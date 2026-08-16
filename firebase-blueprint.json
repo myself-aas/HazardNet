@@ -1,0 +1,169 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "User profile information and saved preferences",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "User ID matching Firebase Auth UID",
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "displayName": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "email": {
+          "type": "string",
+          "maxLength": 255
+        },
+        "photoURL": {
+          "type": "string",
+          "maxLength": 500
+        },
+        "role": {
+          "type": "string",
+          "enum": ["user", "admin"]
+        },
+        "userRole": {
+          "type": "string",
+          "enum": ["smallholder_farmer", "ngo_coordinator", "govt_official", "academic_researcher", "commercial_agribusiness"]
+        },
+        "organization": {
+          "type": "string",
+          "maxLength": 150
+        },
+        "farmSizeHectares": {
+          "type": "number"
+        },
+        "primaryDivision": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "primaryDistrict": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "targetCrops": {
+          "type": "string",
+          "maxLength": 250
+        },
+        "phoneNumber": {
+          "type": "string",
+          "maxLength": 30
+        },
+        "pinpointLat": {
+          "type": "number"
+        },
+        "pinpointLng": {
+          "type": "number"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["uid", "email"]
+    },
+    "Assessment": {
+      "title": "Hazard Assessment",
+      "description": "Saved agricultural hazard prediction and severity report",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "userId": {
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "userEmail": {
+          "type": "string",
+          "maxLength": 255
+        },
+        "districtId": {
+          "type": "string",
+          "maxLength": 50
+        },
+        "districtName": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "primaryHazard": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "confidence": {
+          "type": "number"
+        },
+        "severityScore": {
+          "type": "number"
+        },
+        "severityBin": {
+          "type": "string",
+          "maxLength": 50
+        },
+        "notes": {
+          "type": "string",
+          "maxLength": 1000
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["userId", "districtId", "districtName", "primaryHazard", "confidence", "severityScore"]
+    },
+    "UserAlert": {
+      "title": "District Watchlist Alert",
+      "description": "User custom disaster threshold alert subscription",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "userId": {
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "districtId": {
+          "type": "string",
+          "maxLength": 50
+        },
+        "hazardType": {
+          "type": "string",
+          "maxLength": 50
+        },
+        "severityThreshold": {
+          "type": "number"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["userId", "districtId", "hazardType"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "Collection of user profiles indexed by userId"
+    },
+    "/assessments/{assessmentId}": {
+      "schema": { "$ref": "#/entities/Assessment" },
+      "description": "Collection of saved hazard predictions and assessments"
+    },
+    "/alerts/{alertId}": {
+      "schema": { "$ref": "#/entities/UserAlert" },
+      "description": "Collection of user risk watchlist alerts"
+    }
+  }
+}

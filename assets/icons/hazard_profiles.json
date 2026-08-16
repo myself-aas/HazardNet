@@ -1,0 +1,62 @@
+{
+  "Flood": {
+    "icon": "🌊",
+    "color": "#1E88E5",
+    "description": "Inundation of agricultural land due to excess water.",
+    "mitigation": [
+      "Raise field embankments",
+      "Improve drainage systems",
+      "Plant flood-tolerant varieties (BRRI Dhan51/52)"
+    ]
+  },
+  "Flash Flood": {
+    "icon": "⚡🌊",
+    "color": "#0D47A1",
+    "description": "Rapid inundation of haor basin crops within 6-12 hours.",
+    "mitigation": [
+      "Harvest 80% mature Boro rice immediately",
+      "Secure haor cage culture nets",
+      "Evacuate cattle to high-ground Machrang shelters"
+    ]
+  },
+  "Tropical Cyclone": {
+    "icon": "🌀",
+    "color": "#8E24AA",
+    "description": "Severe wind and tidal surge impacting coastal polders.",
+    "mitigation": [
+      "Close all polder sluice gates immediately",
+      "Evacuate livestock to Machrang shelters",
+      "Apply gypsum to flush salt from soils post-surge"
+    ]
+  },
+  "Drought": {
+    "icon": "☀️",
+    "color": "#F9A825",
+    "description": "Prolonged moisture stress in Barind Tract and Rabi season.",
+    "mitigation": [
+      "Implement Alternate Wetting and Drying (AWD)",
+      "Apply straw mulch to reduce evaporation",
+      "Shift to short-duration pulses if Boro fails"
+    ]
+  },
+  "Heat Wave": {
+    "icon": "🔥",
+    "color": "#E65100",
+    "description": "Extreme temperatures >35°C causing broiler mortality & spike sterility.",
+    "mitigation": [
+      "Provide electrolytes (Vit C) in poultry drinking water",
+      "Maintain 5-7cm standing water in rice fields to buffer soil temp",
+      "Install foggers/roof sprinklers on poultry sheds"
+    ]
+  },
+  "Cold Wave": {
+    "icon": "❄️",
+    "color": "#00ACC1",
+    "description": "Sub-10°C temperature drop affecting Boro seedbeds and livestock.",
+    "mitigation": [
+      "Cover seedbeds with polythene sheets at night",
+      "Irrigate seedbeds with warm groundwater in early morning",
+      "Vaccinate livestock against FMD and respiratory infections"
+    ]
+  }
+}

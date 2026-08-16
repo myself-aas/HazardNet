@@ -1,0 +1,261 @@
+{
+  "metadata": {
+    "version": "1.0",
+    "domain": "Bangladesh Agriculture & Disaster Management",
+    "sources": [
+      "BRRI",
+      "DAE",
+      "DMB",
+      "FAO",
+      "WMO"
+    ]
+  },
+  "documents": [
+    {
+      "id": "inland_coastal_fisheries",
+      "category": "02_fisheries_profiles",
+      "title": "Inland Coastal Fisheries",
+      "content": "# SECTOR PROFILE: FISHERIES (DoF & BFRI Protocols)\n## Context: Bangladesh is the 3rd largest inland fish producer globally.\n\n### 1. Inland Open Water (Haors & Beels - e.g., Sunamganj, Mymensingh, Netrokona, Natore)\n- **Primary Hazard:** Flash Floods (Pre-monsoon), River Erosion.\n- **Vulnerability:** Sudden water level rises wash away fish from open waters; destroys cage culture infrastructure.\n- **Pre-Event Action (48h):** Harvest mature fish (Rui, Katla, Ilish, Pangasius) immediately. Secure floating cage nets with heavy anchors.\n- **Post-Event Recovery:** Restock with fast-growing fingerlings (Tilapia, Silver Carp) provided by Department of Fisheries (DoF). Apply lime (CaCO3 at 250 kg/ha) to stabilize water pH and clear turbidity after floodwater recedes.\n\n### 2. Coastal Aquaculture (Shrimp Gher/Mouth - e.g., Satkhira, Khulna, Bagerhat, Cox's Bazar)\n- **Primary Hazard:** Tropical Cyclone, Tidal Surge, Salinity Intrusion.\n- **Vulnerability:** Embankment breaches flush out shrimp/fish; extreme salinity spikes cause mass mortality in freshwater prawns (Golda).\n- **Pre-Event Action (48h):** Lower pond water levels by 20% to prevent wave overtopping. Reinforce earthen embankments with bamboo nets and sandbags. Close polder sluice gates.\n- **Post-Event Recovery:** Repair breached sluice gates immediately. Flush ponds with freshwater if available. Apply agricultural gypsum (2 t/ha) to pond soils to bind excess sodium (Na+).\n"
+    },
+    {
+      "id": "cyclone_storm",
+      "category": "02_hazard_protocols",
+      "title": "Cyclone Storm",
+      "content": "# Hazard Protocol: Tropical Cyclone & Severe Local Storm\n## Context: Coastal & Haor Regions (Satkhira, Khulna, Barisal, Sylhet)\n### Immediate Actions (0-48 Hours)\n- **Embankments**: Sandbag vulnerable points on polders. Close all sluice gates (Sluice Board protocols) to prevent tidal surge intrusion.\n- **Propping**: Bamboo propping for tall crops (Banana, Sugarcane, late Aman rice).\n- **Harvest**: Harvest mature crops (Potato, Vegetables, mature Aman) immediately.\n- **Shelters**: Evacuate livestock and humans to designated Cyclone Shelters (CCB).\n\n### Protective Measures (1-2 Weeks)\n- **Saltwater Flushing**: If tidal surge breaches embankments, immediately pump or channel freshwater to flush salt from soil profiles before it penetrates deeper.\n- **Debris Clearing**: Remove salt-contaminated debris from agricultural lands to prevent secondary salinization.\n\n### Contingency & Recovery\n- **Salinity Spike**: Apply agricultural gypsum (2-3 tons/ha) to displace sodium ions if soil EC > 4 dS/m.\n- **Replanting**: Use salt-tolerant varieties (BR-11, BRRI Dhan53, BRRI Dhan54) or switch to sunflower/maize in severely affected coastal belts.\n"
+    },
+    {
+      "id": "drought_heat_wave",
+      "category": "02_hazard_protocols",
+      "title": "Drought Heat Wave",
+      "content": "# Hazard Protocol: Drought & Heat Wave\n## Context: Barind Tract (Rajshahi, Rangpur) & Pre-Monsoon (Aus Season)\n### Immediate Actions (0-48 Hours)\n- **AWD Technique**: Implement Alternate Wetting and Drying (AWD) in Boro rice. Use a simple PVC pipe (Tensiometer) to irrigate only when water level drops 15cm below soil surface. Saves 30% water.\n- **Mulching**: Apply straw mulch (5-7 cm) around potato and vegetable bases to reduce soil evaporation.\n- **Water Scheduling**: Irrigate during early morning (6 AM) or late evening (5 PM) to minimize evaporative loss.\n\n### Protective Measures (1-2 Weeks)\n- **Heat Stress Mitigation**: Spray water on vegetable canopies (cucurbitaceae, solanaceae) during peak heat (12 PM - 3 PM).\n- **Nutrient Adjustment**: Reduce nitrogenous fertilizers (which promote lush, water-demanding growth); increase Potash (MOP) to improve plant cell turgor and drought resistance.\n\n### Contingency & Recovery\n- **Crop Failure**: If Boro rice fails at panicle initiation, plow and plant short-duration pulses (Masoor, Chickpea) or Maize if residual moisture permits.\n"
+    },
+    {
+      "id": "flood_flash_flood",
+      "category": "02_hazard_protocols",
+      "title": "Flood Flash Flood",
+      "content": "# Hazard Protocol: Flood & Flash Flood\n## Context: Bangladesh Deltaic Agriculture\n### Immediate Actions (0-48 Hours)\n- **Drainage**: Clear blocked drainage channels and culverts using community labor (Kazal/Shramik).\n- **Harvest**: If Aman rice is at dough/mature stage and flash flood is imminent, harvest immediately even if moisture content is high (use tarpaulins for drying).\n- **Livestock**: Move cattle and poultry to elevated cyclone shelters or raised platforms (Machrang).\n- **Seed Storage**: Move stored seeds (BRRI varieties) and fertilizers to waterproof, elevated rooms.\n\n### Protective Measures (1-2 Weeks)\n- **Post-Flood Drainage**: Dig peripheral trenches (1.5 ft deep) around fields to drain stagnant water within 3-5 days to prevent root rot.\n- **Disease Management**: Spray fungicides (e.g., Tilt 250 EC @ 1ml/L) if bacterial leaf blight or sheath blight symptoms appear post-recession.\n- **Nutrient Recovery**: Apply urea top-dressing (20-30 kg/ha) once water recedes to stimulate tillering recovery.\n\n### Contingency & Recovery\n- **Crop Loss >70%**: Transition to short-duration crops (e.g., BRRI Dhan56, Moong bean, or quick-growing vegetables like Spinach/Lalshak) using residual soil moisture.\n- **Fisheries**: Restock flooded beels/haors with carp fingerlings once water quality stabilizes.\n"
+    },
+    {
+      "id": "cattle_poultry_protocols",
+      "category": "03_livestock_poultry_profiles",
+      "title": "Cattle Poultry Protocols",
+      "content": "# SECTOR PROFILE: LIVESTOCK & POULTRY (DLS & BLRI Protocols)\n\n### 1. Cattle & Goat (e.g., Sirajganj, Kurigram, Jamalpur, Pabna)\n- **Primary Hazard:** Riverine Flood, Flash Flood.\n- **Vulnerability:** Drowning, loss of shelter, severe post-flood fodder crisis, waterborne diseases (bloat, foot rot).\n- **Pre-Event Action (48h):** Evacuate cattle to elevated cyclone/flood shelters (Machrang / Killa) or high-ground community pastures. Stockpile dry fodder (hay, straw, urea-molasses treated straw) for 15 days.\n- **Post-Event Recovery:** Provide emergency fodder blocks and mineral licks. Treat for foot rot with 5% copper sulphate foot baths. Ensure access to clean, arsenic/contamination-free tube-well water.\n\n### 2. Poultry (Broiler & Layer - Nationwide, highly sensitive to Heatwaves & Floods)\n- **Primary Hazard:** Heat Wave, Cold Wave, Flood (shed destruction).\n- **Vulnerability:** Broilers suffer massive mortality at >35°C. Floods destroy low-lying sheds and contaminate feed with mycotoxins.\n- **Pre-Event Action (Heatwave):** Provide electrolytes (Vitamin C, Potassium Chloride) in drinking water. Install foggers/sprinklers on shed roofs. Reduce stocking density by 20%.\n- **Pre-Event Action (Flood):** Relocate birds to elevated shelters. Store feed on plastic pallets above flood level in airtight drums.\n"
+    },
+    {
+      "id": "bd_agro_calendar",
+      "category": "03_seasonal_calendar",
+      "title": "Bd Agro Calendar",
+      "content": "# Bangladesh Agro-Ecological Seasonal Calendar\n## Crucial for aligning HazardNet Lead-Time with Crop Stages\n\n### 1. Kharif-I (Pre-Monsoon: Mid-Feb to Mid-June)\n- **Primary Crops**: Aus Rice, Jute, Maize, Early Vegetables.\n- **Hazards**: Nor'westers (Kalbaishakhi), Heat Wave, Pre-monsoon Drought.\n- **Critical Stage**: Jute sowing, Aus vegetative growth.\n\n### 2. Kharif-II (Monsoon: Mid-June to Mid-Oct)\n- **Primary Crops**: Aman Rice (Transplant & Broadcast), Jute, Aus Harvest.\n- **Hazards**: Flash Flood, Riverine Flood, Tropical Cyclone, Heavy Rainfall.\n- **Critical Stage**: Aman transplanting (July), Tillering (Aug), Flowering (Sept).\n\n### 3. Rabi (Winter: Mid-Oct to Mid-Feb)\n- **Primary Crops**: Boro Rice, Potato, Wheat, Pulses (Chickpea, Lentil), Oilseeds.\n- **Hazards**: Cold Wave, Frost, Winter Drought, Salinity Intrusion (Coastal).\n- **Critical Stage**: Boro seedling (Nov), Potato tuber formation (Dec-Jan).\n"
+    },
+    {
+      "id": "brri_stress_tolerant",
+      "category": "04_variety_database",
+      "title": "Brri Stress Tolerant",
+      "content": "# BRRI Stress-Tolerant Rice Varieties Database\n## Used for Post-Hazard Replanting Recommendations\n\n### Submergence Tolerant (Flood)\n- **BRRI Dhan51**: Tolerates submergence up to 10-12 days. (Kharif-II)\n- **BRRI Dhan52**: Tolerates submergence up to 2 weeks. (Kharif-II)\n- **BRRI Dhan56**: Short duration (110 days), good for flash flood recovery.\n\n### Drought Tolerant (Rainfed Aus/Upland)\n- **BRRI Dhan57**: Deep rooting, drought-tolerant. (Aus)\n- **BRRI Dhan61**: Tolerates moisture stress at reproductive stage.\n- **BRRI Dhan71**: Upland rice, suitable for Barind tract.\n\n### Salinity Tolerant (Coastal)\n- **BRRI Dhan53**: Tolerates EC up to 8-10 dS/m. (Kharif-II)\n- **BRRI Dhan54**: Highly salt-tolerant, suitable for Rabi season in coastal belts.\n- **BRRI Dhan55**: Tolerant to tidal surge salinity.\n\n### Cold Tolerant (Boro Seedling Stage)\n- **BRRI Dhan36**: Tolerates low temperature at seedling stage.\n- **BRRI Dhan62**: Cold tolerant for late Rabi planting.\n"
+    },
+    {
+      "id": "post_disaster_disease_sops",
+      "category": "04_veterinary_emergency",
+      "title": "Post Disaster Disease Sops",
+      "content": "# VETERINARY EMERGENCY PROTOCOLS (DLS)\n## Triggered ONLY when HazardNet Severity >= 0.65 (High/Severe)\n\n### 1. Anthrax & Black Quarter (Post-Flood)\n- **Trigger:** Flooding followed by sudden cattle deaths with dark blood from natural orifices.\n- **SOP:** DO NOT open carcasses (prevents spore formation). Bury deep (6 ft) with quicklime. Ring-vaccinate all healthy cattle within a 10km radius with Anthrax Spore Vaccine (Department of Livestock Services).\n\n### 2. Foot and Mouth Disease (FMD) & Hemorrhagic Septicemia (Post-Cold Wave/Transition)\n- **Trigger:** Cold Wave or sudden temperature drops affecting immunocompromised livestock.\n- **SOP:** Isolate infected animals immediately. Provide soft, easily digestible fodder and potassium permanganate mouth washes. Vaccinate with Polyvalent FMD vaccine.\n\n### 3. Avian Influenza & Newcastle Disease (Post-Cyclone/Flood)\n- **Trigger:** Poultry sheds damaged, wild migratory birds mixing with domestic flocks due to habitat loss.\n- **SOP:** Cull infected flocks safely under DLS supervision (PPE required). Disinfect sheds with 2% sodium hypochlorite. Ban movement of live poultry from the 3km containment zone.\n"
+    },
+    {
+      "id": "agro_ecological_zones_aez",
+      "category": "05_spatial_context",
+      "title": "Agro Ecological Zones Aez",
+      "content": "# Agro-Ecological Zones (AEZ) Reference\n## Based on FAO & BARC (Bangladesh Agricultural Research Council)\n\n| AEZ Name | Dominant Districts | Soil Type | Primary Crops | Hazard Susceptibility |\n| :--- | :--- | :--- | :--- | :--- |\n| **Tidal Floodplain** | Khulna, Satkhira, Patuakhali | Saline, Alluvial | Aman Rice, Sunflower, Pulses | Cyclone, Salinity, Surge |\n| **Ganges River Floodplain** | Rajshahi, Pabna, Kushtia | Loam, Silty Loam | Jute, Rice, Wheat, Sugarcane | River Flood, Drought |\n| **Barind Tract** | Rajshahi, Rangpur, Dinajpur | Red Clay, Hardpan | Boro Rice, Potato, Maize, Mango | Severe Drought, Heat Wave |\n| **Haor Basin** | Sunamganj, Sylhet, Netrokona | Hydromorphic, Clay | Boro Rice, Aus Rice, Fish | Flash Flood (Pre-monsoon) |\n| **Active Meghna Floodplain** | Comilla, Noakhali, Bhola | Sandy, Loamy | Aman Rice, Jute, Pulses | River Erosion, Monsoon Flood |\n| **Chittagong Hill Tracts** | Rangamati, Bandarban, Khagrachari | Red Loam, Hilly | Jhum crops, Banana, Vegetables | Landslide, Flash Flood, Storm |\n| **Karatoa Atrai Floodplain** | Bogra, Joypurhat, Dinajpur | Loam, Sandy Loam | Potato, Wheat, Rice, Tobacco | Winter Cold Wave, Drought |\n"
+    },
+    {
+      "id": "regional_vulnerability_profiles",
+      "category": "05_spatial_context",
+      "title": "Regional Vulnerability Profiles",
+      "content": "# Regional Vulnerability & Hazard Profiles\n## Context: Bangladesh Spatial Hazard Routing\n\n### 1. Coastal & Tidal Zones (Khulna, Satkhira, Bagerhat, Patuakhali, Barguna, Bhola)\n- **Primary Hazards:** Tropical Cyclone, Severe Local Storm, Salinity Intrusion, Tidal Surge.\n- **Agro-Context:** Coastal saline soils, mangrove (Sundarbans) proximity, shrimp-rice rotation.\n- **Specific LLM Instructions:** \n  - If `hazard == 'Tropical Cyclone'`, prioritize \"sluice gate closure\" and \"salinity flushing\".\n  - If `hazard == 'Flood'`, treat as \"Tidal Surge\" (saltwater), NOT riverine freshwater. Recommend gypsum application and salt-tolerant varieties (BR-11).\n\n### 2. Haor Basin & Wetlands (Sunamganj, Sylhet, Netrokona, Kishoreganj, Habiganj)\n- **Primary Hazards:** Flash Flood (Pre-monsoon), Severe Local Storm (Kalbaishakhi).\n- **Agro-Context:** Bowl-shaped depressions, Boro rice cultivation in winter, highly vulnerable to sudden pre-monsoon (March-April) flash floods from upstream hills.\n- **Specific LLM Instructions:**\n  - If `hazard == 'Flash Flood'` and season is `Kharif-I` (Mar-May), trigger \"Emergency Early Harvest\" protocol for Boro rice.\n  - Do NOT recommend embankment reinforcement (ineffective in Haors); recommend rapid harvesting and elevated seed storage.\n\n### 3. Barind Tract & Northern Drought Zones (Rajshahi, Rangpur, Nawabganj, Dinajpur, Thakurgaon)\n- **Primary Hazards:** Drought, Heat Wave, Cold Wave.\n- **Agro-Context:** Pleistocene elevated tract, red clay soil, high groundwater dependence, rainfed Aus and irrigated Boro.\n- **Specific LLM Instructions:**\n  - If `hazard == 'Drought'`, prioritize Alternate Wetting and Drying (AWD), mulching, and shifting to short-duration pulses (Masoor) if Boro fails.\n  - If `hazard == 'Cold Wave'`, focus on Rabi crops (Potato, Wheat, Mustard) and recommend irrigation to mitigate frost.\n\n### 4. Active Floodplains & River Basins (Jamuna, Padma, Meghna basins - e.g., Sirajganj, Jamalpur, Tangail, Comilla)\n- **Primary Hazards:** Flood (Riverine), River Erosion.\n- **Agro-Context:** Deep alluvial soils, high agricultural density, monsoon (Jul-Sep) inundation.\n- **Specific LLM Instructions:**\n  - If `hazard == 'Flood'`, treat as \"Riverine Monsoon Flood\". Focus on drainage, floating agriculture (Baira), and post-flood bacterial leaf blight management.\n\n### 5. Hill & Elevated Regions (Chattogram, Cox's Bazar, Rangamati, Bandarban, Khagrachari)\n- **Primary Hazards:** Severe Local Storm, Flash Flood, Landslide (Note: Landslide not in HazardNet, but storm causes it).\n- **Agro-Context:** Slope agriculture, Jhum cultivation, high rainfall.\n- **Specific LLM Instructions:**\n  - If `hazard == 'Severe Local Storm'`, prioritize hill-side crop protection and warning against working on steep slopes during Kalbaishakhi storms.\n"
+    },
+    {
+      "id": "skill_01_pipeline_interpretation",
+      "category": "06_agent_skills",
+      "title": "Skill 01 Pipeline Interpretation",
+      "content": "# SKILL 01: HazardNet Pipeline & Uncertainty Interpretation\n\n## OBJECTIVE\nSafely interpret HazardNet TFLite edge-inference outputs and map them to advisory urgency levels.\n\n## HAZARDNET OUTPUT SCHEMA\nThe model outputs two values:\n1. `hazard_class`: Categorical (Flood, Cyclone, Drought, etc.)\n2. `severity_score`: Continuous float [0.0 to 1.0] representing physical impact magnitude.\n3. `confidence_bin`: Categorical (Certain ≥0.85, Probable 0.70-0.85, Uncertain <0.70).\n\n## ADVISORY ROUTING MATRIX (STRICT PROTOCOL)\nYou MUST map the model outputs to the following advisory tiers:\n\n| Severity Score | Confidence Bin | Advisory Tier | Action Required |\n| :--- | :--- | :--- | :--- |\n| **≥ 0.75** | **Certain** | 🔴 EMERGENCY | Immediate evacuation/harvest. Trigger DAE Emergency SOP. |\n| **≥ 0.75** | **Probable** | 🟠 HIGH ALERT | Prepare resources. Pre-position relief. Monitor hourly. |\n| **0.40 - 0.74** | **Certain/Probable** | 🟡 WATCH | Proactive mitigation (e.g., clear drains, apply fungicides). |\n| **< 0.40** | **Any** | 🟢 ROUTINE | Standard seasonal awareness. No urgent action. |\n| **Any** | **Uncertain** | ⚠️ CAUTIONARY | \"Probabilistic Outlook\". Emphasize local ground-truthing. |\n\n## EDGE CASE HANDLING\n- **Suspicious Zeros**: If `severity_score == 0.0` but `hazard_class != 'None'`, treat as \"Data Gap / Sensor Occlusion\" (e.g., heavy cloud cover on optical bands). Advise reliance on SAR/ERA5 climate data.\n- **Conflicting Signals**: If Open-Meteo predicts heavy rain but HazardNet predicts Drought (due to lag in soil moisture response), prioritize the **HazardNet temporal context** but add a caveat about rapid-onset flash floods.\n"
+    },
+    {
+      "id": "skill_02_meteo_satellite_literacy",
+      "category": "06_agent_skills",
+      "title": "Skill 02 Meteo Satellite Literacy",
+      "content": "# SKILL 02: Meteorological & Satellite Data Literacy\n\n## OBJECTIVE\nInterpret the 15-channel HazardNet input tensor and Open-Meteo/NASA API forecasts to explain the \"Why\" behind the prediction to farmers.\n\n## SATELLITE BAND INTERPRETATION\n- **SAR (VV/VH)**: Represents surface water and vegetation structure. High VV/VH ratio changes indicate flooding or cyclone windthrow (lodging).\n- **Optical (NIR/Red)**: NDVI drops indicate crop stress (drought/salinity). \n- **ERA5 Climate (Temp/Precip/Soil)**: Represents the atmospheric driver. \n\n## OPEN-METEO FORECAST LIMITATIONS (CRITICAL FOR ACCURACY)\n- **7-Day Horizon**: Highly accurate deterministic forecast. Use for tactical advice (e.g., \"Harvest in next 48h\").\n- **15-Day Horizon**: Probabilistic. Use for strategic advice (e.g., \"Prepare drainage\").\n- **DO NOT** invent specific millimeter rainfall amounts for >7 day horizons. Use qualitative terms (\"above-normal monsoon surge\", \"prolonged dry spell\").\n\n## DATA FUSION LOGIC\nIf SAR shows standing water (Flood) BUT Open-Meteo shows 0mm precipitation:\n→ **Diagnosis**: Riverine flood or tidal surge (not local rainfall).\n→ **Action**: Advise sluice gate management (Coastal) or embankment monitoring (Riverine), NOT local drainage.\n"
+    },
+    {
+      "id": "skill_03_bmd_early_warning",
+      "category": "06_agent_skills",
+      "title": "Skill 03 Bmd Early Warning",
+      "content": "# SKILL 03: BMD Early Warning Signal Integration\n\n## OBJECTIVE\nAlign HazardNet predictions with official Bangladesh Meteorological Department (BMD) warning signals for public trust and legal compliance.\n\n## CYCLONE WARNING SIGNALS\n- **Signal 1 (Dangerous)**: HazardNet Severity > 0.4. Action: Monitor.\n- **Signal 3 (Great Danger)**: HazardNet Severity > 0.7. Action: Evacuate to shelters.\n- **Signal 7-10 (Extreme)**: HazardNet Severity > 0.9. Action: Absolute lockdown, secure livestock.\n\n## HEAVY RAINFALL / FLASH FLOOD ALERTS\n- **Yellow Alert**: 15-day forecast shows >100mm rain. HazardNet Severity > 0.5.\n- **Red Alert**: 7-day forecast shows >200mm rain. HazardNet Severity > 0.8.\n- **Protocol**: Always reference \"In alignment with BMD Red/Yellow Alert protocols...\" in the advisory header.\n"
+    },
+    {
+      "id": "skill_04_dae_agricultural_sop",
+      "category": "06_agent_skills",
+      "title": "Skill 04 Dae Agricultural Sop",
+      "content": "# SKILL 04: DAE Agricultural Disaster SOPs\n\n## OBJECTIVE\nProvide crop-stage-specific interventions based on DAE guidelines.\n\n## FLOOD / FLASH FLOOD SOP\n- **Pre-Event (Severity > 0.6)**: Harvest mature crops immediately. Move seeds to elevated storage.\n- **Post-Event (Water recedes < 5 days)**: Wash seedlings with clean water. Apply Urea (20 kg/ha) for recovery.\n- **Post-Event (Water recedes > 10 days)**: Crop loss >80%. Switch to short-duration crops (e.g., BRRI Dhan56, Moong Dal).\n\n## DROUGHT / HEAT WAVE SOP\n- **Vegetative Stage**: Implement Alternate Wetting and Drying (AWD). Apply mulch.\n- **Reproductive Stage (Flowering)**: Spray water on canopy during 12 PM - 3 PM. Apply Potash (MOP) to improve cell turgor.\n- **Severe (Severity > 0.8)**: Advise crop insurance claim initiation via local UP office.\n\n## SALINITY INTRUSION SOP (Coastal: Satkhira, Khulna, Bagerhat)\n- **Pre-Surge**: Close all polder sluice gates. \n- **Post-Surge**: Apply agricultural gypsum (2-3 tons/ha) to displace sodium. Flush with freshwater if available.\n"
+    },
+    {
+      "id": "skill_05_brri_variety_matching",
+      "category": "06_agent_skills",
+      "title": "Skill 05 Brri Variety Matching",
+      "content": "# SKILL 05: BRRI Stress-Tolerant Variety Matching\n\n## OBJECTIVE\nRecommend specific BRRI rice varieties based on the predicted hazard and severity.\n\n## VARIETY MATCHING MATRIX\n| Hazard | Severity | Recommended BRRI Variety | Tolerance Trait |\n| :--- | :--- | :--- | :--- |\n| **Flood** | High | BRRI Dhan51, Dhan52 | Submergence (up to 14 days) |\n| **Flood** | Moderate | BRRI Dhan56 | Short duration (escape strategy) |\n| **Drought** | High | BRRI Dhan57, Dhan61 | Deep rooting, moisture stress |\n| **Salinity** | High | BRRI Dhan53, Dhan54 | Tolerates EC up to 10 dS/m |\n| **Cold Wave** | High | BRRI Dhan36, Dhan62 | Seedling stage cold tolerance |\n\n## PROTOCOL\nWhen advising post-disaster replanting, you MUST include the specific BRRI variety name and the local seed distributor (e.g., BADC or local NGO).\n"
+    },
+    {
+      "id": "skill_06_international_frameworks",
+      "category": "06_agent_skills",
+      "title": "Skill 06 International Frameworks",
+      "content": "# SKILL 06: International Framework Alignment\n\n## OBJECTIVE\nFrame advisories within global standards for climate adaptation.\n\n## FAO (Food and Agriculture Organization)\n- Reference \"FAO Guidelines for Climate-Smart Agriculture\".\n- Emphasize post-disaster soil health (e.g., green manuring after floods).\n\n## WMO (World Meteorological Organization)\n- Reference \"WMO Seasonal Climate Outlooks\" for 15-day to 3-month horizons.\n- Use WMO standardized terminology (e.g., \"Above Normal Precipitation\", \"Meteorological Drought\").\n\n## SENDAI FRAMEWORK FOR DISASTER RISK REDUCTION\n- Align advisories with \"Target G: Increase availability of and access to early warning systems\".\n- Frame the HazardNet advisory as an \"Anticipatory Action\" mechanism.\n"
+    },
+    {
+      "id": "15_band_tensor_logic",
+      "category": "01_tensor_interpretation",
+      "title": "15 Band Tensor Logic",
+      "content": "# SKILL: 15-Band Tensor Interpretation\n## OBJECTIVE\nTranslate HazardNet's 15-channel input tensor anomalies into physical hazard drivers.\n\n## BAND MAPPING & INTERPRETATION\n1. **SAR_VV & SAR_VH (Sentinel-1):** \n   - *Logic:* VV is sensitive to surface water (double bounce / specular reflection) and wind roughness. VH is sensitive to volume scattering from vegetation.\n   - *Action:* If VV drops sharply while VH drops → **Standing floodwater**. If VV spikes while VH drops → **Cyclone windthrow** (vegetation canopy destroyed, ground exposed).\n2. **Blue, Red, NIR, SWIR (Sentinel-2/Landsat):**\n   - *Logic:* NIR measures chlorophyll content and biomass health. SWIR measures plant tissue water content.\n   - *Action:* NIR drop + SWIR spike → **Severe Drought / Moisture Stress**. NIR drop + Red spike → **Post-flood crop rotting or leaf chlorosis**.\n3. **Temp_2m, Max_Temp, Min_Temp, Dewpoint (ERA5):**\n   - *Logic:* Diurnal temperature range (Max - Min) and relative humidity proxy (Temp - Dewpoint).\n   - *Action:* Min_Temp < 283.15K (10°C) for > 3 consecutive days → **Cold Wave** (Rabi crop/Boro seedling injury). High Dewpoint + High Temp_2m → **Extreme Heat Stress** (spike in crop transpiration loss and livestock heat stroke).\n4. **Precip, Soil_W1, Soil_W3, Solar_Rad:**\n   - *Logic:* Soil_W1 (0-7cm surface) responds immediately; Soil_W3 (0-1m root zone) reflects cumulative water availability.\n   - *Action:* High Precip + Soil_W1 saturation → **Flash Flood Trigger**. Zero Precip + Soil_W3 drying below wilting point → **Root-Zone Agricultural Drought**.\n"
+    },
+    {
+      "id": "climate_drivers",
+      "category": "01_tensor_interpretation",
+      "title": "Climate Drivers",
+      "content": "# SKILL: ERA5 Reanalysis Climate Drivers\n## OBJECTIVE\nInterpret atmospheric, surface temperature, precipitation, and soil layer ERA5 variables driving agricultural hazards in Bangladesh.\n\n## DRIVER THRESHOLDS\n- **Precipitation Anomaly:** Daily rainfall > 100mm/day in Meghalaya/Assam catchments triggers transboundary flash floods in Sylhet/Sunamganj within 24–48 hours.\n- **Root Zone Soil Moisture (Soil_W3):** Volumetric water content < 0.15 m³/m³ in Barind Tract (Rajshahi, Dinajpur) signals deep agricultural drought.\n- **Diurnal Thermal Extremes:** Max_Temp > 38°C (311.15K) accompanied by Solar_Rad > 22 MJ/m²/day causes heat blast / spikelet sterility in Boro rice at flowering stage.\n"
+    },
+    {
+      "id": "optical_stress",
+      "category": "01_tensor_interpretation",
+      "title": "Optical Stress",
+      "content": "# SKILL: Optical Multispectral Vegetation Stress Indices\n## OBJECTIVE\nDerive vegetation canopy health, soil moisture deficit, and flood debris signals from Blue, Red, NIR, and SWIR bands.\n\n## SPECTRAL FORMULATIONS\n- **NDVI = (NIR - Red) / (NIR + Red):** Healthy crop > 0.6; Water < 0.0; Bare Soil 0.1–0.2.\n- **NDWI = (Green/NIR - SWIR) / (Green/NIR + SWIR):** Water body and canopy liquid water content. NDWI > 0.3 indicates waterlogging.\n- **NDMI = (NIR - SWIR) / (NIR + SWIR):** Crop canopy moisture stress. NDMI < 0.1 indicates severe water stress.\n\n## ANOMALY INTERPRETATION\n- **Rapid NDVI Collapse (> 40% drop in 5 days):** Crop inundation, cyclone lodging, or severe pest infestation.\n- **SWIR Rise with Stable Red:** Canopy dehydration during prolonged dry spells or high evaporative demand.\n"
+    },
+    {
+      "id": "sar_anomalies",
+      "category": "01_tensor_interpretation",
+      "title": "Sar Anomalies",
+      "content": "# SKILL: SAR Anomalies (Sentinel-1 VV/VH)\n## OBJECTIVE\nInterpret Synthetic Aperture Radar backscatter signals for all-weather, day-and-night flood inundation and windthrow detection.\n\n## PHYSICAL MECHANISMS\n- **Specular Reflection (Smooth Water):** Smooth open water reflects radar pulses away from the antenna, resulting in dark pixels (VV < -18 dB).\n- **Double-Bounce Scattering (Flooded Vegetation):** Water beneath crop stalks causes double reflection between water surface and vertical stems, producing bright VV signatures (+2 to +5 dB anomaly).\n- **Volume Scattering Loss (Lodging/Windthrow):** Flattened rice stalks lose structural canopy geometry, reducing VH backscatter (-4 to -8 dB drop).\n\n## OPERATIONAL TRIAGE\n- **Flood Inundation:** VV < -16 dB AND VH < -22 dB across > 15% of grid cells.\n- **Submerged Boro Paddy:** VV double-bounce spike followed by VV dark surface drop as water level rises above canopy.\n"
+    },
+    {
+      "id": "severity_binning",
+      "category": "02_severity_quantification",
+      "title": "Severity Binning",
+      "content": "# SKILL: Severity Index Binning & Action Tiers\n## OBJECTIVE\nMap HazardNet's continuous Sigmoid output (0.0 to 1.0) to Bangladesh Government Action Tiers.\n\n## BINNING PROTOCOL\n- **0.00 - 0.33 (LOW / WATCH):** \n  - *Tone:* Informational & routine observation.\n  - *Action:* Continue regular satellite surveillance. Maintain routine DAE advice. No emergency resource allocation required.\n- **0.34 - 0.66 (MODERATE / WARNING):** \n  - *Tone:* Preparatory & proactive mobilization.\n  - *Action:* Mobilize DAE field extension officers (BS). Pre-position flood-tolerant BRRI seeds. Inspect embankment integrity and clean drainage canals.\n- **0.67 - 1.00 (HIGH / EMERGENCY):** \n  - *Tone:* Urgent / Crisis Response.\n  - *Action:* Trigger BMD Signal 3+. Activate District Disaster Management Committees (DDMC). Issue WHO water purification tablet advisories and UNICEF child WASH protocols.\n"
+    },
+    {
+      "id": "uncertainty_routing",
+      "category": "02_severity_quantification",
+      "title": "Uncertainty Routing",
+      "content": "# SKILL: Uncertainty Routing & Low-Confidence Mitigation\n## OBJECTIVE\nHandle predictions where HazardNet confidence score < 0.70 (70%) by injecting probabilistic framing and institutional cross-verification warnings.\n\n## PROTOCOL FOR CONFIDENCE < 0.70\n1. **Probabilistic Framing Mandate:** Prepend advisories with explicit WMO seasonal outlook caveats: *\"Prediction contains moderate model uncertainty (Confidence < 70%). Treat as probabilistic risk scenario.\"*\n2. **Cross-Verification Advice:** Instruct local agricultural officers (UAO/SAAO) and farmers to cross-reference with official Union Parishad notices and local BMD synoptic weather bulletins.\n3. **No Irreversible Actions:** Do not advise drastic, irreversible early harvest if confidence is low unless verified by ground observation.\n"
+    },
+    {
+      "id": "cold_wave",
+      "category": "03_hazard_protocols",
+      "title": "Cold Wave",
+      "content": "# SKILL: Cold Wave & Low Temperature Shock Protocol\n## OBJECTIVE\nProtect winter crops, Boro rice seedbeds, and poultry/livestock from severe winter temperature drops (< 10°C).\n\n## PROTECTIVE ACTIONS\n- **Boro Seedbed Irrigation:** Keep Boro rice seedbeds flooded with 3-5 cm water during cold nights and drain during sunny days to prevent seedling yellowing and cold injury.\n- **Polythene Covering:** Cover seedbeds with transparent polythene sheets from 5 PM to 9 AM.\n- **Fungicide Spraying:** Apply Mancozeb/Sulphur fungicides to potato fields to prevent Late Blight outbreak triggered by high humidity and cold temperatures.\n"
+    },
+    {
+      "id": "drought_heat_wave",
+      "category": "03_hazard_protocols",
+      "title": "Drought Heat Wave",
+      "content": "# SKILL: Agricultural Drought & Heat Wave Protocol\n## OBJECTIVE\nCombat root-zone water deficits and heat-induced spikelet sterility during severe dry spells in Barind and high-land zones.\n\n## AGRONOMIC ADVISORIES\n- **Alternate Wetting and Drying (AWD):** Implement AWD irrigation technique in Boro paddy fields to reduce water consumption by 30% without yield penalty.\n- **Heat Blast Suppression:** Maintain 2-3 cm standing water in paddy fields during flowering/panicle initiation stage to buffer canopy temperatures against extreme heat (>36°C).\n- **Mulching:** Apply straw or plastic mulching in maize, potato, and vegetable plots to conserve soil moisture (Soil_W3).\n- **Drought-Tolerant Varieties:** Recommend *BRRI Dhan56*, *BRRI Dhan66*, and BARI Drought-Tolerant Wheat/Maize varieties.\n"
+    },
+    {
+      "id": "flood_flash_flood",
+      "category": "03_hazard_protocols",
+      "title": "Flood Flash Flood",
+      "content": "# SKILL: Flood & Flash Flood Response Protocol\n## OBJECTIVE\nDeliver actionable crop protection, embankment monitoring, and post-inundation recovery advisories for flood and flash flood events in Bangladesh.\n\n## PRE-EVENT ACTIONS (Severity > 0.50)\n- **Harvest Priority:** Harvest mature Boro/Aman paddy immediately if crops are at 80%+ maturity (dough to ripe stage) to avoid total inundation loss.\n- **Seedbed Protection:** Raise seedbed perimeters with bamboo fencing and polythene covers; prepare floating seedbeds (*Baira*) in low-lying Haor basins.\n- **Livestock Safety:** Move cattle and poultry to elevated embankments (*Killa*) or highland shelters.\n\n## POST-FLOOD RECOVERY (Water Recession)\n- **Soil Fertility:** Apply 20 kg/ha Urea and 10 kg/ha MOP once floodwaters recede to restore submerged root vitality.\n- **Replanting / Floating Seedbed Varieties:**\n  - *BRRI Dhan51 / BRRI Dhan52:* Submergence-tolerant rice varieties for up to 14–21 days of total inundation.\n  - *BRRI Dhan56 / BRRI Dhan57:* Short-duration varieties for late-season escape cropping.\n"
+    },
+    {
+      "id": "severe_local_storm",
+      "category": "03_hazard_protocols",
+      "title": "Severe Local Storm",
+      "content": "# SKILL: Severe Local Storm & Kalbaishakhi Protocol\n## OBJECTIVE\nMitigate Nor'wester (Kalbaishakhi) squalls, lightning, and hail damage during pre-monsoon (March-May).\n\n## SAFETY & CROP ADVISORIES\n- **Lightning Avoidance:** Farmers must clear open paddy fields immediately upon hearing thunder; avoid shelter under isolated trees.\n- **Hail Damage Management:** Drain standing hail meltwater quickly to prevent root rot; apply light nitrogen fertilizer to recover damaged vegetative tissues.\n- **Fruit / Crop Netting:** Use protective shading/netting over high-value horticulture and fruit orchards (mango, lychee).\n"
+    },
+    {
+      "id": "tropical_cyclone",
+      "category": "03_hazard_protocols",
+      "title": "Tropical Cyclone",
+      "content": "# SKILL: Tropical Cyclone & Coastal Surge Protocol\n## OBJECTIVE\nMitigate catastrophic windthrow, saline water intrusion, and coastal polder breaches during Bay of Bengal cyclones.\n\n## COASTAL EMERGENCY PROTOCOLS\n- **Polder & Sluice Gate Control:** Close all coastal polder sluice gates immediately to prevent marine saline water entry into freshwater agricultural zones.\n- **Crop Lodging Mitigation:** Tie standing sugarcane, banana, and maize stalks in bundles (*Propping*) to withstand high-velocity gale force winds.\n- **Post-Surge Salinity Remediation:** Apply Gypsum (2-3 tonnes/hectare) and organic compost post-surge to leach excess Sodium (Na+) ions from root zones.\n- **Saline-Tolerant Cultivars:** Promote *BRRI Dhan53*, *BRRI Dhan54*, and *BRRI Dhan67* (tolerates up to 8-10 dS/m salinity).\n"
+    },
+    {
+      "id": "barc_climate_signatures",
+      "category": "04_agricultural_institutions",
+      "title": "Barc Climate Signatures",
+      "content": "# SKILL: BARC Agro-Climatic Baselines (Bangladesh Agricultural Research Council)\n## OBJECTIVE\nCross-reference Agro-Ecological Zones (AEZ 1 to 30) for baseline soil texture, land type (F0 to F4), and seasonal risk signatures.\n\n## AEZ CLASSIFICATION HIGHLIGHTS\n- **AEZ 1 (Old Himalayan Piedmont Plain):** Sandy loam soils, high vulnerability to cold waves and drought.\n- **AEZ 2 (Active Tista Floodplain - Kurigram, Gaibandha):** Medium High to Medium Low land; extreme riverbank erosion and flash floods.\n- **AEZ 13 (Sylhet Basin / Haor):** Very low land (F3/F4); 100% early flash flood threat during April-May Boro harvest.\n- **AEZ 18 (Young Meghna Estuarine Floodplain):** Salinity intrusion and cyclone surge risk.\n"
+    },
+    {
+      "id": "bari_crop_protocols",
+      "category": "04_agricultural_institutions",
+      "title": "Bari Crop Protocols",
+      "content": "# SKILL: BARI Crop Protocols (Bangladesh Agricultural Research Institute)\n## OBJECTIVE\nProvide non-rice crop advisories (Maize, Potato, Wheat, Pulses, Oilseeds) under climate stress.\n\n## POTATO & VEGETABLES\n- **Late Blight Alert:** When relative humidity > 85% and temperature between 12-20°C, spray Mancozeb (2g/L) preventively.\n- **Flood Drainage:** Construct 30 cm deep drainage trenches around potato/vegetable beds to prevent root asphyxiation.\n\n## MAIZE & PULSES\n- **Waterlogging:** Maize is highly sensitive to root-zone saturation; drain field within 12 hours.\n- **BARI Varieties:** *BARI Gom-33* (heat/blast tolerant wheat), *BARI Chhola-9* (drought tolerant chickpea).\n"
+    },
+    {
+      "id": "brri_rice_protocols",
+      "category": "04_agricultural_institutions",
+      "title": "Brri Rice Protocols",
+      "content": "# SKILL: BRRI Rice Protocols (Bangladesh Rice Research Institute)\n## OBJECTIVE\nProvide exact seed variety and agronomic recommendations based on hazard type.\n\n## FLOOD / FLASH FLOOD (Submergence)\n- **Pre-Event (Severity > 0.5):** Harvest mature Aman/Boro rice immediately if at dough/ripe stage.\n- **Post-Event (Water recedes < 7 days):** Apply Urea (20 kg/ha) once water recedes to encourage tiller revival.\n- **Replanting Varieties:** \n  - *BRRI Dhan51* (Tolerates 10-14 days complete submergence via SUB1 gene).\n  - *BRRI Dhan52* (Tolerates 14-21 days submergence; high yielding).\n  - *BRRI Dhan56* (Short duration, 110 days, drought-escape strategy).\n\n## SALINITY INTRUSION (Coastal: Khulna, Satkhira, Bagerhat)\n- **Pre-Event:** Close all polder sluice gates.\n- **Post-Event:** Apply Gypsum (2-3 t/ha) to displace Na+ ions.\n- **Replanting Varieties:**\n  - *BRRI Dhan53* (Tolerates EC up to 8-10 dS/m).\n  - *BRRI Dhan54* (Highly salt-tolerant for Rabi season).\n  - *BRRI Dhan67* (Salt-tolerant at seedling and reproductive stages).\n"
+    },
+    {
+      "id": "dae_extension_sop",
+      "category": "04_agricultural_institutions",
+      "title": "Dae Extension Sop",
+      "content": "# SKILL: DAE Extension Standard Operating Procedure (Department of Agricultural Extension)\n## OBJECTIVE\nGuide Sub-Assistant Agriculture Officers (SAAO) and Upazila Agriculture Officers (UAO) in field triage, damage reporting, and emergency input distribution.\n\n## SAAO FIELD ACTION STEPS\n1. **Block Triage:** Conduct physical inspection within 24 hours of hazard occurrence across all designated agricultural blocks.\n2. **Loss Assessment:** Report damaged area (hectares), affected farmers, and crop stage via DAE Krishok App / Form-A to UAO.\n3. **Input Distribution:** Coordinate emergency distribution of BRRI/BARI seeds, fertilizer kits, and mechanical harvesters (Combine Harvesters).\n"
+    },
+    {
+      "id": "bmd_warning_signals",
+      "category": "05_meteorological_institutions",
+      "title": "Bmd Warning Signals",
+      "content": "# SKILL: BMD Warning Signal Mapping (Bangladesh Meteorological Department)\n## OBJECTIVE\nAlign HazardNet predictions with official Bangladesh Meteorological Department (BMD) signals for public trust and institutional compliance.\n\n## CYCLONE WARNING SIGNALS\n- **Distant Cautionary Signal 1:** HazardNet Severity 0.25 - 0.40. *Action:* Keep tracking storm track in Bay of Bengal.\n- **Local Warning Signal 3:** HazardNet Severity 0.41 - 0.65. *Action:* Ports warned, fishing boats return to shore, farmers prepare for wind gusts.\n- **Danger Signal 5 - 7:** HazardNet Severity 0.66 - 0.80. *Action:* Evacuate coastal lowlands to cyclone shelters; secure livestock.\n- **Great Danger Signal 8 - 10:** HazardNet Severity > 0.80. *Action:* Extreme crisis; total lockdown; full disaster response.\n\n## HEAVY RAINFALL / FLASH FLOOD ALERTS\n- **Yellow Alert:** Rainfall 44 - 88 mm/24hr. Clearing drainage channels.\n- **Red Alert:** Rainfall > 88 mm/24hr. Immediate harvest and highland relocation.\n"
+    },
+    {
+      "id": "wmo_seasonal_outlook",
+      "category": "05_meteorological_institutions",
+      "title": "Wmo Seasonal Outlook",
+      "content": "# SKILL: WMO Seasonal Outlook & ENSO/IOD Dynamics\n## OBJECTIVE\nIncorporate World Meteorological Organization (WMO) regional climate frameworks, ENSO (El Niño / La Niña), and Indian Ocean Dipole (IOD) signatures into long-range agricultural risk advisories.\n\n## CLIMATE DRIVER EFFECTS ON BANGLADESH\n- **La Niña (+ Positive IOD):** Above-normal monsoon rainfall, higher frequency of severe river floods and pre-monsoon flash floods in Haor basin.\n- **El Niño (- Negative IOD):** Below-normal rainfall, high probability of post-monsoon drought in Barind tract and high summer heat waves.\n"
+    },
+    {
+      "id": "reliefweb_triage",
+      "category": "06_humanitarian_development",
+      "title": "Reliefweb Triage",
+      "content": "# SKILL: ReliefWeb Humanitarian Triage & EM-DAT Scaling\n## OBJECTIVE\nStandardize disaster damage metrics and severity descriptors for international humanitarian cluster reporting.\n\n## METRIC STANDARDIZATION\n- **AFFECTED POPULATION:** Estimate using gridded population density overlaid with Sentinel-1 inundation mask.\n- **SECTOR LOSSES:** Categorize damage across Agriculture & Food Security, Shelter & NFI, WASH, and Health clusters.\n"
+    },
+    {
+      "id": "undp_livelihood_recovery",
+      "category": "06_humanitarian_development",
+      "title": "Undp Livelihood Recovery",
+      "content": "# SKILL: UNDP Livelihood Recovery & Anticipatory Action\n## OBJECTIVE\nImplement Cash-for-Work, shock-responsive social protection, and early action intervention triggers.\n\n## RECOVERY PROTOCOLS\n- **Anticipatory Cash Transfers (BISP/Mobile Money):** Disburse mobile cash transfers 3 days prior to peak flood crest to allow vulnerable households to evacuate assets.\n- **Cash-for-Work (CfW):** Mobilize local labor for post-disaster embankment repairs, canal clearing, and village road reconstruction.\n- **Agricultural Asset Replacement:** Provide smallholder farmers with ducklings, goats, vegetable seed packs, and micro-tillage equipment.\n"
+    },
+    {
+      "id": "unicef_child_nutrition",
+      "category": "06_humanitarian_development",
+      "title": "Unicef Child Nutrition",
+      "content": "# SKILL: UNICEF Child WASH & Protection Protocols\n## OBJECTIVE\nSafeguard children, pregnant women, and lactating mothers during extreme flood/cyclone events.\n\n## ACTIONABLE PROTOCOLS\n- **WASH Kits:** Distribute emergency WASH kits containing water purification tablets, soap, collapsible jerry cans, and dignity items.\n- **Child-Friendly Spaces (CFS):** Establish safe, elevated spaces in flood shelters to prevent child drowning and operationalize psychosocial support.\n- **Micro-Nutrient Supplementation:** Provide Ready-to-Use Therapeutic Food (RUTF) to prevent acute malnutrition during prolonged crop destruction.\n"
+    },
+    {
+      "id": "wb_disaster_financing",
+      "category": "06_humanitarian_development",
+      "title": "Wb Disaster Financing",
+      "content": "# SKILL: World Bank Catastrophe Risk & Parametric Insurance\n## OBJECTIVE\nAlign hazard severity triggers with parametric disaster financing mechanisms (e.g., Bangladesh Climate Change Resilience Fund, World Bank CAT-DDO).\n\n## TRIGGER CONDITIONS\n- **Parametric Flood Index:** Inundation > 25% of district cultivated area for > 7 consecutive days automatically activates parametric payout mechanisms to regional microfinance institutions.\n- **Crop Loss Ratio:** Modeled yield reduction > 40% triggers government agricultural loan waivers and subsidized interest rate refinancing.\n"
+    },
+    {
+      "id": "who_post_disaster_health",
+      "category": "06_humanitarian_development",
+      "title": "Who Post Disaster Health",
+      "content": "# SKILL: WHO Post-Disaster Health Protocols\n## OBJECTIVE\nTrigger health advisories when HazardNet Severity > 0.65 (High Impact).\n\n## FLOOD / CYCLONE HEALTH RISKS\n1. **Waterborne Diseases (Cholera, Typhoid, Diarrhea):**\n   - *Advisory:* \"Boil all drinking water or use WHO-approved Aquatabs (1 tablet per 20L, wait 30 mins).\"\n   - *Action:* UNICEF/DPHE to deploy emergency tube-well testing for fecal contamination.\n2. **Vector-Borne (Dengue, Malaria):**\n   - *Advisory:* Stagnant water post-flood breeds Aedes mosquitoes. Use long-lasting insecticidal nets (LLINs) and clear standing puddles near homesteads.\n3. **Skin & Eye Infections:**\n   - *Advisory:* Avoid wading in stagnant floodwater without rubber boots. Wash with soap and clean tube-well water immediately if exposed.\n\n## COLD WAVE HEALTH RISKS\n- *Advisory:* Vulnerable populations (children <5, elderly) must stay indoors. Keep warm clothing dry. Monitor closely for acute respiratory infection (ARI) or pneumonia symptoms.\n"
+    },
+    {
+      "id": "aman_rice_stages",
+      "category": "07_agronomy_crop_stages",
+      "title": "Aman Rice Stages",
+      "content": "# SKILL: Aman Rice Agronomic Phenology & Hazard Vulnerability\n## OBJECTIVE\nMap monsoon-season Aman rice phenological stages to seasonal climate threats (Monsoon floods, late-season drought, coastal salinity).\n\n## PHENOLOGICAL STAGES & THREATS\n- **Seedbed (June - July):** Submergence risk from early monsoon rain. *Mitigation:* Floating seedbeds (*Baira*).\n- **Transplanting (July - August):** High flood risk. *Mitigation:* Use 30-35 day old seedlings of *BRRI Dhan51/52*.\n- **Vegetative / Tillering (August - September):** Submergence & stem borer attack. *Mitigation:* Apply balanced N-P-K fertilizer.\n- **Flowering / Panicle Initiation (September - October):** Moisture stress / early drought (*Kharif-II drought*). *Mitigation:* Supplementary irrigation from local water bodies.\n- **Harvest (November - December):** Cyclonic rain / lodging. *Mitigation:* Harvest at 80% grain yellowing.\n"
+    },
+    {
+      "id": "boro_rice_stages",
+      "category": "07_agronomy_crop_stages",
+      "title": "Boro Rice Stages",
+      "content": "# SKILL: Boro Rice Agronomic Phenology & Hazard Vulnerability\n## OBJECTIVE\nMap winter/spring irrigated Boro rice phenological stages to cold waves, pre-monsoon flash floods, and heat waves.\n\n## PHENOLOGICAL STAGES & THREATS\n- **Seedbed (November - December):** Cold wave injury (< 10°C). *Mitigation:* Water inundation at night, polythene covering.\n- **Transplanting (December - January):** Cold shock. *Mitigation:* Avoid transplanting during peak cold wave.\n- **Vegetative / Booting (February - March):** Water stress. *Mitigation:* Alternate Wetting and Drying (AWD).\n- **Flowering / Panicle (March - April):** Heat wave (>35°C) & Kalbaishakhi hail storms. *Mitigation:* Maintain standing water layer.\n- **Harvest (April - May):** Haor flash floods in Sylhet/Sunamganj/Kurigram. *Mitigation:* Harvest at 80% ripeness using combine harvesters.\n"
+    },
+    {
+      "id": "rabi_vegetables",
+      "category": "07_agronomy_crop_stages",
+      "title": "Rabi Vegetables",
+      "content": "# SKILL: Rabi Crops & Winter Vegetables Phenology\n## OBJECTIVE\nMap winter non-rice crops (Potato, Mustard, Wheat, Tomato, Pulses) to cold wave, late blight, and unseasonal rainfall hazards.\n\n## AGRONOMIC GUIDELINES\n- **Potato (Nov - Feb):** Late Blight fungal attack during fog/cold wave. Spray preventive copper oxychloride or Mancozeb.\n- **Mustard (Oct - Jan):** Aphid infestation during warm winter snaps. Apply bio-pesticides or neem oil.\n- **Wheat (Nov - Mar):** Wheat Blast disease during humid warm spell. Use *BARI Gom-33*.\n"
+    }
+  ]
+}

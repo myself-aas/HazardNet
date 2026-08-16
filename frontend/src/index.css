@@ -1,0 +1,589 @@
+@import "tailwindcss";
+@import 'leaflet/dist/leaflet.css';
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* Light Theme System & Global Resets */
+:root {
+  --nasa-space-bg: #f8fafc;
+  --nasa-card-bg: rgba(255, 255, 255, 0.95);
+  --nasa-cyan: #0284c7;
+  --nasa-blue: #0284c7;
+  --nasa-emerald: #16a34a;
+  --nasa-crimson: #c62828;
+  --nasa-amber: #f9a825;
+  --m3-sys-color-primary: #f9a825;
+  --m3-sys-color-surface: #ffffff;
+  --m3-sys-motion-easing-emphasized: cubic-bezier(0.2, 0.0, 0, 1.0);
+  --background: oklch(0.99 0 0);
+  --foreground: oklch(0.18 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.18 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.18 0 0);
+  --primary: #f9a825;
+  --primary-foreground: #ffffff;
+  --secondary: oklch(0.95 0 0);
+  --secondary-foreground: oklch(0.18 0 0);
+  --muted: oklch(0.96 0 0);
+  --muted-foreground: oklch(0.45 0 0);
+  --border: oklch(0.9 0 0);
+  --input: oklch(0.9 0 0);
+  --ring: #f9a825;
+  --radius: 0.75rem;
+}
+
+body {
+  margin: 0;
+  font-family: 'Playfair Display', serif;
+  background-color: #f8fafc;
+  color: #1e293b;
+  font-size: 15px;
+  line-height: 1.55;
+  -webkit-tap-highlight-color: transparent;
+  scroll-behavior: smooth;
+}
+
+/* Material 3 & Motion Transitions */
+.m3-transition {
+  transition-property: all;
+  transition-duration: 300ms;
+  transition-timing-function: var(--m3-sys-motion-easing-emphasized);
+}
+
+/* Clean Light HUD Panels */
+.nasa-glass-panel {
+  background: #ffffff;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05), 0 2px 6px -1px rgba(0, 0, 0, 0.03);
+  border-radius: 1.25rem;
+  transition: all 300ms cubic-bezier(0.2, 0.0, 0, 1.0);
+}
+
+.nasa-glass-panel:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+}
+
+/* Custom Leaflet Map Light Styling */
+.leaflet-container {
+  background: #f1f5f9 !important;
+  font-family: inherit;
+  border-radius: 1.25rem;
+}
+
+/* Map tiles enhancement for light theme */
+.leaflet-tile {
+  filter: brightness(1.02) contrast(1.02);
+  image-rendering: -webkit-optimize-contrast;
+}
+
+.map-tile-high-contrast .leaflet-tile {
+  filter: brightness(1.12) contrast(1.28) saturate(1.35) !important;
+  image-rendering: -webkit-optimize-contrast;
+}
+
+@keyframes radarPing {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+}
+
+.radar-ping-ring {
+  animation: radarPing 2s cubic-bezier(0, 0.2, 0.8, 1) infinite;
+}
+
+.custom-modern-leaflet-popup .leaflet-popup-content-wrapper,
+.leaflet-popup-content-wrapper {
+  background: #ffffff !important;
+  color: #1e293b !important;
+  border: 1px solid #e2e8f0 !important;
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-radius: 1rem !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05) !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+.custom-modern-leaflet-popup .leaflet-popup-content,
+.leaflet-popup-content {
+  margin: 0 !important;
+  line-height: 1.4 !important;
+  width: 100% !important;
+}
+
+.leaflet-popup-tip-container {
+  overflow: visible !important;
+}
+
+.leaflet-popup-tip {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.leaflet-container a.leaflet-popup-close-button {
+  color: #64748b !important;
+  padding: 8px 12px 0 0 !important;
+  font-size: 18px !important;
+  font-weight: bold !important;
+  transition: color 0.2s ease;
+}
+
+.leaflet-container a.leaflet-popup-close-button:hover {
+  color: #0f172a !important;
+}
+
+@media (max-width: 640px) {
+  .leaflet-popup-content-wrapper {
+    max-width: 88vw !important;
+    border-radius: 1rem !important;
+  }
+  .leaflet-container a.leaflet-popup-close-button {
+    padding: 6px 10px 0 0 !important;
+    font-size: 20px !important;
+    width: 44px !important;
+    height: 44px !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    top: 4px !important;
+    right: 4px !important;
+  }
+}
+
+/* Map 3D Perspective Container */
+.map-perspective-container {
+  perspective: 1400px;
+  transition: all 600ms var(--m3-sys-motion-easing-emphasized);
+}
+
+.map-perspective-tilted {
+  transform: rotateX(28deg) rotateZ(-1.5deg) scale(1.02);
+  transform-origin: center center;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+}
+
+/* Custom Pulsing Markers & Orbital Scanner */
+@keyframes cyberPulse {
+  0% {
+    transform: scale(0.92);
+    box-shadow: 0 0 0 0 rgba(198, 40, 40, 0.6);
+  }
+  70% {
+    transform: scale(1.18);
+    box-shadow: 0 0 0 16px rgba(198, 40, 40, 0);
+  }
+  100% {
+    transform: scale(0.92);
+    box-shadow: 0 0 0 0 rgba(198, 40, 40, 0);
+  }
+}
+
+/* Leaflet User Jurisdiction District Boundary Pulse Effect */
+@keyframes userDistrictDashPulse {
+  0% {
+    stroke-dashoffset: 0;
+    stroke-opacity: 0.80;
+    filter: drop-shadow(0 0 3px currentColor);
+  }
+  50% {
+    stroke-dashoffset: 32;
+    stroke-opacity: 1;
+    filter: drop-shadow(0 0 12px currentColor);
+  }
+  100% {
+    stroke-dashoffset: 64;
+    stroke-opacity: 0.80;
+    filter: drop-shadow(0 0 3px currentColor);
+  }
+}
+
+@keyframes userDistrictGlowPulse {
+  0% {
+    stroke-width: 8px;
+    stroke-opacity: 0.40;
+    filter: drop-shadow(0 0 4px currentColor);
+  }
+  50% {
+    stroke-width: 14px;
+    stroke-opacity: 0.85;
+    filter: drop-shadow(0 0 16px currentColor);
+  }
+  100% {
+    stroke-width: 8px;
+    stroke-opacity: 0.40;
+    filter: drop-shadow(0 0 4px currentColor);
+  }
+}
+
+.user-district-pulse-border {
+  animation: userDistrictDashPulse 3s linear infinite;
+  stroke-linecap: round !important;
+  stroke-linejoin: round !important;
+}
+
+.user-district-pulse-glow {
+  animation: userDistrictGlowPulse 2.5s ease-in-out infinite;
+  stroke-linecap: round !important;
+  stroke-linejoin: round !important;
+}
+
+@keyframes radarSweep {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.marker-high-risk {
+  animation: cyberPulse 2s infinite;
+}
+
+.radar-sweep-effect {
+  animation: radarSweep 6s linear infinite;
+}
+
+/* Custom Scrollbar for Light Theme */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Safe Padding for Mobile Bottom Nav */
+@media (max-width: 1023px) {
+  .pb-safe-bottom {
+    padding-bottom: 5rem;
+  }
+}
+
+@theme inline {
+  --font-sans: 'Playfair Display', serif;
+  --font-montserrat: 'Playfair Display', serif;
+  --font-brand: 'Playfair Display', serif;
+  --font-heading: 'Playfair Display', serif;
+  --font-display: 'Playfair Display', serif;
+  --font-serif: 'Playfair Display', serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+@layer base {
+  * {
+    @apply border-slate-200 outline-slate-400/30;
+  }
+  body {
+    @apply bg-slate-50 text-slate-900;
+  }
+  html {
+    @apply font-sans;
+  }
+}
+
+/* Brand Typography & Wordmark Utilities per CSV Spec */
+.font-montserrat {
+  font-family: 'Playfair Display', serif;
+}
+
+.font-inter {
+  font-family: 'Playfair Display', serif;
+}
+
+.font-brand {
+  font-family: 'Playfair Display', serif;
+}
+
+/* 1. Top-bar wordmark: Montserrat, 20–22 px, 800, +0.05 em; sits in 56–64 px header */
+.hn-topbar-wordmark {
+  font-family: 'Playfair Display', serif;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  line-height: 1.2;
+}
+@media (min-width: 640px) {
+  .hn-topbar-wordmark {
+    font-size: 22px;
+  }
+}
+
+/* 2. Primary nav / menu items: Inter, 14 px, 600 (active) / 500. Active = teal + 2 px underline */
+.hn-nav-item {
+  font-family: 'Playfair Display', serif;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.15s ease-in-out;
+}
+.hn-nav-item.active,
+.hn-nav-item[data-active="true"] {
+  font-weight: 600;
+  color: #0d9488;
+  border-bottom: 2px solid #0d9488;
+}
+
+/* 3. Dropdown & sidebar menu: Inter, 13–14 px, 400–500, line-height 1.4 */
+.hn-dropdown-item,
+.hn-sidebar-item {
+  font-family: 'Playfair Display', serif;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.4;
+}
+@media (min-width: 640px) {
+  .hn-dropdown-item,
+  .hn-sidebar-item {
+    font-size: 14px;
+    font-weight: 500;
+  }
+}
+
+/* 4. Breadcrumbs: Inter, 12–13 px, 500, muted color */
+.hn-breadcrumb {
+  font-family: 'Playfair Display', serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: #64748b;
+}
+@media (min-width: 640px) {
+  .hn-breadcrumb {
+    font-size: 13px;
+  }
+}
+
+/* 5. Page title (H1): Montserrat, 28–32 px, 700, -0.01 em */
+.hn-h1, h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+@media (min-width: 640px) {
+  .hn-h1, h1 {
+    font-size: 32px;
+  }
+}
+
+/* 6. Section (H2) / card title (H3): Montserrat / Inter, 22 px / 16–18 px, 700 / 600 */
+.hn-h2, h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.hn-h3, h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+@media (min-width: 640px) {
+  .hn-h3, h3 {
+    font-size: 18px;
+  }
+}
+
+/* 7. Body text: Inter, 15–16 px, 400, line-height 1.55 */
+.hn-body, p {
+  font-family: 'Playfair Display', serif;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.55;
+}
+@media (min-width: 640px) {
+  .hn-body, p {
+    font-size: 16px;
+  }
+}
+
+/* 8. Form labels & field hints: Inter, 12–13 px, 500, +0.04 em */
+.hn-label, label, .hn-field-hint {
+  font-family: 'Playfair Display', serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+}
+@media (min-width: 640px) {
+  .hn-label, label, .hn-field-hint {
+    font-size: 13px;
+  }
+}
+
+/* 9. Buttons: Inter, 14 px, 600 */
+.hn-btn, button {
+  font-family: 'Playfair Display', serif;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* 10. Data readouts (severity score, confidence, dates): JetBrains Mono, 13–16 px, 600, Tabular figures */
+.hn-data-readout {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+@media (min-width: 640px) {
+  .hn-data-readout {
+    font-size: 16px;
+  }
+}
+
+/* 11. Badges (FLOOD, SEV-3, district code): JetBrains Mono, 11 px, 600, +0.08 em, caps, colored per severity token */
+.hn-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* 12. Captions / footer: Inter, 12 px, 400 */
+.hn-caption, .hn-footer-text, caption {
+  font-family: 'Playfair Display', serif;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+.brand-gradient-text {
+  background: linear-gradient(135deg, #0f172a 0%, #334155 60%, #0f172a 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.brand-accent-text {
+  background: linear-gradient(135deg, #d97706 0%, #ea580c 50%, #dc2626 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+
+
+/* Mobile & Touch UX Optimization Utilities */
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+.touch-scroll {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+}
+
+/* Safe Area Insets */
+.pt-safe {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.pl-safe {
+  padding-left: env(safe-area-inset-left, 0px);
+}
+.pr-safe {
+  padding-right: env(safe-area-inset-right, 0px);
+}
+
+/* Prevent iOS Mobile Safari auto-zoom on input focus */
+@media (max-width: 768px) {
+  input[type=text],
+  input[type=email],
+  input[type=password],
+  input[type=number],
+  input[type=search],
+  input[type=tel],
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    font-family: system-ui, -apple-system, sans-serif !important;
+  }
+  nav, header, button, .no-print, [role='tablist'] {
+    display: none !important;
+  }
+  .max-w-7xl {
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  div, section {
+    background-color: transparent !important;
+    color: #0f172a !important;
+    border-color: #cbd5e1 !important;
+    box-shadow: none !important;
+  }
+  h1, h2, h3, h4, p, span {
+    color: #0f172a !important;
+  }
+}

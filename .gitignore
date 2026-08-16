@@ -1,0 +1,84 @@
+# Node.js
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Build output
+/dist
+
+# Logs
+logs/
+*.log
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Misc
+.DS_Store
+.env
+.env.local
+.env.*.local
+
+# Docker
+*.dockerfile
+.dockerignore
+
+# VS Code
+.vscode/
+
+# OS generated files
+Thumbs.db
+Desktop.ini
+
+# Backend
+backend/node_modules/
+backend/dist/
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+
+# Test coverage
+coverage/
+
+# Temporary files
+*.tmp
+
+# IDEs
+.idea/
+
+# Misc
+*.swp
+
+# GitHub Actions
+# .github/
+
+# Docker Compose
+docker-compose.yml
+
+# Other
+*.pem
+*.key
+
+# Ignore environment files
+.env
+.env.*
+
+# Ignore compiled Python files
+*.pyc
+__pycache__/
+
+# Ignore logs
+*.log
+
+# Ignore Docker images
+*.tar
+
+# Ignore build artifacts
+*.zip
+
+# Ignore any other generated files
+*.tmp

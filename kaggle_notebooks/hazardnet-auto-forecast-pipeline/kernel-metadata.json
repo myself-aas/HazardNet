@@ -1,0 +1,20 @@
+{
+  "id": "ashifahmedshuvo/hazardnet-auto-forecast-pipeline",
+  "title": "HazardNet Auto Forecast Pipeline",
+  "code_file": "hazardnet-auto-forecast-pipeline.ipynb",
+  "language": "python",
+  "kernel_type": "notebook",
+  "is_private": false,
+  "enable_gpu": false,
+  "enable_internet": true,
+  "dataset_sources": [
+    "ashifahmedshuvo/hazardnet-model",
+    "ashifahmedshuvo/ee-token-json"
+  ],
+  "notebook_sources": [
+    "ashifahmedshuvo/hazardnet-model-conversion"
+  ],
+  "competition_sources": [],
+  "kernel_sources": [],
+  "model_sources": []
+}

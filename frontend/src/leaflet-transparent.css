@@ -1,0 +1,12 @@
+.leaflet-container {
+    background: transparent !important;
+}
+.leaflet-pane, .leaflet-tile, .leaflet-marker-icon, .leaflet-marker-shadow, .leaflet-tile-container, .leaflet-pane > svg, .leaflet-pane > canvas, .leaflet-zoom-box, .leaflet-image-layer, .leaflet-layer {
+    pointer-events: none !important;
+}
+.leaflet-interactive {
+    pointer-events: auto !important;
+}
+.leaflet-control-container .leaflet-control {
+    pointer-events: auto !important;
+}
