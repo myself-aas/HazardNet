@@ -1,5 +1,5 @@
 @import "tailwindcss";
-@import 'leaflet/dist/leaflet.css';
+@import 'leaflet/dist/leaflet.css' layer(base);
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
@@ -92,6 +92,7 @@ body {
     transform: scale(0.6);
     opacity: 0.9;
   }
+
   100% {
     transform: scale(2.4);
     opacity: 0;
@@ -149,6 +150,7 @@ body {
     max-width: 88vw !important;
     border-radius: 1rem !important;
   }
+
   .leaflet-container a.leaflet-popup-close-button {
     padding: 6px 10px 0 0 !important;
     font-size: 20px !important;
@@ -180,10 +182,12 @@ body {
     transform: scale(0.92);
     box-shadow: 0 0 0 0 rgba(198, 40, 40, 0.6);
   }
+
   70% {
     transform: scale(1.18);
     box-shadow: 0 0 0 16px rgba(198, 40, 40, 0);
   }
+
   100% {
     transform: scale(0.92);
     box-shadow: 0 0 0 0 rgba(198, 40, 40, 0);
@@ -197,11 +201,13 @@ body {
     stroke-opacity: 0.80;
     filter: drop-shadow(0 0 3px currentColor);
   }
+
   50% {
     stroke-dashoffset: 32;
     stroke-opacity: 1;
     filter: drop-shadow(0 0 12px currentColor);
   }
+
   100% {
     stroke-dashoffset: 64;
     stroke-opacity: 0.80;
@@ -215,11 +221,13 @@ body {
     stroke-opacity: 0.40;
     filter: drop-shadow(0 0 4px currentColor);
   }
+
   50% {
     stroke-width: 14px;
     stroke-opacity: 0.85;
     filter: drop-shadow(0 0 16px currentColor);
   }
+
   100% {
     stroke-width: 8px;
     stroke-opacity: 0.40;
@@ -243,6 +251,7 @@ body {
   0% {
     transform: rotate(0deg);
   }
+
   100% {
     transform: rotate(360deg);
   }
@@ -261,13 +270,16 @@ body {
   width: 6px;
   height: 6px;
 }
+
 ::-webkit-scrollbar-track {
   background: #f1f5f9;
 }
+
 ::-webkit-scrollbar-thumb {
   background: #cbd5e1;
   border-radius: 9999px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
@@ -331,9 +343,11 @@ body {
   * {
     @apply border-slate-200 outline-slate-400/30;
   }
+
   body {
     @apply bg-slate-50 text-slate-900;
   }
+
   html {
     @apply font-sans;
   }
@@ -360,6 +374,7 @@ body {
   letter-spacing: 0.05em;
   line-height: 1.2;
 }
+
 @media (min-width: 640px) {
   .hn-topbar-wordmark {
     font-size: 22px;
@@ -373,6 +388,7 @@ body {
   font-weight: 500;
   transition: all 0.15s ease-in-out;
 }
+
 .hn-nav-item.active,
 .hn-nav-item[data-active="true"] {
   font-weight: 600;
@@ -388,7 +404,9 @@ body {
   font-weight: 400;
   line-height: 1.4;
 }
+
 @media (min-width: 640px) {
+
   .hn-dropdown-item,
   .hn-sidebar-item {
     font-size: 14px;
@@ -403,6 +421,7 @@ body {
   font-weight: 500;
   color: #64748b;
 }
+
 @media (min-width: 640px) {
   .hn-breadcrumb {
     font-size: 13px;
@@ -410,67 +429,87 @@ body {
 }
 
 /* 5. Page title (H1): Montserrat, 28–32 px, 700, -0.01 em */
-.hn-h1, h1 {
+.hn-h1,
+h1 {
   font-family: 'Playfair Display', serif;
   font-size: 28px;
   font-weight: 700;
   letter-spacing: -0.01em;
   line-height: 1.2;
 }
+
 @media (min-width: 640px) {
-  .hn-h1, h1 {
+
+  .hn-h1,
+  h1 {
     font-size: 32px;
   }
 }
 
 /* 6. Section (H2) / card title (H3): Montserrat / Inter, 22 px / 16–18 px, 700 / 600 */
-.hn-h2, h2 {
+.hn-h2,
+h2 {
   font-family: 'Playfair Display', serif;
   font-size: 22px;
   font-weight: 700;
   line-height: 1.3;
 }
 
-.hn-h3, h3 {
+.hn-h3,
+h3 {
   font-family: 'Playfair Display', serif;
   font-size: 16px;
   font-weight: 600;
   line-height: 1.35;
 }
+
 @media (min-width: 640px) {
-  .hn-h3, h3 {
+
+  .hn-h3,
+  h3 {
     font-size: 18px;
   }
 }
 
 /* 7. Body text: Inter, 15–16 px, 400, line-height 1.55 */
-.hn-body, p {
+.hn-body,
+p {
   font-family: 'Playfair Display', serif;
   font-size: 15px;
   font-weight: 400;
   line-height: 1.55;
 }
+
 @media (min-width: 640px) {
-  .hn-body, p {
+
+  .hn-body,
+  p {
     font-size: 16px;
   }
 }
 
 /* 8. Form labels & field hints: Inter, 12–13 px, 500, +0.04 em */
-.hn-label, label, .hn-field-hint {
+.hn-label,
+label,
+.hn-field-hint {
   font-family: 'Playfair Display', serif;
   font-size: 12px;
   font-weight: 500;
   letter-spacing: 0.04em;
 }
+
 @media (min-width: 640px) {
-  .hn-label, label, .hn-field-hint {
+
+  .hn-label,
+  label,
+  .hn-field-hint {
     font-size: 13px;
   }
 }
 
 /* 9. Buttons: Inter, 14 px, 600 */
-.hn-btn, button {
+.hn-btn,
+button {
   font-family: 'Playfair Display', serif;
   font-size: 14px;
   font-weight: 600;
@@ -484,6 +523,7 @@ body {
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum";
 }
+
 @media (min-width: 640px) {
   .hn-data-readout {
     font-size: 16px;
@@ -500,7 +540,9 @@ body {
 }
 
 /* 12. Captions / footer: Inter, 12 px, 400 */
-.hn-caption, .hn-footer-text, caption {
+.hn-caption,
+.hn-footer-text,
+caption {
   font-family: 'Playfair Display', serif;
   font-size: 12px;
   font-weight: 400;
@@ -526,6 +568,7 @@ body {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
 .scrollbar-none::-webkit-scrollbar {
   display: none;
 }
@@ -539,18 +582,22 @@ body {
 .pt-safe {
   padding-top: env(safe-area-inset-top, 0px);
 }
+
 .pb-safe {
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
+
 .pl-safe {
   padding-left: env(safe-area-inset-left, 0px);
 }
+
 .pr-safe {
   padding-right: env(safe-area-inset-right, 0px);
 }
 
 /* Prevent iOS Mobile Safari auto-zoom on input focus */
 @media (max-width: 768px) {
+
   input[type=text],
   input[type=email],
   input[type=password],
@@ -569,21 +616,35 @@ body {
     color: #0f172a !important;
     font-family: system-ui, -apple-system, sans-serif !important;
   }
-  nav, header, button, .no-print, [role='tablist'] {
+
+  nav,
+  header,
+  button,
+  .no-print,
+  [role='tablist'] {
     display: none !important;
   }
+
   .max-w-7xl {
     max-width: 100% !important;
     padding: 0 !important;
     margin: 0 !important;
   }
-  div, section {
+
+  div,
+  section {
     background-color: transparent !important;
     color: #0f172a !important;
     border-color: #cbd5e1 !important;
     box-shadow: none !important;
   }
-  h1, h2, h3, h4, p, span {
+
+  h1,
+  h2,
+  h3,
+  h4,
+  p,
+  span {
     color: #0f172a !important;
   }
 }
