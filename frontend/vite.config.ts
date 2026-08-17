@@ -30,7 +30,6 @@ export default defineConfig({
       output: {
         manualChunks: {
           // example: split large libs
-          'three': ['three'],
           'recharts': ['recharts'],
         },
       },
