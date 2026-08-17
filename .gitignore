@@ -82,3 +82,5 @@ __pycache__/
 
 # Ignore any other generated files
 *.tmp
+
+.vercel

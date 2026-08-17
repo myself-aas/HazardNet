@@ -14,6 +14,7 @@
     "start": "node backend/server.js",
     "build": "npm run build:frontend",
     "build:frontend": "npm --prefix frontend run build",
+    "build:frontend:copy": "npm run build:frontend && mkdir dist && xcopy /E /I /Y frontend\\dist dist",
     "lint": "tsc -p frontend/tsconfig.json --noEmit",
     "test": "jest --passWithNoTests"
   },
