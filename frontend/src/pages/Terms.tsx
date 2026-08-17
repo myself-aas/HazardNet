@@ -31,14 +31,14 @@ export const Terms: React.FC = () => {
         <section className="space-y-2">
           <h2 className="text-sm font-bold text-slate-900">1. Acceptance of Terms</h2>
           <p>
-            By accessing or using the HazardNet AI web platform, mobile applications, API endpoints, Python SDK, or pre-trained TensorFlow Lite model weights, you agree to be bound by these Terms and Conditions. HazardNet is an open disaster early-warning initiative and decision support system.
+            By accessing or using the HazardNet AI web platform, mobile applications, or API endpoints, you agree to be bound by these Terms and Conditions. HazardNet is a hosted disaster early-warning initiative and decision support system.
           </p>
         </section>
 
         <section className="space-y-2">
-          <h2 className="text-sm font-bold text-slate-900">2. Open Data & Model Licensing (CC BY 4.0)</h2>
+          <h2 className="text-sm font-bold text-slate-900">2. Hosted Model Protection</h2>
           <p>
-            HazardNet dataset granules, baseline model weights (<span className="font-mono bg-slate-100 border border-slate-200 p-0.5 rounded text-slate-900">hazardnet_fp32.tflite</span>, <span className="font-mono bg-slate-100 border border-slate-200 p-0.5 rounded text-slate-900">hazardnet_int8.tflite</span>), and source code are released under the <strong>Creative Commons Attribution 4.0 International (CC BY 4.0)</strong> license. You are free to share, adapt, and build upon the material for academic, governmental, or commercial purposes provided appropriate attribution is given to the HazardNet AI project.
+            HazardNet model weights, preprocessing parameters, and inference implementation are proprietary server-side assets. The web platform exposes prediction results through authorized API requests only; downloading, reverse engineering, scraping, or attempting to reconstruct protected model assets is prohibited.
           </p>
         </section>
 

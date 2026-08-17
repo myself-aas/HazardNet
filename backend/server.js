@@ -36,6 +36,11 @@ app.get('/health', (req, res) => {
   res.json({ status: 'healthy', service: 'HazardNet Backend', timestamp: new Date() });
 });
 
+// Never serve model artifacts or preprocessing assets from the public server.
+app.use(['/Models', '/models', '/hazardnet_fp32.tflite', '/hazardnet_int8.tflite', '/normalization_stats.json', '/labels.json'], (req, res) => {
+  res.status(404).json({ error: 'Not found' });
+});
+
 // API Routes
 app.use('/api/v1/forecasts', forecastRoutes);
 app.use('/api/advisory', advisoryRoutes);
@@ -73,6 +78,9 @@ app.use(express.static(distPath));
 
 // SPA fallback for non-API GET requests
 app.get('*', (req, res, next) => {
+  if (/\.(tflite|onnx|bin|h5|keras|pt|pth)$/i.test(req.path) || /(^|\/)models?\//i.test(req.path)) {
+    return res.status(404).json({ error: 'Not found' });
+  }
   if (req.path.startsWith('/api') || req.path.startsWith('/metrics') || req.path.startsWith('/health')) {
     return next();
   }

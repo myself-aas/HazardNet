@@ -45,7 +45,7 @@ export const Privacy: React.FC = () => {
               <strong>Uploaded Satellite GeoTIFF Files:</strong> User-uploaded raster tiles on the Ingestion page are processed temporarily in memory for 15-channel array tensor transformation. Files are automatically erased after inference completion.
             </li>
             <li>
-              <strong>Offline Caching:</strong> Baseline district hazard tiles and model weights (<span className="font-mono bg-slate-100 p-0.5 rounded border border-slate-200">.tflite</span>) are cached in your browser's IndexedDB storage to guarantee offline availability during internet outages.
+              <strong>Offline Caching:</strong> Map tiles may be cached locally for navigation. HazardNet model weights and preprocessing assets remain server-side and are not downloaded or stored in your browser.
             </li>
           </ul>
         </section>

@@ -1,11 +1,8 @@
-// Service Worker for offline mode & Web Push Notifications
-// Caches the TFLite model, normalization stats, static assets, and GIS map tiles.
+// Service Worker for offline mode, Web Push Notifications, and GIS map tiles.
 
 const CACHE_NAME = 'hazardnet-offline-v1';
 const TILE_CACHE_NAME = 'hazardnet-tiles-v1';
 const MAX_TILE_CACHE_ITEMS = 1200;
-const MODEL_URL = '/hazardnet_fp32.tflite';
-const STATS_URL = '/normalization_stats.json';
 
 // Helper to check if request is a map tile URL
 function isMapTileRequest(url: URL): boolean {
@@ -43,15 +40,7 @@ async function trimTileCache() {
   }
 }
 
-const PRECACHE_URLS = [
-  MODEL_URL,
-  STATS_URL,
-];
-
-self.addEventListener('install', (event: any) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE_URLS))
-  );
+self.addEventListener('install', () => {
   (self as any).skipWaiting();
 });
 
@@ -164,13 +153,6 @@ self.addEventListener('sync', (event: any) => {
 self.addEventListener('fetch', (event: any) => {
   const request = event.request;
   const url = new URL(request.url);
-
-  if (url.pathname === MODEL_URL || url.pathname === STATS_URL) {
-    event.respondWith(
-      caches.match(request).then((cached) => cached || fetch(request))
-    );
-    return;
-  }
 
   // Handle map tile requests with Cache-First & Stale-While-Revalidate fallback strategy
   if (isMapTileRequest(url)) {
