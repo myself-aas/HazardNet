@@ -7,9 +7,10 @@ import { useAuth } from '../context/AuthContext';
 import { HazardNetBrand } from '../components/HazardNetLogo';
 import { PasswordResetModal } from '../components/PasswordResetModal';
 import { EyeToggleIcon } from '../components/ui/animated-state-icons';
+import { OAuthButtons } from '../components/OAuthButtons';
 
 const LoginPage: React.FC = () => {
-  const { signInWithEmail, signInWithGoogle } = useAuth();
+  const { signInWithEmail } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -35,20 +36,6 @@ const LoginPage: React.FC = () => {
       } else {
         setError(err instanceof Error ? err.message : String(err));
       }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleGoogleLogin = async () => {
-    setError(null);
-    setLoading(true);
-    try {
-      await signInWithGoogle();
-      navigate('/');
-    } catch (err: any) {
-      console.error(err);
-      setError(err instanceof Error ? err.message : 'Google sign-in failed.');
     } finally {
       setLoading(false);
     }
@@ -156,15 +143,7 @@ const LoginPage: React.FC = () => {
             </span>
           </div>
 
-          <button
-            id="login-page-google-btn"
-            type="button"
-            onClick={handleGoogleLogin}
-            disabled={loading}
-            className="w-full py-2.5 bg-slate-50 hover:bg-slate-100 text-slate-800 rounded-2xl text-xs font-bold border border-slate-200 transition-all flex items-center justify-center gap-2 cursor-pointer"
-          >
-            <span>Continue with Google</span>
-          </button>
+          <OAuthButtons />
 
           <div className="text-center text-xs text-slate-600 pt-2 space-y-1">
             <p>

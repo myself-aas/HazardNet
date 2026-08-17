@@ -19,11 +19,12 @@ export interface UserAssessment {
 }
 
 type EmailCredential = UserResponse
+export type OAuthProvider = 'google' | 'github' | 'microsoft' | 'apple' | 'linkedin' | 'discord' | 'slack' | 'twitter' | 'orcid'
 export interface AuthContextType {
-  user: AppUser | null; userProfile: UserProfileData | null; loading: boolean; signInWithGoogle: () => Promise<void>
+  user: AppUser | null; userProfile: UserProfileData | null; loading: boolean; signInWithGoogle: () => Promise<void>; signInWithOAuth: (provider: OAuthProvider) => Promise<void>
   signUpWithEmail: (email: string, pass: string, name: string, initialProfile?: Partial<UserProfileData>) => Promise<void>
   signInWithEmailAndPassword: (email: string, pass: string) => Promise<EmailCredential>; signInWithEmail: (email: string, pass: string) => Promise<EmailCredential>
-  signOut: () => Promise<void>; signOutUser: () => Promise<void>; sendPasswordResetEmail: (email: string) => Promise<void>; resetPassword: (email: string) => Promise<void>
+  signOut: () => Promise<void>; signOutUser: () => Promise<void>; sendPasswordResetEmail: (email: string) => Promise<void>; resetPassword: (email: string) => Promise<void>; updatePassword: (password: string) => Promise<void>
   updateUserProfile: (data: Partial<UserProfileData>) => Promise<void>; saveAssessment: (data: Omit<UserAssessment, 'id' | 'userId' | 'userEmail' | 'createdAt'>) => Promise<string>
   fetchUserAssessments: () => Promise<UserAssessment[]>; deleteAssessment: (id: string) => Promise<void>
 }
@@ -44,6 +45,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const saveAssessment = async (data: Omit<UserAssessment, 'id' | 'userId' | 'userEmail' | 'createdAt'>) => { if (!user) throw new Error('Must be authenticated to save assessments.'); const { data: row, error } = await supabase.from('assessments').insert({ user_id: user.id, ...Object.fromEntries(Object.entries(data).map(([key, value]) => [key.replace(/[A-Z]/g, m => `_${m.toLowerCase()}`), value])) }).select('id').single(); if (error) throw error; return row.id }
   const fetchUserAssessments = async () => { if (!user) return []; const { data, error } = await supabase.from('assessments').select('*').eq('user_id', user.id).order('created_at', { ascending: false }); if (error) throw error; return (data ?? []).map(row => ({ id: row.id, userId: row.user_id, userEmail: user.email ?? '', districtId: row.district_id, districtName: row.district_name, primaryHazard: row.primary_hazard, confidence: row.confidence, severityScore: row.severity_score, severityBin: row.severity_bin, notes: row.notes, createdAt: row.created_at })) }
   const deleteAssessment = async (id: string) => { const { error } = await supabase.from('assessments').delete().eq('id', id).eq('user_id', user?.id); if (error) throw error }
-  return <AuthContext.Provider value={{ user, userProfile, loading, signInWithGoogle: async () => { const { error } = await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: `${window.location.origin}/auth/callback` } }); if (error) throw error }, signUpWithEmail, signInWithEmailAndPassword: signIn, signInWithEmail: signIn, signOut, signOutUser: signOut, sendPasswordResetEmail: async email => { const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: `${window.location.origin}/auth/callback` }); if (error) throw error }, resetPassword: async email => { const { error } = await supabase.auth.resetPasswordForEmail(email); if (error) throw error }, updateUserProfile, saveAssessment, fetchUserAssessments, deleteAssessment }}>{children}</AuthContext.Provider>
+  const signInWithOAuth = async (provider: OAuthProvider) => { const { error } = await supabase.auth.signInWithOAuth({ provider: provider as never, options: { redirectTo: `${window.location.origin}/auth/callback` } }); if (error) throw error }
+  const updatePassword = async (password: string) => { const { error } = await supabase.auth.updateUser({ password }); if (error) throw error }
+  return <AuthContext.Provider value={{ user, userProfile, loading, signInWithGoogle: () => signInWithOAuth('google'), signInWithOAuth, signUpWithEmail, signInWithEmailAndPassword: signIn, signInWithEmail: signIn, signOut, signOutUser: signOut, sendPasswordResetEmail: async email => { const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: `${window.location.origin}/update-password` }); if (error) throw error }, resetPassword: async email => { const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: `${window.location.origin}/update-password` }); if (error) throw error }, updatePassword, updateUserProfile, saveAssessment, fetchUserAssessments, deleteAssessment }}>{children}</AuthContext.Provider>
 }
 export const useAuth = () => { const context = useContext(AuthContext); if (!context) throw new Error('useAuth must be used within an AuthProvider'); return context }

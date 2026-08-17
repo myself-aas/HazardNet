@@ -3,9 +3,10 @@ import { useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { HazardNetBrand } from '../components/HazardNetLogo';
+import { OAuthButtons } from '../components/OAuthButtons';
 
 const SignUpPage: React.FC = () => {
-  const { signUpWithEmail, signInWithGoogle } = useAuth();
+  const { signUpWithEmail } = useAuth();
   const navigate = useNavigate();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -153,16 +154,7 @@ const SignUpPage: React.FC = () => {
               ) : null}
               {loading ? "Creating…" : "Sign Up"}
             </motion.button>
-            {/* Google sign‑in button */}
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              type="button"
-              onClick={signInWithGoogle}
-              className="flex items-center justify-center w-full py-2.5 border border-slate-300 bg-white rounded-lg text-sm text-slate-700 hover:bg-slate-50 transition-colors"
-            >
-              <i className="fab fa-google mr-2 text-xs"></i> Continue with Google
-            </motion.button>
+            <OAuthButtons />
           </form>
           <p className="mt-6 text-center text-sm text-slate-600">
             Already have an account?{' '}
