@@ -1,379 +1,52 @@
-import { createContext, useContext, useEffect, useState } from 'react';
-import { 
-  onAuthStateChanged, 
-  signInWithEmailAndPassword, 
-  signOut, 
-  createUserWithEmailAndPassword, 
-  updateProfile, 
-  sendPasswordResetEmail,
-  User, 
-  UserCredential 
-} from 'firebase/auth';
-import { doc, setDoc, getDoc, getDocs, query, collection, where, deleteDoc } from 'firebase/firestore';
-import { 
-  auth, 
-  db, 
-  loginWithGoogle, 
-  handleFirestoreError, 
-  OperationType 
-} from '../services/firebase';
+import { createContext, useContext, useEffect, useState } from 'react'
+import type { User as SupabaseAuthUser, UserResponse } from '@supabase/supabase-js'
+import { supabase } from '../lib/supabase'
 
-export type UserRolePersona = 
-  | 'smallholder_farmer' 
-  | 'ngo_coordinator' 
-  | 'govt_official' 
-  | 'academic_researcher' 
-  | 'commercial_agribusiness';
+export type UserRolePersona = 'smallholder_farmer' | 'ngo_coordinator' | 'govt_official' | 'academic_researcher' | 'commercial_agribusiness'
+
+export type AppUser = SupabaseAuthUser & { uid: string; displayName: string; photoURL?: string; providerData: Array<{ providerId: string; email?: string | null }> }
 
 export interface UserProfileData {
-  uid: string;
-  email: string;
-  displayName: string;
-  photoURL?: string;
-  role?: 'user' | 'admin';
-  userRole?: UserRolePersona;
-  organization?: string;
-  farmSizeHectares?: number;
-  primaryDivision?: string;
-  primaryDistrict?: string;
-  homeDistrictId?: string;
-  homeDistrictName?: string;
-  autoDetectLocationEnabled?: boolean;
-  targetCrops?: string;
-  phoneNumber?: string;
-  pinpointLat?: number;
-  pinpointLng?: number;
-  createdAt?: string;
-  updatedAt?: string;
+  uid: string; email: string; displayName: string; photoURL?: string; role?: 'user' | 'admin'; userRole?: UserRolePersona
+  organization?: string; farmSizeHectares?: number; primaryDivision?: string; primaryDistrict?: string; homeDistrictId?: string
+  homeDistrictName?: string; autoDetectLocationEnabled?: boolean; targetCrops?: string; phoneNumber?: string
+  pinpointLat?: number; pinpointLng?: number; createdAt?: string; updatedAt?: string
 }
 
 export interface UserAssessment {
-  id: string;
-  userId: string;
-  userEmail: string;
-  districtId: string;
-  districtName: string;
-  primaryHazard: string;
-  confidence: number;
-  severityScore: number;
-  severityBin?: string;
-  notes?: string;
-  createdAt: string;
+  id: string; userId: string; userEmail: string; districtId: string; districtName: string; primaryHazard: string
+  confidence: number; severityScore: number; severityBin?: string; notes?: string; createdAt: string
 }
 
+type EmailCredential = UserResponse
+export type OAuthProvider = 'google' | 'github' | 'microsoft' | 'apple' | 'linkedin' | 'discord' | 'slack' | 'twitter' | 'orcid'
 export interface AuthContextType {
-  user: User | null;
-  userProfile: UserProfileData | null;
-  loading: boolean;
-  signInWithGoogle: () => Promise<void>;
-  signUpWithEmail: (email: string, pass: string, name: string, initialProfile?: Partial<UserProfileData>) => Promise<void>;
-  signInWithEmailAndPassword: (email: string, pass: string) => Promise<UserCredential>;
-  signInWithEmail: (email: string, pass: string) => Promise<UserCredential>;
-  signOut: () => Promise<void>;
-  signOutUser: () => Promise<void>;
-  sendPasswordResetEmail: (email: string) => Promise<void>;
-  resetPassword: (email: string) => Promise<void>;
-  updateUserProfile: (data: Partial<UserProfileData>) => Promise<void>;
-  saveAssessment: (data: {
-    districtId: string;
-    districtName: string;
-    primaryHazard: string;
-    confidence: number;
-    severityScore: number;
-    severityBin?: string;
-    notes?: string;
-  }) => Promise<string>;
-  fetchUserAssessments: () => Promise<UserAssessment[]>;
-  deleteAssessment: (id: string) => Promise<void>;
+  user: AppUser | null; userProfile: UserProfileData | null; loading: boolean; signInWithGoogle: () => Promise<void>; signInWithOAuth: (provider: OAuthProvider) => Promise<void>
+  signUpWithEmail: (email: string, pass: string, name: string, initialProfile?: Partial<UserProfileData>) => Promise<void>
+  signInWithEmailAndPassword: (email: string, pass: string) => Promise<EmailCredential>; signInWithEmail: (email: string, pass: string) => Promise<EmailCredential>
+  signOut: () => Promise<void>; signOutUser: () => Promise<void>; sendPasswordResetEmail: (email: string) => Promise<void>; resetPassword: (email: string) => Promise<void>; updatePassword: (password: string) => Promise<void>
+  updateUserProfile: (data: Partial<UserProfileData>) => Promise<void>; saveAssessment: (data: Omit<UserAssessment, 'id' | 'userId' | 'userEmail' | 'createdAt'>) => Promise<string>
+  fetchUserAssessments: () => Promise<UserAssessment[]>; deleteAssessment: (id: string) => Promise<void>
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AuthContext = createContext<AuthContextType | undefined>(undefined)
+const toAppUser = (user: SupabaseAuthUser | null): AppUser | null => user ? { ...user, uid: user.id, displayName: user.user_metadata?.display_name ?? user.user_metadata?.full_name ?? 'User', photoURL: user.user_metadata?.avatar_url, providerData: user.identities?.map(identity => ({ providerId: identity.provider, email: identity.identity_data?.email })) ?? [] } : null
+const toProfile = (row: Record<string, unknown>): UserProfileData => ({ uid: row.id as string, email: row.email as string, displayName: row.display_name as string, photoURL: row.photo_url as string | undefined, role: row.role as UserProfileData['role'], userRole: row.user_role as UserRolePersona, organization: row.organization as string | undefined, farmSizeHectares: row.farm_size_hectares as number | undefined, primaryDivision: row.primary_division as string | undefined, primaryDistrict: row.primary_district as string | undefined, homeDistrictId: row.home_district_id as string | undefined, homeDistrictName: row.home_district_name as string | undefined, autoDetectLocationEnabled: row.auto_detect_location_enabled as boolean | undefined, targetCrops: row.target_crops as string | undefined, phoneNumber: row.phone_number as string | undefined, pinpointLat: row.pinpoint_lat as number | undefined, pinpointLng: row.pinpoint_lng as number | undefined, createdAt: row.created_at as string | undefined, updatedAt: row.updated_at as string | undefined })
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [userProfile, setUserProfile] = useState<UserProfileData | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  const loadUserProfile = async (uid: string): Promise<UserProfileData | null> => {
-    try {
-      const userDocRef = doc(db, 'users', uid);
-      const snap = await getDoc(userDocRef);
-      if (snap.exists()) {
-        const data = snap.data() as UserProfileData;
-        setUserProfile(data);
-        if (data.homeDistrictId) {
-          try {
-            localStorage.setItem('hazardnet_home_district', data.homeDistrictId);
-          } catch (e) {}
-        }
-        if (data.autoDetectLocationEnabled !== undefined) {
-          try {
-            localStorage.setItem('hazardnet_auto_detect_location', String(data.autoDetectLocationEnabled));
-          } catch (e) {}
-        }
-        return data;
-      }
-    } catch (err) {
-      console.warn('Failed to load user profile from Firestore:', err);
-    }
-    return null;
-  };
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      setUser(currentUser);
-      if (currentUser) {
-        // Attempt to fetch existing Firestore profile
-        const existingProfile = await loadUserProfile(currentUser.uid);
-        
-        // Sync baseline profile in Firestore
-        try {
-          const userRef = doc(db, 'users', currentUser.uid);
-          const baseData: Partial<UserProfileData> = {
-            uid: currentUser.uid,
-            email: currentUser.email || '',
-            displayName: currentUser.displayName || existingProfile?.displayName || 'User',
-            photoURL: currentUser.photoURL || existingProfile?.photoURL || '',
-            role: existingProfile?.role || 'user',
-            userRole: existingProfile?.userRole || 'smallholder_farmer',
-            updatedAt: new Date().toISOString()
-          };
-          
-          if (!existingProfile?.createdAt) {
-            baseData.createdAt = new Date().toISOString();
-          }
-
-          await setDoc(userRef, baseData, { merge: true });
-          await loadUserProfile(currentUser.uid);
-        } catch (err) {
-          console.warn('Could not sync user profile to Firestore:', err);
-        }
-      } else {
-        setUserProfile(null);
-      }
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
-  }, []);
-
-  const handleSignInWithGoogle = async () => {
-    await loginWithGoogle();
-  };
-
-  const handleSignUpWithEmail = async (
-    email: string, 
-    pass: string, 
-    name: string, 
-    initialProfile?: Partial<UserProfileData>
-  ) => {
-    try {
-      const res = await createUserWithEmailAndPassword(auth, email, pass);
-      if (res.user && name) {
-        await updateProfile(res.user, { displayName: name });
-      }
-      const newUser = res.user;
-      if (newUser) {
-        const userRef = doc(db, 'users', newUser.uid);
-        const payload: UserProfileData = {
-          uid: newUser.uid,
-          email: newUser.email || email,
-          displayName: name || 'User',
-          role: 'user',
-          userRole: initialProfile?.userRole || 'smallholder_farmer',
-          organization: initialProfile?.organization || '',
-          farmSizeHectares: initialProfile?.farmSizeHectares || 1.5,
-          primaryDivision: initialProfile?.primaryDivision || 'Rangpur',
-          primaryDistrict: initialProfile?.primaryDistrict || '',
-          targetCrops: initialProfile?.targetCrops || 'Boro Paddy, Aman Rice',
-          phoneNumber: initialProfile?.phoneNumber || '',
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        };
-        await setDoc(userRef, payload, { merge: true });
-        setUserProfile(payload);
-      }
-    } catch (error) {
-      console.error('Firebase Auth createUserWithEmailAndPassword error:', error);
-      throw error;
-    }
-  };
-
-  const handleSignInWithEmailAndPassword = async (email: string, pass: string): Promise<UserCredential> => {
-    try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, pass);
-      return userCredential;
-    } catch (error) {
-      console.error('Firebase Auth signInWithEmailAndPassword error:', error);
-      throw error;
-    }
-  };
-
-  const handleSignOut = async (): Promise<void> => {
-    try {
-      await signOut(auth);
-      setUser(null);
-      setUserProfile(null);
-      
-      // Clear sensitive local storage keys and cache
-      try {
-        localStorage.removeItem('hazardnet_home_district');
-        localStorage.removeItem('hazardnet_auto_detect_location');
-        localStorage.removeItem('shonchay_saved_districts');
-      } catch (storageErr) {
-        console.warn('Could not clear local storage on signOut:', storageErr);
-      }
-
-      // Clear session storage
-      try {
-        sessionStorage.clear();
-      } catch (sessionErr) {
-        console.warn('Could not clear session storage on signOut:', sessionErr);
-      }
-    } catch (error) {
-      console.error('Firebase Auth signOut error:', error);
-      throw error;
-    }
-  };
-
-  const handleSendPasswordResetEmail = async (email: string): Promise<void> => {
-    try {
-      await sendPasswordResetEmail(auth, email);
-    } catch (error) {
-      console.error('Firebase Auth sendPasswordResetEmail error:', error);
-      throw error;
-    }
-  };
-
-  const updateUserProfile = async (data: Partial<UserProfileData>): Promise<void> => {
-    if (data.homeDistrictId) {
-      try {
-        localStorage.setItem('hazardnet_home_district', data.homeDistrictId);
-      } catch (e) {}
-    }
-    if (data.autoDetectLocationEnabled !== undefined) {
-      try {
-        localStorage.setItem('hazardnet_auto_detect_location', String(data.autoDetectLocationEnabled));
-      } catch (e) {}
-    }
-    if (!user) {
-      // If guest/unauthenticated user, update local storage and temporary state
-      setUserProfile((prev) => prev ? { ...prev, ...data } : {
-        uid: 'guest',
-        email: '',
-        displayName: 'Guest',
-        ...data,
-      });
-      return;
-    }
-    const path = `users/${user.uid}`;
-    try {
-      const userRef = doc(db, 'users', user.uid);
-      const updatedPayload = {
-        uid: user.uid,
-        email: user.email || '',
-        ...data,
-        updatedAt: new Date().toISOString()
-      };
-      await setDoc(userRef, updatedPayload, { merge: true });
-      await loadUserProfile(user.uid);
-    } catch (error) {
-      handleFirestoreError(error, OperationType.WRITE, path);
-      throw error;
-    }
-  };
-
-  const saveAssessment = async (data: {
-    districtId: string;
-    districtName: string;
-    primaryHazard: string;
-    confidence: number;
-    severityScore: number;
-    severityBin?: string;
-    notes?: string;
-  }): Promise<string> => {
-    if (!user) throw new Error('Must be authenticated to save assessments.');
-    const path = 'assessments';
-    const assessmentId = `asm_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
-    const assessmentRef = doc(db, path, assessmentId);
-    
-    const payload = {
-      id: assessmentId,
-      userId: user.uid,
-      userEmail: user.email || '',
-      districtId: data.districtId,
-      districtName: data.districtName,
-      primaryHazard: data.primaryHazard,
-      confidence: data.confidence,
-      severityScore: data.severityScore,
-      severityBin: data.severityBin || 'Moderate',
-      notes: data.notes || '',
-      createdAt: new Date().toISOString()
-    };
-
-    try {
-      await setDoc(assessmentRef, payload);
-      return assessmentId;
-    } catch (error) {
-      handleFirestoreError(error, OperationType.WRITE, path);
-      throw error;
-    }
-  };
-
-  const fetchUserAssessments = async (): Promise<UserAssessment[]> => {
-    if (!user) return [];
-    const path = 'assessments';
-    try {
-      const q = query(collection(db, path), where('userId', '==', user.uid));
-      const snapshot = await getDocs(q);
-      const results: UserAssessment[] = [];
-      snapshot.forEach((docSnap) => {
-        results.push(docSnap.data() as UserAssessment);
-      });
-      return results.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-    } catch (error) {
-      handleFirestoreError(error, OperationType.LIST, path);
-      return [];
-    }
-  };
-
-  const deleteAssessment = async (id: string): Promise<void> => {
-    if (!user) return;
-    const path = `assessments/${id}`;
-    try {
-      await deleteDoc(doc(db, 'assessments', id));
-    } catch (error) {
-      handleFirestoreError(error, OperationType.DELETE, path);
-    }
-  };
-
-  return (
-    <AuthContext.Provider value={{
-      user,
-      userProfile,
-      loading,
-      signInWithGoogle: handleSignInWithGoogle,
-      signUpWithEmail: handleSignUpWithEmail,
-      signInWithEmailAndPassword: handleSignInWithEmailAndPassword,
-      signInWithEmail: handleSignInWithEmailAndPassword,
-      signOut: handleSignOut,
-      signOutUser: handleSignOut,
-      sendPasswordResetEmail: handleSendPasswordResetEmail,
-      resetPassword: handleSendPasswordResetEmail,
-      updateUserProfile,
-      saveAssessment,
-      fetchUserAssessments,
-      deleteAssessment
-    }}>
-      {children}
-    </AuthContext.Provider>
-  );
-};
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-};
+  const [user, setUser] = useState<AppUser | null>(null); const [userProfile, setUserProfile] = useState<UserProfileData | null>(null); const [loading, setLoading] = useState(true)
+  const loadProfile = async (authUser: SupabaseAuthUser) => { const { data } = await supabase.from('profiles').select('*').eq('id', authUser.id).maybeSingle(); if (data) setUserProfile(toProfile(data)); return data }
+  useEffect(() => { let mounted = true; supabase.auth.getUser().then(({ data }) => { if (mounted) { setUser(toAppUser(data.user)); if (data.user) loadProfile(data.user).finally(() => setLoading(false)); else setLoading(false) } }); const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => { if (!mounted) return; const next = session?.user ?? null; setUser(toAppUser(next)); if (next) loadProfile(next); else setUserProfile(null); setLoading(false) }); return () => { mounted = false; listener.subscription.unsubscribe() } }, [])
+  const signUpWithEmail = async (email: string, pass: string, name: string, initialProfile?: Partial<UserProfileData>) => { const { data, error } = await supabase.auth.signUp({ email, password: pass, options: { emailRedirectTo: import.meta.env.VITE_SUPABASE_REDIRECT_URL ?? `${window.location.origin}/auth/callback`, data: { display_name: name } } }); if (error) throw error; if (data.user && data.session) await saveProfile(data.user, name, initialProfile) }
+  const saveProfile = async (authUser: SupabaseAuthUser, name = 'User', data: Partial<UserProfileData> = {}) => { const row = { id: authUser.id, email: authUser.email ?? '', display_name: name, role: data.role ?? 'user', user_role: data.userRole ?? 'smallholder_farmer', organization: data.organization ?? '', farm_size_hectares: data.farmSizeHectares ?? 1.5, primary_division: data.primaryDivision ?? 'Rangpur', primary_district: data.primaryDistrict ?? '', target_crops: data.targetCrops ?? 'Boro Paddy, Aman Rice', phone_number: data.phoneNumber ?? '', updated_at: new Date().toISOString() }; const { error } = await supabase.from('profiles').upsert(row); if (error) throw error; await loadProfile(authUser) }
+  const signIn = async (email: string, pass: string) => { const result = await supabase.auth.signInWithPassword({ email, password: pass }); if (result.error) throw result.error; return result }
+  const signOut = async () => { const { error } = await supabase.auth.signOut(); if (error) throw error; setUser(null); setUserProfile(null); sessionStorage.clear() }
+  const updateUserProfile = async (data: Partial<UserProfileData>) => { if (!user) { setUserProfile(prev => prev ? { ...prev, ...data } : null); return } const row = Object.fromEntries(Object.entries(data).map(([key, value]) => [key.replace(/[A-Z]/g, m => `_${m.toLowerCase()}`), value])); const { error } = await supabase.from('profiles').update({ ...row, updated_at: new Date().toISOString() }).eq('id', user.id); if (error) throw error; await loadProfile(user) }
+  const saveAssessment = async (data: Omit<UserAssessment, 'id' | 'userId' | 'userEmail' | 'createdAt'>) => { if (!user) throw new Error('Must be authenticated to save assessments.'); const { data: row, error } = await supabase.from('assessments').insert({ user_id: user.id, ...Object.fromEntries(Object.entries(data).map(([key, value]) => [key.replace(/[A-Z]/g, m => `_${m.toLowerCase()}`), value])) }).select('id').single(); if (error) throw error; return row.id }
+  const fetchUserAssessments = async () => { if (!user) return []; const { data, error } = await supabase.from('assessments').select('*').eq('user_id', user.id).order('created_at', { ascending: false }); if (error) throw error; return (data ?? []).map(row => ({ id: row.id, userId: row.user_id, userEmail: user.email ?? '', districtId: row.district_id, districtName: row.district_name, primaryHazard: row.primary_hazard, confidence: row.confidence, severityScore: row.severity_score, severityBin: row.severity_bin, notes: row.notes, createdAt: row.created_at })) }
+  const deleteAssessment = async (id: string) => { const { error } = await supabase.from('assessments').delete().eq('id', id).eq('user_id', user?.id); if (error) throw error }
+  const signInWithOAuth = async (provider: OAuthProvider) => { const { error } = await supabase.auth.signInWithOAuth({ provider: provider as never, options: { redirectTo: `${window.location.origin}/auth/callback` } }); if (error) throw error }
+  const updatePassword = async (password: string) => { const { error } = await supabase.auth.updateUser({ password }); if (error) throw error }
+  return <AuthContext.Provider value={{ user, userProfile, loading, signInWithGoogle: () => signInWithOAuth('google'), signInWithOAuth, signUpWithEmail, signInWithEmailAndPassword: signIn, signInWithEmail: signIn, signOut, signOutUser: signOut, sendPasswordResetEmail: async email => { const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: `${window.location.origin}/update-password` }); if (error) throw error }, resetPassword: async email => { const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: `${window.location.origin}/update-password` }); if (error) throw error }, updatePassword, updateUserProfile, saveAssessment, fetchUserAssessments, deleteAssessment }}>{children}</AuthContext.Provider>
+}
+export const useAuth = () => { const context = useContext(AuthContext); if (!context) throw new Error('useAuth must be used within an AuthProvider'); return context }

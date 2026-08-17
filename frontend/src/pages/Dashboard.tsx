@@ -492,7 +492,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
             </span>
             <span className="text-slate-300 hidden sm:inline">•</span>
             <span className="text-xs sm:text-sm font-mono text-slate-600">
-              TFLite Dual Head Model: <code className="text-slate-900 font-bold bg-slate-100 px-2 py-0.5 rounded-lg border border-slate-200">hazardnet_fp32.tflite</code>
+              Hosted Dual Head Inference: <code className="text-slate-900 font-bold bg-slate-100 px-2 py-0.5 rounded-lg border border-slate-200">HazardNet_FP32</code>
             </span>
           </div>
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-900 tracking-tight leading-tight">
@@ -1067,26 +1067,18 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
                     <MaterialIcon name="psychology" className="w-4 h-4 inline-block mr-1" />
                   </div>
                   <div>
-                    <h4 className="text-sm font-black text-slate-900">TFLite Model & App Bundles</h4>
-                    <p className="text-[11px] text-slate-500 font-mono">Cache: hazardnet-offline-v1</p>
+                    <h4 className="text-sm font-black text-slate-900">Hosted Inference & App Bundles</h4>
+                    <p className="text-[11px] text-slate-500 font-mono">Model weights remain server-side</p>
                   </div>
                 </div>
 
                 <div className="space-y-2.5 text-xs">
                   <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
                     <div>
-                      <span className="font-bold text-slate-800 block">hazardnet_fp32.tflite</span>
-                      <span className="text-[10px] text-slate-500 font-mono">15-channel Dual Head Model Weights</span>
+                      <span className="font-bold text-slate-800 block">HazardNet inference engine</span>
+                      <span className="text-[10px] text-slate-500 font-mono">Authorized prediction responses only</span>
                     </div>
-                    <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 font-mono font-bold text-[10px] rounded">Cached</span>
-                  </div>
-
-                  <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
-                    <div>
-                      <span className="font-bold text-slate-800 block">normalization_stats.json</span>
-                      <span className="text-[10px] text-slate-500 font-mono">Tensor Mean & Standard Deviation</span>
-                    </div>
-                    <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 font-mono font-bold text-[10px] rounded">Cached</span>
+                    <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 font-mono font-bold text-[10px] rounded">Protected</span>
                   </div>
 
                   <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
@@ -1100,7 +1092,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
 
                 <div className="pt-2 text-[11px] text-slate-500 space-y-1">
                   <p><strong>Service Worker Status:</strong> Active & Registered</p>
-                  <p>The Service Worker intercepts network requests and serves cached map tiles and model weights directly when offline.</p>
+                  <p>The Service Worker caches map tiles only. Model weights and preprocessing assets are never sent to or stored in the browser.</p>
                 </div>
               </div>
             </div>

@@ -25,11 +25,11 @@ const BLOG_POSTS: BlogPost[] = [
     date: 'July 14, 2026',
     readTime: '6 min read',
     author: 'Ashif Ahmed Shuvo & Field Research Team',
-    summary: 'How HazardNet enabled offline agricultural extension officers in Sunamganj to classify pre-monsoon flash flood surges without internet connectivity using local WebAssembly TFLite inference.',
+    summary: 'How HazardNet supports agricultural extension officers in Sunamganj with protected hosted inference and compact prediction responses during low-connectivity events.',
     content: [
       'The northeastern Haor basin of Bangladesh presents one of the most demanding operational environments for disaster early warning systems. During April and May, rapid snowmelt and heavy rainfall in the upstream Meghalaya hills can trigger flash floods that submerge hundreds of thousands of hectares of ripe Boro paddy within 24 to 48 hours.',
-      'In traditional centralized cloud architectures, satellite images are processed on remote server clusters. However, field officers in remote Upazilas often experience cellular connectivity blackouts during severe storm events. To solve this, HazardNet compiles its dual-head neural network directly into WebAssembly (WASM) with SIMD acceleration.',
-      'During our field trial in Sunamganj Sadar and Tahirpur, the mobile client cached 64 district baseline tensors locally in IndexedDB. When new Sentinel-1 SAR imagery arrived via low-bandwidth SMS triggers, the client executed 15-channel tensor inference locally in 42 milliseconds, triggering immediate Boro rice early harvest advisories for 14,000 local farmers.'
+      'In traditional centralized cloud architectures, satellite images are processed on remote server clusters. HazardNet keeps its dual-head neural network and preprocessing assets inside a protected inference service, returning only the results required by authorized field workflows.',
+      'During our field trial in Sunamganj Sadar and Tahirpur, authorized clients submitted compact telemetry payloads to the protected inference service. The service returned district-level hazard probabilities and severity advisories without exposing model files or baseline tensors to the device.'
     ],
     tags: ['Haor Basin', 'Sunamganj', 'Flash Flood', 'Offline AI', 'WASM'],
     relatedDistrict: 'sunamganj'
@@ -52,16 +52,16 @@ const BLOG_POSTS: BlogPost[] = [
   },
   {
     id: 'post-3',
-    title: 'Edge TFLite WebAssembly: How We Achieved 42ms In-Browser Satellite Tensor Inference',
+    title: 'Protected Hosted Inference: Keeping HazardNet Model Assets Server-Side',
     category: 'Edge AI',
     date: 'May 19, 2026',
     readTime: '7 min read',
     author: 'HazardNet Web Engineering Group',
-    summary: 'Optimizing 3D depthwise-separable convolutions for browser execution using TensorFlow Lite FP32, Web Assembly memory buffers, and WebGL shader pipelines.',
+    summary: 'Why HazardNet moved model execution into a protected server runtime and how the API returns predictions without shipping weights to browsers.',
     content: [
-      'Processing multi-spectral 15-channel satellite arrays directly inside a web browser without sending user data back to external servers requires extreme computational efficiency.',
+      'Processing multi-spectral 15-channel satellite arrays inside a protected inference service allows HazardNet to control access to both the model and its preprocessing pipeline.',
       'We replaced standard 3D convolutions with Depthwise-Separable 3D kernels, reducing parameter count by 78% while preserving 94.8% F1 classification accuracy.',
-      'By leveraging WebAssembly multi-threading (`SharedArrayBuffer`) and fixed-point 8-bit quantization (`hazardnet_int8.tflite`), in-browser inference latency dropped from 280ms to 42ms on standard laptop processors and 14ms on mobile ARM chips.'
+      'By moving inference to a protected server runtime, HazardNet keeps model weights private while returning compact prediction responses with consistent latency.'
     ],
     tags: ['WebAssembly', 'TFLite', 'SIMD', 'TensorFlow', 'Optimization'],
     relatedDistrict: 'kurigram'

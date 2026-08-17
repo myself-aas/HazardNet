@@ -177,7 +177,8 @@ export const DownloadCenter: React.FC = () => {
               : 'bg-white text-slate-700 border border-slate-200/90 hover:bg-slate-50 shadow-2xs'
           }`}
         >
-          <MaterialIcon name="ai_advisor" className="w-4 h-4" /> TFLite & ONNX Model Weights
+                <MaterialIcon name="ai_advisor" className="w-4 h-4" /> Hosted Inference
+
         </motion.button>
       </div>
 
@@ -197,12 +198,7 @@ export const DownloadCenter: React.FC = () => {
                 <p className="text-[11px] text-emerald-800 font-medium">Check your browser downloads folder. Verify SHA-256 hash before deployment.</p>
               </div>
             </div>
-            <button
-              onClick={() => setDownloadSuccess(null)}
-              className="text-emerald-800 hover:text-emerald-950 font-black text-sm p-1 rounded-lg hover:bg-emerald-100/50 cursor-pointer"
-            >
-              ✕
-            </button>
+
           </motion.div>
         )}
       </AnimatePresence>
@@ -339,103 +335,6 @@ print(f"72-hr Agronomic Advisory: {result.get_advisory()}")`}
           </motion.div>
         )}
 
-        {/* Tab 3: Model Weights */}
-        {selectedTab === 'models' && (
-          <motion.div
-            key="models"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.2 }}
-            className="grid grid-cols-1 md:grid-cols-2 gap-6"
-          >
-            <motion.div whileHover={{ y: -3 }} className="bg-white border border-slate-200/90 rounded-3xl p-6 shadow-sm hover:border-amber-400/80 hover:shadow-xl transition-all duration-300 space-y-4 flex flex-col justify-between">
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="px-3 py-1 rounded-full text-[10px] font-mono font-extrabold bg-emerald-100 text-emerald-950 border border-emerald-200">
-                    Primary Model (FP32)
-                  </span>
-                  <span className="text-xs font-mono font-extrabold text-slate-600">14.2 MB</span>
-                </div>
-
-                <div>
-                  <h3 className="font-black text-slate-900 text-base">hazardnet_fp32.tflite</h3>
-                  <p className="text-xs text-slate-600 mt-1 leading-relaxed">
-                    Full precision baseline model with 3D Depthwise-Separable convolutions and dual Softmax + MSE heads.
-                  </p>
-                </div>
-
-                <ul className="text-xs space-y-1.5 text-slate-600 font-mono font-semibold bg-slate-50 p-3 rounded-xl border border-slate-200/80">
-                  <li className="flex justify-between"><span>Precision:</span><span className="text-slate-900">Float32</span></li>
-                  <li className="flex justify-between"><span>Latency:</span><span className="text-emerald-700">42ms (WASM SIMD)</span></li>
-                  <li className="flex justify-between"><span>F1 Score:</span><span className="text-slate-900">94.8%</span></li>
-                </ul>
-              </div>
-
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => handleSimulatedDownload('hazardnet_fp32.tflite', 'model-fp32')}
-                className="w-full py-2.5 rounded-xl bg-[#f9a825] hover:bg-[#d08305] text-slate-950 text-xs font-black transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
-              >
-                {downloadingId === 'model-fp32' ? (
-                  <>
-                    <span className="w-3.5 h-3.5 border-2 border-slate-900 border-t-transparent rounded-full animate-spin"></span>
-                    <span>Preparing Package...</span>
-                  </>
-                ) : (
-                  <>
-                    <DownloadDoneIcon isState={downloadSuccess === 'hazardnet_fp32.tflite'} size={18} duration={0} />
-                    <span>Download FP32 Weights (.tflite)</span>
-                  </>
-                )}
-              </motion.button>
-            </motion.div>
-
-            <motion.div whileHover={{ y: -3 }} className="bg-white border border-slate-200/90 rounded-3xl p-6 shadow-sm hover:border-amber-400/80 hover:shadow-xl transition-all duration-300 space-y-4 flex flex-col justify-between">
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="px-3 py-1 rounded-full text-[10px] font-mono font-extrabold bg-amber-100 text-amber-950 border border-amber-200">
-                    Quantized Edge (INT8)
-                  </span>
-                  <span className="text-xs font-mono font-extrabold text-slate-600">3.8 MB</span>
-                </div>
-
-                <div>
-                  <h3 className="font-black text-slate-900 text-base">hazardnet_int8.tflite</h3>
-                  <p className="text-xs text-slate-600 mt-1 leading-relaxed">
-                    Full-integer post-training quantized model optimized for ultra-low memory smartphones and Raspberry Pi devices.
-                  </p>
-                </div>
-
-                <ul className="text-xs space-y-1.5 text-slate-600 font-mono font-semibold bg-slate-50 p-3 rounded-xl border border-slate-200/80">
-                  <li className="flex justify-between"><span>Precision:</span><span className="text-slate-900">INT8 Quantized</span></li>
-                  <li className="flex justify-between"><span>Latency:</span><span className="text-emerald-700">14ms (ARM NEON)</span></li>
-                  <li className="flex justify-between"><span>F1 Score:</span><span className="text-slate-900">93.6%</span></li>
-                </ul>
-              </div>
-
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => handleSimulatedDownload('hazardnet_int8.tflite', 'model-int8')}
-                className="w-full py-2.5 rounded-xl bg-[#f9a825] hover:bg-[#d08305] text-slate-950 text-xs font-black transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
-              >
-                {downloadingId === 'model-int8' ? (
-                  <>
-                    <span className="w-3.5 h-3.5 border-2 border-slate-900 border-t-transparent rounded-full animate-spin"></span>
-                    <span>Preparing Package...</span>
-                  </>
-                ) : (
-                  <>
-                    <DownloadDoneIcon isState={downloadSuccess === 'hazardnet_int8.tflite'} size={18} duration={0} />
-                    <span>Download INT8 Quantized (.tflite)</span>
-                  </>
-                )}
-              </motion.button>
-            </motion.div>
-          </motion.div>
-        )}
       </AnimatePresence>
 
     </motion.div>

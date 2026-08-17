@@ -8,6 +8,8 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import SignUpPage from './pages/SignUpPage';
 import LoginPage from './pages/LoginPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import UpdatePasswordPage from './pages/UpdatePasswordPage';
+import AuthCallbackPage from './pages/AuthCallbackPage';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Dashboard from './pages/Dashboard';
@@ -118,6 +120,8 @@ const AppContent: React.FC = () => {
               <Route path="/sign-up" element={<SignUpPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+              <Route path="/update-password" element={<UpdatePasswordPage />} />
+              <Route path="/auth/callback" element={<AuthCallbackPage />} />
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </motion.div>

@@ -9,6 +9,8 @@ const router = express.Router();
 
 router.post('/', validateTensor, async (req, res) => {
   metrics.apiRequestsTotal.inc();
+  res.set('Cache-Control', 'no-store');
+  res.set('X-Content-Type-Options', 'nosniff');
   let tensor = req.tensor;
   let normalized = null;
 
@@ -35,7 +37,7 @@ router.post('/', validateTensor, async (req, res) => {
     });
   } catch (err) {
     console.error('Prediction error:', err);
-    res.status(500).json({ error: 'Inference calculation failed', details: err.message });
+    res.status(500).json({ error: 'Inference calculation failed' });
   } finally {
     if (normalized) tf.dispose(normalized);
     if (tensor) tf.dispose(tensor);

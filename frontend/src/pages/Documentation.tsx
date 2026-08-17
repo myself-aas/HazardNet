@@ -30,15 +30,9 @@ export const Documentation: React.FC = () => {
         </p>
 
         <div className="flex flex-wrap items-center gap-3 pt-4">
-          <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-            <Link
-              to="/download?selectedTab=models"
-              className="px-4 py-2 rounded-xl bg-[#f9a825] hover:bg-[#d08305] text-slate-900 text-xs font-bold transition-all shadow-xs flex items-center gap-1.5"
-            >
-              <span>📥</span>
-              <span>Download TFLite Weights</span>
-            </Link>
-          </motion.div>
+          <div className="px-4 py-2 rounded-xl bg-slate-100 text-slate-600 text-xs font-bold border border-slate-200">
+            Hosted inference keeps model weights private
+          </div>
           <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
             <Link
               to="/download?selectedTab=python"
@@ -131,30 +125,9 @@ export const Documentation: React.FC = () => {
         </p>
       </div>
 
-      {/* Required Models Directory Checklist */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-6 space-y-4 shadow-xs">
-        <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-          <MaterialIcon name="folder_open" className="text-xl text-amber-600" />
-          <span>Models Directory Verification & Integrity</span>
-        </h2>
-        <div className="space-y-2 text-xs font-mono">
-          {[
-            { file: '/Models/hazardnet_fp32.tflite', size: '~14.2 MB', desc: 'Primary FP32 TensorFlow Lite 3D-CNN Model Bundle' },
-            { file: '/Models/normalization_stats.json', size: '~1.2 KB', desc: 'Per-channel Z-score Means & Standard Deviations (15 Bands)' },
-            { file: '/Models/labels.json', size: '~169 B', desc: '8 Target Hazard Class Name Mappings' },
-            { file: '/Models/preprocessing_config.json', size: '~420 B', desc: 'Spatio-Temporal Crop & Transpose Parameters (NCDHW → NDHWC)' },
-          ].map((f) => (
-            <motion.div whileHover={{ x: 2 }} key={f.file} className="flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-xl">
-              <div>
-                <span className="font-bold text-slate-900 block">{f.file}</span>
-                <span className="text-[11px] text-slate-600 font-sans">{f.desc}</span>
-              </div>
-              <span className="text-[10px] text-slate-800 bg-white px-2 py-1 rounded border border-slate-200 font-bold">
-                {f.size}
-              </span>
-            </motion.div>
-          ))}
-        </div>
+      <div className="bg-slate-900 text-white rounded-2xl p-6 space-y-2 shadow-md">
+        <h2 className="text-lg font-bold">Hosted inference architecture</h2>
+        <p className="text-xs text-slate-300 leading-relaxed">HazardNet model weights and preprocessing parameters remain on the inference server. The browser submits authorized inputs and receives prediction results only; no model artifact is cached or shipped to clients.</p>
       </div>
 
       {/* Quick Action Footer */}
