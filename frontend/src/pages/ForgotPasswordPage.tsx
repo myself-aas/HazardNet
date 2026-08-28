@@ -10,7 +10,6 @@ const ForgotPasswordPage: React.FC = () => {
   const navigate = useNavigate();
   const { sendPasswordResetEmail } = useAuth();
   const [email, setEmail] = useState('');
-  const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -23,11 +22,9 @@ const ForgotPasswordPage: React.FC = () => {
     }
     setLoading(true);
     setError(null);
-    setMessage(null);
     try {
       await sendPasswordResetEmail(email.trim());
       setIsSubmitted(true);
-      setMessage('A password reset link has been dispatched to your email.');
       toast.success('Password reset email sent!');
     } catch (err: any) {
       const code = err?.code || '';
