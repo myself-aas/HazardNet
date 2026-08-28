@@ -13,6 +13,7 @@ import predictRoutes from './routes/predict.js';
 import pushRoutes from './routes/push.js';
 import conversionRoutes from './routes/conversions.js';
 import metrics from './metrics.js';
+import { aiLimiter, predictLimiter, apiLimiter } from './middleware/rateLimit.js';
 
 dotenv.config();
 
@@ -20,7 +21,35 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-app.use(cors());
+
+// Rate limiters need the real client IP; we sit behind one proxy/edge hop.
+app.set('trust proxy', 1);
+
+// CORS allowlist (SEC-04). Add allowed browser origins via FRONTEND_ORIGIN
+// (comma-separated). When unset (e.g. local dev), all origins are permitted
+// to preserve the previous behavior — set it in production deployments.
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://127.0.0.1:3000',
+  ...(process.env.FRONTEND_ORIGIN || '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean),
+];
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // No Origin header = same-origin request, curl, or server-to-server.
+      if (!origin) return callback(null, true);
+      // Not configured = keep permissive legacy behavior until FRONTEND_ORIGIN is set.
+      if (allowedOrigins.length === 2) return callback(null, true);
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      return callback(null, false);
+    },
+    methods: ['GET', 'POST', 'OPTIONS'],
+  })
+);
 app.use(express.json({ limit: '10mb' }));
 
 // Basic Security Headers Middleware
@@ -41,12 +70,14 @@ app.use(['/Models', '/models', '/hazardnet_fp32.tflite', '/hazardnet_int8.tflite
   res.status(404).json({ error: 'Not found' });
 });
 
-// API Routes
+// API Routes — layered rate limiting (SEC-01): a baseline on all /api routes
+// plus tighter buckets on the expensive AI/inference endpoints.
+app.use('/api', apiLimiter);
 app.use('/api/v1/forecasts', forecastRoutes);
 app.use('/api/advisory', advisoryRoutes);
-app.use('/api/chat', chatRoutes);
-app.use('/api/agent', agentRoutes);
-app.use('/api/predict', predictRoutes);
+app.use('/api/chat', aiLimiter, chatRoutes);
+app.use('/api/agent', aiLimiter, agentRoutes);
+app.use('/api/predict', predictLimiter, predictRoutes);
 app.use('/api/push', pushRoutes);
 app.use('/api/conversions', conversionRoutes);
 
@@ -81,7 +112,8 @@ app.get('*', (req, res, next) => {
   }
 });
 
-const PORT = 3000;
+// 3001 keeps the API out of Vite's way in dev (vite.config.ts proxies /api here).
+const PORT = process.env.PORT || 3001;
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`HazardNet Backend running on port ${PORT}`);
 });

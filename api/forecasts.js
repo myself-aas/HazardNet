@@ -1,18 +1,19 @@
 // Vercel Serverless Function
 // Handles CSV uploads, generates advisories via Gemini, and writes to Firebase Firestore
+// ESM: the root package.json declares "type": "module" — CJS `require` fails here.
 
-const { createReadStream } = require('fs');
-const csv = require('csv-parser');
-const { generateAdvisory } = require('../backend/services/advisoryAgent');
-const { db, collection, getDocs, query, where, doc, setDoc, deleteDoc, writeBatch } = require('../backend/db.js');
-const Busboy = require('busboy');
+import { createReadStream } from 'node:fs';
+import csv from 'csv-parser';
+import { generateAdvisory } from '../backend/services/advisoryAgent.js';
+import { db, collection, getDocs, query, where, doc, setDoc, deleteDoc, writeBatch } from '../backend/db.js';
+import Busboy from 'busboy';
 
 /**
  * Vercel expects an async function with (req, res) signature.
  * @param {import('vercel').Request} req
  * @param {import('vercel').Response} res
  */
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Method Not Allowed' });
     return;

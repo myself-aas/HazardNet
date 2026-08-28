@@ -21,7 +21,6 @@
   "dependencies": {
     "@google/genai": "^2.15.0",
     "@mui/icons-material": "^9.2.0",
-    "@postman/postman-mcp-server": "^2.11.2",
     "@tensorflow/tfjs": "^4.12.0",
     "@tensorflow/tfjs-tflite": "^0.0.1-alpha.10",
     "@types/leaflet": "^1.9.21",
@@ -32,6 +31,7 @@
     "csv-parser": "^3.2.1",
     "dotenv": "^17.4.2",
     "express": "^4.18.2",
+    "express-rate-limit": "^7.5.0",
     "firebase": "^12.17.0",
     "framer-motion": "^13.0.0",
     "html2canvas": "^1.4.1",

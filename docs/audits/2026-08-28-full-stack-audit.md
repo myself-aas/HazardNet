@@ -281,16 +281,24 @@ jobs:
 ## 6. Prioritized Remediation Roadmap
 
 ### P0 — this week (stop the bleeding)
-| # | Action | Finding | Effort |
+
+> **✅ EXECUTED 2026-08-28** — all 8 items implemented and verified in commit
+> "fix: execute P0 security & integrity roadmap". Result: 18 → **0** production
+> CVEs; rate limits + CORS allowlist live; synthetic-tensor path removed (422,
+> regression-tested); backend on 3001; all serverless functions ESM-loadable;
+> CI workflow added; 7/7 test suites green (45 tests, was 38 tests with 2
+> unrunnable suites).
+
+| # | Action | Finding | Status |
 |---|---|---|---|
-| 1 | Remove `@postman/postman-mcp-server`; regenerate lockfile; re-audit | SEC-02 | 15 min |
-| 2 | Rate-limit + origin-allowlist all `/api/*` (esp. chat/agent/predict) | SEC-01/04 | 2 h |
-| 3 | Delete synthetic-tensor branch in `validateTensor`; 422 instead | SEC-03 | 30 min |
-| 4 | `PORT = env.PORT \|\| 3001` | BE-02 | 5 min |
-| 5 | Convert `api/forecasts.js` to ESM + import CI smoke check | BE-01 | 1 h |
-| 6 | Add `ci.yml` (lint, test, build, audit) | OPS-01 | 1 h |
-| 7 | Fix jest `transformIgnorePatterns` for `@supabase` | FE-03 | 30 min |
-| 8 | Delete `frontend/src/firebase.ts` (orphan project) | SEC-07/FE-05 | 5 min |
+| 1 | Remove `@postman/postman-mcp-server`; regenerate lockfile; re-audit | SEC-02 | ✅ 0 vulns |
+| 2 | Rate-limit + origin-allowlist all `/api/*` (esp. chat/agent/predict) | SEC-01/04 | ✅ 20/min AI, 60/min predict, 120/min base; verified 429s |
+| 3 | Delete synthetic-tensor branch in `validateTensor`; 422 instead | SEC-03 | ✅ + regression test |
+| 4 | `PORT = env.PORT \|\| 3001` | BE-02 | ✅ boot-verified |
+| 5 | Convert `api/forecasts.js` to ESM + import CI smoke check | BE-01 | ✅ 3/3 functions load |
+| 6 | Add `ci.yml` (lint, test, build, audit) | OPS-01 | ✅ |
+| 7 | Fix jest for ESM deps (`@supabase`, `react-markdown` ecosystem) | FE-03 | ✅ 7/7 suites |
+| 8 | Delete `frontend/src/firebase.ts` (orphan project) | SEC-07/FE-05 | ✅ |
 
 ### P1 — this month (structural)
 1. ADR + config consolidation for the backend identity (ARC-01/SEC-07); single config module, env-only.

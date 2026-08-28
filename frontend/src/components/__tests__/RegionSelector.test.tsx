@@ -4,13 +4,15 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { RegionSelector } from '../RegionSelector';
 import { AuthProvider } from '../../context/AuthContext';
 
-// Mock AuthContext
+// Mock AuthContext fully — do NOT `jest.requireActual` here: the real module
+// imports lib/supabase which reads import.meta.env (Vite-only, unavailable in
+// CJS jest). RegionSelector only consumes useAuth/AuthProvider.
 jest.mock('../../context/AuthContext', () => ({
-  ...jest.requireActual('../../context/AuthContext'),
   useAuth: () => ({
     userProfile: { homeDistrictId: 'sylhet' },
     updateUserProfile: jest.fn(),
-  })
+  }),
+  AuthProvider: ({ children }: { children: React.ReactNode }) => children,
 }));
 
 describe('RegionSelector', () => {
