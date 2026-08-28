@@ -8,7 +8,7 @@ import toast from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   AlertTriangle, Filter, Layers, RefreshCw, 
-  ZoomIn, ZoomOut, Navigation, Maximize, Tag, 
+  ZoomIn, ZoomOut, Navigation, Maximize, 
   Camera, RotateCcw, Flame, Ruler, Waves, Radio, 
   Contrast, Compass, Box, Share2, Download, Copy,
   Check, FileText, Image as ImageIcon, Sparkles,
@@ -52,6 +52,7 @@ export {
 // River data, hazard layer registry & marker icon builder moved to
 // ./map/mapPrimitives (see P2 decomposition plan in docs/audits/).
 import { BANGLADESH_RIVERS, HAZARD_LAYERS, createCustomIcon } from './map/mapPrimitives';
+import DistrictForecastCard from './map/DistrictForecastCard';
 import type { HazardLayerDef } from './map/mapPrimitives';
 
 interface LiveMapViewProps {
@@ -123,7 +124,6 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
 
   // New features: Fullscreen, Legend Panel
   const [isBrowserFullscreen, setIsBrowserFullscreen] = useState<boolean>(false);
-  const [isLegendOpen, setIsLegendOpen] = useState<boolean>(true);
 
   // High-Resolution Export Modal & Sharing State
   const [isExportModalOpen, setIsExportModalOpen] = useState<boolean>(false);
@@ -600,107 +600,9 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
         const marker = L.marker([dist.lat, dist.lng], { icon });
         const severityPct = (dist.severity * 100).toFixed(0);
 
-        // Responsive Popup Card
-        const popupContent = `
-        <div style="
-          padding: 16px;
-          font-family: 'Playfair Display', serif;
-          color: #0f172a;
-          background: #ffffff;
-          border-radius: 16px;
-          border: 1px solid #e2e8f0;
-          box-shadow: 0 14px 30px rgba(0, 0, 0, 0.18);
-          min-width: 260px;
-          max-width: 320px;
-          box-sizing: border-box;
-        ">
-          <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;">
-            <div>
-              <div style="font-size: 15px; font-weight: 900; color: #0f172a; letter-spacing: -0.3px;">
-                ${dist.name} District
-              </div>
-              <div style="font-size: 10px; color: #64748b; font-family: monospace; font-weight: bold; margin-top: 1px;">
-                ${dist.division} Division
-              </div>
-            </div>
-            <span style="
-              font-size: 10px;
-              font-weight: 900;
-              padding: 3px 9px;
-              border-radius: 9999px;
-              background: ${dist.severity >= 0.8 ? '#fee2e2' : dist.severity >= 0.5 ? '#fef3c7' : '#dcfce7'};
-              color: ${dist.severity >= 0.8 ? '#991b1b' : dist.severity >= 0.5 ? '#92400e' : '#166534'};
-              border: 1px solid ${dist.severity >= 0.8 ? '#fca5a5' : dist.severity >= 0.5 ? '#fde68a' : '#86efac'};
-              white-space: nowrap;
-            ">
-              ${dist.risk} Risk
-            </span>
-          </div>
-
-          <div style="
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 10px;
-            padding: 10px 12px;
-            margin-bottom: 12px;
-          ">
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
-              <div style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 900; color: #0f172a;">
-                <span>${dist.hazardType}</span>
-              </div>
-              <span style="font-size: 13px; font-weight: 900; color: ${color}; font-family: monospace;">
-                ${severityPct}%
-              </span>
-            </div>
-            <div style="width: 100%; height: 6px; background: #e2e8f0; border-radius: 9999px; overflow: hidden; margin-top: 4px;">
-              <div style="width: ${severityPct}%; height: 100%; background: ${color}; border-radius: 9999px;"></div>
-            </div>
-          </div>
-
-          <div style="font-size: 11px; color: #334155; line-height: 1.6; margin-bottom: 14px;">
-            <div style="display: flex; justify-content: space-between;">
-              <span style="color: #64748b;">Primary Agriculture:</span>
-              <strong style="color: #0f172a;">${dist.mainCrop}</strong>
-            </div>
-            <div style="display: flex; justify-content: space-between;">
-              <span style="color: #64748b;">Elevation MSL:</span>
-              <strong style="color: #0f172a;">${dist.elevationMeters}m</strong>
-            </div>
-            <div style="display: flex; justify-content: space-between;">
-              <span style="color: #64748b;">Coordinates:</span>
-              <strong style="color: #0284c7; font-family: monospace;">${dist.lat.toFixed(2)}°N, ${dist.lng.toFixed(2)}°E</strong>
-            </div>
-          </div>
-
-          <button id="btn-modal-${dist.id}" style="
-            width: 100%;
-            padding: 10px 12px;
-            background: #f9a825;
-            border: none;
-            border-radius: 10px;
-            color: #ffffff;
-            font-weight: 900;
-            font-size: 11px;
-            cursor: pointer;
-            box-shadow: 0 3px 10px rgba(249, 168, 37, 0.35);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            transition: all 0.2s ease;
-          ">
-            <span>View Detailed Analytics</span>
-          </button>
-        </div>
-      `;
-
-        marker.bindPopup(popupContent, {
-          className: 'custom-modern-leaflet-popup',
-          maxWidth: 320,
-          minWidth: 260,
-          autoPan: true,
-          autoPanPadding: [20, 20],
-        });
+        // District popup replaced by the React DistrictForecastCard overlay
+        // (viewport-docked below the navbar — never cropped like the old
+        // native Leaflet popup that opened above the marker).
 
         // Attach district payload for cluster icon summary calculations
         (marker as any).districtData = dist;
@@ -732,16 +634,6 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
 
         marker.on('add', attachMarkerA11y);
         setTimeout(attachMarkerA11y, 50);
-
-        marker.on('popupopen', () => {
-          const btn = document.getElementById(`btn-modal-${dist.id}`);
-          if (btn) {
-            btn.onclick = (e) => {
-              e.stopPropagation();
-              navigate(`/forecast/district/${dist.id}`);
-            };
-          }
-        });
 
         if (isClusteringActive && !isolateSelected) {
           clusterGroupRef.current?.addLayer(marker);
@@ -1250,12 +1142,6 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
       className: isBrowserFullscreen ? "bg-emerald-600/20 text-emerald-600" : ""
     },
     {
-      Icon: Tag,
-      title: isLegendOpen ? "Hide Hazard Legend Panel" : "Show Hazard Legend Panel",
-      onClick: () => setIsLegendOpen(!isLegendOpen),
-      className: isLegendOpen ? "bg-[#f9a825]/20 text-[#f9a825]" : ""
-    },
-    {
       Icon: RotateCcw,
       title: "Reset Map to Full Overview",
       onClick: () => {
@@ -1583,119 +1469,17 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
             isHudVisible ? 'opacity-100' : 'opacity-0'
           }`}
         >
-          {/* Top-Right Floating Panel: District Info or Point Inspection HUD */}
+          {/* District Forecast Card (redesigned: docks BELOW the navbar) */}
           <AnimatePresence>
             {currentSelected && !inspectedPoint && (
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 20 }}
-                transition={{ duration: 0.3 }}
-                className="absolute top-20 sm:top-6 left-4 right-4 sm:left-auto sm:right-6 z-[1000] pointer-events-auto sm:max-w-[320px] w-auto sm:w-full"
-              >
-                <div className="bg-white/98 border border-slate-200 rounded-2xl p-4 shadow-xl text-slate-800 flex flex-col gap-2.5 transition-all">
-                <div className="flex items-center justify-between border-b border-slate-200 pb-2">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-1.5 text-[10px] font-mono font-bold text-slate-500 uppercase tracking-wider">
-                      
-                      TARGETED LOCATION HAZARD
-                    </div>
-                    <h4 className="text-base font-black text-slate-900 tracking-tight mt-0.5 truncate">
-                      {currentSelected.name} District
-                    </h4>
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0 ml-2">
-                    <span
-                      className={`text-[10px] font-black px-2.5 py-1 rounded-full border ${
-                        currentSelected.severity >= 0.8
-                          ? 'bg-rose-100 text-rose-800 border-rose-200'
-                          : currentSelected.severity >= 0.5
-                          ? 'bg-amber-100 text-amber-800 border-amber-200'
-                          : 'bg-emerald-100 text-emerald-800 border-emerald-200'
-                      }`}
-                    >
-                      {currentSelected.risk} Risk
-                    </span>
-                    <button
-                      onClick={() => {
-                        if (onSelectDistrict) {
-                          onSelectDistrict(null as any);
-                        }
-                      }}
-                      className="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-700 font-black flex items-center justify-center text-xs transition-colors cursor-pointer border border-slate-200 shadow-xs"
-                      title="Close Target Hazard Overlay"
-                      aria-label="Close Target Hazard Overlay"
-                    >
-                      ✕
-                    </button>
-                  </div>
-                </div>
-
-                <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 flex flex-col gap-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-extrabold text-slate-900">{currentSelected.hazardType}</span>
-                    <span
-                      className={`text-xs font-black font-mono ${
-                        currentSelected.severity >= 0.8
-                          ? 'text-rose-600'
-                          : currentSelected.severity >= 0.5
-                          ? 'text-amber-600'
-                          : 'text-emerald-600'
-                      }`}
-                    >
-                      {(currentSelected.severity * 100).toFixed(0)}% Severity
-                    </span>
-                  </div>
-
-                  <div className="w-full h-2 bg-slate-200 rounded-full overflow-hidden">
-                    <div
-                      className={`h-full rounded-full transition-all duration-500 ${
-                        currentSelected.severity >= 0.8
-                          ? 'bg-rose-500'
-                          : currentSelected.severity >= 0.5
-                          ? 'bg-amber-500'
-                          : 'bg-emerald-500'
-                      }`}
-                      style={{ width: `${currentSelected.severity * 100}%` }}
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-2 text-[11px]">
-                  <div className="bg-slate-50 p-2 rounded-lg border border-slate-200">
-                    <span className="text-slate-500 block text-[10px]">Division</span>
-                    <span className="font-bold text-slate-800">{currentSelected.division}</span>
-                  </div>
-                  <div className="bg-slate-50 p-2 rounded-lg border border-slate-200">
-                    <span className="text-slate-500 block text-[10px]">Elevation</span>
-                    <span className="font-bold text-slate-800">{currentSelected.elevationMeters}m MSL</span>
-                  </div>
-                </div>
-
-                {/* Expandable Location Map Tile */}
-                <div className="my-1">
-                  <LocationMap 
-                    location={`${currentSelected.name} District, ${currentSelected.division}`}
-                    coordinates={`${currentSelected.lat.toFixed(4)}° N, ${currentSelected.lng.toFixed(4)}° E`}
-                    lat={currentSelected.lat}
-                    lng={currentSelected.lng}
-                    hazardType={currentSelected.hazardType}
-                    severity={currentSelected.severity}
-                    risk={currentSelected.risk}
-                    division={currentSelected.division}
-                    elevation={currentSelected.elevationMeters}
-                  />
-                </div>
-
-                <button
-                  onClick={() => navigate(`/forecast/district/${currentSelected.id}`)}
-                  className="w-full py-2 bg-[#f9a825] hover:bg-[#d08305] text-white font-black text-xs rounded-xl shadow-md flex items-center justify-center gap-2 transition-all active:scale-95"
-                >
-                  <span>View Detailed Disaster Analytics</span>
-                </button>
-              </div>
-            </motion.div>
-          )}
+              <DistrictForecastCard
+                district={currentSelected}
+                onClose={() => {
+                  onSelectDistrict?.(null as any);
+                }}
+                onOpenAnalytics={(districtId) => navigate(`/forecast/district/${districtId}`)}
+              />
+            )}
           </AnimatePresence>
 
           {/* Point Telemetry Click Inspection HUD */}
@@ -1706,7 +1490,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.2 }}
-              className="absolute top-20 sm:top-6 left-4 right-4 sm:left-auto sm:right-6 z-[1050] pointer-events-auto sm:max-w-[320px] w-auto sm:w-full"
+              className="absolute top-20 sm:top-24 left-4 right-4 sm:left-auto sm:right-6 z-[1050] pointer-events-auto sm:max-w-[320px] w-auto sm:w-full"
             >
               <div className="bg-white/98 border-2 border-amber-400 rounded-2xl p-4 shadow-2xl text-slate-800 flex flex-col gap-2.5">
                 <div className="flex items-center justify-between border-b border-slate-200 pb-2">
@@ -2733,14 +2517,8 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
           </AnimatePresence>
 
                     <MapLegendUI
-            isLegendOpen={isLegendOpen}
-            setIsLegendOpen={setIsLegendOpen}
             isRadarActive={isRadarActive}
             setIsRadarActive={setIsRadarActive}
-            liveDistrictsData={liveDistrictsData as any}
-            handleSelectDistrict={handleSelectDistrict as any}
-            selectedHazards={selectedHazards}
-            toggleHazard={toggleHazard}
           />
 
           {/* Bottom-Center Floating Clear Search & Inspect Pill */}
