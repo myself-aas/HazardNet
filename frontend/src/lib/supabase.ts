@@ -58,6 +58,9 @@ if (!isConfigured) {
   console.info('Supabase environment variables not detected or invalid; using resilient mock client.')
 }
 
+/** True when real Supabase credentials are present (vs. the mock client). */
+export const isSupabaseConfigured = isConfigured
+
 export const supabase: SupabaseClient<any, any, any> = isConfigured
   ? createClient(rawUrl, rawKey, {
       auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },

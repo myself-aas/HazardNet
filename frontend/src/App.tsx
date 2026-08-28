@@ -12,6 +12,7 @@ import Footer from './components/Footer';
 import ErrorBoundary from './components/ErrorBoundary';
 import { useHazardNotifications } from './hooks/useHazardNotifications';
 import { initializeAttributionCapture } from './services/conversionTracking';
+import { RequireSuperAdmin } from './components/blog/RequireSuperAdmin';
 import { Toaster } from 'react-hot-toast';
 
 // Route-level code splitting (FE-01): every page is a lazy chunk so the
@@ -24,6 +25,9 @@ const About = lazy(() => import('./pages/About'));
 const UseCases = lazy(() => import('./pages/UseCases'));
 const DownloadCenter = lazy(() => import('./pages/DownloadCenter'));
 const Blogs = lazy(() => import('./pages/Blogs'));
+const BlogArticlePage = lazy(() => import('./pages/BlogArticlePage'));
+const BlogStudioPage = lazy(() => import('./pages/dashboard/BlogStudioPage'));
+const BlogEditorPage = lazy(() => import('./pages/dashboard/BlogEditorPage'));
 const Contact = lazy(() => import('./pages/Contact'));
 const Terms = lazy(() => import('./pages/Terms'));
 const Privacy = lazy(() => import('./pages/Privacy'));
@@ -133,6 +137,31 @@ const AppContent: React.FC = () => {
               <Route path="/use-cases" element={<UseCases />} />
               <Route path="/download" element={<DownloadCenter />} />
               <Route path="/blogs" element={<Blogs />} />
+              <Route path="/blogs/:slug" element={<BlogArticlePage />} />
+              <Route
+                path="/dashboard/blog"
+                element={
+                  <RequireSuperAdmin>
+                    <BlogStudioPage />
+                  </RequireSuperAdmin>
+                }
+              />
+              <Route
+                path="/dashboard/blog/new"
+                element={
+                  <RequireSuperAdmin>
+                    <BlogEditorPage mode="new" />
+                  </RequireSuperAdmin>
+                }
+              />
+              <Route
+                path="/dashboard/blog/edit/:id"
+                element={
+                  <RequireSuperAdmin>
+                    <BlogEditorPage mode="edit" />
+                  </RequireSuperAdmin>
+                }
+              />
               <Route path="/docs" element={<Documentation />} />
               <Route path="/about" element={<About />} />
               <Route path="/contact" element={<Contact />} />
