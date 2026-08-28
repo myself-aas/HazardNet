@@ -14,7 +14,6 @@ export function requestId(req, res, next) {
   res.on('finish', () => {
     const durationMs = Number(process.hrtime.bigint() - start) / 1_000_000;
     const level = res.statusCode >= 500 ? 'error' : res.statusCode >= 400 ? 'warn' : 'info';
-    // eslint-disable-next-line no-console
     console[level](
       JSON.stringify({
         ts: new Date().toISOString(),

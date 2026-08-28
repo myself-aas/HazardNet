@@ -6,6 +6,7 @@
 import eslint from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import reactHooks from 'eslint-plugin-react-hooks';
+import globals from 'globals';
 
 export default tseslint.config(
   {
@@ -37,9 +38,20 @@ export default tseslint.config(
     },
   },
   {
-    // Backend/serverless stay CommonJS-compatible in tooling terms but are
-    // ESM sources; only apply the TS rules where they apply.
-    files: ['backend/**/*.js', 'api/**/*.js', 'scripts/**/*.js', 'scripts/**/*.mjs'],
+    // Browser globals for frontend sources (service worker uses webworker-ish
+    // globals like `self`/`caches` — covered by browser set + explicit extras).
+    files: ['frontend/src/**/*.ts', 'frontend/src/**/*.tsx'],
+    languageOptions: { globals: { ...globals.browser, process: 'readonly' } },
+  },
+  {
+    // Jest globals for test files.
+    files: ['**/__tests__/**/*.{ts,tsx,js}', '**/*.test.{ts,tsx,js}'],
+    languageOptions: { globals: { ...globals.jest } },
+  },
+  {
+    // Backend/serverless/build scripts: Node runtime globals (ESM sources).
+    files: ['backend/**/*.js', 'api/**/*.js', 'scripts/**/*.js', 'scripts/**/*.mjs', '*.config.js', '*.config.ts', 'e2e/**/*.ts'],
+    languageOptions: { globals: { ...globals.node } },
     rules: {
       'no-console': 'off',
     },
