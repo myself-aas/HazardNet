@@ -1,0 +1,394 @@
+# =============================================================================
+# HazardNet CI/Release workflow template - npm package
+#
+# This file lives in .github/workflow-templates/ inside the HazardNet
+# repository and is NOT executed there: GitHub Actions only runs workflows
+# stored in .github/workflows/. To adopt it, copy this file into the npm
+# product repository as .github/workflows/hazardnet-npm-package.yml, then edit
+# the CONFIGURATION block below.
+# See .github/workflow-templates/README.md for adoption steps, secrets and
+# tag conventions.
+#
+# CI (every pull request and push to the default branch):
+#   - fail-fast checks for package.json and the committed lockfile
+#   - install with the repository lockfile (npm ci by default)
+#   - lint / type-check / test / build via package.json scripts
+#     (--if-present: a missing optional script is skipped, a failing one fails)
+#   - 'npm pack' verification: tarball contents and metadata (name/version,
+#     bin targets present in the tarball)
+#   - optional npm/npx executable smoke check against the packed tarball
+#   - tarball + pack manifest uploaded as CI artifacts
+#
+# Release (gated):
+#   - only on a pushed strict-semver tag (vMAJOR.MINOR.PATCH[-pre][+build])
+#     or a manual dispatch with release=true targeting a tag
+#   - npm publish with provenance (id-token: write) + granular publish token;
+#     prerelease tags publish under the 'next' dist-tag by default
+#   - tarball plus SHA256SUMS also attached to a GitHub Release
+#   - both run in the protected 'release' environment (create it in the
+#     product repository)
+# =============================================================================
+
+name: npm Package CI & Release
+
+on:
+  push:
+    branches:
+      - main # <<< EDIT: default branch of the product repository
+    tags:
+      - 'v*' # release-gate enforces strict semver before anything publishes
+  pull_request: # validation for pull requests targeting any branch
+  workflow_dispatch:
+    inputs:
+      release:
+        description: 'Publish to npm and create a GitHub Release from this run (a semver tag is required)'
+        required: true
+        type: boolean
+        default: false
+      release_tag:
+        description: 'Tag to publish (e.g. v1.2.3); required only when dispatching from a branch instead of a tag'
+        required: false
+        type: string
+        default: ''
+
+# Least privilege by default; publishing jobs escalate id-token (provenance)
+# and contents (GitHub Releases) explicitly.
+permissions:
+  contents: read
+
+concurrency:
+  # One lane per event type + ref, so validation runs cancel stale peers but
+  # release runs (tag push or manual dispatch) are never cancelled mid-flight.
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name != 'workflow_dispatch' && github.ref_type != 'tag' }}
+
+env:
+  # ---------------------------------------------------------------------------
+  # CONFIGURATION - edit these defaults after copying into the product repo.
+  # Every value is a plain string; an empty string disables the related step.
+  # ---------------------------------------------------------------------------
+  NODE_VERSION: '20' # keep in sync with the package's 'engines' field
+  LOCKFILE_PATH: package-lock.json # must be committed; guards 'npm ci'
+  INSTALL_COMMAND: npm ci # lockfile install; adjust for yarn/pnpm if needed
+  LINT_SCRIPT: lint # npm script name; '' skips the step
+  TYPECHECK_SCRIPT: typecheck # npm script name; '' skips the step
+  TEST_SCRIPT: test # npm script name; '' skips the step
+  BUILD_SCRIPT: build # npm script name; '' skips the step
+  SMOKE_COMMAND: '' # executable validation, e.g. 'npx --no-install <cli> --help'
+  NPM_ACCESS: public # 'public' or 'restricted' (scoped packages)
+  NPM_DIST_TAG: '' # '' auto-selects: 'next' for prereleases, else 'latest'
+  NPM_PROVENANCE: 'true' # requires a public npmjs registry + repository field
+  ARTIFACT_RETENTION_DAYS: '14' # adjust to the product repository's policy
+
+jobs:
+  release-gate:
+    name: Release gate (event + semver tag checks)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      should-publish: ${{ steps.gate.outputs.should-publish }}
+      tag: ${{ steps.gate.outputs.tag }}
+      version: ${{ steps.gate.outputs.version }}
+      prerelease: ${{ steps.gate.outputs.prerelease }}
+    steps:
+      - name: Decide whether this run is allowed to publish
+        id: gate
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          GITHUB_REF_NAME: ${{ github.ref_name }}
+          GITHUB_REF_TYPE: ${{ github.ref_type }}
+          INPUT_RELEASE: ${{ inputs.release }}
+          INPUT_RELEASE_TAG: ${{ inputs.release_tag }}
+        run: |
+          set -euo pipefail
+
+          semver_regex='^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-[0-9A-Za-z.-]+)?(\+[0-9A-Za-z.-]+)?$'
+
+          should=false
+          tag=''
+
+          if [ "${EVENT_NAME}" = 'push' ] && [ "${GITHUB_REF_TYPE}" = 'tag' ]; then
+            tag="${GITHUB_REF_NAME}"
+            if printf '%s' "${tag}" | grep -Eq "${semver_regex}"; then
+              should=true
+            else
+              # Non-semver tags still run validation; they simply never publish.
+              echo "::warning::Tag '${tag}' is not strict semver (vMAJOR.MINOR.PATCH[-pre][+build]); running validation only."
+            fi
+          elif [ "${EVENT_NAME}" = 'workflow_dispatch' ] && [ "${INPUT_RELEASE}" = 'true' ]; then
+            if [ "${GITHUB_REF_TYPE}" = 'tag' ]; then
+              tag="${GITHUB_REF_NAME}"
+            elif [ -n "${INPUT_RELEASE_TAG}" ]; then
+              tag="${INPUT_RELEASE_TAG}"
+            else
+              echo "::error::Manual release requires a tag: dispatch this workflow with a tag selected, or provide the 'release_tag' input (e.g. v1.2.3)."
+              exit 1
+            fi
+            if ! printf '%s' "${tag}" | grep -Eq "${semver_regex}"; then
+              echo "::error::Release tag '${tag}' is not strict semver (vMAJOR.MINOR.PATCH[-pre][+build])."
+              exit 1
+            fi
+            should=true
+          fi
+
+          version="${tag#v}"
+          prerelease=false
+          case "${version}" in
+            *-*) prerelease=true ;;
+          esac
+
+          {
+            echo "should-publish=${should}"
+            echo "tag=${tag}"
+            echo "version=${version}"
+            echo "prerelease=${prerelease}"
+          } >> "${GITHUB_OUTPUT}"
+
+          echo "Event=${EVENT_NAME} publish=${should} tag=${tag:-<none>} prerelease=${prerelease}"
+          if [ "${should}" != 'true' ]; then
+            echo 'Validation-only run: pull requests and untagged pushes can never publish.'
+          fi
+
+  build:
+    name: Install, check, build & pack
+    needs: release-gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Fail fast if package.json or the lockfile is missing
+        env:
+          LOCKFILE: ${{ env.LOCKFILE_PATH }}
+        run: |
+          set -euo pipefail
+          if [ ! -f package.json ]; then
+            echo '::error::package.json not found at the repository root; this template expects an npm package.'
+            exit 1
+          fi
+          if [ ! -f "${LOCKFILE}" ]; then
+            echo "::error::Lockfile '${LOCKFILE}' not found. Commit the lockfile so installs are reproducible ('npm ci' requires it)."
+            exit 1
+          fi
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: ${{ env.LOCKFILE_PATH }}
+
+      - name: Install dependencies (locked)
+        run: |
+          set -euo pipefail
+          bash -e -o pipefail -c "${INSTALL_COMMAND}"
+
+      - name: Lint
+        if: env.LINT_SCRIPT != ''
+        run: npm run --if-present "${LINT_SCRIPT}"
+
+      - name: Type-check
+        if: env.TYPECHECK_SCRIPT != ''
+        run: npm run --if-present "${TYPECHECK_SCRIPT}"
+
+      - name: Test
+        if: env.TEST_SCRIPT != ''
+        run: npm run --if-present "${TEST_SCRIPT}"
+
+      - name: Build
+        if: env.BUILD_SCRIPT != ''
+        run: npm run --if-present "${BUILD_SCRIPT}"
+
+      - name: Pack and verify tarball contents/metadata
+        run: |
+          set -euo pipefail
+          mkdir -p package
+          npm pack --json --dry-run > pack-manifest.json
+          node -e '
+            const fs = require("fs");
+            const data = JSON.parse(fs.readFileSync("pack-manifest.json", "utf8"));
+            const entry = Array.isArray(data) ? data[0] : data;
+            if (!entry) {
+              console.error("::error::npm pack --dry-run produced no manifest.");
+              process.exit(1);
+            }
+            const files = entry.files || [];
+            if (files.length === 0) {
+              console.error("::error::npm pack would publish an empty package; check the files/package.json configuration.");
+              process.exit(1);
+            }
+            const pkg = JSON.parse(fs.readFileSync("package.json", "utf8"));
+            for (const key of ["name", "version"]) {
+              if (!pkg[key]) {
+                console.error(`::error::package.json is missing the required field "${key}".`);
+                process.exit(1);
+              }
+            }
+            if (pkg.bin) {
+              const bins = typeof pkg.bin === "string" ? [pkg.bin] : Object.values(pkg.bin);
+              const packed = new Set(files.map((f) => f.path));
+              for (const bin of bins) {
+                if (!packed.has(bin)) {
+                  console.error(`::error::bin target "${bin}" is declared in package.json but missing from the packed tarball.`);
+                  process.exit(1);
+                }
+              }
+              console.log(`bin verified in packed tarball: ${bins.join(", ")}`);
+            }
+            console.log(`npm pack verification OK: ${files.length} files, name=${pkg.name}, version=${pkg.version}`);
+          '
+          npm pack --pack-destination package > /dev/null
+          cp pack-manifest.json package/
+          ls -la package/
+
+      - name: Executable smoke check against the packed tarball (optional)
+        if: env.SMOKE_COMMAND != ''
+        run: |
+          set -euo pipefail
+          tarball="$(find package -maxdepth 1 -name '*.tgz' -print -quit)"
+          if [ -z "${tarball}" ]; then
+            echo '::error::No packed tarball found for the executable smoke check.'
+            exit 1
+          fi
+          smoke_dir="${RUNNER_TEMP}/smoke"
+          rm -rf "${smoke_dir}"
+          mkdir -p "${smoke_dir}"
+          cd "${smoke_dir}"
+          npm init --yes > /dev/null
+          npm install --no-audit --no-fund "${OLDPWD}/${tarball}"
+          export PATH="${smoke_dir}/node_modules/.bin:${PATH}"
+          bash -e -o pipefail -c "${SMOKE_COMMAND}"
+
+      - name: Upload tarball and pack manifest
+        uses: actions/upload-artifact@v4
+        with:
+          name: npm-package
+          path: |
+            package/*.tgz
+            package/pack-manifest.json
+          if-no-files-found: error
+          retention-days: ${{ env.ARTIFACT_RETENTION_DAYS }}
+
+  publish-npm:
+    name: Publish to npm (gated)
+    needs: [release-gate, build]
+    if: needs.release-gate.outputs.should-publish == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # Create this environment in the product repository and store the
+    # NPM_AUTH_TOKEN secret there (optionally with required reviewers).
+    environment: release
+    permissions:
+      contents: read
+      id-token: write # required for npm provenance attestations
+    steps:
+      # Checked out at the release tag so package.json is the released tree.
+      - name: Checkout repository (at release tag)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.release-gate.outputs.tag }}
+
+      - name: Set up Node.js (with npm registry auth)
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: ${{ env.LOCKFILE_PATH }}
+          registry-url: ${{ vars.NPM_REGISTRY_URL || 'https://registry.npmjs.org/' }}
+
+      - name: Fail fast when package version does not match the release tag
+        env:
+          TAG_VERSION: ${{ needs.release-gate.outputs.version }}
+        run: |
+          set -euo pipefail
+          node -e '
+            const pkg = require("./package.json");
+            const tag = process.argv[1];
+            if (pkg.version !== tag) {
+              console.error(`::error::package.json version ${pkg.version} does not match release tag v${tag}.`);
+              process.exit(1);
+            }
+            console.log(`package version ${pkg.version} matches tag v${tag}`);
+          ' "${TAG_VERSION}"
+
+      - name: Install dependencies (locked, needed if prepare/prepack scripts run)
+        run: |
+          set -euo pipefail
+          bash -e -o pipefail -c "${INSTALL_COMMAND}"
+
+      - name: Fail fast when the npm token is missing
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ -z "${NODE_AUTH_TOKEN:-}" ]; then
+            echo "::error::Secret NPM_AUTH_TOKEN is not set in the 'release' environment. Add a granular npm publish token before releasing."
+            exit 1
+          fi
+
+      - name: Publish to npm
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTH_TOKEN }}
+          IS_PRERELEASE: ${{ needs.release-gate.outputs.prerelease }}
+        run: |
+          set -euo pipefail
+          if [ -n "${NPM_DIST_TAG}" ]; then
+            dist_tag="${NPM_DIST_TAG}"
+          elif [ "${IS_PRERELEASE}" = 'true' ]; then
+            dist_tag='next'
+          else
+            dist_tag='latest'
+          fi
+          prov=()
+          if [ "${NPM_PROVENANCE}" = 'true' ]; then prov+=('--provenance'); fi
+          npm publish --dry-run --access "${NPM_ACCESS}"
+          npm publish --access "${NPM_ACCESS}" --tag "${dist_tag}" ${prov[@]+"${prov[@]}"}
+          echo "Published to the npm registry as dist-tag '${dist_tag}'."
+
+  github-release:
+    name: Attach tarball to GitHub Release
+    needs: [release-gate, build]
+    if: needs.release-gate.outputs.should-publish == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: release
+    permissions:
+      contents: write # required to create the GitHub Release and upload assets
+    steps:
+      - name: Download tarball and pack manifest
+        uses: actions/download-artifact@v4
+        with:
+          pattern: npm-package*
+          merge-multiple: true
+          path: release-assets
+
+      - name: Fail fast when no release assets were produced
+        working-directory: release-assets
+        run: |
+          set -euo pipefail
+          count="$(find . -maxdepth 1 -type f | wc -l)"
+          if [ "${count}" -eq 0 ]; then
+            echo '::error::No npm tarball artifacts found; nothing to attach to the release.'
+            exit 1
+          fi
+
+      - name: Generate SHA-256 checksums
+        working-directory: release-assets
+        run: |
+          set -euo pipefail
+          find . -maxdepth 1 -type f -print0 | sort -z | xargs -0 sha256sum > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+
+      - name: Create GitHub Release and upload assets
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.release-gate.outputs.tag }}
+          name: ${{ needs.release-gate.outputs.tag }}
+          prerelease: ${{ needs.release-gate.outputs.prerelease == 'true' }}
+          generate_release_notes: true
+          fail_on_unmatched_files: true
+          files: |
+            release-assets/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
