@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import MaterialIcon from '../MaterialIcon';
 import { LocationMap } from '../ui/expand-map';
@@ -9,8 +9,9 @@ import { DistrictData } from '../../data/bangladeshDistricts';
  *
  * Design constraints, from field feedback:
  *  - docks BELOW the top navbar (top-20/sm:top-24) — never cropped at the top
- *  - hard-capped height with an internal scroll region — never cropped at
- *    the bottom of the map viewport either
+ *  - height is hard-capped to the measured map viewport (JS-measured inline
+ *    maxHeight + CSS fallback) with an internal scroll region — never
+ *    cropped at the bottom, even with the location map expanded
  *  - compact: single-row fact grid, collapsible location map (collapsed by
  *    default), tightened paddings
  *  - wider (sm:max-w-[440px]) so the one-row facts stay readable
@@ -54,23 +55,58 @@ export const DistrictForecastCard: React.FC<DistrictForecastCardProps> = ({
   onOpenAnalytics,
 }) => {
   const [showLocationMap, setShowLocationMap] = useState(false);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const [measuredMaxHeight, setMeasuredMaxHeight] = useState<number | null>(null);
   const tone = riskTone(district.severity);
   const severityPct = Math.round(district.severity * 100);
 
+  /**
+   * Measure the real space between the card's top edge and the bottom of the
+   * map overlay (the card's parent covers the map viewport). An inline
+   * maxHeight beats any percentage-resolution quirks in the ancestor chain
+   * (absolute + animated HUD layers), so the card can never overflow the map
+   * — it scrolls internally instead.
+   */
+  useEffect(() => {
+    const wrapper = wrapperRef.current;
+    const parent = wrapper?.parentElement;
+    if (!wrapper || !parent) return;
+
+    const measure = () => {
+      const parentBottom = parent.getBoundingClientRect().bottom;
+      const cardTop = wrapper.getBoundingClientRect().top;
+      const available = Math.floor(parentBottom - cardTop - 12); // breathing room
+      setMeasuredMaxHeight(available > 120 ? available : null);
+    };
+
+    measure();
+    const observer =
+      typeof ResizeObserver !== 'undefined' ? new ResizeObserver(measure) : null;
+    observer?.observe(parent);
+    window.addEventListener('resize', measure);
+    return () => {
+      observer?.disconnect();
+      window.removeEventListener('resize', measure);
+    };
+  }, []);
+
   return (
     <motion.div
+      ref={wrapperRef}
       initial={{ opacity: 0, y: -12, x: 20 }}
       animate={{ opacity: 1, y: 0, x: 0 }}
       exit={{ opacity: 0, y: -12, x: 20 }}
       transition={{ duration: 0.28, ease: 'easeOut' }}
       /* top-20 (80px) mobile / top-24 (96px) desktop clears the ~70px sticky
-         navbar; the max-h caps keep the card inside the map viewport so it
-         can never be cropped at the bottom either. */
-      className="absolute top-20 sm:top-24 left-4 right-4 sm:left-auto sm:right-6 z-[1000] pointer-events-auto sm:max-w-[440px] w-auto sm:w-full max-h-[calc(100%-5.5rem)] sm:max-h-[calc(100%-7rem)] flex flex-col"
+         navbar; the measured maxHeight (inline) + calc fallback cap keep the
+         card inside the map viewport, scrolling internally when the location
+         map is expanded on short viewports. */
+      style={measuredMaxHeight ? { maxHeight: `${measuredMaxHeight}px` } : undefined}
+      className="absolute top-20 sm:top-24 left-4 right-4 sm:left-auto sm:right-6 z-[1000] pointer-events-auto sm:max-w-[440px] w-auto sm:w-full max-h-[calc(100%_-_5.5rem)] sm:max-h-[calc(100%_-_7rem)] flex flex-col"
       role="dialog"
       aria-label={`${district.name} district forecast`}
     >
-      <div className="flex flex-col min-h-0 max-h-full bg-white/85 backdrop-blur-md border border-slate-200/70 rounded-2xl shadow-xl text-slate-800 relative overflow-hidden">
+      <div className="flex flex-col flex-1 min-h-0 bg-white/85 backdrop-blur-md border border-slate-200/70 rounded-2xl shadow-xl text-slate-800 relative overflow-hidden">
         {/* amber identity strip */}
         <div aria-hidden="true" className="absolute top-0 left-0 w-full h-1 bg-[#f9a825]" />
 
@@ -160,7 +196,7 @@ export const DistrictForecastCard: React.FC<DistrictForecastCardProps> = ({
             <span className={`transition-transform ${showLocationMap ? 'rotate-180' : ''}`} aria-hidden="true">▾</span>
           </button>
           {showLocationMap && (
-            <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="overflow-hidden">
+            <div className="overflow-hidden">
               <LocationMap
                 location={`${district.name} District, ${district.division}`}
                 coordinates={`${district.lat.toFixed(4)}° N, ${district.lng.toFixed(4)}° E`}
@@ -172,7 +208,7 @@ export const DistrictForecastCard: React.FC<DistrictForecastCardProps> = ({
                 division={district.division}
                 elevation={district.elevationMeters}
               />
-            </motion.div>
+            </div>
           )}
         </div>
 

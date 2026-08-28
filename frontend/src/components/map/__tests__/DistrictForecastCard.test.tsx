@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import DistrictForecastCard from '../DistrictForecastCard'
 import { DistrictWithRisk } from '../DistrictForecastCard'
@@ -58,9 +58,37 @@ describe('DistrictForecastCard (redesigned district popup)', () => {
     expect(card.className).toContain('top-20')
     expect(card.className).toContain('sm:top-24')
     expect(card.className).not.toContain('top-6')
-    // never taller than the map viewport -> cannot crop at the bottom
-    expect(card.className).toContain('max-h-[calc(100%-5.5rem)]')
-    expect(card.className).toContain('sm:max-h-[calc(100%-7rem)]')
+    // CSS fallback caps (JS-measured inline maxHeight is the primary guard)
+    expect(card.className).toContain('max-h-[calc(100%_-_5.5rem)]')
+    expect(card.className).toContain('sm:max-h-[calc(100%_-_7rem)]')
+  })
+
+  it('caps its height to the measured map viewport via inline maxHeight', async () => {
+    const orig = Element.prototype.getBoundingClientRect
+    Element.prototype.getBoundingClientRect = function (this: Element) {
+      const el = this as HTMLElement
+      if (el.getAttribute?.('data-testid') === 'hud') {
+        return { top: 0, bottom: 800, height: 800, width: 800, left: 0, right: 800, x: 0, y: 0 } as DOMRect
+      }
+      if (el.getAttribute?.('role') === 'dialog') {
+        return { top: 96, bottom: 400, height: 304, width: 340, left: 0, right: 340, x: 0, y: 96 } as DOMRect
+      }
+      return orig.call(this)
+    }
+    try {
+      const { container } = render(
+        <div data-testid="hud">
+          <MemoryRouter>
+            <DistrictForecastCard district={district} onClose={onClose} onOpenAnalytics={onOpenAnalytics} />
+          </MemoryRouter>
+        </div>,
+      )
+      const card = container.querySelector('[role="dialog"]') as HTMLElement
+      // 800 (map bottom) - 96 (card top, below navbar) - 12 (breathing room)
+      await waitFor(() => expect(card.style.maxHeight).toBe('692px'))
+    } finally {
+      Element.prototype.getBoundingClientRect = orig
+    }
   })
 
   it('uses the compact width and a translucent glass background', () => {
