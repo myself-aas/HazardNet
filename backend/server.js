@@ -63,17 +63,6 @@ app.get('/metrics', async (req, res) => {
 // Serve static frontend build files
 const distPath = path.resolve(process.cwd(), 'frontend', 'dist');
 
-if (!fs.existsSync(path.join(distPath, 'index.html'))) {
-  console.log('Frontend dist/index.html not found, starting background build...');
-  exec('npm run build:frontend', (err) => {
-    if (err) {
-      console.error('Frontend build failed:', err.message);
-    } else {
-      console.log('Frontend build completed successfully.');
-    }
-  });
-}
-
 app.use(express.static(distPath));
 
 // SPA fallback for non-API GET requests

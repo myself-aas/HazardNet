@@ -166,8 +166,10 @@ export const BangladeshSvgMap: React.FC<BangladeshSvgMapProps> = ({
 
         <svg
           viewBox="0 0 100 100"
-          className="w-full h-full max-h-[420px] drop-shadow-sm"
+          className="w-full h-full max-h-[420px] drop-shadow-sm focus:outline-hidden"
           preserveAspectRatio="xMidYMid meet"
+          role="region"
+          aria-label="Interactive Vector Spatial Map of Bangladesh with multi-hazard risk indices"
         >
           <defs>
             <radialGradient id="highRiskGlow" cx="50%" cy="50%" r="50%">
@@ -188,7 +190,19 @@ export const BangladeshSvgMap: React.FC<BangladeshSvgMapProps> = ({
           {ALL_8_DIVISIONS.map((div) => {
             const isSelectedDiv = div.id === selectedDivisionId;
             return (
-              <g key={div.id}>
+              <g
+                key={div.id}
+                tabIndex={0}
+                role="button"
+                aria-label={`${div.name}, Primary Hazard: ${div.primaryHazard}, Average Severity: ${(div.avgSeverity * 100).toFixed(0)}%`}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    if (onSelectDivision) onSelectDivision(div);
+                  }
+                }}
+                className="cursor-pointer outline-hidden focus:outline-hidden group/div"
+              >
                 <path
                   d={div.path}
                   fill={isSelectedDiv ? 'rgba(249, 168, 37, 0.25)' : '#f1f5f9'}
@@ -198,7 +212,7 @@ export const BangladeshSvgMap: React.FC<BangladeshSvgMapProps> = ({
                   onMouseEnter={() => setHoveredDivision(div)}
                   onMouseLeave={() => setHoveredDivision(null)}
                   onClick={() => onSelectDivision && onSelectDivision(div)}
-                  className="cursor-pointer transition-all duration-300 hover:fill-amber-100"
+                  className="transition-all duration-300 hover:fill-amber-100 group-focus/div:stroke-amber-600 group-focus/div:stroke-[1.5]"
                 />
 
                 {/* Render Division Centroid Labels in Division Mode */}
@@ -266,13 +280,23 @@ export const BangladeshSvgMap: React.FC<BangladeshSvgMapProps> = ({
               return (
                 <g
                   key={dist.id}
+                  tabIndex={0}
+                  role="button"
+                  aria-label={`${dist.name} District, Risk: ${dist.risk}, Hazard: ${dist.hazardType}, Severity: ${(dist.severity * 100).toFixed(0)}%`}
                   onClick={() => {
                     if (onSelectDistrict) onSelectDistrict(dist);
                     if (onOpenDisasterModal) onOpenDisasterModal(dist.id);
                   }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      if (onSelectDistrict) onSelectDistrict(dist);
+                      if (onOpenDisasterModal) onOpenDisasterModal(dist.id);
+                    }
+                  }}
                   onMouseEnter={() => setHoveredDistrict(dist)}
                   onMouseLeave={() => setHoveredDistrict(null)}
-                  className="cursor-pointer group"
+                  className="cursor-pointer group outline-hidden focus:outline-hidden"
                 >
                   {/* Heatmap Glow Circle */}
                   <circle
@@ -304,7 +328,7 @@ export const BangladeshSvgMap: React.FC<BangladeshSvgMapProps> = ({
                     fill={color}
                     stroke="#ffffff"
                     strokeWidth="0.5"
-                    className="transition-transform group-hover:scale-150"
+                    className="transition-transform group-hover:scale-150 group-focus:scale-175 group-focus:stroke-[#0f172a] group-focus:stroke-[0.8]"
                   />
 
                   {/* Selected Ring */}
@@ -312,7 +336,7 @@ export const BangladeshSvgMap: React.FC<BangladeshSvgMapProps> = ({
                     <circle
                       cx={dist.cx}
                       cy={dist.cy}
-                      r="3.2"
+                      r={3.2}
                       fill="none"
                       stroke="#0f172a"
                       strokeWidth="0.5"

@@ -35,15 +35,66 @@ const toProfile = (row: Record<string, unknown>): UserProfileData => ({ uid: row
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<AppUser | null>(null); const [userProfile, setUserProfile] = useState<UserProfileData | null>(null); const [loading, setLoading] = useState(true)
-  const loadProfile = async (authUser: SupabaseAuthUser) => { const { data } = await supabase.from('profiles').select('*').eq('id', authUser.id).maybeSingle(); if (data) setUserProfile(toProfile(data)); return data }
-  useEffect(() => { let mounted = true; supabase.auth.getUser().then(({ data }) => { if (mounted) { setUser(toAppUser(data.user)); if (data.user) loadProfile(data.user).finally(() => setLoading(false)); else setLoading(false) } }); const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => { if (!mounted) return; const next = session?.user ?? null; setUser(toAppUser(next)); if (next) loadProfile(next); else setUserProfile(null); setLoading(false) }); return () => { mounted = false; listener.subscription.unsubscribe() } }, [])
+  const loadProfile = async (authUser: SupabaseAuthUser) => {
+    try {
+      const { data } = await supabase.from('profiles').select('*').eq('id', authUser.id).maybeSingle()
+      if (data) setUserProfile(toProfile(data as Record<string, unknown>))
+      return data
+    } catch (e) {
+      console.warn('Profile load exception:', e)
+      return null
+    }
+  }
+
+  useEffect(() => {
+    let mounted = true
+    const initAuth = async () => {
+      try {
+        const response = await supabase.auth.getUser()
+        const authUser = response?.data?.user ?? null
+        if (mounted) {
+          setUser(toAppUser(authUser))
+          if (authUser) {
+            await loadProfile(authUser)
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to load initial Supabase user:', err)
+      } finally {
+        if (mounted) setLoading(false)
+      }
+    }
+    initAuth()
+
+    let unsubscribe = () => {}
+    try {
+      const authChangeRes = supabase.auth.onAuthStateChange((_event: any, session: any) => {
+        if (!mounted) return
+        const next = session?.user ?? null
+        setUser(toAppUser(next))
+        if (next) loadProfile(next)
+        else setUserProfile(null)
+        setLoading(false)
+      })
+      if (authChangeRes?.data?.subscription) {
+        unsubscribe = () => authChangeRes.data.subscription.unsubscribe()
+      }
+    } catch (err) {
+      console.warn('Failed to attach auth state listener:', err)
+    }
+
+    return () => {
+      mounted = false
+      unsubscribe()
+    }
+  }, [])
   const signUpWithEmail = async (email: string, pass: string, name: string, initialProfile?: Partial<UserProfileData>) => { const { data, error } = await supabase.auth.signUp({ email, password: pass, options: { emailRedirectTo: import.meta.env.VITE_SUPABASE_REDIRECT_URL ?? `${window.location.origin}/auth/callback`, data: { display_name: name } } }); if (error) throw error; if (data.user && data.session) await saveProfile(data.user, name, initialProfile) }
   const saveProfile = async (authUser: SupabaseAuthUser, name = 'User', data: Partial<UserProfileData> = {}) => { const row = { id: authUser.id, email: authUser.email ?? '', display_name: name, role: data.role ?? 'user', user_role: data.userRole ?? 'smallholder_farmer', organization: data.organization ?? '', farm_size_hectares: data.farmSizeHectares ?? 1.5, primary_division: data.primaryDivision ?? 'Rangpur', primary_district: data.primaryDistrict ?? '', target_crops: data.targetCrops ?? 'Boro Paddy, Aman Rice', phone_number: data.phoneNumber ?? '', updated_at: new Date().toISOString() }; const { error } = await supabase.from('profiles').upsert(row); if (error) throw error; await loadProfile(authUser) }
   const signIn = async (email: string, pass: string) => { const result = await supabase.auth.signInWithPassword({ email, password: pass }); if (result.error) throw result.error; return result }
   const signOut = async () => { const { error } = await supabase.auth.signOut(); if (error) throw error; setUser(null); setUserProfile(null); sessionStorage.clear() }
   const updateUserProfile = async (data: Partial<UserProfileData>) => { if (!user) { setUserProfile(prev => prev ? { ...prev, ...data } : null); return } const row = Object.fromEntries(Object.entries(data).map(([key, value]) => [key.replace(/[A-Z]/g, m => `_${m.toLowerCase()}`), value])); const { error } = await supabase.from('profiles').update({ ...row, updated_at: new Date().toISOString() }).eq('id', user.id); if (error) throw error; await loadProfile(user) }
   const saveAssessment = async (data: Omit<UserAssessment, 'id' | 'userId' | 'userEmail' | 'createdAt'>) => { if (!user) throw new Error('Must be authenticated to save assessments.'); const { data: row, error } = await supabase.from('assessments').insert({ user_id: user.id, ...Object.fromEntries(Object.entries(data).map(([key, value]) => [key.replace(/[A-Z]/g, m => `_${m.toLowerCase()}`), value])) }).select('id').single(); if (error) throw error; return row.id }
-  const fetchUserAssessments = async () => { if (!user) return []; const { data, error } = await supabase.from('assessments').select('*').eq('user_id', user.id).order('created_at', { ascending: false }); if (error) throw error; return (data ?? []).map(row => ({ id: row.id, userId: row.user_id, userEmail: user.email ?? '', districtId: row.district_id, districtName: row.district_name, primaryHazard: row.primary_hazard, confidence: row.confidence, severityScore: row.severity_score, severityBin: row.severity_bin, notes: row.notes, createdAt: row.created_at })) }
+  const fetchUserAssessments = async () => { if (!user) return []; const { data, error } = await supabase.from('assessments').select('*').eq('user_id', user.id).order('created_at', { ascending: false }); if (error) throw error; return ((data as any[]) ?? []).map((row: any) => ({ id: row.id, userId: row.user_id, userEmail: user.email ?? '', districtId: row.district_id, districtName: row.district_name, primaryHazard: row.primary_hazard, confidence: row.confidence, severityScore: row.severity_score, severityBin: row.severity_bin, notes: row.notes, createdAt: row.created_at })) }
   const deleteAssessment = async (id: string) => { const { error } = await supabase.from('assessments').delete().eq('id', id).eq('user_id', user?.id); if (error) throw error }
   const signInWithOAuth = async (provider: OAuthProvider) => { const { error } = await supabase.auth.signInWithOAuth({ provider: provider as never, options: { redirectTo: `${window.location.origin}/auth/callback` } }); if (error) throw error }
   const updatePassword = async (password: string) => { const { error } = await supabase.auth.updateUser({ password }); if (error) throw error }

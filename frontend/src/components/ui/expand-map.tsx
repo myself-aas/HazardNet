@@ -1,379 +1,480 @@
-"use client"
+"use client";
 
-import type React from "react"
+import React, { useState, useRef, useEffect, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  ZoomIn,
+  ZoomOut,
+  Maximize2,
+  Minimize2,
+  RotateCcw,
+  Copy,
+  Check,
+  ExternalLink,
+  Layers,
+  MapPin,
+  Satellite,
+  Compass,
+} from "lucide-react";
+import L from "leaflet";
 
-import { useState, useRef } from "react"
-import { motion, AnimatePresence, useMotionValue, useTransform, useSpring } from "framer-motion"
-import { ZoomIn, ZoomOut } from "lucide-react"
+export interface LocationMapProps {
+  location?: string;
+  coordinates?: string;
+  lat?: number;
+  lng?: number;
+  hazardType?: string;
+  severity?: number;
+  risk?: "Low" | "Moderate" | "High" | string;
+  division?: string;
+  elevation?: number;
+  className?: string;
+  defaultZoom?: number;
+}
 
-interface LocationMapProps {
-  location?: string
-  coordinates?: string
-  className?: string
+type MiniMapLayer = "satellite" | "streets" | "dark" | "topo";
+
+const MINI_MAP_LAYERS: Record<
+  MiniMapLayer,
+  { name: string; url: string; subdomains?: string; maxZoom: number; label: string }
+> = {
+  satellite: {
+    name: "HD Satellite",
+    url: "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+    maxZoom: 19,
+    label: "Sat",
+  },
+  streets: {
+    name: "OpenStreetMap",
+    url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+    subdomains: "abc",
+    maxZoom: 19,
+    label: "Street",
+  },
+  dark: {
+    name: "Dark GIS",
+    url: "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+    subdomains: "abcd",
+    maxZoom: 19,
+    label: "Dark",
+  },
+  topo: {
+    name: "Topographic",
+    url: "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
+    subdomains: "abc",
+    maxZoom: 17,
+    label: "Topo",
+  },
+};
+
+// Helper to extract [lat, lng] from props or coordinate string
+function parseLatLng(lat?: number, lng?: number, coordinates?: string): [number, number] {
+  if (typeof lat === "number" && typeof lng === "number" && !isNaN(lat) && !isNaN(lng)) {
+    return [lat, lng];
+  }
+  if (coordinates) {
+    const match = coordinates.match(/([0-9.]+)[°\s]*([NS])?[,\s]+([0-9.]+)[°\s]*([EW])?/i);
+    if (match) {
+      let parsedLat = parseFloat(match[1]);
+      if (match[2]?.toUpperCase() === "S") parsedLat = -parsedLat;
+      let parsedLng = parseFloat(match[3]);
+      if (match[4]?.toUpperCase() === "W") parsedLng = -parsedLng;
+      if (!isNaN(parsedLat) && !isNaN(parsedLng)) {
+        return [parsedLat, parsedLng];
+      }
+    }
+  }
+  return [24.7471, 90.4203]; // Default fallback: Mymensingh/Central Bangladesh
 }
 
 export function LocationMap({
-  location = "San Francisco, CA",
-  coordinates = "37.7749° N, 122.4194° W",
-  className,
+  location = "Mymensingh, Bangladesh",
+  coordinates = "24.7471° N, 90.4203° E",
+  lat,
+  lng,
+  hazardType = "Monsoon Flood",
+  severity = 0.63,
+  risk = "Moderate",
+  division = "Mymensingh",
+  elevation,
+  className = "",
+  defaultZoom = 11,
 }: LocationMapProps) {
-  const [isHovered, setIsHovered] = useState(false)
-  const [isExpanded, setIsExpanded] = useState(false)
-  const [isZoomed, setIsZoomed] = useState(false)
-  const containerRef = useRef<HTMLDivElement>(null)
+  const [targetLat, targetLng] = parseLatLng(lat, lng, coordinates);
+  const [isExpanded, setIsExpanded] = useState<boolean>(false);
+  const [activeLayerKey, setActiveLayerKey] = useState<MiniMapLayer>("satellite");
+  const [currentZoom, setCurrentZoom] = useState<number>(defaultZoom);
+  const [copied, setCopied] = useState<boolean>(false);
+  const [isLayerMenuOpen, setIsLayerMenuOpen] = useState<boolean>(false);
 
-  const mouseX = useMotionValue(0)
-  const mouseY = useMotionValue(0)
+  const containerRef = useRef<HTMLDivElement>(null);
+  const mapContainerRef = useRef<HTMLDivElement>(null);
+  const mapInstanceRef = useRef<L.Map | null>(null);
+  const tileLayerRef = useRef<L.TileLayer | null>(null);
+  const markerRef = useRef<L.Marker | null>(null);
+  const circleRef = useRef<L.Circle | null>(null);
 
-  const rotateX = useTransform(mouseY, [-50, 50], [8, -8])
-  const rotateY = useTransform(mouseX, [-50, 50], [-8, 8])
+  // Color mapping based on hazard severity and risk level
+  const isHighRisk = severity >= 0.7 || risk.toLowerCase().includes("high");
+  const isModerateRisk = (severity >= 0.4 && severity < 0.7) || risk.toLowerCase().includes("moderate");
+  const riskColor = isHighRisk ? "#e11d48" : isModerateRisk ? "#f59e0b" : "#10b981";
+  const riskBg = isHighRisk ? "rgba(225, 29, 72, 0.2)" : isModerateRisk ? "rgba(245, 158, 11, 0.2)" : "rgba(16, 185, 129, 0.2)";
 
-  const springRotateX = useSpring(rotateX, { stiffness: 300, damping: 30 })
-  const springRotateY = useSpring(rotateY, { stiffness: 300, damping: 30 })
+  // Format coordinates string if not present
+  const displayCoordinates = coordinates || `${targetLat.toFixed(4)}° N, ${targetLng.toFixed(4)}° E`;
 
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!containerRef.current) return
-    const rect = containerRef.current.getBoundingClientRect()
-    const centerX = rect.left + rect.width / 2
-    const centerY = rect.top + rect.height / 2
-    mouseX.set(e.clientX - centerX)
-    mouseY.set(e.clientY - centerY)
-  }
+  // Initialize and manage the mini Leaflet map
+  useEffect(() => {
+    if (!mapContainerRef.current) return;
 
-  const handleMouseLeave = () => {
-    mouseX.set(0)
-    mouseY.set(0)
-    setIsHovered(false)
-  }
+    if (!mapInstanceRef.current) {
+      const map = L.map(mapContainerRef.current, {
+        center: [targetLat, targetLng],
+        zoom: currentZoom,
+        zoomControl: false,
+        attributionControl: false,
+        dragging: true,
+        touchZoom: true,
+        scrollWheelZoom: isExpanded,
+        doubleClickZoom: true,
+      });
 
-  const handleClick = () => {
-    setIsExpanded(!isExpanded)
-  }
+      // Add default tile layer
+      const layerConfig = MINI_MAP_LAYERS[activeLayerKey];
+      const tileLayer = L.tileLayer(layerConfig.url, {
+        maxZoom: layerConfig.maxZoom,
+        subdomains: layerConfig.subdomains || "abc",
+      }).addTo(map);
+      tileLayerRef.current = tileLayer;
 
-  const handleZoomToggle = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    setIsZoomed(!isZoomed)
-  }
+      // Create Custom High-Contrast Pulsing Radar Pin
+      const icon = L.divIcon({
+        html: `
+          <div style="position: relative; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center;">
+            <div style="position: absolute; inset: -8px; border-radius: 50%; background: ${riskColor}; opacity: 0.4;" class="radar-ping-ring"></div>
+            <div style="position: absolute; inset: -2px; border-radius: 50%; background: ${riskColor}; opacity: 0.75;" class="radar-ping-ring"></div>
+            <div style="position: relative; width: 22px; height: 22px; border-radius: 50%; background: #ffffff; border: 3px solid ${riskColor}; box-shadow: 0 2px 10px rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; color: ${riskColor}; font-size: 11px; font-weight: 900;">
+              ●
+            </div>
+          </div>
+        `,
+        className: "mini-map-pin-icon",
+        iconSize: [34, 34],
+        iconAnchor: [17, 17],
+      });
+
+      const marker = L.marker([targetLat, targetLng], { icon }).addTo(map);
+      markerRef.current = marker;
+
+      // Add hazard impact radius circle (e.g. 6km to 12km based on severity)
+      const radiusMeters = 5000 + Math.round(severity * 7000);
+      const circle = L.circle([targetLat, targetLng], {
+        radius: radiusMeters,
+        color: riskColor,
+        weight: 1.5,
+        dashArray: "4, 6",
+        fillColor: riskColor,
+        fillOpacity: 0.14,
+      }).addTo(map);
+      circleRef.current = circle;
+
+      map.on("zoomend", () => {
+        setCurrentZoom(map.getZoom());
+      });
+
+      mapInstanceRef.current = map;
+    } else {
+      // Smooth update when lat/lng changes
+      const map = mapInstanceRef.current;
+      map.setView([targetLat, targetLng], currentZoom, { animate: true });
+
+      if (markerRef.current) {
+        markerRef.current.setLatLng([targetLat, targetLng]);
+      }
+      if (circleRef.current) {
+        circleRef.current.setLatLng([targetLat, targetLng]);
+        circleRef.current.setRadius(5000 + Math.round(severity * 7000));
+        circleRef.current.setStyle({ color: riskColor, fillColor: riskColor });
+      }
+    }
+
+    return () => {
+      // Map cleanup on unmount handled in dedicated unmount hook
+    };
+  }, [targetLat, targetLng, severity, riskColor]);
+
+  // Clean up map instance on component unmount
+  useEffect(() => {
+    return () => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove();
+        mapInstanceRef.current = null;
+      }
+    };
+  }, []);
+
+  // Invalidate map size on container resize
+  useEffect(() => {
+    if (!mapContainerRef.current) return;
+    const resizeObserver = new ResizeObserver(() => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.invalidateSize();
+      }
+    });
+    resizeObserver.observe(mapContainerRef.current);
+    return () => resizeObserver.disconnect();
+  }, []);
+
+  // Handle Layer change
+  useEffect(() => {
+    if (!mapInstanceRef.current) return;
+    const map = mapInstanceRef.current;
+
+    if (tileLayerRef.current) {
+      map.removeLayer(tileLayerRef.current);
+    }
+
+    const layerConfig = MINI_MAP_LAYERS[activeLayerKey];
+    const newTileLayer = L.tileLayer(layerConfig.url, {
+      maxZoom: layerConfig.maxZoom,
+      subdomains: layerConfig.subdomains || "abc",
+    }).addTo(map);
+
+    tileLayerRef.current = newTileLayer;
+  }, [activeLayerKey]);
+
+  // Trigger Leaflet map invalidateSize when expanding/collapsing
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.invalidateSize();
+      }
+    }, 280);
+    return () => clearTimeout(timer);
+  }, [isExpanded]);
+
+  // Handle Map Zoom In
+  const handleZoomIn = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.zoomIn();
+      }
+    },
+    []
+  );
+
+  // Handle Map Zoom Out
+  const handleZoomOut = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.zoomOut();
+      }
+    },
+    []
+  );
+
+  // Handle Recenter
+  const handleRecenter = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.flyTo([targetLat, targetLng], defaultZoom, { duration: 0.6 });
+      }
+    },
+    [targetLat, targetLng, defaultZoom]
+  );
+
+  // Copy coordinates
+  const handleCopyCoordinates = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(`${targetLat.toFixed(5)}, ${targetLng.toFixed(5)}`);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      }
+    },
+    [targetLat, targetLng]
+  );
+
+  // Open in Google Maps
+  const handleOpenExternal = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      const url = `https://www.google.com/maps/search/?api=1&query=${targetLat},${targetLng}`;
+      window.open(url, "_blank", "noopener,noreferrer");
+    },
+    [targetLat, targetLng]
+  );
 
   return (
-    <motion.div
+    <div
       ref={containerRef}
-      className={`relative cursor-pointer select-none ${className || ''}`}
-      style={{
-        perspective: 1000,
-      }}
-      onMouseMove={handleMouseMove}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={handleMouseLeave}
-      onClick={handleClick}
+      className={`relative w-full rounded-2xl overflow-hidden border border-slate-200 shadow-md bg-slate-900 text-white select-none ${className}`}
     >
+      {/* Map View Container with Dynamic Height */}
       <motion.div
-        className="relative overflow-hidden rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm"
-        style={{
-          rotateX: springRotateX,
-          rotateY: springRotateY,
-          transformStyle: "preserve-3d",
-        }}
-        animate={{
-          width: isExpanded ? 320 : 220,
-          height: isExpanded ? 240 : 120,
-        }}
-        transition={{
-          type: "spring",
-          stiffness: 400,
-          damping: 35,
-        }}
+        className="relative w-full overflow-hidden"
+        animate={{ height: isExpanded ? 260 : 160 }}
+        transition={{ type: "spring", stiffness: 350, damping: 30 }}
       >
-        <AnimatePresence>
-          {isExpanded && (
-            <motion.div
-              className="absolute inset-0 pointer-events-none"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.4, delay: 0.1 }}
-            >
-              <div className="absolute inset-0 bg-slate-100 dark:bg-slate-800/80" />
+        {/* Leaflet Map DOM mount element */}
+        <div
+          ref={mapContainerRef}
+          role="region"
+          aria-label={`Mini GIS Map for ${location}`}
+          className="w-full h-full z-0 bg-slate-950 cursor-grab active:cursor-grabbing"
+        />
 
-              {/* Scalable inner map view */}
-              <motion.div
-                className="absolute inset-0 origin-center"
-                animate={{
-                  scale: isZoomed ? 1.55 : 1,
-                }}
-                transition={{
-                  type: "spring",
-                  stiffness: 300,
-                  damping: 25,
-                }}
-              >
-                <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="none">
-                  {/* Main roads */}
-                  <motion.line
-                    x1="0%"
-                    y1="35%"
-                    x2="100%"
-                    y2="35%"
-                    className="stroke-slate-400/40 dark:stroke-slate-500/30"
-                    strokeWidth="4"
-                    initial={{ pathLength: 0 }}
-                    animate={{ pathLength: 1 }}
-                    transition={{ duration: 0.8, delay: 0.2 }}
-                  />
-                  <motion.line
-                    x1="0%"
-                    y1="65%"
-                    x2="100%"
-                    y2="65%"
-                    className="stroke-slate-400/40 dark:stroke-slate-500/30"
-                    strokeWidth="4"
-                    initial={{ pathLength: 0 }}
-                    animate={{ pathLength: 1 }}
-                    transition={{ duration: 0.8, delay: 0.3 }}
-                  />
+        {/* Top HUD Controls Overlay */}
+        <div className="absolute top-2 left-2 right-2 z-10 flex items-center justify-between pointer-events-none">
+          {/* Layer Selector & Indicator */}
+          <div className="flex items-center gap-1 bg-slate-950/80 backdrop-blur-md px-2 py-1 rounded-full border border-slate-700/80 shadow-xs pointer-events-auto">
+            <span
+              className="w-2 h-2 rounded-full animate-pulse"
+              style={{ backgroundColor: riskColor }}
+            />
+            <span className="text-[10px] font-mono font-bold tracking-tight text-slate-200">
+              {MINI_MAP_LAYERS[activeLayerKey].label}
+            </span>
 
-                  {/* Vertical main roads */}
-                  <motion.line
-                    x1="30%"
-                    y1="0%"
-                    x2="30%"
-                    y2="100%"
-                    className="stroke-slate-400/30 dark:stroke-slate-500/20"
-                    strokeWidth="3"
-                    initial={{ pathLength: 0 }}
-                    animate={{ pathLength: 1 }}
-                    transition={{ duration: 0.6, delay: 0.4 }}
-                  />
-                  <motion.line
-                    x1="70%"
-                    y1="0%"
-                    x2="70%"
-                    y2="100%"
-                    className="stroke-slate-400/30 dark:stroke-slate-500/20"
-                    strokeWidth="3"
-                    initial={{ pathLength: 0 }}
-                    animate={{ pathLength: 1 }}
-                    transition={{ duration: 0.6, delay: 0.5 }}
-                  />
-
-                  {/* Secondary streets */}
-                  {[20, 50, 80].map((y, i) => (
-                    <motion.line
-                      key={`h-${i}`}
-                      x1="0%"
-                      y1={`${y}%`}
-                      x2="100%"
-                      y2={`${y}%`}
-                      className="stroke-slate-300/40 dark:stroke-slate-600/20"
-                      strokeWidth="1.5"
-                      initial={{ pathLength: 0 }}
-                      animate={{ pathLength: 1 }}
-                      transition={{ duration: 0.5, delay: 0.6 + i * 0.1 }}
-                    />
-                  ))}
-                  {[15, 45, 55, 85].map((x, i) => (
-                    <motion.line
-                      key={`v-${i}`}
-                      x1={`${x}%`}
-                      y1="0%"
-                      x2={`${x}%`}
-                      y2="100%"
-                      className="stroke-slate-300/40 dark:stroke-slate-600/20"
-                      strokeWidth="1.5"
-                      initial={{ pathLength: 0 }}
-                      animate={{ pathLength: 1 }}
-                      transition={{ duration: 0.5, delay: 0.7 + i * 0.1 }}
-                    />
-                  ))}
-                </svg>
-
-                {/* Buildings */}
-                <motion.div
-                  className="absolute top-[40%] left-[10%] w-[15%] h-[20%] rounded-sm bg-slate-300/40 dark:bg-slate-700/40 border border-slate-300/30"
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.4, delay: 0.5 }}
-                />
-                <motion.div
-                  className="absolute top-[15%] left-[35%] w-[12%] h-[15%] rounded-sm bg-slate-300/35 dark:bg-slate-700/35 border border-slate-300/25"
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.4, delay: 0.6 }}
-                />
-                <motion.div
-                  className="absolute top-[70%] left-[75%] w-[18%] h-[18%] rounded-sm bg-slate-300/38 dark:bg-slate-700/38 border border-slate-300/28"
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.4, delay: 0.7 }}
-                />
-                <motion.div
-                  className="absolute top-[20%] right-[10%] w-[10%] h-[25%] rounded-sm bg-slate-300/32 dark:bg-slate-700/32 border border-slate-300/22"
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.4, delay: 0.55 }}
-                />
-
-                <motion.div
-                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
-                  initial={{ scale: 0, y: -20 }}
-                  animate={{ scale: 1, y: 0 }}
-                  transition={{ type: "spring", stiffness: 400, damping: 20, delay: 0.3 }}
-                >
-                  <svg
-                    width="32"
-                    height="32"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                  >
-                    <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill="#10B981" />
-                    <circle cx="12" cy="9" r="2.5" className="fill-white dark:fill-slate-900" />
-                  </svg>
-                </motion.div>
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Grid pattern - only show when collapsed */}
-        <motion.div
-          className="absolute inset-0 opacity-[0.05] pointer-events-none"
-          animate={{ opacity: isExpanded ? 0 : 0.05 }}
-          transition={{ duration: 0.3 }}
-        >
-          <svg width="100%" height="100%" className="absolute inset-0">
-            <defs>
-              <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
-                <path d="M 20 0 L 0 0 0 20" fill="none" className="stroke-slate-900 dark:stroke-white" strokeWidth="0.5" />
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#grid)" />
-          </svg>
-        </motion.div>
-
-        {/* Content */}
-        <div className="relative z-10 h-full flex flex-col justify-between p-4">
-          {/* Top section */}
-          <div className="flex items-start justify-between">
-            <div className="relative">
-              <motion.div
-                className="relative"
-                animate={{
-                  opacity: isExpanded ? 0 : 1,
-                }}
-                transition={{ duration: 0.3 }}
-              >
-                {/* Map Icon SVG */}
-                <motion.svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="text-emerald-500"
-                  animate={{
-                    filter: isHovered
-                      ? "drop-shadow(0 0 8px rgba(16, 185, 129, 0.6))"
-                      : "drop-shadow(0 0 4px rgba(16, 185, 129, 0.3))",
+            {/* Quick Layer Switch Toggle */}
+            <div className="flex items-center gap-0.5 ml-1 border-l border-slate-700 pl-1">
+              {(["satellite", "streets", "dark"] as MiniMapLayer[]).map((key) => (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setActiveLayerKey(key);
                   }}
-                  transition={{ duration: 0.3 }}
+                  className={`px-1.5 py-0.5 rounded text-[9px] font-bold transition-all cursor-pointer ${
+                    activeLayerKey === key
+                      ? "bg-amber-400 text-slate-950 shadow-xs"
+                      : "text-slate-400 hover:text-white"
+                  }`}
+                  aria-label={`Switch to ${MINI_MAP_LAYERS[key].name}`}
+                  title={MINI_MAP_LAYERS[key].name}
                 >
-                  <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21" />
-                  <line x1="9" x2="9" y1="3" y2="18" />
-                  <line x1="15" x2="15" y1="6" y2="21" />
-                </motion.svg>
-              </motion.div>
-            </div>
-
-            {/* Top controls: Zoom button & Live indicator */}
-            <div className="flex items-center gap-1.5">
-              {/* Zoom Button */}
-              <motion.button
-                type="button"
-                onClick={handleZoomToggle}
-                className="p-1 rounded-full bg-white/80 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-700 backdrop-blur-sm border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 shadow-xs transition-colors z-20 flex items-center justify-center cursor-pointer"
-                whileHover={{ scale: 1.15 }}
-                whileTap={{ scale: 0.9 }}
-                title={isZoomed ? "Zoom Out Map View" : "Zoom In Map View"}
-              >
-                {isZoomed ? (
-                  <ZoomOut className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                ) : (
-                  <ZoomIn className="w-3.5 h-3.5 text-slate-600 dark:text-slate-400" />
-                )}
-              </motion.button>
-
-              {/* Status indicator */}
-              <motion.div
-                className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-slate-100/90 dark:bg-slate-800/90 backdrop-blur-sm border border-slate-200 dark:border-slate-700"
-                animate={{
-                  scale: isHovered ? 1.05 : 1,
-                }}
-                transition={{ duration: 0.2 }}
-              >
-                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-[10px] font-bold text-slate-700 dark:text-slate-300 tracking-wide uppercase">Live</span>
-              </motion.div>
+                  {MINI_MAP_LAYERS[key].label}
+                </button>
+              ))}
             </div>
           </div>
 
-          {/* Bottom section */}
-          <div className="space-y-0.5">
-            <motion.h3
-              className="text-slate-900 dark:text-slate-100 font-bold text-xs tracking-tight"
-              animate={{
-                x: isHovered ? 3 : 0,
-              }}
-              transition={{ type: "spring", stiffness: 400, damping: 25 }}
+          {/* Right Action Icons: Zoom, Recenter, Expand */}
+          <div className="flex items-center gap-1 pointer-events-auto">
+            {/* Recenter button */}
+            <button
+              type="button"
+              onClick={handleRecenter}
+              className="w-7 h-7 rounded-full bg-slate-950/80 hover:bg-slate-800 text-slate-200 hover:text-white backdrop-blur-md border border-slate-700/80 flex items-center justify-center text-xs shadow-xs transition-colors cursor-pointer"
+              title="Recenter Map on Target Coordinates"
+              aria-label="Recenter Map"
             >
-              {location}
-            </motion.h3>
+              <RotateCcw className="w-3.5 h-3.5 text-slate-300" />
+            </button>
 
-            <AnimatePresence>
-              {isExpanded && (
-                <motion.p
-                  className="text-slate-500 dark:text-slate-400 text-[11px] font-mono"
-                  initial={{ opacity: 0, y: -6, height: 0 }}
-                  animate={{ opacity: 1, y: 0, height: "auto" }}
-                  exit={{ opacity: 0, y: -6, height: 0 }}
-                  transition={{ duration: 0.25 }}
-                >
-                  {coordinates}
-                </motion.p>
-              )}
-            </AnimatePresence>
+            {/* Zoom In */}
+            <button
+              type="button"
+              onClick={handleZoomIn}
+              className="w-7 h-7 rounded-full bg-slate-950/80 hover:bg-slate-800 text-slate-200 hover:text-white backdrop-blur-md border border-slate-700/80 flex items-center justify-center text-xs shadow-xs transition-colors cursor-pointer"
+              title="Zoom In"
+              aria-label="Zoom In"
+            >
+              <ZoomIn className="w-3.5 h-3.5" />
+            </button>
 
-            {/* Animated underline */}
-            <motion.div
-              className="h-0.5 bg-emerald-500 rounded-full"
-              initial={{ scaleX: 0, originX: 0 }}
-              animate={{
-                scaleX: isHovered || isExpanded ? 1 : 0.3,
+            {/* Zoom Out */}
+            <button
+              type="button"
+              onClick={handleZoomOut}
+              className="w-7 h-7 rounded-full bg-slate-950/80 hover:bg-slate-800 text-slate-200 hover:text-white backdrop-blur-md border border-slate-700/80 flex items-center justify-center text-xs shadow-xs transition-colors cursor-pointer"
+              title="Zoom Out"
+              aria-label="Zoom Out"
+            >
+              <ZoomOut className="w-3.5 h-3.5" />
+            </button>
+
+            {/* Expand / Minimize Toggle */}
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsExpanded(!isExpanded);
               }}
-              transition={{ duration: 0.4, ease: "easeOut" }}
-            />
+              className="w-7 h-7 rounded-full bg-slate-950/80 hover:bg-slate-800 text-amber-400 hover:text-amber-300 backdrop-blur-md border border-slate-700/80 flex items-center justify-center text-xs shadow-xs transition-colors cursor-pointer"
+              title={isExpanded ? "Collapse Mini Map" : "Expand Mini Map View"}
+              aria-label={isExpanded ? "Collapse Mini Map" : "Expand Mini Map View"}
+            >
+              {isExpanded ? (
+                <Minimize2 className="w-3.5 h-3.5" />
+              ) : (
+                <Maximize2 className="w-3.5 h-3.5" />
+              )}
+            </button>
           </div>
         </div>
 
+        {/* Center Target Crosshair Grid Accent (Subtle overlay) */}
+        <div className="absolute inset-0 pointer-events-none flex items-center justify-center opacity-30">
+          <div className="w-8 h-8 rounded-full border border-dashed border-white/50" />
+        </div>
       </motion.div>
 
-      {/* Click hint */}
-      <motion.p
-        className="absolute -bottom-5 left-1/2 text-[10px] text-slate-500 dark:text-slate-400 font-medium whitespace-nowrap"
-        style={{ x: "-50%" }}
-        initial={{ opacity: 0 }}
-        animate={{
-          opacity: isHovered && !isExpanded ? 1 : 0,
-          y: isHovered ? 0 : 4,
-        }}
-        transition={{ duration: 0.2 }}
-      >
-        Click to inspect
-      </motion.p>
-    </motion.div>
-  )
+      {/* Bottom Info & Telemetry Bar */}
+      <div className="bg-slate-950/95 border-t border-slate-800 p-2.5 flex items-center justify-between gap-2">
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-1.5">
+            <MapPin className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+            <span className="text-xs font-bold text-slate-100 truncate">{location}</span>
+          </div>
+          <div className="flex items-center gap-2 text-[10px] text-slate-400 font-mono mt-0.5">
+            <span>{displayCoordinates}</span>
+            {typeof elevation === "number" && (
+              <span className="text-slate-500">• {elevation}m MSL</span>
+            )}
+          </div>
+        </div>
+
+        {/* Quick action buttons */}
+        <div className="flex items-center gap-1 shrink-0">
+          <button
+            type="button"
+            onClick={handleCopyCoordinates}
+            className="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 active:bg-slate-600 text-slate-200 text-[10px] font-bold flex items-center gap-1 border border-slate-700 transition-colors cursor-pointer"
+            title="Copy Coordinates to Clipboard"
+            aria-label="Copy Coordinates"
+          >
+            {copied ? (
+              <>
+                <Check className="w-3 h-3 text-emerald-400" />
+                <span className="text-emerald-400">Copied</span>
+              </>
+            ) : (
+              <>
+                <Copy className="w-3 h-3 text-slate-400" />
+                <span>Copy</span>
+              </>
+            )}
+          </button>
+
+          <button
+            type="button"
+            onClick={handleOpenExternal}
+            className="p-1 rounded-lg bg-slate-800 hover:bg-slate-700 active:bg-slate-600 text-slate-300 hover:text-white border border-slate-700 transition-colors cursor-pointer"
+            title="Open in Google Maps"
+            aria-label="Open in Google Maps"
+          >
+            <ExternalLink className="w-3 h-3" />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export default LocationMap;

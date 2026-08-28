@@ -150,11 +150,47 @@ self.addEventListener('sync', (event: any) => {
   }
 });
 
+// Helper to query IndexedDB tile store from ServiceWorker
+async function getTileFromIndexedDB(tileUrl: string): Promise<Blob | null> {
+  if (typeof indexedDB === 'undefined') return null;
+  return new Promise((resolve) => {
+    try {
+      const req = indexedDB.open('hazardnet_tile_cache_db', 1);
+      req.onsuccess = (e: any) => {
+        const db = e.target.result;
+        if (!db.objectStoreNames.contains('tiles')) {
+          resolve(null);
+          return;
+        }
+        const tx = db.transaction('tiles', 'readonly');
+        const store = tx.objectStore('tiles');
+        const cursorReq = store.openCursor();
+        cursorReq.onsuccess = (ev: any) => {
+          const cursor = ev.target.result;
+          if (cursor) {
+            if (cursor.value && cursor.value.url === tileUrl && cursor.value.blob) {
+              resolve(cursor.value.blob);
+              return;
+            }
+            cursor.continue();
+          } else {
+            resolve(null);
+          }
+        };
+        cursorReq.onerror = () => resolve(null);
+      };
+      req.onerror = () => resolve(null);
+    } catch {
+      resolve(null);
+    }
+  });
+}
+
 self.addEventListener('fetch', (event: any) => {
   const request = event.request;
   const url = new URL(request.url);
 
-  // Handle map tile requests with Cache-First & Stale-While-Revalidate fallback strategy
+  // Handle map tile requests with Cache-First & IndexedDB emergency fallback strategy
   if (isMapTileRequest(url)) {
     event.respondWith(
       caches.open(TILE_CACHE_NAME).then(async (cache) => {
@@ -174,6 +210,19 @@ self.addEventListener('fetch', (event: any) => {
         // Return cached tile instantly if present (Cache-First)
         if (cachedResponse) {
           return cachedResponse;
+        }
+
+        // Check IndexedDB tile store if Cache API misses
+        const idbBlob = await getTileFromIndexedDB(request.url);
+        if (idbBlob) {
+          const idbResponse = new Response(idbBlob, {
+            headers: {
+              'Content-Type': idbBlob.type || 'image/png',
+              'X-Source': 'HazardNet-IndexedDB-Emergency-Cache',
+            },
+          });
+          cache.put(request, idbResponse.clone());
+          return idbResponse;
         }
 
         // Wait for network response if not cached

@@ -20,15 +20,15 @@ import { getDatabase, Database } from 'firebase/database';
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: "AIzaSyBwyxWm0MIQlTmjJ-NKPKjl72AYLS7oDqQ",
-  authDomain: "hazardnet-aas48424.firebaseapp.com",
-  databaseURL: "https://hazardnet-aas48424-default-rtdb.firebaseio.com",
-  projectId: "hazardnet-aas48424",
-  storageBucket: "hazardnet-aas48424.firebasestorage.app",
-  messagingSenderId: "1053636076316",
-  appId: "1:1053636076316:web:0fbe66d8e4b90c2de9d0d9",
-  measurementId: "G-G40YRHHD94",
-  firestoreDatabaseId: "ai-studio-hazardnet-28005e8f-9924-4dea-983b-743f2fca6093"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyBwyxWm0MIQlTmjJ-NKPKjl72AYLS7oDqQ",
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "hazardnet-aas48424.firebaseapp.com",
+  databaseURL: import.meta.env.VITE_FIREBASE_DATABASE_URL || "https://hazardnet-aas48424-default-rtdb.firebaseio.com",
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "hazardnet-aas48424",
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "hazardnet-aas48424.firebasestorage.app",
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "1053636076316",
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:1053636076316:web:0fbe66d8e4b90c2de9d0d9",
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || "G-G40YRHHD94",
+  firestoreDatabaseId: import.meta.env.VITE_FIREBASE_FIRESTORE_DATABASE_ID || "ai-studio-hazardnet-28005e8f-9924-4dea-983b-743f2fca6093"
 };
 
 // Initialize Firebase

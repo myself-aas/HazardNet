@@ -4,7 +4,6 @@ import { MapLegendUI } from './MapLegendUI';
 import { useNavigate } from 'react-router-dom';
 import L from 'leaflet';
 import 'leaflet.heat';
-import html2canvas from 'html2canvas';
 import toast from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -12,7 +11,8 @@ import {
   ZoomIn, ZoomOut, Navigation, Maximize, Tag, 
   Camera, RotateCcw, Flame, Ruler, Waves, Radio, 
   Contrast, Compass, Box, Share2, Download, Copy,
-  Check, FileText, Image as ImageIcon, Sparkles
+  Check, FileText, Image as ImageIcon, Sparkles,
+  HardDrive, Wifi, WifiOff, Database, Trash2, CloudDownload
 } from 'lucide-react';
 import { AnimatedSocialIcons } from './ui/floating-action-button';
 import { LocationMap } from './ui/expand-map';
@@ -27,130 +27,26 @@ import {
 } from '../services/geolocationService';
 import { useAuth } from '../context/AuthContext';
 import DataProcessingSkeleton from './DataProcessingSkeleton';
+import { useLeafletMap, MAP_LAYERS, MapLayerKey } from '../hooks/useLeafletMap';
+import {
+  useMapMeasurements,
+  calculateDistanceKm,
+  findNearestDistrict,
+  analyzePathBetweenPoints,
+  PathAnalysisResult,
+  DistrictGeo,
+} from '../hooks/useMapMeasurements';
+import { useMapSnapshot } from '../hooks/useMapSnapshot';
+import { useTileCache } from '../hooks/useTileCache';
 
-export type DistrictGeo = DistrictData;
+export type { DistrictGeo, PathAnalysisResult, MapLayerKey };
 export const liveDistrictsData: DistrictGeo[] = ALL_64_DISTRICTS;
-export { getDistrictBoundaryCoordinates };
-
-// Geodesic distance calculation in kilometers (Haversine formula)
-export const calculateDistanceKm = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
-  const R = 6371; // Earth's radius in km
-  const dLat = ((lat2 - lat1) * Math.PI) / 180;
-  const dLon = ((lon2 - lon1) * Math.PI) / 180;
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLon / 2) *
-      Math.sin(dLon / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
-};
-
-// Find closest district to any lat/lng coordinate
-export const findNearestDistrict = (lat: number, lng: number) => {
-  let nearest = ALL_64_DISTRICTS[0];
-  let minDistance = Infinity;
-  for (const dist of ALL_64_DISTRICTS) {
-    const distKm = calculateDistanceKm(lat, lng, dist.lat, dist.lng);
-    if (distKm < minDistance) {
-      minDistance = distKm;
-      nearest = dist;
-    }
-  }
-  return { district: nearest, distanceKm: minDistance };
-};
-
-export interface PathAnalysisResult {
-  totalDistanceKm: number;
-  startDistrict: DistrictGeo | null;
-  endDistrict: DistrictGeo | null;
-  districtsAlongPath: { district: DistrictGeo; t: number; distanceToLineKm: number }[];
-  hazardsDetected: string[];
-  maxSeverity: number;
-  avgSeverity: number;
-  riskRating: 'High' | 'Moderate' | 'Low';
-  segmentCount: number;
-}
-
-// Interactive Path Analysis between clicked measurement points
-export const analyzePathBetweenPoints = (points: [number, number][]): PathAnalysisResult | null => {
-  if (!points || points.length < 2) return null;
-
-  let totalDistanceKm = 0;
-  for (let i = 0; i < points.length - 1; i++) {
-    totalDistanceKm += calculateDistanceKm(points[i][0], points[i][1], points[i + 1][0], points[i + 1][1]);
-  }
-
-  const startDistrict = findNearestDistrict(points[0][0], points[0][1]).district;
-  const endDistrict = findNearestDistrict(points[points.length - 1][0], points[points.length - 1][1]).district;
-
-  const matchedMap = new Map<string, { district: DistrictGeo; t: number; distanceToLineKm: number }>();
-
-  for (let s = 0; s < points.length - 1; s++) {
-    const latA = points[s][0];
-    const lonA = points[s][1];
-    const latB = points[s + 1][0];
-    const lonB = points[s + 1][1];
-
-    const meanLatRad = ((latA + latB) / 2) * (Math.PI / 180);
-    const cosLat = Math.cos(meanLatRad);
-
-    const ux = (lonB - lonA) * cosLat;
-    const uy = latB - latA;
-    const lenSq = ux * ux + uy * uy;
-
-    for (const dist of ALL_64_DISTRICTS) {
-      let t = 0;
-      let projLat = latA;
-      let projLng = lonA;
-
-      if (lenSq > 0.0000001) {
-        const vx = (dist.lng - lonA) * cosLat;
-        const vy = dist.lat - latA;
-        t = Math.max(0, Math.min(1, (vx * ux + vy * uy) / lenSq));
-        projLat = latA + t * (latB - latA);
-        projLng = lonA + t * (lonB - lonA);
-      }
-
-      const distKm = calculateDistanceKm(dist.lat, dist.lng, projLat, projLng);
-      // Districts within 35km buffer of path segment
-      if (distKm <= 35) {
-        const globalT = s + t;
-        const existing = matchedMap.get(dist.id);
-        if (!existing || distKm < existing.distanceToLineKm) {
-          matchedMap.set(dist.id, { district: dist, t: globalT, distanceToLineKm: distKm });
-        }
-      }
-    }
-  }
-
-  const districtsAlongPath = Array.from(matchedMap.values()).sort((a, b) => a.t - b.t);
-
-  const hazardsSet = new Set<string>();
-  let maxSev = 0;
-  let sumSev = 0;
-
-  districtsAlongPath.forEach(({ district }) => {
-    if (district.hazardType) hazardsSet.add(district.hazardType);
-    if (district.severity > maxSev) maxSev = district.severity;
-    sumSev += district.severity;
-  });
-
-  const avgSev = districtsAlongPath.length > 0 ? sumSev / districtsAlongPath.length : 0;
-  const riskRating: 'High' | 'Moderate' | 'Low' = maxSev >= 0.8 ? 'High' : maxSev >= 0.5 ? 'Moderate' : 'Low';
-
-  return {
-    totalDistanceKm,
-    startDistrict,
-    endDistrict,
-    districtsAlongPath,
-    hazardsDetected: Array.from(hazardsSet),
-    maxSeverity: maxSev,
-    avgSeverity: avgSev,
-    riskRating,
-    segmentCount: points.length - 1,
-  };
+export {
+  getDistrictBoundaryCoordinates,
+  calculateDistanceKm,
+  findNearestDistrict,
+  analyzePathBetweenPoints,
+  MAP_LAYERS,
 };
 
 // Bangladesh Major River Networks Polylines
@@ -239,54 +135,20 @@ interface LiveMapViewProps {
   className?: string;
 }
 
-// Map tile layer options (Hyper Photo-Realistic Satellite, High Contrast & 3D Relief)
-const MAP_LAYERS = {
-  esriSatellite: {
-    name: 'Esri World Imagery (HD Satellite)',
-    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-    attribution: 'Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics',
-    maxZoom: 19,
-  },
-  esriClarity: {
-    name: 'Esri Clarity (Ultra HD Vivid Satellite)',
-    url: 'https://clarity.maptiles.arcgis.com/arcgis/rest/services/World_Imagery/WMTS/1.0.0/default/default/GoogleMapsCompatible/{z}/{y}/{x}',
-    attribution: 'Tiles &copy; Esri Clarity',
-    maxZoom: 19,
-  },
-  cartoDark: {
-    name: 'High Contrast Dark GIS',
-    url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-    attribution: '&copy; CARTO &copy; OpenStreetMap',
-    maxZoom: 19,
-  },
-  osmStandard: {
-    name: 'OpenStreetMap (Street & Topo)',
-    url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-    attribution: '&copy; OpenStreetMap contributors',
-    maxZoom: 19,
-  },
-  esriShadedRelief: {
-    name: 'Esri 3D Terrain Relief',
-    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}',
-    attribution: 'Tiles &copy; Esri',
-    maxZoom: 17,
-  },
-  topoMap: {
-    name: 'OpenTopoMap (Contours & Elevation)',
-    url: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
-    attribution: 'Map data: &copy; OpenStreetMap contributors, SRTM',
-    maxZoom: 17,
-  },
-};
-
 // Custom High-Contrast Marker Generator for Leaflet
-const createCustomIcon = (severity: number, isSelected: boolean, hazardType: string, districtName: string) => {
+const createCustomIcon = (severity: number, isSelected: boolean, hazardType: string, districtName: string, riskLevel?: string) => {
   const hazardDef = HAZARD_LAYERS.find((h) => h.id === hazardType) || { name: hazardType };
   const color = getSeverityColor(severity);
   const glowColor = color;
+  const effectiveRisk = riskLevel || (severity >= 0.7 ? 'High' : severity >= 0.4 ? 'Moderate' : 'Low');
+  const ariaLabel = `${districtName} District, Risk: ${effectiveRisk}, Hazard: ${hazardDef.name}, Severity: ${(severity * 100).toFixed(0)}%`;
 
   const html = isSelected ? `
-    <div style="
+    <div
+      tabindex="0"
+      role="button"
+      aria-label="${ariaLabel}"
+      style="
       display: inline-flex;
       align-items: center;
       gap: 8px;
@@ -304,6 +166,7 @@ const createCustomIcon = (severity: number, isSelected: boolean, hazardType: str
       user-select: none;
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
+      outline: none;
     ">
       <span style="color: #0f172a; letter-spacing: -0.2px;">${districtName}: <span style="color: #0284c7;">${hazardDef.name}</span></span>
       <span style="
@@ -320,7 +183,11 @@ const createCustomIcon = (severity: number, isSelected: boolean, hazardType: str
       </span>
     </div>
   ` : `
-    <div style="
+    <div
+      tabindex="0"
+      role="button"
+      aria-label="${ariaLabel}"
+      style="
       width: 30px;
       height: 30px;
       border-radius: 50%;
@@ -337,6 +204,7 @@ const createCustomIcon = (severity: number, isSelected: boolean, hazardType: str
       cursor: pointer;
       user-select: none;
       transition: transform 0.2s ease;
+      outline: none;
     " title="${districtName} (${(severity * 100).toFixed(0)}% ${hazardDef.name})">
       ${districtName.substring(0, 2).toUpperCase()}
     </div>
@@ -381,14 +249,6 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
   const { userProfile } = useAuth();
   const mainWrapperRef = useRef<HTMLDivElement>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<L.Map | null>(null);
-  const tileLayerRef = useRef<L.TileLayer | null>(null);
-  const markersGroupRef = useRef<L.LayerGroup | null>(null);
-  const heatLayerRef = useRef<L.HeatLayer | null>(null);
-  const measureGroupRef = useRef<L.LayerGroup | null>(null);
-  const riverGroupRef = useRef<L.LayerGroup | null>(null);
-  const radarGroupRef = useRef<L.LayerGroup | null>(null);
-  const inspectGroupRef = useRef<L.LayerGroup | null>(null);
   const districtMarkersRef = useRef<Map<string, L.Marker>>(new Map());
   const lastTargetedDistrictRef = useRef<DistrictGeo | null>(null);
 
@@ -405,6 +265,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
   const [isHeatmapActive, setIsHeatmapActive] = useState<boolean>(false);
   const [isRiverLayerActive, setIsRiverLayerActive] = useState<boolean>(true);
   const [isRadarActive, setIsRadarActive] = useState<boolean>(false);
+  const [isClusteringActive, setIsClusteringActive] = useState<boolean>(true);
   const [isMeasuring, setIsMeasuring] = useState<boolean>(false);
   const [measurePoints, setMeasurePoints] = useState<[number, number][]>([]);
   const [inspectedPoint, setInspectedPoint] = useState<{ lat: number; lng: number } | null>(null);
@@ -419,20 +280,13 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
     'Cold Wave',
     'Severe Storm',
   ]);
-  const [isProcessingData, setIsProcessingData] = useState<boolean>(false);
   const [is3DTilted, setIs3DTilted] = useState<boolean>(false);
-  const [currentCoords, setCurrentCoords] = useState<{ lat: number; lng: number; zoom: number }>({ lat: 23.8103, lng: 90.4125, zoom: 7 });
   const [isHudVisible, setIsHudVisible] = useState<boolean>(true);
   const hudTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // New features: Fullscreen, Legend Panel, User Geolocation & PNG Snapshot Export
+  // New features: Fullscreen, Legend Panel
   const [isBrowserFullscreen, setIsBrowserFullscreen] = useState<boolean>(false);
   const [isLegendOpen, setIsLegendOpen] = useState<boolean>(true);
-  const [isLocatingUser, setIsLocatingUser] = useState<boolean>(false);
-  const [userLocationError, setUserLocationError] = useState<string | null>(null);
-  const [userGpsPos, setUserGpsPos] = useState<{ lat: number; lng: number; accuracy?: number } | null>(null);
-  const [isExportingMap, setIsExportingMap] = useState<boolean>(false);
-  const [exportSuccessMsg, setExportSuccessMsg] = useState<string | null>(null);
 
   // High-Resolution Export Modal & Sharing State
   const [isExportModalOpen, setIsExportModalOpen] = useState<boolean>(false);
@@ -441,13 +295,6 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
   const [includeWatermarkHeader, setIncludeWatermarkHeader] = useState<boolean>(true);
   const [includeOverlayLegend, setIncludeOverlayLegend] = useState<boolean>(true);
   const [customReportTitle, setCustomReportTitle] = useState<string>('Bangladesh Multi-Hazard Geospatial Intelligence Report');
-
-  const [capturedPreviewUrl, setCapturedPreviewUrl] = useState<string | null>(null);
-  const [capturedBlob, setCapturedBlob] = useState<Blob | null>(null);
-  const [isGeneratingSnapshot, setIsGeneratingSnapshot] = useState<boolean>(false);
-  const [copySuccessMsg, setCopySuccessMsg] = useState<string | null>(null);
-
-  const hasAutoLocatedRef = useRef<boolean>(false);
 
   // Floating Action Button feature states (Report Hazard, Filter, Layers, Sync)
   const [isReportModalOpen, setIsReportModalOpen] = useState<boolean>(false);
@@ -462,415 +309,128 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [syncToastMessage, setSyncToastMessage] = useState<string | null>(null);
 
-  // Core Map Snapshot Generator: Captures current Leaflet stage with active layers & overlays
-  const generateMapSnapshot = async (overrideScale?: number) => {
-    if (!mapContainerRef.current) return;
+  // Measure mode ref for Leaflet click callback
+  const isMeasuringRef = useRef(isMeasuring);
+  useEffect(() => {
+    isMeasuringRef.current = isMeasuring;
+  }, [isMeasuring]);
 
-    const targetScale = overrideScale !== undefined ? overrideScale : exportScale;
-    setIsGeneratingSnapshot(true);
-    setIsExportingMap(true);
-    setUserLocationError(null);
+  // Selected district object
+  const currentSelected = selectedDistrictId ? liveDistrictsData.find((d) => d.id === selectedDistrictId) : undefined;
 
-    try {
-      if (mapInstanceRef.current) {
-        mapInstanceRef.current.invalidateSize();
+  // Extracted Hook 1: useLeafletMap (Manages Leaflet instance lifecycle, tiles, resize, and geolocation)
+  const {
+    mapInstanceRef,
+    tileLayerRef,
+    markersGroupRef,
+    clusterGroupRef,
+    heatLayerRef,
+    measureGroupRef,
+    riverGroupRef,
+    radarGroupRef,
+    inspectGroupRef,
+    currentCoords,
+    setCurrentCoords,
+    isProcessingData,
+    setIsProcessingData,
+    userGpsPos,
+    setUserGpsPos,
+    isLocatingUser,
+    setIsLocatingUser,
+    userLocationError,
+    setUserLocationError,
+    centerOnUserLocation,
+  } = useLeafletMap(mapContainerRef, activeLayer, {
+    onMapClick: (lat, lng) => {
+      if (isMeasuringRef.current) {
+        setMeasurePoints((prev) => [...prev, [lat, lng]]);
+      } else {
+        setInspectedPoint({ lat, lng });
       }
-
-      await new Promise((resolve) => setTimeout(resolve, 350));
-
-      const captureTarget = mapContainerRef.current;
-
-      const activeOverlayNames = HAZARD_LAYERS
-        .filter((h) => selectedHazards.includes(h.id))
-        .map((h) => h.name)
-        .join(', ') || 'Baseline Vector Boundaries';
-
-      const baseMapName = MAP_LAYERS[activeLayer]?.name || 'Satellite HD';
-      const timestampStr = new Date().toLocaleString('en-US', {
-        dateStyle: 'medium',
-        timeStyle: 'short',
-      });
-      const selectedInfo = currentSelected
-        ? `${currentSelected.name} District (${(currentSelected.severity * 100).toFixed(0)}% Risk)`
-        : 'Bangladesh National Overview';
-
-      const executeHtml2Canvas = async (scaleToUse: number): Promise<HTMLCanvasElement> => {
-        return await html2canvas(captureTarget, {
-          useCORS: true,
-          allowTaint: false,
-          scale: scaleToUse,
-          backgroundColor: '#0f172a',
-          logging: false,
-          imageTimeout: 12000,
-          ignoreElements: (element) => {
-            return element.classList.contains('no-export-snapshot');
-          },
-          onclone: (clonedDoc) => {
-            // 1. Sanitize oklch colors in style tags without stripping Leaflet or Tailwind CSS files
-            const styleTags = clonedDoc.querySelectorAll('style');
-            styleTags.forEach((styleTag) => {
-              try {
-                if (styleTag.textContent && styleTag.textContent.includes('oklch')) {
-                  styleTag.textContent = styleTag.textContent.replace(/oklch\([^)]+\)/g, '#64748b');
-                }
-              } catch (e) {
-                // Ignore style sanitization errors
-              }
-            });
-
-            // 2. Set crossOrigin = 'anonymous' on all tile images in clonedDoc
-            const clonedImgs = clonedDoc.querySelectorAll('img');
-            clonedImgs.forEach((img) => {
-              img.crossOrigin = 'anonymous';
-            });
-
-            // 3. Inject safe fallback styles
-            const oklchFixStyle = clonedDoc.createElement('style');
-            oklchFixStyle.innerHTML = `
-              *, ::before, ::after {
-                color-scheme: light;
-              }
-              :root {
-                --background: #ffffff;
-                --foreground: #0f172a;
-                --card: #ffffff;
-                --card-foreground: #0f172a;
-                --primary: #0f172a;
-                --primary-foreground: #f8fafc;
-                --secondary: #f1f5f9;
-                --secondary-foreground: #0f172a;
-                --muted: #f1f5f9;
-                --muted-foreground: #64748b;
-                --border: #e2e8f0;
-                --input: #e2e8f0;
-              }
-            `;
-            clonedDoc.head.appendChild(oklchFixStyle);
-
-            const clonedContainer = clonedDoc.querySelector('.leaflet-container') as HTMLElement | null;
-            if (clonedContainer) {
-              clonedContainer.style.position = 'relative';
-
-              // Render Official Report Header Watermark
-              if (includeWatermarkHeader) {
-                const headerDiv = clonedDoc.createElement('div');
-                headerDiv.style.cssText = `
-                  position: absolute;
-                  top: 16px;
-                  left: 16px;
-                  right: 16px;
-                  z-index: 999999;
-                  background: rgba(15, 23, 42, 0.95);
-                  color: #ffffff;
-                  border: 2px solid #334155;
-                  border-radius: 20px;
-                  padding: 16px 20px;
-                  font-family: 'Playfair Display', serif"Segoe UI", Roboto, sans-serif;
-                  box-shadow: 0 25px 30px -5px rgba(0,0,0,0.7);
-                  display: flex;
-                  align-items: center;
-                  justify-content: space-between;
-                  gap: 16px;
-                `;
-
-                const escapeHtml = (str: string) => String(str || '')
-                  .replace(/&/g, '&amp;')
-                  .replace(/</g, '&lt;')
-                  .replace(/>/g, '&gt;')
-                  .replace(/"/g, '&quot;')
-                  .replace(/'/g, '&#039;');
-
-                const escapedTitle = escapeHtml(customReportTitle);
-                const escapedLocation = escapeHtml(selectedInfo);
-                const escapedBaseMap = escapeHtml(baseMapName);
-                const escapedTimestamp = escapeHtml(timestampStr);
-                const escapedOverlays = escapeHtml(activeOverlayNames);
-
-                headerDiv.innerHTML = `
-                  <div style="display: flex; align-items: center; gap: 14px;">
-                    <div style="width: 48px; height: 48px; border-radius: 14px; background: #f9a825; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 24px; color: #0f172a; border: 2px solid #ffffff; flex-shrink: 0;">
-                      <MaterialIcon name="shield" className="w-4 h-4 inline-block align-middle" />
-                    </div>
-                    <div>
-                      <div style="display: flex; align-items: center; gap: 8px;">
-                        <span style="background: #f9a825; color: #0f172a; font-weight: 900; font-size: 10px; padding: 2px 9px; border-radius: 9999px; text-transform: uppercase; letter-spacing: 0.05em;">
-                          HAZARDNET AI GEOSPATIAL REPORT
-                        </span>
-                        <span style="font-size: 11px; color: #94a3b8; font-family: monospace;">
-                          VERIFIED SNAPSHOT
-                        </span>
-                      </div>
-                      <h2 style="font-size: 18px; font-weight: 900; margin: 4px 0 2px 0; color: #ffffff; letter-spacing: -0.02em;">
-                        ${escapedTitle}
-                      </h2>
-                      <div style="font-size: 11px; color: #cbd5e1; display: flex; gap: 14px; flex-wrap: wrap;">
-                        <MaterialIcon name="location_on" className="w-4 h-4 inline-block align-middle" /><span><strong>Location:</strong> ${escapedLocation}</span>
-                        <span>🌐 <strong>Base Map:</strong> ${escapedBaseMap}</span>
-                        <span>⏱️ <strong>Generated:</strong> ${escapedTimestamp}</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div style="text-align: right; font-size: 11px; color: #94a3b8; line-height: 1.4; border-left: 1px solid #334155; padding-left: 16px; flex-shrink: 0;">
-                    <div style="color: #f9a825; font-weight: 800; font-size: 12px;">Active Overlays</div>
-                    <div style="color: #f8fafc; font-weight: 600; max-width: 220px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">
-                      ${escapedOverlays}
-                    </div>
-                  </div>
-                `;
-                clonedContainer.appendChild(headerDiv);
-              }
-
-              // Render Active Legend Overlay
-              if (includeOverlayLegend) {
-                const legendDiv = clonedDoc.createElement('div');
-                legendDiv.style.cssText = `
-                  position: absolute;
-                  bottom: 20px;
-                  right: 20px;
-                  z-index: 999999;
-                  background: rgba(15, 23, 42, 0.95);
-                  color: #ffffff;
-                  border: 1px solid #334155;
-                  border-radius: 14px;
-                  padding: 12px 18px;
-                  font-family: 'Playfair Display', serif"Segoe UI", Roboto, sans-serif;
-                  box-shadow: 0 10px 20px -3px rgba(0,0,0,0.6);
-                `;
-                legendDiv.innerHTML = `
-                  <div style="font-weight: 900; color: #f9a825; margin-bottom: 6px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em;">Hazard Severity Index Scale</div>
-                  <div style="display: flex; align-items: center; gap: 14px; font-size: 11px; font-weight: 700;">
-                    <div style="display: flex; align-items: center; gap: 6px;">
-                      <span style="width: 12px; height: 12px; border-radius: 50%; background: #dc2626; display: inline-block;"></span>
-                      <span>Severe (≥80%)</span>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 6px;">
-                      <span style="width: 12px; height: 12px; border-radius: 50%; background: #d97706; display: inline-block;"></span>
-                      <span>Moderate (50-79%)</span>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 6px;">
-                      <span style="width: 12px; height: 12px; border-radius: 50%; background: #16a34a; display: inline-block;"></span>
-                      <span>Low (&lt;50%)</span>
-                    </div>
-                  </div>
-                `;
-                clonedContainer.appendChild(legendDiv);
-              }
-            }
-          },
+    },
+    onAutoLocateDistrict: (district) => {
+      if (onSelectDistrict) {
+        onSelectDistrict({
+          id: district.id,
+          name: district.name,
+          division: district.division,
+          lat: district.lat,
+          lng: district.lng,
+          risk: district.risk,
+          mainCrop: district.mainCrop,
         });
-      };
-
-      // Direct Canvas Fallback Generator
-      const renderNativeCanvasFallback = async (): Promise<HTMLCanvasElement> => {
-        const rect = captureTarget.getBoundingClientRect();
-        const width = Math.max(800, rect.width || 1200);
-        const height = Math.max(600, rect.height || 800);
-        const canvas = document.createElement('canvas');
-        canvas.width = Math.round(width * targetScale);
-        canvas.height = Math.round(height * targetScale);
-        const ctx = canvas.getContext('2d');
-        if (!ctx) throw new Error('Failed to create canvas 2D context');
-
-        ctx.scale(targetScale, targetScale);
-        ctx.fillStyle = '#0f172a';
-        ctx.fillRect(0, 0, width, height);
-
-        // Draw tile images
-        const imgs = Array.from(captureTarget.querySelectorAll('img'));
-        const containerRect = captureTarget.getBoundingClientRect();
-        for (const img of imgs) {
-          if (!img.complete || img.naturalWidth === 0) continue;
-          const iRect = img.getBoundingClientRect();
-          const dx = iRect.left - containerRect.left;
-          const dy = iRect.top - containerRect.top;
-          const dw = iRect.width;
-          const dh = iRect.height;
-          try {
-            ctx.drawImage(img, dx, dy, dw, dh);
-          } catch (e) {
-            // Ignore individual tile draw exceptions
-          }
-        }
-
-        // Watermark Header
-        if (includeWatermarkHeader) {
-          ctx.fillStyle = 'rgba(15, 23, 42, 0.95)';
-          ctx.strokeStyle = '#334155';
-          ctx.lineWidth = 2;
-          ctx.beginPath();
-          ctx.roundRect(16, 16, width - 32, 72, 16);
-          ctx.fill();
-          ctx.stroke();
-
-          ctx.fillStyle = '#f9a825';
-          ctx.font = 'bold 10px sans-serif';
-          ctx.fillText('HAZARDNET AI GEOSPATIAL REPORT', 32, 38);
-
-          ctx.fillStyle = '#ffffff';
-          ctx.font = 'bold 16px sans-serif';
-          ctx.fillText(customReportTitle.substring(0, 55), 32, 58);
-
-          ctx.fillStyle = '#cbd5e1';
-          ctx.font = '11px sans-serif';
-          ctx.fillText(`<MaterialIcon name="location_on" className="w-4 h-4 inline-block align-middle" /> ${selectedInfo}  |  📡 ${baseMapName}  |  📅 ${timestampStr}`, 32, 74);
-        }
-
-        // Legend Overlay
-        if (includeOverlayLegend) {
-          const lW = 260;
-          const lH = 46;
-          const lX = width - lW - 20;
-          const lY = height - lH - 20;
-          ctx.fillStyle = 'rgba(15, 23, 42, 0.95)';
-          ctx.strokeStyle = '#334155';
-          ctx.lineWidth = 1;
-          ctx.beginPath();
-          ctx.roundRect(lX, lY, lW, lH, 12);
-          ctx.fill();
-          ctx.stroke();
-
-          ctx.fillStyle = '#f9a825';
-          ctx.font = 'bold 10px sans-serif';
-          ctx.fillText('HAZARD SEVERITY INDEX SCALE', lX + 12, lY + 18);
-
-          // Severity dots
-          ctx.fillStyle = '#dc2626';
-          ctx.beginPath();
-          ctx.arc(lX + 18, lY + 32, 4, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.fillStyle = '#ffffff';
-          ctx.font = '10px sans-serif';
-          ctx.fillText('Severe', lX + 26, lY + 35);
-
-          ctx.fillStyle = '#d97706';
-          ctx.beginPath();
-          ctx.arc(lX + 85, lY + 32, 4, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.fillStyle = '#ffffff';
-          ctx.fillText('Moderate', lX + 93, lY + 35);
-
-          ctx.fillStyle = '#16a34a';
-          ctx.beginPath();
-          ctx.arc(lX + 160, lY + 32, 4, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.fillStyle = '#ffffff';
-          ctx.fillText('Low', lX + 168, lY + 35);
-        }
-
-        return canvas;
-      };
-
-      let canvas: HTMLCanvasElement;
-      try {
-        canvas = await executeHtml2Canvas(targetScale);
-      } catch (primaryError) {
-        console.warn('html2canvas primary capture failed, retrying at scale 1.5:', primaryError);
-        try {
-          canvas = await executeHtml2Canvas(1.5);
-        } catch (secondaryError) {
-          console.warn('html2canvas scale 1.5 failed, using native canvas fallback:', secondaryError);
-          canvas = await renderNativeCanvasFallback();
-        }
       }
+    },
+    autoLocateEnabled:
+      userProfile?.autoDetectLocationEnabled ??
+      (localStorage.getItem('hazardnet_auto_detect_location') !== 'false'),
+  });
 
-      const mimeType = exportFormat === 'jpeg' ? 'image/jpeg' : 'image/png';
-      const quality = exportFormat === 'jpeg' ? 0.92 : 1.0;
-      
-      let dataUrl: string;
-      try {
-        dataUrl = canvas.toDataURL(mimeType, quality);
-      } catch (dataUrlErr) {
-        console.warn('canvas.toDataURL failed due to canvas policy, falling back to jpeg/png standard:', dataUrlErr);
-        dataUrl = canvas.toDataURL('image/png');
-      }
+  // Extracted Hook 2: useTileCache (IndexedDB Tile Caching & Offline Emergency Storage)
+  const {
+    cacheStats,
+    isOnline,
+    isPreCaching,
+    preCacheProgress,
+    preCacheStatus,
+    refreshStats,
+    downloadEmergencyBangladeshPack,
+    downloadDistrictEmergencyPack,
+    clearCache,
+    cancelPreCache,
+  } = useTileCache();
 
-      setCapturedPreviewUrl(dataUrl);
+  // Extracted Hook 3: useMapMeasurements (Manages ruler points, polyline rendering, and path risk corridor analysis)
+  const {
+    pathAnalysis,
+    totalMeasuredKm,
+    clearMeasurements,
+    removeLastPoint,
+  } = useMapMeasurements({
+    measureGroupRef,
+    measurePoints,
+    setMeasurePoints,
+  });
 
-      try {
-        canvas.toBlob(
-          (blob) => {
-            if (blob) setCapturedBlob(blob);
-          },
-          mimeType,
-          quality
-        );
-      } catch (blobErr) {
-        console.warn('canvas.toBlob failed:', blobErr);
-      }
+  // Extracted Hook 3: useMapSnapshot (Manages html2canvas image capture, oklch CSS sanitization, watermarks & exports)
+  const baseMapName = MAP_LAYERS[activeLayer]?.name || 'Satellite HD';
+  const selectedInfo = currentSelected
+    ? `${currentSelected.name} District (${(currentSelected.severity * 100).toFixed(0)}% Risk)`
+    : 'Bangladesh National Overview';
+  const activeOverlayNames = HAZARD_LAYERS
+    .filter((h) => selectedHazards.includes(h.id))
+    .map((h) => h.name)
+    .join(', ') || 'Baseline Vector Boundaries';
 
-      setExportSuccessMsg('High-resolution map snapshot ready!');
-    } catch (err) {
-      console.error('Failed to capture map snapshot:', err);
-      toast.error('Failed to capture map image. Please try again.');
-    } finally {
-      setIsGeneratingSnapshot(false);
-      setIsExportingMap(false);
-    }
-  };
+  const {
+    generateMapSnapshot,
+    handleDownloadImage,
+    handleCopyImageToClipboard,
+    handleShareReport,
+    capturedPreviewUrl,
+    capturedBlob,
+    isGeneratingSnapshot,
+    isExportingMap,
+    exportSuccessMsg,
+    copySuccessMsg,
+    setExportSuccessMsg,
+    setCopySuccessMsg,
+  } = useMapSnapshot(mapContainerRef, mapInstanceRef, {
+    exportScale,
+    exportFormat,
+    includeWatermarkHeader,
+    includeOverlayLegend,
+    customReportTitle,
+    baseMapName,
+    selectedInfo,
+    activeOverlayNames,
+  });
 
   const handleOpenExportModal = () => {
     setIsExportModalOpen(true);
     generateMapSnapshot();
   };
 
-  const handleDownloadImage = () => {
-    if (!capturedPreviewUrl) return;
-    const dateStr = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
-    const filename = `HazardNet_MapReport_${dateStr}.${exportFormat}`;
-
-    const downloadLink = document.createElement('a');
-    downloadLink.href = capturedPreviewUrl;
-    downloadLink.download = filename;
-    document.body.appendChild(downloadLink);
-    downloadLink.click();
-    document.body.removeChild(downloadLink);
-
-    toast.success(`High-resolution report saved as ${filename}`, { icon: <MaterialIcon name="photo_camera" className="w-4 h-4 inline-block align-middle" /> });
-  };
-
-  const handleCopyImageToClipboard = async () => {
-    if (!capturedBlob) return;
-    try {
-      if (navigator.clipboard && window.ClipboardItem) {
-        const item = new ClipboardItem({ [capturedBlob.type || 'image/png']: capturedBlob });
-        await navigator.clipboard.write([item]);
-        setCopySuccessMsg('High-resolution map image copied to clipboard!');
-        toast.success('Copied map image to clipboard! Ready to paste into reports or messages.', { icon: <MaterialIcon name="content_copy" className="w-4 h-4 text-amber-600" /> });
-        setTimeout(() => setCopySuccessMsg(null), 4000);
-      } else {
-        toast.error('Browser clipboard copy not supported. Please use Download.');
-      }
-    } catch (err) {
-      console.error('Clipboard copy error:', err);
-      toast.error('Could not copy image to clipboard. Try downloading instead.');
-    }
-  };
-
-  const handleShareReport = async () => {
-    if (!capturedBlob) return;
-    try {
-      const filename = `HazardNet_Report_${Date.now()}.${exportFormat}`;
-      const file = new File([capturedBlob], filename, { type: capturedBlob.type });
-
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({
-          title: customReportTitle,
-          text: `HazardNet High-Resolution Geospatial Hazard Report for Bangladesh. Active Location: ${currentSelected?.name || 'All Districts'}.`,
-          files: [file],
-        });
-        toast.success('Hazard report shared successfully!', { icon: <MaterialIcon name="ios_share" className="w-4 h-4 text-sky-600" /> });
-      } else {
-        handleDownloadImage();
-      }
-    } catch (err) {
-      if ((err as Error).name !== 'AbortError') {
-        console.error('Share failed:', err);
-        toast.error('Sharing failed or was cancelled.');
-      }
-    }
-  };
-
-  // Legacy handler compatibility
   const handleExportMapImage = () => {
     handleOpenExportModal();
   };
@@ -921,73 +481,9 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
   };
 
   // Handler to locate user geographic position and map to corresponding district
-  const handleCenterOnUserLocation = async () => {
-    setIsLocatingUser(true);
-    setUserLocationError(null);
-
-    try {
-      const result = await detectExactPinpointLocation();
-      const { lat, lng, nearestDistrict, distanceKm, accuracyMeters } = result;
-
-      setUserGpsPos({ lat, lng, accuracy: accuracyMeters });
-      setIsLocatingUser(false);
-
-      if (nearestDistrict) {
-        if (onSelectDistrict) {
-          onSelectDistrict({
-            id: nearestDistrict.id,
-            name: nearestDistrict.name,
-            division: nearestDistrict.division,
-            lat: nearestDistrict.lat,
-            lng: nearestDistrict.lng,
-            risk: nearestDistrict.risk,
-            mainCrop: nearestDistrict.mainCrop,
-          });
-        }
-        toast.success(
-          `Mapped to your location in ${nearestDistrict.name} District (${nearestDistrict.division} Division)!`,
-          { icon: <MaterialIcon name="my_location" className="w-4 h-4 text-amber-600" />, duration: 4500 }
-        );
-      }
-
-      if (mapInstanceRef.current && nearestDistrict) {
-        const boundaryCoords = getDistrictBoundaryCoordinates(nearestDistrict, lat, lng);
-        if (boundaryCoords.length >= 3) {
-          try {
-            const bounds = L.latLngBounds(boundaryCoords);
-            if (bounds.isValid()) {
-              mapInstanceRef.current.fitBounds(bounds.pad(0.35), { animate: true, duration: 1.5, maxZoom: 11 });
-            } else if (isValidLatLng(lat, lng)) {
-              mapInstanceRef.current.flyTo([lat, lng], 11, { animate: true, duration: 1.5 });
-            }
-          } catch (e) {
-            if (isValidLatLng(lat, lng)) {
-              mapInstanceRef.current.flyTo([lat, lng], 11, { animate: true, duration: 1.5 });
-            }
-          }
-        } else if (isValidLatLng(lat, lng)) {
-          mapInstanceRef.current.flyTo([lat, lng], 11, { animate: true, duration: 1.5 });
-        }
-      } else if (mapInstanceRef.current && isValidLatLng(lat, lng)) {
-        mapInstanceRef.current.flyTo([lat, lng], 11, { animate: true, duration: 1.5 });
-      }
-    } catch (err) {
-      console.warn('Geolocation error:', err);
-      setIsLocatingUser(false);
-      setUserLocationError('GPS/IP location detection failed. Centered on default position.');
-      const fallbackLat = isValidCoordinate(pinpointLat) ? pinpointLat! : 23.8103;
-      const fallbackLng = isValidCoordinate(pinpointLng) ? pinpointLng! : 90.4125;
-      if (mapInstanceRef.current) {
-        mapInstanceRef.current.flyTo([fallbackLat, fallbackLng], 9, { animate: true, duration: 1.2 });
-      }
-    }
+  const handleCenterOnUserLocation = () => {
+    centerOnUserLocation();
   };
-
-  // Measure mode ref for Leaflet click callback
-  const isMeasuringRef = useRef(isMeasuring);
-  useEffect(() => {
-    isMeasuringRef.current = isMeasuring;
-  }, [isMeasuring]);
 
   const handleActivity = () => {
     setIsHudVisible(true);
@@ -1015,6 +511,8 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
             const bounds = L.latLngBounds(boundaryCoords);
             if (bounds.isValid()) {
               mapInstanceRef.current.fitBounds(bounds.pad(0.35), { animate: true, duration: 1.2, maxZoom: 10.5 });
+            } else {
+              mapInstanceRef.current.flyTo([dist.lat, dist.lng], 9.5, { duration: 1.2 });
             }
           } catch (e) {
             console.warn('Failed to fit district bounds:', e);
@@ -1037,9 +535,6 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
       });
     }
   }, [onSelectDistrict]);
-
-  // Selected district object
-  const currentSelected = selectedDistrictId ? liveDistrictsData.find((d) => d.id === selectedDistrictId) : undefined;
 
   // Active district corresponding to the user's current GPS location, stored pinpoint, or home profile
   const activeUserDistrict = useMemo(() => {
@@ -1086,11 +581,6 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
   const clearAllHazards = () => {
     setSelectedHazards([]);
   };
-
-  // Compute live path distance, hazards & risk severity analysis
-  const pathAnalysis = useMemo(() => {
-    return analyzePathBetweenPoints(measurePoints);
-  }, [measurePoints]);
 
   // Compute top 3 hazards for the selected division
   const divisionTopHazards = useMemo(() => {
@@ -1185,157 +675,12 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
     return matchesSearch && matchesHazard && matchesDivision;
   });
 
-  // 1. Initialize Leaflet Map once
-  useEffect(() => {
-    if (!mapContainerRef.current || mapInstanceRef.current) return;
-
-    const map = L.map(mapContainerRef.current, {
-      center: [23.8103, 90.4125],
-      zoom: 7,
-      zoomControl: false,
-      attributionControl: false,
-    });
-
-    const tileLayer = L.tileLayer(MAP_LAYERS[activeLayer].url, {
-      maxZoom: MAP_LAYERS[activeLayer].maxZoom,
-      opacity: 1.0,
-      crossOrigin: true,
-    }).addTo(map);
-
-    const markersGroup = L.layerGroup().addTo(map);
-    const measureGroup = L.layerGroup().addTo(map);
-    const riverGroup = L.layerGroup().addTo(map);
-    const radarGroup = L.layerGroup().addTo(map);
-    const inspectGroup = L.layerGroup().addTo(map);
-
-    map.on('move', () => {
-      const c = map.getCenter();
-      setCurrentCoords({ lat: c.lat, lng: c.lng, zoom: map.getZoom() });
-    });
-    map.on('zoom', () => {
-      const c = map.getCenter();
-      setCurrentCoords({ lat: c.lat, lng: c.lng, zoom: map.getZoom() });
-    });
-
-    // Map Anywhere Click Handler: Distance Ruler or Inspection Pin
-    map.on('click', (e: L.LeafletMouseEvent) => {
-      const lat = Number(e.latlng.lat.toFixed(4));
-      const lng = Number(e.latlng.lng.toFixed(4));
-
-      if (isMeasuringRef.current) {
-        setMeasurePoints((prev) => [...prev, [lat, lng]]);
-      } else {
-        setInspectedPoint({ lat, lng });
-      }
-    });
-
-    mapInstanceRef.current = map;
-    tileLayerRef.current = tileLayer;
-    markersGroupRef.current = markersGroup;
-    measureGroupRef.current = measureGroup;
-    riverGroupRef.current = riverGroup;
-    radarGroupRef.current = radarGroup;
-    inspectGroupRef.current = inspectGroup;
-
-    // Automatically request user's current coordinates & map to nearest district on first launch if setting is enabled
-    if (!hasAutoLocatedRef.current) {
-      hasAutoLocatedRef.current = true;
-      const isAutoLocateEnabled =
-        userProfile?.autoDetectLocationEnabled ??
-        (localStorage.getItem('hazardnet_auto_detect_location') !== 'false');
-
-      if (isAutoLocateEnabled) {
-        setIsLocatingUser(true);
-        detectExactPinpointLocation()
-          .then((result) => {
-            setIsLocatingUser(false);
-            if (result && isValidLatLng(result.lat, result.lng)) {
-              setUserGpsPos({ lat: result.lat, lng: result.lng, accuracy: result.accuracyMeters });
-              if (result.nearestDistrict && onSelectDistrict) {
-                onSelectDistrict({
-                  id: result.nearestDistrict.id,
-                  name: result.nearestDistrict.name,
-                  division: result.nearestDistrict.division,
-                  lat: result.nearestDistrict.lat,
-                  lng: result.nearestDistrict.lng,
-                  risk: result.nearestDistrict.risk,
-                  mainCrop: result.nearestDistrict.mainCrop,
-                });
-              }
-              if (mapInstanceRef.current && result.nearestDistrict) {
-                const boundaryCoords = getDistrictBoundaryCoordinates(result.nearestDistrict, result.lat, result.lng);
-                if (boundaryCoords.length >= 3) {
-                  try {
-                    const bounds = L.latLngBounds(boundaryCoords);
-                    if (bounds.isValid()) {
-                      mapInstanceRef.current.fitBounds(bounds.pad(0.35), { animate: true, duration: 1.5, maxZoom: 11 });
-                    } else {
-                      mapInstanceRef.current.flyTo([result.lat, result.lng], 11, { animate: true, duration: 1.5 });
-                    }
-                  } catch (e) {
-                    mapInstanceRef.current.flyTo([result.lat, result.lng], 11, { animate: true, duration: 1.5 });
-                  }
-                } else {
-                  mapInstanceRef.current.flyTo([result.lat, result.lng], 11, { animate: true, duration: 1.5 });
-                }
-              } else if (mapInstanceRef.current) {
-                mapInstanceRef.current.flyTo([result.lat, result.lng], 11, { animate: true, duration: 1.5 });
-              }
-            }
-          })
-          .catch((err) => {
-            console.warn('Auto-geolocation on initial launch failed:', err);
-            setIsLocatingUser(false);
-          });
-      }
-    }
-
-    setTimeout(() => {
-      if (mapInstanceRef.current) {
-        mapInstanceRef.current.invalidateSize();
-      }
-    }, 300);
-
-    const resizeObserver = new ResizeObserver(() => {
-      if (mapInstanceRef.current) {
-        mapInstanceRef.current.invalidateSize();
-      }
-    });
-
-    if (mapContainerRef.current) {
-      resizeObserver.observe(mapContainerRef.current);
-    }
-
-    return () => {
-      resizeObserver.disconnect();
-      map.remove();
-      mapInstanceRef.current = null;
-      tileLayerRef.current = null;
-      markersGroupRef.current = null;
-      measureGroupRef.current = null;
-      riverGroupRef.current = null;
-      radarGroupRef.current = null;
-      inspectGroupRef.current = null;
-    };
-  }, []);
-
-  // 2. Update Tile Layer on switch
-  useEffect(() => {
-    if (!tileLayerRef.current || !mapInstanceRef.current) return;
-    setIsProcessingData(true);
-    const config = MAP_LAYERS[activeLayer];
-    tileLayerRef.current.setUrl(config.url);
-    const timer = setTimeout(() => {
-      setIsProcessingData(false);
-    }, 1000);
-    return () => clearTimeout(timer);
-  }, [activeLayer]);
-
   // 3. Render Markers & Outlined District Boundaries
   useEffect(() => {
     if (!markersGroupRef.current) return;
 
     markersGroupRef.current.clearLayers();
+    clusterGroupRef.current?.clearLayers();
     districtMarkersRef.current.clear();
 
     const districtsToRender =
@@ -1414,7 +759,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
         });
 
         // Pin Marker with DivIcon
-        const icon = createCustomIcon(dist.severity, isSel, dist.hazardType, dist.name);
+        const icon = createCustomIcon(dist.severity, isSel, dist.hazardType, dist.name, dist.risk);
         const marker = L.marker([dist.lat, dist.lng], { icon });
         const severityPct = (dist.severity * 100).toFixed(0);
 
@@ -1520,6 +865,8 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
           autoPanPadding: [20, 20],
         });
 
+        // Attach district payload for cluster icon summary calculations
+        (marker as any).districtData = dist;
         districtMarkersRef.current.set(dist.id, marker);
 
         const triggerClick = () => {
@@ -1528,6 +875,26 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
 
         marker.on('click', triggerClick);
         circle.on('click', triggerClick);
+
+        const districtAriaLabel = `${dist.name} District, Risk: ${dist.risk || (dist.severity >= 0.7 ? 'High' : dist.severity >= 0.4 ? 'Moderate' : 'Low')}, Hazard: ${dist.hazardType}, Severity: ${Math.round(dist.severity * 100)}%`;
+
+        const attachMarkerA11y = () => {
+          const el = marker.getElement();
+          if (el) {
+            el.setAttribute('tabindex', '0');
+            el.setAttribute('role', 'button');
+            el.setAttribute('aria-label', districtAriaLabel);
+            el.onkeydown = (e: KeyboardEvent) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                triggerClick();
+              }
+            };
+          }
+        };
+
+        marker.on('add', attachMarkerA11y);
+        setTimeout(attachMarkerA11y, 50);
 
         marker.on('popupopen', () => {
           const btn = document.getElementById(`btn-modal-${dist.id}`);
@@ -1539,8 +906,15 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
           }
         });
 
-        markersGroupRef.current?.addLayer(circle);
-        markersGroupRef.current?.addLayer(marker);
+        if (isClusteringActive && !isolateSelected) {
+          clusterGroupRef.current?.addLayer(marker);
+          if (isSel || isUserDist || isDivSel) {
+            markersGroupRef.current?.addLayer(circle);
+          }
+        } else {
+          markersGroupRef.current?.addLayer(circle);
+          markersGroupRef.current?.addLayer(marker);
+        }
       } catch (markerErr) {
         console.warn('Failed to add district marker:', dist.name, markerErr);
       }
@@ -1551,7 +925,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
       try {
         const userPinIcon = L.divIcon({
           html: `
-            <div style="position: relative; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;">
+            <div tabindex="0" role="button" aria-label="User Stored Pinpoint GPS Location: ${pinpointLat.toFixed(4)}°N, ${pinpointLng.toFixed(4)}°E" style="position: relative; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; outline: none; cursor: pointer;">
               <div style="position: absolute; inset: -8px; border-radius: 50%; background: rgba(2, 132, 199, 0.4); filter: blur(4px);" class="radar-ping-ring"></div>
               <div style="position: relative; width: 32px; height: 32px; border-radius: 50%; background: #0284c7; border: 2.5px solid #ffffff; display: flex; align-items: center; justify-content: center; color: #ffffff; box-shadow: 0 4px 16px rgba(2, 132, 199, 0.6);">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="display:block;"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="12" cy="12" r="3" fill="currentColor"/><line x1="12" y1="2" x2="12" y2="6" stroke="currentColor" stroke-width="2"/><line x1="12" y1="18" x2="12" y2="22" stroke="currentColor" stroke-width="2"/><line x1="2" y1="12" x2="6" y2="12" stroke="currentColor" stroke-width="2"/><line x1="18" y1="12" x2="22" y2="12" stroke="currentColor" stroke-width="2"/></svg>
@@ -1575,6 +949,17 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
         const pinSevPct = pinDist ? Math.round(pinDist.severity * 100) : 0;
         const pinRiskColor = pinDist?.risk === 'High' ? '#e11d48' : pinDist?.risk === 'Moderate' ? '#d97706' : '#16a34a';
         const pinRiskBg = pinDist?.risk === 'High' ? 'rgba(225, 29, 72, 0.12)' : pinDist?.risk === 'Moderate' ? 'rgba(217, 119, 6, 0.12)' : 'rgba(22, 163, 74, 0.12)';
+
+        const attachPinA11y = () => {
+          const el = userPinMarker.getElement();
+          if (el) {
+            el.setAttribute('tabindex', '0');
+            el.setAttribute('role', 'button');
+            el.setAttribute('aria-label', `User Stored Pinpoint GPS Location: ${pinpointLat.toFixed(4)}°N, ${pinpointLng.toFixed(4)}°E`);
+          }
+        };
+        userPinMarker.on('add', attachPinA11y);
+        setTimeout(attachPinA11y, 50);
 
         userPinMarker.bindPopup(`
           <div style="padding: 12px; font-family: 'Playfair Display', serif; color: #023246; min-width: 240px; max-width: 280px;">
@@ -1646,7 +1031,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
 
         const userGpsIcon = L.divIcon({
           html: `
-            <div style="position: relative; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+            <div tabindex="0" role="button" aria-label="Active Real-time GPS Position: ${userGpsPos.lat.toFixed(4)}°N, ${userGpsPos.lng.toFixed(4)}°E" style="position: relative; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; outline: none; cursor: pointer;">
               <div style="position: absolute; inset: -10px; border-radius: 50%; background: rgba(2, 132, 199, 0.45); filter: blur(6px);" class="radar-ping-ring"></div>
               <div style="position: relative; width: 36px; height: 36px; border-radius: 50%; background: #0284c7; border: 2.5px solid #ffffff; display: flex; align-items: center; justify-content: center; color: #ffffff; box-shadow: 0 4px 20px rgba(2, 132, 199, 0.7);">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="display:block;"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="12" cy="12" r="3" fill="currentColor"/><line x1="12" y1="2" x2="12" y2="6" stroke="currentColor" stroke-width="2"/><line x1="12" y1="18" x2="12" y2="22" stroke="currentColor" stroke-width="2"/><line x1="2" y1="12" x2="6" y2="12" stroke="currentColor" stroke-width="2"/><line x1="18" y1="12" x2="22" y2="12" stroke="currentColor" stroke-width="2"/></svg>
@@ -1662,6 +1047,17 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
           icon: userGpsIcon,
           zIndexOffset: 3500,
         });
+
+        const attachGpsA11y = () => {
+          const el = gpsMarker.getElement();
+          if (el) {
+            el.setAttribute('tabindex', '0');
+            el.setAttribute('role', 'button');
+            el.setAttribute('aria-label', `Active Real-time GPS Position: ${userGpsPos.lat.toFixed(4)}°N, ${userGpsPos.lng.toFixed(4)}°E`);
+          }
+        };
+        gpsMarker.on('add', attachGpsA11y);
+        setTimeout(attachGpsA11y, 50);
 
         const nearest = findNearestDistrict(userGpsPos.lat, userGpsPos.lng);
         const dist = nearest?.district;
@@ -1778,7 +1174,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
         }
       }
     }
-  }, [filteredDistricts, selectedDistrictId, isolateSelected, currentSelected, handleSelectDistrict, navigate, pinpointLat, pinpointLng, userGpsPos, activeUserDistrict]);
+  }, [filteredDistricts, selectedDistrictId, isolateSelected, currentSelected, handleSelectDistrict, navigate, pinpointLat, pinpointLng, userGpsPos, activeUserDistrict, isClusteringActive, selectedDivision]);
 
   // 4. Render Interactive Click Inspection Marker
   useEffect(() => {
@@ -1788,7 +1184,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
     if (inspectedPoint && isValidLatLng(inspectedPoint.lat, inspectedPoint.lng)) {
       const inspectIcon = L.divIcon({
         html: `
-          <div style="position: relative; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;">
+          <div tabindex="0" role="button" aria-label="Inspected Geographic Point: ${inspectedPoint.lat.toFixed(4)}°N, ${inspectedPoint.lng.toFixed(4)}°E" style="position: relative; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; outline: none; cursor: pointer;">
             <div style="position: absolute; inset: -12px; border-radius: 50%; background: rgba(249, 168, 37, 0.45); filter: blur(6px);" class="radar-ping-ring"></div>
             <div style="position: relative; width: 30px; height: 30px; border-radius: 50%; background: #ffffff; border: 3px solid #f9a825; display: flex; align-items: center; justify-content: center; color: #0f172a; font-size: 14px; font-weight: 900; box-shadow: 0 4px 16px rgba(249, 168, 37, 0.5);">
               <MaterialIcon name="search" className="w-4 h-4 inline-block align-middle" />
@@ -1801,150 +1197,20 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
       });
 
       const inspectMarker = L.marker([inspectedPoint.lat, inspectedPoint.lng], { icon: inspectIcon, zIndexOffset: 4000 });
+      const attachInspectA11y = () => {
+        const el = inspectMarker.getElement();
+        if (el) {
+          el.setAttribute('tabindex', '0');
+          el.setAttribute('role', 'button');
+          el.setAttribute('aria-label', `Inspected Geographic Point: ${inspectedPoint.lat.toFixed(4)}°N, ${inspectedPoint.lng.toFixed(4)}°E`);
+        }
+      };
+      inspectMarker.on('add', attachInspectA11y);
+      setTimeout(attachInspectA11y, 50);
+
       inspectGroupRef.current.addLayer(inspectMarker);
     }
   }, [inspectedPoint]);
-
-  // 5. Render Distance Measurement Ruler Polyline, Waypoint Nodes & Path Analysis Leaflet Popup
-  useEffect(() => {
-    if (!measureGroupRef.current) return;
-    measureGroupRef.current.clearLayers();
-
-    if (measurePoints.length > 0) {
-      // Waypoint Markers
-      measurePoints.forEach((pt, idx) => {
-        const stepDist = idx > 0 ? calculateDistanceKm(measurePoints[idx - 1][0], measurePoints[idx - 1][1], pt[0], pt[1]) : 0;
-        const nearest = findNearestDistrict(pt[0], pt[1]);
-
-        const nodeIcon = L.divIcon({
-          html: `
-            <div style="
-              background: ${idx === 0 ? '#0284c7' : '#f9a825'};
-              color: #ffffff;
-              font-family: 'Playfair Display', serif;
-              font-size: 10px;
-              font-weight: 900;
-              padding: 4px 9px;
-              border-radius: 9999px;
-              border: 2px solid #ffffff;
-              box-shadow: 0 4px 14px rgba(0,0,0,0.35);
-              white-space: nowrap;
-              display: flex;
-              align-items: center;
-              gap: 4px;
-            ">
-              <span>${idx === 0 ? '<MaterialIcon name="location_on" className="w-4 h-4 inline-block align-middle" /> P1' : `<MaterialIcon name="my_location" className="w-4 h-4 inline-block align-middle" /> P${idx + 1}`}</span>
-              <span style="opacity: 0.9;">(${nearest.district.name})</span>
-              ${stepDist > 0 ? `<span style="background: rgba(0,0,0,0.25); padding: 1px 5px; border-radius: 6px;">+${stepDist.toFixed(1)}km</span>` : ''}
-            </div>
-          `,
-          className: 'measure-node-icon',
-          iconSize: [120, 26],
-          iconAnchor: [60, 13],
-        });
-
-        const marker = L.marker([pt[0], pt[1]], { icon: nodeIcon, zIndexOffset: 3800 });
-        measureGroupRef.current?.addLayer(marker);
-      });
-
-      // Connecting Polyline & Midpoint Analysis Leaflet Popup
-      if (measurePoints.length >= 2) {
-        const line = L.polyline(measurePoints, {
-          color: '#f9a825',
-          weight: 5,
-          opacity: 0.95,
-          dashArray: '8, 8',
-        });
-        measureGroupRef.current.addLayer(line);
-
-        const analysis = analyzePathBetweenPoints(measurePoints);
-        if (analysis) {
-          // Midpoint of segment
-          const midLat = (measurePoints[0][0] + measurePoints[1][0]) / 2;
-          const midLng = (measurePoints[0][1] + measurePoints[1][1]) / 2;
-
-          const riskBadgeColor =
-            analysis.riskRating === 'High' ? '#dc2626' : analysis.riskRating === 'Moderate' ? '#d97706' : '#16a34a';
-
-          const midpointIcon = L.divIcon({
-            html: `
-              <div style="
-                width: 28px;
-                height: 28px;
-                border-radius: 50%;
-                background: #ffffff;
-                border: 3px solid #f9a825;
-                box-shadow: 0 4px 16px rgba(249, 168, 37, 0.6);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-size: 13px;
-                font-weight: 900;
-                cursor: pointer;
-              ">
-                📏
-              </div>
-            `,
-            className: 'measure-midpoint-icon',
-            iconSize: [28, 28],
-            iconAnchor: [14, 14],
-          });
-
-          const midpointMarker = L.marker([midLat, midLng], { icon: midpointIcon, zIndexOffset: 3900 });
-
-          const popupContent = `
-            <div style="padding: 10px; font-family: 'Playfair Display', serif; color: #0f172a; min-width: 250px; max-width: 290px;">
-              <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; margin-bottom: 8px;">
-                <strong style="font-size: 12px; color: #0f172a; font-weight: 900; display: flex; align-items: center; gap: 4px;">
-                  📏 Path Measurement
-                </strong>
-                <span style="font-size: 11px; font-weight: 900; background: #f9a825; color: #ffffff; padding: 2px 8px; border-radius: 9999px;">
-                  ${analysis.totalDistanceKm.toFixed(1)} km
-                </span>
-              </div>
-              
-              <div style="font-size: 11px; line-height: 1.6; color: #334155;">
-                <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px; font-weight: 800; color: #0f172a; background: #f8fafc; padding: 6px 8px; border-radius: 8px; border: 1px solid #e2e8f0;">
-                  <span style="color: #0284c7;"><MaterialIcon name="location_on" className="w-4 h-4 inline-block align-middle" /> ${analysis.startDistrict?.name || 'P1'}</span>
-                  <span style="color: #64748b;">➔</span>
-                  <span style="color: #d97706;"><MaterialIcon name="my_location" className="w-4 h-4 inline-block align-middle" /> ${analysis.endDistrict?.name || 'P2'}</span>
-                </div>
-                
-                <div style="margin-top: 8px; display: flex; align-items: center; justify-content: space-between;">
-                  <span style="font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase;">Path Severity Risk:</span>
-                  <span style="font-size: 10px; font-weight: 900; color: ${riskBadgeColor}; background: ${riskBadgeColor}15; padding: 2px 6px; border-radius: 4px; border: 1px solid ${riskBadgeColor}30;">
-                    ${(analysis.maxSeverity * 100).toFixed(0)}% • ${analysis.riskRating}
-                  </span>
-                </div>
-
-                <div style="margin-top: 6px;">
-                  <span style="font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase;">Hazards Encountered:</span>
-                  <div style="margin-top: 4px; display: flex; flex-wrap: wrap; gap: 4px;">
-                    ${
-                      analysis.hazardsDetected.length > 0
-                        ? analysis.hazardsDetected.map(h => `<span style="font-size: 9px; font-weight: 800; background: #fef3c7; color: #b45309; border: 1px solid #fde68a; padding: 1px 6px; border-radius: 4px;"><MaterialIcon name="warning" className="w-4 h-4 inline-block align-middle" /> ${h}</span>`).join('')
-                        : '<span style="font-size: 10px; color: #16a34a; font-weight: 700;">✓ Low Hazard Risk</span>'
-                    }
-                  </div>
-                </div>
-
-                <div style="margin-top: 8px; font-size: 10px; color: #64748b; border-top: 1px dashed #cbd5e1; padding-top: 6px;">
-                  Districts transited (${analysis.districtsAlongPath.length}): ${analysis.districtsAlongPath.map(d => d.district.name).join(', ')}
-                </div>
-              </div>
-            </div>
-          `;
-
-          midpointMarker.bindPopup(popupContent, { autoPan: false, closeButton: true });
-          measureGroupRef.current.addLayer(midpointMarker);
-
-          setTimeout(() => {
-            midpointMarker.openPopup();
-          }, 150);
-        }
-      }
-    }
-  }, [measurePoints]);
 
   // 6. Render Major Bangladesh River Basins Polyline Layer
   useEffect(() => {
@@ -2065,13 +1331,6 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
       }
     }
   }, [isHeatmapActive, filteredDistricts]);
-
-  // Total measured distance calculation
-  const totalMeasuredKm = measurePoints.reduce((acc, curr, idx) => {
-    if (idx === 0) return 0;
-    const prev = measurePoints[idx - 1];
-    return acc + calculateDistanceKm(prev[0], prev[1], curr[0], curr[1]);
-  }, 0);
 
   // Nearest district details for current inspection point
   const nearestDistrictData = inspectedPoint ? findNearestDistrict(inspectedPoint.lat, inspectedPoint.lng) : null;
@@ -2467,7 +1726,12 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
             is3DTilted ? 'map-perspective-tilted' : ''
           } ${isHighContrastBoost ? 'map-tile-high-contrast' : ''}`}
         >
-          <div ref={mapContainerRef} className="w-full h-full z-10 bg-transparent pointer-events-auto" />
+          <div
+            ref={mapContainerRef}
+            role="region"
+            aria-label="Interactive Bangladesh Hazard Leaflet GIS Map with keyboard-navigable district pins and risk data"
+            className="w-full h-full z-10 bg-transparent pointer-events-auto"
+          />
         </div>
 
         {/* Floating HUD Controls Container */}
@@ -2569,8 +1833,15 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                 {/* Expandable Location Map Tile */}
                 <div className="my-1">
                   <LocationMap 
-                    location={`${currentSelected.name}, Bangladesh`}
+                    location={`${currentSelected.name} District, ${currentSelected.division}`}
                     coordinates={`${currentSelected.lat.toFixed(4)}° N, ${currentSelected.lng.toFixed(4)}° E`}
+                    lat={currentSelected.lat}
+                    lng={currentSelected.lng}
+                    hazardType={currentSelected.hazardType}
+                    severity={currentSelected.severity}
+                    risk={currentSelected.risk}
+                    division={currentSelected.division}
+                    elevation={currentSelected.elevationMeters}
                   />
                 </div>
 
@@ -2633,6 +1904,13 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                   <LocationMap 
                     location={`${nearestDistrictData.district.name}, ${nearestDistrictData.district.division}`}
                     coordinates={`${inspectedPoint.lat.toFixed(4)}° N, ${inspectedPoint.lng.toFixed(4)}° E`}
+                    lat={inspectedPoint.lat}
+                    lng={inspectedPoint.lng}
+                    hazardType={nearestDistrictData.district.hazardType}
+                    severity={nearestDistrictData.district.severity}
+                    risk={nearestDistrictData.district.risk}
+                    division={nearestDistrictData.district.division}
+                    elevation={nearestDistrictData.district.elevationMeters}
                   />
                 </div>
 
@@ -3213,6 +2491,130 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                         {isHighContrastBoost ? 'Active' : 'Normal'}
                       </button>
                     </div>
+
+                    <div className="flex items-center justify-between p-2.5 rounded-xl bg-emerald-50/70 border border-emerald-200/80">
+                      <div className="flex flex-col pr-2">
+                        <span className="font-bold text-emerald-950 flex items-center gap-1.5">
+                          <Layers className="w-4 h-4 text-emerald-700" /> District Marker Clustering
+                        </span>
+                        <span className="text-[10px] text-emerald-800 font-medium mt-0.5">
+                          Groups 64 districts at zoom ≤ 8 (Boosts mobile FPS & low-power GPU rendering)
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => setIsClusteringActive(!isClusteringActive)}
+                        className={`px-3 py-1.5 rounded-lg font-black text-xs transition-all shrink-0 ${
+                          isClusteringActive ? 'bg-emerald-700 text-white shadow-xs' : 'bg-slate-200 text-slate-700'
+                        }`}
+                      >
+                        {isClusteringActive ? 'Clustered (Auto)' : '64 Pins (Raw)'}
+                      </button>
+                    </div>
+
+                    {/* IndexedDB Offline Tile Store Section */}
+                    <div className="p-3.5 rounded-2xl bg-amber-50/70 border border-amber-200/90 flex flex-col gap-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 rounded-xl bg-amber-600 text-white flex items-center justify-center shadow-xs shrink-0">
+                            <HardDrive className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <span className="font-black text-xs text-amber-950 block">
+                              Offline Emergency Tile Store (IndexedDB)
+                            </span>
+                            <span className="text-[10px] text-amber-800 font-medium">
+                              Zero-network blackout resilience for flood & cyclone response
+                            </span>
+                          </div>
+                        </div>
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider flex items-center gap-1 border shrink-0 ${
+                          isOnline 
+                            ? 'bg-emerald-100 text-emerald-800 border-emerald-300' 
+                            : 'bg-rose-100 text-rose-800 border-rose-300 animate-pulse'
+                        }`}>
+                          {isOnline ? <Wifi className="w-3 h-3" /> : <WifiOff className="w-3 h-3" />}
+                          {isOnline ? 'Online Sync' : 'Offline Mode'}
+                        </span>
+                      </div>
+
+                      {/* Storage Stats Pill */}
+                      <div className="grid grid-cols-2 gap-2 text-[11px] bg-white/80 p-2.5 rounded-xl border border-amber-200">
+                        <div>
+                          <span className="text-slate-400 font-medium block text-[9px] uppercase">Storage Used</span>
+                          <span className="font-bold text-slate-800 font-mono text-xs">{cacheStats.formattedSize}</span>
+                        </div>
+                        <div>
+                          <span className="text-slate-400 font-medium block text-[9px] uppercase">Tiles in IndexedDB</span>
+                          <span className="font-bold text-slate-800 font-mono text-xs">{cacheStats.totalTiles} cached</span>
+                        </div>
+                      </div>
+
+                      {/* Pre-caching Progress Bar */}
+                      {isPreCaching && (
+                        <div className="p-2.5 bg-amber-100/80 rounded-xl border border-amber-300 flex flex-col gap-1.5">
+                          <div className="flex items-center justify-between text-[11px] font-bold text-amber-950">
+                            <span className="flex items-center gap-1.5 animate-pulse">
+                              <CloudDownload className="w-3.5 h-3.5 text-amber-700" />
+                              {preCacheStatus}
+                            </span>
+                            <span className="font-mono">{preCacheProgress}%</span>
+                          </div>
+                          <div className="w-full bg-amber-200 h-2 rounded-full overflow-hidden">
+                            <div
+                              className="bg-amber-600 h-full rounded-full transition-all duration-300"
+                              style={{ width: `${preCacheProgress}%` }}
+                            />
+                          </div>
+                          <button
+                            onClick={cancelPreCache}
+                            className="self-end text-[10px] text-rose-700 font-bold hover:underline cursor-pointer"
+                          >
+                            Cancel Download
+                          </button>
+                        </div>
+                      )}
+
+                      {/* Action Buttons */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                        <button
+                          onClick={() => downloadEmergencyBangladeshPack(activeLayer)}
+                          disabled={isPreCaching || !isOnline}
+                          className="px-3 py-2 bg-amber-600 hover:bg-amber-700 disabled:opacity-50 text-white text-[11px] font-black rounded-xl shadow-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                          title="Pre-cache tactical zoom 6–9 covering all 64 districts in Bangladesh"
+                        >
+                          <CloudDownload className="w-3.5 h-3.5" />
+                          <span>⚡ Pre-cache Bangladesh Core</span>
+                        </button>
+
+                        <button
+                          onClick={() => {
+                            if (currentSelected) {
+                              downloadDistrictEmergencyPack(currentSelected.lat, currentSelected.lng, currentSelected.name, activeLayer);
+                            } else {
+                              toast('Please select a district on the map first');
+                            }
+                          }}
+                          disabled={isPreCaching || !isOnline}
+                          className="px-3 py-2 bg-slate-800 hover:bg-slate-900 disabled:opacity-50 text-white text-[11px] font-black rounded-xl shadow-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                          title="Download high-resolution satellite/topo tiles for active district"
+                        >
+                          <Layers className="w-3.5 h-3.5" />
+                          <span>📍 Pre-cache {currentSelected ? currentSelected.name : 'Selected'} HD</span>
+                        </button>
+                      </div>
+
+                      <div className="flex items-center justify-between pt-1 border-t border-amber-200/60">
+                        <button
+                          onClick={() => clearCache()}
+                          disabled={isPreCaching || cacheStats.totalTiles === 0}
+                          className="text-[10px] text-slate-500 hover:text-rose-600 disabled:opacity-40 font-bold flex items-center gap-1 cursor-pointer transition-colors"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                          <span>Purge Offline Storage</span>
+                        </button>
+                        <span className="text-[9px] font-mono text-amber-800/80">IndexedDB: hazardnet_tile_cache_db</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
@@ -3352,7 +2754,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                           <button
                             onClick={() => {
                               setExportScale(3);
-                              generateMapSnapshot(3);
+                              generateMapSnapshot({ overrideScale: 3 });
                             }}
                             className={`py-2 px-2.5 rounded-xl font-black text-xs border transition-all text-center ${
                               exportScale === 3
@@ -3365,7 +2767,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                           <button
                             onClick={() => {
                               setExportScale(2);
-                              generateMapSnapshot(2);
+                              generateMapSnapshot({ overrideScale: 2 });
                             }}
                             className={`py-2 px-2.5 rounded-xl font-black text-xs border transition-all text-center ${
                               exportScale === 2
@@ -3378,7 +2780,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                           <button
                             onClick={() => {
                               setExportScale(1.5);
-                              generateMapSnapshot(1.5);
+                              generateMapSnapshot({ overrideScale: 1.5 });
                             }}
                             className={`py-2 px-2.5 rounded-xl font-black text-xs border transition-all text-center ${
                               exportScale === 1.5
@@ -3449,7 +2851,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                     {/* Action Toolbar */}
                     <div className="space-y-2 pt-3 border-t border-slate-100">
                       <button
-                        onClick={handleDownloadImage}
+                        onClick={() => handleDownloadImage()}
                         disabled={isGeneratingSnapshot || !capturedPreviewUrl}
                         className="w-full py-3 bg-[#f9a825] hover:bg-[#d08305] disabled:opacity-50 text-white font-black rounded-2xl text-xs shadow-md transition-all flex items-center justify-center gap-2 active:scale-95"
                       >
@@ -3535,12 +2937,38 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
             <AnimatedSocialIcons icons={hazardActions} iconSize={18} />
           </div>
 
-          {/* Coordinates Readout */}
-          <div className="absolute bottom-4 right-24 z-[1000] bg-white/90 backdrop-blur-md px-3.5 py-1.5 rounded-xl border border-slate-200 text-[11px] font-mono font-bold text-slate-700 shadow-lg pointer-events-auto hidden sm:flex items-center gap-3">
+          {/* Coordinates Readout, Performance Clustering & IndexedDB Tile Cache Indicator */}
+          <div className="absolute bottom-4 right-24 z-[1000] bg-white/95 backdrop-blur-md px-3.5 py-1.5 rounded-xl border border-slate-200 text-[11px] font-mono font-bold text-slate-700 shadow-lg pointer-events-auto hidden sm:flex items-center gap-3">
             <span>Lat: {currentCoords.lat.toFixed(4)}° N</span>
             <span>Lng: {currentCoords.lng.toFixed(4)}° E</span>
             <span className="text-slate-300">|</span>
             <span>Zoom: {currentCoords.zoom}</span>
+            <span className="text-slate-300">|</span>
+            <button
+              onClick={() => setIsClusteringActive(!isClusteringActive)}
+              className={`flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] cursor-pointer transition-colors border ${
+                isClusteringActive
+                  ? 'bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100'
+                  : 'bg-slate-100 text-slate-600 border-slate-300 hover:bg-slate-200'
+              }`}
+              title="Toggle District Marker Clustering for low-power mobile optimization"
+            >
+              <span>{isClusteringActive ? '● Clustered (Auto)' : '○ 64 Pins (Raw)'}</span>
+            </button>
+            <span className="text-slate-300">|</span>
+            <button
+              onClick={() => setIsLayerModalOpen(true)}
+              className={`flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] border font-sans font-semibold cursor-pointer transition-colors ${
+                !isOnline
+                  ? 'bg-rose-50 text-rose-800 border-rose-300 animate-pulse'
+                  : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+              }`}
+              title="IndexedDB Offline Emergency Tile Cache Status - Click to manage"
+            >
+              <HardDrive className="w-3 h-3 text-amber-600" />
+              <span>DB: {cacheStats.totalTiles} ({cacheStats.formattedSize})</span>
+              {!isOnline && <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />}
+            </button>
           </div>
         </div>
       </div>
