@@ -1458,3 +1458,30 @@ body.pdf-exporting thead tr.print-table-emergency-header,
   color: #475569 !important;
 }
 
+
+/* ─── Blog article typography (prose-blog) ─────────────────────────────── */
+.prose-blog h1 { font-size: 1.6rem; font-weight: 900; color: #0f172a; margin: 1.4rem 0 0.6rem; letter-spacing: -0.01em; }
+.prose-blog h2 { font-size: 1.3rem; font-weight: 900; color: #0f172a; margin: 1.3rem 0 0.5rem; }
+.prose-blog h3 { font-size: 1.1rem; font-weight: 800; color: #1e293b; margin: 1.1rem 0 0.4rem; }
+.prose-blog p  { margin: 0.75rem 0; line-height: 1.75; }
+.prose-blog ul, .prose-blog ol { margin: 0.75rem 0 0.75rem 1.4rem; line-height: 1.7; }
+.prose-blog ul { list-style: disc; }
+.prose-blog ol { list-style: decimal; }
+.prose-blog li { margin: 0.3rem 0; }
+.prose-blog a  { color: #b45309; font-weight: 700; text-decoration: underline; text-underline-offset: 2px; }
+.prose-blog a:hover { color: #92400e; }
+.prose-blog blockquote { margin: 1rem 0; padding: 0.6rem 1rem; border-left: 4px solid #f9a825; background: #fffbeb; border-radius: 0 0.75rem 0.75rem 0; color: #78350f; font-style: italic; }
+.prose-blog pre { margin: 1rem 0; padding: 0.9rem 1rem; background: #0f172a; color: #e2e8f0; border-radius: 0.75rem; overflow-x: auto; font-size: 0.78rem; line-height: 1.6; }
+.prose-blog code { font-family: 'JetBrains Mono', monospace; font-size: 0.82em; background: #f1f5f9; padding: 0.1rem 0.35rem; border-radius: 0.35rem; color: #b91c1c; }
+.prose-blog pre code { background: transparent; color: inherit; padding: 0; }
+.prose-blog img { max-width: 100%; height: auto; border-radius: 0.75rem; margin: 1rem 0; border: 1px solid #e2e8f0; }
+.prose-blog hr { margin: 1.5rem 0; border: none; border-top: 1px solid #e2e8f0; }
+.prose-blog [style*="text-align: center"], .prose-blog [style*="text-align:center"] { text-align: center; }
+.prose-blog [style*="text-align: right"], .prose-blog [style*="text-align:right"] { text-align: right; }
+
+/* Editor empty placeholder */
+[contenteditable][data-placeholder]:empty::before {
+  content: attr(data-placeholder);
+  color: #94a3b8;
+  pointer-events: none;
+}

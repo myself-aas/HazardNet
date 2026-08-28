@@ -7,7 +7,6 @@ import MaterialIcon from './MaterialIcon';
 import CommandPalette from './CommandPalette';
 import { useAuth } from '../context/AuthContext';
 import { SavedAssessmentsModal } from './SavedAssessmentsModal';
-import { AuthModal } from './AuthModal';
 import { UserProfileModal } from './UserProfileModal';
 import { NotificationToggle } from './NotificationToggle';
 import { FirebaseRealtimeStatus } from './FirebaseRealtimeStatus';
@@ -40,7 +39,6 @@ export const Navbar: React.FC<NavbarProps> = ({
   const { user } = useAuth();
 
   const [isSavedModalOpen, setIsSavedModalOpen] = useState(false);
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isMenuDrawerOpen, setIsMenuDrawerOpen] = useState(false);
   const [activeMenu, setActiveMenu] = useState<'home' | 'forecasts' | 'advisories' | 'docs' | 'analytics' | null>(null);
@@ -651,7 +649,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   if (user) {
                     setIsProfileModalOpen(true);
                   } else {
-                    setIsAuthModalOpen(true);
+                    navigate('/login');
                   }
                 }}
                 className="cursor-pointer shrink-0 hidden 2xl:block"
@@ -668,7 +666,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   if (user) {
                     setIsProfileModalOpen(true);
                   } else {
-                    setIsAuthModalOpen(true);
+                    navigate('/login');
                   }
                 }}
                 className="flex items-center gap-2 p-1 pl-1.5 pr-2.5 rounded-xl bg-white/70 hover:bg-white/95 border border-slate-200/80 shadow-2xs transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-teal-500/50 focus-visible:outline-none"
@@ -701,10 +699,6 @@ export const Navbar: React.FC<NavbarProps> = ({
         onSelectDistrict={onSelectDistrict}
       />
 
-      <AuthModal
-        isOpen={isAuthModalOpen}
-        onClose={() => setIsAuthModalOpen(false)}
-      />
 
       <UserProfileModal
         isOpen={isProfileModalOpen}
@@ -717,7 +711,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         onClose={() => setIsMenuDrawerOpen(false)}
         user={user}
         onOpenProfile={() => setIsProfileModalOpen(true)}
-        onOpenAuth={() => setIsAuthModalOpen(true)}
+        onOpenAuth={() => navigate('/login')}
         onSelectPage={(page) => {
           if (page.toLowerCase().includes('home')) navigate('/home/overview');
           else if (page.toLowerCase().includes('forecast')) navigate('/forecast/overview');

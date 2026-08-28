@@ -140,6 +140,11 @@ export const Footer: React.FC = () => {
                   Python PyPI Package
                 </Link>
               </li>
+              <li>
+                <Link to="/download?platform=npm" className="hover:text-slate-900 transition-colors">
+                  npm JavaScript Library
+                </Link>
+              </li>
             </ul>
           </div>
 

@@ -1,8 +1,11 @@
 import MaterialIcon from "../components/MaterialIcon";
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import Breadcrumbs from '../components/Breadcrumbs';
+import { BlogArticle, listPublishedArticles, readingTimeMinutes } from '../lib/blogArticles';
+import { useAuth } from '../context/AuthContext';
+import { isPrimarySuperAdmin } from '../lib/superadmins';
 
 interface BlogPost {
   id: string;
@@ -85,8 +88,20 @@ const BLOG_POSTS: BlogPost[] = [
 ];
 
 export const Blogs: React.FC = () => {
+  const { user } = useAuth();
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
   const [filterCategory, setFilterCategory] = useState<string>('All');
+  const [liveArticles, setLiveArticles] = useState<BlogArticle[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    void listPublishedArticles().then((result) => {
+      if (!cancelled && !result.error) setLiveArticles(result.data);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const filteredPosts = BLOG_POSTS.filter(
     (post) => filterCategory === 'All' || post.category === filterCategory
@@ -118,7 +133,48 @@ export const Blogs: React.FC = () => {
         <p className="text-slate-600 text-xs md:text-sm leading-relaxed max-w-3xl">
           Technical deep-dives, remote sensing methodologies, field deployment case studies, and edge WebAssembly optimizations written by the HazardNet research team.
         </p>
+
+        {isPrimarySuperAdmin(user?.email) && (
+          <Link
+            to="/dashboard/blog"
+            className="inline-flex items-center gap-2 rounded-2xl bg-slate-900 px-4 py-2.5 text-xs font-black text-white shadow-md transition-colors hover:bg-slate-700"
+          >
+            <MaterialIcon name="doc" className="w-4 h-4" /> Blog Studio — write & manage articles
+          </Link>
+        )}
       </div>
+
+      {/* Published articles from the Blog Studio (each at /blogs/:slug) */}
+      {liveArticles.length > 0 && (
+        <section className="space-y-3" data-testid="live-articles">
+          <h2 className="text-sm font-black text-slate-900 uppercase tracking-wider font-mono flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            Latest articles
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {liveArticles.map((article) => (
+              <Link
+                key={article.id}
+                to={`/blogs/${article.slug}`}
+                className="group bg-white border border-emerald-200/70 rounded-3xl p-5 shadow-sm hover:border-amber-400/80 hover:shadow-xl transition-all flex flex-col justify-between gap-3"
+              >
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-[10px] font-mono font-bold">
+                    <span className="px-2 py-0.5 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200">{article.category}</span>
+                    <span className="text-slate-400">{readingTimeMinutes(article.contentHtml)} min read</span>
+                  </div>
+                  <h3 className="text-sm font-black text-slate-900 group-hover:text-amber-900 leading-snug">{article.title}</h3>
+                  <p className="text-xs text-slate-600 line-clamp-2">{article.excerpt}</p>
+                </div>
+                <div className="text-[10px] font-mono text-slate-400 flex items-center justify-between">
+                  <span>{article.authorName}</span>
+                  <span className="font-black text-slate-900 group-hover:text-amber-900">Read → /blogs/{article.slug}</span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Category Filter Pills */}
       <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs font-bold scrollbar-none">

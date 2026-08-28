@@ -1,6 +1,17 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import type { User as SupabaseAuthUser, UserResponse } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
+import {
+  AUTH_RETURN_TO_KEY,
+  OAuthProviderId,
+  buildOAuthRedirectTo,
+  getProvider,
+  mapProviderUserMetadata,
+} from '../lib/oauthProviders';
+
+/** Auth screens themselves are never a useful post-login destination. */
+const isAuthScreen = (path: string) =>
+  /^\/(login|signup|forgot-password|update-password|auth)(\/|$)/.test(path);
 
 export type UserRolePersona =
   'smallholder_farmer' | 'ngo_coordinator' | 'govt_official' | 'academic_researcher' | 'commercial_agribusiness';
@@ -49,20 +60,22 @@ export interface UserAssessment {
 }
 
 type EmailCredential = UserResponse;
-export type OAuthProvider =
-  'google' | 'github' | 'microsoft' | 'apple' | 'linkedin' | 'discord' | 'slack' | 'twitter' | 'orcid';
+export type OAuthProvider = OAuthProviderId;
 export interface AuthContextType {
   user: AppUser | null;
   userProfile: UserProfileData | null;
   loading: boolean;
   signInWithGoogle: () => Promise<void>;
-  signInWithOAuth: (provider: OAuthProvider) => Promise<void>;
+  signInWithOAuth: (provider: OAuthProvider, options?: { nextTo?: string }) => Promise<void>;
+  linkIdentity: (provider: OAuthProvider) => Promise<void>;
+  unlinkIdentity: (provider: OAuthProvider) => Promise<void>;
+  getUserIdentities: () => Promise<Array<{ provider: string; identityId: string; email: string | null }>>;
   signUpWithEmail: (
     email: string,
     pass: string,
     name: string,
     initialProfile?: Partial<UserProfileData>,
-  ) => Promise<void>;
+  ) => Promise<'session' | 'confirmation-required'>;
   signInWithEmailAndPassword: (email: string, pass: string) => Promise<EmailCredential>;
   signInWithEmail: (email: string, pass: string) => Promise<EmailCredential>;
   signOut: () => Promise<void>;
@@ -82,8 +95,8 @@ const toAppUser = (user: SupabaseAuthUser | null): AppUser | null =>
     ? {
         ...user,
         uid: user.id,
-        displayName: user.user_metadata?.display_name ?? user.user_metadata?.full_name ?? 'User',
-        photoURL: user.user_metadata?.avatar_url,
+        displayName: mapProviderUserMetadata(user.user_metadata).displayName,
+        photoURL: mapProviderUserMetadata(user.user_metadata).avatarUrl ?? undefined,
         providerData:
           user.identities?.map((identity) => ({
             providerId: identity.provider,
@@ -137,7 +150,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (mounted) {
           setUser(toAppUser(authUser));
           if (authUser) {
-            await loadProfile(authUser);
+            const profile = await loadProfile(authUser);
+            if (!profile) await bootstrapProfileFromOAuth(authUser);
           }
         }
       } catch (err) {
@@ -154,8 +168,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (!mounted) return;
         const next = session?.user ?? null;
         setUser(toAppUser(next));
-        if (next) loadProfile(next);
-        else setUserProfile(null);
+        if (next) {
+          void loadProfile(next).then((profile) => {
+            if (!profile) return bootstrapProfileFromOAuth(next);
+            return undefined;
+          });
+        } else setUserProfile(null);
         setLoading(false);
       });
       if (authChangeRes?.data?.subscription) {
@@ -175,7 +193,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     pass: string,
     name: string,
     initialProfile?: Partial<UserProfileData>,
-  ) => {
+  ): Promise<'session' | 'confirmation-required'> => {
     const { data, error } = await supabase.auth.signUp({
       email,
       password: pass,
@@ -185,7 +203,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       },
     });
     if (error) throw error;
-    if (data.user && data.session) await saveProfile(data.user, name, initialProfile);
+    // No session means Supabase requires email confirmation before login.
+    if (data.user && data.session) {
+      await saveProfile(data.user, name, initialProfile);
+      return 'session';
+    }
+    return 'confirmation-required';
   };
   const saveProfile = async (authUser: SupabaseAuthUser, name = 'User', data: Partial<UserProfileData> = {}) => {
     const row = {
@@ -205,6 +228,45 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const { error } = await supabase.from('profiles').upsert(row);
     if (error) throw error;
     await loadProfile(authUser);
+  };
+  /**
+   * Create the profiles row on first social sign-in (sign-up). Email/password
+   * sign-up creates its row in signUpWithEmail; OAuth flows land here. The
+   * row is seeded from the provider's user metadata (name, email, avatar)
+   * and never overwrites an existing row (ignoreDuplicates).
+   */
+  const bootstrapProfileFromOAuth = async (authUser: SupabaseAuthUser) => {
+    const seed = mapProviderUserMetadata(authUser.user_metadata);
+    const row = {
+      id: authUser.id,
+      email: authUser.email ?? seed.email ?? '',
+      display_name: seed.displayName,
+      role: 'user',
+      user_role: 'smallholder_farmer',
+      organization: '',
+      farm_size_hectares: 1.5,
+      primary_division: 'Rangpur',
+      primary_district: '',
+      target_crops: 'Boro Paddy, Aman Rice',
+      phone_number: '',
+      photo_url: seed.avatarUrl ?? '',
+      updated_at: new Date().toISOString(),
+    };
+    try {
+      const { error } = await supabase.from('profiles').upsert(row, { onConflict: 'id', ignoreDuplicates: true });
+      if (error && /column|photo_url/i.test(error.message)) {
+        // Older profile schemas may lack photo_url — retry without it.
+        const { error: retryError } = await supabase
+          .from('profiles')
+          .upsert({ ...row, photo_url: undefined }, { onConflict: 'id', ignoreDuplicates: true });
+        if (retryError) throw retryError;
+      } else if (error) {
+        throw error;
+      }
+      await loadProfile(authUser);
+    } catch (e) {
+      console.warn('OAuth profile bootstrap failed:', e);
+    }
   };
   const signIn = async (email: string, pass: string) => {
     const result = await supabase.auth.signInWithPassword({ email, password: pass });
@@ -274,12 +336,58 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const { error } = await supabase.from('assessments').delete().eq('id', id).eq('user_id', user?.id);
     if (error) throw error;
   };
-  const signInWithOAuth = async (provider: OAuthProvider) => {
+  const signInWithOAuth = async (provider: OAuthProvider, options?: { nextTo?: string }) => {
+    // Remember where the user was heading so the OAuth callback can return
+    // them there after the (page-reloading) provider redirect.
+    const currentPath = `${window.location.pathname}${window.location.search}`;
+    const nextTo = options?.nextTo ?? (isAuthScreen(currentPath) ? '/' : currentPath);
+    try {
+      sessionStorage.setItem(AUTH_RETURN_TO_KEY, nextTo);
+    } catch {
+      // Best effort only.
+    }
+    const scopes = getProvider(provider).scopes;
     const { error } = await supabase.auth.signInWithOAuth({
       provider: provider as never,
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
+      options: {
+        redirectTo: buildOAuthRedirectTo(window.location.origin, nextTo),
+        ...(scopes ? { scopes } : {}),
+      },
     });
     if (error) throw error;
+  };
+  /** Link an additional provider identity to the signed-in account. */
+  const linkIdentity = async (provider: OAuthProvider) => {
+    const { error } = await supabase.auth.linkIdentity({
+      provider: provider as never,
+      options: { redirectTo: buildOAuthRedirectTo(window.location.origin, '/settings') },
+    });
+    if (error) throw error;
+  };
+  /** Remove a linked provider identity from the signed-in account. */
+  const unlinkIdentity = async (provider: OAuthProvider) => {
+    const identities = await getUserIdentities();
+    const target = identities.find((identity) => identity.provider === provider);
+    if (!target) throw new Error(`No linked ${provider} identity found.`);
+    const { data, error } = await supabase.auth.getUserIdentities();
+    if (error) throw error;
+    const match = (data?.identities ?? []).find((identity) => identity.identity_id === target.identityId);
+    if (!match) throw new Error(`No linked ${provider} identity found.`);
+    const unlinkError = (await (supabase.auth as any).unlinkIdentity(match))?.error;
+    if (unlinkError) throw unlinkError;
+  };
+  /** List the provider identities linked to the signed-in account. */
+  const getUserIdentities = async () => {
+    const { data, error } = await supabase.auth.getUserIdentities();
+    if (error) throw error;
+    return (data?.identities ?? []).map((identity) => ({
+      provider: String(identity.provider),
+      identityId: String(identity.identity_id ?? identity.id ?? ''),
+      email:
+        typeof (identity.identity_data as Record<string, unknown> | null)?.email === 'string'
+          ? ((identity.identity_data as Record<string, unknown>).email as string)
+          : null,
+    }));
   };
   const updatePassword = async (password: string) => {
     const { error } = await supabase.auth.updateUser({ password });
@@ -293,6 +401,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         loading,
         signInWithGoogle: () => signInWithOAuth('google'),
         signInWithOAuth,
+        linkIdentity,
+        unlinkIdentity,
+        getUserIdentities,
         signUpWithEmail,
         signInWithEmailAndPassword: signIn,
         signInWithEmail: signIn,

@@ -43,6 +43,9 @@ const createMockSupabaseClient = (): any => {
       signInWithPassword: async () => ({ data: { user: null, session: null }, error: new Error('Supabase is not configured') }),
       signUp: async () => ({ data: { user: null, session: null }, error: new Error('Supabase is not configured') }),
       signInWithOAuth: async () => ({ data: null, error: new Error('Supabase is not configured') }),
+      getUserIdentities: async () => ({ data: { identities: [] }, error: null }),
+      linkIdentity: async () => ({ data: null, error: new Error('Supabase is not configured') }),
+      unlinkIdentity: async () => ({ data: null, error: null }),
       signOut: async () => ({ error: null }),
       resetPasswordForEmail: async () => ({ data: {}, error: null }),
       updateUser: async () => ({ data: { user: null }, error: null }),
@@ -54,6 +57,9 @@ const createMockSupabaseClient = (): any => {
 if (!isConfigured) {
   console.info('Supabase environment variables not detected or invalid; using resilient mock client.')
 }
+
+/** True when real Supabase credentials are present (vs. the mock client). */
+export const isSupabaseConfigured = isConfigured
 
 export const supabase: SupabaseClient<any, any, any> = isConfigured
   ? createClient(rawUrl, rawKey, {

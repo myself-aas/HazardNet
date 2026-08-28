@@ -1,53 +1,138 @@
 import { useState } from 'react'
-import { useAuth, type OAuthProvider } from '../context/AuthContext'
+import { useAuth } from '../context/AuthContext'
+import { AnimatePresence, motion } from 'framer-motion'
+import ProviderGlyph from './ProviderGlyph'
+import {
+  OAuthProviderId,
+  PRIMARY_PROVIDER_IDS,
+  SECONDARY_PROVIDER_IDS,
+  describeOAuthError,
+  getProvider,
+} from '../lib/oauthProviders'
 
-const providers: Array<{ id: OAuthProvider; label: string; icon: string }> = [
-  { id: 'google', label: 'Google', icon: 'G' },
-  { id: 'github', label: 'GitHub', icon: 'GH' },
-  { id: 'microsoft', label: 'Microsoft', icon: 'MS' },
-  { id: 'apple', label: 'Apple', icon: 'A' },
-  { id: 'linkedin', label: 'LinkedIn', icon: 'in' },
-  { id: 'discord', label: 'Discord', icon: 'D' },
-  { id: 'slack', label: 'Slack', icon: 'S' },
-  { id: 'twitter', label: 'X / Twitter', icon: 'X' },
-  { id: 'orcid', label: 'ORCID', icon: 'iD' },
-]
+/**
+ * Social sign-up/sign-in buttons for every configured OAuth provider.
+ *
+ * Clicking a button starts Supabase's redirect OAuth flow (PKCE): the browser
+ * goes to the provider and returns to /auth/callback, which completes the
+ * exchange and routes the user back where they started. Each provider must be
+ * enabled with its client ID/secret in Supabase → Authentication → Providers
+ * (docs/oauth-provider-setup.md); until then Supabase answers with a clear
+ * "provider is not enabled" error which is surfaced here with setup guidance.
+ */
+
+const Button: React.FC<{
+  provider: OAuthProviderId
+  active: OAuthProviderId | null
+  onPick: (provider: OAuthProviderId) => void
+  wide?: boolean
+}> = ({ provider, active, onPick, wide }) => {
+  const config = getProvider(provider)
+  const busy = active === provider
+  return (
+    <button
+      type="button"
+      disabled={active !== null}
+      onClick={() => onPick(provider)}
+      className={`group flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-2 py-2.5 text-[11px] font-bold text-slate-700 transition-all hover:border-slate-300 hover:bg-slate-50 hover:shadow-xs disabled:cursor-wait disabled:opacity-60 ${wide ? 'w-full' : ''}`}
+      aria-label={`Continue with ${config.label}`}
+      title={config.note ? `${config.label} — ${config.note}` : `Continue with ${config.label}`}
+    >
+      {busy ? (
+        <span className="h-5 w-5 shrink-0 animate-spin rounded-full border-2 border-slate-300 border-t-slate-700" />
+      ) : (
+        <ProviderGlyph provider={provider} className="h-5 w-5 transition-transform group-hover:scale-110" />
+      )}
+      <span className="truncate">{busy ? 'Redirecting…' : config.label}</span>
+    </button>
+  )
+}
 
 export function OAuthButtons() {
   const { signInWithOAuth } = useAuth()
-  const [active, setActive] = useState<OAuthProvider | null>(null)
-  const [error, setError] = useState<string | null>(null)
+  const [active, setActive] = useState<OAuthProviderId | null>(null)
+  const [failure, setFailure] = useState<{ provider: string; title: string; hint: string } | null>(null)
+  const [showMore, setShowMore] = useState(false)
 
-  const handleProvider = async (provider: OAuthProvider) => {
+  const handleProvider = async (provider: OAuthProviderId) => {
     setActive(provider)
-    setError(null)
+    setFailure(null)
     try {
       await signInWithOAuth(provider)
+      // On success the browser leaves the page; nothing else to do.
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : `Could not start ${provider} sign-in.`)
+      const explanation = describeOAuthError(reason)
+      setFailure({ provider: getProvider(provider).label, ...explanation })
       setActive(null)
     }
   }
 
   return (
-    <div className="space-y-2">
-      <div className="grid grid-cols-2 gap-2">
-        {providers.map((provider) => (
-          <button
-            key={provider.id}
-            type="button"
-            disabled={active !== null}
-            onClick={() => handleProvider(provider.id)}
-            className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-2 py-2.5 text-[11px] font-bold text-slate-700 transition-colors hover:bg-slate-50 disabled:cursor-wait disabled:opacity-60"
-            aria-label={`Continue with ${provider.label}`}
-          >
-            <span className="flex h-5 min-w-5 items-center justify-center rounded bg-slate-100 px-1 text-[10px] font-extrabold text-slate-700">{active === provider.id ? '…' : provider.icon}</span>
-            {provider.label}
-          </button>
+    <div className="space-y-2.5">
+      <div className="grid grid-cols-2 gap-2" data-testid="oauth-primary-providers">
+        {PRIMARY_PROVIDER_IDS.map((provider) => (
+          <Button key={provider} provider={provider} active={active} onPick={handleProvider} />
         ))}
       </div>
-      <p className="text-[10px] leading-relaxed text-slate-500">Social buttons require the matching provider to be enabled in your Supabase Auth settings. ORCID uses Supabase&apos;s custom OIDC provider configuration.</p>
-      {error && <p role="alert" className="text-xs font-medium text-rose-700">{error}</p>}
+
+      <button
+        type="button"
+        onClick={() => setShowMore((value) => !value)}
+        className="flex w-full items-center justify-center gap-1.5 rounded-lg py-1 text-[10px] font-bold text-slate-500 transition-colors hover:text-slate-800"
+        aria-expanded={showMore}
+      >
+        {showMore ? 'Fewer sign-in options' : 'More sign-in options'}
+        <span className={`transition-transform ${showMore ? 'rotate-180' : ''}`}>▾</span>
+      </button>
+
+      <AnimatePresence initial={false}>
+        {showMore && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.18 }}
+            className="overflow-hidden"
+          >
+            <div className="grid grid-cols-2 gap-2" data-testid="oauth-secondary-providers">
+              {SECONDARY_PROVIDER_IDS.map((provider) => (
+                <Button key={provider} provider={provider} active={active} onPick={handleProvider} />
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <p className="text-[10px] leading-relaxed text-slate-500">
+        Social sign-in runs through Supabase Auth. Each provider must be enabled with its client ID/secret in the
+        Supabase dashboard (Authentication → Providers) — see{' '}
+        <a
+          href="https://github.com/myself-aas/HazardNet/blob/main/docs/oauth-provider-setup.md"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-bold text-amber-700 underline-offset-2 hover:underline"
+        >
+          the provider setup guide
+        </a>
+        . ORCID uses a custom OIDC provider configuration.
+      </p>
+
+      <AnimatePresence>
+        {failure && (
+          <motion.div
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            role="alert"
+            className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-900"
+          >
+            <p className="font-extrabold">
+              {failure.provider}: {failure.title}
+            </p>
+            <p className="mt-0.5 font-medium leading-relaxed">{failure.hint}</p>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

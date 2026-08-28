@@ -1,168 +1,392 @@
-import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useMemo, useState } from 'react';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useAuth } from '../context/AuthContext';
-import { HazardNetBrand } from '../components/HazardNetLogo';
+import toast from 'react-hot-toast';
+import { useAuth, UserRolePersona } from '../context/AuthContext';
 import { OAuthButtons } from '../components/OAuthButtons';
+import { EyeToggleIcon } from '../components/ui/animated-state-icons';
+import { AuthLayout } from '../components/auth/AuthLayout';
+import MaterialIcon from '../components/MaterialIcon';
+
+/**
+ * Dedicated sign-up page — unique URL: /signup  (/sign-up redirects here)
+ *
+ * Responsive split-screen layout, live password strength + requirements
+ * checklist, persona selection, terms consent, social sign-up, and distinct
+ * handling of "session ready" vs "email confirmation required".
+ */
+
+const PERSONAS: Array<{ value: UserRolePersona; label: string }> = [
+  { value: 'smallholder_farmer', label: 'Smallholder Farmer' },
+  { value: 'ngo_coordinator', label: 'NGO Disaster Coordinator' },
+  { value: 'govt_official', label: 'DAE / Government Extension Officer' },
+  { value: 'academic_researcher', label: 'Academic / Climate Researcher' },
+  { value: 'commercial_agribusiness', label: 'Commercial Agribusiness' },
+];
+
+/** Password strength score 0–4 with live requirement feedback. */
+export const scorePassword = (pw: string): number => {
+  let score = 0;
+  if (pw.length >= 8) score += 1;
+  if (pw.length >= 12) score += 1;
+  if (/[a-z]/.test(pw) && /[A-Z]/.test(pw)) score += 1;
+  if (/\d/.test(pw)) score += 1;
+  if (/[^A-Za-z0-9]/.test(pw)) score += 1;
+  return Math.min(score, 4);
+};
+
+const STRENGTH = [
+  { label: 'Too weak', bar: 'bg-rose-500', text: 'text-rose-700' },
+  { label: 'Weak', bar: 'bg-orange-500', text: 'text-orange-700' },
+  { label: 'Fair', bar: 'bg-amber-500', text: 'text-amber-700' },
+  { label: 'Good', bar: 'bg-lime-600', text: 'text-lime-700' },
+  { label: 'Strong', bar: 'bg-emerald-600', text: 'text-emerald-700' },
+];
+
+const Requirement: React.FC<{ met: boolean; children: React.ReactNode }> = ({ met, children }) => (
+  <li className={`flex items-center gap-1.5 ${met ? 'text-emerald-700' : 'text-slate-500'}`}>
+    <span aria-hidden="true">{met ? '✓' : '○'}</span>
+    <span className="text-[11px] font-medium">{children}</span>
+  </li>
+);
+
+const describeError = (err: unknown): string => {
+  const message = err instanceof Error ? err.message : String(err ?? '');
+  const text = message.toLowerCase();
+  if (text.includes('already registered') || text.includes('already exists')) {
+    return 'An account already exists with this email. Sign in instead — or reset your password if you forgot it.';
+  }
+  if (text.includes('password should be at least')) {
+    return 'Please choose a password of at least 8 characters.';
+  }
+  if (text.includes('too many requests') || text.includes('rate limit')) {
+    return 'Too many attempts — wait a minute and try again.';
+  }
+  if (text.includes('failed to fetch') || text.includes('network')) {
+    return 'Network problem while creating your account. Check your connection and retry.';
+  }
+  if (text.includes('not configured')) {
+    return 'Authentication isn’t configured for this deployment yet.';
+  }
+  return message || 'Sign-up failed. Please try again.';
+};
+
+const inputClass =
+  'w-full px-4 py-3 text-base sm:text-sm bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 placeholder-slate-400 font-medium transition-all focus:outline-none focus:border-[#f9a825] focus:ring-2 focus:ring-[#f9a825]/40';
 
 const SignUpPage: React.FC = () => {
   const { signUpWithEmail } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const rawNext = searchParams.get('next');
+  const next = rawNext && rawNext.startsWith('/') ? rawNext : '/';
+
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [confirm, setConfirm] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const passwordStrengthLabel = password.length > 12 ? 'Strong' : password.length > 8 ? 'Medium' : password.length > 4 ? 'Weak' : 'Very Weak';
-  const passwordStrengthColor = password.length > 12 ? 'bg-emerald-500' : password.length > 8 ? 'bg-amber-500' : password.length > 4 ? 'bg-orange-500' : 'bg-red-500';
+  const [persona, setPersona] = useState<UserRolePersona>('smallholder_farmer');
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(false);
+  const [pendingConfirmation, setPendingConfirmation] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const score = useMemo(() => scorePassword(password), [password]);
+
+  const validate = (): boolean => {
+    const errors: Record<string, string> = {};
+    if (name.trim().length < 2) errors.name = 'Please enter your full name.';
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) errors.email = 'Enter a valid email address.';
+    if (password.length < 8) errors.password = 'Use at least 8 characters.';
+    if (confirm !== password) errors.confirm = 'Passwords don’t match.';
+    if (!acceptedTerms) errors.terms = 'Please accept the Terms and Privacy Policy to continue.';
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!validate()) return;
     setLoading(true);
     setError(null);
     try {
-      await signUpWithEmail(email, password, name);
-      navigate('/');
+      const result = await signUpWithEmail(email.trim(), password, name.trim(), { userRole: persona });
+      if (result === 'confirmation-required') {
+        setPendingConfirmation(true);
+      } else {
+        toast.success('Welcome to HazardNet! Your account is ready.');
+        navigate(next, { replace: true });
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      console.error(err);
+      setError(describeError(err));
     } finally {
       setLoading(false);
     }
   };
 
-  // Helper component for Material‑3 style floating label input
-  const M3Input = ({ id, type = 'text', label, value, setValue, placeholder }: any) => (
-    <div className="relative group mb-5">
-      <input
-        id={id}
-        type={type}
-        required
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        placeholder={placeholder || " "}
-        className="peer w-full border-b border-slate-300 bg-transparent py-1.5 text-slate-900 placeholder-slate-400 placeholder-opacity-0 focus:placeholder-opacity-100 focus:border-amber-600 focus:outline-none transition-all duration-300 text-sm font-normal"
-      />
-      <label
-        htmlFor={id}
-        className="absolute left-0 -top-3.5 text-slate-500 text-xs font-medium tracking-wide transition-all duration-300 peer-placeholder-shown:top-1.5 peer-placeholder-shown:text-sm peer-placeholder-shown:text-slate-500 peer-focus:-top-3.5 peer-focus:text-amber-800 peer-focus:text-xs peer-focus:font-semibold"
+  if (pendingConfirmation) {
+    return (
+      <AuthLayout
+        mode="signup"
+        title="Confirm your email"
+        subtitle="One last step before your HazardNet account activates."
       >
-        {label}
-      </label>
-    </div>
-  );
+        <div className="space-y-5 text-center" data-testid="signup-confirmation">
+          <motion.div
+            initial={{ scale: 0.7, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100 text-emerald-700"
+          >
+            <MaterialIcon name="mail" className="h-6 w-6" />
+          </motion.div>
+          <p className="text-sm text-slate-600 leading-relaxed">
+            We sent a confirmation link to <strong className="text-slate-900">{email.trim()}</strong>. Open it in your
+            inbox to activate your account, then sign in. Check your spam folder if it hasn’t arrived within a few
+            minutes.
+          </p>
+          <Link
+            to={next !== '/' ? `/login?next=${encodeURIComponent(next)}` : '/login'}
+            className="inline-block rounded-2xl bg-[#f9a825] px-5 py-3 text-sm font-black text-slate-950 shadow-md transition-colors hover:bg-[#d08305]"
+          >
+            Continue to sign in
+          </Link>
+        </div>
+      </AuthLayout>
+    );
+  }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 15 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35, ease: 'easeOut' }}
-      className="grid grid-cols-1 lg:grid-cols-2 min-h-dvh bg-slate-50"
+    <AuthLayout
+      mode="signup"
+      title="Create your HazardNet account"
+      subtitle="Free for farmers, extension officers, NGOs and researchers."
     >
-      {/* Left side - HazardNet Brand Showcase */}
-      <div className="hidden lg:flex flex-col items-center justify-center bg-amber-500/10 p-12 border-r border-slate-200 relative overflow-hidden">
-        <div className="absolute -top-24 -left-24 w-96 h-96 bg-amber-200/40 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-amber-300/30 rounded-full blur-3xl pointer-events-none" />
-        
-        <div className="max-w-md space-y-6 relative z-10 text-center">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-100 border border-amber-300 text-amber-900 text-xs font-semibold tracking-wide uppercase">
-            AI-Powered Early Warning
-          </div>
-          <div className="flex justify-center">
-            <HazardNetBrand size="xl" />
-          </div>
-          <p className="text-slate-600 text-sm leading-relaxed">
-            Flood and natural disaster forecasting powered by hybrid cognitive AI models and physics-informed hydrology.
-          </p>
-          <div className="grid grid-cols-2 gap-4 pt-4 text-left">
-            <motion.div whileHover={{ y: -2 }} className="p-4 rounded-xl bg-white border border-slate-200 shadow-xs">
-              <div className="text-2xl font-bold text-slate-900">64</div>
-              <div className="text-xs text-slate-500 font-medium">Districts Monitored</div>
+      <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+        <AnimatePresence>
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, y: -5 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -5 }}
+              role="alert"
+              aria-live="polite"
+              className="p-3.5 bg-rose-50 border border-rose-200 rounded-2xl text-xs text-rose-800 font-medium flex items-start gap-2"
+            >
+              <span className="shrink-0 mt-0.5">
+                <MaterialIcon name="warning" className="w-4 h-4" />
+              </span>
+              <span>
+                {error}{' '}
+                {/already exists/i.test(error) && (
+                  <Link to="/login" className="font-extrabold underline underline-offset-2">
+                    Sign in
+                  </Link>
+                )}
+              </span>
             </motion.div>
-            <motion.div whileHover={{ y: -2 }} className="p-4 rounded-xl bg-white border border-slate-200 shadow-xs">
-              <div className="text-2xl font-bold text-amber-800">7 & 15 Day</div>
-              <div className="text-xs text-slate-500 font-medium">Forecast Horizon</div>
-            </motion.div>
-          </div>
+          )}
+        </AnimatePresence>
+
+        <div>
+          <label className="block text-xs font-bold text-slate-800 mb-1.5" htmlFor="signup-name">
+            Full name
+          </label>
+          <input
+            id="signup-name"
+            name="name"
+            type="text"
+            required
+            autoComplete="name"
+            placeholder="e.g. Ashif Ahmed"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            aria-invalid={Boolean(fieldErrors.name)}
+            className={inputClass}
+          />
+          {fieldErrors.name && <p className="mt-1 text-[11px] font-semibold text-rose-700">{fieldErrors.name}</p>}
         </div>
-      </div>
-      {/* Right side - sign‑up form with wrapped container */}
-      <div className="flex flex-col items-center justify-center px-6 md:px-12 lg:px-24 py-8">
-        <div className="bg-white border border-slate-200 rounded-3xl p-8 w-full max-w-[420px] mx-auto shadow-sm">
-          <AnimatePresence>
-            {error && (
-              <motion.p
-                initial={{ opacity: 0, y: -5 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -5 }}
-                className="text-red-600 text-sm mb-4"
-              >
-                {error}
-              </motion.p>
-            )}
-          </AnimatePresence>
-          <h2 className="text-2xl font-bold mb-6 text-slate-900 tracking-tight">Create Account</h2>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <M3Input id="name" label="Name" value={name} setValue={setName} placeholder="Enter your full name" />
-            <M3Input id="email" type="email" label="Email" value={email} setValue={setEmail} placeholder="Enter your email address" />
-            {/* Password input with eye toggle */}
-            <div className="relative group mb-5">
+
+        <div>
+          <label className="block text-xs font-bold text-slate-800 mb-1.5" htmlFor="signup-email">
+            Email address
+          </label>
+          <input
+            id="signup-email"
+            name="email"
+            type="email"
+            required
+            autoComplete="email"
+            inputMode="email"
+            placeholder="you@example.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            aria-invalid={Boolean(fieldErrors.email)}
+            className={inputClass}
+          />
+          {fieldErrors.email && <p className="mt-1 text-[11px] font-semibold text-rose-700">{fieldErrors.email}</p>}
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-xs font-bold text-slate-800 mb-1.5" htmlFor="signup-password">
+              Password
+            </label>
+            <div className="relative">
               <input
-                id="password"
-                type={showPassword ? "text" : "password"}
+                id="signup-password"
+                name="new-password"
+                type={showPassword ? 'text' : 'password'}
                 required
+                autoComplete="new-password"
+                placeholder="At least 8 characters"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Create a password"
-                className="peer w-full border-b border-slate-300 bg-transparent py-1.5 pr-8 text-slate-900 placeholder-slate-400 placeholder-opacity-0 focus:placeholder-opacity-100 focus:border-amber-600 focus:outline-none transition-all duration-300 text-sm font-normal"
+                aria-invalid={Boolean(fieldErrors.password)}
+                className={`${inputClass} pr-12`}
               />
-              <label
-                htmlFor="password"
-                className="absolute left-0 -top-3.5 text-slate-500 text-xs font-medium tracking-wide transition-all duration-300 peer-placeholder-shown:top-1.5 peer-placeholder-shown:text-sm peer-placeholder-shown:text-slate-500 peer-focus:-top-3.5 peer-focus:text-amber-800 peer-focus:text-xs peer-focus:font-semibold"
-              >
-                Password
-              </label>
-              {/* Eye icon */}
               <button
                 type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute inset-y-0 right-0 flex items-center pr-1 text-slate-400 hover:text-slate-600 transition-colors"
-                aria-label={showPassword ? "Hide password" : "Show password"}
+                onClick={() => setShowPassword((value) => !value)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-slate-400 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#f9a825]/60 cursor-pointer"
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
               >
-                <i className={showPassword ? "fas fa-eye-slash" : "fas fa-eye"}></i>
+                <EyeToggleIcon isState={showPassword} size={20} duration={0} />
               </button>
             </div>
-            {/* Password strength meter */}
             {password && (
-              <div className="flex items-center space-x-2 pb-2">
-                <div className={`h-1.5 flex-1 rounded-full ${passwordStrengthColor}`}></div>
-                <span className="text-xs text-slate-600 font-medium">{passwordStrengthLabel}</span>
+              <div className="mt-2 flex items-center gap-2" aria-live="polite">
+                <div className="flex-1 flex gap-1">
+                  {[0, 1, 2, 3].map((index) => (
+                    <span
+                      key={index}
+                      className={`h-1.5 flex-1 rounded-full ${
+                        index < score ? STRENGTH[score].bar : 'bg-slate-200'
+                      }`}
+                    />
+                  ))}
+                </div>
+                <span className={`text-[10px] font-extrabold ${STRENGTH[score].text}`}>{STRENGTH[score].label}</span>
               </div>
             )}
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              type="submit"
-              disabled={loading}
-              className="relative overflow-hidden w-full py-2.5 bg-[#f9a825] hover:bg-[#d08305] text-slate-900 font-bold text-sm rounded-lg transition-colors disabled:opacity-50 flex items-center justify-center shadow-xs"
-            >
-              {loading ? (
-                <svg className="animate-spin h-5 w-5 mr-2 text-slate-900" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-                </svg>
-              ) : null}
-              {loading ? "Creating…" : "Sign Up"}
-            </motion.button>
-            <OAuthButtons />
-          </form>
-          <p className="mt-6 text-center text-sm text-slate-600">
-            Already have an account?{' '}
-            <Link to="/login" className="text-amber-800 hover:text-amber-900 font-semibold hover:underline">Log In</Link>
-          </p>
+            {fieldErrors.password && (
+              <p className="mt-1 text-[11px] font-semibold text-rose-700">{fieldErrors.password}</p>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-slate-800 mb-1.5" htmlFor="signup-confirm">
+              Confirm password
+            </label>
+            <input
+              id="signup-confirm"
+              name="confirm-password"
+              type={showPassword ? 'text' : 'password'}
+              required
+              autoComplete="new-password"
+              placeholder="Repeat your password"
+              value={confirm}
+              onChange={(e) => setConfirm(e.target.value)}
+              aria-invalid={Boolean(fieldErrors.confirm)}
+              className={inputClass}
+            />
+            {fieldErrors.confirm && (
+              <p className="mt-1 text-[11px] font-semibold text-rose-700">{fieldErrors.confirm}</p>
+            )}
+          </div>
         </div>
-      </div>
-    </motion.div>
+
+        {password && (
+          <ul className="grid grid-cols-2 gap-x-3 gap-y-1 rounded-2xl border border-slate-200/80 bg-slate-50/70 p-3">
+            <Requirement met={password.length >= 8}>8+ characters</Requirement>
+            <Requirement met={/[A-Z]/.test(password) && /[a-z]/.test(password)}>Upper &amp; lowercase</Requirement>
+            <Requirement met={/\d/.test(password)}>A number</Requirement>
+            <Requirement met={/[^A-Za-z0-9]/.test(password)}>A special character</Requirement>
+          </ul>
+        )}
+
+        <div>
+          <label className="block text-xs font-bold text-slate-800 mb-1.5" htmlFor="signup-persona">
+            I am a…
+          </label>
+          <select
+            id="signup-persona"
+            name="persona"
+            value={persona}
+            onChange={(e) => setPersona(e.target.value as UserRolePersona)}
+            className={`${inputClass} cursor-pointer appearance-none`}
+          >
+            {PERSONAS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label className="flex items-start gap-2.5 cursor-pointer" htmlFor="signup-terms">
+            <input
+              id="signup-terms"
+              name="terms"
+              type="checkbox"
+              checked={acceptedTerms}
+              onChange={(e) => setAcceptedTerms(e.target.checked)}
+              className="mt-0.5 h-4 w-4 rounded border-slate-300 text-[#f9a825] accent-[#f9a825] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#f9a825]/60 cursor-pointer"
+            />
+            <span className="text-[11px] leading-relaxed text-slate-600">
+              I agree to the{' '}
+              <Link to="/terms" className="font-bold text-amber-800 underline underline-offset-2">
+                Terms of Service
+              </Link>{' '}
+              and{' '}
+              <Link to="/privacy" className="font-bold text-amber-800 underline underline-offset-2">
+                Privacy Policy
+              </Link>
+              , including use of my advisory preferences to improve early warnings.
+            </span>
+          </label>
+          {fieldErrors.terms && <p className="mt-1 text-[11px] font-semibold text-rose-700">{fieldErrors.terms}</p>}
+        </div>
+
+        <button
+          id="signup-page-submit-btn"
+          type="submit"
+          disabled={loading}
+          className="w-full py-3.5 bg-[#f9a825] hover:bg-[#d08305] text-slate-950 font-extrabold rounded-2xl text-sm transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f9a825]/60 focus-visible:ring-offset-2"
+        >
+          {loading ? (
+            <>
+              <span className="h-4 w-4 animate-spin rounded-full border-2 border-slate-800 border-t-transparent" />
+              Creating account…
+            </>
+          ) : (
+            'Create account'
+          )}
+        </button>
+
+        <div className="relative flex items-center justify-center pt-1" aria-hidden="true">
+          <div className="border-t border-slate-200 w-full" />
+          <span className="bg-white px-3 text-[10px] text-slate-400 font-bold uppercase tracking-wider absolute">
+            or sign up with
+          </span>
+        </div>
+
+        <OAuthButtons />
+      </form>
+
+      <p className="text-center text-xs sm:text-[13px] text-slate-600">
+        Already have an account?{' '}
+        <Link
+          to={next !== '/' ? `/login?next=${encodeURIComponent(next)}` : '/login'}
+          className="font-extrabold text-amber-800 hover:text-amber-900 hover:underline"
+        >
+          Sign in
+        </Link>
+      </p>
+    </AuthLayout>
   );
 };
 

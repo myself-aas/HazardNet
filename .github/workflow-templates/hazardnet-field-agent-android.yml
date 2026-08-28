@@ -1,0 +1,328 @@
+# =============================================================================
+# HazardNet CI/Release workflow template - Android app (Field Agent)
+#
+# This file lives in .github/workflow-templates/ inside the HazardNet
+# repository and is NOT executed there: GitHub Actions only runs workflows
+# stored in .github/workflows/. To adopt it, copy this file into the Android
+# product repository as .github/workflows/hazardnet-field-agent-android.yml,
+# then edit the CONFIGURATION block below.
+# See .github/workflow-templates/README.md for adoption steps, secrets and
+# tag conventions.
+#
+# CI (every pull request and push to the default branch):
+#   - fail-fast checks that the expected Gradle project layout exists
+#   - Gradle lint + unit tests (tasks configurable; empty string disables)
+#   - optional instrumented tests on an emulator (off by default)
+#   - release assembly: SIGNED when all keystore secrets are present,
+#     UNSIGNED otherwise (fork PRs never see secrets, so they build unsigned)
+#   - APK/AAB uploaded as CI artifacts
+#
+# Release (gated):
+#   - only on a pushed strict-semver tag (vMAJOR.MINOR.PATCH[-pre][+build])
+#     or a manual dispatch with release=true targeting a tag
+#   - APK/AAB plus SHA256SUMS attached to a GitHub Release via the protected
+#     'release' environment (create it in the product repository)
+# =============================================================================
+
+name: Android Field Agent CI & Release
+
+on:
+  push:
+    branches:
+      - main # <<< EDIT: default branch of the product repository
+    tags:
+      - 'v*' # release-gate enforces strict semver before anything publishes
+  pull_request: # validation for pull requests targeting any branch
+  workflow_dispatch:
+    inputs:
+      release:
+        description: 'Publish a GitHub Release from this run (a semver tag is required)'
+        required: true
+        type: boolean
+        default: false
+      release_tag:
+        description: 'Tag to publish (e.g. v1.2.3); required only when dispatching from a branch instead of a tag'
+        required: false
+        type: string
+        default: ''
+      run_instrumentation:
+        description: 'Also run instrumented tests on an emulator this run'
+        required: true
+        type: boolean
+        default: false
+
+# Least privilege by default; only the release job escalates to contents:write.
+permissions:
+  contents: read
+
+concurrency:
+  # One lane per event type + ref, so validation runs cancel stale peers but
+  # release runs (tag push or manual dispatch) are never cancelled mid-flight.
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name != 'workflow_dispatch' && github.ref_type != 'tag' }}
+
+env:
+  # ---------------------------------------------------------------------------
+  # CONFIGURATION - edit these defaults after copying into the product repo.
+  # Every value is a plain string; an empty string disables the related step.
+  # ---------------------------------------------------------------------------
+  JAVA_VERSION: '17'                  # Temurin JDK used by Gradle
+  GRADLE_MODULE_DIR: app              # Gradle module that builds the app
+  LINT_TASK: lintRelease              # '' disables the lint step
+  UNIT_TEST_TASK: testReleaseUnitTest # '' disables the unit test step
+  ASSEMBLE_TASK: assembleRelease      # APK assembly task; '' disables
+  BUNDLE_TASK: bundleRelease          # AAB assembly task; '' disables
+  GRADLE_EXTRA_ARGS: ''               # extra flags appended to every ./gradlew call
+  INSTRUMENTATION_ENABLED: 'false'    # 'true' runs emulator tests on every CI run
+  INSTRUMENTED_TEST_TASK: connectedDebugAndroidTest
+  EMULATOR_API_LEVEL: '34'
+  EMULATOR_TARGET: default
+  EMULATOR_ARCH: x86_64
+  ARTIFACT_RETENTION_DAYS: '14'       # adjust to the product repository's policy
+
+jobs:
+  release-gate:
+    name: Release gate (event + semver tag checks)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      should-publish: ${{ steps.gate.outputs.should-publish }}
+      tag: ${{ steps.gate.outputs.tag }}
+      version: ${{ steps.gate.outputs.version }}
+      prerelease: ${{ steps.gate.outputs.prerelease }}
+    steps:
+      - name: Decide whether this run is allowed to publish
+        id: gate
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          GITHUB_REF_NAME: ${{ github.ref_name }}
+          GITHUB_REF_TYPE: ${{ github.ref_type }}
+          INPUT_RELEASE: ${{ inputs.release }}
+          INPUT_RELEASE_TAG: ${{ inputs.release_tag }}
+        run: |
+          set -euo pipefail
+
+          semver_regex='^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-[0-9A-Za-z.-]+)?(\+[0-9A-Za-z.-]+)?$'
+
+          should=false
+          tag=''
+
+          if [ "${EVENT_NAME}" = 'push' ] && [ "${GITHUB_REF_TYPE}" = 'tag' ]; then
+            tag="${GITHUB_REF_NAME}"
+            if printf '%s' "${tag}" | grep -Eq "${semver_regex}"; then
+              should=true
+            else
+              # Non-semver tags still run validation; they simply never publish.
+              echo "::warning::Tag '${tag}' is not strict semver (vMAJOR.MINOR.PATCH[-pre][+build]); running validation only."
+            fi
+          elif [ "${EVENT_NAME}" = 'workflow_dispatch' ] && [ "${INPUT_RELEASE}" = 'true' ]; then
+            if [ "${GITHUB_REF_TYPE}" = 'tag' ]; then
+              tag="${GITHUB_REF_NAME}"
+            elif [ -n "${INPUT_RELEASE_TAG}" ]; then
+              tag="${INPUT_RELEASE_TAG}"
+            else
+              echo "::error::Manual release requires a tag: dispatch this workflow with a tag selected, or provide the 'release_tag' input (e.g. v1.2.3)."
+              exit 1
+            fi
+            if ! printf '%s' "${tag}" | grep -Eq "${semver_regex}"; then
+              echo "::error::Release tag '${tag}' is not strict semver (vMAJOR.MINOR.PATCH[-pre][+build])."
+              exit 1
+            fi
+            should=true
+          fi
+
+          version="${tag#v}"
+          prerelease=false
+          case "${version}" in
+            *-*) prerelease=true ;;
+          esac
+
+          {
+            echo "should-publish=${should}"
+            echo "tag=${tag}"
+            echo "version=${version}"
+            echo "prerelease=${prerelease}"
+          } >> "${GITHUB_OUTPUT}"
+
+          echo "Event=${EVENT_NAME} publish=${should} tag=${tag:-<none>} prerelease=${prerelease}"
+          if [ "${should}" != 'true' ]; then
+            echo 'Validation-only run: pull requests and untagged pushes can never publish.'
+          fi
+
+  build:
+    name: Lint, test & assemble (Linux)
+    needs: release-gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      # Signing is enabled only when EVERY keystore secret exists in this
+      # repository/environment. Fork PRs see no secrets and build unsigned.
+      SIGNING_ENABLED: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' && secrets.ANDROID_KEYSTORE_PASSWORD != '' && secrets.ANDROID_KEYSTORE_ALIAS != '' && secrets.ANDROID_KEY_PASSWORD != '' }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Fail fast if the Gradle project layout is missing
+        env:
+          MODULE_DIR: ${{ env.GRADLE_MODULE_DIR }}
+        run: |
+          set -euo pipefail
+          if [ ! -f ./gradlew ]; then
+            echo "::error::./gradlew wrapper not found at the repository root. Commit the Gradle wrapper (gradle wrapper) or adjust this template."
+            exit 1
+          fi
+          chmod +x ./gradlew
+          if ! ls settings.gradle settings.gradle.kts >/dev/null 2>&1; then
+            echo "::error::No settings.gradle / settings.gradle.kts at the repository root; this template expects a standard Gradle layout."
+            exit 1
+          fi
+          if [ ! -f "${MODULE_DIR}/build.gradle" ] && [ ! -f "${MODULE_DIR}/build.gradle.kts" ]; then
+            echo "::error::Gradle module '${MODULE_DIR}' not found; adjust GRADLE_MODULE_DIR in the workflow CONFIGURATION block."
+            exit 1
+          fi
+          echo "Gradle layout OK (module: ${MODULE_DIR})."
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Set up Gradle (with dependency caching)
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Lint
+        if: env.LINT_TASK != ''
+        run: |
+          set -euo pipefail
+          read -r -a extra_args <<< "${GRADLE_EXTRA_ARGS}"
+          ./gradlew "${LINT_TASK}" ${extra_args[@]+"${extra_args[@]}"}
+
+      - name: Unit tests
+        if: env.UNIT_TEST_TASK != ''
+        run: |
+          set -euo pipefail
+          read -r -a extra_args <<< "${GRADLE_EXTRA_ARGS}"
+          ./gradlew "${UNIT_TEST_TASK}" ${extra_args[@]+"${extra_args[@]}"}
+
+      - name: Instrumented tests (emulator)
+        if: ${{ inputs.run_instrumentation == true || env.INSTRUMENTATION_ENABLED == 'true' }}
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: ${{ env.EMULATOR_API_LEVEL }}
+          target: ${{ env.EMULATOR_TARGET }}
+          arch: ${{ env.EMULATOR_ARCH }}
+          # Runs in a shell that inherits the job environment variables.
+          script: ./gradlew ${INSTRUMENTED_TEST_TASK} ${GRADLE_EXTRA_ARGS}
+
+      - name: Decode release keystore (only when signing secrets exist)
+        if: env.SIGNING_ENABLED == 'true'
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          set -euo pipefail
+          printf '%s' "${KEYSTORE_BASE64}" | base64 --decode > "${RUNNER_TEMP}/release.keystore"
+          echo "Keystore decoded to \${RUNNER_TEMP}/release.keystore (contents never printed)."
+
+      - name: Record signing mode (signed vs unsigned)
+        id: signing_mode
+        run: |
+          set -euo pipefail
+          if [ "${SIGNING_ENABLED}" = 'true' ]; then mode='signed'; else mode='unsigned'; fi
+          echo "mode=${mode}" >> "${GITHUB_OUTPUT}"
+          echo "Release assembly will be: ${mode}."
+
+      - name: Assemble release APK + AAB (signed when secrets are present)
+        env:
+          HZ_KEYSTORE_PATH: ${{ runner.temp }}/release.keystore
+          HZ_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          HZ_KEYSTORE_ALIAS: ${{ secrets.ANDROID_KEYSTORE_ALIAS }}
+          HZ_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          tasks=()
+          if [ -n "${ASSEMBLE_TASK}" ]; then tasks+=("${ASSEMBLE_TASK}"); fi
+          if [ -n "${BUNDLE_TASK}" ]; then tasks+=("${BUNDLE_TASK}"); fi
+          if [ ${#tasks[@]} -eq 0 ]; then
+            echo "::error::Both ASSEMBLE_TASK and BUNDLE_TASK are empty; nothing would be built."
+            exit 1
+          fi
+          if [ "${SIGNING_ENABLED}" = 'true' ]; then
+            # Expose keystore inputs to build.gradle as Gradle project properties
+            # (read them with providers.gradleProperty("hzKeystorePath") etc.).
+            # Passed via environment variables so values never appear in logs.
+            export ORG_GRADLE_PROJECT_hzKeystorePath="${HZ_KEYSTORE_PATH}"
+            export ORG_GRADLE_PROJECT_hzKeystorePassword="${HZ_KEYSTORE_PASSWORD}"
+            export ORG_GRADLE_PROJECT_hzKeystoreAlias="${HZ_KEYSTORE_ALIAS}"
+            export ORG_GRADLE_PROJECT_hzKeyPassword="${HZ_KEY_PASSWORD}"
+          fi
+          read -r -a extra_args <<< "${GRADLE_EXTRA_ARGS}"
+          ./gradlew "${tasks[@]}" ${extra_args[@]+"${extra_args[@]}"}
+
+      - name: Upload APK/AAB artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-release-${{ steps.signing_mode.outputs.mode }}
+          path: |
+            ${{ env.GRADLE_MODULE_DIR }}/build/outputs/apk/**/*.apk
+            ${{ env.GRADLE_MODULE_DIR }}/build/outputs/bundle/**/*.aab
+          if-no-files-found: error
+          retention-days: ${{ env.ARTIFACT_RETENTION_DAYS }}
+
+      - name: Upload Gradle reports (on failure)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-reports-${{ github.run_id }}-${{ github.run_attempt }}
+          path: '**/build/reports/**'
+          if-no-files-found: ignore
+          retention-days: '7'
+
+  github-release:
+    name: Attach APK/AAB to GitHub Release
+    needs: [release-gate, build]
+    if: needs.release-gate.outputs.should-publish == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # Create this environment in the product repository (optionally with
+    # required reviewers) so releases can be approved/protected.
+    environment: release
+    permissions:
+      contents: write # required to create the GitHub Release and upload assets
+    steps:
+      - name: Download staged APK/AAB artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: android-release-*
+          merge-multiple: true
+          path: release-assets
+
+      - name: Fail fast when no release assets were produced
+        working-directory: release-assets
+        run: |
+          set -euo pipefail
+          count="$(find . -maxdepth 1 -type f | wc -l)"
+          if [ "${count}" -eq 0 ]; then
+            echo '::error::No APK/AAB artifacts found; nothing to attach to the release.'
+            exit 1
+          fi
+
+      - name: Generate SHA-256 checksums
+        working-directory: release-assets
+        run: |
+          set -euo pipefail
+          find . -maxdepth 1 -type f -print0 | sort -z | xargs -0 sha256sum > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+
+      - name: Create GitHub Release and upload assets
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.release-gate.outputs.tag }}
+          name: ${{ needs.release-gate.outputs.tag }}
+          prerelease: ${{ needs.release-gate.outputs.prerelease == 'true' }}
+          generate_release_notes: true
+          fail_on_unmatched_files: true
+          files: |
+            release-assets/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
