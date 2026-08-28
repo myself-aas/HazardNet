@@ -60,11 +60,6 @@ export default tseslint.config(
     languageOptions: { globals: { ...globals.jest, process: 'readonly' } },
   },
   {
-    // Manual scratch harness (CJS by design) - exempt from import-style rule.
-    files: ['backend/test_tflite.js'],
-    rules: { '@typescript-eslint/no-require-imports': 'off' },
-  },
-  {
     // Backend/serverless/build scripts: Node runtime globals (ESM sources).
     files: ['backend/**/*.js', 'api/**/*.js', 'utils/**/*.js', 'scripts/**/*.js', 'scripts/**/*.mjs', '*.config.js', '*.config.ts', 'e2e/**/*.ts'],
     languageOptions: { globals: { ...globals.node } },
