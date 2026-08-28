@@ -1,8 +1,7 @@
-import { useEffect } from 'react';
+import { useEffect, lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
-const Analytics = () => null;
 import store from './store/store';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import SignUpPage from './pages/SignUpPage';
@@ -12,24 +11,36 @@ import UpdatePasswordPage from './pages/UpdatePasswordPage';
 import AuthCallbackPage from './pages/AuthCallbackPage';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
-import Dashboard from './pages/Dashboard';
-import UploadPage from './pages/UploadPage';
-import Documentation from './pages/Documentation';
-import About from './pages/About';
-import UseCases from './pages/UseCases';
-import DownloadCenter from './pages/DownloadCenter';
-import Blogs from './pages/Blogs';
-import Contact from './pages/Contact';
-import Terms from './pages/Terms';
-import Privacy from './pages/Privacy';
-import NotFoundPage from './pages/NotFoundPage';
-import { AdvisoriesPage } from './pages/AdvisoriesPage';
-import { AnalyticsAnalyticsPage } from './pages/AnalyticsPage';
-import { DistrictDetailPage } from './pages/DistrictDetailPage';
+import ErrorBoundary from './components/ErrorBoundary';
 import { useHazardNotifications } from './hooks/useHazardNotifications';
 import { initializeAttributionCapture } from './services/conversionTracking';
-import ChatBot from './components/ChatBot';
 import { Toaster } from 'react-hot-toast';
+
+// Route-level code splitting (FE-01): every page is a lazy chunk so the
+// initial shell stays small on low-bandwidth networks. Auth screens stay
+// eager (first-touch UX); everything else loads on demand.
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const UploadPage = lazy(() => import('./pages/UploadPage'));
+const Documentation = lazy(() => import('./pages/Documentation'));
+const About = lazy(() => import('./pages/About'));
+const UseCases = lazy(() => import('./pages/UseCases'));
+const DownloadCenter = lazy(() => import('./pages/DownloadCenter'));
+const Blogs = lazy(() => import('./pages/Blogs'));
+const Contact = lazy(() => import('./pages/Contact'));
+const Terms = lazy(() => import('./pages/Terms'));
+const Privacy = lazy(() => import('./pages/Privacy'));
+const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
+const AdvisoriesPage = lazy(() => import('./pages/AdvisoriesPage').then((m) => ({ default: m.AdvisoriesPage })));
+const AnalyticsAnalyticsPage = lazy(() => import('./pages/AnalyticsPage').then((m) => ({ default: m.AnalyticsAnalyticsPage })));
+const DistrictDetailPage = lazy(() => import('./pages/DistrictDetailPage').then((m) => ({ default: m.DistrictDetailPage })));
+const ChatBot = lazy(() => import('./components/ChatBot'));
+
+/** Full-height fallback shown while a lazy route chunk streams in. */
+const RouteFallback = () => (
+  <div className="w-full min-h-[50vh] flex items-center justify-center" role="status" aria-label="Loading page">
+    <span className="w-8 h-8 border-[3px] border-slate-300 border-t-amber-500 rounded-full animate-spin" />
+  </div>
+);
 
 const AppContent: React.FC = () => {
   const { userProfile } = useAuth();
@@ -81,7 +92,7 @@ const AppContent: React.FC = () => {
       <main
         className={
           isHomePage
-            ? 'w-full h-full h-screen w-screen overflow-hidden p-0 m-0 pointer-events-auto absolute inset-0 z-0'
+            ? 'w-full h-full h-dvh overflow-hidden p-0 m-0 pointer-events-auto absolute inset-0 z-0'
             : 'flex-1 relative z-10 max-w-7xl w-full mx-auto p-3 sm:p-4 md:p-6 lg:p-8 pb-28 md:pb-8 pointer-events-auto'
         }
       >
@@ -94,7 +105,8 @@ const AppContent: React.FC = () => {
             transition={{ duration: 0.22, ease: 'easeInOut' }}
             className="w-full h-full"
           >
-            <Routes location={location}>
+            <Suspense fallback={<RouteFallback />}>
+              <Routes location={location}>
               <Route path="/" element={<Dashboard defaultTab="gis" isFullScreen={true} />} />
               <Route path="/home" element={<Dashboard defaultTab="gis" isFullScreen={true} />} />
               <Route path="/home/overview" element={<Dashboard defaultTab="gis" isFullScreen={true} />} />
@@ -123,7 +135,8 @@ const AppContent: React.FC = () => {
               <Route path="/update-password" element={<UpdatePasswordPage />} />
               <Route path="/auth/callback" element={<AuthCallbackPage />} />
               <Route path="*" element={<NotFoundPage />} />
-            </Routes>
+              </Routes>
+            </Suspense>
           </motion.div>
         </AnimatePresence>
       </main>
@@ -138,7 +151,9 @@ const AppContent: React.FC = () => {
       {/* Floating Chat Bot - Render only on subpages */}
       {!isHomePage && (
         <div className="pointer-events-auto">
-          <ChatBot />
+          <Suspense fallback={null}>
+            <ChatBot />
+          </Suspense>
         </div>
       )}
 
@@ -151,12 +166,13 @@ const AppContent: React.FC = () => {
 
 const App: React.FC = () => (
   <Provider store={store}>
-    <AuthProvider>
-      <Router>
-        <AppContent />
-        <Analytics />
-      </Router>
-    </AuthProvider>
+    <ErrorBoundary>
+      <AuthProvider>
+        <Router>
+          <AppContent />
+        </Router>
+      </AuthProvider>
+    </ErrorBoundary>
   </Provider>
 );
 

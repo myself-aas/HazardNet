@@ -1,5 +1,6 @@
 import express from 'express';
 import { getVapidPublicKey, sendWebPushNotification } from '../utils/vapid.js';
+import { verifyApiKey } from '../utils/apiKeyAuth.js';
 
 const router = express.Router();
 
@@ -90,11 +91,10 @@ router.post('/unsubscribe', (req, res) => {
  */
 router.post('/send', async (req, res) => {
   // Restrict broadcast capability to authenticated backend jobs
-  const authHeader = req.headers['authorization'] || '';
-  const token = authHeader.replace(/^Bearer\s+/i, '');
-  const requiredKey = process.env.BACKEND_API_KEY;
-  if (requiredKey && (!token || token !== requiredKey)) {
-    return res.status(401).json({ error: 'Unauthorized: Authentication required to broadcast push alerts' });
+  // (timing-safe compare, fail-closed when BACKEND_API_KEY is unset — SEC-06).
+  const auth = verifyApiKey(req);
+  if (!auth.ok) {
+    return res.status(auth.status).json({ error: auth.error });
   }
 
   const { title = 'HazardNet Alert', body = 'New disaster severity telemetry updated.', icon = '/hazardnet-logo.svg', data = {} } = req.body || {};

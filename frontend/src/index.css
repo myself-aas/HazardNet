@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "@fontsource-variable/noto-sans";
 @import "@fontsource-variable/playfair-display";
+@import "@fontsource-variable/jetbrains-mono";
 @import 'leaflet/dist/leaflet.css' layer(base);
 @import 'leaflet.markercluster/dist/MarkerCluster.css' layer(base);
 @import 'leaflet.markercluster/dist/MarkerCluster.Default.css' layer(base);
@@ -8,6 +9,25 @@
 @import "shadcn/tailwind.css";
 
 @custom-variant dark (&:is(.dark *));
+
+/* Family-name aliases: map the legacy CDN family names (still referenced in
+   map popups, print CSS, and theme tokens) onto the self-hosted variable
+   font files, so no third-party font request is ever made. */
+@font-face {
+  font-family: 'Playfair Display';
+  src: url('@fontsource-variable/playfair-display/files/playfair-display-latin-wght-normal.woff2') format('woff2-variations');
+  font-weight: 400 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url('@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-wght-normal.woff2') format('woff2-variations');
+  font-weight: 100 800;
+  font-style: normal;
+  font-display: swap;
+}
 
 /* ==========================================================================
    HAZARDNET DESIGN SYSTEM — Token Architecture (three layers)

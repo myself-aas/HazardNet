@@ -7,6 +7,7 @@ import csv from 'csv-parser';
 import { generateAdvisory } from '../backend/services/advisoryAgent.js';
 import { db, collection, getDocs, query, where, doc, setDoc, deleteDoc, writeBatch } from '../backend/db.js';
 import Busboy from 'busboy';
+import { verifyApiKey } from '../backend/utils/apiKeyAuth.js';
 
 /**
  * Vercel expects an async function with (req, res) signature.
@@ -19,12 +20,10 @@ export default async function handler(req, res) {
     return;
   }
 
-  // Validate Bearer authorization token before processing upload stream
-  const authHeader = req.headers['authorization'] || '';
-  const token = authHeader.replace(/^Bearer\s+/i, '');
-  const requiredKey = process.env.BACKEND_API_KEY;
-  if (requiredKey && (!token || token !== requiredKey)) {
-    return res.status(401).json({ error: 'Unauthorized: Invalid or missing API key' });
+  // Timing-safe Bearer key verification (SEC-06); fail-closed when unset.
+  const auth = verifyApiKey(req);
+  if (!auth.ok) {
+    return res.status(auth.status).json({ error: auth.error });
   }
 
   const busboy = new Busboy({ headers: req.headers });

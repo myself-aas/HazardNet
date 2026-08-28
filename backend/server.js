@@ -14,16 +14,70 @@ import pushRoutes from './routes/push.js';
 import conversionRoutes from './routes/conversions.js';
 import metrics from './metrics.js';
 import { aiLimiter, predictLimiter, apiLimiter } from './middleware/rateLimit.js';
+import { requestId } from './middleware/requestId.js';
+import helmet from 'helmet';
 
 dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// ---------------------------------------------------------------------------
+// Startup configuration assertions (SEC-06): loud, early signals for misconfig
+// instead of silent runtime failures. Non-fatal so local dev still boots.
+// ---------------------------------------------------------------------------
+(function assertEnvironment() {
+  const problems = [];
+  const warnings = [];
+
+  if (!process.env.BACKEND_API_KEY) {
+    problems.push('BACKEND_API_KEY is NOT set - authenticated endpoints (CSV ingest, push broadcast) will return 503.');
+  }
+  if (!process.env.GEMINI_API_KEY) {
+    warnings.push('GEMINI_API_KEY unset - AI advisory routes will fall back to the deterministic heuristic engine.');
+  }
+  if (!process.env.VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) {
+    warnings.push('VAPID keys unset - web push subscriptions cannot be created.');
+  }
+  if (!process.env.FRONTEND_ORIGIN) {
+    warnings.push('FRONTEND_ORIGIN unset - CORS allows any origin (legacy mode). Set it in production.');
+  }
+
+  for (const w of warnings) console.warn(`[config] ${w}`);
+  for (const p of problems) console.error(`[config] ${p}`);
+})();
+
 const app = express();
 
 // Rate limiters need the real client IP; we sit behind one proxy/edge hop.
 app.set('trust proxy', 1);
+
+// Security headers (SEC-05). CSP ships in Report-Only mode first so violations
+// can be observed in the console before enforcing; flip reportOnly to false
+// after a monitoring window. Fonts are self-hosted, so no third-party font
+// origins are needed.
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      reportOnly: true,
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        imgSrc: ["'self'", 'data:', 'blob:', 'https:'],
+        fontSrc: ["'self'", 'data:'],
+        connectSrc: ["'self'", 'https:'],
+        workerSrc: ["'self'", 'blob:'],
+        frameAncestors: ["'none'"],
+        baseUri: ["'self'"],
+        formAction: ["'self'"],
+      },
+    },
+  })
+);
+
+// Correlated request logging (BE-04).
+app.use(requestId);
 
 // CORS allowlist (SEC-04). Add allowed browser origins via FRONTEND_ORIGIN
 // (comma-separated). When unset (e.g. local dev), all origins are permitted

@@ -4,6 +4,7 @@
 import { db, collection, doc, setDoc, writeBatch } from '../backend/db.js';
 import { z } from 'zod';
 import { logger } from '../utils/logger.js';
+import { verifyApiKey } from '../backend/utils/apiKeyAuth.js';
 
 // Validation schema for a single forecast row
 const ForecastSchema = z.object({
@@ -30,13 +31,12 @@ export default async function handler(req, res) {
     return;
   }
 
-  // Basic auth check
-  const authHeader = req.headers['authorization'] || '';
-  const token = authHeader.replace(/^Bearer\s+/i, '');
-  if (!token || token !== process.env.BACKEND_API_KEY) {
-    res.statusCode = 401;
+  // Timing-safe Bearer key verification (SEC-06); fail-closed when unset.
+  const auth = verifyApiKey(req);
+  if (!auth.ok) {
+    res.statusCode = auth.status;
     res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify({ error: 'Unauthorized' }));
+    res.end(JSON.stringify({ error: auth.error }));
     return;
   }
 

@@ -301,13 +301,23 @@ jobs:
 | 8 | Delete `frontend/src/firebase.ts` (orphan project) | SEC-07/FE-05 | ✅ |
 
 ### P1 — this month (structural)
-1. ADR + config consolidation for the backend identity (ARC-01/SEC-07); single config module, env-only.
-2. Route-level code splitting + LiveMapView decomposition + bundle budget (FE-01).
-3. `helmet` + CSP; `timingSafeEqual` key checks + startup env assertions (SEC-05/06).
-4. Split `backend/` into its own workspace; prune unused root deps (`three`, `mapbox-gl`, …) (ARC-04).
-5. ESLint 9 + Prettier, warnings-gated on changed files; logger with request IDs (FE-04/BE-04).
-6. `tfjs-node` swap + latency benchmark (ML-01).
-7. Error boundary + self-hosted Material Symbols (FE-02).
+
+> **✅ EXECUTED 2026-08-28** — see commit "feat: execute P1 structural roadmap".
+> Headline results: initial JS payload **796 → 345 kB gzip (-56%)** via route
+> splitting; zero third-party font requests (fully self-hosted, offline-safe);
+> helmet + CSP (report-only) live; timing-safe fail-closed API auth; request-ID
+> logging; ESLint 9 + Prettier with a 572-problem legacy burn-down baseline;
+> TFJS inference benchmarked at **p50 ≈ 6.7 s** (quantifies the tfjs-node swap).
+
+1. ✅ ADR 0001 + `frontend/src/lib/config.ts` single config module; `services/firebase.ts` refactored onto it (ARC-01/SEC-07).
+2. ✅ Route-level code splitting (all pages + ChatBot lazy), root error boundary, `npm run check:bundle` budget gate — initial chunk 345 kB gzip, total 1,048 kB, PASS (FE-01/FE-02). *LiveMapView decomposition deferred — see below.*
+3. ✅ helmet (HSTS, COOP/CORP, nosniff, XFO) + CSP **Report-Only** (flip to enforce after monitoring); `verifyApiKey` timing-safe, **fail-closed** (503 when unset), applied to all 4 guarded endpoints; startup env assertions (SEC-05/06).
+4. ◑ Dependency pruning **done** (13 root deps removed or moved to `frontend/`; `mapbox-gl` removed; zero-usage deps `three`, `react-leaflet`, `pg`, `body-parser`, `leaflet.heat`, `@mui/icons-material`, `@types/*` purged). **Workspace split deferred to P2** — Vercel's bun-workspace function packaging can't be verified from this environment; not worth blind risk.
+5. ✅ ESLint 9 flat config + Prettier; `lint:eslint` baseline = 572 problems (non-blocking burn-down); `AuthContext.tsx` reformatted (FE-04/FE-06). Structured request-ID logging middleware (BE-04).
+6. ◑ ML-01: tfjs-node swap **deferred to P2** (native postinstall downloads are blocked in this sandbox and untestable on Vercel from here) — but `scripts/bench-predict.mjs` now captures the baseline: **p50 ≈ 6,679 ms / p95 ≈ 6,826 ms** per prediction with the browser TFJS build. Re-run after the swap for the before/after.
+7. ✅ Error boundary at app root with offline-friendly recovery UI; Material Symbols CDN sheets deleted (they were **completely unused** — MaterialIcon is inline SVG); JetBrains Mono self-hosted; legacy `'Playfair Display'`/`'JetBrains Mono'` family names aliased to the variable font files so map popups/print CSS need no CDN.
+
+**Deferred (tracked for P2):** backend workspace split, LiveMapView decomposition (3,031 LOC), CSP enforcement flip, tfjs-node swap + re-benchmark.
 
 ### P2 — this quarter (polish & scale)
 1. Delete/extract `app/applet` duplicate (ARC-02).
