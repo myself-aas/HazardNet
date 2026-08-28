@@ -125,7 +125,7 @@ const HAZARD_REPORT_ITEMS: SearchItem[] = [
 // 2. Locations Database (64 Districts, 8 Divisions, Geographical Belts)
 const AUTO_LOCATE_ITEM: SearchItem = {
   id: 'auto-locate-user-district',
-  title: '<MaterialIcon name="location_on" className="w-4 h-4 inline-block mr-1" /> Map My Current District & Location',
+  title: 'Map My Current District & Location',
   category: 'Location',
   subtitle: 'Auto-detect your precise GPS or IP position and map to corresponding Bangladesh district',
   badge: 'GPS / IP Auto-Detect',

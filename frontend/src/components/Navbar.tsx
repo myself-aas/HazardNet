@@ -446,6 +446,20 @@ export const Navbar: React.FC<NavbarProps> = ({
                             <div className="text-[11.5px] text-slate-500 leading-tight mt-0.5">Monsoon & cyclone timing guidance</div>
                           </div>
                         </motion.button>
+
+                        <motion.button
+                          whileHover={{ x: 3 }}
+                          onClick={() => { navigate('/advisories/emergency-response'); setActiveMenu(null); }}
+                          className="w-full p-2.5 text-left flex items-start gap-3 rounded-xl hover:bg-slate-100/90 transition-all cursor-pointer group"
+                        >
+                          <div className="p-2 rounded-xl bg-red-50 text-red-700 group-hover:bg-red-100 transition-colors shrink-0">
+                            <MaterialIcon name="emergency" className="text-lg" />
+                          </div>
+                          <div>
+                            <div className="font-semibold text-slate-900 text-[13.5px]">Emergency Response SOP</div>
+                            <div className="text-[11.5px] text-slate-500 leading-tight mt-0.5">Relief requisition & cluster hotlines</div>
+                          </div>
+                        </motion.button>
                       </motion.div>
                     )}
                   </AnimatePresence>

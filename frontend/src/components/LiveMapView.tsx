@@ -1600,7 +1600,10 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
               }`}
               title="Toggle Tile High Contrast Visual Enhancement"
             >
-              <span>{isHighContrastBoost ? '<MaterialIcon name="bolt" className="w-4 h-4 inline-block align-middle" /> High Contrast [ON]' : 'High Contrast [OFF]'}</span>
+              <span className="flex items-center gap-1">
+                <MaterialIcon name="bolt" className="w-4 h-4 inline-block align-middle" />
+                {isHighContrastBoost ? 'High Contrast [ON]' : 'High Contrast [OFF]'}
+              </span>
             </button>
 
             {/* High-Res Map Export Button */}
@@ -1614,7 +1617,9 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
               }`}
               title="Capture and download current visible map area as a high-resolution PNG image"
             >
-              <span>{isExportingMap ? '⌛ Capturing Map...' : '<MaterialIcon name="photo_camera" className="w-4 h-4 inline-block align-middle" /> Export PNG Map'}</span>
+              <span className="flex items-center gap-1">
+                {isExportingMap ? '⌛ Capturing Map...' : <><MaterialIcon name="photo_camera" className="w-4 h-4 inline-block align-middle" /> Export PNG Map</>}
+              </span>
             </button>
 
             <button

@@ -582,6 +582,12 @@ export const NationalOverview: React.FC<NationalOverviewProps> = ({
           <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white">
             <table className="w-full text-left font-sans text-xs">
               <thead className="bg-slate-50 text-slate-600 font-mono uppercase text-[10px] tracking-wider border-b border-slate-200">
+                {/* Repeated Emergency Protocol Header Row on Every Printed Page */}
+                <tr className="print-table-emergency-header">
+                  <th colSpan={8} className="emergency-protocol-title">
+                    🚨 NATIONAL EMERGENCY PROTOCOL & HAZARD DISTRIBUTION SUMMARY (SOD 2019)
+                  </th>
+                </tr>
                 <tr>
                   <th className="p-3.5">Rank & Unique Hazard</th>
                   <th className="p-3.5">District Count</th>

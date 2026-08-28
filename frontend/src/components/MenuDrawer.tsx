@@ -145,6 +145,13 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
           icon: 'calendar_month',
           description: 'Monsoon, flash flood & cyclone timings',
         },
+        {
+          id: 'emergency-response',
+          title: 'Emergency Logistics & Requisitions',
+          path: '/advisories/emergency-response',
+          icon: 'emergency',
+          description: 'National SOD 2019 relief & procurement protocols',
+        },
       ],
     },
     {

@@ -641,41 +641,615 @@ caption {
   }
 }
 
+/* ==========================================================================
+   OFFICIAL DISASTER MANAGEMENT & EMERGENCY HANDOUT PRINT MEDIA SYSTEM
+   Formatted specifically for physical field handouts, SOD 2019 compliance,
+   and executive emergency responder distribution.
+   ========================================================================== */
+
+/* Utility classes for Print vs Screen */
+.print-only {
+  display: none !important;
+}
+
+.screen-only {
+  display: block;
+}
+
 @media print {
-  body {
-    background: #ffffff !important;
-    color: #0f172a !important;
-    font-family: system-ui, -apple-system, sans-serif !important;
+  /* 1. Page Configuration & Geometry with CSS Paged Media Page Counters */
+  @page {
+    size: A4 portrait;
+    margin: 12mm 10mm 15mm 10mm;
+    @bottom-left {
+      content: "HazardNet Bangladesh • Emergency Directive Handout";
+      font-family: 'JetBrains Mono', monospace, ui-monospace, sans-serif;
+      font-size: 7.5pt;
+      font-weight: 600;
+      color: #475569;
+    }
+    @bottom-center {
+      content: "SOD 2019 Disaster Management Compliance";
+      font-family: 'JetBrains Mono', monospace, ui-monospace, sans-serif;
+      font-size: 7pt;
+      color: #94a3b8;
+    }
+    @bottom-right {
+      content: "Page " counter(page) " of " counter(pages);
+      font-family: 'JetBrains Mono', monospace, ui-monospace, sans-serif;
+      font-size: 8pt;
+      font-weight: 800;
+      color: #0f172a;
+    }
   }
 
-  nav,
-  header,
-  button,
-  .no-print,
-  [role='tablist'] {
-    display: none !important;
+  @page :first {
+    margin-top: 10mm;
   }
 
-  .max-w-7xl {
-    max-width: 100% !important;
-    padding: 0 !important;
-    margin: 0 !important;
-  }
-
-  div,
-  section {
-    background-color: transparent !important;
-    color: #0f172a !important;
-    border-color: #cbd5e1 !important;
+  /* 2. Color Calibration & Exact Ink Rendering */
+  *,
+  *::before,
+  *::after {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+    text-shadow: none !important;
     box-shadow: none !important;
   }
 
-  h1,
-  h2,
-  h3,
-  h4,
-  p,
-  span {
+  /* 3. Base Document Typography & Clean Contrast */
+  html,
+  body {
+    background-color: #ffffff !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+    font-size: 9.5pt !important;
+    line-height: 1.45 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    counter-reset: page;
+  }
+
+  /* 4. HazardNet Official Emergency Handout Watermark */
+  body::before {
+    content: "HAZARDNET BANGLADESH • OFFICIAL EMERGENCY ADVISORY • OPERATIONAL DIRECTIVE";
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-32deg);
+    font-family: 'Playfair Display', Georgia, serif, system-ui;
+    font-size: 22pt;
+    font-weight: 900;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: rgba(15, 23, 42, 0.04) !important;
+    border: 2.5pt dashed rgba(15, 23, 42, 0.04);
+    padding: 20pt 30pt;
+    border-radius: 12pt;
+    pointer-events: none;
+    z-index: 9999;
+    text-align: center;
+    white-space: nowrap;
+    display: block !important;
+  }
+
+  /* 5. Non-Printable Elements Cleanup */
+  nav,
+  header,
+  aside,
+  button,
+  input,
+  select,
+  textarea,
+  [role="dialog"],
+  [role="tablist"],
+  .no-print,
+  .leaflet-control-container,
+  .chat-widget,
+  .toast,
+  .toaster,
+  .floating-action-button,
+  .sticky:not(.print-keep),
+  .fixed:not(.print-keep):not(body::before):not(.print-page-footer) {
+    display: none !important;
+  }
+
+  /* 6. Layout Width, Margins & Container Flattening */
+  .max-w-7xl,
+  .max-w-6xl,
+  .max-w-5xl,
+  .max-w-4xl,
+  .max-w-3xl,
+  .max-w-2xl,
+  .max-w-xl,
+  .max-w-lg,
+  .container {
+    max-width: 100% !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* 7. Card & Box Flattening for Crisp Ink-friendly Handouts */
+  .bg-white,
+  .bg-slate-50,
+  .bg-slate-100,
+  .bg-slate-900,
+  .bg-slate-950,
+  .nasa-glass-panel,
+  [class*="rounded-3xl"],
+  [class*="rounded-2xl"] {
+    background-color: #ffffff !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+    border: 1pt solid #cbd5e1 !important;
+    border-radius: 6pt !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  /* 8. Text Color & Contrast Overrides */
+  h1, h2, h3, h4, h5, h6 {
+    color: #0f172a !important;
+    font-weight: 800 !important;
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+
+  h1 { font-size: 16pt !important; line-height: 1.25 !important; margin-bottom: 6pt !important; }
+  h2 { font-size: 13pt !important; line-height: 1.3 !important; margin-top: 8pt !important; margin-bottom: 4pt !important; }
+  h3 { font-size: 11pt !important; line-height: 1.35 !important; margin-top: 6pt !important; margin-bottom: 3pt !important; }
+  h4 { font-size: 9.5pt !important; line-height: 1.4 !important; }
+  p, span, li, td, th {
+    color: #1e293b !important;
+  }
+
+  .text-white,
+  .text-slate-100,
+  .text-slate-200,
+  .text-slate-300,
+  .text-slate-400 {
+    color: #334155 !important;
+  }
+
+  /* 9. Hyperlink Formatting for Physical Emergency Handouts */
+  a {
+    color: #0f172a !important;
+    text-decoration: none !important;
+  }
+
+  /* Automatically append clean destination URLs to external portals & documentation links */
+  a[href^="http://"]:after,
+  a[href^="https://"]:after {
+    content: " [" attr(href) "]";
+    font-size: 7pt !important;
+    font-family: 'JetBrains Mono', monospace, ui-monospace !important;
+    font-weight: 500 !important;
+    color: #475569 !important;
+    word-break: break-all !important;
+  }
+
+  /* Internal route links, anchors, and scripts should NOT append URLs */
+  a[href^="/"]:after,
+  a[href^="#"]:after,
+  a[href^="javascript:"]:after,
+  .no-print-url:after,
+  .no-print-url a:after,
+  .hn-topbar-wordmark:after {
+    content: none !important;
+  }
+
+  /* Format telephone & mailto links with clear emergency callout */
+  a[href^="tel:"]:after {
+    content: " (Hotline: " attr(href) ")";
+    font-size: 7.5pt !important;
+    font-family: 'JetBrains Mono', monospace !important;
+    font-weight: 700 !important;
     color: #0f172a !important;
   }
+
+  a[href^="mailto:"]:after {
+    content: " [" attr(href) "]";
+    font-size: 7pt !important;
+    font-family: 'JetBrains Mono', monospace !important;
+    color: #334155 !important;
+  }
+
+  a[href^="tel:"] {
+    font-weight: 800 !important;
+    font-family: 'JetBrains Mono', monospace !important;
+    color: #0f172a !important;
+  }
+
+  /* 10. Emergency Contacts & Directory Cards Formatting */
+  .emergency-contact-card,
+  [class*="border-slate-200"] > div,
+  .space-y-4 > div {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  .grid {
+    display: grid !important;
+  }
+
+  .grid-cols-1,
+  .grid-cols-2,
+  .grid-cols-3,
+  .grid-cols-4,
+  .grid-cols-6 {
+    gap: 6pt !important;
+  }
+
+  /* 11. Phased SOP Protocols & Steps - Avoid Breaking Mid-Step */
+  .phased-step-card,
+  .sop-step,
+  div[class*="rounded-3xl"] > div,
+  article,
+  section {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  /* Operational Trigger Threshold Box */
+  [class*="bg-amber-50"],
+  [class*="bg-rose-50"],
+  [class*="bg-emerald-50"],
+  [class*="bg-blue-50"],
+  [class*="bg-slate-50"] {
+    background-color: #f8fafc !important;
+    border: 1pt solid #94a3b8 !important;
+    border-radius: 4pt !important;
+    padding: 5pt 7pt !important;
+  }
+
+  /* Badges & Severity Chips */
+  [class*="rounded-full"],
+  [class*="rounded-lg"],
+  [class*="rounded-md"] {
+    border: 0.75pt solid #64748b !important;
+    background-color: #f1f5f9 !important;
+    color: #0f172a !important;
+    font-weight: 700 !important;
+    border-radius: 3pt !important;
+  }
+
+  /* 12. Technical Cultivars & Long Advisory Tables with Repeated Emergency Header */
+  table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    border: 1.5pt solid #0f172a !important;
+    font-size: 8pt !important;
+    margin-top: 6pt !important;
+    margin-bottom: 8pt !important;
+    page-break-inside: auto !important;
+    break-inside: auto !important;
+  }
+
+  thead {
+    display: table-header-group !important; /* CRITICAL: Repeats the table header at the top of every printed page */
+  }
+
+  /* Fixed 'Emergency Protocol' repeated header row */
+  .print-table-emergency-header,
+  thead tr.print-table-emergency-header {
+    display: table-row !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    background-color: #0f172a !important;
+    color: #ffffff !important;
+  }
+
+  .print-table-emergency-header th,
+  thead tr.print-table-emergency-header th,
+  th.emergency-protocol-title {
+    background-color: #0f172a !important;
+    color: #ffffff !important;
+    font-family: 'JetBrains Mono', monospace, ui-monospace, sans-serif !important;
+    font-size: 8pt !important;
+    font-weight: 900 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.06em !important;
+    padding: 4pt 7pt !important;
+    border: 1.5pt solid #0f172a !important;
+    text-align: left !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  thead tr:not(.print-table-emergency-header) th {
+    background-color: #e2e8f0 !important;
+    color: #0f172a !important;
+    border: 1pt solid #475569 !important;
+    font-weight: 800 !important;
+    font-family: 'JetBrains Mono', monospace, sans-serif !important;
+    font-size: 7.5pt !important;
+    padding: 4pt 6pt !important;
+    text-transform: uppercase;
+  }
+
+  tr {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  td {
+    border: 0.75pt solid #cbd5e1 !important;
+    padding: 4pt 6pt !important;
+    color: #0f172a !important;
+    vertical-align: top !important;
+  }
+
+  tbody tr:nth-child(even) td {
+    background-color: #f8fafc !important;
+  }
+
+  /* 13. Dynamic QR Code Print Layout */
+  .print-qr-code-box {
+    display: flex !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    background-color: #ffffff !important;
+    border: 1pt solid #475569 !important;
+    border-radius: 6pt !important;
+    padding: 4pt 6pt !important;
+    margin: 4pt 0 !important;
+  }
+
+  .print-qr-code-box svg {
+    display: block !important;
+  }
+
+  /* 14. 'Last Updated' Timestamp & Currency Indicators */
+  .print-last-updated {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4pt !important;
+    background-color: #f8fafc !important;
+    border: 1pt solid #64748b !important;
+    border-radius: 4pt !important;
+    padding: 2.5pt 6pt !important;
+    font-family: 'JetBrains Mono', monospace, ui-monospace, sans-serif !important;
+    font-size: 7.5pt !important;
+    font-weight: 700 !important;
+    color: #0f172a !important;
+  }
+
+  .print-last-updated strong {
+    color: #0f172a !important;
+    font-weight: 900 !important;
+  }
+
+  .print-currency-tag {
+    display: inline-block !important;
+    background-color: #0f172a !important;
+    color: #ffffff !important;
+    font-family: 'JetBrains Mono', monospace !important;
+    font-size: 6.5pt !important;
+    font-weight: 800 !important;
+    text-transform: uppercase !important;
+    padding: 1.5pt 4pt !important;
+    border-radius: 2pt !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* 15. Fallback Page Counter for Non-Paged-Media Print Renderers */
+  .print-page-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    font-family: 'JetBrains Mono', monospace, ui-monospace, sans-serif !important;
+    font-size: 7pt !important;
+    color: #475569 !important;
+    border-top: 0.75pt solid #94a3b8 !important;
+    padding-top: 2pt !important;
+    background-color: #ffffff !important;
+    z-index: 999;
+  }
+
+  .print-page-number::after {
+    counter-increment: page;
+    content: "Page " counter(page);
+    font-weight: 800 !important;
+    color: #0f172a !important;
+  }
+
+  /* 16. Structured Advisory Renderer: Uncollapse all sections */
+  .StructuredAdvisoryRenderer,
+  [class*="StructuredAdvisoryRenderer"] {
+    display: block !important;
+  }
+
+  /* Ensure collapsible vulnerability content is always fully visible in print */
+  .animate-in,
+  [class*="slide-in-from-top"] {
+    display: block !important;
+    opacity: 1 !important;
+    height: auto !important;
+    visibility: visible !important;
+  }
+
+  /* 17. Text Clamp Removal */
+  .line-clamp-1,
+  .line-clamp-2,
+  .line-clamp-3,
+  .line-clamp-4,
+  .line-clamp-5,
+  .truncate {
+    display: block !important;
+    -webkit-line-clamp: unset !important;
+    -webkit-box-orient: unset !important;
+    overflow: visible !important;
+    white-space: normal !important;
+    text-overflow: unset !important;
+  }
+
+  /* 18. Print-Only and Screen-Only Display Controls */
+  .print-only {
+    display: block !important;
+  }
+
+  .screen-only {
+    display: none !important;
+  }
 }
+
+/* ==========================================================================
+   CLIENT-SIDE PDF EXPORT CAPTURE STYLES (.pdf-exporting & .pdf-capture-mode)
+   Ensures client-side libraries (jsPDF + html2canvas) render the authentic
+   print-media emergency handout format, including QR codes and SOD 2019 headers.
+   ========================================================================== */
+body.pdf-exporting .print-only,
+.pdf-capture-mode .print-only {
+  display: block !important;
+}
+
+body.pdf-exporting .screen-only,
+.pdf-capture-mode .screen-only,
+body.pdf-exporting .no-print,
+.pdf-capture-mode .no-print {
+  display: none !important;
+}
+
+body.pdf-exporting .print-qr-code-box,
+.pdf-capture-mode .print-qr-code-box {
+  display: flex !important;
+  background-color: #ffffff !important;
+  border: 1pt solid #475569 !important;
+  border-radius: 6pt !important;
+}
+
+body.pdf-exporting .print-last-updated,
+.pdf-capture-mode .print-last-updated {
+  display: inline-flex !important;
+  background-color: #f8fafc !important;
+  border: 1pt solid #64748b !important;
+  color: #0f172a !important;
+}
+
+body.pdf-exporting .print-currency-tag,
+.pdf-capture-mode .print-currency-tag {
+  display: inline-block !important;
+  background-color: #0f172a !important;
+  color: #ffffff !important;
+}
+
+body.pdf-exporting thead tr.print-table-emergency-header,
+.pdf-capture-mode thead tr.print-table-emergency-header {
+  display: table-row !important;
+  background-color: #0f172a !important;
+  color: #ffffff !important;
+}
+
+/* ==========================================================================
+   PRINT PREVIEW MODAL STYLES (.print-preview-rendered-body)
+   Simulates authentic ink-friendly physical handout formatting inside the modal.
+   ========================================================================== */
+.print-preview-rendered-body .print-only {
+  display: block !important;
+}
+
+.print-preview-rendered-body .screen-only,
+.print-preview-rendered-body .no-print {
+  display: none !important;
+}
+
+.print-preview-rendered-body .print-qr-code-box {
+  display: flex !important;
+  background-color: #ffffff !important;
+  border: 1pt solid #475569 !important;
+  border-radius: 6pt !important;
+}
+
+.print-preview-rendered-body .print-last-updated {
+  display: inline-flex !important;
+  background-color: #f8fafc !important;
+  border: 1pt solid #64748b !important;
+  color: #0f172a !important;
+}
+
+.print-preview-rendered-body .print-currency-tag {
+  display: inline-block !important;
+  background-color: #0f172a !important;
+  color: #ffffff !important;
+}
+
+.print-preview-rendered-body table {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  border: 1.5pt solid #0f172a !important;
+  font-size: 8pt !important;
+  margin-top: 6pt !important;
+  margin-bottom: 8pt !important;
+}
+
+.print-preview-rendered-body thead {
+  display: table-header-group !important;
+}
+
+.print-preview-rendered-body thead tr.print-table-emergency-header {
+  display: table-row !important;
+  background-color: #0f172a !important;
+  color: #ffffff !important;
+}
+
+.print-preview-rendered-body thead tr.print-table-emergency-header th,
+.print-preview-rendered-body th.emergency-protocol-title {
+  background-color: #0f172a !important;
+  color: #ffffff !important;
+  font-family: 'JetBrains Mono', monospace, ui-monospace, sans-serif !important;
+  font-size: 8pt !important;
+  font-weight: 900 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.06em !important;
+  padding: 4pt 7pt !important;
+  border: 1.5pt solid #0f172a !important;
+  text-align: left !important;
+}
+
+.print-preview-rendered-body thead tr:not(.print-table-emergency-header) th {
+  background-color: #e2e8f0 !important;
+  color: #0f172a !important;
+  border: 1pt solid #475569 !important;
+  padding: 4pt 6pt !important;
+  font-weight: 800;
+  font-size: 7.5pt;
+  text-transform: uppercase;
+}
+
+.print-preview-rendered-body td {
+  border: 0.75pt solid #cbd5e1 !important;
+  padding: 4pt 6pt !important;
+  font-size: 7.5pt !important;
+  color: #1e293b !important;
+}
+
+.print-preview-rendered-body tr:nth-child(even) td {
+  background-color: #f8fafc !important;
+}
+
+.print-preview-rendered-body .bg-slate-900,
+.print-preview-rendered-body .bg-slate-800,
+.print-preview-rendered-body .bg-slate-950 {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border: 1pt solid #cbd5e1 !important;
+}
+
+.print-preview-rendered-body .text-white {
+  color: #0f172a !important;
+}
+
+.print-preview-rendered-body .text-slate-400,
+.print-preview-rendered-body .text-slate-300 {
+  color: #475569 !important;
+}
+

@@ -657,7 +657,10 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
                       : 'bg-[#f9a825] hover:bg-[#ad6d04] text-slate-950'
                   }`}
                 >
-                  <span>{savedDistricts.some((d) => d.id === selectedDistrict.id) ? '<MaterialIcon name="push_pin" className="w-4 h-4 inline-block mr-1" /> Unpin Selected District' : '<MaterialIcon name="push_pin" className="w-4 h-4 inline-block mr-1" /> Pin Selected District'}</span>
+                  <span className="flex items-center gap-1">
+                    <MaterialIcon name="push_pin" className="w-4 h-4 inline-block mr-1" />
+                    {savedDistricts.some((d) => d.id === selectedDistrict.id) ? 'Unpin Selected District' : 'Pin Selected District'}
+                  </span>
                 </button>
               )}
             </div>
@@ -720,8 +723,8 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
 
                         <div className="flex items-center justify-between text-[11px] font-mono text-slate-600 pt-1 border-t border-slate-200/60">
                           <span>Crop: {dist.mainCrop}</span>
-                          <span className="font-bold text-[#ad6d04]">
-                            {isSelected ? '<MaterialIcon name="my_location" className="w-4 h-4 inline-block mr-1" /> Map Centered' : 'Click to Focus →'}
+                          <span className="font-bold text-[#ad6d04] flex items-center gap-1">
+                            {isSelected ? <><MaterialIcon name="my_location" className="w-4 h-4 inline-block mr-1" /> Map Centered</> : 'Click to Focus →'}
                           </span>
                         </div>
                       </div>
@@ -1054,7 +1057,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
                   disabled={isClearingAllCache}
                   className="px-5 py-3.5 bg-slate-100 hover:bg-rose-50 hover:text-rose-700 hover:border-rose-200 border border-slate-200 text-slate-700 font-bold text-xs rounded-2xl transition-all cursor-pointer"
                 >
-                  {isClearingAllCache ? 'Purging All Caches...' : '<span className="flex items-center gap-1.5"><MaterialIcon name="delete" className="w-3.5 h-3.5 text-rose-600" /> Purge All Offline Caches</span>'}
+                  {isClearingAllCache ? 'Purging All Caches...' : <span className="flex items-center gap-1.5"><MaterialIcon name="delete" className="w-3.5 h-3.5 text-rose-600" /> Purge All Offline Caches</span>}
                 </button>
               </div>
             </div>
