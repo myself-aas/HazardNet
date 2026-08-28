@@ -21,7 +21,7 @@ export function hashSHA256(val) {
 export function hashPhoneE164(phone) {
   if (!phone || typeof phone !== 'string') return null;
   // Remove formatting characters, spaces, dashes, parentheses
-  let digits = phone.replace(/[\s\-\(\)\.]/g, '');
+  let digits = phone.replace(/[\s().-]/g, '');
   if (!digits) return null;
   // If Bangladesh local number (017... or 88017...), ensure international prefix
   if (digits.startsWith('01') && digits.length === 11) {

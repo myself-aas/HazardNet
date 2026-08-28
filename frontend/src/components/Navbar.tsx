@@ -149,8 +149,8 @@ export const Navbar: React.FC<NavbarProps> = ({
               onClick={() => setIsMenuDrawerOpen(!isMenuDrawerOpen)}
               className={
                 isMenuDrawerOpen
-                  ? "p-2 rounded-xl border backdrop-blur-md shadow-2xs transition-colors flex items-center justify-center shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:outline-none bg-amber-500/20 text-amber-900 border-amber-500/50 shadow-xs"
-                  : "p-2 rounded-xl border backdrop-blur-md shadow-2xs transition-colors flex items-center justify-center shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:outline-none bg-white/80 hover:bg-white text-slate-800 border-slate-200/80"
+                  ? "tap-target p-2 rounded-xl border backdrop-blur-md shadow-2xs transition-colors flex items-center justify-center shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:outline-none bg-amber-500/20 text-amber-900 border-amber-500/50 shadow-xs"
+                  : "tap-target p-2 rounded-xl border backdrop-blur-md shadow-2xs transition-colors flex items-center justify-center shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:outline-none bg-white/80 hover:bg-white text-slate-800 border-slate-200/80"
               }
               aria-label={isMenuDrawerOpen ? 'Close navigation menu' : 'Open navigation menu'}
               title={isMenuDrawerOpen ? 'Close Menu' : 'Open Menu'}
@@ -178,7 +178,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               <button
                 onClick={handleNavbarLocate}
                 disabled={isLocatingInNavbar}
-                className="p-2 rounded-xl bg-amber-400 hover:bg-amber-500 text-slate-950 font-bold text-xs shadow-2xs transition-all flex items-center justify-center cursor-pointer disabled:opacity-50"
+                className="tap-target p-2 rounded-xl bg-amber-400 hover:bg-amber-500 text-slate-950 font-bold text-xs shadow-2xs transition-all flex items-center justify-center cursor-pointer disabled:opacity-50"
                 title="Locate me"
                 aria-label="Locate me"
               >

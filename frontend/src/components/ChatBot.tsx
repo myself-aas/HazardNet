@@ -103,9 +103,9 @@ export default function ChatBot() {
             exit={{ scale: 0, opacity: 0 }}
             whileHover={{ scale: 1.08 }}
             whileTap={{ scale: 0.92 }}
-            className="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-[9995] px-4 sm:px-5 py-2.5 sm:py-3 rounded-full bg-[#f9a825] hover:bg-[#d08305] text-white font-extrabold text-xs shadow-xl flex items-center gap-2 cursor-pointer"
+            className="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-[9995] px-4 sm:px-5 py-2.5 sm:py-3 rounded-full bg-amber-400 hover:bg-amber-500 text-slate-950 font-extrabold text-xs shadow-xl flex items-center gap-2 cursor-pointer"
           >
-            <span className="w-2 h-2 rounded-full bg-white animate-ping" />
+            <span className="w-2 h-2 rounded-full bg-slate-950/70 animate-ping" />
             AI Advisor
           </motion.button>
         )}
@@ -120,7 +120,7 @@ export default function ChatBot() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.85, y: 30 }}
             transition={{ type: 'spring', stiffness: 350, damping: 25 }}
-            className="fixed inset-x-0 bottom-0 top-12 sm:top-auto sm:bottom-6 sm:right-6 sm:left-auto z-[10000] w-full sm:w-[450px] h-auto sm:h-[600px] bg-white sm:rounded-2xl shadow-2xl flex flex-col border border-slate-200"
+            className="fixed inset-x-0 bottom-0 top-12 sm:top-auto sm:bottom-6 sm:right-6 sm:left-auto z-[10000] w-full sm:w-[450px] h-auto sm:h-[600px] sm:max-h-[calc(100dvh-3rem)] bg-white sm:rounded-2xl shadow-2xl flex flex-col border border-slate-200 pb-[env(safe-area-inset-bottom)] sm:pb-0"
           >
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-slate-200 bg-slate-50 text-slate-900 sm:rounded-t-2xl">
@@ -207,13 +207,13 @@ export default function ChatBot() {
                   transition={{ duration: 0.25 }}
                   className={`flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}
                 >
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 font-bold text-xs shadow-sm ${msg.role === 'user' ? 'bg-slate-800 text-white' : 'bg-[#f9a825] text-white'}`}>
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 font-bold text-xs shadow-sm ${msg.role === 'user' ? 'bg-slate-800 text-white' : 'bg-amber-400 text-slate-950'}`}>
                     {msg.role === 'user' ? 'You' : 'AI'}
                   </div>
                   <div 
                     className={`max-w-[85%] rounded-2xl p-4 shadow-sm text-sm prose prose-sm max-w-none ${
                       msg.role === 'user' 
-                        ? 'bg-[#f9a825] text-white rounded-tr-none font-medium' 
+                        ? 'bg-amber-100 text-amber-950 border border-amber-200 rounded-tr-none font-medium' 
                         : 'bg-white border border-slate-200 text-slate-800 rounded-tl-none'
                     }`}
                   >
@@ -257,7 +257,7 @@ export default function ChatBot() {
                   whileTap={{ scale: 0.95 }}
                   onClick={() => sendMessage(input)}
                   disabled={!input.trim() || loading}
-                  className="absolute right-2 px-3 py-1.5 bg-[#f9a825] text-white font-bold text-xs rounded-lg hover:bg-[#d08305] disabled:opacity-40 transition-colors shadow-sm cursor-pointer"
+                  className="absolute right-2 px-3 py-1.5 bg-amber-400 text-slate-950 font-bold text-xs rounded-lg hover:bg-amber-500 disabled:opacity-40 transition-colors shadow-sm cursor-pointer"
                 >
                   Send
                 </motion.button>

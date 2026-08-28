@@ -1,6 +1,7 @@
 import express from 'express';
 import path from 'path';
 import multer from 'multer';
+import { verifyApiKey } from '../utils/apiKeyAuth.js';
 import csv from 'csv-parser';
 import fs from 'fs';
 import { db, collection, getDocs, query, where, doc, setDoc, deleteDoc, writeBatch } from '../db.js';
@@ -33,17 +34,17 @@ const VALID_HAZARDS = [
 // POST /api/v1/forecasts/update
 // Receives CSV from GitHub Actions, upserts into Firestore
 // ─────────────────────────────────────────────────────────
-router.post('/update', upload.single('file'), async (req, res) => {
-    // Verify Bearer authorization token before processing CSV upload
-    const authHeader = req.headers['authorization'] || '';
-    const token = authHeader.replace(/^Bearer\s+/i, '');
-    const requiredKey = process.env.BACKEND_API_KEY;
-    if (requiredKey && (!token || token !== requiredKey)) {
+router.post('/update', upload.single('file'), (req, res, next) => {
+    // Timing-safe Bearer key verification (SEC-06); fail-closed when unset.
+    const result = verifyApiKey(req);
+    if (!result.ok) {
         if (req.file && fs.existsSync(req.file.path)) {
             fs.unlinkSync(req.file.path);
         }
-        return res.status(401).json({ error: 'Unauthorized: Invalid or missing API key' });
+        return res.status(result.status).json({ error: result.error });
     }
+    return next();
+}, async (req, res) => {
 
     if (!req.file) {
         return res.status(400).json({ error: 'No file uploaded' });

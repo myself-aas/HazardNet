@@ -61,7 +61,9 @@ describe("AdvisoryPanel", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText(/Severe risk of flooding\./i)).toBeInTheDocument();
+      // StructuredAdvisoryRenderer renders the first sentence of
+      // risk_assessment as the issue headline (period intentionally dropped).
+      expect(screen.getByText(/Severe risk of flooding/i)).toBeInTheDocument();
       expect(screen.getByText(/Evacuate low-lying areas/i)).toBeInTheDocument();
       expect(screen.getByText(/Secure livestock/i)).toBeInTheDocument();
     });

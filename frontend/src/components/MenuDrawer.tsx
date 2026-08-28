@@ -300,7 +300,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
             className="flex items-center gap-2.5 min-w-0 text-left hover:bg-slate-200/60 p-1.5 rounded-xl transition-colors flex-1"
             title={user ? 'Manage Account & Settings' : 'Sign In'}
           >
-            <div className="w-8 h-8 rounded-full bg-[#f9a825] text-white font-black text-xs flex items-center justify-center shadow-xs shrink-0">
+            <div className="w-8 h-8 rounded-full bg-amber-400 text-slate-950 font-black text-xs flex items-center justify-center shadow-xs shrink-0">
               {user ? (user.displayName || user.email || 'U')[0].toUpperCase() : 'ID'}
             </div>
             <div className="min-w-0 flex-1">

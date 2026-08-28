@@ -1038,7 +1038,7 @@ This urgent emergency notification requests immediate public health and WASH clu
 2. CRITICAL EMERGENCY COMMODITY REQUISITIONS:
 - Water Purification Tablets (Aquatabs 67mg): [AQUATABS_COUNT] tablets
 - WHO-Formula Oral Rehydration Salts (ORS): [ORS_PACKETS] packets
-- IV Cholera Saline (Ringer\'s Lactate 1000ml): [IV_BAGS] bags
+- IV Cholera Saline (Ringer's Lactate 1000ml): [IV_BAGS] bags
 - Mobile Water Treatment Plants (Truck/Boat mounted): [WTP_COUNT] units
 - Polyvalent Snake Antivenom: [ANTIVENOM_VIALS] vials
 - Bleaching Powder for Tube-Well Disinfection: [BLEACHING_KG] kg

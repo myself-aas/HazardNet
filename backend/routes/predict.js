@@ -1,11 +1,16 @@
 import express from 'express';
-import tf from '@tensorflow/tfjs';
 import { validateTensor } from '../middleware/validation.js';
 import { normalize } from '../utils/normalization.js';
 import { predict } from '../inference.js';
 import metrics from '../metrics.js';
+import { getModelInfo } from '../modelInfo.js';
+import { getTf } from '../tfjs.js';
+import { createPredictionCache } from '../utils/predictionCache.js';
 
 const router = express.Router();
+
+// Identical tensor payloads within the TTL bypass the ~6.7 s CPU inference.
+const predictionCache = createPredictionCache();
 
 router.post('/', validateTensor, async (req, res) => {
   metrics.apiRequestsTotal.inc();
@@ -13,9 +18,24 @@ router.post('/', validateTensor, async (req, res) => {
   res.set('X-Content-Type-Options', 'nosniff');
   let tensor = req.tensor;
   let normalized = null;
+  const tf = await getTf();
+
+  // Full-tensor cache lookup: same payload + TTL → serve the previous result.
+  try {
+    const tensorValues = await tensor.array();
+    const cached = predictionCache.get(tensorValues);
+    if (cached) {
+      return res.json({
+        ...cached,
+        inference: { ...cached.inference, cached: true },
+      });
+    }
+  } catch {
+    // Cache is best-effort; fall through to inference on any lookup issue.
+  }
 
   try {
-    normalized = normalize(tensor);
+    normalized = await normalize(tensor);
     const start = Date.now();
     const result = await predict(normalized);
     const latency = Date.now() - start;
@@ -27,14 +47,21 @@ router.post('/', validateTensor, async (req, res) => {
     };
     const inferenceInfo = {
       latency_ms: latency,
-      model_version: '1.0-FP32',
+      model_version: getModelInfo().version,
       timestamp: new Date().toISOString()
     };
-    res.json({
+    const responseBody = {
       prediction: result,
       inference: inferenceInfo,
       metadata: metadata
-    });
+    };
+    try {
+      const tensorValues = await tensor.array();
+      predictionCache.set(tensorValues, responseBody);
+    } catch {
+      // best-effort caching
+    }
+    res.json(responseBody);
   } catch (err) {
     console.error('Prediction error:', err);
     res.status(500).json({ error: 'Inference calculation failed' });

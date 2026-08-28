@@ -1,29 +1,28 @@
 // Vercel Serverless Function
 // Handles CSV uploads, generates advisories via Gemini, and writes to Firebase Firestore
+// ESM: the root package.json declares "type": "module" — CJS `require` fails here.
 
-const { createReadStream } = require('fs');
-const csv = require('csv-parser');
-const { generateAdvisory } = require('../backend/services/advisoryAgent');
-const { db, collection, getDocs, query, where, doc, setDoc, deleteDoc, writeBatch } = require('../backend/db.js');
-const Busboy = require('busboy');
+import csv from 'csv-parser';
+import { generateAdvisory } from '../backend/services/advisoryAgent.js';
+import { db, collection, getDocs, query, where, doc, writeBatch } from '../backend/db.js';
+import Busboy from 'busboy';
+import { verifyApiKey } from '../backend/utils/apiKeyAuth.js';
 
 /**
  * Vercel expects an async function with (req, res) signature.
  * @param {import('vercel').Request} req
  * @param {import('vercel').Response} res
  */
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Method Not Allowed' });
     return;
   }
 
-  // Validate Bearer authorization token before processing upload stream
-  const authHeader = req.headers['authorization'] || '';
-  const token = authHeader.replace(/^Bearer\s+/i, '');
-  const requiredKey = process.env.BACKEND_API_KEY;
-  if (requiredKey && (!token || token !== requiredKey)) {
-    return res.status(401).json({ error: 'Unauthorized: Invalid or missing API key' });
+  // Timing-safe Bearer key verification (SEC-06); fail-closed when unset.
+  const auth = verifyApiKey(req);
+  if (!auth.ok) {
+    return res.status(auth.status).json({ error: auth.error });
   }
 
   const busboy = new Busboy({ headers: req.headers });
@@ -31,7 +30,7 @@ module.exports = async function handler(req, res) {
   const errors = [];
   let fileProcessed = false;
 
-  busboy.on('file', (fieldname, file, filename, encoding, mimetype) => {
+  busboy.on('file', (fieldname, file, _filename, _encoding, _mimetype) => {
     if (fieldname !== 'file') {
       file.resume();
       return;

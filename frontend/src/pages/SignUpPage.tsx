@@ -57,7 +57,7 @@ const SignUpPage: React.FC = () => {
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, ease: 'easeOut' }}
-      className="grid grid-cols-1 lg:grid-cols-2 min-h-screen bg-slate-50"
+      className="grid grid-cols-1 lg:grid-cols-2 min-h-dvh bg-slate-50"
     >
       {/* Left side - HazardNet Brand Showcase */}
       <div className="hidden lg:flex flex-col items-center justify-center bg-amber-500/10 p-12 border-r border-slate-200 relative overflow-hidden">

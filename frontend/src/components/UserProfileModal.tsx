@@ -81,7 +81,9 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
     setAutoDetectLocationEnabled(enabled);
     try {
       localStorage.setItem('hazardnet_auto_detect_location', String(enabled));
-    } catch (e) {}
+    } catch {
+      // storage unavailable (private mode) — setting is best-effort
+    }
     try {
       await updateUserProfile({ autoDetectLocationEnabled: enabled });
       toast.success(
@@ -103,7 +105,9 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
       setPrimaryDivision(matched.division);
       try {
         localStorage.setItem('hazardnet_home_district', matched.id);
-      } catch (e) {}
+      } catch {
+        // storage unavailable — best-effort
+      }
     }
   };
 
@@ -463,7 +467,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                     type="button"
                     onClick={() => {
                       setHomeDistrictId('');
-                      try { localStorage.removeItem('hazardnet_home_district'); } catch (e) {}
+                      try { localStorage.removeItem('hazardnet_home_district'); } catch { /* best-effort */ }
                     }}
                     className="w-full py-2 px-3 bg-white hover:bg-rose-50 text-rose-700 border border-rose-200 font-bold rounded-xl text-xs transition-colors cursor-pointer"
                   >

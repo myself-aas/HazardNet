@@ -68,19 +68,10 @@ export function useMapSnapshot(
               return element.classList.contains('no-export-snapshot');
             },
             onclone: (clonedDoc) => {
-              // 1. Sanitize oklch colors in style tags without stripping Leaflet or Tailwind CSS files
-              const styleTags = clonedDoc.querySelectorAll('style');
-              styleTags.forEach((styleTag) => {
-                try {
-                  if (styleTag.textContent && styleTag.textContent.includes('oklch')) {
-                    styleTag.textContent = styleTag.textContent.replace(/oklch\([^)]+\)/g, '#64748b');
-                  }
-                } catch {
-                  // Ignore style sanitization errors
-                }
-              });
+              // Note: html2canvas-pro parses modern color functions (oklch,
+              // oklab, color()) natively — no CSS color sanitization needed.
 
-              // 2. Set crossOrigin = 'anonymous' on all tile images in clonedDoc
+              // Set crossOrigin = 'anonymous' on all tile images in clonedDoc
               const clonedImgs = clonedDoc.querySelectorAll('img');
               clonedImgs.forEach((img) => {
                 img.crossOrigin = 'anonymous';
