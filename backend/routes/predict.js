@@ -1,9 +1,10 @@
 import express from 'express';
-import tf from '@tensorflow/tfjs';
 import { validateTensor } from '../middleware/validation.js';
 import { normalize } from '../utils/normalization.js';
 import { predict } from '../inference.js';
 import metrics from '../metrics.js';
+import { getModelInfo } from '../modelInfo.js';
+import { getTf } from '../tfjs.js';
 
 const router = express.Router();
 
@@ -13,9 +14,10 @@ router.post('/', validateTensor, async (req, res) => {
   res.set('X-Content-Type-Options', 'nosniff');
   let tensor = req.tensor;
   let normalized = null;
+  const tf = await getTf();
 
   try {
-    normalized = normalize(tensor);
+    normalized = await normalize(tensor);
     const start = Date.now();
     const result = await predict(normalized);
     const latency = Date.now() - start;
@@ -27,7 +29,7 @@ router.post('/', validateTensor, async (req, res) => {
     };
     const inferenceInfo = {
       latency_ms: latency,
-      model_version: '1.0-FP32',
+      model_version: getModelInfo().version,
       timestamp: new Date().toISOString()
     };
     res.json({

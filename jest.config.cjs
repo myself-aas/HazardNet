@@ -11,6 +11,22 @@ module.exports = {
   // unified/remark ecosystem): transform everything instead of maintaining a
   // per-package exception list that breaks on every new ESM dependency.
   transformIgnorePatterns: [],
+  // Coverage gate (QA-01). Floor set at the measured 2026-08-28 baseline
+  // (~32% statements) minus a small margin — ratchet upward as tests land.
+  // Scope mirrors `npm test` (see collectCoverageFrom below).
+  coverageThreshold: {
+    global: {
+      statements: 30,
+      branches: 33,
+      functions: 28,
+      lines: 30,
+    },
+  },
+  collectCoverageFrom: [
+    'backend/**/*.js',
+    'api/**/*.js',
+    'frontend/src/utils/**/*.ts',
+  ],
 };
 
 

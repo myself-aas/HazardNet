@@ -1,4 +1,4 @@
-import tf from '@tensorflow/tfjs';
+import { getTf } from '../tfjs.js';
 
 /**
   * Flattens array safely
@@ -18,7 +18,7 @@ function getFlatData(arr) {
   * Expects req.body.tensor to be a flat or nested array matching shape [1,15,10,64,64].
   * Attaches a tf.Tensor5D to req.tensor on success.
   */
-function validateTensor(req, res, next) {
+async function validateTensor(req, res, next) {
   const data = req.body.tensor;
 
   // Integrity: never fabricate input data. A disaster early-warning API must
@@ -42,6 +42,7 @@ function validateTensor(req, res, next) {
   }
 
   try {
+    const tf = await getTf();
     const float32Array = flat instanceof Float32Array ? flat : new Float32Array(flat);
     const tensor = tf.tensor5d(float32Array, [1, 15, 10, 64, 64], 'float32');
     req.tensor = tensor;

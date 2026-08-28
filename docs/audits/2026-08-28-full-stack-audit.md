@@ -320,7 +320,25 @@ jobs:
 **Deferred (tracked for P2):** backend workspace split, LiveMapView decomposition (3,031 LOC), CSP enforcement flip, tfjs-node swap + re-benchmark.
 
 ### P2 — this quarter (polish & scale)
-1. Delete/extract `app/applet` duplicate (ARC-02).
+
+> **◑ EXECUTION IN PROGRESS (2026-08-28)** — see commit "feat: execute P2
+> polish & scale roadmap". Completed: app/applet duplicate deleted (ARC-02);
+> **ML-04 (new High finding, fixed): normalization broadcast bug** — stats were
+> reshaped [15,1,1,1,1] against an NCDHW tensor, producing a 15×15 outer
+> product that corrupted every channel feature feeding the heuristic
+> (constant inputs scored severity ≈0.97–1.0). Fixed to [1,15,1,1,1] with
+> regression tests; predictions are now genuinely input-driven. Model
+> VERSION.json handshake live (`/health` + predict metadata);
+> `backend/tfjs.js` native-loader wired (install tfjs-node in prod to
+> activate); coverage gate 30/33/28/30 (54 tests, 9 suites); security test
+> suite (key handling 503/401, chat bounds, 429); LiveMapView first slice
+> extracted (map primitives module); ADRs 0002/0003; Vercel edge security
+> headers + asset caching; Playwright smoke suite ready (e2e/);
+> CONCERNS.md refreshed. Deferred: Firestore→Supabase cutover (schema +
+> migration script ready, execution needs live credentials), CSP_ENFORCE
+> flip (needs browser-based violation monitoring), backend workspace split.
+
+1. ✅ Delete/extract `app/applet` duplicate (ARC-02).
 2. Firestore→Supabase consolidation for forecasts if ADR approves (ARC-01).
 3. Playwright offline/PDF/mobile smoke suite, weekly (QA-02).
 4. Coverage gate 40%→60%; model VERSION.json handshake (QA-01/ML-02).

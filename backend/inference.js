@@ -1,8 +1,9 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import tf from '@tensorflow/tfjs';
 import metrics from './metrics.js';
+import { getTf } from './tfjs.js';
+import { getModelInfo } from './modelInfo.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -12,10 +13,12 @@ let modelLoaded = false;
 async function loadModel() {
   if (!modelLoaded) {
     const start = Date.now();
+    const tf = await getTf();
     await tf.ready();
     modelLoaded = true;
     const loadTime = Date.now() - start;
     metrics.modelLoadTime.set(loadTime);
+    console.log(`[inference] model ${getModelInfo().version} ready in ${loadTime} ms`);
   }
   return modelLoaded;
 }
@@ -58,7 +61,7 @@ try {
  * @param {number} temperature
  * @returns {tf.Tensor1D}
  */
-function temperatureScale(logits, temperature = 1.0) {
+function temperatureScale(tf, logits, temperature = 1.0) {
   if (temperature === 1) return tf.softmax(logits);
   const scaled = logits.div(tf.scalar(temperature));
   return tf.softmax(scaled);
@@ -82,6 +85,7 @@ function severityBin(score) {
  */
 async function predict(tensor) {
   await loadModel();
+  const tf = await getTf();
 
   return tf.tidy(() => {
     // Transpose from NCDHW [1, 15, 10, 64, 64] to NDHWC [1, 10, 64, 64, 15]
@@ -137,7 +141,7 @@ async function predict(tensor) {
     ];
 
     const logitsTensor = tf.tensor1d(logitsArr);
-    const probs = temperatureScale(logitsTensor, 1.0);
+    const probs = temperatureScale(tf, logitsTensor, 1.0);
     const probsArray = probs.arraySync();
 
     // Continuous physical severity head (Sigmoid 0.0 - 1.0)

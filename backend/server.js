@@ -15,6 +15,7 @@ import conversionRoutes from './routes/conversions.js';
 import metrics from './metrics.js';
 import { aiLimiter, predictLimiter, apiLimiter } from './middleware/rateLimit.js';
 import { requestId } from './middleware/requestId.js';
+import { getModelInfo } from './modelInfo.js';
 import helmet from 'helmet';
 
 dotenv.config();
@@ -56,10 +57,14 @@ app.set('trust proxy', 1);
 // can be observed in the console before enforcing; flip reportOnly to false
 // after a monitoring window. Fonts are self-hosted, so no third-party font
 // origins are needed.
+// Set CSP_ENFORCE=true to flip from Report-Only to enforcing once the
+// violation monitoring window is clean (ADR 0003). Default: report-only.
+const cspEnforce = process.env.CSP_ENFORCE === 'true';
+
 app.use(
   helmet({
     contentSecurityPolicy: {
-      reportOnly: true,
+      reportOnly: !cspEnforce,
       directives: {
         defaultSrc: ["'self'"],
         scriptSrc: ["'self'"],
@@ -116,7 +121,7 @@ app.use((req, res, next) => {
 
 // Health Check
 app.get('/health', (req, res) => {
-  res.json({ status: 'healthy', service: 'HazardNet Backend', timestamp: new Date() });
+  res.json({ status: 'healthy', service: 'HazardNet Backend', timestamp: new Date(), model: getModelInfo().version });
 });
 
 // Never serve model artifacts or preprocessing assets from the public server.
