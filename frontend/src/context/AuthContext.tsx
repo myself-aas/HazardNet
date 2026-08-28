@@ -75,7 +75,7 @@ export interface AuthContextType {
     pass: string,
     name: string,
     initialProfile?: Partial<UserProfileData>,
-  ) => Promise<void>;
+  ) => Promise<'session' | 'confirmation-required'>;
   signInWithEmailAndPassword: (email: string, pass: string) => Promise<EmailCredential>;
   signInWithEmail: (email: string, pass: string) => Promise<EmailCredential>;
   signOut: () => Promise<void>;
@@ -193,7 +193,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     pass: string,
     name: string,
     initialProfile?: Partial<UserProfileData>,
-  ) => {
+  ): Promise<'session' | 'confirmation-required'> => {
     const { data, error } = await supabase.auth.signUp({
       email,
       password: pass,
@@ -203,7 +203,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       },
     });
     if (error) throw error;
-    if (data.user && data.session) await saveProfile(data.user, name, initialProfile);
+    // No session means Supabase requires email confirmation before login.
+    if (data.user && data.session) {
+      await saveProfile(data.user, name, initialProfile);
+      return 'session';
+    }
+    return 'confirmation-required';
   };
   const saveProfile = async (authUser: SupabaseAuthUser, name = 'User', data: Partial<UserProfileData> = {}) => {
     const row = {

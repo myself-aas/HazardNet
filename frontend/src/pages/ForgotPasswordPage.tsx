@@ -2,9 +2,8 @@ import MaterialIcon from "../components/MaterialIcon";
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { AuthCard } from '../components/AuthCard';
+import { AuthLayout } from '../components/auth/AuthLayout';
 import { useAuth } from '../context/AuthContext';
-import { HazardNetBrand } from '../components/HazardNetLogo';
 import toast from 'react-hot-toast';
 
 const ForgotPasswordPage: React.FC = () => {
@@ -50,10 +49,11 @@ const ForgotPasswordPage: React.FC = () => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, ease: 'easeOut' }}
     >
-      <AuthCard title="Reset Password">
-        <div className="flex justify-center mb-1">
-          <HazardNetBrand size="md" />
-        </div>
+      <AuthLayout
+        mode="recovery"
+        title="Reset your password"
+        subtitle="Enter your registered email and we'll send you a secure reset link."
+      >
 
         {!isSubmitted ? (
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -122,7 +122,7 @@ const ForgotPasswordPage: React.FC = () => {
               </p>
               <p>
                 Need an account?{' '}
-                <Link to="/sign-up" className="text-amber-800 hover:underline font-extrabold">Sign Up</Link>
+                <Link to="/signup" className="text-amber-800 hover:underline font-extrabold">Sign Up</Link>
               </p>
             </div>
           </form>
@@ -160,7 +160,7 @@ const ForgotPasswordPage: React.FC = () => {
             </div>
           </div>
         )}
-      </AuthCard>
+      </AuthLayout>
     </motion.div>
   );
 };

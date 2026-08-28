@@ -1,5 +1,5 @@
 import { useEffect, lazy, Suspense } from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import SignUpPage from './pages/SignUpPage';
@@ -55,6 +55,15 @@ const AppContent: React.FC = () => {
     location.pathname === '/home/overview' ||
     location.pathname === '/forecast/overview';
 
+  // Dedicated full-bleed auth pages (own layout, no navbar/footer/chat).
+  const isAuthPage =
+    location.pathname === '/login' ||
+    location.pathname === '/signup' ||
+    location.pathname === '/sign-up' ||
+    location.pathname === '/forgot-password' ||
+    location.pathname === '/update-password' ||
+    location.pathname.startsWith('/auth/');
+
   return (
     <div
       className={
@@ -76,7 +85,7 @@ const AppContent: React.FC = () => {
       />
 
       {/* Top Navigation - Upper layer overlay with near-transparent background */}
-      {!['/terms', '/privacy'].some((p) => location.pathname.startsWith(p)) && (
+      {!['/terms', '/privacy'].some((p) => location.pathname.startsWith(p)) && !isAuthPage && (
         <div
           className={`z-[9990] pointer-events-auto w-full ${
             isHomePage ? 'absolute top-0 left-0 right-0' : 'sticky top-0'
@@ -89,7 +98,9 @@ const AppContent: React.FC = () => {
       {/* Main Content Area */}
       <main
         className={
-          isHomePage
+          isAuthPage
+            ? 'flex-1 relative z-10 w-full pointer-events-auto'
+            : isHomePage
             ? 'w-full h-full h-dvh overflow-hidden p-0 m-0 pointer-events-auto absolute inset-0 z-0'
             : 'flex-1 relative z-10 max-w-7xl w-full mx-auto p-3 sm:p-4 md:p-6 lg:p-8 pb-28 md:pb-8 pointer-events-auto'
         }
@@ -127,7 +138,9 @@ const AppContent: React.FC = () => {
               <Route path="/contact" element={<Contact />} />
               <Route path="/terms" element={<Terms />} />
               <Route path="/privacy" element={<Privacy />} />
-              <Route path="/sign-up" element={<SignUpPage />} />
+              <Route path="/signup" element={<SignUpPage />} />
+              {/* Legacy sign-up URL — permanently redirected to /signup */}
+              <Route path="/sign-up" element={<Navigate to="/signup" replace />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/forgot-password" element={<ForgotPasswordPage />} />
               <Route path="/update-password" element={<UpdatePasswordPage />} />
@@ -140,14 +153,14 @@ const AppContent: React.FC = () => {
       </main>
 
       {/* Render Footer only on subpages; homepage is a full-screen Google Earth stage */}
-      {!isHomePage && (
+      {!isHomePage && !isAuthPage && (
         <div className="pointer-events-auto mt-auto pb-20 md:pb-0">
           <Footer />
         </div>
       )}
 
       {/* Floating Chat Bot - Render only on subpages */}
-      {!isHomePage && (
+      {!isHomePage && !isAuthPage && (
         <div className="pointer-events-auto">
           <Suspense fallback={null}>
             <ChatBot />
