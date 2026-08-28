@@ -140,7 +140,7 @@ async function callGeminiPrimary(prompt, systemInstruction) {
     } catch (err) {
       const msg = String(err?.message || err);
       if (msg.includes('429') || msg.includes('RESOURCE_EXHAUSTED') || msg.includes('quota')) {
-        throw new Error('Gemini API Quota Exceeded (429)');
+        throw new Error('Gemini API Quota Exceeded (429)', { cause: err });
       }
       lastErr = err;
     }
@@ -177,7 +177,7 @@ async function callGeminiSecondary(prompt, systemInstruction) {
     } catch (err) {
       const msg = String(err?.message || err);
       if (msg.includes('429') || msg.includes('RESOURCE_EXHAUSTED') || msg.includes('quota')) {
-        throw new Error('Backup Gemini API Quota Exceeded (429)');
+        throw new Error('Backup Gemini API Quota Exceeded (429)', { cause: err });
       }
       lastErr = err;
     }

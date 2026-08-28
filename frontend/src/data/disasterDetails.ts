@@ -87,14 +87,14 @@ export function getGranularDisasterData(districtId: string): GranularDisasterDat
   });
 
   // Hazard specific metrics & subtypes
-  let subtype = '';
-  let primaryMetricName = '';
-  let primaryMetricValue = '';
-  let secondaryMetricName = '';
-  let secondaryMetricValue = '';
-  let stationName = `${district.name} Hydro-Met Station #${Math.floor(district.lat * 10) % 90 + 10}`;
-  let advisories: string[] = [];
-  let comparison = '';
+  let subtype: string;
+  let primaryMetricName: string;
+  let primaryMetricValue: string;
+  let secondaryMetricName: string;
+  let secondaryMetricValue: string;
+  const stationName = `${district.name} Hydro-Met Station #${Math.floor(district.lat * 10) % 90 + 10}`;
+  let advisories: string[];
+  let comparison: string;
 
   switch (district.hazardType) {
     case 'Flash Flood':

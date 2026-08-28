@@ -1,7 +1,7 @@
 // Vercel serverless function to ingest forecast chunks
 // Expected payload: { chunk: Array<{...}> }
 
-import { db, collection, doc, setDoc, writeBatch } from '../backend/db.js';
+import { db, collection, doc, writeBatch } from '../backend/db.js';
 import { z } from 'zod';
 import { logger } from '../utils/logger.js';
 import { verifyApiKey } from '../backend/utils/apiKeyAuth.js';

@@ -5,8 +5,12 @@ import { predict } from '../inference.js';
 import metrics from '../metrics.js';
 import { getModelInfo } from '../modelInfo.js';
 import { getTf } from '../tfjs.js';
+import { createPredictionCache } from '../utils/predictionCache.js';
 
 const router = express.Router();
+
+// Identical tensor payloads within the TTL bypass the ~6.7 s CPU inference.
+const predictionCache = createPredictionCache();
 
 router.post('/', validateTensor, async (req, res) => {
   metrics.apiRequestsTotal.inc();
@@ -15,6 +19,20 @@ router.post('/', validateTensor, async (req, res) => {
   let tensor = req.tensor;
   let normalized = null;
   const tf = await getTf();
+
+  // Full-tensor cache lookup: same payload + TTL → serve the previous result.
+  try {
+    const tensorValues = await tensor.array();
+    const cached = predictionCache.get(tensorValues);
+    if (cached) {
+      return res.json({
+        ...cached,
+        inference: { ...cached.inference, cached: true },
+      });
+    }
+  } catch {
+    // Cache is best-effort; fall through to inference on any lookup issue.
+  }
 
   try {
     normalized = await normalize(tensor);
@@ -32,11 +50,18 @@ router.post('/', validateTensor, async (req, res) => {
       model_version: getModelInfo().version,
       timestamp: new Date().toISOString()
     };
-    res.json({
+    const responseBody = {
       prediction: result,
       inference: inferenceInfo,
       metadata: metadata
-    });
+    };
+    try {
+      const tensorValues = await tensor.array();
+      predictionCache.set(tensorValues, responseBody);
+    } catch {
+      // best-effort caching
+    }
+    res.json(responseBody);
   } catch (err) {
     console.error('Prediction error:', err);
     res.status(500).json({ error: 'Inference calculation failed' });

@@ -2,10 +2,9 @@
 // Handles CSV uploads, generates advisories via Gemini, and writes to Firebase Firestore
 // ESM: the root package.json declares "type": "module" — CJS `require` fails here.
 
-import { createReadStream } from 'node:fs';
 import csv from 'csv-parser';
 import { generateAdvisory } from '../backend/services/advisoryAgent.js';
-import { db, collection, getDocs, query, where, doc, setDoc, deleteDoc, writeBatch } from '../backend/db.js';
+import { db, collection, getDocs, query, where, doc, writeBatch } from '../backend/db.js';
 import Busboy from 'busboy';
 import { verifyApiKey } from '../backend/utils/apiKeyAuth.js';
 
@@ -31,7 +30,7 @@ export default async function handler(req, res) {
   const errors = [];
   let fileProcessed = false;
 
-  busboy.on('file', (fieldname, file, filename, encoding, mimetype) => {
+  busboy.on('file', (fieldname, file, _filename, _encoding, _mimetype) => {
     if (fieldname !== 'file') {
       file.resume();
       return;

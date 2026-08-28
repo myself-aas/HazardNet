@@ -1,5 +1,6 @@
 import React from "react";
-"use client";
+// "use client" directive omitted: this component tree is only rendered
+// inside the Vite SPA (no React Server Components boundary here).
 
 import { cva } from "class-variance-authority";
 import { AnimatePresence, motion } from "framer-motion";

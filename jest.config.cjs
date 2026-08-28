@@ -20,10 +20,10 @@ module.exports = {
   // Scope mirrors `npm test` (see collectCoverageFrom below).
   coverageThreshold: {
     global: {
-      statements: 30,
-      branches: 33,
-      functions: 28,
-      lines: 30,
+      statements: 32,
+      branches: 35,
+      functions: 30,
+      lines: 31,
     },
   },
   collectCoverageFrom: [

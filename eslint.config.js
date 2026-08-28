@@ -28,13 +28,19 @@ export default tseslint.config(
   eslint.configs.recommended,
   ...tseslint.configs.recommended,
   {
-    files: ['**/*.{ts,tsx}'],
+    // Burn-down severities apply to TS/TSX and the backend JS sources alike.
+    files: ['**/*.{ts,tsx,js}'],
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
+      'no-console': ['warn', { allow: ['warn', 'error', 'info'] }],
+    },
+  },
+  {
+    files: ['frontend/src/**/*.tsx'],
     plugins: { 'react-hooks': reactHooks },
     rules: {
       ...reactHooks.configs.recommended.rules,
-      '@typescript-eslint/no-explicit-any': 'warn',
-      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
-      'no-console': ['warn', { allow: ['warn', 'error', 'info'] }],
     },
   },
   {
@@ -44,13 +50,23 @@ export default tseslint.config(
     languageOptions: { globals: { ...globals.browser, process: 'readonly' } },
   },
   {
+    // Service workers: web worker runtime (self, caches, clients).
+    files: ['frontend/public/**/*.js', 'frontend/src/serviceWorker.ts'],
+    languageOptions: { globals: { ...globals.serviceworker } },
+  },
+  {
     // Jest globals for test files.
     files: ['**/__tests__/**/*.{ts,tsx,js}', '**/*.test.{ts,tsx,js}'],
-    languageOptions: { globals: { ...globals.jest } },
+    languageOptions: { globals: { ...globals.jest, process: 'readonly' } },
+  },
+  {
+    // Manual scratch harness (CJS by design) - exempt from import-style rule.
+    files: ['backend/test_tflite.js'],
+    rules: { '@typescript-eslint/no-require-imports': 'off' },
   },
   {
     // Backend/serverless/build scripts: Node runtime globals (ESM sources).
-    files: ['backend/**/*.js', 'api/**/*.js', 'scripts/**/*.js', 'scripts/**/*.mjs', '*.config.js', '*.config.ts', 'e2e/**/*.ts'],
+    files: ['backend/**/*.js', 'api/**/*.js', 'utils/**/*.js', 'scripts/**/*.js', 'scripts/**/*.mjs', '*.config.js', '*.config.ts', 'e2e/**/*.ts'],
     languageOptions: { globals: { ...globals.node } },
     rules: {
       'no-console': 'off',

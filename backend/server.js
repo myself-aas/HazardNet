@@ -13,8 +13,9 @@ import predictRoutes from './routes/predict.js';
 import pushRoutes from './routes/push.js';
 import conversionRoutes from './routes/conversions.js';
 import metrics from './metrics.js';
-import { aiLimiter, predictLimiter, apiLimiter } from './middleware/rateLimit.js';
+import { predictLimiter, apiLimiter } from './middleware/rateLimit.js';
 import { requestId } from './middleware/requestId.js';
+import { attachSupabaseUser, dynamicAiLimiter } from './middleware/supabaseAuth.js';
 import { getModelInfo } from './modelInfo.js';
 import helmet from 'helmet';
 
@@ -134,8 +135,8 @@ app.use(['/Models', '/models', '/hazardnet_fp32.tflite', '/hazardnet_int8.tflite
 app.use('/api', apiLimiter);
 app.use('/api/v1/forecasts', forecastRoutes);
 app.use('/api/advisory', advisoryRoutes);
-app.use('/api/chat', aiLimiter, chatRoutes);
-app.use('/api/agent', aiLimiter, agentRoutes);
+app.use('/api/chat', attachSupabaseUser, dynamicAiLimiter, chatRoutes);
+app.use('/api/agent', attachSupabaseUser, dynamicAiLimiter, agentRoutes);
 app.use('/api/predict', predictLimiter, predictRoutes);
 app.use('/api/push', pushRoutes);
 app.use('/api/conversions', conversionRoutes);

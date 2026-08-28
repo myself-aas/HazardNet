@@ -206,7 +206,9 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
     try {
       const local = localStorage.getItem('shonchay_saved_districts');
       if (local) return JSON.parse(local);
-    } catch (e) {}
+    } catch {
+      // location lookup is optional — silently skip on failure
+    }
     return [
       ALL_64_DISTRICTS.find((d) => d.id === 'kurigram') || ALL_64_DISTRICTS[0],
       ALL_64_DISTRICTS.find((d) => d.id === 'sunamganj') || ALL_64_DISTRICTS[1],
@@ -228,7 +230,9 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
       }
       try {
         localStorage.setItem('shonchay_saved_districts', JSON.stringify(updated));
-      } catch (e) {}
+      } catch {
+      // storage write is best-effort — skip on quota/private mode
+    }
       return updated;
     });
   };

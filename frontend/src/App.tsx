@@ -1,8 +1,6 @@
 import { useEffect, lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
-import { Provider } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
-import store from './store/store';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import SignUpPage from './pages/SignUpPage';
 import LoginPage from './pages/LoginPage';
@@ -165,15 +163,13 @@ const AppContent: React.FC = () => {
 };
 
 const App: React.FC = () => (
-  <Provider store={store}>
-    <ErrorBoundary>
-      <AuthProvider>
-        <Router>
-          <AppContent />
-        </Router>
-      </AuthProvider>
-    </ErrorBoundary>
-  </Provider>
+  <ErrorBoundary>
+    <AuthProvider>
+      <Router>
+        <AppContent />
+      </Router>
+    </AuthProvider>
+  </ErrorBoundary>
 );
 
 export default App;

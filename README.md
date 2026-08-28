@@ -103,7 +103,7 @@ The easiest way to run the full stack locally is via Docker Compose.
 
 ### Prerequisites
 - Docker & Docker Compose
-- Node.js 18+ (if running without Docker)
+- Node.js **20+** (enforced via `engines` in `package.json`)
 - A valid Mapbox GL Access Token
 
 ### Quick Start (Docker)
@@ -123,7 +123,19 @@ docker-compose up -d --build
 docker-compose logs -f frontend
 ```
 
-### Manual Frontend Setup
+### Manual Full-Stack Setup (two terminals)
+```bash
+# Terminal 1 — API server (Express + TFJS inference)
+npm install
+npm start            # backend on http://localhost:3001 (PORT env to override)
+
+# Terminal 2 — frontend dev server (proxies /api → 3001)
+cd frontend
+npm install
+npm run dev          # app on http://localhost:3000
+```
+
+### Manual Frontend-only Setup
 ```bash
 cd frontend
 npm install
