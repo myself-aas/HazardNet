@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
-import { OAuthButtons } from '../components/OAuthButtons';
+import { AuthSocialButtons } from '../components/auth/AuthSocialButtons';
 import { EyeToggleIcon } from '../components/ui/animated-state-icons';
 import { AuthLayout } from '../components/auth/AuthLayout';
 import MaterialIcon from '../components/MaterialIcon';
@@ -10,9 +10,10 @@ import MaterialIcon from '../components/MaterialIcon';
 /**
  * Dedicated sign-in page — unique URL: /login
  *
- * Responsive (split-screen on desktop, single column on mobile), email +
- * password and social providers, "next" destination preservation, friendly
- * error mapping and accessible form semantics.
+ * Field order follows the product spec: email + password inputs first, then
+ * the prominent "Connect with Google" button, then a compact side-by-side row
+ * of circular icons for the other providers, and finally the classic email
+ * submit beneath a divider. Split-screen on desktop, single column on mobile.
  */
 
 /** Translate email-auth failures into actionable, non-leaky messages. */
@@ -151,6 +152,16 @@ const LoginPage: React.FC = () => {
           </div>
         </div>
 
+        {/* ── Social sign-in first: Google, then compact provider icons ── */}
+        <AuthSocialButtons />
+
+        <div className="relative flex items-center justify-center pt-1" aria-hidden="true">
+          <div className="border-t border-slate-200 w-full" />
+          <span className="bg-white px-3 text-[10px] text-slate-400 font-bold uppercase tracking-wider absolute">
+            or sign in with email
+          </span>
+        </div>
+
         <button
           id="login-page-submit-btn"
           type="submit"
@@ -166,15 +177,6 @@ const LoginPage: React.FC = () => {
             'Sign in'
           )}
         </button>
-
-        <div className="relative flex items-center justify-center pt-1" aria-hidden="true">
-          <div className="border-t border-slate-200 w-full" />
-          <span className="bg-white px-3 text-[10px] text-slate-400 font-bold uppercase tracking-wider absolute">
-            or continue with
-          </span>
-        </div>
-
-        <OAuthButtons />
       </form>
 
       <p className="text-center text-xs sm:text-[13px] text-slate-600">

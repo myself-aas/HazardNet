@@ -642,6 +642,29 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
               You are signed in as <strong className="text-slate-900">{user.email || user.displayName || 'User'}</strong>. Logging out terminates your sign-in session and clears local application caches and cached district preferences from this browser.
             </p>
 
+            <div className="p-3 bg-amber-50 rounded-lg border border-amber-200 text-[11px] text-slate-600 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="space-y-0.5">
+                <div className="font-bold text-slate-800 flex items-center gap-1.5">
+                  <MaterialIcon name="grid_view" className="w-4 h-4" />
+                  <span>Full User Dashboard</span>
+                </div>
+                <div className="text-[10px] text-slate-500">
+                  Edit every profile field, connectors, avatar and your unique /u/&lt;username&gt; page.
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  navigate('/dashboard');
+                }}
+                className="px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-lg text-xs shadow-2xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer shrink-0"
+              >
+                <MaterialIcon name="arrow_right" className="w-4 h-4" />
+                <span>Open Dashboard</span>
+              </button>
+            </div>
+
             <div className="p-3 bg-white rounded-lg border border-slate-200 text-[11px] text-slate-600 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="space-y-0.5">
                 <div className="font-mono text-slate-500">

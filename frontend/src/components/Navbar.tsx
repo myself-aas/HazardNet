@@ -36,7 +36,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 }) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, userProfile } = useAuth();
 
   const [isSavedModalOpen, setIsSavedModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
@@ -658,31 +658,39 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <FirebaseRealtimeStatus variant="badge" />
               </div>
               
-              {/* User Profile / Auth Action */}
+              {/* User Dashboard / Auth Action */}
               <motion.button
                 whileHover={{ scale: 1.04 }}
                 whileTap={{ scale: 0.96 }}
                 onClick={() => {
                   if (user) {
-                    setIsProfileModalOpen(true);
+                    navigate('/dashboard');
                   } else {
                     navigate('/login');
                   }
                 }}
                 className="flex items-center gap-2 p-1 pl-1.5 pr-2.5 rounded-xl bg-white/70 hover:bg-white/95 border border-slate-200/80 shadow-2xs transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-teal-500/50 focus-visible:outline-none"
-                title={user ? 'User Profile & Settings' : 'Sign In / Register'}
+                title={user ? 'Open my dashboard' : 'Sign In / Register'}
               >
                 {user ? (
-                  <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-amber-500 to-amber-400 text-slate-950 font-black text-xs flex items-center justify-center shadow-xs">
-                    {(user.displayName || user.email || 'U')[0].toUpperCase()}
-                  </div>
+                  userProfile?.photoURL ? (
+                    <img
+                      src={userProfile.photoURL}
+                      alt=""
+                      className="w-7 h-7 rounded-full border border-slate-200 object-cover shadow-xs"
+                    />
+                  ) : (
+                    <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-amber-500 to-amber-400 text-slate-950 font-black text-xs flex items-center justify-center shadow-xs">
+                      {(user.displayName || user.email || 'U')[0].toUpperCase()}
+                    </div>
+                  )
                 ) : (
                   <div className="w-7 h-7 rounded-full bg-slate-100 border border-slate-300 text-slate-700 font-bold text-xs flex items-center justify-center shadow-xs">
                     <MaterialIcon name="person" className="text-sm" />
                   </div>
                 )}
                 <span className="text-xs font-semibold text-slate-800 hidden lg:inline max-w-[100px] truncate">
-                  {user?.displayName ? user.displayName.split(' ')[0] : 'Sign In'}
+                  {user ? (userProfile?.username ? `@${userProfile.username}` : (user?.displayName ? user.displayName.split(' ')[0] : 'Dashboard')) : 'Sign In'}
                 </span>
               </motion.button>
 

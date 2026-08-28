@@ -46,15 +46,19 @@ http://localhost:3000/auth/callback
 
 ## Frontend behavior
 
-- **Buttons** live in `frontend/src/components/OAuthButtons.tsx` (sign-in and
-  sign-up pages). The seven headline providers render first; Google,
-  Microsoft, Apple and ORCID are under "More sign-in options".
+- **Buttons** live in `frontend/src/components/auth/AuthSocialButtons.tsx`
+  (sign-in and sign-up pages). Per product spec the prominent **Connect with
+  Google** button renders immediately after the email/password fields, then
+  every other provider appears as compact side-by-side circular icons
+  (`SECONDARY_AFTER_GOOGLE_PROVIDER_IDS` in `src/lib/oauthProviders.ts`).
 - **Callback** (`/auth/callback`, `AuthCallbackPage.tsx`) exchanges the code
   via the Supabase client, shows success/failure states with actionable
   hints, and returns the user to the page they started from
   (`sessionStorage: hazardnet.auth.returnTo`).
-- **Sign-up**: the first social sign-in automatically creates the user's
-  `profiles` row seeded from provider metadata (name, email, avatar).
+- **Sign-up**: passwordless — we send a verification (magic) link that opens
+  `/set-password` where the user chooses their password. The first social
+  sign-in automatically creates the user's `profiles` row seeded from
+  provider metadata (name, email, avatar, generated username).
 - **Account linking**: Profile → **Connected Accounts & Social Sign-In**
   links/unlinks providers to the signed-in account
   (`linkIdentity`/`unlinkIdentity`). The last remaining sign-in method cannot

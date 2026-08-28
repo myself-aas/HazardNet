@@ -1,54 +1,28 @@
-import React, { useMemo, useState } from 'react';
-import { useNavigate, Link, useSearchParams } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useEffect, useState } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { AnimatePresence, motion } from 'framer-motion';
 import toast from 'react-hot-toast';
-import { useAuth, UserRolePersona } from '../context/AuthContext';
-import { OAuthButtons } from '../components/OAuthButtons';
-import { EyeToggleIcon } from '../components/ui/animated-state-icons';
+import { useAuth } from '../context/AuthContext';
+import { AuthSocialButtons } from '../components/auth/AuthSocialButtons';
+import { UsernameField } from '../components/user/UsernameField';
 import { AuthLayout } from '../components/auth/AuthLayout';
 import MaterialIcon from '../components/MaterialIcon';
+import { validateUsername } from '../lib/username';
 
 /**
  * Dedicated sign-up page — unique URL: /signup  (/sign-up redirects here)
  *
- * Responsive split-screen layout, live password strength + requirements
- * checklist, persona selection, terms consent, social sign-up, and distinct
- * handling of "session ready" vs "email confirmation required".
+ * Passwordless by design: the user picks a name, a unique username (validated
+ * live while typing, with suggestions) and an email address; we then email a
+ * verification link. Opening the link verifies the address and opens a
+ * session that lands on /set-password where the user chooses their password.
+ *
+ * Field order follows the product spec: details → prominent "Connect with
+ * Google" → compact side-by-side provider icons → email submit.
  */
 
-const PERSONAS: Array<{ value: UserRolePersona; label: string }> = [
-  { value: 'smallholder_farmer', label: 'Smallholder Farmer' },
-  { value: 'ngo_coordinator', label: 'NGO Disaster Coordinator' },
-  { value: 'govt_official', label: 'DAE / Government Extension Officer' },
-  { value: 'academic_researcher', label: 'Academic / Climate Researcher' },
-  { value: 'commercial_agribusiness', label: 'Commercial Agribusiness' },
-];
-
-/** Password strength score 0–4 with live requirement feedback. */
-export const scorePassword = (pw: string): number => {
-  let score = 0;
-  if (pw.length >= 8) score += 1;
-  if (pw.length >= 12) score += 1;
-  if (/[a-z]/.test(pw) && /[A-Z]/.test(pw)) score += 1;
-  if (/\d/.test(pw)) score += 1;
-  if (/[^A-Za-z0-9]/.test(pw)) score += 1;
-  return Math.min(score, 4);
-};
-
-const STRENGTH = [
-  { label: 'Too weak', bar: 'bg-rose-500', text: 'text-rose-700' },
-  { label: 'Weak', bar: 'bg-orange-500', text: 'text-orange-700' },
-  { label: 'Fair', bar: 'bg-amber-500', text: 'text-amber-700' },
-  { label: 'Good', bar: 'bg-lime-600', text: 'text-lime-700' },
-  { label: 'Strong', bar: 'bg-emerald-600', text: 'text-emerald-700' },
-];
-
-const Requirement: React.FC<{ met: boolean; children: React.ReactNode }> = ({ met, children }) => (
-  <li className={`flex items-center gap-1.5 ${met ? 'text-emerald-700' : 'text-slate-500'}`}>
-    <span aria-hidden="true">{met ? '✓' : '○'}</span>
-    <span className="text-[11px] font-medium">{children}</span>
-  </li>
-);
+const inputClass =
+  'w-full px-4 py-3 text-base sm:text-sm bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 placeholder-slate-400 font-medium transition-all focus:outline-none focus:border-[#f9a825] focus:ring-2 focus:ring-[#f9a825]/40';
 
 const describeError = (err: unknown): string => {
   const message = err instanceof Error ? err.message : String(err ?? '');
@@ -56,11 +30,8 @@ const describeError = (err: unknown): string => {
   if (text.includes('already registered') || text.includes('already exists')) {
     return 'An account already exists with this email. Sign in instead — or reset your password if you forgot it.';
   }
-  if (text.includes('password should be at least')) {
-    return 'Please choose a password of at least 8 characters.';
-  }
   if (text.includes('too many requests') || text.includes('rate limit')) {
-    return 'Too many attempts — wait a minute and try again.';
+    return 'Too many emails requested — wait a minute and try again.';
   }
   if (text.includes('failed to fetch') || text.includes('network')) {
     return 'Network problem while creating your account. Check your connection and retry.';
@@ -68,39 +39,57 @@ const describeError = (err: unknown): string => {
   if (text.includes('not configured')) {
     return 'Authentication isn’t configured for this deployment yet.';
   }
-  return message || 'Sign-up failed. Please try again.';
+  return message || 'We couldn’t send the verification email. Please try again.';
 };
 
-const inputClass =
-  'w-full px-4 py-3 text-base sm:text-sm bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 placeholder-slate-400 font-medium transition-all focus:outline-none focus:border-[#f9a825] focus:ring-2 focus:ring-[#f9a825]/40';
-
 const SignUpPage: React.FC = () => {
-  const { signUpWithEmail } = useAuth();
+  const { sendVerificationEmail, user, userProfile } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const rawNext = searchParams.get('next');
-  const next = rawNext && rawNext.startsWith('/') ? rawNext : '/';
+  const next = rawNext && rawNext.startsWith('/') ? rawNext : '/dashboard';
 
   const [name, setName] = useState('');
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirm, setConfirm] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [persona, setPersona] = useState<UserRolePersona>('smallholder_farmer');
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
-  const [pendingConfirmation, setPendingConfirmation] = useState(false);
+  const [pendingVerification, setPendingVerification] = useState(false);
+  const [resendIn, setResendIn] = useState(0);
 
-  const score = useMemo(() => scorePassword(password), [password]);
+  // Signed-in users don't need the sign-up form.
+  if (user) {
+    return (
+      <AuthLayout
+        mode="signup"
+        title="You’re already signed in"
+        subtitle="Head over to your dashboard to manage your profile."
+      >
+        <div className="space-y-4 text-center">
+          <p className="text-sm text-slate-600">
+            Signed in as <strong className="text-slate-900">{userProfile?.displayName || user.email}</strong>.
+          </p>
+          <button
+            type="button"
+            onClick={() => navigate('/dashboard', { replace: true })}
+            className="w-full py-3.5 bg-[#f9a825] hover:bg-[#d08305] text-slate-950 font-extrabold rounded-2xl text-sm transition-all shadow-md cursor-pointer"
+          >
+            Open my dashboard
+          </button>
+        </div>
+      </AuthLayout>
+    );
+  }
+
+  const usernameValidation = validateUsername(username);
 
   const validate = (): boolean => {
     const errors: Record<string, string> = {};
     if (name.trim().length < 2) errors.name = 'Please enter your full name.';
+    if (!usernameValidation.valid) errors.username = usernameValidation.message ?? 'Choose a valid username.';
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) errors.email = 'Enter a valid email address.';
-    if (password.length < 8) errors.password = 'Use at least 8 characters.';
-    if (confirm !== password) errors.confirm = 'Passwords don’t match.';
     if (!acceptedTerms) errors.terms = 'Please accept the Terms and Privacy Policy to continue.';
     setFieldErrors(errors);
     return Object.keys(errors).length === 0;
@@ -112,13 +101,19 @@ const SignUpPage: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const result = await signUpWithEmail(email.trim(), password, name.trim(), { userRole: persona });
-      if (result === 'confirmation-required') {
-        setPendingConfirmation(true);
-      } else {
-        toast.success('Welcome to HazardNet! Your account is ready.');
-        navigate(next, { replace: true });
+      // Remember the chosen identity so the callback/bootstrap can apply it.
+      try {
+        sessionStorage.setItem('hazardnet.signup.pending', JSON.stringify({ name: name.trim(), username }));
+      } catch {
+        // Best effort only.
       }
+      await sendVerificationEmail(email.trim(), {
+        nextTo: '/set-password',
+        displayName: name.trim(),
+        username,
+      });
+      setPendingVerification(true);
+      setResendIn(45);
     } catch (err) {
       console.error(err);
       setError(describeError(err));
@@ -127,31 +122,72 @@ const SignUpPage: React.FC = () => {
     }
   };
 
-  if (pendingConfirmation) {
+  const resend = async () => {
+    if (resendIn > 0) return;
+    setLoading(true);
+    setError(null);
+    try {
+      await sendVerificationEmail(email.trim(), { nextTo: '/set-password' });
+      toast.success('Verification link sent again.');
+      setResendIn(45);
+    } catch (err) {
+      setError(describeError(err));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Countdown ticker for the resend button.
+  useEffect(() => {
+    if (resendIn <= 0) return;
+    const timer = window.setTimeout(() => setResendIn((value) => Math.max(0, value - 1)), 1000);
+    return () => window.clearTimeout(timer);
+  }, [resendIn]);
+
+  if (pendingVerification) {
     return (
       <AuthLayout
         mode="signup"
-        title="Confirm your email"
-        subtitle="One last step before your HazardNet account activates."
+        title="Verify your email"
+        subtitle="One click away from your HazardNet dashboard."
       >
-        <div className="space-y-5 text-center" data-testid="signup-confirmation">
+        <div className="space-y-5 text-center" data-testid="signup-verification-sent">
           <motion.div
             initial={{ scale: 0.7, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100 text-emerald-700"
           >
-            <MaterialIcon name="mail" className="h-6 w-6" />
+            <MaterialIcon name="mail_check" className="h-6 w-6" />
           </motion.div>
-          <p className="text-sm text-slate-600 leading-relaxed">
-            We sent a confirmation link to <strong className="text-slate-900">{email.trim()}</strong>. Open it in your
-            inbox to activate your account, then sign in. Check your spam folder if it hasn’t arrived within a few
-            minutes.
-          </p>
-          <Link
-            to={next !== '/' ? `/login?next=${encodeURIComponent(next)}` : '/login'}
-            className="inline-block rounded-2xl bg-[#f9a825] px-5 py-3 text-sm font-black text-slate-950 shadow-md transition-colors hover:bg-[#d08305]"
-          >
-            Continue to sign in
+          <div className="space-y-2">
+            <p className="text-sm text-slate-700 leading-relaxed">
+              We sent a verification link to{' '}
+              <strong className="text-slate-900">{email.trim()}</strong>. Open it on this device to
+              activate your account and <strong className="text-slate-900">choose your password</strong>.
+            </p>
+            <p className="text-xs text-slate-500">
+              Tip: check your spam folder if it hasn’t arrived within a few minutes.
+            </p>
+          </div>
+          <div className="flex flex-col gap-2">
+            <button
+              type="button"
+              onClick={resend}
+              disabled={resendIn > 0 || loading}
+              className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-xs font-bold text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-50 cursor-pointer"
+            >
+              {resendIn > 0 ? `Resend link available in ${resendIn}s` : 'Resend verification link'}
+            </button>
+            <button
+              type="button"
+              onClick={() => setPendingVerification(false)}
+              className="text-[11px] font-bold text-slate-500 hover:text-slate-800 cursor-pointer"
+            >
+              Wrong email? Edit details
+            </button>
+          </div>
+          <Link to="/login" className="inline-block text-[11px] font-bold text-amber-800 hover:underline">
+            Already have an account? Sign in
           </Link>
         </div>
       </AuthLayout>
@@ -209,6 +245,18 @@ const SignUpPage: React.FC = () => {
           {fieldErrors.name && <p className="mt-1 text-[11px] font-semibold text-rose-700">{fieldErrors.name}</p>}
         </div>
 
+        <UsernameField
+          id="signup-username"
+          value={username}
+          onChange={setUsername}
+          fullName={name}
+          email={email}
+          autoFocus
+        />
+        {fieldErrors.username && (
+          <p className="-mt-2 text-[11px] font-semibold text-rose-700">{fieldErrors.username}</p>
+        )}
+
         <div>
           <label className="block text-xs font-bold text-slate-800 mb-1.5" htmlFor="signup-email">
             Email address
@@ -227,129 +275,42 @@ const SignUpPage: React.FC = () => {
             className={inputClass}
           />
           {fieldErrors.email && <p className="mt-1 text-[11px] font-semibold text-rose-700">{fieldErrors.email}</p>}
+          <p className="mt-1 text-[11px] text-slate-400">
+            We’ll email you a verification link to activate the account and set your password.
+          </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-xs font-bold text-slate-800 mb-1.5" htmlFor="signup-password">
-              Password
-            </label>
-            <div className="relative">
-              <input
-                id="signup-password"
-                name="new-password"
-                type={showPassword ? 'text' : 'password'}
-                required
-                autoComplete="new-password"
-                placeholder="At least 8 characters"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                aria-invalid={Boolean(fieldErrors.password)}
-                className={`${inputClass} pr-12`}
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword((value) => !value)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-slate-400 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#f9a825]/60 cursor-pointer"
-                aria-label={showPassword ? 'Hide password' : 'Show password'}
-              >
-                <EyeToggleIcon isState={showPassword} size={20} duration={0} />
-              </button>
-            </div>
-            {password && (
-              <div className="mt-2 flex items-center gap-2" aria-live="polite">
-                <div className="flex-1 flex gap-1">
-                  {[0, 1, 2, 3].map((index) => (
-                    <span
-                      key={index}
-                      className={`h-1.5 flex-1 rounded-full ${
-                        index < score ? STRENGTH[score].bar : 'bg-slate-200'
-                      }`}
-                    />
-                  ))}
-                </div>
-                <span className={`text-[10px] font-extrabold ${STRENGTH[score].text}`}>{STRENGTH[score].label}</span>
-              </div>
-            )}
-            {fieldErrors.password && (
-              <p className="mt-1 text-[11px] font-semibold text-rose-700">{fieldErrors.password}</p>
-            )}
-          </div>
+        {/* ── Social sign-up first: Google, then compact provider icons ── */}
+        <AuthSocialButtons label="Sign up with Google" />
 
-          <div>
-            <label className="block text-xs font-bold text-slate-800 mb-1.5" htmlFor="signup-confirm">
-              Confirm password
-            </label>
-            <input
-              id="signup-confirm"
-              name="confirm-password"
-              type={showPassword ? 'text' : 'password'}
-              required
-              autoComplete="new-password"
-              placeholder="Repeat your password"
-              value={confirm}
-              onChange={(e) => setConfirm(e.target.value)}
-              aria-invalid={Boolean(fieldErrors.confirm)}
-              className={inputClass}
-            />
-            {fieldErrors.confirm && (
-              <p className="mt-1 text-[11px] font-semibold text-rose-700">{fieldErrors.confirm}</p>
-            )}
-          </div>
+        <div className="relative flex items-center justify-center pt-1" aria-hidden="true">
+          <div className="border-t border-slate-200 w-full" />
+          <span className="bg-white px-3 text-[10px] text-slate-400 font-bold uppercase tracking-wider absolute">
+            or sign up with email
+          </span>
         </div>
 
-        {password && (
-          <ul className="grid grid-cols-2 gap-x-3 gap-y-1 rounded-2xl border border-slate-200/80 bg-slate-50/70 p-3">
-            <Requirement met={password.length >= 8}>8+ characters</Requirement>
-            <Requirement met={/[A-Z]/.test(password) && /[a-z]/.test(password)}>Upper &amp; lowercase</Requirement>
-            <Requirement met={/\d/.test(password)}>A number</Requirement>
-            <Requirement met={/[^A-Za-z0-9]/.test(password)}>A special character</Requirement>
-          </ul>
-        )}
-
-        <div>
-          <label className="block text-xs font-bold text-slate-800 mb-1.5" htmlFor="signup-persona">
-            I am a…
-          </label>
-          <select
-            id="signup-persona"
-            name="persona"
-            value={persona}
-            onChange={(e) => setPersona(e.target.value as UserRolePersona)}
-            className={`${inputClass} cursor-pointer appearance-none`}
-          >
-            {PERSONAS.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label className="flex items-start gap-2.5 cursor-pointer" htmlFor="signup-terms">
-            <input
-              id="signup-terms"
-              name="terms"
-              type="checkbox"
-              checked={acceptedTerms}
-              onChange={(e) => setAcceptedTerms(e.target.checked)}
-              className="mt-0.5 h-4 w-4 rounded border-slate-300 text-[#f9a825] accent-[#f9a825] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#f9a825]/60 cursor-pointer"
-            />
-            <span className="text-[11px] leading-relaxed text-slate-600">
-              I agree to the{' '}
-              <Link to="/terms" className="font-bold text-amber-800 underline underline-offset-2">
-                Terms of Service
-              </Link>{' '}
-              and{' '}
-              <Link to="/privacy" className="font-bold text-amber-800 underline underline-offset-2">
-                Privacy Policy
-              </Link>
-              , including use of my advisory preferences to improve early warnings.
-            </span>
-          </label>
-          {fieldErrors.terms && <p className="mt-1 text-[11px] font-semibold text-rose-700">{fieldErrors.terms}</p>}
-        </div>
+        <label htmlFor="signup-terms" className="flex items-start gap-2.5 cursor-pointer select-none">
+          <input
+            id="signup-terms"
+            type="checkbox"
+            checked={acceptedTerms}
+            onChange={(e) => setAcceptedTerms(e.target.checked)}
+            className="mt-0.5 h-4 w-4 rounded border-slate-300 accent-[#f9a825] cursor-pointer"
+          />
+          <span className="text-[11px] leading-relaxed text-slate-600">
+            I agree to the{' '}
+            <Link to="/terms" className="font-bold text-amber-800 hover:underline">
+              Terms
+            </Link>{' '}
+            and{' '}
+            <Link to="/privacy" className="font-bold text-amber-800 hover:underline">
+              Privacy Policy
+            </Link>
+            , including weather-data processing for my district.
+          </span>
+        </label>
+        {fieldErrors.terms && <p className="-mt-2 text-[11px] font-semibold text-rose-700">{fieldErrors.terms}</p>}
 
         <button
           id="signup-page-submit-btn"
@@ -360,27 +321,18 @@ const SignUpPage: React.FC = () => {
           {loading ? (
             <>
               <span className="h-4 w-4 animate-spin rounded-full border-2 border-slate-800 border-t-transparent" />
-              Creating account…
+              Sending verification link…
             </>
           ) : (
-            'Create account'
+            'Create account — email me a verification link'
           )}
         </button>
-
-        <div className="relative flex items-center justify-center pt-1" aria-hidden="true">
-          <div className="border-t border-slate-200 w-full" />
-          <span className="bg-white px-3 text-[10px] text-slate-400 font-bold uppercase tracking-wider absolute">
-            or sign up with
-          </span>
-        </div>
-
-        <OAuthButtons />
       </form>
 
       <p className="text-center text-xs sm:text-[13px] text-slate-600">
         Already have an account?{' '}
         <Link
-          to={next !== '/' ? `/login?next=${encodeURIComponent(next)}` : '/login'}
+          to={next !== '/dashboard' ? `/login?next=${encodeURIComponent(next)}` : '/login'}
           className="font-extrabold text-amber-800 hover:text-amber-900 hover:underline"
         >
           Sign in

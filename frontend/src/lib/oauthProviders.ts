@@ -56,6 +56,22 @@ export const PRIMARY_PROVIDER_IDS: OAuthProviderId[] = [
 /** Additional providers kept from the previous sign-in screen. */
 export const SECONDARY_PROVIDER_IDS: OAuthProviderId[] = ['google', 'microsoft', 'apple', 'orcid'];
 
+/**
+ * Auth-page icon row: every provider except Google, rendered as compact
+ * side-by-side circular icons beneath the "Connect with Google" button.
+ */
+export const SECONDARY_AFTER_GOOGLE_PROVIDER_IDS: OAuthProviderId[] = [
+  'github',
+  'microsoft',
+  'apple',
+  'linkedin',
+  'discord',
+  'slack',
+  'twitter',
+  'figma',
+  'orcid',
+];
+
 const CONFIGS: Record<OAuthProviderId, OAuthProviderConfig> = {
   linkedin: {
     id: 'linkedin',
