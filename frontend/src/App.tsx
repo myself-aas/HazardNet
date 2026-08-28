@@ -50,7 +50,7 @@ const AppContent: React.FC = () => {
     <div
       className={
         isHomePage
-          ? 'h-screen w-screen overflow-hidden bg-transparent text-slate-900 flex flex-col font-sans relative pointer-events-none'
+          ? 'h-dvh w-full overflow-hidden bg-transparent text-slate-900 flex flex-col font-sans relative pointer-events-none'
           : 'min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans selection:bg-amber-100 selection:text-amber-900 pointer-events-none'
       }
     >

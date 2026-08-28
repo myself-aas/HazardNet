@@ -52,7 +52,7 @@ export const DataProcessingSkeleton: React.FC<DataProcessingSkeletonProps> = ({
     <div
       className={`relative overflow-hidden border border-slate-200 rounded-2xl bg-white/95 backdrop-blur-md shadow-xs flex flex-col justify-between transition-all duration-300 ${
         mode === 'full'
-          ? 'w-full h-screen min-h-[500px]'
+          ? 'w-full h-dvh min-h-[500px]'
           : mode === 'map'
           ? 'w-full h-full min-h-[380px] p-6'
           : 'w-full p-5'

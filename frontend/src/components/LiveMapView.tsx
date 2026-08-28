@@ -1476,7 +1476,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
       ref={mainWrapperRef}
       className={
         isFullScreen || isBrowserFullscreen
-          ? 'w-full h-full min-h-screen h-screen bg-slate-900 overflow-hidden text-slate-900 relative z-[10]'
+          ? 'w-full h-full min-h-dvh h-dvh bg-slate-900 overflow-hidden text-slate-900 relative z-[10]'
           : className
           ? className
           : `w-full ${customHeight || 'h-full min-h-[500px] lg:min-h-[700px]'} bg-slate-100 rounded-[28px] overflow-hidden text-slate-900 relative border border-slate-200 shadow-sm`
