@@ -297,6 +297,51 @@ npm publish **and** GitHub Release with the tarball + `SHA256SUMS.txt`.
   immutability rules (PyPI versions can never be re-uploaded; npm requires a
   new version).
 
+## Downloads page integration (`/download`)
+
+The HazardNet frontend ships a Download Center at `/download` that mirrors
+these five templates. Each channel (Android, Windows, Linux, Python, npm)
+renders a section with real download buttons served **straight from the
+product repository's GitHub Releases** and live install commands from
+PyPI/npm — no artifacts are hosted or proxied by the website.
+
+How it resolves data (client-side, public APIs only):
+
+- **GitHub Releases API** (`/repos/{slug}/releases/latest`) supplies the
+  version, asset buttons (APK/AAB, installer/zip, tar.gz archives,
+  sdist/wheel, npm tarball) and the `SHA256SUMS.txt` link.
+- **PyPI / npm JSON APIs** supply the latest SDK/library version shown next
+  to the `pip install` / `npm install` commands, with a 10-minute
+  session cache to respect the unauthenticated GitHub API rate budget.
+- **Ownership guard**: a PyPI/npm project only appears if its declared
+  project URLs reference HazardNet or the configured GitHub owner — a
+  squatted third-party package shows as "awaiting release" instead of a
+  download link.
+- Until a product repository publishes its first strict-semver tag, the
+  section shows a "release pipeline prepared" state linking to that
+  repository and its workflow template — never fake versions or dummy files.
+
+Channel wiring lives in `frontend/src/lib/downloadChannels.ts` (data in
+`frontend/src/hooks/useReleaseChannels.ts`, UI in
+`frontend/src/pages/DownloadCenter.tsx`). Repository slugs and package names
+default to the expected product names (`myself-aas/hazardnet-field-agent`,
+`…-gis-workstation`, `…-daemon-cli`, `…-python`, `…-npm`; PyPI/npm name
+`hazardnet`) and are overridable per deployment with Vite env vars:
+
+| Env var | Default | Purpose |
+| --- | --- | --- |
+| `VITE_DOWNLOAD_GITHUB_OWNER` | `myself-aas` | GitHub owner for all product repositories |
+| `VITE_DOWNLOAD_REPO_ANDROID` | `hazardnet-field-agent` | Android product repo name |
+| `VITE_DOWNLOAD_REPO_WINDOWS` | `hazardnet-gis-workstation` | Windows product repo name |
+| `VITE_DOWNLOAD_REPO_LINUX` | `hazardnet-daemon-cli` | Daemon/CLI product repo name |
+| `VITE_DOWNLOAD_REPO_PYTHON` | `hazardnet-python` | Python package product repo name |
+| `VITE_DOWNLOAD_REPO_NPM` | `hazardnet-npm` | npm package product repo name |
+| `VITE_PYPI_PACKAGE_NAME` | `hazardnet` | PyPI project name |
+| `VITE_NPM_PACKAGE_NAME` | `hazardnet` | npm package name |
+
+Update these when the real product repositories are created so the download
+buttons and the release pipelines point at the same place.
+
 ## Validation performed here (structural only)
 
 The templates in this directory were validated structurally: YAML parsing of

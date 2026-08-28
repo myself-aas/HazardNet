@@ -1,117 +1,327 @@
-import MaterialIcon from "../components/MaterialIcon";
-import React from 'react';
-import { useState, useEffect } from 'react';
+import MaterialIcon from '../components/MaterialIcon';
+import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import toast from 'react-hot-toast';
 import Breadcrumbs from '../components/Breadcrumbs';
-import { DownloadDoneIcon, SuccessIcon } from '../components/ui/animated-state-icons';
+import { DownloadDoneIcon } from '../components/ui/animated-state-icons';
+import {
+  ASSET_LABELS,
+  DownloadChannel,
+  ReleaseAsset,
+  formatBytes,
+  githubRepoUrl,
+  githubReleasesUrl,
+  resolveChannels,
+} from '../lib/downloadChannels';
+import { ChannelState, orderAssets, useReleaseChannels } from '../hooks/useReleaseChannels';
 
-interface PlatformSoftware {
-  id: string;
-  name: string;
-  platform: string;
-  version: string;
-  fileSize: string;
-  icon: string;
-  badge: string;
-  description: string;
-  sha256: string;
-  downloadFilename: string;
-  requirements: string;
-}
+type TabId = 'software' | 'python' | 'npm';
 
-const PLATFORMS: PlatformSoftware[] = [
-  {
-    id: 'android',
-    name: 'HazardNet Field Agent Mobile App',
-    platform: 'Android',
-    version: 'v1.4.2 (APK)',
-    fileSize: '18.4 MB',
-    icon: 'android',
-    badge: 'Field Ready',
-    description: 'Offline-first Android app for agricultural extension officers and emergency responders with offline district map caching, GPS location geotagging, and local Wasm model execution.',
-    sha256: 'a9f8b7c6d5e4f3a2b109876543210fedcba9876543210fedcba9876543210fed',
-    downloadFilename: 'hazardnet-android-v1.4.2.apk',
-    requirements: 'Android 8.0 (API 26) or higher • 100MB storage • GPS enabled'
-  },
-  {
-    id: 'windows',
-    name: 'HazardNet Desktop GIS Workstation',
-    platform: 'Windows',
-    version: 'v1.0.1 (.msi)',
-    fileSize: '42.8 MB',
-    icon: 'windows',
-    badge: 'Desktop GUI',
-    description: 'Standalone Windows desktop suite for high-resolution GeoTIFF tile batch processing, multi-layer GIS composition, and DirectML GPU accelerated hazard inference.',
-    sha256: 'b123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
-    downloadFilename: 'hazardnet-windows-x64-v1.0.1.msi',
-    requirements: 'Windows 10/11 64-bit • 4GB RAM • DirectX 12 compatible GPU'
-  },
-  {
-    id: 'linux',
-    name: 'HazardNet Headless Daemon & CLI',
-    platform: 'Linux',
-    version: 'v1.0.1 (.deb / .tar.gz)',
-    fileSize: '12.6 MB',
-    icon: 'linux',
-    badge: 'Server Daemon',
-    description: 'Headless Linux binary and systemd service daemon for automated Sentinel-1/2 tile pipeline ingestion, Prometheus metrics export, and REST API serving.',
-    sha256: 'c89abcdef0123456789abcdef0123456789abcdef0123456789abcdef012345',
-    downloadFilename: 'hazardnet-daemon-amd64_1.0.1_linux.deb',
-    requirements: 'Ubuntu 20.04+ / Debian 11+ / RHEL 8+ • x86_64 or ARM64'
-  },
-  {
-    id: 'python',
-    name: 'HazardNet Python PyPI Package',
-    platform: 'Python PyPI',
-    version: 'v1.0.1 (pip)',
-    fileSize: '1.2 MB',
-    icon: 'python',
-    badge: 'SDK / API',
-    description: 'Python library for downloading satellite granules, constructing 15-channel raster tensors, running ONNX/TFLite model evaluation, and calculating physical severity indexes.',
-    sha256: 'd0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcde',
-    downloadFilename: 'hazardnet-1.0.1-py3-none-any.whl',
-    requirements: 'Python 3.9+ • NumPy >= 1.22 • Rasterio >= 1.3 • tflite-runtime'
+const TAB_BY_CHANNEL: Record<string, TabId> = {
+  android: 'software',
+  windows: 'software',
+  linux: 'software',
+  python: 'python',
+  npm: 'npm',
+};
+
+/** Copy-to-clipboard button with transient confirmation state. */
+const CopyButton: React.FC<{ text: string; label?: string }> = ({ text, label }) => {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch {
+      // Fallback for non-secure contexts
+      const el = document.createElement('textarea');
+      el.value = text;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand('copy');
+      document.body.removeChild(el);
+    }
+    setCopied(true);
+    toast.success(`${label ?? 'Command'} copied to clipboard`, { duration: 1800 });
+    setTimeout(() => setCopied(false), 1600);
+  };
+
+  return (
+    <button
+      type="button"
+      onClick={handleCopy}
+      title="Copy to clipboard"
+      aria-label={`Copy ${label ?? 'command'} to clipboard`}
+      className="shrink-0 px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-[10px] font-bold font-mono transition-all cursor-pointer flex items-center gap-1.5"
+    >
+      <MaterialIcon name={copied ? 'check' : 'content_copy'} className="w-3.5 h-3.5" />
+      {copied ? 'Copied' : 'Copy'}
+    </button>
+  );
+};
+
+/** Primary/secondary download buttons backed by real GitHub release assets. */
+const AssetButton: React.FC<{
+  asset: ReleaseAsset;
+  primary?: boolean;
+  onDownload: (asset: ReleaseAsset) => void;
+}> = ({ asset, primary = false, onDownload }) => (
+  <motion.a
+    whileHover={{ scale: 1.03 }}
+    whileTap={{ scale: 0.97 }}
+    href={asset.url}
+    download
+    rel="noopener noreferrer"
+    onClick={() => onDownload(asset)}
+    className={
+      primary
+        ? 'px-5 py-2.5 rounded-xl bg-[#f9a825] hover:bg-[#d08305] text-slate-950 text-xs font-black transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 shrink-0 cursor-pointer'
+        : 'px-3.5 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-800 text-[11px] font-bold font-mono transition-all flex items-center gap-1.5 shrink-0 cursor-pointer'
+    }
+    title={`Download ${asset.name}`}
+  >
+    {primary ? (
+      <DownloadDoneIcon isState={false} size={18} duration={0} />
+    ) : (
+      <MaterialIcon name="download" className="w-3.5 h-3.5" />
+    )}
+    <span>{primary ? `Download ${ASSET_LABELS[asset.kind]}` : asset.name}</span>
+    {primary && asset.sizeBytes > 0 && (
+      <span className="text-[10px] font-mono font-bold opacity-70">({formatBytes(asset.sizeBytes)})</span>
+    )}
+  </motion.a>
+);
+
+/** Neutral state chip per channel status. */
+const StatusChip: React.FC<{ state: ChannelState }> = ({ state }) => {
+  if (state.status === 'ready') {
+    const label = state.release?.tagName ?? (state.registry ? `v${state.registry.version}` : '');
+    return (
+      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-extrabold bg-emerald-50 border border-emerald-200 text-emerald-900">
+        {label || 'Latest'}
+      </span>
+    );
   }
-];
+  if (state.status === 'loading') {
+    return (
+      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-extrabold bg-slate-100 border border-slate-200 text-slate-600 flex items-center gap-1.5">
+        <span className="w-2 h-2 border-2 border-slate-400 border-t-transparent rounded-full animate-spin" />
+        Checking releases…
+      </span>
+    );
+  }
+  if (state.status === 'unavailable') {
+    return (
+      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-extrabold bg-rose-50 border border-rose-200 text-rose-900">
+        Temporarily unavailable
+      </span>
+    );
+  }
+  return (
+    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-extrabold bg-amber-50 border border-amber-200 text-amber-900">
+      Awaiting first release
+    </span>
+  );
+};
+
+/** One download channel card: live release assets, install command, or pending state. */
+const ChannelCard: React.FC<{ channel: DownloadChannel; state: ChannelState }> = ({ channel, state }) => {
+  const onDownload = useCallback((asset: ReleaseAsset) => {
+    toast.success(`Downloading ${asset.name}…`, {
+      duration: 2600,
+      id: `dl-${asset.name}`,
+    });
+  }, []);
+
+  const assets = state.release ? orderAssets(state.release.assets, channel.primaryAssetKinds) : [];
+  const checksum = assets.find((a) => a.kind === 'checksum');
+  const downloadAssets = assets.filter((a) => a.kind !== 'checksum');
+  const primary = downloadAssets[0];
+  const rest = downloadAssets.slice(1);
+  const registryReady = state.registry?.verified === true;
+
+  return (
+    <motion.div
+      whileHover={{ y: -3 }}
+      id={`platform-${channel.id}`}
+      className="scroll-mt-28 bg-white border border-slate-200/90 rounded-3xl p-6 shadow-sm hover:border-amber-400/80 hover:shadow-xl transition-all duration-300 space-y-4 relative overflow-hidden"
+    >
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 border-b border-slate-100 pb-4">
+        <div className="flex items-start gap-3.5">
+          <div className="w-12 h-12 rounded-2xl bg-amber-50/80 border border-amber-200 flex items-center justify-center shrink-0 shadow-2xs">
+            <MaterialIcon name={channel.icon} className="w-6 h-6 text-amber-700" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h3 className="font-black text-slate-900 text-base">{channel.title}</h3>
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-extrabold bg-slate-100 border border-slate-200 text-slate-800">
+                {channel.badge}
+              </span>
+              <StatusChip state={state} />
+            </div>
+            <p className="text-xs text-slate-500 mt-1 font-medium">{channel.requirements}</p>
+          </div>
+        </div>
+
+        {primary && <AssetButton asset={primary} primary onDownload={onDownload} />}
+      </div>
+
+      <p className="text-xs text-slate-600 leading-relaxed font-normal">{channel.description}</p>
+
+      {/* Registry install command (Python / npm channels) */}
+      {channel.installCommand && (
+        <div className="space-y-2">
+          <label className="text-xs font-extrabold text-slate-900 flex items-center gap-2">
+            <MaterialIcon name="terminal" className="w-3.5 h-3.5 text-slate-500" />
+            Install from {channel.pypiName ? 'PyPI' : 'npm'}:
+          </label>
+          <div className="p-3.5 bg-slate-950 text-amber-400 font-mono text-xs rounded-2xl flex items-center justify-between gap-3 select-all shadow-md border border-slate-800">
+            <span className="font-bold truncate">$ {channel.installCommand}</span>
+            <div className="flex items-center gap-2 shrink-0">
+              <span className="text-slate-400 text-[10px] font-semibold bg-slate-900 px-2 py-0.5 rounded-md border border-slate-800">
+                {registryReady && state.registry
+                  ? `${state.registry.registry === 'pypi' ? 'PyPI' : 'npm'} v${state.registry.version}`
+                  : channel.pypiName
+                    ? 'PyPI: pending'
+                    : 'npm: pending'}
+              </span>
+              <CopyButton text={channel.installCommand} label="Install command" />
+            </div>
+          </div>
+          {registryReady && state.registry && (
+            <a
+              href={state.registry.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-[11px] font-bold text-amber-700 hover:text-amber-900 underline-offset-4 hover:underline"
+            >
+              <MaterialIcon name="public" className="w-3.5 h-3.5" />
+              View on {state.registry.registry === 'pypi' ? 'PyPI' : 'npm'} ({state.registry.name} v{state.registry.version})
+            </a>
+          )}
+        </div>
+      )}
+
+      {/* Live release assets */}
+      {state.release && downloadAssets.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2.5">
+          {primary && <span className="text-[10px] font-mono font-extrabold text-slate-500 uppercase tracking-wider">Release files:</span>}
+          {rest.map((asset) => (
+            <AssetButton key={asset.url} asset={asset} onDownload={onDownload} />
+          ))}
+          {checksum && (
+            <a
+              href={checksum.url}
+              download
+              rel="noopener noreferrer"
+              onClick={() => onDownload(checksum)}
+              className="px-3.5 py-2 rounded-lg bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-900 text-[11px] font-bold font-mono transition-all flex items-center gap-1.5 shrink-0 cursor-pointer"
+              title="SHA-256 checksums for all release files"
+            >
+              <MaterialIcon name="verified_user" className="w-3.5 h-3.5" />
+              SHA256SUMS.txt
+            </a>
+          )}
+        </div>
+      )}
+
+      {/* Ready on registry but no GitHub assets attached yet */}
+      {state.status === 'ready' && !state.release && (
+        <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 text-[11px] text-slate-600 font-medium">
+          Published to its registry; standalone release files (sdist/wheel archives, checksums) appear here once the
+          product repository tags its next <span className="font-mono font-bold">vX.Y.Z</span> release.
+        </div>
+      )}
+
+      {/* Pending first release */}
+      {state.status === 'pending' && (
+        <div className="p-4 rounded-2xl bg-amber-50/70 border border-dashed border-amber-300 text-[11px] text-amber-950 font-medium space-y-2">
+          <p className="flex items-center gap-2 font-extrabold">
+            <MaterialIcon name="history" className="w-4 h-4" />
+            Release pipeline prepared — no version published yet
+          </p>
+          <p className="leading-relaxed">
+            This section activates automatically once{' '}
+            <a
+              href={githubRepoUrl(channel.repoSlug)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-mono font-bold underline underline-offset-2"
+            >
+              {channel.repoSlug}
+            </a>{' '}
+            publishes its first strict-semver tag. Builds, signing and SHA-256 checksums are produced by the{' '}
+            <a
+              href={channel.workflowTemplate}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-bold underline underline-offset-2"
+            >
+              HazardNet release workflow template
+            </a>
+            .
+          </p>
+        </div>
+      )}
+
+      {/* API/rate-limit/network failure */}
+      {state.status === 'unavailable' && (
+        <div className="p-4 rounded-2xl bg-rose-50/70 border border-rose-200 text-[11px] text-rose-950 font-medium space-y-1.5">
+          <p className="flex items-center gap-2 font-extrabold">
+            <MaterialIcon name="warning" className="w-4 h-4" />
+            Live release data unavailable
+          </p>
+          <p className="leading-relaxed">
+            {state.note ?? 'Temporary lookup failure.'} Download files directly from the{' '}
+            <a
+              href={githubReleasesUrl(channel.repoSlug)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-bold underline underline-offset-2"
+            >
+              GitHub releases page
+            </a>
+            .
+          </p>
+        </div>
+      )}
+    </motion.div>
+  );
+};
 
 export const DownloadCenter: React.FC = () => {
   const [searchParams] = useSearchParams();
   const platformParam = searchParams.get('platform');
-  const [downloadingId, setDownloadingId] = useState<string | null>(null);
-  const [downloadSuccess, setDownloadSuccess] = useState<string | null>(null);
-  const [selectedTab, setSelectedTab] = useState<string>('software');
+  const [selectedTab, setSelectedTab] = useState<TabId>(
+    platformParam && TAB_BY_CHANNEL[platformParam] ? TAB_BY_CHANNEL[platformParam] : 'software',
+  );
 
+  const channels = useMemo(() => resolveChannels(import.meta.env as Record<string, string | undefined>), []);
+  const states = useReleaseChannels(channels);
+
+  // Deep links: /download?platform=<channel> switches to the right tab and
+  // scrolls to the channel card (footer & About page links rely on this).
   useEffect(() => {
-    if (platformParam) {
+    if (!platformParam) return;
+    const tab = TAB_BY_CHANNEL[platformParam];
+    if (tab) setSelectedTab(tab);
+    const timer = setTimeout(() => {
       const element = document.getElementById(`platform-${platformParam}`);
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
-      }
-    }
+      if (element) element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 180);
+    return () => clearTimeout(timer);
   }, [platformParam]);
 
-  const handleSimulatedDownload = (filename: string, id: string) => {
-    setDownloadingId(id);
-    setDownloadSuccess(null);
+  const tabs: { id: TabId; icon: string; label: string }[] = [
+    { id: 'software', icon: 'download', label: 'Apps & Binaries' },
+    { id: 'python', icon: 'python', label: 'Python SDK' },
+    { id: 'npm', icon: 'code', label: 'npm Library' },
+  ];
 
-    setTimeout(() => {
-      setDownloadingId(null);
-      setDownloadSuccess(filename);
-
-      // Create dummy file download blob
-      const dummyContent = `HazardNet AI Package: ${filename}\nVersion: 1.0.1\nHazardNet Open Release 2026\nhttps://github.com/hazardnet/hazardnet-ai\n`;
-      const blob = new Blob([dummyContent], { type: 'text/plain' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    }, 1200);
-  };
+  const channelsForTab = (tab: TabId) =>
+    channels.filter((c) => TAB_BY_CHANNEL[c.id] === tab);
 
   return (
     <motion.div
@@ -130,213 +340,85 @@ export const DownloadCenter: React.FC = () => {
             Open Software Center
           </span>
           <span className="text-slate-300">•</span>
-          <span className="text-xs text-slate-500 font-semibold">HazardNet Software & Tools</span>
+          <span className="text-xs text-slate-500 font-semibold">HazardNet Software, Daemons & Libraries</span>
         </div>
 
         <h1 className="text-2xl md:text-3xl font-brand font-black text-slate-900 tracking-tight">
-          Hazard<span className="text-[#d08305]">Net</span> Multi-Platform Software & Model Downloads
+          Hazard<span className="text-[#d08305]">Net</span> Multi-Platform Downloads
         </h1>
         <p className="text-slate-600 text-xs md:text-sm leading-relaxed max-w-3xl">
-          Download native mobile apps, desktop workstation binaries, server daemons, Python SDKs, and pre-trained FP32/INT8 TFLite neural network models for offline edge evaluation.
+          Every artifact below is built and published automatically by the HazardNet product repositories&apos; release
+          pipelines — native Android and Windows apps, the Linux daemon/CLI, and the Python &amp; JavaScript libraries.
+          Files are served straight from GitHub Releases and the public package registries, with SHA-256 checksums
+          attached to every release.
         </p>
       </div>
 
       {/* Tabs */}
       <div className="flex items-center gap-2.5 border-b border-slate-200/80 pb-3 text-xs font-bold overflow-x-auto scrollbar-none touch-scroll">
-        <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          onClick={() => setSelectedTab('software')}
-          className={`px-4 py-2.5 rounded-xl transition-all duration-200 shrink-0 whitespace-nowrap cursor-pointer ${
-            selectedTab === 'software'
-              ? 'bg-[#f9a825] text-slate-950 font-black shadow-md shadow-amber-500/20'
-              : 'bg-white text-slate-700 border border-slate-200/90 hover:bg-slate-50 shadow-2xs'
-          }`}
-        >
-          <MaterialIcon name="android" className="w-4 h-4" /> Native Applications & Mobile Apps
-        </motion.button>
-        <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          onClick={() => setSelectedTab('python')}
-          className={`px-4 py-2.5 rounded-xl transition-all duration-200 shrink-0 whitespace-nowrap cursor-pointer ${
-            selectedTab === 'python'
-              ? 'bg-[#f9a825] text-slate-950 font-black shadow-md shadow-amber-500/20'
-              : 'bg-white text-slate-700 border border-slate-200/90 hover:bg-slate-50 shadow-2xs'
-          }`}
-        >
-          <MaterialIcon name="code" className="w-4 h-4" /> Python SDK & CLI
-        </motion.button>
-        <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          onClick={() => setSelectedTab('models')}
-          className={`px-4 py-2.5 rounded-xl transition-all duration-200 shrink-0 whitespace-nowrap cursor-pointer ${
-            selectedTab === 'models'
-              ? 'bg-[#f9a825] text-slate-950 font-black shadow-md shadow-amber-500/20'
-              : 'bg-white text-slate-700 border border-slate-200/90 hover:bg-slate-50 shadow-2xs'
-          }`}
-        >
-                <MaterialIcon name="ai_advisor" className="w-4 h-4" /> Hosted Inference
-
-        </motion.button>
+        {tabs.map((tab) => (
+          <motion.button
+            key={tab.id}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => setSelectedTab(tab.id)}
+            className={`px-4 py-2.5 rounded-xl transition-all duration-200 shrink-0 whitespace-nowrap cursor-pointer flex items-center gap-2 ${
+              selectedTab === tab.id
+                ? 'bg-[#f9a825] text-slate-950 font-black shadow-md shadow-amber-500/20'
+                : 'bg-white text-slate-700 border border-slate-200/90 hover:bg-slate-50 shadow-2xs'
+            }`}
+          >
+            <MaterialIcon name={tab.icon} className="w-4 h-4" /> {tab.label}
+          </motion.button>
+        ))}
       </div>
 
-      {/* Success Banner */}
-      <AnimatePresence>
-        {downloadSuccess && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="p-4 rounded-2xl bg-emerald-50 border border-emerald-300 text-emerald-950 text-xs flex items-center justify-between gap-3 shadow-md"
-          >
-            <div className="flex items-center gap-2.5">
-              <span className="text-emerald-600 shrink-0"><SuccessIcon isState={true} size={24} /></span>
-              <div>
-                <p className="font-extrabold text-sm">Download initialized for <span className="font-mono bg-emerald-100/80 px-2 py-0.5 rounded-md">{downloadSuccess}</span>!</p>
-                <p className="text-[11px] text-emerald-800 font-medium">Check your browser downloads folder. Verify SHA-256 hash before deployment.</p>
-              </div>
-            </div>
-
-          </motion.div>
-        )}
-      </AnimatePresence>
-
+      {/* Channel cards per tab */}
       <AnimatePresence mode="wait">
-        {/* Tab 1: Native Applications */}
-        {selectedTab === 'software' && (
-          <motion.div
-            key="software"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.2 }}
-            className="space-y-5"
-          >
-            {PLATFORMS.map((item) => (
-              <motion.div
-                whileHover={{ y: -3 }}
-                key={item.id}
-                id={`platform-${item.id}`}
-                className="bg-white border border-slate-200/90 rounded-3xl p-6 shadow-sm hover:border-amber-400/80 hover:shadow-xl transition-all duration-300 space-y-4 relative overflow-hidden"
-              >
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
-                  <div className="flex items-start gap-3.5">
-                    <div className="w-12 h-12 rounded-2xl bg-amber-50/80 border border-amber-200 flex items-center justify-center text-2xl shrink-0 shadow-2xs">
-                      <MaterialIcon name={item.icon} className="w-6 h-6 text-amber-700" />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="font-black text-slate-900 text-base">{item.name}</h3>
-                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-extrabold bg-slate-100 border border-slate-200 text-slate-800">
-                          {item.version}
-                        </span>
-                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-extrabold bg-amber-100 text-amber-950">
-                          {item.fileSize}
-                        </span>
-                      </div>
-                      <p className="text-xs text-slate-500 mt-1 font-medium">{item.requirements}</p>
-                    </div>
-                  </div>
-
-                  <motion.button
-                    whileHover={{ scale: 1.03 }}
-                    whileTap={{ scale: 0.97 }}
-                    onClick={() => handleSimulatedDownload(item.downloadFilename, item.id)}
-                    disabled={downloadingId === item.id}
-                    className="px-5 py-2.5 rounded-xl bg-[#f9a825] hover:bg-[#d08305] text-slate-950 text-xs font-black transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 shrink-0 disabled:opacity-50 cursor-pointer"
-                  >
-                    {downloadingId === item.id ? (
-                      <>
-                        <span className="w-3.5 h-3.5 border-2 border-slate-900 border-t-transparent rounded-full animate-spin"></span>
-                        <span>Preparing Package...</span>
-                      </>
-                    ) : (
-                      <>
-                        <DownloadDoneIcon isState={downloadSuccess === item.downloadFilename} size={18} duration={0} />
-                        <span>Download {item.platform}</span>
-                      </>
-                    )}
-                  </motion.button>
-                </div>
-
-                <p className="text-xs text-slate-600 leading-relaxed font-normal">
-                  {item.description}
-                </p>
-
-                <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/80 flex items-center justify-between gap-2 text-[10px] font-mono text-slate-500 overflow-x-auto shadow-2xs">
-                  <span className="font-extrabold text-slate-700 shrink-0">SHA-256 Checksum:</span>
-                  <span className="select-all font-mono truncate text-slate-800 font-semibold">{item.sha256}</span>
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
-        )}
-
-        {/* Tab 2: Python SDK */}
-        {selectedTab === 'python' && (
-          <motion.div
-            key="python"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.2 }}
-            className="bg-white border border-slate-200/90 rounded-3xl p-6 md:p-8 shadow-md space-y-6"
-          >
-            <div className="flex items-center gap-3.5">
-              <span className="text-3xl p-2 rounded-2xl bg-amber-50 border border-amber-200"><MaterialIcon name="code" className="w-4 h-4" /></span>
-              <div>
-                <h2 className="text-lg font-black text-slate-900 tracking-tight">HazardNet Python PyPI SDK (`hazardnet`)</h2>
-                <p className="text-xs text-slate-500 font-medium">Official Python client for tensor construction and TFLite inference</p>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-xs font-extrabold text-slate-900">Installation via pip:</label>
-              <div className="p-4 bg-slate-950 text-amber-400 font-mono text-xs rounded-2xl flex items-center justify-between select-all shadow-md border border-slate-800">
-                <span className="font-bold">pip install hazardnet --upgrade</span>
-                <span className="text-slate-400 text-[10px] font-semibold bg-slate-900 px-2 py-0.5 rounded-md border border-slate-800">PyPI v1.0.1</span>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-xs font-extrabold text-slate-900">Quickstart Example Code:</label>
-              <pre className="p-4 sm:p-5 bg-slate-950 text-slate-200 font-mono text-xs rounded-2xl overflow-x-auto leading-relaxed border border-slate-800 shadow-lg">
-{`import hazardnet as hn
-
-# 1. Load 15-channel GeoTIFF satellite tensor
-tensor = hn.load_geotiff("sylhet_sentinel_15band.tif")
-
-# 2. Initialize TFLite FP32 model engine
-model = hn.HazardNetEngine(model_type="fp32")
-
-# 3. Predict classification and continuous severity index
-result = model.predict(tensor)
-
-print(f"Detected Hazard: {result.hazard_class}")
-print(f"Physical Severity Index: {result.severity_index:.4f}")
-print(f"72-hr Agronomic Advisory: {result.get_advisory()}")`}
-              </pre>
-            </div>
-
-            <div className="flex items-center gap-3 pt-2">
-              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                <a
-                  href="https://github.com/hazardnet/hazardnet-ai"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-5 py-2.5 rounded-xl bg-slate-900 text-white text-xs font-black hover:bg-slate-800 transition-all flex items-center gap-2 shadow-md cursor-pointer"
-                >
-                  <MaterialIcon name="github" className="w-4 h-4 text-white" /> View Python SDK Source on GitHub
-                </a>
-              </motion.div>
-            </div>
-          </motion.div>
-        )}
-
+        <motion.div
+          key={selectedTab}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+          transition={{ duration: 0.2 }}
+          className="space-y-5"
+        >
+          {channelsForTab(selectedTab).map((channel) => (
+            <ChannelCard key={channel.id} channel={channel} state={states[channel.id]} />
+          ))}
+        </motion.div>
       </AnimatePresence>
 
+      {/* Provenance & verification note */}
+      <div className="bg-white border border-slate-200/90 rounded-3xl p-6 shadow-sm space-y-3">
+        <h2 className="text-sm font-black text-slate-900 flex items-center gap-2">
+          <MaterialIcon name="verified_user" className="w-4 h-4 text-emerald-700" />
+          Provenance &amp; Verification
+        </h2>
+        <ul className="text-xs text-slate-600 leading-relaxed space-y-1.5 list-disc pl-4">
+          <li>
+            All native binaries and archives are produced by CI release workflows (see the{' '}
+            <a
+              href="https://github.com/myself-aas/HazardNet/tree/main/.github/workflow-templates"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-bold text-amber-700 hover:text-amber-900 underline underline-offset-2"
+            >
+              workflow templates
+            </a>
+            ) and attached to GitHub Releases — never built on this website.
+          </li>
+          <li>
+            Each release ships a <span className="font-mono font-bold">SHA256SUMS.txt</span>; verify downloads against
+            it before deployment (<span className="font-mono">sha256sum -c SHA256SUMS.txt</span>).
+          </li>
+          <li>Android builds are signed when release signing is configured; Windows installers are Authenticode-signed when a certificate is present.</li>
+          <li>
+            The Python SDK and JavaScript library are published to PyPI and npm by the same gated pipelines; registry
+            listings on this page are verified against the HazardNet source repositories before being shown.
+          </li>
+        </ul>
+      </div>
     </motion.div>
   );
 };
