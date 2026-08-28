@@ -8,6 +8,7 @@ import { detectExactPinpointLocation, LocationDetectionResult, findNearestDistri
 import { ALL_64_DISTRICTS } from '../data/bangladeshDistricts';
 import { getGranularDisasterData } from '../data/disasterDetails';
 import { FirebaseRealtimeStatus } from './FirebaseRealtimeStatus';
+import IdentityConnections from './IdentityConnections';
 
 interface UserProfileModalProps {
   isOpen: boolean;
@@ -638,7 +639,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
             </div>
 
             <p className="text-[11px] text-slate-600 leading-relaxed">
-              You are signed in as <strong className="text-slate-900">{user.email || user.displayName || 'User'}</strong>. Logging out terminates your Firebase Auth session and clears local application caches and cached district preferences from this browser.
+              You are signed in as <strong className="text-slate-900">{user.email || user.displayName || 'User'}</strong>. Logging out terminates your sign-in session and clears local application caches and cached district preferences from this browser.
             </p>
 
             <div className="p-3 bg-white rounded-lg border border-slate-200 text-[11px] text-slate-600 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -687,6 +688,9 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
               </div>
             )}
           </div>
+
+          {/* Connected Accounts (social identity linking) */}
+          <IdentityConnections />
 
           {/* Action Footer */}
           <div className="pt-3 border-t border-slate-200 flex items-center justify-between gap-2">
