@@ -392,7 +392,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
     setMeasurePoints,
   });
 
-  // Extracted Hook 3: useMapSnapshot (Manages html2canvas image capture, oklch CSS sanitization, watermarks & exports)
+  // Extracted Hook 3: useMapSnapshot (Manages html2canvas-pro image capture, watermarks & exports)
   const baseMapName = MAP_LAYERS[activeLayer]?.name || 'Satellite HD';
   const selectedInfo = currentSelected
     ? `${currentSelected.name} District (${(currentSelected.severity * 100).toFixed(0)}% Risk)`
