@@ -1,0 +1,61 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Must match the bun.lock lockfile version (v1, written by Bun 1.3.x).
+      # Bun 1.4+ would upgrade it to v2, which Vercel's Bun cannot parse.
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.3.14'
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies (frozen lockfile)
+        run: bun install --frozen-lockfile
+
+      - name: Type-check (tsc --noEmit)
+        run: npm run lint
+
+      - name: Unit & integration tests
+        run: npx jest --ci
+
+      - name: RAG knowledge-base freshness
+        run: npm run check:rag-freshness
+
+      - name: Serverless functions load as ESM
+        run: |
+          node -e "import('./api/forecasts.js').then(() => console.log('api/forecasts: ESM OK'))"
+          node -e "import('./api/ingest.js').then(() => console.log('api/ingest: ESM OK'))"
+          node -e "import('./api/metrics.js').then(() => console.log('api/metrics: ESM OK'))"
+
+      - name: Production build
+        run: npm run build
+
+      - name: Bundle budget check
+        run: npm run check:bundle
+
+      - name: ESLint (blocking: 0-error policy, warnings tracked)
+        run: npm run lint:eslint
+
+      - name: Production dependency audit
+        continue-on-error: true # soften until moderate findings are cleared; then make blocking
+        run: |
+          npm i --package-lock-only --ignore-scripts --legacy-peer-deps
+          npm audit --omit=dev --audit-level=high
