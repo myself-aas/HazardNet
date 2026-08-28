@@ -12,9 +12,9 @@
   "scripts": {
     "dev": "npm run build:frontend && node backend/server.js",
     "start": "node backend/server.js",
-    "build": "npm run build:frontend",
+    "build": "npm run build:frontend && node scripts/copy-dist.mjs",
     "build:frontend": "npm --prefix frontend run build",
-    "build:frontend:copy": "npm run build:frontend && mkdir dist && xcopy /E /I /Y frontend\\dist dist",
+    "build:frontend:copy": "npm run build",
     "lint": "tsc -p frontend/tsconfig.json --noEmit",
     "test": "jest --passWithNoTests"
   },
