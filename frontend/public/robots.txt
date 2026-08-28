@@ -1,0 +1,10 @@
+# HazardNet crawler policy — blog articles are the SEO surface.
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /dashboard/
+Disallow: /settings
+Disallow: /u/
+Disallow: /auth/
+
+Sitemap: https://hazardnet.live/sitemap.xml

@@ -827,6 +827,32 @@ export const MaterialIcon: React.FC<MaterialIconProps> = ({
             <path d="m16.5 14.5 2 2 3.5-3.5" />
           </>
         );
+      case 'attach_money':
+      case 'monetization_on':
+      case 'paid':
+        return (
+          <>
+            <circle cx="12" cy="12" r="10" />
+            <path d="M12 6v12M16 8.5c-.7-1-2-1.5-4-1.5-2.2 0-3.5.9-3.5 2.4 0 3.4 7.5 1.6 7.5 5 0 1.6-1.4 2.6-4 2.6-2 0-3.4-.6-4.2-1.7" />
+          </>
+        );
+      case 'search':
+      case 'seo':
+        return (
+          <>
+            <circle cx="11" cy="11" r="8" />
+            <path d="m21 21-4.3-4.3" />
+          </>
+        );
+      case 'faq':
+      case 'quiz':
+      case 'help_outline':
+        return (
+          <>
+            <circle cx="12" cy="12" r="10" />
+            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3M12 17h.01" />
+          </>
+        );
 
       // Default clean fallback (Never renders text ligatures)
       default:

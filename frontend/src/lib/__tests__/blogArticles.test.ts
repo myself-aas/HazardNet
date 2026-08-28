@@ -36,6 +36,19 @@ const baseDraft = {
   authorId: 'uid-1',
   authorEmail: SUPER.email,
   authorName: SUPER.name,
+  metaTitle: '',
+  metaDescription: '',
+  focusKeyword: '',
+  canonicalUrl: '',
+  ogImageUrl: '',
+  robotsNoIndex: false,
+  faqs: [] as Array<{ question: string; answer: string }>,
+  authorTitle: '',
+  authorBio: '',
+  authorAvatarUrl: '',
+  authorWebsite: '',
+  containsAffiliateLinks: false,
+  affiliateDisclosure: '',
 };
 
 describe('superadmins — primary allowlist', () => {

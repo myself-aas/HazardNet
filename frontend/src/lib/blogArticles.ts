@@ -16,6 +16,12 @@ import { isPrimarySuperAdmin } from './superadmins';
 
 export type BlogArticleStatus = 'draft' | 'published';
 
+/** FAQ pair — emitted as FAQPage structured data for Google rich results. */
+export interface BlogFaq {
+  question: string;
+  answer: string;
+}
+
 export interface BlogArticle {
   id: string;
   slug: string;
@@ -33,6 +39,31 @@ export interface BlogArticle {
   createdAt: string;
   updatedAt: string;
   publishedAt: string | null;
+  /* ── SEO / Google Search Console fields ─────────────────────────────── */
+  /** ≤60-char title for SERPs; falls back to title. */
+  metaTitle: string;
+  /** ≤160-char description for SERPs; falls back to excerpt. */
+  metaDescription: string;
+  /** Primary keyword the article targets (drives the SEO checklist). */
+  focusKeyword: string;
+  /** Override the canonical URL when syndicating. */
+  canonicalUrl: string;
+  /** Social-share image; falls back to cover image. */
+  ogImageUrl: string;
+  /** Keep the article out of search indexes (e.g. thin/seasonal content). */
+  robotsNoIndex: boolean;
+  /** FAQ pairs → FAQPage JSON-LD rich results. */
+  faqs: BlogFaq[];
+  /* ── Editable author details (public byline) ────────────────────────── */
+  /** Author role, e.g. "Remote Sensing Specialist". */
+  authorTitle: string;
+  authorBio: string;
+  authorAvatarUrl: string;
+  authorWebsite: string;
+  /* ── Monetization ───────────────────────────────────────────────────── */
+  /** Enables the affiliate disclosure + sponsored rel on outbound links. */
+  containsAffiliateLinks: boolean;
+  affiliateDisclosure: string;
 }
 
 export type BlogArticleDraft = Omit<BlogArticle, 'id' | 'createdAt' | 'updatedAt' | 'publishedAt'> & {
@@ -41,6 +72,9 @@ export type BlogArticleDraft = Omit<BlogArticle, 'id' | 'createdAt' | 'updatedAt
 
 const LOCAL_KEY = 'hazardnet.blog.articles.v1';
 const TABLE = 'blog_articles';
+
+export const DEFAULT_AFFILIATE_DISCLOSURE =
+  'Disclosure: this article contains affiliate links. If you purchase through them, HazardNet may earn a small commission at no extra cost to you — it keeps our forecasting free for farmers.';
 
 export const isLocalDemoMode = (): boolean => !isSupabaseConfigured;
 
@@ -147,6 +181,19 @@ const rowToArticle = (row: Record<string, unknown>): BlogArticle => ({
   createdAt: String(row.created_at ?? ''),
   updatedAt: String(row.updated_at ?? ''),
   publishedAt: (row.published_at as string | null) ?? null,
+  metaTitle: String(row.meta_title ?? ''),
+  metaDescription: String(row.meta_description ?? ''),
+  focusKeyword: String(row.focus_keyword ?? ''),
+  canonicalUrl: String(row.canonical_url ?? ''),
+  ogImageUrl: String(row.og_image_url ?? ''),
+  robotsNoIndex: row.robots_noindex === true,
+  faqs: Array.isArray(row.faqs) ? ((row.faqs as BlogFaq[]) ?? []).filter((faq) => faq && faq.question) : [],
+  authorTitle: String(row.author_title ?? ''),
+  authorBio: String(row.author_bio ?? ''),
+  authorAvatarUrl: String(row.author_avatar_url ?? ''),
+  authorWebsite: String(row.author_website ?? ''),
+  containsAffiliateLinks: row.contains_affiliate_links === true,
+  affiliateDisclosure: String(row.affiliate_disclosure ?? ''),
 });
 
 const articleToRow = (article: BlogArticleDraft | Partial<BlogArticle>) => {
@@ -166,6 +213,19 @@ const articleToRow = (article: BlogArticleDraft | Partial<BlogArticle>) => {
   assign('author_email', article.authorEmail);
   assign('author_name', article.authorName);
   assign('published_at', article.publishedAt ?? null);
+  assign('meta_title', article.metaTitle);
+  assign('meta_description', article.metaDescription);
+  assign('focus_keyword', article.focusKeyword);
+  assign('canonical_url', article.canonicalUrl);
+  assign('og_image_url', article.ogImageUrl);
+  if (article.robotsNoIndex !== undefined) assign('robots_noindex', article.robotsNoIndex);
+  if (article.faqs !== undefined) assign('faqs', article.faqs);
+  assign('author_title', article.authorTitle);
+  assign('author_bio', article.authorBio);
+  assign('author_avatar_url', article.authorAvatarUrl);
+  assign('author_website', article.authorWebsite);
+  if (article.containsAffiliateLinks !== undefined) assign('contains_affiliate_links', article.containsAffiliateLinks);
+  assign('affiliate_disclosure', article.affiliateDisclosure);
   return row;
 };
 

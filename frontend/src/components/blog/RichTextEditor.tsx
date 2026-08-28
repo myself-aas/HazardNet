@@ -116,6 +116,26 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
     emit();
   };
 
+  /**
+   * Affiliate link: inserts an anchor already tagged with
+   * rel="sponsored nofollow noopener" (Google's affiliate-link guideline) and
+   * target="_blank", so monetized links never pass link equity.
+   */
+  const insertAffiliateLink = () => {
+    if (disabled) return;
+    const url = window.prompt('Affiliate URL (https://…)');
+    if (!url) return;
+    const selected = window.getSelection()?.toString() || '';
+    const text = window.prompt('Link text', selected || 'Check price') || '';
+    if (!text) return;
+    editorRef.current?.focus();
+    exec(
+      'insertHTML',
+      `<a href="${url.replace(/"/g, '&quot;')}" target="_blank" rel="sponsored nofollow noopener">${text.replace(/[<>]/g, '')}</a>&nbsp;`,
+    );
+    emit();
+  };
+
   const insertImage = () => {
     if (disabled) return;
     const url = window.prompt('Image URL (https://…)');
@@ -187,6 +207,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
         <span className="w-px h-6 bg-slate-200 mx-1" aria-hidden="true" />
 
         {toolButton('link', 'Insert link', 'share', insertLink)}
+        {toolButton('affiliate', 'Insert affiliate link (rel=sponsored)', 'attach_money', insertAffiliateLink)}
         {toolButton('unlink', 'Remove link', 'cancel', () => runTool('unlink' as Tool))}
         {toolButton('image', 'Insert image from URL', 'camera', insertImage)}
         {toolButton('hr', 'Horizontal rule', 'expand_less', insertHr)}
