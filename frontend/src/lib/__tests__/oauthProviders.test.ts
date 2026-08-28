@@ -13,13 +13,12 @@ import {
 } from '../oauthProviders';
 
 describe('oauthProviders — registry completeness', () => {
-  it('exposes all seven requested providers in the primary set', () => {
+  it('exposes the six primary providers (zoom removed)', () => {
     expect(PRIMARY_PROVIDER_IDS).toEqual([
       'linkedin',
       'github',
       'slack',
       'discord',
-      'zoom',
       'twitter',
       'figma',
     ]);
@@ -41,8 +40,8 @@ describe('oauthProviders — registry completeness', () => {
   });
 
   it('validates provider ids', () => {
-    expect(isOAuthProviderId('zoom')).toBe(true);
     expect(isOAuthProviderId('figma')).toBe(true);
+    expect(isOAuthProviderId('zoom')).toBe(false); // removed from the registry
     expect(isOAuthProviderId('myspace')).toBe(false);
   });
 });
@@ -169,7 +168,6 @@ describe('oauthProviders — identity views', () => {
     expect(unlinked).toContain('linkedin');
     expect(unlinked).toContain('slack');
     expect(unlinked).toContain('discord');
-    expect(unlinked).toContain('zoom');
     expect(unlinked).toContain('twitter');
     expect(unlinked).not.toContain('github');
     expect(unlinked).not.toContain('figma');

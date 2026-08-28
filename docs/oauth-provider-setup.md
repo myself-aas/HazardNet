@@ -7,7 +7,7 @@ authenticates at the provider, and Supabase exchanges the code server-side.
 **No provider secrets ever touch the frontend** — each provider only needs a
 client ID/secret configured once in the Supabase dashboard.
 
-Supported providers: **LinkedIn, GitHub, Slack, Discord, Zoom, X (Twitter),
+Supported providers: **LinkedIn, GitHub, Slack, Discord, X (Twitter),
 Figma** — plus Google, Microsoft, Apple and ORCID (custom OIDC).
 
 ## One-time wiring (all providers)
@@ -37,7 +37,6 @@ http://localhost:3000/auth/callback
 | GitHub | https://github.com/settings/applications/new | [auth-github](https://supabase.com/docs/guides/auth/social-clients/auth-github) | OAuth app; scopes `read:user user:email` are requested automatically. |
 | Slack | https://api.slack.com/apps?new_app=1 | [auth-slack](https://supabase.com/docs/guides/auth/social-clients/auth-slack) | Enable **Sign in with Slack** user scopes (`users:read email`). |
 | Discord | https://discord.com/developers/applications | [auth-discord](https://supabase.com/docs/guides/auth/social-clients/auth-discord) | Add the callback under **OAuth2 → Redirects**; scopes `identify email`. |
-| Zoom | https://developers.zoom.us/ | [auth-zoom](https://supabase.com/docs/guides/auth/social-clients/auth-zoom) | Create a **User OAuth** app in the Zoom App Marketplace; marketplace approval can take time. |
 | X (Twitter) | https://developer.x.com/en/portal/dashboard | [auth-twitter](https://supabase.com/docs/guides/auth/social-clients/auth-twitter) | Set up **OAuth 2.0** user authentication (not OAuth 1.0a). X only releases emails for approved developer accounts; users without an email are prompted to add one at first sign-up. |
 | Figma | https://www.figma.com/developers/ | [auth-figma](https://supabase.com/docs/guides/auth/social-clients/auth-figma) | Standard OAuth app under Figma developer settings. |
 | Google | https://console.cloud.google.com/apis/credentials | [auth-google](https://supabase.com/docs/guides/auth/social-clients/auth-google) | Configure the OAuth consent screen + web client. |

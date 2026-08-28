@@ -91,7 +91,7 @@ export const IdentityConnections: React.FC = () => {
       </div>
 
       <p className="text-[11px] text-slate-600 leading-relaxed">
-        Link providers (LinkedIn, GitHub, Slack, Discord, Zoom, X, Figma…) to sign into this same HazardNet account
+        Link providers (LinkedIn, GitHub, Slack, Discord, X, Figma…) to sign into this same HazardNet account
         with any of them. Disconnecting removes only the sign-in method — your advisories and saved assessments stay.
       </p>
 

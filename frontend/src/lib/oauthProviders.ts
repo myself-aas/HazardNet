@@ -8,7 +8,7 @@
  * dashboard (see docs/oauth-provider-setup.md).
  *
  * Supported here (Supabase provider ids):
- *   linkedin, github, slack, discord, zoom, twitter (X), figma
+ *   linkedin, github, slack, discord, twitter (X), figma
  * plus google, microsoft, apple and a custom OIDC "orcid" provider.
  */
 
@@ -22,7 +22,6 @@ export type OAuthProviderId =
   | 'discord'
   | 'slack'
   | 'twitter'
-  | 'zoom'
   | 'figma'
   | 'orcid';
 
@@ -50,7 +49,6 @@ export const PRIMARY_PROVIDER_IDS: OAuthProviderId[] = [
   'github',
   'slack',
   'discord',
-  'zoom',
   'twitter',
   'figma',
 ];
@@ -97,15 +95,6 @@ const CONFIGS: Record<OAuthProviderId, OAuthProviderConfig> = {
     setupDocsUrl: 'https://supabase.com/docs/guides/auth/social-clients/auth-discord',
     scopes: 'identify email',
     note: 'Add the Supabase callback URL under OAuth2 → Redirects in the Discord developer portal.',
-  },
-  zoom: {
-    id: 'zoom',
-    label: 'Zoom',
-    short: 'Z',
-    color: '#2D8CFF',
-    developerAppUrl: 'https://developers.zoom.us/',
-    setupDocsUrl: 'https://supabase.com/docs/guides/auth/social-clients/auth-zoom',
-    note: 'Create a "User OAuth" app in the Zoom App Marketplace; approval can take time.',
   },
   twitter: {
     id: 'twitter',

@@ -58,14 +58,6 @@ const DiscordGlyph: React.FC = () => (
   </svg>
 );
 
-const ZoomGlyph: React.FC = () => (
-  <svg viewBox="0 0 24 24" className="h-full w-full" aria-hidden="true">
-    <rect width="24" height="24" rx="5" fill="#2D8CFF" />
-    <rect x="4.8" y="8.4" width="9.4" height="7.2" rx="1.9" fill="#fff" />
-    <path d="M14.9 12.05l4.1-3.15v6.3l-4.1-3.15z" fill="#fff" />
-  </svg>
-);
-
 const XGlyph: React.FC = () => (
   <svg viewBox="0 0 24 24" className="h-full w-full" aria-hidden="true">
     <path
@@ -129,7 +121,6 @@ const GLYPHS: Record<OAuthProviderId, React.FC> = {
   github: GitHubGlyph,
   slack: SlackGlyph,
   discord: DiscordGlyph,
-  zoom: ZoomGlyph,
   twitter: XGlyph,
   figma: FigmaGlyph,
   google: GoogleGlyph,

@@ -18,7 +18,7 @@ describe('OAuthButtons', () => {
     ;(useAuth as unknown as jest.Mock).mockReturnValue({ signInWithOAuth })
   })
 
-  it('renders all seven requested providers with brand buttons', () => {
+  it('renders all six primary providers with brand buttons', () => {
     render(<OAuthButtons />)
     PRIMARY_PROVIDER_IDS.forEach((id) => {
       expect(labelButton(getProvider(id).label)).toBeInTheDocument()
