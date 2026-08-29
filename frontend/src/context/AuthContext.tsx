@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import type { User as SupabaseAuthUser, UserResponse } from '@supabase/supabase-js';
-import { supabase } from '../lib/supabase';
+import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import { seedFromIdentity } from '../lib/username';
 import {
   AUTH_RETURN_TO_KEY,
   OAuthProviderId,
@@ -11,7 +12,7 @@ import {
 
 /** Auth screens themselves are never a useful post-login destination. */
 const isAuthScreen = (path: string) =>
-  /^\/(login|signup|forgot-password|update-password|auth)(\/|$)/.test(path);
+  /^\/(login|signup|forgot-password|update-password|set-password|auth|u)(\/|$)/.test(path);
 
 export type UserRolePersona =
   'smallholder_farmer' | 'ngo_coordinator' | 'govt_official' | 'academic_researcher' | 'commercial_agribusiness';
@@ -27,7 +28,9 @@ export interface UserProfileData {
   uid: string;
   email: string;
   displayName: string;
+  username?: string;
   photoURL?: string;
+  avatarPath?: string;
   role?: 'user' | 'admin';
   userRole?: UserRolePersona;
   organization?: string;
@@ -41,6 +44,48 @@ export interface UserProfileData {
   phoneNumber?: string;
   pinpointLat?: number;
   pinpointLng?: number;
+  /* Extended dashboard fields (scripts/db/003_user_dashboard.sql). */
+  firstName?: string;
+  lastName?: string;
+  bio?: string;
+  website?: string;
+  whatsappNumber?: string;
+  dateOfBirth?: string;
+  gender?: string;
+  pronouns?: string;
+  nationality?: string;
+  preferredLanguage?: string;
+  timezone?: string;
+  country?: string;
+  division?: string;
+  district?: string;
+  upazila?: string;
+  village?: string;
+  postalCode?: string;
+  address?: string;
+  occupation?: string;
+  farmingExperienceYears?: number;
+  irrigationType?: string;
+  soilType?: string;
+  livestock?: string;
+  annualIncomeBdt?: number;
+  socialFacebook?: string;
+  socialX?: string;
+  socialLinkedin?: string;
+  socialGithub?: string;
+  socialYoutube?: string;
+  socialInstagram?: string;
+  notifyEmail?: boolean;
+  notifySms?: boolean;
+  notifyPush?: boolean;
+  notifyWeeklyDigest?: boolean;
+  notifyEmergencyAlerts?: boolean;
+  marketingOptIn?: boolean;
+  profileVisibility?: 'public' | 'private';
+  emailVerified?: boolean;
+  onboardingCompleted?: boolean;
+  lastLoginAt?: string;
+  loginCount?: number;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -76,6 +121,23 @@ export interface AuthContextType {
     name: string,
     initialProfile?: Partial<UserProfileData>,
   ) => Promise<'session' | 'confirmation-required'>;
+  /**
+   * Passwordless email verification: sends a verification link (magic link)
+   * to `email`, creating the account when it doesn't exist yet. The link
+   * lands on /auth/callback, which forwards to /set-password so the user
+   * can choose their password. `displayName`/`username` travel as signup
+   * user-metadata so the profile trigger can claim them.
+   */
+  sendVerificationEmail: (
+    email: string,
+    options?: { nextTo?: string; displayName?: string; username?: string },
+  ) => Promise<void>;
+  /** True when the username is free and matches the format rules. */
+  checkUsernameAvailability: (username: string) => Promise<boolean>;
+  /** Change the account email (Supabase re-verifies the new address). */
+  changeEmail: (email: string) => Promise<void>;
+  /** Re-fetch the profiles row from Supabase. */
+  refreshProfile: () => Promise<void>;
   signInWithEmailAndPassword: (email: string, pass: string) => Promise<EmailCredential>;
   signInWithEmail: (email: string, pass: string) => Promise<EmailCredential>;
   signOut: () => Promise<void>;
@@ -108,7 +170,9 @@ const toProfile = (row: Record<string, unknown>): UserProfileData => ({
   uid: row.id as string,
   email: row.email as string,
   displayName: row.display_name as string,
-  photoURL: row.photo_url as string | undefined,
+  username: (row.username as string | undefined) ?? undefined,
+  photoURL: (row.photo_url as string | undefined) || undefined,
+  avatarPath: (row.avatar_path as string | undefined) ?? undefined,
   role: row.role as UserProfileData['role'],
   userRole: row.user_role as UserRolePersona,
   organization: row.organization as string | undefined,
@@ -122,6 +186,47 @@ const toProfile = (row: Record<string, unknown>): UserProfileData => ({
   phoneNumber: row.phone_number as string | undefined,
   pinpointLat: row.pinpoint_lat as number | undefined,
   pinpointLng: row.pinpoint_lng as number | undefined,
+  firstName: (row.first_name as string | undefined) ?? undefined,
+  lastName: (row.last_name as string | undefined) ?? undefined,
+  bio: (row.bio as string | undefined) ?? undefined,
+  website: (row.website as string | undefined) ?? undefined,
+  whatsappNumber: (row.whatsapp_number as string | undefined) ?? undefined,
+  dateOfBirth: (row.date_of_birth as string | undefined) ?? undefined,
+  gender: (row.gender as string | undefined) ?? undefined,
+  pronouns: (row.pronouns as string | undefined) ?? undefined,
+  nationality: (row.nationality as string | undefined) ?? undefined,
+  preferredLanguage: (row.preferred_language as string | undefined) ?? undefined,
+  timezone: (row.timezone as string | undefined) ?? undefined,
+  country: (row.country as string | undefined) ?? undefined,
+  division: (row.division as string | undefined) ?? undefined,
+  district: (row.district as string | undefined) ?? undefined,
+  upazila: (row.upazila as string | undefined) ?? undefined,
+  village: (row.village as string | undefined) ?? undefined,
+  postalCode: (row.postal_code as string | undefined) ?? undefined,
+  address: (row.address as string | undefined) ?? undefined,
+  occupation: (row.occupation as string | undefined) ?? undefined,
+  farmingExperienceYears: (row.farming_experience_years as number | undefined) ?? undefined,
+  irrigationType: (row.irrigation_type as string | undefined) ?? undefined,
+  soilType: (row.soil_type as string | undefined) ?? undefined,
+  livestock: (row.livestock as string | undefined) ?? undefined,
+  annualIncomeBdt: (row.annual_income_bdt as number | undefined) ?? undefined,
+  socialFacebook: (row.social_facebook as string | undefined) ?? undefined,
+  socialX: (row.social_x as string | undefined) ?? undefined,
+  socialLinkedin: (row.social_linkedin as string | undefined) ?? undefined,
+  socialGithub: (row.social_github as string | undefined) ?? undefined,
+  socialYoutube: (row.social_youtube as string | undefined) ?? undefined,
+  socialInstagram: (row.social_instagram as string | undefined) ?? undefined,
+  notifyEmail: (row.notify_email as boolean | undefined) ?? undefined,
+  notifySms: (row.notify_sms as boolean | undefined) ?? undefined,
+  notifyPush: (row.notify_push as boolean | undefined) ?? undefined,
+  notifyWeeklyDigest: (row.notify_weekly_digest as boolean | undefined) ?? undefined,
+  notifyEmergencyAlerts: (row.notify_emergency_alerts as boolean | undefined) ?? undefined,
+  marketingOptIn: (row.marketing_opt_in as boolean | undefined) ?? undefined,
+  profileVisibility: row.profile_visibility === 'private' ? 'private' : 'public',
+  emailVerified: Boolean(row.email_verified_at) || undefined,
+  onboardingCompleted: (row.onboarding_completed as boolean | undefined) ?? undefined,
+  lastLoginAt: (row.last_login_at as string | undefined) ?? undefined,
+  loginCount: (row.login_count as number | undefined) ?? undefined,
   createdAt: row.created_at as string | undefined,
   updatedAt: row.updated_at as string | undefined,
 });
@@ -241,6 +346,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       id: authUser.id,
       email: authUser.email ?? seed.email ?? '',
       display_name: seed.displayName,
+      username: seedFromIdentity(seed.displayName, authUser.email ?? seed.email),
       role: 'user',
       user_role: 'smallholder_farmer',
       organization: '',
@@ -271,6 +377,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signIn = async (email: string, pass: string) => {
     const result = await supabase.auth.signInWithPassword({ email, password: pass });
     if (result.error) throw result.error;
+    // Best-effort login telemetry (last_login_at / login_count).
+    if (isSupabaseConfigured) {
+      try {
+        await supabase.rpc('record_login');
+      } catch {
+        // Non-fatal.
+      }
+    }
     return result;
   };
   const signOut = async () => {
@@ -393,6 +507,48 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const { error } = await supabase.auth.updateUser({ password });
     if (error) throw error;
   };
+  const sendVerificationEmail = async (email: string, options?: { nextTo?: string; displayName?: string; username?: string }) => {
+    // Passwordless verification: the emailed link both verifies the address
+    // and opens a session that allows choosing a password on /set-password.
+    const nextTo = options?.nextTo ?? '/set-password';
+    const metadata: Record<string, string> = {};
+    if (options?.displayName) metadata.display_name = options.displayName;
+    if (options?.username) metadata.username = options.username;
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: {
+        shouldCreateUser: true,
+        ...(Object.keys(metadata).length > 0 ? { data: metadata } : {}),
+        emailRedirectTo:
+          import.meta.env.VITE_SUPABASE_REDIRECT_URL ??
+          buildOAuthRedirectTo(window.location.origin, nextTo),
+      },
+    });
+    if (error) throw error;
+  };
+  const checkUsernameAvailability = async (username: string) => {
+    if (!isSupabaseConfigured) return true; // dev mock — everything is free
+    // Escape LIKE wildcards so names like `ashif_ahmed` match exactly.
+    const pattern = username.replace(/[_%]/g, (character) => `\\${character}`);
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('id')
+      .ilike('username', pattern)
+      .maybeSingle();
+    if (error) throw error;
+    return !data;
+  };
+  const changeEmail = async (email: string) => {
+    const { error } = await supabase.auth.updateUser({ email });
+    if (error) throw error;
+    if (isSupabaseConfigured && user) {
+      // Keep the pending address visible on the profile row immediately.
+      await supabase.from('profiles').update({ email }).eq('id', user.id);
+    }
+  };
+  const refreshProfile = async () => {
+    if (user) await loadProfile(user);
+  };
   return (
     <AuthContext.Provider
       value={{
@@ -405,6 +561,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         unlinkIdentity,
         getUserIdentities,
         signUpWithEmail,
+        sendVerificationEmail,
+        checkUsernameAvailability,
+        changeEmail,
+        refreshProfile,
         signInWithEmailAndPassword: signIn,
         signInWithEmail: signIn,
         signOut,

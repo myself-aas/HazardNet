@@ -39,7 +39,23 @@ create table if not exists public.blog_articles (
   author_name text not null default '',
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
-  published_at timestamptz
+  published_at timestamptz,
+  -- SEO / Search Console (added by scripts/db/004_blog_seo_monetization.sql)
+  meta_title text not null default '',
+  meta_description text not null default '',
+  focus_keyword text not null default '',
+  canonical_url text not null default '',
+  og_image_url text not null default '',
+  robots_noindex boolean not null default false,
+  faqs jsonb not null default '[]'::jsonb,
+  -- editable public byline
+  author_title text not null default '',
+  author_bio text not null default '',
+  author_avatar_url text not null default '',
+  author_website text not null default '',
+  -- monetization
+  contains_affiliate_links boolean not null default false,
+  affiliate_disclosure text not null default ''
 );
 
 alter table public.blog_articles enable row level security;
@@ -107,3 +123,27 @@ count / reading time. Drafts autosave to localStorage while writing.
 Article HTML is sanitized on save **and** on render (`sanitizeBlogHtml`):
 `script`/`iframe`/`object`/`embed`/`style`/`form` nodes, inline `on*` event
 handlers and `javascript:` URLs are stripped.
+
+### SEO & monetization panels (editor)
+
+The editor has three extra panels:
+
+- **SEO & Google Search Console** — SEO title (≤60), meta description (≤160),
+  focus keyword, canonical URL, og:image, `noindex` toggle, an FAQ builder
+  (emits `FAQPage` JSON-LD for rich results), a live **Google SERP preview**
+  and a 13-point SEO checklist with score. The public article page applies the
+  full head (title, description, keywords, robots, canonical, Open Graph,
+  Twitter card, Article+FAQ JSON-LD) via `src/lib/seoHead.ts`.
+- **Author byline** — display name, role/title, bio, avatar and website are
+  all editable per article (E-E-A-T signals). The signed-in superadmin email
+  remains the permission identity (`author_email`, RLS-checked) and is never
+  replaced by the editable byline.
+- **Monetization** — "contains affiliate links" toggle + editable disclosure.
+  When enabled, the article shows a disclosure notice and every outbound link
+  is rewritten to `rel="sponsored nofollow noopener"` on render. The editor
+  toolbar also has a dedicated "Insert affiliate link" button.
+
+Run `scripts/db/004_blog_seo_monetization.sql` (idempotent) to add the new
+columns to an existing `blog_articles` table. See
+[blog-monetization.md](blog-monetization.md) for AdSense setup and the
+affiliate/passive-income playbook.

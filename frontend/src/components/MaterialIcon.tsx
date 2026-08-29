@@ -691,6 +691,169 @@ export const MaterialIcon: React.FC<MaterialIconProps> = ({
           </>
         );
 
+      // ─── DASHBOARD & CONNECTOR EXTENSIONS ───
+      case 'error':
+      case 'error_outline':
+        return (
+          <>
+            <circle cx="12" cy="12" r="10" />
+            <path d="M12 8v4M12 16h.01" />
+          </>
+        );
+      case 'link':
+      case 'link_url':
+        return (
+          <>
+            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+          </>
+        );
+      case 'chat':
+      case 'sms':
+      case 'message':
+        return (
+          <>
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+          </>
+        );
+      case 'forum':
+      case 'groups':
+      case 'community':
+        return (
+          <>
+            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8z" />
+          </>
+        );
+      case 'table_chart':
+      case 'spreadsheet':
+        return (
+          <>
+            <rect width="18" height="18" x="3" y="3" rx="2" />
+            <path d="M3 9h18M3 15h18M9 3v18M15 3v18" />
+          </>
+        );
+      case 'api':
+      case 'webhook':
+      case 'code':
+        return (
+          <>
+            <polyline points="16 18 22 12 16 6" />
+            <polyline points="8 6 2 12 8 18" />
+          </>
+        );
+      case 'sensors':
+      case 'radio':
+        return (
+          <>
+            <circle cx="12" cy="12" r="2" fill="currentColor" />
+            <path d="M16.24 7.76a6 6 0 0 1 0 8.49M7.76 16.24a6 6 0 0 1 0-8.49M19.07 4.93a10 10 0 0 1 0 14.14M4.93 19.07a10 10 0 0 1 0-14.14" />
+          </>
+        );
+      case 'grid_view':
+      case 'dashboard':
+        return (
+          <>
+            <rect width="7" height="7" x="3" y="3" rx="1" />
+            <rect width="7" height="7" x="14" y="3" rx="1" />
+            <rect width="7" height="7" x="3" y="14" rx="1" />
+            <rect width="7" height="7" x="14" y="14" rx="1" />
+          </>
+        );
+      case 'visibility':
+      case 'eye':
+        return (
+          <>
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+            <circle cx="12" cy="12" r="3" />
+          </>
+        );
+      case 'palette':
+      case 'theme':
+        return (
+          <>
+            <circle cx="12" cy="12" r="10" />
+            <circle cx="8.5" cy="10" r="1" fill="currentColor" />
+            <circle cx="12" cy="7.5" r="1" fill="currentColor" />
+            <circle cx="15.5" cy="10" r="1" fill="currentColor" />
+            <path d="M12 22a10 10 0 0 0 10-10c0-1.5-3-2-4 0-1.5 3-4 1-4-1s-4-2-4 1a10 10 0 0 0 2 10z" />
+          </>
+        );
+      case 'check_badge':
+      case 'verified':
+        return (
+          <>
+            <path d="M9 12l2 2 4-4" />
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+          </>
+        );
+      case 'pin':
+      case 'place':
+      case 'map_pin':
+        return (
+          <>
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+            <circle cx="12" cy="10" r="3" />
+          </>
+        );
+      case 'plant':
+      case 'sprout':
+        return (
+          <>
+            <path d="M7 20h10" />
+            <path d="M12 20c0-6 0-8-4-10 0 0 0 6 4 10z" />
+            <path d="M12 12c0-4 2-6 6-6 0 4-2 6-6 6z" />
+          </>
+        );
+      case 'trending_up':
+        return (
+          <>
+            <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
+            <polyline points="16 7 22 7 22 13" />
+          </>
+        );
+      case 'user_check':
+        return (
+          <>
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+            <circle cx="9" cy="7" r="4" />
+            <polyline points="16 11 18 13 22 9" />
+          </>
+        );
+      case 'mail_check':
+        return (
+          <>
+            <rect width="20" height="16" x="2" y="4" rx="2" />
+            <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+            <path d="m16.5 14.5 2 2 3.5-3.5" />
+          </>
+        );
+      case 'attach_money':
+      case 'monetization_on':
+      case 'paid':
+        return (
+          <>
+            <circle cx="12" cy="12" r="10" />
+            <path d="M12 6v12M16 8.5c-.7-1-2-1.5-4-1.5-2.2 0-3.5.9-3.5 2.4 0 3.4 7.5 1.6 7.5 5 0 1.6-1.4 2.6-4 2.6-2 0-3.4-.6-4.2-1.7" />
+          </>
+        );
+      case 'search':
+      case 'seo':
+        return (
+          <>
+            <circle cx="11" cy="11" r="8" />
+            <path d="m21 21-4.3-4.3" />
+          </>
+        );
+      case 'faq':
+      case 'quiz':
+      case 'help_outline':
+        return (
+          <>
+            <circle cx="12" cy="12" r="10" />
+            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3M12 17h.01" />
+          </>
+        );
+
       // Default clean fallback (Never renders text ligatures)
       default:
         return (

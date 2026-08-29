@@ -1,0 +1,8 @@
+# ads.txt — authorized digital sellers for this domain (IAB spec).
+# Required by Google AdSense so advertisers can verify inventory.
+#
+# AFTER AdSense approves the site, replace PUB-ID below with the numeric part
+# of your publisher id (ca-pub-XXXXXXXXXXXXXXXX -> XXXXXXXXXXXXXXXX, no "ca-pub-")
+# and commit. Until then this placeholder line is commented out.
+#
+# google.com, pub-0000000000000000, DIRECT, f08c47fec0942fa0

@@ -64,6 +64,7 @@ The model classifies **8 distinct climatic hazards** across two actionable lead-
 3. **Edge-First TFLite WASM Inference**: The FP32 quantized model (~0.75 MB) runs directly in the browser via `@tensorflow/tfjs-backend-wasm`, enabling <100ms latency and 100% offline capability for field workers.
 4. **Automated Weekly MLOps Pipeline**: A GitHub Actions workflow triggers a Kaggle Notebook every Sunday to fetch the latest GEE satellite data, inject Open-Meteo forecasts, run TFLite inference for all 64 districts, and push updates to the Node.js backend.
 5. **Confidence Binning**: Predictions are explicitly labeled as `Certain` (≥0.85), `Probable` (0.70–0.85), or `Uncertain` (<0.70) to prevent overconfidence in long-term probabilistic outlooks.
+6. **User Dashboards & Unique Profile URLs**: Every signed-in user gets a dedicated dashboard at `/dashboard` with a unique username that becomes their public profile URL (`/u/<username>`), ~40 Supabase-backed profile fields, avatar upload (client-side resize/compress with replace-on-update), connector integrations (Open-Meteo, WhatsApp, SMS, Slack, webhooks, …), and passwordless email-verification sign-up — see [docs/user-dashboard.md](docs/user-dashboard.md).
 
 ---
 

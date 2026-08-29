@@ -35,6 +35,9 @@ const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 const AdvisoriesPage = lazy(() => import('./pages/AdvisoriesPage').then((m) => ({ default: m.AdvisoriesPage })));
 const AnalyticsAnalyticsPage = lazy(() => import('./pages/AnalyticsPage').then((m) => ({ default: m.AnalyticsAnalyticsPage })));
 const DistrictDetailPage = lazy(() => import('./pages/DistrictDetailPage').then((m) => ({ default: m.DistrictDetailPage })));
+const UserDashboardPage = lazy(() => import('./pages/UserDashboardPage'));
+const PublicProfilePage = lazy(() => import('./pages/PublicProfilePage'));
+const SetPasswordPage = lazy(() => import('./pages/SetPasswordPage'));
 const ChatBot = lazy(() => import('./components/ChatBot'));
 
 /** Full-height fallback shown while a lazy route chunk streams in. */
@@ -66,6 +69,7 @@ const AppContent: React.FC = () => {
     location.pathname === '/sign-up' ||
     location.pathname === '/forgot-password' ||
     location.pathname === '/update-password' ||
+    location.pathname === '/set-password' ||
     location.pathname.startsWith('/auth/');
 
   return (
@@ -173,7 +177,11 @@ const AppContent: React.FC = () => {
               <Route path="/login" element={<LoginPage />} />
               <Route path="/forgot-password" element={<ForgotPasswordPage />} />
               <Route path="/update-password" element={<UpdatePasswordPage />} />
+              <Route path="/set-password" element={<SetPasswordPage />} />
               <Route path="/auth/callback" element={<AuthCallbackPage />} />
+              {/* Dedicated per-user dashboard + unique public profile URLs */}
+              <Route path="/dashboard" element={<UserDashboardPage />} />
+              <Route path="/u/:username" element={<PublicProfilePage />} />
               <Route path="*" element={<NotFoundPage />} />
               </Routes>
             </Suspense>

@@ -1,0 +1,90 @@
+import { render, screen } from '@testing-library/react'
+import { MemoryRouter } from 'react-router-dom'
+import { Blogs } from '../Blogs'
+import { useAuth } from '../../context/AuthContext'
+
+// The blog data layer talks to Supabase/localStorage; stub it for the
+// gating tests (studio articles list is irrelevant here).
+jest.mock('../../lib/blogArticles', () => ({
+  listPublishedArticles: async () => ({ data: [], error: null, localDemo: true }),
+  readingTimeMinutes: () => 5,
+}))
+
+// BlogAdUnit imports the AdSense env config (import.meta.env is unavailable
+// under the CJS jest transform) — stub the whole module.
+jest.mock('../../lib/adsense', () => ({
+  ADSENSE_CLIENT: '',
+  ADSENSE_SLOT_BLOG_INDEX: '',
+  ADSENSE_SLOT_ARTICLE_INLINE: '',
+  ADSENSE_SLOT_ARTICLE_FOOTER: '',
+  isAdSenseConfigured: false,
+  isAdSenseDevMode: false,
+  requestAdFill: jest.fn(),
+  injectAdSenseScript: () => null,
+}))
+jest.mock('../../components/blog/ads/BlogAdUnit', () => ({
+  AdSenseScript: () => null,
+  BlogAdUnit: () => null,
+}))
+
+jest.mock('../../context/AuthContext', () => ({
+  useAuth: jest.fn(),
+}))
+
+const SUPERADMIN_EMAIL = 'shuvoasifahmed@gmail.com'
+
+const mountBlogs = () =>
+  render(
+    <MemoryRouter>
+      <Blogs />
+    </MemoryRouter>,
+  )
+
+describe('Blogs page — Blog Studio button visibility', () => {
+  it('is hidden by default for signed-out visitors', () => {
+    ;(useAuth as unknown as jest.Mock).mockReturnValue({ user: null, loading: false })
+    mountBlogs()
+    expect(screen.queryByTestId('blog-studio-btn')).not.toBeInTheDocument()
+    expect(screen.queryByText(/blog studio — write & manage articles/i)).not.toBeInTheDocument()
+  })
+
+  it('stays hidden while the auth session is loading', () => {
+    ;(useAuth as unknown as jest.Mock).mockReturnValue({ user: null, loading: true })
+    mountBlogs()
+    expect(screen.queryByTestId('blog-studio-btn')).not.toBeInTheDocument()
+  })
+
+  it('is hidden for regular signed-in users', () => {
+    ;(useAuth as unknown as jest.Mock).mockReturnValue({
+      user: { uid: 'u-9', email: 'farmer@example.com', displayName: 'Regular User' },
+      loading: false,
+    })
+    mountBlogs()
+    expect(screen.queryByTestId('blog-studio-btn')).not.toBeInTheDocument()
+  })
+
+  it('appears only for the three primary superadmins', () => {
+    for (const email of [
+      SUPERADMIN_EMAIL,
+      'shuvo.1807016@bau.edu.bd',
+      'asifahmedshuvo.aas@gmail.com',
+    ]) {
+      ;(useAuth as unknown as jest.Mock).mockReturnValue({
+        user: { uid: 'u-1', email, displayName: 'Super Admin' },
+        loading: false,
+      })
+      const { unmount } = mountBlogs()
+      expect(screen.getByTestId('blog-studio-btn')).toHaveTextContent(/blog studio — write & manage articles/i)
+      unmount()
+    }
+  })
+
+  it('matches superadmin emails case-insensitively', () => {
+    ;(useAuth as unknown as jest.Mock).mockReturnValue({
+      user: { uid: 'u-1', email: '  ShuvoAsifAhmed@GMAIL.com ', displayName: 'X' },
+      loading: false,
+    })
+    mountBlogs()
+    expect(screen.getByTestId('blog-studio-btn')).toBeInTheDocument()
+  })
+})

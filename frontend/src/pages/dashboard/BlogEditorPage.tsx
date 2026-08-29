@@ -8,6 +8,7 @@ import RichTextEditor from '../../components/blog/RichTextEditor';
 import { useAuth } from '../../context/AuthContext';
 import {
   BlogArticleDraft,
+  BlogFaq,
   createArticle,
   ensureUniqueSlug,
   getArticleById,
@@ -16,12 +17,16 @@ import {
   slugify,
   updateArticle,
 } from '../../lib/blogArticles';
+import { effectiveMetaDescription, effectiveMetaTitle, seoScore } from '../../lib/blogSeo';
 
 /**
  * Full-page blog article editor (dedicated dashboard route, not a popup or
  * inline component): /dashboard/blog/new and /dashboard/blog/edit/:id.
- * Autosaves drafts to localStorage, generates unique slugs, and supports
- * draft/published workflow. Public article URL: /blogs/:slug.
+ *
+ * Everything is editable: content (rich text), SEO metadata (SERP title &
+ * description with Google preview, focus keyword, canonical, OG image,
+ * robots, FAQ rich results), the author byline (name, title, bio, avatar,
+ * website) and monetization (affiliate flag + disclosure). Superadmin-only.
  */
 
 const CATEGORIES = ['Remote Sensing', 'Field Deployment', 'Edge AI', 'Agronomy', 'Research', 'General'];
@@ -30,6 +35,22 @@ const inputClass =
   'w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs text-slate-900 placeholder-slate-400 font-medium transition-all focus:outline-none focus:border-[#f9a825] focus:ring-2 focus:ring-[#f9a825]/40';
 
 const autosaveKey = (id: string) => `hazardnet.blog.draft.${id}`;
+
+const SeoCheckRow: React.FC<{ passed: boolean; label: string; advice: string }> = ({ passed, label, advice }) => (
+  <li className="flex items-start gap-2" title={advice}>
+    <span
+      aria-hidden="true"
+      className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[9px] font-black ${
+        passed ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
+      }`}
+    >
+      {passed ? '✓' : '!'}
+    </span>
+    <span className={`text-[11px] leading-relaxed ${passed ? 'text-slate-500 line-through decoration-slate-300' : 'font-semibold text-slate-700'}`}>
+      {label}
+    </span>
+  </li>
+);
 
 export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => {
   const navigate = useNavigate();
@@ -47,15 +68,37 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
   const [contentHtml, setContentHtml] = useState('');
   const [status, setStatus] = useState<'draft' | 'published'>('draft');
   const [publishedSlug, setPublishedSlug] = useState<string | null>(null);
+
+  // SEO fields
+  const [metaTitle, setMetaTitle] = useState('');
+  const [metaDescription, setMetaDescription] = useState('');
+  const [focusKeyword, setFocusKeyword] = useState('');
+  const [canonicalUrl, setCanonicalUrl] = useState('');
+  const [ogImageUrl, setOgImageUrl] = useState('');
+  const [robotsNoIndex, setRobotsNoIndex] = useState(false);
+  const [faqs, setFaqs] = useState<BlogFaq[]>([]);
+
+  // Editable author details
+  const [authorName, setAuthorName] = useState('');
+  const [authorTitle, setAuthorTitle] = useState('');
+  const [authorBio, setAuthorBio] = useState('');
+  const [authorAvatarUrl, setAuthorAvatarUrl] = useState('');
+  const [authorWebsite, setAuthorWebsite] = useState('');
+
+  // Monetization
+  const [containsAffiliateLinks, setContainsAffiliateLinks] = useState(false);
+  const [affiliateDisclosure, setAffiliateDisclosure] = useState('');
+
   const [loading, setLoading] = useState(mode === 'edit');
   const [loadError, setLoadError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
   const [lastAutosavedAt, setLastAutosavedAt] = useState<string | null>(null);
+  const [showSeoTips, setShowSeoTips] = useState(true);
   const autosaveTimer = useRef<number | null>(null);
   const loadedRef = useRef(false);
 
-  const author = useMemo(
+  const signedInAuthor = useMemo(
     () => ({ id: user?.uid ?? null, email: user?.email ?? '', name: user?.displayName ?? 'HazardNet Team' }),
     [user],
   );
@@ -83,9 +126,31 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
       setContentHtml(article.contentHtml);
       setStatus(article.status);
       setPublishedSlug(article.status === 'published' ? article.slug : null);
+      setMetaTitle(article.metaTitle ?? '');
+      setMetaDescription(article.metaDescription ?? '');
+      setFocusKeyword(article.focusKeyword ?? '');
+      setCanonicalUrl(article.canonicalUrl ?? '');
+      setOgImageUrl(article.ogImageUrl ?? '');
+      setRobotsNoIndex(article.robotsNoIndex ?? false);
+      setFaqs(article.faqs ?? []);
+      setAuthorName(article.authorName ?? '');
+      setAuthorTitle(article.authorTitle ?? '');
+      setAuthorBio(article.authorBio ?? '');
+      setAuthorAvatarUrl(article.authorAvatarUrl ?? '');
+      setAuthorWebsite(article.authorWebsite ?? '');
+      setContainsAffiliateLinks(article.containsAffiliateLinks ?? false);
+      setAffiliateDisclosure(article.affiliateDisclosure ?? '');
       setLoading(false);
     })();
   }, [mode, id]);
+
+  // Default the author byline from the signed-in superadmin (editable).
+  useEffect(() => {
+    if (mode === 'new' && user && !authorName) {
+      setAuthorName(user.displayName ?? 'HazardNet Team');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, mode]);
 
   // Slug follows the title until manually edited
   useEffect(() => {
@@ -93,15 +158,18 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
   }, [title, slugEdited]);
 
   // Debounced autosave to localStorage (draft safety net)
+  const autosavePayload = JSON.stringify({
+    title, slug, excerpt, category, tags, coverImageUrl, contentHtml, status,
+    metaTitle, metaDescription, focusKeyword, canonicalUrl, ogImageUrl, robotsNoIndex, faqs,
+    authorName, authorTitle, authorBio, authorAvatarUrl, authorWebsite,
+    containsAffiliateLinks, affiliateDisclosure,
+  });
   useEffect(() => {
     if (loading || !dirty || !title.trim()) return;
     if (autosaveTimer.current) window.clearTimeout(autosaveTimer.current);
     autosaveTimer.current = window.setTimeout(() => {
       try {
-        localStorage.setItem(
-          autosaveKey(articleId ?? 'new'),
-          JSON.stringify({ title, slug, excerpt, category, tags, coverImageUrl, contentHtml, status, at: Date.now() }),
-        );
+        localStorage.setItem(autosaveKey(articleId ?? 'new'), JSON.stringify({ ...JSON.parse(autosavePayload), at: Date.now() }));
         setLastAutosavedAt(new Date().toLocaleTimeString());
         setDirty(false);
       } catch {
@@ -111,7 +179,7 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
     return () => {
       if (autosaveTimer.current) window.clearTimeout(autosaveTimer.current);
     };
-  }, [articleId, title, slug, excerpt, category, tags, coverImageUrl, contentHtml, status, dirty, loading]);
+  }, [articleId, autosavePayload, dirty, loading, title]);
 
   const markDirty = <T,>(setter: (value: T) => void) => (value: T) => {
     setter(value);
@@ -140,9 +208,24 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
       category,
       tags: tags.split(',').map((t) => t.trim()).filter(Boolean),
       status,
-      authorId: author.id,
-      authorEmail: author.email,
-      authorName: author.name,
+      authorId: signedInAuthor.id,
+      // author_email is the security/permission identity (RLS-checked); the
+      // public byline is fully editable via the author fields below.
+      authorEmail: signedInAuthor.email,
+      authorName: authorName.trim() || signedInAuthor.name,
+      metaTitle: metaTitle.trim(),
+      metaDescription: metaDescription.trim(),
+      focusKeyword: focusKeyword.trim(),
+      canonicalUrl: canonicalUrl.trim(),
+      ogImageUrl: ogImageUrl.trim(),
+      robotsNoIndex,
+      faqs: faqs.filter((faq) => faq.question.trim() && faq.answer.trim()),
+      authorTitle: authorTitle.trim(),
+      authorBio: authorBio.trim(),
+      authorAvatarUrl: authorAvatarUrl.trim(),
+      authorWebsite: authorWebsite.trim(),
+      containsAffiliateLinks,
+      affiliateDisclosure: affiliateDisclosure.trim(),
     };
   };
 
@@ -153,14 +236,14 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
     setSaving(true);
     try {
       if (articleId) {
-        const result = await updateArticle(articleId, { ...draft, status: effectiveStatus }, author);
+        const result = await updateArticle(articleId, { ...draft, status: effectiveStatus }, signedInAuthor);
         if (result.error) {
           toast.error(result.error);
           return;
         }
         toast.success(effectiveStatus === 'published' ? `Published at /blogs/${draft.slug}` : 'Article updated.');
       } else {
-        const result = await createArticle({ ...draft, status: effectiveStatus }, author);
+        const result = await createArticle({ ...draft, status: effectiveStatus }, signedInAuthor);
         if (result.error) {
           toast.error(result.error);
           return;
@@ -179,6 +262,41 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
       setSaving(false);
     }
   };
+
+  const seo = useMemo(
+    () =>
+      seoScore({
+        id: articleId ?? 'preview',
+        slug: slug || 'preview-slug',
+        title,
+        excerpt,
+        contentHtml,
+        coverImageUrl: coverImageUrl || null,
+        category,
+        tags: tags.split(',').map((t) => t.trim()).filter(Boolean),
+        status,
+        authorId: null,
+        authorEmail: '',
+        authorName,
+        createdAt: '',
+        updatedAt: '',
+        publishedAt: null,
+        metaTitle,
+        metaDescription,
+        focusKeyword,
+        canonicalUrl,
+        ogImageUrl,
+        robotsNoIndex,
+        faqs,
+        authorTitle,
+        authorBio,
+        authorAvatarUrl: '',
+        authorWebsite: '',
+        containsAffiliateLinks,
+        affiliateDisclosure,
+      }),
+    [articleId, slug, title, excerpt, contentHtml, coverImageUrl, category, tags, status, authorName, metaTitle, metaDescription, focusKeyword, canonicalUrl, ogImageUrl, robotsNoIndex, faqs, authorTitle, authorBio, containsAffiliateLinks, affiliateDisclosure],
+  );
 
   if (loading) {
     return (
@@ -201,8 +319,12 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
     );
   }
 
+  const serpTitle = effectiveMetaTitle({ metaTitle, title });
+  const serpDescription = effectiveMetaDescription({ metaDescription, excerpt, contentHtml });
+  const serpUrl = `hazardnet.live › blogs › ${slug || 'your-slug'}`;
+
   return (
-    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }} className="max-w-5xl mx-auto space-y-5 pb-10">
+    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }} className="max-w-6xl mx-auto space-y-5 pb-10">
       <Breadcrumbs />
 
       {/* Editor header */}
@@ -254,9 +376,10 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
         </p>
       </div>
 
-      {/* Metadata + editor */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 items-start">
-        <div className="lg:col-span-2 space-y-4">
+      {/* Content + sidebars */}
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-5 items-start">
+        <div className="xl:col-span-2 space-y-4">
+          {/* Core content */}
           <div className="bg-white border border-slate-200/90 rounded-3xl p-5 shadow-sm space-y-4">
             <div>
               <label htmlFor="blog-title" className="block text-xs font-bold text-slate-800 mb-1.5">Title</label>
@@ -312,6 +435,177 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
           </div>
 
           <RichTextEditor value={contentHtml} onChange={markDirty(setContentHtml)} />
+
+          {/* ── SEO & Google Search Console ───────────────────────────── */}
+          <div className="bg-white border border-slate-200/90 rounded-3xl p-5 shadow-sm space-y-4" data-testid="seo-panel">
+            <div className="flex items-center justify-between gap-2">
+              <h3 className="text-xs font-black uppercase tracking-wider text-slate-900 font-mono flex items-center gap-1.5">
+                <MaterialIcon name="search" className="w-4 h-4 text-[#d08305]" /> SEO &amp; Google Search Console
+              </h3>
+              <span
+                className={`rounded-full px-2.5 py-1 text-[10px] font-black ${
+                  seo.score >= 80 ? 'bg-emerald-50 text-emerald-700' : seo.score >= 50 ? 'bg-amber-50 text-amber-700' : 'bg-rose-50 text-rose-700'
+                }`}
+                data-testid="seo-score"
+              >
+                SEO score {seo.score}%
+              </span>
+            </div>
+
+            {/* Google SERP preview */}
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4" data-testid="serp-preview">
+              <p className="mb-2 text-[9px] font-black uppercase tracking-[0.18em] text-slate-400">Google result preview</p>
+              <p className="text-[11px] text-[#4d5156] leading-none mb-1">{serpUrl}</p>
+              <p className="text-[15px] leading-snug text-[#1a0dab] font-medium truncate">{serpTitle || 'Your SEO title appears here'}</p>
+              <p className="mt-1 text-[11px] leading-relaxed text-[#4d5156] line-clamp-2">
+                {serpDescription || 'Your meta description appears here — write 120–160 characters that make searchers click.'}
+              </p>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label htmlFor="blog-meta-title" className="block text-xs font-bold text-slate-800 mb-1.5">
+                  SEO title <span className={metaTitle.length > 60 ? 'text-rose-600' : 'text-slate-400 font-medium'}>({metaTitle.length}/60)</span>
+                </label>
+                <input
+                  id="blog-meta-title"
+                  value={metaTitle}
+                  onChange={(e) => markDirty(setMetaTitle)(e.target.value)}
+                  maxLength={70}
+                  placeholder="Defaults to the article title"
+                  className={inputClass}
+                />
+              </div>
+              <div>
+                <label htmlFor="blog-focus-keyword" className="block text-xs font-bold text-slate-800 mb-1.5">Focus keyword</label>
+                <input
+                  id="blog-focus-keyword"
+                  value={focusKeyword}
+                  onChange={(e) => markDirty(setFocusKeyword)(e.target.value)}
+                  placeholder="e.g. flood forecasting Bangladesh"
+                  className={inputClass}
+                />
+              </div>
+            </div>
+            <div>
+              <label htmlFor="blog-meta-description" className="block text-xs font-bold text-slate-800 mb-1.5">
+                Meta description <span className={metaDescription.length > 160 ? 'text-rose-600' : 'text-slate-400 font-medium'}>({metaDescription.length}/160)</span>
+              </label>
+              <textarea
+                id="blog-meta-description"
+                value={metaDescription}
+                onChange={(e) => markDirty(setMetaDescription)(e.target.value)}
+                rows={2}
+                maxLength={180}
+                placeholder="Defaults to the excerpt — the snippet Google shows under your title."
+                className={`${inputClass} resize-y`}
+              />
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label htmlFor="blog-canonical" className="block text-xs font-bold text-slate-800 mb-1.5">Canonical URL <span className="text-slate-400 font-medium">(optional)</span></label>
+                <input
+                  id="blog-canonical"
+                  value={canonicalUrl}
+                  onChange={(e) => markDirty(setCanonicalUrl)(e.target.value)}
+                  placeholder="https://hazardnet.live/blogs/…"
+                  className={`${inputClass} font-mono`}
+                />
+              </div>
+              <div>
+                <label htmlFor="blog-og-image" className="block text-xs font-bold text-slate-800 mb-1.5">Social share image (og:image) <span className="text-slate-400 font-medium">(optional)</span></label>
+                <input
+                  id="blog-og-image"
+                  value={ogImageUrl}
+                  onChange={(e) => markDirty(setOgImageUrl)(e.target.value)}
+                  placeholder="Defaults to the cover image"
+                  className={`${inputClass} font-mono`}
+                />
+              </div>
+            </div>
+
+            <label htmlFor="blog-noindex" className="flex items-center gap-2.5 cursor-pointer select-none">
+              <input
+                id="blog-noindex"
+                type="checkbox"
+                checked={robotsNoIndex}
+                onChange={(e) => markDirty(setRobotsNoIndex)(e.target.checked)}
+                className="h-4 w-4 rounded border-slate-300 accent-[#f9a825] cursor-pointer"
+              />
+              <span className="text-[11px] font-semibold text-slate-600">
+                Hide from search engines <span className="font-mono text-[10px] text-slate-400">(meta robots: noindex, follow)</span>
+              </span>
+            </label>
+
+            {/* FAQ builder → FAQPage rich results */}
+            <div className="rounded-2xl border border-slate-200 p-4 space-y-3" data-testid="faq-builder">
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                  <MaterialIcon name="faq" className="w-4 h-4 text-[#d08305]" /> FAQ section
+                  <span className="text-[10px] font-medium text-slate-400">(emits FAQPage schema → Google rich results)</span>
+                </p>
+                <button
+                  type="button"
+                  onClick={() => markDirty(setFaqs)([...faqs, { question: '', answer: '' }])}
+                  className="rounded-xl border border-slate-200 px-2.5 py-1.5 text-[10px] font-black text-slate-700 hover:bg-slate-100 cursor-pointer"
+                >
+                  + Add question
+                </button>
+              </div>
+              {faqs.length === 0 && (
+                <p className="text-[11px] text-slate-400">3–5 concise Q&amp;As targeting “People also ask” queries works best.</p>
+              )}
+              {faqs.map((faq, index) => (
+                <div key={index} className="space-y-2 rounded-xl bg-slate-50 p-3">
+                  <div className="flex items-center gap-2">
+                    <input
+                      value={faq.question}
+                      onChange={(e) => markDirty(setFaqs)(faqs.map((f, i) => (i === index ? { ...f, question: e.target.value } : f)))}
+                      placeholder={`Question ${index + 1} — e.g. How accurate is satellite flood forecasting?`}
+                      className={inputClass}
+                      aria-label={`FAQ question ${index + 1}`}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => markDirty(setFaqs)(faqs.filter((_, i) => i !== index))}
+                      className="shrink-0 rounded-xl border border-rose-200 p-2 text-rose-500 hover:bg-rose-50 cursor-pointer"
+                      aria-label={`Remove FAQ ${index + 1}`}
+                    >
+                      <MaterialIcon name="delete" className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                  <textarea
+                    value={faq.answer}
+                    onChange={(e) => markDirty(setFaqs)(faqs.map((f, i) => (i === index ? { ...f, answer: e.target.value } : f)))}
+                    rows={2}
+                    placeholder="Concise answer (40–90 words is the sweet spot for featured snippets)."
+                    className={`${inputClass} resize-y`}
+                    aria-label={`FAQ answer ${index + 1}`}
+                  />
+                </div>
+              ))}
+            </div>
+
+            {/* Live SEO checklist */}
+            <div>
+              <button
+                type="button"
+                onClick={() => setShowSeoTips((v) => !v)}
+                aria-expanded={showSeoTips}
+                className="flex w-full items-center justify-between rounded-xl px-1 py-1.5 text-[11px] font-black text-slate-600 hover:text-slate-900 cursor-pointer"
+              >
+                <span>SEO checklist ({seo.passedCount}/{seo.checks.length} passed · {seo.wordCount} words)</span>
+                <span aria-hidden="true">{showSeoTips ? '▾' : '▸'}</span>
+              </button>
+              {showSeoTips && (
+                <ul className="mt-2 space-y-1.5 rounded-2xl bg-slate-50 p-3.5" data-testid="seo-checklist">
+                  {seo.checks.map((check) => (
+                    <SeoCheckRow key={check.id} passed={check.passed} label={check.label} advice={check.advice} />
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Sidebar settings */}
@@ -370,12 +664,113 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
             </div>
           </div>
 
-          <div className="bg-white border border-slate-200/90 rounded-3xl p-5 shadow-sm space-y-2">
-            <h3 className="text-xs font-black uppercase tracking-wider text-slate-900 font-mono">Author</h3>
-            <p className="text-xs font-bold text-slate-800">{author.name}</p>
-            <p className="text-[11px] font-mono text-slate-500">{author.email}</p>
-            <p className="text-[10px] text-slate-400 leading-relaxed">
-              Articles record the author identity at save time. Only primary superadmins can save or publish.
+          {/* Editable author byline */}
+          <div className="bg-white border border-slate-200/90 rounded-3xl p-5 shadow-sm space-y-3" data-testid="author-panel">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-black uppercase tracking-wider text-slate-900 font-mono">Author byline</h3>
+              <button
+                type="button"
+                onClick={() => {
+                  markDirty(setAuthorName)(signedInAuthor.name);
+                  setDirty(true);
+                }}
+                className="rounded-lg px-2 py-1 text-[10px] font-black text-amber-700 hover:bg-amber-50 cursor-pointer"
+                title="Reset display name to your account name"
+              >
+                Use my profile
+              </button>
+            </div>
+            <div>
+              <label htmlFor="blog-author-name" className="block text-[11px] font-bold text-slate-800 mb-1">Display name</label>
+              <input
+                id="blog-author-name"
+                value={authorName}
+                onChange={(e) => markDirty(setAuthorName)(e.target.value)}
+                placeholder="e.g. Dr. M. Rahman"
+                className={inputClass}
+              />
+            </div>
+            <div>
+              <label htmlFor="blog-author-title" className="block text-[11px] font-bold text-slate-800 mb-1">Title / role</label>
+              <input
+                id="blog-author-title"
+                value={authorTitle}
+                onChange={(e) => markDirty(setAuthorTitle)(e.target.value)}
+                placeholder="e.g. Remote Sensing Specialist"
+                className={inputClass}
+              />
+            </div>
+            <div>
+              <label htmlFor="blog-author-bio" className="block text-[11px] font-bold text-slate-800 mb-1">Short bio</label>
+              <textarea
+                id="blog-author-bio"
+                value={authorBio}
+                onChange={(e) => markDirty(setAuthorBio)(e.target.value)}
+                rows={2}
+                maxLength={280}
+                placeholder="One or two sentences shown under the article (E-E-A-T signal for Google)."
+                className={`${inputClass} resize-y`}
+              />
+            </div>
+            <div>
+              <label htmlFor="blog-author-avatar" className="block text-[11px] font-bold text-slate-800 mb-1">Avatar URL</label>
+              <input
+                id="blog-author-avatar"
+                value={authorAvatarUrl}
+                onChange={(e) => markDirty(setAuthorAvatarUrl)(e.target.value)}
+                placeholder="https://…/author.jpg"
+                className={`${inputClass} font-mono`}
+              />
+              {authorAvatarUrl && (
+                <img src={authorAvatarUrl} alt="Author preview" className="mt-2 h-12 w-12 rounded-full border border-slate-200 object-cover" />
+              )}
+            </div>
+            <div>
+              <label htmlFor="blog-author-website" className="block text-[11px] font-bold text-slate-800 mb-1">Website / profile link</label>
+              <input
+                id="blog-author-website"
+                value={authorWebsite}
+                onChange={(e) => markDirty(setAuthorWebsite)(e.target.value)}
+                placeholder="https://linkedin.com/in/…"
+                className={`${inputClass} font-mono`}
+              />
+            </div>
+            <p className="rounded-xl bg-slate-50 p-2.5 text-[10px] leading-relaxed text-slate-400">
+              Publisher account (permissions): <span className="font-mono font-bold text-slate-500">{signedInAuthor.email || 'signed-out'}</span> — only
+              primary superadmins can save; the public byline above is fully editable.
+            </p>
+          </div>
+
+          {/* Monetization */}
+          <div className="bg-white border border-slate-200/90 rounded-3xl p-5 shadow-sm space-y-3" data-testid="monetization-panel">
+            <h3 className="text-xs font-black uppercase tracking-wider text-slate-900 font-mono">Monetization</h3>
+            <label htmlFor="blog-affiliate" className="flex items-start gap-2.5 cursor-pointer select-none">
+              <input
+                id="blog-affiliate"
+                type="checkbox"
+                checked={containsAffiliateLinks}
+                onChange={(e) => markDirty(setContainsAffiliateLinks)(e.target.checked)}
+                className="mt-0.5 h-4 w-4 rounded border-slate-300 accent-[#f9a825] cursor-pointer"
+              />
+              <span className="text-[11px] font-semibold leading-relaxed text-slate-600">
+                Contains affiliate links
+                <span className="block text-[10px] font-medium text-slate-400">
+                  Shows a disclosure notice and tags outbound links rel=&quot;sponsored nofollow&quot; (Google policy).
+                </span>
+              </span>
+            </label>
+            <textarea
+              id="blog-affiliate-disclosure"
+              value={affiliateDisclosure}
+              onChange={(e) => markDirty(setAffiliateDisclosure)(e.target.value)}
+              rows={3}
+              placeholder="Affiliate disclosure shown at the top of the article…"
+              className={`${inputClass} resize-y`}
+              aria-label="Affiliate disclosure text"
+            />
+            <p className="text-[10px] leading-relaxed text-slate-400">
+              AdSense runs automatically on the blog pages once <span className="font-mono">VITE_ADSENSE_CLIENT</span> is configured. See
+              docs/blog-monetization.md for ad slots and affiliate programs.
             </p>
           </div>
         </aside>

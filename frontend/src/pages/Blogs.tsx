@@ -1,9 +1,13 @@
 import MaterialIcon from "../components/MaterialIcon";
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import Breadcrumbs from '../components/Breadcrumbs';
+import { AdSenseScript, BlogAdUnit } from '../components/blog/ads/BlogAdUnit';
 import { BlogArticle, listPublishedArticles, readingTimeMinutes } from '../lib/blogArticles';
+import { buildBlogIndexHead } from '../lib/blogSeo';
+import { useSeoHead } from '../lib/seoHead';
+import { ADSENSE_SLOT_BLOG_INDEX } from '../lib/adsense';
 import { useAuth } from '../context/AuthContext';
 import { isPrimarySuperAdmin } from '../lib/superadmins';
 
@@ -88,7 +92,7 @@ const BLOG_POSTS: BlogPost[] = [
 ];
 
 export const Blogs: React.FC = () => {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
   const [filterCategory, setFilterCategory] = useState<string>('All');
   const [liveArticles, setLiveArticles] = useState<BlogArticle[]>([]);
@@ -103,6 +107,18 @@ export const Blogs: React.FC = () => {
     };
   }, []);
 
+  // Per-route SEO metadata for the blog index (title/description/canonical).
+  const indexHead = useMemo(() => buildBlogIndexHead({ origin: window.location.origin }), []);
+  useSeoHead(indexHead);
+
+  /**
+   * The "Blog Studio" entry point is hidden by default. It renders ONLY for
+   * the three primary superadmin accounts (frontend/src/lib/superadmins.ts)
+   * after the auth session has resolved — never for guests or regular users,
+   * and never while the session is still loading.
+   */
+  const showStudioButton = !loading && Boolean(user) && isPrimarySuperAdmin(user?.email);
+
   const filteredPosts = BLOG_POSTS.filter(
     (post) => filterCategory === 'All' || post.category === filterCategory
   );
@@ -114,6 +130,7 @@ export const Blogs: React.FC = () => {
       transition={{ duration: 0.35, ease: 'easeOut' }}
       className="space-y-8 max-w-5xl mx-auto"
     >
+      <AdSenseScript />
       <Breadcrumbs />
 
       {/* Header Banner */}
@@ -134,9 +151,10 @@ export const Blogs: React.FC = () => {
           Technical deep-dives, remote sensing methodologies, field deployment case studies, and edge WebAssembly optimizations written by the HazardNet research team.
         </p>
 
-        {isPrimarySuperAdmin(user?.email) && (
+        {showStudioButton && (
           <Link
             to="/dashboard/blog"
+            data-testid="blog-studio-btn"
             className="inline-flex items-center gap-2 rounded-2xl bg-slate-900 px-4 py-2.5 text-xs font-black text-white shadow-md transition-colors hover:bg-slate-700"
           >
             <MaterialIcon name="doc" className="w-4 h-4" /> Blog Studio — write & manage articles
@@ -175,6 +193,9 @@ export const Blogs: React.FC = () => {
           </div>
         </section>
       )}
+
+      {/* Display ad (blogs page only — the sole monetized surface) */}
+      <BlogAdUnit slot={ADSENSE_SLOT_BLOG_INDEX} format="horizontal" label="Advertisement" className="not-prose" />
 
       {/* Category Filter Pills */}
       <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs font-bold scrollbar-none">
