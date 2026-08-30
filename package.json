@@ -1,6 +1,6 @@
 {
   "name": "hazardnet",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Multi-Hazard AI Classification & Severity Quantification for Bangladesh Agricultural Disaster Risk",
   "main": "index.js",
   "license": "MIT",
