@@ -26,15 +26,19 @@ export const PrintQrCode: React.FC<PrintQrCodeProps> = ({
   size = 76,
   showInScreen = false,
 }) => {
-  // Resolve canonical target URL (fallback to window.location.href)
-  const resolvedUrl = url || (typeof window !== 'undefined' ? window.location.href : 'https://hazardnet.bd');
+// Clean and official target URL without noisy query params or sandbox URLs
+  const resolvedUrl =
+    url ||
+    (districtOrSector
+      ? `https://hazardnet.live/district/${districtOrSector.toLowerCase().replace(/\s+/g, '-')}`
+      : 'https://hazardnet.live');
 
   return (
     <div
-      className={`print-qr-code-box ${showInScreen ? 'flex' : 'hidden print:flex print-only'} items-center gap-3.5 p-2.5 bg-white border border-slate-300 rounded-xl ${className}`}
+      className={`print-qr-code-box ${showInScreen ? 'flex' : 'hidden print:flex print-only'} items-center gap-3 p-2 bg-white border border-slate-300 rounded-xl ${className}`}
     >
-      {/* High-Resolution Vector QR Code for Crisp Print Media */}
-      <div className="p-1.5 bg-white border border-slate-200 rounded-lg shrink-0 shadow-xs">
+      {/* High-Resolution Vector QR Code */}
+      <div className="p-1 bg-white border border-slate-200 rounded-lg shrink-0">
         <QRCodeSVG
           value={resolvedUrl}
           size={size}
@@ -45,21 +49,16 @@ export const PrintQrCode: React.FC<PrintQrCodeProps> = ({
         />
       </div>
 
-      {/* QR Code Identification & Instructions */}
-      <div className="flex-1 min-w-0 space-y-1 font-sans">
-        <div className="flex items-center gap-1.5 text-[8pt] font-mono font-black text-slate-900 uppercase tracking-tight">
+      {/* Clean Identification */}
+      <div className="flex-1 min-w-0 font-sans">
+        <div className="flex items-center gap-1 text-[8pt] font-mono font-black text-slate-900 uppercase tracking-tight">
           <QrCode className="w-3 h-3 text-slate-700 shrink-0" />
-          <span>{districtOrSector ? `${districtOrSector} • ` : ''}{title}</span>
+          <span>{title}</span>
         </div>
 
-        <p className="text-[7pt] text-slate-600 font-medium leading-tight">
+        <p className="text-[7pt] text-slate-600 font-medium leading-tight mt-0.5">
           {subtitle}
         </p>
-
-        <div className="flex items-center gap-1 text-[6.5pt] font-mono text-slate-500 truncate pt-0.5 border-t border-slate-100">
-          <Smartphone className="w-2.5 h-2.5 text-slate-400 shrink-0" />
-          <span className="truncate font-semibold text-slate-700">{resolvedUrl}</span>
-        </div>
       </div>
     </div>
   );

@@ -92,21 +92,39 @@
   --info-surface: #e0f2fe;
 
   /* Severity scale — text / solid fills (maps, markers, charts) / tint surfaces */
+  --risk-low: #16a34a;
+  --risk-low-bg: #dcfce7;
+  --risk-moderate: #f59e0b;
+  --risk-moderate-bg: #fef3c7;
+  --risk-high: #dc2626;
+  --risk-high-bg: #fee2e2;
+  --risk-critical: #dc2626;
+  --risk-critical-bg: #fee2e2;
+
+  --progression-bar-low: #16a34a;
+  --progression-bar-moderate: #f59e0b;
+  --progression-bar-high: #dc2626;
+
+  /* Standardized Severity Level Tokens */
+  --severity-amber: #f59e0b;
+  --severity-red: #dc2626;
+  --severity-green: #16a34a;
+
   --severity-low: var(--hn-emerald-700);
-  --severity-low-solid: #22c55e;
+  --severity-low-solid: #16a34a;
   --severity-low-surface: #dcfce7;
   --severity-moderate: var(--hn-amber-700);
   --severity-moderate-solid: #f59e0b;
   --severity-moderate-surface: #fef3c7;
-  --severity-high: #c2410c;
-  --severity-high-solid: #f97316;
-  --severity-high-surface: #ffedd5;
-  --severity-very-high: #b91c1c;
-  --severity-very-high-solid: #ef4444;
+  --severity-high: #dc2626;
+  --severity-high-solid: #dc2626;
+  --severity-high-surface: #fee2e2;
+  --severity-very-high: #dc2626;
+  --severity-very-high-solid: #dc2626;
   --severity-very-high-surface: #fee2e2;
-  --severity-extreme: #9f1239;
-  --severity-extreme-solid: #e11d48;
-  --severity-extreme-surface: #ffe4e6;
+  --severity-extreme: #991b1b;
+  --severity-extreme-solid: #dc2626;
+  --severity-extreme-surface: #fee2e2;
 
   /* Surfaces & text roles */
   --surface-page: #f8fafc;
@@ -488,6 +506,9 @@ body {
   --color-info-foreground: var(--info-foreground);
   --color-info-surface: var(--info-surface);
   /* Severity scale */
+  --color-severity-amber: var(--severity-amber);
+  --color-severity-red: var(--severity-red);
+  --color-severity-green: var(--severity-green);
   --color-severity-low: var(--severity-low);
   --color-severity-low-solid: var(--severity-low-solid);
   --color-severity-low-surface: var(--severity-low-surface);
@@ -831,6 +852,34 @@ caption {
   padding-right: env(safe-area-inset-right, 0px);
 }
 
+/* Standardized Severity Tokens & Progress Bar Color Classes */
+.bg-severity-amber,
+.progress-severity-amber {
+  background-color: var(--severity-amber) !important;
+}
+
+.bg-severity-red,
+.progress-severity-red {
+  background-color: var(--severity-red) !important;
+}
+
+.bg-severity-green,
+.progress-severity-green {
+  background-color: var(--severity-green) !important;
+}
+
+.text-severity-amber {
+  color: var(--severity-amber) !important;
+}
+
+.text-severity-red {
+  color: var(--severity-red) !important;
+}
+
+.text-severity-green {
+  color: var(--severity-green) !important;
+}
+
 /* Prevent iOS Mobile Safari auto-zoom on input focus */
 @media (max-width: 768px) {
 
@@ -865,31 +914,31 @@ caption {
   /* 1. Page Configuration & Geometry with CSS Paged Media Page Counters */
   @page {
     size: A4 portrait;
-    margin: 12mm 10mm 15mm 10mm;
+    margin: 20mm 15mm; /* Top/Bottom: 20mm, Left/Right: 15mm (A4 Standard) */
     @bottom-left {
       content: "HazardNet Bangladesh • Emergency Directive Handout";
-      font-family: 'JetBrains Mono', monospace, ui-monospace, sans-serif;
-      font-size: 7.5pt;
+      font-family: "Times New Roman", Times, serif;
+      font-size: 8.5pt;
       font-weight: 600;
       color: #475569;
     }
     @bottom-center {
       content: "SOD 2019 Disaster Management Compliance";
-      font-family: 'JetBrains Mono', monospace, ui-monospace, sans-serif;
-      font-size: 7pt;
+      font-family: "Times New Roman", Times, serif;
+      font-size: 8pt;
       color: #94a3b8;
     }
     @bottom-right {
       content: "Page " counter(page) " of " counter(pages);
-      font-family: 'JetBrains Mono', monospace, ui-monospace, sans-serif;
-      font-size: 8pt;
+      font-family: "Times New Roman", Times, serif;
+      font-size: 9pt;
       font-weight: 800;
       color: #0f172a;
     }
   }
 
   @page :first {
-    margin-top: 10mm;
+    margin-top: 20mm;
   }
 
   /* 2. Color Calibration & Exact Ink Rendering */
@@ -903,18 +952,24 @@ caption {
     box-shadow: none !important;
   }
 
-  /* 3. Base Document Typography & Clean Contrast */
+  /* 3. Base Document Typography & Clean Contrast (Times New Roman 12pt Official Standard) */
   html,
-  body {
+  body,
+  .print-district-brief {
     background-color: #ffffff !important;
     background: #ffffff !important;
     color: #0f172a !important;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
-    font-size: 9.5pt !important;
-    line-height: 1.45 !important;
+    font-family: "Times New Roman", Times, serif !important;
+    font-size: 12pt !important;
+    line-height: 1.5 !important;
     margin: 0 !important;
     padding: 0 !important;
+    max-width: 100% !important;
     counter-reset: page;
+  }
+
+  .container {
+    padding: 0 5mm !important; /* Internal padding within margins */
   }
 
   /* 4. HazardNet Official Emergency Handout Watermark */
@@ -924,13 +979,13 @@ caption {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%) rotate(-32deg);
-    font-family: 'Playfair Display', Georgia, serif, system-ui;
-    font-size: 22pt;
+    font-family: "Times New Roman", Times, serif;
+    font-size: 20pt;
     font-weight: 900;
-    letter-spacing: 0.16em;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: rgba(15, 23, 42, 0.04) !important;
-    border: 2.5pt dashed rgba(15, 23, 42, 0.04);
+    color: rgba(15, 23, 42, 0.035) !important;
+    border: 2.5pt dashed rgba(15, 23, 42, 0.035);
     padding: 20pt 30pt;
     border-radius: 12pt;
     pointer-events: none;
@@ -942,7 +997,8 @@ caption {
 
   /* 5. Non-Printable Elements Cleanup */
   nav,
-  header,
+  header:not(.print-only):not(.district-brief-header),
+  footer:not(.print-only):not(.print-page-footer),
   aside,
   button,
   input,
@@ -959,6 +1015,10 @@ caption {
   .sticky:not(.print-keep),
   .fixed:not(.print-keep):not(.print-page-footer):not(.print-preview-modal-root) {
     display: none !important;
+  }
+
+  .print-only {
+    display: block !important;
   }
 
   /* When PrintPreviewModal is open during print, render only the preview paper */
@@ -1046,19 +1106,21 @@ caption {
     -webkit-backdrop-filter: none !important;
   }
 
-  /* 8. Text Color & Contrast Overrides */
+  /* 8. Text Color & Contrast Overrides (H1: 18pt, H2: 16pt, H3: 14pt) */
   h1, h2, h3, h4, h5, h6 {
     color: #0f172a !important;
     font-weight: 800 !important;
-    page-break-after: avoid;
-    break-after: avoid;
+    page-break-after: avoid !important;
+    break-after: avoid !important;
   }
 
-  h1 { font-size: 16pt !important; line-height: 1.25 !important; margin-bottom: 6pt !important; }
-  h2 { font-size: 13pt !important; line-height: 1.3 !important; margin-top: 8pt !important; margin-bottom: 4pt !important; }
-  h3 { font-size: 11pt !important; line-height: 1.35 !important; margin-top: 6pt !important; margin-bottom: 3pt !important; }
-  h4 { font-size: 9.5pt !important; line-height: 1.4 !important; }
+  h1 { font-size: 18pt !important; font-weight: bold !important; line-height: 1.3 !important; margin: 0 0 10pt 0 !important; }
+  h2 { font-size: 16pt !important; font-weight: bold !important; line-height: 1.35 !important; margin: 15pt 0 8pt 0 !important; }
+  h3 { font-size: 14pt !important; font-weight: bold !important; line-height: 1.4 !important; margin: 12pt 0 6pt 0 !important; }
+  h4 { font-size: 12pt !important; font-weight: bold !important; line-height: 1.45 !important; margin: 8pt 0 4pt 0 !important; }
   p, span, li, td, th {
+    font-size: 12pt !important;
+    line-height: 1.5 !important;
     color: #1e293b !important;
   }
 
@@ -1148,19 +1210,130 @@ caption {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
 
-  /* 11. Phased SOP Protocols & Steps - Avoid Breaking Mid-Step */
+  /* 11. Explicit Container Pagination Rules for Charts and Upazila Cards */
+  .chart-card {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid-page !important;
+    -webkit-column-break-inside: avoid !important;
+    transform: scale(0.9) !important;
+    transform-origin: top left !important;
+    overflow: hidden !important;
+  }
+
+  .upazila-card {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid-page !important;
+    -webkit-column-break-inside: avoid !important;
+  }
+
+  /* All Chart Elements & Containers: 90% scale transform and pagination protection */
+  .chart-card,
+  .recharts-responsive-container,
+  .recharts-wrapper,
+  .recharts-surface,
+  .recharts-cartesian-axis,
+  .recharts-xAxis,
+  .recharts-yAxis,
+  .recharts-legend-wrapper,
+  #sec-telemetry .chart-card,
+  #sec-hazard-trend .chart-card,
+  #sec-telemetry,
+  #sec-hazard-trend,
+  div[class*="chart-card"],
+  div[class*="chart"],
+  [data-chart-container],
   .phased-step-card,
   .sop-step,
-  .upazila-card,
   .metric-card,
   .impact-metric-pill,
-  .chart-card,
   .pagination-protected,
   div[class*="rounded-3xl"] > div,
   article,
   section {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid-page !important;
+  }
+
+  /* Dedicated Chart Containers Rule: prevent page splitting, keep charts and X-axis labels intact */
+  .chart-card,
+  .recharts-responsive-container,
+  .recharts-wrapper,
+  .recharts-surface,
+  .recharts-cartesian-axis,
+  .recharts-xAxis,
+  .recharts-yAxis,
+  #sec-telemetry .chart-card,
+  #sec-hazard-trend .chart-card,
+  div[class*="chart-card"],
+  div[class*="chart"],
+  [data-chart-container] {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid-page !important;
+    overflow: hidden !important;
+  }
+
+  /* Scale down all chart elements by 90% (transform: scale(0.9)) during print to prevent rendering artifacts and data clipping */
+  .chart-card,
+  .recharts-responsive-container,
+  .recharts-wrapper,
+  .recharts-surface,
+  #sec-telemetry .chart-card,
+  #sec-hazard-trend .chart-card,
+  div[class*="chart-card"],
+  div[class*="chart"],
+  [data-chart-container] {
+    transform: scale(0.9) !important;
+    transform-origin: top left !important;
+    width: 111.11% !important;
+    margin-bottom: -8pt !important;
+  }
+
+  .chart-card .h-64 {
+    height: 145pt !important;
+    max-height: 145pt !important;
+  }
+
+  .chart-card .h-72 {
+    height: 160pt !important;
+    max-height: 160pt !important;
+  }
+
+  /* Upazila Card Grid Pagination Protection (Page 4 Fix) */
+  #sec-upazilas,
+  .upazila-matrix-section {
+    page-break-inside: auto !important;
+    break-inside: auto !important;
+  }
+
+  .upazila-card {
     page-break-inside: avoid !important;
     break-inside: avoid !important;
+    break-inside: avoid-page !important;
+    -webkit-column-break-inside: avoid !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    padding: 10pt 12pt !important;
+    margin-bottom: 0 !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+    height: auto !important;
+    min-height: 0 !important;
+  }
+
+  #sec-upazilas .grid,
+  #sec-upazilas .upazila-grid,
+  #sec-upazilas [class*="grid"],
+  .upazila-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)) !important;
+    gap: 1rem !important;
+    page-break-inside: auto !important;
+    break-inside: auto !important;
   }
 
   /* Force page break before Appendix */
@@ -1170,6 +1343,21 @@ caption {
     break-before: page !important;
     margin-top: 0 !important;
     padding-top: 14pt !important;
+  }
+
+  /* Dedicated 'End of Brief' Page for Print/PDF (Requirement: page-break-before, font-size: 8px) */
+  .end-of-brief-page,
+  .print-end-of-brief {
+    page-break-before: always !important;
+    break-before: page !important;
+    font-size: 8px !important;
+    line-height: 1.4 !important;
+    margin-top: 0 !important;
+    padding-top: 24pt !important;
+  }
+
+  .end-of-brief-page * {
+    font-size: 8px !important;
   }
 
   /* Operational Trigger Threshold Box */
@@ -1207,14 +1395,19 @@ caption {
     break-inside: auto !important;
   }
 
-  thead {
+  /* Repeat table header at the top of every printed page */
+  thead,
+  thead.print-table-emergency-header,
+  .print-table-emergency-header,
+  table thead {
     display: table-header-group !important; /* CRITICAL: Repeats the table header at the top of every printed page */
   }
 
-  /* Fixed 'Emergency Protocol' repeated header row */
+  /* Fixed 'Emergency Protocol' repeated header row for advisories */
   .print-table-emergency-header,
-  thead tr.print-table-emergency-header {
-    display: table-row !important;
+  thead tr.print-table-emergency-header,
+  tr.print-table-emergency-header {
+    display: table-header-group !important;
     page-break-inside: avoid !important;
     break-inside: avoid !important;
     background-color: #0f172a !important;
@@ -1439,6 +1632,28 @@ body.pdf-exporting .no-print,
   box-shadow: none !important;
 }
 
+.pdf-capture-mode .chart-card,
+.print-preview-rendered-body .chart-card,
+.pdf-capture-mode .upazila-card,
+.print-preview-rendered-body .upazila-card,
+.pdf-capture-mode .metric-card,
+.print-preview-rendered-body .metric-card,
+.pdf-capture-mode .impact-metric-pill,
+.print-preview-rendered-body .impact-metric-pill,
+.pdf-capture-mode .pagination-protected,
+.print-preview-rendered-body .pagination-protected,
+.pdf-capture-mode #sec-telemetry .chart-card,
+.print-preview-rendered-body #sec-telemetry .chart-card {
+  page-break-inside: avoid !important;
+  break-inside: avoid !important;
+  break-inside: avoid-page !important;
+}
+
+.pdf-capture-mode .chart-card,
+.print-preview-rendered-body .chart-card {
+  overflow: hidden !important;
+}
+
 .pdf-capture-mode .print-qr-code-box,
 .print-preview-rendered-body .print-qr-code-box {
   display: flex !important;
@@ -1473,13 +1688,18 @@ body.pdf-exporting .no-print,
 }
 
 .pdf-capture-mode thead,
-.print-preview-rendered-body thead {
+.print-preview-rendered-body thead,
+.pdf-capture-mode .print-table-emergency-header,
+.print-preview-rendered-body .print-table-emergency-header,
+.pdf-capture-mode thead tr.print-table-emergency-header,
+.print-preview-rendered-body thead tr.print-table-emergency-header {
   display: table-header-group !important;
 }
 
 .pdf-capture-mode thead tr.print-table-emergency-header,
-.print-preview-rendered-body thead tr.print-table-emergency-header {
-  display: table-row !important;
+.print-preview-rendered-body thead tr.print-table-emergency-header,
+.pdf-capture-mode .print-table-emergency-header,
+.print-preview-rendered-body .print-table-emergency-header {
   background-color: #0f172a !important;
   color: #ffffff !important;
 }

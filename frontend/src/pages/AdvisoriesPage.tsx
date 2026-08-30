@@ -189,7 +189,7 @@ export const AdvisoriesPage: React.FC = () => {
           {/* Dedicated Vector QR Code for Physical Handouts */}
           <div className="shrink-0">
             <PrintQrCode
-              url={typeof window !== 'undefined' ? window.location.href : `https://hazardnet.bd/advisories/${activeSectorId}`}
+              url={`https://hazardnet.live/advisories/${activeSectorId}`}
               districtOrSector={sector.name}
               title="Live Sector Directive"
               subtitle="Scan for real-time telemetry & AI hazard forecasts"

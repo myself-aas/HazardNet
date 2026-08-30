@@ -244,11 +244,16 @@ export async function exportElementToPdf(options: PdfExportOptions = {}): Promis
             body {
               background: #ffffff !important;
               color: #0f172a !important;
-              font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+              font-family: "Times New Roman", Times, serif !important;
+              font-size: 12pt !important;
+              line-height: 1.5 !important;
             }
             .pdf-capture-mode {
               background: #ffffff !important;
               color: #0f172a !important;
+              font-family: "Times New Roman", Times, serif !important;
+              font-size: 12pt !important;
+              line-height: 1.5 !important;
             }
             .bg-white, .bg-slate-50, .bg-slate-100, .bg-slate-900, .bg-slate-950, [class*="bg-slate-"] {
               background-color: ${inkSaver ? '#ffffff' : '#ffffff'} !important;
@@ -261,7 +266,13 @@ export async function exportElementToPdf(options: PdfExportOptions = {}): Promis
               page-break-after: avoid !important;
               break-after: avoid !important;
             }
+            h1 { font-size: 18pt !important; font-weight: bold !important; line-height: 1.3 !important; margin: 0 0 10pt 0 !important; }
+            h2 { font-size: 16pt !important; font-weight: bold !important; line-height: 1.35 !important; margin: 15pt 0 8pt 0 !important; }
+            h3 { font-size: 14pt !important; font-weight: bold !important; line-height: 1.4 !important; margin: 12pt 0 6pt 0 !important; }
+            h4 { font-size: 12pt !important; font-weight: bold !important; line-height: 1.45 !important; margin: 8pt 0 4pt 0 !important; }
             p, span, li, td, th {
+              font-size: 12pt !important;
+              line-height: 1.5 !important;
               color: #1e293b !important;
             }
             table {
@@ -274,16 +285,61 @@ export async function exportElementToPdf(options: PdfExportOptions = {}): Promis
               padding: 6px 8px !important;
               color: #0f172a !important;
             }
-            thead {
+            thead,
+            .print-table-emergency-header,
+            thead tr.print-table-emergency-header {
               display: table-header-group !important;
+            }
+            .print-table-emergency-header th,
+            th.emergency-protocol-title {
+              background-color: #0f172a !important;
+              color: #ffffff !important;
+              font-family: 'JetBrains Mono', monospace, ui-monospace, sans-serif !important;
+              font-size: 8pt !important;
+              font-weight: 900 !important;
+              text-transform: uppercase !important;
+              letter-spacing: 0.06em !important;
             }
             tr {
               page-break-inside: avoid !important;
               break-inside: avoid !important;
             }
-            .phased-step-card, .sop-step, .emergency-contact-card {
+            .chart-card, .upazila-card {
+              break-inside: avoid !important;
+              page-break-inside: avoid !important;
+              break-inside: avoid-page !important;
+            }
+            .phased-step-card, .sop-step, .emergency-contact-card, .chart-card, .upazila-card, .metric-card, .impact-metric-pill, .pagination-protected, #sec-telemetry .chart-card, #sec-hazard-trend .chart-card {
               page-break-inside: avoid !important;
               break-inside: avoid !important;
+              break-inside: avoid-page !important;
+            }
+            .upazila-grid {
+              display: grid !important;
+              grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)) !important;
+              gap: 1rem !important;
+            }
+            .upazila-card {
+              page-break-inside: avoid !important;
+              break-inside: avoid !important;
+              break-inside: avoid-page !important;
+              padding: 10pt 12pt !important;
+              margin-bottom: 0 !important;
+              box-sizing: border-box !important;
+            }
+            .chart-card,
+            .recharts-responsive-container,
+            .recharts-wrapper,
+            .recharts-surface,
+            #sec-telemetry .chart-card,
+            #sec-hazard-trend .chart-card {
+              break-inside: avoid !important;
+              page-break-inside: avoid !important;
+              break-inside: avoid-page !important;
+              transform: scale(0.9) !important;
+              transform-origin: top left !important;
+              width: 111.11% !important;
+              overflow: hidden !important;
             }
           `;
           clonedDoc.head.appendChild(printStyleSheet);

@@ -142,7 +142,7 @@ export const StructuredAdvisoryRenderer: React.FC<StructuredAdvisoryRendererProp
           </div>
           <div className="shrink-0">
             <PrintQrCode
-              url={typeof window !== 'undefined' ? window.location.href : 'https://hazardnet.bd/advisories'}
+              url="https://hazardnet.live/advisories"
               title="Live Advisory"
               subtitle="Scan for AI updates"
               size={60}

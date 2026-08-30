@@ -68,7 +68,7 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
 
           <div className="shrink-0">
             <PrintQrCode
-              url={typeof window !== 'undefined' ? window.location.href : `https://hazardnet.bd/district/${data.districtName}`}
+              url={`https://hazardnet.live/district/${data.districtName.toLowerCase().replace(/\s+/g, '-')}`}
               title="Live Telemetry"
               subtitle="Scan for mobile updates"
               districtOrSector={data.districtName}
@@ -281,7 +281,7 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
 
             <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
               <h4 className="text-xs font-mono uppercase tracking-wider text-slate-500">
-                Softmax Hazard Probability Classifier Head
+                Hazard Probability Breakdown
               </h4>
 
               <div className="space-y-2.5">
@@ -293,7 +293,9 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
                     </div>
                     <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden border border-slate-300">
                       <div
-                        className="bg-slate-800 h-full rounded-full"
+                        className={`h-full rounded-full ${
+                          idx === 0 ? 'bg-purple-600' : idx === 1 ? 'bg-blue-500' : 'bg-slate-500'
+                        }`}
                         style={{ width: `${prob.probability * 100}%` }}
                       ></div>
                     </div>
@@ -396,10 +398,16 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
           <div className="grid grid-cols-2 gap-3 text-xs bg-slate-50 p-3 rounded-lg border border-slate-200 font-mono">
             <div>
               <span className="text-slate-500 block text-[9pt]">Continuous Severity Index:</span>
-              <strong className="text-sm font-black text-rose-600">{(data.modelAssessment.continuousSeverityIndex * 100).toFixed(1)}% (Confidence: {data.modelAssessment.confidenceLevel}%)</strong>
+              <strong className={`text-sm font-black ${
+                data.modelAssessment.continuousSeverityIndex < 0.33 ? 'text-emerald-600' :
+                data.modelAssessment.continuousSeverityIndex < 0.66 ? 'text-amber-600' :
+                'text-rose-600'
+              }`}>
+                {(data.modelAssessment.continuousSeverityIndex * 100).toFixed(1)}% (Confidence: {data.modelAssessment.confidenceLevel}%)
+              </strong>
             </div>
             <div>
-              <span className="text-slate-500 block text-[9pt]">Softmax Predicted Hazard:</span>
+              <span className="text-slate-500 block text-[9pt]">Predicted Hazard Type:</span>
               <strong className="text-sm font-black text-slate-900">{data.hazardSubtype}</strong>
             </div>
           </div>
