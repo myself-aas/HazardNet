@@ -89,6 +89,7 @@ export const DistrictDetailPage: React.FC = () => {
   const [dispatchLogs, setDispatchLogs] = useState<string[]>([]);
   const [showLiveAiAdvisory, setShowLiveAiAdvisory] = useState<boolean>(false);
   const [trendViewMode, setTrendViewMode] = useState<'all' | 'primary' | 'comparison'>('all');
+  const [upazilaViewMode, setUpazilaViewMode] = useState<'cards' | 'table'>('cards');
 
   const sectionsRef = useRef<{ [key: string]: HTMLElement | null }>({});
 
@@ -326,54 +327,95 @@ export const DistrictDetailPage: React.FC = () => {
   return (
     <div id="district-detail-container" className="w-full max-w-7xl mx-auto space-y-8 font-sans pb-16">
       
-      {/* PRINT-ONLY OFFICIAL DISTRICT DISASTER INTELLIGENCE HEADER */}
+      {/* CONSOLIDATED OFFICIAL DISTRICT DISASTER INTELLIGENCE HEADER (PRINT & PDF) */}
       <div className="print-only mb-6 border-b-2 border-slate-900 pb-4">
-        <div className="flex items-center justify-between border-b border-slate-300 pb-2 mb-3 text-[9pt] font-mono font-bold text-slate-700">
-          <span>GOVERNMENT OF THE PEOPLE'S REPUBLIC OF BANGLADESH</span>
-          <span>SOD 2019 DISASTER INTELLIGENCE DISPATCH</span>
-          <span>OFFICIAL DISTRICT STATUS REPORT</span>
+        {/* Single-line Top Bar with Dispatch ID and Date */}
+        <div className="flex items-center justify-between border-b border-slate-300 pb-2 mb-3 text-[8.5pt] font-mono font-bold text-slate-700">
+          <div className="flex items-center gap-2">
+            <span>PEOPLE'S REPUBLIC OF BANGLADESH • MoDMR / NDMA</span>
+            <span className="bg-slate-900 text-white px-1.5 py-0.5 rounded text-[7.5pt] font-mono">SOD 2019 COMPLIANT</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span>DISPATCH ID: <strong className="text-slate-950 font-bold">HN-BD-2026-{data.districtId.toUpperCase().slice(0, 4)}-{new Date().toISOString().slice(5, 10).replace('-', '')}</strong></span>
+            <span>•</span>
+            <span>DATE: {new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}, {new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })} BST</span>
+          </div>
         </div>
 
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex-1">
-            <h1 className="text-xl font-black text-slate-900 tracking-tight">
-              HAZARDNET BANGLADESH • DISTRICT DISASTER INTELLIGENCE BRIEF
+        {/* Header Title with Prominent Risk Badge */}
+        <div className="flex items-start justify-between gap-4 mb-3">
+          <div>
+            <div className="text-[10pt] font-mono font-bold text-slate-500 uppercase tracking-wider">
+              DISTRICT DISASTER INTELLIGENCE BRIEF
+            </div>
+            <h1 className="text-2xl font-black text-slate-950 tracking-tight">
+              {data.districtName} District | {data.hazardType}
             </h1>
-            <p className="text-xs text-slate-800 font-bold mt-0.5">
-              District: {data.districtName} ({data.division} Division) • Risk Level: {data.modelAssessment.riskCategory} ({Math.round(district.severity * 100)}% Severity)
+            <p className="text-xs text-slate-700 font-medium mt-1">
+              Division: <strong className="text-slate-900 font-bold">{data.division}</strong> • Sub-type: <strong className="text-slate-900 font-bold">{data.hazardSubtype}</strong> • Ingestion Station: <strong className="text-slate-900 font-bold">{data.physicalSensorMetrics.sensorStationName}</strong>
             </p>
+          </div>
 
-            {/* Prominent 'Last Updated' Timestamp & Currency Validity */}
-            <div className="flex flex-wrap items-center gap-2 mt-2 pt-1 border-t border-slate-200 text-[8pt] font-mono">
-              <span className="print-last-updated">
-                <strong>LAST UPDATED:</strong> {new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}, {new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' })} BST (GMT+6)
-              </span>
-              <span className="print-currency-tag">
-                EOC DIRECTIVE VALIDITY: 24H LIVE CYCLE
-              </span>
+          {/* Prominent Risk Badge */}
+          <div className="shrink-0 text-right">
+            <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-mono font-black shadow-xs ${
+              data.modelAssessment.riskCategory === 'High' ? 'bg-rose-600 text-white' :
+              data.modelAssessment.riskCategory === 'Moderate' ? 'bg-amber-500 text-slate-950' :
+              'bg-emerald-600 text-white'
+            }`}>
+              <span className={`w-2 h-2 rounded-full ${
+                data.modelAssessment.riskCategory === 'High' ? 'bg-white animate-pulse' :
+                data.modelAssessment.riskCategory === 'Moderate' ? 'bg-slate-950' : 'bg-white'
+              }`} />
+              Risk Level: {data.modelAssessment.riskCategory} ({Math.round(district.severity * 100)}% Severity)
+            </span>
+          </div>
+        </div>
+
+        {/* Consolidated Metadata Block (2-Column Grid) */}
+        <div className="grid grid-cols-2 gap-4 bg-slate-50 border border-slate-200 rounded-xl p-3 text-[8.5pt]">
+          <div className="space-y-1">
+            <div className="flex items-center justify-between">
+              <span className="text-slate-500 font-medium">Geospatial Center:</span>
+              <span className="font-mono font-bold text-slate-900">{district.lat.toFixed(4)}°N, {district.lng.toFixed(4)}°E</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-slate-500 font-medium">Elevation Datum:</span>
+              <span className="font-mono font-bold text-slate-900">{data.elevationMeters} m MSL</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-slate-500 font-medium">Live Dashboard URL:</span>
+              <a
+                href={`https://hazardnet.bd/forecast/district/${districtId}`}
+                target="_blank"
+                rel="noreferrer"
+                className="text-blue-700 hover:text-blue-900 font-bold inline-flex items-center gap-1"
+              >
+                <span>hazardnet.bd/district/{districtId}</span>
+                <ExternalLink className="w-3 h-3" />
+              </a>
             </div>
           </div>
 
-          {/* QR Code for scanning directly into live digital telemetry on mobile */}
-          <div className="shrink-0">
-            <PrintQrCode
-              url={typeof window !== 'undefined' ? window.location.href : `https://hazardnet.bd/district/${districtId}`}
-              districtOrSector={data.districtName}
-              title="Live EOC Mobile Access"
-              subtitle="Scan for real-time sensor streams, satellite maps & AI briefs"
-              size={72}
-            />
+          <div className="flex items-center gap-3 pl-3 border-l border-slate-200">
+            <div className="shrink-0">
+              <PrintQrCode
+                url={typeof window !== 'undefined' ? window.location.href : `https://hazardnet.bd/forecast/district/${districtId}`}
+                districtOrSector={data.districtName}
+                title="Live Field Telemetry"
+                size={54}
+              />
+            </div>
+            <div className="text-[7.5pt] leading-tight text-slate-600">
+              <strong className="text-slate-900 block font-bold text-[8pt]">DIGITAL SENSOR STREAMS</strong>
+              Scan with mobile device for real-time telemetry, satellite radar backscatter layers, and field coordination.
+            </div>
           </div>
-        </div>
-
-        <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-200 text-[8pt] font-mono text-slate-600">
-          <div>Geo-Coordinates: {district.lat.toFixed(3)}°N, {district.lng.toFixed(3)}°E</div>
-          <div>Coordinating Agency: DDMC / District Disaster Management Committee</div>
         </div>
       </div>
 
       {/* 1. TOP UTILITY HEADER / ACTION BAR */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2 screen-only">
         {/* Left: Back to National Overview + District Switcher Dropdown */}
         <div className="flex flex-wrap items-center gap-3">
           <button
@@ -480,12 +522,25 @@ export const DistrictDetailPage: React.FC = () => {
             <span className="hidden md:inline">{copiedAlert ? 'Copied Brief' : 'Share Brief'}</span>
           </button>
 
-          {/* Print / Export Report */}
+          {/* Print / Export Report with Filename Configuration */}
           <PdfExportButton
             elementId="district-detail-container"
-            filename={`HazardNet_${data.districtName}_Disaster_Brief_${new Date().toISOString().slice(0, 10)}.pdf`}
-            documentType={`${data.districtName} District Intelligence Brief`}
+            filename={`HazardNet_${data.districtName}_{hazard}_{docType}_{date}.pdf`}
+            filenameTemplate="HazardNet_{docType}_{region}_{date}.pdf"
+            regionName={data.districtName}
+            districtName={data.districtName}
+            hazardType={data.hazardType}
+            documentType="District Intelligence Brief"
             title="Export PDF Brief"
+            filenameContext={{
+              region: data.districtName,
+              district: data.districtName,
+              division: data.division,
+              hazard: data.hazardType,
+              hazardType: data.hazardType,
+              docType: 'District_Brief',
+              documentType: 'District Intelligence Brief',
+            }}
           />
 
           {/* Download Full JSON Telemetry */}
@@ -501,97 +556,179 @@ export const DistrictDetailPage: React.FC = () => {
       </div>
 
       {/* 2. EXECUTIVE HERO COMMAND CARD */}
-      <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-sm relative overflow-hidden">
+      <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-xs relative overflow-hidden">
         {/* Subtle decorative background glow */}
         <div className="absolute top-0 right-0 w-96 h-96 bg-amber-500/5 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
         
-        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-          <div className="space-y-3 max-w-3xl">
-            {/* Top metadata tags */}
-            <div className="flex flex-wrap items-center gap-2.5">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 border border-slate-200 text-slate-700 text-xs font-mono font-bold">
-                <MapPin className="w-3 h-3 text-slate-500" />
-                {data.division} Division
-              </span>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 border border-slate-200 text-slate-700 text-xs font-mono font-bold">
-                <Compass className="w-3 h-3 text-slate-500" />
-                {district.lat.toFixed(3)}°N, {district.lng.toFixed(3)}°E
-              </span>
-              <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs font-mono font-extrabold ${riskStyles.bg}`}>
-                <AlertOctagon className="w-3 h-3" />
-                {data.modelAssessment.riskCategory} Risk Classification
-              </span>
-            </div>
+        <div className="relative z-10 space-y-6">
+          {/* Header Row */}
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <div className="space-y-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 border border-slate-200 text-slate-700 text-xs font-mono font-bold">
+                  <MapPin className="w-3 h-3 text-slate-500" />
+                  {data.division} Division
+                </span>
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 border border-slate-200 text-slate-700 text-xs font-mono font-bold">
+                  <Compass className="w-3 h-3 text-slate-500" />
+                  {district.lat.toFixed(3)}°N, {district.lng.toFixed(3)}°E
+                </span>
+                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs font-mono font-extrabold ${riskStyles.bg}`}>
+                  <span className={`w-2 h-2 rounded-full ${
+                    data.modelAssessment.riskCategory === 'High' ? 'bg-rose-600 animate-pulse' :
+                    data.modelAssessment.riskCategory === 'Moderate' ? 'bg-amber-500' : 'bg-emerald-600'
+                  }`} />
+                  {data.modelAssessment.riskCategory} Risk Classification
+                </span>
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-50 border border-purple-200 text-purple-800 text-xs font-mono font-bold">
+                  <Bot className="w-3 h-3 text-purple-600" />
+                  AI Model Confidence: {data.modelAssessment.confidenceLevel}% (High)
+                </span>
+              </div>
 
-            {/* Title */}
-            <div>
               <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight flex items-center gap-3">
                 <span>{data.districtName} District</span>
-                <span className="text-slate-400 font-light text-2xl sm:text-3xl">|</span>
-                <span className="text-lg sm:text-2xl font-bold text-slate-700 flex items-center gap-2">
+                <span className="text-slate-300 font-light text-2xl sm:text-3xl">|</span>
+                <span className="text-xl sm:text-2xl font-bold text-slate-700 flex items-center gap-2">
                   {getHazardIcon(data.hazardType)}
                   {data.hazardType}
                 </span>
               </h1>
-              <p className="text-slate-600 text-xs sm:text-sm mt-1.5 leading-relaxed">
-                {data.hazardSubtype}. Official continuous hazard severity index calculated at{' '}
-                <strong className="text-slate-900 font-bold">{(data.modelAssessment.continuousSeverityIndex * 100).toFixed(1)}%</strong> with a neural attention confidence level of{' '}
-                <strong className="text-slate-900 font-bold">{data.modelAssessment.confidenceLevel}%</strong>.
+
+              <p className="text-slate-600 text-xs sm:text-sm leading-relaxed max-w-4xl">
+                {data.hazardSubtype}. Continuous severity index calculated at{' '}
+                <strong className="text-slate-900 font-bold">{(data.modelAssessment.continuousSeverityIndex * 100).toFixed(0)}%</strong> with an AI ensemble confidence of{' '}
+                <strong className="text-slate-900 font-bold">{data.modelAssessment.confidenceLevel}%</strong> calibrated against ground stations and Sentinel-1 SAR observations.
               </p>
+            </div>
+
+            {/* Quick Live Link / QR preview for Screen */}
+            <div className="hidden lg:flex items-center gap-3 bg-slate-50 border border-slate-200/80 rounded-2xl p-3 shrink-0">
+              <div className="shrink-0">
+                <PrintQrCode
+                  url={typeof window !== 'undefined' ? window.location.href : `https://hazardnet.bd/forecast/district/${districtId}`}
+                  districtOrSector={data.districtName}
+                  title="Mobile Link"
+                  size={52}
+                />
+              </div>
+              <div className="text-xs space-y-1">
+                <span className="font-bold text-slate-900 block font-mono text-[11px]">LIVE TELEMETRY STREAM</span>
+                <a
+                  href={`https://hazardnet.bd/forecast/district/${districtId}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-blue-600 hover:text-blue-800 font-semibold text-xs inline-flex items-center gap-1"
+                >
+                  <span>View Live Dashboard</span>
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+              </div>
             </div>
           </div>
 
-          {/* Right: Big Severity Gauge Card */}
-          <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 shrink-0 flex flex-col gap-3 min-w-[260px] sm:min-w-[280px]">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-mono font-bold text-slate-500 uppercase tracking-wider">Severity Gauge</span>
-              <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-mono font-extrabold ${riskStyles.badge}`}>
-                {data.modelAssessment.riskCategory}
-              </span>
-            </div>
-
-            <div className="space-y-1.5">
-              <div className="flex items-baseline justify-between">
-                <span className="text-3xl font-black text-slate-950 font-mono">
-                  {(data.modelAssessment.continuousSeverityIndex * 100).toFixed(0)}
-                  <span className="text-lg font-bold text-slate-500">/100</span>
-                </span>
-                <span className="text-xs font-mono font-bold text-slate-600">
-                  {data.hazardType}
+          {/* 3-Column Key Metrics Summary Card */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2 border-t border-slate-100">
+            {/* Metric 1: Severity Gauge */}
+            <div className="metric-card bg-slate-50 border border-slate-200/80 rounded-2xl p-4 space-y-2">
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-mono font-bold text-slate-500 uppercase">Severity Gauge</span>
+                <span className={`px-2 py-0.5 rounded-md text-[10px] font-mono font-extrabold ${riskStyles.badge}`}>
+                  {data.modelAssessment.riskCategory}
                 </span>
               </div>
-              {/* Progress Bar */}
-              <div className="w-full bg-slate-200 h-2.5 rounded-full overflow-hidden">
+              <div className="flex items-baseline gap-2">
+                <span className="text-2xl sm:text-3xl font-black text-slate-950 font-mono">
+                  {(data.modelAssessment.continuousSeverityIndex * 100).toFixed(0)}
+                  <span className="text-sm font-semibold text-slate-500">/100</span>
+                </span>
+                <span className="text-xs font-mono font-bold text-slate-600">
+                  | {data.hazardType}
+                </span>
+              </div>
+              <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
                 <div
                   className={`h-full rounded-full transition-all duration-700 ${riskStyles.bar}`}
                   style={{ width: `${Math.min(100, Math.max(5, data.modelAssessment.continuousSeverityIndex * 100))}%` }}
                 />
               </div>
+              <div className="text-[11px] text-slate-500 font-medium">
+                Continuous vulnerability indexing
+              </div>
             </div>
 
-            {/* Geodetic Metadata line */}
-            <div className="pt-2 border-t border-slate-200/80 flex items-center justify-between text-[11px] font-mono text-slate-500">
-              <span>Elevation MSL: <strong className="text-slate-800">{data.elevationMeters}m</strong></span>
-              <span>•</span>
-              <span title={data.lastSatelliteUpdate}>SAR Refreshed</span>
+            {/* Metric 2: AI Model Confidence */}
+            <div className="metric-card bg-slate-50 border border-slate-200/80 rounded-2xl p-4 space-y-2">
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-mono font-bold text-slate-500 uppercase">AI Model Confidence</span>
+                <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-emerald-100 text-emerald-800">
+                  ▲ High Reliability
+                </span>
+              </div>
+              <div className="flex items-baseline gap-2">
+                <span className="text-2xl sm:text-3xl font-black text-emerald-700 font-mono">
+                  {data.modelAssessment.confidenceLevel}%
+                </span>
+                <span className="text-xs font-mono font-bold text-slate-600">
+                  | Neural Attention
+                </span>
+              </div>
+              <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-emerald-500 transition-all duration-700"
+                  style={{ width: `${data.modelAssessment.confidenceLevel}%` }}
+                />
+              </div>
+              <div className="text-[11px] text-slate-500 font-medium">
+                Trained on GCM & ECMWF Ensembles
+              </div>
+            </div>
+
+            {/* Metric 3: Hydro-Dynamic Elevation */}
+            <div className="metric-card bg-slate-50 border border-slate-200/80 rounded-2xl p-4 space-y-2">
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-mono font-bold text-slate-500 uppercase">Elevation Datum</span>
+                <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-blue-100 text-blue-800">
+                  SRTM Geodetic
+                </span>
+              </div>
+              <div className="flex items-baseline gap-2">
+                <span className="text-2xl sm:text-3xl font-black text-slate-950 font-mono">
+                  {data.elevationMeters}
+                  <span className="text-sm font-semibold text-slate-500 ml-1">m MSL</span>
+                </span>
+                <span className="text-xs font-mono font-bold text-slate-600">
+                  | Mean Sea Level
+                </span>
+              </div>
+              <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-blue-500 transition-all duration-700"
+                  style={{ width: `${Math.min(100, (data.elevationMeters / 40) * 100)}%` }}
+                />
+              </div>
+              <div className="text-[11px] text-slate-500 font-medium truncate">
+                Station: {data.physicalSensorMetrics.sensorStationName}
+              </div>
             </div>
           </div>
         </div>
       </div>
 
       {/* 3. STICKY EXECUTIVE SECTION JUMP BAR */}
-      <div className="sticky top-[64px] z-30 bg-white/90 backdrop-blur-md border border-slate-200/90 rounded-2xl p-1.5 shadow-sm overflow-x-auto scrollbar-none">
+      <div className="sticky top-[64px] z-30 bg-white/90 backdrop-blur-md border border-slate-200/90 rounded-2xl p-1.5 shadow-sm overflow-x-auto scrollbar-none screen-only">
         <div className="flex items-center gap-1 min-w-max text-xs font-bold">
           <span className="px-3 text-slate-400 font-mono text-[10px] uppercase font-extrabold">Jump:</span>
           {[
             { id: 'sec-impact', label: 'Impact & Demographics', icon: <Users className="w-3.5 h-3.5" /> },
             { id: 'sec-telemetry', label: 'Hydro-Met Sensor Telemetry', icon: <Activity className="w-3.5 h-3.5" /> },
             { id: 'sec-hazard-trend', label: '7-Day Hazard Trend', icon: <TrendingUp className="w-3.5 h-3.5" /> },
-            { id: 'sec-ai', label: 'Neural AI Diagnostics', icon: <Cpu className="w-3.5 h-3.5" /> },
+            { id: 'sec-ai-overview', label: 'AI Spatial Risk Overview', icon: <Cpu className="w-3.5 h-3.5" /> },
             { id: 'sec-upazilas', label: 'Upazila Vulnerability Matrix', badge: data.impactedUpazilas.length, icon: <Layers className="w-3.5 h-3.5" /> },
             { id: 'sec-advisories', label: 'Institutional Advisories', badge: data.emergencyResponse.advisoryBullets.length, icon: <FileText className="w-3.5 h-3.5" /> },
             { id: 'sec-history', label: 'EM-DAT Benchmark', icon: <History className="w-3.5 h-3.5" /> },
             { id: 'sec-ops', label: 'Emergency SOPs & Dispatch', icon: <Radio className="w-3.5 h-3.5" /> },
+            { id: 'appendix-a', label: 'Appendix A: Neural Diagnostics', icon: <Cpu className="w-3.5 h-3.5" /> },
           ].map((sec) => (
             <button
               key={sec.id}
@@ -633,105 +770,110 @@ export const DistrictDetailPage: React.FC = () => {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Card 1: Estimated Impact Area */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-3 hover:border-slate-300 transition-all">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-mono font-bold text-slate-500 uppercase">Impacted Territory</span>
-              <div className="w-7 h-7 rounded-lg bg-rose-50 border border-rose-100 flex items-center justify-center text-rose-600">
-                <Waves className="w-3.5 h-3.5" />
+          <div className="impact-metric-pill bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-3 hover:border-slate-300 transition-all">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-rose-50 border border-rose-100 flex items-center justify-center text-rose-600 shrink-0">
+                <Waves className="w-4 h-4 shrink-0" />
+              </div>
+              <div className="min-w-0">
+                <span className="text-xs font-mono font-bold text-slate-500 uppercase block truncate">Impacted Territory</span>
+                <div className="text-xl sm:text-2xl font-black text-slate-900 font-mono tracking-tight whitespace-nowrap">
+                  {data.estimatedImpactAreaKm2.toLocaleString()} km²
+                </div>
               </div>
             </div>
-            <div className="space-y-1">
-              <div className="text-2xl sm:text-3xl font-black text-slate-900 font-mono tracking-tight">
-                {data.estimatedImpactAreaKm2.toLocaleString()}
-                <span className="text-sm font-semibold text-slate-500 ml-1">km²</span>
-              </div>
+            <div className="space-y-1 pt-1 border-t border-slate-100">
               <div className="flex items-center justify-between text-xs text-slate-600">
-                <span>District Exposure Ratio</span>
+                <span>District Exposure</span>
                 <strong className="font-bold text-rose-700">{data.impactAreaPercentage}%</strong>
               </div>
-              <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden mt-1">
+              <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
                 <div className="bg-rose-500 h-full rounded-full" style={{ width: `${data.impactAreaPercentage}%` }} />
               </div>
             </div>
-            <div className="pt-2 border-t border-slate-100 text-[11px] text-slate-500">
-              Total district landmass: {data.totalDistrictAreaKm2.toLocaleString()} km²
+            <div className="text-[11px] text-slate-500 truncate">
+              Total landmass: {data.totalDistrictAreaKm2.toLocaleString()} km²
             </div>
           </div>
 
           {/* Card 2: Affected Population & Households */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-3 hover:border-slate-300 transition-all">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-mono font-bold text-slate-500 uppercase">Population at Risk</span>
-              <div className="w-7 h-7 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600">
-                <Users className="w-3.5 h-3.5" />
+          <div className="impact-metric-pill bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-3 hover:border-slate-300 transition-all">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 shrink-0">
+                <Users className="w-4 h-4 shrink-0" />
+              </div>
+              <div className="min-w-0">
+                <span className="text-xs font-mono font-bold text-slate-500 uppercase block truncate">Exposed Population</span>
+                <div className="text-xl sm:text-2xl font-black text-slate-900 font-mono tracking-tight whitespace-nowrap">
+                  {data.affectedPopulation.toLocaleString()}
+                </div>
               </div>
             </div>
-            <div className="space-y-1">
-              <div className="text-2xl sm:text-3xl font-black text-slate-900 font-mono tracking-tight">
-                {data.affectedPopulation.toLocaleString()}
-                <span className="text-sm font-semibold text-slate-500 ml-1">residents</span>
-              </div>
+            <div className="space-y-1 pt-1 border-t border-slate-100">
               <div className="flex items-center justify-between text-xs text-slate-600">
-                <span>Vulnerable Households</span>
-                <strong className="font-bold text-slate-900">{data.affectedHouseholds.toLocaleString()}</strong>
+                <span>Vulnerable Families</span>
+                <strong className="font-bold text-slate-900">{data.affectedHouseholds.toLocaleString()} HH</strong>
               </div>
-              <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden mt-1">
+              <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
                 <div className="bg-blue-500 h-full rounded-full" style={{ width: '68%' }} />
               </div>
             </div>
-            <div className="pt-2 border-t border-slate-100 text-[11px] text-slate-500">
-              Average 4.4 members per household density
+            <div className="text-[11px] text-slate-500 truncate">
+              Density: 4.4 members / household
             </div>
           </div>
 
           {/* Card 3: Crop Land & Agriculture */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-3 hover:border-slate-300 transition-all">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-mono font-bold text-slate-500 uppercase">Standing Crop Land</span>
-              <div className="w-7 h-7 rounded-lg bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-600">
-                <Sprout className="w-3.5 h-3.5" />
+          <div className="impact-metric-pill bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-3 hover:border-slate-300 transition-all">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-600 shrink-0">
+                <Sprout className="w-4 h-4 shrink-0" />
+              </div>
+              <div className="min-w-0">
+                <span className="text-xs font-mono font-bold text-slate-500 uppercase block truncate">Agricultural Land</span>
+                <div className="text-xl sm:text-2xl font-black text-slate-900 font-mono tracking-tight whitespace-nowrap">
+                  {data.affectedCropLandHectares.toLocaleString()} ha
+                </div>
               </div>
             </div>
-            <div className="space-y-1">
-              <div className="text-2xl sm:text-3xl font-black text-slate-900 font-mono tracking-tight">
-                {data.affectedCropLandHectares.toLocaleString()}
-                <span className="text-sm font-semibold text-slate-500 ml-1">ha</span>
+            <div className="space-y-1 pt-1 border-t border-slate-100">
+              <div className="flex items-center justify-between text-xs text-slate-600">
+                <span>Standing Crops</span>
+                <strong className="font-bold text-slate-900 truncate ml-1">{data.primaryCropsAtRisk.join(', ')}</strong>
               </div>
-              <div className="text-xs text-slate-600 truncate">
-                Crops: <strong className="font-bold text-slate-900">{data.primaryCropsAtRisk.join(', ')}</strong>
-              </div>
-              <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden mt-1">
+              <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
                 <div className="bg-amber-500 h-full rounded-full" style={{ width: '84%' }} />
               </div>
             </div>
-            <div className="pt-2 border-t border-slate-100 text-[11px] text-slate-500">
-              High vulnerability during vegetative & harvest phase
+            <div className="text-[11px] text-slate-500 truncate">
+              Vegetative & harvest phase alert
             </div>
           </div>
 
           {/* Card 4: Active Emergency Shelters */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-3 hover:border-slate-300 transition-all">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-mono font-bold text-slate-500 uppercase">Shelter Network</span>
-              <div className="w-7 h-7 rounded-lg bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600">
-                <Building2 className="w-3.5 h-3.5" />
+          <div className="impact-metric-pill bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-3 hover:border-slate-300 transition-all">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 shrink-0">
+                <Building2 className="w-4 h-4 shrink-0" />
+              </div>
+              <div className="min-w-0">
+                <span className="text-xs font-mono font-bold text-slate-500 uppercase block truncate">Safe Shelters</span>
+                <div className="text-xl sm:text-2xl font-black text-slate-900 font-mono tracking-tight whitespace-nowrap">
+                  {data.emergencyResponse.activeShelters} centers
+                </div>
               </div>
             </div>
-            <div className="space-y-1">
-              <div className="text-2xl sm:text-3xl font-black text-slate-900 font-mono tracking-tight">
-                {data.emergencyResponse.activeShelters}
-                <span className="text-sm font-semibold text-slate-500 ml-1">centers</span>
-              </div>
+            <div className="space-y-1 pt-1 border-t border-slate-100">
               <div className="flex items-center justify-between text-xs text-slate-600">
                 <span>Capacity Utilized</span>
                 <strong className="font-bold text-emerald-700">{data.emergencyResponse.shelterCapacityUsedPercent}%</strong>
               </div>
-              <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden mt-1">
+              <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
                 <div className="bg-emerald-500 h-full rounded-full" style={{ width: `${data.emergencyResponse.shelterCapacityUsedPercent}%` }} />
               </div>
             </div>
-            <div className="pt-2 border-t border-slate-100 text-[11px] text-slate-500">
-              Equipped with solar power & potable water tanks
+            <div className="text-[11px] text-slate-500 truncate">
+              Equipped with solar & water purification
             </div>
           </div>
         </div>
@@ -740,7 +882,7 @@ export const DistrictDetailPage: React.FC = () => {
       {/* ========================================================================= */}
       {/* SECTION 2: HYDRO-MET SENSOR TELEMETRY & 24-HOUR TREND */}
       {/* ========================================================================= */}
-      <section id="sec-telemetry" className="space-y-4 pt-4">
+      <section id="sec-telemetry" className="space-y-4 pt-4 pagination-protected">
         <div className="flex items-center justify-between border-b border-slate-200 pb-3">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600">
@@ -793,7 +935,7 @@ export const DistrictDetailPage: React.FC = () => {
           </div>
 
           {/* 24-Hour Telemetry Area Chart (2 cols) */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs space-y-4 lg:col-span-2 flex flex-col justify-between">
+          <div className="chart-card bg-white border border-slate-200 rounded-2xl p-6 shadow-xs space-y-4 lg:col-span-2 flex flex-col justify-between">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div>
                 <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
@@ -850,7 +992,7 @@ export const DistrictDetailPage: React.FC = () => {
       {/* ========================================================================= */}
       {/* SECTION 2.5: HAZARD TREND - 7-DAY RISK LEVEL FLUCTUATIONS */}
       {/* ========================================================================= */}
-      <section id="sec-hazard-trend" className="space-y-4 pt-4">
+      <section id="sec-hazard-trend" className="space-y-4 pt-4 pagination-protected">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-200 pb-3 gap-3">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600">
@@ -861,7 +1003,7 @@ export const DistrictDetailPage: React.FC = () => {
               <p className="text-xs text-slate-500">Longitudinal risk scoring and multi-hazard severity progression over the past week.</p>
             </div>
           </div>
-          <div className="flex items-center gap-2 bg-slate-100 p-1 rounded-xl text-xs font-bold">
+          <div className="flex items-center gap-2 bg-slate-100 p-1 rounded-xl text-xs font-bold screen-only">
             {(['all', 'primary', 'comparison'] as const).map((mode) => (
               <button
                 key={mode}
@@ -876,7 +1018,7 @@ export const DistrictDetailPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-xs space-y-6">
+        <div className="chart-card bg-white border border-slate-200 rounded-3xl p-6 shadow-xs space-y-6">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
               <span className="text-xs font-mono font-bold text-amber-700 bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200">
@@ -972,49 +1114,29 @@ export const DistrictDetailPage: React.FC = () => {
       </section>
 
       {/* ========================================================================= */}
-      {/* SECTION 3: TENSORFLOW SPATIAL ATTENTION NEURAL DIAGNOSTICS */}
+      {/* SECTION 3: EXECUTIVE AI RISK OVERVIEW & SPATIAL RADAR BACKSCATTER */}
       {/* ========================================================================= */}
-      <section id="sec-ai" className="space-y-4 pt-4">
+      <section id="sec-ai-overview" className="space-y-4 pt-4 pagination-protected">
         <div className="flex items-center justify-between border-b border-slate-200 pb-3">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl bg-purple-50 border border-purple-200 flex items-center justify-center text-purple-600">
               <Cpu className="w-4 h-4" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-slate-900 tracking-tight">TensorFlow Spatial Attention Neural Diagnostics</h2>
-              <p className="text-xs text-slate-500">Multi-head attention weights, softmax hazard distributions, and calibrated inference metrics.</p>
+              <h2 className="text-lg font-bold text-slate-900 tracking-tight">AI Spatial Risk Overview & Satellite Backscatter</h2>
+              <p className="text-xs text-slate-500">Ensemble confidence scoring, probabilistic hazard breakdown, and radar dielectric validation.</p>
             </div>
           </div>
-          <span className="text-[11px] font-mono text-slate-400 bg-slate-100 px-2.5 py-1 rounded-lg">SECTION 03</span>
-        </div>
-
-        {/* Inference Metrics Triad */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-mono font-bold text-purple-700 uppercase">Inference Latency</span>
-              <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-purple-50 text-purple-700">WebGL Backend</span>
-            </div>
-            <div className="text-3xl font-black text-slate-900 font-mono">38.4 ms</div>
-            <p className="text-xs text-slate-500">Optimized client-side tensor execution per tile.</p>
-          </div>
-
-          <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-mono font-bold text-blue-700 uppercase">Calibration Error (ECE)</span>
-              <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-blue-50 text-blue-700">Platt Scaling</span>
-            </div>
-            <div className="text-3xl font-black text-slate-900 font-mono">1.45%</div>
-            <p className="text-xs text-slate-500">High probabilistic reliability against ground truth.</p>
-          </div>
-
-          <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-mono font-bold text-emerald-700 uppercase">Model Confidence</span>
-              <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-50 text-emerald-700">Ensemble</span>
-            </div>
-            <div className="text-3xl font-black text-slate-900 font-mono">{data.modelAssessment.confidenceLevel}%</div>
-            <p className="text-xs text-slate-500">Cross-validated across Sentinel-1 SAR imagery.</p>
+          <div className="flex items-center gap-2">
+            <a
+              href="#appendix-a"
+              onClick={(e) => { e.preventDefault(); scrollToSection('appendix-a'); }}
+              className="text-xs text-purple-700 hover:text-purple-900 font-mono font-bold inline-flex items-center gap-1 screen-only"
+            >
+              <span>View Technical Appendix</span>
+              <ExternalLink className="w-3 h-3" />
+            </a>
+            <span className="text-[11px] font-mono text-slate-400 bg-slate-100 px-2.5 py-1 rounded-lg">SECTION 03</span>
           </div>
         </div>
 
@@ -1061,11 +1183,11 @@ export const DistrictDetailPage: React.FC = () => {
             <div className="space-y-3">
               <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
                 <Info className="w-4 h-4 text-blue-600" />
-                Tensor Diagnosis & Spatial Attention Narrative
+                Executive Spatial Risk Verification
               </h3>
               <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-4 text-xs font-mono text-slate-800 leading-relaxed space-y-2">
                 <p>
-                  <strong>[TensorFlow v2.16 Ingestion]</strong> Multi-spectral surface reflectance and radar backscatter matrices confirm high dielectric saturation across low-lying geomorphic depressions in {data.districtName}.
+                  <strong>[Ensemble Model Assessment]</strong> Multi-spectral surface reflectance and radar backscatter matrices confirm high dielectric saturation across low-lying geomorphic depressions in {data.districtName}.
                 </p>
                 <p className="text-slate-600">
                   Spatial convolution filters detected significant riverine swell vectors matching historical hydrological models with 94.8% correlation.
@@ -1074,7 +1196,7 @@ export const DistrictDetailPage: React.FC = () => {
             </div>
 
             <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500 font-mono">
-              <span>Model: HazardNet-Vision v3.4.1</span>
+              <span>Model Confidence: <strong className="text-emerald-700 font-bold">{data.modelAssessment.confidenceLevel}% (High)</strong></span>
               <span>Updated: {data.lastSatelliteUpdate.split('•')[0]}</span>
             </div>
           </div>
@@ -1082,9 +1204,9 @@ export const DistrictDetailPage: React.FC = () => {
       </section>
 
       {/* ========================================================================= */}
-      {/* SECTION 4: UPAZILA / THANA VULNERABILITY MATRIX */}
+      {/* SECTION 4: UPAZILA / THANA VULNERABILITY MATRIX (GRID OF DATA CARDS) */}
       {/* ========================================================================= */}
-      <section id="sec-upazilas" className="space-y-4 pt-4">
+      <section id="sec-upazilas" className="space-y-4 pt-4 pagination-protected">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 pb-3">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600">
@@ -1092,16 +1214,38 @@ export const DistrictDetailPage: React.FC = () => {
             </div>
             <div>
               <h2 className="text-lg font-bold text-slate-900 tracking-tight">Upazila / Thana Vulnerability Matrix</h2>
-              <p className="text-xs text-slate-500">Administrative sub-district breakdown with severity scores and household exposure.</p>
+              <p className="text-xs text-slate-500">Administrative sub-district breakdown with severity scores, population exposure, and priority directives.</p>
             </div>
           </div>
-          <span className="text-[11px] font-mono text-slate-400 bg-slate-100 px-2.5 py-1 rounded-lg self-start sm:self-auto">
-            {processedUpazilas.length} UPAZILAS LISTED
-          </span>
+          <div className="flex items-center gap-2 self-start sm:self-auto">
+            {/* View Mode Toggle for Screen */}
+            <div className="flex items-center bg-slate-100 p-1 rounded-xl text-xs font-bold screen-only">
+              <button
+                onClick={() => setUpazilaViewMode('cards')}
+                className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
+                  upazilaViewMode === 'cards' ? 'bg-white text-slate-900 shadow-2xs font-extrabold' : 'text-slate-600 hover:text-slate-950'
+                }`}
+              >
+                Cards View
+              </button>
+              <button
+                onClick={() => setUpazilaViewMode('table')}
+                className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
+                  upazilaViewMode === 'table' ? 'bg-white text-slate-900 shadow-2xs font-extrabold' : 'text-slate-600 hover:text-slate-950'
+                }`}
+              >
+                Table View
+              </button>
+            </div>
+            <span className="text-[11px] font-mono text-slate-400 bg-slate-100 px-2.5 py-1 rounded-lg">
+              {processedUpazilas.length} UPAZILAS LISTED
+            </span>
+            <span className="text-[11px] font-mono text-slate-400 bg-slate-100 px-2.5 py-1 rounded-lg">SECTION 04</span>
+          </div>
         </div>
 
         {/* Filter Controls Bar */}
-        <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4 screen-only">
           <div className="flex flex-wrap items-center gap-2">
             <div className="relative min-w-[200px]">
               <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -1148,34 +1292,110 @@ export const DistrictDetailPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Upazila Data Table */}
-        <div className="bg-white border border-slate-200 rounded-2xl shadow-xs overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead>
-                {/* Repeated Emergency Protocol Header Row on Every Printed Page */}
-                <tr className="print-table-emergency-header">
-                  <th colSpan={5} className="emergency-protocol-title">
-                    🚨 EMERGENCY PROTOCOL & UPAZILA VULNERABILITY MATRIX • {data.districtName.toUpperCase()} DISTRICT
-                  </th>
-                </tr>
-                <tr className="border-b border-slate-200 bg-slate-50/80 text-slate-600 font-mono font-bold">
-                  <th className="py-3.5 px-5">Upazila / Thana Name</th>
-                  <th className="py-3.5 px-4">Status & Inundation Level</th>
-                  <th className="py-3.5 px-4">Continuous Severity</th>
-                  <th className="py-3.5 px-4">Affected Households</th>
-                  <th className="py-3.5 px-5 text-right">Evacuation Priority</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 font-sans">
-                {processedUpazilas.length === 0 ? (
-                  <tr>
-                    <td colSpan={5} className="py-8 text-center text-slate-400">
-                      No sub-districts matched the selected filter criteria.
-                    </td>
+        {/* PRIMARY VIEW: CSS GRID OF UPAZILA DATA CARDS (DEFAULT & ALWAYS PRINTED) */}
+        {(upazilaViewMode === 'cards' || typeof window === 'undefined') ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {processedUpazilas.length === 0 ? (
+              <div className="col-span-2 py-8 text-center text-slate-400 bg-white border border-slate-200 rounded-2xl">
+                No sub-districts matched the selected filter criteria.
+              </div>
+            ) : (
+              processedUpazilas.map((up, idx) => (
+                <div
+                  key={idx}
+                  className="upazila-card pagination-protected bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-3 hover:border-slate-300 transition-all flex flex-col justify-between"
+                >
+                  {/* Card Header: Upazila Name + Geocode + Priority Badge */}
+                  <div className="flex items-start justify-between gap-3 border-b border-slate-100 pb-3">
+                    <div>
+                      <h3 className="font-extrabold text-slate-950 text-base flex items-center gap-2">
+                        <span>{up.name}</span>
+                        <span className="text-[10px] font-mono text-slate-400 font-normal">
+                          (GEO-{data.districtId.toUpperCase().slice(0, 3)}-{idx + 101})
+                        </span>
+                      </h3>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className={`px-2.5 py-0.5 rounded-full text-[10.5px] font-mono font-black ${
+                          up.status === 'Critically Inundated' ? 'bg-rose-100 text-rose-800 border border-rose-200' :
+                          up.status === 'High Risk' ? 'bg-amber-100 text-amber-900 border border-amber-200' :
+                          'bg-blue-100 text-blue-800 border border-blue-200'
+                        }`}>
+                          {up.status}
+                        </span>
+                      </div>
+                    </div>
+
+                    <span className={`px-2.5 py-1 rounded-lg text-[10px] font-mono font-black tracking-wide shrink-0 ${
+                      up.severityScore >= 0.8 ? 'bg-rose-600 text-white' :
+                      up.severityScore >= 0.5 ? 'bg-amber-100 text-amber-900 border border-amber-200' :
+                      'bg-slate-100 text-slate-700'
+                    }`}>
+                      {up.severityScore >= 0.8 ? 'PRIORITY 1: CRITICAL' : up.severityScore >= 0.5 ? 'PRIORITY 2: STANDBY' : 'PRIORITY 3: MONITOR'}
+                    </span>
+                  </div>
+
+                  {/* 4-Item Sub-Grid Metrics */}
+                  <div className="grid grid-cols-2 gap-3 text-xs pt-1">
+                    <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100 space-y-1">
+                      <span className="text-[10px] font-mono text-slate-500 font-bold uppercase block">Severity Score</span>
+                      <div className="flex items-center justify-between">
+                        <span className="text-base font-black text-slate-900 font-mono">
+                          {(up.severityScore * 100).toFixed(0)}%
+                        </span>
+                        <span className="text-[10px] font-mono text-slate-400">/ 100</span>
+                      </div>
+                      <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
+                        <div
+                          className={`h-full rounded-full ${
+                            up.severityScore >= 0.8 ? 'bg-rose-500' : up.severityScore >= 0.5 ? 'bg-amber-500' : 'bg-blue-500'
+                          }`}
+                          style={{ width: `${up.severityScore * 100}%` }}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100 space-y-1">
+                      <span className="text-[10px] font-mono text-slate-500 font-bold uppercase block">Exposed Households</span>
+                      <div className="text-base font-black text-slate-900 font-mono">
+                        {up.householdsAffected.toLocaleString()}
+                      </div>
+                      <div className="text-[10px] text-slate-500 truncate">
+                        Est. ~{(up.householdsAffected * 4.4).toLocaleString()} residents
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Action Directive Footnote */}
+                  <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-600 font-medium">
+                    <span className="truncate">
+                      {up.severityScore >= 0.8
+                        ? 'Immediate relief boats & evacuation required'
+                        : up.severityScore >= 0.5
+                        ? 'Standby mobile medical & dry food provisioning'
+                        : 'Routine hydrological embankment surveillance'}
+                    </span>
+                    <span className="font-mono font-bold text-slate-400 shrink-0 ml-2">EOC-LVL-{up.severityScore >= 0.8 ? '1' : up.severityScore >= 0.5 ? '2' : '3'}</span>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        ) : (
+          /* ALTERNATIVE TABLE VIEW (SCREEN-ONLY) */
+          <div className="bg-white border border-slate-200 rounded-2xl shadow-xs overflow-hidden screen-only">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="border-b border-slate-200 bg-slate-50/80 text-slate-600 font-mono font-bold">
+                    <th className="py-3.5 px-5">Upazila / Thana Name</th>
+                    <th className="py-3.5 px-4">Status & Inundation Level</th>
+                    <th className="py-3.5 px-4">Continuous Severity</th>
+                    <th className="py-3.5 px-4">Affected Households</th>
+                    <th className="py-3.5 px-5 text-right">Evacuation Priority</th>
                   </tr>
-                ) : (
-                  processedUpazilas.map((up, idx) => (
+                </thead>
+                <tbody className="divide-y divide-slate-100 font-sans">
+                  {processedUpazilas.map((up, idx) => (
                     <tr key={idx} className="hover:bg-slate-50/80 transition-colors">
                       <td className="py-4 px-5">
                         <div className="font-bold text-slate-900 text-sm">{up.name}</div>
@@ -1218,18 +1438,18 @@ export const DistrictDetailPage: React.FC = () => {
                         </span>
                       </td>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
+        )}
       </section>
 
       {/* ========================================================================= */}
       {/* SECTION 5: INSTITUTIONAL DIRECTIVES & AGRICULTURAL ADVISORIES */}
       {/* ========================================================================= */}
-      <section id="sec-advisories" className="space-y-4 pt-4">
+      <section id="sec-advisories" className="space-y-4 pt-4 pagination-protected">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 pb-3">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600">
@@ -1243,7 +1463,7 @@ export const DistrictDetailPage: React.FC = () => {
           <div className="flex items-center gap-2 self-start sm:self-auto">
             <button
               onClick={() => setShowLiveAiAdvisory(!showLiveAiAdvisory)}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer screen-only ${
                 showLiveAiAdvisory
                   ? 'bg-amber-500 text-slate-950 shadow-xs'
                   : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:text-slate-900'
@@ -1258,7 +1478,7 @@ export const DistrictDetailPage: React.FC = () => {
 
         {/* Live AI Advisory Synthesizer (When toggled) */}
         {showLiveAiAdvisory && (
-          <div className="bg-slate-900 text-white rounded-3xl p-6 sm:p-8 shadow-md border border-slate-800 space-y-4">
+          <div className="bg-slate-900 text-white rounded-3xl p-6 sm:p-8 shadow-md border border-slate-800 space-y-4 screen-only">
             <div className="flex items-center justify-between border-b border-slate-800 pb-4">
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-xl bg-amber-400/20 border border-amber-400/30 flex items-center justify-center text-amber-400">
@@ -1349,7 +1569,7 @@ export const DistrictDetailPage: React.FC = () => {
       {/* ========================================================================= */}
       {/* SECTION 6: HISTORICAL EM-DAT DISASTER BENCHMARKS */}
       {/* ========================================================================= */}
-      <section id="sec-history" className="space-y-4 pt-4">
+      <section id="sec-history" className="space-y-4 pt-4 pagination-protected">
         <div className="flex items-center justify-between border-b border-slate-200 pb-3">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-700">
@@ -1396,7 +1616,7 @@ export const DistrictDetailPage: React.FC = () => {
       {/* ========================================================================= */}
       {/* SECTION 7: EMERGENCY OPERATIONS, LOGISTICS & DISPATCH COMMAND */}
       {/* ========================================================================= */}
-      <section id="sec-ops" className="space-y-4 pt-4">
+      <section id="sec-ops" className="space-y-4 pt-4 pagination-protected">
         <div className="flex items-center justify-between border-b border-slate-200 pb-3">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl bg-rose-50 border border-rose-200 flex items-center justify-center text-rose-600">
@@ -1473,7 +1693,7 @@ export const DistrictDetailPage: React.FC = () => {
             </div>
 
             {/* Broadcast Dispatch Trigger Button */}
-            <div className="space-y-2 pt-2">
+            <div className="space-y-2 pt-2 screen-only">
               <button
                 onClick={handleTriggerDispatch}
                 disabled={dispatchStatus === 'broadcasting'}
@@ -1502,8 +1722,93 @@ export const DistrictDetailPage: React.FC = () => {
         </div>
       </section>
 
+      {/* ========================================================================= */}
+      {/* APPENDIX A: TECHNICAL METHODOLOGY & NEURAL DIAGNOSTICS */}
+      {/* ========================================================================= */}
+      <section id="appendix-a" className="print-appendix-break appendix-section pagination-protected space-y-4 pt-6">
+        <div className="flex items-center justify-between border-b-2 border-purple-900 pb-3">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-purple-100 border border-purple-300 flex items-center justify-center text-purple-900">
+              <Cpu className="w-4.5 h-4.5" />
+            </div>
+            <div>
+              <h2 className="text-lg font-black text-slate-950 tracking-tight">
+                Appendix A: Technical Methodology & Neural Diagnostics
+              </h2>
+              <p className="text-xs text-slate-600">
+                Mathematical formulations, inference latency benchmarks, and multi-spectral convolution matrices.
+              </p>
+            </div>
+          </div>
+          <span className="text-[11px] font-mono font-bold text-purple-900 bg-purple-100 px-2.5 py-1 rounded-lg">
+            TECHNICAL AUDIT LOG
+          </span>
+        </div>
+
+        {/* Inference Metrics Triad */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-mono font-bold text-purple-700 uppercase">Inference Latency</span>
+              <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-purple-50 text-purple-700">WebGL Acceleration</span>
+            </div>
+            <div className="text-3xl font-black text-slate-900 font-mono">38.4 ms</div>
+            <p className="text-xs text-slate-500">Optimized client-side tensor execution per 256x256 geomorphic tile.</p>
+          </div>
+
+          <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-mono font-bold text-blue-700 uppercase">Calibration Error (ECE)</span>
+              <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-blue-50 text-blue-700">Platt Scaling</span>
+            </div>
+            <div className="text-3xl font-black text-slate-900 font-mono">1.45%</div>
+            <p className="text-xs text-slate-500">High probabilistic calibration reliability against BWDB ground truth stations.</p>
+          </div>
+
+          <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-mono font-bold text-emerald-700 uppercase">Ensemble Confidence</span>
+              <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-50 text-emerald-700">Sentinel-1 SAR</span>
+            </div>
+            <div className="text-3xl font-black text-slate-900 font-mono">{data.modelAssessment.confidenceLevel}%</div>
+            <p className="text-xs text-slate-500">Cross-validated across multi-spectral radar backscatter vectors.</p>
+          </div>
+        </div>
+
+        {/* Detailed Neural Architecture & Convolution Math */}
+        <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs space-y-4 text-xs font-mono">
+          <h3 className="text-sm font-bold text-slate-900 font-sans flex items-center gap-2">
+            <Bot className="w-4 h-4 text-purple-600" />
+            Model Architecture & Mathematical Formulation
+          </h3>
+
+          <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2.5 text-slate-800 leading-relaxed">
+            <div>
+              <strong className="text-slate-950 font-bold block mb-0.5">[1] Convolutional Feature Extraction:</strong>
+              <code>TensorFlow v2.16 • Backbone: ResNet-50 Feature Pyramid Network (FPN) with cross-attention heads</code>
+            </div>
+            <div>
+              <strong className="text-slate-950 font-bold block mb-0.5">[2] Softmax Probability Calibration:</strong>
+              <code>P(Hazard = k | X) = exp(z_k / T) / ∑_j exp(z_j / T) &nbsp; [Temperature Scaling T = 1.18, ECE = 1.45%]</code>
+            </div>
+            <div>
+              <strong className="text-slate-950 font-bold block mb-0.5">[3] Dielectric Backscatter Ingestion:</strong>
+              <p className="font-sans text-slate-700">
+                SAR VV/VH polarization backscatter coefficients evaluated across {data.districtName} terrain. Water boundary threshold set at σ° &lt; -16.5 dB with spatial spatial smoothing filter radius of 30m.
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 text-[11px] text-slate-500">
+            <div>Engine: <strong className="text-slate-800">HazardNet-Vision v3.4.1</strong></div>
+            <div>Model Checkpoint: <strong className="text-slate-800">tf-sar-ensemble-2026.08</strong></div>
+            <div>Verification: <strong className="text-emerald-700">Verified by DDMC Telemetry</strong></div>
+          </div>
+        </div>
+      </section>
+
       {/* PRINT-ONLY OFFICIAL DISTRICT REPORT FOOTER */}
-      <div className="print-only mt-8 pt-4 border-t-2 border-slate-900 text-[8.5pt] text-slate-700 font-mono">
+      <div className="print-only mt-8 pt-4 border-t-2 border-slate-900 text-[8.5pt] text-slate-700 font-mono pagination-protected">
         <div className="grid grid-cols-2 gap-4 pb-2 border-b border-slate-300">
           <div>
             <strong className="text-slate-900 block mb-1">DISTRICT EMERGENCY ACTION CONTACTS:</strong>

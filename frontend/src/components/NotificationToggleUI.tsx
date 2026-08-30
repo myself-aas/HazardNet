@@ -12,6 +12,7 @@ export interface NotificationToggleUIProps {
   onClose: () => void;
   onTogglePush: () => void;
   onTestPush: () => void;
+  variant?: 'default' | 'icon';
 }
 
 export const NotificationToggleUI: React.FC<NotificationToggleUIProps> = ({
@@ -25,21 +26,32 @@ export const NotificationToggleUI: React.FC<NotificationToggleUIProps> = ({
   onClose,
   onTogglePush,
   onTestPush,
+  variant = 'default',
 }) => {
   return (
     <div className="relative inline-block text-left">
-      <button
-        onClick={onToggleOpen}
-        className={`px-2.5 py-1.5 rounded-lg border transition-all flex items-center gap-1.5 text-xs font-semibold ${
-          isSubscribed
-            ? 'bg-[#f9a825] text-white border-[#f9a825] hover:bg-[#d08305] shadow-xs'
-            : 'bg-white/40 text-slate-800 border-slate-200/60 hover:bg-white/70 backdrop-blur-md'
-        }`}
-        title="Web Push Certificate & Emergency Alerts"
-      >
-        <NotificationIcon size={20} className={isSubscribed ? "text-white" : "text-slate-700"} duration={0} isState={isSubscribed} />
-        <span className="hidden lg:inline">{isSubscribed ? 'Alerts Active' : 'Push Alerts'}</span>
-      </button>
+      {variant === 'icon' ? (
+        <button
+          onClick={onToggleOpen}
+          className="w-10 h-10 rounded-full bg-black/5 hover:bg-black/10 flex items-center justify-center transition-colors"
+          title="Push Alerts"
+        >
+          <NotificationIcon size={20} className={isSubscribed ? "text-amber-600" : "text-slate-700"} duration={0} isState={isSubscribed} />
+        </button>
+      ) : (
+        <button
+          onClick={onToggleOpen}
+          className={`px-2.5 py-1.5 rounded-lg border transition-all flex items-center gap-1.5 text-xs font-semibold ${
+            isSubscribed
+              ? 'bg-[#f9a825] text-white border-[#f9a825] hover:bg-[#d08305] shadow-xs'
+              : 'bg-white/40 text-slate-800 border-slate-200/60 hover:bg-white/70 backdrop-blur-md'
+          }`}
+          title="Web Push Certificate & Emergency Alerts"
+        >
+          <NotificationIcon size={20} className={isSubscribed ? "text-white" : "text-slate-700"} duration={0} isState={isSubscribed} />
+          <span className="hidden lg:inline">{isSubscribed ? 'Alerts Active' : 'Push Alerts'}</span>
+        </button>
+      )}
 
       {isOpen && (
         <div className="absolute right-0 mt-2 w-80 bg-white border border-slate-200 rounded-xl shadow-2xl p-4 z-[3000] text-slate-800 font-sans">

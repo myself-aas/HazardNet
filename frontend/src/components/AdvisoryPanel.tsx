@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { StructuredAdvisoryRenderer } from './StructuredAdvisoryRenderer';
+import { PdfExportButton } from './PdfExportButton';
 
 interface AdvisoryPanelProps {
   districtName: string;
@@ -103,7 +104,7 @@ const AdvisoryPanel: React.FC<AdvisoryPanelProps> = ({
   if (!advisory) return null;
 
   return (
-    <div className="w-full bg-white rounded-3xl border border-slate-200/90 shadow-md p-6 sm:p-8 space-y-6 transition-all duration-300 hover:shadow-lg text-slate-900">
+    <div id="advisory-panel-container" className="w-full bg-white rounded-3xl border border-slate-200/90 shadow-md p-6 sm:p-8 space-y-6 transition-all duration-300 hover:shadow-lg text-slate-900">
       <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-200/80">
         <div className="space-y-1">
           <h3 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight flex items-center gap-2">
@@ -126,13 +127,35 @@ const AdvisoryPanel: React.FC<AdvisoryPanelProps> = ({
           </div>
         </div>
 
-        <span className={`px-4 py-1.5 rounded-full text-xs font-mono font-black border shadow-2xs ${
-          (advisory.urgency_tier === 'EMERGENCY' || advisory.urgency_level === 'EMERGENCY' || advisory.urgency_tier === 'WARNING' || advisory.urgency_level === 'WARNING')
-            ? 'bg-rose-100 text-rose-950 border-rose-300'
-            : 'bg-amber-100 text-amber-950 border-amber-300'
-        }`}>
-          {advisory.urgency_tier || advisory.urgency_level || 'WATCH'}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className={`px-4 py-1.5 rounded-full text-xs font-mono font-black border shadow-2xs ${
+            (advisory.urgency_tier === 'EMERGENCY' || advisory.urgency_level === 'EMERGENCY' || advisory.urgency_tier === 'WARNING' || advisory.urgency_level === 'WARNING')
+              ? 'bg-rose-100 text-rose-950 border-rose-300'
+              : 'bg-amber-100 text-amber-950 border-amber-300'
+          }`}>
+            {advisory.urgency_tier || advisory.urgency_level || 'WATCH'}
+          </span>
+
+          <PdfExportButton
+            elementId="advisory-panel-container"
+            title={`${districtName} AI Agricultural Advisory Directive`}
+            documentType="Agricultural Hazard Directive"
+            filename={`HazardNet_Advisory_${districtName}_{hazard}_{date}.pdf`}
+            filenameTemplate="HazardNet_{docType}_{region}_{date}.pdf"
+            regionName={districtName}
+            districtName={districtName}
+            hazardType={hazardType}
+            filenameContext={{
+              region: districtName,
+              district: districtName,
+              hazard: hazardType,
+              hazardType: hazardType,
+              docType: 'Agromet_Advisory',
+              documentType: 'Agricultural Hazard Directive',
+            }}
+            variant="compact"
+          />
+        </div>
       </div>
 
       <div className="pt-4">

@@ -156,7 +156,7 @@ const PublicProfilePage: React.FC = () => {
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="rounded-3xl border border-slate-200 bg-white p-10 text-center shadow-sm"
+          className="rounded-3xl border border-slate-200 bg-white p-6 sm:p-10 text-center shadow-sm"
           data-testid="profile-not-found"
         >
           <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-slate-100 text-slate-400">
@@ -183,7 +183,7 @@ const PublicProfilePage: React.FC = () => {
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="rounded-3xl border border-slate-200 bg-white p-10 text-center shadow-sm"
+          className="rounded-3xl border border-slate-200 bg-white p-6 sm:p-10 text-center shadow-sm"
           data-testid="profile-private"
         >
           <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-slate-100 text-slate-400">

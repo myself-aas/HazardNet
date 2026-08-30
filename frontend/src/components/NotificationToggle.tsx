@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { usePushNotifications } from '../hooks/usePushNotifications';
 import { NotificationToggleUI } from './NotificationToggleUI';
 
-export const NotificationToggle: React.FC = () => {
+export const NotificationToggle: React.FC<{ variant?: 'default' | 'icon' }> = ({ variant }) => {
   const [isOpen, setIsOpen] = useState(false);
   
   const {
@@ -27,6 +27,7 @@ export const NotificationToggle: React.FC = () => {
       onClose={() => setIsOpen(false)}
       onTogglePush={handleTogglePush}
       onTestPush={handleTestPush}
+      variant={variant}
     />
   );
 };

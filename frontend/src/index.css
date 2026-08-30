@@ -948,7 +948,7 @@ caption {
   input,
   select,
   textarea,
-  [role="dialog"],
+  [role="dialog"]:not(.print-preview-modal-root):not(#print-preview-modal-root),
   [role="tablist"],
   .no-print,
   .leaflet-control-container,
@@ -957,8 +957,58 @@ caption {
   .toaster,
   .floating-action-button,
   .sticky:not(.print-keep),
-  .fixed:not(.print-keep):not(body::before):not(.print-page-footer) {
+  .fixed:not(.print-keep):not(.print-page-footer):not(.print-preview-modal-root) {
     display: none !important;
+  }
+
+  /* When PrintPreviewModal is open during print, render only the preview paper */
+  body:has(.print-preview-modal-root) > *:not(#root),
+  body:has(.print-preview-modal-root) #root > *:not(:has(.print-preview-modal-root)) {
+    display: none !important;
+  }
+
+  .print-preview-modal-root {
+    position: static !important;
+    inset: auto !important;
+    z-index: auto !important;
+    background: transparent !important;
+    backdrop-filter: none !important;
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .print-preview-modal-root .screen-only,
+  .print-preview-toolbar,
+  .print-preview-footer {
+    display: none !important;
+  }
+
+  .print-preview-modal-root > div.flex-1 {
+    padding: 0 !important;
+    background: transparent !important;
+    overflow: visible !important;
+    display: block !important;
+  }
+
+  .print-preview-modal-root div[style*="transform"] {
+    transform: none !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    margin: 0 !important;
+  }
+
+  .print-preview-paper {
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    min-height: auto !important;
+    background: #ffffff !important;
   }
 
   /* 6. Layout Width, Margins & Container Flattening */
@@ -1089,14 +1139,37 @@ caption {
     gap: 6pt !important;
   }
 
+  /* Responsive grid columns adjustment for physical A4 Portrait */
+  .grid-cols-4,
+  .lg\:grid-cols-4,
+  .grid-cols-5,
+  .grid-cols-6,
+  .lg\:grid-cols-6 {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
   /* 11. Phased SOP Protocols & Steps - Avoid Breaking Mid-Step */
   .phased-step-card,
   .sop-step,
+  .upazila-card,
+  .metric-card,
+  .impact-metric-pill,
+  .chart-card,
+  .pagination-protected,
   div[class*="rounded-3xl"] > div,
   article,
   section {
     page-break-inside: avoid !important;
     break-inside: avoid !important;
+  }
+
+  /* Force page break before Appendix */
+  .print-appendix-break,
+  .appendix-section {
+    page-break-before: always !important;
+    break-before: page !important;
+    margin-top: 0 !important;
+    padding-top: 14pt !important;
   }
 
   /* Operational Trigger Threshold Box */
@@ -1186,6 +1259,8 @@ caption {
     padding: 4pt 6pt !important;
     color: #0f172a !important;
     vertical-align: top !important;
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
   }
 
   tbody tr:nth-child(even) td {
@@ -1308,65 +1383,63 @@ caption {
 }
 
 /* ==========================================================================
-   CLIENT-SIDE PDF EXPORT CAPTURE STYLES (.pdf-exporting & .pdf-capture-mode)
-   Ensures client-side libraries (jsPDF + html2canvas) render the authentic
-   print-media emergency handout format, including QR codes and SOD 2019 headers.
+   UNIFIED PRINT PREVIEW & PDF CAPTURE STYLES (.pdf-exporting, .pdf-capture-mode, .print-preview-rendered-body)
+   Simulates authentic ink-friendly physical handout formatting inside the modal and html2canvas.
    ========================================================================== */
 body.pdf-exporting .print-only,
-.pdf-capture-mode .print-only {
+.pdf-capture-mode .print-only,
+.print-preview-rendered-body .print-only {
   display: block !important;
 }
 
 body.pdf-exporting .screen-only,
 .pdf-capture-mode .screen-only,
 body.pdf-exporting .no-print,
-.pdf-capture-mode .no-print {
-  display: none !important;
-}
-
-body.pdf-exporting .print-qr-code-box,
-.pdf-capture-mode .print-qr-code-box {
-  display: flex !important;
-  background-color: #ffffff !important;
-  border: 1pt solid #475569 !important;
-  border-radius: 6pt !important;
-}
-
-body.pdf-exporting .print-last-updated,
-.pdf-capture-mode .print-last-updated {
-  display: inline-flex !important;
-  background-color: #f8fafc !important;
-  border: 1pt solid #64748b !important;
-  color: #0f172a !important;
-}
-
-body.pdf-exporting .print-currency-tag,
-.pdf-capture-mode .print-currency-tag {
-  display: inline-block !important;
-  background-color: #0f172a !important;
-  color: #ffffff !important;
-}
-
-body.pdf-exporting thead tr.print-table-emergency-header,
-.pdf-capture-mode thead tr.print-table-emergency-header {
-  display: table-row !important;
-  background-color: #0f172a !important;
-  color: #ffffff !important;
-}
-
-/* ==========================================================================
-   PRINT PREVIEW MODAL STYLES (.print-preview-rendered-body)
-   Simulates authentic ink-friendly physical handout formatting inside the modal.
-   ========================================================================== */
-.print-preview-rendered-body .print-only {
-  display: block !important;
-}
-
+.pdf-capture-mode .no-print,
 .print-preview-rendered-body .screen-only,
 .print-preview-rendered-body .no-print {
   display: none !important;
 }
 
+/* Base Flattening for html2canvas & Preview */
+.pdf-capture-mode *, 
+.pdf-capture-mode *::before, 
+.pdf-capture-mode *::after,
+.print-preview-rendered-body *,
+.print-preview-rendered-body *::before,
+.print-preview-rendered-body *::after {
+  text-shadow: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* Card & Box Flattening for Crisp Ink-friendly Handouts */
+.pdf-capture-mode .bg-white,
+.pdf-capture-mode .bg-slate-50,
+.pdf-capture-mode .bg-slate-100,
+.pdf-capture-mode .bg-slate-900,
+.pdf-capture-mode .bg-slate-950,
+.pdf-capture-mode .nasa-glass-panel,
+.pdf-capture-mode [class*="rounded-3xl"],
+.pdf-capture-mode [class*="rounded-2xl"],
+.print-preview-rendered-body .bg-white,
+.print-preview-rendered-body .bg-slate-50,
+.print-preview-rendered-body .bg-slate-100,
+.print-preview-rendered-body .bg-slate-900,
+.print-preview-rendered-body .bg-slate-950,
+.print-preview-rendered-body .nasa-glass-panel,
+.print-preview-rendered-body [class*="rounded-3xl"],
+.print-preview-rendered-body [class*="rounded-2xl"] {
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border: 1pt solid #cbd5e1 !important;
+  border-radius: 6pt !important;
+  box-shadow: none !important;
+}
+
+.pdf-capture-mode .print-qr-code-box,
 .print-preview-rendered-body .print-qr-code-box {
   display: flex !important;
   background-color: #ffffff !important;
@@ -1374,6 +1447,7 @@ body.pdf-exporting thead tr.print-table-emergency-header,
   border-radius: 6pt !important;
 }
 
+.pdf-capture-mode .print-last-updated,
 .print-preview-rendered-body .print-last-updated {
   display: inline-flex !important;
   background-color: #f8fafc !important;
@@ -1381,12 +1455,14 @@ body.pdf-exporting thead tr.print-table-emergency-header,
   color: #0f172a !important;
 }
 
+.pdf-capture-mode .print-currency-tag,
 .print-preview-rendered-body .print-currency-tag {
   display: inline-block !important;
   background-color: #0f172a !important;
   color: #ffffff !important;
 }
 
+.pdf-capture-mode table,
 .print-preview-rendered-body table {
   width: 100% !important;
   border-collapse: collapse !important;
@@ -1396,16 +1472,20 @@ body.pdf-exporting thead tr.print-table-emergency-header,
   margin-bottom: 8pt !important;
 }
 
+.pdf-capture-mode thead,
 .print-preview-rendered-body thead {
   display: table-header-group !important;
 }
 
+.pdf-capture-mode thead tr.print-table-emergency-header,
 .print-preview-rendered-body thead tr.print-table-emergency-header {
   display: table-row !important;
   background-color: #0f172a !important;
   color: #ffffff !important;
 }
 
+.pdf-capture-mode thead tr.print-table-emergency-header th,
+.pdf-capture-mode th.emergency-protocol-title,
 .print-preview-rendered-body thead tr.print-table-emergency-header th,
 .print-preview-rendered-body th.emergency-protocol-title {
   background-color: #0f172a !important;
@@ -1420,6 +1500,7 @@ body.pdf-exporting thead tr.print-table-emergency-header,
   text-align: left !important;
 }
 
+.pdf-capture-mode thead tr:not(.print-table-emergency-header) th,
 .print-preview-rendered-body thead tr:not(.print-table-emergency-header) th {
   background-color: #e2e8f0 !important;
   color: #0f172a !important;
@@ -1430,6 +1511,7 @@ body.pdf-exporting thead tr.print-table-emergency-header,
   text-transform: uppercase;
 }
 
+.pdf-capture-mode td,
 .print-preview-rendered-body td {
   border: 0.75pt solid #cbd5e1 !important;
   padding: 4pt 6pt !important;
@@ -1437,27 +1519,49 @@ body.pdf-exporting thead tr.print-table-emergency-header,
   color: #1e293b !important;
 }
 
+.pdf-capture-mode tr:nth-child(even) td,
 .print-preview-rendered-body tr:nth-child(even) td {
   background-color: #f8fafc !important;
 }
 
-.print-preview-rendered-body .bg-slate-900,
-.print-preview-rendered-body .bg-slate-800,
-.print-preview-rendered-body .bg-slate-950 {
-  background-color: #ffffff !important;
-  color: #0f172a !important;
-  border: 1pt solid #cbd5e1 !important;
-}
-
-.print-preview-rendered-body .text-white {
-  color: #0f172a !important;
-}
-
+.pdf-capture-mode .text-white,
+.pdf-capture-mode .text-slate-400,
+.pdf-capture-mode .text-slate-300,
+.print-preview-rendered-body .text-white,
 .print-preview-rendered-body .text-slate-400,
 .print-preview-rendered-body .text-slate-300 {
-  color: #475569 !important;
+  color: #0f172a !important;
 }
 
+.pdf-capture-mode h1,
+.pdf-capture-mode h2,
+.pdf-capture-mode h3,
+.print-preview-rendered-body h1,
+.print-preview-rendered-body h2,
+.print-preview-rendered-body h3 {
+  color: #0f172a !important;
+}
+
+/* Ink-Saver High Contrast Field Print Mode */
+.ink-saver-active,
+.ink-saver-active * {
+  color: #000000 !important;
+  border-color: #000000 !important;
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+
+.ink-saver-active svg {
+  stroke: #000000 !important;
+}
+
+.ink-saver-active .print-currency-tag,
+.ink-saver-active thead tr.print-table-emergency-header th {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
 
 /* ─── Blog article typography (prose-blog) ─────────────────────────────── */
 .prose-blog h1 { font-size: 1.6rem; font-weight: 900; color: #0f172a; margin: 1.4rem 0 0.6rem; letter-spacing: -0.01em; }

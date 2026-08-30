@@ -205,7 +205,7 @@ export const AdvisoriesPage: React.FC = () => {
       </div>
 
       {/* 1. SECTOR ROUTE NAVIGATOR (Unique URL per Sector) */}
-      <div className="bg-white border border-slate-200/90 rounded-3xl p-4 sm:p-6 shadow-md space-y-4">
+      <div className="bg-white border border-slate-200/90 rounded-3xl p-4 sm:p-6 shadow-md space-y-4 screen-only">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-4">
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 border border-slate-200 text-slate-800 text-xs font-mono font-bold mb-2">
@@ -231,9 +231,21 @@ export const AdvisoriesPage: React.FC = () => {
             </button>
             <PdfExportButton
               elementId="advisory-bulletin-container"
-              filename={`HazardNet_${sector.code}_Sector_Directive_${new Date().toISOString().slice(0, 10)}.pdf`}
+              filename={`HazardNet_${sector.code}_Directive_{region}_{date}.pdf`}
+              filenameTemplate="HazardNet_{docType}_{region}_{date}.pdf"
               documentType={`${sector.name} Sector Directive`}
+              regionName={selectedDistrictForEmail || 'National'}
+              districtName={selectedDistrictForEmail || 'National'}
+              hazardType="Disaster_Protocol"
               title="Export PDF Bulletin"
+              filenameContext={{
+                region: selectedDistrictForEmail || 'National',
+                district: selectedDistrictForEmail || 'National',
+                docType: `${sector.code}_Directive`,
+                documentType: `${sector.name} Sector Directive`,
+                hazard: 'Sector_Protocol',
+                hazardType: 'Sector_Protocol',
+              }}
             />
           </div>
         </div>
@@ -320,7 +332,7 @@ export const AdvisoriesPage: React.FC = () => {
             <p className="text-[11.5px] text-slate-300 leading-snug">
               Official coordination desk for immediate seed, vaccine, water purification, and evacuation logistics requisition.
             </p>
-            <div className="space-y-2 pt-1">
+            <div className="space-y-2 pt-1 screen-only">
               <button
                 onClick={() => setIsEmailModalOpen(true)}
                 className="w-full py-2.5 px-4 rounded-xl bg-amber-400 text-slate-950 font-black text-xs hover:bg-amber-300 transition-all flex items-center justify-center gap-2 cursor-pointer shadow-xs"
@@ -480,7 +492,7 @@ export const AdvisoriesPage: React.FC = () => {
 
               {/* AI Advisory Result Output */}
               {aiLoading && (
-                <div className="p-8 rounded-2xl bg-slate-800/80 border border-slate-700 text-center space-y-3 animate-pulse">
+                <div className="p-6 sm:p-8 rounded-2xl bg-slate-800/80 border border-slate-700 text-center space-y-3 animate-pulse">
                   <div className="w-8 h-8 rounded-full border-2 border-amber-400 border-t-transparent animate-spin mx-auto"></div>
                   <p className="text-xs text-slate-300 font-mono">Querying Gemini 2.5 API with {aiDistrict} agro-ecological context & {sector.code} directives...</p>
                 </div>
@@ -494,7 +506,7 @@ export const AdvisoriesPage: React.FC = () => {
               )}
 
               {aiAdvisoryData && !aiLoading && (
-                <div className="bg-white text-slate-900 rounded-2xl p-6 shadow-lg border border-slate-200">
+                <div className="bg-white text-slate-900 rounded-2xl p-5 sm:p-6 shadow-lg border border-slate-200">
                   <div className="flex items-center justify-between border-b border-slate-200 pb-3 mb-4">
                     <div>
                       <h4 className="text-sm font-black text-slate-900">

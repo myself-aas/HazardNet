@@ -1,6 +1,8 @@
 import MaterialIcon from "./MaterialIcon";
 import { motion, AnimatePresence } from 'framer-motion';
 import { GranularDisasterData } from '../data/disasterDetails';
+import { PdfExportButton } from './PdfExportButton';
+import { PrintQrCode } from './PrintQrCode';
 
 export interface DisasterDetailModalUIProps {
   data: GranularDisasterData;
@@ -37,6 +39,45 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
 }) => {
   const renderReportBody = () => (
     <>
+      {/* PRINT-ONLY OFFICIAL DIRECTIVE BANNER */}
+      <div className="print-only mb-4 p-4 bg-white border-2 border-slate-900 rounded-xl space-y-3">
+        <div className="flex items-center justify-between border-b border-slate-300 pb-2 text-[8pt] font-mono font-bold text-slate-700">
+          <span>GOVERNMENT OF THE PEOPLE'S REPUBLIC OF BANGLADESH</span>
+          <span>SOD 2019 COMPLIANT DISPATCH</span>
+          <span>PUBLIC SAFETY DIRECTIVE</span>
+        </div>
+
+        <div className="flex items-start justify-between gap-4">
+          <div className="space-y-1">
+            <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-slate-900 text-white font-mono text-[7pt] font-extrabold uppercase">
+              DISTRICT SITUATION REPORT
+            </div>
+            <h2 className="text-xl font-black text-slate-900 tracking-tight">
+              {data.districtName} District • {data.hazardType} Operational Brief
+            </h2>
+            <div className="flex items-center gap-3 text-[8pt] font-mono text-slate-600">
+              <span>Division: <strong>{data.division}</strong></span>
+              <span>•</span>
+              <span>Severity: <strong className="text-rose-600">{data.modelAssessment.riskCategory} Risk</strong></span>
+              <span>•</span>
+              <span className="print-last-updated text-[7pt]">
+                <strong>TIMESTAMP:</strong> {new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}, {new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })} BST
+              </span>
+            </div>
+          </div>
+
+          <div className="shrink-0">
+            <PrintQrCode
+              url={typeof window !== 'undefined' ? window.location.href : `https://hazardnet.bd/district/${data.districtName}`}
+              title="Live Telemetry"
+              subtitle="Scan for mobile updates"
+              districtOrSector={data.districtName}
+              size={64}
+            />
+          </div>
+        </div>
+      </div>
+
       {/* Key Disaster Metrics Summary Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <div className="bg-slate-50 border border-slate-200 p-3.5 rounded-xl space-y-1">
@@ -119,8 +160,8 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
         </div>
       </div>
 
-      {/* Navigation Tabs */}
-      <div className="border-b border-slate-200 flex items-center gap-2 overflow-x-auto text-xs py-1">
+      {/* Screen Navigation Tabs */}
+      <div className="screen-only border-b border-slate-200 flex items-center gap-2 overflow-x-auto text-xs py-1">
         <button
           onClick={() => onSetActiveTab('upazilas')}
           className={`pb-2.5 px-3 font-bold border-b-2 transition-all whitespace-nowrap flex items-center gap-1.5 ${
@@ -166,158 +207,251 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
         </button>
       </div>
 
-      {/* Tab 1: Upazilas */}
-      {activeTab === 'upazilas' && (
-        <div className="space-y-3">
-          <div className="flex items-center justify-between text-xs text-slate-500 font-mono">
-            <span>Granular Upazila-level disaster impact index</span>
-            <span>Sorted by Severity</span>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
-            {data.impactedUpazilas.map((up, idx) => (
-              <div
-                key={idx}
-                className="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between gap-3 text-xs"
-              >
-                <div>
-                  <div className="font-bold text-slate-900 text-sm">{up.name}</div>
-                  <div className="text-[11px] text-slate-600 mt-0.5">
-                    Households Affected: <span className="text-amber-600 font-mono font-bold">{up.householdsAffected.toLocaleString()}</span>
-                  </div>
-                </div>
-
-                <div className="text-right space-y-1">
-                  <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold block ${
-                    up.status === 'Critically Inundated'
-                      ? 'bg-rose-100 text-rose-800 border border-rose-200'
-                      : up.status === 'High Risk'
-                      ? 'bg-amber-100 text-amber-800 border border-amber-200'
-                      : 'bg-emerald-100 text-emerald-800 border border-emerald-200'
-                  }`}>
-                    {up.status}
-                  </span>
-                  <span className="font-mono text-[11px] font-bold text-slate-900 block">
-                    {(up.severityScore * 100).toFixed(0)}% Sev
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Tab 2: AI Model */}
-      {activeTab === 'aiModel' && (
-        <div className="space-y-4">
-          <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
-            <div className="flex items-center justify-between text-xs font-mono">
-              <span className="text-slate-800 font-bold">Continuous Severity Regression Head</span>
-              <span className="text-slate-500">Confidence: <strong className="text-slate-900">{data.modelAssessment.confidenceLevel}%</strong></span>
+      {/* Screen Active Tab Content */}
+      <div className="screen-only">
+        {activeTab === 'upazilas' && (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between text-xs text-slate-500 font-mono">
+              <span>Granular Upazila-level disaster impact index</span>
+              <span>Sorted by Severity</span>
             </div>
 
-            <div className="space-y-1.5">
-              <div className="flex justify-between text-xs font-bold">
-                <span>District Severity Score:</span>
-                <span className="text-rose-600 font-mono">
-                  {(data.modelAssessment.continuousSeverityIndex * 100).toFixed(1)}% (Index: {data.modelAssessment.continuousSeverityIndex})
-                </span>
-              </div>
-              <div className="w-full bg-slate-200 h-3 rounded-full overflow-hidden p-0.5 border border-slate-300">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+              {data.impactedUpazilas.map((up, idx) => (
                 <div
-                  className={`h-full rounded-full transition-all duration-500 ${
-                    data.modelAssessment.continuousSeverityIndex < 0.33
-                      ? 'bg-emerald-500'
-                      : data.modelAssessment.continuousSeverityIndex < 0.66
-                      ? 'bg-amber-500'
-                      : 'bg-rose-500'
-                  }`}
-                  style={{ width: `${data.modelAssessment.continuousSeverityIndex * 100}%` }}
-                ></div>
-              </div>
-            </div>
-          </div>
-
-          <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
-            <h4 className="text-xs font-mono uppercase tracking-wider text-slate-500">
-              Softmax Hazard Probability Classifier Head
-            </h4>
-
-            <div className="space-y-2.5">
-              {data.modelAssessment.softmaxProbabilities.map((prob, idx) => (
-                <div key={idx} className="space-y-1 text-xs">
-                  <div className="flex justify-between font-mono">
-                    <span className="text-slate-700 font-medium">{prob.hazard}</span>
-                    <span className="text-slate-900 font-bold">{(prob.probability * 100).toFixed(1)}%</span>
+                  key={idx}
+                  className="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between gap-3 text-xs"
+                >
+                  <div>
+                    <div className="font-bold text-slate-900 text-sm">{up.name}</div>
+                    <div className="text-[11px] text-slate-600 mt-0.5">
+                      Households Affected: <span className="text-amber-600 font-mono font-bold">{up.householdsAffected.toLocaleString()}</span>
+                    </div>
                   </div>
-                  <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden border border-slate-300">
-                    <div
-                      className="bg-slate-800 h-full rounded-full"
-                      style={{ width: `${prob.probability * 100}%` }}
-                    ></div>
+
+                  <div className="text-right space-y-1">
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold block ${
+                      up.status === 'Critically Inundated'
+                        ? 'bg-rose-100 text-rose-800 border border-rose-200'
+                        : up.status === 'High Risk'
+                        ? 'bg-amber-100 text-amber-800 border border-amber-200'
+                        : 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+                    }`}>
+                      {up.status}
+                    </span>
+                    <span className="font-mono text-[11px] font-bold text-slate-900 block">
+                      {(up.severityScore * 100).toFixed(0)}% Sev
+                    </span>
                   </div>
                 </div>
               ))}
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Tab 3: Emergency */}
-      {activeTab === 'emergency' && (
-        <div className="space-y-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs font-mono">
-            <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl">
-              <span className="text-slate-500 text-[10px] block">Active Shelters</span>
-              <strong className="text-slate-900 text-base font-bold">{data.emergencyResponse.activeShelters}</strong>
+        {activeTab === 'aiModel' && (
+          <div className="space-y-4">
+            <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
+              <div className="flex items-center justify-between text-xs font-mono">
+                <span className="text-slate-800 font-bold">Continuous Severity Regression Head</span>
+                <span className="text-slate-500">Confidence: <strong className="text-slate-900">{data.modelAssessment.confidenceLevel}%</strong></span>
+              </div>
+
+              <div className="space-y-1.5">
+                <div className="flex justify-between text-xs font-bold">
+                  <span>District Severity Score:</span>
+                  <span className="text-rose-600 font-mono">
+                    {(data.modelAssessment.continuousSeverityIndex * 100).toFixed(1)}% (Index: {data.modelAssessment.continuousSeverityIndex})
+                  </span>
+                </div>
+                <div className="w-full bg-slate-200 h-3 rounded-full overflow-hidden p-0.5 border border-slate-300">
+                  <div
+                    className={`h-full rounded-full transition-all duration-500 ${
+                      data.modelAssessment.continuousSeverityIndex < 0.33
+                        ? 'bg-emerald-500'
+                        : data.modelAssessment.continuousSeverityIndex < 0.66
+                        ? 'bg-amber-500'
+                        : 'bg-rose-500'
+                    }`}
+                    style={{ width: `${data.modelAssessment.continuousSeverityIndex * 100}%` }}
+                  ></div>
+                </div>
+              </div>
             </div>
-            <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl">
-              <span className="text-slate-500 text-[10px] block">Capacity Used</span>
-              <strong className="text-amber-600 text-base font-bold">{data.emergencyResponse.shelterCapacityUsedPercent}%</strong>
+
+            <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
+              <h4 className="text-xs font-mono uppercase tracking-wider text-slate-500">
+                Softmax Hazard Probability Classifier Head
+              </h4>
+
+              <div className="space-y-2.5">
+                {data.modelAssessment.softmaxProbabilities.map((prob, idx) => (
+                  <div key={idx} className="space-y-1 text-xs">
+                    <div className="flex justify-between font-mono">
+                      <span className="text-slate-700 font-medium">{prob.hazard}</span>
+                      <span className="text-slate-900 font-bold">{(prob.probability * 100).toFixed(1)}%</span>
+                    </div>
+                    <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden border border-slate-300">
+                      <div
+                        className="bg-slate-800 h-full rounded-full"
+                        style={{ width: `${prob.probability * 100}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
-            <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl">
-              <span className="text-slate-500 text-[10px] block">Relief Dispatched</span>
-              <strong className="text-emerald-600 text-base font-bold">{data.emergencyResponse.reliefDistributedTons} Tons</strong>
+          </div>
+        )}
+
+        {activeTab === 'emergency' && (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs font-mono">
+              <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl">
+                <span className="text-slate-500 text-[10px] block">Active Shelters</span>
+                <strong className="text-slate-900 text-base font-bold">{data.emergencyResponse.activeShelters}</strong>
+              </div>
+              <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl">
+                <span className="text-slate-500 text-[10px] block">Capacity Used</span>
+                <strong className="text-amber-600 text-base font-bold">{data.emergencyResponse.shelterCapacityUsedPercent}%</strong>
+              </div>
+              <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl">
+                <span className="text-slate-500 text-[10px] block">Relief Dispatched</span>
+                <strong className="text-emerald-600 text-base font-bold">{data.emergencyResponse.reliefDistributedTons} Tons</strong>
+              </div>
+              <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl">
+                <span className="text-slate-500 text-[10px] block">Medical Teams</span>
+                <strong className="text-slate-800 text-base font-bold">{data.emergencyResponse.medicalTeamsDeployed} Units</strong>
+              </div>
             </div>
-            <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl">
-              <span className="text-slate-500 text-[10px] block">Medical Teams</span>
-              <strong className="text-slate-800 text-base font-bold">{data.emergencyResponse.medicalTeamsDeployed} Units</strong>
+
+            <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2.5">
+              <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+                <span>Actionable Emergency Advisories</span>
+              </h4>
+              <ul className="space-y-2 text-xs text-slate-700">
+                {data.emergencyResponse.advisoryBullets.map((bullet, idx) => (
+                  <li key={idx} className="flex items-start gap-2 bg-white p-2.5 rounded-lg border border-slate-200">
+                    <span className="text-[#f9a825] font-bold">•</span>
+                    <span>{bullet}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'history' && (
+          <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3 text-xs">
+            <h4 className="font-extrabold text-slate-900 text-sm flex items-center gap-2">
+              <span>Historical Disaster Benchmark Analysis</span>
+            </h4>
+            <p className="text-slate-700 leading-relaxed bg-white p-3.5 rounded-lg border border-slate-200">
+              {data.historicalComparison}
+            </p>
+
+            <div className="text-[11px] text-slate-600 font-mono space-y-1">
+              <div>• Elevation Profile: <strong className="text-slate-900">{data.elevationMeters} meters MSL</strong></div>
+              <div>• Agro-Zone: <strong className="text-slate-900">{data.division} Belt</strong></div>
+              <div>• Return Period: <strong className="text-slate-800">1-in-10 Year Hazard Event</strong></div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Print-Only: All 4 Sections Rendered Sequentially for Complete A4 Situation Report */}
+      <div className="print-only space-y-5">
+        {/* Section 1: Upazila Breakdown Table */}
+        <div className="space-y-2">
+          <h3 className="font-black text-xs text-slate-900 uppercase tracking-wider font-mono border-b border-slate-300 pb-1">
+            1. Impacted Upazila Assessment ({data.impactedUpazilas.length} Upazilas)
+          </h3>
+          <table className="w-full text-left text-xs border border-slate-300">
+            <thead>
+              <tr className="bg-slate-100 text-[8pt] font-mono">
+                <th className="p-2 border border-slate-300">Upazila Name</th>
+                <th className="p-2 border border-slate-300">Inundation Status</th>
+                <th className="p-2 border border-slate-300">Households Affected</th>
+                <th className="p-2 border border-slate-300">Severity Index</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.impactedUpazilas.map((up, idx) => (
+                <tr key={idx} className="border-b border-slate-200">
+                  <td className="p-2 font-bold text-slate-900 border border-slate-200">{up.name}</td>
+                  <td className="p-2 font-semibold text-slate-800 border border-slate-200">{up.status}</td>
+                  <td className="p-2 font-mono text-slate-700 border border-slate-200">{up.householdsAffected.toLocaleString()}</td>
+                  <td className="p-2 font-mono font-bold text-slate-900 border border-slate-200">{(up.severityScore * 100).toFixed(0)}%</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Section 2: AI Multi-Spectral Assessment */}
+        <div className="space-y-2">
+          <h3 className="font-black text-xs text-slate-900 uppercase tracking-wider font-mono border-b border-slate-300 pb-1">
+            2. Multi-Spectral AI Model Diagnostics
+          </h3>
+          <div className="grid grid-cols-2 gap-3 text-xs bg-slate-50 p-3 rounded-lg border border-slate-200 font-mono">
+            <div>
+              <span className="text-slate-500 block text-[9pt]">Continuous Severity Index:</span>
+              <strong className="text-sm font-black text-rose-600">{(data.modelAssessment.continuousSeverityIndex * 100).toFixed(1)}% (Confidence: {data.modelAssessment.confidenceLevel}%)</strong>
+            </div>
+            <div>
+              <span className="text-slate-500 block text-[9pt]">Softmax Predicted Hazard:</span>
+              <strong className="text-sm font-black text-slate-900">{data.hazardSubtype}</strong>
+            </div>
+          </div>
+        </div>
+
+        {/* Section 3: Emergency Operational Response */}
+        <div className="space-y-2">
+          <h3 className="font-black text-xs text-slate-900 uppercase tracking-wider font-mono border-b border-slate-300 pb-1">
+            3. Operational Relief & Logistics Dispatch
+          </h3>
+          <div className="grid grid-cols-4 gap-2 text-xs font-mono mb-2">
+            <div className="p-2 bg-slate-50 border border-slate-300 rounded">
+              <span className="text-slate-500 text-[8pt] block">Active Shelters</span>
+              <strong className="text-slate-900">{data.emergencyResponse.activeShelters} Units</strong>
+            </div>
+            <div className="p-2 bg-slate-50 border border-slate-300 rounded">
+              <span className="text-slate-500 text-[8pt] block">Capacity Used</span>
+              <strong className="text-slate-900">{data.emergencyResponse.shelterCapacityUsedPercent}%</strong>
+            </div>
+            <div className="p-2 bg-slate-50 border border-slate-300 rounded">
+              <span className="text-slate-500 text-[8pt] block">Relief Dispatched</span>
+              <strong className="text-slate-900">{data.emergencyResponse.reliefDistributedTons} Tons</strong>
+            </div>
+            <div className="p-2 bg-slate-50 border border-slate-300 rounded">
+              <span className="text-slate-500 text-[8pt] block">Medical Teams</span>
+              <strong className="text-slate-900">{data.emergencyResponse.medicalTeamsDeployed} Teams</strong>
             </div>
           </div>
 
-          <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2.5">
-            <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
-              <span>Actionable Emergency Advisories</span>
-            </h4>
-            <ul className="space-y-2 text-xs text-slate-700">
+          <div className="bg-slate-50 p-3 rounded-lg border border-slate-300">
+            <div className="font-bold text-xs uppercase mb-1 text-slate-900">Immediate Standing Directives:</div>
+            <ul className="space-y-1 text-xs text-slate-800">
               {data.emergencyResponse.advisoryBullets.map((bullet, idx) => (
-                <li key={idx} className="flex items-start gap-2 bg-white p-2.5 rounded-lg border border-slate-200">
-                  <span className="text-[#f9a825] font-bold">•</span>
+                <li key={idx} className="flex items-start gap-1.5">
+                  <span className="font-bold text-slate-900">•</span>
                   <span>{bullet}</span>
                 </li>
               ))}
             </ul>
           </div>
         </div>
-      )}
 
-      {/* Tab 4: Historical */}
-      {activeTab === 'history' && (
-        <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3 text-xs">
-          <h4 className="font-extrabold text-slate-900 text-sm flex items-center gap-2">
-            <span>Historical Disaster Benchmark Analysis</span>
-          </h4>
-          <p className="text-slate-700 leading-relaxed bg-white p-3.5 rounded-lg border border-slate-200">
+        {/* Section 4: Historical Context & Benchmarking */}
+        <div className="space-y-2">
+          <h3 className="font-black text-xs text-slate-900 uppercase tracking-wider font-mono border-b border-slate-300 pb-1">
+            4. Historical Hydrological & Climatological Benchmark
+          </h3>
+          <p className="text-xs text-slate-800 leading-relaxed bg-slate-50 p-3 rounded-lg border border-slate-200">
             {data.historicalComparison}
           </p>
-
-          <div className="text-[11px] text-slate-600 font-mono space-y-1">
-            <div>• Elevation Profile: <strong className="text-slate-900">{data.elevationMeters} meters MSL</strong></div>
-            <div>• Agro-Zone: <strong className="text-slate-900">{data.division} Belt</strong></div>
-            <div>• Return Period: <strong className="text-slate-800">1-in-10 Year Hazard Event</strong></div>
-          </div>
         </div>
-      )}
+      </div>
     </>
   );
 
@@ -378,25 +512,46 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
           </div>
 
           {/* Scrollable Content Body */}
-          <div className="p-4 sm:p-6 overflow-y-auto space-y-6 custom-scrollbar flex-1">
+          <div id="disaster-situation-report" className="p-4 sm:p-6 overflow-y-auto space-y-6 custom-scrollbar flex-1">
             {renderReportBody()}
           </div>
 
           {/* Action Bar Footer */}
           <div className="p-4 bg-slate-50 border-t border-slate-200 flex flex-wrap items-center justify-between gap-3 text-xs">
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <PdfExportButton
+                elementId="disaster-situation-report"
+                title={`${data.districtName} Disaster Situation Handout`}
+                documentType={`${data.hazardType} Situation Report`}
+                filename={`HazardNet_${data.districtName}_{hazard}_{docType}_{date}.pdf`}
+                filenameTemplate="HazardNet_{docType}_{region}_{date}.pdf"
+                regionName={data.districtName}
+                districtName={data.districtName}
+                hazardType={data.hazardType}
+                filenameContext={{
+                  region: data.districtName,
+                  district: data.districtName,
+                  division: data.division,
+                  hazard: data.hazardType,
+                  hazardType: data.hazardType,
+                  docType: 'Situation_Report',
+                  documentType: `${data.hazardType} Situation Report`,
+                }}
+                variant="split"
+              />
+
               <button
                 onClick={onDownloadReport}
                 className="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl border border-slate-900 transition-all flex items-center gap-2 shadow-xs min-h-[44px]"
               >
-                <span>Download Situation Report (JSON)</span>
+                <span>Download JSON</span>
               </button>
 
               <button
                 onClick={onShareAlert}
                 className="px-3.5 py-2 bg-white hover:bg-slate-100 text-slate-800 font-bold rounded-xl border border-slate-200 transition-all flex items-center gap-2 shadow-xs min-h-[44px]"
               >
-                <span>{copiedAlert ? 'Copied to Clipboard! ✓' : 'Share Disaster Alert'}</span>
+                <span>{copiedAlert ? 'Copied to Clipboard! ✓' : 'Share Alert'}</span>
               </button>
             </div>
 
@@ -511,6 +666,28 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
 
               {/* Mobile Bottom Footer Actions */}
               <div className="pt-3 border-t border-slate-200 flex flex-col gap-2">
+                <PdfExportButton
+                  elementId="disaster-situation-report"
+                  title={`${data.districtName} Disaster Situation Handout`}
+                  documentType={`${data.hazardType} Situation Report`}
+                  filename={`HazardNet_${data.districtName}_{hazard}_{docType}_{date}.pdf`}
+                  filenameTemplate="HazardNet_{docType}_{region}_{date}.pdf"
+                  regionName={data.districtName}
+                  districtName={data.districtName}
+                  hazardType={data.hazardType}
+                  filenameContext={{
+                    region: data.districtName,
+                    district: data.districtName,
+                    division: data.division,
+                    hazard: data.hazardType,
+                    hazardType: data.hazardType,
+                    docType: 'Situation_Report',
+                    documentType: `${data.hazardType} Situation Report`,
+                  }}
+                  variant="primary"
+                  className="w-full justify-center"
+                />
+
                 <button
                   onClick={onDownloadReport}
                   className="w-full py-3 bg-slate-900 active:bg-slate-800 text-white font-bold rounded-xl text-xs transition-all flex items-center justify-center gap-2 min-h-[48px]"

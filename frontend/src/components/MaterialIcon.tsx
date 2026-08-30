@@ -734,7 +734,6 @@ export const MaterialIcon: React.FC<MaterialIconProps> = ({
         );
       case 'api':
       case 'webhook':
-      case 'code':
         return (
           <>
             <polyline points="16 18 22 12 16 6" />
@@ -786,9 +785,8 @@ export const MaterialIcon: React.FC<MaterialIconProps> = ({
             <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
           </>
         );
-      case 'pin':
-      case 'place':
       case 'map_pin':
+      case 'marker':
         return (
           <>
             <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
@@ -836,7 +834,6 @@ export const MaterialIcon: React.FC<MaterialIconProps> = ({
             <path d="M12 6v12M16 8.5c-.7-1-2-1.5-4-1.5-2.2 0-3.5.9-3.5 2.4 0 3.4 7.5 1.6 7.5 5 0 1.6-1.4 2.6-4 2.6-2 0-3.4-.6-4.2-1.7" />
           </>
         );
-      case 'search':
       case 'seo':
         return (
           <>

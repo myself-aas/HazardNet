@@ -173,7 +173,7 @@ app.get('*', (req, res, next) => {
 });
 
 // 3001 keeps the API out of Vite's way in dev (vite.config.ts proxies /api here).
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`HazardNet Backend running on port ${PORT}`);
 });

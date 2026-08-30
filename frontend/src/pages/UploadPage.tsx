@@ -320,7 +320,7 @@ const UploadPage: React.FC = () => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="bg-white border border-slate-200 rounded-2xl p-12 text-center space-y-4 shadow-xs"
+                className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-12 text-center space-y-4 shadow-xs"
               >
                 <div className="w-12 h-12 border-4 border-[#f9a825] border-t-transparent rounded-full animate-spin mx-auto"></div>
                 <h3 className="text-base font-bold text-slate-900">Running 3D-CNN Inference...</h3>
@@ -349,9 +349,9 @@ const UploadPage: React.FC = () => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="bg-white border border-slate-200 rounded-2xl p-12 text-center text-slate-500 space-y-2 shadow-xs"
+                className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-12 text-center text-slate-500 space-y-2 shadow-xs"
               >
-                <span className="text-4xl block"><MaterialIcon name="satellite_alt" className="w-4 h-4 inline-block mr-1" /></span>
+                <span className="text-3xl sm:text-4xl block"><MaterialIcon name="satellite_alt" className="w-4 h-4 inline-block mr-1" /></span>
                 <h3 className="text-sm font-bold text-slate-900">No Raster Loaded Yet</h3>
                 <p className="text-xs">Drag & drop a GeoTIFF raster file or click one of the sample satellite tensors on the left.</p>
               </motion.div>

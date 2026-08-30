@@ -166,7 +166,7 @@ export const StructuredAdvisoryRenderer: React.FC<StructuredAdvisoryRendererProp
       <div className="space-y-2">
         <button 
           onClick={() => setImpactExpanded(!impactExpanded)}
-          className="w-full flex items-center justify-between font-extrabold text-xs text-slate-500 uppercase tracking-wider font-mono hover:text-slate-700 transition-colors"
+          className="w-full flex items-center justify-between font-extrabold text-xs text-slate-500 uppercase tracking-wider font-mono hover:text-slate-700 transition-colors screen-only"
         >
           <span className="flex items-center gap-2">
             <Info className="w-4 h-4 text-blue-500" />
@@ -174,16 +174,30 @@ export const StructuredAdvisoryRenderer: React.FC<StructuredAdvisoryRendererProp
           </span>
           {impactExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
         </button>
+
+        {/* Print-only heading */}
+        <h3 className="print-only font-extrabold text-xs text-slate-500 uppercase tracking-wider font-mono flex items-center gap-2">
+          <Info className="w-4 h-4 text-blue-500" />
+          Vulnerability & Impact Analysis
+        </h3>
         
-        {impactExpanded ? (
-          <div className="bg-slate-50 border border-slate-200/90 rounded-2xl p-4 shadow-inner animate-in slide-in-from-top-2 fade-in duration-200">
-            <ReactMarkdown components={customComponents}>{impactMd}</ReactMarkdown>
-          </div>
-        ) : (
-          <div className="bg-slate-50/50 border border-slate-200/50 rounded-2xl p-4 shadow-sm text-sm text-slate-500 italic cursor-pointer hover:bg-slate-50" onClick={() => setImpactExpanded(true)}>
-            Click to expand long-form vulnerability analysis...
-          </div>
-        )}
+        {/* Screen Interactive view */}
+        <div className="screen-only">
+          {impactExpanded ? (
+            <div className="bg-slate-50 border border-slate-200/90 rounded-2xl p-4 shadow-inner animate-in slide-in-from-top-2 fade-in duration-200">
+              <ReactMarkdown components={customComponents}>{impactMd}</ReactMarkdown>
+            </div>
+          ) : (
+            <div className="bg-slate-50/50 border border-slate-200/50 rounded-2xl p-4 shadow-sm text-sm text-slate-500 italic cursor-pointer hover:bg-slate-50" onClick={() => setImpactExpanded(true)}>
+              Click to expand long-form vulnerability analysis...
+            </div>
+          )}
+        </div>
+
+        {/* Print-only always-expanded view */}
+        <div className="print-only bg-slate-50 border border-slate-200/90 rounded-2xl p-4">
+          <ReactMarkdown components={customComponents}>{impactMd}</ReactMarkdown>
+        </div>
       </div>
 
       {/* MITIGATION SECTION */}
