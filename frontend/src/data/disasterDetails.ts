@@ -11,7 +11,18 @@ export interface GranularDisasterData {
   districtId: string;
   districtName: string;
   division: string;
-  hazardType: 'Flash Flood' | 'Monsoon Flood' | 'Drought' | 'Tropical Cyclone' | 'Cold Wave' | 'Severe Storm';
+  // Mirrors DistrictData['hazardType'] (static baseline + live model classes).
+  hazardType:
+    | 'Flash Flood'
+    | 'Monsoon Flood'
+    | 'Drought'
+    | 'Tropical Cyclone'
+    | 'Cold Wave'
+    | 'Severe Storm'
+    | 'Flood'
+    | 'Heat Wave'
+    | 'Fire'
+    | 'Severe Local Storm';
   hazardSubtype: string;
   incidentDate: string;
   peakImpactWindow: string;

@@ -2,9 +2,10 @@ import express from 'express';
 import path from 'path';
 import multer from 'multer';
 import { verifyApiKey } from '../utils/apiKeyAuth.js';
+import { parseCsvForecastRow, VALID_HORIZONS } from '../utils/forecastRow.js';
+import { getForecastStore } from '../forecastStore.js';
 import csv from 'csv-parser';
 import fs from 'fs';
-import { db, collection, getDocs, query, where, doc, setDoc, deleteDoc, writeBatch } from '../db.js';
 import { generateAdvisory } from '../services/advisoryAgent.js';
 const router = express.Router();
 
@@ -23,12 +24,6 @@ const upload = multer({
     limits: { fileSize: 10 * 1024 * 1024 }, // 10MB max
 });
 
-
-const VALID_HORIZONS = ['7_days', '15_days'];
-const VALID_HAZARDS = [
-    'Cold Wave', 'Drought', 'Fire', 'Flash Flood',
-    'Flood', 'Heat Wave', 'Severe Local Storm', 'Tropical Cyclone'
-];
 
 // ─────────────────────────────────────────────────────────
 // POST /api/v1/forecasts/update
@@ -58,38 +53,15 @@ router.post('/update', upload.single('file'), (req, res, next) => {
             fs.createReadStream(req.file.path)
                 .pipe(csv())
                 .on('data', (row) => {
-                    // Validate each row
-                    if (!VALID_HORIZONS.includes(row.horizon)) {
-                        errors.push(`Row ${results.length + 1}: Invalid horizon "${row.horizon}"`);
+                    // Validate each row (shared parser accepts both the legacy
+                    // `severity_score` column and the notebook's dual-track
+                    // `model_severity` / `physics_severity` columns).
+                    const parsed = parseCsvForecastRow(row, results.length + errors.length + 1);
+                    if (!parsed.ok) {
+                        errors.push(parsed.error);
                         return;
                     }
-                    if (!VALID_HAZARDS.includes(row.hazard_type)) {
-                        errors.push(`Row ${results.length + 1}: Invalid hazard "${row.hazard_type}"`);
-                        return;
-                    }
-
-                    const severity = parseFloat(row.severity_score);
-                    const confidence = parseFloat(row.confidence);
-
-                    if (isNaN(severity) || severity < 0 || severity > 1) {
-                        errors.push(`Row ${results.length + 1}: Invalid severity ${row.severity_score}`);
-                        return;
-                    }
-                    if (isNaN(confidence) || confidence < 0 || confidence > 1) {
-                        errors.push(`Row ${results.length + 1}: Invalid confidence ${row.confidence}`);
-                        return;
-                    }
-
-                    results.push({
-                        district_id: parseInt(row.district_id),
-                        district_name: row.district_name,
-                        horizon: row.horizon,
-                        hazard_type: row.hazard_type,
-                        severity_score: severity,
-                        confidence: confidence,
-                        target_date: row.target_date,
-                        prediction_date: row.prediction_date
-                    });
+                    results.push(parsed.value);
                 })
                 .on('end', resolve)
                 .on('error', reject);
@@ -104,33 +76,10 @@ router.post('/update', upload.single('file'), (req, res, next) => {
         }
 
         const predictionDate = results[0].prediction_date;
-        const forecastsRef = collection(db, 'forecasts');
 
-        // Delete old predictions for this prediction_date
-        const qOld = query(forecastsRef, where('prediction_date', '==', predictionDate));
-        const oldSnap = await getDocs(qOld);
-        const batch = writeBatch(db);
-        oldSnap.forEach((d) => {
-            batch.delete(d.ref);
-        });
-
-        // Insert new records
-        for (const row of results) {
-            const newDocRef = doc(collection(db, 'forecasts'));
-            batch.set(newDocRef, {
-                district_id: row.district_id,
-                district_name: row.district_name,
-                horizon: row.horizon,
-                hazard_type: row.hazard_type,
-                severity_score: row.severity_score,
-                confidence: row.confidence,
-                target_date: row.target_date,
-                prediction_date: row.prediction_date,
-                created_at: new Date().toISOString()
-            });
-        }
-
-        await batch.commit();
+        // Replace all rows for this prediction_date (delete + insert in one
+        // store-level operation; Supabase runs it in a transaction).
+        await getForecastStore().replaceForecastsForPredictionDate(predictionDate, results);
 
         // Generate advisories for each inserted row
         const advisories = [];
@@ -183,7 +132,7 @@ router.post('/update', upload.single('file'), (req, res, next) => {
 });
 
 // ─────────────────────────────────────────────────────────
-// GET /api/v1/forecasts?district_id=1&horizon=7_days
+// GET /api/v1/forecasts?district_id=1&horizon=10_days
 // Returns the latest forecast for a specific district
 // ─────────────────────────────────────────────────────────
 router.get('/', async (req, res) => {
@@ -197,24 +146,11 @@ router.get('/', async (req, res) => {
     }
 
     try {
-        const q = query(
-            collection(db, 'forecasts'),
-            where('district_id', '==', parseInt(district_id)),
-            where('horizon', '==', horizon)
-        );
-        const querySnapshot = await getDocs(q);
-        const rows = [];
-        querySnapshot.forEach((doc) => {
-            rows.push(doc.data());
-        });
+        const forecast = await getForecastStore().getLatestForecastByDistrict(parseInt(district_id), horizon);
 
-        if (rows.length === 0) {
+        if (!forecast) {
             return res.status(404).json({ error: 'No forecast found' });
         }
-
-        // Sort descending by prediction_date
-        rows.sort((a, b) => new Date(b.prediction_date) - new Date(a.prediction_date));
-        const forecast = rows[0];
 
         // Apply severity binning (from 3-hazardnet-with-severity.ipynb)
         let severity_bin, severity_color;
@@ -257,7 +193,7 @@ router.get('/', async (req, res) => {
 });
 
 // ─────────────────────────────────────────────────────────
-// GET /api/v1/forecasts/bulk?horizon=7_days
+// GET /api/v1/forecasts/bulk?horizon=10_days
 // Returns forecasts for ALL 64 districts (for Mapbox heatmap)
 // ─────────────────────────────────────────────────────────
 router.get('/bulk', async (req, res) => {
@@ -268,28 +204,106 @@ router.get('/bulk', async (req, res) => {
     }
 
     try {
-        const q = query(
-            collection(db, 'forecasts'),
-            where('horizon', '==', horizon)
-        );
-        const querySnapshot = await getDocs(q);
-        const allRows = [];
-        querySnapshot.forEach((doc) => {
-            allRows.push(doc.data());
-        });
-
-        // Group by district_id, keeping latest prediction_date
-        const districtMap = new Map();
-        for (const row of allRows) {
-            const existing = districtMap.get(row.district_id);
-            if (!existing || new Date(row.prediction_date) > new Date(existing.prediction_date)) {
-                districtMap.set(row.district_id, row);
-            }
-        }
-        const rows = Array.from(districtMap.values());
+        // Latest row per district for this horizon (grouping happens in the
+        // store: JS grouping on Firestore, DISTINCT ON in Supabase).
+        const rows = await getForecastStore().getLatestForecastsByHorizon(horizon);
 
         res.json({
             horizon: horizon,
+            count: rows.length,
+            generated_at: new Date().toISOString(),
+            forecasts: rows
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// ─────────────────────────────────────────────────────────
+// GET /api/v1/forecasts/history?from=YYYY-MM-DD&to=YYYY-MM-DD
+//   &horizon=10_days|20_days|30_days (optional) &district_id=N (optional)
+//   &format=json|csv (optional, default json)
+// Serves the forecast history accumulating in the store (backlog #6 — the
+// guide's Phase 6, adapted: history lives in the forecast store + the weekly
+// GitHub-Release CSV archive instead of backend/data/ snapshots).
+// Defaults: last 30 days ending today. Max window: 90 days (bounds cost).
+// format=csv emits the ingest-compatible dual-track column set, so any window
+// can be re-exported as an archive artifact.
+// ─────────────────────────────────────────────────────────
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+const HISTORY_MAX_WINDOW_DAYS = 90;
+const HISTORY_DEFAULT_WINDOW_DAYS = 30;
+const CSV_COLUMNS = [
+    'district_id', 'district_name', 'horizon', 'hazard_type', 'severity_score',
+    'confidence', 'target_date', 'prediction_date', 'model_severity',
+    'physics_severity', 'division', 'pcode', 'admin_level', 'adm2_name', 'adm2_pcode'
+];
+
+function isValidDate(s) {
+    if (typeof s !== 'string' || !DATE_RE.test(s)) return false;
+    const t = Date.parse(`${s}T00:00:00Z`);
+    return Number.isFinite(t) && new Date(t).toISOString().slice(0, 10) === s;
+}
+
+function csvEscape(value) {
+    if (value === null || value === undefined) return '';
+    const str = String(value);
+    return /[",\n\r]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
+}
+
+router.get('/history', async (req, res) => {
+    const { from, to, horizon, district_id, format } = req.query;
+
+    // Optional but validated horizon filter.
+    if (horizon !== undefined && !VALID_HORIZONS.includes(horizon)) {
+        return res.status(400).json({ error: `Invalid horizon. Use: ${VALID_HORIZONS.join(', ')}` });
+    }
+    // Optional integer district filter.
+    let districtId = null;
+    if (district_id !== undefined && district_id !== '') {
+        districtId = parseInt(district_id, 10);
+        if (!Number.isInteger(districtId) || districtId < 0) {
+            return res.status(400).json({ error: 'Invalid district_id — expected a non-negative integer' });
+        }
+    }
+    // Date window: defaults to the last 30 days ending today.
+    const todayUtc = new Date().toISOString().slice(0, 10);
+    let toDate = to !== undefined && to !== '' ? to : todayUtc;
+    let fromDate = from !== undefined && from !== '' ? from
+        : new Date(Date.parse(`${toDate}T00:00:00Z`) - HISTORY_DEFAULT_WINDOW_DAYS * 86_400_000)
+            .toISOString().slice(0, 10);
+
+    if (!isValidDate(fromDate) || !isValidDate(toDate)) {
+        return res.status(400).json({ error: 'from/to must be valid YYYY-MM-DD dates' });
+    }
+    if (fromDate > toDate) {
+        return res.status(400).json({ error: 'from must be <= to' });
+    }
+    const windowDays = (Date.parse(`${toDate}T00:00:00Z`) - Date.parse(`${fromDate}T00:00:00Z`)) / 86_400_000;
+    if (windowDays > HISTORY_MAX_WINDOW_DAYS) {
+        return res.status(400).json({ error: `Date window too large (${Math.floor(windowDays)} days) — max ${HISTORY_MAX_WINDOW_DAYS} days` });
+    }
+
+    try {
+        const rows = await getForecastStore().getForecastHistory({
+            from: fromDate, to: toDate, horizon: horizon || null, districtId
+        });
+
+        if (format === 'csv') {
+            const lines = [CSV_COLUMNS.join(',')];
+            for (const row of rows) {
+                lines.push(CSV_COLUMNS.map((c) => csvEscape(row[c])).join(','));
+            }
+            res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+            res.setHeader('Content-Disposition', `attachment; filename="hazardnet_forecasts_${fromDate}_${toDate}.csv"`);
+            return res.status(200).send(lines.join('\n') + '\n');
+        }
+
+        res.json({
+            from: fromDate,
+            to: toDate,
+            horizon: horizon || null,
+            district_id: districtId,
             count: rows.length,
             generated_at: new Date().toISOString(),
             forecasts: rows

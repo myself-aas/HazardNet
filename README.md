@@ -9,7 +9,8 @@
 **HazardNet** is a production-ready, edge-first web application for real-time multi-hazard classification and severity quantification across Bangladesh's 64 agricultural districts. Built for operational deployment and aligned with IEEE TGRS submission standards, it leverages a 3D Depthwise-Separable CNN, deterministic climate forecasting, and TensorFlow Lite WASM to deliver sub-100ms, offline-capable hazard predictions.
 
 🔗 **Live Platform**: [hazardnet.live](https://hazardnet.live) *(Replace with actual URL)*  
-📊 **Kaggle Dataset**: [HazardNet Weekly Forecasts](https://kaggle.com/) *(Replace with actual link)*
+🗄️ **Forecast Archive**: weekly artifacts are attached to this repo's [GitHub Releases](https://github.com/myself-aas/HazardNet/releases) (one set per Sunday pipeline run, tag `vX.Y.Z`): the ingest-compatible forecasts CSV (507 ADM3 units × 10/20/30-day horizons, dual-track severity), plus — when computed — the ADM3 location matrix, the OSM exposure overlay, and the ADM3 hazard+exposure GeoJSON (ADR 0006). Queryable history: 
+`GET /api/v1/forecasts/history?from=YYYY-MM-DD&to=YYYY-MM-DD` (optional `&horizon=10_days|20_days|30_days`, `&district_id=N`, `&format=csv` for an archive-format export).
 
 ---
 
@@ -30,7 +31,7 @@
 
 ## 🌍 Overview
 
-Agricultural disaster risk in Bangladesh requires high-resolution, temporally aware forecasting. HazardNet aggregates 15-channel spatio-temporal tensors (SAR, Optical, ERA5-Land) with deterministic Open-Meteo climate projections to generate **7-day (Tactical)** and **15-day (Strategic)** hazard forecasts. 
+Agricultural disaster risk in Bangladesh requires high-resolution, temporally aware forecasting. HazardNet aggregates 15-channel spatio-temporal tensors (SAR, Optical, ERA5-Land) with deterministic Open-Meteo climate projections to generate **10/20/30-day** hazard forecasts across Bangladesh's **507 sub-district ADM3 units** (495 Upazilas + 12 City Corporations, HDX COD-AB). 
 
 Unlike traditional black-box models, HazardNet employs a **Dual-Track Severity Indexing** system: it cross-validates the CNN's probabilistic severity output against robust, physics-based cognitive formulas (e.g., Vegetation Health Index for Drought, Excess Heat Factor for Heat Waves), ensuring scientifically grounded and transparent decision support for farmers and extension officers.
 
@@ -51,9 +52,9 @@ The model classifies **8 distinct climatic hazards** across two actionable lead-
 | **Severe Local Storm** | Precip, Wind_Max, SAR_VH variability |
 | **Tropical Cyclone** | Wind_Max, Precip, SAR_VV/VH gradients |
 
-**Forecasting Horizons**:
-- **7 Days**: Driven by short-term deterministic weather forecasts (Open-Meteo Daily).
-- **15 Days**: Driven by medium-term seasonal climate outlooks and historical normals.
+**Forecasting Horizons** (10/20/30 days — ADR 0005):
+- **10 Days**: Driven by short-term deterministic weather forecasts (Open-Meteo Daily).
+- **20/30 Days**: Medium-term outlooks; Open-Meteo serves at most 16 deterministic days, so these horizons aggregate the available ≤16-day window (ADR 0005).
 
 ---
 
@@ -168,7 +169,7 @@ VITE_ENABLE_OFFLINE_MODE=true
 
 1. **Navigate to the Dashboard**: Open `http://localhost:3000` (or your deployed URL).
 2. **Select a Region**: Click on any of the 8 Divisions (ADM1) on the map to zoom in and reveal the 64 Districts (ADM2).
-3. **Choose a Horizon**: Use the top toggle to switch between **Next 7 Days** (Tactical) and **Next 15 Days** (Strategic).
+3. **Choose a Horizon**: Use the top toggle to switch between the **10/20/30-day** horizons (ADR 0005).
 4. **Interpret the Prediction Panel**:
    - **Hazard Type & Confidence**: Look for the `Certain` / `Probable` / `Uncertain` badge.
    - **Severity Gauges**: Compare the AI Model Severity (0-100%) with the Physics-Based Severity. High alignment indicates high reliability.

@@ -200,6 +200,7 @@ export function formatFilenameWithPlaceholders(
   }
 
   // Sanitize filename: remove characters forbidden in filenames on OS / filesystems
+  // eslint-disable-next-line no-control-regex -- intentional: strips NUL/control chars forbidden in filenames
   resolved = resolved.replace(/[<>:"/\\|?*\x00-\x1F]/g, '_').trim();
   resolved = resolved.replace(/_+/g, '_');
 

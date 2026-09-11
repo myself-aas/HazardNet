@@ -1,18 +1,9 @@
-I'll refactor the deployment guide to integrate the automated forecast pipeline with Kaggle CI/CD and add FAO GAUL ADM3 (Upazila-level) support. 
-
-Created memory file 
-
-I'll now refactor the entire deployment guide with the CI/CD automated forecast pipeline and FAO GAUL ADM3 support. 
-
-Updated memory
-
-I'll create the refactored deployment guide. Since I cannot edit files in plan mode, I'll show you the complete refactored document that integrates the automated forecast pipeline with Kaggle CI/CD and FAO GAUL ADM3 support. 
-
-Updated memory file 
-
-I'll present you with the complete refactored deployment guide that integrates the automated forecast pipeline with Kaggle CI/CD and FAO GAUL ADM3 support. This is a comprehensive rewrite of the deployment architecture.
-
----
+<!-- Historical design document (2026-08), reconciled against the implemented
+     system on 2026-09-12 (audit backlog 7 — see the RECONCILIATION STATUS
+     block below). Preserved verbatim as the design record; every divergent
+     prescription carries an inline "Reconciled (2026-09-12)" annotation.
+     Current truth: docs/codebase/*.md, docs/adr/*.md,
+     docs/audits/2026-09-12-deployment-verification.md. -->
 
 # HazardNet WebApp Deployment System
 ## Production-Ready Automated Forecast Deployment (IEEE TGRS Submission Ready)
@@ -24,9 +15,37 @@ I'll present you with the complete refactored deployment guide that integrates t
 
 ---
 
+## ⚠️ RECONCILIATION STATUS (2026-09-12 — audit backlog 7)
+
+This document is the **original 2026-08 design record**, preserved verbatim. The implemented
+system diverges from it in well-understood ways; every divergent section below carries an
+inline **⚠️ Reconciled (2026-09-12)** note. Authoritative sources: `docs/adr/*.md`,
+`docs/codebase/*.md`, `docs/audits/2026-09-12-deployment-verification.md`.
+
+**Topology decision (resolved — accepted ADR 0003; the "Docker vs. Vercel" question is
+closed):** Vercel is the primary deploy target (static SPA + `api/` serverless functions,
+`vercel.json`); the Node server (`npm start`) is the local/self-host runtime; **Docker is
+not implemented** — PART 8 is superseded. Self-host observability (Prometheus/Grafana)
+runs via the `docker run` commands in `monitoring/README.md`.
+
+| Prescribed here | Implemented reality |
+|---|---|
+| Daily 00:00 UTC runs; 10/20/30-day horizons | **Weekly Sunday 02:00 UTC** (`weekly_forecast.yml`); **10/20/30-day** horizons (restored 2026-09-12, ADR 0005; Open-Meteo's 16-day cap documented there) |
+| 64 districts + 490 upazilas (554 locations) | **507 ADM3 units** — 495 Upazilas + 12 City Corporations (HDX COD-AB, ADR 0005; the 554 figure matches neither COD 507 nor raw 600) |
+| Static JSON/CSV under `backend/data/` | Forecast store — Firestore (default) / Supabase (ADR 0002) — behind `backend/forecastStore.js` |
+| Express CJS + morgan, no ML inference | ESM, no morgan, **TFJS on-demand inference** (`/api/predict`) |
+| Redux Toolkit + RTK Query; Mapbox GL | **TanStack Query** (`useForecasts`); **Leaflet** |
+| Docker Compose deploy | **Vercel** (ADR 0003) + Node self-host |
+| CSV committed to repo | CSV → **GitHub Release** + API ingest; history via `GET /api/v1/forecasts/history` |
+
+---
+
 ## PART 1: SYSTEM ARCHITECTURE OVERVIEW
 
 ### 1.1 Technology Stack
+
+> ⚠️ **Reconciled (2026-09-12):** Several rows are aspirational — Frontend is **Leaflet** (not Mapbox GL), State Mgmt is **TanStack Query** (not RTK Query), Data Storage is the **forecast store** (Firestore/Supabase per ADR 0002, not static files), the Backend **does** run TFJS inference (`/api/predict`), Deployment is **Vercel + Node self-host** (ADR 0003, no Docker), and Monitoring now ships in `monitoring/`. See the table above and `docs/codebase/STACK.md`.
+
 
 ```
 Forecast Engine:  Kaggle Notebooks (Python + TFLite + GEE + Open-Meteo)
@@ -42,6 +61,8 @@ Monitoring:       Prometheus + Grafana (forecast freshness, pipeline health)
 
 ### 1.2 HazardNet Model Architecture
 
+> ⚠️ **Reconciled (2026-09-12, ADR 0007):** the "→ <2MB (INT8 quantized)" step below was never producible — TFLite's converter crashes on `CONV_3D` under INT8, so quantization is bypassed and the shipped bundle is **FP32 only** (790 KB, `Models/VERSION.json`). The external Kaggle bundle's `hazardnet_int8.tflite` is a misnomer (optimized-FP32 bytes). No INT8 edge path is planned (ADR 0007).
+
 ```
 Model Class:     HazardNetCNN (3D Depthwise-Separable CNN)
 Input Tensor:    (B, T=10, C=15, H=64, W=64)  [10 timesteps, 15 channels, 64x64 pixels]
@@ -55,6 +76,9 @@ Deployment:      Kaggle Notebooks (30 hrs CPU/week free tier)
 ```
 
 ### 1.3 Administrative Boundaries (FAO GAUL 2015)
+
+> ⚠️ **Reconciled (2026-09-12, updated same day — ADR 0005):** Coverage is now the **507-unit HDX COD-AB ADM3 matrix** (495 Upazilas + 12 City Corporations — *not* the 554 figure below, which matches neither the COD layer nor the raw thana geometry), cadence is **weekly Sunday ~02:00 UTC**, horizons are **10/20/30-day** (with Open-Meteo's 16-day cap: 20/30 aggregate the available window).
+
 
 ```
 ADM0 (Country):   Bangladesh (1 feature)
@@ -80,9 +104,14 @@ ADM3 (Upazilas):  ~490 sub-districts (Savar, Dhamrai, Keraniganj, etc.)
 | Phase 5: Docker & Deploy | 1-2 hrs | Docker Compose + deployment pipeline | → Next |
 | Phase 6: Data Archiving | 1-2 hrs | Historical forecast storage + versioning | → Next |
 
+> ⚠️ **Reconciled (2026-09-12, updated same day — ADR 0005):** Actual status — Phase 0 ✅ (notebook + secrets + HDX ADM3 boundaries; horizons 10/20/30) · Phase 1 ✅ (`weekly_forecast.yml`, Sun 02:00 UTC — not the daily workflow prescribed here) · Phase 2 ✅ (different shape: ESM server, forecast store, `/api/v1` prefix, TFJS inference) · Phase 3 ✅ (TanStack + Leaflet, wired 2026-09-12) · Phase 4 ✅ (34 Jest suites, forecast-age SLO, `monitoring/`) · Phase 5 🔴 superseded by ADR 0003 (Vercel) · Phase 6 ✅ (history API + GitHub-Release CSV). Full matrix: `docs/audits/2026-09-12-deployment-verification.md` §2.
+
 ---
 
 ## PART 2: ARCHITECTURE COMPARISON
+
+> ⚠️ **Reconciled (2026-09-12):** The "New Architecture" block's "Download CSV/JSON → Commit to repo" step was implemented differently: the CSV is attached to a **GitHub Release** and POSTed to the ingest API (`POST /api/v1/forecasts/update`); the frontend reads the API (`/bulk`), not committed files. History is queryable via `GET /api/v1/forecasts/history`.
+
 
 ### Old Architecture (Edge Inference)
 ```
@@ -197,6 +226,9 @@ Benefits: No model deployment, fast API responses, scheduled updates, historical
    - Note the notebook path: `<username>/hazardnet-auto-forecast`
 
 ### STEP 0.4: Add ADM3 (Upazila) Support to Forecast Script
+
+> ⚠️ **Reconciled (2026-09-12, updated same day — ADR 0005):** **Implemented (phase 8a)** — the notebook loads the **507-unit HDX COD-AB ADM3** layer (495 Upazilas + 12 City Corporations) from the attached Kaggle dataset `bangladesh-adm0-3-geoboundaries`; FAO GAUL is decommissioned (GEE hosts GAUL levels 0–2 only). The code sketch below predates this: the implemented loader is `load_hdx_adm3_boundaries()` (geopandas, P-code-keyed, asserts 507). The frontend admin-level selector remains future work.
+
 
 **Update the `load_fao_gaul_boundaries()` function**:
 
@@ -329,6 +361,9 @@ results.append({
 
 ### STEP 1.1: Create Kaggle Trigger Script
 
+> ⚠️ **Reconciled (2026-09-12):** **`scripts/kaggle_trigger.py` does not exist.** The equivalent (Kaggle kernel push, poll, download via the Kaggle CLI) is inlined as bash steps in `.github/workflows/weekly_forecast.yml`.
+
+
 **File**: `scripts/kaggle_trigger.py`
 
 ```python
@@ -440,6 +475,9 @@ if __name__ == "__main__":
 
 ### STEP 1.2: Create GitHub Actions Workflow
 
+> ⚠️ **Reconciled (2026-09-12):** **Different workflow.** The canonical pipeline is `.github/workflows/weekly_forecast.yml`: weekly **Sunday 02:00 UTC** (not daily), version bump + patch release + Kaggle run + CSV → Release & ingest + Jest gate. The overlapping legacy `weekly_hazardnet.yml` was retired (ADR 0004). There is no `forecast-pipeline.yml`.
+
+
 **File**: `.github/workflows/forecast-pipeline.yml`
 
 ```yaml
@@ -526,6 +564,9 @@ jobs:
 ```
 
 ### STEP 1.3: Create Forecast Validation Script
+
+> ⚠️ **Reconciled (2026-09-12):** **`scripts/validate_forecasts.py` does not exist.** Row-level schema validation lives in the ingest paths (`backend/utils/forecastRow.js` for CSV, a zod chunk schema in `api/ingest.js`); freshness is monitored by the `hazardnet_forecast_age_hours` gauge with a **192h** alert threshold at weekly cadence (`monitoring/alerts.yml`).
+
 
 **File**: `scripts/validate_forecasts.py`
 
@@ -665,6 +706,9 @@ if __name__ == "__main__":
 
 ### STEP 2.1: Create Express Server (No TFLite)
 
+> ⚠️ **Reconciled (2026-09-12):** **Different server.** The actual `backend/server.js` is **ESM** (no `require`, no morgan — request-id middleware + structured logger), **does** run TFJS inference (`/api/predict`), mounts forecast routes under `/api/v1/forecasts`, serves `/health` inline (model-version handshake), and lives in a single root `package.json` (no `backend/package.json`).
+
+
 **File**: `backend/server.js`
 
 ```javascript
@@ -731,6 +775,9 @@ module.exports = app;
 ```
 
 ### STEP 2.2: Create Forecast Routes
+
+> ⚠️ **Reconciled (2026-09-12):** The actual router (`backend/routes/forecasts.js`) exposes `POST /update` (multipart CSV, Bearer `BACKEND_API_KEY`), `GET /?district_id&horizon`, `GET /bulk?horizon`, and `GET /history?from&to` (added 2026-09-12) — all reading/writing through the forecast store (`backend/forecastStore.js`, ADR 0002).
+
 
 **File**: `backend/routes/forecasts.js`
 
@@ -817,6 +864,9 @@ module.exports = router;
 ```
 
 ### STEP 2.3: Create Forecast Service
+
+> ⚠️ **Reconciled (2026-09-12):** **Never implemented** — no static-file reader or `CACHE_TTL`. Replaced by `backend/forecastStore.js`: Firestore (default) or Supabase Postgres (`FORECAST_STORE` env, ADR 0002). The freshness info this service was meant to provide is the `hazardnet_forecast_age_hours` gauge on `/metrics`.
+
 
 **File**: `backend/services/forecastService.js`
 
@@ -970,6 +1020,9 @@ module.exports = new ForecastService();
 
 ### STEP 2.4: Health Check Endpoint
 
+> ⚠️ **Reconciled (2026-09-12):** No `backend/routes/health.js` — `/health` is inline in `backend/server.js` and includes the model-version handshake. Forecast data status is exposed via `/metrics` (`hazardnet_forecast_age_hours`; absent series = no data / store unreadable).
+
+
 **File**: `backend/routes/health.js`
 
 ```javascript
@@ -1014,6 +1067,9 @@ module.exports = router;
 ## PART 6: PHASE 3 - FRONTEND UI
 
 ### STEP 3.1: Update Frontend to Fetch Pre-Computed Forecasts
+
+> ⚠️ **Reconciled (2026-09-12):** Implemented **differently (2026-09-12)**: TanStack Query hooks (`frontend/src/hooks/useForecasts.ts`) + defensive parsing/district-alias matching (`frontend/src/lib/forecasts.ts`), **Leaflet** map (not Mapbox), horizons **10/20/30-day** (ADR 0005). The GeoTIFF upload components still exist as UI-only mocks; there is no admin-level selector (ADM3 not implemented).
+
 
 **Key Changes**:
 1. Remove GeoTIFF upload components
@@ -1222,6 +1278,9 @@ export const ForecastPanel: React.FC<ForecastPanelProps> = ({
 
 ### STEP 4.1: Prometheus Metrics for Forecast Pipeline
 
+> ⚠️ **Reconciled (2026-09-12):** **Implemented 2026-09-12 (backlog 5)** — `hazardnet_forecast_age_hours` exists verbatim in `backend/metrics.js` (refreshed per scrape via `backend/utils/forecastFreshness.js`; the stateless Vercel `/api/metrics` exposes the same gauge). The other names here differ from the implemented set: `api_requests_total`, `inference_latency_ms`, `model_load_time_ms`, `cache_hit_rate` — see `backend/metrics.js` and `monitoring/README.md`.
+
+
 **File**: `backend/metrics.js`
 
 ```javascript
@@ -1288,6 +1347,9 @@ app.get('/metrics', async (req, res) => {
 
 ### STEP 4.2: Grafana Dashboard Configuration
 
+> ⚠️ **Reconciled (2026-09-12):** **Committed 2026-09-12:** `monitoring/grafana-dashboard.json` (importable, 4 panels, real metric names), `monitoring/prometheus.yml`, `monitoring/alerts.yml`. The alert threshold was **recalibrated 48h → 192h**: this guide's 48h assumed daily runs; at the weekly cadence it would false-fire ~5 of 7 days.
+
+
 **File**: `monitoring/grafana-dashboard.json`
 
 ```json
@@ -1338,6 +1400,9 @@ app.get('/metrics', async (req, res) => {
 ---
 
 ## PART 8: PHASE 5 - DOCKER & DEPLOYMENT
+
+> ⚠️ **Reconciled (2026-09-12):** **Superseded by ADR 0003.** No `docker-compose.yml` or `Dockerfile` exists in the repo, and none is planned: the primary deploy is **Vercel** (Git integration, static SPA + `api/` functions, `vercel.json`); the self-host runtime is the Node server (`npm start`, Node ≥ 20). For the Prometheus/Grafana services prescribed here, use the `docker run` commands in `monitoring/README.md`.
+
 
 ### STEP 5.1: Updated docker-compose.yml (No Model Files)
 
@@ -1438,6 +1503,9 @@ CMD ["node", "server.js"]
 
 ## PART 9: DEPLOYMENT WORKFLOW
 
+> ⚠️ **Reconciled (2026-09-12):** **Actual steps:** deploy = push to `main` (Vercel builds the SPA + functions) — no compose; self-host = `bun install --frozen-lockfile && npm run build && npm start`, then `curl http://localhost:3001/health`; manual pipeline run = `gh workflow run weekly_forecast.yml`. Note there is no `/api/forecasts/latest` route — use `/api/v1/forecasts?district_id&horizon` or `/api/v1/forecasts/bulk`.
+
+
 ### Complete Deployment Steps
 
 ```bash
@@ -1478,6 +1546,9 @@ open http://localhost:3005  # Grafana
 - **Disk Quota**: 20GB max per dataset
 
 ### Forecast Pipeline Runtime
+
+> ⚠️ **Reconciled (2026-09-12):** The math below assumes 554 locations × 3 horizons **daily**. Implemented: **64 districts × 2 horizons weekly** — recompute before relying on the quota-headroom figures.
+
 - **Per Run**: ~90 minutes (554 locations × 3 horizons)
 - **Daily Runs**: 1.5 hours × 7 days = 10.5 hours/week
 - **Headroom**: 19.5 hours/week remaining
@@ -1492,6 +1563,9 @@ If Kaggle limits become restrictive:
 
 ## PART 11: TROUBLESHOOTING
 
+> ⚠️ **Reconciled (2026-09-12):** Rows referencing this guide's unimplemented stack: ">48hrs old" → at weekly cadence the staleness threshold is **192h** (`monitoring/alerts.yml`); "Forecast JSON missing in `backend/data/forecasts/`" → data lives in the forecast store (Firestore/Supabase), and a 503 from authenticated endpoints means `BACKEND_API_KEY` is unset — fail-closed by design; "`CACHE_TTL` in `forecastService.js`" → no such service (store-backed reads).
+
+
 | Issue | Root Cause | Solution |
 |-------|-----------|----------|
 | Kaggle notebook timeout | Too many locations/GEE rate limits | Split into multiple notebooks by division |
@@ -1504,6 +1578,9 @@ If Kaggle limits become restrictive:
 ---
 
 ## PART 12: NEXT STEPS & ENHANCEMENTS
+
+> ⚠️ **Reconciled (2026-09-12):** Status: **web push notifications exist** (`/api/push/*`, VAPID — close to "real-time alerts"); **historical comparison is served** (`GET /api/v1/forecasts/history`, 2026-09-12); downscaling / ensemble / mobile app not started.
+
 
 ### Phase 7: Advanced Features (Post-MVP)
 1. **Real-time Alerts**: Webhook notifications for high-risk forecasts
@@ -1518,6 +1595,8 @@ If Kaggle limits become restrictive:
 **Backend Latency Target**: <50ms (static file serving)  
 **Forecast Update Frequency**: Daily (configurable)  
 **Storage Requirements**: ~5MB per forecast version (30-day archive = 150MB)
+
+> ⚠️ **Reconciled (2026-09-12):** Update frequency is **weekly** (Sunday 02:00 UTC), and the archive is the **GitHub-Release CSV set + the history API** — no in-repo 30-day snapshot rotation.
 
 **Key Benefits**:
 - ✅ No model deployment complexity

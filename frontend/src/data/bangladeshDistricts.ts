@@ -6,7 +6,19 @@ export interface DistrictData {
   lng: number;
   risk: 'Low' | 'Moderate' | 'High';
   severity: number; // 0.0 to 1.0 continuous severity index
-  hazardType: 'Flash Flood' | 'Monsoon Flood' | 'Drought' | 'Tropical Cyclone' | 'Cold Wave' | 'Severe Storm';
+  // Static baseline hazards + the 8 live model classes served by
+  // /api/v1/forecasts/bulk (backend/utils/forecastRow.js VALID_HAZARDS).
+  hazardType:
+    | 'Flash Flood'
+    | 'Monsoon Flood'
+    | 'Drought'
+    | 'Tropical Cyclone'
+    | 'Cold Wave'
+    | 'Severe Storm'
+    | 'Flood'
+    | 'Heat Wave'
+    | 'Fire'
+    | 'Severe Local Storm';
   mainCrop: string;
   elevationMeters: number;
   cx: number; // SVG relative X percent (0 - 100)

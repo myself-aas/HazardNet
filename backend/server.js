@@ -4,7 +4,6 @@ import cors from 'cors';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
-import { exec } from 'child_process';
 import forecastRoutes from './routes/forecasts.js';
 import advisoryRoutes from './routes/advisory.js';
 import chatRoutes from './routes/chat.js';
@@ -13,6 +12,7 @@ import predictRoutes from './routes/predict.js';
 import pushRoutes from './routes/push.js';
 import conversionRoutes from './routes/conversions.js';
 import metrics from './metrics.js';
+import { refreshForecastAgeGauge } from './utils/forecastFreshness.js';
 import { predictLimiter, apiLimiter } from './middleware/rateLimit.js';
 import { requestId } from './middleware/requestId.js';
 import { attachSupabaseUser, dynamicAiLimiter } from './middleware/supabaseAuth.js';
@@ -43,6 +43,9 @@ const __dirname = path.dirname(__filename);
   }
   if (!process.env.FRONTEND_ORIGIN) {
     warnings.push('FRONTEND_ORIGIN unset - CORS allows any origin (legacy mode). Set it in production.');
+  }
+  if (process.env.FORECAST_STORE === 'supabase' && !process.env.DATABASE_URL) {
+    problems.push('FORECAST_STORE=supabase but DATABASE_URL is NOT set - forecast endpoints will fail until the Supabase Postgres connection string is configured.');
   }
 
   for (const w of warnings) console.warn(`[config] ${w}`);
@@ -126,6 +129,10 @@ app.get('/health', (req, res) => {
 });
 
 // Never serve model artifacts or preprocessing assets from the public server.
+// NOTE: the int8 entry is deliberately kept — no true INT8 model exists
+// (TFLite CONV_3D constraint, ADR 0007), but the external Kaggle conversion
+// bundle still emits a misnamed optimized-FP32 file under that filename, and
+// model artifacts must never be publicly served regardless of precision.
 app.use(['/Models', '/models', '/hazardnet_fp32.tflite', '/hazardnet_int8.tflite', '/normalization_stats.json', '/labels.json'], (req, res) => {
   res.status(404).json({ error: 'Not found' });
 });
@@ -141,9 +148,11 @@ app.use('/api/predict', predictLimiter, predictRoutes);
 app.use('/api/push', pushRoutes);
 app.use('/api/conversions', conversionRoutes);
 
-// Prometheus metrics endpoint
+// Prometheus metrics endpoint. The forecast-age gauge is refreshed here
+// (scrape-driven, 60s-cached store probe — see utils/forecastFreshness.js).
 app.get('/metrics', async (req, res) => {
   try {
+    await refreshForecastAgeGauge();
     res.set('Content-Type', metrics.register.contentType);
     res.end(await metrics.register.metrics());
   } catch (err) {

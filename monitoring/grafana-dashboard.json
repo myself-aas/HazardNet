@@ -1,0 +1,87 @@
+{
+  "__inputs": [
+    {
+      "name": "DS_PROMETHEUS",
+      "label": "Prometheus",
+      "description": "Prometheus datasource scraping HazardNet /metrics",
+      "type": "datasource",
+      "pluginId": "prometheus",
+      "pluginName": "Prometheus"
+    }
+  ],
+  "annotations": { "list": [] },
+  "editable": true,
+  "graphTooltip": 1,
+  "panels": [
+    {
+      "id": 1,
+      "title": "Forecast Data Age (hours) — freshness SLO",
+      "description": "Age of the newest prediction_date in the forecast store. Healthy at weekly cadence: ~2h (just after the Sunday 02:00 UTC run) up to ~170h. Red beyond 192h = a missed weekly run. Absent series = nothing ingested yet, store unreadable, or target down (see monitoring/alerts.yml). The guide's original 48h threshold assumed daily runs and is miscalibrated for the weekly pipeline.",
+      "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "h",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              { "color": "green", "value": null },
+              { "color": "red", "value": 192 }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": false } },
+      "targets": [{ "refId": "A", "expr": "hazardnet_forecast_age_hours" }]
+    },
+    {
+      "id": 2,
+      "title": "API Request Rate (req/s)",
+      "description": "Requests through the routes that increment api_requests_total (/api/predict and /api/conversions on the Node server).",
+      "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "fieldConfig": { "defaults": { "unit": "reqps" }, "overrides": [] },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": false } },
+      "targets": [{ "refId": "A", "expr": "sum(rate(api_requests_total[5m]))" }]
+    },
+    {
+      "id": 3,
+      "title": "Inference Latency p95 (ms)",
+      "description": "p95 of the TFJS /api/predict inference latency histogram.",
+      "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "fieldConfig": { "defaults": { "unit": "ms" }, "overrides": [] },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": false } },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(inference_latency_ms_bucket[5m])))"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Model Load Time (ms)",
+      "description": "Time to load the TFJS model bundle at server startup.",
+      "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "fieldConfig": { "defaults": { "unit": "ms" }, "overrides": [] },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom", "showLegend": false } },
+      "targets": [{ "refId": "A", "expr": "model_load_time_ms" }]
+    }
+  ],
+  "schemaVersion": 39,
+  "tags": ["hazardnet", "forecast-pipeline"],
+  "templating": { "list": [] },
+  "time": { "from": "now-7d", "to": "now" },
+  "timezone": "utc",
+  "title": "HazardNet Forecast Pipeline",
+  "uid": "hazardnet-forecast-pipeline",
+  "version": 1,
+  "weekStart": ""
+}
