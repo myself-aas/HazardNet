@@ -1,0 +1,116 @@
+name: HazardNet Automated Forecast Pipeline
+
+on:
+  schedule:
+    # Run daily at 00:00 UTC
+    - cron: '0 0 * * *'
+  workflow_dispatch:  # Allow manual trigger
+    inputs:
+      force_run:
+        description: 'Force forecast generation'
+        required: false
+        default: 'false'
+
+jobs:
+  generate-forecasts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 150  # 2.5 hours max
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+      
+      - name: Install Kaggle CLI
+        run: |
+          pip install kaggle pandas numpy
+          mkdir -p ~/.kaggle
+          echo '{"username":"${{ secrets.KAGGLE_USERNAME }}","key":"${{ secrets.KAGGLE_KEY }}"}' > ~/.kaggle/kaggle.json
+          chmod 600 ~/.kaggle/kaggle.json
+      
+      - name: Trigger Kaggle Notebook
+        id: kaggle_trigger
+        env:
+          KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
+          KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
+        run: |
+          python scripts/kaggle_trigger.py
+        continue-on-error: false
+      
+      - name: Validate Forecast Data
+        run: |
+          python scripts/validate_forecasts.py
+      
+      - name: Archive Historical Forecasts
+        run: |
+          TIMESTAMP=$(date +%Y-%m-%d)
+          mkdir -p backend/data/forecasts/archive/${TIMESTAMP}
+          
+          if [ -f backend/data/forecasts/hazardnet_forecasts_latest.csv ]; then
+            cp backend/data/forecasts/hazardnet_forecasts_latest.csv \
+               backend/data/forecasts/archive/${TIMESTAMP}/
+          fi
+          
+          if [ -f backend/data/forecasts/hazardnet_forecasts_latest.json ]; then
+            cp backend/data/forecasts/hazardnet_forecasts_latest.json \
+               backend/data/forecasts/archive/${TIMESTAMP}/
+          fi
+          
+          echo "Archived forecasts to archive/${TIMESTAMP}/"
+      
+      - name: Commit Forecast Data
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add backend/data/forecasts/
+          
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "chore: update forecasts $(date +%Y-%m-%d)" \
+                       -m "Automated forecast update from Kaggle pipeline" \
+                       -m "Timestamp: $(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+            git push
+          fi
+      
+      - name: Upload Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: forecast-outputs
+          path: |
+            backend/data/forecasts/hazardnet_forecasts_latest.csv
+            backend/data/forecasts/hazardnet_forecasts_latest.json
+          retention-days: 90
+      
+      - name: Notify on Failure
+        if: failure()
+        run: |
+          echo "⚠️ Forecast pipeline failed! Check logs for details."
+          echo "::error::Forecast generation or validation failed"
+      
+      - name: Check Forecast Freshness
+        if: success()
+        run: |
+          FORECAST_AGE_HOURS=$(python -c "
+          import json
+          from datetime import datetime
+          with open('backend/data/forecasts/hazardnet_forecasts_latest.json', 'r') as f:
+              data = json.load(f)
+              pred_date = datetime.fromisoformat(data[0]['prediction_date'])
+              age = (datetime.now() - pred_date).total_seconds() / 3600
+              print(int(age))
+          ")
+          
+          if [ "$FORECAST_AGE_HOURS" -gt 48 ]; then
+            echo "::warning::Forecasts are ${FORECAST_AGE_HOURS} hours old (stale threshold: 48hrs)"
+          else
+            echo "✅ Forecasts are fresh (${FORECAST_AGE_HOURS} hours old)"
+          fi

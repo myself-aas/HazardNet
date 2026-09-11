@@ -1,0 +1,6 @@
+allowBuilds:
+  '@firebase/util': false
+  '@google/genai': false
+  '@parcel/watcher': false
+  core-js: false
+  protobufjs: false

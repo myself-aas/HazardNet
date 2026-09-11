@@ -1,0 +1,86 @@
+# Artillery Load Test Configuration - Forecast API
+# Tests GET /api/v1/forecasts endpoint under realistic load
+config:
+  target: "{{ $processEnvironment.API_BASE_URL }}"
+  phases:
+    # Warm-up phase
+    - duration: 30
+      arrivalRate: 5
+      name: "Warm-up"
+    
+    # Ramp-up phase
+    - duration: 60
+      arrivalRate: 10
+      rampTo: 50
+      name: "Ramp-up to 50 req/s"
+    
+    # Sustained load
+    - duration: 180
+      arrivalRate: 50
+      name: "Sustained load (50 req/s)"
+    
+    # Spike test
+    - duration: 30
+      arrivalRate: 100
+      name: "Spike to 100 req/s"
+    
+    # Cool-down
+    - duration: 30
+      arrivalRate: 10
+      name: "Cool-down"
+  
+  # Performance thresholds
+  ensure:
+    maxErrorRate: 1  # Max 1% error rate
+    p95: 200  # 95th percentile < 200ms
+    p99: 500  # 99th percentile < 500ms
+  
+  # Load test plugins
+  plugins:
+    expect: {}
+    metrics-by-endpoint: {}
+  
+  # HTTP defaults
+  http:
+    timeout: 10
+
+# Test scenarios
+scenarios:
+  - name: "Forecast API Load Test"
+    weight: 70
+    flow:
+      - get:
+          url: "/api/v1/forecasts?district_id={{ $randomNumber(1, 64) }}&horizon={{ $randomString(7_days,15_days) }}"
+          expect:
+            - statusCode: 200
+            - contentType: json
+            - hasProperty: data
+          capture:
+            - json: "$.data[0].hazard_type"
+              as: "hazardType"
+      
+      - think: 1  # 1 second between requests
+  
+  - name: "Specific District Forecast"
+    weight: 20
+    flow:
+      - get:
+          url: "/api/v1/forecasts?district_id=1&horizon=7_days"
+          expect:
+            - statusCode: 200
+      
+      - think: 2
+  
+  - name: "Hazard-Specific Query"
+    weight: 10
+    flow:
+      - get:
+          url: "/api/v1/forecasts?district_id={{ $randomNumber(1, 64) }}&hazard_type=Flood"
+          expect:
+            - statusCode: 200
+      
+      - think: 1
+
+# Variable definitions
+variables:
+  target: "http://localhost:3000"
