@@ -9,7 +9,9 @@
   "enable_internet": true,
   "dataset_sources": [
     "ashifahmedshuvo/hazardnet-model",
-    "ashifahmedshuvo/ee-token-json"
+    "ashifahmedshuvo/ee-token-json",
+    "ashifahmedshuvo/hazardnet-datasets",
+    "ashifahmedshuvo/bangladesh-adm0-3-geoboundaries"
   ],
   "notebook_sources": [
     "ashifahmedshuvo/hazardnet-model-conversion"

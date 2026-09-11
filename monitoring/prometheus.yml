@@ -1,0 +1,34 @@
+# HazardNet Prometheus scrape configuration (backlog #5).
+#
+# Two deployment shapes exist (ADR 0003): the self-hosted Node server and the
+# Vercel serverless deployment. Both expose a /metrics endpoint:
+#
+#   - Node server:      http://<host>:3001/metrics        (full metric set)
+#   - Vercel function:  https://<app>.vercel.app/api/metrics
+#                       (stateless: exposes the forecast freshness SLO)
+#
+# Enable whichever target you actually run. The Vercel endpoint computes the
+# gauge live from the forecast store with a 60s-cached probe, so a 30s scrape
+# interval costs at most ~2 store reads per minute.
+
+global:
+  scrape_interval: 30s
+  evaluation_interval: 30s
+
+rule_files:
+  - alerts.yml
+
+scrape_configs:
+  # Self-hosted Node server (local dev / self-host runtime).
+  - job_name: hazardnet-selfhost
+    static_configs:
+      - targets: ['localhost:3001']
+
+  # Vercel deployment — replace the host with your project's URL and
+  # uncomment. Keep the scrape interval modest: each (uncached) scrape
+  # triggers one forecast-store probe.
+  # - job_name: hazardnet-vercel
+  #   scheme: https
+  #   metrics_path: /api/metrics
+  #   static_configs:
+  #     - targets: ['your-project.vercel.app']

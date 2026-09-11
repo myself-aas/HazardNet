@@ -66,6 +66,8 @@ docker-compose.yml
 # Ignore environment files
 .env
 .env.*
+# ...but keep the documented examples committable
+!.env.example
 
 # Ignore compiled Python files
 *.pyc

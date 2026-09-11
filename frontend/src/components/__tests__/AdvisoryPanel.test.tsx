@@ -63,7 +63,9 @@ describe("AdvisoryPanel", () => {
     await waitFor(() => {
       // StructuredAdvisoryRenderer renders the first sentence of
       // risk_assessment as the issue headline (period intentionally dropped).
-      expect(screen.getByText(/Severe risk of flooding/i)).toBeInTheDocument();
+      // The headline appears in more than one node (icon split across spans),
+      // so assert on presence rather than uniqueness.
+      expect(screen.getAllByText(/Severe risk of flooding/i).length).toBeGreaterThan(0);
       expect(screen.getByText(/Evacuate low-lying areas/i)).toBeInTheDocument();
       expect(screen.getByText(/Secure livestock/i)).toBeInTheDocument();
     });

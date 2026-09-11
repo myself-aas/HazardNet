@@ -59,6 +59,13 @@ const SignUpPage: React.FC = () => {
   const [pendingVerification, setPendingVerification] = useState(false);
   const [resendIn, setResendIn] = useState(0);
 
+  // Countdown ticker for the resend button.
+  useEffect(() => {
+    if (resendIn <= 0) return;
+    const timer = window.setTimeout(() => setResendIn((value) => Math.max(0, value - 1)), 1000);
+    return () => window.clearTimeout(timer);
+  }, [resendIn]);
+
   // Signed-in users don't need the sign-up form.
   if (user) {
     return (
@@ -136,13 +143,6 @@ const SignUpPage: React.FC = () => {
       setLoading(false);
     }
   };
-
-  // Countdown ticker for the resend button.
-  useEffect(() => {
-    if (resendIn <= 0) return;
-    const timer = window.setTimeout(() => setResendIn((value) => Math.max(0, value - 1)), 1000);
-    return () => window.clearTimeout(timer);
-  }, [resendIn]);
 
   if (pendingVerification) {
     return (

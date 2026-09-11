@@ -1,7 +1,8 @@
 import MaterialIcon from "./MaterialIcon";
 import React from 'react';
 import { useMemo, useState } from 'react';
-import { ALL_64_DISTRICTS, ALL_8_DIVISIONS, DistrictData, DivisionData } from '../data/bangladeshDistricts';
+import { ALL_8_DIVISIONS, DistrictData, DivisionData } from '../data/bangladeshDistricts';
+import { useLiveDistricts } from '../hooks/useForecasts';
 import {
   ResponsiveContainer,
   BarChart,
@@ -64,11 +65,15 @@ export const NationalOverview: React.FC<NationalOverviewProps> = ({
   const [selectedDivisionFilter, setSelectedDivisionFilter] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'top3' | 'all_hazards' | 'divisions' | 'formula'>('top3');
 
+  // Live forecast overlay (weekly pipeline via /api/v1/forecasts/bulk);
+  // static baseline when the API is unreachable.
+  const { districts } = useLiveDistricts();
+
   // 1. Calculate Hazard Summaries using {unique_hazard_name} + {district_counts} + {districts_average_severity_score}
   const { hazardSummaries, top3Hazards, nationalAvgSeverity, totalDistricts } = useMemo(() => {
     const grouped: Record<string, DistrictData[]> = {};
 
-    ALL_64_DISTRICTS.forEach((district) => {
+    districts.forEach((district) => {
       const hazard = district.hazardType || 'Monsoon Flood';
       if (!grouped[hazard]) grouped[hazard] = [];
       grouped[hazard].push(district);
@@ -127,20 +132,20 @@ export const NationalOverview: React.FC<NationalOverviewProps> = ({
 
     const top3 = summaries.slice(0, 3);
     const overallAvgSeverity =
-      ALL_64_DISTRICTS.reduce((acc, d) => acc + (d.severity || 0.5), 0) / ALL_64_DISTRICTS.length;
+      districts.reduce((acc, d) => acc + (d.severity || 0.5), 0) / districts.length;
 
     return {
       hazardSummaries: summaries,
       top3Hazards: top3,
       nationalAvgSeverity: overallAvgSeverity,
-      totalDistricts: ALL_64_DISTRICTS.length
+      totalDistricts: districts.length
     };
-  }, []);
+  }, [districts]);
 
   // 2. Calculate Most Vulnerable Divisions/Regions
   const vulnerableDivisions = useMemo(() => {
     const list: VulnerableDivisionSummary[] = ALL_8_DIVISIONS.map((div) => {
-      const districtsInDiv = ALL_64_DISTRICTS.filter(
+      const districtsInDiv = districts.filter(
         (d) => d.division.toLowerCase() === div.id.toLowerCase() || div.name.toLowerCase().includes(d.division.toLowerCase())
       );
 
@@ -182,16 +187,16 @@ export const NationalOverview: React.FC<NationalOverviewProps> = ({
     // Sort by vulnerability score descending
     list.sort((a, b) => b.vulnerabilityScore - a.vulnerabilityScore);
     return list;
-  }, []);
+  }, [districts]);
 
   // Filtered districts list when a hazard or division card is selected
   const filteredDistricts = useMemo(() => {
-    return ALL_64_DISTRICTS.filter((d) => {
+    return districts.filter((d) => {
       if (selectedHazardFilter && d.hazardType !== selectedHazardFilter) return false;
       if (selectedDivisionFilter && !d.division.toLowerCase().includes(selectedDivisionFilter.toLowerCase())) return false;
       return true;
     });
-  }, [selectedHazardFilter, selectedDivisionFilter]);
+  }, [selectedHazardFilter, selectedDivisionFilter, districts]);
 
   return (
     <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 md:p-10 shadow-md space-y-8 text-slate-800 relative overflow-hidden transition-all duration-300 hover:shadow-lg">

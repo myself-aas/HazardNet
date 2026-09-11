@@ -6,19 +6,53 @@ create table if not exists public.forecasts (
   id            uuid primary key default gen_random_uuid(),
   district_id   text        not null,
   district_name text        not null,
-  horizon       text        not null check (horizon in ('7_days', '15_days')),
+  horizon       text        not null check (horizon in ('10_days', '20_days', '30_days'))
   hazard_type   text        not null,
   confidence    numeric     not null check (confidence >= 0 and confidence <= 1),
-  severity_score numeric    not null check (severity_score >= 0 and severity_score <= 1),
+  severity_score numeric     not null check (severity_score >= 0 and severity_score <= 1),
   target_date    date       not null,
   prediction_date date      not null,
   model_version  text,
+  -- Dual-track severity + admin context (weekly Kaggle CSV shape; see
+  -- backend/utils/forecastRow.js). Optional — older rows may be NULL.
+  model_severity   numeric check (model_severity is null or (model_severity >= 0 and model_severity <= 1)),
+  physics_severity numeric check (physics_severity is null or (physics_severity >= 0 and physics_severity <= 1)),
+  division       text,
+  pcode          text,
+  -- ADM3 identity (ADR 0005): admin level + parent ADM2 district.
+  admin_level    int,
+  adm2_name     text,
+  adm2_pcode    text,
   created_at    timestamptz not null default now(),
   unique (district_id, horizon, hazard_type, target_date, prediction_date)
 );
 
+-- Idempotent upgrades for tables created from an earlier revision of this file.
+alter table public.forecasts
+  add column if not exists model_severity   numeric check (model_severity is null or (model_severity >= 0 and model_severity <= 1));
+alter table public.forecasts
+  add column if not exists physics_severity numeric check (physics_severity is null or (physics_severity >= 0 and physics_severity <= 1));
+alter table public.forecasts
+  add column if not exists division text;
+alter table public.forecasts
+  add column if not exists admin_level int;
+alter table public.forecasts
+  add column if not exists adm2_name text;
+alter table public.forecasts
+  add column if not exists adm2_pcode text;
+-- Horizon set widened 7/15 → 10/20/30 (ADR 0005); swap the CHECK idempotently.
+alter table public.forecasts
+  drop constraint if exists forecasts_horizon_check;
+alter table public.forecasts
+  add constraint forecasts_horizon_check
+  check (horizon in ('10_days', '20_days', '30_days'));
+alter table public.forecasts
+  add column if not exists pcode    text;
+
 create index if not exists forecasts_district_idx on public.forecasts (district_id);
 create index if not exists forecasts_dates_idx on public.forecasts (prediction_date desc, target_date);
+-- Serving path for GET /api/v1/forecasts/bulk (latest row per district).
+create index if not exists forecasts_horizon_idx on public.forecasts (horizon, prediction_date desc);
 
 -- Public read (forecasts are public bulletins); writes only via service role
 -- (weekly pipeline, ingest function) which bypasses RLS.

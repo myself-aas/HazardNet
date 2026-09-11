@@ -38,6 +38,8 @@ import {
 } from '../hooks/useMapMeasurements';
 import { useMapSnapshot } from '../hooks/useMapSnapshot';
 import { useTileCache } from '../hooks/useTileCache';
+import { useLiveDistricts } from '../hooks/useForecasts';
+import { FORECAST_HORIZONS, formatHorizonLabel, type ForecastHorizon } from '../lib/forecasts';
 
 export type { DistrictGeo, PathAnalysisResult, MapLayerKey };
 export const liveDistrictsData: DistrictGeo[] = ALL_64_DISTRICTS;
@@ -152,8 +154,14 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
     isMeasuringRef.current = isMeasuring;
   }, [isMeasuring]);
 
+  // Live forecast overlay (weekly pipeline via /api/v1/forecasts/bulk);
+  // falls back to the static district baseline when the API is unreachable,
+  // so every consumer below can treat `liveDistricts` as always-available.
+  const [forecastHorizon, setForecastHorizon] = useState<ForecastHorizon>('10_days');
+  const { districts: liveDistricts, isLive, liveCount, predictionDate } = useLiveDistricts(forecastHorizon);
+
   // Selected district object
-  const currentSelected = selectedDistrictId ? liveDistrictsData.find((d) => d.id === selectedDistrictId) : undefined;
+  const currentSelected = selectedDistrictId ? liveDistricts.find((d) => d.id === selectedDistrictId) : undefined;
 
   // Extracted Hook 1: useLeafletMap (Manages Leaflet instance lifecycle, tiles, resize, and geolocation)
   const {
@@ -384,18 +392,18 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
       return nearest?.district || null;
     }
     if (userProfile?.homeDistrictId) {
-      return liveDistrictsData.find((d) => d.id === userProfile.homeDistrictId) || null;
+      return liveDistricts.find((d) => d.id === userProfile.homeDistrictId) || null;
     }
     const storedDist = localStorage.getItem('hazardnet_home_district');
     if (storedDist) {
-      return liveDistrictsData.find((d) => d.id === storedDist) || null;
+      return liveDistricts.find((d) => d.id === storedDist) || null;
     }
     return null;
-  }, [userGpsPos, pinpointLat, pinpointLng, userProfile?.homeDistrictId]);
+  }, [userGpsPos, pinpointLat, pinpointLng, userProfile?.homeDistrictId, liveDistricts]);
 
   useEffect(() => {
     (window as any).selectHazardDistrict = (districtId: string) => {
-      const found = liveDistrictsData.find((d) => d.id === districtId);
+      const found = liveDistricts.find((d) => d.id === districtId);
       if (found) {
         handleSelectDistrict(found);
       }
@@ -403,7 +411,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
     return () => {
       delete (window as any).selectHazardDistrict;
     };
-  }, [handleSelectDistrict]);
+  }, [handleSelectDistrict, liveDistricts]);
 
   const toggleHazard = (hazardId: string) => {
     setSelectedHazards((prev) =>
@@ -422,7 +430,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
   // Compute top 3 hazards for the selected division
   const divisionTopHazards = useMemo(() => {
     if (selectedDivision === 'All') return [];
-    const divDistricts = liveDistrictsData.filter(d => d.division.toLowerCase() === selectedDivision.toLowerCase());
+    const divDistricts = liveDistricts.filter(d => d.division.toLowerCase() === selectedDivision.toLowerCase());
     
     const hazards: Record<string, { hazardName: string; severitySum: number; count: number; maxSeverity: number }> = {};
     divDistricts.forEach(d => {
@@ -443,7 +451,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
       }))
       .sort((a, b) => b.avgSeverity - a.avgSeverity)
       .slice(0, 3);
-  }, [selectedDivision]);
+  }, [selectedDivision, liveDistricts]);
 
   // Handle Division Filter Jump
   const handleSelectDivision = (divisionName: string) => {
@@ -456,7 +464,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
       return;
     }
 
-    const divisionDistricts = liveDistrictsData.filter((d) => d.division.toLowerCase() === divisionName.toLowerCase());
+    const divisionDistricts = liveDistricts.filter((d) => d.division.toLowerCase() === divisionName.toLowerCase());
     if (divisionDistricts.length > 0) {
       const bounds = L.latLngBounds(divisionDistricts.map((d) => [d.lat, d.lng]));
       mapInstanceRef.current.fitBounds(bounds.pad(0.25), { animate: true, duration: 1.2 });
@@ -483,7 +491,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
       }
       mapInstanceRef.current.flyTo([currentSelected.lat, currentSelected.lng], 9.5, { duration: 1.2 });
     } else if (selectedDivision !== 'All') {
-      const divisionDistricts = liveDistrictsData.filter((d) => d.division.toLowerCase() === selectedDivision.toLowerCase());
+      const divisionDistricts = liveDistricts.filter((d) => d.division.toLowerCase() === selectedDivision.toLowerCase());
       const bounds = L.latLngBounds([]);
       divisionDistricts.forEach((d) => {
         if (isValidLatLng(d.lat, d.lng)) {
@@ -499,10 +507,10 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
         mapInstanceRef.current.fitBounds(bounds.pad(0.1), { animate: true, duration: 1.2, maxZoom: 9 });
       }
     }
-  }, [selectedDistrictId, currentSelected, selectedDivision]);
+  }, [selectedDistrictId, currentSelected, selectedDivision, liveDistricts]);
 
   // Filtered districts based on search, division & active disaster checkboxes
-  const filteredDistricts = liveDistrictsData.filter((d) => {
+  const filteredDistricts = liveDistricts.filter((d) => {
     const matchesSearch =
       d.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       d.division.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -1276,7 +1284,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                   HD TERRAIN STREAM
                 </span>
                 <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-slate-100 text-slate-700 border border-slate-200">
-                  {filteredDistricts.length} / {liveDistrictsData.length} Districts Active
+                  {filteredDistricts.length} / {liveDistricts.length} Districts Active
                 </span>
               </div>
               <p className="text-xs text-slate-500 mt-0.5 leading-relaxed font-medium">
@@ -1378,6 +1386,38 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
             />
           </div>
 
+          {/* Forecast Horizon Toggle (tactical 7-day / strategic 15-day) + live data status */}
+          <div className="flex items-center gap-1.5 shrink-0" role="group" aria-label="Forecast horizon">
+            {FORECAST_HORIZONS.map((h) => (
+              <button
+                key={h}
+                onClick={() => setForecastHorizon(h)}
+                aria-pressed={forecastHorizon === h}
+                className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all whitespace-nowrap ${
+                  forecastHorizon === h
+                    ? 'bg-slate-900 text-white'
+                    : 'text-slate-600 bg-white/90 hover:bg-slate-100 border border-slate-200'
+                }`}
+              >
+                {formatHorizonLabel(h)}
+              </button>
+            ))}
+            <span
+              className={`px-2 py-1 rounded-lg text-[10px] font-bold whitespace-nowrap border ${
+                isLive
+                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                  : 'bg-slate-50 text-slate-500 border-slate-200'
+              }`}
+              title={
+                isLive
+                  ? `Live pipeline forecast — ${liveCount}/64 districts matched, prediction date ${predictionDate}`
+                  : 'Static baseline data — the forecast API is offline or has no rows yet'
+              }
+            >
+              {isLive ? `● Live ${liveCount}/64` : '○ Baseline'}
+            </span>
+          </div>
+
           {/* Hazard Layer Toggles */}
           <div className="flex items-center gap-1.5 overflow-x-auto py-1 custom-scrollbar">
             <button
@@ -1398,7 +1438,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
             </button>
             {HAZARD_LAYERS.map((h) => {
               const isAct = selectedHazards.includes(h.id);
-              const count = liveDistrictsData.filter((d) => d.hazardType === h.id).length;
+              const count = liveDistricts.filter((d) => d.hazardType === h.id).length;
               return (
                 <button
                   key={h.id}
@@ -1818,7 +1858,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                       onChange={(e) => setReportDistrictId(e.target.value)}
                       className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800 focus:outline-none focus:border-[#f9a825]"
                     >
-                      {liveDistrictsData.map((d) => (
+                      {liveDistricts.map((d) => (
                         <option key={d.id} value={d.id}>
                           {d.name} ({d.division} Division)
                         </option>
@@ -1878,7 +1918,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                   </button>
                   <button
                     onClick={() => {
-                      const targetDist = liveDistrictsData.find(d => d.id === reportDistrictId);
+                      const targetDist = liveDistricts.find(d => d.id === reportDistrictId);
                       if (targetDist) {
                         targetDist.severity = reportSeverity;
                         targetDist.hazardType = reportHazardType as any;
@@ -2622,7 +2662,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                 <button
                   key={preset.id}
                   onClick={() => {
-                    const target = liveDistrictsData.find((d) => d.id === preset.id);
+                    const target = liveDistricts.find((d) => d.id === preset.id);
                     if (target) handleSelectDistrict(target);
                   }}
                   className={`px-3 py-1.5 rounded-xl border text-[11px] font-bold transition-all ${

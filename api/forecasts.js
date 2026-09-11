@@ -1,10 +1,11 @@
 // Vercel Serverless Function
-// Handles CSV uploads, generates advisories via Gemini, and writes to Firebase Firestore
+// Handles CSV uploads, generates advisories via Gemini, and writes through the forecast store (ADR 0002)
 // ESM: the root package.json declares "type": "module" — CJS `require` fails here.
 
 import csv from 'csv-parser';
 import { generateAdvisory } from '../backend/services/advisoryAgent.js';
-import { db, collection, getDocs, query, where, doc, writeBatch } from '../backend/db.js';
+import { getForecastStore } from '../backend/forecastStore.js';
+import { parseCsvForecastRow } from '../backend/utils/forecastRow.js';
 import Busboy from 'busboy';
 import { verifyApiKey } from '../backend/utils/apiKeyAuth.js';
 
@@ -39,71 +40,26 @@ export default async function handler(req, res) {
     file
       .pipe(csv())
       .on('data', (row) => {
-        // Validation similar to backend/routes/forecasts.js
-        const VALID_HORIZONS = ['7_days', '15_days'];
-        const VALID_HAZARDS = [
-          'Cold Wave', 'Drought', 'Fire', 'Flash Flood',
-          'Flood', 'Heat Wave', 'Severe Local Storm', 'Tropical Cyclone'
-        ];
-        if (!VALID_HORIZONS.includes(row.horizon)) {
-          errors.push(`Invalid horizon "${row.horizon}"`);
+        // Shared parser (accepts legacy severity_score + notebook dual-track
+        // model_severity/physics_severity shapes) — same contract as the
+        // backend route's CSV ingest.
+        const parsed = parseCsvForecastRow(row, results.length + errors.length + 1);
+        if (!parsed.ok) {
+          errors.push(parsed.error);
           return;
         }
-        if (!VALID_HAZARDS.includes(row.hazard_type)) {
-          errors.push(`Invalid hazard "${row.hazard_type}"`);
-          return;
-        }
-        const severity = parseFloat(row.severity_score);
-        const confidence = parseFloat(row.confidence);
-        if (isNaN(severity) || severity < 0 || severity > 1) {
-          errors.push(`Invalid severity ${row.severity_score}`);
-          return;
-        }
-        if (isNaN(confidence) || confidence < 0 || confidence > 1) {
-          errors.push(`Invalid confidence ${row.confidence}`);
-          return;
-        }
-        results.push({
-          district_id: parseInt(row.district_id),
-          district_name: row.district_name,
-          horizon: row.horizon,
-          hazard_type: row.hazard_type,
-          severity_score: severity,
-          confidence: confidence,
-          target_date: row.target_date,
-          prediction_date: row.prediction_date
-        });
+        results.push(parsed.value);
       })
       .on('end', async () => {
         if (results.length === 0) {
           res.status(422).json({ error: 'No valid rows', validation_errors: errors });
           return;
         }
-        // Write to Firestore
+        // Write through the forecast store (Firestore or Supabase per
+        // FORECAST_STORE — ADR 0002): replace-all for this prediction_date.
         try {
           const predictionDate = results[0].prediction_date;
-          const forecastsRef = collection(db, 'forecasts');
-          const qOld = query(forecastsRef, where('prediction_date', '==', predictionDate));
-          const oldSnap = await getDocs(qOld);
-          const batch = writeBatch(db);
-          oldSnap.forEach((d) => {
-            batch.delete(d.ref);
-          });
-          for (const row of results) {
-            const newDocRef = doc(collection(db, 'forecasts'));
-            batch.set(newDocRef, {
-              district_id: row.district_id,
-              district_name: row.district_name,
-              horizon: row.horizon,
-              hazard_type: row.hazard_type,
-              severity_score: row.severity_score,
-              confidence: row.confidence,
-              target_date: row.target_date,
-              prediction_date: row.prediction_date,
-              created_at: new Date().toISOString()
-            });
-          }
-          await batch.commit();
+          await getForecastStore().replaceForecastsForPredictionDate(predictionDate, results);
         } catch (dbErr) {
           res.status(500).json({ error: 'DB error', detail: dbErr.message });
           return;
