@@ -7,33 +7,44 @@ on:
   workflow_dispatch: # Manual trigger for debugging
 
 concurrency:
-  group: weekly-forecast
-  cancel-in-progress: false # Prevent cancellation mid-release/version bump
+  group: weekly-forecast-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  actions: read
+  checks: write
+  pull-requests: write
 
 env:
-  # Injected as GitHub Secrets
   KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
   KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
+  BACKEND_API_KEY: ${{ secrets.BACKEND_API_KEY }}
   GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-  DATABASE_URL: ${{ secrets.SUPABASE_URL }}
-  DATABASE_SSL: 'true'
-  SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-  
-  # Paths
-  NOTEBOOK_DIR: ./kaggle_notebooks/auto_forecast
+  FORECAST_STORE: ${{ vars.FORECAST_STORE || 'firestore' }}
+  DATABASE_URL: ${{ secrets.SUPABASE_DB_URL }}
+  SUPABASE_SSL: 'true'
+  NOTEBOOK_DIR: ./kaggle_notebooks/hazardnet-auto-forecast-pipeline
   CSV_PATH: ./data/weekly_forecast.csv
+  PORT: '3001'
 
 jobs:
   weekly-patch-and-forecast:
     runs-on: ubuntu-latest
+    timeout-minutes: 180
     permissions:
-      contents: write # Required for version bumping, tagging, and releases
-    
+      contents: write
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Required for git tagging and pushing history
+          fetch-depth: 0
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.3.14'
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -46,154 +57,167 @@ jobs:
         with:
           python-version: '3.10'
 
-      # =======================================================================
-      # 1. AUTOMATED WEEKLY PATCH VERSIONING
-      # =======================================================================
+      - name: Preflight — verify required secrets
+        shell: bash
+        run: |
+          missing=0
+          for var in KAGGLE_USERNAME KAGGLE_KEY BACKEND_API_KEY; do
+            if [ -z "${!var}" ]; then
+              echo "❌ '$var' is not configured (repo → Settings → Secrets and variables → Actions)"
+              missing=1
+            fi
+          done
+          if [ -z "$GEMINI_API_KEY" ]; then
+            echo "⚠️ GEMINI_API_KEY unset — ingest advisories will use the deterministic fallback text."
+          fi
+          if [ "$missing" -ne 0 ]; then exit 1; fi
+          echo "✅ Required secrets present."
+
       - name: Bump Weekly Patch Version
         id: version
+        shell: bash
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          
-          # Bump patch version in package.json (e.g., 1.0.0 -> 1.0.1)
           npm version patch --no-git-tag-version
-          
           NEW_VERSION=$(node -p "require('./package.json').version")
-          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
-          
-          # Commit and tag the new version
-          git add package.json package-lock.json
+          echo "new_version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
+          git add package.json
           git commit -m "chore: bump version to $NEW_VERSION [skip ci]"
           git tag -a "v$NEW_VERSION" -m "Automated weekly release v$NEW_VERSION"
           git push origin HEAD:main --tags
           echo "✅ Successfully bumped and tagged version v$NEW_VERSION"
 
       - name: Install dependencies
-        run: |
-          npm ci
-          cd backend && npm ci
-          cd ..
-          pip install kaggle
+        run: bun install --frozen-lockfile
 
-      # =======================================================================
-      # 2. KAGGLE NOTEBOOK EXECUTION
-      # =======================================================================
       - name: Configure Kaggle CLI
+        shell: bash
         run: |
           mkdir -p ~/.kaggle
           echo '{"username":"${{ env.KAGGLE_USERNAME }}","key":"${{ env.KAGGLE_KEY }}"}' > ~/.kaggle/kaggle.json
           chmod 600 ~/.kaggle/kaggle.json
 
       - name: Trigger Kaggle Notebook
+        shell: bash
         run: |
-          cd ${{ env.NOTEBOOK_DIR }}
-          # Pushes the notebook and automatically triggers a run if 'enable_gpu' or schedule is set in metadata
+          cd "$NOTEBOOK_DIR"
           kaggle kernels push -p .
-          
-          # Extract the kernel slug (e.g., "username/kernel-name") from metadata
-          KERNEL_SLUG=$(cat kernel-metadata.json | jq -r '.id')
-          echo "kernel_slug=$KERNEL_SLUG" >> $GITHUB_ENV
+          KERNEL_SLUG=$(jq -r '.id' kernel-metadata.json)
+          if [ -z "$KERNEL_SLUG" ] || [ "$KERNEL_SLUG" = "null" ]; then
+            echo "❌ Could not read kernel id from kernel-metadata.json"
+            exit 1
+          fi
+          echo "KERNEL_SLUG=$KERNEL_SLUG" >> "$GITHUB_ENV"
           echo "✅ Triggered Kaggle kernel: $KERNEL_SLUG"
 
       - name: Wait for Kaggle Notebook to Complete
+        shell: bash
+        env:
+          MAX_RETRIES: '90'
         run: |
-          echo "⏳ Polling Kaggle kernel status..."
-          MAX_RETRIES=60 # 60 minutes max wait time
+          echo "⏳ Polling Kaggle kernel status (max $MAX_RETRIES minutes)..."
           RETRY_COUNT=0
-          
           while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
-            STATUS_OUTPUT=$(kaggle kernels status ${{ env.kernel_slug }})
-            STATUS=$(echo "$STATUS_OUTPUT" | awk '{print $3}')
-            echo "Current status: $STATUS"
-            
-            if [[ "$STATUS" == "complete" ]]; then
-              echo "✅ Notebook execution completed successfully!"
-              break
-            elif [[ "$STATUS" == "error" ]]; then
-              echo "❌ Notebook execution failed!"
-              mkdir -p ./kaggle_logs
-              kaggle kernels output ${{ env.kernel_slug }} -p ./kaggle_logs
-              cat ./kaggle_logs/* || true
-              exit 1
+            if STATUS_OUTPUT=$(kaggle kernels status "$KERNEL_SLUG" 2>&1); then
+              echo "[$((RETRY_COUNT + 1))/$MAX_RETRIES] $STATUS_OUTPUT"
+              if echo "$STATUS_OUTPUT" | grep -qi 'complete'; then
+                echo "✅ Notebook execution completed successfully!"
+                exit 0
+              elif echo "$STATUS_OUTPUT" | grep -qiE 'error|cancel'; then
+                echo "❌ Notebook execution failed!"
+                mkdir -p ./kaggle_logs
+                kaggle kernels output "$KERNEL_SLUG" -p ./kaggle_logs || true
+                cat ./kaggle_logs/* || true
+                exit 1
+              fi
+            else
+              echo "[$((RETRY_COUNT + 1))/$MAX_RETRIES] Transient status check failure (retrying): $STATUS_OUTPUT"
             fi
-            
             sleep 60
             RETRY_COUNT=$((RETRY_COUNT + 1))
           done
-          
-          if [ $RETRY_COUNT -eq $MAX_RETRIES ]; then
-            echo "❌ Timeout waiting for Kaggle notebook to complete."
-            exit 1
-          fi
+          echo "❌ Timeout waiting for Kaggle notebook to complete."
+          exit 1
 
       - name: Download Forecast Data from Kaggle
+        shell: bash
         run: |
           mkdir -p data
-          kaggle kernels output ${{ env.kernel_slug }} -p data
-          
-          # Find the generated CSV (adjust filename if your notebook outputs a specific name)
-          CSV_FILE=$(find data -name "*.csv" | head -n 1)
+          kaggle kernels output "$KERNEL_SLUG" -p data
+          CSV_FILE=$(ls data/hazardnet_forecasts_latest.csv 2>/dev/null || find data -name '*.csv' | head -n 1)
           if [ -z "$CSV_FILE" ]; then
-            echo "❌ No CSV file found in Kaggle output."
+            echo "❌ No CSV file found in Kaggle output:"
+            ls -la data
             exit 1
           fi
-          
-          mv "$CSV_FILE" ${{ env.CSV_PATH }}
-          echo "✅ Successfully downloaded and moved CSV to ${{ env.CSV_PATH }}"
+          mv "$CSV_FILE" "$CSV_PATH"
+          echo "✅ Downloaded forecast CSV ($(wc -l < "$CSV_PATH") lines) -> $CSV_PATH"
+          RELEASE_FILES="$CSV_PATH"
+          for f in hazardnet_adm3_exposure.csv hazardnet_adm3_locations.csv hazardnet_adm3_latest.geojson; do
+            if [ -f "data/$f" ]; then
+              RELEASE_FILES="$RELEASE_FILES
+./data/$f"
+              echo "✅ Optional artifact present: $f"
+            else
+              echo "ℹ️ Optional artifact absent (notebook step is fail-soft): $f"
+            fi
+          done
+          {
+            echo "RELEASE_FILES<<ARTIFACT_EOF"
+            echo "$RELEASE_FILES"
+            echo "ARTIFACT_EOF"
+          } >> "$GITHUB_ENV"
 
-      # =======================================================================
-      # 3. BACKEND INGESTION & TESTING
-      # =======================================================================
       - name: Start backend server
+        shell: bash
         run: |
-          cd backend
-          npm run start &
-          echo "Backend started with PID $!"
-          
-          # Wait for the server to be ready
-          for i in {1..30}; do
-            if nc -z localhost 3001; then
-              echo "✅ Backend is ready!"
-              break
+          node backend/server.js > backend-server.log 2>&1 &
+          echo $! > backend-server.pid
+          for i in $(seq 1 30); do
+            if curl -sf "http://localhost:${PORT}/health" > /dev/null; then
+              echo "✅ Backend is healthy:"
+              curl -s "http://localhost:${PORT}/health"
+              exit 0
             fi
             sleep 2
           done
-          
-          if ! nc -z localhost 3001; then
-            echo "❌ Backend failed to start"
-            exit 1
-          fi
+          echo "❌ Backend failed to become healthy. Server log:"
+          cat backend-server.log
+          exit 1
 
       - name: Ingest CSV and generate advisories
+        shell: bash
         run: |
-          curl -sS -X POST http://localhost:3001/api/forecasts \
-            -H "Authorization: Bearer ${{ env.SUPABASE_SERVICE_ROLE_KEY }}" \
-            -H "Content-Type: multipart/form-data" \
-            -F "file=@${{ env.CSV_PATH }}" \
-            -o /tmp/ingest_response.json
-          
-          echo "📥 Ingest response:"
-          cat /tmp/ingest_response.json
-          
-          # Verify that the response indicates success
-          if ! jq -e '.status == "success"' /tmp/ingest_response.json > /dev/null; then
-            echo "❌ Ingestion failed or no advisories returned"
+          HTTP_CODE=$(curl -sS -X POST "http://localhost:${PORT}/api/v1/forecasts/update" \
+            -H "Authorization: Bearer $BACKEND_API_KEY" \
+            -F "file=@${CSV_PATH}" \
+            -o ingest_response.json \
+            -w "%{http_code}")
+          echo "📥 Ingest responded HTTP $HTTP_CODE:"
+          cat ingest_response.json
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "❌ Ingestion failed with HTTP $HTTP_CODE"
             exit 1
           fi
+          if ! jq -e '.status == "success"' ingest_response.json > /dev/null; then
+            echo "❌ Ingestion response did not report success"
+            exit 1
+          fi
+          echo "✅ Ingested $(jq -r '.records_updated' ingest_response.json) records (skipped $(jq -r '.records_skipped' ingest_response.json)) for prediction_date $(jq -r '.prediction_date' ingest_response.json)"
 
-      - name: Run backend tests
-        run: |
-          cd backend
-          npm test
+      - name: Run test suite
+        run: npx jest --ci
 
       - name: Stop backend server
         if: always()
+        shell: bash
         run: |
-          pkill -f "node.*backend" || true
+          if [ -f backend-server.pid ]; then
+            kill "$(cat backend-server.pid)" 2>/dev/null || true
+          fi
+          pkill -f "backend/server\.js" 2>/dev/null || true
 
-      # =======================================================================
-      # 4. RELEASE & ARTIFACTS
-      # =======================================================================
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
@@ -201,19 +225,25 @@ jobs:
           name: Weekly Forecast Release v${{ steps.version.outputs.new_version }}
           body: |
             🤖 **Automated Weekly Forecast Pipeline Execution**
-            
+
             - ✅ Kaggle notebook executed successfully.
-            - ✅ New forecast data ingested into Supabase.
-            - ✅ Backend advisories generated.
-            - 🔗 Dataset attached below.
+            - ✅ New forecast data ingested into the Firestore forecast store via `POST /api/v1/forecasts/update`.
+            - ✅ Advisories generated per ingested row.
+            - 🧪 Test suite passed (`npx jest --ci`).
+            - 🔗 Datasets attached below (forecasts CSV; when present also the ADM3 location matrix, the OSM exposure overlay, and the ADM3 hazard+exposure GeoJSON — ADR 0006).
           files: |
-            ${{ env.CSV_PATH }}
+            ${{ env.RELEASE_FILES }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Upload logs (on failure)
+      - name: Upload diagnostics (on failure)
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: backend-logs
-          path: backend/logs/*.log
+          name: weekly-forecast-diagnostics
+          path: |
+            backend-server.log
+            ingest_response.json
+            kaggle_logs/
+            data/
+          if-no-files-found: ignore
