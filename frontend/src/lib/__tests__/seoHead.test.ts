@@ -1,3 +1,6 @@
+/**
+ * @jest-environment jsdom
+ */
 import { createHeadManager } from '../seoHead'
 import { buildSeoHead } from '../blogSeo'
 import { BlogArticle } from '../blogArticles'

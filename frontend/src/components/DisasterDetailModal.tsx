@@ -1,4 +1,3 @@
-import MaterialIcon from "./MaterialIcon";
 import { useEffect, useState } from 'react';
 import { getGranularDisasterData, GranularDisasterData } from '../data/disasterDetails';
 import { DisasterDetailModalUI } from './DisasterDetailModalUI';

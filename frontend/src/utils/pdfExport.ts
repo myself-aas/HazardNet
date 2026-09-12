@@ -3,8 +3,6 @@ import html2canvas from 'html2canvas-pro';
 import {
   formatFilenameWithPlaceholders,
   PdfFilenameContext,
-  AVAILABLE_FILENAME_PLACEHOLDERS,
-  FILENAME_PRESET_TEMPLATES,
 } from './pdfFilenameUtils';
 
 export * from './pdfFilenameUtils';

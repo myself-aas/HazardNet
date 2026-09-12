@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { HazardNetLogo, HazardNetBrand } from './HazardNetLogo';
+import { HazardNetBrand } from './HazardNetLogo';
 
 export const Footer: React.FC = () => {
   const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);

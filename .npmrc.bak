@@ -5,3 +5,4 @@
 # dependency fixes live in package.json. Remove only alongside a committed
 # package-lock.json.
 legacy-peer-deps=true
+allowBuilds@tensorflow/tfjs-node=true

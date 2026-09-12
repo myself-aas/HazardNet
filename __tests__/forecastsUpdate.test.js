@@ -61,7 +61,7 @@ const MIXED_BAD_ROWS_CSV = [
   'district_id,district_name,division,pcode,horizon,hazard_type,model_severity,physics_severity,confidence,target_date,prediction_date',
   '19,Dhaka,Dhaka,3019,10_days,Flood,0.55,0.48,0.91,2026-09-19,2026-09-12',
   '20,Gazipur,Dhaka,3020,15_days,Flood,0.55,0.48,0.91,2026-09-19,2026-09-12',
-  '21,Tangail,Dhaka,3021,10_days,Landslide,0.55,0.48,0.91,2026-09-19,2026-09-12',
+  '21,Tangail,Dhaka,3021,7_days,Landslide,0.55,0.48,0.91,2026-09-19,2026-09-12',
 ].join('\n');
 
 describe('POST /api/v1/forecasts/update (CSV ingest)', () => {

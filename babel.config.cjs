@@ -4,4 +4,12 @@ module.exports = {
     '@babel/preset-typescript',
     ['@babel/preset-react', {runtime: 'automatic'}],
   ],
+  overrides: [
+    {
+      test: ['backend/**/*.js'],
+      parserOpts: {
+        sourceType: 'module',
+      },
+    },
+  ],
 };

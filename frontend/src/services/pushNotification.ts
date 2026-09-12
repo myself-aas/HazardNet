@@ -1,8 +1,8 @@
 // Frontend Web Push Notification Service using VAPID Key pair certificates
 
-export const DEFAULT_VAPID_PUBLIC_KEY = 
-  import.meta.env.VITE_VAPID_PUBLIC_KEY || 
-  'BEO1bxiFpFAXQf0vQasl2C0i7DhZOdKzl8EyAiESkxTLP6B0JZ5gomHCb938bwP2ct6srfLB_URuEZSCnPoyLUw';
+export const DEFAULT_VAPID_PUBLIC_KEY =
+  import.meta.env.VITE_VAPID_PUBLIC_KEY ||
+  'BDiZRhvhtY3Dy6BMKXfM0_tE55WwoIx7r8UiYY1n8foTAOlv53WUMtKEx7VPvnnawvQ6H87KWLJkX81CdOFdmUU';
 
 /**
  * Convert a base64url encoded VAPID public key string into a Uint8Array suitable for PushManager.subscribe()

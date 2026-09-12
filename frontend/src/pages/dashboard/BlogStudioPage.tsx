@@ -8,7 +8,6 @@ import { useAuth } from '../../context/AuthContext';
 import {
   BlogArticle,
   deleteArticle,
-  isLocalDemoMode,
   listArticles,
   updateArticle,
 } from '../../lib/blogArticles';

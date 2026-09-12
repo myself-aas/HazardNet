@@ -24,6 +24,8 @@ export default tseslint.config(
       'app/**',
       'docs/**',
       'Models/**',
+      'audit_temp/**',
+      'load-tests/**',
     ],
   },
   eslint.configs.recommended,
@@ -58,7 +60,10 @@ export default tseslint.config(
   {
     // Jest globals for test files.
     files: ['**/__tests__/**/*.{ts,tsx,js}', '**/*.test.{ts,tsx,js}'],
-    languageOptions: { globals: { ...globals.jest, process: 'readonly' } },
+    languageOptions: { globals: { ...globals.jest, ...globals.node, process: 'readonly' } },
+    rules: {
+      '@typescript-eslint/no-require-imports': 'off',
+    },
   },
   {
     // Backend/serverless/build scripts: Node runtime globals (ESM sources).
@@ -66,6 +71,7 @@ export default tseslint.config(
     languageOptions: { globals: { ...globals.node } },
     rules: {
       'no-console': 'off',
+      '@typescript-eslint/no-require-imports': 'off',
     },
   }
 );

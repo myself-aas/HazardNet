@@ -36,7 +36,7 @@ import pg from 'pg';
 // 1082 (date) type as the raw string for shape parity.
 pg.types.setTypeParser(1082, (val) => val);
 
-const SUPABASE_COLUMNS = 23; // columns written per row (see INSERT below)
+const SUPABASE_COLUMNS = 15; // columns written per row (see INSERT below)
 
 export function getForecastStoreMode() {
   return process.env.FORECAST_STORE === 'supabase' ? 'supabase' : 'firestore';
@@ -233,24 +233,14 @@ async function insertRows(client, rows) {
       row.pcode || null,
       row.admin_level !== undefined && row.admin_level !== null ? Number(row.admin_level) : null,
       row.adm2_name || null,
-      row.adm2_pcode || null,
-      row.temperature_mean ?? null,
-      row.temperature_max ?? null,
-      row.temperature_min ?? null,
-      row.precipitation_mm ?? null,
-      row.wind_max_kmh ?? null,
-      row.dewpoint_mean ?? null,
-      row.solar_radiation_mj_m2 ?? null,
-      row.evapotranspiration_mm ?? null
+      row.adm2_pcode || null
     );
   });
   await client.query(
     `insert into public.forecasts
        (district_id, district_name, horizon, hazard_type, confidence, severity_score,
         target_date, prediction_date, model_severity, physics_severity, division, pcode,
-        admin_level, adm2_name, adm2_pcode, temperature_mean, temperature_max,
-        temperature_min, precipitation_mm, wind_max_kmh, dewpoint_mean,
-        solar_radiation_mj_m2, evapotranspiration_mm)
+        admin_level, adm2_name, adm2_pcode)
      values ${values.join(',')}
      on conflict (district_id, horizon, hazard_type, target_date, prediction_date)
      do update set
@@ -263,15 +253,7 @@ async function insertRows(client, rows) {
        pcode            = excluded.pcode,
        admin_level      = excluded.admin_level,
        adm2_name        = excluded.adm2_name,
-      adm2_pcode       = excluded.adm2_pcode,
-      temperature_mean = excluded.temperature_mean,
-      temperature_max = excluded.temperature_max,
-      temperature_min = excluded.temperature_min,
-      precipitation_mm = excluded.precipitation_mm,
-      wind_max_kmh = excluded.wind_max_kmh,
-      dewpoint_mean = excluded.dewpoint_mean,
-      solar_radiation_mj_m2 = excluded.solar_radiation_mj_m2,
-      evapotranspiration_mm = excluded.evapotranspiration_mm`,
+      adm2_pcode       = excluded.adm2_pcode`,
     params
   );
 }

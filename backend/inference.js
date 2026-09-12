@@ -5,8 +5,7 @@ import metrics from './metrics.js';
 import { getTf } from './tfjs.js';
 import { getModelInfo } from './modelInfo.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __dirname = process.cwd();
 
 let modelLoaded = false;
 

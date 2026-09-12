@@ -1,4 +1,5 @@
 import { useEffect, lazy, Suspense } from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -46,6 +47,8 @@ const RouteFallback = () => (
     <span className="w-8 h-8 border-[3px] border-slate-300 border-t-amber-500 rounded-full animate-spin" />
   </div>
 );
+
+const queryClient = new QueryClient();
 
 const AppContent: React.FC = () => {
   const { userProfile } = useAuth();
@@ -215,9 +218,11 @@ const AppContent: React.FC = () => {
 const App: React.FC = () => (
   <ErrorBoundary>
     <AuthProvider>
-      <Router>
-        <AppContent />
-      </Router>
+      <QueryClientProvider client={queryClient}>
+        <Router>
+          <AppContent />
+        </Router>
+      </QueryClientProvider>
     </AuthProvider>
   </ErrorBoundary>
 );

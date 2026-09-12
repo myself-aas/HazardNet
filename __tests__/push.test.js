@@ -14,7 +14,7 @@ describe('Web Push Certificates & VAPID API Routes', () => {
   describe('VAPID Configuration', () => {
     it('should return the configured VAPID public key', () => {
       const key = getVapidPublicKey();
-      expect(key).toBe('BEO1bxiFpFAXQf0vQasl2C0i7DhZOdKzl8EyAiESkxTLP6B0JZ5gomHCb938bwP2ct6srfLB_URuEZSCnPoyLUw');
+      expect(key).toBe('BDiZRhvhtY3Dy6BMKXfM0_tE55WwoIx7r8UiYY1n8foTAOlv53WUMtKEx7VPvnnawvQ6H87KWLJkX81CdOFdmUU');
     });
   });
 
@@ -22,7 +22,7 @@ describe('Web Push Certificates & VAPID API Routes', () => {
     it('should return public key JSON payload', async () => {
       const res = await request(app).get('/api/push/vapid-key');
       expect(res.statusCode).toBe(200);
-      expect(res.body.publicKey).toBe('BEO1bxiFpFAXQf0vQasl2C0i7DhZOdKzl8EyAiESkxTLP6B0JZ5gomHCb938bwP2ct6srfLB_URuEZSCnPoyLUw');
+      expect(res.body.publicKey).toBe('BDiZRhvhtY3Dy6BMKXfM0_tE55WwoIx7r8UiYY1n8foTAOlv53WUMtKEx7VPvnnawvQ6H87KWLJkX81CdOFdmUU');
     });
   });
 
@@ -31,7 +31,7 @@ describe('Web Push Certificates & VAPID API Routes', () => {
       const res = await request(app).get('/api/push/status');
       expect(res.statusCode).toBe(200);
       expect(res.body.status).toBe('active');
-      expect(res.body.vapidPublicKey).toBe('BEO1bxiFpFAXQf0vQasl2C0i7DhZOdKzl8EyAiESkxTLP6B0JZ5gomHCb938bwP2ct6srfLB_URuEZSCnPoyLUw');
+      expect(res.body.vapidPublicKey).toBe('BDiZRhvhtY3Dy6BMKXfM0_tE55WwoIx7r8UiYY1n8foTAOlv53WUMtKEx7VPvnnawvQ6H87KWLJkX81CdOFdmUU');
     });
   });
 

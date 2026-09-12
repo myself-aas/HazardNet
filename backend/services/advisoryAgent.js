@@ -1,4 +1,4 @@
-import { GoogleGenAI } from '@google/genai';
+// Removed direct import of GoogleGenAI; will be loaded lazily when needed
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -16,6 +16,7 @@ export async function generateAdvisory(payload) {
   }
 
   try {
+    const { GoogleGenAI } = await import('@google/genai');
     const ai = new GoogleGenAI({ apiKey });
     const prompt = `You are an expert Bangladesh agricultural disaster response advisor. Based on the following hazard prediction:
 

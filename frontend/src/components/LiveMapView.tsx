@@ -11,18 +11,16 @@ import {
   ZoomIn, ZoomOut, Navigation, Maximize, 
   Camera, RotateCcw, Flame, Ruler, Waves, Radio, 
   Contrast, Compass, Box, Share2, Download, Copy,
-  Check, FileText, Image as ImageIcon, Sparkles,
-  HardDrive, Wifi, WifiOff, Database, Trash2, CloudDownload
+  Image as ImageIcon,
+  HardDrive, Wifi, WifiOff, Trash2, CloudDownload
 } from 'lucide-react';
 import { AnimatedSocialIcons } from './ui/floating-action-button';
 import { LocationMap } from './ui/expand-map';
-import { ALL_64_DISTRICTS, ALL_8_DIVISIONS, DistrictData } from '../data/bangladeshDistricts';
+import { ALL_64_DISTRICTS, ALL_8_DIVISIONS } from '../data/bangladeshDistricts';
 import { 
   isValidLatLng, 
   isValidCoordinate, 
-  detectExactPinpointLocation, 
   getDistrictBoundaryCoordinates, 
-  snapCoordinateToDistrictBoundary,
   getSeverityColor
 } from '../services/geolocationService';
 import { useAuth } from '../context/AuthContext';

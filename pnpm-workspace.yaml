@@ -2,5 +2,6 @@ allowBuilds:
   '@firebase/util': false
   '@google/genai': false
   '@parcel/watcher': false
+  '@tensorflow/tfjs-node': false
   core-js: false
   protobufjs: false

@@ -2,7 +2,7 @@
  * Security Integration Tests
  * Tests CORS, rate limiting, CSP, API authentication
  */
-const request = require('supertest');
+import request from 'supertest';
 
 // Mock dependencies
 jest.mock('firebase-admin', () => ({
@@ -25,7 +25,12 @@ process.env.SUPABASE_URL = 'https://test.supabase.co';
 process.env.SUPABASE_ANON_KEY = 'test-anon-key';
 process.env.FRONTEND_ORIGIN = 'https://hazardnet.vercel.app';
 
-const app = require('../../backend/server');
+let app;
+
+beforeAll(async () => {
+  const { default: server } = await import('../../backend/server');
+  app = server;
+});
 
 describe('CORS Security', () => {
   test('allows requests from configured origin', async () => {
@@ -50,7 +55,7 @@ describe('CORS Security', () => {
     const response = await request(app)
       .options('/api/predict')
       .set('Origin', 'https://hazardnet.vercel.app')
-      .set('Access-Control-Request-Method', 'POST')
+      .set('Access-Request-Method', 'POST')
       .expect(204);
 
     expect(response.headers['access-control-allow-methods']).toBeDefined();
@@ -138,7 +143,7 @@ describe('API Key Authentication', () => {
       .set('Authorization', 'Bearer wrong-key-12345');
     
     const wrongKeyTime = Date.now() - start;
-
+    
     const start2 = Date.now();
     
     await request(app)
@@ -146,7 +151,7 @@ describe('API Key Authentication', () => {
       .set('Authorization', 'Bearer test-api-key-secure-12345');
     
     const correctKeyTime = Date.now() - start2;
-
+    
     // Timing difference should be minimal (< 10ms)
     expect(Math.abs(wrongKeyTime - correctKeyTime)).toBeLessThan(10);
   });
@@ -155,10 +160,10 @@ describe('API Key Authentication', () => {
 describe('Content Security Policy', () => {
   test('includes CSP headers', async () => {
     const response = await request(app).get('/');
-
+    
     expect(
       response.headers['content-security-policy'] ||
-      response.headers['content-security-policy-report-only']
+        response.headers['content-security-policy-report-only']
     ).toBeDefined();
   });
 
@@ -168,7 +173,7 @@ describe('Content Security Policy', () => {
 
     const response = await request(app).get('/');
     const csp = response.headers['content-security-policy'];
-
+    
     if (csp) {
       expect(csp).toMatch(/script-src/);
       expect(csp).not.toMatch(/'unsafe-inline'/);

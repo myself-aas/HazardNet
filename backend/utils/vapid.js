@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const DEFAULT_PUBLIC_KEY = 'BEO1bxiFpFAXQf0vQasl2C0i7DhZOdKzl8EyAiESkxTLP6B0JZ5gomHCb938bwP2ct6srfLB_URuEZSCnPoyLUw';
+const DEFAULT_PUBLIC_KEY = 'BDiZRhvhtY3Dy6BMKXfM0_tE55WwoIx7r8UiYY1n8foTAOlv53WUMtKEx7VPvnnawvQ6H87KWLJkX81CdOFdmUU';
 const CONTACT_EMAIL = process.env.WEB_PUSH_CONTACT || 'mailto:admin@hazardnet.org';
 
 let activePublicKey = process.env.VAPID_PUBLIC_KEY || DEFAULT_PUBLIC_KEY;

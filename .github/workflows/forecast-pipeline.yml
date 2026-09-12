@@ -28,6 +28,17 @@ jobs:
           python-version: '3.10'
           cache: 'pip'
       
+      - name: Check for required secrets
+        run: |
+          if [ -z "${{ secrets.KAGGLE_USERNAME }}" ]; then
+            echo "Error: KAGGLE_USERNAME secret is not set"
+            exit 1
+          fi
+          if [ -z "${{ secrets.KAGGLE_KEY }}" ]; then
+            echo "Error: KAGGLE_KEY secret is not set"
+            exit 1
+          fi
+      
       - name: Install Kaggle CLI
         run: |
           pip install kaggle pandas numpy
@@ -75,8 +86,8 @@ jobs:
             echo "No changes to commit"
           else
             git commit -m "chore: update forecasts $(date +%Y-%m-%d)" \
-                       -m "Automated forecast update from Kaggle pipeline" \
-                       -m "Timestamp: $(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+                        -m "Automated forecast update from Kaggle pipeline" \
+                        -m "Timestamp: $(date -u +"%Y-%m-%dT%H:%M:%SZ")"
             git push
           fi
       

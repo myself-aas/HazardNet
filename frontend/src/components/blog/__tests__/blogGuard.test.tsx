@@ -98,7 +98,7 @@ describe('RichTextEditor — toolbar and editing surface', () => {
     render(<RichTextEditor value="" onChange={onChange} />)
     const surface = screen.getByRole('textbox', { name: /article body/i })
     surface.innerHTML = '<p>typed</p>'
-    // eslint-disable-next-line
+     
     ;(surface as HTMLElement).dispatchEvent(new Event('input', { bubbles: true }))
     expect(onChange).toHaveBeenCalledWith('<p>typed</p>')
   })

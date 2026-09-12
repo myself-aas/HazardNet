@@ -9,8 +9,7 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "types": ["vite/client", "node"]
-    ,
+    "types": ["vite/client", "node"],
     "baseUrl": "./",
     "paths": {
       "@/*": ["src/*"]

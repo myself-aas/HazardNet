@@ -21,8 +21,7 @@ import helmet from 'helmet';
 
 dotenv.config();
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __dirname = process.cwd();
 
 // ---------------------------------------------------------------------------
 // Startup configuration assertions (SEC-06): loud, early signals for misconfig

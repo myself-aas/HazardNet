@@ -13,7 +13,7 @@
  *    - Tier 6: Zero-Latency Deterministic AEZ Neural-Heuristic Engine
  */
 
-import { GoogleGenAI } from '@google/genai';
+// Lazy-loaded GoogleGenAI; import performed inside functions to avoid Node env errors
 
 // In-Memory Cache for Advisory Requests (10-minute TTL)
 const advisoryCache = new Map();

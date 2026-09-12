@@ -47,14 +47,14 @@ export function parseCsvForecastRow(row, rowNumber) {
     return { ok: false, error: `Row ${rowNumber}: Missing row data` };
   }
 
-  const horizon = String(row.horizon || '').trim();
-  if (!VALID_HORIZONS.includes(horizon)) {
-    return { ok: false, error: `Row ${rowNumber}: Invalid horizon "${row.horizon}"` };
-  }
-
   const hazardType = String(row.hazard_type || '').trim();
   if (!VALID_HAZARDS.includes(hazardType)) {
     return { ok: false, error: `Row ${rowNumber}: Invalid hazard "${row.hazard_type}"` };
+  }
+
+  const horizon = String(row.horizon || '').trim();
+  if (!VALID_HORIZONS.includes(horizon)) {
+    return { ok: false, error: `Row ${rowNumber}: Invalid horizon "${row.horizon}"` };
   }
 
   // Severity: legacy single-track column (`severity_score`) or the notebook's
