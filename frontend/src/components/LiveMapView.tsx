@@ -157,7 +157,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
   // Live forecast overlay (weekly pipeline via /api/v1/forecasts/bulk);
   // falls back to the static district baseline when the API is unreachable,
   // so every consumer below can treat `liveDistricts` as always-available.
-  const [forecastHorizon, setForecastHorizon] = useState<ForecastHorizon>('10_days');
+  const [forecastHorizon, setForecastHorizon] = useState<ForecastHorizon>('7_days');
   const { districts: liveDistricts, isLive, liveCount, predictionDate } = useLiveDistricts(forecastHorizon);
 
   // Selected district object

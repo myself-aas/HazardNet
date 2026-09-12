@@ -132,7 +132,7 @@ router.post('/update', upload.single('file'), (req, res, next) => {
 });
 
 // ─────────────────────────────────────────────────────────
-// GET /api/v1/forecasts?district_id=1&horizon=10_days
+// GET /api/v1/forecasts?district_id=1&horizon=7_days
 // Returns the latest forecast for a specific district
 // ─────────────────────────────────────────────────────────
 router.get('/', async (req, res) => {
@@ -193,7 +193,7 @@ router.get('/', async (req, res) => {
 });
 
 // ─────────────────────────────────────────────────────────
-// GET /api/v1/forecasts/bulk?horizon=10_days
+// GET /api/v1/forecasts/bulk?horizon=7_days
 // Returns forecasts for ALL 64 districts (for Mapbox heatmap)
 // ─────────────────────────────────────────────────────────
 router.get('/bulk', async (req, res) => {
@@ -221,7 +221,7 @@ router.get('/bulk', async (req, res) => {
 
 // ─────────────────────────────────────────────────────────
 // GET /api/v1/forecasts/history?from=YYYY-MM-DD&to=YYYY-MM-DD
-//   &horizon=10_days|20_days|30_days (optional) &district_id=N (optional)
+//   &horizon=7_days|15_days (optional) &district_id=N (optional)
 //   &format=json|csv (optional, default json)
 // Serves the forecast history accumulating in the store (backlog #6 — the
 // guide's Phase 6, adapted: history lives in the forecast store + the weekly

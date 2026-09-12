@@ -24,7 +24,7 @@ import { ALL_64_DISTRICTS } from '../../data/bangladeshDistricts';
 const row = (overrides: Partial<ForecastRow> = {}): ForecastRow => ({
   district_id: 19,
   district_name: 'Dhaka',
-  horizon: '10_days',
+  horizon: '7_days',
   hazard_type: 'Flood',
   severity_score: 0.5,
   confidence: 0.9,
@@ -44,6 +44,30 @@ describe('parseForecastRow / parseBulkResponse', () => {
     expect(parsed?.pcode).toBe('3019');
   });
 
+  it('keeps forecasted meteorological fields for individual views', () => {
+    const parsed = parseForecastRow(row({
+      temperature_mean: 299.4,
+      temperature_max: 304.2,
+      temperature_min: 294.1,
+      precipitation_mm: 42.5,
+      wind_max_kmh: 31.8,
+      dewpoint_mean: 292.7,
+      solar_radiation_mj_m2: 18.6,
+      evapotranspiration_mm: 4.2,
+    }));
+
+    expect(parsed).toMatchObject({
+      temperature_mean: 299.4,
+      temperature_max: 304.2,
+      temperature_min: 294.1,
+      precipitation_mm: 42.5,
+      wind_max_kmh: 31.8,
+      dewpoint_mean: 292.7,
+      solar_radiation_mj_m2: 18.6,
+      evapotranspiration_mm: 4.2,
+    });
+  });
+
   it.each([
     ['severity out of range', { severity_score: 1.4 }],
     ['confidence out of range', { confidence: -0.1 }],
@@ -56,7 +80,7 @@ describe('parseForecastRow / parseBulkResponse', () => {
 
   it('drops malformed rows but keeps valid ones in a bulk payload', () => {
     const rows = parseBulkResponse({
-      horizon: '10_days',
+      horizon: '7_days',
       count: 3,
       generated_at: '2026-09-12T00:00:00Z',
       forecasts: [row(), { district_name: 'No numbers' }, row({ district_name: 'Gazipur' })],
@@ -160,7 +184,7 @@ describe('ADM3 → ADM2 rollup (ADR 0006 phase 8d)', () => {
   const unit = (adm2: string, over: Partial<ForecastRow> = {}): ForecastRow => ({
     district_id: 101,
     district_name: 'Savar',
-    horizon: '10_days',
+    horizon: '7_days',
     hazard_type: 'Flood',
     severity_score: 0.5,
     confidence: 0.8,
@@ -224,16 +248,14 @@ describe('ADM3 → ADM2 rollup (ADR 0006 phase 8d)', () => {
 
 describe('display helpers', () => {
   it('formats horizon labels', () => {
-    expect(formatHorizonLabel('10_days')).toBe('Next 10 Days');
-    expect(formatHorizonLabel('20_days')).toBe('Next 20 Days');
-    expect(formatHorizonLabel('30_days')).toBe('Next 30 Days');
+    expect(formatHorizonLabel('7_days')).toBe('Next 7 Days');
+    expect(formatHorizonLabel('15_days')).toBe('Next 15 Days');
   });
 
   it('guards the horizon type', () => {
-    expect(isForecastHorizon('10_days')).toBe(true);
-    expect(isForecastHorizon('20_days')).toBe(true);
-    expect(isForecastHorizon('30_days')).toBe(true);
-    expect(isForecastHorizon('15_days')).toBe(false); // retired 7/15-era value
+    expect(isForecastHorizon('7_days')).toBe(true);
+    expect(isForecastHorizon('15_days')).toBe(true);
+    expect(isForecastHorizon('10_days')).toBe(false);
   });
 
   it('computes non-negative prediction age in hours', () => {

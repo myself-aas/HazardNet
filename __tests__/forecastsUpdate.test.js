@@ -48,13 +48,13 @@ app.use('/api/v1/forecasts', forecastRoutes);
 
 const NOTEBOOK_CSV = [
   'district_id,district_name,division,pcode,admin_level,adm2_name,adm2_pcode,horizon,hazard_type,model_severity,physics_severity,confidence,target_date,prediction_date,data_source',
-  '19,Dhaka,Dhaka,3019,3,Dhaka,3037,10_days,Flood,0.55,0.48,0.91,2026-09-19,2026-09-12,Hybrid_Cognitive_Forecast',
-  '30,Jashore,Khulna,4030,3,Jashore,4030,10_days,Drought,0.35,0.40,0.78,2026-09-19,2026-09-12,Hybrid_Cognitive_Forecast',
+  '19,Dhaka,Dhaka,3019,3,Dhaka,3037,7_days,Flood,0.55,0.48,0.91,2026-09-19,2026-09-12,Hybrid_Cognitive_Forecast',
+  '30,Jashore,Khulna,4030,3,Jashore,4030,7_days,Drought,0.35,0.40,0.78,2026-09-19,2026-09-12,Hybrid_Cognitive_Forecast',
 ].join('\n');
 
 const LEGACY_CSV = [
   'district_id,district_name,horizon,hazard_type,severity_score,confidence,target_date,prediction_date',
-  '19,Dhaka,20_days,Heat Wave,0.7,0.88,2026-09-27,2026-09-12',
+  '19,Dhaka,7_days,Heat Wave,0.7,0.88,2026-09-27,2026-09-12',
 ].join('\n');
 
 const MIXED_BAD_ROWS_CSV = [

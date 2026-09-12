@@ -72,8 +72,8 @@ jobs:
           echo "── GET /health ──"
           curl -s -o /dev/null -w "HTTP %{http_code}\n" http://localhost:3010/health
 
-          echo "── GET /api/v1/forecasts/bulk?horizon=10_days (through the Supabase store) ──"
-          curl -s -w "\nHTTP %{http_code}\n" "http://localhost:3010/api/v1/forecasts/bulk?horizon=10_days" | head -c 500
+          echo "── GET /api/v1/forecasts/bulk?horizon=7_days (through the Supabase store) ──"
+          curl -s -w "\nHTTP %{http_code}\n" "http://localhost:3010/api/v1/forecasts/bulk?horizon=7_days" | head -c 500
           echo
 
           echo "── GET /api/v1/forecasts/history (default window) ──"
@@ -87,7 +87,7 @@ jobs:
           grep -E "\[config\]|forecastStore" server.log | head -10 || true
 
           # Hard gate: the bulk serving path must return 200 through Supabase.
-          CODE=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:3010/api/v1/forecasts/bulk?horizon=10_days")
+          CODE=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:3010/api/v1/forecasts/bulk?horizon=7_days")
           if [ "$CODE" != "200" ]; then
             echo "❌ /bulk returned HTTP $CODE through the Supabase store — see server.log below"
             tail -30 server.log

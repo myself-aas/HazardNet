@@ -27,7 +27,7 @@ const daysAgo = (n) => new Date(Date.parse(`${today()}T00:00:00Z`) - n * 86_400_
 const row = (over = {}) => ({
   district_id: 19,
   district_name: 'Dhaka',
-  horizon: '10_days',
+  horizon: '7_days',
   hazard_type: 'Flood',
   severity_score: 0.55,
   confidence: 0.91,
@@ -78,8 +78,8 @@ describe('GET /api/v1/forecasts/history — validation', () => {
   });
 
   it('rejects an invalid horizon with 400', async () => {
-    // '15_days' is the retired 7/15-era value — must now be rejected.
-    const res = await request(app).get('/api/v1/forecasts/history?horizon=15_days');
+    // '10_days' is an invalid horizon — must be rejected.
+    const res = await request(app).get('/api/v1/forecasts/history?horizon=10_days');
     expect(res.status).toBe(400);
     expect(res.body.error).toMatch(/Invalid horizon/);
   });
@@ -107,13 +107,13 @@ describe('GET /api/v1/forecasts/history — defaults and pass-through', () => {
 
   it('passes explicit window, horizon and district_id through to the store', async () => {
     history.mockResolvedValue([row(), row({ district_id: 30 })]);
-    const res = await request(app).get('/api/v1/forecasts/history?from=2026-09-01&to=2026-09-07&horizon=20_days&district_id=19');
+    const res = await request(app).get('/api/v1/forecasts/history?from=2026-09-01&to=2026-09-07&horizon=7_days&district_id=19');
     expect(res.status).toBe(200);
-    expect(history).toHaveBeenCalledWith({
-      from: '2026-09-01', to: '2026-09-07', horizon: '20_days', districtId: 19,
-    });
+expect(history).toHaveBeenCalledWith({
+       from: '2026-09-01', to: '2026-09-07', horizon: '7_days', districtId: 19,
+     });
     expect(res.body.count).toBe(2);
-    expect(res.body.horizon).toBe('20_days');
+    expect(res.body.horizon).toBe('7_days');
     expect(res.body.district_id).toBe(19);
     expect(res.body.forecasts[0].district_name).toBe('Dhaka');
   });
@@ -144,9 +144,9 @@ describe('GET /api/v1/forecasts/history?format=csv — archive export', () => {
     expect(lines[0]).toBe(
       'district_id,district_name,horizon,hazard_type,severity_score,confidence,target_date,prediction_date,model_severity,physics_severity,division,pcode,admin_level,adm2_name,adm2_pcode'
     );
-    expect(lines[1]).toBe('19,Dhaka,10_days,Flood,0.55,0.91,2026-09-19,2026-09-12,0.55,0.48,Dhaka,3019,3,Dhaka,3037');
+    expect(lines[1]).toBe('19,Dhaka,7_days,Flood,0.55,0.91,2026-09-19,2026-09-12,0.55,0.48,Dhaka,3019,3,Dhaka,3037');
     // Optional fields export as empty cells when absent.
-    expect(lines[2]).toBe('30,Jashore,10_days,Flood,0.55,0.91,2026-09-19,2026-09-12,0.55,,,,,,');
+    expect(lines[2]).toBe('30,Jashore,7_days,Flood,0.55,0.91,2026-09-19,2026-09-12,0.55,,,,,,');
   });
 
   it('CSV-escapes commas and quotes in values', async () => {

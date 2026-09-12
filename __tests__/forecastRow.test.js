@@ -12,7 +12,7 @@ import { parseCsvForecastRow, VALID_HAZARDS, VALID_HORIZONS } from '../backend/u
 const legacyRow = {
   district_id: '19',
   district_name: 'Dhaka',
-  horizon: '10_days',
+  horizon: '7_days',
   hazard_type: 'Flood',
   severity_score: '0.5',
   confidence: '0.9',
@@ -28,7 +28,7 @@ const notebookRow = {
   admin_level: '3',
   adm2_name: 'Dhaka',
   adm2_pcode: '3037',
-  horizon: '20_days',
+  horizon: '15_days',
   hazard_type: 'Heat Wave',
   model_severity: '0.72',
   physics_severity: '0.64',
@@ -44,7 +44,7 @@ describe('parseCsvForecastRow — accepted shapes', () => {
     expect(r.value).toEqual({
       district_id: 19,
       district_name: 'Dhaka',
-      horizon: '10_days',
+      horizon: '7_days',
       hazard_type: 'Flood',
       severity_score: 0.5,
       confidence: 0.9,
@@ -66,6 +66,32 @@ describe('parseCsvForecastRow — accepted shapes', () => {
     expect(r.value.adm2_pcode).toBe('3037');
   });
 
+  it('preserves forecasted meteorological fields for individual location views', () => {
+    const r = parseCsvForecastRow({
+      ...notebookRow,
+      temperature_mean: '299.4',
+      temperature_max: '304.2',
+      temperature_min: '294.1',
+      precipitation_mm: '42.5',
+      wind_max_kmh: '31.8',
+      dewpoint_mean: '292.7',
+      solar_radiation_mj_m2: '18.6',
+      evapotranspiration_mm: '4.2'
+    }, 2);
+
+    expect(r.ok).toBe(true);
+    expect(r.value).toMatchObject({
+      temperature_mean: 299.4,
+      temperature_max: 304.2,
+      temperature_min: 294.1,
+      precipitation_mm: 42.5,
+      wind_max_kmh: 31.8,
+      dewpoint_mean: 292.7,
+      solar_radiation_mj_m2: 18.6,
+      evapotranspiration_mm: 4.2
+    });
+  });
+
   it('prefers severity_score when both columns are present', () => {
     const r = parseCsvForecastRow({ ...notebookRow, severity_score: '0.4', model_severity: '0.9' }, 1);
     expect(r.ok).toBe(true);
@@ -79,8 +105,7 @@ describe('parseCsvForecastRow — rejections', () => {
   });
 
   it('rejects an unknown horizon', () => {
-    // '15_days' is the retired 7/15-era value — must now be rejected.
-    const r = parseCsvForecastRow({ ...legacyRow, horizon: '15_days' }, 1);
+    const r = parseCsvForecastRow({ ...legacyRow, horizon: '20_days' }, 1);
     expect(r.ok).toBe(false);
     expect(r.error).toContain('Invalid horizon');
   });
@@ -131,7 +156,7 @@ describe('parseCsvForecastRow — rejections', () => {
 
 describe('parseCsvForecastRow — constants parity', () => {
   it('keeps the 7/15-day horizons and 8 hazard classes in sync with the model', () => {
-    expect(VALID_HORIZONS).toEqual(['10_days', '20_days', '30_days']);
+    expect(VALID_HORIZONS).toEqual(['7_days', '15_days']);
     expect(VALID_HAZARDS).toHaveLength(8);
     expect(VALID_HAZARDS).toContain('Severe Local Storm');
   });

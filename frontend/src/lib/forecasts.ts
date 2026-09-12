@@ -28,6 +28,15 @@ export interface ForecastRow {
   confidence: number;
   target_date: string;
   prediction_date: string;
+  /** Forecasted weather values in human-readable units. */
+  temperature_mean?: number;
+  temperature_max?: number;
+  temperature_min?: number;
+  precipitation_mm?: number;
+  wind_max_kmh?: number;
+  dewpoint_mean?: number;
+  solar_radiation_mj_m2?: number;
+  evapotranspiration_mm?: number;
   created_at?: string;
   /** Dual-track severity (present when the weekly CSV carried both columns). */
   model_severity?: number;
@@ -47,9 +56,7 @@ export interface BulkForecastsResponse {
   forecasts: ForecastRow[];
 }
 
-// 10/20/30-day horizons (2026-09-12, ADR 0005) — matches the refactored
-// Kaggle notebook + backend VALID_HORIZONS.
-export const FORECAST_HORIZONS = ['10_days', '20_days', '30_days'] as const;
+export const FORECAST_HORIZONS = ['7_days', '15_days'] as const;
 export type ForecastHorizon = (typeof FORECAST_HORIZONS)[number];
 
 export const isForecastHorizon = (v: unknown): v is ForecastHorizon =>
@@ -83,6 +90,20 @@ export function parseForecastRow(raw: unknown): ForecastRow | null {
     target_date: r.target_date,
     prediction_date: r.prediction_date,
   };
+
+  const meteorologicalFields = [
+    'temperature_mean',
+    'temperature_max',
+    'temperature_min',
+    'precipitation_mm',
+    'wind_max_kmh',
+    'dewpoint_mean',
+    'solar_radiation_mj_m2',
+    'evapotranspiration_mm',
+  ] as const;
+  for (const field of meteorologicalFields) {
+    if (isFiniteNumber(r[field])) row[field] = r[field];
+  }
 
   if (isFiniteNumber(r.model_severity)) row.model_severity = r.model_severity;
   if (isFiniteNumber(r.physics_severity)) row.physics_severity = r.physics_severity;
@@ -269,7 +290,7 @@ export function applyForecastsToDistricts(
 export const forecastAgeHours = (predictionDate: string, now: Date = new Date()): number =>
   Math.max(0, (now.getTime() - new Date(predictionDate).getTime()) / 3_600_000);
 
-/** `'10_days'` → `'Next 10 Days'` (used by the map's horizon toggle). */
+/** Format a horizon for the map and individual forecast views. */
 export const formatHorizonLabel = (horizon: ForecastHorizon): string => {
   const days = Number(horizon.replace('_days', ''));
   return `Next ${days} Days`;

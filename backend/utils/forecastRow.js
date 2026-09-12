@@ -10,9 +10,19 @@
  * for downstream consumers.
  */
 
-// 10/20/30-day horizons (2026-09-12, ADR 0005 — matches the refactored Kaggle
-// notebook and the public.forecasts CHECK constraint in 002 SQL).
-export const VALID_HORIZONS = ['10_days', '20_days', '30_days'];
+// Tactical and strategic forecast horizons shared by the notebook, API, and UI.
+export const VALID_HORIZONS = ['7_days', '15_days'];
+
+const METEOROLOGICAL_FIELDS = [
+  'temperature_mean',
+  'temperature_max',
+  'temperature_min',
+  'precipitation_mm',
+  'wind_max_kmh',
+  'dewpoint_mean',
+  'solar_radiation_mj_m2',
+  'evapotranspiration_mm'
+];
 
 export const VALID_HAZARDS = [
   'Cold Wave',
@@ -85,6 +95,13 @@ export function parseCsvForecastRow(row, rowNumber) {
     target_date: row.target_date,
     prediction_date: row.prediction_date
   };
+
+  for (const field of METEOROLOGICAL_FIELDS) {
+    if (row[field] !== undefined && row[field] !== '') {
+      const parsed = parseFloat(row[field]);
+      if (Number.isFinite(parsed)) value[field] = parsed;
+    }
+  }
 
   // Dual-track severity (physics-based proxy) — optional passthrough.
   const physicsSeverity = parseFloat(row.physics_severity);

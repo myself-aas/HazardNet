@@ -12,7 +12,7 @@ const ForecastSchema = z.object({
   district_name: z.string(),
   // Keep in sync with backend/utils/forecastRow.js VALID_HORIZONS and the
   // public.forecasts CHECK constraint (scripts/db/002_forecasts_supabase.sql).
-  horizon: z.enum(['10_days', '20_days', '30_days']),
+  horizon: z.enum(['7_days', '15_days']),
   hazard_type: z.string(),
   confidence: z.number(),
   severity_score: z.number(),
@@ -23,6 +23,14 @@ const ForecastSchema = z.object({
   physics_severity: z.number().min(0).max(1).optional(),
   division: z.string().optional(),
   pcode: z.string().optional(),
+  temperature_mean: z.number().optional(),
+  temperature_max: z.number().optional(),
+  temperature_min: z.number().optional(),
+  precipitation_mm: z.number().optional(),
+  wind_max_kmh: z.number().optional(),
+  dewpoint_mean: z.number().optional(),
+  solar_radiation_mj_m2: z.number().optional(),
+  evapotranspiration_mm: z.number().optional(),
 });
 
 // Payload schema

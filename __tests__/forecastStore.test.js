@@ -60,7 +60,7 @@ void pgDefault;
 const row = (over = {}) => ({
   district_id: 19,
   district_name: 'Dhaka',
-  horizon: '10_days',
+horizon: '7_days',
   hazard_type: 'Flood',
   severity_score: 0.55,
   confidence: 0.91,
@@ -94,7 +94,7 @@ describe('mode selection', () => {
 
   it('fails loud when supabase is selected without DATABASE_URL', async () => {
     process.env.FORECAST_STORE = 'supabase';
-    await expect(getForecastStore().getLatestForecastsByHorizon('10_days')).rejects.toThrow(/DATABASE_URL/);
+    await expect(getForecastStore().getLatestForecastsByHorizon('7_days')).rejects.toThrow(/DATABASE_URL/);
   });
 });
 
@@ -107,14 +107,14 @@ describe('firestore store', () => {
       },
     });
     const store = getForecastStore();
-    const latest = await store.getLatestForecastByDistrict(19, '10_days');
+    const latest = await store.getLatestForecastByDistrict(19, '7_days');
     expect(latest.prediction_date).toBe('2026-09-12');
   });
 
   it('getLatestForecastByDistrict returns null when nothing matches', async () => {
     mockGetDocs.mockResolvedValue({ forEach: () => {} });
     const store = getForecastStore();
-    expect(await store.getLatestForecastByDistrict(19, '10_days')).toBeNull();
+    expect(await store.getLatestForecastByDistrict(19, '7_days')).toBeNull();
   });
 
   it('getLatestForecastsByHorizon groups by district keeping the latest row', async () => {
@@ -126,8 +126,8 @@ describe('firestore store', () => {
       },
     });
     const store = getForecastStore();
-    const rows = await store.getLatestForecastsByHorizon('10_days');
-    expect(rows).toHaveLength(2);
+const rows = await store.getLatestForecastsByHorizon('7_days');
+     expect(rows).toHaveLength(2);
     expect(rows.find((r) => r.district_id === 19).prediction_date).toBe('2026-09-12');
   });
 
@@ -168,9 +168,9 @@ describe('firestore store', () => {
   it('getForecastHistory passes horizon and district filters as equality constraints', async () => {
     mockGetDocs.mockResolvedValue({ forEach: () => {} });
     const store = getForecastStore();
-    await store.getForecastHistory({ from: '2026-09-01', to: '2026-09-30', horizon: '10_days', districtId: 19 });
+await store.getForecastHistory({ from: '2026-09-01', to: '2026-09-30', horizon: '7_days', districtId: 19 });
     const { where: whereFn } = jest.requireMock('../backend/db.js');
-    expect(whereFn).toHaveBeenCalledWith('horizon', '==', '10_days');
+    expect(whereFn).toHaveBeenCalledWith('horizon', '==', '7_days');
     expect(whereFn).toHaveBeenCalledWith('district_id', '==', 19);
     expect(whereFn).toHaveBeenCalledWith('prediction_date', '>=', '2026-09-01');
     expect(whereFn).toHaveBeenCalledWith('prediction_date', '<=', '2026-09-30');
@@ -211,7 +211,7 @@ describe('supabase store', () => {
         {
           district_id: '19',
           district_name: 'Dhaka',
-          horizon: '10_days',
+horizon: '7_days',
           hazard_type: 'Flood',
           severity_score: '0.55',
           confidence: '0.91',
@@ -229,7 +229,7 @@ describe('supabase store', () => {
       ],
     });
 
-    const forecast = await store.getLatestForecastByDistrict(19, '10_days');
+    const forecast = await store.getLatestForecastByDistrict(19, '7_days');
 
     expect(forecast.district_id).toBe(19); // text → number
     expect(forecast.severity_score).toBe(0.55); // numeric string → number
@@ -243,7 +243,7 @@ describe('supabase store', () => {
     expect(forecast.adm2_pcode).toBe('3037');
     expect(mockPoolQuery).toHaveBeenCalledWith(
       expect.stringContaining('order by prediction_date desc'),
-      ['19', '10_days']
+      ['19', '7_days']
     );
   });
 
@@ -255,10 +255,10 @@ describe('supabase store', () => {
         { ...row({ district_id: 30, district_name: 'Jashore' }), severity_score: '0.35', confidence: '0.78' },
       ],
     });
-    const rows = await store.getLatestForecastsByHorizon('10_days');
+    const rows = await store.getLatestForecastsByHorizon('7_days');
     expect(mockPoolQuery).toHaveBeenCalledWith(
       expect.stringContaining('distinct on (district_id)'),
-      ['10_days']
+      ['7_days']
     );
     expect(rows).toHaveLength(2);
     expect(rows.every((r) => typeof r.severity_score === 'number')).toBe(true);
@@ -281,7 +281,7 @@ describe('supabase store', () => {
 
     const insertParams = client.query.mock.calls[2][1];
     expect(insertParams).toEqual([
-      '19', 'Dhaka', '10_days', 'Flood', 0.91, 0.55, '2026-09-19', '2026-09-12',
+      '19', 'Dhaka', '7_days', 'Flood', 0.91, 0.55, '2026-09-19', '2026-09-12',
       0.55, 0.48, 'Dhaka', '3019', 3, 'Dhaka', '3037',
     ]);
   });
@@ -321,10 +321,10 @@ describe('supabase store', () => {
         { ...row({ district_id: 30, district_name: 'Jashore', prediction_date: '2026-09-12' }), severity_score: '0.35', confidence: '0.78' },
       ],
     });
-    const rows = await store.getForecastHistory({ from: '2026-09-01', to: '2026-09-30', horizon: '10_days', districtId: 19 });
+    const rows = await store.getForecastHistory({ from: '2026-09-01', to: '2026-09-30', horizon: '7_days', districtId: 19 });
     expect(mockPoolQuery).toHaveBeenCalledWith(
       expect.stringContaining('where prediction_date >= $1 and prediction_date <= $2 and horizon = $3 and district_id = $4 order by prediction_date asc, district_id asc'),
-      ['2026-09-01', '2026-09-30', '10_days', '19']
+      ['2026-09-01', '2026-09-30', '7_days', '19']
     );
     expect(rows).toHaveLength(2);
     expect(rows.every((r) => typeof r.severity_score === 'number' && typeof r.confidence === 'number')).toBe(true);

@@ -25,7 +25,7 @@ VALID_HAZARDS = [
     'Flood', 'Heat Wave', 'Severe Local Storm', 'Tropical Cyclone'
 ]
 
-VALID_HORIZONS = ['10_days', '20_days', '30_days']
+VALID_HORIZONS = ['7_days', '15_days']
 
 def validate_csv():
     """Validate CSV file structure and content."""
@@ -48,7 +48,7 @@ def validate_csv():
         return False
     
     # Check row count (should be 554 locations * 3 horizons = 1662 rows minimum)
-    expected_rows = 1662
+    expected_rows = 1108
     if len(df) < expected_rows * 0.9:  # Allow 10% tolerance
         print(f"⚠️ Warning: Expected ~{expected_rows} rows, got {len(df)}")
     

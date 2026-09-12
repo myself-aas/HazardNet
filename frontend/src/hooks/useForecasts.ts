@@ -22,7 +22,7 @@ import {
 } from '../lib/forecasts';
 
 /** Fetch + defensively parse the bulk forecast payload for one horizon. */
-export function useForecasts(horizon: ForecastHorizon = '10_days') {
+export function useForecasts(horizon: ForecastHorizon = '7_days') {
   return useQuery({
     queryKey: ['forecasts', 'bulk', horizon],
     queryFn: async (): Promise<ForecastRow[]> => {
@@ -61,7 +61,7 @@ export interface LiveDistricts {
  * The one-stop district source for map/dashboard views: live forecast data
  * when available, static baseline otherwise — consumers never need to branch.
  */
-export function useLiveDistricts(horizon: ForecastHorizon = '10_days'): LiveDistricts {
+export function useLiveDistricts(horizon: ForecastHorizon = '7_days'): LiveDistricts {
   const { data, isPending } = useForecasts(horizon);
 
   return useMemo(() => {
