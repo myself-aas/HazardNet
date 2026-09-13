@@ -66,34 +66,59 @@ def poll_notebook_status():
     print("\n⏱️ Timeout: Notebook execution took too long")
     return False
 
+def _pick_csv(directory: Path, target_name: str):
+    """Pick the forecast CSV from a download dir (preferred name first)."""
+    candidates = list(directory.rglob("*.csv"))
+    preferred = [p for p in candidates if p.name == target_name]
+    return preferred[0] if preferred else (candidates[0] if candidates else None)
+
+
 def download_outputs():
-    """Download the daily Kaggle dataset, with notebook output as fallback."""
-    print(f"\n📥 Downloading daily dataset: {DATASET_PATH}")
+    """Download the notebook's CSV output, falling back to the daily dataset.
+
+    Primary source (same one the hourly refresh workflow uses):
+        kaggle kernels output ashifahmedshuvo/hazardnet-auto-forecast-pipeline -p <dir>
+    which yields the notebook's /kaggle/working/hazardnet_forecasts_latest.csv
+    from its most recent run. The daily Kaggle dataset remains the fallback
+    for when the kernel output is unpublished or unavailable.
+    """
     output_dir = Path("./backend/data/forecasts")
     output_dir.mkdir(parents=True, exist_ok=True)
-    dataset_dir = output_dir / "kaggle_dataset"
-    dataset_dir.mkdir(parents=True, exist_ok=True)
-
-    dataset_cmd = f"kaggle datasets download -d {DATASET_PATH} -p {dataset_dir} --unzip --force"
-    if os.system(dataset_cmd) != 0:
-        print("❌ Failed to download the daily Kaggle dataset")
-        return False
-
     csv_file = output_dir / "hazardnet_forecasts_latest.csv"
-    candidates = list(dataset_dir.rglob("*.csv"))
-    preferred = [p for p in candidates if p.name == csv_file.name]
-    source_csv = preferred[0] if preferred else (candidates[0] if candidates else None)
 
-    if source_csv is None:
-        print("❌ Daily Kaggle dataset did not contain a CSV")
-        return False
-    source_csv.replace(csv_file)
-    print(f"✅ Downloaded dataset CSV: {csv_file} ({csv_file.stat().st_size:,} bytes)")
+    # 1) Preferred: the notebook kernel's own output files.
+    print(f"\n📥 Downloading notebook output: kaggle kernels output {NOTEBOOK_PATH}")
+    notebook_dir = output_dir / "notebook_output"
+    if notebook_dir.exists():
+        import shutil
+        shutil.rmtree(notebook_dir)
+    notebook_dir.mkdir(parents=True, exist_ok=True)
+
+    kernel_ok = os.system(f"kaggle kernels output {NOTEBOOK_PATH} -p {notebook_dir}") == 0
+    source_csv = _pick_csv(notebook_dir, csv_file.name) if kernel_ok else None
+    if source_csv is not None:
+        source_csv.replace(csv_file)
+        print(f"✅ Downloaded notebook output CSV: {csv_file} ({csv_file.stat().st_size:,} bytes)")
+    else:
+        # 2) Fallback: the daily Kaggle dataset snapshot.
+        print("ℹ️ Notebook output unavailable — falling back to the daily dataset")
+        print(f"📥 Downloading daily dataset: {DATASET_PATH}")
+        dataset_dir = output_dir / "kaggle_dataset"
+        dataset_dir.mkdir(parents=True, exist_ok=True)
+
+        dataset_cmd = f"kaggle datasets download -d {DATASET_PATH} -p {dataset_dir} --unzip --force"
+        if os.system(dataset_cmd) != 0:
+            print("❌ Failed to download the daily Kaggle dataset")
+            return False
+
+        source_csv = _pick_csv(dataset_dir, csv_file.name)
+        if source_csv is None:
+            print("❌ Daily Kaggle dataset did not contain a CSV")
+            return False
+        source_csv.replace(csv_file)
+        print(f"✅ Downloaded dataset CSV: {csv_file} ({csv_file.stat().st_size:,} bytes)")
 
     # Keep the notebook JSON artifact when available for validation and archives.
-    notebook_dir = output_dir / "notebook_output"
-    notebook_dir.mkdir(parents=True, exist_ok=True)
-    os.system(f"kaggle kernels output {NOTEBOOK_PATH} -p {notebook_dir} >/dev/null 2>&1")
     json_candidates = list(notebook_dir.rglob("*.json"))
     if json_candidates:
         json_candidates[0].replace(output_dir / "hazardnet_forecasts_latest.json")
