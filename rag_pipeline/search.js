@@ -2,10 +2,10 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const ragModuleFile = fileURLToPath(import.meta.url);
+const ragModuleDir = path.dirname(ragModuleFile);
 
-const RAG_DIR = __dirname;
+const RAG_DIR = ragModuleDir;
 const KB_PATH = path.join(RAG_DIR, 'agent_knowledge_base.json');
 const BASELINES_PATH = path.join(RAG_DIR, 'district_economic_baselines.json');
 const SPATIAL_MAP_PATH = path.join(RAG_DIR, 'references', '05_spatial_context', 'district_division_mapping.json');

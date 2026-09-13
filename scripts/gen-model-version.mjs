@@ -33,5 +33,25 @@ const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'))
 const combined = crypto.createHash('sha256').update(entry.artifacts.map((a) => a.sha256).join('')).digest('hex').slice(0, 12);
 entry.version = `${pkg.version}+model.${combined}`;
 
-fs.writeFileSync(path.join(modelsDir, 'VERSION.json'), JSON.stringify(entry, null, 2) + '\n');
-console.log(`[gen-model-version] Models/VERSION.json written: ${entry.version}`);
+// Deterministic regeneration (CI relies on it): the verify job runs this
+// script and fails on `git diff`. A fresh `generatedAt` on every run would
+// dirty the file unconditionally, so an unchanged handshake keeps the
+// committed file byte-identical and `generatedAt` means "handshake last
+// changed" rather than "script last ran".
+const versionPath = path.join(modelsDir, 'VERSION.json');
+const next = JSON.stringify(entry, null, 2) + '\n';
+let prev = null;
+try {
+  prev = JSON.parse(fs.readFileSync(versionPath, 'utf8'));
+} catch {
+  prev = null;
+}
+const same = prev
+  && prev.version === entry.version
+  && JSON.stringify(prev.artifacts) === JSON.stringify(entry.artifacts);
+if (same) {
+  console.log(`[gen-model-version] Models/VERSION.json unchanged: ${entry.version}`);
+} else {
+  fs.writeFileSync(versionPath, next);
+  console.log(`[gen-model-version] Models/VERSION.json written: ${entry.version}`);
+}

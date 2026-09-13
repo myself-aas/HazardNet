@@ -1503,7 +1503,7 @@ CMD ["node", "server.js"]
 
 ## PART 9: DEPLOYMENT WORKFLOW
 
-> ⚠️ **Reconciled (2026-09-12):** **Actual steps:** deploy = push to `main` (Vercel builds the SPA + functions) — no compose; self-host = `bun install --frozen-lockfile && npm run build && npm start`, then `curl http://localhost:3001/health`; manual pipeline run = `gh workflow run weekly_forecast.yml`. Note there is no `/api/forecasts/latest` route — use `/api/v1/forecasts?district_id&horizon` or `/api/v1/forecasts/bulk`.
+> ⚠️ **Reconciled (2026-09-12):** **Actual steps:** deploy = push to `main` (Vercel builds the SPA + functions) — no compose; self-host = `npm ci --no-audit --no-fund && npm run build && npm start`, then `curl http://localhost:3001/health`; manual pipeline run = `gh workflow run weekly_forecast.yml`. Note there is no `/api/forecasts/latest` route — use `/api/v1/forecasts?district_id&horizon` or `/api/v1/forecasts/bulk`.
 
 
 ### Complete Deployment Steps

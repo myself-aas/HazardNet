@@ -17,6 +17,7 @@ both must validate —
 The schema is detected from the CSV header; the JSON artifact must match the
 CSV's detected schema.
 """
+import argparse
 import sys
 import json
 import pandas as pd
@@ -26,6 +27,10 @@ from datetime import datetime, timezone
 FORECAST_DIR = Path("./backend/data/forecasts")
 CSV_FILE = FORECAST_DIR / "hazardnet_forecasts_latest.csv"
 JSON_FILE = FORECAST_DIR / "hazardnet_forecasts_latest.json"
+# Hourly refresh pulls the notebook's latest output, which may legitimately be
+# days old between notebook runs — freshness is a warning there, not a gate.
+# Producer pipelines (daily/weekly) keep the strict freshness gate.
+SKIP_FRESHNESS = False
 
 # Columns common to both schemas.
 COMMON_COLUMNS = [
@@ -253,7 +258,23 @@ def validate_completeness():
         return False
 
 
-def main():
+def parse_args(argv=None):
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--csv', default=str(CSV_FILE), help='Forecast CSV to validate')
+    parser.add_argument('--json', default=str(JSON_FILE), help='Forecast JSON artifact to validate')
+    parser.add_argument('--skip-freshness', action='store_true',
+                        help='Warn instead of failing on stale prediction_date '
+                             '(hourly refresh: the notebook runs on its own cadence)')
+    return parser.parse_args(argv)
+
+
+def main(argv=None):
+    global CSV_FILE, JSON_FILE, SKIP_FRESHNESS
+    args = parse_args(argv)
+    CSV_FILE = Path(args.csv)
+    JSON_FILE = Path(args.json)
+    SKIP_FRESHNESS = args.skip_freshness
+
     print("=" * 60)
     print("HazardNet Forecast Validation")
     print("=" * 60 + "\n")
@@ -265,6 +286,9 @@ def main():
         'freshness': validate_freshness() if csv_ok else False,
         'completeness': validate_completeness() if csv_ok else False,
     }
+    if SKIP_FRESHNESS and csv_ok and not results['freshness']:
+        print("ℹ️ Freshness gate skipped (--skip-freshness): stale data warns but passes.")
+        results['freshness'] = True
 
     print("\n" + "=" * 60)
     if all(results.values()):
@@ -278,5 +302,5 @@ def main():
         sys.exit(1)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

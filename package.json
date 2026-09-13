@@ -29,7 +29,6 @@
   "workspaces": [
     "frontend"
   ],
-
   "scripts": {
     "dev": "npm run build:frontend && node backend/server.js",
     "start": "node backend/server.js",
@@ -43,7 +42,6 @@
     "check:bundle": "node scripts/check-bundle.mjs",
     "check:rag-freshness": "node scripts/check-rag-freshness.mjs"
   },
-
   "dependencies": {
     "@google/genai": "^2.15.0",
     "@supabase/supabase-js": "^2.116.0",
@@ -75,7 +73,9 @@
     "@testing-library/react": "^14.3.1",
     "@types/jest": "^29.5.14",
     "@types/supertest": "^7.2.1",
+    "@vitejs/plugin-react": "^6.1.1",
     "babel-jest": "^30.4.1",
+    "babel-plugin-transform-import-meta": "^2.3.3",
     "eslint": "^9.39.0",
     "eslint-plugin-react-hooks": "^5.2.0",
     "firebase-admin": "^14.4.0",
@@ -87,8 +87,7 @@
     "supertest": "^7.2.2",
     "ts-jest": "^29.4.12",
     "typescript": "^5.4.5",
-    "typescript-eslint": "^8.46.0",
-    "@vitejs/plugin-react": "^6.1.1"
+    "typescript-eslint": "^8.46.0"
   },
   "engines": {
     "node": ">=20"

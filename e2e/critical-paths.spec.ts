@@ -112,8 +112,9 @@ test.describe('Advisory Generation', () => {
 
   test('advisory contains structured sections', async ({ page }) => {
     await page.goto(`${BASE}/advisories/drought`); // Specific hazard advisory
-    
-    await page.waitForLoadState('networkidle');
+
+    // Deterministic content wait (networkidle never settles with persistent connections).
+    await expect(page.getByText(/advisory|guidance|drought/i)).toBeVisible({ timeout: 15000 });
     
     // Should have structured content
     const sections = ['immediate', 'agricultural', 'safety', 'contact'];
@@ -141,7 +142,7 @@ test.describe('PDF Export', () => {
   test('PDF export triggers download', async ({ page }) => {
     await page.goto(`${BASE}/advisories`);
     
-    const downloadPromise = page.waitForEvent('download', { timeout: 30000 });
+    const downloadPromise = page.waitForEvent('download', { timeout: 15000 });
     const pdfButton = page.getByRole('button', { name: /export pdf|download pdf/i }).first();
     
     if (await pdfButton.isVisible()) {

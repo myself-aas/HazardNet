@@ -62,47 +62,75 @@ export interface ForecastMetadata {
   source: string | null;
 }
 
-/** Load freshness metadata without ever substituting a client/request timestamp. */
+/**
+ * Load freshness metadata without ever substituting a client/request timestamp.
+ *
+ * Three-stage fallback (mirrors loadForecasts): live /metadata → live /bulk →
+ * the committed hourly snapshot. The Peak Hazard Window / Incident Ingestion
+ * cards therefore keep showing the latest Kaggle prediction_date even when
+ * the API/store is unreachable, as long as the deployment bundle carries a
+ * snapshot. Throws only when all three sources fail.
+ */
 export async function fetchForecastMetadata(): Promise<ForecastMetadata> {
-  const metadataResponse = await fetch(`/api/v1/forecasts/metadata?fresh=${Date.now()}`, {
-    cache: 'no-store',
-  });
-
-  if (metadataResponse.ok) {
-    const payload = await metadataResponse.json() as {
-      prediction_date?: unknown;
-      ingestion_timestamp?: unknown;
-      data_source?: unknown;
-    };
-    return {
-      predictionDate: typeof payload.prediction_date === 'string' ? payload.prediction_date.slice(0, 10) : null,
-      ingestionTimestamp: typeof payload.ingestion_timestamp === 'string' ? payload.ingestion_timestamp : null,
-      source: typeof payload.data_source === 'string' ? payload.data_source : null,
-    };
+  // 1. Live metadata endpoint (Vercel serverless / Express backend).
+  try {
+    const metadataResponse = await fetch(`/api/v1/forecasts/metadata?fresh=${Date.now()}`, {
+      cache: 'no-store',
+    });
+    if (metadataResponse.ok) {
+      const payload = await metadataResponse.json() as {
+        prediction_date?: unknown;
+        ingestion_timestamp?: unknown;
+        data_source?: unknown;
+      };
+      const predictionDate = typeof payload.prediction_date === 'string' ? payload.prediction_date.slice(0, 10) : null;
+      if (predictionDate) {
+        return {
+          predictionDate,
+          ingestionTimestamp: typeof payload.ingestion_timestamp === 'string' ? payload.ingestion_timestamp : null,
+          source: typeof payload.data_source === 'string' ? payload.data_source : null,
+        };
+      }
+    }
+  } catch {
+    // fall through to /bulk, then the snapshot
   }
 
-  // Bulk is the authoritative live row endpoint. It also lets the card work
+  // 2. Bulk is the authoritative live row endpoint. It also lets the card work
   // against older deployments that do not expose /metadata yet.
-  const bulkResponse = await fetch(`/api/v1/forecasts/bulk?horizon=7_days&fresh=${Date.now()}`, {
-    cache: 'no-store',
-  });
-  if (!bulkResponse.ok) throw new Error(`Forecast metadata unavailable (${bulkResponse.status})`);
-  const payload = await bulkResponse.json() as { generated_at?: unknown; data_source?: unknown; forecasts?: unknown };
-  const rows = parseBulkResponse(payload);
-  const latestPrediction = rows
-    .map((row) => row.prediction_date)
-    .sort()
-    .at(-1) ?? null;
-  const latestIngestion = rows
-    .map((row) => row.created_at)
-    .filter((value): value is string => Boolean(value))
-    .sort()
-    .at(-1) ?? null;
-  return {
-    predictionDate: latestPrediction,
-    ingestionTimestamp: latestIngestion,
-    source: typeof payload.data_source === 'string' ? payload.data_source : null,
-  };
+  try {
+    const bulkResponse = await fetch(`/api/v1/forecasts/bulk?horizon=7_days&fresh=${Date.now()}`, {
+      cache: 'no-store',
+    });
+    if (bulkResponse.ok) {
+      const payload = await bulkResponse.json() as { generated_at?: unknown; data_source?: unknown; forecasts?: unknown };
+      const rows = parseBulkResponse(payload);
+      const latestPrediction = rows
+        .map((row) => row.prediction_date)
+        .sort()
+        .at(-1) ?? null;
+      if (latestPrediction) {
+        const latestIngestion = rows
+          .map((row) => row.created_at)
+          .filter((value): value is string => Boolean(value))
+          .sort()
+          .at(-1) ?? null;
+        return {
+          predictionDate: latestPrediction,
+          ingestionTimestamp: latestIngestion,
+          source: typeof payload.data_source === 'string' ? payload.data_source : null,
+        };
+      }
+    }
+  } catch {
+    // fall through to the snapshot
+  }
+
+  // 3. Committed hourly snapshot (bundled with the deployment).
+  const snapshotMetadata = await fetchSnapshotMetadata();
+  if (snapshotMetadata.predictionDate) return snapshotMetadata;
+
+  throw new Error('Forecast metadata unavailable (API and snapshot both unreachable)');
 }
 
 export const FORECAST_HORIZONS = ['7_days', '15_days'] as const;
@@ -161,6 +189,10 @@ export function parseForecastRow(raw: unknown): ForecastRow | null {
   if (isFiniteNumber(r.admin_level)) row.admin_level = r.admin_level;
   if (typeof r.adm2_name === 'string' && r.adm2_name) row.adm2_name = r.adm2_name;
   if (typeof r.adm2_pcode === 'string' && r.adm2_pcode) row.adm2_pcode = r.adm2_pcode;
+  // created_at powers the /bulk fallback's ingestionTimestamp in
+  // fetchForecastMetadata — dropping it blanks the Incident Ingestion card
+  // whenever /metadata is down.
+  if (typeof r.created_at === 'string' && r.created_at) row.created_at = r.created_at;
 
   return row;
 }
@@ -216,6 +248,47 @@ export async function fetchStaticForecastSnapshot(horizon: ForecastHorizon): Pro
     return parseSnapshotResponse(await res.json(), horizon);
   } catch {
     return [];
+  }
+}
+
+/**
+ * Freshness metadata from the committed hourly snapshot — the offline-capable
+ * equivalent of /metadata for the Peak Hazard Window / Incident Ingestion
+ * cards. Never throws: resolves to all-null when the snapshot is missing or
+ * malformed. The snapshot's prediction_date wins; when absent, the newest row
+ * date across horizons is derived (same rule as the /bulk fallback above).
+ */
+export async function fetchSnapshotMetadata(): Promise<ForecastMetadata> {
+  const empty: ForecastMetadata = { predictionDate: null, ingestionTimestamp: null, source: null };
+  try {
+    const res = await fetch(`${FORECAST_SNAPSHOT_URL}?fresh=${Date.now()}`, { cache: 'no-store' });
+    if (!res.ok) return empty;
+    const payload = await res.json() as ForecastSnapshot;
+    if (!payload || typeof payload !== 'object') return empty;
+
+    let predictionDate = typeof payload.prediction_date === 'string'
+      ? payload.prediction_date.slice(0, 10)
+      : null;
+    if (!predictionDate && payload.horizons && typeof payload.horizons === 'object') {
+      const rowDates: string[] = [];
+      for (const rows of Object.values(payload.horizons)) {
+        if (!Array.isArray(rows)) continue;
+        for (const row of rows) {
+          const parsed = parseForecastRow(row);
+          if (parsed) rowDates.push(parsed.prediction_date);
+        }
+      }
+      rowDates.sort();
+      predictionDate = rowDates.at(-1) ?? null;
+    }
+    if (!predictionDate) return empty;
+    return {
+      predictionDate,
+      ingestionTimestamp: typeof payload.generated_at === 'string' ? payload.generated_at : null,
+      source: typeof payload.source === 'string' ? payload.source : null,
+    };
+  } catch {
+    return empty;
   }
 }
 

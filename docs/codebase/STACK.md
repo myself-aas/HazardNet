@@ -9,8 +9,8 @@
 | Area | Value | Evidence |
 |------|-------|----------|
 | Primary languages | TypeScript (frontend, 151 files), JavaScript ESM (backend/serverless, 42 files), Python (weekly Kaggle pipeline) | `frontend/package.json`, `backend/server.js`, `kaggle_notebooks/hazardnet-auto-forecast-pipeline/hazardnet-auto-forecast-pipeline.ipynb` |
-| Runtime + version | Node.js **>= 20** (`engines.node`); CI pins Node 20 + Bun **1.3.14** (lockfileVersion 1) | `package.json` (`engines`), `.github/workflows/ci.yml` (setup-node 20, setup-bun 1.3.14) |
-| Package manager | **npm with Bun lockfile**: `bun.lock` committed; installs via `bun install --frozen-lockfile` in CI; `.npmrc` sets `legacy-peer-deps=true` (no `package-lock.json` committed) | `bun.lock`, `.npmrc`, `.github/workflows/ci.yml`, comment in `.npmrc` |
+| Runtime + version | Node.js **>= 20** (`engines.node`); CI pins Node 20 | `package.json` (`engines`), `.github/workflows/ci.yml` (setup-node 20) |
+| Package manager | **npm** (sole): `package-lock.json` committed (npm workspaces: root + `frontend`); installs via `npm ci --no-audit --no-fund` in CI and on Vercel. `bun.lock` / `pnpm-lock.yaml` removed 2026-09-13 — three divergent lockfiles broke reproducibility (reaudit) | `package-lock.json`, `.github/workflows/ci.yml` |
 | Module/build system | Root `package.json` `"type": "module"` (ESM everywhere); **Vite 5** builds the frontend; `tsc --noEmit` type-checks it. npm **workspaces**: `["frontend"]` | `package.json` (`type`, `workspaces`, `scripts`), `frontend/vite.config.ts`, `frontend/tsconfig.json` |
 | Python runtime (pipeline only) | Python 3.10 (`weekly_forecast.yml`) with `earthengine-api`, `tensorflow`, `pandas`, `geopandas` (the second Sunday pipeline, `weekly_hazardnet.yml` / Python 3.11, was retired 2026-09-12 — ADR 0004) | `.github/workflows/weekly_forecast.yml`, `kaggle_notebooks/.../hazardnet-auto-forecast-pipeline.ipynb` |
 
@@ -61,16 +61,16 @@ Dead dependency: `@mapbox/mapbox-gl-geocoder` (^4.7.2) is declared but never imp
 | ESLint 9 (flat config, typescript-eslint 8 + react-hooks) | Lint, 0-error policy blocking in CI | `eslint.config.js`, `.github/workflows/ci.yml` |
 | Prettier 3 | Formatting (`npm run format`) | `.prettierrc`, `package.json` scripts |
 | Jest 29 (+ ts-jest, babel-jest, jsdom env, Testing Library) | Unit/integration tests + coverage gate (statements 32%) | `jest.config.cjs`, `jest.setup.ts` |
-| Playwright 1.62 | E2E smoke suite (chromium desktop + Pixel 7 mobile) — **not** run in CI | `playwright.config.ts`, `e2e/smoke.spec.ts`, `.github/workflows/ci.yml` |
+| Playwright 1.62 | E2E smoke suite (chromium desktop + Pixel 7 mobile) — run in CI (`test-e2e` job) | `playwright.config.ts`, `e2e/smoke.spec.ts`, `.github/workflows/ci.yml` |
 | supertest, node-mocks-http | Backend route/middleware tests | `package.json` devDependencies, `__tests__/` |
-| Bun 1.3.14 | Frozen installs in CI (lockfileVersion 1 required by Vercel's Bun) | `.github/workflows/ci.yml` comment |
+| npm 10 (Node 20) | Frozen installs in CI and on Vercel (`npm ci --no-audit --no-fund` from `package-lock.json`) | `.github/workflows/ci.yml`, `vercel.json` (no installCommand → npm auto-detect) |
 | scripts/check-bundle.mjs | Bundle budget gate: 800 KB gzip per chunk / 1600 KB total | `scripts/check-bundle.mjs` |
 | scripts/check-rag-freshness.mjs | RAG knowledge-base freshness gate (CI-enforced) | `package.json` scripts, `.github/workflows/ci.yml` |
 
 ### 4) Key Commands
 
 ```bash
-bun install --frozen-lockfile      # install (CI); npm install also works (legacy-peer-deps via .npmrc)
+npm ci --no-audit --no-fund        # install (CI + Vercel; frozen from package-lock.json)
 npm start                          # backend only: node backend/server.js (PORT env; 3001 used in dev per vite proxy)
 npm run dev                        # build frontend then start backend
 npm run build                      # build frontend (vite) + copy dist to root (scripts/copy-dist.mjs)
@@ -91,7 +91,7 @@ Evidence: `package.json` scripts; `frontend/vite.config.ts` (proxy + port 3000);
 - Required backend env vars (from `backend/server.js` startup assertions + code reads):
   `BACKEND_API_KEY` (problems-level: 503 on authenticated endpoints if unset), `GEMINI_API_KEY`, `GEMINI_API_KEY_BACKUP`, `GROQ_API_KEY`, `HUGGINGFACE_API_KEY`, `OPENROUTER_API_KEY`, `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `WEB_PUSH_CONTACT`, `FRONTEND_ORIGIN`, `CSP_ENFORCE`, `SUPABASE_JWT_SECRET`, `DATABASE_URL`, `SUPABASE_SSL`, `FORECAST_STORE` (forecast-store selection, ADR 0002), `PORT`. (grep of `process.env.*` over `backend/`, `api/`, `scripts/`, `utils/`)
 - Frontend env vars (grep of `import.meta.env.VITE_*`): `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `VITE_SUPABASE_REDIRECT_URL`, `VITE_VAPID_PUBLIC_KEY`, `VITE_ADSENSE_CLIENT`, `VITE_ADSENSE_SLOT_ARTICLE_FOOTER`, `VITE_ADSENSE_SLOT_ARTICLE_INLINE`, `VITE_ADSENSE_SLOT_BLOG_INDEX`, plus `VITE_FIREBASE_API_KEY/AUTH_DOMAIN/DATABASE_URL/PROJECT_ID/STORAGE_BUCKET/MESSAGING_SENDER_ID/APP_ID/MEASUREMENT_ID/FIRESTORE_DATABASE_ID` (defaults committed in `frontend/src/lib/config.ts`; public-by-design per ADR 0001).
-- Deployment constraints: Vercel is the primary deploy target (static `dist/` + `api/` serverless functions, enforcing security headers, CSP Report-Only); the Node server is the local/self-host runtime (ADR 0003). Vercel builds install with the root `bun.lock` (v1) — CI guards with a frozen install.
+- Deployment constraints: Vercel is the primary deploy target (static `dist/` + `api/` serverless functions, enforcing security headers, CSP Report-Only); the Node server is the local/self-host runtime (ADR 0003). Vercel builds install with the root `package-lock.json` (npm auto-detect; no `installCommand` in `vercel.json`) — CI guards with a frozen install.
 - README-documented vars `VITE_MAPBOX_TOKEN`, `VITE_ENABLE_EDGE_INFERENCE`, `VITE_API_BASE_URL` are **not read anywhere in the code** (grep verified) — see CONCERNS divergences.
 
 ### 6) Evidence

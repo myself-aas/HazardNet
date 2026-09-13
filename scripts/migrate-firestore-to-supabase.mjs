@@ -8,10 +8,9 @@
 // Requires: DATABASE_URL (Supabase Postgres connection string). Firestore
 // credentials come from firebase-applet-config.json (existing backend path).
 //
-// Horizon note (ADR 0005): the Supabase CHECK constraint accepts
-// 10/20/30-day horizons only. Legacy 7/15-era Firestore rows — if any exist —
-// are SKIPPED and reported, not migrated (they belong to the retired era and
-// the pipeline has never successfully written; the store is expected empty).
+// Horizon note (ADR 0008): the Supabase CHECK constraint accepts the canonical
+// 7/15-day horizons (the set the committed notebook produces). Rows with any
+// other horizon — if any exist — are SKIPPED and reported, not migrated.
 // Schema verification: run scripts/verify-supabase-cutover.mjs first.
 import { db, collection, getDocs } from '../backend/db.js';
 import pg from 'pg';
@@ -29,8 +28,8 @@ if (!process.env.SUPABASE_SSL && !DATABASE_URL.includes('sslmode=')) {
 
 const { Client } = pg;
 
-const VALID_HORIZONS = ['10_days', '20_days', '30_days']; // ADR 0005
-const LEGACY_HORIZONS = ['7_days', '15_days'];           // retired era
+const VALID_HORIZONS = ['7_days', '15_days']; // ADR 0008 canonical set
+const LEGACY_HORIZONS = ['10_days', '20_days', '30_days']; // aspirational, never produced
 
 async function fetchFirestoreRows() {
   const snap = await getDocs(collection(db, 'forecasts'));
