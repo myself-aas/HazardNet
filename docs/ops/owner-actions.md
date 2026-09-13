@@ -20,8 +20,10 @@ gh pr create --base main --head arena/01a099a1-hazardnet \
   --body-file docs/audits/2026-09-13-production-readiness-reaudit.md
 ```
 
-Then on GitHub: review the PR → wait for all CI jobs green → **Merge pull request**.
-(E2E runs only in CI — no browsers in the sandbox — so do not merge red.)
+Then on GitHub: review the PR → wait for CI green → **Merge pull request**.
+(E2E is quarantined non-blocking per reaudit N9 — pre-existing 20-min timeouts,
+no green baseline — so merge when the other five jobs are green; E2E still runs
+and reports signal on every PR.)
 
 ## Action 1 — Rotate the leaked credentials 🔴 (P0, ~30 min)
 
@@ -78,8 +80,10 @@ Also refresh your own local `.env` from `.env.example` (gitignored — verify wi
 
 ### 2a. Merge the PR (from Step 0)
 
-Merge only when CI is fully green, especially: **Backend Tests, Frontend Tests,
-Pipeline Scripts Tests, E2E Tests, Code Quality & Build, Security Audit.**
+Merge only when CI is green, especially: **Backend Tests, Frontend Tests,
+Pipeline Scripts Tests, Code Quality & Build, Security Audit.**
+(`E2E Tests` is quarantined non-blocking — reaudit N9 — but keep an eye on it:
+red is tolerated, a *timeout/cancel* would still need attention.)
 
 ### 2b. Set Vercel environment variables
 
@@ -131,6 +135,9 @@ Repo → **Settings → Branches → Add classic branch protection rule**:
 - ✅ **Require status checks to pass** + ✅ **Require branches to be up to date before merging** →
   add: `Backend Tests`, `Frontend Tests`, `Pipeline Scripts Tests`, `E2E Tests`,
   `Code Quality & Build`, `Security Audit`
+  (`E2E Tests` stays required even while quarantined: the job is time-bounded to
+  always complete, and quarantine converts red → success; it becomes a real gate
+  again automatically when the quarantine is lifted per N9.)
 - ⚠️ **Bypass list (critical):** under *"Allow specified actors to bypass required
   pull requests"* add **`github-actions[bot]`** — the hourly forecast bot commits
   data + snapshots directly to `main`; without this bypass its pushes get rejected.

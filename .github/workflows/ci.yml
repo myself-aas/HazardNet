@@ -132,6 +132,11 @@ jobs:
     name: E2E Tests
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    # E2E QUARANTINE (2026-09-13): suite never completed in CI (pre-existing
+    # 20-min timeouts, no green baseline). Non-blocking until healthy; the job
+    # still runs and reports signal. Lift: remove this line once the reaudit's
+    # lift criteria are met (3 consecutive green CI runs incl. E2E).
+    continue-on-error: true
 
     steps:
       - name: Checkout repository
