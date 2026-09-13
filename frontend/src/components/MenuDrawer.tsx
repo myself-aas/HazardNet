@@ -1,6 +1,6 @@
 import React from 'react';
-import { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
@@ -71,6 +71,18 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
       [sectionId]: !prev[sectionId],
     }));
   };
+
+  // Escape closes the drawer. The panel covers the header hamburger at
+  // phone/tablet widths, so keyboard and assistive-tech users need an explicit
+  // dismiss path that does not depend on hitting the backdrop.
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [isOpen, onClose]);
 
   const navSections: NavSection[] = [
     {
@@ -145,6 +157,10 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
           {/* Navigation Drawer Container */}
           <motion.div
             key="drawer-panel"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Navigation menu"
+            data-testid="menu-drawer"
             initial={{ x: '-100%' }}
             animate={{ x: 0 }}
             exit={{ x: '-100%' }}
@@ -177,6 +193,21 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                   ) : (
                     <MaterialIcon name="person" className="text-[20px] text-slate-800" />
                   )}
+                </button>
+                {/*
+                  In-panel dismiss control. The header hamburger sits under this
+                  panel (z-[10000]) once the drawer is open, so without this the
+                  only way out was tapping the translucent backdrop — no visible
+                  close affordance and nothing keyboard reachable.
+                */}
+                <button
+                  onClick={onClose}
+                  data-testid="menu-drawer-close"
+                  aria-label="Close navigation menu"
+                  title="Close menu"
+                  className="w-10 h-10 rounded-full bg-black/5 hover:bg-black/10 flex items-center justify-center transition-colors focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:outline-none"
+                >
+                  <MaterialIcon name="close" className="text-[20px] text-slate-800" />
                 </button>
               </div>
             </div>
@@ -255,6 +286,29 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
 
             {/* Drawer Footer */}
             <div className="p-6 flex flex-col gap-4 shrink-0 mt-auto">
+              {/* Signed-out visitors: registration must be reachable from the
+                  primary navigation. The compact header bar below xl has no
+                  room for auth links, so the drawer is their entry point. */}
+              {!user && (
+                <div className="flex flex-col gap-2">
+                  <Link
+                    to="/signup"
+                    data-testid="drawer-signup-link"
+                    onClick={onClose}
+                    className="w-full py-3 rounded-2xl bg-[#f9a825] hover:bg-[#d08305] text-slate-950 text-[13px] font-extrabold text-center shadow-2xs transition-all focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:outline-none"
+                  >
+                    Sign up free
+                  </Link>
+                  <Link
+                    to="/login"
+                    data-testid="drawer-signin-link"
+                    onClick={onClose}
+                    className="w-full py-3 rounded-2xl border border-slate-900/15 hover:bg-black/5 text-slate-800 text-[13px] font-bold text-center transition-all focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:outline-none"
+                  >
+                    Sign in
+                  </Link>
+                </div>
+              )}
               <FirebaseRealtimeStatus variant="compact" />
               <div className="flex items-center justify-between text-[11px] font-mono text-slate-500">
                 <span className="flex items-center gap-1.5">

@@ -6,6 +6,12 @@ yarn-error.log
 # Build output
 /dist
 
+# Playwright artifacts (written by a local `npx playwright test` run)
+/test-results
+/playwright-report
+/blob-report
+/playwright/.cache
+
 # Logs
 logs/
 *.log

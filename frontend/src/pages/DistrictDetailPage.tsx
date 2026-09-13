@@ -1626,7 +1626,7 @@ export const DistrictDetailPage: React.FC = () => {
               {data.emergencyResponse.advisoryBullets.map((bullet, idx) => (
                 <div
                   key={idx}
-                  className="bg-slate-50 border border-slate-200/90 border-l-4 border-l-emerald-500 rounded-xl p-4 sm:p-5 flex items-start gap-4 hover:border-slate-300 transition-colors shadow-2xs"
+                  className="bg-slate-50 border border-slate-200/90 border-l-4 border-l-emerald-500 rounded-xl p-4 sm:p-5 flex flex-wrap items-start gap-4 hover:border-slate-300 transition-colors shadow-2xs"
                 >
                   <span className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-800 font-mono text-sm flex items-center justify-center shrink-0 font-extrabold mt-0.5 shadow-2xs border border-emerald-300">
                     {idx + 1}
@@ -1634,7 +1634,11 @@ export const DistrictDetailPage: React.FC = () => {
                   <div className="flex-1 text-sm sm:text-[15px] text-slate-800 leading-relaxed font-normal">
                     {bullet}
                   </div>
-                  <span className="shrink-0 px-2.5 py-1 bg-white border border-slate-200 rounded-md text-[10px] font-mono font-extrabold text-slate-600">
+                  {/* `basis-full` below sm: this 178px attribution chip is
+                      shrink-0, so on a 375px phone it used to push the whole
+                      document 20px into horizontal scroll. On its own line it
+                      costs nothing. */}
+                  <span className="shrink-0 basis-full sm:basis-auto px-2.5 py-1 bg-white border border-slate-200 rounded-md text-[10px] font-mono font-extrabold text-slate-600">
                     DAE/BRRI Official Protocol
                   </span>
                 </div>
