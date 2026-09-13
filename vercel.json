@@ -4,7 +4,7 @@
   "outputDirectory": "dist",
   "rewrites": [
     {
-      "source": "/((?!api/|assets/|serviceWorker\\.js).*)",
+      "source": "/((?!api/|assets/|serviceWorker\\.js|_vercel/).*)",
       "destination": "/index.html"
     }
   ],
