@@ -116,7 +116,7 @@ Known behavior (no action): with Firestore unreachable, reads return `200` + emp
 | Clean-slate install | `npm ci` in a pristine copy (`--ignore-scripts`: sandbox blocks the tfjs native download) | 1,733 packages, exit 0 ✅ |
 | Workflow validation | strict duplicate-key YAML parse ×7 + any-`if:` `secrets` scan + SchemaStore schema + live push-bisect B0–B4 | all OK, NONE, 0 schema errors, bisect converges on outputs-gating ✅ |
 | E2E compile | `npx playwright test --list` | 44 tests listed (execution needs browsers → CI-only) ✅ |
-| E2E execution | fresh PR run after the outputs-gating fix | job hit the 20-min timeout (20.25 min in-step, cancelled); pre-existing — pre-branch-era job shows the identical signature. Quarantined per N9; all other 5 CI jobs green ✅ |
+| E2E execution | PR runs before/after N9 quarantine | pre-quarantine: 20-min timeout (20.25 min in-step, cancelled; pre-existing — pre-branch-era job identical). Post-quarantine: job *completes* in ~3.5 min (red on assertions → `continue-on-error` → run `success`); all other 5 jobs green, preview deploy proceeds ✅ |
 | Backend smoke (real boot) | `node backend/server.js` + curl | `/health` 200 (`2.1.9+model…`), CSP-R-O present, no `x-powered-by`, `/update` 401 w/o key, `/Models/*` 404, traversal contained ✅ |
 | Live production probe | `GET /api/v1/forecasts/{metadata,bulk}`, `/data/forecasts-latest.json` | Vercel 404 / SPA 404 — old deploy, heals on merge ✅ (explains finding #2) |
 
