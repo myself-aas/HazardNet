@@ -546,7 +546,7 @@ export const AdvisoriesPage: React.FC = () => {
           </div>
 
           {/* Phase Filter Tabs */}
-          <div className="flex items-center gap-1.5 bg-slate-100 p-1.5 rounded-2xl border border-slate-200 shrink-0 self-start sm:self-auto overflow-x-auto">
+          <div className="flex items-center gap-1.5 bg-slate-100 p-1.5 rounded-2xl border border-slate-200 shrink min-w-0 self-start sm:self-auto max-w-full overflow-x-auto">
             {[
               { id: 'all', label: 'All Phases' },
               { id: 'pre-disaster', label: '1. Pre-Disaster (T-72h)' },

@@ -5,18 +5,20 @@ import { defineConfig, devices } from '@playwright/test';
  *   npm run build && npx vite preview --port 4173 &
  *   npx playwright test
  * or against the dev server with E2E_BASE_URL=http://localhost:3000.
+ *
+ * The 2026-09-13 quarantine bounds (timeout: 30s, retries: 0) are gone. They
+ * were a containment measure for a suite that never finished; the actual cause
+ * was a production crash on every built page (see the `leafletGlobalShim`
+ * plugin in frontend/vite.config.ts). With the suite green and completing in
+ * ~1 minute, the normal bounds are back: retries absorb CI runner variance
+ * instead of masking real failures behind a hard timeout.
  */
 export default defineConfig({
   testDir: './e2e',
-  // E2E QUARANTINE (2026-09-13): the suite never completed in CI (20-min
-  // timeouts since 2026-09-12, no green baseline). Bounds below guarantee the
-  // job always completes (~6 min worst-case) instead of hanging; restore
-  // retries: 2 / timeout: 60_000 when the suite is healthy again. See the
-  // production-readiness reaudit ("E2E quarantine" note) for lift criteria.
-  timeout: 30_000,
+  timeout: 60_000,
   fullyParallel: true,
   workers: 4,
-  retries: 0,
+  retries: process.env.CI ? 2 : 0,
   reporter: process.env.CI ? [['github'], ['html', { open: 'never' }]] : 'list',
   use: {
     baseURL: process.env.E2E_BASE_URL || 'http://localhost:4173',

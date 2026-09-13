@@ -218,9 +218,16 @@ export const BrandPanel: React.FC<BrandPanelProps> = ({ mode, intervalMs = 5200 
               exit={reduceMotion ? undefined : { opacity: 0, y: -14 }}
               transition={{ duration: 0.35, ease: 'easeOut' }}
             >
-              <h1 className="text-3xl xl:text-4xl font-black leading-tight tracking-tight text-white">
+              {/*
+                Deliberately not a heading: this is rotating marketing copy
+                inside an aria-live region, and the document's real h1 is the
+                form title rendered by AuthLayout. Emitting an h1 here produced
+                a second h1 on lg+ and made the carousel announce itself as a
+                heading change on every rotation.
+              */}
+              <p className="text-3xl xl:text-4xl font-black leading-tight tracking-tight text-white">
                 {message.headline}
-              </h1>
+              </p>
               <p className="mt-4 text-sm leading-relaxed text-slate-300">{message.body}</p>
             </motion.div>
           </AnimatePresence>

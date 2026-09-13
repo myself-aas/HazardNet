@@ -452,6 +452,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onSelectDistrict
         className="relative p-2 rounded-xl bg-white/40 hover:bg-white/70 active:bg-white/90 border border-slate-200/50 text-slate-800 hover:text-slate-950 backdrop-blur-md transition-all duration-200 hover:scale-105 active:scale-95 shadow-2xs flex items-center justify-center group shrink-0"
         title="Search HazardNet (Ctrl+K)"
         aria-label="Search HazardNet"
+        data-testid="district-search-trigger"
       >
         <MaterialIcon name="search" className="text-lg text-slate-800 group-hover:text-slate-950 transition-all duration-200 group-hover:scale-110" />
 
@@ -479,6 +480,10 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onSelectDistrict
             <motion.div
               key="command-palette-modal"
               ref={containerRef}
+              role="dialog"
+              aria-modal="true"
+              aria-label="Search HazardNet"
+              data-testid="district-search-modal"
               initial={{ opacity: 0, scale: 0.94, y: -12 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.94, y: -12 }}
@@ -498,6 +503,8 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onSelectDistrict
                   setSelectedIndex(0);
                 }}
                 onKeyDown={handleInputKeyDown}
+                data-testid="district-search-input"
+                aria-label="Search districts, hazards and documents"
                 placeholder="Search 64 districts, hazard reports, profiles, or docs..."
                 className="w-full pl-3 pr-10 py-1.5 bg-transparent text-slate-900 placeholder-slate-400 text-sm font-medium focus:outline-none"
                 autoFocus

@@ -136,8 +136,15 @@ export const Navbar: React.FC<NavbarProps> = ({
         {/* Unified Header Bar */}
         <div className="px-3 sm:px-6 w-full relative flex items-center justify-between">
           
-          {/* MOBILE VIEW LAYOUT (md:hidden) */}
-          <div className="flex md:hidden items-center justify-between w-full">
+          {/*
+            COMPACT VIEW LAYOUT (xl:hidden).
+            The full desktop bar (brand + 5 nav menus + search + alerts + auth)
+            measures ~1180px, so it only fits from the `xl` breakpoint (1280px)
+            up. Switching this at `md` (768px) made the sticky header wider than
+            the viewport and produced ~250px of page-level horizontal scrolling
+            on every tablet-width page (caught by e2e/smoke.spec.ts).
+          */}
+          <div className="flex xl:hidden items-center justify-between w-full min-w-0">
             {/* Top Left: Hamburger Menu Icon with Layout Transition */}
             <motion.button
               layout
@@ -190,8 +197,9 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
           </div>
 
-          {/* DESKTOP VIEW LAYOUT (hidden md:flex) */}
-          <div className="hidden md:flex items-center justify-between w-full">
+          {/* DESKTOP VIEW LAYOUT (hidden xl:flex) — see the note above: the
+              full bar needs ~1180px, so it activates at xl (1280px). */}
+          <div className="hidden xl:flex items-center justify-between w-full min-w-0">
             {/* Left Section: Brand & Navigation Menus */}
             <div className="flex items-center gap-2 lg:gap-4 shrink-0">
               <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} className="flex items-center justify-center">
@@ -616,7 +624,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
 
             {/* Right Section: Action controls & profile */}
-            <div className="flex items-center gap-2 lg:gap-3 shrink-0">
+            <div className="flex items-center gap-1.5 xl:gap-2 2xl:gap-3 shrink-0">
               
               {/* Map Location Action Button */}
               <motion.button
@@ -658,22 +666,22 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <FirebaseRealtimeStatus variant="badge" />
               </div>
               
-              {/* User Dashboard / Auth Action */}
-              <motion.button
-                whileHover={{ scale: 1.04 }}
-                whileTap={{ scale: 0.96 }}
-                onClick={() => {
-                  if (user) {
-                    navigate('/dashboard');
-                  } else {
-                    navigate('/login');
-                  }
-                }}
-                className="flex items-center gap-2 p-1 pl-1.5 pr-2.5 rounded-xl bg-white/70 hover:bg-white/95 border border-slate-200/80 shadow-2xs transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-teal-500/50 focus-visible:outline-none"
-                title={user ? 'Open my dashboard' : 'Sign In / Register'}
-              >
-                {user ? (
-                  userProfile?.photoURL ? (
+              {/* User Dashboard / Auth Action.
+                  Signed-out visitors get real <Link> elements rather than a
+                  click-handler <button>: /signup was previously unreachable
+                  from the primary navigation (registration required typing the
+                  URL), and buttons are invisible to crawlers, screen-reader
+                  landmark lists and role-based E2E locators. */}
+              {user ? (
+                <motion.button
+                  whileHover={{ scale: 1.04 }}
+                  whileTap={{ scale: 0.96 }}
+                  onClick={() => navigate('/dashboard')}
+                  className="flex items-center gap-2 p-1 pl-1.5 pr-2.5 rounded-xl bg-white/70 hover:bg-white/95 border border-slate-200/80 shadow-2xs transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-teal-500/50 focus-visible:outline-none"
+                  title="Open my dashboard"
+                  data-testid="navbar-dashboard-btn"
+                >
+                  {userProfile?.photoURL ? (
                     <img
                       src={userProfile.photoURL}
                       alt=""
@@ -683,16 +691,33 @@ export const Navbar: React.FC<NavbarProps> = ({
                     <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-amber-500 to-amber-400 text-slate-950 font-black text-xs flex items-center justify-center shadow-xs">
                       {(user.displayName || user.email || 'U')[0].toUpperCase()}
                     </div>
-                  )
-                ) : (
-                  <div className="w-7 h-7 rounded-full bg-slate-100 border border-slate-300 text-slate-700 font-bold text-xs flex items-center justify-center shadow-xs">
-                    <MaterialIcon name="person" className="text-sm" />
-                  </div>
-                )}
-                <span className="text-xs font-semibold text-slate-800 hidden lg:inline max-w-[100px] truncate">
-                  {user ? (userProfile?.username ? `@${userProfile.username}` : (user?.displayName ? user.displayName.split(' ')[0] : 'Dashboard')) : 'Sign In'}
-                </span>
-              </motion.button>
+                  )}
+                  <span className="text-xs font-semibold text-slate-800 max-w-[100px] truncate">
+                    {userProfile?.username
+                      ? `@${userProfile.username}`
+                      : user?.displayName
+                      ? user.displayName.split(' ')[0]
+                      : 'Dashboard'}
+                  </span>
+                </motion.button>
+              ) : (
+                <div className="flex items-center gap-1.5 shrink-0" data-testid="navbar-auth-links">
+                  <Link
+                    to="/login"
+                    data-testid="navbar-signin-link"
+                    className="px-3 py-2 rounded-xl text-xs font-bold text-slate-700 hover:text-slate-950 hover:bg-white/70 border border-transparent hover:border-slate-200/80 transition-all focus-visible:ring-2 focus-visible:ring-teal-500/50 focus-visible:outline-none"
+                  >
+                    Sign in
+                  </Link>
+                  <Link
+                    to="/signup"
+                    data-testid="navbar-signup-link"
+                    className="px-3.5 py-2 rounded-xl text-xs font-extrabold text-slate-950 bg-[#f9a825] hover:bg-[#d08305] shadow-2xs transition-all focus-visible:ring-2 focus-visible:ring-[#f9a825]/60 focus-visible:ring-offset-2 focus-visible:outline-none"
+                  >
+                    Sign up
+                  </Link>
+                </div>
+              )}
 
             </div>
 

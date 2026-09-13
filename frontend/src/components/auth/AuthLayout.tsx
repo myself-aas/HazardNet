@@ -64,7 +64,13 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({ mode, title, subtitle, c
         <div className="rounded-3xl border border-slate-200/90 bg-white p-6 sm:p-8 shadow-md sm:shadow-xl space-y-6 relative overflow-hidden">
           <div aria-hidden="true" className="absolute top-0 left-0 w-full h-1 bg-[#f9a825]" />
           <header className="space-y-1.5">
-              <h2 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900">{title}</h2>
+              {/*
+                h1, not h2: this is the page-level heading of a standalone
+                document (/login, /signup, ...). Starting the outline at h2
+                breaks heading navigation for screen-reader users and makes the
+                page's primary heading harder to target reliably.
+              */}
+              <h1 className="text-xl sm:text-2xl font-black tracking-tight text-slate-900">{title}</h1>
             <p className="text-xs sm:text-[13px] leading-relaxed text-slate-500">{subtitle}</p>
           </header>
           {children}

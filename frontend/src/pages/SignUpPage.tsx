@@ -314,6 +314,7 @@ const SignUpPage: React.FC = () => {
 
         <button
           id="signup-page-submit-btn"
+          data-testid="signup-submit-btn"
           type="submit"
           disabled={loading}
           className="w-full py-3.5 bg-[#f9a825] hover:bg-[#d08305] text-slate-950 font-extrabold rounded-2xl text-sm transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f9a825]/60 focus-visible:ring-offset-2"
