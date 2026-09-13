@@ -433,6 +433,24 @@ jobs:
           curl -fsS -m 20 -H "$hdr" "$api/v2/teams/$VERCEL_ORG_ID" >/dev/null 2>&1 || \
             echo "::warning::VERCEL_ORG_ID is not readable as a team by this token (expected if the project lives in a personal account — otherwise the token is not a member of that team, or the secret is stale)."
 
+      - name: Deploy to Vercel Production
+        if: steps.flags.outputs.has_token == 'true'
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          url=$(npx --yes vercel@50 deploy --prod --yes \
+            -m githubDeployment=1 \
+            -m githubOrg="${GITHUB_REPOSITORY_OWNER}" \
+            -m githubRepo="${GITHUB_REPOSITORY#*/}" \
+            -m githubCommitSha="${GITHUB_SHA}" \
+            -m githubCommitRef="${GITHUB_REF_NAME}" \
+            -m githubCommitAuthorLogin="${GITHUB_ACTOR}" \
+            -m githubCommitMessage="$(git log -1 --pretty=%s)")
+          echo "Vercel production: $url"
+          echo "Vercel production: $url" >> "$GITHUB_STEP_SUMMARY"
+
       - name: Skip notice (no Vercel token)
         if: steps.flags.outputs.has_token != 'true'
         run: echo "::notice::VERCEL_TOKEN not set — skipping Vercel production deploy."
