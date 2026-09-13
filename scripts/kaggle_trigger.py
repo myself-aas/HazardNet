@@ -11,7 +11,12 @@ from pathlib import Path
 
 KAGGLE_USERNAME = os.environ.get('KAGGLE_USERNAME')
 KAGGLE_KEY = os.environ.get('KAGGLE_KEY')
-NOTEBOOK_PATH = f"{KAGGLE_USERNAME}/hazardnet-auto-forecast"
+# This is the committed Kaggle kernel that owns the forecast artifacts. Keep
+# this explicit so a missing username cannot silently target a different slug.
+NOTEBOOK_PATH = os.environ.get(
+    'KAGGLE_KERNEL',
+    'ashifahmedshuvo/hazardnet-auto-forecast-pipeline'
+)
 MAX_POLL_ATTEMPTS = 120  # 2 hours with 60s intervals
 POLL_INTERVAL = 60  # seconds
 

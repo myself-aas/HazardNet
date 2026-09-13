@@ -50,7 +50,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -89,7 +93,7 @@ jobs:
           echo "✅ Successfully bumped and tagged version v$NEW_VERSION"
 
       - name: Install dependencies
-        run: bun install --frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - name: Configure Kaggle CLI
         shell: bash
@@ -104,6 +108,11 @@ jobs:
           cd "$NOTEBOOK_DIR"
           kaggle kernels push -p .
           KERNEL_SLUG=$(jq -r '.id' kernel-metadata.json)
+          EXPECTED_KERNEL_SLUG="ashifahmedshuvo/hazardnet-auto-forecast-pipeline"
+          if [ "$KERNEL_SLUG" != "$EXPECTED_KERNEL_SLUG" ]; then
+            echo "❌ kernel-metadata.json id '$KERNEL_SLUG' does not match '$EXPECTED_KERNEL_SLUG'"
+            exit 1
+          fi
           if [ -z "$KERNEL_SLUG" ] || [ "$KERNEL_SLUG" = "null" ]; then
             echo "❌ Could not read kernel id from kernel-metadata.json"
             exit 1

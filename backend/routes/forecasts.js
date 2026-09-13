@@ -132,6 +132,23 @@ router.post('/update', upload.single('file'), (req, res, next) => {
 });
 
 // ─────────────────────────────────────────────────────────
+// GET /api/v1/forecasts/metadata
+// Returns the newest ingested Kaggle prediction date and source.
+// ─────────────────────────────────────────────────────────
+router.get('/metadata', async (req, res) => {
+    try {
+        const predictionDate = await getForecastStore().getLatestPredictionDate();
+        res.json({
+            prediction_date: predictionDate,
+            data_source: 'ashifahmedshuvo/hazardnet-auto-forecast-pipeline',
+            generated_at: new Date().toISOString(),
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// ─────────────────────────────────────────────────────────
 // GET /api/v1/forecasts?district_id=1&horizon=7_days
 // Returns the latest forecast for a specific district
 // ─────────────────────────────────────────────────────────
@@ -195,7 +212,7 @@ router.get('/', async (req, res) => {
 // ─────────────────────────────────────────────────────────
 // GET /api/v1/forecasts/bulk?horizon=7_days
 // Returns forecasts for ALL 64 districts (for Mapbox heatmap)
-// ─────────────────────────────────────────────────────────
+// ──────────────────────────────��──────────────────────────
 router.get('/bulk', async (req, res) => {
     const { horizon } = req.query;
 
