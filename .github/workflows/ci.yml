@@ -407,23 +407,31 @@ jobs:
 
       # Vercel CLI directly — see deploy-preview for the rationale (dead
       # action, CLI 25, `--scope` given a team id).
-      - name: Deploy to Vercel Production
+
+      # Diagnostics only — see deploy-preview for why.
+      - name: Describe Vercel credentials
         if: steps.flags.outputs.has_token == 'true'
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
         run: |
-          url=$(npx --yes vercel@50 deploy --prod --yes \
-            -m githubDeployment=1 \
-            -m githubOrg="${GITHUB_REPOSITORY_OWNER}" \
-            -m githubRepo="${GITHUB_REPOSITORY#*/}" \
-            -m githubCommitSha="${GITHUB_SHA}" \
-            -m githubCommitRef="${GITHUB_REF_NAME}" \
-            -m githubCommitAuthorLogin="${GITHUB_ACTOR}" \
-            -m githubCommitMessage="$(git log -1 --pretty=%s)")
-          echo "Vercel production: $url"
-          echo "Vercel production: $url" >> "$GITHUB_STEP_SUMMARY"
+          # `api`/`hdr` keep the probes short; `|| true` inside each
+          # substitution keeps a failed probe from aborting the step under the
+          # runner's default `bash -e`.
+          api=https://api.vercel.com
+          hdr="Authorization: Bearer $VERCEL_TOKEN"
+          who=$(curl -fsS -m 20 -H "$hdr" "$api/v2/user" 2>/dev/null \
+                  | jq -r '.user.username // .user.email // "unknown"' 2>/dev/null || true)
+          teams=$(curl -fsS -m 20 -H "$hdr" "$api/v2/teams" 2>/dev/null \
+                    | jq -r '[.teams[]?.slug] | join(", ")' 2>/dev/null || true)
+          [ -n "$who" ] || who=unavailable
+          [ -n "$teams" ] || teams=unavailable
+          echo "token user     : $who"
+          echo "visible teams  : $teams"
+          echo "configured ids : org=$VERCEL_ORG_ID project=$VERCEL_PROJECT_ID"
+          curl -fsS -m 20 -H "$hdr" "$api/v2/teams/$VERCEL_ORG_ID" >/dev/null 2>&1 || \
+            echo "::warning::VERCEL_ORG_ID is not readable as a team by this token (expected if the project lives in a personal account — otherwise the token is not a member of that team, or the secret is stale)."
 
       - name: Skip notice (no Vercel token)
         if: steps.flags.outputs.has_token != 'true'
