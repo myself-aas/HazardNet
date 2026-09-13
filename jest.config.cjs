@@ -21,6 +21,9 @@ module.exports = {
   // must not pick them up (they import @playwright/test, which is not
   // jest-compatible).
   testPathIgnorePatterns: ['/node_modules/', '/e2e/'],
+  // Cap worker parallelism: the API suites import the full Express app (heavy
+  // babel transforms of ESM deps), and unbounded workers OOM small CI runners.
+  maxWorkers: '50%',
   // Coverage gate (QA-01). Floor set at the measured 2026-08-28 baseline
   // (~32% statements) minus a small margin â€” ratchet upward as tests land.
   // Scope mirrors `npm test` (see collectCoverageFrom below).

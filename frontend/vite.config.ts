@@ -41,10 +41,39 @@ export default defineConfig(({ mode }) => {
     chunkSizeWarningLimit: 1000, // increase limit (KB) if needed
     rollupOptions: {
       output: {
+        // Vendor splitting: the heaviest third-party stacks get their own
+        // long-cacheable chunks so the root chunk stays lean and repeat
+        // visits only re-download what changed. (jspdf/html2canvas power the
+        // PDF export buttons; leaflet the maps; mui+emotion the design
+        // system; firebase+supabase auth/data; recharts the charts.)
         manualChunks(id) {
-          if (id.includes('node_modules/recharts')) {
-            return 'recharts';
+          if (!id.includes('node_modules')) return undefined;
+          if (id.includes('node_modules/recharts')) return 'vendor-recharts';
+          if (id.includes('node_modules/jspdf') || id.includes('node_modules/html2canvas')) {
+            return 'vendor-pdf';
           }
+          if (id.includes('node_modules/leaflet')) return 'vendor-leaflet';
+          if (
+            id.includes('node_modules/@mui') ||
+            id.includes('node_modules/@emotion') ||
+            id.includes('node_modules/@base-ui')
+          ) {
+            return 'vendor-mui';
+          }
+          if (id.includes('node_modules/firebase') || id.includes('node_modules/@firebase')) {
+            return 'vendor-firebase';
+          }
+          if (id.includes('node_modules/@supabase')) return 'vendor-supabase';
+          if (
+            id.includes('node_modules/react') ||
+            id.includes('node_modules/react-dom') ||
+            id.includes('node_modules/react-router') ||
+            id.includes('node_modules/@tanstack') ||
+            id.includes('node_modules/framer-motion')
+          ) {
+            return 'vendor-react';
+          }
+          return undefined;
         },
       },
     },

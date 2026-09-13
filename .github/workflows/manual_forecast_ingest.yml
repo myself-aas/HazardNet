@@ -1,0 +1,237 @@
+name: Manual Forecast Ingest (Hand-Run Kaggle CSV)
+
+# Escape hatch for hand-run notebook output: upload the CSV you downloaded
+# from Kaggle (the notebook's /kaggle/working/hazardnet_forecasts_latest.csv)
+# to `data/manual_forecast.csv` — via the GitHub web UI (Add file → Upload
+# files) or git push — and this workflow validates it, ingests it into the
+# forecast store, rebuilds the website snapshot, and commits everything, so
+# the deployed site refreshes on the next build. Also runnable on demand via
+# workflow_dispatch (uses whatever CSV is currently at that path).
+#
+# This is the same ingest contract as the automated pipelines
+# (scripts/validate_forecasts.py + POST /api/v1/forecasts/update), so a CSV
+# that passes here is guaranteed to be shaped exactly like the notebook
+# output the hourly workflow consumes.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'data/manual_forecast.csv'
+  workflow_dispatch:
+    inputs:
+      force_refresh:
+        description: 'Ingest + commit even when the CSV is unchanged since last ingest'
+        required: false
+        default: 'false'
+
+concurrency:
+  group: manual-forecast-ingest-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+env:
+  FORECAST_STORE: ${{ vars.FORECAST_STORE || 'supabase' }}
+  DATABASE_URL: ${{ secrets.SUPABASE_DB_URL }}
+  SUPABASE_SSL: 'true'
+  MANUAL_CSV: data/manual_forecast.csv
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: scripts/requirements-pipeline.txt
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          npm ci --no-audit --no-fund
+          pip install --requirement scripts/requirements-pipeline.txt
+
+      - name: Preflight — verify CSV + secrets
+        shell: bash
+        run: |
+          if [ ! -f "$MANUAL_CSV" ]; then
+            echo "❌ $MANUAL_CSV not found."
+            echo "   Upload your Kaggle notebook's hazardnet_forecasts_latest.csv to that path"
+            echo "   (GitHub web: Add file → Upload files) and re-run this workflow."
+            exit 1
+          fi
+          echo "✅ Manual CSV present: $MANUAL_CSV ($(wc -l < "$MANUAL_CSV") lines)"
+          missing=0
+          if [ -z "$BACKEND_API_KEY" ]; then
+            echo "❌ BACKEND_API_KEY secret is not set (repo → Settings → Secrets and variables → Actions)"
+            missing=1
+          fi
+          if [ "$FORECAST_STORE" = "supabase" ] && [ -z "$DATABASE_URL" ]; then
+            echo "❌ FORECAST_STORE=supabase but SUPABASE_DB_URL secret is not set."
+            missing=1
+          fi
+          if [ "$missing" -ne 0 ]; then exit 1; fi
+          echo "✅ Required secrets present (store: $FORECAST_STORE)."
+        env:
+          BACKEND_API_KEY: ${{ secrets.BACKEND_API_KEY }}
+
+      - name: Validate manual CSV
+        shell: bash
+        run: |
+          # Regenerate the JSON sidecar from the CSV (same as the hourly
+          # fetcher does for notebook CSV-only output), then run the full
+          # validator. --skip-freshness: a hand upload is an explicit human
+          # action — schema/range checks gate, staleness only warns.
+          python -c "
+          import csv, json
+          with open('$MANUAL_CSV', newline='', encoding='utf-8') as fh:
+              records = list(csv.DictReader(fh))
+          with open('data/manual_forecast.json', 'w', encoding='utf-8') as fh:
+              json.dump(records, fh, indent=2)
+          print(f'regenerated data/manual_forecast.json ({len(records)} records)')
+          "
+          python scripts/validate_forecasts.py --csv "$MANUAL_CSV" --json data/manual_forecast.json --skip-freshness
+
+      - name: Promote manual CSV to the pipeline paths
+        id: promote
+        shell: bash
+        run: |
+          mkdir -p backend/data/forecasts
+          NEW_SHA=$(sha256sum "$MANUAL_CSV" | cut -d' ' -f1)
+          OLD_SHA=$(jq -r '.csv_sha256 // empty' backend/data/forecasts/manifest.json 2>/dev/null || true)
+          echo "sha=$NEW_SHA" >> "$GITHUB_OUTPUT"
+          if [ -n "$OLD_SHA" ] && [ "$NEW_SHA" = "$OLD_SHA" ] && [ "${{ inputs.force_refresh }}" != "true" ]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "ℹ️ Manual CSV unchanged since the last ingest — skipping ingest/commit."
+            exit 0
+          fi
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+          cp "$MANUAL_CSV" backend/data/forecasts/hazardnet_forecasts_latest.csv
+          cp data/manual_forecast.json backend/data/forecasts/hazardnet_forecasts_latest.json
+          python -c "
+          import csv, hashlib, json
+          from datetime import datetime, timezone
+          csv_path = 'backend/data/forecasts/hazardnet_forecasts_latest.csv'
+          with open(csv_path, newline='', encoding='utf-8') as fh:
+              rows = list(csv.DictReader(fh))
+          manifest = {
+              'source': 'manual upload: data/manual_forecast.csv (hand-run Kaggle notebook output)',
+              'fetched_at': datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'),
+              'prediction_date': max(r['prediction_date'] for r in rows) if rows else None,
+              'row_count': len(rows),
+              'csv_sha256': hashlib.sha256(open(csv_path, 'rb').read()).hexdigest(),
+              'csv_path': csv_path,
+              'json_path': 'backend/data/forecasts/hazardnet_forecasts_latest.json',
+          }
+          with open('backend/data/forecasts/manifest.json', 'w', encoding='utf-8') as fh:
+              json.dump(manifest, fh, indent=2)
+              fh.write('\n')
+          print('manifest:', json.dumps(manifest, indent=2))
+          "
+
+      - name: Rebuild website snapshot
+        if: steps.promote.outputs.changed == 'true'
+        shell: bash
+        run: node scripts/build_forecast_snapshot.mjs
+
+      - name: Ingest CSV into the forecast store
+        if: steps.promote.outputs.changed == 'true'
+        shell: bash
+        env:
+          BACKEND_API_KEY: ${{ secrets.BACKEND_API_KEY }}
+          PORT: '3001'
+        run: |
+          node backend/server.js > backend-server.log 2>&1 &
+          echo $! > backend-server.pid
+          for i in $(seq 1 30); do
+            if curl -sf "http://localhost:${PORT}/health" > /dev/null; then
+              echo "✅ Backend is healthy"
+              break
+            fi
+            if [ "$i" = "30" ]; then
+              echo "❌ Backend failed to become healthy. Server log:"
+              cat backend-server.log
+              exit 1
+            fi
+            sleep 2
+          done
+          HTTP_CODE=$(curl -sS -X POST "http://localhost:${PORT}/api/v1/forecasts/update" \
+            -H "Authorization: Bearer $BACKEND_API_KEY" \
+            -F "file=@backend/data/forecasts/hazardnet_forecasts_latest.csv" \
+            -o ingest_response.json \
+            -w "%{http_code}")
+          echo "📥 Ingest responded HTTP $HTTP_CODE:"
+          cat ingest_response.json
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "❌ Ingestion failed with HTTP $HTTP_CODE"
+            exit 1
+          fi
+          jq -e '.status == "success"' ingest_response.json > /dev/null
+
+      - name: Stop backend server
+        if: always()
+        shell: bash
+        run: |
+          if [ -f backend-server.pid ]; then
+            kill "$(cat backend-server.pid)" 2>/dev/null || true
+          fi
+          pkill -f "backend/server\\.js" 2>/dev/null || true
+
+      - name: Commit ingested data
+        if: steps.promote.outputs.changed == 'true'
+        shell: bash
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add backend/data/forecasts/ frontend/public/data/forecasts-latest.json
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git pull --rebase --autostash origin "${GITHUB_REF_NAME}" || true
+            PREDICTION_DATE=$(jq -r '.prediction_date // "unknown"' backend/data/forecasts/manifest.json 2>/dev/null || echo unknown)
+            git commit -m "chore(data): manual forecast ingest ${PREDICTION_DATE}" \
+              -m "Source: data/manual_forecast.csv (hand-run Kaggle notebook output)" \
+              -m "Timestamp: $(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+            git push
+          fi
+
+      - name: Summarize
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "### Manual forecast ingest — $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            echo ""
+            if [ "${{ steps.promote.outputs.changed }}" = "true" ]; then
+              jq -r '"- prediction_date: " + (.prediction_date // "unknown") + "\n- rows: " + ((.row_count // 0) | tostring)' backend/data/forecasts/manifest.json 2>/dev/null || echo "- manifest unavailable"
+              if [ -f ingest_response.json ]; then
+                jq -r '"- ingested: " + ((.records_updated // 0) | tostring) + " (skipped " + ((.records_skipped // 0) | tostring) + ")"' ingest_response.json
+              fi
+            else
+              echo "- no change (CSV unchanged since the last ingest)"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload diagnostics (on failure)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: manual-ingest-diagnostics
+          path: |
+            backend-server.log
+            ingest_response.json
+          if-no-files-found: ignore

@@ -1,0 +1,82 @@
+name: Site Health Probe
+
+# External black-box probe for the production deployment (monitoring gap
+# closure): every 30 minutes, verify the site renders and the forecast API
+# serves data no older than 10 days. Failures are visible in Actions (and can
+# be wired to Slack/email via the notify step's webhook inputs).
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: site-health-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  SITE_URL: https://hazardnet.live
+  MAX_DATA_AGE_DAYS: '10'
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Probe homepage
+        shell: bash
+        run: |
+          HTTP_CODE=$(curl -sS -o /tmp/home.html -w "%{http_code}" --max-time 30 "$SITE_URL/")
+          echo "homepage HTTP $HTTP_CODE"
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "::error::Homepage returned HTTP $HTTP_CODE"
+            exit 1
+          fi
+          if ! grep -qiE 'hazardnet|__vite__|react' /tmp/home.html; then
+            echo "::error::Homepage body does not look like the HazardNet app"
+            head -c 500 /tmp/home.html
+            exit 1
+          fi
+          echo "✅ Homepage serves the app shell"
+
+      - name: Probe forecast metadata API
+        shell: bash
+        run: |
+          HTTP_CODE=$(curl -sS -o /tmp/metadata.json -w "%{http_code}" --max-time 30 "$SITE_URL/api/v1/forecasts/metadata")
+          echo "metadata HTTP $HTTP_CODE"
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "::error::/api/v1/forecasts/metadata returned HTTP $HTTP_CODE"
+            cat /tmp/metadata.json
+            exit 1
+          fi
+          PREDICTION_DATE=$(jq -r '.prediction_date // empty' /tmp/metadata.json | head -c 10)
+          echo "prediction_date: ${PREDICTION_DATE:-<none>}"
+          if [ -z "$PREDICTION_DATE" ]; then
+            echo "::error::metadata has no prediction_date — the forecast store looks empty"
+            cat /tmp/metadata.json
+            exit 1
+          fi
+          AGE_DAYS=$(( ( $(date +%s) - $(date -d "$PREDICTION_DATE" +%s) ) / 86400 ))
+          echo "data age: ${AGE_DAYS} days (threshold: ${MAX_DATA_AGE_DAYS})"
+          if [ "$AGE_DAYS" -gt "$MAX_DATA_AGE_DAYS" ]; then
+            echo "::error::forecast data is ${AGE_DAYS} days old (>${MAX_DATA_AGE_DAYS}) — pipeline may be stalled"
+            exit 1
+          fi
+          echo "✅ Forecast data is fresh"
+
+      - name: Summarize
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "### Site health probe — $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            echo ""
+            echo "- site: $SITE_URL"
+            if [ -f /tmp/metadata.json ]; then
+              jq -r '"- prediction_date: " + (.prediction_date // "none") + "\n- source: " + (.data_source // "none")' /tmp/metadata.json
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"

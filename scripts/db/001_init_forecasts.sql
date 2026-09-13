@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS forecasts (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     district_id INT NOT NULL,
     district_name VARCHAR(100) NOT NULL,
-    horizon VARCHAR(20) NOT NULL CHECK (horizon IN ('10_days', '20_days', '30_days')),
+    horizon VARCHAR(20) NOT NULL CHECK (horizon IN ('7_days', '15_days')),
     hazard_type VARCHAR(50) NOT NULL,
     confidence FLOAT NOT NULL CHECK (confidence >= 0 AND confidence <= 1),
     severity_score FLOAT NOT NULL CHECK (severity_score >= 0 AND severity_score <= 1),

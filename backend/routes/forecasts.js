@@ -3,6 +3,13 @@ import path from 'path';
 import multer from 'multer';
 import { verifyApiKey } from '../utils/apiKeyAuth.js';
 import { parseCsvForecastRow, VALID_HORIZONS } from '../utils/forecastRow.js';
+import {
+    parseBulkQuery,
+    parseHistoryQuery,
+    historyRowsToCsv,
+    metadataDatasets,
+    metadataDataSource,
+} from '../utils/forecastServe.js';
 import { getForecastStore } from '../forecastStore.js';
 import csv from 'csv-parser';
 import fs from 'fs';
@@ -144,22 +151,9 @@ router.get('/metadata', async (req, res) => {
         res.json({
             prediction_date: predictionDate,
             ingestion_timestamp: ingestionTimestamp,
-            data_source: process.env.KAGGLE_DATASET || 'ashifahmedshuvo/hazardnet-weekly-forecasts',
+            data_source: metadataDataSource(),
             notebook_source: 'ashifahmedshuvo/hazardnet-auto-forecast-pipeline',
-            datasets: [
-                {
-                    id: '7b9ed0ca41d930114260efabb71a7fbf616cb68456d30823ecfc2ac45732fe3c',
-                    name: 'hazardnet-weekly-forecasts',
-                    url: 'https://www.kaggle.com/datasets/ashifahmedshuvo/hazardnet-weekly-forecasts/',
-                    update_frequency: 'daily'
-                },
-                {
-                    id: 'auto-forecast-pipeline',
-                    name: 'hazardnet-auto-forecast-pipeline',
-                    url: 'https://www.kaggle.com/code/ashifahmedshuvo/hazardnet-auto-forecast-pipeline/',
-                    type: 'notebook'
-                }
-            ],
+            datasets: metadataDatasets(),
             generated_at: now.toISOString(),
         });
     } catch (error) {
@@ -233,11 +227,13 @@ router.get('/', async (req, res) => {
 // Returns forecasts for ALL 64 districts (for Mapbox heatmap)
 // ──────────────────────────────��──────────────────────────
 router.get('/bulk', async (req, res) => {
-    const { horizon } = req.query;
-
-    if (!horizon || !VALID_HORIZONS.includes(horizon)) {
-        return res.status(400).json({ error: `Invalid horizon. Use: ${VALID_HORIZONS.join(', ')}` });
+    // Shared with the Vercel handler (api/v1/forecasts/bulk.js) — identical
+    // validation and response shape on both runtimes.
+    const parsed = parseBulkQuery(req.query);
+    if (parsed.error) {
+        return res.status(400).json({ error: parsed.error });
     }
+    const { horizon } = parsed;
 
     try {
         // Latest row per district for this horizon (grouping happens in the
@@ -249,7 +245,7 @@ router.get('/bulk', async (req, res) => {
             horizon: horizon,
             count: rows.length,
             generated_at: new Date().toISOString(),
-            data_source: process.env.KAGGLE_DATASET || 'ashifahmedshuvo/hazardnet-weekly-forecasts',
+            data_source: metadataDataSource(),
             forecasts: rows
         });
     } catch (error) {
@@ -268,79 +264,30 @@ router.get('/bulk', async (req, res) => {
 // format=csv emits the ingest-compatible dual-track column set, so any window
 // can be re-exported as an archive artifact.
 // ─────────────────────────────────────────────────────────
-const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
-const HISTORY_MAX_WINDOW_DAYS = 90;
-const HISTORY_DEFAULT_WINDOW_DAYS = 30;
-const CSV_COLUMNS = [
-    'district_id', 'district_name', 'horizon', 'hazard_type', 'severity_score',
-    'confidence', 'target_date', 'prediction_date', 'model_severity',
-    'physics_severity', 'division', 'pcode', 'admin_level', 'adm2_name', 'adm2_pcode'
-];
-
-function isValidDate(s) {
-    if (typeof s !== 'string' || !DATE_RE.test(s)) return false;
-    const t = Date.parse(`${s}T00:00:00Z`);
-    return Number.isFinite(t) && new Date(t).toISOString().slice(0, 10) === s;
-}
-
-function csvEscape(value) {
-    if (value === null || value === undefined) return '';
-    const str = String(value);
-    return /[",\n\r]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
-}
-
 router.get('/history', async (req, res) => {
-    const { from, to, horizon, district_id, format } = req.query;
-
-    // Optional but validated horizon filter.
-    if (horizon !== undefined && !VALID_HORIZONS.includes(horizon)) {
-        return res.status(400).json({ error: `Invalid horizon. Use: ${VALID_HORIZONS.join(', ')}` });
+    // Shared with the Vercel handler (api/v1/forecasts/history.js) —
+    // identical windowing, validation, and CSV export on both runtimes.
+    const parsed = parseHistoryQuery(req.query);
+    if (parsed.error) {
+        return res.status(400).json({ error: parsed.error });
     }
-    // Optional integer district filter.
-    let districtId = null;
-    if (district_id !== undefined && district_id !== '') {
-        districtId = parseInt(district_id, 10);
-        if (!Number.isInteger(districtId) || districtId < 0) {
-            return res.status(400).json({ error: 'Invalid district_id — expected a non-negative integer' });
-        }
-    }
-    // Date window: defaults to the last 30 days ending today.
-    const todayUtc = new Date().toISOString().slice(0, 10);
-    let toDate = to !== undefined && to !== '' ? to : todayUtc;
-    let fromDate = from !== undefined && from !== '' ? from
-        : new Date(Date.parse(`${toDate}T00:00:00Z`) - HISTORY_DEFAULT_WINDOW_DAYS * 86_400_000)
-            .toISOString().slice(0, 10);
-
-    if (!isValidDate(fromDate) || !isValidDate(toDate)) {
-        return res.status(400).json({ error: 'from/to must be valid YYYY-MM-DD dates' });
-    }
-    if (fromDate > toDate) {
-        return res.status(400).json({ error: 'from must be <= to' });
-    }
-    const windowDays = (Date.parse(`${toDate}T00:00:00Z`) - Date.parse(`${fromDate}T00:00:00Z`)) / 86_400_000;
-    if (windowDays > HISTORY_MAX_WINDOW_DAYS) {
-        return res.status(400).json({ error: `Date window too large (${Math.floor(windowDays)} days) — max ${HISTORY_MAX_WINDOW_DAYS} days` });
-    }
+    const { from: fromDate, to: toDate, horizon, districtId, format } = parsed;
 
     try {
         const rows = await getForecastStore().getForecastHistory({
-            from: fromDate, to: toDate, horizon: horizon || null, districtId
+            from: fromDate, to: toDate, horizon, districtId
         });
 
         if (format === 'csv') {
-            const lines = [CSV_COLUMNS.join(',')];
-            for (const row of rows) {
-                lines.push(CSV_COLUMNS.map((c) => csvEscape(row[c])).join(','));
-            }
             res.setHeader('Content-Type', 'text/csv; charset=utf-8');
             res.setHeader('Content-Disposition', `attachment; filename="hazardnet_forecasts_${fromDate}_${toDate}.csv"`);
-            return res.status(200).send(lines.join('\n') + '\n');
+            return res.status(200).send(historyRowsToCsv(rows));
         }
 
         res.json({
             from: fromDate,
             to: toDate,
-            horizon: horizon || null,
+            horizon,
             district_id: districtId,
             count: rows.length,
             generated_at: new Date().toISOString(),

@@ -6,7 +6,7 @@ create table if not exists public.forecasts (
   id            uuid primary key default gen_random_uuid(),
   district_id   text        not null,
   district_name text        not null,
-  horizon       text        not null check (horizon in ('10_days', '20_days', '30_days'))
+  horizon       text        not null check (horizon in ('7_days', '15_days'))
   hazard_type   text        not null,
   confidence    numeric     not null check (confidence >= 0 and confidence <= 1),
   severity_score numeric     not null check (severity_score >= 0 and severity_score <= 1),
@@ -40,12 +40,14 @@ alter table public.forecasts
   add column if not exists adm2_name text;
 alter table public.forecasts
   add column if not exists adm2_pcode text;
--- Horizon set widened 7/15 → 10/20/30 (ADR 0005); swap the CHECK idempotently.
+-- Horizon set canonicalized to 7/15 (ADR 0008): the set the committed Kaggle
+-- notebook actually produces. Existing databases converge via 005 (kept as a
+-- separate forward migration); this keeps fresh installs identical.
 alter table public.forecasts
   drop constraint if exists forecasts_horizon_check;
 alter table public.forecasts
   add constraint forecasts_horizon_check
-  check (horizon in ('10_days', '20_days', '30_days'));
+  check (horizon in ('7_days', '15_days'));
 alter table public.forecasts
   add column if not exists pcode    text;
 

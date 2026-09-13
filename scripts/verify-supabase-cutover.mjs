@@ -6,7 +6,8 @@
 //   1. connectivity (TLS per SUPABASE_SSL)
 //   2. public.forecasts exists with the full 15-column schema (ADR 0005:
 //      incl. admin_level / adm2_name / adm2_pcode)
-//   3. horizon CHECK constraint = 10/20/30 days (retired 7/15 must be absent)
+//   3. horizon CHECK constraint = 7/15 days (ADR 0008 canonical set;
+//      the aspirational 10/20/30 must be absent)
 //   4. unique upsert key (district_id, horizon, hazard_type, target_date, prediction_date)
 //   5. serving indexes (district, dates, horizon+prediction_date desc)
 //   6. RLS enabled + public-read policy
@@ -28,7 +29,7 @@ const EXPECTED_COLUMNS = [
   'model_version', 'model_severity', 'physics_severity', 'division', 'pcode',
   'admin_level', 'adm2_name', 'adm2_pcode', 'created_at',
 ];
-const EXPECTED_HORIZONS = ['10_days', '20_days', '30_days'];
+const EXPECTED_HORIZONS = ['7_days', '15_days']; // ADR 0008 canonical set
 
 const client = new pg.Client({
   connectionString: DATABASE_URL,
@@ -63,8 +64,8 @@ try {
   );
   const def = checkRows[0]?.def ?? '';
   const allPresent = EXPECTED_HORIZONS.every((h) => def.includes(h));
-  const legacyAbsent = !def.includes('7_days') && !def.includes('15_days');
-  check('horizon CHECK = 10/20/30', allPresent && legacyAbsent, def || 'constraint not found');
+  const aspirationalAbsent = !def.includes('10_days') && !def.includes('20_days') && !def.includes('30_days');
+  check('horizon CHECK = 7/15 (ADR 0008)', allPresent && aspirationalAbsent, def || 'constraint not found');
 
   const { rows: uniqRows } = await client.query(
     `select pg_get_constraintdef(oid) as def from pg_constraint

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-28T13:56:03.651Z",
+  "generatedAt": "2026-09-13T08:24:23.560Z",
   "artifacts": [
     {
       "name": "hazardnet_fp32.tflite",
@@ -22,5 +22,5 @@
       "sha256": "9df8ab079e03e331ac717f352737c38ca9925ae2c09f39d435cba8b99d1300c5"
     }
   ],
-  "version": "1.0.3+model.8d8d1b8758ce"
+  "version": "2.1.9+model.8d8d1b8758ce"
 }

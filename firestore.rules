@@ -71,6 +71,16 @@ service cloud.firestore {
         && (!('createdAt' in data) || data.createdAt is string);
     }
 
+    // Forecast bulletins are PUBLIC data: anyone may read them (the website's
+    // live layer + the Vercel GET handlers when FORECAST_STORE=firestore).
+    // Writes stay denied here on purpose — ingest goes through the
+    // authenticated backend into the Supabase (service-role) store (ADR 0008);
+    // the unauthenticated client SDK must never be able to poison bulletins.
+    match /forecasts/{forecastId} {
+      allow get, list: if true;
+      allow create, update, delete: if false;
+    }
+
     // Matching Collections
     match /users/{userId} {
       allow get: if isOwner(userId);

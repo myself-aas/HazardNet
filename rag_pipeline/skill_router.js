@@ -2,16 +2,16 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const ragModuleFile = fileURLToPath(import.meta.url);
+const ragModuleDir = path.dirname(ragModuleFile);
 
-const SKILLS_DIR = path.join(__dirname, 'skills');
-const REFS_DIR = path.join(__dirname, 'references');
+const SKILLS_DIR = path.join(ragModuleDir, 'skills');
+const REFS_DIR = path.join(ragModuleDir, 'references');
 
 // Load District Economic Baselines
 let districtBaselines = [];
 try {
-  const jsonPath = path.join(__dirname, 'district_economic_baselines.json');
+  const jsonPath = path.join(ragModuleDir, 'district_economic_baselines.json');
   if (fs.existsSync(jsonPath)) {
     const rawData = fs.readFileSync(jsonPath, 'utf8');
     districtBaselines = JSON.parse(rawData).districts || [];

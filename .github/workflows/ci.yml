@@ -32,16 +32,11 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
-      - name: Set up Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: '1.3.14'
-
       - name: Install dependencies
-        run: bun install --frozen-lockfile
+        run: npm ci --no-audit --no-fund
 
       - name: Run backend unit tests
-        run: npx jest --ci --coverage --coverageDirectory=./coverage/backend --testPathIgnorePatterns='/e2e/'
+        run: npx jest --ci --coverage --coverageDirectory=./coverage/backend --testPathIgnorePatterns='/e2e/' 'frontend/src'
 
       - name: Upload backend coverage
         if: always()
@@ -67,17 +62,22 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
-      - name: Set up Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: '1.3.14'
-
       - name: Install dependencies
-        run: bun install --frozen-lockfile
+        run: npm ci --no-audit --no-fund
 
+      # Frontend suites run under the ROOT jest config (babel TS/React
+      # transform + jsdom). Running bare `jest` inside frontend/ has no config
+      # and cannot parse .tsx — hence the explicit --config/--rootDir pair
+      # (mirrored by frontend/package.json `test` for local runs).
+      # --coverageThreshold='{}' disables the backend-calibrated global gates
+      # for this frontend-only run: the 32%+ thresholds are scoped to the
+      # backend test job (see jest.config.cjs QA-01) and can never pass on a
+      # run that executes no backend suites. Coverage still uploads to
+      # Codecov for tracking; ratchet a frontend gate here once component
+      # tests land (baseline: ~17% statements, lib/utils only).
       - name: Run frontend tests
         working-directory: frontend
-        run: npm test -- --coverage
+        run: npx jest --ci --config ../jest.config.cjs --rootDir .. --coverage --coverageDirectory=./frontend/coverage --coverageThreshold='{}' frontend/src
 
       - name: Upload frontend coverage
         if: always()
@@ -87,6 +87,46 @@ jobs:
           flags: frontend
           fail_ci_if_error: false
           token: ${{ secrets.CODECOV_TOKEN }}
+
+  test-pipeline-scripts:
+    name: Pipeline Scripts Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Install Python test deps
+        run: pip install --requirement scripts/requirements-pipeline.txt pytest
+
+      # Guards the Kaggle pipeline scripts AND the workflow files themselves:
+      # every .github/workflows/*.yml must parse as YAML and must not use the
+      # `secrets` context in ANY `if:` (job or step — GitHub rejects the whole
+      # file with zero jobs either way; gate on a resolved step output
+      # instead — the Sept 2026 CI outage). See scripts/tests/.
+      - name: Run pipeline script tests
+        run: python -m pytest scripts/tests -q
+
+      - name: Snapshot builder smoke test
+        run: |
+          python scripts/tests/make_fixture_csv.py /tmp/fixture_forecasts.csv
+          node scripts/build_forecast_snapshot.mjs /tmp/fixture_forecasts.csv /tmp/forecasts-latest.json
+          node -e "const s=require('/tmp/forecasts-latest.json'); if(!s.horizons['7_days']?.length) throw new Error('empty 7_days'); console.log('snapshot OK:', s.prediction_date)"
 
   test-e2e:
     name: E2E Tests
@@ -103,13 +143,8 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
-      - name: Set up Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: '1.3.14'
-
       - name: Install dependencies
-        run: bun install --frozen-lockfile
+        run: npm ci --no-audit --no-fund
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
@@ -120,35 +155,20 @@ jobs:
       - name: Start preview server
         run: |
           npm --prefix frontend run preview -- --host 0.0.0.0 --port 4173 > /tmp/hazardnet-preview.log 2>&1 &
-          SERVER_PID=$!
-          echo "SERVER_PID=$SERVER_PID" >> "$GITHUB_ENV"
-          READY=0
           for i in {1..60}; do
             if curl -fsS http://127.0.0.1:4173 >/dev/null; then
-              echo "Preview server is ready on port 4173."
-              READY=1
-              break
+              exit 0
             fi
             sleep 1
           done
-          if [ "$READY" -ne 1 ]; then
-            echo 'Preview server did not become ready in time.'
-            cat /tmp/hazardnet-preview.log
-            exit 1
-          fi
+          echo 'Preview server did not become ready in time.'
+          cat /tmp/hazardnet-preview.log
+          exit 1
 
       - name: Run E2E tests
         run: npx playwright test
         env:
           E2E_BASE_URL: http://127.0.0.1:4173
-
-      - name: Stop preview server
-        if: always()
-        run: |
-          if [ -n "$SERVER_PID" ]; then
-            kill "$SERVER_PID" 2>/dev/null || true
-          fi
-          pkill -f "vite preview" 2>/dev/null || true
 
       - name: Upload test results
         if: always()
@@ -161,7 +181,7 @@ jobs:
   verify:
     name: Code Quality & Build
     runs-on: ubuntu-latest
-    needs: [test-backend, test-frontend]
+    needs: [test-backend, test-frontend, test-pipeline-scripts]
     timeout-minutes: 20
 
     steps:
@@ -174,13 +194,8 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
-      - name: Set up Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: '1.3.14'
-
       - name: Install dependencies
-        run: bun install --frozen-lockfile
+        run: npm ci --no-audit --no-fund
 
       - name: Type-check (tsc --noEmit)
         run: npm run lint
@@ -191,11 +206,22 @@ jobs:
       - name: RAG knowledge-base freshness
         run: npm run check:rag-freshness
 
+      - name: Model VERSION.json is current
+        run: |
+          node scripts/gen-model-version.mjs
+          git diff --exit-code -- Models/VERSION.json || {
+            echo "::error::Models/VERSION.json is stale — run 'node scripts/gen-model-version.mjs' and commit it."
+            exit 1
+          }
+
       - name: Serverless functions load as ESM
         run: |
           node -e "import('./api/forecasts.js').then(() => console.log('api/forecasts: ESM OK'))"
           node -e "import('./api/ingest.js').then(() => console.log('api/ingest: ESM OK'))"
           node -e "import('./api/metrics.js').then(() => console.log('api/metrics: ESM OK'))"
+          node -e "import('./api/v1/forecasts/bulk.js').then(() => console.log('api/v1/forecasts/bulk: ESM OK'))"
+          node -e "import('./api/v1/forecasts/metadata.js').then(() => console.log('api/v1/forecasts/metadata: ESM OK'))"
+          node -e "import('./api/v1/forecasts/history.js').then(() => console.log('api/v1/forecasts/history: ESM OK'))"
 
       - name: Production build
         run: npm run build
@@ -226,31 +252,45 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
-      - name: Clear npm cache
-        run: npm cache clean --force
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
 
-      - name: Install audit-ci
-        run: npm install --no-save audit-ci
+      # Working-tree scan for committed high-confidence secrets (ghp_/sk-/
+      #AIza/xox/AKIA/private keys/connection strings with passwords...).
+      # History is out of scope here (past leaks are tracked for rotation in
+      # docs/audits/) — this gate stops NEW leaks from merging.
+      - name: Scan working tree for leaked secrets
+        run: bash scripts/check-secrets.sh
 
+      # Fails closed on any high/critical advisory NOT listed in
+      # audit-exceptions.json (accepted-risk entries carry expiries, so the
+      # gate also fails when an exception goes stale without re-review).
+      # Bare `npm audit --audit-level=high` could never pass: the tfjs-node
+      # install toolchain (tar/adm-zip, install-time only) has no
+      # non-breaking fix.
       - name: Production dependency audit
-        continue-on-error: true
-        run: npm audit --omit=dev --audit-level=high
-
-      - name: Check for known vulnerabilities (audit-ci)
-        continue-on-error: true
-        run: npx audit-ci --high --production
+        run: node scripts/npm-audit-ci.mjs
 
   deploy-preview:
     name: Deploy Preview (Vercel)
     runs-on: ubuntu-latest
     needs: [verify, test-e2e]
-    if: github.event_name == 'pull_request' && secrets.VERCEL_TOKEN != ''
+    if: github.event_name == 'pull_request'
 
+    # NOTE: the `secrets` context is forbidden in EVERY `if:` (job AND step —
+    # GitHub rejects the whole file with zero jobs). Token presence is resolved
+    # once into a step output (secrets ARE allowed inside `run:`), and the
+    # deploy/skip steps gate on that output instead.
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Resolve Vercel deploy flag
+        id: flags
+        run: echo "has_token=${{ secrets.VERCEL_TOKEN != '' }}" >> "$GITHUB_OUTPUT"
+
       - name: Deploy to Vercel Preview
+        if: steps.flags.outputs.has_token == 'true'
         uses: amondnet/vercel-action@v25
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
@@ -258,17 +298,28 @@ jobs:
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
           scope: ${{ secrets.VERCEL_ORG_ID }}
 
+      - name: Skip notice (no Vercel token)
+        if: steps.flags.outputs.has_token != 'true'
+        run: echo "::notice::VERCEL_TOKEN not set — skipping Vercel preview deploy."
+
   deploy-production:
     name: Deploy Production (Vercel)
     runs-on: ubuntu-latest
     needs: [verify, test-e2e, security-audit]
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push' && secrets.VERCEL_TOKEN != ''
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
 
+    # NOTE: no `secrets` in any `if:` (see deploy-preview) — gate on the
+    # resolved step output instead.
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Resolve Vercel deploy flag
+        id: flags
+        run: echo "has_token=${{ secrets.VERCEL_TOKEN != '' }}" >> "$GITHUB_OUTPUT"
+
       - name: Deploy to Vercel Production
+        if: steps.flags.outputs.has_token == 'true'
         uses: amondnet/vercel-action@v25
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
@@ -276,3 +327,7 @@ jobs:
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
           vercel-args: '--prod'
           scope: ${{ secrets.VERCEL_ORG_ID }}
+
+      - name: Skip notice (no Vercel token)
+        if: steps.flags.outputs.has_token != 'true'
+        run: echo "::notice::VERCEL_TOKEN not set — skipping Vercel production deploy."

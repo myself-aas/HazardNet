@@ -120,6 +120,7 @@ async function callGeminiPrimary(prompt, systemInstruction) {
   if (!process.env.GEMINI_API_KEY) throw new Error('GEMINI_API_KEY not configured');
   if (!isProviderHealthy('gemini_primary')) throw new Error('gemini_primary breaker TRIPPED');
 
+  const { GoogleGenAI } = await import('@google/genai');
   const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
   const geminiModels = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-flash-latest'];
   
@@ -157,6 +158,7 @@ async function callGeminiSecondary(prompt, systemInstruction) {
   if (!apiKey) throw new Error('GEMINI_API_KEY_BACKUP not configured');
   if (!isProviderHealthy('gemini_secondary')) throw new Error('gemini_secondary breaker TRIPPED');
 
+  const { GoogleGenAI } = await import('@google/genai');
   const ai = new GoogleGenAI({ apiKey });
   const backupModels = ['gemini-2.0-flash', 'gemini-flash-latest'];
 

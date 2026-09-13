@@ -10,6 +10,8 @@ import {
   buildForecastIndex,
   confidenceBin,
   effectiveDistrictRows,
+  fetchForecastMetadata,
+  fetchSnapshotMetadata,
   forecastAgeHours,
   formatHorizonLabel,
   isForecastHorizon,
@@ -300,5 +302,101 @@ describe('display helpers', () => {
     const now = new Date('2026-09-12T12:00:00Z');
     expect(forecastAgeHours('2026-09-12T06:00:00Z', now)).toBe(6);
     expect(forecastAgeHours('2026-09-13T00:00:00Z', now)).toBe(0);
+  });
+});
+
+describe('fetchForecastMetadata — three-stage fallback (API → bulk → snapshot)', () => {
+  const snapshotPayload = {
+    schema: 'hazardnet-forecast-snapshot/v1',
+    generated_at: '2026-09-13T05:05:00.000Z',
+    source: 'kaggle kernels output ashifahmedshuvo/hazardnet-auto-forecast-pipeline',
+    prediction_date: '2026-09-13',
+    horizons: { '7_days': [row({ prediction_date: '2026-09-13' })] },
+  };
+
+  const mockFetch = (impl: (url: string) => unknown) => {
+    global.fetch = jest.fn((url: string) => Promise.resolve(impl(url))) as unknown as typeof fetch;
+  };
+  const ok = (body: unknown) => ({ ok: true, status: 200, json: () => Promise.resolve(body) });
+  const fail = (status = 404) => ({ ok: false, status, json: () => Promise.resolve({}) });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  it('prefers the live /metadata endpoint', async () => {
+    mockFetch((url) =>
+      url.includes('/metadata')
+        ? ok({ prediction_date: '2026-09-14T00:00:00Z', ingestion_timestamp: '2026-09-14T01:00:00Z', data_source: 'live' })
+        : fail(),
+    );
+    await expect(fetchForecastMetadata()).resolves.toEqual({
+      predictionDate: '2026-09-14',
+      ingestionTimestamp: '2026-09-14T01:00:00Z',
+      source: 'live',
+    });
+  });
+
+  it('falls back to /bulk rows when /metadata is down', async () => {
+    mockFetch((url) => {
+      if (url.includes('/metadata')) return fail(503);
+      if (url.includes('/bulk')) {
+        return ok({
+          data_source: 'live-bulk',
+          forecasts: [row({ prediction_date: '2026-09-12', created_at: '2026-09-12T02:00:00Z' })],
+        });
+      }
+      return fail();
+    });
+    await expect(fetchForecastMetadata()).resolves.toEqual({
+      predictionDate: '2026-09-12',
+      ingestionTimestamp: '2026-09-12T02:00:00Z',
+      source: 'live-bulk',
+    });
+  });
+
+  it('falls back to the committed snapshot when the whole API is down', async () => {
+    mockFetch((url) => (url.includes('/data/forecasts-latest.json') ? ok(snapshotPayload) : fail(503)));
+    await expect(fetchForecastMetadata()).resolves.toEqual({
+      predictionDate: '2026-09-13',
+      ingestionTimestamp: '2026-09-13T05:05:00.000Z',
+      source: 'kaggle kernels output ashifahmedshuvo/hazardnet-auto-forecast-pipeline',
+    });
+  });
+
+  it('throws only when API and snapshot are all unreachable', async () => {
+    mockFetch(() => fail(503));
+    await expect(fetchForecastMetadata()).rejects.toThrow('both unreachable');
+  });
+
+  it('fetchSnapshotMetadata derives the newest row date when prediction_date is absent', async () => {
+    const { prediction_date: _omit, ...rest } = snapshotPayload;
+    mockFetch(() => ok({
+      ...rest,
+      horizons: {
+        '7_days': [row({ prediction_date: '2026-09-10' }), row({ prediction_date: '2026-09-11' })],
+        '15_days': [row({ horizon: '15_days', prediction_date: '2026-09-09' })],
+      },
+    }));
+    await expect(fetchSnapshotMetadata()).resolves.toEqual({
+      predictionDate: '2026-09-11',
+      ingestionTimestamp: '2026-09-13T05:05:00.000Z',
+      source: 'kaggle kernels output ashifahmedshuvo/hazardnet-auto-forecast-pipeline',
+    });
+  });
+
+  it('fetchSnapshotMetadata never throws (all-null on missing/malformed)', async () => {
+    mockFetch(() => fail());
+    await expect(fetchSnapshotMetadata()).resolves.toEqual({
+      predictionDate: null,
+      ingestionTimestamp: null,
+      source: null,
+    });
+    mockFetch(() => ok({ horizons: 'garbage' }));
+    await expect(fetchSnapshotMetadata()).resolves.toEqual({
+      predictionDate: null,
+      ingestionTimestamp: null,
+      source: null,
+    });
   });
 });

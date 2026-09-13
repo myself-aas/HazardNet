@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
 import express from 'express';
-import cors from 'cors';
+import { corsMiddleware } from './middleware/cors.js';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
@@ -41,7 +41,12 @@ const __dirname = process.cwd();
     warnings.push('VAPID keys unset - web push subscriptions cannot be created.');
   }
   if (!process.env.FRONTEND_ORIGIN) {
-    warnings.push('FRONTEND_ORIGIN unset - CORS allows any origin (legacy mode). Set it in production.');
+    const msg = 'FRONTEND_ORIGIN unset - CORS allows any origin in development, but FAILS CLOSED in production. Set it in production.';
+    if (process.env.NODE_ENV === 'production' || process.env.VERCEL_ENV === 'production') {
+      problems.push(msg);
+    } else {
+      warnings.push(msg);
+    }
   }
   if (process.env.FORECAST_STORE === 'supabase' && !process.env.DATABASE_URL) {
     problems.push('FORECAST_STORE=supabase but DATABASE_URL is NOT set - forecast endpoints will fail until the Supabase Postgres connection string is configured.');
@@ -53,6 +58,9 @@ const __dirname = process.cwd();
 
 const app = express();
 
+// Don't advertise the framework in responses (SEC-05: minimize fingerprinting).
+app.disable('x-powered-by');
+
 // Rate limiters need the real client IP; we sit behind one proxy/edge hop.
 app.set('trust proxy', 1);
 
@@ -60,12 +68,17 @@ app.set('trust proxy', 1);
 // can be observed in the console before enforcing; flip reportOnly to false
 // after a monitoring window. Fonts are self-hosted, so no third-party font
 // origins are needed.
-// Set CSP_ENFORCE=true to flip from Report-Only to enforcing once the
-// violation monitoring window is clean (ADR 0003). Default: report-only.
-const cspEnforce = process.env.CSP_ENFORCE === 'true';
+// CSP mode (ADR 0003): enforcing in production by default; Report-Only in
+// development. Override explicitly per environment with CSP_ENFORCE=true|false.
+// connect-src includes wss: for Supabase/Firebase realtime channels.
+const cspEnforce = process.env.CSP_ENFORCE !== undefined
+  ? process.env.CSP_ENFORCE === 'true'
+  : (process.env.NODE_ENV === 'production' || process.env.VERCEL_ENV === 'production');
 
 app.use(
   helmet({
+    // No framing use-case exists; DENY matches CSP frame-ancestors 'none'.
+    frameguard: { action: 'deny' },
     contentSecurityPolicy: {
       reportOnly: !cspEnforce,
       directives: {
@@ -87,31 +100,10 @@ app.use(
 // Correlated request logging (BE-04).
 app.use(requestId);
 
-// CORS allowlist (SEC-04). Add allowed browser origins via FRONTEND_ORIGIN
-// (comma-separated). When unset (e.g. local dev), all origins are permitted
-// to preserve the previous behavior — set it in production deployments.
-const allowedOrigins = [
-  'http://localhost:3000',
-  'http://127.0.0.1:3000',
-  ...(process.env.FRONTEND_ORIGIN || '')
-    .split(',')
-    .map((s) => s.trim())
-    .filter(Boolean),
-];
-
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      // No Origin header = same-origin request, curl, or server-to-server.
-      if (!origin) return callback(null, true);
-      // Not configured = keep permissive legacy behavior until FRONTEND_ORIGIN is set.
-      if (allowedOrigins.length === 2) return callback(null, true);
-      if (allowedOrigins.includes(origin)) return callback(null, true);
-      return callback(null, false);
-    },
-    methods: ['GET', 'POST', 'OPTIONS'],
-  })
-);
+// CORS allowlist (SEC-04) — see middleware/cors.js. Production fails closed:
+// with FRONTEND_ORIGIN unset in a production runtime, cross-origin browser
+// requests are rejected instead of reflected.
+app.use(corsMiddleware());
 app.use(express.json({ limit: '10mb' }));
 
 // Basic Security Headers Middleware
@@ -180,11 +172,18 @@ app.get('*', (req, res, next) => {
   }
 });
 
-// 3001 keeps the API out of Vite's way in dev (vite.config.ts proxies /api here).
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`HazardNet Backend running on port ${PORT}`);
-});
-
 export default app;
+
+// Bind a port only when executed directly (`node backend/server.js`) — never
+// on import, so supertest suites can load the app without occupying a port
+// (parallel suites would otherwise collide with EADDRINUSE).
+const invokedAsScript = process.argv[1] !== undefined
+  && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+if (invokedAsScript) {
+  // 3001 keeps the API out of Vite's way in dev (vite.config.ts proxies /api here).
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`HazardNet Backend running on port ${PORT}`);
+  });
+}
 
