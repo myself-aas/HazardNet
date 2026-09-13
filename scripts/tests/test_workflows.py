@@ -16,6 +16,7 @@ write permissions for data commits, concurrency guards, required files).
 """
 
 import json
+import shlex
 from pathlib import Path
 
 import pytest
@@ -193,4 +194,97 @@ def test_no_workflow_requires_vercel_deploy_credentials(workflows):
     assert not problems, (
         'workflows must not require Vercel deploy credentials '
         '(the Git integration deploys; no secret needed):\n' + '\n'.join(problems)
+    )
+
+
+# ---------------------------------------------------------------------------
+# Jest argv guards (regression for the silent backend-suite dropout)
+# ---------------------------------------------------------------------------
+
+def jest_steps(workflow):
+    """Every step in ci.yml whose `run:` invokes jest, as (name, run) pairs."""
+    found = []
+    for job in workflow.get('jobs', {}).values():
+        for step in job.get('steps', []) or []:
+            run = step.get('run')
+            if isinstance(run, str) and 'jest' in run:
+                found.append((step.get('name', '<unnamed>'), run))
+    return found
+
+
+def ignore_patterns(run):
+    """The arguments consumed by `--testPathIgnorePatterns`.
+
+    Handles both spellings, because the shell collapses the first one:
+        --testPathIgnorePatterns='/e2e/' '/frontend/'
+        -> ['--testPathIgnorePatterns=/e2e/', '/frontend/']
+    The flag is array-valued, so everything AFTER it belongs to it regardless
+    of how it is written.
+    """
+    tokens = shlex.split(run)
+    for index, token in enumerate(tokens):
+        if token.startswith('--testPathIgnorePatterns='):
+            return [token.split('=', 1)[1], *tokens[index + 1:]]
+        if token == '--testPathIgnorePatterns':
+            return list(tokens[index + 1:])
+    return []
+
+
+def test_ci_has_a_backend_jest_step(workflows):
+    steps = jest_steps(workflows['ci.yml'])
+    assert steps, 'ci.yml no longer runs jest'
+
+
+def test_backend_jest_step_has_no_bare_selector(workflows):
+    """`--testPathIgnorePatterns` is array-valued and consumes EVERY following
+    argument, so a bare positional selector after it is silently reinterpreted
+    as one more ignore pattern instead of selecting tests.
+
+    The backend step used to read `... --testPathIgnorePatterns='/e2e/'
+    'frontend/src'`: 'frontend/src' never selected anything, and the step only
+    ran the backend suites because the ignore patterns happened to win. Moving
+    the selector first would have swapped in all 21 frontend suites and still
+    reported 21 passing suites — a green job covering none of the backend.
+    """
+    assert 'ci.yml' in workflows
+    offenders = []
+
+    for name, run in jest_steps(workflows['ci.yml']):
+        for pattern in ignore_patterns(run):
+            # Ignore patterns are path fragments. A selector like
+            # 'frontend/src' has no leading slash and is the bug shape.
+            if not (pattern.startswith('/') and pattern.endswith('/')):
+                offenders.append((name, pattern))
+
+    assert not offenders, (
+        'jest argument(s) after --testPathIgnorePatterns are not ignore '
+        f'patterns and will be swallowed silently: {offenders}'
+    )
+
+
+def _backend_jest_step(workflows):
+    """The ci.yml step that runs the backend suites (matched by step name).
+
+    Scoped by name on purpose: the frontend job also runs jest, and mixing the
+    two steps' arguments would make these assertions meaningless.
+    """
+    for name, run in jest_steps(workflows['ci.yml']):
+        if 'backend' in name.lower():
+            return name, run
+    raise AssertionError('ci.yml has no jest step named for the backend')
+
+
+def test_backend_jest_step_excludes_frontend_and_e2e(workflows):
+    """The backend step must keep the frontend suites out. If '/frontend/' is
+    ever dropped from the list, the step starts measuring the wrong half of the
+    repository."""
+    name, run = _backend_jest_step(workflows)
+    patterns = ignore_patterns(run)
+
+    assert patterns, f'{name!r} no longer pins an ignore list: {run}'
+    assert '/frontend/' in patterns, (
+        f'{name!r} must ignore /frontend/ (patterns: {patterns})'
+    )
+    assert '/e2e/' in patterns, (
+        f'{name!r} must ignore /e2e/ (patterns: {patterns})'
     )
