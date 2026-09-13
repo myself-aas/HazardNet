@@ -67,6 +67,7 @@ import { StructuredAdvisoryRenderer } from '../components/StructuredAdvisoryRend
 import AdvisoryPanel from '../components/AdvisoryPanel';
 import { PrintQrCode } from '../components/PrintQrCode';
 import { PdfExportButton } from '../components/PdfExportButton';
+import { fetchForecastMetadata } from '../lib/forecasts';
 
 export const DistrictDetailPage: React.FC = () => {
   const { id } = useParams<{ id?: string }>();
@@ -82,21 +83,18 @@ export const DistrictDetailPage: React.FC = () => {
 
     const refreshMetadata = async () => {
       try {
-        const response = await fetch(`/api/v1/forecasts/metadata?fresh=${Date.now()}`, {
-          cache: 'no-store',
-        });
-        if (!response.ok) return;
-        const metadata: {
-          prediction_date?: string;
-          data_source?: string;
-          ingestion_timestamp?: string | null;
-        } = await response.json();
+        const metadata = await fetchForecastMetadata();
         if (cancelled) return;
-        setLivePredictionDate(metadata.prediction_date?.slice(0, 10) ?? null);
-        setLiveSource(metadata.data_source ?? null);
-        setIngestionTimestamp(metadata.ingestion_timestamp ?? null);
+        setLivePredictionDate(metadata.predictionDate);
+        setLiveSource(metadata.source);
+        setIngestionTimestamp(metadata.ingestionTimestamp);
       } catch {
-        // Keep the last successful Kaggle snapshot visible during a transient outage.
+        // Do not revive the static July dates when the live source is unavailable.
+        if (!cancelled) {
+          setLivePredictionDate(null);
+          setLiveSource(null);
+          setIngestionTimestamp(null);
+        }
       }
     };
 
@@ -110,7 +108,14 @@ export const DistrictDetailPage: React.FC = () => {
 
   const data: GranularDisasterData = useMemo(() => {
     const fallback = getGranularDisasterData(districtId);
-    if (!livePredictionDate) return fallback;
+    if (!livePredictionDate) {
+      return {
+        ...fallback,
+        peakImpactWindow: 'Live Kaggle data unavailable',
+        incidentDate: 'Live Kaggle data unavailable',
+        lastSatelliteUpdate: 'Awaiting Kaggle forecast ingestion',
+      };
+    }
     const prediction = new Date(`${livePredictionDate}T00:00:00Z`);
     const end = new Date(prediction.getTime() + 6 * 86_400_000);
     const formatDate = (value: Date) => value.toLocaleDateString('en-GB', {

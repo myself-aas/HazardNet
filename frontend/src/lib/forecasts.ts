@@ -56,6 +56,55 @@ export interface BulkForecastsResponse {
   forecasts: ForecastRow[];
 }
 
+export interface ForecastMetadata {
+  predictionDate: string | null;
+  ingestionTimestamp: string | null;
+  source: string | null;
+}
+
+/** Load freshness metadata without ever substituting a client/request timestamp. */
+export async function fetchForecastMetadata(): Promise<ForecastMetadata> {
+  const metadataResponse = await fetch(`/api/v1/forecasts/metadata?fresh=${Date.now()}`, {
+    cache: 'no-store',
+  });
+
+  if (metadataResponse.ok) {
+    const payload = await metadataResponse.json() as {
+      prediction_date?: unknown;
+      ingestion_timestamp?: unknown;
+      data_source?: unknown;
+    };
+    return {
+      predictionDate: typeof payload.prediction_date === 'string' ? payload.prediction_date.slice(0, 10) : null,
+      ingestionTimestamp: typeof payload.ingestion_timestamp === 'string' ? payload.ingestion_timestamp : null,
+      source: typeof payload.data_source === 'string' ? payload.data_source : null,
+    };
+  }
+
+  // Bulk is the authoritative live row endpoint. It also lets the card work
+  // against older deployments that do not expose /metadata yet.
+  const bulkResponse = await fetch(`/api/v1/forecasts/bulk?horizon=7_days&fresh=${Date.now()}`, {
+    cache: 'no-store',
+  });
+  if (!bulkResponse.ok) throw new Error(`Forecast metadata unavailable (${bulkResponse.status})`);
+  const payload = await bulkResponse.json() as { generated_at?: unknown; data_source?: unknown; forecasts?: unknown };
+  const rows = parseBulkResponse(payload);
+  const latestPrediction = rows
+    .map((row) => row.prediction_date)
+    .sort()
+    .at(-1) ?? null;
+  const latestIngestion = rows
+    .map((row) => row.created_at)
+    .filter((value): value is string => Boolean(value))
+    .sort()
+    .at(-1) ?? null;
+  return {
+    predictionDate: latestPrediction,
+    ingestionTimestamp: latestIngestion,
+    source: typeof payload.data_source === 'string' ? payload.data_source : null,
+  };
+}
+
 export const FORECAST_HORIZONS = ['7_days', '15_days'] as const;
 export type ForecastHorizon = (typeof FORECAST_HORIZONS)[number];
 
