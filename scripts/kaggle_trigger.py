@@ -19,7 +19,7 @@ NOTEBOOK_PATH = os.environ.get(
 )
 DATASET_PATH = os.environ.get(
     'KAGGLE_DATASET',
-    '7b9ed0ca41d930114260efabb71a7fbf616cb68456d30823ecfc2ac45732fe3c'
+    'ashifahmedshuvo/hazardnet-weekly-forecasts'
 )
 MAX_POLL_ATTEMPTS = 120  # 2 hours with 60s intervals
 POLL_INTERVAL = 60  # seconds
@@ -74,7 +74,7 @@ def download_outputs():
     dataset_dir = output_dir / "kaggle_dataset"
     dataset_dir.mkdir(parents=True, exist_ok=True)
 
-    dataset_cmd = f"kaggle datasets download -d {DATASET_PATH} -p {dataset_dir} --unzip"
+    dataset_cmd = f"kaggle datasets download -d {DATASET_PATH} -p {dataset_dir} --unzip --force"
     if os.system(dataset_cmd) != 0:
         print("❌ Failed to download the daily Kaggle dataset")
         return False

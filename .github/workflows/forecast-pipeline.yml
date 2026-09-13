@@ -67,7 +67,7 @@ jobs:
           KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
           KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
           KAGGLE_KERNEL: ashifahmedshuvo/hazardnet-auto-forecast-pipeline
-          KAGGLE_DATASET: 7b9ed0ca41d930114260efabb71a7fbf616cb68456d30823ecfc2ac45732fe3c
+          KAGGLE_DATASET: ashifahmedshuvo/hazardnet-weekly-forecasts
         run: |
           python scripts/kaggle_trigger.py
         continue-on-error: false
