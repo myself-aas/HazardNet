@@ -138,12 +138,28 @@ router.post('/update', upload.single('file'), (req, res, next) => {
 router.get('/metadata', async (req, res) => {
     try {
         const predictionDate = await getForecastStore().getLatestPredictionDate();
+        const now = new Date();
         res.setHeader('Cache-Control', 'no-store, max-age=0');
         res.json({
             prediction_date: predictionDate,
+            ingestion_timestamp: now.toISOString(),
             data_source: process.env.KAGGLE_DATASET || '7b9ed0ca41d930114260efabb71a7fbf616cb68456d30823ecfc2ac45732fe3c',
             notebook_source: 'ashifahmedshuvo/hazardnet-auto-forecast-pipeline',
-            generated_at: new Date().toISOString(),
+            datasets: [
+                {
+                    id: '7b9ed0ca41d930114260efabb71a7fbf616cb68456d30823ecfc2ac45732fe3c',
+                    name: 'hazardnet-weekly-forecasts',
+                    url: 'https://www.kaggle.com/datasets/ashifahmedshuvo/hazardnet-weekly-forecasts/',
+                    update_frequency: 'daily'
+                },
+                {
+                    id: 'auto-forecast-pipeline',
+                    name: 'hazardnet-auto-forecast-pipeline',
+                    url: 'https://www.kaggle.com/code/ashifahmedshuvo/hazardnet-auto-forecast-pipeline/',
+                    type: 'notebook'
+                }
+            ],
+            generated_at: now.toISOString(),
         });
     } catch (error) {
         res.status(500).json({ error: error.message });
