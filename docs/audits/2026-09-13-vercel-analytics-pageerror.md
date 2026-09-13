@@ -149,5 +149,24 @@ time.
   check:bundle` (within budget), `npx jest --ci frontend/src` (20 suites, 207
   tests) all pass.
 - End-to-end confirmation is CI-only: this sandbox cannot install Playwright
-  browsers (no network access to the browser CDN), so the suite must be re-run
+  browsers (no network access to the browser CDN), so the suite had to be re-run
   by the `E2E Tests` job.
+- **Confirmed green in CI**: run
+  [`34774866037`](https://github.com/myself-aas/HazardNet/actions/runs/34774866037),
+  job `E2E Tests` (`103771016154`), step 8 `Run E2E tests` → `success`
+  (2 m 17 s). Every other job in that run passed as well; the 46 collected
+  tests include the new guard on both projects.
+- The failing-on-main job for comparison: run `34770924925`, job `E2E Tests`
+  (`103766193804`), same step → `failure`, only that step.
+
+### Known unrelated failure: the Vercel checks on the PR
+
+`Vercel` (commit status) reports *"Deployment was blocked"* and the
+`Deploy Preview (Vercel)` job fails on the fix PR. That is account plumbing,
+not this change: the same checks already failed on
+[PR #15](https://github.com/myself-aas/HazardNet/pull/15) before any of these
+edits (*"GitHub couldn't verify an account for the commit"* — the commit
+author is not linked to the Vercel account), and `vercel.json` itself parses
+and its rewrite regex matches exactly the intended set of paths. `E2E Tests`,
+which is what this incident is about, runs against a locally built preview
+and is unaffected.
