@@ -96,9 +96,21 @@ export function parseCsvForecastRow(row, rowNumber) {
     prediction_date: row.prediction_date
   };
 
+  // The Kaggle notebook publishes Open-Meteo values in native units. Convert
+  // them at the ingest boundary so API consumers keep the documented units.
+  const meteorologicalValues = {
+    temperature_mean: row.temperature_mean ?? row.om_temp_2m_k,
+    temperature_max: row.temperature_max ?? row.om_max_temp_k,
+    temperature_min: row.temperature_min ?? row.om_min_temp_k,
+    precipitation_mm: row.precipitation_mm ?? (row.om_precip_m !== undefined ? Number(row.om_precip_m) * 1000 : undefined),
+    wind_max_kmh: row.wind_max_kmh ?? (row.om_wind_max_ms !== undefined ? Number(row.om_wind_max_ms) * 3.6 : undefined),
+    dewpoint_mean: row.dewpoint_mean ?? row.om_dewpoint_k,
+    solar_radiation_mj_m2: row.solar_radiation_mj_m2 ?? (row.om_solar_rad_j !== undefined ? Number(row.om_solar_rad_j) / 1_000_000 : undefined),
+    evapotranspiration_mm: row.evapotranspiration_mm ?? (row.om_et_sum_m !== undefined ? Number(row.om_et_sum_m) * 1000 : undefined),
+  };
   for (const field of METEOROLOGICAL_FIELDS) {
-    if (row[field] !== undefined && row[field] !== '') {
-      const parsed = parseFloat(row[field]);
+    if (meteorologicalValues[field] !== undefined && meteorologicalValues[field] !== '') {
+      const parsed = parseFloat(meteorologicalValues[field]);
       if (Number.isFinite(parsed)) value[field] = parsed;
     }
   }

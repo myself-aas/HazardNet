@@ -106,6 +106,18 @@ function createFirestoreStore() {
       return latest;
     },
 
+    /** Latest ingestion timestamp (created_at) from any forecast record. */
+    async getLatestIngestionTimestamp() {
+      const q = query(collection(db, 'forecasts'), orderBy('created_at', 'desc'), limit(1));
+      const snap = await getDocs(q);
+      let latest = null;
+      snap.forEach((d) => {
+        const row = d.data();
+        if (row && row.created_at) latest = String(row.created_at);
+      });
+      return latest;
+    },
+
     /** All rows with from <= prediction_date <= to (optionally filtered by
      *  horizon / district), sorted by prediction_date asc, district_id asc —
      *  the history API's backing query (backlog #6). 'YYYY-MM-DD' strings
@@ -291,6 +303,15 @@ function createSupabaseStore() {
       );
       const latest = rows[0] && rows[0].latest;
       return latest ? String(latest).slice(0, 10) : null;
+    },
+
+    /** Latest ingestion timestamp (created_at) from any forecast record. */
+    async getLatestIngestionTimestamp() {
+      const { rows } = await getPool().query(
+        'select max(created_at) as latest from public.forecasts'
+      );
+      const latest = rows[0] && rows[0].latest;
+      return latest ? new Date(latest).toISOString() : null;
     },
 
     /** All rows with from <= prediction_date <= to (optionally filtered by

@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useEffect, useState, useMemo, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
@@ -67,13 +67,88 @@ import { StructuredAdvisoryRenderer } from '../components/StructuredAdvisoryRend
 import AdvisoryPanel from '../components/AdvisoryPanel';
 import { PrintQrCode } from '../components/PrintQrCode';
 import { PdfExportButton } from '../components/PdfExportButton';
+import { fetchForecastMetadata } from '../lib/forecasts';
 
 export const DistrictDetailPage: React.FC = () => {
   const { id } = useParams<{ id?: string }>();
   const navigate = useNavigate();
   const districtId = id || 'kurigram';
 
-  const data: GranularDisasterData = useMemo(() => getGranularDisasterData(districtId), [districtId]);
+  const [livePredictionDate, setLivePredictionDate] = useState<string | null>(null);
+  const [liveSource, setLiveSource] = useState<string | null>(null);
+  const [ingestionTimestamp, setIngestionTimestamp] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const refreshMetadata = async () => {
+      try {
+        const metadata = await fetchForecastMetadata();
+        if (cancelled) return;
+        setLivePredictionDate(metadata.predictionDate);
+        setLiveSource(metadata.source);
+        setIngestionTimestamp(metadata.ingestionTimestamp);
+      } catch {
+        // Do not revive the static July dates when the live source is unavailable.
+        if (!cancelled) {
+          setLivePredictionDate(null);
+          setLiveSource(null);
+          setIngestionTimestamp(null);
+        }
+      }
+    };
+
+    refreshMetadata();
+    const interval = window.setInterval(refreshMetadata, 5 * 60 * 1000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(interval);
+    };
+  }, []);
+
+  const data: GranularDisasterData = useMemo(() => {
+    const fallback = getGranularDisasterData(districtId);
+    if (!livePredictionDate) {
+      return {
+        ...fallback,
+        peakImpactWindow: 'Live Kaggle data unavailable',
+        incidentDate: 'Live Kaggle data unavailable',
+        lastSatelliteUpdate: 'Awaiting Kaggle forecast ingestion',
+      };
+    }
+    const prediction = new Date(`${livePredictionDate}T00:00:00Z`);
+    const end = new Date(prediction.getTime() + 6 * 86_400_000);
+    const formatDate = (value: Date) => value.toLocaleDateString('en-GB', {
+      day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC'
+    });
+    
+    const formattedIngestionTime = ingestionTimestamp
+      ? (() => {
+          const ingestionDate = new Date(ingestionTimestamp);
+          if (Number.isNaN(ingestionDate.getTime())) return 'Unavailable';
+          const dateStr = ingestionDate.toLocaleDateString('en-CA', {
+            timeZone: 'Europe/London',
+          });
+          const timeStr = ingestionDate.toLocaleTimeString('en-GB', {
+            hour: '2-digit',
+            minute: '2-digit',
+            timeZone: 'Europe/London',
+          });
+          const tzAbbr = ingestionDate.toLocaleString('en-GB', {
+            timeZone: 'Europe/London',
+            timeZoneName: 'short',
+          }).split(' ').pop();
+          return `${dateStr} ${timeStr} ${tzAbbr || ''}`.trim();
+        })()
+      : 'Awaiting Kaggle ingestion';
+    
+    return {
+      ...fallback,
+      incidentDate: formattedIngestionTime,
+      peakImpactWindow: `${formatDate(prediction)} - ${formatDate(end)}`,
+      lastSatelliteUpdate: `${liveSource ?? 'Kaggle forecast'} • ${livePredictionDate}`,
+    };
+  }, [districtId, livePredictionDate, liveSource, ingestionTimestamp]);
   const district = useMemo(() => getDistrictById(districtId) || ALL_64_DISTRICTS[0], [districtId]);
 
   // UI States

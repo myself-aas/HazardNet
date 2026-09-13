@@ -41,9 +41,10 @@ export default defineConfig(({ mode }) => {
     chunkSizeWarningLimit: 1000, // increase limit (KB) if needed
     rollupOptions: {
       output: {
-        manualChunks: {
-          // example: split large libs
-          'recharts': ['recharts'],
+        manualChunks(id) {
+          if (id.includes('node_modules/recharts')) {
+            return 'recharts';
+          }
         },
       },
     },

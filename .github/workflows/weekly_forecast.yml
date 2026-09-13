@@ -26,6 +26,7 @@ env:
   SUPABASE_SSL: 'true'
   NOTEBOOK_DIR: ./kaggle_notebooks/hazardnet-auto-forecast-pipeline
   CSV_PATH: ./data/weekly_forecast.csv
+  KAGGLE_DATASET: 7b9ed0ca41d930114260efabb71a7fbf616cb68456d30823ecfc2ac45732fe3c
   PORT: '3001'
 
 jobs:
@@ -50,7 +51,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: 'npm'
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -89,7 +94,7 @@ jobs:
           echo "✅ Successfully bumped and tagged version v$NEW_VERSION"
 
       - name: Install dependencies
-        run: bun install --frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - name: Configure Kaggle CLI
         shell: bash
@@ -104,6 +109,11 @@ jobs:
           cd "$NOTEBOOK_DIR"
           kaggle kernels push -p .
           KERNEL_SLUG=$(jq -r '.id' kernel-metadata.json)
+          EXPECTED_KERNEL_SLUG="ashifahmedshuvo/hazardnet-auto-forecast-pipeline"
+          if [ "$KERNEL_SLUG" != "$EXPECTED_KERNEL_SLUG" ]; then
+            echo "❌ kernel-metadata.json id '$KERNEL_SLUG' does not match '$EXPECTED_KERNEL_SLUG'"
+            exit 1
+          fi
           if [ -z "$KERNEL_SLUG" ] || [ "$KERNEL_SLUG" = "null" ]; then
             echo "❌ Could not read kernel id from kernel-metadata.json"
             exit 1
@@ -140,19 +150,30 @@ jobs:
           echo "❌ Timeout waiting for Kaggle notebook to complete."
           exit 1
 
-      - name: Download Forecast Data from Kaggle
+      - name: Download Forecast Data from Kaggle dataset
         shell: bash
         run: |
-          mkdir -p data
-          kaggle kernels output "$KERNEL_SLUG" -p data
-          CSV_FILE=$(ls data/hazardnet_forecasts_latest.csv 2>/dev/null || find data -name '*.csv' | head -n 1)
+          rm -rf data/kaggle_dataset
+          mkdir -p data/kaggle_dataset
+          kaggle datasets download -d "$KAGGLE_DATASET" -p data/kaggle_dataset --unzip
+          CSV_FILE=$(find data/kaggle_dataset -type f -name '*.csv' | head -n 1)
           if [ -z "$CSV_FILE" ]; then
-            echo "❌ No CSV file found in Kaggle output:"
-            ls -la data
+            echo "❌ Daily Kaggle dataset did not contain a CSV"
+            find data/kaggle_dataset -maxdepth 2 -type f -print
             exit 1
           fi
-          mv "$CSV_FILE" "$CSV_PATH"
-          echo "✅ Downloaded forecast CSV ($(wc -l < "$CSV_PATH") lines) -> $CSV_PATH"
+          cp "$CSV_FILE" "$CSV_PATH"
+          echo "✅ Downloaded daily dataset CSV ($(wc -l < "$CSV_PATH") lines) -> $CSV_PATH"
+
+          # Keep the notebook JSON artifact for validation and release metadata.
+          mkdir -p data/notebook_output
+          kaggle kernels output "$KERNEL_SLUG" -p data/notebook_output || true
+          JSON_FILE=$(find data/notebook_output -type f -name '*.json' | head -n 1)
+          if [ -n "$JSON_FILE" ]; then cp "$JSON_FILE" data/hazardnet_forecasts_latest.json; fi
+          if [ ! -f data/hazardnet_forecasts_latest.json ]; then
+            echo "❌ Notebook JSON output is required for validation"
+            exit 1
+          fi
           RELEASE_FILES="$CSV_PATH"
           for f in hazardnet_adm3_exposure.csv hazardnet_adm3_locations.csv hazardnet_adm3_latest.geojson; do
             if [ -f "data/$f" ]; then
