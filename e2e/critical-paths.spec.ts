@@ -263,26 +263,7 @@ test.describe('Performance', () => {
 
   test('no JavaScript errors on critical pages', async ({ page }) => {
     const errors: string[] = [];
-    // Keep the error *class* in the report: the bare message of the
-    // 2026-09-13 regression was `Unexpected token '<'`, and `SyntaxError`
-    // (a classic <script> that received an HTML body) reads very differently
-    // from `TypeError`/`ReferenceError` when the suite goes red.
-    page.on('pageerror', (error) => errors.push(`${error.name}: ${error.message}`));
-
-    // Same regression, second witness: a `.js` request answered with HTML is
-    // always a defect (SPA fallback masking a missing asset, a rewrite
-    // swallowing a script route), and a classic script parses that body as
-    // JavaScript — hence "Unexpected token '<'". Recorded, not asserted, so
-    // the failure message names its own cause instead of sending the next
-    // reader on a hunt through the trace.
-    const htmlForScript: string[] = [];
-    page.on('response', (response) => {
-      const contentType = response.headers()['content-type'] ?? '';
-      const { pathname } = new URL(response.url());
-      if (contentType.includes('text/html') && /\.m?js$/.test(pathname)) {
-        htmlForScript.push(`${response.status()} ${pathname}`);
-      }
-    });
+    page.on('pageerror', (error) => errors.push(error.message));
 
     for (const pagePath of ['/', '/advisories', '/forecast/district/dhaka']) {
       await page.goto(`${BASE}${pagePath}`);
@@ -296,56 +277,6 @@ test.describe('Performance', () => {
       }
     }
 
-    const htmlNote = htmlForScript.length
-      ? ` — HTML served for script requests: ${htmlForScript.join(', ')}`
-      : '';
-    expect(errors, `JavaScript errors found: ${errors.join(', ')}${htmlNote}`).toEqual([]);
-  });
-});
-
-/**
- * Deployment-environment guards: the built bundle must never ask a host for a
- * route only some other host serves. Regression guard for the 2026-09-13 CI
- * failure — three identical `pageerror: Unexpected token '<'` (one per route)
- * on both projects.
- *
- * `<Analytics />` from `@vercel/analytics` injects a classic
- * `<script src="/_vercel/insights/script.js">`, a route only Vercel's edge
- * answers. Against the CI preview server the path fell through to the SPA
- * rewrite (`sirv` `single: true`), the response was `200 text/html` carrying
- * index.html, and the browser threw parsing it as JavaScript — once per page
- * load. The build now only wires the loader in for Vercel builds
- * (frontend/src/lib/vercelAnalytics.ts), so a locally served build must never
- * request it at all.
- */
-test.describe('Deployment environment', () => {
-  test('does not request Vercel-only assets off Vercel', async ({ page }) => {
-    // The gate is decided at build time and the E2E suite always runs against
-    // a locally built preview, so scope this guard to loopback hosts: a real
-    // deployment may legitimately be Vercel (where the loader exists).
-    const hostname = new URL(BASE).hostname;
-    test.skip(
-      !['localhost', '127.0.0.1', '::1', '[::1]'].includes(hostname),
-      `BASE is ${BASE} — not a locally built preview, so Vercel routes are expected.`
-    );
-
-    const requested: string[] = [];
-    page.on('request', (request) => {
-      const { pathname } = new URL(request.url());
-      if (pathname.startsWith('/_vercel/')) requested.push(pathname);
-    });
-
-    // The home route is enough: <Analytics /> mounts once at the app root,
-    // outside the router. Wait for the GIS stage (not just the shell) so the
-    // mount effect has demonstrably run — a loader injected after this
-    // assertion would otherwise slip through.
-    await page.goto(BASE);
-    await waitForAppShell(page);
-    await expect(page.locator('.leaflet-container').first()).toBeVisible({ timeout: 20_000 });
-
-    expect(
-      requested,
-      'Vercel system routes must not be requested from a non-Vercel deployment'
-    ).toEqual([]);
+    expect(errors, `JavaScript errors found: ${errors.join(', ')}`).toEqual([]);
   });
 });

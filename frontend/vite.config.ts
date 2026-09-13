@@ -52,33 +52,6 @@ function leafletGlobalShim(): PluginOption {
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, '..', '');
-
-  /**
-   * Vercel Web Analytics gate (2026-09-13 E2E fix — see
-   * frontend/src/lib/vercelAnalytics.ts for the full failure story).
-   *
-   * `@vercel/analytics` ships no loader of its own: at mount `<Analytics />`
-   * injects a *classic* `<script src="/_vercel/insights/script.js">`, and that
-   * namespace is a Vercel system route (only served when Web Analytics is on
-   * for the project). Everywhere else the path falls through to the SPA
-   * rewrite and comes back as `index.html` with `text/html`, so the browser
-   * parses the app shell as JavaScript and throws
-   * `SyntaxError: Unexpected token '<'` once per page load — which is exactly
-   * what failed `Performance › no JavaScript errors on critical pages` in
-   * e2e/critical-paths.spec.ts (42/44 passing, one pageerror per navigation).
-   *
-   * `VERCEL=1` is set by Vercel's build image for every deployment it builds —
-   * production, preview, and custom domains such as hazardnet.live — so the
-   * loader is wired in exactly where it can be served. `VITE_VERCEL_ANALYTICS`
-   * (any of `.env`, `.env.local`, the CI environment) overrides the guess:
-   * `true` forces the loader on, `false` forces it off, empty/unset keeps the
-   * automatic guess.
-   */
-  const vercelAnalyticsOverride = env.VITE_VERCEL_ANALYTICS?.trim();
-  const vercelAnalyticsEnabled = vercelAnalyticsOverride
-    ? vercelAnalyticsOverride === 'true'
-    : env.VERCEL === '1';
-
   return {
   plugins: [leafletGlobalShim(), react(), tailwindcss()],
   resolve: {
@@ -153,9 +126,6 @@ export default defineConfig(({ mode }) => {
     },
   },
   define: {
-    // Boolean literal (not a string) so the client can do a plain
-    // `=== true` check — see lib/vercelAnalytics.ts.
-    'import.meta.env.VITE_VERCEL_ANALYTICS': JSON.stringify(vercelAnalyticsEnabled),
     'import.meta.env.VITE_SUPABASE_URL': JSON.stringify(env.NEXT_PUBLIC_SUPABASE_URL ?? env.SUPABASE_URL),
     'import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY': JSON.stringify(env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? env.SUPABASE_PUBLISHABLE_KEY ?? env.NEXT_PUBLIC_SUPABASE_ANON_KEY),
     'import.meta.env.VITE_SUPABASE_REDIRECT_URL': JSON.stringify(env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL),

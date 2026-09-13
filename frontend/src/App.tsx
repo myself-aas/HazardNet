@@ -12,7 +12,6 @@ import AuthCallbackPage from './pages/AuthCallbackPage';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import ErrorBoundary from './components/ErrorBoundary';
-import { vercelAnalyticsEnabled } from './lib/vercelAnalytics';
 import { useHazardNotifications } from './hooks/useHazardNotifications';
 import { initializeAttributionCapture } from './services/conversionTracking';
 import { RequireSuperAdmin } from './components/blog/RequireSuperAdmin';
@@ -226,15 +225,7 @@ const App: React.FC = () => (
         </Router>
       </QueryClientProvider>
     </AuthProvider>
-    {/*
-      Vercel Web Analytics loads ONLY where Vercel's edge can serve it:
-      `/_vercel/insights/script.js` is a Vercel system route, and on any other
-      host an SPA rewrite answers it with index.html, which the browser parses
-      as JavaScript and rejects with `SyntaxError: Unexpected token '<'` once
-      per page load. See lib/vercelAnalytics.ts for the full story and the
-      build-time gate in frontend/vite.config.ts.
-    */}
-    {vercelAnalyticsEnabled && <Analytics />}
+    <Analytics />
   </ErrorBoundary>
 );
 
