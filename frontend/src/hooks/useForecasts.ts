@@ -2,9 +2,9 @@
  * Forecast data hooks — TanStack Query wrappers around
  * `GET /api/v1/forecasts/bulk` (the weekly Kaggle pipeline's serving path).
  *
- * Offline-first posture: the API refreshes weekly, so the client caches
- * aggressively (30 min stale time), retries only once, and never refetches on
- * window focus. When the API is unreachable (offline field use), callers fall
+ * The API is refreshed daily from the Kaggle dataset. The client polls for
+ * fresh data while keeping the static baseline available for offline use.
+ * When the API is unreachable, callers fall
  * back to the static `ALL_64_DISTRICTS` baseline via `useLiveDistricts`.
  */
 
@@ -26,19 +26,19 @@ export function useForecasts(horizon: ForecastHorizon = '7_days') {
   return useQuery({
     queryKey: ['forecasts', 'bulk', horizon],
     queryFn: async (): Promise<ForecastRow[]> => {
-      const res = await fetch(`/api/v1/forecasts/bulk?horizon=${encodeURIComponent(horizon)}`);
+      const res = await fetch(`/api/v1/forecasts/bulk?horizon=${encodeURIComponent(horizon)}&fresh=${Date.now()}`, { cache: 'no-store' });
       if (!res.ok) {
         throw new Error(`Forecast API responded ${res.status}`);
       }
       return parseBulkResponse(await res.json());
     },
-    // Weekly data: a 30-minute client cache is effectively always fresh,
-    // keeps repeated map mounts off the API, and survives offline reloads
-    // from the query cache for a day.
-    staleTime: 30 * 60 * 1000,
+    // The dataset is updated daily. Poll in the background so an open map
+    // receives the new ingestion without requiring a page reload.
+    staleTime: 5 * 60 * 1000,
     gcTime: 24 * 60 * 60 * 1000,
+    refetchInterval: 5 * 60 * 1000,
     retry: 1,
-    refetchOnWindowFocus: false,
+    refetchOnWindowFocus: true,
   });
 }
 

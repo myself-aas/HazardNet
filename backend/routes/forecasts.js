@@ -138,9 +138,11 @@ router.post('/update', upload.single('file'), (req, res, next) => {
 router.get('/metadata', async (req, res) => {
     try {
         const predictionDate = await getForecastStore().getLatestPredictionDate();
+        res.setHeader('Cache-Control', 'no-store, max-age=0');
         res.json({
             prediction_date: predictionDate,
-            data_source: 'ashifahmedshuvo/hazardnet-auto-forecast-pipeline',
+            data_source: process.env.KAGGLE_DATASET || '7b9ed0ca41d930114260efabb71a7fbf616cb68456d30823ecfc2ac45732fe3c',
+            notebook_source: 'ashifahmedshuvo/hazardnet-auto-forecast-pipeline',
             generated_at: new Date().toISOString(),
         });
     } catch (error) {
@@ -225,10 +227,12 @@ router.get('/bulk', async (req, res) => {
         // store: JS grouping on Firestore, DISTINCT ON in Supabase).
         const rows = await getForecastStore().getLatestForecastsByHorizon(horizon);
 
+        res.setHeader('Cache-Control', 'no-store, max-age=0');
         res.json({
             horizon: horizon,
             count: rows.length,
             generated_at: new Date().toISOString(),
+            data_source: process.env.KAGGLE_DATASET || '7b9ed0ca41d930114260efabb71a7fbf616cb68456d30823ecfc2ac45732fe3c',
             forecasts: rows
         });
     } catch (error) {

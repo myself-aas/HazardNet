@@ -17,6 +17,10 @@ NOTEBOOK_PATH = os.environ.get(
     'KAGGLE_KERNEL',
     'ashifahmedshuvo/hazardnet-auto-forecast-pipeline'
 )
+DATASET_PATH = os.environ.get(
+    'KAGGLE_DATASET',
+    '7b9ed0ca41d930114260efabb71a7fbf616cb68456d30823ecfc2ac45732fe3c'
+)
 MAX_POLL_ATTEMPTS = 120  # 2 hours with 60s intervals
 POLL_INTERVAL = 60  # seconds
 
@@ -63,37 +67,39 @@ def poll_notebook_status():
     return False
 
 def download_outputs():
-    """Download CSV and JSON outputs from Kaggle."""
-    print("\n📥 Downloading outputs...")
-    
+    """Download the daily Kaggle dataset, with notebook output as fallback."""
+    print(f"\n📥 Downloading daily dataset: {DATASET_PATH}")
     output_dir = Path("./backend/data/forecasts")
     output_dir.mkdir(parents=True, exist_ok=True)
-    
-    # Download files
-    cmd = f"kaggle kernels output {NOTEBOOK_PATH} -p {output_dir}"
-    result = os.system(cmd)
-    
-    if result != 0:
-        print("❌ Failed to download outputs")
+    dataset_dir = output_dir / "kaggle_dataset"
+    dataset_dir.mkdir(parents=True, exist_ok=True)
+
+    dataset_cmd = f"kaggle datasets download -d {DATASET_PATH} -p {dataset_dir} --unzip"
+    if os.system(dataset_cmd) != 0:
+        print("❌ Failed to download the daily Kaggle dataset")
         return False
-    
-    # Verify files exist
+
     csv_file = output_dir / "hazardnet_forecasts_latest.csv"
-    json_file = output_dir / "hazardnet_forecasts_latest.json"
-    
-    if csv_file.exists() and json_file.exists():
-        csv_size = csv_file.stat().st_size
-        json_size = json_file.stat().st_size
-        print(f"✅ Downloaded: {csv_file} ({csv_size:,} bytes)")
-        print(f"✅ Downloaded: {json_file} ({json_size:,} bytes)")
-        return True
-    else:
-        print("❌ Output files not found")
-        if csv_file.exists():
-            print(f"   Found: {csv_file}")
-        if json_file.exists():
-            print(f"   Found: {json_file}")
+    candidates = list(dataset_dir.rglob("*.csv"))
+    preferred = [p for p in candidates if p.name == csv_file.name]
+    source_csv = preferred[0] if preferred else (candidates[0] if candidates else None)
+
+    if source_csv is None:
+        print("❌ Daily Kaggle dataset did not contain a CSV")
         return False
+    source_csv.replace(csv_file)
+    print(f"✅ Downloaded dataset CSV: {csv_file} ({csv_file.stat().st_size:,} bytes)")
+
+    # Keep the notebook JSON artifact when available for validation and archives.
+    notebook_dir = output_dir / "notebook_output"
+    notebook_dir.mkdir(parents=True, exist_ok=True)
+    os.system(f"kaggle kernels output {NOTEBOOK_PATH} -p {notebook_dir} >/dev/null 2>&1")
+    json_candidates = list(notebook_dir.rglob("*.json"))
+    if json_candidates:
+        json_candidates[0].replace(output_dir / "hazardnet_forecasts_latest.json")
+    else:
+        print("ℹ️ Notebook JSON output unavailable; CSV remains authoritative")
+    return True
 
 def main():
     print("=" * 60)
