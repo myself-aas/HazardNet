@@ -15,6 +15,7 @@ import {
   isForecastHorizon,
   parseBulkResponse,
   parseForecastRow,
+  parseSnapshotResponse,
   rollupAdm3ToDistricts,
   severityBin,
   type ForecastRow,
@@ -243,6 +244,43 @@ describe('ADM3 → ADM2 rollup (ADR 0006 phase 8d)', () => {
     expect(chattogram?.severity).toBe(0.4); // rollup key 'Chattogram' matches the baseline spelling
     // Nothing matched the upazila names themselves:
     expect(districts.find((d) => d.name === 'Savar')).toBeUndefined();
+  });
+});
+
+describe('parseSnapshotResponse (hourly static snapshot fallback)', () => {
+  const snapshot = {
+    schema: 'hazardnet-forecast-snapshot/v1',
+    generated_at: '2026-09-13T05:05:00.000Z',
+    source: 'kaggle kernels output ashifahmedshuvo/hazardnet-auto-forecast-pipeline',
+    prediction_date: '2026-09-13',
+    horizons: {
+      '7_days': [
+        row({ horizon: '7_days', model_severity: 0.61, physics_severity: 0.55 }),
+        row({ horizon: '7_days', district_id: 30, district_name: 'Jashore', hazard_type: 'Drought' }),
+      ],
+      '15_days': [row({ horizon: '15_days', severity_score: 0.33 })],
+    },
+  };
+
+  it('extracts only the requested horizon and validates rows', () => {
+    expect(parseSnapshotResponse(snapshot, '7_days')).toHaveLength(2);
+    expect(parseSnapshotResponse(snapshot, '15_days')).toHaveLength(1);
+    expect(parseSnapshotResponse(snapshot, '7_days')[0]?.model_severity).toBe(0.61);
+  });
+
+  it('drops malformed rows inside the snapshot', () => {
+    const noisy = {
+      horizons: {
+        '7_days': [row(), { severity_score: 'not-a-number', confidence: 0.9 }, null],
+      },
+    };
+    expect(parseSnapshotResponse(noisy, '7_days')).toHaveLength(1);
+  });
+
+  it('returns [] for missing or malformed payloads (never throws)', () => {
+    expect(parseSnapshotResponse(null, '7_days')).toEqual([]);
+    expect(parseSnapshotResponse({}, '7_days')).toEqual([]);
+    expect(parseSnapshotResponse({ horizons: { '7_days': 'oops' } }, '7_days')).toEqual([]);
   });
 });
 

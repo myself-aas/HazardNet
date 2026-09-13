@@ -174,6 +174,52 @@ export function parseBulkResponse(payload: unknown): ForecastRow[] {
 }
 
 // ─────────────────────────────────────────────────────────────────────────
+// Static hourly snapshot — the website's committed fallback data
+// ─────────────────────────────────────────────────────────────────────────
+// The hourly GitHub workflow (hourly_forecast.yml) downloads the Kaggle
+// notebook's CSV output and regenerates this file inside the website bundle
+// (scripts/build_forecast_snapshot.mjs), so every deployment of the codebase
+// ships with forecasts at most one hour behind the latest notebook run —
+// even when the forecast API/store is unreachable.
+
+/** Public path of the committed hourly snapshot (frontend/public/data/...). */
+export const FORECAST_SNAPSHOT_URL = '/data/forecasts-latest.json';
+
+/** Shape of frontend/public/data/forecasts-latest.json (schema v1). */
+export interface ForecastSnapshot {
+  schema?: string;
+  generated_at?: string;
+  source?: string;
+  prediction_date?: string | null;
+  horizons?: Partial<Record<string, unknown[]>>;
+}
+
+/** Parse one horizon's rows out of the static snapshot payload. */
+export function parseSnapshotResponse(payload: unknown, horizon: ForecastHorizon): ForecastRow[] {
+  if (!payload || typeof payload !== 'object') return [];
+  const horizons = (payload as ForecastSnapshot).horizons;
+  if (!horizons || typeof horizons !== 'object') return [];
+  const rows = horizons[horizon];
+  if (!Array.isArray(rows)) return [];
+  return rows.map(parseForecastRow).filter((r): r is ForecastRow => r !== null);
+}
+
+/**
+ * Fetch the committed hourly snapshot for one horizon. Used as the fallback
+ * when the live API is unreachable — resolves to [] (not throw) when the
+ * snapshot itself is missing, so callers degrade to the static baseline.
+ */
+export async function fetchStaticForecastSnapshot(horizon: ForecastHorizon): Promise<ForecastRow[]> {
+  try {
+    const res = await fetch(`${FORECAST_SNAPSHOT_URL}?fresh=${Date.now()}`, { cache: 'no-store' });
+    if (!res.ok) return [];
+    return parseSnapshotResponse(await res.json(), horizon);
+  } catch {
+    return [];
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────
 // Binning — parity with backend/routes/forecasts.js GET /
 // ─────────────────────────────────────────────────────────────────────────
 
