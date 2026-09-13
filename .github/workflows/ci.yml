@@ -305,34 +305,24 @@ jobs:
         id: flags
         run: echo "has_token=${{ secrets.VERCEL_TOKEN != '' }}" >> "$GITHUB_OUTPUT"
 
-      # Diagnostics only — never fails the job. When Vercel refuses a deploy its
-      # error is "You do not have access to the specified account", which says
-      # nothing about *which* account, so print what the token can actually
-      # see. That is the difference between a wrong/stale secret and a token
-      # whose account is not a member of the team in VERCEL_ORG_ID.
-      - name: Describe Vercel credentials
+      # Resolves the org + project the token may actually use, and exports them
+      # for the deploy step. The CLI trusts VERCEL_ORG_ID / VERCEL_PROJECT_ID
+      # blindly, so a stale secret in either produces a 403 the CLI reports as
+      # "Could not retrieve Project Settings. To link your Project, remove the
+      # `.vercel` directory and deploy again." — advice that cannot help in CI,
+      # where no `.vercel` directory exists. The script looks the project up by
+      # name instead, so a stale id degrades to a notice rather than a failure.
+      # See scripts/ci/resolve-vercel-scope.sh and
+      # docs/audits/2026-09-14-vercel-deploy-403-project-unresolved.md.
+      - name: Resolve Vercel scope
         if: steps.flags.outputs.has_token == 'true'
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-        run: |
-          # `api`/`hdr` keep the probes short; `|| true` inside each
-          # substitution keeps a failed probe from aborting the step under the
-          # runner's default `bash -e`.
-          api=https://api.vercel.com
-          hdr="Authorization: Bearer $VERCEL_TOKEN"
-          who=$(curl -fsS -m 20 -H "$hdr" "$api/v2/user" 2>/dev/null \
-                  | jq -r '.user.username // .user.email // "unknown"' 2>/dev/null || true)
-          teams=$(curl -fsS -m 20 -H "$hdr" "$api/v2/teams" 2>/dev/null \
-                    | jq -r '[.teams[]?.slug] | join(", ")' 2>/dev/null || true)
-          [ -n "$who" ] || who=unavailable
-          [ -n "$teams" ] || teams=unavailable
-          echo "token user     : $who"
-          echo "visible teams  : $teams"
-          echo "configured ids : org=$VERCEL_ORG_ID project=$VERCEL_PROJECT_ID"
-          curl -fsS -m 20 -H "$hdr" "$api/v2/teams/$VERCEL_ORG_ID" >/dev/null 2>&1 || \
-            echo "::warning::VERCEL_ORG_ID is not readable as a team by this token (expected if the project lives in a personal account — otherwise the token is not a member of that team, or the secret is stale)."
+          VERCEL_ORG_SLUG: aas-core
+          VERCEL_PROJECT_NAME: hazardnet
+        run: bash scripts/ci/resolve-vercel-scope.sh
 
       # Vercel CLI directly instead of amondnet/vercel-action@v25: that action
       # bundles CLI 25 (2023) and runs on the Node 20 Actions runtime GitHub is
@@ -341,13 +331,14 @@ jobs:
       # `team_…` id — the id form is what fails with "You do not have access to
       # the specified account". The documented CI pattern is the VERCEL_ORG_ID
       # / VERCEL_PROJECT_ID environment variables, which scope by id without
-      # `--scope`. See docs/audits/2026-09-14-actions-runtime-and-vercel-deploy.md.
+      # `--scope` — read here from `$GITHUB_ENV`, where `Resolve Vercel scope`
+      # puts the ids that actually work. Do NOT re-declare them in this step's
+      # `env:`, which would shadow the resolved values with the raw secrets.
+      # See docs/audits/2026-09-14-actions-runtime-and-vercel-deploy.md.
       - name: Deploy to Vercel Preview
         if: steps.flags.outputs.has_token == 'true'
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
         run: |
           url=$(npx --yes vercel@50 deploy --yes \
             -m githubDeployment=1 \
@@ -380,65 +371,26 @@ jobs:
         id: flags
         run: echo "has_token=${{ secrets.VERCEL_TOKEN != '' }}" >> "$GITHUB_OUTPUT"
 
-      # Diagnostics only — see deploy-preview for why.
-      - name: Describe Vercel credentials
+      # Resolves the org + project the token may actually use — see
+      # deploy-preview's `Resolve Vercel scope` for the full rationale.
+      - name: Resolve Vercel scope
         if: steps.flags.outputs.has_token == 'true'
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-        run: |
-          # `api`/`hdr` keep the probes short; `|| true` inside each
-          # substitution keeps a failed probe from aborting the step under the
-          # runner's default `bash -e`.
-          api=https://api.vercel.com
-          hdr="Authorization: Bearer $VERCEL_TOKEN"
-          who=$(curl -fsS -m 20 -H "$hdr" "$api/v2/user" 2>/dev/null \
-                  | jq -r '.user.username // .user.email // "unknown"' 2>/dev/null || true)
-          teams=$(curl -fsS -m 20 -H "$hdr" "$api/v2/teams" 2>/dev/null \
-                    | jq -r '[.teams[]?.slug] | join(", ")' 2>/dev/null || true)
-          [ -n "$who" ] || who=unavailable
-          [ -n "$teams" ] || teams=unavailable
-          echo "token user     : $who"
-          echo "visible teams  : $teams"
-          echo "configured ids : org=$VERCEL_ORG_ID project=$VERCEL_PROJECT_ID"
-          curl -fsS -m 20 -H "$hdr" "$api/v2/teams/$VERCEL_ORG_ID" >/dev/null 2>&1 || \
-            echo "::warning::VERCEL_ORG_ID is not readable as a team by this token (expected if the project lives in a personal account — otherwise the token is not a member of that team, or the secret is stale)."
+          VERCEL_ORG_SLUG: aas-core
+          VERCEL_PROJECT_NAME: hazardnet
+        run: bash scripts/ci/resolve-vercel-scope.sh
 
       # Vercel CLI directly — see deploy-preview for the rationale (dead
-      # action, CLI 25, `--scope` given a team id).
-
-      # Diagnostics only — see deploy-preview for why.
-      - name: Describe Vercel credentials
-        if: steps.flags.outputs.has_token == 'true'
-        env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-        run: |
-          # `api`/`hdr` keep the probes short; `|| true` inside each
-          # substitution keeps a failed probe from aborting the step under the
-          # runner's default `bash -e`.
-          api=https://api.vercel.com
-          hdr="Authorization: Bearer $VERCEL_TOKEN"
-          who=$(curl -fsS -m 20 -H "$hdr" "$api/v2/user" 2>/dev/null \
-                  | jq -r '.user.username // .user.email // "unknown"' 2>/dev/null || true)
-          teams=$(curl -fsS -m 20 -H "$hdr" "$api/v2/teams" 2>/dev/null \
-                    | jq -r '[.teams[]?.slug] | join(", ")' 2>/dev/null || true)
-          [ -n "$who" ] || who=unavailable
-          [ -n "$teams" ] || teams=unavailable
-          echo "token user     : $who"
-          echo "visible teams  : $teams"
-          echo "configured ids : org=$VERCEL_ORG_ID project=$VERCEL_PROJECT_ID"
-          curl -fsS -m 20 -H "$hdr" "$api/v2/teams/$VERCEL_ORG_ID" >/dev/null 2>&1 || \
-            echo "::warning::VERCEL_ORG_ID is not readable as a team by this token (expected if the project lives in a personal account — otherwise the token is not a member of that team, or the secret is stale)."
-
+      # action, CLI 25, `--scope` given a team id). The resolved ids arrive via
+      # `$GITHUB_ENV`; re-declaring them here would shadow them with the raw
+      # secrets.
       - name: Deploy to Vercel Production
         if: steps.flags.outputs.has_token == 'true'
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
         run: |
           url=$(npx --yes vercel@50 deploy --prod --yes \
             -m githubDeployment=1 \

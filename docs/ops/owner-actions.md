@@ -69,10 +69,14 @@ Also refresh your own local `.env` from `.env.example` (gitignored — verify wi
   old Kaggle `key` in `~/.kaggle/kaggle.json` returns 401.
 - New values are live: `kaggle datasets list` works; Supabase pooler URL connects
   (`psql "<new-url>" -c 'select 1'`); Codecov upload succeeds on the next CI run.
-- The Vercel deploy path works: the next `Deploy Preview (Vercel)` job logs the
-  token identity and visible teams in its `Describe Vercel credentials` step.
-  If that step warns that `VERCEL_ORG_ID` is not readable, the token is not a
-  member of the team that owns the project (or the id is stale) — see
+- The Vercel deploy path works: the next `Deploy Preview (Vercel)` job's
+  `Resolve Vercel scope` step prints the token user, its visible teams and the
+  org/project it resolved. The ids no longer have to be correct in the secrets
+  for the deploy to work — the step resolves them from the token (see
+  `docs/audits/2026-09-14-vercel-deploy-403-project-unresolved.md`) — but they
+  should still be refreshed so the `::notice::` about a stale secret stops.
+  If that step *fails*, the token is not a member of the team that owns the
+  project; re-copy the ids and re-issue the token from inside that team. See
   `docs/audits/2026-09-14-actions-runtime-and-vercel-deploy.md`.
 - Re-run the leak scan any time: `bash scripts/check-secrets.sh`.
 

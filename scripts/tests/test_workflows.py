@@ -148,3 +148,39 @@ def test_manual_ingest_triggers_on_csv_push(workflows):
     assert 'workflow_dispatch' in (doc.get('on') or {}), (
         'manual_forecast_ingest.yml must support manual dispatch'
     )
+
+
+def test_vercel_deploy_uses_resolved_scope(workflows):
+    """The Vercel deploy steps must not re-declare VERCEL_ORG_ID/VERCEL_PROJECT_ID.
+
+    `Resolve Vercel scope` (scripts/ci/resolve-vercel-scope.sh) works out which
+    ids the token may actually use and exports them through $GITHUB_ENV. A
+    step-level `env:` wins over $GITHUB_ENV, so re-declaring the raw secrets on
+    the deploy step silently restores the stale values — and with them the 403
+    the CLI reports as "Could not retrieve Project Settings"
+    (docs/audits/2026-09-14-vercel-deploy-403-project-unresolved.md).
+    """
+    script = ROOT / 'scripts' / 'ci' / 'resolve-vercel-scope.sh'
+    assert script.is_file(), f'missing resolver script: {script}'
+
+    problems = []
+    for job_id, job in workflows['ci.yml']['jobs'].items():
+        steps = job.get('steps') or []
+        deploy = [s for s in steps if str(s.get('name', '')).startswith('Deploy to Vercel')]
+        if not deploy:
+            continue
+        resolver = [s for s in steps if str(s.get('name', '')).startswith('Resolve Vercel scope')]
+        if not resolver:
+            problems.append(f'{job_id}: deploys to Vercel without a `Resolve Vercel scope` step')
+        for step in resolver:
+            if 'resolve-vercel-scope.sh' not in str(step.get('run', '')):
+                problems.append(f'{job_id}: `Resolve Vercel scope` does not call the resolver script')
+        for step in deploy:
+            env = step.get('env') or {}
+            for key in ('VERCEL_ORG_ID', 'VERCEL_PROJECT_ID'):
+                if key in env:
+                    problems.append(
+                        f'{job_id} step `{step.get("name")}`: re-declares {key}, which shadows '
+                        f'the value resolved into $GITHUB_ENV'
+                    )
+    assert not problems, 'Vercel deploy scope wiring:\n' + '\n'.join(problems)

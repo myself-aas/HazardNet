@@ -88,17 +88,43 @@ organization by **slug** only; handing it a `team_…` id fails with
 (`scope-not-accessible`). Details:
 `docs/audits/2026-09-14-actions-runtime-and-vercel-deploy.md`.
 
+Those two ids are **resolved at deploy time, not trusted from the secrets**.
+`Resolve Vercel scope` (`scripts/ci/resolve-vercel-scope.sh`) asks the API what
+the token can see and exports the working ids into `$GITHUB_ENV`, in this
+order: the configured secrets when they are usable → the team named by
+`VERCEL_ORG_SLUG` (`aas-core`) → that slug itself → the token's own personal
+account. Each candidate is verified the way the CLI uses it (`GET /v2/teams/<org>`
+must not be 403, `GET /v9/projects/<idOrName>?teamId=<org>` must be 200), so a
+stale secret downgrades to a `::notice::` instead of failing the deploy. A
+*team-scoped* token is supported: it answers 403 on `/v2/user` — without the
+`invalidToken` flag a revoked token carries — and that is not treated as fatal.
+The deploy steps must not re-declare those two variables in `env:` — a
+step-level `env:` beats `$GITHUB_ENV` and would reinstate the stale values
+(`scripts/tests/test_workflows.py::test_vercel_deploy_uses_resolved_scope`).
+
 If `Deploy Preview (Vercel)` or `Deploy Production (Vercel)` fails:
 
-1. Read the `Describe Vercel credentials` step that runs first — it prints the
-   user and teams the `VERCEL_TOKEN` can see, plus the configured ids.
-2. A warning that `VERCEL_ORG_ID is not readable as a team by this token` means
-   either the secret is stale or the token's account is not a member of the
-   team that owns the project. Re-copy both ids from the Vercel project
-   dashboard (**Settings → General**) and re-issue the token from an account
-   inside that team.
-3. A *skipped* deploy job (rather than a failed one) just means
+1. Read the `Resolve Vercel scope` step that runs first — it prints the token's
+   user, the teams the token can see, and the org/project it resolved.
+2. `Could not retrieve Project Settings. To link your Project, remove the
+   `.vercel` directory and deploy again.` does **not** mean a local link file:
+   CI has no `.vercel` directory. In the CLI that message is raised only for an
+   HTTP **403** with `forbidden` / `team_unauthorized`, i.e. a valid token whose
+   org/project pair it may not use — the case the resolver handles. See
+   `docs/audits/2026-09-14-vercel-deploy-403-project-unresolved.md`.
+3. If the resolver itself fails, it prints the token's user, its visible teams,
+   and a `path | HTTP | error` table for every probe. A row of 403s with
+   `team_unauthorized` means the token cannot reach that team; a 403 carrying
+   `invalidToken` means the credential is dead and must be re-issued. Re-copy
+   both ids from the project dashboard (**Settings → General**); for the second
+   case re-issue `VERCEL_TOKEN` from an account inside that team.
+4. A *skipped* deploy job (rather than a failed one) just means
    `VERCEL_TOKEN` is unset — the steps log a `::notice::` and exit cleanly.
+
+Note that Vercel's **Git integration** deploys previews and production
+independently of this job (that is the primary path — push to `main`), so a red
+deploy job does not necessarily mean the site is stale; check the `Vercel`
+commit status as well.
 
 ### Manual Deployment (Emergency Only)
 
