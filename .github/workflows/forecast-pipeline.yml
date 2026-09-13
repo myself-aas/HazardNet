@@ -30,14 +30,29 @@ jobs:
       
       - name: Check for required secrets
         run: |
-          if [ -z "${{ secrets.KAGGLE_USERNAME }}" ]; then
-            echo "Error: KAGGLE_USERNAME secret is not set"
-            exit 1
-          fi
-          if [ -z "${{ secrets.KAGGLE_KEY }}" ]; then
-            echo "Error: KAGGLE_KEY secret is not set"
-            exit 1
-          fi
+          for secret in KAGGLE_USERNAME KAGGLE_KEY BACKEND_API_KEY; do
+            if [ -z "${!secret}" ]; then
+              echo "Error: $secret secret is not set"
+              exit 1
+            fi
+          done
+        env:
+          KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
+          KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
+          BACKEND_API_KEY: ${{ secrets.BACKEND_API_KEY }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Install backend dependencies
+        run: pnpm install --frozen-lockfile
       
       - name: Install Kaggle CLI
         run: |
@@ -60,7 +75,28 @@ jobs:
       - name: Validate Forecast Data
         run: |
           python scripts/validate_forecasts.py
-      
+
+      - name: Ingest refreshed CSV into backend
+        env:
+          BACKEND_API_KEY: ${{ secrets.BACKEND_API_KEY }}
+          PORT: '3001'
+        run: |
+          node backend/server.js > backend-server.log 2>&1 &
+          BACKEND_PID=$!
+          trap 'kill "$BACKEND_PID" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 30); do
+            if curl -fsS "http://127.0.0.1:${PORT}/health" >/dev/null; then
+              break
+            fi
+            sleep 2
+          done
+          curl -fsS -X POST "http://127.0.0.1:${PORT}/api/v1/forecasts/update" \
+            -H "Authorization: Bearer ${BACKEND_API_KEY}" \
+            -F "file=@backend/data/forecasts/hazardnet_forecasts_latest.csv" \
+            -o ingest-response.json
+          jq -e '.status == "success"' ingest-response.json >/dev/null
+          cat ingest-response.json
+
       - name: Archive Historical Forecasts
         run: |
           TIMESTAMP=$(date +%Y-%m-%d)

@@ -143,7 +143,7 @@ router.get('/metadata', async (req, res) => {
         res.setHeader('Cache-Control', 'no-store, max-age=0');
         res.json({
             prediction_date: predictionDate,
-            ingestion_timestamp: ingestionTimestamp || now.toISOString(),
+            ingestion_timestamp: ingestionTimestamp,
             data_source: process.env.KAGGLE_DATASET || '7b9ed0ca41d930114260efabb71a7fbf616cb68456d30823ecfc2ac45732fe3c',
             notebook_source: 'ashifahmedshuvo/hazardnet-auto-forecast-pipeline',
             datasets: [

@@ -78,47 +78,64 @@ export const DistrictDetailPage: React.FC = () => {
   const [ingestionTimestamp, setIngestionTimestamp] = useState<string | null>(null);
 
   useEffect(() => {
-    const controller = new AbortController();
-    fetch('/api/v1/forecasts/metadata', { signal: controller.signal })
-      .then((response) => response.ok ? response.json() : null)
-      .then((metadata: { prediction_date?: string; data_source?: string; ingestion_timestamp?: string } | null) => {
-        if (!metadata?.prediction_date) return;
-        setLivePredictionDate(metadata.prediction_date.slice(0, 10));
+    let cancelled = false;
+
+    const refreshMetadata = async () => {
+      try {
+        const response = await fetch(`/api/v1/forecasts/metadata?fresh=${Date.now()}`, {
+          cache: 'no-store',
+        });
+        if (!response.ok) return;
+        const metadata: {
+          prediction_date?: string;
+          data_source?: string;
+          ingestion_timestamp?: string | null;
+        } = await response.json();
+        if (cancelled) return;
+        setLivePredictionDate(metadata.prediction_date?.slice(0, 10) ?? null);
         setLiveSource(metadata.data_source ?? null);
         setIngestionTimestamp(metadata.ingestion_timestamp ?? null);
-      })
-      .catch(() => undefined);
-    return () => controller.abort();
+      } catch {
+        // Keep the last successful Kaggle snapshot visible during a transient outage.
+      }
+    };
+
+    refreshMetadata();
+    const interval = window.setInterval(refreshMetadata, 5 * 60 * 1000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(interval);
+    };
   }, []);
 
   const data: GranularDisasterData = useMemo(() => {
     const fallback = getGranularDisasterData(districtId);
     if (!livePredictionDate) return fallback;
     const prediction = new Date(`${livePredictionDate}T00:00:00Z`);
-    const end = new Date(prediction.getTime() + 7 * 86_400_000);
+    const end = new Date(prediction.getTime() + 6 * 86_400_000);
     const formatDate = (value: Date) => value.toLocaleDateString('en-GB', {
       day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC'
     });
     
-    // Format ingestion timestamp with timezone (use local timezone or BST)
-    let formattedIngestionTime = `${livePredictionDate} 06:00 BST`;
-    if (ingestionTimestamp) {
-      try {
-        const ingestionDate = new Date(ingestionTimestamp);
-        const dateStr = ingestionDate.toLocaleDateString('en-GB', {
-          year: 'numeric', month: '2-digit', day: '2-digit', timeZone: 'Europe/London'
-        });
-        const timeStr = ingestionDate.toLocaleTimeString('en-GB', {
-          hour: '2-digit', minute: '2-digit', timeZone: 'Europe/London'
-        });
-        // Determine if BST or GMT
-        const tzAbbr = ingestionDate.toLocaleString('en-GB', { timeZone: 'Europe/London', timeZoneName: 'short' }).split(' ').pop();
-        formattedIngestionTime = `${dateStr.split('/').reverse().join('-')} ${timeStr} ${tzAbbr || 'BST'}`;
-      } catch (e) {
-        // Fallback to simple format
-        formattedIngestionTime = `${livePredictionDate} 06:00 BST`;
-      }
-    }
+    const formattedIngestionTime = ingestionTimestamp
+      ? (() => {
+          const ingestionDate = new Date(ingestionTimestamp);
+          if (Number.isNaN(ingestionDate.getTime())) return 'Unavailable';
+          const dateStr = ingestionDate.toLocaleDateString('en-CA', {
+            timeZone: 'Europe/London',
+          });
+          const timeStr = ingestionDate.toLocaleTimeString('en-GB', {
+            hour: '2-digit',
+            minute: '2-digit',
+            timeZone: 'Europe/London',
+          });
+          const tzAbbr = ingestionDate.toLocaleString('en-GB', {
+            timeZone: 'Europe/London',
+            timeZoneName: 'short',
+          }).split(' ').pop();
+          return `${dateStr} ${timeStr} ${tzAbbr || ''}`.trim();
+        })()
+      : 'Awaiting Kaggle ingestion';
     
     return {
       ...fallback,
