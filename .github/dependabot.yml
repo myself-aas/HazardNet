@@ -1,0 +1,23 @@
+# Keeps the Actions runtime current: on 2026-09-14 every workflow was pinned to
+# actions that still declared `runs.using: node20`, which GitHub removes from
+# hosted runners in September 2026 — the pipelines would have stopped loading
+# rather than failing loudly. See
+# docs/audits/2026-09-14-actions-runtime-and-vercel-deploy.md.
+#
+# Scope is deliberately narrow: GitHub Actions only. The npm dependency tree is
+# covered by `npm audit` in the security-audit job (scripts/npm-audit-ci.mjs)
+# with its own accepted-risk expiries, so it is not duplicated here.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 1
+    groups:
+      actions:
+        patterns: ['*']
+    commit-message:
+      prefix: 'ci'
+      include: scope

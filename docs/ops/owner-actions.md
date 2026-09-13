@@ -69,6 +69,11 @@ Also refresh your own local `.env` from `.env.example` (gitignored — verify wi
   old Kaggle `key` in `~/.kaggle/kaggle.json` returns 401.
 - New values are live: `kaggle datasets list` works; Supabase pooler URL connects
   (`psql "<new-url>" -c 'select 1'`); Codecov upload succeeds on the next CI run.
+- The Vercel deploy path works: the next `Deploy Preview (Vercel)` job logs the
+  token identity and visible teams in its `Describe Vercel credentials` step.
+  If that step warns that `VERCEL_ORG_ID` is not readable, the token is not a
+  member of the team that owns the project (or the id is stale) — see
+  `docs/audits/2026-09-14-actions-runtime-and-vercel-deploy.md`.
 - Re-run the leak scan any time: `bash scripts/check-secrets.sh`.
 
 > Optional hygiene (NOT a substitute for rotation): purge the values from git

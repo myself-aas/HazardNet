@@ -24,10 +24,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '20'
           cache: 'npm'
@@ -40,7 +40,7 @@ jobs:
 
       - name: Upload backend coverage
         if: always()
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           files: ./coverage/backend/lcov.info
           flags: backend
@@ -54,10 +54,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '20'
           cache: 'npm'
@@ -81,7 +81,7 @@ jobs:
 
       - name: Upload frontend coverage
         if: always()
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           files: ./frontend/coverage/lcov.info
           flags: frontend
@@ -95,16 +95,16 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '20'
           cache: 'npm'
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.11'
 
@@ -151,10 +151,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '20'
           cache: 'npm'
@@ -188,7 +188,7 @@ jobs:
 
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: playwright-report
           path: playwright-report/
@@ -202,10 +202,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '20'
           cache: 'npm'
@@ -247,7 +247,7 @@ jobs:
 
       - name: Upload build artifacts
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: frontend-dist
           path: frontend/dist/
@@ -260,10 +260,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '20'
           cache: 'npm'
@@ -299,20 +299,66 @@ jobs:
     # deploy/skip steps gate on that output instead.
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Resolve Vercel deploy flag
         id: flags
         run: echo "has_token=${{ secrets.VERCEL_TOKEN != '' }}" >> "$GITHUB_OUTPUT"
 
+      # Diagnostics only — never fails the job. When Vercel refuses a deploy its
+      # error is "You do not have access to the specified account", which says
+      # nothing about *which* account, so print what the token can actually
+      # see. That is the difference between a wrong/stale secret and a token
+      # whose account is not a member of the team in VERCEL_ORG_ID.
+      - name: Describe Vercel credentials
+        if: steps.flags.outputs.has_token == 'true'
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          # `api`/`hdr` keep the probes short; `|| true` inside each
+          # substitution keeps a failed probe from aborting the step under the
+          # runner's default `bash -e`.
+          api=https://api.vercel.com
+          hdr="Authorization: Bearer $VERCEL_TOKEN"
+          who=$(curl -fsS -m 20 -H "$hdr" "$api/v2/user" 2>/dev/null \
+                  | jq -r '.user.username // .user.email // "unknown"' 2>/dev/null || true)
+          teams=$(curl -fsS -m 20 -H "$hdr" "$api/v2/teams" 2>/dev/null \
+                    | jq -r '[.teams[]?.slug] | join(", ")' 2>/dev/null || true)
+          [ -n "$who" ] || who=unavailable
+          [ -n "$teams" ] || teams=unavailable
+          echo "token user     : $who"
+          echo "visible teams  : $teams"
+          echo "configured ids : org=$VERCEL_ORG_ID project=$VERCEL_PROJECT_ID"
+          curl -fsS -m 20 -H "$hdr" "$api/v2/teams/$VERCEL_ORG_ID" >/dev/null 2>&1 || \
+            echo "::warning::VERCEL_ORG_ID is not readable as a team by this token (expected if the project lives in a personal account — otherwise the token is not a member of that team, or the secret is stale)."
+
+      # Vercel CLI directly instead of amondnet/vercel-action@v25: that action
+      # bundles CLI 25 (2023) and runs on the Node 20 Actions runtime GitHub is
+      # removing. It also forwarded `scope: ${{ secrets.VERCEL_ORG_ID }}` as
+      # `--scope`, and `--scope` takes a team *slug* (`aas-core`), not a
+      # `team_…` id — the id form is what fails with "You do not have access to
+      # the specified account". The documented CI pattern is the VERCEL_ORG_ID
+      # / VERCEL_PROJECT_ID environment variables, which scope by id without
+      # `--scope`. See docs/audits/2026-09-14-actions-runtime-and-vercel-deploy.md.
       - name: Deploy to Vercel Preview
         if: steps.flags.outputs.has_token == 'true'
-        uses: amondnet/vercel-action@v25
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          scope: ${{ secrets.VERCEL_ORG_ID }}
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          url=$(npx --yes vercel@50 deploy --yes \
+            -m githubDeployment=1 \
+            -m githubOrg="${GITHUB_REPOSITORY_OWNER}" \
+            -m githubRepo="${GITHUB_REPOSITORY#*/}" \
+            -m githubCommitSha="${GITHUB_SHA}" \
+            -m githubCommitRef="${GITHUB_REF_NAME}" \
+            -m githubCommitAuthorLogin="${GITHUB_ACTOR}" \
+            -m githubCommitMessage="$(git log -1 --pretty=%s)")
+          echo "Vercel preview: $url"
+          echo "Vercel preview: $url" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Skip notice (no Vercel token)
         if: steps.flags.outputs.has_token != 'true'
@@ -328,21 +374,56 @@ jobs:
     # resolved step output instead.
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Resolve Vercel deploy flag
         id: flags
         run: echo "has_token=${{ secrets.VERCEL_TOKEN != '' }}" >> "$GITHUB_OUTPUT"
 
+      # Diagnostics only — see deploy-preview for why.
+      - name: Describe Vercel credentials
+        if: steps.flags.outputs.has_token == 'true'
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          # `api`/`hdr` keep the probes short; `|| true` inside each
+          # substitution keeps a failed probe from aborting the step under the
+          # runner's default `bash -e`.
+          api=https://api.vercel.com
+          hdr="Authorization: Bearer $VERCEL_TOKEN"
+          who=$(curl -fsS -m 20 -H "$hdr" "$api/v2/user" 2>/dev/null \
+                  | jq -r '.user.username // .user.email // "unknown"' 2>/dev/null || true)
+          teams=$(curl -fsS -m 20 -H "$hdr" "$api/v2/teams" 2>/dev/null \
+                    | jq -r '[.teams[]?.slug] | join(", ")' 2>/dev/null || true)
+          [ -n "$who" ] || who=unavailable
+          [ -n "$teams" ] || teams=unavailable
+          echo "token user     : $who"
+          echo "visible teams  : $teams"
+          echo "configured ids : org=$VERCEL_ORG_ID project=$VERCEL_PROJECT_ID"
+          curl -fsS -m 20 -H "$hdr" "$api/v2/teams/$VERCEL_ORG_ID" >/dev/null 2>&1 || \
+            echo "::warning::VERCEL_ORG_ID is not readable as a team by this token (expected if the project lives in a personal account — otherwise the token is not a member of that team, or the secret is stale)."
+
+      # Vercel CLI directly — see deploy-preview for the rationale (dead
+      # action, CLI 25, `--scope` given a team id).
       - name: Deploy to Vercel Production
         if: steps.flags.outputs.has_token == 'true'
-        uses: amondnet/vercel-action@v25
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          vercel-args: '--prod'
-          scope: ${{ secrets.VERCEL_ORG_ID }}
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          url=$(npx --yes vercel@50 deploy --prod --yes \
+            -m githubDeployment=1 \
+            -m githubOrg="${GITHUB_REPOSITORY_OWNER}" \
+            -m githubRepo="${GITHUB_REPOSITORY#*/}" \
+            -m githubCommitSha="${GITHUB_SHA}" \
+            -m githubCommitRef="${GITHUB_REF_NAME}" \
+            -m githubCommitAuthorLogin="${GITHUB_ACTOR}" \
+            -m githubCommitMessage="$(git log -1 --pretty=%s)")
+          echo "Vercel production: $url"
+          echo "Vercel production: $url" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Skip notice (no Vercel token)
         if: steps.flags.outputs.has_token != 'true'

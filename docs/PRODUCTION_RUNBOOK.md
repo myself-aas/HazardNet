@@ -78,6 +78,28 @@ gh pr create --base main --head feature-branch
 # Preview URL: https://hazardnet-pr-123.vercel.app
 ```
 
+#### How CI deploys, and how to triage a failed deploy
+
+Both deploy jobs run the Vercel CLI directly (`npx --yes vercel@50 deploy`),
+scoped by the `VERCEL_ORG_ID` / `VERCEL_PROJECT_ID` environment variables — not
+by a third-party action, and not by `vercel --scope`. `--scope` selects an
+organization by **slug** only; handing it a `team_…` id fails with
+`You do not have access to the specified account`
+(`scope-not-accessible`). Details:
+`docs/audits/2026-09-14-actions-runtime-and-vercel-deploy.md`.
+
+If `Deploy Preview (Vercel)` or `Deploy Production (Vercel)` fails:
+
+1. Read the `Describe Vercel credentials` step that runs first — it prints the
+   user and teams the `VERCEL_TOKEN` can see, plus the configured ids.
+2. A warning that `VERCEL_ORG_ID is not readable as a team by this token` means
+   either the secret is stale or the token's account is not a member of the
+   team that owns the project. Re-copy both ids from the Vercel project
+   dashboard (**Settings → General**) and re-issue the token from an account
+   inside that team.
+3. A *skipped* deploy job (rather than a failed one) just means
+   `VERCEL_TOKEN` is unset — the steps log a `::notice::` and exit cleanly.
+
 ### Manual Deployment (Emergency Only)
 
 #### Deploy to Vercel (CLI)
