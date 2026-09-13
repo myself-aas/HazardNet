@@ -2,6 +2,7 @@ import { useEffect, lazy, Suspense } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Analytics } from '@vercel/analytics/react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import SignUpPage from './pages/SignUpPage';
 import LoginPage from './pages/LoginPage';
@@ -224,6 +225,7 @@ const App: React.FC = () => (
         </Router>
       </QueryClientProvider>
     </AuthProvider>
+    <Analytics />
   </ErrorBoundary>
 );
 
