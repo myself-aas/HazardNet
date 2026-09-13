@@ -78,53 +78,34 @@ gh pr create --base main --head feature-branch
 # Preview URL: https://hazardnet-pr-123.vercel.app
 ```
 
-#### How CI deploys, and how to triage a failed deploy
+#### How CI deploys
 
-Both deploy jobs run the Vercel CLI directly (`npx --yes vercel@50 deploy`),
-scoped by the `VERCEL_ORG_ID` / `VERCEL_PROJECT_ID` environment variables — not
-by a third-party action, and not by `vercel --scope`. `--scope` selects an
-organization by **slug** only; handing it a `team_…` id fails with
-`You do not have access to the specified account`
-(`scope-not-accessible`). Details:
-`docs/audits/2026-09-14-actions-runtime-and-vercel-deploy.md`.
+**Vercel's Git integration does the deploying — CI holds no Vercel
+credentials.** On a pull request Vercel builds a preview; on a push to `main`
+it builds production. The signal to watch is the **`Vercel` commit status**
+(linked to `vercel.com/<team>/hazardnet/<deployment>`), not a GitHub Actions
+job.
 
-Those two ids are **resolved at deploy time, not trusted from the secrets**.
-`Resolve Vercel scope` (`scripts/ci/resolve-vercel-scope.sh`) asks the API what
-the token can see and exports the working ids into `$GITHUB_ENV`, in this
-order: the configured secrets when they are usable → the team named by
-`VERCEL_ORG_SLUG` (`aas-core`) → that slug itself → the token's own personal
-account. Each candidate is verified the way the CLI uses it (`GET /v2/teams/<org>`
-must not be 403, `GET /v9/projects/<idOrName>?teamId=<org>` must be 200), so a
-stale secret downgrades to a `::notice::` instead of failing the deploy. A
-*team-scoped* token is supported: it answers 403 on `/v2/user` — without the
-`invalidToken` flag a revoked token carries — and that is not treated as fatal.
-The deploy steps must not re-declare those two variables in `env:` — a
-step-level `env:` beats `$GITHUB_ENV` and would reinstate the stale values
-(`scripts/tests/test_workflows.py::test_vercel_deploy_uses_resolved_scope`).
+CI used to run `npx vercel deploy` from `deploy-preview` / `deploy-production`
+jobs, scoped by `VERCEL_TOKEN` / `VERCEL_ORG_ID` / `VERCEL_PROJECT_ID`. Those
+jobs were removed on 2026-09-14: the ids in the secrets were stale, so every run
+failed with a 403 the CLI reports as *"Could not retrieve Project Settings. To
+link your Project, remove the `.vercel` directory and deploy again."* — advice
+that cannot be followed in CI, which has no `.vercel` directory at all. The
+failure had nothing to do with the code under test, and the credential could
+not be corrected from CI. Diagnosis:
+`docs/audits/2026-09-14-vercel-deploy-403-project-unresolved.md`.
 
-If `Deploy Preview (Vercel)` or `Deploy Production (Vercel)` fails:
+Consequences worth knowing:
 
-1. Read the `Resolve Vercel scope` step that runs first — it prints the token's
-   user, the teams the token can see, and the org/project it resolved.
-2. `Could not retrieve Project Settings. To link your Project, remove the
-   `.vercel` directory and deploy again.` does **not** mean a local link file:
-   CI has no `.vercel` directory. In the CLI that message is raised only for an
-   HTTP **403** with `forbidden` / `team_unauthorized`, i.e. a valid token whose
-   org/project pair it may not use — the case the resolver handles. See
-   `docs/audits/2026-09-14-vercel-deploy-403-project-unresolved.md`.
-3. If the resolver itself fails, it prints the token's user, its visible teams,
-   and a `path | HTTP | error` table for every probe. A row of 403s with
-   `team_unauthorized` means the token cannot reach that team; a 403 carrying
-   `invalidToken` means the credential is dead and must be re-issued. Re-copy
-   both ids from the project dashboard (**Settings → General**); for the second
-   case re-issue `VERCEL_TOKEN` from an account inside that team.
-4. A *skipped* deploy job (rather than a failed one) just means
-   `VERCEL_TOKEN` is unset — the steps log a `::notice::` and exit cleanly.
-
-Note that Vercel's **Git integration** deploys previews and production
-independently of this job (that is the primary path — push to `main`), so a red
-deploy job does not necessarily mean the site is stale; check the `Vercel`
-commit status as well.
+- A red `Deploy Preview/Production (Vercel)` job no longer exists as a failure
+  mode; if you find one referenced in an older run, it predates the removal.
+- **No repository secret is needed to deploy.** `VERCEL_TOKEN`,
+  `VERCEL_ORG_ID` and `VERCEL_PROJECT_ID` are no longer read by any workflow,
+  and `scripts/tests/test_workflows.py` fails if one is reintroduced.
+- If a deployment does not appear, check the Vercel project's **Git
+  integration** settings (repository connected, production branch `main`) —
+  that is the only deploy path now.
 
 ### Manual Deployment (Emergency Only)
 

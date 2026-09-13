@@ -15,6 +15,7 @@ enforce the structural invariants the data pipelines depend on (explicit
 write permissions for data commits, concurrency guards, required files).
 """
 
+import json
 from pathlib import Path
 
 import pytest
@@ -150,37 +151,46 @@ def test_manual_ingest_triggers_on_csv_push(workflows):
     )
 
 
-def test_vercel_deploy_uses_resolved_scope(workflows):
-    """The Vercel deploy steps must not re-declare VERCEL_ORG_ID/VERCEL_PROJECT_ID.
+def test_no_workflow_requires_vercel_deploy_credentials(workflows):
+    """No workflow may depend on Vercel deploy credentials.
 
-    `Resolve Vercel scope` (scripts/ci/resolve-vercel-scope.sh) works out which
-    ids the token may actually use and exports them through $GITHUB_ENV. A
-    step-level `env:` wins over $GITHUB_ENV, so re-declaring the raw secrets on
-    the deploy step silently restores the stale values — and with them the 403
-    the CLI reports as "Could not retrieve Project Settings"
-    (docs/audits/2026-09-14-vercel-deploy-403-project-unresolved.md).
+    CI used to deploy with `npx vercel deploy` scoped by `VERCEL_TOKEN` /
+    `VERCEL_ORG_ID` / `VERCEL_PROJECT_ID`. That path was removed on 2026-09-14:
+    the ids in the secrets were stale, every attempt failed with a 403 the CLI
+    reports as "Could not retrieve Project Settings", and the credential could
+    not be corrected from CI at all (see
+    docs/audits/2026-09-14-vercel-deploy-403-project-unresolved.md).
+
+    Deployments are the Vercel **Git integration**'s job: it builds previews for
+    pull requests and production on push to `main` from the repository itself,
+    with no repository secret involved — its `Vercel` commit status is the
+    signal to watch. This guard keeps a credential requirement from creeping
+    back in and silently turning every run red for a reason unrelated to the
+    code under test.
+
+    Reference `VERCEL`/`_vercel` for the *analytics build gate* is fine and not
+    matched here — only the deploy credentials and the CLI are.
     """
-    script = ROOT / 'scripts' / 'ci' / 'resolve-vercel-scope.sh'
-    assert script.is_file(), f'missing resolver script: {script}'
-
+    forbidden = (
+        'VERCEL_TOKEN', 'VERCEL_ORG_ID', 'VERCEL_PROJECT_ID',
+        'VERCEL_ORG_SLUG', 'VERCEL_PROJECT_NAME',
+        'amondnet/vercel-action', 'vercel-action',
+    )
     problems = []
-    for job_id, job in workflows['ci.yml']['jobs'].items():
-        steps = job.get('steps') or []
-        deploy = [s for s in steps if str(s.get('name', '')).startswith('Deploy to Vercel')]
-        if not deploy:
-            continue
-        resolver = [s for s in steps if str(s.get('name', '')).startswith('Resolve Vercel scope')]
-        if not resolver:
-            problems.append(f'{job_id}: deploys to Vercel without a `Resolve Vercel scope` step')
-        for step in resolver:
-            if 'resolve-vercel-scope.sh' not in str(step.get('run', '')):
-                problems.append(f'{job_id}: `Resolve Vercel scope` does not call the resolver script')
-        for step in deploy:
-            env = step.get('env') or {}
-            for key in ('VERCEL_ORG_ID', 'VERCEL_PROJECT_ID'):
-                if key in env:
+    for name, doc in workflows.items():
+        text = json.dumps(doc)
+        for needle in forbidden:
+            if needle in text:
+                problems.append(f'{name}: references {needle}')
+        for job_id, job in doc['jobs'].items():
+            for step in job.get('steps', []) or []:
+                run = str(step.get('run', ''))
+                if 'vercel' in run and 'deploy' in run and 'npx' in run:
                     problems.append(
-                        f'{job_id} step `{step.get("name")}`: re-declares {key}, which shadows '
-                        f'the value resolved into $GITHUB_ENV'
+                        f'{name} job `{job_id}` step `{step.get("name")}`: '
+                        'runs the Vercel CLI'
                     )
-    assert not problems, 'Vercel deploy scope wiring:\n' + '\n'.join(problems)
+    assert not problems, (
+        'workflows must not require Vercel deploy credentials '
+        '(the Git integration deploys; no secret needed):\n' + '\n'.join(problems)
+    )

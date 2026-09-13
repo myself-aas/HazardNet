@@ -129,13 +129,16 @@ and warns when `VERCEL_ORG_ID` is not readable as a team by that token. That
 turns "You do not have access to the specified account" into an answer instead
 of a guess.
 
-> **Superseded the same day** by `Resolve Vercel scope`
-> (`scripts/ci/resolve-vercel-scope.sh`): this step diagnosed the problem but
-> still deployed with the ids from the secrets, and on PR #19 the CLI failed
-> with a 403 it reports as *"Could not retrieve Project Settings"* — see
-> `docs/audits/2026-09-14-vercel-deploy-403-project-unresolved.md`. The
-> resolver keeps the same diagnostic output and additionally exports the ids
-> the token can actually use.
+> **Superseded the same day: the CI deploy jobs were removed.** This step
+> diagnosed the problem but still deployed with the ids from the secrets, and on
+> PR #19 the CLI failed with a 403 it reports as *"Could not retrieve Project
+> Settings"* — see
+> `docs/audits/2026-09-14-vercel-deploy-403-project-unresolved.md`. A resolver
+> replaced it briefly, then `deploy-preview` / `deploy-production` were dropped
+> altogether: Vercel's Git integration deploys previews and production without
+> any repository secret, and was succeeding throughout. `ci.yml` now contains no
+> `VERCEL_TOKEN` / `VERCEL_ORG_ID` / `VERCEL_PROJECT_ID`, and
+> `scripts/tests/test_workflows.py` fails if one is reintroduced.
 
 ## What is verified, and what is not
 

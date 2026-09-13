@@ -1,5 +1,23 @@
 # 2026-09-14 — `Deploy Preview/Production (Vercel)` 403, and the misdirecting error it prints
 
+> **Status (same day): the CI deploy path was removed, not repaired.**
+> `deploy-preview` / `deploy-production` are gone from `ci.yml`, and with them
+> `scripts/ci/resolve-vercel-scope.sh` and its tests. CI holds no Vercel
+> credential at all; **Vercel's Git integration** builds previews and production
+> from the repository itself (`Vercel` commit status), which it was already
+> doing successfully for every commit while these jobs failed.
+>
+> The resolver described in §3 did run, and its final form got as far as
+> `GET /v2/user` succeeding and `/v2/teams` being refused — a team-scoped token
+> whose team this job cannot name (§6). Chasing that further meant guessing at
+> account plumbing from CI on every push, for a deploy that already happens
+> without it, so the requirement was dropped instead.
+>
+> This document is kept for the diagnosis: the CLI's single throw site (§1),
+> the proof that the failure predated the rewrite (§2), the shadowing trap
+> (§3), and the token semantics in §6 are all worth having on record. The
+> verification table in §4 describes the removed script.
+
 **Trigger:** the Vercel CLI steps added earlier the same day
 (`docs/audits/2026-09-14-actions-runtime-and-vercel-deploy.md`) failed on PR
 #19's run [`34779634203`](https://github.com/myself-aas/HazardNet/actions/runs/34779634203),
@@ -99,7 +117,7 @@ The `Vercel` **commit status passes** on both branches
 same commits under team `aas-core` without trouble; only the secrets-based CLI
 path cannot authenticate.
 
-## 3. Fix
+## 3. The fix that was tried (superseded — the path was removed)
 
 **`scripts/ci/resolve-vercel-scope.sh`** (new) resolves the scope from the token
 and exports `VERCEL_ORG_ID` / `VERCEL_PROJECT_ID` into `$GITHUB_ENV`. Its first
@@ -155,8 +173,9 @@ secret it had to override. On failure it prints a `path | HTTP | error` table
 for every probe plus a reading of what that pattern means, so the next run
 answers the question instead of re-posing it.
 
-Both deploy jobs call it as `Resolve Vercel scope` (replacing
-`Describe Vercel credentials`, which only diagnosed).
+Both deploy jobs called it as `Resolve Vercel scope` (replacing
+`Describe Vercel credentials`, which only diagnosed) — until the jobs themselves
+were removed, see the status note at the top.
 
 **The shadowing trap:** a step-level `env:` beats `$GITHUB_ENV`. Re-declaring
 `VERCEL_ORG_ID` in the deploy step's `env:` — the obvious thing to do, and what
@@ -166,9 +185,9 @@ enforces the opposite: every Vercel deploy step must be preceded by the
 resolver, the resolver must call the script, and the deploy step must not
 re-declare either id.
 
-## 4. Verification
+## 4. Verification (of the now-removed resolver)
 
-The resolver is exercised against a stand-in Vercel API inside the test suite —
+The resolver was exercised against a stand-in Vercel API inside the test suite —
 `scripts/tests/test_vercel_scope_resolver.py`, whose `FakeVercel` reproduces the
 refusals the real endpoints use (403 `invalidToken` for a revoked token, 403
 `forbidden` *without* that flag for a team-scoped one, 403 `team_unauthorized`
@@ -188,12 +207,15 @@ so each branch is provoked rather than asserted. 10 tests:
 | No visible scope holds `hazardnet` | exit 1 + the full `path | HTTP | error` table |
 | Project in the token's personal account | resolved without `teamId` |
 
-They run under the existing `Pipeline Scripts Tests` job (no network: the
-stand-in is a loopback `ThreadingHTTPServer` on an ephemeral port).
+They ran under the existing `Pipeline Scripts Tests` job (no network: the
+stand-in is a loopback `ThreadingHTTPServer` on an ephemeral port). **The script
+and these tests were deleted when the deploy jobs were removed**; what replaces
+them is `test_workflows.py::test_no_workflow_requires_vercel_deploy_credentials`,
+which fails if any workflow reaches for a Vercel deploy credential again.
 
-The regression guard was verified in both directions: it accepts the current
-workflow, and it rejects both a re-declared `VERCEL_ORG_ID` on a deploy step and
-a deploy job missing its resolver.
+The `no-shadowing` guard was verified in both directions while it existed: it
+accepted the then-current workflow, and rejected both a re-declared
+`VERCEL_ORG_ID` on a deploy step and a deploy job missing its resolver.
 
 Also checked: `scripts/tests/test_workflows.py` 8/8 (the new guard plus the
 existing `secrets`-in-`if:` and structural invariants), all 14 workflow/template
@@ -219,3 +241,39 @@ gh api repos/myself-aas/HazardNet/check-runs/<job_id>/annotations \
 ```
 
 That is how the `::warning::` lines and the exit codes in §1 and §2 were read.
+
+## 6. What the live runs established about the credential
+
+Two runs are worth recording, because between them they pin down the token's
+shape more precisely than the theory in §1 could.
+
+**Run `34781836908`** (`Resolve Vercel scope`, the resolver's first draft):
+`GET /v2/user` was refused with no `invalidToken` flag. A revoked token sets
+that flag — so this was *not* a dead credential, and the draft's message
+("invalid, revoked or expired") was wrong. The CLI's own error the day before
+had been `PROJECT_UNAUTHORIZED`, not `InvalidToken`, which is only reachable
+*after* the token checks pass. A token that authenticates there but is refused
+`/v2/user` is **team-scoped**: it is not bound to a user, so the user endpoint
+is closed to it while its team is not.
+
+**Run `34782153211`** (the resolver that accounted for that): `/v2/user`
+succeeded, then `/v2/teams` was refused, so the visible team list came back
+empty and no candidate scope could be verified. The final failure output —
+still in the log — was:
+
+```
+::error::Could not resolve a Vercel project for this repository — every scope visible to VERCEL_TOKEN refused 'hazardnet'.
+::error::token user: unavailable | visible teams: none reported
+::error::configured: org=team_stale project=prj_stale | tried team slug 'aas-core'
+```
+
+So the credential authenticates, cannot enumerate its teams, and does not know
+the configured org id — an account↔team mismatch whose correction lives in the
+Vercel dashboard. That is precisely the class of problem this repository cannot
+settle from a workflow, which is why the requirement was removed rather than
+guessed at further.
+
+Note what did *not* break in any of these runs: the `Vercel` commit status was
+`success` throughout (e.g. `vercel.com/aas-core/hazardnet/6QFA2AD2cVn5ppyqbbM65dpkP928`
+for `5d40f03`), as it had been on `main` while the old action failed. The Git
+integration was deploying every commit the whole time.
