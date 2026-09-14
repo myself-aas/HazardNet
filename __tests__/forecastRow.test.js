@@ -92,6 +92,119 @@ describe('parseCsvForecastRow — accepted shapes', () => {
     });
   });
 
+  it('converts the notebook native om_* columns into documented API units', () => {
+    // Real Bagerhat 7-day row from hazardnet_forecasts_latest.csv (2026-09-12).
+    // The notebook accumulates several Open-Meteo terms over the whole horizon
+    // and mislabels two of them, so the raw values must NOT pass through:
+    //   om_et_sum_m 30.45 is MILLIMETRES over 7 days (not metres)
+    //   om_solar_rad_j 146060 is kJ/m² over 7 days
+    // Storing the raw totals produced ~30,000 mm of evapotranspiration and
+    // 0.15 MJ/m² of solar radiation.
+    const r = parseCsvForecastRow({
+      district_id: '1',
+      district_name: 'Bagerhat',
+      division: 'Khulna',
+      pcode: '5795',
+      horizon: '7_days',
+      hazard_type: 'Tropical Cyclone',
+      model_severity: '1.0',
+      physics_severity: '0.0522',
+      confidence: '1.0',
+      target_date: '2026-09-19',
+      prediction_date: '2026-09-12',
+      om_temp_2m_k: '27.825',   // Celsius despite the _k suffix
+      om_precip_m: '0.0522',    // metres -> mm
+      om_max_temp_k: '33.1',
+      om_min_temp_k: '24.9',
+      om_dewpoint_k: '25.5375',
+      om_solar_rad_j: '146060.0',
+      om_wind_max_ms: '10.3',
+      om_et_sum_m: '30.45'
+    }, 1);
+
+    expect(r.ok).toBe(true);
+    expect(r.value.temperature_mean).toBeCloseTo(27.825, 4); // pass-through
+    expect(r.value.temperature_max).toBeCloseTo(33.1, 4);
+    expect(r.value.temperature_min).toBeCloseTo(24.9, 4);
+    expect(r.value.dewpoint_mean).toBeCloseTo(25.5375, 4);
+    expect(r.value.precipitation_mm).toBeCloseTo(52.2, 4);        // ×1000
+    expect(r.value.wind_max_kmh).toBeCloseTo(37.08, 4);           // ×3.6
+    // 146060 kJ/m² ÷ 1000 ÷ 7 days
+    expect(r.value.solar_radiation_mj_m2).toBeCloseTo(20.8657, 3);
+    // 30.45 mm ÷ 7 days
+    expect(r.value.evapotranspiration_mm).toBeCloseTo(4.35, 4);
+
+    // Guard the specific magnitudes that regressed: horizon totals must never
+    // survive the ingest boundary.
+    expect(r.value.evapotranspiration_mm).toBeLessThan(20);
+    expect(r.value.solar_radiation_mj_m2).toBeLessThan(40);
+  });
+
+  it('scales the om_* per-day conversions by the horizon length', () => {
+    // Real Bagerhat 15-day row — same district, twice the horizon. The
+    // horizon totals grow, but the per-day rates must stay in the same band.
+    const r = parseCsvForecastRow({
+      district_id: '1',
+      district_name: 'Bagerhat',
+      horizon: '15_days',
+      hazard_type: 'Flash Flood',
+      model_severity: '1.0',
+      physics_severity: '0.524',
+      confidence: '0.7614',
+      target_date: '2026-09-27',
+      prediction_date: '2026-09-12',
+      om_temp_2m_k: '27.8467',
+      om_precip_m: '0.0786',
+      om_max_temp_k: '33.1',
+      om_min_temp_k: '24.9',
+      om_dewpoint_k: '25.7333',
+      om_solar_rad_j: '272080.0',
+      om_wind_max_ms: '12.6',
+      om_et_sum_m: '56.24'
+    }, 1);
+
+    expect(r.ok).toBe(true);
+    expect(r.value.precipitation_mm).toBeCloseTo(78.6, 4);
+    expect(r.value.wind_max_kmh).toBeCloseTo(45.36, 4);
+    expect(r.value.solar_radiation_mj_m2).toBeCloseTo(18.1387, 3); // ÷ 15
+    expect(r.value.evapotranspiration_mm).toBeCloseTo(3.7493, 3);  // ÷ 15
+  });
+
+  it('prefers the documented API columns when both spellings are present', () => {
+    const r = parseCsvForecastRow({
+      ...notebookRow,
+      // A row that genuinely carries API units is trusted as-is; the om_*
+      // originals are only a fallback for notebook-native CSVs.
+      temperature_mean: '28.5',
+      precipitation_mm: '12.3',
+      wind_max_kmh: '20',
+      solar_radiation_mj_m2: '19.4',
+      evapotranspiration_mm: '3.9',
+      om_temp_2m_k: '27.825',
+      om_precip_m: '0.0522',
+      om_solar_rad_j: '146060.0',
+      om_et_sum_m: '30.45'
+    }, 1);
+
+    expect(r.ok).toBe(true);
+    expect(r.value.temperature_mean).toBeCloseTo(28.5, 4);
+    expect(r.value.precipitation_mm).toBeCloseTo(12.3, 4);
+    expect(r.value.wind_max_kmh).toBeCloseTo(20, 4);
+    expect(r.value.solar_radiation_mj_m2).toBeCloseTo(19.4, 4);
+    expect(r.value.evapotranspiration_mm).toBeCloseTo(3.9, 4);
+  });
+
+  it('omits meteorological fields entirely when the CSV has none', () => {
+    const r = parseCsvForecastRow(legacyRow, 1);
+    expect(r.ok).toBe(true);
+    for (const field of [
+      'temperature_mean', 'temperature_max', 'temperature_min', 'precipitation_mm',
+      'wind_max_kmh', 'dewpoint_mean', 'solar_radiation_mj_m2', 'evapotranspiration_mm',
+    ]) {
+      expect(r.value[field]).toBeUndefined();
+    }
+  });
+
   it('prefers severity_score when both columns are present', () => {
     const r = parseCsvForecastRow({ ...notebookRow, severity_score: '0.4', model_severity: '0.9' }, 1);
     expect(r.ok).toBe(true);

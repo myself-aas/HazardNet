@@ -21,6 +21,13 @@ Apply order:
    every article) with ones keyed on `auth.uid()`. Also adds the missing
    superadmin SELECT policy: without it the Blog Studio cannot list its own
    drafts and "Save draft"/"Unpublish" fail with a misleading RLS error.
+8. `007_forecasts_meteorological.sql` — adds the eight Open-Meteo
+   meteorological columns the weekly notebook emits (`temperature_mean`,
+   `temperature_max`, `temperature_min`, `precipitation_mm`, `wind_max_kmh`,
+   `dewpoint_mean`, `solar_radiation_mj_m2`, `evapotranspiration_mm`). Before
+   this, the Supabase ingest wrote an explicit 15-column INSERT that simply
+   omitted them, so every weather value was silently dropped between the CSV
+   and the API — no error, just NULLs. Run after `002`.
 
 All files are idempotent (`if not exists` / `drop policy if exists`), so
 re-running one is safe.
