@@ -1,14 +1,16 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { AuthLayout } from '../components/auth/AuthLayout'
-import { useAuth } from '../context/AuthContext'
+import { auth } from '../services/firebase'
+import { verifyPasswordResetCode, confirmPasswordReset } from 'firebase/auth'
+import { PASSWORD_REQUIREMENTS } from '../lib/passwordStrength'
 
 /**
  * Dedicated password-update page — unique URL: /update-password
  * Users land here from the password-reset email link.
  */
 export default function UpdatePasswordPage() {
-  const { updatePassword } = useAuth()
+  const code = useMemo(() => new URLSearchParams(window.location.search).get('oobCode'), [])
   const navigate = useNavigate()
   const [password, setPassword] = useState('')
   const [confirmation, setConfirmation] = useState('')
@@ -18,18 +20,23 @@ export default function UpdatePasswordPage() {
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
-    const timer = window.setTimeout(() => setReady(true), 300)
-    return () => window.clearTimeout(timer)
-  }, [])
+    let cancelled = false;
+    if (!code) { setError('Open the password reset link from your email.'); return; }
+    window.history.replaceState({}, '', '/update-password');
+    void verifyPasswordResetCode(auth, code).then(() => { if (!cancelled) setReady(true); })
+      .catch(() => { if (!cancelled) setError('This reset link is invalid or expired. Request a new one.'); });
+    return () => { cancelled = true; };
+  }, [code])
 
   const submit = async (event: React.FormEvent) => {
     event.preventDefault()
     setError(null)
-    if (password.length < 8) return setError('Your password must contain at least 8 characters.')
+    if (!code || !ready) return setError('A valid password reset link is required.');
+    if (!PASSWORD_REQUIREMENTS.every((r) => r.test(password))) return setError('Use at least 8 characters with uppercase, lowercase, a number and a symbol.');
     if (password !== confirmation) return setError('The passwords do not match.')
     setSaving(true)
     try {
-      await updatePassword(password)
+      await confirmPasswordReset(auth, code, password)
       setStatus('Your password has been updated. You can now sign in with it.')
       window.setTimeout(() => navigate('/login'), 1400)
     } catch (reason) {
@@ -46,8 +53,9 @@ export default function UpdatePasswordPage() {
     <AuthLayout
       mode="recovery"
       title="Choose a new password"
-      subtitle={ready ? 'Create a new password for your HazardNet account.' : 'Preparing secure password recovery…'}
+      subtitle={ready ? 'Use 8+ characters with uppercase, lowercase, a number and a symbol.' : 'Checking your password reset link…'}
     >
+      {error && !ready && <p role="alert">{error} <Link to="/forgot-password">Request a new reset link</Link></p>}
       {status ? (
         <div role="status" className="space-y-4 text-center">
           <p className="rounded-2xl border border-emerald-200 bg-emerald-50 p-3.5 text-xs font-medium text-emerald-800">
@@ -59,7 +67,7 @@ export default function UpdatePasswordPage() {
         </div>
       ) : (
         <form onSubmit={submit} className="space-y-4">
-          {error && (
+          {error && ready && (
             <p role="alert" className="rounded-2xl border border-rose-200 bg-rose-50 p-3.5 text-xs font-medium text-rose-800">
               {error}
             </p>

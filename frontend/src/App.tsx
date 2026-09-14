@@ -1,7 +1,9 @@
+import { RouteAccessibility } from './components/RouteAccessibility';
+import { LegacyDistrictRedirect } from './components/LegacyDistrictRedirect';
 import { useEffect, lazy, Suspense } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, MotionConfig, useReducedMotion } from 'framer-motion';
 import { Analytics } from '@vercel/analytics/react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import SignUpPage from './pages/SignUpPage';
@@ -56,6 +58,7 @@ const AppContent: React.FC = () => {
   const { userProfile } = useAuth();
   useHazardNotifications(userProfile?.homeDistrictId);
   const location = useLocation();
+  const reduceMotion = useReducedMotion();
 
   useEffect(() => {
     initializeAttributionCapture();
@@ -85,6 +88,7 @@ const AppContent: React.FC = () => {
           : 'min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans selection:bg-amber-100 selection:text-amber-900 pointer-events-none'
       }
     >
+      <RouteAccessibility />
       <Toaster
         position="top-right"
         toastOptions={{
@@ -109,7 +113,7 @@ const AppContent: React.FC = () => {
       )}
 
       {/* Main Content Area */}
-      <main
+      <main id="main-content" tabIndex={-1}
         className={
           isAuthPage
             ? 'flex-1 relative z-10 w-full pointer-events-auto'
@@ -121,9 +125,9 @@ const AppContent: React.FC = () => {
         <AnimatePresence mode="wait">
           <motion.div
             key={location.pathname}
-            initial={{ opacity: 0, y: 8 }}
+            initial={reduceMotion ? false : { opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
+            exit={reduceMotion ? { opacity: 1 } : { opacity: 0, y: -8 }}
             transition={{ duration: 0.22, ease: 'easeInOut' }}
             className="w-full h-full"
           >
@@ -135,6 +139,7 @@ const AppContent: React.FC = () => {
               <Route path="/forecast/overview" element={<Dashboard defaultTab="gis" isFullScreen={true} />} />
               <Route path="/forecast/dashboard" element={<Navigate to="/analytics/forecast-dashboard" replace />} />
               <Route path="/forecast/my-districts" element={<Dashboard defaultTab="saved" />} />
+              <Route path="/district/:id" element={<LegacyDistrictRedirect />} />
               <Route path="/forecast/district/:id" element={<DistrictDetailPage />} />
               <Route path="/forecast/compare" element={<Dashboard defaultTab="compare" />} />
               <Route path="/forecast/settings" element={<Dashboard defaultTab="settings" />} />
@@ -223,7 +228,7 @@ const App: React.FC = () => (
     <AuthProvider>
       <QueryClientProvider client={queryClient}>
         <Router>
-          <AppContent />
+          <MotionConfig reducedMotion="user"><AppContent /></MotionConfig>
         </Router>
       </QueryClientProvider>
     </AuthProvider>

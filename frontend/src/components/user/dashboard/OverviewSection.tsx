@@ -92,10 +92,10 @@ export const OverviewSection: React.FC<{ onNavigate: (tab: 'profile' | 'connecto
     if (!userProfile?.email) return;
     setResendBusy(true);
     try {
-      await sendVerificationEmail(userProfile.email, { nextTo: '/dashboard' });
+      await sendVerificationEmail(userProfile.email);
       toast.success('Verification link sent — check your inbox.');
     } catch {
-      toast.error('Could not resend right now — Supabase rate-limits email. Try again in a minute.');
+      toast.error('Could not resend right now — Firebase rate-limits email. Try again in a minute.');
     } finally {
       setResendBusy(false);
     }

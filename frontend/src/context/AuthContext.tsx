@@ -1,17 +1,16 @@
-import { sendEmailLink } from '../lib/emailLink';
+import { createSocialProvider } from '../lib/firebaseProviders';
 import { saveProfile as persistProfile } from '../lib/profilePrivacy';
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import type { User as FirebaseAuthUser, UserInfo } from 'firebase/auth';
 import { auth, db } from '../services/firebase';
-import { unlink, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut as fbSignOut, sendPasswordResetEmail, updatePassword as fbUpdatePassword, updateEmail as fbUpdateEmail, linkWithPopup, OAuthProvider as FbOAuthProvider, signInWithPopup, fetchSignInMethodsForEmail } from 'firebase/auth';
+import { unlink, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut as fbSignOut, sendPasswordResetEmail, updatePassword as fbUpdatePassword, verifyBeforeUpdateEmail, linkWithPopup, signInWithPopup, sendEmailVerification, updateProfile as updateFirebaseProfile } from 'firebase/auth';
 import { doc, getDoc, setDoc, updateDoc, collection, addDoc, getDocs, query, where, orderBy, deleteDoc } from 'firebase/firestore';
 import { seedFromIdentity } from '../lib/username';
 import {
   AUTH_RETURN_TO_KEY,
   OAuthProviderId,
-  buildOAuthRedirectTo,
-  getProvider,
-  mapProviderUserMetadata,
+  safeAuthReturnTo,
+  isOAuthProviderId,
 } from '../lib/oauthProviders';
 
 /** Auth screens themselves are never a useful post-login destination. */
@@ -127,22 +126,13 @@ export interface AuthContextType {
     name: string,
     initialProfile?: Partial<UserProfileData>,
   ) => Promise<'session' | 'confirmation-required'>;
-  /**
-   * Passwordless email verification: sends a verification link (magic link)
-   * to `email`, creating the account when it doesn't exist yet. The link
-   * lands on /auth/callback, which forwards to /set-password so the user
-   * can choose their password. `displayName`/`username` travel as signup
-   * user-metadata so the profile trigger can claim them.
-   */
-  sendVerificationEmail: (
-    email: string,
-    options?: { nextTo?: string; displayName?: string; username?: string },
-  ) => Promise<void>;
+  /** Send verification for the current account; never creates a passwordless session. */
+  sendVerificationEmail: (email: string) => Promise<void>;
   /** True when the username is free and matches the format rules. */
   checkUsernameAvailability: (username: string) => Promise<boolean>;
-  /** Change the account email (Supabase re-verifies the new address). */
+  /** Change the account email (Firebase re-verifies the new address). */
   changeEmail: (email: string) => Promise<void>;
-  /** Re-fetch the profiles row from Supabase. */
+  /** Re-fetch the profiles row from Firebase. */
   refreshProfile: () => Promise<void>;
   signInWithEmailAndPassword: (email: string, pass: string) => Promise<EmailCredential>;
   signInWithEmail: (email: string, pass: string) => Promise<EmailCredential>;
@@ -239,11 +229,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<AppUser | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfileData | null>(null);
   const [loading, setLoading] = useState(true);
+  const identityBusy = useRef(false);
+  const changeIdentity = async (change: () => Promise<void>) => {
+    if (identityBusy.current) throw new Error('An account connection change is already in progress.');
+    identityBusy.current = true;
+    try { await change(); } finally { identityBusy.current = false; }
+  };
   const loadProfile = async (authUser: FirebaseAuthUser) => {
     try {
       const docSnap = await getDoc(doc(db, 'profiles', authUser.uid));
       const data = docSnap.exists() ? { id: docSnap.id, ...docSnap.data() } : null;
-      if (data) setUserProfile(toProfile(data as Record<string, unknown>));
+      if (data && auth.currentUser?.uid === authUser.uid) {
+        // Firebase Auth owns email identity; sync only after Auth has accepted the change.
+        if (authUser.email && (data as Record<string, unknown>).email !== authUser.email) {
+          await persistProfile(authUser.uid, { email: authUser.email });
+          Object.assign(data, { email: authUser.email });
+        }
+        if (auth.currentUser?.uid === authUser.uid) setUserProfile(toProfile(data as Record<string, unknown>));
+      }
       return data;
     } catch (e) {
       console.warn('Profile load exception:', e);
@@ -253,45 +256,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     let mounted = true;
-    const initAuth = async () => {
+    let revision = 0;
+    const unsubscribe = onAuthStateChanged(auth, async (next) => {
+      if (!mounted) return;
+      const version = ++revision;
+      setLoading(true);
+      setUser(toAppUser(next));
+      setUserProfile(null);
       try {
-        const authUser = auth.currentUser;
-        if (mounted) {
-          setUser(toAppUser(authUser));
-          if (authUser) {
-            const profile = await loadProfile(authUser);
-            if (!profile) await bootstrapProfileFromOAuth(authUser);
-          }
-        }
-      } catch (err) {
-        console.warn('Failed to load initial Firebase user:', err);
-      } finally {
-        if (mounted) setLoading(false);
-      }
-    };
-    initAuth();
-
-    let unsubscribe = () => {};
-    try {
-      unsubscribe = onAuthStateChanged(auth, (next) => {
-        if (!mounted) return;
-        setUser(toAppUser(next));
         if (next) {
-          void loadProfile(next).then((profile) => {
-            if (!profile) return bootstrapProfileFromOAuth(next);
-            return undefined;
-          });
-        } else setUserProfile(null);
-        setLoading(false);
-      });
-    } catch (err) {
-      console.warn('Failed to attach auth state listener:', err);
-    }
-
-    return () => {
-      mounted = false;
-      unsubscribe();
-    };
+          const profile = await loadProfile(next);
+          if (!profile && mounted && version === revision) await bootstrapProfileFromOAuth(next);
+        }
+      } finally {
+        if (mounted && version === revision) setLoading(false);
+      }
+    }, () => {
+      if (!mounted) return;
+      setUser(null); setUserProfile(null); setLoading(false);
+    });
+    return () => { mounted = false; revision++; unsubscribe(); };
   }, []);
 
   const signUpWithEmail = async (
@@ -302,6 +286,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   ): Promise<'session' | 'confirmation-required'> => {
     const cred = await createUserWithEmailAndPassword(auth, email, pass);
     if (cred.user) {
+      await updateFirebaseProfile(cred.user, { displayName: name });
       await saveProfile(cred.user, name, initialProfile);
       return 'session';
     }
@@ -313,6 +298,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       id: authUser.uid,
       email: authUser.email ?? '',
       display_name: name,
+      username: data.username ?? '',
       role: data.role ?? 'user',
       user_role: data.userRole ?? 'smallholder_farmer',
       organization: data.organization ?? '',
@@ -328,6 +314,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const bootstrapProfileFromOAuth = async (authUser: FirebaseAuthUser) => {
+    if (authUser.providerData.some((p) => p.providerId === 'password')) return;
     const seed = authUser.providerData?.[0] ?? {};
     const displayName = authUser.displayName || seed.displayName || 'User';
     const row = {
@@ -426,63 +413,50 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (error) throw error;
   };
   const signInWithOAuth = async (provider: OAuthProvider, options?: { nextTo?: string }) => {
-    // Remember where the user was heading so the OAuth callback can return
-    // them there after the (page-reloading) provider redirect.
+    const fbProvider = createSocialProvider(provider); // runtime allowlist before SDK call
     const currentPath = `${window.location.pathname}${window.location.search}`;
-    const nextTo = options?.nextTo ?? (isAuthScreen(currentPath) ? '/' : currentPath);
+    const next = safeAuthReturnTo(options?.nextTo ?? (isAuthScreen(currentPath) ? '/' : currentPath));
     try {
-      sessionStorage.setItem(AUTH_RETURN_TO_KEY, nextTo);
-    } catch {
-      // Best effort only.
+      await signInWithPopup(auth, fbProvider);
+    } finally {
+      // Popup flows complete in this page; stale destinations must not survive another attempt.
+      try { sessionStorage.removeItem(AUTH_RETURN_TO_KEY); } catch { /* storage optional */ }
     }
-    const scopes = getProvider(provider).scopes;
-    let error = null;
-    try {
-      const fbProv = new FbOAuthProvider(`${provider}.com`);
-      if(scopes) scopes.split(' ').forEach(s => fbProv.addScope(s));
-      await signInWithPopup(auth, fbProv);
-    } catch(e) { error = e; }
-    if (error) throw error;
+    if (options?.nextTo) window.location.assign(next);
   };
-  /** Link an additional provider identity to the signed-in account. */
-  const linkIdentity = async (provider: OAuthProvider) => {
-    let error = null;
-    try { const fbProv = new FbOAuthProvider(`${provider}.com`); await linkWithPopup(auth.currentUser!, fbProv); } catch(e) { error = e; }
-    if (error) throw error;
-  };
-  /** Remove a linked provider identity from the signed-in account. */
-  const unlinkIdentity = async (provider: string) => {
+  const linkIdentity = async (provider: OAuthProvider) => changeIdentity(async () => {
+    const fbProvider = createSocialProvider(provider);
     if (!auth.currentUser) throw new Error('Sign in required');
-    const target = auth.currentUser.providerData.find((identity) =>
-      identity.providerId === provider || identity.providerId === `${provider}.com` || identity.providerId === `oidc.${provider}`);
-    if (!target) throw new Error(`No linked ${provider} identity found.`);
-    if (auth.currentUser.providerData.length < 2) throw new Error('Keep at least one sign-in method.');
-    await unlink(auth.currentUser, target.providerId);
-  };
-  /** List the provider identities linked to the signed-in account. */
-  const getUserIdentities = async () => {
-    const data = { identities: auth.currentUser?.providerData.map(p => ({ provider: p.providerId, identity_id: p.uid, identity_data: { email: p.email } })) ?? [] };
-    const error = null;
-    if (error) throw error;
-    return (data?.identities ?? []).map((identity) => ({
-      provider: String(identity.provider),
-      identityId: String(identity.identity_id ?? ''),
-      email:
-        typeof (identity as Record<string, unknown> | null)?.email === 'string'
-          ? ((identity as Record<string, unknown>).email as string)
-          : null,
-    }));
-  };
+    await linkWithPopup(auth.currentUser, fbProvider);
+    setUser(toAppUser(auth.currentUser));
+  });
+  const unlinkIdentity = async (provider: OAuthProvider) => changeIdentity(async () => {
+    if (!isOAuthProviderId(provider)) throw new Error('Unsupported provider');
+    const current = auth.currentUser;
+    if (!current) throw new Error('Sign in required');
+    const providerId = `${provider}.com`;
+    if (!current.providerData.some((p) => p.providerId === providerId)) throw new Error('Provider is not linked');
+    const remaining = current.providerData.filter((p) => p.providerId !== providerId
+      && ['password', 'google.com', 'github.com'].includes(p.providerId));
+    if (!remaining.length) throw new Error('Keep at least one supported sign-in method.');
+    await unlink(current, providerId);
+    setUser(toAppUser(current));
+  });
+  const getUserIdentities = async () => (auth.currentUser?.providerData ?? []).map((p) => ({
+    provider: p.providerId.replace(/\.com$/, ''), identityId: p.uid, email: p.email,
+  }));
   const updatePassword = async (password: string) => {
+    if (!auth.currentUser) throw new Error('Sign in required');
     let error = null;
     try { await fbUpdatePassword(auth.currentUser!, password); } catch(e) { error = e; }
     if (error) throw error;
+    setUser(toAppUser(auth.currentUser));
   };
-  const sendVerificationEmail = async (email: string, options?: { nextTo?: string; displayName?: string; username?: string }) => {
-    if (options?.displayName || options?.username) {
-      sessionStorage.setItem('hazardnet.signup.pending', JSON.stringify({ name: options.displayName, username: options.username }));
-    }
-    await sendEmailLink(email);
+  const sendVerificationEmail = async (email: string) => {
+    const current = auth.currentUser;
+    if (!current || current.email?.toLowerCase() !== email.trim().toLowerCase()) throw new Error('Sign in to verify your account email.');
+    if (current.emailVerified) return;
+    await sendEmailVerification(current, { url: `${window.location.origin}/login` });
   };
   const checkUsernameAvailability = async (username: string) => {
     try {
@@ -494,12 +468,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
   const changeEmail = async (email: string) => {
-    if (auth.currentUser) {
-      await fbUpdateEmail(auth.currentUser, email);
-    }
-    if (user) {
-      await persistProfile(user.uid, { email });
-    }
+    if (!auth.currentUser) throw new Error('Sign in required');
+    await verifyBeforeUpdateEmail(auth.currentUser, email.trim(), { url: `${window.location.origin}/login` });
+    // Firebase changes the email only after verification; do not store an unverified address.
   };
   const refreshProfile = async () => {
     if (user) await loadProfile(user);

@@ -33,7 +33,7 @@ it('shows missing district data without substituting another district', () => {
 it('labels stale output and legacy fallback explicitly', () => {
   (useForecasts as jest.Mock).mockReturnValue({ data: [{ ...row, generated_at: '2020-01-01' }], isPending: false });
   render(<ProfileForecastCard />);
-  expect(screen.getByText(/Stale or unverified fallback/)).toBeTruthy();
+  expect(screen.getByText(/Stale or unverified/)).toBeTruthy();
 });
 it('shows loading state', () => {
   (useForecasts as jest.Mock).mockReturnValue({ isPending: true });

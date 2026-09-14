@@ -1,3 +1,4 @@
+import { severityBin } from '../../lib/forecasts';
 // Extracted from LiveMapView.tsx (P2 decomposition, first slice).
 // Pure, component-independent map primitives: river polylines data,
 // hazard layer registry, and the Leaflet marker icon builder.
@@ -8,7 +9,7 @@ import { getSeverityColor } from '../../services/geolocationService';
 export const BANGLADESH_RIVERS = [
   {
     name: 'Padma River (Ganges Basin)',
-    status: 'High Water Volume • Flow 24,500 m³/s',
+    status: 'Reference river geography — live flow unavailable',
     coords: [
       [24.62, 88.02],
       [24.35, 88.58],
@@ -20,7 +21,7 @@ export const BANGLADESH_RIVERS = [
   },
   {
     name: 'Jamuna River (Brahmaputra Channel)',
-    status: 'Flood Warning Level • Flow 42,000 m³/s',
+    status: 'Reference river geography — live flow unavailable',
     coords: [
       [25.80, 89.65],
       [25.25, 89.72],
@@ -32,7 +33,7 @@ export const BANGLADESH_RIVERS = [
   },
   {
     name: 'Meghna Estuary Network',
-    status: 'Tidal Delta Discharge • Flow 31,200 m³/s',
+    status: 'Reference river geography — live flow unavailable',
     coords: [
       [24.88, 90.95],
       [24.20, 90.90],
@@ -44,7 +45,7 @@ export const BANGLADESH_RIVERS = [
   },
   {
     name: 'Teesta River Basin',
-    status: 'Flash Surge Inundation Risk',
+    status: 'Reference river geography — live flow unavailable',
     coords: [
       [26.35, 88.85],
       [26.05, 89.15],
@@ -55,7 +56,7 @@ export const BANGLADESH_RIVERS = [
   },
   {
     name: 'Surma & Kushiyara (Sylhet Haor)',
-    status: 'Severe Haor Inundation Alert',
+    status: 'Reference river geography — live flow unavailable',
     coords: [
       [25.10, 91.85],
       [24.90, 91.50],
@@ -66,7 +67,7 @@ export const BANGLADESH_RIVERS = [
   },
   {
     name: 'Karnaphuli Coastal Basin',
-    status: 'Estuarine Normal Flow',
+    status: 'Reference river geography — live flow unavailable',
     coords: [
       [22.75, 92.20],
       [22.45, 91.95],
@@ -81,7 +82,7 @@ export const createCustomIcon = (severity: number, isSelected: boolean, hazardTy
   const hazardDef = HAZARD_LAYERS.find((h) => h.id === hazardType) || { name: hazardType };
   const color = getSeverityColor(severity);
   const glowColor = color;
-  const effectiveRisk = riskLevel || (severity >= 0.7 ? 'High' : severity >= 0.4 ? 'Moderate' : 'Low');
+  const effectiveRisk = severityBin(severity);
   const ariaLabel = `${districtName} District, Risk: ${effectiveRisk}, Hazard: ${hazardDef.name}, Severity: ${(severity * 100).toFixed(0)}%`;
 
   const html = isSelected ? `
@@ -100,14 +101,14 @@ export const createCustomIcon = (severity: number, isSelected: boolean, hazardTy
       box-shadow: 0 6px 24px rgba(0,0,0,0.25), 0 0 20px ${glowColor};
       color: #0f172a;
       font-family: 'Playfair Display', serif;
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 900;
       white-space: nowrap;
       cursor: pointer;
       user-select: none;
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
-      outline: none;
+
     ">
       <span style="color: #0f172a; letter-spacing: -0.2px;">${districtName}: <span style="color: #0284c7;">${hazardDef.name}</span></span>
       <span style="
@@ -137,7 +138,7 @@ export const createCustomIcon = (severity: number, isSelected: boolean, hazardTy
       box-shadow: 0 4px 14px rgba(0,0,0,0.2), 0 0 12px ${glowColor};
       color: #0f172a;
       font-family: 'Playfair Display', serif;
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 900;
       display: flex;
       align-items: center;
@@ -145,7 +146,7 @@ export const createCustomIcon = (severity: number, isSelected: boolean, hazardTy
       cursor: pointer;
       user-select: none;
       transition: transform 0.2s ease;
-      outline: none;
+
     " title="${districtName} (${(severity * 100).toFixed(0)}% ${hazardDef.name})">
       ${districtName.substring(0, 2).toUpperCase()}
     </div>

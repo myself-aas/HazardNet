@@ -7,19 +7,11 @@ import { AuthSocialButtons } from '../components/auth/AuthSocialButtons';
 import { UsernameField } from '../components/user/UsernameField';
 import { AuthLayout } from '../components/auth/AuthLayout';
 import MaterialIcon from '../components/MaterialIcon';
+import { PASSWORD_REQUIREMENTS } from '../lib/passwordStrength';
+import { safeAuthReturnTo } from '../lib/oauthProviders';
 import { validateUsername } from '../lib/username';
 
-/**
- * Dedicated sign-up page — unique URL: /signup  (/sign-up redirects here)
- *
- * Passwordless by design: the user picks a name, a unique username (validated
- * live while typing, with suggestions) and an email address; we then email a
- * verification link. Opening the link verifies the address and opens a
- * session that lands on /set-password where the user chooses their password.
- *
- * Field order follows the product spec: details → prominent "Connect with
- * Google" → compact side-by-side provider icons → email submit.
- */
+/** Email/password registration with optional Google or GitHub sign-in. */
 
 const inputClass =
   'w-full px-4 py-3 text-base sm:text-sm bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 placeholder-slate-400 font-medium transition-all focus:outline-none focus:border-[#f9a825] focus:ring-2 focus:ring-[#f9a825]/40';
@@ -27,7 +19,7 @@ const inputClass =
 const describeError = (err: unknown): string => {
   const message = err instanceof Error ? err.message : String(err ?? '');
   const text = message.toLowerCase();
-  if (text.includes('already registered') || text.includes('already exists')) {
+  if (text.includes('email-already-in-use') || text.includes('already registered') || text.includes('already exists')) {
     return 'An account already exists with this email. Sign in instead — or reset your password if you forgot it.';
   }
   if (text.includes('too many requests') || text.includes('rate limit')) {
@@ -43,15 +35,17 @@ const describeError = (err: unknown): string => {
 };
 
 const SignUpPage: React.FC = () => {
-  const { sendVerificationEmail, user } = useAuth();
+  const { signUpWithEmail, sendVerificationEmail, user } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const rawNext = searchParams.get('next');
-  const next = rawNext && rawNext.startsWith('/') ? rawNext : '/';
+  const next = safeAuthReturnTo(rawNext);
 
   const [name, setName] = useState('');
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmation, setConfirmation] = useState('');
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
@@ -61,10 +55,10 @@ const SignUpPage: React.FC = () => {
 
   // Redirect signed-in users immediately to homepage or destination.
   useEffect(() => {
-    if (user) {
+    if (user && !loading && !pendingVerification) {
       navigate(next, { replace: true });
     }
-  }, [user, navigate, next]);
+  }, [user, navigate, next, loading, pendingVerification]);
 
   // Countdown ticker for the resend button.
   useEffect(() => {
@@ -80,6 +74,8 @@ const SignUpPage: React.FC = () => {
     if (name.trim().length < 2) errors.name = 'Please enter your full name.';
     if (!usernameValidation.valid) errors.username = usernameValidation.message ?? 'Choose a valid username.';
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) errors.email = 'Enter a valid email address.';
+    if (!PASSWORD_REQUIREMENTS.every((r) => r.test(password))) errors.password = 'Use at least 8 characters with uppercase, lowercase, a number and a symbol.';
+    if (password !== confirmation) errors.confirmation = 'Passwords do not match.';
     if (!acceptedTerms) errors.terms = 'Please accept the Terms and Privacy Policy to continue.';
     setFieldErrors(errors);
     return Object.keys(errors).length === 0;
@@ -87,21 +83,15 @@ const SignUpPage: React.FC = () => {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (!validate()) return;
+    if (!validate()) { requestAnimationFrame(() => document.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus()); return; }
     setLoading(true);
     setError(null);
     try {
-      // Remember the chosen identity so the callback/bootstrap can apply it.
-      try {
-        sessionStorage.setItem('hazardnet.signup.pending', JSON.stringify({ name: name.trim(), username }));
-      } catch {
-        // Best effort only.
-      }
-      await sendVerificationEmail(email.trim(), {
-        nextTo: '/set-password',
-        displayName: name.trim(),
-        username,
-      });
+      await signUpWithEmail(email.trim(), password, name.trim(), { username });
+      setPassword('');
+      setConfirmation('');
+      try { await sendVerificationEmail(email.trim()); }
+      catch { setError('Your account was created, but the verification email could not be sent. Use Resend below.'); }
       setPendingVerification(true);
       setResendIn(45);
     } catch (err) {
@@ -117,7 +107,7 @@ const SignUpPage: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      await sendVerificationEmail(email.trim(), { nextTo: '/set-password' });
+      await sendVerificationEmail(email.trim());
       toast.success('Verification link sent again.');
       setResendIn(45);
     } catch (err) {
@@ -142,11 +132,12 @@ const SignUpPage: React.FC = () => {
           >
             <MaterialIcon name="mail_check" className="h-6 w-6" />
           </motion.div>
+          {error && <p role="alert" className="text-sm text-rose-700">{error}</p>}
           <div className="space-y-2">
             <p className="text-sm text-slate-700 leading-relaxed">
-              We sent a verification link to{' '}
+              Your password is set. Verify the email address{' '}
               <strong className="text-slate-900">{email.trim()}</strong>. Open it on this device to
-              activate your account and <strong className="text-slate-900">choose your password</strong>.
+              verify your address. Your password is already set.
             </p>
             <p className="text-xs text-slate-500">
               Tip: check your spam folder if it hasn’t arrived within a few minutes.
@@ -161,13 +152,7 @@ const SignUpPage: React.FC = () => {
             >
               {resendIn > 0 ? `Resend link available in ${resendIn}s` : 'Resend verification link'}
             </button>
-            <button
-              type="button"
-              onClick={() => setPendingVerification(false)}
-              className="text-[11px] font-bold text-slate-500 hover:text-slate-800 cursor-pointer"
-            >
-              Wrong email? Edit details
-            </button>
+            <Link to="/dashboard" className="text-sm font-bold text-amber-800">Continue to dashboard</Link>
           </div>
           <Link to="/login" className="inline-block text-[11px] font-bold text-amber-800 hover:underline">
             Already have an account? Sign in
@@ -222,23 +207,21 @@ const SignUpPage: React.FC = () => {
             placeholder="e.g. Ashif Ahmed"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            aria-invalid={Boolean(fieldErrors.name)}
+            aria-invalid={Boolean(fieldErrors.name)} aria-describedby={fieldErrors.name ? 'signup-name-error' : undefined}
             className={inputClass}
           />
-          {fieldErrors.name && <p className="mt-1 text-[11px] font-semibold text-rose-700">{fieldErrors.name}</p>}
+          {fieldErrors.name && <p id="signup-name-error" className="mt-1 text-[11px] font-semibold text-rose-700">{fieldErrors.name}</p>}
         </div>
 
         <UsernameField
-          id="signup-username"
+          id="signup-username" externalError={fieldErrors.username}
           value={username}
           onChange={setUsername}
           fullName={name}
           email={email}
           autoFocus
         />
-        {fieldErrors.username && (
-          <p className="-mt-2 text-[11px] font-semibold text-rose-700">{fieldErrors.username}</p>
-        )}
+
 
         <div>
           <label className="block text-xs font-bold text-slate-800 mb-1.5" htmlFor="signup-email">
@@ -254,28 +237,30 @@ const SignUpPage: React.FC = () => {
             placeholder="you@example.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            aria-invalid={Boolean(fieldErrors.email)}
+            aria-invalid={Boolean(fieldErrors.email)} aria-describedby={fieldErrors.email ? 'signup-email-error' : undefined}
             className={inputClass}
           />
-          {fieldErrors.email && <p className="mt-1 text-[11px] font-semibold text-rose-700">{fieldErrors.email}</p>}
+          {fieldErrors.email && <p id="signup-email-error" className="mt-1 text-[11px] font-semibold text-rose-700">{fieldErrors.email}</p>}
           <p className="mt-1 text-[11px] text-slate-400">
-            We’ll email you a verification link to activate the account and set your password.
+            Create your password below. We’ll also send an email to verify your address.
           </p>
         </div>
 
-        {/* ── Social sign-up first: Google, then compact provider icons ── */}
-        <AuthSocialButtons label="Sign up with Google" onSuccess={() => navigate(next, { replace: true })} />
-
-        <div className="relative flex items-center justify-center pt-1" aria-hidden="true">
-          <div className="border-t border-slate-200 w-full" />
-          <span className="bg-white px-3 text-[10px] text-slate-400 font-bold uppercase tracking-wider absolute">
-            or sign up with email
-          </span>
-        </div>
+        <label className="block text-xs font-bold text-slate-800" htmlFor="signup-password">Password
+          <input id="signup-password" type="password" required autoComplete="new-password" value={password}
+            onChange={(e) => setPassword(e.target.value)} className={inputClass} aria-invalid={Boolean(fieldErrors.password)} aria-describedby={fieldErrors.password ? 'signup-password-error' : undefined} />
+        </label>
+        <p className="text-xs text-slate-500">At least 8 characters, uppercase and lowercase letters, a number and a symbol.</p>
+        {fieldErrors.password && <p id="signup-password-error" role="alert" className="text-xs text-rose-700">{fieldErrors.password}</p>}
+        <label className="block text-xs font-bold text-slate-800" htmlFor="signup-confirmation">Confirm password
+          <input id="signup-confirmation" type="password" required autoComplete="new-password" value={confirmation}
+            onChange={(e) => setConfirmation(e.target.value)} className={inputClass} aria-invalid={Boolean(fieldErrors.confirmation)} aria-describedby={fieldErrors.confirmation ? 'signup-confirmation-error' : undefined} />
+        </label>
+        {fieldErrors.confirmation && <p id="signup-confirmation-error" role="alert" className="text-xs text-rose-700">{fieldErrors.confirmation}</p>}
 
         <label htmlFor="signup-terms" className="flex items-start gap-2.5 cursor-pointer select-none">
           <input
-            id="signup-terms"
+            id="signup-terms" aria-invalid={Boolean(fieldErrors.terms)} aria-describedby={fieldErrors.terms ? 'signup-terms-error' : undefined}
             type="checkbox"
             checked={acceptedTerms}
             onChange={(e) => setAcceptedTerms(e.target.checked)}
@@ -293,7 +278,7 @@ const SignUpPage: React.FC = () => {
             , including weather-data processing for my district.
           </span>
         </label>
-        {fieldErrors.terms && <p className="-mt-2 text-[11px] font-semibold text-rose-700">{fieldErrors.terms}</p>}
+        {fieldErrors.terms && <p id="signup-terms-error" className="-mt-2 text-[11px] font-semibold text-rose-700">{fieldErrors.terms}</p>}
 
         <button
           id="signup-page-submit-btn"
@@ -305,14 +290,15 @@ const SignUpPage: React.FC = () => {
           {loading ? (
             <>
               <span className="h-4 w-4 animate-spin rounded-full border-2 border-slate-800 border-t-transparent" />
-              Sending verification link…
+              Creating account…
             </>
           ) : (
-            'Create account — email me a verification link'
+            'Create account with email'
           )}
         </button>
       </form>
-
+      <p className="text-center text-xs text-slate-500">Or continue with Google or GitHub. Accept the terms above first.</p>
+      <AuthSocialButtons label="Sign up with Google" disabled={!acceptedTerms || loading} onSuccess={() => navigate(next, { replace: true })} />
       <p className="text-center text-xs sm:text-[13px] text-slate-600">
         Already have an account?{' '}
         <Link

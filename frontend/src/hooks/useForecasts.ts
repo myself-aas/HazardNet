@@ -1,3 +1,4 @@
+import { isVerifiedForecastFresh } from '../lib/profileForecast';
 /**
  * Forecast data hooks — TanStack Query wrappers around
  * `GET /api/v1/forecasts/bulk` (the Kaggle pipeline's serving path).
@@ -34,12 +35,14 @@ export async function loadForecasts(horizon: ForecastHorizon): Promise<ForecastR
       throw new Error(`Forecast API responded ${res.status}`);
     }
     const rows = parseBulkResponse(await res.json());
-    if (rows.length > 0) return rows;
+    const runs = new Set(rows.map(row => row.forecast_run_id || 'unverified'));
+    if (runs.size > 1) throw new Error('Mixed forecast publications are not a coherent dataset');
+    if (rows.length > 0) return rows.map(row => ({ ...row, source_kind: 'api' as const }));
   } catch {
     // fall through to the committed legacy snapshot
   }
   const snapshotRows = await fetchStaticForecastSnapshot(horizon);
-  if (snapshotRows.length > 0) return snapshotRows;
+  if (snapshotRows.length > 0) return snapshotRows.map(row => ({ ...row, source_kind: 'snapshot' as const }));
   throw new Error('Forecast API and legacy snapshot are both unavailable');
 }
 
@@ -72,6 +75,7 @@ export interface LiveDistricts {
   isLive: boolean;
   /** Fetch in flight and no data yet (static baseline is already usable). */
   isPending: boolean;
+  refresh: () => Promise<void>;
 }
 
 /**
@@ -79,21 +83,22 @@ export interface LiveDistricts {
  * when available, static baseline otherwise — consumers never need to branch.
  */
 export function useLiveDistricts(horizon: ForecastHorizon = '7_days'): LiveDistricts {
-  const { data, isPending } = useForecasts(horizon);
+  const { data, isPending, refetch } = useForecasts(horizon);
 
   return useMemo(() => {
     const rows = data ?? [];
     const { districts, matched, predictionDate } = applyForecastsToDistricts(ALL_64_DISTRICTS, rows);
     return {
       districts,
+      refresh: async () => { const result = await refetch(); if (result.error) throw result.error; },
       // Rolled up to districts when the rows are ADM3-shaped (ADR 0006 8d).
       forecastByDistrict: buildForecastIndex(effectiveDistrictRows(rows)),
       liveCount: matched,
       predictionDate,
-      isLive: matched > 0,
+      isLive: matched > 0 && rows.every(row => row.source_kind === 'api' && isVerifiedForecastFresh(row)),
       isPending: isPending && matched === 0,
     };
-  }, [data, isPending]);
+  }, [data, isPending, refetch]);
 }
 
 /** Re-exported for callers that need the type guard next to a horizon toggle. */

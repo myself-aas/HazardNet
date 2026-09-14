@@ -1,4 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import { AccessibleDialog } from '../components/ui/AccessibleDialog';
+import { useHazardContext } from '../hooks/useHazardContext';
+import { districtFor, dhakaTime } from '../lib/hazardUx';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
@@ -38,6 +41,9 @@ import { PdfExportButton } from '../components/PdfExportButton';
 export const AdvisoriesPage: React.FC = () => {
   const { subCategory } = useParams<{ subCategory?: string }>();
   const navigate = useNavigate();
+  const { horizon, district: contextDistrict, params } = useHazardContext();
+  const contextName = districtFor(contextDistrict)?.name || '';
+
 
   // Active sector resolution
   const activeSectorId = subCategory && SECTOR_ADVISORIES[subCategory] ? subCategory : 'crops';
@@ -46,7 +52,7 @@ export const AdvisoriesPage: React.FC = () => {
   // Redirect /advisories to /advisories/crops for unique clean URL
   useEffect(() => {
     if (!subCategory || !SECTOR_ADVISORIES[subCategory]) {
-      navigate('/advisories/crops', { replace: true });
+      navigate(`/advisories/crops?${params.toString()}`, { replace: true });
     }
   }, [subCategory, navigate]);
 
@@ -55,22 +61,26 @@ export const AdvisoriesPage: React.FC = () => {
   
   // Interactive Email Modal State
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
-  const [selectedDistrictForEmail, setSelectedDistrictForEmail] = useState<string>('Kurigram');
-  const [affectedUpazilas, setAffectedUpazilas] = useState<string>('Chilmari, Ulipur, Roumari');
-  const [customOfficerName, setCustomOfficerName] = useState<string>('Md. Rafiqul Islam (Upazila Coordinator)');
-  const [customOfficerPhone, setCustomOfficerPhone] = useState<string>('+8801712-345678');
-  const [customDamageArea, setCustomDamageArea] = useState<string>('4,500');
+  const [selectedDistrictForEmail, setSelectedDistrictForEmail] = useState<string>(contextName);
+  const [affectedUpazilas, setAffectedUpazilas] = useState<string>('');
+  const [customOfficerName, setCustomOfficerName] = useState<string>('');
+  const [customOfficerPhone, setCustomOfficerPhone] = useState<string>('');
+  const [customDamageArea, setCustomDamageArea] = useState<string>('');
 
   // Gemini Live AI Advisory Generator State
   const [showAiSynthesizer, setShowAiSynthesizer] = useState(false);
-  const [aiDistrict, setAiDistrict] = useState<string>('Kurigram');
+  const [aiDistrict, setAiDistrict] = useState<string>(contextName);
   const [aiHazard, setAiHazard] = useState<string>('Monsoon Flood');
   const [aiSeverity, setAiSeverity] = useState<number>(0.85);
   const [aiConfidence, setAiConfidence] = useState<number>(0.92);
-  const [aiCropContext, setAiCropContext] = useState<string>('T. Aman Rice (Vegetative Tillering Stage)');
+  const [aiCropContext, setAiCropContext] = useState<string>('');
   const [aiLoading, setAiLoading] = useState<boolean>(false);
   const [aiAdvisoryData, setAiAdvisoryData] = useState<any | null>(null);
+  const requestRef = useRef<AbortController | null>(null);
   const [aiError, setAiError] = useState<string | null>(null);
+
+  useEffect(() => { setSelectedDistrictForEmail(contextName); setAiDistrict(contextName); setAffectedUpazilas(''); }, [contextName]);
+  useEffect(() => { requestRef.current?.abort(); setAiAdvisoryData(null); setAiLoading(false); return () => requestRef.current?.abort(); }, [aiDistrict, aiHazard, aiSeverity, aiConfidence, aiCropContext, horizon]);
 
   // Filtered steps
   const filteredProtocols = selectedPhase === 'all'
@@ -80,20 +90,20 @@ export const AdvisoriesPage: React.FC = () => {
   // Generate dynamic email body
   const generatePopulatedEmail = () => {
     let body = sector.emailTemplate.bodyStructure;
-    body = body.replace(/\[DISTRICT_NAME\]/g, selectedDistrictForEmail);
+    body = body.replace(/\[DISTRICT_NAME\]/g, selectedDistrictForEmail || '[Select district]');
     body = body.replace(/\[UPAZILAS_AFFECTED\]/g, affectedUpazilas || '[Upazilas]');
-    body = body.replace(/\[AREA_IN_HECTARES\]/g, customDamageArea || '1,200');
-    body = body.replace(/\[OFFICER_NAME\]/g, customOfficerName || 'Authorized Officer');
+    body = body.replace(/\[AREA_IN_HECTARES\]/g, customDamageArea || 'Unknown / not assessed');
+    body = body.replace(/\[OFFICER_NAME\]/g, customOfficerName || '[Your name and role]');
     body = body.replace(/\[OFFICER_PHONE\]/g, customOfficerPhone || '+8801XXXXXXXXX');
-    body = body.replace(/\[YOUR_NAME_AND_DESIGNATION\]/g, customOfficerName || 'Authorized Disaster Focal Officer');
+    body = body.replace(/\[YOUR_NAME_AND_DESIGNATION\]/g, customOfficerName || '[Your name and role]');
     body = body.replace(/\[PHONE_NUMBER\]/g, customOfficerPhone || '+8801XXXXXXXXX');
-    return body;
+    return `UNSENT DRAFT — review all facts and verify the recipient. Not a government directive.\n\n${body}`;
   };
 
-  const handleCopyEmail = () => {
+  const handleCopyEmail = async () => {
     const emailText = `To: ${sector.emailTemplate.recipientDefault}\nSubject: ${sector.emailTemplate.subject.replace(/\[DISTRICT_NAME\]/g, selectedDistrictForEmail)}\n\n${generatePopulatedEmail()}`;
-    navigator.clipboard.writeText(emailText);
-    toast.success('Official emergency requisition email copied to clipboard!', {
+    try { await navigator.clipboard.writeText(emailText); } catch { toast.error('Copy failed. Select and copy the preview below.'); return; }
+    toast.success('Unsent draft copied. Nothing has been sent.', {
       icon: <CheckCircle2 className="w-5 h-5 text-emerald-600" />
     });
   };
@@ -105,8 +115,8 @@ export const AdvisoriesPage: React.FC = () => {
     window.location.href = `mailto:${to}?subject=${subject}&body=${body}`;
   };
 
-  const handleCopyUrl = () => {
-    navigator.clipboard.writeText(window.location.href);
+  const handleCopyUrl = async () => {
+    try { await navigator.clipboard.writeText(window.location.href); } catch { toast.error('Copy failed. Copy the address from your browser.'); return; }
     toast.success(`Copied unique URL for ${sector.name} to clipboard!`, {
       icon: <Copy className="w-4 h-4 text-emerald-600" />
     });
@@ -117,7 +127,11 @@ export const AdvisoriesPage: React.FC = () => {
     setAiLoading(true);
     setAiError(null);
     try {
+      if (!aiDistrict) throw new Error('Choose a district before generating guidance.');
+      requestRef.current?.abort();
+      const controller = new AbortController(); requestRef.current = controller;
       const response = await fetch('/api/advisory', {
+        signal: controller.signal,
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -126,7 +140,7 @@ export const AdvisoriesPage: React.FC = () => {
           severity_score: aiSeverity,
           confidence: aiConfidence,
           crop_context: aiCropContext,
-          target_date: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+          target_date: new Date(Date.now() + (horizon === '15_days' ? 15 : 7) * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
         })
       });
 
@@ -135,14 +149,16 @@ export const AdvisoriesPage: React.FC = () => {
       }
 
       const data = await response.json();
+      if (controller.signal.aborted) return;
       setAiAdvisoryData(data);
-      toast.success(`Generated real-time AI advisory for ${aiDistrict}!`, {
+      toast.success(`Generated experimental scenario guidance for ${aiDistrict}!`, {
         icon: <Sparkles className="w-4 h-4 text-amber-500" />
       });
     } catch (err: any) {
+      if (err.name === 'AbortError') return;
       console.error('Failed to generate advisory:', err);
       setAiError(err.message || 'Failed to synthesize advisory.');
-      toast.error('Could not reach Gemini API. Showing validated protocol standards.');
+      toast.error('Could not reach Gemini API. Reference guidance remains available. Retry when connected.');
     } finally {
       setAiLoading(false);
     }
@@ -158,18 +174,19 @@ export const AdvisoriesPage: React.FC = () => {
       transition={{ duration: 0.3 }}
       className="max-w-7xl mx-auto space-y-8 pb-16"
     >
+      <section className="hn-panel"><h2>What to do · {contextName || 'Choose your district'}</h2><p>Selected forecast period: {horizon === '15_days' ? '15 days' : '7 days'}. Reference guidance is not a current official warning. AI inputs below are editable scenario assumptions, not observed facts. Verify the district, hazard, severity and crop before generating guidance.</p></section>
       {/* PRINT-ONLY OFFICIAL EMERGENCY BULLETIN HEADER */}
       <div className="print-only mb-6 border-b-2 border-slate-900 pb-4">
         <div className="flex items-center justify-between border-b border-slate-300 pb-2 mb-3 text-[9pt] font-mono font-bold text-slate-700">
-          <span>GOVERNMENT OF THE PEOPLE'S REPUBLIC OF BANGLADESH</span>
-          <span>SOD 2019 COMPLIANT DIRECTIVE</span>
-          <span>EMERGENCY DISPATCH • PUBLIC SAFETY</span>
+          <span>HAZARDNET · INDEPENDENT EXPERIMENTAL GUIDANCE</span>
+          <span>REFERENCE MATERIAL — VERIFY WITH OFFICIAL SOURCES</span>
+          <span>NOT AN EMERGENCY DISPATCH</span>
         </div>
         
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1">
             <h1 className="text-xl font-black text-slate-900 tracking-tight">
-              HAZARDNET BANGLADESH • EMERGENCY OPERATIONAL DIRECTIVE
+              HAZARDNET · REFERENCE GUIDANCE (NOT GOVERNMENT-ISSUED)
             </h1>
             <p className="text-xs text-slate-800 font-bold mt-0.5">
               Sector: {sector.name} ({sector.code}) • Standard Operating Procedures & Technical Action Matrix
@@ -178,7 +195,7 @@ export const AdvisoriesPage: React.FC = () => {
             {/* Prominent 'Last Updated' Timestamp and Advisory Currency Validity Indicator */}
             <div className="flex flex-wrap items-center gap-2 mt-2 pt-1 border-t border-slate-200 text-[8pt] font-mono">
               <span className="print-last-updated">
-                <strong>LAST UPDATED:</strong> {new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}, {new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' })} BST (GMT+6)
+                <strong>DOCUMENT PREPARED:</strong> {dhakaTime(new Date().toISOString())}
               </span>
               <span className="print-currency-tag">
                 VALIDITY: 24-HOUR EARLY WARNING WINDOW
@@ -189,7 +206,7 @@ export const AdvisoriesPage: React.FC = () => {
           {/* Dedicated Vector QR Code for Physical Handouts */}
           <div className="shrink-0">
             <PrintQrCode
-              url={`https://hazardnet.live/advisories/${activeSectorId}`}
+              url={new URL(`/advisories/${activeSectorId}?${params.toString()}`, window.location.origin).href}
               districtOrSector={sector.name}
               title="Live Sector Directive"
               subtitle="Scan for real-time telemetry & AI hazard forecasts"
@@ -216,7 +233,7 @@ export const AdvisoriesPage: React.FC = () => {
               Sectoral Hazard Directives & Emergency Protocols
             </h1>
             <p className="text-xs sm:text-sm text-slate-600 mt-1 max-w-3xl">
-              Official institutional guidelines, operational thresholds, and verified emergency assistance contacts for Bangladesh disaster management.
+              Reference guidance and contact links. Verify current instructions and contact details with the responsible institution before use.
             </p>
           </div>
 
@@ -330,7 +347,7 @@ export const AdvisoriesPage: React.FC = () => {
               <span className="text-xs font-mono font-black tracking-wider uppercase">Emergency Action Desk</span>
             </div>
             <p className="text-[11.5px] text-slate-300 leading-snug">
-              Official coordination desk for immediate seed, vaccine, water purification, and evacuation logistics requisition.
+              Reference coordination contacts; verify availability independently. HazardNet does not operate a coordination desk.
             </p>
             <div className="space-y-2 pt-1 screen-only">
               <button
@@ -402,16 +419,16 @@ export const AdvisoriesPage: React.FC = () => {
                   </div>
                   <div>
                     <h3 className="text-base sm:text-lg font-black text-white flex items-center gap-2">
-                      <span>Gemini 2.5 Dynamic Sector AI Synthesizer</span>
-                      <span className="px-2 py-0.5 rounded-md bg-amber-400 text-slate-950 text-[10px] font-mono font-black">LIVE</span>
+                      <span>Generate scenario guidance</span>
+                      <span className="px-2 py-0.5 rounded-md bg-amber-400 text-slate-950 text-[10px] font-mono font-black">SCENARIO</span>
                     </h3>
                     <p className="text-xs text-slate-400">
-                      Real-time generative intelligence correlating district AEZ soil profiles, river stage thresholds, and sector protocols.
+                      Experimental guidance based on the inputs below, not live observations. Review every recommendation.
                     </p>
                   </div>
                 </div>
                 <button
-                  onClick={() => setShowAiSynthesizer(false)}
+                  aria-label="Close scenario generator" onClick={() => setShowAiSynthesizer(false)}
                   className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 self-start sm:self-auto cursor-pointer"
                 >
                   <X className="w-5 h-5" />
@@ -427,6 +444,7 @@ export const AdvisoriesPage: React.FC = () => {
                     onChange={(e) => setAiDistrict(e.target.value)}
                     className="w-full px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-white text-xs font-semibold focus:outline-none focus:border-amber-400"
                   >
+                    <option value="">Select district</option>
                     {ALL_64_DISTRICTS.map((d) => (
                       <option key={d.id} value={d.name}>
                         {d.name} ({d.division})
@@ -917,20 +935,20 @@ export const AdvisoriesPage: React.FC = () => {
             <div>• Livestock & Veterinary: 16358 | Health Hotline: 16263</div>
           </div>
           <div className="text-right">
-            <strong className="text-slate-900 block mb-1">OFFICIAL DISPATCH AUTHENTICATION:</strong>
+            <strong className="text-slate-900 block mb-1">UNSENT REFERENCE DOCUMENT:</strong>
             <div>HazardNet Bangladesh Disaster Intelligence System</div>
             <div>Statutory Alignment: Standing Orders on Disaster (SOD 2019)</div>
-            <div>Official Field Responder & Disaster Management Handout</div>
+            <div>Experimental guidance — independently verify before use</div>
           </div>
         </div>
         <div className="text-center pt-2 text-[7.5pt] text-slate-500">
-          Official Technical Directive issued for Bangladesh Disaster Management Committees (DMC) at National, District, Upazila, and Union levels.
+          HazardNet reference material. Not issued by a government agency and not a dispatch receipt.
         </div>
       </div>
 
       {/* PRINT-ONLY FIXED RUNNING FOOTER WITH DYNAMIC CSS PAGE NUMBERING */}
       <div className="print-only print-page-footer">
-        <span>HAZARDNET BANGLADESH • SOD 2019 DIRECTIVE</span>
+        <span>HAZARDNET · REFERENCE GUIDANCE</span>
         <span>SECTOR: {sector.name.toUpperCase()} ({sector.code})</span>
         <span className="print-page-number"></span>
       </div>
@@ -938,7 +956,7 @@ export const AdvisoriesPage: React.FC = () => {
       {/* 8. EMERGENCY EMAIL REQUISITION MODAL */}
       <AnimatePresence>
         {isEmailModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs">
+          <AccessibleDialog title="Unsent assistance email draft" onClose={() => setIsEmailModalOpen(false)}>
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -961,7 +979,7 @@ export const AdvisoriesPage: React.FC = () => {
                   </div>
                 </div>
                 <button
-                  onClick={() => setIsEmailModalOpen(false)}
+                  aria-label="Close email draft" onClick={() => setIsEmailModalOpen(false)}
                   className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 cursor-pointer"
                 >
                   <X className="w-5 h-5" />
@@ -971,12 +989,13 @@ export const AdvisoriesPage: React.FC = () => {
               {/* Form Controls to Customize Email */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-slate-700">Select Affected District:</label>
+                  <label className="text-xs font-bold text-slate-700" htmlFor="draft-selectedDistrictForEmail">Select Affected District:</label>
                   <select
-                    value={selectedDistrictForEmail}
-                    onChange={(e) => setSelectedDistrictForEmail(e.target.value)}
+                    id="draft-selectedDistrictForEmail" value={selectedDistrictForEmail}
+                    onChange={(e) => { setSelectedDistrictForEmail(e.target.value); setAffectedUpazilas(''); }}
                     className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs font-semibold text-slate-900 focus:outline-none focus:border-slate-900"
                   >
+                    <option value="">Select district</option>
                     {ALL_64_DISTRICTS.map((d) => (
                       <option key={d.id} value={d.name}>
                         {d.name} ({d.division})
@@ -986,10 +1005,10 @@ export const AdvisoriesPage: React.FC = () => {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-slate-700">Affected Upazilas / Unions:</label>
+                  <label className="text-xs font-bold text-slate-700" htmlFor="draft-affectedUpazilas">Affected Upazilas / Unions:</label>
                   <input
                     type="text"
-                    value={affectedUpazilas}
+                    id="draft-affectedUpazilas" value={affectedUpazilas}
                     onChange={(e) => setAffectedUpazilas(e.target.value)}
                     className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs font-semibold text-slate-900 focus:outline-none focus:border-slate-900"
                     placeholder="e.g. Chilmari, Ulipur, Roumari"
@@ -997,10 +1016,10 @@ export const AdvisoriesPage: React.FC = () => {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-slate-700">Coordinator / Officer Name & Role:</label>
+                  <label className="text-xs font-bold text-slate-700" htmlFor="draft-customOfficerName">Coordinator / Officer Name & Role:</label>
                   <input
                     type="text"
-                    value={customOfficerName}
+                    id="draft-customOfficerName" value={customOfficerName}
                     onChange={(e) => setCustomOfficerName(e.target.value)}
                     className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs font-semibold text-slate-900 focus:outline-none focus:border-slate-900"
                     placeholder="e.g. Md. Rafiqul Islam (Upazila Coordinator)"
@@ -1008,10 +1027,10 @@ export const AdvisoriesPage: React.FC = () => {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-slate-700">Officer Phone / Hotline:</label>
+                  <label className="text-xs font-bold text-slate-700" htmlFor="draft-customOfficerPhone">Officer Phone / Hotline:</label>
                   <input
                     type="text"
-                    value={customOfficerPhone}
+                    id="draft-customOfficerPhone" value={customOfficerPhone}
                     onChange={(e) => setCustomOfficerPhone(e.target.value)}
                     className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-xs font-semibold text-slate-900 focus:outline-none focus:border-slate-900"
                     placeholder="e.g. +8801712-345678"
@@ -1026,6 +1045,7 @@ export const AdvisoriesPage: React.FC = () => {
                   <span className="font-mono text-slate-500">Recipients: {sector.emailTemplate.recipientDefault}</span>
                 </div>
                 <textarea
+                  aria-label="Unsent email preview"
                   readOnly
                   rows={10}
                   value={generatePopulatedEmail()}
@@ -1036,7 +1056,7 @@ export const AdvisoriesPage: React.FC = () => {
               {/* Modal Actions */}
               <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
                 <span className="text-xs text-slate-500">
-                  Ready to send directly via mailto or copy to clipboard for official communications.
+                  Unsent draft. Verify all fields and recipient. Opening your mail app does not send this request.
                 </span>
 
                 <div className="flex items-center gap-2 w-full sm:w-auto">
@@ -1058,7 +1078,7 @@ export const AdvisoriesPage: React.FC = () => {
                 </div>
               </div>
             </motion.div>
-          </div>
+          </AccessibleDialog>
         )}
       </AnimatePresence>
     </motion.div>

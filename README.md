@@ -136,3 +136,10 @@ selects the primary district (falling back to district) from the Firebase profil
 correct/review the notebook units, approve its source SHA, and merge through PR
 review. The supplied legacy notebook/CSV must not be marked SI without correcting
 the calculation inputs. See [setup, data contract and recovery](docs/ops/three-hour-kaggle-forecasts.md).
+
+### Sign-in methods
+
+Only **email/password, Google and GitHub** are supported. Email signup sets the password
+up front; verification email links do not sign users in. Account linking follows the
+same two-provider social allowlist. See [Firebase setup and authentication policy](docs/ops/auth-provider-policy.md)
+for console settings, legacy-account migration and end-to-end verification.

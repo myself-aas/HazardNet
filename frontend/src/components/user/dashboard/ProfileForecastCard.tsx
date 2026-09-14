@@ -1,3 +1,4 @@
+import { dhakaTime, forecastStatus } from '../../../lib/hazardUx';
 import React, { useState } from 'react';
 import { useAuth } from '../../../context/AuthContext';
 import { useForecasts } from '../../../hooks/useForecasts';
@@ -18,6 +19,7 @@ export function ProfileForecastCard() {
         <option value="7_days">7 days</option><option value="15_days">15 days</option>
       </select>
     </label>
+    <button className="hn-button" disabled={forecasts.isFetching} onClick={() => void forecasts.refetch()}>Retry / refresh forecast</button>
     {!district ? <p>Set your primary district in Edit Profile to see your forecast.</p>
       : forecasts.isPending ? <p role="status">Loading forecast for {district}…</p>
         : !row ? <p role="status">No forecast available for {district}. Try again later.</p>
@@ -27,9 +29,9 @@ export function ProfileForecastCard() {
             {row.physics_severity !== undefined && <p>Physics severity: {(row.physics_severity * 100).toFixed(0)} / 100</p>}
             <p>Model confidence: {(row.confidence * 100).toFixed(0)}% — not a probability of harm.</p>
             <p>Prediction: {row.prediction_date} · Target: {row.target_date}</p>
-            {row.generated_at && <p>Generated: {new Date(row.generated_at).toLocaleString()}</p>}
+            {row.generated_at && <p>Generated: {dhakaTime(row.generated_at)}</p>}
             <p role="status" className={fresh ? 'text-emerald-700' : 'text-amber-800'}>
-              {fresh ? 'Fresh, run-verified forecast' : 'Stale or unverified fallback — not a current forecast.'}
+              {forecastStatus(row)}
             </p>
             <p className="text-xs text-slate-500">Experimental model guidance. Check official warnings before making safety decisions.</p>
           </div>}

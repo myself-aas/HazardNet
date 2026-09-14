@@ -37,11 +37,13 @@ export interface UsernameFieldProps {
   /** Show the compact rule checklist (default true). */
   showRules?: boolean;
   placeholder?: string;
+  externalError?: string;
 }
 
 const RULE_PATTERN = /^[a-z][a-z0-9_]{2,19}$/;
 
 export const UsernameField: React.FC<UsernameFieldProps> = ({
+  externalError,
   id = 'username-field',
   label = 'Username',
   value,
@@ -142,7 +144,7 @@ export const UsernameField: React.FC<UsernameFieldProps> = ({
           value={value}
           autoFocus={autoFocus}
           onChange={(event) => onChange(sanitizeUsernameInput(event.target.value))}
-          aria-describedby={`${id}-status`}
+          aria-invalid={Boolean(externalError) || status === 'invalid' || status === 'taken'} aria-describedby={`${id}-status`}
           className="w-full bg-transparent px-2 py-3 text-base sm:text-sm text-slate-900 placeholder-slate-400 font-medium outline-none"
         />
         {status !== 'idle' && (
@@ -158,7 +160,7 @@ export const UsernameField: React.FC<UsernameFieldProps> = ({
 
       {/* Live status line */}
       <p id={`${id}-status`} aria-live="polite" className={`mt-1 text-[11px] font-semibold ${style.text}`} data-testid="username-status">
-        {statusMessage}
+        {externalError || statusMessage}
       </p>
 
       {/* Rule checklist while typing */}

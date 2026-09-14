@@ -227,7 +227,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                         : 'text-slate-700 hover:text-slate-950 hover:bg-slate-900/5'
                     }`}
                   >
-                    <span>Home</span>
+                    <span>Map</span>
                     <motion.span
                       animate={{ rotate: activeMenu === 'home' ? 180 : 0 }}
                       transition={{ duration: 0.2 }}
@@ -365,7 +365,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                         : 'text-slate-700 hover:text-slate-950 hover:bg-slate-900/5'
                     }`}
                   >
-                    <span>Advisories</span>
+                    <span>What to do</span>
                     <motion.span
                       animate={{ rotate: activeMenu === 'advisories' ? 180 : 0 }}
                       transition={{ duration: 0.2 }}
@@ -567,7 +567,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                         : 'text-slate-700 hover:text-slate-950 hover:bg-slate-900/5'
                     }`}
                   >
-                    <span>Analytics</span>
+                    <span>Analyst tools</span>
                     <span className="px-1.5 py-0.5 bg-amber-100 text-amber-800 rounded-md font-mono text-[10px] font-bold tracking-wider border border-amber-300/80">ADMIN</span>
                     <motion.span
                       animate={{ rotate: activeMenu === 'analytics' ? 180 : 0 }}

@@ -20,6 +20,7 @@ import type { DistrictData } from '../data/bangladeshDistricts';
 // ─────────────────────────────────────────────────────────────────────────
 
 export interface ForecastRow {
+  source_kind?: 'api' | 'snapshot';
   district_id: number | string;
   district_name: string;
   horizon: string;
@@ -433,7 +434,7 @@ export function applyForecastsToDistricts(
 
   const merged = districts.map((district) => {
     const row = index.get(canonicalKey(district.name));
-    if (!row) return district;
+    if (!row) return { ...district, risk: severityBin(district.severity) };
 
     matched += 1;
     const rowDate = new Date(row.prediction_date);
