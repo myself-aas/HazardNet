@@ -27,7 +27,7 @@ export function metadataDatasets() {
       id: '7b9ed0ca41d930114260efabb71a7fbf616cb68456d30823ecfc2ac45732fe3c',
       name: 'hazardnet-weekly-forecasts',
       url: 'https://www.kaggle.com/datasets/ashifahmedshuvo/hazardnet-weekly-forecasts/',
-      update_frequency: 'daily',
+      update_frequency: 'every 3 hours',
     },
     {
       id: 'auto-forecast-pipeline',
@@ -39,7 +39,7 @@ export function metadataDatasets() {
 }
 
 export function metadataDataSource() {
-  return process.env.KAGGLE_DATASET || 'ashifahmedshuvo/hazardnet-weekly-forecasts';
+  return process.env.KAGGLE_KERNEL || process.env.KAGGLE_DATASET || 'ashifahmedshuvo/hazardnet-weekly-forecasts';
 }
 
 /**
@@ -113,4 +113,16 @@ export function historyRowsToCsv(rows) {
     lines.push(CSV_COLUMNS.map((c) => csvEscape(row[c])).join(','));
   }
   return `${lines.join('\n')}\n`;
+}
+
+/** Metadata from one serving snapshot; legacy stores retain rollout compatibility. */
+export async function readForecastMetadata(store) {
+  const publication = await store.getLatestPublicationMetadata?.();
+  if (publication) return publication;
+  return {
+    prediction_date: await store.getLatestPredictionDate(),
+    ingestion_timestamp: await store.getLatestIngestionTimestamp(),
+    data_source: metadataDataSource(),
+    notebook_source: process.env.KAGGLE_KERNEL || 'ashifahmedshuvo/hazardnet-auto-forecast-pipeline',
+  };
 }

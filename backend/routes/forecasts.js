@@ -11,6 +11,7 @@ import {
     historyRowsToCsv,
     metadataDatasets,
     metadataDataSource,
+    readForecastMetadata,
 } from '../utils/forecastServe.js';
 import { getForecastStore } from '../forecastStore.js';
 import csv from 'csv-parser';
@@ -184,15 +185,11 @@ router.post('/ingest-csv', async (req, res) => {
 // ─────────────────────────────────────────────────────────
 router.get('/metadata', async (req, res) => {
     try {
-        const predictionDate = await getForecastStore().getLatestPredictionDate();
-        const ingestionTimestamp = await getForecastStore().getLatestIngestionTimestamp();
+        const metadata = await readForecastMetadata(getForecastStore());
         const now = new Date();
         res.setHeader('Cache-Control', 'no-store, max-age=0');
         res.json({
-            prediction_date: predictionDate,
-            ingestion_timestamp: ingestionTimestamp,
-            data_source: metadataDataSource(),
-            notebook_source: 'ashifahmedshuvo/hazardnet-auto-forecast-pipeline',
+            ...metadata,
             datasets: metadataDatasets(),
             generated_at: now.toISOString(),
         });

@@ -106,50 +106,31 @@ def test_no_secrets_context_in_any_if(workflows):
     )
 
 
-def test_data_pipelines_have_write_permissions(workflows):
-    """Pipelines that commit refreshed data need explicit contents:write —
-    the default GITHUB_TOKEN permission set is repo-configurable."""
+def test_only_one_forecast_writer(workflows):
+    active = workflows['forecast-pipeline.yml']
+    assert active['on']['schedule'] == [{'cron': '0 */3 * * *'}]
+    assert active['concurrency'] == {'group': 'forecast-production-writer', 'cancel-in-progress': False}
+    job = active['jobs']['forecast']
+    assert job['environment'] == 'forecast-production'
+    assert 'default_branch' in job['if']
+    assert job['timeout-minutes'] > 90
+    text = json.dumps(active)
+    assert 'kaggle_trigger.py' in text and 'publish_forecasts.mjs' in text
+    assert 'fetch_kaggle_forecast.py' not in text
+    assert 'git push' not in text
     for name in DATA_COMMIT_WORKFLOWS:
-        doc = workflows[name]
-        top = (doc.get('permissions') or {}).get('contents')
-        job_level = [(doc.get('permissions') or {}).get('contents') == 'write']
-        for job in doc['jobs'].values():
-            perms = job.get('permissions') or {}
-            job_level.append(perms.get('contents') == 'write')
-        assert top == 'write' or any(job_level), (
-            f'{name}: needs `permissions: contents: write` (top-level or job-level) '
-            'to push refreshed forecast data'
-        )
+        assert workflows[name]['permissions'] == {'contents': 'read'}
+        if name != 'forecast-pipeline.yml':
+            assert set(workflows[name]['on']) == {'workflow_dispatch'}
+            assert 'FIREBASE_SERVICE_ACCOUNT_JSON' not in json.dumps(workflows[name])
 
 
-def test_data_pipelines_have_concurrency_guards(workflows):
-    for name in DATA_COMMIT_WORKFLOWS:
-        assert 'concurrency' in workflows[name], (
-            f'{name}: missing concurrency guard — overlapping runs would '
-            'race on the data commit'
-        )
-
-
-def test_hourly_workflow_runs_hourly(workflows):
-    doc = workflows['hourly_forecast.yml']
-    schedules = (doc.get('on') or {}).get('schedule') or []
-    crons = [s.get('cron', '') for s in schedules]
-    assert any(c.startswith('5 * * * *') or c.startswith('*/60') or ' * * *' in c
-               for c in crons), (
-        f'hourly_forecast.yml must run hourly; found schedules: {crons}'
-    )
-
-
-def test_manual_ingest_triggers_on_csv_push(workflows):
-    doc = workflows['manual_forecast_ingest.yml']
-    push = (doc.get('on') or {}).get('push') or {}
-    paths = push.get('paths') or []
-    assert any('manual_forecast' in p for p in paths), (
-        'manual_forecast_ingest.yml must trigger on pushes to the manual CSV path'
-    )
-    assert 'workflow_dispatch' in (doc.get('on') or {}), (
-        'manual_forecast_ingest.yml must support manual dispatch'
-    )
+def test_release_gate_covers_every_job(workflows):
+    jobs = workflows['ci.yml']['jobs']
+    gate = jobs['release-gate']
+    assert gate['if'] == 'always()'
+    assert set(gate['needs']) == set(jobs) - {'release-gate'}
+    assert workflows['ci.yml']['permissions'] == {'contents': 'read'}
 
 
 def test_no_workflow_requires_vercel_deploy_credentials(workflows):
@@ -288,3 +269,12 @@ def test_backend_jest_step_excludes_frontend_and_e2e(workflows):
     assert '/e2e/' in patterns, (
         f'{name!r} must ignore /e2e/ (patterns: {patterns})'
     )
+
+
+def test_external_actions_are_immutable(workflows):
+    import re
+    for doc in workflows.values():
+        for job in doc['jobs'].values():
+            for step in job.get('steps', []):
+                if 'uses' in step:
+                    assert re.fullmatch(r'[\w.-]+/[\w.-]+@[a-f0-9]{40}', step['uses'])

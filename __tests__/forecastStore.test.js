@@ -4,7 +4,7 @@
  * Forecast store (backend/forecastStore.js) tests.
  */
 import { getForecastStore, getForecastStoreMode, resetForecastStore } from '../backend/forecastStore.js';
-import { getDocs as _getDocs, writeBatch as _writeBatch, orderBy as _orderBy, limit as _limit } from '../backend/db.js';
+import { getDoc as _getDoc, getDocs as _getDocs, writeBatch as _writeBatch, orderBy as _orderBy, limit as _limit } from '../backend/db.js';
 
 jest.mock('../backend/db.js', () => ({
   db: {},
@@ -14,6 +14,7 @@ jest.mock('../backend/db.js', () => ({
   orderBy: jest.fn(() => ({})),
   limit: jest.fn(() => ({})),
   getDocs: jest.fn(),
+  getDoc: jest.fn().mockResolvedValue({ data: () => undefined }),
   doc: jest.fn(() => ({})),
   writeBatch: jest.fn(() => ({ delete: jest.fn(), set: jest.fn(), commit: jest.fn().mockResolvedValue(true) })),
 }));
@@ -147,4 +148,24 @@ test('failed publication never starts deleting previous forecasts', async () => 
   mockGetDocs.mockResolvedValue({ forEach: (cb) => cb({ id: 'old', ref: 'old-ref' }) });
   await expect(getForecastStore().replaceForecastsForPredictionDate('2026-09-12', [row()])).rejects.toThrow('offline');
   expect(batch.delete).not.toHaveBeenCalled();
+});
+
+describe('verified serving snapshot', () => {
+  afterEach(() => _getDoc.mockResolvedValue({ data: () => undefined }));
+  it('serves the entire latest horizon from one snapshot, not legacy writes', async () => {
+    _getDoc.mockResolvedValue({ data: () => ({ rows: [row({ forecast_run_id: 'new-run' }), row({ horizon: '15_days' })],
+      manifest: { prediction_date: '2026-09-14', kernel: 'configured/notebook', run_id: 'new-run' }, published_at: '2026-09-14T09:31:00Z' }) });
+    const store = getForecastStore();
+    expect((await store.getLatestForecastsByHorizon('7_days'))[0].forecast_run_id).toBe('new-run');
+    expect(await store.getLatestForecastByDistrict(99, '7_days')).toBeNull();
+    expect(await store.getLatestPredictionDate()).toBe('2026-09-14');
+    expect(await store.getLatestIngestionTimestamp()).toBe('2026-09-14T09:31:00Z');
+    expect(await store.getLatestPublicationMetadata()).toMatchObject({ notebook_source: 'configured/notebook', forecast_run_id: 'new-run' });
+    expect(mockGetDocs).not.toHaveBeenCalled();
+  });
+  it('does not silently fall back when the verified snapshot read fails', async () => {
+    _getDoc.mockRejectedValue(new Error('Firestore unavailable'));
+    await expect(getForecastStore().getLatestForecastsByHorizon('7_days')).rejects.toThrow('unavailable');
+    expect(mockGetDocs).not.toHaveBeenCalled();
+  });
 });

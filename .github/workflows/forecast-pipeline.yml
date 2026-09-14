@@ -1,230 +1,80 @@
-name: HazardNet Automated Forecast Pipeline
-
+name: Three-hour verified Kaggle forecasts
 on:
   schedule:
-    # Trigger Kaggle notebook pipeline every 3 hours
-    - cron: '0 */3 * * *'
+    - cron: '0 */3 * * *' # UTC; GitHub schedules may be delayed.
   workflow_dispatch:
-    inputs:
-      force_run:
-        description: 'Force forecast generation'
-        required: false
-        default: 'false'
-
-concurrency:
-  group: forecast-data-${{ github.ref }}
-  cancel-in-progress: false
-
 permissions:
-  contents: write
-
-env:
-  FORECAST_STORE: firestore
-  FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
-  FIREBASE_PROJECT_ID: ${{ vars.FIREBASE_PROJECT_ID }}
-  FIREBASE_DATABASE_ID: ${{ vars.FIREBASE_DATABASE_ID }}
-  KAGGLE_KERNEL: ashifahmedshuvo/hazardnet-auto-forecast-pipeline
-
+  contents: read
+concurrency:
+  group: forecast-production-writer
+  cancel-in-progress: false
 jobs:
-  generate-forecasts:
+  forecast:
+    # Only reviewed default-branch code may access production credentials.
+    if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    environment: forecast-production
     runs-on: ubuntu-latest
-    timeout-minutes: 150
-
+    timeout-minutes: 115
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Set up Python
-        uses: actions/setup-python@v7
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
         with:
           python-version: '3.11'
-          cache: 'pip'
+          cache: pip
           cache-dependency-path: scripts/requirements-pipeline.txt
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v7
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
         with:
           node-version: '22'
-          cache: 'npm'
-
-      - name: Check for required secrets
-        shell: bash
+          cache: npm
+      - name: Install locked dependencies before exposing credentials
         run: |
-          test -n "$FIREBASE_SERVICE_ACCOUNT_JSON" || { echo 'Configure FIREBASE_SERVICE_ACCOUNT_JSON in Actions secrets'; exit 1; }
-          missing=0
-          for secret in KAGGLE_USERNAME KAGGLE_KEY BACKEND_API_KEY; do
-            if [ -z "${!secret}" ]; then
-              echo "❌ Error: $secret secret is not set (repo → Settings → Secrets and variables → Actions)"
-              missing=1
-            fi
+          npm ci --ignore-scripts --no-audit --no-fund
+          pip install -r scripts/requirements-pipeline.txt
+      - name: Preflight production configuration
+        env:
+          KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
+          KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
+          KAGGLE_KERNEL: ${{ vars.KAGGLE_KERNEL }}
+          KAGGLE_SOURCE_SHA256: ${{ vars.KAGGLE_SOURCE_SHA256 }}
+          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+          FIREBASE_PROJECT_ID: ${{ vars.FIREBASE_PROJECT_ID }}
+          FIREBASE_DATABASE_ID: ${{ vars.FIREBASE_DATABASE_ID }}
+        run: |
+          for key in KAGGLE_USERNAME KAGGLE_KEY KAGGLE_KERNEL KAGGLE_SOURCE_SHA256 FIREBASE_SERVICE_ACCOUNT_JSON FIREBASE_PROJECT_ID FIREBASE_DATABASE_ID; do
+            test -n "${!key}" || { echo "::error::Configure $key in forecast-production"; exit 1; }
           done
-          if [ "$missing" -ne 0 ]; then exit 1; fi
-          echo "✅ Required secrets present (store: $FORECAST_STORE)."
+      - name: Trigger new notebook version and await verified output
         env:
           KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
           KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
-          BACKEND_API_KEY: ${{ secrets.BACKEND_API_KEY }}
-
-      - name: Cache node_modules
-        uses: actions/cache@v4
-        with:
-          path: |
-            node_modules
-            frontend/node_modules
-            ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-
-      - name: Install dependencies
-        run: |
-          npm ci --no-audit --no-fund
-          pip install --requirement scripts/requirements-pipeline.txt
-
-      - name: Validate Firebase environment variables
-        run: node scripts/validate_env.mjs
-
-      - name: Configure Kaggle CLI
-        shell: bash
-        run: |
-          mkdir -p ~/.kaggle
-          echo "{\"username\":\"$KAGGLE_USERNAME\",\"key\":\"$KAGGLE_KEY\"}" > ~/.kaggle/kaggle.json
-          chmod 600 ~/.kaggle/kaggle.json
-          kaggle --version
+          KAGGLE_KERNEL: ${{ vars.KAGGLE_KERNEL }}
+          KAGGLE_SOURCE_SHA256: ${{ vars.KAGGLE_SOURCE_SHA256 }}
+        run: python scripts/kaggle_trigger.py --timeout-minutes 90
+      - name: Publish complete snapshot atomically to Firebase
         env:
-          KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
-          KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
-
-      - name: Trigger Kaggle Notebook Run
-        id: kaggle_trigger
-        env:
-          KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
-          KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
-          KAGGLE_KERNEL: ashifahmedshuvo/hazardnet-auto-forecast-pipeline
+          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+          FIREBASE_PROJECT_ID: ${{ vars.FIREBASE_PROJECT_ID }}
+          FIREBASE_DATABASE_ID: ${{ vars.FIREBASE_DATABASE_ID }}
+        run: node scripts/publish_forecasts.mjs > .forecast-run/receipt.json
+      - name: Publication summary
         run: |
-          python scripts/kaggle_trigger.py --kernel "$KAGGLE_KERNEL" --max-retries 45 --poll-interval 30
-
-      - name: Download Output CSV from Kaggle
-        id: fetch_forecast
-        env:
-          KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
-          KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
-          KAGGLE_KERNEL: ashifahmedshuvo/hazardnet-auto-forecast-pipeline
-        run: |
-          python scripts/fetch_kaggle_forecast.py --kernel "$KAGGLE_KERNEL" --dest data/kaggle_notebook_output --attempts 5 --retry-delay 30
-
-      - name: Validate Forecast Data
-        run: |
-          python scripts/validate_forecasts.py
-
-      - name: Ingest refreshed CSV into Firebase and backend store
-        env:
-          BACKEND_API_KEY: ${{ secrets.BACKEND_API_KEY }}
-          PORT: '3001'
-        run: |
-          node backend/server.js > backend-server.log 2>&1 &
-          BACKEND_PID=$!
-          trap 'kill "$BACKEND_PID" 2>/dev/null || true' EXIT
-          for attempt in $(seq 1 30); do
-            if curl -fsS "http://127.0.0.1:${PORT}/health" >/dev/null; then
-              break
-            fi
-            sleep 2
-          done
-          curl -fsS -X POST "http://127.0.0.1:${PORT}/api/v1/forecasts/update" \
-            -H "Authorization: Bearer ${BACKEND_API_KEY}" \
-            -F "file=@backend/data/forecasts/hazardnet_forecasts_latest.csv" \
-            -o ingest-response.json
-          jq -e '.status == "success"' ingest-response.json >/dev/null
-          cat ingest-response.json
-
-      - name: Rebuild website snapshot
-        run: |
-          node scripts/build_forecast_snapshot.mjs
-          echo "### 3-Hour forecast refresh — $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_STEP_SUMMARY"
-          jq -r '"- prediction_date: " + (.prediction_date // "unknown")' frontend/public/data/forecasts-latest.json >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Archive Historical Forecasts
-        run: |
-          TIMESTAMP=$(date +%Y-%m-%d_%H-%M-%S)
-          mkdir -p backend/data/forecasts/archive/${TIMESTAMP}
-
-          if [ -f backend/data/forecasts/hazardnet_forecasts_latest.csv ]; then
-            cp backend/data/forecasts/hazardnet_forecasts_latest.csv \
-               backend/data/forecasts/archive/${TIMESTAMP}/
-          fi
-
-          if [ -f backend/data/forecasts/hazardnet_forecasts_latest.json ]; then
-            cp backend/data/forecasts/hazardnet_forecasts_latest.json \
-               backend/data/forecasts/archive/${TIMESTAMP}/
-          fi
-
-          echo "Archived forecasts to archive/${TIMESTAMP}/"
-
-      - name: Commit Forecast Data
-        run: |
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          git add backend/data/forecasts/ frontend/public/data/forecasts-latest.json
-
-          if git diff --staged --quiet; then
-            echo "No changes to commit"
-          else
-            git pull --rebase --autostash origin "${GITHUB_REF_NAME}" || true
-            git commit -m "chore(data): update 3-hour forecasts $(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-                        -m "Automated 3-hour forecast update from Kaggle pipeline" \
-                        -m "Timestamp: $(date -u +"%Y-%m-%dT%H:%M:%SZ")"
-            git push origin "HEAD:${GITHUB_REF_NAME}"
-          fi
-
-      - name: Upload Artifacts
+          echo '### Verified Kaggle publication' >> "$GITHUB_STEP_SUMMARY"
+          jq -r '"- Run: " + .run_id + "\n- Result: " + .status' .forecast-run/receipt.json >> "$GITHUB_STEP_SUMMARY"
+      - name: Archive validated outputs only (never notebook source or execution logs)
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
-          name: forecast-outputs
+          name: forecast-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
-            backend/data/forecasts/hazardnet_forecasts_latest.csv
-            backend/data/forecasts/hazardnet_forecasts_latest.json
-            frontend/public/data/forecasts-latest.json
-          retention-days: 90
-
-      - name: Notify on Failure
+            .forecast-run/hazardnet_forecasts_latest.csv
+            .forecast-run/hazardnet_run.json
+            .forecast-run/publication.json
+            .forecast-run/receipt.json
+          include-hidden-files: true
+          if-no-files-found: ignore
+          retention-days: 14
+      - name: Report failed refresh
         if: failure()
-        run: |
-          echo "⚠️ Forecast pipeline failed! Check logs for details."
-          echo "::error::Forecast generation or validation failed"
-
-      - name: Check Forecast Freshness
-        if: success()
-        run: |
-          if [ -f backend/data/forecasts/hazardnet_forecasts_latest.json ]; then
-            SOURCE=backend/data/forecasts/hazardnet_forecasts_latest.json
-          else
-            SOURCE=backend/data/forecasts/hazardnet_forecasts_latest.csv
-          fi
-          FORECAST_AGE_HOURS=$(python3 -c "
-          import csv, json, sys
-          from datetime import datetime, timezone
-          src = '$SOURCE'
-          if src.endswith('.json'):
-              with open(src) as f:
-                  dates = [r['prediction_date'] for r in json.load(f)]
-          else:
-              with open(src, newline='') as f:
-                  dates = [r['prediction_date'] for r in csv.DictReader(f)]
-          latest = max(dates)
-          pred = datetime.fromisoformat(latest)
-          if pred.tzinfo is None:
-              pred = pred.replace(tzinfo=timezone.utc)
-          age = (datetime.now(timezone.utc) - pred).total_seconds() / 3600
-          print(int(age))
-          print(latest, file=sys.stderr)
-          ")
-
-          if [ "$FORECAST_AGE_HOURS" -gt 48 ]; then
-            echo "::warning::Forecasts are ${FORECAST_AGE_HOURS} hours old (stale threshold: 48hrs)"
-          else
-            echo "✅ Forecasts are fresh (${FORECAST_AGE_HOURS} hours old)"
-          fi
+        run: echo '::error::Refresh failed. Last successful Firebase publication remains active; inspect run and notebook contract.'

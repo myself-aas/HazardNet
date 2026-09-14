@@ -22,8 +22,8 @@ APIs, and an authenticated Python LiteRT service running the checked-in FP32 mod
 - Displays Bangladesh district hazard maps and ingested forecast bulletins with
   model/physics severity fields, historical exports and freshness metadata.
 - Uses **7/15-day** archive/API horizons in the current validators. Forecast
-  production runs every three hours in Actions, latest-output refresh hourly,
-  and a weekly job creates a patch release. The external Kaggle notebook's
+  production uses one verified three-hour Actions pipeline; duplicate hourly,
+  weekly and manual writers are retired. No scheduled job commits data or creates releases. The external Kaggle notebook's
   scientific outputs require separate validation.
 - Runs **real uploaded tensor/TIFF data** through the checked-in trained FP32
   TFLite model via the model service. No fabricated prediction on errors.
@@ -123,3 +123,16 @@ add regression tests, and submit a pull request with test evidence and known
 limits. Keep datasets/generated artifacts/secrets out of Git unless explicitly
 required by existing data workflows. Licensed under [MIT](LICENSE); external
 model training data and boundary datasets retain their own terms.
+
+### Verified three-hour forecasts
+
+The new pipeline pulls approved private Kaggle notebook source, triggers a **new
+version**, waits up to 90 minutes (usual runtime may be 25–30 minutes), verifies
+its run marker, hash, SI units and all 128 rows, then publishes one atomic Firebase
+serving snapshot. Express and Vercel read the same snapshot. The user dashboard
+selects the primary district (falling back to district) from the Firebase profile.
+
+**Activation is gated:** configure the protected `forecast-production` environment,
+correct/review the notebook units, approve its source SHA, and merge through PR
+review. The supplied legacy notebook/CSV must not be marked SI without correcting
+the calculation inputs. See [setup, data contract and recovery](docs/ops/three-hour-kaggle-forecasts.md).

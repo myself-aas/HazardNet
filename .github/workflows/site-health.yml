@@ -2,7 +2,7 @@ name: Site Health Probe
 
 # External black-box probe for the production deployment (monitoring gap
 # closure): every 30 minutes, verify the site renders and the forecast API
-# serves data no older than 10 days. Failures are visible in Actions (and can
+# serves data ingested within six hours. Failures are visible in Actions (and can
 # be wired to Slack/email via the notify step's webhook inputs).
 
 on:
@@ -19,7 +19,7 @@ permissions:
 
 env:
   SITE_URL: https://hazardnet.live
-  MAX_DATA_AGE_DAYS: '10'
+  MAX_DATA_AGE_HOURS: '6'
 
 jobs:
   probe:
@@ -60,13 +60,25 @@ jobs:
             cat /tmp/metadata.json
             exit 1
           fi
-          AGE_DAYS=$(( ( $(date +%s) - $(date -d "$PREDICTION_DATE" +%s) ) / 86400 ))
-          echo "data age: ${AGE_DAYS} days (threshold: ${MAX_DATA_AGE_DAYS})"
-          if [ "$AGE_DAYS" -gt "$MAX_DATA_AGE_DAYS" ]; then
-            echo "::error::forecast data is ${AGE_DAYS} days old (>${MAX_DATA_AGE_DAYS}) — pipeline may be stalled"
+          INGESTED=$(jq -er '.ingestion_timestamp | select(type == "string" and length > 0)' /tmp/metadata.json)
+          AGE_SECONDS=$(( $(date +%s) - $(date -d "$INGESTED" +%s) ))
+          if [ "$AGE_SECONDS" -lt -300 ] || [ "$AGE_SECONDS" -gt "$((MAX_DATA_AGE_HOURS * 3600))" ]; then
+            echo "::error::Forecast ingestion age ${AGE_SECONDS}s outside allowed six-hour window"
             exit 1
           fi
           echo "✅ Forecast data is fresh"
+
+      - name: Require both complete forecast horizons
+        run: |
+          for horizon in 7_days 15_days; do
+            curl -fsS --retry 2 --max-time 30 "$SITE_URL/api/v1/forecasts/bulk?horizon=$horizon" -o /tmp/bulk.json
+            jq -e --arg horizon "$horizon" '
+              (.forecasts | length) == 64 and
+              ([.forecasts[].district_id] | unique | length) == 64 and
+              all(.forecasts[]; .horizon == $horizon and (.forecast_run_id | type) == "string") and
+              ([.forecasts[].forecast_run_id] | unique | length) == 1
+            ' /tmp/bulk.json >/dev/null
+          done
 
       - name: Summarize
         if: always()

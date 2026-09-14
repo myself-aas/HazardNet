@@ -6,7 +6,7 @@ import { createHash } from 'node:crypto';
  * Read-shape: numeric fields as JS numbers, dates as 'YYYY-MM-DD' strings.
  */
 
-import { db, collection, getDocs, query, where, orderBy, limit, doc, writeBatch } from './db.js';
+import { db, collection, getDocs, getDoc, query, where, orderBy, limit, doc, writeBatch } from './db.js';
 
 export function getForecastStoreMode() {
   return 'firestore';
@@ -31,11 +31,37 @@ export function resetForecastStore() {
 // Firestore implementation
 // ─────────────────────────────────────────────────────────────────────────
 
+async function currentPublication() {
+  const snapshot = await getDoc(doc(collection(db, 'forecast_publications'), 'current'));
+  // Missing snapshot allows a coordinated rollout from the legacy store.
+  // Read errors must propagate; never silently serve old data on Firebase failure.
+  return snapshot.data() || null;
+}
+
 function createFirestoreStore() {
   return {
     mode: 'firestore',
 
+    async getLatestPublicationMetadata() {
+      const current = await currentPublication();
+      if (!current) return null;
+      return {
+        prediction_date: current.manifest.prediction_date,
+        ingestion_timestamp: current.published_at,
+        data_source: current.manifest.kernel,
+        notebook_source: current.manifest.kernel,
+        forecast_run_id: current.manifest.run_id,
+        completed_at: current.manifest.completed_at,
+        kaggle_version: current.manifest.kaggle_version,
+        csv_sha256: current.manifest.csv_sha256,
+        model_sha256: current.manifest.model_sha256,
+        contract_version: current.manifest.contract_version,
+      };
+    },
+
     async getLatestForecastByDistrict(districtId, horizon) {
+      const current = await currentPublication();
+      if (current) return current.rows.find((r) => r.district_id === districtId && r.horizon === horizon) || null;
       const q = query(
         collection(db, 'forecasts'),
         where('district_id', '==', districtId),
@@ -50,6 +76,8 @@ function createFirestoreStore() {
     },
 
     async getLatestForecastsByHorizon(horizon) {
+      const current = await currentPublication();
+      if (current) return current.rows.filter((r) => r.horizon === horizon);
       const q = query(collection(db, 'forecasts'), where('horizon', '==', horizon));
       const snap = await getDocs(q);
       const districtMap = new Map();
@@ -66,6 +94,8 @@ function createFirestoreStore() {
     /** Newest prediction_date across all horizons ('YYYY-MM-DD' | null).
      *  Cheap freshness probe for the /metrics gauge: one indexed doc read. */
     async getLatestPredictionDate() {
+      const current = await currentPublication();
+      if (current) return current.manifest.prediction_date;
       const q = query(collection(db, 'forecasts'), orderBy('prediction_date', 'desc'), limit(1));
       const snap = await getDocs(q);
       let latest = null;
@@ -78,6 +108,8 @@ function createFirestoreStore() {
 
     /** Latest ingestion timestamp (created_at) from any forecast record. */
     async getLatestIngestionTimestamp() {
+      const current = await currentPublication();
+      if (current) return current.published_at;
       const q = query(collection(db, 'forecasts'), orderBy('created_at', 'desc'), limit(1));
       const snap = await getDocs(q);
       let latest = null;
