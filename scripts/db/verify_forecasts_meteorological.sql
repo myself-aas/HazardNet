@@ -86,7 +86,16 @@ order by ord;
 -- and still reports FAIL rather than erroring — on a database where 007 has
 -- not been applied yet. A missing column simply yields no key in the JSON, so
 -- it can never make the checks below look better than they are.
-with latest as (
+with cols as (
+  -- Distinguishes the two ways check 11 can fail, which need different fixes.
+  select count(*) as present
+  from information_schema.columns
+  where table_schema = 'public' and table_name = 'forecasts'
+    and column_name in ('temperature_mean', 'temperature_max', 'temperature_min',
+                        'precipitation_mm', 'wind_max_kmh', 'dewpoint_mean',
+                        'solar_radiation_mj_m2', 'evapotranspiration_mm')
+),
+latest as (
   select to_jsonb(f) as j
   from public.forecasts f
   where prediction_date = (select max(prediction_date) from public.forecasts)
@@ -126,8 +135,10 @@ from (
          when rows_with_weather = rows_total then 'PASS'
          else 'FAIL' end,
     case when rows_total = 0 then 'no data to check'
-      when rows_with_weather = 0 then 'the columns are missing or the ingest is still writing the old 15-column INSERT — apply 007 and re-run the ingest'
-      else rows_with_weather || ' of ' || rows_total || ' rows have a temperature_mean' end
+      when rows_with_weather = rows_total then rows_with_weather || ' of ' || rows_total || ' rows have a temperature_mean'
+      when (select present from cols) < 8
+        then 'the columns are missing — apply 007_forecasts_meteorological.sql first'
+      else 'the columns exist, but these rows were written before the store carried them — re-run an ingest (weekly_forecast / hourly_forecast, or manual_forecast_ingest) to backfill. Note that only the rows for the re-ingested prediction_date are refreshed; older prediction dates keep NULL weather.' end
   from totals
 
   union all

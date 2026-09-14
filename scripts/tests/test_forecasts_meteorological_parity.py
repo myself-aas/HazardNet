@@ -107,6 +107,19 @@ def test_verifier_does_not_select_missing_columns_directly():
     assert not re.search(r'\bmin\(\s*temperature_mean', data_half)
 
 
+def test_verifier_distinguishes_the_two_ways_the_data_check_fails():
+    """Missing columns and stale rows need different fixes, so say which.
+
+    After 007 is applied the columns exist but every row predates the ingest
+    that writes them, and the operator needs to be told to re-ingest — not told
+    to apply a migration they already ran.
+    """
+    text = VERIFY_SQL.read_text(encoding='utf-8')
+    assert 'the columns are missing — apply 007' in text
+    assert 'these rows were written before the store carried them' in text
+    assert 'information_schema.columns' in text.split('PART 2', 1)[-1]
+
+
 def test_store_binds_all_eight_columns_in_insert_and_upsert():
     text = STORE_JS.read_text(encoding='utf-8')
     for column in EXPECTED_COLUMNS:
