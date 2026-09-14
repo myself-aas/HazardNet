@@ -6,7 +6,7 @@ create table if not exists public.forecasts (
   id            uuid primary key default gen_random_uuid(),
   district_id   text        not null,
   district_name text        not null,
-  horizon       text        not null check (horizon in ('7_days', '15_days'))
+  horizon       text        not null check (horizon in ('7_days', '15_days')),
   hazard_type   text        not null,
   confidence    numeric     not null check (confidence >= 0 and confidence <= 1),
   severity_score numeric     not null check (severity_score >= 0 and severity_score <= 1),
