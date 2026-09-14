@@ -1,16 +1,19 @@
 """Meteorological column parity guards.
 
-The eight Open-Meteo columns the weekly notebook emits are declared in four
+The eight Open-Meteo columns the weekly notebook emits are declared in five
 places, and drift between them silently destroys weather data — which is
 exactly what shipped before 007: the columns did not exist, so the Supabase
-store's 15-column INSERT dropped every value with no error at all.
+store's 15-column INSERT dropped every value with no error at all. The one-shot
+Firestore cutover script had the same defect in both directions, reading the
+fields off the documents and then not naming them in its INSERT.
 
-  * scripts/db/007_forecasts_meteorological.sql     — the schema
-  * scripts/db/verify_forecasts_meteorological.sql  — the operator's check
-  * backend/forecastStore.js                        — the write path
-  * backend/utils/forecastRow.js                    — the ingest parser
+  * scripts/db/007_forecasts_meteorological.sql        — the schema
+  * scripts/db/verify_forecasts_meteorological.sql     — the operator's check
+  * backend/forecastStore.js                           — the write path
+  * backend/utils/forecastRow.js                       — the ingest parser
+  * scripts/migrate-firestore-to-supabase.mjs          — the cutover writer
 
-These tests pin the four together so a rename or a type change in one file
+These tests pin the five together so a rename or a type change in one file
 cannot pass unnoticed.
 """
 
@@ -25,6 +28,7 @@ VERIFY_SQL = ROOT / 'scripts' / 'db' / 'verify_forecasts_meteorological.sql'
 STORE_JS = ROOT / 'backend' / 'forecastStore.js'
 PARSER_JS = ROOT / 'backend' / 'utils' / 'forecastRow.js'
 JEST_STORE_TEST = ROOT / '__tests__' / 'forecastStore.test.js'
+CUTOVER_JS = ROOT / 'scripts' / 'migrate-firestore-to-supabase.mjs'
 
 # The contract: names as stored, in the order the write path binds them.
 EXPECTED_COLUMNS = [
@@ -52,7 +56,7 @@ def _migration_columns() -> dict[str, str]:
     }
 
 
-@pytest.mark.parametrize('path', [MIGRATION, VERIFY_SQL, STORE_JS, PARSER_JS])
+@pytest.mark.parametrize('path', [MIGRATION, VERIFY_SQL, STORE_JS, PARSER_JS, CUTOVER_JS])
 def test_expected_files_exist(path: Path):
     assert path.exists(), f'{path} is missing'
 
@@ -137,6 +141,70 @@ def test_parser_accepts_the_same_eight_fields():
     block = text.split('const METEOROLOGICAL_FIELDS = [', 1)[1].split(']', 1)[0]
     names = re.findall(r"'(\w+)'", block)
     assert sorted(names) == sorted(EXPECTED_COLUMNS)
+
+
+def _cutover_upsert_sql() -> tuple[str, list[str]]:
+    """The cutover script's SQL template with its JS interpolations evaluated."""
+    text = CUTOVER_JS.read_text(encoding='utf-8')
+    met = re.findall(r"'(\w+)'", text.split('const MET_COLUMNS = [', 1)[1].split(']', 1)[0])
+    sql = text.split('const upsert = `', 1)[1].split('`;', 1)[0]
+    sql = sql.replace("${MET_COLUMNS.join(', ')}", ', '.join(met))
+    sql = sql.replace(
+        "${MET_COLUMNS.map((_, i) => `$${17 + i}`).join(',')}",
+        ','.join(f'${17 + i}' for i in range(len(met))),
+    )
+    sql = sql.replace(
+        "${MET_COLUMNS.map((c) => `${c} = excluded.${c}`).join(',\\n    ')}",
+        ',\n    '.join(f'{c} = excluded.{c}' for c in met),
+    )
+    assert '${' not in sql, 'a JS interpolation was left unsubstituted'
+    return sql, met
+
+
+def test_cutover_script_reads_and_writes_the_same_eight_columns():
+    text = CUTOVER_JS.read_text(encoding='utf-8')
+    sql, met = _cutover_upsert_sql()
+
+    # The 16 pre-existing columns plus the eight meteorological ones.
+    columns = [c.strip() for c in re.search(r'\((.*?)\)\s*values', sql, re.S).group(1).split(',')]
+    assert columns[:16] == [
+        'district_id', 'district_name', 'horizon', 'hazard_type', 'confidence',
+        'severity_score', 'target_date', 'prediction_date', 'model_version',
+        'model_severity', 'physics_severity', 'division', 'pcode', 'admin_level',
+        'adm2_name', 'adm2_pcode',
+    ]
+    assert columns[16:] == EXPECTED_COLUMNS
+    assert met == EXPECTED_COLUMNS
+
+    # Read side: every field is taken off the Firestore document.
+    read_block = text.split('rows.push({', 1)[1].split('});', 1)[0]
+    for column in EXPECTED_COLUMNS:
+        assert re.search(rf'{column}:\s*met\(v\.{column}\)', read_block), (
+            f'{column} is not read from the Firestore document'
+        )
+        # Upsert must refresh the weather values, not just insert them once.
+        assert re.search(rf'{column}\s*=\s*excluded\.{column}', sql)
+
+    # Placeholders, columns and the bound parameter list must line up exactly.
+    placeholders = [int(n) for n in re.findall(r'\$(\d+)', sql)]
+    assert len(placeholders) == len(columns) == len(set(placeholders))
+    assert max(placeholders) == 16 + len(EXPECTED_COLUMNS)
+    assert '...MET_COLUMNS.map((c) => r[c])' in text
+
+
+def test_cutover_script_never_reads_raw_notebook_columns():
+    """Firestore documents hold API units — converting here would double-convert.
+
+    forecastRow.js converts the notebook's om_* columns at the ingest boundary,
+    so a raw om_* value reaching this script would mean it is being written into
+    an already-converted column (30,000 mm of ET0 in a mm/day column).
+    """
+    text = CUTOVER_JS.read_text(encoding='utf-8')
+    read_block = text.split('rows.push({', 1)[1].split('});', 1)[0]
+    # The comment above the block mentions om_* in prose — only a document read
+    # of one of those keys would be a bug.
+    assert not re.search(r'v\.om_\w+', read_block), 'raw notebook column is read as if already converted'
+    assert not re.search(r"(temperature_mean|solar_radiation_mj_m2)\s*:\s*met\(v\.om_", read_block)
 
 
 def test_store_test_pins_the_column_count():
