@@ -91,6 +91,9 @@ const AppContent: React.FC = () => {
       <RouteAccessibility />
       <Toaster
         position="top-right"
+        // Status toasts must not cover header/search controls. Navigation lives
+        // at z-9990; body-portaled drawers and native dialogs sit above both.
+        containerStyle={{ top: isAuthPage ? 16 : 80, zIndex: 9800 }}
         toastOptions={{
           style: {
             background: '#ffffff',

@@ -73,7 +73,7 @@ test.describe('District Selection & Forecast Display', () => {
     // Selecting a district deep-links the map (`/?district=<id>`) and pins the
     // forecast card for it.
     await expect(page).toHaveURL(/district=kurigram/);
-    await expect(page.getByText('DISTRICT FORECAST')).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByRole('region', { name: 'Kurigram district forecast', exact: true })).toBeVisible({ timeout: 15_000 });
   });
 
   test('forecast shows required information', async ({ page }) => {
@@ -96,17 +96,15 @@ test.describe('District Selection & Forecast Display', () => {
   });
 
   test('district forecast card opens the full district brief', async ({ page }) => {
-    await page.goto(BASE);
+    // Explicit selection avoids dependence on GPS, profile defaults or a
+    // previous session, and checks the selected horizon survives navigation.
+    await page.goto(`${BASE}/?district=kurigram&horizon=15_days`);
     await waitForAppShell(page);
-
-    // The GIS stage pins a forecast card for the focused district; its primary
-    // action must deep-link into the district intelligence brief.
-    const openBrief = page.getByRole('button', { name: /view detailed disaster analytics/i });
-    await expect(openBrief).toBeVisible({ timeout: 20_000 });
-
-    await openBrief.click();
-    await expect(page).toHaveURL(/\/forecast\/district\/[a-z-]+/);
-    await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 20_000 });
+    const card = page.getByRole('region', { name: 'Kurigram district forecast', exact: true });
+    await expect(card).toBeVisible({ timeout: 20_000 });
+    await card.getByRole('button', { name: 'Read district forecast', exact: true }).click();
+    await expect(page).toHaveURL(/\/forecast\/district\/kurigram\?horizon=15_days$/);
+    await expect(page.getByRole('heading', { level: 1, name: 'Kurigram district forecast', exact: true })).toBeVisible({ timeout: 20_000 });
   });
 });
 
@@ -237,6 +235,28 @@ test.describe('Mobile Navigation', () => {
     // inside the panel (see MenuDrawer.tsx).
     await drawer.getByTestId('menu-drawer-close').click();
     await expect(drawer).toBeHidden({ timeout: 10_000 });
+  });
+
+  test('mobile drawer stays dismissible while a prediction-error toast is visible', async ({ page }) => {
+    let releaseFailure!: () => void;
+    const pendingFailure = new Promise<void>(resolve => { releaseFailure = resolve; });
+    await page.route('**/api/predict', async route => {
+      await pendingFailure;
+      await route.fulfill({ status: 503, contentType: 'application/json', body: '{"error":"Unavailable"}' });
+    });
+    try {
+      await page.goto(`${BASE}/?district=dhaka`);
+      await waitForAppShell(page);
+      await page.getByRole('button', { name: 'Open navigation menu', exact: true }).click();
+      const drawer = page.getByTestId('menu-drawer');
+      await expect(drawer).toBeVisible();
+      releaseFailure();
+      await expect(page.getByText('Prediction unavailable. No replacement model scores were generated.', { exact: true }).first()).toBeVisible();
+      // A normal click must work while the toast exists. Do not force the
+      // click, dismiss notifications, or wait for the toast to disappear.
+      await drawer.getByTestId('menu-drawer-close').click({ timeout: 3000 });
+      await expect(drawer).toBeHidden();
+    } finally { releaseFailure(); }
   });
 
   test('forecast view is usable on mobile', async ({ page }) => {
