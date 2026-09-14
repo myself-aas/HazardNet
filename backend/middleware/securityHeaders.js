@@ -35,7 +35,6 @@ function getCspConfig(enforce = false) {
       'data:',
       'blob:',
       'https://firebasestorage.googleapis.com',
-      'https://*.supabase.co',
       'https://api.mapbox.com',
       'https://tiles.mapbox.com',
       'https://events.mapbox.com',
@@ -45,7 +44,8 @@ function getCspConfig(enforce = false) {
     connectSrc: [
       "'self'",
       'https://firestore.googleapis.com',
-      'https://*.supabase.co',
+      'https://identitytoolkit.googleapis.com',
+      'https://securetoken.googleapis.com',
       'https://api.mapbox.com',
       'https://events.mapbox.com',
       'https://generativelanguage.googleapis.com', // Gemini API

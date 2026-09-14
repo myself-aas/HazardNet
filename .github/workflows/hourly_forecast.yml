@@ -2,15 +2,8 @@ name: Hourly Forecast Refresh (Kaggle Notebook Output)
 
 # Refresher cadence — downloads the Kaggle notebook's *latest-run* CSV output
 # (`kaggle kernels output ashifahmedshuvo/hazardnet-auto-forecast-pipeline`),
-# validates it, ingests it into the forecast store, rebuilds the static
-# website snapshot, and commits. Never re-executes the notebook (the daily
-# forecast-pipeline.yml is the producer). See docs/ops/hourly_forecast.md.
-#
-# Why the site is guaranteed to carry hourly data:
-#  1. API path — ingestion updates the store behind GET /api/v1/forecasts/bulk.
-#  2. Codebase path — the committed frontend/public/data/forecasts-latest.json
-#     snapshot ships with every deployment; useForecasts() falls back to it
-#     when the API is unreachable.
+# validates it, ingests it into the forecast store (Firebase Firestore), rebuilds the static
+# website snapshot, and commits.
 
 on:
   schedule:
@@ -31,9 +24,7 @@ permissions:
   contents: write
 
 env:
-  FORECAST_STORE: ${{ vars.FORECAST_STORE || 'supabase' }}
-  DATABASE_URL: ${{ secrets.SUPABASE_DB_URL }}
-  SUPABASE_SSL: 'true'
+  FORECAST_STORE: ${{ vars.FORECAST_STORE || 'firestore' }}
   KAGGLE_KERNEL: ashifahmedshuvo/hazardnet-auto-forecast-pipeline
 
 jobs:
@@ -58,10 +49,24 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
+      - name: Cache node_modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            frontend/node_modules
+            ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
       - name: Install dependencies
         run: |
           npm ci --no-audit --no-fund
           pip install --requirement scripts/requirements-pipeline.txt
+
+      - name: Validate Firebase environment variables
+        run: node scripts/validate_env.mjs
 
       - name: Preflight — verify required secrets
         shell: bash
@@ -73,12 +78,6 @@ jobs:
               missing=1
             fi
           done
-          if [ "$FORECAST_STORE" = "supabase" ] && [ -z "$DATABASE_URL" ]; then
-            echo "❌ FORECAST_STORE=supabase but SUPABASE_DB_URL secret is not set."
-            echo "   Apply scripts/db/*.sql in Supabase, then add the service-role Postgres"
-            echo "   connection string as SUPABASE_DB_URL (see docs/ops/hourly_forecast.md)."
-            missing=1
-          fi
           if [ "$missing" -ne 0 ]; then exit 1; fi
           echo "✅ Required secrets present (store: $FORECAST_STORE)."
           mkdir -p ~/.kaggle
@@ -103,9 +102,6 @@ jobs:
         if: steps.fetch.outputs.changed == 'true' || inputs.force_refresh == 'true'
         shell: bash
         run: |
-          # --skip-freshness: the notebook runs on its own cadence, so its
-          # latest output may be days old between runs — schema/range checks
-          # still gate, staleness only warns (the fetch step emits it).
           python scripts/validate_forecasts.py --skip-freshness
 
       - name: Rebuild website snapshot

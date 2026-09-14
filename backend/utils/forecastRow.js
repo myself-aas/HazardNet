@@ -57,12 +57,23 @@ export function parseCsvForecastRow(row, rowNumber) {
     return { ok: false, error: `Row ${rowNumber}: Invalid horizon "${row.horizon}"` };
   }
 
-  // Severity: legacy single-track column (`severity_score`) or the notebook's
-  // dual-track `model_severity`. The CNN severity is the canonical value.
-  const severityRaw = row.severity_score !== undefined && row.severity_score !== ''
-    ? row.severity_score
-    : row.model_severity;
+  // Severity: accepting Kaggle notebook's dual-track (`physics_severity` and `model_severity`)
+  // as well as single-track `severity_score`.
+  const modelSevRaw = row.model_severity !== undefined && row.model_severity !== ''
+    ? row.model_severity
+    : row.severity_score;
+  const physicsSevRaw = row.physics_severity !== undefined && row.physics_severity !== ''
+    ? row.physics_severity
+    : row.severity_score;
+
+  const modelSev = parseFloat(modelSevRaw);
+  const physicsSev = parseFloat(physicsSevRaw);
+
+  const severityRaw = row.physics_severity !== undefined && row.physics_severity !== ''
+    ? row.physics_severity
+    : (row.severity_score !== undefined && row.severity_score !== '' ? row.severity_score : row.model_severity);
   const severity = parseFloat(severityRaw);
+
   if (isNaN(severity) || severity < 0 || severity > 1) {
     return { ok: false, error: `Row ${rowNumber}: Invalid severity ${severityRaw}` };
   }
@@ -138,11 +149,12 @@ export function parseCsvForecastRow(row, rowNumber) {
     }
   }
 
-  // Dual-track severity (physics-based proxy) — optional passthrough.
-  const physicsSeverity = parseFloat(row.physics_severity);
-  if (!isNaN(physicsSeverity) && physicsSeverity >= 0 && physicsSeverity <= 1) {
-    value.physics_severity = physicsSeverity;
-    value.model_severity = severity;
+  // Dual-track severity (physics-based proxy & model severity)
+  if (!isNaN(physicsSev) && physicsSev >= 0 && physicsSev <= 1) {
+    value.physics_severity = physicsSev;
+  }
+  if (!isNaN(modelSev) && modelSev >= 0 && modelSev <= 1) {
+    value.model_severity = modelSev;
   }
 
   // Administrative context from the FAO GAUL loader — optional passthrough.

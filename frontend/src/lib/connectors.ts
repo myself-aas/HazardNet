@@ -8,7 +8,8 @@
  * is code-owned; only per-user state is stored.
  */
 
-import { supabase, isSupabaseConfigured } from './supabase';
+import { db } from '../services/firebase';
+import { collection, query, getDocs, where, doc, setDoc } from 'firebase/firestore';
 
 export type ConnectorCategory = 'Data Sources' | 'Alerts & Messaging' | 'Productivity' | 'Developer';
 
@@ -167,36 +168,37 @@ export interface UserConnectorState {
   connectedAt: string | null;
 }
 
-/** Load the signed-in user's connector rows (empty in unconfigured dev mode). */
+/** Load the signed-in user's connector rows. */
 export async function fetchUserConnectors(userId: string): Promise<UserConnectorState[]> {
-  if (!isSupabaseConfigured || !userId) return [];
+  if (!userId) return [];
   try {
-    const { data, error } = await supabase
-      .from('user_connectors')
-      .select('connector_key, status, config, connected_at')
-      .eq('user_id', userId);
-    if (error) throw error;
-    return ((data as Array<Record<string, unknown>>) ?? []).map((row) => ({
-      connectorKey: String(row.connector_key),
-      status: row.status === 'disconnected' ? 'disconnected' : 'connected',
-      config: (row.config as Record<string, string>) ?? {},
-      connectedAt: (row.connected_at as string) ?? null,
-    }));
+    const q = query(collection(db, 'user_connectors'), where('user_id', '==', userId));
+    const snap = await getDocs(q);
+    return snap.docs.map((d) => {
+      const row = d.data();
+      return {
+        connectorKey: String(row.connector_key ?? row.provider ?? ''),
+        status: row.status === 'disconnected' ? 'disconnected' : 'connected',
+        config: (row.config as Record<string, string>) ?? (row.auth_data as Record<string, string>) ?? {},
+        connectedAt: (row.connected_at as string) ?? null,
+      };
+    });
   } catch {
     return [];
   }
 }
 
-/** Enable/disable a connector for a user (upserts the state row). */
+/** Enable/disable a connector for a user (upserts the state row in Firestore). */
 export async function saveUserConnector(
   userId: string,
   connectorKey: string,
   status: 'connected' | 'disconnected',
   config: Record<string, string> = {},
 ): Promise<void> {
-  if (!isSupabaseConfigured || !userId) return;
+  if (!userId) return;
   const now = new Date().toISOString();
-  const { error } = await supabase.from('user_connectors').upsert(
+  await setDoc(
+    doc(db, 'user_connectors', `${userId}_${connectorKey}`),
     {
       user_id: userId,
       connector_key: connectorKey,
@@ -206,7 +208,6 @@ export async function saveUserConnector(
       disconnected_at: status === 'disconnected' ? now : null,
       updated_at: now,
     },
-    { onConflict: 'user_id,connector_key' },
+    { merge: true },
   );
-  if (error) throw error;
 }

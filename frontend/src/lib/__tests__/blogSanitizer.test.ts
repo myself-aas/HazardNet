@@ -16,10 +16,8 @@
  *   • the `catch { return html }` path returned the input UNSANITISED.
  */
 
-// Supabase client uses import.meta (vite) — jest runs CJS, so mock the adapter.
-jest.mock('../supabase', () => ({
-  supabase: {},
-  isSupabaseConfigured: false,
+jest.mock('../../services/firebase', () => ({
+  db: {},
 }))
 
 import { sanitizeBlogHtml } from '../blogArticles'

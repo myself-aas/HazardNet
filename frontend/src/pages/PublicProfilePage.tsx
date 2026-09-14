@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import { db } from '../services/firebase';
+import { collection, query, getDocs, where, getDoc, doc } from 'firebase/firestore';
+const isSupabaseConfigured = true;
 import { HazardNetBrand } from '../components/HazardNetLogo';
 import MaterialIcon from '../components/MaterialIcon';
 import { sanitizeUsernameInput } from '../lib/username';
@@ -75,11 +77,12 @@ const PublicProfilePage: React.FC = () => {
 
     void (async () => {
       try {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('*')
-          .ilike('username', username)
-          .maybeSingle();
+        let data: any = null; let error = null;
+        try {
+          const q = query(collection(db, 'profiles'), where('username', '==', username));
+          const snap = await getDocs(q);
+          if(!snap.empty) data = { id: snap.docs[0].id, ...snap.docs[0].data() };
+        } catch(e) { error = e; }
         if (cancelled) return;
         if (error) throw error;
         if (!data) {

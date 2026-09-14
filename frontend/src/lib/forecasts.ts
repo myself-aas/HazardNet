@@ -334,7 +334,7 @@ const DISTRICT_NAME_ALIASES: Record<string, string> = {
   khagrachari: 'khagrachhari',
 };
 
-const canonicalKey = (name: string): string => {
+export const canonicalKey = (name: string): string => {
   const key = normalizeDistrictKey(name);
   return DISTRICT_NAME_ALIASES[key] ?? key;
 };

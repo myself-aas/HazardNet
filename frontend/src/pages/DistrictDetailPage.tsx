@@ -67,7 +67,7 @@ import { StructuredAdvisoryRenderer } from '../components/StructuredAdvisoryRend
 import AdvisoryPanel from '../components/AdvisoryPanel';
 import { PrintQrCode } from '../components/PrintQrCode';
 import { PdfExportButton } from '../components/PdfExportButton';
-import { fetchForecastMetadata } from '../lib/forecasts';
+import { fetchForecastMetadata, fetchStaticForecastSnapshot, ForecastRow, canonicalKey } from '../lib/forecasts';
 
 export const DistrictDetailPage: React.FC = () => {
   const { id } = useParams<{ id?: string }>();
@@ -150,6 +150,62 @@ export const DistrictDetailPage: React.FC = () => {
     };
   }, [districtId, livePredictionDate, liveSource, ingestionTimestamp]);
   const district = useMemo(() => getDistrictById(districtId) || ALL_64_DISTRICTS[0], [districtId]);
+
+  // District Kaggle Notebook CSV Forecast Data for 7 and 15 Days
+  const [districtForecasts7D, setDistrictForecasts7D] = useState<ForecastRow[]>([]);
+  const [districtForecasts15D, setDistrictForecasts15D] = useState<ForecastRow[]>([]);
+  const [loadingForecastTable, setLoadingForecastTable] = useState<boolean>(true);
+  const [activeTableHorizon, setActiveTableHorizon] = useState<'7_days' | '15_days'>('7_days');
+
+  useEffect(() => {
+    let isMounted = true;
+    setLoadingForecastTable(true);
+    Promise.all([
+      fetchStaticForecastSnapshot('7_days').catch(() => []),
+      fetchStaticForecastSnapshot('15_days').catch(() => []),
+    ]).then(([rows7, rows15]) => {
+      if (!isMounted) return;
+      const matchName = district.name.toLowerCase();
+      const filterDistrict = (r: ForecastRow) =>
+        r.district_name.toLowerCase() === matchName ||
+        canonicalKey(r.district_name) === canonicalKey(district.name);
+
+      setDistrictForecasts7D(rows7.filter(filterDistrict));
+      setDistrictForecasts15D(rows15.filter(filterDistrict));
+      setLoadingForecastTable(false);
+    }).catch(() => {
+      if (isMounted) setLoadingForecastTable(false);
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [district.name]);
+
+  // Find possible highest severity occurrence date across 7 and 15 day rows
+  const peakSeverityInfo = useMemo(() => {
+    const all = [...districtForecasts7D, ...districtForecasts15D];
+    if (all.length === 0) return { peakDate: 'N/A', peakScore: district.severity, hazard: district.hazardType, confidence: 0.88 };
+    const maxRow = all.reduce((max, r) => (r.severity_score > max.severity_score ? r : max), all[0]);
+    return {
+      peakDate: maxRow.target_date,
+      peakScore: maxRow.severity_score,
+      hazard: maxRow.hazard_type,
+      physicsSeverity: maxRow.physics_severity ?? maxRow.severity_score,
+      modelSeverity: maxRow.model_severity ?? maxRow.severity_score,
+      confidence: maxRow.confidence,
+    };
+  }, [districtForecasts7D, districtForecasts15D, district]);
+
+  const chartData = useMemo(() => {
+    const rows = activeTableHorizon === '7_days' ? districtForecasts7D : districtForecasts15D;
+    return rows.map((r) => ({
+      date: r.target_date,
+      physicsSeverity: Math.round((r.physics_severity ?? r.severity_score) * 100),
+      modelSeverity: Math.round((r.model_severity ?? r.severity_score) * 100),
+      confidence: Math.round(r.confidence * 100),
+    }));
+  }, [districtForecasts7D, districtForecasts15D, activeTableHorizon]);
 
   // UI States
   const [copiedAlert, setCopiedAlert] = useState(false);
@@ -303,6 +359,58 @@ export const DistrictDetailPage: React.FC = () => {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
     toast.success(`District telemetry report exported for ${data.districtName}`);
+  };
+
+  const handleDownloadTableCsv = () => {
+    const rowsToExport = activeTableHorizon === '7_days' ? districtForecasts7D : districtForecasts15D;
+    if (rowsToExport.length === 0) {
+      toast.error('No forecast records available to export for this horizon.');
+      return;
+    }
+    const headers = [
+      'District ID',
+      'District Name',
+      'Horizon',
+      'Target Date',
+      'Prediction Date',
+      'Hazard Type',
+      'Physics Severity',
+      'CNN Model Severity',
+      'Confidence',
+      'Min Temp (°C)',
+      'Max Temp (°C)',
+      'Precipitation (mm)',
+      'Wind Max (km/h)'
+    ];
+    const csvRows = [headers.join(',')];
+    for (const r of rowsToExport) {
+      const values = [
+        r.district_id,
+        `"${r.district_name}"`,
+        r.horizon || activeTableHorizon,
+        r.target_date,
+        r.prediction_date,
+        `"${r.hazard_type}"`,
+        r.physics_severity ?? r.severity_score,
+        r.model_severity ?? r.severity_score,
+        r.confidence,
+        r.temperature_min ?? '',
+        r.temperature_max ?? '',
+        r.precipitation_mm ?? '',
+        r.wind_max_kmh ?? ''
+      ];
+      csvRows.push(values.join(','));
+    }
+    const blob = new Blob([csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `hazardnet_${districtId}_${activeTableHorizon}_forecasts.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    toast.success(`Exported ${rowsToExport.length} forecast records to CSV (${activeTableHorizon === '7_days' ? '7-Day' : '15-Day'}).`);
   };
 
   const handleShareAlert = () => {
@@ -586,6 +694,34 @@ export const DistrictDetailPage: React.FC = () => {
           </div>
         </div>
 
+        {/* Highlighted Hazard & Peak Severity Occurrence Date Banner */}
+        <div className="bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 border border-amber-200 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-xs font-mono shadow-xs">
+          <div className="flex items-center gap-3">
+            <span className="p-2.5 rounded-xl bg-amber-500 text-slate-950 font-black shadow-xs">
+              <Calendar className="w-5 h-5" />
+            </span>
+            <div>
+              <div className="text-slate-500 font-semibold uppercase tracking-wider text-[10px]">Peak Severity Occurrence Date</div>
+              <div className="text-slate-950 font-black text-sm sm:text-base flex items-center gap-2">
+                <span>{peakSeverityInfo.peakDate}</span>
+                <span className="px-2 py-0.5 rounded bg-red-600 text-white text-xs font-black">
+                  {Math.round(peakSeverityInfo.peakScore * 100)}% Severity
+                </span>
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center gap-6 sm:border-l sm:border-amber-200/80 sm:pl-6">
+            <div>
+              <div className="text-slate-500 font-semibold uppercase tracking-wider text-[10px]">Highlighted Hazard</div>
+              <div className="text-red-700 font-black uppercase tracking-wider text-sm">{peakSeverityInfo.hazard}</div>
+            </div>
+            <div>
+              <div className="text-slate-500 font-semibold uppercase tracking-wider text-[10px]">Model Confidence</div>
+              <div className="text-slate-950 font-extrabold text-sm">{Math.round(peakSeverityInfo.confidence * 100)}%</div>
+            </div>
+          </div>
+        </div>
+
         {/* Consolidated Metadata Block (Two-Column Layout) */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50 border border-slate-200/90 rounded-2xl p-4 text-[9pt]">
           {/* Column 1: Hazard Sub-type & Regional Ingestion */}
@@ -645,6 +781,147 @@ export const DistrictDetailPage: React.FC = () => {
           </div>
         </div>
       </header>
+
+      {/* USER-FRIENDLY TABLE: KAGGLE NOTEBOOK CSV FORECAST OUTPUT (7 & 15 DAYS) */}
+      <section className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-7 shadow-xs space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-4">
+          <div>
+            <div className="text-xs font-mono font-bold text-amber-600 uppercase tracking-wider">
+              Kaggle Notebook CSV Output • District Telemetry Feed
+            </div>
+            <h2 className="text-xl font-black text-slate-950 tracking-tight">
+              7-Day & 15-Day Forecast Records ({data.districtName})
+            </h2>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setActiveTableHorizon('7_days')}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                activeTableHorizon === '7_days'
+                  ? 'bg-slate-900 text-white shadow-sm'
+                  : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+              }`}
+            >
+              7-Day Forecast ({districtForecasts7D.length})
+            </button>
+            <button
+              onClick={() => setActiveTableHorizon('15_days')}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                activeTableHorizon === '15_days'
+                  ? 'bg-slate-900 text-white shadow-sm'
+                  : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+              }`}
+            >
+              15-Day Forecast ({districtForecasts15D.length})
+            </button>
+            <button
+              onClick={handleDownloadTableCsv}
+              title="Download specific 7 and 15-day hazard intelligence records as CSV"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs transition-all shadow-xs cursor-pointer ml-1"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span>Download CSV</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Trend Analysis Line Chart */}
+        {!loadingForecastTable && chartData.length > 0 && (
+          <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 sm:p-5 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="text-xs font-mono font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                <TrendingUp className="w-4 h-4 text-amber-600" />
+                <span>Hazard Progression Trend ({activeTableHorizon === '7_days' ? '7-Day' : '15-Day'} Horizon)</span>
+              </div>
+              <div className="text-[11px] font-mono text-slate-500">
+                Severity Index (%) vs Target Date
+              </div>
+            </div>
+            <div className="h-56 sm:h-64 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={chartData} margin={{ top: 10, right: 20, left: -20, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                  <XAxis dataKey="date" stroke="#64748b" fontSize={11} tickLine={false} />
+                  <YAxis stroke="#64748b" fontSize={11} domain={[0, 100]} tickLine={false} unit="%" />
+                  <Tooltip
+                    contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '12px', color: '#fff', fontSize: '12px' }}
+                    formatter={(value: any, name: any) => [`${value}%`, name === 'physicsSeverity' ? 'Physics Severity' : name === 'modelSeverity' ? 'Model Severity' : 'Confidence']}
+                  />
+                  <Line type="monotone" dataKey="physicsSeverity" name="physicsSeverity" stroke="#dc2626" strokeWidth={3} dot={{ r: 4, fill: '#dc2626' }} activeDot={{ r: 6 }} />
+                  <Line type="monotone" dataKey="modelSeverity" name="modelSeverity" stroke="#2563eb" strokeWidth={2} strokeDasharray="4 4" dot={{ r: 3, fill: '#2563eb' }} />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        )}
+
+        {loadingForecastTable ? (
+          <div className="py-12 text-center text-slate-500 font-mono text-sm animate-pulse">
+            Loading Kaggle CSV forecast logs for {data.districtName}...
+          </div>
+        ) : (
+          <div className="overflow-x-auto rounded-2xl border border-slate-200/90 shadow-2xs">
+            <table className="w-full text-left border-collapse text-xs font-sans">
+              <thead>
+                <tr className="bg-slate-900 text-white font-bold text-[11px] uppercase tracking-wider font-mono">
+                  <th className="px-3.5 py-3">Target Date</th>
+                  <th className="px-3.5 py-3">Prediction</th>
+                  <th className="px-3.5 py-3">Hazard Type</th>
+                  <th className="px-3.5 py-3">Physics Sev.</th>
+                  <th className="px-3.5 py-3">CNN Sev.</th>
+                  <th className="px-3.5 py-3">Confidence</th>
+                  <th className="px-3.5 py-3">Temp (Min/Max)</th>
+                  <th className="px-3.5 py-3">Precip.</th>
+                  <th className="px-3.5 py-3">Wind Max</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {(activeTableHorizon === '7_days' ? districtForecasts7D : districtForecasts15D).length === 0 ? (
+                  <tr>
+                    <td colSpan={9} className="p-8 text-center text-slate-500 font-sans text-sm">
+                      No forecast records found in Kaggle CSV output for {data.districtName} ({activeTableHorizon === '7_days' ? '7 Days' : '15 Days'}).
+                    </td>
+                  </tr>
+                ) : (
+                  (activeTableHorizon === '7_days' ? districtForecasts7D : districtForecasts15D).map((row, idx) => (
+                    <tr key={idx} className={`transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/80'} hover:bg-amber-50/40`}>
+                      <td className="px-3.5 py-3 font-mono font-bold text-slate-900 whitespace-nowrap">{row.target_date}</td>
+                      <td className="px-3.5 py-3 font-mono text-slate-500 whitespace-nowrap">{row.prediction_date}</td>
+                      <td className="px-3.5 py-3 font-semibold text-slate-800">{row.hazard_type}</td>
+                      <td className="px-3.5 py-3 font-mono font-bold whitespace-nowrap">
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black ${
+                          (row.physics_severity ?? row.severity_score) >= 0.67 ? 'bg-red-100 text-red-800' :
+                          (row.physics_severity ?? row.severity_score) >= 0.34 ? 'bg-amber-100 text-amber-800' :
+                          'bg-emerald-100 text-emerald-800'
+                        }`}>
+                          {Math.round((row.physics_severity ?? row.severity_score) * 100)}%
+                        </span>
+                      </td>
+                      <td className="px-3.5 py-3 font-mono text-slate-700 whitespace-nowrap">
+                        {row.model_severity !== undefined ? `${Math.round(row.model_severity * 100)}%` : `${Math.round(row.severity_score * 100)}%`}
+                      </td>
+                      <td className="px-3.5 py-3 font-mono font-bold text-slate-900 whitespace-nowrap">{Math.round(row.confidence * 100)}%</td>
+                      <td className="px-3.5 py-3 font-mono text-slate-700 whitespace-nowrap">
+                        {row.temperature_min !== undefined && row.temperature_max !== undefined
+                          ? `${row.temperature_min}°C / ${row.temperature_max}°C`
+                          : row.temperature_mean !== undefined
+                          ? `${row.temperature_mean}°C`
+                          : '—'}
+                      </td>
+                      <td className="px-3.5 py-3 font-mono text-slate-700 whitespace-nowrap">
+                        {row.precipitation_mm !== undefined ? `${row.precipitation_mm} mm` : '—'}
+                      </td>
+                      <td className="px-3.5 py-3 font-mono text-slate-700 whitespace-nowrap">
+                        {row.wind_max_kmh !== undefined ? `${row.wind_max_kmh} km/h` : '—'}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
 
       {/* MAIN DOCUMENT BODY */}
       <main className="space-y-8">
@@ -973,6 +1250,80 @@ export const DistrictDetailPage: React.FC = () => {
               Equipped with solar & water purification
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* GEOSPATIAL HAZARD SEVERITY MINI-HEATMAP */}
+      <section className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-xs space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-4">
+          <div>
+            <div className="text-xs font-mono font-bold text-amber-600 uppercase tracking-wider">
+              Geospatial Distribution Matrix
+            </div>
+            <h3 className="text-xl font-black text-slate-950 tracking-tight">
+              Hazard Severity Heatmap — {data.districtName} District Sub-Regions
+            </h3>
+          </div>
+          <div className="flex items-center gap-3 text-xs font-mono">
+            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-md bg-emerald-500" /> Low (0-33%)</span>
+            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-md bg-amber-500" /> Moderate (34-66%)</span>
+            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-md bg-rose-600" /> Critical (67-100%)</span>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {data.impactedUpazilas.map((upazila, idx) => {
+            const scorePct = Math.round(upazila.severityScore * 100);
+            const isCrit = upazila.status === 'Critically Inundated' || scorePct >= 67;
+            const isHigh = upazila.status === 'High Risk' || (scorePct >= 40 && scorePct < 67);
+            return (
+              <div
+                key={idx}
+                className={`rounded-2xl p-4 border transition-all relative overflow-hidden flex flex-col justify-between space-y-3 ${
+                  isCrit ? 'bg-rose-50/70 border-rose-200 shadow-2xs' :
+                  isHigh ? 'bg-amber-50/70 border-amber-200' :
+                  'bg-slate-50 border-slate-200'
+                }`}
+              >
+                {/* Heatmap background intensity bar */}
+                <div
+                  className={`absolute bottom-0 left-0 h-1 transition-all duration-500 ${
+                    isCrit ? 'bg-rose-600' : isHigh ? 'bg-amber-500' : 'bg-emerald-500'
+                  }`}
+                  style={{ width: `${scorePct}%` }}
+                />
+
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-slate-900 text-sm">{upazila.name}</span>
+                  <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono font-black ${
+                    isCrit ? 'bg-rose-600 text-white animate-pulse' :
+                    isHigh ? 'bg-amber-500 text-slate-950' :
+                    'bg-emerald-600 text-white'
+                  }`}>
+                    {scorePct}% Intensity
+                  </span>
+                </div>
+
+                <div className="space-y-1 text-xs font-mono">
+                  <div className="flex items-center justify-between text-slate-600">
+                    <span>Status:</span>
+                    <strong className={`font-bold ${isCrit ? 'text-rose-700' : isHigh ? 'text-amber-800' : 'text-emerald-700'}`}>
+                      {upazila.status}
+                    </strong>
+                  </div>
+                  <div className="flex items-center justify-between text-slate-600">
+                    <span>Exposed HH:</span>
+                    <strong className="text-slate-900 font-bold">{upazila.householdsAffected.toLocaleString()}</strong>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="text-[11px] font-mono text-slate-500 bg-slate-50 border border-slate-200 rounded-xl p-3 flex items-center justify-between">
+          <span>Spatial Grid Resolution: ADM3 Upazila Boundary Ingestion • Model Confidence: {data.modelAssessment.confidenceLevel}%</span>
+          <span className="font-bold text-slate-900">Total Sub-Regions Mapped: {data.impactedUpazilas.length}</span>
         </div>
       </section>
 

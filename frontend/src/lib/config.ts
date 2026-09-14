@@ -29,4 +29,4 @@ export const firebaseConfig = {
 
 /** Firestore database id (the AI-Studio applet database used for forecasts). */
 export const firestoreDatabaseId =
-  env.VITE_FIREBASE_FIRESTORE_DATABASE_ID || 'ai-studio-hazardnet-28005e8f-9924-4dea-983b-743f2fca6093';
+  env.VITE_FIREBASE_FIRESTORE_DATABASE_ID || 'ai-studio-hazardnet-55b49dbf-625b-492b-9cff-feabd729e843';

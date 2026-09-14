@@ -1,8 +1,5 @@
-// lib/avatar imports the real Supabase client (which reads import.meta.env —
-// unavailable under the CJS jest transform), so stub it before importing.
-jest.mock('../supabase', () => ({
-  supabase: {},
-  isSupabaseConfigured: false,
+jest.mock('../../services/firebase', () => ({
+  db: {},
 }))
 
 import {

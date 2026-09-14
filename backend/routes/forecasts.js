@@ -3,6 +3,7 @@ import path from 'path';
 import multer from 'multer';
 import { verifyApiKey } from '../utils/apiKeyAuth.js';
 import { parseCsvForecastRow, VALID_HORIZONS } from '../utils/forecastRow.js';
+import { ingestForecastCsv } from '../utils/csvIngestion.js';
 import {
     parseBulkQuery,
     parseHistoryQuery,
@@ -135,6 +136,44 @@ router.post('/update', upload.single('file'), (req, res, next) => {
         }
         console.error('❌ Forecast update failed:', error.message);
         res.status(500).json({ error: 'Internal server error', detail: error.message });
+    }
+});
+
+// ─────────────────────────────────────────────────────────
+// POST /api/v1/forecasts/ingest-csv
+// Directly ingests CSV data from raw request body or JSON payload
+// ─────────────────────────────────────────────────────────
+router.post('/ingest-csv', async (req, res) => {
+    const auth = verifyApiKey(req);
+    if (!auth.ok) {
+        return res.status(auth.status).json({ error: auth.error });
+    }
+
+    try {
+        let csvData = '';
+        if (typeof req.body === 'string') {
+            csvData = req.body;
+        } else if (req.body && typeof req.body.csv === 'string') {
+            csvData = req.body.csv;
+        } else if (Buffer.isBuffer(req.body)) {
+            csvData = req.body.toString('utf-8');
+        }
+
+        if (!csvData || !csvData.trim()) {
+            return res.status(400).json({ error: 'Missing or empty CSV payload in body' });
+        }
+
+        const mode = req.query.mode === 'append' ? 'append' : 'replace';
+        const strict = req.query.strict !== 'false';
+
+        const result = await ingestForecastCsv(csvData, { mode, strict });
+        res.json({
+            status: 'success',
+            message: 'CSV forecast ingested into Firestore successfully',
+            ...result
+        });
+    } catch (error) {
+        res.status(400).json({ error: 'CSV ingestion failed', detail: error.message });
     }
 });
 

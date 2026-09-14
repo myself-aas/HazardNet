@@ -43,11 +43,11 @@ const describeError = (err: unknown): string => {
 };
 
 const SignUpPage: React.FC = () => {
-  const { sendVerificationEmail, user, userProfile } = useAuth();
+  const { sendVerificationEmail, user } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const rawNext = searchParams.get('next');
-  const next = rawNext && rawNext.startsWith('/') ? rawNext : '/dashboard';
+  const next = rawNext && rawNext.startsWith('/') ? rawNext : '/';
 
   const [name, setName] = useState('');
   const [username, setUsername] = useState('');
@@ -59,36 +59,19 @@ const SignUpPage: React.FC = () => {
   const [pendingVerification, setPendingVerification] = useState(false);
   const [resendIn, setResendIn] = useState(0);
 
+  // Redirect signed-in users immediately to homepage or destination.
+  useEffect(() => {
+    if (user) {
+      navigate(next, { replace: true });
+    }
+  }, [user, navigate, next]);
+
   // Countdown ticker for the resend button.
   useEffect(() => {
     if (resendIn <= 0) return;
     const timer = window.setTimeout(() => setResendIn((value) => Math.max(0, value - 1)), 1000);
     return () => window.clearTimeout(timer);
   }, [resendIn]);
-
-  // Signed-in users don't need the sign-up form.
-  if (user) {
-    return (
-      <AuthLayout
-        mode="signup"
-        title="You’re already signed in"
-        subtitle="Head over to your dashboard to manage your profile."
-      >
-        <div className="space-y-4 text-center">
-          <p className="text-sm text-slate-600">
-            Signed in as <strong className="text-slate-900">{userProfile?.displayName || user.email}</strong>.
-          </p>
-          <button
-            type="button"
-            onClick={() => navigate('/dashboard', { replace: true })}
-            className="w-full py-3.5 bg-[#f9a825] hover:bg-[#d08305] text-slate-950 font-extrabold rounded-2xl text-sm transition-all shadow-md cursor-pointer"
-          >
-            Open my dashboard
-          </button>
-        </div>
-      </AuthLayout>
-    );
-  }
 
   const usernameValidation = validateUsername(username);
 
@@ -281,7 +264,7 @@ const SignUpPage: React.FC = () => {
         </div>
 
         {/* ── Social sign-up first: Google, then compact provider icons ── */}
-        <AuthSocialButtons label="Sign up with Google" />
+        <AuthSocialButtons label="Sign up with Google" onSuccess={() => navigate(next, { replace: true })} />
 
         <div className="relative flex items-center justify-center pt-1" aria-hidden="true">
           <div className="border-t border-slate-200 w-full" />
@@ -333,7 +316,7 @@ const SignUpPage: React.FC = () => {
       <p className="text-center text-xs sm:text-[13px] text-slate-600">
         Already have an account?{' '}
         <Link
-          to={next !== '/dashboard' ? `/login?next=${encodeURIComponent(next)}` : '/login'}
+          to={next && next !== '/' ? `/login?next=${encodeURIComponent(next)}` : '/login'}
           className="font-extrabold text-amber-800 hover:text-amber-900 hover:underline"
         >
           Sign in

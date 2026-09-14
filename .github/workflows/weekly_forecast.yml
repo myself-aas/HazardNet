@@ -21,9 +21,7 @@ env:
   KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
   BACKEND_API_KEY: ${{ secrets.BACKEND_API_KEY }}
   GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-  FORECAST_STORE: ${{ vars.FORECAST_STORE || 'supabase' }}
-  DATABASE_URL: ${{ secrets.SUPABASE_DB_URL }}
-  SUPABASE_SSL: 'true'
+  FORECAST_STORE: ${{ vars.FORECAST_STORE || 'firestore' }}
   NOTEBOOK_DIR: ./kaggle_notebooks/hazardnet-auto-forecast-pipeline
   KERNEL_SLUG: ashifahmedshuvo/hazardnet-auto-forecast-pipeline
   CSV_PATH: ./backend/data/forecasts/hazardnet_forecasts_latest.csv
@@ -70,22 +68,30 @@ jobs:
               missing=1
             fi
           done
-          if [ "$FORECAST_STORE" = "supabase" ] && [ -z "$DATABASE_URL" ]; then
-            echo "❌ FORECAST_STORE=supabase but SUPABASE_DB_URL secret is not set."
-            echo "   Apply scripts/db/*.sql in Supabase, then add the service-role Postgres"
-            echo "   connection string as SUPABASE_DB_URL (see docs/ops/hourly_forecast.md)."
-            missing=1
-          fi
           if [ -z "$GEMINI_API_KEY" ]; then
             echo "⚠️ GEMINI_API_KEY unset — ingest advisories will use the deterministic fallback text."
           fi
           if [ "$missing" -ne 0 ]; then exit 1; fi
           echo "✅ Required secrets present (store: $FORECAST_STORE)."
 
+      - name: Cache node_modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            frontend/node_modules
+            ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
       - name: Install dependencies
         run: |
           npm ci --no-audit --no-fund
           pip install --requirement scripts/requirements-pipeline.txt
+
+      - name: Validate Firebase environment variables
+        run: node scripts/validate_env.mjs
 
       - name: Configure Kaggle CLI
         shell: bash
@@ -98,61 +104,11 @@ jobs:
       - name: Trigger Kaggle Notebook
         shell: bash
         run: |
-          EXPECTED_KERNEL_SLUG="ashifahmedshuvo/hazardnet-auto-forecast-pipeline"
-          if [ ! -f "$NOTEBOOK_DIR/kernel-metadata.json" ]; then
-            echo "❌ Notebook directory not found: $NOTEBOOK_DIR"
-            exit 1
-          fi
-          KERNEL_SLUG=$(jq -r '.id' "$NOTEBOOK_DIR/kernel-metadata.json")
-          if [ -z "$KERNEL_SLUG" ] || [ "$KERNEL_SLUG" = "null" ]; then
-            echo "❌ Could not read kernel id from kernel-metadata.json"
-            exit 1
-          fi
-          if [ "$KERNEL_SLUG" != "$EXPECTED_KERNEL_SLUG" ]; then
-            echo "❌ kernel-metadata.json id '$KERNEL_SLUG' does not match '$EXPECTED_KERNEL_SLUG'"
-            exit 1
-          fi
-          cd "$NOTEBOOK_DIR"
-          kaggle kernels push -p .
-          echo "KERNEL_SLUG=$KERNEL_SLUG" >> "$GITHUB_ENV"
-          echo "✅ Triggered Kaggle kernel: $KERNEL_SLUG"
-
-      - name: Wait for Kaggle Notebook to Complete
-        shell: bash
-        env:
-          MAX_RETRIES: '90'
-        run: |
-          echo "⏳ Polling Kaggle kernel status (max $MAX_RETRIES minutes)..."
-          RETRY_COUNT=0
-          while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
-            if STATUS_OUTPUT=$(kaggle kernels status "$KERNEL_SLUG" 2>&1); then
-              echo "[$((RETRY_COUNT + 1))/$MAX_RETRIES] $STATUS_OUTPUT"
-              if echo "$STATUS_OUTPUT" | grep -qi 'complete'; then
-                echo "✅ Notebook execution completed successfully!"
-                exit 0
-              elif echo "$STATUS_OUTPUT" | grep -qiE 'error|cancel'; then
-                echo "❌ Notebook execution failed!"
-                mkdir -p ./kaggle_logs
-                kaggle kernels output "$KERNEL_SLUG" -p ./kaggle_logs || true
-                cat ./kaggle_logs/* || true
-                exit 1
-              fi
-            else
-              echo "[$((RETRY_COUNT + 1))/$MAX_RETRIES] Transient status check failure (retrying): $STATUS_OUTPUT"
-            fi
-            sleep 60
-            RETRY_COUNT=$((RETRY_COUNT + 1))
-          done
-          echo "❌ Timeout waiting for Kaggle notebook to complete."
-          exit 1
+          python scripts/kaggle_trigger.py --kernel "$KERNEL_SLUG" --max-retries 45 --poll-interval 30
 
       - name: Download forecast output from the notebook run
         shell: bash
         run: |
-          # Single source of truth (same as the hourly refresher): the kernel's
-          # own output files — no stale-dataset fallback, no hard JSON
-          # requirement (the notebook emits CSV-only; the JSON sidecar is
-          # regenerated from it).
           set -o pipefail
           python scripts/fetch_kaggle_forecast.py --dest data/kaggle_notebook_output \
             --attempts 5 --retry-delay 60 2>&1 | tee fetch.log
@@ -162,7 +118,6 @@ jobs:
       - name: Validate forecast data
         shell: bash
         run: |
-          # Strict gate (producer pipeline): schema + ranges + freshness.
           python scripts/validate_forecasts.py
 
       - name: Collect release files
@@ -258,8 +213,6 @@ jobs:
         id: version
         shell: bash
         run: |
-          # Version bump runs AFTER successful ingest so a failed data run
-          # never ships an empty release.
           npm version patch --no-git-tag-version
           NEW_VERSION=$(node -p "require('./package.json').version")
           echo "new_version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
@@ -282,7 +235,7 @@ jobs:
             - ✅ Advisories generated per ingested row.
             - ✅ Website snapshot refreshed (`frontend/public/data/forecasts-latest.json`).
             - 🧪 Test suite passed (`npx jest --ci`).
-            - 🔗 Datasets attached below (forecasts CSV + JSON; when present also the ADM3 location matrix, the OSM exposure overlay, and the ADM3 hazard+exposure GeoJSON — ADR 0006).
+            - 🔗 Datasets attached below (forecasts CSV + JSON).
           files: |
             ${{ env.RELEASE_FILES }}
         env:

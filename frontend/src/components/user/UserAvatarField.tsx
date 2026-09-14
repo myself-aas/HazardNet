@@ -79,7 +79,7 @@ export const UserAvatarField: React.FC<{ size?: number; editable?: boolean }> = 
     if (!user) return;
     setBusy(true);
     try {
-      await deleteAvatar(user.uid, userProfile?.avatarPath ?? null);
+      await deleteAvatar(user.uid);
       await updateUserProfile({ photoURL: '', avatarPath: undefined });
       await refreshProfile();
       setPreview(null);

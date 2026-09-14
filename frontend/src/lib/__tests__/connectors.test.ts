@@ -1,8 +1,5 @@
-// lib/connectors imports the real Supabase client (which reads
-// import.meta.env — unavailable under the CJS jest transform); stub it.
-jest.mock('../supabase', () => ({
-  supabase: {},
-  isSupabaseConfigured: false,
+jest.mock('../../services/firebase', () => ({
+  db: {},
 }))
 
 import {

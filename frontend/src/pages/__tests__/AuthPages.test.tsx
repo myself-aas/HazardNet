@@ -5,11 +5,9 @@ import LoginPage from '../LoginPage'
 import SignUpPage from '../SignUpPage'
 import SetPasswordPage from '../SetPasswordPage'
 
-// SetPasswordPage reads the real Supabase client (import.meta.env is
-// unavailable under the CJS jest transform); stub the module.
-jest.mock('../../lib/supabase', () => ({
-  supabase: { auth: { getSession: async () => ({ data: { session: null } }) } },
-  isSupabaseConfigured: false,
+jest.mock('../../services/firebase', () => ({
+  auth: {},
+  db: {},
 }))
 
 jest.mock('../../context/AuthContext', () => ({

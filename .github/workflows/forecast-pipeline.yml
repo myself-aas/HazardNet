@@ -2,9 +2,9 @@ name: HazardNet Automated Forecast Pipeline
 
 on:
   schedule:
-    # Run daily at 00:00 UTC
-    - cron: '0 0 * * *'
-  workflow_dispatch:  # Allow manual trigger
+    # Trigger Kaggle notebook pipeline every 3 hours
+    - cron: '0 */3 * * *'
+  workflow_dispatch:
     inputs:
       force_run:
         description: 'Force forecast generation'
@@ -19,14 +19,13 @@ permissions:
   contents: write
 
 env:
-  FORECAST_STORE: ${{ vars.FORECAST_STORE || 'supabase' }}
-  DATABASE_URL: ${{ secrets.SUPABASE_DB_URL }}
-  SUPABASE_SSL: 'true'
+  FORECAST_STORE: ${{ vars.FORECAST_STORE || 'firestore' }}
+  KAGGLE_KERNEL: ashifahmedshuvo/hazardnet-auto-forecast-pipeline
 
 jobs:
   generate-forecasts:
     runs-on: ubuntu-latest
-    timeout-minutes: 150  # 2.5 hours max
+    timeout-minutes: 150
 
     steps:
       - name: Checkout repository
@@ -41,7 +40,14 @@ jobs:
           cache: 'pip'
           cache-dependency-path: scripts/requirements-pipeline.txt
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '20'
+          cache: 'npm'
+
       - name: Check for required secrets
+        shell: bash
         run: |
           missing=0
           for secret in KAGGLE_USERNAME KAGGLE_KEY BACKEND_API_KEY; do
@@ -50,12 +56,6 @@ jobs:
               missing=1
             fi
           done
-          if [ "$FORECAST_STORE" = "supabase" ] && [ -z "$DATABASE_URL" ]; then
-            echo "❌ Error: FORECAST_STORE=supabase but SUPABASE_DB_URL secret is not set."
-            echo "   Apply scripts/db/*.sql in Supabase, then add the service-role Postgres"
-            echo "   connection string as SUPABASE_DB_URL (see docs/ops/hourly_forecast.md)."
-            missing=1
-          fi
           if [ "$missing" -ne 0 ]; then exit 1; fi
           echo "✅ Required secrets present (store: $FORECAST_STORE)."
         env:
@@ -63,39 +63,59 @@ jobs:
           KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
           BACKEND_API_KEY: ${{ secrets.BACKEND_API_KEY }}
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v7
+      - name: Cache node_modules
+        uses: actions/cache@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          path: |
+            node_modules
+            frontend/node_modules
+            ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
 
-      - name: Install backend dependencies
-        run: npm ci --no-audit --no-fund
-
-      - name: Install Kaggle CLI
+      - name: Install dependencies
         run: |
+          npm ci --no-audit --no-fund
           pip install --requirement scripts/requirements-pipeline.txt
+
+      - name: Validate Firebase environment variables
+        run: node scripts/validate_env.mjs
+
+      - name: Configure Kaggle CLI
+        shell: bash
+        run: |
           mkdir -p ~/.kaggle
-          echo '{"username":"${{ secrets.KAGGLE_USERNAME }}","key":"${{ secrets.KAGGLE_KEY }}"}' > ~/.kaggle/kaggle.json
+          echo "{\"username\":\"$KAGGLE_USERNAME\",\"key\":\"$KAGGLE_KEY\"}" > ~/.kaggle/kaggle.json
           chmod 600 ~/.kaggle/kaggle.json
           kaggle --version
+        env:
+          KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
+          KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
 
-      - name: Trigger Kaggle Notebook
+      - name: Trigger Kaggle Notebook Run
         id: kaggle_trigger
         env:
           KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
           KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
           KAGGLE_KERNEL: ashifahmedshuvo/hazardnet-auto-forecast-pipeline
-          KAGGLE_DATASET: ashifahmedshuvo/hazardnet-weekly-forecasts
         run: |
-          python scripts/kaggle_trigger.py
-        continue-on-error: false
+          python scripts/kaggle_trigger.py --kernel "$KAGGLE_KERNEL" --max-retries 45 --poll-interval 30
+
+      - name: Download Output CSV from Kaggle
+        id: fetch_forecast
+        env:
+          KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
+          KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
+          KAGGLE_KERNEL: ashifahmedshuvo/hazardnet-auto-forecast-pipeline
+        run: |
+          python scripts/fetch_kaggle_forecast.py --kernel "$KAGGLE_KERNEL" --dest data/kaggle_notebook_output --attempts 5 --retry-delay 30
 
       - name: Validate Forecast Data
         run: |
           python scripts/validate_forecasts.py
 
-      - name: Ingest refreshed CSV into backend
+      - name: Ingest refreshed CSV into Firebase and backend store
         env:
           BACKEND_API_KEY: ${{ secrets.BACKEND_API_KEY }}
           PORT: '3001'
@@ -119,12 +139,12 @@ jobs:
       - name: Rebuild website snapshot
         run: |
           node scripts/build_forecast_snapshot.mjs
-          echo "### Daily forecast refresh — $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_STEP_SUMMARY"
+          echo "### 3-Hour forecast refresh — $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_STEP_SUMMARY"
           jq -r '"- prediction_date: " + (.prediction_date // "unknown")' frontend/public/data/forecasts-latest.json >> "$GITHUB_STEP_SUMMARY"
 
       - name: Archive Historical Forecasts
         run: |
-          TIMESTAMP=$(date +%Y-%m-%d)
+          TIMESTAMP=$(date +%Y-%m-%d_%H-%M-%S)
           mkdir -p backend/data/forecasts/archive/${TIMESTAMP}
 
           if [ -f backend/data/forecasts/hazardnet_forecasts_latest.csv ]; then
@@ -149,8 +169,8 @@ jobs:
             echo "No changes to commit"
           else
             git pull --rebase --autostash origin "${GITHUB_REF_NAME}" || true
-            git commit -m "chore(data): update forecasts $(date +%Y-%m-%d)" \
-                        -m "Automated forecast update from Kaggle pipeline" \
+            git commit -m "chore(data): update 3-hour forecasts $(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+                        -m "Automated 3-hour forecast update from Kaggle pipeline" \
                         -m "Timestamp: $(date -u +"%Y-%m-%dT%H:%M:%SZ")"
             git push
           fi
@@ -175,14 +195,12 @@ jobs:
       - name: Check Forecast Freshness
         if: success()
         run: |
-          # CSV-first: the notebook emits CSV-only, so the JSON artifact may be
-          # regenerated (or absent) — never fail a good run on a missing file.
           if [ -f backend/data/forecasts/hazardnet_forecasts_latest.json ]; then
             SOURCE=backend/data/forecasts/hazardnet_forecasts_latest.json
           else
             SOURCE=backend/data/forecasts/hazardnet_forecasts_latest.csv
           fi
-          FORECAST_AGE_HOURS=$(python -c "
+          FORECAST_AGE_HOURS=$(python3 -c "
           import csv, json, sys
           from datetime import datetime, timezone
           src = '$SOURCE'

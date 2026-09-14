@@ -15,7 +15,7 @@ import metrics from './metrics.js';
 import { refreshForecastAgeGauge } from './utils/forecastFreshness.js';
 import { predictLimiter, apiLimiter } from './middleware/rateLimit.js';
 import { requestId } from './middleware/requestId.js';
-import { attachSupabaseUser, dynamicAiLimiter } from './middleware/supabaseAuth.js';
+import { attachFirebaseAuthUser, dynamicAiLimiter } from './middleware/firebaseAuth.js';
 import { getModelInfo } from './modelInfo.js';
 import helmet from 'helmet';
 
@@ -48,10 +48,7 @@ const __dirname = process.cwd();
       warnings.push(msg);
     }
   }
-  if (process.env.FORECAST_STORE === 'supabase' && !process.env.DATABASE_URL) {
-    problems.push('FORECAST_STORE=supabase but DATABASE_URL is NOT set - forecast endpoints will fail until the Supabase Postgres connection string is configured.');
-  }
-
+  
   for (const w of warnings) console.warn(`[config] ${w}`);
   for (const p of problems) console.error(`[config] ${p}`);
 })();
@@ -133,8 +130,8 @@ app.use(['/Models', '/models', '/hazardnet_fp32.tflite', '/hazardnet_int8.tflite
 app.use('/api', apiLimiter);
 app.use('/api/v1/forecasts', forecastRoutes);
 app.use('/api/advisory', advisoryRoutes);
-app.use('/api/chat', attachSupabaseUser, dynamicAiLimiter, chatRoutes);
-app.use('/api/agent', attachSupabaseUser, dynamicAiLimiter, agentRoutes);
+app.use('/api/chat', attachFirebaseAuthUser, dynamicAiLimiter, chatRoutes);
+app.use('/api/agent', attachFirebaseAuthUser, dynamicAiLimiter, agentRoutes);
 app.use('/api/predict', predictLimiter, predictRoutes);
 app.use('/api/push', pushRoutes);
 app.use('/api/conversions', conversionRoutes);
@@ -181,7 +178,7 @@ const invokedAsScript = process.argv[1] !== undefined
   && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
 if (invokedAsScript) {
   // 3001 keeps the API out of Vite's way in dev (vite.config.ts proxies /api here).
-  const PORT = process.env.PORT || 3000;
+  const PORT = 3000;
   app.listen(PORT, '0.0.0.0', () => {
     console.log(`HazardNet Backend running on port ${PORT}`);
   });

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
@@ -45,7 +45,7 @@ const inputClass =
   'w-full px-4 py-3 text-base sm:text-sm bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 placeholder-slate-400 font-medium transition-all focus:outline-none focus:border-[#f9a825] focus:ring-2 focus:ring-[#f9a825]/40';
 
 const LoginPage: React.FC = () => {
-  const { signInWithEmail } = useAuth();
+  const { signInWithEmail, user } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const rawNext = searchParams.get('next');
@@ -56,6 +56,12 @@ const LoginPage: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      navigate(next, { replace: true });
+    }
+  }, [user, navigate, next]);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -153,7 +159,7 @@ const LoginPage: React.FC = () => {
         </div>
 
         {/* ── Social sign-in first: Google, then compact provider icons ── */}
-        <AuthSocialButtons />
+        <AuthSocialButtons onSuccess={() => navigate(next, { replace: true })} />
 
         <div className="relative flex items-center justify-center pt-1" aria-hidden="true">
           <div className="border-t border-slate-200 w-full" />

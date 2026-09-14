@@ -22,7 +22,7 @@ export const AccountSection: React.FC = () => {
 
   useEffect(() => {
     if (!user) return;
-    const identities = (user.providerData ?? []).map((provider) => provider.providerId);
+    const identities = (user.providerData ?? []).map((provider: { providerId: string }) => provider.providerId);
     setPasswordProvider(identities.includes('email') ? 'email' : identities.length > 0 ? 'social' : 'unknown');
   }, [user]);
 
@@ -70,7 +70,7 @@ export const AccountSection: React.FC = () => {
     }
   };
 
-  const emailVerified = Boolean(user?.email_confirmed_at ?? user?.confirmed_at);
+  const emailVerified = Boolean(user?.emailVerified ?? user?.email_confirmed_at ?? user?.confirmed_at);
 
   return (
     <div className="space-y-5">

@@ -5,7 +5,8 @@ import { AuthLayout } from '../components/auth/AuthLayout'
 import { useAuth } from '../context/AuthContext'
 import MaterialIcon from '../components/MaterialIcon'
 import { PASSWORD_REQUIREMENTS, passwordStrength } from '../lib/passwordStrength'
-import { supabase, isSupabaseConfigured } from '../lib/supabase'
+import { auth } from '../services/firebase';
+const isSupabaseConfigured = true;
 
 /**
  * Dedicated password-setup page — unique URL: /set-password
@@ -42,9 +43,11 @@ export default function SetPasswordPage() {
     const timer = window.setTimeout(() => {
       if (!cancelled) setPhase((current) => (current === 'waiting' ? 'ready' : current))
     }, 600)
-    void supabase.auth.getSession().then((result: { data?: { session?: unknown } | null }) => {
-      if (!cancelled && result.data?.session) setPhase('ready')
-    })
+    if (typeof auth?.authStateReady === 'function') {
+      void auth.authStateReady().then(() => {
+        if (!cancelled && auth.currentUser) setPhase('ready')
+      })
+    }
     return () => {
       cancelled = true
       window.clearTimeout(timer)

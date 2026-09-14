@@ -74,7 +74,7 @@ service cloud.firestore {
     // Forecast bulletins are PUBLIC data: anyone may read them (the website's
     // live layer + the Vercel GET handlers when FORECAST_STORE=firestore).
     // Writes stay denied here on purpose — ingest goes through the
-    // authenticated backend into the Supabase (service-role) store (ADR 0008);
+    // authenticated backend into the Firestore store;
     // the unauthenticated client SDK must never be able to poison bulletins.
     match /forecasts/{forecastId} {
       allow get, list: if true;
@@ -82,11 +82,27 @@ service cloud.firestore {
     }
 
     // Matching Collections
+    match /profiles/{userId} {
+      allow get, list: if true;
+      allow create: if isOwner(userId) && isValidId(userId);
+      allow update: if isOwner(userId) && isValidId(userId);
+      allow delete: if isOwner(userId) && isValidId(userId);
+    }
+
     match /users/{userId} {
       allow get: if isOwner(userId);
-      allow create: if isOwner(userId) && isValidId(userId) && isValidUserProfile(incoming());
-      allow update: if isOwner(userId) && isValidId(userId) && isValidUserProfile(incoming());
+      allow create: if isOwner(userId) && isValidId(userId);
+      allow update: if isOwner(userId) && isValidId(userId);
       allow delete: if isOwner(userId) && isValidId(userId);
+    }
+
+    match /user_connectors/{connectorId} {
+      allow read, write: if isSignedIn();
+    }
+
+    match /blog_articles/{articleId} {
+      allow get, list: if true;
+      allow create, update, delete: if isSignedIn();
     }
 
     match /assessments/{assessmentId} {

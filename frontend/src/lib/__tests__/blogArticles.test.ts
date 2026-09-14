@@ -1,8 +1,5 @@
-// Supabase client uses import.meta (vite) — jest runs CJS, so mock the adapter
-// and exercise the local demo store (localStorage) instead.
-jest.mock('../supabase', () => ({
-  supabase: {},
-  isSupabaseConfigured: false,
+jest.mock('../../services/firebase', () => ({
+  db: {},
 }))
 
 import {

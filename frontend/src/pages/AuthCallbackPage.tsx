@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { supabase } from '../lib/supabase'
+import { auth } from '../services/firebase';
+import { onAuthStateChanged } from 'firebase/auth';
 import {
   describeOAuthError,
   getProvider,
@@ -13,23 +14,18 @@ import {
 type CallbackPhase = 'exchanging' | 'success' | 'error'
 type Explanation = ReturnType<typeof describeOAuthError>
 
-/**
- * OAuth landing page: the provider + Supabase redirect here with either an
- * authorization `code` (PKCE), an `error`, or an implicit-flow hash. The
- * Supabase client (detectSessionInUrl) exchanges the code automatically;
- * this page waits for the session, reports clear success/failure states and
- * routes the user back to where they started the sign-in.
- */
 export default function AuthCallbackPage() {
   const navigate = useNavigate()
   const params = useMemo(
     () => parseOAuthCallbackParams(window.location.search, window.location.hash),
     [],
   )
+
   const [phase, setPhase] = useState<CallbackPhase>(params.error ? 'error' : 'exchanging')
   const [explanation, setExplanation] = useState<Explanation | null>(
     params.error ? describeOAuthError(params.errorDescription ?? params.error) : null,
   )
+
   const [returnTo, setReturnTo] = useState<string | null>(null)
   const [providerLabel, setProviderLabel] = useState<string | null>(null)
   const [countdown, setCountdown] = useState(3)
@@ -44,16 +40,19 @@ export default function AuthCallbackPage() {
 
   useEffect(() => {
     if (phase !== 'exchanging') return
+
     let unsubscribe: () => void = () => {}
 
     const finish = (sessionUser: unknown) => {
       if (settled.current) return
       settled.current = true
+
       const identities =
         (sessionUser as { identities?: Array<{ provider?: string }> } | null)?.identities ?? []
       const usedProvider = identities
         .map((identity) => identity.provider)
         .find((provider): provider is string => Boolean(provider) && isOAuthProviderId(provider as string))
+
       setProviderLabel(usedProvider && isOAuthProviderId(usedProvider) ? getProvider(usedProvider).label : null)
       setReturnTo(resolveOAuthReturnTo(params.next))
       setPhase('success')
@@ -66,22 +65,15 @@ export default function AuthCallbackPage() {
       setPhase('error')
     }
 
-    // The supabase-js singleton exchanges the ?code during initialization
-    // (detectSessionInUrl). Await the session and watch auth events; time
-    // out with guidance if neither arrives.
-    void supabase.auth.getSession().then((result: { data?: { session?: { user?: unknown } | null }; error?: unknown }) => {
-      if (result.error) fail(result.error)
-      else if (result.data?.session?.user) finish(result.data.session.user)
+    void auth.authStateReady().then(() => {
+      if (auth.currentUser) finish(auth.currentUser)
     })
 
     try {
-      const { data } = supabase.auth.onAuthStateChange(
-        (event: string, session: { user?: unknown } | null) => {
-          if (event === 'SIGNED_IN') finish(session?.user)
-        },
-      )
-      if (data?.subscription) unsubscribe = () => data.subscription.unsubscribe()
-    } catch {
+      unsubscribe = onAuthStateChanged(auth, (user) => {
+        if (user) finish(user)
+      })
+    } catch (err) {
       // Listener is best-effort; the getSession poll covers the exchange.
     }
 
@@ -102,6 +94,7 @@ export default function AuthCallbackPage() {
   // Auto-return countdown on success.
   useEffect(() => {
     if (phase !== 'success' || !returnTo) return
+
     if (countdown <= 0) {
       navigate(returnTo.startsWith('/') ? returnTo : '/', { replace: true })
       return

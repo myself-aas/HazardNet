@@ -1,10 +1,11 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import ForecastDashboard from '../components/ForecastDashboard';
 
 export const AnalyticsAnalyticsPage: React.FC = () => {
   const { subCategory } = useParams<{ subCategory?: string }>();
   const navigate = useNavigate();
-  const activeTab = subCategory || 'model-metrics';
+  const activeTab = subCategory || 'forecast-dashboard';
 
   return (
     <motion.div
@@ -31,6 +32,16 @@ export const AnalyticsAnalyticsPage: React.FC = () => {
 
       {/* Sub-navigation */}
       <div className="flex items-center gap-2.5 border-b border-slate-200/90 pb-4 overflow-x-auto scrollbar-none touch-scroll">
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={() => navigate('/analytics/forecast-dashboard')}
+          className={`px-4 py-2.5 rounded-2xl text-xs font-extrabold transition-all shrink-0 whitespace-nowrap cursor-pointer ${
+            activeTab === 'forecast-dashboard' ? 'bg-amber-500 text-slate-900 shadow-2xs' : 'bg-white text-slate-700 border border-slate-200/90 hover:bg-slate-50 shadow-2xs'
+          }`}
+        >
+          Forecast Dashboard (Firestore & Recharts)
+        </motion.button>
         <motion.button
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
@@ -65,6 +76,17 @@ export const AnalyticsAnalyticsPage: React.FC = () => {
 
       {/* Content based on subTab with AnimatePresence */}
       <AnimatePresence mode="wait">
+        {activeTab === 'forecast-dashboard' && (
+          <motion.div
+            key="forecast-dashboard"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.25 }}
+          >
+            <ForecastDashboard onSelectDistrict={(id) => navigate(`/?district=${id}`)} />
+          </motion.div>
+        )}
         {activeTab === 'model-metrics' && (
           <motion.div
             key="model-metrics"

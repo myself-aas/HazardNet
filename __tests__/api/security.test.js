@@ -15,17 +15,11 @@
  */
 const request = require('supertest');
 
-jest.mock('@supabase/supabase-js', () => ({
-  createClient: jest.fn(() => ({ auth: { getUser: jest.fn() } })),
-}));
-
 // Heavy modules this suite never touches — keep them out of the worker.
 jest.mock('@google/genai', () => ({ GoogleGenAI: jest.fn() }));
 jest.mock('../../backend/db.js', () => ({}));
 
 process.env.BACKEND_API_KEY = 'test-api-key-secure-12345';
-process.env.SUPABASE_URL = 'https://test.supabase.co';
-process.env.SUPABASE_ANON_KEY = 'test-anon-key';
 process.env.FRONTEND_ORIGIN = 'https://hazardnet.vercel.app';
 
 const app = require('../../backend/server').default;

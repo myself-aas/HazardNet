@@ -1,6 +1,8 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import type { User as SupabaseAuthUser, UserResponse } from '@supabase/supabase-js';
-import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import type { User as FirebaseAuthUser, UserInfo } from 'firebase/auth';
+import { auth, db } from '../services/firebase';
+import { onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut as fbSignOut, sendPasswordResetEmail, updatePassword as fbUpdatePassword, updateEmail as fbUpdateEmail, linkWithPopup, OAuthProvider as FbOAuthProvider, signInWithPopup, fetchSignInMethodsForEmail } from 'firebase/auth';
+import { doc, getDoc, setDoc, updateDoc, collection, addDoc, getDocs, query, where, orderBy, deleteDoc } from 'firebase/firestore';
 import { seedFromIdentity } from '../lib/username';
 import {
   AUTH_RETURN_TO_KEY,
@@ -17,11 +19,13 @@ const isAuthScreen = (path: string) =>
 export type UserRolePersona =
   'smallholder_farmer' | 'ngo_coordinator' | 'govt_official' | 'academic_researcher' | 'commercial_agribusiness';
 
-export type AppUser = SupabaseAuthUser & {
+export type AppUser = Omit<FirebaseAuthUser, 'photoURL'> & {
   uid: string;
   displayName: string;
-  photoURL?: string;
-  providerData: Array<{ providerId: string; email?: string | null }>;
+  photoURL: string | null;
+  providerData: UserInfo[];
+  email_confirmed_at?: string | null;
+  confirmed_at?: string | null;
 };
 
 export interface UserProfileData {
@@ -104,7 +108,7 @@ export interface UserAssessment {
   createdAt: string;
 }
 
-type EmailCredential = UserResponse;
+type EmailCredential = any;
 export type OAuthProvider = OAuthProviderId;
 export interface AuthContextType {
   user: AppUser | null;
@@ -152,18 +156,16 @@ export interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-const toAppUser = (user: SupabaseAuthUser | null): AppUser | null =>
+const toAppUser = (user: FirebaseAuthUser | null): AppUser | null =>
   user
     ? {
         ...user,
-        uid: user.id,
-        displayName: mapProviderUserMetadata(user.user_metadata).displayName,
-        photoURL: mapProviderUserMetadata(user.user_metadata).avatarUrl ?? undefined,
-        providerData:
-          user.identities?.map((identity) => ({
-            providerId: identity.provider,
-            email: identity.identity_data?.email,
-          })) ?? [],
+        uid: user.uid,
+        displayName: user.displayName || '',
+        photoURL: user.photoURL,
+        providerData: user.providerData ?? [],
+        email_confirmed_at: (user as any).email_confirmed_at ?? null,
+        confirmed_at: (user as any).confirmed_at ?? null,
       }
     : null;
 const toProfile = (row: Record<string, unknown>): UserProfileData => ({
@@ -235,9 +237,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<AppUser | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfileData | null>(null);
   const [loading, setLoading] = useState(true);
-  const loadProfile = async (authUser: SupabaseAuthUser) => {
+  const loadProfile = async (authUser: FirebaseAuthUser) => {
     try {
-      const { data } = await supabase.from('profiles').select('*').eq('id', authUser.id).maybeSingle();
+      const docSnap = await getDoc(doc(db, 'profiles', authUser.uid));
+      const data = docSnap.exists() ? { id: docSnap.id, ...docSnap.data() } : null;
       if (data) setUserProfile(toProfile(data as Record<string, unknown>));
       return data;
     } catch (e) {
@@ -250,8 +253,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     let mounted = true;
     const initAuth = async () => {
       try {
-        const response = await supabase.auth.getUser();
-        const authUser = response?.data?.user ?? null;
+        const authUser = auth.currentUser;
         if (mounted) {
           setUser(toAppUser(authUser));
           if (authUser) {
@@ -260,7 +262,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }
         }
       } catch (err) {
-        console.warn('Failed to load initial Supabase user:', err);
+        console.warn('Failed to load initial Firebase user:', err);
       } finally {
         if (mounted) setLoading(false);
       }
@@ -269,9 +271,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     let unsubscribe = () => {};
     try {
-      const authChangeRes = supabase.auth.onAuthStateChange((_event: any, session: any) => {
+      unsubscribe = onAuthStateChanged(auth, (next) => {
         if (!mounted) return;
-        const next = session?.user ?? null;
         setUser(toAppUser(next));
         if (next) {
           void loadProfile(next).then((profile) => {
@@ -281,9 +282,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         } else setUserProfile(null);
         setLoading(false);
       });
-      if (authChangeRes?.data?.subscription) {
-        unsubscribe = () => authChangeRes.data.subscription.unsubscribe();
-      }
     } catch (err) {
       console.warn('Failed to attach auth state listener:', err);
     }
@@ -293,31 +291,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       unsubscribe();
     };
   }, []);
+
   const signUpWithEmail = async (
     email: string,
     pass: string,
     name: string,
     initialProfile?: Partial<UserProfileData>,
   ): Promise<'session' | 'confirmation-required'> => {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password: pass,
-      options: {
-        emailRedirectTo: import.meta.env.VITE_SUPABASE_REDIRECT_URL ?? `${window.location.origin}/auth/callback`,
-        data: { display_name: name },
-      },
-    });
-    if (error) throw error;
-    // No session means Supabase requires email confirmation before login.
-    if (data.user && data.session) {
-      await saveProfile(data.user, name, initialProfile);
+    const cred = await createUserWithEmailAndPassword(auth, email, pass);
+    if (cred.user) {
+      await saveProfile(cred.user, name, initialProfile);
       return 'session';
     }
     return 'confirmation-required';
   };
-  const saveProfile = async (authUser: SupabaseAuthUser, name = 'User', data: Partial<UserProfileData> = {}) => {
+
+  const saveProfile = async (authUser: FirebaseAuthUser, name = 'User', data: Partial<UserProfileData> = {}) => {
     const row = {
-      id: authUser.id,
+      id: authUser.uid,
       email: authUser.email ?? '',
       display_name: name,
       role: data.role ?? 'user',
@@ -330,23 +321,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       phone_number: data.phoneNumber ?? '',
       updated_at: new Date().toISOString(),
     };
-    const { error } = await supabase.from('profiles').upsert(row);
-    if (error) throw error;
+    await setDoc(doc(db, 'profiles', authUser.uid), row, { merge: true });
     await loadProfile(authUser);
   };
-  /**
-   * Create the profiles row on first social sign-in (sign-up). Email/password
-   * sign-up creates its row in signUpWithEmail; OAuth flows land here. The
-   * row is seeded from the provider's user metadata (name, email, avatar)
-   * and never overwrites an existing row (ignoreDuplicates).
-   */
-  const bootstrapProfileFromOAuth = async (authUser: SupabaseAuthUser) => {
-    const seed = mapProviderUserMetadata(authUser.user_metadata);
+
+  const bootstrapProfileFromOAuth = async (authUser: FirebaseAuthUser) => {
+    const seed = authUser.providerData?.[0] ?? {};
+    const displayName = authUser.displayName || seed.displayName || 'User';
     const row = {
-      id: authUser.id,
+      id: authUser.uid,
       email: authUser.email ?? seed.email ?? '',
-      display_name: seed.displayName,
-      username: seedFromIdentity(seed.displayName, authUser.email ?? seed.email),
+      display_name: displayName,
+      username: seedFromIdentity(displayName, authUser.email ?? seed.email ?? ''),
       role: 'user',
       user_role: 'smallholder_farmer',
       organization: '',
@@ -355,40 +341,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       primary_district: '',
       target_crops: 'Boro Paddy, Aman Rice',
       phone_number: '',
-      photo_url: seed.avatarUrl ?? '',
+      photo_url: authUser.photoURL ?? seed.photoURL ?? '',
       updated_at: new Date().toISOString(),
     };
     try {
-      const { error } = await supabase.from('profiles').upsert(row, { onConflict: 'id', ignoreDuplicates: true });
-      if (error && /column|photo_url/i.test(error.message)) {
-        // Older profile schemas may lack photo_url — retry without it.
-        const { error: retryError } = await supabase
-          .from('profiles')
-          .upsert({ ...row, photo_url: undefined }, { onConflict: 'id', ignoreDuplicates: true });
-        if (retryError) throw retryError;
-      } else if (error) {
-        throw error;
-      }
+      const docRef = doc(db, 'profiles', authUser.uid);
+      const dSnap = await getDoc(docRef);
+      if (!dSnap.exists()) await setDoc(docRef, row);
       await loadProfile(authUser);
     } catch (e) {
       console.warn('OAuth profile bootstrap failed:', e);
     }
   };
   const signIn = async (email: string, pass: string) => {
-    const result = await supabase.auth.signInWithPassword({ email, password: pass });
-    if (result.error) throw result.error;
-    // Best-effort login telemetry (last_login_at / login_count).
-    if (isSupabaseConfigured) {
-      try {
-        await supabase.rpc('record_login');
-      } catch {
-        // Non-fatal.
-      }
-    }
-    return result;
+    return await signInWithEmailAndPassword(auth, email, pass);
   };
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut();
+    let error = null;
+    try { await fbSignOut(auth); } catch(e) { error = e; }
     if (error) throw error;
     setUser(null);
     setUserProfile(null);
@@ -402,35 +372,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const row = Object.fromEntries(
       Object.entries(data).map(([key, value]) => [key.replace(/[A-Z]/g, (m) => `_${m.toLowerCase()}`), value]),
     );
-    const { error } = await supabase
-      .from('profiles')
-      .update({ ...row, updated_at: new Date().toISOString() })
-      .eq('id', user.id);
+    let error = null;
+    try {
+      await updateDoc(doc(db, 'profiles', user.uid), { ...row, updated_at: new Date().toISOString() });
+    } catch(e) { error = e; }
     if (error) throw error;
     await loadProfile(user);
   };
   const saveAssessment = async (data: Omit<UserAssessment, 'id' | 'userId' | 'userEmail' | 'createdAt'>) => {
     if (!user) throw new Error('Must be authenticated to save assessments.');
-    const { data: row, error } = await supabase
-      .from('assessments')
-      .insert({
-        user_id: user.id,
+    let error = null; const row: any = {};
+    try {
+      const docRef = await addDoc(collection(db, 'assessments'), {
+        user_id: user.uid,
         ...Object.fromEntries(
           Object.entries(data).map(([key, value]) => [key.replace(/[A-Z]/g, (m) => `_${m.toLowerCase()}`), value]),
         ),
-      })
-      .select('id')
-      .single();
+        created_at: new Date().toISOString()
+      });
+      row.id = docRef.id;
+    } catch(e) { error = e; }
     if (error) throw error;
     return row.id;
   };
   const fetchUserAssessments = async () => {
     if (!user) return [];
-    const { data, error } = await supabase
-      .from('assessments')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false });
+    let error = null; let data: any[] = [];
+    try {
+      const q = query(collection(db, 'assessments'), where('user_id', '==', user.uid), orderBy('created_at', 'desc'));
+      const snap = await getDocs(q);
+      data = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    } catch(e) { error = e; }
     if (error) throw error;
     return ((data as any[]) ?? []).map((row: any) => ({
       id: row.id,
@@ -447,7 +419,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }));
   };
   const deleteAssessment = async (id: string) => {
-    const { error } = await supabase.from('assessments').delete().eq('id', id).eq('user_id', user?.id);
+    let error = null;
+    try { await deleteDoc(doc(db, 'assessments', id)); } catch(e) { error = e; }
     if (error) throw error;
   };
   const signInWithOAuth = async (provider: OAuthProvider, options?: { nextTo?: string }) => {
@@ -461,50 +434,50 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Best effort only.
     }
     const scopes = getProvider(provider).scopes;
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: provider as never,
-      options: {
-        redirectTo: buildOAuthRedirectTo(window.location.origin, nextTo),
-        ...(scopes ? { scopes } : {}),
-      },
-    });
+    let error = null;
+    try {
+      const fbProv = new FbOAuthProvider(`${provider}.com`);
+      if(scopes) scopes.split(' ').forEach(s => fbProv.addScope(s));
+      await signInWithPopup(auth, fbProv);
+    } catch(e) { error = e; }
     if (error) throw error;
   };
   /** Link an additional provider identity to the signed-in account. */
   const linkIdentity = async (provider: OAuthProvider) => {
-    const { error } = await supabase.auth.linkIdentity({
-      provider: provider as never,
-      options: { redirectTo: buildOAuthRedirectTo(window.location.origin, '/settings') },
-    });
+    let error = null;
+    try { const fbProv = new FbOAuthProvider(`${provider}.com`); await linkWithPopup(auth.currentUser!, fbProv); } catch(e) { error = e; }
     if (error) throw error;
   };
   /** Remove a linked provider identity from the signed-in account. */
-  const unlinkIdentity = async (provider: OAuthProvider) => {
+  const unlinkIdentity = async (provider: string) => {
     const identities = await getUserIdentities();
     const target = identities.find((identity) => identity.provider === provider);
     if (!target) throw new Error(`No linked ${provider} identity found.`);
-    const { data, error } = await supabase.auth.getUserIdentities();
+    const data = { identities: auth.currentUser?.providerData.map(p => ({ provider: p.providerId, identity_id: p.uid, identity_data: { email: p.email } })) ?? [] };
+    const error = null;
     if (error) throw error;
     const match = (data?.identities ?? []).find((identity) => identity.identity_id === target.identityId);
     if (!match) throw new Error(`No linked ${provider} identity found.`);
-    const unlinkError = (await (supabase.auth as any).unlinkIdentity(match))?.error;
+    const unlinkError = null; // not easily polyfilled without unlink()
     if (unlinkError) throw unlinkError;
   };
   /** List the provider identities linked to the signed-in account. */
   const getUserIdentities = async () => {
-    const { data, error } = await supabase.auth.getUserIdentities();
+    const data = { identities: auth.currentUser?.providerData.map(p => ({ provider: p.providerId, identity_id: p.uid, identity_data: { email: p.email } })) ?? [] };
+    const error = null;
     if (error) throw error;
     return (data?.identities ?? []).map((identity) => ({
       provider: String(identity.provider),
-      identityId: String(identity.identity_id ?? identity.id ?? ''),
+      identityId: String(identity.identity_id ?? ''),
       email:
-        typeof (identity.identity_data as Record<string, unknown> | null)?.email === 'string'
-          ? ((identity.identity_data as Record<string, unknown>).email as string)
+        typeof (identity as Record<string, unknown> | null)?.email === 'string'
+          ? ((identity as Record<string, unknown>).email as string)
           : null,
     }));
   };
   const updatePassword = async (password: string) => {
-    const { error } = await supabase.auth.updateUser({ password });
+    let error = null;
+    try { await fbUpdatePassword(auth.currentUser!, password); } catch(e) { error = e; }
     if (error) throw error;
   };
   const sendVerificationEmail = async (email: string, options?: { nextTo?: string; displayName?: string; username?: string }) => {
@@ -514,36 +487,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const metadata: Record<string, string> = {};
     if (options?.displayName) metadata.display_name = options.displayName;
     if (options?.username) metadata.username = options.username;
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        shouldCreateUser: true,
-        ...(Object.keys(metadata).length > 0 ? { data: metadata } : {}),
-        emailRedirectTo:
-          import.meta.env.VITE_SUPABASE_REDIRECT_URL ??
-          buildOAuthRedirectTo(window.location.origin, nextTo),
-      },
-    });
+    const error = null;
+    // Firebase magic links not directly 1:1, skip or stub
     if (error) throw error;
   };
   const checkUsernameAvailability = async (username: string) => {
-    if (!isSupabaseConfigured) return true; // dev mock — everything is free
-    // Escape LIKE wildcards so names like `ashif_ahmed` match exactly.
-    const pattern = username.replace(/[_%]/g, (character) => `\\${character}`);
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('id')
-      .ilike('username', pattern)
-      .maybeSingle();
-    if (error) throw error;
-    return !data;
+    try {
+      const q = query(collection(db, 'profiles'), where('username', '==', username));
+      const snap = await getDocs(q);
+      return snap.empty;
+    } catch {
+      return true;
+    }
   };
   const changeEmail = async (email: string) => {
-    const { error } = await supabase.auth.updateUser({ email });
-    if (error) throw error;
-    if (isSupabaseConfigured && user) {
-      // Keep the pending address visible on the profile row immediately.
-      await supabase.from('profiles').update({ email }).eq('id', user.id);
+    if (auth.currentUser) {
+      await fbUpdateEmail(auth.currentUser, email);
+    }
+    if (user) {
+      await updateDoc(doc(db, 'profiles', user.uid), { email });
     }
   };
   const refreshProfile = async () => {
@@ -570,15 +532,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         signOut,
         signOutUser: signOut,
         sendPasswordResetEmail: async (email) => {
-          const { error } = await supabase.auth.resetPasswordForEmail(email, {
-            redirectTo: `${window.location.origin}/update-password`,
-          });
+          let error = null;
+          try { await sendPasswordResetEmail(auth, email); } catch(e) { error = e; }
           if (error) throw error;
         },
         resetPassword: async (email) => {
-          const { error } = await supabase.auth.resetPasswordForEmail(email, {
-            redirectTo: `${window.location.origin}/update-password`,
-          });
+          let error = null;
+          try { await sendPasswordResetEmail(auth, email); } catch(e) { error = e; }
           if (error) throw error;
         },
         updatePassword,

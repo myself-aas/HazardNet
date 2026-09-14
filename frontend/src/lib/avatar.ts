@@ -7,7 +7,8 @@
  * the 2 MB bucket limit — typically 20–60 KB per avatar.
  */
 
-import { supabase, isSupabaseConfigured } from './supabase';
+import { db } from '../services/firebase';
+import { doc, updateDoc } from 'firebase/firestore';
 
 export const AVATAR_MAX_DIMENSION = 512;
 export const AVATAR_TARGET_BYTES = 160 * 1024; // keep final blob under ~160 KB
@@ -131,64 +132,35 @@ export function avatarPathFromUrl(url?: string | null): string | null {
 }
 
 /**
- * Full avatar update flow. Resizes locally, uploads to
- * `avatars/<userId>/avatar-<timestamp>.<ext>`, writes photo_url + avatar_path
- * onto the profile and deletes the previous object so storage never grows.
+ * Full avatar update flow. Resizes locally, converts to Data URL, and writes photo_url
+ * onto the profile doc in Firestore.
  */
 export async function uploadAvatar({
   file,
   userId,
-  currentAvatarPath,
   onStage,
 }: UploadAvatarArgs): Promise<UploadAvatarResult> {
   onStage?.('resizing');
   const resized = await resizeAvatarFile(file);
   const storagePath = `${userId}/avatar-${Date.now()}.${resized.extension}`;
 
-  // Dev/demo mode without Supabase credentials: keep a local preview only.
-  if (!isSupabaseConfigured) {
-    const localPreviewUrl = URL.createObjectURL(resized.blob);
-    onStage?.('done');
-    return { publicUrl: localPreviewUrl, storagePath: `local:${storagePath}`, bytes: resized.blob.size, replacedOld: false, localPreviewUrl };
-  }
-
   onStage?.('uploading');
-  const { error: uploadError } = await supabase.storage
-    .from(AVATAR_BUCKET)
-    .upload(storagePath, resized.blob, { contentType: resized.contentType, cacheControl: '3600', upsert: false });
-  if (uploadError) throw new AvatarError(uploadError.message || 'Upload failed — check Storage policies.');
-
-  const { data: urlData } = supabase.storage.from(AVATAR_BUCKET).getPublicUrl(storagePath);
-  if (!urlData?.publicUrl) throw new AvatarError('Upload succeeded but no public URL was returned.');
+  const reader = new FileReader();
+  const dataUrlPromise = new Promise<string>((resolve, reject) => {
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = () => reject(new AvatarError('Failed to encode image preview'));
+  });
+  reader.readAsDataURL(resized.blob);
+  const dataUrl = await dataUrlPromise;
 
   onStage?.('finalizing');
-  const { error: updateError } = await supabase
-    .from('profiles')
-    .update({ photo_url: urlData.publicUrl, avatar_path: storagePath, updated_at: new Date().toISOString() })
-    .eq('id', userId);
-  if (updateError) throw new AvatarError(updateError.message || 'Could not save the new avatar.');
-
-  // Replace-on-update: drop the previous object to keep the bucket tiny.
-  const previous = currentAvatarPath || null;
-  let replacedOld = false;
-  if (previous && previous !== storagePath && !previous.startsWith('local:')) {
-    const { error: removeError } = await supabase.storage.from(AVATAR_BUCKET).remove([previous]);
-    replacedOld = !removeError;
-  }
+  await updateDoc(doc(db, 'profiles', userId), { avatar_path: storagePath, photo_url: dataUrl });
 
   onStage?.('done');
-  return { publicUrl: urlData.publicUrl, storagePath, bytes: resized.blob.size, replacedOld };
+  return { publicUrl: dataUrl, storagePath, bytes: resized.blob.size, replacedOld: false };
 }
 
 /** Remove the stored avatar entirely (user cleared their photo). */
-export async function deleteAvatar(userId: string, currentAvatarPath?: string | null): Promise<void> {
-  if (isSupabaseConfigured) {
-    if (currentAvatarPath && !currentAvatarPath.startsWith('local:')) {
-      await supabase.storage.from(AVATAR_BUCKET).remove([currentAvatarPath]);
-    }
-    await supabase
-      .from('profiles')
-      .update({ photo_url: '', avatar_path: null, updated_at: new Date().toISOString() })
-      .eq('id', userId);
-  }
+export async function deleteAvatar(userId: string): Promise<void> {
+  await updateDoc(doc(db, 'profiles', userId), { avatar_path: null, photo_url: null });
 }

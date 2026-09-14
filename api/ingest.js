@@ -5,6 +5,7 @@ import { getForecastStore } from '../backend/forecastStore.js';
 import { z } from 'zod';
 import { logger } from '../utils/logger.js';
 import { verifyApiKey } from '../backend/utils/apiKeyAuth.js';
+import { ingestForecastCsv } from '../backend/utils/csvIngestion.js';
 
 // Validation schema for a single forecast row
 const ForecastSchema = z.object({
@@ -57,15 +58,50 @@ export default async function handler(req, res) {
 
   let body;
   try {
-    body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+    body = typeof req.body === 'string' ? req.body : req.body;
   } catch {
-    res.statusCode = 400;
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify({ error: 'Invalid JSON body' }));
-    return;
+    body = req.body;
   }
 
-  const parseResult = PayloadSchema.safeParse(body);
+  // Check if body is raw CSV string or object with csv field
+  let csvString = null;
+  if (typeof body === 'string' && (body.includes(',') || body.includes('\n'))) {
+    csvString = body;
+  } else if (body && typeof body === 'object' && typeof body.csv === 'string') {
+    csvString = body.csv;
+  }
+
+  if (csvString) {
+    try {
+      const mode = req.query?.mode === 'append' ? 'append' : 'replace';
+      const result = await ingestForecastCsv(csvString, { mode });
+      res.statusCode = 200;
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify({ status: 'success', ...result }));
+      return;
+    } catch (e) {
+      logger.error('CSV Ingest error', e);
+      res.statusCode = 400;
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify({ error: e.message }));
+      return;
+    }
+  }
+
+  // Otherwise handle JSON chunk payload
+  let parsedJson = body;
+  if (typeof body === 'string') {
+    try {
+      parsedJson = JSON.parse(body);
+    } catch {
+      res.statusCode = 400;
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify({ error: 'Invalid JSON or CSV body' }));
+      return;
+    }
+  }
+
+  const parseResult = PayloadSchema.safeParse(parsedJson);
   if (!parseResult.success) {
     res.statusCode = 400;
     res.setHeader('Content-Type', 'application/json');

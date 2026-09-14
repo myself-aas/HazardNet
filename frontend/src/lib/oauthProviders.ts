@@ -1,15 +1,7 @@
 /**
  * HazardNet OAuth provider registry (single source of truth).
  *
- * Social sign-up/sign-in is powered by Supabase Auth: the browser is
- * redirected to the provider, and Supabase exchanges the authorization code
- * (PKCE) server-side. The client never handles provider credentials — each
- * provider only needs its client ID/secret configured once in the Supabase
- * dashboard (see docs/oauth-provider-setup.md).
- *
- * Supported here (Supabase provider ids):
- *   linkedin, github, slack, discord, twitter (X), figma
- * plus google, microsoft, apple and a custom OIDC "orcid" provider.
+ * Social sign-up/sign-in is powered by Firebase Auth.
  */
 
 /** Supabase OAuth provider ids used by HazardNet. */

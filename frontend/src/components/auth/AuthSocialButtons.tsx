@@ -46,7 +46,13 @@ const ProviderIconButton: React.FC<{
   )
 }
 
-export function AuthSocialButtons({ label = 'Connect with Google' }: { label?: string }) {
+export function AuthSocialButtons({
+  label = 'Connect with Google',
+  onSuccess,
+}: {
+  label?: string
+  onSuccess?: () => void
+}) {
   const { signInWithOAuth } = useAuth()
   const [active, setActive] = useState<OAuthProviderId | null>(null)
   const [failure, setFailure] = useState<{ provider: string; title: string; hint: string } | null>(null)
@@ -56,7 +62,7 @@ export function AuthSocialButtons({ label = 'Connect with Google' }: { label?: s
     setFailure(null)
     try {
       await signInWithOAuth(provider)
-      // On success the browser leaves the page; nothing else to do.
+      onSuccess?.()
     } catch (reason) {
       const explanation = describeOAuthError(reason)
       setFailure({ provider: getProvider(provider).label, ...explanation })

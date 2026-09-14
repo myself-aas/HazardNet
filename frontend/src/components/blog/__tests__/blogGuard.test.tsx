@@ -7,9 +7,8 @@ import RichTextEditor from '../RichTextEditor'
 jest.mock('../../../context/AuthContext', () => ({
   useAuth: jest.fn(),
 }))
-jest.mock('../../../lib/supabase', () => ({
-  supabase: {},
-  isSupabaseConfigured: false,
+jest.mock('../../../services/firebase', () => ({
+  db: {},
 }))
 
 const setAuth = (state: { user: unknown; loading: boolean }) => {

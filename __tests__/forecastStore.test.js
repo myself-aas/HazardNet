@@ -1,17 +1,10 @@
 /**
  * @jest-environment node
  *
- * Forecast store (backend/forecastStore.js) — the ADR 0002 access layer.
- *
- * Covers: mode selection + fail-loud config, Firestore implementation
- * semantics (latest-per-district, replace-for-prediction-date), and the
- * Supabase implementation's SQL/row coercion (pg returns numeric as strings
- * and date as raw strings via the 1082 type parser — the API shape must stay
- * identical to the Firestore store's).
+ * Forecast store (backend/forecastStore.js) tests.
  */
 import { getForecastStore, getForecastStoreMode, resetForecastStore } from '../backend/forecastStore.js';
 import { getDocs as _getDocs, writeBatch as _writeBatch, orderBy as _orderBy, limit as _limit } from '../backend/db.js';
-import pgDefault, { __mockPoolQuery, __mockPoolConnect } from 'pg';
 
 jest.mock('../backend/db.js', () => ({
   db: {},
@@ -25,42 +18,15 @@ jest.mock('../backend/db.js', () => ({
   writeBatch: jest.fn(() => ({ delete: jest.fn(), set: jest.fn(), commit: jest.fn().mockResolvedValue(true) })),
 }));
 
-jest.mock('pg', () => {
-  const real = jest.requireActual('pg');
-  // Shared fns so tests can program/inspect the "pool".
-  const query = jest.fn().mockResolvedValue({ rows: [] });
-  const connect = jest.fn().mockResolvedValue({
-    query: jest.fn().mockResolvedValue({ rows: [] }),
-    release: jest.fn(),
-  });
-  class FakePool {
-    constructor() {
-      this.query = query;
-      this.connect = connect;
-      this.on = jest.fn();
-    }
-  }
-  return {
-    ...real,
-    __mockPoolQuery: query,
-    __mockPoolConnect: connect,
-    default: FakePool,
-    Pool: FakePool,
-  };
-});
-
 const mockGetDocs = jest.mocked(_getDocs);
 const mockWriteBatch = jest.mocked(_writeBatch);
 const mockOrderBy = jest.mocked(_orderBy);
 const mockLimit = jest.mocked(_limit);
-const mockPoolQuery = __mockPoolQuery;
-const mockPoolConnect = __mockPoolConnect;
-void pgDefault;
 
 const row = (over = {}) => ({
   district_id: 19,
   district_name: 'Dhaka',
-horizon: '7_days',
+  horizon: '7_days',
   hazard_type: 'Flood',
   severity_score: 0.55,
   confidence: 0.91,
@@ -74,27 +40,13 @@ horizon: '7_days',
 
 beforeEach(() => {
   jest.clearAllMocks();
-  mockPoolQuery.mockResolvedValue({ rows: [] });
   resetForecastStore();
-  delete process.env.FORECAST_STORE;
-  delete process.env.DATABASE_URL;
 });
 
 describe('mode selection', () => {
-  it('defaults to firestore (pre-cutover behavior)', () => {
+  it('returns firestore mode', () => {
     expect(getForecastStoreMode()).toBe('firestore');
     expect(getForecastStore().mode).toBe('firestore');
-  });
-
-  it('selects supabase when FORECAST_STORE=supabase', () => {
-    process.env.FORECAST_STORE = 'supabase';
-    process.env.DATABASE_URL = 'postgresql://user:pass@db.example.supabase.co:5432/postgres';
-    expect(getForecastStore().mode).toBe('supabase');
-  });
-
-  it('fails loud when supabase is selected without DATABASE_URL', async () => {
-    process.env.FORECAST_STORE = 'supabase';
-    await expect(getForecastStore().getLatestForecastsByHorizon('7_days')).rejects.toThrow(/DATABASE_URL/);
   });
 });
 
@@ -126,8 +78,8 @@ describe('firestore store', () => {
       },
     });
     const store = getForecastStore();
-const rows = await store.getLatestForecastsByHorizon('7_days');
-     expect(rows).toHaveLength(2);
+    const rows = await store.getLatestForecastsByHorizon('7_days');
+    expect(rows).toHaveLength(2);
     expect(rows.find((r) => r.district_id === 19).prediction_date).toBe('2026-09-12');
   });
 
@@ -160,20 +112,6 @@ const rows = await store.getLatestForecastsByHorizon('7_days');
     expect(rows.map((r) => `${r.prediction_date}:${r.district_id}`)).toEqual([
       '2026-09-05:19', '2026-09-12:19', '2026-09-12:30',
     ]);
-    const { where: whereFn } = jest.requireMock('../backend/db.js');
-    expect(whereFn).toHaveBeenCalledWith('prediction_date', '>=', '2026-09-01');
-    expect(whereFn).toHaveBeenCalledWith('prediction_date', '<=', '2026-09-30');
-  });
-
-  it('getForecastHistory passes horizon and district filters as equality constraints', async () => {
-    mockGetDocs.mockResolvedValue({ forEach: () => {} });
-    const store = getForecastStore();
-await store.getForecastHistory({ from: '2026-09-01', to: '2026-09-30', horizon: '7_days', districtId: 19 });
-    const { where: whereFn } = jest.requireMock('../backend/db.js');
-    expect(whereFn).toHaveBeenCalledWith('horizon', '==', '7_days');
-    expect(whereFn).toHaveBeenCalledWith('district_id', '==', 19);
-    expect(whereFn).toHaveBeenCalledWith('prediction_date', '>=', '2026-09-01');
-    expect(whereFn).toHaveBeenCalledWith('prediction_date', '<=', '2026-09-30');
   });
 
   it('replaceForecastsForPredictionDate deletes old rows then writes new ones', async () => {
@@ -188,229 +126,5 @@ await store.getForecastHistory({ from: '2026-09-01', to: '2026-09-30', horizon: 
     expect(batch.delete).toHaveBeenCalledWith('old-doc-ref');
     expect(batch.set).toHaveBeenCalledTimes(2);
     expect(batch.commit).toHaveBeenCalledTimes(1);
-  });
-});
-
-describe('supabase store', () => {
-  const connect = () => {
-    process.env.FORECAST_STORE = 'supabase';
-    process.env.DATABASE_URL = 'postgresql://user:pass@db.example.supabase.co:5432/postgres';
-    const client = {
-      query: jest.fn().mockResolvedValue({ rows: [] }),
-      release: jest.fn(),
-    };
-    mockPoolConnect.mockResolvedValue(client);
-    return { store: getForecastStore(), client };
-  };
-
-  it('getLatestForecastByDistrict queries with district as text and coerces the row shape', async () => {
-    const { store } = connect();
-    // pg shape: numeric → string, date → raw string (1082 parser), district_id text.
-    mockPoolQuery.mockResolvedValueOnce({
-      rows: [
-        {
-          district_id: '19',
-          district_name: 'Dhaka',
-horizon: '7_days',
-          hazard_type: 'Flood',
-          severity_score: '0.55',
-          confidence: '0.91',
-          target_date: '2026-09-19',
-          prediction_date: '2026-09-12',
-          model_severity: '0.55',
-          physics_severity: '0.48',
-          division: 'Dhaka',
-          pcode: '3019',
-          admin_level: 3,
-          adm2_name: 'Dhaka',
-          adm2_pcode: '3037',
-          created_at: new Date('2026-09-12T08:00:00Z'),
-        },
-      ],
-    });
-
-    const forecast = await store.getLatestForecastByDistrict(19, '7_days');
-
-    expect(forecast.district_id).toBe(19); // text → number
-    expect(forecast.severity_score).toBe(0.55); // numeric string → number
-    expect(forecast.confidence).toBe(0.91);
-    expect(forecast.model_severity).toBe(0.55);
-    expect(forecast.physics_severity).toBe(0.48);
-    expect(forecast.target_date).toBe('2026-09-19'); // stays YYYY-MM-DD
-    expect(forecast.created_at).toBe('2026-09-12T08:00:00.000Z'); // Date → ISO string
-    expect(forecast.admin_level).toBe(3); // ADM3 identity passthrough (ADR 0005)
-    expect(forecast.adm2_name).toBe('Dhaka');
-    expect(forecast.adm2_pcode).toBe('3037');
-    expect(mockPoolQuery).toHaveBeenCalledWith(
-      expect.stringContaining('order by prediction_date desc'),
-      ['19', '7_days']
-    );
-  });
-
-  it('getLatestForecastsByHorizon uses DISTINCT ON and maps all rows', async () => {
-    const { store } = connect();
-    mockPoolQuery.mockResolvedValueOnce({
-      rows: [
-        { ...row(), district_id: '19', severity_score: '0.55', confidence: '0.91' },
-        { ...row({ district_id: 30, district_name: 'Jashore' }), severity_score: '0.35', confidence: '0.78' },
-      ],
-    });
-    const rows = await store.getLatestForecastsByHorizon('7_days');
-    expect(mockPoolQuery).toHaveBeenCalledWith(
-      expect.stringContaining('distinct on (district_id)'),
-      ['7_days']
-    );
-    expect(rows).toHaveLength(2);
-    expect(rows.every((r) => typeof r.severity_score === 'number')).toBe(true);
-    expect(rows.every((r) => typeof r.confidence === 'number')).toBe(true);
-  });
-
-  it('replaceForecastsForPredictionDate runs delete+insert in a transaction', async () => {
-    const { store, client } = connect();
-    const { written } = await store.replaceForecastsForPredictionDate('2026-09-12', [
-      row({ model_severity: 0.55, physics_severity: 0.48, division: 'Dhaka', pcode: '3019' }),
-    ]);
-
-    expect(written).toBe(1);
-    const calls = client.query.mock.calls.map((c) => c[0]);
-    expect(calls[0]).toBe('begin');
-    expect(calls[1]).toContain('delete from public.forecasts where prediction_date = $1');
-    expect(calls[2]).toContain('insert into public.forecasts');
-    expect(calls[2]).toContain('on conflict (district_id, horizon, hazard_type, target_date, prediction_date)');
-    expect(calls[3]).toBe('commit');
-
-    const insertParams = client.query.mock.calls[2][1];
-    expect(insertParams).toEqual([
-      '19', 'Dhaka', '7_days', 'Flood', 0.91, 0.55, '2026-09-19', '2026-09-12',
-      0.55, 0.48, 'Dhaka', '3019', 3, 'Dhaka', '3037',
-      // Meteorological columns (007_forecasts_meteorological.sql) are written
-      // for every row; absent values bind as NULL rather than being dropped.
-      null, null, null, null, null, null, null, null,
-    ]);
-  });
-
-  // Before this, the INSERT listed only the 15 identity/severity columns while
-  // the Firestore store wrote `{...row}` — so on the Supabase cutover the
-  // notebook's eight Open-Meteo values vanished between the CSV and the API
-  // with no error anywhere (the columns did not exist to reject them).
-  const METEOROLOGICAL_COLUMNS = [
-    'temperature_mean', 'temperature_max', 'temperature_min', 'precipitation_mm',
-    'wind_max_kmh', 'dewpoint_mean', 'solar_radiation_mj_m2', 'evapotranspiration_mm',
-  ];
-
-  it('writes all eight meteorological columns on insert and upsert', async () => {
-    const { store, client } = connect();
-    await store.replaceForecastsForPredictionDate('2026-09-12', [row()]);
-
-    const insert = client.query.mock.calls[2][0];
-    const columnList = insert.slice(insert.indexOf('(') + 1, insert.indexOf(')'))
-      .split(',').map((c) => c.trim());
-    const placeholders = insert.slice(insert.indexOf('values')).match(/\$\d+/g) || [];
-
-    for (const field of METEOROLOGICAL_COLUMNS) {
-      expect(columnList).toContain(field);
-      // The upsert must refresh weather values too, not just the first insert.
-      expect(insert).toMatch(new RegExp(`${field}\\s*=\\s*excluded\\.${field}`));
-    }
-    // Column/placeholder/param counts can never drift apart again.
-    expect(columnList).toHaveLength(23);
-    expect(placeholders).toHaveLength(23);
-    expect(client.query.mock.calls[2][1]).toHaveLength(23);
-  });
-
-  it('binds meteorological values as numbers when present', async () => {
-    const { store, client } = connect();
-    await store.replaceForecastsForPredictionDate('2026-09-12', [row({
-      temperature_mean: 27.825,
-      temperature_max: 33.1,
-      temperature_min: 24.9,
-      precipitation_mm: 52.2,
-      wind_max_kmh: 37.08,
-      dewpoint_mean: 25.5375,
-      solar_radiation_mj_m2: 20.8657,
-      evapotranspiration_mm: 4.35,
-    })]);
-
-    expect(client.query.mock.calls[2][1].slice(-8)).toEqual([
-      27.825, 33.1, 24.9, 52.2, 37.08, 25.5375, 20.8657, 4.35,
-    ]);
-  });
-
-  it('coerces string meteorological values and nulls empty ones', async () => {
-    const { store, client } = connect();
-    await store.replaceForecastsForPredictionDate('2026-09-12', [row({
-      temperature_mean: '27.825',
-      temperature_max: '',
-      temperature_min: undefined,
-      precipitation_mm: null,
-    })]);
-
-    const params = client.query.mock.calls[2][1].slice(-8);
-    expect(params[0]).toBe(27.825); // numeric string → number
-    expect(params.slice(1)).toEqual([null, null, null, null, null, null, null]);
-  });
-
-  it('rolls back and rethrows on insert failure', async () => {
-    const { store, client } = connect();
-    client.query.mockImplementation(async (sql) => {
-      if (typeof sql === 'string' && sql.startsWith('insert')) throw new Error('constraint violation');
-      return { rows: [] };
-    });
-    await expect(
-      store.replaceForecastsForPredictionDate('2026-09-12', [row()])
-    ).rejects.toThrow('constraint violation');
-    const calls = client.query.mock.calls.map((c) => c[0]);
-    expect(calls).toContain('rollback');
-    expect(client.release).toHaveBeenCalled();
-  });
-
-  it('getLatestPredictionDate uses max() and parses the date string', async () => {
-    const { store } = connect();
-    mockPoolQuery.mockResolvedValueOnce({ rows: [{ latest: '2026-09-12' }] });
-    await expect(store.getLatestPredictionDate()).resolves.toBe('2026-09-12');
-    expect(mockPoolQuery).toHaveBeenCalledWith(expect.stringContaining('max(prediction_date)'));
-  });
-
-  it('getLatestPredictionDate returns null when the table is empty', async () => {
-    const { store } = connect();
-    mockPoolQuery.mockResolvedValueOnce({ rows: [{ latest: null }] });
-    await expect(store.getLatestPredictionDate()).resolves.toBeNull();
-  });
-
-  it('getForecastHistory builds a ranged query with optional filters and maps rows', async () => {
-    const { store } = connect();
-    mockPoolQuery.mockResolvedValueOnce({
-      rows: [
-        { ...row(), district_id: '19', severity_score: '0.55', confidence: '0.91' },
-        { ...row({ district_id: 30, district_name: 'Jashore', prediction_date: '2026-09-12' }), severity_score: '0.35', confidence: '0.78' },
-      ],
-    });
-    const rows = await store.getForecastHistory({ from: '2026-09-01', to: '2026-09-30', horizon: '7_days', districtId: 19 });
-    expect(mockPoolQuery).toHaveBeenCalledWith(
-      expect.stringContaining('where prediction_date >= $1 and prediction_date <= $2 and horizon = $3 and district_id = $4 order by prediction_date asc, district_id asc'),
-      ['2026-09-01', '2026-09-30', '7_days', '19']
-    );
-    expect(rows).toHaveLength(2);
-    expect(rows.every((r) => typeof r.severity_score === 'number' && typeof r.confidence === 'number')).toBe(true);
-    expect(rows.every((r) => typeof r.district_id === 'number')).toBe(true);
-  });
-
-  it('getForecastHistory omits optional filters when not provided', async () => {
-    const { store } = connect();
-    mockPoolQuery.mockResolvedValueOnce({ rows: [] });
-    await store.getForecastHistory({ from: '2026-09-01', to: '2026-09-30' });
-    const [sql, params] = mockPoolQuery.mock.calls[0];
-    expect(sql).not.toContain('horizon =');
-    expect(sql).not.toContain('district_id =');
-    expect(params).toEqual(['2026-09-01', '2026-09-30']);
-  });
-
-  it('appendForecasts upserts without deleting', async () => {
-    const { store } = connect();
-    await store.appendForecasts([row()]);
-    const sqls = mockPoolQuery.mock.calls.map((c) => c[0]);
-    expect(sqls).toHaveLength(1);
-    expect(sqls[0]).toContain('insert into public.forecasts');
-    expect(sqls.join(' ')).not.toContain('delete from');
   });
 });

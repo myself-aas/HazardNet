@@ -65,13 +65,7 @@ jest.mock('../../backend/inference.js', () => ({
 jest.mock('@google/genai', () => ({ GoogleGenAI: jest.fn() }));
 jest.mock('../../backend/db.js', () => ({}));
 
-jest.mock('@supabase/supabase-js', () => ({
-  createClient: jest.fn(() => ({ auth: { getUser: jest.fn() } })),
-}));
-
 process.env.BACKEND_API_KEY = 'test-api-key';
-process.env.SUPABASE_URL = 'https://test.supabase.co';
-process.env.SUPABASE_ANON_KEY = 'test-anon-key';
 
 const app = require('../../backend/server').default;
 

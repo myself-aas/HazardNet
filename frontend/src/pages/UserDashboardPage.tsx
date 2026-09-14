@@ -10,7 +10,6 @@ import { ConnectorsSection } from '../components/user/dashboard/ConnectorsSectio
 import MaterialIcon from '../components/MaterialIcon';
 import { HazardNetBrand } from '../components/HazardNetLogo';
 import { profilePath, sanitizeUsernameInput } from '../lib/username';
-import { isSupabaseConfigured } from '../lib/supabase';
 import { Card } from '../components/user/dashboard/ui';
 
 /**
@@ -150,10 +149,7 @@ const UserDashboardPage: React.FC = () => {
   );
 
   // Auth guard — signed-out visitors go to login with a return path.
-  // When Supabase isn't configured at all (design/demo deployments), render
-  // the dashboard in clearly-labeled demo mode instead of bouncing.
-  const demoMode = !isSupabaseConfigured && !loading && !user;
-  if (!loading && !user && !demoMode) {
+  if (!loading && !user) {
     return <Navigate to="/login?next=%2Fdashboard" replace />;
   }
 
@@ -178,15 +174,6 @@ const UserDashboardPage: React.FC = () => {
 
   return (
     <div className="mx-auto w-full max-w-7xl">
-      {demoMode && (
-        <div className="mb-4 flex items-center gap-2.5 rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3" data-testid="dashboard-demo-banner">
-          <MaterialIcon name="info" size={16} className="shrink-0 text-sky-700" />
-          <p className="text-xs font-bold text-sky-900">
-            Design preview — connect Supabase (VITE_SUPABASE_URL / VITE_SUPABASE_PUBLISHABLE_KEY) to enable real
-            accounts, saved fields and connectors.
-          </p>
-        </div>
-      )}
 
       {/* ── Header ─────────────────────────────────────────────────────── */}
       <motion.header

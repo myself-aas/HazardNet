@@ -12,7 +12,8 @@
  */
 
 import DOMPurify from 'dompurify';
-import { supabase, isSupabaseConfigured } from './supabase';
+import { db } from '../services/firebase';
+import { collection, query, orderBy, getDocs, where, getDoc, doc, setDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { isPrimarySuperAdmin } from './superadmins';
 
 export type BlogArticleStatus = 'draft' | 'published';
@@ -77,7 +78,9 @@ const TABLE = 'blog_articles';
 export const DEFAULT_AFFILIATE_DISCLOSURE =
   'Disclosure: this article contains affiliate links. If you purchase through them, HazardNet may earn a small commission at no extra cost to you — it keeps our forecasting free for farmers.';
 
-export const isLocalDemoMode = (): boolean => !isSupabaseConfigured;
+export const isLocalDemoMode = (): boolean => {
+  return typeof window !== 'undefined' && (!db || !('app' in db));
+};
 
 // ─── slug & content helpers ─────────────────────────────────────────────────
 
@@ -356,8 +359,13 @@ export async function listArticles(): Promise<BlogStoreResult<BlogArticle[]>> {
       localDemo: true,
     };
   }
-  const { data, error } = await supabase.from(TABLE).select('*').order('created_at', { ascending: false });
-  if (error) return { data: [], error: error.message, localDemo: false };
+  let data: any[] = []; let error = null;
+  try {
+    const q = query(collection(db, TABLE), orderBy('created_at', 'desc'));
+    const snap = await getDocs(q);
+    data = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch(e) { error = e; }
+  if (error) return { data: [], error: String(error), localDemo: false };
   return { data: (data ?? []).map(rowToArticle), error: null, localDemo: false };
 }
 
@@ -372,12 +380,13 @@ export async function listPublishedArticles(): Promise<BlogStoreResult<BlogArtic
       localDemo: true,
     };
   }
-  const { data, error } = await supabase
-    .from(TABLE)
-    .select('*')
-    .eq('status', 'published')
-    .order('published_at', { ascending: false, nullsFirst: false });
-  if (error) return { data: [], error: error.message, localDemo: false };
+  let data: any[] = []; let error = null;
+  try {
+    const q = query(collection(db, TABLE), where('status', '==', 'published'), orderBy('published_at', 'desc'));
+    const snap = await getDocs(q);
+    data = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch(e) { error = e; }
+  if (error) return { data: [], error: String(error), localDemo: false };
   return { data: (data ?? []).map(rowToArticle), error: null, localDemo: false };
 }
 
@@ -386,8 +395,13 @@ export async function getArticleBySlug(slug: string): Promise<BlogStoreResult<Bl
   if (isLocalDemoMode()) {
     return { data: readLocal().find((a) => a.slug === slug) ?? null, error: null, localDemo: true };
   }
-  const { data, error } = await supabase.from(TABLE).select('*').eq('slug', slug).maybeSingle();
-  if (error) return { data: null, error: error.message, localDemo: false };
+  let data: any = null; let error = null;
+  try {
+    const q = query(collection(db, TABLE), where('slug', '==', slug));
+    const snap = await getDocs(q);
+    if(!snap.empty) data = { id: snap.docs[0].id, ...snap.docs[0].data() };
+  } catch(e) { error = e; }
+  if (error) return { data: null, error: String(error), localDemo: false };
   return { data: data ? rowToArticle(data as Record<string, unknown>) : null, error: null, localDemo: false };
 }
 
@@ -396,8 +410,12 @@ export async function getArticleById(id: string): Promise<BlogStoreResult<BlogAr
   if (isLocalDemoMode()) {
     return { data: readLocal().find((a) => a.id === id) ?? null, error: null, localDemo: true };
   }
-  const { data, error } = await supabase.from(TABLE).select('*').eq('id', id).maybeSingle();
-  if (error) return { data: null, error: error.message, localDemo: false };
+  let data: any = null; let error = null;
+  try {
+    const dSnap = await getDoc(doc(db, TABLE, id));
+    if(dSnap.exists()) data = { id: dSnap.id, ...dSnap.data() };
+  } catch(e) { error = e; }
+  if (error) return { data: null, error: String(error), localDemo: false };
   return { data: data ? rowToArticle(data as Record<string, unknown>) : null, error: null, localDemo: false };
 }
 
@@ -425,8 +443,14 @@ export async function createArticle(
     writeLocal(all);
     return { data: article, error: null, localDemo: true };
   }
-  const { data, error } = await supabase.from(TABLE).insert(articleToRow({ ...draft, authorId: author.id, publishedAt: article.publishedAt })).select('*').single();
-  if (error) return { data: null, error: error.message, localDemo: false };
+  let data: any = null; let error = null;
+  try {
+    const newRow = articleToRow({ ...draft, authorId: author.id, publishedAt: article.publishedAt });
+    const ref = doc(collection(db, TABLE));
+    await setDoc(ref, newRow);
+    data = { id: ref.id, ...newRow };
+  } catch(e) { error = e; }
+  if (error) return { data: null, error: String(error), localDemo: false };
   return { data: rowToArticle(data as Record<string, unknown>), error: null, localDemo: false };
 }
 
@@ -464,8 +488,12 @@ export async function updateArticle(
   const row = articleToRow(changes);
   row.updated_at = now;
   if (changes.status === 'published') row.published_at = changes.publishedAt ?? now;
-  const { data, error } = await supabase.from(TABLE).update(row).eq('id', id).select('*').single();
-  if (error) return { data: null, error: error.message, localDemo: false };
+  let data: any = null; let error = null;
+  try {
+    await updateDoc(doc(db, TABLE, id), row);
+    data = row;
+  } catch(e) { error = e; }
+  if (error) return { data: null, error: String(error), localDemo: false };
   return { data: rowToArticle(data as Record<string, unknown>), error: null, localDemo: false };
 }
 
@@ -478,7 +506,10 @@ export async function deleteArticle(id: string, author: AuthorContext): Promise<
     writeLocal(readLocal().filter((a) => a.id !== id));
     return { data: true, error: null, localDemo: true };
   }
-  const { error } = await supabase.from(TABLE).delete().eq('id', id);
-  if (error) return { data: false, error: error.message, localDemo: false };
+  let error = null;
+  try {
+    await deleteDoc(doc(db, TABLE, id));
+  } catch(e) { error = e; }
+  if (error) return { data: false, error: String(error), localDemo: false };
   return { data: true, error: null, localDemo: false };
 }

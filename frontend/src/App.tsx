@@ -133,6 +133,7 @@ const AppContent: React.FC = () => {
               <Route path="/home" element={<Dashboard defaultTab="gis" isFullScreen={true} />} />
               <Route path="/home/overview" element={<Dashboard defaultTab="gis" isFullScreen={true} />} />
               <Route path="/forecast/overview" element={<Dashboard defaultTab="gis" isFullScreen={true} />} />
+              <Route path="/forecast/dashboard" element={<Navigate to="/analytics/forecast-dashboard" replace />} />
               <Route path="/forecast/my-districts" element={<Dashboard defaultTab="saved" />} />
               <Route path="/forecast/district/:id" element={<DistrictDetailPage />} />
               <Route path="/forecast/compare" element={<Dashboard defaultTab="compare" />} />

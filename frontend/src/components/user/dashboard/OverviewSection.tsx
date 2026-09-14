@@ -67,7 +67,7 @@ export const OverviewSection: React.FC<{ onNavigate: (tab: 'profile' | 'connecto
   useEffect(() => {
     if (!user) return;
     void fetchUserAssessments()
-      .then((assessments) => setAssessmentCount(assessments.length))
+      .then((assessments: unknown[]) => setAssessmentCount(assessments.length))
       .catch(() => setAssessmentCount(0));
     void fetchUserConnectors(user.uid).then(
       (rows) => setConnectorCount(rows.filter((row) => row.status === 'connected').length),
@@ -85,7 +85,7 @@ export const OverviewSection: React.FC<{ onNavigate: (tab: 'profile' | 'connecto
     }
   };
 
-  const emailVerified = Boolean(user?.email_confirmed_at ?? user?.confirmed_at);
+  const emailVerified = Boolean(user?.emailVerified ?? user?.email_confirmed_at ?? user?.confirmed_at);
 
   const handleResend = async () => {
     if (!userProfile?.email) return;

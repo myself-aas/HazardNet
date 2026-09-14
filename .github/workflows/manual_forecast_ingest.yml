@@ -1,18 +1,5 @@
 name: Manual Forecast Ingest (Hand-Run Kaggle CSV)
 
-# Escape hatch for hand-run notebook output: upload the CSV you downloaded
-# from Kaggle (the notebook's /kaggle/working/hazardnet_forecasts_latest.csv)
-# to `data/manual_forecast.csv` — via the GitHub web UI (Add file → Upload
-# files) or git push — and this workflow validates it, ingests it into the
-# forecast store, rebuilds the website snapshot, and commits everything, so
-# the deployed site refreshes on the next build. Also runnable on demand via
-# workflow_dispatch (uses whatever CSV is currently at that path).
-#
-# This is the same ingest contract as the automated pipelines
-# (scripts/validate_forecasts.py + POST /api/v1/forecasts/update), so a CSV
-# that passes here is guaranteed to be shaped exactly like the notebook
-# output the hourly workflow consumes.
-
 on:
   push:
     branches: [main]
@@ -33,9 +20,7 @@ permissions:
   contents: write
 
 env:
-  FORECAST_STORE: ${{ vars.FORECAST_STORE || 'supabase' }}
-  DATABASE_URL: ${{ secrets.SUPABASE_DB_URL }}
-  SUPABASE_SSL: 'true'
+  FORECAST_STORE: ${{ vars.FORECAST_STORE || 'firestore' }}
   MANUAL_CSV: data/manual_forecast.csv
 
 jobs:
@@ -60,10 +45,24 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
+      - name: Cache node_modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            frontend/node_modules
+            ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
       - name: Install dependencies
         run: |
           npm ci --no-audit --no-fund
           pip install --requirement scripts/requirements-pipeline.txt
+
+      - name: Validate Firebase environment variables
+        run: node scripts/validate_env.mjs
 
       - name: Preflight — verify CSV + secrets
         shell: bash
@@ -80,10 +79,6 @@ jobs:
             echo "❌ BACKEND_API_KEY secret is not set (repo → Settings → Secrets and variables → Actions)"
             missing=1
           fi
-          if [ "$FORECAST_STORE" = "supabase" ] && [ -z "$DATABASE_URL" ]; then
-            echo "❌ FORECAST_STORE=supabase but SUPABASE_DB_URL secret is not set."
-            missing=1
-          fi
           if [ "$missing" -ne 0 ]; then exit 1; fi
           echo "✅ Required secrets present (store: $FORECAST_STORE)."
         env:
@@ -92,10 +87,6 @@ jobs:
       - name: Validate manual CSV
         shell: bash
         run: |
-          # Regenerate the JSON sidecar from the CSV (same as the hourly
-          # fetcher does for notebook CSV-only output), then run the full
-          # validator. --skip-freshness: a hand upload is an explicit human
-          # action — schema/range checks gate, staleness only warns.
           python -c "
           import csv, json
           with open('$MANUAL_CSV', newline='', encoding='utf-8') as fh:

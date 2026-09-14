@@ -16,7 +16,7 @@ try {
 }
 
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
-export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId || 'ai-studio-hazardnet-28005e8f-9924-4dea-983b-743f2fca6093');
+export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId || 'ai-studio-hazardnet-55b49dbf-625b-492b-9cff-feabd729e843');
 export { collection, addDoc, getDocs, query, where, orderBy, limit, deleteDoc, doc, setDoc, getDoc, writeBatch };
 export default db;
 
