@@ -70,10 +70,15 @@ http://localhost:3000/auth/callback
 
 ## Environment
 
-Social sign-in itself needs no frontend env vars beyond the existing
-`VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`. If those are absent
-the UI still renders, but starting a flow explains that authentication is
-unconfigured (a mock client is used — see `lib/supabase.ts`).
+Social sign-in itself needs no frontend env vars beyond the existing Supabase
+URL and publishable key. Set them at the **repository root** as
+`NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (aliases:
+`SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`) — *not* `VITE_SUPABASE_*` in
+`frontend/.env`, which `frontend/vite.config.ts` shadows with a `define` block
+and therefore ignores. See `.env.example` §7.
+
+If those are absent the UI still renders, but starting a flow explains that
+authentication is unconfigured (a mock client is used — see `lib/supabase.ts`).
 
 ## Security notes
 

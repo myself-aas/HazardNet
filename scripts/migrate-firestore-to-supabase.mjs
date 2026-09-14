@@ -28,6 +28,20 @@ if (!process.env.SUPABASE_SSL && !DATABASE_URL.includes('sslmode=')) {
 
 const { Client } = pg;
 
+// The eight meteorological columns added by 007_forecasts_meteorological.sql,
+// in the order the INSERT binds them.
+const MET_COLUMNS = [
+  'temperature_mean', 'temperature_max', 'temperature_min', 'precipitation_mm',
+  'wind_max_kmh', 'dewpoint_mean', 'solar_radiation_mj_m2', 'evapotranspiration_mm',
+];
+
+/** Numeric passthrough for a meteorological value: absent/blank -> NULL. */
+const met = (v) => {
+  if (v === null || v === undefined || v === '') return null;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
+};
+
 const VALID_HORIZONS = ['7_days', '15_days']; // ADR 0008 canonical set
 const LEGACY_HORIZONS = ['10_days', '20_days', '30_days']; // aspirational, never produced
 
@@ -55,6 +69,20 @@ async function fetchFirestoreRows() {
       admin_level: Number.isInteger(Number(v.admin_level)) ? Number(v.admin_level) : null,
       adm2_name: v.adm2_name ? String(v.adm2_name) : null,
       adm2_pcode: v.adm2_pcode ? String(v.adm2_pcode) : null,
+      // Meteorological fields (007_forecasts_meteorological.sql). The Firestore
+      // store wrote `{ ...row }`, so the documents already hold these under
+      // their API-unit names and the values pass through unconverted — the
+      // notebook's raw om_* columns are converted at the ingest boundary by
+      // backend/utils/forecastRow.js, never stored. Dropping them here (as this
+      // script used to) silently loses them all over again, with no error.
+      temperature_mean: met(v.temperature_mean),
+      temperature_max: met(v.temperature_max),
+      temperature_min: met(v.temperature_min),
+      precipitation_mm: met(v.precipitation_mm),
+      wind_max_kmh: met(v.wind_max_kmh),
+      dewpoint_mean: met(v.dewpoint_mean),
+      solar_radiation_mj_m2: met(v.solar_radiation_mj_m2),
+      evapotranspiration_mm: met(v.evapotranspiration_mm),
     });
   });
 
@@ -104,8 +132,10 @@ const upsert = `
   insert into public.forecasts
     (district_id, district_name, horizon, hazard_type, confidence, severity_score,
      target_date, prediction_date, model_version, model_severity, physics_severity, division, pcode,
-     admin_level, adm2_name, adm2_pcode)
-  values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)
+     admin_level, adm2_name, adm2_pcode,
+     ${MET_COLUMNS.join(', ')})
+  values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,
+     ${MET_COLUMNS.map((_, i) => `$${17 + i}`).join(',')})
   on conflict (district_id, horizon, hazard_type, target_date, prediction_date)
   do update set
     district_name = excluded.district_name,
@@ -118,7 +148,8 @@ const upsert = `
     pcode = excluded.pcode,
     admin_level = excluded.admin_level,
     adm2_name = excluded.adm2_name,
-    adm2_pcode = excluded.adm2_pcode
+    adm2_pcode = excluded.adm2_pcode,
+    ${MET_COLUMNS.map((c) => `${c} = excluded.${c}`).join(',\n    ')}
 `;
 let written = 0;
 try {
@@ -129,6 +160,7 @@ try {
       r.confidence, r.severity_score, r.target_date, r.prediction_date, r.model_version,
       r.model_severity, r.physics_severity, r.division, r.pcode,
       r.admin_level, r.adm2_name, r.adm2_pcode,
+      ...MET_COLUMNS.map((c) => r[c]),
     ]);
     written++;
   }

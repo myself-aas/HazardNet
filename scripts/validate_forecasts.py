@@ -43,9 +43,12 @@ COMMON_COLUMNS = [
 ADM3_COLUMNS = ['location_id', 'location_name', 'location_type', 'admin_level',
                 'division', 'pcode'] + COMMON_COLUMNS + ['data_source']
 
-# Notebook schema (64 FAO GAUL districts × 2 horizons × 8 hazards = 1024
-# rows). Severity may arrive as the legacy single-track column instead of the
-# dual-track pair; district_name/division/pcode are required by the ingest
+# Notebook schema — 64 FAO GAUL districts × 2 horizons = 128 rows. The
+# notebook emits ONE row per district per horizon carrying that district's
+# single top-1 hazard (`run_inference` returns one (hazard, confidence,
+# severity) triple and the loop appends once), NOT the full hazard cross
+# product. Severity may arrive as the legacy single-track column instead of
+# the dual-track pair; district_name/division/pcode are required by the ingest
 # contract, admin_level & adm2_* optional.
 NOTEBOOK_COLUMNS = ['district_id', 'district_name', 'horizon', 'hazard_type',
                     'confidence', 'target_date', 'prediction_date']
@@ -105,7 +108,11 @@ def validate_csv():
     if schema == 'adm3':
         expected_rows = 1108  # 554 locations × horizons (historical contract)
     else:
-        expected_rows = 64 * len(VALID_HORIZONS) * len(VALID_HAZARDS)  # 1024
+        # One top-1-hazard row per district per horizon. This used to multiply
+        # by len(VALID_HAZARDS) for 1024, which the notebook never produced —
+        # every real run warned "Expected ~1024 rows, got 128", which is how a
+        # genuine shortfall would have been mistaken for the usual noise.
+        expected_rows = 64 * len(VALID_HORIZONS)  # 128
     if len(df) < expected_rows * 0.9:
         print(f"⚠️ Warning: Expected ~{expected_rows} rows, got {len(df)}")
 

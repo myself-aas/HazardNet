@@ -160,7 +160,7 @@ jobs:
       SIGNING_ENABLED: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' && secrets.ANDROID_KEYSTORE_PASSWORD != '' && secrets.ANDROID_KEYSTORE_ALIAS != '' && secrets.ANDROID_KEY_PASSWORD != '' }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Fail fast if the Gradle project layout is missing
         env:
@@ -183,13 +183,13 @@ jobs:
           echo "Gradle layout OK (module: ${MODULE_DIR})."
 
       - name: Set up JDK
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: ${{ env.JAVA_VERSION }}
 
       - name: Set up Gradle (with dependency caching)
-        uses: gradle/actions/setup-gradle@v4
+        uses: gradle/actions/setup-gradle@v5
 
       - name: Lint
         if: env.LINT_TASK != ''
@@ -260,7 +260,7 @@ jobs:
           ./gradlew "${tasks[@]}" ${extra_args[@]+"${extra_args[@]}"}
 
       - name: Upload APK/AAB artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: android-release-${{ steps.signing_mode.outputs.mode }}
           path: |
@@ -271,7 +271,7 @@ jobs:
 
       - name: Upload Gradle reports (on failure)
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: android-reports-${{ github.run_id }}-${{ github.run_attempt }}
           path: '**/build/reports/**'
@@ -291,7 +291,7 @@ jobs:
       contents: write # required to create the GitHub Release and upload assets
     steps:
       - name: Download staged APK/AAB artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           pattern: android-release-*
           merge-multiple: true
@@ -315,7 +315,7 @@ jobs:
           cat SHA256SUMS.txt
 
       - name: Create GitHub Release and upload assets
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ needs.release-gate.outputs.tag }}
           name: ${{ needs.release-gate.outputs.tag }}

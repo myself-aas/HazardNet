@@ -156,7 +156,7 @@ jobs:
     timeout-minutes: 30
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Fail fast if package.json or the lockfile is missing
         env:
@@ -173,7 +173,7 @@ jobs:
           fi
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
@@ -261,7 +261,7 @@ jobs:
           bash -e -o pipefail -c "${SMOKE_COMMAND}"
 
       - name: Upload tarball and pack manifest
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: npm-package
           path: |
@@ -285,12 +285,12 @@ jobs:
     steps:
       # Checked out at the release tag so package.json is the released tree.
       - name: Checkout repository (at release tag)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: ${{ needs.release-gate.outputs.tag }}
 
       - name: Set up Node.js (with npm registry auth)
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
@@ -357,7 +357,7 @@ jobs:
       contents: write # required to create the GitHub Release and upload assets
     steps:
       - name: Download tarball and pack manifest
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           pattern: npm-package*
           merge-multiple: true
@@ -381,7 +381,7 @@ jobs:
           cat SHA256SUMS.txt
 
       - name: Create GitHub Release and upload assets
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ needs.release-gate.outputs.tag }}
           name: ${{ needs.release-gate.outputs.tag }}

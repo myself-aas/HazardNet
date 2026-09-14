@@ -24,10 +24,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '20'
           cache: 'npm'
@@ -36,11 +36,19 @@ jobs:
         run: npm ci --no-audit --no-fund
 
       - name: Run backend unit tests
-        run: npx jest --ci --coverage --coverageDirectory=./coverage/backend --testPathIgnorePatterns='/e2e/' 'frontend/src'
+        # --testPathIgnorePatterns is ARRAY-valued: EVERY following argument is
+        # swallowed as another ignore pattern, so a bare selector here does not
+        # select anything. This step used to end with `'frontend/src'`, which
+        # only worked by accident — reordering it to put the selector first
+        # would have run the frontend suites instead (21 either way, so the job
+        # would have stayed green while covering none of the backend).
+        # Pass the complete ignore list explicitly. Guarded by
+        # scripts/tests/test_workflows.py::test_backend_jest_step_has_no_bare_selector
+        run: npx jest --ci --coverage --coverageDirectory=./coverage/backend --testPathIgnorePatterns='/node_modules/' '/e2e/' '/frontend/'
 
       - name: Upload backend coverage
         if: always()
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           files: ./coverage/backend/lcov.info
           flags: backend
@@ -54,10 +62,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '20'
           cache: 'npm'
@@ -81,7 +89,7 @@ jobs:
 
       - name: Upload frontend coverage
         if: always()
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           files: ./frontend/coverage/lcov.info
           flags: frontend
@@ -95,16 +103,16 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '20'
           cache: 'npm'
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.11'
 
@@ -151,10 +159,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '20'
           cache: 'npm'
@@ -188,7 +196,7 @@ jobs:
 
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: playwright-report
           path: playwright-report/
@@ -202,10 +210,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '20'
           cache: 'npm'
@@ -247,7 +255,7 @@ jobs:
 
       - name: Upload build artifacts
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: frontend-dist
           path: frontend/dist/
@@ -260,10 +268,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '20'
           cache: 'npm'
@@ -286,64 +294,3 @@ jobs:
       # non-breaking fix.
       - name: Production dependency audit
         run: node scripts/npm-audit-ci.mjs
-
-  deploy-preview:
-    name: Deploy Preview (Vercel)
-    runs-on: ubuntu-latest
-    needs: [verify, test-e2e]
-    if: github.event_name == 'pull_request'
-
-    # NOTE: the `secrets` context is forbidden in EVERY `if:` (job AND step —
-    # GitHub rejects the whole file with zero jobs). Token presence is resolved
-    # once into a step output (secrets ARE allowed inside `run:`), and the
-    # deploy/skip steps gate on that output instead.
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Resolve Vercel deploy flag
-        id: flags
-        run: echo "has_token=${{ secrets.VERCEL_TOKEN != '' }}" >> "$GITHUB_OUTPUT"
-
-      - name: Deploy to Vercel Preview
-        if: steps.flags.outputs.has_token == 'true'
-        uses: amondnet/vercel-action@v25
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          scope: ${{ secrets.VERCEL_ORG_ID }}
-
-      - name: Skip notice (no Vercel token)
-        if: steps.flags.outputs.has_token != 'true'
-        run: echo "::notice::VERCEL_TOKEN not set — skipping Vercel preview deploy."
-
-  deploy-production:
-    name: Deploy Production (Vercel)
-    runs-on: ubuntu-latest
-    needs: [verify, test-e2e, security-audit]
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-
-    # NOTE: no `secrets` in any `if:` (see deploy-preview) — gate on the
-    # resolved step output instead.
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Resolve Vercel deploy flag
-        id: flags
-        run: echo "has_token=${{ secrets.VERCEL_TOKEN != '' }}" >> "$GITHUB_OUTPUT"
-
-      - name: Deploy to Vercel Production
-        if: steps.flags.outputs.has_token == 'true'
-        uses: amondnet/vercel-action@v25
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          vercel-args: '--prod'
-          scope: ${{ secrets.VERCEL_ORG_ID }}
-
-      - name: Skip notice (no Vercel token)
-        if: steps.flags.outputs.has_token != 'true'
-        run: echo "::notice::VERCEL_TOKEN not set — skipping Vercel production deploy."

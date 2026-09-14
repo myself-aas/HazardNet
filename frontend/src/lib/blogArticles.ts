@@ -11,6 +11,7 @@
  *    published production content.
  */
 
+import DOMPurify from 'dompurify';
 import { supabase, isSupabaseConfigured } from './supabase';
 import { isPrimarySuperAdmin } from './superadmins';
 
@@ -106,28 +107,124 @@ export function ensureUniqueSlug(base: string, existingSlugs: string[], ownId?: 
 }
 
 /**
- * Sanitize editor HTML: strips script/iframe/embed/object nodes, inline event
- * handlers and javascript: URLs. Applied on save; rendering happens only after
- * this pass. (Only superadmins can author content; this is defense-in-depth.)
+ * Elements the editor can actually produce (RichTextEditor is contentEditable +
+ * execCommand): formatBlock → p/h1–h3/blockquote/pre, bold → b|strong,
+ * italic → i|em, underline → u, strikeThrough → s|strike, lists → ul/ol/li,
+ * alignment → inline `text-align`, foreColor → font|span, links, inline
+ * images, horizontal rule, plus whatever the HTML source view emits.
+ *
+ * NOTE: this is an ALLOWLIST, and that is load-bearing. DOMPurify's own default
+ * allowlist is much wider — it permits `iframe`, `form`, `input`, `style`,
+ * `select`, `audio`, `video` and more, so calling `DOMPurify.sanitize` with no
+ * config would have RE-ENABLED elements the previous blocklist removed.
+ */
+const ALLOWED_TAGS = [
+  'p', 'br', 'hr', 'div', 'span',
+  'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+  'strong', 'b', 'em', 'i', 'u', 's', 'strike', 'del', 'ins', 'mark',
+  'sub', 'sup', 'small', 'big', 'tt', 'nobr', 'font', 'center',
+  'blockquote', 'pre', 'code',
+  'ul', 'ol', 'li',
+  'a', 'img',
+  'table', 'caption', 'colgroup', 'col', 'thead', 'tbody', 'tfoot', 'tr', 'th', 'td',
+];
+
+/** Attributes that cannot execute. `id` is safe here: DOMPurify's DOM
+ *  clobbering protection (SANITIZE_DOM, on by default) neutralises it. */
+const ALLOWED_ATTR = [
+  'href', 'src', 'alt', 'title', 'target', 'rel', 'width', 'height',
+  'class', 'style', 'colspan', 'rowspan', 'align', 'valign', 'dir', 'lang',
+  'color', 'size', 'face', 'cite', 'datetime', 'start', 'type', 'id',
+  'loading', 'decoding', 'referrerpolicy',
+];
+
+/**
+ * Inline CSS is required for the editor's alignment and text-colour commands.
+ * DOMPurify allows the `style` attribute but does not parse the declarations
+ * inside it, so anything able to fetch or execute is dropped here. Every
+ * editor command uses plain keyword properties (text-align, color, …), so this
+ * costs no functionality.
+ */
+const UNSAFE_CSS = /(url\s*\(|expression\s*\(|javascript:|vbscript:|@import|behaviou?r\s*:|\\)/i;
+
+/**
+ * DOMPurify deliberately permits `data:` URIs on media tags — `img` is in its
+ * DATA_URI_TAGS allowlist (the `DATA_URI_TAGS[lcTag]` branch in purify.js),
+ * which config cannot narrow. The previous sanitizer blocked `data:text/html`,
+ * so this preserves exactly that: image payloads are fine, anything else is
+ * dropped rather than left in the document.
+ *
+ * Detection matches DOMPurify's own test — it compares the RAW value with
+ * `indexOf(value, 'data:') === 0`, so a value prefixed with a control or
+ * whitespace character never qualifies as a data: URI in the first place and
+ * is dropped before this hook matters.
+ */
+const SAFE_DATA_URI = /^data:image\/(?:png|jpe?g|gif|webp|avif|bmp|x-icon);/i;
+
+const URI_ATTRS = new Set(['src', 'href', 'xlink:href', 'poster', 'action', 'formaction']);
+
+function sanitizeInlineStyle(value: string): string {
+  return value
+    .split(';')
+    .map((declaration) => declaration.trim())
+    .filter((declaration) => declaration && !UNSAFE_CSS.test(declaration))
+    .join('; ');
+}
+
+if (!(DOMPurify as unknown as { __hazardnetHooks?: boolean }).__hazardnetHooks) {
+  (DOMPurify as unknown as { __hazardnetHooks?: boolean }).__hazardnetHooks = true;
+
+  DOMPurify.addHook('uponSanitizeAttribute', (_node, data) => {
+    // Inline CSS: DOMPurify allows the attribute but does not parse it.
+    if (data.attrName === 'style') {
+      const safe = sanitizeInlineStyle(data.attrValue);
+      if (safe) data.attrValue = safe;
+      else data.keepAttr = false;
+      return;
+    }
+
+    // Non-image data: URIs (e.g. data:text/html smuggling markup).
+    if (
+      URI_ATTRS.has(data.attrName.toLowerCase()) &&
+      data.attrValue.slice(0, 5).toLowerCase() === 'data:' &&
+      !SAFE_DATA_URI.test(data.attrValue)
+    ) {
+      data.keepAttr = false;
+    }
+  });
+}
+
+/**
+ * Sanitize editor HTML. Applied on save AND on render (BlogArticlePage), so
+ * content already stored is cleaned before it reaches dangerouslySetInnerHTML.
+ *
+ * Backed by DOMPurify with an explicit allowlist. The previous hand-rolled
+ * blocklist was bypassable — `<meta http-equiv="refresh">` was not filtered at
+ * all (silent redirect of every reader), `javascript:` survived behind a
+ * leading C0 control character (browsers strip those, `startsWith` does not),
+ * and `catch { return html }` returned the input UNSANITISED on any error.
+ *
+ * Fail-closed: if sanitising is impossible this returns '' rather than the
+ * original markup. Never return `html` here.
  */
 export function sanitizeBlogHtml(html: string): string {
-  if (typeof window === 'undefined' || typeof DOMParser === 'undefined') return html;
+  if (!html) return '';
+  // Sanitising needs a DOM. The app is client-only, but fail closed anyway so a
+  // future SSR path can never render unsanitised article HTML.
+  if (typeof window === 'undefined' || typeof DOMParser === 'undefined') return '';
   try {
-    const doc = new DOMParser().parseFromString(`<body>${html}</body>`, 'text/html');
-    doc.body.querySelectorAll('script,iframe,object,embed,link,style,form').forEach((el) => el.remove());
-    doc.body.querySelectorAll('*').forEach((el) => {
-      [...el.attributes].forEach((attr) => {
-        const name = attr.name.toLowerCase();
-        const value = attr.value.trim().toLowerCase();
-        if (name.startsWith('on')) el.removeAttribute(attr.name);
-        if ((name === 'href' || name === 'src') && (value.startsWith('javascript:') || value.startsWith('data:text/html'))) {
-          el.removeAttribute(attr.name);
-        }
-      });
-    });
-    return doc.body.innerHTML;
+    return String(
+      DOMPurify.sanitize(html, {
+        ALLOWED_TAGS,
+        ALLOWED_ATTR,
+        ALLOW_DATA_ATTR: false,
+        ALLOW_ARIA_ATTR: false,
+        KEEP_CONTENT: true,
+        FORBID_ATTR: ['srcdoc', 'formaction', 'action', 'xlink:href', 'xmlns'],
+      }),
+    );
   } catch {
-    return html;
+    return '';
   }
 }
 

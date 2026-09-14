@@ -98,6 +98,25 @@ export function parseCsvForecastRow(row, rowNumber) {
 
   // The Kaggle notebook publishes Open-Meteo values in native units. Convert
   // them at the ingest boundary so API consumers keep the documented units.
+  //
+  // Two of the notebook's column names are actively misleading, and the CSV
+  // values only make sense once that is accounted for:
+  //
+  //   * `om_temp_2m_k` holds CELSIUS despite the `_k` suffix (Open-Meteo
+  //     defaults to Celsius), so it passes through unconverted — converting it
+  //     as Kelvin would store ~300 °C.
+  //   * `om_et_sum_m` holds MILLIMETRES despite the `_m` suffix, and
+  //     `om_solar_rad_j` holds kJ/m² — the notebook accumulates both over the
+  //     whole horizon (`np.nansum(...)`, with a `* 1000` on the solar term).
+  //
+  // The two fields below are documented as DAILY values (the pre-cutover
+  // fixture used 18.6 MJ/m² and 4.2 mm), so the horizon totals are divided by
+  // the horizon length. Without this a real notebook row stores ~30,000 mm of
+  // evapotranspiration — about 30 metres of water.
+  const horizonDays = parseInt(String(horizon).split('_')[0], 10);
+  const validDays = Number.isFinite(horizonDays) && horizonDays > 0;
+  const perDay = (total) => (validDays ? Number(total) / horizonDays : undefined);
+
   const meteorologicalValues = {
     temperature_mean: row.temperature_mean ?? row.om_temp_2m_k,
     temperature_max: row.temperature_max ?? row.om_max_temp_k,
@@ -105,8 +124,12 @@ export function parseCsvForecastRow(row, rowNumber) {
     precipitation_mm: row.precipitation_mm ?? (row.om_precip_m !== undefined ? Number(row.om_precip_m) * 1000 : undefined),
     wind_max_kmh: row.wind_max_kmh ?? (row.om_wind_max_ms !== undefined ? Number(row.om_wind_max_ms) * 3.6 : undefined),
     dewpoint_mean: row.dewpoint_mean ?? row.om_dewpoint_k,
-    solar_radiation_mj_m2: row.solar_radiation_mj_m2 ?? (row.om_solar_rad_j !== undefined ? Number(row.om_solar_rad_j) / 1_000_000 : undefined),
-    evapotranspiration_mm: row.evapotranspiration_mm ?? (row.om_et_sum_m !== undefined ? Number(row.om_et_sum_m) * 1000 : undefined),
+    // kJ/m² over the horizon -> MJ/m²/day.
+    solar_radiation_mj_m2: row.solar_radiation_mj_m2
+      ?? (row.om_solar_rad_j !== undefined ? perDay(Number(row.om_solar_rad_j) / 1000) : undefined),
+    // mm over the horizon -> mm/day.
+    evapotranspiration_mm: row.evapotranspiration_mm
+      ?? (row.om_et_sum_m !== undefined ? perDay(row.om_et_sum_m) : undefined),
   };
   for (const field of METEOROLOGICAL_FIELDS) {
     if (meteorologicalValues[field] !== undefined && meteorologicalValues[field] !== '') {

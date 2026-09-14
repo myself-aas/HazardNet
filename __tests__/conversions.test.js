@@ -196,6 +196,37 @@ describe('Server-Side Conversion Tracking & Attribution Engine', () => {
       expect(res.body.match_quality_score).toBeGreaterThanOrEqual(7.0);
     });
 
+    it('POST /api/conversions/track - responds even when Firestore never settles', async () => {
+      // Regression: the route used to `await addDoc(...)` on the response path.
+      // When Firestore is unreachable its client does not resolve or reject, so
+      // the endpoint hung forever (no response at 20s+). The event is already
+      // captured in the in-memory buffer, so the response must not depend on it.
+      const { addDoc } = await import('../backend/db.js');
+      addDoc.mockImplementationOnce(() => new Promise(() => {})); // never settles
+      process.env.CONVERSION_PERSIST_TIMEOUT_MS = '50';
+
+      try {
+        const res = await request(app)
+          .post('/api/conversions/track')
+          .send({ event_name: 'NeverSettles', event_id: 'ev_hang_test' })
+          .timeout({ deadline: 4000 });
+
+        expect(res.statusCode).toBe(201);
+        expect(res.body.event_id).toBe('ev_hang_test');
+
+        // Let the bounded background write settle BEFORE the test ends —
+        // otherwise its timer fires during teardown, which jest reports as
+        // "Cannot log after tests are done" and fails the suite in CI.
+        await new Promise((resolve) => setTimeout(resolve, 150));
+      } finally {
+        delete process.env.CONVERSION_PERSIST_TIMEOUT_MS;
+      }
+
+      // The conversion is still recorded locally, so the data is not lost.
+      const debug = await request(app).get('/api/conversions/debug');
+      expect(debug.body.recent_events.some((e) => e.event_id === 'ev_hang_test')).toBe(true);
+    });
+
     it('POST /api/conversions/dispatch - should format CAPI dispatch payloads for targets', async () => {
       const res = await request(app)
         .post('/api/conversions/dispatch')

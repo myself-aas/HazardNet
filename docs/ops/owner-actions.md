@@ -69,6 +69,13 @@ Also refresh your own local `.env` from `.env.example` (gitignored — verify wi
   old Kaggle `key` in `~/.kaggle/kaggle.json` returns 401.
 - New values are live: `kaggle datasets list` works; Supabase pooler URL connects
   (`psql "<new-url>" -c 'select 1'`); Codecov upload succeeds on the next CI run.
+- **Not required for deploying: no Vercel secret is read by any workflow.**
+  Vercel's Git integration builds every preview and the production site on its
+  own (`Vercel` commit status), so `VERCEL_TOKEN` / `VERCEL_ORG_ID` /
+  `VERCEL_PROJECT_ID` can be deleted from the repository's Actions secrets —
+  rotating them is optional and no longer unblocks anything. They were removed
+  from CI on 2026-09-14 after the stale ids made every run fail; see
+  `docs/audits/2026-09-14-vercel-deploy-403-project-unresolved.md`.
 - Re-run the leak scan any time: `bash scripts/check-secrets.sh`.
 
 > Optional hygiene (NOT a substitute for rotation): purge the values from git
@@ -98,10 +105,19 @@ Set each for **Production** (and Preview, except where noted):
 | `BACKEND_API_KEY` | `<same openssl value as GitHub secret>` | Authenticates `api/ingest.js` |
 | `FRONTEND_ORIGIN` | `https://www.hazardnet.live,https://hazardnet.live` | CORS allowlist (comma-separated; production fails closed without it — include apex **and** `www`; add preview domains as needed) |
 | `GEMINI_API_KEY` | `<new key>` | Serverless advisory/chat routes (recommended) |
-| `VITE_SUPABASE_URL` | `https://<project>.supabase.co` | Frontend Supabase client |
-| `VITE_SUPABASE_PUBLISHABLE_KEY` | `<publishable key>` | Frontend Supabase client (public-by-design) |
-| `VITE_SUPABASE_REDIRECT_URL` | `https://www.hazardnet.live` | Auth redirects |
+| `NEXT_PUBLIC_SUPABASE_URL` | `https://<project>.supabase.co` | Frontend Supabase client — **not** `VITE_SUPABASE_URL`, see below |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | `<publishable key>` | Frontend Supabase client (public-by-design) — not `VITE_SUPABASE_PUBLISHABLE_KEY` |
+| `NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL` | `https://www.hazardnet.live` | Auth redirects — not `VITE_SUPABASE_REDIRECT_URL` |
 | `VITE_VAPID_PUBLIC_KEY` | `<new public key>` | Push subscriptions (only the public key goes here) |
+
+> ⚠️ **The three Supabase names above are the `NEXT_PUBLIC_` forms on purpose.**
+> `frontend/vite.config.ts` injects the client's `VITE_SUPABASE_*` values with an
+> explicit `define` block that reads the **repository root** env, and a `define`
+> substitution wins over anything Vite loads. Setting `VITE_SUPABASE_URL` (in the
+> dashboard *or* in `frontend/.env`) has no effect at all — verified by build: the
+> value never reaches the bundle, while the `NEXT_PUBLIC_`/`SUPABASE_` forms do.
+> Prefix aliases `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY` also work.
+> Full list: `.env.example` §7.
 
 (Firebase `VITE_*` have committed defaults — skip unless you use Firebase.
 AdSense/download `VITE_*` are optional features.)

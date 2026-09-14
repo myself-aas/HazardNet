@@ -106,3 +106,28 @@ def test_unrecognized_schema_fails(tmp_path):
     proc = run_validate(csv_path, json_path)
     assert proc.returncode == 1
     assert 'Unrecognized schema' in proc.stdout
+
+
+def test_full_notebook_fixture_does_not_warn_about_row_count(tmp_path):
+    """One row per district per horizon (128), not the 64x2x8 cross product.
+
+    Regression: the expectation was `64 * len(HORIZONS) * len(HAZARDS)` = 1024,
+    but the notebook's loop runs a single top-1-hazard inference per district
+    per horizon and appends once, so every real run printed "Expected ~1024
+    rows, got 128". A permanent spurious warning is how a genuine shortfall
+    (skipped districts) would have been dismissed as the usual noise.
+    """
+    columns, rows = notebook_rows(today())
+    assert len(rows) == 128, 'fixture drifted from the notebook row contract'
+    csv_path, json_path = write_csv_json(tmp_path, columns, rows)
+    proc = run_validate(csv_path, json_path, '--skip-freshness')
+    assert proc.returncode == 0, proc.stdout
+    assert 'Expected ~' not in proc.stdout, proc.stdout
+
+
+def test_short_notebook_csv_still_warns_about_row_count(tmp_path):
+    """...and the warning must stay live for a real shortfall."""
+    columns, rows = notebook_rows(today())
+    csv_path, json_path = write_csv_json(tmp_path, columns, rows[:50])
+    proc = run_validate(csv_path, json_path, '--skip-freshness')
+    assert 'Expected ~128 rows, got 50' in proc.stdout, proc.stdout

@@ -78,6 +78,35 @@ gh pr create --base main --head feature-branch
 # Preview URL: https://hazardnet-pr-123.vercel.app
 ```
 
+#### How CI deploys
+
+**Vercel's Git integration does the deploying — CI holds no Vercel
+credentials.** On a pull request Vercel builds a preview; on a push to `main`
+it builds production. The signal to watch is the **`Vercel` commit status**
+(linked to `vercel.com/<team>/hazardnet/<deployment>`), not a GitHub Actions
+job.
+
+CI used to run `npx vercel deploy` from `deploy-preview` / `deploy-production`
+jobs, scoped by `VERCEL_TOKEN` / `VERCEL_ORG_ID` / `VERCEL_PROJECT_ID`. Those
+jobs were removed on 2026-09-14: the ids in the secrets were stale, so every run
+failed with a 403 the CLI reports as *"Could not retrieve Project Settings. To
+link your Project, remove the `.vercel` directory and deploy again."* — advice
+that cannot be followed in CI, which has no `.vercel` directory at all. The
+failure had nothing to do with the code under test, and the credential could
+not be corrected from CI. Diagnosis:
+`docs/audits/2026-09-14-vercel-deploy-403-project-unresolved.md`.
+
+Consequences worth knowing:
+
+- A red `Deploy Preview/Production (Vercel)` job no longer exists as a failure
+  mode; if you find one referenced in an older run, it predates the removal.
+- **No repository secret is needed to deploy.** `VERCEL_TOKEN`,
+  `VERCEL_ORG_ID` and `VERCEL_PROJECT_ID` are no longer read by any workflow,
+  and `scripts/tests/test_workflows.py` fails if one is reintroduced.
+- If a deployment does not appear, check the Vercel project's **Git
+  integration** settings (repository connected, production branch `main`) —
+  that is the only deploy path now.
+
 ### Manual Deployment (Emergency Only)
 
 #### Deploy to Vercel (CLI)

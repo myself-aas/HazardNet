@@ -58,43 +58,62 @@ create table if not exists public.blog_articles (
   affiliate_disclosure text not null default ''
 );
 
+-- Row-level security. The AUTHORITATIVE policy definitions now live in
+-- scripts/db/006_blog_articles_rls_authz.sql — run that file; it is
+-- idempotent and it replaces everything below.
+--
+-- ⚠️ DO NOT authorise on `author_email`. It is an ordinary column written by
+-- the browser, so a policy that tests it is asking the caller what they claim
+-- to be, not who they are — any registered user could satisfy it by sending a
+-- superadmin address. Identity must come from the JWT (auth.uid()).
+--
+-- The fixed shape, for reference:
+
+create or replace function public.is_blog_superadmin()
+returns boolean language sql stable security definer set search_path = ''
+as $$
+  select exists (
+    select 1 from auth.users u
+    where u.id = auth.uid()
+      and lower(u.email) in (
+        'shuvo.1807016@bau.edu.bd',
+        'shuvoasifahmed@gmail.com',
+        'asifahmedshuvo.aas@gmail.com'
+      )
+  );
+$$;
+
 alter table public.blog_articles enable row level security;
 
--- Public read access limited to published articles
+-- Public blog: published articles only.
 create policy "blog_published_public_read"
   on public.blog_articles for select
+  to anon, authenticated
   using (status = 'published');
 
--- Writes/deletes restricted to the primary superadmin emails
-create policy "blog_superadmin_write"
+-- Blog Studio: a superadmin may read everything, including their own drafts.
+-- Without this the studio cannot list drafts (listArticles has no status
+-- filter) and save-draft/unpublish fail with a misleading RLS error.
+create policy "blog_superadmin_read"
+  on public.blog_articles for select
+  to authenticated
+  using (public.is_blog_superadmin());
+
+create policy "blog_superadmin_insert"
   on public.blog_articles for insert
-  with check (
-    lower(author_email) in (
-      'shuvo.1807016@bau.edu.bd',
-      'shuvoasifahmed@gmail.com',
-      'asifahmedshuvo.aas@gmail.com'
-    )
-  );
+  to authenticated
+  with check (public.is_blog_superadmin());
 
 create policy "blog_superadmin_update"
   on public.blog_articles for update
-  using (
-    lower(author_email) in (
-      'shuvo.1807016@bau.edu.bd',
-      'shuvoasifahmed@gmail.com',
-      'asifahmedshuvo.aas@gmail.com'
-    )
-  );
+  to authenticated
+  using (public.is_blog_superadmin())
+  with check (public.is_blog_superadmin());
 
 create policy "blog_superadmin_delete"
   on public.blog_articles for delete
-  using (
-    lower(author_email) in (
-      'shuvo.1807016@bau.edu.bd',
-      'shuvoasifahmed@gmail.com',
-      'asifahmedshuvo.aas@gmail.com'
-    )
-  );
+  to authenticated
+  using (public.is_blog_superadmin());
 ```
 
 - **Local demo mode (no Supabase env vars):** articles persist to browser
@@ -135,9 +154,11 @@ The editor has three extra panels:
   full head (title, description, keywords, robots, canonical, Open Graph,
   Twitter card, Article+FAQ JSON-LD) via `src/lib/seoHead.ts`.
 - **Author byline** — display name, role/title, bio, avatar and website are
-  all editable per article (E-E-A-T signals). The signed-in superadmin email
-  remains the permission identity (`author_email`, RLS-checked) and is never
-  replaced by the editable byline.
+  all editable per article (E-E-A-T signals). Permissions do **not** depend on
+  any of them: RLS resolves identity from the JWT via `is_blog_superadmin()`,
+  and `author_email` is stamped server-side by a trigger so it cannot be
+  spoofed (see `scripts/db/006_blog_articles_rls_authz.sql`). The editable
+  byline is display-only.
 - **Monetization** — "contains affiliate links" toggle + editable disclosure.
   When enabled, the article shows a disclosure notice and every outbound link
   is rewritten to `rel="sponsored nofollow noopener"` on render. The editor

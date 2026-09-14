@@ -1,8 +1,0 @@
-# Vercel builds this repo with `npm install` and there is no committed npm
-# lockfile, so every deploy re-resolves the full tree from floating ranges.
-# `legacy-peer-deps` keeps a third-party peer-range disagreement (which npm
-# would otherwise reject with ERESOLVE) from failing the build; the real
-# dependency fixes live in package.json. Remove only alongside a committed
-# package-lock.json.
-legacy-peer-deps=true
-allowBuilds@tensorflow/tfjs-node=true

@@ -283,7 +283,71 @@ horizon: '7_days',
     expect(insertParams).toEqual([
       '19', 'Dhaka', '7_days', 'Flood', 0.91, 0.55, '2026-09-19', '2026-09-12',
       0.55, 0.48, 'Dhaka', '3019', 3, 'Dhaka', '3037',
+      // Meteorological columns (007_forecasts_meteorological.sql) are written
+      // for every row; absent values bind as NULL rather than being dropped.
+      null, null, null, null, null, null, null, null,
     ]);
+  });
+
+  // Before this, the INSERT listed only the 15 identity/severity columns while
+  // the Firestore store wrote `{...row}` — so on the Supabase cutover the
+  // notebook's eight Open-Meteo values vanished between the CSV and the API
+  // with no error anywhere (the columns did not exist to reject them).
+  const METEOROLOGICAL_COLUMNS = [
+    'temperature_mean', 'temperature_max', 'temperature_min', 'precipitation_mm',
+    'wind_max_kmh', 'dewpoint_mean', 'solar_radiation_mj_m2', 'evapotranspiration_mm',
+  ];
+
+  it('writes all eight meteorological columns on insert and upsert', async () => {
+    const { store, client } = connect();
+    await store.replaceForecastsForPredictionDate('2026-09-12', [row()]);
+
+    const insert = client.query.mock.calls[2][0];
+    const columnList = insert.slice(insert.indexOf('(') + 1, insert.indexOf(')'))
+      .split(',').map((c) => c.trim());
+    const placeholders = insert.slice(insert.indexOf('values')).match(/\$\d+/g) || [];
+
+    for (const field of METEOROLOGICAL_COLUMNS) {
+      expect(columnList).toContain(field);
+      // The upsert must refresh weather values too, not just the first insert.
+      expect(insert).toMatch(new RegExp(`${field}\\s*=\\s*excluded\\.${field}`));
+    }
+    // Column/placeholder/param counts can never drift apart again.
+    expect(columnList).toHaveLength(23);
+    expect(placeholders).toHaveLength(23);
+    expect(client.query.mock.calls[2][1]).toHaveLength(23);
+  });
+
+  it('binds meteorological values as numbers when present', async () => {
+    const { store, client } = connect();
+    await store.replaceForecastsForPredictionDate('2026-09-12', [row({
+      temperature_mean: 27.825,
+      temperature_max: 33.1,
+      temperature_min: 24.9,
+      precipitation_mm: 52.2,
+      wind_max_kmh: 37.08,
+      dewpoint_mean: 25.5375,
+      solar_radiation_mj_m2: 20.8657,
+      evapotranspiration_mm: 4.35,
+    })]);
+
+    expect(client.query.mock.calls[2][1].slice(-8)).toEqual([
+      27.825, 33.1, 24.9, 52.2, 37.08, 25.5375, 20.8657, 4.35,
+    ]);
+  });
+
+  it('coerces string meteorological values and nulls empty ones', async () => {
+    const { store, client } = connect();
+    await store.replaceForecastsForPredictionDate('2026-09-12', [row({
+      temperature_mean: '27.825',
+      temperature_max: '',
+      temperature_min: undefined,
+      precipitation_mm: null,
+    })]);
+
+    const params = client.query.mock.calls[2][1].slice(-8);
+    expect(params[0]).toBe(27.825); // numeric string → number
+    expect(params.slice(1)).toEqual([null, null, null, null, null, null, null]);
   });
 
   it('rolls back and rethrows on insert failure', async () => {
