@@ -7,7 +7,7 @@ on:
   workflow_dispatch: # Manual trigger for debugging (main branch only — see preflight)
 
 concurrency:
-  group: weekly-forecast-${{ github.ref }}
+  group: forecast-data-${{ github.ref }}
   cancel-in-progress: false
 
 permissions:
@@ -21,7 +21,10 @@ env:
   KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
   BACKEND_API_KEY: ${{ secrets.BACKEND_API_KEY }}
   GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-  FORECAST_STORE: ${{ vars.FORECAST_STORE || 'firestore' }}
+  FORECAST_STORE: firestore
+  FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+  FIREBASE_PROJECT_ID: ${{ vars.FIREBASE_PROJECT_ID }}
+  FIREBASE_DATABASE_ID: ${{ vars.FIREBASE_DATABASE_ID }}
   NOTEBOOK_DIR: ./kaggle_notebooks/hazardnet-auto-forecast-pipeline
   KERNEL_SLUG: ashifahmedshuvo/hazardnet-auto-forecast-pipeline
   CSV_PATH: ./backend/data/forecasts/hazardnet_forecasts_latest.csv
@@ -44,7 +47,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v7
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
 
       - name: Set up Python
@@ -61,6 +64,7 @@ jobs:
             echo "❌ Manual weekly runs are only allowed from 'main' (this workflow tags releases and pushes to main)."
             exit 1
           fi
+          test -n "$FIREBASE_SERVICE_ACCOUNT_JSON" || { echo 'Configure FIREBASE_SERVICE_ACCOUNT_JSON in Actions secrets'; exit 1; }
           missing=0
           for var in KAGGLE_USERNAME KAGGLE_KEY BACKEND_API_KEY; do
             if [ -z "${!var}" ]; then
@@ -97,7 +101,7 @@ jobs:
         shell: bash
         run: |
           mkdir -p ~/.kaggle
-          echo "{\"username\":\"${{ env.KAGGLE_USERNAME }}\",\"key\":\"${{ env.KAGGLE_KEY }}\"}" > ~/.kaggle/kaggle.json
+          echo "{\"username\":\"$KAGGLE_USERNAME\",\"key\":\"$KAGGLE_KEY\"}" > ~/.kaggle/kaggle.json
           chmod 600 ~/.kaggle/kaggle.json
           kaggle --version
 
@@ -216,10 +220,10 @@ jobs:
           npm version patch --no-git-tag-version
           NEW_VERSION=$(node -p "require('./package.json').version")
           echo "new_version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
-          git add package.json
+          git add package.json package-lock.json
           git commit -m "chore: bump version to $NEW_VERSION [skip ci]"
           git tag -a "v$NEW_VERSION" -m "Automated weekly release v$NEW_VERSION"
-          git push origin HEAD:main --tags
+          git push origin "HEAD:${GITHUB_REF_NAME}" "v$NEW_VERSION"
           echo "✅ Successfully bumped and tagged version v$NEW_VERSION"
 
       - name: Create GitHub Release

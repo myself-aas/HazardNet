@@ -1,3 +1,4 @@
+import { EMAIL_LINK_KEY, isEmailLink, completeEmailLink } from '../lib/emailLink'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
@@ -16,6 +17,12 @@ type Explanation = ReturnType<typeof describeOAuthError>
 
 export default function AuthCallbackPage() {
   const navigate = useNavigate()
+  const callbackUrl = useMemo(() => window.location.href, [])
+  const emailLink = useMemo(() => isEmailLink(callbackUrl), [callbackUrl])
+  const [emailAddress, setEmailAddress] = useState(() => {
+    try { return localStorage.getItem(EMAIL_LINK_KEY) || '' } catch { return '' }
+  })
+  const [emailInput, setEmailInput] = useState('')
   const params = useMemo(
     () => parseOAuthCallbackParams(window.location.search, window.location.hash),
     [],
@@ -41,10 +48,12 @@ export default function AuthCallbackPage() {
   useEffect(() => {
     if (phase !== 'exchanging') return
 
+    if (emailLink && !emailAddress) return
+    let cancelled = false
     let unsubscribe: () => void = () => {}
 
     const finish = (sessionUser: unknown) => {
-      if (settled.current) return
+      if (cancelled || settled.current) return
       settled.current = true
 
       const identities =
@@ -59,10 +68,18 @@ export default function AuthCallbackPage() {
     }
 
     const fail = (error: unknown) => {
-      if (settled.current) return
+      if (cancelled || settled.current) return
       settled.current = true
       setExplanation(describeOAuthError(error))
       setPhase('error')
+    }
+
+    if (emailLink) {
+      void completeEmailLink(emailAddress, callbackUrl).then((user) => {
+        window.history.replaceState({}, '', '/auth/callback')
+        finish(user)
+      }).catch(fail)
+      return () => { cancelled = true }
     }
 
     void auth.authStateReady().then(() => {
@@ -86,10 +103,11 @@ export default function AuthCallbackPage() {
     }, 12000)
 
     return () => {
+      cancelled = true
       window.clearTimeout(timeout)
       unsubscribe()
     }
-  }, [phase, params.error, params.errorDescription, params.next])
+  }, [phase, params.error, params.errorDescription, params.next, emailLink, emailAddress, callbackUrl])
 
   // Auto-return countdown on success.
   useEffect(() => {
@@ -102,6 +120,18 @@ export default function AuthCallbackPage() {
     const timer = window.setTimeout(() => setCountdown((value) => value - 1), 800)
     return () => window.clearTimeout(timer)
   }, [phase, returnTo, countdown, navigate])
+
+  if (emailLink && !emailAddress && phase === 'exchanging') {
+    return <Shell>
+      <h1 className="text-lg font-bold">Confirm your email</h1>
+      <p>Enter the address that received this link to finish signing in on this device.</p>
+      <form onSubmit={(event) => { event.preventDefault(); setEmailAddress(emailInput.trim()) }}>
+        <label>Email address<input type="email" required autoComplete="email" value={emailInput}
+          onChange={(event) => setEmailInput(event.target.value)} className="border rounded p-2 m-2" /></label>
+        <button type="submit" className="rounded bg-amber-400 p-2">Complete sign-in</button>
+      </form>
+    </Shell>
+  }
 
   if (phase === 'exchanging') {
     return (

@@ -19,7 +19,13 @@ function getFlatData(arr) {
   * Attaches a tf.Tensor5D to req.tensor on success.
   */
 async function validateTensor(req, res, next) {
-  const data = req.body.tensor;
+  const binary = Buffer.isBuffer(req.body);
+  if (binary && req.body.length !== 1 * 15 * 10 * 64 * 64 * 4) {
+    return res.status(400).json({ error: 'Binary tensor size mismatch' });
+  }
+  const data = binary
+    ? Array.from({ length: req.body.length / 4 }, (_, i) => req.body.readFloatLE(i * 4))
+    : req.body?.tensor;
 
   // Integrity: never fabricate input data. A disaster early-warning API must
   // refuse to run the model on synthetic/random tensors — a prediction from
@@ -39,6 +45,10 @@ async function validateTensor(req, res, next) {
   const expectedSize = 1 * 15 * 10 * 64 * 64;
   if (flat.length !== expectedSize) {
     return res.status(400).json({ error: `Tensor shape mismatch. Expected ${expectedSize} elements, received ${flat.length}` });
+  }
+
+  if (flat.some((value) => typeof value !== 'number' || !Number.isFinite(value) || Math.abs(value) > 3.402823466e38)) {
+    return res.status(400).json({ error: 'Tensor values must be finite float32 numbers' });
   }
 
   try {

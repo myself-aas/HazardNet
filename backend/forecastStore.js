@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 /**
  * Forecast data store — the single access layer for forecast persistence.
  *
@@ -110,31 +111,42 @@ function createFirestoreStore() {
     },
 
     async replaceForecastsForPredictionDate(predictionDate, rows) {
-      const forecastsRef = collection(db, 'forecasts');
-      const qOld = query(forecastsRef, where('prediction_date', '==', predictionDate));
-      const oldSnap = await getDocs(qOld);
-      const batch = writeBatch(db);
-      oldSnap.forEach((d) => batch.delete(d.ref));
-      for (const row of rows) {
-        batch.set(doc(collection(db, 'forecasts')), {
-          ...row,
-          created_at: new Date().toISOString(),
-        });
+      if (rows.some((row) => row.prediction_date !== predictionDate)) {
+        throw new Error('Replacement rows must share prediction_date');
       }
-      await batch.commit();
+      const old = await getDocs(query(collection(db, 'forecasts'), where('prediction_date', '==', predictionDate)));
+      const ids = new Set(rows.map(rowId));
+      // Publish all replacements before deleting obsolete rows. Partial failures
+      // never erase the previous forecast set; replay is idempotent by row key.
+      await writeRows(rows);
+      const stale = [];
+      old.forEach((entry) => { if (!ids.has(entry.id)) stale.push(entry.ref); });
+      for (let i = 0; i < stale.length; i += 400) {
+        const batch = writeBatch(db);
+        stale.slice(i, i + 400).forEach((ref) => batch.delete(ref));
+        await batch.commit();
+      }
       return { written: rows.length };
     },
 
     async appendForecasts(rows) {
-      const batch = writeBatch(db);
-      for (const row of rows) {
-        batch.set(doc(collection(db, 'forecasts')), {
-          ...row,
-          created_at: new Date().toISOString(),
-        });
-      }
-      await batch.commit();
+      await writeRows(rows);
       return { written: rows.length };
     },
   };
+}
+
+function rowId(row) {
+  return createHash('sha256').update(JSON.stringify([
+    row.district_id, row.horizon, row.hazard_type, row.target_date, row.prediction_date,
+  ])).digest('hex');
+}
+async function writeRows(rows) {
+  for (let i = 0; i < rows.length; i += 400) {
+    const batch = writeBatch(db);
+    rows.slice(i, i + 400).forEach((row) => batch.set(doc(collection(db, 'forecasts'), rowId(row)), {
+      ...row, created_at: new Date().toISOString(),
+    }));
+    await batch.commit();
+  }
 }

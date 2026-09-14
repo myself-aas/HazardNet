@@ -1,0 +1,24 @@
+name: Firebase deployment verify
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Read forecast metadata with the trusted server identity
+        env:
+          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+          FIREBASE_PROJECT_ID: ${{ vars.FIREBASE_PROJECT_ID }}
+          FIREBASE_DATABASE_ID: ${{ vars.FIREBASE_DATABASE_ID }}
+        run: |
+          test -n "$FIREBASE_SERVICE_ACCOUNT_JSON" || { echo 'Configure the Firebase service account secret'; exit 1; }
+          node --input-type=module -e "import {getForecastStore} from './backend/forecastStore.js'; const date=await getForecastStore().getLatestPredictionDate(); if(!date) throw new Error('Forecast store empty'); console.log({prediction_date:date});"

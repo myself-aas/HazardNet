@@ -1,7 +1,9 @@
+import { sendEmailLink } from '../lib/emailLink';
+import { saveProfile as persistProfile } from '../lib/profilePrivacy';
 import { createContext, useContext, useEffect, useState } from 'react';
 import type { User as FirebaseAuthUser, UserInfo } from 'firebase/auth';
 import { auth, db } from '../services/firebase';
-import { onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut as fbSignOut, sendPasswordResetEmail, updatePassword as fbUpdatePassword, updateEmail as fbUpdateEmail, linkWithPopup, OAuthProvider as FbOAuthProvider, signInWithPopup, fetchSignInMethodsForEmail } from 'firebase/auth';
+import { unlink, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut as fbSignOut, sendPasswordResetEmail, updatePassword as fbUpdatePassword, updateEmail as fbUpdateEmail, linkWithPopup, OAuthProvider as FbOAuthProvider, signInWithPopup, fetchSignInMethodsForEmail } from 'firebase/auth';
 import { doc, getDoc, setDoc, updateDoc, collection, addDoc, getDocs, query, where, orderBy, deleteDoc } from 'firebase/firestore';
 import { seedFromIdentity } from '../lib/username';
 import {
@@ -321,7 +323,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       phone_number: data.phoneNumber ?? '',
       updated_at: new Date().toISOString(),
     };
-    await setDoc(doc(db, 'profiles', authUser.uid), row, { merge: true });
+    await persistProfile(authUser.uid, row);
     await loadProfile(authUser);
   };
 
@@ -347,7 +349,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const docRef = doc(db, 'profiles', authUser.uid);
       const dSnap = await getDoc(docRef);
-      if (!dSnap.exists()) await setDoc(docRef, row);
+      if (!dSnap.exists()) await persistProfile(authUser.uid, row, true);
       await loadProfile(authUser);
     } catch (e) {
       console.warn('OAuth profile bootstrap failed:', e);
@@ -374,7 +376,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     );
     let error = null;
     try {
-      await updateDoc(doc(db, 'profiles', user.uid), { ...row, updated_at: new Date().toISOString() });
+      await persistProfile(user.uid, { ...row, updated_at: new Date().toISOString() });
     } catch(e) { error = e; }
     if (error) throw error;
     await loadProfile(user);
@@ -450,16 +452,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
   /** Remove a linked provider identity from the signed-in account. */
   const unlinkIdentity = async (provider: string) => {
-    const identities = await getUserIdentities();
-    const target = identities.find((identity) => identity.provider === provider);
+    if (!auth.currentUser) throw new Error('Sign in required');
+    const target = auth.currentUser.providerData.find((identity) =>
+      identity.providerId === provider || identity.providerId === `${provider}.com` || identity.providerId === `oidc.${provider}`);
     if (!target) throw new Error(`No linked ${provider} identity found.`);
-    const data = { identities: auth.currentUser?.providerData.map(p => ({ provider: p.providerId, identity_id: p.uid, identity_data: { email: p.email } })) ?? [] };
-    const error = null;
-    if (error) throw error;
-    const match = (data?.identities ?? []).find((identity) => identity.identity_id === target.identityId);
-    if (!match) throw new Error(`No linked ${provider} identity found.`);
-    const unlinkError = null; // not easily polyfilled without unlink()
-    if (unlinkError) throw unlinkError;
+    if (auth.currentUser.providerData.length < 2) throw new Error('Keep at least one sign-in method.');
+    await unlink(auth.currentUser, target.providerId);
   };
   /** List the provider identities linked to the signed-in account. */
   const getUserIdentities = async () => {
@@ -481,23 +479,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (error) throw error;
   };
   const sendVerificationEmail = async (email: string, options?: { nextTo?: string; displayName?: string; username?: string }) => {
-    // Passwordless verification: the emailed link both verifies the address
-    // and opens a session that allows choosing a password on /set-password.
-    const nextTo = options?.nextTo ?? '/set-password';
-    const metadata: Record<string, string> = {};
-    if (options?.displayName) metadata.display_name = options.displayName;
-    if (options?.username) metadata.username = options.username;
-    const error = null;
-    // Firebase magic links not directly 1:1, skip or stub
-    if (error) throw error;
+    if (options?.displayName || options?.username) {
+      sessionStorage.setItem('hazardnet.signup.pending', JSON.stringify({ name: options.displayName, username: options.username }));
+    }
+    await sendEmailLink(email);
   };
   const checkUsernameAvailability = async (username: string) => {
     try {
-      const q = query(collection(db, 'profiles'), where('username', '==', username));
+      const q = query(collection(db, 'public_profiles'), where('username', '==', username));
       const snap = await getDocs(q);
       return snap.empty;
     } catch {
-      return true;
+      throw new Error('Unable to check username availability. Please retry.');
     }
   };
   const changeEmail = async (email: string) => {
@@ -505,7 +498,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       await fbUpdateEmail(auth.currentUser, email);
     }
     if (user) {
-      await updateDoc(doc(db, 'profiles', user.uid), { email });
+      await persistProfile(user.uid, { email });
     }
   };
   const refreshProfile = async () => {

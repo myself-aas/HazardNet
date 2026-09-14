@@ -1,10 +1,8 @@
 // CI dependency gate: `npm audit --omit=dev` minus accepted-risk exceptions.
 //
-// Bare `npm audit --audit-level=high` can never pass while the tfjs-node
-// install toolchain carries unfixable transitive advisories (tar/adm-zip —
-// install-time only, no non-breaking fix). This gate fails closed on ANY
-// high/critical advisory NOT listed in audit-exceptions.json, and fails on
-// expired exceptions so accepted risk is re-reviewed on schedule.
+// Fails closed on high/critical advisories, invalid audit output, or expired
+// exceptions. Native TFJS install-tooling exceptions were retired with the
+// dependency; new exceptions require explicit review.
 // Exit 0 = pass, 1 = fail. Moderate/low are reported, never gated
 // (same semantics as the old --audit-level=high flag).
 import { execFileSync } from 'node:child_process';
@@ -34,6 +32,11 @@ try {
     console.error(String(err.message || err).slice(0, 500));
     process.exit(1);
   }
+}
+
+if (audit.error || !audit.metadata?.vulnerabilities || !audit.vulnerabilities) {
+  console.error('[npm-audit-ci] Invalid/error audit response; refusing to certify dependencies');
+  process.exit(1);
 }
 
 const exceptions = JSON.parse(fs.readFileSync(path.join(root, 'audit-exceptions.json'), 'utf8')).exceptions || [];

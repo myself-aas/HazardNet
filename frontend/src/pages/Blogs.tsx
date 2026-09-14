@@ -9,7 +9,6 @@ import { buildBlogIndexHead } from '../lib/blogSeo';
 import { useSeoHead } from '../lib/seoHead';
 import { ADSENSE_SLOT_BLOG_INDEX } from '../lib/adsense';
 import { useAuth } from '../context/AuthContext';
-import { isPrimarySuperAdmin } from '../lib/superadmins';
 
 interface BlogPost {
   id: string;
@@ -117,7 +116,7 @@ export const Blogs: React.FC = () => {
    * after the auth session has resolved — never for guests or regular users,
    * and never while the session is still loading.
    */
-  const showStudioButton = !loading && Boolean(user) && isPrimarySuperAdmin(user?.email);
+  const showStudioButton = !loading && Boolean(user);
 
   const filteredPosts = BLOG_POSTS.filter(
     (post) => filterCategory === 'All' || post.category === filterCategory

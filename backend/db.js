@@ -1,22 +1,17 @@
-import { initializeApp, getApps } from 'firebase/app';
-import { getFirestore, collection, addDoc, getDocs, query, where, orderBy, limit, deleteDoc, doc, setDoc, getDoc, writeBatch } from 'firebase/firestore';
-import fs from 'fs';
-import path from 'path';
-import dotenv from 'dotenv';
-dotenv.config();
-
-const configPath = path.resolve(process.cwd(), 'firebase-applet-config.json');
-let firebaseConfig = {};
-try {
-  if (fs.existsSync(configPath)) {
-    firebaseConfig = JSON.parse(fs.readFileSync(configPath, 'utf8'));
-  }
-} catch (e) {
-  console.warn('Could not read firebase-applet-config.json:', e.message);
-}
-
-const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
-export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId || 'ai-studio-hazardnet-55b49dbf-625b-492b-9cff-feabd729e843');
-export { collection, addDoc, getDocs, query, where, orderBy, limit, deleteDoc, doc, setDoc, getDoc, writeBatch };
+// Server-only compatibility adapter over the trusted Firebase Admin SDK.
+// Never import this module from browser code. Public clients remain rule-bound.
+import { getAdminDb } from './admin.js';
+export const db = { get collection() { return getAdminDb().collection.bind(getAdminDb()); } };
+export const collection = (parent, name) => parent.collection(name);
+export const doc = (parent, ...segments) => parent.doc(segments.length ? segments.join('/') : undefined);
+export const where = (...args) => (ref) => ref.where(...args);
+export const orderBy = (...args) => (ref) => ref.orderBy(...args);
+export const limit = (count) => (ref) => ref.limit(count);
+export const query = (ref, ...constraints) => constraints.reduce((result, apply) => apply(result), ref);
+export const getDocs = (ref) => ref.get();
+export const getDoc = (ref) => ref.get();
+export const addDoc = (ref, data) => ref.add(data);
+export const setDoc = (ref, data, options) => options ? ref.set(data, options) : ref.set(data);
+export const deleteDoc = (ref) => ref.delete();
+export const writeBatch = () => getAdminDb().batch();
 export default db;
-

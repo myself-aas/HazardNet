@@ -114,9 +114,9 @@ describe('firestore store', () => {
     ]);
   });
 
-  it('replaceForecastsForPredictionDate deletes old rows then writes new ones', async () => {
+  it('replaceForecastsForPredictionDate writes replacements before deleting obsolete rows', async () => {
     const batch = { delete: jest.fn(), set: jest.fn(), commit: jest.fn().mockResolvedValue(true) };
-    mockWriteBatch.mockReturnValueOnce(batch);
+    mockWriteBatch.mockReturnValue(batch);
     mockGetDocs.mockResolvedValue({
       forEach: (cb) => cb({ ref: 'old-doc-ref', data: () => row() }),
     });
@@ -125,6 +125,26 @@ describe('firestore store', () => {
     expect(written).toBe(2);
     expect(batch.delete).toHaveBeenCalledWith('old-doc-ref');
     expect(batch.set).toHaveBeenCalledTimes(2);
-    expect(batch.commit).toHaveBeenCalledTimes(1);
+    expect(batch.commit).toHaveBeenCalledTimes(2);
   });
+});
+
+test('large ADM3 append is bounded and preserves weather values', async () => {
+  const batches = [];
+  mockWriteBatch.mockImplementation(() => {
+    const batch = { set: jest.fn(), delete: jest.fn(), commit: jest.fn().mockResolvedValue() };
+    batches.push(batch); return batch;
+  });
+  const weather = { temperature_mean: 30, temperature_max: 38, temperature_min: 23,
+    precipitation_mm: 55, wind_max_kmh: 20, dewpoint_mean: 22, solar_radiation_mj_m2: 18, evapotranspiration_mm: 4 };
+  await getForecastStore().appendForecasts(Array.from({ length: 1014 }, (_, district_id) => row({ district_id, ...weather })));
+  expect(batches.map((batch) => batch.set.mock.calls.length)).toEqual([400, 400, 214]);
+  expect(batches[0].set.mock.calls[0][1]).toMatchObject(weather);
+});
+test('failed publication never starts deleting previous forecasts', async () => {
+  const batch = { set: jest.fn(), delete: jest.fn(), commit: jest.fn().mockRejectedValue(new Error('offline')) };
+  mockWriteBatch.mockReturnValue(batch);
+  mockGetDocs.mockResolvedValue({ forEach: (cb) => cb({ id: 'old', ref: 'old-ref' }) });
+  await expect(getForecastStore().replaceForecastsForPredictionDate('2026-09-12', [row()])).rejects.toThrow('offline');
+  expect(batch.delete).not.toHaveBeenCalled();
 });

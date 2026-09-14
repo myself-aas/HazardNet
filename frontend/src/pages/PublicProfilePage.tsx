@@ -3,7 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { db } from '../services/firebase';
 import { collection, query, getDocs, where, getDoc, doc } from 'firebase/firestore';
-const isSupabaseConfigured = true;
+
 import { HazardNetBrand } from '../components/HazardNetLogo';
 import MaterialIcon from '../components/MaterialIcon';
 import { sanitizeUsernameInput } from '../lib/username';
@@ -12,8 +12,7 @@ import { sanitizeUsernameInput } from '../lib/username';
  * Public profile page — unique URL: /u/<username>
  *
  * The username a user claims in their dashboard is their address on the web.
- * Fetches the `profiles` row by username (RLS exposes only rows marked
- * public), renders a clean profile card, and handles unknown/private users.
+ * Fetches the `profiles` row by username (the public projection excludes private contact data), renders a clean profile card, and handles unknown/private users.
  */
 
 interface PublicProfile {
@@ -66,7 +65,7 @@ const PublicProfilePage: React.FC = () => {
     setState('loading');
     setProfile(null);
 
-    if (!isSupabaseConfigured || !username) {
+    if (!username) {
       // Demo mode without Supabase: show a friendly sample card instead of a
       // hard error so the route is still explorable.
       setState('offline');
@@ -79,7 +78,7 @@ const PublicProfilePage: React.FC = () => {
       try {
         let data: any = null; let error = null;
         try {
-          const q = query(collection(db, 'profiles'), where('username', '==', username));
+          const q = query(collection(db, 'public_profiles'), where('username', '==', username));
           const snap = await getDocs(q);
           if(!snap.empty) data = { id: snap.docs[0].id, ...snap.docs[0].data() };
         } catch(e) { error = e; }

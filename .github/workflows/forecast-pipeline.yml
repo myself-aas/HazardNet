@@ -12,14 +12,17 @@ on:
         default: 'false'
 
 concurrency:
-  group: forecast-pipeline-${{ github.ref }}
+  group: forecast-data-${{ github.ref }}
   cancel-in-progress: false
 
 permissions:
   contents: write
 
 env:
-  FORECAST_STORE: ${{ vars.FORECAST_STORE || 'firestore' }}
+  FORECAST_STORE: firestore
+  FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+  FIREBASE_PROJECT_ID: ${{ vars.FIREBASE_PROJECT_ID }}
+  FIREBASE_DATABASE_ID: ${{ vars.FIREBASE_DATABASE_ID }}
   KAGGLE_KERNEL: ashifahmedshuvo/hazardnet-auto-forecast-pipeline
 
 jobs:
@@ -43,12 +46,13 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v7
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
 
       - name: Check for required secrets
         shell: bash
         run: |
+          test -n "$FIREBASE_SERVICE_ACCOUNT_JSON" || { echo 'Configure FIREBASE_SERVICE_ACCOUNT_JSON in Actions secrets'; exit 1; }
           missing=0
           for secret in KAGGLE_USERNAME KAGGLE_KEY BACKEND_API_KEY; do
             if [ -z "${!secret}" ]; then
@@ -172,7 +176,7 @@ jobs:
             git commit -m "chore(data): update 3-hour forecasts $(date -u +%Y-%m-%dT%H:%M:%SZ)" \
                         -m "Automated 3-hour forecast update from Kaggle pipeline" \
                         -m "Timestamp: $(date -u +"%Y-%m-%dT%H:%M:%SZ")"
-            git push
+            git push origin "HEAD:${GITHUB_REF_NAME}"
           fi
 
       - name: Upload Artifacts
