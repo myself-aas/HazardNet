@@ -22,10 +22,17 @@ const conversionBuffer = [];
 // awaiting it here hung POST /api/conversions/track indefinitely (the old
 // `catch` was only *commented* "non-blocking"). Bound the write instead and
 // report failure in the logs without delaying the caller.
-const PERSIST_TIMEOUT_MS = 3000;
+const DEFAULT_PERSIST_TIMEOUT_MS = 3000;
+
+/** Overridable so tests can exercise the bound without a 3s wait. */
+function persistTimeoutMs() {
+  const configured = Number(process.env.CONVERSION_PERSIST_TIMEOUT_MS);
+  return Number.isFinite(configured) && configured > 0 ? configured : DEFAULT_PERSIST_TIMEOUT_MS;
+}
 
 function persistConversion(record, attribution, matchQualityScore) {
   if (!db || typeof addDoc !== 'function') return;
+  const timeoutMs = persistTimeoutMs();
   let timer;
   const write = addDoc(collection(db, 'conversions'), {
     event_name: record.event_name,
@@ -37,7 +44,9 @@ function persistConversion(record, attribution, matchQualityScore) {
     created_at: record.created_at,
   });
   const timeout = new Promise((_, reject) => {
-    timer = setTimeout(() => reject(new Error(`Firestore write exceeded ${PERSIST_TIMEOUT_MS}ms`)), PERSIST_TIMEOUT_MS);
+    timer = setTimeout(() => reject(new Error(`Firestore write exceeded ${timeoutMs}ms`)), timeoutMs);
+    // Never hold the event loop open on behalf of a best-effort write.
+    if (typeof timer.unref === 'function') timer.unref();
   });
   // `timer` is assigned synchronously by the executor above, so it is always
   // defined by the time the race settles.

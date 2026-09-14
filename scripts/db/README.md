@@ -32,6 +32,19 @@ Apply order:
 All files are idempotent (`if not exists` / `drop policy if exists`), so
 re-running one is safe.
 
+## Verifying the meteorological columns
+
+`verify_forecasts_meteorological.sql` is the check for `007` (same contract as
+the blog verifier above: run it in the Supabase SQL editor, expect FAILs
+before, PASSes after). It is read-only, and it deliberately inspects stored
+rows through `to_jsonb()` so it reports FAIL instead of erroring on a database
+where the columns do not exist yet.
+
+**Apply `007` before the next ingest run.** The Supabase store now names the
+eight columns in its INSERT, so on a database without them the ingest fails
+outright with `column "temperature_mean" of relation "forecasts" does not
+exist` rather than silently dropping the values as it did before.
+
 ## Verifying the blog security fix
 
 `verify_blog_articles_rls.sql` is **not** a migration — it is a self-assessing

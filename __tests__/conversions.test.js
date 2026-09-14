@@ -203,14 +203,24 @@ describe('Server-Side Conversion Tracking & Attribution Engine', () => {
       // captured in the in-memory buffer, so the response must not depend on it.
       const { addDoc } = await import('../backend/db.js');
       addDoc.mockImplementationOnce(() => new Promise(() => {})); // never settles
+      process.env.CONVERSION_PERSIST_TIMEOUT_MS = '50';
 
-      const res = await request(app)
-        .post('/api/conversions/track')
-        .send({ event_name: 'NeverSettles', event_id: 'ev_hang_test' })
-        .timeout({ deadline: 4000 });
+      try {
+        const res = await request(app)
+          .post('/api/conversions/track')
+          .send({ event_name: 'NeverSettles', event_id: 'ev_hang_test' })
+          .timeout({ deadline: 4000 });
 
-      expect(res.statusCode).toBe(201);
-      expect(res.body.event_id).toBe('ev_hang_test');
+        expect(res.statusCode).toBe(201);
+        expect(res.body.event_id).toBe('ev_hang_test');
+
+        // Let the bounded background write settle BEFORE the test ends —
+        // otherwise its timer fires during teardown, which jest reports as
+        // "Cannot log after tests are done" and fails the suite in CI.
+        await new Promise((resolve) => setTimeout(resolve, 150));
+      } finally {
+        delete process.env.CONVERSION_PERSIST_TIMEOUT_MS;
+      }
 
       // The conversion is still recorded locally, so the data is not lost.
       const debug = await request(app).get('/api/conversions/debug');
