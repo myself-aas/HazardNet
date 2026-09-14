@@ -75,7 +75,7 @@ jobs:
           echo "✅ Required secrets present (store: $FORECAST_STORE)."
 
       - name: Cache node_modules
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: |
             node_modules

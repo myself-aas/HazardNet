@@ -64,7 +64,7 @@ jobs:
           BACKEND_API_KEY: ${{ secrets.BACKEND_API_KEY }}
 
       - name: Cache node_modules
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: |
             node_modules
