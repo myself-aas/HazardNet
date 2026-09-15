@@ -5,22 +5,53 @@ on:
     - cron: '0 0 * * *' # Runs daily at Midnight UTC
   workflow_dispatch: # Allows manual trigger
 
+concurrency:
+  group: daily-forecast-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
 jobs:
   run-forecast:
+    name: Daily Earth Engine inference + push
     runs-on: ubuntu-latest
+    timeout-minutes: 120
+
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4
-      
+        uses: actions/checkout@v7
+
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: '3.11'
           cache: 'pip'
+          cache-dependency-path: scripts/requirements-inference.txt
 
       - name: Install Optimized Dependencies
+        run: pip install -r scripts/requirements-inference.txt
+
+      - name: Preflight -- verify required secrets
+        shell: bash
         run: |
-          pip install -r scripts/requirements-inference.txt
+          missing=0
+          for var in EE_SERVICE_ACCOUNT_JSON HAZARDNET_API_URL HAZARDNET_API_KEY; do
+            if [ -z "${!var}" ]; then
+              echo "::error::'$var' is not configured (repo -> Settings -> Secrets and variables -> Actions)"
+              missing=1
+            fi
+          done
+          case "$HAZARDNET_API_URL" in
+            http://*|https://*) ;;
+            *) echo "::error::HAZARDNET_API_URL does not start with http(s)://: $HAZARDNET_API_URL"; missing=1 ;;
+          esac
+          if [ "$missing" -ne 0 ]; then exit 1; fi
+          echo "Required secrets present; API endpoint: $HAZARDNET_API_URL"
+        env:
+          EE_SERVICE_ACCOUNT_JSON: ${{ secrets.EE_SERVICE_ACCOUNT_JSON }}
+          HAZARDNET_API_URL: ${{ secrets.HAZARDNET_API_URL }}
+          HAZARDNET_API_KEY: ${{ secrets.HAZARDNET_API_KEY }}
 
       - name: Execute Pipeline
         env:
@@ -28,3 +59,8 @@ jobs:
           HAZARDNET_API_URL: ${{ secrets.HAZARDNET_API_URL }}
           HAZARDNET_API_KEY: ${{ secrets.HAZARDNET_API_KEY }}
         run: python scripts/auto_forecast.py
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "::error::Daily forecast pipeline failed -- check logs for details."

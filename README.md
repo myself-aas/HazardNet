@@ -5,6 +5,9 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue.svg)](https://www.typescriptlang.org/)
 [![TensorFlow Lite](https://img.shields.io/badge/TFLite-FP32-orange.svg)](https://www.tensorflow.org/lite)
 [![Mapbox GL](https://img.shields.io/badge/Mapbox-GL-green.svg)](https://docs.mapbox.com/mapbox-gl-js)
+[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/myself-aas/HazardNet/blob/main/ml/train_and_convert.ipynb)
+[![Daily forecast](https://github.com/myself-aas/HazardNet/actions/workflows/daily_forecast.yml/badge.svg)](https://github.com/myself-aas/HazardNet/actions/workflows/daily_forecast.yml)
+[![Model validation](https://github.com/myself-aas/HazardNet/actions/workflows/model-validation.yml/badge.svg)](https://github.com/myself-aas/HazardNet/actions/workflows/model-validation.yml)
 
 **HazardNet** is a production-ready, edge-first web application for real-time multi-hazard classification and severity quantification across Bangladesh's 64 agricultural districts. Built for operational deployment and aligned with IEEE TGRS submission standards, it leverages a 3D Depthwise-Separable CNN, deterministic climate forecasting, and TensorFlow Lite WASM to deliver sub-100ms, offline-capable hazard predictions.
 

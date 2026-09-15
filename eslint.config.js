@@ -40,7 +40,7 @@ export default tseslint.config(
     },
   },
   {
-    files: ['frontend/src/**/*.tsx'],
+    files: ['frontend/src/**/*.ts', 'frontend/src/**/*.tsx'],
     plugins: { 'react-hooks': reactHooks },
     rules: {
       ...reactHooks.configs.recommended.rules,

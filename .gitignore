@@ -1,104 +1,76 @@
-# Node.js
-node_modules/
-npm-debug.log
-yarn-error.log
 
-# Build output
-/dist
-
-# Playwright artifacts (written by a local `npx playwright test` run)
-/test-results
-/playwright-report
-/blob-report
-/playwright/.cache
-
-# Logs
-logs/
-*.log
-
-# Runtime data
-pids
-*.pid
-*.seed
-*.pid.lock
-
-# Misc
-.DS_Store
-.env
-.env.local
-.env.*.local
-
-# Docker
-*.dockerfile
-.dockerignore
-
-# VS Code
-.vscode/
-
-# OS generated files
-Thumbs.db
-Desktop.ini
-
-# Backend
-backend/node_modules/
-backend/dist/
-
-# Frontend
-frontend/node_modules/
-frontend/dist/
-
-# Test coverage
-coverage/
-
-# Temporary files
-*.tmp
-
-# Multer CSV upload landing dir (created at runtime by forecast ingest)
-uploads/
-
-# Raw Kaggle kernel output scratch (hourly workflow diagnostics; see data/README.md)
-data/kaggle_notebook_output/
-
-# IDEs
-.idea/
-
-# Misc
-*.swp
-
-# GitHub Actions
+!.env.example
+# ...but keep the documented examples committable
 # .github/
-
+# Backend
+# Build output
+# Docker
 # Docker Compose
-docker-compose.yml
-
-# Other
-*.pem
-*.key
-
+# Frontend
+# GitHub Actions
+# IDEs
+# Ignore Docker images
+# Ignore any other generated files
+# Ignore build artifacts
+# Ignore compiled Python files
 # Ignore environment files
+# Ignore logs
+# Logs
+# Misc
+# Multer CSV upload landing dir (created at runtime by forecast ingest)
+# Node.js
+# OS generated files
+# Other
+# Playwright artifacts (written by a local `npx playwright test` run)
+# Raw Kaggle kernel output scratch (hourly workflow diagnostics; see data/README.md)
+# Runtime data
+# Scratch audit workspace. A bare gitlink lived here with no .gitmodules entry,
+# Temporary files
+# Test coverage
+# VS Code
+# which made `git submodule status` fail in a fresh clone; removed 2026-09-14.
+*.dockerfile
+*.key
+*.log
+*.pem
+*.pid
+*.pid.lock
+*.pyc
+*.seed
+*.swp
+*.tar
+*.tmp
+*.zip
+.DS_Store
+.dockerignore
 .env
 .env.*
-# ...but keep the documented examples committable
-!.env.example
-
-# Ignore compiled Python files
-*.pyc
-__pycache__/
-
-# Ignore logs
-*.log
-
-# Ignore Docker images
-*.tar
-
-# Ignore build artifacts
-*.zip
-
-# Ignore any other generated files
-*.tmp
-
+.env.*.local
+.env.local
+.idea/
+.pytest_cache/
+.venv/
 .vercel
-
-# Scratch audit workspace. A bare gitlink lived here with no .gitmodules entry,
-# which made `git submodule status` fail in a fresh clone; removed 2026-09-14.
+.vscode/
+/blob-report
+/dist
+/playwright-report
+/playwright/.cache
+/test-results
+Desktop.ini
+Thumbs.db
+__pycache__/
 audit_temp/
+backend/dist/
+backend/node_modules/
+coverage/
+data/kaggle_notebook_output/
+docker-compose.yml
+frontend/dist/
+frontend/node_modules/
+logs/
+node_modules/
+npm-debug.log
+pids
+uploads/
+yarn-error.log
