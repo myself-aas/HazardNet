@@ -41,7 +41,7 @@ describe('Ingest API Handler', () => {
     it('should successfully ingest chunk and return 200 with count', async () => {
       // horizon must be the domain enum ('7_days' | '15_days') —
       // matches the CSV path and the public.forecasts CHECK constraint.
-      const chunk = [{ district_id: '1', district_name: 'A', horizon: '7_days', hazard_type: 'fire', confidence: 0.9, severity_score: 0.5, target_date: '2024-01-01', prediction_date: '2024-01-01' }];
+      const chunk = [{ district_id: '1', district_name: 'A', horizon: '7_days', hazard_type: 'Fire', confidence: 0.9, severity_score: 0.5, target_date: '2024-01-01', prediction_date: '2024-01-01' }];
       const { req, res } = createMocks({
         method: 'POST',
         headers: { authorization: 'Bearer secret' },

@@ -1,0 +1,30 @@
+name: HazardNet Daily Forecast Pipeline
+
+on:
+  schedule:
+    - cron: '0 0 * * *' # Runs daily at Midnight UTC
+  workflow_dispatch: # Allows manual trigger
+
+jobs:
+  run-forecast:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install Optimized Dependencies
+        run: |
+          pip install -r scripts/requirements-inference.txt
+
+      - name: Execute Pipeline
+        env:
+          EE_SERVICE_ACCOUNT_JSON: ${{ secrets.EE_SERVICE_ACCOUNT_JSON }}
+          HAZARDNET_API_URL: ${{ secrets.HAZARDNET_API_URL }}
+          HAZARDNET_API_KEY: ${{ secrets.HAZARDNET_API_KEY }}
+        run: python scripts/auto_forecast.py

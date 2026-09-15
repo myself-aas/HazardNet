@@ -14,6 +14,7 @@ import { MenuDrawer } from './MenuDrawer';
 import { MenuCloseIcon } from './ui/animated-state-icons';
 import { HazardNetLogo, HazardNetBrand } from './HazardNetLogo';
 import { detectExactPinpointLocation } from '../services/geolocationService';
+import { PWAInstallButton } from './PWAInstallButton';
 
 interface NavbarProps {
   onSelectDistrict?: (districtId: string) => void;
@@ -650,6 +651,9 @@ export const Navbar: React.FC<NavbarProps> = ({
 
               {/* Push / Emergency Notification Toggle */}
               <NotificationToggle />
+
+              {/* Install PWA Button */}
+              <PWAInstallButton />
 
               {/* Realtime Firebase Sync Badge */}
               <div

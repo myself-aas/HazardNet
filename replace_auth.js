@@ -1,4 +1,4 @@
-const fs = require('fs');
+import fs from 'fs';
 let code = fs.readFileSync('frontend/src/context/AuthContext.tsx', 'utf8');
 
 code = code.replace("import type { User as SupabaseAuthUser, UserResponse } from '@supabase/supabase-js';", "import type { User as SupabaseAuthUser } from 'firebase/auth';\nimport { auth, db } from '../services/firebase';\nimport { onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut as fbSignOut, sendPasswordResetEmail, updatePassword as fbUpdatePassword, updateEmail as fbUpdateEmail, linkWithPopup, OAuthProvider as FbOAuthProvider, signInWithPopup } from 'firebase/auth';\nimport { doc, getDoc, setDoc, updateDoc, collection, addDoc, getDocs, query, where, orderBy, deleteDoc } from 'firebase/firestore';");

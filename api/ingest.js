@@ -65,7 +65,7 @@ export default async function handler(req, res) {
 
   // Check if body is raw CSV string or object with csv field
   let csvString = null;
-  if (typeof body === 'string' && (body.includes(',') || body.includes('\n'))) {
+  if (typeof body === 'string' && !body.trim().startsWith('{') && !body.trim().startsWith('[') && (body.includes(',') || body.includes('\n'))) {
     csvString = body;
   } else if (body && typeof body === 'object' && typeof body.csv === 'string') {
     csvString = body.csv;

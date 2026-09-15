@@ -61,17 +61,17 @@ export function parseCsvForecastRow(row, rowNumber) {
   // as well as single-track `severity_score`.
   const modelSevRaw = row.model_severity !== undefined && row.model_severity !== ''
     ? row.model_severity
-    : row.severity_score;
+    : undefined;
   const physicsSevRaw = row.physics_severity !== undefined && row.physics_severity !== ''
     ? row.physics_severity
-    : row.severity_score;
+    : undefined;
 
   const modelSev = parseFloat(modelSevRaw);
   const physicsSev = parseFloat(physicsSevRaw);
 
-  const severityRaw = row.physics_severity !== undefined && row.physics_severity !== ''
-    ? row.physics_severity
-    : (row.severity_score !== undefined && row.severity_score !== '' ? row.severity_score : row.model_severity);
+  const severityRaw = row.severity_score !== undefined && row.severity_score !== ''
+    ? row.severity_score
+    : (row.model_severity !== undefined && row.model_severity !== '' ? row.model_severity : row.physics_severity);
   const severity = parseFloat(severityRaw);
 
   if (isNaN(severity) || severity < 0 || severity > 1) {

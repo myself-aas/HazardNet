@@ -1,4 +1,4 @@
-import { parseCsvString, processAndValidateCsvRows, ingestForecastCsv } from '../../backend/utils/csvIngestion.js';
+import { parseCsvString, processAndValidateCsvRows } from '../../backend/utils/csvIngestion.js';
 import assert from 'node:assert/strict';
 
 async function runTests() {
