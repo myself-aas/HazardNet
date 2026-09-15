@@ -1,9 +1,0 @@
-{
-  "scripts/tests/test_forecasts_meteorological_parity.py::test_expected_files_exist[path4]": true,
-  "scripts/tests/test_forecasts_meteorological_parity.py::test_store_binds_all_eight_columns_in_insert_and_upsert": true,
-  "scripts/tests/test_forecasts_meteorological_parity.py::test_store_column_count_matches_its_own_column_list": true,
-  "scripts/tests/test_forecasts_meteorological_parity.py::test_store_meteorological_list_matches_the_migration": true,
-  "scripts/tests/test_forecasts_meteorological_parity.py::test_cutover_script_reads_and_writes_the_same_eight_columns": true,
-  "scripts/tests/test_forecasts_meteorological_parity.py::test_cutover_script_never_reads_raw_notebook_columns": true,
-  "scripts/tests/test_forecasts_meteorological_parity.py::test_store_test_pins_the_column_count": true
-}
