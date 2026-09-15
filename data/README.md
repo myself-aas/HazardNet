@@ -9,9 +9,10 @@ The table below says which is which.
 
 | Path | Writer | Contents | Committed? |
 |---|---|---|---|
-| `data/kaggle_notebook_output/` | `scripts/fetch_kaggle_forecast.py` (`--dest`, hourly workflow) | Raw `kaggle kernels output` bundle (+ `fetch-manifest.json`) | No (CI diagnostics artifact only) |
-| `backend/data/forecasts/` | `fetch_kaggle_forecast.py` (`--csv-out`/`--json-out`) + validation | Validated `hazardnet_forecasts_latest.csv/.json` + `manifest.json` | **Yes** — committed by the hourly workflow as the auditable ingest input |
-| `frontend/public/data/forecasts-latest.json` | `scripts/build_forecast_snapshot.mjs` (hourly workflow) | Static website snapshot; ships inside every deployment | **Yes** — the offline fallback `useForecasts()` reads when the API is down |
+| `hazardnet_forecasts_latest.csv` (workspace root) | `scripts/auto_forecast.py` on the runner (`daily_forecast.yml`) | The freshly generated forecast rows | No (workflow artifact) |
+| `data/kaggle_notebook_output/` | `scripts/fetch_kaggle_forecast.py` (`--dest`, dispatch-only legacy Kaggle job) | Raw `kaggle kernels output` bundle (+ `fetch-manifest.json`) | No (CI diagnostics artifact only) |
+| `backend/data/forecasts/` | `scripts/publish_forecast_csv.py` (GitHub run) or `fetch_kaggle_forecast.py` (legacy Kaggle run) + validation | Validated `hazardnet_forecasts_latest.csv/.json` + `manifest.json` | **Yes** — committed by the producing workflow as the auditable ingest input |
+| `frontend/public/data/forecasts-latest.json` | `scripts/build_forecast_snapshot.mjs` (the same workflow) | Static website snapshot; ships inside every deployment | **Yes** — the offline fallback `useForecasts()` reads when the API is down. **This is the delivery path while the deployment serves no ingest API.** |
 | `data/manual_forecast.csv` (+ `.json` sidecar) | You, by hand (GitHub web UI → Add file → Upload files, or `git push`) | Hand-run Kaggle notebook output awaiting ingest | **Yes** — it is the trigger path for `manual_forecast_ingest.yml`, so it must be committed for the workflow to fire |
 
 ## Lifecycle (manual — first-run / hand-run notebook output)
@@ -36,12 +37,30 @@ It is skipped when the CSV's sha256 still matches the committed manifest and
 CSV on a feature branch will not run it. The hourly job then supersedes this
 data on its next run.
 
-⚠️ The workflow trusts the file: it stamps
-`source: kaggle kernels output ashifahmedshuvo/hazardnet-auto-forecast-pipeline`
+⚠️ The workflow trusts the file: it stamps its own provenance
+(`source: kaggle kernels output ashifahmedshuvo/hazardnet-auto-forecast-pipeline`)
 on the snapshot regardless of where the CSV actually came from. Upload real
 notebook output, not a fixture — anything else will be published as a forecast.
+(The GitHub-native producer stamps its own source explicitly, so a snapshot can
+never claim a producer that did not make it: `SNAPSHOT_SOURCE`.)
 
-## Lifecycle (hourly)
+## Lifecycle (daily, GitHub-native — the production path)
+
+1. `daily_forecast.yml` runs `scripts/auto_forecast.py` on the runner
+   (GEE + Open-Meteo + TFLite); the CSV lands in the workspace root. No Kaggle.
+2. `scripts/publish_forecast_csv.py` sanity-checks it and writes
+   `backend/data/forecasts/*.csv|json` + `manifest.json` (provenance + sha256).
+3. `scripts/validate_forecasts.py` gates the promoted artifacts.
+4. `build_forecast_snapshot.mjs` regenerates the frontend snapshot with the
+   `SNAPSHOT_SOURCE` provenance.
+5. The workflow commits `backend/data/forecasts/` + the snapshot, so the site
+   redeploys with the new data. With `PUSH_TO_API=true` it additionally POSTs the
+   CSV to the ingest API (the store path).
+
+## Lifecycle (hourly, legacy Kaggle worker — dispatch-only since 2026-09-16)
+
+The `hourly_forecast.yml` steps below still work when dispatched by hand and its
+Kernel token + slug are valid; it no longer runs on a timer.
 
 1. `hourly_forecast.yml` downloads the notebook's latest-run output into
    `data/kaggle_notebook_output/` (gitignored scratch).

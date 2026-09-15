@@ -16,6 +16,8 @@ let cached = null;
  * level up — never process.cwd(), which breaks when the server boots from a
  * different directory (and previously pointed above the repo root entirely).
  */
+export const LEGACY_VERSION = '1.0-FP32 (legacy literal — VERSION.json missing)';
+
 export function getModelInfo() {
   if (cached) return cached;
   const candidates = [
@@ -32,6 +34,15 @@ export function getModelInfo() {
       console.warn(`[modelInfo] Could not parse ${p}:`, err.message);
     }
   }
-  cached = { version: '1.0-FP32 (legacy literal — VERSION.json missing)', artifacts: [] };
-  return cached;
+  // The fallback is NOT cached on purpose: a missing handshake file (the file
+  // is tracked — `__tests__/modelInfo.test.js` and the `Model VERSION.json is
+  // current` CI gate both pin it) used to be memoised for the life of the
+  // process, so a long-running server kept reporting the legacy literal even
+  // after Models/VERSION.json appeared on disk. Warn loudly so the cause is
+  // visible in the boot log, and re-probe on the next call.
+  console.warn(
+    '[modelInfo] Models/VERSION.json is missing — /health and /api/predict report '
+    + 'the legacy literal. Run `node scripts/gen-model-version.mjs` and commit it.'
+  );
+  return { version: LEGACY_VERSION, artifacts: [] };
 }

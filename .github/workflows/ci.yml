@@ -33,7 +33,7 @@ jobs:
           cache: 'npm'
 
       - name: Cache node_modules
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             node_modules
@@ -82,7 +82,7 @@ jobs:
           cache: 'npm'
 
       - name: Cache node_modules
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             node_modules
@@ -139,7 +139,7 @@ jobs:
           python-version: '3.11'
 
       - name: Cache node_modules
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             node_modules
@@ -201,7 +201,7 @@ jobs:
           cache: 'npm'
 
       - name: Cache node_modules
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             node_modules
@@ -218,7 +218,7 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Cache Playwright browsers
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.cache/ms-playwright
           key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
@@ -271,7 +271,7 @@ jobs:
           cache: 'npm'
 
       - name: Cache node_modules
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             node_modules
@@ -296,13 +296,23 @@ jobs:
       - name: RAG knowledge-base freshness
         run: npm run check:rag-freshness
 
+      # A `git diff --exit-code` gate alone cannot see a MISSING file: an
+      # untracked Models/VERSION.json diffs clean, so the handshake stayed
+      # absent on main while this step reported success — and the backend suite
+      # failed 60 s earlier on `model_version` falling back to the legacy
+      # literal (see docs/audits/2026-09-15-ci-backend-tests-and-workflow-green.md).
+      # `git status --porcelain` reports untracked (`??`) and modified (` M`)
+      # alike, so stale == missing == red. Guarded by
+      # scripts/tests/test_workflows.py::test_model_version_gate_detects_missing_file.
       - name: Model VERSION.json is current
         run: |
           node scripts/gen-model-version.mjs
-          git diff --exit-code -- Models/VERSION.json || {
-            echo "::error::Models/VERSION.json is stale — run 'node scripts/gen-model-version.mjs' and commit it."
+          if [ -n "$(git status --porcelain -- Models/VERSION.json)" ]; then
+            git status --short -- Models/VERSION.json
+            echo "::error::Models/VERSION.json is stale or missing — run 'node scripts/gen-model-version.mjs' and commit it."
             exit 1
-          }
+          fi
+          echo "✅ Models/VERSION.json matches the artifacts on disk"
 
       - name: Serverless functions load as ESM
         run: |
@@ -317,7 +327,7 @@ jobs:
         run: npm run build
 
       - name: Cache build artifacts
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             frontend/dist/
@@ -353,7 +363,7 @@ jobs:
           cache: 'npm'
 
       - name: Cache node_modules
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             node_modules

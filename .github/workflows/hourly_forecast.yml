@@ -1,14 +1,29 @@
 name: Hourly Forecast Refresh (Kaggle Notebook Output)
 
+# ─────────────────────────────────────────────────────────────────────────────
+# RETIRED FROM THE SCHEDULE 2026-09-16 — dispatch-only legacy.
+#
+# Production forecasts are generated on the GitHub runner by
+# `.github/workflows/daily_forecast.yml` (scripts/auto_forecast.py: GEE +
+# Open-Meteo + TFLite; no Kaggle anywhere in the path). This workflow needs a
+# valid Kaggle token AND a runnable kernel, and after the 2026-09-15 token
+# rotation it failed every scheduled run with a bare exit code 1 — it was
+# retired rather than left red (see
+# docs/audits/2026-09-15-ci-backend-tests-and-workflow-green.md §3 and
+# docs/mlops/ARCHITECTURE.md, "Why this is better than the all-Kaggle setup").
+#
+# Kept for the cases the GitHub path does not cover (heavy ADM3/507-unit run,
+# OSM exposure overlay, release archiving): re-enable by adding back a
+# `schedule:` block under `on:`, and set the `KAGGLE_KERNEL` repository
+# variable if the notebook slug changed. Triage: docs/ops/kaggle-pipeline-triage.md
+# ─────────────────────────────────────────────────────────────────────────────
+
 # Refresher cadence — downloads the Kaggle notebook's *latest-run* CSV output
 # (`kaggle kernels output ashifahmedshuvo/hazardnet-auto-forecast-pipeline`),
 # validates it, ingests it into the forecast store (Firebase Firestore), rebuilds the static
 # website snapshot, and commits.
 
 on:
-  schedule:
-    # Every hour at minute 5 UTC.
-    - cron: '5 * * * *'
   workflow_dispatch:
     inputs:
       force_refresh:
@@ -25,7 +40,10 @@ permissions:
 
 env:
   FORECAST_STORE: ${{ vars.FORECAST_STORE || 'firestore' }}
-  KAGGLE_KERNEL: ashifahmedshuvo/hazardnet-auto-forecast-pipeline
+  # Overridable (repo → Settings → Secrets and variables → Actions → Variables)
+  # so a renamed/re-uploaded Kaggle notebook can be repointed without a code
+  # change; see .github/workflows/forecast-pipeline.yml for the failure mode.
+  KAGGLE_KERNEL: ${{ vars.KAGGLE_KERNEL || 'ashifahmedshuvo/hazardnet-auto-forecast-pipeline' }}
 
 jobs:
   refresh:
@@ -50,7 +68,7 @@ jobs:
           cache: 'npm'
 
       - name: Cache node_modules
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             node_modules

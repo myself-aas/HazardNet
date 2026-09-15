@@ -16,6 +16,7 @@ write permissions for data commits, concurrency guards, required files).
 """
 
 import json
+import re
 import shlex
 from pathlib import Path
 
@@ -41,12 +42,19 @@ REQUIRED_WORKFLOWS = {
 }
 
 # Workflows that must have contents:write (they push data/commits).
+# daily_forecast.yml joined on 2026-09-16: the GitHub-native producer commits
+# the refreshed CSV + website snapshot, which is the only delivery path that
+# works while the deployment serves no ingest API.
 DATA_COMMIT_WORKFLOWS = {
+    'daily_forecast.yml',
     'forecast-pipeline.yml',
     'hourly_forecast.yml',
     'manual_forecast_ingest.yml',
     'weekly_forecast.yml',
 }
+
+# Kaggle-dependent workflows, retired from the schedule on 2026-09-16.
+KAGGLE_WORKFLOWS = ('forecast-pipeline.yml', 'hourly_forecast.yml', 'weekly_forecast.yml')
 
 # model-validation.yml needs pull-requests:write to leave a status summary;
 # other workflows that only read should default to contents:read.
@@ -139,13 +147,69 @@ def test_data_pipelines_have_concurrency_guards(workflows):
         )
 
 
-def test_hourly_workflow_runs_hourly(workflows):
-    doc = workflows['hourly_forecast.yml']
-    schedules = (doc.get('on') or {}).get('schedule') or []
-    crons = [s.get('cron', '') for s in schedules]
-    assert any(c.startswith('5 * * * *') or c.startswith('*/60') or ' * * *' in c
-               for c in crons), (
-        f'hourly_forecast.yml must run hourly; found schedules: {crons}'
+def test_forecast_generation_runs_on_the_runner_not_kaggle(workflows):
+    """The GitHub-native pipeline must be the scheduled producer, and the
+    Kaggle-backed workflows must not run on a schedule.
+
+    Two things were true before 2026-09-16: every scheduled forecast job went
+    through Kaggle (`kaggle kernels push` / `kernels output`), and after the
+    token rotation all of them failed with a bare exit code 1 — while
+    `scripts/auto_forecast.py`, which needs only the GEE service account and
+    runs on the runner, sat idle in daily_forecast.yml without ever committing
+    its output. The schedule now belongs to the runner.
+    """
+    # 1. The runner-based producer is scheduled.
+    daily = workflows['daily_forecast.yml']
+    crons = [(s or {}).get('cron', '') for s in (daily.get('on') or {}).get('schedule') or []]
+    assert crons, 'daily_forecast.yml must keep a schedule — it is the production producer'
+    assert 'workflow_dispatch' in (daily.get('on') or {}), (
+        'daily_forecast.yml must stay manually dispatchable'
+    )
+
+    # 2. …and it actually generates the forecast on the runner.
+    runs = [
+        str(step.get('run', ''))
+        for job in daily['jobs'].values()
+        for step in (job.get('steps') or [])
+    ]
+    whole = '\n'.join(runs)
+    assert 'scripts/auto_forecast.py' in whole, (
+        'daily_forecast.yml must run scripts/auto_forecast.py (the GEE + TFLite generator)'
+    )
+    assert 'publish_forecast_csv' in whole, (
+        'daily_forecast.yml must promote the generated CSV into backend/data/forecasts/'
+    )
+    assert 'build_forecast_snapshot.mjs' in whole, (
+        'daily_forecast.yml must rebuild the website snapshot it commits'
+    )
+    # The workflow must not *invoke* Kaggle or read its secrets. Prose is
+    # allowed (the file explains why Kaggle is gone), executed commands are not:
+    # strip comment lines, then look for CLI calls and secret references.
+    kaggle_calls = []
+    for job_id, job in daily['jobs'].items():
+        for step in job.get('steps') or []:
+            if 'secrets.KAGGLE' in json.dumps(step.get('env') or {}):
+                kaggle_calls.append(f'{job_id}/{step.get("name")}: reads a KAGGLE_* secret')
+            commands = '\n'.join(
+                line for line in str(step.get('run', '')).splitlines()
+                if not line.strip().startswith('#')
+            )
+            if re.search(r'\bkaggle\s+(kernels|datasets|config)', commands):
+                kaggle_calls.append(f'{job_id}/{step.get("name")}: calls the kaggle CLI')
+    assert not kaggle_calls, (
+        'the production forecast pipeline must not depend on Kaggle:\n'
+        + '\n'.join(kaggle_calls)
+    )
+
+    # 3. No workflow that needs Kaggle is on a schedule any more.
+    scheduled = []
+    for name in KAGGLE_WORKFLOWS:
+        doc = workflows[name]
+        if (doc.get('on') or {}).get('schedule'):
+            scheduled.append(name)
+    assert not scheduled, (
+        'these Kaggle-backed workflows must stay dispatch-only (they need a valid '
+        f'token + a runnable kernel; production runs on the runner): {scheduled}'
     )
 
 
@@ -312,6 +376,11 @@ REQUIRED_ACTION_VERSIONS = {
     'actions/setup-python':    'v7',
     'actions/upload-artifact': 'v7',
     'codecov/codecov-action':  'v7',
+    # actions/cache@v4 is the last node20 release; the runner forced it onto
+    # Node 24 and annotated every job with a deprecation warning (the
+    # 2026-09-14 runtime sweep moved the other actions but missed this one).
+    # v5 is node24 and needs runner >= 2.327.1 (hosted runners are far past it).
+    'actions/cache':           'v5',
 }
 
 # Workflows that are either scheduled or long-running and therefore need a
@@ -435,3 +504,129 @@ def test_daily_forecast_has_secret_preflight(workflows):
         'EE_SERVICE_ACCOUNT_JSON / HAZARDNET_API_URL / HAZARDNET_API_KEY are '
         'set before running auto_forecast.py (see other pipelines for the pattern)'
     )
+
+
+# ---------------------------------------------------------------------------
+# Regression guards for the 2026-09-15 "everything red" sweep
+# ---------------------------------------------------------------------------
+# Three independent failures, all of which looked like "CI is broken" from the
+# outside: the backend suite fell over on a model-version string, the site
+# probe reported a redirect as an outage, and the Kaggle jobs died with a bare
+# exit code 1. Each guard below pins the invariant that makes the failure
+# legible instead of silent.
+
+KAGGLE_KERNEL_WORKFLOWS = ('forecast-pipeline.yml', 'hourly_forecast.yml', 'weekly_forecast.yml')
+KAGGLE_KERNEL_SLUG = 'ashifahmedshuvo/hazardnet-auto-forecast-pipeline'
+
+
+def test_model_version_gate_detects_missing_file(workflows):
+    """The Models/VERSION.json gate must see a MISSING file, not just a stale
+    one.
+
+    `git diff --exit-code -- Models/VERSION.json` prints nothing for an
+    untracked file, so the gate reported "current" on `main` while the file did
+    not exist at all — and the backend suite failed 60 s earlier on
+    `model_version` falling back to the legacy literal. `git status --porcelain`
+    reports untracked (`??`) and modified (` M`) alike.
+    """
+    steps = [
+        step
+        for job in workflows['ci.yml']['jobs'].values()
+        for step in (job.get('steps') or [])
+    ]
+    gate = [s for s in steps if 'VERSION.json' in (s.get('name') or '')]
+    assert gate, 'ci.yml has no Models/VERSION.json gate step'
+
+    run = '\n'.join(str(s.get('run', '')) for s in gate)
+    assert 'gen-model-version.mjs' in run, (
+        'the VERSION.json gate must regenerate the file before comparing it'
+    )
+    assert 'git status --porcelain' in run, (
+        'the VERSION.json gate must use `git status --porcelain` — a plain '
+        '`git diff --exit-code` cannot see an untracked/missing file, which is '
+        'exactly how the handshake stayed absent while CI stayed green'
+    )
+
+
+def _curl_flag_strings(text):
+    """Every `curl` invocation's short flags in `text` (long flags excluded)."""
+    for match in re.finditer(r'\bcurl\s+((?:-\S+\s+)*)', text):
+        for token in match.group(1).split():
+            if token.startswith('-') and not token.startswith('--'):
+                yield token
+
+
+def test_site_health_probe_follows_redirects(workflows):
+    """curl without -L records a redirect *as* the probe result.
+
+    The canonical deployment is www.hazardnet.live and the apex answers 308,
+    so every scheduled Site Health run was red ("Homepage returned HTTP 308")
+    while the site itself was up. -L plus the same-domain check in the step
+    keeps the probe honest: a redirect that leaves the domain still fails.
+    """
+    doc = workflows['site-health.yml']
+    runs = [
+        str(step.get('run', ''))
+        for job in doc['jobs'].values()
+        for step in (job.get('steps') or [])
+    ]
+    assert any('curl' in run for run in runs), 'site-health.yml no longer probes with curl'
+
+    offenders = []
+    for run in runs:
+        for line in run.splitlines():
+            if 'curl' not in line:
+                continue
+            flags = list(_curl_flag_strings(line))
+            if not flags:
+                continue  # not a curl invocation (comment or echo)
+            if not any('L' in flag for flag in flags):
+                offenders.append(line.strip()[:100])
+
+    assert not offenders, (
+        'site-health.yml curl invocation(s) without -L will report the redirect '
+        'instead of the site: ' + '; '.join(offenders)
+    )
+
+    # The API half of the probe must stay repointable: production served the
+    # website without any /api/* route for weeks (the deployment runs the
+    # frontend only), so the probe needs to be able to target the host that
+    # actually answers — without editing the workflow.
+    env_text = json.dumps(doc.get('env') or {})
+    whole = '\n'.join(runs) + env_text
+    assert 'vars.API_METADATA_URL' in whole, (
+        'site-health.yml must let the forecast-API probe target another host '
+        'via the API_METADATA_URL repository variable'
+    )
+
+
+def test_kaggle_backed_workflows_take_the_kernel_from_a_repo_variable(workflows):
+    """All three Kaggle pipelines must read the kernel slug from the
+    `KAGGLE_KERNEL` repository variable (with the known slug as the fallback).
+
+    A renamed/re-uploaded notebook changes its slug; with the slug hardcoded in
+    three files, every Kaggle-backed job died at the first API call with a bare
+    `exit code 1` and could only be fixed by editing and merging code.
+    """
+    for name in KAGGLE_KERNEL_WORKFLOWS:
+        doc = workflows[name]
+        env = doc.get('env') or {}
+        overrides = {k: env.get(k) for k in ('KAGGLE_KERNEL', 'KERNEL_SLUG') if k in env}
+        assert overrides, f'{name}: no KAGGLE_KERNEL/KERNEL_SLUG in the workflow env'
+        for key, value in overrides.items():
+            assert 'vars.KAGGLE_KERNEL' in str(value), (
+                f'{name}: {key} must be `${{{{ vars.KAGGLE_KERNEL || ... }}}}` '
+                f'so it can be repointed without a code change (found: {value!r})'
+            )
+
+        # No step may shadow the overridable value with a hardcoded slug.
+        for job_id, job in doc['jobs'].items():
+            for step in job.get('steps') or []:
+                step_env = step.get('env') or {}
+                for key in ('KAGGLE_KERNEL', 'KERNEL_SLUG'):
+                    if step_env.get(key) == KAGGLE_KERNEL_SLUG:
+                        raise AssertionError(
+                            f'{name} job `{job_id}` step `{step.get("name")}`: '
+                            f'{key} is hardcoded and would shadow the repository '
+                            'variable'
+                        )
