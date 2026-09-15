@@ -1,5 +1,14 @@
 # Hourly Forecast Refresh Pipeline (Kaggle → GitHub Actions → Website)
 
+> **RETIRED FROM THE SCHEDULE 2026-09-16.** The hourly Kaggle refresh no longer
+> runs on a timer: forecasts are generated on the GitHub runner by
+> [`daily_forecast.yml`](../../.github/workflows/daily_forecast.yml)
+> (`scripts/auto_forecast.py` — GEE + Open-Meteo + TFLite, no Kaggle) and the
+> committed snapshot is the delivery path. This document is kept for the
+> dispatch-only legacy path (needs a valid Kaggle token + a runnable kernel); see
+> [`docs/ops/kaggle-pipeline-triage.md`](kaggle-pipeline-triage.md) and
+> [`docs/audits/2026-09-15-ci-backend-tests-and-workflow-green.md`](../audits/2026-09-15-ci-backend-tests-and-workflow-green.md).
+
 The website refreshes **every hour** with the latest forecast CSV produced by
 the Kaggle notebook
 [`ashifahmedshuvo/hazardnet-auto-forecast-pipeline`](https://www.kaggle.com/code/ashifahmedshuvo/hazardnet-auto-forecast-pipeline).

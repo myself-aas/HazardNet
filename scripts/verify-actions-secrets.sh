@@ -46,15 +46,20 @@ set -euo pipefail
 
 SECRETS_CATALOG=(
   # Core backend
-  "BACKEND_API_KEY|yes|forecast-pipeline, hourly, weekly, manual-ingest|Bearer token for POST /api/v1/forecasts/update"
+  "BACKEND_API_KEY|yes|manual-ingest, Supabase-cutover-verify|Bearer token for POST /api/v1/forecasts/update"
   "GEMINI_API_KEY|opt|weekly|Advisory generation (deterministic fallback if unset)"
-  # Kaggle
-  "KAGGLE_USERNAME|yes|forecast-pipeline, hourly, weekly|kaggle CLI auth"
-  "KAGGLE_KEY|yes|forecast-pipeline, hourly, weekly|kaggle CLI auth"
-  # Daily / Earth Engine inference pipeline
-  "HAZARDNET_API_URL|yes|daily_forecast|Ingest endpoint for auto_forecast.py push"
-  "HAZARDNET_API_KEY|yes|daily_forecast|Bearer token for HAZARDNET_API_URL"
-  "EE_SERVICE_ACCOUNT_JSON|yes|daily_forecast|GEE service account JSON key"
+  # Kaggle — LEGACY (2026-09-16): the Kaggle workflows are dispatch-only now.
+  # Production forecasts run on the runner via scripts/auto_forecast.py, so a
+  # missing/expired Kaggle token no longer fails any scheduled job.
+  "KAGGLE_USERNAME|opt|forecast-pipeline, hourly, weekly (dispatch-only legacy)|kaggle CLI auth"
+  "KAGGLE_KEY|opt|forecast-pipeline, hourly, weekly (dispatch-only legacy)|kaggle CLI auth"
+  # Daily / Earth Engine inference pipeline (the production forecast path).
+  # HAZARDNET_API_* are only consumed when the PUSH_TO_API repository variable
+  # is 'true' (i.e. an ingest API is deployed); the committed snapshot is the
+  # default delivery, so they are optional.
+  "HAZARDNET_API_URL|opt|daily_forecast (only when PUSH_TO_API=true)|Ingest endpoint for auto_forecast.py push"
+  "HAZARDNET_API_KEY|opt|daily_forecast (only when PUSH_TO_API=true)|Bearer token for HAZARDNET_API_URL"
+  "EE_SERVICE_ACCOUNT_JSON|yes|daily_forecast|GEE service account JSON key (the pipeline's data source)"
   # Supabase cutover
   "SUPABASE_DB_URL|opt|Supabase-cutover-verify|Mapped to DATABASE_URL at step scope"
   # CI / coverage

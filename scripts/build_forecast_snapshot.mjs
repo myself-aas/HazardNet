@@ -2,11 +2,19 @@
 /**
  * Build the static forecast snapshot that ships inside the website bundle.
  *
- * The hourly pipeline (.github/workflows/hourly_forecast.yml) refreshes
- * backend/data/forecasts/hazardnet_forecasts_latest.csv from the Kaggle
- * notebook output (`kaggle kernels output
- * ashifahmedshuvo/hazardnet-auto-forecast-pipeline`) and then runs this
- * script to emit frontend/public/data/forecasts-latest.json.
+ * Two producers refresh backend/data/forecasts/hazardnet_forecasts_latest.csv
+ * and then run this script to emit frontend/public/data/forecasts-latest.json:
+ *
+ *   1. GitHub-native (default since 2026-09-16): `.github/workflows/daily_forecast.yml`
+ *      runs scripts/auto_forecast.py on the runner (GEE + Open-Meteo + TFLite)
+ *      and promotes its CSV with scripts/publish_forecast_csv.py. No Kaggle.
+ *   2. Kaggle (legacy, dispatch-only): forecast-pipeline/hourly/weekly download
+ *      the notebook's output (`kaggle kernels output
+ *      ashifahmedshuvo/hazardnet-auto-forecast-pipeline`).
+ *
+ * The provenance stamped into `source`/`producer` therefore follows the
+ * caller: set SNAPSHOT_SOURCE (and SNAPSHOT_KERNEL if the slug differs) so a
+ * snapshot can never claim to come from a producer that did not make it.
  *
  * Why a static snapshot?
  *  - The committed CSV alone only reaches the API after an ingest into the
@@ -24,6 +32,9 @@
  * Defaults:
  *   csvPath = backend/data/forecasts/hazardnet_forecasts_latest.csv
  *   outPath = frontend/public/data/forecasts-latest.json
+ * Env:
+ *   SNAPSHOT_SOURCE = provenance string written to `source`
+ *                     (default: "kaggle kernels output <SNAPSHOT_KERNEL>")
  *
  * Zero runtime dependencies (hand-rolled RFC4180 CSV reader) so the pipeline
  * never needs an install step just to refresh the website data.
@@ -34,7 +45,10 @@ import { dirname, resolve } from 'node:path';
 
 const CSV_PATH = resolve(process.argv[2] || 'backend/data/forecasts/hazardnet_forecasts_latest.csv');
 const OUT_PATH = resolve(process.argv[3] || 'frontend/public/data/forecasts-latest.json');
-const KERNEL = 'ashifahmedshuvo/hazardnet-auto-forecast-pipeline';
+const KERNEL = process.env.SNAPSHOT_KERNEL || 'ashifahmedshuvo/hazardnet-auto-forecast-pipeline';
+// Provenance is caller-supplied: the Kaggle workers keep the historical
+// string, the GitHub-native producer passes its own (see the header).
+const SOURCE = process.env.SNAPSHOT_SOURCE || `kaggle kernels output ${KERNEL}`;
 
 // ─── Minimal RFC4180 CSV parser (handles quotes, escaped quotes, CRLF) ───
 function parseCsv(text) {
@@ -157,7 +171,7 @@ function main() {
   const snapshot = {
     schema: 'hazardnet-forecast-snapshot/v1',
     generated_at: new Date().toISOString(),
-    source: `kaggle kernels output ${KERNEL}`,
+    source: SOURCE,
     kernel: KERNEL,
     prediction_date: predictionDates.size > 0 ? [...predictionDates].sort().at(-1) : null,
     horizons,
@@ -168,6 +182,7 @@ function main() {
   console.log(`✅ Snapshot written: ${OUT_PATH}`);
   console.log(`   Rows: ${totalCount} (dropped ${dropped}) across horizons: ${Object.keys(horizons).join(', ')}`);
   console.log(`   Latest prediction_date: ${snapshot.prediction_date ?? 'unknown'}`);
+  console.log(`   Source: ${snapshot.source}`);
 }
 
 main();

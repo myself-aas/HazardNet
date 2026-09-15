@@ -42,12 +42,19 @@ REQUIRED_WORKFLOWS = {
 }
 
 # Workflows that must have contents:write (they push data/commits).
+# daily_forecast.yml joined on 2026-09-16: the GitHub-native producer commits
+# the refreshed CSV + website snapshot, which is the only delivery path that
+# works while the deployment serves no ingest API.
 DATA_COMMIT_WORKFLOWS = {
+    'daily_forecast.yml',
     'forecast-pipeline.yml',
     'hourly_forecast.yml',
     'manual_forecast_ingest.yml',
     'weekly_forecast.yml',
 }
+
+# Kaggle-dependent workflows, retired from the schedule on 2026-09-16.
+KAGGLE_WORKFLOWS = ('forecast-pipeline.yml', 'hourly_forecast.yml', 'weekly_forecast.yml')
 
 # model-validation.yml needs pull-requests:write to leave a status summary;
 # other workflows that only read should default to contents:read.
@@ -140,13 +147,69 @@ def test_data_pipelines_have_concurrency_guards(workflows):
         )
 
 
-def test_hourly_workflow_runs_hourly(workflows):
-    doc = workflows['hourly_forecast.yml']
-    schedules = (doc.get('on') or {}).get('schedule') or []
-    crons = [s.get('cron', '') for s in schedules]
-    assert any(c.startswith('5 * * * *') or c.startswith('*/60') or ' * * *' in c
-               for c in crons), (
-        f'hourly_forecast.yml must run hourly; found schedules: {crons}'
+def test_forecast_generation_runs_on_the_runner_not_kaggle(workflows):
+    """The GitHub-native pipeline must be the scheduled producer, and the
+    Kaggle-backed workflows must not run on a schedule.
+
+    Two things were true before 2026-09-16: every scheduled forecast job went
+    through Kaggle (`kaggle kernels push` / `kernels output`), and after the
+    token rotation all of them failed with a bare exit code 1 — while
+    `scripts/auto_forecast.py`, which needs only the GEE service account and
+    runs on the runner, sat idle in daily_forecast.yml without ever committing
+    its output. The schedule now belongs to the runner.
+    """
+    # 1. The runner-based producer is scheduled.
+    daily = workflows['daily_forecast.yml']
+    crons = [(s or {}).get('cron', '') for s in (daily.get('on') or {}).get('schedule') or []]
+    assert crons, 'daily_forecast.yml must keep a schedule — it is the production producer'
+    assert 'workflow_dispatch' in (daily.get('on') or {}), (
+        'daily_forecast.yml must stay manually dispatchable'
+    )
+
+    # 2. …and it actually generates the forecast on the runner.
+    runs = [
+        str(step.get('run', ''))
+        for job in daily['jobs'].values()
+        for step in (job.get('steps') or [])
+    ]
+    whole = '\n'.join(runs)
+    assert 'scripts/auto_forecast.py' in whole, (
+        'daily_forecast.yml must run scripts/auto_forecast.py (the GEE + TFLite generator)'
+    )
+    assert 'publish_forecast_csv' in whole, (
+        'daily_forecast.yml must promote the generated CSV into backend/data/forecasts/'
+    )
+    assert 'build_forecast_snapshot.mjs' in whole, (
+        'daily_forecast.yml must rebuild the website snapshot it commits'
+    )
+    # The workflow must not *invoke* Kaggle or read its secrets. Prose is
+    # allowed (the file explains why Kaggle is gone), executed commands are not:
+    # strip comment lines, then look for CLI calls and secret references.
+    kaggle_calls = []
+    for job_id, job in daily['jobs'].items():
+        for step in job.get('steps') or []:
+            if 'secrets.KAGGLE' in json.dumps(step.get('env') or {}):
+                kaggle_calls.append(f'{job_id}/{step.get("name")}: reads a KAGGLE_* secret')
+            commands = '\n'.join(
+                line for line in str(step.get('run', '')).splitlines()
+                if not line.strip().startswith('#')
+            )
+            if re.search(r'\bkaggle\s+(kernels|datasets|config)', commands):
+                kaggle_calls.append(f'{job_id}/{step.get("name")}: calls the kaggle CLI')
+    assert not kaggle_calls, (
+        'the production forecast pipeline must not depend on Kaggle:\n'
+        + '\n'.join(kaggle_calls)
+    )
+
+    # 3. No workflow that needs Kaggle is on a schedule any more.
+    scheduled = []
+    for name in KAGGLE_WORKFLOWS:
+        doc = workflows[name]
+        if (doc.get('on') or {}).get('schedule'):
+            scheduled.append(name)
+    assert not scheduled, (
+        'these Kaggle-backed workflows must stay dispatch-only (they need a valid '
+        f'token + a runnable kernel; production runs on the runner): {scheduled}'
     )
 
 

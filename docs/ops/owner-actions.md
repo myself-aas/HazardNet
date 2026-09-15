@@ -58,7 +58,13 @@ Secrets (9): `BACKEND_API_KEY`, `CODECOV_TOKEN`, `GEMINI_API_KEY`,
 `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`.
 (`GITHUB_TOKEN` there is automatic — nothing to set.)
 
-Variables (1): `FORECAST_STORE` = `supabase`.
+Additionally required by the GitHub-native forecast pipeline (2026-09-16):
+`EE_SERVICE_ACCOUNT_JSON` (GEE — the data source) and, only when
+`PUSH_TO_API=true`, `HAZARDNET_API_URL` + `HAZARDNET_API_KEY`.
+
+Variables: `FORECAST_STORE` = `supabase`; `PUSH_TO_API` = `true` **only** once an
+ingest API is deployed and reachable (`/api/v1/forecasts/update` returning 200,
+see §2a-bis); `KAGGLE_KERNEL` only for the legacy Kaggle dispatches.
 
 Also refresh your own local `.env` from `.env.example` (gitignored — verify with
 `git check-ignore .env`).
@@ -145,16 +151,32 @@ apply retroactively). The merge to `main` also triggers a fresh production build
 
 ### 2c. Put the first live data in (one manual run)
 
-The hourly job only *downloads* the notebook's latest output — trigger it once by
-hand so you don't wait for the clock:
+Since 2026-09-16 the forecasts are generated **on the GitHub runner** — no
+Kaggle token, no notebook, no kernel slug. Dispatch the producer once so you
+don't wait for the 00:00 UTC clock:
 
-1. GitHub → **Actions → Hourly Forecast Refresh → Run workflow** → `force_refresh: true`.
-2. Wait for green, then verify:
-   - `curl -s https://www.hazardnet.live/api/v1/forecasts/metadata` → real
-     `prediction_date` + `ingestion_timestamp` (not nulls, not 404).
-   - `curl -s "https://www.hazardnet.live/api/v1/forecasts/bulk?horizon=7_days" | head -c 300` → `count` > 0.
+1. GitHub → **Actions → HazardNet Daily Forecast Pipeline → Run workflow**.
+   (~19 minutes; needs the `EE_SERVICE_ACCOUNT_JSON` secret and nothing else.)
+2. Confirm it committed data: the run's summary card shows `prediction_date` +
+   `rows`, and a `chore(data): daily forecast refresh <date>` commit appears on
+   `main` touching `backend/data/forecasts/` and
+   `frontend/public/data/forecasts-latest.json`.
+3. Verify locally / from any host that can reach production:
+   - `curl -s https://www.hazardnet.live/data/forecasts-latest.json | jq .prediction_date`
+     → today's date (the snapshot the site bundles).
+   - With the API deployed (§2a-bis) **and** `PUSH_TO_API=true`:
+     `curl -s https://www.hazardnet.live/api/v1/forecasts/metadata` → real
+     `prediction_date` + `ingestion_timestamp`;
+     `curl -s "https://www.hazardnet.live/api/v1/forecasts/bulk?horizon=7_days" | head -c 300` → `count` > 0.
    - Open the site: Peak Hazard Window / Incident Ingestion cards show live dates
-     instead of *"Live Kaggle data unavailable"*.
+     instead of the *"live data unavailable"* fallback.
+
+> Kaggle is now optional everywhere. The three Kaggle workflows
+> (`forecast-pipeline`, `hourly_forecast`, `weekly_forecast`) are
+> `workflow_dispatch`-only legacy — see
+> [`docs/ops/kaggle-pipeline-triage.md`](kaggle-pipeline-triage.md). Rotating the
+> Kaggle token (§1a-3) is therefore **no longer needed to keep the site fresh**;
+> it only matters if you dispatch one of those legacy jobs.
 
 ## Action 3 — Confirm branch protection 🟡 (~10 min, after the merge)
 

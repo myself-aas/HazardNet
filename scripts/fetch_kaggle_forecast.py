@@ -18,6 +18,24 @@ VALID_HAZARDS = {
     'Flood', 'Heat Wave', 'Severe Local Storm', 'Tropical Cyclone'
 }
 
+# Canonical meteorological columns — mirrors backend/utils/forecastRow.js
+# METEOROLOGICAL_FIELDS. They must be NUMBERS in the JSON sidecar: the ingest
+# path drops non-numeric values, and the committed sidecar is the auditable
+# record of what the generator actually produced. (Found 2026-09-16: these
+# arrived as strings "27.5" from every producer, because the converter's numeric
+# allowlist only covered the severity/confidence columns and the legacy om_*.)
+METEOROLOGICAL_FIELDS = (
+    'temperature_mean', 'temperature_max', 'temperature_min',
+    'precipitation_mm', 'wind_max_kmh', 'dewpoint_mean',
+    'solar_radiation_mj_m2', 'evapotranspiration_mm',
+)
+
+NUMERIC_FIELDS = (
+    'model_severity', 'physics_severity', 'severity_score', 'confidence',
+    'severity', 'latitude', 'longitude',
+    *METEOROLOGICAL_FIELDS,
+)
+
 
 def compute_sha256(file_path):
     h = hashlib.sha256()
@@ -47,7 +65,7 @@ def convert_csv_to_json_records(csv_path):
             for k, v in row.items():
                 if k in ('district_id', 'location_id'):
                     parsed_row[k] = int(v) if v else 0
-                elif k in ('model_severity', 'physics_severity', 'severity_score', 'confidence') or k.startswith('om_'):
+                elif k in NUMERIC_FIELDS or k.startswith('om_'):
                     try:
                         parsed_row[k] = float(v)
                     except (ValueError, TypeError):

@@ -1,20 +1,52 @@
 name: HazardNet Daily Forecast Pipeline
 
+# ─────────────────────────────────────────────────────────────────────────────
+# THE production forecast pipeline (MLOps Profile 1). It generates the
+# forecast ON THE RUNNER — no Kaggle, no notebook scheduler, no kernel slug:
+#
+#   scripts/auto_forecast.py     GEE satellite imagery + Open-Meteo forecasts
+#                                → TFLite inference (tflite-runtime + cv2)
+#                                → hazardnet_forecasts_latest.csv
+#   scripts/publish_forecast_csv.py
+#                                → backend/data/forecasts/*.csv|json + manifest
+#   scripts/build_forecast_snapshot.mjs
+#                                → frontend/public/data/forecasts-latest.json
+#   commit                       → the website redeploys carrying the new data
+#
+# The three Kaggle-backed workflows (forecast-pipeline, hourly_forecast,
+# weekly_forecast) lost their schedules on 2026-09-16 and are dispatch-only
+# legacy: they need a live Kaggle token + kernel and produced red runs for days
+# while this path needed only the GEE service account. See
+# docs/mlops/ARCHITECTURE.md ("Why this is better than the all-Kaggle setup").
+#
+# Delivery is the committed snapshot by default (the production deployment
+# serves the SPA + bundled snapshot). Set the repository VARIABLE
+# `PUSH_TO_API=true` once an ingest API is deployed to also POST the CSV to
+# `HAZARDNET_API_URL` — that push is then a hard gate.
+# ─────────────────────────────────────────────────────────────────────────────
+
 on:
   schedule:
-    - cron: '0 0 * * *' # Runs daily at Midnight UTC
-  workflow_dispatch: # Allows manual trigger
+    - cron: '0 0 * * *' # Daily at midnight UTC (06:00 Bangladesh time)
+  workflow_dispatch: # Manual trigger for debugging
 
 concurrency:
   group: daily-forecast-${{ github.ref }}
   cancel-in-progress: false
 
 permissions:
-  contents: read
+  contents: write # commits the refreshed CSV + snapshot
+
+env:
+  SNAPSHOT_SOURCE: 'github-actions: scripts/auto_forecast.py (GEE + Open-Meteo + TFLite)'
+  # Only push to an ingest API when one is known to be deployed; otherwise the
+  # generator runs artifact-only and the site is served by the committed
+  # snapshot (see docs/ops/owner-actions.md §2a-bis for the deployment state).
+  PUSH_TO_API: ${{ vars.PUSH_TO_API || 'false' }}
 
 jobs:
   run-forecast:
-    name: Daily Earth Engine inference + push
+    name: Generate forecasts on the runner + publish
     runs-on: ubuntu-latest
     timeout-minutes: 120
 
@@ -29,6 +61,13 @@ jobs:
           cache: 'pip'
           cache-dependency-path: scripts/requirements-inference.txt
 
+      - name: Set up Node.js
+        # Only for scripts/build_forecast_snapshot.mjs, which has zero npm
+        # dependencies — so this job installs no node_modules at all.
+        uses: actions/setup-node@v7
+        with:
+          node-version: '20'
+
       - name: Install Optimized Dependencies
         run: pip install -r scripts/requirements-inference.txt
 
@@ -36,31 +75,113 @@ jobs:
         shell: bash
         run: |
           missing=0
-          for var in EE_SERVICE_ACCOUNT_JSON HAZARDNET_API_URL HAZARDNET_API_KEY; do
-            if [ -z "${!var}" ]; then
-              echo "::error::'$var' is not configured (repo -> Settings -> Secrets and variables -> Actions)"
-              missing=1
-            fi
-          done
-          case "$HAZARDNET_API_URL" in
-            http://*|https://*) ;;
-            *) echo "::error::HAZARDNET_API_URL does not start with http(s)://: $HAZARDNET_API_URL"; missing=1 ;;
-          esac
+          # Earth Engine is the one credential this pipeline cannot avoid: it
+          # is the satellite data source (Kaggle is not involved at all).
+          if [ -z "$EE_SERVICE_ACCOUNT_JSON" ]; then
+            echo "::error::'EE_SERVICE_ACCOUNT_JSON' is not configured (repo -> Settings -> Secrets and variables -> Actions). It is required: scripts/auto_forecast.py authenticates to Google Earth Engine with it."
+            missing=1
+          fi
+          if [ "$PUSH_TO_API" = "true" ]; then
+            for var in HAZARDNET_API_URL HAZARDNET_API_KEY; do
+              if [ -z "${!var}" ]; then
+                echo "::error::'$var' is not configured but the PUSH_TO_API repository variable is 'true'. Set both, or set PUSH_TO_API=false to publish through the committed snapshot only."
+                missing=1
+              fi
+            done
+            case "$HAZARDNET_API_URL" in
+              http://*|https://*) ;;
+              *) echo "::error::HAZARDNET_API_URL does not start with http(s)://: $HAZARDNET_API_URL"; missing=1 ;;
+            esac
+          else
+            echo "ℹ️ PUSH_TO_API=$PUSH_TO_API — generating artifacts only (no API POST)."
+          fi
           if [ "$missing" -ne 0 ]; then exit 1; fi
-          echo "Required secrets present; API endpoint: $HAZARDNET_API_URL"
+          echo "✅ Required secrets present."
         env:
           EE_SERVICE_ACCOUNT_JSON: ${{ secrets.EE_SERVICE_ACCOUNT_JSON }}
           HAZARDNET_API_URL: ${{ secrets.HAZARDNET_API_URL }}
           HAZARDNET_API_KEY: ${{ secrets.HAZARDNET_API_KEY }}
 
-      - name: Execute Pipeline
+      - name: Execute pipeline (GEE + Open-Meteo + TFLite inference)
+        # ~19 min: GEE imagery + Open-Meteo per district, then TFLite inference
+        # for the 7-day and 15-day horizons. Writes hazardnet_forecasts_latest.csv
+        # into the workspace. HAZARDNET_API_URL/KEY are passed only when
+        # PUSH_TO_API=true; the script then POSTs the CSV and fails the job if
+        # the ingest is rejected.
         env:
           EE_SERVICE_ACCOUNT_JSON: ${{ secrets.EE_SERVICE_ACCOUNT_JSON }}
-          HAZARDNET_API_URL: ${{ secrets.HAZARDNET_API_URL }}
-          HAZARDNET_API_KEY: ${{ secrets.HAZARDNET_API_KEY }}
+          EE_SERVICE_ACCOUNT_EMAIL: ${{ vars.EE_SERVICE_ACCOUNT_EMAIL || '' }}
+          HAZARDNET_API_URL: ${{ vars.PUSH_TO_API == 'true' && secrets.HAZARDNET_API_URL || '' }}
+          HAZARDNET_API_KEY: ${{ vars.PUSH_TO_API == 'true' && secrets.HAZARDNET_API_KEY || '' }}
         run: python scripts/auto_forecast.py
+
+      - name: Publish CSV to the pipeline paths
+        id: publish
+        shell: bash
+        run: |
+          python scripts/publish_forecast_csv.py \
+            --csv hazardnet_forecasts_latest.csv \
+            --source "$SNAPSHOT_SOURCE" | tee publish.log
+          CHANGED=$(grep -oE 'CHANGED=(true|false)' publish.log | tail -n 1 | cut -d= -f2)
+          echo "changed=${CHANGED:-true}" >> "$GITHUB_OUTPUT"
+
+      - name: Validate forecast data
+        shell: bash
+        run: python scripts/validate_forecasts.py
+
+      - name: Rebuild website snapshot
+        shell: bash
+        run: node scripts/build_forecast_snapshot.mjs
+
+      - name: Commit refreshed data
+        shell: bash
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add backend/data/forecasts/ frontend/public/data/forecasts-latest.json
+          if git diff --staged --quiet; then
+            echo "ℹ️ Forecast data unchanged since the last run — nothing to commit."
+            exit 0
+          fi
+          PREDICTION_DATE=$(jq -r '.prediction_date // "unknown"' backend/data/forecasts/manifest.json)
+          ROW_COUNT=$(jq -r '.row_count // 0' backend/data/forecasts/manifest.json)
+          git pull --rebase --autostash origin "${GITHUB_REF_NAME}" || true
+          git commit -m "chore(data): daily forecast refresh ${PREDICTION_DATE}" \
+            -m "Source: scripts/auto_forecast.py on GitHub Actions (GEE + Open-Meteo + TFLite)" \
+            -m "Rows: ${ROW_COUNT} | Generators: .github/workflows/daily_forecast.yml" \
+            -m "Timestamp: $(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+          git push
+
+      - name: Upload forecast artifacts
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: daily-forecast-output
+          path: |
+            hazardnet_forecasts_latest.csv
+            publish.log
+            backend/data/forecasts/manifest.json
+            frontend/public/data/forecasts-latest.json
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Summarize
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "### Daily forecast pipeline — $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            echo ""
+            echo "- generator: \`scripts/auto_forecast.py\` (GEE + Open-Meteo + TFLite) on the runner — no Kaggle"
+            echo "- publish: \`scripts/publish_forecast_csv.py\` (changed: ${{ steps.publish.outputs.changed || 'n/a' }})"
+            echo "- delivery: committed snapshot \`frontend/public/data/forecasts-latest.json\`"
+            echo "- API push: PUSH_TO_API=$PUSH_TO_API"
+            if [ -f backend/data/forecasts/manifest.json ]; then
+              jq -r '"- prediction_date: " + (.prediction_date // "unknown") + "\n- rows: " + ((.row_count // 0) | tostring) + "\n- source: " + (.source // "unknown")' backend/data/forecasts/manifest.json
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Notify on failure
         if: failure()
         run: |
-          echo "::error::Daily forecast pipeline failed -- check logs for details."
+          echo "::error::Daily forecast pipeline failed -- the site keeps serving the last committed snapshot. Check the failing step above (GEE credentials, Open-Meteo availability, or a schema change in scripts/auto_forecast.py)."

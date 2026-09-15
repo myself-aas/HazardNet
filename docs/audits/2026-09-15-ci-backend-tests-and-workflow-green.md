@@ -183,6 +183,34 @@ and `weekly_forecast.yml` (last run 2026-09-13, same Kaggle trigger).
 `daily_forecast.yml` and `manual_forecast_ingest.yml` have never run — they are
 schedule/path-triggered and have nothing to report.
 
+## 3b. Kaggle removed from the forecast path (owner decision, 2026-09-16)
+
+After §3 was written the owner stated the intent plainly: *"I need to run auto
+forecast pipeline script on GitHub. Don't need Kaggle to run it."* That is
+already the repository's documented architecture — `docs/mlops/ARCHITECTURE.md`
+("Profile 1 — Daily Auto-Forecast", *"Why this is better than the all-Kaggle
+setup"*) — but the schedulers said otherwise: **every** timer-driven forecast job
+went through Kaggle, while `scripts/auto_forecast.py` (GEE + Open-Meteo +
+tflite-runtime, ~19 min, no Kaggle) was the only generator that could actually
+run, and it never committed its output.
+
+What changed:
+
+| Before | After |
+|---|---|
+| `forecast-pipeline.yml` (every 3 h), `hourly_forecast.yml` (hourly), `weekly_forecast.yml` (weekly) drove Kaggle | All three are **dispatch-only legacy** (schedules removed, retired banner + triage doc); the files stay for the heavy ADM3/OSM/release work |
+| `daily_forecast.yml` ran the script, then pushed to an ingest API that does not exist and exited 1 | It is now **the** scheduled producer with the full chain: generate → promote → validate → snapshot → commit |
+| Nothing committed the generated data; the site could only be refreshed by the Kaggle hourly job | `scripts/publish_forecast_csv.py` (new) writes `backend/data/forecasts/*.csv|json` + manifest; `build_forecast_snapshot.mjs` stamps `SNAPSHOT_SOURCE`; the run commits both |
+| API push was mandatory → the 404 in §2 turned every run red | `PUSH_TO_API` repository variable (default `false`): artifact-only by default, hard-gated once an API exists |
+| Secrets catalog demanded Kaggle + API credentials | Kaggle → optional/legacy, `HAZARDNET_API_*` → optional, `EE_SERVICE_ACCOUNT_JSON` → the one required credential (it is the satellite data source) |
+
+New guard: `scripts/tests/test_workflows.py::test_forecast_generation_runs_on_the_runner_not_kaggle`
+(the scheduled producer runs `auto_forecast.py` + `publish_forecast_csv.py` +
+`build_forecast_snapshot.mjs`, must not call the `kaggle` CLI or read
+`secrets.KAGGLE_*`, and the three Kaggle workflows must stay dispatch-only).
+New tests: `scripts/tests/test_publish_forecast_csv.py` (7 cases incl. the
+promote → validate → snapshot chain end-to-end against a fixture CSV).
+
 ## 4. Actions runtime — the last Node 20 straggler
 
 Every CI job carried
@@ -200,7 +228,8 @@ was still on `@v4`. Bumped to `@v5` (`runs.using: node24`, requires runner
 | `npx jest --ci --coverage …` (backend job, exact CI argv) | 22 suites / 192 tests pass, coverage gates met |
 | `npx jest … frontend/src` (frontend job) | 21 suites / 225 tests pass |
 | `python -m pytest scripts/tests -q` (pipeline job) | 56 pass (incl. 3 new workflow guards, 20 new trigger tests) |
-| `node scripts/build_forecast_snapshot.mjs` with the fixture CSV | snapshot OK, 128 rows, 7/15-day horizons |
+| `node scripts/build_forecast_snapshot.mjs` with the fixture CSV | snapshot OK, 128 rows, 7/15-day horizons; `SNAPSHOT_SOURCE` honoured |
+| `scripts/tests/test_publish_forecast_csv.py` | 7 pass — including promote → `validate_forecasts.py` → snapshot as one chain |
 | `npm run lint` / `lint:eslint` / `check:env` / `check:rag-freshness` | clean (0 errors; 283 pre-existing warnings) |
 | `npm run build` | exit 0, `frontend/dist` → `dist` |
 | CI on PR #26 (`gh run view 35021720224`) | **all 6 jobs green** — Backend, Frontend, Pipeline Scripts, E2E (46 passed), Security Audit, Code Quality & Build; the Node 20 deprecation annotation is gone |
@@ -216,20 +245,26 @@ was still on `@v4`. Bumped to `@v5` (`runs.using: node24`, requires runner
    the 2026-09-13 audit opened; until it is done the site-health probe's API
    half and `useForecasts()` (which falls back to the bundled snapshot) cannot
    be right.
-2. **Codecov `codecov/patch`** — the check fails on this PR for an account
+2. **Forecast data** — dispatch `HazardNet Daily Forecast Pipeline` once
+   (Actions → Run workflow) and confirm it commits `backend/data/forecasts/` +
+   `frontend/public/data/forecasts-latest.json`; that is the delivery path while
+   the deployment serves no API. `EE_SERVICE_ACCOUNT_JSON` must be configured —
+   it is the only credential this path needs (no Kaggle). Once the API is live
+   (§2a-bis), set the `PUSH_TO_API` repository variable to also write the store.
+3. **Codecov `codecov/patch`** — the check fails on this PR for an account
    reason, not a coverage one: *"The author of this PR,
    arena-ai-coding-agent[bot], is not an activated member of this organization
    on Codecov."* Activate the bot under Codecov → Members, or ignore the check
    (it does not block the merge; every bot-authored PR shows it).
-3. **Kaggle token** — confirm `KAGGLE_USERNAME` / `KAGGLE_KEY` in repo secrets
+4. **Kaggle token** (legacy only) — confirm `KAGGLE_USERNAME` / `KAGGLE_KEY` in repo secrets
    are the *current* values (Kaggle → Settings → API → Create New Token), then
    re-run the `Verify GitHub Actions Secrets` workflow, then re-run
    `HazardNet Automated Forecast Pipeline` / `Hourly Forecast Refresh`.
-4. **Kernel slug** — if those still fail with `404`, set the `KAGGLE_KERNEL`
+5. **Kernel slug** (legacy only) — if those still fail with `404`, set the `KAGGLE_KERNEL`
    repository variable to the notebook's current slug.
-5. **Supabase** — re-dispatch `Supabase cutover verify` once `SUPABASE_DB_URL`
+6. **Supabase** — re-dispatch `Supabase cutover verify` once `SUPABASE_DB_URL`
    is configured; that job has not had a green run.
-6. **Site probe** — the next 30-minute schedule after the merge is the live
+7. **Site probe** — the next 30-minute schedule after the merge is the live
    verification of the `-L` fix. The homepage probe should pass; the metadata
    step will keep failing with the §2 diagnosis until the deployment serves the
    API (or `API_METADATA_URL` is pointed at it).
