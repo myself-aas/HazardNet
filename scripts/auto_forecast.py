@@ -44,6 +44,7 @@ BAND_NAMES = [
     'Soil_W1', 'Soil_W3', 'Soil_T1', 'Dewpoint', 'Solar_Rad'
 ]
 
+# Fix the path to the model to load it directly
 MODEL_PATH = 'Models/hazardnet_fp32.tflite'
 STATS_PATH = 'Models/normalization_stats.json'
 OUTPUT_CSV = 'hazardnet_forecasts_latest.csv'
@@ -331,9 +332,14 @@ def build_t0_and_infer(dist, historical_steps, horizon_days, norm_stats):
             normalized = np.zeros_like(full_tensor, dtype=np.float32)
             
             for c, band in enumerate(BAND_NAMES):
-                # Ensure we handle nested list structure of norm stats exported by Training script
-                mean = norm_stats['means'][band]
-                std = max(norm_stats['stds'][band], 1e-6)
+                # Check for either the standard dict structure or the old nested structure
+                if 'means' in norm_stats and band in norm_stats['means']:
+                    mean = norm_stats['means'][band]
+                    std = max(norm_stats['stds'][band], 1e-6)
+                else:
+                    # In case the normalization stats are a direct dictionary per band
+                    mean = norm_stats[band]['mean']
+                    std = max(norm_stats[band]['std'], 1e-6)
                 normalized[:, c, :, :] = (full_tensor[:, c, :, :] - mean) / std
                 
             tflite_input = np.transpose(normalized, (0, 2, 3, 1)) # NCDHW -> NDHWC depending on model format
@@ -345,14 +351,15 @@ def build_t0_and_infer(dist, historical_steps, horizon_days, norm_stats):
                 
             tflite_input = np.expand_dims(tflite_input, axis=0).astype(np.float32)
             return tflite_input, om_data
-        except Exception:
+        except Exception as e:
+            print(f"Error creating tensor: {e}")
             return None, None
     return None, None
 
 results = []
 print(f"\\nStarting Optimized HazardNet Forecast Pipeline...")
 
-for dist in DISTRICTS[:2]: # Truncated for quick testing (full list in prod)
+for dist in DISTRICTS: # Full pipeline now
     print(f"Processing {dist['name']}...")
     historical_steps = fetch_historical_steps(dist['lat'], dist['lon'], NORM_STATS)
     if not historical_steps: continue
@@ -391,7 +398,7 @@ for dist in DISTRICTS[:2]: # Truncated for quick testing (full list in prod)
 
 df_results = pd.DataFrame(results)
 df_results.to_csv(OUTPUT_CSV, index=False)
-print("Pipeline complete. Created CSV.")
+print(f"Pipeline complete. Created CSV with {len(df_results)} rows.")
 
 # ==============================================================================
 # 9. PUSH TO LIVE PRODUCTION ENDPOINT
