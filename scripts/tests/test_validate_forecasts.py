@@ -105,7 +105,7 @@ def test_unrecognized_schema_fails(tmp_path):
     json_path.write_text('[{"a": 1}]', encoding='utf-8')
     proc = run_validate(csv_path, json_path)
     assert proc.returncode == 1
-    assert 'Unrecognized schema' in proc.stdout
+    assert 'Invalid schema' in proc.stdout
 
 
 def test_full_notebook_fixture_does_not_warn_about_row_count(tmp_path):
