@@ -1,5 +1,7 @@
 # ADR 0001 — Backend platform identity & configuration consolidation
 
+> **Superseded 2026-09-14:** Firebase is canonical. See [ADR 0009](0009-firebase-model-and-deployment-contract.md). The Supabase cutover instructions below are historical, not an active runbook.
+
 - **Status:** Accepted (2026-08-28)
 - **Context:** Audit findings ARC-01 / SEC-07
 - **Deciders:** HazardNet maintainers

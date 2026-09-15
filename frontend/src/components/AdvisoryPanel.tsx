@@ -7,6 +7,8 @@ interface AdvisoryPanelProps {
   hazardType: string;
   severityScore: number;
   confidence: number;
+  targetDate?: string;
+  cropContext?: string;
 }
 
 interface AdvisoryResponse {
@@ -37,20 +39,24 @@ const AdvisoryPanel: React.FC<AdvisoryPanelProps> = ({
   districtName,
   hazardType,
   severityScore,
-  confidence
+  confidence, targetDate, cropContext
 }) => {
+  const [attempt, setAttempt] = useState(0);
   const [advisory, setAdvisory] = useState<AdvisoryResponse | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    const controller = new AbortController();
     const fetchAdvisory = async () => {
+      setAdvisory(null);
       setLoading(true);
       setError(null);
       
       try {
         const response = await fetch('/api/advisory', {
           method: 'POST',
+          signal: controller.signal,
           headers: {
             'Content-Type': 'application/json',
           },
@@ -59,8 +65,8 @@ const AdvisoryPanel: React.FC<AdvisoryPanelProps> = ({
             hazard_type: hazardType,
             severity_score: severityScore,
             confidence: confidence,
-            target_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 7 days from now
-            crop_context: 'Aman Rice (Tillering Stage)'
+            target_date: targetDate, // 7 days from now
+            crop_context: cropContext || 'Unspecified — do not assume a crop or growth stage'
           })
         });
 
@@ -69,18 +75,19 @@ const AdvisoryPanel: React.FC<AdvisoryPanelProps> = ({
         }
 
         const data: AdvisoryResponse = await response.json();
-        setAdvisory(data);
+        if (!controller.signal.aborted) setAdvisory(data);
       } catch (err: any) {
-        setError(err.message || 'An error occurred while fetching the advisory.');
+        if (!controller.signal.aborted) setError(err.message || 'An error occurred while fetching the advisory.');
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) setLoading(false);
       }
     };
 
     if (hazardType && districtName) {
       fetchAdvisory();
     }
-  }, [districtName, hazardType, severityScore, confidence]);
+    return () => controller.abort();
+  }, [districtName, hazardType, severityScore, confidence, targetDate, cropContext, attempt]);
 
   if (loading) {
     return (
@@ -96,7 +103,7 @@ const AdvisoryPanel: React.FC<AdvisoryPanelProps> = ({
     return (
       <div className="w-full bg-rose-50/90 rounded-3xl border border-rose-200/90 shadow-md p-6 mt-6 text-rose-950 text-sm space-y-1">
         <p className="font-extrabold text-base">Error generating AI Advisory</p>
-        <p className="text-xs text-rose-700 leading-relaxed font-normal">{error}</p>
+        <p className="text-xs text-rose-700 leading-relaxed font-normal">{error}</p><button className="hn-button" onClick={() => setAttempt(n => n + 1)}>Retry guidance</button>
       </div>
     );
   }

@@ -693,6 +693,7 @@ body {
   }
 }
 
+@layer base {
 /* 5. Page title (H1): display serif, 28–32 px, 700, -0.01 em */
 .hn-h1,
 h1 {
@@ -770,6 +771,8 @@ button {
   font-family: var(--font-sans);
   font-size: 14px;
   font-weight: 600;
+}
+
 }
 
 /* 10. Data readouts (severity score, confidence, dates): JetBrains Mono, 13–16 px, 600, Tabular figures */
@@ -1809,3 +1812,17 @@ body.pdf-exporting .no-print,
   color: #94a3b8;
   pointer-events: none;
 }
+
+/* Shared task-first components. Brand tokens, not a second palette. */
+.hn-panel { background: var(--surface-card, #fff); color: var(--text-primary, #0f172a); border: 1px solid var(--border-default, #cbd5e1); border-radius: 1rem; padding: clamp(1rem, 3vw, 1.75rem); }
+.hn-panel p { font-size: 1rem; line-height: 1.6; }
+.hn-button { min-height: 44px; min-width: 44px; padding: .65rem 1rem; border-radius: .75rem; background: var(--brand-primary, #f9a825); color: #0f172a; font-size: .875rem; font-weight: 600; border: 1px solid #ad6d04; cursor: pointer; }
+.hn-button:disabled { opacity: .6; cursor: not-allowed; }
+.hn-input { min-height: 44px; padding: .65rem; border: 1px solid #64748b; border-radius: .5rem; background: #fff; color: #0f172a; font-size: 1rem; }
+.hazard-dialog { width: min(95vw, 64rem); max-height: 90dvh; overflow: auto; margin: auto; padding: 1rem; border: 1px solid #cbd5e1; border-radius: 1rem; background: #fff; color: #0f172a; pointer-events: auto; }
+.hazard-dialog::backdrop { background: rgb(15 23 42 / .75); }
+.hazard-dialog button { min-height: 44px; min-width: 44px; }
+.hn-skip { position: fixed; top: .5rem; left: .5rem; transform: translateY(-200%); z-index: 20000; padding: 1rem; background: #fff; color: #0f172a; pointer-events: auto; }
+.hn-skip:focus { transform: none; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+@media print { .hn-button, .hn-skip { display: none !important; } .hn-panel { break-inside: avoid; } }

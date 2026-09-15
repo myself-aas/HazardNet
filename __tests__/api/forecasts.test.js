@@ -106,7 +106,7 @@ beforeEach(() => {
 
 describe('POST /api/v1/forecasts/update', () => {
   test('ingests the notebook-shaped dual-track CSV', async () => {
-    const response = await auth(request(app).post('/api/v1/forecasts/update'))
+    const response = await auth(request(app).post('/api/v1/forecasts/update?advisories=true'))
       .attach('file', Buffer.from(NOTEBOOK_CSV), 'hazardnet_forecasts_latest.csv')
       .expect(200);
 
@@ -121,7 +121,7 @@ describe('POST /api/v1/forecasts/update', () => {
   });
 
   test('still ingests the legacy single-track severity_score CSV', async () => {
-    const response = await auth(request(app).post('/api/v1/forecasts/update'))
+    const response = await auth(request(app).post('/api/v1/forecasts/update?advisories=true'))
       .attach('file', Buffer.from(LEGACY_CSV), 'legacy.csv')
       .expect(200);
 
@@ -136,7 +136,7 @@ describe('POST /api/v1/forecasts/update', () => {
       '20,Gazipur,15_days,Flood,0.55,0.91,2026-09-19,2026-09-12',
       '21,Tangail,7_days,Landslide,0.4,0.8,2026-09-19,2026-09-12',
     ].join('\n');
-    const response = await auth(request(app).post('/api/v1/forecasts/update'))
+    const response = await auth(request(app).post('/api/v1/forecasts/update?advisories=true'))
       .attach('file', Buffer.from(mixed), 'mixed.csv')
       .expect(200);
 
@@ -151,7 +151,7 @@ describe('POST /api/v1/forecasts/update', () => {
       '19,Dhaka,10_days,Flood,0.7,0.88,2026-09-19,2026-09-12',
       '20,Gazipur,7_days,Flood,1.5,0.88,2026-09-19,2026-09-12',
     ].join('\n');
-    const response = await auth(request(app).post('/api/v1/forecasts/update'))
+    const response = await auth(request(app).post('/api/v1/forecasts/update?advisories=true'))
       .attach('file', Buffer.from(bad), 'bad.csv')
       .expect(422);
 
@@ -161,7 +161,7 @@ describe('POST /api/v1/forecasts/update', () => {
 
   test('rejects a header-only CSV with 422', async () => {
     const headerOnly = 'district_id,district_name,horizon,hazard_type,severity_score,confidence,target_date,prediction_date';
-    const response = await auth(request(app).post('/api/v1/forecasts/update'))
+    const response = await auth(request(app).post('/api/v1/forecasts/update?advisories=true'))
       .attach('file', Buffer.from(headerOnly), 'empty.csv')
       .expect(422);
 
@@ -170,14 +170,14 @@ describe('POST /api/v1/forecasts/update', () => {
 
   test('rejects requests without an API key (401)', async () => {
     await request(app)
-      .post('/api/v1/forecasts/update')
+      .post('/api/v1/forecasts/update?advisories=true')
       .attach('file', Buffer.from(NOTEBOOK_CSV), 'forecasts.csv')
       .expect(401);
   });
 
   test('rejects requests with a wrong API key (401)', async () => {
     await request(app)
-      .post('/api/v1/forecasts/update')
+      .post('/api/v1/forecasts/update?advisories=true')
       .set('Authorization', 'Bearer wrong-key')
       .attach('file', Buffer.from(NOTEBOOK_CSV), 'forecasts.csv')
       .expect(401);
@@ -188,7 +188,7 @@ describe('POST /api/v1/forecasts/update', () => {
     delete process.env.BACKEND_API_KEY;
     try {
       await request(app)
-        .post('/api/v1/forecasts/update')
+        .post('/api/v1/forecasts/update?advisories=true')
         .set('Authorization', 'Bearer test-api-key-12345')
         .attach('file', Buffer.from(NOTEBOOK_CSV), 'forecasts.csv')
         .expect(503);
@@ -198,14 +198,14 @@ describe('POST /api/v1/forecasts/update', () => {
   });
 
   test('rejects requests without a file (400)', async () => {
-    await auth(request(app).post('/api/v1/forecasts/update')).expect(400);
+    await auth(request(app).post('/api/v1/forecasts/update?advisories=true')).expect(400);
   });
 
   test('replace semantics: re-ingesting a prediction_date replaces its rows', async () => {
-    await auth(request(app).post('/api/v1/forecasts/update'))
+    await auth(request(app).post('/api/v1/forecasts/update?advisories=true'))
       .attach('file', Buffer.from(NOTEBOOK_CSV), 'a.csv')
       .expect(200);
-    await auth(request(app).post('/api/v1/forecasts/update'))
+    await auth(request(app).post('/api/v1/forecasts/update?advisories=true'))
       .attach('file', Buffer.from(NOTEBOOK_CSV), 'b.csv')
       .expect(200);
     expect(getForecastStore().__memory).toHaveLength(2);
@@ -214,7 +214,7 @@ describe('POST /api/v1/forecasts/update', () => {
 
 describe('GET /api/v1/forecasts (single district)', () => {
   beforeEach(async () => {
-    await auth(request(app).post('/api/v1/forecasts/update'))
+    await auth(request(app).post('/api/v1/forecasts/update?advisories=true'))
       .attach('file', Buffer.from(NOTEBOOK_CSV), 'seed.csv')
       .expect(200);
   });
@@ -253,7 +253,7 @@ describe('GET /api/v1/forecasts (single district)', () => {
 
 describe('GET /api/v1/forecasts/bulk', () => {
   beforeEach(async () => {
-    await auth(request(app).post('/api/v1/forecasts/update'))
+    await auth(request(app).post('/api/v1/forecasts/update?advisories=true'))
       .attach('file', Buffer.from(NOTEBOOK_CSV), 'seed.csv')
       .expect(200);
   });
@@ -283,7 +283,7 @@ describe('GET /api/v1/forecasts/metadata', () => {
     const empty = await request(app).get('/api/v1/forecasts/metadata').expect(200);
     expect(empty.body.prediction_date).toBeNull();
 
-    await auth(request(app).post('/api/v1/forecasts/update'))
+    await auth(request(app).post('/api/v1/forecasts/update?advisories=true'))
       .attach('file', Buffer.from(NOTEBOOK_CSV), 'seed.csv')
       .expect(200);
 
@@ -297,7 +297,7 @@ describe('GET /api/v1/forecasts/metadata', () => {
 
 describe('GET /api/v1/forecasts/history', () => {
   beforeEach(async () => {
-    await auth(request(app).post('/api/v1/forecasts/update'))
+    await auth(request(app).post('/api/v1/forecasts/update?advisories=true'))
       .attach('file', Buffer.from(NOTEBOOK_CSV), 'seed.csv')
       .expect(200);
   });

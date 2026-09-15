@@ -1,3 +1,4 @@
+import { severityBin } from '../lib/forecasts';
 import { ALL_64_DISTRICTS, DistrictData } from '../data/bangladeshDistricts';
 
 export interface LocationDetectionResult {
@@ -36,26 +37,9 @@ export function isValidLatLng(lat: any, lng: any): boolean {
  * @param severity Severity index from 0.0 (0%) to 1.0 (100%)
  */
 export function getSeverityColor(severity: number): string {
-  const normalized = severity > 1 ? severity / 100 : severity;
-  const s = Math.max(0, Math.min(1, normalized));
-
-  let r: number, g: number, b: number;
-  if (s <= 0.5) {
-    // 0.0 to 0.5: Emerald Green (#16a34a) -> Warning Yellow (#eab308)
-    const t = s * 2;
-    r = Math.round(22 + (234 - 22) * t);
-    g = Math.round(163 + (179 - 163) * t);
-    b = Math.round(74 + (8 - 74) * t);
-  } else {
-    // 0.5 to 1.0: Warning Yellow (#eab308) -> Hazard Red (#dc2626)
-    const t = (s - 0.5) * 2;
-    r = Math.round(234 + (220 - 234) * t);
-    g = Math.round(179 + (38 - 179) * t);
-    b = Math.round(8 + (38 - 8) * t);
-  }
-
-  const toHex = (n: number) => n.toString(16).padStart(2, '0');
-  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+  const s = severity > 1 ? severity / 100 : severity;
+  if (!Number.isFinite(s)) return '#64748b';
+  return severityBin(s) === 'High' ? '#dc2626' : severityBin(s) === 'Moderate' ? '#f59e0b' : '#16a34a';
 }
 
 // Helper to generate organic realistic district boundary polygons (20 vertices)

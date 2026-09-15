@@ -1,3 +1,4 @@
+jest.mock('../../../hooks/useForecasts', () => ({ useForecasts: () => ({ data: [], isPending: false }) }));
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import DistrictForecastCard from '../DistrictForecastCard'
@@ -35,10 +36,10 @@ describe('DistrictForecastCard (redesigned district popup)', () => {
 
   it('renders the district forecast with hazard, severity and compact facts', () => {
     mount()
-    expect(screen.getByRole('dialog', { name: /kurigram district forecast/i })).toBeInTheDocument()
+    expect(screen.getByRole('region', { name: /kurigram district forecast/i })).toBeInTheDocument()
     expect(screen.getByText('Monsoon Flood')).toBeInTheDocument()
     expect(screen.getByText('88% Severity')).toBeInTheDocument()
-    expect(screen.getByText('High Risk')).toBeInTheDocument()
+    expect(screen.getByText('High severity')).toBeInTheDocument()
     expect(screen.getByTitle(/Main crop: Aman Rice & Jute/i)).toBeInTheDocument()
     expect(screen.getByText(/28m MSL/i)).toBeInTheDocument()
     expect(screen.getByText(/25\.81°N, 89\.64°E/)).toBeInTheDocument()
@@ -70,7 +71,7 @@ describe('DistrictForecastCard (redesigned district popup)', () => {
       if (el.getAttribute?.('data-testid') === 'hud') {
         return { top: 0, bottom: 800, height: 800, width: 800, left: 0, right: 800, x: 0, y: 0 } as DOMRect
       }
-      if (el.getAttribute?.('role') === 'dialog') {
+      if (el.getAttribute?.('role') === 'region') {
         return { top: 96, bottom: 400, height: 304, width: 340, left: 0, right: 340, x: 0, y: 96 } as DOMRect
       }
       return orig.call(this)
@@ -83,7 +84,7 @@ describe('DistrictForecastCard (redesigned district popup)', () => {
           </MemoryRouter>
         </div>,
       )
-      const card = container.querySelector('[role="dialog"]') as HTMLElement
+      const card = container.querySelector('[role="region"]') as HTMLElement
       // 800 (map bottom) - 96 (card top, below navbar) - 12 (breathing room)
       await waitFor(() => expect(card.style.maxHeight).toBe('692px'))
     } finally {
@@ -91,12 +92,12 @@ describe('DistrictForecastCard (redesigned district popup)', () => {
     }
   })
 
-  it('uses the compact width and a translucent glass background', () => {
+  it('uses the compact width and an opaque readable background', () => {
     const { container } = mount()
     const card = container.firstElementChild as HTMLElement
     expect(card.className).toContain('sm:max-w-[440px]')
     const glass = card.firstElementChild as HTMLElement
-    expect(glass.className).toContain('bg-white/85')
+    expect(glass.className).toContain('bg-white')
     expect(glass.className).toContain('backdrop-blur-md')
   })
 
@@ -108,7 +109,7 @@ describe('DistrictForecastCard (redesigned district popup)', () => {
 
   it('opens detailed analytics with the district id', () => {
     mount()
-    fireEvent.click(screen.getByRole('button', { name: /view detailed disaster analytics/i }))
+    fireEvent.click(screen.getByRole('button', { name: /read district forecast/i }))
     expect(onOpenAnalytics).toHaveBeenCalledWith('kurigram')
   })
 

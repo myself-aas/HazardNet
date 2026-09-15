@@ -21,7 +21,7 @@ export function requestId(req, res, next) {
         msg: 'http_request',
         requestId: req.id,
         method: req.method,
-        path: req.originalUrl,
+        path: req.originalUrl.split('?')[0], // query strings may contain secrets/PII
         status: res.statusCode,
         durationMs: Math.round(durationMs * 10) / 10,
       })

@@ -1,3 +1,4 @@
+import os from 'node:os';
 import express from 'express';
 import path from 'path';
 import multer from 'multer';
@@ -10,6 +11,7 @@ import {
     historyRowsToCsv,
     metadataDatasets,
     metadataDataSource,
+    readForecastMetadata,
 } from '../utils/forecastServe.js';
 import { getForecastStore } from '../forecastStore.js';
 import csv from 'csv-parser';
@@ -18,7 +20,7 @@ import { generateAdvisory } from '../services/advisoryAgent.js';
 const router = express.Router();
 
 // Ensure upload directory exists
-const uploadDir = path.resolve(process.cwd(), 'uploads');
+const uploadDir = path.join(os.tmpdir(), 'hazardnet-uploads');
 if (!fs.existsSync(uploadDir)) {
     try {
         fs.mkdirSync(uploadDir, { recursive: true });
@@ -37,7 +39,7 @@ const upload = multer({
 // POST /api/v1/forecasts/update
 // Receives CSV from GitHub Actions, upserts into Firestore
 // ─────────────────────────────────────────────────────────
-router.post('/update', upload.single('file'), (req, res, next) => {
+router.post('/update', (req, res, next) => {
     // Timing-safe Bearer key verification (SEC-06); fail-closed when unset.
     const result = verifyApiKey(req);
     if (!result.ok) {
@@ -47,7 +49,7 @@ router.post('/update', upload.single('file'), (req, res, next) => {
         return res.status(result.status).json({ error: result.error });
     }
     return next();
-}, async (req, res) => {
+}, upload.single('file'), async (req, res) => {
 
     if (!req.file) {
         return res.status(400).json({ error: 'No file uploaded' });
@@ -91,7 +93,7 @@ router.post('/update', upload.single('file'), (req, res, next) => {
 
         // Generate advisories for each inserted row
         const advisories = [];
-        for (const row of results) {
+        for (const row of (req.query.advisories === 'true' ? results.slice(0, 5) : [])) {
             try {
                 const advisory = await generateAdvisory({
                     hazard: row.hazard_type,
@@ -183,15 +185,11 @@ router.post('/ingest-csv', async (req, res) => {
 // ─────────────────────────────────────────────────────────
 router.get('/metadata', async (req, res) => {
     try {
-        const predictionDate = await getForecastStore().getLatestPredictionDate();
-        const ingestionTimestamp = await getForecastStore().getLatestIngestionTimestamp();
+        const metadata = await readForecastMetadata(getForecastStore());
         const now = new Date();
         res.setHeader('Cache-Control', 'no-store, max-age=0');
         res.json({
-            prediction_date: predictionDate,
-            ingestion_timestamp: ingestionTimestamp,
-            data_source: metadataDataSource(),
-            notebook_source: 'ashifahmedshuvo/hazardnet-auto-forecast-pipeline',
+            ...metadata,
             datasets: metadataDatasets(),
             generated_at: now.toISOString(),
         });

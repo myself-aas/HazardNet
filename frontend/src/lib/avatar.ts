@@ -7,8 +7,7 @@
  * the 2 MB bucket limit — typically 20–60 KB per avatar.
  */
 
-import { db } from '../services/firebase';
-import { doc, updateDoc } from 'firebase/firestore';
+import { saveProfile } from './profilePrivacy';
 
 export const AVATAR_MAX_DIMENSION = 512;
 export const AVATAR_TARGET_BYTES = 160 * 1024; // keep final blob under ~160 KB
@@ -154,7 +153,7 @@ export async function uploadAvatar({
   const dataUrl = await dataUrlPromise;
 
   onStage?.('finalizing');
-  await updateDoc(doc(db, 'profiles', userId), { avatar_path: storagePath, photo_url: dataUrl });
+  await saveProfile(userId, { avatar_path: storagePath, photo_url: dataUrl });
 
   onStage?.('done');
   return { publicUrl: dataUrl, storagePath, bytes: resized.blob.size, replacedOld: false };
@@ -162,5 +161,5 @@ export async function uploadAvatar({
 
 /** Remove the stored avatar entirely (user cleared their photo). */
 export async function deleteAvatar(userId: string): Promise<void> {
-  await updateDoc(doc(db, 'profiles', userId), { avatar_path: null, photo_url: null });
+  await saveProfile(userId, { avatar_path: null, photo_url: null });
 }

@@ -16,6 +16,7 @@ jest.mock('../../context/AuthContext', () => ({
 
 const signInWithEmail = jest.fn()
 const sendVerificationEmail = jest.fn()
+const signUpWithEmail = jest.fn()
 const updatePassword = jest.fn()
 const signInWithOAuth = jest.fn()
 const checkUsernameAvailability = jest.fn()
@@ -25,7 +26,7 @@ const mockAuth = (overrides: Record<string, unknown> = {}) => {
     user: null,
     userProfile: null,
     signInWithEmail,
-    signUpWithEmail: jest.fn(),
+    signUpWithEmail,
     sendVerificationEmail,
     signInWithOAuth,
     updatePassword,
@@ -53,7 +54,8 @@ const orderOf = (a: HTMLElement, b: HTMLElement) =>
 
 describe('LoginPage — dedicated /login page', () => {
   beforeEach(() => {
-    jest.clearAllMocks()
+    jest.resetAllMocks()
+    signUpWithEmail.mockResolvedValue('session')
     mockAuth()
   })
 
@@ -63,7 +65,7 @@ describe('LoginPage — dedicated /login page', () => {
     expect(screen.getByLabelText(/email address/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/^password/i)).toBeInTheDocument()
     expect(screen.getByTestId('connect-google-btn')).toBeInTheDocument()
-    expect(screen.getByTestId('auth-provider-icons')).toBeInTheDocument()
+    expect(screen.getByTestId('connect-github-btn')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: /forgot password/i })).toHaveAttribute('href', '/forgot-password')
     expect(screen.getByRole('link', { name: /create an account/i })).toHaveAttribute('href', '/signup')
   })
@@ -73,7 +75,7 @@ describe('LoginPage — dedicated /login page', () => {
     const email = screen.getByLabelText(/email address/i)
     const password = screen.getByLabelText(/^password/i)
     const google = screen.getByTestId('connect-google-btn')
-    const icons = screen.getByTestId('auth-provider-icons')
+    const icons = screen.getByTestId('connect-github-btn')
     const submit = screen.getByRole('button', { name: /^sign in$/i })
     expect(orderOf(email, password)).toBe(true)
     expect(orderOf(password, google)).toBe(true)
@@ -118,7 +120,8 @@ describe('LoginPage — dedicated /login page', () => {
 
 describe('SignUpPage — verification-link flow', () => {
   beforeEach(() => {
-    jest.clearAllMocks()
+    jest.resetAllMocks()
+    signUpWithEmail.mockResolvedValue('session')
     mockAuth()
     sessionStorage.clear()
   })
@@ -127,6 +130,8 @@ describe('SignUpPage — verification-link flow', () => {
     fireEvent.change(screen.getByLabelText(/full name/i), { target: { value: 'Ashif Ahmed' } })
     fireEvent.change(screen.getByLabelText(/username/i), { target: { value: 'ashif_ahmed' } })
     fireEvent.change(screen.getByLabelText(/email address/i), { target: { value: 'a@b.co' } })
+    fireEvent.change(screen.getByLabelText(/^password$/i), { target: { value: 'Str0ng!pass' } });
+    fireEvent.change(screen.getByLabelText(/^confirm password$/i), { target: { value: 'Str0ng!pass' } });
     fireEvent.click(screen.getByLabelText(/i agree to the/i))
   }
 
@@ -140,11 +145,11 @@ describe('SignUpPage — verification-link flow', () => {
     expect(screen.getByRole('link', { name: /^sign in$/i })).toHaveAttribute('href', '/login')
   })
 
-  it('places Google before the email submit button', () => {
+  it('places email registration before the alternative social methods', () => {
     const { container } = mount('/signup')
     const google = screen.getByTestId('connect-google-btn')
     const submit = screen.getByRole('button', { name: /create account/i })
-    expect(orderOf(google, submit)).toBe(true)
+    expect(orderOf(submit, google)).toBe(true)
   })
 
   it('sanitizes the username while typing (lowercase, letters/digits/underscore only)', () => {
@@ -172,11 +177,8 @@ describe('SignUpPage — verification-link flow', () => {
     fillValid()
     fireEvent.click(screen.getByRole('button', { name: /create account/i }))
     expect(await screen.findByTestId('signup-verification-sent')).toBeInTheDocument()
-    expect(sendVerificationEmail).toHaveBeenCalledWith('a@b.co', {
-      nextTo: '/set-password',
-      displayName: 'Ashif Ahmed',
-      username: 'ashif_ahmed',
-    })
+    expect(signUpWithEmail).toHaveBeenCalledWith('a@b.co', 'Str0ng!pass', 'Ashif Ahmed', { username: 'ashif_ahmed' });
+    expect(sendVerificationEmail).toHaveBeenCalledWith('a@b.co');
     expect(screen.getByText(/a@b\.co/i)).toBeInTheDocument()
   })
 
@@ -185,7 +187,8 @@ describe('SignUpPage — verification-link flow', () => {
     mount('/signup')
     fillValid()
     fireEvent.click(screen.getByRole('button', { name: /create account/i }))
-    expect(await screen.findByRole('alert')).toHaveTextContent(/already exists/i)
+    expect(await screen.findByRole('alert')).toHaveTextContent(/account was created.*could not be sent/i)
+    expect(signUpWithEmail).toHaveBeenCalledTimes(1)
   })
 })
 
@@ -193,7 +196,8 @@ describe('SetPasswordPage — password setup after email verification', () => {
   const verifiedUser = { id: 'u-1', email: 'a@b.co', email_confirmed_at: new Date().toISOString() }
 
   beforeEach(() => {
-    jest.clearAllMocks()
+    jest.resetAllMocks()
+    signUpWithEmail.mockResolvedValue('session')
     mockAuth({ user: verifiedUser })
   })
 
@@ -226,3 +230,16 @@ describe('SetPasswordPage — password setup after email verification', () => {
     expect(updatePassword).toHaveBeenCalledWith('Str0ng!pass')
   })
 })
+
+describe('Authentication method allowlist on public entry pages', () => {
+  beforeEach(() => { jest.resetAllMocks(); mockAuth(); });
+  it.each(['/login', '/signup'])('%s offers email/password and exactly Google/GitHub OAuth', (path) => {
+    mount(path);
+    expect(screen.getByLabelText(/email address/i)).toHaveAttribute('type', 'email');
+    expect(screen.getByLabelText(/^password$/i)).toHaveAttribute('type', 'password');
+    const social = within(screen.getByTestId('auth-social-buttons'));
+    expect(social.getAllByRole('button').map(button => button.getAttribute('data-testid')))
+      .toEqual(['connect-google-btn', 'connect-github-btn']);
+    expect(screen.queryByRole('button', { name: /facebook|apple|microsoft|twitter|discord|phone|anonymous|magic link|email link/i })).not.toBeInTheDocument();
+  });
+});

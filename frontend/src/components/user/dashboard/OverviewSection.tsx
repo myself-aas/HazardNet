@@ -6,6 +6,7 @@ import MaterialIcon from '../../MaterialIcon';
 import { profilePath, sanitizeUsernameInput } from '../../../lib/username';
 import { CONNECTOR_CATALOG, fetchUserConnectors } from '../../../lib/connectors';
 import { Card } from './ui';
+import { ProfileForecastCard } from './ProfileForecastCard';
 
 /**
  * "Overview" tab — the at-a-glance home of the user dashboard: profile
@@ -91,10 +92,10 @@ export const OverviewSection: React.FC<{ onNavigate: (tab: 'profile' | 'connecto
     if (!userProfile?.email) return;
     setResendBusy(true);
     try {
-      await sendVerificationEmail(userProfile.email, { nextTo: '/dashboard' });
+      await sendVerificationEmail(userProfile.email);
       toast.success('Verification link sent — check your inbox.');
     } catch {
-      toast.error('Could not resend right now — Supabase rate-limits email. Try again in a minute.');
+      toast.error('Could not resend right now — Firebase rate-limits email. Try again in a minute.');
     } finally {
       setResendBusy(false);
     }
@@ -102,6 +103,7 @@ export const OverviewSection: React.FC<{ onNavigate: (tab: 'profile' | 'connecto
 
   return (
     <div className="space-y-5">
+      <ProfileForecastCard />
       {/* Verification banner */}
       {!emailVerified && (
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3" data-testid="verify-email-banner">

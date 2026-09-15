@@ -1,162 +1,42 @@
-/**
- * HazardNet OAuth provider registry (single source of truth).
- *
- * Social sign-up/sign-in is powered by Firebase Auth.
- */
-
-/** Supabase OAuth provider ids used by HazardNet. */
-export type OAuthProviderId =
-  | 'google'
-  | 'github'
-  | 'microsoft'
-  | 'apple'
-  | 'linkedin'
-  | 'discord'
-  | 'slack'
-  | 'twitter'
-  | 'figma'
-  | 'orcid';
-
+/** The only supported social sign-in methods. Email/password is managed separately. */
+export type OAuthProviderId = 'google' | 'github';
 export interface OAuthProviderConfig {
   id: OAuthProviderId;
-  /** Button label. */
   label: string;
-  /** Compact label for chips/badges. */
   short: string;
-  /** Brand color (glyph tile / accents). */
   color: string;
-  /** Where the user creates the developer app (client id/secret). */
   developerAppUrl: string;
-  /** Supabase setup guide for this provider. */
   setupDocsUrl: string;
-  /** Extra OAuth scopes to request (space separated; Supabase defaults apply when empty). */
   scopes?: string;
-  /** Setup caveat surfaced in the UI/docs. */
   note?: string;
 }
-
-/** The seven headline providers, in UI order. */
-export const PRIMARY_PROVIDER_IDS: OAuthProviderId[] = [
-  'linkedin',
-  'github',
-  'slack',
-  'discord',
-  'twitter',
-  'figma',
-];
-
-/** Additional providers kept from the previous sign-in screen. */
-export const SECONDARY_PROVIDER_IDS: OAuthProviderId[] = ['google', 'microsoft', 'apple', 'orcid'];
-
-/**
- * Auth-page icon row: every provider except Google, rendered as compact
- * side-by-side circular icons beneath the "Connect with Google" button.
- */
-export const SECONDARY_AFTER_GOOGLE_PROVIDER_IDS: OAuthProviderId[] = [
-  'github',
-  'microsoft',
-  'apple',
-  'linkedin',
-  'discord',
-  'slack',
-  'twitter',
-  'figma',
-  'orcid',
-];
-
+export const PRIMARY_PROVIDER_IDS: OAuthProviderId[] = ['google', 'github'];
+export const SECONDARY_PROVIDER_IDS: OAuthProviderId[] = [];
+export const SECONDARY_AFTER_GOOGLE_PROVIDER_IDS: OAuthProviderId[] = ['github'];
 const CONFIGS: Record<OAuthProviderId, OAuthProviderConfig> = {
-  linkedin: {
-    id: 'linkedin',
-    label: 'LinkedIn',
-    short: 'in',
-    color: '#0A66C2',
-    developerAppUrl: 'https://www.linkedin.com/developers/apps/new',
-    setupDocsUrl: 'https://supabase.com/docs/guides/auth/social-clients/auth-linkedin',
-    scopes: 'openid profile email',
-    note: 'Enable the "Sign In with LinkedIn using OpenID Connect" product on the LinkedIn app.',
-  },
-  github: {
-    id: 'github',
-    label: 'GitHub',
-    short: 'GH',
-    color: '#24292F',
-    developerAppUrl: 'https://github.com/settings/applications/new',
-    setupDocsUrl: 'https://supabase.com/docs/guides/auth/social-clients/auth-github',
-    scopes: 'read:user user:email',
-  },
-  slack: {
-    id: 'slack',
-    label: 'Slack',
-    short: 'S',
-    color: '#4A154B',
-    developerAppUrl: 'https://api.slack.com/apps?new_app=1',
-    setupDocsUrl: 'https://supabase.com/docs/guides/auth/social-clients/auth-slack',
-    scopes: 'users:read email',
-    note: 'The Slack app needs the "Sign in with Slack" user scope set enabled.',
-  },
-  discord: {
-    id: 'discord',
-    label: 'Discord',
-    short: 'D',
-    color: '#5865F2',
-    developerAppUrl: 'https://discord.com/developers/applications',
-    setupDocsUrl: 'https://supabase.com/docs/guides/auth/social-clients/auth-discord',
-    scopes: 'identify email',
-    note: 'Add the Supabase callback URL under OAuth2 → Redirects in the Discord developer portal.',
-  },
-  twitter: {
-    id: 'twitter',
-    label: 'X (Twitter)',
-    short: 'X',
-    color: '#0F1419',
-    developerAppUrl: 'https://developer.x.com/en/portal/dashboard',
-    setupDocsUrl: 'https://supabase.com/docs/guides/auth/social-clients/auth-twitter',
-    note: 'Configure "OAuth 2.0" user authentication; X email access requires an approved developer account.',
-  },
-  figma: {
-    id: 'figma',
-    label: 'Figma',
-    short: 'F',
-    color: '#F24E1E',
-    developerAppUrl: 'https://www.figma.com/developers/',
-    setupDocsUrl: 'https://supabase.com/docs/guides/auth/social-clients/auth-figma',
-  },
-  google: {
-    id: 'google',
-    label: 'Google',
-    short: 'G',
-    color: '#4285F4',
+  google: { id: 'google', label: 'Google', short: 'G', color: '#4285F4',
     developerAppUrl: 'https://console.cloud.google.com/apis/credentials',
-    setupDocsUrl: 'https://supabase.com/docs/guides/auth/social-clients/auth-google',
-  },
-  microsoft: {
-    id: 'microsoft',
-    label: 'Microsoft',
-    short: 'MS',
-    color: '#00A4EF',
-    developerAppUrl: 'https://portal.azure.com/#blade/Microsoft_AAD_RegisteredApps/ApplicationsListBlade',
-    setupDocsUrl: 'https://supabase.com/docs/guides/auth/social-clients/auth-azure',
-  },
-  apple: {
-    id: 'apple',
-    label: 'Apple',
-    short: '',
-    color: '#000000',
-    developerAppUrl: 'https://developer.apple.com/account/resources/identifiers/list/serviceId',
-    setupDocsUrl: 'https://supabase.com/docs/guides/auth/social-clients/auth-apple',
-  },
-  orcid: {
-    id: 'orcid',
-    label: 'ORCID',
-    short: 'iD',
-    color: '#A6CE39',
-    developerAppUrl: 'https://orcid.org/developer-tools',
-    setupDocsUrl: 'https://supabase.com/docs/guides/auth/social-clients/auth-orcid',
-    note: 'Configured as a custom OIDC provider in Supabase.',
-  },
+    setupDocsUrl: 'https://firebase.google.com/docs/auth/web/google-signin' },
+  github: { id: 'github', label: 'GitHub', short: 'GH', color: '#24292F',
+    developerAppUrl: 'https://github.com/settings/applications/new',
+    setupDocsUrl: 'https://firebase.google.com/docs/auth/web/github-auth', scopes: 'user:email' },
 };
 
+const unsafePath = (value: string) => [...value].some((c) => c === '\\' || c.charCodeAt(0) <= 32);
+
+export function safeAuthReturnTo(value?: string | null): string {
+  if (!value || !value.startsWith('/') || value.startsWith('//') || unsafePath(value)) return '/';
+  try {
+    const decoded = decodeURIComponent(value);
+    if (decoded.startsWith('//') || unsafePath(decoded)) return '/';
+    const url = new URL(value, 'https://hazardnet.invalid');
+    if (url.origin !== 'https://hazardnet.invalid') return '/';
+    if (/^\/(login|signup|sign-up|forgot-password|auth)(\/|$)/.test(url.pathname)) return '/';
+    return value;
+  } catch { return '/'; }
+}
 export function getProvider(id: OAuthProviderId): OAuthProviderConfig {
+  if (!isOAuthProviderId(id)) throw new Error('Unsupported provider. Use Google or GitHub.');
   return CONFIGS[id];
 }
 
@@ -170,63 +50,13 @@ export const AUTH_RETURN_TO_KEY = 'hazardnet.auth.returnTo';
 /** Default post-auth landing page. */
 export const AUTH_DEFAULT_RETURN = '/';
 
-/** Path Supabase redirects back to after the provider authorization screen. */
-export const AUTH_CALLBACK_PATH = '/auth/callback';
-
-/** Build the redirectTo URL handed to Supabase (must be allow-listed in the dashboard). */
-export function buildOAuthRedirectTo(origin: string, nextTo?: string): string {
-  const base = `${origin.replace(/\/$/, '')}${AUTH_CALLBACK_PATH}`;
-  if (!nextTo || nextTo === AUTH_DEFAULT_RETURN) return base;
-  return `${base}?next=${encodeURIComponent(nextTo)}`;
-}
-
-export interface OAuthCallbackParams {
-  /** PKCE authorization code present on a successful provider redirect. */
-  code: string | null;
-  /** OAuth error code (?error=access_denied…) or GoTrue error_code. */
-  error: string | null;
-  errorDescription: string | null;
-  /** Intended destination carried through the flow (?next=…). */
-  next: string | null;
-  /** True when Supabase returned an implicit-flow hash fragment instead of a code. */
-  implicitHash: boolean;
-}
-
-/** Parse the Supabase/provider redirect query (and implicit-flow hash). */
-export function parseOAuthCallbackParams(
-  search: string,
-  hash: string = '',
-): OAuthCallbackParams {
-  const query = search.startsWith('?') ? search.slice(1) : search;
-  const params = new URLSearchParams(query);
-  const hashQuery = hash.startsWith('#') ? hash.slice(1) : hash;
-  const hashParams = new URLSearchParams(hashQuery);
-  const hasImplicitToken = hashParams.has('access_token') || hashParams.has('error');
-  const pick = (source: URLSearchParams, ...names: string[]): string | null => {
-    for (const name of names) {
-      const value = source.get(name);
-      if (value) return value;
-    }
-    return null;
-  };
-  return {
-    code: pick(params, 'code'),
-    error: pick(params, 'error', 'error_code'),
-    errorDescription: pick(params, 'error_description', 'error_description'),
-    next: pick(params, 'next'),
-    implicitHash: hasImplicitToken,
-  };
-}
-
 /** Where to send the user after the callback completes (stored returnTo wins). */
 export function resolveOAuthReturnTo(nextFromUrl: string | null): string {
-  const fallback = nextFromUrl && nextFromUrl.startsWith('/') ? nextFromUrl : AUTH_DEFAULT_RETURN;
+  const fallback = safeAuthReturnTo(nextFromUrl);
   try {
     const stored = sessionStorage.getItem(AUTH_RETURN_TO_KEY);
-    if (stored && stored.startsWith('/')) {
-      sessionStorage.removeItem(AUTH_RETURN_TO_KEY);
-      return stored;
-    }
+    sessionStorage.removeItem(AUTH_RETURN_TO_KEY);
+    if (stored) return safeAuthReturnTo(stored);
   } catch {
     // sessionStorage unavailable — fall through to the query param/default.
   }
@@ -236,30 +66,35 @@ export function resolveOAuthReturnTo(nextFromUrl: string | null): string {
 export interface OAuthErrorExplanation {
   title: string;
   hint: string;
-  /** True when the fix is enabling the provider in Supabase. */
+  /** True when the fix is enabling the provider in Firebase. */
   providerDisabled: boolean;
 }
 
-/** Translate Supabase/provider OAuth errors into actionable guidance. */
+/** Translate Firebase/provider OAuth errors into actionable guidance. */
 export function describeOAuthError(rawError: unknown): OAuthErrorExplanation {
   const message =
     typeof rawError === 'string'
       ? rawError
       : ((rawError as { message?: string })?.message ?? String(rawError ?? ''));
 
-  const text = message.toLowerCase();
+  const text = `${(rawError as { code?: string })?.code ?? ''} ${message}`.toLowerCase();
+  if (text.includes('account-exists-with-different-credential') || text.includes('credential-already-in-use')) {
+    return { title: 'Use your existing sign-in method', hint: 'Sign in to your existing account first, then connect Google or GitHub in Account & Security. Accounts are not merged automatically.', providerDisabled: false };
+  }
+  if (text.includes('popup-blocked')) return { title: 'Sign-in popup blocked', hint: 'Allow popups for this site and try again.', providerDisabled: false };
+  if (text.includes('requires-recent-login')) return { title: 'Sign in again', hint: 'For your security, sign out and sign in again before changing your account.', providerDisabled: false };
 
-  if (text.includes('not enabled') || text.includes('unsupported provider') || text.includes('provider_')) {
+  if (text.includes('operation-not-allowed') || text.includes('not enabled') || text.includes('unsupported provider') || text.includes('provider_')) {
     return {
       title: 'Provider not enabled',
-      hint: 'Enable this provider under Authentication → Sign In / Up → Providers in the Supabase dashboard and paste the client ID/secret from the provider’s developer app.',
+      hint: 'Enable this provider under Authentication → Sign-in method in the Firebase dashboard and paste the client ID/secret from the provider’s developer app.',
       providerDisabled: true,
     };
   }
-  if (text.includes('redirect') && (text.includes('uri') || text.includes('url') || text.includes('mismatch'))) {
+  if (text.includes('unauthorized-domain') || text.includes('redirect') && (text.includes('uri') || text.includes('url') || text.includes('mismatch'))) {
     return {
       title: 'Redirect URL not allow-listed',
-      hint: 'Add the exact callback URL to both the provider’s developer app and Supabase Authentication → URL Configuration → Redirect URLs.',
+      hint: 'Add the exact callback URL to both the provider’s developer app and Firebase Authentication → Settings → Authorized domains; use the Firebase /__/auth/handler callback in the provider app.',
       providerDisabled: false,
     };
   }
@@ -277,7 +112,7 @@ export function describeOAuthError(rawError: unknown): OAuthErrorExplanation {
       providerDisabled: false,
     };
   }
-  if (text.includes('access_denied') || text.includes('cancelled') || text.includes('canceled')) {
+  if (text.includes('popup-closed-by-user') || text.includes('cancelled-popup-request') || text.includes('access_denied') || text.includes('cancelled') || text.includes('canceled')) {
     return {
       title: 'Sign-in cancelled',
       hint: 'Authorization was cancelled at the provider. Close this dialog and try again.',
@@ -294,7 +129,7 @@ export function describeOAuthError(rawError: unknown): OAuthErrorExplanation {
   if (text.includes('not configured') || text.includes('supabase is not configured')) {
     return {
       title: 'Authentication unavailable',
-      hint: 'Supabase environment variables are missing for this deployment; social sign-in cannot start.',
+      hint: 'Firebase environment variables are missing for this deployment; social sign-in cannot start.',
       providerDisabled: false,
     };
   }
@@ -305,37 +140,6 @@ export function describeOAuthError(rawError: unknown): OAuthErrorExplanation {
   };
 }
 
-export interface ProviderProfileSeed {
-  displayName: string;
-  email: string | null;
-  avatarUrl: string | null;
-}
-
-/**
- * Map provider user metadata onto a profile seed. Providers disagree on
- * field names (full_name vs name, avatar_url vs picture …); take the first
- * non-empty candidate per slot.
- */
-export function mapProviderUserMetadata(
-  metadata: Record<string, unknown> | null | undefined,
-): ProviderProfileSeed {
-  const meta = metadata ?? {};
-  const first = (keys: string[]): string | null => {
-    for (const key of keys) {
-      const value = meta[key];
-      if (typeof value === 'string' && value.trim()) return value.trim();
-    }
-    return null;
-  };
-  return {
-    displayName:
-      first(['display_name', 'full_name', 'name', 'preferred_username', 'user_name', 'username']) ??
-      'User',
-    email: first(['email']),
-    avatarUrl: first(['avatar_url', 'picture', 'profile_image_url', 'twitter_profile_image_url']),
-  };
-}
-
 export interface ProviderIdentityView {
   provider: OAuthProviderId;
   identityId: string;
@@ -343,16 +147,17 @@ export interface ProviderIdentityView {
   lastSignInAt: string | null;
 }
 
-/** Normalize a Supabase user identities array into linkable/unlinkable views. */
+/** Normalize native Firebase providerData (legacy stored identities remain readable) into linkable/unlinkable views. */
 export function toIdentityViews(
   identities: Array<Record<string, unknown>> | null | undefined,
 ): ProviderIdentityView[] {
   return (identities ?? [])
     .map((identity) => {
-      const provider = String(identity.provider ?? '');
-      const identityId = String(identity.identity_id ?? identity.id ?? '');
+      const raw = String(identity.providerId ?? identity.provider ?? '');
+      const provider = raw.replace(/\.com$/, '');
+      const identityId = String(identity.uid ?? identity.identityId ?? identity.identity_id ?? identity.id ?? '');
       if (!isOAuthProviderId(provider) || !identityId) return null;
-      const identityData = (identity.identity_data ?? {}) as Record<string, unknown>;
+      const identityData = (identity.identity_data ?? identity) as Record<string, unknown>;
       return {
         provider: provider as OAuthProviderId,
         identityId,
@@ -369,7 +174,7 @@ export function unlinkedProviders(
   pool: OAuthProviderId[] = [...PRIMARY_PROVIDER_IDS, ...SECONDARY_PROVIDER_IDS],
 ): OAuthProviderId[] {
   const linked = new Set(toIdentityViews(identities).map((view) => view.provider));
-  // An email/password account has no "email" identity in some Supabase
+  // An email/password account has no "email" identity in some Firebase
   // configurations; the pool simply lists providers the user can connect.
   return pool.filter((id) => !linked.has(id));
 }

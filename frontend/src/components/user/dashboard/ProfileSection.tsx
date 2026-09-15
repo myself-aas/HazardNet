@@ -190,7 +190,7 @@ export const ProfileSection: React.FC = () => {
         <div className="grid gap-4 sm:grid-cols-2">
           <TextField id="phone-number" label="Phone number" value={pickText(draft.phoneNumber)} onChange={set('phoneNumber')} placeholder="+8801XXXXXXXXX" type="tel" autoComplete="tel" />
           <TextField id="whatsapp-number" label="WhatsApp number" value={pickText(draft.whatsappNumber)} onChange={set('whatsappNumber')} placeholder="+8801XXXXXXXXX" type="tel" hint="Used by the WhatsApp Alerts connector." />
-          <SelectField id="preferred-language" label="Preferred language" value={pickText(draft.preferredLanguage) || 'en'} onChange={set('preferredLanguage')} options={LANGUAGES} />
+          <SelectField id="preferred-language" label="Preferred communication language (interface currently English)" value={pickText(draft.preferredLanguage) || 'en'} onChange={set('preferredLanguage')} options={LANGUAGES} />
           <SelectField
             id="timezone"
             label="Timezone"

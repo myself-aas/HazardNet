@@ -98,15 +98,15 @@ export default defineConfig(({ mode }) => {
     allowedHosts: ['.e2b.app'],
     proxy: {
       '/api': {
-        target: 'http://127.0.0.1:3000',
+        target: env.API_PROXY_TARGET || 'http://127.0.0.1:3001',
         changeOrigin: true,
       },
       '/metrics': {
-        target: 'http://127.0.0.1:3000',
+        target: env.API_PROXY_TARGET || 'http://127.0.0.1:3001',
         changeOrigin: true,
       },
       '/health': {
-        target: 'http://127.0.0.1:3000',
+        target: env.API_PROXY_TARGET || 'http://127.0.0.1:3001',
         changeOrigin: true,
       }
     }

@@ -1,3 +1,5 @@
+> **Historical SQL assets:** Firebase is now canonical (ADR 0009). Do not run the former Supabase forecast cutover. Spatial/PostGIS tooling is optional self-host analytics, not application persistence. Some historical migration references below no longer exist.
+
 # Database migrations — single source of truth
 
 This directory is the **only** home for SQL schema migrations (the duplicate

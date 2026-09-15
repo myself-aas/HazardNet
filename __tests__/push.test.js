@@ -6,6 +6,12 @@ import request from 'supertest';
 import pushRoutes from '../backend/routes/push.js';
 import { getVapidPublicKey } from '../backend/utils/vapid.js';
 
+jest.mock('../backend/pushStore.js', () => {
+  const rows = new Map();
+  return { pushStore: { size: async () => rows.size, set: async (key, value) => rows.set(key, value),
+    delete: async (key) => rows.delete(key), entries: async () => Array.from(rows.entries()) } };
+});
+
 const app = express();
 app.use(express.json());
 app.use('/api/push', pushRoutes);

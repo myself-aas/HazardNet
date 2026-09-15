@@ -19,17 +19,18 @@ export const AnalyticsAnalyticsPage: React.FC = () => {
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-900 text-xs font-mono font-bold mb-3 shadow-2xs">
             <span>RESEARCHER & ADMIN ANALYTICS</span>
             <span>•</span>
-            <span>TensorFlow & CI/CD Telemetry</span>
+            <span>Analyst tools</span>
           </div>
           <h1 className="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
-            Model Diagnostics & Pipeline Observability
+            Forecasts and analyst tools
           </h1>
           <p className="text-slate-600 mt-2 max-w-3xl text-xs sm:text-sm leading-relaxed">
-            Real-time tracking of neural network inference latency, mean absolute error (MAE), expected calibration error (ECE), and automated Kaggle/GitHub CI/CD ingestion pipelines.
+            Explore forecasts and methodology. Diagnostic and pipeline examples below are demonstrations, not measured operational status.
           </p>
         </div>
       </div>
 
+      {activeTab !== 'forecast-dashboard' && <p role="note" className="hn-panel">DEMONSTRATION ONLY — all diagnostic figures, historical examples and pipeline logs in this tab are illustrative, not current measurements. Do not use them for operational decisions.</p>}
       {/* Sub-navigation */}
       <div className="flex items-center gap-2.5 border-b border-slate-200/90 pb-4 overflow-x-auto scrollbar-none touch-scroll">
         <motion.button
@@ -40,7 +41,7 @@ export const AnalyticsAnalyticsPage: React.FC = () => {
             activeTab === 'forecast-dashboard' ? 'bg-amber-500 text-slate-900 shadow-2xs' : 'bg-white text-slate-700 border border-slate-200/90 hover:bg-slate-50 shadow-2xs'
           }`}
         >
-          Forecast Dashboard (Firestore & Recharts)
+          Forecast dashboard
         </motion.button>
         <motion.button
           whileHover={{ scale: 1.02 }}

@@ -12,7 +12,7 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({ customItems }) => {
     if (customItems) return customItems;
 
     const pathnames = location.pathname.split('/').filter((x) => x);
-    const items = [{ label: 'Home / GIS Map', path: '/' }];
+    const items = [{ label: 'Map', path: '/' }];
 
     let currentPath = '';
     pathnames.forEach((name) => {
@@ -64,7 +64,7 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({ customItems }) => {
         to="/"
         className="shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-[#ad6d04] border border-amber-200 font-bold transition-all text-[11px]"
       >
-        <span>Back to Live GIS</span>
+        <span>Back to map</span>
       </Link>
     </nav>
   );

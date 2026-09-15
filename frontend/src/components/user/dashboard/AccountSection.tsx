@@ -7,7 +7,7 @@ import MaterialIcon from '../../MaterialIcon';
 import { IdentityConnections } from '../../IdentityConnections';
 
 /**
- * "Account & Security" tab — email change (re-verified by Supabase), password
+ * "Account & Security" tab — email change (re-verified by Firebase), password
  * set/change, linked social identities, and session controls.
  */
 
@@ -23,7 +23,7 @@ export const AccountSection: React.FC = () => {
   useEffect(() => {
     if (!user) return;
     const identities = (user.providerData ?? []).map((provider: { providerId: string }) => provider.providerId);
-    setPasswordProvider(identities.includes('email') ? 'email' : identities.length > 0 ? 'social' : 'unknown');
+    setPasswordProvider(identities.includes('password') ? 'email' : identities.length > 0 ? 'social' : 'unknown');
   }, [user]);
 
   const handleEmailChange = async () => {
