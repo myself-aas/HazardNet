@@ -98,6 +98,45 @@ that lacks `-L`.
 `hazardnet.live` (TLS handshake reset; only `api.github.com` is reachable), so
 the first scheduled run after this merge is the verification.
 
+### What the redirect was hiding (verified against production, 2026-09-15)
+
+Following the redirect exposes a **separate, still-open production defect** —
+the one the 2026-09-13 audit filed as P0-2 ("the Vercel deployment has no GET
+handler for `/api/v1/forecasts/bulk`"). Probed from outside the sandbox:
+
+| URL | Result |
+|---|---|
+| `https://www.hazardnet.live/` | **200** — the SPA renders (TFLite/severity UI) |
+| `https://www.hazardnet.live/api/metrics` | **404** `NOT_FOUND` (Vercel's platform 404 page, not the app's JSON) |
+| `https://www.hazardnet.live/api/v1/forecasts/metadata` | **404** (same Vercel platform page) |
+| `https://www.hazardnet.live/dashboard` | **404** (same) |
+
+The SPA answers on `/` only, no `/api/*` function is reachable, and client-side
+deep links 404 as well — the shape of a Vercel project whose **Root Directory**
+is the frontend (`frontend/`) rather than the repository root, so neither the
+root `vercel.json` rewrites nor the root `api/` serverless functions are part of
+the deployment (the Vercel commit status reported the newest commit,
+`37aa7e8`, as a successful deployment, so this is not a stale deploy).
+
+That is why the probe's second half is still red — and it is a **true finding**,
+not a flake: the frontend's `useForecasts()` falls back to the committed static
+snapshot, which is exactly the "site serves mock/baseline data" symptom the
+2026-09-13 audit measured. Two changes keep the probe useful instead of merely
+red:
+
+* a 404 now prints **why** (`this deployment serves no /api/v1/forecasts/* route
+  … check the Vercel Root Directory`), and
+* the probe can be pointed at wherever the API actually runs with the
+  `API_METADATA_URL` repository variable (default unchanged:
+  `$SITE_URL/api/v1/forecasts/metadata`) — the Kaggle pipeline already pushes to
+  a `HAZARDNET_API_URL` that need not be the website host.
+
+**Owner fix for the deployment:** Vercel → project `hazardnet` → Settings →
+Build & Development Settings → **Root Directory** = repository root (or deploy a
+second project rooted at the repo root and point `www` at it). Until then the
+site is static-only: deep links 404, and every `useForecasts()` call falls back
+to the bundled snapshot.
+
 ## 3. Kaggle-backed pipelines — the failure is external, the silence was ours
 
 | Workflow | Failed step | Run |
@@ -164,19 +203,33 @@ was still on `@v4`. Bumped to `@v5` (`runs.using: node24`, requires runner
 | `node scripts/build_forecast_snapshot.mjs` with the fixture CSV | snapshot OK, 128 rows, 7/15-day horizons |
 | `npm run lint` / `lint:eslint` / `check:env` / `check:rag-freshness` | clean (0 errors; 283 pre-existing warnings) |
 | `npm run build` | exit 0, `frontend/dist` → `dist` |
+| CI on PR #26 (`gh run view 35021720224`) | **all 6 jobs green** — Backend, Frontend, Pipeline Scripts, E2E (46 passed), Security Audit, Code Quality & Build; the Node 20 deprecation annotation is gone |
 | `node scripts/gen-model-version.mjs` twice | second run: "unchanged" — deterministic, so the gate is stable |
 | `__tests__/modelInfo.test.js` with `Models/VERSION.json` removed | 4 failures (guard proven red) |
 
 ## Owner actions that remain
 
-1. **Kaggle token** — confirm `KAGGLE_USERNAME` / `KAGGLE_KEY` in repo secrets
+1. **Vercel Root Directory** (new, §2) — production serves the frontend only:
+   every `/api/*` route and every client-side deep link 404s. Set the project's
+   Root Directory to the repository root (Settings → Build & Development
+   Settings), or point `www` at a project rooted there. This is the same P0-2
+   the 2026-09-13 audit opened; until it is done the site-health probe's API
+   half and `useForecasts()` (which falls back to the bundled snapshot) cannot
+   be right.
+2. **Codecov `codecov/patch`** — the check fails on this PR for an account
+   reason, not a coverage one: *"The author of this PR,
+   arena-ai-coding-agent[bot], is not an activated member of this organization
+   on Codecov."* Activate the bot under Codecov → Members, or ignore the check
+   (it does not block the merge; every bot-authored PR shows it).
+3. **Kaggle token** — confirm `KAGGLE_USERNAME` / `KAGGLE_KEY` in repo secrets
    are the *current* values (Kaggle → Settings → API → Create New Token), then
    re-run the `Verify GitHub Actions Secrets` workflow, then re-run
    `HazardNet Automated Forecast Pipeline` / `Hourly Forecast Refresh`.
-2. **Kernel slug** — if those still fail with `404`, set the `KAGGLE_KERNEL`
+4. **Kernel slug** — if those still fail with `404`, set the `KAGGLE_KERNEL`
    repository variable to the notebook's current slug.
-3. **Supabase** — re-dispatch `Supabase cutover verify` once `SUPABASE_DB_URL`
+5. **Supabase** — re-dispatch `Supabase cutover verify` once `SUPABASE_DB_URL`
    is configured; that job has not had a green run.
-4. **Site probe** — the next 30-minute schedule is the live verification of the
-   `-L` fix; if it fails with anything other than HTTP 200, the site (not the
-   probe) needs attention.
+6. **Site probe** — the next 30-minute schedule after the merge is the live
+   verification of the `-L` fix. The homepage probe should pass; the metadata
+   step will keep failing with the §2 diagnosis until the deployment serves the
+   API (or `API_METADATA_URL` is pointed at it).

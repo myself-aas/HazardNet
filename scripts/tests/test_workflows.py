@@ -525,6 +525,17 @@ def test_site_health_probe_follows_redirects(workflows):
         'instead of the site: ' + '; '.join(offenders)
     )
 
+    # The API half of the probe must stay repointable: production served the
+    # website without any /api/* route for weeks (the deployment runs the
+    # frontend only), so the probe needs to be able to target the host that
+    # actually answers — without editing the workflow.
+    env_text = json.dumps(doc.get('env') or {})
+    whole = '\n'.join(runs) + env_text
+    assert 'vars.API_METADATA_URL' in whole, (
+        'site-health.yml must let the forecast-API probe target another host '
+        'via the API_METADATA_URL repository variable'
+    )
+
 
 def test_kaggle_backed_workflows_take_the_kernel_from_a_repo_variable(workflows):
     """All three Kaggle pipelines must read the kernel slug from the

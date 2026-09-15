@@ -20,6 +20,11 @@ permissions:
 env:
   SITE_URL: https://hazardnet.live
   MAX_DATA_AGE_DAYS: '10'
+  # Optional override (repository variable) for the forecast API host. Default:
+  # same host as the site. Only set this if the API is served somewhere else —
+  # the Kaggle pipeline pushes to HAZARDNET_API_URL, which need not be the
+  # website's own host.
+  API_METADATA_URL: ${{ vars.API_METADATA_URL || '' }}
 
 jobs:
   probe:
@@ -66,8 +71,15 @@ jobs:
         run: |
           # Same -L rationale as the homepage probe above: the API rides the
           # same apex→www 308.
-          HTTP_CODE=$(curl -sSL --max-redirs 5 -o /tmp/metadata.json -w "%{http_code}" --max-time 30 "$SITE_URL/api/v1/forecasts/metadata")
-          echo "metadata HTTP $HTTP_CODE"
+          API_URL="${API_METADATA_URL:-$SITE_URL/api/v1/forecasts/metadata}"
+          HTTP_CODE=$(curl -sSL --max-redirs 5 -o /tmp/metadata.json -w "%{http_code}" --max-time 30 "$API_URL")
+          echo "metadata HTTP $HTTP_CODE ($API_URL)"
+          if [ "$HTTP_CODE" = "404" ]; then
+            echo "::error::$API_URL returns 404 — this deployment serves no /api/v1/forecasts/* route at all."
+            echo "::error::Check the Vercel project's Root Directory (Production serves only the static frontend today: /dashboard 404s too). If the API runs on a different host, set the API_METADATA_URL repository variable to its /api/v1/forecasts/metadata URL."
+            cat /tmp/metadata.json | head -c 300
+            exit 1
+          fi
           if [ "$HTTP_CODE" != "200" ]; then
             echo "::error::/api/v1/forecasts/metadata returned HTTP $HTTP_CODE"
             cat /tmp/metadata.json

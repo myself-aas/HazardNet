@@ -92,6 +92,24 @@ Pipeline Scripts Tests, Code Quality & Build, Security Audit.**
 (`E2E Tests` is quarantined non-blocking — reaudit N9 — but keep an eye on it:
 red is tolerated, a *timeout/cancel* would still need attention.)
 
+### 2a-bis. Check the Vercel **Root Directory** (verified broken 2026-09-15)
+
+Probed live on 2026-09-15: `https://www.hazardnet.live/` renders the SPA, but
+`/api/metrics`, `/api/v1/forecasts/metadata` **and `/dashboard`** all return
+Vercel's platform `404: NOT_FOUND`. That is the signature of a project built
+from `frontend/` rather than the repository root — the root `vercel.json`
+rewrites (SPA deep links) and the root `api/**` serverless functions are then
+never part of the deployment, so the site is static-only and
+`useForecasts()` silently falls back to the bundled snapshot (audit P0-2).
+
+**Fix:** Vercel → project `HazardNet` → **Settings → Build & Development
+Settings → Root Directory** = repository root (leave the field empty / `./`),
+then redeploy. Same class of finding, with the evidence table, in
+[`docs/audits/2026-09-15-ci-backend-tests-and-workflow-green.md`](../audits/2026-09-15-ci-backend-tests-and-workflow-green.md).
+If the API is intentionally hosted elsewhere, point the probe at it with the
+`API_METADATA_URL` repository variable instead of leaving the site-health
+probe red.
+
 ### 2b. Set Vercel environment variables
 
 Vercel Dashboard → project `HazardNet` → **Settings → Environment Variables**.
