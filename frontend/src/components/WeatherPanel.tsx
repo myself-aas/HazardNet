@@ -9,9 +9,6 @@ import {
   Sunrise,
   Sunset,
   Cloud,
-  CloudRain,
-  CloudSnow,
-  CloudLightning,
   Sun,
   Moon,
   Umbrella,
@@ -28,7 +25,6 @@ import {
 } from 'lucide-react';
 import {
   ResponsiveContainer,
-  AreaChart,
   Area,
   XAxis,
   YAxis,
@@ -40,7 +36,7 @@ import {
   ComposedChart,
   Bar,
 } from 'recharts';
-import type { WeatherResponse, CurrentWeather, HourlyWeather, DailyWeather } from '../lib/weather';
+import type { WeatherResponse, HourlyWeather, DailyWeather } from '../lib/weather';
 import { windDirectionLabel } from '../lib/weather';
 import { wmoCodeInfo } from '../lib/wmoWeatherCodes';
 
@@ -76,18 +72,35 @@ const fmtTime = (iso: string) => {
 };
 
 // Celius → convenient rounding
-const c = (v: number | null | undefined) =>
-  v == null || !Number.isFinite(v) ? '—' : `${Math.round(v)}°`;
-const msToKmh = (v: number | null | undefined) =>
-  v == null || !Number.isFinite(v) ? '—' : `${Math.round(v * 3.6)} km/h`;
-const mm = (v: number | null | undefined) =>
-  v == null || !Number.isFinite(v) ? '—' : `${v.toFixed(1)} mm`;
-const pct = (v: number | null | undefined) =>
-  v == null || !Number.isFinite(v) ? '—' : `${Math.round(v)}%`;
-const hpa = (v: number | null | undefined) =>
-  v == null || !Number.isFinite(v) ? '—' : `${Math.round(v)} hPa`;
-const km = (v: number | null | undefined) =>
-  v == null || !Number.isFinite(v) ? '—' : `${(v / 1000).toFixed(1)} km`;
+const asNum = (v: string | number | null | undefined): number | null => {
+  if (v == null) return null;
+  const n = typeof v === 'number' ? v : Number(v);
+  return Number.isFinite(n) ? n : null;
+};
+const c = (v: string | number | null | undefined) => {
+  const n = asNum(v);
+  return n == null ? '—' : `${Math.round(n)}°`;
+};
+const msToKmh = (v: string | number | null | undefined) => {
+  const n = asNum(v);
+  return n == null ? '—' : `${Math.round(n * 3.6)} km/h`;
+};
+const mm = (v: string | number | null | undefined) => {
+  const n = asNum(v);
+  return n == null ? '—' : `${n.toFixed(1)} mm`;
+};
+const pct = (v: string | number | null | undefined) => {
+  const n = asNum(v);
+  return n == null ? '—' : `${Math.round(n)}%`;
+};
+const hpa = (v: string | number | null | undefined) => {
+  const n = asNum(v);
+  return n == null ? '—' : `${Math.round(n)} hPa`;
+};
+const km = (v: string | number | null | undefined) => {
+  const n = asNum(v);
+  return n == null ? '—' : `${(n / 1000).toFixed(1)} km`;
+};
 
 /** Zip hourly arrays into objects, restricted to the next N hours from now. */
 function hourlyWindow(hourly: HourlyWeather, hours: number) {
@@ -130,7 +143,7 @@ const Stat: React.FC<{
   icon: React.ReactNode;
   label: string;
   value: string;
-  sub?: string;
+  sub?: React.ReactNode;
 }> = ({ icon, label, value, sub }) => (
   <div className="flex items-start gap-3 rounded-lg bg-slate-50 dark:bg-slate-800/60 p-3">
     <div className="mt-0.5 text-slate-500 dark:text-slate-400">{icon}</div>

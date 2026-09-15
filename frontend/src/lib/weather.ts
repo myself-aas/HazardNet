@@ -185,6 +185,34 @@ export interface BatchWeatherResponse {
 }
 
 /**
+ * Fetch the full forecast (current + hourly + 16-day daily) for a single point.
+ * Mirrors the backend default (forecast_days=16, hourly + daily + current).
+ */
+export async function fetchWeather(
+  lat: number,
+  lng: number,
+  opts: { forecast_days?: number; timezone?: string; signal?: AbortSignal } = {},
+): Promise<WeatherResponse> {
+  const params = new URLSearchParams({
+    lat: String(lat),
+    lng: String(lng),
+  });
+  if (opts.forecast_days && opts.forecast_days > 1) {
+    params.set('forecast_days', String(Math.min(Math.max(opts.forecast_days, 1), 16)));
+  }
+  if (opts.timezone) params.set('timezone', opts.timezone);
+  const resp = await fetch(`/api/v1/weather?${params.toString()}`, {
+    signal: opts.signal,
+    cache: 'no-store',
+  });
+  if (!resp.ok) {
+    const body = await resp.text().catch(() => '');
+    throw new Error(`Weather API error ${resp.status}: ${body.slice(0, 200)}`);
+  }
+  return resp.json() as Promise<WeatherResponse>;
+}
+
+/**
  * Fetch current-only weather for a single point (mini badge).
  */
 export async function fetchCurrentWeather(
