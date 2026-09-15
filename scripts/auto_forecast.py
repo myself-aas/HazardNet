@@ -1,12 +1,12 @@
 import os
 import io
+import sys
 import json
 import time
 import urllib.request
 import numpy as np
 import pandas as pd
 import requests
-import geopandas as gpd
 from datetime import datetime, timedelta
 import cv2  # Replaces PyTorch for bilinear interpolation
 import tflite_runtime.interpreter as tflite # Replaces full TensorFlow
@@ -16,24 +16,36 @@ import tflite_runtime.interpreter as tflite # Replaces full TensorFlow
 # ==============================================================================
 import ee
 
-ee_credentials_json = os.environ.get("EE_SERVICE_ACCOUNT_JSON")
+# --- Earth Engine authentication via service-account JSON from env -----------
+# On GitHub Actions the JSON is injected as a repository secret and must never
+# be committed to disk beyond the lifetime of the job. We write it to a
+# temporary file, initialize EE, then remove it.
+ee_credentials_json = os.environ.get("EE_SERVICE_ACCOUNT_JSON", "").strip()
 if not ee_credentials_json:
     print("CRITICAL ERROR: EE_SERVICE_ACCOUNT_JSON is missing from the environment.")
-    import sys
     sys.exit(1)
 
-with open("ee_creds.json", "w") as f:
-    f.write(ee_credentials_json)
+# Allow the service-account email to be overridden via env; otherwise
+# fall back to the HazardNet Kaggle/GCP service account.
+SERVICE_ACCOUNT = os.environ.get(
+    "EE_SERVICE_ACCOUNT_EMAIL",
+    "hazardnet-ee-service-kaggle@hazardnet-aas48424.iam.gserviceaccount.com",
+)
 
-SERVICE_ACCOUNT = 'hazardnet-ee-service-kaggle@hazardnet-aas48424.iam.gserviceaccount.com'
+CREDS_PATH = "ee_creds.json"
 try:
-    credentials = ee.ServiceAccountCredentials(SERVICE_ACCOUNT, 'ee_creds.json')
-    ee.Initialize(credentials)  
-    print("OK: Google Earth Engine Initialized via Service Account")
-except Exception as e:
-    print(f"CRITICAL ERROR: GEE Initialization Failed: {e}")
-    import sys
-    sys.exit(1)
+    with open(CREDS_PATH, "w") as f:
+        f.write(ee_credentials_json)
+    credentials = ee.ServiceAccountCredentials(SERVICE_ACCOUNT, CREDS_PATH)
+    ee.Initialize(credentials)
+    print("OK: Google Earth Engine initialized via service account.")
+finally:
+    # Remove the credential file from disk as soon as EE is initialized so a
+    # later crash/debug log can't leak it.
+    try:
+        os.remove(CREDS_PATH)
+    except OSError:
+        pass
 
 # ==============================================================================
 # 2. CONFIGURATION & PATHS
@@ -182,36 +194,103 @@ def get_ee_image_as_numpy(image, region, scale=10, target_size=(64, 64)):
     return img_np
 
 def get_openmeteo_forecast(lat, lon, horizon_days):
+    """Fetch an Open-Meteo forecast and aggregate to the scalar daily
+    summaries the downstream 15-channel tensor + physics-severity formulas
+    consume.
+
+    Unit contract (matches what the model was trained on and what the
+    om_calc_* thresholds expect):
+      * Temperatures -> K  (physics-formula code converts to °C locally)
+      * Precipitation, ET0 -> m  (formulas convert to mm locally)
+      * Shortwave radiation -> J/m² (sum over horizon)
+      * Wind speed -> km/h  (om_calc_* use km/h thresholds: 50 km/h storm, etc.)
+
+    Corrections vs. the original Kaggle notebook:
+      1. `dew_point_2m_mean` is NOT a valid daily parameter, so we request
+         hourly dew_point_2m and compute the daily mean ourselves. Without
+         this, the HTTP call 200s but returns None for dewpoint and the
+         script silently falls back to NaN defaults.
+      2. `et0_fao_evapotranspiration_sum` is wrong (correct daily param is
+         `et0_fao_evapotranspiration`).
+      3. Default `temperature_unit=celsius` (Kaggle relied on this default
+         but then the default-value branch returned 295 K while the API
+         branch returned ~25 °C -> ~12 σ mismatch for the model). We now
+         convert API temps to Kelvin explicitly.
+    """
     url = "https://api.open-meteo.com/v1/forecast"
     params = {
-        "latitude": lat, "longitude": lon,
-        "daily": "temperature_2m_mean,temperature_2m_max,temperature_2m_min,"
-                 "precipitation_sum,dew_point_2m_mean,shortwave_radiation_sum,"
-                 "wind_speed_10m_max,et0_fao_evapotranspiration_sum",
+        "latitude": lat,
+        "longitude": lon,
+        "daily": (
+            "temperature_2m_mean,temperature_2m_max,temperature_2m_min,"
+            "precipitation_sum,"
+            "shortwave_radiation_sum,"
+            "wind_speed_10m_max,wind_gusts_10m_max,"
+            "et0_fao_evapotranspiration"
+        ),
+        "hourly": "dew_point_2m",
         "timezone": "Asia/Dhaka",
-        "forecast_days": min(horizon_days + 1, 16)
+        # Use defaults (wind=km/h, temp=°C, precip=mm) so physics thresholds
+        # (50 km/h storm, 30 °C heat wave, etc.) behave identically to
+        # training.
+        "forecast_days": min(horizon_days + 1, 16),
     }
     try:
-        resp = requests.get(url, params=params, timeout=10)
+        resp = requests.get(url, params=params, timeout=15)
         resp.raise_for_status()
-        daily = resp.json().get('daily', {})
-        
-        def safe_array(key, default_val):
+        payload = resp.json()
+        daily = payload.get('daily', {})
+        hourly = payload.get('hourly', {})
+
+        def safe_daily(key, default_val):
             arr = daily.get(key)
-            if arr is None: arr = [default_val]
+            if arr is None or len(arr) == 0:
+                arr = [default_val]
             return np.array([float(x) if x is not None else np.nan for x in arr])
 
+        # --- Dew point: daily API doesn't expose it, aggregate from hourly.
+        dew_hourly = np.array(
+            [float(x) if x is not None else np.nan
+             for x in (hourly.get('dew_point_2m') or [])]
+        )
+        hours_per_day = 24
+        n_days = horizon_days + 1
+        if dew_hourly.size >= hours_per_day * n_days:
+            dew_daily = np.array([
+                np.nanmean(dew_hourly[i*hours_per_day:(i+1)*hours_per_day])
+                for i in range(n_days)
+            ])
+        else:
+            dew_daily = np.full(n_days, np.nan)
+
+        # --- Raw Open-Meteo daily arrays in native units (°C, mm, km/h, MJ/m²).
+        temp_mean_c = safe_daily('temperature_2m_mean', 22.0)
+        temp_max_c  = safe_daily('temperature_2m_max',  27.0)
+        temp_min_c  = safe_daily('temperature_2m_min',  17.0)
+        precip_mm   = safe_daily('precipitation_sum',   0.0)
+        wind_max_kmh = safe_daily('wind_speed_10m_max', 0.0)    # km/h
+        gust_max_kmh = safe_daily('wind_gusts_10m_max', 0.0)   # km/h
+        swr_sum_mj   = safe_daily('shortwave_radiation_sum', 5.0)  # MJ/m²
+        et_mm        = safe_daily('et0_fao_evapotranspiration', 0.0)  # mm
+        dew_c        = dew_daily
+
         return {
-            'Temp_2m': float(np.nanmean(safe_array('temperature_2m_mean', 295.0))),
-            'Precip': float(np.nansum(safe_array('precipitation_sum', 0.0))) / 1000.0,
-            'Max_Temp': float(np.nanmax(safe_array('temperature_2m_max', 300.0))),
-            'Min_Temp': float(np.nanmin(safe_array('temperature_2m_min', 280.0))),
-            'Dewpoint': float(np.nanmean(safe_array('dew_point_2m_mean', 285.0))),
-            'Solar_Rad': float(np.nansum(safe_array('shortwave_radiation_sum', 5000.0))) * 1000.0,
-            'Wind_Max': float(np.nanmax(safe_array('wind_speed_10m_max', 0.0))),
-            'ET_Sum': float(np.nansum(safe_array('et0_fao_evapotranspiration_sum', 0.0)))
+            # Outputs in the units the model's normalization stats expect.
+            'Temp_2m':   float(np.nanmean(temp_mean_c)) + 273.15,   # K
+            'Max_Temp':  float(np.nanmax(temp_max_c))  + 273.15,
+            'Min_Temp':  float(np.nanmin(temp_min_c))  + 273.15,
+            'Dewpoint':  float(np.nanmean(dew_c))       + 273.15,
+            'Precip':    float(np.nansum(precip_mm)) / 1000.0,     # m
+            'Solar_Rad': float(np.nansum(swr_sum_mj)) * 1.0e6,     # J/m²
+            'Wind_Max':  float(np.nanmax(wind_max_kmh)),            # km/h
+            'Gust_Max':  float(np.nanmax(gust_max_kmh)),            # km/h
+            'ET_Sum':    float(np.nansum(et_mm)) / 1000.0,         # m
         }
-    except Exception:
+    except requests.exceptions.RequestException as e:
+        print(f"Open-Meteo HTTP Error for ({lat}, {lon}): {e}")
+        return None
+    except Exception as e:
+        print(f"Open-Meteo Processing Error for ({lat}, {lon}): {e}")
         return None
 
 # ==============================================================================
@@ -313,46 +392,62 @@ def build_t0_and_infer(dist, historical_steps, horizon_days, norm_stats):
     lat, lon = dist['lat'], dist['lon']
     today = datetime.now()
     region = ee.Geometry.Point([lon, lat]).buffer(320).bounds().getInfo()
-    
+
     om_data = get_openmeteo_forecast(lat, lon, horizon_days)
     if not om_data: return None, None
-        
+
     t0_start = (today - timedelta(days=10)).strftime('%Y-%m-%d')
     t0_end = today.strftime('%Y-%m-%d')
-    
+
     t0_combined_img = get_temporal_15ch_stack(region, t0_start, t0_end)
     if t0_combined_img:
         try:
             t0_np = get_ee_image_as_numpy(t0_combined_img, region, scale=10)
-            om_bands = [om_data['Temp_2m'], om_data['Precip'], om_data['Max_Temp'], om_data['Min_Temp'],
-                        0.3, 0.3, 290.0, om_data['Dewpoint'], om_data['Solar_Rad']]
-            t0_np[6:15, :, :] = np.array(om_bands).reshape(9, 1, 1)
-            
-            full_tensor = np.stack(historical_steps + [t0_np], axis=0)
-            normalized = np.zeros_like(full_tensor, dtype=np.float32)
-            
+            # Replace ERA5-Land weather bands 6..15 (0-indexed) with Open-Meteo
+            # forecast values for the T0 step. Bands 0..5 (SAR+optical) come
+            # straight from Earth Engine. The Soil_W1/W3/T1 placeholders match
+            # the trained model's normalization means (~0.32, ~0.32, ~300 K).
+            om_bands = [
+                om_data['Temp_2m'], om_data['Precip'],
+                om_data['Max_Temp'], om_data['Min_Temp'],
+                0.32, 0.32, 299.0,   # Soil_W1, Soil_W3, Soil_T1 (fallback)
+                om_data['Dewpoint'], om_data['Solar_Rad'],
+            ]
+            t0_np[6:15, :, :] = np.array(om_bands, dtype=np.float32).reshape(9, 1, 1)
+
+            # After stacking: [T=10, C=15, H=64, W=64]
+            full_tensor = np.stack(historical_steps + [t0_np], axis=0).astype(np.float32)
+
+            # Per-channel z-score normalization.
+            normalized = np.empty_like(full_tensor, dtype=np.float32)
             for c, band in enumerate(BAND_NAMES):
-                # Check for either the standard dict structure or the old nested structure
                 if 'means' in norm_stats and band in norm_stats['means']:
-                    mean = norm_stats['means'][band]
-                    std = max(norm_stats['stds'][band], 1e-6)
+                    mean = float(norm_stats['means'][band])
+                    std = float(norm_stats['stds'][band])
+                elif band in norm_stats and isinstance(norm_stats[band], dict):
+                    mean = float(norm_stats[band]['mean'])
+                    std = float(norm_stats[band]['std'])
                 else:
-                    # In case the normalization stats are a direct dictionary per band
-                    mean = norm_stats[band]['mean']
-                    std = max(norm_stats[band]['std'], 1e-6)
+                    raise KeyError(f"Band '{band}' missing from normalization stats")
+                std = max(std, 1e-6)
                 normalized[:, c, :, :] = (full_tensor[:, c, :, :] - mean) / std
-                
-            tflite_input = np.transpose(normalized, (0, 2, 3, 1)) # NCDHW -> NDHWC depending on model format
-            
-            # Auto-detect transposition need based on tflite expected shape
-            expected_shape = input_details[0]['shape']
-            if len(expected_shape) == 5 and expected_shape[1] == 15: # NCDHW
-                tflite_input = normalized
-                
-            tflite_input = np.expand_dims(tflite_input, axis=0).astype(np.float32)
-            return tflite_input, om_data
+
+            # Model expects [B, T, H, W, C] = [1, 10, 64, 64, 15] (channels-last 3D CNN).
+            tflite_input = np.transpose(normalized, (0, 2, 3, 1))  # T,C,H,W -> T,H,W,C
+            tflite_input = np.expand_dims(tflite_input, axis=0)     # add batch dim
+
+            # Shape sanity check (fail loud rather than silently feeding garbage).
+            expected = tuple(input_details[0]['shape'].tolist())
+            actual = tuple(tflite_input.shape)
+            if actual != expected:
+                print(f"Shape mismatch: got {actual}, model expects {expected}")
+                return None, None
+
+            return tflite_input.astype(np.float32), om_data
         except Exception as e:
-            print(f"Error creating tensor: {e}")
+            import traceback
+            print(f"Error creating tensor for {dist.get('name','?')}: {e}")
+            traceback.print_exc()
             return None, None
     return None, None
 
@@ -362,39 +457,88 @@ print(f"\\nStarting Optimized HazardNet Forecast Pipeline...")
 for dist in DISTRICTS: # Full pipeline now
     print(f"Processing {dist['name']}...")
     historical_steps = fetch_historical_steps(dist['lat'], dist['lon'], NORM_STATS)
-    if not historical_steps: continue
-        
+    if not historical_steps:
+        continue
+
     for horizon_name, days in HORIZONS.items():
         tensor, om_data = build_t0_and_infer(dist, historical_steps, days, NORM_STATS)
         if tensor is not None and om_data is not None:
             hazard, conf, severity = run_inference(tensor)
-            
-            temp_max_c = om_data['Max_Temp'] - 273.15
-            temp_min_c = om_data['Min_Temp'] - 273.15
-            precip_mm = om_data['Precip'] * 1000.0
-            
+
+            # Convert once, reuse for both physics and CSV output. The
+            # Open-Meteo scalars are aggregated over the whole horizon in the
+            # units documented on get_openmeteo_forecast (K, m, J/m², km/h).
+            temp_mean_c     = om_data['Temp_2m']  - 273.15
+            temp_max_c      = om_data['Max_Temp'] - 273.15
+            temp_min_c      = om_data['Min_Temp'] - 273.15
+            dew_c           = om_data['Dewpoint'] - 273.15
+            precip_total_mm = om_data['Precip'] * 1000.0    # horizon total (mm)
+            et_total_mm     = om_data['ET_Sum'] * 1000.0    # horizon total (mm)
+            solar_total_kj  = om_data['Solar_Rad'] / 1000.0 # horizon total (kJ/m²)
+            wind_max_kmh    = om_data['Wind_Max']           # km/h (default Open-Meteo unit)
+
+            # Physics-severity formulas use °C, horizon-total mm, km/h, days.
             physics_severity = 0.50
-            if hazard == 'Tropical Cyclone': physics_severity = om_calc_tropical_cyclone(om_data['Wind_Max'], precip_mm)
-            elif hazard == 'Severe Local Storm': physics_severity = om_calc_severe_storm(precip_mm, om_data['Wind_Max'])
-            elif hazard == 'Cold Wave': physics_severity = om_calc_cold_wave(temp_min_c, days)
-            elif hazard == 'Fire': physics_severity = om_calc_fire(temp_max_c, om_data['Wind_Max'], om_data['ET_Sum'])
-            elif hazard == 'Drought': physics_severity = om_calc_drought(temp_max_c, precip_mm)
-            elif hazard in ['Flood', 'Flash Flood']: physics_severity = om_calc_flood(precip_mm, precip_mm)
-            elif hazard == 'Heat Wave': physics_severity = om_calc_heat_wave(temp_max_c, days)
-            
+            if hazard == 'Tropical Cyclone':
+                physics_severity = om_calc_tropical_cyclone(wind_max_kmh, precip_total_mm)
+            elif hazard == 'Severe Local Storm':
+                physics_severity = om_calc_severe_storm(precip_total_mm, wind_max_kmh)
+            elif hazard == 'Cold Wave':
+                physics_severity = om_calc_cold_wave(temp_min_c, days)
+            elif hazard == 'Fire':
+                physics_severity = om_calc_fire(temp_max_c, wind_max_kmh, et_total_mm)
+            elif hazard == 'Drought':
+                physics_severity = om_calc_drought(temp_max_c, precip_total_mm)
+            elif hazard in ('Flood', 'Flash Flood'):
+                physics_severity = om_calc_flood(precip_total_mm, precip_total_mm)
+            elif hazard == 'Heat Wave':
+                physics_severity = om_calc_heat_wave(temp_max_c, days)
+
             target_date = (datetime.now() + timedelta(days=days)).strftime('%Y-%m-%d')
-            
+
+            # Emit BOTH canonical field names (in the documented ingest
+            # units: °C, mm/day, km/h, MJ/m²/day) AND the legacy `om_*`
+            # columns that the ingest parser maps for back-compat. The
+            # legacy aliases are populated with values that match what the
+            # ingest layer expects them to mean (NOT their misleading
+            # suffixes — see backend/utils/forecastRow.js).
+            horizon_days = days
+
             results.append({
-                'district_id': dist['id'], 'district_name': dist['name'], 'division': dist['division'],
-                'pcode': dist['pcode'], 'horizon': horizon_name, 'hazard_type': hazard,
-                'model_severity': round(severity, 4), 'physics_severity': round(physics_severity, 4),
-                'confidence': round(conf, 4), 'target_date': target_date,
-                'prediction_date': datetime.now().strftime('%Y-%m-%d'), 'data_source': 'Hybrid_Cognitive_Forecast',
-                'om_temp_2m_k': round(om_data['Temp_2m'], 4), 'om_precip_m': round(om_data['Precip'], 4),
-                'om_max_temp_k': round(om_data['Max_Temp'], 4), 'om_min_temp_k': round(om_data['Min_Temp'], 4),
-                'om_dewpoint_k': round(om_data['Dewpoint'], 4), 'om_solar_rad_j': round(om_data['Solar_Rad'], 4),
-                'om_wind_max_ms': round(om_data['Wind_Max'], 4), 'om_et_sum_m': round(om_data['ET_Sum'], 4)
+                'district_id': dist['id'], 'district_name': dist['name'],
+                'division': dist['division'], 'pcode': dist['pcode'],
+                'horizon': horizon_name, 'hazard_type': hazard,
+                'model_severity': round(severity, 4),
+                'physics_severity': round(physics_severity, 4),
+                'confidence': round(conf, 4),
+                'target_date': target_date,
+                'prediction_date': datetime.now().strftime('%Y-%m-%d'),
+                'data_source': 'Hybrid_Cognitive_Forecast',
+                # Canonical per-day meteorological fields (forecastRow.js
+                # METEOROLOGICAL_FIELDS, in the documented units).
+                'temperature_mean':      round(temp_mean_c, 4),   # °C
+                'temperature_max':       round(temp_max_c, 4),    # °C
+                'temperature_min':       round(temp_min_c, 4),    # °C
+                'precipitation_mm':      round(precip_total_mm / horizon_days, 4),  # mm/day
+                'wind_max_kmh':          round(wind_max_kmh, 4),  # km/h
+                'dewpoint_mean':         round(dew_c, 4),         # °C
+                'solar_radiation_mj_m2': round(solar_total_kj / horizon_days / 1000.0, 4),  # MJ/m²/day
+                'evapotranspiration_mm': round(et_total_mm / horizon_days, 4),        # mm/day
+                # Legacy columns kept for any downstream consumers that still
+                # scrape the old names. Suffixes reflect what ingest expects
+                # them to contain (see forecastRow.js).
+                'om_temp_2m_k':    round(temp_mean_c, 4),   # °C (despite _k suffix)
+                'om_max_temp_k':   round(temp_max_c, 4),    # °C
+                'om_min_temp_k':   round(temp_min_c, 4),    # °C
+                'om_dewpoint_k':   round(dew_c, 4),         # °C
+                'om_precip_m':     round(precip_total_mm / 1000.0, 6),   # m total
+                'om_wind_max_ms':  round(wind_max_kmh / 3.6, 4),        # m/s (so ×3.6 = km/h)
+                'om_solar_rad_j':  round(solar_total_kj, 4),            # kJ/m² total
+                'om_et_sum_m':     round(et_total_mm, 4),               # mm total (despite _m suffix)
             })
+
+    # Light rate-limit between districts to be polite to EE + Open-Meteo.
+    time.sleep(0.2)
 
 df_results = pd.DataFrame(results)
 df_results.to_csv(OUTPUT_CSV, index=False)
@@ -408,7 +552,7 @@ AUTH_TOKEN = os.environ.get("HAZARDNET_API_KEY")
 
 if not API_URL or not AUTH_TOKEN:
     print("WARNING: API URL or Auth Token is missing. Saved locally but not pushed.")
-    import sys
+
     sys.exit(0)
 
 try:
@@ -416,7 +560,7 @@ try:
         csv_data = f.read()
 except FileNotFoundError:
     print("CRITICAL ERROR: CSV not found.")
-    import sys
+
     sys.exit(1)
 
 try:
@@ -430,9 +574,8 @@ try:
         print(f"SUCCESS: Successfully pushed forecasts to {API_URL}.")
     else:
         print(f"FAILED: API rejected the payload. HTTP {resp.status_code}: {resp.text}")
-        import sys
         sys.exit(1)
 except requests.exceptions.RequestException as e:
     print(f"FAILED: Network error: {e}")
-    import sys
+
     sys.exit(1)

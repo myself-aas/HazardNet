@@ -1,0 +1,57 @@
+name: Model Bundle Validation
+
+# Triggered automatically when a PR (or direct push) updates Models/*.
+# Performs a cheap CI sanity check on the incoming TFLite bundle so a bad
+# conversion from the Colab notebook cannot silently break the daily job.
+#
+# Runs with tflite-runtime only (~2 MB) — no TensorFlow / PyTorch.
+
+on:
+  push:
+    branches: [main]
+    paths: ['Models/**']
+  pull_request:
+    paths: ['Models/**']
+  workflow_dispatch:
+
+concurrency:
+  group: model-validation-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  validate-tflite:
+    name: TFLite bundle smoke test
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: scripts/requirements-inference.txt
+
+      - name: Install tflite-runtime + numpy (same wheel the daily job uses)
+        run: pip install tflite-runtime==2.14.0 numpy==1.26.4
+
+      - name: Validate model bundle
+        run: python scripts/validate_model_bundle.py
+
+      - name: Summarize
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "### Model bundle validation — $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            echo ""
+            echo "Smoke-tested \`Models/hazardnet_fp32.tflite\` with tflite-runtime"
+            echo "(exact dependency used by the daily inference job)."
+          } >> "$GITHUB_STEP_SUMMARY"

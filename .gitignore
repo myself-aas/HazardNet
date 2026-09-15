@@ -102,3 +102,5 @@ __pycache__/
 # Scratch audit workspace. A bare gitlink lived here with no .gitmodules entry,
 # which made `git submodule status` fail in a fresh clone; removed 2026-09-14.
 audit_temp/
+.pytest_cache/
+.venv/

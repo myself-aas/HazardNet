@@ -28,6 +28,7 @@ import {
   Wind,
   Sun,
   Snowflake,
+  Cloud,
   CloudLightning,
   AlertTriangle,
   ShieldAlert,
@@ -68,6 +69,8 @@ import AdvisoryPanel from '../components/AdvisoryPanel';
 import { PrintQrCode } from '../components/PrintQrCode';
 import { PdfExportButton } from '../components/PdfExportButton';
 import { fetchForecastMetadata, fetchStaticForecastSnapshot, ForecastRow, canonicalKey } from '../lib/forecasts';
+import { WeatherPanel } from '../components/WeatherPanel';
+import { useWeather } from '../hooks/useWeather';
 
 export const DistrictDetailPage: React.FC = () => {
   const { id } = useParams<{ id?: string }>();
@@ -150,6 +153,13 @@ export const DistrictDetailPage: React.FC = () => {
     };
   }, [districtId, livePredictionDate, liveSource, ingestionTimestamp]);
   const district = useMemo(() => getDistrictById(districtId) || ALL_64_DISTRICTS[0], [districtId]);
+
+  // Live Open-Meteo weather (current + 48h hourly + 16-day daily) for this
+  // district's centroid. The hook handles caching + 15-min refresh.
+  const weather = useWeather(district?.lat, district?.lng, {
+    forecast_days: 16,
+    timezone: 'Asia/Dhaka',
+  });
 
   // District Kaggle Notebook CSV Forecast Data for 7 and 15 Days
   const [districtForecasts7D, setDistrictForecasts7D] = useState<ForecastRow[]>([]);
@@ -1960,6 +1970,44 @@ export const DistrictDetailPage: React.FC = () => {
             </div>
           </div>
         )}
+
+        {/* Open-Meteo live weather: current conditions + 48h + 16-day forecast */}
+        <section aria-label="Live weather forecast" className="max-w-4xl mx-auto w-full">
+          <div className="flex items-center gap-2 mb-3 px-1">
+            <Cloud className="w-4 h-4 text-sky-500" />
+            <h2 className="text-base font-bold text-slate-800 dark:text-slate-100">
+              Live Weather — {data.districtName}
+            </h2>
+            <span className="text-[11px] font-mono text-slate-400 ml-auto">
+              {weather.loading && !weather.data ? 'Loading…' : weather.error ? 'Unavailable' : 'Open-Meteo 16-day'}
+            </span>
+          </div>
+          {weather.data ? (
+            <WeatherPanel
+              data={weather.data}
+              locationLabel={`${data.districtName} (${district.lat.toFixed(2)}°, ${district.lng.toFixed(2)}°)`}
+              loading={weather.loading}
+              error={weather.error}
+            />
+          ) : weather.error ? (
+            <div className="rounded-xl border border-amber-200 bg-amber-50 text-amber-900 px-4 py-3 text-sm flex items-start gap-2">
+              <AlertTriangle size={16} className="mt-0.5 shrink-0" />
+              <div>
+                <div className="font-semibold">Weather data temporarily unavailable</div>
+                <div className="text-xs mt-0.5 opacity-80">{weather.error}</div>
+              </div>
+            </div>
+          ) : (
+            <div className="rounded-xl border border-slate-200 bg-white p-6 animate-pulse">
+              <div className="h-20 bg-slate-100 rounded-lg mb-3" />
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <div key={i} className="h-14 bg-slate-100 rounded-lg" />
+                ))}
+              </div>
+            </div>
+          )}
+        </section>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Actionable Protocol Cards (2 cols) */}

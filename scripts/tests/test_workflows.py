@@ -29,18 +29,27 @@ WORKFLOWS_DIR = ROOT / '.github' / 'workflows'
 # daily producer, hourly refresher, manual CSV ingest, weekly release.
 REQUIRED_WORKFLOWS = {
     'ci.yml',
+    'daily_forecast.yml',
     'forecast-pipeline.yml',
     'hourly_forecast.yml',
     'manual_forecast_ingest.yml',
+    'model-validation.yml',
+    'site-health.yml',
+    'Supabase-cutover-verify.yml',
+    'verify-secrets.yml',
     'weekly_forecast.yml',
 }
 
+# Workflows that must have contents:write (they push data/commits).
 DATA_COMMIT_WORKFLOWS = {
     'forecast-pipeline.yml',
     'hourly_forecast.yml',
     'manual_forecast_ingest.yml',
     'weekly_forecast.yml',
 }
+
+# model-validation.yml needs pull-requests:write to leave a status summary;
+# other workflows that only read should default to contents:read.
 
 
 def load_workflows():
@@ -287,4 +296,142 @@ def test_backend_jest_step_excludes_frontend_and_e2e(workflows):
     )
     assert '/e2e/' in patterns, (
         f'{name!r} must ignore /e2e/ (patterns: {patterns})'
+    )
+
+
+# ---------------------------------------------------------------------------
+# Workflow hygiene guards (added 2026-09-15)
+# ---------------------------------------------------------------------------
+
+# Actions whose major version must be consistent across every workflow file.
+# When we bump one, we bump all — a single stale checkout@v4 in a forgotten
+# pipeline has caused subtle bugs before.
+REQUIRED_ACTION_VERSIONS = {
+    'actions/checkout':        'v7',
+    'actions/setup-node':      'v7',
+    'actions/setup-python':    'v7',
+    'actions/upload-artifact': 'v7',
+    'codecov/codecov-action':  'v7',
+}
+
+# Workflows that are either scheduled or long-running and therefore need a
+# concurrency guard to avoid overlapping runs.
+CONCURRENCY_REQUIRED = {
+    'ci.yml',
+    'daily_forecast.yml',
+    'forecast-pipeline.yml',
+    'hourly_forecast.yml',
+    'manual_forecast_ingest.yml',
+    'site-health.yml',
+    'Supabase-cutover-verify.yml',
+    'verify-secrets.yml',
+    'weekly_forecast.yml',
+}
+
+# Every workflow should declare an explicit top-level `permissions:` block so
+# GITHUB_TOKEN privileges are not left to repository defaults (a workflow that
+# only reads the repo should not silently inherit write access).
+PERMISSIONS_REQUIRED = set(CONCURRENCY_REQUIRED)
+
+# Jobs that can potentially run forever without a timeout (cron jobs especially
+# — a single stuck 6-hour job blocks the queue and burns minutes).
+TIMEOUT_REQUIRED = set(CONCURRENCY_REQUIRED)
+
+
+def _collect_action_refs(doc):
+    """Yield (action_base, version, location) for every `uses:` step."""
+    import re
+    for job_id, job in (doc.get('jobs') or {}).items():
+        for step in job.get('steps') or []:
+            uses = step.get('uses')
+            if not isinstance(uses, str):
+                continue
+            m = re.match(r'^([\w.-]+/[\w.-]+(?:/[\w./-]+)?)@([\w.-]+)$', uses)
+            if m:
+                yield m.group(1), m.group(2), f'{job_id}/{step.get("name", "?")}'
+
+
+def test_action_versions_are_consistent(workflows):
+    """No workflow should pin an older major of a first-party action than the
+    versions REQUIRED_ACTION_VERSIONS declares. Drift caused daily_forecast.yml
+    to sit on checkout@v4 / setup-python@v5 while everything else moved to v7."""
+    violations = []
+    for name, doc in workflows.items():
+        for action, version, loc in _collect_action_refs(doc):
+            expected = REQUIRED_ACTION_VERSIONS.get(action)
+            if expected and version != expected:
+                violations.append(
+                    f'{name} {loc}: uses {action}@{version}, expected @{expected}'
+                )
+    assert not violations, (
+        'action version drift (bump all references uniformly):\n'
+        + '\n'.join(violations)
+    )
+
+
+def test_every_workflow_declares_permissions(workflows):
+    """Every workflow must have an explicit top-level permissions: block."""
+    violations = []
+    for name in PERMISSIONS_REQUIRED:
+        if name not in workflows:
+            continue
+        doc = workflows[name]
+        if not isinstance(doc.get('permissions'), dict):
+            violations.append(f'{name}: missing top-level permissions: block')
+    assert not violations, (
+        'workflows missing explicit permissions: (defaults to repo settings; '
+        'declare least-privilege explicitly):\n' + '\n'.join(violations)
+    )
+
+
+def test_every_workflow_has_concurrency_guard(workflows):
+    """Every scheduled/manual workflow must declare concurrency to prevent
+    overlapping runs from racing on data commits or double-pinging."""
+    violations = []
+    for name in CONCURRENCY_REQUIRED:
+        if name not in workflows:
+            continue
+        if 'concurrency' not in workflows[name]:
+            violations.append(f'{name}: missing concurrency: guard')
+    assert not violations, (
+        'workflows missing concurrency guard:\n' + '\n'.join(violations)
+    )
+
+
+def test_every_job_has_timeout(workflows):
+    """Every job should declare timeout-minutes so a stuck run cannot burn
+    minutes indefinitely."""
+    violations = []
+    for name, doc in workflows.items():
+        if name not in TIMEOUT_REQUIRED:
+            continue
+        for job_id, job in doc['jobs'].items():
+            if not job.get('timeout-minutes'):
+                violations.append(f'{name} job `{job_id}`: missing timeout-minutes')
+    assert not violations, (
+        'jobs without timeout-minutes (add an upper bound appropriate to the job):\n'
+        + '\n'.join(violations)
+    )
+
+
+def test_daily_forecast_has_secret_preflight(workflows):
+    """The daily forecast script exits with a cryptic traceback when
+    EE_SERVICE_ACCOUNT_JSON / HAZARDNET_API_* are missing. The workflow must
+    run a preflight step that checks them and fails fast with a clear
+    message (mirroring the pattern used by forecast-pipeline, hourly,
+    weekly, and manual-ingest)."""
+    doc = workflows['daily_forecast.yml']
+    preflight_seen = False
+    for job in doc['jobs'].values():
+        for step in job.get('steps') or []:
+            run = step.get('run', '') or ''
+            name = (step.get('name') or '').lower()
+            if ('preflight' in name or 'secret' in name or 'required' in name) \
+               and 'EE_SERVICE_ACCOUNT_JSON' in run and 'HAZARDNET_API' in run:
+                preflight_seen = True
+                break
+    assert preflight_seen, (
+        'daily_forecast.yml must include a preflight step that verifies '
+        'EE_SERVICE_ACCOUNT_JSON / HAZARDNET_API_URL / HAZARDNET_API_KEY are '
+        'set before running auto_forecast.py (see other pipelines for the pattern)'
     )

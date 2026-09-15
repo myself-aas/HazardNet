@@ -11,6 +11,7 @@ import agentRoutes from './routes/agent.js';
 import predictRoutes from './routes/predict.js';
 import pushRoutes from './routes/push.js';
 import conversionRoutes from './routes/conversions.js';
+import weatherRoutes from './routes/weather.js';
 import metrics from './metrics.js';
 import { refreshForecastAgeGauge } from './utils/forecastFreshness.js';
 import { predictLimiter, apiLimiter } from './middleware/rateLimit.js';
@@ -135,6 +136,7 @@ app.use('/api/agent', attachFirebaseAuthUser, dynamicAiLimiter, agentRoutes);
 app.use('/api/predict', predictLimiter, predictRoutes);
 app.use('/api/push', pushRoutes);
 app.use('/api/conversions', conversionRoutes);
+app.use('/api/v1/weather', weatherRoutes);
 
 // Prometheus metrics endpoint. The forecast-age gauge is refreshed here
 // (scrape-driven, 60s-cached store probe — see utils/forecastFreshness.js).
