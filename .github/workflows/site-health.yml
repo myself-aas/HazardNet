@@ -27,15 +27,33 @@ jobs:
     timeout-minutes: 10
 
     steps:
+      # `-L` (follow redirects) is required, not cosmetic: the canonical
+      # deployment is www.hazardnet.live and the apex answers 308. Without -L
+      # curl reported that redirect *as* the probe result, so every scheduled
+      # run had been red ("Homepage returned HTTP 308") while the site itself
+      # was serving 200 — see
+      # docs/audits/2026-09-15-ci-backend-tests-and-workflow-green.md.
+      # %{url_effective} plus the same-site check keep the probe honest: a
+      # redirect that leaves the production domain still fails the job.
       - name: Probe homepage
         shell: bash
         run: |
-          HTTP_CODE=$(curl -sS -o /tmp/home.html -w "%{http_code}" --max-time 30 "$SITE_URL/")
-          echo "homepage HTTP $HTTP_CODE"
+          RESPONSE=$(curl -sSL --max-redirs 5 -o /tmp/home.html -w "%{http_code} %{url_effective}" --max-time 30 "$SITE_URL/")
+          HTTP_CODE=${RESPONSE%% *}
+          FINAL_URL=${RESPONSE#* }
+          echo "homepage HTTP $HTTP_CODE (final URL: ${FINAL_URL:-unknown})"
           if [ "$HTTP_CODE" != "200" ]; then
-            echo "::error::Homepage returned HTTP $HTTP_CODE"
+            echo "::error::Homepage returned HTTP $HTTP_CODE (final URL: ${FINAL_URL:-unknown})"
             exit 1
           fi
+          case "$FINAL_URL" in
+            "$SITE_URL"|"$SITE_URL"/*) ;;
+            "https://www.hazardnet.live"|"https://www.hazardnet.live"/*) ;;
+            *)
+              echo "::error::Homepage redirected off the production domain: $FINAL_URL"
+              exit 1
+              ;;
+          esac
           if ! grep -qiE 'hazardnet|__vite__|react' /tmp/home.html; then
             echo "::error::Homepage body does not look like the HazardNet app"
             head -c 500 /tmp/home.html
@@ -46,7 +64,9 @@ jobs:
       - name: Probe forecast metadata API
         shell: bash
         run: |
-          HTTP_CODE=$(curl -sS -o /tmp/metadata.json -w "%{http_code}" --max-time 30 "$SITE_URL/api/v1/forecasts/metadata")
+          # Same -L rationale as the homepage probe above: the API rides the
+          # same apex→www 308.
+          HTTP_CODE=$(curl -sSL --max-redirs 5 -o /tmp/metadata.json -w "%{http_code}" --max-time 30 "$SITE_URL/api/v1/forecasts/metadata")
           echo "metadata HTTP $HTTP_CODE"
           if [ "$HTTP_CODE" != "200" ]; then
             echo "::error::/api/v1/forecasts/metadata returned HTTP $HTTP_CODE"

@@ -20,7 +20,14 @@ permissions:
 
 env:
   FORECAST_STORE: ${{ vars.FORECAST_STORE || 'firestore' }}
-  KAGGLE_KERNEL: ashifahmedshuvo/hazardnet-auto-forecast-pipeline
+  # Overridable at runtime (repo → Settings → Secrets and variables → Actions →
+  # Variables). Renaming or re-uploading the notebook on Kaggle changes its
+  # slug; every Kaggle-backed job then dies at the first API call with a bare
+  # "exit code 1". Set the `KAGGLE_KERNEL` variable to repoint all three
+  # pipelines without a code change, and see the diagnostic output of
+  # scripts/kaggle_trigger.py for which of the two failure modes it is
+  # (credentials vs. kernel not found).
+  KAGGLE_KERNEL: ${{ vars.KAGGLE_KERNEL || 'ashifahmedshuvo/hazardnet-auto-forecast-pipeline' }}
 
 jobs:
   generate-forecasts:
@@ -64,7 +71,7 @@ jobs:
           BACKEND_API_KEY: ${{ secrets.BACKEND_API_KEY }}
 
       - name: Cache node_modules
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             node_modules
@@ -98,7 +105,6 @@ jobs:
         env:
           KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
           KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
-          KAGGLE_KERNEL: ashifahmedshuvo/hazardnet-auto-forecast-pipeline
         run: |
           python scripts/kaggle_trigger.py --kernel "$KAGGLE_KERNEL" --max-retries 45 --poll-interval 30
 
@@ -107,7 +113,6 @@ jobs:
         env:
           KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
           KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
-          KAGGLE_KERNEL: ashifahmedshuvo/hazardnet-auto-forecast-pipeline
         run: |
           python scripts/fetch_kaggle_forecast.py --kernel "$KAGGLE_KERNEL" --dest data/kaggle_notebook_output --attempts 5 --retry-delay 30
 

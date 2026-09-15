@@ -16,6 +16,7 @@ write permissions for data commits, concurrency guards, required files).
 """
 
 import json
+import re
 import shlex
 from pathlib import Path
 
@@ -312,6 +313,11 @@ REQUIRED_ACTION_VERSIONS = {
     'actions/setup-python':    'v7',
     'actions/upload-artifact': 'v7',
     'codecov/codecov-action':  'v7',
+    # actions/cache@v4 is the last node20 release; the runner forced it onto
+    # Node 24 and annotated every job with a deprecation warning (the
+    # 2026-09-14 runtime sweep moved the other actions but missed this one).
+    # v5 is node24 and needs runner >= 2.327.1 (hosted runners are far past it).
+    'actions/cache':           'v5',
 }
 
 # Workflows that are either scheduled or long-running and therefore need a
@@ -435,3 +441,118 @@ def test_daily_forecast_has_secret_preflight(workflows):
         'EE_SERVICE_ACCOUNT_JSON / HAZARDNET_API_URL / HAZARDNET_API_KEY are '
         'set before running auto_forecast.py (see other pipelines for the pattern)'
     )
+
+
+# ---------------------------------------------------------------------------
+# Regression guards for the 2026-09-15 "everything red" sweep
+# ---------------------------------------------------------------------------
+# Three independent failures, all of which looked like "CI is broken" from the
+# outside: the backend suite fell over on a model-version string, the site
+# probe reported a redirect as an outage, and the Kaggle jobs died with a bare
+# exit code 1. Each guard below pins the invariant that makes the failure
+# legible instead of silent.
+
+KAGGLE_KERNEL_WORKFLOWS = ('forecast-pipeline.yml', 'hourly_forecast.yml', 'weekly_forecast.yml')
+KAGGLE_KERNEL_SLUG = 'ashifahmedshuvo/hazardnet-auto-forecast-pipeline'
+
+
+def test_model_version_gate_detects_missing_file(workflows):
+    """The Models/VERSION.json gate must see a MISSING file, not just a stale
+    one.
+
+    `git diff --exit-code -- Models/VERSION.json` prints nothing for an
+    untracked file, so the gate reported "current" on `main` while the file did
+    not exist at all — and the backend suite failed 60 s earlier on
+    `model_version` falling back to the legacy literal. `git status --porcelain`
+    reports untracked (`??`) and modified (` M`) alike.
+    """
+    steps = [
+        step
+        for job in workflows['ci.yml']['jobs'].values()
+        for step in (job.get('steps') or [])
+    ]
+    gate = [s for s in steps if 'VERSION.json' in (s.get('name') or '')]
+    assert gate, 'ci.yml has no Models/VERSION.json gate step'
+
+    run = '\n'.join(str(s.get('run', '')) for s in gate)
+    assert 'gen-model-version.mjs' in run, (
+        'the VERSION.json gate must regenerate the file before comparing it'
+    )
+    assert 'git status --porcelain' in run, (
+        'the VERSION.json gate must use `git status --porcelain` — a plain '
+        '`git diff --exit-code` cannot see an untracked/missing file, which is '
+        'exactly how the handshake stayed absent while CI stayed green'
+    )
+
+
+def _curl_flag_strings(text):
+    """Every `curl` invocation's short flags in `text` (long flags excluded)."""
+    for match in re.finditer(r'\bcurl\s+((?:-\S+\s+)*)', text):
+        for token in match.group(1).split():
+            if token.startswith('-') and not token.startswith('--'):
+                yield token
+
+
+def test_site_health_probe_follows_redirects(workflows):
+    """curl without -L records a redirect *as* the probe result.
+
+    The canonical deployment is www.hazardnet.live and the apex answers 308,
+    so every scheduled Site Health run was red ("Homepage returned HTTP 308")
+    while the site itself was up. -L plus the same-domain check in the step
+    keeps the probe honest: a redirect that leaves the domain still fails.
+    """
+    doc = workflows['site-health.yml']
+    runs = [
+        str(step.get('run', ''))
+        for job in doc['jobs'].values()
+        for step in (job.get('steps') or [])
+    ]
+    assert any('curl' in run for run in runs), 'site-health.yml no longer probes with curl'
+
+    offenders = []
+    for run in runs:
+        for line in run.splitlines():
+            if 'curl' not in line:
+                continue
+            flags = list(_curl_flag_strings(line))
+            if not flags:
+                continue  # not a curl invocation (comment or echo)
+            if not any('L' in flag for flag in flags):
+                offenders.append(line.strip()[:100])
+
+    assert not offenders, (
+        'site-health.yml curl invocation(s) without -L will report the redirect '
+        'instead of the site: ' + '; '.join(offenders)
+    )
+
+
+def test_kaggle_backed_workflows_take_the_kernel_from_a_repo_variable(workflows):
+    """All three Kaggle pipelines must read the kernel slug from the
+    `KAGGLE_KERNEL` repository variable (with the known slug as the fallback).
+
+    A renamed/re-uploaded notebook changes its slug; with the slug hardcoded in
+    three files, every Kaggle-backed job died at the first API call with a bare
+    `exit code 1` and could only be fixed by editing and merging code.
+    """
+    for name in KAGGLE_KERNEL_WORKFLOWS:
+        doc = workflows[name]
+        env = doc.get('env') or {}
+        overrides = {k: env.get(k) for k in ('KAGGLE_KERNEL', 'KERNEL_SLUG') if k in env}
+        assert overrides, f'{name}: no KAGGLE_KERNEL/KERNEL_SLUG in the workflow env'
+        for key, value in overrides.items():
+            assert 'vars.KAGGLE_KERNEL' in str(value), (
+                f'{name}: {key} must be `${{{{ vars.KAGGLE_KERNEL || ... }}}}` '
+                f'so it can be repointed without a code change (found: {value!r})'
+            )
+
+        # No step may shadow the overridable value with a hardcoded slug.
+        for job_id, job in doc['jobs'].items():
+            for step in job.get('steps') or []:
+                step_env = step.get('env') or {}
+                for key in ('KAGGLE_KERNEL', 'KERNEL_SLUG'):
+                    if step_env.get(key) == KAGGLE_KERNEL_SLUG:
+                        raise AssertionError(
+                            f'{name} job `{job_id}` step `{step.get("name")}`: '
+                            f'{key} is hardcoded and would shadow the repository '
+                            'variable'
+                        )
