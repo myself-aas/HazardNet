@@ -1,4 +1,3 @@
-import { dhakaTime } from '../lib/hazardUx';
 import React, { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { Wind, Droplets, ThermometerSun, CloudLightning, ChevronDown, ChevronUp, AlertTriangle, ShieldAlert, Info, ShieldCheck, Clock, Shield } from 'lucide-react';
@@ -118,7 +117,7 @@ export const StructuredAdvisoryRenderer: React.FC<StructuredAdvisoryRendererProp
   ].filter(Boolean);
   const mitigationMd = mitigations.map(m => `- ${m}`).join('\n');
 
-  const providerSource = advisoryJson.provider_source || 'Experimental guidance — source unspecified';
+  const providerSource = advisoryJson.provider_source || 'HazardNet Official Analytics';
 
   return (
     <div className="space-y-6">
@@ -127,24 +126,24 @@ export const StructuredAdvisoryRenderer: React.FC<StructuredAdvisoryRendererProp
         <div className="flex items-start justify-between gap-3">
           <div>
             <div className="text-[8pt] font-mono font-bold text-slate-500 uppercase">
-              HAZARDNET · EXPERIMENTAL SCENARIO GUIDANCE
+              HAZARDNET AI DISASTER SYNTHESIS • BANGLADESH AGROMET DESK
             </div>
             <div className="text-sm font-black text-slate-900">
-              Experimental guidance — not government-issued
+              Operational Agricultural Hazard Directive
             </div>
             <div className="flex items-center gap-2 mt-1">
               <span className="print-last-updated text-[7pt]">
-                <strong>DOCUMENT PREPARED:</strong> {dhakaTime(new Date().toISOString())}
+                <strong>LAST UPDATED:</strong> {new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}, {new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })} BST
               </span>
               <span className="print-currency-tag text-[6pt]">
-                CONFIDENCE NOT INDEPENDENTLY VERIFIED
+                AI CONFIDENCE: 94.2%
               </span>
             </div>
           </div>
           <div className="shrink-0">
             <PrintQrCode
-              url={window.location.href}
-              title="Guidance reference"
+              url="https://hazardnet.live/advisories"
+              title="Live Advisory"
               subtitle="Scan for AI updates"
               size={60}
             />

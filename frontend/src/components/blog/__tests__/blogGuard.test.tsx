@@ -45,7 +45,7 @@ describe('RequireSuperAdmin — full-page route guard', () => {
     expect(screen.queryByTestId('studio')).not.toBeInTheDocument()
   })
 
-  it('permits registered users to access the studio', () => {
+  it('shows a 403 page for signed-in non-superadmins', () => {
     setAuth({ user: { email: 'reader@example.com' }, loading: false })
     render(
       <MemoryRouter>
@@ -54,7 +54,9 @@ describe('RequireSuperAdmin — full-page route guard', () => {
         </RequireSuperAdmin>
       </MemoryRouter>,
     )
-    expect(screen.getByTestId('studio')).toBeInTheDocument()
+    expect(screen.getByText(/superadmins only/i)).toBeInTheDocument()
+    expect(screen.getByText('reader@example.com')).toBeInTheDocument()
+    expect(screen.queryByTestId('studio')).not.toBeInTheDocument()
   })
 
   it('renders the studio for primary superadmins', () => {

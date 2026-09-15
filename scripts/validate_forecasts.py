@@ -48,7 +48,7 @@ def main():
     # Check severity column
     has_severity = ('model_severity' in fieldnames or 'severity_score' in fieldnames)
     if not has_severity:
-        print("❌ Unrecognized schema: severity column (model_severity or severity_score) is missing")
+        print("❌ Invalid schema: severity column (model_severity or severity_score) is missing")
         sys.exit(1)
 
     # Detect schema

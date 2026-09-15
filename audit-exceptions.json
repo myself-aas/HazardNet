@@ -1,4 +1,103 @@
 {
-  "_comment": "No accepted high/critical exceptions. The native TFJS dependency and its tar/adm-zip install tooling were removed on 2026-09-14; LiteRT owns trained model execution. Future exceptions require an advisory ID, rationale and expiry.",
-  "exceptions": []
+  "_comment": "Accepted-risk exceptions for the `node scripts/npm-audit-ci.mjs` CI gate (replaces bare `npm audit --audit-level=high`, which can never pass while these unfixable transitive advisories exist). Every entry MUST carry an expiry — the gate fails on expired entries to force re-review. List advisories by GHSA id (stable across versions); the gate fails closed on ANY unlisted high/critical advisory.",
+  "exceptions": [
+    {
+      "ghsa": "GHSA-34x7-hfp2-rc4v",
+      "package": "tar (transitive via @tensorflow/tfjs-node -> @mapbox/node-pre-gyp)",
+      "severity": "critical",
+      "reason": "Install-time only: extracts the tfjs-node prebuilt libtensorflow binary during `npm ci`. Zero require/import in backend/, api/, frontend/src, rag_pipeline/, scripts/ (audit-verified). No non-breaking fix exists (fixAvailable isSemVerMajor). Re-evaluate on tfjs-node upgrade.",
+      "expires": "2026-12-12"
+    },
+    {
+      "ghsa": "GHSA-8qq5-rm4j-mr97",
+      "package": "tar (transitive via @tensorflow/tfjs-node -> @mapbox/node-pre-gyp)",
+      "severity": "critical",
+      "reason": "Install-time only (see GHSA-34x7-hfp2-rc4v).",
+      "expires": "2026-12-12"
+    },
+    {
+      "ghsa": "GHSA-83g3-92jg-28cx",
+      "package": "tar (transitive via @tensorflow/tfjs-node -> @mapbox/node-pre-gyp)",
+      "severity": "critical",
+      "reason": "Install-time only (see GHSA-34x7-hfp2-rc4v).",
+      "expires": "2026-12-12"
+    },
+    {
+      "ghsa": "GHSA-qffp-2rhf-9h96",
+      "package": "tar (transitive via @tensorflow/tfjs-node -> @mapbox/node-pre-gyp)",
+      "severity": "critical",
+      "reason": "Install-time only (see GHSA-34x7-hfp2-rc4v).",
+      "expires": "2026-12-12"
+    },
+    {
+      "ghsa": "GHSA-9ppj-qmqm-q256",
+      "package": "tar (transitive via @tensorflow/tfjs-node -> @mapbox/node-pre-gyp)",
+      "severity": "critical",
+      "reason": "Install-time only (see GHSA-34x7-hfp2-rc4v).",
+      "expires": "2026-12-12"
+    },
+    {
+      "ghsa": "GHSA-r6q2-hw4h-h46w",
+      "package": "tar (transitive via @tensorflow/tfjs-node -> @mapbox/node-pre-gyp)",
+      "severity": "critical",
+      "reason": "Install-time only (see GHSA-34x7-hfp2-rc4v).",
+      "expires": "2026-12-12"
+    },
+    {
+      "ghsa": "GHSA-vmf3-w455-68vh",
+      "package": "tar (transitive via @tensorflow/tfjs-node -> @mapbox/node-pre-gyp)",
+      "severity": "critical",
+      "reason": "Install-time only (see GHSA-34x7-hfp2-rc4v).",
+      "expires": "2026-12-12"
+    },
+    {
+      "ghsa": "GHSA-w8wr-v893-vjvp",
+      "package": "tar (transitive via @tensorflow/tfjs-node -> @mapbox/node-pre-gyp)",
+      "severity": "critical",
+      "reason": "Install-time only (see GHSA-34x7-hfp2-rc4v).",
+      "expires": "2026-12-12"
+    },
+    {
+      "ghsa": "GHSA-23hp-3jrh-7fpw",
+      "package": "tar (transitive via @tensorflow/tfjs-node -> @mapbox/node-pre-gyp)",
+      "severity": "critical",
+      "reason": "Install-time only (see GHSA-34x7-hfp2-rc4v).",
+      "expires": "2026-12-12"
+    },
+    {
+      "ghsa": "GHSA-8x88-c5mf-7j5w",
+      "package": "tar (transitive via @tensorflow/tfjs-node -> @mapbox/node-pre-gyp)",
+      "severity": "critical",
+      "reason": "Install-time only (see GHSA-34x7-hfp2-rc4v).",
+      "expires": "2026-12-12"
+    },
+    {
+      "ghsa": "GHSA-gvwx-54wh-qm9j",
+      "package": "tar (transitive via @tensorflow/tfjs-node -> @mapbox/node-pre-gyp)",
+      "severity": "critical",
+      "reason": "Install-time only (see GHSA-34x7-hfp2-rc4v).",
+      "expires": "2026-12-12"
+    },
+    {
+      "ghsa": "GHSA-r292-9mhp-454m",
+      "package": "tar (transitive via @tensorflow/tfjs-node -> @mapbox/node-pre-gyp)",
+      "severity": "critical",
+      "reason": "Install-time only (see GHSA-34x7-hfp2-rc4v).",
+      "expires": "2026-12-12"
+    },
+    {
+      "ghsa": "GHSA-xcpc-8h2w-3j85",
+      "package": "adm-zip (transitive via @tensorflow/tfjs-node)",
+      "severity": "high",
+      "reason": "Install-time only: used by the tfjs-node install toolchain. Zero require/import in backend/, api/, frontend/src, rag_pipeline/, scripts/ (audit-verified). No non-breaking fix exists. Re-evaluate on tfjs-node upgrade.",
+      "expires": "2026-12-12"
+    },
+    {
+      "ghsa": "GHSA-vwc7-r8mq-g2x9",
+      "package": "adm-zip (transitive via @tensorflow/tfjs-node)",
+      "severity": "high",
+      "reason": "Install-time only (see GHSA-xcpc-8h2w-3j85).",
+      "expires": "2026-12-12"
+    }
+  ]
 }

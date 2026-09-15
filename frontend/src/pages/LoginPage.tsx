@@ -1,4 +1,3 @@
-import { safeAuthReturnTo } from '../lib/oauthProviders';
 import React, { useEffect, useState } from 'react';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -8,13 +7,20 @@ import { EyeToggleIcon } from '../components/ui/animated-state-icons';
 import { AuthLayout } from '../components/auth/AuthLayout';
 import MaterialIcon from '../components/MaterialIcon';
 
-/** Email/password sign-in, plus Google and GitHub popup authentication. */
+/**
+ * Dedicated sign-in page — unique URL: /login
+ *
+ * Field order follows the product spec: email + password inputs first, then
+ * the prominent "Connect with Google" button, then a compact side-by-side row
+ * of circular icons for the other providers, and finally the classic email
+ * submit beneath a divider. Split-screen on desktop, single column on mobile.
+ */
 
 /** Translate email-auth failures into actionable, non-leaky messages. */
 const describeError = (err: unknown): string => {
   const message = err instanceof Error ? err.message : String(err ?? '');
-  const text = `${(err as { code?: string })?.code ?? ''} ${message}`.toLowerCase();
-  if (text.includes('user-not-found') || text.includes('invalid login credentials') || text.includes('wrong-password') || text.includes('invalid-credential')) {
+  const text = message.toLowerCase();
+  if (text.includes('invalid login credentials') || text.includes('wrong-password') || text.includes('invalid-credential')) {
     return 'That email and password combination doesn’t match. Check for typos or reset your password below.';
   }
   if (text.includes('email not confirmed')) {
@@ -23,7 +29,7 @@ const describeError = (err: unknown): string => {
   if (text.includes('user not found')) {
     return 'No account exists for this email yet. Create one below — it takes a minute.';
   }
-  if (text.includes('too-many-requests') || text.includes('too many requests') || text.includes('rate limit')) {
+  if (text.includes('too many requests') || text.includes('rate limit')) {
     return 'Too many attempts — wait a minute and try again.';
   }
   if (text.includes('failed to fetch') || text.includes('network')) {
@@ -43,7 +49,7 @@ const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const rawNext = searchParams.get('next');
-  const next = safeAuthReturnTo(rawNext);
+  const next = rawNext && rawNext.startsWith('/') ? rawNext : '/';
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -153,7 +159,7 @@ const LoginPage: React.FC = () => {
         </div>
 
         {/* ── Social sign-in first: Google, then compact provider icons ── */}
-        <AuthSocialButtons disabled={loading} onSuccess={() => navigate(next, { replace: true })} />
+        <AuthSocialButtons onSuccess={() => navigate(next, { replace: true })} />
 
         <div className="relative flex items-center justify-center pt-1" aria-hidden="true">
           <div className="border-t border-slate-200 w-full" />

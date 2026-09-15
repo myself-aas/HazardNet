@@ -140,19 +140,19 @@ describe('blogArticles — local demo store (no Supabase env)', () => {
     expect((await listArticles()).data).toHaveLength(0)
   })
 
-  it('allows registered authors to publish but protects other authors in local mode', async () => {
+  it('blocks non-superadmins from every write path', async () => {
     const created = await createArticle(baseDraft, SUPER)
     const denied = await createArticle({ ...baseDraft, slug: 'nope' }, OTHER)
-    expect(denied.error).toBeNull()
+    expect(denied.error).toMatch(/only primary superadmins/i)
 
     const upd = await updateArticle(created.data!.id, { title: 'Hack' }, OTHER)
-    expect(upd.error).toMatch(/only the author/i)
+    expect(upd.error).toMatch(/only primary superadmins/i)
 
     const del = await deleteArticle(created.data!.id, OTHER)
-    expect(del.error).toMatch(/only the author/i)
+    expect(del.error).toMatch(/only primary superadmins/i)
 
-    // Both authored articles remain after denied cross-owner edits/deletes.
-    expect((await listArticles()).data).toHaveLength(2)
+    // store untouched by the denied attempts
+    expect((await listArticles()).data).toHaveLength(1)
   })
 
   it('unpublishing clears the published timestamp', async () => {

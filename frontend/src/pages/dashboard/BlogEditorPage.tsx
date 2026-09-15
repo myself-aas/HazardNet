@@ -737,7 +737,7 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
             </div>
             <p className="rounded-xl bg-slate-50 p-2.5 text-[10px] leading-relaxed text-slate-400">
               Publisher account (permissions): <span className="font-mono font-bold text-slate-500">{signedInAuthor.email || 'signed-out'}</span> — only
-              registered authors and administrators can save; the public byline above is fully editable.
+              primary superadmins can save; the public byline above is fully editable.
             </p>
           </div>
 

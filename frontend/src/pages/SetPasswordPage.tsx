@@ -5,9 +5,17 @@ import { AuthLayout } from '../components/auth/AuthLayout'
 import { useAuth } from '../context/AuthContext'
 import MaterialIcon from '../components/MaterialIcon'
 import { PASSWORD_REQUIREMENTS, passwordStrength } from '../lib/passwordStrength'
+import { auth } from '../services/firebase';
+const isSupabaseConfigured = true;
 
-
-/** Add/change a password for an authenticated account. Email verification never creates a session. */
+/**
+ * Dedicated password-setup page — unique URL: /set-password
+ *
+ * The final step of the email-verification flow: the user clicks the
+ * verification link in their inbox (which opens a session via /auth/callback),
+ * lands here, and chooses the password for their new account. Also used when
+ * a verified session wants to add a password to a social-only account.
+ */
 
 const Requirement: React.FC<{ met: boolean; children: React.ReactNode }> = ({ met, children }) => (
   <li className={`flex items-center gap-1.5 ${met ? 'text-emerald-700' : 'text-slate-500'}`}>
@@ -19,7 +27,7 @@ const Requirement: React.FC<{ met: boolean; children: React.ReactNode }> = ({ me
 type Phase = 'waiting' | 'ready' | 'done'
 
 export default function SetPasswordPage() {
-  const { user, loading, updatePassword } = useAuth()
+  const { user, updatePassword } = useAuth()
   const navigate = useNavigate()
   const [password, setPassword] = useState('')
   const [confirmation, setConfirmation] = useState('')
@@ -28,7 +36,23 @@ export default function SetPasswordPage() {
   const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
 
-  useEffect(() => { if (!loading) setPhase('ready'); }, [loading]);
+  // Give detectSessionInUrl a moment to exchange the emailed verification
+  // link, then settle into "ready" (with or without a session).
+  useEffect(() => {
+    let cancelled = false
+    const timer = window.setTimeout(() => {
+      if (!cancelled) setPhase((current) => (current === 'waiting' ? 'ready' : current))
+    }, 600)
+    if (typeof auth?.authStateReady === 'function') {
+      void auth.authStateReady().then(() => {
+        if (!cancelled && auth.currentUser) setPhase('ready')
+      })
+    }
+    return () => {
+      cancelled = true
+      window.clearTimeout(timer)
+    }
+  }, [])
 
   const strength = passwordStrength(password)
   const allMet = PASSWORD_REQUIREMENTS.every((requirement) => requirement.test(password))
@@ -36,7 +60,6 @@ export default function SetPasswordPage() {
   const submit = async (event: React.FormEvent) => {
     event.preventDefault()
     setError(null)
-    if (!user) return setError('Sign in before setting a password.')
     if (password.length < 8) return setError('Your password must contain at least 8 characters.')
     if (!allMet) return setError('Please satisfy every requirement before continuing.')
     if (password !== confirmation) return setError('The passwords do not match.')
@@ -49,7 +72,7 @@ export default function SetPasswordPage() {
       setError(
         reason instanceof Error
           ? reason.message.includes('session')
-            ? 'Sign out and sign in again before changing your password.'
+            ? 'Your verification link expired. Request a new link from the sign-up page and try again.'
             : reason.message
           : 'Unable to set your password.',
       )
@@ -84,22 +107,23 @@ export default function SetPasswordPage() {
       title="Set your password"
       subtitle={
         user
-          ? 'Add or update the password for your signed-in account.'
-          : 'Sign in before setting a password.'
+          ? 'Your email is verified. Choose a password to finish securing your account.'
+          : 'Finishing email verification…'
       }
     >
       {phase === 'waiting' && !user ? (
         <div className="flex flex-col items-center gap-3 py-6" role="status" data-testid="set-password-waiting">
           <span className="h-8 w-8 animate-spin rounded-full border-[3px] border-slate-200 border-t-[#f9a825]" />
-          <p className="text-xs text-slate-500">Checking your session…</p>
+          <p className="text-xs text-slate-500">Verifying your email link…</p>
         </div>
       ) : (
         <form onSubmit={submit} className="space-y-4" data-testid="set-password-form">
           {!user && phase === 'ready' && (
             <p role="alert" className="rounded-2xl border border-amber-200 bg-amber-50 p-3.5 text-xs font-medium text-amber-800">
-              You need a signed-in session to set a password. Please{' '}
-              <Link to="/login" className="font-extrabold underline underline-offset-2">
-                sign in
+              We couldn’t detect your verification session. Open the newest link we emailed you — it must be
+              opened on this browser — or{' '}
+              <Link to="/signup" className="font-extrabold underline underline-offset-2">
+                request a fresh link
               </Link>
               .
             </p>
@@ -175,7 +199,7 @@ export default function SetPasswordPage() {
 
           <button
             type="submit"
-            disabled={saving || !user}
+            disabled={saving || (!user && !isSupabaseConfigured)}
             className="w-full rounded-2xl bg-[#f9a825] py-3.5 text-sm font-extrabold text-slate-950 transition-colors hover:bg-[#d08305] disabled:opacity-50 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f9a825]/60 focus-visible:ring-offset-2"
           >
             {saving ? 'Saving password…' : 'Save password & open my dashboard'}

@@ -54,13 +54,13 @@ describe('Blogs page — Blog Studio button visibility', () => {
     expect(screen.queryByTestId('blog-studio-btn')).not.toBeInTheDocument()
   })
 
-  it('is available to regular signed-in users', () => {
+  it('is hidden for regular signed-in users', () => {
     ;(useAuth as unknown as jest.Mock).mockReturnValue({
       user: { uid: 'u-9', email: 'farmer@example.com', displayName: 'Regular User' },
       loading: false,
     })
     mountBlogs()
-    expect(screen.getByTestId('blog-studio-btn')).toBeInTheDocument()
+    expect(screen.queryByTestId('blog-studio-btn')).not.toBeInTheDocument()
   })
 
   it('appears only for the three primary superadmins', () => {

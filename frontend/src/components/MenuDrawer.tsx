@@ -1,4 +1,3 @@
-import { createPortal } from 'react-dom';
 import React from 'react';
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
@@ -140,9 +139,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
     onClose();
   };
 
-  // Escape the app/header stacking context (z-9990). Otherwise the root
-  // toast layer (z-9999) can intercept taps on the drawer's close button.
-  return createPortal(
+  return (
     <AnimatePresence>
       {isOpen && (
         <>
@@ -153,7 +150,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 bg-slate-900/20 backdrop-blur-sm z-[10000]"
+            className="fixed inset-0 bg-slate-900/20 backdrop-blur-sm z-[9999]"
             onClick={onClose}
           />
 
@@ -168,7 +165,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
             animate={{ x: 0 }}
             exit={{ x: '-100%' }}
             transition={{ type: 'spring', stiffness: 350, damping: 30 }}
-            className="fixed inset-y-0 left-0 z-[10001] w-80 max-w-[85vw] bg-gradient-to-b from-[#e8e4e1] to-[#cfd1c4] rounded-r-3xl shadow-2xl flex flex-col font-sans select-none text-slate-800 overflow-hidden"
+            className="fixed inset-y-0 left-0 z-[10000] w-80 max-w-[85vw] bg-gradient-to-b from-[#e8e4e1] to-[#cfd1c4] rounded-r-3xl shadow-2xl flex flex-col font-sans select-none text-slate-800 overflow-hidden"
           >
             {/* Drawer Header */}
             <div className="px-6 py-6 flex items-center justify-between shrink-0">
@@ -333,8 +330,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
           </motion.div>
         </>
       )}
-    </AnimatePresence>,
-    document.body,
+    </AnimatePresence>
   );
 };
 

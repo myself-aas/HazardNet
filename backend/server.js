@@ -84,7 +84,7 @@ app.use(
         styleSrc: ["'self'", "'unsafe-inline'"],
         imgSrc: ["'self'", 'data:', 'blob:', 'https:'],
         fontSrc: ["'self'", 'data:'],
-        connectSrc: ["'self'", 'https:', 'wss:'],
+        connectSrc: ["'self'", 'https:'],
         workerSrc: ["'self'", 'blob:'],
         frameAncestors: ["'none'"],
         baseUri: ["'self'"],
@@ -101,9 +101,7 @@ app.use(requestId);
 // with FRONTEND_ORIGIN unset in a production runtime, cross-origin browser
 // requests are rejected instead of reflected.
 app.use(corsMiddleware());
-app.use('/api/predict', express.raw({ type: 'application/octet-stream', limit: '3mb' }));
 app.use(express.json({ limit: '10mb' }));
-app.use('/api/v1/forecasts/ingest-csv', express.text({ type: ['text/csv', 'text/plain'], limit: '4mb' }));
 
 // Basic Security Headers Middleware
 app.use((req, res, next) => {
@@ -114,7 +112,7 @@ app.use((req, res, next) => {
 });
 
 // Health Check
-app.get(['/health', '/api/health'], (req, res) => {
+app.get('/health', (req, res) => {
   res.json({ status: 'healthy', service: 'HazardNet Backend', timestamp: new Date(), model: getModelInfo().version });
 });
 
@@ -180,8 +178,7 @@ const invokedAsScript = process.argv[1] !== undefined
   && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
 if (invokedAsScript) {
   // 3001 keeps the API out of Vite's way in dev (vite.config.ts proxies /api here).
-  const PORT = Number(process.env.PORT || 3001);
-  if (!Number.isInteger(PORT) || PORT < 1 || PORT > 65535) throw new Error('Invalid PORT');
+  const PORT = 3000;
   app.listen(PORT, '0.0.0.0', () => {
     console.log(`HazardNet Backend running on port ${PORT}`);
   });

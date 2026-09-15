@@ -15,16 +15,13 @@ const ForecastSchema = z.object({
   // public.forecasts CHECK constraint (scripts/db/002_forecasts_supabase.sql).
   horizon: z.enum(['7_days', '15_days']),
   hazard_type: z.string(),
-  confidence: z.number().min(0).max(1),
-  severity_score: z.number().min(0).max(1),
+  confidence: z.number(),
+  severity_score: z.number(),
   target_date: z.string().refine((v) => !isNaN(Date.parse(v)), { message: 'Invalid date' }),
   prediction_date: z.string().refine((v) => !isNaN(Date.parse(v)), { message: 'Invalid date' }),
   // Dual-track severity + admin context (weekly Kaggle pipeline CSV shape) — optional.
   model_severity: z.number().min(0).max(1).optional(),
   physics_severity: z.number().min(0).max(1).optional(),
-  admin_level: z.number().int().optional(),
-  adm2_name: z.string().optional(),
-  adm2_pcode: z.string().optional(),
   division: z.string().optional(),
   pcode: z.string().optional(),
   temperature_mean: z.number().optional(),
@@ -39,7 +36,7 @@ const ForecastSchema = z.object({
 
 // Payload schema
 const PayloadSchema = z.object({
-  chunk: z.array(ForecastSchema).min(1).max(2000),
+  chunk: z.array(ForecastSchema),
 });
 
 export default async function handler(req, res) {
@@ -61,8 +58,7 @@ export default async function handler(req, res) {
 
   let body;
   try {
-    body = typeof req.body === 'string' && req.body.trim().startsWith('{')
-      ? JSON.parse(req.body) : req.body;
+    body = typeof req.body === 'string' ? req.body : req.body;
   } catch {
     body = req.body;
   }

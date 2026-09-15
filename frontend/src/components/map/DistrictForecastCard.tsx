@@ -1,8 +1,3 @@
-import { useHazardContext } from '../../hooks/useHazardContext';
-import { useForecasts } from '../../hooks/useForecasts';
-import { selectProfileForecast } from '../../lib/profileForecast';
-import { forecastStatus } from '../../lib/hazardUx';
-import { severityBin } from '../../lib/forecasts';
 import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import MaterialIcon from '../MaterialIcon';
@@ -20,7 +15,7 @@ import { DistrictData } from '../../data/bangladeshDistricts';
  *  - compact: single-row fact grid, collapsible location map (collapsed by
  *    default), tightened paddings
  *  - wider (sm:max-w-[440px]) so the one-row facts stay readable
- *  - translucent glass background (bg-white + backdrop blur) so the map
+ *  - translucent glass background (bg-white/85 + backdrop blur) so the map
  *    stays visible underneath
  */
 
@@ -33,14 +28,14 @@ export interface DistrictForecastCardProps {
 }
 
 const riskTone = (severity: number) =>
-  severityBin(severity) === 'High'
+  severity >= 0.8
     ? {
         badge: 'bg-rose-100/90 text-rose-800 border-rose-200/80',
         text: 'text-rose-600',
         bar: 'bg-rose-500',
         ring: 'border-rose-300/70',
       }
-    : severityBin(severity) === 'Moderate'
+    : severity >= 0.5
       ? {
           badge: 'bg-amber-100/90 text-amber-800 border-amber-200/80',
           text: 'text-amber-600',
@@ -62,9 +57,6 @@ export const DistrictForecastCard: React.FC<DistrictForecastCardProps> = ({
   const [showLocationMap, setShowLocationMap] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const [measuredMaxHeight, setMeasuredMaxHeight] = useState<number | null>(null);
-  const { horizon } = useHazardContext();
-  const forecasts = useForecasts(horizon);
-  const row = selectProfileForecast(forecasts.data ?? [], { district: district.name });
   const tone = riskTone(district.severity);
   const severityPct = Math.round(district.severity * 100);
 
@@ -111,33 +103,33 @@ export const DistrictForecastCard: React.FC<DistrictForecastCardProps> = ({
          map is expanded on short viewports. */
       style={measuredMaxHeight ? { maxHeight: `${measuredMaxHeight}px` } : undefined}
       className="absolute top-20 sm:top-24 left-4 right-4 sm:left-auto sm:right-6 z-[1000] pointer-events-auto sm:max-w-[440px] w-auto sm:w-full max-h-[calc(100%_-_5.5rem)] sm:max-h-[calc(100%_-_7rem)] flex flex-col"
-      role="region"
+      role="dialog"
       aria-label={`${district.name} district forecast`}
     >
-      <div className="flex flex-col flex-1 min-h-0 bg-white backdrop-blur-md border border-slate-200/70 rounded-2xl shadow-xl text-slate-800 relative overflow-hidden">
+      <div className="flex flex-col flex-1 min-h-0 bg-white/85 backdrop-blur-md border border-slate-200/70 rounded-2xl shadow-xl text-slate-800 relative overflow-hidden">
         {/* amber identity strip */}
         <div aria-hidden="true" className="absolute top-0 left-0 w-full h-1 bg-[#f9a825]" />
 
         {/* Header (fixed) */}
         <div className="flex items-start justify-between gap-2 border-b border-slate-200/60 pb-2 pt-3 px-3.5 shrink-0">
           <div className="min-w-0">
-            <div className="flex items-center gap-1.5 text-xs font-mono font-bold text-slate-500 uppercase tracking-wider">
+            <div className="flex items-center gap-1.5 text-[9px] font-mono font-bold text-slate-500 uppercase tracking-wider">
               <MaterialIcon name="radar" className="w-3 h-3 text-[#d08305]" />
               District Forecast
             </div>
             <h4 className="text-sm font-black text-slate-900 tracking-tight mt-0.5 truncate">
               {district.name} District
-              <span className="ml-1.5 font-mono text-xs font-bold text-slate-600">{district.division.toUpperCase()}</span>
+              <span className="ml-1.5 font-mono text-[9px] font-bold text-slate-400">{district.division.toUpperCase()}</span>
             </h4>
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
-            <span className={`text-xs font-black px-2 py-0.5 rounded-full border ${tone.badge}`}>
-              {severityBin(district.severity)} severity
+            <span className={`text-[10px] font-black px-2 py-0.5 rounded-full border ${tone.badge}`}>
+              {district.risk} Risk
             </span>
             <button
               type="button"
               onClick={onClose}
-              className="w-11 h-11 rounded-full bg-slate-100/80 hover:bg-slate-200 text-slate-700 font-black flex items-center justify-center text-xs transition-colors cursor-pointer border border-slate-200/80"
+              className="w-6 h-6 rounded-full bg-slate-100/80 hover:bg-slate-200 text-slate-700 font-black flex items-center justify-center text-[11px] transition-colors cursor-pointer border border-slate-200/80"
               title="Close district forecast"
               aria-label="Close district forecast"
             >
@@ -148,15 +140,14 @@ export const DistrictForecastCard: React.FC<DistrictForecastCardProps> = ({
 
         {/* Scrollable body (only if the viewport is very short) */}
         <div className="flex flex-col gap-2 p-3 overflow-y-auto overscroll-contain min-h-0">
-          <p role="status" className="text-sm text-slate-800">{forecastStatus(row ?? undefined)} · {horizon === '15_days' ? '15 days' : '7 days'}</p>
           {/* Primary hazard + severity meter */}
           <div className={`bg-white/60 border ${tone.ring} rounded-xl px-2.5 py-2 flex flex-col gap-1.5`}>
             <div className="flex items-center justify-between gap-2">
-              <span className="text-xs font-extrabold text-slate-900 flex items-center gap-1.5">
+              <span className="text-[11px] font-extrabold text-slate-900 flex items-center gap-1.5">
                 <span className={`w-1.5 h-1.5 rounded-full ${tone.bar} animate-pulse`} aria-hidden="true" />
                 {district.hazardType}
               </span>
-              <span className={`text-xs font-black font-mono ${tone.text}`}>{severityPct}% Severity</span>
+              <span className={`text-[11px] font-black font-mono ${tone.text}`}>{severityPct}% Severity</span>
             </div>
             <div
               className="w-full h-1.5 bg-slate-200/80 rounded-full overflow-hidden"
@@ -174,17 +165,17 @@ export const DistrictForecastCard: React.FC<DistrictForecastCardProps> = ({
           </div>
 
           {/* District facts — single compact row */}
-          <div className="grid grid-cols-1 min-[380px]:grid-cols-3 gap-2 text-xs">
+          <div className="grid grid-cols-3 gap-1.5 text-[10px]">
             <div className="bg-white/60 p-1.5 rounded-lg border border-slate-200/70 min-w-0" title={`Main crop: ${district.mainCrop}`}>
-              <span className="text-slate-500 block text-xs font-bold uppercase tracking-wide">Main Crop</span>
-              <span className="font-bold text-slate-800 break-words block">{district.mainCrop}</span>
+              <span className="text-slate-500 block text-[8px] font-bold uppercase tracking-wide">Main Crop</span>
+              <span className="font-bold text-slate-800 truncate block">{district.mainCrop}</span>
             </div>
             <div className="bg-white/60 p-1.5 rounded-lg border border-slate-200/70 min-w-0">
-              <span className="text-slate-500 block text-xs font-bold uppercase tracking-wide">Elevation</span>
+              <span className="text-slate-500 block text-[8px] font-bold uppercase tracking-wide">Elevation</span>
               <span className="font-bold text-slate-800">{district.elevationMeters}m MSL</span>
             </div>
             <div className="bg-white/60 p-1.5 rounded-lg border border-slate-200/70 min-w-0">
-              <span className="text-slate-500 block text-xs font-bold uppercase tracking-wide">Coords</span>
+              <span className="text-slate-500 block text-[8px] font-bold uppercase tracking-wide">Coords</span>
               <span className="font-bold font-mono text-sky-700">
                 {district.lat.toFixed(2)}°N, {district.lng.toFixed(2)}°E
               </span>
@@ -196,7 +187,7 @@ export const DistrictForecastCard: React.FC<DistrictForecastCardProps> = ({
             type="button"
             onClick={() => setShowLocationMap((value) => !value)}
             aria-expanded={showLocationMap}
-            className="flex items-center justify-between gap-2 rounded-lg border border-slate-200/70 bg-white/60 px-2.5 py-1.5 text-xs font-bold text-slate-600 hover:bg-white/90 transition-colors cursor-pointer"
+            className="flex items-center justify-between gap-2 rounded-lg border border-slate-200/70 bg-white/60 px-2.5 py-1.5 text-[10px] font-bold text-slate-600 hover:bg-white/90 transition-colors cursor-pointer"
           >
             <span className="flex items-center gap-1.5">
               <MaterialIcon name="map" className="w-3 h-3 text-[#d08305]" />
@@ -226,10 +217,10 @@ export const DistrictForecastCard: React.FC<DistrictForecastCardProps> = ({
           <button
             type="button"
             onClick={() => onOpenAnalytics(district.id)}
-            className="w-full min-h-11 py-2 bg-[#f9a825] hover:bg-[#d08305] text-slate-950 font-black text-xs rounded-xl shadow-md flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer"
+            className="w-full py-2 bg-[#f9a825] hover:bg-[#d08305] text-white font-black text-[11px] rounded-xl shadow-md flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer"
           >
             <MaterialIcon name="analytics" className="w-3.5 h-3.5" />
-            Read district forecast
+            View Detailed Disaster Analytics
           </button>
         </div>
       </div>

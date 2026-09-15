@@ -19,7 +19,7 @@ module.exports = {
   // Playwright specs live in e2e/ and run via `npx playwright test` â€” jest
   // must not pick them up (they import @playwright/test, which is not
   // jest-compatible).
-  testPathIgnorePatterns: ['/node_modules/', '/e2e/', '/tests/firestore-rules.test.mjs'],
+  testPathIgnorePatterns: ['/node_modules/', '/e2e/'],
   // Cap worker parallelism: the API suites import the full Express app (heavy
   // babel transforms of ESM deps), and unbounded workers OOM small CI runners.
   maxWorkers: '50%',

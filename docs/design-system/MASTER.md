@@ -31,21 +31,16 @@ All Layer 2/3 tokens are registered in `@theme inline`, so they generate Tailwin
 | `text-success`, `bg-warning-surface`, `bg-info-surface` | status |
 | `font-sans`, `font-brand`, `font-mono` | typography |
 
-**Forecast severity: three categories** — canonical logic is `lib/forecasts.ts:severityBin`.
-This is a model index, not an event probability. Low < 0.34; Moderate 0.34–<0.67; High ≥ 0.67.
-Text is used alongside color. Unknown data must be labeled unavailable, not assigned Low.
+**Severity ramp** (text values are WCAG AA ≥ 4.5:1 on white; `-solid` for map fills/markers/charts;
+`-surface` for tint chips):
 
 | Level | Text | Solid | Surface |
 | --- | --- | --- | --- |
-| Low | `#15803d` | `#16a34a` | `#dcfce7` |
-| Moderate | `#b45309` | `#f59e0b` | `#fef3c7` |
-| High | `#dc2626` | `#dc2626` | `#fee2e2` |
-
-Very-high/extreme tokens remain compatibility aliases for older illustrations, not extra forecast bins.
-`AccessibleDialog`, `ForecastSummary`, `.hn-panel`, `.hn-button` and `.hn-input` are the shared core patterns.
-Use 16px body, 14px important labels and at least 12px secondary captions; comfortable controls target 44px.
-Base element typography lives in the CSS base layer, so deliberate component utilities can override it.
-Do not use white text on brand amber; use the dark foreground.
+| Low | `#15803d` emerald-700 | `#22c55e` | `#dcfce7` |
+| Moderate | `#b45309` amber-700 | `#f59e0b` | `#fef3c7` |
+| High | `#c2410c` orange-700 | `#f97316` | `#ffedd5` |
+| Very high | `#b91c1c` red-700 | `#ef4444` | `#fee2e2` |
+| Extreme | `#9f1239` rose-800 | `#e11d48` | `#ffe4e6` |
 
 Legacy `--nasa-*` / `--m3-*` variables are aliased to semantic tokens for backward
 compatibility and are **deprecated** — do not use them in new code.

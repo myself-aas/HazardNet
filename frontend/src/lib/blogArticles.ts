@@ -1,12 +1,20 @@
 /**
- * Firebase blog data layer. Registered users own their articles; trusted
- * admin custom claims allow moderation (firestore.rules). Public reads query
- * published articles only. Local demo data is explicitly isolated in tests.
+ * Blog article data layer for HazardNet.
+ *
+ * Storage adapters:
+ *  - Supabase (production): the `blog_articles` table (SQL + RLS in
+ *    docs/blog-admin-setup.md). Writes are restricted by RLS to the primary
+ *    superadmin emails; the UI gates on the same allowlist.
+ *  - Local demo mode: when Supabase env vars are absent (mock client), articles
+ *    persist to localStorage so the studio remains fully explorable. A banner
+ *    makes the active mode explicit so demo content is never mistaken for
+ *    published production content.
  */
 
 import DOMPurify from 'dompurify';
-import { db, auth } from '../services/firebase';
-import { collection, query, orderBy, getDocs, where, getDoc, doc, setDoc, updateDoc, deleteDoc, deleteField } from 'firebase/firestore';
+import { db } from '../services/firebase';
+import { collection, query, orderBy, getDocs, where, getDoc, doc, setDoc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { isPrimarySuperAdmin } from './superadmins';
 
 export type BlogArticleStatus = 'draft' | 'published';
 
@@ -336,13 +344,13 @@ export interface BlogStoreResult<T> {
 }
 
 const guardAuthor = (author: AuthorContext): string | null => {
-  if (!author.id) {
-    return 'Sign in to manage your articles.';
+  if (!author.email || !isPrimarySuperAdmin(author.email)) {
+    return 'Only primary superadmins can manage blog articles.';
   }
   return null;
 };
 
-/** Author-scoped studio list; custom-claim admins can list all. */
+/** All articles (superadmin studio view). */
 export async function listArticles(): Promise<BlogStoreResult<BlogArticle[]>> {
   if (isLocalDemoMode()) {
     return {
@@ -353,11 +361,7 @@ export async function listArticles(): Promise<BlogStoreResult<BlogArticle[]>> {
   }
   let data: any[] = []; let error = null;
   try {
-    const user = auth.currentUser;
-    if (!user) throw new Error('Sign in required');
-    const token = await user.getIdTokenResult();
-    const constraints = token.claims.admin === true ? [] : [where('author_id', '==', user.uid)];
-    const q = query(collection(db, TABLE), ...constraints);
+    const q = query(collection(db, TABLE), orderBy('created_at', 'desc'));
     const snap = await getDocs(q);
     data = snap.docs.map(d => ({ id: d.id, ...d.data() }));
   } catch(e) { error = e; }
@@ -393,7 +397,7 @@ export async function getArticleBySlug(slug: string): Promise<BlogStoreResult<Bl
   }
   let data: any = null; let error = null;
   try {
-    const q = query(collection(db, TABLE), where('slug', '==', slug), where('status', '==', 'published'));
+    const q = query(collection(db, TABLE), where('slug', '==', slug));
     const snap = await getDocs(q);
     if(!snap.empty) data = { id: snap.docs[0].id, ...snap.docs[0].data() };
   } catch(e) { error = e; }
@@ -415,7 +419,7 @@ export async function getArticleById(id: string): Promise<BlogStoreResult<BlogAr
   return { data: data ? rowToArticle(data as Record<string, unknown>) : null, error: null, localDemo: false };
 }
 
-/** Create an article (registered authors; ownership enforced by Firestore). */
+/** Create an article (superadmins only). */
 export async function createArticle(
   draft: BlogArticleDraft,
   author: AuthorContext,
@@ -426,8 +430,6 @@ export async function createArticle(
   const now = new Date().toISOString();
   const article: BlogArticle = {
     ...draft,
-    authorId: author.id,
-    authorEmail: author.email,
     id: crypto.randomUUID?.() ?? `local-${Date.now()}`,
     contentHtml: sanitizeBlogHtml(draft.contentHtml),
     publishedAt: draft.status === 'published' ? (draft.publishedAt ?? now) : null,
@@ -443,8 +445,7 @@ export async function createArticle(
   }
   let data: any = null; let error = null;
   try {
-    const newRow: Record<string, unknown> = { ...articleToRow({ ...draft, authorId: author.id, authorEmail: author.email, publishedAt: article.publishedAt }), created_at: now, updated_at: now };
-    delete newRow.author_email;
+    const newRow = articleToRow({ ...draft, authorId: author.id, publishedAt: article.publishedAt });
     const ref = doc(collection(db, TABLE));
     await setDoc(ref, newRow);
     data = { id: ref.id, ...newRow };
@@ -453,7 +454,7 @@ export async function createArticle(
   return { data: rowToArticle(data as Record<string, unknown>), error: null, localDemo: false };
 }
 
-/** Update an article (registered authors; ownership enforced by Firestore). */
+/** Update an article (superadmins only). */
 export async function updateArticle(
   id: string,
   changes: Partial<BlogArticleDraft>,
@@ -468,7 +469,6 @@ export async function updateArticle(
     const all = readLocal();
     const index = all.findIndex((a) => a.id === id);
     if (index === -1) return { data: null, error: 'Article not found.', localDemo: true };
-    if (all[index].authorId !== author.id) return { data: null, error: 'Only the author can edit this local article.', localDemo: true };
     const next: BlogArticle = {
       ...all[index],
       ...changes,
@@ -486,30 +486,24 @@ export async function updateArticle(
     return { data: next, error: null, localDemo: true };
   }
   const row = articleToRow(changes);
-  delete row.author_id;
-  row.author_email = deleteField();
   row.updated_at = now;
   if (changes.status === 'published') row.published_at = changes.publishedAt ?? now;
-  if (changes.status === 'draft') row.published_at = null;
   let data: any = null; let error = null;
   try {
     await updateDoc(doc(db, TABLE, id), row);
-    const updated = await getDoc(doc(db, TABLE, id));
-    data = { id, ...updated.data() };
+    data = row;
   } catch(e) { error = e; }
   if (error) return { data: null, error: String(error), localDemo: false };
   return { data: rowToArticle(data as Record<string, unknown>), error: null, localDemo: false };
 }
 
-/** Delete an article (registered authors; ownership enforced by Firestore). */
+/** Delete an article (superadmins only). */
 export async function deleteArticle(id: string, author: AuthorContext): Promise<BlogStoreResult<boolean>> {
   const denied = guardAuthor(author);
   if (denied) return { data: false, error: denied, localDemo: isLocalDemoMode() };
 
   if (isLocalDemoMode()) {
-    const articles = readLocal();
-    if (articles.find((a) => a.id === id)?.authorId !== author.id) return { data: false, error: 'Only the author can delete this local article.', localDemo: true };
-    writeLocal(articles.filter((a) => a.id !== id));
+    writeLocal(readLocal().filter((a) => a.id !== id));
     return { data: true, error: null, localDemo: true };
   }
   let error = null;

@@ -1,0 +1,77 @@
+name: Supabase cutover verify
+
+on:
+  workflow_dispatch:
+    inputs:
+      boot_server:
+        description: 'Boot the backend in supabase mode and smoke the API'
+        type: boolean
+        default: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Verify Supabase schema (ADR 0002 checklist)
+        env:
+          DATABASE_URL: ${{ secrets.SUPABASE_DB_URL }}
+          SUPABASE_SSL: 'true'
+        run: node scripts/verify-supabase-cutover.mjs
+
+      - name: Boot backend (FORECAST_STORE=supabase) and smoke the API
+        if: ${{ inputs.boot_server }}
+        env:
+          DATABASE_URL: ${{ secrets.SUPABASE_DB_URL }}
+          SUPABASE_SSL: 'true'
+          FORECAST_STORE: supabase
+          PORT: '3010'
+        run: |
+          node backend/server.js > server.log 2>&1 &
+          echo $! > server.pid
+
+          # Wait for readiness (max ~20s).
+          for i in $(seq 1 20); do
+            curl -sf http://localhost:3010/health > /dev/null && break
+            sleep 1
+          done
+
+          echo "── GET /health ──"
+          curl -s -o /dev/null -w "HTTP %{http_code}\n" http://localhost:3010/health
+
+          echo "── GET /api/v1/forecasts/bulk?horizon=7_days (through the Supabase store) ──"
+          curl -s -w "\nHTTP %{http_code}\n" "http://localhost:3010/api/v1/forecasts/bulk?horizon=7_days" | head -c 500
+          echo
+
+          echo "── GET /api/v1/forecasts/history (default window) ──"
+          curl -s -w "\nHTTP %{http_code}\n" "http://localhost:3010/api/v1/forecasts/history" | head -c 300
+          echo
+
+          echo "── GET /metrics — forecast freshness gauge ──"
+          curl -s http://localhost:3010/metrics | grep -A1 hazardnet_forecast_age_hours || echo "(gauge absent — empty store, expected pre-first-run)"
+
+          echo "── Server config log ──"
+          grep -E "\[config\]|forecastStore" server.log | head -10 || true
+
+          # Hard gate: the bulk serving path must return 200 through Supabase.
+          CODE=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:3010/api/v1/forecasts/bulk?horizon=7_days")
+          if [ "$CODE" != "200" ]; then
+            echo "❌ /bulk returned HTTP $CODE through the Supabase store — see server.log below"
+            tail -30 server.log
+            kill $(cat server.pid) 2>/dev/null || true
+            exit 1
+          fi
+
+          kill $(cat server.pid) 2>/dev/null || true
+          echo "✅ Supabase cutover smoke passed (health/bulk/history/metrics)"

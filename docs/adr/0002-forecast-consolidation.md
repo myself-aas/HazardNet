@@ -1,7 +1,5 @@
 # ADR 0002 — Consolidate forecast storage from Firestore to Supabase
 
-> **Superseded 2026-09-14:** Firebase is canonical. See [ADR 0009](0009-firebase-model-and-deployment-contract.md). The Supabase cutover instructions below are historical, not an active runbook.
-
 - **Status:** Accepted (2026-08-28) — **expand phase implemented 2026-09-12**; cutover flip pending ops (credentials)
 - **Context:** Audit ARC-01; ADR 0001 declares Supabase the system of record
 

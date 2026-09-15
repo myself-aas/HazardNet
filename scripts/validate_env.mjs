@@ -15,7 +15,12 @@ const REQUIRED_FIREBASE_VARS = [
   'VITE_FIREBASE_FIRESTORE_DATABASE_ID',
 ];
 
-
+const RECOMMENDED_FIREBASE_VARS = [
+  'VITE_FIREBASE_DATABASE_URL',
+  'VITE_FIREBASE_STORAGE_BUCKET',
+  'VITE_FIREBASE_MESSAGING_SENDER_ID',
+  'VITE_FIREBASE_APP_ID',
+];
 
 function validateEnv() {
   console.log('🔍 Validating Firebase environment variables & configuration...');
@@ -54,7 +59,7 @@ function validateEnv() {
 
   // 3. Validate FORECAST_STORE setting if provided
   const forecastStore = process.env.FORECAST_STORE || 'firestore';
-  const validStores = ['firestore'];
+  const validStores = ['firestore', 'local', 'memory', 'json'];
   if (!validStores.includes(forecastStore)) {
     console.error(
       `❌ Invalid FORECAST_STORE: "${forecastStore}". Allowed: ${validStores.join(', ')}`

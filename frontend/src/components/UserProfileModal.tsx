@@ -6,7 +6,7 @@ import toast from 'react-hot-toast';
 import { useAuth, UserRolePersona } from '../context/AuthContext';
 import { detectExactPinpointLocation, LocationDetectionResult, findNearestDistrict, isValidLatLng, isValidCoordinate } from '../services/geolocationService';
 import { ALL_64_DISTRICTS } from '../data/bangladeshDistricts';
-import { ForecastSummary } from './ForecastSummary';
+import { getGranularDisasterData } from '../data/disasterDetails';
 import { FirebaseRealtimeStatus } from './FirebaseRealtimeStatus';
 import IdentityConnections from './IdentityConnections';
 
@@ -479,7 +479,72 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
             </div>
           </div>
 
-          {homeDistrictId && <ForecastSummary district={ALL_64_DISTRICTS.find(d => d.id === homeDistrictId)?.name || homeDistrictId} />}
+          {/* District-Based Hazard & Severity Identification Card */}
+          {(() => {
+            const currentDistrictObj = ALL_64_DISTRICTS.find(d => d.id === homeDistrictId) || ALL_64_DISTRICTS.find(d => d.id === 'dhaka') || ALL_64_DISTRICTS[0];
+            const granular = currentDistrictObj ? getGranularDisasterData(currentDistrictObj.id) : null;
+            const severityScorePct = currentDistrictObj ? Math.round(currentDistrictObj.severity * 100) : 75;
+
+            return (
+              <div className="bg-slate-900 text-white border border-slate-800 rounded-2xl p-4 space-y-3 shadow-md relative overflow-hidden">
+                <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
+                  <div className="flex items-center gap-2">
+                    <span className="text-amber-400 font-bold text-sm"><MaterialIcon name="shield" className="w-4 h-4 inline-block mr-1" /></span>
+                    <div>
+                      <h4 className="text-xs font-extrabold text-white tracking-wide uppercase font-mono">
+                        District Hazard & Severity Identification
+                      </h4>
+                      <p className="text-[10px] text-slate-400 font-sans">
+                        Identified using user district ({currentDistrictObj.name}) instead of raw lat/lon coordinates
+                      </p>
+                    </div>
+                  </div>
+                  <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono font-black border ${
+                    currentDistrictObj.risk === 'High' ? 'bg-rose-500/20 text-rose-300 border-rose-500/40' :
+                    currentDistrictObj.risk === 'Moderate' ? 'bg-amber-500/20 text-amber-300 border-amber-500/40' :
+                    'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                  }`}>
+                    {currentDistrictObj.risk} Risk ({severityScorePct}% Severity)
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                  <div className="bg-slate-800/80 p-2.5 rounded-xl border border-slate-700/60">
+                    <span className="text-[10px] font-mono text-slate-400 block uppercase">Selected District</span>
+                    <strong className="text-amber-400 font-black truncate block mt-0.5">{currentDistrictObj.name} ({currentDistrictObj.division})</strong>
+                  </div>
+                  <div className="bg-slate-800/80 p-2.5 rounded-xl border border-slate-700/60">
+                    <span className="text-[10px] font-mono text-slate-400 block uppercase">Primary Hazard</span>
+                    <strong className="text-white font-black truncate block mt-0.5">{currentDistrictObj.hazardType}</strong>
+                  </div>
+                  <div className="bg-slate-800/80 p-2.5 rounded-xl border border-slate-700/60">
+                    <span className="text-[10px] font-mono text-slate-400 block uppercase">Severity Score</span>
+                    <strong className="text-rose-400 font-mono font-black block mt-0.5">{severityScorePct}%</strong>
+                  </div>
+                  <div className="bg-slate-800/80 p-2.5 rounded-xl border border-slate-700/60">
+                    <span className="text-[10px] font-mono text-slate-400 block uppercase">Vulnerable Crop</span>
+                    <strong className="text-emerald-400 font-black truncate block mt-0.5">{currentDistrictObj.mainCrop}</strong>
+                  </div>
+                </div>
+
+                {granular?.modelAssessment?.softmaxProbabilities && (
+                  <div className="pt-2 border-t border-slate-800 text-[11px] space-y-1.5">
+                    <span className="text-[10px] font-mono text-slate-400 font-extrabold uppercase tracking-wider block">
+                      Multi-Hazard Risk Distribution for {currentDistrictObj.name}:
+                    </span>
+                    <div className="flex flex-wrap gap-2">
+                      {granular.modelAssessment.softmaxProbabilities.map((item: { hazard: string; probability: number }, idx: number) => (
+                        <div key={idx} className="px-2.5 py-1 rounded-lg bg-slate-800 border border-slate-700 text-[10px] flex items-center gap-1.5 font-mono">
+                          <span className="text-slate-300 font-bold">{item.hazard}:</span>
+                          <span className="text-amber-400 font-black">{Math.round(item.probability * 100)}%</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
 
           {/* Form Fields */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

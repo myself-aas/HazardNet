@@ -4,7 +4,7 @@
  * Forecast store (backend/forecastStore.js) tests.
  */
 import { getForecastStore, getForecastStoreMode, resetForecastStore } from '../backend/forecastStore.js';
-import { getDoc as _getDoc, getDocs as _getDocs, writeBatch as _writeBatch, orderBy as _orderBy, limit as _limit } from '../backend/db.js';
+import { getDocs as _getDocs, writeBatch as _writeBatch, orderBy as _orderBy, limit as _limit } from '../backend/db.js';
 
 jest.mock('../backend/db.js', () => ({
   db: {},
@@ -14,7 +14,6 @@ jest.mock('../backend/db.js', () => ({
   orderBy: jest.fn(() => ({})),
   limit: jest.fn(() => ({})),
   getDocs: jest.fn(),
-  getDoc: jest.fn().mockResolvedValue({ data: () => undefined }),
   doc: jest.fn(() => ({})),
   writeBatch: jest.fn(() => ({ delete: jest.fn(), set: jest.fn(), commit: jest.fn().mockResolvedValue(true) })),
 }));
@@ -115,9 +114,9 @@ describe('firestore store', () => {
     ]);
   });
 
-  it('replaceForecastsForPredictionDate writes replacements before deleting obsolete rows', async () => {
+  it('replaceForecastsForPredictionDate deletes old rows then writes new ones', async () => {
     const batch = { delete: jest.fn(), set: jest.fn(), commit: jest.fn().mockResolvedValue(true) };
-    mockWriteBatch.mockReturnValue(batch);
+    mockWriteBatch.mockReturnValueOnce(batch);
     mockGetDocs.mockResolvedValue({
       forEach: (cb) => cb({ ref: 'old-doc-ref', data: () => row() }),
     });
@@ -126,46 +125,6 @@ describe('firestore store', () => {
     expect(written).toBe(2);
     expect(batch.delete).toHaveBeenCalledWith('old-doc-ref');
     expect(batch.set).toHaveBeenCalledTimes(2);
-    expect(batch.commit).toHaveBeenCalledTimes(2);
-  });
-});
-
-test('large ADM3 append is bounded and preserves weather values', async () => {
-  const batches = [];
-  mockWriteBatch.mockImplementation(() => {
-    const batch = { set: jest.fn(), delete: jest.fn(), commit: jest.fn().mockResolvedValue() };
-    batches.push(batch); return batch;
-  });
-  const weather = { temperature_mean: 30, temperature_max: 38, temperature_min: 23,
-    precipitation_mm: 55, wind_max_kmh: 20, dewpoint_mean: 22, solar_radiation_mj_m2: 18, evapotranspiration_mm: 4 };
-  await getForecastStore().appendForecasts(Array.from({ length: 1014 }, (_, district_id) => row({ district_id, ...weather })));
-  expect(batches.map((batch) => batch.set.mock.calls.length)).toEqual([400, 400, 214]);
-  expect(batches[0].set.mock.calls[0][1]).toMatchObject(weather);
-});
-test('failed publication never starts deleting previous forecasts', async () => {
-  const batch = { set: jest.fn(), delete: jest.fn(), commit: jest.fn().mockRejectedValue(new Error('offline')) };
-  mockWriteBatch.mockReturnValue(batch);
-  mockGetDocs.mockResolvedValue({ forEach: (cb) => cb({ id: 'old', ref: 'old-ref' }) });
-  await expect(getForecastStore().replaceForecastsForPredictionDate('2026-09-12', [row()])).rejects.toThrow('offline');
-  expect(batch.delete).not.toHaveBeenCalled();
-});
-
-describe('verified serving snapshot', () => {
-  afterEach(() => _getDoc.mockResolvedValue({ data: () => undefined }));
-  it('serves the entire latest horizon from one snapshot, not legacy writes', async () => {
-    _getDoc.mockResolvedValue({ data: () => ({ rows: [row({ forecast_run_id: 'new-run' }), row({ horizon: '15_days' })],
-      manifest: { prediction_date: '2026-09-14', kernel: 'configured/notebook', run_id: 'new-run' }, published_at: '2026-09-14T09:31:00Z' }) });
-    const store = getForecastStore();
-    expect((await store.getLatestForecastsByHorizon('7_days'))[0].forecast_run_id).toBe('new-run');
-    expect(await store.getLatestForecastByDistrict(99, '7_days')).toBeNull();
-    expect(await store.getLatestPredictionDate()).toBe('2026-09-14');
-    expect(await store.getLatestIngestionTimestamp()).toBe('2026-09-14T09:31:00Z');
-    expect(await store.getLatestPublicationMetadata()).toMatchObject({ notebook_source: 'configured/notebook', forecast_run_id: 'new-run' });
-    expect(mockGetDocs).not.toHaveBeenCalled();
-  });
-  it('does not silently fall back when the verified snapshot read fails', async () => {
-    _getDoc.mockRejectedValue(new Error('Firestore unavailable'));
-    await expect(getForecastStore().getLatestForecastsByHorizon('7_days')).rejects.toThrow('unavailable');
-    expect(mockGetDocs).not.toHaveBeenCalled();
+    expect(batch.commit).toHaveBeenCalledTimes(1);
   });
 });

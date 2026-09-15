@@ -1,7 +1,5 @@
 # ADR 0003 — Deploy topology & CSP rollout
 
-> **Updated by ADR 0009:** Both Vercel and Express must expose all feature routes; trained inference uses an authenticated LiteRT service. See [current deployment contract](0009-firebase-model-and-deployment-contract.md).
-
 - **Status:** Accepted (2026-08-28)
 - **Context:** Audit OPS/P2; the repo simultaneously carries `vercel.json`,
   `firebase.json` (hosting), and a Node server that serves the built frontend.

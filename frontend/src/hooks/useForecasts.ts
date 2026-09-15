@@ -1,11 +1,16 @@
-import { isVerifiedForecastFresh } from '../lib/profileForecast';
 /**
  * Forecast data hooks — TanStack Query wrappers around
  * `GET /api/v1/forecasts/bulk` (the Kaggle pipeline's serving path).
  *
- * Data cadence: one GitHub pipeline triggers Kaggle every three hours and
- * atomically publishes verified output to Firebase. Clients poll every five
- * minutes. The committed snapshot is legacy/offline data, not a live refresh.
+ * Data cadence: the daily workflow re-runs the Kaggle notebook, and the
+ * hourly workflow (hourly_forecast.yml) pulls the notebook's latest CSV
+ * output (`kaggle kernels output ashifahmedshuvo/hazardnet-auto-forecast-pipeline`)
+ * into the forecast store and into the committed static snapshot. The client
+ * polls for fresh data so an open map picks up each hourly refresh without a
+ * page reload. When the API is unreachable, the hook falls back to the
+ * committed hourly snapshot (/data/forecasts-latest.json); when that is also
+ * unavailable, callers degrade to the static `ALL_64_DISTRICTS` baseline via
+ * `useLiveDistricts`.
  */
 
 import { useMemo } from 'react';
@@ -24,7 +29,7 @@ import {
 
 /**
  * Fetch + defensively parse the bulk forecast payload for one horizon.
- * Falls back to the committed legacy snapshot when the API is unreachable,
+ * Falls back to the committed hourly snapshot when the API is unreachable,
  * and throws only when both sources fail (so TanStack Query reports an
  * error and the static baseline remains in use).
  */
@@ -35,15 +40,13 @@ export async function loadForecasts(horizon: ForecastHorizon): Promise<ForecastR
       throw new Error(`Forecast API responded ${res.status}`);
     }
     const rows = parseBulkResponse(await res.json());
-    const runs = new Set(rows.map(row => row.forecast_run_id || 'unverified'));
-    if (runs.size > 1) throw new Error('Mixed forecast publications are not a coherent dataset');
-    if (rows.length > 0) return rows.map(row => ({ ...row, source_kind: 'api' as const }));
+    if (rows.length > 0) return rows;
   } catch {
-    // fall through to the committed legacy snapshot
+    // fall through to the committed hourly snapshot
   }
   const snapshotRows = await fetchStaticForecastSnapshot(horizon);
-  if (snapshotRows.length > 0) return snapshotRows.map(row => ({ ...row, source_kind: 'snapshot' as const }));
-  throw new Error('Forecast API and legacy snapshot are both unavailable');
+  if (snapshotRows.length > 0) return snapshotRows;
+  throw new Error('Forecast API and hourly snapshot are both unavailable');
 }
 
 /** Fetch + defensively parse the bulk forecast payload for one horizon. */
@@ -51,7 +54,7 @@ export function useForecasts(horizon: ForecastHorizon = '7_days') {
   return useQuery({
     queryKey: ['forecasts', 'bulk', horizon],
     queryFn: () => loadForecasts(horizon),
-    // The dataset is refreshed every three hours by the Kaggle pipeline. Poll in the
+    // The dataset is refreshed hourly by the Kaggle pipeline. Poll in the
     // background so an open map receives each new ingestion without
     // requiring a page reload.
     staleTime: 5 * 60 * 1000,
@@ -75,7 +78,6 @@ export interface LiveDistricts {
   isLive: boolean;
   /** Fetch in flight and no data yet (static baseline is already usable). */
   isPending: boolean;
-  refresh: () => Promise<void>;
 }
 
 /**
@@ -83,22 +85,21 @@ export interface LiveDistricts {
  * when available, static baseline otherwise — consumers never need to branch.
  */
 export function useLiveDistricts(horizon: ForecastHorizon = '7_days'): LiveDistricts {
-  const { data, isPending, refetch } = useForecasts(horizon);
+  const { data, isPending } = useForecasts(horizon);
 
   return useMemo(() => {
     const rows = data ?? [];
     const { districts, matched, predictionDate } = applyForecastsToDistricts(ALL_64_DISTRICTS, rows);
     return {
       districts,
-      refresh: async () => { const result = await refetch(); if (result.error) throw result.error; },
       // Rolled up to districts when the rows are ADM3-shaped (ADR 0006 8d).
       forecastByDistrict: buildForecastIndex(effectiveDistrictRows(rows)),
       liveCount: matched,
       predictionDate,
-      isLive: matched > 0 && rows.every(row => row.source_kind === 'api' && isVerifiedForecastFresh(row)),
+      isLive: matched > 0,
       isPending: isPending && matched === 0,
     };
-  }, [data, isPending, refetch]);
+  }, [data, isPending]);
 }
 
 /** Re-exported for callers that need the type guard next to a horizon toggle. */

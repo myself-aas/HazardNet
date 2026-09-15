@@ -3,7 +3,7 @@
  *
  * "Connectors" let a HazardNet account pull data from and push alerts to the
  * services farmers, NGOs and researchers already use. Connection state lives
- * in the `user_connectors` Firestore collection, so a user's dashboard is fully
+ * in the `user_connectors` table (Supabase), so a user's dashboard is fully
  * portable across devices. Catalog metadata (name, category, accent, docs)
  * is code-owned; only per-user state is stored.
  */
@@ -164,7 +164,6 @@ export function getConnector(key: string): ConnectorDefinition | undefined {
 export interface UserConnectorState {
   connectorKey: string;
   status: 'connected' | 'disconnected';
-  /** Sensitive: webhook URLs can act as bearer credentials. Owner-only storage. */
   config: Record<string, string>;
   connectedAt: string | null;
 }

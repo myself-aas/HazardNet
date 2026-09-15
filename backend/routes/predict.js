@@ -25,8 +25,6 @@ router.post('/', validateTensor, async (req, res) => {
     const tensorValues = await tensor.array();
     const cached = predictionCache.get(tensorValues);
     if (cached) {
-      tf.dispose(tensor);
-      tensor = null;
       return res.json({
         ...cached,
         inference: { ...cached.inference, cached: true },
@@ -66,9 +64,7 @@ router.post('/', validateTensor, async (req, res) => {
     res.json(responseBody);
   } catch (err) {
     console.error('Prediction error:', err);
-    res.status(err.status === 503 ? 503 : 502).json({ error: err.status === 503
-      ? 'Trained model service is not configured. No prediction was generated.'
-      : 'Trained model inference failed. No prediction was generated.' });
+    res.status(500).json({ error: 'Inference calculation failed' });
   } finally {
     if (normalized) tf.dispose(normalized);
     if (tensor) tf.dispose(tensor);

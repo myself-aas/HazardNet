@@ -1,5 +1,21 @@
 import rateLimit from 'express-rate-limit';
-import { getAdminAuth } from '../admin.js';
+import * as adminModule from 'firebase-admin';
+
+const admin = adminModule.default || adminModule;
+
+const getAppsList = () => {
+  if (admin && Array.isArray(admin.apps)) return admin.apps;
+  if (typeof adminModule.getApps === 'function') return adminModule.getApps();
+  return [];
+};
+
+if (getAppsList().length === 0 && admin && typeof admin.initializeApp === 'function') {
+  try {
+    admin.initializeApp();
+  } catch (err) {
+    console.warn('[firebaseAuth] Admin initialization deferred or running in client mode:', err.message);
+  }
+}
 
 /**
  * Firebase Auth identity middleware for AI and protected backend routes.
@@ -28,8 +44,8 @@ export async function attachFirebaseAuthUser(req, _res, next) {
 
   if (token) {
     try {
-      {
-        const decodedToken = await getAdminAuth().verifyIdToken(token);
+      if (getAppsList().length > 0 && admin && typeof admin.auth === 'function') {
+        const decodedToken = await admin.auth().verifyIdToken(token);
         if (decodedToken && decodedToken.uid) {
           req.user = { id: decodedToken.uid, email: decodedToken.email ?? null, role: 'user' };
         }

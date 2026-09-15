@@ -69,9 +69,9 @@ export function parseCsvForecastRow(row, rowNumber) {
   const modelSev = parseFloat(modelSevRaw);
   const physicsSev = parseFloat(physicsSevRaw);
 
-  const severityRaw = row.severity_score !== undefined && row.severity_score !== ''
-    ? row.severity_score
-    : row.model_severity;
+  const severityRaw = row.physics_severity !== undefined && row.physics_severity !== ''
+    ? row.physics_severity
+    : (row.severity_score !== undefined && row.severity_score !== '' ? row.severity_score : row.model_severity);
   const severity = parseFloat(severityRaw);
 
   if (isNaN(severity) || severity < 0 || severity > 1) {
@@ -150,10 +150,10 @@ export function parseCsvForecastRow(row, rowNumber) {
   }
 
   // Dual-track severity (physics-based proxy & model severity)
-  if (row.physics_severity !== undefined && row.physics_severity !== '' && !isNaN(physicsSev) && physicsSev >= 0 && physicsSev <= 1) {
+  if (!isNaN(physicsSev) && physicsSev >= 0 && physicsSev <= 1) {
     value.physics_severity = physicsSev;
   }
-  if (row.model_severity !== undefined && row.model_severity !== '' && !isNaN(modelSev) && modelSev >= 0 && modelSev <= 1) {
+  if (!isNaN(modelSev) && modelSev >= 0 && modelSev <= 1) {
     value.model_severity = modelSev;
   }
 

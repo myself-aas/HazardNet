@@ -1,63 +1,124 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    function signedIn() { return request.auth != null; }
-    function owner(uid) { return signedIn() && request.auth.uid == uid; }
-    // Only a trusted Admin SDK operator may assign custom claims.
-    function admin() { return signedIn() && request.auth.token.get('admin', false) == true; }
-    function publicProfileValid() {
-      return request.resource.data.keys().hasOnly([
-        'display_name', 'username', 'photo_url', 'bio', 'user_role', 'organization',
-        'country', 'division', 'district', 'primary_division', 'primary_district',
-        'nationality', 'preferred_language', 'occupation', 'target_crops',
-        'farm_size_hectares', 'farming_experience_years', 'irrigation_type', 'soil_type',
-        'website', 'social_facebook', 'social_x', 'social_linkedin', 'social_github',
-        'social_youtube', 'social_instagram', 'created_at', 'profile_visibility'
-      ]) && request.resource.data.profile_visibility in ['public', 'private']
-      && (request.resource.data.profile_visibility == 'public'
-        || request.resource.data.keys().hasOnly(['username', 'profile_visibility']));
+
+    // Global Safety Net (default deny)
+    match /{document=**} {
+      allow read, write: if false;
     }
-    match /forecasts/{id} {
-      allow read: if true;
-      allow write: if false; // trusted Admin SDK only, never public client writes
+
+    // Helpers
+    function isSignedIn() {
+      return request.auth != null;
     }
-    match /profiles/{uid} {
-      allow read, delete: if owner(uid);
-      allow create, update: if owner(uid);
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
     }
-    match /public_profiles/{uid} {
-      allow read: if true; // contains only the explicit public projection
-      allow create, update: if owner(uid) && publicProfileValid();
-      allow delete: if owner(uid);
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
     }
-    match /users/{uid} { allow read, write: if owner(uid); }
-    match /user_connectors/{id} {
-      allow read, delete: if owner(resource.data.user_id);
-      allow create: if owner(request.resource.data.user_id);
-      allow update: if owner(resource.data.user_id)
-        && request.resource.data.user_id == resource.data.user_id;
+
+    function incoming() {
+      return request.resource.data;
     }
-    match /blog_articles/{id} {
-      allow read: if resource.data.status == 'published' || admin() || owner(resource.data.author_id);
-      allow create: if owner(request.resource.data.author_id)
-        && request.resource.data.status in ['draft', 'published'];
-      allow update: if (admin() || owner(resource.data.author_id))
-        && request.resource.data.author_id == resource.data.author_id
-        && request.resource.data.status in ['draft', 'published'];
-      allow delete: if admin() || owner(resource.data.author_id);
+
+    function existing() {
+      return resource.data;
     }
-    match /assessments/{id} {
-      allow read, delete: if owner(resource.data.user_id);
-      allow create: if owner(request.resource.data.user_id);
-      allow update: if owner(resource.data.user_id)
-        && request.resource.data.user_id == resource.data.user_id;
+
+    // Validation helper for UserProfile
+    function isValidUserProfile(data) {
+      return (!('uid' in data) || (data.uid is string && data.uid.size() <= 128 && data.uid == request.auth.uid))
+        && (!('email' in data) || (data.email is string && data.email.size() <= 255))
+        && (!('displayName' in data) || (data.displayName is string && data.displayName.size() <= 150))
+        && (!('photoURL' in data) || (data.photoURL is string && data.photoURL.size() <= 1500))
+        && (!('role' in data) || (data.role == 'user' || data.role == 'admin'))
+        && (!('userRole' in data) || (data.userRole is string && data.userRole.size() <= 100))
+        && (!('organization' in data) || (data.organization is string && data.organization.size() <= 250))
+        && (!('farmSizeHectares' in data) || data.farmSizeHectares is number)
+        && (!('primaryDivision' in data) || (data.primaryDivision is string && data.primaryDivision.size() <= 100))
+        && (!('primaryDistrict' in data) || (data.primaryDistrict is string && data.primaryDistrict.size() <= 100))
+        && (!('targetCrops' in data) || (data.targetCrops is string && data.targetCrops.size() <= 500))
+        && (!('phoneNumber' in data) || (data.phoneNumber is string && data.phoneNumber.size() <= 50))
+        && (!('pinpointLat' in data) || data.pinpointLat is number)
+        && (!('pinpointLng' in data) || data.pinpointLng is number)
+        && (!('createdAt' in data) || data.createdAt is string)
+        && (!('updatedAt' in data) || data.updatedAt is string);
     }
-    match /alerts/{id} {
-      allow read, delete: if owner(resource.data.user_id);
-      allow create: if owner(request.resource.data.user_id);
-      allow update: if owner(resource.data.user_id)
-        && request.resource.data.user_id == resource.data.user_id;
+
+    // Validation helper for Assessment
+    function isValidAssessment(data) {
+      return data.userId is string && data.userId.size() <= 128 && data.userId == request.auth.uid
+        && data.districtId is string && data.districtId.size() <= 50
+        && data.districtName is string && data.districtName.size() <= 100
+        && data.primaryHazard is string && data.primaryHazard.size() <= 100
+        && data.confidence is number
+        && data.severityScore is number
+        && (!('userEmail' in data) || (data.userEmail is string && data.userEmail.size() <= 255))
+        && (!('severityBin' in data) || (data.severityBin is string && data.severityBin.size() <= 50))
+        && (!('notes' in data) || (data.notes is string && data.notes.size() <= 1000))
+        && (!('createdAt' in data) || data.createdAt is string);
     }
-    match /{document=**} { allow read, write: if false; }
+
+    // Validation helper for UserAlert
+    function isValidUserAlert(data) {
+      return data.userId is string && data.userId.size() <= 128 && data.userId == request.auth.uid
+        && data.districtId is string && data.districtId.size() <= 50
+        && data.hazardType is string && data.hazardType.size() <= 50
+        && (!('severityThreshold' in data) || data.severityThreshold is number)
+        && (!('createdAt' in data) || data.createdAt is string);
+    }
+
+    // Forecast bulletins are PUBLIC data: anyone may read them (the website's
+    // live layer + the Vercel GET handlers when FORECAST_STORE=firestore).
+    // Writes stay denied here on purpose — ingest goes through the
+    // authenticated backend into the Firestore store;
+    // the unauthenticated client SDK must never be able to poison bulletins.
+    match /forecasts/{forecastId} {
+      allow get, list: if true;
+      allow create, update, delete: if false;
+    }
+
+    // Matching Collections
+    match /profiles/{userId} {
+      allow get, list: if true;
+      allow create: if isOwner(userId) && isValidId(userId);
+      allow update: if isOwner(userId) && isValidId(userId);
+      allow delete: if isOwner(userId) && isValidId(userId);
+    }
+
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidId(userId);
+      allow update: if isOwner(userId) && isValidId(userId);
+      allow delete: if isOwner(userId) && isValidId(userId);
+    }
+
+    match /user_connectors/{connectorId} {
+      allow read, write: if isSignedIn();
+    }
+
+    match /blog_articles/{articleId} {
+      allow get, list: if true;
+      allow create, update, delete: if isSignedIn();
+    }
+
+    match /assessments/{assessmentId} {
+      allow get: if isSignedIn() && existing().userId == request.auth.uid;
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && isValidId(assessmentId) && isValidAssessment(incoming());
+      allow update: if isSignedIn() && isValidId(assessmentId) && existing().userId == request.auth.uid && isValidAssessment(incoming());
+      allow delete: if isSignedIn() && isValidId(assessmentId) && existing().userId == request.auth.uid;
+    }
+
+    match /alerts/{alertId} {
+      allow get: if isSignedIn() && existing().userId == request.auth.uid;
+      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && isValidId(alertId) && isValidUserAlert(incoming());
+      allow update: if isSignedIn() && isValidId(alertId) && existing().userId == request.auth.uid && isValidUserAlert(incoming());
+      allow delete: if isSignedIn() && isValidId(alertId) && existing().userId == request.auth.uid;
+    }
   }
 }

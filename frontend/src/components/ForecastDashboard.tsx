@@ -1,6 +1,3 @@
-import { useForecasts } from '../hooks/useForecasts';
-import { useHazardContext } from '../hooks/useHazardContext';
-import { isVerifiedForecastFresh } from '../lib/profileForecast';
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -20,7 +17,9 @@ import {
   ReferenceLine,
   ComposedChart
 } from 'recharts';
-import type { ForecastRow } from '../lib/forecasts';
+import { collection, query, getDocs, onSnapshot, orderBy, limit } from 'firebase/firestore';
+import { db } from '../lib/firebase';
+import { fetchStaticForecastSnapshot, ForecastRow } from '../lib/forecasts';
 import MaterialIcon from './MaterialIcon';
 import toast from 'react-hot-toast';
 
@@ -49,16 +48,79 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
   initialDistrictId = '',
   onSelectDistrict,
 }) => {
-  const { horizon: selectedHorizon, setHorizon: setSelectedHorizon } = useHazardContext();
-  const forecastQuery = useForecasts(selectedHorizon);
-  const forecasts = forecastQuery.data ?? [];
-  const loading = forecastQuery.isPending;
-  const dbSource = forecasts.length && forecasts.every(row => row.source_kind === 'api' && isVerifiedForecastFresh(row)) ? 'verified' : 'fallback';
+  const [forecasts, setForecasts] = useState<ForecastRow[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [dbSource, setDbSource] = useState<'firestore' | 'fallback'>('firestore');
+  const [selectedHorizon, setSelectedHorizon] = useState<'7_days' | '15_days'>('7_days');
   const [selectedDistrict, setSelectedDistrict] = useState<string>(initialDistrictId);
   const [selectedHazard, setSelectedHazard] = useState<string>('all');
   const [selectedRiskLevel, setSelectedRiskLevel] = useState<'all' | 'high' | 'moderate' | 'low'>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [activeChartTab, setActiveChartTab] = useState<'trends' | 'comparison' | 'dualTrack'>('trends');
+
+  // Load forecast data: immediate static snapshot baseline + live Firestore listener
+  useEffect(() => {
+    let unsubscribe: (() => void) | undefined;
+    let isMounted = true;
+
+    // Immediately seed with snapshot data so charts render without delay
+    fetchStaticForecastSnapshot(selectedHorizon)
+      .then((rows) => {
+        if (isMounted && rows && rows.length > 0) {
+          setForecasts(rows);
+          setDbSource('fallback');
+          setLoading(false);
+        }
+      })
+      .catch((err) => {
+        console.warn('Initial static snapshot load issue:', err);
+      });
+
+    // Attempt real-time Firestore sync
+    try {
+      const forecastsRef = collection(db, 'forecasts');
+      const q = query(forecastsRef, orderBy('prediction_date', 'desc'), limit(500));
+
+      unsubscribe = onSnapshot(
+        q,
+        (snapshot) => {
+          if (!isMounted) return;
+          if (!snapshot.empty) {
+            const docs: ForecastRow[] = [];
+            snapshot.forEach((doc) => {
+              docs.push(doc.data() as ForecastRow);
+            });
+            setForecasts(docs);
+            setDbSource('firestore');
+            setLoading(false);
+          } else {
+            // Firestore collection has no documents yet, retain fallback
+            setDbSource('fallback');
+            setLoading(false);
+          }
+        },
+        (error) => {
+          // Graceful handling if Firestore is offline or unreachable
+          console.warn('Firestore real-time subscription offline or unavailable:', error?.message || error);
+          if (isMounted) {
+            setDbSource('fallback');
+            setLoading(false);
+          }
+        }
+      );
+    } catch (err) {
+      console.warn('Firestore initialization failed, running with static fallback:', err);
+      if (isMounted) {
+        setDbSource('fallback');
+        setLoading(false);
+      }
+    }
+
+    return () => {
+      isMounted = false;
+      if (unsubscribe) unsubscribe();
+    };
+  }, [selectedHorizon]);
 
   // Unique lists for filter dropdowns
   const availableDistricts = useMemo(() => {
@@ -236,7 +298,6 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
   return (
     <div className="w-full space-y-6">
       {/* Header Banner & Status */}
-      <button className="hn-button" disabled={forecastQuery.isFetching} onClick={() => void forecastQuery.refetch()}>Retry / refresh forecasts</button>
       <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-md relative overflow-hidden transition-all duration-300 hover:shadow-lg">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
           <div className="space-y-2">
@@ -247,20 +308,20 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
               </span>
               <span
                 className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-bold border ${
-                  dbSource === 'verified'
+                  dbSource === 'firestore'
                     ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
                     : 'bg-slate-100 border-slate-200 text-slate-700'
                 }`}
               >
-                <span className={`w-2 h-2 rounded-full ${dbSource === 'verified' ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`} />
-                <span>{dbSource === 'verified' ? 'Fresh run-verified forecast' : 'Stale / offline reference — not current'}</span>
+                <span className={`w-2 h-2 rounded-full ${dbSource === 'firestore' ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`} />
+                <span>{dbSource === 'firestore' ? 'Firestore Live Sync' : 'Local Forecast Baseline'}</span>
               </span>
             </div>
             <h1 className="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
               District Hazard Forecast Analytics
             </h1>
             <p className="text-slate-600 text-xs sm:text-sm max-w-3xl leading-relaxed">
-              Experimental multi-hazard forecasts and weather trends across Bangladesh's 64 agricultural districts powered by CNN AI model inference and Open-Meteo observations.
+              Real-time multi-hazard risk quantification and weather trends across Bangladesh's 64 agricultural districts powered by CNN AI model inference and Open-Meteo observations.
             </p>
           </div>
 
@@ -471,7 +532,7 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
           <div className="h-72 w-full flex items-center justify-center">
             <div className="flex flex-col items-center gap-3">
               <span className="w-8 h-8 border-3 border-slate-300 border-t-amber-500 rounded-full animate-spin" />
-              <span className="text-xs font-mono text-slate-500">Loading forecasts…</span>
+              <span className="text-xs font-mono text-slate-500">Querying Firestore Forecast Store...</span>
             </div>
           </div>
         ) : (

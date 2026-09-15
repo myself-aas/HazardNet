@@ -4,7 +4,7 @@
 // cards: newest ingested Kaggle prediction_date + ingestion timestamp +
 // dataset provenance. Same shape as backend/routes/forecasts.js GET /metadata.
 
-import { metadataDatasets, readForecastMetadata } from '../../../backend/utils/forecastServe.js';
+import { metadataDatasets, metadataDataSource } from '../../../backend/utils/forecastServe.js';
 import { getForecastStore } from '../../../backend/forecastStore.js';
 
 /**
@@ -19,10 +19,14 @@ export default async function handler(req, res) {
 
   try {
     const store = getForecastStore();
-    const metadata = await readForecastMetadata(store);
+    const predictionDate = await store.getLatestPredictionDate();
+    const ingestionTimestamp = await store.getLatestIngestionTimestamp();
     res.setHeader('Cache-Control', 'no-store, max-age=0');
     res.status(200).json({
-      ...metadata,
+      prediction_date: predictionDate,
+      ingestion_timestamp: ingestionTimestamp,
+      data_source: metadataDataSource(),
+      notebook_source: 'ashifahmedshuvo/hazardnet-auto-forecast-pipeline',
       datasets: metadataDatasets(),
       generated_at: new Date().toISOString(),
     });

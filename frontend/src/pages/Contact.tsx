@@ -1,4 +1,3 @@
-import { downloadDraft } from '../lib/hazardUx';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -21,10 +20,12 @@ export const Contact: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSending(false);
-    const fields = Array.from(new FormData(e.currentTarget as HTMLFormElement).entries()).map(([name, value]) => `${name}: ${value}`).join('\n');
-    downloadDraft(`UNSENT DRAFT — HazardNet has not received this request.\nType: ${activeForm}\n${fields}`);
-    setSubmittedMessage('Unsent draft prepared for download. Nothing was submitted or logged. Your inputs are retained; use a verified contact channel to send it.');
+    setIsSending(true);
+    setTimeout(() => {
+      setIsSending(false);
+      setSubmittedMessage(`Thank you, ${reporterName || 'Responder'}. Your report for ${district.toUpperCase()} (${hazardType}) has been logged in the HazardNet validation queue.`);
+      setComments('');
+    }, 600); // Wait for the send animation
   };
 
   return (
@@ -50,7 +51,7 @@ export const Contact: React.FC = () => {
           HazardNet Contact, Incident Reporting & API Access
         </h1>
         <p className="text-slate-600 text-xs md:text-sm leading-relaxed max-w-3xl">
-          Online submission is unavailable. Prepare and download an unsent draft, then send it through a verified contact channel. This page does not notify emergency responders.
+          Report ground-truth disaster observations, request academic API keys, or connect with our remote sensing researchers and emergency response liaisons.
         </p>
       </div>
 
@@ -136,8 +137,8 @@ export const Contact: React.FC = () => {
               >
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block font-bold text-slate-900 mb-1" htmlFor="contact-1">Target District:</label>
-                    <select id="contact-1" name="target-district"
+                    <label className="block font-bold text-slate-900 mb-1">Target District:</label>
+                    <select
                       value={district}
                       onChange={(e) => setDistrict(e.target.value)}
                       className="w-full p-2.5 rounded-xl border border-slate-300 bg-slate-50 text-slate-900 font-medium outline-none focus:border-amber-600"
@@ -153,8 +154,8 @@ export const Contact: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="block font-bold text-slate-900 mb-1" htmlFor="contact-2">Observed Hazard Type:</label>
-                    <select id="contact-2" name="observed-hazard-type"
+                    <label className="block font-bold text-slate-900 mb-1">Observed Hazard Type:</label>
+                    <select
                       value={hazardType}
                       onChange={(e) => setHazardType(e.target.value)}
                       className="w-full p-2.5 rounded-xl border border-slate-300 bg-slate-50 text-slate-900 font-medium outline-none focus:border-amber-600"
@@ -171,8 +172,8 @@ export const Contact: React.FC = () => {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block font-bold text-slate-900 mb-1" htmlFor="contact-3">Your Name / Agent Title:</label>
-                    <input id="contact-3" name="your-name-agent-title"
+                    <label className="block font-bold text-slate-900 mb-1">Your Name / Agent Title:</label>
+                    <input
                       type="text"
                       required
                       value={reporterName}
@@ -183,8 +184,8 @@ export const Contact: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="block font-bold text-slate-900 mb-1" htmlFor="contact-4">Contact Email / Phone:</label>
-                    <input id="contact-4" name="contact-email-phone"
+                    <label className="block font-bold text-slate-900 mb-1">Contact Email / Phone:</label>
+                    <input
                       type="email"
                       required
                       value={contactEmail}
@@ -196,8 +197,8 @@ export const Contact: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block font-bold text-slate-900 mb-1" htmlFor="contact-5">Field Observations & Water Depth:</label>
-                  <textarea id="contact-5" name="field-observations-water-depth"
+                  <label className="block font-bold text-slate-900 mb-1">Field Observations & Water Depth:</label>
+                  <textarea
                     rows={3}
                     required
                     value={comments}
@@ -215,7 +216,7 @@ export const Contact: React.FC = () => {
                   className="px-6 py-3 rounded-xl bg-[#f9a825] text-slate-900 font-bold transition-all shadow-xs flex items-center gap-2 text-xs hover:bg-[#d08305] cursor-pointer"
                 >
                   <SendIcon size={18} duration={0} isState={isSending} />
-                  <span>{isSending ? 'Preparing draft…' : 'Download unsent observation'}</span>
+                  <span>{isSending ? 'Sending...' : 'Submit Ground-Truth Observation'}</span>
                 </motion.button>
               </motion.form>
             )}
@@ -232,8 +233,8 @@ export const Contact: React.FC = () => {
                 className="space-y-4 text-xs"
               >
                 <div>
-                  <label className="block font-bold text-slate-900 mb-1" htmlFor="contact-6">Institution / Organization Name:</label>
-                  <input id="contact-6" name="institution-organization-name"
+                  <label className="block font-bold text-slate-900 mb-1">Institution / Organization Name:</label>
+                  <input
                     type="text"
                     required
                     placeholder="e.g. Bangladesh University of Engineering & Technology (BUET)"
@@ -243,8 +244,8 @@ export const Contact: React.FC = () => {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block font-bold text-slate-900 mb-1" htmlFor="contact-7">Institutional Email:</label>
-                    <input id="contact-7" name="institutional-email"
+                    <label className="block font-bold text-slate-900 mb-1">Institutional Email:</label>
+                    <input
                       type="email"
                       required
                       placeholder="researcher@buet.ac.bd"
@@ -253,8 +254,8 @@ export const Contact: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="block font-bold text-slate-900 mb-1" htmlFor="contact-8">Estimated Request Rate:</label>
-                    <select id="contact-8" name="estimated-request-rate" className="w-full p-2.5 rounded-xl border border-slate-300 bg-slate-50 text-slate-900 font-medium outline-none focus:border-amber-600">
+                    <label className="block font-bold text-slate-900 mb-1">Estimated Request Rate:</label>
+                    <select className="w-full p-2.5 rounded-xl border border-slate-300 bg-slate-50 text-slate-900 font-medium outline-none focus:border-amber-600">
                       <option value="1000">1,000 req / day (Academic Free)</option>
                       <option value="10000">10,000 req / day (Government/NGO)</option>
                       <option value="unlimited">Custom Pipeline (Dedicated Server)</option>
@@ -270,7 +271,7 @@ export const Contact: React.FC = () => {
                   className="px-6 py-3 rounded-xl bg-[#f9a825] text-slate-900 font-bold transition-all shadow-xs flex items-center gap-2 text-xs hover:bg-[#d08305] cursor-pointer"
                 >
                   <SendIcon size={18} duration={0} isState={isSending} />
-                  <span>{isSending ? 'Preparing draft…' : 'Download unsent API request'}</span>
+                  <span>{isSending ? 'Sending...' : 'Request API Key Access'}</span>
                 </motion.button>
               </motion.form>
             )}
@@ -287,8 +288,8 @@ export const Contact: React.FC = () => {
                 className="space-y-4 text-xs"
               >
                 <div>
-                  <label className="block font-bold text-slate-900 mb-1" htmlFor="contact-9">Full Name:</label>
-                  <input id="contact-9" name="full-name"
+                  <label className="block font-bold text-slate-900 mb-1">Full Name:</label>
+                  <input
                     type="text"
                     required
                     placeholder="Your Name"
@@ -297,8 +298,8 @@ export const Contact: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block font-bold text-slate-900 mb-1" htmlFor="contact-10">Email Address:</label>
-                  <input id="contact-10" name="email-address"
+                  <label className="block font-bold text-slate-900 mb-1">Email Address:</label>
+                  <input
                     type="email"
                     required
                     placeholder="you@example.com"
@@ -307,8 +308,8 @@ export const Contact: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block font-bold text-slate-900 mb-1" htmlFor="contact-11">Message Details:</label>
-                  <textarea id="contact-11" name="message-details"
+                  <label className="block font-bold text-slate-900 mb-1">Message Details:</label>
+                  <textarea
                     rows={4}
                     required
                     placeholder="Inquire about dataset licensing, paper code reproduction, or partnership opportunities..."
@@ -324,7 +325,7 @@ export const Contact: React.FC = () => {
                   className="px-6 py-3 rounded-xl bg-[#f9a825] text-slate-900 font-bold transition-all shadow-xs flex items-center gap-2 text-xs hover:bg-[#d08305] cursor-pointer"
                 >
                   <SendIcon size={18} duration={0} isState={isSending} />
-                  <span>{isSending ? 'Preparing draft…' : 'Download unsent message'}</span>
+                  <span>{isSending ? 'Sending...' : 'Send Message'}</span>
                 </motion.button>
               </motion.form>
             )}

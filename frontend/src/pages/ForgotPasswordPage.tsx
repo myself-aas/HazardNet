@@ -41,7 +41,7 @@ const ForgotPasswordPage: React.FC = () => {
   };
 
   return (
-    <motion.div role="status" aria-live="polite"
+    <motion.div
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, ease: 'easeOut' }}
@@ -65,7 +65,7 @@ const ForgotPasswordPage: React.FC = () => {
 
             <AnimatePresence>
               {error && (
-                <motion.div role="status" aria-live="polite"
+                <motion.div
                   initial={{ opacity: 0, y: -5 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -5 }}

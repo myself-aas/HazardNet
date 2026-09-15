@@ -71,7 +71,7 @@ describe('POST /api/v1/forecasts/update (CSV ingest)', () => {
 
   it('ingests the notebook-shaped dual-track CSV (model_severity/physics_severity)', async () => {
     const res = await request(app)
-      .post('/api/v1/forecasts/update?advisories=true')
+      .post('/api/v1/forecasts/update')
       .set('Authorization', 'Bearer test-secret')
       .attach('file', Buffer.from(NOTEBOOK_CSV), 'hazardnet_forecasts_latest.csv');
 
@@ -86,7 +86,7 @@ describe('POST /api/v1/forecasts/update (CSV ingest)', () => {
 
   it('still ingests the legacy single-track severity_score CSV', async () => {
     const res = await request(app)
-      .post('/api/v1/forecasts/update?advisories=true')
+      .post('/api/v1/forecasts/update')
       .set('Authorization', 'Bearer test-secret')
       .attach('file', Buffer.from(LEGACY_CSV), 'legacy.csv');
 
@@ -97,7 +97,7 @@ describe('POST /api/v1/forecasts/update (CSV ingest)', () => {
 
   it('skips invalid rows and reports them, keeping valid ones', async () => {
     const res = await request(app)
-      .post('/api/v1/forecasts/update?advisories=true')
+      .post('/api/v1/forecasts/update')
       .set('Authorization', 'Bearer test-secret')
       .attach('file', Buffer.from(MIXED_BAD_ROWS_CSV), 'mixed.csv');
 
@@ -111,7 +111,7 @@ describe('POST /api/v1/forecasts/update (CSV ingest)', () => {
 
   it('returns 422 when every row fails validation', async () => {
     const res = await request(app)
-      .post('/api/v1/forecasts/update?advisories=true')
+      .post('/api/v1/forecasts/update')
       .set('Authorization', 'Bearer test-secret')
       .attach('file', Buffer.from('district_id,district_name,horizon,hazard_type,severity_score,confidence,target_date,prediction_date\n1,X,10_days,Flood,9,0.5,2026-09-19,2026-09-12'), 'bad.csv');
 
@@ -121,7 +121,7 @@ describe('POST /api/v1/forecasts/update (CSV ingest)', () => {
 
   it('rejects unauthenticated ingest with 401', async () => {
     const res = await request(app)
-      .post('/api/v1/forecasts/update?advisories=true')
+      .post('/api/v1/forecasts/update')
       .attach('file', Buffer.from(NOTEBOOK_CSV), 'forecasts.csv');
 
     expect(res.statusCode).toBe(401);

@@ -41,13 +41,12 @@
     "format": "prettier --write \"frontend/src/**/*.{ts,tsx}\" \"backend/**/*.js\" \"api/**/*.js\"",
     "check:bundle": "node scripts/check-bundle.mjs",
     "check:rag-freshness": "node scripts/check-rag-freshness.mjs",
-    "check:env": "node scripts/validate_env.mjs",
-    "test:e2e": "playwright test",
-    "test:rules": "firebase emulators:exec --only firestore --project demo-hazardnet \"node --test tests/firestore-rules.test.mjs\""
+    "check:env": "node scripts/validate_env.mjs"
   },
   "dependencies": {
     "@google/genai": "^2.15.0",
     "@tensorflow/tfjs": "^4.12.0",
+    "@tensorflow/tfjs-node": "^4.22.0",
     "busboy": "^1.6.0",
     "cors": "^2.8.5",
     "csv-parser": "^3.2.1",
@@ -56,7 +55,6 @@
     "express": "^4.18.2",
     "express-rate-limit": "^7.5.0",
     "firebase": "^12.17.0",
-    "firebase-admin": "^14.4.0",
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.0",
     "multer": "^2.2.0",
@@ -70,7 +68,6 @@
     "@babel/preset-react": "^7.22.6",
     "@babel/preset-typescript": "^7.22.5",
     "@eslint/js": "^9.39.5",
-    "@firebase/rules-unit-testing": "^5.0.0",
     "@playwright/test": "^1.62.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^14.3.1",
@@ -81,7 +78,7 @@
     "babel-plugin-transform-import-meta": "^2.3.3",
     "eslint": "^9.39.0",
     "eslint-plugin-react-hooks": "^5.2.0",
-    "firebase-tools": "^15.0.0",
+    "firebase-admin": "^14.4.0",
     "globals": "^17.11.0",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^30.4.1",
@@ -93,6 +90,6 @@
     "typescript-eslint": "^8.46.0"
   },
   "engines": {
-    "node": ">=22.12.0"
+    "node": ">=20"
   }
 }

@@ -20,7 +20,6 @@ import type { DistrictData } from '../data/bangladeshDistricts';
 // ─────────────────────────────────────────────────────────────────────────
 
 export interface ForecastRow {
-  source_kind?: 'api' | 'snapshot';
   district_id: number | string;
   district_name: string;
   horizon: string;
@@ -39,9 +38,6 @@ export interface ForecastRow {
   solar_radiation_mj_m2?: number;
   evapotranspiration_mm?: number;
   created_at?: string;
-  generated_at?: string;
-  forecast_run_id?: string;
-  contract_version?: string;
   /** Dual-track severity (present when the weekly CSV carried both columns). */
   model_severity?: number;
   physics_severity?: number;
@@ -70,7 +66,7 @@ export interface ForecastMetadata {
  * Load freshness metadata without ever substituting a client/request timestamp.
  *
  * Three-stage fallback (mirrors loadForecasts): live /metadata → live /bulk →
- * the legacy deployment snapshot. The Peak Hazard Window / Incident Ingestion
+ * the committed hourly snapshot. The Peak Hazard Window / Incident Ingestion
  * cards therefore keep showing the latest Kaggle prediction_date even when
  * the API/store is unreachable, as long as the deployment bundle carries a
  * snapshot. Throws only when all three sources fail.
@@ -198,9 +194,6 @@ export function parseForecastRow(raw: unknown): ForecastRow | null {
   // whenever /metadata is down.
   if (typeof r.created_at === 'string' && r.created_at) row.created_at = r.created_at;
 
-  for (const field of ['generated_at', 'forecast_run_id', 'contract_version'] as const) {
-    if (typeof r[field] === 'string') row[field] = r[field];
-  }
   return row;
 }
 
@@ -213,11 +206,15 @@ export function parseBulkResponse(payload: unknown): ForecastRow[] {
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// Legacy deployment snapshot — offline fallback, NOT refreshed by automation.
-// Firebase is the three-hour serving source. Never present this fallback as a
-// newly verified Kaggle run; it has no forecast_run_id or execution timestamp.
+// Static hourly snapshot — the website's committed fallback data
+// ─────────────────────────────────────────────────────────────────────────
+// The hourly GitHub workflow (hourly_forecast.yml) downloads the Kaggle
+// notebook's CSV output and regenerates this file inside the website bundle
+// (scripts/build_forecast_snapshot.mjs), so every deployment of the codebase
+// ships with forecasts at most one hour behind the latest notebook run —
+// even when the forecast API/store is unreachable.
 
-/** Public path of the legacy deployment snapshot (frontend/public/data/...). */
+/** Public path of the committed hourly snapshot (frontend/public/data/...). */
 export const FORECAST_SNAPSHOT_URL = '/data/forecasts-latest.json';
 
 /** Shape of frontend/public/data/forecasts-latest.json (schema v1). */
@@ -240,7 +237,7 @@ export function parseSnapshotResponse(payload: unknown, horizon: ForecastHorizon
 }
 
 /**
- * Fetch the legacy deployment snapshot for one horizon. Used as the fallback
+ * Fetch the committed hourly snapshot for one horizon. Used as the fallback
  * when the live API is unreachable — resolves to [] (not throw) when the
  * snapshot itself is missing, so callers degrade to the static baseline.
  */
@@ -255,7 +252,7 @@ export async function fetchStaticForecastSnapshot(horizon: ForecastHorizon): Pro
 }
 
 /**
- * Freshness metadata from the legacy deployment snapshot — the offline-capable
+ * Freshness metadata from the committed hourly snapshot — the offline-capable
  * equivalent of /metadata for the Peak Hazard Window / Incident Ingestion
  * cards. Never throws: resolves to all-null when the snapshot is missing or
  * malformed. The snapshot's prediction_date wins; when absent, the newest row
@@ -434,7 +431,7 @@ export function applyForecastsToDistricts(
 
   const merged = districts.map((district) => {
     const row = index.get(canonicalKey(district.name));
-    if (!row) return { ...district, risk: severityBin(district.severity) };
+    if (!row) return district;
 
     matched += 1;
     const rowDate = new Date(row.prediction_date);

@@ -10,13 +10,14 @@ import {
   describeOAuthError,
   getProvider,
   toIdentityViews,
+  unlinkedProviders,
 } from '../lib/oauthProviders'
 
 /**
  * Connected accounts management: shows every provider identity linked to the
- * signed-in Firebase user and lets them connect more (linkIdentity popup
+ * signed-in Supabase user and lets them connect more (linkIdentity redirect
  * flow) or disconnect existing ones (unlinkIdentity). Users can combine,
- * a Google identity with a GitHub identity on one account.
+ * e.g., a LinkedIn work identity with a GitHub identity on one account.
  */
 export const IdentityConnections: React.FC = () => {
   const { user, linkIdentity, unlinkIdentity } = useAuth()
@@ -29,7 +30,7 @@ export const IdentityConnections: React.FC = () => {
     if (!user) return
     try {
       setLoadError(null)
-      const views = toIdentityViews(user.providerData as unknown as Array<Record<string, unknown>>)
+      const views = toIdentityViews((user as { identities?: unknown[] }).identities as Array<Record<string, unknown>>)
       setLinked(views)
     } catch (reason) {
       setLoadError(reason instanceof Error ? reason.message : 'Could not load connected accounts.')
@@ -44,8 +45,7 @@ export const IdentityConnections: React.FC = () => {
     setLinking(provider)
     try {
       await linkIdentity(provider)
-      await reload();
-      setLinking(null);
+      // Success leaves the page for the provider; nothing to reset.
     } catch (reason) {
       const explanation = describeOAuthError(reason)
       toast.error(`${getProvider(provider).label}: ${explanation.title} — ${explanation.hint}`, { duration: 5200 })
@@ -71,14 +71,16 @@ export const IdentityConnections: React.FC = () => {
 
   if (!user) return null
 
-  const available = [...PRIMARY_PROVIDER_IDS, ...SECONDARY_PROVIDER_IDS].filter((p) => !linked.some((identity) => identity.provider === p));
-  const supportedCount = user.providerData.filter((p) => ['password', 'google.com', 'github.com'].includes(p.providerId)).length;
+  const available = unlinkedProviders(
+    (user as { identities?: unknown[] }).identities as Array<Record<string, unknown>>,
+    [...PRIMARY_PROVIDER_IDS, ...SECONDARY_PROVIDER_IDS],
+  )
 
   return (
     <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <ProviderGlyph provider="github" className="h-4 w-4" />
+          <ProviderGlyph provider="linkedin" className="h-4 w-4" />
           <h4 className="text-xs font-extrabold text-slate-900 uppercase tracking-wide">
             Connected Accounts & Social Sign-In
           </h4>
@@ -89,7 +91,7 @@ export const IdentityConnections: React.FC = () => {
       </div>
 
       <p className="text-[11px] text-slate-600 leading-relaxed">
-        Link Google or GitHub to sign into this same HazardNet account
+        Link providers (LinkedIn, GitHub, Slack, Discord, X, Figma…) to sign into this same HazardNet account
         with any of them. Disconnecting removes only the sign-in method — your advisories and saved assessments stay.
       </p>
 
@@ -103,7 +105,7 @@ export const IdentityConnections: React.FC = () => {
         <ul className="space-y-1.5" data-testid="linked-identities">
           {linked.map((identity) => {
             const config = getProvider(identity.provider)
-            const isLastIdentity = supportedCount <= 1
+            const isLastIdentity = linked.length === 1
             return (
               <li
                 key={identity.identityId}
@@ -122,7 +124,7 @@ export const IdentityConnections: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => handleUnlink(identity.provider)}
-                  disabled={unlinking !== null || linking !== null || isLastIdentity}
+                  disabled={unlinking === identity.provider || isLastIdentity}
                   title={
                     isLastIdentity
                       ? 'Add another sign-in method before removing the last one'
@@ -150,7 +152,7 @@ export const IdentityConnections: React.FC = () => {
                   type="button"
                   whileTap={{ scale: 0.96 }}
                   onClick={() => handleLink(provider)}
-                  disabled={linking !== null || unlinking !== null}
+                  disabled={linking !== null}
                   className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-[10px] font-bold text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-50 disabled:cursor-wait disabled:opacity-60"
                 >
                   {linking === provider ? (

@@ -1,13 +1,12 @@
 import express from 'express';
-import { pushStore as subscriptions } from '../pushStore.js';
 import { getVapidPublicKey, sendWebPushNotification } from '../utils/vapid.js';
 import { verifyApiKey } from '../utils/apiKeyAuth.js';
 
 const router = express.Router();
 
-// Durable private Firestore subscriptions shared across Vercel and Express.
+// In-memory web push subscription store with max capacity limit
 const MAX_SUBSCRIPTIONS = 5000;
-
+const subscriptions = new Map();
 
 /**
  * GET /api/push/vapid-key
@@ -22,40 +21,37 @@ router.get('/vapid-key', (req, res) => {
  * GET /api/push/status
  * Returns subscription statistics and push service status.
  */
-router.get('/status', handle(async (req, res) => {
+router.get('/status', (req, res) => {
   res.json({
     status: 'active',
-    activeSubscriptions: await subscriptions.size(),
+    activeSubscriptions: subscriptions.size,
     vapidPublicKey: getVapidPublicKey(),
   });
-}));
+});
 
 /**
  * POST /api/push/subscribe
  * Registers a new client Web Push subscription.
  */
-router.post('/subscribe', handle(async (req, res) => {
+router.post('/subscribe', (req, res) => {
   const subscription = req.body;
 
   if (!subscription || !subscription.endpoint || typeof subscription.endpoint !== 'string') {
     return res.status(400).json({ error: 'Invalid push subscription payload' });
   }
 
-  // Restrict browser-provided URLs to real push services (SSRF defense).
-  let endpoint;
-  try { endpoint = new URL(subscription.endpoint); } catch { return res.status(400).json({ error: 'Malformed push endpoint' }); }
-  const allowed = ['fcm.googleapis.com', 'updates.push.services.mozilla.com', 'web.push.apple.com'];
-  if (endpoint.protocol !== 'https:' || endpoint.username || endpoint.password || endpoint.port
-      || !allowed.includes(endpoint.hostname) || subscription.endpoint.length > 2048
-      || typeof subscription.keys?.p256dh !== 'string' || typeof subscription.keys?.auth !== 'string'
-      || subscription.keys.p256dh.length > 256 || subscription.keys.auth.length > 256) {
-    return res.status(400).json({ error: 'Unsupported push endpoint or keys' });
-  }
-  if (await subscriptions.size() >= MAX_SUBSCRIPTIONS) {
-    return res.status(503).json({ error: 'Push subscription capacity reached' });
+  // Validate endpoint URL structure and length
+  if (subscription.endpoint.length > 2048 || (!subscription.endpoint.startsWith('https://') && !subscription.endpoint.startsWith('http://localhost'))) {
+    return res.status(400).json({ error: 'Malformed push subscription endpoint' });
   }
 
-  await subscriptions.set(subscription.endpoint, {
+  if (subscriptions.size >= MAX_SUBSCRIPTIONS && !subscriptions.has(subscription.endpoint)) {
+    // Evict oldest subscription if over limit
+    const oldestKey = subscriptions.keys().next().value;
+    subscriptions.delete(oldestKey);
+  }
+
+  subscriptions.set(subscription.endpoint, {
     subscription,
     subscribedAt: new Date().toISOString(),
   });
@@ -65,35 +61,35 @@ router.post('/subscribe', handle(async (req, res) => {
   res.status(201).json({
     success: true,
     message: 'Push subscription registered successfully',
-    totalSubscriptions: await subscriptions.size(),
+    totalSubscriptions: subscriptions.size,
   });
-}));
+});
 
 /**
  * POST /api/push/unsubscribe
  * Unregisters an existing Web Push subscription.
  */
-router.post('/unsubscribe', handle(async (req, res) => {
+router.post('/unsubscribe', (req, res) => {
   const { endpoint } = req.body || {};
 
   if (!endpoint) {
     return res.status(400).json({ error: 'Endpoint is required for unsubscription' });
   }
 
-  const existed = await subscriptions.delete(endpoint);
+  const existed = subscriptions.delete(endpoint);
 
   res.json({
     success: true,
     unsubscribed: existed,
-    totalSubscriptions: await subscriptions.size(),
+    totalSubscriptions: subscriptions.size,
   });
-}));
+});
 
 /**
  * POST /api/push/send
  * Broadcasts a push notification to registered Web Push clients.
  */
-router.post('/send', handle(async (req, res) => {
+router.post('/send', async (req, res) => {
   // Restrict broadcast capability to authenticated backend jobs
   // (timing-safe compare, fail-closed when BACKEND_API_KEY is unset — SEC-06).
   const auth = verifyApiKey(req);
@@ -114,18 +110,19 @@ router.post('/send', handle(async (req, res) => {
     badge: '/hazardnet-logo.svg',
     timestamp: Date.now(),
     data: {
-      url: typeof data?.url === 'string' && data.url.startsWith('/') && !data.url.startsWith('//') && data.url.length <= 500 ? data.url : '/',
+      url: typeof data?.url === 'string' && data.url.length <= 500 ? data.url : '/',
+      ...(typeof data === 'object' && data !== null ? data : {}),
     },
   };
 
   const results = {
-    total: await subscriptions.size(),
+    total: subscriptions.size,
     successful: 0,
     failed: 0,
     errors: [],
   };
 
-  if (await subscriptions.size() === 0) {
+  if (subscriptions.size === 0) {
     return res.json({
       success: true,
       message: 'No active web push subscriptions found',
@@ -133,8 +130,7 @@ router.post('/send', handle(async (req, res) => {
     });
   }
 
-  const entries = await subscriptions.entries();
-  const send = async ([endpoint, entry]) => {
+  const sendPromises = Array.from(subscriptions.entries()).map(async ([endpoint, entry]) => {
     try {
       await sendWebPushNotification(entry.subscription, notificationPayload);
       results.successful++;
@@ -144,28 +140,18 @@ router.post('/send', handle(async (req, res) => {
 
       // Clean up expired (410 Gone / 404 Not Found) subscriptions
       if (err.statusCode === 410 || err.statusCode === 404) {
-        await subscriptions.delete(endpoint);
+        subscriptions.delete(endpoint);
       }
     }
-  };
-  for (let i = 0; i < entries.length; i += 10) {
-    await Promise.all(entries.slice(i, i + 10).map(send));
-  }
+  });
+
+  await Promise.all(sendPromises);
 
   res.json({
     success: true,
     message: `Push notification broadcast complete`,
     results,
   });
-}));
-
-function handle(fn) {
-  return (req, res, next) => Promise.resolve(fn(req, res)).catch(next);
-}
-
-router.use((err, req, res, _next) => {
-  console.error('[push] Store or delivery unavailable:', err.code || err.name);
-  res.status(503).json({ error: 'Push service temporarily unavailable' });
 });
 
 export default router;

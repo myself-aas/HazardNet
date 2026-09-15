@@ -1,4 +1,3 @@
-import { districtFor, districtPath } from '../lib/hazardUx';
 import React from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { QrCode, Smartphone, ExternalLink, ShieldCheck } from 'lucide-react';
@@ -20,16 +19,19 @@ interface PrintQrCodeProps {
  */
 export const PrintQrCode: React.FC<PrintQrCodeProps> = ({
   url,
-  title = 'HazardNet reference link',
-  subtitle = 'Scan to check forecast source and freshness',
+  title = 'Live Digital Directive & Real-time Field Telemetry',
+  subtitle = 'Scan with mobile camera to access live situation map & updates',
   districtOrSector,
   className = '',
   size = 76,
   showInScreen = false,
 }) => {
 // Clean and official target URL without noisy query params or sandbox URLs
-  const district = districtFor(districtOrSector || '');
-  const resolvedUrl = url || new URL(district ? districtPath(district.id) : '/', window.location.origin).href;
+  const resolvedUrl =
+    url ||
+    (districtOrSector
+      ? `https://hazardnet.live/district/${districtOrSector.toLowerCase().replace(/\s+/g, '-')}`
+      : 'https://hazardnet.live');
 
   return (
     <div
