@@ -180,8 +180,21 @@ export const DistrictDetailPage: React.FC = () => {
         r.district_name.toLowerCase() === matchName ||
         canonicalKey(r.district_name) === canonicalKey(district.name);
 
-      setDistrictForecasts7D(rows7.filter(filterDistrict));
-      setDistrictForecasts15D(rows15.filter(filterDistrict));
+      const district7D = rows7.filter(filterDistrict);
+      const district15D = rows15.filter(filterDistrict);
+      setDistrictForecasts7D(district7D);
+      setDistrictForecasts15D(district15D);
+      // The pipeline does not always emit BOTH horizons for every district
+      // (a GEE/inference hiccup can drop one), so don't open the section on
+      // an empty tab when the other horizon has records: 2026-09-16's run
+      // covered Mymensingh only in the 15-day CSV, and the page opened on
+      // "7-Day Forecast (0) — no forecast records found" anyway.
+      setActiveTableHorizon((current) => {
+        const rowsFor = (h: '7_days' | '15_days') => (h === '7_days' ? district7D : district15D);
+        if (rowsFor(current).length > 0) return current;
+        const other = current === '7_days' ? '15_days' : '7_days';
+        return rowsFor(other).length > 0 ? other : current;
+      });
       setLoadingForecastTable(false);
     }).catch(() => {
       if (isMounted) setLoadingForecastTable(false);
@@ -797,7 +810,7 @@ export const DistrictDetailPage: React.FC = () => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-4">
           <div>
             <div className="text-xs font-mono font-bold text-amber-600 uppercase tracking-wider">
-              Kaggle Notebook CSV Output • District Telemetry Feed
+              Pipeline CSV Output (GEE + Open-Meteo + TFLite) • District Telemetry Feed
             </div>
             <h2 className="text-xl font-black text-slate-950 tracking-tight">
               7-Day & 15-Day Forecast Records ({data.districtName})
@@ -867,7 +880,7 @@ export const DistrictDetailPage: React.FC = () => {
 
         {loadingForecastTable ? (
           <div className="py-12 text-center text-slate-500 font-mono text-sm animate-pulse">
-            Loading Kaggle CSV forecast logs for {data.districtName}...
+            Loading pipeline CSV forecast logs for {data.districtName}...
           </div>
         ) : (
           <div className="overflow-x-auto rounded-2xl border border-slate-200/90 shadow-2xs">
@@ -889,7 +902,10 @@ export const DistrictDetailPage: React.FC = () => {
                 {(activeTableHorizon === '7_days' ? districtForecasts7D : districtForecasts15D).length === 0 ? (
                   <tr>
                     <td colSpan={9} className="p-8 text-center text-slate-500 font-sans text-sm">
-                      No forecast records found in Kaggle CSV output for {data.districtName} ({activeTableHorizon === '7_days' ? '7 Days' : '15 Days'}).
+                      The latest pipeline run did not emit a {activeTableHorizon === '7_days' ? '7-day' : '15-day'} record for {data.districtName}.
+                      {(activeTableHorizon === '7_days' ? districtForecasts15D : districtForecasts7D).length > 0
+                        ? ` The ${activeTableHorizon === '7_days' ? '15-day' : '7-day'} horizon has records — switch tabs above.`
+                        : ' Check back after the next scheduled forecast refresh.'}
                     </td>
                   </tr>
                 ) : (

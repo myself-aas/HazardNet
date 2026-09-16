@@ -147,6 +147,17 @@ def test_website_snapshot_builds_from_the_published_csv(tmp_path):
     assert sorted(snapshot['horizons']) == ['15_days', '7_days']
     assert len(snapshot['horizons']['7_days']) == 64
 
+    # Legacy om_* columns (this fixture carries no canonical met columns) must
+    # be converted into the snapshot with the SAME rules as the ingest
+    # boundary (backend/utils/forecastRow.js): precip m→mm, wind m/s→km/h,
+    # solar kJ-over-horizon→MJ/m²/day, ET mm-over-horizon→mm/day.
+    met_row = snapshot['horizons']['7_days'][0]
+    assert met_row['temperature_mean'] == 300.15   # om_temp_2m_k passthrough
+    assert met_row['precipitation_mm'] == 4.0      # 0.004 m * 1000
+    assert met_row['wind_max_kmh'] == 30.6         # 8.5 m/s * 3.6
+    assert met_row['evapotranspiration_mm'] == round(0.005 / 7, 4)
+    assert met_row['solar_radiation_mj_m2'] == round(18000000 / 1000 / 7, 4)
+
 
 # ---------------------------------------------------------------------------
 # The generator's own schema must survive the whole chain
@@ -249,9 +260,21 @@ def test_generated_schema_flows_through_publish_validate_and_snapshot(tmp_path):
         'Flood', 'Heat Wave', 'Severe Local Storm', 'Tropical Cyclone',
     }
 
-    # The canonical meteorological columns are not part of the (deliberately
-    # small) website snapshot; they travel in the JSON sidecar the store ingest
-    # consumes — prove they survive the promoter as numbers, not strings.
+    # The canonical meteorological columns must survive INTO the website
+    # snapshot: the District Detail page's forecast table renders
+    # Temp (Min/Max) / Precip. / Wind Max from the committed snapshot, and
+    # until 2026-09-16 the builder dropped them, so production showed "—" in
+    # every weather column whenever it ran off the snapshot fallback.
+    assert row['temperature_min'] == 24.9
+    assert row['temperature_max'] == 33.1
+    assert row['precipitation_mm'] == 4.2
+    assert row['wind_max_kmh'] == 10.3
+    assert row['dewpoint_mean'] == 25.5
+    assert row['solar_radiation_mj_m2'] == 18.4
+    assert row['evapotranspiration_mm'] == 3.1
+
+    # …and they travel in the JSON sidecar the store ingest consumes — prove
+    # they survive the promoter as numbers, not strings.
     sidecar = json.loads((tmp_path / 'out.json').read_text())
     assert sidecar[0]['temperature_mean'] == 27.5
     assert sidecar[0]['precipitation_mm'] == 4.2
