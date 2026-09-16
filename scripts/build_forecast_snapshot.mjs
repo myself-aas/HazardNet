@@ -106,6 +106,7 @@ function main() {
     'Flood', 'Heat Wave', 'Severe Local Storm', 'Tropical Cyclone',
   ]);
   const VALID_HORIZONS = new Set(['7_days', '15_days']);
+  const HORIZON_DAYS = { '7_days': 7, '15_days': 15 };
 
   const horizons = {};
   let dropped = 0;
@@ -147,6 +148,38 @@ function main() {
     ]) {
       const v = num(get(cells, src));
       if (v !== null) row[out] = v;
+    }
+
+    // Meteorological (Open-Meteo) fields — the District Detail page's CSV
+    // table renders Temp (Min/Max) / Precip. / Wind Max from these, and until
+    // 2026-09-16 the snapshot silently dropped them, so the site showed "—"
+    // for every weather column whenever it ran off the committed snapshot.
+    // Canonical column names win; the legacy om_* aliases are converted with
+    // EXACTLY the same rules as the ingest boundary (backend/utils/
+    // forecastRow.js): om_temp_2m_k/om_max_temp_k/om_min_temp_k/om_dewpoint_k
+    // hold °C despite the suffix, om_precip_m is metres over the horizon,
+    // om_wind_max_ms is m/s, om_solar_rad_j is kJ/m² over the horizon and
+    // om_et_sum_m is mm over the horizon (both converted to per-day values).
+    const days = HORIZON_DAYS[horizon];
+    const round4 = (v) => (v === null ? null : Math.round(v * 10000) / 10000);
+    const legacy = (name, transform = (v) => v) => {
+      const v = num(get(cells, name));
+      return v === null ? null : transform(v);
+    };
+    const meteorological = {
+      temperature_mean: num(get(cells, 'temperature_mean')) ?? legacy('om_temp_2m_k'),
+      temperature_max: num(get(cells, 'temperature_max')) ?? legacy('om_max_temp_k'),
+      temperature_min: num(get(cells, 'temperature_min')) ?? legacy('om_min_temp_k'),
+      precipitation_mm: num(get(cells, 'precipitation_mm')) ?? legacy('om_precip_m', (v) => v * 1000),
+      wind_max_kmh: num(get(cells, 'wind_max_kmh')) ?? legacy('om_wind_max_ms', (v) => v * 3.6),
+      dewpoint_mean: num(get(cells, 'dewpoint_mean')) ?? legacy('om_dewpoint_k'),
+      solar_radiation_mj_m2: num(get(cells, 'solar_radiation_mj_m2'))
+        ?? legacy('om_solar_rad_j', (v) => (v / 1000) / days),
+      evapotranspiration_mm: num(get(cells, 'evapotranspiration_mm'))
+        ?? legacy('om_et_sum_m', (v) => v / days),
+    };
+    for (const [field, value] of Object.entries(meteorological)) {
+      if (value !== null && Number.isFinite(value)) row[field] = round4(value);
     }
     for (const [out, src] of [
       ['division', 'division'],

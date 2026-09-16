@@ -66,39 +66,66 @@ jobs:
           fi
           echo "✅ Homepage serves the app shell"
 
-      - name: Probe forecast metadata API
+      - name: Probe forecast data (API, falling back to the committed snapshot)
         shell: bash
         run: |
           # Same -L rationale as the homepage probe above: the API rides the
           # same apex→www 308.
+          #
+          # Production currently ships the SPA plus the committed snapshot and
+          # serves NO /api/* route at all (Vercel Root Directory — see
+          # docs/ops/owner-actions.md §2a-bis). While PUSH_TO_API=false the
+          # snapshot IS the documented delivery path (daily_forecast.yml
+          # commits it), so a 404 on the API must not go red as long as the
+          # snapshot the site actually serves is present and fresh. The probe
+          # therefore checks the API first and falls back to the snapshot,
+          # applying the same freshness gate to whichever source answered.
           API_URL="${API_METADATA_URL:-$SITE_URL/api/v1/forecasts/metadata}"
+          SNAPSHOT_URL="$SITE_URL/data/forecasts-latest.json"
+
+          check_freshness() {
+            # $1 = prediction_date (YYYY-MM-DD), $2 = human-readable source
+            if [ -z "$1" ]; then
+              echo "::error::$2 has no prediction_date — the forecast data looks empty"
+              return 1
+            fi
+            echo "prediction_date: $1 ($2)"
+            AGE_DAYS=$(( ( $(date +%s) - $(date -d "$1" +%s) ) / 86400 ))
+            echo "data age: ${AGE_DAYS} days (threshold: ${MAX_DATA_AGE_DAYS})"
+            if [ "$AGE_DAYS" -gt "$MAX_DATA_AGE_DAYS" ]; then
+              echo "::error::forecast data is ${AGE_DAYS} days old (>${MAX_DATA_AGE_DAYS}) — pipeline may be stalled"
+              return 1
+            fi
+          }
+
           HTTP_CODE=$(curl -sSL --max-redirs 5 -o /tmp/metadata.json -w "%{http_code}" --max-time 30 "$API_URL")
           echo "metadata HTTP $HTTP_CODE ($API_URL)"
-          if [ "$HTTP_CODE" = "404" ]; then
-            echo "::error::$API_URL returns 404 — this deployment serves no /api/v1/forecasts/* route at all."
-            echo "::error::Check the Vercel project's Root Directory (Production serves only the static frontend today: /dashboard 404s too). If the API runs on a different host, set the API_METADATA_URL repository variable to its /api/v1/forecasts/metadata URL."
-            cat /tmp/metadata.json | head -c 300
+          if [ "$HTTP_CODE" = "200" ] && jq -e . /tmp/metadata.json >/dev/null 2>&1; then
+            PREDICTION_DATE=$(jq -r '.prediction_date // empty' /tmp/metadata.json | head -c 10)
+            check_freshness "$PREDICTION_DATE" "$API_URL" || exit 1
+            echo "✅ Forecast API serves fresh data"
+            exit 0
+          fi
+
+          if [ -n "$API_METADATA_URL" ]; then
+            # The owner explicitly pointed the probe at a dedicated API host —
+            # that host not answering with forecast JSON is a hard failure.
+            echo "::error::$API_URL returned HTTP $HTTP_CODE (or non-JSON) — the API_METADATA_URL repository variable points at a host that does not serve forecast metadata."
+            head -c 300 /tmp/metadata.json || true
             exit 1
           fi
-          if [ "$HTTP_CODE" != "200" ]; then
-            echo "::error::/api/v1/forecasts/metadata returned HTTP $HTTP_CODE"
-            cat /tmp/metadata.json
+
+          echo "::warning::$API_URL returned HTTP $HTTP_CODE — this deployment serves no /api/v1/forecasts/* route (Vercel Root Directory, docs/ops/owner-actions.md §2a-bis). Probing the committed snapshot instead: it is the active delivery path while PUSH_TO_API=false. Set the API_METADATA_URL repository variable if the API runs on another host."
+          SNAP_CODE=$(curl -sSL --max-redirs 5 -o /tmp/metadata.json -w "%{http_code}" --max-time 30 "$SNAPSHOT_URL")
+          echo "snapshot HTTP $SNAP_CODE ($SNAPSHOT_URL)"
+          if [ "$SNAP_CODE" != "200" ] || ! jq -e . /tmp/metadata.json >/dev/null 2>&1; then
+            echo "::error::Neither the forecast API (HTTP $HTTP_CODE) nor the committed snapshot (HTTP $SNAP_CODE) is being served — the site has no forecast data path at all."
+            head -c 300 /tmp/metadata.json || true
             exit 1
           fi
           PREDICTION_DATE=$(jq -r '.prediction_date // empty' /tmp/metadata.json | head -c 10)
-          echo "prediction_date: ${PREDICTION_DATE:-<none>}"
-          if [ -z "$PREDICTION_DATE" ]; then
-            echo "::error::metadata has no prediction_date — the forecast store looks empty"
-            cat /tmp/metadata.json
-            exit 1
-          fi
-          AGE_DAYS=$(( ( $(date +%s) - $(date -d "$PREDICTION_DATE" +%s) ) / 86400 ))
-          echo "data age: ${AGE_DAYS} days (threshold: ${MAX_DATA_AGE_DAYS})"
-          if [ "$AGE_DAYS" -gt "$MAX_DATA_AGE_DAYS" ]; then
-            echo "::error::forecast data is ${AGE_DAYS} days old (>${MAX_DATA_AGE_DAYS}) — pipeline may be stalled"
-            exit 1
-          fi
-          echo "✅ Forecast data is fresh"
+          check_freshness "$PREDICTION_DATE" "$SNAPSHOT_URL" || exit 1
+          echo "✅ Committed snapshot serves fresh data"
 
       - name: Summarize
         if: always()
@@ -108,7 +135,10 @@ jobs:
             echo "### Site health probe — $(date -u +%Y-%m-%dT%H:%M:%SZ)"
             echo ""
             echo "- site: $SITE_URL"
-            if [ -f /tmp/metadata.json ]; then
-              jq -r '"- prediction_date: " + (.prediction_date // "none") + "\n- source: " + (.data_source // "none")' /tmp/metadata.json
+            # Guard the jq: when the probed endpoint answered with an HTML
+            # error page, /tmp/metadata.json is not JSON and an unguarded jq
+            # here used to fail the Summarize step on top of the probe itself.
+            if [ -f /tmp/metadata.json ] && jq -e . /tmp/metadata.json >/dev/null 2>&1; then
+              jq -r '"- prediction_date: " + (.prediction_date // "none") + "\n- source: " + (.data_source // .source // "none")' /tmp/metadata.json
             fi
           } >> "$GITHUB_STEP_SUMMARY"

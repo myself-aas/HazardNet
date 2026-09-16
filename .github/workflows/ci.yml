@@ -323,18 +323,25 @@ jobs:
           node -e "import('./api/v1/forecasts/metadata.js').then(() => console.log('api/v1/forecasts/metadata: ESM OK'))"
           node -e "import('./api/v1/forecasts/history.js').then(() => console.log('api/v1/forecasts/history: ESM OK'))"
 
-      - name: Production build
-        run: npm run build
-
-      - name: Cache build artifacts
+      # Cache ONLY Vite's incremental cache, restored BEFORE the build.
+      # The previous step cached `frontend/dist/` too and ran AFTER the build:
+      # actions/cache extracts the old tar OVER the fresh dist without deleting
+      # anything, and because chunk filenames are content-hashed, every run
+      # merged the previous commits' chunks into dist and saved the union back
+      # (restore-keys prefix fallback). The bundle budget check then summed
+      # stale chunks along with the real build — the total accreted by
+      # ~260 kB gzip per distinct commit until the budget "failed" on runs
+      # whose actual build was fine (first red: PR #27, 2026-09-16).
+      - name: Cache Vite build cache
         uses: actions/cache@v5
         with:
-          path: |
-            frontend/dist/
-            frontend/node_modules/.vite
-          key: ${{ runner.os }}-build-artifacts-${{ github.sha }}
+          path: frontend/node_modules/.vite
+          key: ${{ runner.os }}-vite-cache-${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-build-artifacts-
+            ${{ runner.os }}-vite-cache-
+
+      - name: Production build
+        run: npm run build
 
       - name: Bundle budget check
         run: npm run check:bundle
