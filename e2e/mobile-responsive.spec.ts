@@ -61,16 +61,20 @@ test.describe('Mobile responsiveness @375px', () => {
     const chat = page.getByRole('dialog', { name: /hazardnet ai advisor chat/i });
     await expect(chat).toBeVisible();
 
-    const chatBox = await chat.boundingBox();
-    const headerBox = await page.locator('header').first().boundingBox();
-    expect(chatBox).toBeTruthy();
-    expect(headerBox).toBeTruthy();
-
     // Full-screen sheet: spans the viewport width and starts at the very top,
-    // so no slice of the page header is half-covered behind it.
-    expect(chatBox!.x).toBeGreaterThanOrEqual(0);
-    expect(chatBox!.width).toBeGreaterThanOrEqual(374);
-    expect(chatBox!.y).toBeLessThanOrEqual(1);
+    // so no slice of the page header is half-covered behind it. The sheet
+    // enters on a spring (scale 0.85→1 with overshoot), so poll until the
+    // geometry has settled instead of sampling mid-animation.
+    await expect
+      .poll(
+        async () => {
+          const b = await chat.boundingBox();
+          if (!b) return false;
+          return Math.abs(b.x) <= 0.5 && b.width >= 374 && b.y <= 1 && b.y >= -1;
+        },
+        { timeout: 10_000 }
+      )
+      .toBe(true);
 
     // …and it is dismissible.
     await chat.getByRole('button', { name: /close assistant/i }).click();
@@ -87,6 +91,12 @@ test.describe('Mobile responsiveness @375px', () => {
     await page.getByRole('button', { name: /open navigation menu/i }).click();
     const drawer = page.getByTestId('menu-drawer');
     await expect(drawer).toBeVisible();
+
+    // Wait for the slide-in spring to settle (visible() can resolve while the
+    // panel is still off-screen at x < 0).
+    await expect
+      .poll(async () => (await drawer.boundingBox())?.x, { timeout: 10_000 })
+      .toBeGreaterThanOrEqual(-0.5);
 
     // The portaled drawer (z-[10002]) must stack above the header (z-40):
     // compare paint order via elementFromPoint at the header's center.

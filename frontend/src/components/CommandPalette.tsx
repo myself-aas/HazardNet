@@ -450,7 +450,13 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onSelectDistrict
           setIsOpen(true);
           setTimeout(() => inputRef.current?.focus(), 50);
         }}
-        className="relative tap-target p-2 rounded-xl bg-white/40 hover:bg-white/70 active:bg-white/90 border border-slate-200/50 text-slate-800 hover:text-slate-950 backdrop-blur-md transition-all duration-200 hover:scale-105 active:scale-95 shadow-2xs flex items-center justify-center group shrink-0"
+        /* 44×44 touch target on the compact (touch) bar. At ≥xl the trigger
+           lives in the full desktop bar, which measured ~1180px before this
+           target existed — a 44px min-width there pushed it to 1287px and
+           overflowed the viewport at exactly 1280 (e2e/smoke.spec.ts). The
+           desktop bar is cursor-driven, so it keeps the natural icon width.
+           Utilities (not .tap-target) so the xl: variant reliably overrides. */
+        className="relative min-w-[44px] min-h-[44px] xl:min-w-0 p-2 rounded-xl bg-white/40 hover:bg-white/70 active:bg-white/90 border border-slate-200/50 text-slate-800 hover:text-slate-950 backdrop-blur-md transition-all duration-200 hover:scale-105 active:scale-95 shadow-2xs flex items-center justify-center group shrink-0"
         title="Search HazardNet (Ctrl+K)"
         aria-label="Search HazardNet"
         data-testid="district-search-trigger"
