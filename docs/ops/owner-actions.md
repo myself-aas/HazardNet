@@ -485,3 +485,32 @@ sandbox has no Java, no emulator and no project credentials.
    hammering one instance but multiplies by the number of warm instances. A global
    guarantee needs a shared counter (Upstash Redis/Vercel KV) — worth it only if the AI
    routes see real abuse; the honest current guarantee is documented in `SECURITY.md`.
+
+## Action 9 — Let the probe publish its result 🟡 (~5 min, after the merge)
+
+The Phase 7 status page renders `data/site-health/latest.json`, which
+`.github/workflows/site-health.yml` commits on every scheduled run. The workflow now declares
+`permissions: contents: write` for exactly that step.
+
+**GitHub caps that request at the repository setting.** If
+*Settings → Actions → General → Workflow permissions* is **"Read repository contents and
+packages permissions"**, the token is read-only, the `git push` fails — and the workflow is
+written to report that as a **warning**, not a failure, so the probe still tells you what it
+found (the result is in the run summary and the uploaded artifact). You will see:
+
+```
+::warning::could not publish the probe result to the branch — this repository's workflow
+permissions are read-only (docs/ops/owner-actions.md, Action 9). The result is still in the
+run summary and the uploaded artifact.
+```
+
+**Fix:** *Settings → Actions → General → Workflow permissions* → **"Read and write
+permissions"**, then dispatch the probe once (`Actions → Site Health Probe → Run workflow`) and
+confirm `data/site-health/latest.json` gained a commit. Nothing else in the repository needs
+write access from this workflow, and every other workflow keeps its own least-privilege
+`permissions:` block.
+
+**Until Action 7 is done, expect the probe to be red** — and expect the status page to say so.
+That is the page working: the live deployment serves none of the declared security headers, its
+API routes 404, and its sitemap predates Phase 0. A green probe before Action 7 would mean the
+probe is broken.

@@ -40,6 +40,7 @@ const AnalyticsAnalyticsPage = lazy(() => import('./pages/AnalyticsPage').then((
 const DistrictDetailPage = lazy(() => import('./pages/DistrictDetailPage').then((m) => ({ default: m.DistrictDetailPage })));
 const AlertsPage = lazy(() => import('./pages/AlertsPage').then((m) => ({ default: m.AlertsPage })));
 const AlertDetailPage = lazy(() => import('./pages/AlertDetailPage').then((m) => ({ default: m.AlertDetailPage })));
+const StatusPage = lazy(() => import('./pages/StatusPage').then((m) => ({ default: m.StatusPage })));
 const UserDashboardPage = lazy(() => import('./pages/UserDashboardPage'));
 const PublicProfilePage = lazy(() => import('./pages/PublicProfilePage'));
 const SetPasswordPage = lazy(() => import('./pages/SetPasswordPage'));
@@ -204,6 +205,9 @@ const AppContent: React.FC = () => {
               <Route path="/model" element={<ArticlePage path="/model" />} />
               <Route path="/data-sources" element={<ArticlePage path="/data-sources" />} />
               <Route path="/faq" element={<ArticlePage path="/faq" />} />
+              {/* Phase 7 observability: what the deployment's own committed artifacts say
+                  about the freshness of the data it ships (frontend/public/data/freshness.json). */}
+              <Route path="/status" element={<StatusPage />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/terms" element={<Terms />} />
               <Route path="/privacy" element={<Privacy />} />

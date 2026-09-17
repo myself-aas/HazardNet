@@ -314,7 +314,7 @@ the code.
 | Model registry | **Content-hash artifacts + `Models/VERSION.json` + a CI freshness gate** *(unchanged)*, plus a recorded run report per pipeline execution | Already exists and is enforced in CI; the missing half is *metrics*, not artifacts | MLflow — a server for one model | Champion/challenger or more than one concurrently served model (Phase 3 retraining loop) |
 | Secrets | **GitHub Actions secrets + Vercel env + Firebase env config** *(unchanged)* | No long-lived services to rotate; GEE creds are already job-scoped and deleted after use | Vault | Multi-service production with rotation/compliance requirements |
 | Observability | **prom-client `/api/metrics` + the 30-min site-health probes + a published `data/freshness.json`** ▲ | Cheap, already deployed, and it measures what matters (forecast age, coverage, endpoint honesty) | Prometheus/Grafana/Loki stack; Sentry | An on-call rotation, or more than one service whose health must be correlated |
-| Status page | **Static page generated from `data/freshness.json` + the probe workflow** ◆ (Phase 7) | Publishes the thing trust depends on (freshness per source, coverage per horizon) with no new infra | Hosted status SaaS | Multiple dependent services |
+| Status page | **Static page generated from `data/freshness.json` + the probe workflow** ◆ **delivered (Phase 7)** — `/status`, `scripts/build_freshness_artifact.mjs`, `docs/ops/STATUS_PAGE.md` | Publishes the thing trust depends on (freshness per source, coverage per horizon) with no new infra | Hosted status SaaS | Multiple dependent services |
 
 ---
 
@@ -354,7 +354,7 @@ for this).
 | How fresh is the forecast? | `data/freshness.json` (generated per run) + `hazardnet_forecast_age_hours` |
 | Which districts are missing this run, and why? | `coverage` stamp + `run_report` (§3.2, §3.3) |
 | Which model produced this number? | `model_version` on the row (§3.1); no response claims otherwise |
-| Is the site honest right now? | the site-health probe workflow (deep links, headers, sitemap honesty, freshness) |
+| Is the site honest right now? | the site-health probe workflow (deep links, headers, sitemap honesty, freshness, the status page + its artifact) → published as `data/site-health/latest.json` and rendered on `/status` |
 | Why was this alert published? | `alert_audit` + the frozen `evidence_snapshot` (ADR 0010) |
 | Is the model still behaving? | Phase 3 eval harness: per-class metrics, drift, POD/FAR — **not yet built** |
 

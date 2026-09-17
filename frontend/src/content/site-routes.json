@@ -376,6 +376,80 @@
       ]
     },
     {
+      "path": "/status",
+      "label": "System status",
+      "title": "HazardNet system status — data freshness, coverage and the last health probe",
+      "description": "What this deployment ships right now: the age of the forecast snapshot and the alert snapshot against their SLOs, the coverage of the current run, model provenance (not stamped yet), and the last published site-health probe result. Every number is copied from a named committed file, and anything unknown is labelled unknown.",
+      "robots": "index,follow",
+      "sitemap": { "changefreq": "daily", "priority": 0.8 },
+      "appShell": true,
+      "updated": "2026-09-18",
+      "h1": "HazardNet system status",
+      "standfirst": "This page is built from the artifacts the deployment ships — the forecast snapshot, the ingest manifest, the alert snapshot and the last site-health probe result — not from a live probe of the running services. It states the age of each source against the SLO it is measured against, the coverage of the current run, the model provenance, and what the last probe run found. Where a value is unknown, it says unknown.",
+      "keywords": [
+        "HazardNet status",
+        "forecast freshness",
+        "data coverage Bangladesh",
+        "site health probe"
+      ],
+      "sections": [
+        {
+          "h2": "How this page is produced",
+          "paragraphs": [
+            "The numbers above are derived from four committed files: the website forecast snapshot (frontend/public/data/forecasts-latest.json), the ingest run manifest (backend/data/forecasts/manifest.json), the alert snapshot (frontend/public/data/alerts-latest.json) and, when one has been published, the site-health probe result (data/site-health/latest.json). A build script (scripts/build_freshness_artifact.mjs) turns them into frontend/public/data/freshness.json, and this page renders that artifact — the same file a script or a monitoring system can read.",
+            "The derived timestamp printed above each table is when that artifact was produced. It moves when the pipeline commits new data, when the probe commits a new result, and when the site is rebuilt."
+          ]
+        },
+        {
+          "h2": "What the states mean",
+          "bullets": [
+            "Within SLO — the source is present and its age is inside the SLO that applies to it: 192 hours for the forecast data, 48 hours for the alert snapshot, 2 hours for the probe result.",
+            "Past SLO — the source is present but older than its SLO. The age and the SLO are both printed so the gap can be read directly.",
+            "Checks failing — the last site-health probe run reported at least one failed check; the checks table names them.",
+            "No data — the artifact the source describes is not present in this deployment at all. No age is printed, because there is nothing to age.",
+            "Unknown — the artifact could not be read, or it does not carry the timestamp the age would need. Unknown is a distinct state from No data on purpose: one means the file is missing, the other means we cannot tell."
+          ]
+        },
+        {
+          "h2": "What this page deliberately does not claim",
+          "bullets": [
+            "It is not an uptime or availability report. No uptime history is kept and no percentage is computed here; the site-health probe reports an outcome per check, per run, and that is what it says.",
+            "It is not a live probe. A source can be Within SLO here while the deployed site is failing its checks — the probe row, not the freshness rows, is the live-surface signal.",
+            "It does not name missing districts when the run did not report them. The coverage stamp says how many districts the run covered; if the run did not list which ones are absent, this page says so rather than inferring them.",
+            "It does not describe a model version that does not exist. While the ingest pipeline does not stamp a model_version, the provenance row says Not stamped, and the alert engine's publication gate stays closed for everything above WATCH.",
+            "It is not an official warning service. Read the methodology page for scope, and heed the warnings issued by BMD, FFWC, DDM and your local administration."
+          ],
+          "callout": {
+            "tone": "warning",
+            "text": "Within SLO on this page describes the committed data files the deployment ships, not the services that serve them. For the live surface — the homepage, deep links, security headers, the sitemap and the forecast endpoint — read the last site-health probe result in the table above or the Site Health Probe workflow run it links to."
+          },
+          "links": [
+            { "label": "Methodology and scope", "href": "/methodology" },
+            { "label": "Model card", "href": "/model" },
+            { "label": "Data sources", "href": "/data-sources" }
+          ]
+        }
+      ],
+      "faqs": [
+        {
+          "question": "How often is this page updated?",
+          "answer": "Whenever the data it describes is committed: the scheduled forecast pipeline commits a new snapshot (and therefore a new derived artifact) when it runs, the site-health probe commits its result every 30 minutes on the default branch, and every deployment rebuilds the page from whatever artifact is committed at that commit. The derived timestamp printed with the tables is the authoritative answer for the copy you are reading."
+        },
+        {
+          "question": "Why does the model version say Not stamped?",
+          "answer": "Because the ingest pipeline does not currently record a model_version on the rows it publishes, and this page will not print one it cannot prove. The same absence is why nothing above the WATCH level can be published automatically yet: the product spec requires a model version on a published alert, and the engine records that as a blocker instead of issuing one."
+        },
+        {
+          "question": "The alert list is empty — is that an error?",
+          "answer": "No. The alert engine assessed the current run's rows and published none of them, because none of them had the model provenance a published alert requires. The count of assessed rows that produced no published alert is stated in the notes above, so an empty list is visible as a state rather than as a silent absence."
+        },
+        {
+          "question": "Does Within SLO mean the site is up?",
+          "answer": "No. Within SLO is a statement about the age of a data file against its threshold. Whether the deployed site serves its pages, its headers and its API is what the site-health probe checks, and its result is reported separately above."
+        }
+      ]
+    },
+    {
       "path": "/about",
       "label": "About",
       "title": "About HazardNet — mission, scope and who runs it",

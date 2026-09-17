@@ -160,6 +160,9 @@ export const Footer: React.FC = () => {
                 </Link>
               </li>
               <li>
+                <Link to="/status" className="hover:text-slate-900 transition-colors">
+                  System Status
+                </Link>
                 <Link to="/blogs" className="hover:text-slate-900 transition-colors">
                   Research Blogs & Field Insights
                 </Link>

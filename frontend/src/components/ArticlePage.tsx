@@ -55,7 +55,12 @@ const InlineLink: React.FC<{ link: SectionLink }> = ({ link }) => {
   );
 };
 
-export const ArticlePage: React.FC<{ path: string }> = ({ path }) => {
+/**
+ * `introSlot` lets a page inject live content (the `/status` freshness panel) directly under
+ * the shared header, so the long-form copy and the live numbers come from one renderer
+ * instead of two that can drift.
+ */
+export const ArticlePage: React.FC<{ path: string; introSlot?: React.ReactNode }> = ({ path, introSlot }) => {
   const content = usePageSeo(path);
 
   if (!content) {
@@ -95,6 +100,8 @@ export const ArticlePage: React.FC<{ path: string }> = ({ path }) => {
         <h1 className="text-2xl font-black tracking-tight text-slate-900 md:text-3xl">{content.h1 ?? content.title}</h1>
         {content.standfirst && <p className="max-w-3xl text-xs leading-relaxed text-slate-600 md:text-sm">{content.standfirst}</p>}
       </header>
+
+      {introSlot}
 
       {sections.map((section, index) => (
         <section key={index} className="space-y-3 rounded-2xl border border-slate-200 bg-white p-6 shadow-xs md:p-7">

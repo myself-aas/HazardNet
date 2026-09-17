@@ -199,6 +199,10 @@ jobs:
         shell: bash
         run: node scripts/build_forecast_snapshot.mjs
 
+      - name: Rebuild freshness artifact
+        shell: bash
+        run: node scripts/build_freshness_artifact.mjs
+
       - name: Run test suite
         run: npx jest --ci
 
@@ -217,6 +221,8 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add backend/data/forecasts/ frontend/public/data/forecasts-latest.json
+          # Derived status artifact — rebuilt above, committed with its inputs (Phase 7).
+          git add frontend/public/data/freshness.json
           if git diff --staged --quiet; then
             echo "No data changes to commit"
           else

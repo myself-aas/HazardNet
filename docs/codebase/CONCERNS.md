@@ -51,6 +51,7 @@
 | Firestore client SDK used server-side for reads/writes | `backend/db.js` | Admin-less access, per-op latency | No connection pooling; Firestore read pricing on hot paths | Complete ADR 0002 → Supabase (pg) |
 | Bundle size near budget (total ~1,041 kB gzip vs 1,600 kB gate; largest chunk budget 800 kB) | `scripts/check-bundle.mjs`, re-audit V8 | Passing but growing (LiveMapView chunk risk) | Low-bandwidth field users pay first-load cost | Continue code-splitting + component decomposition |
 | Sequential AI cascade latency when primary providers are down | `ai_fallback_engine.js` (tier order Gemini→OpenRouter→Groq→HF→heuristic) | Up to 4 network hops before heuristic | Advisory latency spikes during provider outages | Parallel hedged requests after first fallback, or shorter per-tier timeouts `[TODO timeouts]` |
+| The published status surface is only as fresh as the last commit | `frontend/public/data/freshness.json`, `data/site-health/latest.json` | `/status` states the age of every source, so staleness is visible rather than silent | A stale artifact reads as stale (that is the `Past SLO` state); nothing pages anyone | The pipeline and probe workflows rebuild it in the same commit as their data; `--check` gates drift; a hosted status SaaS was rejected (no on-call, no second service) |
 | Service-worker tile cache bounded at 1,200 items, LRU-trimmed; alert payloads in their own network-first cache with a labelled offline fallback | `frontend/public/serviceWorker.js` | Bounded storage | — | Adequate; monitor quota errors in the field |
 
 ### 5) Fragile/High-Churn Areas
@@ -397,7 +398,32 @@ not to the UI.
 | 8 | **Disclosure surface**: no `SECURITY.md`; `security.txt` existed but was unverifiable and live-404 | `SECURITY.md` (scope, safe harbour, SLAs, controls) + `__tests__/securityTxt.test.js` (RFC 9116 fields, expiry window, contact parity with `SECURITY.md`, policy route existence, rewrite/redirect routing, dist copy) |
 | 9 | **`/api/**` responses carried no hardening headers of their own** — they relied entirely on the Vercel config that was not in force | The serverless guard sets `X-Content-Type-Options: nosniff` + `Referrer-Policy: no-referrer` on every response, and `Cache-Control: no-store` unless the endpoint sets its own |
 
+| 10 | **The service worker that shipped was not the one Phase 5 edited.** `frontend/src/serviceWorker.ts` is imported by nothing; the app registers `/serviceWorker.js`, copied verbatim from `frontend/public/`. The offline alert strategy (network-first + `X-HazardNet-Stale`) therefore never reached a browser, and the delivered worker cached every 200 GET — including credentialed `/api/**` reads | Strategy + cacheability guard moved into `frontend/public/serviceWorker.js`, the unshipped duplicate deleted, and `__tests__/serviceWorker.test.js` now loads **the shipped file**, drives its `fetch` handler and asserts the built worker is byte-identical to the source |
+
 Two carry-overs from the Phase 5 close-out are also resolved here: the `jest-axe`
 dependency surface was audited (dev-only, not shipped; its typings added) and the
 `data/README.md` counter semantics are unchanged.
-| 10 | **The service worker that shipped was not the one Phase 5 edited.** `frontend/src/serviceWorker.ts` is imported by nothing; the app registers `/serviceWorker.js`, copied verbatim from `frontend/public/`. The offline alert strategy (network-first + `X-HazardNet-Stale`) therefore never reached a browser, and the delivered worker cached every 200 GET — including credentialed `/api/**` reads | Strategy + cacheability guard moved into `frontend/public/serviceWorker.js`, the unshipped duplicate deleted, and `__tests__/serviceWorker.test.js` now loads **the shipped file**, drives its `fetch` handler and asserts the built worker is byte-identical to the source |
+
+## Phase 7 — observability: the freshness artifact and the public status page (2026-09-18)
+
+The architecture reserved this phase for one question — *"is the site honest right now?"* —
+and answered it without new always-on infrastructure: a committed artifact plus the probe
+workflow. Three things had to be true for that to be more than decoration, and two were not
+true before this phase:
+
+| # | Finding | Status |
+| - | ------- | ------ |
+| 1 | **`data/freshness.json` did not exist.** `TARGET_ARCHITECTURE.md` §3.2/§6 and the monitoring guide both promise a published freshness artifact; nothing produced it, so a status page would have had nothing to render and the probe's result had no machine-readable home | `scripts/build_freshness_artifact.mjs` → `frontend/public/data/freshness.json` (`hazardnet-freshness/v1`): per-source state/age/SLO/reason for the ingest manifest, the website snapshot, the alert snapshot and the probe; the coverage stamp and model provenance copied verbatim; `honesty[]` notes generated from the inputs. `--check` fails when the committed artifact stops describing the committed data, and it is blind to the clock so it cannot rot |
+| 2 | **The probe result had nowhere to go.** `site-health.yml` printed its findings and exited; no scheduled run published anything the site could read, so a black-box failure appeared only in the Actions tab | The workflow now records a machine-readable result (`data/site-health/latest.json`, `hazardnet-site-probe/v1`) from each step's own outcome, commits it on the default branch (non-fatally — a read-only token warns instead of failing the probe), uploads it as a run artifact, and rebuilds the derived artifact. Two checks were added: `/status` is served, and the artifact's `prediction_date` equals the one the deployment actually serves |
+| 3 | **The status page itself.** A page that claims to be a live probe, prints `0 h` for an unknown age, or invents a model version would be worse than no page | `/status` (public, indexable, in the sitemap): the long-form copy lives in `site-routes.json` (shared with the prerenderer) and the panel renders the artifact at runtime *and* into the static HTML at build time, so a crawler or a no-JavaScript visitor sees the real figures. `lib/freshness.ts` refuses any other schema, renders unknown ages as `—`, and keeps `No data` distinct from `Unknown`. Unstamped model provenance is stated as *Not stamped*, never defaulted |
+
+**A pre-existing bug found on the way:** the `/status` route entry with `"sitemap": true`
+crashed the build (`entry.priority.toFixed(1)`), because every other route carries
+`{changefreq, priority}`. Fixed and pinned by `scripts/tests/test_status_surface.py`, which
+also re-derives the artifact's numbers from the committed snapshots independently of the
+builder, asserts the pipeline workflows regenerate the artifact with their data, and asserts
+the page's copy does not promise liveness or uptime it cannot measure.
+
+**What this phase does not fix:** the deployed surface is still stale (owner Action 7), so the
+first real probe result will read `fail` and `/status` will say so, naming the failed checks.
+Nothing here can publish a model version (Phase 9) or make the pipeline run.

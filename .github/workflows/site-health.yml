@@ -15,7 +15,13 @@ concurrency:
   cancel-in-progress: true
 
 permissions:
-  contents: read
+  # `write` for exactly one step: publishing the machine-readable probe result
+  # (data/site-health/latest.json + the derived freshness artifact) that the
+  # /status page renders. Everything else in this workflow only reads. If the
+  # repository's workflow permissions are set to read-only, the publish step
+  # degrades to a warning and the result is still uploaded as an artifact —
+  # see docs/ops/owner-actions.md, Action 9.
+  contents: write
 
 env:
   SITE_URL: https://hazardnet.live
@@ -41,6 +47,7 @@ jobs:
       # %{url_effective} plus the same-site check keep the probe honest: a
       # redirect that leaves the production domain still fails the job.
       - name: Probe homepage
+        id: homepage
         shell: bash
         run: |
           RESPONSE=$(curl -sSL --max-redirs 5 -o /tmp/home.html -w "%{http_code} %{url_effective}" --max-time 30 "$SITE_URL/")
@@ -73,6 +80,7 @@ jobs:
       # real HTML file per route (frontend/scripts/prerender.mjs) and
       # frontend/vercel.json carries the rewrite, so this must stay green.
       - name: Probe deep links resolve with prerendered content
+        id: deep_links
         shell: bash
         run: |
           set -uo pipefail
@@ -109,6 +117,7 @@ jobs:
       # only thing that sets these; if the wrong one applies to the deployment
       # they disappear silently, which is exactly what happened before.
       - name: Probe security headers
+        id: security_headers
         shell: bash
         run: |
           set -uo pipefail
@@ -139,6 +148,7 @@ jobs:
       # is worse than no sitemap (SEO-01). Verified live on 2026-09-17: it listed
       # /documentation and /about, both of which 404'd.
       - name: Verify every sitemap URL resolves
+        id: sitemap
         shell: bash
         run: |
           set -uo pipefail
@@ -163,6 +173,7 @@ jobs:
           exit "$FAILED"
 
       - name: Probe forecast data (API, falling back to the committed snapshot)
+        id: forecast_data
         shell: bash
         run: |
           # Same -L rationale as the homepage probe above: the API rides the
@@ -222,6 +233,136 @@ jobs:
           PREDICTION_DATE=$(jq -r '.prediction_date // empty' /tmp/metadata.json | head -c 10)
           check_freshness "$PREDICTION_DATE" "$SNAPSHOT_URL" || exit 1
           echo "✅ Committed snapshot serves fresh data"
+
+      # Phase 7: the status page is part of the product surface now, and so is the
+      # artifact it renders. Both are probed here — a page that says "within SLO"
+      # while its artifact contradicts the data the site serves is exactly the
+      # failure this check exists to make visible.
+      - name: Probe the status page and its freshness artifact
+        id: status_page
+        shell: bash
+        run: |
+          set -uo pipefail
+          FAILED=0
+
+          CODE=$(curl -sSL --max-redirs 5 -o /tmp/status.html -w '%{http_code}' --max-time 30 "$SITE_URL/status" || echo 000)
+          echo "/status HTTP $CODE"
+          if [ "$CODE" != "200" ]; then
+            echo "::error::/status returned HTTP $CODE — the public status page is not being served."
+            FAILED=1
+          elif ! grep -qi 'system status' /tmp/status.html; then
+            echo "::error::/status returned 200 without the status page content (SPA shell served instead?)."
+            FAILED=1
+          fi
+
+          ACODE=$(curl -sSL --max-redirs 5 -o /tmp/freshness.json -w '%{http_code}' --max-time 30 "$SITE_URL/data/freshness.json" || echo 000)
+          echo "/data/freshness.json HTTP $ACODE"
+          if [ "$ACODE" != "200" ] || ! jq -e . /tmp/freshness.json >/dev/null 2>&1; then
+            echo "::error::/data/freshness.json is not served (HTTP $ACODE) — the status page has no data to render."
+            FAILED=1
+          else
+            SCHEMA=$(jq -r '.schema // "none"' /tmp/freshness.json)
+            SOURCES=$(jq -r '(.sources | length) // 0' /tmp/freshness.json)
+            echo "artifact schema: $SCHEMA, sources: $SOURCES"
+            if [ "$SCHEMA" != "hazardnet-freshness/v1" ] || [ "$SOURCES" -lt 1 ]; then
+              echo "::error::the served freshness artifact does not carry the expected contract."
+              FAILED=1
+            fi
+            # The artifact must describe the data this deployment actually serves.
+            if [ -f /tmp/metadata.json ] && jq -e . /tmp/metadata.json >/dev/null 2>&1; then
+              SERVED=$(jq -r '.prediction_date // empty' /tmp/metadata.json | head -c 10)
+              QUOTED=$(jq -r '.sources[] | select(.id == "forecast_snapshot") | .prediction_date // empty' /tmp/freshness.json | head -c 10)
+              echo "served prediction_date: ${SERVED:-unknown} | artifact quotes: ${QUOTED:-unknown}"
+              if [ -n "$SERVED" ] && [ -n "$QUOTED" ] && [ "$SERVED" != "$QUOTED" ]; then
+                echo "::error::the freshness artifact quotes prediction_date $QUOTED but the site serves $SERVED — the status page would describe different data than the deployment ships."
+                FAILED=1
+              fi
+            fi
+          fi
+          exit "$FAILED"
+
+      # The result is published in two forms: a machine-readable record the status
+      # page reads, and a run artifact. Neither invents a pass: the outcomes are
+      # read back from the steps themselves.
+      - name: Publish machine-readable probe result
+        if: always()
+        shell: bash
+        env:
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          OUT_HOMEPAGE: ${{ steps.homepage.outcome }}
+          OUT_DEEP_LINKS: ${{ steps.deep_links.outcome }}
+          OUT_SECURITY_HEADERS: ${{ steps.security_headers.outcome }}
+          OUT_SITEMAP: ${{ steps.sitemap.outcome }}
+          OUT_FORECAST_DATA: ${{ steps.forecast_data.outcome }}
+          OUT_STATUS_PAGE: ${{ steps.status_page.outcome }}
+        run: |
+          set -uo pipefail
+          mkdir -p data/site-health
+          jq -n \
+            --arg ran_at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            --arg run_url "$RUN_URL" \
+            --arg site_url "$SITE_URL" \
+            --arg homepage "$OUT_HOMEPAGE" \
+            --arg deep_links "$OUT_DEEP_LINKS" \
+            --arg security_headers "$OUT_SECURITY_HEADERS" \
+            --arg sitemap "$OUT_SITEMAP" \
+            --arg forecast_data "$OUT_FORECAST_DATA" \
+            --arg status_page "$OUT_STATUS_PAGE" \
+            '{
+              schema: "hazardnet-site-probe/v1",
+              ran_at: $ran_at,
+              run_url: $run_url,
+              site_url: $site_url,
+              outcome: (if ([$homepage, $deep_links, $security_headers, $sitemap, $forecast_data, $status_page] | all(. == "success")) then "pass" else "fail" end),
+              checks: [
+                { id: "homepage", outcome: $homepage, detail: null },
+                { id: "deep_links", outcome: $deep_links, detail: null },
+                { id: "security_headers", outcome: $security_headers, detail: null },
+                { id: "sitemap", outcome: $sitemap, detail: null },
+                { id: "forecast_data", outcome: $forecast_data, detail: null },
+                { id: "status_page", outcome: $status_page, detail: null }
+              ]
+            }' > data/site-health/latest.json
+          # Rebuild the derived artifact so the published page quotes this run.
+          node scripts/build_freshness_artifact.mjs || echo "::warning::could not rebuild the freshness artifact"
+          {
+            echo ""
+            echo "- probe outcome: $(jq -r '.outcome' data/site-health/latest.json)"
+            jq -r '.checks[] | "  - \(.id): \(.outcome)"' data/site-health/latest.json
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Publish the probe result to the branch
+        if: always()
+        shell: bash
+        run: |
+          set -uo pipefail
+          if [ "${GITHUB_REF_NAME}" != "main" ]; then
+            echo "::notice::not the default branch (${GITHUB_REF_NAME}) — the probe result stays a run artifact."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/site-health/latest.json frontend/public/data/freshness.json
+          if git diff --staged --quiet; then
+            echo "Probe result unchanged since the last run — nothing to commit."
+            exit 0
+          fi
+          OUTCOME=$(jq -r '.outcome' data/site-health/latest.json)
+          git pull --rebase --autostash origin main || true
+          git commit -m "chore(ops): site-health probe ${OUTCOME} $(date -u +%Y-%m-%dT%H:%MZ)"
+          if ! git push; then
+            echo "::warning::could not publish the probe result to the branch — this repository's workflow permissions are read-only (docs/ops/owner-actions.md, Action 9). The result is still in the run summary and the uploaded artifact."
+          fi
+
+      - name: Upload the probe result
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: site-health-result
+          path: |
+            data/site-health/latest.json
+            frontend/public/data/freshness.json
+          retention-days: 30
 
       - name: Summarize
         if: always()

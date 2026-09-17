@@ -202,12 +202,21 @@ jobs:
           SCENE_MANIFEST: hazardnet_scene_manifest.json
         run: node scripts/build_forecast_snapshot.mjs
 
+      # Phase 7: the freshness artifact quotes the snapshot and the manifest, so it is
+      # rebuilt in the same run that rewrites them — a status page derived from yesterday's
+      # inputs would be the exact lie it exists to prevent.
+      - name: Rebuild freshness artifact
+        shell: bash
+        run: node scripts/build_freshness_artifact.mjs
+
       - name: Commit refreshed data
         shell: bash
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           git add backend/data/forecasts/ frontend/public/data/forecasts-latest.json
+          # The derived status artifact travels with the data it describes (Phase 7).
+          git add frontend/public/data/freshness.json
           # Only stages the alert snapshot when the builder actually produced one;
           # `git add` on a missing path would fail the whole commit step.
           if [ -f frontend/public/data/alerts-latest.json ]; then
@@ -239,6 +248,7 @@ jobs:
             backend/data/forecasts/manifest.json
             frontend/public/data/forecasts-latest.json
             frontend/public/data/alerts-latest.json
+            frontend/public/data/freshness.json
           if-no-files-found: ignore
           retention-days: 14
 

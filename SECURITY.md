@@ -70,6 +70,11 @@ always fine.
 - Third-party services (Vercel, Firebase, Open-Meteo, Google Earth Engine) — report those
   upstream.
 
+The open items above are tracked with owners and reproduction steps in
+`docs/ops/owner-actions.md` (credential rotation, the deployment root, rules validation, the
+probe's publish permission). Please read that file before reporting a known gap: it is the
+project's own list of what is not finished.
+
 ## How the project protects the deployment
 
 Recorded here so a reporter can check whether a control is deliberate before testing it:
@@ -96,6 +101,13 @@ Recorded here so a reporter can check whether a control is deliberate before tes
   in CI and is itself regression-tested
   (`scripts/tests/test_secret_scan.py`), after the 2026-09-18 audit found the gate was
   blind to `.env.example` (<docs/audits/2026-09-18-secret-scan-false-negative.md>).
+- **Observability of the above** (Phase 7) — `/status` publishes what the deployment's own
+  committed artifacts say about the freshness, coverage and provenance of the data it ships
+  (`frontend/public/data/freshness.json`, built by `scripts/build_freshness_artifact.mjs`),
+  together with the last site-health probe result (`data/site-health/latest.json`, published
+  by `.github/workflows/site-health.yml` every 30 minutes). It is a statement about committed
+  files, not a live probe, and it says so on the page; the probe row is the live-surface
+  signal. Operator guide: `docs/ops/STATUS_PAGE.md`.
 
 ## Disclosure
 

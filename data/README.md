@@ -5,7 +5,7 @@ CI-only scratch and must never be committed; the others are committed on
 purpose — they are the auditable ingest input and the offline website snapshot.
 The table below says which is which.
 
-## The four landing zones
+## The landing zones
 
 | Path | Writer | Contents | Committed? |
 |---|---|---|---|
@@ -14,6 +14,8 @@ The table below says which is which.
 | `data/kaggle_notebook_output/` | `scripts/fetch_kaggle_forecast.py` (`--dest`, dispatch-only legacy Kaggle job) | Raw `kaggle kernels output` bundle (+ `fetch-manifest.json`) | No (CI diagnostics artifact only) |
 | `backend/data/forecasts/` | `scripts/publish_forecast_csv.py` (GitHub run) or `fetch_kaggle_forecast.py` (legacy Kaggle run) + validation | Validated `hazardnet_forecasts_latest.csv/.json` + `manifest.json` | **Yes** — committed by the producing workflow as the auditable ingest input |
 | `frontend/public/data/forecasts-latest.json` | `scripts/build_forecast_snapshot.mjs` (the same workflow) | Static website snapshot; ships inside every deployment | **Yes** — the offline fallback `useForecasts()` reads when the API is down. **This is the delivery path while the deployment serves no ingest API.** |
+| `data/site-health/latest.json` | `.github/workflows/site-health.yml` (every 30 min on the default branch) | The machine-readable result of the last site-health probe: outcome + per-check results | **Yes** — the `/status` page and the freshness artifact quote it (never hand-edit; see `data/site-health/README.md`) |
+| `frontend/public/data/freshness.json` | `scripts/build_freshness_artifact.mjs` (pipeline workflows, the probe workflow, or by hand) | Derived status artifact: per-source age vs SLO, coverage stamp, model provenance, probe result | **Yes** — it is what `/status` renders; `--check` gates it against its inputs |
 | `data/manual_forecast.csv` (+ `.json` sidecar) | You, by hand (GitHub web UI → Add file → Upload files, or `git push`) | Hand-run Kaggle notebook output awaiting ingest | **Yes** — it is the trigger path for `manual_forecast_ingest.yml`, so it must be committed for the workflow to fire |
 
 ## Coverage gate (added 2026-09-17)

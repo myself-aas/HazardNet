@@ -55,6 +55,7 @@ if (!existsSync(contentPath)) {
 const site = JSON.parse(readFileSync(contentPath, 'utf8'));
 const origin = site.site.origin.replace(/\/$/, '');
 const template = readFileSync(path.join(distDir, 'index.html'), 'utf8');
+const statusArtifact = loadFreshnessArtifact();
 
 /* ────────────────────────────── helpers ────────────────────────────── */
 
@@ -175,6 +176,7 @@ function renderBody(route) {
     `<div class="hn-static">`,
     `<h1>${renderInline(route.h1 ?? route.title)}</h1>`,
     route.standfirst ? `<p class="hn-lead">${renderInline(route.standfirst)}</p>` : '',
+    route.path === '/status' ? renderStatusPanel(statusArtifact) : '',
     renderSections(route.sections),
     renderFaqs(route.faqs),
     route.updated
@@ -362,6 +364,18 @@ const STATIC_STYLES = `<style>
   .hn-static a{color:#b45309}
   .hn-static .hn-callout{border-left:3px solid #f9a825;background:#fffbeb;padding:.7rem .9rem;border-radius:.4rem;font-size:.94rem}
   .hn-static .hn-meta{font-size:.8rem;color:#64748b;border-top:1px solid #e2e8f0;padding-top:.9rem;margin-top:2rem}
+  .hn-static table{width:100%;border-collapse:collapse;margin:.75rem 0 1rem;font-size:.92rem}
+  .hn-static caption{text-align:left;font-size:.8rem;color:#64748b;padding-bottom:.35rem}
+  .hn-static th,.hn-static td{border-bottom:1px solid #e2e8f0;padding:.45rem .6rem .45rem 0;text-align:left;vertical-align:top}
+  .hn-static .hn-state{display:inline-block;border:1px solid #cbd5e1;border-radius:999px;padding:.1rem .5rem;font-size:.75rem;font-weight:700;white-space:nowrap}
+  .hn-static .hn-state-fresh{border-color:#86efac;background:#f0fdf4;color:#166534}
+  .hn-static .hn-state-stale{border-color:#fcd34d;background:#fffbeb;color:#92400e}
+  .hn-static .hn-state-failing{border-color:#fca5a5;background:#fef2f2;color:#991b1b}
+  .hn-static .hn-state-unknown{border-color:#cbd5e1;background:#f8fafc;color:#475569}
+  .hn-static .hn-reason{display:block;font-weight:400;font-size:.8rem;color:#64748b}
+  .hn-static .hn-path{display:block;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.72rem;color:#94a3b8}
+  .hn-static .hn-meta-line{font-size:.8rem;color:#64748b}
+  .hn-static .hn-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
   .hn-static .hn-loading{font-size:.8rem;color:#94a3b8}
   .hn-static details{border-bottom:1px solid #e2e8f0;padding:.55rem 0}
   .hn-static summary{font-weight:600;cursor:pointer}
@@ -539,6 +553,149 @@ function buildSitemap(articleRoutes) {
     .join('\n');
 
   return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`;
+}
+
+/* ───────────────────────── status page data (Phase 7) ───────────────────────── */
+
+/**
+ * `/status` is the one public route whose body is data, not prose: the freshness artifact
+ * (`frontend/public/data/freshness.json`, built by `scripts/build_freshness_artifact.mjs`)
+ * is rendered into the static HTML here, and `FreshnessPanel` renders the same numbers at
+ * runtime. A visitor without JavaScript, and a crawler, therefore see the real figures
+ * instead of an empty shell — and `__tests__/statusPagePrerender.test.js` asserts that the
+ * numbers in dist/ match the committed artifact.
+ *
+ * When the artifact is absent the page says so in one line. It never falls back to
+ * "everything is fine".
+ */
+function loadFreshnessArtifact() {
+  const artifactPath = path.join(frontendDir, 'public', 'data', 'freshness.json');
+  if (!existsSync(artifactPath)) return null;
+  try {
+    return JSON.parse(readFileSync(artifactPath, 'utf8'));
+  } catch (error) {
+    console.warn(`[prerender] freshness artifact is not readable JSON: ${error.message}`);
+    return null;
+  }
+}
+
+const STATE_CLASS = {
+  fresh: 'hn-state hn-state-fresh',
+  stale: 'hn-state hn-state-stale',
+  failing: 'hn-state hn-state-failing',
+  missing: 'hn-state hn-state-missing',
+  unknown: 'hn-state hn-state-unknown',
+};
+
+const STATE_LABEL = {
+  fresh: 'Within SLO',
+  stale: 'Past SLO',
+  failing: 'Checks failing',
+  missing: 'No data',
+  unknown: 'Unknown',
+};
+
+function ageText(hours) {
+  if (typeof hours !== 'number' || !Number.isFinite(hours) || hours < 0) return '—';
+  if (hours < 48) return `${Math.round(hours * 10) / 10} h`;
+  return `${Math.round((hours / 24) * 10) / 10} d`;
+}
+
+function stateBadge(state) {
+  const key = Object.prototype.hasOwnProperty.call(STATE_LABEL, state) ? state : 'unknown';
+  return `<span class="${STATE_CLASS[key]}">${STATE_LABEL[key]}</span>`;
+}
+
+function renderStatusPanel(artifact) {
+  if (!artifact || !Array.isArray(artifact.sources) || artifact.sources.length === 0) {
+    return (
+      '<section aria-labelledby="hn-status-right-now"><h2 id="hn-status-right-now">Right now</h2>' +
+      '<p role="status">The freshness artifact (<code>frontend/public/data/freshness.json</code>) is not ' +
+      'present in this build, so this page cannot state the age of the data the deployment ships. ' +
+      'That is not a statement that the data is fresh.</p></section>'
+    );
+  }
+  const rows = artifact.sources
+    .map((source) => {
+      const latest =
+        source.prediction_date ??
+        (source.generated_at ? `${String(source.generated_at).slice(0, 16).replace('T', ' ')} UTC` : '—');
+      return (
+        '<tr>' +
+        `<th scope="row">${renderInline(source.label ?? source.id)}` +
+        (source.reason ? `<span class="hn-reason">${renderInline(source.reason)}</span>` : '') +
+        `<span class="hn-path">${escapeHtml(source.artifact ?? '')}</span></th>` +
+        `<td>${stateBadge(source.state)}</td>` +
+        `<td>${ageText(source.age_hours)}</td>` +
+        `<td>${typeof source.slo_hours === 'number' ? `${source.slo_hours} h` : '—'}</td>` +
+        `<td>${escapeHtml(String(latest))}</td>` +
+        '</tr>'
+      );
+    })
+    .join('');
+
+  const coverage = artifact.coverage;
+  const coverageHtml = coverage
+    ? '<h3>Coverage of the current run</h3><p>' +
+      `${coverage.districts_covered ?? 'unknown'} of ${coverage.districts_expected ?? 'unknown'} districts ` +
+      `have a row for at least one horizon, from ${coverage.produced_units ?? 'unknown'} produced ` +
+      `district/horizon units — coverage status <strong>${escapeHtml(String(coverage.status ?? 'unreported'))}</strong>.</p>`
+    : '';
+
+  const model = artifact.model ?? {};
+  const modelHtml =
+    '<h3>Model provenance</h3><p>' +
+    (model.stamped
+      ? `This deployment's rows carry <code>${escapeHtml(String(model.model_version))}</code>.`
+      : '<strong>Not stamped.</strong> The ingest pipeline does not yet record a <code>model_version</code> ' +
+        'on the rows it produces, so no number on this site claims one, and §1.6 of the product spec blocks ' +
+        'automatic publication of anything above <code>WATCH</code> until one exists.') +
+    '</p>';
+
+  const probe = (artifact.sources ?? []).find((source) => source.id === 'site_probe');
+  const checks = probe?.detail && Array.isArray(probe.detail.checks) ? probe.detail.checks : [];
+  const probeHtml =
+    '<h3>Last site-health probe</h3>' +
+    (checks.length > 0
+      ? '<table><caption class="hn-sr">Checks performed by the last published site-health probe run</caption>' +
+        '<thead><tr><th scope="col">Check</th><th scope="col">Outcome</th><th scope="col">Detail</th></tr></thead><tbody>' +
+        checks
+          .map(
+            (check) =>
+              `<tr><th scope="row">${escapeHtml(String(check.id))}</th><td>${
+                check.outcome === 'success' ? 'pass' : `fail (${escapeHtml(String(check.outcome))})`
+              }</td><td>${escapeHtml(String(check.detail ?? '—'))}</td></tr>`
+          )
+          .join('') +
+        '</tbody></table>'
+      : '<p>No probe result has been published to this checkout, so the live-surface checks are ' +
+        '<strong>unknown here</strong> — not passing.</p>');
+
+  const honesty = Array.isArray(artifact.honesty) && artifact.honesty.length > 0
+    ? '<h3>What this page is not saying</h3><ul>' +
+      artifact.honesty.map((note) => `<li>${renderInline(note)}</li>`).join('') +
+      '</ul>'
+    : '';
+
+  const builtAt = artifact.built_at ? `${String(artifact.built_at).slice(0, 16).replace('T', ' ')} UTC` : '—';
+
+  return (
+    '<section aria-labelledby="hn-status-right-now">' +
+    '<h2 id="hn-status-right-now">Right now</h2>' +
+    `<p>${renderInline(artifact.what_this_is ?? 'A derived statement about the committed data artifacts this deployment ships.')}</p>` +
+    `<p class="hn-meta-line">Derived ${escapeHtml(builtAt)} by <code>${escapeHtml(
+      String(artifact.generated_by ?? 'unknown producer')
+    )}</code>. ${artifact.overall?.counts?.fresh ?? 0} of ${artifact.sources.length} sources within their SLO.</p>` +
+    `<table><caption class="hn-sr">Each data source this deployment ships, its state, its age and the SLO it is measured against.</caption>` +
+    '<thead><tr><th scope="col">Source</th><th scope="col">State</th><th scope="col">Age</th>' +
+    '<th scope="col">SLO</th><th scope="col">Latest data</th></tr></thead>' +
+    `<tbody>${rows}</tbody></table>` +
+    coverageHtml +
+    modelHtml +
+    probeHtml +
+    honesty +
+    '</section>'
+  );
 }
 
 /* ──────────────────────────────── main ──────────────────────────────── */
