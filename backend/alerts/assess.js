@@ -40,6 +40,7 @@
  */
 
 import { getPolicy, maxLevel, levelRank, ALERT_LEVELS, REQUIRED_DISCLAIMER } from './policy.js';
+import { VALID_HAZARDS } from '../utils/forecastRow.js';
 
 /** Fraction of the freshness SLO above which an assessment warns about staleness. */
 const STALE_FRACTION = 0.75;
@@ -58,17 +59,20 @@ const round = (value, digits = 4) => {
   return Math.round(value * factor) / factor;
 };
 
-/** The eight modelled classes, spelled as `Models/labels.json` spells them. */
-export const HAZARD_CLASSES = Object.freeze([
-  'Flood',
-  'Flash Flood',
-  'Tropical Cyclone',
-  'Storm Surge',
-  'River Erosion',
-  'Landslide',
-  'Drought',
-  'Heatwave',
-]);
+/**
+ * The eight modelled classes, taken from the row contract rather than restated.
+ *
+ * This list **must** be the model's vocabulary — `Models/labels.json` and
+ * `VALID_HAZARDS` in `backend/utils/forecastRow.js` (which the CSV ingest already
+ * enforces) — because it decides which rows the engine is willing to judge. An
+ * earlier revision of this file used the *display* vocabulary from
+ * `frontend/src/data/*` (Storm Surge, River Erosion, Landslide, Heatwave); that is
+ * a different set, and using it here silently skipped every Cold Wave, Fire, Heat
+ * Wave and Severe Local Storm row — the four classes those two lists do not share.
+ * `__tests__/alerts/assess.test.js` now pins this constant to `Models/labels.json`,
+ * so the two cannot drift again.
+ */
+export const HAZARD_CLASSES = Object.freeze([...VALID_HAZARDS]);
 
 export function isModelledHazard(hazardType) {
   return HAZARD_CLASSES.includes(hazardType);

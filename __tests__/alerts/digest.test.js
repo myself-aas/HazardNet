@@ -12,6 +12,8 @@ import {
   disclaimerIsComplete, formatDate, formatHorizon, formatLeadTime, toBengaliDigits,
 } from '../../backend/alerts/digest.js';
 import { REQUIRED_DISCLAIMER } from '../../backend/alerts/policy.js';
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
 
 const WATCH_ALERT = {
   id: '2026-09-23__7_days__19__flood',
@@ -51,10 +53,25 @@ describe('formatting helpers', () => {
     expect(toBengaliDigits('999')).toBe('৯৯৯');
   });
 
-  test('every modelled hazard has a Bengali label', () => {
-    const hazards = ['Flood', 'Flash Flood', 'Tropical Cyclone', 'Storm Surge', 'River Erosion',
-      'Landslide', 'Drought', 'Heatwave'];
-    for (const hazard of hazards) expect(HAZARD_LABELS[hazard]).toBeTruthy();
+  test('every modelled hazard has a Bengali label, and nothing else does', () => {
+    // Read the model's own vocabulary rather than restating it: this is the list
+    // the alert engine must speak (Models/labels.json == forecastRow VALID_HAZARDS).
+    const labels = JSON.parse(
+      readFileSync(path.resolve(__dirname, '../../Models/labels.json'), 'utf8'),
+    );
+    const modelled = Object.keys(labels).sort((a, b) => Number(a) - Number(b))
+      .map((key) => labels[key]);
+    expect(modelled).toHaveLength(8);
+    for (const hazard of modelled) {
+      expect(HAZARD_LABELS[hazard]).toBeTruthy();
+      expect(HAZARD_LABELS[hazard]).toMatch(/[\u0980-\u09FF]/);
+    }
+    // The display vocabulary (Storm Surge / River Erosion / Landslide / Heatwave)
+    // is a frontend concern, not a model class — labelling it here would imply
+    // coverage the model does not have.
+    for (const displayed of ['Storm Surge', 'River Erosion', 'Landslide', 'Heatwave']) {
+      expect(HAZARD_LABELS[displayed]).toBeUndefined();
+    }
     expect(Object.values(LEVEL_LABELS)).toHaveLength(4);
   });
 });

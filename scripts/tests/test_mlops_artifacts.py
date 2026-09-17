@@ -42,6 +42,40 @@ COPY_FILES = [
 ]
 
 
+#: The historical pipeline dump uploaded in 2026-09-18 (commit 487e79e). It is the
+#: research source, not a contract — but it lives in a public repository, so the
+#: same claim discipline applies: it may describe what the code did, never an
+#: accuracy number the repository has not measured.
+ARCHIVED_DUMP = ROOT / 'docs' / 'HazardNet.md'
+
+
+def test_the_archived_pipeline_dump_carries_a_provenance_header():
+    text = ARCHIVED_DUMP.read_text(encoding='utf-8')
+    assert text.startswith('> **Provenance'), (
+        'docs/HazardNet.md must keep its provenance header: without it the dump reads '
+        'as a description of the shipped system'
+    )
+    for marker in ('not a contract and not a description of the shipped system',
+                   'om_calc_flood(precip_mm, precip_mm)',
+                   'PRODUCT_SPEC wins'):
+        assert marker in text
+
+
+def test_the_archived_pipeline_dump_repeats_no_retired_claim():
+    text = ARCHIVED_DUMP.read_text(encoding='utf-8')
+    offenders = []
+    for phrase in ('98.55', 'ensemble agreement', 'ground stations',
+                   'Platt calibration', '1.2 million'):
+        for match in re.finditer(re.escape(phrase), text, re.IGNORECASE):
+            line = text[:match.start()].count('\n') + 1
+            context = text.splitlines()[line - 1]
+            if any(negation in context.lower() for negation in
+                   ('not ', 'no ', 'never', 'without', 'unsupported')):
+                continue
+            offenders.append(f'docs/HazardNet.md:{line}: {context.strip()[:120]}')
+    assert offenders == [], 'retired claim quoted in the archived dump:\n' + '\n'.join(offenders)
+
+
 # ── the artifact ────────────────────────────────────────────────────────────
 
 def test_the_calibration_template_is_present_and_records_why_it_is_unfit():

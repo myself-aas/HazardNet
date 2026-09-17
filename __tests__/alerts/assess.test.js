@@ -14,8 +14,12 @@
  * softmax score can never reach WARNING by default, and a missing physics track
  * is "unknown", not "no divergence".
  */
-import { assessBatch, assessRow, readEvidence } from '../../backend/alerts/assess.js';
+import { assessBatch, assessRow, readEvidence, HAZARD_CLASSES, isModelledHazard }
+  from '../../backend/alerts/assess.js';
 import { getPolicy } from '../../backend/alerts/policy.js';
+import { VALID_HAZARDS } from '../../backend/utils/forecastRow.js';
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
 
 const NOW = new Date('2026-09-17T06:00:00Z');
 const policy = getPolicy({});
@@ -176,6 +180,34 @@ describe('contract fields', () => {
     const alert = assessRow(row({ prediction_date: '2026-09-10' }), { policy, now: NOW });
     expect(alert.freshness.within_slo).toBe(false);
     expect(alert.freshness.age_hours).toBeGreaterThan(48);
+  });
+
+  test('the vocabulary is the model vocabulary, not the site vocabulary', () => {
+    // The trap this pins: the frontend display set (Storm Surge, River Erosion,
+    // Landslide, Heatwave) is *not* the model's label set, and an engine built on
+    // it silently skips Cold Wave / Fire / Heat Wave / Severe Local Storm rows.
+    const labels = JSON.parse(
+      readFileSync(path.resolve(__dirname, '../../Models/labels.json'), 'utf8'),
+    );
+    const modelled = Object.keys(labels).sort((a, b) => Number(a) - Number(b))
+      .map((key) => labels[key]);
+    expect([...HAZARD_CLASSES]).toEqual(modelled);
+    expect(HAZARD_CLASSES).toEqual(VALID_HAZARDS);
+    for (const hazard of modelled) expect(isModelledHazard(hazard)).toBe(true);
+    for (const displayed of ['Storm Surge', 'River Erosion', 'Landslide', 'Heatwave']) {
+      expect(isModelledHazard(displayed)).toBe(false);
+    }
+  });
+
+  test('every modelled class is assessed, not skipped', () => {
+    // Regression: these four were skipped by the display-vocabulary revision.
+    for (const hazard of ['Cold Wave', 'Fire', 'Heat Wave', 'Severe Local Storm']) {
+      const assessed = assessRow(row({ hazard_type: hazard, confidence: 0.55 }),
+        { policy, now: NOW });
+      expect(assessed.status).toBe('assessed');
+      expect(assessed.level).toBe('WATCH');
+      expect(assessed.hazard_type).toBe(hazard);
+    }
   });
 
   test('skips rows it cannot judge instead of inventing a level', () => {

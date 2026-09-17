@@ -294,6 +294,13 @@ still open is below.
 7. **The evidence card's HTML rendering is not the PDF export.** `?format=card` gives a
    print-ready page; turning it into a PDF belongs with the Phase 5 UI, which already
    has an export path (`frontend/src/utils/pdfExport.ts`).
-8. **`.env.example` still contains live-looking secrets.** Pre-existing, tracked as
+8. **The alert engine's hazard vocabulary is now pinned, but the trap remains live.**
+   The repository carries two vocabularies: the model's eight classes (`Models/labels.json`,
+   `backend/utils/forecastRow.js::VALID_HAZARDS`) and the frontend's display set
+   (`frontend/src/data/*`: Storm Surge, River Erosion, Landslide, …). Phase 4's first cut
+   mixed them and would have skipped four real classes; two tests now pin the alert
+   vocabulary to the model's. Anything else that branches on `hazard_type` needs the same
+   care — see `docs/audits/2026-09-18-pipeline-dump-review.md` §4.
+9. **`.env.example` still contains live-looking secrets.** Pre-existing, tracked as
    Action 1 of `docs/ops/owner-actions.md`; the alert variables were appended with
    empty values and must not be filled with real credentials in-repo.

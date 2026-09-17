@@ -1,3 +1,22 @@
+> **Provenance — added 2026-09-18, not part of the original upload.**
+>
+> This file is the **historical source dump** of the HazardNet research pipeline as it
+> was run in Colab/Kaggle, in eight sections: ReliefWeb event extraction (Phase 1), the
+> dual-track severity index (Phase 2), the dataset builder (Phase 3), the ablation study
+> (Phase 4), the training pipeline (Phase 5), the edge-deployment converter (Phase 6), the
+> event-based model (Phase 7) and the auto-forecast inference loop (Phase 8).
+>
+> **It is not a contract and not a description of the shipped system.** It records the code
+> as it was written, including the defects this repository has since fixed — the
+> `om_calc_flood(precip_mm, precip_mm)` argument bug, the fabricated soil channels
+> (`0.3, 0.3, 290.0`), the hardcoded `physics_severity = 0.50` fallback and the
+> "BANGLADESH-CALIBRATED / LEAKAGE-SAFE / STATISTICALLY PROVEN" banner claims, none of
+> which are backed by a measured metric in this repository.
+>
+> Where this file and `docs/PRODUCT_SPEC.md` disagree, PRODUCT_SPEC wins. For the current
+> pipeline see `scripts/auto_forecast.py`; for the current contracts see `docs/MODEL_CARD.md`,
+> `docs/PRODUCT_SPEC.md` and `docs/mlops/`. The review of this upload is in
+> `docs/audits/2026-09-18-pipeline-dump-review.md`.
 # HazardNet Complete Pipeline
 
 ## Phase 1

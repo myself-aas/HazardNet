@@ -36,15 +36,24 @@ export const LEVEL_LABELS = Object.freeze({
   SEVERE: { en: 'Severe', bn: 'মারাত্মক সতর্কতা' },
 });
 
+/**
+ * Bengali names for the eight modelled hazard classes — the same vocabulary as
+ * `Models/labels.json` / `backend/utils/forecastRow.js` (see the note in
+ * `assess.js`). The site's *display* vocabulary (`frontend/src/data/*`) mentions
+ * Storm Surge, River Erosion and Landslide; those are not model classes and never
+ * appear in a forecast row, so a label for them here would only suggest coverage
+ * the model does not have. A test asserts a label exists for every class in
+ * `Models/labels.json`, and an unknown class falls back to its English name.
+ */
 export const HAZARD_LABELS = Object.freeze({
-  Flood: 'বন্যা',
-  'Flash Flood': 'আকস্মিক বন্যা',
-  'Tropical Cyclone': 'ঘূর্ণিঝড়',
-  'Storm Surge': 'জলোচ্ছ্বাস',
-  'River Erosion': 'নদীভাঙন',
-  Landslide: 'ভূমিধস',
+  'Cold Wave': 'শৈত্যপ্রবাহ',
   Drought: 'খরা',
-  Heatwave: 'তাপপ্রবাহ',
+  Fire: 'অগ্নিকাণ্ড',
+  'Flash Flood': 'আকস্মিক বন্যা',
+  Flood: 'বন্যা',
+  'Heat Wave': 'তাপপ্রবাহ',
+  'Severe Local Storm': 'তীব্র স্থানীয় ঝড়',
+  'Tropical Cyclone': 'ঘূর্ণিঝড়',
 });
 
 const MONTHS_BN = [

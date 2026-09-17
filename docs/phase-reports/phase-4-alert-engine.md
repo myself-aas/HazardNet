@@ -286,6 +286,18 @@ reasoned about in advance:
 12. **The rate limiter is shared per IP**, which the test suite discovered the hard way
     (429s after a dozen runs); the suite resets the bucket per test, and the limits are
     documented rather than tuned.
+13. **The engine spoke the wrong hazard vocabulary.** `HAZARD_CLASSES` was hardcoded to
+    the frontend's *display* set (Storm Surge, River Erosion, Landslide, Heatwave) rather
+    than the model's label set (`Models/labels.json` / `VALID_HAZARDS`: Cold Wave, Drought,
+    Fire, Flash Flood, Flood, Heat Wave, Severe Local Storm, Tropical Cyclone). Had it
+    shipped, every Cold Wave, Fire, Heat Wave and Severe Local Storm row would have been
+    skipped — no alert, only a `skipped` count — while three classes that can never appear
+    in a row were advertised, and Bengali digests fell back to English names for the four
+    affected hazards. Found on 2026-09-18 while reviewing the owner's uploaded pipeline dump
+    (`docs/audits/2026-09-18-pipeline-dump-review.md`), whose class list is the model's.
+    Fixed by deriving the list from `VALID_HAZARDS` and pinning it to `Models/labels.json`
+    in two tests; every fixture in this phase used Flood/Flash Flood, which is why nothing
+    caught it.
 
 ## 6. Acceptance criteria (§1.3 / §1.6 / §1.7)
 
