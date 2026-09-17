@@ -1,7 +1,7 @@
 {
   "schema": "hazardnet-hindcast-report/v1",
   "hindcast_version": "1.0.0",
-  "generated_at": "2026-09-17T23:09:01Z",
+  "generated_at": "2026-09-17T23:12:10Z",
   "episode": {
     "id": "amphan-2020",
     "title": "Cyclone Amphan \u2014 Bangladesh landfall, 20 May 2020",
@@ -296,6 +296,12 @@
       "Flash Flood": 10
     },
     "saturated_terms": {
+      "fire_wind": {
+        "term": "(wind_max_kmh - 5.0) / 20.0",
+        "rows": 128,
+        "rows_at_ceiling": 116,
+        "first_row_argument": 40.4
+      },
       "fire_drying": {
         "term": "et_total_mm / 6.0",
         "rows": 128,
@@ -328,6 +334,43 @@
         "min": 0,
         "max": 0
       }
+    },
+    "wind_drivers": {
+      "era5_10m_sustained": {
+        "rows": 128,
+        "wind_kmh": {
+          "min": 19.2,
+          "max": 69.1
+        },
+        "top_class_distribution": {
+          "Fire": 127,
+          "Flash Flood": 1
+        },
+        "named_the_episode_class": 0,
+        "episode_class_over_threshold": 0,
+        "episode_class_score": {
+          "min": 0.0136,
+          "max": 0.248
+        }
+      },
+      "era5_10m_gust": {
+        "rows": 128,
+        "wind_kmh": {
+          "min": 51.1,
+          "max": 133.9
+        },
+        "top_class_distribution": {
+          "Fire": 127,
+          "Flash Flood": 1
+        },
+        "named_the_episode_class": 0,
+        "episode_class_over_threshold": 2,
+        "episode_class_score": {
+          "min": 0.0987,
+          "max": 0.5145
+        }
+      },
+      "finding": "With the sustained maximum the shipped pipeline uses, the episode's class scores 0.0136\u20130.2480 and crosses the 0.5 band on 0 of 128 rows; with the gust field the archive also carries it scores 0.0987\u20130.5145 and crosses on 2. The wind driver, not the formula alone, decides whether this event was detectable. Note what the second number does *not* fix: the track's top class is still Fire, so the separation between the two wind-driven classes is a second, independent defect."
     },
     "detection_counterfactual": {
       "named_districts": 14,
@@ -362,6 +405,7 @@
         "temperature_2m_min",
         "precipitation_sum",
         "wind_speed_10m_max",
+        "wind_gusts_10m_max",
         "et0_fao_evapotranspiration"
       ],
       "driver_series_loaded_from": "/home/runner/work/HazardNet/HazardNet/data/hindcast/drivers/amphan-2020.json",
