@@ -119,18 +119,29 @@ jobs:
         id: publish
         shell: bash
         run: |
+          # --run-report is mandatory: it carries the coverage tally (how many of
+          # the requested district x horizon units were actually produced) and the
+          # model provenance. Without it a partial run would ship looking complete
+          # — the defect fixed on 2026-09-17.
           python scripts/publish_forecast_csv.py \
             --csv hazardnet_forecasts_latest.csv \
+            --run-report hazardnet_run_report.json \
             --source "$SNAPSHOT_SOURCE" | tee publish.log
           CHANGED=$(grep -oE 'CHANGED=(true|false)' publish.log | tail -n 1 | cut -d= -f2)
           echo "changed=${CHANGED:-true}" >> "$GITHUB_OUTPUT"
 
       - name: Validate forecast data
+        # Includes the coverage gate: the manifest must account for every
+        # requested unit, and a partial run must say so.
         shell: bash
-        run: python scripts/validate_forecasts.py
+        run: python scripts/validate_forecasts.py --manifest backend/data/forecasts/manifest.json
 
       - name: Rebuild website snapshot
         shell: bash
+        env:
+          # The snapshot carries the run's coverage tally + provenance; without
+          # this it can only report what the CSV itself proves.
+          SNAPSHOT_RUN_REPORT: hazardnet_run_report.json
         run: node scripts/build_forecast_snapshot.mjs
 
       - name: Commit refreshed data
@@ -159,6 +170,7 @@ jobs:
           name: daily-forecast-output
           path: |
             hazardnet_forecasts_latest.csv
+            hazardnet_run_report.json
             publish.log
             backend/data/forecasts/manifest.json
             frontend/public/data/forecasts-latest.json
@@ -178,6 +190,10 @@ jobs:
             echo "- API push: PUSH_TO_API=$PUSH_TO_API"
             if [ -f backend/data/forecasts/manifest.json ]; then
               jq -r '"- prediction_date: " + (.prediction_date // "unknown") + "\n- rows: " + ((.row_count // 0) | tostring) + "\n- source: " + (.source // "unknown")' backend/data/forecasts/manifest.json
+              jq -r '"- coverage: " + ((.coverage.produced_units // 0) | tostring) + "/" + ((.coverage.requested_units // 0) | tostring) + " units (" + (.coverage_status // "unknown") + "), districts: " + ((.coverage.districts_with_any_horizon // 0) | tostring) + "\n- model: " + (.model_version // "unrecorded") + "\n- soil channels fabricated: " + ((.soil_channels_fabricated // false) | tostring)' backend/data/forecasts/manifest.json
+              if [ "$(jq -r '.coverage_status // "unknown"' backend/data/forecasts/manifest.json)" != "complete" ]; then
+                echo "- ⚠️ partial run: districts missing a forecast are labelled as baseline on the site" >> "$GITHUB_STEP_SUMMARY"
+              fi
             fi
           } >> "$GITHUB_STEP_SUMMARY"
 

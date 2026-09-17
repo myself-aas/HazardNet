@@ -217,12 +217,36 @@ export function parseBulkResponse(payload: unknown): ForecastRow[] {
 /** Public path of the committed hourly snapshot (frontend/public/data/...). */
 export const FORECAST_SNAPSHOT_URL = '/data/forecasts-latest.json';
 
-/** Shape of frontend/public/data/forecasts-latest.json (schema v1). */
+/**
+ * Shape of `frontend/public/data/forecasts-latest.json`.
+ *
+ * schema v2 (2026-09-17) added `provenance` (which model/tensor/pipeline produced
+ * these rows) and `coverage` (how many of the requested district x horizon units
+ * were actually produced, and which districts are missing). Both are optional so
+ * a deployment still serving a v1 snapshot keeps working — but a UI that ignores
+ * `coverage` will render static baseline numbers for missing districts as if they
+ * were today's forecast, which is the defect Phase 0 recorded (PRODUCT_SPEC §5.1).
+ */
 export interface ForecastSnapshot {
   schema?: string;
   generated_at?: string;
   source?: string;
   prediction_date?: string | null;
+  provenance?: {
+    model_version?: string | null;
+    tensor_build_id?: string | null;
+    pipeline_version?: string | null;
+    run_id?: string | null;
+  } | null;
+  coverage?: {
+    requested_units?: number | null;
+    produced_units?: number | null;
+    per_horizon?: Record<string, number> | null;
+    districts_covered?: number | null;
+    missing_district_ids?: number[];
+    status?: string | null;
+  } | null;
+  soil_channels_fabricated?: boolean | null;
   horizons?: Partial<Record<string, unknown[]>>;
 }
 
@@ -320,8 +344,8 @@ export const normalizeDistrictKey = (name: string): string =>
  * = canonical static-table key.
  */
 const DISTRICT_NAME_ALIASES: Record<string, string> = {
-  chittagong: 'chattogram',
   jessore: 'jashore',
+  chittagong: 'chattogram',
   comilla: 'cumilla',
   barishal: 'barisal',
   bogura: 'bogra',
@@ -331,6 +355,11 @@ const DISTRICT_NAME_ALIASES: Record<string, string> = {
   brahamanbaria: 'brahmanbaria',
   jhalakathi: 'jhalokati',
   'chapainawabganj ': 'chapainawabganj', // defensive: trailing-space variants
+  // FAO GAUL 2015 (and so the forecast pipeline) calls Chapainawabganj simply
+  // "Nawabganj". Without this alias that district's forecast row never matched
+  // its card, so the site showed the static baseline despite having a forecast
+  // (found 2026-09-17 while wiring coverage accounting).
+  nawabganj: 'chapainawabganj',
   khagrachari: 'khagrachhari',
 };
 

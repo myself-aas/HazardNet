@@ -133,7 +133,7 @@ jobs:
 
       - name: Validate Forecast Data
         run: |
-          python scripts/validate_forecasts.py
+          python scripts/validate_forecasts.py --skip-coverage  # legacy Kaggle producer: no run report / coverage tally
 
       - name: Ingest refreshed CSV into Firebase and backend store
         env:

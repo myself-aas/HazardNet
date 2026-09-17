@@ -157,6 +157,54 @@ export function parseCsvForecastRow(row, rowNumber) {
     value.model_severity = modelSev;
   }
 
+  // ── Physics track (independent, all eight classes) ───────────────────────
+  // `physics_severity` (handled above) is the physics score for the class the
+  // model chose. These fields carry what the physics track concluded on its
+  // own, so a consumer can see a hazard the model missed — the defect fixed
+  // on 2026-09-17 (docs/PRODUCT_SPEC.md §5.4).
+  if (row.physics_top_hazard && String(row.physics_top_hazard).trim()) {
+    const top = String(row.physics_top_hazard).trim();
+    if (VALID_HAZARDS.includes(top)) value.physics_top_hazard = top;
+  }
+  const topSeverity = parseFloat(row.physics_top_severity);
+  if (Number.isFinite(topSeverity) && topSeverity >= 0 && topSeverity <= 1) {
+    value.physics_top_severity = topSeverity;
+  }
+  if (row.physics_agreement !== undefined && row.physics_agreement !== '') {
+    const raw = String(row.physics_agreement).trim().toLowerCase();
+    if (raw === 'true' || raw === 'false') value.physics_agreement = raw === 'true';
+  }
+  const divergence = parseFloat(row.track_divergence);
+  if (Number.isFinite(divergence) && divergence >= 0 && divergence <= 1) {
+    value.track_divergence = divergence;
+  }
+  // Per-class physics scores are optional and passthrough: keys are dynamic
+  // (`physics_flash_flood`, …), which the store takes as-is.
+  const physicsScores = {};
+  for (const hazard of VALID_HAZARDS) {
+    const key = `physics_${hazard.toLowerCase().replace(/\s+/g, '_')}`;
+    if (row[key] === undefined || row[key] === '') continue;
+    const parsed = parseFloat(row[key]);
+    if (Number.isFinite(parsed) && parsed >= 0 && parsed <= 1) physicsScores[key] = parsed;
+  }
+  if (Object.keys(physicsScores).length > 0) value.physics_scores = physicsScores;
+
+  // ── Provenance (audit 2026-09-17) ────────────────────────────────────────
+  // Without these a published forecast cannot be traced back to the model and
+  // tensor that produced it (docs/PRODUCT_SPEC.md §5.8).
+  for (const field of ['model_version', 'tensor_build_id', 'pipeline_version', 'run_id']) {
+    if (row[field] && String(row[field]).trim()) value[field] = String(row[field]).trim();
+  }
+  if (row.soil_channels_fabricated !== undefined && row.soil_channels_fabricated !== '') {
+    const raw = String(row.soil_channels_fabricated).trim().toLowerCase();
+    if (raw === 'true' || raw === 'false') value.soil_channels_fabricated = raw === 'true';
+  }
+  // `confidence_kind` distinguishes the model's own (uncalibrated) softmax from
+  // a future calibrated probability, so no consumer has to guess.
+  if (row.confidence_kind && String(row.confidence_kind).trim()) {
+    value.confidence_kind = String(row.confidence_kind).trim();
+  }
+
   // Administrative context from the FAO GAUL loader — optional passthrough.
   if (row.division && String(row.division).trim()) {
     value.division = String(row.division).trim();

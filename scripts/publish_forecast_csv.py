@@ -19,7 +19,15 @@ Nothing here talks to the network and nothing is pushed: the caller decides what
 to do with `CHANGED=true` (commit, rebuild the snapshot, ingest into a store).
 
 Usage:
-    python scripts/publish_forecast_csv.py --csv hazardnet_forecasts_latest.csv
+    python scripts/publish_forecast_csv.py --csv hazardnet_forecasts_latest.csv \
+        --run-report hazardnet_run_report.json
+
+The run report is what makes a partial run publishable-but-labelled: it carries
+the coverage tally from the generator, and its coverage/horizons/soil flags are
+copied into manifest.json so the website and the API can state how complete (and
+how synthetic) the data they are serving is. Publishing a CSV whose coverage
+cannot be accounted for is refused — that is the "partial runs must not ship
+silently" rule from the 2026-09-17 audit.
 
 Exit codes: 0 = artifacts written (or already current), 1 = invalid input.
 """
@@ -54,6 +62,9 @@ def main():
                         help='Provenance stamped into manifest.json')
     parser.add_argument('--force', action='store_true',
                         help='Rewrite the artifacts even when the CSV hash is unchanged')
+    parser.add_argument('--run-report', default='hazardnet_run_report.json',
+                        help='Run report emitted by scripts/auto_forecast.py '
+                             '(coverage + provenance). Missing report = refuse to publish.')
     args = parser.parse_args()
 
     src = Path(args.csv)
@@ -90,11 +101,55 @@ def main():
     json_out.parent.mkdir(parents=True, exist_ok=True)
     manifest_out.parent.mkdir(parents=True, exist_ok=True)
 
+    # ── coverage + provenance gate (audit 2026-09-17) ──────────────────────
+    # Validated BEFORE anything is written, so a refused publish leaves the
+    # previous artifacts in place instead of half-replacing them. The shipped
+    # pipeline skipped failed districts silently, which made a 25-of-64-district
+    # run indistinguishable from a complete one; a partial run may still be
+    # published, but only with the tally that says it is partial.
     records = convert_csv_to_json_records(src)
+    prediction_dates = [r.get('prediction_date') for r in records if r.get('prediction_date')]
+
+    report_path = Path(args.run_report)
+    if not report_path.exists():
+        print(f"❌ Run report not found: {report_path}")
+        print("   scripts/auto_forecast.py writes one next to the CSV; without it the "
+              "coverage of this run cannot be accounted for, and a partial run must not "
+              "be published without a tally. Re-run the generator, or pass "
+              "--run-report <path>.")
+        sys.exit(1)
+    try:
+        report = json.loads(report_path.read_text(encoding='utf-8'))
+    except json.JSONDecodeError as exc:
+        print(f"❌ Run report is not valid JSON ({exc}); refusing to publish.")
+        sys.exit(1)
+
+    coverage = report.get('coverage') or {}
+    if not coverage.get('requested_units'):
+        print("❌ Run report has no coverage tally; refusing to publish an unaccounted run.")
+        sys.exit(1)
+
+    produced = coverage.get('produced_units', 0)
+    requested = coverage['requested_units']
+    if len(records) != produced:
+        print(f"❌ CSV/report mismatch: report says {produced} units produced, "
+              f"CSV has {len(records)} rows. Refusing to publish.")
+        sys.exit(1)
+
+    csv_out.parent.mkdir(parents=True, exist_ok=True)
+    json_out.parent.mkdir(parents=True, exist_ok=True)
+    manifest_out.parent.mkdir(parents=True, exist_ok=True)
+
     shutil.copyfile(src, csv_out)
     json_out.write_text(json.dumps(records, indent=2), encoding='utf-8')
 
-    prediction_dates = [r.get('prediction_date') for r in records if r.get('prediction_date')]
+    produced = coverage.get('produced_units', 0)
+    requested = coverage['requested_units']
+    if len(records) != produced:
+        print(f"❌ CSV/report mismatch: report says {produced} units produced, "
+              f"CSV has {len(records)} rows. Refusing to publish.")
+        sys.exit(1)
+
     manifest = {
         'source': args.source,
         'generated_at': datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'),
@@ -103,6 +158,25 @@ def main():
         'csv_sha256': new_sha,
         'csv_path': str(csv_out),
         'json_path': str(json_out),
+        # Provenance: which model/tensor/pipeline produced these rows.
+        'run_id': report.get('run_id'),
+        'pipeline_version': report.get('pipeline_version'),
+        'model_version': report.get('model_version'),
+        'model_sha256': report.get('model_sha256'),
+        # Coverage: how complete this run is (never assume 64 x 2).
+        'coverage_status': report.get('status'),
+        'coverage': {
+            'requested_units': requested,
+            'produced_units': produced,
+            'districts_with_any_horizon': coverage.get('districts_with_any_horizon'),
+            'missing_district_ids': coverage.get('missing_district_ids', []),
+            'horizons': coverage.get('horizons') or coverage.get('requested_horizons'),
+            'per_horizon': coverage.get('per_horizon'),
+            'skipped': coverage.get('skipped', []),
+        },
+        # Input integrity: the three soil channels are training-mean placeholders.
+        'soil_channels_fabricated': report.get('soil_channels_fabricated'),
+        'soil_mode': report.get('soil_mode'),
     }
     manifest_out.write_text(json.dumps(manifest, indent=2) + '\n', encoding='utf-8')
 
@@ -111,6 +185,12 @@ def main():
     print(f"   wrote {manifest_out}")
     print(f"CHANGED={'false' if unchanged else 'true'}")
     print(f"   prediction_date={manifest['prediction_date']} rows={manifest['row_count']}")
+    print(f"   coverage={produced}/{requested} units ({manifest['coverage_status']}), "
+          f"districts={coverage.get('districts_with_any_horizon')}")
+    print(f"   model_version={manifest.get('model_version')} run_id={manifest.get('run_id')}")
+    if manifest['coverage_status'] != 'complete':
+        print("::warning::partial run published — the manifest records the coverage tally, "
+              "and the site must label districts that have no current forecast.")
 
 
 if __name__ == '__main__':

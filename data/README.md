@@ -10,10 +10,25 @@ The table below says which is which.
 | Path | Writer | Contents | Committed? |
 |---|---|---|---|
 | `hazardnet_forecasts_latest.csv` (workspace root) | `scripts/auto_forecast.py` on the runner (`daily_forecast.yml`) | The freshly generated forecast rows | No (workflow artifact) |
+| `hazardnet_run_report.json` (workspace root) | `scripts/auto_forecast.py` (same run) | Coverage tally + provenance for that run: `coverage.{requested_units, produced_units, per_horizon, missing_district_ids, skipped[], status}`, `model_version`, `model_sha256`, `pipeline_version`, `run_id`, `soil_channels_fabricated` | No (workflow artifact, uploaded for inspection) |
 | `data/kaggle_notebook_output/` | `scripts/fetch_kaggle_forecast.py` (`--dest`, dispatch-only legacy Kaggle job) | Raw `kaggle kernels output` bundle (+ `fetch-manifest.json`) | No (CI diagnostics artifact only) |
 | `backend/data/forecasts/` | `scripts/publish_forecast_csv.py` (GitHub run) or `fetch_kaggle_forecast.py` (legacy Kaggle run) + validation | Validated `hazardnet_forecasts_latest.csv/.json` + `manifest.json` | **Yes** — committed by the producing workflow as the auditable ingest input |
 | `frontend/public/data/forecasts-latest.json` | `scripts/build_forecast_snapshot.mjs` (the same workflow) | Static website snapshot; ships inside every deployment | **Yes** — the offline fallback `useForecasts()` reads when the API is down. **This is the delivery path while the deployment serves no ingest API.** |
 | `data/manual_forecast.csv` (+ `.json` sidecar) | You, by hand (GitHub web UI → Add file → Upload files, or `git push`) | Hand-run Kaggle notebook output awaiting ingest | **Yes** — it is the trigger path for `manual_forecast_ingest.yml`, so it must be committed for the workflow to fire |
+
+## Coverage gate (added 2026-09-17)
+
+`scripts/publish_forecast_csv.py` requires the run report (`--run-report`, default
+`hazardnet_run_report.json`) and refuses to publish:
+
+* when the report is missing (the coverage of the run cannot be accounted for), or
+* when its `coverage.produced_units` disagrees with the CSV row count.
+
+A **partial** run still publishes — but it is labelled: `manifest.json` gets
+`coverage_status: "partial"`, the full tally, and the list of districts with no forecast, and the
+snapshot carries the same. `scripts/validate_forecasts.py` fails a manifest with no tally or no
+model provenance. The legacy Kaggle producers have no run report, so their workflows pass
+`--skip-coverage` explicitly — a deliberate, visible exemption rather than a silent one.
 
 ## Lifecycle (manual — first-run / hand-run notebook output)
 

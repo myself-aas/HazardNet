@@ -120,7 +120,7 @@ jobs:
         if: steps.fetch.outputs.changed == 'true' || inputs.force_refresh == 'true'
         shell: bash
         run: |
-          python scripts/validate_forecasts.py --skip-freshness
+          python scripts/validate_forecasts.py --skip-freshness --skip-coverage  # legacy Kaggle producer: no run report / coverage tally
 
       - name: Rebuild website snapshot
         if: steps.fetch.outputs.changed == 'true' || inputs.force_refresh == 'true'

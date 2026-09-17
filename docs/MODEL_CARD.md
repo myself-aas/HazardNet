@@ -101,9 +101,17 @@ boundaries published.
 ## 6. Measured behaviour (as deployed)
 
 All figures below are computed from `frontend/public/data/forecasts-latest.json`
-(schema `hazardnet-forecast-snapshot/v1`, `generated_at 2026-09-16T15:32:01Z`,
-produced by the real TFLite CNN via `scripts/auto_forecast.py`) and from the committed archive
-`data/hazardnet_forecasts_latest.csv` (127 rows).
+(produced by the real TFLite CNN via `scripts/auto_forecast.py`; the file is now
+schema `hazardnet-forecast-snapshot/v2`, `prediction_date 2026-09-16`, and reports `coverage.status:
+partial` — 60 of 64 districts, 74 forecast units of the 128 a full run covers) and from the
+committed archive `data/hazardnet_forecasts_latest.csv`.
+
+**Everything in this section describes rows produced by the pre-Phase-2 pipeline** (before
+2026-09-17). Those rows have no `provenance` block, so they are self-identifying: if
+`provenance.pipeline_version` is absent, §6 applies as written. Phase 2 changed three of the
+mechanisms below — see the status notes in §6.3, §6.4 and §8 — but has not yet produced a shipped
+run, so there is no post-fix measurement to report here. Do not read this section as a statement
+about the current code path.
 
 ### 6.1 Prediction distribution — degenerate
 
@@ -144,6 +152,14 @@ demonstrated as seasonal behaviour rather than a defect.
 - **`Soil_W1`, `Soil_W3`, `Soil_T1` are set to the constants `0.32, 0.32, 299.0`** — the training
   means, i.e. zero information — so the model's live input is effectively **12 informative
   channels**, and 3 channels carry a distribution shift relative to training (constant vs. varying).
+
+  **Status (Phase 2, 2026-09-17): GUARDED, not fixed.** The constants are now resolved from
+  `HAZARDNET_SOIL_MODE` rather than hard-coded: `mean` keeps the pipeline running and stamps every
+  row `soil_channels_fabricated=true` (carried into `manifest.json`, the run report and the
+  snapshot); `forbid` aborts the run with an explicit message. `validate_forecasts.py` warns on
+  every placeholder run. The real fix — fetching ERA5-Land soil moisture/temperature at the live
+  timestep — is still outstanding, so **a forecast produced today still rests on 12 informative
+  channels**, and now says so in its own record.
 - Units throughout are handled by convention comments (`om_precip_m` holds metres over the horizon,
   `om_*_temp_k` holds °C despite the suffix), and the same conventions are re-implemented in the
   Node ingest path (`backend/utils/forecastRow.js`). Two independent implementations of the same
@@ -155,6 +171,32 @@ A shipped forecast row cannot be reproduced: it records no model version, datase
 preprocessing version or input-scene list. `data_source: "Hybrid_Cognitive_Forecast"` is a free-text
 label with no definition in the repository. **Requirement (Phase 2):** stamp
 `model_version`, `dataset_version`, `tensor_build_id` and the contributing scene IDs into every row.
+
+**Status (Phase 2, 2026-09-17): PARTIAL.** Rows now carry `model_version` (from `Models/VERSION.json`),
+`tensor_build_id` (sha256 prefix of the model artifact), `pipeline_version`, `run_id`,
+`confidence_kind` and the per-class physics scores; the manifest/run report carry the full
+`model_sha256` and the coverage tally. `validate_forecasts.py` rejects a publish with no model
+provenance. Still missing: **`dataset_version` and per-prediction scene lineage** (which Earth Engine
+image, which COG, which acquisition dates fed each district-timestep). That needs the scene manifest
+in `docs/architecture/TARGET_ARCHITECTURE.md` §3.1 and cannot be faked with stamps on the current
+pipeline. Rows produced before this date have `provenance: null`, which is the accurate record.
+
+### 6.5 Phase 2 pipeline increment (2026-09-17)
+
+Three load-bearing changes, all pinned by tests:
+
+| Change | Where | Test |
+| ------ | ----- | ---- |
+| Independent physics track (all 8 classes, no dependence on the model's pick; `om_calc_flood` takes a horizon total *and* a peak 24 h) | `scripts/physics_severity.py`, wired in `scripts/auto_forecast.py` | `scripts/tests/test_physics_severity.py` (18), `scripts/tests/test_model_claims.py` |
+| Coverage accounting: per-skip reasons, `hazardnet_run_report.json`, publish/validate gates, `coverage` in the v2 snapshot | `auto_forecast.py`, `publish_forecast_csv.py`, `validate_forecasts.py`, `build_forecast_snapshot.mjs` | `scripts/tests/test_publish_forecast_csv.py`, `scripts/tests/test_validate_forecasts.py` |
+| Row provenance (`model_version`, `tensor_build_id`, `pipeline_version`, `run_id`, `confidence_kind`) end to end into the API envelope | generator → manifest → snapshot → `backend/utils/forecastRow.js` → `backend/utils/predictFromStore.js` | `scripts/tests/test_csv_ingestion.mjs`, `__tests__/predictFromStore.test.js` |
+
+Two incidental defects were found and fixed while wiring coverage:
+the model's class **ordinal** was being written into `hazard_type` for part of the pipeline's history
+(now mapped through the pinned class order and range-checked), and the site's district-name alias map
+was missing GAUL spellings — `Nawabganj` (Chapainawabganj) never matched its card, and a dangling
+`jessore → jashore` alias rewrote a working key (`scripts/tests/test_district_name_parity.py` now
+guards the whole name set in both directions).
 
 ## 7. The second, undocumented inference path
 
@@ -187,11 +229,11 @@ is not defensible.
 | # | Failure | Mechanism | Detection plan |
 | - | ------- | --------- | -------------- |
 | 1 | Blind during monsoon cloud | Optical channels 2–5 (S2/Landsat) are unusable under cloud; only SAR channels remain informative | Log per-run cloud fraction per district |
-| 2 | Constant-placeholder channels | Soil channels fixed at training means (§6.3) | Assert non-constant variance before inference |
-| 3 | Silent district dropout | GEE failure → `continue` → district absent from output, no record | Coverage stamp + fail on < 64 districts |
-| 4 | Overconfident output | Saturated softmax (§6.1) | Reliability diagram; isotonic calibration |
-| 5 | Class collapse | Majority-class attraction under imbalance + leakage (§6.1) | Per-class prediction histogram alert |
-| 6 | Non-independent "physics" track | Physics score computed *from the model's chosen class* | Compute all 8 physics scores independently |
+| 2 | Constant-placeholder channels | Soil channels fixed at training means (§6.3) | Assert non-constant variance before inference — **still open**; rows are now stamped `soil_channels_fabricated=true` and `HAZARDNET_SOIL_MODE=forbid` can refuse the run |
+| 3 | Silent district dropout | GEE failure → `continue` → district absent from output, no record | Coverage stamp + fail on < 64 districts — **guarded (Phase 2)**: every skip recorded with a reason, publisher refuses an untallied run, validator fails a tally that disagrees with the rows; the site still needs to label the gaps (Phase 5) |
+| 4 | Overconfident output | Saturated softmax (§6.1) | Reliability diagram; isotonic calibration — **open** (Phase 3), now namespaced as `confidence_kind: model_softmax_top_class` so a calibrated value can never be confused with it |
+| 5 | Class collapse | Majority-class attraction under imbalance + leakage (§6.1) | Per-class prediction histogram alert — **open** (Phase 3) |
+| 6 | Non-independent "physics" track | Physics score computed *from the model's chosen class* | Compute all 8 physics scores independently — **fixed (Phase 2)**: `scripts/physics_severity.py` scores all eight classes from weather drivers alone, the `om_calc_flood(precip, precip)` argument bug is fixed, agreement/divergence/top-hazard are emitted per row, and `scripts/tests/test_model_claims.py` fails if a branch on the predicted class returns |
 | 7 | Two models, two answers | API heuristic vs. pipeline CNN (§7) | Parity harness, or single path |
 | 8 | Extreme-event novelty | Training ends 2025; unprecedented events are out-of-distribution | Track prediction drift vs. historical priors |
 

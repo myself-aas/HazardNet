@@ -70,6 +70,14 @@ export const NULLABLE_PATHS = [
   'prediction.channel_features.sar_vv',
   'inference.latency_ms',
   'inference.model_version',
+  // Independent physics track — present only from the 2026-09-17 pipeline
+  // onward, so rows published before it legitimately lack these (PRODUCT_SPEC
+  // §5.4). `soil_channels_fabricated` is the permanent caveat on the model's
+  // input (three soil channels are training means), not a per-run accident.
+  'provenance.physics_top_hazard',
+  'provenance.physics_agreement',
+  'provenance.track_divergence',
+  'provenance.soil_channels_fabricated',
 ];
 
 /** Map of envelope driver field -> stored row field (+ any unit passthrough). */
@@ -176,7 +184,16 @@ export function predictFromStore(row, options = {}) {
       prediction_date: row.prediction_date ?? null,
       target_date: row.target_date ?? null,
       model_severity: isFiniteNumber(row.model_severity) ? row.model_severity : null,
+      // The physics score for the class the model chose (a cross-check of its
+      // magnitude) — and, beside it, what the independent physics track would
+      // have picked on its own. When those two disagree, the response says so
+      // instead of presenting one number as consensus.
       physics_severity: isFiniteNumber(row.physics_severity) ? row.physics_severity : null,
+      physics_top_hazard: VALID_HAZARDS.includes(row.physics_top_hazard) ? row.physics_top_hazard : null,
+      physics_agreement: typeof row.physics_agreement === 'boolean' ? row.physics_agreement : null,
+      track_divergence: isFiniteNumber(row.track_divergence) ? row.track_divergence : null,
+      soil_channels_fabricated:
+        typeof row.soil_channels_fabricated === 'boolean' ? row.soil_channels_fabricated : null,
       data_source: row.data_source ?? null,
     },
     inference: {

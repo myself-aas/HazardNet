@@ -130,3 +130,39 @@ Findings that supersede or complicate the notes above:
    skipped without a record (`if not historical_steps: continue`).
 5. **The physics cross-check is not independent** - it is computed only for the class the model
    selected, so it cannot detect a missed hazard (`docs/PRODUCT_SPEC.md` section 5.4).
+
+## Phase 2 pipeline increment (2026-09-17)
+
+Fixes findings 4 and 5 above, guards finding 2's data-quality twin, and adds cross-surface guards.
+Each item names the artifact that now fails if it regresses.
+
+1. **The physics cross-check is independent now, so it can disagree.** All eight classes are scored
+   from weather drivers alone (`scripts/physics_severity.py`; the model's pick is not an input), the
+   `om_calc_flood(precip_total, precip_total)` argument bug is fixed (a peak-24-hour term now exists,
+   and neither argument has a default), and rows carry `physics_top_hazard` / `physics_agreement` /
+   `track_divergence` / per-class `physics_<class>` scores. Rows published before this date do **not**
+   have these — their `physics_severity` is the old conditioned value, and the site copy says so.
+2. **Silent district dropout is gone: skipped districts are recorded, and a partial run cannot ship
+   unlabelled.** `auto_forecast.py` records a reason per skip and writes
+   `hazardnet_run_report.json`; `publish_forecast_csv.py` refuses to publish without it and refuses a
+   report that disagrees with the CSV; `validate_forecasts.py` fails a manifest with no tally or no
+   model provenance; the snapshot is schema **v2** and states its own coverage (`status: partial`,
+   60/64 districts as of the committed run).
+3. **The UI still does not label those gaps** — it renders baseline numbers for a district with no
+   current forecast. That is the remaining half of finding 4 and lands in Phase 5; the data it needs
+   (`coverage.missing_district_ids`, `districts_expected`) is now published.
+4. **Soil channels are still training-mean placeholders** (finding in `MODEL_CARD.md` §6.3), but they
+   are now visible: `HAZARDNET_SOIL_MODE=mean|forbid`, `soil_channels_fabricated` on every row and in
+   the manifest, and a validator warning on every placeholder run. The real fix (ERA5-Land soil at
+   the live timestep) is open; do not treat a passing pipeline as evidence that the input is real.
+5. **Provenance is partial by design.** `model_version`/`tensor_build_id`/`pipeline_version`/`run_id`/
+   `confidence_kind` are stamped end to end; `dataset_version` and per-prediction scene lineage are
+   not, because the pipeline has no scene manifest to stamp — see `TARGET_ARCHITECTURE.md` §3.1.
+6. **Two cross-surface name/label defects were found while wiring coverage** (both would have hidden
+   data silently): the model's class *ordinal* was written into `hazard_type` for part of the
+   pipeline's history (now mapped through the pinned class order and range-checked), and the site's
+   district alias map was missing GAUL spellings — `Nawabganj` (Chapainawabganj) never matched its
+   card, while a dangling `jessore → jashore` alias rewrote a working key. Guards:
+   `scripts/tests/test_district_name_parity.py` (both directions, plus the 64-district count) and
+   `scripts/tests/test_physics_severity.py::test_class_order_matches_the_model_labels`.
+

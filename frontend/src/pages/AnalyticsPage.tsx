@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import ForecastDashboard from '../components/ForecastDashboard';
 
-/** Shape of `public/data/forecasts-latest.json` (hazardnet-forecast-snapshot/v1). */
+/** Shape of `public/data/forecasts-latest.json` (hazardnet-forecast-snapshot/v2). */
 interface ForecastSnapshot {
   schema?: string;
   generated_at?: string;

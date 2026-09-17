@@ -189,6 +189,19 @@ wind_max_kmh, dewpoint_mean, solar_radiation_mj_m2, evapotranspiration_mm
 `confidence_kind` distinguishes `model_softmax_top_class` (today) from a future
 `calibrated_probability` — so a consumer can never mistake one for the other.
 
+**Implemented 2026-09-17 (Phase 2, first increment):** `model_version`, `tensor_build_id`,
+`pipeline_version`, `run_id`, `confidence_kind` and the physics-track columns
+(`physics_top_hazard`, `physics_top_severity`, `physics_agreement`, `track_divergence`,
+`physics_inputs_missing`, `soil_channels_fabricated`, and one `physics_<class>` score per class)
+are emitted by `scripts/auto_forecast.py`, carried through `publish_forecast_csv.py` →
+`manifest.json` → the v2 snapshot, parsed by `backend/utils/forecastRow.js` and exposed in the
+`/api/predict` envelope's `provenance` block.
+
+**Still missing from this row contract: `dataset_version` and per-prediction scene lineage.** They
+require the scene manifest described below to exist first; the pipeline cannot honestly stamp a
+dataset version it does not have. Also outstanding: the artifact-level `model_sha256` is in the
+manifest/run report but not on each row (rows carry the short `tensor_build_id`).
+
 ### 3.2 Coverage stamp (mandatory, Phase 2)
 
 ```json
@@ -201,6 +214,31 @@ wind_max_kmh, dewpoint_mean, solar_radiation_mj_m2, evapotranspiration_mm
 Rule: the site may show a district without a forecast **only** while labelling it as baseline, and
 the published freshness artifact reports coverage per horizon. This closes the silent-dropout defect
 (`PRODUCT_SPEC.md` §5.1) at the data layer rather than in the UI.
+
+**Implemented 2026-09-17 (Phase 2, first increment).** The emitted stamp is
+`hazardnet-run-report.json → coverage`:
+
+```json
+"coverage": {
+  "requested_units": 128, "produced_units": 74, "status": "partial",
+  "requested_districts": 64, "districts_with_any_horizon": 60,
+  "horizons": ["7_days", "15_days"],
+  "per_horizon": {"7_days": {"requested": 64, "produced": 25}, "15_days": {"requested": 64, "produced": 49}},
+  "missing_district_ids": [1, 2, 3], "missing_district_names": ["Bagerhat", "…"],
+  "skipped": [{"district_id": 4, "district_name": "Bandarban", "horizon": "*", "reason": "no_historical_steps"}]
+}
+```
+
+`units` (district × horizon) is used as well as `districts` because a district can be covered at one
+horizon and missing at the other — that is exactly what the shipped data shows (25 at `7_days`, 49 at
+`15_days`). The publisher copies this tally into `manifest.json` and **refuses to publish without
+it**; the validator fails a manifest whose tally disagrees with the CSV rows, or that carries no
+model provenance. The snapshot exposes the subset a reader can act on (`coverage.status`,
+`units_per_horizon`, `districts_per_horizon`, `districts_covered`, `districts_expected`,
+`missing_district_ids` — `null` when the producer did not report them).
+
+**Still open:** the UI labels (Phase 5). The data layer now states the gap; the dashboard still
+renders baseline numbers for a district with no current forecast.
 
 ### 3.3 Inference job contract (the pipeline as a service)
 

@@ -49,6 +49,9 @@ const KERNEL = process.env.SNAPSHOT_KERNEL || 'ashifahmedshuvo/hazardnet-auto-fo
 // Provenance is caller-supplied: the Kaggle workers keep the historical
 // string, the GitHub-native producer passes its own (see the header).
 const SOURCE = process.env.SNAPSHOT_SOURCE || `kaggle kernels output ${KERNEL}`;
+const REPORT_PATH = resolve(process.env.SNAPSHOT_RUN_REPORT || 'hazardnet_run_report.json');
+let REPORT = null;
+let reportCoverage = null;
 
 // ─── Minimal RFC4180 CSV parser (handles quotes, escaped quotes, CRLF) ───
 function parseCsv(text) {
@@ -80,6 +83,35 @@ function parseCsv(text) {
   return rows.filter((cells) => !(cells.length === 1 && cells[0].trim() === ''));
 }
 
+/**
+ * How many districts the site itself ships (`frontend/src/data/bangladeshDistricts.ts`).
+ *
+ * The denominator a coverage statement needs. Read (not imported) so the builder
+ * stays dependency-free; returns null when the file is missing, in which case
+ * coverage falls back to what the CSV alone can prove.
+ *
+ * Deliberately a *count*, not a name-to-id mapping: the site keys districts by
+ * slug and the pipeline by numeric GAUL id, and their spellings differ for a
+ * handful of districts ("Nawabganj" vs "Chapainawabganj"). Guessing that mapping
+ * here could assert a district is covered when it is not. The producer's run
+ * report carries the authoritative ids and names.
+ */
+function readExpectedDistrictCount() {
+  for (const path of [
+    resolve('frontend/src/data/bangladeshDistricts.ts'),
+    resolve('../frontend/src/data/bangladeshDistricts.ts'),
+  ]) {
+    if (!existsSync(path)) continue;
+    const text = readFileSync(path, 'utf8');
+    // Count only the district array (`ALL_64_DISTRICTS`), never the 8 division
+    // entries that follow it in the same file.
+    const array = text.split('ALL_64_DISTRICTS')[1]?.split('];')[0] ?? '';
+    const entries = (array.match(/\{\s*id:\s*'/g) ?? []).length;
+    if (entries > 0) return entries;
+  }
+  return null;
+}
+
 const num = (v) => {
   if (v === undefined || v === null || String(v).trim() === '') return null;
   const n = Number(v);
@@ -93,7 +125,21 @@ function main() {
     process.exit(1);
   }
 
-  const [header, ...records] = parseCsv(readFileSync(CSV_PATH, 'utf8'));
+  // Run report (coverage/provenance from scripts/auto_forecast.py). Optional so a
+  // bare checkout can still rebuild a snapshot, but its absence is stated.
+  if (existsSync(REPORT_PATH)) {
+    try {
+      REPORT = JSON.parse(readFileSync(REPORT_PATH, 'utf8'));
+      reportCoverage = REPORT.coverage ?? null;
+    } catch (err) {
+      console.warn(`[snapshot] ignoring unreadable run report ${REPORT_PATH}: ${err.message}`);
+    }
+  } else {
+    console.warn(`[snapshot] no run report at ${REPORT_PATH} — coverage will be derived from the CSV alone.`);
+  }
+
+  const [header, ...recordsRaw] = parseCsv(readFileSync(CSV_PATH, 'utf8'));
+  const records = recordsRaw;
   if (!header || records.length === 0) {
     console.error('❌ Forecast CSV is empty.');
     process.exit(1);
@@ -101,11 +147,24 @@ function main() {
   const idx = Object.fromEntries(header.map((name, i) => [name.trim(), i]));
   const get = (cells, name) => (idx[name] !== undefined ? cells[idx[name]]?.trim() : undefined);
 
+  /** First non-empty value of `field` across the CSV (provenance columns). */
+  const firstValue = (field) => {
+    for (const cells of records) {
+      const value = get(cells, field);
+      if (value) return value;
+    }
+    return null;
+  };
+
+  // Mirrored from backend/utils/forecastRow.js VALID_HAZARDS and
+  // scripts/physics_severity.py HAZARD_CLASSES; pinned by
+  // scripts/tests/test_model_claims.py so the three cannot drift.
   const VALID_HAZARDS = new Set([
     'Cold Wave', 'Drought', 'Fire', 'Flash Flood',
     'Flood', 'Heat Wave', 'Severe Local Storm', 'Tropical Cyclone',
   ]);
   const VALID_HORIZONS = new Set(['7_days', '15_days']);
+  const invalidHazards = new Map();
   const HORIZON_DAYS = { '7_days': 7, '15_days': 15 };
 
   const horizons = {};
@@ -115,6 +174,15 @@ function main() {
   for (const cells of records) {
     const horizon = get(cells, 'horizon');
     const hazard = get(cells, 'hazard_type');
+    if (hazard && !VALID_HAZARDS.has(hazard)) {
+      // Not just a dropped row: an unrecognised hazard label means the generator
+      // and the site disagree about the class vocabulary (the shipped snapshot
+      // contained bare class ordinals like "6" for exactly this reason). Report
+      // it instead of silently shrinking the dataset.
+      invalidHazards.set(hazard, (invalidHazards.get(hazard) ?? 0) + 1);
+      dropped += 1;
+      continue;
+    }
     if (!VALID_HORIZONS.has(horizon) || !VALID_HAZARDS.has(hazard)) { dropped += 1; continue; }
 
     // Severity: legacy single-track column or the notebook's dual-track one.
@@ -187,10 +255,42 @@ function main() {
       ['adm2_name', 'adm2_name'],
       ['adm2_pcode', 'adm2_pcode'],
       ['data_source', 'data_source'],
+      // Provenance (audit 2026-09-17): every published row must know which
+      // model/tensor/pipeline produced it, so a forecast can be reproduced
+      // from its own record. Absent values stay absent — never defaulted.
+      ['model_version', 'model_version'],
+      ['confidence_kind', 'confidence_kind'],
+      ['tensor_build_id', 'tensor_build_id'],
+      ['pipeline_version', 'pipeline_version'],
+      ['run_id', 'run_id'],
+      ['physics_top_hazard', 'physics_top_hazard'],
+      ['physics_inputs_missing', 'physics_inputs_missing'],
     ]) {
       const v = get(cells, src);
       if (v) row[out] = v;
     }
+
+    // Independently computed physics scores for ALL eight classes. These are
+    // what let a consumer see a hazard the model missed (the shipped pipeline
+    // only scored the class the model had already chosen).
+    const physicsScores = {};
+    for (const hazard of VALID_HAZARDS) {
+      const key = 'physics_' + hazard.toLowerCase().replace(/\s+/g, '_');
+      const value = num(get(cells, key));
+      if (value !== null) physicsScores[key] = value;
+    }
+    if (Object.keys(physicsScores).length > 0) row.physics_scores = physicsScores;
+
+    // Numeric/bool annotations, kept only when the CSV actually carried them.
+    const agreement = get(cells, 'physics_agreement');
+    if (agreement === 'True' || agreement === 'true') row.physics_agreement = true;
+    else if (agreement === 'False' || agreement === 'false') row.physics_agreement = false;
+    const divergence = num(get(cells, 'track_divergence'));
+    if (divergence !== null) row.track_divergence = divergence;
+    const topSeverity = num(get(cells, 'physics_top_severity'));
+    if (topSeverity !== null) row.physics_top_severity = topSeverity;
+    const soilFabricated = get(cells, 'soil_channels_fabricated');
+    if (soilFabricated === 'True' || soilFabricated === 'true') row.soil_channels_fabricated = true;
 
     (horizons[horizon] ??= []).push(row);
   }
@@ -201,12 +301,62 @@ function main() {
     process.exit(1);
   }
 
+  // Coverage is derived from the CSV, not assumed. A district present at one
+  // horizon but not the other is a gap the site must label as "no current
+  // forecast" rather than rendering static baseline numbers for it as if they
+  // were today's (audit 2026-09-17, PRODUCT_SPEC §5.1).
+  //
+  // `requested_*` and `missing_district_ids` can only come from the producer's
+  // run report — the CSV alone cannot say how many districts were *asked for*.
+  // When the report is absent those fields stay null, which is the honest answer;
+  // the committed district list is then used to say which of the 64 districts the
+  // snapshot does not cover.
+  const districtsByHorizon = {};
+  const unitsByHorizon = {};
+  for (const [name, rows] of Object.entries(horizons)) {
+    districtsByHorizon[name] = [...new Set(rows.map((r) => Number(r.district_id)))].sort((a, b) => a - b);
+    unitsByHorizon[name] = rows.length;
+  }
+  const covered = new Set(Object.values(districtsByHorizon).flat());
+  const expectedDistricts = readExpectedDistrictCount();
+
+  const coverage = {
+    requested_units: reportCoverage?.requested_units ?? null,
+    produced_units: totalCount,
+    units_per_horizon: unitsByHorizon,
+    districts_per_horizon: Object.fromEntries(
+      Object.entries(districtsByHorizon).map(([name, ids]) => [name, ids.length])
+    ),
+    districts_covered: covered.size,
+    districts_expected: expectedDistricts,
+    // `null` means "not recorded", not "none missing": a CSV alone cannot say
+    // which districts were asked for and failed. Only the producer's run report
+    // can, which is why the daily job passes it here.
+    missing_district_ids: reportCoverage?.missing_district_ids ?? null,
+    missing_district_names: reportCoverage?.missing_district_names ?? null,
+    horizons: reportCoverage?.horizons ?? Object.keys(horizons),
+    skipped: reportCoverage?.skipped ?? [],
+    status:
+      reportCoverage?.status ??
+      (expectedDistricts !== null && covered.size >= expectedDistricts ? 'complete' : 'partial'),
+  };
+
+  const provenance = {
+    model_version: firstValue('model_version'),
+    tensor_build_id: firstValue('tensor_build_id'),
+    pipeline_version: firstValue('pipeline_version'),
+    run_id: firstValue('run_id'),
+  };
+
   const snapshot = {
-    schema: 'hazardnet-forecast-snapshot/v1',
+    schema: 'hazardnet-forecast-snapshot/v2',
     generated_at: new Date().toISOString(),
     source: SOURCE,
     kernel: KERNEL,
     prediction_date: predictionDates.size > 0 ? [...predictionDates].sort().at(-1) : null,
+    provenance,
+    coverage,
+    soil_channels_fabricated: REPORT?.soil_channels_fabricated ?? null,
     horizons,
   };
 
@@ -216,6 +366,14 @@ function main() {
   console.log(`   Rows: ${totalCount} (dropped ${dropped}) across horizons: ${Object.keys(horizons).join(', ')}`);
   console.log(`   Latest prediction_date: ${snapshot.prediction_date ?? 'unknown'}`);
   console.log(`   Source: ${snapshot.source}`);
+  console.log(`   Coverage: ${coverage.produced_units} units, ${coverage.districts_covered} districts, status=${coverage.status}`);
+  if (provenance.model_version) console.log(`   Model: ${provenance.model_version} (tensor ${provenance.tensor_build_id ?? 'unknown'})`);
+  if (snapshot.soil_channels_fabricated) console.log('   ⚠ soil channels fabricated (training means) — rows are stamped soil_channels_fabricated=true');
+  if (invalidHazards.size > 0) {
+    console.error(`❌ Unrecognised hazard labels dropped from the CSV: ${[...invalidHazards.entries()].map(([h, n]) => `${h}×${n}`).join(', ')}`);
+    console.error('   The generator and the site disagree about the class vocabulary (e.g. bare class ordinals). Fix the producer before shipping this snapshot.');
+    process.exitCode = 1;
+  }
 }
 
 main();

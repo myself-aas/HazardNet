@@ -95,7 +95,7 @@ jobs:
               json.dump(records, fh, indent=2)
           print(f'regenerated data/manual_forecast.json ({len(records)} records)')
           "
-          python scripts/validate_forecasts.py --csv "$MANUAL_CSV" --json data/manual_forecast.json --skip-freshness
+          python scripts/validate_forecasts.py --csv "$MANUAL_CSV" --json data/manual_forecast.json --skip-freshness --skip-coverage  # hand-run Kaggle CSV: no run report / coverage tally
 
       - name: Promote manual CSV to the pipeline paths
         id: promote

@@ -32,9 +32,20 @@ METEOROLOGICAL_FIELDS = (
 
 NUMERIC_FIELDS = (
     'model_severity', 'physics_severity', 'severity_score', 'confidence',
-    'severity', 'latitude', 'longitude',
+    'severity', 'latitude', 'longitude', 'track_divergence',
     *METEOROLOGICAL_FIELDS,
 )
+
+# Columns the pipeline writes as Python/CSV booleans. The JSON sidecar is consumed
+# by stores and by the snapshot builder, so they are typed here rather than left
+# as the strings 'True'/'False' (audit 2026-09-17).
+BOOLEAN_FIELDS = ('physics_agreement', 'soil_channels_fabricated')
+
+# Per-class physics scores (`physics_flash_flood`, …) are numeric; the other
+# `physics_*` columns are not. An empty score means "not computed for this row"
+# and must stay null rather than becoming a 0.0 that reads as "no hazard".
+PHYSICS_PREFIX = 'physics_'
+PHYSICS_NON_NUMERIC = ('physics_top_hazard', 'physics_agreement', 'physics_inputs_missing')
 
 
 def compute_sha256(file_path):
@@ -65,6 +76,17 @@ def convert_csv_to_json_records(csv_path):
             for k, v in row.items():
                 if k in ('district_id', 'location_id'):
                     parsed_row[k] = int(v) if v else 0
+                elif k in BOOLEAN_FIELDS:
+                    text = (v or '').strip().lower()
+                    if text in ('true', 'false'):
+                        parsed_row[k] = text == 'true'
+                    else:
+                        parsed_row[k] = None if text == '' else v
+                elif k.startswith(PHYSICS_PREFIX) and k not in PHYSICS_NON_NUMERIC:
+                    try:
+                        parsed_row[k] = float(v)
+                    except (ValueError, TypeError):
+                        parsed_row[k] = None
                 elif k in NUMERIC_FIELDS or k.startswith('om_'):
                     try:
                         parsed_row[k] = float(v)

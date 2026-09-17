@@ -156,6 +156,11 @@ release blocker (Phase 8 SEO/content work will be held to it).
 Measured against the live deployment, the committed archive and `frontend/public/data/forecasts-latest.json`
 (generated 2026-09-16T15:32Z). **These are defects to fix, not design decisions.**
 
+**Fix log** — each finding below carries a status line. `FIXED` means code exists and a test pins it;
+`GUARDED` means the defect can no longer ship silently but the underlying data quality question is
+still open; `OPEN` means nothing has changed yet. The historical text is kept, because the published
+snapshot still contains rows produced by the old pipeline and their limits must stay readable.
+
 ### 5.1 Coverage is partial and varies by horizon — and nothing says so
 
 | Horizon | Districts in published snapshot | Districts in committed archive CSV |
@@ -172,6 +177,22 @@ product claim "all 64 districts" refers to the map and the archive, not to live 
 *Fix (Phase 2/5):* stamp `coverage: {requested, produced, missing[]}` into every snapshot; the UI
 must label a missing district "no current forecast for this horizon" rather than showing baseline
 numbers.
+
+**Status: GUARDED (pipeline), OPEN (UI).**
+- `scripts/auto_forecast.py` now records every skipped district with a reason and writes a
+  `hazardnet_run_report.json` (`coverage.requested_units / produced_units / per_horizon /
+  missing_district_ids / skipped[]`, `status: complete|partial`). The silent
+  `if not historical_steps: continue` is gone (`scripts/tests/test_publish_forecast_csv.py`,
+  `scripts/tests/test_validate_forecasts.py`).
+- `scripts/publish_forecast_csv.py` **refuses to publish without a run report** and refuses a report
+  that disagrees with the CSV, so a partial run cannot ship unlabelled; a partial run that *is*
+  labelled publishes with `coverage_status: partial` in `manifest.json`.
+- `scripts/validate_forecasts.py` fails when the manifest has no tally or no model provenance.
+- The snapshot is now `hazardnet-forecast-snapshot/v2` with `coverage` (units/districts per horizon,
+  `districts_expected`, `missing_district_ids` — `null` when the producer did not report them) and
+  `provenance`. The committed snapshot currently reports 60/64 districts, `status: partial`.
+- **Still open:** the UI does not yet render "no current forecast" for a district missing from the
+  coverage list — it shows baseline numbers. That is Phase 5 work, and the data it needs now exists.
 
 ### 5.2 Advertised horizons are not the shipped horizons
 
@@ -209,6 +230,24 @@ arguments (looks like an argument bug).
 *Fix (Phase 2/3):* compute all eight physics scores independently of the model's pick, then compare
 distributions.
 
+**Status: FIXED.**
+- The formulas now live in `scripts/physics_severity.py` (standard library only) with 18 unit tests
+  (`scripts/tests/test_physics_severity.py`): `compute_physics_scores(drivers, horizon_days)` scores
+  **all eight classes** from weather drivers alone — the model's predicted class is not an input.
+- `om_calc_flood(precip_total_mm, precip_peak_mm)` now takes the horizon total *and* the wettest 24 h
+  inside it (peak derived from the hourly Open-Meteo series); the duplicate-value call is gone, and a
+  test asserts neither argument has a default. `om_calc_severe_storm` had the same wiring bug and is
+  fixed the same way.
+- Every row now carries `physics_top_hazard`, `physics_top_severity`, `physics_agreement`,
+  `track_divergence`, `physics_inputs_missing` and per-class `physics_*` scores, so a hazard the
+  model missed is visible in the data. `scripts/tests/test_model_claims.py` fails if a branch on the
+  predicted class comes back.
+- Known limit, documented in the module: `Flood` and `Flash Flood` share one rainfall formula
+  (separating them needs hydrology/FFWC data — TARGET_ARCHITECTURE §2.1), and in a rain-heavy cyclone
+  the flood proxy can outrank the cyclone proxy.
+- **Rows published before 2026-09-17 keep the old, conditioned `physics_severity`** (the site copy
+  says so explicitly); `provenance.pipeline_version` distinguishes them.
+
 ### 5.5 `confidence` does not mean what the site says
 
 `confidence` is the model's **softmax score for the class it selected** (`run_inference`, written
@@ -230,6 +269,17 @@ therefore 12 informative channels, with train/serve skew on 6 more.
 channels. Any 10/20/30-day expansion must also account for Open-Meteo's ~16-day deterministic limit
 (which is why ADR 0005's 20/30-day horizons were only ever a weather-window aggregation).
 
+**Status: GUARDED (not fixed).**
+- The constants are no longer hard-coded invisibly: they are resolved from `HAZARDNET_SOIL_MODE`
+  (`mean` = fabricate the training means and label it; `forbid` = refuse to run, for any run whose
+  output will be used for evaluation or retraining). `SOIL_MODE=forbid` currently exits with an
+  explicit message because the live path still does not fetch soil variables.
+- Every row carries `soil_channels_fabricated: true`, the manifest carries
+  `soil_channels_fabricated` + `soil_mode`, the snapshot carries the same flag, and
+  `scripts/validate_forecasts.py` prints a warning on every run that uses placeholders.
+- **Still open:** the real fix — ERA5-Land soil moisture/temperature at the live timestep. Until
+  then the model's live input is 12 informative channels, and the row says so.
+
 ### 5.7 The web API does not run the trained model
 
 `POST /api/predict` (the dashboard's "Softmax classification") is served by
@@ -247,6 +297,19 @@ TFLite CNN, while the interactive dashboard runs the heuristic. Full detail in t
 Every row is stamped `data_source: "Hybrid_Cognitive_Forecast"`, a label that describes no
 published method. Rows carry no model version, no dataset version, no preprocessing version and no
 input-scene lineage, so a forecast cannot be reproduced from its own record.
+
+**Status: PARTIAL.**
+- Every row now carries `model_version` (from `Models/VERSION.json`), `tensor_build_id` (first 16
+  hex of the model artifact's sha256 — a fallback so a row is never traceable to nothing),
+  `pipeline_version`, `run_id`, and `confidence_kind: model_softmax_top_class`. The run report adds
+  the full `model_sha256` and the coverage tally; the manifest and the snapshot carry them forward,
+  and `backend/utils/forecastRow.js` + `predictFromStore.js` expose them through the API envelope.
+- `scripts/validate_forecasts.py` fails a publish whose manifest carries no model provenance.
+- **Still open:** `dataset_version` and per-prediction scene lineage (the COG/Earth-Engine image
+  list per district-timestep). That is the remaining half of the §3.1 row contract; it needs the
+  scene manifest described in TARGET_ARCHITECTURE §3.1, not more stamps on the current pipeline.
+  Rows published before 2026-09-17 have none of these fields — their absence is the honest record
+  that they came from the older pipeline (the snapshot reports `provenance: null`).
 
 ---
 
@@ -268,6 +331,7 @@ input-scene lineage, so a forecast cannot be reproduced from its own record.
 | Date | Version | Change |
 | ---- | ------- | ------ |
 | 2026-09-17 | 1.0-draft | First written contract; §5 records eight places where the shipped system contradicts it. |
+| 2026-09-17 | 1.1-draft | Phase 2 (first increment). §5.1 coverage: accounted for and gated (UI labelling still open). §5.4 physics track: independent, all eight classes, `om_calc_flood` argument bug fixed. §5.6 soil channels: labelled and refusable, still placeholders. §5.8 provenance: model/tensor/run/confidence-kind stamped; dataset version and scene lineage still open. |
 
 ## 8. Sign-off
 

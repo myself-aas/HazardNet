@@ -160,6 +160,34 @@ describe('predictFromStore / declared gaps match actual gaps', () => {
     expect(envelope.metadata.fields_unavailable.length).toBeGreaterThan(0);
   });
 
+  it('carries the independent physics track when the row records one', () => {
+    const envelope = predictFromStore({
+      ...firstRow(),
+      physics_top_hazard: 'Tropical Cyclone',
+      physics_agreement: false,
+      track_divergence: 0.41,
+      soil_channels_fabricated: true,
+    });
+    expect(envelope.provenance.physics_top_hazard).toBe('Tropical Cyclone');
+    expect(envelope.provenance.physics_agreement).toBe(false);
+    expect(envelope.provenance.track_divergence).toBeCloseTo(0.41);
+    expect(envelope.provenance.soil_channels_fabricated).toBe(true);
+    for (const path of [
+      'provenance.physics_top_hazard',
+      'provenance.physics_agreement',
+      'provenance.track_divergence',
+      'provenance.soil_channels_fabricated',
+    ]) {
+      expect(envelope.metadata.fields_unavailable).not.toContain(path);
+    }
+  });
+
+  it('does not guess a physics pick from an unknown hazard label', () => {
+    const envelope = predictFromStore({ ...firstRow(), physics_top_hazard: 'Landslide' });
+    expect(envelope.provenance.physics_top_hazard).toBeNull();
+    expect(envelope.metadata.fields_unavailable).toContain('provenance.physics_top_hazard');
+  });
+
   it('drops model_version from the unavailable list when the row records one', () => {
     const envelope = predictFromStore({
       ...firstRow(),
