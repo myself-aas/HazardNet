@@ -194,7 +194,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <MaterialIcon name="person_pin_circle" className="w-4 h-4" />
                 )}
               </button>
-              {createPortal(<CommandPalette onSelectDistrict={onSelectDistrict} />, document.body)}
+              <CommandPalette onSelectDistrict={onSelectDistrict} />
             </div>
           </div>
 
@@ -647,7 +647,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               </motion.button>
 
               {/* Command Palette / Quick Search */}
-              {createPortal(<CommandPalette onSelectDistrict={onSelectDistrict} />, document.body)}
+              <CommandPalette onSelectDistrict={onSelectDistrict} />
 
               {/* Push / Emergency Notification Toggle */}
               <NotificationToggle />

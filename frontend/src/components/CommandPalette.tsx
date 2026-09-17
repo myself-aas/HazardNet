@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback, useDeferredValue, useTransition, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
@@ -463,7 +464,14 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onSelectDistrict
         </span>
       </button>
 
-      {/* Global Command Palette Search Modal */}
+      {/* Global Command Palette Search Modal.
+          Portaled to document.body so the overlay escapes the sticky header
+          wrapper's stacking context (z-40) and dims the whole page — but the
+          trigger button above stays inline: the navbar renders two palette
+          triggers (compact bar + desktop bar) and each must stay inside its
+          `hidden xl:flex` / `xl:hidden` container so exactly one is visible
+          per breakpoint (e2e strict-mode locators rely on that). */}
+      {createPortal(
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -620,6 +628,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onSelectDistrict
         </motion.div>
       )}
       </AnimatePresence>
+      , document.body)}
     </>
   );
 };
