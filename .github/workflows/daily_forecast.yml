@@ -43,6 +43,11 @@ env:
   # generator runs artifact-only and the site is served by the committed
   # snapshot (see docs/ops/owner-actions.md §2a-bis for the deployment state).
   PUSH_TO_API: ${{ vars.PUSH_TO_API || 'false' }}
+  # Stream Python stdout line-by-line. During the 2026-09-17 zero-rows incident
+  # the block-buffered output flushed only at exit, so every "Processing X..."
+  # line carried the final-flush timestamp and the real error ordering was
+  # unrecoverable from the log.
+  PYTHONUNBUFFERED: '1'
 
 jobs:
   run-forecast:
@@ -184,4 +189,4 @@ jobs:
       - name: Notify on failure
         if: failure()
         run: |
-          echo "::error::Daily forecast pipeline failed -- the site keeps serving the last committed snapshot. Check the failing step above (GEE credentials, Open-Meteo availability, or a schema change in scripts/auto_forecast.py)."
+          echo "::error::Daily forecast pipeline failed -- the site keeps serving the last committed snapshot. The generator now fails fast with the real cause in the 'Execute pipeline' step (GEE/Open-Meteo availability, credentials, or a schema change in scripts/auto_forecast.py); the publish sanity check no longer masks it."
