@@ -105,3 +105,28 @@ Stated intent (README.md, Hazards: "production-ready, edge-first… TFLite WASM�
 ### Remediation backlog already tracked by the team
 
 Carried-open P2 deferrals from `docs/audits/2026-08-28-master-reaudit.md` §4 (do not duplicate): Firestore→Supabase cutover, `CSP_ENFORCE=true` flip, `@tensorflow/tfjs-node` install + re-benchmark, backend workspace split, LiveMapView decomposition. P3 recommendations (§6) also list follow-ups executed same-day — consult before opening new work items.
+
+## Phase 0 ground-truth audit (2026-09-17)
+
+**Read first:** `docs/PRODUCT_SPEC.md` (product contract + §5 defect list) and
+`docs/MODEL_CARD.md` (what the model is, and what it is not). Both were written to stop this file's
+own failure mode — documentation that describes an intended system rather than the shipped one.
+
+Findings that supersede or complicate the notes above:
+
+1. **Two inference paths, only one of them the model.** `POST /api/predict` is served by
+   `backend/inference.js`, which never loads `Models/hazardnet_fp32.tflite`: it computes eight
+   hand-written linear scores plus a heuristic severity. The daily pipeline
+   (`scripts/auto_forecast.py`) does run the real TFLite CNN. Same names, different maths.
+2. **`docs/adr/0005-adm3-hdx-horizons.md`'s horizon claim is false.** Its checklist marks
+   "10/20/30 everywhere; 7/15 retired" as done; `VALID_HORIZONS` is `['7_days','15_days']` in every
+   code path, and the ADR now carries a dated amendment. Public copy advertised 10/20/30 until this
+   audit; `scripts/tests/test_model_claims.py` now fails CI if copy and code disagree again.
+3. **Shipped forecasts are degenerate.** The 2026-09-16 snapshot predicts the same hazard class for
+   every district at 15 days, with `confidence` close to 1.0 for 68/74 rows and severity >= 0.997 —
+   see `docs/MODEL_CARD.md` section 6.1. Any accuracy figure quoted from the retired
+   `assets/docs/MODEL_CARD.md` (98.8 %, 95.6 %, ~1.2 M parameters) is unverifiable and retired.
+4. **Coverage is partial and silent.** 25/64 districts at 7 days, 49/64 at 15 days; failures are
+   skipped without a record (`if not historical_steps: continue`).
+5. **The physics cross-check is not independent** - it is computed only for the class the model
+   selected, so it cannot detect a missed hazard (`docs/PRODUCT_SPEC.md` section 5.4).

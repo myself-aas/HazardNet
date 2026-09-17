@@ -43,7 +43,7 @@ export const Footer: React.FC = () => {
             </Link>
 
             <a
-              href="https://github.com/hazardnet/hazardnet-ai"
+              href="https://github.com/myself-aas/HazardNet"
               target="_blank"
               rel="noopener noreferrer"
               className="px-4 py-2.5 rounded-xl bg-slate-100 text-slate-700 font-bold border border-slate-200 hover:bg-slate-200 transition-all flex items-center gap-2"
@@ -195,7 +195,7 @@ export const Footer: React.FC = () => {
               </li>
               <li>
                 <a
-                  href="https://github.com/hazardnet/hazardnet-ai/blob/main/LICENSE"
+                  href="https://github.com/myself-aas/HazardNet/blob/main/LICENSE"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="hover:text-slate-900 transition-colors"

@@ -4,6 +4,7 @@
 
 import { parseHistoryQuery, historyRowsToCsv } from '../../../backend/utils/forecastServe.js';
 import { getForecastStore } from '../../../backend/forecastStore.js';
+import { clientError } from '../../../backend/utils/clientError.js';
 
 /**
  * @param {import('vercel').Request} req
@@ -50,6 +51,6 @@ export default async function handler(req, res) {
       forecasts: rows,
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    clientError(res, err, { scope: 'api/v1/forecasts/history' });
   }
 }

@@ -1,6 +1,7 @@
 import express from 'express';
 import { searchRAG, GOVT_OFFICE_DIRECTORY, getAgentInstructions } from '../../rag_pipeline/index.js';
 import { generateAdvisoryWithFallback } from '../utils/ai_fallback_engine.js';
+import { clientError } from '../utils/clientError.js';
 
 const router = express.Router();
 
@@ -144,10 +145,7 @@ router.post('/query', async (req, res) => {
 
   } catch (err) {
     console.error('Chat Query Error:', err);
-    res.status(500).json({
-      error: 'Failed to process RAG chat query',
-      message: err.message
-    });
+    clientError(res, err, { scope: 'backend/chat', fallback: 'Failed to process RAG chat query' });
   }
 });
 

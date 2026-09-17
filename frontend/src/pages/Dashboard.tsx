@@ -127,7 +127,14 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
   const [loading, setLoading] = useState(false);
   const [prediction, setPrediction] = useState<number[]>([0.1, 0.05, 0.02, 0.2, 0.5, 0.03, 0.05, 0.05]);
   const [severity, setSeverity] = useState<number>(0.78);
-  const [processingTimeMs, setProcessingTimeMs] = useState<number>(42);
+  // 0 means "no inference has been measured on this device" — never render a
+  // placeholder number as if it were a measurement (UI-14).
+  const [processingTimeMs, setProcessingTimeMs] = useState<number>(0);
+  // Provenance for the numbers above. `live` is set only when /api/predict
+  // actually answered; the catch branch shows a static district baseline and
+  // the UI must label it as such (UI-01/UX-12).
+  const [predictionSource, setPredictionSource] = useState<'live' | 'baseline'>('baseline');
+  const [liveSummary, setLiveSummary] = useState<{ hazard: string; confidence: number } | null>(null);
   const [channelFeatures, setChannelFeatures] = useState<any>(null);
 
   // Offline Cache & Storage Management State
@@ -324,11 +331,22 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
         setSeverity(pred.severity_score ?? 0.75);
         setChannelFeatures(pred.channel_features || null);
         setProcessingTimeMs(data.inference?.latency_ms ?? Math.round(performance.now() - start));
+        setLiveSummary({
+          hazard: typeof pred.hazard === 'string' ? pred.hazard : dist.hazardType,
+          confidence:
+            typeof pred.confidence === 'number' ? pred.confidence : Math.max(...probs.map(Number)),
+        });
+        setPredictionSource('live');
       } else {
         throw new Error('API returned non-200');
       }
     } catch (e) {
-      const elapsed = Math.round(performance.now() - start);
+      // The inference API is unreachable (it is not deployed on the Vercel
+      // surface yet). Fall back to the static district baseline and *say so*:
+      // presenting the climatological prior as a softmax result, with a
+      // fabricated latency, is exactly the fake-precision defect the audit
+      // flagged (UI-01/UI-14/UX-12).
+      console.warn('[HazardNet] live inference unavailable — showing static district baseline', e);
       if (dist.risk === 'High') {
         setPrediction([0.02, 0.08, 0.01, 0.25, 0.55, 0.02, 0.04, 0.03]);
         setSeverity(0.85);
@@ -339,7 +357,9 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
         setPrediction([0.05, 0.10, 0.02, 0.05, 0.12, 0.05, 0.05, 0.02]);
         setSeverity(0.22);
       }
-      setProcessingTimeMs(elapsed);
+      setLiveSummary(null);
+      setPredictionSource('baseline');
+      setProcessingTimeMs(0);
     } finally {
       setLoading(false);
     }
@@ -371,8 +391,8 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
   const downloadReport = () => {
     if (!selectedDistrict) return;
     const csvContent = "data:text/csv;charset=utf-8," 
-      + "Region,Latitude,Longitude,Risk,Main Crop,Severity Score\n"
-      + `${selectedDistrict.name},${selectedDistrict.lat},${selectedDistrict.lng},${selectedDistrict.risk},${selectedDistrict.mainCrop},${(severity * 100).toFixed(0)}%`;
+      + "Region,Latitude,Longitude,Risk,Main Crop,Severity Score,Source\n"
+      + `${selectedDistrict.name},${selectedDistrict.lat},${selectedDistrict.lng},${selectedDistrict.risk},${selectedDistrict.mainCrop},${(severity * 100).toFixed(0)}%,${predictionSource === 'live' ? 'Live model inference' : 'Static baseline (model unavailable)'}`;
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
@@ -881,7 +901,21 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
                         </span>
                       </div>
                       <p className="text-xs text-slate-500 mt-1">
-                        Softmax classification: <strong className="text-slate-800">{selectedDistrict.risk} Hazard Probability</strong> | Latency: 38ms
+                        {predictionSource === 'live' && liveSummary ? (
+                          <>
+                            Live model output:{' '}
+                            <strong className="text-slate-800">
+                              {liveSummary.hazard} · {(liveSummary.confidence * 100).toFixed(1)}% top-class confidence
+                            </strong>
+                            {processingTimeMs > 0 && <> · measured {processingTimeMs} ms</>}
+                          </>
+                        ) : (
+                          <>
+                            Static baseline band:{' '}
+                            <strong className="text-slate-800">{selectedDistrict.risk}</strong> — live inference
+                            unavailable, showing the district's climatological prior (not a model output)
+                          </>
+                        )}
                       </p>
                     </div>
 

@@ -90,10 +90,9 @@ router.post('/', async (req, res) => {
     res.json(advisoryJson);
   } catch (error) {
     console.error('Advisory Engine Error:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'Failed to generate advisory',
-      message: error.message,
-      fallback: 'Monitor local weather and contact Union Parishad Agriculture Officer.' 
+      fallback: 'Monitor local weather and contact Union Parishad Agriculture Officer.'
     });
   }
 });

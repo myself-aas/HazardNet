@@ -118,11 +118,12 @@ expect(history).toHaveBeenCalledWith({
     expect(res.body.forecasts[0].district_name).toBe('Dhaka');
   });
 
-  it('surfaces store failures as 500', async () => {
+  it('surfaces store failures as a generic 500 (SEC-13: no internal detail leaked)', async () => {
     history.mockRejectedValue(new Error('store down'));
     const res = await request(app).get('/api/v1/forecasts/history');
     expect(res.status).toBe(500);
-    expect(res.body.error).toBe('store down');
+    expect(res.body.error).toBe('Internal server error');
+    expect(JSON.stringify(res.body)).not.toContain('store down');
   });
 });
 

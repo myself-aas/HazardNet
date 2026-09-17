@@ -30,8 +30,8 @@ export const PrintQrCode: React.FC<PrintQrCodeProps> = ({
   const resolvedUrl =
     url ||
     (districtOrSector
-      ? `https://hazardnet.live/district/${districtOrSector.toLowerCase().replace(/\s+/g, '-')}`
-      : 'https://hazardnet.live');
+      ? `https://www.hazardnet.live/forecast/district/${districtOrSector.toLowerCase().replace(/\s+/g, '-')}`
+      : 'https://www.hazardnet.live');
 
   return (
     <div

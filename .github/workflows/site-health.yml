@@ -66,6 +66,102 @@ jobs:
           fi
           echo "✅ Homepage serves the app shell"
 
+      # Deep-link probe (2026-09-17 audit, P0). Every non-root route returned
+      # Vercel's platform 404 in production — /login, /dashboard, /about,
+      # /blogs, /documentation — because the project was built from frontend/
+      # and the root vercel.json rewrites never applied. The build now emits a
+      # real HTML file per route (frontend/scripts/prerender.mjs) and
+      # frontend/vercel.json carries the rewrite, so this must stay green.
+      - name: Probe deep links resolve with prerendered content
+        shell: bash
+        run: |
+          set -uo pipefail
+          FAILED=0
+          check_route () {
+            local path="$1" expect="$2" label="$3"
+            local response code html
+            response=$(curl -sSL --max-redirs 5 -w '\n%{http_code}' --max-time 30 "$SITE_URL$path" 2>/dev/null || true)
+            code="${response##*$'\n'}"
+            html="${response%$'\n'*}"
+            if [ "$code" != "200" ]; then
+              echo "::error::$label ($path) returned HTTP $code — deep links are broken. Check the Vercel Root Directory (docs/ops/owner-actions.md §2a-bis) and that the prerender step ran."
+              FAILED=1
+              return
+            fi
+            if ! grep -qi -- "$expect" <<< "$html"; then
+              echo "::error::$label ($path) returned 200 but is missing expected content ($expect) — the SPA shell may have been served instead of the prerendered page."
+              FAILED=1
+              return
+            fi
+            echo "✅ $label ($path) 200 with expected content"
+          }
+          check_route '/' 'hazardnet' 'homepage'
+          check_route '/login' 'sign in' 'sign-in page'
+          check_route '/about' 'about hazardnet' 'about page'
+          check_route '/blogs' 'blog' 'blog index'
+          check_route '/methodology' 'methodology' 'methodology'
+          check_route '/faq' 'frequently asked questions' 'FAQ'
+          check_route '/robots.txt' 'sitemap:' 'robots.txt'
+          check_route '/.well-known/security.txt' 'contact:' 'security.txt'
+          exit "$FAILED"
+
+      # Security-header probe (SEC-03/SEC-04). vercel.json (both copies) is the
+      # only thing that sets these; if the wrong one applies to the deployment
+      # they disappear silently, which is exactly what happened before.
+      - name: Probe security headers
+        shell: bash
+        run: |
+          set -uo pipefail
+          HEADERS=$(curl -sSI -L --max-redirs 5 --max-time 30 "$SITE_URL/" | tr -d '\r')
+          FAILED=0
+          require () {
+            local name="$1" needle="${2:-}"
+            if ! grep -qi "^$name:" <<< "$HEADERS"; then
+              echo "::error::missing header: $name"
+              FAILED=1
+              return
+            fi
+            if [ -n "$needle" ] && ! grep -qi "^$name:.*$needle" <<< "$HEADERS"; then
+              echo "::error::$name does not contain '$needle'"
+              FAILED=1
+              return
+            fi
+            echo "✅ $name"
+          }
+          require 'strict-transport-security' 'includeSubDomains'
+          require 'content-security-policy' "frame-ancestors 'none'"
+          require 'x-content-type-options' 'nosniff'
+          require 'referrer-policy'
+          require 'permissions-policy'
+          exit "$FAILED"
+
+      # Sitemap honesty: a sitemap that lists URLs the deployment does not serve
+      # is worse than no sitemap (SEO-01). Verified live on 2026-09-17: it listed
+      # /documentation and /about, both of which 404'd.
+      - name: Verify every sitemap URL resolves
+        shell: bash
+        run: |
+          set -uo pipefail
+          curl -sSL --max-redirs 5 --max-time 30 "$SITE_URL/sitemap.xml" -o /tmp/sitemap.xml
+          if ! grep -q '<urlset' /tmp/sitemap.xml; then
+            echo "::error::/sitemap.xml is not a sitemap"
+            head -c 300 /tmp/sitemap.xml
+            exit 1
+          fi
+          URLS=$(grep -o '<loc>[^<]*</loc>' /tmp/sitemap.xml | sed 's/<[^>]*>//g')
+          COUNT=$(wc -w <<< "$URLS")
+          echo "sitemap lists $COUNT URLs"
+          FAILED=0
+          for url in $URLS; do
+            code=$(curl -sSL --max-redirs 5 -o /dev/null -w '%{http_code}' --max-time 30 "$url" || echo 000)
+            if [ "$code" != "200" ]; then
+              echo "::error::$url → HTTP $code (listed in sitemap.xml but not served)"
+              FAILED=1
+            fi
+          done
+          [ "$FAILED" = "0" ] && echo "✅ every sitemap URL returns 200"
+          exit "$FAILED"
+
       - name: Probe forecast data (API, falling back to the committed snapshot)
         shell: bash
         run: |

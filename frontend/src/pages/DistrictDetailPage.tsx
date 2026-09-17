@@ -781,12 +781,12 @@ export const DistrictDetailPage: React.FC = () => {
               <div className="flex items-center justify-between">
                 <span className="text-slate-500 font-medium">Interactive Dashboard:</span>
                 <a
-                  href={`https://hazardnet.live/district/${districtId}`}
+                  href={`https://www.hazardnet.live/forecast/district/${districtId}`}
                   target="_blank"
                   rel="noreferrer"
                   className="text-blue-700 hover:text-blue-900 font-bold inline-flex items-center gap-1 underline"
                 >
-                  <span>hazardnet.live/district/{districtId}</span>
+                  <span>www.hazardnet.live/forecast/district/{districtId}</span>
                   <ExternalLink className="w-3 h-3" />
                 </a>
               </div>
@@ -795,7 +795,7 @@ export const DistrictDetailPage: React.FC = () => {
             <div className="pt-2 border-t border-slate-200 flex items-center justify-between">
               <span className="text-[8pt] text-slate-500 font-mono">Real-time Mobile Telemetry Feed:</span>
               <PrintQrCode
-                url={`https://hazardnet.live/district/${districtId}`}
+                url={`https://www.hazardnet.live/forecast/district/${districtId}`}
                 districtOrSector={data.districtName}
                 title="Live Field Telemetry"
                 size={42}
@@ -993,7 +993,7 @@ export const DistrictDetailPage: React.FC = () => {
                 <div className="hidden lg:flex items-center gap-3 bg-slate-50 border border-slate-200/80 rounded-2xl p-3 shrink-0 screen-only">
                   <div className="shrink-0">
                     <PrintQrCode
-                      url={`https://hazardnet.live/district/${districtId}`}
+                      url={`https://www.hazardnet.live/forecast/district/${districtId}`}
                       districtOrSector={data.districtName}
                       title="Mobile Link"
                       size={52}
@@ -1002,7 +1002,7 @@ export const DistrictDetailPage: React.FC = () => {
                   <div className="text-xs space-y-1">
                     <span className="font-bold text-slate-900 block font-mono text-[11px]">LIVE TELEMETRY STREAM</span>
                     <a
-                      href={`https://hazardnet.live/district/${districtId}`}
+                      href={`https://www.hazardnet.live/forecast/district/${districtId}`}
                       target="_blank"
                       rel="noreferrer"
                       className="text-blue-600 hover:text-blue-800 font-semibold text-xs inline-flex items-center gap-1"

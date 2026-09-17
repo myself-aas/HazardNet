@@ -42,6 +42,9 @@ const UserDashboardPage = lazy(() => import('./pages/UserDashboardPage'));
 const PublicProfilePage = lazy(() => import('./pages/PublicProfilePage'));
 const SetPasswordPage = lazy(() => import('./pages/SetPasswordPage'));
 const ChatBot = lazy(() => import('./components/ChatBot'));
+// Long-form public reference pages. Copy lives in src/content/site-routes.json
+// and is prerendered to static HTML at build time (scripts/prerender.mjs).
+const ArticlePage = lazy(() => import('./components/ArticlePage'));
 
 /** Full-height fallback shown while a lazy route chunk streams in. */
 const RouteFallback = () => (
@@ -97,6 +100,16 @@ const AppContent: React.FC = () => {
         }}
       />
 
+      {/* Skip link (WCAG 2.4.1): first focusable element on every page, so a
+          keyboard or screen-reader user can jump past the navbar straight to
+          the content. Visible only while focused. */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-[9999] focus:rounded-xl focus:bg-slate-900 focus:px-4 focus:py-2.5 focus:text-sm focus:font-bold focus:text-white focus:shadow-lg"
+      >
+        Skip to main content
+      </a>
+
       {/* Top Navigation - Upper layer overlay with near-transparent background */}
       {!['/terms', '/privacy'].some((p) => location.pathname.startsWith(p)) && !isAuthPage && (
         <div
@@ -110,6 +123,8 @@ const AppContent: React.FC = () => {
 
       {/* Main Content Area */}
       <main
+        id="main-content"
+        tabIndex={-1}
         className={
           isAuthPage
             ? 'flex-1 relative z-10 w-full pointer-events-auto'
@@ -173,7 +188,15 @@ const AppContent: React.FC = () => {
                 }
               />
               <Route path="/docs" element={<Documentation />} />
+              {/* Legacy sitemap URL: /documentation was advertised in sitemap.xml
+                  while the app only ever served /docs (404 in production). */}
+              <Route path="/documentation" element={<Navigate to="/docs" replace />} />
               <Route path="/about" element={<About />} />
+              {/* Trust surfaces (E-E-A-T): methodology, model card, data sources, FAQ */}
+              <Route path="/methodology" element={<ArticlePage path="/methodology" />} />
+              <Route path="/model" element={<ArticlePage path="/model" />} />
+              <Route path="/data-sources" element={<ArticlePage path="/data-sources" />} />
+              <Route path="/faq" element={<ArticlePage path="/faq" />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/terms" element={<Terms />} />
               <Route path="/privacy" element={<Privacy />} />

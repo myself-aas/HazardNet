@@ -1,11 +1,42 @@
-import { useParams, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import ForecastDashboard from '../components/ForecastDashboard';
+
+/** Shape of `public/data/forecasts-latest.json` (hazardnet-forecast-snapshot/v1). */
+interface ForecastSnapshot {
+  schema?: string;
+  generated_at?: string;
+  prediction_date?: string;
+  source?: string;
+  kernel?: string;
+  horizons?: Record<string, unknown[]>;
+}
 
 export const AnalyticsAnalyticsPage: React.FC = () => {
   const { subCategory } = useParams<{ subCategory?: string }>();
   const navigate = useNavigate();
   const activeTab = subCategory || 'forecast-dashboard';
+
+  // Pipeline status comes from the snapshot this deployment actually serves
+  // (cache-busted), never from invented "log lines" (UI-01).
+  const [snapshot, setSnapshot] = useState<ForecastSnapshot | null>(null);
+  const [snapshotError, setSnapshotError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/data/forecasts-latest.json', { cache: 'no-store' })
+      .then((res) => (res.ok ? res.json() : Promise.reject(new Error(`HTTP ${res.status}`))))
+      .then((data: ForecastSnapshot) => {
+        if (!cancelled) setSnapshot(data);
+      })
+      .catch((err: unknown) => {
+        if (!cancelled) setSnapshotError(err instanceof Error ? err.message : 'unavailable');
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return (
     <motion.div
@@ -25,7 +56,10 @@ export const AnalyticsAnalyticsPage: React.FC = () => {
             Model Diagnostics & Pipeline Observability
           </h1>
           <p className="text-slate-600 mt-2 max-w-3xl text-xs sm:text-sm leading-relaxed">
-            Real-time tracking of neural network inference latency, mean absolute error (MAE), expected calibration error (ECE), and automated Kaggle/GitHub CI/CD ingestion pipelines.
+            What this deployment can actually show: the freshness and provenance of the last forecast snapshot, the
+            raw forecast store, and the pipeline that produced it. Accuracy metrics (latency, MAE, ECE) appear here
+            only after a benchmark has been run and recorded — until then this page says so instead of quoting
+            numbers.
           </p>
         </div>
       </div>
@@ -98,13 +132,19 @@ export const AnalyticsAnalyticsPage: React.FC = () => {
           >
             <motion.div whileHover={{ y: -4, scale: 1.01 }} whileTap={{ scale: 0.98 }} className="bg-white border border-slate-200/90 rounded-3xl p-6 shadow-md hover:shadow-lg transition-all space-y-3 cursor-pointer">
               <div className="text-xs font-mono text-slate-500 font-bold">INFERENCE LATENCY</div>
-              <div className="text-3xl font-black text-slate-900">42.8 ms</div>
-              <p className="text-xs text-slate-600 leading-relaxed">Optimized WebGL backend execution across 64 districts.</p>
+              <div className="text-2xl font-black text-slate-400">Not published</div>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                No committed benchmark measures end-to-end inference latency. Per-request timing, where the inference
+                API is reachable, stays on the device that made the request.
+              </p>
             </motion.div>
             <motion.div whileHover={{ y: -4, scale: 1.01 }} whileTap={{ scale: 0.98 }} className="bg-white border border-slate-200/90 rounded-3xl p-6 shadow-md hover:shadow-lg transition-all space-y-3 cursor-pointer">
               <div className="text-xs font-mono text-slate-500 font-bold">MEAN ABSOLUTE ERROR (MAE)</div>
-              <div className="text-3xl font-black text-slate-900">0.034</div>
-              <p className="text-xs text-slate-600 leading-relaxed">Validated against IMD & BMD ground station records.</p>
+              <div className="text-2xl font-black text-slate-400">Not published</div>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                The classifier has not yet been scored against independent BMD/FFWC station records, so no error
+                metric is quoted here. The model card documents the validation status that does exist.
+              </p>
             </motion.div>
             <motion.div whileHover={{ y: -4, scale: 1.01 }} whileTap={{ scale: 0.98 }} className="bg-white border border-slate-200/90 rounded-3xl p-6 shadow-md hover:shadow-lg transition-all space-y-3 sm:col-span-2 md:col-span-1 cursor-pointer">
               <div className="text-xs font-mono text-slate-500 font-bold">EXPECTED CALIBRATION ERROR (ECE)</div>

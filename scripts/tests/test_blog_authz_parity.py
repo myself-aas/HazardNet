@@ -5,6 +5,7 @@ is a security bug in either direction:
 
   * frontend/src/lib/superadmins.ts        — the UI gate
   * scripts/db/006_blog_articles_rls_authz.sql — the RLS enforcement + trigger
+  * firestore.rules                        — the Firestore implementation's gate
   * docs/blog-admin-setup.md               — the reference SQL operators copy
 
 Too narrow in the SQL and the real owner is locked out of their own blog; too
@@ -25,6 +26,7 @@ SUPERADMINS_TS = ROOT / 'frontend' / 'src' / 'lib' / 'superadmins.ts'
 MIGRATION = ROOT / 'scripts' / 'db' / '006_blog_articles_rls_authz.sql'
 SETUP_DOC = ROOT / 'docs' / 'blog-admin-setup.md'
 VERIFY_SQL = ROOT / 'scripts' / 'db' / 'verify_blog_articles_rls.sql'
+FIRESTORE_RULES = ROOT / 'firestore.rules'
 
 EMAIL_RE = re.compile(r"'([A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,})'")
 
@@ -42,9 +44,55 @@ def _emails_from_sql(path: Path) -> set[str]:
     return {e.lower() for e in EMAIL_RE.findall(path.read_text(encoding='utf-8'))}
 
 
+def _emails_from_firestore_rules(path: Path) -> set[str]:
+    """Emails inside the isBlogSuperadmin() allowlist array."""
+    text = path.read_text(encoding='utf-8')
+    start = text.index('function isBlogSuperadmin')
+    end = text.index(']', text.index('[', start))
+    return {e.lower() for e in EMAIL_RE.findall(text[start:end])}
+
+
 def test_all_expected_files_exist():
-    for path in (SUPERADMINS_TS, MIGRATION, SETUP_DOC, VERIFY_SQL):
+    for path in (SUPERADMINS_TS, MIGRATION, SETUP_DOC, VERIFY_SQL, FIRESTORE_RULES):
         assert path.exists(), f'missing {path.relative_to(ROOT)}'
+
+
+def test_firestore_allowlist_matches_frontend():
+    """The app writes blog articles through Firestore, so firestore.rules is a
+    live enforcement point — not documentation. Drift here is a security bug."""
+    ts = _emails_from_ts(SUPERADMINS_TS)
+    rules = _emails_from_firestore_rules(FIRESTORE_RULES)
+    assert rules, 'could not parse a superadmin allowlist out of firestore.rules'
+    assert rules == ts, (
+        'superadmin allowlist drift between superadmins.ts and firestore.rules.\n'
+        f'  frontend only: {sorted(ts - rules)}\n'
+        f'  rules only:    {sorted(rules - ts)}'
+    )
+
+
+def test_firestore_blog_writes_require_superadmin():
+    """Regression guard for the 2026-09-17 finding: blog writes were granted to
+    any authenticated user, so any signed-up account could publish or delete
+    public content."""
+    text = FIRESTORE_RULES.read_text(encoding='utf-8')
+    block = text[text.index('match /blog_articles'):]
+    block = block[: block.index('}', block.index('allow'))]
+    assert 'isBlogSuperadmin()' in block, 'blog_articles writes are not gated on the superadmin allowlist'
+    assert 'create, update, delete: if isSignedIn()' not in block, (
+        'blog_articles writes are still granted to any signed-in user'
+    )
+
+
+def test_firestore_connectors_are_owner_scoped():
+    """Regression guard: user_connectors granted read/write to any signed-in
+    user, exposing every account's connector config to every other account."""
+    text = FIRESTORE_RULES.read_text(encoding='utf-8')
+    block = text[text.index('match /user_connectors'):]
+    block = block[: block.index('\n    }')]
+    assert 'request.auth.uid' in block, 'user_connectors rules do not check ownership'
+    assert 'allow read, write: if isSignedIn();' not in block, (
+        'user_connectors still grants read/write to any signed-in user'
+    )
 
 
 def test_migration_allowlist_matches_frontend():

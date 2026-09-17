@@ -131,7 +131,10 @@ describe('GET /api/v1/forecasts/bulk (Vercel)', () => {
     }));
     const res = await invoke(bulkHandler, { query: { horizon: '7_days' } });
     expect(res.statusCode).toBe(500);
-    expect(res.body.error).toBe('store down');
+    // SEC-13: 5xx responses must never echo the underlying error text back to
+    // the client — it leaks driver/host detail. The message is logged instead.
+    expect(res.body.error).toBe('Internal server error');
+    expect(JSON.stringify(res.body)).not.toContain('store down');
   });
 });
 

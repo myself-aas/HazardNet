@@ -1,8 +1,14 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { HazardNetBrand } from '../components/HazardNetLogo';
+import { usePageSeo } from '../hooks/usePageSeo';
 
 export const NotFoundPage: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  // Unknown deep links fall through the SPA rewrite and resolve here with HTTP
+  // 200 — a soft 404. usePageSeo finds no route entry for the path and applies
+  // `noindex,follow`, so the page cannot be indexed as real content.
+  usePageSeo(location.pathname);
 
   return (
     <div className="min-h-[70vh] flex items-center justify-center p-4">

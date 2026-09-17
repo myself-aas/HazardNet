@@ -83,7 +83,12 @@ export default async function handler(req, res) {
       logger.error('CSV Ingest error', e);
       res.statusCode = 400;
       res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify({ error: e.message }));
+      // Row-level validation messages ("Row 3: Invalid hazard …") are written
+      // for the operator who uploaded the CSV and are safe to return. Anything
+      // else stays server-side: echoing a raw exception message can disclose
+      // internals (audit SEC-13).
+      const isRowValidation = /^Row \d+: /.test(String(e?.message ?? ''));
+      res.end(JSON.stringify({ error: isRowValidation ? e.message : 'CSV ingest failed' }));
       return;
     }
   }
@@ -121,10 +126,12 @@ export default async function handler(req, res) {
     res.setHeader('Content-Type', 'application/json');
     res.end(JSON.stringify({ status: 'success', count: chunk.length }));
   } catch (e) {
+    // SEC-13: authenticated caller or not, a 5xx must not echo driver/database
+    // text back over the wire. The full error is in the server logs.
     logger.error('Ingest error', e);
     res.statusCode = 500;
     res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify({ error: e.message }));
+    res.end(JSON.stringify({ error: 'Forecast store write failed' }));
   }
 }
 

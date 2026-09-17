@@ -96,13 +96,44 @@ service cloud.firestore {
       allow delete: if isOwner(userId) && isValidId(userId);
     }
 
+    // Connector rows are per-user documents keyed `${uid}_${connectorKey}`
+    // (see frontend/src/lib/connectors.ts). The previous rule — `if isSignedIn()`
+    // — let ANY authenticated account read and overwrite ANY other account's
+    // connector configuration, which includes webhook URLs and connector auth
+    // data (audit SEC-01/SEC-09, 2026-09-17). Ownership is taken from the
+    // document's own `user_id`, never from the id the client supplied.
     match /user_connectors/{connectorId} {
-      allow read, write: if isSignedIn();
+      allow get: if isSignedIn() && existing().user_id == request.auth.uid;
+      allow list: if isSignedIn() && resource.data.user_id == request.auth.uid;
+      allow create: if isSignedIn() && incoming().user_id == request.auth.uid;
+      allow update: if isSignedIn()
+        && existing().user_id == request.auth.uid
+        && incoming().user_id == request.auth.uid;
+      allow delete: if isSignedIn() && existing().user_id == request.auth.uid;
+    }
+
+    // Blog articles — the public SEO surface. Reads stay public (published
+    // articles are meant to be read and indexed). Writes were `if isSignedIn()`,
+    // so any authenticated visitor could publish, edit or delete content on the
+    // public site; the superadmin check existed only in the UI
+    // (frontend/src/components/blog/RequireSuperAdmin.tsx). Writes are now
+    // pinned to the same allowlist as the Supabase RLS policy
+    // (scripts/db/006_blog_articles_rls_authz.sql) and the UI gate
+    // (frontend/src/lib/superadmins.ts); scripts/tests/test_blog_authz_parity.py
+    // fails CI if the three lists drift apart.
+    function isBlogSuperadmin() {
+      return isSignedIn()
+        && request.auth.token.email is string
+        && request.auth.token.email.lower() in [
+          'shuvo.1807016@bau.edu.bd',
+          'shuvoasifahmed@gmail.com',
+          'asifahmedshuvo.aas@gmail.com'
+        ];
     }
 
     match /blog_articles/{articleId} {
       allow get, list: if true;
-      allow create, update, delete: if isSignedIn();
+      allow create, update, delete: if isBlogSuperadmin();
     }
 
     match /assessments/{assessmentId} {

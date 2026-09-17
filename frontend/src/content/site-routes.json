@@ -1,0 +1,650 @@
+{
+  "$comment": [
+    "SINGLE SOURCE OF TRUTH for the public surface of hazardnet.live.",
+    "Consumed by two consumers, which is the whole point:",
+    "  1. scripts/prerender.mjs — emits real HTML (+ <head> metadata) for every route at build time,",
+    "     so deep links work and crawlers see content without executing JavaScript.",
+    "  2. the React app (src/components/ArticlePage.tsx + src/hooks/usePageSeo.ts), which renders the",
+    "     same copy and re-applies the same <head> during client-side navigation.",
+    "Editing copy here updates both. Do not fork the text into a component.",
+    "Facts in this file are drawn from the repository (README.md, docs/adr/0005-0008,",
+    "Models/VERSION.json, scripts/auto_forecast.py). If a claim becomes untrue, fix it here."
+  ],
+  "site": {
+    "name": "HazardNet",
+    "origin": "https://www.hazardnet.live",
+    "locale": "en",
+    "defaultTitle": "HazardNet — Multi-Hazard Early Warning for Bangladesh Agriculture",
+    "defaultDescription": "HazardNet turns satellite, reanalysis and weather-forecast data into 7- and 15-day multi-hazard outlooks for Bangladesh's 64 districts — 8 hazards, dual-track severity, and free, offline-capable maps.",
+    "twitter": "@hazardnet",
+    "publisher": {
+      "name": "HazardNet",
+      "url": "https://www.hazardnet.live/about",
+      "logo": "https://www.hazardnet.live/pwa-512x512.png",
+      "email": "contact@hazardnet.live"
+    }
+  },
+  "routes": [
+    {
+      "path": "/",
+      "label": "Live map",
+      "title": "HazardNet — Multi-Hazard Early Warning for Bangladesh Agriculture",
+      "description": "Free multi-hazard early warning for Bangladesh: 8 hazards, 7- and 15-day district outlooks, dual-track severity and confidence bins, with an offline-capable map and PDF export.",
+      "keywords": [
+        "Bangladesh early warning",
+        "multi-hazard forecasting",
+        "flash flood forecast Bangladesh",
+        "agricultural drought monitoring",
+        "cyclone early warning",
+        "Open-Meteo",
+        "Sentinel-1 SAR",
+        "ERA5-Land"
+      ],
+      "robots": "index,follow",
+      "sitemap": { "changefreq": "daily", "priority": 1.0 },
+      "appShell": true,
+      "h1": "Multi-hazard early warning for Bangladesh's 64 districts",
+      "standfirst": "HazardNet is a free, non-commercial early-warning platform for Bangladesh agriculture. It converts satellite observations, reanalysis data and weather forecasts into 7- and 15-day outlooks for eight climate hazards, then shows them on a map that keeps working when the connection does not.",
+      "updated": "2026-09-17",
+      "sections": [
+        {
+          "h2": "What you are looking at",
+          "paragraphs": [
+            "The interactive map at the top of this page colours each district by the highest-severity hazard of its current outlook, where the latest model run covers it; districts outside that run keep their static baseline colour, and the district card in the dashboard states which of the two is shown. Selecting a district opens its forecast card: hazard type, severity index, confidence bin, the crops and land cover at risk, and the lead time in days.",
+            "Every number on the map comes from the most recent forecast snapshot the platform holds. The snapshot's prediction date is printed next to the map — if that date is more than a few days old, treat the outlook as stale and read the banner that explains why."
+          ]
+        },
+        {
+          "h2": "How to read the numbers honestly",
+          "bullets": [
+            "Severity index (0.00–1.00) is the model's continuous damage-potential score. It is not a probability and not a percentage of damage.",
+            "Confidence (Certain ≥ 0.85, Probable 0.70–0.85, Uncertain < 0.70) is the model's own certainty in the hazard class it selected. It is not a measure of whether the forecast is correct, and it is not derived from the physics cross-check — the two tracks are computed separately and can disagree, and each district card shows both side by side so the divergence is visible.",
+            "Physics severity is an independent, formula-based estimate (for example, a vegetation-health index for drought or an excess-heat factor for heat waves). Model and physics severity diverging is normal and is shown rather than hidden.",
+            "Lead time is the forecast horizon — 7 or 15 days. Both are driven by the same deterministic weather window (Open-Meteo serves at most about 16 days), so the 15-day outlook is the more uncertain of the two and is a planning aid, not a storm-specific prediction. A longer 10/20/30-day horizon set is described in ADR 0005 but is not implemented in the pipeline, so it is not published."
+          ],
+          "callout": {
+            "tone": "warning",
+            "text": "HazardNet is decision support, not an official warning service. For evacuation, cyclone signals, flood bulletins and emergency instructions, follow the Bangladesh Meteorological Department (BMD), the Flood Forecasting and Warning Centre (FFWC) and your local administration."
+          }
+        },
+        {
+          "h2": "Where the data comes from",
+          "paragraphs": [
+            "Sentinel-1 radar and Sentinel-2 optical imagery (ESA Copernicus, accessed through Google Earth Engine), ERA5-Land reanalysis (ECMWF Copernicus), Open-Meteo deterministic forecasts, HDX COD-AB administrative boundaries and OpenStreetMap exposure data. Full provenance, cadence and licences are on the data sources page."
+          ],
+          "links": [
+            { "label": "Methodology", "href": "/methodology" },
+            { "label": "Model card", "href": "/model" },
+            { "label": "Data sources", "href": "/data-sources" },
+            { "label": "Frequently asked questions", "href": "/faq" }
+          ]
+        }
+      ]
+    },
+    {
+      "path": "/methodology",
+      "label": "Methodology",
+      "title": "Methodology — how HazardNet builds a forecast",
+      "description": "The full HazardNet pipeline: satellite and reanalysis inputs, the 15-channel tensor, TFLite inference, dual-track severity, confidence binning, horizons, freshness policy and what is — and is not — validated.",
+      "keywords": ["HazardNet methodology", "dual-track severity", "confidence binning", "forecast pipeline", "Bangladesh hazard model"],
+      "robots": "index,follow",
+      "sitemap": { "changefreq": "monthly", "priority": 0.9 },
+      "appShell": false,
+      "h1": "Methodology",
+      "standfirst": "Everything HazardNet does between a satellite pass and the district card on your screen, including the parts that are uncertain, delayed or not yet validated. If you are going to make a decision with this platform, this page is the one to read.",
+      "updated": "2026-09-17",
+      "sections": [
+        {
+          "h2": "1 · Input assembly",
+          "paragraphs": [
+            "The pipeline runs from a scheduled GitHub Actions workflow on HazardNet's own runners — no third-party notebook service is in the critical path. For each forecast unit it assembles a 15-channel spatio-temporal tensor from four families of input:"
+          ],
+          "bullets": [
+            "Radar — Sentinel-1 GRD backscatter (VV and VH), which sees the surface through cloud and is the primary flood signal.",
+            "Optical — Sentinel-2 surface reflectance, reduced to vegetation and water indices (NDVI, NDWI). Cloud cover is the limiting factor and is treated as missing data, not as zero.",
+            "Reanalysis — ERA5-Land fields: 2 m temperature (mean, max, min), dewpoint, soil water content at multiple depths, solar radiation, wind speed.",
+            "Forecast — Open-Meteo deterministic daily weather for the lead-time window (see the horizon caveat in section 4)."
+          ]
+        },
+        {
+          "h2": "2 · Inference",
+          "paragraphs": [
+            "The tensor feeds a 3D depthwise-separable convolutional network that emits two heads: an 8-class softmax over the hazard taxonomy (cold wave, drought, fire, flash flood, flood, heat wave, severe local storm, tropical cyclone) and a continuous severity regression. The same FP32 TFLite bundle that runs on the server runs in a visitor's browser through TensorFlow.js WASM, which is what makes the offline and low-bandwidth experience possible."
+          ]
+        },
+        {
+          "h2": "3 · Dual-track severity — the honesty mechanism",
+          "paragraphs": [
+            "A single neural network returning a confident-looking number is not enough for an early-warning product, so every output carries a second, formula-based estimate beside it: a rainfall threshold for flood and flash flood, a vegetation-health index for drought, an excess-heat factor for heat wave. The two tracks are published side by side rather than blended. Two limits are stated plainly: the physics track is currently computed for the hazard class the model selected — so it checks the model's magnitude, not its choice of hazard — and it cannot independently detect a hazard the model has missed.",
+            "The confidence bin on each record is the model's own certainty in the class it selected; it is not derived from track agreement, so a high confidence is possible while the two tracks disagree. Where they diverge, both values stay visible on the district card. A high model severity against a low physics severity means 'the model sees something the physics estimate does not' — treat it as a question to verify, not as an alarm. Deriving confidence from the two tracks instead of the softmax is a planned change, not a shipped behaviour."
+          ]
+        },
+        {
+          "h2": "4 · Horizons and lead time",
+          "paragraphs": [
+            "Outlooks are published at 7 and 15 days, both driven by the same deterministic weather-forecast window; Open-Meteo serves at most about 16 deterministic days, so the 15-day outlook inherits that window's uncertainty. They are planning aids for seasonal decisions such as irrigation, planting and stock movement, not storm-specific predictions. A 10/20/30-day horizon set is specified in ADR 0005 but has not been implemented in the pipeline, and the website does not advertise it."
+          ]
+        },
+        {
+          "h2": "5 · Freshness, staleness and failure",
+          "paragraphs": [
+            "A refresh is attempted hourly; the published result is a committed snapshot that the website can serve even when the API or the pipeline is unavailable (ADR 0008). The platform therefore degrades to 'older data' rather than to 'no data' — and it labels the age of what it is showing. If the pipeline stalls, the snapshot keeps serving until a newer one replaces it, and the site-health probe raises the alarm in CI."
+          ],
+          "callout": {
+            "tone": "info",
+            "text": "Read the prediction date, not the page-load time. A page that loaded one second ago can still be showing an outlook computed days ago."
+          }
+        },
+        {
+          "h2": "6 · What is validated — and what is not",
+          "bullets": [
+            "Validated in CI: the TFLite bundle loads, its sha256 matches Models/VERSION.json, labels and normalisation statistics are present, and the bundle is not served publicly.",
+            "Checked at runtime: freshness of the served snapshot, with a hard failure in the health probe when the data is older than the freshness threshold.",
+            "Cross-checked: model severity versus physics severity for every unit and horizon.",
+            "Not yet validated: forecast skill against observed hazard outcomes. HazardNet does not currently publish a hit rate, false-alarm rate or Brier score against BMD/FFWC records. Until it does, treat severity as a relative prioritisation signal rather than a calibrated probability."
+          ]
+        },
+        {
+          "h2": "7 · Reproducibility",
+          "paragraphs": [
+            "The pipeline scripts, model bundle manifest, database migrations and ADRs are in the public repository. Forecast archives are published as release artifacts, and the history API exposes past prediction dates for comparison."
+          ],
+          "links": [
+            { "label": "Model card", "href": "/model" },
+            { "label": "Data sources and licences", "href": "/data-sources" },
+            { "label": "Report an incorrect forecast", "href": "/contact" }
+          ]
+        }
+      ]
+    },
+    {
+      "path": "/model",
+      "label": "Model card",
+      "title": "Model card — HazardNet multi-hazard classifier",
+      "description": "Architecture, inputs, outputs, precision, intended use, out-of-scope uses, known failure modes and reporting channels for the HazardNet multi-hazard classification model (FP32 TFLite).",
+      "keywords": ["HazardNet model card", "multi-hazard classifier", "TFLite FP32", "model limitations", "responsible AI disaster response"],
+      "robots": "index,follow",
+      "sitemap": { "changefreq": "monthly", "priority": 0.9 },
+      "appShell": false,
+      "h1": "Model card",
+      "standfirst": "A model card for the classifier that produces HazardNet's hazard labels and severity indices: what it is, what it must not be used for, and where it is known to fail.",
+      "updated": "2026-09-17",
+      "sections": [
+        {
+          "h2": "Overview",
+          "bullets": [
+            "Task: multi-label climate-hazard classification plus continuous severity regression per forecast unit, per horizon.",
+            "Hazard classes (8): cold wave, drought, fire, flash flood, flood, heat wave, severe local storm, tropical cyclone.",
+            "Input: 15-channel spatio-temporal tensor (Sentinel-1 VV/VH, Sentinel-2 indices, ERA5-Land surface and soil state, precipitation and wind from Open-Meteo).",
+            "Architecture: 3D depthwise-separable convolutional network with a shared trunk and two heads — 8-way softmax classification and severity regression.",
+            "Bundle: FP32 TFLite, roughly 0.75 MB, sha256-manifested in Models/VERSION.json and refreshed by the pipeline.",
+            "Execution: server-side for scheduled runs, and in the visitor's browser through TensorFlow.js WASM for interactive and offline use."
+          ]
+        },
+        {
+          "h2": "Intended use",
+          "paragraphs": [
+            "HazardNet is built for agricultural extension officers, NGOs and disaster-management practitioners in Bangladesh who need a consistent national picture at district and sub-district level, and for researchers who need a transparent, citation-friendly baseline. It is a prioritisation and situational-awareness tool: it helps you decide where to look next and which district to call."
+          ]
+        },
+        {
+          "h2": "Out of scope — do not use it for this",
+          "bullets": [
+            "Issuing or replacing official warnings. Cyclone signals, flood bulletins and evacuation orders come from BMD, FFWC and the local administration.",
+            "Any decision where a false negative costs lives without a human check — the model is a screening layer, not an authority.",
+            "Property, insurance or compensation determinations; the severity index is not a damage assessment.",
+            "Sub-district micro-siting. The outlook is published per administrative unit; it does not resolve individual fields, roads or embankments."
+          ]
+        },
+        {
+          "h2": "Known failure modes",
+          "bullets": [
+            "Cloud and scan gaps: Sentinel-2 optical input is missing under persistent cloud, and Sentinel-1 revisit is not instantaneous, so a fast-onset event between passes can be under-observed.",
+            "Reanalysis lag: ERA5-Land is a reanalysis product with its own latency; the most recent hours are estimated, not measured.",
+            "Proxy physics: the independent severity track uses formula proxies. A proxy can be wrong in the same direction as the model, which weakens the cross-check as an error detector.",
+            "Class imbalance: rare hazards (for example, severe local storms) have fewer training examples than floods, so their calibration is weaker.",
+            "Long horizons: the 15-day outlook inherits the uncertainty of a deterministic weather window and should be read as an outlook, not a prediction.",
+            "No INT8 edge bundle exists: a 3D-convolution quantisation path is closed by the runtime at FP32-only precision (ADR 0007). Older documents that mention an INT8 sub-2 MB bundle are out of date."
+          ]
+        },
+        {
+          "h2": "Fairness, privacy and data protection",
+          "paragraphs": [
+            "The model consumes environmental data only — no personal data, no farm-level records and no household information enter training or inference. Account data used by the dashboard (profile, saved districts, connectors) is separate from the model and is not used as model input."
+          ]
+        },
+        {
+          "h2": "Reporting a problem with a prediction",
+          "paragraphs": [
+            "If a district card looks wrong — a missed event, an over-stated severity, a stale date — send it to the team with the district, hazard, horizon and date. Ground-truth reports are the only route by which the platform can eventually publish skill metrics."
+          ],
+          "links": [
+            { "label": "Report an incorrect forecast", "href": "/contact" },
+            { "label": "How the pipeline works", "href": "/methodology" }
+          ]
+        }
+      ]
+    },
+    {
+      "path": "/data-sources",
+      "label": "Data sources",
+      "title": "Data sources, licences and update cadence — HazardNet",
+      "description": "Every dataset behind HazardNet — Sentinel-1 and Sentinel-2 via Google Earth Engine, ERA5-Land, Open-Meteo, HDX COD-AB boundaries, OpenStreetMap — with licences, cadence and known latency.",
+      "keywords": ["Sentinel-1 flood mapping", "ERA5-Land Bangladesh", "Open-Meteo API", "HDX COD-AB", "OpenStreetMap exposure", "data attribution"],
+      "robots": "index,follow",
+      "sitemap": { "changefreq": "monthly", "priority": 0.8 },
+      "appShell": false,
+      "h1": "Data sources, licences and cadence",
+      "standfirst": "HazardNet is only as good as the data underneath it. This page lists every input, who produces it, how often it updates, what it costs the user (nothing) and what its licence requires of anyone republishing it.",
+      "updated": "2026-09-17",
+      "sections": [
+        {
+          "h2": "Environmental inputs",
+          "bullets": [
+            "Sentinel-1 GRD, C-band SAR (VV/VH) — ESA Copernicus, accessed through Google Earth Engine. All-weather surface backscatter; the primary flood and surface-water signal. Revisit of roughly 6–12 days at Bangladesh latitudes, depending on the constellation and orbit.",
+            "Sentinel-2 MSI, Level-2A surface reflectance — ESA Copernicus, via Google Earth Engine. Vegetation and water indices (NDVI, NDWI) for drought and crop stress. 5-day nominal revisit, cloud-limited during the monsoon.",
+            "ERA5-Land hourly reanalysis — ECMWF, via the Copernicus Climate Data Store / Earth Engine. Temperature (mean, max, min), dewpoint, soil water at multiple depths, solar radiation, wind. Complete spatial coverage with a latency of several days for the most recent hours.",
+            "Open-Meteo deterministic forecast — Open-Meteo (CC-BY 4.0). Daily temperature, precipitation, wind, dewpoint, radiation and evapotranspiration for the lead-time window, up to about 16 days.",
+            "HDX COD-AB administrative boundaries — OCHA / HDX. The 64-district (ADM2) and 507-unit (ADM3: 495 upazilas plus 12 city corporations) geometry that every forecast is attached to (ADR 0005).",
+            "OpenStreetMap exposure overlay — OpenStreetMap contributors (ODbL). Roads, bridges and other infrastructure intersecting a hazard footprint, used for the exposure view (ADR 0006)."
+          ]
+        },
+        {
+          "h2": "Official warning context",
+          "paragraphs": [
+            "HazardNet links out to the institutions that carry legal responsibility for warnings in Bangladesh. Their bulletins always take precedence over anything shown here:"
+          ],
+          "bullets": [
+            "Bangladesh Meteorological Department (BMD) — weather forecasts, cyclone signals, heat and cold alerts.",
+            "Flood Forecasting and Warning Centre (FFWC) — river-level and flood bulletins.",
+            "Department of Disaster Management (DDM) — national disaster directives and shelter information.",
+            "National emergency hotline: 999."
+          ]
+        },
+        {
+          "h2": "Attribution and licence notes for reusers",
+          "bullets": [
+            "Copernicus data (Sentinel-1/2, ERA5-Land) is free to use with attribution to the European Union's Copernicus programme and ESA/ECMWF as appropriate.",
+            "Open-Meteo data is CC-BY 4.0: attribute Open-Meteo when republishing derived values.",
+            "OpenStreetMap data is ODbL: derived databases must carry the same licence and attribution.",
+            "HazardNet's own code is MIT-licensed; the forecast archive is published as release artifacts with a sha256 manifest so a republication can be traced to an exact run."
+          ]
+        },
+        {
+          "h2": "What HazardNet adds",
+          "paragraphs": [
+            "The value added is the assembly and the cross-checking: a harmonised 15-channel tensor per unit, one inference pass that produces a comparable severity index across all 64 districts, an independent physics-based severity track beside it, and a confidence bin that tells you whether the two agree."
+          ],
+          "links": [
+            { "label": "Methodology", "href": "/methodology" },
+            { "label": "Model card", "href": "/model" },
+            { "label": "Download the forecast archive", "href": "/download" }
+          ]
+        }
+      ]
+    },
+    {
+      "path": "/faq",
+      "label": "FAQ",
+      "title": "HazardNet FAQ — accuracy, freshness, offline use and official warnings",
+      "description": "Straight answers about HazardNet: is it an official warning, what the percentage means, how fresh the data is, whether it works offline, how exports are scoped and how to report a wrong forecast.",
+      "keywords": ["HazardNet FAQ", "Bangladesh flood warning", "how accurate is HazardNet", "offline hazard map", "early warning disclaimer"],
+      "robots": "index,follow",
+      "sitemap": { "changefreq": "monthly", "priority": 0.8 },
+      "appShell": false,
+      "h1": "Frequently asked questions",
+      "standfirst": "The questions visitors actually ask, answered without marketing language — including the ones about what HazardNet cannot do.",
+      "updated": "2026-09-17",
+      "sections": [],
+      "faqs": [
+        {
+          "question": "Is HazardNet an official government warning service?",
+          "answer": "No. HazardNet is an independent, non-commercial decision-support platform. Cyclone signals, flood bulletins, evacuation orders and emergency instructions are issued by the Bangladesh Meteorological Department (BMD), the Flood Forecasting and Warning Centre (FFWC), the Department of Disaster Management (DDM) and your local administration. Always follow them over anything shown here. The national emergency hotline is 999."
+        },
+        {
+          "question": "What does the percentage next to a district actually mean?",
+          "answer": "It is the model's severity index, scaled 0–100 for display. It is a continuous score of damage potential for the forecast unit and horizon — not a probability, and not a forecast that X% of the district will be damaged. The underlying value runs from 0.00 to 1.00 and is shown with the physics-based severity estimate beside it."
+        },
+        {
+          "question": "What is the difference between severity, confidence and physics severity?",
+          "answer": "Severity is the model's damage-potential score. Physics severity is a formula-based estimate (for example a rainfall threshold for flood, an excess-heat factor for heat waves) that is computed for the hazard class the model selected — so it checks the model's magnitude, not its choice of hazard. Confidence is the model's own certainty in that class: Certain at 0.85 and above, Probable between 0.70 and 0.85, Uncertain below 0.70. It does not measure agreement between the two tracks; when they diverge, both values stay visible on the card and the outlook should be treated as a question to verify rather than an alarm."
+        },
+        {
+          "question": "How fresh is the data, and how often is it updated?",
+          "answer": "A refresh is attempted hourly and the published result is a committed snapshot. The prediction date is printed next to the map, and that date — not the time you opened the page — tells you how old the outlook is. If the pipeline fails, the site keeps serving the last good snapshot and labels its age rather than showing nothing."
+        },
+        {
+          "question": "Which hazards and which areas are covered?",
+          "answer": "Eight hazards: cold wave, drought, fire, flash flood, flood, heat wave, severe local storm and tropical cyclone. The interactive map covers all 64 districts of Bangladesh, and the published archive covers 507 sub-district (ADM3) units — 495 upazilas plus 12 city corporations — using HDX COD-AB boundaries."
+        },
+        {
+          "question": "How far ahead can it really see?",
+          "answer": "HazardNet publishes 7- and 15-day outlooks, both driven by the same deterministic weather forecast window (Open-Meteo serves at most about 16 days). They are honest planning aids for seasonal decisions (irrigation, planting, stock movement), not storm-specific long-range predictions — read the 15-day outlook as the more uncertain of the two."
+        },
+        {
+          "question": "Does HazardNet work offline?",
+          "answer": "Partly, and the limits are worth knowing. The app installs as a PWA and caches map tiles you have already viewed, so previously visited areas can render without a connection. New forecasts, new areas and any export you have not generated before need a connection. Cached tiles are held in browser storage with a size cap, so a long time offline — or clearing site data — will empty the cache."
+        },
+        {
+          "question": "What exactly does a map or PDF export contain?",
+          "answer": "The export captures the current view: the layers you have enabled, the district or region in frame, the prediction date, the legend, data attribution and the disclaimer. Resolution and page size are chosen in the export dialog before the file is generated, and the dialog states what will be in the filename, format and date range."
+        },
+        {
+          "question": "What happens to my data if I create an account?",
+          "answer": "An account stores the profile fields you fill in, your saved districts, your connectors and your preferences so the dashboard can show them to you. Environmental forecasts do not depend on your account, and no personal data is used as model input. See the privacy policy for retention and deletion."
+        },
+        {
+          "question": "A district card looks wrong. What should I do?",
+          "answer": "Send it in: district, hazard, horizon, date and what you observed on the ground. Ground-truth reports are the only route by which the platform can publish skill metrics, and they are how thresholds get corrected. Use the contact page, which reaches the maintainers directly."
+        }
+      ]
+    },
+    {
+      "path": "/about",
+      "label": "About",
+      "title": "About HazardNet — mission, scope and who runs it",
+      "description": "What HazardNet is, who maintains it, what it covers, how it is funded (it is free) and how to get in touch or contribute.",
+      "robots": "index,follow",
+      "sitemap": { "changefreq": "monthly", "priority": 0.6 },
+      "appShell": false,
+      "h1": "About HazardNet",
+      "standfirst": "HazardNet is a free multi-hazard early-warning platform for Bangladesh agriculture, built around satellite observation, open data and an explicitly honest treatment of uncertainty.",
+      "updated": "2026-09-17",
+      "sections": [
+        {
+          "h2": "What it covers",
+          "bullets": [
+            "64 districts on the interactive map; 507 ADM3 units in the published archive.",
+            "Eight hazards: cold wave, drought, fire, flash flood, flood, heat wave, severe local storm, tropical cyclone.",
+            "7- and 15-day horizons with confidence bins, dual-track severity and a physics cross-check."
+          ]
+        },
+        {
+          "h2": "How it is paid for",
+          "paragraphs": [
+            "Core forecasting is free and does not require an account. The blog carries advertising, which is the only monetised surface, and account features are optional. No hazard data is behind a paywall."
+          ],
+          "links": [
+            { "label": "Methodology", "href": "/methodology" },
+            { "label": "Data sources", "href": "/data-sources" },
+            { "label": "Contact", "href": "/contact" }
+          ]
+        }
+      ]
+    },
+    {
+      "path": "/blogs",
+      "label": "Blog",
+      "title": "Blog and field notes — HazardNet",
+      "description": "Articles on satellite flood mapping, drought monitoring, dual-track severity and early-warning practice in Bangladesh, written by the HazardNet maintainers.",
+      "keywords": ["satellite flood mapping", "SAR flood detection", "drought monitoring Bangladesh", "early warning practice"],
+      "robots": "index,follow",
+      "sitemap": { "changefreq": "weekly", "priority": 0.7 },
+      "appShell": false,
+      "h1": "Blog and field notes",
+      "standfirst": "Longer-form explanations of how the forecasting works, what the satellite data can and cannot see, and what we learn from districts where the outlook was wrong.",
+      "updated": "2026-09-17",
+      "sections": [
+        {
+          "h2": "What we publish here",
+          "bullets": [
+            "Method explainers: how a specific hazard is detected and what the severity index means for it.",
+            "Data notes: Sentinel-1 coverage gaps, monsoon cloud, reanalysis latency and how each is handled.",
+            "Post-event reviews: what the outlook said before an event, compared with what happened.",
+            "Platform notes: releases, API changes and known issues."
+          ],
+          "links": [
+            { "label": "Methodology", "href": "/methodology" },
+            { "label": "Model card", "href": "/model" }
+          ]
+        }
+      ]
+    },
+    {
+      "path": "/advisories",
+      "label": "Advisories",
+      "title": "Hazard advisories — HazardNet",
+      "description": "Hazard-specific advisories for the sectors HazardNet covers, derived from the current outlook, with the lead time, affected area and confidence stated on every advisory.",
+      "keywords": ["agricultural advisory Bangladesh", "hazard advisory", "crop protection flood", "early warning advisory"],
+      "robots": "index,follow",
+      "sitemap": { "changefreq": "daily", "priority": 0.8 },
+      "appShell": false,
+      "h1": "Advisories",
+      "standfirst": "Plain-language guidance attached to the current hazard outlook. Every advisory states its hazard, lead time, area and confidence — and none of them override an official instruction.",
+      "updated": "2026-09-17",
+      "sections": [
+        {
+          "h2": "How to read an advisory",
+          "bullets": [
+            "Threshold: the level at which the hazard becomes actionable for the sector in question.",
+            "Lead time: how many days ahead the advisory applies, from the forecast horizon it came from.",
+            "Affected area: the administrative units the advisory covers.",
+            "Status: active, escalating or all-clear, with the prediction date it was generated from."
+          ],
+          "callout": {
+            "tone": "warning",
+            "text": "Advisories are decision support for planning. For evacuation, shelter and emergency instructions, follow BMD, FFWC, DDM and your local administration."
+          }
+        }
+      ]
+    },
+    {
+      "path": "/analytics",
+      "label": "Analytics",
+      "title": "Risk analytics — HazardNet",
+      "description": "National and divisional hazard analytics: severity distribution across districts, 30-day trend, hazard mix and the current outlook's confidence breakdown.",
+      "keywords": ["hazard analytics Bangladesh", "severity trend", "district risk comparison", "climate risk dashboard"],
+      "robots": "index,follow",
+      "sitemap": { "changefreq": "weekly", "priority": 0.7 },
+      "appShell": false,
+      "h1": "Risk analytics",
+      "standfirst": "Aggregate views of the current outlook: how severity is distributed nationally and by division, which hazards dominate this window, and how much of the country sits in each confidence bin.",
+      "updated": "2026-09-17",
+      "sections": [
+        {
+          "h2": "What the charts show",
+          "bullets": [
+            "Severity distribution across all forecast units for the selected horizon.",
+            "Thirty-day trend of the national severity aggregate, from the published archive.",
+            "Hazard mix: which of the eight classes is driving severity this window.",
+            "Confidence breakdown: the share of units classified Certain, Probable and Uncertain."
+          ]
+        }
+      ]
+    },
+    {
+      "path": "/docs",
+      "label": "Documentation",
+      "title": "Documentation — HazardNet API, model and deployment",
+      "description": "Technical documentation for HazardNet: forecast API endpoints, data schema, model bundle, deployment topology, operational runbooks and the architecture decision records.",
+      "keywords": ["HazardNet API documentation", "forecast API", "architecture decision records", "deployment runbook"],
+      "robots": "index,follow",
+      "sitemap": { "changefreq": "monthly", "priority": 0.6 },
+      "appShell": false,
+      "h1": "Documentation",
+      "standfirst": "Reference material for people integrating with HazardNet or running the pipeline: API contracts, data schema, model manifest, architecture decisions and operational runbooks.",
+      "updated": "2026-09-17",
+      "sections": [
+        {
+          "h2": "Reference sections",
+          "bullets": [
+            "Forecast API: metadata, bulk by horizon, and queryable history for past prediction dates.",
+            "Data schema: per-unit hazard class, model severity, physics severity, confidence and the driver variables.",
+            "Model bundle: FP32 TFLite artifact, labels, normalisation statistics and the sha256 manifest.",
+            "Architecture decisions: ADRs covering ADM3 expansion, exposure overlay, the FP32-only bundle and the hourly refresh policy."
+          ],
+          "links": [
+            { "label": "Methodology", "href": "/methodology" },
+            { "label": "Download the archive", "href": "/download" }
+          ]
+        }
+      ]
+    },
+    {
+      "path": "/download",
+      "label": "Download",
+      "title": "Download the forecast archive and offline apps — HazardNet",
+      "description": "Download HazardNet forecast archives (CSV/JSON with a sha256 manifest), history exports and the offline-capable applications — free, no account required.",
+      "keywords": ["HazardNet download", "forecast CSV Bangladesh", "offline early warning app", "forecast archive"],
+      "robots": "index,follow",
+      "sitemap": { "changefreq": "weekly", "priority": 0.7 },
+      "appShell": false,
+      "h1": "Download the data and the offline apps",
+      "standfirst": "Forecasts are free to download and reuse with attribution. The archive ships as CSV and JSON, with a manifest that records the run, the row count and a sha256 checksum.",
+      "updated": "2026-09-17",
+      "sections": [
+        {
+          "h2": "What you can download",
+          "bullets": [
+            "Current forecast snapshot (CSV and JSON), regenerated by the pipeline each run.",
+            "Historical archive by prediction date, for comparison and back-testing.",
+            "Model bundle manifest: artifact names, byte sizes and sha256 checksums for reproducibility.",
+            "Offline-capable clients for field use, which cache map tiles for previously viewed areas."
+          ],
+          "callout": {
+            "tone": "info",
+            "text": "If you republish HazardNet-derived data, keep the attribution and licence notes on the data sources page with it."
+          },
+          "links": [{ "label": "Data sources and licences", "href": "/data-sources" }]
+        }
+      ]
+    },
+    {
+      "path": "/use-cases",
+      "label": "Use cases",
+      "title": "Regional use cases — HazardNet",
+      "description": "How HazardNet is used in four Bangladeshi risk settings: haor pre-monsoon flash floods, coastal cyclone storm surge, Barind agricultural drought and sub-Himalayan cold snaps.",
+      "keywords": ["haor flash flood", "coastal cyclone Bangladesh", "Barind drought", "cold wave northern Bangladesh"],
+      "robots": "index,follow",
+      "sitemap": { "changefreq": "monthly", "priority": 0.7 },
+      "appShell": false,
+      "h1": "Regional use cases",
+      "standfirst": "Four settings where the outlook is read differently, because the hazard, the lead time that matters and the decision being made are all different.",
+      "updated": "2026-09-17",
+      "sections": [
+        {
+          "h2": "The four settings",
+          "bullets": [
+            "Haor pre-monsoon flash flood — short lead time, boro harvest timing, road and embankment access.",
+            "Coastal cyclone storm surge — wind and surge exposure, evacuation timing, shelter planning.",
+            "Barind agricultural drought — slow onset, soil-moisture and vegetation indices drive the decision.",
+            "Sub-Himalayan cold snap — temperature thresholds and crop-stage sensitivity in the north-west."
+          ]
+        }
+      ]
+    },
+    {
+      "path": "/contact",
+      "label": "Contact",
+      "title": "Contact, incident reporting and API access — HazardNet",
+      "description": "Report a ground-truth observation, flag an incorrect forecast, request API access or disclose a security issue. Direct contact routes for the HazardNet maintainers.",
+      "keywords": ["HazardNet contact", "report incorrect forecast", "ground truth report", "security disclosure"],
+      "robots": "index,follow",
+      "sitemap": { "changefreq": "monthly", "priority": 0.6 },
+      "appShell": false,
+      "h1": "Contact and incident reporting",
+      "standfirst": "Ground-truth reports are how the platform improves. If a district card looks wrong — a missed event, an overstated severity, a stale date — send the district, hazard, horizon and date.",
+      "updated": "2026-09-17",
+      "sections": [
+        {
+          "h2": "What to send with a report",
+          "bullets": [
+            "District or upazila, hazard and the forecast horizon you are looking at.",
+            "The prediction date shown on the page you saw — freshness matters more than page-load time.",
+            "What you observed on the ground, and roughly when.",
+            "A contact address if you want a reply; reports are used to correct thresholds and to build published skill metrics."
+          ],
+          "callout": {
+            "tone": "danger",
+            "text": "This is not an emergency channel and it is not monitored around the clock. In an emergency call 999, and follow BMD, FFWC, DDM and local administration instructions."
+          }
+        }
+      ]
+    },
+    {
+      "path": "/privacy",
+      "label": "Privacy",
+      "title": "Privacy policy — HazardNet",
+      "description": "What HazardNet stores, why it stores it, how long it is kept and how to have it deleted. Environmental forecasting needs no personal data.",
+      "robots": "index,follow",
+      "sitemap": { "changefreq": "yearly", "priority": 0.3 },
+      "appShell": false,
+      "h1": "Privacy policy",
+      "standfirst": "HazardNet forecasts run on environmental data, not on your data. This page explains the narrow set of things an account does store.",
+      "updated": "2026-09-17",
+      "sections": [
+        {
+          "h2": "Summary",
+          "bullets": [
+            "No account is required to read any forecast, map or advisory.",
+            "An account stores only the profile fields you enter, your saved districts, connector settings and preferences.",
+            "Personal data is never used as model input, and is not sold or shared for advertising.",
+            "Advertising is limited to the blog and is served by Google AdSense when configured; core hazard content carries no ads."
+          ]
+        }
+      ]
+    },
+    {
+      "path": "/terms",
+      "label": "Terms",
+      "title": "Terms of use — HazardNet",
+      "description": "The terms for using HazardNet, including the disaster early-warning disclaimer: decision support only, never a substitute for official BMD, FFWC or DDM instructions.",
+      "robots": "index,follow",
+      "sitemap": { "changefreq": "yearly", "priority": 0.3 },
+      "appShell": false,
+      "h1": "Terms of use",
+      "standfirst": "Short version: use the platform freely, cite the data, and treat every forecast as decision support rather than an official instruction.",
+      "updated": "2026-09-17",
+      "sections": [
+        {
+          "h2": "Disaster early-warning disclaimer",
+          "paragraphs": [
+            "HazardNet predictions, severity indices and advisories are generated by automated models for decision support. They do not supersede or replace official emergency evacuation orders, cyclone warnings or river-level bulletins issued by the Bangladesh Meteorological Department (BMD), the Flood Forecasting and Warning Centre (FFWC), the Department of Disaster Management (DDM) or local authorities. Forecasts carry uncertainty that is stated rather than hidden; verify before acting and never use this platform as the sole basis for a life-safety decision."
+          ]
+        }
+      ]
+    }
+  ],
+  "appScreens": [
+    {
+      "path": "/login",
+      "title": "Sign in — HazardNet",
+      "description": "Sign in to HazardNet to save districts, configure alert connectors and export reports.",
+      "robots": "noindex,follow",
+      "h1": "Sign in to HazardNet",
+      "standfirst": "The live map and all forecast pages are public and need no account. Sign in to save districts, set up alert connectors and keep your exports in one place."
+    },
+    {
+      "path": "/signup",
+      "title": "Create an account — HazardNet",
+      "description": "Create a free HazardNet account to save districts, set up alert connectors and manage exports.",
+      "robots": "noindex,follow",
+      "h1": "Create a HazardNet account",
+      "standfirst": "Forecasts stay free and account-free. An account adds saved districts, alert connectors and a personal dashboard."
+    },
+    {
+      "path": "/dashboard",
+      "title": "Dashboard — HazardNet",
+      "description": "Your saved districts, connectors and export history.",
+      "robots": "noindex,nofollow",
+      "h1": "HazardNet dashboard",
+      "standfirst": "Your saved districts, profile, connectors and exports. Sign in to continue — this page contains no public content."
+    },
+    {
+      "path": "/settings",
+      "title": "Settings — HazardNet",
+      "description": "Alert and preference settings.",
+      "robots": "noindex,nofollow",
+      "h1": "Settings",
+      "standfirst": "Account and alert preferences. Sign in to continue."
+    },
+    {
+      "path": "/upload",
+      "title": "Raster ingestion — HazardNet",
+      "description": "Authenticated dataset ingestion for operators.",
+      "robots": "noindex,nofollow",
+      "h1": "Dataset ingestion",
+      "standfirst": "Ingestion is restricted to authenticated operators. The public forecast archive is available on the download page."
+    }
+  ]
+}

@@ -68,7 +68,7 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
 
           <div className="shrink-0">
             <PrintQrCode
-              url={`https://hazardnet.live/district/${data.districtName.toLowerCase().replace(/\s+/g, '-')}`}
+              url={`https://www.hazardnet.live/forecast/district/${data.districtName.toLowerCase().replace(/\s+/g, '-')}`}
               title="Live Telemetry"
               subtitle="Scan for mobile updates"
               districtOrSector={data.districtName}
