@@ -178,10 +178,37 @@ people), the metrics page (§8.1 of the phase report, engineering), the beta gat
 | --- | --- | --- |
 | Whole Python suite | `python -m pytest scripts/tests -q` | **531 passed, 1 skipped** |
 | Hindcast reports recompute from committed inputs | `cd scripts && python -m hindcast.cli check --require-reports` | ✅ 4 reports, every number matches |
-| Backend + frontend JS suites | `npx jest` (root `jest.config.cjs`) | green on the last CI run of the previous phase; re-run when the PR opens (§5) |
+| Backend + frontend JS suites | `npx jest` (root `jest.config.cjs`) | **passed in CI** on PR #29's run `35286726745` (Backend Tests, Frontend Tests, Code Quality & Build, Security Audit, TFLite bundle smoke) — the JS suites could not be re-run locally because `npm ci` cannot reach `storage.googleapis.com` from the sandbox |
+| End-to-end browser suite | `npx playwright test` (CI job `E2E Tests`) | ❌ **failing** — see §5.1, which is the one red job on this branch |
 | Content engine snapshot | `node scripts/build_content_engine.mjs --check` | 87 routes match their inputs |
 | Hindcast end-to-end | `gh workflow run hindcast.yml -f episode=all` | run `35286394326`: fetch → score → check → test → commit |
 | Phase reports | `docs/phase-reports/` | phase-2 … phase-9 present |
+
+### 5.1 The one red job: E2E on this branch, and its evidence chain
+
+This is the most important operational finding of the audit, and it was invisible until the PR was
+opened: **`ci.yml` runs only on pushes to `main`/`develop` and on pull requests into them**, so the
+531-test suite and the browser suite were never executed by GitHub for this branch's commits until
+PR #29.
+
+| Fact | Evidence |
+| --- | --- |
+| `main` at `3a44545` had E2E **green** | CI run `35119749079` (push to `main`, 2026-09-16): E2E Tests success |
+| This branch's first CI run has E2E **red** | PR #29, run `35286726745` (head `939ef6b`): `Backend Tests`, `Frontend Tests`, `Code Quality & Build`, `Pipeline Scripts Tests`, `Security Audit`, `TFLite bundle smoke` all **success**; `E2E Tests` **failure** |
+| The failure is in the test run, not the build | the job's steps `Install dependencies`, `Install Playwright browsers`, `Build frontend` and `Start preview server` all succeeded; step `Run E2E tests` failed |
+| The cause is therefore in phases 0–9 | the only difference between the green run and this one is this branch's commits |
+| It cannot be attributed from the sandbox | the job logs and the `playwright-report` artifact are served from `results-receiver.actions.githubusercontent.com` and Azure blob storage, both unreachable here; and Playwright's browser download plus `npm ci`'s binaries are blocked, so the suite cannot be reproduced locally |
+
+**Consequence:** the branch is not mergeable as it stands — not because the work is wrong, but
+because nobody has yet seen *which* E2E spec regressed. The fix path is one of two, and either is
+fine: run `npx playwright test` on a machine with browsers (the suite's own README command), or
+re-run the CI job and read the report artifact. The likeliest areas, given what the phases touched
+and what the specs assert, are the surfaces Phase 5/7/8 edited — `Navbar.tsx`, `MenuDrawer.tsx`,
+`Footer.tsx`, the `/documentation → /docs` redirect added in `c9a4f70`, and the strict
+"no horizontal overflow" checks at 320/375/768/1280 px.
+
+*What is **not** claimed here:* that the E2E suite is fine, that the failure is flaky, or that it is
+unrelated to the phase work. It is a red job on a green baseline.
 
 ## 5. Claims that are **not** made (and must not be)
 
@@ -204,9 +231,10 @@ people), the metrics page (§8.1 of the phase report, engineering), the beta gat
    provider credentials sit in a tracked file. Then verify with the `verify-secrets.yml` workflow.
 2. **Fix the deployment root and confirm the live headers** (Action 7). One setting plus one probe
    run; it turns the red site-health probe green and closes the Phase 6 live-verification gap.
-3. **Open the PR and let CI validate the branch.** `ci.yml` runs on pull requests to `main`, so the
-   531-test suite and the hindcast gate have never been executed by GitHub for this branch's later
-   commits. Merge stays the owner's decision (Action 2); a draft PR is enough to get the validation.
+3. **Fix the one red CI job — E2E (§5.1).** PR #29 is open as a draft and CI has now run: five jobs
+   are green, `E2E Tests` is red, and the baseline (`main` at `3a44545`) was green. Read the
+   `playwright-report` artifact from run `35286726745` (or run `npx playwright test` locally) and fix
+   the spec or the surface it caught. Until then the branch cannot pass branch protection (Action 3).
 
 ### P1 — next (owner + one engineering increment)
 

@@ -253,6 +253,7 @@ the wrong hazard.
 | Whole script suite | `python -m pytest scripts/tests -q` | ✅ 531 passed, 1 skipped |
 | Producing workflow | `gh workflow run hindcast.yml -f episode=all` (and on push to the harness/episodes) | ✅ run `35286394326` — fetched 4 episodes' drivers, scored, checked, tested, committed |
 | Network | none in the sandbox; the archive is reached from a GitHub runner | driver series committed so the science stays auditable offline |
+| Branch CI (PR #29, run `35286726745`) | `ci.yml` | Backend, Frontend, Code Quality, Pipeline Scripts, Security Audit, TFLite smoke: ✅ · **E2E Tests: ❌** — a regression against a green `main` (`3a44545`), unattributed: the report artifact and job logs are not reachable from this sandbox and Playwright cannot run here. See `docs/PHASES_0-9_AUDIT.md` §5.1 |
 
 The harness caught three of its own defects during this phase, all through the `check` gate or a
 test rather than through review: a report whose `per_district` table disagreed with its inputs (a
