@@ -117,9 +117,11 @@ works on a 3G connection and a low-end Android phone, usable offline once loaded
 | Spatial unit | ADM2 district (64) for forecasts; ADM3 unit (507: 495 upazilas + 12 city corporations) for the archive | HDX COD-AB, ADR 0005 |
 | Labels used in code | 8 hazard classes, fixed order | `Models/labels.json`, `backend/utils/forecastRow.js` |
 | Horizons used in code | `7_days`, `15_days` | `backend/utils/forecastRow.js` `VALID_HORIZONS` |
-| Row schema (published) | `district_id, district_name, division, pcode, horizon, hazard_type, severity_score, confidence, target_date, prediction_date, model_severity, physics_severity, data_source` + 8 meteorological fields | `scripts/build_forecast_snapshot.mjs` |
+| Row schema (published) | `district_id, district_name, division, pcode, horizon, hazard_type, severity_score, confidence, target_date, prediction_date, model_severity, physics_severity, data_source` + 8 meteorological fields + provenance (`model_version`, `tensor_build_id`, `pipeline_version`, `run_id`, `confidence_kind`) + the 8 independent physics scores / `physics_top_hazard` / `physics_agreement` / `track_divergence` + `dataset_version` | `scripts/build_forecast_snapshot.mjs` |
 | Freshness SLO | Snapshot `prediction_date` ≤ 48 h old | `/api/metrics` `hazardnet_forecast_age_hours` |
-| Versioning | Every published row must be traceable to a model version and a dataset version | `Models/VERSION.json`; ❌ dataset versioning not implemented |
+| Versioning | Every published row must be traceable to a model version and a dataset version | `Models/VERSION.json`; `dataset_version` from `scripts/etl/scene_manifest.py`, stamped per row and gated at publish (§5.8). Snapshot exposes `lineage.status` (`complete`/`partial`) so a deployment knows whether every row can name its inputs |
+| Historical events | The `w4` prior's event table, with an auditable count | `scripts/db/008_hazard_events_postgis.sql` (store) + `python -m etl.cli events` (loader; reports drift vs the 2,931 claim). Table itself not in-repo |
+| Ingestion streams | Sentinel-1/2, Landsat-8, MODIS, ERA5-Land, Open-Meteo, FFWC, BMD — each with an explicit "no data" answer | `scripts/etl/sources.py`, `hydrology.py`, `bulletins.py` |
 
 ---
 
@@ -298,18 +300,31 @@ Every row is stamped `data_source: "Hybrid_Cognitive_Forecast"`, a label that de
 published method. Rows carry no model version, no dataset version, no preprocessing version and no
 input-scene lineage, so a forecast cannot be reproduced from its own record.
 
-**Status: PARTIAL.**
-- Every row now carries `model_version` (from `Models/VERSION.json`), `tensor_build_id` (first 16
-  hex of the model artifact's sha256 — a fallback so a row is never traceable to nothing),
+**Status: MOSTLY MET (Phase 2, second increment).**
+- Every row carries `model_version` (from `Models/VERSION.json`), `tensor_build_id` (first 16 hex of
+  the model artifact's sha256 — a fallback so a row is never traceable to nothing),
   `pipeline_version`, `run_id`, and `confidence_kind: model_softmax_top_class`. The run report adds
   the full `model_sha256` and the coverage tally; the manifest and the snapshot carry them forward,
   and `backend/utils/forecastRow.js` + `predictFromStore.js` expose them through the API envelope.
-- `scripts/validate_forecasts.py` fails a publish whose manifest carries no model provenance.
-- **Still open:** `dataset_version` and per-prediction scene lineage (the COG/Earth-Engine image
-  list per district-timestep). That is the remaining half of the §3.1 row contract; it needs the
-  scene manifest described in TARGET_ARCHITECTURE §3.1, not more stamps on the current pipeline.
-  Rows published before 2026-09-17 have none of these fields — their absence is the honest record
-  that they came from the older pipeline (the snapshot reports `provenance: null`).
+- **`dataset_version` now exists.** `scripts/etl/scene_manifest.py` hashes the inputs behind each
+  prediction unit — the nine decadal windows, the collections per step, a sha256 of every tensor in
+  the stack (including the t0 input) and the Open-Meteo request parameters plus the canonical digest
+  of the response — into `ds1.<16 hex>`. Same inputs ⇒ same version; a new scene, a shifted window or
+  a revised upstream response ⇒ a different one. `scripts/auto_forecast.py` writes
+  `hazardnet_scene_manifest.json`, stamps the version on every row, and records a `scene_manifest`
+  block in the run report; `scripts/publish_forecast_csv.py` copies the manifest next to the
+  artifacts and **refuses to publish** a run whose lineage is missing, errored, or does not cover
+  every row; the snapshot exposes the per-row version, the run-level `dataset_version` and a
+  `lineage` block (`status`, `rows_with_version`, `rows_total`, `scenes_enumerated`).
+- `scripts/validate_forecasts.py` fails a publish whose manifest carries no model provenance, a
+  malformed `dataset_version`, or a `lineage` claim that disagrees with the rows.
+- **Still open:** per-scene enumeration (the manifest records `scenes_enumerated: false` and hashes
+  tensors instead of listing Sentinel item ids — enough to detect that the inputs changed, not enough
+  to name the scene), and the COG archive (the contract and the GDAL command generation exist in
+  `scripts/etl/cog.py`; no raster has been archived yet, so the pixels behind a version are still
+  fetched fresh from Earth Engine). Rows published before 2026-09-17 have an empty
+  `dataset_version`, which is the honest record that they came from the older pipeline — the snapshot
+  served today reports `lineage.status = partial` for exactly that reason.
 
 ---
 
@@ -332,6 +347,7 @@ input-scene lineage, so a forecast cannot be reproduced from its own record.
 | ---- | ------- | ------ |
 | 2026-09-17 | 1.0-draft | First written contract; §5 records eight places where the shipped system contradicts it. |
 | 2026-09-17 | 1.1-draft | Phase 2 (first increment). §5.1 coverage: accounted for and gated (UI labelling still open). §5.4 physics track: independent, all eight classes, `om_calc_flood` argument bug fixed. §5.6 soil channels: labelled and refusable, still placeholders. §5.8 provenance: model/tensor/run/confidence-kind stamped; dataset version and scene lineage still open. |
+| 2026-09-17 | 1.2-draft | Phase 2 (second increment). §2 data contract: event store + ingestion streams + `dataset_version` rows added; versioning no longer "not implemented" (§5.8 now gated at publish, with `lineage.status`). §5.2 monsoon blindness: the ingestion adapters label an optical gap instead of zero-filling (the live pipeline's constant-zero fallback remains — recorded in the model card §8). §5.8: `dataset_version` is a content hash over the decadal windows, collections, per-step tensor digests and the Open-Meteo request/response fingerprint; missing/failed/partial lineage refuses publication. Per-scene enumeration and the COG archive remain open. |
 
 ## 8. Sign-off
 

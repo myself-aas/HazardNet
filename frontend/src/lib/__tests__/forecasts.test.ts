@@ -47,6 +47,18 @@ describe('parseForecastRow / parseBulkResponse', () => {
     expect(parsed?.pcode).toBe('3019');
   });
 
+  it('keeps a well-formed dataset_version and drops a malformed one', () => {
+    // Lineage is passed through verbatim when it is shaped like a version
+    // (scripts/etl/scene_manifest.py emits `ds1.<16 hex>`), and dropped otherwise:
+    // a value that identifies nothing must not reach the UI as if it did.
+    const good = parseForecastRow(row({ dataset_version: 'ds1.0123456789abcdef' }));
+    expect(good?.dataset_version).toBe('ds1.0123456789abcdef');
+    expect(parseForecastRow(row({ dataset_version: 'ds1.NOT-A-HASH' }))?.dataset_version)
+      .toBeUndefined();
+    expect(parseForecastRow(row({ dataset_version: 'v2' }))?.dataset_version).toBeUndefined();
+    expect(parseForecastRow(row())?.dataset_version).toBeUndefined();
+  });
+
   it('keeps forecasted meteorological fields for individual views', () => {
     const parsed = parseForecastRow(row({
       temperature_mean: 299.4,
@@ -257,7 +269,8 @@ describe('parseSnapshotResponse (hourly static snapshot fallback)', () => {
     prediction_date: '2026-09-13',
     horizons: {
       '7_days': [
-        row({ horizon: '7_days', model_severity: 0.61, physics_severity: 0.55 }),
+        row({ horizon: '7_days', model_severity: 0.61, physics_severity: 0.55,
+              dataset_version: 'ds1.fedcba9876543210' }),
         row({ horizon: '7_days', district_id: 30, district_name: 'Jashore', hazard_type: 'Drought' }),
       ],
       '15_days': [row({ horizon: '15_days', severity_score: 0.33 })],
@@ -268,6 +281,9 @@ describe('parseSnapshotResponse (hourly static snapshot fallback)', () => {
     expect(parseSnapshotResponse(snapshot, '7_days')).toHaveLength(2);
     expect(parseSnapshotResponse(snapshot, '15_days')).toHaveLength(1);
     expect(parseSnapshotResponse(snapshot, '7_days')[0]?.model_severity).toBe(0.61);
+    // The snapshot carries the per-row content hash through to the UI layer.
+    expect(parseSnapshotResponse(snapshot, '7_days')[0]?.dataset_version).toBe('ds1.fedcba9876543210');
+    expect(parseSnapshotResponse(snapshot, '7_days')[1]?.dataset_version).toBeUndefined();
   });
 
   it('drops malformed rows inside the snapshot', () => {

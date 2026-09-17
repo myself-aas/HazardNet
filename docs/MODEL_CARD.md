@@ -66,7 +66,7 @@ Flood, Heat Wave, Severe Local Storm, Tropical Cyclone.
 
 | Item | Value | Where |
 | ---- | ----- | ----- |
-| Events | **2,931** historical hazard events, 2000–2025, 64 districts | `assets/docs/MODEL_CARD.md` (retired card) — **the event table itself is not in this repository** |
+| Events | **2,931** historical hazard events, 2000–2025, 64 districts — *reported, not verified* | `assets/docs/MODEL_CARD.md` (retired card) — **the event table itself is not in this repository**. The store that makes the number measurable now exists (`scripts/db/008_hazard_events_postgis.sql` + `python -m etl.cli events`, §6.5); until the archive is loaded, the count stays "reported" |
 | Event table location | Kaggle dataset `ashifahmedshuvo/hazardnet-datasets` → `master_tensors.h5` | `ml/HazardNet_auto_train.ipynb` cells 3–4, 7 |
 | Sampling | ~117 events/year nationally across all classes | derived from 2,931 / 25 years |
 | Class balance | **UNVERIFIED** — no per-class counts are committed. The shipped forecast distribution (§6.1) and the class list (floods/cyclones dominate reported Bangladesh disasters; fire and severe local storm are rare) both imply strong imbalance |
@@ -172,16 +172,29 @@ preprocessing version or input-scene list. `data_source: "Hybrid_Cognitive_Forec
 label with no definition in the repository. **Requirement (Phase 2):** stamp
 `model_version`, `dataset_version`, `tensor_build_id` and the contributing scene IDs into every row.
 
-**Status (Phase 2, 2026-09-17): PARTIAL.** Rows now carry `model_version` (from `Models/VERSION.json`),
-`tensor_build_id` (sha256 prefix of the model artifact), `pipeline_version`, `run_id`,
-`confidence_kind` and the per-class physics scores; the manifest/run report carry the full
-`model_sha256` and the coverage tally. `validate_forecasts.py` rejects a publish with no model
-provenance. Still missing: **`dataset_version` and per-prediction scene lineage** (which Earth Engine
-image, which COG, which acquisition dates fed each district-timestep). That needs the scene manifest
-in `docs/architecture/TARGET_ARCHITECTURE.md` §3.1 and cannot be faked with stamps on the current
-pipeline. Rows produced before this date have `provenance: null`, which is the accurate record.
+**Status (Phase 2, second increment, 2026-09-17): MOSTLY MET.** Rows now carry `model_version`
+(from `Models/VERSION.json`), `tensor_build_id` (sha256 prefix of the model artifact),
+`pipeline_version`, `run_id`, `confidence_kind`, the per-class physics scores, and **`dataset_version`**
+— a content hash over the inputs behind each prediction unit (`scripts/etl/scene_manifest.py`), built
+from the nine decadal windows, the contributing collections, a sha256 of every tensor in the stack
+(including the t0 input) and the Open-Meteo request/response fingerprint. The scene manifest travels
+with the artifacts (`backend/data/forecasts/hazardnet_scene_manifest.json`), its run-level version and
+a `lineage` block (`status: complete|partial`, `rows_with_version/rows_total`) appear in the website
+snapshot, and `scripts/publish_forecast_csv.py` **refuses to publish** a run whose lineage is missing,
+failed or does not cover every row.
 
-### 6.5 Phase 2 pipeline increment (2026-09-17)
+Still missing, and named here rather than implied:
+
+* **per-scene enumeration** — the manifest records `scenes_enumerated: false` and digests tensors
+  instead of listing Sentinel-2/S1 item ids (enumeration costs one extra Earth Engine round trip per
+  collection per district). Enough to detect *that* the inputs changed, not enough to name the scene;
+* **the COG archive** — `scripts/etl/cog.py` defines and validates the contract and generates the
+  GDAL commands, but no COG has been archived yet, so the pixels behind a version are still fetched
+  fresh from Earth Engine rather than pinned;
+* **rows published before 2026-09-17** have an empty `dataset_version`, which is the accurate record:
+  the snapshot served today reports `lineage.status = partial` for exactly that reason.
+
+### 6.5 Phase 2 pipeline increments (2026-09-17)
 
 Three load-bearing changes, all pinned by tests:
 
@@ -190,6 +203,25 @@ Three load-bearing changes, all pinned by tests:
 | Independent physics track (all 8 classes, no dependence on the model's pick; `om_calc_flood` takes a horizon total *and* a peak 24 h) | `scripts/physics_severity.py`, wired in `scripts/auto_forecast.py` | `scripts/tests/test_physics_severity.py` (18), `scripts/tests/test_model_claims.py` |
 | Coverage accounting: per-skip reasons, `hazardnet_run_report.json`, publish/validate gates, `coverage` in the v2 snapshot | `auto_forecast.py`, `publish_forecast_csv.py`, `validate_forecasts.py`, `build_forecast_snapshot.mjs` | `scripts/tests/test_publish_forecast_csv.py`, `scripts/tests/test_validate_forecasts.py` |
 | Row provenance (`model_version`, `tensor_build_id`, `pipeline_version`, `run_id`, `confidence_kind`) end to end into the API envelope | generator → manifest → snapshot → `backend/utils/forecastRow.js` → `backend/utils/predictFromStore.js` | `scripts/tests/test_csv_ingestion.mjs`, `__tests__/predictFromStore.test.js` |
+
+#### 6.5.1 Second increment — ingestion ETL, event store, lineage
+
+| Change | Where | Test |
+| ------ | ----- | ---- |
+| Historical event store (PostGIS): `hazard_events` + the 64-row district validation snapshot + per-run ingest audit + aggregate views + `hazard_event_prior()` | `scripts/db/008_hazard_events_postgis.sql`, verified by `scripts/db/verify_hazard_events.sql` | `scripts/tests/test_etl_events.py` (55) |
+| Event loader/validator that **reports the drift** against the 2,931-event claim instead of asserting it, emits reviewable SQL and never invents rows | `scripts/etl/events.py`, `scripts/etl/db.py`, `scripts/etl/cli.py` | `scripts/tests/test_etl_events.py` |
+| `w3` hydrology stream: FFWC levels vs published danger levels, lead-time damping, staleness, worst-station-per-district, `available: false` (never `0`) for uncovered districts | `scripts/etl/hydrology.py` | `scripts/tests/test_etl_hydrology_bulletins.py` (46) |
+| `w3` official stream: BMD bulletins → structured advisories + the `model_agrees_with_official` feedback signal (null when no bulletin named the district) | `scripts/etl/bulletins.py` | `scripts/tests/test_etl_hydrology_bulletins.py` |
+| COG preprocessing contract (EPSG:4326, 512 tiles, overview series, explicit nodata, per-source band scales incl. MODIS LST 0.02 K) + job planning + post-write verification | `scripts/etl/cog.py` | `scripts/tests/test_etl_sources_cog.py` (53) |
+| Source adapters with fixture/live modes that return `ok: false` + a reason rather than an empty payload (the monsoon optical gap is *labelled*, not zero-filled) | `scripts/etl/sources.py` | `scripts/tests/test_etl_sources_cog.py` |
+| `dataset_version` end to end: generator → scene manifest → published manifest → snapshot row + `lineage` block → frontend parser, with publish/validate gates | `scripts/etl/scene_manifest.py`, `auto_forecast.py`, `publish_forecast_csv.py`, `validate_forecasts.py`, `build_forecast_snapshot.mjs`, `frontend/src/lib/forecasts.ts` | `test_etl_sources_cog.py`, `test_publish_forecast_csv.py`, `test_validate_forecasts.py`, `frontend/src/lib/__tests__/forecasts.test.ts` |
+
+Two defects in the loader itself were found by these tests as they were written, both of which
+would only have surfaced on a real database: the generated `insert into public.hazard_events` listed
+one more column than it supplied values for (every load would have been rejected outright), and the
+64-row district snapshot had no foreign key on `adm2_pcode`, so an event could be stored with a pcode
+belonging to no district. `scripts/tests/test_etl_events.py::test_every_insert_tuple_has_exactly_one_value_per_column`
+and the migration-parity test now fail if either returns.
 
 Two incidental defects were found and fixed while wiring coverage:
 the model's class **ordinal** was being written into `hazard_type` for part of the pipeline's history
@@ -228,7 +260,7 @@ is not defensible.
 
 | # | Failure | Mechanism | Detection plan |
 | - | ------- | --------- | -------------- |
-| 1 | Blind during monsoon cloud | Optical channels 2–5 (S2/Landsat) are unusable under cloud; only SAR channels remain informative | Log per-run cloud fraction per district |
+| 1 | Blind during monsoon cloud | Optical channels 2–5 (S2/Landsat) are unusable under cloud; only SAR channels remain informative | Log per-run cloud fraction per district — **partly guarded (Phase 2)**: the ingestion adapters report `optical_gap`/`monsoon` per window and refuse to substitute zeros, and the manifest names the collections each step used; the *live* pipeline still falls back to constant-zero optical channels when the S2 composite is empty (`scripts/auto_forecast.py`), so the model can still be shown a cloud-free-looking zero tensor |
 | 2 | Constant-placeholder channels | Soil channels fixed at training means (§6.3) | Assert non-constant variance before inference — **still open**; rows are now stamped `soil_channels_fabricated=true` and `HAZARDNET_SOIL_MODE=forbid` can refuse the run |
 | 3 | Silent district dropout | GEE failure → `continue` → district absent from output, no record | Coverage stamp + fail on < 64 districts — **guarded (Phase 2)**: every skip recorded with a reason, publisher refuses an untallied run, validator fails a tally that disagrees with the rows; the site still needs to label the gaps (Phase 5) |
 | 4 | Overconfident output | Saturated softmax (§6.1) | Reliability diagram; isotonic calibration — **open** (Phase 3), now namespaced as `confidence_kind: model_softmax_top_class` so a calibrated value can never be confused with it |
@@ -247,7 +279,7 @@ reproduced from this repository, and two are contradicted by the shipped data.
 | "Event-Based 5-Fold Cross Validation (Acc: **98.8 %**)" | No artefact contains this number: not the notebook, not `Models/VERSION.json`, not CI. Random event-split accuracy is also the metric most inflated by temporal leakage (§4.1) |
 | "Spatial Leave-One-District-Out (Acc: **95.6 %**)" | Same: no result file, no run log, no committed metrics |
 | "**~1.2 M** parameters" | No parameter count is computed in the repo |
-| "**2,931** unique hazard events (2000–2025)" | The event table lives in a Kaggle dataset keyed to a Drive path in a Colab notebook; it is not committed, so the number cannot be audited here. Retain only as "reported by the training notebook's dataset" until the table is versioned in-repo |
+| "**2,931** unique hazard events (2000–2025)" | The event table lives in a Kaggle dataset keyed to a Drive path in a Colab notebook; it is not committed, so the number still cannot be audited here. As of 2026-09-17 the *store and loader* exist (§6.5.1) and every ingest run records the measured total, the per-class/per-year counts and the drift against 2,931 — so the claim can now be checked the moment the export is loaded. Until then: "reported by the training notebook's dataset" |
 | "INT8 quantization bypassed … model operates in native FP32" | Correct as a fact, but it means the edge/offline latency story has no basis — recorded here rather than as a feature |
 | "Accuracy" used as a public claim anywhere | Replaced by the product rule in `docs/PRODUCT_SPEC.md` §3: no accuracy claim without a temporally held-out, published evaluation |
 

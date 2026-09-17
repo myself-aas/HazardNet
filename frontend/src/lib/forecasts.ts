@@ -43,6 +43,13 @@ export interface ForecastRow {
   physics_severity?: number;
   division?: string;
   pcode?: string;
+  /**
+   * `dataset_version` — the content hash over the inputs behind this prediction
+   * unit (scripts/etl/scene_manifest.py, PRODUCT_SPEC §5.8). Same inputs, same
+   * version; a new satellite scene or a revised forecast window moves it. Phase 2
+   * puts it on the rows; Phase 5 surfaces it next to each forecast's methodology.
+   */
+  dataset_version?: string;
   /** ADM3 identity (ADR 0005/0006): admin level + parent ADM2 district. */
   admin_level?: number;
   adm2_name?: string;
@@ -189,6 +196,11 @@ export function parseForecastRow(raw: unknown): ForecastRow | null {
   if (isFiniteNumber(r.admin_level)) row.admin_level = r.admin_level;
   if (typeof r.adm2_name === 'string' && r.adm2_name) row.adm2_name = r.adm2_name;
   if (typeof r.adm2_pcode === 'string' && r.adm2_pcode) row.adm2_pcode = r.adm2_pcode;
+  // Lineage passes through only when it is shaped like a version. A malformed
+  // value must not reach the UI as if it identified the inputs.
+  if (typeof r.dataset_version === 'string' && /^ds1\.[0-9a-f]{16}$/.test(r.dataset_version)) {
+    row.dataset_version = r.dataset_version;
+  }
   // created_at powers the /bulk fallback's ingestionTimestamp in
   // fetchForecastMetadata — dropping it blanks the Incident Ingestion card
   // whenever /metadata is down.
@@ -247,6 +259,22 @@ export interface ForecastSnapshot {
     status?: string | null;
   } | null;
   soil_channels_fabricated?: boolean | null;
+  /** Run-level `dataset_version` (content hash over every unit's inputs). */
+  dataset_version?: string | null;
+  /**
+   * How many rows carry a version. `status: 'partial'` means some rows cannot
+   * name the inputs behind them — a legacy snapshot, or a run whose lineage
+   * failed — and the UI should say so rather than implying full lineage.
+   */
+  lineage?: {
+    dataset_version?: string | null;
+    scene_manifest_path?: string | null;
+    units_in_manifest?: number | null;
+    rows_with_version?: number | null;
+    rows_total?: number | null;
+    scenes_enumerated?: boolean | null;
+    status?: string | null;
+  } | null;
   horizons?: Partial<Record<string, unknown[]>>;
 }
 

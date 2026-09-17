@@ -28,6 +28,24 @@ from physics_severity import (  # noqa: E402  (after the path insert just above)
     physics_summary,
 )
 
+# ── Per-prediction scene lineage (PRODUCT_SPEC §5.8) ─────────────────────────
+# `scripts/etl/scene_manifest.py` describes and hashes what a prediction was
+# built from; `scripts/etl/sources.py` owns the decadal-window arithmetic this
+# pipeline uses. Both are standard-library-only, and both are tested offline
+# (scripts/tests/test_etl_sources_cog.py), which is why the lineage can be
+# verified in CI even though the tensors can only be built on a runner with
+# Earth Engine credentials.
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), 'etl'))
+from scene_manifest import (  # noqa: E402
+    build_manifest as build_scene_manifest,
+    driver_record as scene_driver_record,
+    step_record as scene_step_record,
+    unit_lookup as scene_unit_lookup,
+    unit_record as scene_unit_record,
+    write_manifest as write_scene_manifest,
+)
+from sources import ten_day_windows  # noqa: E402
+
 # ==============================================================================
 # 1. GEE AUTHENTICATION (Service Account)
 # ==============================================================================
@@ -211,6 +229,31 @@ def get_ee_image_as_numpy(image, region, scale=10, target_size=(64, 64)):
         
     return img_np
 
+def _openmeteo_provenance(url, params, payload, fields_defaulted=()):
+    """Fingerprint one Open-Meteo request for the scene manifest.
+
+    Two things make a prediction reproducible: the exact question that was asked
+    (`url` + `params`, hashed canonically) and the exact bytes that came back
+    (canonical-JSON digest of the parsed response). Either changing moves the
+    unit's `dataset_version`.
+
+    `fields_defaulted` lists the fields the aggregator had to fill from its
+    hard-coded defaults because the response omitted them — the same class of
+    problem as the fabricated soil channels, so it is recorded rather than
+    absorbed into a plausible-looking number.
+    """
+    digest = hashlib.sha256(
+        json.dumps(payload, sort_keys=True, default=str).encode('utf-8')
+    ).hexdigest()
+    return {
+        'url': url,
+        'params': {str(key): params[key] for key in sorted(params)},
+        'payload_sha256': digest,
+        'fields_defaulted': sorted(fields_defaulted),
+        'retrieved_at': datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'),
+    }
+
+
 def get_openmeteo_forecast(lat, lon, horizon_days):
     """Fetch an Open-Meteo forecast and aggregate to the scalar daily
     summaries the downstream 15-channel tensor + physics-severity formulas
@@ -260,9 +303,15 @@ def get_openmeteo_forecast(lat, lon, horizon_days):
         daily = payload.get('daily', {})
         hourly = payload.get('hourly', {})
 
+        fields_defaulted = []
+
         def safe_daily(key, default_val):
             arr = daily.get(key)
             if arr is None or len(arr) == 0:
+                # The response did not carry this field; the value below is a
+                # hard-coded default, not an observation. Recorded so the scene
+                # manifest can say so instead of presenting it as data.
+                fields_defaulted.append(key)
                 arr = [default_val]
             return np.array([float(x) if x is not None else np.nan for x in arr])
 
@@ -310,6 +359,8 @@ def get_openmeteo_forecast(lat, lon, horizon_days):
             # on 2026-09-17). Both are derived from the same daily series, so
             # they stay consistent with the total.
             'Precip_Peak_24h_mm': float(np.nanmax(np.nan_to_num(precip_mm, nan=0.0))),
+            # ── lineage for the scene manifest (not a model input) ───────
+            '_provenance': _openmeteo_provenance(url, params, payload, fields_defaulted),
         }
     except requests.exceptions.RequestException as e:
         print(f"Open-Meteo HTTP Error for ({lat}, {lon}): {e}")
@@ -446,7 +497,84 @@ def build_t0_and_infer(dist, historical_steps, horizon_days, norm_stats):
             return None, None
     return None, None
 
+SCENE_MANIFEST_PATH = os.environ.get(
+    'HAZARDNET_SCENE_MANIFEST_PATH', 'hazardnet_scene_manifest.json'
+)
+#: The collections the 15-channel historical stack is built from
+#: (`get_temporal_15ch_stack`). Recorded per step so the manifest names its
+#: sources rather than saying only "Earth Engine".
+STACK_COLLECTIONS = (
+    'COPERNICUS/S1_GRD',
+    'COPERNICUS/S2_SR_HARMONIZED',
+    'LANDSAT/LC08/C02/T1_L2',
+    'ECMWF/ERA5_LAND/DAILY_AGGR',
+)
+
+
+def _tensor_digest(tensor):
+    """sha256 of a tensor's bytes — how "the inputs changed" becomes observable.
+
+    Digesting the float32 buffer rather than a summary statistic means a single
+    changed pixel moves the `dataset_version`; NaN bit patterns are stable, so an
+    unchanged composite always hashes the same.
+    """
+    if tensor is None:
+        return None
+    return hashlib.sha256(np.asarray(tensor, dtype='float32').tobytes()).hexdigest()
+
+
+def build_scene_unit(dist, horizon_name, historical_steps, t0_tensor, om_data, prediction_date):
+    """Lineage for one (district, horizon) prediction unit.
+
+    Steps 0..8 are the nine decadal composites the model's history carries;
+    step 9 is the t0 block the forecast input is built from. The t0 window is the
+    same ten days as step 8 — `build_t0_and_infer` re-fetches it for the forecast
+    input rather than reusing the historical array — which is why the two steps
+    can differ and why both are hashed.
+    """
+    windows = ten_day_windows(prediction_date)
+    steps = []
+    for index, tensor in enumerate(historical_steps):
+        window = windows[index] if index < len(windows) else (None, None)
+        steps.append(scene_step_record(
+            step=index, window_start=window[0], window_end=window[1],
+            collections=STACK_COLLECTIONS, tensor_digest=_tensor_digest(tensor),
+            shape=np.asarray(tensor).shape, scale_m=10,
+        ))
+    t0_window = windows[-1] if windows else (None, None)
+    steps.append(scene_step_record(
+        step=len(steps), window_start=t0_window[0], window_end=t0_window[1],
+        collections=STACK_COLLECTIONS, tensor_digest=_tensor_digest(t0_tensor),
+        shape=np.asarray(t0_tensor).shape, scale_m=10,
+    ))
+
+    provenance = (om_data or {}).get('_provenance') or {}
+    driver = None
+    if provenance.get('payload_sha256'):
+        driver = scene_driver_record(
+            source='open-meteo', url=provenance['url'], params=provenance['params'],
+            payload_sha256=provenance['payload_sha256'], retrieved_at=provenance.get('retrieved_at'),
+        )
+    return scene_unit_record(
+        district_id=dist['id'], district_name=dist['name'], horizon=horizon_name,
+        steps=steps, driver=driver,
+        # Earth Engine composites do not hand back per-scene ids without one extra
+        # round trip per collection per district. Until that cost is paid, the
+        # manifest says `false` and still carries the tensor digests — enough to
+        # detect that the inputs changed, not enough to name the scene. Recorded
+        # rather than implied (see scripts/etl/scene_manifest.py).
+        enumerated=False,
+        extra={
+            't0_step_index': len(steps) - 1,
+            'fields_defaulted': provenance.get('fields_defaulted', []),
+            'driver_recorded': driver is not None,
+        },
+    )
+
+
 results = []
+scene_units = []
+scene_units_error = None
 print(f"\\nStarting Optimized HazardNet Forecast Pipeline...")
 
 # ── provenance for this run (PRODUCT_SPEC §5.8 / §3.1) ───────────────────────
@@ -606,6 +734,21 @@ for dist in DISTRICTS: # Full pipeline now
                 physics_severity = physics_scores[hazard]
             missing = missing_drivers(physics_drivers)
 
+            # Scene lineage for this unit. Built from the same tensors and the
+            # same Open-Meteo payload the prediction used, so `dataset_version`
+            # identifies the actual inputs (PRODUCT_SPEC §5.8). The row is stamped
+            # after the manifest is assembled, below.
+            try:
+                scene_units.append(build_scene_unit(
+                    dist, horizon_name, historical_steps, tensor, om_data, prediction_date,
+                ))
+            except Exception as exc:  # noqa: BLE001 - lineage failure must not lose the forecast
+                # The forecast is still emitted (it is the product); the run report
+                # records that this unit has no usable lineage, and the publisher
+                # refuses to ship a run whose lineage failed.
+                scene_units_error = scene_units_error or f"{dist['name']}/{horizon_name}: {exc}"
+                print(f"  [LINEAGE] {dist['name']} {horizon_name}: {exc}")
+
             target_date = (datetime.now() + timedelta(days=days)).strftime('%Y-%m-%d')
 
             # Emit BOTH canonical field names (in the documented ingest
@@ -641,6 +784,8 @@ for dist in DISTRICTS: # Full pipeline now
                 'physics_agreement': bool(physics['physics_agreement']),
                 'track_divergence': physics.get('track_divergence'),
                 'physics_inputs_missing': '|'.join(missing),
+                # ── lineage (filled in from the scene manifest, below) ───────
+                'dataset_version': None,
                 'soil_channels_fabricated': SOIL_FABRICATED,
                 **physics_columns(physics_scores),
                 # Canonical per-day meteorological fields (forecastRow.js
@@ -668,6 +813,57 @@ for dist in DISTRICTS: # Full pipeline now
 
     # Light rate-limit between districts to be polite to EE + Open-Meteo.
     time.sleep(0.2)
+
+# ── scene manifest → dataset_version (PRODUCT_SPEC §5.8) ────────────────────
+# Every prediction unit gets a content hash over the inputs that produced it: the
+# decadal windows, the contributing collections, the digest of each tensor in the
+# stack (including the t0 input) and the Open-Meteo request/response fingerprint.
+# Rerunning a day reproduces the version; a new satellite scene, a changed
+# forecast window or a revised upstream response moves it. Recorded by the scene
+# manifest and stamped on each row so a consumer can tell one from the other.
+scene_manifest_info = {
+    'path': None, 'units': 0, 'rows_stamped': 0,
+    'dataset_version': None, 'sha256': None, 'error': scene_units_error,
+}
+if scene_units:
+    try:
+        scene_manifest = build_scene_manifest(
+            prediction_date=prediction_date,
+            pipeline_version=PIPELINE_VERSION,
+            model_version=MODEL_VERSION,
+            units=scene_units,
+            run_id=RUN_ID,
+        )
+        scene_manifest_info['sha256'] = write_scene_manifest(scene_manifest, SCENE_MANIFEST_PATH)
+        lookup = scene_unit_lookup(scene_manifest)
+        stamped = 0
+        for row in results:
+            version = lookup.get((str(row.get('district_id')), row.get('horizon')))
+            if version:
+                row['dataset_version'] = version
+                stamped += 1
+        scene_manifest_info.update({
+            'path': SCENE_MANIFEST_PATH,
+            'units': len(scene_manifest['units']),
+            'rows_stamped': stamped,
+            'dataset_version': scene_manifest['dataset_version'],
+            'scenes_enumerated': scene_manifest['scenes_enumerated'],
+            'units_with_defaulted_drivers': sum(
+                1 for unit in scene_manifest['units']
+                if (unit.get('extra') or {}).get('fields_defaulted')
+            ),
+        })
+        print(f"Scene manifest: {SCENE_MANIFEST_PATH} — {len(scene_manifest['units'])} units, "
+              f"dataset_version={scene_manifest['dataset_version']}, rows stamped={stamped}")
+    except Exception as exc:  # noqa: BLE001 - reported, and publishing is refused below
+        scene_manifest_info['error'] = f'{type(exc).__name__}: {exc}'
+        print(f"::warning::scene manifest could not be written ({exc}); rows carry no dataset_version")
+elif not scene_units_error:
+    scene_manifest_info['error'] = 'no prediction units produced a lineage record'
+
+if scene_manifest_info['error'] and scene_manifest_info['rows_stamped'] < len(results):
+    print(f"::warning::scene lineage incomplete: {scene_manifest_info['error']} — "
+          f"{len(results) - scene_manifest_info['rows_stamped']} row(s) have no dataset_version")
 
 # ── coverage tally + run report (PRODUCT_SPEC §5.1 / TARGET_ARCHITECTURE §3.3) ─
 df_results = pd.DataFrame(results)
@@ -710,6 +906,11 @@ run_report = {
     'coverage': coverage,
     'soil_channels_fabricated': SOIL_FABRICATED,
     'soil_mode': SOIL_MODE,
+    # Scene lineage: where the manifest is, which run-level dataset_version it
+    # carries, and whether every unit got one. A non-null `error` makes the
+    # publisher refuse the run — a forecast that cannot name its inputs must not
+    # ship (PRODUCT_SPEC §5.8).
+    'scene_manifest': scene_manifest_info,
 }
 
 REPORT_PATH = os.environ.get('HAZARDNET_RUN_REPORT_PATH', 'hazardnet_run_report.json')

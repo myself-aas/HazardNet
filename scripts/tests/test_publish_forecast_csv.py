@@ -39,12 +39,45 @@ def _write_fixture_csv(path, rows=None, columns=None):
     return path
 
 
+def write_scene_manifest(tmp_path, rows, *, name='hazardnet_scene_manifest.json',
+                         dataset_version='ds-run.0011223344556677'):
+    """Stand-in for the manifest scripts/auto_forecast.py writes.
+
+    Only the fields the publish/validate gates read are populated; the real
+    manifest (scripts/etl/scene_manifest.py) carries the full per-step lineage and
+    its own schema tests (scripts/tests/test_etl_sources_cog.py).
+    """
+    stamped = [row for row in rows if str(row.get('dataset_version') or '').strip()]
+    manifest = {
+        'schema': 'hazardnet-scene-manifest/v1',
+        'prediction_date': rows[0].get('prediction_date') if rows else None,
+        'pipeline_version': 'auto_forecast/2.0.0',
+        'model_version': '2.1.9+model.testfixture',
+        'run_id': '20260917T000000Z-testtest',
+        'dataset_version': dataset_version,
+        'scenes_enumerated': False,
+        'units': [
+            {
+                'district_id': row.get('district_id'),
+                'district_name': row.get('district_name'),
+                'horizon': row.get('horizon'),
+                'dataset_version': row.get('dataset_version'),
+            }
+            for row in stamped
+        ],
+    }
+    path = tmp_path / name
+    path.write_text(json.dumps(manifest, indent=2), encoding='utf-8')
+    return path
+
+
 def write_run_report(tmp_path, rows=None, *, produced=None, status=None, name='hazardnet_run_report.json',
-                     soil=True):
+                     soil=True, scene_error=None, with_scene=True):
     """A run report of the shape scripts/auto_forecast.py writes.
 
     The publisher refuses to publish without one: the coverage tally it carries
-    is what stops a partial run from shipping as if it were complete.
+    is what stops a partial run from shipping as if it were complete, and the
+    scene-manifest block is what stops a run whose inputs cannot be named.
     """
     rows = rows if rows is not None else notebook_rows('2026-09-15')[1]
     produced = len(rows) if produced is None else produced
@@ -71,6 +104,19 @@ def write_run_report(tmp_path, rows=None, *, produced=None, status=None, name='h
             'status': resolved,
         },
     }
+    if with_scene:
+        scene_path = write_scene_manifest(tmp_path, rows)
+        stamped = sum(1 for row in rows if str(row.get('dataset_version') or '').strip())
+        report['scene_manifest'] = {
+            'path': str(scene_path),
+            'units': stamped,
+            'rows_stamped': stamped,
+            'dataset_version': 'ds-run.0011223344556677',
+            'sha256': 'c' * 64,
+            'scenes_enumerated': False,
+            'units_with_defaulted_drivers': 0,
+            'error': scene_error,
+        }
     path = tmp_path / name
     path.write_text(json.dumps(report), encoding='utf-8')
     return path
@@ -231,6 +277,8 @@ GENERATOR_COLUMNS = {
     # Independent physics track, all eight classes (audit 2026-09-17).
     'physics_top_hazard', 'physics_top_severity', 'physics_agreement',
     'track_divergence', 'physics_inputs_missing', 'soil_channels_fabricated',
+    # Scene lineage (PRODUCT_SPEC §5.8): content hash over the inputs.
+    'dataset_version',
     'temperature_mean', 'temperature_max', 'temperature_min',
     'precipitation_mm', 'wind_max_kmh', 'dewpoint_mean',
     'solar_radiation_mj_m2', 'evapotranspiration_mm',
@@ -515,3 +563,23 @@ def test_generator_accounts_for_every_requested_unit():
     # The silent skip must be gone: every `continue` in the district loop has to
     # be preceded by a recorded reason.
     assert 'if not historical_steps:\n        continue' not in source
+
+
+def test_both_gates_run_before_anything_is_written_and_only_once():
+    """The gates are the only reason a refusal leaves the previous data intact.
+
+    A duplicate copy of a gate that runs *after* the writes is worse than dead
+    code: it can fail a publish whose artifacts are already half-replaced, and it
+    hides the real one from a reader tracing the control flow. (Both mistakes were
+    made, and this test is the guard.)
+    """
+    source = PUBLISH.read_text(encoding='utf-8')
+    assert source.count('coverage + provenance gate') == 1  # box-drawing comment marker
+    assert source.count('CSV/report mismatch') == 1
+    assert source.count('scene-lineage gate') == 1
+    assert source.count('Lineage coverage mismatch') == 1
+    # Every gate exit precedes the first write to the artifact paths.
+    first_write = source.index("_copy_if_distinct(src, csv_out)")
+    for gate in ('Run report not found', 'CSV/report mismatch', 'Scene lineage failed',
+                 'Lineage coverage mismatch', 'Scene manifest not found'):
+        assert source.index(gate) < first_write, f'{gate} must run before the writes'

@@ -155,9 +155,15 @@ Each item names the artifact that now fails if it regresses.
    are now visible: `HAZARDNET_SOIL_MODE=mean|forbid`, `soil_channels_fabricated` on every row and in
    the manifest, and a validator warning on every placeholder run. The real fix (ERA5-Land soil at
    the live timestep) is open; do not treat a passing pipeline as evidence that the input is real.
-5. **Provenance is partial by design.** `model_version`/`tensor_build_id`/`pipeline_version`/`run_id`/
-   `confidence_kind` are stamped end to end; `dataset_version` and per-prediction scene lineage are
-   not, because the pipeline has no scene manifest to stamp — see `TARGET_ARCHITECTURE.md` §3.1.
+5. **Provenance is now end to end, with two named holes.** `model_version`, `tensor_build_id`,
+   `pipeline_version`, `run_id`, `confidence_kind` **and** `dataset_version` are stamped and gated;
+   the scene manifest travels with the artifacts. The holes are: **per-scene enumeration**
+   (`scenes_enumerated: false` — the manifest hashes tensors, so it can say the inputs changed but not
+   which Sentinel scene changed) and **the COG archive** (`scripts/etl/cog.py` defines and validates
+   the contract and generates the GDAL commands; nothing has been archived, so the pixels behind a
+   `dataset_version` are still fetched fresh from Earth Engine). Rows published before 2026-09-17
+   carry no `dataset_version`, and the served snapshot reports `lineage.status = partial` for exactly
+   that reason — do not read "the pipeline has a manifest" as "the archive is reproducible".
 6. **Two cross-surface name/label defects were found while wiring coverage** (both would have hidden
    data silently): the model's class *ordinal* was written into `hazard_type` for part of the
    pipeline's history (now mapped through the pinned class order and range-checked), and the site's
@@ -166,3 +172,40 @@ Each item names the artifact that now fails if it regresses.
    `scripts/tests/test_district_name_parity.py` (both directions, plus the 64-district count) and
    `scripts/tests/test_physics_severity.py::test_class_order_matches_the_model_labels`.
 
+### Phase 2 ingestion increment (2026-09-17, second part)
+
+Seven things this increment changes, and the honest limit on each:
+
+1. **The historical event store exists; the 2,931 events still do not.** `scripts/db/008_hazard_events_postgis.sql`
+   creates `hazard_events` (eight-class CHECK, ordered-date CHECK, `(source, source_record_id)` unique
+   key, PostGIS geometry derived from the ADM3 layer), a 64-row district validation snapshot, a per-run
+   ingest audit table, two aggregate views and `hazard_event_prior()`. `python -m etl.cli events`
+   validates, counts, emits reviewable SQL, and records the **drift** against the model card's 2,931 —
+   it never asserts it. The Kaggle/Drive table is still not in this repository, so the claim remains
+   unverified until someone loads it; nothing was invented to fill the gap.
+2. **The `w3` streams are ingestible but not wired into the forecast.** FFWC river levels are scored
+   against published danger levels (documented bands, lead-time damping, staleness flags,
+   worst-station-per-district, `available: false` rather than `0` for uncovered districts) and BMD
+   bulletins are parsed into advisories with a `model_agrees_with_official` signal. Neither runs on a
+   schedule and neither feeds the fusion; the daily pipeline still publishes `w1`+`w2`.
+3. **COG preprocessing is a contract, not an archive.** Metadata validation, per-source band scales
+   (MODIS LST is 0.02 K/step, not the 0.01 NDVI-style scale), job planning, `gdal_translate -of COG`
+   command generation and post-write verification exist and are tested. There is deliberately no
+   raster writer: a hand-rolled TIFF that silently produces a non-COG would be worse than none. Until
+   jobs are run, "COG preprocessing" means the schema and the plan.
+4. **The daily pipeline's soil channels are still fabricated.** The ingestion adapters fetch real
+   ERA5-Land soil layers, but the *live* forecast path still fills those channels with training means
+   and stamps `soil_channels_fabricated=true`. `scripts/etl` having the right data does not mean the
+   running pipeline uses it — that wiring is the open item.
+5. **The monsoon optical gap is labelled at ingest, not fixed at inference.** The adapters report
+   `optical_gap`/`monsoon` and refuse to substitute zeros; `auto_forecast.py` still falls back to
+   constant-zero optical channels when the Sentinel-2 composite is empty. A cloud-free-looking zero
+   tensor remains possible in a published forecast.
+6. **Everything here is fixture-tested, not live-tested.** The tests exercise recorded payloads
+   (`scripts/tests/fixtures/etl/`): no Earth Engine credentials, no GDAL, no Postgres, no network. The
+   live fetch paths in `sources.py` report "needs the dependency" instead of pretending. The first run
+   against real FFWC/BMD/COG inputs has not happened yet.
+7. **`districts.py` is generated, and its parity is guarded.** The 64-district snapshot is derived
+   from the committed forecast CSVs (GAUL spellings modernised) and `test_etl_events.py` fails if it
+   drifts from either the fixture vocabulary or the migration's district seed — the two places a
+   district can silently disappear again.

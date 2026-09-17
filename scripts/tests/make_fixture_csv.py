@@ -14,6 +14,7 @@ Usage:
 
 import argparse
 import csv
+import hashlib
 import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -46,7 +47,20 @@ NOTEBOOK_COLUMNS = [
     'target_date', 'prediction_date', 'data_source',
     'om_temp_2m_k', 'om_precip_m', 'om_max_temp_k', 'om_min_temp_k',
     'om_dewpoint_k', 'om_solar_rad_j', 'om_wind_max_ms', 'om_et_sum_m',
+    # Scene lineage. The pipeline stamps a content hash over the inputs that
+    # produced each unit (scripts/etl/scene_manifest.py); the fixture stands in
+    # with a deterministic per-row value so the publish/validate/snapshot chain
+    # can be exercised end to end offline.
+    'dataset_version',
 ]
+
+
+def fixture_dataset_version(district_id, horizon, prediction_date):
+    """A deterministic stand-in for a real `dataset_version` (`ds1.<16 hex>`)."""
+    digest = hashlib.sha256(
+        f'{district_id}|{horizon}|{prediction_date}'.encode('utf-8')
+    ).hexdigest()
+    return f'ds1.{digest[:16]}'
 
 ADM3_COLUMNS = [
     'location_id', 'location_name', 'location_type', 'admin_level',
@@ -87,6 +101,7 @@ def notebook_rows(prediction_date: str):
                 'om_solar_rad_j': 18000000,
                 'om_wind_max_ms': 8.5,
                 'om_et_sum_m': 0.005,
+                'dataset_version': fixture_dataset_version(district_id, horizon, prediction_date),
             })
     return NOTEBOOK_COLUMNS, rows
 

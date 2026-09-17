@@ -50,8 +50,16 @@ const KERNEL = process.env.SNAPSHOT_KERNEL || 'ashifahmedshuvo/hazardnet-auto-fo
 // string, the GitHub-native producer passes its own (see the header).
 const SOURCE = process.env.SNAPSHOT_SOURCE || `kaggle kernels output ${KERNEL}`;
 const REPORT_PATH = resolve(process.env.SNAPSHOT_RUN_REPORT || 'hazardnet_run_report.json');
+// Published alongside the CSV/JSON sidecar by scripts/publish_forecast_csv.py.
+// It carries the per-unit and run-level `dataset_version` (PRODUCT_SPEC §5.8);
+// without it the snapshot can still be built, but it must say the inputs behind
+// the rows are unnamed rather than implying lineage it does not have.
+const SCENE_MANIFEST_PATH = resolve(
+  process.env.SCENE_MANIFEST || 'backend/data/forecasts/hazardnet_scene_manifest.json'
+);
 let REPORT = null;
 let reportCoverage = null;
+let sceneManifest = null;
 
 // ─── Minimal RFC4180 CSV parser (handles quotes, escaped quotes, CRLF) ───
 function parseCsv(text) {
@@ -136,6 +144,18 @@ function main() {
     }
   } else {
     console.warn(`[snapshot] no run report at ${REPORT_PATH} — coverage will be derived from the CSV alone.`);
+  }
+
+  // Scene lineage (PRODUCT_SPEC §5.8). Optional file, but its absence is stated:
+  // a snapshot whose rows cannot name their inputs must say so.
+  if (existsSync(SCENE_MANIFEST_PATH)) {
+    try {
+      sceneManifest = JSON.parse(readFileSync(SCENE_MANIFEST_PATH, 'utf8'));
+    } catch (err) {
+      console.warn(`[snapshot] ignoring unreadable scene manifest ${SCENE_MANIFEST_PATH}: ${err.message}`);
+    }
+  } else {
+    console.warn(`[snapshot] no scene manifest at ${SCENE_MANIFEST_PATH} — rows will not carry a dataset_version.`);
   }
 
   const [header, ...recordsRaw] = parseCsv(readFileSync(CSV_PATH, 'utf8'));
@@ -291,6 +311,13 @@ function main() {
     if (topSeverity !== null) row.physics_top_severity = topSeverity;
     const soilFabricated = get(cells, 'soil_channels_fabricated');
     if (soilFabricated === 'True' || soilFabricated === 'true') row.soil_channels_fabricated = true;
+    // Content hash over the inputs behind this prediction unit. Passed through
+    // verbatim (the site never recomputes it), and dropped when it does not look
+    // like a version — a bad value must not be published as if it were lineage.
+    const datasetVersion = get(cells, 'dataset_version');
+    if (datasetVersion && /^ds1\.[0-9a-f]{16}$/.test(datasetVersion)) {
+      row.dataset_version = datasetVersion;
+    }
 
     (horizons[horizon] ??= []).push(row);
   }
@@ -348,6 +375,23 @@ function main() {
     run_id: firstValue('run_id'),
   };
 
+  // Lineage: the run-level version comes from the scene manifest; the count of
+  // versioned rows is derived from the rows themselves, so a manifest claiming
+  // more units than the CSV holds cannot inflate this.
+  const versionedRows = Object.values(horizons).flat().filter((r) => r.dataset_version).length;
+  const lineage = {
+    dataset_version: sceneManifest?.dataset_version ?? null,
+    scene_manifest_path: sceneManifest ? SCENE_MANIFEST_PATH : null,
+    units_in_manifest: sceneManifest?.units?.length ?? null,
+    rows_with_version: versionedRows,
+    rows_total: totalCount,
+    scenes_enumerated: sceneManifest?.scenes_enumerated ?? null,
+    status: versionedRows === totalCount && totalCount > 0 ? 'complete' : 'partial',
+  };
+  if (lineage.status !== 'complete') {
+    console.warn(`[snapshot] dataset_version present on ${versionedRows}/${totalCount} rows — the rest cannot name their inputs.`);
+  }
+
   const snapshot = {
     schema: 'hazardnet-forecast-snapshot/v2',
     generated_at: new Date().toISOString(),
@@ -356,6 +400,8 @@ function main() {
     prediction_date: predictionDates.size > 0 ? [...predictionDates].sort().at(-1) : null,
     provenance,
     coverage,
+    lineage,
+    dataset_version: lineage.dataset_version,
     soil_channels_fabricated: REPORT?.soil_channels_fabricated ?? null,
     horizons,
   };
@@ -367,6 +413,7 @@ function main() {
   console.log(`   Latest prediction_date: ${snapshot.prediction_date ?? 'unknown'}`);
   console.log(`   Source: ${snapshot.source}`);
   console.log(`   Coverage: ${coverage.produced_units} units, ${coverage.districts_covered} districts, status=${coverage.status}`);
+  console.log(`   Lineage: dataset_version=${lineage.dataset_version ?? 'none'} (${lineage.rows_with_version}/${lineage.rows_total} rows versioned, ${lineage.status})`);
   if (provenance.model_version) console.log(`   Model: ${provenance.model_version} (tensor ${provenance.tensor_build_id ?? 'unknown'})`);
   if (snapshot.soil_channels_fabricated) console.log('   ⚠ soil channels fabricated (training means) — rows are stamped soil_channels_fabricated=true');
   if (invalidHazards.size > 0) {

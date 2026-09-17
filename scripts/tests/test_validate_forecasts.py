@@ -39,8 +39,13 @@ def write_csv_json(tmp_path, columns, rows, name='f'):
 
 
 def write_run_report(tmp_path, rows, *, produced=None, status=None, name='hazardnet_run_report.json',
-                     model_version='2.1.9+model.testfixture', model_sha256='a' * 64):
-    """A coverage tally of the shape scripts/auto_forecast.py emits."""
+                     model_version='2.1.9+model.testfixture', model_sha256='a' * 64, scene=None):
+    """A coverage tally of the shape scripts/auto_forecast.py emits.
+
+    `scene` attaches a scene-manifest block (PRODUCT_SPEC §5.8); without it the
+    validator must warn that the dataset cannot name its inputs rather than fail,
+    because the committed 2026-09-16 artifacts predate the manifest.
+    """
     produced = len(rows) if produced is None else produced
     horizons = sorted({r.get('horizon') for r in rows if r.get('horizon')})
     districts = {r.get('district_name') for r in rows if r.get('district_name')}
@@ -64,6 +69,8 @@ def write_run_report(tmp_path, rows, *, produced=None, status=None, name='hazard
             'status': status or ('complete' if produced == len(rows) else 'partial'),
         },
     }
+    if scene is not None:
+        report['scene_manifest'] = scene
     path = tmp_path / name
     path.write_text(json.dumps(report), encoding='utf-8')
     return path
@@ -249,3 +256,110 @@ def test_fabricated_soil_channels_are_disclosed_not_hidden(tmp_path):
     assert proc.returncode == 0, proc.stdout
     assert 'soil_channels_fabricated=true' in proc.stdout.replace(' ', '')
     assert 'training-mean placeholders' in proc.stdout
+
+
+# ---------------------------------------------------------------------------
+# Scene lineage (PRODUCT_SPEC §5.8)
+#
+# A forecast that cannot name the inputs behind it is not reproducible: the
+# scene manifest carries a content hash over the decadal windows, the tensor
+# digests and the Open-Meteo request/response fingerprint. These tests pin the
+# three ways the chain breaks: a malformed version, a manifest block pointing at
+# a file that is not there, and a row count that no longer matches.
+# ---------------------------------------------------------------------------
+
+
+def test_malformed_dataset_version_is_rejected(tmp_path):
+    columns, rows = notebook_rows(today())
+    rows[0]['dataset_version'] = 'ds1.NOTAHASH'
+    csv_path, json_path = write_csv_json(tmp_path, columns, rows)
+    proc = run_validate(csv_path, json_path, '--skip-freshness')
+    assert proc.returncode == 1
+    assert 'Malformed dataset_version' in proc.stdout
+
+
+def test_blank_dataset_version_is_tolerated_for_legacy_producers(tmp_path):
+    columns, rows = notebook_rows(today())
+    for row in rows:
+        row['dataset_version'] = ''
+    csv_path, json_path = write_csv_json(tmp_path, columns, rows)
+    proc = run_validate(csv_path, json_path, '--skip-freshness')
+    assert proc.returncode == 0, proc.stdout + proc.stderr
+    assert 'dataset_version present on 0/128 rows' in proc.stdout
+
+
+def test_manifest_without_scene_block_warns_about_unnameable_inputs(tmp_path):
+    columns, rows = notebook_rows(today())
+    csv_path, json_path = write_csv_json(tmp_path, columns, rows)
+    manifest = write_run_report(tmp_path, rows)
+    proc = run_validate(csv_path, json_path, '--skip-freshness', coverage=True, manifest=manifest)
+    assert proc.returncode == 0, proc.stdout + proc.stderr
+    assert 'no scene_manifest block' in proc.stdout
+
+
+def test_scene_manifest_continuity_is_checked(tmp_path):
+    columns, rows = notebook_rows(today())
+    csv_path, json_path = write_csv_json(tmp_path, columns, rows)
+    scene_file = tmp_path / 'hazardnet_scene_manifest.json'
+    scene_file.write_text(json.dumps({'schema': 'hazardnet-scene-manifest/v1'}), encoding='utf-8')
+    block = {
+        'path': str(scene_file), 'units': len(rows), 'rows_stamped': len(rows),
+        'dataset_version': 'ds-run.0011223344556677', 'scenes_enumerated': False,
+    }
+    manifest = write_run_report(tmp_path, rows, scene=block)
+    proc = run_validate(csv_path, json_path, '--skip-freshness', coverage=True, manifest=manifest)
+    assert proc.returncode == 0, proc.stdout + proc.stderr
+    assert 'dataset_version=ds-run.0011223344556677' in proc.stdout
+
+    # ...and a claim that more rows were stamped than the CSV holds is a failure.
+    lying = dict(block, rows_stamped=len(rows) + 1)
+    manifest = write_run_report(tmp_path, rows, scene=lying)
+    proc = run_validate(csv_path, json_path, '--skip-freshness', coverage=True, manifest=manifest)
+    assert proc.returncode == 1
+    assert 'Lineage mismatch' in proc.stdout
+
+
+def test_scene_manifest_missing_from_disk_fails(tmp_path):
+    columns, rows = notebook_rows(today())
+    csv_path, json_path = write_csv_json(tmp_path, columns, rows)
+    manifest = write_run_report(tmp_path, rows, scene={
+        'path': str(tmp_path / 'gone.json'), 'units': len(rows), 'rows_stamped': len(rows),
+        'dataset_version': 'ds-run.0011223344556677',
+    })
+    proc = run_validate(csv_path, json_path, '--skip-freshness', coverage=True, manifest=manifest)
+    assert proc.returncode == 1
+    assert 'not on disk' in proc.stdout
+
+
+# ---------------------------------------------------------------------------
+# Artifact resolution (a rehearsal / staging directory)
+#
+# `--manifest` is the one path a caller must give; the CSV and its JSON sidecar
+# are resolved beside it. Without that, validating a staging run compares that
+# run's coverage tally against the *committed* CSV and fails with a mismatch that
+# looks like a data defect but is a path defect.
+# ---------------------------------------------------------------------------
+
+
+def test_csv_and_sidecar_resolve_beside_the_manifest(tmp_path):
+    columns, rows = notebook_rows(today())
+    stage = tmp_path / 'stage'
+    stage.mkdir()
+    manifest = write_run_report(stage, rows)
+    # A CSV that is *not* the committed one, under the manifest's own directory.
+    staged_rows = rows[:20]
+    csv_path = stage / 'hazardnet_forecasts_latest.csv'
+    with open(csv_path, 'w', newline='', encoding='utf-8') as handle:
+        writer = csv.DictWriter(handle, fieldnames=columns)
+        writer.writeheader()
+        writer.writerows(staged_rows)
+    (stage / 'hazardnet_forecasts_latest.json').write_text(json.dumps(staged_rows), encoding='utf-8')
+
+    proc = subprocess.run(
+        [sys.executable, str(VALIDATE), '--manifest', str(manifest), '--skip-freshness',
+         '--skip-coverage'],
+        capture_output=True, text=True, cwd=ROOT,
+    )
+    assert proc.returncode == 0, proc.stdout + proc.stderr
+    # 20 rows read, not the 74 of the committed CSV: the file beside the manifest won.
+    assert 'Expected ~20 rows' in proc.stdout or '20 rows' in proc.stdout

@@ -136,13 +136,25 @@ hazard evidence (district, horizon) =
     w1 · calibrated_cnn_score        (spatial/optical/SAR view)
   + w2 · physics_score               (rainfall / heat / wind thresholds — all 8 classes, computed
                                       independently of the model's pick)
-  + w3 · hydrology_score  ◇ deferred (FFWC river levels, BMD bulletins — Phase 2 ingestion)
-  + w4 · historical_prior ◇ deferred (the 2000–2025 event archive, once it is versioned in-repo)
+  + w3 · hydrology_score  ◆ ingested (FFWC levels vs danger levels; BMD bulletins → advisories — Phase 2)
+  + w4 · historical_prior ◆ computable (event store + recency-weighted prior; archive still not in-repo)
   → calibrated probability → thresholds → alert level (with HITL above WATCH)
 ```
 
-Only `w1` and `w2` exist today, and `w2` is not independent yet. Phase 2 rebuilds `w2`; `w3`/`w4`
-enter when the ingestion exists.
+**Status (Phase 2, second increment, 2026-09-17).** `w1`/`w2` are as described above (`w2` now
+independent, all eight classes). `w3` and `w4` have moved from "deferred" to "ingested/computable",
+which is a statement about the **data layer**, not about the model:
+
+* `w3` — `scripts/etl/hydrology.py` scores FFWC station levels against their published danger levels
+  (exceedance ratio → documented severity bands, lead-time damping for forecast-only levels, staleness
+  flagging, worst-station-per-district) and `scripts/etl/bulletins.py` turns BMD prose into structured
+  advisories, including the `model_agrees_with_official` ground-truth signal. Neither is wired into
+  the fusion yet and neither runs on a schedule — the daily pipeline still publishes `w1`+`w2` only;
+* `w4` — `scripts/db/008_hazard_events_postgis.sql` plus `python -m etl.cli events` make the prior
+  computable and its 2,931-event claim checkable, but the archive itself is not in this repository, so
+  no run has been produced from it yet.
+
+The fusion step that combines the four streams, and its calibrated probability, remain Phase 3.
 
 ### 2.2 Layer responsibilities
 
@@ -197,10 +209,21 @@ are emitted by `scripts/auto_forecast.py`, carried through `publish_forecast_csv
 `manifest.json` → the v2 snapshot, parsed by `backend/utils/forecastRow.js` and exposed in the
 `/api/predict` envelope's `provenance` block.
 
-**Still missing from this row contract: `dataset_version` and per-prediction scene lineage.** They
-require the scene manifest described below to exist first; the pipeline cannot honestly stamp a
-dataset version it does not have. Also outstanding: the artifact-level `model_sha256` is in the
-manifest/run report but not on each row (rows carry the short `tensor_build_id`).
+**Implemented 2026-09-17 (Phase 2, second increment): `dataset_version` and per-prediction scene
+lineage.** `scripts/etl/scene_manifest.py` defines the manifest (`hazardnet-scene-manifest/v1`) and
+derives `dataset_version = ds1.<16 hex>` as a content hash over each prediction unit's inputs: the
+nine decadal windows, the collections queried per step, a sha256 of every tensor in the stack
+(including the t0 input) and the Open-Meteo request parameters plus the canonical digest of the
+response. `scripts/auto_forecast.py` builds the units and stamps the version on every row;
+`publish_forecast_csv.py` copies `hazardnet_scene_manifest.json` next to the artifacts and refuses to
+publish when the lineage block is missing, errored or incomplete; and the snapshot exposes the per-row
+version plus a run-level `dataset_version` and `lineage` block.
+
+**Still missing from this row contract:** per-scene enumeration (the manifest records
+`scenes_enumerated: false` and digests tensors instead of listing Sentinel item ids — a digest detects
+*that* inputs changed, not *which* scene changed) and the COG archive that would pin the pixels
+themselves. Also outstanding: the artifact-level `model_sha256` is in the manifest/run report but not
+on each row (rows carry the short `tensor_build_id`).
 
 ### 3.2 Coverage stamp (mandatory, Phase 2)
 

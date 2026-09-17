@@ -169,6 +169,23 @@ jobs:
           node scripts/build_forecast_snapshot.mjs /tmp/fixture_forecasts.csv /tmp/forecasts-latest.json
           node -e "const s=require('/tmp/forecasts-latest.json'); if(!s.horizons['7_days']?.length) throw new Error('empty 7_days'); console.log('snapshot OK:', s.prediction_date)"
 
+      # The ingestion entry points a workflow would call, exercised offline against
+      # the same fixtures the unit tests use: events → load SQL, and a scene
+      # manifest whose dataset_version the publisher will require.
+      - name: ETL smoke test (offline fixtures)
+        run: |
+          set -euo pipefail
+          cd scripts
+          python -m etl.cli events --input tests/fixtures/etl/events_sample.csv \
+            --claimed-total 9 --emit-sql /tmp/events.sql --report /tmp/events-report.json > /dev/null
+          grep -q 'insert into public.hazard_events' /tmp/events.sql
+          grep -q 'public.hazard_event_ingest_runs' /tmp/events.sql
+          python -m etl.cli scene-manifest --units tests/fixtures/etl/scene_units.json \
+            --out /tmp/scene-manifest.json > /tmp/scene-report.json
+          python -c "import json; r=json.load(open('/tmp/scene-report.json')); \
+            assert r['status']=='ok' and r['problems']==[], r; \
+            print('etl OK:', r['dataset_version'], r['units'], 'units')"
+
   test-e2e:
     name: E2E Tests
     runs-on: ubuntu-latest

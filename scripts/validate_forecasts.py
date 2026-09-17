@@ -5,6 +5,7 @@
 import argparse
 import csv
 import json
+import re
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -17,17 +18,34 @@ VALID_HAZARDS = {
 NOTEBOOK_REQUIRED = {'district_id', 'district_name', 'division', 'pcode', 'horizon', 'hazard_type', 'target_date', 'prediction_date'}
 ADM3_REQUIRED = {'location_id', 'location_name', 'location_type', 'admin_level', 'division', 'pcode', 'horizon', 'hazard_type', 'target_date', 'prediction_date'}
 
+#: Fallbacks for the artifact paths when nothing sits beside --manifest.
+COMMITTED_CSV = Path('backend/data/forecasts/hazardnet_forecasts_latest.csv')
+COMMITTED_JSON = Path('backend/data/forecasts/hazardnet_forecasts_latest.json')
+
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--csv', default='backend/data/forecasts/hazardnet_forecasts_latest.csv')
-    parser.add_argument('--json', default='backend/data/forecasts/hazardnet_forecasts_latest.json')
+    # Derived from --manifest when it is not given: validating a manifest from
+    # somewhere other than the committed paths (a rehearsal, a staging directory)
+    # must validate the CSV *beside it*, not the one in the repository — otherwise
+    # the coverage gate compares one run's tally with another run's rows and fails
+    # with a confusing mismatch.
+    parser.add_argument('--csv', default=None)
+    parser.add_argument('--json', default=None)
     parser.add_argument('--skip-freshness', action='store_true', help='Skip freshness validation check')
     parser.add_argument('--manifest', default='backend/data/forecasts/manifest.json',
                         help='Pipeline manifest carrying the coverage tally')
     parser.add_argument('--skip-coverage', action='store_true',
                         help='Skip the coverage/run-report gate (legacy Kaggle CSVs have no report)')
     args = parser.parse_args()
+
+    manifest_dir = Path(args.manifest).parent
+    if args.csv is None:
+        beside = manifest_dir / 'hazardnet_forecasts_latest.csv'
+        args.csv = str(beside if beside.exists() else COMMITTED_CSV)
+    if args.json is None:
+        beside = manifest_dir / 'hazardnet_forecasts_latest.json'
+        args.json = str(beside if beside.exists() else COMMITTED_JSON)
 
     csv_path = Path(args.csv)
     json_path = Path(args.json)
@@ -74,6 +92,23 @@ def main():
         if hazard not in VALID_HAZARDS:
             print(f"❌ Invalid hazard type found at row {i + 1}: '{hazard}'")
             sys.exit(1)
+
+    # ── dataset_version shape (PRODUCT_SPEC §5.8) ───────────────────────────
+    # A blank value is allowed only for the legacy producers that ran before the
+    # scene manifest existed. A value that is present and malformed is not: it
+    # would read as lineage while identifying nothing.
+    if 'dataset_version' in fieldnames:
+        versioned = 0
+        for i, row in enumerate(rows):
+            value = (row.get('dataset_version') or '').strip()
+            if not value:
+                continue
+            versioned += 1
+            if not re.fullmatch(r'ds1\.[0-9a-f]{16}', value):
+                print(f"❌ Malformed dataset_version at row {i + 1}: {value!r} "
+                      "(expected ds1.<16 hex chars> from scripts/etl/scene_manifest.py)")
+                sys.exit(1)
+        print(f"✅ dataset_version present on {versioned}/{len(rows)} rows")
 
     # Validate row count for notebook schema
     if schema == 'notebook':
@@ -142,6 +177,28 @@ def main():
         if manifest.get('soil_channels_fabricated'):
             print("⚠️ Soil channels are training-mean placeholders "
                   "(soil_channels_fabricated=true) — see docs/MODEL_CARD.md §6.3.")
+        # Lineage continuity: the published manifest must name the scene manifest
+        # it shipped with, and (when it does) the rows must carry versions. This
+        # is the check that catches a CSV republished without its lineage file.
+        scene = manifest.get('scene_manifest') or {}
+        if scene:
+            scene_path = Path(scene.get('path') or '')
+            if not scene_path.exists():
+                print(f"❌ Manifest references a scene manifest that is not on disk: {scene_path}")
+                sys.exit(1)
+            stamped = sum(1 for row in rows if (row.get('dataset_version') or '').strip())
+            if scene.get('rows_stamped') is not None and stamped != scene['rows_stamped']:
+                print(f"❌ Lineage mismatch: manifest says {scene['rows_stamped']} rows were stamped, "
+                      f"the CSV has {stamped}.")
+                sys.exit(1)
+            # A published manifest carries the run-level version at the top level;
+            # a generator run report carries it inside the scene block. Accept both.
+            version = manifest.get('dataset_version') or scene.get('dataset_version')
+            print(f"✅ dataset_version={version} "
+                  f"({scene.get('units')} units, scenes_enumerated={scene.get('scenes_enumerated')})")
+        else:
+            print("⚠️ Manifest has no scene_manifest block — this dataset cannot name the inputs "
+                  "that produced it (legacy run). See docs/PRODUCT_SPEC.md §5.8.")
 
     print("✅ Forecast validation passed successfully!")
     sys.exit(0)
