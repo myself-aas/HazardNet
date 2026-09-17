@@ -182,7 +182,8 @@ What low-bandwidth mode changes:
 * **Data**: `loadAlerts({ offlineFirst: true })` skips the API request entirely rather
   than waiting up to 6 s for a timeout.
 
-The service worker (`serviceWorker.ts`) gives `/api/v1/alerts` and
+The service worker (`frontend/public/serviceWorker.js` — the file the app registers and
+Vite copies into `dist/`; there is no second copy) gives `/api/v1/alerts` and
 `/data/alerts-latest.json` their own **network-first** strategy with a 5 s timeout and a
 labelled cache fallback (`X-HazardNet-Stale: 1`). The generic shell cache is cache-first
 and would otherwise serve an install-day payload as if it were today's forecast.

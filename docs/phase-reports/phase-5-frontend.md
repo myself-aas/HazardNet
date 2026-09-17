@@ -54,7 +54,7 @@ New files (all untracked before this phase's commit):
 
 Modified: `App.tsx` (routes), `Navbar.tsx`, `MenuDrawer.tsx`, `BangladeshSvgMap.tsx`
 (alert layer props), `useLeafletMap.ts` (basemap substitution), `index.css`
-(low-bandwidth rules), `serviceWorker.ts` (alert cache strategy), `content/site-routes.json`
+(low-bandwidth rules), `frontend/public/serviceWorker.js` (alert cache strategy — corrected in Phase 6, see below), `content/site-routes.json`
 (`/alerts`), `.github/workflows/daily_forecast.yml` (snapshot build step).
 
 ---
@@ -203,7 +203,7 @@ What it changes:
 | Default view on `/alerts` | cards | the text table |
 | Data fetch | API first, snapshot fallback | `offlineFirst` — the snapshot is read immediately, the API request is skipped rather than waiting out a 6 s timeout |
 
-**Offline:** `serviceWorker.ts` registers a dedicated strategy for `/api/v1/alerts` and
+**Offline:** `frontend/public/serviceWorker.js` registers a dedicated strategy for `/api/v1/alerts` and
 `/data/alerts-latest.json` — network-first with a **5 s** timeout, then a labelled cache
 response (`X-HazardNet-Stale: 1`, `X-HazardNet-Cached-At`), which `lib/alerts.ts` surfaces
 as `source: 'cache'`. The generic shell cache is cache-first; without this rule an
@@ -373,3 +373,16 @@ plus `scripts/tests/test_frontend_alert_surface.py`.
 This phase changed no thresholds, no model artefacts and no published numbers. The site
 still says what is true: a research decision-support tool, not an official warning
 service.
+
+---
+
+## 9. Correction (2026-09-18, Phase 6)
+
+The offline alert strategy described in §5 was originally written into
+`frontend/src/serviceWorker.ts`. Nothing imports that file and the app registers
+`/serviceWorker.js`, which Vite copies verbatim from `frontend/public/` — so the strategy
+**did not ship** and the delivered worker had no alert handling at all. Phase 6 moved the
+network-first alert cache, the `X-HazardNet-Stale` labelling and the cacheability rule into
+`frontend/public/serviceWorker.js`, deleted the unshipped duplicate, and replaced the
+old test with `__tests__/serviceWorker.test.js`, which evaluates the shipped file and drives
+its real `fetch` handler (9 tests, including "the built worker equals the source").

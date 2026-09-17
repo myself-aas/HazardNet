@@ -132,11 +132,11 @@ alerts API answers a duty officer's `Authorization: Bearer <key>` request with u
 rows and reviewer contact details; the generic shell strategy cached **every** 200 GET,
 including `/api/**`.
 
-**Fixed:** `isCacheableResponse(request, response)` in `frontend/src/serviceWorker.ts`
-refuses credentialed requests, `no-store`/`private`, `Set-Cookie`, non-GET and non-200; both
-network-response cache sites use it (the map-tile cache deliberately does not — it is public
-imagery with its own eviction). Pinned by `serviceWorkerCache.test.ts`, including a
-source-level assertion so the rule cannot be bypassed by a later inline `cache.put`.
+**Fixed — and while fixing it, a bigger one surfaced (§2.10):** the guard lives in
+`frontend/public/serviceWorker.js`, the file the app registers and the build copies, and
+both network-response cache sites use it (the map-tile cache deliberately does not — it is
+public imagery with its own eviction). Pinned by `__tests__/serviceWorker.test.js`, which
+evaluates the shipped file and drives its real `fetch` handler.
 
 ### 2.6 The chat prompt bounds were decorative (medium)
 
@@ -193,6 +193,22 @@ shadow the path, dist copy present after a build).
   `fetch`) plus one genuine unused binding. Fixed (config block for `.mjs` Node globals; the
   dead `cover` removed) — the "0-error policy" step in CI now means what it says.
 
+### 2.10 Phase 5's offline alert strategy never shipped (high)
+
+`frontend/src/serviceWorker.ts` — the file Phase 5 edited, and the file this phase's first
+cache-guard patch went into — is **imported by nothing**. The browser registers
+`/serviceWorker.js` (`frontend/src/main.tsx`), which Vite copies verbatim from
+`frontend/public/`, and that file had no alert handling at all: no network-first strategy,
+no labelled `X-HazardNet-Stale` fallback, and an app-shell branch that cached **every** 200
+GET. So the documented offline-alert behaviour did not exist in any browser, and the
+credential-caching exposure in §2.5 was live in the shipped worker.
+
+**Fixed:** the alert cache (network-first, 5 s timeout, labelled fallback) and
+`isCacheableResponse()` now live in `frontend/public/serviceWorker.js`; the unshipped
+duplicate is deleted; `__tests__/serviceWorker.test.js` loads **that** file, drives its
+`fetch` handler with stubbed `caches`/`fetch`, and asserts the built `dist/serviceWorker.js`
+is byte-identical to the source — the check that would have caught this in Phase 5.
+
 ---
 
 ## 3. Change list
@@ -203,12 +219,12 @@ shadow the path, dist copy present after a build).
 | Headers | `vercel.json`, `frontend/vercel.json`, `backend/server.js` | both configs carry the canonical string; helmet parses it; stricter SPA rewrite; `/.well-known` cache rule |
 | Serverless | `backend/middleware/serverlessGuard.js` (new), all 13 `api/**` handlers | per-instance rate limits, `RateLimit-*`/`Retry-After`, hardening headers on JSON responses |
 | CSV | `backend/utils/csvSafety.js` (new), `backend/utils/forecastServe.js`, `frontend/src/lib/alertsCsv.ts` | formula-injection neutralisation + RFC 4180 quoting, shared by both runtimes |
-| Offline | `frontend/src/serviceWorker.ts` | `isCacheableResponse()` wired into both response cache paths |
+| Offline | `frontend/public/serviceWorker.js` (shipped), `frontend/src/serviceWorker.ts` deleted | alert network-first cache + `isCacheableResponse()` in the file the browser actually registers |
 | Chat | `backend/routes/chat.js` | sanitized prompt + whole-prompt cap + honest response metadata |
 | Rules | `firestore.rules` | dual-spelling ownership, validators applied, dead code removed |
 | Docs | `SECURITY.md` (new), `docs/audits/2026-09-18-secret-scan-false-negative.md` (new), `docs/codebase/CONCERNS.md`, `docs/ops/owner-actions.md` (Actions 7 + 8, Action 1c note) | disclosure policy, audit record, register updated, owner work handed over |
 | Gates | `scripts/check-secrets.sh`, `eslint.config.js`, `frontend/scripts/prerender.mjs` | scan fixed (value-only allowlist, 17 patterns), `.mjs` Node globals, dead binding removed |
-| Tests (new) | `__tests__/api/serverlessGuard.test.js`, `__tests__/api/chatPromptBounds.test.js`, `__tests__/firestoreRules.test.js`, `__tests__/securityTxt.test.js`, `__tests__/securityHeadersParity.test.js`, `__tests__/csvSafety.test.js`, `frontend/src/lib/__tests__/serviceWorkerCache.test.ts`, `scripts/tests/test_secret_scan.py` | one suite per finding, each failing without its fix |
+| Tests (new) | `__tests__/serviceWorker.test.js` (shipped worker driven by its real fetch handler), `__tests__/api/serverlessGuard.test.js`, `__tests__/api/chatPromptBounds.test.js`, `__tests__/firestoreRules.test.js`, `__tests__/securityTxt.test.js`, `__tests__/securityHeadersParity.test.js`, `__tests__/csvSafety.test.js`, `frontend/src/lib/__tests__/serviceWorkerCache.test.ts`, `scripts/tests/test_secret_scan.py` | one suite per finding, each failing without its fix |
 
 `__tests__/securityHeadersParity.test.js` deserves a note of its own: it asserts the same
 policy string across `vercel.json`, `frontend/vercel.json` and the module helmet uses, so

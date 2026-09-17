@@ -69,10 +69,14 @@ PUBLIC_BROWSER_VALUE='^(vcp_|AIza)'
 # pasted into a *_PUBLIC_KEY variable still fails.
 PUBLIC_ASSIGNMENT='^[A-Z][A-Z0-9_]*(PUBLIC_KEY|ANON_KEY)='
 
-# Tracked text files only; lockfiles + this script + binary blobs excluded.
+# Tracked text files only; lockfiles, this script and its own test suite excluded.
+# The test suite (scripts/tests/test_secret_scan.py) contains *deliberately* credential-
+# shaped fixtures — that is the whole point of it — so scanning it reports the scanner's own
+# regression tests. The exclusion is pinned by test_scan_covers_the_whole_tracked_tree, so
+# any file added to this list has to be justified there.
 mapfile -t FILES < <(git ls-files \
   | grep -vE '^(bun\.lock|pnpm-lock\.yaml|package-lock\.json|frontend/package-lock\.json)$' \
-  | grep -vE '^scripts/check-secrets\.sh$')
+  | grep -vE '^scripts/(check-secrets\.sh|tests/test_secret_scan\.py)$')
 
 # The matched value, not the path: `file:line:match` → `match` → value of an
 # assignment when the match is one.

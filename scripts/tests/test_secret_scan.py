@@ -22,6 +22,7 @@ tested rather than trusted:
 
 from __future__ import annotations
 
+import re
 import shutil
 import subprocess
 import sys
@@ -166,8 +167,21 @@ def test_scan_covers_the_whole_tracked_tree() -> None:
     tracked = subprocess.run(
         ["git", "ls-files"], cwd=ROOT, capture_output=True, text=True, check=True,
     ).stdout.splitlines()
-    # Lockfiles and the scanner itself are excluded.
-    assert counted >= len(tracked) - 6
+    # Lockfiles, the scanner and this suite (which is full of credential-shaped fixtures)
+    # are the only exclusions — the list lives in the script and is asserted here so a new
+    # exemption cannot be added quietly.
+    script = SCANNER.read_text(encoding="utf-8")
+    files_block = script[script.index("mapfile -t FILES"):script.index("value_of()")]
+    assert "check-secrets" in files_block, "the scanner itself should be excluded by name"
+    assert "tests/test_secret_scan" in files_block, "its own fixture suite should be excluded by name"
+    # Lockfiles (4 names) + the two excluded scripts: nothing else may be skipped.
+    assert len(tracked) - counted <= 8, f"scanned {counted} of {len(tracked)} tracked files"
+    exclusions = [line.strip() for line in files_block.splitlines() if "grep -vE" in line]
+    assert len(exclusions) == 2, f"unexpected extra exclusions: {exclusions}"
+    # Both name files explicitly (escaped dots, anchored ends) — no directory-wide exemption.
+    for line in exclusions:
+        assert "\\." in line, f"exclusion is not a file pattern: {line}"
+        assert line.count("'") == 2, f"exclusion should be one quoted pattern: {line}"
     assert counted > 500, f"only {counted} files scanned"
 
 

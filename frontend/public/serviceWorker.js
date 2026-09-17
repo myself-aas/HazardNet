@@ -5,6 +5,88 @@ const CACHE_NAME = 'hazardnet-offline-v1';
 const TILE_CACHE_NAME = 'hazardnet-tiles-v1';
 const MAX_TILE_CACHE_ITEMS = 1200;
 
+// Alert payloads get their own cache with a network-first strategy (Phase 5).
+//
+// Why not let the app-shell cache handle them: that strategy is stale-while-revalidate, so
+// an installed PWA would happily keep serving the payload it saw on install day as if it
+// were today's forecast. For a hazard list that is the failure mode that matters most, so
+// alerts are fetched from the network first (short timeout — 2G users must not wait) and a
+// cached copy is only ever served as a *labelled* fallback. The `X-HazardNet-Stale` marker
+// is what lets the client relabel the data as "offline copy" instead of "live".
+const ALERTS_CACHE_NAME = 'hazardnet-alerts-v1';
+const ALERTS_NETWORK_TIMEOUT_MS = 5000;
+
+function isAlertsRequest(url) {
+  return url.pathname.startsWith('/api/v1/alerts') || url.pathname === '/data/alerts-latest.json';
+}
+
+// May this response be written to Cache Storage? (Phase 6, SEC-09)
+//
+// A service worker sits below the HTTP cache, so `Cache-Control: no-store` does not protect
+// a response from being copied into Cache Storage by `cache.put`. Two classes must never be:
+// a **credentialed** request (the alerts API answers a duty officer's `Authorization:
+// Bearer <key>` call with unpublished rows and reviewer contact details — caching that
+// would leave privileged data on a shared device and replay it to a later unprivileged read
+// of the same URL), and a response the server marked `no-store`/`private` or tied to a
+// session with `Set-Cookie`.
+function isCacheableResponse(request, response) {
+  if (!request || !response) return false;
+  if (request.method && request.method !== 'GET') return false;
+  if (response.status !== 200) return false;
+
+  const requestHeaders = request.headers;
+  if (requestHeaders && typeof requestHeaders.has === 'function'
+    && (requestHeaders.has('authorization') || requestHeaders.has('x-api-key'))) {
+    return false;
+  }
+
+  const responseHeaders = response.headers;
+  if (!responseHeaders || typeof responseHeaders.get !== 'function') return true;
+  const cacheControl = String(responseHeaders.get('cache-control') || '').toLowerCase();
+  if (cacheControl.indexOf('no-store') !== -1 || cacheControl.indexOf('private') !== -1) return false;
+  if (responseHeaders.get('set-cookie')) return false;
+  return true;
+}
+
+function fetchWithTimeout(request, timeoutMs) {
+  const controller = typeof AbortController === 'function' ? new AbortController() : null;
+  const timer = setTimeout(() => { if (controller) controller.abort(); }, timeoutMs);
+  const pending = controller ? fetch(request, { signal: controller.signal }) : fetch(request);
+  return pending.finally(() => clearTimeout(timer));
+}
+
+async function alertsNetworkFirst(request) {
+  const cache = await caches.open(ALERTS_CACHE_NAME);
+  try {
+    const response = await fetchWithTimeout(request, ALERTS_NETWORK_TIMEOUT_MS);
+    if (isCacheableResponse(request, response)) {
+      const headers = new Headers(response.headers);
+      headers.set('X-HazardNet-Cached-At', new Date().toISOString());
+      await cache.put(request, new Response(await response.clone().blob(), {
+        status: response.status,
+        statusText: response.statusText,
+        headers,
+      }));
+    }
+    return response;
+  } catch (e) {
+    const cached = await cache.match(request);
+    if (!cached) {
+      return new Response(
+        JSON.stringify({ error: 'offline and no cached alert payload on this device' }),
+        { status: 504, headers: { 'Content-Type': 'application/json' } },
+      );
+    }
+    const headers = new Headers(cached.headers);
+    headers.set('X-HazardNet-Stale', '1');
+    return new Response(await cached.blob(), {
+      status: 200,
+      statusText: 'OK (offline copy)',
+      headers,
+    });
+  }
+}
+
 // Helper to check if request is a map tile URL
 function isMapTileRequest(url) {
   const href = url.href.toLowerCase();
@@ -49,7 +131,7 @@ self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => Promise.all(
       keys
-        .filter((key) => key !== CACHE_NAME && key !== TILE_CACHE_NAME)
+        .filter((key) => key !== CACHE_NAME && key !== TILE_CACHE_NAME && key !== ALERTS_CACHE_NAME)
         .map((key) => caches.delete(key))
     )).then(() => self.clients.claim())
   );
@@ -239,6 +321,12 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Alert payloads: network-first, labelled cache fallback (never a silent stale read).
+  if (isAlertsRequest(url)) {
+    event.respondWith(alertsNetworkFirst(request));
+    return;
+  }
+
   // For API responses, try network first
   if (request.url.includes('/api/predict') || request.url.includes('/api/push')) {
     event.respondWith(
@@ -251,7 +339,7 @@ self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(request).then((cached) => {
       const network = fetch(request).then((response) => {
-        if (response && response.status === 200) {
+        if (isCacheableResponse(request, response)) {
           caches.open(CACHE_NAME).then((cache) => cache.put(request, response.clone()));
         }
         return response;
