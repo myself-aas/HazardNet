@@ -25,6 +25,14 @@
  *      produces zero alerts; silently overwriting yesterday's file with an empty list
  *      would turn a pipeline failure into "all clear". `--allow-empty` is required to do
  *      that deliberately.
+ *   5. **Refuse a payload it does not understand.** Three producers feed this script and
+ *      they do not share a shape: the public list endpoint (`alerts[]`), the engine run
+ *      report (`published_alerts[]`, and `batch.alerts[]` before persistence), and the
+ *      test fixtures. A payload with none of those keys is a broken integration, not a
+ *      quiet day — exit 2 rather than writing an empty snapshot. (This is the bug the
+ *      first CI wiring had: the workflow posted `{notify:true}`, the route stripped
+ *      `batch.alerts` because `include_alerts` was absent, and the builder happily wrote
+ *      "no alerts" every night.)
  *
  * The output schema is `hazardnet-alerts/v1` (`ALERTS_SNAPSHOT_SCHEMA` in
  * `frontend/src/lib/alerts.ts`); the client warns and still renders if the tag differs.
@@ -77,10 +85,84 @@ export function countByLevel(alerts) {
  * Pure transform: engine payload → snapshot payload. Exported so the test suite can
  * pin the filtering and stamping rules without touching the filesystem.
  */
+/**
+ * Find the alert rows in a payload, whatever produced it.
+ *
+ * Returns `{rows, shape}` or `null` when the payload carries no recognisable list, so the
+ * caller can fail loudly instead of reporting an empty run.
+ */
+export function extractAlertRows(payload) {
+  if (Array.isArray(payload)) return { rows: payload, shape: 'array' };
+  if (!payload || typeof payload !== 'object') return null;
+  // Order matters. `published_alerts` is the only key whose name states the rows are
+  // already published (the engine writes it after persistence), so it wins; a bare
+  // `alerts` list is the public endpoint and the fixtures; `batch.alerts` is the engine's
+  // pre-persistence assessments, which are DRAFT until stored.
+  if (Array.isArray(payload.published_alerts)) {
+    return { rows: payload.published_alerts, shape: 'published_alerts' };
+  }
+  if (Array.isArray(payload.alerts)) return { rows: payload.alerts, shape: 'alerts' };
+  if (Array.isArray(payload.batch?.alerts)) return { rows: payload.batch.alerts, shape: 'batch.alerts' };
+  return null;
+}
+
+/**
+ * The engine's count of rows it assessed but could not publish: blocked by §1.6 or by a
+ * missing calibration map, queued for a duty officer, or held by policy. `null` when the
+ * payload is not a run report (a plain alert list cannot know this).
+ */
+export function countNotPublished(payload) {
+  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) return null;
+  const persisted = payload.persisted;
+  if (!persisted || typeof persisted !== 'object') return null;
+  const parts = ['blocked', 'pending_review', 'held']
+    .map((key) => (typeof persisted[key] === 'number' ? persisted[key] : 0));
+  const total = parts.reduce((sum, value) => sum + value, 0);
+  return total > 0 ? total : null;
+}
+
+/**
+ * How many rows the run looked at, whatever it called them.
+ *
+ * `dropped_unpublished` is only honest if the denominator is the number of rows the run
+ * *considered*, not the number of rows in whichever list happened to be chosen. The engine
+ * run report says so explicitly (`rows`), the API list implies it (`alerts.length`), and a
+ * report that carries only the published list still knows its own length.
+ */
+export function consideredRowCount(payload, fallback = 0) {
+  if (payload && typeof payload === 'object' && !Array.isArray(payload)) {
+    if (typeof payload.rows === 'number' && payload.rows >= 0) return payload.rows;
+    if (typeof payload.assessed === 'number' && payload.assessed >= 0) return payload.assessed;
+    if (Array.isArray(payload.batch?.alerts)) return payload.batch.alerts.length;
+    if (Array.isArray(payload.alerts)) return payload.alerts.length;
+    if (Array.isArray(payload.published_alerts)) return payload.published_alerts.length;
+  }
+  if (Array.isArray(payload)) return payload.length;
+  return fallback;
+}
+
+/**
+ * Pure transform. Deliberately **total**: a payload with no recognisable rows yields an
+ * empty snapshot rather than a throw, so this function stays usable by callers that have
+ * already decided what an empty result means. The CLI is where the refusal lives (an
+ * unrecognised payload is an integration error and exits 2 — see `main`).
+ */
 export function buildSnapshot(payload, { generatedAt = new Date().toISOString() } = {}) {
-  const rows = Array.isArray(payload) ? payload : Array.isArray(payload?.alerts) ? payload.alerts : [];
-  const published = rows.filter((row) => row && row.state === 'PUBLISHED');
+  const extracted = extractAlertRows(payload);
+  const rows = extracted?.rows || [];
+  // When the engine tells us which rows it published, that list is the answer even if the
+  // batch it assessed is also present (the batch rows are DRAFT until persisted).
+  const published = extracted?.shape === 'published_alerts'
+    ? rows.filter(Boolean)
+    : rows.filter((row) => row && row.state === 'PUBLISHED');
   const dropped = rows.length - published.length;
+  // The engine's own account of the rows it could not publish. `dropped_unpublished`
+  // above only knows about rows *in this payload*; a run report's published list is
+  // (correctly) empty when nothing published, so the interesting number there is the
+  // engine's tally of blocked/pending/held rows. Both are carried: the page needs the
+  // second one to say "74 rows were assessed and none could be published" instead of
+  // the flatly misleading "no alerts".
+  const notPublished = countNotPublished(payload);
 
   const alerts = published.map((row) => ({
     ...row,
@@ -97,8 +179,20 @@ export function buildSnapshot(payload, { generatedAt = new Date().toISOString() 
     built_at: generatedAt,
     source: payload?.source || 'alert-engine',
     policy_version: payload?.policy_version || policy?.version || null,
-    assessed: typeof payload?.assessed === 'number' ? payload.assessed : null,
-    counts: { ...countByLevel(alerts), dropped_unpublished: dropped },
+    // `assessed` is the row count the run looked at: the API list endpoint reports it
+    // under `assessed`, the engine run report under `rows` (and `batch.counts.total`
+    // for a preview). Whichever exists is what the page can honestly print.
+    assessed: typeof payload?.assessed === 'number'
+      ? payload.assessed
+      : (typeof payload?.rows === 'number' ? payload.rows : null),
+    // NOTE: never `payload.count`. The list endpoint's `count` is the number of rows it
+    // *returned* (published only), and reporting that as "rows assessed" would make a
+    // quiet page look like a thorough one.
+    counts: {
+      ...countByLevel(alerts),
+      dropped_unpublished: dropped,
+      ...(notPublished === null ? {} : { not_published: notPublished }),
+    },
     policy,
     disclaimer: policy?.disclaimer || ALERT_DISCLAIMER,
     alerts,
@@ -116,6 +210,19 @@ function main() {
     process.exit(2);
   }
   const payload = JSON.parse(readFileSync(args.in, 'utf8'));
+  const extracted = extractAlertRows(payload);
+  if (!extracted) {
+    console.error(
+      '[alerts-snapshot] unrecognised alert payload: expected a JSON array, or an object ' +
+      'with `published_alerts`, `alerts` or `batch.alerts`. Refusing to write a snapshot ' +
+      'from a payload this script cannot read — an integration error must not look like ' +
+      '"no alerts". (If the run report was produced with `include_alerts: false`, the rows ' +
+      'were stripped by the route: re-run the engine with include_alerts.)',
+    );
+    process.exit(2);
+  }
+  const shape = extracted.shape;
+  console.log(`[alerts-snapshot] input shape: ${shape} (${extracted.rows.length} row(s))`);
   const snapshot = buildSnapshot(payload);
 
   if (snapshot.alerts.length === 0 && !args.allowEmpty) {

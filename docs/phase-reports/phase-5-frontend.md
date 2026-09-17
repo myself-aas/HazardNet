@@ -248,6 +248,50 @@ not claims of completion.
 
 ---
 
+## 8b. The CI wiring bug, found while closing the phase
+
+The step that was supposed to keep the committed snapshot fresh would never have published
+an alert, and its smoke test was green the whole time:
+
+```
+daily_forecast.yml → POST /api/v1/alerts/run  {"notify": true}
+backend/routes/alerts.js → strips batch.alerts unless include_alerts is set
+scripts/build_alert_snapshot.mjs → only understood a top-level alerts[]
+                                → wrote an empty snapshot, every night, silently
+```
+
+The smoke test passed because its fixture (`alert-run.sample.json`) uses the shape the
+builder wanted, not the shape the engine sends — a test proving the wrong thing, which is
+the more expensive kind of bug.
+
+Fixed in three layers, each of which would have caught it alone:
+
+1. **The engine now says what it published.** `runAlertEngine` returns
+   `published_alerts[]`. It has to: `batch.alerts` are the *pre-persistence* assessments
+   (`DRAFT` until stored), so a consumer filtering them for `PUBLISHED` finds nothing even
+   on a run that published — the run report is the only layer that knows the final state.
+2. **The builder accepts all three producer shapes** (`published_alerts`, `alerts`,
+   `batch.alerts`, in that precedence) and **exits 2 on a payload it cannot read**. An
+   unreadable payload is an integration error; it must not be indistinguishable from a
+   quiet day.
+3. **The workflow asks for the rows and checks it got them** (`include_alerts: true`, plus
+   a `jq -e` gate that fails the job when the report carries no alert rows), and `ci.yml`
+   now smokes the stripped-report refusal and the engine-shape read.
+
+The bug also exposed a wording trap the fix had to solve. With the published list empty,
+`dropped_unpublished` is legitimately `0` — so the page, which keyed its empty-state copy
+off that number, silently lost the sentence *"74 district rows were assessed and none
+could be published"* and fell back to a flat "no alerts are published". Two counters now
+exist and are documented: `dropped_unpublished` (list-local) and `not_published` (the
+engine's blocked + pending-review + held tally, absent when the payload cannot know it).
+The page prefers the second, and a regression test renders exactly the post-fix snapshot
+shape.
+
+Tests: `__tests__/alertSnapshot.test.js` (shape precedence, the refusal, the counters),
+`__tests__/alertReplay.test.js` (a stamped in-memory run publishes 74 rows and its run
+report builds a 74-alert snapshot — the in-memory stamp is a test double, and a companion
+test asserts the committed snapshot is still untouched).
+
 ## 9. Pipeline wiring
 
 `daily_forecast.yml` gained a step after the publish step:
@@ -281,6 +325,7 @@ equivalents and need no credentials.
 | Production build | `cd frontend && npm run build` | green: 21 routes prerendered, `sitemap.xml` 16 URLs, `/alerts` present with title/canonical/h1 |
 | Cross-surface disclaimer parity | `pytest scripts/tests/test_frontend_alert_surface.py` | 6 passed |
 | Engine replay on committed data | `npm run alerts:rehearse` | 74 assessed / 0 published / 74 blocked (§1.6, no model version) |
+| Snapshot builder refuses an unreadable payload | `node scripts/build_alert_snapshot.mjs --in unreadable.json` | exit 2, nothing written |
 
 New test suites (11, +155 tests): `lib/__tests__/{i18n,alerts,bandwidth,alertLayer,alertsCsv}.test.ts`,
 `components/alerts/__tests__/{AlertsSurface,alertsA11y}.test.tsx`,
@@ -302,7 +347,10 @@ plus `scripts/tests/test_frontend_alert_surface.py`.
 3. **The nested-landmark accessibility defect** (§7).
 4. **A comma-expression bug in the map's aria-label** silently reduced the accessible name
    to the bare level code; caught by the new map test.
-5. **Saturation is visible, not silent.** Every row landing on `WATCH` is what an
+5. **The alert-snapshot CI wiring could never have published anything** (§8b), and the
+   committed ingest file has no per-row provenance, so §1.6 blocks every row today —
+   upstream of the UI, recorded in `docs/codebase/CONCERNS.md` and owner Action 6a.
+6. **Saturation is visible, not silent.** Every row landing on `WATCH` is what an
    uncalibrated model + conservative thresholds produce; the page reports it as
    saturation and the policy panel shows the thresholds behind it.
 

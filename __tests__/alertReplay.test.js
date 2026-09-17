@@ -12,6 +12,7 @@
  */
 
 import { memoryStore, rehearseAlertEngine, rowsFromSnapshot } from '../scripts/rehearse_alert_engine.mjs';
+import { buildSnapshot } from '../scripts/build_alert_snapshot.mjs';
 import { readFileSync } from 'node:fs';
 
 const snapshot = JSON.parse(readFileSync('frontend/public/data/forecasts-latest.json', 'utf8'));
@@ -97,5 +98,53 @@ describe('rehearseAlertEngine over the committed snapshot', () => {
     const again = await rehearseAlertEngine({ snapshot, now: NOW });
     expect(again.counts).toEqual(result.counts);
     expect(again.persisted.blocked_reasons).toEqual(result.persisted.blocked_reasons);
+  });
+});
+
+describe('the run report a pipeline consumes', () => {
+  it('reports an empty published list rather than a missing one', async () => {
+    const result = await rehearseAlertEngine({ snapshot, now: NOW });
+    expect(Array.isArray(result.published_alerts)).toBe(true);
+    expect(result.published_alerts).toEqual([]);
+    expect(result.published_alerts).toHaveLength(result.persisted.published);
+  });
+
+  it('carries the published rows downstream when the snapshot does carry provenance', async () => {
+    // The committed snapshot has no model version, so nothing may publish (§1.6). Here the
+    // rows are stamped **in memory only** — a test double for the day the pipeline stamps a
+    // real version — to prove the wiring that the CI step depends on: run report →
+    // `published_alerts` → build_alert_snapshot.mjs → snapshot with PUBLISHED rows.
+    const stamped = {
+      ...snapshot,
+      horizons: Object.fromEntries(Object.entries(snapshot.horizons).map(([horizon, rows]) => [
+        horizon,
+        // The engine reads the *row-level* `model_version` (backend/utils/forecastRow.js
+        // schema), which is the field the ingest producer stamps — not the snapshot's
+        // top-level `provenance` block the website keeps for compactness.
+        rows.map((row) => ({ ...row, model_version: 'test-double-2026-09-18' })),
+      ])),
+    };
+
+    const result = await rehearseAlertEngine({ snapshot: stamped, now: NOW });
+    expect(result.persisted.published).toBe(74);
+    expect(result.published_alerts).toHaveLength(74);
+    for (const alert of result.published_alerts) {
+      expect(alert.state).toBe('PUBLISHED');
+      expect(alert.provenance.model_version).toBe('test-double-2026-09-18');
+      expect(alert.requires_human_review).toBe(false);
+      expect(alert.disclaimer).toMatch(/not an official warning service/);
+    }
+
+    const built = buildSnapshot(result);
+    expect(built.alerts).toHaveLength(74);
+    expect(built.counts.dropped_unpublished).toBe(0);
+    expect(built.counts.WATCH).toBe(74);
+    expect(built.assessed).toBe(74);
+    expect(built.alerts.every((alert) => alert.disclaimer && alert.disclaimer.length > 0)).toBe(true);
+  });
+
+  it('does not touch the committed snapshot when it stamps provenance in a test', async () => {
+    const onDisk = JSON.parse(readFileSync('frontend/public/data/forecasts-latest.json', 'utf8'));
+    expect(onDisk.provenance.model_version).toBeNull();
   });
 });

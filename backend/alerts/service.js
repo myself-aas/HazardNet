@@ -418,6 +418,12 @@ export async function runAlertEngine({
     rows: collected.length,
     batch,
     persisted,
+    // The rows this run actually published, in the same shape the snapshot builder
+    // consumes. `batch.alerts` cannot serve that purpose: those are the pre-persistence
+    // assessments (state DRAFT until persisted), so a consumer filtering them for
+    // PUBLISHED would find nothing even on a run that published alerts. The run report
+    // is the only place that knows the post-persistence state, so it carries it.
+    published_alerts: publishable,
     notifications,
     run_state: {
       last_run_at: nextRunState.last_run_at,

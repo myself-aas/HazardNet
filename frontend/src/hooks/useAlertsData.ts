@@ -29,6 +29,12 @@ export interface UseAlertsData {
   /** Level → row count, as reported by the payload. */
   counts: Record<string, number> | null;
   droppedUnpublished: number;
+  /**
+   * Rows the run assessed but could not publish (blocked / pending review / held), when
+   * the payload is a run report. `null` when the payload cannot know — the page must then
+   * fall back to `droppedUnpublished` rather than claiming a number.
+   */
+  notPublished: number | null;
   warnings: string[];
   error: string | null;
   loading: boolean;
@@ -97,6 +103,7 @@ export function useAlertsData({ maxAgeHours = 48, offline = false }: UseAlertsDa
     assessed: result?.assessed ?? null,
     counts: result?.counts ?? null,
     droppedUnpublished: result?.dropped_unpublished || 0,
+    notPublished: result?.not_published ?? null,
     warnings: result?.warnings || [],
     error: result?.error || null,
     loading,

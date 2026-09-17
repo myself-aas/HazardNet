@@ -102,6 +102,11 @@ export const AlertsPage: React.FC = () => {
     });
   }, [sorted]);
 
+  // How many rows the run could not publish. Prefer the engine's own tally (blocked /
+  // pending review / held) and fall back to what this payload dropped — never to zero
+  // when the payload simply cannot say.
+  const suppressed = data.notPublished ?? data.droppedUnpublished;
+
   const headline = data.alerts.length === 0
     ? t('alerts.empty.title')
     : (data.alerts.length === 1
@@ -165,9 +170,9 @@ export const AlertsPage: React.FC = () => {
           {data.assessed !== null && (
             <span>{t('alerts.page.assessed', { count: formatNumber(data.assessed, { maximumFractionDigits: 0 }) })}</span>
           )}
-          {data.droppedUnpublished > 0 && (
+          {suppressed > 0 && (
             <span className="text-amber-800">
-              {t('alerts.page.dropped', { count: formatNumber(data.droppedUnpublished, { maximumFractionDigits: 0 }) })}
+              {t('alerts.page.dropped', { count: formatNumber(suppressed, { maximumFractionDigits: 0 }) })}
             </span>
           )}
           {data.alerts.length > 0 && (
@@ -275,9 +280,9 @@ export const AlertsPage: React.FC = () => {
               </p>
             )}
             <p className="mt-1 text-xs text-slate-600">
-              {data.droppedUnpublished > 0
+              {suppressed > 0
                 ? t('alerts.empty.blocked', {
-                  assessed: formatNumber(data.assessed ?? data.droppedUnpublished, { maximumFractionDigits: 0 }),
+                  assessed: formatNumber(data.assessed ?? suppressed, { maximumFractionDigits: 0 }),
                 })
                 : t('alerts.empty.body')}
             </p>

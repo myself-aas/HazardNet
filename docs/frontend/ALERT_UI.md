@@ -229,7 +229,29 @@ Tests: `frontend/src/components/__tests__/BangladeshSvgMap.alertLayer.test.tsx`,
 3. `generated_at`, the policy copy, the counts and each row's provenance are carried
    through untouched;
 4. it **refuses to replace a non-empty snapshot with an empty one** (exit 3) unless
-   `--allow-empty` is passed — a failed engine run must not read as "all clear".
+   `--allow-empty` is passed — a failed engine run must not read as "all clear";
+5. it **refuses a payload it cannot read** (exit 2). Three producers feed it and they do
+   not share a shape — the public list endpoint (`alerts[]`), the engine run report
+   (`published_alerts[]`, plus `batch.alerts[]` from before persistence), and the test
+   fixtures — so a payload with none of those keys is an integration error, not a quiet
+   day. This rule exists because the first CI wiring was exactly that bug: the workflow
+   posted `{notify: true}`, `/api/v1/alerts/run` strips `batch.alerts` unless
+   `include_alerts: true` is set, and the builder would have written "no alerts" every
+   night while alerts existed.
+
+### The two counts
+
+| Field | Meaning | Source |
+|---|---|---|
+| `counts.dropped_unpublished` | rows **in this payload** that were not `PUBLISHED` | always computed |
+| `counts.not_published` | rows the run **assessed but could not publish** (blocked + pending review + held) | the run report's `persisted` block, absent when the payload cannot know |
+
+The page prints the second one when it exists (falling back to the first) — that is the
+number behind *"74 district rows were assessed and none could be published"*. Reading only
+the drop count would turn a fully blocked run into "no alerts are published", which is the
+misleading half of the truth. `assessed` likewise comes from the run report's `rows` (or
+the API's `assessed`), **never** from the list endpoint's `count`, which is the number of
+rows the endpoint returned rather than the number the run looked at.
 
 `scripts/rehearse_alert_engine.mjs` runs the **real** engine offline against the committed
 forecast snapshot with an in-memory store. It is how CI and a developer machine exercise

@@ -12,9 +12,9 @@
  *   - an empty run must not silently replace a good snapshot.
  */
 
-import { ALERT_DISCLAIMER, ALERTS_SNAPSHOT_SCHEMA, buildSnapshot, countByLevel } from '../scripts/build_alert_snapshot.mjs';
+import { ALERT_DISCLAIMER, ALERTS_SNAPSHOT_SCHEMA, buildSnapshot, countByLevel, extractAlertRows } from '../scripts/build_alert_snapshot.mjs';
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -79,10 +79,11 @@ describe('countByLevel', () => {
   });
 });
 
+const run = (args) => execFileSync('node', ['scripts/build_alert_snapshot.mjs', ...args], {
+  encoding: 'utf8', stdio: 'pipe',
+});
+
 describe('the CLI', () => {
-  const run = (args) => execFileSync('node', ['scripts/build_alert_snapshot.mjs', ...args], {
-    encoding: 'utf8', stdio: 'pipe',
-  });
 
   it('writes the snapshot from a fixture and reports what it did', () => {
     const dir = mkdtempSync(join(tmpdir(), 'alert-snapshot-'));
@@ -131,5 +132,104 @@ describe('the CLI', () => {
     const out = join(dir, 'out.json');
     run(['--in', bad, '--out', out]);
     expect(JSON.parse(readFileSync(out, 'utf8')).alerts[0].disclaimer).toBe(ALERT_DISCLAIMER);
+  });
+});
+
+describe('which payload shapes the builder accepts', () => {
+  // The three producers do not share a shape, and the first CI wiring silently shipped
+  // the wrong one: the workflow posted `{notify: true}` to /api/v1/alerts/run, the route
+  // strips `batch.alerts` unless `include_alerts` is set, and the builder — which only
+  // understood `alerts[]` — wrote an empty snapshot every night and called it "no alerts".
+  const draft = (id) => ({ id, state: 'DRAFT', level: 'WATCH', district_name: 'Sunamganj' });
+  const runReport = (over = {}) => ({
+    ok: true,
+    ran_at: '2026-09-18T06:00:00Z',
+    policy_version: 'alert-policy/1.0.0',
+    rows: 3,
+    batch: { alerts: [draft('a-1'), draft('a-2'), draft('a-3')], assessed: 3 },
+    persisted: { created: 3, published: 1, pending_review: 0, held: 0, blocked: 2 },
+    published_alerts: [row({ id: 'a-1' })],
+    ...over,
+  });
+
+  it('prefers published_alerts — the only key that means "already published"', () => {
+    const extracted = extractAlertRows(runReport());
+    expect(extracted.shape).toBe('published_alerts');
+    const snapshot = buildSnapshot(runReport());
+    expect(snapshot.alerts.map((alert) => alert.id)).toEqual(['a-1']);
+    // `dropped_unpublished` stays list-local (nothing in the published list was dropped);
+    // the run's own account of what it could not publish is the separate tally below.
+    expect(snapshot.counts.dropped_unpublished).toBe(0);
+    expect(snapshot.counts.not_published).toBe(2);
+    expect(snapshot.assessed).toBe(3);
+  });
+
+  it('takes an empty published list at its word — a run that published nothing is empty', () => {
+    // The DRAFT rows in `batch.alerts` are *not* resurrected: a pre-persistence
+    // assessment is not an approval.
+    const report = runReport({ published_alerts: [] });
+    expect(extractAlertRows(report).shape).toBe('published_alerts');
+    const snapshot = buildSnapshot(report);
+    expect(snapshot.alerts).toEqual([]);
+    expect(snapshot.counts.dropped_unpublished).toBe(0);
+    expect(snapshot.counts.not_published).toBe(2); // the engine's blocked tally, not a guess
+    expect(snapshot.assessed).toBe(3); // from `rows`, since the run report has no `assessed`
+  });
+
+  it('falls back to batch.alerts for a run report that carries no published list', () => {
+    // An older engine build (or a report trimmed downstream) still gets its published
+    // rows read — and every row that is not PUBLISHED is dropped and counted.
+    const { published_alerts: _omitted, ...legacy } = runReport();
+    expect(extractAlertRows(legacy).shape).toBe('batch.alerts');
+    const snapshot = buildSnapshot(legacy);
+    expect(snapshot.alerts).toEqual([]);
+    // With no published list to trust, the DRAFT batch rows are drops — and they are
+    // counted, never silently absorbed.
+    expect(snapshot.counts.dropped_unpublished).toBe(3);
+    expect(snapshot.counts.not_published).toBe(2); // still the engine's own tally
+  });
+
+  it('carries no not_published tally for a payload that cannot know it', () => {
+    const snapshot = buildSnapshot({ alerts: [row()] });
+    expect(snapshot.counts).not.toHaveProperty('not_published');
+  });
+
+  it('does not report the list endpoint count as "rows assessed"', () => {
+    // `count` is how many rows the endpoint returned, not how many the run looked at.
+    const snapshot = buildSnapshot({ count: 1, alerts: [row()] });
+    expect(snapshot.assessed).toBeNull();
+  });
+
+  it('still reads the public list endpoint shape', () => {
+    const snapshot = buildSnapshot({ generated_at: '2026-09-18T06:00:00Z', alerts: [row()] });
+    expect(snapshot.alerts).toHaveLength(1);
+  });
+
+  it('returns null for a payload with no recognisable list', () => {
+    expect(extractAlertRows({ ok: true, rows: 74 })).toBeNull();
+    expect(extractAlertRows({ batch: { alerts_omitted: 74 } })).toBeNull();
+    expect(extractAlertRows('not json')).toBeNull();
+    expect(extractAlertRows(null)).toBeNull();
+  });
+
+  it('exits 2 and writes nothing when the payload is unreadable', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'alert-snapshot-'));
+    const unreadable = join(dir, 'stripped.json');
+    // Exactly what the route returns when `include_alerts` is not set.
+    writeFileSync(unreadable, JSON.stringify({
+      ok: true, rows: 74, persisted: { published: 0 }, batch: { alerts_omitted: 74 },
+    }));
+    const out = join(dir, 'out.json');
+    let failure = null;
+    try {
+      run(['--in', unreadable, '--out', out]);
+    } catch (error) {
+      failure = error;
+    }
+    // Assert the *specific* refusal: a bare `toThrow()` also passes on a typo in this test.
+    expect(failure).not.toBeNull();
+    expect(failure.status).toBe(2);
+    expect(String(failure.stderr)).toMatch(/unrecognised alert payload/);
+    expect(existsSync(out)).toBe(false);
   });
 });

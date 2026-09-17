@@ -146,11 +146,19 @@ jobs:
             echo "::notice::alert engine skipped: HAZARDNET_API_KEY (secret) and BACKEND_API_URL (variable) are not both set"
             exit 0
           fi
+          # include_alerts: true is load-bearing. Without it the route strips
+          # `batch.alerts` (it answers with `alerts_omitted`) and the snapshot step below
+          # has no rows to read — which is exactly how the first version of this wiring
+          # would have published "no alerts" every night while alerts existed.
           curl -sS -f -X POST "$BACKEND_API_URL/api/v1/alerts/run" \
             -H "Authorization: Bearer $HAZARDNET_API_KEY" \
             -H 'Content-Type: application/json' \
-            -d '{"notify": true}' -o alert-run.json
-          jq -r '"alert engine: rows=" + (.rows|tostring) + " published=" + (.persisted.published|tostring) + " pending_review=" + (.persisted.pending_review|tostring) + " blocked=" + (.persisted.blocked|tostring) + " levels=" + (.batch.counts|tojson)' alert-run.json | tee -a "$GITHUB_STEP_SUMMARY"
+            -d '{"notify": true, "include_alerts": true}' -o alert-run.json
+          jq -r '"alert engine: rows=" + (.rows|tostring) + " published=" + (.persisted.published|tostring) + " pending_review=" + (.persisted.pending_review|tostring) + " blocked=" + (.persisted.blocked|tostring) + " published_rows=" + ((.published_alerts // [])|length|tostring) + " levels=" + (.batch.counts|tojson)' alert-run.json | tee -a "$GITHUB_STEP_SUMMARY"
+          # Fail here, not later, if the report does not carry the rows the snapshot
+          # needs: a stripped report must never be read as "nothing to publish".
+          jq -e 'has("published_alerts") or has("alerts") or (.batch.alerts | type == "array")' alert-run.json > /dev/null \
+            || { echo "::error::alert run report carries no alert rows (published_alerts/alerts/batch.alerts all absent) — the snapshot cannot be built from it"; exit 1; }"
 
       - name: Upload the alert run report
         if: always()

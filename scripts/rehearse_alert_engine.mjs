@@ -110,6 +110,10 @@ export async function rehearseAlertEngine({ snapshot, now = new Date(), env = {}
     counts: run.batch.counts,
     saturation: run.batch.saturation,
     persisted: run.persisted,
+    // The rows this run published, in the shape the snapshot builder consumes. Same
+    // contract as `runAlertEngine`'s report: `alerts` below is the store dump (DRAFT
+    // documents included), this is only what cleared §1.6.
+    published_alerts: run.published_alerts,
     policy: describePolicy(policy),
     alerts: documents,
     provenance_note:
@@ -157,7 +161,8 @@ async function main() {
     console.log(`[alert-replay] rows=${result.rows_total} assessed=${result.assessed} `
       + `published=${result.persisted.published} pending_review=${result.persisted.pending_review} `
       + `blocked=${result.persisted.blocked} skipped=${result.skipped.length}`);
-    console.log(`[alert-replay] levels=${JSON.stringify(result.counts)}`);
+    console.log(`[alert-replay] levels=${JSON.stringify(result.counts)} ` +
+      `published_rows=${result.published_alerts.length}`);
     console.log(`[alert-replay] blocked because: ${blocked}`);
     if (result.persisted.published === 0 && result.assessed > 0) {
       console.log('[alert-replay] NOTE: nothing could be published — the rows carry no model '

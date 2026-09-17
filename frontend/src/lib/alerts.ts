@@ -185,6 +185,12 @@ export interface AlertsResult {
   counts: Record<string, number> | null;
   /** Rows the payload carried that were not PUBLISHED and were therefore dropped. */
   dropped_unpublished: number;
+  /**
+   * Rows the run assessed but could not publish (blocked, pending review or held), as
+   * the run report counted them. `null` when the payload is not a run report — a plain
+   * alert list cannot know this, and the page must not invent it.
+   */
+  not_published?: number | null;
   /** §1.7 / contract problems found while parsing; non-empty means degraded data. */
   warnings: string[];
   error: string | null;
@@ -458,6 +464,9 @@ export async function loadAlerts(options: LoadAlertsOptions = {}): Promise<Alert
         generated_at: asString(isRecord(payload) ? payload.generated_at : null) || fetched_at,
         assessed: isRecord(payload) ? numberOrNull(payload.assessed) : null,
         counts: isRecord(payload) ? countsOrNull(payload.counts) : null,
+        not_published: isRecord(payload)
+          ? numberOrNull((payload.counts as Record<string, unknown> | undefined)?.not_published)
+          : null,
         error: null,
         fetched_at,
       };
@@ -485,6 +494,7 @@ export async function loadAlerts(options: LoadAlertsOptions = {}): Promise<Alert
       generated_at: asString(snapshot.generated_at) || fetched_at,
       assessed: numberOrNull(snapshot.assessed),
       counts: countsOrNull(snapshot.counts),
+      not_published: numberOrNull(snapshot.counts?.not_published),
       error: errors.length > 0 ? errors.join('; ') : null,
       fetched_at,
     };

@@ -195,6 +195,43 @@ jobs:
           fi
           echo "alert snapshot guard OK: empty run refused"
 
+          # A payload the builder cannot read is an integration error, not a quiet day:
+          # exit 2 and write nothing. This is the exact shape the run endpoint returns
+          # when `include_alerts` is not set — the bug the first wiring shipped.
+          node -e "
+            const fs = require('fs');
+            fs.writeFileSync('/tmp/alerts-stripped.json', JSON.stringify({
+              ok: true, rows: 74, persisted: { published: 3 }, batch: { alerts_omitted: 74 },
+            }));
+          "
+          if node scripts/build_alert_snapshot.mjs --in /tmp/alerts-stripped.json --out /tmp/alerts-should-not-exist.json 2>/dev/null; then
+            echo "::error::the builder wrote a snapshot from a payload with no recognisable alert rows"
+            exit 1
+          fi
+          test ! -f /tmp/alerts-should-not-exist.json
+          echo "alert snapshot guard OK: unreadable payload refused"
+
+          # The engine's own run report nests the rows under batch.alerts / published_alerts
+          # rather than a top-level alerts[]; the builder must read both.
+          node -e "
+            const fs = require('fs');
+            fs.writeFileSync('/tmp/alerts-engine-shape.json', JSON.stringify({
+              ok: true, rows: 2, policy_version: 'alert-policy/1.0.0',
+              batch: { alerts: [{ id: 'draft', state: 'DRAFT' }, { id: 'published', state: 'DRAFT' }] },
+              published_alerts: [{ id: 'published', state: 'PUBLISHED', level: 'WATCH', disclaimer: '' }],
+              persisted: { published: 1, blocked: 1 },
+            }));
+          "
+          node scripts/build_alert_snapshot.mjs --in /tmp/alerts-engine-shape.json --out /tmp/alerts-engine-shape-out.json
+          node -e "
+            const s = require('/tmp/alerts-engine-shape-out.json');
+            if (s.alerts.length !== 1 || s.alerts[0].id !== 'published') throw new Error('published_alerts not preferred');
+            if (!s.alerts[0].disclaimer.includes('not an official warning service')) throw new Error('§1.7 disclaimer not stamped');
+            if (s.assessed !== 2) throw new Error('assessed not taken from the run report rows count');
+            if (s.counts.not_published !== 1) throw new Error('engine not-published tally missing');
+            console.log('alert snapshot OK: engine run-report shape read');
+          "
+
       # The ingestion entry points a workflow would call, exercised offline against
       # the same fixtures the unit tests use: events → load SQL, and a scene
       # manifest whose dataset_version the publisher will require.

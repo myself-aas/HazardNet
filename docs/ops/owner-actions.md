@@ -362,6 +362,23 @@ pipeline stamps a model version. Nothing was stamped to make the page look bette
 wired into the forecast run so rows arrive with `model_version`, then re-run
 `daily_forecast.yml` and check that `alert-run.json` reports `persisted.published > 0`.
 
+**Why it is not hypothetical — measured 2026-09-18 on the committed data:**
+
+```bash
+# rows carry no provenance at all (28 columns, none of them model/pipeline/run/confidence_kind)
+head -1 backend/data/forecasts/hazardnet_forecasts_latest.csv | tr ',' '\n' | grep -c '^model_version$'   # → 0
+node -e "const r=require('./backend/data/forecasts/hazardnet_forecasts_latest.json');console.log(Object.keys(r[0]).filter(k=>/version|run_id|confidence_kind/.test(k)))"  # → []
+jq '{model_version, coverage_status}' backend/data/forecasts/manifest.json                                 # → both null/absent
+# and the engine consequently blocks every row:
+npm run alerts:rehearse | tail -3   # → blocked=74, "74× §1.6 requires model version before an alert is published"
+```
+
+The committed ingest file predates the Phase 2 publish gate, which now refuses a run whose
+report has no coverage/provenance (`scripts/publish_forecast_csv.py`) and a manifest with
+no model provenance (`scripts/validate_forecasts.py`). So the first pipeline run that
+passes the gate should also be the first run that can publish an alert. Do not "fix" this
+by stamping a version anywhere else — the block is the product telling the truth.
+
 **Verify:**
 ```bash
 npm run alerts:rehearse        # expect published=0 and the §1.6 reason, until 6a is done

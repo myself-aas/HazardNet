@@ -1,7 +1,7 @@
 {
   "schema": "hazardnet-alerts/v1",
-  "generated_at": "2026-09-17T20:34:27.231Z",
-  "built_at": "2026-09-17T20:34:30.760Z",
+  "generated_at": "2026-09-17T21:08:14.217Z",
+  "built_at": "2026-09-17T21:08:14.286Z",
   "source": "alert engine replay over hazardnet-forecast-snapshot/v2 (prediction_date 2026-09-16)",
   "policy_version": "alert-policy/1.0.0",
   "assessed": 74,
@@ -10,7 +10,8 @@
     "WATCH": 0,
     "WARNING": 0,
     "SEVERE": 0,
-    "dropped_unpublished": 74
+    "dropped_unpublished": 0,
+    "not_published": 74
   },
   "policy": {
     "version": "alert-policy/1.0.0",

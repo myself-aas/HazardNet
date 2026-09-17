@@ -134,3 +134,49 @@ def test_low_bandwidth_and_language_are_declared_in_the_route_copy():
     route = next(entry for entry in routes if entry.get('path') == '/alerts')
     copy = json.dumps(route, ensure_ascii=False).lower()
     assert 'bengali' in copy
+
+def test_an_empty_snapshot_still_explains_itself():
+    """An empty alert list must never be the whole story.
+
+    When the committed snapshot has no published alerts, the page's empty state is only
+    truthful if the payload also carries what the run did — how many rows it assessed and
+    how many it could not publish. The builder emits `counts.not_published` from the
+    engine's own tally (blocked + pending review + held) and `counts.dropped_unpublished`
+    for rows that were in the payload unpublished. Drop both and `/alerts` silently reports
+    a blocked run as a quiet day, which is the failure this guards.
+    """
+    snapshot = json.loads(SNAPSHOT.read_text(encoding='utf-8'))
+    if snapshot.get('alerts'):
+        return
+    counts = snapshot.get('counts') or {}
+    suppressed = counts.get('not_published') or counts.get('dropped_unpublished') or 0
+    assessed = snapshot.get('assessed')
+    assert isinstance(assessed, int) and assessed > 0, (
+        f'an empty snapshot must report how many rows the run assessed, got {assessed!r}'
+    )
+    assert suppressed > 0, (
+        'an empty snapshot must carry the engine tally that explains it '
+        '(counts.not_published or counts.dropped_unpublished)'
+    )
+
+
+def test_the_builder_refuses_a_payload_it_cannot_read():
+    """`--in` a JSON object with no recognisable alert list must exit 2 and write nothing."""
+    import subprocess
+    import tempfile
+
+    with tempfile.TemporaryDirectory() as tmp:
+        payload = Path(tmp) / 'stripped.json'
+        out = Path(tmp) / 'out.json'
+        payload.write_text(json.dumps({
+            'ok': True, 'rows': 74, 'persisted': {'published': 0},
+            'batch': {'alerts_omitted': 74},
+        }), encoding='utf-8')
+        result = subprocess.run(
+            ['node', str(ROOT / 'scripts' / 'build_alert_snapshot.mjs'),
+             '--in', str(payload), '--out', str(out)],
+            capture_output=True, text=True, cwd=str(ROOT),
+        )
+        assert result.returncode == 2, result.stdout + result.stderr
+        assert not out.exists(), 'an unreadable payload must not produce a snapshot'
+        assert 'unrecognised alert payload' in result.stderr

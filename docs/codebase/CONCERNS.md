@@ -343,3 +343,42 @@ spirit as the Phase 4 list above.
    scanned.
 9. **`jest-axe` was added as a dev dependency.** It is not shipped, but it is a new
    dependency surface the Phase 6 security pass should include in the audit.
+
+## Phase 5 — the alert snapshot wiring, and why nothing publishes yet
+
+Two findings from finishing the Phase 5 CI path. The first was a bug and is fixed; the
+second is the reason the committed snapshot is empty and it belongs to the data plane,
+not to the UI.
+
+1. **The CI alert-snapshot step could never have published anything (fixed 2026-09-18).**
+   `.github/workflows/daily_forecast.yml` posted `{"notify": true}` to
+   `/api/v1/alerts/run`; the route strips `batch.alerts` unless the body asks for
+   `include_alerts: true`; and `scripts/build_alert_snapshot.mjs` only understood a
+   top-level `alerts[]`. The fixture-driven smoke test passed because the fixture used the
+   shape the builder wanted, not the shape the engine sends — a green test proving the
+   wrong thing. Fixed in three layers: the workflow now requests `include_alerts: true` and
+   fails if the report carries no rows; `runAlertEngine` returns a `published_alerts[]`
+   list (it is the only layer that knows the post-persistence state — `batch.alerts` rows
+   are `DRAFT` until stored, so a consumer filtering *them* for `PUBLISHED` finds nothing
+   even on a run that published); and the builder reads all three shapes and **refuses a
+   payload it cannot read** (exit 2) instead of writing an empty snapshot. Tests:
+   `__tests__/alertSnapshot.test.js` (shapes, precedence, refusal) and
+   `__tests__/alertReplay.test.js` (a stamped in-memory run publishes 74 rows and the
+   builder turns its run report into a 74-alert snapshot).
+2. **The committed ingest data carries no provenance, so §1.6 blocks every alert
+   (open — upstream of the UI).** `backend/data/forecasts/hazardnet_forecasts_latest.json`
+   rows have no `model_version`/`pipeline_version`/`run_id`/`confidence_kind`, the CSV has
+   28 columns and none of them is provenance, and `manifest.json` has no `model_version`
+   or coverage tally. The alert engine's §1.6 gate therefore blocks all 74 rows, which is
+   the correct behaviour for the data it was given. This file predates the Phase 2 gate:
+   `scripts/publish_forecast_csv.py` now refuses to promote a run whose report has no
+   coverage/provenance, and `scripts/validate_forecasts.py` fails a manifest with no model
+   provenance — so the next real pipeline run should replace it. Until then, `/alerts`
+   correctly shows "74 rows assessed, none publishable". Owner Action 6a names the exact
+   checks; nothing in the repository may stamp a version to make the page look alive.
+3. **The page's empty-state copy now reads the engine's own tally, not the payload's drop
+   count.** `counts.not_published` (blocked + pending review + held, from the run report)
+   is what backs *"74 district rows were assessed and none could be published"*;
+   `dropped_unpublished` remains list-local. Without the distinction, an empty published
+   list plus a full blocked tally rendered as "no alerts are published" — true, and
+   useless. Regression test: `frontend/src/pages/__tests__/AlertsPage.test.tsx`.

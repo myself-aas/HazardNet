@@ -131,6 +131,22 @@ describe('AlertsPage', () => {
     expect(screen.getByText(/§1.6 requires a model version/)).toBeInTheDocument();
   });
 
+  it('explains the block from the run tally even when the payload dropped nothing', async () => {
+    // The committed snapshot's shape after the CI wiring fix: the published list is empty
+    // (so `dropped_unpublished` is 0) and the engine's own tally says 74 rows were held
+    // back. Reading only the drop count would have turned a blocked run into "no alerts".
+    loadAlertsMock.mockResolvedValue(result({
+      alerts: [],
+      counts: { WATCH: 0, dropped_unpublished: 0, not_published: 74 },
+      assessed: 74,
+      dropped_unpublished: 0,
+      not_published: 74,
+    }) as never);
+    renderPage();
+    expect(await screen.findByText(/none could be published/)).toBeInTheDocument();
+    expect(screen.getByText(/74 district rows were assessed/)).toBeInTheDocument();
+  });
+
   it('says out loud that an uncalibrated score is not a probability', async () => {
     renderPage();
     await screen.findByRole('heading', { name: /Sunamganj/ });

@@ -115,9 +115,21 @@ be published, and the builder refuses to invent one. Its `counts.dropped_unpubli
 (74) and `assessed` (74) are how the web page can say *"74 rows assessed, none
 publishable"* rather than *"all clear"*.
 
-Two invariants the builder enforces (tested in `__tests__/alertSnapshot.test.js` and
+Invariants the builder enforces (tested in `__tests__/alertSnapshot.test.js` and
 `scripts/tests/test_frontend_alert_surface.py`):
 
 1. only `PUBLISHED` rows reach the file, and every row carries the §1.7 disclaimer;
 2. an empty run **cannot** replace a non-empty snapshot unless `--allow-empty` is passed —
-   a failed pipeline must not silently become "no alerts today".
+   a failed pipeline must not silently become "no alerts today";
+3. a payload with no recognisable alert list (`published_alerts`, `alerts` or
+   `batch.alerts`) exits 2 and writes nothing — an integration error is not a quiet day.
+   The first version of the CI wiring tripped this: the workflow called
+   `/api/v1/alerts/run` without `include_alerts: true`, the route strips the row list, and
+   every night would have produced an empty snapshot.
+
+The committed file carries two different counters, and they are not interchangeable:
+`counts.dropped_unpublished` is list-local (rows in the payload that were not `PUBLISHED`),
+while `counts.not_published` is the engine's own tally of rows it assessed but could not
+publish (blocked / pending review / held). Today the file has
+`dropped_unpublished: 0` and `not_published: 74` — the correct reading of "74 rows assessed,
+0 published" — and that is the number the page prints.
