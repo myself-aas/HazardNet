@@ -66,9 +66,14 @@ export default function ChatBot() {
         })
       });
 
-      const data: ChatResponse = await res.json();
-      
-      let answer = data.answer || 'Sorry, I am having trouble connecting to the knowledge base.';
+      // A proxy/404 can answer with HTML — surface the HTTP status instead of
+      // dying on the JSON parse with a generic "error communicating" bubble.
+      const data: ChatResponse = await res.json().catch(() => ({}) as ChatResponse);
+
+      let answer = data.answer ||
+        (res.ok
+          ? 'Sorry, I am having trouble connecting to the knowledge base.'
+          : `The AI service is unreachable (HTTP ${res.status}). Please try again shortly.`);
       
       if (data.suggested_followups && data.suggested_followups.length > 0) {
          answer += `\n\n**Suggested Questions:**\n` + data.suggested_followups.map(q => `- ${q}`).join('\n');
@@ -103,7 +108,8 @@ export default function ChatBot() {
             exit={{ scale: 0, opacity: 0 }}
             whileHover={{ scale: 1.08 }}
             whileTap={{ scale: 0.92 }}
-            className="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-[9995] px-4 sm:px-5 py-2.5 sm:py-3 rounded-full bg-amber-400 hover:bg-amber-500 text-slate-950 font-extrabold text-xs shadow-xl flex items-center gap-2 cursor-pointer"
+            className="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-[9995] px-4 sm:px-5 py-3 sm:py-3 min-h-[44px] rounded-full bg-amber-400 hover:bg-amber-500 text-slate-950 font-extrabold text-xs shadow-xl flex items-center gap-2 cursor-pointer"
+            aria-label="Open AI Advisor chat"
           >
             <span className="w-2 h-2 rounded-full bg-slate-950/70 animate-ping" />
             AI Advisor
@@ -120,18 +126,25 @@ export default function ChatBot() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.85, y: 30 }}
             transition={{ type: 'spring', stiffness: 350, damping: 25 }}
-            className="fixed inset-x-0 bottom-0 top-12 sm:top-auto sm:bottom-6 sm:right-6 sm:left-auto z-[10000] w-full sm:w-[450px] h-auto sm:h-[600px] sm:max-h-[calc(100dvh-3rem)] bg-white sm:rounded-2xl shadow-2xl flex flex-col border border-slate-200 pb-[env(safe-area-inset-bottom)] sm:pb-0"
+            /* Mobile: a true full-screen sheet (inset-0). It previously opened
+               at top-12 while the sticky header is h-14, so its top edge sat
+               8px into the header and the half-covered bar looked broken.
+               Desktop: anchored bottom-right panel, unchanged. */
+            className="fixed inset-x-0 bottom-0 top-0 sm:top-auto sm:bottom-6 sm:right-6 sm:left-auto z-[10000] w-full sm:w-[450px] h-auto sm:h-[600px] sm:max-h-[calc(100dvh-3rem)] max-h-dvh bg-white sm:rounded-2xl shadow-2xl flex flex-col border border-slate-200 pb-[env(safe-area-inset-bottom)] sm:pb-0"
+            role="dialog"
+            aria-modal="true"
+            aria-label="HazardNet AI Advisor chat"
           >
             {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-slate-200 bg-slate-50 text-slate-900 sm:rounded-t-2xl">
+            <div className="flex items-center justify-between p-4 border-b border-slate-200 bg-slate-50 text-slate-900 sm:rounded-t-2xl pt-[max(1rem,env(safe-area-inset-top))] sm:pt-4 shrink-0">
               <div className="flex items-center gap-2">
                 <HazardNetBrand size="sm" />
               </div>
-              <motion.button 
+              <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setIsOpen(false)}
-                className="px-2.5 py-1 hover:bg-slate-200 text-slate-700 hover:text-slate-900 rounded-md text-xs font-black transition-colors cursor-pointer flex items-center gap-1 border border-slate-200"
+                className="min-h-[36px] sm:min-h-[32px] px-3 py-1.5 hover:bg-slate-200 text-slate-700 hover:text-slate-900 rounded-md text-xs font-black transition-colors cursor-pointer flex items-center gap-1 border border-slate-200"
                 title="Close Assistant"
                 aria-label="Close Assistant"
               >
@@ -257,7 +270,7 @@ export default function ChatBot() {
                   whileTap={{ scale: 0.95 }}
                   onClick={() => sendMessage(input)}
                   disabled={!input.trim() || loading}
-                  className="absolute right-2 px-3 py-1.5 bg-amber-400 text-slate-950 font-bold text-xs rounded-lg hover:bg-amber-500 disabled:opacity-40 transition-colors shadow-sm cursor-pointer"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 min-h-[36px] px-3 py-1.5 bg-amber-400 text-slate-950 font-bold text-xs rounded-lg hover:bg-amber-500 disabled:opacity-40 transition-colors shadow-sm cursor-pointer"
                 >
                   Send
                 </motion.button>

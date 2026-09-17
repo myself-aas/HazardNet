@@ -2,6 +2,18 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
+  "functions": {
+    "api/chat/**/*.js": {
+      "maxDuration": 60
+    }
+  },
+  "outputFileTracingIncludes": {
+    "api/chat/**": [
+      "./rag_pipeline/agent.md",
+      "./rag_pipeline/agent_knowledge_base.json",
+      "./rag_pipeline/district_economic_baselines.json"
+    ]
+  },
   "rewrites": [
     {
       "source": "/((?!api/|assets/|serviceWorker\\.js|_vercel/).*)",

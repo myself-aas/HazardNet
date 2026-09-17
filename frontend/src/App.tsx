@@ -87,6 +87,9 @@ const AppContent: React.FC = () => {
     >
       <Toaster
         position="top-right"
+        /* Above every overlay (modals sit at z-[10001]+; the old default 9999
+           let profile-save toasts render behind the modal backdrop). */
+        containerStyle={{ zIndex: 10050 }}
         toastOptions={{
           style: {
             background: '#ffffff',
@@ -97,10 +100,14 @@ const AppContent: React.FC = () => {
         }}
       />
 
-      {/* Top Navigation - Upper layer overlay with near-transparent background */}
+      {/* Top Navigation - Upper layer overlay with near-transparent background.
+          z-40 keeps the sticky header above page content but BELOW the page
+          overlays (disaster detail z-[1200]+, print preview, chat, modals) —
+          it used to be z-[9990], which trapped every modal rendered inside
+          <main> underneath the header, so popups visually collided with it. */}
       {!['/terms', '/privacy'].some((p) => location.pathname.startsWith(p)) && !isAuthPage && (
         <div
-          className={`z-[9990] pointer-events-auto w-full ${
+          className={`z-40 pointer-events-auto w-full ${
             isHomePage ? 'absolute top-0 left-0 right-0' : 'sticky top-0'
           }`}
         >
@@ -112,10 +119,10 @@ const AppContent: React.FC = () => {
       <main
         className={
           isAuthPage
-            ? 'flex-1 relative z-10 w-full pointer-events-auto'
+            ? 'flex-1 relative w-full pointer-events-auto'
             : isHomePage
-            ? 'w-full h-full h-dvh overflow-hidden p-0 m-0 pointer-events-auto absolute inset-0 z-0'
-            : 'flex-1 relative z-10 max-w-7xl w-full mx-auto p-3 sm:p-4 md:p-6 lg:p-8 pb-28 md:pb-8 pointer-events-auto'
+            ? 'w-full h-full h-dvh overflow-hidden p-0 m-0 pointer-events-auto absolute inset-0'
+            : 'flex-1 relative max-w-7xl w-full mx-auto p-3 sm:p-4 md:p-6 lg:p-8 pb-28 md:pb-8 pointer-events-auto'
         }
       >
         <AnimatePresence mode="wait">

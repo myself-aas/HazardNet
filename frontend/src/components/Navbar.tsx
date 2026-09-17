@@ -194,7 +194,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <MaterialIcon name="person_pin_circle" className="w-4 h-4" />
                 )}
               </button>
-              <CommandPalette onSelectDistrict={onSelectDistrict} />
+              {createPortal(<CommandPalette onSelectDistrict={onSelectDistrict} />, document.body)}
             </div>
           </div>
 
@@ -647,7 +647,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               </motion.button>
 
               {/* Command Palette / Quick Search */}
-              <CommandPalette onSelectDistrict={onSelectDistrict} />
+              {createPortal(<CommandPalette onSelectDistrict={onSelectDistrict} />, document.body)}
 
               {/* Push / Emergency Notification Toggle */}
               <NotificationToggle />
@@ -730,34 +730,51 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
       </motion.header>
 
-      <SavedAssessmentsModal
-        isOpen={isSavedModalOpen}
-        onClose={() => setIsSavedModalOpen(false)}
-        onSelectDistrict={onSelectDistrict}
-      />
+      {/*
+        Full-screen overlays are portaled to document.body so they escape this
+        header wrapper's stacking context. They used to render inside it with
+        z-50 while the header bar itself is z-[2000] — so the sticky header
+        painted ON TOP of the profile/saved-assessment modal and its backdrop
+        (the mobile "popup overlaps the header" bug). Portaled + z-[10001] they
+        sit above the header (z-40) and the chat window (z-[10000]).
+      */}
+      {createPortal(
+        <SavedAssessmentsModal
+          isOpen={isSavedModalOpen}
+          onClose={() => setIsSavedModalOpen(false)}
+          onSelectDistrict={onSelectDistrict}
+        />,
+        document.body
+      )}
 
 
-      <UserProfileModal
-        isOpen={isProfileModalOpen}
-        onClose={() => setIsProfileModalOpen(false)}
-        onSelectDistrict={onSelectDistrict}
-      />
+      {createPortal(
+        <UserProfileModal
+          isOpen={isProfileModalOpen}
+          onClose={() => setIsProfileModalOpen(false)}
+          onSelectDistrict={onSelectDistrict}
+        />,
+        document.body
+      )}
 
-      <MenuDrawer
-        isOpen={isMenuDrawerOpen}
-        onClose={() => setIsMenuDrawerOpen(false)}
-        user={user}
-        onOpenProfile={() => setIsProfileModalOpen(true)}
-        onOpenAuth={() => navigate('/login')}
-        onSelectPage={(page) => {
-          if (page.toLowerCase().includes('home')) navigate('/home/overview');
-          else if (page.toLowerCase().includes('forecast')) navigate('/forecast/overview');
-          else if (page.toLowerCase().includes('advisories')) navigate('/advisories');
-          else if (page.toLowerCase().includes('analytics')) navigate('/analytics');
-          else if (page.toLowerCase().includes('download')) navigate('/download');
-          else if (page.toLowerCase().includes('doc')) navigate('/docs');
-        }}
-      />
+      {createPortal(
+        <MenuDrawer
+          isOpen={isMenuDrawerOpen}
+          onClose={() => setIsMenuDrawerOpen(false)}
+          user={user}
+          onOpenProfile={() => setIsProfileModalOpen(true)}
+          onOpenAuth={() => navigate('/login')}
+          onSelectPage={(page) => {
+            if (page.toLowerCase().includes('home')) navigate('/home/overview');
+            else if (page.toLowerCase().includes('forecast')) navigate('/forecast/overview');
+            else if (page.toLowerCase().includes('advisories')) navigate('/advisories');
+            else if (page.toLowerCase().includes('analytics')) navigate('/analytics');
+            else if (page.toLowerCase().includes('download')) navigate('/download');
+            else if (page.toLowerCase().includes('doc')) navigate('/docs');
+          }}
+        />,
+        document.body
+      )}
     </>
   );
 };

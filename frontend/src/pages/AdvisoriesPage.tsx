@@ -938,7 +938,7 @@ export const AdvisoriesPage: React.FC = () => {
       {/* 8. EMERGENCY EMAIL REQUISITION MODAL */}
       <AnimatePresence>
         {isEmailModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs">
+          <div className="fixed inset-0 z-[10001] flex items-center justify-center p-3 sm:p-4 bg-slate-950/70 backdrop-blur-xs">
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -946,23 +946,24 @@ export const AdvisoriesPage: React.FC = () => {
               transition={{ duration: 0.2 }}
               className="bg-white rounded-3xl border border-slate-200 max-w-3xl w-full max-h-[90vh] overflow-y-auto p-6 sm:p-8 shadow-2xl space-y-6"
             >
-              <div className="flex items-center justify-between border-b border-slate-200 pb-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-2xl bg-amber-100 border border-amber-300 flex items-center justify-center text-amber-950">
+              <div className="flex flex-wrap items-start sm:items-center justify-between gap-3 border-b border-slate-200 pb-4">
+                <div className="flex items-start sm:items-center gap-3 min-w-0">
+                  <div className="w-10 h-10 shrink-0 rounded-2xl bg-amber-100 border border-amber-300 flex items-center justify-center text-amber-950">
                     <Mail className="w-5 h-5" />
                   </div>
-                  <div>
-                    <h3 className="text-lg font-black text-slate-900">
+                  <div className="min-w-0">
+                    <h3 className="text-base sm:text-lg font-black text-slate-900 break-words">
                       Emergency Assistance Email Requisition Generator
                     </h3>
-                    <p className="text-xs text-slate-500 font-mono">
+                    <p className="text-xs text-slate-500 font-mono break-words">
                       Pre-formatted official communication aligned with SOD 2019 standards
                     </p>
                   </div>
                 </div>
                 <button
                   onClick={() => setIsEmailModalOpen(false)}
-                  className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 cursor-pointer"
+                  className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 cursor-pointer shrink-0"
+                  aria-label="Close email requisition generator"
                 >
                   <X className="w-5 h-5" />
                 </button>

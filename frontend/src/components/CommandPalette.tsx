@@ -449,7 +449,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onSelectDistrict
           setIsOpen(true);
           setTimeout(() => inputRef.current?.focus(), 50);
         }}
-        className="relative p-2 rounded-xl bg-white/40 hover:bg-white/70 active:bg-white/90 border border-slate-200/50 text-slate-800 hover:text-slate-950 backdrop-blur-md transition-all duration-200 hover:scale-105 active:scale-95 shadow-2xs flex items-center justify-center group shrink-0"
+        className="relative tap-target p-2 rounded-xl bg-white/40 hover:bg-white/70 active:bg-white/90 border border-slate-200/50 text-slate-800 hover:text-slate-950 backdrop-blur-md transition-all duration-200 hover:scale-105 active:scale-95 shadow-2xs flex items-center justify-center group shrink-0"
         title="Search HazardNet (Ctrl+K)"
         aria-label="Search HazardNet"
         data-testid="district-search-trigger"

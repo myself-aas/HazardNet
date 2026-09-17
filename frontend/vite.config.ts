@@ -97,16 +97,21 @@ export default defineConfig(({ mode }) => {
     // Allow the sandbox preview host (e2b.app) in addition to localhost
     allowedHosts: ['.e2b.app'],
     proxy: {
+      // Backend (backend/server.js) runs on 3001 — see the 2026-08-28 audit:
+      // both sides used to claim 3000, so this proxy looped /api straight
+      // back into Vite itself and every /api/chat/* call in dev died on
+      // Vite's SPA-fallback index.html ("There was an error communicating
+      // with the AI").
       '/api': {
-        target: 'http://127.0.0.1:3000',
+        target: 'http://127.0.0.1:3001',
         changeOrigin: true,
       },
       '/metrics': {
-        target: 'http://127.0.0.1:3000',
+        target: 'http://127.0.0.1:3001',
         changeOrigin: true,
       },
       '/health': {
-        target: 'http://127.0.0.1:3000',
+        target: 'http://127.0.0.1:3001',
         changeOrigin: true,
       }
     }

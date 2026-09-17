@@ -325,7 +325,10 @@ export function LocationMap({
           ref={mapContainerRef}
           role="region"
           aria-label={`Mini GIS Map for ${location}`}
-          className="w-full h-full z-0 bg-slate-950 cursor-grab active:cursor-grabbing"
+          /* relative makes z-0 effective so Leaflet's internal panes
+             (z-index 200+) stay contained instead of escaping to the root
+             stacking context over the sticky header. */
+          className="relative w-full h-full z-0 bg-slate-950 cursor-grab active:cursor-grabbing"
         />
 
         {/* Top HUD Controls Overlay */}
