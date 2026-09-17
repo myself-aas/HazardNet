@@ -13,10 +13,10 @@ name: HazardNet Daily Forecast Pipeline
 #                                → frontend/public/data/forecasts-latest.json
 #   commit                       → the website redeploys carrying the new data
 #
-# The three Kaggle-backed workflows (forecast-pipeline, hourly_forecast,
-# weekly_forecast) lost their schedules on 2026-09-16 and are dispatch-only
-# legacy: they need a live Kaggle token + kernel and produced red runs for days
-# while this path needed only the GEE service account. See
+# The Kaggle-backed workflows (forecast-pipeline, hourly_forecast,
+# weekly_forecast, manual_forecast_ingest) were removed entirely on 2026-09-17
+# by owner decision — nothing runs on the Kaggle platform. This GitHub-native
+# pipeline is the single producer: it needs only the GEE service account. See
 # docs/mlops/ARCHITECTURE.md ("Why this is better than the all-Kaggle setup").
 #
 # Delivery is the committed snapshot by default (the production deployment

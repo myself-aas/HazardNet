@@ -155,11 +155,12 @@ jobs:
       - name: Install Python test deps
         run: pip install --requirement scripts/requirements-pipeline.txt pytest
 
-      # Guards the Kaggle pipeline scripts AND the workflow files themselves:
-      # every .github/workflows/*.yml must parse as YAML and must not use the
-      # `secrets` context in ANY `if:` (job or step — GitHub rejects the whole
-      # file with zero jobs either way; gate on a resolved step output
-      # instead — the Sept 2026 CI outage). See scripts/tests/.
+      # Guards the pipeline scripts AND the workflow files themselves: every
+      # .github/workflows/*.yml must parse as YAML, must not use the `secrets`
+      # context in ANY `if:` (job or step — GitHub rejects the whole file with
+      # zero jobs either way; gate on a resolved step output instead — the
+      # Sept 2026 CI outage), and must not depend on Kaggle (removed
+      # 2026-09-17; the runner pipeline is the only producer). See scripts/tests/.
       - name: Run pipeline script tests
         run: python -m pytest scripts/tests -q
 

@@ -3,7 +3,14 @@
      block below). Preserved verbatim as the design record; every divergent
      prescription carries an inline "Reconciled (2026-09-12)" annotation.
      Current truth: docs/codebase/*.md, docs/adr/*.md,
-     docs/audits/2026-09-12-deployment-verification.md. -->
+     docs/audits/2026-09-12-deployment-verification.md.
+
+     Update 2026-09-17: the Kaggle pipeline described here is GONE. The four
+     Kaggle-backed workflows (forecast-pipeline, hourly_forecast,
+     weekly_forecast, manual_forecast_ingest) and their scripts were deleted —
+     nothing runs on the Kaggle platform. The single forecast producer is
+     .github/workflows/daily_forecast.yml, which runs entirely on the GitHub
+     runner (GEE + Open-Meteo + TFLite) and commits the refreshed data. -->
 
 # HazardNet WebApp Deployment System
 ## Production-Ready Automated Forecast Deployment (IEEE TGRS Submission Ready)

@@ -38,7 +38,7 @@ public. **Rotation (revoke → replace) is the fix; nothing in code can do it.**
 |---|---|---|
 | 1 | Supabase DB password (+ pooled URL) | Supabase Dashboard → project → **Settings → Database → Connection string → Reset password**. Copy the new pooler URL (`aws-0-…pooler.supabase.com:6543`) |
 | 2 | Supabase API keys (if the JWT/anon/service values were committed) | Supabase Dashboard → **Settings → API → API Keys → Regenerate** (legacy `service_role` / `anon`) |
-| 3 | Kaggle API token | kaggle.com → avatar → **Settings → API → Revoke** old token → **Create New Token** (gives `username` + `key`) |
+| 3 | ~~Kaggle API token~~ *(removed 2026-09-17)* | No longer used: the Kaggle workflows were deleted — nothing runs on Kaggle. Optionally **delete** `KAGGLE_USERNAME` / `KAGGLE_KEY` from the repo secrets |
 | 4 | Gemini API key (+ backup) | Google AI Studio → **API keys → Delete** old → **Create API key** |
 | 5 | OpenRouter key | openrouter.ai → **Keys → Delete → New key** (set a spend limit) |
 | 6 | Groq key | console.groq.com → **API Keys → Revoke → Create** |
@@ -53,10 +53,12 @@ public. **Rotation (revoke → replace) is the fix; nothing in code can do it.**
 
 Repo → **Settings → Secrets and variables → Actions** → update each (never commit values):
 
-Secrets (9): `BACKEND_API_KEY`, `CODECOV_TOKEN`, `GEMINI_API_KEY`,
-`KAGGLE_KEY`, `KAGGLE_USERNAME`, `SUPABASE_DB_URL` (= new pooler URL from 1a-1),
+Secrets: `BACKEND_API_KEY`, `CODECOV_TOKEN`, `GEMINI_API_KEY`,
+`SUPABASE_DB_URL` (= new pooler URL from 1a-1),
 `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`.
-(`GITHUB_TOKEN` there is automatic — nothing to set.)
+(`GITHUB_TOKEN` there is automatic — nothing to set. The `KAGGLE_USERNAME` /
+`KAGGLE_KEY` secrets are no longer read by anything since the Kaggle workflows
+were removed on 2026-09-17 — delete them at your convenience.)
 
 Additionally required by the GitHub-native forecast pipeline (2026-09-16):
 `EE_SERVICE_ACCOUNT_JSON` (GEE — the data source) and, only when
@@ -64,16 +66,15 @@ Additionally required by the GitHub-native forecast pipeline (2026-09-16):
 
 Variables: `FORECAST_STORE` = `supabase`; `PUSH_TO_API` = `true` **only** once an
 ingest API is deployed and reachable (`/api/v1/forecasts/update` returning 200,
-see §2a-bis); `KAGGLE_KERNEL` only for the legacy Kaggle dispatches.
+see §2a-bis). (`KAGGLE_KERNEL` is unused — the Kaggle workflows are gone.)
 
 Also refresh your own local `.env` from `.env.example` (gitignored — verify with
 `git check-ignore .env`).
 
 ### 1c. Verify the rotation
 
-- Old values are dead: e.g. `curl -H "Authorization: Bearer <OLD>" …` fails;
-  old Kaggle `key` in `~/.kaggle/kaggle.json` returns 401.
-- New values are live: `kaggle datasets list` works; Supabase pooler URL connects
+- Old values are dead: e.g. `curl -H "Authorization: Bearer <OLD>" …` fails.
+- New values are live: Supabase pooler URL connects
   (`psql "<new-url>" -c 'select 1'`); Codecov upload succeeds on the next CI run.
 - **Not required for deploying: no Vercel secret is read by any workflow.**
   Vercel's Git integration builds every preview and the production site on its
@@ -171,12 +172,11 @@ don't wait for the 00:00 UTC clock:
    - Open the site: Peak Hazard Window / Incident Ingestion cards show live dates
      instead of the *"live data unavailable"* fallback.
 
-> Kaggle is now optional everywhere. The three Kaggle workflows
-> (`forecast-pipeline`, `hourly_forecast`, `weekly_forecast`) are
-> `workflow_dispatch`-only legacy — see
-> [`docs/ops/kaggle-pipeline-triage.md`](kaggle-pipeline-triage.md). Rotating the
-> Kaggle token (§1a-3) is therefore **no longer needed to keep the site fresh**;
-> it only matters if you dispatch one of those legacy jobs.
+> Kaggle is gone entirely (2026-09-17): the four Kaggle-backed workflows
+> (`forecast-pipeline`, `hourly_forecast`, `weekly_forecast`,
+> `manual_forecast_ingest`) were **deleted** — nothing in this repository runs
+> on, or talks to, the Kaggle platform, and no Kaggle credential is needed for
+> anything.
 
 ## Action 3 — Confirm branch protection 🟡 (~10 min, after the merge)
 

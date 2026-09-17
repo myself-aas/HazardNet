@@ -206,12 +206,13 @@ export function parseBulkResponse(payload: unknown): ForecastRow[] {
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// Static hourly snapshot — the website's committed fallback data
+// Static forecast snapshot — the website's committed fallback data
 // ─────────────────────────────────────────────────────────────────────────
-// The hourly GitHub workflow (hourly_forecast.yml) downloads the Kaggle
-// notebook's CSV output and regenerates this file inside the website bundle
+// The daily GitHub workflow (daily_forecast.yml) generates the forecast on
+// the runner (scripts/auto_forecast.py — GEE + Open-Meteo + TFLite, no
+// Kaggle) and regenerates this file inside the website bundle
 // (scripts/build_forecast_snapshot.mjs), so every deployment of the codebase
-// ships with forecasts at most one hour behind the latest notebook run —
+// ships with forecasts at most one day behind the latest pipeline run —
 // even when the forecast API/store is unreachable.
 
 /** Public path of the committed hourly snapshot (frontend/public/data/...). */

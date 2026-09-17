@@ -1,13 +1,13 @@
 /**
  * Forecast data hooks — TanStack Query wrappers around
- * `GET /api/v1/forecasts/bulk` (the Kaggle pipeline's serving path).
+ * `GET /api/v1/forecasts/bulk` (the forecast pipeline's serving path).
  *
- * Data cadence: the daily workflow re-runs the Kaggle notebook, and the
- * hourly workflow (hourly_forecast.yml) pulls the notebook's latest CSV
- * output (`kaggle kernels output ashifahmedshuvo/hazardnet-auto-forecast-pipeline`)
- * into the forecast store and into the committed static snapshot. The client
- * polls for fresh data so an open map picks up each hourly refresh without a
- * page reload. When the API is unreachable, the hook falls back to the
+ * Data cadence: the daily workflow (daily_forecast.yml) generates the
+ * forecast on the GitHub runner (scripts/auto_forecast.py — GEE + Open-Meteo
+ * + TFLite; no Kaggle since 2026-09-17) and pushes it into the forecast
+ * store and the committed static snapshot. The client polls for fresh data
+ * so an open map picks up each refresh without a page reload. When the API
+ * is unreachable, the hook falls back to the
  * committed hourly snapshot (/data/forecasts-latest.json); when that is also
  * unavailable, callers degrade to the static `ALL_64_DISTRICTS` baseline via
  * `useLiveDistricts`.
@@ -54,7 +54,7 @@ export function useForecasts(horizon: ForecastHorizon = '7_days') {
   return useQuery({
     queryKey: ['forecasts', 'bulk', horizon],
     queryFn: () => loadForecasts(horizon),
-    // The dataset is refreshed hourly by the Kaggle pipeline. Poll in the
+    // The dataset is refreshed daily by the runner pipeline. Poll in the
     // background so an open map receives each new ingestion without
     // requiring a page reload.
     staleTime: 5 * 60 * 1000,
