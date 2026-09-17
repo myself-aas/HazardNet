@@ -197,6 +197,7 @@ PR #29.
 | This branch's first CI run has E2E **red** | PR #29, run `35286726745` (head `939ef6b`): `Backend Tests`, `Frontend Tests`, `Code Quality & Build`, `Pipeline Scripts Tests`, `Security Audit`, `TFLite bundle smoke` all **success**; `E2E Tests` **failure** |
 | The failure is in the test run, not the build | the job's steps `Install dependencies`, `Install Playwright browsers`, `Build frontend` and `Start preview server` all succeeded; step `Run E2E tests` failed |
 | The cause is therefore in phases 0–9 | the only difference between the green run and this one is this branch's commits |
+| It is **deterministic**, not flaky | two consecutive runs on this branch (`35286726745` @ `939ef6b` and `35287273862` @ `f79f958`) both fail the same job while the other five stay green |
 | It cannot be attributed from the sandbox | the job logs and the `playwright-report` artifact are served from `results-receiver.actions.githubusercontent.com` and Azure blob storage, both unreachable here; and Playwright's browser download plus `npm ci`'s binaries are blocked, so the suite cannot be reproduced locally |
 
 **Consequence:** the branch is not mergeable as it stands — not because the work is wrong, but
