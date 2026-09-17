@@ -17,7 +17,8 @@ name: Hindcast (Phase 9)
 # its tensor needs Sentinel/Landsat/ERA5-Land bands over Earth Engine for the
 # historical window, which is owner-credentialed work.
 #
-# Dispatch-only: an episode is a curated historical event, not a schedule.
+# An episode is a curated historical event, not a schedule: there is no cron here.
+# Dispatch it by hand, or push a change to the harness/episodes (see the `push` trigger).
 # ─────────────────────────────────────────────────────────────────────────────
 
 on:
@@ -27,6 +28,15 @@ on:
         description: 'Episode id from data/hindcast/episodes/ (or "all")'
         required: false
         default: 'all'
+  # `workflow_dispatch` only fires for a workflow that exists on the default branch, so the
+  # harness also runs when its own inputs change. The path filter deliberately excludes
+  # `data/hindcast/drivers/**` and `data/hindcast/reports/**` — the two paths this workflow
+  # commits — which keeps the bot's own commit from re-triggering the run.
+  push:
+    paths:
+      - 'scripts/hindcast/**'
+      - 'data/hindcast/episodes/**'
+      - '.github/workflows/hindcast.yml'
 
 concurrency:
   group: hindcast-${{ github.ref }}
