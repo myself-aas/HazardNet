@@ -358,6 +358,24 @@ for this).
 | Why was this alert published? | `alert_audit` + the frozen `evidence_snapshot` (ADR 0010) |
 | Is the model still behaving? | Phase 3 eval harness: per-class metrics, drift, POD/FAR — **not yet built** |
 
+### 6.1 The content and search surface (Phase 8)
+
+Phase 8 answers a question §6 did not: *what can a person (or a crawler) learn without opening
+the map?* The rule is the same one the status page follows — a page may state what a committed
+artifact says and nothing else.
+
+| Question | Answer source |
+| --- | --- |
+| What does this hazard class mean, and what does the score not mean? | one page per class under `/hazards`, composed from `src/content/hazard-methodology.json` + the current run |
+| What does the current run say about my district? | `/districts/<id>` — hazard class, severity, confidence and the physics cross-check per horizon, plus the static baseline and the coverage gap |
+| What is the recorded history? | only when an event archive is loaded: district history sections + `/retrospectives/<year>`, each printing its own count and the drift against the model card's 2,931 claim |
+| What is the canonical URL of this page? | `www.hazardnet.live` — declared in `src/content/site-routes.json`, enforced by `scripts/prerender.mjs`, mirrored by the apex redirect in both `vercel.json` files |
+| What did the build publish? | `frontend/public/data/content-index.json` (committed inventory), regenerated with the pages and gated by `--check` |
+
+The pages are **composed, never authored per district**: the prose is reviewed once in
+`hazard-methodology.json`, and the numbers come from the same snapshot the deployment serves. That
+is the only arrangement in which 74 pages can stay true to a pipeline that runs daily.
+
 ---
 
 ## 7. Complexity budget (deliberate)

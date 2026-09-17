@@ -48,7 +48,14 @@ const OUT_PATH = resolve(process.argv[3] || 'frontend/public/data/forecasts-late
 const KERNEL = process.env.SNAPSHOT_KERNEL || 'ashifahmedshuvo/hazardnet-auto-forecast-pipeline';
 // Provenance is caller-supplied: the Kaggle workers keep the historical
 // string, the GitHub-native producer passes its own (see the header).
-const SOURCE = process.env.SNAPSHOT_SOURCE || `kaggle kernels output ${KERNEL}`;
+// The Kaggle string is the legacy default, and it is a *claim*: a snapshot rebuilt by hand from
+// a CSV that came off the GitHub Actions pipeline was previously stamped "kaggle kernels output
+// …" because the caller did not set SNAPSHOT_SOURCE. The workflows do set it (daily_forecast.yml
+// passes the Actions string), so this branch only runs for local/manual rebuilds — where the
+// honest answer is that nobody declared a producer. `docs/ops/SEO_AND_CONTENT.md` §7 records the
+// committed snapshot that still carries the old label; its rows match the committed CSV exactly.
+const SOURCE = process.env.SNAPSHOT_SOURCE
+  || `unspecified: built outside a workflow (no SNAPSHOT_SOURCE); the Kaggle slug would have been ${KERNEL}`;
 const REPORT_PATH = resolve(process.env.SNAPSHOT_RUN_REPORT || 'hazardnet_run_report.json');
 // Published alongside the CSV/JSON sidecar by scripts/publish_forecast_csv.py.
 // It carries the per-unit and run-level `dataset_version` (PRODUCT_SPEC §5.8);

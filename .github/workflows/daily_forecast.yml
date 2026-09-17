@@ -62,14 +62,22 @@ jobs:
           cache-dependency-path: scripts/requirements-inference.txt
 
       - name: Set up Node.js
-        # Only for scripts/build_forecast_snapshot.mjs, which has zero npm
-        # dependencies — so this job installs no node_modules at all.
+        # The snapshot/policy scripts have zero npm dependencies, but the content
+        # rebuild below runs the real build (engine -> vite -> prerender) so the
+        # committed content pages and the content index are refreshed together —
+        # see the "Rebuild generated content pages and the content index" step.
         uses: actions/setup-node@v7
         with:
           node-version: '20'
+          cache: 'npm'
 
       - name: Install Optimized Dependencies
         run: pip install -r scripts/requirements-inference.txt
+
+      - name: Install workspace dependencies
+        # Root install: `frontend/` is an npm workspace, so this is what gives the
+        # build below its toolchain (vite, the prerenderer's deps).
+        run: npm ci --no-audit --no-fund
 
       - name: Preflight -- verify required secrets
         shell: bash
@@ -209,6 +217,19 @@ jobs:
         shell: bash
         run: node scripts/build_freshness_artifact.mjs
 
+      # Phase 8: the content engine's pages are derived from the snapshot above, so they are
+      # rebuilt in the same run that rewrites it. A district page quoting yesterday's run is the
+      # same class of lie the freshness artifact exists to prevent.
+      # The full build, not just the engine: `npm run build` regenerates
+      # `frontend/src/content/generated-routes.json` from the snapshot this run just
+      # published and then prerenders every route, which is what rewrites the committed
+      # `frontend/public/data/content-index.json` (and the served `dist/` copy). Both are
+      # staged by the commit step below, so the repository can never carry pages or an
+      # inventory that describe a different snapshot than the one published here.
+      - name: Rebuild generated content pages and the content index
+        shell: bash
+        run: npm run build:frontend
+
       - name: Commit refreshed data
         shell: bash
         run: |
@@ -217,6 +238,10 @@ jobs:
           git add backend/data/forecasts/ frontend/public/data/forecasts-latest.json
           # The derived status artifact travels with the data it describes (Phase 7).
           git add frontend/public/data/freshness.json
+          # Content engine output (Phase 8): the generated pages plus the committed index of
+          # what the build published. `--check` in CI fails if they stop matching the snapshot.
+          git add frontend/src/content/generated-routes.json
+          git add frontend/public/data/content-index.json
           # Only stages the alert snapshot when the builder actually produced one;
           # `git add` on a missing path would fail the whole commit step.
           if [ -f frontend/public/data/alerts-latest.json ]; then

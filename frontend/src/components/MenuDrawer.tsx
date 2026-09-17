@@ -125,6 +125,8 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
       icon: 'folder',
       items: [
         { id: 'documentation', title: 'Documentation', path: '/docs', icon: 'description' },
+        { id: 'hazard-methodology', title: 'Hazard Methodology', path: '/hazards', icon: 'menu_book' },
+        { id: 'district-outlooks', title: 'District Outlooks', path: '/districts', icon: 'location_on' },
         { id: 'status', title: 'System Status', path: '/status', icon: 'monitor_heart' },
         { id: 'upload', title: 'Upload Data', path: '/upload', icon: 'cloud_upload' },
         { id: 'use-cases', title: 'Use Cases', path: '/use-cases', icon: 'lightbulb' },

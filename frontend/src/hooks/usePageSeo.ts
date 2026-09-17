@@ -16,7 +16,10 @@
 
 import { useEffect, useMemo } from 'react';
 import siteRoutes from '../content/site-routes.json';
+import generatedRoutes from '../content/generated-routes.json';
+import attribution from '../content/attribution.json';
 import { createHeadManager, type HeadManager } from '../lib/seoHead';
+import { buildJsonLdGraph } from '../lib/structuredData.js';
 import type { SeoHead } from '../lib/blogSeo';
 
 interface RouteContent {
@@ -39,12 +42,35 @@ interface RouteContent {
   faqs?: Array<{ question: string; answer: string }>;
 }
 
+/**
+ * Extra fields the content engine writes (Phase 8). They are not rendered by this hook — they
+ * exist so the structured-data builder can describe the page accurately (breadcrumb trail, the
+ * place a district page is about, a dataset the page documents).
+ */
+interface RouteSeoExtras {
+  breadcrumb?: Array<{ name: string; path?: string }>;
+  structuredData?: {
+    place?: Record<string, unknown>;
+    dataset?: { kind: 'event-archive' | 'forecast'; name?: string; temporalCoverage?: string };
+  };
+}
+
+type RouteWithExtras = RouteContent & RouteSeoExtras;
+
 const SITE = siteRoutes.site;
 const ORIGIN = SITE.origin.replace(/\/$/, '');
 
-const ALL_ROUTES: RouteContent[] = [
-  ...(siteRoutes.routes as unknown as RouteContent[]),
-  ...((siteRoutes.appScreens ?? []) as unknown as RouteContent[]),
+/**
+ * The hand-written routes plus the content engine's generated pages (`generated-routes.json`,
+ * written by scripts/build_content_engine.mjs). Merging them here means a client-side navigation
+ * to `/hazards/…`, `/districts/…` or `/retrospectives/…` updates the title, canonical, robots
+ * directive and JSON-LD exactly as the prerendered HTML already has them — otherwise the SPA
+ * would keep the shell's metadata on every generated page.
+ */
+const ALL_ROUTES: RouteWithExtras[] = [
+  ...(siteRoutes.routes as unknown as RouteWithExtras[]),
+  ...((siteRoutes.appScreens ?? []) as unknown as RouteWithExtras[]),
+  ...(generatedRoutes.routes as unknown as RouteWithExtras[]),
 ];
 
 /** Content for a public page, keyed by its route path (e.g. `/methodology`). */
@@ -59,9 +85,8 @@ export function canonicalFor(pathname: string): string {
   return `${ORIGIN}${normalized}`;
 }
 
-function buildSeoHead(route: RouteContent): SeoHead {
+function buildSeoHead(route: RouteWithExtras): SeoHead {
   const canonical = canonicalFor(route.path);
-  const faqs = route.faqs ?? [];
   return {
     title: route.title,
     description: route.description,
@@ -75,28 +100,12 @@ function buildSeoHead(route: RouteContent): SeoHead {
     authorName: SITE.publisher.name,
     section: route.label ?? null,
     tags: route.keywords ?? [],
-    jsonLd:
-      faqs.length > 0
-        ? {
-            '@context': 'https://schema.org',
-            '@type': 'FAQPage',
-            '@id': `${canonical}#faq`,
-            mainEntity: faqs.map((faq) => ({
-              '@type': 'Question',
-              name: faq.question,
-              acceptedAnswer: { '@type': 'Answer', text: faq.answer },
-            })),
-          }
-        : null,
+    // The full @graph from the shared builder (src/lib/structuredData.js) — the same module
+    // scripts/prerender.mjs calls, so hydration cannot replace a richer graph with a poorer one.
+    jsonLd: buildJsonLdGraph({ route, site: SITE, attribution }),
   };
 }
 
-/**
- * Applies the metadata for `pathname` for as long as the calling page is
- * mounted. Falls back to a noindex directive for paths with no route entry, so
- * an unknown deep link that the SPA resolves to the 404 page is never indexed
- * as a valid page (soft-404 protection).
- */
 export function usePageSeo(pathname: string): RouteContent | undefined {
   const route = useMemo(() => pageContent(pathname), [pathname]);
   const manager: HeadManager = useMemo(() => createHeadManager(document), []);

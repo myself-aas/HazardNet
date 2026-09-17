@@ -163,8 +163,22 @@ export const Footer: React.FC = () => {
                 <Link to="/status" className="hover:text-slate-900 transition-colors">
                   System Status
                 </Link>
+              </li>
+              <li>
                 <Link to="/blogs" className="hover:text-slate-900 transition-colors">
                   Research Blogs & Field Insights
+                </Link>
+              </li>
+              {/* Phase 8 content engine: the hazard-by-hazard methodology and the per-district
+                  outlooks are crawlable reference pages, so they belong in the footer nav. */}
+              <li>
+                <Link to="/hazards" className="hover:text-slate-900 transition-colors">
+                  Hazard Methodology
+                </Link>
+              </li>
+              <li>
+                <Link to="/districts" className="hover:text-slate-900 transition-colors">
+                  District Outlooks
                 </Link>
               </li>
               <li>

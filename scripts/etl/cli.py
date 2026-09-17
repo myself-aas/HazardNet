@@ -8,6 +8,7 @@ DSN, and the SQL they would apply is written out for review either way.
 
     python -m etl.cli districts
     python -m etl.cli events --input events.csv --claimed-total 2931 --emit-sql out/events.sql
+    python -m etl.cli events --input events.csv --export-json data/events/hazardnet-events.json
     python -m etl.cli hydrology --input ffwc.json --rows backend/data/forecasts/…csv --report hydrology.json
     python -m etl.cli bulletins --input bmd.txt --advisories advisories.json
     python -m etl.cli cog --plan fixture_jobs.json --manifest cog-manifest.json
@@ -128,6 +129,31 @@ def cmd_events(args) -> int:
         'path': (db_module.write_script(script, args.emit_sql)
                  if args.emit_sql and not args.dry_run else None),
     }
+    # The content engine (`scripts/build_content_engine.mjs --events`) publishes the district
+    # history sections and the retrospectives from this file, so it carries the same drift
+    # statement the report does: the measured count, the claimed 2,931 and the difference. The
+    # export is the *normalised* rows — identical to what the SQL above loads — not the raw source
+    # rows, so a page cannot show something the loader would have rejected.
+    if args.export_json and not args.dry_run:
+        export_payload = {
+            'schema': 'hazardnet-events-export/v1',
+            'etl_version': ETL_VERSION,
+            'run_id': run_id,
+            'source': str(args.source),
+            'generated_at': report['finished_at'],
+            'claimed_total': claim['claimed'],
+            'ingested': summary['total'],
+            'drift': claim['drift'],
+            'counts': summary,
+            'events': outcome['events'],
+        }
+        export_text = json.dumps(export_payload, indent=2) + '\n'
+        Path(args.export_json).write_text(export_text, encoding='utf-8')
+        report['export_json'] = {
+            'path': str(args.export_json),
+            'events': summary['total'],
+            'bytes': len(export_text),
+        }
     if args.report and not args.dry_run:
         Path(args.report).write_text(json.dumps(report, indent=2) + '\n', encoding='utf-8')
 
@@ -319,6 +345,9 @@ def build_parser() -> argparse.ArgumentParser:
                    help='the count docs/MODEL_CARD.md quotes; the run reports the drift, never asserts it')
     p.add_argument('--emit-sql', metavar='PATH', help='write the load script here')
     p.add_argument('--report', metavar='PATH', help='write the JSON run report here')
+    p.add_argument('--export-json', metavar='PATH',
+                   help='write the normalised events (exactly the rows the SQL loads) as JSON for '
+                        'the content engine (`scripts/build_content_engine.mjs --events`)')
     p.add_argument('--run-id', help='override the generated run id')
     p.add_argument('--apply', action='store_true', help='apply the script to a live database')
     p.add_argument('--dsn', default=None, help='Postgres DSN (or HAZARDNET_DATABASE_URL)')

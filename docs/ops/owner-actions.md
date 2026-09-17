@@ -514,3 +514,96 @@ write access from this workflow, and every other workflow keeps its own least-pr
 That is the page working: the live deployment serves none of the declared security headers, its
 API routes 404, and its sitemap predates Phase 0. A green probe before Action 7 would mean the
 probe is broken.
+
+---
+
+## Action 10 — Put the site in front of search engines 🔴 (P0 for discoverability, ~30 min)
+
+**What is missing:** nobody has ever told Google or Bing the site exists. There is no Search
+Console property, no Bing Webmaster property, and therefore no sitemap submission, no coverage
+report and no way to see whether the 87 URLs the build now publishes are being indexed. Phase 8
+made the *surface* crawlable (static HTML for every route, one canonical host, a sitemap generated
+from the build); this action is what makes it *discovered*.
+
+**Steps**
+
+1. **Verify the domain in Google Search Console.** Use the **Domain** property for
+   `hazardnet.live` (not a URL-prefix property): DNS verification covers the apex, `www` and every
+   future subdomain in one record. The TXT record goes in the DNS zone that serves
+   `hazardnet.live`; the Vercel project's *Domains* tab shows which nameserver/host is authoritative
+   if it is not obvious.
+2. **Verify in Bing Webmaster Tools.** Bing offers "import from Google Search Console" once step 1
+   is done — use it, and keep the same account.
+3. **Submit the sitemap:** `https://www.hazardnet.live/sitemap.xml`. Do not submit the apex URL; it
+   redirects, and a sitemap that redirects is reported as an error.
+4. **Confirm the canonical host is being chosen.** In Search Console → *Pages*, after a few days,
+   the reported canonical URL for `/districts/bhola` must be `https://www.hazardnet.live/districts/bhola`.
+   If the apex appears instead, check the redirects in `vercel.json` are live (`curl -sI
+   https://hazardnet.live/districts/bhola` must answer `308` with a `location:` on www).
+5. **Watch coverage for 28 days.** Expect three states: indexed, "Discovered – currently not
+   indexed" (normal for a young site), and the four districts the current run did not cover — those
+   are `noindex,follow` **by design** and must appear in the report as *Excluded by 'noindex'*. If
+   they show as *Duplicate*, the district pages are being compared to each other and the place
+   metadata in their JSON-LD needs looking at (`__tests__/structuredData.test.js` covers the graph).
+
+**Evidence to record here when done:** which account owns each property, the date of verification,
+the date the sitemap was accepted, and the first coverage numbers.
+
+**Do not** buy links, submit to link farms, or add the site to directories that do not have a
+disaster/agriculture remit — the domain's credibility with the audiences in Action 11 is worth more
+than any ranking a paid link would produce.
+
+---
+
+## Action 11 — Request the listings and citations the project is defensible enough to ask for 🟠 (ongoing, ~2 h)
+
+The 2026-09 deployment is honest enough to be cited — it publishes its provenance, its freshness,
+its coverage gaps and its model's limits — and a citation from an authoritative portal is worth
+more than any on-site SEO change. Each item below is an outbound request from the thesis author;
+none can be performed by a workflow.
+
+| Target | Route in | What to send |
+| --- | --- | --- |
+| **Department of Agrometeorology, BAU** (supervisor: `https://bau.edu.bd/profile/AGRON1013`) | supervisor | request a project/student-work page linking to the site and the repository |
+| **DDM** (Department of Disaster Management) | `ddm.gov.bd` contact form / the district office | one-page summary: what the tool does, what it does not claim, and the `/status` page |
+| **BMD**, **FFWC** | the offices the pipeline already reads data from | note that their bulletins are cited as inputs on `/data-sources`; ask whether a reciprocal tools/partners listing exists |
+| **ReliefWeb** (OCHA) | submission form for "apps/tools" | the repository + a description that states the hindcast is not yet run |
+| **HDX / OCHA Centre for Humanitarian Data** | HDX dataset discussion | the forecast snapshot and its schema; note the historical archive is not redistributed |
+| **EM-DAT (CRED, UCLouvain)** | their data-use contact | the event store cites EM-DAT-style records; ask whether the loader's mapping is acceptable before publishing counts |
+| **FAO (agrometeorology / GIEWS)** | country office | the advisories surface and the district export |
+| **Google Earth Engine** (developer/community showcase) | community forum / developer program | the Sentinel-2, Landsat 8 and ERA5-Land collections the pipeline consumes |
+| **GitHub** | repository page (`github.com/myself-aas/HazardNet`) | topics, description, `CITATION.cff` (already committed — the "Cite this repository" button now works), and a release tag |
+| **Data providers**: Vercel, Firebase, Open-Meteo, Leaflet, OpenStreetMap, Copernicus (Sentinel-2), USGS/NASA (Landsat 5/7/8), ECMWF (ERA5-Land), Copernicus EMS, SAR (Sentinel-1) | their community/showcase or "who uses this" pages | a short note naming exactly which product is used and where it is credited |
+| **University disaster-research centres** (BUET, DU IWFM, BAU, KUET and international groups working on Bangladesh) | direct email | the methodology pages, so a reviewer can check the physics without reading the code |
+
+**Rule:** send the site's own state, not a pitch. The current state includes: the pipeline stamps no
+model version, no calibration map exists, nothing above `WATCH` can be published automatically,
+coverage is partial (60 of 64 districts in the committed run), and the historical archive is not
+published. Any listing that requires an accuracy claim cannot be honestly filled in yet — that is
+what Phase 9's hindcast is for. Record who replied, when, and what they asked for.
+
+---
+
+## Action 12 — Decide the event archive's fate 🟡 (owner decision, then ~1 h)
+
+`docs/MODEL_CARD.md` §4 quotes **2,931 events (2000–2025)**, and Phase 8 built the pages that would
+publish what it contains — but the archive itself is not in the repository, so every district page
+currently says "no archive loaded" and `/retrospectives` does not exist. Three coherent options:
+
+1. **Load it privately (fastest, smallest claim).** Run the three commands in
+   `docs/ops/SEO_AND_CONTENT.md` §4 on the machine that has the export, rebuild, and the district
+   history sections and the retrospectives appear with the archive's own counts and the drift
+   against 2,931 printed beside them. The file stays untracked; the *pages* are committed. Note
+   that the committed pages would then quote counts derived from third-party data — acceptable for
+   a summary, and each page names its source.
+2. **Publish it with a DOI.** Deposit the normalised export on Zenodo (or Kaggle, where the working
+   copy already lives), then load it as in option 1 and add the DOI to `/data-sources` and the
+   JSON-LD `Dataset` node. This is the option that makes the archive *citable*, which is what the
+   Phase 8 structured data was written to support — but it needs a redistribution-rights decision
+   from the author, because the rows are assembled from sources with their own terms.
+3. **Leave it out.** The honest fallback the site already implements. Nothing breaks; the district
+   pages keep saying why the section is empty, and the model card keeps owning the 2,931 figure.
+
+Whichever is chosen, record it here. Until one is, the pages must keep saying "no archive loaded" —
+and `scripts/tests/test_content_engine.py` will fail any build that fills that space with a number
+nobody read.

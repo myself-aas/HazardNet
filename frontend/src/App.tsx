@@ -49,6 +49,20 @@ const ChatBot = lazy(() => import('./components/ChatBot'));
 // and is prerendered to static HTML at build time (scripts/prerender.mjs).
 const ArticlePage = lazy(() => import('./components/ArticlePage'));
 
+/**
+ * Generated content pages (Phase 8). The hazard methodology pages, the district outlooks and the
+ * season retrospectives are produced by `scripts/build_content_engine.mjs` into
+ * `src/content/generated-routes.json`, so their paths depend on the 64-district and 8-hazard lists
+ * rather than being written out here one by one. They render through the same long-form page as
+ * `/methodology`: `ArticlePage` resolves its copy from the URL, and `usePageSeo` marks a path the
+ * engine did not generate `noindex,follow` — so an invented slug such as `/districts/atlantis`
+ * gets the unavailable state instead of a page that pretends to be a district outlook.
+ */
+const GeneratedContentPage: React.FC = () => {
+  const { pathname } = useLocation();
+  return <ArticlePage path={pathname} />;
+};
+
 /** Full-height fallback shown while a lazy route chunk streams in. */
 const RouteFallback = () => (
   <div className="w-full min-h-[50vh] flex items-center justify-center" role="status" aria-label="Loading page">
@@ -208,6 +222,15 @@ const AppContent: React.FC = () => {
               {/* Phase 7 observability: what the deployment's own committed artifacts say
                   about the freshness of the data it ships (frontend/public/data/freshness.json). */}
               <Route path="/status" element={<StatusPage />} />
+              {/* Phase 8 content engine: hazard-by-hazard methodology, a page per district built
+                  from the run this deployment serves, and (when an event archive is loaded)
+                  annual retrospectives. All three are prerendered statically at build time. */}
+              <Route path="/hazards" element={<GeneratedContentPage />} />
+              <Route path="/hazards/:slug" element={<GeneratedContentPage />} />
+              <Route path="/districts" element={<GeneratedContentPage />} />
+              <Route path="/districts/:id" element={<GeneratedContentPage />} />
+              <Route path="/retrospectives" element={<GeneratedContentPage />} />
+              <Route path="/retrospectives/:year" element={<GeneratedContentPage />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/terms" element={<Terms />} />
               <Route path="/privacy" element={<Privacy />} />

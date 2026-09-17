@@ -31,12 +31,16 @@
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { buildJsonLdGraph } from '../src/lib/structuredData.js';
 
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const frontendDir = path.resolve(scriptDir, '..');
 const distDir = path.join(frontendDir, 'dist');
 const contentPath = path.join(frontendDir, 'src', 'content', 'site-routes.json');
 const blogIndexPath = path.join(frontendDir, 'public', 'data', 'blog-index.json');
+const generatedRoutesPath = path.join(frontendDir, 'src', 'content', 'generated-routes.json');
+const attributionPath = path.join(frontendDir, 'src', 'content', 'attribution.json');
+const contentIndexPath = path.join(frontendDir, 'public', 'data', 'content-index.json');
 
 const BUILD_DATE = new Date().toISOString().slice(0, 10);
 
@@ -53,6 +57,9 @@ if (!existsSync(contentPath)) {
 }
 
 const site = JSON.parse(readFileSync(contentPath, 'utf8'));
+// Read rather than imported: Node cannot `import` JSON without an import attribute, and this
+// script shares the structured-data module with the SPA (which imports it through Vite).
+const attribution = JSON.parse(readFileSync(attributionPath, 'utf8'));
 const origin = site.site.origin.replace(/\/$/, '');
 const template = readFileSync(path.join(distDir, 'index.html'), 'utf8');
 const statusArtifact = loadFreshnessArtifact();
@@ -222,101 +229,13 @@ function injectIntoRoot(html, body) {
   return `${html.slice(0, start)}${body}${html.slice(cursor)}`;
 }
 
+/**
+ * Structured data comes from `src/lib/structuredData.js` — the same module the SPA imports — so
+ * the graph a crawler reads in this static HTML and the graph it would see after hydration are
+ * produced by one implementation rather than two that agree today and diverge later.
+ */
 function jsonLdFor(route) {
-  const graph = [
-    {
-      '@type': 'WebSite',
-      '@id': `${origin}/#website`,
-      url: `${origin}/`,
-      name: site.site.name,
-      description: site.site.defaultDescription,
-      inLanguage: site.site.locale,
-      publisher: { '@id': `${origin}/#organization` },
-    },
-    {
-      '@type': 'Organization',
-      '@id': `${origin}/#organization`,
-      name: site.site.publisher.name,
-      url: site.site.publisher.url,
-      logo: site.site.publisher.logo,
-      email: site.site.publisher.email,
-      areaServed: { '@type': 'Country', name: 'Bangladesh' },
-      knowsAbout: [
-        'flood early warning',
-        'drought monitoring',
-        'tropical cyclone risk',
-        'agricultural disaster risk reduction',
-      ],
-    },
-  ];
-
-  const pageUrl = canonicalFor(route.path);
-  graph.push({
-    '@type': 'WebPage',
-    '@id': `${pageUrl}#webpage`,
-    url: pageUrl,
-    name: route.title,
-    description: route.description,
-    isPartOf: { '@id': `${origin}/#website` },
-    inLanguage: site.site.locale,
-    ...(route.updated ? { dateModified: route.updated } : {}),
-  });
-
-  if (route.path === '/' || route.path === '/model' || route.path === '/methodology') {
-    graph.push({
-      '@type': 'SoftwareApplication',
-      name: 'HazardNet',
-      applicationCategory: 'WeatherApplication',
-      operatingSystem: 'Web',
-      url: `${origin}/`,
-      description: site.site.defaultDescription,
-      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
-      featureList: [
-        'Multi-hazard forecasting for Bangladesh (8 hazard classes)',
-        '7- and 15-day district outlooks with confidence bins',
-        'Dual-track severity (model severity + formula-based physics estimate)',
-        'Offline-capable map tiles and PDF export',
-      ],
-    });
-  }
-
-  if (route.path === '/data-sources') {
-    graph.push({
-      '@type': 'Dataset',
-      name: 'HazardNet multi-hazard forecast archive (Bangladesh)',
-      description:
-        'Per-unit hazard classification and severity forecasts for Bangladesh at 7- and 15-day horizons, derived from Sentinel-1/2, ERA5-Land and Open-Meteo.',
-      url: `${origin}/download`,
-      spatialCoverage: { '@type': 'Place', name: 'Bangladesh' },
-      variableMeasured: ['hazard class', 'severity index', 'confidence bin'],
-      creator: { '@id': `${origin}/#organization` },
-      isAccessibleForFree: true,
-    });
-  }
-
-  if (Array.isArray(route.faqs) && route.faqs.length > 0) {
-    graph.push({
-      '@type': 'FAQPage',
-      '@id': `${pageUrl}#faq`,
-      mainEntity: route.faqs.map((faq) => ({
-        '@type': 'Question',
-        name: faq.question,
-        acceptedAnswer: { '@type': 'Answer', text: faq.answer },
-      })),
-    });
-  }
-
-  graph.push({
-    '@type': 'BreadcrumbList',
-    itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'HazardNet', item: `${origin}/` },
-      ...(route.path === '/'
-        ? []
-        : [{ '@type': 'ListItem', position: 2, name: route.label ?? route.h1 ?? route.path, item: pageUrl }]),
-    ],
-  });
-
-  return { '@context': 'https://schema.org', '@graph': graph };
+  return buildJsonLdGraph({ route, site: site.site, attribution });
 }
 
 /** Per-route <head> contents, replacing the shell's placeholder metadata. */
@@ -525,7 +444,7 @@ function buildArticleHtml(article) {
 
 /* ──────────────────────────── sitemap / robots ──────────────────────────── */
 
-function buildSitemap(articleRoutes) {
+function buildSitemap(articleRoutes, generatedRoutes) {
   const entries = site.routes
     .filter((route) => route.sitemap)
     .map((route) => ({
@@ -534,6 +453,19 @@ function buildSitemap(articleRoutes) {
       changefreq: route.sitemap.changefreq,
       priority: route.sitemap.priority,
     }));
+
+  // Generated pages join the sitemap only when the content engine marked them indexable. A
+  // district the run did not cover carries `robots: noindex,follow` and no sitemap entry, so the
+  // sitemap can never advertise a page whose only content is a statement that there is no data.
+  for (const route of generatedRoutes) {
+    if (!route.sitemap) continue;
+    entries.push({
+      loc: canonicalFor(route.path),
+      lastmod: route.updated ?? BUILD_DATE,
+      changefreq: route.sitemap.changefreq,
+      priority: route.sitemap.priority,
+    });
+  }
 
   for (const article of articleRoutes) {
     entries.push({
@@ -698,7 +630,85 @@ function renderStatusPanel(artifact) {
   );
 }
 
+/* ──────────────────────── generated content (Phase 8) ──────────────────────── */
+
+/**
+ * `src/content/generated-routes.json` is written by `scripts/build_content_engine.mjs` from the
+ * forecast snapshot this deployment serves, the authored hazard methodology and the district
+ * table. It is required: building without it would publish a site missing 74 of its pages, which
+ * is the class of failure the 2026-09-17 audit found (a sitemap listing URLs the build never
+ * wrote). `npm run build` regenerates it first, so the pages and the data cannot drift.
+ */
+function loadGeneratedRoutes() {
+  if (!existsSync(generatedRoutesPath)) {
+    fail('src/content/generated-routes.json is missing — run `node scripts/build_content_engine.mjs`.');
+  }
+  let parsed;
+  try {
+    parsed = JSON.parse(readFileSync(generatedRoutesPath, 'utf8'));
+  } catch (error) {
+    fail(`src/content/generated-routes.json is not readable JSON: ${error.message}`);
+  }
+  if (!Array.isArray(parsed.routes) || parsed.routes.length === 0) {
+    fail('src/content/generated-routes.json contains no routes.');
+  }
+  return parsed;
+}
+
+/**
+ * The committed, reviewable inventory of what this build published
+ * (`public/data/content-index.json`): routes with their robots directive and sitemap flag, the
+ * counts, and the inputs — 8 kB of routing facts instead of the 400 kB of page copy. The
+ * site-health probe reads it to check that the deployment still serves what the index claims.
+ */
+function writeContentIndex(document, prerenderedPaths) {
+  const index = {
+    schema: 'hazardnet-content-index/v1',
+    generated_at: document.generated_at,
+    generated_by: document.generated_by,
+    origin: document.origin,
+    inputs: document.inputs,
+    counts: {
+      ...document.counts,
+      prerendered_html_files: prerenderedPaths.length,
+      sitemap_urls:
+        site.routes.filter((route) => route.sitemap).length +
+        document.routes.filter((route) => route.sitemap).length +
+        blogArticleCount,
+    },
+    unmatched_snapshot_districts: document.unmatched_snapshot_districts ?? [],
+    routes: document.routes.map((route) => ({
+      path: route.path,
+      title: route.title,
+      robots: route.robots ?? 'index,follow',
+      in_sitemap: Boolean(route.sitemap),
+    })),
+  };
+  const serialised = `${JSON.stringify(index, null, 2)}\n`;
+  // Two copies on purpose: `public/data/content-index.json` is the committed, reviewable record
+  // of what the site published, and `dist/data/content-index.json` is the copy the deployment
+  // actually serves. Vite copies `public/` before this script runs, so without the second write
+  // the served index would describe the *previous* build.
+  writeFileSync(contentIndexPath, serialised);
+  mkdirSync(path.join(distDir, 'data'), { recursive: true });
+  writeFileSync(path.join(distDir, 'data', 'content-index.json'), serialised);
+}
+
 /* ──────────────────────────────── main ──────────────────────────────── */
+
+/**
+ * The canonical host is `www.hazardnet.live`: the apex answers 308 → www, `security.txt`'s
+ * Canonical and Policy fields use www, and every canonical tag this build writes uses it. The
+ * build refuses to emit an apex canonical rather than shipping two URLs for one page — see
+ * docs/ops/SEO_AND_CONTENT.md for the decision and the edge redirect that mirrors it.
+ */
+const CANONICAL_HOST = 'www.hazardnet.live';
+if (new URL(origin).host !== CANONICAL_HOST) {
+  fail(`content origin is ${new URL(origin).host} but the canonical host is ${CANONICAL_HOST} — fix src/content/site-routes.json`);
+}
+
+const generated = loadGeneratedRoutes();
+const blogArticleCount = loadBlogIndex().length;
 
 const prerendered = [];
 for (const route of site.routes) {
@@ -712,6 +722,14 @@ for (const screen of site.appScreens ?? []) {
   const route = { ...screen, sections: [], sitemap: null };
   writeRoute(route, buildHtml(route));
   prerendered.push(`${route.path} (noindex)`);
+}
+
+// The content engine's pages (hazard methodology, district outlooks, retrospectives). Each one is
+// a real HTML file for the same reason the hand-written routes are: a crawler and a no-JavaScript
+// visitor get the full text without executing the SPA.
+for (const route of generated.routes) {
+  writeRoute(route, buildHtml(route));
+  prerendered.push(`${route.path}${/^noindex/.test(route.robots ?? '') ? ' (noindex)' : ''}`);
 }
 
 const blogArticles = loadBlogIndex();
@@ -731,7 +749,8 @@ for (const article of blogArticles) {
 // Sitemap + robots are regenerated so they can never list a URL that the build
 // does not actually serve (the 2026-09-17 audit found exactly that: a sitemap
 // of eight URLs, seven of which returned 404).
-writeFileSync(path.join(distDir, 'sitemap.xml'), buildSitemap(blogArticles));
+writeFileSync(path.join(distDir, 'sitemap.xml'), buildSitemap(blogArticles, generated.routes));
+writeContentIndex(generated, prerendered);
 
 const robotsSource = path.join(frontendDir, 'public', 'robots.txt');
 if (existsSync(robotsSource)) {
@@ -748,7 +767,8 @@ if (existsSync(robotsSource)) {
 writeFileSync(path.join(distDir, '404.html'), template);
 
 console.log(
-  `[prerender] ${prerendered.length} routes written (${blogArticles.length} blog articles), ` +
-    `sitemap.xml with ${site.routes.filter((r) => r.sitemap).length + blogArticles.length} URLs.`
+  `[prerender] ${prerendered.length} routes written (${blogArticles.length} blog articles, ` +
+    `${generated.routes.length} from the content engine), sitemap.xml with ` +
+    `${site.routes.filter((r) => r.sitemap).length + generated.routes.filter((r) => r.sitemap).length + blogArticles.length} URLs.`
 );
 for (const entry of prerendered) console.log(`[prerender]   · ${entry}`);

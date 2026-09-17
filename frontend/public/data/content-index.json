@@ -1,0 +1,473 @@
+{
+  "schema": "hazardnet-content-index/v1",
+  "generated_at": "2026-09-17T22:34:13.575Z",
+  "generated_by": "scripts/build_content_engine.mjs",
+  "origin": "https://www.hazardnet.live",
+  "inputs": {
+    "methodology": "frontend/src/content/hazard-methodology.json",
+    "district_table": "frontend/src/data/bangladeshDistricts.ts",
+    "forecast_snapshot": {
+      "path": "frontend/public/data/forecasts-latest.json",
+      "prediction_date": "2026-09-16",
+      "generated_at": "2026-09-17T16:11:19.128Z"
+    },
+    "event_archive": null
+  },
+  "counts": {
+    "routes": 74,
+    "hazards": 8,
+    "districts": 64,
+    "districts_with_outlook": 60,
+    "districts_without_outlook": 4,
+    "retrospectives": 0,
+    "prerendered_html_files": 96,
+    "sitemap_urls": 87
+  },
+  "unmatched_snapshot_districts": [],
+  "routes": [
+    {
+      "path": "/hazards",
+      "title": "Hazard classes in Bangladesh: methodology behind each HazardNet forecast",
+      "robots": "index,follow",
+      "in_sitemap": true
+    },
+    {
+      "path": "/hazards/flood",
+      "title": "Flood in Bangladesh: how HazardNet classifies and scores it",
+      "robots": "index,follow",
+      "in_sitemap": true
+    },
+    {
+      "path": "/hazards/flash-flood",
+      "title": "Flash Flood in Bangladesh: how HazardNet classifies and scores it",
+      "robots": "index,follow",
+      "in_sitemap": true
+    },
+    {
+      "path": "/hazards/tropical-cyclone",
+      "title": "Tropical Cyclone in Bangladesh: how HazardNet classifies and scores it",
+      "robots": "index,follow",
+      "in_sitemap": true
+    },
+    {
+      "path": "/hazards/drought",
+      "title": "Drought in Bangladesh: how HazardNet classifies and scores it",
+      "robots": "index,follow",
+      "in_sitemap": true
+    },
+    {
+      "path": "/hazards/heat-wave",
+      "title": "Heat Wave in Bangladesh: how HazardNet classifies and scores it",
+      "robots": "index,follow",
+      "in_sitemap": true
+    },
+    {
+      "path": "/hazards/cold-wave",
+      "title": "Cold Wave in Bangladesh: how HazardNet classifies and scores it",
+      "robots": "index,follow",
+      "in_sitemap": true
+    },
+    {
+      "path": "/hazards/fire",
+      "title": "Fire in Bangladesh: how HazardNet classifies and scores it",
+      "robots": "index,follow",
+      "in_sitemap": true
+    },
+    {
+      "path": "/hazards/severe-local-storm",
+      "title": "Severe Local Storm in Bangladesh: how HazardNet classifies and scores it",
+      "robots": "index,follow",
+      "in_sitemap": true
+    },
+    {
+      "path": "/districts",
+      "title": "District hazard outlooks for all 64 districts of Bangladesh — HazardNet",
+      "robots": "index,follow",
+      "in_sitemap": true
+    },
+    {
+      "path": "/districts/kurigram",
+      "title": "Kurigram district hazard outlook — HazardNet",
+      "robots": "index,follow",
+      "in_sitemap": true
+    },
+    {
+      "path": "/districts/rangpur",
+      "title": "Rangpur district hazard outlook — HazardNet",
+      "robots": "index,follow",
+      "in_sitemap": true
+    },
+    {
+      "path": "/districts/gaibandha",
+      "title": "Gaibandha district hazard outlook — HazardNet",
+      "robots": "index,follow",
+      "in_sitemap": true
+    },
+    {
+      "path": "/districts/nilphamari",
+      "title": "Nilphamari district hazard outlook — HazardNet",
+      "robots": "index,follow",
+      "in_sitemap": true
+    },
+    {
+      "path": "/districts/dinajpur",
+      "title": "Dinajpur district hazard outlook — HazardNet",
+      "robots": "index,follow",
+      "in_sitemap": true
+    },
+    {
+      "path": "/districts/panchagarh",
+      "title": "Panchagarh district hazard outlook — HazardNet",
+      "robots": "index,follow",
+      "in_sitemap": true
+    },
+    {
+      "path": "/districts/thakurgaon",
+      "title": "Thakurgaon district hazard outlook — HazardNet",
+      "robots": "index,follow",
+      "in_sitemap": true
+    },
+    {
+      "path": "/districts/lalmonirhat",
+      "title": "Lalmonirhat district hazard outlook — HazardNet",
+      "robots": "index,follow",
+      "in_sitemap": true
+    },
+    {
+      "path": "/districts/rajshahi",
+      "title": "Rajshahi district hazard outlook — HazardNet",
+      "robots": "index,follow",
+      "in_sitemap": true
+    },
+    {
+      "path": "/districts/bogra",
+      "title": "Bogra district hazard outlook — HazardNet",
+      "robots": "index,follow",
+      "in_sitemap": true
+    },
+    {
+      "path": "/districts/sirajganj",
+      "title": "Sirajganj district hazard outlook — HazardNet",
+      "robots": "index,follow",
+      "in_sitemap": true
+    },
+    {
+      "path": "/districts/pabna",
+      "title": "Pabna district hazard outlook — HazardNet",
+      "robots": "index,follow",
+      "in_sitemap": true
+    },
+    {
+      "path": "/districts/naogaon",
+      "title": "Naogaon district hazard outlook — HazardNet",
+      "robots": "index,follow",
+      "in_sitemap": true
+    },
+    {
+      "path": "/districts/natore",
+      "title": "Natore district hazard outlook — HazardNet",
+      "robots": "index,follow",
+      "in_sitemap": true
+    },
+    {
+      "path": "/districts/chapainawabganj",
+      "title": "Chapainawabganj district hazard outlook — HazardNet",
+      "robots": "index,follow",
+      "in_sitemap": true
+    },
+    {
+      "path": "/districts/joypurhat",
+      "title": "Joypurhat district hazard outlook — HazardNet",
+      "robots": "index,follow",
+      "in_sitemap": true
+    },
+    {
+      "path": "/districts/mymensingh",
+      "title": "Mymensingh district hazard outlook — HazardNet",
+      "robots": "index,follow",
+      "in_sitemap": true
+    },
+    {
+      "path": "/districts/netrokona",
+      "title": "Netrokona district hazard outlook — HazardNet",
+      "robots": "index,follow",
+      "in_sitemap": true
+    },
+    {
+      "path": "/districts/jamalpur",
+      "title": "Jamalpur district hazard outlook — HazardNet",
+      "robots": "index,follow",
+      "in_sitemap": true
+    },
+    {
+      "path": "/districts/sherpur",
+      "title": "Sherpur district hazard outlook — HazardNet",
+      "robots": "index,follow",
+      "in_sitemap": true
+    },
+    {
+      "path": "/districts/sylhet",
+      "title": "Sylhet district hazard outlook — HazardNet",
+      "robots": "index,follow",
+      "in_sitemap": true
+    },
+    {
+      "path": "/districts/sunamganj",
+      "title": "Sunamganj district hazard outlook — HazardNet",
+      "robots": "index,follow",
+      "in_sitemap": true
+    },
+    {
+      "path": "/districts/habiganj",
+      "title": "Habiganj district hazard outlook — HazardNet",
+      "robots": "index,follow",
+      "in_sitemap": true
+    },
+    {
+      "path": "/districts/moulvibazar",
+      "title": "Moulvibazar district hazard outlook — HazardNet",
+      "robots": "index,follow",
+      "in_sitemap": true
+    },
+    {
+      "path": "/districts/dhaka",
+      "title": "Dhaka district hazard outlook — HazardNet",
+      "robots": "index,follow",
+      "in_sitemap": true
+    },
+    {
+      "path": "/districts/gazipur",
+      "title": "Gazipur district hazard outlook — HazardNet",
+      "robots": "index,follow",
+      "in_sitemap": true
+    },
+    {
+      "path": "/districts/narayanganj",
+      "title": "Narayanganj district hazard outlook — HazardNet",
+      "robots": "index,follow",
+      "in_sitemap": true
+    },
+    {
+      "path": "/districts/tangail",
+      "title": "Tangail district hazard outlook — HazardNet",
+      "robots": "index,follow",
+      "in_sitemap": true
+    },
+    {
+      "path": "/districts/kishoreganj",
+      "title": "Kishoreganj district hazard outlook — HazardNet",
+      "robots": "index,follow",
+      "in_sitemap": true
+    },
+    {
+      "path": "/districts/manikganj",
+      "title": "Manikganj district hazard outlook — HazardNet",
+      "robots": "index,follow",
+      "in_sitemap": true
+    },
+    {
+      "path": "/districts/munshiganj",
+      "title": "Munshiganj district hazard outlook — HazardNet",
+      "robots": "index,follow",
+      "in_sitemap": true
+    },
+    {
+      "path": "/districts/narsingdi",
+      "title": "Narsingdi district hazard outlook — HazardNet",
+      "robots": "index,follow",
+      "in_sitemap": true
+    },
+    {
+      "path": "/districts/faridpur",
+      "title": "Faridpur district hazard outlook — HazardNet",
+      "robots": "index,follow",
+      "in_sitemap": true
+    },
+    {
+      "path": "/districts/gopalganj",
+      "title": "Gopalganj district hazard outlook — HazardNet",
+      "robots": "index,follow",
+      "in_sitemap": true
+    },
+    {
+      "path": "/districts/madaripur",
+      "title": "Madaripur district hazard outlook — HazardNet",
+      "robots": "index,follow",
+      "in_sitemap": true
+    },
+    {
+      "path": "/districts/rajbari",
+      "title": "Rajbari district hazard outlook — HazardNet",
+      "robots": "index,follow",
+      "in_sitemap": true
+    },
+    {
+      "path": "/districts/shariatpur",
+      "title": "Shariatpur district hazard outlook — HazardNet",
+      "robots": "index,follow",
+      "in_sitemap": true
+    },
+    {
+      "path": "/districts/khulna",
+      "title": "Khulna district hazard outlook — HazardNet",
+      "robots": "index,follow",
+      "in_sitemap": true
+    },
+    {
+      "path": "/districts/satkhira",
+      "title": "Satkhira district hazard outlook — HazardNet",
+      "robots": "index,follow",
+      "in_sitemap": true
+    },
+    {
+      "path": "/districts/bagerhat",
+      "title": "Bagerhat district hazard outlook — HazardNet",
+      "robots": "index,follow",
+      "in_sitemap": true
+    },
+    {
+      "path": "/districts/jessore",
+      "title": "Jashore district hazard outlook — HazardNet",
+      "robots": "index,follow",
+      "in_sitemap": true
+    },
+    {
+      "path": "/districts/jhenaidah",
+      "title": "Jhenaidah district hazard outlook — HazardNet",
+      "robots": "noindex,follow",
+      "in_sitemap": false
+    },
+    {
+      "path": "/districts/magura",
+      "title": "Magura district hazard outlook — HazardNet",
+      "robots": "index,follow",
+      "in_sitemap": true
+    },
+    {
+      "path": "/districts/narail",
+      "title": "Narail district hazard outlook — HazardNet",
+      "robots": "index,follow",
+      "in_sitemap": true
+    },
+    {
+      "path": "/districts/chuadanga",
+      "title": "Chuadanga district hazard outlook — HazardNet",
+      "robots": "index,follow",
+      "in_sitemap": true
+    },
+    {
+      "path": "/districts/kushtia",
+      "title": "Kushtia district hazard outlook — HazardNet",
+      "robots": "index,follow",
+      "in_sitemap": true
+    },
+    {
+      "path": "/districts/meherpur",
+      "title": "Meherpur district hazard outlook — HazardNet",
+      "robots": "index,follow",
+      "in_sitemap": true
+    },
+    {
+      "path": "/districts/barisal",
+      "title": "Barisal district hazard outlook — HazardNet",
+      "robots": "noindex,follow",
+      "in_sitemap": false
+    },
+    {
+      "path": "/districts/bhola",
+      "title": "Bhola district hazard outlook — HazardNet",
+      "robots": "index,follow",
+      "in_sitemap": true
+    },
+    {
+      "path": "/districts/jhalokati",
+      "title": "Jhalokati district hazard outlook — HazardNet",
+      "robots": "index,follow",
+      "in_sitemap": true
+    },
+    {
+      "path": "/districts/patuakhali",
+      "title": "Patuakhali district hazard outlook — HazardNet",
+      "robots": "index,follow",
+      "in_sitemap": true
+    },
+    {
+      "path": "/districts/pirojpur",
+      "title": "Pirojpur district hazard outlook — HazardNet",
+      "robots": "index,follow",
+      "in_sitemap": true
+    },
+    {
+      "path": "/districts/barguna",
+      "title": "Barguna district hazard outlook — HazardNet",
+      "robots": "index,follow",
+      "in_sitemap": true
+    },
+    {
+      "path": "/districts/chattogram",
+      "title": "Chattogram district hazard outlook — HazardNet",
+      "robots": "index,follow",
+      "in_sitemap": true
+    },
+    {
+      "path": "/districts/coxsbazar",
+      "title": "Cox's Bazar district hazard outlook — HazardNet",
+      "robots": "index,follow",
+      "in_sitemap": true
+    },
+    {
+      "path": "/districts/cumilla",
+      "title": "Cumilla district hazard outlook — HazardNet",
+      "robots": "index,follow",
+      "in_sitemap": true
+    },
+    {
+      "path": "/districts/feni",
+      "title": "Feni district hazard outlook — HazardNet",
+      "robots": "index,follow",
+      "in_sitemap": true
+    },
+    {
+      "path": "/districts/noakhali",
+      "title": "Noakhali district hazard outlook — HazardNet",
+      "robots": "index,follow",
+      "in_sitemap": true
+    },
+    {
+      "path": "/districts/lakshmipur",
+      "title": "Lakshmipur district hazard outlook — HazardNet",
+      "robots": "index,follow",
+      "in_sitemap": true
+    },
+    {
+      "path": "/districts/chandpur",
+      "title": "Chandpur district hazard outlook — HazardNet",
+      "robots": "index,follow",
+      "in_sitemap": true
+    },
+    {
+      "path": "/districts/brahmanbaria",
+      "title": "Brahmanbaria district hazard outlook — HazardNet",
+      "robots": "index,follow",
+      "in_sitemap": true
+    },
+    {
+      "path": "/districts/khagrachhari",
+      "title": "Khagrachhari district hazard outlook — HazardNet",
+      "robots": "noindex,follow",
+      "in_sitemap": false
+    },
+    {
+      "path": "/districts/rangamati",
+      "title": "Rangamati district hazard outlook — HazardNet",
+      "robots": "index,follow",
+      "in_sitemap": true
+    },
+    {
+      "path": "/districts/bandarban",
+      "title": "Bandarban district hazard outlook — HazardNet",
+      "robots": "noindex,follow",
+      "in_sitemap": false
+    }
+  ]
+}

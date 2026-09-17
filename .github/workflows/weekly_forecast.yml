@@ -203,6 +203,16 @@ jobs:
         shell: bash
         run: node scripts/build_freshness_artifact.mjs
 
+      # Phase 8: the content engine's pages are derived from the snapshot above, so they are
+      # rebuilt in the same run that rewrites it. A district page quoting yesterday's run is the
+      # same class of lie the freshness artifact exists to prevent.
+      # Full build (engine -> vite -> prerender): the engine output and the content index
+      # describe the same snapshot, and both are committed below (Phase 8). Root
+      # `npm ci` above populates the `frontend/` workspace, so no extra install is needed.
+      - name: Rebuild generated content pages and the content index
+        shell: bash
+        run: npm run build:frontend
+
       - name: Run test suite
         run: npx jest --ci
 
@@ -223,6 +233,10 @@ jobs:
           git add backend/data/forecasts/ frontend/public/data/forecasts-latest.json
           # Derived status artifact — rebuilt above, committed with its inputs (Phase 7).
           git add frontend/public/data/freshness.json
+          # Content engine output (Phase 8): the generated pages plus the committed index of
+          # what the build published. `--check` in CI fails if they stop matching the snapshot.
+          git add frontend/src/content/generated-routes.json
+          git add frontend/public/data/content-index.json
           if git diff --staged --quiet; then
             echo "No data changes to commit"
           else

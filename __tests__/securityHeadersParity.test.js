@@ -22,6 +22,38 @@ const headerMap = (config, source = '/(.*)') => {
   return Object.fromEntries(entry.headers.map(({ key, value }) => [key, value]));
 };
 
+describe('redirect parity', () => {
+  const rootCfg = readJson('vercel.json');
+  const frontendCfg = readJson('frontend/vercel.json');
+  const apexRedirect = (config) =>
+    (config.redirects || []).find(
+      (rule) =>
+        rule.destination === 'https://www.hazardnet.live/:path*' &&
+        (rule.has || []).some((condition) => condition.type === 'host' && condition.value === 'hazardnet.live')
+    );
+
+  // Phase 8: the canonical host is www. The apex answered 308 → www before this change only
+  // because of a dashboard-level domain setting, which is not in the repository and not
+  // reviewable; both configs now state the redirect. A canonical tag pointing at www while the
+  // apex serves the same page under its own URL is the duplicate-content case this closes.
+  it('redirects the apex host to www in both configs', () => {
+    expect(apexRedirect(rootCfg)).toBeDefined();
+    expect(apexRedirect(frontendCfg)).toBeDefined();
+    expect(apexRedirect(rootCfg).permanent).toBe(true);
+    expect(apexRedirect(frontendCfg).permanent).toBe(true);
+  });
+
+  it('keeps the legacy /documentation redirect in both configs', () => {
+    for (const config of [rootCfg, frontendCfg]) {
+      expect(
+        (config.redirects || []).some(
+          (rule) => rule.source === '/documentation' && rule.destination === '/docs' && rule.permanent
+        )
+      ).toBe(true);
+    }
+  });
+});
+
 describe('security header parity', () => {
   const rootCfg = readJson('vercel.json');
   const frontendCfg = readJson('frontend/vercel.json');

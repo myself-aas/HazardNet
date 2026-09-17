@@ -99,7 +99,11 @@ describe('routing', () => {
     // Every catch-all rewrite must exclude paths containing a dot; otherwise the static
     // file is never reached and a request for it returns index.html instead.
     for (const rewrite of rewrites) {
-      expect(rewrite.destination).toBe('/index.html');
+      // The catch-all now lands on the *noindex* shell (`404.html`), not on `index.html`: an
+      // unknown URL served the indexable homepage HTML is a soft 404, and the crawlable URL space
+      // is unbounded (Phase 8). The dotted-path exclusion is what keeps `/.well-known/security.txt`
+      // and `/data/*.json` reachable, so it must survive any change here.
+      expect(rewrite.destination).toBe('/404.html');
       expect(rewrite.source).toContain('.*\\.[a-zA-Z0-9]+$');
     }
   });

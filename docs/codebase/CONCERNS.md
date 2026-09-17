@@ -398,6 +398,7 @@ not to the UI.
 | 8 | **Disclosure surface**: no `SECURITY.md`; `security.txt` existed but was unverifiable and live-404 | `SECURITY.md` (scope, safe harbour, SLAs, controls) + `__tests__/securityTxt.test.js` (RFC 9116 fields, expiry window, contact parity with `SECURITY.md`, policy route existence, rewrite/redirect routing, dist copy) |
 | 9 | **`/api/**` responses carried no hardening headers of their own** — they relied entirely on the Vercel config that was not in force | The serverless guard sets `X-Content-Type-Options: nosniff` + `Referrer-Policy: no-referrer` on every response, and `Cache-Control: no-store` unless the endpoint sets its own |
 
+| 11 | **The generated content pages ride in the SPA bundle** (Phase 8). `usePageSeo` imports `src/content/generated-routes.json` so a client-side navigation renders the page the static HTML already served | `frontend/src/content/generated-routes.json` → chunk `usePageSeo-*.js` | 409 kB raw / **38.6 kB gzip** for that chunk (measured 2026-09-18), against 55 kB / ~14 kB for the hand-written route copy before this phase; the budget check (`npm run check:bundle`) is the tripwire | The weight is on content pages only, and the alternative (per-route fetch) trades it for a hydration flash; documented in `docs/ops/SEO_AND_CONTENT.md` §5 rather than left implicit |
 | 10 | **The service worker that shipped was not the one Phase 5 edited.** `frontend/src/serviceWorker.ts` is imported by nothing; the app registers `/serviceWorker.js`, copied verbatim from `frontend/public/`. The offline alert strategy (network-first + `X-HazardNet-Stale`) therefore never reached a browser, and the delivered worker cached every 200 GET — including credentialed `/api/**` reads | Strategy + cacheability guard moved into `frontend/public/serviceWorker.js`, the unshipped duplicate deleted, and `__tests__/serviceWorker.test.js` now loads **the shipped file**, drives its `fetch` handler and asserts the built worker is byte-identical to the source |
 
 Two carry-overs from the Phase 5 close-out are also resolved here: the `jest-axe`
@@ -427,3 +428,59 @@ the page's copy does not promise liveness or uptime it cannot measure.
 **What this phase does not fix:** the deployed surface is still stale (owner Action 7), so the
 first real probe result will read `fail` and `/status` will say so, naming the failed checks.
 Nothing here can publish a model version (Phase 9) or make the pipeline run.
+
+## Phase 8 — SEO and the content engine (2026-09-18)
+
+The deployment plan reserved this phase for the part of the project a search engine can see: pages
+that answer the question a district officer types, the model's own numbers published per district,
+and the structured data that lets a crawler — and a dataset catalogue — read them. Five findings,
+all but one closed in-repo:
+
+| # | Finding | Status |
+| - | ------- | ------ |
+| 1 | **The canonical host lived in a dashboard, not in the repository.** Every canonical, the sitemap and `security.txt` used `www.hazardnet.live`, and the apex happened to redirect there — because of a project setting no test could see | www is now the declared canonical host: both `vercel.json` copies carry the apex→www redirect, `frontend/scripts/prerender.mjs` **fails the build** if the content origin is not the canonical host, and `__tests__/securityHeadersParity.test.js` asserts the redirect survives in both configs. `docs/ops/SEO_AND_CONTENT.md` §1 records the decision and the reasoning |
+| 2 | **The sitemap grew by hand, so it could lie.** The 2026-09-17 audit found it listing URLs that 404'd; it was fixed for the 17 hand-written routes, and this phase added 74 generated ones. The sitemap is now built from the same route lists the pages are, including only indexable entries: `__tests__/seoFoundations.test.js` asserts every `<loc>` exists as a file on disk and that no `noindex` page appears in it, `content-index.json` records the count, and the probe re-verifies **all** 87 URLs live (parallel `xargs -P 8`, no sampling) every 30 minutes |
+| 3 | **There was nothing to rank for.** The site's public copy was a dozen reference pages; there was no page per hazard class and none per district, so the queries that matter ("flood risk Kurigram", "cyclone Bhola") had no target | `scripts/build_content_engine.mjs` composes `/hazards` + 8 hazard methodology pages + `/districts` + 64 district outlooks (and retrospectives, when an archive is loaded) from the committed snapshot and authored prose. Every page is prerendered to static HTML, carries its own canonical/robots/JSON-LD and is in the sitemap unless the engine marked it `noindex` |
+| 4 | **Copy could drift from the code it describes.** Each hazard page publishes the formula its physics cross-check uses; the pipeline's formulas have changed before (the flood double-argument bug) and a page teaching the old one would be worse than no page | `scripts/tests/test_content_engine.py` **executes** each published `expr` against `scripts/physics_severity.py` for a grid of driver vectors, pins the eight published classes to `HAZARD_CLASSES`, and fails if a page states a historical count the build did not read |
+| 5 | **Structured data had two producers that could diverge.** The prerenderer wrote a graph into the HTML and `usePageSeo` wrote another after hydration; a crawler that runs JavaScript could have seen a poorer graph than one that does not | one implementation (`frontend/src/lib/structuredData.js`) serves both, and `__tests__/structuredData.test.js` compares the graph in `dist/` with what the renderer produces for the same route, field for field. The historical-archive `Dataset` node is emitted only when the engine actually loaded an archive, and never carries a licence or a distribution URL |
+
+**Two working-tree findings this phase closed were not about SEO at all.** (1)
+`scripts/tests/make_fixture_csv.py` wrote to the committed ingest path by default, so a bare
+`python scripts/tests/make_fixture_csv.py` replaced the 74 committed forecast rows with 128
+synthetic ones — which is what the working tree contained when this phase started. The helper now
+defaults to `/tmp` and refuses that path without `--force`; the CSV was restored from `HEAD`.
+(2) `scripts/build_forecast_snapshot.mjs` stamped `kaggle kernels output …` whenever
+`SNAPSHOT_SOURCE` was unset, so a hand-rebuilt snapshot claimed the retired Kaggle producer while
+the ingest manifest claimed the Actions pipeline. The rows are identical (verified district by
+district), so this is a label, not a data difference; the fallback now says the producer was never
+declared, and the committed snapshot's old label is recorded in the phase report instead of being
+rewritten.
+
+**The honesty constraint shaped the content, not just the copy.** The 2,931-event archive
+(`MODEL_CARD.md` §4) is not in this repository, so no generated page may state a district or yearly
+event count: with no archive loaded every district page says so in one sentence and quotes the claim
+as *reported, not verified*; with an archive loaded the engine prints the archive's own count and the
+drift beside it. The four districts the committed run did not cover get `noindex,follow` pages that
+explain the gap and stay out of the sitemap — they are the opposite of a soft 404, which is what a
+baseline-coloured page pretending to be a forecast would have been.
+
+**Cost, stated rather than discovered later:** the generated routes are imported by the SPA so a
+client-side navigation renders what the static HTML already served. That puts them in a lazy chunk
+measured at 409 kB raw / **38.6 kB gzip** (2026-09-18), against 55 kB / ~14 kB for the hand-written
+route copy before this phase. The alternative (per-route fetch) removes the weight and reintroduces
+a flash between prerendered text and hydration; if the bundle budget fails, that is the change to
+make — not trimming the content.
+
+**Coverage copy is per horizon, because the run is.** The committed snapshot carries 25 units at the
+7-day horizon and 49 at the 15-day horizon across 60 of 64 districts, which reads like swapped
+horizon labels and is not one: every `7_days` row is exactly seven days from its prediction date and
+every `15_days` row is fifteen. "60 of 64 districts carry a row" would let a reader assume both
+horizons, so the district pages and the index state the per-horizon counts and say a district can
+appear at one horizon and not the other. The producer's silent-skip path (`if tensor is not None
+and om_data is not None:` with no `else` in `scripts/auto_forecast.py`) still leaves a missing
+(district, horizon) unexplained in the run report — a pipeline fix, not a copy fix.
+
+**What this phase does not fix:** the deployment is still stale (owner Action 7), so the new pages
+are not live yet; discoverability needs owner Action 10 (Search Console/Bing verification and
+sitemap submission) and the citations need Action 11; whether the archive is published at all is
+Action 12. Nothing here invents a submission, a listing or a backlink.

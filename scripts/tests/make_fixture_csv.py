@@ -141,8 +141,15 @@ def adm3_rows(prediction_date: str):
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
+    # Default to a temp path, NOT the committed ingest artifact. The previous default was
+    # `backend/data/forecasts/hazardnet_forecasts_latest.csv`, so running this helper once with
+    # no arguments overwrote the real forecast rows with synthetic ones in the working tree —
+    # exactly what happened before Phase 8, and a fixture that reaches `git commit` would put
+    # invented rows into the ingest path that the site and the ETL read.
     parser.add_argument('out', nargs='?',
-                        default='backend/data/forecasts/hazardnet_forecasts_latest.csv')
+                        default='/tmp/hazardnet_fixture_forecasts.csv')
+    parser.add_argument('--force', action='store_true',
+                        help='allow writing over a committed artifact under backend/data/forecasts/')
     parser.add_argument('--schema', choices=['notebook', 'adm3'], default='notebook')
     parser.add_argument('--prediction-date', default=None)
     parser.add_argument('--stale-days', type=int, default=0)
@@ -158,6 +165,12 @@ def main() -> None:
     columns, rows = (notebook_rows(prediction_date) if args.schema == 'notebook'
                      else adm3_rows(prediction_date))
     out = Path(args.out)
+    guarded = Path('backend/data/forecasts')
+    if guarded.resolve() in out.resolve().parents and not args.force:
+        sys.exit(
+            f'refusing to write synthetic fixture rows over {out} — that path is a committed '
+            'ingest artifact. Write elsewhere, or pass --force if you really mean to replace it.'
+        )
     out.parent.mkdir(parents=True, exist_ok=True)
     with open(out, 'w', newline='', encoding='utf-8') as fh:
         writer = csv.DictWriter(fh, fieldnames=columns)

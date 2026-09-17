@@ -7,12 +7,18 @@
       "source": "/documentation",
       "destination": "/docs",
       "permanent": true
+    },
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "hazardnet.live" }],
+      "destination": "https://www.hazardnet.live/:path*",
+      "permanent": true
     }
   ],
   "rewrites": [
     {
       "source": "/((?!api/|assets/|_vercel/|data/|.*\\.[a-zA-Z0-9]+$).*)",
-      "destination": "/index.html"
+      "destination": "/404.html"
     }
   ],
   "headers": [

@@ -426,6 +426,60 @@ jobs:
       - name: Bundle budget check
         run: npm run check:bundle
 
+      # Phase 8: the derived artifacts must still describe the committed inputs. Both gates are
+      # clock-blind (they compare a time-independent projection), so they cannot rot as the
+      # repository ages, and they fail before a deploy rather than after one.
+      - name: Derived artifacts describe their committed inputs
+        run: |
+          node scripts/build_content_engine.mjs --check
+          node scripts/build_freshness_artifact.mjs --check
+
+      # The build rewrites `frontend/public/data/content-index.json` (Vite copies `public/` into
+      # `dist/` before the prerenderer runs, so the prerenderer writes both copies). The rewrite
+      # moves `generated_at` on every build, which is why `git status` cannot be the gate: it
+      # would be red on every run. Compare the committed copy against the one this build just
+      # produced with the clock field removed — a difference then means the committed inventory
+      # describes a different set of pages than the commit builds, which is exactly the state
+      # the daily/weekly pipelines avoid by rebuilding before they commit.
+      - name: Committed content index matches this build
+        run: |
+          node - <<'NODE'
+          const { execSync } = require('node:child_process');
+          const fs = require('node:fs');
+
+          const file = 'frontend/public/data/content-index.json';
+          const strip = (raw) => {
+            const parsed = JSON.parse(raw);
+            delete parsed.generated_at;
+            return JSON.stringify(parsed);
+          };
+
+          const fresh = strip(fs.readFileSync(file, 'utf8'));
+          let committed;
+          try {
+            committed = strip(execSync(`git show HEAD:${file}`, { encoding: 'utf8' }));
+          } catch {
+            console.log(`::error::${file} is not committed — the build generated it, commit it.`);
+            process.exit(1);
+          }
+          if (fresh !== committed) {
+            console.log(`::error::${file} is stale — run 'cd frontend && npm run build' and commit it.`);
+            process.exit(1);
+          }
+          console.log('✅ the committed content index describes the pages this build produced');
+          NODE
+
+      # These suites assert on the *built* output (the SEO foundations of every generated page,
+      # the prerendered status page, and the JSON-LD graph in the HTML matching the renderer's).
+      # They self-skip without frontend/dist, so this run — the one job that builds — is where
+      # they actually execute.
+      - name: Post-build surface checks (prerender + SEO + structured data)
+        run: |
+          npx jest --ci --config jest.config.cjs --rootDir . \
+            __tests__/seoFoundations.test.js \
+            __tests__/statusPagePrerender.test.js \
+            __tests__/structuredData.test.js
+
       - name: Upload build artifacts
         if: always()
         uses: actions/upload-artifact@v7
