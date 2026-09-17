@@ -376,17 +376,28 @@ def _wind_driver_summary(episode: dict, predictions: list, threshold: float) -> 
         }
     if len(summary) == 2:
         sustained, gust = summary['era5_10m_sustained'], summary['era5_10m_gust']
+        gust_tops = max(gust['top_class_distribution'], key=gust['top_class_distribution'].get)
+        if gust['episode_class_over_threshold']:
+            driver_sentence = (
+                'The wind driver, not the formula alone, decides whether this event was detectable '
+                'at the district point.'
+            )
+        else:
+            driver_sentence = (
+                'Even the gust field leaves the episode class below the band, so the wind argument '
+                'alone does not explain the miss: at this distance from the track the driver the '
+                'pipeline uses cannot represent the hazard, and the class the formula describes is '
+                'unreachable for this event.'
+            )
         summary['finding'] = (
             f"With the sustained maximum the shipped pipeline uses, the episode's class scores "
             f"{sustained['episode_class_score']['min']:.4f}–{sustained['episode_class_score']['max']:.4f} "
             f"and crosses the {threshold:g} band on {sustained['episode_class_over_threshold']} of "
             f"{sustained['rows']} rows; with the gust field the archive also carries it scores "
             f"{gust['episode_class_score']['min']:.4f}–{gust['episode_class_score']['max']:.4f} and crosses "
-            f"on {gust['episode_class_over_threshold']}. The wind driver, not the formula alone, decides "
-            "whether this event was detectable. Note what the second number does *not* fix: the track's "
-            "top class is still "
-            f"{max(gust['top_class_distribution'], key=gust['top_class_distribution'].get)}, so the "
-            "separation between the two wind-driven classes is a second, independent defect."
+            f"on {gust['episode_class_over_threshold']}. {driver_sentence} Note what neither number "
+            f"fixes: the track's top class is {gust_tops} under either driver, so the separation "
+            'between the wind-driven classes is a second, independent defect.'
         )
     return summary
 
