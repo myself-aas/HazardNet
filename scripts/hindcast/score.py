@@ -34,6 +34,19 @@ if str(SCRIPTS_DIR) not in sys.path:
 import physics_severity  # noqa: E402
 
 HORIZONS = (('7_days', 7), ('15_days', 15))
+
+#: The three terms below receive, in the shipped wiring, a quantity the formula was not
+#: written for. The hindcast measures the consequence instead of asserting it:
+#:
+#:   fire drying term        `et_sum_mm / 6.0`      receives the *horizon total* ET (tens of mm)
+#:   heat-wave persistence   `duration_days / 5.0`  receives the horizon *length* (7 or 15)
+#:   cold-wave persistence   `duration_days / 5.0`  receives the horizon *length* (7 or 15)
+#:
+#: Each is therefore at its ceiling on every row of every run: the fire term because any
+#: horizon accumulates well over 6 mm of ET, the two persistence terms because both horizons
+#: exceed five days. The formulas' own defaults (3.0 mm ET, 1 day) are the clue that they were
+#: written for a daily ET value and an observed exceedance count.
+SATURATING_TERMS = ('fire_drying', 'heat_persistence', 'cold_persistence')
 SCORE_SOURCE = 'physics_track'
 SCORE_SOURCE_NOTE = (
     'Severity and class come from the independent physics cross-check '
@@ -63,6 +76,7 @@ def drivers_for_window(series: dict, prediction_date: str, target_date: str) -> 
         values = [value for value, keep in zip(_numbers(series['daily'][variable]), mask) if keep]
         return [value for value in values if value is not None]
 
+    et_values = select('et0_fao_evapotranspiration')
     precip = select('precipitation_sum')
     t_max = select('temperature_2m_max')
     t_min = select('temperature_2m_min')
@@ -76,6 +90,76 @@ def drivers_for_window(series: dict, prediction_date: str, target_date: str) -> 
         'precip_peak_mm': max(precip) if precip else None,
         'wind_max_kmh': max(wind) if wind else None,
         'et_total_mm': sum(et) if et else None,
+        # Kept for the counterfactual: the per-day series inside the window, which is what the
+        # fire term and the two persistence terms actually describe.
+        'window_daily': {
+            'temp_max_c': t_max, 'temp_min_c': t_min, 'et0_mm': et_values,
+        },
+    }
+
+
+def _count_above(values, threshold):
+    return sum(1 for value in values if value is not None and value > threshold)
+
+
+def _count_below(values, threshold):
+    return sum(1 for value in values if value is not None and value < threshold)
+
+
+def counterfactual_scores(drivers: dict, horizon_days: int) -> dict:
+    """The same physics with the three saturated arguments replaced by what they describe.
+
+    * `et_sum_mm` -> the window's **mean daily** ET (the fire formula's divisor and its own
+      default of 3.0 mm are daily quantities);
+    * `duration_days` -> the number of days in the window that actually exceeded the formula's
+      threshold (30 °C for heat, 16 °C for cold), not the horizon's length.
+
+    Everything else is unchanged, and the substitution is reported alongside the result so the
+    difference can be attributed. This is a *diagnostic*: the shipped pipeline's wiring is not
+    changed here, because that changes published values and belongs to the pipeline owner with
+    this evidence in hand.
+    """
+    window_daily = drivers.get('window_daily') or {}
+    days = max(int(drivers.get('days') or horizon_days), 1)
+    et_daily = None if drivers.get('et_total_mm') is None else drivers['et_total_mm'] / days
+    heat_days = _count_above(window_daily.get('temp_max_c', []), 30.0)
+    cold_days = _count_below(window_daily.get('temp_min_c', []), 16.0)
+
+    scores = physics_severity.compute_physics_scores(drivers, horizon_days)
+    substitutions = {
+        'fire_et_mm_per_day': None if et_daily is None else round(et_daily, 4),
+        'heat_exceedance_days_above_30c': heat_days,
+        'cold_exceedance_days_below_16c': cold_days,
+        'horizon_days_replaced': days,
+    }
+    if et_daily is not None:
+        scores['Fire'] = physics_severity.om_calc_fire(
+            drivers.get('temp_max_c'), drivers.get('wind_max_kmh'), et_daily)
+    scores['Heat Wave'] = physics_severity.om_calc_heat_wave(drivers.get('temp_max_c'), heat_days)
+    scores['Cold Wave'] = physics_severity.om_calc_cold_wave(drivers.get('temp_min_c'), cold_days)
+    return {'scores': scores, 'substitutions': substitutions}
+
+
+def saturation_report(row: dict, horizon_days: int) -> dict:
+    """How far each of the three suspect terms is from its ceiling, per row."""
+    drivers = row['drivers']
+    et_total = drivers.get('et_total_mm')
+    return {
+        'fire_drying': {
+            'term': 'et_total_mm / 6.0',
+            'argument': et_total,
+            'at_ceiling': et_total is not None and et_total / 6.0 >= 1.0,
+        },
+        'heat_persistence': {
+            'term': 'horizon_days / 5.0',
+            'argument': horizon_days,
+            'at_ceiling': horizon_days / 5.0 >= 1.0,
+        },
+        'cold_persistence': {
+            'term': 'horizon_days / 5.0',
+            'argument': horizon_days,
+            'at_ceiling': horizon_days / 5.0 >= 1.0,
+        },
     }
 
 
@@ -95,7 +179,8 @@ def prediction_rows(episode: dict, district_locations, series: dict) -> list:
             missing = physics_severity.missing_drivers(drivers)
             scores = physics_severity.compute_physics_scores(drivers, lead_days)
             summary = physics_severity.physics_summary(scores, episode['hazard_class'])
-            rows.append({
+            counterfactual = counterfactual_scores(drivers, lead_days)
+            row = {
                 # The fields mlops.evaluate joins on.
                 'district_name': location['name'],
                 'hazard_type': summary['physics_top_hazard'],
@@ -115,7 +200,16 @@ def prediction_rows(episode: dict, district_locations, series: dict) -> list:
                 'physics_score_of_episode_class': round(scores[episode['hazard_class']], 4),
                 'physics_agreement_with_episode_class':
                     summary['physics_top_hazard'] == episode['hazard_class'],
-            })
+                'counterfactual_top_hazard': max(
+                    counterfactual['scores'],
+                    key=lambda name: (counterfactual['scores'][name], -physics_severity.HAZARD_CLASSES.index(name)),
+                ),
+                'counterfactual_scores': {name: round(value, 4)
+                                          for name, value in counterfactual['scores'].items()},
+                'counterfactual_substitutions': counterfactual['substitutions'],
+                'saturated_terms': saturation_report({'drivers': drivers}, lead_days),
+            }
+            rows.append(row)
     return rows
 
 

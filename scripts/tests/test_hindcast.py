@@ -111,6 +111,41 @@ def test_the_shipped_episodes_are_the_ones_the_plan_names():
     assert {'amphan-2020', 'yaas-2021'} <= ids, 'the Phase 9 list names Amphan (2020) and Yaas (2021)'
 
 
+# ── the wiring diagnostic ────────────────────────────────────────────────────
+
+def test_the_saturated_physics_terms_are_measured_not_asserted():
+    """Two terms in the shipped wiring are at their ceiling on every row. The harness has to
+    show that with counts, because a reader cannot check a claim made only in prose."""
+    report = build()
+    diagnostics = report['physics_diagnostics']
+    for term in ('fire_drying', 'heat_persistence', 'cold_persistence'):
+        entry = diagnostics['saturated_terms'][term]
+        assert entry['rows'] == report['counts']['predictions']
+        assert entry['rows_at_ceiling'] == entry['rows'], (
+            f'{term} is not at its ceiling on every row — the finding needs restating'
+        )
+    # The counterfactual substitutes the arguments the formulas actually describe, and the
+    # substitution is reported so the difference can be attributed.
+    substitutions = diagnostics['counterfactual_substitutions']
+    assert substitutions['fire_et_mm_per_day']['max'] < 6.0, (
+        'a daily ET mean below the fire divisor is what makes the shipped term saturate'
+    )
+    assert substitutions['heat_exceedance_days_above_30c']['max'] <= 16
+    assert 'wiring finding' in diagnostics['finding']
+
+
+def test_the_counterfactual_lowers_the_fire_score_and_is_published_beside_the_shipped_one():
+    episode = fixture_episode()
+    rows = score_module.prediction_rows(episode, hindcast_cli.district_locations(), fixture_series())
+    for row in rows:
+        assert row['counterfactual_scores']['Fire'] <= row['physics_scores']['Fire']
+    report = build()
+    assert set(report['physics_diagnostics']['top_class_distribution_shipped'])
+    assert set(report['physics_diagnostics']['top_class_distribution_counterfactual'])
+    assert report['physics_diagnostics']['detection_counterfactual']['named_districts'] == \
+        report['detection']['named_districts']
+
+
 # ── the computed half: drivers, scores, report ───────────────────────────────
 
 def test_window_aggregation_matches_the_pipeline_contract():

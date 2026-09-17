@@ -155,6 +155,7 @@ def build_report(episode: dict, *, series: dict, drivers_path: str, now: str | N
         'generated_at': now or _utc_now(),
         'episode': episode_module.audit_summary(episode),
         'detection': detection_summary(episode, predictions, threshold),
+        'physics_diagnostics': physics_diagnostics(episode, predictions, threshold),
         'what_was_hindcast': {
             'physics_track': True,
             'cnn_evaluated': False,
@@ -239,7 +240,34 @@ def build_report(episode: dict, *, series: dict, drivers_path: str, now: str | N
     return report
 
 
-def detection_summary(episode: dict, predictions: list, threshold: float) -> dict:
+def _shipped_accessors(episode: dict):
+    """How the shipped rows expose the three detection questions (see `detection_summary`)."""
+    return (
+        lambda row: row['severity_score'],
+        lambda row: row['hazard_type'],
+        lambda row: row.get('physics_score_of_episode_class'),
+        lambda row: bool(row.get('physics_agreement_with_episode_class')),
+    )
+
+
+def _counterfactual_accessors(episode: dict):
+    """The same three questions over the counterfactual scores (see score.counterfactual_scores)."""
+    class_name = episode['hazard_class']
+
+    def top(row):
+        scores = row['counterfactual_scores']
+        return max(scores, key=lambda name: scores[name])
+
+    return (
+        lambda row: max(row['counterfactual_scores'].values()),
+        top,
+        lambda row: row['counterfactual_scores'].get(class_name),
+        lambda row: top(row) == class_name,
+    )
+
+
+def detection_summary(episode: dict, predictions: list, threshold: float, *,
+                      accessors=None) -> dict:
     """Did the track put the named districts on the list — and under which class?
 
     Three numbers, because "detected" hides a real distinction that the evaluation alone
@@ -258,6 +286,7 @@ def detection_summary(episode: dict, predictions: list, threshold: float) -> dic
     Reported over the named districts only, with the per-horizon view, because a hit at one
     horizon and a miss at the other is a lead-time fact worth seeing.
     """
+    score_of, top_of, class_score_of, names_class = accessors or _shipped_accessors(episode)
     by_district: dict = {}
     for row in predictions:
         by_district.setdefault(row['district_name'], []).append(row)
@@ -265,13 +294,12 @@ def detection_summary(episode: dict, predictions: list, threshold: float) -> dic
     rows = []
     for entry in episode_module.affected_districts(episode):
         district_rows = by_district.get(entry['district'], [])
-        strongest = max((row['severity_score'] or 0.0) for row in district_rows) if district_rows else None
-        flagged = [row for row in district_rows if (row['severity_score'] or 0.0) >= threshold]
-        named_class = [row for row in district_rows if row.get('physics_agreement_with_episode_class')
-                       and (row['severity_score'] or 0.0) >= threshold]
-        class_over = [row for row in district_rows
-                      if (row.get('physics_score_of_episode_class') or 0.0) >= threshold]
-        top = max(district_rows, key=lambda row: row['severity_score'] or 0.0, default=None)
+        strongest = max((score_of(row) or 0.0) for row in district_rows) if district_rows else None
+        flagged = [row for row in district_rows if (score_of(row) or 0.0) >= threshold]
+        named_class = [row for row in district_rows
+                       if names_class(row) and (score_of(row) or 0.0) >= threshold]
+        class_over = [row for row in district_rows if (class_score_of(row) or 0.0) >= threshold]
+        top = max(district_rows, key=lambda row: score_of(row) or 0.0, default=None)
         rows.append({
             'district': entry['district'],
             'tier': entry.get('tier'),
@@ -280,7 +308,7 @@ def detection_summary(episode: dict, predictions: list, threshold: float) -> dic
             'flagged_episode_class': bool(named_class),
             'episode_class_over_threshold': bool(class_over),
             'strongest_score': None if strongest is None else round(strongest, 4),
-            'strongest_class': None if top is None else top['hazard_type'],
+            'strongest_class': None if top is None else top_of(top),
             'flag_horizons': sorted(row['horizon'] for row in flagged),
         })
 
@@ -308,13 +336,69 @@ def detection_summary(episode: dict, predictions: list, threshold: float) -> dic
                 ),
                 'flagged_any_class': sum(
                     1 for row in rows
-                    if any((items['severity_score'] or 0.0) >= threshold and items['horizon'] == name
+                    if any((score_of(items) or 0.0) >= threshold and items['horizon'] == name
                            for items in by_district.get(row['district'], []))
                 ),
             }
             for name, _ in score_module.HORIZONS
         },
         'per_district': rows,
+    }
+
+
+def physics_diagnostics(episode: dict, predictions: list, threshold: float) -> dict:
+    """Measure the shipped wiring before recommending a change to it.
+
+    Two terms in the physics wiring sit at their ceiling on every row of every run
+    (`score.SATURATING_TERMS`): the fire formula's drying term receives a horizon ET total
+    against a divisor written for a daily value, and the heat/cold persistence terms receive the
+    horizon's length against a divisor written for an exceedance count. The consequence is not
+    theoretical — it moves the class the track says it "would have picked" — so it is measured
+    here, with the counterfactual recomputation beside it, rather than asserted in prose.
+    """
+    import collections
+
+    shipped = collections.Counter(row['hazard_type'] for row in predictions)
+    counterfactual = collections.Counter(row['counterfactual_top_hazard'] for row in predictions)
+    saturation = {}
+    for term in score_module.SATURATING_TERMS:
+        at_ceiling = sum(1 for row in predictions if row['saturated_terms'][term]['at_ceiling'])
+        example = predictions[0]['saturated_terms'][term]
+        saturation[term] = {
+            'term': example['term'],
+            'rows': len(predictions),
+            'rows_at_ceiling': at_ceiling,
+            'first_row_argument': example['argument'],
+        }
+
+    et_per_day = [row['counterfactual_substitutions']['fire_et_mm_per_day'] for row in predictions
+                  if row['counterfactual_substitutions']['fire_et_mm_per_day'] is not None]
+    heat_days = [row['counterfactual_substitutions']['heat_exceedance_days_above_30c'] for row in predictions]
+    cold_days = [row['counterfactual_substitutions']['cold_exceedance_days_below_16c'] for row in predictions]
+
+    return {
+        'top_class_distribution_shipped': dict(sorted(shipped.items())),
+        'top_class_distribution_counterfactual': dict(sorted(counterfactual.items())),
+        'saturated_terms': saturation,
+        'counterfactual_substitutions': {
+            'fire_et_mm_per_day': {'min': min(et_per_day), 'max': max(et_per_day)} if et_per_day else None,
+            'heat_exceedance_days_above_30c': {'min': min(heat_days), 'max': max(heat_days)},
+            'cold_exceedance_days_below_16c': {'min': min(cold_days), 'max': max(cold_days)},
+        },
+        'detection_counterfactual': {
+            key: value for key, value in detection_summary(
+                episode, predictions, threshold, accessors=_counterfactual_accessors(episode)
+            ).items() if key != 'per_district'
+        },
+        'finding': (
+            'In the shipped wiring the fire formula\'s drying term is at its ceiling on every row '
+            'because it receives the horizon ET total, and both persistence terms are at theirs '
+            'because they receive the horizon length. The counterfactual recomputes those three '
+            'arguments with the quantities their formulas describe (mean daily ET, exceedance days '
+            'above 30 °C / below 16 °C) and reports the difference. This is a wiring finding for '
+            'the pipeline owner, measured here rather than asserted: the formulas themselves are '
+            'not changed by this harness.'
+        ),
     }
 
 
