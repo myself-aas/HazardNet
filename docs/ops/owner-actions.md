@@ -607,3 +607,59 @@ currently says "no archive loaded" and `/retrospectives` does not exist. Three c
 Whichever is chosen, record it here. Until one is, the pages must keep saying "no archive loaded" —
 and `scripts/tests/test_content_engine.py` will fail any build that fills that space with a number
 nobody read.
+
+---
+
+## Action 13 — Run the tabletop, then open the soft-launch gate 🟠 (Phase 9, ~2 h owner + duty desk)
+
+Phase 9 asks for two things no repository can do for itself: a **tabletop exercise** and a **soft
+launch** as an experimental decision-support beta. The hindcast half is now in the repository
+(`data/hindcast/reports/`, `scripts/hindcast/`, `.github/workflows/hindcast.yml`), and it says
+something the exercise should be built around: on the two cyclones the plan names, **every named
+district reached the alarm list and not one was flagged under the class that occurred** — the
+physics track called 127 of 128 district-windows `Fire`. A tabletop that assumes the pipeline
+names the hazard correctly would be testing a system this repository does not yet have.
+
+### 13a. The tabletop (half a day, one facilitator, the duty desk, one district officer)
+
+Use a **historical** episode first, then a live one. The point is not the forecast; it is what the
+duty officer does with an alert that is real, ambiguous, or wrong.
+
+| Step | Ask | Pass criteria |
+| --- | --- | --- |
+| 1 | Present the Amphan 2020 window as a live run (the drivers and the physics scores are in `data/hindcast/reports/amphan-2020.json`). Ask what they would publish. | The desk notices that the top class is not a cyclone, and says what they would do about it. Any answer is acceptable **if it is written down**; silence is the failure. |
+| 2 | Present the same window with the correct class supplied. | The desk produces an alert within the §1.3 threshold rules **and** can state the confidence's meaning (see Action 5a). |
+| 3 | Inject the 2024 eastern-flood onset (`data/hindcast/reports/eastern-flood-2024.json`) as a live run. | The desk identifies which of the named districts are hill-stream versus riverine and says what changes for each. |
+| 4 | Inject a district that is alarmed with **no recorded impact** (the report's `alarmed_without_a_recorded_impact`). | The desk does not call it a false alarm; it says "unknown" and identifies who could confirm. |
+| 5 | Ask for the escalation path to DDM/FFWC for one class. | The path is named, with a person and a channel, or the gap is recorded as a gap. |
+
+**Write the outcome into this file**, signed and dated: what was said, what was agreed, and which
+of the five steps failed. A tabletop with no written record cannot support the beta claim, and
+`docs/PRODUCT_SPEC.md` §3 forbids the site from claiming operational use until one exists.
+
+### 13b. The calibration key (required by the same gate)
+
+`Models/calibration/confidence_map.template.json` is deliberately unfit — `CalibrationMap.validate`
+refuses it and two tests pin that (`scripts/tests/test_mlops_*.py`). Until a fitted map exists,
+`alert_engine` keeps `WARNING` unreachable, and nothing above `WATCH` can be published
+automatically. The hindcast does **not** by itself produce that map: it scores the physics track
+against a truth set that names affected districts only, so the false-alarm denominator is absent
+(Action 12 has to supply it). The sequence is therefore:
+
+1. Load the event archive (Action 12, any of the three options).
+2. `python -m mlops.calibrate` against it, then `mlops apply-calibration` to stamp `model_version`.
+3. Re-run `gh workflow run hindcast.yml -f episode=all` and commit the regenerated reports — the
+   reports then carry a `scores.calibration` block that is no longer a placeholder.
+4. Only then set the WARNING threshold, in writing, with the reason (Action 5a).
+
+### 13c. The beta framing, if you choose to launch (owner decision)
+
+The site already says the right things in the places Phase 8 built — but a beta needs a stated
+scope. Recommended framing, to be recorded here before anyone links the site publicly:
+
+* **In scope:** district-level, 7- and 15-day outlooks, `WATCH`-band advisories, and a published
+  hindcast with its caveats.
+* **Out of scope, stated on the site:** operational evacuation decisions; anything above `WATCH`;
+  any accuracy claim (the hindcast ceiling is a *ceiling on detection*, not forecast skill).
+* **Who owns the number:** one named person who answers for the published metrics, so an
+  experimental beta cannot drift into an implied operational service by silence.

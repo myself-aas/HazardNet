@@ -32,6 +32,7 @@ if str(SCRIPTS_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_DIR))
 
 import physics_severity  # noqa: E402
+from etl import districts as etl_districts  # noqa: E402
 
 HORIZONS = (('7_days', 7), ('15_days', 15))
 
@@ -262,13 +263,20 @@ def prediction_rows(episode: dict, district_locations, series: dict) -> list:
 
 
 def outcome_rows(episode: dict) -> list:
-    """The truth set as `mlops.evaluate` reads it: one observed outcome per named district."""
+    """The truth set as `mlops.evaluate` reads it: one observed outcome per named district.
+
+    The district is resolved through `etl.districts` before it is written, because the join with
+    the prediction rows is a *name* join: an episode that spells a district the way its source
+    did ("Cumilla", "Coxs Bazar", "Jhalakathi") would otherwise produce rows that never match a
+    prediction and silently vanish from the table. `validate_episode` already refuses an
+    unresolvable name, so `resolve` cannot return None here.
+    """
     onset = episode['event']['onset_date']
     ends = episode['event'].get('ends_date') or onset
     rows = []
     for entry in episode['truth']['affected']:
         rows.append({
-            'district': entry['district'],
+            'district': etl_districts.resolve(entry['district']),
             'hazard_type': episode['hazard_class'],
             'start_date': onset,
             'end_date': ends,
@@ -296,9 +304,10 @@ def per_district(episode: dict, predictions: list) -> list:
             by_district[row['district_name']] = row
     table = []
     for entry in episode['truth']['affected']:
-        row = by_district.get(entry['district'])
+        district = etl_districts.resolve(entry['district'])
+        row = by_district.get(district)
         table.append({
-            'district': entry['district'],
+            'district': district,
             'as_written': entry.get('as_written'),
             'tier': entry.get('tier'),
             'source_id': entry.get('source_id'),

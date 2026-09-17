@@ -107,6 +107,15 @@ def build_report(episode: dict, *, series: dict, drivers_path: str, now: str | N
     if not predictions:
         raise SystemExit('no prediction rows could be built — the driver series is empty')
 
+    # A truth-set district with no prediction row would be a silent hole in the per-district
+    # table (the district-scoring join is a name join). `check` fails on it, and the report
+    # states it, because a district nobody scored must not read as a district nothing happened in.
+    scored = {row['district_name'] for row in predictions}
+    named_without_a_row = sorted(
+        entry['district'] for entry in episode_module.affected_districts(episode)
+        if entry['district'] not in scored
+    )
+
     evaluation = evaluate_module.evaluate(
         _write_temp(predictions, 'predictions'),
         _write_temp(outcomes, 'outcomes'),
@@ -216,6 +225,7 @@ def build_report(episode: dict, *, series: dict, drivers_path: str, now: str | N
             'matched_pairs': len(joined['pairs']),
             'prediction_windows_without_an_outcome': len(joined['unmatched_no_outcome']),
             'outcomes_not_relevant_to_a_window': joined['not_relevant'],
+            'named_districts_without_a_prediction_row': named_without_a_row,
         },
         'evaluation': evaluation,
         'threshold_sensitivity': sensitivity,
@@ -510,6 +520,9 @@ def cmd_run(args) -> int:
           f"({report['episode']['truth_completeness']})")
     print(f"predictions    : {report['counts']['predictions']} rows over "
           f"{report['counts']['districts']} districts")
+    if report['counts']['named_districts_without_a_prediction_row']:
+        print(f"!! unscored    : {report['counts']['named_districts_without_a_prediction_row']} "
+              'named district(s) have no prediction row — the driver series is incomplete')
     if report['evaluation'].get('scores'):
         events = report['evaluation']['scores']['events']
         print(f"detection      : hits {events['hits']} · misses {events['misses']} · "

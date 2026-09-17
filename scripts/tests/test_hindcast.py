@@ -245,6 +245,35 @@ def test_the_report_carries_the_wind_driver_comparison_and_its_finding_sentence(
     assert 'Severe Local Storm' in wind['finding'] and 'wind driver' in wind['finding']
 
 
+def test_an_alias_spelling_in_the_truth_set_resolves_before_it_is_joined():
+    """The district join is a name join, and episodes are written from sources that spell
+    districts their own way (Comilla, Coxs Bazar, Jhalakathi, Pirozpur). Resolution therefore
+    happens in the harness, on both sides of the join. The first version of the 2024 episode
+    spelled two districts the way its source did, and CI caught two districts missing from the
+    per-district table — this pins both halves of the fix.
+    """
+    from etl import districts as district_table
+
+    episode = fixture_episode()
+    episode['truth']['affected'] = [
+        {**episode['truth']['affected'][0], 'district': 'Comilla', 'as_written': 'Cumilla'},
+        {**episode['truth']['affected'][0], 'district': 'Coxs Bazar', 'as_written': "Cox's Bazar"},
+    ]
+    # 1. The truth rows carry canonical names, which is what the predict side speaks.
+    assert [row['district'] for row in score_module.outcome_rows(episode)] == \
+        ['Cumilla', "Cox's Bazar"]
+    assert [entry['district'] for entry in episode_module.affected_districts(episode)] == \
+        ['Cumilla', "Cox's Bazar"]
+    assert district_table.resolve('Coxs Bazar') == "Cox's Bazar"
+
+    # 2. The fixture has no station for either district (it is six scripted stations), and that
+    #    hole is *reported* rather than left as a silently empty row in the table.
+    report = build(episode=episode)
+    assert report['counts']['named_districts_without_a_prediction_row'] == ["Cox's Bazar", 'Cumilla']
+    assert [row['district'] for row in report['per_district']] == ['Cumilla', "Cox's Bazar"]
+    assert all(row['physics_top_hazard'] is None for row in report['per_district'])
+
+
 def test_the_engine_scores_the_episode_class_and_the_mismatch_is_visible():
     report = build()
     scores = report['evaluation']['scores']
