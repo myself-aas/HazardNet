@@ -13,12 +13,14 @@
 import { authenticateAlertRequest } from '../../../backend/utils/alertAuth.js';
 import { reviewAlert } from '../../../backend/alerts/service.js';
 import { publicAlertView } from '../../../backend/routes/alerts.js';
+import { guardRequest } from '../../../backend/middleware/serverlessGuard.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Method Not Allowed' });
     return;
   }
+  if (guardRequest(req, res, { bucket: 'pipeline' })) return;
   const body = req.body || {};
   const action = String(body.action || '').toLowerCase();
   if (!['approve', 'reject', 'submit-for-review', 'supersede'].includes(action)) {

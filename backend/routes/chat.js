@@ -3,6 +3,16 @@ import { searchRAG, GOVT_OFFICE_DIRECTORY, getAgentInstructions } from '../../ra
 import { generateAdvisoryWithFallback } from '../utils/ai_fallback_engine.js';
 import { clientError } from '../utils/clientError.js';
 
+/**
+ * Prompt bounds (SEC-11). The per-field numbers existed before this phase but the prompt
+ * was assembled from raw input; these are the numbers actually enforced on the model call,
+ * and `MAX_PROMPT_CHARS` bounds the whole thing including retrieved context.
+ */
+const MAX_QUERY_CHARS = 3000;
+const MAX_HISTORY_MESSAGE_CHARS = 1500;
+const MAX_PROMPT_CHARS = 12_000;
+
+
 const router = express.Router();
 
 const systemPrompt = `You are the HazardNet RAG Assistant — an expert AI advisor for Bangladesh Agriculture, Disaster Risk Management, Veterinary Care, Livestock, Fisheries, Agricultural Economics, Environmental Protection, and Humanitarian Relief.
@@ -26,13 +36,18 @@ router.post('/query', async (req, res) => {
       return res.status(400).json({ error: 'Query parameter is required' });
     }
 
-    // Input bounds & anti-DoS safeguards
-    const sanitizedQuery = query.trim().slice(0, 3000);
+    // Input bounds & anti-DoS safeguards (SEC-11). These bounds only count if they reach
+    // the prompt: the first version of this route computed `sanitizedQuery` for RAG
+    // retrieval but then built the LLM prompt from the raw body, so a caller could send a
+    // megabyte of text (cost, latency, and an unbounded prompt-injection surface) while the
+    // code still looked bounded. Everything downstream of this block uses the sanitized
+    // values, and the assembled prompt is capped as a whole.
+    const sanitizedQuery = query.trim().slice(0, MAX_QUERY_CHARS);
     const sanitizedDistrict = typeof district === 'string' ? district.trim().slice(0, 100) : undefined;
     const safeHistory = Array.isArray(conversationHistory)
       ? conversationHistory.slice(-8).map(msg => ({
           role: msg?.role === 'user' ? 'user' : 'assistant',
-          content: typeof msg?.content === 'string' ? msg.content.slice(0, 1500) : ''
+          content: typeof msg?.content === 'string' ? msg.content.slice(0, MAX_HISTORY_MESSAGE_CHARS) : ''
         }))
       : [];
 
@@ -55,12 +70,31 @@ router.post('/query', async (req, res) => {
 
     // 3. Format Conversation History
     let historyText = '';
-    if (Array.isArray(conversationHistory) && conversationHistory.length > 0) {
+    if (safeHistory.length > 0) {
+      // Built from the sanitized history, not the raw body (see the note above).
       historyText = `\n=== RECENT CONVERSATION HISTORY ===\n` +
-        conversationHistory.slice(-4).map(msg => `${msg.role === 'user' ? 'User' : 'Assistant'}: ${msg.content}`).join('\n') + '\n';
+        safeHistory.slice(-4).map(msg => `${msg.role === 'user' ? 'User' : 'Assistant'}: ${msg.content}`).join('\n') + '\n';
     }
 
-    const fullUserPrompt = `${contextText}${historyText}\n=== USER QUERY ===\n${query}\n\nProvide a comprehensive, clear, structured Markdown answer utilizing the above retrieved RAG context. Also suggest 3 short follow-up questions at the very end formatted inside a JSON block or clean list.`;
+    const promptTail = `\n=== USER QUERY ===\n${sanitizedQuery}\n\nProvide a comprehensive, clear, structured Markdown answer utilizing the above retrieved RAG context. Also suggest 3 short follow-up questions at the very end formatted inside a JSON block or clean list.`;
+
+    // The retrieved context is in-repo content, so truncating it is safe — and capping the
+    // whole prompt is what makes the per-field bounds meaningful. The note's own length is
+    // reserved up front, so the assembled prompt is inside the budget even when it says so.
+    const TRUNCATION_NOTE = '\n[retrieved context truncated: prompt budget reached]\n';
+    const tailBudget = MAX_PROMPT_CHARS - promptTail.length - TRUNCATION_NOTE.length;
+    if (historyText.length > tailBudget) historyText = historyText.slice(0, Math.max(0, tailBudget));
+
+    const contextBudget = tailBudget - historyText.length;
+    let promptTruncated = false;
+    if (contextText.length > contextBudget) {
+      contextText = contextBudget > 0
+        ? `${contextText.slice(0, contextBudget)}${TRUNCATION_NOTE}`
+        : '';
+      promptTruncated = true;
+    }
+
+    const fullUserPrompt = `${contextText}${historyText}${promptTail}`;
 
     // 4. Generate Answer via Multi-Provider HA Fallback Engine
     const aiParams = {
@@ -128,6 +162,9 @@ router.post('/query', async (req, res) => {
 
     res.json({
       query,
+      // Echoed so a client (and this repo's tests) can see the bound was applied rather
+      // than trusting that it was.
+      prompt: { chars: fullUserPrompt.length, truncated: promptTruncated },
       answer: answerMarkdown,
       retrieved_sources: ragResult.results.map(r => ({
         id: r.id,

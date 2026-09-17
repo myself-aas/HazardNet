@@ -89,7 +89,21 @@ def test_firestore_connectors_are_owner_scoped():
     text = FIRESTORE_RULES.read_text(encoding='utf-8')
     block = text[text.index('match /user_connectors'):]
     block = block[: block.index('\n    }')]
-    assert 'request.auth.uid' in block, 'user_connectors rules do not check ownership'
+
+    # Phase 6 moved the comparison into the `isCallerOwned()` helper (which accepts both
+    # the client's `user_id` and the SQL mirror's `userId`), so the assertion is on the
+    # helper *and* its use here — a literal `request.auth.uid` no longer appears in the
+    # block itself, and the old check failed on the fix rather than on a regression.
+    assert 'isCallerOwned(existing())' in block, 'user_connectors reads do not check ownership'
+    assert 'isCallerOwned(incoming())' in block, 'user_connectors writes do not check ownership'
+    helper = text[text.index('function isCallerOwned'):]
+    helper = helper[: helper.index('}')]
+    assert 'request.auth.uid' in helper, 'isCallerOwned does not compare against the caller'
+    owner_helper = text[text.index('function ownerOf'):]
+    owner_helper = owner_helper[: owner_helper.index('}')]
+    assert "'user_id' in data" in owner_helper and "'userId' in data" in owner_helper, (
+        'ownerOf must accept both ownership spellings (the client writes user_id)'
+    )
     assert 'allow read, write: if isSignedIn();' not in block, (
         'user_connectors still grants read/write to any signed-in user'
     )

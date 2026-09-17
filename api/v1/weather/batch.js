@@ -5,6 +5,7 @@
 
 import { fetchCurrentWeatherBatch } from '../../../../backend/utils/openMeteo.js';
 import { clientError } from '../../../backend/utils/clientError.js';
+import { guardRequest } from '../../../backend/middleware/serverlessGuard.js';
 
 export const config = {
   api: { bodyParser: { sizeLimit: '256kb' } },
@@ -29,6 +30,7 @@ export default async function handler(req, res) {
     }
     return;
   }
+  if (guardRequest(req, res, { bucket: 'read' })) return;
 
   if (req.method === 'GET') {
     const coords = typeof req.query.coords === 'string' ? req.query.coords : '';

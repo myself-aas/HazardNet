@@ -8,12 +8,14 @@
 import { authenticateAlertRequest } from '../../../backend/utils/alertAuth.js';
 import { alertFromDocument, getAlertStore } from '../../../backend/alerts/service.js';
 import { buildEvidenceCard } from '../../../backend/alerts/report.js';
+import { guardRequest } from '../../../backend/middleware/serverlessGuard.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
     res.status(405).json({ error: 'Method Not Allowed' });
     return;
   }
+  if (guardRequest(req, res, { bucket: 'alerts' })) return;
   const id = req.query.id || req.query.alert_id;
   if (!id || id === '_meta') {
     res.status(400).json({ error: 'an ?id=<alert-id> query parameter is required' });

@@ -6,7 +6,7 @@
  * that survives a driver list containing a comma.
  */
 
-import { alertsToCsv, csvCell, downloadAlertsCsv } from '../alertsCsv';
+import { alertsToCsv, csvCell, downloadAlertsCsv, isFormulaLike } from '../alertsCsv';
 import type { AlertRecord } from '../alerts';
 
 const COLUMNS = [
@@ -105,5 +105,44 @@ describe('downloadAlertsCsv', () => {
     expect(downloadAlertsCsv([alert()], {
       filename: 'a.csv', columns: COLUMNS, documentRef: undefined,
     })).toBe(false);
+  });
+});
+
+describe('formula injection (Phase 6)', () => {
+  // Phase 6 turned this from a nice-to-have into a tested rule: the export is opened in
+  // Excel by people who did not write the data, and a leading '=' executes on open.
+  const columns = [{ key: 'district_name' as const, header: 'district' }];
+  const row = (district_name: string) => ([{ district_name }] as unknown as AlertRecord[]);
+  const firstCell = (csv: string) => csv.split('\r\n')[1];
+
+  it('neutralises every character a spreadsheet evaluates', () => {
+    for (const payload of ['=1+1', '+1', '@SUM(A1)', '\tcmd', '\r=1']) {
+      const cell = firstCell(alertsToCsv(row(payload), columns));
+      expect(cell.startsWith("'") || cell.startsWith("\"'")).toBe(true);
+    }
+  });
+
+  it('neutralises a DDE-style payload', () => {
+    const csv = alertsToCsv(row('=cmd|\' /C calc\'!A0'), columns);
+    expect(csv).toContain("'=cmd");
+  });
+
+  it('leaves plain numbers alone, including negative ones', () => {
+    expect(csvCell(-12.4)).toBe('-12.4');
+    expect(csvCell('-0.5')).toBe('-0.5');
+    // ...but a leading minus that is not a number is treated as a formula.
+    expect(csvCell('-2+3')).toBe("'-2+3");
+  });
+
+  it('still quotes a neutralised value that contains a comma', () => {
+    const cell = firstCell(alertsToCsv(row('=x,y'), columns));
+    // Neutralised *and* RFC 4180 quoted (the comma would otherwise shift the column).
+    expect(cell).toBe("\"'=x,y\"");
+  });
+
+  it('exposes the same rule the backend escaper uses', () => {
+    expect(isFormulaLike('=x')).toBe(true);
+    expect(isFormulaLike('safe')).toBe(false);
+    expect(isFormulaLike('')).toBe(false);
   });
 });

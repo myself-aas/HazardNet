@@ -10,12 +10,14 @@
 import { verifyApiKey } from '../../../backend/utils/apiKeyAuth.js';
 import { runAlertEngine } from '../../../backend/alerts/service.js';
 import { notifyAlert } from '../../../backend/alerts/notify.js';
+import { guardRequest } from '../../../backend/middleware/serverlessGuard.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Method Not Allowed' });
     return;
   }
+  if (guardRequest(req, res, { bucket: 'pipeline' })) return;
   const key = verifyApiKey({ headers: req.headers });
   if (!key.ok) {
     res.status(key.status).json({ error: key.error });

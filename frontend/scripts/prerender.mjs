@@ -429,7 +429,6 @@ function loadBlogIndex() {
 
 function renderArticleBody(article) {
   const published = article.publishedAt ? String(article.publishedAt).slice(0, 10) : null;
-  const cover = absoluteUrl(article.coverImageUrl);
   return [
     '<div class="hn-static">',
     `<p class="hn-meta">${article.category ? `${escapeHtml(article.category)} · ` : ''}${

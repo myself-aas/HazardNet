@@ -83,6 +83,11 @@ Also refresh your own local `.env` from `.env.example` (gitignored — verify wi
   from CI on 2026-09-14 after the stale ids made every run fail; see
   `docs/audits/2026-09-14-vercel-deploy-403-project-unresolved.md`.
 - Re-run the leak scan any time: `bash scripts/check-secrets.sh`.
+- **Updated 2026-09-18 (Phase 6):** `.env.example` no longer contains the values (it is
+  placeholder-only now), and the scan can finally see them — the allowlist was matching
+  the *path* `.env.example`, so every hit inside it was discarded and CI reported success.
+  See `docs/audits/2026-09-18-secret-scan-false-negative.md`. The values below are still
+  live until rotated; cleaning the file does not revoke anything.
 
 > Optional hygiene (NOT a substitute for rotation): purge the values from git
 > history with `git filter-repo --strip-blobs-bigger-than …` / `--replace-text`.
@@ -407,3 +412,61 @@ driven against a running build, and satellite-free low-bandwidth mode has not be
 on a real 2G handset. Suggested pass: NVDA (Windows/Chrome) or TalkBack (Android) on
 `/alerts` in Bengali and English, plus one throttled mobile run with Data Saver on. What
 the automated pass cannot cover is listed in `docs/frontend/ACCESSIBILITY.md` §4.
+
+---
+
+## Action 7 — Re-deploy, then confirm the headers are actually live 🔴 (P0, ~15 min)
+
+**The repository and the live site disagree.** `www.hazardnet.live` (probed 2026-09-18)
+serves `Access-Control-Allow-Origin: *` on the HTML document and **none** of the security
+headers defined in `vercel.json` — no CSP, no `X-Content-Type-Options`, no
+`X-Frame-Options`, no `Referrer-Policy`, no `Permissions-Policy`, no COOP — and its HSTS
+header lacks `includeSubDomains`. `/.well-known/security.txt` returns Vercel's platform
+404 although the file is in the repository and in `dist/`.
+
+Two possible causes, in order of likelihood:
+
+1. **The production deployment predates the config.** The headers were added in Phase 0
+   (`3651bc5`, 2026-09-17) and the file is served from the deployment output, so a deploy
+   is required before either appears. Trigger a redeploy (empty commit on `main`, or
+   Vercel → Deployments → Redeploy) and re-probe.
+2. **The Vercel project root is not the repository root.** `docs/audits/2026-09-14-vercel-deploy-403-project-unresolved.md`
+   and §2a-bis cover the Root Directory setting; if Vercel builds from `frontend/`, the
+   root `vercel.json` is never read and `frontend/vercel.json` (which carries the same
+   headers, asserted equal by `__tests__/securityHeadersParity.test.js`) is the one in
+   force. Check Settings → Build & Development → Root Directory.
+
+**Verify (must all hold after the deploy):**
+```bash
+curl -sI https://www.hazardnet.live/ | grep -iE 'content-security-policy|x-content-type|x-frame|referrer-policy|permissions-policy|cross-origin-opener|strict-transport'
+curl -s  https://www.hazardnet.live/.well-known/security.txt | head -3    # RFC 9116 fields
+curl -sI https://www.hazardnet.live/ | grep -ci 'access-control-allow-origin: \*'   # → 0
+```
+A CDN cache is involved (`X-Vercel-Cache`), so re-probe with a cache-buster query string
+before concluding anything.
+
+## Action 8 — Validate the corrected Firestore rules, and consider a shared rate-limit store 🟠
+
+The Phase 6 audit found the rules reading camelCase ownership (`userId`) while the client
+writes snake_case (`user_id`), which denied owners their own assessment/alert/connector
+rows and left the profile validator inert. `firestore.rules` now accepts both spellings and
+applies the validators (`__tests__/firestoreRules.test.js` pins the shape, 13 checks), but
+**the corrected file has not been deployed or exercised against the emulator** — the audit
+sandbox has no Java, no emulator and no project credentials.
+
+1. Run the emulator suite locally before deploying:
+   ```bash
+   npm i -D @firebase/rules-unit-testing
+   firebase emulators:exec --only firestore "npm test -- firestore"
+   firebase deploy --only firestore:rules --dry-run   # compile check
+   ```
+   Cases worth writing first: an owner reading their own assessment; a stranger reading it;
+   a profile update with a 5 MB `display_name`; a `role: 'admin'` self-write; a connector
+   read by another signed-in account (the SEC-01/SEC-09 regression).
+2. Deploy with `firebase deploy --only firestore:rules`, then re-run the same cases against
+   the real project with two test accounts.
+3. **Rate limiting is per-instance.** `backend/middleware/serverlessGuard.js` caps each
+   Vercel instance (60–120/min depending on the bucket), which stops a single client from
+   hammering one instance but multiplies by the number of warm instances. A global
+   guarantee needs a shared counter (Upstash Redis/Vercel KV) — worth it only if the AI
+   routes see real abuse; the honest current guarantee is documented in `SECURITY.md`.

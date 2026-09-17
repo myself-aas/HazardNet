@@ -8,6 +8,7 @@
  */
 
 import { VALID_HORIZONS } from './forecastRow.js';
+import { csvEscape } from './csvSafety.js';
 
 export const HISTORY_MAX_WINDOW_DAYS = 90;
 export const HISTORY_DEFAULT_WINDOW_DAYS = 30;
@@ -100,11 +101,10 @@ export function parseHistoryQuery(query) {
   return { from: fromDate, to: toDate, horizon: horizon || null, districtId, format };
 }
 
-function csvEscape(value) {
-  if (value === null || value === undefined) return '';
-  const str = String(value);
-  return /[",\n\r]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
-}
+// CSV escaping lives in utils/csvSafety.js so the export cannot drift from the rule the
+// tests pin: RFC 4180 quoting *plus* formula-injection neutralisation (a cell beginning
+// `=`/`+`/`-`/`@` executes in Excel — see the module header).
+export { csvEscape } from './csvSafety.js';
 
 /** Render history rows as the ingest-compatible CSV export. */
 export function historyRowsToCsv(rows) {

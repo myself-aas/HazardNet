@@ -6,6 +6,7 @@
 
 import { fetchWeather, fetchCurrentWeather } from '../../../backend/utils/openMeteo.js';
 import { clientError } from '../../backend/utils/clientError.js';
+import { guardRequest } from '../backend/middleware/serverlessGuard.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
@@ -13,6 +14,7 @@ export default async function handler(req, res) {
     res.status(405).json({ error: 'Method Not Allowed' });
     return;
   }
+  if (guardRequest(req, res, { bucket: 'read' })) return;
 
   const lat = parseFloat(req.query.lat);
   const lng = parseFloat(req.query.lng);

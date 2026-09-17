@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { logger } from '../utils/logger.js';
 import { verifyApiKey } from '../backend/utils/apiKeyAuth.js';
 import { ingestForecastCsv } from '../backend/utils/csvIngestion.js';
+import { guardRequest } from '../backend/middleware/serverlessGuard.js';
 
 // Validation schema for a single forecast row
 const ForecastSchema = z.object({
@@ -46,6 +47,7 @@ export default async function handler(req, res) {
     res.end(JSON.stringify({ error: 'Method not allowed' }));
     return;
   }
+  if (guardRequest(req, res, { bucket: 'pipeline' })) return;
 
   // Timing-safe Bearer key verification (SEC-06); fail-closed when unset.
   const auth = verifyApiKey(req);

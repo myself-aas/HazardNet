@@ -20,6 +20,7 @@ import { requestId } from './middleware/requestId.js';
 import { attachFirebaseAuthUser, dynamicAiLimiter } from './middleware/firebaseAuth.js';
 import { getModelInfo } from './modelInfo.js';
 import helmet from 'helmet';
+import { cspDirectivesFromString } from './security/csp.js';
 
 dotenv.config();
 
@@ -63,10 +64,9 @@ app.disable('x-powered-by');
 // Rate limiters need the real client IP; we sit behind one proxy/edge hop.
 app.set('trust proxy', 1);
 
-// Security headers (SEC-05). CSP ships in Report-Only mode first so violations
-// can be observed in the console before enforcing; flip reportOnly to false
-// after a monitoring window. Fonts are self-hosted, so no third-party font
-// origins are needed.
+// Security headers (SEC-05). The policy itself lives in backend/security/csp.js so the
+// self-hosted deployment cannot drift from the two Vercel configs (Phase 6 fix: they had
+// drifted — the ad-network allowlist existed in one edition only).
 // CSP mode (ADR 0003): enforcing in production by default; Report-Only in
 // development. Override explicitly per environment with CSP_ENFORCE=true|false.
 // connect-src includes wss: for Supabase/Firebase realtime channels.
@@ -80,18 +80,7 @@ app.use(
     frameguard: { action: 'deny' },
     contentSecurityPolicy: {
       reportOnly: !cspEnforce,
-      directives: {
-        defaultSrc: ["'self'"],
-        scriptSrc: ["'self'"],
-        styleSrc: ["'self'", "'unsafe-inline'"],
-        imgSrc: ["'self'", 'data:', 'blob:', 'https:'],
-        fontSrc: ["'self'", 'data:'],
-        connectSrc: ["'self'", 'https:'],
-        workerSrc: ["'self'", 'blob:'],
-        frameAncestors: ["'none'"],
-        baseUri: ["'self'"],
-        formAction: ["'self'"],
-      },
+      directives: cspDirectivesFromString(),
     },
   })
 );

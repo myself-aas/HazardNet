@@ -14,12 +14,14 @@ import { listAlerts, stateCounts } from '../../../backend/alerts/service.js';
 import { getPolicy, ALERT_LEVELS } from '../../../backend/alerts/policy.js';
 import { ALERT_STATES } from '../../../backend/alerts/lifecycle.js';
 import { publicAlertView } from '../../../backend/routes/alerts.js';
+import { guardRequest } from '../../../backend/middleware/serverlessGuard.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
     res.status(405).json({ error: 'Method Not Allowed' });
     return;
   }
+  if (guardRequest(req, res, { bucket: 'alerts' })) return;
   const policy = getPolicy();
   const { privileged } = await authenticateAlertRequest(req);
 

@@ -28,47 +28,133 @@ service cloud.firestore {
       return resource.data;
     }
 
-    // Validation helper for UserProfile
+    // ---------------------------------------------------------------------------
+    // Ownership spelling (Phase 6 fix, SEC-13)
+    //
+    // The client writes snake_case — `AuthContext.saveAssessment` posts `user_id`,
+    // `updateUserProfile` snake-cases every camelCase field before the write — while these
+    // rules read camelCase (`userId`). On a client-written document the old check compared
+    // `undefined` with the caller's uid, so the owner was denied their own row and the
+    // validators never ran. Accepting both spellings restores the intent and keeps the
+    // SQL mirror (scripts/db/003_user_dashboard.sql) readable.
+    //
+    // NOTE: verifying these rules needs the Firestore emulator (Java) or a real project;
+    // neither is available in the audit sandbox, so the shape is pinned by
+    // `__tests__/firestoreRules.test.js` and the emulator run is an owner action in
+    // docs/ops/owner-actions.md.
+    // ---------------------------------------------------------------------------
+    function ownerOf(data) {
+      return 'user_id' in data
+        ? data.user_id
+        : (('userId' in data) ? data.userId : null);
+    }
+
+    function isCallerOwned(data) {
+      return ownerOf(data) is string && ownerOf(data) == request.auth.uid;
+    }
+
+    /** Present under either spelling (a required field must be present at all). */
+    function hasEither(data, snake, camel) {
+      return (snake in data) || (camel in data);
+    }
+
+    /** Bounded when present: free-text fields are the ones that can be used to store junk. */
+    function boundedString(data, field, max) {
+      return (!(field in data) || (data[field] is string && data[field].size() <= max));
+    }
+
+    function boundedNumber(data, field) {
+      return (!(field in data) || data[field] is number);
+    }
+
+    /** A document that keeps growing is storage abuse the rules can see. */
+    function withinKeyBudget(data, max) {
+      return data.keys().size() <= max;
+    }
+
+    // Validation helper for the profile document the app actually writes
+    // (snake_case, see AuthContext.saveProfile / bootstrapProfileFromOAuth /
+    // updateUserProfile). Identity fields must agree with the caller; free-text fields are
+    // length-capped; `role` stays inside the two values the UI understands. Authorization
+    // never reads this document — the backend takes the role from verified token claims
+    // (backend/middleware/firebaseAuth.js) — so a stored role is display data only.
     function isValidUserProfile(data) {
-      return (!('uid' in data) || (data.uid is string && data.uid.size() <= 128 && data.uid == request.auth.uid))
-        && (!('email' in data) || (data.email is string && data.email.size() <= 255))
-        && (!('displayName' in data) || (data.displayName is string && data.displayName.size() <= 150))
-        && (!('photoURL' in data) || (data.photoURL is string && data.photoURL.size() <= 1500))
+      return withinKeyBudget(data, 60)
+        && (!('id' in data) || (data.id is string && data.id == request.auth.uid))
+        && (!('uid' in data) || (data.uid is string && data.uid == request.auth.uid))
+        && (!('user_id' in data) || (data.user_id is string && data.user_id == request.auth.uid))
+        && boundedString(data, 'email', 255)
+        && boundedString(data, 'display_name', 150)
+        && boundedString(data, 'displayName', 150)
+        && boundedString(data, 'username', 80)
+        && boundedString(data, 'photo_url', 1500)
+        && boundedString(data, 'photoURL', 1500)
+        && boundedString(data, 'organization', 250)
+        && boundedString(data, 'target_crops', 500)
+        && boundedString(data, 'targetCrops', 500)
+        && boundedString(data, 'bio', 2000)
+        && boundedString(data, 'address', 500)
+        && boundedString(data, 'website', 300)
+        && boundedString(data, 'phone_number', 50)
+        && boundedString(data, 'phoneNumber', 50)
+        && boundedString(data, 'whatsapp_number', 50)
+        && boundedString(data, 'primary_division', 100)
+        && boundedString(data, 'primaryDivision', 100)
+        && boundedString(data, 'primary_district', 100)
+        && boundedString(data, 'primaryDistrict', 100)
+        && boundedString(data, 'home_district_id', 100)
+        && boundedString(data, 'home_district_name', 150)
         && (!('role' in data) || (data.role == 'user' || data.role == 'admin'))
-        && (!('userRole' in data) || (data.userRole is string && data.userRole.size() <= 100))
-        && (!('organization' in data) || (data.organization is string && data.organization.size() <= 250))
-        && (!('farmSizeHectares' in data) || data.farmSizeHectares is number)
-        && (!('primaryDivision' in data) || (data.primaryDivision is string && data.primaryDivision.size() <= 100))
-        && (!('primaryDistrict' in data) || (data.primaryDistrict is string && data.primaryDistrict.size() <= 100))
-        && (!('targetCrops' in data) || (data.targetCrops is string && data.targetCrops.size() <= 500))
-        && (!('phoneNumber' in data) || (data.phoneNumber is string && data.phoneNumber.size() <= 50))
-        && (!('pinpointLat' in data) || data.pinpointLat is number)
-        && (!('pinpointLng' in data) || data.pinpointLng is number)
-        && (!('createdAt' in data) || data.createdAt is string)
-        && (!('updatedAt' in data) || data.updatedAt is string);
+        && boundedString(data, 'user_role', 100)
+        && boundedString(data, 'userRole', 100)
+        && boundedNumber(data, 'farm_size_hectares')
+        && boundedNumber(data, 'farmSizeHectares')
+        && boundedNumber(data, 'pinpoint_lat')
+        && boundedNumber(data, 'pinpoint_lng');
     }
 
-    // Validation helper for Assessment
+    // Validation helper for Assessment (client writes `user_id` + snake_case fields;
+    // camelCase is accepted for documents written by the server/SQL mirror).
     function isValidAssessment(data) {
-      return data.userId is string && data.userId.size() <= 128 && data.userId == request.auth.uid
-        && data.districtId is string && data.districtId.size() <= 50
-        && data.districtName is string && data.districtName.size() <= 100
-        && data.primaryHazard is string && data.primaryHazard.size() <= 100
-        && data.confidence is number
-        && data.severityScore is number
-        && (!('userEmail' in data) || (data.userEmail is string && data.userEmail.size() <= 255))
-        && (!('severityBin' in data) || (data.severityBin is string && data.severityBin.size() <= 50))
-        && (!('notes' in data) || (data.notes is string && data.notes.size() <= 1000))
-        && (!('createdAt' in data) || data.createdAt is string);
+      return hasEither(data, 'user_id', 'userId')
+        && isCallerOwned(data)
+        && withinKeyBudget(data, 60)
+        && hasEither(data, 'district_id', 'districtId')
+        && hasEither(data, 'district_name', 'districtName')
+        && hasEither(data, 'primary_hazard', 'primaryHazard')
+        && boundedString(data, 'district_id', 50)
+        && boundedString(data, 'districtId', 50)
+        && boundedString(data, 'district_name', 100)
+        && boundedString(data, 'districtName', 100)
+        && boundedString(data, 'primary_hazard', 100)
+        && boundedString(data, 'primaryHazard', 100)
+        && boundedString(data, 'notes', 1000)
+        && boundedString(data, 'user_email', 255)
+        && boundedString(data, 'userEmail', 255)
+        && boundedString(data, 'severity_bin', 50)
+        && boundedString(data, 'severityBin', 50)
+        && boundedNumber(data, 'severity_score')
+        && boundedNumber(data, 'severityScore')
+        && boundedNumber(data, 'confidence')
+        && boundedString(data, 'created_at', 40)
+        && boundedString(data, 'createdAt', 40);
     }
 
-    // Validation helper for UserAlert
+    // Validation helper for UserAlert — same spelling rules as Assessment.
     function isValidUserAlert(data) {
-      return data.userId is string && data.userId.size() <= 128 && data.userId == request.auth.uid
-        && data.districtId is string && data.districtId.size() <= 50
-        && data.hazardType is string && data.hazardType.size() <= 50
-        && (!('severityThreshold' in data) || data.severityThreshold is number)
-        && (!('createdAt' in data) || data.createdAt is string);
+      return hasEither(data, 'user_id', 'userId')
+        && isCallerOwned(data)
+        && withinKeyBudget(data, 60)
+        && hasEither(data, 'district_id', 'districtId')
+        && hasEither(data, 'hazard_type', 'hazardType')
+        && boundedString(data, 'district_id', 50)
+        && boundedString(data, 'districtId', 50)
+        && boundedString(data, 'hazard_type', 50)
+        && boundedString(data, 'hazardType', 50)
+        && boundedNumber(data, 'severity_threshold')
+        && boundedNumber(data, 'severityThreshold')
+        && boundedString(data, 'created_at', 40)
+        && boundedString(data, 'createdAt', 40);
     }
 
     // Forecast bulletins are PUBLIC data: anyone may read them (the website's
@@ -84,8 +170,10 @@ service cloud.firestore {
     // Matching Collections
     match /profiles/{userId} {
       allow get, list: if true;
-      allow create: if isOwner(userId) && isValidId(userId);
-      allow update: if isOwner(userId) && isValidId(userId);
+      // The validator was defined but never applied until Phase 6 — it existed while
+      // profile writes were gated on ownership alone (any field, any size).
+      allow create: if isOwner(userId) && isValidId(userId) && isValidUserProfile(incoming());
+      allow update: if isOwner(userId) && isValidId(userId) && isValidUserProfile(incoming());
       allow delete: if isOwner(userId) && isValidId(userId);
     }
 
@@ -103,13 +191,11 @@ service cloud.firestore {
     // data (audit SEC-01/SEC-09, 2026-09-17). Ownership is taken from the
     // document's own `user_id`, never from the id the client supplied.
     match /user_connectors/{connectorId} {
-      allow get: if isSignedIn() && existing().user_id == request.auth.uid;
-      allow list: if isSignedIn() && resource.data.user_id == request.auth.uid;
-      allow create: if isSignedIn() && incoming().user_id == request.auth.uid;
-      allow update: if isSignedIn()
-        && existing().user_id == request.auth.uid
-        && incoming().user_id == request.auth.uid;
-      allow delete: if isSignedIn() && existing().user_id == request.auth.uid;
+      allow get: if isSignedIn() && isCallerOwned(existing());
+      allow list: if isSignedIn() && isCallerOwned(resource.data);
+      allow create: if isSignedIn() && isCallerOwned(incoming());
+      allow update: if isSignedIn() && isCallerOwned(existing()) && isCallerOwned(incoming());
+      allow delete: if isSignedIn() && isCallerOwned(existing());
     }
 
     // Blog articles — the public SEO surface. Reads stay public (published
@@ -136,20 +222,24 @@ service cloud.firestore {
       allow create, update, delete: if isBlogSuperadmin();
     }
 
+    // Assessments are keyed by a random doc id, so ownership has to come from the
+    // document body — and the body uses `user_id` (see the note on ownerOf()).
     match /assessments/{assessmentId} {
-      allow get: if isSignedIn() && existing().userId == request.auth.uid;
-      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow get: if isSignedIn() && isCallerOwned(existing());
+      allow list: if isSignedIn() && isCallerOwned(resource.data);
       allow create: if isSignedIn() && isValidId(assessmentId) && isValidAssessment(incoming());
-      allow update: if isSignedIn() && isValidId(assessmentId) && existing().userId == request.auth.uid && isValidAssessment(incoming());
-      allow delete: if isSignedIn() && isValidId(assessmentId) && existing().userId == request.auth.uid;
+      allow update: if isSignedIn() && isValidId(assessmentId)
+        && isCallerOwned(existing()) && isValidAssessment(incoming());
+      allow delete: if isSignedIn() && isCallerOwned(existing());
     }
 
     match /alerts/{alertId} {
-      allow get: if isSignedIn() && existing().userId == request.auth.uid;
-      allow list: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow get: if isSignedIn() && isCallerOwned(existing());
+      allow list: if isSignedIn() && isCallerOwned(resource.data);
       allow create: if isSignedIn() && isValidId(alertId) && isValidUserAlert(incoming());
-      allow update: if isSignedIn() && isValidId(alertId) && existing().userId == request.auth.uid && isValidUserAlert(incoming());
-      allow delete: if isSignedIn() && isValidId(alertId) && existing().userId == request.auth.uid;
+      allow update: if isSignedIn() && isValidId(alertId)
+        && isCallerOwned(existing()) && isValidUserAlert(incoming());
+      allow delete: if isSignedIn() && isCallerOwned(existing());
     }
   }
 }

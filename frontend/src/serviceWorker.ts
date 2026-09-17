@@ -20,6 +20,40 @@ function isAlertsRequest(url: URL): boolean {
   return url.pathname.startsWith('/api/v1/alerts') || url.pathname === '/data/alerts-latest.json';
 }
 
+/**
+ * May this response be written to Cache Storage? (Phase 6, SEC-09)
+ *
+ * A service worker sits below the HTTP cache, so `Cache-Control: no-store` does not
+ * protect a response from being copied into Cache Storage by `cache.put`. Two classes of
+ * response must never be:
+ *
+ *   1. **Credentialed requests.** The alerts API answers a duty officer's
+ *      `Authorization: Bearer <key>` request with unpublished rows and the review queue
+ *      (`state=all`, reviewer contact details). Caching that copy would leave privileged
+ *      data on a shared device and could replay it to a later unprivileged read of the
+ *      same URL.
+ *   2. **Responses the server marked private or no-store** — including `Set-Cookie`,
+ *      which means the payload is tied to a session the cache knows nothing about.
+ *
+ * Exported for the test suite: this is a security decision that must not be re-implemented
+ * inline, and it is the kind of rule that silently regresses otherwise.
+ */
+export function isCacheableResponse(request: Request, response: Response | null | undefined): boolean {
+  if (!request || !response) return false;
+  if (request.method && request.method !== 'GET') return false;
+  if (response.status !== 200) return false;
+
+  const headers = request.headers;
+  if (headers && (headers.has('authorization') || headers.has('x-api-key'))) return false;
+
+  const responseHeaders = response.headers;
+  if (!responseHeaders || typeof responseHeaders.get !== 'function') return true;
+  const cacheControl = String(responseHeaders.get('cache-control') || '').toLowerCase();
+  if (cacheControl.includes('no-store') || cacheControl.includes('private')) return false;
+  if (responseHeaders.get('set-cookie')) return false;
+  return true;
+}
+
 async function fetchWithTimeout(request: Request, timeoutMs: number): Promise<Response> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
@@ -34,7 +68,7 @@ async function alertsNetworkFirst(request: Request): Promise<Response> {
   const cache = await caches.open(ALERTS_CACHE_NAME);
   try {
     const response = await fetchWithTimeout(request, ALERTS_NETWORK_TIMEOUT_MS);
-    if (response && response.status === 200 && request.method === 'GET') {
+    if (isCacheableResponse(request, response)) {
       const headers = new Headers(response.headers);
       headers.set('X-HazardNet-Cached-At', new Date().toISOString());
       await cache.put(request, new Response(await response.clone().blob(), {
@@ -312,7 +346,7 @@ self.addEventListener('fetch', (event: any) => {
   event.respondWith(
     caches.match(request).then((cached) => {
       const network = fetch(request).then((response) => {
-        if (response && response.status === 200) {
+        if (isCacheableResponse(request, response)) {
           caches.open(CACHE_NAME).then((cache) => cache.put(request, response.clone()));
         }
         return response;

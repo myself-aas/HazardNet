@@ -13,6 +13,13 @@
  *  - **RFC 4180 quoting.** Fields containing a comma, quote or newline are quoted and
  *    inner quotes doubled; a driver-variable list with a comma would otherwise shift
  *    every later column.
+ *  - **Formula neutralisation.** A spreadsheet evaluates any cell that begins `=`, `+`,
+ *    `-`, `@`, tab or CR, so `=HYPERLINK(...)` in a district name or a reviewer's note
+ *    would run on the operator's machine when the file is opened. Dangerous leading
+ *    characters are prefixed with `'` (the spreadsheet's own "this is text" marker);
+ *    plain numbers, including negative ones, are left exactly as they are. The same rule
+ *    lives in `backend/utils/csvSafety.js` for the server-side exports — the two are
+ *    tested against the same cases.
  */
 
 import type { AlertRecord } from './alerts';
@@ -31,11 +38,23 @@ const valueAt = (alert: AlertRecord, key: string): unknown => {
   }, alert);
 };
 
+const FORMULA_START = /^[=+@\t\r]/;
+const PLAIN_NUMBER = /^-?\d+(\.\d+)?([eE][-+]?\d+)?$/;
+
+/** True when a spreadsheet would evaluate this cell instead of displaying it. */
+export function isFormulaLike(text: string): boolean {
+  if (!text) return false;
+  if (FORMULA_START.test(text)) return true;
+  if (text.startsWith('-')) return !PLAIN_NUMBER.test(text);
+  return false;
+}
+
 export function csvCell(value: unknown): string {
   if (value === null || value === undefined) return '';
   const text = typeof value === 'object' ? JSON.stringify(value) : String(value);
-  if (/[",\r\n]/.test(text)) return `"${text.replace(/"/g, '""')}"`;
-  return text;
+  const safe = isFormulaLike(text) ? `'${text}` : text;
+  if (/[",\r\n]/.test(safe)) return `"${safe.replace(/"/g, '""')}"`;
+  return safe;
 }
 
 export function alertsToCsv(alerts: AlertRecord[], columns: CsvColumn[]): string {
