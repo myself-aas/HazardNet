@@ -1641,33 +1641,41 @@ if __name__ == '__main__':
 
 ## Phase 4
 
-### HazardNet Ablation Study
+### HazardNet Ablation Study (Multi-Session)
 
 ```python
 """
 ================================================================================
-HazardNet Scientific Training Pipeline v3.1 (Ablation Study Edition)
-Complete Experimental Logging, Statistical Validation & Q1 Visualization Suite
+HazardNet ABLATION STUDY ONLY (Batch 4) — Isolated, Quota-Safe, Q1-Grade
 ================================================================================
-BANGLADESH-CALIBRATED | LEAKAGE-SAFE | PHYSICALLY ANCHORED | STATISTICALLY PROVEN
+SCOPE: Architectural ablations ONLY. Strategy validation (grouped_kfold,
+rolling_origin, event_kfold, spatial_lodo) runs in OTHER notebooks.
 
-ABLATIONS INCLUDED:
-  Base: Full HazardNet (Depthwise-Separable + SE Attention + Temporal Preservation + MTL)
-  A1:   No SE Attention Blocks
-  A2:   Standard Conv3d (replaces Depthwise-Separable)
-  A3:   No Temporal Preservation (pools time immediately in Block 1)
-  A4:   Classification Only (removes severity head + MTL loss)
+ABLATIONS (identical protocol = grouped_kfold, identical hyperparams, same seed):
+  full_model  : reference architecture
+  A1_No_SE_Attention     : remove Squeeze-and-Excitation blocks
+  A2_Standard_Conv3d     : replace Depthwise-Separable with dense Conv3d
+  A3_No_Temporal_Preserve: pool time immediately in Block 1
+  A4_Classification_Only : remove severity head + regression loss
 
-USAGE IN KAGGLE NOTEBOOK:
-  ABLATION = 'all'  # Options: 'Base', 'A1_No_SE_Attention', ..., 'A4_Classification_Only' or 'all'
-  main()
+OUTPUTS (isolated batch + shared master log):
+  /kaggle/working/HazardNet_Results/batch4_ablation/
+  ├── ablation/{variant}_{fold}_best.pt          (checkpoints)
+  ├── ablation/ablation_fold_results.csv         (per-fold raw metrics)
+  ├── ablation/ablation_study.csv  +  .tex       (publication table)
+  ├── figures/ablation_comparison.png/.pdf       (2x2: Acc, F1, RMSE, Params)
+  ├── figures/ablation_efficiency_frontier.png   (Params vs Acc: Lightweight-Max proof)
+  ├── figures/ablation_cm_{variant}.png          (pooled confusion per variant)
+  └── ablation_metadata.json
+  /kaggle/working/HazardNet_Results/master_logs/master_ablation.csv  (appended)
+
+QUOTA GUARD: WALL_CLOCK_LIMIT_HOURS stops training gracefully and STILL writes
+all tables/figures from completed variants before the session can be killed.
 ================================================================================
 """
-from __future__ import annotations
-import os, sys, json, glob, re, argparse, warnings, hashlib
+import os, json, glob, time, warnings
 from datetime import datetime
 from pathlib import Path
-from collections import defaultdict
 import numpy as np
 import pandas as pd
 
@@ -1677,153 +1685,106 @@ import torch.nn.functional as F
 from torch.optim import AdamW
 from torch.optim.lr_scheduler import CosineAnnealingLR
 from torch.utils.data import DataLoader, Dataset, get_worker_info
-
-from sklearn.isotonic import IsotonicRegression
-from sklearn.model_selection import StratifiedGroupKFold, StratifiedKFold
 from sklearn.metrics import (accuracy_score, f1_score, precision_score, recall_score,
                              mean_squared_error, mean_absolute_error, r2_score,
-                             confusion_matrix, roc_auc_score, roc_curve,
-                             precision_recall_curve, average_precision_score,
-                             brier_score_loss)
+                             confusion_matrix)
+from scipy.stats import chi2
 from tqdm import tqdm
 import h5py
 
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
-from matplotlib.patches import FancyBboxPatch
 import seaborn as sns
-from scipy import stats
 
 warnings.filterwarnings("ignore")
 
 # ============================================================================
-# JOURNAL PUBLICATION STYLE
+# USER CONTROLS
 # ============================================================================
-JOURNAL_COLORS = {
-    "primary": "#2C3E50", "accent": "#E74C3C", "secondary": "#3498DB",
-    "tertiary": "#27AE60", "quaternary": "#F39C12", "quinary": "#9B59B6",
-    "senary": "#1ABC9C", "septenary": "#E67E22", "neutral": "#95A5A6",
-    "background": "#FAFAFA", "grid": "#ECF0F1",
-}
-HAZARD_COLORS = {
-    "Cold Wave": "#3498DB", "Drought": "#E67E22", "Fire": "#E74C3C",
-    "Flash Flood": "#1ABC9C", "Flood": "#2980B9", "Heat Wave": "#C0392B",
-    "Severe Local Storm": "#8E44AD", "Tropical Cyclone": "#2C3E50",
-}
-STRATEGY_COLORS = {
-    "event_kfold": "#95A5A6", "spatial_lodo": "#3498DB",
-    "temporal": "#E74C3C", "spatio_temporal": "#F39C12",
-    "grouped_kfold": "#27AE60", "rolling_origin": "#9B59B6",
-}
+OUTPUT_BASE            = "/kaggle/working/HazardNet_Results"
+BATCH_ID               = "batch4_ablation"
+ABLATION_PROTOCOL      = "grouped_kfold"     # leakage-safe protocol (fixed for fairness)
+WALL_CLOCK_LIMIT_HOURS = 8.0                 # hard safety net vs Kaggle quota
+NUM_EPOCHS             = 50
+BATCH_SIZE             = 16
+LEARNING_RATE          = 1e-3
+WEIGHT_DECAY           = 1e-4
+PATIENCE               = 10
+GRAD_CLIP              = 1.0
+NUM_WORKERS            = 2
+DEVICE                 = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+SEED                   = 42
 
-plt.rcParams.update({
-    "font.family": "sans-serif",
-    "font.sans-serif": ["Helvetica", "Arial", "DejaVu Sans"],
-    "font.size": 9, "axes.labelsize": 10, "axes.titlesize": 11,
-    "axes.titleweight": "bold", "axes.linewidth": 0.8, "axes.edgecolor": "#2C3E50",
-    "axes.grid": True, "grid.alpha": 0.3, "grid.linewidth": 0.5,
-    "xtick.labelsize": 8, "ytick.labelsize": 8,
-    "xtick.direction": "out", "ytick.direction": "out",
-    "legend.fontsize": 8, "legend.framealpha": 0.9, "legend.edgecolor": "#BDC3C7",
-    "figure.dpi": 300, "savefig.dpi": 300, "savefig.bbox": "tight",
-    "savefig.pad_inches": 0.05, "figure.facecolor": "white", "axes.facecolor": "#FAFAFA",
-    "text.usetex": False,
-})
+# ---- ABLATION BATCH CONFIG (identical in ALL sessions for fairness) ----
+ABLATION_MAX_FOLDS  = 5            # FULL study = 5 folds
+
+# ---- PER-SESSION CONTROLS (edit these each session) ----
+ABLATION_FOLD_SLICE = (0, 2)       # Session 1: folds [0,2) | S2: (2,4) | S3: (4,5)
+PRIOR_RESULTS_CSV     = None       # S2/S3: "/kaggle/input/hazardnet-ablation-sN/ablation_fold_results.csv"
+PRIOR_PREDICTIONS_CSV = None       # S2/S3: "/kaggle/input/hazardnet-ablation-sN/ablation_predictions.csv"
+
+# ---- DIRECTORY SETUP (Fixed Order) ----
+BATCH_DIR    = os.path.join(OUTPUT_BASE, BATCH_ID)
+ABL_DIR      = os.path.join(BATCH_DIR, "ablation")
+FIG_DIR      = os.path.join(BATCH_DIR, "figures")
+MASTER_LOGS  = os.path.join(OUTPUT_BASE, "master_logs")
+
+for d in (BATCH_DIR, ABL_DIR, FIG_DIR, MASTER_LOGS):
+    os.makedirs(d, exist_ok=True)
+
+START_TIME = time.time()
+RESULTS_CSV     = os.path.join(ABL_DIR, "ablation_fold_results.csv")
+PREDICTIONS_CSV = os.path.join(ABL_DIR, "ablation_predictions.csv")
+
+METRIC_COLS = ["variant", "fold", "n_params", "hazard_accuracy", "hazard_f1_macro",
+               "severity_rmse", "severity_r2", "n_test"]
+
+EXPERIMENTAL_DIR = "/kaggle/input/datasets/ashifahmedshuvo/hazardnet-datasets/tensors_output/HazardNet_Event_Based_Datasets"
+MASTER_H5_PATH   = os.path.join(EXPERIMENTAL_DIR, "master_tensors.h5")
+CONFIG_PATH      = os.path.join(EXPERIMENTAL_DIR, "dataset_config.json")
+
+def hours_elapsed(): return (time.time() - START_TIME) / 3600.0
+def quota_exceeded(): return hours_elapsed() > WALL_CLOCK_LIMIT_HOURS
+
+torch.manual_seed(SEED); np.random.seed(SEED)
 
 # ============================================================================
-# BANGLADESH REFERENCES & THRESHOLDS
+# BANGLADESH-CALIBRATED SEVERITY THRESHOLDS (direction-aware)
 # ============================================================================
-REFERENCES_BD = {
-    "tcrr2023": dict(doi="10.1016/j.tcrr.2023.06.002", validated=True),
-    "jweia2022": dict(doi="10.1016/j.jweia.2022.105026", validated=True),
-    "bd_cold_lstm": dict(doi="10.1186/s44329-026-00058-6", validated=True),
-    "bd_cold_alam": dict(doi="10.3390/app13127030", validated=True),
-    "bd_cold_forewarn": dict(doi=None, verified_url=True),
-    "bd_heat_bmd": dict(doi=None, verified_url=True),
-    "bd_heat_bdrcs": dict(doi=None, verified_url=True),
-    "bd_flood_ffwc": dict(doi=None, verified_url=True),
-    "bd_flood_glofas": dict(doi="10.1111/jfr3.12959", validated=True),
-    "bd_flash_haor": dict(doi=None, verified_url=True),
-    "bd_flash_bmd": dict(doi=None, verified_url=True),
-    "bd_drought_kam": dict(doi="10.1038/s41598-022-24146-0", validated=True),
-    "bd_drought_ml": dict(doi=None, verified_url=True),
-    "bd_fire_barik": dict(doi="10.1038/s43247-023-01112-w", validated=True),
-    "bd_storm_hoque": dict(doi=None, verified_url=True),
-    "bd_tc_wmo": dict(doi=None, verified_url=True),
-    "bd_tc_bmd": dict(doi="10.1007/s43762-023-00113-x", validated=True),
-}
-
-HAZARD_TYPES = [
-    "Cold Wave", "Drought", "Fire", "Flash Flood",
-    "Flood", "Heat Wave", "Severe Local Storm", "Tropical Cyclone",
-]
+HAZARD_TYPES = ["Cold Wave", "Drought", "Fire", "Flash Flood",
+                "Flood", "Heat Wave", "Severe Local Storm", "Tropical Cyclone"]
 
 SEVERITY_THRESHOLDS = {
-    "Cold Wave": dict(
-        index="minimum temperature Tmin (deg C), BMD operational",
-        anchors=[(16, 0.10), (13, 0.30), (10, 0.50), (8, 0.70), (6, 0.90), (4, 1.0)],
-        tiers=dict(watch=0.30, warning=0.50, severe=0.70),
-        interpretation={0.10: "Tmin~16C cold night (health watch)", 0.30: "Tmin~13C moderate cold spell",
-                        0.50: "Tmin<=10C BMD COLD WAVE DAY (warning)", 0.70: "Tmin<=8C severe cold wave (FOREWARN)",
-                        0.90: "Tmin<=6C extreme cold wave"},
-        refs=["bd_cold_lstm", "bd_cold_alam", "bd_cold_forewarn"]),
-    "Heat Wave": dict(
-        index="maximum temperature Tmax (deg C), BMD operational classes",
-        anchors=[(36, 0.25), (38, 0.50), (40, 0.70), (42, 0.85), (44, 1.0)],
-        tiers=dict(watch=0.25, warning=0.50, severe=0.70),
-        interpretation={0.25: "Tmax>=36C mild onset (watch)", 0.50: "Tmax>=38C moderate (WARNING; BDRCS HI trigger)",
-                        0.70: "Tmax>=40C severe (DREF severe)", 0.85: "Tmax>=42C extreme"},
-        refs=["bd_heat_bmd", "bd_heat_bdrcs"]),
-    "Flood": dict(
-        index="river water level relative to FFWC danger level (m)",
-        anchors=[(-0.5, 0.30), (0.0, 0.50), (1.0, 0.75), (2.0, 1.0)],
-        tiers=dict(watch=0.30, warning=0.50, severe=0.75),
-        interpretation={0.30: "within 0.5m below danger (FFWC warning zone)", 0.50: "at danger level (~90th pct flow) FLOOD onset",
-                        0.75: ">1m above danger SEVERE FLOOD (FFWC)", 1.00: ">2m above danger extreme inundation"},
-        refs=["bd_flood_ffwc", "bd_flood_glofas"]),
-    "Flash Flood": dict(
-        index="24-h rainfall (mm), BMD heavy-rain classes + haor response",
-        anchors=[(44, 0.40), (88, 0.65), (150, 0.85), (250, 1.0)],
-        tiers=dict(watch=0.40, warning=0.65, severe=0.85),
-        interpretation={0.40: "24h>=44mm BMD heavy rain (haor watch)", 0.65: "24h>=88mm very heavy (WARNING)",
-                        0.85: "24h>=150mm Sylhet-2022-class (SEVERE)", 1.00: "24h>=250mm exceptional extreme"},
-        refs=["bd_flash_bmd", "bd_flash_haor"]),
-    "Drought": dict(
-        index="SPEI-3 (WMO classes as applied to Bangladesh)",
-        anchors=[(-1.0, 0.30), (-1.5, 0.60), (-2.0, 0.85), (-2.5, 1.0)],
-        tiers=dict(watch=0.30, warning=0.60, severe=0.85),
-        interpretation={0.30: "SPEI-3<=-1.0 moderate (Bangladesh)", 0.60: "SPEI-3<=-1.5 severe (rabi/pre-kharif risk)",
-                        0.85: "SPEI-3<=-2.0 extreme (Barind-type)"},
-        refs=["bd_drought_ml", "bd_drought_kam"]),
-    "Fire": dict(
-        index="Canadian Fire Weather Index (FWI), humid-zone calibrated",
-        anchors=[(11.2, 0.30), (21.3, 0.55), (38.0, 0.75), (50.0, 0.90), (70.0, 1.0)],
-        tiers=dict(watch=0.30, warning=0.55, severe=0.75),
-        interpretation={0.30: "FWI>=11.2 moderate (dry-season watch)", 0.55: "FWI>=21.3 high (warning; humid-zone relevant)",
-                        0.75: "FWI>=38 very high (severe)"},
-        refs=["bd_fire_barik"]),
-    "Severe Local Storm": dict(
-        index="maximum gust wind speed (km/h), Kalbaishakhi classes",
-        anchors=[(45, 0.25), (61, 0.40), (91, 0.65), (121, 0.90), (150, 1.0)],
-        tiers=dict(watch=0.40, warning=0.65, severe=0.90),
-        interpretation={0.25: "gusts 45-60 km/h squally (BMD signal 1)", 0.40: "gusts>=61 LIGHT nor'wester (watch)",
-                        0.65: "gusts>=91 MODERATE Kalbaishakhi (WARNING)", 0.90: "gusts>=121 SEVERE nor'wester (hail/damage)"},
-        refs=["bd_storm_hoque"]),
-    "Tropical Cyclone": dict(
-        index="maximum sustained wind (km/h, 3-min, WMO/IMD NIO scale)",
-        anchors=[(63, 0.25), (89, 0.50), (118, 0.70), (166, 0.85), (221, 1.0)],
-        tiers=dict(watch=0.25, warning=0.50, severe=0.70),
-        interpretation={0.25: ">=63 cyclonic storm (named; watch)", 0.50: ">=89 SEVERE cyclonic storm (WARNING, GDS)",
-                        0.70: ">=118 VERY SEVERE (severe)", 0.85: ">=166 EXTREMELY SEVERE (SIDR/Amphan class)",
-                        1.00: ">=221 super cyclonic storm"},
-        refs=["bd_tc_wmo", "bd_tc_bmd", "tcrr2023", "jweia2022"]),
+    "Cold Wave": dict(index="Tmin (deg C), BMD",
+        anchors=[(16,0.10),(13,0.30),(10,0.50),(8,0.70),(6,0.90),(4,1.0)],
+        tiers=dict(watch=0.30, warning=0.50, severe=0.70)),
+    "Heat Wave": dict(index="Tmax (deg C), BMD",
+        anchors=[(36,0.25),(38,0.50),(40,0.70),(42,0.85),(44,1.0)],
+        tiers=dict(watch=0.25, warning=0.50, severe=0.70)),
+    "Flood": dict(index="level vs FFWC danger (m)",
+        anchors=[(-0.5,0.30),(0.0,0.50),(1.0,0.75),(2.0,1.0)],
+        tiers=dict(watch=0.30, warning=0.50, severe=0.75)),
+    "Flash Flood": dict(index="24-h rainfall (mm)",
+        anchors=[(44,0.40),(88,0.65),(150,0.85),(250,1.0)],
+        tiers=dict(watch=0.40, warning=0.65, severe=0.85)),
+    "Drought": dict(index="SPEI-3",
+        anchors=[(-1.0,0.30),(-1.5,0.60),(-2.0,0.85),(-2.5,1.0)],
+        tiers=dict(watch=0.30, warning=0.60, severe=0.85)),
+    "Fire": dict(index="FWI",
+        anchors=[(11.2,0.30),(21.3,0.55),(38.0,0.75),(50.0,0.90),(70.0,1.0)],
+        tiers=dict(watch=0.30, warning=0.55, severe=0.75)),
+    "Severe Local Storm": dict(index="gust (km/h), Kalbaishakhi",
+        anchors=[(45,0.25),(61,0.40),(91,0.65),(121,0.90),(150,1.0)],
+        tiers=dict(watch=0.40, warning=0.65, severe=0.90)),
+    "Tropical Cyclone": dict(index="wind (km/h, 3-min NIO)",
+        anchors=[(63,0.25),(89,0.50),(118,0.70),(166,0.85),(221,1.0)],
+        tiers=dict(watch=0.25, warning=0.50, severe=0.70)),
 }
 
 class SeverityNormalizer:
-    """Direction-aware piecewise-linear physical index <-> [0,1] mapper."""
-    def __init__(self, hazard: str):
+    """Direction-aware piecewise-linear physical index <-> [0,1]."""
+    def __init__(self, hazard):
         cfg = SEVERITY_THRESHOLDS[hazard]
         xs = np.array([a[0] for a in cfg["anchors"]], dtype=float)
         ys = np.array([a[1] for a in cfg["anchors"]], dtype=float)
@@ -1831,559 +1792,430 @@ class SeverityNormalizer:
         if self._flip: xs = -xs
         assert np.all(np.diff(xs) > 0), f"{hazard}: anchors must be strictly monotonic"
         assert np.all(np.diff(ys) >= 0), f"{hazard}: severity must be non-decreasing"
-        self.xs, self.ys = xs, ys
-        self.tiers = cfg["tiers"]
-        self.index_name = cfg["index"]
-        self.hazard = hazard
-
+        self.xs, self.ys, self.tiers = xs, ys, cfg["tiers"]
     def _to_internal(self, x): return -x if self._flip else x
-    def to_severity(self, x: float) -> float:
+    def to_severity(self, x):
         x = self._to_internal(float(x))
         return float(np.interp(x, self.xs, self.ys, left=self.ys[0], right=self.ys[-1]))
-    def to_index(self, s: float) -> float:
-        s = float(np.clip(s, self.ys[0], self.ys[-1]))
-        v = float(np.interp(s, self.ys, self.xs))
-        return -v if self._flip else v
-    def tier(self, severity: float) -> str:
-        if severity >= self.tiers["severe"]: return "severe"
-        if severity >= self.tiers["warning"]: return "warning"
-        if severity >= self.tiers["watch"]: return "watch"
-        return "none"
 
 # ============================================================================
-# EXPERIMENT LOGGER
-# ============================================================================
-class ExperimentLogger:
-    def __init__(self, base_dir: str, experiment_name: str = "HazardNet_Ablation"):
-        self.base_dir = Path(base_dir) / experiment_name
-        self.timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        self.run_dir = self.base_dir / f"run_{self.timestamp}"
-        self.run_dir.mkdir(parents=True, exist_ok=True)
-
-        self.dirs = {}
-        for d in ["logs", "metrics", "calibration", "figures", "ablation_study"]:
-            self.dirs[d] = self.run_dir / d
-            self.dirs[d].mkdir(exist_ok=True)
-
-        self._epoch_logs, self._fold_results, self._ablation_results = [], [], []
-        self._log_metadata()
-        print(f"  Experiment Logger initialized: {self.run_dir}")
-
-    def _log_metadata(self):
-        meta = {
-            "experiment_name": "HazardNet Ablation Study v3.1", "timestamp": self.timestamp,
-            "hazard_types": HAZARD_TYPES, "n_classes": len(HAZARD_TYPES),
-            "torch_version": torch.__version__,
-            "device": str(torch.device("cuda" if torch.cuda.is_available() else "cpu")),
-        }
-        with open(self.run_dir / "experiment_metadata.json", "w") as f:
-            json.dump(meta, f, indent=2, default=str)
-
-    def log_epoch(self, fold: str, ablation: str, epoch: int, phase: str,
-                  loss_total: float, loss_cls: float, loss_reg: float,
-                  accuracy: float, f1_macro: float, rmse: float, r2: float, lr: float = None, **kwargs):
-        entry = dict(ablation=ablation, fold=fold, epoch=epoch, phase=phase,
-                     loss_total=loss_total, loss_cls=loss_cls, loss_reg=loss_reg,
-                     accuracy=accuracy, f1_macro=f1_macro, rmse=rmse, r2=r2,
-                     learning_rate=lr, timestamp=datetime.now().isoformat(), **kwargs)
-        self._epoch_logs.append(entry)
-
-    def log_fold_result(self, ablation: str, fold: str, metrics: dict):
-        self._fold_results.append(dict(ablation=ablation, fold=fold, **metrics))
-
-    def log_ablation_summary(self, ablation: str, metrics: dict):
-        self._ablation_results.append(dict(ablation=ablation, **metrics))
-
-    def save_all(self):
-        print(f"\n{'='*60}\nSAVING ALL EXPERIMENT ARTIFACTS -> {self.run_dir}\n{'='*60}")
-        if self._epoch_logs:
-            pd.DataFrame(self._epoch_logs).to_csv(self.dirs["logs"] / "training_logs.csv", index=False)
-        if self._fold_results:
-            pd.DataFrame(self._fold_results).to_csv(self.dirs["metrics"] / "fold_results.csv", index=False)
-        if self._ablation_results:
-            df = pd.DataFrame(self._ablation_results)
-            df.to_csv(self.dirs["ablation_study"] / "ablation_comparison.csv", index=False)
-            latex_path = self.dirs["ablation_study"] / "ablation_comparison.tex"
-            with open(latex_path, "w") as f:
-                f.write(df.to_latex(index=False, escape=False))
-        print(f"  Total files saved: {sum(1 for _ in self.run_dir.rglob('*') if _.is_file())}")
-
-# ============================================================================
-# CALIBRATION & MODEL ARCHITECTURE (ABLATION-AWARE)
+# CONFIGURABLE MODEL (ablation flags)
 # ============================================================================
 class DepthwiseSeparableConv3d(nn.Module):
-    def __init__(self, in_channels, out_channels, kernel_size=3, padding=1):
+    def __init__(self, i, o, k=3, p=1):
         super().__init__()
-        self.depthwise = nn.Conv3d(in_channels, in_channels, kernel_size, padding=padding, groups=in_channels, bias=False)
-        self.pointwise = nn.Conv3d(in_channels, out_channels, kernel_size=1, bias=False)
-        self.bn = nn.BatchNorm3d(out_channels)
+        self.depthwise = nn.Conv3d(i, i, k, padding=p, groups=i, bias=False)
+        self.pointwise = nn.Conv3d(i, o, 1, bias=False)
+        self.bn = nn.BatchNorm3d(o)
     def forward(self, x): return self.bn(self.pointwise(self.depthwise(x)))
 
+class StandardConv3d(nn.Module):
+    def __init__(self, i, o, k=3, p=1):
+        super().__init__()
+        self.conv = nn.Conv3d(i, o, k, padding=p, bias=False)
+        self.bn = nn.BatchNorm3d(o)
+    def forward(self, x): return self.bn(self.conv(x))
+
 class SEBlock3D(nn.Module):
-    def __init__(self, channels, reduction=4):
+    def __init__(self, ch, r=4):
         super().__init__()
         self.fc = nn.Sequential(nn.AdaptiveAvgPool3d(1), nn.Flatten(),
-                                nn.Linear(channels, channels // reduction, bias=False), nn.ReLU(inplace=True),
-                                nn.Linear(channels // reduction, channels, bias=False), nn.Sigmoid())
-    def forward(self, x):
-        w = self.fc(x).unsqueeze(-1).unsqueeze(-1).unsqueeze(-1)
-        return x * w
+            nn.Linear(ch, ch // r, bias=False), nn.ReLU(inplace=True),
+            nn.Linear(ch // r, ch, bias=False), nn.Sigmoid())
+    def forward(self, x): return x * self.fc(x).unsqueeze(-1).unsqueeze(-1).unsqueeze(-1)
 
 class HazardNetCNN(nn.Module):
-    def __init__(self, in_channels=15, num_hazards=8, ablation='Base'):
+    def __init__(self, in_channels=15, num_hazards=8, use_se=True, use_depthwise=True,
+                 preserve_temporal=True, use_severity=True):
         super().__init__()
-        self.ablation = ablation
-        self.has_se = (ablation != 'A1_No_SE_Attention')
-        self.use_dw = (ablation != 'A2_Standard_Conv3d')
-        self.preserve_temporal = (ablation != 'A3_No_Temporal_Preservation')
-        self.has_severity = (ablation != 'A4_Classification_Only')
-
-        def make_conv(in_c, out_c):
-            if self.use_dw:
-                return DepthwiseSeparableConv3d(in_c, out_c)
-            else:
-                return nn.Sequential(
-                    nn.Conv3d(in_c, out_c, kernel_size=3, padding=1, bias=False),
-                    nn.BatchNorm3d(out_c)
-                )
-
-        def make_se(channels):
-            return SEBlock3D(channels) if self.has_se else nn.Identity()
-
-        # A3: Pool time immediately in Block 1 (2,2,2) instead of preserving it (1,2,2)
-        t_pool1 = (1, 2, 2) if self.preserve_temporal else (2, 2, 2)
-
-        self.block1 = nn.Sequential(make_conv(in_channels, 32), nn.ReLU(True), make_se(32), nn.MaxPool3d(t_pool1))
-        self.block2 = nn.Sequential(make_conv(32, 64), nn.ReLU(True), make_se(64), nn.MaxPool3d((2, 2, 2)))
-        self.block3 = nn.Sequential(make_conv(64, 128), nn.ReLU(True), make_se(128), nn.MaxPool3d((1, 2, 2)))
-        self.block4 = nn.Sequential(make_conv(128, 256), nn.ReLU(True), make_se(256), nn.MaxPool3d((1, 2, 2)))
-        
+        self.use_severity = use_severity
+        conv = (lambda i, o: DepthwiseSeparableConv3d(i, o)) if use_depthwise \
+               else (lambda i, o: StandardConv3d(i, o))
+        se = (lambda c: SEBlock3D(c)) if use_se else (lambda c: nn.Identity())
+        pool1 = (1, 2, 2) if preserve_temporal else (2, 2, 2)
+        self.block1 = nn.Sequential(conv(in_channels, 32), nn.ReLU(True), se(32), nn.MaxPool3d(pool1))
+        self.block2 = nn.Sequential(conv(32, 64),  nn.ReLU(True), se(64),  nn.MaxPool3d((2, 2, 2)))
+        self.block3 = nn.Sequential(conv(64, 128), nn.ReLU(True), se(128), nn.MaxPool3d((1, 2, 2)))
+        self.block4 = nn.Sequential(conv(128, 256), nn.ReLU(True), se(256), nn.MaxPool3d((1, 2, 2)))
         self.global_pool = nn.AdaptiveAvgPool3d(1)
         self.shared_fc = nn.Sequential(nn.Linear(256, 128), nn.ReLU(True), nn.Dropout(0.3))
         self.hazard_head = nn.Linear(128, num_hazards)
-        
-        if self.has_severity:
-            self.severity_head = nn.Sequential(nn.Linear(128, 64), nn.ReLU(True), nn.Linear(64, 1), nn.Sigmoid())
-
+        self.severity_head = nn.Sequential(nn.Linear(128, 64), nn.ReLU(True),
+                                           nn.Linear(64, 1), nn.Sigmoid()) if use_severity else None
     def forward(self, x):
         x = self.block4(self.block3(self.block2(self.block1(x))))
         x = self.global_pool(x).view(x.size(0), -1)
         x = self.shared_fc(x)
-        h_out = self.hazard_head(x)
-        if self.has_severity:
-            s_out = self.severity_head(x).squeeze(1)
-            return h_out, s_out
-        return h_out, None
+        h = self.hazard_head(x)
+        s = self.severity_head(x).squeeze(1) if self.severity_head is not None \
+            else torch.zeros(x.size(0), device=x.device)
+        return h, s
+    def count_parameters(self):
+        return sum(p.numel() for p in self.parameters() if p.requires_grad)
 
 class HomoscedasticMTLLoss(nn.Module):
-    def __init__(self):
+    def __init__(self, use_severity=True):
         super().__init__()
+        self.use_severity = use_severity
         self.log_vars = nn.Parameter(torch.zeros(2))
-        self.ce_loss = nn.CrossEntropyLoss(reduction="none")
-        self.huber_loss = nn.SmoothL1Loss(reduction="none")
-
-    def forward(self, hazard_pred, severity_pred, hazard_true, severity_true, confidence):
-        loss_cls = self.ce_loss(hazard_pred, hazard_true)
-        loss_reg = self.huber_loss(severity_pred, severity_true)
+        self.ce = nn.CrossEntropyLoss(reduction="none")
+        self.huber = nn.SmoothL1Loss(reduction="none")
+    def forward(self, h_pred, s_pred, h_true, s_true, confidence):
+        loss_cls = self.ce(h_pred, h_true)
         prec_cls = torch.exp(-self.log_vars[0])
+        cls_term = prec_cls * (loss_cls * confidence).mean() + self.log_vars[0]
+        if not self.use_severity:
+            return cls_term, (loss_cls * confidence).mean().item(), 0.0
+        loss_reg = self.huber(s_pred, s_true)
         prec_reg = torch.exp(-self.log_vars[1])
-        total = (prec_cls * (loss_cls * confidence).mean() + self.log_vars[0]) + \
-                (prec_reg * (loss_reg * confidence).mean() + self.log_vars[1])
-        return total, (loss_cls * confidence).mean().item(), (loss_reg * confidence).mean().item()
-
-class AblationLoss(nn.Module):
-    def __init__(self, ablation):
-        super().__init__()
-        self.ablation = ablation
-        if ablation == 'A4_Classification_Only':
-            self.ce_loss = nn.CrossEntropyLoss()
-        else:
-            self.mtl_loss = HomoscedasticMTLLoss()
-
-    def forward(self, hazard_pred, severity_pred, hazard_true, severity_true, confidence):
-        if self.ablation == 'A4_Classification_Only':
-            loss = self.ce_loss(hazard_pred, hazard_true)
-            return loss, loss.item(), 0.0
-        else:
-            return self.mtl_loss(hazard_pred, severity_pred, hazard_true, severity_true, confidence)
+        reg_term = prec_reg * (loss_reg * confidence).mean() + self.log_vars[1]
+        return cls_term + reg_term, (loss_cls * confidence).mean().item(), (loss_reg * confidence).mean().item()
 
 # ============================================================================
-# DATASET & METRICS TRACKER
+# DATASET & TRACKER
 # ============================================================================
 class MasterHDF5Dataset(Dataset):
     def __init__(self, csv_path, master_h5_path, augment=False):
         self.df = pd.read_csv(csv_path)
         self.master_h5_path = master_h5_path
         self.augment = augment
-        self.h5f = None
-        self._worker_id = None
+        self.h5f = None; self._worker_id = None
         self.brightness, self.contrast, self.temporal_shift = 0.1, 0.1, 1
         self.target_shape = (15, 10, 64, 64)
         self._normalizers = {h: SeverityNormalizer(h) for h in HAZARD_TYPES}
-
     def _open_h5(self):
         wid = get_worker_info().id if get_worker_info() else -1
         if self.h5f is None or self._worker_id != wid:
             if self.h5f: self.h5f.close()
             self.h5f = h5py.File(self.master_h5_path, "r", rdcc_nbytes=1024**2 * 10)
             self._worker_id = wid
-
     def __len__(self): return len(self.df)
-
-    def _resize_spatial(self, tensor):
-        c, t, h, w = tensor.shape
+    def _resize_spatial(self, t):
+        c, tt, h, w = t.shape
         th, tw = self.target_shape[2], self.target_shape[3]
-        if h == th and w == tw: return tensor
-        r = tensor.permute(1, 0, 2, 3).reshape(t * c, 1, h, w)
+        if h == th and w == tw: return t
+        r = t.permute(1, 0, 2, 3).reshape(tt * c, 1, h, w)
         r = F.interpolate(r, size=(th, tw), mode="nearest")
-        return r.reshape(t, c, th, tw).permute(1, 0, 2, 3).contiguous()
-
-    def _augment(self, tensor):
-        if np.random.rand() > 0.5: tensor = tensor + np.random.uniform(-self.brightness, self.brightness)
+        return r.reshape(tt, c, th, tw).permute(1, 0, 2, 3).contiguous()
+    def _augment(self, t):
+        if np.random.rand() > 0.5: t = t + np.random.uniform(-self.brightness, self.brightness)
         if np.random.rand() > 0.5:
             f = 1.0 + np.random.uniform(-self.contrast, self.contrast)
-            m = tensor.mean(dim=[-1, -2], keepdim=True)
-            tensor = (tensor - m) * f + m
+            m = t.mean(dim=[-1, -2], keepdim=True); t = (t - m) * f + m
         if np.random.rand() > 0.5:
             s = np.random.randint(-self.temporal_shift, self.temporal_shift + 1)
             if s > 0:
-                b = tensor[:, 0:1, :, :].repeat(1, s, 1, 1)
-                tensor = torch.cat([b, tensor[:, :-s, :, :]], dim=1)
+                b = t[:, 0:1, :, :].repeat(1, s, 1, 1); t = torch.cat([b, t[:, :-s, :, :]], dim=1)
             elif s < 0:
-                a = abs(s); b = tensor[:, -1:, :, :].repeat(1, a, 1, 1)
-                tensor = torch.cat([tensor[:, a:, :, :], b], dim=1)
-        return tensor
-
+                a = abs(s); b = t[:, -1:, :, :].repeat(1, a, 1, 1); t = torch.cat([t[:, a:, :, :], b], dim=1)
+        return t
     def __getitem__(self, idx):
         self._open_h5()
         row = self.df.iloc[idx]
         eid = str(row["event_id"])
         tensor = torch.from_numpy(self.h5f["tensors"][eid][:]).float()
         label = int(row["hazard_idx"])
-        hazard = HAZARD_TYPES[label]
         severity = float(row.get("severity_index", 0.0))
         src = row.get("severity_source_index", None)
         if src is not None and not pd.isna(src):
-            severity = self._normalizers[hazard].to_severity(float(src))
+            severity = self._normalizers[HAZARD_TYPES[label]].to_severity(float(src))
         confidence = float(row.get("confidence", 0.5))
         tensor = self._resize_spatial(tensor)
         if self.augment: tensor = self._augment(tensor)
         return tensor, label, severity, confidence, eid
-
     def __del__(self):
         if self.h5f: self.h5f.close()
 
-class EnhancedMetricsTracker:
-    def __init__(self): self.reset()
-    def reset(self):
-        self.total_losses, self.cls_losses, self.reg_losses = [], [], []
-        self.hazard_preds, self.hazard_targets = [], []
-        self.severity_preds, self.severity_targets = [], []
-        self.hazard_logits_all, self.confidences = [], []
-
-    def update(self, total_loss, cls_loss, reg_loss, h_pred, h_true, s_pred, s_true, logits=None, confidence=None):
-        self.total_losses.append(total_loss); self.cls_losses.append(cls_loss); self.reg_losses.append(reg_loss)
-        self.hazard_preds.extend(h_pred); self.hazard_targets.extend(h_true)
-        if s_pred is not None:
-            self.severity_preds.extend(s_pred); self.severity_targets.extend(s_true)
-        if logits is not None: self.hazard_logits_all.append(logits)
-        if confidence is not None: self.confidences.extend(confidence)
-
-    def get_summary(self):
-        h_acc = accuracy_score(self.hazard_targets, self.hazard_preds)
-        h_f1w = f1_score(self.hazard_targets, self.hazard_preds, average="weighted", zero_division=0)
-        h_f1m = f1_score(self.hazard_targets, self.hazard_preds, average="macro", zero_division=0)
-        
-        if len(self.severity_preds) > 0:
-            s_mse = mean_squared_error(self.severity_targets, self.severity_preds)
-            sev_metrics = dict(severity_mse=s_mse, severity_rmse=np.sqrt(s_mse),
-                               severity_mae=mean_absolute_error(self.severity_targets, self.severity_preds),
-                               severity_r2=r2_score(self.severity_targets, self.severity_preds))
+class MetricsTracker:
+    def __init__(self, track_severity=True):
+        self.track_severity = track_severity
+        self.losses, self.hp, self.ht, self.sp, self.st = [], [], [], [], []
+    def update(self, loss, hp, ht, sp, st):
+        self.losses.append(loss); self.hp.extend(hp); self.ht.extend(ht)
+        if self.track_severity:
+            self.sp.extend(sp); self.st.extend(st)
+    def summary(self):
+        out = dict(loss_total=np.mean(self.losses),
+                   hazard_accuracy=accuracy_score(self.ht, self.hp),
+                   hazard_f1_macro=f1_score(self.ht, self.hp, average="macro", zero_division=0))
+        if self.track_severity and len(self.st) > 0:
+            mse = mean_squared_error(self.st, self.sp)
+            try: r2 = r2_score(self.st, self.sp)
+            except Exception: r2 = np.nan
+            out.update(severity_rmse=np.sqrt(mse), severity_r2=r2)
         else:
-            sev_metrics = dict(severity_mse=np.nan, severity_rmse=np.nan, severity_mae=np.nan, severity_r2=np.nan)
-
-        return dict(loss_total=np.mean(self.total_losses), loss_cls=np.mean(self.cls_losses), loss_reg=np.mean(self.reg_losses),
-                    hazard_accuracy=h_acc, hazard_f1=h_f1w, hazard_f1_macro=h_f1m, **sev_metrics)
-
-    def get_confusion_matrix_normalized(self):
-        cm = confusion_matrix(self.hazard_targets, self.hazard_preds, labels=range(len(HAZARD_TYPES)))
-        return np.nan_to_num(cm.astype(float) / cm.sum(axis=1, keepdims=True))
+            out.update(severity_rmse=np.nan, severity_r2=np.nan)
+        return out
 
 # ============================================================================
-# Q1 PUBLICATION VISUALIZER
+# ABLATION REGISTRY
 # ============================================================================
-class PublicationVisualizer:
-    def __init__(self, output_dir):
-        self.output_dir = Path(output_dir)
-        self.output_dir.mkdir(parents=True, exist_ok=True)
-
-    def _save(self, fig, name, formats=("png", "pdf")):
-        for fmt in formats:
-            path = self.output_dir / f"{name}.{fmt}"
-            fig.savefig(path, dpi=300, bbox_inches="tight", facecolor="white")
-        plt.close(fig)
-
-    def plot_confusion_matrix(self, cm_norm, title, filename):
-        fig, ax = plt.subplots(figsize=(7, 6))
-        sns.heatmap(cm_norm, annot=True, fmt=".2f", cmap="Blues", xticklabels=HAZARD_TYPES, yticklabels=HAZARD_TYPES,
-                    ax=ax, linewidths=0.5, linecolor="white", cbar_kws={"label": "Normalized Frequency", "shrink": 0.8}, annot_kws={"size": 7})
-        ax.set_xlabel("Predicted Hazard", fontweight="bold"); ax.set_ylabel("True Hazard", fontweight="bold")
-        ax.set_title(title, fontweight="bold", fontsize=11)
-        plt.setp(ax.get_xticklabels(), rotation=45, ha="right", fontsize=7)
-        plt.setp(ax.get_yticklabels(), rotation=0, fontsize=7)
-        self._save(fig, filename)
-
-    def plot_ablation_comparison(self, df_ablation: pd.DataFrame, filename):
-        fig, axes = plt.subplots(1, 2, figsize=(12, 5))
-        metrics = [("Accuracy_mean", "Hazard Accuracy"), ("F1_macro_mean", "Macro F1-Score")]
-
-        for ax, (metric, label) in zip(axes, metrics):
-            data, labels, colors = [], [], []
-            for _, row in df_ablation.iterrows():
-                abl = row["Ablation"]
-                val = row.get(metric, 0)
-                data.append(val)
-                labels.append(abl.replace("A", "A\n")) # Better wrapping
-                colors.append(JOURNAL_COLORS["secondary"] if "Base" in abl else JOURNAL_COLORS["quaternary"])
-
-            x = np.arange(len(data))
-            bars = ax.bar(x, data, color=colors, alpha=0.85, edgecolor="white", linewidth=0.5, width=0.6)
-            ax.set_ylim(0, 1.05)
-            ax.set_xticks(x); ax.set_xticklabels(labels, fontsize=8, rotation=0, ha="center")
-            ax.set_ylabel(label, fontweight="bold"); ax.set_title(label, fontweight="bold")
-            ax.spines["top"].set_visible(False); ax.spines["right"].set_visible(False)
-            for bar, val in zip(bars, data):
-                ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 0.01, f"{val:.3f}", ha="center", va="bottom", fontsize=8)
-
-        plt.suptitle("Ablation Study: Component Impact on Classification", fontweight="bold", fontsize=12, y=1.02)
-        plt.tight_layout()
-        self._save(fig, filename)
-
-# ============================================================================
-# TRAINING & CONFIG
-# ============================================================================
-class TrainConfig:
-    EXPERIMENTAL_DIR = "/kaggle/input/datasets/ashifahmedshuvo/hazardnet-datasets/tensors_output/HazardNet_Event_Based_Datasets"
-    MASTER_H5_PATH = os.path.join(EXPERIMENTAL_DIR, "master_tensors.h5")
-    CONFIG_PATH = os.path.join(EXPERIMENTAL_DIR, "dataset_config.json")
-    OUTPUT_DIR = "/kaggle/working/HazardNet_Ablation_Results"
-    BATCH_SIZE = 16
-    NUM_EPOCHS = 30  # Reduced to 30 for faster ablation turnaround
-    LEARNING_RATE = 1e-3
-    WEIGHT_DECAY = 1e-4
-    PATIENCE = 8
-    GRAD_CLIP = 1.0
-    NUM_WORKERS = 2
-    DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-def train_epoch(model, loader, optimizer, criterion, device, ablation):
-    model.train(); metrics = EnhancedMetricsTracker()
-    for tensors, cls_idx, severity, confidence, _ in tqdm(loader, desc="Train", unit="batch"):
-        tensors, cls_idx, severity, confidence = [t.to(device) for t in [tensors, cls_idx, severity, confidence]]
-        optimizer.zero_grad()
-        h_pred, s_pred = model(tensors)
-        
-        # Handle A4 (Classification Only) where s_pred is None
-        dummy_s = torch.zeros_like(severity) if s_pred is None else s_pred
-        total, cls_l, reg_l = criterion(h_pred, dummy_s, cls_idx, severity, confidence)
-        
-        total.backward()
-        torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=TrainConfig.GRAD_CLIP)
-        optimizer.step()
-        
-        s_pred_np = s_pred.detach().cpu().numpy() if s_pred is not None else None
-        s_true_np = severity.cpu().numpy() if s_pred is not None else None
-        
-        metrics.update(total.item(), cls_l, reg_l, h_pred.detach().argmax(1).cpu().numpy(), cls_idx.cpu().numpy(),
-                       s_pred_np, s_true_np, logits=h_pred.detach().cpu().numpy(), confidence=confidence.cpu().numpy())
-    return metrics
-
-def evaluate(model, loader, criterion, device, split_name="Val", ablation='Base'):
-    model.eval(); metrics = EnhancedMetricsTracker()
-    with torch.no_grad():
-        for tensors, cls_idx, severity, confidence, _ in tqdm(loader, desc=split_name, unit="batch"):
-            tensors, cls_idx, severity, confidence = [t.to(device) for t in [tensors, cls_idx, severity, confidence]]
-            h_pred, s_pred = model(tensors)
-            
-            dummy_s = torch.zeros_like(severity) if s_pred is None else s_pred
-            total, cls_l, reg_l = criterion(h_pred, dummy_s, cls_idx, severity, confidence)
-            
-            s_pred_np = s_pred.cpu().numpy() if s_pred is not None else None
-            s_true_np = severity.cpu().numpy() if s_pred is not None else None
-            
-            metrics.update(total.item(), cls_l, reg_l, h_pred.argmax(1).cpu().numpy(), cls_idx.cpu().numpy(),
-                           s_pred_np, s_true_np, logits=h_pred.cpu().numpy(), confidence=confidence.cpu().numpy())
-    return metrics
-
-def train_single_fold(fold_name, train_csv, val_csv, test_csv, num_classes, output_dir, logger: ExperimentLogger, viz: PublicationVisualizer, ablation: str, init_from=None):
-    print(f"\n{'='*60}\nFOLD: {fold_name} | ABLATION: {ablation}\n{'='*60}")
-    train_loader = DataLoader(MasterHDF5Dataset(train_csv, TrainConfig.MASTER_H5_PATH, True), batch_size=TrainConfig.BATCH_SIZE, shuffle=True, num_workers=TrainConfig.NUM_WORKERS, pin_memory=True)
-    val_loader = DataLoader(MasterHDF5Dataset(val_csv, TrainConfig.MASTER_H5_PATH, False), batch_size=TrainConfig.BATCH_SIZE, shuffle=False, num_workers=TrainConfig.NUM_WORKERS, pin_memory=True)
-    test_loader = DataLoader(MasterHDF5Dataset(test_csv, TrainConfig.MASTER_H5_PATH, False), batch_size=TrainConfig.BATCH_SIZE, shuffle=False, num_workers=TrainConfig.NUM_WORKERS, pin_memory=True)
-
-    model = HazardNetCNN(15, num_classes, ablation=ablation).to(TrainConfig.DEVICE)
-    if init_from and os.path.exists(init_from) and ablation == 'Base':
-        model.load_state_dict(torch.load(init_from, map_location=TrainConfig.DEVICE))
-        print(f"  Fine-tuning from {init_from}")
-        
-    criterion = AblationLoss(ablation).to(TrainConfig.DEVICE)
-    
-    # Optimizer setup (handle missing log_vars for A4)
-    params = [{"params": model.parameters()}]
-    if hasattr(criterion, 'mtl_loss'):
-        params.append({"params": criterion.mtl_loss.log_vars})
-    optimizer = AdamW(params, lr=TrainConfig.LEARNING_RATE, weight_decay=TrainConfig.WEIGHT_DECAY)
-    scheduler = CosineAnnealingLR(optimizer, T_max=TrainConfig.NUM_EPOCHS, eta_min=1e-6)
-
-    best_val_loss, patience_counter, best_epoch = float("inf"), 0, 0
-    safe_name = f"{ablation}_{fold_name}".replace("/", "_").replace(" ", "_")
-    ckpt_path = os.path.join(output_dir, f"{safe_name}_best.pt")
-
-    for epoch in range(TrainConfig.NUM_EPOCHS):
-        train_m = train_epoch(model, train_loader, optimizer, criterion, TrainConfig.DEVICE, ablation)
-        val_m = evaluate(model, val_loader, criterion, TrainConfig.DEVICE, "Val", ablation)
-        scheduler.step()
-        ts, vs = train_m.get_summary(), val_m.get_summary()
-        lr_now = optimizer.param_groups[0]["lr"]
-        
-        logger.log_epoch(fold_name, ablation, epoch + 1, "train", ts["loss_total"], ts["loss_cls"], ts["loss_reg"], ts["hazard_accuracy"], ts["hazard_f1_macro"], ts["severity_rmse"], ts["severity_r2"], lr=lr_now)
-        logger.log_epoch(fold_name, ablation, epoch + 1, "val", vs["loss_total"], vs["loss_cls"], vs["loss_reg"], vs["hazard_accuracy"], vs["hazard_f1_macro"], vs["severity_rmse"], vs["severity_r2"], lr=lr_now)
-
-        if vs["loss_total"] < best_val_loss:
-            best_val_loss, patience_counter, best_epoch = vs["loss_total"], 0, epoch + 1
-            torch.save(model.state_dict(), ckpt_path)
-        else:
-            patience_counter += 1
-            if patience_counter >= TrainConfig.PATIENCE:
-                print(f"  Early stopping at epoch {epoch+1} (best: {best_epoch})"); break
-        if (epoch + 1) % 10 == 0 or epoch == 0:
-            print(f"  Epoch {epoch+1:2d}/{TrainConfig.NUM_EPOCHS} | Train: {ts['loss_total']:.4f} Acc:{ts['hazard_accuracy']:.3f} | Val: {vs['loss_total']:.4f} Acc:{vs['hazard_accuracy']:.3f}")
-
-    model.load_state_dict(torch.load(ckpt_path))
-    test_metrics = evaluate(model, test_loader, criterion, TrainConfig.DEVICE, "Test", ablation)
-    s = test_metrics.get_summary()
-    print(f"  TEST Acc={s['hazard_accuracy']:.4f} F1macro={s['hazard_f1_macro']:.4f} RMSE={s['severity_rmse']:.4f}")
-
-    logger.log_fold_result(ablation, fold_name, dict(s, n_test=len(test_loader.dataset)))
-    viz.plot_confusion_matrix(test_metrics.get_confusion_matrix_normalized(), f"CM: {ablation} - {fold_name}", f"cm_{safe_name}")
-
-    return dict(fold=fold_name, ablation=ablation, **s, n_test=len(test_loader.dataset), ckpt=ckpt_path)
-
-# ============================================================================
-# STRATEGY RUNNERS & MAIN
-# ============================================================================
-def _run_dirs(base, num_classes, output_dir, prefix, logger, viz, ablation, chain=False):
-    results, prev_ckpt = [], None
-    if not os.path.isdir(base):
-        print(f"  WARNING: {base} not found - skipping"); return []
-    for fd in sorted(glob.glob(os.path.join(base, "*"))):
-        if not os.path.isdir(fd): continue
-        fn = os.path.basename(fd)
-        r = train_single_fold(f"{prefix}{fn}", os.path.join(fd, "train_events.csv"), os.path.join(fd, "val_events.csv"), os.path.join(fd, "test_events.csv"),
-                              num_classes, output_dir, logger, viz, ablation, init_from=prev_ckpt if chain else None)
-        if chain: prev_ckpt = r["ckpt"]
-        results.append(r)
-    return results
-
-ABLATION_MAP = {
-    'Base': 'Base Model (Full HazardNet)',
-    'A1_No_SE_Attention': 'A1: No SE Attention',
-    'A2_Standard_Conv3d': 'A2: Standard Conv3d',
-    'A3_No_Temporal_Preservation': 'A3: Early Time Pooling',
-    'A4_Classification_Only': 'A4: Classification Only'
+ABLATION_REGISTRY = {
+    "full_model":           dict(use_se=True,  use_depthwise=True,  preserve_temporal=True,  use_severity=True,
+                                 label="Full Model (Ours)",        color="#2C3E50"),
+    "A1_No_SE_Attention":   dict(use_se=False, use_depthwise=True,  preserve_temporal=True,  use_severity=True,
+                                 label="A1: w/o SE Attention",     color="#E74C3C"),
+    "A2_Standard_Conv3d":   dict(use_se=True,  use_depthwise=False, preserve_temporal=True,  use_severity=True,
+                                 label="A2: Standard Conv3d",      color="#F39C12"),
+    "A3_No_Temporal_Pres.": dict(use_se=True,  use_depthwise=True,  preserve_temporal=False, use_severity=True,
+                                 label="A3: w/o Temporal Preserv.", color="#3498DB"),
+    "A4_Classification_Only": dict(use_se=True, use_depthwise=True, preserve_temporal=True,  use_severity=False,
+                                 label="A4: Classification Only",  color="#9B59B6"),
 }
 
 # ============================================================================
-# SET YOUR ABLATION HERE
+# TRAIN ONE FOLD (one variant)
 # ============================================================================
-ABLATION = 'all'  # Options: 'Base', 'A1_No_SE_Attention', ..., 'A4_Classification_Only' or 'all'
-# ============================================================================
+def train_epoch(model, loader, opt, crit, track_sev):
+    model.train(); m = MetricsTracker(track_sev)
+    for t, c, s, conf, _ in tqdm(loader, desc="  Train", unit="batch", leave=False):
+        t, c, s, conf = [x.to(DEVICE) for x in (t, c, s, conf)]
+        opt.zero_grad()
+        h, sv = model(t)
+        total, _, _ = crit(h, sv, c, s, conf)
+        total.backward()
+        torch.nn.utils.clip_grad_norm_(model.parameters(), GRAD_CLIP)
+        opt.step()
+        m.update(total.item(), h.detach().argmax(1).cpu().numpy(), c.cpu().numpy(),
+                 sv.detach().cpu().numpy(), s.cpu().numpy())
+    return m
 
+def evaluate(model, loader, crit, track_sev, name):
+    model.eval(); m = MetricsTracker(track_sev)
+    with torch.no_grad():
+        for t, c, s, conf, _ in tqdm(loader, desc=f"  {name}", unit="batch", leave=False):
+            t, c, s, conf = [x.to(DEVICE) for x in (t, c, s, conf)]
+            h, sv = model(t)
+            total, _, _ = crit(h, sv, c, s, conf)
+            m.update(total.item(), h.argmax(1).cpu().numpy(), c.cpu().numpy(),
+                     sv.cpu().numpy(), s.cpu().numpy())
+    return m
+
+def train_one_variant_fold(variant, cfg, fold_dir, fold_tag, num_classes):
+    track_sev = cfg["use_severity"]
+    tl = DataLoader(MasterHDF5Dataset(os.path.join(fold_dir, "train_events.csv"), MASTER_H5_PATH, True),
+                    batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKERS, pin_memory=True)
+    vl = DataLoader(MasterHDF5Dataset(os.path.join(fold_dir, "val_events.csv"), MASTER_H5_PATH, False),
+                    batch_size=BATCH_SIZE, shuffle=False, num_workers=NUM_WORKERS, pin_memory=True)
+    te = DataLoader(MasterHDF5Dataset(os.path.join(fold_dir, "test_events.csv"), MASTER_H5_PATH, False),
+                    batch_size=BATCH_SIZE, shuffle=False, num_workers=NUM_WORKERS, pin_memory=True)
+
+    model = HazardNetCNN(15, num_classes, **{k: cfg[k] for k in
+             ("use_se", "use_depthwise", "preserve_temporal", "use_severity")}).to(DEVICE)
+    n_params = model.count_parameters()
+    crit = HomoscedasticMTLLoss(use_severity=track_sev).to(DEVICE)
+    opt = AdamW([{"params": model.parameters()}, {"params": crit.log_vars}],
+                lr=LEARNING_RATE, weight_decay=WEIGHT_DECAY)
+    sched = CosineAnnealingLR(opt, T_max=NUM_EPOCHS, eta_min=1e-6)
+
+    ckpt = os.path.join(ABL_DIR, f"{BATCH_ID}_{variant}_{fold_tag}_best.pt")
+    best_loss, patience, best_ep = float("inf"), 0, 0
+    for ep in range(NUM_EPOCHS):
+        tr = train_epoch(model, tl, opt, crit, track_sev)
+        va = evaluate(model, vl, crit, track_sev, "Val")
+        sched.step()
+        ts, vs = tr.summary(), va.summary()
+        if vs["loss_total"] < best_loss:
+            best_loss, patience, best_ep = vs["loss_total"], 0, ep + 1
+            torch.save(model.state_dict(), ckpt)
+        else:
+            patience += 1
+            if patience >= PATIENCE:
+                print(f"    early stop @ {ep+1} (best {best_ep})"); break
+        if (ep + 1) % 10 == 0:
+            print(f"    ep {ep+1:2d} | tr {ts['loss_total']:.3f} acc {ts['hazard_accuracy']:.3f} | "
+                  f"va {vs['loss_total']:.3f} acc {vs['hazard_accuracy']:.3f}")
+
+    model.load_state_dict(torch.load(ckpt, map_location=DEVICE))
+    tm = evaluate(model, te, crit, track_sev, "Test")
+    s = tm.summary()
+    return dict(variant=variant, fold=fold_tag, n_params=n_params, **s,
+                preds=np.array(tm.hp), targets=np.array(tm.ht),
+                sev_preds=np.array(tm.sp) if track_sev else None,
+                sev_targets=np.array(tm.st) if track_sev else None,
+                n_test=len(tm.ht), ckpt=ckpt)
+
+# ============================================================================
+# STATISTICS
+# ============================================================================
+def bootstrap_acc_ci(targets, preds, n_boot=2000, seed=42):
+    rng = np.random.RandomState(seed); n = len(targets); accs = []
+    for _ in range(n_boot):
+        i = rng.randint(0, n, n)
+        accs.append(accuracy_score(targets[i], preds[i]))
+    accs = np.array(accs)
+    return float(np.percentile(accs, 2.5)), float(np.percentile(accs, 97.5))
+
+def mcnemar(targets, preds_a, preds_b):
+    ca, cb = (preds_a == targets), (preds_b == targets)
+    b = int(np.sum(ca & ~cb)); c = int(np.sum(~ca & cb))
+    if b + c == 0: return 1.0, b, c
+    stat = (abs(b - c) - 1) ** 2 / (b + c)
+    return float(chi2.sf(stat, 1)), b, c
+
+# ============================================================================
+# VISUALIZATION
+# ============================================================================
+def plot_ablation_comparison(df, path_stem):
+    fig, axes = plt.subplots(2, 2, figsize=(11, 8))
+    panels = [("Accuracy_mean", "Classification Accuracy", True),
+              ("F1_macro_mean", "Macro F1-Score", True),
+              ("RMSE_mean", "Severity RMSE (lower better)", False),
+              ("Params_M", "Parameters (Millions)", False)]
+    for ax, (col, title, hb) in zip(axes.flat, panels):
+        vals = df[col].tolist(); x = np.arange(len(vals))
+        pv = [0.0 if pd.isna(v) else v for v in vals]
+        bars = ax.bar(x, pv, color=df["Color"].tolist(), alpha=0.88, edgecolor="white", width=0.62)
+        if hb: ax.set_ylim(0, 1.05)
+        ax.set_xticks(x); ax.set_xticklabels(df["Label"], fontsize=6.5, rotation=18, ha="right")
+        ax.set_title(title, fontweight="bold")
+        ax.spines["top"].set_visible(False); ax.spines["right"].set_visible(False)
+        for bar, v in zip(bars, vals):
+            txt = "N/A" if pd.isna(v) else f"{v:.3f}"
+            ax.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 0.01,
+                    txt, ha="center", va="bottom", fontsize=7, fontweight="bold")
+    plt.suptitle("Ablation Study: Architectural Component Contributions", fontweight="bold", y=0.995)
+    plt.tight_layout()
+    for ext in ("png", "pdf"):
+        plt.savefig(f"{path_stem}.{ext}", dpi=300, bbox_inches="tight", facecolor="white")
+    plt.close()
+
+def plot_efficiency_frontier(df, path_stem):
+    fig, ax = plt.subplots(figsize=(7, 5))
+    for _, r in df.iterrows():
+        ax.scatter(r["Params_M"], r["Accuracy_mean"], s=160, color=r["Color"],
+                   edgecolor="black", linewidth=0.8, zorder=3)
+        ax.annotate(r["Label"], (r["Params_M"], r["Accuracy_mean"]),
+                    textcoords="offset points", xytext=(8, 6), fontsize=7.5, fontweight="bold")
+    ax.set_xlabel("Trainable Parameters (Millions)", fontweight="bold")
+    ax.set_ylabel("Classification Accuracy", fontweight="bold")
+    ax.set_title("Efficiency Frontier: Accuracy vs Model Size\n(Lightweight-Max / Green AI evidence)",
+                 fontweight="bold")
+    ax.grid(alpha=0.3)
+    for ext in ("png", "pdf"):
+        plt.savefig(f"{path_stem}.{ext}", dpi=300, bbox_inches="tight", facecolor="white")
+    plt.close()
+
+def plot_confusion(cm, labels, title, path):
+    fig, ax = plt.subplots(figsize=(7.5, 6.5))
+    sns.heatmap(cm, annot=True, fmt=".2f", cmap="Blues", xticklabels=labels, yticklabels=labels,
+                ax=ax, linewidths=0.5, linecolor="white", annot_kws={"size": 7},
+                cbar_kws={"label": "Normalized Frequency", "shrink": 0.8})
+    ax.set_xlabel("Predicted", fontweight="bold"); ax.set_ylabel("True", fontweight="bold")
+    ax.set_title(title, fontweight="bold")
+    plt.setp(ax.get_xticklabels(), rotation=45, ha="right", fontsize=7)
+    plt.setp(ax.get_yticklabels(), rotation=0, fontsize=7)
+    plt.tight_layout(); plt.savefig(path, dpi=300, bbox_inches="tight", facecolor="white"); plt.close()
+
+# ============================================================================
+# ABLATION STUDY ORCHESTRATOR
+# ============================================================================
+def _read_csv_safe(path, cols):
+    if path and os.path.exists(path):
+        return pd.read_csv(path)
+    return pd.DataFrame(columns=cols)
+
+def run_ablation_study(num_classes):
+    prior_m = _read_csv_safe(PRIOR_RESULTS_CSV, METRIC_COLS)
+    prior_p = _read_csv_safe(PRIOR_PREDICTIONS_CSV, [])
+    done = set(zip(prior_m["variant"], prior_m["fold"])) if len(prior_m) else set()
+
+    fold_dirs = sorted([d for d in glob.glob(os.path.join(EXPERIMENTAL_DIR, ABLATION_PROTOCOL, "*"))
+                        if os.path.isdir(d)])[:ABLATION_MAX_FOLDS]
+    session_folds = fold_dirs[ABLATION_FOLD_SLICE[0]:ABLATION_FOLD_SLICE[1]]
+    print(f"Total folds={len(fold_dirs)} | this session={[os.path.basename(d) for d in session_folds]} "
+          f"| already complete={len(done)} run(s)")
+
+    new_m, new_p, stopped = [], [], False
+    for vname, cfg in ABLATION_REGISTRY.items():
+        if stopped: break
+        for fd in session_folds:
+            ftag = os.path.basename(fd)
+            if (vname, ftag) in done:
+                print(f"  skip (done): {vname}/{ftag}"); continue
+            if quota_exceeded():
+                print("  ⚠️ wall-clock guard triggered — stopping; resume in next session."); stopped = True; break
+            r = train_one_variant_fold(vname, cfg, fd, ftag, num_classes)
+            new_m.append({c: r[c] for c in METRIC_COLS})
+            new_p.append(pd.DataFrame({
+                "variant": vname, "fold": ftag, "idx": np.arange(len(r["targets"])),
+                "y_true": r["targets"], "y_pred": r["preds"],
+                "sev_true": r["sev_targets"] if r["sev_targets"] is not None else np.nan,
+                "sev_pred": r["sev_preds"]   if r["sev_preds"]   is not None else np.nan}))
+            done.add((vname, ftag))
+
+    comb_m = pd.concat([prior_m] + ([pd.DataFrame(new_m, columns=METRIC_COLS)] if new_m else []), ignore_index=True)
+    comb_p = pd.concat([prior_p] + new_p, ignore_index=True) if new_p else prior_p
+    comb_m.to_csv(RESULTS_CSV, index=False)
+    comb_p.to_csv(PREDICTIONS_CSV, index=False)
+    print(f"Combined state saved: {len(comb_m)} fold-runs / {len(comb_p)} predictions -> {RESULTS_CSV}")
+
+    expected = {(v, os.path.basename(fd)) for v in ABLATION_REGISTRY for fd in fold_dirs}
+    have = set(zip(comb_m["variant"], comb_m["fold"]))
+    if expected <= have:
+        print("✅ All 25 variant×fold runs complete — aggregating final ablation study.")
+        aggregate_ablation(comb_m, comb_p)
+    else:
+        missing = sorted(expected - have)
+        print(f"⏳ {len(missing)} run(s) remain for the next session, e.g. {missing[:4]}")
+
+def aggregate_ablation(comb_m, comb_p):
+    full = comb_m[comb_m["variant"] == "full_model"]
+    full_acc = full["hazard_accuracy"].mean() if len(full) else np.nan
+    rows = []
+    for vname, cfg in ABLATION_REGISTRY.items():
+        g = comb_m[comb_m["variant"] == vname]
+        if not len(g): continue
+        pv = comb_p[comb_p["variant"] == vname]
+        lo, hi = bootstrap_acc_ci(pv["y_true"].values, pv["y_pred"].values)
+        p_mcn = np.nan
+        if vname != "full_model" and len(full):
+            pf = comb_p[comb_p["variant"] == "full_model"]
+            m = pv.merge(pf, on=["fold", "idx"], suffixes=("_a", "_f"))
+            if len(m):
+                p_mcn, _, _ = mcnemar(m["y_true_a"].values, m["y_pred_f"].values, m["y_pred_a"].values)
+        rows.append(dict(Variant=vname, Label=cfg["label"], Color=cfg["color"],
+            Params_M=round(g["n_params"].iloc[0] / 1e6, 3), N_Folds=len(g),
+            Accuracy_mean=g["hazard_accuracy"].mean(), Accuracy_std=g["hazard_accuracy"].std(ddof=0),
+            Acc_CI95_lo=lo, Acc_CI95_hi=hi,
+            F1_macro_mean=g["hazard_f1_macro"].mean(), F1_macro_std=g["hazard_f1_macro"].std(ddof=0),
+            RMSE_mean=g["severity_rmse"].mean() if cfg["use_severity"] else np.nan,
+            R2_mean=g["severity_r2"].mean() if cfg["use_severity"] else np.nan,
+            Delta_Acc_vs_Full=g["hazard_accuracy"].mean() - full_acc,
+            McNemar_p_vs_Full=p_mcn))
+    df = pd.DataFrame(rows)
+
+    df.to_csv(os.path.join(ABL_DIR, "ablation_study.csv"), index=False)
+    with open(os.path.join(ABL_DIR, "ablation_study.tex"), "w") as f:
+        f.write(df.to_latex(index=False, escape=False))
+    plot_ablation_comparison(df, os.path.join(FIG_DIR, "ablation_comparison"))
+    plot_efficiency_frontier(df, os.path.join(FIG_DIR, "ablation_efficiency_frontier"))
+    for vname in df["Variant"]:
+        pv = comb_p[comb_p["variant"] == vname]
+        cm = confusion_matrix(pv["y_true"], pv["y_pred"], labels=range(len(HAZARD_TYPES)))
+        plot_confusion(np.nan_to_num(cm.astype(float) / cm.sum(axis=1, keepdims=True)),
+                       HAZARD_TYPES, f"Pooled Confusion: {vname}",
+                       os.path.join(FIG_DIR, f"ablation_cm_{vname}.png"))
+
+    mdf = df.copy(); mdf.insert(0, "batch_id", BATCH_ID)
+    mpath = os.path.join(MASTER_LOGS, "master_ablation.csv")
+    if os.path.exists(mpath): mdf.to_csv(mpath, mode="a", header=False, index=False)
+    else: mdf.to_csv(mpath, index=False)
+    print(df.to_string(index=False))
+    print(f"✅ Ablation table, figures and master log written (master append happens ONCE, here).")
+
+# ============================================================================
+# MAIN
+# ============================================================================
 def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--ablation", default=ABLATION, choices=list(ABLATION_MAP.keys()) + ["all"], help="Single ablation name")
-    parser.add_argument("--ablations", default=None, help="Comma-separated list, e.g. Base,A1_No_SE_Attention")
-    
-    # Jupyter-safe argparse
-    in_notebook = 'ipykernel' in sys.modules or 'IPython' in sys.modules
-    if in_notebook:
-        args = parser.parse_args(args=[])
-    else:
-        args = parser.parse_args()
-
-    if args.ablations:
-        selected = [a.strip() for a in args.ablations.split(",")]
-    elif isinstance(ABLATION, list):
-        selected = ABLATION
-    elif ABLATION == 'all':
-        selected = list(ABLATION_MAP.keys())
-    else:
-        selected = [ABLATION]
-
-    invalid = [a for a in selected if a not in ABLATION_MAP]
-    if invalid:
-        print(f"ERROR: Unknown ablations: {invalid}")
-        return
-
-    print("=" * 80)
-    print("HAZARDNET ABLATION STUDY PIPELINE v3.1")
-    print(f"Running ablations: {selected}")
-    print("Note: Ablations are evaluated on 'event_kfold' to ensure rapid, standardized architectural comparison.")
-    print("=" * 80)
-
-    logger = ExperimentLogger(TrainConfig.OUTPUT_DIR)
-    viz = PublicationVisualizer(logger.dirs["figures"])
-
-    with open(TrainConfig.CONFIG_PATH) as f:
-        config = json.load(f)
-    num_classes = config["n_classes"]
-    
-    all_ablation_results = {}
-
-    for abl in selected:
-        abl_name = ABLATION_MAP[abl]
-        print(f"\n{'='*80}\nABLATION: {abl_name}\n{'='*80}")
-        out = os.path.join(TrainConfig.OUTPUT_DIR, abl)
-        os.makedirs(out, exist_ok=True)
-        
-        # Run on event_kfold for ablation speed and standard baseline comparison
-        base_dir = os.path.join(TrainConfig.EXPERIMENTAL_DIR, "event_kfold")
-        results = _run_dirs(base_dir, num_classes, out, "event_kfold_", logger, viz, abl)
-        all_ablation_results[abl] = results
-        
-        if results:
-            accs = [r.get("hazard_accuracy", 0) for r in results]
-            f1s = [r.get("hazard_f1_macro", 0) for r in results]
-            print(f"\n  {abl_name} Summary:")
-            print(f"    Accuracy: {np.mean(accs):.4f} +/- {np.std(accs):.4f}")
-            print(f"    F1-Macro: {np.mean(f1s):.4f} +/- {np.std(f1s):.4f}")
-
-    # Cross-Ablation Comparison Table
-    print(f"\n{'='*80}\nABLATION STUDY COMPARISON (IEEE TGRS Table III)\n{'='*80}")
-    comparison_rows = []
-    for abl in selected:
-        results = all_ablation_results.get(abl, [])
-        if results:
-            accs = [r.get("hazard_accuracy", 0) for r in results]
-            f1s = [r.get("hazard_f1_macro", 0) for r in results]
-            rmses = [r.get("severity_rmse", np.nan) for r in results]
-            
-            comparison_rows.append({
-                "Ablation": ABLATION_MAP[abl],
-                "N_Folds": len(results),
-                "Accuracy_mean": np.mean(accs), "Accuracy_std": np.std(accs),
-                "F1_macro_mean": np.mean(f1s), "F1_macro_std": np.std(f1s),
-                "RMSE_mean": np.nanmean(rmses), "RMSE_std": np.nanstd(rmses),
-            })
-
-    if comparison_rows:
-        df_comp = pd.DataFrame(comparison_rows)
-        print(df_comp.to_string(index=False))
-        logger.log_ablation_summary("summary", df_comp.to_dict())
-        viz.plot_ablation_comparison(df_comp, "ablation_study_comparison")
-
-    logger.save_all()
-    print(f"\n✅ ALL ABLATION EXPERIMENTS COMPLETE. Results saved to: {logger.run_dir}")
+    print("=" * 90)
+    print("HAZARDNET ABLATION STUDY (Batch 4) — isolated, quota-safe")
+    print("=" * 90)
+    with open(CONFIG_PATH) as f:
+        num_classes = json.load(f)["n_classes"]
+    print(f"Classes: {num_classes} | Device: {DEVICE}")
+    run_ablation_study(num_classes)
+    print(f"\nWall-clock used: {hours_elapsed():.2f} h / cap {WALL_CLOCK_LIMIT_HOURS} h")
 
 if __name__ == "__main__":
     main()
