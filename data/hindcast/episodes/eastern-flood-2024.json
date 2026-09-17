@@ -1,0 +1,98 @@
+{
+  "schema": "hazardnet-hindcast-episode/v1",
+  "id": "eastern-flood-2024",
+  "title": "Eastern flash floods — Feni, Cumilla, Noakhali, 20–30 August 2024",
+  "hazard_class": "Flash Flood",
+  "why_this_episode": "The first monsoon-season episode, and the first in which the physics track's rainfall terms are the relevant ones. It also exercises a class the two cyclones do not: the cause was a depression over the Bay plus very heavy upstream rain in the Tripura and Meghalaya basins, which produced the highest water levels on the Muhuri, Feni, Gomti, Howrah and Khowai rivers since records began in 1988. A harness that only replays cyclones would be measuring the one hazard family whose formula is wind-driven and whose driver is least adequate.",
+  "event": {
+    "onset_date": "2024-08-24",
+    "ends_date": "2024-09-05",
+    "onset_note": "Flooding began on 20 August 2024 (NASA Disasters) and peaked over 23–25 August, when the MoDMR reported 4.4 million people affected across 11 districts. The scored onset is 2024-08-24 — inside that peak, and four days after the first inundation — because the harness scores the window *before* the date it is given: an earlier onset would score windows that ended before the rivers rose."
+  },
+  "scoring": {
+    "alarm_threshold": 0.5,
+    "min_matched": 11,
+    "absence_means_no_event": false,
+    "absence_means_no_event_reason": "The same rule as the cyclone episodes. Eleven districts are named as affected by the BDRCS sitrep and the remaining 53 were not surveyed by it, so a district without a recorded impact stays unknown rather than becoming a negative. Treating them as negatives would manufacture a false-alarm ratio out of a reporting boundary."
+  },
+  "truth": {
+    "completeness": "named-affected-only",
+    "affected": [
+      { "district": "Feni", "as_written": "Feni", "tier": "most_affected", "source_id": "bdrcs-sitrep3" },
+      { "district": "Noakhali", "as_written": "Noakhali", "tier": "most_affected", "source_id": "who-response" },
+      { "district": "Lakshmipur", "as_written": "Lakshmipur", "tier": "most_affected", "source_id": "who-response" },
+      { "district": "Comilla", "as_written": "Cumilla", "tier": "most_affected", "source_id": "who-response" },
+      { "district": "Chattogram", "as_written": "Chattogram", "tier": "stated_affected", "source_id": "bdrcs-sitrep3" },
+      { "district": "Brahmanbaria", "as_written": "Brahmanbaria", "tier": "stated_affected", "source_id": "bdrcs-sitrep3" },
+      { "district": "Chandpur", "as_written": "Chandpur", "tier": "stated_affected", "source_id": "nasa-disasters" },
+      { "district": "Coxs Bazar", "as_written": "Cox's Bazar", "tier": "stated_affected", "source_id": "bdrcs-sitrep3" },
+      { "district": "Habiganj", "as_written": "Habiganj", "tier": "stated_affected", "source_id": "bdrcs-sitrep3" },
+      { "district": "Khagrachhari", "as_written": "Khagrachari", "tier": "stated_affected", "source_id": "bdrcs-sitrep3" },
+      { "district": "Moulvibazar", "as_written": "Moulvibazar", "tier": "stated_affected", "source_id": "bdrcs-sitrep3" },
+      { "district": "Rangamati", "as_written": "Rangamati", "tier": "stated_affected", "source_id": "nasa-disasters" },
+      { "district": "Sylhet", "as_written": "Sylhet", "tier": "stated_affected", "source_id": "bdrcs-sitrep3" }
+    ],
+    "count_claims": [
+      { "claim": "11 districts affected; 73 upazilas; 528 unions/municipalities", "source_id": "bdrcs-sitrep3" },
+      { "claim": "4.4 million people affected across 11 districts, 887,000 families, per the MoDMR press briefing", "source_id": "voa-modmr" },
+      { "claim": "6 million affected at the height of the floods; 11 districts in the Chattogram and Sylhet divisions; 74 deaths across 9 districts", "source_id": "world-bank-grade" },
+      { "claim": "Feni, Noakhali, Lakshmipur and Cumilla experienced the most severe impacts", "source_id": "who-response" }
+    ],
+    "notes": [
+      "The 11-district framing (Feni, Cumilla, Chattogram, Khagrachari, Noakhali, Moulvibazar, Habiganj, Brahmanbaria, Sylhet, Lakshmipur, Cox's Bazar) is consistent across the Red Crescent sitrep, the WHO update and the World Bank GRADE report; that agreement is why 11 of the 13 named rows carry tier `stated_affected`, and only the four districts WHO singles out carry `most_affected`.",
+      "Chandpur and Rangamati are named by different sources than the 11-district list (the NASA Disasters activation and UNICEF's report on the Khagrachhari–Rangamati belt). They are kept as `stated_affected` with their own source rather than dropped, and the count claim they are not part of is recorded above so the disagreement is visible.",
+      "The World Bank GRADE report puts 70 % of estimated damages in Noakhali, Cumilla and Feni — a second, independent ranking that agrees with the tier assignment."
+    ]
+  },
+  "drivers": {
+    "product": "Open-Meteo historical archive (ERA5 / ERA5-Land era reanalysis)",
+    "endpoint": "https://archive-api.open-meteo.com/v1/archive",
+    "variables": [
+      "temperature_2m_max", "temperature_2m_min", "precipitation_sum",
+      "wind_speed_10m_max", "wind_gusts_10m_max", "et0_fao_evapotranspiration"
+    ]
+  },
+  "known_limitations": [
+    "Reanalysis, not archived forecast — the number is a ceiling on detection, and the plan's lead-time requirement needs forecast fields the harness cannot see (same as the cyclone episodes).",
+    "The physics track was not re-run for this window and the CNN is not evaluated: detection is the independent cross-check track only.",
+    "Peak precipitation is approximated by the wettest day inside the window, and a district centroid cannot represent the hill-stream catchments that actually flooded — the same driver-fidelity limit the cyclone episodes expose, in the rainfall dimension.",
+    "`Flash Flood` is the class chosen for an event that was partly riverine: the Feni, Muhuri and Gomti rivers reached record levels, while the Khagrachhari/Rangamati and Sylhet-diviion flooding was flash and hill-stream in character. Flood and Flash Flood share their rainfall inputs in `physics_severity`, so the distinction is a reporting choice, not a measurement — recorded here so nobody reads a class match as a validation of the distinction."
+  ],
+  "sources": [
+    {
+      "id": "bdrcs-sitrep3",
+      "what_it_evidences": "The 11-district affected list and the 73-upazila / 528-union scale of the event.",
+      "citation": "BDRCS Situation Report 3 — Southeastern Flood, August 2024 (Bangladesh Red Crescent Society, 28 August 2024), citing 11 districts: Feni, Cumilla, Chattogram, Khagrachari, Noakhali, Moulvibazar, Habiganj, Brahmanbaria, Sylhet, Lakshmipur, Cox's Bazar.",
+      "url": "https://bdrcs.org/wp-content/uploads/2024/08/BDRCS-Sitrep-3-Southeastern-Flood-August-2024.pdf",
+      "accessed": "2026-09-18"
+    },
+    {
+      "id": "who-response",
+      "what_it_evidences": "The most-severely-affected ranking (Feni, Noakhali, Lakshmipur, Cumilla) and the 11-district framing used by the health cluster.",
+      "citation": "Rising Waters, Rising Challenges: WHO's Response to Severe Flooding in Bangladesh (WHO Bangladesh, 4 November 2024).",
+      "url": "https://www.who.int/bangladesh/news/detail/04-11-2024-rising-waters--rising-challenges-who-s-response-to-severe-flooding-in-bangladesh",
+      "accessed": "2026-09-18"
+    },
+    {
+      "id": "nasa-disasters",
+      "what_it_evidences": "The 20 August 2024 start of the flooding, the depression over the Bay of Bengal as the meteorological trigger, and the Khagrachhari/Rangamati dimension of the affected area.",
+      "citation": "Bangladesh Flooding August 2024 — Disasters activations (NASA Applied Sciences, 28 August 2024).",
+      "url": "https://appliedsciences.nasa.gov/what-we-do/disasters/disasters-activations/bangladesh-flooding-august-2024",
+      "accessed": "2026-09-18"
+    },
+    {
+      "id": "voa-modmr",
+      "what_it_evidences": "The 4.4-million / 887,000-family / 77-upazila figures from the Ministry of Disaster Management and Relief press briefing.",
+      "citation": "Bangladesh floods claim 15 lives, affect more than 4.4 million (VOA News, 23 August 2024, reporting the MoDMR briefing).",
+      "url": "https://www.voanews.com/a/bangladesh-floods-claim-15-lives-affect-more-than-4-4-million-/7754825.html",
+      "accessed": "2026-09-18"
+    },
+    {
+      "id": "world-bank-grade",
+      "what_it_evidences": "The spatial concentration of damages (over 70 % in Noakhali, Cumilla and Feni), the 74-deaths-across-9-districts count and the record water levels since 1988.",
+      "citation": "Global Rapid Post-Disaster Damage Estimation (GRADE) Report — August 2024 Floods, Bangladesh (World Bank, 2024).",
+      "url": "https://documents1.worldbank.org/curated/en/099921506192542727/pdf/IDU-3c0e1de6-9af6-40b9-99a3-78397d1041ac.pdf",
+      "accessed": "2026-09-18"
+    }
+  ]
+}

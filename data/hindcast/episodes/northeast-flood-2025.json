@@ -1,0 +1,62 @@
+{
+  "schema": "hazardnet-hindcast-episode/v1",
+  "id": "northeast-flood-2025",
+  "title": "Northeast and coastal monsoon floods — Sylhet, Sunamganj and the hill districts, 1 June 2025",
+  "hazard_class": "Flood",
+  "why_this_episode": "The second monsoon-season episode, and the most recent one with a published district list at the moment this harness was built. It matters for a different reason than the 2024 event: the affected set spans two physically distinct regimes at once — the Sylhet/Sunamganj/Netrokona basin flooding driven by upstream Meghalaya and Assam rainfall, and the Khagrachari/Bandarban/Rangamati/Bhola inundation from local heavy rain and coastal waterlogging. A point-sampled district centroid is a reasonable proxy for the first and a poor one for the second.",
+  "event": {
+    "onset_date": "2025-06-01",
+    "onset_note": "The scored date is the date of the cited situation report (as of 1 June 2025), not a measured onset: the report states the districts 'have been severely affected' without dating the first inundation. Recorded this way on purpose — a guessed onset would move every window in the report."
+  },
+  "scoring": {
+    "alarm_threshold": 0.5,
+    "min_matched": 10,
+    "absence_means_no_event": false,
+    "absence_means_no_event_reason": "Same rule as the other three episodes: the sitrep names ten districts, does not claim to have surveyed the other 54, and unnamed districts therefore stay unknown."
+  },
+  "truth": {
+    "completeness": "named-affected-only",
+    "affected": [
+      { "district": "Sylhet", "as_written": "Sylhet", "tier": "severely_affected", "source_id": "bdrcs-flood-2025" },
+      { "district": "Sunamganj", "as_written": "Sunamganj", "tier": "severely_affected", "source_id": "bdrcs-flood-2025" },
+      { "district": "Moulvibazar", "as_written": "Moulvibazar", "tier": "severely_affected", "source_id": "bdrcs-flood-2025" },
+      { "district": "Habiganj", "as_written": "Habiganj", "tier": "severely_affected", "source_id": "bdrcs-flood-2025" },
+      { "district": "Netrokona", "as_written": "Netrokona", "tier": "severely_affected", "source_id": "bdrcs-flood-2025" },
+      { "district": "Noakhali", "as_written": "Noakhali", "tier": "severely_affected", "source_id": "bdrcs-flood-2025" },
+      { "district": "Bhola", "as_written": "Bhola", "tier": "severely_affected", "source_id": "bdrcs-flood-2025" },
+      { "district": "Khagrachhari", "as_written": "Khagrachari", "tier": "severely_affected", "source_id": "bdrcs-flood-2025" },
+      { "district": "Bandarban", "as_written": "Bandarban", "tier": "severely_affected", "source_id": "bdrcs-flood-2025" },
+      { "district": "Rangamati", "as_written": "Rangamati", "tier": "severely_affected", "source_id": "bdrcs-flood-2025" }
+    ],
+    "count_claims": [
+      { "claim": "Ten named districts severely affected (Sylhet, Sunamganj, Moulvibazar, Habiganj, Netrokona, Noakhali, Bhola, Khagrachari, Bandarban, Rangamati) with loss of life, displacement and agricultural damage", "source_id": "bdrcs-flood-2025" }
+    ],
+    "notes": [
+      "One reporter, one tier: unlike the cyclone episodes this truth set has a single source and therefore no independent agreement to lean on. Every row is `severely_affected` — a tier the source's own wording supports — and the report's detection counts are correspondingly weaker evidence than the 2024 episode's, which three organisations agree on.",
+      "The 2024 eastern flood and this event share six districts (Sylhet, Moulvibazar, Habiganj, Noakhali, Khagrachari and the hill belt). Two episodes are therefore not two independent samples, and the report says so rather than adding them into a '2 of 4 events detected' figure."
+    ]
+  },
+  "drivers": {
+    "product": "Open-Meteo historical archive (ERA5 / ERA5-Land era reanalysis)",
+    "endpoint": "https://archive-api.open-meteo.com/v1/archive",
+    "variables": [
+      "temperature_2m_max", "temperature_2m_min", "precipitation_sum",
+      "wind_speed_10m_max", "wind_gusts_10m_max", "et0_fao_evapotranspiration"
+    ]
+  },
+  "known_limitations": [
+    "Single-sourced truth set, and an onset date taken from the situation report rather than from a dated event record.",
+    "Reanalysis, not archived forecast — a ceiling on detection, as with every episode here.",
+    "CNN not re-run; detection is the physics cross-check track only.",
+    "Basin flooding depends on upstream rainfall in Meghalaya and Assam that the Bangladesh district centroids do not sample; the driver limitation is structural for the Sylhet/Sunamganj part of this affected set."
+  ],
+  "sources": [
+    {
+      "id": "bdrcs-flood-2025",
+      "what_it_evidences": "The ten-district affected list and the losses (lives, displacement, housing, agriculture) as of 1 June 2025.",
+      "citation": "Situation Report 1 — Flood 2025 (Bangladesh Red Crescent Society, 2 June 2025), reporting the situation as of 1 June 2025: Sylhet, Sunamganj, Moulvibazar, Habiganj, Netrokona, Noakhali, Bhola, Khagrachari, Bandarban and Rangamati severely affected.",
+      "url": "https://bdrcs.org/situation-report-1-flood-2025/",
+      "accessed": "2026-09-18"
+    }
+  ]
+}
