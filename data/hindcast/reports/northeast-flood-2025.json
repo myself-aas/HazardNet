@@ -1,7 +1,7 @@
 {
   "schema": "hazardnet-hindcast-report/v1",
   "hindcast_version": "1.0.0",
-  "generated_at": "2026-09-17T23:18:19Z",
+  "generated_at": "2026-09-17T23:20:52Z",
   "episode": {
     "id": "northeast-flood-2025",
     "title": "Northeast and coastal monsoon floods \u2014 Sylhet, Sunamganj and the hill districts, 1 June 2025",
@@ -785,9 +785,20 @@
     }
   ],
   "alarmed_without_a_recorded_impact": {
-    "count": 0,
-    "examples": [],
-    "interpretation": "These district-windows crossed the alarm threshold with no outcome on record. They are UNKNOWN, not false alarms: the truth set names the districts the cited assessments report, and nobody claims to have surveyed all 64. Measuring the false-alarm ratio needs the historical event archive loaded (owner Action 12)."
+    "count": 108,
+    "examples": [
+      "Bagerhat (Fire 0.816, 2025-05-25)",
+      "Bagerhat (Fire 0.888, 2025-05-17)",
+      "Barguna (Fire 0.773, 2025-05-25)",
+      "Barguna (Flash Flood 0.870, 2025-05-17)",
+      "Barisal (Flash Flood 0.896, 2025-05-25)",
+      "Barisal (Flash Flood 0.934, 2025-05-17)",
+      "Bogra (Fire 0.832, 2025-05-17)",
+      "Bogra (Fire 0.832, 2025-05-25)",
+      "Brahmanbaria (Flash Flood 0.920, 2025-05-25)",
+      "Brahmanbaria (Flash Flood 0.987, 2025-05-17)"
+    ],
+    "interpretation": "These district-windows crossed the alarm threshold with no outcome on record. They are UNKNOWN, not false alarms: the truth set names the districts the cited assessments report, and nobody claims to have surveyed all 64. Measuring the false-alarm ratio needs the historical event archive loaded (owner Action 12). The count is the number of alarms the truth set cannot speak to, so it is expected to be large while the truth set is a named list \u2014 it is the size of what this hindcast does not know."
   },
   "caveats": [
     "Single-sourced truth set, and an onset date taken from the situation report rather than from a dated event record.",

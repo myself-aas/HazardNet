@@ -1,7 +1,7 @@
 {
   "schema": "hazardnet-hindcast-report/v1",
   "hindcast_version": "1.0.0",
-  "generated_at": "2026-09-17T23:18:17Z",
+  "generated_at": "2026-09-17T23:20:50Z",
   "episode": {
     "id": "eastern-flood-2024",
     "title": "Eastern flash floods \u2014 Feni, Cumilla, Noakhali, 20\u201330 August 2024",
@@ -887,9 +887,20 @@
     }
   ],
   "alarmed_without_a_recorded_impact": {
-    "count": 0,
-    "examples": [],
-    "interpretation": "These district-windows crossed the alarm threshold with no outcome on record. They are UNKNOWN, not false alarms: the truth set names the districts the cited assessments report, and nobody claims to have surveyed all 64. Measuring the false-alarm ratio needs the historical event archive loaded (owner Action 12)."
+    "count": 102,
+    "examples": [
+      "Bagerhat (Fire 0.728, 2024-08-17)",
+      "Bagerhat (Flash Flood 0.751, 2024-08-09)",
+      "Bandarban (Fire 0.511, 2024-08-17)",
+      "Bandarban (Flash Flood 0.614, 2024-08-09)",
+      "Barguna (Fire 0.767, 2024-08-17)",
+      "Barguna (Fire 0.805, 2024-08-09)",
+      "Barisal (Flash Flood 0.903, 2024-08-17)",
+      "Barisal (Flash Flood 0.921, 2024-08-09)",
+      "Bhola (Fire 0.736, 2024-08-17)",
+      "Bhola (Flash Flood 0.868, 2024-08-09)"
+    ],
+    "interpretation": "These district-windows crossed the alarm threshold with no outcome on record. They are UNKNOWN, not false alarms: the truth set names the districts the cited assessments report, and nobody claims to have surveyed all 64. Measuring the false-alarm ratio needs the historical event archive loaded (owner Action 12). The count is the number of alarms the truth set cannot speak to, so it is expected to be large while the truth set is a named list \u2014 it is the size of what this hindcast does not know."
   },
   "caveats": [
     "Reanalysis, not archived forecast \u2014 the number is a ceiling on detection, and the plan's lead-time requirement needs forecast fields the harness cannot see (same as the cyclone episodes).",

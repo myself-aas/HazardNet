@@ -1,7 +1,7 @@
 {
   "schema": "hazardnet-hindcast-report/v1",
   "hindcast_version": "1.0.0",
-  "generated_at": "2026-09-17T23:19:23Z",
+  "generated_at": "2026-09-17T23:21:56Z",
   "episode": {
     "id": "yaas-2021",
     "title": "Cyclone Yaas \u2014 Bangladesh coast, 26 May 2021",
@@ -759,9 +759,20 @@
     }
   ],
   "alarmed_without_a_recorded_impact": {
-    "count": 0,
-    "examples": [],
-    "interpretation": "These district-windows crossed the alarm threshold with no outcome on record. They are UNKNOWN, not false alarms: the truth set names the districts the cited assessments report, and nobody claims to have surveyed all 64. Measuring the false-alarm ratio needs the historical event archive loaded (owner Action 12)."
+    "count": 110,
+    "examples": [
+      "Bandarban (Fire 0.840, 2021-05-11)",
+      "Bandarban (Fire 0.840, 2021-05-19)",
+      "Bogra (Fire 0.848, 2021-05-11)",
+      "Bogra (Fire 0.848, 2021-05-19)",
+      "Brahmanbaria (Fire 0.840, 2021-05-19)",
+      "Brahmanbaria (Fire 0.846, 2021-05-11)",
+      "Chandpur (Fire 0.904, 2021-05-11)",
+      "Chandpur (Fire 0.904, 2021-05-19)",
+      "Chapainawabganj (Fire 0.915, 2021-05-19)",
+      "Chapainawabganj (Fire 0.917, 2021-05-11)"
+    ],
+    "interpretation": "These district-windows crossed the alarm threshold with no outcome on record. They are UNKNOWN, not false alarms: the truth set names the districts the cited assessments report, and nobody claims to have surveyed all 64. Measuring the false-alarm ratio needs the historical event archive loaded (owner Action 12). The count is the number of alarms the truth set cannot speak to, so it is expected to be large while the truth set is a named list \u2014 it is the size of what this hindcast does not know."
   },
   "caveats": [
     "Identical to the Amphan episode: reanalysis rather than archived forecast fields, CNN not re-run, peak precipitation approximated by the wettest day, unnamed districts unknown.",

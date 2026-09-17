@@ -1,7 +1,7 @@
 {
   "schema": "hazardnet-hindcast-report/v1",
   "hindcast_version": "1.0.0",
-  "generated_at": "2026-09-17T23:18:14Z",
+  "generated_at": "2026-09-17T23:20:48Z",
   "episode": {
     "id": "amphan-2020",
     "title": "Cyclone Amphan \u2014 Bangladesh landfall, 20 May 2020",
@@ -906,9 +906,20 @@
     }
   ],
   "alarmed_without_a_recorded_impact": {
-    "count": 0,
-    "examples": [],
-    "interpretation": "These district-windows crossed the alarm threshold with no outcome on record. They are UNKNOWN, not false alarms: the truth set names the districts the cited assessments report, and nobody claims to have surveyed all 64. Measuring the false-alarm ratio needs the historical event archive loaded (owner Action 12)."
+    "count": 100,
+    "examples": [
+      "Bandarban (Fire 0.885, 2020-05-05)",
+      "Bandarban (Fire 0.885, 2020-05-13)",
+      "Bogra (Fire 0.832, 2020-05-05)",
+      "Bogra (Fire 0.832, 2020-05-13)",
+      "Brahmanbaria (Fire 0.851, 2020-05-13)",
+      "Brahmanbaria (Fire 0.853, 2020-05-05)",
+      "Chandpur (Fire 0.859, 2020-05-05)",
+      "Chandpur (Fire 0.859, 2020-05-13)",
+      "Chapainawabganj (Fire 0.872, 2020-05-05)",
+      "Chapainawabganj (Fire 0.872, 2020-05-13)"
+    ],
+    "interpretation": "These district-windows crossed the alarm threshold with no outcome on record. They are UNKNOWN, not false alarms: the truth set names the districts the cited assessments report, and nobody claims to have surveyed all 64. Measuring the false-alarm ratio needs the historical event archive loaded (owner Action 12). The count is the number of alarms the truth set cannot speak to, so it is expected to be large while the truth set is a named list \u2014 it is the size of what this hindcast does not know."
   },
   "caveats": [
     "Reanalysis is not the forecast that existed on the issue date. This measures whether the physics track, given the weather that actually occurred in the window, flags the districts that were hit \u2014 a ceiling on detection, not a forecast skill score.",
