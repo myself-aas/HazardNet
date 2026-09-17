@@ -1,79 +1,103 @@
 {
   "schema": "hazardnet-hindcast-report/v1",
   "hindcast_version": "1.0.0",
-  "generated_at": "2026-09-17T23:19:23Z",
+  "generated_at": "2026-09-17T23:18:19Z",
   "episode": {
-    "id": "yaas-2021",
-    "title": "Cyclone Yaas \u2014 Bangladesh coast, 26 May 2021",
-    "hazard_class": "Tropical Cyclone",
-    "onset_date": "2021-05-26",
-    "episode_path": "../data/hindcast/episodes/yaas-2021.json",
-    "episode_sha256": "e01e776737c73846bcff1b4771c317cc3347c83ba709472e0cf5bd4980a77a49",
+    "id": "northeast-flood-2025",
+    "title": "Northeast and coastal monsoon floods \u2014 Sylhet, Sunamganj and the hill districts, 1 June 2025",
+    "hazard_class": "Flood",
+    "onset_date": "2025-06-01",
+    "episode_path": "../data/hindcast/episodes/northeast-flood-2025.json",
+    "episode_sha256": "4174a2bc57347c15cb601693daaa9caca2f44841db51e4dca5ec24907c28d735",
     "truth_completeness": "named-affected-only",
     "affected_districts": [
-      "Bagerhat",
-      "Barguna",
-      "Barisal",
+      "Sylhet",
+      "Sunamganj",
+      "Moulvibazar",
+      "Habiganj",
+      "Netrokona",
+      "Noakhali",
       "Bhola",
-      "Jhalokati",
-      "Khulna",
-      "Patuakhali",
-      "Pirojpur",
-      "Satkhira"
+      "Khagrachhari",
+      "Bandarban",
+      "Rangamati"
     ],
-    "affected_count": 9,
+    "affected_count": 10,
     "sources": [
       {
-        "id": "nawg-jna",
-        "citation": "Cyclone YAAS: Light Coordinated Joint Needs Analysis \u2014 Needs Assessment Working Group (NAWG) & Information Management Working Group, Bangladesh, 6 June 2021.",
-        "url": "https://reliefweb.int/report/bangladesh/cyclone-yaas-light-coordinated-joint-needs-analysis-needs-assessment-working-group",
+        "id": "bdrcs-flood-2025",
+        "citation": "Situation Report 1 \u2014 Flood 2025 (Bangladesh Red Crescent Society, 2 June 2025), reporting the situation as of 1 June 2025: Sylhet, Sunamganj, Moulvibazar, Habiganj, Netrokona, Noakhali, Bhola, Khagrachari, Bandarban and Rangamati severely affected.",
+        "url": "https://bdrcs.org/situation-report-1-flood-2025/",
         "accessed": "2026-09-18",
-        "what_it_evidences": "The district-level affected-population table (Bagerhat, Barguna, Barisal, Bhola, Jhalokathi, Khulna, Patuakhali, Pirozpur, Satkhira) and the 16-district / 1.3-million-people framing."
-      },
-      {
-        "id": "ifrc-dref-final",
-        "citation": "Bangladesh: Cyclone YAAS \u2014 Final Report, DREF operation MDRBD027 (IFRC, December 2021).",
-        "url": "https://reliefweb.int/report/bangladesh/bangladesh-cyclone-yaas-final-report-n-mdrbd027",
-        "accessed": "2026-09-18",
-        "what_it_evidences": "The nine coastal districts reached by the response, the most-affected ranking, and the housing/latrine/water-point damage figures."
+        "what_it_evidences": "The ten-district affected list and the losses (lives, displacement, housing, agriculture) as of 1 June 2025."
       }
     ],
     "truth_notes": [
-      "The NAWG table publishes district-level affected populations for these nine districts; that table is what makes this episode's truth set stronger than Amphan's.",
-      "The 16-district framing again exceeds the named set, so the same rule applies: unnamed districts are unknown, not negative."
+      "One reporter, one tier: unlike the cyclone episodes this truth set has a single source and therefore no independent agreement to lean on. Every row is `severely_affected` \u2014 a tier the source's own wording supports \u2014 and the report's detection counts are correspondingly weaker evidence than the 2024 episode's, which three organisations agree on.",
+      "The 2024 eastern flood and this event share six districts (Sylhet, Moulvibazar, Habiganj, Noakhali, Khagrachari and the hill belt). Two episodes are therefore not two independent samples, and the report says so rather than adding them into a '2 of 4 events detected' figure."
     ],
     "known_limitations": [
-      "Identical to the Amphan episode: reanalysis rather than archived forecast fields, CNN not re-run, peak precipitation approximated by the wettest day, unnamed districts unknown.",
-      "Amphan (2020) had not been recovered from when Yaas struck; the affected set therefore overlaps almost completely, which is a property of the coast, not of the truth set."
+      "Single-sourced truth set, and an onset date taken from the situation report rather than from a dated event record.",
+      "Reanalysis, not archived forecast \u2014 a ceiling on detection, as with every episode here.",
+      "CNN not re-run; detection is the physics cross-check track only.",
+      "Basin flooding depends on upstream rainfall in Meghalaya and Assam that the Bangladesh district centroids do not sample; the driver limitation is structural for the Sylhet/Sunamganj part of this affected set."
     ]
   },
   "detection": {
-    "named_districts": 9,
-    "districts_with_a_scored_row": 9,
-    "flagged_any_class": 9,
+    "named_districts": 10,
+    "districts_with_a_scored_row": 10,
+    "flagged_any_class": 10,
     "flagged_episode_class": 0,
-    "episode_class_over_threshold": 0,
+    "episode_class_over_threshold": 10,
     "alarm_threshold": 0.5,
     "interpretation": "Detection counts over the districts the sources name. There is no \"not detected, therefore clear\" claim anywhere in this report: unnamed districts are unknown, and the false-alarm ratio is measurable only when the historical archive is loaded.",
     "per_horizon": {
       "7_days": {
-        "named_districts_with_a_row": 9,
-        "flagged_any_class": 9
+        "named_districts_with_a_row": 10,
+        "flagged_any_class": 10
       },
       "15_days": {
-        "named_districts_with_a_row": 9,
-        "flagged_any_class": 9
+        "named_districts_with_a_row": 10,
+        "flagged_any_class": 10
       }
     },
     "per_district": [
       {
-        "district": "Bagerhat",
-        "tier": "stated_affected",
+        "district": "Sylhet",
+        "tier": "severely_affected",
         "horizons_scored": 2,
         "flagged_any_class": true,
         "flagged_episode_class": false,
-        "episode_class_over_threshold": false,
-        "strongest_score": 0.9627,
+        "episode_class_over_threshold": true,
+        "strongest_score": 1.0,
+        "strongest_class": "Flash Flood",
+        "flag_horizons": [
+          "15_days",
+          "7_days"
+        ]
+      },
+      {
+        "district": "Sunamganj",
+        "tier": "severely_affected",
+        "horizons_scored": 2,
+        "flagged_any_class": true,
+        "flagged_episode_class": false,
+        "episode_class_over_threshold": true,
+        "strongest_score": 1.0,
+        "strongest_class": "Flash Flood",
+        "flag_horizons": [
+          "15_days",
+          "7_days"
+        ]
+      },
+      {
+        "district": "Moulvibazar",
+        "tier": "severely_affected",
+        "horizons_scored": 2,
+        "flagged_any_class": true,
+        "flagged_episode_class": false,
+        "episode_class_over_threshold": true,
+        "strongest_score": 0.8507,
         "strongest_class": "Fire",
         "flag_horizons": [
           "15_days",
@@ -81,28 +105,42 @@
         ]
       },
       {
-        "district": "Barguna",
-        "tier": "stated_affected",
+        "district": "Habiganj",
+        "tier": "severely_affected",
         "horizons_scored": 2,
         "flagged_any_class": true,
         "flagged_episode_class": false,
-        "episode_class_over_threshold": false,
-        "strongest_score": 0.912,
-        "strongest_class": "Fire",
+        "episode_class_over_threshold": true,
+        "strongest_score": 0.8945,
+        "strongest_class": "Flash Flood",
         "flag_horizons": [
           "15_days",
           "7_days"
         ]
       },
       {
-        "district": "Barisal",
-        "tier": "stated_affected",
+        "district": "Netrokona",
+        "tier": "severely_affected",
         "horizons_scored": 2,
         "flagged_any_class": true,
         "flagged_episode_class": false,
-        "episode_class_over_threshold": false,
-        "strongest_score": 0.944,
-        "strongest_class": "Fire",
+        "episode_class_over_threshold": true,
+        "strongest_score": 0.853,
+        "strongest_class": "Flash Flood",
+        "flag_horizons": [
+          "15_days",
+          "7_days"
+        ]
+      },
+      {
+        "district": "Noakhali",
+        "tier": "severely_affected",
+        "horizons_scored": 2,
+        "flagged_any_class": true,
+        "flagged_episode_class": false,
+        "episode_class_over_threshold": true,
+        "strongest_score": 1.0,
+        "strongest_class": "Flash Flood",
         "flag_horizons": [
           "15_days",
           "7_days"
@@ -110,83 +148,55 @@
       },
       {
         "district": "Bhola",
-        "tier": "stated_affected",
+        "tier": "severely_affected",
         "horizons_scored": 2,
         "flagged_any_class": true,
         "flagged_episode_class": false,
-        "episode_class_over_threshold": false,
-        "strongest_score": 0.9067,
-        "strongest_class": "Fire",
+        "episode_class_over_threshold": true,
+        "strongest_score": 0.9085,
+        "strongest_class": "Flash Flood",
         "flag_horizons": [
           "15_days",
           "7_days"
         ]
       },
       {
-        "district": "Jhalokati",
-        "tier": "stated_affected",
+        "district": "Khagrachhari",
+        "tier": "severely_affected",
         "horizons_scored": 2,
         "flagged_any_class": true,
         "flagged_episode_class": false,
-        "episode_class_over_threshold": false,
-        "strongest_score": 0.944,
-        "strongest_class": "Fire",
+        "episode_class_over_threshold": true,
+        "strongest_score": 0.9255,
+        "strongest_class": "Flash Flood",
         "flag_horizons": [
           "15_days",
           "7_days"
         ]
       },
       {
-        "district": "Khulna",
-        "tier": "stated_affected",
+        "district": "Bandarban",
+        "tier": "severely_affected",
         "horizons_scored": 2,
         "flagged_any_class": true,
         "flagged_episode_class": false,
-        "episode_class_over_threshold": false,
-        "strongest_score": 0.9147,
-        "strongest_class": "Fire",
+        "episode_class_over_threshold": true,
+        "strongest_score": 0.8435,
+        "strongest_class": "Flash Flood",
         "flag_horizons": [
           "15_days",
           "7_days"
         ]
       },
       {
-        "district": "Patuakhali",
-        "tier": "stated_affected",
+        "district": "Rangamati",
+        "tier": "severely_affected",
         "horizons_scored": 2,
         "flagged_any_class": true,
         "flagged_episode_class": false,
-        "episode_class_over_threshold": false,
-        "strongest_score": 0.936,
-        "strongest_class": "Fire",
-        "flag_horizons": [
-          "15_days",
-          "7_days"
-        ]
-      },
-      {
-        "district": "Pirojpur",
-        "tier": "stated_affected",
-        "horizons_scored": 2,
-        "flagged_any_class": true,
-        "flagged_episode_class": false,
-        "episode_class_over_threshold": false,
-        "strongest_score": 0.9173,
-        "strongest_class": "Fire",
-        "flag_horizons": [
-          "15_days",
-          "7_days"
-        ]
-      },
-      {
-        "district": "Satkhira",
-        "tier": "stated_affected",
-        "horizons_scored": 2,
-        "flagged_any_class": true,
-        "flagged_episode_class": false,
-        "episode_class_over_threshold": false,
-        "strongest_score": 0.8933,
-        "strongest_class": "Fire",
+        "episode_class_over_threshold": true,
+        "strongest_score": 1.0,
+        "strongest_class": "Flash Flood",
         "flag_horizons": [
           "15_days",
           "7_days"
@@ -196,25 +206,25 @@
   },
   "physics_diagnostics": {
     "top_class_distribution_shipped": {
-      "Fire": 127,
-      "Flash Flood": 1
+      "Fire": 75,
+      "Flash Flood": 53
     },
     "top_class_distribution_counterfactual": {
-      "Fire": 127,
-      "Flash Flood": 1
+      "Fire": 54,
+      "Flash Flood": 74
     },
     "saturated_terms": {
       "fire_wind": {
         "term": "(wind_max_kmh - 5.0) / 20.0",
         "rows": 128,
-        "rows_at_ceiling": 86,
-        "first_row_argument": 22.4
+        "rows_at_ceiling": 128,
+        "first_row_argument": 36.8
       },
       "fire_drying": {
         "term": "et_total_mm / 6.0",
         "rows": 128,
         "rows_at_ceiling": 128,
-        "first_row_argument": 32.11
+        "first_row_argument": 29.009999999999998
       },
       "heat_persistence": {
         "term": "horizon_days / 5.0",
@@ -231,11 +241,11 @@
     },
     "counterfactual_substitutions": {
       "fire_et_mm_per_day": {
-        "min": 3.5869,
-        "max": 5.6163
+        "min": 2.3125,
+        "max": 4.1887
       },
       "heat_exceedance_days_above_30c": {
-        "min": 5,
+        "min": 1,
         "max": 16
       },
       "cold_exceedance_days_below_16c": {
@@ -247,55 +257,55 @@
       "era5_10m_sustained": {
         "rows": 128,
         "wind_kmh": {
-          "min": 14.8,
-          "max": 43.3
+          "min": 25.7,
+          "max": 44.5
         },
         "top_class_distribution": {
-          "Fire": 127,
-          "Flash Flood": 1
+          "Fire": 75,
+          "Flash Flood": 53
         },
         "named_the_episode_class": 0,
-        "episode_class_over_threshold": 0,
+        "episode_class_over_threshold": 101,
         "episode_class_score": {
-          "min": 0.0285,
-          "max": 0.2457
+          "min": 0.2097,
+          "max": 1.0
         }
       },
       "era5_10m_gust": {
         "rows": 128,
         "wind_kmh": {
-          "min": 37.4,
-          "max": 84.6
+          "min": 49.0,
+          "max": 85.0
         },
         "top_class_distribution": {
-          "Fire": 127,
-          "Flash Flood": 1
+          "Fire": 75,
+          "Flash Flood": 53
         },
         "named_the_episode_class": 0,
-        "episode_class_over_threshold": 0,
+        "episode_class_over_threshold": 101,
         "episode_class_score": {
-          "min": 0.0388,
-          "max": 0.3166
+          "min": 0.2097,
+          "max": 1.0
         }
       },
-      "finding": "With the sustained maximum the shipped pipeline uses, the episode's class scores 0.0285\u20130.2457 and crosses the 0.5 band on 0 of 128 rows; with the gust field the archive also carries it scores 0.0388\u20130.3166 and crosses on 0. Even the gust field leaves the episode class below the band, so the wind argument alone does not explain the miss: at this distance from the track the driver the pipeline uses cannot represent the hazard, and the class the formula describes is unreachable for this event. Note what neither number fixes: the track's top class is Fire under either driver, so the separation between the wind-driven classes is a second, independent defect."
+      "finding": "With the sustained maximum the shipped pipeline uses, the episode's class scores 0.2097\u20131.0000 and crosses the 0.5 band on 101 of 128 rows; with the gust field the archive also carries it scores 0.2097\u20131.0000 and crosses on 101. The wind driver, not the formula alone, decides whether this event was detectable at the district point. Note what neither number fixes: the track's top class is Fire under either driver, so the separation between the wind-driven classes is a second, independent defect."
     },
     "detection_counterfactual": {
-      "named_districts": 9,
-      "districts_with_a_scored_row": 9,
-      "flagged_any_class": 9,
+      "named_districts": 10,
+      "districts_with_a_scored_row": 10,
+      "flagged_any_class": 10,
       "flagged_episode_class": 0,
-      "episode_class_over_threshold": 0,
+      "episode_class_over_threshold": 10,
       "alarm_threshold": 0.5,
       "interpretation": "Detection counts over the districts the sources name. There is no \"not detected, therefore clear\" claim anywhere in this report: unnamed districts are unknown, and the false-alarm ratio is measurable only when the historical archive is loaded.",
       "per_horizon": {
         "7_days": {
-          "named_districts_with_a_row": 9,
-          "flagged_any_class": 9
+          "named_districts_with_a_row": 10,
+          "flagged_any_class": 10
         },
         "15_days": {
-          "named_districts_with_a_row": 9,
-          "flagged_any_class": 9
+          "named_districts_with_a_row": 10,
+          "flagged_any_class": 10
         }
       }
     },
@@ -316,7 +326,7 @@
         "wind_gusts_10m_max",
         "et0_fao_evapotranspiration"
       ],
-      "driver_series_loaded_from": "/home/runner/work/HazardNet/HazardNet/data/hindcast/drivers/yaas-2021.json",
+      "driver_series_loaded_from": "/home/runner/work/HazardNet/HazardNet/data/hindcast/drivers/northeast-flood-2025.json",
       "is_forecast": false,
       "is_forecast_note": "Reanalysis knows the weather that occurred inside the window. This measures whether the physics track, given that weather, flags the districts that were hit \u2014 a ceiling on detection, not forecast skill. A lead-time hindcast needs archived forecast fields (ECMWF MARS/CDS), which this harness has no credential for.",
       "aggregation": {
@@ -335,30 +345,30 @@
       "Nothing in this report covers a district nobody named. Unknown is not clear, and the far column is unmeasurable rather than zero when no negative sample exists."
     ],
     "alarm_threshold": 0.5,
-    "min_matched": 5,
+    "min_matched": 10,
     "absence_means_no_event": false,
-    "absence_means_no_event_reason": "Same reasoning as the Amphan episode: the assessment names affected districts and does not claim to have surveyed all 64, so unnamed districts are unknown rather than clear.",
+    "absence_means_no_event_reason": "Same rule as the other three episodes: the sitrep names ten districts, does not claim to have surveyed the other 54, and unnamed districts therefore stay unknown.",
     "horizons": [
       {
         "name": "7_days",
         "lead_days": 7,
-        "prediction_date": "2021-05-19",
-        "target_date": "2021-05-26"
+        "prediction_date": "2025-05-25",
+        "target_date": "2025-06-01"
       },
       {
         "name": "15_days",
         "lead_days": 15,
-        "prediction_date": "2021-05-11",
-        "target_date": "2021-05-26"
+        "prediction_date": "2025-05-17",
+        "target_date": "2025-06-01"
       }
     ]
   },
   "counts": {
     "predictions": 128,
     "districts": 64,
-    "outcomes_named": 9,
-    "matched_pairs": 18,
-    "prediction_windows_without_an_outcome": 110,
+    "outcomes_named": 10,
+    "matched_pairs": 20,
+    "prediction_windows_without_an_outcome": 108,
     "outcomes_not_relevant_to_a_window": 0,
     "named_districts_without_a_prediction_row": []
   },
@@ -369,14 +379,14 @@
     "reason": null,
     "counts": {
       "predictions": 128,
-      "outcomes": 9,
-      "matched": 18,
-      "unmatched_no_outcome": 110,
+      "outcomes": 10,
+      "matched": 20,
+      "unmatched_no_outcome": 108,
       "outcome_before_forecast": 0,
       "outside_window": 0,
       "missing_fields": 0,
       "not_relevant_outcomes": 0,
-      "min_matched": 5,
+      "min_matched": 10,
       "absence_means_no_event": false,
       "alarm_threshold": 0.5,
       "near_days": 14
@@ -384,21 +394,21 @@
     "unverifiable": {
       "examples": {
         "no_outcome_on_record": [
-          "Kurigram/2021-05-19",
-          "Kurigram/2021-05-11",
-          "Rangpur/2021-05-19",
-          "Rangpur/2021-05-11",
-          "Gaibandha/2021-05-19"
+          "Kurigram/2025-05-25",
+          "Kurigram/2025-05-17",
+          "Rangpur/2025-05-25",
+          "Rangpur/2025-05-17",
+          "Gaibandha/2025-05-25"
         ],
         "outcome_before_forecast": [],
         "outside_window": [],
         "missing_fields": [],
         "conflicting_observations": [
-          "Khulna: observed Tropical Cyclone vs predicted Fire",
-          "Khulna: observed Tropical Cyclone vs predicted Fire",
-          "Satkhira: observed Tropical Cyclone vs predicted Fire",
-          "Satkhira: observed Tropical Cyclone vs predicted Fire",
-          "Bagerhat: observed Tropical Cyclone vs predicted Fire"
+          "Netrokona: observed Flood vs predicted Fire",
+          "Netrokona: observed Flood vs predicted Flash Flood",
+          "Sylhet: observed Flood vs predicted Flash Flood",
+          "Sylhet: observed Flood vs predicted Flash Flood",
+          "Sunamganj: observed Flood vs predicted Flash Flood"
         ]
       },
       "not_relevant_outcomes": 0
@@ -407,11 +417,11 @@
       "events": {
         "hits": 0,
         "misses": 0,
-        "false_alarms": 18,
+        "false_alarms": 20,
         "correct_negatives": 0,
         "observed_events": 0,
-        "forecast_events": 18,
-        "samples": 18,
+        "forecast_events": 20,
+        "samples": 20,
         "pod": null,
         "far": 1.0,
         "csi": 0.0,
@@ -421,7 +431,7 @@
         "frequency_bias": null,
         "f1": null,
         "alarm_threshold": 0.5,
-        "negatives_available": 18
+        "negatives_available": 20
       },
       "per_class": {
         "Cold Wave": {
@@ -447,27 +457,37 @@
           "precision": 0.0,
           "recall": null,
           "observed_events": 0,
-          "forecast_events": 18,
+          "forecast_events": 4,
           "hits": 0,
           "misses": 0,
-          "false_alarms": 18,
+          "false_alarms": 4,
           "status": "measured"
         },
         "Flash Flood": {
           "pod": null,
-          "far": null,
-          "csi": null,
+          "far": 1.0,
+          "csi": 0.0,
+          "precision": 0.0,
+          "recall": null,
           "observed_events": 0,
-          "forecast_events": 0,
-          "status": "untested"
+          "forecast_events": 16,
+          "hits": 0,
+          "misses": 0,
+          "false_alarms": 16,
+          "status": "measured"
         },
         "Flood": {
-          "pod": null,
+          "pod": 0.0,
           "far": null,
           "csi": null,
-          "observed_events": 0,
+          "precision": null,
+          "recall": 0.0,
+          "observed_events": 20,
           "forecast_events": 0,
-          "status": "untested"
+          "hits": 0,
+          "misses": 20,
+          "false_alarms": null,
+          "status": "measured"
         },
         "Heat Wave": {
           "pod": null,
@@ -486,17 +506,12 @@
           "status": "untested"
         },
         "Tropical Cyclone": {
-          "pod": 0.0,
+          "pod": null,
           "far": null,
           "csi": null,
-          "precision": null,
-          "recall": 0.0,
-          "observed_events": 18,
+          "observed_events": 0,
           "forecast_events": 0,
-          "hits": 0,
-          "misses": 18,
-          "false_alarms": null,
-          "status": "measured"
+          "status": "untested"
         }
       },
       "class_confusion": {
@@ -554,8 +569,8 @@
           "Flood": {
             "Cold Wave": 0,
             "Drought": 0,
-            "Fire": 0,
-            "Flash Flood": 0,
+            "Fire": 4,
+            "Flash Flood": 16,
             "Flood": 0,
             "Heat Wave": 0,
             "Severe Local Storm": 0,
@@ -584,7 +599,7 @@
           "Tropical Cyclone": {
             "Cold Wave": 0,
             "Drought": 0,
-            "Fire": 18,
+            "Fire": 0,
             "Flash Flood": 0,
             "Flood": 0,
             "Heat Wave": 0,
@@ -593,7 +608,7 @@
           }
         },
         "unlabelled": {},
-        "total": 18
+        "total": 20
       },
       "reliability": {
         "bins": [],
@@ -606,18 +621,18 @@
         "single_class_sample": false,
         "note": null
       },
-      "severity_mae_vs_occurrence": 0.925189,
+      "severity_mae_vs_occurrence": 0.91789,
       "lead_time_days": {
         "min": 7,
         "max": 15,
         "mean": 11.0,
-        "samples": 18,
-        "samples_with_lead_over_0": 18
+        "samples": 20,
+        "samples_with_lead_over_0": 20
       },
-      "scored_samples": 18
+      "scored_samples": 20
     },
-    "scored_samples": 18,
-    "negative_samples": 18,
+    "scored_samples": 20,
+    "negative_samples": 20,
     "evaluated_events": 0,
     "ece": null,
     "csi": 0.0,
@@ -628,30 +643,30 @@
   "threshold_sensitivity": [
     {
       "alarm_threshold": 0.4,
-      "scored_samples": 18,
+      "scored_samples": 20,
       "hits": 0,
       "misses": 0,
-      "false_alarms": 18,
+      "false_alarms": 20,
       "pod": null,
       "far": 1.0,
       "note": "PRODUCT_SPEC \u00a71.3 WATCH band"
     },
     {
       "alarm_threshold": 0.5,
-      "scored_samples": 18,
+      "scored_samples": 20,
       "hits": 0,
       "misses": 0,
-      "false_alarms": 18,
+      "false_alarms": 20,
       "pod": null,
       "far": 1.0,
       "note": "harness default"
     },
     {
       "alarm_threshold": 0.65,
-      "scored_samples": 18,
+      "scored_samples": 20,
       "hits": 0,
       "misses": 0,
-      "false_alarms": 18,
+      "false_alarms": 20,
       "pod": null,
       "far": 1.0,
       "note": "PRODUCT_SPEC \u00a71.3 WARNING band"
@@ -659,103 +674,114 @@
   ],
   "per_district": [
     {
-      "district": "Bagerhat",
-      "as_written": "Bagerhat",
-      "tier": "stated_affected",
-      "source_id": "nawg-jna",
+      "district": "Sylhet",
+      "as_written": "Sylhet",
+      "tier": "severely_affected",
+      "source_id": "bdrcs-flood-2025",
+      "physics_top_hazard": "Flash Flood",
+      "physics_top_severity": 1.0,
+      "physics_score_of_episode_class": 1.0,
+      "physics_named_episode_class": false,
+      "within_window_days": 8
+    },
+    {
+      "district": "Sunamganj",
+      "as_written": "Sunamganj",
+      "tier": "severely_affected",
+      "source_id": "bdrcs-flood-2025",
+      "physics_top_hazard": "Flash Flood",
+      "physics_top_severity": 1.0,
+      "physics_score_of_episode_class": 1.0,
+      "physics_named_episode_class": false,
+      "within_window_days": 8
+    },
+    {
+      "district": "Moulvibazar",
+      "as_written": "Moulvibazar",
+      "tier": "severely_affected",
+      "source_id": "bdrcs-flood-2025",
       "physics_top_hazard": "Fire",
-      "physics_top_severity": 0.9627,
-      "physics_score_of_episode_class": 0.0726,
+      "physics_top_severity": 0.8507,
+      "physics_score_of_episode_class": 0.835,
       "physics_named_episode_class": false,
       "within_window_days": 16
     },
     {
-      "district": "Barguna",
-      "as_written": "Barguna",
-      "tier": "stated_affected",
-      "source_id": "nawg-jna",
-      "physics_top_hazard": "Fire",
-      "physics_top_severity": 0.912,
-      "physics_score_of_episode_class": 0.0698,
+      "district": "Habiganj",
+      "as_written": "Habiganj",
+      "tier": "severely_affected",
+      "source_id": "bdrcs-flood-2025",
+      "physics_top_hazard": "Flash Flood",
+      "physics_top_severity": 0.8945,
+      "physics_score_of_episode_class": 0.8945,
       "physics_named_episode_class": false,
       "within_window_days": 16
     },
     {
-      "district": "Barisal",
-      "as_written": "Barisal",
-      "tier": "stated_affected",
-      "source_id": "nawg-jna",
-      "physics_top_hazard": "Fire",
-      "physics_top_severity": 0.944,
-      "physics_score_of_episode_class": 0.0677,
+      "district": "Netrokona",
+      "as_written": "Netrokona",
+      "tier": "severely_affected",
+      "source_id": "bdrcs-flood-2025",
+      "physics_top_hazard": "Flash Flood",
+      "physics_top_severity": 0.853,
+      "physics_score_of_episode_class": 0.853,
+      "physics_named_episode_class": false,
+      "within_window_days": 16
+    },
+    {
+      "district": "Noakhali",
+      "as_written": "Noakhali",
+      "tier": "severely_affected",
+      "source_id": "bdrcs-flood-2025",
+      "physics_top_hazard": "Flash Flood",
+      "physics_top_severity": 1.0,
+      "physics_score_of_episode_class": 1.0,
       "physics_named_episode_class": false,
       "within_window_days": 16
     },
     {
       "district": "Bhola",
       "as_written": "Bhola",
-      "tier": "stated_affected",
-      "source_id": "nawg-jna",
-      "physics_top_hazard": "Fire",
-      "physics_top_severity": 0.9067,
-      "physics_score_of_episode_class": 0.0624,
+      "tier": "severely_affected",
+      "source_id": "bdrcs-flood-2025",
+      "physics_top_hazard": "Flash Flood",
+      "physics_top_severity": 0.9085,
+      "physics_score_of_episode_class": 0.9085,
       "physics_named_episode_class": false,
       "within_window_days": 16
     },
     {
-      "district": "Jhalokati",
-      "as_written": "Jhalokathi",
-      "tier": "stated_affected",
-      "source_id": "nawg-jna",
-      "physics_top_hazard": "Fire",
-      "physics_top_severity": 0.944,
-      "physics_score_of_episode_class": 0.0788,
+      "district": "Khagrachhari",
+      "as_written": "Khagrachari",
+      "tier": "severely_affected",
+      "source_id": "bdrcs-flood-2025",
+      "physics_top_hazard": "Flash Flood",
+      "physics_top_severity": 0.9255,
+      "physics_score_of_episode_class": 0.9255,
+      "physics_named_episode_class": false,
+      "within_window_days": 8
+    },
+    {
+      "district": "Bandarban",
+      "as_written": "Bandarban",
+      "tier": "severely_affected",
+      "source_id": "bdrcs-flood-2025",
+      "physics_top_hazard": "Flash Flood",
+      "physics_top_severity": 0.8435,
+      "physics_score_of_episode_class": 0.8435,
       "physics_named_episode_class": false,
       "within_window_days": 16
     },
     {
-      "district": "Khulna",
-      "as_written": "Khulna",
-      "tier": "stated_affected",
-      "source_id": "nawg-jna",
-      "physics_top_hazard": "Fire",
-      "physics_top_severity": 0.9147,
-      "physics_score_of_episode_class": 0.0686,
+      "district": "Rangamati",
+      "as_written": "Rangamati",
+      "tier": "severely_affected",
+      "source_id": "bdrcs-flood-2025",
+      "physics_top_hazard": "Flash Flood",
+      "physics_top_severity": 1.0,
+      "physics_score_of_episode_class": 1.0,
       "physics_named_episode_class": false,
-      "within_window_days": 16
-    },
-    {
-      "district": "Patuakhali",
-      "as_written": "Patuakhali",
-      "tier": "stated_affected",
-      "source_id": "nawg-jna",
-      "physics_top_hazard": "Fire",
-      "physics_top_severity": 0.936,
-      "physics_score_of_episode_class": 0.1002,
-      "physics_named_episode_class": false,
-      "within_window_days": 16
-    },
-    {
-      "district": "Pirojpur",
-      "as_written": "Pirozpur",
-      "tier": "stated_affected",
-      "source_id": "nawg-jna",
-      "physics_top_hazard": "Fire",
-      "physics_top_severity": 0.9173,
-      "physics_score_of_episode_class": 0.0788,
-      "physics_named_episode_class": false,
-      "within_window_days": 16
-    },
-    {
-      "district": "Satkhira",
-      "as_written": "Satkhira",
-      "tier": "stated_affected",
-      "source_id": "nawg-jna",
-      "physics_top_hazard": "Fire",
-      "physics_top_severity": 0.8933,
-      "physics_score_of_episode_class": 0.0622,
-      "physics_named_episode_class": false,
-      "within_window_days": 16
+      "within_window_days": 8
     }
   ],
   "alarmed_without_a_recorded_impact": {
@@ -764,20 +790,16 @@
     "interpretation": "These district-windows crossed the alarm threshold with no outcome on record. They are UNKNOWN, not false alarms: the truth set names the districts the cited assessments report, and nobody claims to have surveyed all 64. Measuring the false-alarm ratio needs the historical event archive loaded (owner Action 12)."
   },
   "caveats": [
-    "Identical to the Amphan episode: reanalysis rather than archived forecast fields, CNN not re-run, peak precipitation approximated by the wettest day, unnamed districts unknown.",
-    "Amphan (2020) had not been recovered from when Yaas struck; the affected set therefore overlaps almost completely, which is a property of the coast, not of the truth set."
+    "Single-sourced truth set, and an onset date taken from the situation report rather than from a dated event record.",
+    "Reanalysis, not archived forecast \u2014 a ceiling on detection, as with every episode here.",
+    "CNN not re-run; detection is the physics cross-check track only.",
+    "Basin flooding depends on upstream rainfall in Meghalaya and Assam that the Bangladesh district centroids do not sample; the driver limitation is structural for the Sylhet/Sunamganj part of this affected set."
   ],
   "citations": [
     {
-      "id": "nawg-jna",
-      "citation": "Cyclone YAAS: Light Coordinated Joint Needs Analysis \u2014 Needs Assessment Working Group (NAWG) & Information Management Working Group, Bangladesh, 6 June 2021.",
-      "url": "https://reliefweb.int/report/bangladesh/cyclone-yaas-light-coordinated-joint-needs-analysis-needs-assessment-working-group",
-      "accessed": "2026-09-18"
-    },
-    {
-      "id": "ifrc-dref-final",
-      "citation": "Bangladesh: Cyclone YAAS \u2014 Final Report, DREF operation MDRBD027 (IFRC, December 2021).",
-      "url": "https://reliefweb.int/report/bangladesh/bangladesh-cyclone-yaas-final-report-n-mdrbd027",
+      "id": "bdrcs-flood-2025",
+      "citation": "Situation Report 1 \u2014 Flood 2025 (Bangladesh Red Crescent Society, 2 June 2025), reporting the situation as of 1 June 2025: Sylhet, Sunamganj, Moulvibazar, Habiganj, Netrokona, Noakhali, Bhola, Khagrachari, Bandarban and Rangamati severely affected.",
+      "url": "https://bdrcs.org/situation-report-1-flood-2025/",
       "accessed": "2026-09-18"
     }
   ]

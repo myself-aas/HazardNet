@@ -1,7 +1,7 @@
 {
   "schema": "hazardnet-hindcast-report/v1",
   "hindcast_version": "1.0.0",
-  "generated_at": "2026-09-17T23:13:08Z",
+  "generated_at": "2026-09-17T23:18:14Z",
   "episode": {
     "id": "amphan-2020",
     "title": "Cyclone Amphan \u2014 Bangladesh landfall, 20 May 2020",
@@ -451,7 +451,8 @@
     "outcomes_named": 14,
     "matched_pairs": 28,
     "prediction_windows_without_an_outcome": 100,
-    "outcomes_not_relevant_to_a_window": 0
+    "outcomes_not_relevant_to_a_window": 0,
+    "named_districts_without_a_prediction_row": []
   },
   "evaluation": {
     "schema": "hazardnet-mlops-evaluation/v1",
