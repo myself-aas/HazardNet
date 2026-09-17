@@ -212,7 +212,7 @@ export const RiskAnalytics: React.FC<RiskAnalyticsProps> = ({ onSelectDistrict }
             </span>
             <div className="flex items-baseline justify-between">
               <span className="text-base font-extrabold text-slate-900">Sylhet Haor Basin</span>
-              <span className="text-xs font-bold text-rose-600 font-mono">97% Severity</span>
+              <span className="text-xs font-bold text-rose-600 font-mono">Flash Flood</span>
             </div>
             <p className="text-[11px] text-slate-500">Pre-monsoon flash flood vulnerability</p>
           </div>
@@ -223,7 +223,7 @@ export const RiskAnalytics: React.FC<RiskAnalyticsProps> = ({ onSelectDistrict }
             </span>
             <div className="flex items-baseline justify-between">
               <span className="text-base font-extrabold text-amber-700">Barind Tract (Rajshahi)</span>
-              <span className="text-xs font-bold text-amber-700 font-mono">+18% YoY</span>
+              <span className="text-xs font-bold text-amber-700 font-mono">Rising trend</span>
             </div>
             <p className="text-[11px] text-slate-500">Intensified seasonal drought & heat stress</p>
           </div>
@@ -234,7 +234,7 @@ export const RiskAnalytics: React.FC<RiskAnalyticsProps> = ({ onSelectDistrict }
             </span>
             <div className="flex items-baseline justify-between">
               <span className="text-base font-extrabold text-rose-700">Satkhira & Cox's Bazar</span>
-              <span className="text-xs font-bold text-rose-600 font-mono">94% Salinity</span>
+              <span className="text-xs font-bold text-rose-600 font-mono">Storm surge</span>
             </div>
             <p className="text-[11px] text-slate-500">Tropical storm surge peak in Oct-Nov</p>
           </div>
@@ -244,10 +244,10 @@ export const RiskAnalytics: React.FC<RiskAnalyticsProps> = ({ onSelectDistrict }
               Protected Crop Acreage
             </span>
             <div className="flex items-baseline justify-between">
-              <span className="text-base font-extrabold text-emerald-700">142,500 Hectares</span>
-              <span className="text-xs font-bold text-emerald-600 font-mono">94.2% Acc.</span>
+              <span className="text-base font-extrabold text-emerald-700">Coastal & Haor Belts</span>
+              <span className="text-xs font-bold text-emerald-600 font-mono">Advisory active</span>
             </div>
-            <p className="text-[11px] text-slate-500">Early harvest advisory lead time: 72 hrs</p>
+            <p className="text-[11px] text-slate-500">Early harvest advisories for pre-monsoon windows</p>
           </div>
 
         </div>

@@ -319,15 +319,24 @@ class SeverityNormalizer:
 
     def __init__(self, hazard: str):
         cfg = SEVERITY_THRESHOLDS[hazard]
-        anchors = sorted(cfg["anchors"])
-        xs = np.array([a[0] for a in anchors], dtype=float)
-        ys = np.array([a[1] for a in anchors], dtype=float)
+        raw = list(cfg["anchors"])
         # DIRECTION-AWARE: indices where the hazard INTENSIFIES as the value
         # DROPS (Tmin for cold waves, SPEI for drought) are stored in deficit
-        # space (negated) so severity is always non-decreasing. This fixes the
-        # latent Drought-anchor bug of v2.0 (decreasing xs would have raised
-        # at runtime the first time SeverityNormalizer("Drought") was built).
-        self._flip = xs[0] > xs[-1]
+        # space (negated) so severity is always non-decreasing.
+        #
+        # 2026-09-17 repair (recorded in docs/RUNBOOK_LOG.md): the flip MUST
+        # be detected on the config's NATURAL order (severity-ascending, so
+        # deficit hazards list the index descending). The previous code ran
+        # `sorted()` first and then tested xs[0] > xs[-1] — dead code, since
+        # sorted xs is always ascending — leaving the latent Drought-anchor
+        # bug unfixed: SeverityNormalizer("Drought") (global SPEI config) and
+        # the BD Cold Wave (Tmin) config crashed at construction with
+        # "severity must be non-decreasing". Caught by the BD proof suite
+        # (INT-SEV-BD-01: 55/57), pinned by training/tests.
+        self._flip = raw[0][0] > raw[-1][0]
+        anchors = sorted(raw, key=lambda a: a[0], reverse=self._flip)
+        xs = np.array([a[0] for a in anchors], dtype=float)
+        ys = np.array([a[1] for a in anchors], dtype=float)
         if self._flip:
             xs = -xs
         assert np.all(np.diff(xs) > 0), f"{hazard}: anchors must be strictly monotonic"

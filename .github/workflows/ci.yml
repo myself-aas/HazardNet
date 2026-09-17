@@ -315,6 +315,15 @@ jobs:
           fi
           echo "✅ Models/VERSION.json matches the artifacts on disk"
 
+      # PRD REQ-006 / TASK-008 / TRD INT-CLAIM-01: every metric-shaped number
+      # in public copy must be registered in docs/CLAIMS.md with a strategy
+      # label. Fabricated or unregistered metrics fail the build.
+      # Guarded by scripts/tests/test_workflows.py::test_claims_gate_step_present.
+      - name: Claims registry gate (PRD REQ-006)
+        run: |
+          node scripts/check-claims.mjs --claims docs/CLAIMS.md --src frontend/src --html frontend/index.html dist/index.html
+
+
       - name: Serverless functions load as ESM
         run: |
           node -e "import('./api/forecasts.js').then(() => console.log('api/forecasts: ESM OK'))"

@@ -127,7 +127,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
   const [loading, setLoading] = useState(false);
   const [prediction, setPrediction] = useState<number[]>([0.1, 0.05, 0.02, 0.2, 0.5, 0.03, 0.05, 0.05]);
   const [severity, setSeverity] = useState<number>(0.78);
-  const [processingTimeMs, setProcessingTimeMs] = useState<number>(42);
+  const [processingTimeMs, setProcessingTimeMs] = useState<number>(0);
   const [channelFeatures, setChannelFeatures] = useState<any>(null);
 
   // Offline Cache & Storage Management State
@@ -881,7 +881,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
                         </span>
                       </div>
                       <p className="text-xs text-slate-500 mt-1">
-                        Softmax classification: <strong className="text-slate-800">{selectedDistrict.risk} Hazard Probability</strong> | Latency: 38ms
+                        Softmax classification: <strong className="text-slate-800">{selectedDistrict.risk} Hazard Probability</strong> | Latency: {processingTimeMs}ms
                       </p>
                     </div>
 

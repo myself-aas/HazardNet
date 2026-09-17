@@ -176,6 +176,16 @@ nightly -> Tier-2 model verification harness (POD/FAR on recent bulletins)
 
 ## 10. Traceability Matrix
 
+> **Status (2026-09-17, agent execution):** UNIT-SEV-01/02/03 implemented in
+> `training/tests/test_severity_normalizer.py` (8 tests, green, with a
+> regression pinning the deficit-space normalizer repair — see
+> docs/RUNBOOK_LOG.md). INT-SEV-BD-01 implemented twice: as a pytest case in
+> the same file and as `training/run_bd_proofs.py`, gated in CI via
+> `.github/workflows/v3-ml-contracts.yml` (evidence:
+> `results/bd_thresholds_validation.log`, 57/57). INT-CLAIM-01 implemented as
+> `__tests__/claimsGate.test.js` (6 tests, green) + the CI step in `ci.yml`.
+> Remaining tests in this blueprint are pending their tasks.
+
 | PRD Req | Unit | Integration | E2E |
 |---|---|---|---|
 | REQ-001 | UNIT-SPLIT-01/02 | INT-SPLIT-01/02, INT-HIND-01 | — |

@@ -202,7 +202,7 @@ export function useMapSnapshot(
                   legendDiv.innerHTML = `
                     <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #334155; padding-bottom: 6px;">
                       <strong style="color: #f9a825; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em;">Multi-Hazard Severity Key</strong>
-                      <span style="color: #94a3b8; font-size: 10px; font-family: monospace;">HazardNet v2.4</span>
+                      <span style="color: #94a3b8; font-size: 10px; font-family: monospace;">HazardNet</span>
                     </div>
                     <div style="display: flex; align-items: center; gap: 12px;">
                       <div style="display: flex; align-items: center; gap: 6px;">

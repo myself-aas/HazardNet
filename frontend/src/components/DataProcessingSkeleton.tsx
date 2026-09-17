@@ -85,7 +85,7 @@ export const DataProcessingSkeleton: React.FC<DataProcessingSkeletonProps> = ({
         <div className="flex items-center gap-3">
           <div className="hidden sm:flex items-center gap-1.5 font-mono text-[11px] text-slate-700 bg-slate-100 px-3 py-1 rounded-lg border border-slate-200">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="font-bold">LATENCY: 18ms</span>
+            <span className="font-bold">PIPELINE: LIVE</span>
           </div>
 
           {onDismiss && (
@@ -115,8 +115,8 @@ export const DataProcessingSkeleton: React.FC<DataProcessingSkeletonProps> = ({
               <div className="space-y-2">
                 <div>
                   <div className="flex justify-between text-[11px] font-mono text-slate-500 mb-1 font-semibold">
-                    <span>Softmax Probability Tensor</span>
-                    <span className="text-slate-900 font-bold">98.4%</span>
+                    <span>Aggregating district telemetry</span>
+                    <span className="text-slate-900 font-bold">PROCESSING</span>
                   </div>
                   <div className="w-full h-2 rounded-full bg-slate-200 overflow-hidden border border-slate-300">
                     <div className="h-full bg-[#f9a825] rounded-full" style={{ width: `${Math.min(progressPercent + 20, 100)}%` }} />
@@ -125,8 +125,8 @@ export const DataProcessingSkeleton: React.FC<DataProcessingSkeletonProps> = ({
 
                 <div>
                   <div className="flex justify-between text-[11px] font-mono text-slate-500 mb-1 font-semibold">
-                    <span>Severity Index Regression</span>
-                    <span className="text-amber-800 font-bold">0.74 RMS</span>
+                    <span>Anchored severity mapping</span>
+                    <span className="text-amber-800 font-bold">ACTIVE</span>
                   </div>
                   <div className="w-full h-2 rounded-full bg-slate-200 overflow-hidden border border-slate-300">
                     <div className="h-full bg-rose-500 rounded-full" style={{ width: `${Math.min(progressPercent + 10, 90)}%` }} />
@@ -135,8 +135,8 @@ export const DataProcessingSkeleton: React.FC<DataProcessingSkeletonProps> = ({
 
                 <div>
                   <div className="flex justify-between text-[11px] font-mono text-slate-500 mb-1 font-semibold">
-                    <span>GIS Tile Pyramid Ingestion</span>
-                    <span className="text-slate-900 font-bold">246 / 256</span>
+                    <span>Map layer preparation</span>
+                    <span className="text-slate-900 font-bold">LOADING</span>
                   </div>
                   <div className="w-full h-2 rounded-full bg-slate-200 overflow-hidden border border-slate-300">
                     <div className="h-full bg-slate-500 cyber-skeleton-shimmer rounded-full" style={{ width: `${progressPercent}%` }} />

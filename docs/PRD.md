@@ -407,6 +407,16 @@ Storms: 10.1029/2024GL110960 · 10.1175/BAMS-D-21-0260.1 · Hoque 2022 (BanglaJo
 
 ### 13.3 Change Log
 
+- **3.0.1 (2026-09-17, agent execution):** file inventory corrected to repo
+  reality — the v3 modules and docs were delivered at the repo root, not under
+  `training/` + `docs/`; they now live at `training/hazardnet_scientific_pipeline.py`,
+  `training/hazardnet_bd_thresholds.py`, and `docs/{PRD,TRD,TASKS,
+  HazardNet_Deployment_Plan_v3}.md` (renamed from their dated uploads; no
+  external references existed). `hazardnet_splits.py` / `inference/fusion.py`
+  are not separate files: the pipeline module embeds the split generators and
+  fusion components (packaging difference only). Full verification record:
+  `docs/RUNBOOK_LOG.md`.
+
 | Version | Date | Author | Changes |
 | --- | --- | --- | --- |
 | 3.0 | 2026-09-17 | Planning agent (Kimi) | Initial PRD integrating leakage-safe evaluation, BD thresholds, fusion inference, benchmark-anchored frontend |

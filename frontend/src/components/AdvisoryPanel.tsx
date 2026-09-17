@@ -116,7 +116,7 @@ const AdvisoryPanel: React.FC<AdvisoryPanelProps> = ({
             </span>
             {advisory.cached && (
               <span className="px-3 py-1 rounded-full text-[11px] font-mono font-extrabold bg-emerald-50 text-emerald-950 border border-emerald-200/80 shadow-2xs">
-                Cache Hit (0ms)
+                Cached response
               </span>
             )}
             {advisory.provider_source && (

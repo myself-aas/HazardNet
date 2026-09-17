@@ -1,0 +1,69 @@
+name: v3 ML Contracts
+
+# Tier-1/2 ML contract tests (TRD §10): the anchored-severity normalizer
+# unit proofs (UNIT-SEV-01/02/03) and the 57 Bangladesh threshold proof
+# obligations (INT-SEV-BD-01, PRD REQ-002 / TASK-003).
+#
+# Failure policy (runbook stop-conditions): any failing proof BLOCKS the
+# training path — this workflow must stay green before any training run or
+# deployment-gate evaluation is attempted.
+#
+# Runs on GitHub's own runners only (PRD §2.4: nothing may execute on
+# Kaggle; training data artifacts are never downloaded here — these tests
+# are pure-module and need only the two training/ modules).
+
+on:
+  pull_request:
+    paths:
+      - 'training/**'
+      - 'results/**'
+      - '.github/workflows/v3-ml-contracts.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'training/**'
+      - 'results/**'
+      - '.github/workflows/v3-ml-contracts.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: v3-ml-contracts-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  ml-contracts:
+    name: Severity contracts + BD threshold proofs
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: training/requirements.txt
+
+      - name: Install training dependencies
+        run: pip install -r training/requirements.txt
+
+      - name: Severity normalizer unit proofs (UNIT-SEV-01/02/03)
+        run: python -m pytest training/tests -q
+
+      - name: BD threshold proofs (INT-SEV-BD-01, 57/57 required)
+        run: python training/run_bd_proofs.py
+
+      - name: Upload proofs evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: bd-thresholds-validation
+          path: results/bd_thresholds_validation.log
+          if-no-files-found: error
+          retention-days: 90

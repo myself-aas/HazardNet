@@ -37,6 +37,9 @@ REQUIRED_WORKFLOWS = {
     'site-health.yml',
     'Supabase-cutover-verify.yml',
     'verify-secrets.yml',
+    # v3 ML contract tests: severity normalizer proofs + 57 BD threshold
+    # proofs (TRD §10 / PRD REQ-002 / TASK-003). Failure blocks training.
+    'v3-ml-contracts.yml',
 }
 
 # Workflows that must have contents:write (they push data/commits).
@@ -387,6 +390,7 @@ CONCURRENCY_REQUIRED = {
     'site-health.yml',
     'Supabase-cutover-verify.yml',
     'verify-secrets.yml',
+    'v3-ml-contracts.yml',
 }
 
 # Every workflow should declare an explicit top-level `permissions:` block so

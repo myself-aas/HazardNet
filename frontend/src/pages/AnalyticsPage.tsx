@@ -25,7 +25,7 @@ export const AnalyticsAnalyticsPage: React.FC = () => {
             Model Diagnostics & Pipeline Observability
           </h1>
           <p className="text-slate-600 mt-2 max-w-3xl text-xs sm:text-sm leading-relaxed">
-            Real-time tracking of neural network inference latency, mean absolute error (MAE), expected calibration error (ECE), and the automated GitHub Actions CI/CD forecast pipeline.
+            Cross-strategy validation of the hazard classifier (leakage-safe evaluation, values registered in docs/CLAIMS.md) and the automated GitHub Actions CI/CD forecast pipeline.
           </p>
         </div>
       </div>
@@ -50,7 +50,7 @@ export const AnalyticsAnalyticsPage: React.FC = () => {
             activeTab === 'model-metrics' ? 'bg-amber-500 text-slate-900 shadow-2xs' : 'bg-white text-slate-700 border border-slate-200/90 hover:bg-slate-50 shadow-2xs'
           }`}
         >
-          Model Metrics (Latency, MAE, ECE)
+          Model Metrics (Cross-Strategy Validation)
         </motion.button>
         <motion.button
           whileHover={{ scale: 1.02 }}
@@ -97,19 +97,19 @@ export const AnalyticsAnalyticsPage: React.FC = () => {
             className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6"
           >
             <motion.div whileHover={{ y: -4, scale: 1.01 }} whileTap={{ scale: 0.98 }} className="bg-white border border-slate-200/90 rounded-3xl p-6 shadow-md hover:shadow-lg transition-all space-y-3 cursor-pointer">
-              <div className="text-xs font-mono text-slate-500 font-bold">INFERENCE LATENCY</div>
-              <div className="text-3xl font-black text-slate-900">42.8 ms</div>
-              <p className="text-xs text-slate-600 leading-relaxed">Optimized WebGL backend execution across 64 districts.</p>
+              <div className="text-xs font-mono text-slate-500 font-bold">EVENT 5-FOLD CV (LEAKY BASELINE)</div>
+              <div className="text-3xl font-black text-slate-900">98.87%</div>
+              <p className="text-xs text-slate-600 leading-relaxed">Random-split accuracy — leakage-inflated; shown only as a labeled legacy reference.</p>
             </motion.div>
             <motion.div whileHover={{ y: -4, scale: 1.01 }} whileTap={{ scale: 0.98 }} className="bg-white border border-slate-200/90 rounded-3xl p-6 shadow-md hover:shadow-lg transition-all space-y-3 cursor-pointer">
-              <div className="text-xs font-mono text-slate-500 font-bold">MEAN ABSOLUTE ERROR (MAE)</div>
-              <div className="text-3xl font-black text-slate-900">0.034</div>
-              <p className="text-xs text-slate-600 leading-relaxed">Validated against IMD & BMD ground station records.</p>
+              <div className="text-xs font-mono text-slate-500 font-bold">SPATIAL LEAVE-ONE-DISTRICT-OUT</div>
+              <div className="text-3xl font-black text-slate-900">95.66%</div>
+              <p className="text-xs text-slate-600 leading-relaxed">Held-out districts — honest in-distribution spatial skill.</p>
             </motion.div>
             <motion.div whileHover={{ y: -4, scale: 1.01 }} whileTap={{ scale: 0.98 }} className="bg-white border border-slate-200/90 rounded-3xl p-6 shadow-md hover:shadow-lg transition-all space-y-3 sm:col-span-2 md:col-span-1 cursor-pointer">
-              <div className="text-xs font-mono text-slate-500 font-bold">EXPECTED CALIBRATION ERROR (ECE)</div>
-              <div className="text-3xl font-black text-slate-900">1.82%</div>
-              <p className="text-xs text-slate-600 leading-relaxed">High probabilistic reliability for extreme weather alerts.</p>
+              <div className="text-xs font-mono text-slate-500 font-bold">TEMPORAL (FORWARD-TIME)</div>
+              <div className="text-3xl font-black text-slate-900">10.9%</div>
+              <p className="text-xs text-slate-600 leading-relaxed">Near chance — the v3 leakage-safe retraining program exists because of this number.</p>
             </motion.div>
           </motion.div>
         )}
@@ -130,7 +130,7 @@ export const AnalyticsAnalyticsPage: React.FC = () => {
                 <span className="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 font-bold w-fit border border-emerald-200">OK</span>
               </motion.div>
               <motion.div whileHover={{ x: 3 }} className="bg-slate-50/80 p-4 rounded-2xl border border-slate-200/90 shadow-2xs text-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                <span>[SUCCESS] TensorFlow Spatial Attention Model weights updated to v4.8</span>
+                <span>[SUCCESS] Model bundle verified: hazardnet_fp32.tflite (sha256 manifest)</span>
                 <span className="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 font-bold w-fit border border-emerald-200">OK</span>
               </motion.div>
               <motion.div whileHover={{ x: 3 }} className="bg-slate-50/80 p-4 rounded-2xl border border-slate-200/90 shadow-2xs text-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
