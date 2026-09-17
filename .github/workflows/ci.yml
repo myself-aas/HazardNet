@@ -163,6 +163,13 @@ jobs:
       - name: Run pipeline script tests
         run: python -m pytest scripts/tests -q
 
+      # Phase 9: the hindcast reports must still recompute from the committed episodes and the
+      # committed driver series. Offline and deterministic, so it runs in CI rather than only in
+      # the workflow that produces them — a hand-edited score fails here.
+      - name: Hindcast reports recompute from their committed inputs
+        working-directory: scripts
+        run: python -m hindcast.cli check --require-reports
+
       - name: Snapshot builder smoke test
         run: |
           python scripts/tests/make_fixture_csv.py /tmp/fixture_forecasts.csv

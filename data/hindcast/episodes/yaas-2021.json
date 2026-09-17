@@ -1,0 +1,68 @@
+{
+  "schema": "hazardnet-hindcast-episode/v1",
+  "id": "yaas-2021",
+  "title": "Cyclone Yaas — Bangladesh coast, 26 May 2021",
+  "hazard_class": "Tropical Cyclone",
+  "why_this_episode": "The second of the two cyclones the Phase 9 list names. It struck the same belt as Amphan while the belt was still unrecovered, and the joint needs assessment published a district-level affected table — the most structured affected list available to this harness.",
+  "event": {
+    "onset_date": "2021-05-26",
+    "landfall_note": "Landfall in West Bengal and Odisha on 26 May 2021; the west coast of Bangladesh was crossed late the same evening, coinciding with a full moon and a 6–8 ft tidal surge.",
+    "ends_date": "2021-05-27"
+  },
+  "scoring": {
+    "alarm_threshold": 0.5,
+    "min_matched": 5,
+    "absence_means_no_event": false,
+    "absence_means_no_event_reason": "Same reasoning as the Amphan episode: the assessment names affected districts and does not claim to have surveyed all 64, so unnamed districts are unknown rather than clear."
+  },
+  "truth": {
+    "completeness": "named-affected-only",
+    "affected": [
+      { "district": "Bagerhat", "as_written": "Bagerhat", "tier": "stated_affected", "source_id": "nawg-jna" },
+      { "district": "Barguna", "as_written": "Barguna", "tier": "stated_affected", "source_id": "nawg-jna" },
+      { "district": "Barisal", "as_written": "Barisal", "tier": "stated_affected", "source_id": "nawg-jna" },
+      { "district": "Bhola", "as_written": "Bhola", "tier": "stated_affected", "source_id": "nawg-jna" },
+      { "district": "Jhalokati", "as_written": "Jhalokathi", "tier": "stated_affected", "source_id": "nawg-jna" },
+      { "district": "Khulna", "as_written": "Khulna", "tier": "stated_affected", "source_id": "nawg-jna" },
+      { "district": "Patuakhali", "as_written": "Patuakhali", "tier": "stated_affected", "source_id": "nawg-jna" },
+      { "district": "Pirojpur", "as_written": "Pirozpur", "tier": "stated_affected", "source_id": "nawg-jna" },
+      { "district": "Satkhira", "as_written": "Satkhira", "tier": "stated_affected", "source_id": "nawg-jna" }
+    ],
+    "count_claims": [
+      { "claim": "16 districts affected across the coast; about 1.3 million people", "source_id": "nawg-jna" },
+      { "claim": "9 coastal districts with damaged housing and water points", "source_id": "ifrc-dref-final" }
+    ],
+    "notes": [
+      "The NAWG table publishes district-level affected populations for these nine districts; that table is what makes this episode's truth set stronger than Amphan's.",
+      "The 16-district framing again exceeds the named set, so the same rule applies: unnamed districts are unknown, not negative."
+    ]
+  },
+  "drivers": {
+    "product": "Open-Meteo historical archive (ERA5 / ERA5-Land era reanalysis)",
+    "endpoint": "https://archive-api.open-meteo.com/v1/archive",
+    "variables": [
+      "temperature_2m_max", "temperature_2m_min", "precipitation_sum",
+      "wind_speed_10m_max", "et0_fao_evapotranspiration"
+    ]
+  },
+  "known_limitations": [
+    "Identical to the Amphan episode: reanalysis rather than archived forecast fields, CNN not re-run, peak precipitation approximated by the wettest day, unnamed districts unknown.",
+    "Amphan (2020) had not been recovered from when Yaas struck; the affected set therefore overlaps almost completely, which is a property of the coast, not of the truth set."
+  ],
+  "sources": [
+    {
+      "id": "nawg-jna",
+      "what_it_evidences": "The district-level affected-population table (Bagerhat, Barguna, Barisal, Bhola, Jhalokathi, Khulna, Patuakhali, Pirozpur, Satkhira) and the 16-district / 1.3-million-people framing.",
+      "citation": "Cyclone YAAS: Light Coordinated Joint Needs Analysis — Needs Assessment Working Group (NAWG) & Information Management Working Group, Bangladesh, 6 June 2021.",
+      "url": "https://reliefweb.int/report/bangladesh/cyclone-yaas-light-coordinated-joint-needs-analysis-needs-assessment-working-group",
+      "accessed": "2026-09-18"
+    },
+    {
+      "id": "ifrc-dref-final",
+      "what_it_evidences": "The nine coastal districts reached by the response, the most-affected ranking, and the housing/latrine/water-point damage figures.",
+      "citation": "Bangladesh: Cyclone YAAS — Final Report, DREF operation MDRBD027 (IFRC, December 2021).",
+      "url": "https://reliefweb.int/report/bangladesh/bangladesh-cyclone-yaas-final-report-n-mdrbd027",
+      "accessed": "2026-09-18"
+    }
+  ]
+}
