@@ -12,8 +12,8 @@
 **HazardNet** is a production-ready, edge-first web application for real-time multi-hazard classification and severity quantification across Bangladesh's 64 agricultural districts. Built for operational deployment and aligned with IEEE TGRS submission standards, it leverages a 3D Depthwise-Separable CNN, deterministic climate forecasting, and TensorFlow Lite WASM to deliver sub-100ms, offline-capable hazard predictions.
 
 🔗 **Live Platform**: [hazardnet.live](https://hazardnet.live) *(Replace with actual URL)*  
-🗄️ **Forecast Archive**: weekly artifacts are attached to this repo's [GitHub Releases](https://github.com/myself-aas/HazardNet/releases) (one set per Sunday pipeline run, tag `vX.Y.Z`): the ingest-compatible forecasts CSV (507 ADM3 units × 10/20/30-day horizons, dual-track severity), plus — when computed — the ADM3 location matrix, the OSM exposure overlay, and the ADM3 hazard+exposure GeoJSON (ADR 0006). Queryable history: 
-`GET /api/v1/forecasts/history?from=YYYY-MM-DD&to=YYYY-MM-DD` (optional `&horizon=10_days|20_days|30_days`, `&district_id=N`, `&format=csv` for an archive-format export).
+🗄️ **Forecast Archive**: weekly artifacts are attached to this repo's [GitHub Releases](https://github.com/myself-aas/HazardNet/releases) (one set per Sunday pipeline run, tag `vX.Y.Z`): the ingest-compatible forecasts CSV (64 ADM2 districts × 7- and 15-day horizons, dual-track severity), plus — when computed — the ADM3 location matrix, the OSM exposure overlay, and the ADM3 hazard+exposure GeoJSON (ADR 0006). Queryable history: 
+`GET /api/v1/forecasts/history?from=YYYY-MM-DD&to=YYYY-MM-DD` (optional `&horizon=7_days|15_days`, `&district_id=N`, `&format=csv` for an archive-format export).
 
 ---
 
@@ -34,7 +34,7 @@
 
 ## 🌍 Overview
 
-Agricultural disaster risk in Bangladesh requires high-resolution, temporally aware forecasting. HazardNet aggregates 15-channel spatio-temporal tensors (SAR, Optical, ERA5-Land) with deterministic Open-Meteo climate projections to generate **10/20/30-day** hazard forecasts across Bangladesh's **507 sub-district ADM3 units** (495 Upazilas + 12 City Corporations, HDX COD-AB). 
+Agricultural disaster risk in Bangladesh requires high-resolution, temporally aware forecasting. HazardNet aggregates 15-channel spatio-temporal tensors (SAR, Optical, ERA5-Land) with deterministic Open-Meteo climate projections to generate **7- and 15-day** hazard forecasts across Bangladesh's **64 districts** (ADM2). The 507-unit ADM3 expansion and the 10/20/30-day horizons were accepted in [ADR 0005](docs/adr/0005-adm3-hdx-horizons.md) but are **not implemented yet** — the ingest contract, the store, the API and the website all run the 64-district, 7/15-day product, and `scripts/tests/test_model_claims.py` fails the build when copy advertises anything else. 
 
 Unlike traditional black-box models, HazardNet employs a **Dual-Track Severity Indexing** system: it cross-validates the CNN's probabilistic severity output against robust, physics-based cognitive formulas (e.g., Vegetation Health Index for Drought, Excess Heat Factor for Heat Waves), ensuring scientifically grounded and transparent decision support for farmers and extension officers.
 
@@ -55,9 +55,10 @@ The model classifies **8 distinct climatic hazards** across two actionable lead-
 | **Severe Local Storm** | Precip, Wind_Max, SAR_VH variability |
 | **Tropical Cyclone** | Wind_Max, Precip, SAR_VV/VH gradients |
 
-**Forecasting Horizons** (10/20/30 days — ADR 0005):
-- **10 Days**: Driven by short-term deterministic weather forecasts (Open-Meteo Daily).
-- **20/30 Days**: Medium-term outlooks; Open-Meteo serves at most 16 deterministic days, so these horizons aggregate the available ≤16-day window (ADR 0005).
+**Forecasting Horizons** (7 and 15 days — the horizons the pipeline actually runs):
+- **7 Days**: Driven by short-term deterministic weather forecasts (Open-Meteo Daily).
+- **15 Days**: The medium-term outlook. Open-Meteo's deterministic API serves at most 16 days, so this window stays inside the deterministic range.
+- **10/20/30-day horizons are *not* live.** [ADR 0005](docs/adr/0005-adm3-hdx-horizons.md) accepted them (2026-09-12), but the implementation still runs 7/15: `FORECAST_HORIZONS` in `frontend/src/lib/forecasts.ts`, the ingest contract in `backend/utils/forecastRow.js`, and every published page advertise 7 and 15 days, and `scripts/tests/test_model_claims.py` fails the build if any of them start advertising a horizon the code cannot produce. Treat ADR 0005's horizon change as pending, not shipped.
 
 ---
 
@@ -69,7 +70,8 @@ The model classifies **8 distinct climatic hazards** across two actionable lead-
 4. **Automated MLOps Pipeline (runs entirely on GitHub — no Kaggle)**: A daily GitHub Actions run ([`.github/workflows/daily_forecast.yml`](.github/workflows/daily_forecast.yml)) executes [`scripts/auto_forecast.py`](scripts/auto_forecast.py) on the runner: GEE satellite imagery + Open-Meteo forecasts in, TFLite inference out, for all 64 districts across the 7-day and 15-day horizons. The generated CSV is validated, promoted into `backend/data/forecasts/`, and baked into the committed website snapshot (`frontend/public/data/forecasts-latest.json`) so every deployment carries the freshest forecast even when the API is unreachable. Set the repository variable `PUSH_TO_API=true` to additionally POST the CSV into the forecast store. See [docs/mlops/ARCHITECTURE.md](docs/mlops/ARCHITECTURE.md).
 5. **Score Binning (relative, not calibrated)**: Predictions are labelled `Certain` (≥0.85), `Probable` (0.70–0.85), or `Uncertain` (<0.70) as a *relative* band for scanning a list. These bands describe the model's own uncalibrated score, not a measured probability of an event — see the model card ([`docs/MODEL_CARD.md`](docs/MODEL_CARD.md) §6) before quoting any number.
 6. **Alert engine with a human gate (Phase 4)**: The backend turns forecast rows into alerts on the PRODUCT_SPEC §1.3 ladder (`NO_ALERT` → `WATCH` → `WARNING` → `SEVERE`), auto-publishes nothing above `WATCH`, requires a named duty officer to approve or reject anything higher (rejections are stored as evaluation labels), and delivers to SMS/Telegram subscribers in English and Bengali — every message carrying the §1.7 disclaimer. See [`docs/alerts/ALERT_ENGINE.md`](docs/alerts/ALERT_ENGINE.md).
-7. **User Dashboards & Unique Profile URLs**: Every signed-in user gets a dedicated dashboard at `/dashboard` with a unique username that becomes their public profile URL (`/u/<username>`), ~40 Supabase-backed profile fields, avatar upload (client-side resize/compress with replace-on-update), connector integrations (Open-Meteo, WhatsApp, SMS, Slack, webhooks, …), and passwordless email-verification sign-up — see [docs/user-dashboard.md](docs/user-dashboard.md).
+8. **Alert surface with a Bengali/English UI and a working offline path (Phase 5)**: `/alerts` lists every published alert with its level, hazard, horizon, evidence trail and the policy in force; `/alerts/:id` is a printable evidence card (PDF via the shared exporter) that carries the §1.7 disclaimer; `/district/:id` shows that district's alert next to its forecast. The whole surface is bilingual (Bengali numerals and dates included, `lang` set per element), renders from the live API **or** the committed `alerts-latest.json` snapshot **or** a service-worker-labelled offline copy — and always says which one you are looking at. Low-bandwidth mode (Data Saver, 2G, ≤2 GB RAM, ≤4 cores, or the user's own toggle) swaps satellite raster tiles for the vector map, drops the animations, and lands on the text table that also serves as the map's screen-reader alternative. See [`docs/frontend/ALERT_UI.md`](docs/frontend/ALERT_UI.md) and [`docs/frontend/ACCESSIBILITY.md`](docs/frontend/ACCESSIBILITY.md).
+9. **User Dashboards & Unique Profile URLs**: Every signed-in user gets a dedicated dashboard at `/dashboard` with a unique username that becomes their public profile URL (`/u/<username>`), ~40 Supabase-backed profile fields, avatar upload (client-side resize/compress with replace-on-update), connector integrations (Open-Meteo, WhatsApp, SMS, Slack, webhooks, …), and passwordless email-verification sign-up — see [docs/user-dashboard.md](docs/user-dashboard.md).
 
 ---
 
@@ -173,7 +175,7 @@ VITE_ENABLE_OFFLINE_MODE=true
 
 1. **Navigate to the Dashboard**: Open `http://localhost:3000` (or your deployed URL).
 2. **Select a Region**: Click on any of the 8 Divisions (ADM1) on the map to zoom in and reveal the 64 Districts (ADM2).
-3. **Choose a Horizon**: Use the top toggle to switch between the **10/20/30-day** horizons (ADR 0005).
+3. **Choose a Horizon**: Use the forecast dashboard toggle to switch between the **7-day** and **15-day** horizons (`7_days` and `15_days`; `backend/utils/forecastRow.js::VALID_HORIZONS` is the authority).
 4. **Interpret the Prediction Panel**:
    - **Hazard Type & Confidence**: Look for the `Certain` / `Probable` / `Uncertain` badge.
    - **Severity Gauges**: Compare the AI Model Severity (0-100%) with the Physics-Based Severity. High alignment indicates high reliability.

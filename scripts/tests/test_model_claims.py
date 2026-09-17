@@ -61,6 +61,9 @@ COPY_COMPONENT_GLOBS = [
 BLOCK_COMMENT = re.compile(r'\{?/\*.*?\*/', re.S)
 
 
+README = ROOT / 'README.md'
+
+
 def _copy_text() -> str:
     """All user-facing copy as one string, from every authoring surface."""
     parts = []
@@ -344,3 +347,29 @@ def test_snapshot_coverage_is_measured_not_assumed():
             f'snapshot coverage is partial {incomplete} but docs/PRODUCT_SPEC.md does not '
             'state a coverage requirement'
         )
+
+def test_readme_does_not_advertise_unshipped_horizons():
+    """The README is a public claim surface and drifted from the code once already.
+
+    ADR 0005 accepted 10/20/30-day horizons but the pipeline still runs 7/15. The README
+    presented the ADR as shipped fact, which is exactly the failure mode
+    `test_advertised_horizons_match_the_code` guards on the site copy — so the README gets
+    the same guard. `10/20/30` may appear only in an explicitly unshipped context.
+    """
+    text = README.read_text(encoding='utf-8')
+    code_horizons = _code_horizons()
+    assert code_horizons == {'7_days', '15_days'}, code_horizons
+
+    for line in text.splitlines():
+        if '10/20/30' not in line:
+            continue
+        lowered = line.lower()
+        assert any(marker in lowered for marker in (
+            'not live', 'not* live', 'pending', 'not shipped', 'not implemented',
+        )), (
+            f'README presents 10/20/30-day horizons as current: {line.strip()}'
+        )
+
+    # The delivered horizons must be stated as such.
+    assert '7 and 15 days' in text
+    assert '7-day and 15-day' in text or '7 and 15 days' in text

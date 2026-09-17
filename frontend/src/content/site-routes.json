@@ -82,6 +82,42 @@
       ]
     },
     {
+      "path": "/alerts",
+      "label": "Alerts",
+      "title": "Live hazard alerts for Bangladesh districts — HazardNet",
+      "description": "Published HazardNet alerts by district: level, hazard, 7- and 15-day horizon, the evidence behind each one, and the policy that decides it. Available in Bengali and English, and it keeps working offline.",
+      "keywords": ["bangladesh hazard alerts", "district alert levels", "flash flood watch", "early warning bangladesh"],
+      "robots": "index,follow",
+      "sitemap": { "changefreq": "hourly", "priority": 0.95 },
+      "appShell": false,
+      "h1": "Hazard alerts",
+      "standfirst": "Every alert HazardNet has published, district by district, with the evidence and the policy behind it. A watch is the highest level the engine can publish on its own; anything above a watch waits for a named duty officer to approve it. The list is rendered from live data, so this page also works from the snapshot the deployment carries when the API cannot be reached.",
+      "updated": "2026-09-18",
+      "sections": [
+        {
+          "h2": "1 · What a level means",
+          "paragraphs": [
+            "Four levels are published: no alert, watch, warning and severe. The level comes from the alert policy in force, not from the model alone. A watch is issued when the model score crosses the watch threshold or when its severity band does; a warning additionally requires a calibrated probability, and no calibration map is fitted for the current model version, so warnings are not currently issuable from model evidence.",
+            "Each alert states the hazard class, the district, the 7- or 15-day horizon, the forecast issue time, the data cutoff and the model version it came from."
+          ]
+        },
+        {
+          "h2": "2 · The evidence behind an alert",
+          "paragraphs": [
+            "Every alert carries a model severity, an independently computed physics severity and the divergence between the two tracks. When the tracks disagree beyond the policy threshold the alert is flagged rather than silently averaged.",
+            "The model score is a softmax output used as a relative priority signal. It is not a probability that the hazard will occur, and no calibration map is fitted yet — the alert page says this next to every number."
+          ]
+        },
+        {
+          "h2": "3 · Who approves what",
+          "paragraphs": [
+            "The engine publishes at or below the watch level automatically. A warning or severe alert requires a named duty officer, a review timestamp and the model version and data cutoff recorded against the decision, so a published alert can always be traced back to the run that produced it.",
+            "Alerts are also delivered by SMS and Telegram to subscribers who have opted in. Both channels carry the same disclaimer as this page, and a single SMS is capped at 70 Bengali characters per segment, which is why the message body is short and links back to the evidence card."
+          ]
+        }
+      ]
+    },
+    {
       "path": "/methodology",
       "label": "Methodology",
       "title": "Methodology — how HazardNet builds a forecast",

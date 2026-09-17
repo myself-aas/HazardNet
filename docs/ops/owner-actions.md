@@ -337,3 +337,56 @@ curl -s -X POST "$BACKEND_API_URL/api/v1/alerts/preview" -H "Authorization: Bear
 curl -s "$BACKEND_API_URL/api/v1/alerts?state=PUBLISHED&limit=1" | jq -r '.alerts[0].id' \
   | xargs -I{} curl -s "$BACKEND_API_URL/api/v1/alerts/{}/evidence-card?format=markdown"
 ```
+
+---
+
+## Action 6 — Own the alert surface after Phase 5 🟠 (~45 min, owner + one field reviewer)
+
+The web surface now exists (`/alerts`, `/alerts/:id`, the district strip, bilingual UI,
+low-bandwidth mode, PDF/CSV export). Four things about it are the owner's call, not the
+code's.
+
+### 6a. A model version, or nothing can be published 🔴
+
+The committed snapshot is **empty on purpose**: `scripts/rehearse_alert_engine.mjs`
+replays the real engine over the committed forecast snapshot, assesses all 74 rows to
+`WATCH`, and every one of them is `publication_blocked` with the same reason —
+*"§1.6 requires model version before an alert is published"* — because the forecast
+snapshot's `provenance.model_version` is `null`.
+
+So the honest state of the site today is **"no alerts are published, 74 district rows
+assessed and held"**, which the page says in words. Nothing will publish until the
+pipeline stamps a model version. Nothing was stamped to make the page look better.
+
+**Do:** confirm that `Models/VERSION.json` (or `MODEL_VERSION` in the workflow env) is
+wired into the forecast run so rows arrive with `model_version`, then re-run
+`daily_forecast.yml` and check that `alert-run.json` reports `persisted.published > 0`.
+
+**Verify:**
+```bash
+npm run alerts:rehearse        # expect published=0 and the §1.6 reason, until 6a is done
+jq '.persisted' /tmp/alert-run.json
+curl -s "$BACKEND_API_URL/api/v1/alerts" | jq '{counts, assessed}'
+```
+
+### 6b. Decide whether the site should show an empty alert list or a "not yet publishing" banner
+
+If the pipeline will not stamp provenance before the soft launch, the page's current
+wording is correct but blunt. The alternative — hiding `/alerts` from the nav until the
+first alert exists — is a product decision; the route is live and prerendered either way.
+
+### 6c. Review the Bengali copy with a native-speaker field reviewer
+
+The Bengali strings were written for this phase (alert levels, confidence caveat,
+low-bandwidth explanations, emergency numbers, hazard-class names). They have not been
+reviewed by a native speaker working in the districts. This is a soft-launch blocker for
+a product whose audience reads Bengali first. Files: `frontend/src/lib/i18n.ts`,
+`frontend/src/hooks/useHazardLabel.ts`, `frontend/src/lib/legal.ts`.
+
+### 6d. Accessibility walk-through on real devices
+
+`jest-axe` is clean on the new components in both languages, but no screen reader has been
+driven against a running build, and satellite-free low-bandwidth mode has not been tried
+on a real 2G handset. Suggested pass: NVDA (Windows/Chrome) or TalkBack (Android) on
+`/alerts` in Bengali and English, plus one throttled mobile run with Data Saver on. What
+the automated pass cannot cover is listed in `docs/frontend/ACCESSIBILITY.md` §4.

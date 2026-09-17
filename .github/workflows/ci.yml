@@ -169,6 +169,32 @@ jobs:
           node scripts/build_forecast_snapshot.mjs /tmp/fixture_forecasts.csv /tmp/forecasts-latest.json
           node -e "const s=require('/tmp/forecasts-latest.json'); if(!s.horizons['7_days']?.length) throw new Error('empty 7_days'); console.log('snapshot OK:', s.prediction_date)"
 
+      # The alert snapshot is a public artefact: it must contain PUBLISHED rows only,
+      # must carry the §1.7 disclaimer on every row, and must refuse to replace a
+      # non-empty snapshot with an empty one. All three are asserted here.
+      - name: Alert snapshot builder smoke test
+        run: |
+          set -euo pipefail
+          node scripts/build_alert_snapshot.mjs \
+            --in scripts/tests/fixtures/alerts/alert-run.sample.json \
+            --out /tmp/alerts-latest.json
+          node -e "
+            const s = require('/tmp/alerts-latest.json');
+            if (s.schema !== 'hazardnet-alerts/v1') throw new Error('schema tag missing');
+            if (s.alerts.length !== 2) throw new Error('expected 2 published rows, got ' + s.alerts.length);
+            if (!s.alerts.every((a) => a.state === 'PUBLISHED')) throw new Error('non-published row leaked');
+            if (!s.alerts.every((a) => a.disclaimer && a.disclaimer.includes('not an official warning service')))
+              throw new Error('§1.7 disclaimer missing from a row');
+            if (s.counts.dropped_unpublished !== 1) throw new Error('drop count wrong');
+            console.log('alert snapshot OK:', s.alerts.length, 'published rows');
+          "
+          # Overwriting a non-empty snapshot with an empty run must fail (exit 3).
+          if node scripts/build_alert_snapshot.mjs --in scripts/tests/fixtures/alerts/empty-run.sample.json --out /tmp/alerts-latest.json 2>/dev/null; then
+            echo "::error::the builder replaced a non-empty snapshot with an empty one"
+            exit 1
+          fi
+          echo "alert snapshot guard OK: empty run refused"
+
       # The ingestion entry points a workflow would call, exercised offline against
       # the same fixtures the unit tests use: events → load SQL, and a scene
       # manifest whose dataset_version the publisher will require.

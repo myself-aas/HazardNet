@@ -161,6 +161,23 @@ jobs:
           if-no-files-found: ignore
           retention-days: 14
 
+      - name: Rebuild the alert snapshot (offline fallback for /alerts)
+        shell: bash
+        run: |
+          # The alert page must render when the API is unreachable and on the first
+          # paint of a fresh deploy, so the run's output is committed as a static
+          # snapshot. The builder only carries PUBLISHED rows, stamps the §1.7
+          # disclaimer on any row missing it, and refuses (exit 3) to replace a
+          # non-empty snapshot with an empty one — a failed run must not read as
+          # "all clear". Re-run with --allow-empty when the quiet result is real.
+          if [ ! -f alert-run.json ]; then
+            echo "::notice::alert snapshot not rebuilt: the alert engine did not run in this workflow"
+            exit 0
+          fi
+          node scripts/build_alert_snapshot.mjs \
+            --in alert-run.json \
+            --out frontend/public/data/alerts-latest.json
+
       - name: Validate forecast data
         # Includes the coverage gate: the manifest must account for every
         # requested unit, and a partial run must say so.
@@ -183,6 +200,11 @@ jobs:
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           git add backend/data/forecasts/ frontend/public/data/forecasts-latest.json
+          # Only stages the alert snapshot when the builder actually produced one;
+          # `git add` on a missing path would fail the whole commit step.
+          if [ -f frontend/public/data/alerts-latest.json ]; then
+            git add frontend/public/data/alerts-latest.json
+          fi
           if git diff --staged --quiet; then
             echo "ℹ️ Forecast data unchanged since the last run — nothing to commit."
             exit 0
@@ -208,6 +230,7 @@ jobs:
             publish.log
             backend/data/forecasts/manifest.json
             frontend/public/data/forecasts-latest.json
+            frontend/public/data/alerts-latest.json
           if-no-files-found: ignore
           retention-days: 14
 
@@ -221,6 +244,9 @@ jobs:
             echo "- generator: \`scripts/auto_forecast.py\` (GEE + Open-Meteo + TFLite) on the runner — no Kaggle"
             echo "- publish: \`scripts/publish_forecast_csv.py\` (changed: ${{ steps.publish.outputs.changed || 'n/a' }})"
             echo "- delivery: committed snapshot \`frontend/public/data/forecasts-latest.json\`"
+            if [ -f frontend/public/data/alerts-latest.json ]; then
+              echo "- alerts snapshot: $(jq -r '(.alerts|length)|tostring' frontend/public/data/alerts-latest.json) published row(s) committed, schema $(jq -r '.schema' frontend/public/data/alerts-latest.json)"
+            fi
             if [ -f alert-run.json ]; then
               echo "- alerts: levels \`$(jq -c '.batch.counts' alert-run.json)\` — published $(jq -r '.persisted.published' alert-run.json), pending review $(jq -r '.persisted.pending_review' alert-run.json), blocked $(jq -r '.persisted.blocked // 0' alert-run.json)"
             else

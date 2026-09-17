@@ -1,0 +1,41 @@
+{
+  "schema": "hazardnet-alerts/v1",
+  "generated_at": "2026-09-17T20:34:27.231Z",
+  "built_at": "2026-09-17T20:34:30.760Z",
+  "source": "alert engine replay over hazardnet-forecast-snapshot/v2 (prediction_date 2026-09-16)",
+  "policy_version": "alert-policy/1.0.0",
+  "assessed": 74,
+  "counts": {
+    "NO_ALERT": 0,
+    "WATCH": 0,
+    "WARNING": 0,
+    "SEVERE": 0,
+    "dropped_unpublished": 74
+  },
+  "policy": {
+    "version": "alert-policy/1.0.0",
+    "source": "defaults",
+    "overridden": [],
+    "ignored": [],
+    "warnings": [],
+    "thresholds": {
+      "watch_probability": 0.4,
+      "warning_probability": 0.65,
+      "watch_severity": 0.55,
+      "divergence_watch": 0.3,
+      "agreement_epsilon": 0.1
+    },
+    "human_in_the_loop": {
+      "max_auto_publish_level": "WATCH",
+      "requires_named_reviewer_above": "WATCH",
+      "note": "PRODUCT_SPEC §1.6: the pipeline may publish at or below WATCH automatically; anything above it requires a named duty officer, and the reviewer identity is stored on the alert."
+    },
+    "calibration": {
+      "calibrated_probability_required_for_warning": true,
+      "note": "No calibration map is fitted (docs/mlops/CALIBRATION.md), so WARNING cannot be reached from model evidence alone: rows carry confidence_kind=model_softmax_top_class. WATCH and official-bulletin SEVERE remain available."
+    },
+    "disclaimer": "HazardNet is a research-based decision-support tool. It is not an official warning service. Always follow instructions from the Bangladesh Meteorological Department, FFWC and your local administration. In an emergency call 999 (national emergency), 1090 (disaster response), or 16123 (agriculture helpline)."
+  },
+  "disclaimer": "HazardNet is a research-based decision-support tool. It is not an official warning service. Always follow instructions from the Bangladesh Meteorological Department, FFWC and your local administration. In an emergency call 999 (national emergency), 1090 (disaster response), or 16123 (agriculture helpline).",
+  "alerts": []
+}

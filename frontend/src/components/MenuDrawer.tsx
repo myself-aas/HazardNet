@@ -91,6 +91,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
       icon: 'map',
       items: [
         { id: 'overview', title: 'GIS Overview', path: '/home/overview', icon: 'public', badge: '3D' },
+        { id: 'alerts', title: 'Alerts', path: '/alerts', icon: 'notifications_active' },
         { id: 'my-districts', title: 'Saved Districts', path: '/forecast/my-districts', icon: 'bookmark' },
         { id: 'compare', title: 'Compare Districts', path: '/forecast/compare', icon: 'compare_arrows' },
       ],

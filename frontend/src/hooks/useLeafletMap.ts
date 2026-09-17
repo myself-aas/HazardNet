@@ -46,6 +46,31 @@ export const MAP_LAYERS = {
 
 export type MapLayerKey = keyof typeof MAP_LAYERS;
 
+/** Layers that require a decent connection: they are imagery, not vector geometry. */
+const RASTER_IMAGERY_LAYERS: MapLayerKey[] = ['esriSatellite', 'esriClarity', 'esriShadedRelief'];
+
+/**
+ * Layer actually used for a request (Phase 5: low-bandwidth mode).
+ *
+ * The dashboard's default basemap is Esri World Imagery — a raster tile per 256 px
+ * per zoom level, which on a 2G connection is the single heaviest thing the page
+ * loads and the thing most likely to leave a user staring at a grey grid. When
+ * low-bandwidth mode is on (`useBandwidthMode` sets `data-low-bandwidth` on `<html>`,
+ * plus `save-data`/`effectiveType` signals), an imagery layer falls back to the
+ * vector-ish street basemap: same geographic information, a fraction of the bytes.
+ *
+ * A non-imagery choice by the user is always respected; only the expensive defaults
+ * are substituted.
+ */
+export function effectiveMapLayer(requested: MapLayerKey, lowBandwidth?: boolean | null): MapLayerKey {
+  const low = lowBandwidth ?? (
+    typeof document !== 'undefined' && document.documentElement.dataset.lowBandwidth === 'true'
+  );
+  if (!low) return requested;
+  if (!RASTER_IMAGERY_LAYERS.includes(requested)) return requested;
+  return 'osmStandard';
+}
+
 // Custom Leaflet TileLayer subclass that checks IndexedDB first, caches network tiles on fetch, and handles offline mode gracefully
 export function createCachedTileLayer(url: string, layerId: string, options: L.TileLayerOptions = {}): L.TileLayer {
   const CachedLayer = (L.TileLayer as any).extend({
@@ -175,8 +200,9 @@ export function useLeafletMap(
       attributionControl: false,
     });
 
-    const config = MAP_LAYERS[activeLayer] || MAP_LAYERS.esriSatellite;
-    const tileLayer = createCachedTileLayer(config.url, activeLayer, {
+    const baseLayerKey = effectiveMapLayer(activeLayer);
+    const config = MAP_LAYERS[baseLayerKey] || MAP_LAYERS.osmStandard;
+    const tileLayer = createCachedTileLayer(config.url, baseLayerKey, {
       maxZoom: config.maxZoom,
       opacity: 1.0,
       crossOrigin: true,
@@ -372,13 +398,14 @@ export function useLeafletMap(
   useEffect(() => {
     if (!mapInstanceRef.current) return;
     setIsProcessingData(true);
-    const config = MAP_LAYERS[activeLayer] || MAP_LAYERS.esriSatellite;
+    const baseLayerKey = effectiveMapLayer(activeLayer);
+    const config = MAP_LAYERS[baseLayerKey] || MAP_LAYERS.osmStandard;
 
     if (tileLayerRef.current) {
       mapInstanceRef.current.removeLayer(tileLayerRef.current);
     }
 
-    const newTileLayer = createCachedTileLayer(config.url, activeLayer, {
+    const newTileLayer = createCachedTileLayer(config.url, baseLayerKey, {
       maxZoom: config.maxZoom,
       opacity: 1.0,
       crossOrigin: true,

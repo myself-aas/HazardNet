@@ -621,6 +621,20 @@ export const Navbar: React.FC<NavbarProps> = ({
                   </AnimatePresence>
                 </div>
 
+                {/* 6. Alerts — a plain link, not a dropdown: this is the one item a
+                    returning visitor comes back for, and it must cost one tap. */}
+                <Link
+                  to="/alerts"
+                  className={`px-3 py-1.5 text-[13.5px] font-medium rounded-xl transition-all flex items-center gap-1.5 whitespace-nowrap shrink-0 no-underline focus-visible:ring-2 focus-visible:ring-teal-500/50 focus-visible:outline-none ${
+                    location.pathname.startsWith('/alerts')
+                      ? 'bg-amber-500/15 text-amber-950 font-bold border border-amber-500/40 shadow-2xs'
+                      : 'text-slate-700 hover:text-slate-950 hover:bg-slate-900/5'
+                  }`}
+                >
+                  <MaterialIcon name="notifications_active" className="w-4 h-4" />
+                  <span>Alerts</span>
+                </Link>
+
               </nav>
             </div>
 
@@ -751,6 +765,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         onOpenAuth={() => navigate('/login')}
         onSelectPage={(page) => {
           if (page.toLowerCase().includes('home')) navigate('/home/overview');
+          else if (page.toLowerCase().includes('alert')) navigate('/alerts');
           else if (page.toLowerCase().includes('forecast')) navigate('/forecast/overview');
           else if (page.toLowerCase().includes('advisories')) navigate('/advisories');
           else if (page.toLowerCase().includes('analytics')) navigate('/analytics');

@@ -4,6 +4,64 @@ const CACHE_NAME = 'hazardnet-offline-v1';
 const TILE_CACHE_NAME = 'hazardnet-tiles-v1';
 const MAX_TILE_CACHE_ITEMS = 1200;
 
+// Alert payloads get their own cache with a network-first strategy (Phase 5).
+//
+// Why not let the generic shell cache handle them: the shell strategy is
+// cache-first, so an installed PWA would keep serving the payload it saw on
+// install day as if it were today's forecast. For a hazard list that is the
+// failure mode that matters most, so alerts are fetched from the network first
+// (short timeout — 2G users must not wait) and the cached copy is only ever
+// served as a *labelled* fallback. The `X-HazardNet-Stale` marker is what
+// lets the client relabel the data as "offline copy" instead of "live".
+const ALERTS_CACHE_NAME = 'hazardnet-alerts-v1';
+const ALERTS_NETWORK_TIMEOUT_MS = 5000;
+
+function isAlertsRequest(url: URL): boolean {
+  return url.pathname.startsWith('/api/v1/alerts') || url.pathname === '/data/alerts-latest.json';
+}
+
+async function fetchWithTimeout(request: Request, timeoutMs: number): Promise<Response> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(request, { signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function alertsNetworkFirst(request: Request): Promise<Response> {
+  const cache = await caches.open(ALERTS_CACHE_NAME);
+  try {
+    const response = await fetchWithTimeout(request, ALERTS_NETWORK_TIMEOUT_MS);
+    if (response && response.status === 200 && request.method === 'GET') {
+      const headers = new Headers(response.headers);
+      headers.set('X-HazardNet-Cached-At', new Date().toISOString());
+      await cache.put(request, new Response(await response.clone().blob(), {
+        status: response.status,
+        statusText: response.statusText,
+        headers,
+      }));
+    }
+    return response;
+  } catch {
+    const cached = await cache.match(request);
+    if (!cached) {
+      return new Response(
+        JSON.stringify({ error: 'offline and no cached alert payload on this device' }),
+        { status: 504, headers: { 'Content-Type': 'application/json' } },
+      );
+    }
+    const headers = new Headers(cached.headers);
+    headers.set('X-HazardNet-Stale', '1');
+    return new Response(await cached.blob(), {
+      status: 200,
+      statusText: 'OK (offline copy)',
+      headers,
+    });
+  }
+}
+
 // Helper to check if request is a map tile URL
 function isMapTileRequest(url: URL): boolean {
   const href = url.href.toLowerCase();
@@ -48,7 +106,7 @@ self.addEventListener('activate', (event: any) => {
   event.waitUntil(
     caches.keys().then((keys) => Promise.all(
       keys
-        .filter((key) => key !== CACHE_NAME && key !== TILE_CACHE_NAME)
+        .filter((key) => key !== CACHE_NAME && key !== TILE_CACHE_NAME && key !== ALERTS_CACHE_NAME)
         .map((key) => caches.delete(key))
     )).then(() => (self as any).clients.claim())
   );
@@ -235,6 +293,12 @@ self.addEventListener('fetch', (event: any) => {
         return new Response('', { status: 504, statusText: 'Tile Unavailable Offline' });
       })
     );
+    return;
+  }
+
+  // Alert payloads: network-first, labelled cache fallback (never a silent stale read).
+  if (isAlertsRequest(url)) {
+    event.respondWith(alertsNetworkFirst(request));
     return;
   }
 

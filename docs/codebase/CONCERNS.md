@@ -304,3 +304,42 @@ still open is below.
 9. **`.env.example` still contains live-looking secrets.** Pre-existing, tracked as
    Action 1 of `docs/ops/owner-actions.md`; the alert variables were appended with
    empty values and must not be filled with real credentials in-repo.
+
+## Phase 5 (frontend) — what the new surface does not fix
+
+The alert surface, the bilingual UI, the low-bandwidth path and the evidence-card export
+shipped in Phase 5. These are the parts that remain untrue or unverified, in the same
+spirit as the Phase 4 list above.
+
+1. **The committed alert snapshot is empty.** All 74 assessed rows are
+   `publication_blocked` because the forecast snapshot carries no model version and §1.6
+   requires one. The page therefore shows "no alerts are published" every day until the
+   pipeline stamps provenance (owner Action 6a). This is correct behaviour, not a bug —
+   but it means the alert list, the map's alert layer and the district strip have never
+   rendered a real published alert in production.
+2. **No production alert has ever been displayed or exported.** The UI paths are covered
+   by 100+ unit/component tests and one replay over committed data, but the end-to-end
+   path (live API with a published alert → page → PDF on a phone) has never run.
+3. **Bengali covers the alert and map surfaces only.** The long-form pages
+   (`site-routes.json` sections, blog articles, advisories) are English-only. Recorded in
+   `docs/frontend/ALERT_UI.md` §5 as scope, not as done.
+4. **No native-speaker review of the Bengali copy**, and no screen-reader pass on a real
+   build. Both are owner Action 6c/6d; the automated axe pass cannot cover either.
+5. **Accessibility work stops at the Phase 5 surfaces.** The 3D dashboard, analytics pages
+   and content pages have not had the WCAG 2.2 AA treatment documented in
+   `docs/frontend/ACCESSIBILITY.md`.
+6. **The PDF export is a rasterised image, not tagged PDF/UA.** It carries the text and
+   the disclaimer, but a screen reader cannot reflow it.
+7. **Low-bandwidth detection is heuristics, and the 5 s service-worker timeout is a
+   guess.** `hardwareConcurrency ≤ 4` will put some perfectly capable mid-range phones on
+   the vector basemap. The user's toggle overrides it, and the cost of being wrong in the
+   other direction (a hung tab on a 2G handset) is worse — but the thresholds are not
+   measured on real devices.
+8. **The README drifted from the product and was only caught by hand.** Its pitch
+   advertised 10/20/30-day horizons and 507 ADM3 units (ADR 0005, unimplemented) as
+   shipped fact, while the API, store and site run 64 districts × 7/15 days. Corrected in
+   Phase 5 and now guarded by `test_readme_does_not_advertise_unshipped_horizons`, but the
+   same class of drift in other docs (advisories copy, the ADRs themselves) is not
+   scanned.
+9. **`jest-axe` was added as a dev dependency.** It is not shipped, but it is a new
+   dependency surface the Phase 6 security pass should include in the audit.

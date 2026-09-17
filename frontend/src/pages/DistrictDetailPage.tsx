@@ -68,6 +68,7 @@ import { StructuredAdvisoryRenderer } from '../components/StructuredAdvisoryRend
 import AdvisoryPanel from '../components/AdvisoryPanel';
 import { PrintQrCode } from '../components/PrintQrCode';
 import { PdfExportButton } from '../components/PdfExportButton';
+import { DistrictAlertStrip } from '../components/alerts/DistrictAlertStrip';
 import { fetchForecastMetadata, fetchStaticForecastSnapshot, ForecastRow, canonicalKey } from '../lib/forecasts';
 import { WeatherPanel } from '../components/WeatherPanel';
 import { useWeather } from '../hooks/useWeather';
@@ -716,6 +717,14 @@ export const DistrictDetailPage: React.FC = () => {
             </span>
           </div>
         </div>
+
+        {/* Published alert for this district (Phase 5). Sits directly under the page
+            title because "is there an alert for me here" is the first question, and
+            an absent strip must not read as an absent hazard. */}
+        <DistrictAlertStrip
+          district={district.id || data.districtName || district.name}
+          baselineOnly={Boolean((data as { baselineOnly?: boolean }).baselineOnly)}
+        />
 
         {/* Highlighted Hazard & Peak Severity Occurrence Date Banner */}
         <div className="bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 border border-amber-200 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-xs font-mono shadow-xs">

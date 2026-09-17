@@ -616,6 +616,26 @@ body {
   }
 }
 
+/* Low-bandwidth mode (Phase 5).
+   `useBandwidthMode` writes data-low-bandwidth on <html> when Data Saver is on, the
+   connection is 2G, the device reports <=2 GB RAM / <=4 cores, or the user asked for it.
+   The same collapse as prefers-reduced-motion applies, because on these devices the
+   animation is not decoration — it is the difference between a usable page and a hung
+   tab. Components that need to change behaviour (not just styling) read the hook. */
+html[data-low-bandwidth='true'] *,
+html[data-low-bandwidth='true'] *::before,
+html[data-low-bandwidth='true'] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html[data-low-bandwidth='true'] {
+  scroll-behavior: auto !important;
+}
+
 /* Brand Typography & Wordmark Utilities per CSV Spec
    Roles: brand/display = Playfair Display Variable (headings, wordmark);
    UI/body/nav/buttons/labels = Noto Sans Variable; data readouts = JetBrains Mono. */

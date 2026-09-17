@@ -100,3 +100,24 @@ Kernel token + slug are valid; it no longer runs on a timer.
 - `docs/adr/0008-hourly-refresh-snapshot-fallback.md` — why two paths (API +
   committed snapshot) exist.
 - `docs/adr/0002-forecast-consolidation.md` — the forecast store abstraction.
+
+## Alert snapshot (added Phase 5, 2026-09-18)
+
+| Path | Writer | Contents | Committed? |
+|---|---|---|---|
+| `frontend/public/data/alerts-latest.json` | `scripts/build_alert_snapshot.mjs` from the engine output `alert-run.json` (`daily_forecast.yml`) | Published alerts only (`PUBLISHED`), schema `hazardnet-alerts/v1`, with `generated_at`, the policy copy, level counts and each row's evidence/provenance | **Yes** — the offline fallback `/alerts` reads when the API is unreachable, the service worker has no cached copy, or the user is in low-bandwidth mode |
+
+The `alerts-latest.json` file that ships in this repository was produced by
+`npm run alerts:snapshot`, i.e. by replaying the **real** engine over the committed
+forecast snapshot offline. It is deliberately **empty**: the committed forecast snapshot
+has `provenance.model_version: null`, §1.6 requires a model version before an alert may
+be published, and the builder refuses to invent one. Its `counts.dropped_unpublished`
+(74) and `assessed` (74) are how the web page can say *"74 rows assessed, none
+publishable"* rather than *"all clear"*.
+
+Two invariants the builder enforces (tested in `__tests__/alertSnapshot.test.js` and
+`scripts/tests/test_frontend_alert_surface.py`):
+
+1. only `PUBLISHED` rows reach the file, and every row carries the §1.7 disclaimer;
+2. an empty run **cannot** replace a non-empty snapshot unless `--allow-empty` is passed —
+   a failed pipeline must not silently become "no alerts today".

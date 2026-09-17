@@ -38,6 +38,8 @@ const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 const AdvisoriesPage = lazy(() => import('./pages/AdvisoriesPage').then((m) => ({ default: m.AdvisoriesPage })));
 const AnalyticsAnalyticsPage = lazy(() => import('./pages/AnalyticsPage').then((m) => ({ default: m.AnalyticsAnalyticsPage })));
 const DistrictDetailPage = lazy(() => import('./pages/DistrictDetailPage').then((m) => ({ default: m.DistrictDetailPage })));
+const AlertsPage = lazy(() => import('./pages/AlertsPage').then((m) => ({ default: m.AlertsPage })));
+const AlertDetailPage = lazy(() => import('./pages/AlertDetailPage').then((m) => ({ default: m.AlertDetailPage })));
 const UserDashboardPage = lazy(() => import('./pages/UserDashboardPage'));
 const PublicProfilePage = lazy(() => import('./pages/PublicProfilePage'));
 const SetPasswordPage = lazy(() => import('./pages/SetPasswordPage'));
@@ -154,6 +156,11 @@ const AppContent: React.FC = () => {
               <Route path="/forecast/compare" element={<Dashboard defaultTab="compare" />} />
               <Route path="/forecast/settings" element={<Dashboard defaultTab="settings" />} />
               <Route path="/settings" element={<Dashboard defaultTab="settings" />} />
+              {/* Public alert surface (Phase 5). The alert id in the path is the
+                  engine's own alert id, so a link from an SMS or a Telegram message
+                  lands on the exact evidence card it refers to. */}
+              <Route path="/alerts" element={<AlertsPage />} />
+              <Route path="/alerts/:id" element={<AlertDetailPage />} />
               <Route path="/advisories" element={<AdvisoriesPage />} />
               <Route path="/advisories/:subCategory" element={<AdvisoriesPage />} />
               <Route path="/analytics" element={<AnalyticsAnalyticsPage />} />
