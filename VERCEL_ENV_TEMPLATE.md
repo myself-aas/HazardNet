@@ -15,6 +15,25 @@ Configure these environment variables in your Vercel project under **Project Set
 
 ---
 
+## 1b. Alert engine (PRODUCT_SPEC §1.3/§1.6)
+| Environment Variable | Description | Recommended Scope | Example Value |
+| :--- | :--- | :--- | :--- |
+| `ALERT_DUTY_OFFICERS` | Comma-separated uids/emails allowed to approve or reject an alert above WATCH. | Production, Preview | `uid1,duty@example.org` |
+| `ALERT_AUTO_PUBLISH` | `false` keeps every alert in DRAFT (no automatic publication at all). | Production | `true` |
+| `ALERT_MAX_AUTO_PUBLISH_LEVEL` | Ceiling for automatic publication. Raising it above `WATCH` weakens §1.6. | Production | `WATCH` |
+| `ALERT_WATCH_PROBABILITY` / `ALERT_WARNING_PROBABILITY` | §1.3 probability thresholds. | Production, Preview | `0.4` / `0.65` |
+| `ALERT_WATCH_SEVERITY` / `ALERT_DIVERGENCE_WATCH` | Severity band and divergence rule. | Production, Preview | `0.55` / `0.3` |
+| `ALERT_ALLOW_UNCALIBRATED_WARNING` | Allows WARNING without a fitted calibration map. A product decision, surfaced on the policy endpoint. | Production | *(unset)* |
+| `SMS_PROVIDER` | `bulksmsbd`, `greenweb` or `none`. | Production | `bulksmsbd` |
+| `SMS_SENDER_ID` | Registered sender id / mask shown to recipients. | Production | `HazardNet` |
+| `SMS_DRY_RUN` | `true` builds the request and reports it without sending — use before enabling a gateway. | Preview | `true` |
+| `SMS_MAX_PER_RUN` | Cap on SMS attempted per engine run; the overflow is counted, not dropped. | Production | `25` |
+| `BULKSMSBD_API_KEY` / `GREENWEB_API_KEY` | Gateway credentials (one provider). | Production | `...` |
+| `TELEGRAM_BOT_TOKEN` / `TELEGRAM_ALERT_CHAT_ID` | Telegram delivery. | Production | `123:ABC` / `-100...` |
+| `ALERT_AUTO_PUBLISH_MINUTES` | Minimum gap between automatic publications (spam guard). | Production | `720` |
+| `ALERT_NOTIFY_TIMEOUT_MS` | Bound on the notification leg so a slow gateway cannot hold a run. | Production | `10000` |
+
+---
 ## 2. Database & Storage Configuration
 | Environment Variable | Description | Recommended Scope | Example Value |
 | :--- | :--- | :--- | :--- |

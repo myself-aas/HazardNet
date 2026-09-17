@@ -132,6 +132,35 @@ jobs:
           CHANGED=$(grep -oE 'CHANGED=(true|false)' publish.log | tail -n 1 | cut -d= -f2)
           echo "changed=${CHANGED:-true}" >> "$GITHUB_OUTPUT"
 
+      - name: Run the alert engine (§1.3 levels, §1.6 gate)
+        id: alerts
+        env:
+          HAZARDNET_API_KEY: ${{ secrets.HAZARDNET_API_KEY }}
+          BACKEND_API_URL: ${{ vars.BACKEND_API_URL }}
+        run: |
+          # The engine lives behind /api/v1/alerts/run (backend/routes/alerts.js):
+          # it assesses the latest stored rows, auto-publishes at or below WATCH, and
+          # queues anything above it for a named duty officer. Nothing above WATCH can
+          # be published by this step, by construction.
+          if [ -z "$HAZARDNET_API_KEY" ] || [ -z "$BACKEND_API_URL" ]; then
+            echo "::notice::alert engine skipped: HAZARDNET_API_KEY (secret) and BACKEND_API_URL (variable) are not both set"
+            exit 0
+          fi
+          curl -sS -f -X POST "$BACKEND_API_URL/api/v1/alerts/run" \
+            -H "Authorization: Bearer $HAZARDNET_API_KEY" \
+            -H 'Content-Type: application/json' \
+            -d '{"notify": true}' -o alert-run.json
+          jq -r '"alert engine: rows=" + (.rows|tostring) + " published=" + (.persisted.published|tostring) + " pending_review=" + (.persisted.pending_review|tostring) + " blocked=" + (.persisted.blocked|tostring) + " levels=" + (.batch.counts|tojson)' alert-run.json | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload the alert run report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: alert-run
+          path: alert-run.json
+          if-no-files-found: ignore
+          retention-days: 14
+
       - name: Validate forecast data
         # Includes the coverage gate: the manifest must account for every
         # requested unit, and a partial run must say so.
@@ -192,6 +221,11 @@ jobs:
             echo "- generator: \`scripts/auto_forecast.py\` (GEE + Open-Meteo + TFLite) on the runner — no Kaggle"
             echo "- publish: \`scripts/publish_forecast_csv.py\` (changed: ${{ steps.publish.outputs.changed || 'n/a' }})"
             echo "- delivery: committed snapshot \`frontend/public/data/forecasts-latest.json\`"
+            if [ -f alert-run.json ]; then
+              echo "- alerts: levels \`$(jq -c '.batch.counts' alert-run.json)\` — published $(jq -r '.persisted.published' alert-run.json), pending review $(jq -r '.persisted.pending_review' alert-run.json), blocked $(jq -r '.persisted.blocked // 0' alert-run.json)"
+            else
+              echo "- alerts: not run (see the alert engine step notice)"
+            fi
             echo "- API push: PUSH_TO_API=$PUSH_TO_API"
             if [ -f backend/data/forecasts/manifest.json ]; then
               jq -r '"- prediction_date: " + (.prediction_date // "unknown") + "\n- rows: " + ((.row_count // 0) | tostring) + "\n- source: " + (.source // "unknown")' backend/data/forecasts/manifest.json

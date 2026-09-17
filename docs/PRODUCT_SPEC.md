@@ -62,7 +62,19 @@ Every level carries: hazard class, lead time (days), confidence statement, evide
 official sources. **Nothing is auto-published above `WATCH`** — `WARNING`/`SEVERE` require the
 human-in-the-loop step defined in §1.6.
 
-**Shipped today:** levels 1–4 do not exist. The system publishes a per-district
+**Status: IMPLEMENTED (Phase 4, 2026-09-17).** The ladder above is enforced by
+`backend/alerts/assess.js` and the lifecycle in `backend/alerts/lifecycle.js`; the
+thresholds in force, the auto-publish ceiling and every override are published by
+`GET /api/v1/alerts/policy` (`docs/alerts/ALERT_ENGINE.md`). Two honest consequences of
+the Phase 3 calibration status: `WARNING` requires `confidence_kind:
+calibrated_probability` and is therefore **unreachable from model evidence while no map
+is fitted** (the engine records the blocker on every alert rather than issuing one), and
+`SEVERE` is reachable from a maximum-severity BMD/FFWC bulletin or a duty officer's
+review, not from the model. On the committed 74-row snapshot every row lands on `WATCH`
+through the severity band — the distribution mirrors the model's degeneracy, which the
+engine reports as `batch.saturation`.
+
+**Shipped before this:** levels 1–4 did not exist. The system published a per-district
 `hazard_type` + `severity_score` + `confidence`, and each district's static baseline band. The
 mapping above is the Phase 4 target.
 
@@ -100,6 +112,14 @@ works on a 3G connection and a low-end Android phone, usable offline once loaded
 3. Rejections are recorded with a reason and become training/evaluation labels.
 4. Every published alert stores: reviewer identity, timestamp, model version, data cutoff, evidence
    snapshot. This is the audit trail (Phase 4, §4).
+
+**Status: IMPLEMENTED (Phase 4, 2026-09-17).** `backend/alerts/lifecycle.js` holds the
+state machine (`DRAFT → PENDING_REVIEW → PUBLISHED`, plus `REJECTED` and `SUPERSEDED`),
+`canAutoPublish()` refuses any level above `max_auto_publish_level` (`WATCH`), rejection
+requires a substantive reason which is stored as an evaluation label, and
+`toPublishRecord()` refuses to publish without all five audit fields. An automatic
+publication that is later re-scored above the ceiling is pulled back to
+`PENDING_REVIEW` (`escalate`).
 
 ### 1.7 Disclaimer (required on every public surface, including SMS and exports)
 
@@ -140,6 +160,13 @@ A public claim about accuracy may only be made when the corresponding artefact e
 **Product rule:** until a row in this table has evidence, user-facing copy must describe the
 quantity as a *relative prioritisation signal*, not a probability. Copy that violates this rule is a
 release blocker (Phase 8 SEO/content work will be held to it).
+
+**Status: IMPLEMENTED (Phase 4, 2026-09-17).** `REQUIRED_DISCLAIMER` in
+`backend/alerts/policy.js` is byte-compared against this block by
+`__tests__/alerts/policy.test.js` (markdown stripped), is attached to every assessment,
+and appears on the alert digests (SMS and Telegram, English and Bengali — the SMS form
+is the short rendering, whose completeness a test asserts), the CSV export's last
+column, and the evidence card.
 
 ---
 
@@ -332,9 +359,9 @@ input-scene lineage, so a forecast cannot be reproduced from its own record.
 
 | Spec section | Feeds |
 | ------------ | ----- |
-| §1.3 warning levels, §1.6 HITL | Phase 4 alert engine + state machine |
+| §1.3 warning levels, §1.6 HITL | **Built in Phase 4** (`backend/alerts/`, `docs/alerts/ALERT_ENGINE.md`); thresholds are placeholders until Phase 9, and `WARNING` stays unreachable until a calibration map is fitted |
 | §1.4 cadence, §5.1 coverage stamp | Phase 2 pipeline + Phase 7 observability |
-| §1.5 users, §1.7 disclaimer | Phase 5 UI, Phase 8 content |
+| §1.5 users, §1.7 disclaimer | §1.7 is implemented on the API surfaces (digests, exports, evidence cards); the same disclaimer on the site UI and content pages is Phase 5/Phase 8 |
 | §3 acceptance criteria | Phase 3 MLOps (eval harness is the blocker) |
 | §5.1, §5.3–5.5 defects | Phase 3 calibration/thresholds, Phase 2 pipeline rework |
 | §5.7 two-model split | Phase 1 architecture decision: one inference path or two, explicitly |
@@ -347,6 +374,7 @@ input-scene lineage, so a forecast cannot be reproduced from its own record.
 | ---- | ------- | ------ |
 | 2026-09-17 | 1.0-draft | First written contract; §5 records eight places where the shipped system contradicts it. |
 | 2026-09-17 | 1.1-draft | Phase 2 (first increment). §5.1 coverage: accounted for and gated (UI labelling still open). §5.4 physics track: independent, all eight classes, `om_calc_flood` argument bug fixed. §5.6 soil channels: labelled and refusable, still placeholders. §5.8 provenance: model/tensor/run/confidence-kind stamped; dataset version and scene lineage still open. |
+| 2026-09-17 | 1.4-draft | Phase 4 (backend + alert engine). §1.3 levels and the §1.6 gate are implemented (`backend/alerts/{policy,assess,store,lifecycle,service,notify,digest,report}.js`, `backend/routes/alerts.js`, `api/v1/alerts/*`): nothing above `WATCH` can be auto-published, `approve`/`reject` require a named duty officer (or the pipeline key attesting one), rejections are stored as evaluation labels, and a published alert carries reviewer identity, timestamp, model version, data cutoff and an evidence snapshot. `WARNING` is unreachable from model evidence while no calibration map exists — the engine records that as a blocker rather than issuing one, and on the committed 74-row snapshot every row lands on `WATCH`, which the batch reports as saturation. SMS/Telegram delivery, CSV export, evidence cards and a printable card are new; the PDF export stays with the Phase 5 UI. Thresholds are conservative placeholders pending Phase 9 hindcast and owner sign-off. |
 | 2026-09-17 | 1.3-draft | Phase 3 (MLOps). §1.3 confidence: `confidence` remains the model's uncalibrated softmax and the API keeps labelling it (`confidence_kind`); a `calibrated_probability` row is only possible once a fitted map passes `scripts/mlops/calibration.py::validate`, and no map is shipped (`Models/calibration/confidence_map.template.json` is unfitted by design). §3 acceptance: the calibration and POD/FAR/CSI criteria remain open with a named blocker — the event archive is not loaded, so no observed outcomes can be joined. Public copy that described the score as calibrated against ground stations/Sentinel-1 (district page, methodology panel) has been corrected. Model registry, promotion policy and the nightly evaluation/drift workflow are new (`.github/workflows/mlops.yml`, `Models/REGISTRY.json`); promotion policy and the nightly report are documented in `docs/phase-reports/phase-3-mlops.md`. |
 | 2026-09-17 | 1.2-draft | Phase 2 (second increment). §2 data contract: event store + ingestion streams + `dataset_version` rows added; versioning no longer "not implemented" (§5.8 now gated at publish, with `lineage.status`). §5.2 monsoon blindness: the ingestion adapters label an optical gap instead of zero-filling (the live pipeline's constant-zero fallback remains — recorded in the model card §8). §5.8: `dataset_version` is a content hash over the decadal windows, collections, per-step tensor digests and the Open-Meteo request/response fingerprint; missing/failed/partial lineage refuses publication. Per-scene enumeration and the COG archive remain open. |
 

@@ -261,3 +261,39 @@ still open is below.
    lists and shelter/relief numbers from the static district baseline. Phase 3
    documented that in the module and corrected every model-confidence label, but the
    panel itself still shows illustrative numbers next to real ones.
+
+## Phase 4 (backend + alert engine) — what is still not true
+
+1. **Every alert today is the same alert.** The engine can produce exactly one level
+   from the shipped model: 74/74 rows assess as `WATCH` (severity ≥ the watch band),
+   0 `NO_ALERT`, 0 `WARNING`, and 25 rows additionally flagged for track divergence.
+   The batch says so in `saturation`, but a reader who only reads the level count sees
+   "74 alerts". Thresholds that discriminate need Phase 9's hindcast, and the model
+   needs calibration before any level above `WATCH` is reachable.
+2. **`WARNING` cannot be issued from model evidence.** §1.3 defines it as a calibrated
+   probability; no calibration map is fitted (Phase 3's open item), so the engine
+   blocks it with `warning_requires_calibration` on every row. `SEVERE` is reachable
+   only from a maximum-severity official bulletin or a duty officer's review.
+3. **Publication is blocked on the committed snapshot.** Its rows carry no
+   `model_version`/`dataset_version` (they predate Phase 2 stamping), and §1.6 requires
+   a model version; a run over those rows writes 74 documents, publishes 0 and records
+   `blocked: 74` with the reason. That is the intended behaviour, but it means the
+   alert surface is inert until the pipeline's stamped rows are what the store serves.
+4. **No alert has been delivered.** There are no subscribers and no gateway
+   credentials; every transport reports `degraded`/`dry_run`, and the fan-out reports
+   `matched: 0`. The first real send is an owner action, rehearsed with
+   `SMS_DRY_RUN=true`.
+5. **Bengali SMS costs ~3× English.** The Bengali digest is UCS-2 (70 characters per
+   segment) and the sample alert renders as 5 segments against 2 for English. The
+   digest reports `sms_encoding`/`sms_segments` so the cost is visible, but the channel
+   mix is a product decision (owner Action 5).
+6. **Thresholds, duty officers and subscribers are placeholders or absent.** The
+   policy defaults (watch 0.40/0.55, warning 0.65, divergence 0.30) are conservative
+   round numbers, not fitted values; `ALERT_DUTY_OFFICERS` is unset, so the only
+   reviewer path that works today is the pipeline key attesting a named human.
+7. **The evidence card's HTML rendering is not the PDF export.** `?format=card` gives a
+   print-ready page; turning it into a PDF belongs with the Phase 5 UI, which already
+   has an export path (`frontend/src/utils/pdfExport.ts`).
+8. **`.env.example` still contains live-looking secrets.** Pre-existing, tracked as
+   Action 1 of `docs/ops/owner-actions.md`; the alert variables were appended with
+   empty values and must not be filled with real credentials in-repo.

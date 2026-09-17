@@ -264,3 +264,76 @@ challenger is evaluated, and record who may act as the approver.
 `cd scripts && python -m mlops.cli audit` → `ok`; `python -m mlops.cli registry --write`
 → `unchanged`; `python -m mlops.cli evaluate --predictions ../backend/data/forecasts/hazardnet_forecasts_latest.csv --outcomes <archive export>`
 → `insufficient_truth` today, `ok` with POD/FAR/CSI once the archive is loaded.
+
+---
+
+## Action 5 — Turn the alert engine on (Phase 4) 🟠 (~1 hour, owner + duty desk)
+
+The engine is implemented and safe by construction: nothing above `WATCH` can be
+published without a named human (`docs/alerts/ALERT_ENGINE.md`). What it cannot do is
+decide *how sensitive* it should be, *who* may approve, or *how* it reaches people.
+Those are four decisions and five settings.
+
+### 5a. Set the §1.3 thresholds (or accept the defaults in writing)
+
+Today's defaults are conservative round numbers: watch probability 0.40, watch severity
+band 0.55, warning probability 0.65, divergence 0.30. Against the shipped model they put
+**every row in `WATCH`** — the level is not yet discriminating, because the underlying
+score is degenerate (MODEL_CARD §6.1) and uncalibrated. Two honest options: leave them
+until Phase 9's hindcast produces calibrated thresholds, or raise the watch band now so
+the public map shows fewer, more meaningful alerts. Either way, record the decision:
+`GET /api/v1/alerts/policy` publishes the values in force, their source
+(`defaults`/`environment`) and any override.
+
+### 5b. Name the duty officers
+
+`ALERT_DUTY_OFFICERS=uid1,uid2,email@…` (comma-separated Firebase uids or emails), or
+give the reviewers an `admin`/`duty_officer` claim. A signed-in stranger can read the
+public alerts but cannot approve or reject anything — §1.6 asks for a *named* officer,
+and the record stores `verified_via` (firebase claim or pipeline key attestation).
+
+### 5c. Decide the channel mix and create the credentials
+
+* SMS: choose `SMS_PROVIDER=bulksmsbd|greenweb`, set the gateway key and `SMS_SENDER_ID`
+  (a registered mask). **Rehearse with `SMS_DRY_RUN=true` first** — the dry run returns
+  the exact request with credentials redacted and reports `sent: false`.
+* Telegram: `TELEGRAM_BOT_TOKEN` + `TELEGRAM_ALERT_CHAT_ID`.
+* Budget: `SMS_MAX_PER_RUN` (default 25) caps attempts per run; overflow is counted as
+  `over_budget`. A Bengali message is UCS-2 and costs ~3× the segments of English
+  (the digest reports the count), so decide which channel gets which language.
+
+### 5d. Create the subscriber list
+
+Firestore collection `alertSubscriptions`, one document per subscriber:
+
+```json
+{ "channel": "sms", "destination": "8801XXXXXXXXX", "district_name": "Kurigram",
+  "hazards": ["Flood", "Flash Flood"], "min_level": "WATCH", "language": "bn",
+  "active": true }
+```
+
+A subscriber is matched on district **and** hazard **and** minimum level; only published
+alerts are dispatched. Beta-test with one number and your own district before opening it.
+
+### 5e. Let the daily pipeline run it
+
+Set the repository variable `BACKEND_API_URL` and the secret `HAZARDNET_API_KEY`. The
+`daily_forecast.yml` step then calls `POST /api/v1/alerts/run` after each publish,
+uploads `alert-run.json` and prints the level counts into the job summary. Without those
+two settings the step logs a notice and skips, so the workflow stays green.
+
+**Also consider:** `ALERT_AUTO_PUBLISH=false` keeps everything in DRAFT — sensible during
+a soft launch while thresholds are still placeholders and no subscriber has been
+briefed. And note that `WARNING`/`SEVERE` cannot be issued at all from model evidence
+until a calibration map is fitted (Phase 3's open item); today the only paths above
+`WATCH` are an official bulletin at maximum severity or a duty officer's review.
+
+**Verify:**
+```bash
+curl -s "$BACKEND_API_URL/api/v1/alerts/policy" | jq '{thresholds, human_in_the_loop, calibration, transports}'
+curl -s -X POST "$BACKEND_API_URL/api/v1/alerts/preview" -H "Authorization: Bearer $HAZARDNET_API_KEY" \
+  -H 'Content-Type: application/json' -d '{}' | jq '.batch.counts, .batch.saturation'
+# a dry-run dispatch of the highest alert (no gateway call, no cost):
+curl -s "$BACKEND_API_URL/api/v1/alerts?state=PUBLISHED&limit=1" | jq -r '.alerts[0].id' \
+  | xargs -I{} curl -s "$BACKEND_API_URL/api/v1/alerts/{}/evidence-card?format=markdown"
+```

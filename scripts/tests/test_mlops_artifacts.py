@@ -106,6 +106,32 @@ def test_no_copy_claims_the_model_score_is_calibrated():
     assert offenders == [], 'copy claims calibration without an artifact:\n' + '\n'.join(offenders)
 
 
+#: Claims that were live in the copy before this phase and must never come back.
+#: A line may mention them only to say they are not true ("not calibrated against
+#: ground stations"), which is what the negation check below allows.
+RETIRED_PHRASES = ('98.55', 'ensemble agreement', 'ground stations', 'platt calibration',
+                   'guarantees')
+
+
+def test_no_copy_reinstates_a_retired_confidence_claim():
+    offenders = []
+    for path in COPY_FILES:
+        text = path.read_text(encoding='utf-8')
+        for phrase in RETIRED_PHRASES:
+            for match in re.finditer(re.escape(phrase), text, re.IGNORECASE):
+                line = text[:match.start()].count('\n') + 1
+                context = text.splitlines()[line - 1]
+                lowered = context.lower()
+                if any(negation in lowered for negation in
+                       ('not ', 'no ', 'never', 'uncalibrated', 'awaiting', 'without')):
+                    continue
+                offenders.append(f'{path.relative_to(ROOT)}:{line}: {context.strip()[:120]}')
+    assert offenders == [], (
+        'copy re-uses a retired claim (Phase 0 audit / Phase 3 correction):\n'
+        + '\n'.join(offenders)
+    )
+
+
 def test_the_district_page_says_the_score_is_uncalibrated():
     text = (ROOT / 'frontend' / 'src' / 'pages' / 'DistrictDetailPage.tsx').read_text()
     assert 'uncalibrated' in text

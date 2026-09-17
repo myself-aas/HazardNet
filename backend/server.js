@@ -12,9 +12,10 @@ import predictRoutes from './routes/predict.js';
 import pushRoutes from './routes/push.js';
 import conversionRoutes from './routes/conversions.js';
 import weatherRoutes from './routes/weather.js';
+import alertRoutes from './routes/alerts.js';
 import metrics from './metrics.js';
 import { refreshForecastAgeGauge } from './utils/forecastFreshness.js';
-import { predictLimiter, apiLimiter } from './middleware/rateLimit.js';
+import { predictLimiter, apiLimiter, alertLimiter } from './middleware/rateLimit.js';
 import { requestId } from './middleware/requestId.js';
 import { attachFirebaseAuthUser, dynamicAiLimiter } from './middleware/firebaseAuth.js';
 import { getModelInfo } from './modelInfo.js';
@@ -137,6 +138,9 @@ app.use('/api/predict', predictLimiter, predictRoutes);
 app.use('/api/push', pushRoutes);
 app.use('/api/conversions', conversionRoutes);
 app.use('/api/v1/weather', weatherRoutes);
+// Alert engine + §1.6 review surface. Identity is attached but never required:
+// published alerts are public (PRODUCT_SPEC §1.3), the review queue is not.
+app.use('/api/v1/alerts', attachFirebaseAuthUser, alertLimiter, alertRoutes);
 
 // Prometheus metrics endpoint. The forecast-age gauge is refreshed here
 // (scrape-driven, 60s-cached store probe — see utils/forecastFreshness.js).
