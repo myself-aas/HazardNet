@@ -346,6 +346,51 @@ def detection_summary(episode: dict, predictions: list, threshold: float, *,
     }
 
 
+def _wind_driver_summary(episode: dict, predictions: list, threshold: float) -> dict:
+    """The same episode scored from each wind driver the archive offers.
+
+    The cyclone formula is `0.7 * clip((wind - 50) / 150) + 0.3 * clip(rain / 300)`, so its value
+    is set by the wind argument. The shipped pipeline feeds it the sustained 10 m daily maximum at
+    the district centroid — which under a landfalling cyclone is a fraction of what the district
+    experienced — and the archive's gust field is the closer proxy. This block reports what each
+    choice does to the class the track names, rather than arguing about it.
+    """
+    import collections
+
+    summary = {}
+    for name, _ in score_module.WIND_SCENARIOS:
+        rows = [row['wind_driver_scenarios'][name] for row in predictions
+                if name in row['wind_driver_scenarios']]
+        if not rows:
+            continue
+        episode_scores = [row['episode_class_score'] for row in rows]
+        summary[name] = {
+            'rows': len(rows),
+            'wind_kmh': {'min': min(row['wind_kmh'] for row in rows),
+                         'max': max(row['wind_kmh'] for row in rows)},
+            'top_class_distribution': dict(sorted(collections.Counter(
+                row['top_hazard'] for row in rows).items())),
+            'named_the_episode_class': sum(1 for row in rows if row['named_the_episode_class']),
+            'episode_class_over_threshold': sum(1 for value in episode_scores if value >= threshold),
+            'episode_class_score': {'min': min(episode_scores), 'max': max(episode_scores)},
+        }
+    if len(summary) == 2:
+        sustained, gust = summary['era5_10m_sustained'], summary['era5_10m_gust']
+        summary['finding'] = (
+            f"With the sustained maximum the shipped pipeline uses, the episode's class scores "
+            f"{sustained['episode_class_score']['min']:.4f}–{sustained['episode_class_score']['max']:.4f} "
+            f"and crosses the {threshold:g} band on {sustained['episode_class_over_threshold']} of "
+            f"{sustained['rows']} rows; with the gust field the archive also carries it scores "
+            f"{gust['episode_class_score']['min']:.4f}–{gust['episode_class_score']['max']:.4f} and crosses "
+            f"on {gust['episode_class_over_threshold']}. The wind driver, not the formula alone, decides "
+            "whether this event was detectable. Note what the second number does *not* fix: the track's "
+            "top class is still "
+            f"{max(gust['top_class_distribution'], key=gust['top_class_distribution'].get)}, so the "
+            "separation between the two wind-driven classes is a second, independent defect."
+        )
+    return summary
+
+
 def physics_diagnostics(episode: dict, predictions: list, threshold: float) -> dict:
     """Measure the shipped wiring before recommending a change to it.
 
@@ -385,6 +430,7 @@ def physics_diagnostics(episode: dict, predictions: list, threshold: float) -> d
             'heat_exceedance_days_above_30c': {'min': min(heat_days), 'max': max(heat_days)},
             'cold_exceedance_days_below_16c': {'min': min(cold_days), 'max': max(cold_days)},
         },
+        'wind_drivers': _wind_driver_summary(episode, predictions, threshold),
         'detection_counterfactual': {
             key: value for key, value in detection_summary(
                 episode, predictions, threshold, accessors=_counterfactual_accessors(episode)

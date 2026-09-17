@@ -46,7 +46,14 @@ HORIZONS = (('7_days', 7), ('15_days', 15))
 #: horizon accumulates well over 6 mm of ET, the two persistence terms because both horizons
 #: exceed five days. The formulas' own defaults (3.0 mm ET, 1 day) are the clue that they were
 #: written for a daily ET value and an observed exceedance count.
-SATURATING_TERMS = ('fire_drying', 'heat_persistence', 'cold_persistence')
+SATURATING_TERMS = ('fire_wind', 'fire_drying', 'heat_persistence', 'cold_persistence')
+
+#: The two wind drivers the archive provides, and what each means for the two wind-driven
+#: classes. `era5_10m_sustained` is what the shipped pipeline uses.
+WIND_SCENARIOS = (
+    ('era5_10m_sustained', 'wind_max_kmh'),
+    ('era5_10m_gust', 'wind_gust_max_kmh'),
+)
 SCORE_SOURCE = 'physics_track'
 SCORE_SOURCE_NOTE = (
     'Severity and class come from the independent physics cross-check '
@@ -78,6 +85,7 @@ def drivers_for_window(series: dict, prediction_date: str, target_date: str) -> 
 
     et_values = select('et0_fao_evapotranspiration')
     precip = select('precipitation_sum')
+    gust = select('wind_gusts_10m_max')
     t_max = select('temperature_2m_max')
     t_min = select('temperature_2m_min')
     wind = select('wind_speed_10m_max')
@@ -89,11 +97,13 @@ def drivers_for_window(series: dict, prediction_date: str, target_date: str) -> 
         'precip_total_mm': sum(precip) if precip else None,
         'precip_peak_mm': max(precip) if precip else None,
         'wind_max_kmh': max(wind) if wind else None,
+        'wind_gust_max_kmh': max(gust) if gust else None,
         'et_total_mm': sum(et) if et else None,
         # Kept for the counterfactual: the per-day series inside the window, which is what the
         # fire term and the two persistence terms actually describe.
         'window_daily': {
             'temp_max_c': t_max, 'temp_min_c': t_min, 'et0_mm': et_values,
+            'wind_max_kmh': wind, 'wind_gust_max_kmh': gust, 'precip_mm': precip,
         },
     }
 
@@ -140,11 +150,47 @@ def counterfactual_scores(drivers: dict, horizon_days: int) -> dict:
     return {'scores': scores, 'substitutions': substitutions}
 
 
+def wind_driver_scenarios(drivers: dict, hazard_class: str, horizon_days: int) -> dict:
+    """Re-score the two wind-driven classes from each wind driver the archive offers.
+
+    The cyclone score is `0.7 * clip((wind - 50) / 150) + 0.3 * clip(rain / 300)`, so it is
+    dominated by the wind argument: with the sustained 10 m maximum at a district point (tens of
+    km/h under a landfalling cyclone) it stays near zero, while the gust field — the closer
+    proxy for what the district experienced — puts it in the range the class is meant to describe.
+    Measuring both turns "the driver choice matters" into a number.
+    """
+    out = {}
+    for name, key in WIND_SCENARIOS:
+        value = drivers.get(key)
+        if value is None:
+            continue
+        scores = dict(physics_severity.compute_physics_scores({**drivers, 'wind_max_kmh': value},
+                                                              horizon_days))
+        summary = physics_severity.physics_summary(scores, hazard_class)
+        out[name] = {
+            'wind_kmh': round(value, 1),
+            'top_hazard': summary['physics_top_hazard'],
+            'episode_class_score': round(scores.get(hazard_class, 0.0), 4),
+            'tropical_cyclone': round(scores['Tropical Cyclone'], 4),
+            'severe_local_storm': round(scores['Severe Local Storm'], 4),
+            'named_the_episode_class': summary['physics_top_hazard'] == hazard_class,
+        }
+    return out
+
+
 def saturation_report(row: dict, horizon_days: int) -> dict:
-    """How far each of the three suspect terms is from its ceiling, per row."""
+    """How far each of the four suspect terms is from its ceiling, per row."""
     drivers = row['drivers']
     et_total = drivers.get('et_total_mm')
+    wind_max = drivers.get('wind_max_kmh')
     return {
+        'fire_wind': {
+            'term': '(wind_max_kmh - 5.0) / 20.0',
+            'argument': wind_max,
+            # The term is written for a dry, windy day; 25 km/h of daily maximum wind is an
+            # ordinary coastal afternoon in Bangladesh.
+            'at_ceiling': wind_max is not None and (wind_max - 5.0) / 20.0 >= 1.0,
+        },
         'fire_drying': {
             'term': 'et_total_mm / 6.0',
             'argument': et_total,
@@ -207,6 +253,8 @@ def prediction_rows(episode: dict, district_locations, series: dict) -> list:
                 'counterfactual_scores': {name: round(value, 4)
                                           for name, value in counterfactual['scores'].items()},
                 'counterfactual_substitutions': counterfactual['substitutions'],
+                'wind_driver_scenarios': wind_driver_scenarios(
+                    drivers, episode['hazard_class'], lead_days),
                 'saturated_terms': saturation_report({'drivers': drivers}, lead_days),
             }
             rows.append(row)

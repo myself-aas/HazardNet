@@ -2,7 +2,7 @@
 """Weather drivers for a hindcast window, from the Open-Meteo historical archive.
 
 This is the only part of the package that touches the network, and it is deliberately
-small: one endpoint, five daily variables, batched at 32 stations per request, cached on
+small: one endpoint, six daily variables, batched at 32 stations per request, cached on
 disk so a re-run (and every test) works offline.
 
 **Why Open-Meteo and not the CDS API**: the product behind this endpoint is ERA5 /
@@ -28,6 +28,13 @@ DAILY_VARIABLES = (
     'temperature_2m_min',
     'precipitation_sum',
     'wind_speed_10m_max',
+    # Both wind drivers the archive offers are fetched on purpose. The shipped pipeline feeds
+    # the physics track (and the CNN's ERA5-Land wind band) the *sustained* 10 m maximum, which
+    # at a district centroid under a landfalling cyclone is a fraction of what the district
+    # experienced; the gust field is the closer proxy. Fetching both lets the hindcast measure
+    # the difference instead of recommending it blind (scripts/hindcast/score.py
+    # `wind_driver_scenarios`).
+    'wind_gusts_10m_max',
     'et0_fao_evapotranspiration',
 )
 MAX_STATIONS_PER_REQUEST = 32

@@ -128,7 +128,8 @@ def test_the_saturated_physics_terms_are_measured_not_asserted():
     # substitution is reported so the difference can be attributed.
     substitutions = diagnostics['counterfactual_substitutions']
     assert substitutions['fire_et_mm_per_day']['max'] < 6.0, (
-        'a daily ET mean below the fire divisor is what makes the shipped term saturate'
+        'a daily ET mean below the fire divisor (6 mm) is what makes the shipped term saturate: the '
+        'formula is handed the horizon total, which on any horizon reaches the divisor'
     )
     assert substitutions['heat_exceedance_days_above_30c']['max'] <= 16
     assert 'wiring finding' in diagnostics['finding']
@@ -164,6 +165,18 @@ def test_window_aggregation_matches_the_pipeline_contract():
     assert score_module.drivers_for_window(station, '2019-01-01', '2019-01-07') == {'days': 0}
 
 
+def test_the_fixture_carries_both_wind_drivers_the_archive_offers():
+    """The harness's central finding is about the *driver*, so the fixture has to carry the pair
+    a post-event record describes: a sustained maximum far below the cyclone, and a gust field
+    near it. Without both, the wind-scenario diagnostic would have nothing to measure."""
+    station = fixture_series()['khulna']
+    assert 'wind_gusts_10m_max' in station['daily'], 'the gust driver must be fetched'
+    index = station['time'].index('2020-05-20')
+    sustained = station['daily']['wind_speed_10m_max'][index]
+    gust = station['daily']['wind_gusts_10m_max'][index]
+    assert sustained < 70 and gust > 150, 'the fixture must reproduce the sustained/gust gap'
+
+
 def test_prediction_rows_carry_the_objective_window_and_their_provenance():
     episode = fixture_episode()
     rows = score_module.prediction_rows(episode, hindcast_cli.district_locations(), fixture_series())
@@ -186,34 +199,79 @@ def test_a_scripted_cyclonic_day_is_flagged_at_the_coast_and_not_inland():
     detection = {row['district']: row for row in report['detection']['per_district']}
     for district in ('Khulna', 'Satkhira', 'Bhola', 'Patuakhali'):
         assert detection[district]['flagged_any_class'], f'{district} should be flagged'
-        assert detection[district]['episode_class_over_threshold']
     # The inland controls are in the driver series but not in the truth set: they must not be
     # reported as either hits or false alarms.
     assert 'Dhaka' not in detection and 'Sylhet' not in detection
+
+
+def test_the_shipped_wind_driver_leaves_the_cyclone_class_below_the_band():
+    """The finding, in the fixture: with the sustained 10 m maximum the pipeline feeds the
+    physics track, the class the event actually was does not cross the alarm band at the coast —
+    while a differently-named class does. The gust field the archive also offers puts it over."""
+    episode = fixture_episode()
+    rows = score_module.prediction_rows(episode, hindcast_cli.district_locations(), fixture_series())
+    coastal = [row for row in rows if row['district_name'] in ('Khulna', 'Satkhira', 'Bhola', 'Patuakhali')]
+    assert coastal
+    for row in coastal:
+        sustained = row['wind_driver_scenarios']['era5_10m_sustained']
+        gust = row['wind_driver_scenarios']['era5_10m_gust']
+        assert sustained['tropical_cyclone'] < 0.5, 'sustained driver stays below the WATCH band'
+        assert gust['tropical_cyclone'] >= 0.5, 'the gust driver crosses it'
+        assert gust['tropical_cyclone'] > sustained['tropical_cyclone']
+        # Crossing the band is not the same as being named: `Severe Local Storm` tops both
+        # scenarios at gust speed, so the episode class is still not the track's pick.
+        assert sustained['top_hazard'] != 'Tropical Cyclone'
+        assert gust['top_hazard'] == 'Severe Local Storm'
+    # And the shipped run therefore reports the episode class below threshold everywhere.
+    assert report_detection(rows, episode)['episode_class_over_threshold'] == 0
+
+
+def report_detection(rows, episode, threshold=0.5):
+    return hindcast_cli.detection_summary(episode, rows, threshold)
+
+
+def test_the_report_carries_the_wind_driver_comparison_and_its_finding_sentence():
+    """The finding has to survive into the artifact a reader sees, not only into the row payload."""
+    report = build()
+    wind = report['physics_diagnostics']['wind_drivers']
+    sustained, gust = wind['era5_10m_sustained'], wind['era5_10m_gust']
+    assert sustained['rows'] == gust['rows'] == report['counts']['predictions']
+    assert sustained['episode_class_over_threshold'] == 0
+    assert gust['episode_class_over_threshold'] > 0
+    assert gust['episode_class_score']['max'] > sustained['episode_class_score']['max']
+    assert gust['named_the_episode_class'] == 0, (
+        'the gust driver crosses the band without naming the class — that is the second defect'
+    )
+    assert 'Severe Local Storm' in wind['finding'] and 'wind driver' in wind['finding']
 
 
 def test_the_engine_scores_the_episode_class_and_the_mismatch_is_visible():
     report = build()
     scores = report['evaluation']['scores']
     assert report['evaluation']['status'] == 'ok'
-    # The scripted storm is wind-driven, and the physics family's steeper wind formula wins:
-    # the track names `Severe Local Storm`. That is the finding, and it must show up as a
-    # class mismatch in per_class rather than being smoothed into a hit.
+    # The scripted storm is wind-driven, and the physics family's steeper persistence and rain
+    # terms win: the track never names the cyclone class. That is the finding, and it must show
+    # up as a class mismatch in per_class rather than being smoothed into a hit.
     assert scores['per_class']['Tropical Cyclone']['hits'] == 0
     assert scores['per_class']['Tropical Cyclone']['misses'] > 0
     assert report['detection']['flagged_episode_class'] == 0
-    assert report['detection']['episode_class_over_threshold'] > 0
+    assert report['detection']['episode_class_over_threshold'] == 0
 
 
 def test_swapping_the_episode_class_to_what_the_track_names_produces_hits():
     """The scoring path must be able to produce a hit at all — otherwise the harness would
-    report `pod 0` for every event and read as a finding it is not."""
+    report `pod 0` for every event and read as a finding it is not.
+
+    `Fire` is the class the fixture's shipped wiring names on the majority of its rows (the
+    saturation diagnostic explains why), so scoring against `Fire` must produce hits on those
+    rows and misses on the rest — a partial detection, which is what a working scorer looks like.
+    """
     episode = fixture_episode()
-    episode['hazard_class'] = 'Severe Local Storm'
+    episode['hazard_class'] = 'Fire'
     report = build(episode=episode)
     events = report['evaluation']['scores']['events']
     assert events['hits'] > 0
-    assert events['pod'] == 1.0
+    assert events['pod'] is not None and events['pod'] > 0.0
     assert report['detection']['flagged_episode_class'] > 0
 
 
