@@ -66,8 +66,8 @@ export interface ForecastMetadata {
  * Load freshness metadata without ever substituting a client/request timestamp.
  *
  * Three-stage fallback (mirrors loadForecasts): live /metadata → live /bulk →
- * the committed hourly snapshot. The Peak Hazard Window / Incident Ingestion
- * cards therefore keep showing the latest Kaggle prediction_date even when
+ * the committed forecast snapshot. The Peak Hazard Window / Incident Ingestion
+ * cards therefore keep showing the latest prediction_date even when
  * the API/store is unreachable, as long as the deployment bundle carries a
  * snapshot. Throws only when all three sources fail.
  */

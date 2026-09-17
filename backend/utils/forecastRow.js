@@ -1,7 +1,7 @@
 /**
  * Shared forecast-row parsing for the CSV ingest path.
  *
- * The weekly Kaggle notebook (kaggle_notebooks/hazardnet-auto-forecast-pipeline)
+ * The forecast pipeline (scripts/auto_forecast.py)
  * writes dual-track columns — `model_severity` and `physics_severity` — while
  * the original ingest contract used a single `severity_score` column. This
  * parser accepts both shapes so the weekly pipeline lands without a rename
@@ -57,7 +57,7 @@ export function parseCsvForecastRow(row, rowNumber) {
     return { ok: false, error: `Row ${rowNumber}: Invalid horizon "${row.horizon}"` };
   }
 
-  // Severity: accepting Kaggle notebook's dual-track (`physics_severity` and `model_severity`)
+  // Severity: accepting the pipeline CSV's dual-track (`physics_severity` and `model_severity`)
   // as well as single-track `severity_score`.
   const modelSevRaw = row.model_severity !== undefined && row.model_severity !== ''
     ? row.model_severity
@@ -107,7 +107,7 @@ export function parseCsvForecastRow(row, rowNumber) {
     prediction_date: row.prediction_date
   };
 
-  // The Kaggle notebook publishes Open-Meteo values in native units. Convert
+  // The forecast pipeline publishes Open-Meteo values in native units. Convert
   // them at the ingest boundary so API consumers keep the documented units.
   //
   // Two of the notebook's column names are actively misleading, and the CSV

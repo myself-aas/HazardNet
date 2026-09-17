@@ -179,7 +179,7 @@ router.post('/ingest-csv', async (req, res) => {
 
 // ─────────────────────────────────────────────────────────
 // GET /api/v1/forecasts/metadata
-// Returns the newest ingested Kaggle prediction date and source.
+// Returns the newest ingested prediction date and source.
 // ─────────────────────────────────────────────────────────
 router.get('/metadata', async (req, res) => {
     try {
@@ -191,7 +191,7 @@ router.get('/metadata', async (req, res) => {
             prediction_date: predictionDate,
             ingestion_timestamp: ingestionTimestamp,
             data_source: metadataDataSource(),
-            notebook_source: 'ashifahmedshuvo/hazardnet-auto-forecast-pipeline',
+            pipeline_source: 'github-actions: daily_forecast.yml (scripts/auto_forecast.py)',
             datasets: metadataDatasets(),
             generated_at: now.toISOString(),
         });

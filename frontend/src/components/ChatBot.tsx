@@ -79,6 +79,13 @@ export default function ChatBot() {
          answer += `\n\n**Suggested Questions:**\n` + data.suggested_followups.map(q => `- ${q}`).join('\n');
       }
 
+      // Provenance footer — shows which engine answered (Gemini / OpenRouter /
+      // Groq free-tier LLM over the RAG knowledge base, or the offline
+      // deterministic tier when every API key is unavailable).
+      if (data.provider_source) {
+        answer += `\n\n---\n*Source: ${data.provider_source}*`;
+      }
+
       setMessages(prev => [...prev, { role: 'assistant', content: answer }]);
     } catch (err) {
       console.error(err);

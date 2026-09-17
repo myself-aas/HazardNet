@@ -253,7 +253,7 @@ describe('parseSnapshotResponse (hourly static snapshot fallback)', () => {
   const snapshot = {
     schema: 'hazardnet-forecast-snapshot/v1',
     generated_at: '2026-09-13T05:05:00.000Z',
-    source: 'kaggle kernels output ashifahmedshuvo/hazardnet-auto-forecast-pipeline',
+    source: 'github-actions: scripts/auto_forecast.py (GEE + Open-Meteo + TFLite)',
     prediction_date: '2026-09-13',
     horizons: {
       '7_days': [
@@ -309,7 +309,7 @@ describe('fetchForecastMetadata — three-stage fallback (API → bulk → snaps
   const snapshotPayload = {
     schema: 'hazardnet-forecast-snapshot/v1',
     generated_at: '2026-09-13T05:05:00.000Z',
-    source: 'kaggle kernels output ashifahmedshuvo/hazardnet-auto-forecast-pipeline',
+    source: 'github-actions: scripts/auto_forecast.py (GEE + Open-Meteo + TFLite)',
     prediction_date: '2026-09-13',
     horizons: { '7_days': [row({ prediction_date: '2026-09-13' })] },
   };
@@ -360,7 +360,7 @@ describe('fetchForecastMetadata — three-stage fallback (API → bulk → snaps
     await expect(fetchForecastMetadata()).resolves.toEqual({
       predictionDate: '2026-09-13',
       ingestionTimestamp: '2026-09-13T05:05:00.000Z',
-      source: 'kaggle kernels output ashifahmedshuvo/hazardnet-auto-forecast-pipeline',
+      source: 'github-actions: scripts/auto_forecast.py (GEE + Open-Meteo + TFLite)',
     });
   });
 
@@ -381,7 +381,7 @@ describe('fetchForecastMetadata — three-stage fallback (API → bulk → snaps
     await expect(fetchSnapshotMetadata()).resolves.toEqual({
       predictionDate: '2026-09-11',
       ingestionTimestamp: '2026-09-13T05:05:00.000Z',
-      source: 'kaggle kernels output ashifahmedshuvo/hazardnet-auto-forecast-pipeline',
+      source: 'github-actions: scripts/auto_forecast.py (GEE + Open-Meteo + TFLite)',
     });
   });
 

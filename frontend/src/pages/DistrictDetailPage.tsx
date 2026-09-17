@@ -114,9 +114,9 @@ export const DistrictDetailPage: React.FC = () => {
     if (!livePredictionDate) {
       return {
         ...fallback,
-        peakImpactWindow: 'Live Kaggle data unavailable',
-        incidentDate: 'Live Kaggle data unavailable',
-        lastSatelliteUpdate: 'Awaiting Kaggle forecast ingestion',
+        peakImpactWindow: 'Live forecast data unavailable',
+        incidentDate: 'Live forecast data unavailable',
+        lastSatelliteUpdate: 'Awaiting forecast pipeline ingestion',
       };
     }
     const prediction = new Date(`${livePredictionDate}T00:00:00Z`);
@@ -143,13 +143,13 @@ export const DistrictDetailPage: React.FC = () => {
           }).split(' ').pop();
           return `${dateStr} ${timeStr} ${tzAbbr || ''}`.trim();
         })()
-      : 'Awaiting Kaggle ingestion';
+      : 'Awaiting forecast ingestion';
     
     return {
       ...fallback,
       incidentDate: formattedIngestionTime,
       peakImpactWindow: `${formatDate(prediction)} - ${formatDate(end)}`,
-      lastSatelliteUpdate: `${liveSource ?? 'Kaggle forecast'} • ${livePredictionDate}`,
+      lastSatelliteUpdate: `${liveSource ?? 'Latest forecast'} • ${livePredictionDate}`,
     };
   }, [districtId, livePredictionDate, liveSource, ingestionTimestamp]);
   const district = useMemo(() => getDistrictById(districtId) || ALL_64_DISTRICTS[0], [districtId]);
@@ -161,7 +161,7 @@ export const DistrictDetailPage: React.FC = () => {
     timezone: 'Asia/Dhaka',
   });
 
-  // District Kaggle Notebook CSV Forecast Data for 7 and 15 Days
+  // District CSV Forecast Data for 7 and 15 Days (daily pipeline)
   const [districtForecasts7D, setDistrictForecasts7D] = useState<ForecastRow[]>([]);
   const [districtForecasts15D, setDistrictForecasts15D] = useState<ForecastRow[]>([]);
   const [loadingForecastTable, setLoadingForecastTable] = useState<boolean>(true);
@@ -805,7 +805,7 @@ export const DistrictDetailPage: React.FC = () => {
         </div>
       </header>
 
-      {/* USER-FRIENDLY TABLE: KAGGLE NOTEBOOK CSV FORECAST OUTPUT (7 & 15 DAYS) */}
+      {/* USER-FRIENDLY TABLE: PIPELINE CSV FORECAST OUTPUT (7 & 15 DAYS) */}
       <section className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-7 shadow-xs space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-4">
           <div>

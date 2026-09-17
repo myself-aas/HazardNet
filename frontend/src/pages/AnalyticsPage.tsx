@@ -25,7 +25,7 @@ export const AnalyticsAnalyticsPage: React.FC = () => {
             Model Diagnostics & Pipeline Observability
           </h1>
           <p className="text-slate-600 mt-2 max-w-3xl text-xs sm:text-sm leading-relaxed">
-            Real-time tracking of neural network inference latency, mean absolute error (MAE), expected calibration error (ECE), and automated Kaggle/GitHub CI/CD ingestion pipelines.
+            Real-time tracking of neural network inference latency, mean absolute error (MAE), expected calibration error (ECE), and the automated GitHub Actions CI/CD forecast pipeline.
           </p>
         </div>
       </div>
@@ -60,7 +60,7 @@ export const AnalyticsAnalyticsPage: React.FC = () => {
             activeTab === 'pipeline-status' ? 'bg-amber-500 text-slate-900 shadow-2xs' : 'bg-white text-slate-700 border border-slate-200/90 hover:bg-slate-50 shadow-2xs'
           }`}
         >
-          Pipeline Status (Kaggle / GitHub CI/CD)
+          Pipeline Status (GitHub Actions CI/CD)
         </motion.button>
         <motion.button
           whileHover={{ scale: 1.02 }}
@@ -123,10 +123,10 @@ export const AnalyticsAnalyticsPage: React.FC = () => {
             transition={{ duration: 0.25 }}
             className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-md space-y-6"
           >
-            <h2 className="text-xl font-bold text-slate-900">GitHub Actions & Kaggle Notebook Sync Logs</h2>
+            <h2 className="text-xl font-bold text-slate-900">GitHub Actions Forecast Pipeline Sync Logs</h2>
             <div className="space-y-3 font-mono text-xs">
               <motion.div whileHover={{ x: 3 }} className="bg-slate-50/80 p-4 rounded-2xl border border-slate-200/90 shadow-2xs text-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                <span>[SUCCESS] Kaggle Dataset Sync: Sentinel-2 & MODIS NDVI rasters fetched (07:00 UTC)</span>
+                <span>[SUCCESS] GEE Sync: Sentinel-1/2 SAR & ERA5-Land rasters fetched (00:00 UTC daily run)</span>
                 <span className="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 font-bold w-fit border border-emerald-200">OK</span>
               </motion.div>
               <motion.div whileHover={{ x: 3 }} className="bg-slate-50/80 p-4 rounded-2xl border border-slate-200/90 shadow-2xs text-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2">

@@ -4,7 +4,7 @@
  * POST /api/v1/forecasts/update — CSV ingest route integration test.
  *
  * Regression guard for the weekly-pipeline schema break (2026-09-12): the
- * Kaggle notebook writes dual-track columns (`model_severity`,
+ * forecast pipeline writes dual-track columns (`model_severity`,
  * `physics_severity`, plus `division` / `pcode`), while the legacy contract
  * used a single `severity_score` column. Both shapes must ingest cleanly.
  * Firestore and the advisory agent are mocked — this tests the HTTP + CSV

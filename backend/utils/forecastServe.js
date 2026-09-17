@@ -20,26 +20,31 @@ export const CSV_COLUMNS = [
   'physics_severity', 'division', 'pcode', 'admin_level', 'adm2_name', 'adm2_pcode',
 ];
 
-/** Kaggle provenance block served by GET /metadata (both runtimes). */
+/** Forecast provenance block served by GET /metadata (both runtimes).
+ * Runner-native since the Kaggle workflows were removed (2026-09-17):
+ * the producer is daily_forecast.yml on the GitHub Actions runner and the
+ * historical CSV archive is the GitHub Release attachment set. */
 export function metadataDatasets() {
   return [
     {
-      id: '7b9ed0ca41d930114260efabb71a7fbf616cb68456d30823ecfc2ac45732fe3c',
-      name: 'hazardnet-weekly-forecasts',
-      url: 'https://www.kaggle.com/datasets/ashifahmedshuvo/hazardnet-weekly-forecasts/',
+      id: 'auto-forecast-pipeline',
+      name: 'hazardnet-auto-forecast-pipeline',
+      url: 'https://github.com/myself-aas/HazardNet/actions/workflows/daily_forecast.yml',
+      type: 'workflow',
       update_frequency: 'daily',
     },
     {
-      id: 'auto-forecast-pipeline',
-      name: 'hazardnet-auto-forecast-pipeline',
-      url: 'https://www.kaggle.com/code/ashifahmedshuvo/hazardnet-auto-forecast-pipeline/',
-      type: 'notebook',
+      id: 'forecast-history-archive',
+      name: 'hazardnet-forecast-history',
+      url: 'https://github.com/myself-aas/HazardNet/releases',
+      type: 'release-archive',
     },
   ];
 }
 
 export function metadataDataSource() {
-  return process.env.KAGGLE_DATASET || 'ashifahmedshuvo/hazardnet-weekly-forecasts';
+  return process.env.FORECAST_DATA_SOURCE
+    || 'github-actions: scripts/auto_forecast.py (GEE + Open-Meteo + TFLite)';
 }
 
 /**

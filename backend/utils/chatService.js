@@ -147,25 +147,41 @@ export async function handleChatQuery(input) {
   });
 
   if (ragResult.districtBaseline) {
-    contextText += `\n=== DISTRICT BASELINE: ${ragResult.districtBaseline.district} ===\n`;
+    const baselineName = ragResult.districtBaseline.district || ragResult.districtBaseline.name;
+    contextText += `\n=== DISTRICT BASELINE: ${baselineName} ===\n`;
     contextText += JSON.stringify(ragResult.districtBaseline, null, 2) + '\n';
   }
 
   contextText += `\n=== OFFICIAL GOVT HELPLINES & WEBSITES ===\n`;
   contextText += JSON.stringify(GOVT_OFFICE_DIRECTORY, null, 2) + '\n';
 
-  // 3. Format Conversation History
+  // 3. Format Conversation History (the sanitized copy — capped above — so a
+  //    hostile/oversized history cannot bloat the prompt)
   let historyText = '';
-  if (Array.isArray(conversationHistory) && conversationHistory.length > 0) {
+  if (safeHistory.length > 0) {
     historyText = `\n=== RECENT CONVERSATION HISTORY ===\n` +
-      conversationHistory.slice(-4).map(msg => `${msg.role === 'user' ? 'User' : 'Assistant'}: ${msg.content}`).join('\n') + '\n';
+      safeHistory.slice(-4).map(msg => `${msg.role === 'user' ? 'User' : 'Assistant'}: ${msg.content}`).join('\n') + '\n';
   }
 
-  const fullUserPrompt = `${contextText}${historyText}\n=== USER QUERY ===\n${query}\n\nProvide a comprehensive, clear, structured Markdown answer utilizing the above retrieved RAG context. Also suggest 3 short follow-up questions at the very end formatted inside a JSON block or clean list.`;
+  // Every LLM tier in the fallback engine is invoked in JSON mode
+  // (Gemini responseMimeType / OpenRouter+Groq response_format), so the
+  // response contract must be ONE explicit JSON object. The old free-form
+  // "Markdown answer + JSON block at the end" instruction made JSON-locked
+  // models improvise and the parser miss the answer.
+  const fullUserPrompt = `${contextText}${historyText}
+=== USER QUERY ===
+${sanitizedQuery}
+
+Answer the user's query using the retrieved RAG knowledge above (plus the
+district baseline and official helplines whenever relevant). Ground every
+claim in that context; if it does not cover something, say so plainly.
+Respond with a single valid JSON object and nothing else — no markdown
+fences, no surrounding prose:
+{"answer": "<your complete answer as well-structured Markdown: headings, bullets, specific varieties/protocols/dosages/helplines from the context>", "followups": ["<short follow-up question 1>", "<short follow-up question 2>", "<short follow-up question 3>"]}`;
 
   // 4. Generate Answer via Multi-Provider HA Fallback Engine
   const aiParams = {
-    district_name: district || ragResult.districtBaseline?.district || 'Bangladesh',
+    district_name: district || ragResult.districtBaseline?.district || ragResult.districtBaseline?.name || 'Bangladesh',
     hazard_type: 'General Agriculture & Hazard Inquiry',
     severity_score: 0.5,
     confidence: 0.90
@@ -218,7 +234,7 @@ export async function handleChatQuery(input) {
   let districtContacts = null;
   if (ragResult.districtBaseline) {
     districtContacts = {
-      district: ragResult.districtBaseline.district,
+      district: ragResult.districtBaseline.district || ragResult.districtBaseline.name,
       dae_officer: ragResult.districtBaseline.dae_officer || 'Upazila Agriculture Officer (UAO)',
       dls_officer: ragResult.districtBaseline.dls_officer || 'Upazila Livestock Officer (ULO)',
       dof_officer: ragResult.districtBaseline.dof_officer || 'Upazila Fisheries Officer (UFO)',
