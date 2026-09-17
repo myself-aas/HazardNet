@@ -340,6 +340,24 @@ def test_an_episode_with_no_joinable_outcome_reports_insufficient_truth_rather_t
     assert report['detection']['flagged_any_class'] == 0
 
 
+def test_alarmed_windows_without_a_recorded_outcome_are_counted_from_the_predictions():
+    """The report's `counts.prediction_windows_without_an_outcome` and its
+    `alarmed_without_a_recorded_impact.count` answer different questions, and the second must not
+    be read off the scored pairs: with `absence_means_no_event: false` a window with no outcome
+    never becomes a pair, so the first version of that block published 0 unknowns beside a count
+    of 4 unmatched windows. The alarm list is what a duty officer sees, so it is counted from the
+    alarm list."""
+    report = build()
+    alarmed = report['alarmed_without_a_recorded_impact']
+    assert report['what_was_hindcast']['absence_means_no_event'] is False
+    assert report['counts']['prediction_windows_without_an_outcome'] == 4
+    # The two inland controls are alarmed (`Fire` is what this wiring calls a calm May day) and
+    # nothing on record covers them, so they are exactly the unknowns the block exists to state.
+    assert alarmed['count'] == 4
+    assert all(example.startswith(('Dhaka', 'Sylhet')) for example in alarmed['examples'])
+    assert 'UNKNOWN' in alarmed['interpretation']
+
+
 def test_the_report_declares_what_was_not_done():
     report = build()
     declaration = report['what_was_hindcast']

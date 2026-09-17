@@ -146,17 +146,21 @@ def build_report(episode: dict, *, series: dict, drivers_path: str, now: str | N
             ),
         })
 
-    # Districts the physics track alarmed on that the truth set does not name. No record is
-    # not absence, so these are reported as unknown — never as false alarms, never dropped.
-    alarmed_no_record = []
-    for pair in joined['pairs']:
-        severity = pair['severity']
-        if severity is None or severity < threshold:
-            continue
-        if not pair['observed'] and pair['truth_source'] == 'absence':
-            alarmed_no_record.append(
-                f"{pair['district']} ({pair['hazard_type']} {severity:.3f}, {pair['prediction_date']})"
-            )
+    # District-windows the physics track alarmed on that the truth set does not name. No record
+    # is not absence, so these are reported as unknown — never as false alarms, never dropped.
+    #
+    # The set is built from the *predictions*, not from the scored pairs: with
+    # `absence_means_no_event: false` a window with no outcome never becomes a pair, and reading
+    # the count off the pairs would report 0 unknowns where the report's own `counts` says there
+    # are a hundred. The first version of this block did exactly that.
+    paired = {(pair['district_key'], pair['prediction_date']) for pair in joined['pairs']}
+    alarmed_no_record = [
+        f"{row['district_name']} ({row['hazard_type']} {row['severity_score']:.3f}, "
+        f"{row['prediction_date']})"
+        for row in predictions
+        if (row['severity_score'] or 0.0) >= threshold
+        and (evaluate_module.normalize_key(row['district_name']), row['prediction_date']) not in paired
+    ]
 
     report = {
         'schema': REPORT_SCHEMA,
@@ -237,7 +241,10 @@ def build_report(episode: dict, *, series: dict, drivers_path: str, now: str | N
                 'These district-windows crossed the alarm threshold with no outcome on record. They '
                 'are UNKNOWN, not false alarms: the truth set names the districts the cited '
                 'assessments report, and nobody claims to have surveyed all 64. Measuring the '
-                'false-alarm ratio needs the historical event archive loaded (owner Action 12).'
+                'false-alarm ratio needs the historical event archive loaded (owner Action 12). '
+                'The count is the number of alarms the truth set cannot speak to, so it is '
+                'expected to be large while the truth set is a named list — it is the size of '
+                'what this hindcast does not know.'
             ),
         },
         'caveats': list(episode.get('known_limitations', [])),
