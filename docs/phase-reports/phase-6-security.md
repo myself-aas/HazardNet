@@ -37,7 +37,7 @@ longer held once the code was actually followed to the deployed path.
 
 Probe of `https://www.hazardnet.live/` on 2026-09-17/18:
 
-| Header | Live | `vercel.json` |
+| Header | Live (`main` and this branch both declare these) | `vercel.json` |
 | ------ | ---- | ------------- |
 | `Content-Security-Policy` | **absent** | enforcing policy, ad allowlist |
 | `X-Content-Type-Options` | **absent** | `nosniff` |
@@ -49,11 +49,18 @@ Probe of `https://www.hazardnet.live/` on 2026-09-17/18:
 | `Access-Control-Allow-Origin` | **`*`** on the HTML document | not set by us (Vercel default; harmless for public HTML, wrong as a habit) |
 
 `/.well-known/security.txt` also returns the platform's 404 although the file is in the
-repository **and** in `dist/`. Both are consistent with one explanation: the headers were
-added in Phase 0 (`3651bc5`) and the production deployment predates that config (the
-alternative — Vercel building from a different root directory — is covered by Action 2a-bis
-and would mean `frontend/vercel.json` is the config in force, which is why it now carries a
-byte-identical policy, asserted by `__tests__/securityHeadersParity.test.js`).
+repository **and** in `dist/`. Further probes narrowed it down: `/api/metrics` and
+`/api/forecasts` both return `X-Vercel-Error: NOT_FOUND` even though both handlers exist on
+`main`, while static files under `frontend/public/` (`/serviceWorker.js`,
+`/data/forecasts-latest.json`) serve normally. That is the signature of the Vercel project's
+**Root Directory** being `frontend/` — the repository root's `vercel.json` and the
+root-level `api/**` are outside the deployed tree (the 2026-09-14/15 finding), and this
+branch is additionally 14 commits ahead of the `main` that production tracks. Action 7 now
+carries that evidence and the two ways to resolve it.
+
+Because both `vercel.json` files now carry a byte-identical policy (asserted by
+`__tests__/securityHeadersParity.test.js`), the headers arrive whichever root the project
+ends up using — the API functions are the part that needs the root decision.
 
 **Fixed in-repo:** the CSP now has exactly one definition
 (`backend/security/csp.js`); both `vercel.json` files carry that string and helmet parses

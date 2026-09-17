@@ -415,35 +415,50 @@ the automated pass cannot cover is listed in `docs/frontend/ACCESSIBILITY.md` §
 
 ---
 
-## Action 7 — Re-deploy, then confirm the headers are actually live 🔴 (P0, ~15 min)
+## Action 7 — Fix the deployment root, then confirm the headers are live 🔴 (P0, ~30 min)
 
-**The repository and the live site disagree.** `www.hazardnet.live` (probed 2026-09-18)
-serves `Access-Control-Allow-Origin: *` on the HTML document and **none** of the security
-headers defined in `vercel.json` — no CSP, no `X-Content-Type-Options`, no
-`X-Frame-Options`, no `Referrer-Policy`, no `Permissions-Policy`, no COOP — and its HSTS
-header lacks `includeSubDomains`. `/.well-known/security.txt` returns Vercel's platform
-404 although the file is in the repository and in `dist/`.
+**The repository and the live site disagree, and the evidence points at the deployment
+root rather than a missing redeploy.** Probes of `www.hazardnet.live` on 2026-09-18:
 
-Two possible causes, in order of likelihood:
+| Probe | Live | What the repo says |
+| ----- | ---- | ------------------ |
+| `/` | 200, **no** CSP/XCTO/XFO/Referrer-Policy/Permissions-Policy/COOP; HSTS without `includeSubDomains`; `Access-Control-Allow-Origin: *` | `vercel.json` (on `main` too) declares all of them |
+| `/api/metrics` | **404** `X-Vercel-Error: NOT_FOUND` | `api/metrics.js` exists on `main` |
+| `/api/forecasts` | **404** (same) | `api/forecasts.js` exists on `main` |
+| `/serviceWorker.js` | 200 | `frontend/public/serviceWorker.js` |
+| `/data/forecasts-latest.json` | 200 | `frontend/public/data/forecasts-latest.json` |
+| `/.well-known/security.txt` | **404** | `frontend/public/.well-known/security.txt` (on this branch) |
+| `/data/alerts-latest.json` | **404** | `frontend/public/data/alerts-latest.json` (on this branch) |
 
-1. **The production deployment predates the config.** The headers were added in Phase 0
-   (`3651bc5`, 2026-09-17) and the file is served from the deployment output, so a deploy
-   is required before either appears. Trigger a redeploy (empty commit on `main`, or
-   Vercel → Deployments → Redeploy) and re-probe.
-2. **The Vercel project root is not the repository root.** `docs/audits/2026-09-14-vercel-deploy-403-project-unresolved.md`
-   and §2a-bis cover the Root Directory setting; if Vercel builds from `frontend/`, the
-   root `vercel.json` is never read and `frontend/vercel.json` (which carries the same
-   headers, asserted equal by `__tests__/securityHeadersParity.test.js`) is the one in
-   force. Check Settings → Build & Development → Root Directory.
+Static files that live under `frontend/public/` are served; everything that lives at the
+**repository root** (`api/**`, the root `vercel.json`) is not — which is what the Vercel
+project's **Root Directory** being `frontend/` produces, and what
+`docs/audits/2026-09-14-vercel-deploy-403-project-unresolved.md` warned about. A second,
+independent fact: this branch is 14 commits ahead of `main`, and production tracks `main`.
 
-**Verify (must all hold after the deploy):**
+So there are two things to fix, in this order:
+
+1. **Root Directory** (Vercel → Settings → Build & Development → Root Directory). Either:
+   - set it to the repository root, and then fix the root `vercel.json` for that layout
+     (its `buildCommand: "npm run build"` and `outputDirectory: "dist"` are only correct
+     when the root is `frontend/` — at the repo root the build is
+     `cd frontend && npm install && npm run build` with output `frontend/dist`), **or**
+   - keep it as `frontend/` and accept that `api/**` is not deployed from there: the
+     frontend's headers then come from the new `frontend/vercel.json` (added on this
+     branch), and the serverless endpoints need either their own project or a root-directory
+     change. `docs/adr/0003-deploy-topology.md` is the place that decision is recorded.
+2. **Merge the branch** (owner Action 2 already covers the merge + env vars) so the deployed
+   commit contains the Phase 0–6 work at all.
+
+**Verify (all four must hold after the deploy):**
 ```bash
 curl -sI https://www.hazardnet.live/ | grep -iE 'content-security-policy|x-content-type|x-frame|referrer-policy|permissions-policy|cross-origin-opener|strict-transport'
-curl -s  https://www.hazardnet.live/.well-known/security.txt | head -3    # RFC 9116 fields
-curl -sI https://www.hazardnet.live/ | grep -ci 'access-control-allow-origin: \*'   # → 0
+curl -s  https://www.hazardnet.live/.well-known/security.txt | head -3          # RFC 9116 fields
+curl -sI https://www.hazardnet.live/api/v1/alerts/policy | head -1              # 200, not 404
+curl -sI https://www.hazardnet.live/ | grep -ci 'access-control-allow-origin: \*'  # → 0
 ```
-A CDN cache is involved (`X-Vercel-Cache`), so re-probe with a cache-buster query string
-before concluding anything.
+A CDN cache is involved (`X-Vercel-Cache: HIT`), so re-probe with a cache-buster query
+string before concluding anything.
 
 ## Action 8 — Validate the corrected Firestore rules, and consider a shared rate-limit store 🟠
 
