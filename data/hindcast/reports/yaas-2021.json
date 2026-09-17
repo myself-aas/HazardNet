@@ -1,7 +1,7 @@
 {
   "schema": "hazardnet-hindcast-report/v1",
   "hindcast_version": "1.0.0",
-  "generated_at": "2026-09-17T23:12:14Z",
+  "generated_at": "2026-09-17T23:13:10Z",
   "episode": {
     "id": "yaas-2021",
     "title": "Cyclone Yaas \u2014 Bangladesh coast, 26 May 2021",
@@ -278,7 +278,7 @@
           "max": 0.3166
         }
       },
-      "finding": "With the sustained maximum the shipped pipeline uses, the episode's class scores 0.0285\u20130.2457 and crosses the 0.5 band on 0 of 128 rows; with the gust field the archive also carries it scores 0.0388\u20130.3166 and crosses on 0. The wind driver, not the formula alone, decides whether this event was detectable. Note what the second number does *not* fix: the track's top class is still Fire, so the separation between the two wind-driven classes is a second, independent defect."
+      "finding": "With the sustained maximum the shipped pipeline uses, the episode's class scores 0.0285\u20130.2457 and crosses the 0.5 band on 0 of 128 rows; with the gust field the archive also carries it scores 0.0388\u20130.3166 and crosses on 0. Even the gust field leaves the episode class below the band, so the wind argument alone does not explain the miss: at this distance from the track the driver the pipeline uses cannot represent the hazard, and the class the formula describes is unreachable for this event. Note what neither number fixes: the track's top class is Fire under either driver, so the separation between the wind-driven classes is a second, independent defect."
     },
     "detection_counterfactual": {
       "named_districts": 9,

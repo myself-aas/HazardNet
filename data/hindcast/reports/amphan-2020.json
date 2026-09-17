@@ -1,7 +1,7 @@
 {
   "schema": "hazardnet-hindcast-report/v1",
   "hindcast_version": "1.0.0",
-  "generated_at": "2026-09-17T23:12:10Z",
+  "generated_at": "2026-09-17T23:13:08Z",
   "episode": {
     "id": "amphan-2020",
     "title": "Cyclone Amphan \u2014 Bangladesh landfall, 20 May 2020",
@@ -370,7 +370,7 @@
           "max": 0.5145
         }
       },
-      "finding": "With the sustained maximum the shipped pipeline uses, the episode's class scores 0.0136\u20130.2480 and crosses the 0.5 band on 0 of 128 rows; with the gust field the archive also carries it scores 0.0987\u20130.5145 and crosses on 2. The wind driver, not the formula alone, decides whether this event was detectable. Note what the second number does *not* fix: the track's top class is still Fire, so the separation between the two wind-driven classes is a second, independent defect."
+      "finding": "With the sustained maximum the shipped pipeline uses, the episode's class scores 0.0136\u20130.2480 and crosses the 0.5 band on 0 of 128 rows; with the gust field the archive also carries it scores 0.0987\u20130.5145 and crosses on 2. The wind driver, not the formula alone, decides whether this event was detectable at the district point. Note what neither number fixes: the track's top class is Fire under either driver, so the separation between the wind-driven classes is a second, independent defect."
     },
     "detection_counterfactual": {
       "named_districts": 14,
