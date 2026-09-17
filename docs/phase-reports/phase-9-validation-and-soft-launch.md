@@ -186,7 +186,7 @@ cyclone. The finding sentence says so.
 
 | Term | Formula as wired | Argument it receives | Rows at ceiling |
 | --- | --- | --- | --- |
-| `fire_wind` | `(wind − 5) / 20` | the daily max wind (≥ 25 km/h on a coastal afternoon) | 116/128 (Amphan), 128/128 (2025), 36/128 (2024) |
+| `fire_wind` | `(wind − 5) / 20` | the daily max wind (≥ 25 km/h on a coastal afternoon) | 128/128 (2025) · 116/128 (Amphan) · 86/128 (Yaas) · 36/128 (2024) |
 | `fire_drying` | `et_sum_mm / 6` | the **horizon total** ET (the divisor is a *daily* value; the formula's own default is 3 mm) | **128/128 in all four episodes** |
 | `heat_persistence` | `duration_days / 5` | the horizon **length** (7 or 15 days), not an exceedance count | **128/128 in all four** |
 | `cold_persistence` | `duration_days / 5` | the same | **128/128 in all four** |
