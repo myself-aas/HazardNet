@@ -127,8 +127,8 @@ Tests: `frontend/src/lib/__tests__/alertsCsv.test.ts`.
 
 ## 5. Bilingual UI
 
-`lib/i18n.ts` (dictionary + store) and `hooks/useI18n.ts` (React binding).
-`components/alerts/LanguageToggle.tsx` is the control.
+`lib/i18n.ts` (137 keys per language — 274 strings — plus the store) and
+`hooks/useI18n.ts` (React binding). `components/alerts/LanguageToggle.tsx` is the control.
 
 Rules:
 

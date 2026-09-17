@@ -165,7 +165,8 @@ about the alert layer required a canvas.
 
 ## 5. Bilingual UI (English / Bengali)
 
-`lib/i18n.ts` holds both dictionaries (**272 keys**, asserted complete), a `t()` that
+`lib/i18n.ts` holds both dictionaries (**137 keys each, 274 strings**; a test asserts
+neither dictionary has a missing or orphan key), a `t()` that
 falls back to English rather than to a key, and a store that fires listeners.
 `useI18n()` binds it to React and writes `<html lang>` on every change
 (`en` / `bn-BD`).
