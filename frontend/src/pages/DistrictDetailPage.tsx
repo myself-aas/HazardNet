@@ -977,7 +977,7 @@ export const DistrictDetailPage: React.FC = () => {
                 </span>
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-50 border border-purple-200 text-purple-800 text-xs font-mono font-bold">
                   <Bot className="w-3 h-3 text-purple-600" />
-                  AI Model Confidence: {data.modelAssessment.confidenceLevel}% (High)
+                  Model Score: {data.modelAssessment.confidenceLevel}% (uncalibrated)
                 </span>
               </div>
 
@@ -985,8 +985,9 @@ export const DistrictDetailPage: React.FC = () => {
               <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                 <p className="text-slate-800 text-sm sm:text-base leading-relaxed font-medium max-w-4xl">
                   {data.hazardSubtype}. Continuous severity index calculated at{' '}
-                  <strong className="text-slate-950 font-bold">{(data.modelAssessment.continuousSeverityIndex * 100).toFixed(0)}%</strong> with an AI ensemble confidence of{' '}
-                  <strong className="text-slate-950 font-bold">{data.modelAssessment.confidenceLevel}%</strong> calibrated against ground stations and Sentinel-1 SAR observations. Primary exposure focuses across low-elevation agricultural floodplains, dense riverine settlements, and vulnerable embankment corridors.
+                  <strong className="text-slate-950 font-bold">{(data.modelAssessment.continuousSeverityIndex * 100).toFixed(0)}%</strong> with a model score of{' '}
+                  <strong className="text-slate-950 font-bold">{data.modelAssessment.confidenceLevel}%</strong>. That score is the classifier&rsquo;s own (uncalibrated) softmax, not a measured probability of the event — calibration and POD/FAR are tracked in the{' '}
+                  <a href="/methodology" className="underline decoration-dotted font-semibold">methodology</a>. Primary exposure focuses across low-elevation agricultural floodplains, dense riverine settlements, and vulnerable embankment corridors.
                 </p>
 
                 {/* Quick Live Link / QR preview for Screen */}
@@ -2292,20 +2293,24 @@ export const DistrictDetailPage: React.FC = () => {
 
           <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-mono font-bold text-blue-700 uppercase">Calibration Accuracy</span>
-              <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-blue-50 text-blue-700">Platt Calibration</span>
+              <span className="text-xs font-mono font-bold text-blue-700 uppercase">Calibration</span>
+              <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-50 text-amber-700">Not yet fitted</span>
             </div>
-            <div className="text-3xl font-black text-slate-900 font-mono">98.55%</div>
-            <p className="text-xs text-slate-500">High probability reliability calibrated directly against BWDB ground truth river gauge stations.</p>
+            <div className="text-3xl font-black text-slate-900 font-mono">—</div>
+            <p className="text-xs text-slate-500">
+              No calibration map has been fitted: the repository has no observed-outcome
+              dataset to fit one against, so no calibration accuracy can be quoted.
+              See the <a href="/methodology" className="underline decoration-dotted font-semibold">methodology</a>.
+            </p>
           </div>
 
           <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-mono font-bold text-emerald-700 uppercase">Ensemble Agreement</span>
-              <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-50 text-emerald-700">Sentinel-1 SAR</span>
+              <span className="text-xs font-mono font-bold text-emerald-700 uppercase">Model Score</span>
+              <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-50 text-emerald-700">Softmax</span>
             </div>
             <div className="text-3xl font-black text-slate-900 font-mono">{data.modelAssessment.confidenceLevel}%</div>
-            <p className="text-xs text-slate-500">Cross-verified across multi-spectral satellite radar feeds and weather telemetry stations.</p>
+            <p className="text-xs text-slate-500">The classifier's own score for its chosen class — uncalibrated, and not an ensemble or ground-station agreement measure.</p>
           </div>
         </div>
 
@@ -2324,9 +2329,9 @@ export const DistrictDetailPage: React.FC = () => {
               </p>
             </div>
             <div>
-              <strong className="text-slate-950 font-bold block mb-1">[2] Probability Scoring & Calibration (Platt Calibration & Softmax Scoring):</strong>
+              <strong className="text-slate-950 font-bold block mb-1">[2] Probability Scoring (Softmax — not yet calibrated):</strong>
               <p className="text-slate-700">
-                The AI model converts complex multi-hazard sensor readings into an intuitive 0–100% risk probability score for floods, waterlogging, and riverbank erosion. This calibrated scoring prevents false alarms and guarantees that District Disaster Management Committee (DDMC) officials receive trustworthy early alerts.
+                The model converts multi-hazard sensor readings into a 0–100% hazard score. It is the classifier&rsquo;s own softmax for the class it chose: it is <strong className="font-bold">not</strong> a calibrated probability, and the project publishes no calibration accuracy because no calibration map has been fitted — that requires observed-outcome data. Detection performance (POD / FAR / CSI) is likewise reported only once it can be measured against the event archive.
               </p>
             </div>
             <div>

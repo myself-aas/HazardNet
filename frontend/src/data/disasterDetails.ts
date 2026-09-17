@@ -7,6 +7,17 @@ export interface UpazilaImpact {
   householdsAffected: number;
 }
 
+/**
+ * ⚠ This module SYNTHESISES a district detail view. The exposure figures
+ * (impact area, population, upazila lists, shelters, relief tonnage) and
+ * `confidenceLevel` are derived from the static district baseline
+ * (`bangladeshDistricts.ts`) for display; they are not model output and must not
+ * be presented as such. `confidenceLevel` in particular is
+ * `92 + severity * 7.2` — a display score, not a calibrated probability (Phase 3
+ * MLOps: `docs/mlops/CALIBRATION.md`, and the copy guards in
+ * `scripts/tests/test_model_claims.py`). Replacing this panel with served
+ * forecast fields is tracked for Phase 5.
+ */
 export interface GranularDisasterData {
   districtId: string;
   districtName: string;
@@ -50,6 +61,8 @@ export interface GranularDisasterData {
       hazard: string;
       probability: number;
     }[];
+    // Display score derived from the static baseline severity — NOT a calibrated
+    // probability and not read from the published forecast. See the module header.
     confidenceLevel: number; // e.g. 96.4%
   };
   emergencyResponse: {
@@ -232,6 +245,8 @@ export function getGranularDisasterData(districtId: string): GranularDisasterDat
       continuousSeverityIndex: district.severity,
       riskCategory: district.risk,
       softmaxProbabilities,
+      // Display score for the panel; see the module header. Do not describe it as
+      // a calibrated confidence — nothing in this repository is calibrated.
       confidenceLevel: Number((92 + sev * 7.2).toFixed(1)),
     },
     emergencyResponse: {

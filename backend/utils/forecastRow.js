@@ -8,6 +8,12 @@
  * step, and passes the dual-track values (plus `division` / `pcode`) through
  * to storage when present, preserving the README's dual-track severity story
  * for downstream consumers.
+ *
+ * `confidence` is the model's own softmax unless a `confidence_calibrated`
+ * column is present, in which case the calibrated value is published as
+ * `confidence` (with `confidence_raw` carrying the softmax and `confidence_kind`
+ * set to `calibrated_probability`). Nothing in this repository is calibrated by
+ * default — see `docs/mlops/CALIBRATION.md`.
  */
 
 // Tactical and strategic forecast horizons shared by the notebook, API, and UI.
@@ -83,6 +89,27 @@ export function parseCsvForecastRow(row, rowNumber) {
     return { ok: false, error: `Row ${rowNumber}: Invalid confidence ${row.confidence}` };
   }
 
+  // ── calibrated confidence (Phase 3) ──────────────────────────────────────
+  // A row produced by `python -m mlops.cli apply-calibration` carries the softmax
+  // in `confidence_raw` and the fitted map's output in `confidence_calibrated`.
+  // When that column is present it *becomes* `confidence` (so every existing
+  // consumer reads the calibrated number) and `confidence_kind` is set to
+  // `calibrated_probability`. The uncalibrated value stays readable as
+  // `confidence_raw`, so nothing is lost and no consumer has to guess which of the
+  // two numbers it is looking at.
+  let confidenceValue = confidence;
+  let calibratedValue = null;
+  if (row.confidence_calibrated !== undefined && row.confidence_calibrated !== '') {
+    calibratedValue = parseFloat(row.confidence_calibrated);
+    if (isNaN(calibratedValue) || calibratedValue < 0 || calibratedValue > 1) {
+      return {
+        ok: false,
+        error: `Row ${rowNumber}: Invalid confidence_calibrated ${row.confidence_calibrated}`
+      };
+    }
+    confidenceValue = calibratedValue;
+  }
+
   const districtId = parseInt(row.district_id, 10);
   if (isNaN(districtId)) {
     return { ok: false, error: `Row ${rowNumber}: Invalid district_id ${row.district_id}` };
@@ -102,10 +129,15 @@ export function parseCsvForecastRow(row, rowNumber) {
     horizon,
     hazard_type: hazardType,
     severity_score: severity,
-    confidence,
+    confidence: confidenceValue,
     target_date: row.target_date,
     prediction_date: row.prediction_date
   };
+
+  if (calibratedValue !== null) {
+    value.confidence_raw = confidence;
+    value.confidence_kind = 'calibrated_probability';
+  }
 
   // The Kaggle notebook publishes Open-Meteo values in native units. Convert
   // them at the ingest boundary so API consumers keep the documented units.
@@ -199,9 +231,12 @@ export function parseCsvForecastRow(row, rowNumber) {
     const raw = String(row.soil_channels_fabricated).trim().toLowerCase();
     if (raw === 'true' || raw === 'false') value.soil_channels_fabricated = raw === 'true';
   }
-  // `confidence_kind` distinguishes the model's own (uncalibrated) softmax from
-  // a future calibrated probability, so no consumer has to guess.
-  if (row.confidence_kind && String(row.confidence_kind).trim()) {
+  // `confidence_kind` distinguishes the model's own (uncalibrated) softmax from a
+  // calibrated probability, so no consumer has to guess. The case above (a
+  // `confidence_calibrated` column) has already decided it; an explicit column
+  // value otherwise wins, and the default is applied at the API boundary
+  // (`backend/utils/predictFromStore.js`).
+  if (!value.confidence_kind && row.confidence_kind && String(row.confidence_kind).trim()) {
     value.confidence_kind = String(row.confidence_kind).trim();
   }
 

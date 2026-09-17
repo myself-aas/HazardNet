@@ -294,6 +294,18 @@ artefact handshake (`Models/VERSION.json`) enforced in CI.
 precision/recall/F1 values, no ROC/PR curves, no calibration curve, no confusion matrix, and no
 lead-time or POD/FAR/CSI numbers anywhere in the repository.
 
+**Phase 3 status (2026-09-17).** The *evaluation path* now exists outside the notebook:
+`scripts/mlops/` computes POD/FAR/CSI, per-class one-vs-rest scores, the class confusion
+matrix, reliability (ECE/MCE/Brier/Brier skill) and lead-time distributions from published
+rows joined to observed outcomes, and `mlops.cli drift` measures PSI against the previous
+published run. It is wired into `.github/workflows/mlops.yml` nightly. **No numbers can be
+reported from it yet**: the event archive is not loaded, so every run to date returns
+`insufficient_truth` with the match counts, and the calibration map ships unfitted
+(`Models/calibration/confidence_map.template.json`, refused by `apply-calibration`). See
+`docs/phase-reports/phase-3-mlops.md` §4 for the exact blocker — the short version is that
+calibration and verification both need observed outcomes, and none are joined yet. Copy that
+described the softmax as calibrated has been corrected (`faithfulness` note below).
+
 Priority order (feeds Phases 2–3 of the deployment plan):
 
 1. **Triage the degenerate output** (§6.1) — it makes every downstream feature meaningless.
@@ -301,7 +313,9 @@ Priority order (feeds Phases 2–3 of the deployment plan):
 3. **Run the harness with `STRATEGY='temporal'` and `spatio_temporal`**, commit the results and the
    split boundaries; report per-class metrics, not accuracy.
 4. **Calibrate** (isotonic on a recent, disjoint window) and publish a reliability diagram; replace
-   `confidence` semantics accordingly, in code and in copy.
+   `confidence` semantics accordingly, in code and in copy. *Phase 3 built the fitter, the artifact
+   format and the refusal rules; the step that remains is supplying the labels — nothing can be
+   calibrated until the event archive is loaded and joined (`docs/mlops/CALIBRATION.md`).*
 5. **Fix the physics track** so it is independent, then define the warning-level mapping from
    agreement + calibrated probability (product spec §1.3).
 6. **Collapse to one inference path** (§7) and add a parity test if two are genuinely needed.

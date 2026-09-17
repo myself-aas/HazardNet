@@ -254,7 +254,9 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
             <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
               <div className="flex items-center justify-between text-xs font-mono">
                 <span className="text-slate-800 font-bold">Continuous Severity Regression Head</span>
-                <span className="text-slate-500">Confidence: <strong className="text-slate-900">{data.modelAssessment.confidenceLevel}%</strong></span>
+                <span className="text-slate-500" title="The classifier's own softmax for its chosen class. It is not a calibrated probability of the event.">
+                  Model score: <strong className="text-slate-900">{data.modelAssessment.confidenceLevel}%</strong> <span className="text-slate-400">(uncalibrated)</span>
+                </span>
               </div>
 
               <div className="space-y-1.5">
@@ -403,7 +405,7 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
                 data.modelAssessment.continuousSeverityIndex < 0.66 ? 'text-amber-600' :
                 'text-rose-600'
               }`}>
-                {(data.modelAssessment.continuousSeverityIndex * 100).toFixed(1)}% (Confidence: {data.modelAssessment.confidenceLevel}%)
+                {(data.modelAssessment.continuousSeverityIndex * 100).toFixed(1)}% (model score: {data.modelAssessment.confidenceLevel}%, uncalibrated)
               </strong>
             </div>
             <div>

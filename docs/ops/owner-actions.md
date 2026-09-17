@@ -215,3 +215,52 @@ rejected; next hourly run pushes its data commit successfully.
 - [ ] Manual hourly run green; `/metadata` shows a real `prediction_date`; site cards live
 - [ ] `main` protected (PR + 6 status checks + bot bypass); direct push rejected
 - [ ] Calendar note: `audit-exceptions.json` expires **2026-12-12** (CI fails to force re-review)
+
+---
+
+## Action 4 — Phase 3 follow-ups (MLOps)
+
+These are the two decisions and one data load that unblock the phase's headline
+deliverables. None of them can be done from inside the repository.
+
+### 4a. Load the event archive so calibration and verification can run
+
+The model registry, the calibration fitter and the evaluation harness are built and
+tested; what they cannot do without is observed outcomes. `hazard_events` ships empty
+by design (`scripts/db/008_hazard_events_postgis.sql`), and the sandbox has no
+Postgres binary, so:
+
+1. load the 2,931-event archive into the store
+   (`python -m etl.cli events --input <extract> --apply`, see `scripts/etl/README.md`),
+   and note the ingested count against the claim — the CLI reports the drift;
+2. export the outcomes joined to districts and dates and hand the file to the
+   nightly job (`mlops.cli evaluate --outcomes <file>`);
+3. once the join produces ≥200 labelled predictions, fit the calibration map
+   (`mlops.cli calibrate … --out Models/calibration/confidence_map.json`) — its
+   `validate()` refuses an under-sampled or undocumented fit, and
+   `apply-calibration` refuses the unfitted template that ships today.
+
+Until step 3 happens, `confidence` stays the model's softmax and the site says so.
+
+### 4b. Decide what to do about the INT8 artifact 🔴 (recommended: leave retired)
+
+`Models/hazardnet_int8.tflite` is a byte-identical copy of the FP32 file; ADR 0007
+records that TFLite's converter crashes on `CONV_3D` under INT8. The registry now
+records this (`stage: retired`, `duplicate_of`, refused promotion). Two acceptable
+outcomes: either delete the file and the ADR 0007 pointer to it, or keep it retired
+with the registry note. What must not happen is a third artifact that *looks* like a
+quantized model without being one.
+
+### 4c. Approve the promotion policy
+
+`Models/REGISTRY.json` → `policy` gates promotions on a passing challenger
+comparison **and** a named approver, with absolute bars for a first champion
+(CSI ≥ 0.20, POD ≥ 0.30, FAR ≤ 0.80, ECE ≤ 0.20). Those bars are placeholders chosen
+to be conservative for a model whose output is documented as degenerate
+(MODEL_CARD §6.1) — the owner should set the real thresholds before the first
+challenger is evaluated, and record who may act as the approver.
+
+**Verify:**
+`cd scripts && python -m mlops.cli audit` → `ok`; `python -m mlops.cli registry --write`
+→ `unchanged`; `python -m mlops.cli evaluate --predictions ../backend/data/forecasts/hazardnet_forecasts_latest.csv --outcomes <archive export>`
+→ `insufficient_truth` today, `ok` with POD/FAR/CSI once the archive is loaded.

@@ -209,3 +209,55 @@ Seven things this increment changes, and the honest limit on each:
    from the committed forecast CSVs (GAUL spellings modernised) and `test_etl_events.py` fails if it
    drifts from either the fixture vocabulary or the migration's district seed — the two places a
    district can silently disappear again.
+
+## Phase 3 MLOps (2026-09-17)
+
+Phase 3 built the verification, calibration and registry surface (`scripts/mlops/`,
+`Models/REGISTRY.json`, `.github/workflows/mlops.yml`) and corrected the public
+copy that claimed a calibration which did not exist. What it *could not* fix is the
+thing that blocks the phase's headline deliverable, and the honest list of what is
+still open is below.
+
+1. **The event archive is not loaded, so nothing can be calibrated or scored.** The
+   PostGIS store's `hazard_events` table is empty by design (the migration ships the
+   schema, the prior function and the verification queries, but no rows), the sandbox
+   has no Postgres binary, and no export of the 2,931-event archive is committed.
+   Consequences, all reported rather than papered over: `mlops.cli calibrate` refuses
+   to fit (no labelled outcomes), `mlops.cli evaluate` returns
+   `insufficient_truth` with the counts, and
+   `Models/calibration/confidence_map.template.json` ships **unfitted** so
+   `apply-calibration` refuses it. `confidence` is therefore still the model's
+   softmax — the difference from before is that no surface now says otherwise.
+2. **A fitted calibration map cannot be shipped from this environment.** Fitting on
+   the model's own scores, the ETL fixtures or the synthetic MLOps fixture would
+   produce a number that looks calibrated; the map's `validate()` refuses a fit
+   without ≥200 labelled rows and without provenance, and the phase deliberately did
+   not work around that.
+3. **The model's degenerate output is a training problem, not a calibration one.**
+   MODEL_CARD §6.1 is unchanged: 19/25 rows at `1.0000` (7-day) and 49/49 (15-day),
+   one class for most districts. Calibration is monotone, so it cannot make a
+   collapsed classifier informative; the registry's drift report now *detects* the
+   collapse (`class_share_drift` → `collapsed` at ≥95 % share) but detection is not a
+   fix.
+4. **No INT8 artifact exists, and none was fabricated.** `hazardnet_int8.tflite` is a
+   byte-identical copy of the FP32 file (`sha256 6b76d7ef…43d1c`), recorded by ADR
+   0007 and now by the registry (`duplicate_of`, `stage: retired`, and a refusal to
+   promote the duplicate). Producing a real INT8 bundle needs a converter that
+   supports `CONV_3D`, or an architecture change.
+5. **The alarm threshold in the evaluation is a stand-in.** `mlops.cli evaluate`
+   scores at `severity >= 0.5` because PRODUCT_SPEC §1.3's WATCH/WARNING/SEVERE
+   thresholds belong to the Phase 4 alert engine. Every report records the threshold
+   used, so a later change is visible rather than silent.
+6. **Drift is measured on published driver columns, not on model inputs.** The tensors
+   themselves are fetched from Earth Engine per run and are not committed, so PSI runs
+   over the Open-Meteo/hydrology columns written next to each row. That is a proxy,
+   and it is labelled as one; the `dataset_version` scene manifest is what would let a
+   future phase drift the actual input stack.
+7. **The quarterly retrain is a reminder, not a retrain.** Training needs Earth Engine
+   credentials and a frozen train/validation/test window; the workflow opens an issue
+   with the brief and the checklist instead of pretending to run the notebook.
+8. **Two public copy surfaces still need a Phase 5 pass.** The district detail panel
+   (`frontend/src/data/disasterDetails.ts`) synthesises exposure figures, upazila
+   lists and shelter/relief numbers from the static district baseline. Phase 3
+   documented that in the module and corrected every model-confidence label, but the
+   panel itself still shows illustrative numbers next to real ones.
