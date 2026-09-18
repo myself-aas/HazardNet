@@ -66,12 +66,21 @@ test.describe('HazardNet smoke', () => {
   test('no horizontal overflow at common widths', async ({ page }) => {
     // Four very different pages: the editorial front door and the console it links to
     // (added with the PR #29 split), the advisory screen (cards, chips, controls) and the
-    // generated validation page (eight-column tables, added with Phase 9 §8.1 — a wide
-    // table is exactly the kind of content that quietly widens a phone page).
+    // generated validation page (tables, added with Phase 9 §8.1 — a wide table is exactly
+    // the kind of content that quietly widens a phone page).
+    //
+    // That is sixteen full page loads in one test, and the default 60 s budget is not
+    // enough for it: CI failed here on 2026-09-18 with `page.goto: net::ERR_ABORTED`
+    // followed by the test timing out — a navigation that never settled, not an overflow
+    // assertion (the assertion reports the offending element and the measured pixels, and
+    // this run reported neither). `slow()` triples the budget, and `domcontentloaded`
+    // stops the navigation waiting on a `load` event these SPA pages fire late — readiness
+    // is asserted explicitly below, on the element the measurement actually needs.
+    test.slow();
     for (const path of ['/', '/live', '/advisories', '/model-performance']) {
       for (const width of [320, 375, 768, 1280]) {
         await page.setViewportSize({ width, height: 900 });
-        await page.goto(`${BASE}${path}`);
+        await page.goto(`${BASE}${path}`, { waitUntil: 'domcontentloaded' });
         // Measure only once the lazy route has rendered. Asserting immediately
         // after `goto` measured an empty shell and reported 0px overflow while
         // the real page scrolled ~285px sideways on a phone. The console at
