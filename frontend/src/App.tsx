@@ -38,10 +38,33 @@ const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 const AdvisoriesPage = lazy(() => import('./pages/AdvisoriesPage').then((m) => ({ default: m.AdvisoriesPage })));
 const AnalyticsAnalyticsPage = lazy(() => import('./pages/AnalyticsPage').then((m) => ({ default: m.AnalyticsAnalyticsPage })));
 const DistrictDetailPage = lazy(() => import('./pages/DistrictDetailPage').then((m) => ({ default: m.DistrictDetailPage })));
+const AlertsPage = lazy(() => import('./pages/AlertsPage').then((m) => ({ default: m.AlertsPage })));
+const AlertDetailPage = lazy(() => import('./pages/AlertDetailPage').then((m) => ({ default: m.AlertDetailPage })));
+const StatusPage = lazy(() => import('./pages/StatusPage').then((m) => ({ default: m.StatusPage })));
 const UserDashboardPage = lazy(() => import('./pages/UserDashboardPage'));
 const PublicProfilePage = lazy(() => import('./pages/PublicProfilePage'));
 const SetPasswordPage = lazy(() => import('./pages/SetPasswordPage'));
 const ChatBot = lazy(() => import('./components/ChatBot'));
+// Long-form public reference pages. Copy lives in src/content/site-routes.json
+// and is prerendered to static HTML at build time (scripts/prerender.mjs).
+const ArticlePage = lazy(() => import('./components/ArticlePage'));
+// The editorial front door at `/`. Its copy is the `/` entry in the same
+// site-routes.json the prerenderer reads; only the live artifact panels are React.
+const FrontDoor = lazy(() => import('./pages/FrontDoor'));
+
+/**
+ * Generated content pages (Phase 8). The hazard methodology pages, the district outlooks and the
+ * season retrospectives are produced by `scripts/build_content_engine.mjs` into
+ * `src/content/generated-routes.json`, so their paths depend on the 64-district and 8-hazard lists
+ * rather than being written out here one by one. They render through the same long-form page as
+ * `/methodology`: `ArticlePage` resolves its copy from the URL, and `usePageSeo` marks a path the
+ * engine did not generate `noindex,follow` — so an invented slug such as `/districts/atlantis`
+ * gets the unavailable state instead of a page that pretends to be a district outlook.
+ */
+const GeneratedContentPage: React.FC = () => {
+  const { pathname } = useLocation();
+  return <ArticlePage path={pathname} />;
+};
 
 /** Full-height fallback shown while a lazy route chunk streams in. */
 const RouteFallback = () => (
@@ -61,8 +84,15 @@ const AppContent: React.FC = () => {
     initializeAttributionCapture();
   }, []);
 
+  /**
+   * `/live` — and only `/live` — is the full-bleed console: transparent navbar over the
+   * map, no page padding, no footer. `/` is an editorial page and gets the ordinary
+   * document flow (PR #29, "front door" split). `/home`, `/home/overview` and
+   * `/forecast/overview` remain valid console deep links, so they keep the full-bleed
+   * layout even though they are no longer the canonical address.
+   */
   const isHomePage =
-    location.pathname === '/' ||
+    location.pathname === '/live' ||
     location.pathname === '/home' ||
     location.pathname === '/home/overview' ||
     location.pathname === '/forecast/overview';
@@ -100,11 +130,17 @@ const AppContent: React.FC = () => {
         }}
       />
 
-      {/* Top Navigation - Upper layer overlay with near-transparent background.
-          z-40 keeps the sticky header above page content but BELOW the page
-          overlays (disaster detail z-[1200]+, print preview, chat, modals) —
-          it used to be z-[9990], which trapped every modal rendered inside
-          <main> underneath the header, so popups visually collided with it. */}
+      {/* Skip link (WCAG 2.4.1): first focusable element on every page, so a
+          keyboard or screen-reader user can jump past the navbar straight to
+          the content. Visible only while focused. */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-[9999] focus:rounded-xl focus:bg-slate-900 focus:px-4 focus:py-2.5 focus:text-sm focus:font-bold focus:text-white focus:shadow-lg"
+      >
+        Skip to main content
+      </a>
+
+      {/* Top Navigation - Upper layer overlay with near-transparent background */}
       {!['/terms', '/privacy'].some((p) => location.pathname.startsWith(p)) && !isAuthPage && (
         <div
           className={`z-40 pointer-events-auto w-full ${
@@ -117,6 +153,8 @@ const AppContent: React.FC = () => {
 
       {/* Main Content Area */}
       <main
+        id="main-content"
+        tabIndex={-1}
         className={
           isAuthPage
             ? 'flex-1 relative w-full pointer-events-auto'
@@ -136,7 +174,11 @@ const AppContent: React.FC = () => {
           >
             <Suspense fallback={<RouteFallback />}>
               <Routes location={location}>
-              <Route path="/" element={<Dashboard defaultTab="gis" isFullScreen={true} />} />
+              {/* `/` is the editorial front door; the console lives at `/live`. The
+                  `/home*` and `/forecast/overview` paths are kept as console deep links
+                  because they were published for the whole life of the project. */}
+              <Route path="/" element={<FrontDoor />} />
+              <Route path="/live" element={<Dashboard defaultTab="gis" isFullScreen={true} />} />
               <Route path="/home" element={<Dashboard defaultTab="gis" isFullScreen={true} />} />
               <Route path="/home/overview" element={<Dashboard defaultTab="gis" isFullScreen={true} />} />
               <Route path="/forecast/overview" element={<Dashboard defaultTab="gis" isFullScreen={true} />} />
@@ -146,6 +188,11 @@ const AppContent: React.FC = () => {
               <Route path="/forecast/compare" element={<Dashboard defaultTab="compare" />} />
               <Route path="/forecast/settings" element={<Dashboard defaultTab="settings" />} />
               <Route path="/settings" element={<Dashboard defaultTab="settings" />} />
+              {/* Public alert surface (Phase 5). The alert id in the path is the
+                  engine's own alert id, so a link from an SMS or a Telegram message
+                  lands on the exact evidence card it refers to. */}
+              <Route path="/alerts" element={<AlertsPage />} />
+              <Route path="/alerts/:id" element={<AlertDetailPage />} />
               <Route path="/advisories" element={<AdvisoriesPage />} />
               <Route path="/advisories/:subCategory" element={<AdvisoriesPage />} />
               <Route path="/analytics" element={<AnalyticsAnalyticsPage />} />
@@ -180,7 +227,31 @@ const AppContent: React.FC = () => {
                 }
               />
               <Route path="/docs" element={<Documentation />} />
+              {/* Legacy sitemap URL: /documentation was advertised in sitemap.xml
+                  while the app only ever served /docs (404 in production). */}
+              <Route path="/documentation" element={<Navigate to="/docs" replace />} />
               <Route path="/about" element={<About />} />
+              {/* Trust surfaces (E-E-A-T): methodology, model card, data sources, FAQ */}
+              <Route path="/methodology" element={<ArticlePage path="/methodology" />} />
+              <Route path="/model" element={<ArticlePage path="/model" />} />
+              <Route path="/data-sources" element={<ArticlePage path="/data-sources" />} />
+              <Route path="/faq" element={<ArticlePage path="/faq" />} />
+              {/* Phase 7 observability: what the deployment's own committed artifacts say
+                  about the freshness of the data it ships (frontend/public/data/freshness.json). */}
+              <Route path="/status" element={<StatusPage />} />
+              {/* Phase 8 content engine: hazard-by-hazard methodology, a page per district built
+                  from the run this deployment serves, and (when an event archive is loaded)
+                  annual retrospectives. All three are prerendered statically at build time. */}
+              <Route path="/hazards" element={<GeneratedContentPage />} />
+              <Route path="/hazards/:slug" element={<GeneratedContentPage />} />
+              <Route path="/districts" element={<GeneratedContentPage />} />
+              {/* Phase 9 §8.1 — composed from the committed hindcast reports by the content
+                  engine. The route must exist here as well as in the prerendered HTML: the
+                  page a visitor reaches by clicking is served by the SPA. */}
+              <Route path="/model-performance" element={<GeneratedContentPage />} />
+              <Route path="/districts/:id" element={<GeneratedContentPage />} />
+              <Route path="/retrospectives" element={<GeneratedContentPage />} />
+              <Route path="/retrospectives/:year" element={<GeneratedContentPage />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/terms" element={<Terms />} />
               <Route path="/privacy" element={<Privacy />} />

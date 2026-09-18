@@ -8,7 +8,7 @@ import { motion } from 'framer-motion';
  */
 
 export const inputClass =
-  'w-full px-3.5 py-2.5 text-sm bg-white border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 font-medium transition-all focus:outline-none focus:border-[#f9a825] focus:ring-2 focus:ring-[#f9a825]/30 disabled:bg-slate-50 disabled:text-slate-400';
+  'w-full px-3.5 py-2.5 text-sm bg-white border border-slate-200 rounded-xl text-slate-900 placeholder-slate-400 font-medium transition-all focus:outline-none focus:border-nasa-blue focus:ring-2 focus:ring-nasa-blue/30 disabled:bg-slate-50 disabled:text-slate-400';
 
 export const Card: React.FC<{
   title?: string;
@@ -208,7 +208,7 @@ export const ToggleField: React.FC<{
       role="switch"
       aria-checked={checked}
       onClick={() => onChange(!checked)}
-      className={`relative h-6 w-11 shrink-0 rounded-full transition-colors duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f9a825]/60 ${
+      className={`relative h-6 w-11 shrink-0 rounded-full transition-colors duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nasa-blue/60 ${
         checked ? 'bg-emerald-500' : 'bg-slate-300'
       }`}
     >

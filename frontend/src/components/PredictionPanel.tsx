@@ -99,7 +99,7 @@ const PredictionPanel: React.FC<PredictionPanelProps> = ({
       <div className="bg-slate-50/90 border border-slate-200/90 rounded-2xl p-6 relative overflow-hidden shadow-2xs hover:shadow-sm transition-all duration-300">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
           <div className="flex items-center gap-4">
-            <span className="w-16 h-16 bg-[#f9a825]/15 border border-[#f9a825]/30 rounded-2xl flex items-center justify-center text-xl font-black text-[#b87002] shrink-0 font-mono shadow-2xs">
+            <span className="w-16 h-16 bg-nasa-red/15 border border-nasa-blue/30 rounded-2xl flex items-center justify-center text-xl font-black text-[#b87002] shrink-0 font-mono shadow-2xs">
               {primary.name.substring(0, 2).toUpperCase()}
             </span>
             <div className="space-y-1">
@@ -175,7 +175,12 @@ const PredictionPanel: React.FC<PredictionPanelProps> = ({
         <div className="bg-slate-50/90 border border-slate-200/90 rounded-2xl p-5 flex flex-col justify-between space-y-3 shadow-2xs">
           <div className="flex items-center justify-between text-xs font-mono">
             <span className="font-extrabold text-slate-700 uppercase tracking-wider">Inference Speed</span>
-            <span className="text-slate-950 font-extrabold bg-white px-3 py-1 rounded-full text-xs border border-slate-200 shadow-2xs">{processingTimeMs} ms</span>
+            {/* `0` means no inference was measured for this view (e.g. the API was
+                unreachable and the static baseline is shown) — render words, not
+                a fabricated "0 ms" (UI-14). */}
+            <span className="text-slate-950 font-extrabold bg-white px-3 py-1 rounded-full text-xs border border-slate-200 shadow-2xs">
+              {processingTimeMs > 0 ? `${processingTimeMs} ms` : 'not measured'}
+            </span>
           </div>
           <div className="grid grid-cols-2 gap-2.5 text-xs font-mono">
             <div className="bg-white p-3 rounded-2xl border border-slate-200/90 shadow-2xs space-y-0.5">
@@ -293,7 +298,10 @@ const PredictionPanel: React.FC<PredictionPanelProps> = ({
                   confidence: primary.score,
                   severityScore: severity,
                   severityBin,
-                  notes: `Model prediction for ${districtName}. Processing time: ${processingTimeMs}ms.`
+                  notes:
+                    processingTimeMs > 0
+                      ? `Model prediction for ${districtName}. Processing time: ${processingTimeMs}ms.`
+                      : `Baseline prediction for ${districtName} (live inference unavailable; no processing time measured).`
                 });
                 setSaveSuccess(true);
                 setTimeout(() => setSaveSuccess(false), 3500);
@@ -304,7 +312,7 @@ const PredictionPanel: React.FC<PredictionPanelProps> = ({
               }
             }}
             disabled={isSaving}
-            className="px-4 py-2.5 bg-[#f9a825] hover:bg-[#d08305] text-slate-900 font-extrabold rounded-xl text-xs transition-all duration-200 flex items-center gap-2 min-h-[44px] shadow-xs disabled:opacity-50 active:scale-98"
+            className="px-4 py-2.5 bg-nasa-red hover:bg-nasa-red-shade text-slate-900 font-extrabold rounded-xl text-xs transition-all duration-200 flex items-center gap-2 min-h-[44px] shadow-xs disabled:opacity-50 active:scale-98"
           >
             {isSaving ? (
               <span>Saving...</span>

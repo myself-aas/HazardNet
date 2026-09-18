@@ -13,6 +13,7 @@
 
 import express from 'express';
 import { attachFirebaseAuthUser, dynamicAiLimiter } from '../../backend/middleware/firebaseAuth.js';
+import { guardRequest } from '../../backend/middleware/serverlessGuard.js';
 import { handleChatQuery } from '../../backend/utils/chatService.js';
 
 const app = express();
@@ -24,6 +25,12 @@ app.use(express.json({ limit: '2mb' }));
 app.use(attachFirebaseAuthUser, dynamicAiLimiter);
 
 async function queryHandler(req, res) {
+  // Serverless-suite guard (SEC-07): the static scan in
+  // __tests__/api/serverlessGuard.test.js requires every handler under api/
+  // to apply the api-level guard; 'read' keeps it above the identity-aware
+  // dynamicAiLimiter ceilings (10/min anonymous, 60/min signed-in) so the
+  // real rationing stays with the limiter written for this endpoint.
+  if (guardRequest(req, res, { bucket: 'read' })) return;
   try {
     const { query, district, conversationHistory } = req.body || {};
     const payload = await handleChatQuery({ query, district, conversationHistory });

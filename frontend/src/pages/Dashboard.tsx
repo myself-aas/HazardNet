@@ -127,7 +127,14 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
   const [loading, setLoading] = useState(false);
   const [prediction, setPrediction] = useState<number[]>([0.1, 0.05, 0.02, 0.2, 0.5, 0.03, 0.05, 0.05]);
   const [severity, setSeverity] = useState<number>(0.78);
+  // 0 means "no inference has been measured on this device" — never render a
+  // placeholder number as if it were a measurement (UI-14).
   const [processingTimeMs, setProcessingTimeMs] = useState<number>(0);
+  // Provenance for the numbers above. `live` is set only when /api/predict
+  // actually answered; the catch branch shows a static district baseline and
+  // the UI must label it as such (UI-01/UX-12).
+  const [predictionSource, setPredictionSource] = useState<'live' | 'baseline'>('baseline');
+  const [liveSummary, setLiveSummary] = useState<{ hazard: string; confidence: number } | null>(null);
   const [channelFeatures, setChannelFeatures] = useState<any>(null);
 
   // Offline Cache & Storage Management State
@@ -324,11 +331,22 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
         setSeverity(pred.severity_score ?? 0.75);
         setChannelFeatures(pred.channel_features || null);
         setProcessingTimeMs(data.inference?.latency_ms ?? Math.round(performance.now() - start));
+        setLiveSummary({
+          hazard: typeof pred.hazard === 'string' ? pred.hazard : dist.hazardType,
+          confidence:
+            typeof pred.confidence === 'number' ? pred.confidence : Math.max(...probs.map(Number)),
+        });
+        setPredictionSource('live');
       } else {
         throw new Error('API returned non-200');
       }
     } catch (e) {
-      const elapsed = Math.round(performance.now() - start);
+      // The inference API is unreachable (it is not deployed on the Vercel
+      // surface yet). Fall back to the static district baseline and *say so*:
+      // presenting the climatological prior as a softmax result, with a
+      // fabricated latency, is exactly the fake-precision defect the audit
+      // flagged (UI-01/UI-14/UX-12).
+      console.warn('[HazardNet] live inference unavailable — showing static district baseline', e);
       if (dist.risk === 'High') {
         setPrediction([0.02, 0.08, 0.01, 0.25, 0.55, 0.02, 0.04, 0.03]);
         setSeverity(0.85);
@@ -339,7 +357,9 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
         setPrediction([0.05, 0.10, 0.02, 0.05, 0.12, 0.05, 0.05, 0.02]);
         setSeverity(0.22);
       }
-      setProcessingTimeMs(elapsed);
+      setLiveSummary(null);
+      setPredictionSource('baseline');
+      setProcessingTimeMs(0);
     } finally {
       setLoading(false);
     }
@@ -371,8 +391,8 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
   const downloadReport = () => {
     if (!selectedDistrict) return;
     const csvContent = "data:text/csv;charset=utf-8," 
-      + "Region,Latitude,Longitude,Risk,Main Crop,Severity Score\n"
-      + `${selectedDistrict.name},${selectedDistrict.lat},${selectedDistrict.lng},${selectedDistrict.risk},${selectedDistrict.mainCrop},${(severity * 100).toFixed(0)}%`;
+      + "Region,Latitude,Longitude,Risk,Main Crop,Severity Score,Source\n"
+      + `${selectedDistrict.name},${selectedDistrict.lat},${selectedDistrict.lng},${selectedDistrict.risk},${selectedDistrict.mainCrop},${(severity * 100).toFixed(0)}%,${predictionSource === 'live' ? 'Live model inference' : 'Static baseline (model unavailable)'}`;
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
@@ -492,8 +512,8 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
       >
         <div className="space-y-3">
           <div className="flex flex-wrap items-center gap-3">
-            <span className="px-3.5 py-1 rounded-full text-xs font-mono font-bold uppercase tracking-wider bg-[#f9a825]/10 text-[#d08305] border border-[#f9a825]/20 shadow-xs flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#f9a825] animate-pulse"></span>
+            <span className="px-3.5 py-1 rounded-full text-xs font-mono font-bold uppercase tracking-wider bg-nasa-red/10 text-nasa-red-shade border border-nasa-blue/20 shadow-xs flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-nasa-red animate-pulse"></span>
               Live GIS Satellite Telemetry
             </span>
             <span className="text-slate-300 hidden sm:inline">•</span>
@@ -556,7 +576,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
           <button
             onClick={() => { if (selectedDistrict) runPrediction(selectedDistrict); }}
             disabled={loading}
-            className="px-4 sm:px-6 py-2 sm:py-3 bg-[#f9a825] hover:bg-[#d08305] text-slate-900 font-black text-xs sm:text-sm rounded-full shadow-md transition-all duration-200 flex items-center gap-2 sm:gap-2.5 disabled:opacity-50 active:scale-98 hover:scale-[1.02] min-h-[44px] sm:min-h-[48px] cursor-pointer"
+            className="px-4 sm:px-6 py-2 sm:py-3 bg-nasa-red hover:bg-nasa-red-shade text-slate-900 font-black text-xs sm:text-sm rounded-full shadow-md transition-all duration-200 flex items-center gap-2 sm:gap-2.5 disabled:opacity-50 active:scale-98 hover:scale-[1.02] min-h-[44px] sm:min-h-[48px] cursor-pointer"
           >
             {loading ? (
               <>
@@ -664,7 +684,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
           <div className="bg-slate-900 rounded-[28px] p-6 sm:p-8 text-white shadow-md border border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-6 relative overflow-hidden">
             <div className="space-y-2 relative z-10 max-w-2xl">
               <div className="flex items-center gap-2.5">
-                <span className="px-3 py-1 rounded-full text-[10px] font-mono font-black uppercase tracking-wider bg-[#f9a825] text-slate-950">
+                <span className="px-3 py-1 rounded-full text-[10px] font-mono font-black uppercase tracking-wider bg-nasa-red text-slate-950">
                   Cloud Synchronized Stage
                 </span>
                 <span className="text-xs font-mono text-slate-300">
@@ -686,7 +706,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
                   className={`px-5 py-3 rounded-2xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer shadow-md ${
                     savedDistricts.some((d) => d.id === selectedDistrict.id)
                       ? 'bg-rose-600 hover:bg-rose-700 text-white'
-                      : 'bg-[#f9a825] hover:bg-[#ad6d04] text-slate-950'
+                      : 'bg-nasa-red hover:bg-[#ad6d04] text-slate-950'
                   }`}
                 >
                   <span className="flex items-center gap-1">
@@ -724,7 +744,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
                         onClick={() => setSelectedDistrict(dist)}
                         className={`p-4 rounded-2xl border transition-all cursor-pointer flex flex-col gap-2 relative ${
                           isSelected
-                            ? 'bg-amber-50/80 border-[#f9a825] shadow-md ring-2 ring-[#f9a825]/30'
+                            ? 'bg-amber-50/80 border-nasa-blue shadow-md ring-2 ring-nasa-blue/30'
                             : 'bg-slate-50/60 border-slate-200 hover:bg-slate-100/80 hover:border-slate-300'
                         }`}
                       >
@@ -733,7 +753,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
                             <h4 className="text-sm font-black text-slate-900 flex items-center gap-2">
                               <span>{dist.name} District</span>
                               {isSelected && (
-                                <span className="w-2 h-2 rounded-full bg-[#f9a825] animate-ping"></span>
+                                <span className="w-2 h-2 rounded-full bg-nasa-red animate-ping"></span>
                               )}
                             </h4>
                             <p className="text-[11px] text-slate-500 font-medium">
@@ -771,7 +791,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
               <div className="bg-white border border-slate-200/80 rounded-[28px] p-3 shadow-md space-y-3">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-3 pt-1 text-xs">
                   <div className="flex items-center gap-2 font-extrabold text-slate-800">
-                    <span className="w-2.5 h-2.5 rounded-full bg-[#f9a825] animate-pulse"></span>
+                    <span className="w-2.5 h-2.5 rounded-full bg-nasa-red animate-pulse"></span>
                     <span>Interactive GIS LiveMapView Stage</span>
                     <span className="text-[10px] font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md hidden xl:inline">
                       {selectedDistrict ? `${selectedDistrict.name} Focused (${selectedDistrict.lat}°N, ${selectedDistrict.lng}°E)` : 'Active Leaflet Engine'}
@@ -820,7 +840,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
                       onClick={() => setSavedMapHeight('dynamic')}
                       className={`px-2.5 py-1 rounded-lg text-xs font-black transition-all cursor-pointer ${
                         savedMapHeight === 'dynamic'
-                          ? 'bg-[#f9a825] text-slate-950 shadow-xs'
+                          ? 'bg-nasa-red text-slate-950 shadow-xs'
                           : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
                       }`}
                       title="Auto Dynamic Screen Fit Height"
@@ -881,13 +901,27 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
                         </span>
                       </div>
                       <p className="text-xs text-slate-500 mt-1">
-                        Softmax classification: <strong className="text-slate-800">{selectedDistrict.risk} Hazard Probability</strong> | Latency: {processingTimeMs}ms
+                        {predictionSource === 'live' && liveSummary ? (
+                          <>
+                            Live model output:{' '}
+                            <strong className="text-slate-800">
+                              {liveSummary.hazard} · {(liveSummary.confidence * 100).toFixed(1)}% top-class confidence
+                            </strong>
+                            {processingTimeMs > 0 && <> · measured {processingTimeMs} ms</>}
+                          </>
+                        ) : (
+                          <>
+                            Static baseline band:{' '}
+                            <strong className="text-slate-800">{selectedDistrict.risk}</strong> — live inference
+                            unavailable, showing the district's climatological prior (not a model output)
+                          </>
+                        )}
                       </p>
                     </div>
 
                     <button
                       onClick={() => selectedDistrict?.id && handleOpenDisasterModal(selectedDistrict.id)}
-                      className="px-5 py-2.5 bg-[#f9a825] hover:bg-[#ad6d04] text-slate-950 font-black text-xs rounded-xl shadow-xs transition-all cursor-pointer flex items-center justify-center gap-2"
+                      className="px-5 py-2.5 bg-nasa-red hover:bg-[#ad6d04] text-slate-950 font-black text-xs rounded-xl shadow-xs transition-all cursor-pointer flex items-center justify-center gap-2"
                     >
                       <span>Granular Report & Directives</span>
                     </button>
@@ -979,10 +1013,10 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
         <div className="space-y-8">
           {/* Section Banner Header */}
           <div className="bg-slate-900 rounded-[28px] p-6 sm:p-8 text-white shadow-lg border border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-6 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-96 h-96 bg-[#f9a825]/10 rounded-full blur-3xl pointer-events-none"></div>
+            <div className="absolute top-0 right-0 w-96 h-96 bg-nasa-red/10 rounded-full blur-3xl pointer-events-none"></div>
             <div className="space-y-2 relative z-10 max-w-2xl">
               <div className="flex items-center gap-2.5">
-                <span className="px-3 py-1 rounded-full text-[10px] font-mono font-black uppercase tracking-wider bg-[#f9a825] text-slate-950">
+                <span className="px-3 py-1 rounded-full text-[10px] font-mono font-black uppercase tracking-wider bg-nasa-red text-slate-950">
                   Storage & Offline Control
                 </span>
                 <span className="text-xs font-mono text-slate-300">
@@ -1014,7 +1048,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
             <div className="lg:col-span-7 bg-white border border-slate-200 rounded-[28px] p-6 sm:p-8 shadow-sm space-y-6">
               <div className="flex items-center justify-between border-b border-slate-100 pb-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-2xl bg-[#f9a825]/15 border border-[#f9a825]/30 text-[#ad6d04] flex items-center justify-center font-bold text-xl">
+                  <div className="w-12 h-12 rounded-2xl bg-nasa-red/15 border border-nasa-blue/30 text-[#ad6d04] flex items-center justify-center font-bold text-xl">
                     <MaterialIcon name="gis" className="w-6 h-6" />
                   </div>
                   <div>
@@ -1067,7 +1101,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
                 <button
                   onClick={handleClearTileCache}
                   disabled={isClearingTileCache || tileCacheStats.count === 0}
-                  className="px-6 py-3.5 bg-[#f9a825] hover:bg-[#d08305] text-slate-950 font-black text-sm rounded-2xl shadow-md transition-all duration-200 flex items-center gap-2.5 disabled:opacity-50 active:scale-98 cursor-pointer"
+                  className="px-6 py-3.5 bg-nasa-red hover:bg-nasa-red-shade text-slate-950 font-black text-sm rounded-2xl shadow-md transition-all duration-200 flex items-center gap-2.5 disabled:opacity-50 active:scale-98 cursor-pointer"
                 >
                   {isClearingTileCache ? (
                     <>
@@ -1230,7 +1264,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
 
               <button
                 onClick={() => selectedDistrict?.id && handleOpenDisasterModal(selectedDistrict.id)}
-                className="px-5 py-3 bg-[#f9a825] hover:bg-[#d08305] text-slate-900 font-extrabold text-sm rounded-full shadow-xs transition-all duration-200 flex items-center gap-2 active:scale-98 hover:scale-[1.02] min-h-[48px] cursor-pointer"
+                className="px-5 py-3 bg-nasa-red hover:bg-nasa-red-shade text-slate-900 font-extrabold text-sm rounded-full shadow-xs transition-all duration-200 flex items-center gap-2 active:scale-98 hover:scale-[1.02] min-h-[48px] cursor-pointer"
               >
                 <span>Granular Data Report</span>
               </button>
@@ -1315,7 +1349,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-2">
                   <div>
                     <h3 className="text-xl sm:text-2xl font-black text-slate-900 flex items-center gap-2.5">
-                      <span className="w-3 h-3 rounded-full bg-[#f9a825] animate-pulse"></span>
+                      <span className="w-3 h-3 rounded-full bg-nasa-red animate-pulse"></span>
                       <span>National Predictive AI Risk Analysis & Advisory</span>
                     </h3>
                     <p className="text-xs text-slate-500 font-mono mt-0.5">

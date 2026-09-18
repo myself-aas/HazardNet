@@ -5,6 +5,8 @@
 // local/GitHub-Actions runs (Express) share identical behavior.
 
 import { fetchWeather, fetchCurrentWeather } from '../../../backend/utils/openMeteo.js';
+import { clientError } from '../../backend/utils/clientError.js';
+import { guardRequest } from '../backend/middleware/serverlessGuard.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
@@ -12,6 +14,7 @@ export default async function handler(req, res) {
     res.status(405).json({ error: 'Method Not Allowed' });
     return;
   }
+  if (guardRequest(req, res, { bucket: 'read' })) return;
 
   const lat = parseFloat(req.query.lat);
   const lng = parseFloat(req.query.lng);
@@ -30,6 +33,6 @@ export default async function handler(req, res) {
     res.setHeader('Cache-Control', 'public, max-age=900');
     res.status(200).json(data);
   } catch (err) {
-    res.status(err.status || 500).json({ error: err.message });
+    clientError(res, err, { scope: 'api/v1/weather', fallback: 'Weather lookup failed' });
   }
 }

@@ -16,7 +16,7 @@ export const Terms: React.FC = () => {
         
         <div className="border-b border-slate-200 pb-4 space-y-2">
           <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#f9a825]/10 text-[#d08305] border border-[#f9a825]/20 uppercase">
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-nasa-red/10 text-nasa-red-shade border border-nasa-blue/20 uppercase">
               Legal Agreement
             </span>
             <span className="text-slate-300">•</span>

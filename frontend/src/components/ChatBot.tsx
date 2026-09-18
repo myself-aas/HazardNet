@@ -104,7 +104,9 @@ export default function ChatBot() {
 
   return (
     <>
-      {/* Floating Action Button */}
+      {/* Floating Action Button. HDS semantics: this control *does something
+          here* (it opens the on-page assistant), so it is blue. Red is reserved
+          for "go somewhere" — navigation CTAs and errors. */}
       <AnimatePresence>
         {!isOpen && (
           <motion.button
@@ -115,7 +117,7 @@ export default function ChatBot() {
             exit={{ scale: 0, opacity: 0 }}
             whileHover={{ scale: 1.08 }}
             whileTap={{ scale: 0.92 }}
-            className="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-[9995] px-4 sm:px-5 py-3 sm:py-3 min-h-[44px] rounded-full bg-amber-400 hover:bg-amber-500 text-slate-950 font-extrabold text-xs shadow-xl flex items-center gap-2 cursor-pointer"
+            className="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-[9995] px-4 sm:px-5 py-3 sm:py-3 min-h-[44px] rounded-full bg-nasa-blue hover:bg-nasa-blue-shade text-white font-extrabold text-xs shadow-xl flex items-center gap-2 cursor-pointer"
             aria-label="Open AI Advisor chat"
           >
             <span className="w-2 h-2 rounded-full bg-slate-950/70 animate-ping" />
@@ -134,9 +136,9 @@ export default function ChatBot() {
             exit={{ opacity: 0, scale: 0.85, y: 30 }}
             transition={{ type: 'spring', stiffness: 350, damping: 25 }}
             /* Mobile: a true full-screen sheet (inset-0). It previously opened
-               at top-12 while the sticky header is h-14, so its top edge sat
-               8px into the header and the half-covered bar looked broken.
-               Desktop: anchored bottom-right panel, unchanged. */
+                at top-12 while the sticky header is h-14, so its top edge sat
+                8px into the header and the half-covered bar looked broken.
+                Desktop: anchored bottom-right panel, unchanged. */
             className="fixed inset-x-0 bottom-0 top-0 sm:top-auto sm:bottom-6 sm:right-6 sm:left-auto z-[10000] w-full sm:w-[450px] h-auto sm:h-[600px] sm:max-h-[calc(100dvh-3rem)] max-h-dvh bg-white sm:rounded-2xl shadow-2xl flex flex-col border border-slate-200 pb-[env(safe-area-inset-bottom)] sm:pb-0"
             role="dialog"
             aria-modal="true"
@@ -147,7 +149,7 @@ export default function ChatBot() {
               <div className="flex items-center gap-2">
                 <HazardNetBrand size="sm" />
               </div>
-              <motion.button
+              <motion.button 
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setIsOpen(false)}
@@ -172,7 +174,7 @@ export default function ChatBot() {
                   className="space-y-4"
                 >
                   <div className="flex gap-3">
-                    <div className="w-8 h-8 rounded-full bg-[#f9a825] text-white flex items-center justify-center shrink-0 font-bold text-xs shadow-sm">
+                    <div className="w-8 h-8 rounded-full bg-nasa-red text-white flex items-center justify-center shrink-0 font-bold text-xs shadow-sm">
                       AI
                     </div>
                     <div className="bg-white border border-slate-200 rounded-2xl rounded-tl-none p-4 shadow-sm text-sm text-slate-800">
@@ -197,7 +199,7 @@ export default function ChatBot() {
                           whileHover={{ scale: 1.01, x: 2 }}
                           whileTap={{ scale: 0.98 }}
                           onClick={() => sendMessage(q)}
-                          className="text-left text-xs bg-white border border-slate-200 text-slate-700 p-3 rounded-xl hover:bg-amber-50 hover:border-amber-200 hover:text-[#d08305] transition-colors shadow-sm cursor-pointer"
+                          className="text-left text-xs bg-white border border-slate-200 text-slate-700 p-3 rounded-xl hover:bg-amber-50 hover:border-amber-200 hover:text-nasa-red-shade transition-colors shadow-sm cursor-pointer"
                         >
                           {q}
                         </motion.button>
@@ -249,7 +251,7 @@ export default function ChatBot() {
                   animate={{ opacity: 1, y: 0 }}
                   className="flex gap-3"
                 >
-                  <div className="w-8 h-8 rounded-full bg-[#f9a825] text-white flex items-center justify-center shrink-0 font-bold text-xs shadow-sm">
+                  <div className="w-8 h-8 rounded-full bg-nasa-red text-white flex items-center justify-center shrink-0 font-bold text-xs shadow-sm">
                     AI
                   </div>
                   <div className="bg-white border border-slate-200 rounded-2xl rounded-tl-none px-4 py-3 shadow-sm flex items-center gap-2">
@@ -269,7 +271,7 @@ export default function ChatBot() {
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={handleKeyDown}
                   placeholder="Ask about agriculture, hazards, contacts..."
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-4 pr-16 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#f9a825] resize-none h-[50px] scrollbar-hide"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-4 pr-16 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-nasa-blue resize-none h-[50px] scrollbar-hide"
                   rows={1}
                 />
                 <motion.button
@@ -277,7 +279,7 @@ export default function ChatBot() {
                   whileTap={{ scale: 0.95 }}
                   onClick={() => sendMessage(input)}
                   disabled={!input.trim() || loading}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 min-h-[36px] px-3 py-1.5 bg-amber-400 text-slate-950 font-bold text-xs rounded-lg hover:bg-amber-500 disabled:opacity-40 transition-colors shadow-sm cursor-pointer"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 min-h-[36px] px-3 py-1.5 bg-nasa-blue text-white font-bold text-xs rounded-control hover:bg-nasa-blue-shade disabled:opacity-40 transition-colors cursor-pointer"
                 >
                   Send
                 </motion.button>

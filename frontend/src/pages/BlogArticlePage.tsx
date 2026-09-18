@@ -96,7 +96,7 @@ export const BlogArticlePage: React.FC = () => {
             : 'This URL does not match a published HazardNet article. It may be a draft, renamed, or removed.'}
         </p>
         <div className="flex items-center gap-2">
-          <Link to="/blogs" className="rounded-2xl bg-[#f9a825] px-4 py-2.5 text-xs font-black text-slate-950 shadow-md hover:bg-[#d08305]">
+          <Link to="/blogs" className="rounded-2xl bg-nasa-red px-4 py-2.5 text-xs font-black text-slate-950 shadow-md hover:bg-nasa-red-shade">
             Browse all articles
           </Link>
           {isPrimarySuperAdmin(user?.email) && (
@@ -151,7 +151,7 @@ export const BlogArticlePage: React.FC = () => {
           </div>
 
           <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight leading-tight">{article.title}</h1>
-          <p className="text-sm text-slate-600 leading-relaxed border-l-4 border-[#f9a825]/60 pl-3">{article.excerpt}</p>
+          <p className="text-sm text-slate-600 leading-relaxed border-l-4 border-nasa-blue/60 pl-3">{article.excerpt}</p>
 
           <div className="flex items-center justify-between gap-3 border-y border-slate-100 py-3">
             <div className="flex items-center gap-2.5 min-w-0">

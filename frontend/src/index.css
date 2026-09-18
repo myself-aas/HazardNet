@@ -1,7 +1,16 @@
+/* NASA Horizon Design System tokens (nasa/hds-core, CC0-1.0) — vendored and compiled by
+   scripts/import_nasa_tokens.mjs, mapped onto this app's semantic roles below. Imported first so
+   every var(--hds-*) consumer resolves. Source and rules: data/design/nasa-hds/PROVENANCE.md */
+@import "./styles/nasa-hds.css";
+
 @import "tailwindcss";
-@import "@fontsource-variable/noto-sans";
-@import "@fontsource-variable/playfair-display";
-@import "@fontsource-variable/jetbrains-mono";
+/* Typefaces: NASA HDS is set in Inter (headings), Public Sans (body) and DM Mono (data/code).
+   All three are self-hosted through @fontsource, so no third-party request is ever made and the
+   service worker can cache them for offline use. */
+@import "@fontsource-variable/inter";
+@import "@fontsource-variable/public-sans";
+@import "@fontsource/dm-mono/400.css";
+@import "@fontsource/dm-mono/500.css";
 @import 'leaflet/dist/leaflet.css' layer(base);
 @import 'leaflet.markercluster/dist/MarkerCluster.css' layer(base);
 @import 'leaflet.markercluster/dist/MarkerCluster.Default.css' layer(base);
@@ -10,24 +19,46 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* Family-name aliases: map the legacy CDN family names (still referenced in
-   map popups, print CSS, and theme tokens) onto the self-hosted variable
-   font files, so no third-party font request is ever made. */
+/* Family-name aliases.
+   `@fontsource` registers families under package-ish names ("Inter Variable",
+   "Public Sans Variable"), while NASA's design tokens name the families the way NASA's own
+   stylesheet does: 'Inter', 'Public Sans Web', 'DM Mono'. The HDS block above resolves
+   `var(--hds-font-family-body)` to 'Public Sans Web', so that exact family has to exist here.
+   The map popups and the print stylesheet used to hard-code the previous families as literal
+   strings; they now reference var(--hds-font-family-*) or the DM Mono stack directly, so no
+   legacy alias is needed. */
 @font-face {
-  font-family: 'Playfair Display';
-  src: url('@fontsource-variable/playfair-display/files/playfair-display-latin-wght-normal.woff2') format('woff2-variations');
-  font-weight: 400 900;
+  font-family: 'Public Sans Web';
+  src: url('@fontsource-variable/public-sans/files/public-sans-latin-wght-normal.woff2') format('woff2-variations');
+  font-weight: 100 900;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: 'JetBrains Mono';
-  src: url('@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-wght-normal.woff2') format('woff2-variations');
-  font-weight: 100 800;
+  font-family: 'Inter';
+  src: url('@fontsource-variable/inter/files/inter-latin-wght-normal.woff2') format('woff2-variations');
+  font-weight: 100 900;
   font-style: normal;
   font-display: swap;
 }
+
+@font-face {
+  font-family: 'DM Mono';
+  src: url('@fontsource/dm-mono/files/dm-mono-latin-400-normal.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'DM Mono';
+  src: url('@fontsource/dm-mono/files/dm-mono-latin-500-normal.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
 
 /* ==========================================================================
    HAZARDNET DESIGN SYSTEM — Token Architecture (three layers)
@@ -39,12 +70,14 @@
 :root {
   /* ---- Layer 1 · Primitives --------------------------------------------- */
   /* Brand ramp (amber = CTA/energy; teal = active navigation) */
-  --hn-amber-300: #fcd34d;
-  --hn-amber-400: #fbbf24;
-  --hn-amber-500: #f59e0b;
-  --hn-amber-600: #d97706;
-  --hn-amber-700: #b45309;
-  --hn-amber-950: #451a03;
+  /* Warm ramp — values are NASA HDS yellow/orange tokens (see Layer 1b), so the
+     caution/highlight family is NASA's rather than a local approximation. */
+  --hn-amber-300: var(--hds-dataviz-seq-yellow-20);     /* #ffcb47 */
+  --hn-amber-400: var(--hds-dataviz-seq-yellow-30);     /* #f5af0c */
+  --hn-amber-500: var(--hds-color-international-orange);/* #ea6f24 */
+  --hn-amber-600: var(--hds-dataviz-seq-orange-50);     /* #d96a00 */
+  --hn-amber-700: var(--hds-dataviz-seq-orange-60);     /* #b25600 — 5.5:1 on white */
+  --hn-amber-950: var(--hds-dataviz-seq-orange-90);     /* #3b1b00 */
   --hn-teal-500: #14b8a6;
   --hn-teal-600: #0d9488;
   --hn-teal-700: #0f766e;
@@ -52,46 +85,89 @@
   --hn-emerald-600: #16a34a;
   --hn-emerald-700: #15803d;
 
+  /* Layer 1b · NASA Horizon Design System primitives ------------------------
+     Every value below references a compiled NASA token (--hds-*), whose source
+     is nasa/hds-core's tokens.json — vendored in data/design/nasa-hds/ and
+     compiled by scripts/import_nasa_tokens.mjs. The usage rule NASA attaches to
+     each token is repeated here on purpose: the rules are part of the system,
+     and a palette adopted without them is only a costume. */
+  --hn-hds-red: var(--hds-color-nasa-red);             /* "go somewhere": navigation CTAs, errors. Never on-page actions, decoration or dataviz. */
+  --hn-hds-red-tint: var(--hds-color-nasa-red-tint);   /* hover states, error highlights */
+  --hn-hds-red-shade: var(--hds-color-nasa-red-shade); /* button hover, error dark — 7.0:1 against white */
+  --hn-hds-blue: var(--hds-color-nasa-blue);           /* "do something here": controls, list markers, table headers, info. Never nav CTAs or dataviz. */
+  --hn-hds-blue-tint: var(--hds-color-nasa-blue-tint);
+  --hn-hds-blue-shade: var(--hds-color-nasa-blue-shade); /* 9.9:1 against white — link/info text on light surfaces */
+  --hn-hds-orange: var(--hds-color-international-orange); /* status/decorative accent. Never a primary action. */
+  --hn-hds-green: var(--hds-color-active-green);        /* active/confirmation state. Never branding, backgrounds or dataviz. */
+  --hn-hds-black: var(--hds-color-carbon-black);              /* maximum-contrast text and outlines (focus rings) */
+  --hn-hds-white: var(--hds-color-spacesuit-white);
+  --hn-hds-surface: var(--hds-color-carbon-05);        /* #f6f6f6 — page background */
+  --hn-hds-surface-sunken: var(--hds-color-carbon-10);
+  --hn-hds-line: var(--hds-color-carbon-20);           /* hairline borders, dividers */
+  --hn-hds-line-strong: var(--hds-color-carbon-30);
+  --hn-hds-ink-muted: var(--hds-color-carbon-50);      /* 4.46:1 on white — borders/icons only, just under AA for text */
+  --hn-hds-ink-soft: var(--hds-color-carbon-60);       /* 7.1:1 on white — smallest text gray that clears AA */
+  --hn-hds-ink: var(--hds-color-carbon-90);            /* #17171b — body text */
+
   /* Motion */
   --ease-emphasized: cubic-bezier(0.2, 0, 0, 1);
   --ease-standard: cubic-bezier(0.2, 0, 0.2, 1);
   --duration-fast: 150ms;
   --duration-base: 300ms;
 
-  /* ---- Layer 2 · Semantic (shadcn-compatible core) ----------------------- */
-  --background: #f8fafc;
-  --foreground: #0f172a;
-  --card: #ffffff;
-  --card-foreground: #0f172a;
-  --popover: #ffffff;
-  --popover-foreground: #0f172a;
-  --primary: #f9a825;
-  --primary-foreground: #451a03; /* AA fix: was #ffffff (1.9:1 on amber) — now ≈8.3:1 */
-  --secondary: #f1f5f9;
-  --secondary-foreground: #0f172a;
-  --accent: #f1f5f9;
-  --accent-foreground: #0f172a;
-  --muted: #f1f5f9;
-  --muted-foreground: #475569; /* AA fix: slate-600 = 7.0:1 on white (was ≈4.5:1 gray) */
-  --destructive: #b91c1c;
-  --destructive-foreground: #ffffff;
-  --border: #e2e8f0;
-  --input: #cbd5e1;
-  --ring: #d97706; /* amber-600 — visible 3:1+ non-text focus indicator */
-  --radius: 0.75rem;
+  /* ---- Layer 2 · Semantic (shadcn-compatible core) -----------------------
+     Token names are unchanged; the values they resolve to are now NASA's. That
+     is the entire point of a semantic layer: fifty-one files' worth of
+     components keep saying `bg-primary`, and the answer to "what is primary"
+     changed in one place. Contrast ratios in the comments are measured, not
+     estimated — see docs/design-system/MASTER.md §Contrast. */
+  --background: var(--hn-hds-surface);         /* #f6f6f6 */
+  --foreground: var(--hn-hds-ink);             /* #17171b — 17.4:1 on --background */
+  --card: var(--hn-hds-white);
+  --card-foreground: var(--hn-hds-ink);
+  --popover: var(--hn-hds-white);
+  --popover-foreground: var(--hn-hds-ink);
+  /* Primary = NASA red: the colour of "go somewhere". Actions that navigate or
+     submit, and error/emergency states — nowhere else. */
+  --primary: var(--hn-hds-red);                /* #f64137 */
+  --primary-foreground: var(--hn-hds-white);   /* 3.1:1 — large/bold labels or icons only */
+  /* The same red one step darker: 7.0:1 against white, for filled controls whose
+     labels are small (≤16px). NASA's own white-on-red measures 3.1:1, which
+     clears AA for large text but not for a 14px bold label; rather than quietly
+     ship that regression, small-label CTAs use the shade. */
+  --primary-strong: var(--hn-hds-red-shade);   /* #b60109 */
+  --primary-strong-foreground: var(--hn-hds-white);
+  /* Accent = NASA blue: "do something here" — on-page interaction. */
+  --secondary: var(--hn-hds-surface-sunken);
+  --secondary-foreground: var(--hn-hds-ink);
+  --accent: var(--hn-hds-blue);                /* #1c67e3 */
+  --accent-foreground: var(--hn-hds-white);
+  --muted: var(--hn-hds-surface-sunken);
+  --muted-foreground: var(--hn-hds-ink-soft);  /* 7.1:1 on white (carbon-50 would be 4.46:1) */
+  --destructive: var(--hn-hds-red-shade);      /* 7.0:1 with white */
+  --destructive-foreground: var(--hn-hds-white);
+  --border: var(--hn-hds-line);                /* carbon-20 — decorative hairlines */
+  --input: var(--hn-hds-ink-muted);            /* 4.46:1 on white — control boundaries clear 1.4.11's 3:1 */
+  --ring: var(--hn-hds-ink-soft);              /* HDS's default dashed-ring colour (carbon-60 on light) */
+  --radius: var(--hds-border-radius-default);  /* 0px — NASA's sharp default */
 
-  /* Status (text values meet 4.5:1 on white/surface tints) */
+  /* Status (text values meet 4.5:1 on white/surfaces; info is NASA blue, per HDS) */
   --success: var(--hn-emerald-700);
-  --success-foreground: #ffffff;
-  --success-surface: #dcfce7;
+  --success-foreground: var(--hn-hds-white);
+  --success-surface: color-mix(in srgb, var(--hn-emerald-600) 14%, var(--hn-hds-white));
   --warning: var(--hn-amber-700);
-  --warning-foreground: #ffffff;
-  --warning-surface: #fef3c7;
-  --info: #0369a1;
-  --info-foreground: #ffffff;
-  --info-surface: #e0f2fe;
+  --warning-foreground: var(--hn-hds-white);
+  --warning-surface: color-mix(in srgb, var(--hn-amber-500) 20%, var(--hn-hds-white));
+  --info: var(--hn-hds-blue-shade);            /* 9.9:1 on white */
+  --info-foreground: var(--hn-hds-white);
+  --info-surface: color-mix(in srgb, var(--hn-hds-blue) 8%, var(--hn-hds-white));
 
-  /* Severity scale — text / solid fills (maps, markers, charts) / tint surfaces */
+  /* Severity scale — text / solid fills (maps, markers, charts) / tint surfaces.
+     HazardNet's own five-step hazard semantics, not NASA's three-colour status
+     set: three states cannot express five hazard levels. Deliberately unchanged
+     by this restyle because the values are asserted by map/legend tests and
+     carry meaning the brand palette does not. --severity-moderate-solid is
+     aligned to HDS's status orange; the rest keep their measured ratios. */
   --risk-low: #16a34a;
   --risk-low-bg: #dcfce7;
   --risk-moderate: #f59e0b;
@@ -114,7 +190,7 @@
   --severity-low-solid: #16a34a;
   --severity-low-surface: #dcfce7;
   --severity-moderate: var(--hn-amber-700);
-  --severity-moderate-solid: #f59e0b;
+  --severity-moderate-solid: var(--hn-hds-orange); /* #ea6f24 — HDS status orange, 3.1:1 vs white */
   --severity-moderate-surface: #fef3c7;
   --severity-high: #dc2626;
   --severity-high-solid: #dc2626;
@@ -127,33 +203,36 @@
   --severity-extreme-surface: #fee2e2;
 
   /* Surfaces & text roles */
-  --surface-page: #f8fafc;
-  --surface-card: #ffffff;
-  --surface-sunken: #f1f5f9;
-  --surface-inverse: #0f172a;
+  --surface-page: var(--hn-hds-surface);
+  --surface-card: var(--hn-hds-white);
+  --surface-sunken: var(--hn-hds-surface-sunken);
+  --surface-inverse: var(--hn-hds-ink);
   --text-body: var(--foreground);
   --text-muted: var(--muted-foreground);
-  --text-subtle: #64748b; /* 4.76:1 — smallest AA-safe gray for captions */
-  --text-inverse: #f8fafc;
+  --text-subtle: var(--hn-hds-ink-soft);       /* 7.1:1 — smallest AA-safe caption gray */
+  --text-inverse: var(--hn-hds-surface);
 
   /* ---- Layer 2b · Legacy aliases (deprecated — do not use in new code) --- */
   --nasa-space-bg: var(--surface-page);
   --nasa-card-bg: var(--surface-card);
-  --nasa-cyan: var(--hn-sky-600);
-  --nasa-blue: var(--hn-sky-600);
+  --nasa-cyan: var(--hn-hds-blue-tint);
+  --nasa-blue: var(--hn-hds-blue);       /* the alias now resolves to the real NASA blue */
   --nasa-emerald: var(--hn-emerald-600);
-  --nasa-crimson: #c62828;
-  --nasa-amber: var(--primary);
+  --nasa-crimson: var(--hn-hds-red-shade);
+  --nasa-amber: var(--warning);          /* was --primary; amber is status-only now */
   --m3-sys-color-primary: var(--primary);
   --m3-sys-color-surface: var(--surface-card);
   --m3-sys-motion-easing-emphasized: var(--ease-emphasized);
 
-  /* Chart palette */
-  --chart-1: #0f172a;
-  --chart-2: var(--primary);
-  --chart-3: var(--hn-sky-600);
-  --chart-4: var(--hn-emerald-600);
-  --chart-5: #ef4444;
+  /* Chart palette — NASA's own categorical dataviz assignment (HDS
+     `dataviz.color.cat.set.light.5-items.option-1`: Blue 70, Orange ~38, Aqua 40,
+     Lime 70, Gold ~38). NASA forbids brand red/blue in dataviz, which is why
+     these come from the dataviz group rather than from --primary/--accent. */
+  --chart-1: var(--hds-dataviz-series-a-light);
+  --chart-2: var(--hds-dataviz-series-b-light);
+  --chart-3: var(--hds-dataviz-series-c-light);
+  --chart-4: var(--hds-dataviz-series-d-light);
+  --chart-5: var(--hds-dataviz-series-e-light);
 
   /* Sidebar slots (shadcn) */
   --sidebar: #ffffff;
@@ -168,9 +247,9 @@
   /* ---- Layer 3 · Component ----------------------------------------------- */
   --panel-bg: var(--surface-card);
   --panel-border: var(--border);
-  --panel-radius: 1.25rem;
+  --panel-radius: var(--hds-border-radius-default);  /* 0px — HDS cards are square */
   --panel-blur: 20px;
-  --panel-shadow: 0 4px 20px -2px rgb(15 23 42 / 0.05), 0 2px 6px -1px rgb(15 23 42 / 0.03);
+  --panel-shadow: 0 1px 2px rgb(23 23 27 / 0.06);    /* HDS is flat: depth comes from 1px borders, not shadows */
   --control-min-size: 44px; /* minimum touch target (iOS HIG / WCAG 2.5.8) */
   --navbar-height: 3.5rem;
 }
@@ -182,14 +261,13 @@
 
 body {
   margin: 0;
-  /* UI/body text uses the humanist sans; the Playfair display serif is
-     reserved for brand headings & wordmark (see typography utilities). */
-  font-family: 'Noto Sans Variable', ui-sans-serif, system-ui, -apple-system,
-    'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  /* Body copy is NASA HDS's body stack (Public Sans, 16px/1.62); headings take
+     Inter via --font-heading. Both come from --hds-font-family-*. */
+  font-family: var(--hds-font-family-body);
   background-color: var(--surface-page);
   color: var(--text-body);
-  font-size: 16px; /* AA/UX rule: 16px base for readable body text */
-  line-height: 1.5;
+  font-size: var(--hds-font-size-xs); /* 16px — HDS body size and the AA/UX floor */
+  line-height: var(--hds-line-height-5);
   -webkit-tap-highlight-color: transparent;
   scroll-behavior: smooth;
   /* Guard against accidental horizontal scroll on small viewports.
@@ -486,15 +564,66 @@ body {
 }
 
 @theme inline {
-  /* Typography: humanist sans for UI/body/data; Playfair display serif
-     reserved for brand wordmark & headings (font-brand/heading/display). */
-  --font-sans: 'Noto Sans Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  --font-brand: 'Playfair Display Variable', 'Playfair Display', Georgia, serif;
-  --font-heading: var(--font-brand);
-  --font-display: var(--font-brand);
-  --font-serif: var(--font-brand);
-  --font-montserrat: var(--font-brand);
-  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  /* Typography — NASA HDS's three families, expressed as the app's existing keys
+     so no component had to be rewritten to change typeface:
+       sans  → Public Sans  (HDS body: paragraphs, UI, tables)
+       brand → Inter        (HDS headings: h1-h3, display, wordmark)
+       mono  → DM Mono      (HDS data: figures, coordinates, metrics, code)
+     Each family resolves through var(--hds-font-family-*) so the stack keeps a
+     single source of truth in NASA's tokens. */
+  --font-sans: var(--hds-font-family-body);
+  --font-brand: var(--hds-font-family-heading);
+  --font-heading: var(--hds-font-family-heading);
+  --font-display: var(--hds-font-family-heading);
+  --font-serif: var(--hds-font-family-heading);
+  --font-montserrat: var(--hds-font-family-heading);
+  --font-mono: var(--hds-font-family-code);
+
+  /* Corner radius: see the radius keys at the foot of this block — HDS's two
+     values (0px default, 2px for controls) are applied there. `rounded-full` is
+     deliberately untouched: avatars, status dots and circular icon buttons must
+     stay round. */
+  --radius-control: var(--hds-border-radius-control);
+
+  /* Warm ramp — Tailwind's `amber-*` keys re-pointed at NASA's yellow and
+     international-orange sequences from the HDS dataviz ramps. This is what
+     turns 600-odd existing `bg-amber-100 / text-amber-900 / border-amber-300`
+     call sites into NASA's warm palette without touching a single component.
+     Semantics are preserved: amber still means caution/highlight, it is simply
+     now NASA's caution colour. Values are HDS tokens, not inventions —
+     yellow 10/20/30, orange 10/20/50/60/70/80/90 and international-orange. */
+  --color-amber-50: var(--hds-dataviz-seq-yellow-10);
+  --color-amber-100: var(--hds-dataviz-seq-orange-10);
+  --color-amber-200: var(--hds-dataviz-seq-orange-20);
+  --color-amber-300: var(--hds-dataviz-seq-yellow-20);
+  --color-amber-400: var(--hds-dataviz-seq-yellow-30);
+  --color-amber-500: var(--hds-color-international-orange);
+  --color-amber-600: var(--hds-dataviz-seq-orange-50);
+  --color-amber-700: var(--hds-dataviz-seq-orange-60);
+  --color-amber-800: var(--hds-dataviz-seq-orange-70);
+  --color-amber-900: var(--hds-dataviz-seq-orange-80);
+  --color-amber-950: var(--hds-dataviz-seq-orange-90);
+
+  /* NASA palette, published under the names NASA uses, so a class can name the
+     semantic directly: bg-nasa-red, text-nasa-blue-shade, border-carbon-20. */
+  --color-nasa-red: var(--hds-color-nasa-red);
+  --color-nasa-red-tint: var(--hds-color-nasa-red-tint);
+  --color-nasa-red-shade: var(--hds-color-nasa-red-shade);
+  --color-nasa-blue: var(--hds-color-nasa-blue);
+  --color-nasa-blue-tint: var(--hds-color-nasa-blue-tint);
+  --color-nasa-blue-shade: var(--hds-color-nasa-blue-shade);
+  --color-nasa-orange: var(--hds-color-international-orange);
+  --color-nasa-green: var(--hds-color-active-green);
+  --color-carbon-05: var(--hds-color-carbon-05);
+  --color-carbon-10: var(--hds-color-carbon-10);
+  --color-carbon-20: var(--hds-color-carbon-20);
+  --color-carbon-30: var(--hds-color-carbon-30);
+  --color-carbon-40: var(--hds-color-carbon-40);
+  --color-carbon-50: var(--hds-color-carbon-50);
+  --color-carbon-60: var(--hds-color-carbon-60);
+  --color-carbon-70: var(--hds-color-carbon-70);
+  --color-carbon-80: var(--hds-color-carbon-80);
+  --color-carbon-90: var(--hds-color-carbon-90);
   /* Status */
   --color-success: var(--success);
   --color-success-foreground: var(--success-foreground);
@@ -545,6 +674,8 @@ body {
   --color-chart-2: var(--chart-2);
   --color-chart-1: var(--chart-1);
   --color-ring: var(--ring);
+  --color-primary-strong: var(--primary-strong);
+  --color-primary-strong-foreground: var(--primary-strong-foreground);
   --color-input: var(--input);
   --color-border: var(--border);
   --color-destructive: var(--destructive);
@@ -562,13 +693,20 @@ body {
   --color-card: var(--card);
   --color-foreground: var(--foreground);
   --color-background: var(--background);
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
+  /* Corner radius — NASA HDS has exactly two radii: 0px for surfaces and 2px for
+     small interactive controls (checkbox, select, text field, tag). Mapping the
+     whole shadcn scale onto those two values is what squares off every
+     rounded-md/xl/2xl/3xl call site across the app in one edit.
+     (Upstream these were `calc(var(--radius) * N)`; --radius is 0 now, so they
+     all collapsed to 0 — correct for surfaces, but it erased HDS's 2px control
+     radius, which is why the control steps are pinned explicitly.) */
+  --radius-sm: var(--hds-border-radius-control);
+  --radius-md: var(--hds-border-radius-control);
+  --radius-lg: var(--hds-border-radius-default);
+  --radius-xl: var(--hds-border-radius-default);
+  --radius-2xl: var(--hds-border-radius-default);
+  --radius-3xl: var(--hds-border-radius-default);
+  --radius-4xl: var(--hds-border-radius-default);
 }
 
 @layer base {
@@ -585,18 +723,103 @@ body {
     -webkit-text-size-adjust: 100%;
   }
 
-  /* Brand headings carry the display serif; balanced line wrapping
-     avoids orphaned words on narrow viewports. */
+  /* Headings are HDS's heading face (Inter) at NASA's measured tracking; the
+     balance/pretty wrapping avoids orphaned words on narrow viewports. */
   h1,
-  h2 {
-    font-family: var(--font-brand);
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-heading);
     text-wrap: balance;
   }
 
-  /* Visible keyboard focus everywhere — focus rings must never be removed. */
+  h1 {
+    letter-spacing: var(--hds-letter-spacing-neg-3);
+  }
+
+  h2 {
+    letter-spacing: var(--hds-letter-spacing-neg-2);
+  }
+
+  /* Metadata / eyebrow text: uppercase, tracked out, 12px — HDS's
+     `metadata` composite, used for dates, sources and provenance labels. */
+  .hn-metadata {
+    font-family: var(--font-heading);
+    font-size: var(--hds-font-size-3xs);
+    font-weight: var(--hds-font-weight-bold);
+    line-height: var(--hds-line-height-6);
+    letter-spacing: var(--hds-letter-spacing-1);
+    text-transform: uppercase;
+  }
+
+  /* Masthead navigation link — NASA's header pattern: uppercase 12px metadata
+     type, a 2px rule that turns red for the current section. Red is correct here
+     because a nav link navigates ("go somewhere"); blue is reserved for controls
+     that act on the current page. */
+  .hn-nav-link {
+    font-family: var(--font-heading);
+    /* HDS metadata is 12px, but uppercase + tracking makes the masthead ~30% wider than the
+       sentence-case links it replaced, which overflowed a 1280px viewport (caught by the
+       overflow e2e test). 11px at xl, the full 12px from 2xl — the HDS composite is used
+       verbatim wherever there is room for it. */
+    font-size: 0.6875rem;
+    font-weight: var(--hds-font-weight-bold);
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--hn-hds-ink-soft);
+    border-bottom: 2px solid transparent;
+    transition: color 150ms var(--ease-standard), border-color 150ms var(--ease-standard);
+  }
+
+  .hn-nav-link:hover {
+    color: var(--hn-hds-ink);
+    border-bottom-color: var(--hn-hds-line-strong);
+  }
+
+  .hn-nav-link[aria-current='page'],
+  .hn-nav-link-active {
+    color: var(--hn-hds-red-shade);
+    border-bottom-color: var(--hn-hds-red);
+  }
+
+  @media (min-width: 1536px) {
+    .hn-nav-link {
+      font-size: var(--hds-font-size-3xs);
+      letter-spacing: var(--hds-letter-spacing-1);
+    }
+  }
+
+  /* Long identifiers — script paths, token names, model filenames — are unbreakable tokens by
+     nature. At 320px one of them (`scripts/build_freshness_artifact.mjs` on /status) pushed the
+     document 81px wider than the viewport. Inline code breaks instead of the page. */
+  code,
+  kbd,
+  samp {
+    overflow-wrap: anywhere;
+  }
+
+  /* HDS's dashed keyboard-focus ring: 1px dashed, 1px offset, palette-aware.
+     Colour is carbon-60 on light surfaces and carbon-30 on dark ones, which is
+     HDS's own default treatment. */
+  .hn-surface-dark {
+    --ring: var(--hds-color-carbon-30);
+  }
+
+  /* Visible keyboard focus everywhere — focus rings must never be removed.
+     Shape and colour follow HDS: 1px dashed, 1px offset, carbon-60 on light
+     surfaces (see `.hn-surface-dark` and the Leaflet override for the dark
+     ones). Radius-based rings were the previous treatment; dashed rectangles
+     are NASA's, and they read better on the square-cornered controls anyway. */
   :focus-visible {
-    outline: 2px solid var(--ring);
-    outline-offset: 2px;
+    outline: var(--hds-focus-width) var(--hds-focus-style) var(--ring);
+    outline-offset: var(--hds-focus-offset);
+  }
+
+  /* The satellite basemap is the one genuinely dark surface in the product;
+     carbon-60 would vanish against it, so the ring steps up to carbon-30. */
+  .leaflet-container :focus-visible,
+  .hn-surface-dark :focus-visible {
+    outline-color: var(--hds-color-carbon-30);
   }
 }
 
@@ -616,9 +839,29 @@ body {
   }
 }
 
+/* Low-bandwidth mode (Phase 5).
+   `useBandwidthMode` writes data-low-bandwidth on <html> when Data Saver is on, the
+   connection is 2G, the device reports <=2 GB RAM / <=4 cores, or the user asked for it.
+   The same collapse as prefers-reduced-motion applies, because on these devices the
+   animation is not decoration — it is the difference between a usable page and a hung
+   tab. Components that need to change behaviour (not just styling) read the hook. */
+html[data-low-bandwidth='true'] *,
+html[data-low-bandwidth='true'] *::before,
+html[data-low-bandwidth='true'] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html[data-low-bandwidth='true'] {
+  scroll-behavior: auto !important;
+}
+
 /* Brand Typography & Wordmark Utilities per CSV Spec
-   Roles: brand/display = Playfair Display Variable (headings, wordmark);
-   UI/body/nav/buttons/labels = Noto Sans Variable; data readouts = JetBrains Mono. */
+   Roles: brand/display = Inter (headings, wordmark); UI/body/nav/buttons/labels =
+   Public Sans; data readouts = DM Mono — the three NASA HDS families. */
 .font-montserrat {
   font-family: var(--font-brand);
 }
@@ -772,9 +1015,9 @@ button {
   font-weight: 600;
 }
 
-/* 10. Data readouts (severity score, confidence, dates): JetBrains Mono, 13–16 px, 600, Tabular figures */
+/* 10. Data readouts (severity score, confidence, dates): DM Mono, 13–16 px, 600, tabular figures */
 .hn-data-readout {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--hds-font-family-code);
   font-size: 13px;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
@@ -787,9 +1030,9 @@ button {
   }
 }
 
-/* 11. Badges (FLOOD, SEV-3, district code): JetBrains Mono, 11 px, 600, +0.08 em, caps, colored per severity token */
+/* 11. Badges (FLOOD, SEV-3, district code): DM Mono, 11 px, 600, +0.08 em, caps, colored per severity token */
 .hn-badge {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--hds-font-family-code);
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.08em;
@@ -1143,7 +1386,7 @@ caption {
   a[href^="https://"]:after {
     content: " [" attr(href) "]";
     font-size: 7pt !important;
-    font-family: 'JetBrains Mono', monospace, ui-monospace !important;
+    font-family: 'DM Mono', Consolas, monospace !important;
     font-weight: 500 !important;
     color: #475569 !important;
     word-break: break-all !important;
@@ -1163,7 +1406,7 @@ caption {
   a[href^="tel:"]:after {
     content: " (Hotline: " attr(href) ")";
     font-size: 7.5pt !important;
-    font-family: 'JetBrains Mono', monospace !important;
+    font-family: 'DM Mono', Consolas, monospace !important;
     font-weight: 700 !important;
     color: #0f172a !important;
   }
@@ -1171,13 +1414,13 @@ caption {
   a[href^="mailto:"]:after {
     content: " [" attr(href) "]";
     font-size: 7pt !important;
-    font-family: 'JetBrains Mono', monospace !important;
+    font-family: 'DM Mono', Consolas, monospace !important;
     color: #334155 !important;
   }
 
   a[href^="tel:"] {
     font-weight: 800 !important;
-    font-family: 'JetBrains Mono', monospace !important;
+    font-family: 'DM Mono', Consolas, monospace !important;
     color: #0f172a !important;
   }
 
@@ -1419,7 +1662,7 @@ caption {
   th.emergency-protocol-title {
     background-color: #0f172a !important;
     color: #ffffff !important;
-    font-family: 'JetBrains Mono', monospace, ui-monospace, sans-serif !important;
+    font-family: 'DM Mono', Consolas, monospace !important;
     font-size: 8pt !important;
     font-weight: 900 !important;
     text-transform: uppercase !important;
@@ -1436,7 +1679,7 @@ caption {
     color: #0f172a !important;
     border: 1pt solid #475569 !important;
     font-weight: 800 !important;
-    font-family: 'JetBrains Mono', monospace, sans-serif !important;
+    font-family: 'DM Mono', Consolas, monospace !important;
     font-size: 7.5pt !important;
     padding: 4pt 6pt !important;
     text-transform: uppercase;
@@ -1485,7 +1728,7 @@ caption {
     border: 1pt solid #64748b !important;
     border-radius: 4pt !important;
     padding: 2.5pt 6pt !important;
-    font-family: 'JetBrains Mono', monospace, ui-monospace, sans-serif !important;
+    font-family: 'DM Mono', Consolas, monospace !important;
     font-size: 7.5pt !important;
     font-weight: 700 !important;
     color: #0f172a !important;
@@ -1500,7 +1743,7 @@ caption {
     display: inline-block !important;
     background-color: #0f172a !important;
     color: #ffffff !important;
-    font-family: 'JetBrains Mono', monospace !important;
+    font-family: 'DM Mono', Consolas, monospace !important;
     font-size: 6.5pt !important;
     font-weight: 800 !important;
     text-transform: uppercase !important;
@@ -1519,7 +1762,7 @@ caption {
     display: flex !important;
     justify-content: space-between !important;
     align-items: center !important;
-    font-family: 'JetBrains Mono', monospace, ui-monospace, sans-serif !important;
+    font-family: 'DM Mono', Consolas, monospace !important;
     font-size: 7pt !important;
     color: #475569 !important;
     border-top: 0.75pt solid #94a3b8 !important;
@@ -1710,7 +1953,7 @@ body.pdf-exporting .no-print,
 .print-preview-rendered-body th.emergency-protocol-title {
   background-color: #0f172a !important;
   color: #ffffff !important;
-  font-family: 'JetBrains Mono', monospace, ui-monospace, sans-serif !important;
+  font-family: 'DM Mono', Consolas, monospace !important;
   font-size: 8pt !important;
   font-weight: 900 !important;
   text-transform: uppercase !important;
@@ -1796,7 +2039,7 @@ body.pdf-exporting .no-print,
 .prose-blog a:hover { color: #92400e; }
 .prose-blog blockquote { margin: 1rem 0; padding: 0.6rem 1rem; border-left: 4px solid #f9a825; background: #fffbeb; border-radius: 0 0.75rem 0.75rem 0; color: #78350f; font-style: italic; }
 .prose-blog pre { margin: 1rem 0; padding: 0.9rem 1rem; background: #0f172a; color: #e2e8f0; border-radius: 0.75rem; overflow-x: auto; font-size: 0.78rem; line-height: 1.6; }
-.prose-blog code { font-family: 'JetBrains Mono', monospace; font-size: 0.82em; background: #f1f5f9; padding: 0.1rem 0.35rem; border-radius: 0.35rem; color: #b91c1c; }
+.prose-blog code { font-family: var(--hds-font-family-code); font-size: 0.82em; background: #f1f5f9; padding: 0.1rem 0.35rem; border-radius: 0.35rem; color: #b91c1c; }
 .prose-blog pre code { background: transparent; color: inherit; padding: 0; }
 .prose-blog img { max-width: 100%; height: auto; border-radius: 0.75rem; margin: 1rem 0; border: 1px solid #e2e8f0; }
 .prose-blog hr { margin: 1.5rem 0; border: none; border-top: 1px solid #e2e8f0; }

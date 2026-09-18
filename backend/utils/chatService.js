@@ -27,6 +27,21 @@ YOUR RESPONSIBILITIES:
 5. If district context is provided, tailor your response specifically to that district's agro-ecological zone (AEZ) and local hazards.`;
 
 /**
+ * Prompt bounds (SEC-11). The per-field numbers existed before this phase but the prompt
+ * was assembled from raw input; these are the numbers actually enforced on the model call,
+ * and `MAX_PROMPT_CHARS` bounds the whole thing including retrieved context. The bounds
+ * only count if they reach the prompt: an earlier version computed `sanitizedQuery` for
+ * RAG retrieval but built the LLM prompt from the raw body, so a caller could send a
+ * megabyte of text (cost, latency, prompt-injection surface) while the code still looked
+ * bounded. Everything downstream of the sanitize block uses the sanitized values, and the
+ * assembled prompt is capped as a whole — on BOTH transports, since the Express route and
+ * the Vercel twin share this module.
+ */
+const MAX_QUERY_CHARS = 3000;
+const MAX_HISTORY_MESSAGE_CHARS = 1500;
+const MAX_PROMPT_CHARS = 12_000;
+
+/**
  * Categorized sample queries for the widget's quick-start chips.
  * GET /api/chat/sample-questions
  */
@@ -127,13 +142,13 @@ export async function handleChatQuery(input) {
     throw err;
   }
 
-  // Input bounds & anti-DoS safeguards
-  const sanitizedQuery = query.trim().slice(0, 3000);
+  // Input bounds & anti-DoS safeguards (SEC-11 — see the constants above)
+  const sanitizedQuery = query.trim().slice(0, MAX_QUERY_CHARS);
   const sanitizedDistrict = typeof district === 'string' ? district.trim().slice(0, 100) : undefined;
   const safeHistory = Array.isArray(conversationHistory)
     ? conversationHistory.slice(-8).map(msg => ({
         role: msg?.role === 'user' ? 'user' : 'assistant',
-        content: typeof msg?.content === 'string' ? msg.content.slice(0, 1500) : ''
+        content: typeof msg?.content === 'string' ? msg.content.slice(0, MAX_HISTORY_MESSAGE_CHARS) : ''
       }))
     : [];
 
@@ -168,16 +183,35 @@ export async function handleChatQuery(input) {
   // response contract must be ONE explicit JSON object. The old free-form
   // "Markdown answer + JSON block at the end" instruction made JSON-locked
   // models improvise and the parser miss the answer.
-  const fullUserPrompt = `${contextText}${historyText}
-=== USER QUERY ===
-${sanitizedQuery}
-
-Answer the user's query using the retrieved RAG knowledge above (plus the
+  const promptTail = `\n=== USER QUERY ===\n${sanitizedQuery}\n\nAnswer the user's query using the retrieved RAG knowledge above (plus the
 district baseline and official helplines whenever relevant). Ground every
 claim in that context; if it does not cover something, say so plainly.
 Respond with a single valid JSON object and nothing else — no markdown
 fences, no surrounding prose:
 {"answer": "<your complete answer as well-structured Markdown: headings, bullets, specific varieties/protocols/dosages/helplines from the context>", "followups": ["<short follow-up question 1>", "<short follow-up question 2>", "<short follow-up question 3>"]}`;
+
+  // SEC-11: the per-field bounds only count if the assembled prompt is capped
+  // as a whole. The retrieved context is in-repo content, so truncating it is
+  // safe — the note's own length is reserved up front, so the final string is
+  // inside the budget even when it says so.
+  const TRUNCATION_NOTE = '\n[retrieved context truncated: prompt budget reached]\n';
+  const tailBudget = MAX_PROMPT_CHARS - promptTail.length - TRUNCATION_NOTE.length;
+  if (historyText.length > tailBudget) historyText = historyText.slice(0, Math.max(0, tailBudget));
+
+  const contextBudget = tailBudget - historyText.length;
+  let promptTruncated = false;
+  if (contextText.length > contextBudget) {
+    contextText = contextBudget > 0
+      ? `${contextText.slice(0, contextBudget)}${TRUNCATION_NOTE}`
+      : '';
+    promptTruncated = true;
+  }
+
+  const fullUserPrompt = `${contextText}${historyText}${promptTail}`;
+
+  // Diagnostics the transports return as `prompt`: tests (and operators) can
+  // verify the bound is enforced rather than merely computed.
+  const promptStats = { chars: fullUserPrompt.length, truncated: promptTruncated };
 
   // 4. Generate Answer via Multi-Provider HA Fallback Engine
   const aiParams = {
@@ -257,6 +291,7 @@ fences, no surrounding prose:
     govt_directory: GOVT_OFFICE_DIRECTORY,
     suggested_followups: followups,
     provider_source: aiResponse?.provider_source || 'HazardNet RAG Knowledge Engine',
-    cached: aiResponse?.cached || false
+    cached: aiResponse?.cached || false,
+    prompt: promptStats
   };
 }

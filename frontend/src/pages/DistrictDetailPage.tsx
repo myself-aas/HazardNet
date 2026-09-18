@@ -68,6 +68,7 @@ import { StructuredAdvisoryRenderer } from '../components/StructuredAdvisoryRend
 import AdvisoryPanel from '../components/AdvisoryPanel';
 import { PrintQrCode } from '../components/PrintQrCode';
 import { PdfExportButton } from '../components/PdfExportButton';
+import { DistrictAlertStrip } from '../components/alerts/DistrictAlertStrip';
 import { fetchForecastMetadata, fetchStaticForecastSnapshot, ForecastRow, canonicalKey } from '../lib/forecasts';
 import { WeatherPanel } from '../components/WeatherPanel';
 import { useWeather } from '../hooks/useWeather';
@@ -616,8 +617,10 @@ export const DistrictDetailPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Right: Executive Action Controls */}
-        <div className="flex items-center gap-2">
+        {/* Right: Executive Action Controls.
+            `flex-wrap`: bookmark + share + PDF + JSON is ~357px of controls, which is a 37px
+            document overflow at 320px if they are forced onto one line. They wrap instead. */}
+        <div className="flex flex-wrap items-center gap-2">
           {/* Bookmark / Watchlist */}
           <button
             onClick={handleToggleSave}
@@ -717,6 +720,14 @@ export const DistrictDetailPage: React.FC = () => {
           </div>
         </div>
 
+        {/* Published alert for this district (Phase 5). Sits directly under the page
+            title because "is there an alert for me here" is the first question, and
+            an absent strip must not read as an absent hazard. */}
+        <DistrictAlertStrip
+          district={district.id || data.districtName || district.name}
+          baselineOnly={Boolean((data as { baselineOnly?: boolean }).baselineOnly)}
+        />
+
         {/* Highlighted Hazard & Peak Severity Occurrence Date Banner */}
         <div className="bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 border border-amber-200 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-xs font-mono shadow-xs">
           <div className="flex items-center gap-3">
@@ -778,16 +789,21 @@ export const DistrictDetailPage: React.FC = () => {
                 <span className="text-slate-500 font-medium">Surface Elevation Datum:</span>
                 <span className="font-mono font-bold text-slate-900">{data.elevationMeters} m MSL</span>
               </div>
-              <div className="flex items-center justify-between">
+              {/* `flex-wrap` + `break-all`: the printed brief carries the full URL, and on a
+                  375px viewport the label and the unbroken URL cannot share a line — this row was
+                  the 20px of document-level horizontal overflow the E2E suite caught on
+                  /forecast/district/dhaka. The URL must stay readable, so it wraps rather than
+                  being truncated. */}
+              <div className="flex flex-wrap items-center justify-between gap-1">
                 <span className="text-slate-500 font-medium">Interactive Dashboard:</span>
                 <a
-                  href={`https://hazardnet.live/district/${districtId}`}
+                  href={`https://www.hazardnet.live/forecast/district/${districtId}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="text-blue-700 hover:text-blue-900 font-bold inline-flex items-center gap-1 underline"
+                  className="text-blue-700 hover:text-blue-900 font-bold inline-flex items-center gap-1 underline min-w-0 break-all"
                 >
-                  <span>hazardnet.live/district/{districtId}</span>
-                  <ExternalLink className="w-3 h-3" />
+                  <span>www.hazardnet.live/forecast/district/{districtId}</span>
+                  <ExternalLink className="w-3 h-3 shrink-0" />
                 </a>
               </div>
             </div>
@@ -795,7 +811,7 @@ export const DistrictDetailPage: React.FC = () => {
             <div className="pt-2 border-t border-slate-200 flex items-center justify-between">
               <span className="text-[8pt] text-slate-500 font-mono">Real-time Mobile Telemetry Feed:</span>
               <PrintQrCode
-                url={`https://hazardnet.live/district/${districtId}`}
+                url={`https://www.hazardnet.live/forecast/district/${districtId}`}
                 districtOrSector={data.districtName}
                 title="Live Field Telemetry"
                 size={42}
@@ -816,7 +832,9 @@ export const DistrictDetailPage: React.FC = () => {
               7-Day & 15-Day Forecast Records ({data.districtName})
             </h2>
           </div>
-          <div className="flex items-center gap-2">
+          {/* `flex-wrap`: the two horizon toggles plus "Download CSV" are ~357px, which is a
+              37px document overflow at 320px. They wrap rather than widen the page. */}
+          <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={() => setActiveTableHorizon('7_days')}
               className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
@@ -840,7 +858,7 @@ export const DistrictDetailPage: React.FC = () => {
             <button
               onClick={handleDownloadTableCsv}
               title="Download specific 7 and 15-day hazard intelligence records as CSV"
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs transition-all shadow-xs cursor-pointer ml-1"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-nasa-red hover:bg-nasa-red-shade text-slate-950 font-black text-xs transition-all shadow-xs cursor-pointer ml-1"
             >
               <Download className="w-3.5 h-3.5" />
               <span>Download CSV</span>
@@ -977,7 +995,7 @@ export const DistrictDetailPage: React.FC = () => {
                 </span>
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-50 border border-purple-200 text-purple-800 text-xs font-mono font-bold">
                   <Bot className="w-3 h-3 text-purple-600" />
-                  AI Model Confidence: {data.modelAssessment.confidenceLevel}% (High)
+                  Model Score: {data.modelAssessment.confidenceLevel}% (uncalibrated)
                 </span>
               </div>
 
@@ -985,15 +1003,16 @@ export const DistrictDetailPage: React.FC = () => {
               <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                 <p className="text-slate-800 text-sm sm:text-base leading-relaxed font-medium max-w-4xl">
                   {data.hazardSubtype}. Continuous severity index calculated at{' '}
-                  <strong className="text-slate-950 font-bold">{(data.modelAssessment.continuousSeverityIndex * 100).toFixed(0)}%</strong> with an AI ensemble confidence of{' '}
-                  <strong className="text-slate-950 font-bold">{data.modelAssessment.confidenceLevel}%</strong> calibrated against ground stations and Sentinel-1 SAR observations. Primary exposure focuses across low-elevation agricultural floodplains, dense riverine settlements, and vulnerable embankment corridors.
+                  <strong className="text-slate-950 font-bold">{(data.modelAssessment.continuousSeverityIndex * 100).toFixed(0)}%</strong> with a model score of{' '}
+                  <strong className="text-slate-950 font-bold">{data.modelAssessment.confidenceLevel}%</strong>. That score is the classifier&rsquo;s own (uncalibrated) softmax, not a measured probability of the event — calibration and POD/FAR are tracked in the{' '}
+                  <a href="/methodology" className="underline decoration-dotted font-semibold">methodology</a>. Primary exposure focuses across low-elevation agricultural floodplains, dense riverine settlements, and vulnerable embankment corridors.
                 </p>
 
                 {/* Quick Live Link / QR preview for Screen */}
                 <div className="hidden lg:flex items-center gap-3 bg-slate-50 border border-slate-200/80 rounded-2xl p-3 shrink-0 screen-only">
                   <div className="shrink-0">
                     <PrintQrCode
-                      url={`https://hazardnet.live/district/${districtId}`}
+                      url={`https://www.hazardnet.live/forecast/district/${districtId}`}
                       districtOrSector={data.districtName}
                       title="Mobile Link"
                       size={52}
@@ -1002,7 +1021,7 @@ export const DistrictDetailPage: React.FC = () => {
                   <div className="text-xs space-y-1">
                     <span className="font-bold text-slate-900 block font-mono text-[11px]">LIVE TELEMETRY STREAM</span>
                     <a
-                      href={`https://hazardnet.live/district/${districtId}`}
+                      href={`https://www.hazardnet.live/forecast/district/${districtId}`}
                       target="_blank"
                       rel="noreferrer"
                       className="text-blue-600 hover:text-blue-800 font-semibold text-xs inline-flex items-center gap-1"
@@ -1153,7 +1172,7 @@ export const DistrictDetailPage: React.FC = () => {
               <p className="text-xs text-slate-500">Spatial territory exposure, population vulnerability, and standing crop risk estimations.</p>
             </div>
           </div>
-          <span className="text-[11px] font-mono text-slate-400 bg-slate-100 px-2.5 py-1 rounded-lg">SECTION 01</span>
+          <span className="text-[11px] font-mono text-slate-400 bg-slate-100 px-2.5 py-1 rounded-lg">SECTION I</span>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -1369,7 +1388,7 @@ export const DistrictDetailPage: React.FC = () => {
               </p>
             </div>
           </div>
-          <span className="text-[11px] font-mono text-slate-400 bg-slate-100 px-2.5 py-1 rounded-lg">SECTION 02</span>
+          <span className="text-[11px] font-mono text-slate-400 bg-slate-100 px-2.5 py-1 rounded-lg">SECTION II</span>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -1466,8 +1485,8 @@ export const DistrictDetailPage: React.FC = () => {
             </div>
 
             <div className="flex items-center justify-between text-[11px] text-slate-500 pt-2 border-t border-slate-100">
-              <span>Telemetry Frequency: 15-Minute Sample Interval</span>
-              <span className="font-mono text-emerald-600 font-bold">Severity: BD-anchored scale</span>
+              <span>Source: the daily model forecast (Earth Engine + Open-Meteo)</span>
+              <span className="font-mono text-slate-500 font-bold">Reference: regional danger threshold</span>
             </div>
           </div>
         </div>
@@ -1525,17 +1544,8 @@ export const DistrictDetailPage: React.FC = () => {
               </div>
               <div className="w-px h-8 bg-slate-200" />
               <div>
-                <div className="text-slate-500">Trend Velocity</div>
-                <div className="text-sm font-black text-amber-600">
-                  {(() => {
-                    const vals = hazardTrendData.map((d) => Number(d[data.hazardType] || 0));
-                    const prev = vals[vals.length - 2] ?? 0;
-                    const last = vals[vals.length - 1] ?? 0;
-                    if (vals.length < 2 || prev <= 0) return '—';
-                    const pct = ((last - prev) / prev) * 100;
-                    return `${pct >= 0 ? '+' : ''}${pct.toFixed(1)}% / day`;
-                  })()}
-                </div>
+                <div className="text-slate-500">Trend Basis</div>
+                <div className="text-sm font-black text-amber-600">7-Day window</div>
               </div>
             </div>
           </div>
@@ -1600,7 +1610,7 @@ export const DistrictDetailPage: React.FC = () => {
             </div>
             <div className="bg-slate-50 p-3 rounded-xl border border-slate-200/80">
               <span className="font-mono text-slate-500 font-bold block mb-1">Confidence Interval</span>
-              <p className="text-slate-700">Trend confidence is tracked against historical sensor checkpoints.</p>
+              <p className="text-slate-700">No calibration map has been fitted — the model card documents what is and is not measured.</p>
             </div>
           </div>
         </div>
@@ -1629,7 +1639,7 @@ export const DistrictDetailPage: React.FC = () => {
               <span>View Technical Appendix</span>
               <ExternalLink className="w-3 h-3" />
             </a>
-            <span className="text-[11px] font-mono text-slate-400 bg-slate-100 px-2.5 py-1 rounded-lg">SECTION 03</span>
+            <span className="text-[11px] font-mono text-slate-400 bg-slate-100 px-2.5 py-1 rounded-lg">SECTION III</span>
           </div>
         </div>
 
@@ -1680,7 +1690,7 @@ export const DistrictDetailPage: React.FC = () => {
               </h3>
               <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-4 text-xs font-mono text-slate-800 leading-relaxed space-y-2">
                 <p>
-                  Satellite imagery confirms high water saturation across low-lying areas. AI models detect significant river swelling matching historical flood patterns.
+                  Satellite imagery shows high water saturation across low-lying areas, and the severity index is computed from the day's Earth Engine and Open-Meteo inputs.
                 </p>
               </div>
             </div>
@@ -1730,7 +1740,7 @@ export const DistrictDetailPage: React.FC = () => {
             <span className="text-[11px] font-mono text-slate-400 bg-slate-100 px-2.5 py-1 rounded-lg">
               {processedUpazilas.length} UPAZILAS LISTED
             </span>
-            <span className="text-[11px] font-mono text-slate-400 bg-slate-100 px-2.5 py-1 rounded-lg">SECTION 04</span>
+            <span className="text-[11px] font-mono text-slate-400 bg-slate-100 px-2.5 py-1 rounded-lg">SECTION IV</span>
           </div>
         </div>
 
@@ -1963,7 +1973,7 @@ export const DistrictDetailPage: React.FC = () => {
               <Sparkles className="w-3.5 h-3.5 text-amber-600" />
               <span>{showLiveAiAdvisory ? 'Hide AI Synthesizer' : 'Synthesize Gemini AI Advisory'}</span>
             </button>
-            <span className="text-[11px] font-mono text-slate-400 bg-slate-100 px-2.5 py-1 rounded-lg">SECTION 05</span>
+            <span className="text-[11px] font-mono text-slate-400 bg-slate-100 px-2.5 py-1 rounded-lg">SECTION V</span>
           </div>
         </div>
 
@@ -2114,7 +2124,7 @@ export const DistrictDetailPage: React.FC = () => {
               <p className="text-xs text-slate-500">Longitudinal hazard analysis cross-referencing global disaster databases (1990-2026).</p>
             </div>
           </div>
-          <span className="text-[11px] font-mono text-slate-400 bg-slate-100 px-2.5 py-1 rounded-lg">SECTION 06</span>
+          <span className="text-[11px] font-mono text-slate-400 bg-slate-100 px-2.5 py-1 rounded-lg">SECTION VI</span>
         </div>
 
         <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-xs space-y-6">
@@ -2135,14 +2145,14 @@ export const DistrictDetailPage: React.FC = () => {
             {/* Peak Historical Benchmark - Changed to Slate-700 for non-alarm historical context */}
             <div className="bg-slate-50 p-4 rounded-xl border border-slate-200/80 space-y-1">
               <span className="text-[10px] font-mono text-slate-500 font-bold uppercase">Historical Peak (2020)</span>
-              <div className="text-2xl font-black text-slate-700 font-mono">Super-flood (2020)</div>
-              <span className="text-[11px] text-slate-500">Historical super-flood peak benchmark</span>
+              <div className="text-2xl font-black text-slate-400 font-mono">Not published</div>
+              <span className="text-[11px] text-slate-500">No per-district peak index derived from EM-DAT yet</span>
             </div>
 
             <div className="bg-slate-50 p-4 rounded-xl border border-slate-200/80 space-y-1">
               <span className="text-[10px] font-mono text-slate-500 font-bold uppercase">Model Cross-Correlation</span>
-              <div className="text-2xl font-black text-emerald-600 font-mono">R2 tracked</div>
-              <span className="text-[11px] text-slate-500">Cross-checked against ground gauges (v3 evaluation pending)</span>
+              <div className="text-2xl font-black text-slate-400 font-mono">Not published</div>
+              <span className="text-[11px] text-slate-500">No calibration map fitted against station records</span>
             </div>
           </div>
         </div>
@@ -2162,7 +2172,7 @@ export const DistrictDetailPage: React.FC = () => {
               <p className="text-xs text-slate-500">Resource deployments, shelter logistics, and instant authority dispatch transmission.</p>
             </div>
           </div>
-          <span className="text-[11px] font-mono text-slate-400 bg-slate-100 px-2.5 py-1 rounded-lg">SECTION 07</span>
+          <span className="text-[11px] font-mono text-slate-400 bg-slate-100 px-2.5 py-1 rounded-lg">SECTION VII</span>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -2293,28 +2303,32 @@ export const DistrictDetailPage: React.FC = () => {
           <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-xs font-mono font-bold text-purple-700 uppercase">Inference Latency</span>
-              <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-purple-50 text-purple-700">WebGL Acceleration</span>
+              <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-slate-100 text-slate-600">Not measured</span>
             </div>
-            <div className="text-3xl font-black text-slate-900 font-mono">In-browser</div>
-            <p className="text-xs text-slate-500">Fast automated scoring executed directly inside your browser for instant local decision support.</p>
+            <div className="text-3xl font-black text-slate-400 font-mono">—</div>
+            <p className="text-xs text-slate-500">Latencies for the daily pipeline are not measured on this page, so none is quoted.</p>
           </div>
 
           <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-mono font-bold text-blue-700 uppercase">Calibration Accuracy</span>
-              <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-blue-50 text-blue-700">Platt Calibration</span>
+              <span className="text-xs font-mono font-bold text-blue-700 uppercase">Calibration</span>
+              <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-50 text-amber-700">Not yet fitted</span>
             </div>
-            <div className="text-3xl font-black text-slate-900 font-mono">v3 pending</div>
-            <p className="text-xs text-slate-500">Isotonic calibration is part of the v3 evaluation program.</p>
+            <div className="text-3xl font-black text-slate-900 font-mono">—</div>
+            <p className="text-xs text-slate-500">
+              No calibration map has been fitted: the repository has no observed-outcome
+              dataset to fit one against, so no calibration accuracy can be quoted.
+              See the <a href="/methodology" className="underline decoration-dotted font-semibold">methodology</a>.
+            </p>
           </div>
 
           <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-mono font-bold text-emerald-700 uppercase">Ensemble Agreement</span>
-              <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-50 text-emerald-700">Sentinel-1 SAR</span>
+              <span className="text-xs font-mono font-bold text-emerald-700 uppercase">Model Score</span>
+              <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-50 text-emerald-700">Softmax</span>
             </div>
             <div className="text-3xl font-black text-slate-900 font-mono">{data.modelAssessment.confidenceLevel}%</div>
-            <p className="text-xs text-slate-500">Cross-verified across multi-spectral satellite radar feeds and weather telemetry stations.</p>
+            <p className="text-xs text-slate-500">The classifier's own score for its chosen class — uncalibrated, and not an ensemble or ground-station agreement measure.</p>
           </div>
         </div>
 
@@ -2333,9 +2347,9 @@ export const DistrictDetailPage: React.FC = () => {
               </p>
             </div>
             <div>
-              <strong className="text-slate-950 font-bold block mb-1">[2] Probability Scoring & Calibration (Platt Calibration & Softmax Scoring):</strong>
+              <strong className="text-slate-950 font-bold block mb-1">[2] Probability Scoring (Softmax — not yet calibrated):</strong>
               <p className="text-slate-700">
-                The AI model converts complex multi-hazard sensor readings into an intuitive 0–100% risk probability score for floods, waterlogging, and riverbank erosion. This calibrated scoring prevents false alarms and guarantees that District Disaster Management Committee (DDMC) officials receive trustworthy early alerts.
+                The model converts multi-hazard sensor readings into a 0–100% hazard score. It is the classifier&rsquo;s own softmax for the class it chose: it is <strong className="font-bold">not</strong> a calibrated probability, and the project publishes no calibration accuracy because no calibration map has been fitted — that requires observed-outcome data. Detection performance (POD / FAR / CSI) is likewise reported only once it can be measured against the event archive.
               </p>
             </div>
             <div>

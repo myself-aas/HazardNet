@@ -3,6 +3,7 @@ import express from 'express';
 import { GoogleGenAI } from '@google/genai';
 import { routeSkills } from '../../rag_pipeline/index.js';
 import { generateDeterministicHeuristicAdvisory } from '../utils/ai_fallback_engine.js';
+import { clientError } from '../utils/clientError.js';
 
 const router = express.Router();
 
@@ -73,7 +74,7 @@ router.post('/advisory', async (req, res) => {
     res.json(advisory);
   } catch (err) {
     console.error('Agent Function Calling Error:', err);
-    res.status(500).json({ error: 'Failed to generate advisory via Agent function calling', message: err.message });
+    clientError(res, err, { scope: 'backend/agent', fallback: 'Failed to generate advisory via Agent function calling' });
   }
 });
 

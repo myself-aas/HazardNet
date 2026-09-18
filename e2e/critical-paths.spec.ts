@@ -52,10 +52,11 @@ test.describe('Authentication Flows', () => {
 
 test.describe('District Selection & Forecast Display', () => {
   test('user can search a district and open its forecast', async ({ page }) => {
-    await page.goto(BASE);
+    // The GIS console lives at `/live`; `/` is the editorial front door (PR #29).
+    await page.goto(`${BASE}/live`);
     await waitForAppShell(page);
 
-    // The GIS stage is the home page's primary surface.
+    // The GIS stage is the console's primary surface.
     await expect(page.locator('.leaflet-container').first()).toBeVisible({ timeout: 20_000 });
 
     // Two CommandPalette triggers exist in the DOM (compact bar + desktop bar);
@@ -70,9 +71,10 @@ test.describe('District Selection & Forecast Display', () => {
     await expect(result).toBeVisible({ timeout: 10_000 });
     await result.click();
 
-    // Selecting a district deep-links the map (`/?district=<id>`) and pins the
-    // forecast card for it.
-    await expect(page).toHaveURL(/district=kurigram/);
+    // Selecting a district deep-links the map (`/live?district=<id>`) and pins
+    // the forecast card for it. The older `/?district=<id>` form still resolves:
+    // the front door forwards it to `/live` (covered below).
+    await expect(page).toHaveURL(/\/live\?district=kurigram/);
     await expect(page.getByText('DISTRICT FORECAST')).toBeVisible({ timeout: 15_000 });
   });
 
@@ -96,7 +98,9 @@ test.describe('District Selection & Forecast Display', () => {
   });
 
   test('district forecast card opens the full district brief', async ({ page }) => {
-    await page.goto(BASE);
+    // The GIS stage is the console at `/live` (PR #29); the card it pins is part
+    // of that stage, not of the editorial front door.
+    await page.goto(`${BASE}/live`);
     await waitForAppShell(page);
 
     // The GIS stage pins a forecast card for the focused district; its primary
@@ -284,11 +288,11 @@ test.describe('Performance', () => {
       }
     });
 
-    for (const pagePath of ['/', '/advisories', '/forecast/district/dhaka']) {
+    for (const pagePath of ['/', '/live', '/advisories', '/forecast/district/dhaka']) {
       await page.goto(`${BASE}${pagePath}`);
       // Wait for the route's own content instead of `networkidle` — the app
       // keeps a Firebase RTDB websocket open, so the network never goes idle.
-      if (pagePath === '/') {
+      if (pagePath === '/live') {
         await waitForAppShell(page);
         await expect(page.locator('.leaflet-container').first()).toBeVisible({ timeout: 20_000 });
       } else {
@@ -300,6 +304,54 @@ test.describe('Performance', () => {
       ? ` — HTML served for script requests: ${htmlForScript.join(', ')}`
       : '';
     expect(errors, `JavaScript errors found: ${errors.join(', ')}${htmlNote}`).toEqual([]);
+  });
+});
+
+/**
+ * The editorial front door (PR #29). `/` stopped being the map, so these tests pin
+ * the properties that make it a front door rather than a splash screen: it must
+ * carry its own identity, attribute the work, link to the console, and keep every
+ * `/?district=` deep link that has been published since the project began.
+ */
+test.describe('Editorial front door', () => {
+  test('renders identity, provenance and the route into the console', async ({ page }) => {
+    await page.goto(BASE);
+    await waitForAppShell(page);
+
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 20_000 });
+
+    // The console must not be the root any more: a front door that quietly *is*
+    // the map would make this suite pass while the audit's finding stands.
+    await expect(page.locator('.leaflet-container')).toHaveCount(0);
+
+    // Attribution is a standing requirement, not decoration: the thesis author,
+    // the supervisors' institution, and the citation string must all be present.
+    await expect(page.getByText(/Ashif Ahmed Shuvo/).first()).toBeVisible();
+    await expect(page.getByText(/Bangladesh Agricultural University/).first()).toBeVisible();
+    await expect(page.getByText(/Shuvo, A\. A\. HazardNet/).first()).toBeVisible();
+
+    // The live half states what the committed artifacts say, or says it could not
+    // read them — never a silently blank panel.
+    await expect(page.getByText(/Published alerts/i).first()).toBeVisible({ timeout: 20_000 });
+  });
+
+  test('forwards legacy /?district= deep links to the console', async ({ page }) => {
+    await page.goto(`${BASE}/?district=kurigram`);
+
+    // District links were published as `/?district=<id>` for the whole life of the
+    // project (SMS, Telegram, bookmarks). They must keep working.
+    await expect(page).toHaveURL(/\/live\?district=kurigram/);
+    await expect(page.locator('.leaflet-container').first()).toBeVisible({ timeout: 20_000 });
+  });
+
+  test('the hero CTA opens the console', async ({ page }) => {
+    await page.goto(BASE);
+    await waitForAppShell(page);
+
+    await page.getByRole('link', { name: /open the live map/i }).first().click();
+
+    await expect(page).toHaveURL(/\/live(\?|$)/);
+    await expect(page.locator('.leaflet-container').first()).toBeVisible({ timeout: 20_000 });
   });
 });
 
@@ -335,11 +387,12 @@ test.describe('Deployment environment', () => {
       if (pathname.startsWith('/_vercel/')) requested.push(pathname);
     });
 
-    // The home route is enough: <Analytics /> mounts once at the app root,
-    // outside the router. Wait for the GIS stage (not just the shell) so the
-    // mount effect has demonstrably run — a loader injected after this
-    // assertion would otherwise slip through.
-    await page.goto(BASE);
+    // One route is enough: <Analytics /> mounts once at the app root, outside the
+    // router. Wait for the GIS stage (not just the shell) so the mount effect has
+    // demonstrably run — a loader injected after this assertion would otherwise
+    // slip through. `/live` is the route with the map; on `/` the equivalent wait
+    // would be for an <h1>, which renders before the lazy map chunk is requested.
+    await page.goto(`${BASE}/live`);
     await waitForAppShell(page);
     await expect(page.locator('.leaflet-container').first()).toBeVisible({ timeout: 20_000 });
 

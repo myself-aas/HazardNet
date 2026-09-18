@@ -110,8 +110,17 @@ export const Navbar: React.FC<NavbarProps> = ({
     setActiveMenu((prev) => (prev === menu ? null : menu));
   };
 
-  const isTransparentMode = isTransparent ?? (
+  // The transparent masthead belongs to the full-bleed map console (`/live`). The
+  // editorial front door at `/` is an ordinary page with an ordinary navbar.
+  /** The nav item covers both the editorial overview and the console it links to. */
+  const isHomeMenuRoute =
     location.pathname === '/' ||
+    location.pathname === '/live' ||
+    location.pathname.startsWith('/home') ||
+    location.pathname === '/forecast/overview';
+
+  const isTransparentMode = isTransparent ?? (
+    location.pathname === '/live' ||
     location.pathname === '/home' ||
     location.pathname === '/home/overview' ||
     location.pathname === '/forecast/overview'
@@ -125,13 +134,13 @@ export const Navbar: React.FC<NavbarProps> = ({
         transition={{ duration: 0.3, ease: 'easeOut' }}
         ref={headerRef}
         className={`sticky top-0 z-[2000] border-b text-slate-800 transition-all duration-300 select-none h-14 sm:h-16 flex items-center ${
+          /* HDS chrome is flat and opaque: no backdrop blur, depth from the 1px
+             rule beneath the bar rather than a shadow. */
           isTransparentMode
-            ? isScrolled
-              ? 'bg-white/85 backdrop-blur-2xl border-slate-200/70 shadow-sm shadow-slate-900/5'
-              : 'bg-white/60 backdrop-blur-xl border-white/25 shadow-none'
+            ? 'bg-white/95 border-carbon-20 shadow-none'
             : isScrolled
-            ? 'bg-white/95 backdrop-blur-2xl border-slate-200/80 shadow-md shadow-slate-900/5'
-            : 'bg-white/90 backdrop-blur-xl border-slate-200/60 shadow-xs'
+            ? 'bg-white border-carbon-20 shadow-none'
+            : 'bg-white border-carbon-20 shadow-none'
         }`}
       >
         {/* Unified Header Bar */}
@@ -172,7 +181,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             >
               <Link
                 to="/"
-                className="flex items-center justify-center gap-1.5 px-2.5 py-1 rounded-xl text-slate-900 hover:bg-white/40 transition-all focus-visible:ring-2 focus-visible:ring-teal-500/50 focus-visible:outline-none"
+                className="flex items-center justify-center gap-1.5 px-2.5 py-1 rounded-xl text-slate-900 hover:bg-white/40 transition-all focus-visible:ring-2 focus-visible:ring-nasa-blue/60 focus-visible:outline-none"
                 title="HazardNet"
               >
                 <HazardNetBrand size="sm" />
@@ -184,7 +193,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               <button
                 onClick={handleNavbarLocate}
                 disabled={isLocatingInNavbar}
-                className="tap-target p-2 rounded-xl bg-amber-400 hover:bg-amber-500 text-slate-950 font-bold text-xs shadow-2xs transition-all flex items-center justify-center cursor-pointer disabled:opacity-50"
+                className="tap-target p-2 rounded-control bg-nasa-blue hover:bg-nasa-blue-shade text-white font-bold text-xs transition-all flex items-center justify-center cursor-pointer disabled:opacity-50"
                 title="Locate me"
                 aria-label="Locate me"
               >
@@ -202,11 +211,11 @@ export const Navbar: React.FC<NavbarProps> = ({
               full bar needs ~1180px, so it activates at xl (1280px). */}
           <div className="hidden xl:flex items-center justify-between w-full min-w-0">
             {/* Left Section: Brand & Navigation Menus */}
-            <div className="flex items-center gap-2 lg:gap-4 shrink-0">
+            <div className="flex items-center gap-2 lg:gap-3 shrink-0">
               <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} className="flex items-center justify-center">
                 <Link
                   to="/"
-                  className="flex items-center justify-center gap-2 px-2.5 py-1.5 hover:bg-white/50 rounded-xl text-slate-900 transition-colors shrink-0 focus-visible:ring-2 focus-visible:ring-teal-500/50 focus-visible:outline-none"
+                  className="flex items-center justify-center gap-2 px-2.5 py-1.5 hover:bg-white/50 rounded-xl text-slate-900 transition-colors shrink-0 focus-visible:ring-2 focus-visible:ring-nasa-blue/60 focus-visible:outline-none"
                   title="HazardNet Early Warning System"
                 >
                   <HazardNetBrand size="md" />
@@ -214,7 +223,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               </motion.div>
 
               {/* Desktop Navigation Tabs */}
-              <nav className="flex items-center gap-1" aria-label="Main Navigation">
+              <nav className="flex items-center gap-0.5 2xl:gap-1" aria-label="Main Navigation">
                 
                 {/* 1. Home */}
                 <div className="relative">
@@ -222,10 +231,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => toggleMenu('home')}
-                    className={`px-3 py-1.5 text-[13.5px] font-medium rounded-xl transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0 focus-visible:ring-2 focus-visible:ring-teal-500/50 focus-visible:outline-none ${
-                      activeMenu === 'home' || location.pathname.startsWith('/home')
-                        ? 'bg-teal-600/10 text-teal-900 font-semibold border border-teal-600/30 shadow-2xs'
-                        : 'text-slate-700 hover:text-slate-950 hover:bg-slate-900/5'
+                    className={`hn-nav-link px-1 2xl:px-2.5 py-2 transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0 focus-visible:outline-none ${
+                      activeMenu === 'home' || isHomeMenuRoute
+                        ? 'hn-nav-link-active'
+                        : ''
                     }`}
                   >
                     <span>Home</span>
@@ -248,14 +257,29 @@ export const Navbar: React.FC<NavbarProps> = ({
                       >
                         <motion.button
                           whileHover={{ x: 3 }}
-                          onClick={() => { navigate('/home/overview'); setActiveMenu(null); }}
+                          onClick={() => { navigate('/'); setActiveMenu(null); }}
                           className="w-full p-2.5 text-left flex items-start gap-3 rounded-xl hover:bg-slate-100/90 transition-all cursor-pointer group"
                         >
-                          <div className="p-2 rounded-xl bg-teal-50 text-teal-700 group-hover:bg-teal-100 transition-colors shrink-0">
+                          <div className="p-2 rounded-xl bg-nasa-blue/10 text-nasa-blue-shade group-hover:bg-nasa-blue/20 transition-colors shrink-0">
+                            <MaterialIcon name="description" className="text-lg" />
+                          </div>
+                          <div>
+                            <div className="font-semibold text-slate-900 text-[13.5px]">Overview</div>
+                            <div className="text-[11.5px] text-slate-500 leading-tight mt-0.5">
+                              What this platform is for, what the last run produced, and where every number can be checked
+                            </div>
+                          </div>
+                        </motion.button>
+                        <motion.button
+                          whileHover={{ x: 3 }}
+                          onClick={() => { navigate('/live'); setActiveMenu(null); }}
+                          className="w-full p-2.5 text-left flex items-start gap-3 rounded-xl hover:bg-slate-100/90 transition-all cursor-pointer group"
+                        >
+                          <div className="p-2 rounded-xl bg-nasa-blue/10 text-nasa-blue-shade group-hover:bg-nasa-blue/20 transition-colors shrink-0">
                             <MaterialIcon name="public" className="text-lg" />
                           </div>
                           <div>
-                            <div className="font-semibold text-slate-900 text-[13.5px]">GIS Overview & Earth Stage</div>
+                            <div className="font-semibold text-slate-900 text-[13.5px]">Live map & GIS console</div>
                             <div className="text-[11.5px] text-slate-500 leading-tight mt-0.5">Interactive 3D Bangladesh hazard map</div>
                           </div>
                         </motion.button>
@@ -270,10 +294,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => toggleMenu('forecasts')}
-                    className={`px-3 py-1.5 text-[13.5px] font-medium rounded-xl transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0 focus-visible:ring-2 focus-visible:ring-teal-500/50 focus-visible:outline-none ${
+                    className={`hn-nav-link px-1 2xl:px-2.5 py-2 transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0 focus-visible:outline-none ${
                       activeMenu === 'forecasts' || location.pathname.startsWith('/forecast')
-                        ? 'bg-teal-600/10 text-teal-900 font-semibold border border-teal-600/30 shadow-2xs'
-                        : 'text-slate-700 hover:text-slate-950 hover:bg-slate-900/5'
+                        ? 'hn-nav-link-active'
+                        : ''
                     }`}
                   >
                     <span>Forecasts</span>
@@ -360,10 +384,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => toggleMenu('advisories')}
-                    className={`px-3 py-1.5 text-[13.5px] font-medium rounded-xl transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0 focus-visible:ring-2 focus-visible:ring-teal-500/50 focus-visible:outline-none ${
+                    className={`hn-nav-link px-1 2xl:px-2.5 py-2 transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0 focus-visible:outline-none ${
                       activeMenu === 'advisories' || location.pathname.startsWith('/advisories')
-                        ? 'bg-teal-600/10 text-teal-900 font-semibold border border-teal-600/30 shadow-2xs'
-                        : 'text-slate-700 hover:text-slate-950 hover:bg-slate-900/5'
+                        ? 'hn-nav-link-active'
+                        : ''
                     }`}
                   >
                     <span>Advisories</span>
@@ -478,10 +502,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => toggleMenu('docs')}
-                    className={`px-3 py-1.5 text-[13.5px] font-medium rounded-xl transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0 focus-visible:ring-2 focus-visible:ring-teal-500/50 focus-visible:outline-none ${
+                    className={`hn-nav-link px-1 2xl:px-2.5 py-2 transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0 focus-visible:outline-none ${
                       activeMenu === 'docs' || location.pathname.startsWith('/docs') || location.pathname.startsWith('/download') || location.pathname.startsWith('/blogs') || location.pathname.startsWith('/about')
-                        ? 'bg-teal-600/10 text-teal-900 font-semibold border border-teal-600/30 shadow-2xs'
-                        : 'text-slate-700 hover:text-slate-950 hover:bg-slate-900/5'
+                        ? 'hn-nav-link-active'
+                        : ''
                     }`}
                   >
                     <span>Knowledge</span>
@@ -523,7 +547,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                         </motion.button>
 
                         <motion.button whileHover={{ x: 3 }} onClick={() => { navigate('/download'); setActiveMenu(null); }} className="w-full p-2.5 text-left flex items-start gap-3 rounded-xl hover:bg-slate-100/90 transition-all cursor-pointer group">
-                          <div className="p-2 rounded-xl bg-teal-50 text-teal-700 group-hover:bg-teal-100 transition-colors shrink-0">
+                          <div className="p-2 rounded-xl bg-nasa-blue/10 text-nasa-blue-shade group-hover:bg-nasa-blue/20 transition-colors shrink-0">
                             <MaterialIcon name="download" className="text-lg" />
                           </div>
                           <div>
@@ -562,10 +586,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => toggleMenu('analytics')}
-                    className={`px-3 py-1.5 text-[13.5px] font-medium rounded-xl transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0 focus-visible:ring-2 focus-visible:ring-teal-500/50 focus-visible:outline-none ${
+                    className={`hn-nav-link px-1 2xl:px-2.5 py-2 transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0 focus-visible:outline-none ${
                       activeMenu === 'analytics' || location.pathname.startsWith('/analytics')
-                        ? 'bg-teal-600/10 text-teal-900 font-semibold border border-teal-600/30 shadow-2xs'
-                        : 'text-slate-700 hover:text-slate-950 hover:bg-slate-900/5'
+                        ? 'hn-nav-link-active'
+                        : ''
                     }`}
                   >
                     <span>Analytics</span>
@@ -597,13 +621,17 @@ export const Navbar: React.FC<NavbarProps> = ({
                           </div>
                         </motion.button>
 
-                        <motion.button whileHover={{ x: 3 }} onClick={() => { navigate('/analytics/model-metrics'); setActiveMenu(null); }} className="w-full p-2.5 text-left flex items-start gap-3 rounded-xl hover:bg-slate-100/90 transition-all cursor-pointer group">
+                        {/* Phase 9 §8.1: this entry used to advertise "ML accuracy & F1 scores" and
+                            point at an analytics screen. The repository has no such number to
+                            publish, so it now links to the page that publishes what was actually
+                            measured — detection counts and POD/FAR/CSI on every scored hindcast episode. */}
+                        <motion.button whileHover={{ x: 3 }} onClick={() => { navigate('/model-performance'); setActiveMenu(null); }} className="w-full p-2.5 text-left flex items-start gap-3 rounded-xl hover:bg-slate-100/90 transition-all cursor-pointer group">
                           <div className="p-2 rounded-xl bg-purple-50 text-purple-700 group-hover:bg-purple-100 transition-colors shrink-0">
                             <MaterialIcon name="monitoring" className="text-lg" />
                           </div>
                           <div>
-                            <div className="font-semibold text-slate-900 text-[13.5px]">AI Model Performance</div>
-                            <div className="text-[11.5px] text-slate-500 leading-tight mt-0.5">ML accuracy & F1 scores</div>
+                            <div className="font-semibold text-slate-900 text-[13.5px]">Hindcast Validation</div>
+                            <div className="text-[11.5px] text-slate-500 leading-tight mt-0.5">Four historical episodes, with limits</div>
                           </div>
                         </motion.button>
 
@@ -621,11 +649,25 @@ export const Navbar: React.FC<NavbarProps> = ({
                   </AnimatePresence>
                 </div>
 
+                {/* 6. Alerts — a plain link, not a dropdown: this is the one item a
+                    returning visitor comes back for, and it must cost one tap. */}
+                <Link
+                  to="/alerts"
+                  className={`px-2.5 2xl:px-3 py-1.5 text-[13.5px] font-medium rounded-xl transition-all flex items-center gap-1.5 whitespace-nowrap shrink-0 no-underline focus-visible:ring-2 focus-visible:ring-nasa-blue/60 focus-visible:outline-none ${
+                    location.pathname.startsWith('/alerts')
+                      ? 'bg-amber-500/15 text-amber-950 font-bold border border-amber-500/40 shadow-2xs'
+                      : 'text-slate-700 hover:text-slate-950 hover:bg-slate-900/5'
+                  }`}
+                >
+                  <MaterialIcon name="notifications_active" className="w-4 h-4" />
+                  <span>Alerts</span>
+                </Link>
+
               </nav>
             </div>
 
             {/* Right Section: Action controls & profile */}
-            <div className="flex items-center gap-1.5 xl:gap-2 2xl:gap-3 shrink-0">
+            <div className="flex items-center gap-1 2xl:gap-2 shrink-0">
               
               {/* Map Location Action Button */}
               <motion.button
@@ -633,7 +675,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 whileTap={{ scale: 0.97 }}
                 onClick={handleNavbarLocate}
                 disabled={isLocatingInNavbar}
-                className="px-3 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-500 text-slate-950 font-bold text-xs shadow-2xs border border-amber-300/80 transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-amber-500/50 focus-visible:outline-none"
+                className="px-3 py-1.5 rounded-control bg-nasa-blue hover:bg-nasa-blue-shade text-white font-bold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 focus-visible:outline-none"
                 title="Detect my location & map to nearest district"
               >
                 {isLocatingInNavbar ? (
@@ -641,7 +683,11 @@ export const Navbar: React.FC<NavbarProps> = ({
                 ) : (
                   <>
                     <MaterialIcon name="person_pin_circle" className="w-4 h-4" />
-                    <span className="hidden xl:inline text-[12px] whitespace-nowrap">Locate Me</span>
+                    {/* The label is a 2xl-only affordance: the desktop bar carries brand + six nav
+                        items + five controls, and at exactly 1280px it has no room for this word.
+                        The E2E overflow check in e2e/smoke.spec.ts is the guard — adding any item
+                        to this bar must be measured against it. */}
+                    <span className="hidden 2xl:inline text-[12px] whitespace-nowrap">Locate Me</span>
                   </>
                 )}
               </motion.button>
@@ -681,7 +727,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   whileHover={{ scale: 1.04 }}
                   whileTap={{ scale: 0.96 }}
                   onClick={() => navigate('/dashboard')}
-                  className="flex items-center gap-2 p-1 pl-1.5 pr-2.5 rounded-xl bg-white/70 hover:bg-white/95 border border-slate-200/80 shadow-2xs transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-teal-500/50 focus-visible:outline-none"
+                  className="flex items-center gap-2 p-1 pl-1.5 pr-2.5 rounded-xl bg-white/70 hover:bg-white/95 border border-slate-200/80 shadow-2xs transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-nasa-blue/60 focus-visible:outline-none"
                   title="Open my dashboard"
                   data-testid="navbar-dashboard-btn"
                 >
@@ -709,14 +755,14 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <Link
                     to="/login"
                     data-testid="navbar-signin-link"
-                    className="px-3 py-2 rounded-xl text-xs font-bold text-slate-700 hover:text-slate-950 hover:bg-white/70 border border-transparent hover:border-slate-200/80 transition-all focus-visible:ring-2 focus-visible:ring-teal-500/50 focus-visible:outline-none"
+                    className="px-3 py-2 rounded-xl text-xs font-bold text-slate-700 hover:text-slate-950 hover:bg-white/70 border border-transparent hover:border-slate-200/80 transition-all focus-visible:ring-2 focus-visible:ring-nasa-blue/60 focus-visible:outline-none"
                   >
                     Sign in
                   </Link>
                   <Link
                     to="/signup"
                     data-testid="navbar-signup-link"
-                    className="px-3.5 py-2 rounded-xl text-xs font-extrabold text-slate-950 bg-[#f9a825] hover:bg-[#d08305] shadow-2xs transition-all focus-visible:ring-2 focus-visible:ring-[#f9a825]/60 focus-visible:ring-offset-2 focus-visible:outline-none"
+                    className="px-3.5 py-2 rounded-xl text-xs font-extrabold text-slate-950 bg-nasa-red hover:bg-nasa-red-shade shadow-2xs transition-all focus-visible:ring-2 focus-visible:ring-nasa-blue/60 focus-visible:ring-offset-2 focus-visible:outline-none"
                   >
                     Sign up
                   </Link>
@@ -732,11 +778,11 @@ export const Navbar: React.FC<NavbarProps> = ({
 
       {/*
         Full-screen overlays are portaled to document.body so they escape this
-        header wrapper's stacking context. They used to render inside it with
-        z-50 while the header bar itself is z-[2000] — so the sticky header
-        painted ON TOP of the profile/saved-assessment modal and its backdrop
-        (the mobile "popup overlaps the header" bug). Portaled + z-[10001] they
-        sit above the header (z-40) and the chat window (z-[10000]).
+        header wrapper's stacking context. They used to render inside it — so
+        when the header had its own elevated z-index, the sticky header painted
+        ON TOP of the profile/saved-assessment modal and its backdrop (the
+        mobile "popup overlaps the header" bug, PR #28). Portaled they sit
+        above the header (z-40) and below nothing else.
       */}
       {createPortal(
         <SavedAssessmentsModal
@@ -746,7 +792,6 @@ export const Navbar: React.FC<NavbarProps> = ({
         />,
         document.body
       )}
-
 
       {createPortal(
         <UserProfileModal
@@ -765,7 +810,9 @@ export const Navbar: React.FC<NavbarProps> = ({
           onOpenProfile={() => setIsProfileModalOpen(true)}
           onOpenAuth={() => navigate('/login')}
           onSelectPage={(page) => {
-            if (page.toLowerCase().includes('home')) navigate('/home/overview');
+            if (page.toLowerCase().includes('overview')) navigate('/live');
+            else if (page.toLowerCase().includes('front door')) navigate('/');
+            else if (page.toLowerCase().includes('alert')) navigate('/alerts');
             else if (page.toLowerCase().includes('forecast')) navigate('/forecast/overview');
             else if (page.toLowerCase().includes('advisories')) navigate('/advisories');
             else if (page.toLowerCase().includes('analytics')) navigate('/analytics');

@@ -166,7 +166,7 @@ export const BrandPanel: React.FC<BrandPanelProps> = ({ mode, intervalMs = 5200 
       `}</style>
       <div aria-hidden="true" className="pointer-events-none absolute inset-0">
         <div
-          className="hn-aurora absolute -top-24 -left-24 h-96 w-96 rounded-full bg-[#f9a825]/15 blur-3xl"
+          className="hn-aurora absolute -top-24 -left-24 h-96 w-96 rounded-full bg-nasa-red/15 blur-3xl"
           style={{ animation: reduceMotion ? undefined : 'hn-aurora-a 18s ease-in-out infinite' }}
         />
         <div
@@ -206,7 +206,7 @@ export const BrandPanel: React.FC<BrandPanelProps> = ({ mode, intervalMs = 5200 
         aria-live="polite"
         data-testid="brand-carousel"
       >
-        <p className="mb-4 text-[11px] font-mono font-extrabold uppercase tracking-[0.2em] text-[#f9a825]">
+        <p className="mb-4 text-[11px] font-mono font-extrabold uppercase tracking-[0.2em] text-nasa-red-shade">
           {mode === 'login' ? 'Welcome back' : mode === 'signup' ? 'Create your account' : 'Account recovery'}
         </p>
         <div className="min-h-[13rem]">
@@ -245,7 +245,7 @@ export const BrandPanel: React.FC<BrandPanelProps> = ({ mode, intervalMs = 5200 
                 aria-label={`Highlight ${dot + 1} of ${messages.length}`}
                 onClick={() => setIndex(dot)}
                 className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
-                  dot === index ? 'w-7 bg-[#f9a825]' : 'w-2.5 bg-slate-700 hover:bg-slate-500'
+                  dot === index ? 'w-7 bg-nasa-red' : 'w-2.5 bg-slate-700 hover:bg-slate-500'
                 }`}
               />
             ))}

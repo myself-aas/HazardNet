@@ -1,0 +1,36 @@
+cff-version: 1.2.0
+message: "If you use HazardNet, its forecasts or its historical hazard archive in academic work or an operational product, please cite this repository as below."
+title: "HazardNet: multi-hazard early warning for Bangladesh agriculture"
+abstract: >-
+  HazardNet turns satellite, reanalysis and weather-forecast data into 7- and 15-day
+  multi-hazard outlooks for the 64 districts of Bangladesh, across eight hazard classes, with a
+  dual-track severity (a classification model plus an independent formula-based physics
+  cross-check). The work comprises an ingestion and validation ETL, a PostGIS historical event
+  store, an MLOps layer (dataset and model registries, calibration, drift verification), a
+  human-gated alert engine, and a bilingual, offline-capable public front end that publishes its
+  own data provenance and freshness. Master's thesis, Department of Agrometeorology, Bangladesh
+  Agricultural University. Supervised by Dr. Ahmed Khairul Hasan; co-supervised by the Department
+  of Computer Science and Mathematics, BAU.
+type: thesis
+authors:
+  - family-names: Shuvo
+    given-names: Ashif Ahmed
+    orcid: "https://orcid.org/0009-0003-5734-1519"
+    website: "https://github.com/myself-aas"
+    affiliation: "Department of Agrometeorology, Bangladesh Agricultural University"
+repository-code: "https://github.com/myself-aas/HazardNet"
+url: "https://www.hazardnet.live"
+license: MIT
+keywords:
+  - multi-hazard early warning
+  - agricultural disaster risk reduction
+  - Bangladesh
+  - flood
+  - tropical cyclone
+  - drought
+  - remote sensing
+  - ERA5-Land
+  - Sentinel-2
+  - Landsat
+  - Open-Meteo
+  - Google Earth Engine

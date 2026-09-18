@@ -34,15 +34,13 @@ This document describes how HazardNet decouples **everyday inference** (cheap, f
 
 ## Profile 1 — Daily Auto-Forecast (CPU)
 
-> **2026-09-17 — this is the ONLY forecast producer.** The Kaggle-backed
-> workflows (`forecast-pipeline`, `hourly_forecast`, `weekly_forecast`,
-> `manual_forecast_ingest`) were **deleted from the repository** (owner
-> decision: nothing runs on the Kaggle platform) along with
-> `scripts/kaggle_trigger.py` and `scripts/fetch_kaggle_forecast.py` and the
-> `KAGGLE_USERNAME` / `KAGGLE_KEY` secret checks. They had been dispatch-only
-> since 2026-09-16, when the token rotation left every scheduled run failing at
-> the first Kaggle call with a bare `exit code 1` while this job — which needs
-> only the GEE service account — generated the forecasts itself. See
+> **2026-09-16 — this is now the ONLY scheduled forecast producer.** The three
+> Kaggle-backed workflows (`forecast-pipeline`, `hourly_forecast`, `weekly_forecast`)
+> were retired from the schedule and are `workflow_dispatch`-only legacy: they
+> need a valid Kaggle token *and* a runnable kernel, and after the token rotation
+> every scheduled run failed at the first Kaggle call with a bare `exit code 1`.
+> Nothing in the forecast path needed Kaggle any more — this job generates the
+> forecasts itself. See
 > [`docs/audits/2026-09-15-ci-backend-tests-and-workflow-green.md`](../audits/2026-09-15-ci-backend-tests-and-workflow-green.md).
 
 | | |
@@ -135,9 +133,8 @@ Using a PR (instead of a direct push to `main`) gives CI (`model-validation.yml`
 
 ## Why this is better than the all-Kaggle setup
 
-> Acted on 2026-09-16 (schedulers off) and completed 2026-09-17 (the Kaggle
-> workflows were deleted outright). What follows is the original rationale —
-> now the state of the repository rather than the plan.
+> Acted on 2026-09-16: the Kaggle schedulers are off. What follows is the
+> original rationale — now the state of the repository rather than the plan.
 
 * **CI/CD decoupling.** Your GitHub repository is the single source of truth. The web app pulls models from Git; GitHub Actions runs the cron jobs. No dependency on Kaggle's notebook scheduler or uptime.
 * **Cold-start speed.** Stripping TF/PyTorch from the operational pipeline cuts install time from ~4 minutes to ~45 seconds.

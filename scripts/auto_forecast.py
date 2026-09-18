@@ -3,13 +3,48 @@ import io
 import sys
 import json
 import time
+import uuid
+import hashlib
 import urllib.request
 import numpy as np
 import pandas as pd
 import requests
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import cv2  # Replaces PyTorch for bilinear interpolation
 import tflite_runtime.interpreter as tflite # Replaces full TensorFlow
+
+# ── Independent physics track (Phase 2, audit 2026-09-17) ────────────────────
+# The formulas live in their own standard-library-only module so they can be
+# unit-tested without Earth Engine or TFLite (scripts/tests/test_physics_severity.py)
+# and so the pipeline cannot drift from the tested version. All eight hazard
+# classes are scored from the meteorological drivers alone — never from the
+# model's own answer.
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from physics_severity import (  # noqa: E402  (after the path insert just above)
+    HAZARD_CLASSES,
+    compute_physics_scores,
+    missing_drivers,
+    physics_columns,
+    physics_summary,
+)
+
+# ── Per-prediction scene lineage (PRODUCT_SPEC §5.8) ─────────────────────────
+# `scripts/etl/scene_manifest.py` describes and hashes what a prediction was
+# built from; `scripts/etl/sources.py` owns the decadal-window arithmetic this
+# pipeline uses. Both are standard-library-only, and both are tested offline
+# (scripts/tests/test_etl_sources_cog.py), which is why the lineage can be
+# verified in CI even though the tensors can only be built on a runner with
+# Earth Engine credentials.
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), 'etl'))
+from scene_manifest import (  # noqa: E402
+    build_manifest as build_scene_manifest,
+    driver_record as scene_driver_record,
+    step_record as scene_step_record,
+    unit_lookup as scene_unit_lookup,
+    unit_record as scene_unit_record,
+    write_manifest as write_scene_manifest,
+)
+from sources import ten_day_windows  # noqa: E402
 
 # ==============================================================================
 # 1. GEE AUTHENTICATION (Service Account)
@@ -62,8 +97,9 @@ STATS_PATH = 'Models/normalization_stats.json'
 OUTPUT_CSV = 'hazardnet_forecasts_latest.csv'
 
 HORIZONS = {'7_days': 7, '15_days': 15}
-HAZARD_CLASSES = ['Cold Wave', 'Drought', 'Fire', 'Flash Flood', 
-                  'Flood', 'Heat Wave', 'Severe Local Storm', 'Tropical Cyclone']
+# HAZARD_CLASSES is imported from scripts/physics_severity.py (single source of
+# truth, pinned to Models/labels.json and backend/utils/forecastRow.js by
+# scripts/tests/test_model_claims.py). Do not redefine it here.
 
 # ==============================================================================
 # 3. LOAD BANGLADESH FAO GAUL ADMINISTRATIVE BOUNDARIES
@@ -180,7 +216,7 @@ def get_ee_image_as_numpy(image, region, scale=10, target_size=(64, 64)):
     # district loop until the 120-minute job timeout kills the whole workflow.
     response = urllib.request.urlopen(url, timeout=60)
     data = np.load(io.BytesIO(response.read()), allow_pickle=True)
-
+    
     bands = [data[b] for b in image.bandNames().getInfo()]
     img_np = np.stack(bands, axis=0) # Shape: [channels, height, width]
     
@@ -240,6 +276,44 @@ def retry_call(fn, *, what, attempts=RETRY_ATTEMPTS, base_delay=RETRY_BASE_DELAY
     # Unreachable, but keeps the contract explicit.
     raise RuntimeError(f"{what} exhausted retries")
 
+def _openmeteo_provenance(url, params, payload, fields_defaulted=()):
+    """Fingerprint one Open-Meteo request for the scene manifest.
+
+    Two things make a prediction reproducible: the exact question that was asked
+    (`url` + `params`, hashed canonically) and the exact bytes that came back
+    (canonical-JSON digest of the parsed response). Either changing moves the
+    unit's `dataset_version`.
+
+    `fields_defaulted` lists the fields the aggregator had to fill from its
+    hard-coded defaults because the response omitted them — the same class of
+    problem as the fabricated soil channels, so it is recorded rather than
+    absorbed into a plausible-looking number.
+    """
+    digest = hashlib.sha256(
+        json.dumps(payload, sort_keys=True, default=str).encode('utf-8')
+    ).hexdigest()
+    return {
+        'url': url,
+        'params': {str(key): params[key] for key in sorted(params)},
+        'payload_sha256': digest,
+        'fields_defaulted': sorted(fields_defaulted),
+        'retrieved_at': datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'),
+    }
+
+
+def observed_series(values) -> list:
+    """The finite values of a daily array, in order, with gaps left out.
+
+    `scripts/physics_severity.py` derives the mean daily ET, the mean daily wind and the two
+    exceedance counts from these series. A missing day is therefore dropped rather than
+    substituted: a zero-filled temperature gap would read as a day below 16 °C, and a
+    zero-filled ET gap would pull the drying term down — both are the 2026-09 defect class
+    (a value that is not the quantity the formula describes) wearing a different hat.
+    """
+    array = np.asarray(values, dtype=float).ravel()
+    return [float(value) for value in array if np.isfinite(value)]
+
+
 def get_openmeteo_forecast(lat, lon, horizon_days):
     """Fetch an Open-Meteo forecast and aggregate to the scalar daily
     summaries the downstream 15-channel tensor + physics-severity formulas
@@ -296,9 +370,15 @@ def get_openmeteo_forecast(lat, lon, horizon_days):
         daily = payload.get('daily', {})
         hourly = payload.get('hourly', {})
 
+        fields_defaulted = []
+
         def safe_daily(key, default_val):
             arr = daily.get(key)
             if arr is None or len(arr) == 0:
+                # The response did not carry this field; the value below is a
+                # hard-coded default, not an observation. Recorded so the scene
+                # manifest can say so instead of presenting it as data.
+                fields_defaulted.append(key)
                 arr = [default_val]
             return np.array([float(x) if x is not None else np.nan for x in arr])
 
@@ -339,6 +419,37 @@ def get_openmeteo_forecast(lat, lon, horizon_days):
             'Wind_Max':  float(np.nanmax(wind_max_kmh)),            # km/h
             'Gust_Max':  float(np.nanmax(gust_max_kmh)),            # km/h
             'ET_Sum':    float(np.nansum(et_mm)) / 1000.0,         # m
+            # ── horizon-shape drivers for the physics track ──────────────
+            # `Precip` is the horizon total; a flood intensity term needs the
+            # wettest 24 h inside it and the length of the horizon, otherwise
+            # `om_calc_flood` receives the same quantity twice (the defect fixed
+            # on 2026-09-17). Both are derived from the same daily series, so
+            # they stay consistent with the total.
+            'Precip_Peak_24h_mm': float(np.nanmax(np.nan_to_num(precip_mm, nan=0.0))),
+            # ── daily series for the physics track (defect fixed 2026-09-18) ─────
+            # The fire drying/persistence terms are written for *daily* quantities
+            # (their own defaults are 3 mm ET, 1 day, 10 km/h), and the hindcast
+            # measured what happens when a horizon total or a horizon length is
+            # passed instead: every one of those terms sat at its ceiling on every
+            # row of every episode, and `Fire` — a class that is high everywhere —
+            # became the physics track's top pick on 127 of 128 windows of a
+            # landfalling cyclone. The fix is not a better scalar: it is to stop
+            # aggregating here at all. `scripts/physics_severity.py` takes these
+            # series and computes the mean daily ET, the mean daily wind and the
+            # two exceedance counts itself, so this caller cannot pass the wrong
+            # aggregate — it is not the one aggregating.
+            '_daily_for_physics': {
+                # `observed_series`, not `nan_to_num`: a missing day must be *absent* from the
+                # series, never a zero. Zero-filling temperature would count every gap as a day
+                # below 16 °C (the cold-wave exceedance term) and drag the mean daily ET toward
+                # zero — i.e. it would reintroduce the same class of defect in a new place.
+                'daily_temp_max_c': observed_series(temp_max_c),
+                'daily_temp_min_c': observed_series(temp_min_c),
+                'daily_et0_mm':     observed_series(et_mm),
+                'daily_wind_max_kmh': observed_series(wind_max_kmh),
+            },
+            # ── lineage for the scene manifest (not a model input) ───────
+            '_provenance': _openmeteo_provenance(url, params, payload, fields_defaulted),
         }
     except requests.exceptions.RequestException as e:
         print(f"Open-Meteo HTTP Error for ({lat}, {lon}): {e}")
@@ -350,40 +461,6 @@ def get_openmeteo_forecast(lat, lon, horizon_days):
 # ==============================================================================
 # 6. HYBRID COGNITIVE: PHYSICAL INDEX FORMULAS
 # ==============================================================================
-def safe_float(val, default=0.0):
-    try:
-        f = float(val)
-        return default if np.isnan(f) else f
-    except Exception:
-        return default
-
-def om_calc_severe_storm(precip_max, wind_max):
-    p = safe_float(precip_max, 0.0) / 100.0
-    w = max(safe_float(wind_max, 0.0) - 50.0, 0.0) / 100.0
-    return float(np.clip(0.6 * w + 0.4 * min(p, 1.0), 0.0, 1.0))
-
-def om_calc_cold_wave(temp_min, duration):
-    return float(np.clip(0.7 * np.clip((16.0 - safe_float(temp_min, 16.0)) / 10.0, 0.0, 1.0) + 0.3 * np.clip(safe_float(duration, 1.0) / 5.0, 0.0, 1.0), 0.0, 1.0))
-
-def om_calc_fire(temp_max, wind_max, et_sum):
-    h = np.clip((safe_float(temp_max, 30.0) - 25.0) / 15.0, 0.0, 1.0)
-    w = np.clip((safe_float(wind_max, 10.0) - 5.0) / 20.0, 0.0, 1.0)
-    d = np.clip(safe_float(et_sum, 3.0) / 6.0, 0.0, 1.0)
-    return float(np.clip(0.4 * h + 0.3 * w + 0.3 * d, 0.0, 1.0))
-
-def om_calc_tropical_cyclone(wind_max, precip_sum):
-    return float(np.clip(0.7 * min(max(safe_float(wind_max, 0.0) - 50.0, 0.0) / 150.0, 1.0) + 0.3 * min(safe_float(precip_sum, 0.0) / 300.0, 1.0), 0.0, 1.0))
-
-def om_calc_drought(temp_max, precip_sum):
-    t = np.clip((safe_float(temp_max, 25.0) - 25.0) / 20.0, 0.0, 1.0)
-    p = np.clip((200.0 - safe_float(precip_sum, 200.0)) / 200.0, 0.0, 1.0)
-    return float(np.clip(0.6 * t + 0.4 * p, 0.0, 1.0))
-
-def om_calc_flood(precip_sum, precip_max):
-    return float(np.clip(0.5 * np.clip(safe_float(precip_sum, 0.0) / 300.0, 0.0, 1.0) + 0.5 * np.clip(safe_float(precip_max, 0.0) / 100.0, 0.0, 1.0), 0.0, 1.0))
-
-def om_calc_heat_wave(temp_max, duration):
-    return float(np.clip(0.7 * np.clip((safe_float(temp_max, 30.0) - 30.0) / 15.0, 0.0, 1.0) + 0.3 * np.clip(safe_float(duration, 1.0) / 5.0, 0.0, 1.0), 0.0, 1.0))
 
 # ==============================================================================
 # 7. MODEL INFERENCE SETUP
@@ -416,10 +493,14 @@ def run_inference(tensor):
             severity_score = interpreter.get_tensor(out['index'])[0]
     
     probs = softmax(hazard_logits)
-    pred_class = np.argmax(probs)
+    pred_class = int(np.argmax(probs))
     confidence = float(probs[pred_class])
-    
-    return HAZARD_CLASSES[pred_class], confidence, float(severity_score)
+
+    # Return the class ORDINAL (0..7 per Models/labels.json), not a name: the
+    # caller maps it through the fixed class order and validates the range. The
+    # shipped pipeline wrote this ordinal straight into `hazard_type`, which is
+    # why the committed snapshot contains integer hazard labels.
+    return pred_class, confidence, float(severity_score)
 
 # ==============================================================================
 # 8. OPTIMIZED MAIN EXECUTION LOOP
@@ -465,6 +546,8 @@ def build_t0_and_infer(dist, historical_steps, horizon_days, norm_stats):
     t0_combined_img = get_temporal_15ch_stack(region, t0_start, t0_end)
     if t0_combined_img:
         try:
+            # Retried per-request: absorbs GEE 429/5xx/timeout blips that
+            # used to zero out a whole district on the first failure.
             t0_np = retry_call(
                 lambda: get_ee_image_as_numpy(t0_combined_img, region, scale=10),
                 what=f"GEE T0 download for {dist.get('name', '?')}",
@@ -476,7 +559,7 @@ def build_t0_and_infer(dist, historical_steps, horizon_days, norm_stats):
             om_bands = [
                 om_data['Temp_2m'], om_data['Precip'],
                 om_data['Max_Temp'], om_data['Min_Temp'],
-                0.32, 0.32, 299.0,   # Soil_W1, Soil_W3, Soil_T1 (fallback)
+                soil_w1, soil_w3, soil_t1,
                 om_data['Dewpoint'], om_data['Solar_Rad'],
             ]
             t0_np[6:15, :, :] = np.array(om_bands, dtype=np.float32).reshape(9, 1, 1)
@@ -517,30 +600,206 @@ def build_t0_and_infer(dist, historical_steps, horizon_days, norm_stats):
             return None, None
     return None, None
 
+SCENE_MANIFEST_PATH = os.environ.get(
+    'HAZARDNET_SCENE_MANIFEST_PATH', 'hazardnet_scene_manifest.json'
+)
+#: The collections the 15-channel historical stack is built from
+#: (`get_temporal_15ch_stack`). Recorded per step so the manifest names its
+#: sources rather than saying only "Earth Engine".
+STACK_COLLECTIONS = (
+    'COPERNICUS/S1_GRD',
+    'COPERNICUS/S2_SR_HARMONIZED',
+    'LANDSAT/LC08/C02/T1_L2',
+    'ECMWF/ERA5_LAND/DAILY_AGGR',
+)
+
+
+def _tensor_digest(tensor):
+    """sha256 of a tensor's bytes — how "the inputs changed" becomes observable.
+
+    Digesting the float32 buffer rather than a summary statistic means a single
+    changed pixel moves the `dataset_version`; NaN bit patterns are stable, so an
+    unchanged composite always hashes the same.
+    """
+    if tensor is None:
+        return None
+    return hashlib.sha256(np.asarray(tensor, dtype='float32').tobytes()).hexdigest()
+
+
+def build_scene_unit(dist, horizon_name, historical_steps, t0_tensor, om_data, prediction_date):
+    """Lineage for one (district, horizon) prediction unit.
+
+    Steps 0..8 are the nine decadal composites the model's history carries;
+    step 9 is the t0 block the forecast input is built from. The t0 window is the
+    same ten days as step 8 — `build_t0_and_infer` re-fetches it for the forecast
+    input rather than reusing the historical array — which is why the two steps
+    can differ and why both are hashed.
+    """
+    windows = ten_day_windows(prediction_date)
+    steps = []
+    for index, tensor in enumerate(historical_steps):
+        window = windows[index] if index < len(windows) else (None, None)
+        steps.append(scene_step_record(
+            step=index, window_start=window[0], window_end=window[1],
+            collections=STACK_COLLECTIONS, tensor_digest=_tensor_digest(tensor),
+            shape=np.asarray(tensor).shape, scale_m=10,
+        ))
+    t0_window = windows[-1] if windows else (None, None)
+    steps.append(scene_step_record(
+        step=len(steps), window_start=t0_window[0], window_end=t0_window[1],
+        collections=STACK_COLLECTIONS, tensor_digest=_tensor_digest(t0_tensor),
+        shape=np.asarray(t0_tensor).shape, scale_m=10,
+    ))
+
+    provenance = (om_data or {}).get('_provenance') or {}
+    driver = None
+    if provenance.get('payload_sha256'):
+        driver = scene_driver_record(
+            source='open-meteo', url=provenance['url'], params=provenance['params'],
+            payload_sha256=provenance['payload_sha256'], retrieved_at=provenance.get('retrieved_at'),
+        )
+    return scene_unit_record(
+        district_id=dist['id'], district_name=dist['name'], horizon=horizon_name,
+        steps=steps, driver=driver,
+        # Earth Engine composites do not hand back per-scene ids without one extra
+        # round trip per collection per district. Until that cost is paid, the
+        # manifest says `false` and still carries the tensor digests — enough to
+        # detect that the inputs changed, not enough to name the scene. Recorded
+        # rather than implied (see scripts/etl/scene_manifest.py).
+        enumerated=False,
+        extra={
+            't0_step_index': len(steps) - 1,
+            'fields_defaulted': provenance.get('fields_defaulted', []),
+            'driver_recorded': driver is not None,
+        },
+    )
+
+
 results = []
+scene_units = []
+scene_units_error = None
 print(f"\\nStarting Optimized HazardNet Forecast Pipeline...")
 
-def run_pipeline_pass():
-    """One full sweep over all districts. Returns (results, failed_districts).
+# ── provenance for this run (PRODUCT_SPEC §5.8 / §3.1) ───────────────────────
+# Every emitted row must be traceable to the artifacts and code that produced
+# it, otherwise a forecast cannot be reproduced from its own record.
+PIPELINE_VERSION = 'auto_forecast/2.0.0'
+RUN_ID = f"{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%SZ')}-{uuid.uuid4().hex[:8]}"
+prediction_date = datetime.now().strftime('%Y-%m-%d')
 
-    NOTE: keep appending the row dict inline to the local `results` list —
-    scripts/tests/test_publish_forecast_csv.py parses that append call to keep
-    the CSV schema contract in lockstep with the generator. Renaming the call
-    or hoisting the dict into a variable breaks that test.
-    """
+
+def _artifact_digest(path):
+    """sha256 of a model artifact, or None when it is not present."""
+    try:
+        with open(path, 'rb') as handle:
+            return hashlib.sha256(handle.read()).hexdigest()
+    except OSError:
+        return None
+
+
+MODEL_SHA256 = _artifact_digest(MODEL_PATH)
+MODEL_VERSION = None
+MODEL_ARTIFACT_MISMATCH = None
+try:
+    with open(os.path.join(os.path.dirname(MODEL_PATH) or '.', 'VERSION.json'), 'r') as handle:
+        _manifest = json.load(handle)
+    MODEL_VERSION = _manifest.get('version')
+    # Integrity check: the model bundle records each artifact's sha256, so a
+    # swapped or truncated model can be detected here rather than in a forecast
+    # that silently stops matching its own version string.
+    for artifact in _manifest.get('artifacts', []):
+        if artifact.get('name') == os.path.basename(MODEL_PATH):
+            recorded = artifact.get('sha256')
+            if recorded and MODEL_SHA256 and recorded != MODEL_SHA256:
+                MODEL_ARTIFACT_MISMATCH = (
+                    f"{MODEL_PATH} sha256 {MODEL_SHA256[:16]}… does not match "
+                    f"Models/VERSION.json ({recorded[:16]}…)"
+                )
+except (OSError, ValueError):
+    pass
+# Falls back to the artifact digest so a row is never traceable to nothing.
+TENSOR_BUILD_ID = MODEL_SHA256[:16] if MODEL_SHA256 else None
+if MODEL_ARTIFACT_MISMATCH:
+    raise SystemExit(
+        f"CRITICAL: {MODEL_ARTIFACT_MISMATCH}. Refusing to run: every row this run emits "
+        "would be stamped with a version that does not describe the weights that produced it."
+    )
+
+# ── soil channels: fabricate-and-label, or refuse ────────────────────────────
+# The model takes 15 channels; three of them (Soil_W1/W3/T1) are ERA5-Land soil
+# variables that the live path does not currently fetch, so the shipped pipeline
+# passed their *training means* (0.32, 0.32, 299.0) — zero information that the
+# model cannot distinguish from a real measurement (MODEL_CARD §6.3).
+#
+# Default `mean` keeps the pipeline running and stamps every row with
+# `soil_channels_fabricated=true` so the defect is visible in the data instead of
+# hidden in a literal. Set HAZARDNET_SOIL_MODE=forbid to make fabricated soil
+# channels a hard failure — use it once real soil drivers are wired in, and in any
+# run whose output will be used for evaluation.
+SOIL_MODE = os.environ.get('HAZARDNET_SOIL_MODE', 'mean').strip().lower()
+SOIL_MEAN_DEFAULTS = (0.32, 0.32, 299.0)
+if SOIL_MODE == 'forbid':
+    raise SystemExit(
+        "HAZARDNET_SOIL_MODE=forbid is set, but this pipeline does not yet fetch "
+        "ERA5-Land soil moisture/temperature for the live timestep. Wire those bands "
+        "in (see docs/PRODUCT_SPEC.md §5.6) before using forbid mode."
+    )
+if SOIL_MODE not in ('mean',):
+    raise SystemExit(f"Unknown HAZARDNET_SOIL_MODE={SOIL_MODE!r} (expected 'mean' or 'forbid')")
+soil_w1, soil_w3, soil_t1 = SOIL_MEAN_DEFAULTS
+SOIL_FABRICATED = True
+print(f"[config] soil channels: mode={SOIL_MODE} -> values {SOIL_MEAN_DEFAULTS} "
+      f"(fabricated=true; HAZARDNET_SOIL_MODE=forbid makes this fatal)")
+
+# ── coverage accounting (PRODUCT_SPEC §5.1) ──────────────────────────────────
+# The shipped pipeline skipped a district silently whenever an Earth Engine fetch
+# failed (`if not historical_steps: continue`), so 25/64 and 49/64-district runs
+# looked exactly like complete ones on the website. Every requested
+# (district, horizon) is now accounted for, and manifest.json carries the tally.
+requested_units = len(DISTRICTS) * len(HORIZONS)
+# ── pass-level retry + fail-fast guard (2026-09-17 incident) ────────────────
+# A pass that yields ZERO rows means an upstream outage (GEE downloads or
+# Open-Meteo), not "no hazards today" — every district needs both sources to
+# emit a row. Retry the whole sweep once after a cool-down; if it is still
+# empty, exit non-zero HERE so the workflow's "Execute pipeline" step shows
+# the real failure instead of publish_forecast_csv.py's downstream
+# "CSV contains zero rows" sanity-check error.
+PASS_RETRY_WAIT_S = 5 * 60
+for pass_num in (1, 2):
+    # Per-pass state: the coverage tally and lineage capture describe the pass
+    # whose rows ship — never a blend of two passes.
     results = []
-    failed = []
+    scene_units = []
+    scene_units_error = None
+    coverage = {
+        'requested_units': requested_units,
+        'requested_districts': len(DISTRICTS),
+        'requested_horizons': list(HORIZONS.keys()),
+        'horizons': list(HORIZONS.keys()),
+        'produced_units': 0,
+        'districts_with_any_horizon': 0,
+        'per_horizon': {name: {'requested': len(DISTRICTS), 'produced': 0} for name in HORIZONS},
+        'skipped': [],
+        'started_at': datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'),
+    }
+
     for dist in DISTRICTS: # Full pipeline now
         print(f"Processing {dist['name']}...")
         historical_steps = fetch_historical_steps(dist['lat'], dist['lon'], NORM_STATS)
         if not historical_steps:
-            failed.append(dist['name'])
+            # Not silent any more: the district is recorded with a reason and the
+            # run is reported as partial rather than successful.
+            print(f"  [SKIP] {dist['name']}: no historical tensor (Earth Engine fetch empty/failed)")
+            coverage['skipped'].append({
+                'district_id': dist['id'], 'district_name': dist['name'],
+                'horizon': '*', 'reason': 'no_historical_steps',
+            })
             continue
 
         for horizon_name, days in HORIZONS.items():
             tensor, om_data = build_t0_and_infer(dist, historical_steps, days, NORM_STATS)
             if tensor is not None and om_data is not None:
-                hazard, conf, severity = run_inference(tensor)
+                model_class_index, conf, severity = run_inference(tensor)
 
                 # Convert once, reuse for both physics and CSV output. The
                 # Open-Meteo scalars are aggregated over the whole horizon in the
@@ -554,22 +813,66 @@ def run_pipeline_pass():
                 solar_total_kj  = om_data['Solar_Rad'] / 1000.0 # horizon total (kJ/m²)
                 wind_max_kmh    = om_data['Wind_Max']           # km/h (default Open-Meteo unit)
 
-                # Physics-severity formulas use °C, horizon-total mm, km/h, days.
-                physics_severity = 0.50
-                if hazard == 'Tropical Cyclone':
-                    physics_severity = om_calc_tropical_cyclone(wind_max_kmh, precip_total_mm)
-                elif hazard == 'Severe Local Storm':
-                    physics_severity = om_calc_severe_storm(precip_total_mm, wind_max_kmh)
-                elif hazard == 'Cold Wave':
-                    physics_severity = om_calc_cold_wave(temp_min_c, days)
-                elif hazard == 'Fire':
-                    physics_severity = om_calc_fire(temp_max_c, wind_max_kmh, et_total_mm)
-                elif hazard == 'Drought':
-                    physics_severity = om_calc_drought(temp_max_c, precip_total_mm)
-                elif hazard in ('Flood', 'Flash Flood'):
-                    physics_severity = om_calc_flood(precip_total_mm, precip_total_mm)
-                elif hazard == 'Heat Wave':
-                    physics_severity = om_calc_heat_wave(temp_max_c, days)
+                # The classification head returns a class INDEX into the fixed
+                # order (Models/labels.json). Writing it straight into
+                # `hazard_type` is what put integers in the hazard column of the
+                # shipped snapshot; map it to the name and fail loudly if the model
+                # ever returns something outside the eight classes.
+                if not isinstance(model_class_ordinal, (int, np.integer)) or not (
+                    0 <= int(model_class_ordinal) < len(HAZARD_CLASSES)
+                ):
+                    print(f"  [SKIP] {dist['name']} {horizon_name}: model returned class "
+                          f"{model_class_ordinal!r}, outside 0..{len(HAZARD_CLASSES) - 1}")
+                    coverage['skipped'].append({
+                        'district_id': dist['id'], 'district_name': dist['name'],
+                        'horizon': horizon_name, 'reason': f'invalid_class_ordinal:{model_class_ordinal!r}',
+                    })
+                    continue
+                hazard = HAZARD_CLASSES[int(model_class_ordinal)]
+
+                # Independent physics track: all eight classes are scored from the
+                # meteorological drivers alone, with no reference to what the model
+                # predicted (PRODUCT_SPEC §5.4). `physics_severity` keeps its old
+                # meaning — the physics score for the class the model chose — so
+                # existing consumers keep working, while the new columns expose a
+                # hazard the model may have missed.
+                physics_drivers = {
+                    'temp_max_c': temp_max_c,
+                    'temp_min_c': temp_min_c,
+                    'precip_total_mm': precip_total_mm,
+                    'precip_peak_mm': om_data.get('Precip_Peak_24h_mm'),
+                    # Gust, not the sustained maximum: the unit is a district centroid, and
+                    # the hindcast measured the sustained field at 19-69 km/h on Amphan's
+                    # landfall day where the same archive's gust field reached 51-134 km/h.
+                    'wind_gust_kmh': om_data.get('Gust_Max'),
+                    # The daily series: `resolve_drivers` turns these into the daily-mean ET,
+                    # the daily-mean wind and the two exceedance counts the formulas describe.
+                    **(om_data.get('_daily_for_physics') or {}),
+                    # Kept so the row records what the horizon accumulated. The module reads it
+                    # only when no daily ET series was supplied.
+                    'et_total_mm': et_total_mm,
+                }
+                physics_scores = compute_physics_scores(physics_drivers, days)
+                physics = physics_summary(physics_scores, hazard, severity)
+                physics_severity = physics['physics_severity']
+                if physics_severity is None:  # cannot happen: hazard is validated above
+                    physics_severity = physics_scores[hazard]
+                missing = missing_drivers(physics_drivers)
+
+                # Scene lineage for this unit. Built from the same tensors and the
+                # same Open-Meteo payload the prediction used, so `dataset_version`
+                # identifies the actual inputs (PRODUCT_SPEC §5.8). The row is stamped
+                # after the manifest is assembled, below.
+                try:
+                    scene_units.append(build_scene_unit(
+                        dist, horizon_name, historical_steps, tensor, om_data, prediction_date,
+                    ))
+                except Exception as exc:  # noqa: BLE001 - lineage failure must not lose the forecast
+                    # The forecast is still emitted (it is the product); the run report
+                    # records that this unit has no usable lineage, and the publisher
+                    # refuses to ship a run whose lineage failed.
+                    scene_units_error = scene_units_error or f"{dist['name']}/{horizon_name}: {exc}"
+                    print(f"  [LINEAGE] {dist['name']} {horizon_name}: {exc}")
 
                 target_date = (datetime.now() + timedelta(days=days)).strftime('%Y-%m-%d')
 
@@ -589,8 +892,27 @@ def run_pipeline_pass():
                     'physics_severity': round(physics_severity, 4),
                     'confidence': round(conf, 4),
                     'target_date': target_date,
-                    'prediction_date': datetime.now().strftime('%Y-%m-%d'),
+                    'prediction_date': prediction_date,
                     'data_source': 'Hybrid_Cognitive_Forecast',
+                    # ── provenance (PRODUCT_SPEC §5.8 / §3.1) ────────────────────
+                    'model_version': MODEL_VERSION,
+                    'tensor_build_id': TENSOR_BUILD_ID,
+                    'pipeline_version': PIPELINE_VERSION,
+                    'run_id': RUN_ID,
+                    # The stored confidence is the model's own softmax for its top
+                    # class — uncalibrated, and not a model/physics agreement score.
+                    # Naming it means no consumer has to guess (PRODUCT_SPEC §3).
+                    'confidence_kind': 'model_softmax_top_class',
+                    # ── independent physics track, all eight classes ─────────────
+                    'physics_top_hazard': physics['physics_top_hazard'],
+                    'physics_top_severity': physics['physics_top_severity'],
+                    'physics_agreement': bool(physics['physics_agreement']),
+                    'track_divergence': physics.get('track_divergence'),
+                    'physics_inputs_missing': '|'.join(missing),
+                    # ── lineage (filled in from the scene manifest, below) ───────
+                    'dataset_version': None,
+                    'soil_channels_fabricated': SOIL_FABRICATED,
+                    **physics_columns(physics_scores),
                     # Canonical per-day meteorological fields (forecastRow.js
                     # METEOROLOGICAL_FIELDS, in the documented units).
                     'temperature_mean':      round(temp_mean_c, 4),   # °C
@@ -614,40 +936,138 @@ def run_pipeline_pass():
                     'om_et_sum_m':     round(et_total_mm, 4),               # mm total (despite _m suffix)
                 })
 
-            # Light rate-limit between districts to be polite to EE + Open-Meteo.
-            time.sleep(0.2)
-    return results, failed
+        # Light rate-limit between districts to be polite to EE + Open-Meteo.
+        time.sleep(0.2)
 
-# 8-bis. PASS-LEVEL RETRY + FAIL-FAST GUARD
-# A pass that yields ZERO rows means an upstream outage (GEE downloads or
-# Open-Meteo), not "no hazards today" — every district needs both sources to
-# emit a row. Retry the whole sweep once after a cool-down; if it is still
-# empty, exit non-zero HERE so the workflow's "Execute pipeline" step shows
-# the real failure instead of publish_forecast_csv.py's downstream
-# "CSV contains zero rows" sanity-check error (2026-09-17 incident).
-PASS_RETRY_WAIT_S = 5 * 60
-for pass_num in (1, 2):
-    results, failed_districts = run_pipeline_pass()
     if results:
-        if failed_districts:
-            print(f"ℹ️ Pass {pass_num}: {len(failed_districts)}/{len(DISTRICTS)} districts skipped: "
-                  f"{', '.join(failed_districts)}")
         break
     print(f"❌ Pass {pass_num}/2 produced 0 rows — every district failed (see errors above).")
     if pass_num == 1:
         print(f"   Waiting {PASS_RETRY_WAIT_S // 60} minutes before a full retry pass…")
         time.sleep(PASS_RETRY_WAIT_S)
 
-df_results = pd.DataFrame(results)
-df_results.to_csv(OUTPUT_CSV, index=False)
-print(f"Pipeline complete. Created CSV with {len(df_results)} rows.")
-
-if df_results.empty:
-    print("CRITICAL ERROR: forecast pipeline produced 0 rows — every district failed.")
+if not results:
+    print("CRITICAL ERROR: forecast pipeline produced 0 rows across both passes — every district failed.")
     print("   The committed snapshot stays untouched and this step fails so the cause")
     print("   is visible here (GEE availability / Open-Meteo availability / credentials).")
     print("   Do NOT rerun publish/validate/commit steps off an empty CSV.")
     sys.exit(1)
+
+# ── scene manifest → dataset_version (PRODUCT_SPEC §5.8) ────────────────────
+# Every prediction unit gets a content hash over the inputs that produced it: the
+# decadal windows, the contributing collections, the digest of each tensor in the
+# stack (including the t0 input) and the Open-Meteo request/response fingerprint.
+# Rerunning a day reproduces the version; a new satellite scene, a changed
+# forecast window or a revised upstream response moves it. Recorded by the scene
+# manifest and stamped on each row so a consumer can tell one from the other.
+scene_manifest_info = {
+    'path': None, 'units': 0, 'rows_stamped': 0,
+    'dataset_version': None, 'sha256': None, 'error': scene_units_error,
+}
+if scene_units:
+    try:
+        scene_manifest = build_scene_manifest(
+            prediction_date=prediction_date,
+            pipeline_version=PIPELINE_VERSION,
+            model_version=MODEL_VERSION,
+            units=scene_units,
+            run_id=RUN_ID,
+        )
+        scene_manifest_info['sha256'] = write_scene_manifest(scene_manifest, SCENE_MANIFEST_PATH)
+        lookup = scene_unit_lookup(scene_manifest)
+        stamped = 0
+        for row in results:
+            version = lookup.get((str(row.get('district_id')), row.get('horizon')))
+            if version:
+                row['dataset_version'] = version
+                stamped += 1
+        scene_manifest_info.update({
+            'path': SCENE_MANIFEST_PATH,
+            'units': len(scene_manifest['units']),
+            'rows_stamped': stamped,
+            'dataset_version': scene_manifest['dataset_version'],
+            'scenes_enumerated': scene_manifest['scenes_enumerated'],
+            'units_with_defaulted_drivers': sum(
+                1 for unit in scene_manifest['units']
+                if (unit.get('extra') or {}).get('fields_defaulted')
+            ),
+        })
+        print(f"Scene manifest: {SCENE_MANIFEST_PATH} — {len(scene_manifest['units'])} units, "
+              f"dataset_version={scene_manifest['dataset_version']}, rows stamped={stamped}")
+    except Exception as exc:  # noqa: BLE001 - reported, and publishing is refused below
+        scene_manifest_info['error'] = f'{type(exc).__name__}: {exc}'
+        print(f"::warning::scene manifest could not be written ({exc}); rows carry no dataset_version")
+elif not scene_units_error:
+    scene_manifest_info['error'] = 'no prediction units produced a lineage record'
+
+if scene_manifest_info['error'] and scene_manifest_info['rows_stamped'] < len(results):
+    print(f"::warning::scene lineage incomplete: {scene_manifest_info['error']} — "
+          f"{len(results) - scene_manifest_info['rows_stamped']} row(s) have no dataset_version")
+
+# ── coverage tally + run report (PRODUCT_SPEC §5.1 / TARGET_ARCHITECTURE §3.3) ─
+df_results = pd.DataFrame(results)
+df_results.to_csv(OUTPUT_CSV, index=False)
+
+coverage['produced_units'] = int(len(df_results))
+coverage['districts_with_any_horizon'] = (
+    int(df_results['district_name'].nunique()) if len(df_results) else 0
+)
+for horizon_name in HORIZONS:
+    coverage['per_horizon'][horizon_name]['produced'] = (
+        int((df_results['horizon'] == horizon_name).sum()) if len(df_results) else 0
+    )
+# Districts with no row at all — the frozen coverage-stamp contract
+# (TARGET_ARCHITECTURE §3.2) names this explicitly, and it is the list the site
+# must label as "no current forecast" rather than filling with baseline numbers.
+produced_ids = {int(r['district_id']) for r in results if r.get('district_id') is not None}
+coverage['missing_district_ids'] = sorted(
+    int(dist['id']) for dist in DISTRICTS if int(dist['id']) not in produced_ids
+)
+coverage['missing_district_names'] = sorted(
+    dist['name'] for dist in DISTRICTS if int(dist['id']) not in produced_ids
+)
+coverage['finished_at'] = datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
+coverage['status'] = 'complete' if coverage['produced_units'] == requested_units else 'partial'
+
+run_report = {
+    'schema': 'hazardnet-run-report/v1',
+    'run_id': RUN_ID,
+    'pipeline_version': PIPELINE_VERSION,
+    'model_version': MODEL_VERSION,
+    'model_sha256': MODEL_SHA256,
+    'started_at': coverage['started_at'],
+    'finished_at': coverage['finished_at'],
+    'prediction_date': prediction_date,
+    'horizons': list(HORIZONS.keys()),
+    'requested_units': requested_units,
+    'produced_units': coverage['produced_units'],
+    'status': coverage['status'],
+    'coverage': coverage,
+    'soil_channels_fabricated': SOIL_FABRICATED,
+    'soil_mode': SOIL_MODE,
+    # Scene lineage: where the manifest is, which run-level dataset_version it
+    # carries, and whether every unit got one. A non-null `error` makes the
+    # publisher refuse the run — a forecast that cannot name its inputs must not
+    # ship (PRODUCT_SPEC §5.8).
+    'scene_manifest': scene_manifest_info,
+}
+
+REPORT_PATH = os.environ.get('HAZARDNET_RUN_REPORT_PATH', 'hazardnet_run_report.json')
+with open(REPORT_PATH, 'w') as handle:
+    json.dump(run_report, handle, indent=2)
+
+print(f"Pipeline complete. Created CSV with {len(df_results)} rows.")
+print(f"Coverage: {coverage['produced_units']}/{requested_units} requested units "
+      f"({coverage['districts_with_any_horizon']}/{len(DISTRICTS)} districts) — "
+      f"status={coverage['status']}")
+print(f"Run report: {REPORT_PATH} (run_id={RUN_ID})")
+if coverage['status'] != 'complete':
+    # Loud, but not fatal: a partial run is still publishable *when it is labelled
+    # as partial*. The manifest and the run report carry the tally, and
+    # scripts/publish_forecast_csv.py refuses to publish an unlabelled partial.
+    print(f"::warning::Pipeline produced {coverage['produced_units']} of {requested_units} "
+          f"requested units. The site will label the remaining districts as having no "
+          f"current forecast — see coverage.skipped in {REPORT_PATH}.")
 
 # ==============================================================================
 # 9. PUSH TO LIVE PRODUCTION ENDPOINT

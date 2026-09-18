@@ -1,8 +1,8 @@
 /**
  * Server-side CSV Ingestion Utility for HazardNet.
  *
- * Securely parses, validates, and ingests forecasted CSV data (such as output
- * from the forecast pipeline) directly into the Firebase Firestore collection.
+ * Securely parses, validates, and ingests forecasted CSV data (such as output from
+ * the Kaggle automation workflow) directly into the Firebase Firestore collection.
  */
 
 import { Readable } from 'node:stream';

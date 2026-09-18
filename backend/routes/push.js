@@ -136,7 +136,11 @@ router.post('/send', async (req, res) => {
       results.successful++;
     } catch (err) {
       results.failed++;
-      results.errors.push({ endpoint: endpoint.slice(0, 30), error: err.message });
+      // Never echo the push provider's message (it can carry endpoint and VAPID
+      // diagnostics): report a status class to the caller, keep the detail in
+      // the server log (audit SEC-13).
+      console.warn('[push] delivery failed', { endpoint: endpoint.slice(0, 30), statusCode: err?.statusCode });
+      results.errors.push({ endpoint: endpoint.slice(0, 30), error: `delivery failed (${err?.statusCode ?? 'unknown'})` });
 
       // Clean up expired (410 Gone / 404 Not Found) subscriptions
       if (err.statusCode === 410 || err.statusCode === 404) {

@@ -43,6 +43,13 @@ export interface ForecastRow {
   physics_severity?: number;
   division?: string;
   pcode?: string;
+  /**
+   * `dataset_version` — the content hash over the inputs behind this prediction
+   * unit (scripts/etl/scene_manifest.py, PRODUCT_SPEC §5.8). Same inputs, same
+   * version; a new satellite scene or a revised forecast window moves it. Phase 2
+   * puts it on the rows; Phase 5 surfaces it next to each forecast's methodology.
+   */
+  dataset_version?: string;
   /** ADM3 identity (ADR 0005/0006): admin level + parent ADM2 district. */
   admin_level?: number;
   adm2_name?: string;
@@ -66,8 +73,8 @@ export interface ForecastMetadata {
  * Load freshness metadata without ever substituting a client/request timestamp.
  *
  * Three-stage fallback (mirrors loadForecasts): live /metadata → live /bulk →
- * the committed forecast snapshot. The Peak Hazard Window / Incident Ingestion
- * cards therefore keep showing the latest prediction_date even when
+ * the committed hourly snapshot. The Peak Hazard Window / Incident Ingestion
+ * cards therefore keep showing the latest Kaggle prediction_date even when
  * the API/store is unreachable, as long as the deployment bundle carries a
  * snapshot. Throws only when all three sources fail.
  */
@@ -189,6 +196,11 @@ export function parseForecastRow(raw: unknown): ForecastRow | null {
   if (isFiniteNumber(r.admin_level)) row.admin_level = r.admin_level;
   if (typeof r.adm2_name === 'string' && r.adm2_name) row.adm2_name = r.adm2_name;
   if (typeof r.adm2_pcode === 'string' && r.adm2_pcode) row.adm2_pcode = r.adm2_pcode;
+  // Lineage passes through only when it is shaped like a version. A malformed
+  // value must not reach the UI as if it identified the inputs.
+  if (typeof r.dataset_version === 'string' && /^ds1\.[0-9a-f]{16}$/.test(r.dataset_version)) {
+    row.dataset_version = r.dataset_version;
+  }
   // created_at powers the /bulk fallback's ingestionTimestamp in
   // fetchForecastMetadata — dropping it blanks the Incident Ingestion card
   // whenever /metadata is down.
@@ -206,24 +218,63 @@ export function parseBulkResponse(payload: unknown): ForecastRow[] {
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// Static forecast snapshot — the website's committed fallback data
+// Static hourly snapshot — the website's committed fallback data
 // ─────────────────────────────────────────────────────────────────────────
-// The daily GitHub workflow (daily_forecast.yml) generates the forecast on
-// the runner (scripts/auto_forecast.py — GEE + Open-Meteo + TFLite, no
-// Kaggle) and regenerates this file inside the website bundle
+// The hourly GitHub workflow (hourly_forecast.yml) downloads the Kaggle
+// notebook's CSV output and regenerates this file inside the website bundle
 // (scripts/build_forecast_snapshot.mjs), so every deployment of the codebase
-// ships with forecasts at most one day behind the latest pipeline run —
+// ships with forecasts at most one hour behind the latest notebook run —
 // even when the forecast API/store is unreachable.
 
 /** Public path of the committed hourly snapshot (frontend/public/data/...). */
 export const FORECAST_SNAPSHOT_URL = '/data/forecasts-latest.json';
 
-/** Shape of frontend/public/data/forecasts-latest.json (schema v1). */
+/**
+ * Shape of `frontend/public/data/forecasts-latest.json`.
+ *
+ * schema v2 (2026-09-17) added `provenance` (which model/tensor/pipeline produced
+ * these rows) and `coverage` (how many of the requested district x horizon units
+ * were actually produced, and which districts are missing). Both are optional so
+ * a deployment still serving a v1 snapshot keeps working — but a UI that ignores
+ * `coverage` will render static baseline numbers for missing districts as if they
+ * were today's forecast, which is the defect Phase 0 recorded (PRODUCT_SPEC §5.1).
+ */
 export interface ForecastSnapshot {
   schema?: string;
   generated_at?: string;
   source?: string;
   prediction_date?: string | null;
+  provenance?: {
+    model_version?: string | null;
+    tensor_build_id?: string | null;
+    pipeline_version?: string | null;
+    run_id?: string | null;
+  } | null;
+  coverage?: {
+    requested_units?: number | null;
+    produced_units?: number | null;
+    per_horizon?: Record<string, number> | null;
+    districts_covered?: number | null;
+    missing_district_ids?: number[];
+    status?: string | null;
+  } | null;
+  soil_channels_fabricated?: boolean | null;
+  /** Run-level `dataset_version` (content hash over every unit's inputs). */
+  dataset_version?: string | null;
+  /**
+   * How many rows carry a version. `status: 'partial'` means some rows cannot
+   * name the inputs behind them — a legacy snapshot, or a run whose lineage
+   * failed — and the UI should say so rather than implying full lineage.
+   */
+  lineage?: {
+    dataset_version?: string | null;
+    scene_manifest_path?: string | null;
+    units_in_manifest?: number | null;
+    rows_with_version?: number | null;
+    rows_total?: number | null;
+    scenes_enumerated?: boolean | null;
+    status?: string | null;
+  } | null;
   horizons?: Partial<Record<string, unknown[]>>;
 }
 
@@ -321,8 +372,8 @@ export const normalizeDistrictKey = (name: string): string =>
  * = canonical static-table key.
  */
 const DISTRICT_NAME_ALIASES: Record<string, string> = {
-  chittagong: 'chattogram',
   jessore: 'jashore',
+  chittagong: 'chattogram',
   comilla: 'cumilla',
   barishal: 'barisal',
   bogura: 'bogra',
@@ -332,6 +383,11 @@ const DISTRICT_NAME_ALIASES: Record<string, string> = {
   brahamanbaria: 'brahmanbaria',
   jhalakathi: 'jhalokati',
   'chapainawabganj ': 'chapainawabganj', // defensive: trailing-space variants
+  // FAO GAUL 2015 (and so the forecast pipeline) calls Chapainawabganj simply
+  // "Nawabganj". Without this alias that district's forecast row never matched
+  // its card, so the site showed the static baseline despite having a forecast
+  // (found 2026-09-17 while wiring coverage accounting).
+  nawabganj: 'chapainawabganj',
   khagrachari: 'khagrachhari',
 };
 

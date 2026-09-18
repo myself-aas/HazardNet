@@ -71,7 +71,7 @@ export const HazardNetLogo: React.FC<HazardNetLogoProps> = ({
       </svg>
       {showText && (
         <span className={`${textSizeClass} ${textClasses}`}>
-          Hazard<span className="text-[#d08305] dark:text-[#f9a825]">Net</span>
+          Hazard<span className="text-nasa-red-shade dark:text-nasa-red-tint">Net</span>
         </span>
       )}
     </div>
@@ -109,7 +109,7 @@ export const HazardNetBrand: React.FC<HazardNetBrandProps> = ({
         <span className={isDark ? 'text-white' : 'text-slate-900'}>
           Hazard
         </span>
-        <span className="text-[#d08305] dark:text-[#f9a825]">
+        <span className="text-nasa-red-shade dark:text-nasa-red-tint">
           Net
         </span>
       </span>

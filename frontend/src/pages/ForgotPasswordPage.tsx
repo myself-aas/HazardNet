@@ -55,7 +55,7 @@ const ForgotPasswordPage: React.FC = () => {
         {!isSubmitted ? (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="flex items-start gap-3 p-3.5 bg-amber-50 border border-amber-200/90 rounded-2xl">
-              <div className="w-8 h-8 rounded-xl bg-[#f9a825]/20 flex items-center justify-center text-sm shrink-0 font-bold text-amber-900">
+              <div className="w-8 h-8 rounded-xl bg-nasa-red/20 flex items-center justify-center text-sm shrink-0 font-bold text-amber-900">
                 🔑
               </div>
               <p className="text-xs text-slate-600 leading-relaxed">
@@ -89,7 +89,7 @@ const ForgotPasswordPage: React.FC = () => {
                 placeholder="user@example.com"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs text-slate-900 placeholder-slate-400 font-medium focus:outline-none focus:border-[#f9a825] focus:ring-1 focus:ring-[#f9a825] transition-all"
+                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs text-slate-900 placeholder-slate-400 font-medium focus:outline-none focus:border-nasa-blue focus:ring-1 focus:ring-nasa-blue transition-all"
               />
             </div>
 
@@ -97,7 +97,7 @@ const ForgotPasswordPage: React.FC = () => {
               id="forgot-submit-btn"
               type="submit"
               disabled={loading || !email.trim()}
-              className="w-full py-3 bg-[#f9a825] text-slate-900 hover:bg-[#d08305] font-extrabold rounded-2xl text-xs transition-all shadow-xs disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
+              className="w-full py-3 bg-nasa-red text-slate-900 hover:bg-nasa-red-shade font-extrabold rounded-2xl text-xs transition-all shadow-xs disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
             >
               {loading ? (
                 <>
@@ -143,7 +143,7 @@ const ForgotPasswordPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => navigate('/login')}
-                className="w-full py-2.5 bg-[#f9a825] hover:bg-[#d08305] text-slate-900 rounded-2xl text-xs font-extrabold transition-all shadow-xs cursor-pointer"
+                className="w-full py-2.5 bg-nasa-red hover:bg-nasa-red-shade text-slate-900 rounded-2xl text-xs font-extrabold transition-all shadow-xs cursor-pointer"
               >
                 Proceed to Sign In
               </button>

@@ -15,6 +15,7 @@ import { getForecastStore } from '../forecastStore.js';
 import csv from 'csv-parser';
 import fs from 'fs';
 import { generateAdvisory } from '../services/advisoryAgent.js';
+import { clientError } from '../utils/clientError.js';
 const router = express.Router();
 
 // Ensure upload directory exists
@@ -135,7 +136,7 @@ router.post('/update', upload.single('file'), (req, res, next) => {
             fs.unlinkSync(req.file.path);
         }
         console.error('❌ Forecast update failed:', error.message);
-        res.status(500).json({ error: 'Internal server error', detail: error.message });
+        clientError(res, error, { scope: 'backend/forecasts', fallback: 'Internal server error' });
     }
 });
 
@@ -173,13 +174,13 @@ router.post('/ingest-csv', async (req, res) => {
             ...result
         });
     } catch (error) {
-        res.status(400).json({ error: 'CSV ingestion failed', detail: error.message });
+        clientError(res, error, { status: 400, scope: 'backend/forecasts', fallback: 'CSV ingestion failed' });
     }
 });
 
 // ─────────────────────────────────────────────────────────
 // GET /api/v1/forecasts/metadata
-// Returns the newest ingested prediction date and source.
+// Returns the newest ingested Kaggle prediction date and source.
 // ─────────────────────────────────────────────────────────
 router.get('/metadata', async (req, res) => {
     try {
@@ -191,12 +192,12 @@ router.get('/metadata', async (req, res) => {
             prediction_date: predictionDate,
             ingestion_timestamp: ingestionTimestamp,
             data_source: metadataDataSource(),
-            pipeline_source: 'github-actions: daily_forecast.yml (scripts/auto_forecast.py)',
+            notebook_source: 'ashifahmedshuvo/hazardnet-auto-forecast-pipeline',
             datasets: metadataDatasets(),
             generated_at: now.toISOString(),
         });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        clientError(res, error, { scope: 'backend/forecasts' });
     }
 });
 
@@ -257,7 +258,7 @@ router.get('/', async (req, res) => {
             }
         });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        clientError(res, error, { scope: 'backend/forecasts' });
     }
 });
 
@@ -288,7 +289,7 @@ router.get('/bulk', async (req, res) => {
             forecasts: rows
         });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        clientError(res, error, { scope: 'backend/forecasts' });
     }
 });
 
@@ -333,7 +334,7 @@ router.get('/history', async (req, res) => {
             forecasts: rows
         });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        clientError(res, error, { scope: 'backend/forecasts' });
     }
 });
 

@@ -40,3 +40,20 @@ export const apiLimiter = buildLimiter({
   limit: 120,
   message: 'API rate limit exceeded. Please slow down.',
 });
+
+/** Alert reads (public map/API + evidence cards). 60 req/min/IP. */
+export const alertLimiter = buildLimiter({
+  windowMs: 60_000,
+  limit: 60,
+  message: 'Alert API rate limit exceeded. Please slow down.',
+});
+
+/**
+ * Alert state changes and engine runs. 12 req/min/IP: approving an alert is a
+ * deliberate, attributable act (§1.6), so the ceiling is low on purpose.
+ */
+export const alertReviewLimiter = buildLimiter({
+  windowMs: 60_000,
+  limit: 12,
+  message: 'Too many alert review requests. Wait a minute before acting again.',
+});

@@ -108,13 +108,13 @@ export const DistrictForecastCard: React.FC<DistrictForecastCardProps> = ({
     >
       <div className="flex flex-col flex-1 min-h-0 bg-white/85 backdrop-blur-md border border-slate-200/70 rounded-2xl shadow-xl text-slate-800 relative overflow-hidden">
         {/* amber identity strip */}
-        <div aria-hidden="true" className="absolute top-0 left-0 w-full h-1 bg-[#f9a825]" />
+        <div aria-hidden="true" className="absolute top-0 left-0 w-full h-1 bg-nasa-red" />
 
         {/* Header (fixed) */}
         <div className="flex items-start justify-between gap-2 border-b border-slate-200/60 pb-2 pt-3 px-3.5 shrink-0">
           <div className="min-w-0">
             <div className="flex items-center gap-1.5 text-[9px] font-mono font-bold text-slate-500 uppercase tracking-wider">
-              <MaterialIcon name="radar" className="w-3 h-3 text-[#d08305]" />
+              <MaterialIcon name="radar" className="w-3 h-3 text-nasa-red-shade" />
               District Forecast
             </div>
             <h4 className="text-sm font-black text-slate-900 tracking-tight mt-0.5 truncate">
@@ -190,7 +190,7 @@ export const DistrictForecastCard: React.FC<DistrictForecastCardProps> = ({
             className="flex items-center justify-between gap-2 rounded-lg border border-slate-200/70 bg-white/60 px-2.5 py-1.5 text-[10px] font-bold text-slate-600 hover:bg-white/90 transition-colors cursor-pointer"
           >
             <span className="flex items-center gap-1.5">
-              <MaterialIcon name="map" className="w-3 h-3 text-[#d08305]" />
+              <MaterialIcon name="map" className="w-3 h-3 text-nasa-red-shade" />
               Location Map
             </span>
             <span className={`transition-transform ${showLocationMap ? 'rotate-180' : ''}`} aria-hidden="true">▾</span>
@@ -217,7 +217,7 @@ export const DistrictForecastCard: React.FC<DistrictForecastCardProps> = ({
           <button
             type="button"
             onClick={() => onOpenAnalytics(district.id)}
-            className="w-full py-2 bg-[#f9a825] hover:bg-[#d08305] text-white font-black text-[11px] rounded-xl shadow-md flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer"
+            className="w-full py-2 bg-nasa-red hover:bg-nasa-red-shade text-white font-black text-[11px] rounded-xl shadow-md flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer"
           >
             <MaterialIcon name="analytics" className="w-3.5 h-3.5" />
             View Detailed Disaster Analytics

@@ -135,7 +135,7 @@ export const Blogs: React.FC = () => {
 
       {/* Header Banner */}
       <div className="bg-white border border-slate-200/90 rounded-3xl p-6 md:p-8 shadow-md relative overflow-hidden space-y-3">
-        <div className="absolute top-0 left-0 w-full h-1 bg-[#f9a825]"></div>
+        <div className="absolute top-0 left-0 w-full h-1 bg-nasa-red"></div>
         <div className="flex items-center gap-2">
           <span className="px-3 py-1 rounded-full text-[10px] font-mono font-extrabold bg-amber-50 text-amber-900 border border-amber-300 uppercase tracking-wider shadow-2xs">
             Research Insights & Field Reports
@@ -207,7 +207,7 @@ export const Blogs: React.FC = () => {
             onClick={() => setFilterCategory(cat)}
             className={`px-4 py-2 rounded-xl whitespace-nowrap transition-all duration-200 cursor-pointer ${
               filterCategory === cat
-                ? 'bg-[#f9a825] text-slate-950 font-black shadow-md shadow-amber-500/20'
+                ? 'bg-nasa-red text-slate-950 font-black shadow-md shadow-amber-500/20'
                 : 'bg-white text-slate-700 border border-slate-200/90 hover:bg-slate-50 hover:border-slate-300 shadow-2xs'
             }`}
           >

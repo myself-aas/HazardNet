@@ -1,0 +1,727 @@
+{
+  "schema": "hazardnet-hindcast-report/v1",
+  "hindcast_version": "1.0.0",
+  "generated_at": "2026-09-18T04:55:29Z",
+  "episode": {
+    "id": "mocha-2023",
+    "title": "Cyclone Mocha \u2014 Cox's Bazar coast and Teknaf, 14 May 2023",
+    "hazard_class": "Tropical Cyclone",
+    "onset_date": "2023-05-14",
+    "episode_path": "../data/hindcast/episodes/mocha-2023.json",
+    "episode_sha256": "b188505a5d0f989c2e4b85567a174718a5c9251f961691dcff6ab191a9e0ba60",
+    "truth_completeness": "named-affected-only",
+    "affected_districts": [
+      "Cox's Bazar",
+      "Chattogram",
+      "Feni",
+      "Noakhali"
+    ],
+    "affected_count": 4,
+    "sources": [
+      {
+        "id": "modmr-initial-damage",
+        "citation": "Bangladesh: Cyclone Mocha Humanitarian Response Situation Report, as of 15 May 2023 \u2014 Inter Sector Coordination Group (ISCG) / UN Bangladesh, reporting the Department of Disaster Management (DDM) and Ministry of Disaster Management and Relief (MoDMR) initial damage information.",
+        "url": "https://bangladesh.un.org/en/231958-bangladesh-cyclone-mocha-humanitarian-response-situation-report-15-may-2023",
+        "accessed": "2026-09-18",
+        "what_it_evidences": "The four-district affected set at district level, the 26 upazila / 99 union / 429,337-nationals counts, the housing damage totals (2,052 fully, 10,692 partially), and the no-recorded-fatality statement."
+      },
+      {
+        "id": "acaps-mocha",
+        "citation": "Bangladesh and Myanmar: Impact of Cyclone Mocha \u2014 ACAPS Briefing Note, 23 May 2023.",
+        "url": "https://www.acaps.org/fileadmin/Data_Product/Main_media/20230523_acaps_briefing_note_bangladesh_and_myanmar_impact_of_cyclone_mocha_0.pdf",
+        "accessed": "2026-09-18",
+        "what_it_evidences": "The Chattogram-division district list (Chattogram, Cox's Bazar, Feni, Noakhali), the approximately 2.3 million affected and 2,000+ destroyed / 10,000+ damaged houses in Bangladesh, and the 750,000-person pre-landfall evacuation."
+      },
+      {
+        "id": "start-fund-stmartin",
+        "citation": "Briefing Note: Cyclone Mocha, Saint Martin Island, 18 May 2023 \u2014 Start Fund Bangladesh.",
+        "url": "https://reliefweb.int/report/bangladesh/briefing-note-cyclone-mocha-saint-martin-island-18-may-2023",
+        "accessed": "2026-09-18",
+        "what_it_evidences": "The Saint Martin's Island impact (the most severe documented damage in Bangladesh) and the relief/host-community response, and the statement that the island is in Teknaf upazila of Cox's Bazar district \u2014 which is why the truth set carries Cox's Bazar rather than an island."
+      }
+    ],
+    "truth_notes": [
+      "The four districts are the ones the government initial damage assessment names at district level. The 429,337 figure and the 2.3-million reference in the ACAPS note are different counts of different things (Bangladeshi nationals reached by the assessed damage versus people in the affected division), and neither is used as a denominator here.",
+      "Cox's Bazar is the only district in this truth set where the sources quantify the impact (334,620 Bangladeshi nationals affected, 2,052 houses fully damaged and 10,692 partially damaged; Saint Martin's Island in Teknaf upazila assessed from satellite imagery). It carries the `most_affected` tier for that reason.",
+      "Cox's Bazar also appears in the eastern-flood-2024 truth set. One shared district out of four is the smallest overlap of any pair in this set; the two south-western cyclone episodes (Amphan 2020, Yaas 2021) overlap each other almost completely."
+    ],
+    "known_limitations": [
+      "Reanalysis rather than archived forecast fields: this measures whether the physics track, given the weather that occurred, flags the districts that were hit \u2014 a ceiling on detection, not forecast skill (identical to the other three episodes; the harness has no ECMWF MARS/CDS credential).",
+      "The CNN was not re-run: its input tensor needs Sentinel-1/2, Landsat and ERA5-Land bands over Earth Engine for the historical window.",
+      "The Bangladesh impact was a near-miss outward wind field rather than a direct eye crossing, so a district-centroid wind from a reanalysis grid will under-represent whatever the coast actually experienced \u2014 the same driver-fidelity limit the 2020/2021 cyclone episodes expose, in the opposite direction.",
+      "A district centroid cannot represent Saint Martin's Island (about 8 km\u00b2, 120 km south of the Teknaf mainland): the island took the most severe documented damage in Bangladesh and is not a district.",
+      "The truth set has 4 districts, so the false-alarm denominator stays absent for the same reason as in the other episodes (`absence_means_no_event: false`). Any FAR this episode reports is a reporting boundary, not an operational false-alarm rate."
+    ]
+  },
+  "detection": {
+    "named_districts": 4,
+    "districts_with_a_scored_row": 4,
+    "flagged_any_class": 4,
+    "flagged_episode_class": 0,
+    "episode_class_over_threshold": 0,
+    "alarm_threshold": 0.5,
+    "interpretation": "Detection counts over the districts the sources name. There is no \"not detected, therefore clear\" claim anywhere in this report: unnamed districts are unknown, and the false-alarm ratio is measurable only when the historical archive is loaded.",
+    "per_horizon": {
+      "7_days": {
+        "named_districts_with_a_row": 4,
+        "flagged_any_class": 4
+      },
+      "15_days": {
+        "named_districts_with_a_row": 4,
+        "flagged_any_class": 4
+      }
+    },
+    "per_district": [
+      {
+        "district": "Cox's Bazar",
+        "tier": "most_affected",
+        "horizons_scored": 2,
+        "flagged_any_class": true,
+        "flagged_episode_class": false,
+        "episode_class_over_threshold": false,
+        "strongest_score": 0.8543,
+        "strongest_class": "Flash Flood",
+        "flag_horizons": [
+          "15_days",
+          "7_days"
+        ]
+      },
+      {
+        "district": "Chattogram",
+        "tier": "stated_affected",
+        "horizons_scored": 2,
+        "flagged_any_class": true,
+        "flagged_episode_class": false,
+        "episode_class_over_threshold": false,
+        "strongest_score": 0.7449,
+        "strongest_class": "Fire",
+        "flag_horizons": [
+          "15_days",
+          "7_days"
+        ]
+      },
+      {
+        "district": "Feni",
+        "tier": "stated_affected",
+        "horizons_scored": 2,
+        "flagged_any_class": true,
+        "flagged_episode_class": false,
+        "episode_class_over_threshold": false,
+        "strongest_score": 0.888,
+        "strongest_class": "Drought",
+        "flag_horizons": [
+          "15_days",
+          "7_days"
+        ]
+      },
+      {
+        "district": "Noakhali",
+        "tier": "stated_affected",
+        "horizons_scored": 2,
+        "flagged_any_class": true,
+        "flagged_episode_class": false,
+        "episode_class_over_threshold": false,
+        "strongest_score": 0.8806,
+        "strongest_class": "Fire",
+        "flag_horizons": [
+          "15_days",
+          "7_days"
+        ]
+      }
+    ]
+  },
+  "physics_diagnostics": {
+    "top_class_distribution_shipped": {
+      "Drought": 30,
+      "Fire": 94,
+      "Flash Flood": 2,
+      "Heat Wave": 2
+    },
+    "top_class_distribution_legacy": {
+      "Fire": 126,
+      "Flash Flood": 2
+    },
+    "saturated_terms": {
+      "fire_wind": {
+        "term": "(wind_mean_kmh - 5.0) / 20.0",
+        "legacy_term": "(wind_max_kmh - 5.0) / 20.0",
+        "rows": 128,
+        "rows_at_ceiling": 1,
+        "legacy_rows_at_ceiling": 74,
+        "first_row_argument": 17.062500000000004,
+        "legacy_argument": 22.4
+      },
+      "fire_drying": {
+        "term": "et_mm_per_day / 6.0",
+        "legacy_term": "et_total_mm / 6.0",
+        "rows": 128,
+        "rows_at_ceiling": 24,
+        "legacy_rows_at_ceiling": 128,
+        "first_row_argument": 6.1,
+        "legacy_argument": 48.8
+      },
+      "heat_persistence": {
+        "term": "heat_exceedance_days / 5.0",
+        "legacy_term": "horizon_days / 5.0",
+        "rows": 128,
+        "rows_at_ceiling": 128,
+        "legacy_rows_at_ceiling": 128,
+        "first_row_argument": 8,
+        "legacy_argument": 7
+      },
+      "cold_persistence": {
+        "term": "cold_exceedance_days / 5.0",
+        "legacy_term": "horizon_days / 5.0",
+        "rows": 128,
+        "rows_at_ceiling": 0,
+        "legacy_rows_at_ceiling": 128,
+        "first_row_argument": 0,
+        "legacy_argument": 7
+      }
+    },
+    "corrected_driver_ranges": {
+      "fire_wind_mean_kmh": {
+        "min": 11.78125,
+        "max": 25.625
+      },
+      "fire_et_mm_per_day": {
+        "min": 4.3412500000000005,
+        "max": 6.875000000000001
+      },
+      "heat_exceedance_days_above_30c": {
+        "min": 6,
+        "max": 16
+      },
+      "cold_exceedance_days_below_16c": {
+        "min": 0,
+        "max": 0
+      }
+    },
+    "wind_drivers": {
+      "era5_10m_gust": {
+        "rows": 128,
+        "wind_kmh": {
+          "min": 36.7,
+          "max": 85.3
+        },
+        "top_class_distribution": {
+          "Drought": 30,
+          "Fire": 94,
+          "Flash Flood": 2,
+          "Heat Wave": 2
+        },
+        "named_the_episode_class": 0,
+        "episode_class_over_threshold": 0,
+        "episode_class_score": {
+          "min": 0.0,
+          "max": 0.3773
+        }
+      },
+      "era5_10m_sustained": {
+        "rows": 128,
+        "wind_kmh": {
+          "min": 18.1,
+          "max": 51.0
+        },
+        "top_class_distribution": {
+          "Drought": 30,
+          "Fire": 94,
+          "Flash Flood": 2,
+          "Heat Wave": 2
+        },
+        "named_the_episode_class": 0,
+        "episode_class_over_threshold": 0,
+        "episode_class_score": {
+          "min": 0.0,
+          "max": 0.2173
+        }
+      },
+      "finding": "With the sustained maximum the shipped pipeline uses, the episode's class scores 0.0000\u20130.2173 and crosses the 0.5 band on 0 of 128 rows; with the gust field the archive also carries it scores 0.0000\u20130.3773 and crosses on 0. Even the gust field leaves the episode class below the band, so the wind argument alone does not explain the miss: at this distance from the track the driver the pipeline uses cannot represent the hazard, and the class the formula describes is unreachable for this event. Note what neither number fixes: the track's top class is Fire under either driver, so the separation between the wind-driven classes is a second, independent defect."
+    },
+    "detection_legacy": {
+      "named_districts": 4,
+      "districts_with_a_scored_row": 4,
+      "flagged_any_class": 4,
+      "flagged_episode_class": 0,
+      "episode_class_over_threshold": 0,
+      "alarm_threshold": 0.5,
+      "interpretation": "Detection counts over the districts the sources name. There is no \"not detected, therefore clear\" claim anywhere in this report: unnamed districts are unknown, and the false-alarm ratio is measurable only when the historical archive is loaded.",
+      "per_horizon": {
+        "7_days": {
+          "named_districts_with_a_row": 4,
+          "flagged_any_class": 4
+        },
+        "15_days": {
+          "named_districts_with_a_row": 4,
+          "flagged_any_class": 4
+        }
+      }
+    },
+    "finding": "The corrected wiring feeds each formula the quantity it describes: mean daily ET and mean daily maximum wind to the fire terms, the gust maximum to the two wind-damage classes, and the number of days past 30 \u00b0C / below 16 \u00b0C to the persistence terms. The same rows are scored with the pre-correction wiring beside it, so the change and its size are on the record rather than in a commit message."
+  },
+  "what_was_hindcast": {
+    "physics_track": true,
+    "cnn_evaluated": false,
+    "cnn_note": "Severity and class come from the independent physics cross-check (scripts/physics_severity.py) run on reanalysis drivers. The CNN was not re-run: its t2 tensor needs Sentinel-1/2 + Landsat + ERA5-Land bands over Earth Engine for the historical window. These are not model-skill numbers.",
+    "drivers": {
+      "product": "Open-Meteo historical archive (ERA5 / ERA5-Land era reanalysis)",
+      "endpoint": "https://archive-api.open-meteo.com/v1/archive",
+      "variables": [
+        "temperature_2m_max",
+        "temperature_2m_min",
+        "precipitation_sum",
+        "wind_speed_10m_max",
+        "wind_gusts_10m_max",
+        "et0_fao_evapotranspiration"
+      ],
+      "driver_series_loaded_from": "/home/runner/work/HazardNet/HazardNet/data/hindcast/drivers/mocha-2023.json",
+      "is_forecast": false,
+      "is_forecast_note": "Reanalysis knows the weather that occurred inside the window. This measures whether the physics track, given that weather, flags the districts that were hit \u2014 a ceiling on detection, not forecast skill. A lead-time hindcast needs archived forecast fields (ECMWF MARS/CDS), which this harness has no credential for.",
+      "aggregation": {
+        "precip_total_mm": "sum of daily precipitation over the window",
+        "precip_peak_mm": "wettest day in the window (the live pipeline uses the peak 6-hourly accumulation, so a forward-flood term is understated)",
+        "temp_max_c": "maximum daily maximum",
+        "temp_min_c": "minimum daily minimum",
+        "wind_max_kmh": "sustained maximum (kept for the record and the pre-correction comparison; the wind-damage classes read the gust below)",
+        "wind_gust_max_kmh": "gust maximum \u2014 the driver the two wind-damage classes read, because the unit is a district centroid",
+        "wind_mean_kmh": "mean of the daily maximum wind over the window",
+        "et_mm_per_day": "mean daily reference evapotranspiration",
+        "heat_exceedance_days": "days past 30 \u00b0C inside the window",
+        "cold_exceedance_days": "days below 16 \u00b0C inside the window",
+        "et_total_mm": "sum of daily ET0 (kept; read only when no daily ET series is available, and never as a daily rate)"
+      }
+    },
+    "how_to_read": [
+      "`evaluation.scores.events` is class-strict: an alarm is a hit only when the predict track *named* the class that occurred. A district correctly flagged under a different class therefore appears there as a false alarm, which is why the class-agnostic `detection.flagged_any_class` exists \u2014 read them together.",
+      "`evaluation.scores.per_class` is one-vs-rest per class. `pod: 0.0` with `misses: N` for the episode class means the track never named that class, not that it scored the district low; `detection.episode_class_over_threshold` separates the two.",
+      "`detection` counts over the districts the sources name, per horizon.",
+      "Nothing in this report covers a district nobody named. Unknown is not clear, and the far column is unmeasurable rather than zero when no negative sample exists."
+    ],
+    "alarm_threshold": 0.5,
+    "min_matched": 5,
+    "absence_means_no_event": false,
+    "absence_means_no_event_reason": "Same reasoning as the Amphan and Yaas episodes: the initial damage assessment names four districts and does not claim to have surveyed the other 60, so a district nobody named is UNKNOWN, not clear. The 2.3-million-people framing used by one briefing includes districts that are not named at district level, which is exactly the case where counting an unnamed district as a negative would manufacture a false-alarm rate.",
+    "horizons": [
+      {
+        "name": "7_days",
+        "lead_days": 7,
+        "prediction_date": "2023-05-07",
+        "target_date": "2023-05-14"
+      },
+      {
+        "name": "15_days",
+        "lead_days": 15,
+        "prediction_date": "2023-04-29",
+        "target_date": "2023-05-14"
+      }
+    ]
+  },
+  "counts": {
+    "predictions": 128,
+    "districts": 64,
+    "outcomes_named": 4,
+    "matched_pairs": 8,
+    "prediction_windows_without_an_outcome": 120,
+    "outcomes_not_relevant_to_a_window": 0,
+    "named_districts_without_a_prediction_row": []
+  },
+  "evaluation": {
+    "schema": "hazardnet-mlops-evaluation/v1",
+    "mlops_version": "mlops/1.0.0",
+    "status": "ok",
+    "reason": null,
+    "counts": {
+      "predictions": 128,
+      "outcomes": 4,
+      "matched": 8,
+      "unmatched_no_outcome": 120,
+      "outcome_before_forecast": 0,
+      "outside_window": 0,
+      "missing_fields": 0,
+      "not_relevant_outcomes": 0,
+      "min_matched": 5,
+      "absence_means_no_event": false,
+      "alarm_threshold": 0.5,
+      "near_days": 14
+    },
+    "unverifiable": {
+      "examples": {
+        "no_outcome_on_record": [
+          "Kurigram/2023-05-07",
+          "Kurigram/2023-04-29",
+          "Rangpur/2023-05-07",
+          "Rangpur/2023-04-29",
+          "Gaibandha/2023-05-07"
+        ],
+        "outcome_before_forecast": [],
+        "outside_window": [],
+        "missing_fields": [],
+        "conflicting_observations": [
+          "Chattogram: observed Tropical Cyclone vs predicted Fire",
+          "Chattogram: observed Tropical Cyclone vs predicted Fire",
+          "Cox's Bazar: observed Tropical Cyclone vs predicted Flash Flood",
+          "Cox's Bazar: observed Tropical Cyclone vs predicted Flash Flood",
+          "Feni: observed Tropical Cyclone vs predicted Drought"
+        ]
+      },
+      "not_relevant_outcomes": 0
+    },
+    "scores": {
+      "events": {
+        "hits": 0,
+        "misses": 0,
+        "false_alarms": 8,
+        "correct_negatives": 0,
+        "observed_events": 0,
+        "forecast_events": 8,
+        "samples": 8,
+        "pod": null,
+        "far": 1.0,
+        "csi": 0.0,
+        "precision": 0.0,
+        "recall": null,
+        "accuracy": 0.0,
+        "frequency_bias": null,
+        "f1": null,
+        "alarm_threshold": 0.5,
+        "negatives_available": 8
+      },
+      "per_class": {
+        "Cold Wave": {
+          "pod": null,
+          "far": null,
+          "csi": null,
+          "observed_events": 0,
+          "forecast_events": 0,
+          "status": "untested"
+        },
+        "Drought": {
+          "pod": null,
+          "far": 1.0,
+          "csi": 0.0,
+          "precision": 0.0,
+          "recall": null,
+          "observed_events": 0,
+          "forecast_events": 1,
+          "hits": 0,
+          "misses": 0,
+          "false_alarms": 1,
+          "status": "measured"
+        },
+        "Fire": {
+          "pod": null,
+          "far": 1.0,
+          "csi": 0.0,
+          "precision": 0.0,
+          "recall": null,
+          "observed_events": 0,
+          "forecast_events": 4,
+          "hits": 0,
+          "misses": 0,
+          "false_alarms": 4,
+          "status": "measured"
+        },
+        "Flash Flood": {
+          "pod": null,
+          "far": 1.0,
+          "csi": 0.0,
+          "precision": 0.0,
+          "recall": null,
+          "observed_events": 0,
+          "forecast_events": 2,
+          "hits": 0,
+          "misses": 0,
+          "false_alarms": 2,
+          "status": "measured"
+        },
+        "Flood": {
+          "pod": null,
+          "far": null,
+          "csi": null,
+          "observed_events": 0,
+          "forecast_events": 0,
+          "status": "untested"
+        },
+        "Heat Wave": {
+          "pod": null,
+          "far": 1.0,
+          "csi": 0.0,
+          "precision": 0.0,
+          "recall": null,
+          "observed_events": 0,
+          "forecast_events": 1,
+          "hits": 0,
+          "misses": 0,
+          "false_alarms": 1,
+          "status": "measured"
+        },
+        "Severe Local Storm": {
+          "pod": null,
+          "far": null,
+          "csi": null,
+          "observed_events": 0,
+          "forecast_events": 0,
+          "status": "untested"
+        },
+        "Tropical Cyclone": {
+          "pod": 0.0,
+          "far": null,
+          "csi": null,
+          "precision": null,
+          "recall": 0.0,
+          "observed_events": 8,
+          "forecast_events": 0,
+          "hits": 0,
+          "misses": 8,
+          "false_alarms": null,
+          "status": "measured"
+        }
+      },
+      "class_confusion": {
+        "labels": [
+          "Cold Wave",
+          "Drought",
+          "Fire",
+          "Flash Flood",
+          "Flood",
+          "Heat Wave",
+          "Severe Local Storm",
+          "Tropical Cyclone"
+        ],
+        "matrix": {
+          "Cold Wave": {
+            "Cold Wave": 0,
+            "Drought": 0,
+            "Fire": 0,
+            "Flash Flood": 0,
+            "Flood": 0,
+            "Heat Wave": 0,
+            "Severe Local Storm": 0,
+            "Tropical Cyclone": 0
+          },
+          "Drought": {
+            "Cold Wave": 0,
+            "Drought": 0,
+            "Fire": 0,
+            "Flash Flood": 0,
+            "Flood": 0,
+            "Heat Wave": 0,
+            "Severe Local Storm": 0,
+            "Tropical Cyclone": 0
+          },
+          "Fire": {
+            "Cold Wave": 0,
+            "Drought": 0,
+            "Fire": 0,
+            "Flash Flood": 0,
+            "Flood": 0,
+            "Heat Wave": 0,
+            "Severe Local Storm": 0,
+            "Tropical Cyclone": 0
+          },
+          "Flash Flood": {
+            "Cold Wave": 0,
+            "Drought": 0,
+            "Fire": 0,
+            "Flash Flood": 0,
+            "Flood": 0,
+            "Heat Wave": 0,
+            "Severe Local Storm": 0,
+            "Tropical Cyclone": 0
+          },
+          "Flood": {
+            "Cold Wave": 0,
+            "Drought": 0,
+            "Fire": 0,
+            "Flash Flood": 0,
+            "Flood": 0,
+            "Heat Wave": 0,
+            "Severe Local Storm": 0,
+            "Tropical Cyclone": 0
+          },
+          "Heat Wave": {
+            "Cold Wave": 0,
+            "Drought": 0,
+            "Fire": 0,
+            "Flash Flood": 0,
+            "Flood": 0,
+            "Heat Wave": 0,
+            "Severe Local Storm": 0,
+            "Tropical Cyclone": 0
+          },
+          "Severe Local Storm": {
+            "Cold Wave": 0,
+            "Drought": 0,
+            "Fire": 0,
+            "Flash Flood": 0,
+            "Flood": 0,
+            "Heat Wave": 0,
+            "Severe Local Storm": 0,
+            "Tropical Cyclone": 0
+          },
+          "Tropical Cyclone": {
+            "Cold Wave": 0,
+            "Drought": 1,
+            "Fire": 4,
+            "Flash Flood": 2,
+            "Flood": 0,
+            "Heat Wave": 1,
+            "Severe Local Storm": 0,
+            "Tropical Cyclone": 0
+          }
+        },
+        "unlabelled": {},
+        "total": 8
+      },
+      "reliability": {
+        "bins": [],
+        "ece": null,
+        "mce": null,
+        "brier": null,
+        "brier_skill": null,
+        "log_loss": null,
+        "samples": 0,
+        "single_class_sample": false,
+        "note": null
+      },
+      "severity_mae_vs_occurrence": 0.834525,
+      "lead_time_days": {
+        "min": 7,
+        "max": 15,
+        "mean": 11.0,
+        "samples": 8,
+        "samples_with_lead_over_0": 8
+      },
+      "scored_samples": 8
+    },
+    "scored_samples": 8,
+    "negative_samples": 8,
+    "evaluated_events": 0,
+    "ece": null,
+    "csi": 0.0,
+    "far": 1.0,
+    "pod": null,
+    "model_versions": []
+  },
+  "threshold_sensitivity": [
+    {
+      "alarm_threshold": 0.4,
+      "scored_samples": 8,
+      "hits": 0,
+      "misses": 0,
+      "false_alarms": 8,
+      "pod": null,
+      "far": 1.0,
+      "note": "PRODUCT_SPEC \u00a71.3 WATCH band"
+    },
+    {
+      "alarm_threshold": 0.5,
+      "scored_samples": 8,
+      "hits": 0,
+      "misses": 0,
+      "false_alarms": 8,
+      "pod": null,
+      "far": 1.0,
+      "note": "harness default"
+    },
+    {
+      "alarm_threshold": 0.65,
+      "scored_samples": 8,
+      "hits": 0,
+      "misses": 0,
+      "false_alarms": 8,
+      "pod": null,
+      "far": 1.0,
+      "note": "PRODUCT_SPEC \u00a71.3 WARNING band"
+    }
+  ],
+  "per_district": [
+    {
+      "district": "Cox's Bazar",
+      "as_written": "Cox's Bazar",
+      "tier": "most_affected",
+      "source_id": "modmr-initial-damage",
+      "physics_top_hazard": "Flash Flood",
+      "physics_top_severity": 0.8543,
+      "physics_score_of_episode_class": 0.2126,
+      "physics_named_episode_class": false,
+      "within_window_days": 16
+    },
+    {
+      "district": "Chattogram",
+      "as_written": "Chattogram",
+      "tier": "stated_affected",
+      "source_id": "acaps-mocha",
+      "physics_top_hazard": "Fire",
+      "physics_top_severity": 0.7211,
+      "physics_score_of_episode_class": 0.0881,
+      "physics_named_episode_class": false,
+      "within_window_days": 16
+    },
+    {
+      "district": "Feni",
+      "as_written": "Feni",
+      "tier": "stated_affected",
+      "source_id": "acaps-mocha",
+      "physics_top_hazard": "Heat Wave",
+      "physics_top_severity": 0.8833,
+      "physics_score_of_episode_class": 0.0359,
+      "physics_named_episode_class": false,
+      "within_window_days": 16
+    },
+    {
+      "district": "Noakhali",
+      "as_written": "Noakhali",
+      "tier": "stated_affected",
+      "source_id": "acaps-mocha",
+      "physics_top_hazard": "Fire",
+      "physics_top_severity": 0.8533,
+      "physics_score_of_episode_class": 0.0463,
+      "physics_named_episode_class": false,
+      "within_window_days": 16
+    }
+  ],
+  "alarmed_without_a_recorded_impact": {
+    "count": 120,
+    "examples": [
+      "Bagerhat (Fire 0.789, 2023-04-29)",
+      "Bagerhat (Fire 0.851, 2023-05-07)",
+      "Bandarban (Fire 0.653, 2023-04-29)",
+      "Bandarban (Fire 0.685, 2023-05-07)",
+      "Barguna (Fire 0.751, 2023-04-29)",
+      "Barguna (Fire 0.800, 2023-05-07)",
+      "Barisal (Fire 0.785, 2023-04-29)",
+      "Barisal (Fire 0.840, 2023-05-07)",
+      "Bhola (Fire 0.798, 2023-04-29)",
+      "Bhola (Fire 0.834, 2023-05-07)"
+    ],
+    "interpretation": "These district-windows crossed the alarm threshold with no outcome on record. They are UNKNOWN, not false alarms: the truth set names the districts the cited assessments report, and nobody claims to have surveyed all 64. Measuring the false-alarm ratio needs the historical event archive loaded (owner Action 12). The count is the number of alarms the truth set cannot speak to, so it is expected to be large while the truth set is a named list \u2014 it is the size of what this hindcast does not know."
+  },
+  "caveats": [
+    "Reanalysis rather than archived forecast fields: this measures whether the physics track, given the weather that occurred, flags the districts that were hit \u2014 a ceiling on detection, not forecast skill (identical to the other three episodes; the harness has no ECMWF MARS/CDS credential).",
+    "The CNN was not re-run: its input tensor needs Sentinel-1/2, Landsat and ERA5-Land bands over Earth Engine for the historical window.",
+    "The Bangladesh impact was a near-miss outward wind field rather than a direct eye crossing, so a district-centroid wind from a reanalysis grid will under-represent whatever the coast actually experienced \u2014 the same driver-fidelity limit the 2020/2021 cyclone episodes expose, in the opposite direction.",
+    "A district centroid cannot represent Saint Martin's Island (about 8 km\u00b2, 120 km south of the Teknaf mainland): the island took the most severe documented damage in Bangladesh and is not a district.",
+    "The truth set has 4 districts, so the false-alarm denominator stays absent for the same reason as in the other episodes (`absence_means_no_event: false`). Any FAR this episode reports is a reporting boundary, not an operational false-alarm rate."
+  ],
+  "citations": [
+    {
+      "id": "modmr-initial-damage",
+      "citation": "Bangladesh: Cyclone Mocha Humanitarian Response Situation Report, as of 15 May 2023 \u2014 Inter Sector Coordination Group (ISCG) / UN Bangladesh, reporting the Department of Disaster Management (DDM) and Ministry of Disaster Management and Relief (MoDMR) initial damage information.",
+      "url": "https://bangladesh.un.org/en/231958-bangladesh-cyclone-mocha-humanitarian-response-situation-report-15-may-2023",
+      "accessed": "2026-09-18"
+    },
+    {
+      "id": "acaps-mocha",
+      "citation": "Bangladesh and Myanmar: Impact of Cyclone Mocha \u2014 ACAPS Briefing Note, 23 May 2023.",
+      "url": "https://www.acaps.org/fileadmin/Data_Product/Main_media/20230523_acaps_briefing_note_bangladesh_and_myanmar_impact_of_cyclone_mocha_0.pdf",
+      "accessed": "2026-09-18"
+    },
+    {
+      "id": "start-fund-stmartin",
+      "citation": "Briefing Note: Cyclone Mocha, Saint Martin Island, 18 May 2023 \u2014 Start Fund Bangladesh.",
+      "url": "https://reliefweb.int/report/bangladesh/briefing-note-cyclone-mocha-saint-martin-island-18-may-2023",
+      "accessed": "2026-09-18"
+    }
+  ]
+}

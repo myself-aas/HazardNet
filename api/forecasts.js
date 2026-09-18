@@ -8,6 +8,8 @@ import { getForecastStore } from '../backend/forecastStore.js';
 import { parseCsvForecastRow } from '../backend/utils/forecastRow.js';
 import Busboy from 'busboy';
 import { verifyApiKey } from '../backend/utils/apiKeyAuth.js';
+import { clientError } from '../backend/utils/clientError.js';
+import { guardRequest } from '../backend/middleware/serverlessGuard.js';
 
 /**
  * Vercel expects an async function with (req, res) signature.
@@ -19,6 +21,7 @@ export default async function handler(req, res) {
     res.status(405).json({ error: 'Method Not Allowed' });
     return;
   }
+  if (guardRequest(req, res, { bucket: 'read' })) return;
 
   // Timing-safe Bearer key verification (SEC-06); fail-closed when unset.
   const auth = verifyApiKey(req);
@@ -61,7 +64,7 @@ export default async function handler(req, res) {
           const predictionDate = results[0].prediction_date;
           await getForecastStore().replaceForecastsForPredictionDate(predictionDate, results);
         } catch (dbErr) {
-          res.status(500).json({ error: 'DB error', detail: dbErr.message });
+          clientError(res, dbErr, { scope: 'api/forecasts', fallback: 'Forecast store write failed' });
           return;
         }
         // Generate advisories
@@ -90,7 +93,7 @@ export default async function handler(req, res) {
         });
       })
       .on('error', (err) => {
-        res.status(500).json({ error: 'CSV parse error', detail: err.message });
+        clientError(res, err, { scope: 'api/forecasts', fallback: 'CSV upload could not be processed' });
       });
   });
 

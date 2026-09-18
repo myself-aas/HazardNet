@@ -131,7 +131,10 @@ describe('GET /api/v1/forecasts/bulk (Vercel)', () => {
     }));
     const res = await invoke(bulkHandler, { query: { horizon: '7_days' } });
     expect(res.statusCode).toBe(500);
-    expect(res.body.error).toBe('store down');
+    // SEC-13: 5xx responses must never echo the underlying error text back to
+    // the client — it leaks driver/host detail. The message is logged instead.
+    expect(res.body.error).toBe('Internal server error');
+    expect(JSON.stringify(res.body)).not.toContain('store down');
   });
 });
 
@@ -172,12 +175,12 @@ describe('GET /api/v1/forecasts/history (Vercel)', () => {
 });
 
 describe('GET /api/v1/forecasts/metadata (Vercel)', () => {
-  test('serves prediction date, ingestion stamp, and pipeline provenance', async () => {
+  test('serves prediction date, ingestion stamp, and Kaggle provenance', async () => {
     const res = await invoke(metadataHandler);
     expect(res.statusCode).toBe(200);
     expect(res.body.prediction_date).toBe('2026-09-12');
     expect(res.body.ingestion_timestamp).toBe('2026-09-12T02:00:00Z');
-    expect(res.body.pipeline_source).toContain('daily_forecast.yml');
+    expect(res.body.notebook_source).toContain('hazardnet-auto-forecast-pipeline');
     expect(res.body.datasets).toHaveLength(2);
     expect(res.headers['cache-control']).toContain('no-store');
   });

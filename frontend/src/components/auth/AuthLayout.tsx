@@ -47,7 +47,7 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({ mode, title, subtitle, c
       {/* slow amber→emerald shimmer, disabled under prefers-reduced-motion */}
       <motion.div
         aria-hidden="true"
-        className="h-1 bg-gradient-to-r from-[#f9a825] via-amber-300 to-emerald-400 bg-[length:200%_100%]"
+        className="h-1 bg-gradient-to-r from-nasa-red via-amber-300 to-emerald-400 bg-[length:200%_100%]"
         animate={reduceMotion ? undefined : { backgroundPosition: ['0% 0%', '200% 0%'] }}
         transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}
       />
@@ -62,7 +62,7 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({ mode, title, subtitle, c
         className="w-full max-w-md"
       >
         <div className="rounded-3xl border border-slate-200/90 bg-white p-6 sm:p-8 shadow-md sm:shadow-xl space-y-6 relative overflow-hidden">
-          <div aria-hidden="true" className="absolute top-0 left-0 w-full h-1 bg-[#f9a825]" />
+          <div aria-hidden="true" className="absolute top-0 left-0 w-full h-1 bg-nasa-red" />
           <header className="space-y-1.5">
               {/*
                 h1, not h2: this is the page-level heading of a standalone

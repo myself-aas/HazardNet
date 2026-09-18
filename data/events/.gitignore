@@ -1,0 +1,3 @@
+# The historical event archive is not redistributed by this repository — see README.md
+# in this directory. A deployment that has the export drops it here and rebuilds.
+*.json

@@ -1,10 +1,20 @@
-# HazardNet crawler policy — blog articles are the SEO surface.
+# https://www.hazardnet.live/robots.txt
 User-agent: *
 Allow: /
-Disallow: /dashboard
-Disallow: /dashboard/
-Disallow: /settings
-Disallow: /u/
-Disallow: /auth/
 
-Sitemap: https://hazardnet.live/sitemap.xml
+# Authenticated app surfaces and account flows: nothing here is useful in
+# search results, and crawling them wastes budget (the pages carry
+# X-Robots-Tag / <meta name="robots" content="noindex"> as well).
+Disallow: /dashboard
+Disallow: /settings
+Disallow: /upload
+Disallow: /auth/
+Disallow: /u/
+Disallow: /update-password
+Disallow: /set-password
+Disallow: /forgot-password
+
+# NOTE: /login and /signup are intentionally crawlable — they are noindex and
+# the tag can only be honoured if a crawler is allowed to fetch the page.
+
+Sitemap: https://www.hazardnet.live/sitemap.xml

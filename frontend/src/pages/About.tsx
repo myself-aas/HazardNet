@@ -27,7 +27,7 @@ export const About: React.FC = () => {
         </div>
         
         <h1 className="text-2xl md:text-3xl font-brand font-black text-slate-900 tracking-tight">
-          Hazard<span className="text-[#d08305]">Net</span> Agro-Climatic Intelligence Platform
+          Hazard<span className="text-nasa-red-shade">Net</span> Agro-Climatic Intelligence Platform
         </h1>
         <p className="text-xs md:text-sm text-slate-600 leading-relaxed max-w-3xl">
           Automated multi-hazard early warning, 15-band satellite feature classification, physical severity quantification, and offline-capable edge computing for agricultural extension across Bangladesh.
@@ -46,7 +46,7 @@ export const About: React.FC = () => {
           <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
             <Link
               to="/download"
-              className="px-4 py-2 rounded-xl bg-[#f9a825] hover:bg-[#d08305] text-slate-900 text-xs font-bold transition-all shadow-xs inline-block"
+              className="px-4 py-2 rounded-xl bg-nasa-red hover:bg-nasa-red-shade text-slate-900 text-xs font-bold transition-all shadow-xs inline-block"
             >
               Download Offline Software
             </Link>
@@ -54,7 +54,7 @@ export const About: React.FC = () => {
 
           <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
             <a
-              href="https://github.com/hazardnet/hazardnet-ai"
+              href="https://github.com/myself-aas/HazardNet"
               target="_blank"
               rel="noopener noreferrer"
               className="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold border border-slate-200 hover:text-slate-900 hover:bg-slate-200 transition-all inline-block"
@@ -194,8 +194,8 @@ export const About: React.FC = () => {
         </p>
         <div className="p-4 bg-slate-900 text-slate-100 rounded-xl font-mono text-xs select-all overflow-x-auto border border-slate-800">
           {`# Clone the HazardNet GitHub Repository
-git clone https://github.com/hazardnet/hazardnet-ai.git
-cd hazardnet-ai
+git clone https://github.com/myself-aas/HazardNet.git
+cd HazardNet
 
 # Start the local development server
 npm install

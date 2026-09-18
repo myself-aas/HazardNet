@@ -1,32 +1,172 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Breadcrumbs from '../components/Breadcrumbs';
 import MaterialIcon from '../components/MaterialIcon';
-import { SuccessIcon, SendIcon } from '../components/ui/animated-state-icons';
+import { SendIcon } from '../components/ui/animated-state-icons';
+
+/**
+ * Contact, incident reporting and API access.
+ *
+ * HONESTY NOTE (audit UX-10 / UX-12 / SEO-13, 2026-09-17)
+ * ------------------------------------------------------
+ * This page used to run every form through `setTimeout(600)` and then print
+ * "Your report … has been logged in the HazardNet validation queue" — nothing
+ * was sent anywhere or stored, and the API-request and general-inquiry tabs did
+ * not even capture their fields (their inputs were uncontrolled). The sidebar
+ * also advertised a non-existent "alert@hazardnet.ai" emergency queue, a
+ * research-laboratory street address and a "<2 hours" response SLA.
+ *
+ * Now: the form builds a complete, prefilled report and hands it to a channel
+ * that actually exists — a public GitHub issue (trackable, which a "validation
+ * queue" never was) or the maintainer mailbox. Nothing claims to have been sent
+ * until the visitor has actually opened one of those channels.
+ */
+
+/** Project support mailbox. Override per-deployment with VITE_CONTACT_EMAIL. */
+const CONTACT_EMAIL: string =
+  (import.meta.env.VITE_CONTACT_EMAIL as string | undefined)?.trim() || 'shuvoasifahmed@gmail.com';
+
+const REPO = 'https://github.com/myself-aas/HazardNet';
+
+type FormKind = 'report' | 'api' | 'general';
+
+interface FormState {
+  district: string;
+  hazardType: string;
+  severityObserved: string;
+  reporterName: string;
+  contactEmail: string;
+  comments: string;
+  institution: string;
+  institutionEmail: string;
+  requestRate: string;
+  fullName: string;
+  email: string;
+  message: string;
+}
+
+const INITIAL: FormState = {
+  district: 'sylhet',
+  hazardType: 'Flash Flood',
+  severityObserved: 'High',
+  reporterName: '',
+  contactEmail: '',
+  comments: '',
+  institution: '',
+  institutionEmail: '',
+  requestRate: '1000',
+  fullName: '',
+  email: '',
+  message: '',
+};
+
+const SUBJECTS: Record<FormKind, string> = {
+  report: 'Ground-truth observation report',
+  api: 'API access request',
+  general: 'General inquiry',
+};
+
+function buildBody(kind: FormKind, form: FormState): string {
+  if (kind === 'report') {
+    return [
+      `District: ${form.district}`,
+      `Observed hazard: ${form.hazardType}`,
+      `Observed severity: ${form.severityObserved}`,
+      `Reporter: ${form.reporterName}`,
+      `Reply contact: ${form.contactEmail}`,
+      '',
+      'Field observations:',
+      form.comments,
+      '',
+      `Environment: ${typeof navigator !== 'undefined' ? navigator.userAgent : 'unknown'}`,
+      `Page: ${typeof window !== 'undefined' ? window.location.href : ''}`,
+      `Submitted: ${new Date().toISOString()}`,
+    ].join('\n');
+  }
+  if (kind === 'api') {
+    return [
+      `Institution: ${form.institution}`,
+      `Institutional email: ${form.institutionEmail}`,
+      `Requested rate: ${form.requestRate} requests/day`,
+      '',
+      'Use case:',
+      form.message,
+      '',
+      `Submitted: ${new Date().toISOString()}`,
+    ].join('\n');
+  }
+  return [
+    `Name: ${form.fullName}`,
+    `Email: ${form.email}`,
+    '',
+    form.message,
+    '',
+    `Submitted: ${new Date().toISOString()}`,
+  ].join('\n');
+}
 
 export const Contact: React.FC = () => {
-  const [activeForm, setActiveForm] = useState<'report' | 'api' | 'general'>('report');
-  
-  // Incident Report Form State
-  const [district, setDistrict] = useState('sylhet');
-  const [hazardType, setHazardType] = useState('Flash Flood');
-  const [severityObserved, setSeverityObserved] = useState('High');
-  const [comments, setComments] = useState('');
-  const [reporterName, setReporterName] = useState('');
-  const [contactEmail, setContactEmail] = useState('');
-  const [submittedMessage, setSubmittedMessage] = useState<string | null>(null);
-  const [isSending, setIsSending] = useState(false);
+  const [activeForm, setActiveForm] = useState<FormKind>('report');
+  const [form, setForm] = useState<FormState>(INITIAL);
+  const [prepared, setPrepared] = useState<{ kind: FormKind; subject: string; body: string } | null>(null);
+  const [errors, setErrors] = useState<string[]>([]);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSending(true);
-    setTimeout(() => {
-      setIsSending(false);
-      setSubmittedMessage(`Thank you, ${reporterName || 'Responder'}. Your report for ${district.toUpperCase()} (${hazardType}) has been logged in the HazardNet validation queue.`);
-      setComments('');
-    }, 600); // Wait for the send animation
+  const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
+    setForm((prev) => ({ ...prev, [key]: value }));
+
+  const issueUrl = useMemo(() => {
+    if (!prepared) return REPO;
+    const params = new URLSearchParams({
+      title: `[${prepared.subject}] `,
+      body: prepared.body,
+      labels: prepared.kind === 'report' ? 'ground-truth' : 'inquiry',
+    });
+    return `${REPO}/issues/new?${params.toString()}`;
+  }, [prepared]);
+
+  const mailtoUrl = useMemo(() => {
+    if (!prepared) return `mailto:${CONTACT_EMAIL}`;
+    return `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(`[HazardNet] ${prepared.subject}`)}&body=${encodeURIComponent(prepared.body)}`;
+  }, [prepared]);
+
+  /** Validation summary (UI-11): explicit messages, announced to screen readers. */
+  const validate = (kind: FormKind): string[] => {
+    const problems: string[] = [];
+    if (kind === 'report') {
+      if (!form.reporterName.trim()) problems.push('Add your name or role so the report can be attributed.');
+      if (!form.comments.trim()) problems.push('Describe what you observed on the ground.');
+      if (!form.contactEmail.trim()) problems.push('Add a reply address (email or phone).');
+    }
+    if (kind === 'api') {
+      if (!form.institution.trim()) problems.push('Institution or organisation name is required.');
+      if (!form.institutionEmail.trim()) problems.push('Institutional email is required.');
+      if (!form.message.trim()) problems.push('Describe the intended use of the API.');
+    }
+    if (kind === 'general') {
+      if (!form.fullName.trim()) problems.push('Your name is required.');
+      if (!form.email.trim()) problems.push('A reply address is required.');
+      if (!form.message.trim()) problems.push('Write your message.');
+    }
+    return problems;
   };
+
+  const handleSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
+    const problems = validate(activeForm);
+    setErrors(problems);
+    if (problems.length > 0) {
+      setPrepared(null);
+      return;
+    }
+    setPrepared({
+      kind: activeForm,
+      subject: `${SUBJECTS[activeForm]} — ${activeForm === 'report' ? form.district : form.institution || form.fullName}`,
+      body: buildBody(activeForm, form),
+    });
+  };
+
+  const inputClass =
+    'w-full p-2.5 rounded-xl border border-slate-300 bg-slate-50 text-slate-900 font-medium outline-none focus:border-amber-600 focus:ring-2 focus:ring-amber-200';
 
   return (
     <motion.div
@@ -37,344 +177,398 @@ export const Contact: React.FC = () => {
     >
       <Breadcrumbs />
 
-      {/* Header Banner */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-6 md:p-8 shadow-xs space-y-3">
+      <header className="bg-white border border-slate-200 rounded-2xl p-6 md:p-8 shadow-xs space-y-3">
         <div className="flex items-center gap-2">
           <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-50 text-amber-900 border border-amber-200 uppercase tracking-wider">
-            Support & Communications
+            Support &amp; communications
           </span>
-          <span className="text-slate-300">•</span>
-          <span className="text-xs text-slate-500 font-medium">Disaster Hotline & API Access</span>
         </div>
-
         <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">
-          HazardNet Contact, Incident Reporting & API Access
+          Contact, incident reporting &amp; API access
         </h1>
         <p className="text-slate-600 text-xs md:text-sm leading-relaxed max-w-3xl">
-          Report ground-truth disaster observations, request academic API keys, or connect with our remote sensing researchers and emergency response liaisons.
+          Ground-truth reports are how HazardNet improves. Describe the district, hazard and what you saw; the form
+          prepares a complete report you can file publicly (GitHub, so it can be tracked) or send by email.
         </p>
-      </div>
+        <p
+          role="note"
+          className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-[11px] font-semibold leading-relaxed text-rose-900"
+        >
+          This is not an emergency channel and it is not monitored around the clock. In an emergency call{' '}
+          <strong>999</strong>, and follow BMD, FFWC, DDM and local administration instructions.
+        </p>
+      </header>
 
-      {/* Contact Form Container & Emergency Sidebar */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
-        {/* Main Form Box */}
         <div className="lg:col-span-2 bg-white border border-slate-200 rounded-2xl p-6 md:p-8 shadow-xs space-y-6">
-          
-          {/* Form Switcher */}
           <div className="flex items-center gap-2 border-b border-slate-200 pb-3 text-xs font-bold overflow-x-auto scrollbar-none">
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => { setActiveForm('report'); setSubmittedMessage(null); }}
-              className={`px-3.5 py-1.5 rounded-xl transition-all whitespace-nowrap cursor-pointer ${
-                activeForm === 'report'
-                  ? 'bg-amber-500 text-slate-900 font-bold shadow-xs'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900'
-              }`}
-            >
-              Ground-Truth Incident Report
-            </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => { setActiveForm('api'); setSubmittedMessage(null); }}
-              className={`px-3.5 py-1.5 rounded-xl transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
-                activeForm === 'api'
-                  ? 'bg-amber-500 text-slate-900 font-bold shadow-xs'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900'
-              }`}
-            >
-              <MaterialIcon name="key" className="text-sm" />
-              <span>Academic API Key Request</span>
-            </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => { setActiveForm('general'); setSubmittedMessage(null); }}
-              className={`px-3.5 py-1.5 rounded-xl transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
-                activeForm === 'general'
-                  ? 'bg-amber-500 text-slate-900 font-bold shadow-xs'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900'
-              }`}
-            >
-              <MaterialIcon name="mail" className="text-sm" />
-              <span>General Inquiries</span>
-            </motion.button>
+            {(
+              [
+                ['report', 'Ground-truth report'],
+                ['api', 'API access request'],
+                ['general', 'General inquiry'],
+              ] as Array<[FormKind, string]>
+            ).map(([kind, label]) => (
+              <button
+                key={kind}
+                type="button"
+                aria-pressed={activeForm === kind}
+                onClick={() => {
+                  setActiveForm(kind);
+                  setPrepared(null);
+                  setErrors([]);
+                }}
+                className={`px-3.5 py-1.5 rounded-xl transition-all whitespace-nowrap cursor-pointer ${
+                  activeForm === kind
+                    ? 'bg-amber-500 text-slate-900 font-bold shadow-xs'
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
           </div>
 
-          {/* Submitted Message Box */}
-          <AnimatePresence>
-            {submittedMessage && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs flex items-center justify-between gap-3"
-              >
-                <div className="flex items-center gap-2">
-                  <SuccessIcon size={24} duration={0} isState={true} className="text-amber-600" />
-                  <span>{submittedMessage}</span>
-                </div>
-                <button onClick={() => setSubmittedMessage(null)} className="font-bold text-slate-500 hover:text-slate-900 cursor-pointer">
-                  ✕
-                </button>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          {errors.length > 0 && (
+            <div role="alert" className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-xs text-rose-900">
+              <p className="font-bold">Please fix the following before continuing:</p>
+              <ul className="mt-1 list-disc pl-5">
+                {errors.map((problem) => (
+                  <li key={problem}>{problem}</li>
+                ))}
+              </ul>
+            </div>
+          )}
 
-          <AnimatePresence mode="wait">
-            {/* Form 1: Ground-Truth Incident Report */}
+          {prepared && (
+            <div role="status" className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-xs text-emerald-950 space-y-2">
+              <p className="font-bold">Your report is prepared — choose how to send it:</p>
+              <p className="leading-relaxed">
+                Nothing has been submitted yet. HazardNet has no server-side inbox for these forms, so pick a channel
+                below: the GitHub issue is public and trackable, the email opens in your mail client. Both are prefilled
+                with everything you typed.
+              </p>
+              <div className="flex flex-wrap gap-2 pt-1">
+                <a
+                  href={issueUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="rounded-xl bg-slate-900 px-4 py-2 font-bold text-white hover:bg-slate-700"
+                >
+                  Open a prefilled GitHub issue
+                </a>
+                <a
+                  href={mailtoUrl}
+                  className="rounded-xl border border-slate-300 bg-white px-4 py-2 font-bold text-slate-800 hover:bg-slate-50"
+                >
+                  Send by email instead
+                </a>
+              </div>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-4 text-xs" noValidate>
             {activeForm === 'report' && (
-              <motion.form
-                key="report"
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 10 }}
-                transition={{ duration: 0.2 }}
-                onSubmit={handleSubmit}
-                className="space-y-4 text-xs"
-              >
+              <>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block font-bold text-slate-900 mb-1">Target District:</label>
+                    <label htmlFor="district" className="block font-bold text-slate-900 mb-1">
+                      District or upazila
+                    </label>
                     <select
-                      value={district}
-                      onChange={(e) => setDistrict(e.target.value)}
-                      className="w-full p-2.5 rounded-xl border border-slate-300 bg-slate-50 text-slate-900 font-medium outline-none focus:border-amber-600"
+                      id="district"
+                      value={form.district}
+                      onChange={(e) => set('district', e.target.value)}
+                      className={inputClass}
                     >
-                      <option value="sylhet">Sylhet (Haor Basin)</option>
-                      <option value="sunamganj">Sunamganj (Haor Basin)</option>
-                      <option value="kurigram">Kurigram (Jamuna Riverine)</option>
-                      <option value="satkhira">Satkhira (Coastal Surge)</option>
-                      <option value="rajshahi">Rajshahi (Barind Drought)</option>
-                      <option value="panchagarh">Panchagarh (Sub-Himalayan Cold Wave)</option>
-                      <option value="coxsbazar">Cox's Bazar (Coastal Cyclone)</option>
+                      {['sylhet', 'sunamganj', 'kurigram', 'satkhira', 'rajshahi', 'panchagarh', 'coxsbazar', 'other'].map(
+                        (d) => (
+                          <option key={d} value={d}>
+                            {d === 'other' ? 'Other / not listed' : d.charAt(0).toUpperCase() + d.slice(1)}
+                          </option>
+                        )
+                      )}
                     </select>
                   </div>
-
                   <div>
-                    <label className="block font-bold text-slate-900 mb-1">Observed Hazard Type:</label>
+                    <label htmlFor="hazardType" className="block font-bold text-slate-900 mb-1">
+                      Observed hazard
+                    </label>
                     <select
-                      value={hazardType}
-                      onChange={(e) => setHazardType(e.target.value)}
-                      className="w-full p-2.5 rounded-xl border border-slate-300 bg-slate-50 text-slate-900 font-medium outline-none focus:border-amber-600"
+                      id="hazardType"
+                      value={form.hazardType}
+                      onChange={(e) => set('hazardType', e.target.value)}
+                      className={inputClass}
                     >
-                      <option value="Flash Flood">Flash Flood</option>
-                      <option value="Monsoon Flood">Monsoon Riverine Flood</option>
-                      <option value="Tropical Cyclone">Tropical Cyclone & Storm Surge</option>
-                      <option value="Drought">Agricultural Drought</option>
-                      <option value="Cold Wave">Winter Cold Wave</option>
-                      <option value="Severe Storm">Kalbaishakhi Squall</option>
+                      {[
+                        'Flash Flood',
+                        'Monsoon Flood',
+                        'Tropical Cyclone',
+                        'Drought',
+                        'Cold Wave',
+                        'Heat Wave',
+                        'Severe Local Storm',
+                        'Fire',
+                      ].map((h) => (
+                        <option key={h} value={h}>
+                          {h}
+                        </option>
+                      ))}
                     </select>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block font-bold text-slate-900 mb-1">Your Name / Agent Title:</label>
+                    <label htmlFor="severityObserved" className="block font-bold text-slate-900 mb-1">
+                      Observed severity vs the forecast
+                    </label>
+                    <select
+                      id="severityObserved"
+                      value={form.severityObserved}
+                      onChange={(e) => set('severityObserved', e.target.value)}
+                      className={inputClass}
+                    >
+                      <option value="Much lower">Much lower than forecast</option>
+                      <option value="Lower">Lower than forecast</option>
+                      <option value="Matches">Matches the forecast</option>
+                      <option value="High">Higher than forecast</option>
+                      <option value="Much higher">Much higher than forecast</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label htmlFor="reporterName" className="block font-bold text-slate-900 mb-1">
+                      Your name or role
+                    </label>
                     <input
+                      id="reporterName"
                       type="text"
-                      required
-                      value={reporterName}
-                      onChange={(e) => setReporterName(e.target.value)}
-                      placeholder="e.g. Ashikur Rahman (Extension Officer)"
-                      className="w-full p-2.5 rounded-xl border border-slate-300 bg-slate-50 text-slate-900 font-medium outline-none focus:border-amber-600"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block font-bold text-slate-900 mb-1">Contact Email / Phone:</label>
-                    <input
-                      type="email"
-                      required
-                      value={contactEmail}
-                      onChange={(e) => setContactEmail(e.target.value)}
-                      placeholder="officer@dae.gov.bd"
-                      className="w-full p-2.5 rounded-xl border border-slate-300 bg-slate-50 text-slate-900 font-medium outline-none focus:border-amber-600"
+                      value={form.reporterName}
+                      onChange={(e) => set('reporterName', e.target.value)}
+                      placeholder="e.g. Extension Officer, Sunamganj"
+                      className={inputClass}
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block font-bold text-slate-900 mb-1">Field Observations & Water Depth:</label>
-                  <textarea
-                    rows={3}
-                    required
-                    value={comments}
-                    onChange={(e) => setComments(e.target.value)}
-                    placeholder="Describe flooded crop acreage, polder breach status, or water depth over danger level..."
-                    className="w-full p-2.5 rounded-xl border border-slate-300 bg-slate-50 text-slate-900 font-medium outline-none focus:border-amber-600"
+                  <label htmlFor="contactEmail" className="block font-bold text-slate-900 mb-1">
+                    Reply address (email or phone)
+                  </label>
+                  <input
+                    id="contactEmail"
+                    type="text"
+                    value={form.contactEmail}
+                    onChange={(e) => set('contactEmail', e.target.value)}
+                    placeholder="officer@dae.gov.bd"
+                    className={inputClass}
                   />
                 </div>
 
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  type="submit"
-                  disabled={isSending}
-                  className="px-6 py-3 rounded-xl bg-[#f9a825] text-slate-900 font-bold transition-all shadow-xs flex items-center gap-2 text-xs hover:bg-[#d08305] cursor-pointer"
-                >
-                  <SendIcon size={18} duration={0} isState={isSending} />
-                  <span>{isSending ? 'Sending...' : 'Submit Ground-Truth Observation'}</span>
-                </motion.button>
-              </motion.form>
+                <div>
+                  <label htmlFor="comments" className="block font-bold text-slate-900 mb-1">
+                    What did you observe?
+                  </label>
+                  <textarea
+                    id="comments"
+                    rows={4}
+                    value={form.comments}
+                    onChange={(e) => set('comments', e.target.value)}
+                    placeholder="Flooded crop acreage, water depth over danger level, dates, and how it compared with what the district card showed."
+                    className={inputClass}
+                  />
+                </div>
+              </>
             )}
 
-            {/* Form 2: API Key Request */}
             {activeForm === 'api' && (
-              <motion.form
-                key="api"
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 10 }}
-                transition={{ duration: 0.2 }}
-                onSubmit={handleSubmit}
-                className="space-y-4 text-xs"
-              >
+              <>
                 <div>
-                  <label className="block font-bold text-slate-900 mb-1">Institution / Organization Name:</label>
+                  <label htmlFor="institution" className="block font-bold text-slate-900 mb-1">
+                    Institution or organisation
+                  </label>
                   <input
+                    id="institution"
                     type="text"
-                    required
-                    placeholder="e.g. Bangladesh University of Engineering & Technology (BUET)"
-                    className="w-full p-2.5 rounded-xl border border-slate-300 bg-slate-50 text-slate-900 font-medium outline-none focus:border-amber-600"
+                    value={form.institution}
+                    onChange={(e) => set('institution', e.target.value)}
+                    placeholder="e.g. Bangladesh University of Engineering & Technology"
+                    className={inputClass}
                   />
                 </div>
-
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block font-bold text-slate-900 mb-1">Institutional Email:</label>
+                    <label htmlFor="institutionEmail" className="block font-bold text-slate-900 mb-1">
+                      Institutional email
+                    </label>
                     <input
+                      id="institutionEmail"
                       type="email"
-                      required
+                      value={form.institutionEmail}
+                      onChange={(e) => set('institutionEmail', e.target.value)}
                       placeholder="researcher@buet.ac.bd"
-                      className="w-full p-2.5 rounded-xl border border-slate-300 bg-slate-50 text-slate-900 font-medium outline-none focus:border-amber-600"
+                      className={inputClass}
                     />
                   </div>
-
                   <div>
-                    <label className="block font-bold text-slate-900 mb-1">Estimated Request Rate:</label>
-                    <select className="w-full p-2.5 rounded-xl border border-slate-300 bg-slate-50 text-slate-900 font-medium outline-none focus:border-amber-600">
-                      <option value="1000">1,000 req / day (Academic Free)</option>
-                      <option value="10000">10,000 req / day (Government/NGO)</option>
-                      <option value="unlimited">Custom Pipeline (Dedicated Server)</option>
+                    <label htmlFor="requestRate" className="block font-bold text-slate-900 mb-1">
+                      Expected request rate
+                    </label>
+                    <select
+                      id="requestRate"
+                      value={form.requestRate}
+                      onChange={(e) => set('requestRate', e.target.value)}
+                      className={inputClass}
+                    >
+                      <option value="1000">up to 1,000 requests / day</option>
+                      <option value="10000">up to 10,000 requests / day</option>
+                      <option value="custom">Custom pipeline / bulk archive</option>
                     </select>
                   </div>
                 </div>
-
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  type="submit"
-                  disabled={isSending}
-                  className="px-6 py-3 rounded-xl bg-[#f9a825] text-slate-900 font-bold transition-all shadow-xs flex items-center gap-2 text-xs hover:bg-[#d08305] cursor-pointer"
-                >
-                  <SendIcon size={18} duration={0} isState={isSending} />
-                  <span>{isSending ? 'Sending...' : 'Request API Key Access'}</span>
-                </motion.button>
-              </motion.form>
-            )}
-
-            {/* Form 3: General Inquiry */}
-            {activeForm === 'general' && (
-              <motion.form
-                key="general"
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 10 }}
-                transition={{ duration: 0.2 }}
-                onSubmit={handleSubmit}
-                className="space-y-4 text-xs"
-              >
                 <div>
-                  <label className="block font-bold text-slate-900 mb-1">Full Name:</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="Your Name"
-                    className="w-full p-2.5 rounded-xl border border-slate-300 bg-slate-50 text-slate-900 font-medium outline-none focus:border-amber-600"
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-bold text-slate-900 mb-1">Email Address:</label>
-                  <input
-                    type="email"
-                    required
-                    placeholder="you@example.com"
-                    className="w-full p-2.5 rounded-xl border border-slate-300 bg-slate-50 text-slate-900 font-medium outline-none focus:border-amber-600"
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-bold text-slate-900 mb-1">Message Details:</label>
+                  <label htmlFor="message" className="block font-bold text-slate-900 mb-1">
+                    Intended use
+                  </label>
                   <textarea
+                    id="message"
                     rows={4}
-                    required
-                    placeholder="Inquire about dataset licensing, paper code reproduction, or partnership opportunities..."
-                    className="w-full p-2.5 rounded-xl border border-slate-300 bg-slate-50 text-slate-900 font-medium outline-none focus:border-amber-600"
+                    value={form.message}
+                    onChange={(e) => set('message', e.target.value)}
+                    placeholder="What will you query, how often, and will derived outputs be published?"
+                    className={inputClass}
                   />
                 </div>
-
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  type="submit"
-                  disabled={isSending}
-                  className="px-6 py-3 rounded-xl bg-[#f9a825] text-slate-900 font-bold transition-all shadow-xs flex items-center gap-2 text-xs hover:bg-[#d08305] cursor-pointer"
-                >
-                  <SendIcon size={18} duration={0} isState={isSending} />
-                  <span>{isSending ? 'Sending...' : 'Send Message'}</span>
-                </motion.button>
-              </motion.form>
+              </>
             )}
-          </AnimatePresence>
 
+            {activeForm === 'general' && (
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="fullName" className="block font-bold text-slate-900 mb-1">
+                      Full name
+                    </label>
+                    <input
+                      id="fullName"
+                      type="text"
+                      value={form.fullName}
+                      onChange={(e) => set('fullName', e.target.value)}
+                      className={inputClass}
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="email" className="block font-bold text-slate-900 mb-1">
+                      Reply address
+                    </label>
+                    <input
+                      id="email"
+                      type="email"
+                      value={form.email}
+                      onChange={(e) => set('email', e.target.value)}
+                      placeholder="you@example.com"
+                      className={inputClass}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label htmlFor="generalMessage" className="block font-bold text-slate-900 mb-1">
+                    Message
+                  </label>
+                  <textarea
+                    id="generalMessage"
+                    rows={4}
+                    value={form.message}
+                    onChange={(e) => set('message', e.target.value)}
+                    placeholder="Dataset licensing, reproducing paper results, partnership questions — anything."
+                    className={inputClass}
+                  />
+                </div>
+              </>
+            )}
+
+            <button
+              type="submit"
+              className="px-6 py-3 rounded-xl bg-nasa-red text-slate-900 font-bold transition-all shadow-xs flex items-center gap-2 text-xs hover:bg-nasa-red-shade cursor-pointer"
+            >
+              <SendIcon size={18} duration={0} isState={false} />
+              <span>Prepare report</span>
+            </button>
+            <p className="text-[11px] leading-relaxed text-slate-500">
+              The button prepares your report and shows sending options. It does not transmit anything by itself, and
+              HazardNet does not store these forms on its servers.
+            </p>
+          </form>
         </div>
 
-        {/* Emergency Info Sidebar */}
-        <div className="space-y-6">
+        <aside className="space-y-6">
           <div className="bg-white text-slate-900 rounded-2xl p-6 shadow-xs space-y-4 border border-slate-200">
-            <h3 className="font-extrabold text-sm uppercase tracking-wider font-mono text-slate-900">
-              Emergency Hotlines
-            </h3>
+            <h2 className="font-extrabold text-sm uppercase tracking-wider font-mono text-slate-900">
+              Official hotlines
+            </h2>
 
             <div className="space-y-3 text-xs">
-              <motion.div whileHover={{ scale: 1.02 }} className="p-3 bg-amber-50 rounded-xl border border-amber-200 space-y-1">
+              <div className="p-3 bg-rose-50 rounded-xl border border-rose-200 space-y-1">
+                <span className="font-bold text-rose-900 block">National emergency service</span>
+                <p className="font-mono text-sm font-bold text-rose-800">📞 999</p>
+              </div>
+              <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 space-y-1">
                 <span className="font-bold text-amber-900 block">Department of Agricultural Extension (DAE)</span>
                 <p className="font-mono text-sm font-bold text-amber-800">📞 16123</p>
-              </motion.div>
-
-              <motion.div whileHover={{ scale: 1.02 }} className="p-3 bg-amber-50 rounded-xl border border-amber-200 space-y-1">
-                <span className="font-bold text-amber-900 block">National Disaster Early Warning Helpline</span>
+              </div>
+              <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 space-y-1">
+                <span className="font-bold text-amber-900 block">Disaster management helpline</span>
                 <p className="font-mono text-sm font-bold text-amber-800">📞 1090</p>
-              </motion.div>
-
-              <motion.div whileHover={{ scale: 1.02 }} className="p-3 bg-amber-50 rounded-xl border border-amber-200 space-y-1">
-                <span className="font-bold text-amber-900 block">HazardNet Emergency Data Queue</span>
-                <p className="font-mono text-xs text-amber-800">alert@hazardnet.ai</p>
-              </motion.div>
+              </div>
             </div>
           </div>
 
           <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs space-y-3 text-xs text-slate-600">
-            <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2">
-              <MaterialIcon name="location_on" className="text-amber-800" /> Research & Data Center
-            </h3>
-            <p>
-              HazardNet Research Laboratory<br />
-              SPARRSO & BUET GIS Research Wing<br />
-              Agargaon, Dhaka-1207, Bangladesh
+            <h2 className="font-bold text-slate-900 text-sm flex items-center gap-2">
+              <MaterialIcon name="hub" className="text-amber-800" /> Where reports go
+            </h2>
+            <p className="leading-relaxed">
+              HazardNet is an independent project without a staffed office. Reports are filed on the public issue
+              tracker or emailed to the maintainers, and corrections to thresholds are recorded in the same repository
+              as the code — so changes can be traced.
             </p>
-            <div className="pt-2 border-t border-slate-200 font-mono text-[11px] text-slate-500">
-              Response Time: &lt;2 hours for field incidents
-            </div>
+            <ul className="space-y-1.5">
+              <li>
+                <a
+                  className="font-bold text-amber-700 hover:text-amber-900 underline underline-offset-4"
+                  href={`${REPO}/issues`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Public issue tracker
+                </a>
+              </li>
+              <li>
+                <a className="font-bold text-amber-700 hover:text-amber-900 underline underline-offset-4" href={mailtoUrl}>
+                  {CONTACT_EMAIL}
+                </a>
+              </li>
+              <li>
+                <a className="font-bold text-amber-700 hover:text-amber-900 underline underline-offset-4" href="/.well-known/security.txt">
+                  Security disclosure policy
+                </a>
+              </li>
+            </ul>
           </div>
-        </div>
-
+        </aside>
       </div>
 
+      <p className="text-[11px] text-slate-500">
+        HazardNet is decision support, not an official warning service. See the{' '}
+        <a className="font-bold text-amber-700 hover:text-amber-900" href="/methodology">
+          methodology
+        </a>{' '}
+        and{' '}
+        <a className="font-bold text-amber-700 hover:text-amber-900" href="/data-sources">
+          data sources
+        </a>{' '}
+        pages for scope and limitations.
+      </p>
     </motion.div>
   );
 };

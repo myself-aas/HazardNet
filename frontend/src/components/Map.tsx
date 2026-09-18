@@ -44,7 +44,7 @@ const Map: React.FC<MapProps> = ({
       {!isFullScreen && (
         <div className="bg-white border border-slate-200 p-1.5 rounded-2xl flex items-center justify-between gap-2 text-xs shadow-xs text-slate-700">
           <div className="flex items-center gap-1.5 px-3 py-1 font-semibold text-slate-900">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#f9a825] animate-pulse"></span>
+            <span className="w-2.5 h-2.5 rounded-full bg-nasa-red animate-pulse"></span>
             <span>GIS Visualization Engine</span>
           </div>
 
@@ -53,7 +53,7 @@ const Map: React.FC<MapProps> = ({
               onClick={() => setMapMode('leaflet')}
               className={`px-3 py-1.5 rounded-lg font-bold transition-all flex items-center gap-1.5 ${
                 mapMode === 'leaflet'
-                  ? 'bg-[#f9a825] text-slate-900 shadow-xs'
+                  ? 'bg-nasa-red text-slate-900 shadow-xs'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
@@ -64,7 +64,7 @@ const Map: React.FC<MapProps> = ({
               onClick={() => setMapMode('svg')}
               className={`px-3 py-1.5 rounded-lg font-bold transition-all flex items-center gap-1.5 ${
                 mapMode === 'svg'
-                  ? 'bg-[#f9a825] text-slate-900 shadow-xs'
+                  ? 'bg-nasa-red text-slate-900 shadow-xs'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >

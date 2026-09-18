@@ -7,6 +7,13 @@
 # Scope is deliberately narrow: GitHub Actions only. The npm dependency tree is
 # covered by `npm audit` in the security-audit job (scripts/npm-audit-ci.mjs)
 # with its own accepted-risk expiries, so it is not duplicated here.
+#
+# Re-checked 2026-09-18 (Phase 6): `node scripts/npm-audit-ci.mjs` reports
+# PASS with 14 accepted advisories, every one of them an install-time-only path
+# (dev tooling and transitive build dependencies), and each exception carries an
+# expiry date in audit-exceptions.json. The rationale for not adding an
+# npm-ecosystem entry stands as long as that stays true — if an exception ever
+# covers a *runtime* dependency, add the ecosystem here instead of renewing it.
 version: 2
 updates:
   - package-ecosystem: github-actions

@@ -13,10 +13,10 @@ name: HazardNet Daily Forecast Pipeline
 #                                → frontend/public/data/forecasts-latest.json
 #   commit                       → the website redeploys carrying the new data
 #
-# The Kaggle-backed workflows (forecast-pipeline, hourly_forecast,
-# weekly_forecast, manual_forecast_ingest) were removed entirely on 2026-09-17
-# by owner decision — nothing runs on the Kaggle platform. This GitHub-native
-# pipeline is the single producer: it needs only the GEE service account. See
+# The three Kaggle-backed workflows (forecast-pipeline, hourly_forecast,
+# weekly_forecast) lost their schedules on 2026-09-16 and are dispatch-only
+# legacy: they need a live Kaggle token + kernel and produced red runs for days
+# while this path needed only the GEE service account. See
 # docs/mlops/ARCHITECTURE.md ("Why this is better than the all-Kaggle setup").
 #
 # Delivery is the committed snapshot by default (the production deployment
@@ -38,16 +38,16 @@ permissions:
   contents: write # commits the refreshed CSV + snapshot
 
 env:
-  SNAPSHOT_SOURCE: 'github-actions: scripts/auto_forecast.py (GEE + Open-Meteo + TFLite)'
-  # Only push to an ingest API when one is known to be deployed; otherwise the
-  # generator runs artifact-only and the site is served by the committed
-  # snapshot (see docs/ops/owner-actions.md §2a-bis for the deployment state).
-  PUSH_TO_API: ${{ vars.PUSH_TO_API || 'false' }}
   # Stream Python stdout line-by-line. During the 2026-09-17 zero-rows incident
   # the block-buffered output flushed only at exit, so every "Processing X..."
   # line carried the final-flush timestamp and the real error ordering was
   # unrecoverable from the log.
   PYTHONUNBUFFERED: '1'
+  SNAPSHOT_SOURCE: 'github-actions: scripts/auto_forecast.py (GEE + Open-Meteo + TFLite)'
+  # Only push to an ingest API when one is known to be deployed; otherwise the
+  # generator runs artifact-only and the site is served by the committed
+  # snapshot (see docs/ops/owner-actions.md §2a-bis for the deployment state).
+  PUSH_TO_API: ${{ vars.PUSH_TO_API || 'false' }}
 
 jobs:
   run-forecast:
@@ -67,14 +67,22 @@ jobs:
           cache-dependency-path: scripts/requirements-inference.txt
 
       - name: Set up Node.js
-        # Only for scripts/build_forecast_snapshot.mjs, which has zero npm
-        # dependencies — so this job installs no node_modules at all.
+        # The snapshot/policy scripts have zero npm dependencies, but the content
+        # rebuild below runs the real build (engine -> vite -> prerender) so the
+        # committed content pages and the content index are refreshed together —
+        # see the "Rebuild generated content pages and the content index" step.
         uses: actions/setup-node@v7
         with:
           node-version: '20'
+          cache: 'npm'
 
       - name: Install Optimized Dependencies
         run: pip install -r scripts/requirements-inference.txt
+
+      - name: Install workspace dependencies
+        # Root install: `frontend/` is an npm workspace, so this is what gives the
+        # build below its toolchain (vite, the prerenderer's deps).
+        run: npm ci --no-audit --no-fund
 
       - name: Preflight -- verify required secrets
         shell: bash
@@ -124,19 +132,108 @@ jobs:
         id: publish
         shell: bash
         run: |
+          # --run-report is mandatory: it carries the coverage tally (how many of
+          # the requested district x horizon units were actually produced), the
+          # model provenance and the scene-manifest block (the per-row
+          # dataset_version). Without it a partial run would ship looking complete
+          # — the defect fixed on 2026-09-17 — and a run whose lineage failed would
+          # ship rows that cannot name their inputs (PRODUCT_SPEC §5.8).
           python scripts/publish_forecast_csv.py \
             --csv hazardnet_forecasts_latest.csv \
+            --run-report hazardnet_run_report.json \
             --source "$SNAPSHOT_SOURCE" | tee publish.log
           CHANGED=$(grep -oE 'CHANGED=(true|false)' publish.log | tail -n 1 | cut -d= -f2)
           echo "changed=${CHANGED:-true}" >> "$GITHUB_OUTPUT"
 
-      - name: Validate forecast data
+      - name: Run the alert engine (§1.3 levels, §1.6 gate)
+        id: alerts
+        env:
+          HAZARDNET_API_KEY: ${{ secrets.HAZARDNET_API_KEY }}
+          BACKEND_API_URL: ${{ vars.BACKEND_API_URL }}
+        run: |
+          # The engine lives behind /api/v1/alerts/run (backend/routes/alerts.js):
+          # it assesses the latest stored rows, auto-publishes at or below WATCH, and
+          # queues anything above it for a named duty officer. Nothing above WATCH can
+          # be published by this step, by construction.
+          if [ -z "$HAZARDNET_API_KEY" ] || [ -z "$BACKEND_API_URL" ]; then
+            echo "::notice::alert engine skipped: HAZARDNET_API_KEY (secret) and BACKEND_API_URL (variable) are not both set"
+            exit 0
+          fi
+          # include_alerts: true is load-bearing. Without it the route strips
+          # `batch.alerts` (it answers with `alerts_omitted`) and the snapshot step below
+          # has no rows to read — which is exactly how the first version of this wiring
+          # would have published "no alerts" every night while alerts existed.
+          curl -sS -f -X POST "$BACKEND_API_URL/api/v1/alerts/run" \
+            -H "Authorization: Bearer $HAZARDNET_API_KEY" \
+            -H 'Content-Type: application/json' \
+            -d '{"notify": true, "include_alerts": true}' -o alert-run.json
+          jq -r '"alert engine: rows=" + (.rows|tostring) + " published=" + (.persisted.published|tostring) + " pending_review=" + (.persisted.pending_review|tostring) + " blocked=" + (.persisted.blocked|tostring) + " published_rows=" + ((.published_alerts // [])|length|tostring) + " levels=" + (.batch.counts|tojson)' alert-run.json | tee -a "$GITHUB_STEP_SUMMARY"
+          # Fail here, not later, if the report does not carry the rows the snapshot
+          # needs: a stripped report must never be read as "nothing to publish".
+          jq -e 'has("published_alerts") or has("alerts") or (.batch.alerts | type == "array")' alert-run.json > /dev/null \
+            || { echo "::error::alert run report carries no alert rows (published_alerts/alerts/batch.alerts all absent) — the snapshot cannot be built from it"; exit 1; }"
+
+      - name: Upload the alert run report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: alert-run
+          path: alert-run.json
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Rebuild the alert snapshot (offline fallback for /alerts)
         shell: bash
-        run: python scripts/validate_forecasts.py
+        run: |
+          # The alert page must render when the API is unreachable and on the first
+          # paint of a fresh deploy, so the run's output is committed as a static
+          # snapshot. The builder only carries PUBLISHED rows, stamps the §1.7
+          # disclaimer on any row missing it, and refuses (exit 3) to replace a
+          # non-empty snapshot with an empty one — a failed run must not read as
+          # "all clear". Re-run with --allow-empty when the quiet result is real.
+          if [ ! -f alert-run.json ]; then
+            echo "::notice::alert snapshot not rebuilt: the alert engine did not run in this workflow"
+            exit 0
+          fi
+          node scripts/build_alert_snapshot.mjs \
+            --in alert-run.json \
+            --out frontend/public/data/alerts-latest.json
+
+      - name: Validate forecast data
+        # Includes the coverage gate: the manifest must account for every
+        # requested unit, and a partial run must say so.
+        shell: bash
+        run: python scripts/validate_forecasts.py --manifest backend/data/forecasts/manifest.json
 
       - name: Rebuild website snapshot
         shell: bash
+        env:
+          # The snapshot carries the run's coverage tally, provenance and lineage;
+          # without the run report it can only report what the CSV itself proves,
+          # and without the scene manifest it must say the rows' inputs are unnamed.
+          SNAPSHOT_RUN_REPORT: hazardnet_run_report.json
+          SCENE_MANIFEST: hazardnet_scene_manifest.json
         run: node scripts/build_forecast_snapshot.mjs
+
+      # Phase 7: the freshness artifact quotes the snapshot and the manifest, so it is
+      # rebuilt in the same run that rewrites them — a status page derived from yesterday's
+      # inputs would be the exact lie it exists to prevent.
+      - name: Rebuild freshness artifact
+        shell: bash
+        run: node scripts/build_freshness_artifact.mjs
+
+      # Phase 8: the content engine's pages are derived from the snapshot above, so they are
+      # rebuilt in the same run that rewrites it. A district page quoting yesterday's run is the
+      # same class of lie the freshness artifact exists to prevent.
+      # The full build, not just the engine: `npm run build` regenerates
+      # `frontend/src/content/generated-routes.json` from the snapshot this run just
+      # published and then prerenders every route, which is what rewrites the committed
+      # `frontend/public/data/content-index.json` (and the served `dist/` copy). Both are
+      # staged by the commit step below, so the repository can never carry pages or an
+      # inventory that describe a different snapshot than the one published here.
+      - name: Rebuild generated content pages and the content index
+        shell: bash
+        run: npm run build:frontend
 
       - name: Commit refreshed data
         shell: bash
@@ -144,6 +241,17 @@ jobs:
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           git add backend/data/forecasts/ frontend/public/data/forecasts-latest.json
+          # The derived status artifact travels with the data it describes (Phase 7).
+          git add frontend/public/data/freshness.json
+          # Content engine output (Phase 8): the generated pages plus the committed index of
+          # what the build published. `--check` in CI fails if they stop matching the snapshot.
+          git add frontend/src/content/generated-routes.json
+          git add frontend/public/data/content-index.json
+          # Only stages the alert snapshot when the builder actually produced one;
+          # `git add` on a missing path would fail the whole commit step.
+          if [ -f frontend/public/data/alerts-latest.json ]; then
+            git add frontend/public/data/alerts-latest.json
+          fi
           if git diff --staged --quiet; then
             echo "ℹ️ Forecast data unchanged since the last run — nothing to commit."
             exit 0
@@ -164,9 +272,13 @@ jobs:
           name: daily-forecast-output
           path: |
             hazardnet_forecasts_latest.csv
+            hazardnet_run_report.json
+            hazardnet_scene_manifest.json
             publish.log
             backend/data/forecasts/manifest.json
             frontend/public/data/forecasts-latest.json
+            frontend/public/data/alerts-latest.json
+            frontend/public/data/freshness.json
           if-no-files-found: ignore
           retention-days: 14
 
@@ -180,9 +292,21 @@ jobs:
             echo "- generator: \`scripts/auto_forecast.py\` (GEE + Open-Meteo + TFLite) on the runner — no Kaggle"
             echo "- publish: \`scripts/publish_forecast_csv.py\` (changed: ${{ steps.publish.outputs.changed || 'n/a' }})"
             echo "- delivery: committed snapshot \`frontend/public/data/forecasts-latest.json\`"
+            if [ -f frontend/public/data/alerts-latest.json ]; then
+              echo "- alerts snapshot: $(jq -r '(.alerts|length)|tostring' frontend/public/data/alerts-latest.json) published row(s) committed, schema $(jq -r '.schema' frontend/public/data/alerts-latest.json)"
+            fi
+            if [ -f alert-run.json ]; then
+              echo "- alerts: levels \`$(jq -c '.batch.counts' alert-run.json)\` — published $(jq -r '.persisted.published' alert-run.json), pending review $(jq -r '.persisted.pending_review' alert-run.json), blocked $(jq -r '.persisted.blocked // 0' alert-run.json)"
+            else
+              echo "- alerts: not run (see the alert engine step notice)"
+            fi
             echo "- API push: PUSH_TO_API=$PUSH_TO_API"
             if [ -f backend/data/forecasts/manifest.json ]; then
               jq -r '"- prediction_date: " + (.prediction_date // "unknown") + "\n- rows: " + ((.row_count // 0) | tostring) + "\n- source: " + (.source // "unknown")' backend/data/forecasts/manifest.json
+              jq -r '"- coverage: " + ((.coverage.produced_units // 0) | tostring) + "/" + ((.coverage.requested_units // 0) | tostring) + " units (" + (.coverage_status // "unknown") + "), districts: " + ((.coverage.districts_with_any_horizon // 0) | tostring) + "\n- model: " + (.model_version // "unrecorded") + "\n- soil channels fabricated: " + ((.soil_channels_fabricated // false) | tostring) + "\n- dataset_version: " + (.dataset_version // "unrecorded") + " (" + ((.scene_manifest.rows_stamped // 0) | tostring) + " rows carry a scene version, scenes_enumerated=" + ((.scene_manifest.scenes_enumerated // false) | tostring) + ")"' backend/data/forecasts/manifest.json
+              if [ "$(jq -r '.coverage_status // "unknown"' backend/data/forecasts/manifest.json)" != "complete" ]; then
+                echo "- ⚠️ partial run: districts missing a forecast are labelled as baseline on the site" >> "$GITHUB_STEP_SUMMARY"
+              fi
             fi
           } >> "$GITHUB_STEP_SUMMARY"
 

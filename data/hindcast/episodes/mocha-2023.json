@@ -1,0 +1,74 @@
+{
+  "schema": "hazardnet-hindcast-episode/v1",
+  "id": "mocha-2023",
+  "title": "Cyclone Mocha — Cox's Bazar coast and Teknaf, 14 May 2023",
+  "hazard_class": "Tropical Cyclone",
+  "why_this_episode": "Phase 9 §8 item 9.7 asks for a 2023 episode and a second cycle, to break the overlap between the 2024 and 2025 flood episodes. Mocha is the third cyclone in the set and the only one that struck the *eastern* coast: Amphan and Yaas both crossed the south-west (Khulna/Barisal belt), Mocha completed its crossing over the Cox's Bazar coast. It is also the one episode whose Bangladesh impact is documented as a near-miss — the eye passed into Myanmar while the Bangladesh coast took the outer wind field and the surge — which makes it a different failure mode from the two south-western cyclones: the question is not whether a direct hit is detectable but whether a 100 km/h-class coastal wind field in a 4-district truth set survives a formula whose wind term saturates at 25 km/h (see the 2024/2025 reports' §4.1).",
+  "event": {
+    "onset_date": "2023-05-14",
+    "landfall_note": "Extremely severe cyclonic storm Mocha made landfall on 14 May 2023 between Cox's Bazar (Bangladesh) and Kyaukpyu (Myanmar); the Bangladesh Meteorological Department lowered the danger signals for the maritime ports on the morning of 15 May. Bangladesh authorities had evacuated around 750,000 people from the coastal region, including Cox's Bazar and Saint Martin's Island.",
+    "ends_date": "2023-05-15"
+  },
+  "scoring": {
+    "alarm_threshold": 0.5,
+    "min_matched": 5,
+    "absence_means_no_event": false,
+    "absence_means_no_event_reason": "Same reasoning as the Amphan and Yaas episodes: the initial damage assessment names four districts and does not claim to have surveyed the other 60, so a district nobody named is UNKNOWN, not clear. The 2.3-million-people framing used by one briefing includes districts that are not named at district level, which is exactly the case where counting an unnamed district as a negative would manufacture a false-alarm rate."
+  },
+  "truth": {
+    "completeness": "named-affected-only",
+    "affected": [
+      { "district": "Cox's Bazar", "as_written": "Cox's Bazar", "tier": "most_affected", "source_id": "modmr-initial-damage" },
+      { "district": "Chattogram", "as_written": "Chattogram", "tier": "stated_affected", "source_id": "acaps-mocha" },
+      { "district": "Feni", "as_written": "Feni", "tier": "stated_affected", "source_id": "acaps-mocha" },
+      { "district": "Noakhali", "as_written": "Noakhali", "tier": "stated_affected", "source_id": "acaps-mocha" }
+    ],
+    "count_claims": [
+      { "claim": "4 districts, 26 upazilas, 99 unions and 429,337 Bangladeshi nationals affected (DDM/MoDMR initial damage information)", "source_id": "modmr-initial-damage" },
+      { "claim": "approximately 2.3 million people affected in Chattogram division — Chattogram, Cox's Bazar, Feni and Noakhali districts", "source_id": "acaps-mocha" }
+    ],
+    "notes": [
+      "The four districts are the ones the government initial damage assessment names at district level. The 429,337 figure and the 2.3-million reference in the ACAPS note are different counts of different things (Bangladeshi nationals reached by the assessed damage versus people in the affected division), and neither is used as a denominator here.",
+      "Cox's Bazar is the only district in this truth set where the sources quantify the impact (334,620 Bangladeshi nationals affected, 2,052 houses fully damaged and 10,692 partially damaged; Saint Martin's Island in Teknaf upazila assessed from satellite imagery). It carries the `most_affected` tier for that reason.",
+      "Cox's Bazar also appears in the eastern-flood-2024 truth set. One shared district out of four is the smallest overlap of any pair in this set; the two south-western cyclone episodes (Amphan 2020, Yaas 2021) overlap each other almost completely."
+    ]
+  },
+  "drivers": {
+    "product": "Open-Meteo historical archive (ERA5 / ERA5-Land era reanalysis)",
+    "endpoint": "https://archive-api.open-meteo.com/v1/archive",
+    "variables": [
+      "temperature_2m_max", "temperature_2m_min", "precipitation_sum",
+      "wind_speed_10m_max", "wind_gusts_10m_max", "et0_fao_evapotranspiration"
+    ]
+  },
+  "known_limitations": [
+    "Reanalysis rather than archived forecast fields: this measures whether the physics track, given the weather that occurred, flags the districts that were hit — a ceiling on detection, not forecast skill (identical to the other three episodes; the harness has no ECMWF MARS/CDS credential).",
+    "The CNN was not re-run: its input tensor needs Sentinel-1/2, Landsat and ERA5-Land bands over Earth Engine for the historical window.",
+    "The Bangladesh impact was a near-miss outward wind field rather than a direct eye crossing, so a district-centroid wind from a reanalysis grid will under-represent whatever the coast actually experienced — the same driver-fidelity limit the 2020/2021 cyclone episodes expose, in the opposite direction.",
+    "A district centroid cannot represent Saint Martin's Island (about 8 km², 120 km south of the Teknaf mainland): the island took the most severe documented damage in Bangladesh and is not a district.",
+    "The truth set has 4 districts, so the false-alarm denominator stays absent for the same reason as in the other episodes (`absence_means_no_event: false`). Any FAR this episode reports is a reporting boundary, not an operational false-alarm rate."
+  ],
+  "sources": [
+    {
+      "id": "modmr-initial-damage",
+      "what_it_evidences": "The four-district affected set at district level, the 26 upazila / 99 union / 429,337-nationals counts, the housing damage totals (2,052 fully, 10,692 partially), and the no-recorded-fatality statement.",
+      "citation": "Bangladesh: Cyclone Mocha Humanitarian Response Situation Report, as of 15 May 2023 — Inter Sector Coordination Group (ISCG) / UN Bangladesh, reporting the Department of Disaster Management (DDM) and Ministry of Disaster Management and Relief (MoDMR) initial damage information.",
+      "url": "https://bangladesh.un.org/en/231958-bangladesh-cyclone-mocha-humanitarian-response-situation-report-15-may-2023",
+      "accessed": "2026-09-18"
+    },
+    {
+      "id": "acaps-mocha",
+      "what_it_evidences": "The Chattogram-division district list (Chattogram, Cox's Bazar, Feni, Noakhali), the approximately 2.3 million affected and 2,000+ destroyed / 10,000+ damaged houses in Bangladesh, and the 750,000-person pre-landfall evacuation.",
+      "citation": "Bangladesh and Myanmar: Impact of Cyclone Mocha — ACAPS Briefing Note, 23 May 2023.",
+      "url": "https://www.acaps.org/fileadmin/Data_Product/Main_media/20230523_acaps_briefing_note_bangladesh_and_myanmar_impact_of_cyclone_mocha_0.pdf",
+      "accessed": "2026-09-18"
+    },
+    {
+      "id": "start-fund-stmartin",
+      "what_it_evidences": "The Saint Martin's Island impact (the most severe documented damage in Bangladesh) and the relief/host-community response, and the statement that the island is in Teknaf upazila of Cox's Bazar district — which is why the truth set carries Cox's Bazar rather than an island.",
+      "citation": "Briefing Note: Cyclone Mocha, Saint Martin Island, 18 May 2023 — Start Fund Bangladesh.",
+      "url": "https://reliefweb.int/report/bangladesh/briefing-note-cyclone-mocha-saint-martin-island-18-may-2023",
+      "accessed": "2026-09-18"
+    }
+  ]
+}

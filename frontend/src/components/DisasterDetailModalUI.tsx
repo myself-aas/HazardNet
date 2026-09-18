@@ -68,7 +68,7 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
 
           <div className="shrink-0">
             <PrintQrCode
-              url={`https://hazardnet.live/district/${data.districtName.toLowerCase().replace(/\s+/g, '-')}`}
+              url={`https://www.hazardnet.live/forecast/district/${data.districtName.toLowerCase().replace(/\s+/g, '-')}`}
               title="Live Telemetry"
               subtitle="Scan for mobile updates"
               districtOrSector={data.districtName}
@@ -166,7 +166,7 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
           onClick={() => onSetActiveTab('upazilas')}
           className={`pb-2.5 px-3 font-bold border-b-2 transition-all whitespace-nowrap flex items-center gap-1.5 ${
             activeTab === 'upazilas'
-              ? 'border-[#f9a825] text-[#d08305]'
+              ? 'border-nasa-blue text-nasa-red-shade'
               : 'border-transparent text-slate-500 hover:text-slate-800'
           }`}
         >
@@ -177,7 +177,7 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
           onClick={() => onSetActiveTab('aiModel')}
           className={`pb-2.5 px-3 font-bold border-b-2 transition-all whitespace-nowrap flex items-center gap-1.5 ${
             activeTab === 'aiModel'
-              ? 'border-[#f9a825] text-[#d08305]'
+              ? 'border-nasa-blue text-nasa-red-shade'
               : 'border-transparent text-slate-500 hover:text-slate-800'
           }`}
         >
@@ -188,7 +188,7 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
           onClick={() => onSetActiveTab('emergency')}
           className={`pb-2.5 px-3 font-bold border-b-2 transition-all whitespace-nowrap flex items-center gap-1.5 ${
             activeTab === 'emergency'
-              ? 'border-[#f9a825] text-[#d08305]'
+              ? 'border-nasa-blue text-nasa-red-shade'
               : 'border-transparent text-slate-500 hover:text-slate-800'
           }`}
         >
@@ -199,7 +199,7 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
           onClick={() => onSetActiveTab('history')}
           className={`pb-2.5 px-3 font-bold border-b-2 transition-all whitespace-nowrap flex items-center gap-1.5 ${
             activeTab === 'history'
-              ? 'border-[#f9a825] text-[#d08305]'
+              ? 'border-nasa-blue text-nasa-red-shade'
               : 'border-transparent text-slate-500 hover:text-slate-800'
           }`}
         >
@@ -254,7 +254,9 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
             <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
               <div className="flex items-center justify-between text-xs font-mono">
                 <span className="text-slate-800 font-bold">Continuous Severity Regression Head</span>
-                <span className="text-slate-500">Confidence: <strong className="text-slate-900">{data.modelAssessment.confidenceLevel}%</strong></span>
+                <span className="text-slate-500" title="The classifier's own softmax for its chosen class. It is not a calibrated probability of the event.">
+                  Model score: <strong className="text-slate-900">{data.modelAssessment.confidenceLevel}%</strong> <span className="text-slate-400">(uncalibrated)</span>
+                </span>
               </div>
 
               <div className="space-y-1.5">
@@ -334,7 +336,7 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
               <ul className="space-y-2 text-xs text-slate-700">
                 {data.emergencyResponse.advisoryBullets.map((bullet, idx) => (
                   <li key={idx} className="flex items-start gap-2 bg-white p-2.5 rounded-lg border border-slate-200">
-                    <span className="text-[#f9a825] font-bold">•</span>
+                    <span className="text-nasa-red-shade font-bold">•</span>
                     <span>{bullet}</span>
                   </li>
                 ))}
@@ -403,7 +405,7 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
                 data.modelAssessment.continuousSeverityIndex < 0.66 ? 'text-amber-600' :
                 'text-rose-600'
               }`}>
-                {(data.modelAssessment.continuousSeverityIndex * 100).toFixed(1)}% (Confidence: {data.modelAssessment.confidenceLevel}%)
+                {(data.modelAssessment.continuousSeverityIndex * 100).toFixed(1)}% (model score: {data.modelAssessment.confidenceLevel}%, uncalibrated)
               </strong>
             </div>
             <div>
@@ -603,7 +605,7 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
             <div className="w-12 h-1.5 bg-slate-300 rounded-full mb-2" />
             <div className="w-full flex items-center justify-between">
               <div className="flex items-center gap-2 min-w-0">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#f9a825] animate-pulse shrink-0"></span>
+                <span className="w-2.5 h-2.5 rounded-full bg-nasa-red animate-pulse shrink-0"></span>
                 <h3 className="text-base font-black text-slate-900 tracking-tight leading-none truncate">
                   {data.districtName} Hazard Report
                 </h3>
@@ -655,7 +657,7 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
               <div className="flex items-center gap-2 pt-1">
                 <button
                   onClick={() => onSetSheetMode('half')}
-                  className="flex-1 py-2.5 bg-[#f9a825] active:bg-[#d08305] text-slate-900 font-extrabold text-xs rounded-xl shadow-xs transition-all flex items-center justify-center gap-1.5 min-h-[44px]"
+                  className="flex-1 py-2.5 bg-nasa-red active:bg-nasa-red-shade text-slate-900 font-extrabold text-xs rounded-xl shadow-xs transition-all flex items-center justify-center gap-1.5 min-h-[44px]"
                 >
                   <span>View Detailed Analytics & Action Plan ▲</span>
                 </button>

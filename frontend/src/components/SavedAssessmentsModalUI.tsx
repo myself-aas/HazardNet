@@ -119,7 +119,7 @@ export const SavedAssessmentsModalUI: React.FC<SavedAssessmentsModalUIProps> = (
                               onSelectDistrict(item.districtId);
                               onClose();
                             }}
-                            className="px-3 py-1.5 bg-[#f9a825] hover:bg-[#d08305] text-slate-900 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer"
+                            className="px-3 py-1.5 bg-nasa-red hover:bg-nasa-red-shade text-slate-900 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer"
                           >
                             View Map
                           </motion.button>

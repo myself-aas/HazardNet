@@ -205,7 +205,7 @@ const UploadPage: React.FC = () => {
           <div
             onDrop={handleDrop}
             onDragOver={(e) => e.preventDefault()}
-            className="bg-white border-2 border-dashed border-slate-300 hover:border-[#f9a825] transition-all rounded-2xl p-6 text-center cursor-pointer relative overflow-hidden group shadow-xs"
+            className="bg-white border-2 border-dashed border-slate-300 hover:border-nasa-blue transition-all rounded-2xl p-6 text-center cursor-pointer relative overflow-hidden group shadow-xs"
           >
             <input
               type="file"
@@ -322,7 +322,7 @@ const UploadPage: React.FC = () => {
                 exit={{ opacity: 0 }}
                 className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-12 text-center space-y-4 shadow-xs"
               >
-                <div className="w-12 h-12 border-4 border-[#f9a825] border-t-transparent rounded-full animate-spin mx-auto"></div>
+                <div className="w-12 h-12 border-4 border-nasa-blue border-t-transparent rounded-full animate-spin mx-auto"></div>
                 <h3 className="text-base font-bold text-slate-900">Running 3D-CNN Inference...</h3>
                 <p className="text-xs text-slate-500">
                   Transposing NCDHW to NDHWC tensor and querying TFLite FP32 Dual-Head Model.

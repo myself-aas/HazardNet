@@ -12,13 +12,15 @@ import predictRoutes from './routes/predict.js';
 import pushRoutes from './routes/push.js';
 import conversionRoutes from './routes/conversions.js';
 import weatherRoutes from './routes/weather.js';
+import alertRoutes from './routes/alerts.js';
 import metrics from './metrics.js';
 import { refreshForecastAgeGauge } from './utils/forecastFreshness.js';
-import { predictLimiter, apiLimiter } from './middleware/rateLimit.js';
+import { predictLimiter, apiLimiter, alertLimiter } from './middleware/rateLimit.js';
 import { requestId } from './middleware/requestId.js';
 import { attachFirebaseAuthUser, dynamicAiLimiter } from './middleware/firebaseAuth.js';
 import { getModelInfo } from './modelInfo.js';
 import helmet from 'helmet';
+import { cspDirectivesFromString } from './security/csp.js';
 
 dotenv.config();
 
@@ -62,10 +64,9 @@ app.disable('x-powered-by');
 // Rate limiters need the real client IP; we sit behind one proxy/edge hop.
 app.set('trust proxy', 1);
 
-// Security headers (SEC-05). CSP ships in Report-Only mode first so violations
-// can be observed in the console before enforcing; flip reportOnly to false
-// after a monitoring window. Fonts are self-hosted, so no third-party font
-// origins are needed.
+// Security headers (SEC-05). The policy itself lives in backend/security/csp.js so the
+// self-hosted deployment cannot drift from the two Vercel configs (Phase 6 fix: they had
+// drifted — the ad-network allowlist existed in one edition only).
 // CSP mode (ADR 0003): enforcing in production by default; Report-Only in
 // development. Override explicitly per environment with CSP_ENFORCE=true|false.
 // connect-src includes wss: for Supabase/Firebase realtime channels.
@@ -79,18 +80,7 @@ app.use(
     frameguard: { action: 'deny' },
     contentSecurityPolicy: {
       reportOnly: !cspEnforce,
-      directives: {
-        defaultSrc: ["'self'"],
-        scriptSrc: ["'self'"],
-        styleSrc: ["'self'", "'unsafe-inline'"],
-        imgSrc: ["'self'", 'data:', 'blob:', 'https:'],
-        fontSrc: ["'self'", 'data:'],
-        connectSrc: ["'self'", 'https:'],
-        workerSrc: ["'self'", 'blob:'],
-        frameAncestors: ["'none'"],
-        baseUri: ["'self'"],
-        formAction: ["'self'"],
-      },
+      directives: cspDirectivesFromString(),
     },
   })
 );
@@ -119,8 +109,8 @@ app.get('/health', (req, res) => {
 
 // Never serve model artifacts or preprocessing assets from the public server.
 // NOTE: the int8 entry is deliberately kept — no true INT8 model exists
-// (TFLite CONV_3D constraint, ADR 0007), but the historical external
-// conversion bundle emitted a misnamed optimized-FP32 file under that filename, and
+// (TFLite CONV_3D constraint, ADR 0007), but the external Kaggle conversion
+// bundle still emits a misnamed optimized-FP32 file under that filename, and
 // model artifacts must never be publicly served regardless of precision.
 app.use(['/Models', '/models', '/hazardnet_fp32.tflite', '/hazardnet_int8.tflite', '/normalization_stats.json', '/labels.json'], (req, res) => {
   res.status(404).json({ error: 'Not found' });
@@ -137,6 +127,9 @@ app.use('/api/predict', predictLimiter, predictRoutes);
 app.use('/api/push', pushRoutes);
 app.use('/api/conversions', conversionRoutes);
 app.use('/api/v1/weather', weatherRoutes);
+// Alert engine + §1.6 review surface. Identity is attached but never required:
+// published alerts are public (PRODUCT_SPEC §1.3), the review queue is not.
+app.use('/api/v1/alerts', attachFirebaseAuthUser, alertLimiter, alertRoutes);
 
 // Prometheus metrics endpoint. The forecast-age gauge is refreshed here
 // (scrape-driven, 60s-cached store probe — see utils/forecastFreshness.js).

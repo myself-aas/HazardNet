@@ -83,3 +83,41 @@ Two hard constraints shaped the decision:
       15-column CSV header)
 - [ ] First kernel run on Kaggle: asserts 507 units, produces 1,521 rows
 - [ ] First weekly ingest lands; `/bulk?horizon=10_days` returns 507 rows
+
+---
+
+## Amendment — 2026-09-17: the 10/20/30-day horizon set was never implemented
+
+**Status change: the horizon decision in this ADR is reverted to the implemented 7/15-day set.
+The ADM3 decision (§Decision 5's identity columns, 507 units) is unaffected and stays accepted.**
+
+A Phase 0 ground-truth audit (`docs/PRODUCT_SPEC.md` §5.2, `docs/MODEL_CARD.md` §4) checked this
+ADR's claims against the code. The checklist item
+
+> `- [x] Backend/frontend horizon set = 10/20/30 everywhere; 7/15 retired (422/400 paths covered by tests)`
+
+is **not true**, and the smoke result quoted beside it (`/bulk?horizon=10_days` 200, `7_days` 400)
+cannot be reproduced against the current tree. What the code accepts today:
+
+| File | Declared horizons |
+| ---- | ----------------- |
+| `backend/utils/forecastRow.js` | `VALID_HORIZONS = ['7_days', '15_days']` |
+| `scripts/auto_forecast.py` | `HORIZONS = {'7_days': 7, '15_days': 15}` |
+| `scripts/build_forecast_snapshot.mjs` | `VALID_HORIZONS = new Set(['7_days', '15_days'])` |
+| `frontend/public/data/forecasts-latest.json` (2026-09-16) | `7_days`, `15_days` |
+| `data/hazardnet_forecasts_latest.csv` (127 rows) | `7_days` (64), `15_days` (63) |
+
+Public copy (homepage, `/methodology`, `/faq`, `/about`, meta descriptions) advertised
+**10/20/30-day** outlooks on the strength of this ADR, while the pipeline shipped 7/15. That copy
+now states 7/15 and says plainly that the longer set is not implemented. A guard
+(`scripts/tests/test_model_claims.py::test_advertised_horizons_match_the_code`) fails CI if copy
+advertises a horizon set the code does not accept.
+
+Why this was not a documentation-only slip: `10_days`/`20_days`/`30_days` in `VALID_HORIZONS` would
+reject every row of the live CSV (the ingest validates against that list), so the ADR as written
+described a system that could not have ingested the data it claimed to publish.
+
+**To re-open the horizon question** it needs a new ADR, not a checkbox: the deterministic weather
+window is ≤16 days (§Decision 6 of this document), so 20/30-day values are an aggregation of the
+16-day window and must be labelled as such in the API schema, the UI and the copy — plus a per-horizon
+coverage report (`docs/PRODUCT_SPEC.md` §5.1) so partial runs cannot ship silently.

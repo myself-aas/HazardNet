@@ -1,0 +1,146 @@
+{
+  "generated_at": "2026-09-18T06:00:00Z",
+  "source": "alert-engine",
+  "assessed": 60,
+  "policy_version": "alert-policy/1.0.0",
+  "counts": {
+    "NO_ALERT": 0,
+    "WATCH": 2,
+    "WARNING": 0,
+    "SEVERE": 0
+  },
+  "policy": {
+    "version": "alert-policy/1.0.0",
+    "source": "committed",
+    "thresholds": {
+      "watch_probability": 0.4,
+      "warning_probability": 0.65,
+      "watch_severity": 0.55,
+      "divergence_watch": 0.3,
+      "agreement_epsilon": 0.1
+    },
+    "human_in_the_loop": {
+      "max_auto_publish_level": "WATCH"
+    },
+    "calibration": {
+      "calibrated_probability_required_for_warning": true
+    },
+    "disclaimer": "HazardNet is a research-based decision-support tool. It is not an official warning service. Always follow instructions from the Bangladesh Meteorological Department, FFWC and your local administration. In an emergency call 999 (national emergency), 1090 (disaster response), or 16123 (agriculture helpline)."
+  },
+  "alerts": [
+    {
+      "id": "2026-09-21__7_days__sunamganj__flash-flood__p2026-09-18",
+      "alert_key": "2026-09-21__7_days__sunamganj__flash-flood",
+      "state": "PUBLISHED",
+      "level": "WATCH",
+      "district_id": 60,
+      "district_name": "Sunamganj",
+      "division": "Sylhet",
+      "horizon": "7_days",
+      "hazard_type": "Flash Flood",
+      "target_date": "2026-09-21",
+      "prediction_date": "2026-09-18",
+      "lead_time_days": 3,
+      "severity_score": 0.9999,
+      "confidence": 0.9912,
+      "confidence_kind": "model_softmax",
+      "requires_human_review": false,
+      "policy_version": "alert-policy/1.0.0",
+      "evidence": {
+        "model": {
+          "model_severity": 0.9999,
+          "confidence_published": "model_softmax",
+          "drivers": [
+            "precip_72h",
+            "soil_moisture"
+          ]
+        },
+        "physics": {
+          "physics_severity": 0.7549,
+          "divergence": 0.245,
+          "agreement": "partial",
+          "engine": "physics-track/1.0.0"
+        }
+      },
+      "freshness": {
+        "data_cutoff": "2026-09-18T00:00:00Z",
+        "stale_soon": false
+      },
+      "provenance": {
+        "model_version": "hazardnet-tflite-2026-09-12",
+        "dataset_version": "scenes-2026-09-17"
+      },
+      "published": {
+        "at": "2026-09-18T06:00:00Z",
+        "level": "WATCH",
+        "mode": "auto",
+        "model_version": "hazardnet-tflite-2026-09-12",
+        "data_cutoff": "2026-09-18T00:00:00Z"
+      },
+      "disclaimer": "HazardNet is a research-based decision-support tool. It is not an official warning service. Always follow instructions from the Bangladesh Meteorological Department, FFWC and your local administration. In an emergency call 999 (national emergency), 1090 (disaster response), or 16123 (agriculture helpline)."
+    },
+    {
+      "id": "2026-09-22__7_days__kurigram__flood__p2026-09-18",
+      "alert_key": "2026-09-22__7_days__kurigram__flood",
+      "state": "PUBLISHED",
+      "level": "WATCH",
+      "district_id": 46,
+      "district_name": "Kurigram",
+      "division": "Rangpur",
+      "horizon": "7_days",
+      "hazard_type": "Flood",
+      "target_date": "2026-09-22",
+      "prediction_date": "2026-09-18",
+      "lead_time_days": 4,
+      "severity_score": 0.8123,
+      "confidence": 0.61,
+      "confidence_kind": "model_softmax",
+      "requires_human_review": false,
+      "policy_version": "alert-policy/1.0.0",
+      "evidence": {
+        "model": {
+          "model_severity": 0.8123,
+          "confidence_published": "model_softmax",
+          "drivers": [
+            "precip_72h"
+          ]
+        },
+        "physics": {
+          "physics_severity": null,
+          "divergence": null,
+          "agreement": "not_computed",
+          "engine": null
+        }
+      },
+      "freshness": {
+        "data_cutoff": "2026-09-18T00:00:00Z",
+        "stale_soon": false
+      },
+      "provenance": {
+        "model_version": "hazardnet-tflite-2026-09-12",
+        "dataset_version": null
+      },
+      "published": {
+        "at": "2026-09-18T06:00:00Z",
+        "level": "WATCH",
+        "mode": "auto",
+        "model_version": "hazardnet-tflite-2026-09-12",
+        "data_cutoff": "2026-09-18T00:00:00Z"
+      }
+    },
+    {
+      "id": "2026-09-23__7_days__sylhet__flood__p2026-09-18",
+      "alert_key": "2026-09-23__7_days__sylhet__flood",
+      "state": "DRAFT",
+      "level": "WARNING",
+      "district_name": "Sylhet",
+      "hazard_type": "Flood",
+      "requires_human_review": true,
+      "evidence": {
+        "model": {
+          "model_severity": 0.88
+        }
+      }
+    }
+  ]
+}

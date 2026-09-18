@@ -1,0 +1,9 @@
+# Security contact and disclosure policy — RFC 9116
+# Report vulnerabilities here rather than opening a public issue.
+
+Contact: mailto:shuvoasifahmed@gmail.com
+Contact: https://github.com/myself-aas/HazardNet/security/advisories/new
+Expires: 2027-09-17T00:00:00.000Z
+Preferred-Languages: en, bn
+Canonical: https://www.hazardnet.live/.well-known/security.txt
+Policy: https://www.hazardnet.live/contact

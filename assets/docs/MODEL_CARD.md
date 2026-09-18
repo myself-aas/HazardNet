@@ -1,22 +1,25 @@
-# HazardNet Model Card (FP32 TFLite)
+# HazardNet Model Card — moved
 
-## Model Details
-- **Architecture**: 3D Depthwise-Separable CNN with Squeeze-and-Excitation (SE) Blocks
-- **Input Shape**: `(1, 10, 64, 64, 15)` [NDHWC format for TFLite runtime]
-- **Parameters**: ~1.2M (0.75 MB FP32)
-- **Outputs**: 
-  - `hazard_logits`: 8 classes (Cold Wave, Drought, Fire, Flash Flood, Flood, Heat Wave, Severe Local Storm, Tropical Cyclone)
-  - `severity_score`: Continuous float [0.0 - 1.0]
+The canonical model card now lives at **[`docs/MODEL_CARD.md`](../../docs/MODEL_CARD.md)**.
 
-## Training Data
-- **Source**: Google Earth Engine (Sentinel-1/2, Landsat-8/9, ERA5-Land reanalysis)
-- **Events**: 2,931 unique hazard events (2000-2025) across 64 Bangladesh districts.
-- **Validation**: Event-Based 5-Fold Cross Validation (Acc: 98.8%), Spatial Leave-One-District-Out (Acc: 95.6%).
+## Why this file changed (2026-09-17)
 
-## Multi-Sectoral Guidance Integration
-- **Institutional Alignment**: Integrated protocols from DAE (Crops), DoF (Fisheries), and DLS (Livestock & Veterinary).
-- **Decision Engine**: Dynamic RAG routing based on district economic baselines and hazard severity thresholds.
+This location previously carried a one-page card whose performance figures — **98.8 %** event-based
+cross-validation accuracy, **95.6 %** spatial leave-one-district-out accuracy and **~1.2 M**
+parameters — could not be traced to any artefact in this repository: they appear in no notebook
+cell, result file, CI log or commit. Two of them are additionally contradicted by the shipped
+forecasts, which are saturated (the 2026-09-16 snapshot predicted the same hazard class for every
+district at ≈1.0 confidence and ≈1.0 severity).
 
-## Limitations & Edge Cases
-- **Temporal Shift**: Performance drops on extreme out-of-distribution climate non-stationarity events.
-- **Quantization**: INT8 quantization bypassed due to TFLite `CONV_3D` kernel constraints in web/mobile runtimes. Model operates in native FP32.
+Those numbers were also repeated in user-facing copy. They have been **retired** and must not be
+reused; `docs/MODEL_CARD.md` §9 lists every retired claim with the reason, and
+`scripts/tests/test_model_claims.py` fails CI if they reappear in a documentation or copy surface.
+
+The honest card documents what is verifiable: architecture and input geometry from the training
+notebook, the committed artifact hashes, measured output-distribution behaviour, the input-integrity
+problems at inference time (three channels fixed at training means; nine substituted from a
+different source), the second heuristic inference path behind `POST /api/predict`, and the
+evaluation that still has to be run before any accuracy claim is made.
+
+*If you are looking for a stable public summary of the model, link to `docs/MODEL_CARD.md` — not to
+a copy of it. Two documents that must agree will drift; the repository has one source of truth.*

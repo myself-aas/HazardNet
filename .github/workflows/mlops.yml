@@ -1,0 +1,222 @@
+name: MLOps — nightly evaluation, drift and registry audit
+
+# Phase 3 (docs/phase-reports/phase-3-mlops.md). Three jobs, in order of how much
+# they can change:
+#
+#   nightly   — scores the published forecasts against the event archive (POD/FAR/
+#               CSI + reliability), measures PSI drift against the previous run,
+#               and audits the model bundle against Models/VERSION.json. It writes
+#               reports as artifacts; it never promotes a model and never writes a
+#               calibrated probability, because promotion needs a human and
+#               calibration needs labelled outcomes.
+#   quarterly — produces the retrain brief (champion metrics, drift, the checklist)
+#               and opens/updates an issue. Retraining itself runs
+#               ml/HazardNet_auto_train.ipynb on a machine with Earth Engine
+#               credentials; this job makes sure it is *asked for* on schedule.
+#
+# Not wired here on purpose: `mlops.cli promote`. The challenger comparison is a
+# review artifact (see docs/mlops/RETRAIN_AND_PROMOTION.md); an automated promotion
+# is exactly the "uncalibrated confidence + auto-publish" failure the plan names.
+
+on:
+  schedule:
+    - cron: '0 2 * * *'      # nightly, 02:00 UTC (08:00 Asia/Dhaka)
+    - cron: '0 3 1 1,4,7,10 *'  # 03:00 UTC on the 1st of Jan/Apr/Jul/Oct
+  workflow_dispatch:
+    inputs:
+      absence_means_no_event:
+        description: 'Treat district-windows with no recorded event as negatives (only when the archive is complete)'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mlops-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  nightly:
+    name: Evaluate, drift and audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.11'
+
+      - name: Install the workflows' own YAML parser
+        # The workflow validates its own file, so the dependency is pinned here
+        # rather than assumed to exist on the runner image.
+        run: python -m pip install --quiet 'pyyaml>=6,<7'
+
+      - name: Artifact audit (handshake vs bytes on disk)
+        run: python -m mlops.cli audit --json mlops-reports/audit.json
+        working-directory: scripts
+
+      - name: Refresh the model registry
+        # Writes only when the bytes changed; `unchanged` is the expected result on a
+        # day when the bundle did not move.
+        run: python -m mlops.cli registry --write --json mlops-reports/registry.json
+        working-directory: scripts
+
+      - name: Verify the registry did not drift from the committed one
+        run: git diff --exit-code -- Models/REGISTRY.json
+        continue-on-error: true   # reported, not fatal: the registry is refreshed below
+        id: registry-drift
+
+      - name: Evaluate the published forecasts against the event archive
+        id: evaluate
+        continue-on-error: true
+        run: |
+          python -m mlops.cli evaluate \
+            --predictions ../backend/data/forecasts/hazardnet_forecasts_latest.csv \
+            --outcomes ../scripts/tests/fixtures/etl/events_sample.csv \
+            --json mlops-reports/evaluation.json
+        working-directory: scripts
+
+      - name: Drift against the previous published run
+        # The committed legacy run under data/ is the only earlier published run in
+        # the repository, so it is the reference the nightly job can use today. Once
+        # runs are archived per day this becomes "yesterday's artifact".
+        continue-on-error: true
+        run: |
+          python -m mlops.cli drift \
+            --reference ../data/hazardnet_forecasts_latest.csv \
+            --current ../backend/data/forecasts/hazardnet_forecasts_latest.csv \
+            --json mlops-reports/drift.json
+        working-directory: scripts
+
+      - name: Summarise for the run page
+        if: always()
+        run: |
+          {
+            echo '## MLOps nightly'
+            echo
+            echo '```'
+            test -f mlops-reports/evaluation.json && python - <<'PY' || echo 'no evaluation report'
+          import json, sys
+          report = json.load(open('mlops-reports/evaluation.json'))
+          print(f"evaluation: {report['status']} — matched {report['counts']['matched']} of "
+                f"{report['counts']['predictions']} predictions")
+          if report.get('reason'):
+              print(report['reason'])
+          if report.get('scores'):
+              events = report['scores']['events']
+              print(f"POD {events['pod']} FAR {events['far']} CSI {events['csi']}")
+          PY
+            test -f mlops-reports/drift.json && python - <<'PY' || echo 'no drift report'
+          import json
+          report = json.load(open('mlops-reports/drift.json'))
+          print(f"drift: {report['status']}")
+          for row in report['drivers']['drivers']['ranked'][:3]:
+              print(f"  {row['series']}: PSI {row['psi']} ({row['level']})")
+          for name in report['unavailable'][:3]:
+              print(f"  {name}: not measured")
+          PY
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Publish the reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: mlops-nightly-reports
+          path: mlops-reports/
+          if-no-files-found: warn
+          retention-days: 30
+
+  quarterly-retrain-brief:
+    name: Quarterly retrain brief
+    if: github.event.schedule == '0 3 1 1,4,7,10 *' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.11'
+
+      - run: python -m pip install --quiet 'pyyaml>=6,<7'
+
+      - name: Build the retrain brief
+        run: |
+          python -m mlops.cli registry --out ../Models/REGISTRY.json --json mlops-reports/registry.json
+          python -m mlops.cli evaluate \
+            --predictions ../backend/data/forecasts/hazardnet_forecasts_latest.csv \
+            --outcomes ../scripts/tests/fixtures/etl/events_sample.csv \
+            --json mlops-reports/evaluation.json || true
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          reports = Path('mlops-reports')
+          registry = json.loads((reports / 'registry.json').read_text())
+          evaluation = None
+          if (reports / 'evaluation.json').exists():
+              evaluation = json.loads((reports / 'evaluation.json').read_text())
+          body = [
+              '# Quarterly retrain brief',
+              '',
+              f"Champion: {', '.join(registry['champions']) or 'none'}",
+              f"Handshake: {registry['handshake']['version']}",
+              '',
+          ]
+          if evaluation:
+              body += [
+                  f"Evaluation status: {evaluation['status']}",
+                  f"Matched predictions: {evaluation['counts']['matched']}",
+              ]
+              if evaluation.get('scores'):
+                  events = evaluation['scores']['events']
+                  body.append(f"POD {events['pod']} FAR {events['far']} CSI {events['csi']}")
+              else:
+                  body.append(f"Why it could not be scored: {evaluation.get('reason')}")
+          body += [
+              '',
+              'Checklist (docs/mlops/RETRAIN_AND_PROMOTION.md):',
+              '- [ ] Refresh the event archive (`python -m etl.cli events --input <fresh extract>`)',
+              '- [ ] Retrain on the frozen window (`ml/HazardNet_auto_train.ipynb`)',
+              '- [ ] Fit the calibration map on held-out labelled outcomes',
+              '- [ ] Evaluate challenger vs champion and paste both reports',
+              '- [ ] Promote with an approver, or record why not',
+          ]
+          Path('retrain-brief.md').write_text('\n'.join(body) + '\n')
+          print('\n'.join(body))
+          PY
+        working-directory: scripts
+
+      - name: Open or update the retrain request
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const fs = require('fs');
+            const body = fs.readFileSync('scripts/retrain-brief.md', 'utf8');
+            const title = 'Quarterly retrain review';
+            const { owner, repo } = context.repo;
+            const existing = await github.rest.issues.listForRepo({
+              owner, repo, state: 'open', labels: 'mlops,retrain', per_page: 10,
+            });
+            const match = existing.data.find((issue) => issue.title === title);
+            if (match) {
+              await github.rest.issues.createComment({ owner, repo, issue_number: match.number, body });
+            } else {
+              await github.rest.issues.create({ owner, repo, title, body, labels: ['mlops', 'retrain'] });
+            }
+
+      - name: Publish the brief
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: mlops-retrain-brief
+          path: |
+            scripts/retrain-brief.md
+            mlops-reports/
+          if-no-files-found: warn
+          retention-days: 90

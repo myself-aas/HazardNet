@@ -50,7 +50,7 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({ customItems }) => {
               ) : (
                 <Link
                   to={item.path}
-                  className="text-slate-500 hover:text-[#d08305] font-medium transition-colors"
+                  className="text-slate-500 hover:text-nasa-red-shade font-medium transition-colors"
                 >
                   {item.label}
                 </Link>

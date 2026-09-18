@@ -155,20 +155,150 @@ jobs:
       - name: Install Python test deps
         run: pip install --requirement scripts/requirements-pipeline.txt pytest
 
-      # Guards the pipeline scripts AND the workflow files themselves: every
-      # .github/workflows/*.yml must parse as YAML, must not use the `secrets`
-      # context in ANY `if:` (job or step — GitHub rejects the whole file with
-      # zero jobs either way; gate on a resolved step output instead — the
-      # Sept 2026 CI outage), and must not depend on Kaggle (removed
-      # 2026-09-17; the runner pipeline is the only producer). See scripts/tests/.
+      # Guards the Kaggle pipeline scripts AND the workflow files themselves:
+      # every .github/workflows/*.yml must parse as YAML and must not use the
+      # `secrets` context in ANY `if:` (job or step — GitHub rejects the whole
+      # file with zero jobs either way; gate on a resolved step output
+      # instead — the Sept 2026 CI outage). See scripts/tests/.
       - name: Run pipeline script tests
         run: python -m pytest scripts/tests -q
+
+      # Phase 9: the hindcast reports must still recompute from the committed episodes and the
+      # committed driver series. Offline and deterministic, so it runs in CI rather than only in
+      # the workflow that produces them — a hand-edited score fails here.
+      - name: Hindcast reports recompute from their committed inputs
+        working-directory: scripts
+        run: python -m hindcast.cli check --require-reports
+
+      # Phase 9 §8.1: the validation artifact is the first place this repository publishes its
+      # own measured performance, so the property that matters is what the builder *refuses*.
+      # A report that claims the CNN was evaluated, or whose drivers claim to be forecast fields,
+      # must fail the build rather than reach the page.
+      - name: Model performance builder smoke test
+        run: |
+          set -euo pipefail
+          node scripts/build_model_performance.mjs --out /tmp/model-performance.json
+          node -e "
+            const fs = require('node:fs');
+            const d = JSON.parse(fs.readFileSync('/tmp/model-performance.json', 'utf8'));
+            if (d.schema !== 'hazardnet-model-performance/v1') throw new Error('schema tag missing');
+            // Derived, not hard-coded: the episode count is a property of the committed reports,
+            // so adding an episode must not require editing this assertion (it once did).
+            const reports = fs.readdirSync('data/hindcast/reports').filter((n) => n.endsWith('.json'));
+            if (d.episodes.length !== reports.length) {
+              throw new Error('published ' + d.episodes.length + ' episodes for ' + reports.length + ' reports');
+            }
+            if (d.method.cnn_evaluated !== false) throw new Error('CNN evaluation claim leaked');
+            if (d.method.is_forecast !== false) throw new Error('forecast-skill claim leaked');
+            const text = fs.readFileSync('/tmp/model-performance.json', 'utf8');
+            for (const key of ['accuracy', 'f1', 'precision', 'recall', 'brier', 'log_loss']) {
+              if (text.includes('"' + key + '"')) throw new Error('forbidden metric published: ' + key);
+            }
+            if (!d.not_published.length) throw new Error('no caveats carried with the numbers');
+            console.log('model performance OK:', d.episodes.length, 'episodes,',
+              d.totals.named_districts, 'named districts,', d.not_published.length, 'caveats');
+          "
+          # The committed artifact must equal what the committed reports produce.
+          node scripts/build_model_performance.mjs --check
+          # …and a report that overstates the harness must fail the build.
+          mkdir -p /tmp/hn-overstated
+          node -e "
+            const fs = require('node:fs');
+            const report = JSON.parse(fs.readFileSync('data/hindcast/reports/amphan-2020.json', 'utf8'));
+            report.what_was_hindcast.cnn_evaluated = true;
+            fs.writeFileSync('/tmp/hn-overstated/amphan-2020.json', JSON.stringify(report));
+          "
+          if node scripts/build_model_performance.mjs --reports-dir /tmp/hn-overstated --out /tmp/hn-overstated/out.json 2>/dev/null; then
+            echo "::error::the builder published a report that claims the CNN was evaluated"
+            exit 1
+          fi
+          echo "✅ the builder refuses to publish an overstated report"
 
       - name: Snapshot builder smoke test
         run: |
           python scripts/tests/make_fixture_csv.py /tmp/fixture_forecasts.csv
           node scripts/build_forecast_snapshot.mjs /tmp/fixture_forecasts.csv /tmp/forecasts-latest.json
           node -e "const s=require('/tmp/forecasts-latest.json'); if(!s.horizons['7_days']?.length) throw new Error('empty 7_days'); console.log('snapshot OK:', s.prediction_date)"
+
+      # The alert snapshot is a public artefact: it must contain PUBLISHED rows only,
+      # must carry the §1.7 disclaimer on every row, and must refuse to replace a
+      # non-empty snapshot with an empty one. All three are asserted here.
+      - name: Alert snapshot builder smoke test
+        run: |
+          set -euo pipefail
+          node scripts/build_alert_snapshot.mjs \
+            --in scripts/tests/fixtures/alerts/alert-run.sample.json \
+            --out /tmp/alerts-latest.json
+          node -e "
+            const s = require('/tmp/alerts-latest.json');
+            if (s.schema !== 'hazardnet-alerts/v1') throw new Error('schema tag missing');
+            if (s.alerts.length !== 2) throw new Error('expected 2 published rows, got ' + s.alerts.length);
+            if (!s.alerts.every((a) => a.state === 'PUBLISHED')) throw new Error('non-published row leaked');
+            if (!s.alerts.every((a) => a.disclaimer && a.disclaimer.includes('not an official warning service')))
+              throw new Error('§1.7 disclaimer missing from a row');
+            if (s.counts.dropped_unpublished !== 1) throw new Error('drop count wrong');
+            console.log('alert snapshot OK:', s.alerts.length, 'published rows');
+          "
+          # Overwriting a non-empty snapshot with an empty run must fail (exit 3).
+          if node scripts/build_alert_snapshot.mjs --in scripts/tests/fixtures/alerts/empty-run.sample.json --out /tmp/alerts-latest.json 2>/dev/null; then
+            echo "::error::the builder replaced a non-empty snapshot with an empty one"
+            exit 1
+          fi
+          echo "alert snapshot guard OK: empty run refused"
+
+          # A payload the builder cannot read is an integration error, not a quiet day:
+          # exit 2 and write nothing. This is the exact shape the run endpoint returns
+          # when `include_alerts` is not set — the bug the first wiring shipped.
+          node -e "
+            const fs = require('fs');
+            fs.writeFileSync('/tmp/alerts-stripped.json', JSON.stringify({
+              ok: true, rows: 74, persisted: { published: 3 }, batch: { alerts_omitted: 74 },
+            }));
+          "
+          if node scripts/build_alert_snapshot.mjs --in /tmp/alerts-stripped.json --out /tmp/alerts-should-not-exist.json 2>/dev/null; then
+            echo "::error::the builder wrote a snapshot from a payload with no recognisable alert rows"
+            exit 1
+          fi
+          test ! -f /tmp/alerts-should-not-exist.json
+          echo "alert snapshot guard OK: unreadable payload refused"
+
+          # The engine's own run report nests the rows under batch.alerts / published_alerts
+          # rather than a top-level alerts[]; the builder must read both.
+          node -e "
+            const fs = require('fs');
+            fs.writeFileSync('/tmp/alerts-engine-shape.json', JSON.stringify({
+              ok: true, rows: 2, policy_version: 'alert-policy/1.0.0',
+              batch: { alerts: [{ id: 'draft', state: 'DRAFT' }, { id: 'published', state: 'DRAFT' }] },
+              published_alerts: [{ id: 'published', state: 'PUBLISHED', level: 'WATCH', disclaimer: '' }],
+              persisted: { published: 1, blocked: 1 },
+            }));
+          "
+          node scripts/build_alert_snapshot.mjs --in /tmp/alerts-engine-shape.json --out /tmp/alerts-engine-shape-out.json
+          node -e "
+            const s = require('/tmp/alerts-engine-shape-out.json');
+            if (s.alerts.length !== 1 || s.alerts[0].id !== 'published') throw new Error('published_alerts not preferred');
+            if (!s.alerts[0].disclaimer.includes('not an official warning service')) throw new Error('§1.7 disclaimer not stamped');
+            if (s.assessed !== 2) throw new Error('assessed not taken from the run report rows count');
+            if (s.counts.not_published !== 1) throw new Error('engine not-published tally missing');
+            console.log('alert snapshot OK: engine run-report shape read');
+          "
+
+      # The ingestion entry points a workflow would call, exercised offline against
+      # the same fixtures the unit tests use: events → load SQL, and a scene
+      # manifest whose dataset_version the publisher will require.
+      - name: ETL smoke test (offline fixtures)
+        run: |
+          set -euo pipefail
+          cd scripts
+          python -m etl.cli events --input tests/fixtures/etl/events_sample.csv \
+            --claimed-total 9 --emit-sql /tmp/events.sql --report /tmp/events-report.json > /dev/null
+          grep -q 'insert into public.hazard_events' /tmp/events.sql
+          grep -q 'public.hazard_event_ingest_runs' /tmp/events.sql
+          python -m etl.cli scene-manifest --units tests/fixtures/etl/scene_units.json \
+            --out /tmp/scene-manifest.json > /tmp/scene-report.json
+          python -c "import json; r=json.load(open('/tmp/scene-report.json')); \
+            assert r['status']=='ok' and r['problems']==[], r; \
+            print('etl OK:', r['dataset_version'], r['units'], 'units')"
 
   test-e2e:
     name: E2E Tests
@@ -315,6 +445,12 @@ jobs:
           fi
           echo "✅ Models/VERSION.json matches the artifacts on disk"
 
+      - name: Serverless functions load as ESM
+        run: |
+          node -e "import('./api/forecasts.js').then(() => console.log('api/forecasts: ESM OK'))"
+          node -e "import('./api/ingest.js').then(() => console.log('api/ingest: ESM OK'))"
+          node -e "import('./api/metrics.js').then(() => console.log('api/metrics: ESM OK'))"
+
       # PRD REQ-006 / TASK-008 / TRD INT-CLAIM-01: every metric-shaped number
       # in public copy must be registered in docs/CLAIMS.md with a strategy
       # label. Fabricated or unregistered metrics fail the build.
@@ -322,13 +458,6 @@ jobs:
       - name: Claims registry gate (PRD REQ-006)
         run: |
           node scripts/check-claims.mjs --claims docs/CLAIMS.md --src frontend/src --html frontend/index.html dist/index.html
-
-
-      - name: Serverless functions load as ESM
-        run: |
-          node -e "import('./api/forecasts.js').then(() => console.log('api/forecasts: ESM OK'))"
-          node -e "import('./api/ingest.js').then(() => console.log('api/ingest: ESM OK'))"
-          node -e "import('./api/metrics.js').then(() => console.log('api/metrics: ESM OK'))"
           node -e "import('./api/v1/forecasts/bulk.js').then(() => console.log('api/v1/forecasts/bulk: ESM OK'))"
           node -e "import('./api/v1/forecasts/metadata.js').then(() => console.log('api/v1/forecasts/metadata: ESM OK'))"
           node -e "import('./api/v1/forecasts/history.js').then(() => console.log('api/v1/forecasts/history: ESM OK'))"
@@ -355,6 +484,70 @@ jobs:
 
       - name: Bundle budget check
         run: npm run check:bundle
+
+      # Phase 8: the derived artifacts must still describe the committed inputs. Both gates are
+      # clock-blind (they compare a time-independent projection), so they cannot rot as the
+      # repository ages, and they fail before a deploy rather than after one.
+      - name: Derived artifacts describe their committed inputs
+        run: |
+          node scripts/build_content_engine.mjs --check
+          node scripts/build_freshness_artifact.mjs --check
+          # Phase 9 §8.1: the published validation numbers are projected from the committed
+          # hindcast reports, so a hand-edited model-performance.json fails here — as does a
+          # report that has been re-scored without regenerating the page that cites it.
+          node scripts/build_model_performance.mjs --check
+          # NASA Horizon Design System: frontend/src/styles/nasa-hds.css must still be the exact
+          # compilation of the vendored nasa/hds-core token source. A hand-edited token — or a
+          # vendored update without a regenerate — fails here rather than shipping a palette that
+          # no longer matches the system it claims to come from.
+          node scripts/import_nasa_tokens.mjs --check
+
+      # The build rewrites `frontend/public/data/content-index.json` (Vite copies `public/` into
+      # `dist/` before the prerenderer runs, so the prerenderer writes both copies). The rewrite
+      # moves `generated_at` on every build, which is why `git status` cannot be the gate: it
+      # would be red on every run. Compare the committed copy against the one this build just
+      # produced with the clock field removed — a difference then means the committed inventory
+      # describes a different set of pages than the commit builds, which is exactly the state
+      # the daily/weekly pipelines avoid by rebuilding before they commit.
+      - name: Committed content index matches this build
+        run: |
+          node - <<'NODE'
+          const { execSync } = require('node:child_process');
+          const fs = require('node:fs');
+
+          const file = 'frontend/public/data/content-index.json';
+          const strip = (raw) => {
+            const parsed = JSON.parse(raw);
+            delete parsed.generated_at;
+            return JSON.stringify(parsed);
+          };
+
+          const fresh = strip(fs.readFileSync(file, 'utf8'));
+          let committed;
+          try {
+            committed = strip(execSync(`git show HEAD:${file}`, { encoding: 'utf8' }));
+          } catch {
+            console.log(`::error::${file} is not committed — the build generated it, commit it.`);
+            process.exit(1);
+          }
+          if (fresh !== committed) {
+            console.log(`::error::${file} is stale — run 'cd frontend && npm run build' and commit it.`);
+            process.exit(1);
+          }
+          console.log('✅ the committed content index describes the pages this build produced');
+          NODE
+
+      # These suites assert on the *built* output (the SEO foundations of every generated page,
+      # the prerendered status page, and the JSON-LD graph in the HTML matching the renderer's).
+      # They self-skip without frontend/dist, so this run — the one job that builds — is where
+      # they actually execute.
+      - name: Post-build surface checks (prerender + SEO + structured data)
+        run: |
+          npx jest --ci --config jest.config.cjs --rootDir . \
+            __tests__/seoFoundations.test.js \
+            __tests__/statusPagePrerender.test.js \
+            __tests__/structuredData.test.js \
+            __tests__/modelPerformance.test.js
 
       - name: Upload build artifacts
         if: always()

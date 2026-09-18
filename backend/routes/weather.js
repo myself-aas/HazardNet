@@ -1,5 +1,6 @@
 import express from 'express';
 import { fetchWeather, fetchCurrentWeather, fetchCurrentWeatherBatch } from '../utils/openMeteo.js';
+import { clientError } from '../utils/clientError.js';
 
 const router = express.Router();
 
@@ -26,7 +27,7 @@ router.get('/', async (req, res) => {
     res.setHeader('Cache-Control', 'public, max-age=900');
     res.status(200).json(data);
   } catch (err) {
-    res.status(err.status || 500).json({ error: err.message });
+    clientError(res, err, { scope: 'backend/weather', fallback: 'Weather lookup failed' });
   }
 });
 
@@ -55,7 +56,7 @@ router.post('/batch', express.json({ limit: '256kb' }), async (req, res) => {
       points: results,
     });
   } catch (err) {
-    res.status(err.status || 500).json({ error: err.message });
+    clientError(res, err, { scope: 'backend/weather', fallback: 'Weather lookup failed' });
   }
 });
 
@@ -77,7 +78,7 @@ router.get('/batch', async (req, res) => {
     res.setHeader('Cache-Control', 'public, max-age=900');
     res.status(200).json({ count: results.length, generated_at: new Date().toISOString(), points: results });
   } catch (err) {
-    res.status(err.status || 500).json({ error: err.message });
+    clientError(res, err, { scope: 'backend/weather', fallback: 'Weather lookup failed' });
   }
 });
 

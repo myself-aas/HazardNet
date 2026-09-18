@@ -1,0 +1,32 @@
+{
+  "$comment": "Project attribution, committed as data because it is published in more than one place (the Organization/Person nodes of the site's JSON-LD, the citation block, and the repository's CITATION.cff) and must not be paraphrased differently in any of them. Every value here is a fact supplied by the thesis author; nothing is inferred.",
+  "author": {
+    "name": "Ashif Ahmed Shuvo",
+    "orcid": "0009-0003-5734-1519",
+    "orcidUrl": "https://orcid.org/0009-0003-5734-1519",
+    "github": "https://github.com/myself-aas",
+    "linkedin": "https://www.linkedin.com/in/me-aas",
+    "x": "https://x.com/myself_aas",
+    "role": "Master's thesis author"
+  },
+  "supervisor": {
+    "name": "Dr. Ahmed Khairul Hasan",
+    "url": "https://bau.edu.bd/profile/AGRON1013",
+    "role": "Supervisor"
+  },
+  "coSupervisor": {
+    "url": "https://csm.bau.edu.bd/teachers/CSM1007",
+    "role": "Co-supervisor"
+  },
+  "department": {
+    "name": "Department of Agrometeorology",
+    "university": "Bangladesh Agricultural University (BAU)",
+    "url": "https://bau.edu.bd/"
+  },
+  "work": {
+    "type": "Master's thesis",
+    "name": "HazardNet: multi-hazard early warning for Bangladesh agriculture",
+    "repository": "https://github.com/myself-aas/HazardNet",
+    "citationText": "Shuvo, A. A. HazardNet: multi-hazard early warning for Bangladesh agriculture. Master's thesis, Department of Agrometeorology, Bangladesh Agricultural University. https://github.com/myself-aas/HazardNet"
+  }
+}

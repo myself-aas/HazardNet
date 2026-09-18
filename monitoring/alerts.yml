@@ -2,7 +2,7 @@
 #
 # Threshold rationale: the canonical pipeline runs DAILY at 00:00 UTC
 # (.github/workflows/daily_forecast.yml — GitHub runner, GEE + Open-Meteo +
-# TFLite; the Kaggle workflows were removed on 2026-09-17). With date-granular
+# TFLite; the Kaggle workflows have been dispatch-only legacy since 2026-09-16). With date-granular
 # prediction_date values, a healthy gauge saws between ~2h (just after a run)
 # and ~25h (just before the next). 48h (2 days) = one missed run plus ~22h of
 # grace — the weekly-cadence 192h calibration applied only while the Kaggle

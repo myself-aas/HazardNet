@@ -189,7 +189,7 @@ export const AdvisoriesPage: React.FC = () => {
           {/* Dedicated Vector QR Code for Physical Handouts */}
           <div className="shrink-0">
             <PrintQrCode
-              url={`https://hazardnet.live/advisories/${activeSectorId}`}
+              url={`https://www.hazardnet.live/advisories/${activeSectorId}`}
               districtOrSector={sector.name}
               title="Live Sector Directive"
               subtitle="Scan for real-time telemetry & AI hazard forecasts"
@@ -473,7 +473,7 @@ export const AdvisoriesPage: React.FC = () => {
                   <button
                     onClick={handleGenerateAiAdvisory}
                     disabled={aiLoading}
-                    className="w-full py-2.5 px-4 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50"
+                    className="w-full py-2.5 px-4 rounded-xl bg-nasa-red hover:bg-nasa-red-tint text-slate-950 font-black text-xs flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50"
                   >
                     {aiLoading ? (
                       <>

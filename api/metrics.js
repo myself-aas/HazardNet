@@ -15,6 +15,7 @@
  */
 import client from 'prom-client';
 import { refreshForecastAgeGauge } from '../backend/utils/forecastFreshness.js';
+import { guardRequest } from '../backend/middleware/serverlessGuard.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
@@ -22,6 +23,7 @@ export default async function handler(req, res) {
     res.end(JSON.stringify({ error: 'Method not allowed' }));
     return;
   }
+  if (guardRequest(req, res, { bucket: 'metrics' })) return;
 
   const outcome = await refreshForecastAgeGauge();
   if (outcome.status === 'error') {

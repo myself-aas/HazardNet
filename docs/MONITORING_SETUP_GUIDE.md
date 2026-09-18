@@ -46,6 +46,24 @@ curl https://hazardnet.vercel.app/api/metrics
 
 ---
 
+## 1.3 The published status surface (Phase 7)
+
+Prometheus and Grafana are for whoever runs the platform; the public surface is `/status`, and
+it is deliberately not a metrics stack:
+
+| | |
+|---|---|
+| Artifact | `frontend/public/data/freshness.json` (`hazardnet-freshness/v1`), built by `scripts/build_freshness_artifact.mjs` from the committed ingest manifest, website snapshot, alert snapshot and the probe result |
+| Page | `/status` — the artifact rendered as static HTML at build time plus a React panel at runtime (same file), copy in `frontend/src/content/site-routes.json` |
+| Probe result | `data/site-health/latest.json` (`hazardnet-site-probe/v1`), published by `.github/workflows/site-health.yml` every 30 minutes |
+| Drift gate | `node scripts/build_freshness_artifact.mjs --check` (clock-blind: schema, coverage, provenance, source timestamps) |
+| Operator guide | `docs/ops/STATUS_PAGE.md` |
+
+The metric that stays on the Prometheus path is forecast age
+(`hazardnet_forecast_age_hours`, see §1.2 and `monitoring/alerts.yml`); everything else the
+status page states is derived from committed files, because a per-invocation serverless
+counter would lie about a fleet (see `api/metrics.js`).
+
 ## 2. Grafana Dashboard Setup
 
 ### 2.1 Create Grafana Account

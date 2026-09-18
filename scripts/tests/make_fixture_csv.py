@@ -14,6 +14,7 @@ Usage:
 
 import argparse
 import csv
+import hashlib
 import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -46,7 +47,20 @@ NOTEBOOK_COLUMNS = [
     'target_date', 'prediction_date', 'data_source',
     'om_temp_2m_k', 'om_precip_m', 'om_max_temp_k', 'om_min_temp_k',
     'om_dewpoint_k', 'om_solar_rad_j', 'om_wind_max_ms', 'om_et_sum_m',
+    # Scene lineage. The pipeline stamps a content hash over the inputs that
+    # produced each unit (scripts/etl/scene_manifest.py); the fixture stands in
+    # with a deterministic per-row value so the publish/validate/snapshot chain
+    # can be exercised end to end offline.
+    'dataset_version',
 ]
+
+
+def fixture_dataset_version(district_id, horizon, prediction_date):
+    """A deterministic stand-in for a real `dataset_version` (`ds1.<16 hex>`)."""
+    digest = hashlib.sha256(
+        f'{district_id}|{horizon}|{prediction_date}'.encode('utf-8')
+    ).hexdigest()
+    return f'ds1.{digest[:16]}'
 
 ADM3_COLUMNS = [
     'location_id', 'location_name', 'location_type', 'admin_level',
@@ -87,6 +101,7 @@ def notebook_rows(prediction_date: str):
                 'om_solar_rad_j': 18000000,
                 'om_wind_max_ms': 8.5,
                 'om_et_sum_m': 0.005,
+                'dataset_version': fixture_dataset_version(district_id, horizon, prediction_date),
             })
     return NOTEBOOK_COLUMNS, rows
 
@@ -126,8 +141,15 @@ def adm3_rows(prediction_date: str):
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
+    # Default to a temp path, NOT the committed ingest artifact. The previous default was
+    # `backend/data/forecasts/hazardnet_forecasts_latest.csv`, so running this helper once with
+    # no arguments overwrote the real forecast rows with synthetic ones in the working tree —
+    # exactly what happened before Phase 8, and a fixture that reaches `git commit` would put
+    # invented rows into the ingest path that the site and the ETL read.
     parser.add_argument('out', nargs='?',
-                        default='backend/data/forecasts/hazardnet_forecasts_latest.csv')
+                        default='/tmp/hazardnet_fixture_forecasts.csv')
+    parser.add_argument('--force', action='store_true',
+                        help='allow writing over a committed artifact under backend/data/forecasts/')
     parser.add_argument('--schema', choices=['notebook', 'adm3'], default='notebook')
     parser.add_argument('--prediction-date', default=None)
     parser.add_argument('--stale-days', type=int, default=0)
@@ -143,6 +165,12 @@ def main() -> None:
     columns, rows = (notebook_rows(prediction_date) if args.schema == 'notebook'
                      else adm3_rows(prediction_date))
     out = Path(args.out)
+    guarded = Path('backend/data/forecasts')
+    if guarded.resolve() in out.resolve().parents and not args.force:
+        sys.exit(
+            f'refusing to write synthetic fixture rows over {out} — that path is a committed '
+            'ingest artifact. Write elsewhere, or pass --force if you really mean to replace it.'
+        )
     out.parent.mkdir(parents=True, exist_ok=True)
     with open(out, 'w', newline='', encoding='utf-8') as fh:
         writer = csv.DictWriter(fh, fieldnames=columns)

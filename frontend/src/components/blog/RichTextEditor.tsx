@@ -215,7 +215,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
         <span className="w-px h-6 bg-slate-200 mx-1" aria-hidden="true" />
 
         <div className="flex items-center gap-1" role="group" aria-label="Text color">
-          {['#0f172a', '#b91c1c', '#1d4ed8', '#15803d', '#d08305'].map((color) => (
+          {['#0f172a', '#b91c1c', '#1d4ed8', '#15803d', '#b60109'].map((color) => (
             <button
               key={color}
               type="button"

@@ -1,0 +1,29 @@
+{
+  "_comment": [
+    "TEMPLATE ONLY — this map is deliberately UNFITTED and is refused by",
+    "`python -m mlops.cli apply-calibration` (see scripts/mlops/calibration.py).",
+    "It exists so the shape and the required provenance are reviewable before real",
+    "labelled outcomes exist. Fit the real map with:",
+    "  cd scripts && python -m mlops.cli calibrate --fit-from <labelled predictions> \\",
+    "      --outcomes <observed outcomes> --method isotonic \\",
+    "      --fit-period <window> --fitted-on <date> --out ../Models/calibration/confidence_map.json",
+    "and only then may a published row carry confidence_kind=calibrated_probability.",
+    "Do NOT hand-edit a fitted map: the fit provenance is what makes it auditable."
+  ],
+  "format": "hazardnet-calibration/v1",
+  "method": "isotonic",
+  "samples": 0,
+  "base_rate": null,
+  "brier": null,
+  "brier_raw": null,
+  "ece": null,
+  "ece_raw": null,
+  "monotone": null,
+  "converged": null,
+  "pairs": [],
+  "fit_period": null,
+  "fitted_on": null,
+  "fit_source": null,
+  "label_definition": null,
+  "status": "awaiting-outcomes"
+}

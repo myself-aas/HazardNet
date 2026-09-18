@@ -123,20 +123,19 @@ describe('historyRowsToCsv', () => {
 });
 
 describe('metadata helpers', () => {
-  test('metadataDatasets points at the runner pipeline + GitHub release archive', () => {
+  test('metadataDatasets pins the Kaggle dataset + notebook provenance', () => {
     const datasets = metadataDatasets();
     expect(datasets).toHaveLength(2);
-    expect(datasets[0].url).toContain('github.com/myself-aas/HazardNet/actions/workflows/daily_forecast.yml');
-    expect(datasets[0].update_frequency).toBe('daily');
-    expect(datasets[1].url).toContain('github.com/myself-aas/HazardNet/releases');
+    expect(datasets[0].url).toContain('kaggle.com/datasets/');
+    expect(datasets[1].url).toContain('kaggle.com/code/');
   });
 
-  test('metadataDataSource honors FORECAST_DATA_SOURCE with a documented default', () => {
-    const saved = process.env.FORECAST_DATA_SOURCE;
-    process.env.FORECAST_DATA_SOURCE = 'custom/source';
-    expect(metadataDataSource()).toBe('custom/source');
-    delete process.env.FORECAST_DATA_SOURCE;
-    expect(metadataDataSource()).toBe('github-actions: scripts/auto_forecast.py (GEE + Open-Meteo + TFLite)');
-    if (saved !== undefined) process.env.FORECAST_DATA_SOURCE = saved;
+  test('metadataDataSource honors KAGGLE_DATASET with a documented default', () => {
+    const saved = process.env.KAGGLE_DATASET;
+    process.env.KAGGLE_DATASET = 'someone/elsewhere';
+    expect(metadataDataSource()).toBe('someone/elsewhere');
+    delete process.env.KAGGLE_DATASET;
+    expect(metadataDataSource()).toBe('ashifahmedshuvo/hazardnet-weekly-forecasts');
+    if (saved !== undefined) process.env.KAGGLE_DATASET = saved;
   });
 });

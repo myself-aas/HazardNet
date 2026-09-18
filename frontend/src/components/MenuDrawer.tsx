@@ -90,7 +90,9 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
       category: 'National Maps',
       icon: 'map',
       items: [
-        { id: 'overview', title: 'GIS Overview', path: '/home/overview', icon: 'public', badge: '3D' },
+        { id: 'live', title: 'Live Map & GIS Console', path: '/live', icon: 'public', badge: '3D' },
+        { id: 'front-door', title: 'Overview (front door)', path: '/', icon: 'description' },
+        { id: 'alerts', title: 'Alerts', path: '/alerts', icon: 'notifications_active' },
         { id: 'my-districts', title: 'Saved Districts', path: '/forecast/my-districts', icon: 'bookmark' },
         { id: 'compare', title: 'Compare Districts', path: '/forecast/compare', icon: 'compare_arrows' },
       ],
@@ -124,6 +126,9 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
       icon: 'folder',
       items: [
         { id: 'documentation', title: 'Documentation', path: '/docs', icon: 'description' },
+        { id: 'hazard-methodology', title: 'Hazard Methodology', path: '/hazards', icon: 'menu_book' },
+        { id: 'district-outlooks', title: 'District Outlooks', path: '/districts', icon: 'location_on' },
+        { id: 'status', title: 'System Status', path: '/status', icon: 'monitor_heart' },
         { id: 'upload', title: 'Upload Data', path: '/upload', icon: 'cloud_upload' },
         { id: 'use-cases', title: 'Use Cases', path: '/use-cases', icon: 'lightbulb' },
         { id: 'download', title: 'Download Center', path: '/download', icon: 'download' },
@@ -295,7 +300,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                     to="/signup"
                     data-testid="drawer-signup-link"
                     onClick={onClose}
-                    className="w-full py-3 rounded-2xl bg-[#f9a825] hover:bg-[#d08305] text-slate-950 text-[13px] font-extrabold text-center shadow-2xs transition-all focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:outline-none"
+                    className="w-full py-3 rounded-2xl bg-nasa-red hover:bg-nasa-red-shade text-slate-950 text-[13px] font-extrabold text-center shadow-2xs transition-all focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:outline-none"
                   >
                     Sign up free
                   </Link>

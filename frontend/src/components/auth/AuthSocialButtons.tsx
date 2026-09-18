@@ -33,7 +33,7 @@ const ProviderIconButton: React.FC<{
       onClick={() => onPick(provider)}
       aria-label={`Continue with ${config.label}`}
       title={config.note ? `${config.label} — ${config.note}` : `Continue with ${config.label}`}
-      className="group relative flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white shadow-xs transition-all hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-sm disabled:cursor-wait disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f9a825]/60 cursor-pointer"
+      className="group relative flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white shadow-xs transition-all hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-sm disabled:cursor-wait disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nasa-blue/60 cursor-pointer"
     >
       {busy ? (
         <span className="h-4 w-4 animate-spin rounded-full border-2 border-slate-300 border-t-slate-700" />
@@ -79,7 +79,7 @@ export function AuthSocialButtons({
         onClick={() => handleProvider('google')}
         data-testid="connect-google-btn"
         aria-label={label}
-        className="group flex w-full items-center justify-center gap-3 rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-bold text-slate-800 shadow-sm transition-all hover:border-slate-400 hover:shadow-md disabled:cursor-wait disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f9a825]/60 focus-visible:ring-offset-2 cursor-pointer"
+        className="group flex w-full items-center justify-center gap-3 rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-bold text-slate-800 shadow-sm transition-all hover:border-slate-400 hover:shadow-md disabled:cursor-wait disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nasa-blue/60 focus-visible:ring-offset-2 cursor-pointer"
       >
         {active === 'google' ? (
           <span className="h-5 w-5 animate-spin rounded-full border-2 border-slate-300 border-t-slate-700" />

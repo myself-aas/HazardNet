@@ -5,6 +5,7 @@ import {
   DistrictData,
   DivisionData
 } from '../data/bangladeshDistricts';
+import { LEVEL_COLOURS } from './alerts/AlertLevelBadge';
 
 interface BangladeshSvgMapProps {
   onSelectDistrict?: (district: DistrictData) => void;
@@ -14,6 +15,25 @@ interface BangladeshSvgMapProps {
   activeHazardFilter?: string;
   mapViewMode?: 'districts' | 'divisions';
   onOpenDisasterModal?: (districtId: string) => void;
+  /**
+   * Alert-engine choropleth (Phase 5): district slug → published alert level.
+   *
+   * When supplied, the district markers are coloured by *alert level* instead of the
+   * static baseline severity, because those two things frequently disagree and only
+   * one of them is a published alert. Districts absent from the map keep the baseline
+   * colour and are labelled as baseline in the table — see `DistrictAlertTable`.
+   */
+  alertLevels?: Record<string, string> | null;
+  /** level → already-translated label, for the accessible name of each marker. */
+  alertLevelLabels?: Record<string, string> | null;
+  /**
+   * Low-bandwidth rendering: drop the pulsing glow circles, the ping rings and the
+   * dotted background grid. The map stays fully usable (it is vector geometry) —
+   * only the decoration that costs repaints goes away.
+   */
+  lowBandwidth?: boolean;
+  /** Replaces the static severity legend when the alert layer is active. */
+  legendSlot?: React.ReactNode;
 }
 
 export const BangladeshSvgMap: React.FC<BangladeshSvgMapProps> = ({
@@ -24,6 +44,10 @@ export const BangladeshSvgMap: React.FC<BangladeshSvgMapProps> = ({
   activeHazardFilter = 'All',
   mapViewMode = 'districts',
   onOpenDisasterModal,
+  alertLevels = null,
+  alertLevelLabels = null,
+  lowBandwidth = false,
+  legendSlot = null,
 }) => {
   const [hoveredDistrict, setHoveredDistrict] = useState<DistrictData | null>(null);
   const [hoveredDivision, setHoveredDivision] = useState<DivisionData | null>(null);
@@ -44,20 +68,22 @@ export const BangladeshSvgMap: React.FC<BangladeshSvgMapProps> = ({
   return (
     <div className="w-full bg-white rounded-2xl border border-slate-200 p-4 shadow-xl relative overflow-hidden flex flex-col justify-between text-slate-800">
       
-      {/* Background Tech Grid */}
-      <div 
-        className="absolute inset-0 pointer-events-none opacity-20"
-        style={{
-          backgroundImage: `radial-gradient(#94a3b8 0.75px, transparent 0.75px)`,
-          backgroundSize: '16px 16px'
-        }}
-      />
+      {/* Background Tech Grid (skipped in low-bandwidth mode: pure decoration) */}
+      {!lowBandwidth && (
+        <div
+          className="absolute inset-0 pointer-events-none opacity-20"
+          style={{
+            backgroundImage: `radial-gradient(#94a3b8 0.75px, transparent 0.75px)`,
+            backgroundSize: '16px 16px'
+          }}
+        />
+      )}
 
       {/* Header & Map Level Mode Controls */}
       <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-3 pb-3 border-b border-slate-200">
         <div>
           <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#f9a825] animate-ping"></span>
+            <span className={`w-2.5 h-2.5 rounded-full bg-nasa-red ${lowBandwidth ? '' : 'animate-ping'}`}></span>
             <h3 className="text-sm font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
               <span>Vector Spatial Heatmap</span>
             </h3>
@@ -79,7 +105,7 @@ export const BangladeshSvgMap: React.FC<BangladeshSvgMapProps> = ({
               onClick={() => setViewMode('districts')}
               className={`px-2.5 py-1 rounded-lg font-bold transition-all ${
                 viewMode === 'districts'
-                  ? 'bg-[#f9a825] text-white shadow-xs'
+                  ? 'bg-nasa-red text-white shadow-xs'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
@@ -89,7 +115,7 @@ export const BangladeshSvgMap: React.FC<BangladeshSvgMapProps> = ({
               onClick={() => setViewMode('divisions')}
               className={`px-2.5 py-1 rounded-lg font-bold transition-all ${
                 viewMode === 'divisions'
-                  ? 'bg-[#f9a825] text-white shadow-xs'
+                  ? 'bg-nasa-red text-white shadow-xs'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
@@ -206,7 +232,7 @@ export const BangladeshSvgMap: React.FC<BangladeshSvgMapProps> = ({
                 <path
                   d={div.path}
                   fill={isSelectedDiv ? 'rgba(249, 168, 37, 0.25)' : '#f1f5f9'}
-                  stroke={isSelectedDiv ? '#f9a825' : '#cbd5e1'}
+                  stroke={isSelectedDiv ? '#f64137' : '#cbd5e1'}
                   strokeWidth={isSelectedDiv ? '1.2' : '0.5'}
                   strokeDasharray={viewMode === 'divisions' ? 'none' : '1 1'}
                   onMouseEnter={() => setHoveredDivision(div)}
@@ -274,15 +300,23 @@ export const BangladeshSvgMap: React.FC<BangladeshSvgMapProps> = ({
           {viewMode === 'districts' &&
             filteredDistricts.map((dist) => {
               const isSelected = dist.id === selectedDistrictId;
-              const color = getSeverityColor(dist.severity);
-              const isHigh = dist.severity >= 0.8;
+              const alertLevel = alertLevels ? alertLevels[dist.id] : undefined;
+              const color = alertLevel ? LEVEL_COLOURS[alertLevel as keyof typeof LEVEL_COLOURS] : getSeverityColor(dist.severity);
+              const isHigh = !alertLevel && dist.severity >= 0.8;
+              // Accessible name: the baseline risk is always stated, and the published
+              // alert level is appended when one exists. A comma expression here would
+              // silently print only the level code, so the label is built step by step.
+              const alertLevelName = alertLevel
+                ? String((alertLevelLabels && alertLevelLabels[alertLevel]) || alertLevel)
+                : null;
+              const alertLabel = alertLevelName ? `, HazardNet alert: ${alertLevelName}` : '';
 
               return (
                 <g
                   key={dist.id}
                   tabIndex={0}
                   role="button"
-                  aria-label={`${dist.name} District, Risk: ${dist.risk}, Hazard: ${dist.hazardType}, Severity: ${(dist.severity * 100).toFixed(0)}%`}
+                  aria-label={`${dist.name} District, Risk: ${dist.risk}, Hazard: ${dist.hazardType}, Severity: ${(dist.severity * 100).toFixed(0)}%${alertLabel}`}
                   onClick={() => {
                     if (onSelectDistrict) onSelectDistrict(dist);
                     if (onOpenDisasterModal) onOpenDisasterModal(dist.id);
@@ -298,17 +332,19 @@ export const BangladeshSvgMap: React.FC<BangladeshSvgMapProps> = ({
                   onMouseLeave={() => setHoveredDistrict(null)}
                   className="cursor-pointer group outline-hidden focus:outline-hidden"
                 >
-                  {/* Heatmap Glow Circle */}
-                  <circle
-                    cx={dist.cx}
-                    cy={dist.cy}
-                    r={isSelected ? 4.5 : isHigh ? 3.5 : 2.5}
-                    fill={isHigh ? 'url(#highRiskGlow)' : 'url(#modRiskGlow)'}
-                    className="animate-pulse opacity-80"
-                  />
+                  {/* Heatmap Glow Circle (decorative; skipped in low-bandwidth mode) */}
+                  {!lowBandwidth && (
+                    <circle
+                      cx={dist.cx}
+                      cy={dist.cy}
+                      r={isSelected ? 4.5 : isHigh ? 3.5 : 2.5}
+                      fill={isHigh ? 'url(#highRiskGlow)' : 'url(#modRiskGlow)'}
+                      className="animate-pulse opacity-80"
+                    />
+                  )}
 
                   {/* High Risk Ping Ring */}
-                  {isHigh && (
+                  {!lowBandwidth && isHigh && (
                     <circle
                       cx={dist.cx}
                       cy={dist.cy}
@@ -345,7 +381,7 @@ export const BangladeshSvgMap: React.FC<BangladeshSvgMapProps> = ({
                   )}
 
                   {/* Label Text for Key Districts or Selected */}
-                  {(isSelected || dist.severity >= 0.8 || dist.id === 'dhaka' || dist.id === 'rajshahi' || dist.id === 'chattogram' || dist.id === 'khulna') && (
+                  {(isSelected || alertLevel || dist.severity >= 0.8 || dist.id === 'dhaka' || dist.id === 'rajshahi' || dist.id === 'chattogram' || dist.id === 'khulna') && (
                     <text
                       x={dist.cx + 1.8}
                       y={dist.cy + 0.8}
@@ -367,7 +403,8 @@ export const BangladeshSvgMap: React.FC<BangladeshSvgMapProps> = ({
       {/* Footer Legend & Selected Node HUD */}
       <div className="relative z-10 flex flex-wrap items-center justify-between gap-3 mt-3 pt-3 border-t border-slate-200 text-xs text-slate-500">
         
-        {/* Severity Output Indicators */}
+        {/* Legend: alert levels when the alert layer is on, baseline severity otherwise */}
+        {legendSlot ? legendSlot : (
         <div className="flex items-center gap-3">
           <span className="font-bold text-slate-700">Severity Scale:</span>
           <div className="flex items-center gap-1.5 font-mono text-[11px]">
@@ -383,10 +420,18 @@ export const BangladeshSvgMap: React.FC<BangladeshSvgMapProps> = ({
             <span>High (&gt;0.75)</span>
           </div>
         </div>
+        )}
 
         {/* Selected Zone Display */}
-        <div className="font-mono text-[11px] text-slate-800 bg-slate-100 px-3 py-1 rounded-lg border border-slate-200">
-          Showing: <strong>{viewMode === 'districts' ? `${filteredDistricts.length} / 64 Districts` : 'All 8 Divisions'}</strong>
+        <div className="flex flex-wrap items-center gap-2">
+          {alertLevels && (
+            <span className="font-mono text-[11px] text-slate-800 bg-amber-50 px-3 py-1 rounded-lg border border-amber-300">
+              Alert layer: <strong>{Object.keys(alertLevels).length} districts</strong>
+            </span>
+          )}
+          <div className="font-mono text-[11px] text-slate-800 bg-slate-100 px-3 py-1 rounded-lg border border-slate-200">
+            Showing: <strong>{viewMode === 'districts' ? `${filteredDistricts.length} / 64 Districts` : 'All 8 Divisions'}</strong>
+          </div>
         </div>
 
       </div>

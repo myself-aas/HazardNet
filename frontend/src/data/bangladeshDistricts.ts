@@ -94,7 +94,10 @@ export const ALL_64_DISTRICTS: DistrictData[] = [
   { id: 'khulna', name: 'Khulna', division: 'Khulna', lat: 22.8456, lng: 89.5403, risk: 'High', severity: 0.76, hazardType: 'Tropical Cyclone', mainCrop: 'Sesame & Paddy', elevationMeters: 6, cx: 42, cy: 70 },
   { id: 'satkhira', name: 'Satkhira', division: 'Khulna', lat: 22.7185, lng: 89.0705, risk: 'High', severity: 0.89, hazardType: 'Tropical Cyclone', mainCrop: 'Shrimp Farming & Saline Rice', elevationMeters: 4, cx: 34, cy: 73 },
   { id: 'bagerhat', name: 'Bagerhat', division: 'Khulna', lat: 22.6516, lng: 89.7859, risk: 'High', severity: 0.83, hazardType: 'Tropical Cyclone', mainCrop: 'Coconut & Betel Nut', elevationMeters: 5, cx: 47, cy: 74 },
-  { id: 'jessore', name: 'Jessore', division: 'Khulna', lat: 23.1664, lng: 89.2081, risk: 'Moderate', severity: 0.52, hazardType: 'Drought', mainCrop: 'Flower Cultivation & Date Palm', elevationMeters: 12, cx: 36, cy: 64 },
+  // Name uses the 2018 official spelling (Jashore) as the other renamed
+  // districts do; the id stays 'jessore' because it is the URL segment for
+  // /forecast/district/:id and other datasets key on it.
+  { id: 'jessore', name: 'Jashore', division: 'Khulna', lat: 23.1664, lng: 89.2081, risk: 'Moderate', severity: 0.52, hazardType: 'Drought', mainCrop: 'Flower Cultivation & Date Palm', elevationMeters: 12, cx: 36, cy: 64 },
   { id: 'jhenaidah', name: 'Jhenaidah', division: 'Khulna', lat: 23.5448, lng: 89.1539, risk: 'Moderate', severity: 0.48, hazardType: 'Drought', mainCrop: 'Banana & Vegetables', elevationMeters: 14, cx: 36, cy: 58 },
   { id: 'magura', name: 'Magura', division: 'Khulna', lat: 23.4873, lng: 89.4199, risk: 'Moderate', severity: 0.55, hazardType: 'Monsoon Flood', mainCrop: 'Mustard & Jute', elevationMeters: 11, cx: 41, cy: 59 },
   { id: 'narail', name: 'Narail', division: 'Khulna', lat: 23.1725, lng: 89.5126, risk: 'Moderate', severity: 0.58, hazardType: 'Monsoon Flood', mainCrop: 'Paddy & Pulses', elevationMeters: 8, cx: 42, cy: 64 },

@@ -8,6 +8,7 @@
  */
 
 import { VALID_HORIZONS } from './forecastRow.js';
+import { csvEscape } from './csvSafety.js';
 
 export const HISTORY_MAX_WINDOW_DAYS = 90;
 export const HISTORY_DEFAULT_WINDOW_DAYS = 30;
@@ -20,31 +21,26 @@ export const CSV_COLUMNS = [
   'physics_severity', 'division', 'pcode', 'admin_level', 'adm2_name', 'adm2_pcode',
 ];
 
-/** Forecast provenance block served by GET /metadata (both runtimes).
- * Runner-native since the Kaggle workflows were removed (2026-09-17):
- * the producer is daily_forecast.yml on the GitHub Actions runner and the
- * historical CSV archive is the GitHub Release attachment set. */
+/** Kaggle provenance block served by GET /metadata (both runtimes). */
 export function metadataDatasets() {
   return [
     {
-      id: 'auto-forecast-pipeline',
-      name: 'hazardnet-auto-forecast-pipeline',
-      url: 'https://github.com/myself-aas/HazardNet/actions/workflows/daily_forecast.yml',
-      type: 'workflow',
+      id: '7b9ed0ca41d930114260efabb71a7fbf616cb68456d30823ecfc2ac45732fe3c',
+      name: 'hazardnet-weekly-forecasts',
+      url: 'https://www.kaggle.com/datasets/ashifahmedshuvo/hazardnet-weekly-forecasts/',
       update_frequency: 'daily',
     },
     {
-      id: 'forecast-history-archive',
-      name: 'hazardnet-forecast-history',
-      url: 'https://github.com/myself-aas/HazardNet/releases',
-      type: 'release-archive',
+      id: 'auto-forecast-pipeline',
+      name: 'hazardnet-auto-forecast-pipeline',
+      url: 'https://www.kaggle.com/code/ashifahmedshuvo/hazardnet-auto-forecast-pipeline/',
+      type: 'notebook',
     },
   ];
 }
 
 export function metadataDataSource() {
-  return process.env.FORECAST_DATA_SOURCE
-    || 'github-actions: scripts/auto_forecast.py (GEE + Open-Meteo + TFLite)';
+  return process.env.KAGGLE_DATASET || 'ashifahmedshuvo/hazardnet-weekly-forecasts';
 }
 
 /**
@@ -105,11 +101,10 @@ export function parseHistoryQuery(query) {
   return { from: fromDate, to: toDate, horizon: horizon || null, districtId, format };
 }
 
-function csvEscape(value) {
-  if (value === null || value === undefined) return '';
-  const str = String(value);
-  return /[",\n\r]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
-}
+// CSV escaping lives in utils/csvSafety.js so the export cannot drift from the rule the
+// tests pin: RFC 4180 quoting *plus* formula-injection neutralisation (a cell beginning
+// `=`/`+`/`-`/`@` executes in Excel — see the module header).
+export { csvEscape } from './csvSafety.js';
 
 /** Render history rows as the ingest-compatible CSV export. */
 export function historyRowsToCsv(rows) {

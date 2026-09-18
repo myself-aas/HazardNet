@@ -1,11 +1,13 @@
 // Vercel Serverless Function — GET /api/v1/forecasts/metadata
 //
 // Freshness endpoint for the "Peak Hazard Window" / "Incident Ingestion"
-// cards: newest ingested prediction_date + ingestion timestamp +
+// cards: newest ingested Kaggle prediction_date + ingestion timestamp +
 // dataset provenance. Same shape as backend/routes/forecasts.js GET /metadata.
 
 import { metadataDatasets, metadataDataSource } from '../../../backend/utils/forecastServe.js';
 import { getForecastStore } from '../../../backend/forecastStore.js';
+import { clientError } from '../../../backend/utils/clientError.js';
+import { guardRequest } from '../../../backend/middleware/serverlessGuard.js';
 
 /**
  * @param {import('vercel').Request} req
@@ -16,6 +18,7 @@ export default async function handler(req, res) {
     res.status(405).json({ error: 'Method Not Allowed' });
     return;
   }
+  if (guardRequest(req, res, { bucket: 'read' })) return;
 
   try {
     const store = getForecastStore();
@@ -26,11 +29,11 @@ export default async function handler(req, res) {
       prediction_date: predictionDate,
       ingestion_timestamp: ingestionTimestamp,
       data_source: metadataDataSource(),
-      pipeline_source: 'github-actions: daily_forecast.yml (scripts/auto_forecast.py)',
+      notebook_source: 'ashifahmedshuvo/hazardnet-auto-forecast-pipeline',
       datasets: metadataDatasets(),
       generated_at: new Date().toISOString(),
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    clientError(res, err, { scope: 'api/v1/forecasts/metadata' });
   }
 }

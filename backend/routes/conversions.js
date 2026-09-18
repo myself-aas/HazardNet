@@ -9,6 +9,7 @@ import {
 } from '../utils/conversionTracker.js';
 import { db, collection, addDoc } from '../db.js';
 import metrics from '../metrics.js';
+import { clientError } from '../utils/clientError.js';
 
 const router = express.Router();
 
@@ -135,7 +136,7 @@ router.post('/track', async (req, res) => {
     });
   } catch (error) {
     console.error('[Conversion Tracking Error]:', error);
-    res.status(500).json({ error: 'Failed to record server-side conversion', details: error.message });
+    clientError(res, error, { scope: 'backend/conversions', fallback: 'Failed to record server-side conversion' });
   }
 });
 
