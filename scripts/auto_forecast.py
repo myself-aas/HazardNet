@@ -254,6 +254,19 @@ def _openmeteo_provenance(url, params, payload, fields_defaulted=()):
     }
 
 
+def observed_series(values) -> list:
+    """The finite values of a daily array, in order, with gaps left out.
+
+    `scripts/physics_severity.py` derives the mean daily ET, the mean daily wind and the two
+    exceedance counts from these series. A missing day is therefore dropped rather than
+    substituted: a zero-filled temperature gap would read as a day below 16 °C, and a
+    zero-filled ET gap would pull the drying term down — both are the 2026-09 defect class
+    (a value that is not the quantity the formula describes) wearing a different hat.
+    """
+    array = np.asarray(values, dtype=float).ravel()
+    return [float(value) for value in array if np.isfinite(value)]
+
+
 def get_openmeteo_forecast(lat, lon, horizon_days):
     """Fetch an Open-Meteo forecast and aggregate to the scalar daily
     summaries the downstream 15-channel tensor + physics-severity formulas
@@ -359,6 +372,28 @@ def get_openmeteo_forecast(lat, lon, horizon_days):
             # on 2026-09-17). Both are derived from the same daily series, so
             # they stay consistent with the total.
             'Precip_Peak_24h_mm': float(np.nanmax(np.nan_to_num(precip_mm, nan=0.0))),
+            # ── daily series for the physics track (defect fixed 2026-09-18) ─────
+            # The fire drying/persistence terms are written for *daily* quantities
+            # (their own defaults are 3 mm ET, 1 day, 10 km/h), and the hindcast
+            # measured what happens when a horizon total or a horizon length is
+            # passed instead: every one of those terms sat at its ceiling on every
+            # row of every episode, and `Fire` — a class that is high everywhere —
+            # became the physics track's top pick on 127 of 128 windows of a
+            # landfalling cyclone. The fix is not a better scalar: it is to stop
+            # aggregating here at all. `scripts/physics_severity.py` takes these
+            # series and computes the mean daily ET, the mean daily wind and the
+            # two exceedance counts itself, so this caller cannot pass the wrong
+            # aggregate — it is not the one aggregating.
+            '_daily_for_physics': {
+                # `observed_series`, not `nan_to_num`: a missing day must be *absent* from the
+                # series, never a zero. Zero-filling temperature would count every gap as a day
+                # below 16 °C (the cold-wave exceedance term) and drag the mean daily ET toward
+                # zero — i.e. it would reintroduce the same class of defect in a new place.
+                'daily_temp_max_c': observed_series(temp_max_c),
+                'daily_temp_min_c': observed_series(temp_min_c),
+                'daily_et0_mm':     observed_series(et_mm),
+                'daily_wind_max_kmh': observed_series(wind_max_kmh),
+            },
             # ── lineage for the scene manifest (not a model input) ───────
             '_provenance': _openmeteo_provenance(url, params, payload, fields_defaulted),
         }
@@ -724,7 +759,15 @@ for dist in DISTRICTS: # Full pipeline now
                 'temp_min_c': temp_min_c,
                 'precip_total_mm': precip_total_mm,
                 'precip_peak_mm': om_data.get('Precip_Peak_24h_mm'),
-                'wind_max_kmh': wind_max_kmh,
+                # Gust, not the sustained maximum: the unit is a district centroid, and
+                # the hindcast measured the sustained field at 19-69 km/h on Amphan's
+                # landfall day where the same archive's gust field reached 51-134 km/h.
+                'wind_gust_kmh': om_data.get('Gust_Max'),
+                # The daily series: `resolve_drivers` turns these into the daily-mean ET,
+                # the daily-mean wind and the two exceedance counts the formulas describe.
+                **(om_data.get('_daily_for_physics') or {}),
+                # Kept so the row records what the horizon accumulated. The module reads it
+                # only when no daily ET series was supplied.
                 'et_total_mm': et_total_mm,
             }
             physics_scores = compute_physics_scores(physics_drivers, days)

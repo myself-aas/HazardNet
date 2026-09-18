@@ -9,17 +9,27 @@ inputs (`python -m hindcast.cli check`). Five episodes — **Amphan 2020, Yaas 2
 2023, the August 2024 eastern flash floods, the June 2025 monsoon floods** — were replayed through
 the pipeline's independent physics track over real reanalysis drivers. Every one of the **50 named
 affected districts reached the alarm list at both horizons (50/50)**, and the track named the class
-that occurred for **12 of them** — all 12 in the 2024 flood episode, whose class score is
-rainfall-driven. On the three cyclones it named **0 of 27**, because the ERA5 daily-maximum 10 m
-wind at a district centroid on Amphan's landfall day is **44–69 km/h** where the cyclone carried
-130–155 km/h ashore.
+that occurred for **13 of them** — all 13 in the 2024 flood episode, whose class score is
+rainfall-driven. On the three cyclones it named **0 of 27**, because the ERA5 sustained 10 m wind at
+a district centroid on Amphan's landfall day is **19–69 km/h** where the cyclone carried 130–155 km/h
+ashore — and even the archive's gust field, which the corrected wiring now reads, only reaches the
+alarm band on **2 of Amphan's 128** windows.
 The first measured detection in the project's history is therefore also its most useful finding:
-**the hindcast found a driver-fidelity problem, three saturated physics terms, and two
+**the hindcast found a driver-fidelity problem, four saturated physics terms, and two
 inseparable class pairs — not a skill number.**
+
+Three of those findings were corrected on **2026-09-18**: the physics wiring now feeds each formula
+the quantity it describes, and the two wind-damage classes read the gust (§4.2). The correction moved
+the 2024 flood's class-strict score from 22 hits / 4 false alarms to **26 hits / 0 false alarms**, and
+the before/after is published in every report and on `/model-performance`. What it did *not* fix is
+stated with the same precision: `Fire` still tops 45–119 of 128 windows per episode (§4.3), the
+rain/wind class pairs remain inseparable at district-point resolution (§4.4), and no threshold band
+moves (§3.3).
 
 Phase 9 is *not* complete: the calibration map is still unfit (no fitted map, so `WARNING` stays
 unreachable), the tabletop exercise has not been run and cannot be run by a repository, and the
-public metrics dashboard does not exist yet. §8–§10 say exactly what is left and who owns it.
+source archive — without which the calibration map and the district histories stay empty — is still
+absent. §8–§10 say exactly what is left and who owns it.
 
 ---
 
@@ -88,8 +98,9 @@ Three properties are recorded in the files themselves rather than left to the re
 * `threshold_sensitivity` — the §1.3 WATCH (0.40) and WARNING (0.65) bands plus the harness default,
   each with its own hit/miss/false-alarm split;
 * `detection` — the three counts of §3.1, per district and per horizon;
-* `physics_diagnostics` — §4's saturation counts, the wiring counterfactual, and the wind-driver
-  comparison with a generated `finding` sentence;
+* `physics_diagnostics` — §4's saturation counts for the corrected wiring **and** the one it
+  replaced, the corrected driver ranges, the two wind-driver scenarios with a generated `finding`
+  sentence, and `detection_legacy` (the same detection counts under the pre-correction wiring);
 * `per_district`, `alarmed_without_a_recorded_impact`, `counts`, `caveats`, `citations`.
 
 ## 3. Results
@@ -110,9 +121,9 @@ them would state either a false disaster or a false success, so the report carri
 | `amphan-2020` (Tropical Cyclone) | 14 | **14 / 14** | 0 | 0 / 14 |
 | `yaas-2021` (Tropical Cyclone) | 9 | **9 / 9** | 0 | 0 / 9 |
 | `mocha-2023` (Tropical Cyclone) | 4 | **4 / 4** | 0 | 0 / 4 |
-| `eastern-flood-2024` (Flash Flood) | 13 | **13 / 13** | **12** | 13 / 13 |
+| `eastern-flood-2024` (Flash Flood) | 13 | **13 / 13** | **13** | 13 / 13 |
 | `northeast-flood-2025` (Flood) | 10 | **10 / 10** | 0 | 10 / 10 |
-| **all five** | **50** | **50 / 50** | **12** | 23 / 50 |
+| **all five** | **50** | **50 / 50** | **13** | 23 / 50 |
 
 Same table by horizon: the any-class column is identical at 7 days and at 15 days in all five
 episodes — nothing in this hindcast is a lead-time story, and `lead_time_days` is
@@ -125,7 +136,7 @@ episodes — nothing in this hindcast is a lead-time story, and `lead_time_days`
 | `amphan-2020` | 28 | 0 | 0 | 28 | — (no hit possible) | 1.0 | 0.0 |
 | `yaas-2021` | 18 | 0 | 0 | 18 | — | 1.0 | 0.0 |
 | `mocha-2023` | 8 | 0 | 0 | 8 | — | 1.0 | 0.0 |
-| `eastern-flood-2024` | 26 | 22 | 0 | 4 | **1.0** | **0.154** | **0.846** |
+| `eastern-flood-2024` | 26 | 26 | 0 | 0 | **1.0** | — (no negative sample) | — |
 | `northeast-flood-2025` | 20 | 0 | 0 | 20 | — | 1.0 | 0.0 |
 
 Four readings that a table alone would hide, each of which the report states:
@@ -137,10 +148,13 @@ Four readings that a table alone would hide, each of which the report states:
    27 alarms that were *called by another name*: all 14 Amphan districts were alarmed, under
    `Fire`. The class-agnostic count (14/14) sits beside it precisely so that a reader cannot take
    the 1.0 for a false-alarm rate.
-3. **The 2024 flood's `FAR: 0.154` is a real, measured false-alarm ratio** — 4 of 26 scored windows
-   were alarmed under a class other than the one that occurred — and the first one this project has
-   ever been able to compute. It is also the only episode where the physics track did what it is
-   supposed to do, so it doubles as the positive control that the scoring path can produce hits.
+3. **The 2024 flood is now scored 26 hits / 0 false alarms, and `FAR` is `None` for a structural
+   reason.** Under the pre-correction wiring it read 22 hits / 4 false alarms (`FAR: 0.154`, the first
+   measured false-alarm ratio this project ever computed); the corrected wiring names `Flash Flood` on
+   all 26 scored windows, so no false alarm is possible — and with no negative sample left, `FAR` and
+   `CSI` become uncomputable rather than 0. The report says that in place (`unmeasurable.reason`)
+   instead of printing a perfect score. It is also the positive control that the scoring path can
+   produce hits at all: `POD: 1.0` on 26 samples.
 4. **The false-alarm denominator is still a boundary, not a sample.** 100–110 district-windows per
    episode were alarmed with **no outcome on record**; they are counted
    (`alarmed_without_a_recorded_impact.count`) and listed as UNKNOWN, never as false alarms. That
@@ -151,21 +165,21 @@ Four readings that a table alone would hide, each of which the report states:
 
 | Threshold | Amphan | Yaas | 2024 flood | 2025 flood |
 | --- | --- | --- | --- | --- |
-| 0.40 (WATCH band) | 0 hits / 28 FA | 0 / 18 FA | 22 hits / 4 FA | 0 / 20 FA |
+| 0.40 (WATCH band) | 0 hits / 28 FA | 0 / 18 FA | 26 hits / 0 FA | 0 / 20 FA |
 | 0.50 (harness default) | identical | identical | identical | identical |
 | 0.65 (WARNING band) | identical | identical | identical | identical |
 
-The three bands give byte-identical splits on all five episodes. **Threshold tuning cannot fix what
-this hindcast found**, because the alarms are not marginal: they are either far above the band under
-a saturated term, or the correct class is scoring 0.03–0.25. That is the single most important
-sentence for the Phase 9 calibration workstream, and it is why §4 is a wiring finding rather than a
-tuning recommendation.
+The three bands give byte-identical splits on all five episodes — before and after the wiring
+correction. **Threshold tuning cannot fix what this hindcast found**, because the alarms are not
+marginal: they are either far above the band, or the correct class is scoring 0.03–0.52 with the
+cyclone windows a few hundredths under it. That is the single most important sentence for the Phase 9
+calibration workstream, and it is why §4 is a wiring finding rather than a tuning recommendation.
 
 ## 4. What the hindcast found (four measured findings)
 
 ### 4.1 The wind driver, not the formula, decides whether a cyclone is detectable
 
-The cyclone score is `0.7 · clip((wind − 50) / 150) + 0.3 · clip(rain / 300)`. On Amphan's landfall
+The cyclone score is `0.7 · clip((gust − 50) / 150) + 0.3 · clip(rain / 300)`. On Amphan's landfall
 day the daily maximum 10 m wind from the archive, at the district centroids the pipeline samples, is:
 
 | | sustained `wind_speed_10m_max` | `wind_gusts_10m_max` |
@@ -175,62 +189,77 @@ day the daily maximum 10 m wind from the archive, at the district centroids the 
 | Cyclone class score, Yaas | 0.0285 – 0.2457 | 0.0388 – 0.3166 (0 / 128) |
 
 Amphan carried 130–155 km/h sustained to landfall. A district *centroid* is not the eyewall, and the
-pipeline's own driver — the same `wind_speed_10m_max` its live runs feed the physics track and the
-CNN's ERA5-Land band — therefore reports less than half of what the district experienced. The gust
-field the same archive endpoint offers gets Amphan's coastal windows over the band and strokes
-within 0.16 of it. **The harness fetched both rather than recommending one**, and the reports carry
-the comparison with a generated finding sentence.
+sustained field — the same `wind_speed_10m_max` the live pipeline originally fed the physics track
+and the CNN's ERA5-Land band — therefore reports less than half of what the district experienced. The
+gust field the same archive endpoint offers gets Amphan's coastal windows over the band and strokes
+within 0.16 of it.
 
-Two things this does *not* fix, both in the same block: the track's top class is still `Fire` for
-127 of 128 windows under **either** driver, and the correct class is never the top pick — gusting to
-185 km/h makes `Severe Local Storm` (which saturates its wind term at 150 km/h) the pick, not the
-cyclone. The finding sentence says so.
+**Shipped 2026-09-18 (§4.6):** the two wind-damage classes read the gust. The sustained maximum is
+still carried in every report as the pre-correction half of the comparison, and the 2024 and 2025
+episodes are unaffected by the choice — their class scores are rainfall-dominated, so both driver
+rows are byte-identical there, which is itself worth knowing before attributing anything to the
+driver.
 
-### 4.2 Three terms in the shipped wiring are at their ceiling on every row
+Two things the driver change does *not* fix: the track's top class is still `Fire` on 45–119 of 128
+windows per episode, and the correct class is never the top pick on a cyclone — gusting to 185 km/h
+makes `Severe Local Storm` (which saturates its wind term at 150 km/h) the pick, not the cyclone.
 
-| Term | Formula as wired | Argument it receives | Rows at ceiling |
+### 4.2 Four terms in the pre-correction wiring sat at their ceiling, three of them on every row
+
+| Term | Formula as wired | Argument it received | Rows at ceiling, pre-correction |
 | --- | --- | --- | --- |
-| `fire_wind` | `(wind − 5) / 20` | the daily max wind (≥ 25 km/h on a coastal afternoon) | 128/128 (2025) · 116/128 (Amphan) · 86/128 (Yaas) · 74/128 (Mocha) · 36/128 (2024) |
+| `fire_wind` | `(wind − 5) / 20` | the windiest afternoon's maximum, not the mean daily wind | 128/128 (2025) · 116/128 (Amphan) · 86/128 (Yaas) · 74/128 (Mocha) · 36/128 (2024) |
 | `fire_drying` | `et_sum_mm / 6` | the **horizon total** ET (the divisor is a *daily* value; the formula's own default is 3 mm) | **128/128 in all five episodes** |
 | `heat_persistence` | `duration_days / 5` | the horizon **length** (7 or 15 days), not an exceedance count | **128/128 in all five** |
 | `cold_persistence` | `duration_days / 5` | the same | **128/128 in all five** |
 
-Measured effect of correcting them (the *counterfactual*, recomputed by the harness with mean daily
-ET and exceedance days — the shipped formulas are **not** changed here, because changing published
-values is the pipeline owner's call with this evidence in hand):
+The harness measured this and recomputed the same rows with the quantities the formulas describe
+(mean daily ET, mean daily maximum wind, exceedance days), publishing both distributions beside each
+other. The owner shipped that correction on 2026-09-18 (§4.6), so the numbers below are now the
+before/after record carried in every report:
 
-| Episode | Top class, as shipped | Top class, counterfactual |
+| Episode | Top class, corrected wiring | Top class, pre-correction wiring |
 | --- | --- | --- |
-| `amphan-2020` | Fire 127 / Flash Flood 1 | Fire 118 / Flash Flood 10 |
-| `eastern-flood-2024` | Fire 88 / Flash Flood 40 | Fire 69 / Flash Flood 59 |
-| `northeast-flood-2025` | Fire 75 / Flash Flood 53 | Fire 54 / Flash Flood 74 |
-| `yaas-2021` | Fire 127 / Flash Flood 1 | Fire 127 / Flash Flood 1 |
+| `amphan-2020` | Fire 92 / Flash Flood 30 / Drought 6 | Fire 127 / Flash Flood 1 |
+| `eastern-flood-2024` | Flash Flood 78 / Fire 49 / Drought 1 | Fire 88 / Flash Flood 40 |
+| `northeast-flood-2025` | Flash Flood 83 / Fire 45 | Fire 75 / Flash Flood 53 |
+| `mocha-2023` | Fire 94 / Drought 30 / Flash Flood 2 / Heat Wave 2 | Fire 126 / Flash Flood 2 |
+| `yaas-2021` | Fire 119 / Drought 5 / Flash Flood 4 | Fire 127 / Flash Flood 1 |
 
-The wiring fix moves 9–21 windows per episode across a class boundary. It does not remove the `Fire`
+The wiring correction moves 9–127 windows per episode across a class boundary and turns the two flood
+episodes' top class from `Fire` into the rain class that occurred. It does not remove the `Fire`
 dominance, which is the next finding.
 
-### 4.3 `Fire` outranks a cyclone, a flood and a monsoon onset in Bangladesh in May
+### 4.3 `Fire` still outranks a cyclone in Bangladesh in May — four times less often than before
 
-`Fire` tops 127 of 128 windows in both cyclone episodes and 75–88 of 128 in the flood episodes, at
-scores of 0.55–0.87 — while the class that occurred scores 0.03–0.25 (cyclones) or sits below `Fire`
-despite a saturated rainfall term (floods). The cause is arithmetic rather than meteorological: with
-coastal winds above the 25 km/h clip, pre-monsoon temperatures around 33 °C and a saturating drying
-term, `Fire = 0.4·h + 0.3·w + 0.3·d` starts at ≈0.5–0.6 on an ordinary May day in the coastal belt.
-A class that is high everywhere cannot discriminate anywhere — and because the physics summary
-reports it as the track's "own pick", every downstream comparison inherits the noise.
+`Fire` topped 127 of 128 windows in both cyclone episodes and 75–88 of 128 in the flood episodes
+under the pre-correction wiring, at scores of 0.55–0.87, while the class that occurred scored
+0.03–0.25. The cause was arithmetic rather than meteorological: coastal winds above the 25 km/h clip,
+pre-monsoon temperatures around 33 °C and a saturating drying term put
+`Fire = 0.4·h + 0.3·w + 0.3·d` at ≈0.5–0.6 on an ordinary May day in the coastal belt.
+
+With the wiring corrected the dominance is reduced, not resolved: `Fire` is still the top class on
+**119 of 128** Yaas windows, **94 of 128** Mocha windows, **92 of 128** Amphan windows and **45–49 of
+128** in the two flood episodes — but `Drought` now rises to second place on the hot dry windows
+(30 rows in Mocha, 6 in Amphan) and the rain classes lead both flood episodes. The residual is a
+property of the formula, not the wiring: it is a temperate fire-weather rule, and in a coastal
+pre-monsoon belt it is high everywhere, so it cannot discriminate anywhere. Fixing that means either
+tropicalising its inputs or masking the class outside a fire season, and both change published values
+in a way the harness cannot validate against a truth set it does not have. **Owner decision, §8
+item 9.2b.**
 
 ### 4.4 The physics family cannot separate the pairs that share a driver
 
 | Pair | Evidence |
 | --- | --- |
 | `Tropical Cyclone` vs `Severe Local Storm` | both are wind-driven; with the gust driver the cyclone reaches 0.51–0.85 while `Severe Local Storm` hits its 150 km/h ceiling at 1.0 and takes the top spot on 8 of the fixture's 12 windows and on the real coastal windows |
-| `Flood` vs `Flash Flood` | both are rain-driven with almost the same inputs. The 2025 episode is scored as `Flood`; **10 of 10** districts crossed the band on the `Flood` score, and the track named `Flash Flood` (or `Fire`) on **all 128** windows — so the class-strict score is 0 hits, 20 false alarms, and the district-level detection is 10/10. The 2024 episode is the mirror image and gets 12/13. |
+| `Flood` vs `Flash Flood` | both are rain-driven with almost the same inputs. The 2025 episode is scored as `Flood`; **10 of 10** districts crossed the band on the `Flood` score, and the track named `Flash Flood` (or `Fire`) on **all 128** windows — so the class-strict score is 0 hits, 20 false alarms, and the district-level detection is 10/10. The 2024 episode is the mirror image: the track names `Flash Flood` on all 26 scored windows, so it scores 26 hits and **loses** `FAR`/`CSI` to the absence of a negative sample. The pair is the same class differing by a duration the physics track does not measure, which is why one episode scores perfectly and the other scores zero on an identical formula. |
 
 This is the finding the plan's "class fidelity" question was actually asking, and it now has numbers:
 detection is *class-conditional*, and the physics family's four rain/wind classes are not
 distinguishable at district-point resolution.
 
-### 4.4 Cyclone Mocha 2023: the fourth data point, and the same two defects
+### 4.5 Cyclone Mocha 2023: the fifth data point, and the same two defects
 
 The 2023 episode added under §8 item 9.7 is the set's first *eastern*-coast cyclone and its first
 near-miss: Mocha's eye crossed into Myanmar while the Cox's Bazar coast took the outer wind field.
@@ -241,16 +270,67 @@ the useful part:
   class, and **none under `Tropical Cyclone`** — the score range at district centroids is
   18.1–51.0 km/h sustained and 36.7–85.3 km/h gust, and **neither driver moves the cyclone class
   over the 0.5 band on any of the 128 rows**;
-* `Fire` is the track's top class on **126 of 128** rows, and the counterfactual substitutions do
-  not change that at all (127 vs 126 on the shipped wiring);
-* three terms are again at their ceiling on every row (`fire_drying`, `heat_persistence`,
-  `cold_persistence`), and `fire_wind` on 74 of 128;
+* `Fire` was the track's top class on **126 of 128** rows before the correction and is the top class
+  on **94 of 128** after it, with `Drought` second on 30 — Mocha's outer bands crossed the coast on a
+  real pre-monsoon drying window, which is also why the corrected fire drying term is the only one in
+  the set that still saturates anywhere;
+* three terms were at their ceiling on every row under the pre-correction wiring (`fire_drying`,
+  `heat_persistence`, `cold_persistence`) and `fire_wind` on 74 of 128; after the correction the fire
+  drying term still saturates on 24 of 128 rows — the one episode where the window's mean daily ET
+  genuinely reaches the 6 mm divisor — which is what that term saturating *should* mean;
 * `POD` is `None` and `FAR` is 1.0 for the same structural reason as the other two cyclones — the
   truth set names districts, and no dated outcome exists inside the prediction window.
 
 In other words, adding a fourth vulnerability cycle and a third year did not produce a new finding:
 it reproduced the two pipeline defects on an episode the harness had never seen, which is what a
 validation episode is for.
+
+### 4.6 The 2026-09-18 correction: what changed, where it is enforced, and what it left open
+
+Items 9.2 and 9.3 of §8 were owner-gated because they change published values. The owner shipped
+them in this workstream, on this harness's evidence, and the discipline that made the finding
+auditable is the discipline that makes the correction auditable: the old wiring is still computed on
+every row, so no number in this section depends on anyone's memory of what the code used to do.
+
+| Change | From | To |
+| --- | --- | --- |
+| Fire drying term | the horizon **total** ET (`et_sum_mm`) | the window's **mean daily** ET (`et_mm_per_day`) |
+| Fire wind term | the windiest afternoon (`wind_max_kmh`) | the **mean daily maximum** wind (`wind_mean_kmh`) |
+| Cyclone + severe-storm wind | the sustained 10 m maximum | the **gust** maximum (`wind_gust_kmh`) |
+| Heat/cold persistence | the horizon **length** | the count of days past **30 °C / 16 °C** |
+
+**How the defect class is prevented now.** Not by a better scalar: by removing the aggregation from
+the callers. `scripts/physics_severity.py::resolve_drivers` takes the observed daily series
+(`daily_temp_max_c`, `daily_temp_min_c`, `daily_et0_mm`, `daily_wind_max_kmh`) and computes the mean
+daily ET, the mean daily wind and the two exceedance counts itself, so a caller cannot pass the wrong
+aggregate — it is not the one aggregating. Both live callers (`scripts/auto_forecast.py` and
+`scripts/hindcast/score.py`) pass the series. The guards that remain (`_require_daily_et` rejects a
+value only a horizon total could produce; `_require_exceedance_days` rejects a non-integer or a
+duration) are the second line, not the first, and the report says so rather than implying a
+magnitude check can tell a count from a length.
+
+**What is enforced in CI.** `python -m hindcast.cli check --require-reports` recomputes all five
+reports from the committed episodes and drivers and fails on a single differing value;
+`node scripts/build_model_performance.mjs --check` fails if the published artifact no longer matches
+those reports; `node scripts/build_content_engine.mjs --check` does the same for the page.
+`__tests__/modelPerformance.test.js` asserts the before/after pairs reach the page. On the Python
+side, `tests/test_physics_severity.py` pins the aggregation, the guards and the legacy saturation,
+and `tests/test_hindcast.py` pins that the corrected fire score is never above the legacy one on any
+row and that the legacy wiring still reproduces its ceiling.
+
+**What the correction changed in the headline results.** The 2024 flood episode moved from 22 hits /
+4 false alarms to **26 hits / 0 false alarms**, and the named-class total from 12 of 50 districts to
+**13**. The cyclone episodes did not move: the gust driver puts 2 of Amphan's 128 windows over the
+band, and a class that is over the band on 2 windows of 14 districts is not detection. Nothing about
+the calibration conclusion changed — no threshold band moved.
+
+**What it left open, with the same precision.** (a) `Fire` remains the top class on 45–119 of 128
+windows per episode (§4.3) — a formula-shape question, not a wiring one. (b) The rain/wind class
+pairs remain inseparable at district-point resolution (§4.4). (c) The bulletin and event ETLs ingest
+prose wind speeds whose averaging the source may not state; those records now carry that fact in
+their `severity_basis` rather than being silently converted to a gust
+(`scripts/etl/bulletins.py`, §11). (d) Every number here is still a *ceiling on detection*: the
+drivers are reanalysis, and the CNN was not re-run.
 
 ## 5. Calibration — still the blocker, and the hindcast says why
 
@@ -274,9 +354,11 @@ the wrong hazard.
 
 | Check | Command | Result |
 | --- | --- | --- |
-| Reports recompute from committed inputs | `cd scripts && python -m hindcast.cli check --require-reports` | ✅ 4 reports, every number matches (also runs in `ci.yml`) |
-| Harness unit tests | `python -m pytest scripts/tests/test_hindcast.py -q` | ✅ 23 passed |
-| Whole script suite | `python -m pytest scripts/tests -q` | ✅ 531 passed, 1 skipped |
+| Reports recompute from committed inputs | `cd scripts && python -m hindcast.cli check --require-reports` | ✅ 5 reports, every number matches (also runs in `ci.yml`) |
+| Harness unit tests | `python -m pytest scripts/tests/test_hindcast.py -q` | ✅ 25 passed |
+| Physics-track tests | `python -m pytest scripts/tests/test_physics_severity.py -q` | ✅ 25 passed (the aggregation, the guards, the legacy saturation) |
+| Whole script suite | `python -m pytest scripts/tests -q` | ✅ 539 passed, 1 skipped |
+| Derived artifacts match their inputs | `node scripts/build_model_performance.mjs --check` · `node scripts/build_content_engine.mjs --check` | ✅ both exact |
 | Producing workflow | `gh workflow run hindcast.yml -f episode=all` (and on push to the harness/episodes) | ✅ run `35286394326` — fetched 4 episodes' drivers, scored, checked, tested, committed |
 | Network | none in the sandbox; the archive is reached from a GitHub runner | driver series committed so the science stays auditable offline |
 | Branch CI (PR #29, run `35286726745`) | `ci.yml` | Backend, Frontend, Code Quality, Pipeline Scripts, Security Audit, TFLite smoke: ✅ · **E2E Tests: ❌** — a regression against a green `main` (`3a44545`), unattributed: the report artifact and job logs are not reachable from this sandbox and Playwright cannot run here. See `docs/PHASES_0-9_AUDIT.md` §5.1 |
@@ -308,8 +390,9 @@ right. Each is now a test.
 | # | Item | Owner | Why it is not done here |
 | --- | --- | --- | --- |
 | 9.1 | ~~Publish the model-performance page~~ **done** — `/model-performance`, prerendered, generated from `data/hindcast/reports/*.json` via `frontend/public/data/model-performance.json` | shipped | see §8.1 for what it publishes and what it refuses |
-| 9.2 | Fix the three saturated terms (§4.2) and the `Fire` dominance (§4.3) in `scripts/physics_severity.py` / `auto_forecast.py` | pipeline owner | changes published values; the measurement is in the reports and the counterfactual is already implemented and tested |
-| 9.3 | Switch the wind driver (or add the gust as a second driver) in the live pipeline (§4.1) | pipeline owner | same reason; the evidence is the wind-driver block of every report |
+| 9.2a | Fix the four saturated terms (§4.2) in `scripts/physics_severity.py` / `auto_forecast.py` | **done 2026-09-18** — see §4.6 | the corrected wiring ships; the pre-correction wiring is recomputed on every row as `legacy_*`, so the before/after stays measured. `python -m hindcast.cli check --require-reports` recomputes all five reports from the committed inputs |
+| 9.2b | Address the residual `Fire` dominance (§4.3) — tropicalise its inputs or mask the class outside a fire season | pipeline owner | `Fire` is still the top class on 45–119 of 128 windows per episode. Both routes change published values in a way no truth set here can validate, and the formula is a temperate fire-weather rule being asked about a coastal pre-monsoon belt — an owner decision with the before/after in `physics_diagnostics` |
+| 9.3 | Read the gust for the two wind-damage classes (§4.1) | **done 2026-09-18** — see §4.6 | the sustained maximum is still published beside it in every report's `wind_drivers` block, so the effect of the choice is on the record |
 | 9.4 | Load the event archive, then fit and stamp the calibration map (Action 12 + 13b) | owner | needs the archive; 2,931 events is the model card's claim and nothing here restates it |
 | 9.5 | Run the tabletop exercise and write its record into `docs/ops/owner-actions.md` (Action 13a) | owner + duty desk | a facilitated exercise with people; the script and pass criteria are written |
 | 9.6 | Open the soft-launch beta gate (Action 13c) | owner | needs a stated scope and a named number owner; §10 lists the exact gate |
@@ -337,11 +420,12 @@ a metrics dashboard, and the honest dashboard for this system is the three-numbe
 | The tests | `__tests__/modelPerformance.test.js` (22 tests) | The artifact equals what the reports produce; `null` POD stays `null` and renders as `—`; no forbidden key; the route's tables match the artifact; the prerendered HTML carries the same numbers and the limits |
 
 **What the page publishes:** the detection table (all five episodes), POD/FAR/CSI with the
-uncomputable values explained in place, the 0.40/0.50/0.65 band comparison (12 rows), the
-shipped-versus-gust wind comparison (8 rows) with each report's finding, the saturated-term table,
-the 14 deduplicated caveats, the four reading notes, and the 12 truth-set citations. **What it does
-not publish:** any accuracy percentage — the words are absent and the metric keys are structurally
-impossible.
+uncomputable values explained in place, the 0.40/0.50/0.65 band comparison (15 rows), the
+gust-versus-sustained wind comparison (10 rows) with each report's finding, the saturated-term table
+with the **pre-correction counts beside the corrected ones** (10 rows), the wiring-correction table
+(top class before and after, 5 rows), the 14 deduplicated caveats, the four reading notes, and the
+truth-set citations. **What it does not publish:** any accuracy percentage — the words are absent and
+the metric keys are structurally impossible.
 
 ## 9. Tabletop exercise
 

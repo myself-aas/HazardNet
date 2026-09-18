@@ -126,7 +126,11 @@ DATE_FORMATS = ('%Y-%m-%d', '%Y/%m/%d', '%d-%m-%Y', '%d/%m/%Y', '%Y%m%d', '%d %b
 #: Runtime district vocabulary + spelling resolution.
 from districts import division_of, pcode_of, resolve as resolve_district  # noqa: E402
 
-_SEVERITY_BASIS = re.compile(r'^\s*([a-z_]+)\s*=\s*(-?\d+(?:\.\d+)?)\s*$', re.I)
+#: `driver=value`, with an optional trailing note. The note is what the bulletin ETL writes
+#: when it has to say *how* a number was read ("upper bound of 60-80 kmph"); the value is
+#: still the value, so the severity stays reproducible from the basis alone.
+_SEVERITY_BASIS = re.compile(r'^\s*([a-z_]+)\s*=\s*(-?\d+(?:\.\d+)?)\s*(?:\(.*\))?\s*$',
+                             re.I)
 
 
 class EventValidationError(ValueError):
@@ -198,6 +202,10 @@ def severity_from_basis(basis, hazard: str, duration_days: float = 1.0):
     (w4) and the live streams could not be compared. Returns ``None`` when the
     basis names a driver we do not have a formula for; the caller then stores
     ``severity: null`` with the basis string, rather than inventing a number.
+
+    A trailing note in parentheses (the bulletin ETL records how a wind was read, e.g. that it
+    was the upper bound of a reported range) is carried by the source string and does not change
+    the arithmetic: the value is the value, and the note is the audit trail.
     """
     if not basis:
         return None

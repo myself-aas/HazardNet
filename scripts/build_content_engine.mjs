@@ -648,6 +648,19 @@ function modelPerformanceRoute({ performance }) {
    * loses, because the episode list below carries every full title.
    */
   const shortTitle = (episode) => String(episode.title ?? '').split(' — ')[0].trim() || episode.id;
+  /**
+   * `{Fire: 119, Drought: 5}` → `"Fire 119, Drought 5"`, strongest first. Used for the
+   * before/after of the physics wiring, where the counts are the whole point and a chart would
+   * add nothing a reader could check.
+   */
+  const rankByCount = (distribution) => {
+    const entries = Object.entries(distribution ?? {}).filter(([, value]) => Number(value) > 0);
+    if (entries.length === 0) return '—';
+    return entries
+      .sort((a, b) => b[1] - a[1] || String(a[0]).localeCompare(String(b[0])))
+      .map(([name, value]) => `${name} ${count(value)}`)
+      .join(', ');
+  };
   // Spelled-out counts: the copy says "these are five episodes, not a validation set", and that
   // sentence has to stay true when a sixth is added — a hard-coded word is how a page starts
   // contradicting its own table.
@@ -824,9 +837,10 @@ function modelPerformanceRoute({ performance }) {
         },
       },
       {
-        h2: 'The wind driver, and why it decides detection',
+        h2: 'The wind driver: which field the track reads, and why it decides detection',
         paragraphs: [
-          'The shipped pipeline scores the sustained 10 m maximum. The driver archive also carries the gust maximum, so each report re-scores the same episode with it. Where those two rows differ, the driver choice — not the formula — is what decides whether the district point was detectable.',
+          'The physics cross-check scores the two wind-damage classes — Tropical Cyclone and Severe Local Storm — from the **gust** maximum. That is the correction shipped on 2026-09-18: the forecast unit is a district centroid, and a centroid is not the eyewall, so a sustained 10 m maximum understates what the district actually faced. On Amphan\'s landfall day the sustained field reached 19–69 km/h where the same archive\'s gust field reached 51–134 km/h, which is the difference between a class that never left the 0.01–0.25 band and one that reached the coastal alarm band.',
+          'Each report therefore re-scores the same rows with the **sustained** maximum — what the track used before the correction — and both rows are below. Where they differ, the driver choice, not the formula or the weather, is what decided whether the district point was detectable.',
           ...episodes
             .map((episode) => episode.drivers?.finding)
             .filter(Boolean)
@@ -837,11 +851,11 @@ function modelPerformanceRoute({ performance }) {
             'Episode-class score range and over-band count under each wind driver, per episode (128 district-horizon rows each).',
           columns: ['Episode', 'Driver', 'Rows', 'Wind (km/h)', 'Episode-class score', 'Rows over band', 'Top class'],
           rows: episodes.flatMap((episode) =>
-            [episode.drivers?.shipped, episode.drivers?.archive]
+            [episode.drivers?.shipped, episode.drivers?.legacy]
               .filter(Boolean)
               .map((driver) => [
                 shortTitle(episode),
-                driver.name === 'era5_10m_sustained' ? 'sustained max (shipped)' : 'gust max (archive)',
+                driver.name === 'era5_10m_gust' ? 'gust max (read by the track)' : 'sustained max (pre-correction)',
                 count(driver.rows),
                 range(driver.wind_kmh_min, driver.wind_kmh_max, 1, ''),
                 range(driver.episode_class_score_min, driver.episode_class_score_max, 4, ''),
@@ -855,29 +869,67 @@ function modelPerformanceRoute({ performance }) {
         },
       },
       {
-        h2: 'Saturated terms: three formula inputs that carry no information',
+        h2: 'The formula inputs that used to carry no information',
         paragraphs: [
           `The physics cross-check feeds each formula an argument taken from the forecast unit. Four of those arguments, measured across ` +
-            `all ${howMany(episodes.length)} episodes, sit at the top of their formula on every row — so the term cannot distinguish one ` +
-            'district from another, and any severity difference attributed to it is an artefact of the wiring rather than of the weather.',
+            `all ${howMany(episodes.length)} episodes, used to sit at the top of their formula on every row — so the term could not distinguish one ` +
+            'district from another, and any severity difference attributed to it was an artefact of the wiring rather than of the weather. ' +
+            'The owner corrected the wiring on 2026-09-18 (the release line on every report says so), and both halves stay published here: ' +
+            'what each term reads now, and the argument it used to be handed. Each table row carries the count under the corrected wiring and under the ' +
+            'one it replaced. A term that still reaches its ceiling is a measured property of the window — a fortnight whose mean daily drying genuinely ' +
+            'reached the fire divisor, a heat spell that really did hold five days past 30 °C — not an artefact of the unit it was passed.',
           ...episodes
-            .map((episode) => episode.counterfactual_finding)
+            .map((episode) => episode.wiring_finding)
             .filter(Boolean)
             .slice(0, 1)
             .map((finding) => finding),
         ],
         table: {
           caption:
-            'Rows at the term\'s ceiling, out of the rows scored, per episode. A term at its ceiling on every row carries no information.',
+            'Rows at the term\'s ceiling, out of the rows scored, per episode, under the corrected wiring and under the one it replaced. Three of the ' +
+            'four terms were at their ceiling on every row of every episode before the correction (the fire drying term and both persistence terms); the ' +
+            'fire wind term was at its ceiling on 36–128 of 128 rows depending on the episode. What is left after the correction is the windows that ' +
+            'genuinely reached the term\'s own divisor.',
           columns: ['Episode', 'Rows', 'fire_wind', 'fire_drying', 'heat_persistence', 'cold_persistence'],
+          rows: episodes.flatMap((episode) => {
+            const TERMS = ['fire_wind', 'fire_drying', 'heat_persistence', 'cold_persistence'];
+            const cell = (term, key) => {
+              const block = episode.saturation?.[term];
+              if (!block) return '—';
+              return `${count(block[key])} of ${count(block.rows)}`;
+            };
+            return [
+              [
+                shortTitle(episode),
+                count(episode.drivers?.shipped?.rows),
+                ...TERMS.map((term) => cell(term, 'rows_at_ceiling')),
+              ],
+              [
+                `${shortTitle(episode)} — pre-correction`,
+                count(episode.drivers?.shipped?.rows),
+                ...TERMS.map((term) => cell(term, 'legacy_rows_at_ceiling')),
+              ],
+            ];
+          }),
+        },
+      },
+      {
+        h2: 'What the wiring correction changed',
+        paragraphs: [
+          'The same rows, scored with the corrected wiring and with the one it replaced. The class a row crowns is what the physics track "would have picked", ' +
+            'so this table is the size of the correction: before it, `Fire` — a class that scores high everywhere in the pre-monsoon coastal belt and therefore ' +
+            'separates nothing — was the top pick on 127 of the 128 windows of a landfalling cyclone. The rain classes now lead on the two flood episodes and ' +
+            'the cyclone windows split between `Fire` and the rain classes, which is the honest limit the reports state: point weather cannot separate a rain ' +
+            'class from a wind class it arrives with.',
+        ],
+        table: {
+          caption: 'Top class per district-horizon row, corrected wiring beside the pre-correction wiring, per episode.',
+          columns: ['Episode', 'Rows', 'Top class — corrected', 'Top class — pre-correction'],
           rows: episodes.map((episode) => [
             shortTitle(episode),
             count(episode.drivers?.shipped?.rows),
-            ...['fire_wind', 'fire_drying', 'heat_persistence', 'cold_persistence'].map((term) => {
-              const block = episode.saturation?.[term];
-              if (!block) return '—';
-              return `${count(block.rows_at_ceiling)} of ${count(block.rows)}`;
-            }),
+            rankByCount(episode.top_class_distribution?.shipped),
+            rankByCount(episode.top_class_distribution?.legacy),
           ]),
         },
       },

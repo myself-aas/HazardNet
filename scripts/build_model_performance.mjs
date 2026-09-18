@@ -177,6 +177,10 @@ function driversBlock(episodeId, drivers) {
   if (!drivers?.era5_10m_sustained || !drivers?.era5_10m_gust) {
     throw new Error(`${episodeId}: wind driver comparison missing from the report`);
   }
+  // Which of the two is "shipped" flipped on 2026-09-18. The corrected physics wiring scores the
+  // two wind-damage classes from the gust (`era5_10m_gust`), because the unit is a district
+  // centroid and a centroid is not the eyewall; the sustained maximum is what the pre-correction
+  // pipeline used, and it stays in the document as the legacy half of the comparison.
   const pick = (block) => ({
     rows: int(block.rows),
     wind_kmh_min: num(block.wind_kmh?.min),
@@ -188,8 +192,8 @@ function driversBlock(episodeId, drivers) {
     top_class_distribution: block.top_class_distribution ?? {},
   });
   return {
-    shipped: { name: 'era5_10m_sustained', ...pick(drivers.era5_10m_sustained) },
-    archive: { name: 'era5_10m_gust', ...pick(drivers.era5_10m_gust) },
+    shipped: { name: 'era5_10m_gust', ...pick(drivers.era5_10m_gust) },
+    legacy: { name: 'era5_10m_sustained', ...pick(drivers.era5_10m_sustained) },
     finding: str(drivers.finding),
   };
 }
@@ -198,7 +202,19 @@ function saturationBlock(episodeId, saturated) {
   if (!saturated) throw new Error(`${episodeId}: physics_diagnostics.saturated_terms missing`);
   const block = {};
   for (const [term, value] of Object.entries(saturated)) {
-    block[term] = { rows: int(value.rows), rows_at_ceiling: int(value.rows_at_ceiling) };
+    block[term] = {
+      rows: int(value.rows),
+      rows_at_ceiling: int(value.rows_at_ceiling),
+      // The same count under the pre-correction wiring, so the before/after is a number pair in
+      // the artifact rather than a sentence in a commit message.
+      legacy_rows_at_ceiling: int(value.legacy_rows_at_ceiling),
+      // The measured argument the corrected wiring passes, and the one the pre-correction
+      // wiring passed. Both are published so the reader can see the defect and the fix.
+      term: str(value.term),
+      legacy_term: str(value.legacy_term),
+      legacy_argument: value.legacy_argument === null || value.legacy_argument === undefined
+        ? null : num(value.legacy_argument),
+    };
   }
   return block;
 }
@@ -235,9 +251,10 @@ export function episodeBlock(report, { reportPath, reportSha }) {
     saturation: saturationBlock(episode.id, physics.saturated_terms),
     top_class_distribution: {
       shipped: physics.top_class_distribution_shipped ?? {},
-      counterfactual: physics.top_class_distribution_counterfactual ?? {},
+      legacy: physics.top_class_distribution_legacy ?? {},
     },
-    counterfactual_finding: str(physics.finding),
+    wiring_finding: str(physics.finding),
+    corrected_driver_ranges: physics.corrected_driver_ranges ?? {},
     alarmed_without_a_recorded_impact: int(report.alarmed_without_a_recorded_impact?.count),
     caveats: Array.isArray(report.caveats) ? report.caveats.map(str).filter(Boolean) : [],
   };

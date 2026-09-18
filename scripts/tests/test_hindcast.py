@@ -113,37 +113,68 @@ def test_the_shipped_episodes_are_the_ones_the_plan_names():
 
 # ── the wiring diagnostic ────────────────────────────────────────────────────
 
-def test_the_saturated_physics_terms_are_measured_not_asserted():
-    """Two terms in the shipped wiring are at their ceiling on every row. The harness has to
-    show that with counts, because a reader cannot check a claim made only in prose."""
+def test_the_corrected_terms_are_measured_and_the_legacy_ones_are_still_on_the_record():
+    """The three-term defect is *fixed*, and the fix is what this diagnostic now measures.
+
+    Before 2026-09-18 the fire drying term and both persistence terms were at their ceiling on
+    every row of every episode, which is why `Fire` topped 127 of 128 windows of a landfalling
+    cyclone. The corrected wiring feeds each formula the quantity it describes, and this test
+    pins both halves: the corrected arguments are the resolved drivers, and the legacy wiring
+    still reproduces the saturation it was corrected for (deleting the defect would delete the
+    evidence of what it did).
+    """
     report = build()
     diagnostics = report['physics_diagnostics']
-    for term in ('fire_drying', 'heat_persistence', 'cold_persistence'):
+    expected_terms = {
+        'fire_wind': 'wind_mean_kmh',
+        'fire_drying': 'et_mm_per_day',
+        'heat_persistence': 'heat_exceedance_days',
+        'cold_persistence': 'cold_exceedance_days',
+    }
+    for term, argument in expected_terms.items():
         entry = diagnostics['saturated_terms'][term]
         assert entry['rows'] == report['counts']['predictions']
-        assert entry['rows_at_ceiling'] == entry['rows'], (
-            f'{term} is not at its ceiling on every row — the finding needs restating'
+        # The term names the corrected argument, and the legacy argument is recorded beside it,
+        # so a reader sees the defect and the fix in the same block.
+        assert argument in entry['term'], f'{term} does not read {argument}'
+        assert entry['legacy_argument'] is not None
+        assert entry['rows_at_ceiling'] <= entry['rows']
+
+    # The fire terms no longer saturate on any row: mean daily ET is around 4 mm against a
+    # 6 mm divisor, and mean daily wind is a two-digit km/h figure against a 20 km/h span.
+    for term in ('fire_wind', 'fire_drying'):
+        entry = diagnostics['saturated_terms'][term]
+        assert entry['rows_at_ceiling'] < entry['rows'], (
+            f'{term} is at its ceiling on every row: the pre-correction wiring is back'
         )
-    # The counterfactual substitutes the arguments the formulas actually describe, and the
-    # substitution is reported so the difference can be attributed.
-    substitutions = diagnostics['counterfactual_substitutions']
-    assert substitutions['fire_et_mm_per_day']['max'] < 6.0, (
-        'a daily ET mean below the fire divisor (6 mm) is what makes the shipped term saturate: the '
-        'formula is handed the horizon total, which on any horizon reaches the divisor'
+    ranges = diagnostics['corrected_driver_ranges']
+    assert ranges['fire_et_mm_per_day']['max'] < 6.0, (
+        'a daily ET mean below the fire divisor (6 mm) is what makes the legacy term saturate: '
+        'the formula was handed the horizon total, which on any horizon reaches the divisor'
     )
-    assert substitutions['heat_exceedance_days_above_30c']['max'] <= 16
-    assert 'wiring finding' in diagnostics['finding']
+    assert ranges['fire_wind_mean_kmh']['max'] < 25.0
+    assert ranges['heat_exceedance_days_above_30c']['max'] <= 16
+    # A finding that describes a correction already shipped says so; it no longer asks the owner
+    # to change the wiring.
+    assert 'corrected wiring' in diagnostics['finding']
+    assert set(diagnostics['top_class_distribution_legacy']), 'the before/after needs both halves'
 
 
-def test_the_counterfactual_lowers_the_fire_score_and_is_published_beside_the_shipped_one():
+def test_the_legacy_wiring_scores_fire_higher_than_the_corrected_wiring_on_every_row():
     episode = fixture_episode()
     rows = score_module.prediction_rows(episode, hindcast_cli.district_locations(), fixture_series())
     for row in rows:
-        assert row['counterfactual_scores']['Fire'] <= row['physics_scores']['Fire']
+        # The legacy fire term is pinned at its ceiling by the horizon ET total, so it cannot
+        # score below the corrected one.
+        assert row['legacy_scores']['Fire'] >= row['physics_scores']['Fire']
+        assert set(row['legacy_scores']) == set(row['physics_scores'])
+        # The legacy arguments are recorded for the record, and they are the ones the guards in
+        # `physics_severity` refuse: a horizon total as a daily rate.
+        assert row['legacy_arguments']['fire_et_argument'] == 'et_total_mm (horizon total)'
     report = build()
     assert set(report['physics_diagnostics']['top_class_distribution_shipped'])
-    assert set(report['physics_diagnostics']['top_class_distribution_counterfactual'])
-    assert report['physics_diagnostics']['detection_counterfactual']['named_districts'] == \
+    assert set(report['physics_diagnostics']['top_class_distribution_legacy'])
+    assert report['physics_diagnostics']['detection_legacy']['named_districts'] == \
         report['detection']['named_districts']
 
 
@@ -291,17 +322,36 @@ def test_swapping_the_episode_class_to_what_the_track_names_produces_hits():
     """The scoring path must be able to produce a hit at all — otherwise the harness would
     report `pod 0` for every event and read as a finding it is not.
 
-    `Fire` is the class the fixture's shipped wiring names on the majority of its rows (the
-    saturation diagnostic explains why), so scoring against `Fire` must produce hits on those
-    rows and misses on the rest — a partial detection, which is what a working scorer looks like.
+    The class is read from the report's own distribution rather than hard-coded, because which
+    class the track names is exactly what the 2026-09-18 wiring correction changed: the scripted
+    storm used to crown `Fire` on every row (the saturated drying term), and it now crowns the
+    rain classes. Scoring against the class the track actually names must produce hits; the
+    episode class itself still misses, which is the finding the report carries.
     """
+    tops = build()['physics_diagnostics']['top_class_distribution_shipped']
+    named_class = max(tops, key=lambda name: tops[name])
     episode = fixture_episode()
-    episode['hazard_class'] = 'Fire'
+    episode['hazard_class'] = named_class
     report = build(episode=episode)
     events = report['evaluation']['scores']['events']
-    assert events['hits'] > 0
+    assert events['hits'] > 0, f'scoring against the track\'s own top class ({named_class}) produced no hits'
     assert events['pod'] is not None and events['pod'] > 0.0
     assert report['detection']['flagged_episode_class'] > 0
+
+
+def test_the_wiring_correction_changed_which_class_the_track_names():
+    """The before/after is the deliverable, so the direction of the change is pinned.
+
+    On this fixture the legacy wiring crowns `Fire` on two thirds of the rows; the corrected
+    wiring does not crown it at all. If a future change makes `Fire` the top class again, the
+    corrected terms are saturating again and the reports are describing the defect they were
+    written to fix.
+    """
+    diagnostics = build()['physics_diagnostics']
+    legacy = diagnostics['top_class_distribution_legacy']
+    shipped = diagnostics['top_class_distribution_shipped']
+    assert legacy['Fire'] > shipped.get('Fire', 0)
+    assert legacy['Fire'] / sum(legacy.values()) > 0.5
 
 
 def test_absence_of_a_record_is_never_a_false_alarm():

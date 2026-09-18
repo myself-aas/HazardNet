@@ -191,7 +191,19 @@ def build_report(episode: dict, *, series: dict, drivers_path: str, now: str | N
                     'precip_peak_mm': 'wettest day in the window (the live pipeline uses the peak '
                                       '6-hourly accumulation, so a forward-flood term is understated)',
                     'temp_max_c': 'maximum daily maximum', 'temp_min_c': 'minimum daily minimum',
-                    'wind_max_kmh': 'maximum daily maximum', 'et_total_mm': 'sum of daily ET0',
+                    'wind_max_kmh': 'sustained maximum (kept for the record and the pre-correction '
+                                    'comparison; the wind-damage classes read the gust below)',
+                    'wind_gust_max_kmh': 'gust maximum — the driver the two wind-damage classes '
+                                         'read, because the unit is a district centroid',
+                    # The four the corrected physics wiring uses. `resolve_drivers` derives them
+                    # here, from the daily series, so the harness never passes an aggregate that
+                    # the formula was not written for.
+                    'wind_mean_kmh': 'mean of the daily maximum wind over the window',
+                    'et_mm_per_day': 'mean daily reference evapotranspiration',
+                    'heat_exceedance_days': 'days past 30 °C inside the window',
+                    'cold_exceedance_days': 'days below 16 °C inside the window',
+                    'et_total_mm': 'sum of daily ET0 (kept; read only when no daily ET series is '
+                                   'available, and never as a daily rate)',
                 },
             },
             'how_to_read': [
@@ -267,18 +279,18 @@ def _shipped_accessors(episode: dict):
     )
 
 
-def _counterfactual_accessors(episode: dict):
-    """The same three questions over the counterfactual scores (see score.counterfactual_scores)."""
+def _legacy_accessors(episode: dict):
+    """The same questions over the pre-correction scores (see `score.legacy_scores`)."""
     class_name = episode['hazard_class']
 
     def top(row):
-        scores = row['counterfactual_scores']
+        scores = row['legacy_scores']
         return max(scores, key=lambda name: scores[name])
 
     return (
-        lambda row: max(row['counterfactual_scores'].values()),
+        lambda row: max(row['legacy_scores'].values()),
         top,
-        lambda row: row['counterfactual_scores'].get(class_name),
+        lambda row: row['legacy_scores'].get(class_name),
         lambda row: top(row) == class_name,
     )
 
@@ -420,58 +432,65 @@ def _wind_driver_summary(episode: dict, predictions: list, threshold: float) -> 
 
 
 def physics_diagnostics(episode: dict, predictions: list, threshold: float) -> dict:
-    """Measure the shipped wiring before recommending a change to it.
+    """Measure the corrected wiring against the one it replaced, on every run.
 
-    Two terms in the physics wiring sit at their ceiling on every row of every run
-    (`score.SATURATING_TERMS`): the fire formula's drying term receives a horizon ET total
-    against a divisor written for a daily value, and the heat/cold persistence terms receive the
-    horizon's length against a divisor written for an exceedance count. The consequence is not
-    theoretical — it moves the class the track says it "would have picked" — so it is measured
-    here, with the counterfactual recomputation beside it, rather than asserted in prose.
+    The four terms below sat at their ceiling on every row before 2026-09-18: the fire formula's
+    drying term received a horizon ET total against a divisor written for a daily value, its
+    wind term received a single windiest afternoon, and both persistence terms received the
+    horizon's length against a divisor written for an exceedance count. The owner shipped the
+    correction on this harness's evidence, so what the reports carry now is the *comparison* —
+    corrected wiring beside legacy wiring on the same rows — rather than a recommendation.
     """
     import collections
 
     shipped = collections.Counter(row['hazard_type'] for row in predictions)
-    counterfactual = collections.Counter(row['counterfactual_top_hazard'] for row in predictions)
+    legacy = collections.Counter(row['legacy_top_hazard'] for row in predictions)
     saturation = {}
     for term in score_module.SATURATING_TERMS:
         at_ceiling = sum(1 for row in predictions if row['saturated_terms'][term]['at_ceiling'])
+        legacy_at_ceiling = sum(
+            1 for row in predictions if row['saturated_terms'][term]['legacy_at_ceiling'])
         example = predictions[0]['saturated_terms'][term]
         saturation[term] = {
             'term': example['term'],
+            'legacy_term': example['legacy_term'],
             'rows': len(predictions),
             'rows_at_ceiling': at_ceiling,
+            # The pre-correction wiring, measured on the same rows: this is what makes the
+            # before/after a number in the artifact rather than a sentence in a commit message.
+            'legacy_rows_at_ceiling': legacy_at_ceiling,
             'first_row_argument': example['argument'],
+            'legacy_argument': example.get('legacy_argument'),
         }
 
-    et_per_day = [row['counterfactual_substitutions']['fire_et_mm_per_day'] for row in predictions
-                  if row['counterfactual_substitutions']['fire_et_mm_per_day'] is not None]
-    heat_days = [row['counterfactual_substitutions']['heat_exceedance_days_above_30c'] for row in predictions]
-    cold_days = [row['counterfactual_substitutions']['cold_exceedance_days_below_16c'] for row in predictions]
+    resolved = [row['drivers_resolved'] for row in predictions]
+    wind_mean = [row['wind_mean_kmh'] for row in resolved if row.get('wind_mean_kmh') is not None]
+    et_daily = [row['et_mm_per_day'] for row in resolved if row.get('et_mm_per_day') is not None]
+    heat_days = [row['heat_exceedance_days'] for row in resolved if row.get('heat_exceedance_days') is not None]
+    cold_days = [row['cold_exceedance_days'] for row in resolved if row.get('cold_exceedance_days') is not None]
 
     return {
         'top_class_distribution_shipped': dict(sorted(shipped.items())),
-        'top_class_distribution_counterfactual': dict(sorted(counterfactual.items())),
+        'top_class_distribution_legacy': dict(sorted(legacy.items())),
         'saturated_terms': saturation,
-        'counterfactual_substitutions': {
-            'fire_et_mm_per_day': {'min': min(et_per_day), 'max': max(et_per_day)} if et_per_day else None,
-            'heat_exceedance_days_above_30c': {'min': min(heat_days), 'max': max(heat_days)},
-            'cold_exceedance_days_below_16c': {'min': min(cold_days), 'max': max(cold_days)},
+        'corrected_driver_ranges': {
+            'fire_wind_mean_kmh': {'min': min(wind_mean), 'max': max(wind_mean)} if wind_mean else None,
+            'fire_et_mm_per_day': {'min': min(et_daily), 'max': max(et_daily)} if et_daily else None,
+            'heat_exceedance_days_above_30c': {'min': min(heat_days), 'max': max(heat_days)} if heat_days else None,
+            'cold_exceedance_days_below_16c': {'min': min(cold_days), 'max': max(cold_days)} if cold_days else None,
         },
         'wind_drivers': _wind_driver_summary(episode, predictions, threshold),
-        'detection_counterfactual': {
+        'detection_legacy': {
             key: value for key, value in detection_summary(
-                episode, predictions, threshold, accessors=_counterfactual_accessors(episode)
+                episode, predictions, threshold, accessors=_legacy_accessors(episode)
             ).items() if key != 'per_district'
         },
         'finding': (
-            'In the shipped wiring the fire formula\'s drying term is at its ceiling on every row '
-            'because it receives the horizon ET total, and both persistence terms are at theirs '
-            'because they receive the horizon length. The counterfactual recomputes those three '
-            'arguments with the quantities their formulas describe (mean daily ET, exceedance days '
-            'above 30 °C / below 16 °C) and reports the difference. This is a wiring finding for '
-            'the pipeline owner, measured here rather than asserted: the formulas themselves are '
-            'not changed by this harness.'
+            'The corrected wiring feeds each formula the quantity it describes: mean daily ET and '
+            'mean daily maximum wind to the fire terms, the gust maximum to the two wind-damage '
+            'classes, and the number of days past 30 °C / below 16 °C to the persistence terms. '
+            'The same rows are scored with the pre-correction wiring beside it, so the change and '
+            'its size are on the record rather than in a commit message.'
         ),
     }
 

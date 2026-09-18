@@ -7,28 +7,28 @@
   "built_from": [
     {
       "path": "data/hindcast/reports/amphan-2020.json",
-      "sha256": "3f307c35afb39361d8693c8332b884c6e12823ee6072ad1279532b270eee0513",
-      "generated_at": "2026-09-18T00:33:55Z"
+      "sha256": "4bae9121caf25372a72e79a7a78bdd604eb3b68403038b9159c70a49bf98d6cf",
+      "generated_at": "2026-09-18T04:46:54Z"
     },
     {
       "path": "data/hindcast/reports/eastern-flood-2024.json",
-      "sha256": "208db4ff22e23e948e39de973c1568af271c3b6426026e9f3267c75f41e026f7",
-      "generated_at": "2026-09-18T00:33:59Z"
+      "sha256": "c9dda5b732153e2c662d21f4ea76f8526865abe17af2eb73163613ff1b5ac6aa",
+      "generated_at": "2026-09-18T04:46:55Z"
     },
     {
       "path": "data/hindcast/reports/mocha-2023.json",
-      "sha256": "471b29b172fe3b0d05e19dad709e790993a54995837cbeefc3f70c68f7dd300c",
-      "generated_at": "2026-09-18T00:35:49Z"
+      "sha256": "d1e29c758341a0dd8bb749714d605947f3f0338f8ae18b579e7a766eccaa7183",
+      "generated_at": "2026-09-18T04:46:55Z"
     },
     {
       "path": "data/hindcast/reports/northeast-flood-2025.json",
-      "sha256": "9d5629ab84c6137fc525b21e3eb4132e180da362fe0a66aa05948e7bb572c380",
-      "generated_at": "2026-09-18T00:35:51Z"
+      "sha256": "cde9c171dc482211c1a0f74490fb9866d764185a06e2fbb9b3aaf1df23815914",
+      "generated_at": "2026-09-18T04:46:55Z"
     },
     {
       "path": "data/hindcast/reports/yaas-2021.json",
-      "sha256": "7582bd40db371db502d7dd2519e138e1f2afe1b9275bae7c7a64f9ee2636cfd3",
-      "generated_at": "2026-09-18T00:35:56Z"
+      "sha256": "af1627e7becf9dc0bf3aaf1e87f2313d8282fca700d76cdf9d31bb84d480adea",
+      "generated_at": "2026-09-18T04:46:54Z"
     }
   ],
   "method": {
@@ -66,10 +66,10 @@
     "named_districts": 50,
     "districts_with_a_scored_row": 50,
     "flagged_any_class": 50,
-    "flagged_the_episode_class": 12,
+    "flagged_the_episode_class": 13,
     "episode_class_over_threshold": 23,
     "scored_samples": 100,
-    "alarmed_without_a_recorded_impact": 540,
+    "alarmed_without_a_recorded_impact": 532,
     "episodes_with_a_computable_pod": 1
   },
   "episodes": [
@@ -93,8 +93,8 @@
       ],
       "report": {
         "path": "data/hindcast/reports/amphan-2020.json",
-        "sha256": "3f307c35afb39361d8693c8332b884c6e12823ee6072ad1279532b270eee0513",
-        "generated_at": "2026-09-18T00:33:55Z"
+        "sha256": "4bae9121caf25372a72e79a7a78bdd604eb3b68403038b9159c70a49bf98d6cf",
+        "generated_at": "2026-09-18T04:46:54Z"
       },
       "sources": [
         {
@@ -163,20 +163,6 @@
       },
       "drivers": {
         "shipped": {
-          "name": "era5_10m_sustained",
-          "rows": 128,
-          "wind_kmh_min": 19.2,
-          "wind_kmh_max": 69.1,
-          "episode_class_score_min": 0.0136,
-          "episode_class_score_max": 0.248,
-          "named_the_episode_class": 0,
-          "episode_class_over_threshold": 0,
-          "top_class_distribution": {
-            "Fire": 127,
-            "Flash Flood": 1
-          }
-        },
-        "archive": {
           "name": "era5_10m_gust",
           "rows": 128,
           "wind_kmh_min": 51.1,
@@ -186,8 +172,25 @@
           "named_the_episode_class": 0,
           "episode_class_over_threshold": 2,
           "top_class_distribution": {
-            "Fire": 127,
-            "Flash Flood": 1
+            "Drought": 6,
+            "Fire": 92,
+            "Flash Flood": 25,
+            "Severe Local Storm": 5
+          }
+        },
+        "legacy": {
+          "name": "era5_10m_sustained",
+          "rows": 128,
+          "wind_kmh_min": 19.2,
+          "wind_kmh_max": 69.1,
+          "episode_class_score_min": 0.0136,
+          "episode_class_score_max": 0.248,
+          "named_the_episode_class": 0,
+          "episode_class_over_threshold": 0,
+          "top_class_distribution": {
+            "Drought": 6,
+            "Fire": 92,
+            "Flash Flood": 30
           }
         },
         "finding": "With the sustained maximum the shipped pipeline uses, the episode's class scores 0.0136–0.2480 and crosses the 0.5 band on 0 of 128 rows; with the gust field the archive also carries it scores 0.0987–0.5145 and crosses on 2. The wind driver, not the formula alone, decides whether this event was detectable at the district point. Note what neither number fixes: the track's top class is Fire under either driver, so the separation between the wind-driven classes is a second, independent defect."
@@ -195,33 +198,68 @@
       "saturation": {
         "fire_wind": {
           "rows": 128,
-          "rows_at_ceiling": 116
+          "rows_at_ceiling": 0,
+          "legacy_rows_at_ceiling": 116,
+          "term": "(wind_mean_kmh - 5.0) / 20.0",
+          "legacy_term": "(wind_max_kmh - 5.0) / 20.0",
+          "legacy_argument": 40.4
         },
         "fire_drying": {
           "rows": 128,
-          "rows_at_ceiling": 128
+          "rows_at_ceiling": 0,
+          "legacy_rows_at_ceiling": 128,
+          "term": "et_mm_per_day / 6.0",
+          "legacy_term": "et_total_mm / 6.0",
+          "legacy_argument": 26.749999999999996
         },
         "heat_persistence": {
           "rows": 128,
-          "rows_at_ceiling": 128
+          "rows_at_ceiling": 119,
+          "legacy_rows_at_ceiling": 128,
+          "term": "heat_exceedance_days / 5.0",
+          "legacy_term": "horizon_days / 5.0",
+          "legacy_argument": 7
         },
         "cold_persistence": {
           "rows": 128,
-          "rows_at_ceiling": 128
+          "rows_at_ceiling": 0,
+          "legacy_rows_at_ceiling": 128,
+          "term": "cold_exceedance_days / 5.0",
+          "legacy_term": "horizon_days / 5.0",
+          "legacy_argument": 7
         }
       },
       "top_class_distribution": {
         "shipped": {
+          "Drought": 6,
+          "Fire": 92,
+          "Flash Flood": 30
+        },
+        "legacy": {
           "Fire": 127,
           "Flash Flood": 1
-        },
-        "counterfactual": {
-          "Fire": 118,
-          "Flash Flood": 10
         }
       },
-      "counterfactual_finding": "In the shipped wiring the fire formula's drying term is at its ceiling on every row because it receives the horizon ET total, and both persistence terms are at theirs because they receive the horizon length. The counterfactual recomputes those three arguments with the quantities their formulas describe (mean daily ET, exceedance days above 30 °C / below 16 °C) and reports the difference. This is a wiring finding for the pipeline owner, measured here rather than asserted: the formulas themselves are not changed by this harness.",
-      "alarmed_without_a_recorded_impact": 100,
+      "wiring_finding": "The corrected wiring feeds each formula the quantity it describes: mean daily ET and mean daily maximum wind to the fire terms, the gust maximum to the two wind-damage classes, and the number of days past 30 °C / below 16 °C to the persistence terms. The same rows are scored with the pre-correction wiring beside it, so the change and its size are on the record rather than in a commit message.",
+      "corrected_driver_ranges": {
+        "fire_wind_mean_kmh": {
+          "min": 9.65,
+          "max": 22.737499999999997
+        },
+        "fire_et_mm_per_day": {
+          "min": 3.2675,
+          "max": 5.284999999999999
+        },
+        "heat_exceedance_days_above_30c": {
+          "min": 2,
+          "max": 16
+        },
+        "cold_exceedance_days_below_16c": {
+          "min": 0,
+          "max": 0
+        }
+      },
+      "alarmed_without_a_recorded_impact": 97,
       "caveats": [
         "Reanalysis is not the forecast that existed on the issue date. This measures whether the physics track, given the weather that actually occurred in the window, flags the districts that were hit — a ceiling on detection, not a forecast skill score.",
         "The CNN is NOT re-run: the t2 tensor needs Sentinel-1/2 + Landsat + ERA5-Land bands over GEE for the historical window, which this environment cannot reach (Earth Engine credentials) and which the Phase 9 plan assigns to the archive-loaded run.",
@@ -246,8 +284,8 @@
       ],
       "report": {
         "path": "data/hindcast/reports/yaas-2021.json",
-        "sha256": "7582bd40db371db502d7dd2519e138e1f2afe1b9275bae7c7a64f9ee2636cfd3",
-        "generated_at": "2026-09-18T00:35:56Z"
+        "sha256": "af1627e7becf9dc0bf3aaf1e87f2313d8282fca700d76cdf9d31bb84d480adea",
+        "generated_at": "2026-09-18T04:46:54Z"
       },
       "sources": [
         {
@@ -302,20 +340,6 @@
       },
       "drivers": {
         "shipped": {
-          "name": "era5_10m_sustained",
-          "rows": 128,
-          "wind_kmh_min": 14.8,
-          "wind_kmh_max": 43.3,
-          "episode_class_score_min": 0.0285,
-          "episode_class_score_max": 0.2457,
-          "named_the_episode_class": 0,
-          "episode_class_over_threshold": 0,
-          "top_class_distribution": {
-            "Fire": 127,
-            "Flash Flood": 1
-          }
-        },
-        "archive": {
           "name": "era5_10m_gust",
           "rows": 128,
           "wind_kmh_min": 37.4,
@@ -325,8 +349,24 @@
           "named_the_episode_class": 0,
           "episode_class_over_threshold": 0,
           "top_class_distribution": {
-            "Fire": 127,
-            "Flash Flood": 1
+            "Drought": 5,
+            "Fire": 119,
+            "Flash Flood": 4
+          }
+        },
+        "legacy": {
+          "name": "era5_10m_sustained",
+          "rows": 128,
+          "wind_kmh_min": 14.8,
+          "wind_kmh_max": 43.3,
+          "episode_class_score_min": 0.0285,
+          "episode_class_score_max": 0.2457,
+          "named_the_episode_class": 0,
+          "episode_class_over_threshold": 0,
+          "top_class_distribution": {
+            "Drought": 5,
+            "Fire": 119,
+            "Flash Flood": 4
           }
         },
         "finding": "With the sustained maximum the shipped pipeline uses, the episode's class scores 0.0285–0.2457 and crosses the 0.5 band on 0 of 128 rows; with the gust field the archive also carries it scores 0.0388–0.3166 and crosses on 0. Even the gust field leaves the episode class below the band, so the wind argument alone does not explain the miss: at this distance from the track the driver the pipeline uses cannot represent the hazard, and the class the formula describes is unreachable for this event. Note what neither number fixes: the track's top class is Fire under either driver, so the separation between the wind-driven classes is a second, independent defect."
@@ -334,32 +374,67 @@
       "saturation": {
         "fire_wind": {
           "rows": 128,
-          "rows_at_ceiling": 86
+          "rows_at_ceiling": 1,
+          "legacy_rows_at_ceiling": 86,
+          "term": "(wind_mean_kmh - 5.0) / 20.0",
+          "legacy_term": "(wind_max_kmh - 5.0) / 20.0",
+          "legacy_argument": 22.4
         },
         "fire_drying": {
           "rows": 128,
-          "rows_at_ceiling": 128
+          "rows_at_ceiling": 0,
+          "legacy_rows_at_ceiling": 128,
+          "term": "et_mm_per_day / 6.0",
+          "legacy_term": "et_total_mm / 6.0",
+          "legacy_argument": 32.11
         },
         "heat_persistence": {
           "rows": 128,
-          "rows_at_ceiling": 128
+          "rows_at_ceiling": 128,
+          "legacy_rows_at_ceiling": 128,
+          "term": "heat_exceedance_days / 5.0",
+          "legacy_term": "horizon_days / 5.0",
+          "legacy_argument": 7
         },
         "cold_persistence": {
           "rows": 128,
-          "rows_at_ceiling": 128
+          "rows_at_ceiling": 0,
+          "legacy_rows_at_ceiling": 128,
+          "term": "cold_exceedance_days / 5.0",
+          "legacy_term": "horizon_days / 5.0",
+          "legacy_argument": 7
         }
       },
       "top_class_distribution": {
         "shipped": {
-          "Fire": 127,
-          "Flash Flood": 1
+          "Drought": 5,
+          "Fire": 119,
+          "Flash Flood": 4
         },
-        "counterfactual": {
+        "legacy": {
           "Fire": 127,
           "Flash Flood": 1
         }
       },
-      "counterfactual_finding": "In the shipped wiring the fire formula's drying term is at its ceiling on every row because it receives the horizon ET total, and both persistence terms are at theirs because they receive the horizon length. The counterfactual recomputes those three arguments with the quantities their formulas describe (mean daily ET, exceedance days above 30 °C / below 16 °C) and reports the difference. This is a wiring finding for the pipeline owner, measured here rather than asserted: the formulas themselves are not changed by this harness.",
+      "wiring_finding": "The corrected wiring feeds each formula the quantity it describes: mean daily ET and mean daily maximum wind to the fire terms, the gust maximum to the two wind-damage classes, and the number of days past 30 °C / below 16 °C to the persistence terms. The same rows are scored with the pre-correction wiring beside it, so the change and its size are on the record rather than in a commit message.",
+      "corrected_driver_ranges": {
+        "fire_wind_mean_kmh": {
+          "min": 10.281250000000002,
+          "max": 26.150000000000006
+        },
+        "fire_et_mm_per_day": {
+          "min": 3.5868750000000005,
+          "max": 5.616250000000001
+        },
+        "heat_exceedance_days_above_30c": {
+          "min": 5,
+          "max": 16
+        },
+        "cold_exceedance_days_below_16c": {
+          "min": 0,
+          "max": 0
+        }
+      },
       "alarmed_without_a_recorded_impact": 110,
       "caveats": [
         "Identical to the Amphan episode: reanalysis rather than archived forecast fields, CNN not re-run, peak precipitation approximated by the wettest day, unnamed districts unknown.",
@@ -387,8 +462,8 @@
       ],
       "report": {
         "path": "data/hindcast/reports/mocha-2023.json",
-        "sha256": "471b29b172fe3b0d05e19dad709e790993a54995837cbeefc3f70c68f7dd300c",
-        "generated_at": "2026-09-18T00:35:49Z"
+        "sha256": "d1e29c758341a0dd8bb749714d605947f3f0338f8ae18b579e7a766eccaa7183",
+        "generated_at": "2026-09-18T04:46:55Z"
       },
       "sources": [
         {
@@ -450,20 +525,6 @@
       },
       "drivers": {
         "shipped": {
-          "name": "era5_10m_sustained",
-          "rows": 128,
-          "wind_kmh_min": 18.1,
-          "wind_kmh_max": 51,
-          "episode_class_score_min": 0,
-          "episode_class_score_max": 0.2173,
-          "named_the_episode_class": 0,
-          "episode_class_over_threshold": 0,
-          "top_class_distribution": {
-            "Fire": 126,
-            "Flash Flood": 2
-          }
-        },
-        "archive": {
           "name": "era5_10m_gust",
           "rows": 128,
           "wind_kmh_min": 36.7,
@@ -473,8 +534,26 @@
           "named_the_episode_class": 0,
           "episode_class_over_threshold": 0,
           "top_class_distribution": {
-            "Fire": 126,
-            "Flash Flood": 2
+            "Drought": 30,
+            "Fire": 94,
+            "Flash Flood": 2,
+            "Heat Wave": 2
+          }
+        },
+        "legacy": {
+          "name": "era5_10m_sustained",
+          "rows": 128,
+          "wind_kmh_min": 18.1,
+          "wind_kmh_max": 51,
+          "episode_class_score_min": 0,
+          "episode_class_score_max": 0.2173,
+          "named_the_episode_class": 0,
+          "episode_class_over_threshold": 0,
+          "top_class_distribution": {
+            "Drought": 30,
+            "Fire": 94,
+            "Flash Flood": 2,
+            "Heat Wave": 2
           }
         },
         "finding": "With the sustained maximum the shipped pipeline uses, the episode's class scores 0.0000–0.2173 and crosses the 0.5 band on 0 of 128 rows; with the gust field the archive also carries it scores 0.0000–0.3773 and crosses on 0. Even the gust field leaves the episode class below the band, so the wind argument alone does not explain the miss: at this distance from the track the driver the pipeline uses cannot represent the hazard, and the class the formula describes is unreachable for this event. Note what neither number fixes: the track's top class is Fire under either driver, so the separation between the wind-driven classes is a second, independent defect."
@@ -482,32 +561,68 @@
       "saturation": {
         "fire_wind": {
           "rows": 128,
-          "rows_at_ceiling": 74
+          "rows_at_ceiling": 1,
+          "legacy_rows_at_ceiling": 74,
+          "term": "(wind_mean_kmh - 5.0) / 20.0",
+          "legacy_term": "(wind_max_kmh - 5.0) / 20.0",
+          "legacy_argument": 22.4
         },
         "fire_drying": {
           "rows": 128,
-          "rows_at_ceiling": 128
+          "rows_at_ceiling": 24,
+          "legacy_rows_at_ceiling": 128,
+          "term": "et_mm_per_day / 6.0",
+          "legacy_term": "et_total_mm / 6.0",
+          "legacy_argument": 48.8
         },
         "heat_persistence": {
           "rows": 128,
-          "rows_at_ceiling": 128
+          "rows_at_ceiling": 128,
+          "legacy_rows_at_ceiling": 128,
+          "term": "heat_exceedance_days / 5.0",
+          "legacy_term": "horizon_days / 5.0",
+          "legacy_argument": 7
         },
         "cold_persistence": {
           "rows": 128,
-          "rows_at_ceiling": 128
+          "rows_at_ceiling": 0,
+          "legacy_rows_at_ceiling": 128,
+          "term": "cold_exceedance_days / 5.0",
+          "legacy_term": "horizon_days / 5.0",
+          "legacy_argument": 7
         }
       },
       "top_class_distribution": {
         "shipped": {
-          "Fire": 126,
-          "Flash Flood": 2
+          "Drought": 30,
+          "Fire": 94,
+          "Flash Flood": 2,
+          "Heat Wave": 2
         },
-        "counterfactual": {
+        "legacy": {
           "Fire": 126,
           "Flash Flood": 2
         }
       },
-      "counterfactual_finding": "In the shipped wiring the fire formula's drying term is at its ceiling on every row because it receives the horizon ET total, and both persistence terms are at theirs because they receive the horizon length. The counterfactual recomputes those three arguments with the quantities their formulas describe (mean daily ET, exceedance days above 30 °C / below 16 °C) and reports the difference. This is a wiring finding for the pipeline owner, measured here rather than asserted: the formulas themselves are not changed by this harness.",
+      "wiring_finding": "The corrected wiring feeds each formula the quantity it describes: mean daily ET and mean daily maximum wind to the fire terms, the gust maximum to the two wind-damage classes, and the number of days past 30 °C / below 16 °C to the persistence terms. The same rows are scored with the pre-correction wiring beside it, so the change and its size are on the record rather than in a commit message.",
+      "corrected_driver_ranges": {
+        "fire_wind_mean_kmh": {
+          "min": 11.78125,
+          "max": 25.625
+        },
+        "fire_et_mm_per_day": {
+          "min": 4.3412500000000005,
+          "max": 6.875000000000001
+        },
+        "heat_exceedance_days_above_30c": {
+          "min": 6,
+          "max": 16
+        },
+        "cold_exceedance_days_below_16c": {
+          "min": 0,
+          "max": 0
+        }
+      },
       "alarmed_without_a_recorded_impact": 120,
       "caveats": [
         "Reanalysis rather than archived forecast fields: this measures whether the physics track, given the weather that occurred, flags the districts that were hit — a ceiling on detection, not forecast skill (identical to the other three episodes; the harness has no ECMWF MARS/CDS credential).",
@@ -538,8 +653,8 @@
       ],
       "report": {
         "path": "data/hindcast/reports/eastern-flood-2024.json",
-        "sha256": "208db4ff22e23e948e39de973c1568af271c3b6426026e9f3267c75f41e026f7",
-        "generated_at": "2026-09-18T00:33:59Z"
+        "sha256": "c9dda5b732153e2c662d21f4ea76f8526865abe17af2eb73163613ff1b5ac6aa",
+        "generated_at": "2026-09-18T04:46:55Z"
       },
       "sources": [
         {
@@ -582,7 +697,7 @@
         "named_districts": 13,
         "districts_with_a_scored_row": 13,
         "flagged_any_class": 13,
-        "flagged_the_episode_class": 12,
+        "flagged_the_episode_class": 13,
         "episode_class_over_threshold": 13,
         "alarm_threshold": 0.5,
         "per_horizon": {
@@ -604,76 +719,113 @@
         "outcomes": 13,
         "matched": 26,
         "unmatched_no_outcome": 102,
-        "hits": 22,
+        "hits": 26,
         "misses": 0,
-        "false_alarms": 4,
-        "observed_events": 22,
+        "false_alarms": 0,
+        "observed_events": 26,
         "forecast_events": 26,
         "pod": 1,
-        "far": 0.153846,
-        "csi": 0.846154
+        "far": null,
+        "csi": null
       },
       "drivers": {
         "shipped": {
-          "name": "era5_10m_sustained",
-          "rows": 128,
-          "wind_kmh_min": 15,
-          "wind_kmh_max": 31.3,
-          "episode_class_score_min": 0.1175,
-          "episode_class_score_max": 1,
-          "named_the_episode_class": 40,
-          "episode_class_over_threshold": 83,
-          "top_class_distribution": {
-            "Fire": 88,
-            "Flash Flood": 40
-          }
-        },
-        "archive": {
           "name": "era5_10m_gust",
           "rows": 128,
           "wind_kmh_min": 33.1,
           "wind_kmh_max": 53.6,
           "episode_class_score_min": 0.1175,
           "episode_class_score_max": 1,
-          "named_the_episode_class": 31,
+          "named_the_episode_class": 78,
           "episode_class_over_threshold": 83,
           "top_class_distribution": {
-            "Fire": 97,
-            "Flash Flood": 31
+            "Drought": 1,
+            "Fire": 49,
+            "Flash Flood": 78
           }
         },
-        "finding": "With the sustained maximum the shipped pipeline uses, the episode's class scores 0.1175–1.0000 and crosses the 0.5 band on 83 of 128 rows; with the gust field the archive also carries it scores 0.1175–1.0000 and crosses on 83. The wind driver, not the formula alone, decides whether this event was detectable at the district point. Note what neither number fixes: the track's top class is Fire under either driver, so the separation between the wind-driven classes is a second, independent defect."
+        "legacy": {
+          "name": "era5_10m_sustained",
+          "rows": 128,
+          "wind_kmh_min": 15,
+          "wind_kmh_max": 31.3,
+          "episode_class_score_min": 0.1175,
+          "episode_class_score_max": 1,
+          "named_the_episode_class": 78,
+          "episode_class_over_threshold": 83,
+          "top_class_distribution": {
+            "Drought": 1,
+            "Fire": 49,
+            "Flash Flood": 78
+          }
+        },
+        "finding": "With the sustained maximum the shipped pipeline uses, the episode's class scores 0.1175–1.0000 and crosses the 0.5 band on 83 of 128 rows; with the gust field the archive also carries it scores 0.1175–1.0000 and crosses on 83. The wind driver, not the formula alone, decides whether this event was detectable at the district point. Note what neither number fixes: the track's top class is Flash Flood under either driver, so the separation between the wind-driven classes is a second, independent defect."
       },
       "saturation": {
         "fire_wind": {
           "rows": 128,
-          "rows_at_ceiling": 36
+          "rows_at_ceiling": 0,
+          "legacy_rows_at_ceiling": 36,
+          "term": "(wind_mean_kmh - 5.0) / 20.0",
+          "legacy_term": "(wind_max_kmh - 5.0) / 20.0",
+          "legacy_argument": 25.4
         },
         "fire_drying": {
           "rows": 128,
-          "rows_at_ceiling": 128
+          "rows_at_ceiling": 0,
+          "legacy_rows_at_ceiling": 128,
+          "term": "et_mm_per_day / 6.0",
+          "legacy_term": "et_total_mm / 6.0",
+          "legacy_argument": 30.240000000000002
         },
         "heat_persistence": {
           "rows": 128,
-          "rows_at_ceiling": 128
+          "rows_at_ceiling": 94,
+          "legacy_rows_at_ceiling": 128,
+          "term": "heat_exceedance_days / 5.0",
+          "legacy_term": "horizon_days / 5.0",
+          "legacy_argument": 7
         },
         "cold_persistence": {
           "rows": 128,
-          "rows_at_ceiling": 128
+          "rows_at_ceiling": 0,
+          "legacy_rows_at_ceiling": 128,
+          "term": "cold_exceedance_days / 5.0",
+          "legacy_term": "horizon_days / 5.0",
+          "legacy_argument": 7
         }
       },
       "top_class_distribution": {
         "shipped": {
+          "Drought": 1,
+          "Fire": 49,
+          "Flash Flood": 78
+        },
+        "legacy": {
           "Fire": 88,
           "Flash Flood": 40
-        },
-        "counterfactual": {
-          "Fire": 69,
-          "Flash Flood": 59
         }
       },
-      "counterfactual_finding": "In the shipped wiring the fire formula's drying term is at its ceiling on every row because it receives the horizon ET total, and both persistence terms are at theirs because they receive the horizon length. The counterfactual recomputes those three arguments with the quantities their formulas describe (mean daily ET, exceedance days above 30 °C / below 16 °C) and reports the difference. This is a wiring finding for the pipeline owner, measured here rather than asserted: the formulas themselves are not changed by this harness.",
-      "alarmed_without_a_recorded_impact": 102,
+      "wiring_finding": "The corrected wiring feeds each formula the quantity it describes: mean daily ET and mean daily maximum wind to the fire terms, the gust maximum to the two wind-damage classes, and the number of days past 30 °C / below 16 °C to the persistence terms. The same rows are scored with the pre-correction wiring beside it, so the change and its size are on the record rather than in a commit message.",
+      "corrected_driver_ranges": {
+        "fire_wind_mean_kmh": {
+          "min": 12.3125,
+          "max": 24.650000000000002
+        },
+        "fire_et_mm_per_day": {
+          "min": 1.8250000000000002,
+          "max": 4.30875
+        },
+        "heat_exceedance_days_above_30c": {
+          "min": 0,
+          "max": 16
+        },
+        "cold_exceedance_days_below_16c": {
+          "min": 0,
+          "max": 0
+        }
+      },
+      "alarmed_without_a_recorded_impact": 97,
       "caveats": [
         "Reanalysis, not archived forecast — the number is a ceiling on detection, and the plan's lead-time requirement needs forecast fields the harness cannot see (same as the cyclone episodes).",
         "The physics track was not re-run for this window and the CNN is not evaluated: detection is the independent cross-check track only.",
@@ -700,8 +852,8 @@
       ],
       "report": {
         "path": "data/hindcast/reports/northeast-flood-2025.json",
-        "sha256": "9d5629ab84c6137fc525b21e3eb4132e180da362fe0a66aa05948e7bb572c380",
-        "generated_at": "2026-09-18T00:35:51Z"
+        "sha256": "cde9c171dc482211c1a0f74490fb9866d764185a06e2fbb9b3aaf1df23815914",
+        "generated_at": "2026-09-18T04:46:55Z"
       },
       "sources": [
         {
@@ -749,20 +901,6 @@
       },
       "drivers": {
         "shipped": {
-          "name": "era5_10m_sustained",
-          "rows": 128,
-          "wind_kmh_min": 25.7,
-          "wind_kmh_max": 44.5,
-          "episode_class_score_min": 0.2097,
-          "episode_class_score_max": 1,
-          "named_the_episode_class": 0,
-          "episode_class_over_threshold": 101,
-          "top_class_distribution": {
-            "Fire": 75,
-            "Flash Flood": 53
-          }
-        },
-        "archive": {
           "name": "era5_10m_gust",
           "rows": 128,
           "wind_kmh_min": 49,
@@ -772,41 +910,89 @@
           "named_the_episode_class": 0,
           "episode_class_over_threshold": 101,
           "top_class_distribution": {
-            "Fire": 75,
-            "Flash Flood": 53
+            "Fire": 45,
+            "Flash Flood": 83
           }
         },
-        "finding": "With the sustained maximum the shipped pipeline uses, the episode's class scores 0.2097–1.0000 and crosses the 0.5 band on 101 of 128 rows; with the gust field the archive also carries it scores 0.2097–1.0000 and crosses on 101. The wind driver, not the formula alone, decides whether this event was detectable at the district point. Note what neither number fixes: the track's top class is Fire under either driver, so the separation between the wind-driven classes is a second, independent defect."
+        "legacy": {
+          "name": "era5_10m_sustained",
+          "rows": 128,
+          "wind_kmh_min": 25.7,
+          "wind_kmh_max": 44.5,
+          "episode_class_score_min": 0.2097,
+          "episode_class_score_max": 1,
+          "named_the_episode_class": 0,
+          "episode_class_over_threshold": 101,
+          "top_class_distribution": {
+            "Fire": 45,
+            "Flash Flood": 83
+          }
+        },
+        "finding": "With the sustained maximum the shipped pipeline uses, the episode's class scores 0.2097–1.0000 and crosses the 0.5 band on 101 of 128 rows; with the gust field the archive also carries it scores 0.2097–1.0000 and crosses on 101. The wind driver, not the formula alone, decides whether this event was detectable at the district point. Note what neither number fixes: the track's top class is Flash Flood under either driver, so the separation between the wind-driven classes is a second, independent defect."
       },
       "saturation": {
         "fire_wind": {
           "rows": 128,
-          "rows_at_ceiling": 128
+          "rows_at_ceiling": 2,
+          "legacy_rows_at_ceiling": 128,
+          "term": "(wind_mean_kmh - 5.0) / 20.0",
+          "legacy_term": "(wind_max_kmh - 5.0) / 20.0",
+          "legacy_argument": 36.8
         },
         "fire_drying": {
           "rows": 128,
-          "rows_at_ceiling": 128
+          "rows_at_ceiling": 0,
+          "legacy_rows_at_ceiling": 128,
+          "term": "et_mm_per_day / 6.0",
+          "legacy_term": "et_total_mm / 6.0",
+          "legacy_argument": 29.009999999999998
         },
         "heat_persistence": {
           "rows": 128,
-          "rows_at_ceiling": 128
+          "rows_at_ceiling": 120,
+          "legacy_rows_at_ceiling": 128,
+          "term": "heat_exceedance_days / 5.0",
+          "legacy_term": "horizon_days / 5.0",
+          "legacy_argument": 7
         },
         "cold_persistence": {
           "rows": 128,
-          "rows_at_ceiling": 128
+          "rows_at_ceiling": 0,
+          "legacy_rows_at_ceiling": 128,
+          "term": "cold_exceedance_days / 5.0",
+          "legacy_term": "horizon_days / 5.0",
+          "legacy_argument": 7
         }
       },
       "top_class_distribution": {
         "shipped": {
+          "Fire": 45,
+          "Flash Flood": 83
+        },
+        "legacy": {
           "Fire": 75,
           "Flash Flood": 53
-        },
-        "counterfactual": {
-          "Fire": 54,
-          "Flash Flood": 74
         }
       },
-      "counterfactual_finding": "In the shipped wiring the fire formula's drying term is at its ceiling on every row because it receives the horizon ET total, and both persistence terms are at theirs because they receive the horizon length. The counterfactual recomputes those three arguments with the quantities their formulas describe (mean daily ET, exceedance days above 30 °C / below 16 °C) and reports the difference. This is a wiring finding for the pipeline owner, measured here rather than asserted: the formulas themselves are not changed by this harness.",
+      "wiring_finding": "The corrected wiring feeds each formula the quantity it describes: mean daily ET and mean daily maximum wind to the fire terms, the gust maximum to the two wind-damage classes, and the number of days past 30 °C / below 16 °C to the persistence terms. The same rows are scored with the pre-correction wiring beside it, so the change and its size are on the record rather than in a commit message.",
+      "corrected_driver_ranges": {
+        "fire_wind_mean_kmh": {
+          "min": 14.393749999999999,
+          "max": 26.25
+        },
+        "fire_et_mm_per_day": {
+          "min": 2.3125,
+          "max": 4.18875
+        },
+        "heat_exceedance_days_above_30c": {
+          "min": 1,
+          "max": 16
+        },
+        "cold_exceedance_days_below_16c": {
+          "min": 0,
+          "max": 0
+        }
+      },
       "alarmed_without_a_recorded_impact": 108,
       "caveats": [
         "Single-sourced truth set, and an onset date taken from the situation report rather than from a dated event record.",
@@ -846,7 +1032,7 @@
       "scored_samples": 28,
       "hits": 0,
       "misses": 0,
-      "false_alarms": 28,
+      "false_alarms": 24,
       "pod": null,
       "far": 1
     },
@@ -855,33 +1041,33 @@
       "alarm_threshold": 0.4,
       "band": "PRODUCT_SPEC §1.3 WATCH band",
       "scored_samples": 26,
-      "hits": 22,
+      "hits": 26,
       "misses": 0,
-      "false_alarms": 4,
+      "false_alarms": 0,
       "pod": 1,
-      "far": 0.153846
+      "far": null
     },
     {
       "episode": "eastern-flood-2024",
       "alarm_threshold": 0.5,
       "band": "harness default",
       "scored_samples": 26,
-      "hits": 22,
+      "hits": 26,
       "misses": 0,
-      "false_alarms": 4,
+      "false_alarms": 0,
       "pod": 1,
-      "far": 0.153846
+      "far": null
     },
     {
       "episode": "eastern-flood-2024",
       "alarm_threshold": 0.65,
       "band": "PRODUCT_SPEC §1.3 WARNING band",
       "scored_samples": 26,
-      "hits": 22,
-      "misses": 0,
-      "false_alarms": 4,
-      "pod": 1,
-      "far": 0.153846
+      "hits": 24,
+      "misses": 2,
+      "false_alarms": 0,
+      "pod": 0.923077,
+      "far": null
     },
     {
       "episode": "mocha-2023",

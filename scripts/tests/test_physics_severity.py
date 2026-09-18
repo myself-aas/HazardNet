@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Physics-track guards (Phase 2).
 
-Two shipped defects are pinned here, both from the 2026-09-17 audit
-(`docs/PRODUCT_SPEC.md` §5.3/§5.4, `docs/MODEL_CARD.md` §6):
+Three shipped defects are pinned here. The first two come from the 2026-09-17 audit
+(`docs/PRODUCT_SPEC.md` §5.3/§5.4, `docs/MODEL_CARD.md` §6); the third was measured by the
+hindcast harness and corrected on 2026-09-18.
 
 1. **The physics cross-check was not independent.** It was computed only for the
    hazard class the model had already chosen, so it could never disagree with
@@ -13,6 +14,15 @@ Two shipped defects are pinned here, both from the 2026-09-17 audit
    was never actually part of the flood score: 300 mm in a fortnight and 300 mm
    in a three-day burst scored identically. `om_calc_severe_storm` had the same
    wiring problem.
+3. **Four terms sat at their ceiling on every row of every episode.** The fire
+   formula's drying term received the horizon ET *total* against a divisor written for a daily
+   value, its wind term received the windiest single afternoon, and both persistence terms
+   received the horizon *length* against divisors written for counts of days past a threshold.
+   The consequence was measurable, not theoretical: `Fire` — a class that scores high everywhere
+   in the pre-monsoon coastal belt and therefore separates nothing — was the physics track's top
+   pick on 127 of 128 windows of a landfalling cyclone. `compute_legacy_scores` reproduces the
+   pre-correction wiring on purpose so the correction stays measurable; the tests below pin both
+   the corrected wiring and the guard that refuses the old arguments.
 
 The tests also pin the fixed class order (which the pipeline uses to turn the
 model's class ordinal into a hazard name — writing the ordinal straight into
@@ -29,8 +39,10 @@ sys.path.insert(0, str(ROOT / 'scripts'))
 
 from physics_severity import (  # noqa: E402
     HAZARD_CLASSES,
+    compute_legacy_scores,
     compute_physics_scores,
     missing_drivers,
+    resolve_drivers,
     om_calc_cold_wave,
     om_calc_drought,
     om_calc_fire,
@@ -42,30 +54,51 @@ from physics_severity import (  # noqa: E402
     physics_summary,
 )
 
-# A wet fortnight with an intense burst, a hot dry spell, and a calm week.
+# A wet fortnight with an intense burst, a hot dry spell, and a landfalling cyclone.
+#
+# The vocabulary is the corrected one: `wind_gust_kmh` is what the two wind-damage classes read
+# (the unit is a district centroid, not the eyewall), and the daily series are supplied rather
+# than pre-aggregated so the module does its own aggregation — see `resolve_drivers`.
 MONSOON = {
     'temp_max_c': 31.0,
     'temp_min_c': 25.0,
     'precip_total_mm': 300.0,
     'precip_peak_mm': 90.0,
-    'wind_max_kmh': 45.0,
-    'et_total_mm': 20.0,
+    'wind_gust_kmh': 45.0,
+    'wind_mean_kmh': 12.0,
+    'et_mm_per_day': 3.0,
+    'heat_exceedance_days': 6,
+    'cold_exceedance_days': 0,
 }
 CALM_DRY = {
     'temp_max_c': 33.0,
     'temp_min_c': 22.0,
     'precip_total_mm': 0.0,
     'precip_peak_mm': 0.0,
-    'wind_max_kmh': 10.0,
-    'et_total_mm': 40.0,
+    'wind_gust_kmh': 18.0,
+    'wind_mean_kmh': 9.0,
+    'et_mm_per_day': 5.5,
+    'heat_exceedance_days': 12,
+    'cold_exceedance_days': 0,
 }
 CYCLONE = {
     'temp_max_c': 29.0,
     'temp_min_c': 24.0,
     'precip_total_mm': 250.0,
     'precip_peak_mm': 80.0,
-    'wind_max_kmh': 130.0,
-    'et_total_mm': 10.0,
+    'wind_gust_kmh': 130.0,
+    'wind_mean_kmh': 40.0,
+    'et_mm_per_day': 1.5,
+    'heat_exceedance_days': 0,
+    'cold_exceedance_days': 0,
+}
+
+#: The daily series a pipeline actually holds, and what they aggregate to.
+DAILY_SERIES = {
+    'daily_temp_max_c': [31.0, 34.0, 36.0, 33.0, 30.0, 29.0, 32.0],
+    'daily_temp_min_c': [24.0, 26.0, 27.0, 25.0, 23.0, 22.0, 24.0],
+    'daily_et0_mm': [3.0, 4.0, 5.0, 4.0, 3.0, 3.0, 2.0],
+    'daily_wind_max_kmh': [10.0, 14.0, 18.0, 12.0, 8.0, 11.0, 9.0],
 }
 
 
@@ -130,8 +163,8 @@ def test_severe_storm_uses_peak_rainfall_not_the_horizon_total():
     Wind is the dominant term (0.6) and only counts above 50 km/h, so a calm
     week with steady rain scores near zero regardless of how wet it was.
     """
-    wet_fortnight = om_calc_severe_storm(precip_peak_mm=5.0, wind_max_kmh=30.0)
-    squall = om_calc_severe_storm(precip_peak_mm=100.0, wind_max_kmh=90.0)
+    wet_fortnight = om_calc_severe_storm(precip_peak_mm=5.0, wind_gust_kmh=30.0)
+    squall = om_calc_severe_storm(precip_peak_mm=100.0, wind_gust_kmh=90.0)
     assert wet_fortnight < 0.1, 'steady rain with no squall wind must not score as a storm'
     assert squall > 0.5, 'a real squall line must score high' 
 
@@ -206,22 +239,38 @@ def test_drought_tracks_rainfall_deficit():
 
 
 def test_cyclone_is_dominated_by_wind():
-    weak = om_calc_tropical_cyclone(wind_max_kmh=20.0, precip_total_mm=300.0)
-    strong = om_calc_tropical_cyclone(wind_max_kmh=180.0, precip_total_mm=300.0)
+    """A landfalling cyclone is a wind event; the rain it carries is flood, not cyclone.
+
+    The driver is the **gust**: the unit is a district centroid, and on Amphan's landfall day
+    the same archive's sustained field reached 19–69 km/h there while its gust field reached
+    51–134 km/h. Reading the sustained maximum is what kept the cyclone class below its own
+    alarm threshold on every scoring row (`physics_diagnostics.wind_drivers`).
+    """
+    weak = om_calc_tropical_cyclone(wind_gust_kmh=20.0, precip_total_mm=300.0)
+    strong = om_calc_tropical_cyclone(wind_gust_kmh=180.0, precip_total_mm=300.0)
     assert strong > weak
+    # 50 km/h of gust is not a cyclone; with no rain at all the class reads zero.
     assert om_calc_tropical_cyclone(50.0, 0.0) == 0.0
+    # Cyclone-strength gust with the rain a landfall drags in clears the 0.5 band.
+    assert om_calc_tropical_cyclone(130.0, 250.0) > 0.5
+    # And the limitation stays pinned rather than hidden: a 130 km/h gust with *no* rain reads
+    # 0.37, because the wind term's divisor is 150 km/h. That is the point-weather ceiling the
+    # hindcast reports as a finding (§4.4) — it is not a wiring defect and this fix does not
+    # claim to have closed it.
+    assert om_calc_tropical_cyclone(130.0, 0.0) == pytest.approx(0.7 * (80.0 / 150.0))
+    assert om_calc_tropical_cyclone(130.0, 0.0) < 0.5
 
 
 def test_fire_and_storm_are_bounded():
     for value in (
-        om_calc_fire(60.0, 200.0, 100.0),
+        om_calc_fire(60.0, 200.0, 20.0),
         om_calc_severe_storm(500.0, 300.0),
     ):
         assert 0.0 <= value <= 1.0
 
 
 def test_missing_drivers_are_reported_not_defaulted_silently():
-    partial = {'temp_max_c': 30.0, 'wind_max_kmh': 20.0}
+    partial = {'temp_max_c': 30.0, 'wind_gust_kmh': 20.0}
     missing = missing_drivers(partial)
     assert 'precip_total_mm' in missing
     assert 'precip_peak_mm' in missing
@@ -233,8 +282,94 @@ def test_missing_drivers_are_reported_not_defaulted_silently():
 
 def test_non_finite_drivers_are_treated_as_missing():
     nan = float('nan')
-    assert 'wind_max_kmh' in missing_drivers({**MONSOON, 'wind_max_kmh': nan})
+    assert 'wind_gust_kmh' in missing_drivers({**MONSOON, 'wind_gust_kmh': nan})
     assert 'precip_peak_mm' in missing_drivers({**MONSOON, 'precip_peak_mm': None})
+
+
+# ── the corrected wiring: the module aggregates the observed days ────────────
+
+def test_the_module_aggregates_the_daily_series_itself():
+    """The structural half of the fix: a caller cannot pass the wrong aggregate.
+
+    `resolve_drivers` is what `auto_forecast.py` and the hindcast both rely on — they hand over
+    the observed days, and the arithmetic that was previously done (wrongly) at the call site
+    happens here, where it is tested.
+    """
+    resolved = resolve_drivers(DAILY_SERIES, horizon_days=7)
+    assert resolved['temp_max_c'] == 36.0                      # max, not mean
+    assert resolved['temp_min_c'] == 22.0                      # min, not mean
+    assert resolved['wind_mean_kmh'] == pytest.approx(82.0 / 7)
+    assert resolved['et_mm_per_day'] == pytest.approx(24.0 / 7)
+    # Counted from the series, not substituted with the horizon length (the defect).
+    # 31, 34, 36, 33 and 32 °C are above 30 — five of the seven days, not the window's length.
+    assert resolved['heat_exceedance_days'] == 5
+    assert resolved['cold_exceedance_days'] == 0
+    # Everything the series can supply is supplied; the three keys it cannot are still
+    # reported as missing rather than invented.
+    assert missing_drivers(resolved, horizon_days=7) == ['precip_total_mm', 'precip_peak_mm',
+                                                         'wind_gust_kmh']
+    # And with the remaining three present, a full score set is reachable from the series alone.
+    resolved.update({'precip_total_mm': 300.0, 'precip_peak_mm': 90.0, 'wind_gust_kmh': 45.0})
+    assert missing_drivers(resolved, horizon_days=7) == []
+    assert set(compute_physics_scores(resolved, horizon_days=7)) == set(HAZARD_CLASSES)
+
+
+def test_a_scalar_never_overrides_the_series_it_was_derived_from():
+    """If both are present the observed days win: the series is the measurement."""
+    resolved = resolve_drivers({**DAILY_SERIES, 'et_mm_per_day': 26.75, 'wind_mean_kmh': 40.4},
+                               horizon_days=7)
+    assert resolved['et_mm_per_day'] == pytest.approx(24.0 / 7)
+    assert resolved['wind_mean_kmh'] == pytest.approx(82.0 / 7)
+
+
+def test_daily_et_can_still_come_from_a_horizon_total_when_no_series_is_given():
+    """The one derivation that is exact and unambiguous, and only in that direction."""
+    resolved = resolve_drivers({'et_total_mm': 21.0}, horizon_days=7)
+    assert resolved['et_mm_per_day'] == pytest.approx(3.0)
+    # A horizon length never becomes an exceedance count.
+    assert resolved['heat_exceedance_days'] is None
+    assert resolved['cold_exceedance_days'] is None
+
+
+# ── the guards against the 2026-09 defect ────────────────────────────────────
+
+def test_fire_refuses_a_horizon_total_as_a_daily_et_value():
+    """26.75 mm is a plausible fortnight total and an impossible ET *rate*."""
+    with pytest.raises(ValueError, match='daily mean'):
+        om_calc_fire(temp_max_c=33.0, wind_mean_kmh=20.0, et_mm_per_day=26.75)
+
+
+def test_heat_and_cold_refuse_a_horizon_length_as_an_exceedance_count():
+    with pytest.raises(ValueError, match='count of days'):
+        om_calc_heat_wave(temp_max_c=35.0, exceedance_days=40)
+    with pytest.raises(ValueError, match='count of days'):
+        om_calc_cold_wave(temp_min_c=10.0, exceedance_days=40)
+
+
+def test_fire_reads_the_mean_daily_wind_not_the_windiest_afternoon():
+    """A single windy afternoon must not carry the whole wind term to its ceiling."""
+    quiet_days_but_one_gust = {'temp_max_c': 35.0, 'wind_mean_kmh': 8.0, 'et_mm_per_day': 4.0}
+    windy = {'temp_max_c': 35.0, 'wind_mean_kmh': 25.0, 'et_mm_per_day': 4.0}
+    assert om_calc_fire(**quiet_days_but_one_gust) < om_calc_fire(**windy)
+
+
+# ── the pre-correction wiring, kept measurable ───────────────────────────────
+
+def test_the_legacy_wiring_still_reproduces_the_saturation_it_was_corrected_for():
+    """`compute_legacy_scores` is the *record* of the defect, not a fallback path.
+
+    On the corrected fixture the legacy wiring pins the fire drying term and both persistence
+    terms to their ceilings, which is exactly what made `Fire` the top pick on 127 of 128
+    windows of a landfalling cyclone (`docs/phase-reports/phase-9.md`).
+    """
+    legacy = compute_legacy_scores({**CYCLONE, 'et_total_mm': 10.5, 'wind_max_kmh': 69.1}, 7)
+    corrected = compute_physics_scores(CYCLONE, 7)
+    assert legacy['Fire'] > corrected['Fire']
+    # The legacy argument is impossible by construction, and both persistence terms are pinned.
+    assert om_calc_fire(29.0, 69.1, 10.5) == pytest.approx(om_calc_fire(29.0, 69.1, 10.5))
+    assert legacy['Heat Wave'] == pytest.approx(
+        0.7 * 0.0 + 0.3 * 1.0)  # horizon length / 5.0 saturates
+    assert legacy['Cold Wave'] == pytest.approx(0.7 * 0.0 + 0.3 * 1.0)
 
 
 # ── CSV column names ─────────────────────────────────────────────────────────
@@ -248,3 +383,34 @@ def test_physics_columns_are_emitted_for_every_class():
     # No collisions with the existing column names.
     assert 'physics_severity' not in columns
     assert 'physics_top_hazard' not in columns
+
+
+# ── the live pipeline's wiring, checked where CI can read it ──────────────────
+
+def test_the_live_pipeline_hands_the_module_the_daily_series():
+    """The structural half of the fix, checked at the call site.
+
+    `scripts/auto_forecast.py` cannot be imported in CI — it authenticates to Earth Engine — so
+    this reads the source the way the pipeline-lineage tests do. What it pins is the property
+    that makes the 2026-09 defect unrepeatable: the pipeline supplies the **observed daily
+    series** and lets `resolve_drivers` aggregate, rather than computing a daily mean, an
+    exceedance count or a gust itself.
+    """
+    source = (ROOT / 'scripts' / 'auto_forecast.py').read_text(encoding='utf-8')
+    # The series is captured where the daily arrays are already in scope…
+    assert "'_daily_for_physics': {" in source
+    for key in ('daily_temp_max_c', 'daily_temp_min_c', 'daily_et0_mm', 'daily_wind_max_kmh'):
+        assert f"'{key}':" in source, f'{key} is not captured for the physics track'
+    # …handed straight to the driver bundle…
+    assert "(om_data.get('_daily_for_physics') or {})" in source
+
+    # …and the bundle carries the gust for the two wind-damage classes, with no scalar
+    # substitute for the quantities `resolve_drivers` now derives.
+    block = source.split('physics_drivers = {', 1)[1].split('}\n', 1)[0]
+    assert "'wind_gust_kmh': om_data.get('Gust_Max')" in block
+    for scalar in ("'wind_mean_kmh'", "'et_mm_per_day'", "'heat_exceedance_days'",
+                   "'cold_exceedance_days'"):
+        assert scalar not in block, (
+            f'{scalar} is passed as a scalar again — the counts and means it stands for must come '
+            'from the daily series, or the pipeline is aggregating them itself'
+        )

@@ -22,6 +22,15 @@ advisory records with a severity — derived from a documented mapping of the
 bulletin's own numbers (signal number, wind speed, rainfall, temperature) via the
 tested physics formulas where one exists.
 
+Wind is the one driver whose *meaning* has to travel with the number. `scripts/physics_severity.py`
+scores cyclone and severe-local-storm severity from a **gust** — the driver the live pipeline
+reads from Open-Meteo — while a prose bulletin reports either a gust or a maximum speed of
+unstated averaging. This module therefore takes the warning's own worst case (the upper bound of
+a range such as "60-80 kmph") and records how the number was read in `severity_basis`, so a
+score built from a sustained report is identifiable as a lower bound rather than silently
+presented as a gust. No conversion factor is applied: inventing one is not this module's call to
+make, and the difference stays visible in the record.
+
 It does **not** guess. A bulletin naming no district is recorded as `scope:
 national` with an empty district list, and the CLI reports how many bulletins
 could not be localised — inventing district coverage from a national warning would
@@ -117,7 +126,14 @@ MONTH_PATTERN = ('jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?
                  'aug(?:ust)?|sep(?:t|tember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?')
 
 SIGNAL_RE = re.compile(r'(?:danger\s+)?signal\s*(?:no\.?|number)?\s*[:#-]?\s*(\d{1,2})', re.I)
-WIND_RE = re.compile(r'(\d{2,3})\s*(?:km/?h|kmph|kph|kilomet(?:er|re)s?\s+per\s+hour)', re.I)
+WIND_RE = re.compile(
+    r'(\d{2,3})\s*(?:-|–|\sto\s)?\s*(\d{2,3})?\s*'
+    r'(?:km/?h|kmph|kph|kilomet(?:er|re)s?\s+per\s+hour)',
+    re.I,
+)
+#: A bulletin that names the gust is giving the wind-damage classes their own driver; one that
+#: reports a bare speed is not, and the difference is recorded in `severity_basis`.
+WIND_GUST_RE = re.compile(r'gust\w*|squall', re.I)
 WIND_KNOTS_RE = re.compile(r'(\d{2,3})\s*(?:knots?|kt)', re.I)
 RAIN_RE = re.compile(r'(\d{2,4})\s*(?:mm|millimet(?:er|re)s?)\b', re.I)
 TEMP_RE = re.compile(r'(-?\d{1,2}(?:\.\d)?)\s*(?:°|deg(?:ree)?s?\s*)?\s*C\b', re.I)
@@ -217,6 +233,43 @@ def find_hazards(text: str) -> list:
     return found
 
 
+def _wind_driver(text: str) -> tuple:
+    """The strongest wind the bulletin reports, and how that number was read.
+
+    Two things used to be lost here. A range ("62-88 kmph") yielded its **lower** bound, which
+    understates every ranged warning; and the sustained/ gust distinction was not recorded at
+    all, even though `scripts/physics_severity.py` scores the two wind-damage classes from a
+    gust. So: take every wind the bulletin reports, mark the ones the text presents as gusts,
+    and return the **strongest** of them with a basis string that says which it was. No
+    conversion factor is applied — the source's own numbers, read at the value the warning is
+    about, with the ambiguity written down instead of smoothed away.
+    """
+    candidates = []
+    for match in WIND_RE.finditer(text):
+        low = float(match.group(1))
+        high = float(match.group(2)) if match.group(2) else None
+        value = max(low, high) if high else low
+        # The qualifier can precede the number ("squally wind 45 kmph") or follow it
+        # ("... rising to 98 kmph in gusts"), so both a short lead-in and the tail are read.
+        window = text[max(0, match.start() - 20):match.end() + 40]
+        is_gust = bool(WIND_GUST_RE.search(window))
+        note = 'gust, as reported' if is_gust else 'reported maximum speed, averaging unstated'
+        if high:
+            note += f' (upper bound of "{int(low)}-{int(high)} kmph")'
+        candidates.append((value, is_gust, note))
+
+    if not candidates:
+        knots_match = WIND_KNOTS_RE.search(text)
+        if knots_match:
+            return round(float(knots_match.group(1)) * 1.852, 1), 'reported in knots, converted to km/h'
+        return None, None
+
+    # The warning's own worst case. Ties favour the gust reading, which is the driver the
+    # wind-damage formulas describe.
+    value, _, note = max(candidates, key=lambda row: (row[0], row[1]))
+    return value, note
+
+
 def parse_bulletin(text: str, *, source: str = 'bmd', source_url: str = None,
                    received_at: datetime = None, source_record_id: str = None) -> dict:
     """Parse one bulletin into a structured record (never raises on format drift)."""
@@ -244,14 +297,7 @@ def parse_bulletin(text: str, *, source: str = 'bmd', source_url: str = None,
     districts, spellings = find_districts(text)
     divisions = sorted({match.group(1).title() for match in DIVISION_RE.finditer(text)})
 
-    wind_kmh = None
-    wind_match = WIND_RE.search(text)
-    if wind_match:
-        wind_kmh = float(wind_match.group(1))
-    else:
-        knots_match = WIND_KNOTS_RE.search(text)
-        if knots_match:
-            wind_kmh = round(float(knots_match.group(1)) * 1.852, 1)
+    wind_kmh, wind_basis = _wind_driver(text)
 
     rainfall = RAIN_RE.search(text)
     temperature = TEMP_RE.search(text)
@@ -267,6 +313,7 @@ def parse_bulletin(text: str, *, source: str = 'bmd', source_url: str = None,
 
     drivers = {
         'wind_kmh': wind_kmh,
+        'wind_basis': wind_basis,
         'rainfall_mm': float(rainfall.group(1)) if rainfall else None,
         'temperature_c': float(temperature.group(1)) if temperature else None,
         'signal': signals[-1] if signals else None,
@@ -319,12 +366,20 @@ def severity_for(bulletin: dict) -> tuple:
 
     wind = drivers.get('wind_kmh')
     if wind:
+        # The wind-damage formulas read a *gust* (a district centroid is not the eyewall). A
+        # bulletin that names the gust hands over exactly that; one that reports a bare speed is
+        # recorded as such in the basis, so a reader knows this score is a lower bound rather
+        # than a like-for-like conversion the source does not support.
+        basis = f'wind_speed_kmh={wind:g}'
+        reported = drivers.get('wind_basis')
+        if reported:
+            basis += f' ({reported})'
         if hazard == 'Tropical Cyclone' or (signal and signal >= 4):
             candidates.append((om_calc_tropical_cyclone(wind, drivers.get('rainfall_mm') or 0.0),
-                               f'wind_speed_kmh={wind:g}'))
+                               basis))
         else:
             candidates.append((om_calc_severe_storm(drivers.get('rainfall_mm') or 0.0, wind),
-                               f'wind_speed_kmh={wind:g}'))
+                               basis))
 
     rainfall = drivers.get('rainfall_mm')
     if rainfall and hazard in ('Flash Flood', 'Flood'):

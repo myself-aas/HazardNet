@@ -1,6 +1,6 @@
 {
   "schema": "hazardnet-generated-routes/v1",
-  "generated_at": "2026-09-18T02:20:52.547Z",
+  "generated_at": "2026-09-18T04:51:16.072Z",
   "generated_by": "scripts/build_content_engine.mjs",
   "origin": "https://www.hazardnet.live",
   "inputs": {
@@ -19,23 +19,23 @@
       "built_from": [
         {
           "path": "data/hindcast/reports/amphan-2020.json",
-          "sha256": "3f307c35afb39361d8693c8332b884c6e12823ee6072ad1279532b270eee0513"
+          "sha256": "4bae9121caf25372a72e79a7a78bdd604eb3b68403038b9159c70a49bf98d6cf"
         },
         {
           "path": "data/hindcast/reports/eastern-flood-2024.json",
-          "sha256": "208db4ff22e23e948e39de973c1568af271c3b6426026e9f3267c75f41e026f7"
+          "sha256": "c9dda5b732153e2c662d21f4ea76f8526865abe17af2eb73163613ff1b5ac6aa"
         },
         {
           "path": "data/hindcast/reports/mocha-2023.json",
-          "sha256": "471b29b172fe3b0d05e19dad709e790993a54995837cbeefc3f70c68f7dd300c"
+          "sha256": "d1e29c758341a0dd8bb749714d605947f3f0338f8ae18b579e7a766eccaa7183"
         },
         {
           "path": "data/hindcast/reports/northeast-flood-2025.json",
-          "sha256": "9d5629ab84c6137fc525b21e3eb4132e180da362fe0a66aa05948e7bb572c380"
+          "sha256": "cde9c171dc482211c1a0f74490fb9866d764185a06e2fbb9b3aaf1df23815914"
         },
         {
           "path": "data/hindcast/reports/yaas-2021.json",
-          "sha256": "7582bd40db371db502d7dd2519e138e1f2afe1b9275bae7c7a64f9ee2636cfd3"
+          "sha256": "af1627e7becf9dc0bf3aaf1e87f2313d8282fca700d76cdf9d31bb84d480adea"
         }
       ]
     }
@@ -208,7 +208,7 @@
         }
       },
       "h1": "What the model did on five historical episodes",
-      "standfirst": "Across 5 episodes and 50 district-episode pairs that the cited assessments name, the physics track flagged 50 under some class, 12 under the class that occurred, and 23 scored the occurring class above the alarm band. Those three numbers are not the same number, and the difference between them is the most useful thing on this page.",
+      "standfirst": "Across 5 episodes and 50 district-episode pairs that the cited assessments name, the physics track flagged 50 under some class, 13 under the class that occurred, and 23 scored the occurring class above the alarm band. Those three numbers are not the same number, and the difference between them is the most useful thing on this page.",
       "sections": [
         {
           "h2": "The five episodes",
@@ -256,7 +256,7 @@
           "h2": "Detection: did the run flag the districts the sources name?",
           "paragraphs": [
             "Each row is one episode, scored against that episode's own truth set. \"Flagged any class\" counts a district as flagged when any of the eight classes crossed the alarm band; \"flagged the class\" counts only the class that occurred, which is the strict reading. The last column separates a district the track scored low from a district it scored high but classified under another class.",
-            "Totals: 50 of 50 named district-episode pairs carried a scored row, 50 were flagged under some class, and 12 named the class that occurred."
+            "Totals: 50 of 50 named district-episode pairs carried a scored row, 50 were flagged under some class, and 13 named the class that occurred."
           ],
           "table": {
             "caption": "Detection per episode, over the districts the cited sources name (class-agnostic and class-strict counts are both shown).",
@@ -308,7 +308,7 @@
                 "13",
                 "13",
                 "13",
-                "12",
+                "13",
                 "13"
               ],
               [
@@ -376,12 +376,12 @@
               [
                 "Eastern flash floods",
                 "26",
-                "22",
+                "26",
                 "0",
-                "4",
+                "0",
                 "1.000",
-                "0.154",
-                "0.846"
+                "—",
+                "—"
               ],
               [
                 "Northeast and coastal monsoon floods",
@@ -445,7 +445,7 @@
                 "28",
                 "0",
                 "0",
-                "28",
+                "24",
                 "—",
                 "1.000"
               ],
@@ -454,33 +454,33 @@
                 "WATCH band",
                 "0.400",
                 "26",
-                "22",
+                "26",
                 "0",
-                "4",
+                "0",
                 "1.000",
-                "0.154"
+                "—"
               ],
               [
                 "Eastern flash floods",
                 "harness default",
                 "0.500",
                 "26",
-                "22",
+                "26",
                 "0",
-                "4",
+                "0",
                 "1.000",
-                "0.154"
+                "—"
               ],
               [
                 "Eastern flash floods",
                 "WARNING band",
                 "0.650",
                 "26",
-                "22",
+                "24",
+                "2",
                 "0",
-                "4",
-                "1.000",
-                "0.154"
+                "0.923",
+                "—"
               ],
               [
                 "Cyclone Mocha",
@@ -585,14 +585,15 @@
           }
         },
         {
-          "h2": "The wind driver, and why it decides detection",
+          "h2": "The wind driver: which field the track reads, and why it decides detection",
           "paragraphs": [
-            "The shipped pipeline scores the sustained 10 m maximum. The driver archive also carries the gust maximum, so each report re-scores the same episode with it. Where those two rows differ, the driver choice — not the formula — is what decides whether the district point was detectable.",
+            "The physics cross-check scores the two wind-damage classes — Tropical Cyclone and Severe Local Storm — from the **gust** maximum. That is the correction shipped on 2026-09-18: the forecast unit is a district centroid, and a centroid is not the eyewall, so a sustained 10 m maximum understates what the district actually faced. On Amphan's landfall day the sustained field reached 19–69 km/h where the same archive's gust field reached 51–134 km/h, which is the difference between a class that never left the 0.01–0.25 band and one that reached the coastal alarm band.",
+            "Each report therefore re-scores the same rows with the **sustained** maximum — what the track used before the correction — and both rows are below. Where they differ, the driver choice, not the formula or the weather, is what decided whether the district point was detectable.",
             "With the sustained maximum the shipped pipeline uses, the episode's class scores 0.0136–0.2480 and crosses the 0.5 band on 0 of 128 rows; with the gust field the archive also carries it scores 0.0987–0.5145 and crosses on 2. The wind driver, not the formula alone, decides whether this event was detectable at the district point. Note what neither number fixes: the track's top class is Fire under either driver, so the separation between the wind-driven classes is a second, independent defect.",
             "With the sustained maximum the shipped pipeline uses, the episode's class scores 0.0285–0.2457 and crosses the 0.5 band on 0 of 128 rows; with the gust field the archive also carries it scores 0.0388–0.3166 and crosses on 0. Even the gust field leaves the episode class below the band, so the wind argument alone does not explain the miss: at this distance from the track the driver the pipeline uses cannot represent the hazard, and the class the formula describes is unreachable for this event. Note what neither number fixes: the track's top class is Fire under either driver, so the separation between the wind-driven classes is a second, independent defect.",
             "With the sustained maximum the shipped pipeline uses, the episode's class scores 0.0000–0.2173 and crosses the 0.5 band on 0 of 128 rows; with the gust field the archive also carries it scores 0.0000–0.3773 and crosses on 0. Even the gust field leaves the episode class below the band, so the wind argument alone does not explain the miss: at this distance from the track the driver the pipeline uses cannot represent the hazard, and the class the formula describes is unreachable for this event. Note what neither number fixes: the track's top class is Fire under either driver, so the separation between the wind-driven classes is a second, independent defect.",
-            "With the sustained maximum the shipped pipeline uses, the episode's class scores 0.1175–1.0000 and crosses the 0.5 band on 83 of 128 rows; with the gust field the archive also carries it scores 0.1175–1.0000 and crosses on 83. The wind driver, not the formula alone, decides whether this event was detectable at the district point. Note what neither number fixes: the track's top class is Fire under either driver, so the separation between the wind-driven classes is a second, independent defect.",
-            "With the sustained maximum the shipped pipeline uses, the episode's class scores 0.2097–1.0000 and crosses the 0.5 band on 101 of 128 rows; with the gust field the archive also carries it scores 0.2097–1.0000 and crosses on 101. The wind driver, not the formula alone, decides whether this event was detectable at the district point. Note what neither number fixes: the track's top class is Fire under either driver, so the separation between the wind-driven classes is a second, independent defect."
+            "With the sustained maximum the shipped pipeline uses, the episode's class scores 0.1175–1.0000 and crosses the 0.5 band on 83 of 128 rows; with the gust field the archive also carries it scores 0.1175–1.0000 and crosses on 83. The wind driver, not the formula alone, decides whether this event was detectable at the district point. Note what neither number fixes: the track's top class is Flash Flood under either driver, so the separation between the wind-driven classes is a second, independent defect.",
+            "With the sustained maximum the shipped pipeline uses, the episode's class scores 0.2097–1.0000 and crosses the 0.5 band on 101 of 128 rows; with the gust field the archive also carries it scores 0.2097–1.0000 and crosses on 101. The wind driver, not the formula alone, decides whether this event was detectable at the district point. Note what neither number fixes: the track's top class is Flash Flood under either driver, so the separation between the wind-driven classes is a second, independent defect."
           ],
           "table": {
             "caption": "Episode-class score range and over-band count under each wind driver, per episode (128 district-horizon rows each).",
@@ -608,105 +609,105 @@
             "rows": [
               [
                 "Cyclone Amphan",
-                "sustained max (shipped)",
-                "128",
-                "19.2–69.1",
-                "0.0136–0.2480",
-                "0",
-                "Fire (127), Flash Flood (1)"
-              ],
-              [
-                "Cyclone Amphan",
-                "gust max (archive)",
+                "gust max (read by the track)",
                 "128",
                 "51.1–133.9",
                 "0.0987–0.5145",
                 "2",
-                "Fire (127), Flash Flood (1)"
+                "Fire (92), Flash Flood (25), Drought (6), Severe Local Storm (5)"
               ],
               [
-                "Cyclone Yaas",
-                "sustained max (shipped)",
+                "Cyclone Amphan",
+                "sustained max (pre-correction)",
                 "128",
-                "14.8–43.3",
-                "0.0285–0.2457",
+                "19.2–69.1",
+                "0.0136–0.2480",
                 "0",
-                "Fire (127), Flash Flood (1)"
+                "Fire (92), Flash Flood (30), Drought (6)"
               ],
               [
                 "Cyclone Yaas",
-                "gust max (archive)",
+                "gust max (read by the track)",
                 "128",
                 "37.4–84.6",
                 "0.0388–0.3166",
                 "0",
-                "Fire (127), Flash Flood (1)"
+                "Fire (119), Drought (5), Flash Flood (4)"
               ],
               [
-                "Cyclone Mocha",
-                "sustained max (shipped)",
+                "Cyclone Yaas",
+                "sustained max (pre-correction)",
                 "128",
-                "18.1–51.0",
-                "0.0000–0.2173",
+                "14.8–43.3",
+                "0.0285–0.2457",
                 "0",
-                "Fire (126), Flash Flood (2)"
+                "Fire (119), Drought (5), Flash Flood (4)"
               ],
               [
                 "Cyclone Mocha",
-                "gust max (archive)",
+                "gust max (read by the track)",
                 "128",
                 "36.7–85.3",
                 "0.0000–0.3773",
                 "0",
-                "Fire (126), Flash Flood (2)"
+                "Fire (94), Drought (30), Flash Flood (2), Heat Wave (2)"
               ],
               [
-                "Eastern flash floods",
-                "sustained max (shipped)",
+                "Cyclone Mocha",
+                "sustained max (pre-correction)",
                 "128",
-                "15.0–31.3",
-                "0.1175–1.0000",
-                "83",
-                "Fire (88), Flash Flood (40)"
+                "18.1–51.0",
+                "0.0000–0.2173",
+                "0",
+                "Fire (94), Drought (30), Flash Flood (2), Heat Wave (2)"
               ],
               [
                 "Eastern flash floods",
-                "gust max (archive)",
+                "gust max (read by the track)",
                 "128",
                 "33.1–53.6",
                 "0.1175–1.0000",
                 "83",
-                "Fire (97), Flash Flood (31)"
+                "Flash Flood (78), Fire (49), Drought (1)"
               ],
               [
-                "Northeast and coastal monsoon floods",
-                "sustained max (shipped)",
+                "Eastern flash floods",
+                "sustained max (pre-correction)",
                 "128",
-                "25.7–44.5",
-                "0.2097–1.0000",
-                "101",
-                "Fire (75), Flash Flood (53)"
+                "15.0–31.3",
+                "0.1175–1.0000",
+                "83",
+                "Flash Flood (78), Fire (49), Drought (1)"
               ],
               [
                 "Northeast and coastal monsoon floods",
-                "gust max (archive)",
+                "gust max (read by the track)",
                 "128",
                 "49.0–85.0",
                 "0.2097–1.0000",
                 "101",
-                "Fire (75), Flash Flood (53)"
+                "Flash Flood (83), Fire (45)"
+              ],
+              [
+                "Northeast and coastal monsoon floods",
+                "sustained max (pre-correction)",
+                "128",
+                "25.7–44.5",
+                "0.2097–1.0000",
+                "101",
+                "Flash Flood (83), Fire (45)"
               ]
             ]
           }
         },
         {
-          "h2": "Saturated terms: three formula inputs that carry no information",
+          "h2": "The formula inputs that used to carry no information",
           "paragraphs": [
-            "The physics cross-check feeds each formula an argument taken from the forecast unit. Four of those arguments, measured across all five episodes, sit at the top of their formula on every row — so the term cannot distinguish one district from another, and any severity difference attributed to it is an artefact of the wiring rather than of the weather.",
-            "In the shipped wiring the fire formula's drying term is at its ceiling on every row because it receives the horizon ET total, and both persistence terms are at theirs because they receive the horizon length. The counterfactual recomputes those three arguments with the quantities their formulas describe (mean daily ET, exceedance days above 30 °C / below 16 °C) and reports the difference. This is a wiring finding for the pipeline owner, measured here rather than asserted: the formulas themselves are not changed by this harness."
+            "The physics cross-check feeds each formula an argument taken from the forecast unit. Four of those arguments, measured across all five episodes, used to sit at the top of their formula on every row — so the term could not distinguish one district from another, and any severity difference attributed to it was an artefact of the wiring rather than of the weather. The owner corrected the wiring on 2026-09-18 (the release line on every report says so), and both halves stay published here: what each term reads now, and the argument it used to be handed. Each table row carries the count under the corrected wiring and under the one it replaced. A term that still reaches its ceiling is a measured property of the window — a fortnight whose mean daily drying genuinely reached the fire divisor, a heat spell that really did hold five days past 30 °C — not an artefact of the unit it was passed.",
+            "The corrected wiring feeds each formula the quantity it describes: mean daily ET and mean daily maximum wind to the fire terms, the gust maximum to the two wind-damage classes, and the number of days past 30 °C / below 16 °C to the persistence terms. The same rows are scored with the pre-correction wiring beside it, so the change and its size are on the record rather than in a commit message."
           ],
           "table": {
-            "caption": "Rows at the term's ceiling, out of the rows scored, per episode. A term at its ceiling on every row carries no information.",
+            "caption": "Rows at the term's ceiling, out of the rows scored, per episode, under the corrected wiring and under the one it replaced. Three of the four terms were at their ceiling on every row of every episode before the correction (the fire drying term and both persistence terms); the fire wind term was at its ceiling on 36–128 of 128 rows depending on the episode. What is left after the correction is the windows that genuinely reached the term's own divisor.",
             "columns": [
               "Episode",
               "Rows",
@@ -719,6 +720,14 @@
               [
                 "Cyclone Amphan",
                 "128",
+                "0 of 128",
+                "0 of 128",
+                "119 of 128",
+                "0 of 128"
+              ],
+              [
+                "Cyclone Amphan — pre-correction",
+                "128",
                 "116 of 128",
                 "128 of 128",
                 "128 of 128",
@@ -726,6 +735,14 @@
               ],
               [
                 "Cyclone Yaas",
+                "128",
+                "1 of 128",
+                "0 of 128",
+                "128 of 128",
+                "0 of 128"
+              ],
+              [
+                "Cyclone Yaas — pre-correction",
                 "128",
                 "86 of 128",
                 "128 of 128",
@@ -735,6 +752,14 @@
               [
                 "Cyclone Mocha",
                 "128",
+                "1 of 128",
+                "24 of 128",
+                "128 of 128",
+                "0 of 128"
+              ],
+              [
+                "Cyclone Mocha — pre-correction",
+                "128",
                 "74 of 128",
                 "128 of 128",
                 "128 of 128",
@@ -742,6 +767,14 @@
               ],
               [
                 "Eastern flash floods",
+                "128",
+                "0 of 128",
+                "0 of 128",
+                "94 of 128",
+                "0 of 128"
+              ],
+              [
+                "Eastern flash floods — pre-correction",
                 "128",
                 "36 of 128",
                 "128 of 128",
@@ -751,10 +784,65 @@
               [
                 "Northeast and coastal monsoon floods",
                 "128",
+                "2 of 128",
+                "0 of 128",
+                "120 of 128",
+                "0 of 128"
+              ],
+              [
+                "Northeast and coastal monsoon floods — pre-correction",
+                "128",
                 "128 of 128",
                 "128 of 128",
                 "128 of 128",
                 "128 of 128"
+              ]
+            ]
+          }
+        },
+        {
+          "h2": "What the wiring correction changed",
+          "paragraphs": [
+            "The same rows, scored with the corrected wiring and with the one it replaced. The class a row crowns is what the physics track \"would have picked\", so this table is the size of the correction: before it, `Fire` — a class that scores high everywhere in the pre-monsoon coastal belt and therefore separates nothing — was the top pick on 127 of the 128 windows of a landfalling cyclone. The rain classes now lead on the two flood episodes and the cyclone windows split between `Fire` and the rain classes, which is the honest limit the reports state: point weather cannot separate a rain class from a wind class it arrives with."
+          ],
+          "table": {
+            "caption": "Top class per district-horizon row, corrected wiring beside the pre-correction wiring, per episode.",
+            "columns": [
+              "Episode",
+              "Rows",
+              "Top class — corrected",
+              "Top class — pre-correction"
+            ],
+            "rows": [
+              [
+                "Cyclone Amphan",
+                "128",
+                "Fire 92, Flash Flood 30, Drought 6",
+                "Fire 127, Flash Flood 1"
+              ],
+              [
+                "Cyclone Yaas",
+                "128",
+                "Fire 119, Drought 5, Flash Flood 4",
+                "Fire 127, Flash Flood 1"
+              ],
+              [
+                "Cyclone Mocha",
+                "128",
+                "Fire 94, Drought 30, Flash Flood 2, Heat Wave 2",
+                "Fire 126, Flash Flood 2"
+              ],
+              [
+                "Eastern flash floods",
+                "128",
+                "Flash Flood 78, Fire 49, Drought 1",
+                "Fire 88, Flash Flood 40"
+              ],
+              [
+                "Northeast and coastal monsoon floods",
+                "128",
+                "Flash Flood 83, Fire 45",
+                "Fire 75, Flash Flood 53"
               ]
             ]
           }

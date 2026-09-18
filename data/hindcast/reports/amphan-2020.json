@@ -1,7 +1,7 @@
 {
   "schema": "hazardnet-hindcast-report/v1",
   "hindcast_version": "1.0.0",
-  "generated_at": "2026-09-18T00:33:55Z",
+  "generated_at": "2026-09-18T04:46:54Z",
   "episode": {
     "id": "amphan-2020",
     "title": "Cyclone Amphan \u2014 Bangladesh landfall, 20 May 2020",
@@ -95,7 +95,7 @@
         "flagged_any_class": true,
         "flagged_episode_class": false,
         "episode_class_over_threshold": false,
-        "strongest_score": 0.872,
+        "strongest_score": 0.718,
         "strongest_class": "Fire",
         "flag_horizons": [
           "15_days",
@@ -109,7 +109,7 @@
         "flagged_any_class": true,
         "flagged_episode_class": false,
         "episode_class_over_threshold": false,
-        "strongest_score": 0.8773,
+        "strongest_score": 0.7841,
         "strongest_class": "Fire",
         "flag_horizons": [
           "15_days",
@@ -123,7 +123,7 @@
         "flagged_any_class": true,
         "flagged_episode_class": false,
         "episode_class_over_threshold": false,
-        "strongest_score": 0.8747,
+        "strongest_score": 0.7109,
         "strongest_class": "Fire",
         "flag_horizons": [
           "15_days",
@@ -137,7 +137,7 @@
         "flagged_any_class": true,
         "flagged_episode_class": false,
         "episode_class_over_threshold": false,
-        "strongest_score": 0.8667,
+        "strongest_score": 0.7122,
         "strongest_class": "Fire",
         "flag_horizons": [
           "15_days",
@@ -151,7 +151,7 @@
         "flagged_any_class": true,
         "flagged_episode_class": false,
         "episode_class_over_threshold": false,
-        "strongest_score": 0.8293,
+        "strongest_score": 0.7122,
         "strongest_class": "Fire",
         "flag_horizons": [
           "15_days",
@@ -165,7 +165,7 @@
         "flagged_any_class": true,
         "flagged_episode_class": false,
         "episode_class_over_threshold": false,
-        "strongest_score": 0.8587,
+        "strongest_score": 0.7089,
         "strongest_class": "Fire",
         "flag_horizons": [
           "15_days",
@@ -179,7 +179,7 @@
         "flagged_any_class": true,
         "flagged_episode_class": false,
         "episode_class_over_threshold": false,
-        "strongest_score": 0.8533,
+        "strongest_score": 0.6926,
         "strongest_class": "Fire",
         "flag_horizons": [
           "15_days",
@@ -193,7 +193,7 @@
         "flagged_any_class": true,
         "flagged_episode_class": false,
         "episode_class_over_threshold": false,
-        "strongest_score": 0.8933,
+        "strongest_score": 0.7408,
         "strongest_class": "Fire",
         "flag_horizons": [
           "15_days",
@@ -207,7 +207,7 @@
         "flagged_any_class": true,
         "flagged_episode_class": false,
         "episode_class_over_threshold": false,
-        "strongest_score": 0.8773,
+        "strongest_score": 0.7283,
         "strongest_class": "Fire",
         "flag_horizons": [
           "15_days",
@@ -221,7 +221,7 @@
         "flagged_any_class": true,
         "flagged_episode_class": false,
         "episode_class_over_threshold": false,
-        "strongest_score": 0.8747,
+        "strongest_score": 0.7097,
         "strongest_class": "Fire",
         "flag_horizons": [
           "15_days",
@@ -235,7 +235,7 @@
         "flagged_any_class": true,
         "flagged_episode_class": false,
         "episode_class_over_threshold": false,
-        "strongest_score": 0.864,
+        "strongest_score": 0.6828,
         "strongest_class": "Fire",
         "flag_horizons": [
           "15_days",
@@ -249,7 +249,7 @@
         "flagged_any_class": true,
         "flagged_episode_class": false,
         "episode_class_over_threshold": false,
-        "strongest_score": 0.8587,
+        "strongest_score": 0.661,
         "strongest_class": "Fire",
         "flag_horizons": [
           "15_days",
@@ -263,7 +263,7 @@
         "flagged_any_class": true,
         "flagged_episode_class": false,
         "episode_class_over_threshold": false,
-        "strongest_score": 0.8773,
+        "strongest_score": 0.7093,
         "strongest_class": "Fire",
         "flag_horizons": [
           "15_days",
@@ -277,8 +277,8 @@
         "flagged_any_class": true,
         "flagged_episode_class": false,
         "episode_class_over_threshold": false,
-        "strongest_score": 0.8773,
-        "strongest_class": "Fire",
+        "strongest_score": 0.7952,
+        "strongest_class": "Flash Flood",
         "flag_horizons": [
           "15_days",
           "7_days"
@@ -288,43 +288,60 @@
   },
   "physics_diagnostics": {
     "top_class_distribution_shipped": {
+      "Drought": 6,
+      "Fire": 92,
+      "Flash Flood": 30
+    },
+    "top_class_distribution_legacy": {
       "Fire": 127,
       "Flash Flood": 1
     },
-    "top_class_distribution_counterfactual": {
-      "Fire": 118,
-      "Flash Flood": 10
-    },
     "saturated_terms": {
       "fire_wind": {
-        "term": "(wind_max_kmh - 5.0) / 20.0",
+        "term": "(wind_mean_kmh - 5.0) / 20.0",
+        "legacy_term": "(wind_max_kmh - 5.0) / 20.0",
         "rows": 128,
-        "rows_at_ceiling": 116,
-        "first_row_argument": 40.4
+        "rows_at_ceiling": 0,
+        "legacy_rows_at_ceiling": 116,
+        "first_row_argument": 17.25,
+        "legacy_argument": 40.4
       },
       "fire_drying": {
-        "term": "et_total_mm / 6.0",
+        "term": "et_mm_per_day / 6.0",
+        "legacy_term": "et_total_mm / 6.0",
         "rows": 128,
-        "rows_at_ceiling": 128,
-        "first_row_argument": 26.749999999999996
+        "rows_at_ceiling": 0,
+        "legacy_rows_at_ceiling": 128,
+        "first_row_argument": 3.3437499999999996,
+        "legacy_argument": 26.749999999999996
       },
       "heat_persistence": {
-        "term": "horizon_days / 5.0",
+        "term": "heat_exceedance_days / 5.0",
+        "legacy_term": "horizon_days / 5.0",
         "rows": 128,
-        "rows_at_ceiling": 128,
-        "first_row_argument": 7
+        "rows_at_ceiling": 119,
+        "legacy_rows_at_ceiling": 128,
+        "first_row_argument": 4,
+        "legacy_argument": 7
       },
       "cold_persistence": {
-        "term": "horizon_days / 5.0",
+        "term": "cold_exceedance_days / 5.0",
+        "legacy_term": "horizon_days / 5.0",
         "rows": 128,
-        "rows_at_ceiling": 128,
-        "first_row_argument": 7
+        "rows_at_ceiling": 0,
+        "legacy_rows_at_ceiling": 128,
+        "first_row_argument": 0,
+        "legacy_argument": 7
       }
     },
-    "counterfactual_substitutions": {
+    "corrected_driver_ranges": {
+      "fire_wind_mean_kmh": {
+        "min": 9.65,
+        "max": 22.737499999999997
+      },
       "fire_et_mm_per_day": {
         "min": 3.2675,
-        "max": 5.285
+        "max": 5.284999999999999
       },
       "heat_exceedance_days_above_30c": {
         "min": 2,
@@ -336,23 +353,6 @@
       }
     },
     "wind_drivers": {
-      "era5_10m_sustained": {
-        "rows": 128,
-        "wind_kmh": {
-          "min": 19.2,
-          "max": 69.1
-        },
-        "top_class_distribution": {
-          "Fire": 127,
-          "Flash Flood": 1
-        },
-        "named_the_episode_class": 0,
-        "episode_class_over_threshold": 0,
-        "episode_class_score": {
-          "min": 0.0136,
-          "max": 0.248
-        }
-      },
       "era5_10m_gust": {
         "rows": 128,
         "wind_kmh": {
@@ -360,8 +360,10 @@
           "max": 133.9
         },
         "top_class_distribution": {
-          "Fire": 127,
-          "Flash Flood": 1
+          "Drought": 6,
+          "Fire": 92,
+          "Flash Flood": 25,
+          "Severe Local Storm": 5
         },
         "named_the_episode_class": 0,
         "episode_class_over_threshold": 2,
@@ -370,9 +372,27 @@
           "max": 0.5145
         }
       },
+      "era5_10m_sustained": {
+        "rows": 128,
+        "wind_kmh": {
+          "min": 19.2,
+          "max": 69.1
+        },
+        "top_class_distribution": {
+          "Drought": 6,
+          "Fire": 92,
+          "Flash Flood": 30
+        },
+        "named_the_episode_class": 0,
+        "episode_class_over_threshold": 0,
+        "episode_class_score": {
+          "min": 0.0136,
+          "max": 0.248
+        }
+      },
       "finding": "With the sustained maximum the shipped pipeline uses, the episode's class scores 0.0136\u20130.2480 and crosses the 0.5 band on 0 of 128 rows; with the gust field the archive also carries it scores 0.0987\u20130.5145 and crosses on 2. The wind driver, not the formula alone, decides whether this event was detectable at the district point. Note what neither number fixes: the track's top class is Fire under either driver, so the separation between the wind-driven classes is a second, independent defect."
     },
-    "detection_counterfactual": {
+    "detection_legacy": {
       "named_districts": 14,
       "districts_with_a_scored_row": 14,
       "flagged_any_class": 14,
@@ -391,7 +411,7 @@
         }
       }
     },
-    "finding": "In the shipped wiring the fire formula's drying term is at its ceiling on every row because it receives the horizon ET total, and both persistence terms are at theirs because they receive the horizon length. The counterfactual recomputes those three arguments with the quantities their formulas describe (mean daily ET, exceedance days above 30 \u00b0C / below 16 \u00b0C) and reports the difference. This is a wiring finding for the pipeline owner, measured here rather than asserted: the formulas themselves are not changed by this harness."
+    "finding": "The corrected wiring feeds each formula the quantity it describes: mean daily ET and mean daily maximum wind to the fire terms, the gust maximum to the two wind-damage classes, and the number of days past 30 \u00b0C / below 16 \u00b0C to the persistence terms. The same rows are scored with the pre-correction wiring beside it, so the change and its size are on the record rather than in a commit message."
   },
   "what_was_hindcast": {
     "physics_track": true,
@@ -408,7 +428,7 @@
         "wind_gusts_10m_max",
         "et0_fao_evapotranspiration"
       ],
-      "driver_series_loaded_from": "/home/runner/work/HazardNet/HazardNet/data/hindcast/drivers/amphan-2020.json",
+      "driver_series_loaded_from": "/home/user/HazardNet/data/hindcast/drivers/amphan-2020.json",
       "is_forecast": false,
       "is_forecast_note": "Reanalysis knows the weather that occurred inside the window. This measures whether the physics track, given that weather, flags the districts that were hit \u2014 a ceiling on detection, not forecast skill. A lead-time hindcast needs archived forecast fields (ECMWF MARS/CDS), which this harness has no credential for.",
       "aggregation": {
@@ -416,8 +436,13 @@
         "precip_peak_mm": "wettest day in the window (the live pipeline uses the peak 6-hourly accumulation, so a forward-flood term is understated)",
         "temp_max_c": "maximum daily maximum",
         "temp_min_c": "minimum daily minimum",
-        "wind_max_kmh": "maximum daily maximum",
-        "et_total_mm": "sum of daily ET0"
+        "wind_max_kmh": "sustained maximum (kept for the record and the pre-correction comparison; the wind-damage classes read the gust below)",
+        "wind_gust_max_kmh": "gust maximum \u2014 the driver the two wind-damage classes read, because the unit is a district centroid",
+        "wind_mean_kmh": "mean of the daily maximum wind over the window",
+        "et_mm_per_day": "mean daily reference evapotranspiration",
+        "heat_exceedance_days": "days past 30 \u00b0C inside the window",
+        "cold_exceedance_days": "days below 16 \u00b0C inside the window",
+        "et_total_mm": "sum of daily ET0 (kept; read only when no daily ET series is available, and never as a daily rate)"
       }
     },
     "how_to_read": [
@@ -526,11 +551,16 @@
         },
         "Drought": {
           "pod": null,
-          "far": null,
-          "csi": null,
+          "far": 1.0,
+          "csi": 0.0,
+          "precision": 0.0,
+          "recall": null,
           "observed_events": 0,
-          "forecast_events": 0,
-          "status": "untested"
+          "forecast_events": 1,
+          "hits": 0,
+          "misses": 0,
+          "false_alarms": 1,
+          "status": "measured"
         },
         "Fire": {
           "pod": null,
@@ -539,19 +569,24 @@
           "precision": 0.0,
           "recall": null,
           "observed_events": 0,
-          "forecast_events": 28,
+          "forecast_events": 25,
           "hits": 0,
           "misses": 0,
-          "false_alarms": 28,
+          "false_alarms": 25,
           "status": "measured"
         },
         "Flash Flood": {
           "pod": null,
-          "far": null,
-          "csi": null,
+          "far": 1.0,
+          "csi": 0.0,
+          "precision": 0.0,
+          "recall": null,
           "observed_events": 0,
-          "forecast_events": 0,
-          "status": "untested"
+          "forecast_events": 2,
+          "hits": 0,
+          "misses": 0,
+          "false_alarms": 2,
+          "status": "measured"
         },
         "Flood": {
           "pod": null,
@@ -675,9 +710,9 @@
           },
           "Tropical Cyclone": {
             "Cold Wave": 0,
-            "Drought": 0,
-            "Fire": 28,
-            "Flash Flood": 0,
+            "Drought": 1,
+            "Fire": 25,
+            "Flash Flood": 2,
             "Flood": 0,
             "Heat Wave": 0,
             "Severe Local Storm": 0,
@@ -698,7 +733,7 @@
         "single_class_sample": false,
         "note": null
       },
-      "severity_mae_vs_occurrence": 0.8679,
+      "severity_mae_vs_occurrence": 0.689807,
       "lead_time_days": {
         "min": 7,
         "max": 15,
@@ -743,7 +778,7 @@
       "scored_samples": 28,
       "hits": 0,
       "misses": 0,
-      "false_alarms": 28,
+      "false_alarms": 24,
       "pod": null,
       "far": 1.0,
       "note": "PRODUCT_SPEC \u00a71.3 WARNING band"
@@ -756,8 +791,8 @@
       "tier": "most_affected",
       "source_id": "hctt-response-plan",
       "physics_top_hazard": "Fire",
-      "physics_top_severity": 0.872,
-      "physics_score_of_episode_class": 0.0565,
+      "physics_top_severity": 0.6622,
+      "physics_score_of_episode_class": 0.0467,
       "physics_named_episode_class": false,
       "within_window_days": 16
     },
@@ -767,8 +802,8 @@
       "tier": "most_affected",
       "source_id": "hctt-response-plan",
       "physics_top_hazard": "Fire",
-      "physics_top_severity": 0.8773,
-      "physics_score_of_episode_class": 0.1478,
+      "physics_top_severity": 0.7063,
+      "physics_score_of_episode_class": 0.0587,
       "physics_named_episode_class": false,
       "within_window_days": 16
     },
@@ -778,8 +813,8 @@
       "tier": "most_affected",
       "source_id": "hctt-response-plan",
       "physics_top_hazard": "Fire",
-      "physics_top_severity": 0.8747,
-      "physics_score_of_episode_class": 0.0446,
+      "physics_top_severity": 0.6562,
+      "physics_score_of_episode_class": 0.0432,
       "physics_named_episode_class": false,
       "within_window_days": 16
     },
@@ -789,7 +824,7 @@
       "tier": "most_affected",
       "source_id": "hctt-response-plan",
       "physics_top_hazard": "Fire",
-      "physics_top_severity": 0.8667,
+      "physics_top_severity": 0.6559,
       "physics_score_of_episode_class": 0.033,
       "physics_named_episode_class": false,
       "within_window_days": 16
@@ -800,8 +835,8 @@
       "tier": "most_affected",
       "source_id": "hctt-response-plan",
       "physics_top_hazard": "Fire",
-      "physics_top_severity": 0.8293,
-      "physics_score_of_episode_class": 0.0498,
+      "physics_top_severity": 0.6597,
+      "physics_score_of_episode_class": 0.0475,
       "physics_named_episode_class": false,
       "within_window_days": 16
     },
@@ -811,7 +846,7 @@
       "tier": "most_affected",
       "source_id": "hctt-response-plan",
       "physics_top_hazard": "Fire",
-      "physics_top_severity": 0.8587,
+      "physics_top_severity": 0.6444,
       "physics_score_of_episode_class": 0.0323,
       "physics_named_episode_class": false,
       "within_window_days": 16
@@ -822,8 +857,8 @@
       "tier": "most_affected",
       "source_id": "hctt-response-plan",
       "physics_top_hazard": "Fire",
-      "physics_top_severity": 0.8533,
-      "physics_score_of_episode_class": 0.0382,
+      "physics_top_severity": 0.6371,
+      "physics_score_of_episode_class": 0.0377,
       "physics_named_episode_class": false,
       "within_window_days": 16
     },
@@ -833,7 +868,7 @@
       "tier": "most_affected",
       "source_id": "hctt-response-plan",
       "physics_top_hazard": "Fire",
-      "physics_top_severity": 0.8933,
+      "physics_top_severity": 0.6829,
       "physics_score_of_episode_class": 0.0459,
       "physics_named_episode_class": false,
       "within_window_days": 16
@@ -844,8 +879,8 @@
       "tier": "most_affected",
       "source_id": "hctt-response-plan",
       "physics_top_hazard": "Fire",
-      "physics_top_severity": 0.8773,
-      "physics_score_of_episode_class": 0.1355,
+      "physics_top_severity": 0.6609,
+      "physics_score_of_episode_class": 0.1061,
       "physics_named_episode_class": false,
       "within_window_days": 16
     },
@@ -855,7 +890,7 @@
       "tier": "reported_affected",
       "source_id": "sentinel1-flood-mapping",
       "physics_top_hazard": "Fire",
-      "physics_top_severity": 0.8747,
+      "physics_top_severity": 0.6565,
       "physics_score_of_episode_class": 0.0345,
       "physics_named_episode_class": false,
       "within_window_days": 16
@@ -865,8 +900,8 @@
       "as_written": "Jhalakati / Jhalokathi",
       "tier": "reported_affected",
       "source_id": "sentinel1-flood-mapping",
-      "physics_top_hazard": "Fire",
-      "physics_top_severity": 0.864,
+      "physics_top_hazard": "Drought",
+      "physics_top_severity": 0.6312,
       "physics_score_of_episode_class": 0.0329,
       "physics_named_episode_class": false,
       "within_window_days": 16
@@ -877,7 +912,7 @@
       "tier": "reported_affected",
       "source_id": "sentinel1-flood-mapping",
       "physics_top_hazard": "Fire",
-      "physics_top_severity": 0.8587,
+      "physics_top_severity": 0.6141,
       "physics_score_of_episode_class": 0.0602,
       "physics_named_episode_class": false,
       "within_window_days": 16
@@ -888,7 +923,7 @@
       "tier": "reported_affected",
       "source_id": "sentinel1-flood-mapping",
       "physics_top_hazard": "Fire",
-      "physics_top_severity": 0.8773,
+      "physics_top_severity": 0.6507,
       "physics_score_of_episode_class": 0.0445,
       "physics_named_episode_class": false,
       "within_window_days": 16
@@ -898,26 +933,26 @@
       "as_written": "Jhenaidah / Jhenaidaha",
       "tier": "reported_affected",
       "source_id": "sentinel1-flood-mapping",
-      "physics_top_hazard": "Fire",
-      "physics_top_severity": 0.8773,
-      "physics_score_of_episode_class": 0.2074,
+      "physics_top_hazard": "Flash Flood",
+      "physics_top_severity": 0.7952,
+      "physics_score_of_episode_class": 0.1771,
       "physics_named_episode_class": false,
       "within_window_days": 16
     }
   ],
   "alarmed_without_a_recorded_impact": {
-    "count": 100,
+    "count": 97,
     "examples": [
-      "Bandarban (Fire 0.885, 2020-05-05)",
-      "Bandarban (Fire 0.885, 2020-05-13)",
-      "Bogra (Fire 0.832, 2020-05-05)",
-      "Bogra (Fire 0.832, 2020-05-13)",
-      "Brahmanbaria (Fire 0.851, 2020-05-13)",
-      "Brahmanbaria (Fire 0.853, 2020-05-05)",
-      "Chandpur (Fire 0.859, 2020-05-05)",
-      "Chandpur (Fire 0.859, 2020-05-13)",
-      "Chapainawabganj (Fire 0.872, 2020-05-05)",
-      "Chapainawabganj (Fire 0.872, 2020-05-13)"
+      "Bandarban (Fire 0.676, 2020-05-05)",
+      "Bandarban (Fire 0.686, 2020-05-13)",
+      "Bogra (Flash Flood 0.673, 2020-05-13)",
+      "Bogra (Flash Flood 0.733, 2020-05-05)",
+      "Brahmanbaria (Fire 0.585, 2020-05-05)",
+      "Brahmanbaria (Fire 0.598, 2020-05-13)",
+      "Chandpur (Fire 0.624, 2020-05-05)",
+      "Chandpur (Fire 0.669, 2020-05-13)",
+      "Chapainawabganj (Fire 0.626, 2020-05-05)",
+      "Chapainawabganj (Fire 0.668, 2020-05-13)"
     ],
     "interpretation": "These district-windows crossed the alarm threshold with no outcome on record. They are UNKNOWN, not false alarms: the truth set names the districts the cited assessments report, and nobody claims to have surveyed all 64. Measuring the false-alarm ratio needs the historical event archive loaded (owner Action 12). The count is the number of alarms the truth set cannot speak to, so it is expected to be large while the truth set is a named list \u2014 it is the size of what this hindcast does not know."
   },

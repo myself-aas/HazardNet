@@ -331,6 +331,50 @@ def test_the_cyclone_bulletin_maps_signals_and_wind_to_severity():
     assert second['severity_basis'] == 'signal=7'
 
 
+def test_a_ranged_wind_is_read_at_the_value_the_warning_is_about():
+    """`62-88 kmph` is a warning about 88 kmph, and the basis says so.
+
+    The parser used to take the lower bound, which understates every ranged bulletin. Both ends
+    are still on the record, so a reviewer can see what was read and where it came from.
+    """
+    value, basis = bulletins._wind_driver(
+        'Maximum sustained wind speed within 54 km of the centre is about 62-88 kmph.')
+    assert value == 88.0
+    assert 'upper bound' in basis and '62-88' in basis
+    assert basis.startswith('reported maximum speed')
+
+
+def test_a_gust_the_bulletin_names_wins_over_the_sustained_speed():
+    """The wind-damage formulas read a gust; when the bulletin reports one, that is the driver.
+
+    "about 62-88 kmph rising to 98 kmph in gusts" is a warning about 98 km/h, and the basis
+    records that the source itself called it a gust — the difference between the two readings is
+    the difference between a score the source supports and one this code invented.
+    """
+    text = ('Cyclone Sitrang over the Bay. Maximum sustained wind speed within 54 km of the '
+            'centre is about 62-88 kmph rising to 98 kmph in gusts.')
+    value, basis = bulletins._wind_driver(text)
+    assert value == 98.0
+    assert basis == 'gust, as reported'
+
+    bulletin = bulletins.parse_bulletin(text)
+    assert bulletin['drivers']['wind_kmh'] == 98.0
+    score, basis_string = bulletins.severity_for(bulletin)
+    assert 'wind_speed_kmh=98' in basis_string and 'gust, as reported' in basis_string
+    assert score == pytest.approx(
+        round(physics_severity.om_calc_tropical_cyclone(98.0, 0.0), 4), abs=1e-4)
+
+
+def test_a_bulletin_that_reports_only_a_speed_says_so_in_the_basis():
+    """No conversion factor is invented: the ambiguity is recorded, not smoothed away."""
+    bulletin = bulletins.parse_bulletin(
+        'Heavy rainfall likely over Sylhet with wind speed 45 kmph during the next 24 hours.')
+    assert bulletin['drivers']['wind_kmh'] == 45.0
+    assert bulletin['drivers']['wind_basis'] == 'reported maximum speed, averaging unstated'
+    _, basis_string = bulletins.severity_for(bulletin)
+    assert 'averaging unstated' in basis_string
+
+
 def test_a_bulletin_without_districts_is_national_scope_with_an_unlocalised_advisory():
     third = parsed_bulletins()[2]
     assert third['scope'] == 'national'

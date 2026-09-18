@@ -231,6 +231,45 @@ describe('the generated /model-performance route', () => {
     }
   });
 
+  it('carries the pre-correction wiring beside the corrected one, per term', () => {
+    // The 2026-09-18 correction is only auditable if the artifact keeps both halves. Three of
+    // the four terms were at their ceiling on every row of every episode before it, and that
+    // count is published rather than described.
+    for (const episode of artifact.episodes) {
+      for (const term of ['fire_drying', 'heat_persistence', 'cold_persistence']) {
+        expect(episode.saturation[term].legacy_rows_at_ceiling).toBe(episode.saturation[term].rows);
+        expect(episode.saturation[term].rows_at_ceiling).toBeLessThanOrEqual(episode.saturation[term].rows);
+      }
+      // The fire wind term was the one that saturated on some rows rather than all of them.
+      const fireWind = episode.saturation.fire_wind;
+      expect(fireWind.legacy_rows_at_ceiling).toBeGreaterThanOrEqual(36);
+      expect(fireWind.legacy_rows_at_ceiling).toBeLessThanOrEqual(fireWind.rows);
+      // Both top-class distributions, and the corrected driver the terms now read.
+      expect(Object.keys(episode.top_class_distribution.shipped).length).toBeGreaterThan(0);
+      expect(Object.keys(episode.top_class_distribution.legacy).length).toBeGreaterThan(0);
+      expect(episode.drivers.shipped.name).toBe('era5_10m_gust');
+      expect(episode.drivers.legacy.name).toBe('era5_10m_sustained');
+    }
+  });
+
+  it('says on the page which wiring is which, and what the correction left open', () => {
+    const copy = JSON.stringify(route.sections);
+    expect(copy).toMatch(/2026-09-18/);
+    expect(copy).toMatch(/pre-correction/);
+    // The residual finding is stated, not smoothed: Fire is still the top class on the cyclone
+    // windows, and the pair limitation stays on the page.
+    const correction = route.sections.find((section) => section.h2 === 'What the wiring correction changed');
+    expect(correction).toBeTruthy();
+    expect(correction.paragraphs.join(' ')).toMatch(/Fire/);
+    expect(correction.paragraphs.join(' ')).toMatch(/separate a rain class from a wind class/);
+    // Every correction row carries both distributions, ranked by count.
+    for (const row of correction.table.rows) {
+      expect(row).toHaveLength(4);
+      expect(row[2]).toMatch(/Fire|Flash Flood|Drought/);
+      expect(row[3]).toMatch(/Fire|Flash Flood|Drought/);
+    }
+  });
+
   it('renders an uncomputable score as a dash, never as 0.000', () => {
     const scores = route.sections.find((section) => section.table?.columns.includes('POD')).table;
     const podColumn = scores.columns.indexOf('POD');
@@ -274,7 +313,13 @@ maybe('the built page', () => {
   it('serves the numbers from the artifact in the static HTML', () => {
     const eastern = artifact.episodes.find((episode) => episode.id === 'eastern-flood-2024');
     expect(html).toContain(`>${eastern.detection.flagged_any_class}<`);
-    expect(html).toContain('0.846');
+    // Derived rather than hard-coded: the 2024 episode's pod/csi are exactly the pair the
+    // 2026-09-18 wiring correction moved (22 hits / 4 false alarms → 26 / 0, which takes FAR
+    // and CSI from 0.846 to uncomputable), so a fixed number here would pin the defect.
+    expect(eastern.scores.pod).toBe(1);
+    expect(eastern.scores.csi).toBeNull();
+    expect(html).toContain('>1.000<');
+    expect(html).toContain('>—<');
   });
 
   it('carries the limits in the static text, not only after hydration', () => {

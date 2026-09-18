@@ -165,17 +165,25 @@ the findings in `docs/phase-reports/phase-9-validation-and-soft-launch.md`:
 * **Threshold independence:** the 0.40 / 0.50 / 0.65 bands produce identical splits on all five
   episodes — so the calibration workstream cannot fix what the hindcast found.
 * **Four findings with numbers:** the ERA5 sustained 10 m wind at district centroids on Amphan's
-  landfall day is 44–69 km/h where the cyclone carried 130–155 km/h ashore; three physics terms are
-  at their ceiling on every row (`fire_wind`, `fire_drying`, `heat_persistence`/`cold_persistence`);
-  `Fire` outranks a cyclone, a flood and a monsoon onset on 75–127 of 128 windows; and the two
-  wind-driven classes (TC vs SLS) and the two rain-driven classes (Flood vs Flash Flood) are not
-  separable at district-point resolution.
+  landfall day is 19–69 km/h sustained where the cyclone carried 130–155 km/h ashore; three physics
+  terms were at their ceiling on every row (`fire_drying`, `heat_persistence`/`cold_persistence`) and
+  a fourth on 36–128 of 128; `Fire` outranks a cyclone, a flood and a monsoon onset on 75–127 of 128
+  windows; and the two wind-driven classes (TC vs SLS) and the two rain-driven classes (Flood vs
+  Flash Flood) are not separable at district-point resolution.
+
+  **Corrected 2026-09-18 (§8 items 7–8 below):** the four terms now receive the quantities their
+  formulas describe, and the two wind-damage classes read the gust. The headline effect is recorded
+  in the reports' `physics_diagnostics` before/after blocks and on `/model-performance`: the 2024
+  flood episode moves from 22 hits / 4 false alarms to 26 hits / 0 false alarms and the named-class
+  total from 12 of 50 districts to 13; the residual `Fire` dominance and the inseparable class pairs
+  are unchanged and remain findings, not fixes.
 
 *Delivered since the first pass of this audit — §8.1, the public metrics dashboard:*
 **`/model-performance`**, built from `frontend/public/data/model-performance.json`, which
 `scripts/build_model_performance.mjs` projects from the five committed hindcast reports. The page
 carries the detection table, POD/FAR/CSI with every `None` explained in place, the threshold-band
-comparison, the shipped-versus-gust wind-driver comparison, the saturated-term table, the reports'
+comparison, the gust-versus-sustained wind-driver comparison, the saturated-term table with the
+pre-correction counts beside the corrected ones, the wiring-correction table, the reports'
 caveats and reading notes verbatim, and the truth-set citations. It publishes **no** headline
 accuracy percentage, and that is enforced structurally rather than by convention: the builder
 copies fields through an explicit allow-list, fails the build on any of
@@ -276,18 +284,25 @@ the overflow spec, so a third could exist undetected.
 
 ### P2 — the substantive fixes the hindcast found (pipeline owner)
 
-7. **Fix the three saturated physics terms** — mean daily ET for the fire drying term, exceedance
-   days for the two persistence terms. The counterfactual is already implemented and tested in
-   `scripts/hindcast/score.py`; the measured effect is 9–21 windows per episode crossing a class
-   boundary. *Acceptance:* the counterfactual and the shipped top-class distributions converge in a
-   regenerated hindcast report.
-8. **Fix the wind driver** — use (or additionally carry) `wind_gusts_10m_max`. *Acceptance:* the
-   cyclic episode's cyclone-class score range moves from 0.014–0.248 toward 0.099–0.515, and the
-   report's wind-driver block says the correct class is the track's pick.
-9. **Address the `Fire` dominance** — with the wiring fixed, `Fire` still tops 54–127 of 128 windows
-   in every episode. Either its wind/drying inputs need to be tropicalised (the formula is a
-   temperate fire-weather rule) or the class needs a masking rule for the monsoon. *Acceptance:* a
-   calm May day in the coastal belt no longer scores 0.55+ for `Fire`.
+7. ~~**Fix the four saturated physics terms**~~ — **done 2026-09-18.** Mean daily ET and mean daily
+   maximum wind for the fire terms, exceedance days for the two persistence terms, all aggregated by
+   `physics_severity.resolve_drivers` from the observed daily series so a caller cannot pass the
+   wrong aggregate. *Acceptance met:* the corrected and pre-correction top-class distributions are
+   both published in every report (`physics_diagnostics.top_class_distribution_*`), the per-term
+   before/after counts are in the artifacts and on `/model-performance`, and
+   `hindcast.cli check --require-reports` recomputes all five reports from the committed inputs.
+8. ~~**Fix the wind driver**~~ — **done 2026-09-18.** Tropical Cyclone and Severe Local Storm read
+   `wind_gusts_10m_max`. *Acceptance met:* Amphan's cyclone-class range moved from 0.014–0.248 to
+   0.099–0.515 with 2 of 128 windows over the band, and the sustained maximum stays published beside
+   it in `physics_diagnostics.wind_drivers`. The acceptance clause "the report's wind-driver block
+   says the correct class is the track's pick" is *not* met and is recorded as such: `Fire` still
+   tops those rows (item 9).
+9. **Address the residual `Fire` dominance** — `Fire` still tops 45–119 of 128 windows per episode,
+   and 92–119 of 128 in the two cyclone episodes. Either its wind/drying inputs need to be
+   tropicalised (the formula is a temperate fire-weather rule) or the class needs a masking rule for
+   the pre-monsoon coastal belt. *Acceptance:* a calm May day in the coastal belt no longer scores
+   0.55+ for `Fire`. **Owner decision — no truth set in this repository can validate either route,
+   and both change published values.**
 10. **Separate the two inseparable class pairs** (TC vs SLS; Flood vs Flash Flood) — or state in
     `MODEL_CARD.md` that the physics track cannot distinguish them, and have the alert surface carry
     the pair rather than the class. *Acceptance:* the 2025 episode's 0 hits / 20 false alarms under
