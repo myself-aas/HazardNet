@@ -383,7 +383,10 @@ REQUIRED_ACTION_VERSIONS = {
     # Node 24 and annotated every job with a deprecation warning (the
     # 2026-09-14 runtime sweep moved the other actions but missed this one).
     # v5 is node24 and needs runner >= 2.327.1 (hosted runners are far past it).
-    'actions/cache':           'v5',
+    # v6 (Dependabot actions-group bump, Sept 2026) migrates the action to ESM,
+    # picks up the read-only-token save-only fix (v6.1.0), and keeps the same
+    # inputs/outputs — no workflow changes needed beyond the tag.
+    'actions/cache':           'v6',
 }
 
 # Workflows that are either scheduled or long-running and therefore need a
