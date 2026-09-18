@@ -488,6 +488,11 @@ jobs:
           # hindcast reports, so a hand-edited model-performance.json fails here — as does a
           # report that has been re-scored without regenerating the page that cites it.
           node scripts/build_model_performance.mjs --check
+          # NASA Horizon Design System: frontend/src/styles/nasa-hds.css must still be the exact
+          # compilation of the vendored nasa/hds-core token source. A hand-edited token — or a
+          # vendored update without a regenerate — fails here rather than shipping a palette that
+          # no longer matches the system it claims to come from.
+          node scripts/import_nasa_tokens.mjs --check
 
       # The build rewrites `frontend/public/data/content-index.json` (Vite copies `public/` into
       # `dist/` before the prerenderer runs, so the prerenderer writes both copies). The rewrite
