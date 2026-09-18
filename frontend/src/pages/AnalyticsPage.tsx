@@ -148,8 +148,10 @@ export const AnalyticsAnalyticsPage: React.FC = () => {
             </motion.div>
             <motion.div whileHover={{ y: -4, scale: 1.01 }} whileTap={{ scale: 0.98 }} className="bg-white border border-slate-200/90 rounded-3xl p-6 shadow-md hover:shadow-lg transition-all space-y-3 sm:col-span-2 md:col-span-1 cursor-pointer">
               <div className="text-xs font-mono text-slate-500 font-bold">EXPECTED CALIBRATION ERROR (ECE)</div>
-              <div className="text-3xl font-black text-slate-900">1.82%</div>
-              <p className="text-xs text-slate-600 leading-relaxed">High probabilistic reliability for extreme weather alerts.</p>
+              <div className="text-2xl font-black text-slate-400">Not published</div>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                No calibration map has been fitted against observed outcomes, so no calibration error is quoted here.
+              </p>
             </motion.div>
           </motion.div>
         )}

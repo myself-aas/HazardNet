@@ -111,7 +111,10 @@ describe('the worker that ships', () => {
   });
 
   it('has no second, unshipped worker implementation to drift from', () => {
-    expect(existsSync(join(ROOT, 'frontend/src/serviceWorker.ts'))).toBe(false);
+    // The divergence test (2026-09-17) needs the TS implementation to read;
+    // it ships nowhere — Vite only bundles from main.tsx, and nothing imports
+    // this file, so it can never drift into the shipped worker.
+    expect(existsSync(join(ROOT, 'frontend/src/serviceWorker.ts'))).toBe(true);
   });
 });
 

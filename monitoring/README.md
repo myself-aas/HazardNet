@@ -21,10 +21,11 @@ Notes:
 
 - `prediction_date` is date-granular (`YYYY-MM-DD`), so the age carries up to
   ±24h of granularity — irrelevant at the 192h threshold.
-- **Threshold calibration:** the guide's original 48h threshold assumed its own
-  *daily* pipeline schedule. The repo's canonical pipeline is **weekly**
-  (`weekly_forecast.yml`, Sun 02:00 UTC), so 48h would false-fire ~5 of 7 days;
-  192h = one missed run + ~22h grace.
+- **Threshold calibration:** the canonical pipeline is **daily**
+  (`daily_forecast.yml`, 00:00 UTC on the GitHub runner; the Kaggle workflows
+  have been dispatch-only legacy since 2026-09-16), so 48h = one missed run + ~22h grace. (The 192h
+  weekly-cadence value applied only while the Kaggle weekly pipeline was the
+  producer.)
 - The gauge is refreshed **scrape-driven** on every `/metrics` request, via a
   60s-cached store probe (`backend/utils/forecastFreshness.js`) — a 30s scrape
   interval costs ≤ ~2 indexed reads (Firestore) / `max()` queries (Supabase)

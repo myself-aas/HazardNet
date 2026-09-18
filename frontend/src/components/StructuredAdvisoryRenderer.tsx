@@ -136,7 +136,7 @@ export const StructuredAdvisoryRenderer: React.FC<StructuredAdvisoryRendererProp
                 <strong>LAST UPDATED:</strong> {new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}, {new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })} BST
               </span>
               <span className="print-currency-tag text-[6pt]">
-                AI CONFIDENCE: 94.2%
+                AI ASSIST - EXPERIMENTAL
               </span>
             </div>
           </div>

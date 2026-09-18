@@ -212,7 +212,9 @@ def get_temporal_15ch_stack(region, start, end):
 # ==============================================================================
 def get_ee_image_as_numpy(image, region, scale=10, target_size=(64, 64)):
     url = image.getDownloadURL({'region': region, 'scale': scale, 'format': 'NPY'})
-    response = urllib.request.urlopen(url)
+    # 60s socket timeout: without one a stalled GEE download can hang the
+    # district loop until the 120-minute job timeout kills the whole workflow.
+    response = urllib.request.urlopen(url, timeout=60)
     data = np.load(io.BytesIO(response.read()), allow_pickle=True)
     
     bands = [data[b] for b in image.bandNames().getInfo()]
@@ -228,6 +230,51 @@ def get_ee_image_as_numpy(image, region, scale=10, target_size=(64, 64)):
         img_np = np.transpose(resized_hwc, (2, 0, 1)) # Back to [C, H, W]
         
     return img_np
+
+# ==============================================================================
+# 4-bis. RESILIENT NETWORK HELPERS
+# ==============================================================================
+# 2026-09-17 incident: every district's GEE download failed *silently*
+# (`except Exception: return None` in fetch_historical_steps swallowed the real
+# error), the run "succeeded" with a 0-row CSV and only died later at
+# publish_forecast_csv.py's sanity check ("CSV contains zero rows"), pointing
+# everyone at the wrong step. The helpers below make the pipeline (a) retry the
+# transient failures we actually see in production logs (Open-Meteo read
+# timeouts, GEE 429/5xx) and (b) log every failure with its cause so the next
+# red run names the real culprit in the "Execute pipeline" step itself.
+# ==============================================================================
+
+RETRY_ATTEMPTS = 3
+RETRY_BASE_DELAY_S = 5.0
+
+def _is_retryable(exc):
+    """Retry transient transport/quota errors; permanent ones fail fast."""
+    msg = str(exc).lower()
+    transient_markers = (
+        '429', 'too many requests', 'rate limit', 'quota',
+        '500', '502', '503', '504', 'internalerror', 'unavailable',
+        'timeout', 'timed out', 'connection reset', 'connection refused',
+        'temporarily unavailable', 'overloaded', 'deadline',
+    )
+    return any(marker in msg for marker in transient_markers)
+
+def retry_call(fn, *, what, attempts=RETRY_ATTEMPTS, base_delay=RETRY_BASE_DELAY_S):
+    """Run fn(), retrying transient failures with exponential backoff.
+
+    Raises the last exception after `attempts` tries; the caller decides
+    whether that failure is fatal for its district/step.
+    """
+    for attempt in range(1, attempts + 1):
+        try:
+            return fn()
+        except Exception as exc:
+            if attempt >= attempts or not _is_retryable(exc):
+                raise
+            delay = base_delay * (2 ** (attempt - 1))
+            print(f"   ⚠️ {what} failed (attempt {attempt}/{attempts}): {type(exc).__name__}: {exc} — retrying in {delay:.0f}s")
+            time.sleep(delay)
+    # Unreachable, but keeps the contract explicit.
+    raise RuntimeError(f"{what} exhausted retries")
 
 def _openmeteo_provenance(url, params, payload, fields_defaulted=()):
     """Fingerprint one Open-Meteo request for the scene manifest.
@@ -310,8 +357,15 @@ def get_openmeteo_forecast(lat, lon, horizon_days):
         "forecast_days": min(horizon_days + 1, 16),
     }
     try:
-        resp = requests.get(url, params=params, timeout=15)
-        resp.raise_for_status()
+        # Retried with backoff: the 2026-09-16 production run lost ~27/64
+        # districts to single 15s Open-Meteo read timeouts — a transient
+        # failure mode that a retry absorbs. raise_for_status() is inside the
+        # retried closure so HTTP 429/5xx responses are retried too.
+        def _fetch():
+            r = requests.get(url, params=params, timeout=30)
+            r.raise_for_status()
+            return r
+        resp = retry_call(_fetch, what=f"Open-Meteo fetch for ({lat}, {lon})")
         payload = resp.json()
         daily = payload.get('daily', {})
         hourly = payload.get('hourly', {})
@@ -462,8 +516,17 @@ def fetch_historical_steps(lat, lon, norm_stats):
         combined_img = get_temporal_15ch_stack(region, start_date.strftime('%Y-%m-%d'), end_date.strftime('%Y-%m-%d'))
         if combined_img:
             try:
-                historical_steps.append(get_ee_image_as_numpy(combined_img, region, scale=10))
-            except Exception:
+                # Retried per-request: absorbs GEE 429/5xx/timeout blips that
+                # used to kill a whole district on the first failure.
+                historical_steps.append(retry_call(
+                    lambda: get_ee_image_as_numpy(combined_img, region, scale=10),
+                    what=f"GEE historical download (step t={t})",
+                ))
+            except Exception as e:
+                # 2026-09-17: this used to `return None` with zero logging, so
+                # a full GEE outage produced a silent 0-row CSV and a
+                # confusing failure two steps later. Now the cause is in the log.
+                print(f"   ❌ GEE historical fetch failed: {type(e).__name__}: {e}")
                 return None
         else:
             return None
@@ -483,7 +546,12 @@ def build_t0_and_infer(dist, historical_steps, horizon_days, norm_stats):
     t0_combined_img = get_temporal_15ch_stack(region, t0_start, t0_end)
     if t0_combined_img:
         try:
-            t0_np = get_ee_image_as_numpy(t0_combined_img, region, scale=10)
+            # Retried per-request: absorbs GEE 429/5xx/timeout blips that
+            # used to zero out a whole district on the first failure.
+            t0_np = retry_call(
+                lambda: get_ee_image_as_numpy(t0_combined_img, region, scale=10),
+                what=f"GEE T0 download for {dist.get('name', '?')}",
+            )
             # Replace ERA5-Land weather bands 6..15 (0-indexed) with Open-Meteo
             # forecast values for the T0 step. Bands 0..5 (SAR+optical) come
             # straight from Earth Engine. The Soil_W1/W3/T1 placeholders match
@@ -689,173 +757,201 @@ print(f"[config] soil channels: mode={SOIL_MODE} -> values {SOIL_MEAN_DEFAULTS} 
 # looked exactly like complete ones on the website. Every requested
 # (district, horizon) is now accounted for, and manifest.json carries the tally.
 requested_units = len(DISTRICTS) * len(HORIZONS)
-coverage = {
-    'requested_units': requested_units,
-    'requested_districts': len(DISTRICTS),
-    'requested_horizons': list(HORIZONS.keys()),
-    'horizons': list(HORIZONS.keys()),
-    'produced_units': 0,
-    'districts_with_any_horizon': 0,
-    'per_horizon': {name: {'requested': len(DISTRICTS), 'produced': 0} for name in HORIZONS},
-    'skipped': [],
-    'started_at': datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'),
-}
+# ── pass-level retry + fail-fast guard (2026-09-17 incident) ────────────────
+# A pass that yields ZERO rows means an upstream outage (GEE downloads or
+# Open-Meteo), not "no hazards today" — every district needs both sources to
+# emit a row. Retry the whole sweep once after a cool-down; if it is still
+# empty, exit non-zero HERE so the workflow's "Execute pipeline" step shows
+# the real failure instead of publish_forecast_csv.py's downstream
+# "CSV contains zero rows" sanity-check error.
+PASS_RETRY_WAIT_S = 5 * 60
+for pass_num in (1, 2):
+    # Per-pass state: the coverage tally and lineage capture describe the pass
+    # whose rows ship — never a blend of two passes.
+    results = []
+    scene_units = []
+    scene_units_error = None
+    coverage = {
+        'requested_units': requested_units,
+        'requested_districts': len(DISTRICTS),
+        'requested_horizons': list(HORIZONS.keys()),
+        'horizons': list(HORIZONS.keys()),
+        'produced_units': 0,
+        'districts_with_any_horizon': 0,
+        'per_horizon': {name: {'requested': len(DISTRICTS), 'produced': 0} for name in HORIZONS},
+        'skipped': [],
+        'started_at': datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'),
+    }
 
-for dist in DISTRICTS: # Full pipeline now
-    print(f"Processing {dist['name']}...")
-    historical_steps = fetch_historical_steps(dist['lat'], dist['lon'], NORM_STATS)
-    if not historical_steps:
-        # Not silent any more: the district is recorded with a reason and the
-        # run is reported as partial rather than successful.
-        print(f"  [SKIP] {dist['name']}: no historical tensor (Earth Engine fetch empty/failed)")
-        coverage['skipped'].append({
-            'district_id': dist['id'], 'district_name': dist['name'],
-            'horizon': '*', 'reason': 'no_historical_steps',
-        })
-        continue
-
-    for horizon_name, days in HORIZONS.items():
-        tensor, om_data = build_t0_and_infer(dist, historical_steps, days, NORM_STATS)
-        if tensor is not None and om_data is not None:
-            model_class_index, conf, severity = run_inference(tensor)
-
-            # Convert once, reuse for both physics and CSV output. The
-            # Open-Meteo scalars are aggregated over the whole horizon in the
-            # units documented on get_openmeteo_forecast (K, m, J/m², km/h).
-            temp_mean_c     = om_data['Temp_2m']  - 273.15
-            temp_max_c      = om_data['Max_Temp'] - 273.15
-            temp_min_c      = om_data['Min_Temp'] - 273.15
-            dew_c           = om_data['Dewpoint'] - 273.15
-            precip_total_mm = om_data['Precip'] * 1000.0    # horizon total (mm)
-            et_total_mm     = om_data['ET_Sum'] * 1000.0    # horizon total (mm)
-            solar_total_kj  = om_data['Solar_Rad'] / 1000.0 # horizon total (kJ/m²)
-            wind_max_kmh    = om_data['Wind_Max']           # km/h (default Open-Meteo unit)
-
-            # The classification head returns a class INDEX into the fixed
-            # order (Models/labels.json). Writing it straight into
-            # `hazard_type` is what put integers in the hazard column of the
-            # shipped snapshot; map it to the name and fail loudly if the model
-            # ever returns something outside the eight classes.
-            if not isinstance(model_class_ordinal, (int, np.integer)) or not (
-                0 <= int(model_class_ordinal) < len(HAZARD_CLASSES)
-            ):
-                print(f"  [SKIP] {dist['name']} {horizon_name}: model returned class "
-                      f"{model_class_ordinal!r}, outside 0..{len(HAZARD_CLASSES) - 1}")
-                coverage['skipped'].append({
-                    'district_id': dist['id'], 'district_name': dist['name'],
-                    'horizon': horizon_name, 'reason': f'invalid_class_ordinal:{model_class_ordinal!r}',
-                })
-                continue
-            hazard = HAZARD_CLASSES[int(model_class_ordinal)]
-
-            # Independent physics track: all eight classes are scored from the
-            # meteorological drivers alone, with no reference to what the model
-            # predicted (PRODUCT_SPEC §5.4). `physics_severity` keeps its old
-            # meaning — the physics score for the class the model chose — so
-            # existing consumers keep working, while the new columns expose a
-            # hazard the model may have missed.
-            physics_drivers = {
-                'temp_max_c': temp_max_c,
-                'temp_min_c': temp_min_c,
-                'precip_total_mm': precip_total_mm,
-                'precip_peak_mm': om_data.get('Precip_Peak_24h_mm'),
-                # Gust, not the sustained maximum: the unit is a district centroid, and
-                # the hindcast measured the sustained field at 19-69 km/h on Amphan's
-                # landfall day where the same archive's gust field reached 51-134 km/h.
-                'wind_gust_kmh': om_data.get('Gust_Max'),
-                # The daily series: `resolve_drivers` turns these into the daily-mean ET,
-                # the daily-mean wind and the two exceedance counts the formulas describe.
-                **(om_data.get('_daily_for_physics') or {}),
-                # Kept so the row records what the horizon accumulated. The module reads it
-                # only when no daily ET series was supplied.
-                'et_total_mm': et_total_mm,
-            }
-            physics_scores = compute_physics_scores(physics_drivers, days)
-            physics = physics_summary(physics_scores, hazard, severity)
-            physics_severity = physics['physics_severity']
-            if physics_severity is None:  # cannot happen: hazard is validated above
-                physics_severity = physics_scores[hazard]
-            missing = missing_drivers(physics_drivers)
-
-            # Scene lineage for this unit. Built from the same tensors and the
-            # same Open-Meteo payload the prediction used, so `dataset_version`
-            # identifies the actual inputs (PRODUCT_SPEC §5.8). The row is stamped
-            # after the manifest is assembled, below.
-            try:
-                scene_units.append(build_scene_unit(
-                    dist, horizon_name, historical_steps, tensor, om_data, prediction_date,
-                ))
-            except Exception as exc:  # noqa: BLE001 - lineage failure must not lose the forecast
-                # The forecast is still emitted (it is the product); the run report
-                # records that this unit has no usable lineage, and the publisher
-                # refuses to ship a run whose lineage failed.
-                scene_units_error = scene_units_error or f"{dist['name']}/{horizon_name}: {exc}"
-                print(f"  [LINEAGE] {dist['name']} {horizon_name}: {exc}")
-
-            target_date = (datetime.now() + timedelta(days=days)).strftime('%Y-%m-%d')
-
-            # Emit BOTH canonical field names (in the documented ingest
-            # units: °C, mm/day, km/h, MJ/m²/day) AND the legacy `om_*`
-            # columns that the ingest parser maps for back-compat. The
-            # legacy aliases are populated with values that match what the
-            # ingest layer expects them to mean (NOT their misleading
-            # suffixes — see backend/utils/forecastRow.js).
-            horizon_days = days
-
-            results.append({
+    for dist in DISTRICTS: # Full pipeline now
+        print(f"Processing {dist['name']}...")
+        historical_steps = fetch_historical_steps(dist['lat'], dist['lon'], NORM_STATS)
+        if not historical_steps:
+            # Not silent any more: the district is recorded with a reason and the
+            # run is reported as partial rather than successful.
+            print(f"  [SKIP] {dist['name']}: no historical tensor (Earth Engine fetch empty/failed)")
+            coverage['skipped'].append({
                 'district_id': dist['id'], 'district_name': dist['name'],
-                'division': dist['division'], 'pcode': dist['pcode'],
-                'horizon': horizon_name, 'hazard_type': hazard,
-                'model_severity': round(severity, 4),
-                'physics_severity': round(physics_severity, 4),
-                'confidence': round(conf, 4),
-                'target_date': target_date,
-                'prediction_date': prediction_date,
-                'data_source': 'Hybrid_Cognitive_Forecast',
-                # ── provenance (PRODUCT_SPEC §5.8 / §3.1) ────────────────────
-                'model_version': MODEL_VERSION,
-                'tensor_build_id': TENSOR_BUILD_ID,
-                'pipeline_version': PIPELINE_VERSION,
-                'run_id': RUN_ID,
-                # The stored confidence is the model's own softmax for its top
-                # class — uncalibrated, and not a model/physics agreement score.
-                # Naming it means no consumer has to guess (PRODUCT_SPEC §3).
-                'confidence_kind': 'model_softmax_top_class',
-                # ── independent physics track, all eight classes ─────────────
-                'physics_top_hazard': physics['physics_top_hazard'],
-                'physics_top_severity': physics['physics_top_severity'],
-                'physics_agreement': bool(physics['physics_agreement']),
-                'track_divergence': physics.get('track_divergence'),
-                'physics_inputs_missing': '|'.join(missing),
-                # ── lineage (filled in from the scene manifest, below) ───────
-                'dataset_version': None,
-                'soil_channels_fabricated': SOIL_FABRICATED,
-                **physics_columns(physics_scores),
-                # Canonical per-day meteorological fields (forecastRow.js
-                # METEOROLOGICAL_FIELDS, in the documented units).
-                'temperature_mean':      round(temp_mean_c, 4),   # °C
-                'temperature_max':       round(temp_max_c, 4),    # °C
-                'temperature_min':       round(temp_min_c, 4),    # °C
-                'precipitation_mm':      round(precip_total_mm / horizon_days, 4),  # mm/day
-                'wind_max_kmh':          round(wind_max_kmh, 4),  # km/h
-                'dewpoint_mean':         round(dew_c, 4),         # °C
-                'solar_radiation_mj_m2': round(solar_total_kj / horizon_days / 1000.0, 4),  # MJ/m²/day
-                'evapotranspiration_mm': round(et_total_mm / horizon_days, 4),        # mm/day
-                # Legacy columns kept for any downstream consumers that still
-                # scrape the old names. Suffixes reflect what ingest expects
-                # them to contain (see forecastRow.js).
-                'om_temp_2m_k':    round(temp_mean_c, 4),   # °C (despite _k suffix)
-                'om_max_temp_k':   round(temp_max_c, 4),    # °C
-                'om_min_temp_k':   round(temp_min_c, 4),    # °C
-                'om_dewpoint_k':   round(dew_c, 4),         # °C
-                'om_precip_m':     round(precip_total_mm / 1000.0, 6),   # m total
-                'om_wind_max_ms':  round(wind_max_kmh / 3.6, 4),        # m/s (so ×3.6 = km/h)
-                'om_solar_rad_j':  round(solar_total_kj, 4),            # kJ/m² total
-                'om_et_sum_m':     round(et_total_mm, 4),               # mm total (despite _m suffix)
+                'horizon': '*', 'reason': 'no_historical_steps',
             })
+            continue
 
-    # Light rate-limit between districts to be polite to EE + Open-Meteo.
-    time.sleep(0.2)
+        for horizon_name, days in HORIZONS.items():
+            tensor, om_data = build_t0_and_infer(dist, historical_steps, days, NORM_STATS)
+            if tensor is not None and om_data is not None:
+                model_class_index, conf, severity = run_inference(tensor)
+
+                # Convert once, reuse for both physics and CSV output. The
+                # Open-Meteo scalars are aggregated over the whole horizon in the
+                # units documented on get_openmeteo_forecast (K, m, J/m², km/h).
+                temp_mean_c     = om_data['Temp_2m']  - 273.15
+                temp_max_c      = om_data['Max_Temp'] - 273.15
+                temp_min_c      = om_data['Min_Temp'] - 273.15
+                dew_c           = om_data['Dewpoint'] - 273.15
+                precip_total_mm = om_data['Precip'] * 1000.0    # horizon total (mm)
+                et_total_mm     = om_data['ET_Sum'] * 1000.0    # horizon total (mm)
+                solar_total_kj  = om_data['Solar_Rad'] / 1000.0 # horizon total (kJ/m²)
+                wind_max_kmh    = om_data['Wind_Max']           # km/h (default Open-Meteo unit)
+
+                # The classification head returns a class INDEX into the fixed
+                # order (Models/labels.json). Writing it straight into
+                # `hazard_type` is what put integers in the hazard column of the
+                # shipped snapshot; map it to the name and fail loudly if the model
+                # ever returns something outside the eight classes.
+                if not isinstance(model_class_ordinal, (int, np.integer)) or not (
+                    0 <= int(model_class_ordinal) < len(HAZARD_CLASSES)
+                ):
+                    print(f"  [SKIP] {dist['name']} {horizon_name}: model returned class "
+                          f"{model_class_ordinal!r}, outside 0..{len(HAZARD_CLASSES) - 1}")
+                    coverage['skipped'].append({
+                        'district_id': dist['id'], 'district_name': dist['name'],
+                        'horizon': horizon_name, 'reason': f'invalid_class_ordinal:{model_class_ordinal!r}',
+                    })
+                    continue
+                hazard = HAZARD_CLASSES[int(model_class_ordinal)]
+
+                # Independent physics track: all eight classes are scored from the
+                # meteorological drivers alone, with no reference to what the model
+                # predicted (PRODUCT_SPEC §5.4). `physics_severity` keeps its old
+                # meaning — the physics score for the class the model chose — so
+                # existing consumers keep working, while the new columns expose a
+                # hazard the model may have missed.
+                physics_drivers = {
+                    'temp_max_c': temp_max_c,
+                    'temp_min_c': temp_min_c,
+                    'precip_total_mm': precip_total_mm,
+                    'precip_peak_mm': om_data.get('Precip_Peak_24h_mm'),
+                    # Gust, not the sustained maximum: the unit is a district centroid, and
+                    # the hindcast measured the sustained field at 19-69 km/h on Amphan's
+                    # landfall day where the same archive's gust field reached 51-134 km/h.
+                    'wind_gust_kmh': om_data.get('Gust_Max'),
+                    # The daily series: `resolve_drivers` turns these into the daily-mean ET,
+                    # the daily-mean wind and the two exceedance counts the formulas describe.
+                    **(om_data.get('_daily_for_physics') or {}),
+                    # Kept so the row records what the horizon accumulated. The module reads it
+                    # only when no daily ET series was supplied.
+                    'et_total_mm': et_total_mm,
+                }
+                physics_scores = compute_physics_scores(physics_drivers, days)
+                physics = physics_summary(physics_scores, hazard, severity)
+                physics_severity = physics['physics_severity']
+                if physics_severity is None:  # cannot happen: hazard is validated above
+                    physics_severity = physics_scores[hazard]
+                missing = missing_drivers(physics_drivers)
+
+                # Scene lineage for this unit. Built from the same tensors and the
+                # same Open-Meteo payload the prediction used, so `dataset_version`
+                # identifies the actual inputs (PRODUCT_SPEC §5.8). The row is stamped
+                # after the manifest is assembled, below.
+                try:
+                    scene_units.append(build_scene_unit(
+                        dist, horizon_name, historical_steps, tensor, om_data, prediction_date,
+                    ))
+                except Exception as exc:  # noqa: BLE001 - lineage failure must not lose the forecast
+                    # The forecast is still emitted (it is the product); the run report
+                    # records that this unit has no usable lineage, and the publisher
+                    # refuses to ship a run whose lineage failed.
+                    scene_units_error = scene_units_error or f"{dist['name']}/{horizon_name}: {exc}"
+                    print(f"  [LINEAGE] {dist['name']} {horizon_name}: {exc}")
+
+                target_date = (datetime.now() + timedelta(days=days)).strftime('%Y-%m-%d')
+
+                # Emit BOTH canonical field names (in the documented ingest
+                # units: °C, mm/day, km/h, MJ/m²/day) AND the legacy `om_*`
+                # columns that the ingest parser maps for back-compat. The
+                # legacy aliases are populated with values that match what the
+                # ingest layer expects them to mean (NOT their misleading
+                # suffixes — see backend/utils/forecastRow.js).
+                horizon_days = days
+
+                results.append({
+                    'district_id': dist['id'], 'district_name': dist['name'],
+                    'division': dist['division'], 'pcode': dist['pcode'],
+                    'horizon': horizon_name, 'hazard_type': hazard,
+                    'model_severity': round(severity, 4),
+                    'physics_severity': round(physics_severity, 4),
+                    'confidence': round(conf, 4),
+                    'target_date': target_date,
+                    'prediction_date': prediction_date,
+                    'data_source': 'Hybrid_Cognitive_Forecast',
+                    # ── provenance (PRODUCT_SPEC §5.8 / §3.1) ────────────────────
+                    'model_version': MODEL_VERSION,
+                    'tensor_build_id': TENSOR_BUILD_ID,
+                    'pipeline_version': PIPELINE_VERSION,
+                    'run_id': RUN_ID,
+                    # The stored confidence is the model's own softmax for its top
+                    # class — uncalibrated, and not a model/physics agreement score.
+                    # Naming it means no consumer has to guess (PRODUCT_SPEC §3).
+                    'confidence_kind': 'model_softmax_top_class',
+                    # ── independent physics track, all eight classes ─────────────
+                    'physics_top_hazard': physics['physics_top_hazard'],
+                    'physics_top_severity': physics['physics_top_severity'],
+                    'physics_agreement': bool(physics['physics_agreement']),
+                    'track_divergence': physics.get('track_divergence'),
+                    'physics_inputs_missing': '|'.join(missing),
+                    # ── lineage (filled in from the scene manifest, below) ───────
+                    'dataset_version': None,
+                    'soil_channels_fabricated': SOIL_FABRICATED,
+                    **physics_columns(physics_scores),
+                    # Canonical per-day meteorological fields (forecastRow.js
+                    # METEOROLOGICAL_FIELDS, in the documented units).
+                    'temperature_mean':      round(temp_mean_c, 4),   # °C
+                    'temperature_max':       round(temp_max_c, 4),    # °C
+                    'temperature_min':       round(temp_min_c, 4),    # °C
+                    'precipitation_mm':      round(precip_total_mm / horizon_days, 4),  # mm/day
+                    'wind_max_kmh':          round(wind_max_kmh, 4),  # km/h
+                    'dewpoint_mean':         round(dew_c, 4),         # °C
+                    'solar_radiation_mj_m2': round(solar_total_kj / horizon_days / 1000.0, 4),  # MJ/m²/day
+                    'evapotranspiration_mm': round(et_total_mm / horizon_days, 4),        # mm/day
+                    # Legacy columns kept for any downstream consumers that still
+                    # scrape the old names. Suffixes reflect what ingest expects
+                    # them to contain (see forecastRow.js).
+                    'om_temp_2m_k':    round(temp_mean_c, 4),   # °C (despite _k suffix)
+                    'om_max_temp_k':   round(temp_max_c, 4),    # °C
+                    'om_min_temp_k':   round(temp_min_c, 4),    # °C
+                    'om_dewpoint_k':   round(dew_c, 4),         # °C
+                    'om_precip_m':     round(precip_total_mm / 1000.0, 6),   # m total
+                    'om_wind_max_ms':  round(wind_max_kmh / 3.6, 4),        # m/s (so ×3.6 = km/h)
+                    'om_solar_rad_j':  round(solar_total_kj, 4),            # kJ/m² total
+                    'om_et_sum_m':     round(et_total_mm, 4),               # mm total (despite _m suffix)
+                })
+
+        # Light rate-limit between districts to be polite to EE + Open-Meteo.
+        time.sleep(0.2)
+
+    if results:
+        break
+    print(f"❌ Pass {pass_num}/2 produced 0 rows — every district failed (see errors above).")
+    if pass_num == 1:
+        print(f"   Waiting {PASS_RETRY_WAIT_S // 60} minutes before a full retry pass…")
+        time.sleep(PASS_RETRY_WAIT_S)
+
+if not results:
+    print("CRITICAL ERROR: forecast pipeline produced 0 rows across both passes — every district failed.")
+    print("   The committed snapshot stays untouched and this step fails so the cause")
+    print("   is visible here (GEE availability / Open-Meteo availability / credentials).")
+    print("   Do NOT rerun publish/validate/commit steps off an empty CSV.")
+    sys.exit(1)
 
 # ── scene manifest → dataset_version (PRODUCT_SPEC §5.8) ────────────────────
 # Every prediction unit gets a content hash over the inputs that produced it: the

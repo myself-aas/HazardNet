@@ -1,0 +1,14 @@
+# HazardNet v3 artifact version registry (runbook PART 0.2).
+# The inference service must load all four versions and refuse startup on
+# mismatch (PRD REQ-003 / USR-005 / TRD INT-FUS-02).
+#
+# model_ver      bump on any architecture/training change
+# fusion_ver     bump on calibrator/guard/conformal refit
+# thresholds_ver bump only if SEVERITY_THRESHOLDS_BD changes
+# dataset_ver    the 2,931-event archive version
+# git_sha        filled by CI at build time
+model_ver: "hazardnet-cnn-2.0.0"
+fusion_ver: "fusion-1.0.0"
+thresholds_ver: "bd-1.0.0"
+dataset_ver: "events-1.0"
+git_sha: "868e943cd46cbf942494270a29d47c2da4ce1dd1"  # v3.0 baseline import (2026-09-17)

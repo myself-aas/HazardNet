@@ -38,6 +38,11 @@ permissions:
   contents: write # commits the refreshed CSV + snapshot
 
 env:
+  # Stream Python stdout line-by-line. During the 2026-09-17 zero-rows incident
+  # the block-buffered output flushed only at exit, so every "Processing X..."
+  # line carried the final-flush timestamp and the real error ordering was
+  # unrecoverable from the log.
+  PYTHONUNBUFFERED: '1'
   SNAPSHOT_SOURCE: 'github-actions: scripts/auto_forecast.py (GEE + Open-Meteo + TFLite)'
   # Only push to an ingest API when one is known to be deployed; otherwise the
   # generator runs artifact-only and the site is served by the committed
@@ -308,4 +313,4 @@ jobs:
       - name: Notify on failure
         if: failure()
         run: |
-          echo "::error::Daily forecast pipeline failed -- the site keeps serving the last committed snapshot. Check the failing step above (GEE credentials, Open-Meteo availability, or a schema change in scripts/auto_forecast.py)."
+          echo "::error::Daily forecast pipeline failed -- the site keeps serving the last committed snapshot. The generator now fails fast with the real cause in the 'Execute pipeline' step (GEE/Open-Meteo availability, credentials, or a schema change in scripts/auto_forecast.py); the publish sanity check no longer masks it."

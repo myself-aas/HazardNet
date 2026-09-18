@@ -219,7 +219,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.15 }}
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs"
+          className="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs"
           onClick={(e) => {
             if (e.target === e.currentTarget) onClose();
           }}
@@ -230,35 +230,38 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 15 }}
             transition={{ type: 'spring', stiffness: 350, damping: 25 }}
-            className="bg-white border border-slate-200 rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-5 max-h-[90vh] flex flex-col text-slate-800"
+            className="bg-white border border-slate-200 rounded-2xl max-w-2xl w-full p-4 sm:p-6 shadow-2xl space-y-4 sm:space-y-5 max-h-[calc(100dvh-1.5rem)] sm:max-h-[90vh] flex flex-col text-slate-800"
+            role="dialog"
+            aria-modal="true"
+            aria-label="User profile settings"
           >
             {/* Header */}
-            <div className="flex items-center justify-between pb-4 border-b border-slate-200">
-          <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3 pb-3 sm:pb-4 border-b border-slate-200">
+          <div className="flex items-center gap-3 min-w-0">
             {user.photoURL ? (
               <img
                 src={user.photoURL}
                 alt={displayName}
-                className="w-12 h-12 rounded-xl object-cover border border-slate-200 shadow-xs"
+                className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl object-cover border border-slate-200 shadow-xs shrink-0"
               />
             ) : (
-              <div className="w-12 h-12 rounded-xl bg-nasa-red/10 border border-nasa-blue/20 text-nasa-red-shade font-black text-lg flex items-center justify-center shadow-xs">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-nasa-red/10 border border-nasa-blue/20 text-nasa-red-shade font-black text-lg flex items-center justify-center shadow-xs shrink-0">
                 {(displayName || 'U')[0].toUpperCase()}
               </div>
             )}
-            <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-lg font-extrabold text-slate-900">{displayName || 'User Profile'}</h2>
-                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <h2 className="text-base sm:text-lg font-extrabold text-slate-900 truncate max-w-[55vw] sm:max-w-none">{displayName || 'User Profile'}</h2>
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200 whitespace-nowrap">
                   {personaInfo.label}
                 </span>
               </div>
-              <p className="text-xs text-slate-500 font-medium">{user.email}</p>
+              <p className="text-xs text-slate-500 font-medium truncate max-w-[60vw] sm:max-w-none">{user.email}</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="px-2.5 py-1 text-xs font-black text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-100 transition-colors border border-slate-200 flex items-center gap-1 cursor-pointer"
+            className="min-h-[36px] px-3 py-1.5 text-xs font-black text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-100 transition-colors border border-slate-200 flex items-center gap-1 cursor-pointer shrink-0"
             title="Close Profile Modal"
             aria-label="Close Profile Modal"
           >

@@ -1,23 +1,39 @@
 /**
  * HazardNet High-Availability AI Fallback Engine
- * 
+ *
  * Bulletproof Multi-Tier Fallback Architecture for High-Concurrency Load:
- * 1. In-Memory TTL LRU Cache (deduplicates concurrent district requests)
+ * 1. In-Memory TTL LRU Cache (deduplicates identical prompt requests)
  * 2. Provider Circuit Breakers (auto-trips 429/quota limits for 45s)
- * 3. Multi-Model Cascade:
+ * 3. Multi-Model Cascade (all free-tier LLM APIs, RAG-grounded prompts):
  *    - Tier 1: Primary Gemini Model (gemini-2.5-flash / gemini-flash-latest)
- *    - Tier 2: Backup Gemini Models & Key Rotation (gemini-1.5-pro / gemini-2.0-flash)
- *    - Tier 3: OpenRouter API (Llama 3.3 70B, Gemma 2 9B, Qwen 2.5)
- *    - Tier 4: Groq API (Llama 3.3 70B, Gemma 2 9B)
- *    - Tier 5: HuggingFace Inference API (Mistral 7B)
+ *    - Tier 2: Backup Gemini Models & Key Rotation (gemini-2.5-flash-lite / gemini-2.0-flash)
+ *    - Tier 3: OpenRouter API (Llama 3.3 70B, DeepSeek V3, Gemma 2 9B, Qwen 2.5)
+ *    - Tier 4: Groq API (Llama 3.3 70B, Llama 3.1 8B)
+ *    - Tier 5: HuggingFace Inference Router (Mistral 7B, Llama 3.1 8B)
  *    - Tier 6: Zero-Latency Deterministic AEZ Neural-Heuristic Engine
+ *
+ * Every successful response is stamped with `provider_source` so consumers
+ * (the AI Advisor chat, the advisory panel) can show which engine answered.
  */
 
-// Lazy-loaded GoogleGenAI; import performed inside functions to avoid Node env errors
+import { createHash } from 'node:crypto';
 
 // In-Memory Cache for Advisory Requests (10-minute TTL)
 const advisoryCache = new Map();
 const CACHE_TTL_MS = 10 * 60 * 1000;
+
+// Per-provider timeout: a hung upstream must not eat the whole cascade (the
+// chat serverless function has a hard wall-clock budget on Vercel).
+const PROVIDER_TIMEOUT_MS = 12_000;
+
+// Human-readable provenance stamped onto successful LLM responses
+const PROVIDER_LABELS = {
+  gemini_primary: 'Google Gemini API (free tier) — HazardNet RAG',
+  gemini_secondary: 'Google Gemini API, backup key (free tier) — HazardNet RAG',
+  openrouter: 'OpenRouter free model (Llama/DeepSeek/Qwen) — HazardNet RAG',
+  groq: 'Groq API free tier (Llama) — HazardNet RAG',
+  huggingface: 'HuggingFace Inference Router (free tier) — HazardNet RAG',
+};
 
 // Provider Circuit Breaker States
 const circuitBreakers = {
@@ -122,7 +138,7 @@ async function callGeminiPrimary(prompt, systemInstruction) {
 
   const { GoogleGenAI } = await import('@google/genai');
   const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-  const geminiModels = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-flash-latest'];
+  const geminiModels = ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-2.0-flash', 'gemini-flash-latest'];
   
   let lastErr;
   for (const modelName of geminiModels) {
@@ -203,9 +219,10 @@ async function callOpenRouter(prompt, systemInstruction) {
     'X-Title': 'HazardNet AI GIS'
   };
 
-  // Try top free models on OpenRouter
+  // Try top free models on OpenRouter (failures cascade to the next slug)
   const freeModels = [
     'meta-llama/llama-3.3-70b-instruct:free',
+    'deepseek/deepseek-chat-v3-0324:free',
     'google/gemma-2-9b-it:free',
     'qwen/qwen-2.5-coder-32b-instruct:free',
     'mistralai/mistral-7b-instruct:free'
@@ -217,6 +234,7 @@ async function callOpenRouter(prompt, systemInstruction) {
       const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
         method: 'POST',
         headers,
+        signal: AbortSignal.timeout(PROVIDER_TIMEOUT_MS),
         body: JSON.stringify({
           model: model,
           messages: [
@@ -254,33 +272,44 @@ async function callGroq(prompt, systemInstruction) {
   if (!apiKey) throw new Error('GROQ_API_KEY not configured');
   if (!isProviderHealthy('groq')) throw new Error('groq breaker TRIPPED');
 
-  const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`
-    },
-    body: JSON.stringify({
-      model: 'llama-3.3-70b-versatile',
-      messages: [
-        { role: 'system', content: systemInstruction + '\nReturn JSON format only.' },
-        { role: 'user', content: prompt }
-      ],
-      response_format: { type: 'json_object' },
-      temperature: 0.2
-    })
-  });
+  const groqModels = ['llama-3.3-70b-versatile', 'llama-3.1-8b-instant'];
+  let lastErr;
+  for (const model of groqModels) {
+    try {
+      const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
+        signal: AbortSignal.timeout(PROVIDER_TIMEOUT_MS),
+        body: JSON.stringify({
+          model: model,
+          messages: [
+            { role: 'system', content: systemInstruction + '\nReturn JSON format only.' },
+            { role: 'user', content: prompt }
+          ],
+          response_format: { type: 'json_object' },
+          temperature: 0.2
+        })
+      });
 
-  if (!res.ok) {
-    const errorText = await res.text();
-    throw new Error(`Groq status ${res.status}: ${errorText}`);
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(`Groq (${model}) status ${res.status}: ${errorText}`);
+      }
+
+      const data = await res.json();
+      const text = data?.choices?.[0]?.message?.content;
+      const parsed = parseCleanJson(text);
+      recordProviderSuccess('groq');
+      return parsed;
+    } catch (err) {
+      lastErr = err;
+    }
   }
 
-  const data = await res.json();
-  const text = data?.choices?.[0]?.message?.content;
-  const parsed = parseCleanJson(text);
-  recordProviderSuccess('groq');
-  return parsed;
+  throw lastErr || new Error('All Groq models failed');
 }
 
 /**
@@ -291,37 +320,55 @@ async function callHuggingFace(prompt, systemInstruction) {
   if (!apiKey) throw new Error('HUGGINGFACE_API_KEY not configured');
   if (!isProviderHealthy('huggingface')) throw new Error('huggingface breaker TRIPPED');
 
-  const headers = { 
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${apiKey}`
-  };
+  // HuggingFace's serverless inference is served by the router's
+  // OpenAI-compatible chat-completions endpoint (the legacy
+  // api-inference.huggingface.co /models/* surface was sunset).
+  const hfModels = ['mistralai/Mistral-7B-Instruct-v0.3', 'meta-llama/Llama-3.1-8B-Instruct'];
+  let lastErr;
+  for (const model of hfModels) {
+    try {
+      const res = await fetch('https://router.huggingface.co/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
+        signal: AbortSignal.timeout(PROVIDER_TIMEOUT_MS),
+        body: JSON.stringify({
+          model: model,
+          messages: [
+            { role: 'system', content: systemInstruction + '\nRespond strictly with valid JSON only.' },
+            { role: 'user', content: prompt }
+          ],
+          temperature: 0.2,
+          max_tokens: 2048
+        })
+      });
 
-  const res = await fetch('https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.2', {
-    method: 'POST',
-    headers,
-    body: JSON.stringify({
-      inputs: `[INST] ${systemInstruction}\n\n${prompt}\nReturn valid JSON only. [/INST]`,
-      parameters: { max_new_tokens: 1024, temperature: 0.2 }
-    })
-  });
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(`HuggingFace (${model}) status ${res.status}: ${errorText}`);
+      }
 
-  if (!res.ok) {
-    const errorText = await res.text();
-    throw new Error(`HuggingFace status ${res.status}: ${errorText}`);
+      const data = await res.json();
+      const rawText = data?.choices?.[0]?.message?.content;
+      if (!rawText) throw new Error(`HuggingFace (${model}) returned no content`);
+
+      // Extract json snippet (models may wrap JSON in prose or fences)
+      const jsonStart = rawText.indexOf('{');
+      const jsonEnd = rawText.lastIndexOf('}');
+      if (jsonStart !== -1 && jsonEnd !== -1) {
+        const parsed = parseCleanJson(rawText.slice(jsonStart, jsonEnd + 1));
+        recordProviderSuccess('huggingface');
+        return parsed;
+      }
+      throw new Error(`HuggingFace (${model}) did not return a valid JSON block`);
+    } catch (err) {
+      lastErr = err;
+    }
   }
 
-  const data = await res.json();
-  const rawText = Array.isArray(data) ? data[0]?.generated_text : data?.generated_text;
-  
-  // Extract json snippet
-  const jsonStart = rawText.indexOf('{');
-  const jsonEnd = rawText.lastIndexOf('}');
-  if (jsonStart !== -1 && jsonEnd !== -1) {
-    const parsed = parseCleanJson(rawText.slice(jsonStart, jsonEnd + 1));
-    recordProviderSuccess('huggingface');
-    return parsed;
-  }
-  throw new Error('HuggingFace did not return a valid JSON block');
+  throw lastErr || new Error('All HuggingFace models failed');
 }
 
 /**
@@ -398,8 +445,17 @@ function generateDeterministicHeuristicAdvisory(params) {
 async function generateAdvisoryWithFallback(params, systemInstruction, prompt) {
   engineStats.totalRequests += 1;
 
-  // 1. Construct unique cache key
-  const cacheKey = `${params.district_name || 'dist'}:${params.hazard_type || 'haz'}:${Math.round((params.severity_score || 0) * 10)}:${new Date().getMonth()}`;
+  // 1. Construct unique cache key. The PROMPT is part of the key: it embeds
+  //    the user's actual query + the retrieved RAG context, so two different
+  //    questions (even from the same district) must never share a cached
+  //    answer. Before 2026-09-17 the key was district:hazard:severity only —
+  //    with hazard fixed per caller, every chat turn in a district returned
+  //    the first question's answer for 10 minutes.
+  const promptHash = createHash('sha256')
+    .update(`${systemInstruction}\n${prompt}`)
+    .digest('hex')
+    .slice(0, 16);
+  const cacheKey = `${params.district_name || 'dist'}:${params.hazard_type || 'haz'}:${Math.round((params.severity_score || 0) * 10)}:${promptHash}`;
   const cachedEntry = advisoryCache.get(cacheKey);
   if (cachedEntry && (Date.now() - cachedEntry.timestamp < CACHE_TTL_MS)) {
     engineStats.cacheHits += 1;
@@ -424,7 +480,13 @@ async function generateAdvisoryWithFallback(params, systemInstruction, prompt) {
     try {
       console.log(`[AI Fallback Engine] Attempting advisory generation via provider '${provider.key}'...`);
       const result = await provider.fn();
-      
+
+      // Stamp which free-tier LLM actually answered (the deterministic tier
+      // sets its own provider_source; never overwrite an explicit one).
+      if (result && typeof result === 'object' && !result.provider_source) {
+        result.provider_source = PROVIDER_LABELS[provider.key];
+      }
+
       // Store in cache for concurrent request deduplication
       advisoryCache.set(cacheKey, { timestamp: Date.now(), data: result });
       return result;

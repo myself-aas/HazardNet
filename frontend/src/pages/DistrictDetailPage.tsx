@@ -115,9 +115,9 @@ export const DistrictDetailPage: React.FC = () => {
     if (!livePredictionDate) {
       return {
         ...fallback,
-        peakImpactWindow: 'Live Kaggle data unavailable',
-        incidentDate: 'Live Kaggle data unavailable',
-        lastSatelliteUpdate: 'Awaiting Kaggle forecast ingestion',
+        peakImpactWindow: 'Live forecast data unavailable',
+        incidentDate: 'Live forecast data unavailable',
+        lastSatelliteUpdate: 'Awaiting forecast pipeline ingestion',
       };
     }
     const prediction = new Date(`${livePredictionDate}T00:00:00Z`);
@@ -144,13 +144,13 @@ export const DistrictDetailPage: React.FC = () => {
           }).split(' ').pop();
           return `${dateStr} ${timeStr} ${tzAbbr || ''}`.trim();
         })()
-      : 'Awaiting Kaggle ingestion';
+      : 'Awaiting forecast ingestion';
     
     return {
       ...fallback,
       incidentDate: formattedIngestionTime,
       peakImpactWindow: `${formatDate(prediction)} - ${formatDate(end)}`,
-      lastSatelliteUpdate: `${liveSource ?? 'Kaggle forecast'} • ${livePredictionDate}`,
+      lastSatelliteUpdate: `${liveSource ?? 'Latest forecast'} • ${livePredictionDate}`,
     };
   }, [districtId, livePredictionDate, liveSource, ingestionTimestamp]);
   const district = useMemo(() => getDistrictById(districtId) || ALL_64_DISTRICTS[0], [districtId]);
@@ -162,7 +162,7 @@ export const DistrictDetailPage: React.FC = () => {
     timezone: 'Asia/Dhaka',
   });
 
-  // District Kaggle Notebook CSV Forecast Data for 7 and 15 Days
+  // District CSV Forecast Data for 7 and 15 Days (daily pipeline)
   const [districtForecasts7D, setDistrictForecasts7D] = useState<ForecastRow[]>([]);
   const [districtForecasts15D, setDistrictForecasts15D] = useState<ForecastRow[]>([]);
   const [loadingForecastTable, setLoadingForecastTable] = useState<boolean>(true);
@@ -821,7 +821,7 @@ export const DistrictDetailPage: React.FC = () => {
         </div>
       </header>
 
-      {/* USER-FRIENDLY TABLE: KAGGLE NOTEBOOK CSV FORECAST OUTPUT (7 & 15 DAYS) */}
+      {/* USER-FRIENDLY TABLE: PIPELINE CSV FORECAST OUTPUT (7 & 15 DAYS) */}
       <section className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-7 shadow-xs space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-4">
           <div>
@@ -1172,7 +1172,7 @@ export const DistrictDetailPage: React.FC = () => {
               <p className="text-xs text-slate-500">Spatial territory exposure, population vulnerability, and standing crop risk estimations.</p>
             </div>
           </div>
-          <span className="text-[11px] font-mono text-slate-400 bg-slate-100 px-2.5 py-1 rounded-lg">SECTION 01</span>
+          <span className="text-[11px] font-mono text-slate-400 bg-slate-100 px-2.5 py-1 rounded-lg">SECTION I</span>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -1388,7 +1388,7 @@ export const DistrictDetailPage: React.FC = () => {
               </p>
             </div>
           </div>
-          <span className="text-[11px] font-mono text-slate-400 bg-slate-100 px-2.5 py-1 rounded-lg">SECTION 02</span>
+          <span className="text-[11px] font-mono text-slate-400 bg-slate-100 px-2.5 py-1 rounded-lg">SECTION II</span>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -1485,8 +1485,8 @@ export const DistrictDetailPage: React.FC = () => {
             </div>
 
             <div className="flex items-center justify-between text-[11px] text-slate-500 pt-2 border-t border-slate-100">
-              <span>Telemetry Frequency: 15-Minute Sample Interval</span>
-              <span className="font-mono text-emerald-600 font-bold">Calibration Variance: ±0.03</span>
+              <span>Source: the daily model forecast (Earth Engine + Open-Meteo)</span>
+              <span className="font-mono text-slate-500 font-bold">Reference: regional danger threshold</span>
             </div>
           </div>
         </div>
@@ -1544,8 +1544,8 @@ export const DistrictDetailPage: React.FC = () => {
               </div>
               <div className="w-px h-8 bg-slate-200" />
               <div>
-                <div className="text-slate-500">Trend Velocity</div>
-                <div className="text-sm font-black text-amber-600">+4.2% / day</div>
+                <div className="text-slate-500">Trend Basis</div>
+                <div className="text-sm font-black text-amber-600">7-Day window</div>
               </div>
             </div>
           </div>
@@ -1610,7 +1610,7 @@ export const DistrictDetailPage: React.FC = () => {
             </div>
             <div className="bg-slate-50 p-3 rounded-xl border border-slate-200/80">
               <span className="font-mono text-slate-500 font-bold block mb-1">Confidence Interval</span>
-              <p className="text-slate-700">95% Bayesian confidence bound maintained across all 7 historical sensor checkpoints.</p>
+              <p className="text-slate-700">No calibration map has been fitted — the model card documents what is and is not measured.</p>
             </div>
           </div>
         </div>
@@ -1639,7 +1639,7 @@ export const DistrictDetailPage: React.FC = () => {
               <span>View Technical Appendix</span>
               <ExternalLink className="w-3 h-3" />
             </a>
-            <span className="text-[11px] font-mono text-slate-400 bg-slate-100 px-2.5 py-1 rounded-lg">SECTION 03</span>
+            <span className="text-[11px] font-mono text-slate-400 bg-slate-100 px-2.5 py-1 rounded-lg">SECTION III</span>
           </div>
         </div>
 
@@ -1690,7 +1690,7 @@ export const DistrictDetailPage: React.FC = () => {
               </h3>
               <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-4 text-xs font-mono text-slate-800 leading-relaxed space-y-2">
                 <p>
-                  Satellite imagery confirms high water saturation across low-lying areas. AI models detect significant river swelling matching historical flood patterns with 94.8% accuracy.
+                  Satellite imagery shows high water saturation across low-lying areas, and the severity index is computed from the day's Earth Engine and Open-Meteo inputs.
                 </p>
               </div>
             </div>
@@ -1740,7 +1740,7 @@ export const DistrictDetailPage: React.FC = () => {
             <span className="text-[11px] font-mono text-slate-400 bg-slate-100 px-2.5 py-1 rounded-lg">
               {processedUpazilas.length} UPAZILAS LISTED
             </span>
-            <span className="text-[11px] font-mono text-slate-400 bg-slate-100 px-2.5 py-1 rounded-lg">SECTION 04</span>
+            <span className="text-[11px] font-mono text-slate-400 bg-slate-100 px-2.5 py-1 rounded-lg">SECTION IV</span>
           </div>
         </div>
 
@@ -1973,7 +1973,7 @@ export const DistrictDetailPage: React.FC = () => {
               <Sparkles className="w-3.5 h-3.5 text-amber-600" />
               <span>{showLiveAiAdvisory ? 'Hide AI Synthesizer' : 'Synthesize Gemini AI Advisory'}</span>
             </button>
-            <span className="text-[11px] font-mono text-slate-400 bg-slate-100 px-2.5 py-1 rounded-lg">SECTION 05</span>
+            <span className="text-[11px] font-mono text-slate-400 bg-slate-100 px-2.5 py-1 rounded-lg">SECTION V</span>
           </div>
         </div>
 
@@ -2124,7 +2124,7 @@ export const DistrictDetailPage: React.FC = () => {
               <p className="text-xs text-slate-500">Longitudinal hazard analysis cross-referencing global disaster databases (1990-2026).</p>
             </div>
           </div>
-          <span className="text-[11px] font-mono text-slate-400 bg-slate-100 px-2.5 py-1 rounded-lg">SECTION 06</span>
+          <span className="text-[11px] font-mono text-slate-400 bg-slate-100 px-2.5 py-1 rounded-lg">SECTION VI</span>
         </div>
 
         <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-xs space-y-6">
@@ -2145,14 +2145,14 @@ export const DistrictDetailPage: React.FC = () => {
             {/* Peak Historical Benchmark - Changed to Slate-700 for non-alarm historical context */}
             <div className="bg-slate-50 p-4 rounded-xl border border-slate-200/80 space-y-1">
               <span className="text-[10px] font-mono text-slate-500 font-bold uppercase">Historical Peak (2020)</span>
-              <div className="text-2xl font-black text-slate-700 font-mono">0.91 Index (2020)</div>
-              <span className="text-[11px] text-slate-500">Historical super-flood peak benchmark</span>
+              <div className="text-2xl font-black text-slate-400 font-mono">Not published</div>
+              <span className="text-[11px] text-slate-500">No per-district peak index derived from EM-DAT yet</span>
             </div>
 
             <div className="bg-slate-50 p-4 rounded-xl border border-slate-200/80 space-y-1">
               <span className="text-[10px] font-mono text-slate-500 font-bold uppercase">Model Cross-Correlation</span>
-              <div className="text-2xl font-black text-emerald-600 font-mono">94.8% Accuracy</div>
-              <span className="text-[11px] text-slate-500">R² calibration against ground gauges</span>
+              <div className="text-2xl font-black text-slate-400 font-mono">Not published</div>
+              <span className="text-[11px] text-slate-500">No calibration map fitted against station records</span>
             </div>
           </div>
         </div>
@@ -2172,7 +2172,7 @@ export const DistrictDetailPage: React.FC = () => {
               <p className="text-xs text-slate-500">Resource deployments, shelter logistics, and instant authority dispatch transmission.</p>
             </div>
           </div>
-          <span className="text-[11px] font-mono text-slate-400 bg-slate-100 px-2.5 py-1 rounded-lg">SECTION 07</span>
+          <span className="text-[11px] font-mono text-slate-400 bg-slate-100 px-2.5 py-1 rounded-lg">SECTION VII</span>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -2303,10 +2303,10 @@ export const DistrictDetailPage: React.FC = () => {
           <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-xs font-mono font-bold text-purple-700 uppercase">Inference Latency</span>
-              <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-purple-50 text-purple-700">WebGL Acceleration</span>
+              <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-slate-100 text-slate-600">Not measured</span>
             </div>
-            <div className="text-3xl font-black text-slate-900 font-mono">38.4 ms</div>
-            <p className="text-xs text-slate-500">Fast automated scoring executed directly inside your browser for instant local decision support.</p>
+            <div className="text-3xl font-black text-slate-400 font-mono">—</div>
+            <p className="text-xs text-slate-500">Latencies for the daily pipeline are not measured on this page, so none is quoted.</p>
           </div>
 
           <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-2">

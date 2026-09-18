@@ -1,0 +1,14 @@
+# HazardNet v3 training/evaluation dependencies (pip install -r).
+# The scientific pipeline module imports all of these at module level; the
+# runner/tests (run_bd_proofs.py, tests/) need the same set for import parity.
+# CPU-only training/eval: plain `torch` from PyPI works on CPU runners.
+torch
+numpy
+pandas
+scikit-learn>=1.1
+tqdm
+h5py
+matplotlib
+seaborn
+joblib
+pytest

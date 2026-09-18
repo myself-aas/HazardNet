@@ -231,7 +231,7 @@ export const NationalOverview: React.FC<NationalOverviewProps> = ({
           <div className="bg-slate-50/80 border border-slate-200/90 p-3.5 rounded-2xl flex flex-col justify-center shadow-2xs">
             <span className="text-[10px] font-mono text-slate-500 uppercase font-bold">Analyzed Districts</span>
             <span className="text-xl font-black text-slate-900">{totalDistricts} / 64</span>
-            <span className="text-[10px] text-emerald-600 font-mono">100% Coverage</span>
+            <span className="text-[10px] text-emerald-600 font-mono">Full national coverage</span>
           </div>
 
           <div className="bg-slate-50/80 border border-slate-200/90 p-3.5 rounded-2xl flex flex-col justify-center shadow-2xs">
@@ -707,7 +707,7 @@ export const NationalOverview: React.FC<NationalOverviewProps> = ({
               <span className="text-slate-500 text-[10px] uppercase block font-bold">Variable 3</span>
               <h5 className="text-slate-900 font-black text-sm">{`{districts_average_severity_score}`}</h5>
               <p className="text-slate-600 text-[11px] leading-relaxed">
-                Computes the mathematical mean of continuous multi-spectral severity indices (0.00 to 1.00) across all districts belonging to each unique hazard class.
+                Computes the mathematical mean of continuous multi-spectral severity indices (range 0-1) across all districts belonging to each unique hazard class.
               </p>
             </div>
           </div>
@@ -718,7 +718,7 @@ export const NationalOverview: React.FC<NationalOverviewProps> = ({
               <span>Composite Risk Index = Hazard District Count × Average Severity Score</span>
             </div>
             <div className="px-3 py-1.5 bg-white border border-sky-300 rounded-xl text-emerald-700 font-bold shrink-0 shadow-xs">
-              Confidence Score: 94.2% (Validated via ERA5 & Sentinel-2)
+              Method: District Count x Mean Anchored Severity (BD thresholds)
             </div>
           </div>
         </div>

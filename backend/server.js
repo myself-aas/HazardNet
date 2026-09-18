@@ -172,8 +172,9 @@ export default app;
 const invokedAsScript = process.argv[1] !== undefined
   && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
 if (invokedAsScript) {
-  // 3001 keeps the API out of Vite's way in dev (vite.config.ts proxies /api here).
-  const PORT = 3000;
+  // 3001 keeps the API out of Vite's way in dev (vite.config.ts proxies /api
+  // here). PORT can still override it for container/PaaS deployments.
+  const PORT = process.env.PORT || 3001;
   app.listen(PORT, '0.0.0.0', () => {
     console.log(`HazardNet Backend running on port ${PORT}`);
   });

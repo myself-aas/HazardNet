@@ -2,6 +2,14 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
+  "functions": {
+    "api/chat/query.js": {
+      "includeFiles": "../rag_pipeline/**"
+    },
+    "api/chat/sample-questions.js": {
+      "includeFiles": "../rag_pipeline/**"
+    }
+  },
   "redirects": [
     {
       "source": "/documentation",

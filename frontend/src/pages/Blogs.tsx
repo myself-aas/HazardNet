@@ -267,7 +267,7 @@ export const Blogs: React.FC = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4"
+            className="fixed inset-0 z-[10001] bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4"
           >
             <motion.div
               initial={{ opacity: 0, scale: 0.92, y: 20 }}

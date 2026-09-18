@@ -776,36 +776,52 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
       </motion.header>
 
-      <SavedAssessmentsModal
-        isOpen={isSavedModalOpen}
-        onClose={() => setIsSavedModalOpen(false)}
-        onSelectDistrict={onSelectDistrict}
-      />
+      {/*
+        Full-screen overlays are portaled to document.body so they escape this
+        header wrapper's stacking context. They used to render inside it — so
+        when the header had its own elevated z-index, the sticky header painted
+        ON TOP of the profile/saved-assessment modal and its backdrop (the
+        mobile "popup overlaps the header" bug, PR #28). Portaled they sit
+        above the header (z-40) and below nothing else.
+      */}
+      {createPortal(
+        <SavedAssessmentsModal
+          isOpen={isSavedModalOpen}
+          onClose={() => setIsSavedModalOpen(false)}
+          onSelectDistrict={onSelectDistrict}
+        />,
+        document.body
+      )}
 
+      {createPortal(
+        <UserProfileModal
+          isOpen={isProfileModalOpen}
+          onClose={() => setIsProfileModalOpen(false)}
+          onSelectDistrict={onSelectDistrict}
+        />,
+        document.body
+      )}
 
-      <UserProfileModal
-        isOpen={isProfileModalOpen}
-        onClose={() => setIsProfileModalOpen(false)}
-        onSelectDistrict={onSelectDistrict}
-      />
-
-      <MenuDrawer
-        isOpen={isMenuDrawerOpen}
-        onClose={() => setIsMenuDrawerOpen(false)}
-        user={user}
-        onOpenProfile={() => setIsProfileModalOpen(true)}
-        onOpenAuth={() => navigate('/login')}
-        onSelectPage={(page) => {
-          if (page.toLowerCase().includes('overview')) navigate('/live');
-          else if (page.toLowerCase().includes('front door')) navigate('/');
-          else if (page.toLowerCase().includes('alert')) navigate('/alerts');
-          else if (page.toLowerCase().includes('forecast')) navigate('/forecast/overview');
-          else if (page.toLowerCase().includes('advisories')) navigate('/advisories');
-          else if (page.toLowerCase().includes('analytics')) navigate('/analytics');
-          else if (page.toLowerCase().includes('download')) navigate('/download');
-          else if (page.toLowerCase().includes('doc')) navigate('/docs');
-        }}
-      />
+      {createPortal(
+        <MenuDrawer
+          isOpen={isMenuDrawerOpen}
+          onClose={() => setIsMenuDrawerOpen(false)}
+          user={user}
+          onOpenProfile={() => setIsProfileModalOpen(true)}
+          onOpenAuth={() => navigate('/login')}
+          onSelectPage={(page) => {
+            if (page.toLowerCase().includes('overview')) navigate('/live');
+            else if (page.toLowerCase().includes('front door')) navigate('/');
+            else if (page.toLowerCase().includes('alert')) navigate('/alerts');
+            else if (page.toLowerCase().includes('forecast')) navigate('/forecast/overview');
+            else if (page.toLowerCase().includes('advisories')) navigate('/advisories');
+            else if (page.toLowerCase().includes('analytics')) navigate('/analytics');
+            else if (page.toLowerCase().includes('download')) navigate('/download');
+            else if (page.toLowerCase().includes('doc')) navigate('/docs');
+          }}
+        />,
+        document.body
+      )}
     </>
   );
 };

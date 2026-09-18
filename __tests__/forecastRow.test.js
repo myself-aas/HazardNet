@@ -3,7 +3,7 @@
  *
  * parseCsvForecastRow — shared CSV ingest row parser (backend/utils/forecastRow.js).
  *
- * The weekly Kaggle notebook writes dual-track columns (`model_severity`,
+ * The forecast pipeline writes dual-track columns (`model_severity`,
  * `physics_severity`, plus `division` / `pcode`), while the legacy ingest
  * contract used a single `severity_score`. Both shapes must ingest cleanly.
  */

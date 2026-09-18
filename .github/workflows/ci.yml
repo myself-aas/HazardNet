@@ -450,6 +450,14 @@ jobs:
           node -e "import('./api/forecasts.js').then(() => console.log('api/forecasts: ESM OK'))"
           node -e "import('./api/ingest.js').then(() => console.log('api/ingest: ESM OK'))"
           node -e "import('./api/metrics.js').then(() => console.log('api/metrics: ESM OK'))"
+
+      # PRD REQ-006 / TASK-008 / TRD INT-CLAIM-01: every metric-shaped number
+      # in public copy must be registered in docs/CLAIMS.md with a strategy
+      # label. Fabricated or unregistered metrics fail the build.
+      # Guarded by scripts/tests/test_workflows.py::test_claims_gate_step_present.
+      - name: Claims registry gate (PRD REQ-006)
+        run: |
+          node scripts/check-claims.mjs --claims docs/CLAIMS.md --src frontend/src --html frontend/index.html dist/index.html
           node -e "import('./api/v1/forecasts/bulk.js').then(() => console.log('api/v1/forecasts/bulk: ESM OK'))"
           node -e "import('./api/v1/forecasts/metadata.js').then(() => console.log('api/v1/forecasts/metadata: ESM OK'))"
           node -e "import('./api/v1/forecasts/history.js').then(() => console.log('api/v1/forecasts/history: ESM OK'))"
