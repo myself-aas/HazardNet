@@ -1,6 +1,6 @@
 {
   "schema": "hazardnet-generated-routes/v1",
-  "generated_at": "2026-09-18T00:26:14.949Z",
+  "generated_at": "2026-09-18T00:36:31.418Z",
   "generated_by": "scripts/build_content_engine.mjs",
   "origin": "https://www.hazardnet.live",
   "inputs": {
@@ -15,23 +15,27 @@
     "model_performance": {
       "path": "frontend/public/data/model-performance.json",
       "hindcast_version": "1.0.0",
-      "episodes": 4,
+      "episodes": 5,
       "built_from": [
         {
           "path": "data/hindcast/reports/amphan-2020.json",
-          "sha256": "9b060a1aa4894951f035bfc7a195115f262878c04b8e6ec8616ea75197ed47e1"
+          "sha256": "3f307c35afb39361d8693c8332b884c6e12823ee6072ad1279532b270eee0513"
         },
         {
           "path": "data/hindcast/reports/eastern-flood-2024.json",
-          "sha256": "11c770ae691a260eb7d816041e4cef6b9f46c3777f3f564dbf2e12d66abcc856"
+          "sha256": "208db4ff22e23e948e39de973c1568af271c3b6426026e9f3267c75f41e026f7"
+        },
+        {
+          "path": "data/hindcast/reports/mocha-2023.json",
+          "sha256": "471b29b172fe3b0d05e19dad709e790993a54995837cbeefc3f70c68f7dd300c"
         },
         {
           "path": "data/hindcast/reports/northeast-flood-2025.json",
-          "sha256": "d86c61420140a4f411e0ad300b969c845e2e3af07396df32291d5537d1fe91ee"
+          "sha256": "9d5629ab84c6137fc525b21e3eb4132e180da362fe0a66aa05948e7bb572c380"
         },
         {
           "path": "data/hindcast/reports/yaas-2021.json",
-          "sha256": "ccbd419c24f813a2b95be93812516133d72b34f1d5460591f6e17a911e06c948"
+          "sha256": "7582bd40db371db502d7dd2519e138e1f2afe1b9275bae7c7a64f9ee2636cfd3"
         }
       ]
     }
@@ -44,7 +48,7 @@
     "districts_with_outlook": 60,
     "districts_without_outlook": 4,
     "retrospectives": 0,
-    "model_performance_episodes": 4
+    "model_performance_episodes": 5
   },
   "freshness_hint": "see frontend/public/data/freshness.json for the age of the inputs",
   "routes": [
@@ -155,7 +159,7 @@
       "path": "/model-performance",
       "label": "Hindcast validation",
       "title": "Hindcast validation: what HazardNet detected on four historical Bangladesh episodes",
-      "description": "Per-episode detection counts, POD/FAR/CSI and threshold-band sensitivity for 4 historical episodes (Cyclone Amphan 2020, Cyclone Yaas 2021, the August 2024 eastern floods, the June 2025 northeast floods), computed from reanalysis drivers and published with the limits stated. Four episodes are not a validation set, and these are a ceiling on detection rather than forecast skill. The page publishes no single accuracy percentage, because this system cannot support one.",
+      "description": "Per-episode detection counts, POD/FAR/CSI and threshold-band sensitivity for 5 historical episodes (Cyclone Amphan 2020, Cyclone Yaas 2021, the August 2024 eastern floods, the June 2025 northeast floods), computed from reanalysis drivers and published with the limits stated. Four episodes are not a validation set, and these are a ceiling on detection rather than forecast skill. The page publishes no single accuracy percentage, because this system cannot support one.",
       "keywords": [
         "HazardNet validation",
         "hindcast Bangladesh flood 2024",
@@ -170,7 +174,7 @@
         "priority": 0.7
       },
       "appShell": true,
-      "updated": "2026-09-17",
+      "updated": "2026-09-18",
       "breadcrumb": [
         {
           "name": "Hindcast validation",
@@ -185,7 +189,7 @@
         "dataset": {
           "kind": "hindcast-validation",
           "name": "HazardNet hindcast validation runs, Bangladesh (2020–2025)",
-          "description": "Detection counts, POD/FAR/CSI and threshold sensitivity for 4 historical episodes, scored by scripts/hindcast/ (reanalysis drivers; the CNN was not re-run). Each episode file records the truth-set sources it scored against.",
+          "description": "Detection counts, POD/FAR/CSI and threshold sensitivity for 5 historical episodes, scored by scripts/hindcast/ (reanalysis drivers; the CNN was not re-run). Each episode file records the truth-set sources it scored against.",
           "temporalCoverage": "2020-05-20/2025-06-01",
           "variableMeasured": [
             "districts with a scored row",
@@ -204,7 +208,7 @@
         }
       },
       "h1": "What the model did on four historical episodes",
-      "standfirst": "Across 4 episodes and 46 district-episode pairs that the cited assessments name, the physics track flagged 46 under some class, 12 under the class that occurred, and 23 scored the occurring class above the alarm band. Those three numbers are not the same number, and the difference between them is the most useful thing on this page.",
+      "standfirst": "Across 5 episodes and 50 district-episode pairs that the cited assessments name, the physics track flagged 50 under some class, 12 under the class that occurred, and 23 scored the occurring class above the alarm band. Those three numbers are not the same number, and the difference between them is the most useful thing on this page.",
       "sections": [
         {
           "h2": "The four episodes",
@@ -214,6 +218,7 @@
           "bullets": [
             "Cyclone Amphan — Bangladesh landfall, 20 May 2020 — onset 2020-05-20, 14 districts named as affected, truth completeness: named-affected-only.",
             "Cyclone Yaas — Bangladesh coast, 26 May 2021 — onset 2021-05-26, 9 districts named as affected, truth completeness: named-affected-only.",
+            "Cyclone Mocha — Cox's Bazar coast and Teknaf, 14 May 2023 — onset 2023-05-14, 4 districts named as affected, truth completeness: named-affected-only.",
             "Eastern flash floods — Feni, Cumilla, Noakhali, 20–30 August 2024 — onset 2024-08-24, 13 districts named as affected, truth completeness: named-affected-only.",
             "Northeast and coastal monsoon floods — Sylhet, Sunamganj and the hill districts, 1 June 2025 — onset 2025-06-01, 10 districts named as affected, truth completeness: named-affected-only."
           ]
@@ -251,7 +256,7 @@
           "h2": "Detection: did the run flag the districts the sources name?",
           "paragraphs": [
             "Each row is one episode, scored against that episode's own truth set. \"Flagged any class\" counts a district as flagged when any of the eight classes crossed the alarm band; \"flagged the class\" counts only the class that occurred, which is the strict reading. The last column separates a district the track scored low from a district it scored high but classified under another class.",
-            "Totals: 46 of 46 named district-episode pairs carried a scored row, 46 were flagged under some class, and 12 named the class that occurred."
+            "Totals: 50 of 50 named district-episode pairs carried a scored row, 50 were flagged under some class, and 12 named the class that occurred."
           ],
           "table": {
             "caption": "Detection per episode, over the districts the cited sources name (class-agnostic and class-strict counts are both shown).",
@@ -287,6 +292,16 @@
                 "0"
               ],
               [
+                "Cyclone Mocha",
+                "Tropical Cyclone",
+                "2023-05-14",
+                "4",
+                "4",
+                "4",
+                "0",
+                "0"
+              ],
+              [
                 "Eastern flash floods",
                 "Flash Flood",
                 "2024-08-24",
@@ -312,7 +327,7 @@
         {
           "h2": "Scores: POD, FAR and CSI — and the rows where they do not exist",
           "paragraphs": [
-            "These are the standard verification scores, computed over the district-horizon samples in each episode's window. POD is \"—\" for amphan-2020, yaas-2021, northeast-flood-2025: the truth set names affected districts but records no dated outcome inside the prediction window, so there is no observed event to divide by. A false alarm ratio of 1.000 in that situation means \"no negative sample existed\", not \"every alarm was wrong\" — with no named event there is nothing for an alarm to be right about.",
+            "These are the standard verification scores, computed over the district-horizon samples in each episode's window. POD is \"—\" for amphan-2020, yaas-2021, mocha-2023, northeast-flood-2025: the truth set names affected districts but records no dated outcome inside the prediction window, so there is no observed event to divide by. A false alarm ratio of 1.000 in that situation means \"no negative sample existed\", not \"every alarm was wrong\" — with no named event there is nothing for an alarm to be right about.",
             "The false alarm ratio is measurable only against districts where an event was recorded as absent. The reports say plainly that no district is treated as a confirmed negative, so treat the FAR column as a bound on the fraction of alarms that hit a district nobody reported as affected — which is the drift signal the district pages also expose."
           ],
           "table": {
@@ -344,6 +359,16 @@
                 "0",
                 "0",
                 "18",
+                "—",
+                "1.000",
+                "0.000"
+              ],
+              [
+                "Cyclone Mocha",
+                "8",
+                "0",
+                "0",
+                "8",
                 "—",
                 "1.000",
                 "0.000"
@@ -458,6 +483,39 @@
                 "0.154"
               ],
               [
+                "Cyclone Mocha",
+                "WATCH band",
+                "0.400",
+                "8",
+                "0",
+                "0",
+                "8",
+                "—",
+                "1.000"
+              ],
+              [
+                "Cyclone Mocha",
+                "harness default",
+                "0.500",
+                "8",
+                "0",
+                "0",
+                "8",
+                "—",
+                "1.000"
+              ],
+              [
+                "Cyclone Mocha",
+                "WARNING band",
+                "0.650",
+                "8",
+                "0",
+                "0",
+                "8",
+                "—",
+                "1.000"
+              ],
+              [
                 "Northeast and coastal monsoon floods",
                 "WATCH band",
                 "0.400",
@@ -532,6 +590,7 @@
             "The shipped pipeline scores the sustained 10 m maximum. The driver archive also carries the gust maximum, so each report re-scores the same episode with it. Where those two rows differ, the driver choice — not the formula — is what decides whether the district point was detectable.",
             "With the sustained maximum the shipped pipeline uses, the episode's class scores 0.0136–0.2480 and crosses the 0.5 band on 0 of 128 rows; with the gust field the archive also carries it scores 0.0987–0.5145 and crosses on 2. The wind driver, not the formula alone, decides whether this event was detectable at the district point. Note what neither number fixes: the track's top class is Fire under either driver, so the separation between the wind-driven classes is a second, independent defect.",
             "With the sustained maximum the shipped pipeline uses, the episode's class scores 0.0285–0.2457 and crosses the 0.5 band on 0 of 128 rows; with the gust field the archive also carries it scores 0.0388–0.3166 and crosses on 0. Even the gust field leaves the episode class below the band, so the wind argument alone does not explain the miss: at this distance from the track the driver the pipeline uses cannot represent the hazard, and the class the formula describes is unreachable for this event. Note what neither number fixes: the track's top class is Fire under either driver, so the separation between the wind-driven classes is a second, independent defect.",
+            "With the sustained maximum the shipped pipeline uses, the episode's class scores 0.0000–0.2173 and crosses the 0.5 band on 0 of 128 rows; with the gust field the archive also carries it scores 0.0000–0.3773 and crosses on 0. Even the gust field leaves the episode class below the band, so the wind argument alone does not explain the miss: at this distance from the track the driver the pipeline uses cannot represent the hazard, and the class the formula describes is unreachable for this event. Note what neither number fixes: the track's top class is Fire under either driver, so the separation between the wind-driven classes is a second, independent defect.",
             "With the sustained maximum the shipped pipeline uses, the episode's class scores 0.1175–1.0000 and crosses the 0.5 band on 83 of 128 rows; with the gust field the archive also carries it scores 0.1175–1.0000 and crosses on 83. The wind driver, not the formula alone, decides whether this event was detectable at the district point. Note what neither number fixes: the track's top class is Fire under either driver, so the separation between the wind-driven classes is a second, independent defect.",
             "With the sustained maximum the shipped pipeline uses, the episode's class scores 0.2097–1.0000 and crosses the 0.5 band on 101 of 128 rows; with the gust field the archive also carries it scores 0.2097–1.0000 and crosses on 101. The wind driver, not the formula alone, decides whether this event was detectable at the district point. Note what neither number fixes: the track's top class is Fire under either driver, so the separation between the wind-driven classes is a second, independent defect."
           ],
@@ -582,6 +641,24 @@
                 "0.0388–0.3166",
                 "0",
                 "Fire (127), Flash Flood (1)"
+              ],
+              [
+                "Cyclone Mocha",
+                "sustained max (shipped)",
+                "128",
+                "18.1–51.0",
+                "0.0000–0.2173",
+                "0",
+                "Fire (126), Flash Flood (2)"
+              ],
+              [
+                "Cyclone Mocha",
+                "gust max (archive)",
+                "128",
+                "36.7–85.3",
+                "0.0000–0.3773",
+                "0",
+                "Fire (126), Flash Flood (2)"
               ],
               [
                 "Eastern flash floods",
@@ -656,6 +733,14 @@
                 "128 of 128"
               ],
               [
+                "Cyclone Mocha",
+                "128",
+                "74 of 128",
+                "128 of 128",
+                "128 of 128",
+                "128 of 128"
+              ],
+              [
                 "Eastern flash floods",
                 "128",
                 "36 of 128",
@@ -683,6 +768,11 @@
             "The affected set is the districts named in the cited assessments. Non-listed districts are unknown, not clear.",
             "Identical to the Amphan episode: reanalysis rather than archived forecast fields, CNN not re-run, peak precipitation approximated by the wettest day, unnamed districts unknown.",
             "Amphan (2020) had not been recovered from when Yaas struck; the affected set therefore overlaps almost completely, which is a property of the coast, not of the truth set.",
+            "Reanalysis rather than archived forecast fields: this measures whether the physics track, given the weather that occurred, flags the districts that were hit — a ceiling on detection, not forecast skill (identical to the other three episodes; the harness has no ECMWF MARS/CDS credential).",
+            "The CNN was not re-run: its input tensor needs Sentinel-1/2, Landsat and ERA5-Land bands over Earth Engine for the historical window.",
+            "The Bangladesh impact was a near-miss outward wind field rather than a direct eye crossing, so a district-centroid wind from a reanalysis grid will under-represent whatever the coast actually experienced — the same driver-fidelity limit the 2020/2021 cyclone episodes expose, in the opposite direction.",
+            "A district centroid cannot represent Saint Martin's Island (about 8 km², 120 km south of the Teknaf mainland): the island took the most severe documented damage in Bangladesh and is not a district.",
+            "The truth set has 4 districts, so the false-alarm denominator stays absent for the same reason as in the other episodes (`absence_means_no_event: false`). Any FAR this episode reports is a reporting boundary, not an operational false-alarm rate.",
             "Reanalysis, not archived forecast — the number is a ceiling on detection, and the plan's lead-time requirement needs forecast fields the harness cannot see (same as the cyclone episodes).",
             "The physics track was not re-run for this window and the CNN is not evaluated: detection is the independent cross-check track only.",
             "Peak precipitation is approximated by the wettest day inside the window, and a district centroid cannot represent the hill-stream catchments that actually flooded — the same driver-fidelity limit the cyclone episodes expose, in the rainfall dimension.",
@@ -714,6 +804,9 @@
             "Cyclone Amphan in Bangladesh: An Overview — Living Deltas Hub (2022). — https://livingdeltas.org/blog/cyclone-amphan-in-bangladesh-an-overview (accessed 2026-09-18)",
             "Cyclone YAAS: Light Coordinated Joint Needs Analysis — Needs Assessment Working Group (NAWG) & Information Management Working Group, Bangladesh, 6 June 2021. — https://reliefweb.int/report/bangladesh/cyclone-yaas-light-coordinated-joint-needs-analysis-needs-assessment-working-group (accessed 2026-09-18)",
             "Bangladesh: Cyclone YAAS — Final Report, DREF operation MDRBD027 (IFRC, December 2021). — https://reliefweb.int/report/bangladesh/bangladesh-cyclone-yaas-final-report-n-mdrbd027 (accessed 2026-09-18)",
+            "Bangladesh: Cyclone Mocha Humanitarian Response Situation Report, as of 15 May 2023 — Inter Sector Coordination Group (ISCG) / UN Bangladesh, reporting the Department of Disaster Management (DDM) and Ministry of Disaster Management and Relief (MoDMR) initial damage information. — https://bangladesh.un.org/en/231958-bangladesh-cyclone-mocha-humanitarian-response-situation-report-15-may-2023 (accessed 2026-09-18)",
+            "Bangladesh and Myanmar: Impact of Cyclone Mocha — ACAPS Briefing Note, 23 May 2023. — https://www.acaps.org/fileadmin/Data_Product/Main_media/20230523_acaps_briefing_note_bangladesh_and_myanmar_impact_of_cyclone_mocha_0.pdf (accessed 2026-09-18)",
+            "Briefing Note: Cyclone Mocha, Saint Martin Island, 18 May 2023 — Start Fund Bangladesh. — https://reliefweb.int/report/bangladesh/briefing-note-cyclone-mocha-saint-martin-island-18-may-2023 (accessed 2026-09-18)",
             "BDRCS Situation Report 3 — Southeastern Flood, August 2024 (Bangladesh Red Crescent Society, 28 August 2024), citing 11 districts: Feni, Cumilla, Chattogram, Khagrachari, Noakhali, Moulvibazar, Habiganj, Brahmanbaria, Sylhet, Lakshmipur, Cox's Bazar. — https://bdrcs.org/wp-content/uploads/2024/08/BDRCS-Sitrep-3-Southeastern-Flood-August-2024.pdf (accessed 2026-09-18)",
             "Rising Waters, Rising Challenges: WHO's Response to Severe Flooding in Bangladesh (WHO Bangladesh, 4 November 2024). — https://www.who.int/bangladesh/news/detail/04-11-2024-rising-waters--rising-challenges-who-s-response-to-severe-flooding-in-bangladesh (accessed 2026-09-18)",
             "Bangladesh Flooding August 2024 — Disasters activations (NASA Applied Sciences, 28 August 2024). — https://appliedsciences.nasa.gov/what-we-do/disasters/disasters-activations/bangladesh-flooding-august-2024 (accessed 2026-09-18)",

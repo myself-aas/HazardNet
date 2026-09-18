@@ -7,23 +7,28 @@
   "built_from": [
     {
       "path": "data/hindcast/reports/amphan-2020.json",
-      "sha256": "9b060a1aa4894951f035bfc7a195115f262878c04b8e6ec8616ea75197ed47e1",
-      "generated_at": "2026-09-17T23:20:48Z"
+      "sha256": "3f307c35afb39361d8693c8332b884c6e12823ee6072ad1279532b270eee0513",
+      "generated_at": "2026-09-18T00:33:55Z"
     },
     {
       "path": "data/hindcast/reports/eastern-flood-2024.json",
-      "sha256": "11c770ae691a260eb7d816041e4cef6b9f46c3777f3f564dbf2e12d66abcc856",
-      "generated_at": "2026-09-17T23:20:50Z"
+      "sha256": "208db4ff22e23e948e39de973c1568af271c3b6426026e9f3267c75f41e026f7",
+      "generated_at": "2026-09-18T00:33:59Z"
+    },
+    {
+      "path": "data/hindcast/reports/mocha-2023.json",
+      "sha256": "471b29b172fe3b0d05e19dad709e790993a54995837cbeefc3f70c68f7dd300c",
+      "generated_at": "2026-09-18T00:35:49Z"
     },
     {
       "path": "data/hindcast/reports/northeast-flood-2025.json",
-      "sha256": "d86c61420140a4f411e0ad300b969c845e2e3af07396df32291d5537d1fe91ee",
-      "generated_at": "2026-09-17T23:20:52Z"
+      "sha256": "9d5629ab84c6137fc525b21e3eb4132e180da362fe0a66aa05948e7bb572c380",
+      "generated_at": "2026-09-18T00:35:51Z"
     },
     {
       "path": "data/hindcast/reports/yaas-2021.json",
-      "sha256": "ccbd419c24f813a2b95be93812516133d72b34f1d5460591f6e17a911e06c948",
-      "generated_at": "2026-09-17T23:21:56Z"
+      "sha256": "7582bd40db371db502d7dd2519e138e1f2afe1b9275bae7c7a64f9ee2636cfd3",
+      "generated_at": "2026-09-18T00:35:56Z"
     }
   ],
   "method": {
@@ -57,14 +62,14 @@
     "absence_means_no_event_reason": "The truth set below names the districts the cited assessments report as affected. Districts nobody named are UNKNOWN, not negatives: the same reports do not claim to have surveyed all 64 districts, and the 2020 reporting was constrained by the COVID-19 response. Counting them as negatives would manufacture a false-alarm rate."
   },
   "totals": {
-    "episodes": 4,
-    "named_districts": 46,
-    "districts_with_a_scored_row": 46,
-    "flagged_any_class": 46,
+    "episodes": 5,
+    "named_districts": 50,
+    "districts_with_a_scored_row": 50,
+    "flagged_any_class": 50,
     "flagged_the_episode_class": 12,
     "episode_class_over_threshold": 23,
-    "scored_samples": 92,
-    "alarmed_without_a_recorded_impact": 420,
+    "scored_samples": 100,
+    "alarmed_without_a_recorded_impact": 540,
     "episodes_with_a_computable_pod": 1
   },
   "episodes": [
@@ -88,8 +93,8 @@
       ],
       "report": {
         "path": "data/hindcast/reports/amphan-2020.json",
-        "sha256": "9b060a1aa4894951f035bfc7a195115f262878c04b8e6ec8616ea75197ed47e1",
-        "generated_at": "2026-09-17T23:20:48Z"
+        "sha256": "3f307c35afb39361d8693c8332b884c6e12823ee6072ad1279532b270eee0513",
+        "generated_at": "2026-09-18T00:33:55Z"
       },
       "sources": [
         {
@@ -241,8 +246,8 @@
       ],
       "report": {
         "path": "data/hindcast/reports/yaas-2021.json",
-        "sha256": "ccbd419c24f813a2b95be93812516133d72b34f1d5460591f6e17a911e06c948",
-        "generated_at": "2026-09-17T23:21:56Z"
+        "sha256": "7582bd40db371db502d7dd2519e138e1f2afe1b9275bae7c7a64f9ee2636cfd3",
+        "generated_at": "2026-09-18T00:35:56Z"
       },
       "sources": [
         {
@@ -362,6 +367,157 @@
       ]
     },
     {
+      "id": "mocha-2023",
+      "title": "Cyclone Mocha — Cox's Bazar coast and Teknaf, 14 May 2023",
+      "hazard_class": "Tropical Cyclone",
+      "onset_date": "2023-05-14",
+      "affected_count": 4,
+      "truth_completeness": "named-affected-only",
+      "truth_notes": [
+        "The four districts are the ones the government initial damage assessment names at district level. The 429,337 figure and the 2.3-million reference in the ACAPS note are different counts of different things (Bangladeshi nationals reached by the assessed damage versus people in the affected division), and neither is used as a denominator here.",
+        "Cox's Bazar is the only district in this truth set where the sources quantify the impact (334,620 Bangladeshi nationals affected, 2,052 houses fully damaged and 10,692 partially damaged; Saint Martin's Island in Teknaf upazila assessed from satellite imagery). It carries the `most_affected` tier for that reason.",
+        "Cox's Bazar also appears in the eastern-flood-2024 truth set. One shared district out of four is the smallest overlap of any pair in this set; the two south-western cyclone episodes (Amphan 2020, Yaas 2021) overlap each other almost completely."
+      ],
+      "known_limitations": [
+        "Reanalysis rather than archived forecast fields: this measures whether the physics track, given the weather that occurred, flags the districts that were hit — a ceiling on detection, not forecast skill (identical to the other three episodes; the harness has no ECMWF MARS/CDS credential).",
+        "The CNN was not re-run: its input tensor needs Sentinel-1/2, Landsat and ERA5-Land bands over Earth Engine for the historical window.",
+        "The Bangladesh impact was a near-miss outward wind field rather than a direct eye crossing, so a district-centroid wind from a reanalysis grid will under-represent whatever the coast actually experienced — the same driver-fidelity limit the 2020/2021 cyclone episodes expose, in the opposite direction.",
+        "A district centroid cannot represent Saint Martin's Island (about 8 km², 120 km south of the Teknaf mainland): the island took the most severe documented damage in Bangladesh and is not a district.",
+        "The truth set has 4 districts, so the false-alarm denominator stays absent for the same reason as in the other episodes (`absence_means_no_event: false`). Any FAR this episode reports is a reporting boundary, not an operational false-alarm rate."
+      ],
+      "report": {
+        "path": "data/hindcast/reports/mocha-2023.json",
+        "sha256": "471b29b172fe3b0d05e19dad709e790993a54995837cbeefc3f70c68f7dd300c",
+        "generated_at": "2026-09-18T00:35:49Z"
+      },
+      "sources": [
+        {
+          "id": "modmr-initial-damage",
+          "citation": "Bangladesh: Cyclone Mocha Humanitarian Response Situation Report, as of 15 May 2023 — Inter Sector Coordination Group (ISCG) / UN Bangladesh, reporting the Department of Disaster Management (DDM) and Ministry of Disaster Management and Relief (MoDMR) initial damage information.",
+          "url": "https://bangladesh.un.org/en/231958-bangladesh-cyclone-mocha-humanitarian-response-situation-report-15-may-2023",
+          "accessed": "2026-09-18",
+          "what_it_evidences": "The four-district affected set at district level, the 26 upazila / 99 union / 429,337-nationals counts, the housing damage totals (2,052 fully, 10,692 partially), and the no-recorded-fatality statement."
+        },
+        {
+          "id": "acaps-mocha",
+          "citation": "Bangladesh and Myanmar: Impact of Cyclone Mocha — ACAPS Briefing Note, 23 May 2023.",
+          "url": "https://www.acaps.org/fileadmin/Data_Product/Main_media/20230523_acaps_briefing_note_bangladesh_and_myanmar_impact_of_cyclone_mocha_0.pdf",
+          "accessed": "2026-09-18",
+          "what_it_evidences": "The Chattogram-division district list (Chattogram, Cox's Bazar, Feni, Noakhali), the approximately 2.3 million affected and 2,000+ destroyed / 10,000+ damaged houses in Bangladesh, and the 750,000-person pre-landfall evacuation."
+        },
+        {
+          "id": "start-fund-stmartin",
+          "citation": "Briefing Note: Cyclone Mocha, Saint Martin Island, 18 May 2023 — Start Fund Bangladesh.",
+          "url": "https://reliefweb.int/report/bangladesh/briefing-note-cyclone-mocha-saint-martin-island-18-may-2023",
+          "accessed": "2026-09-18",
+          "what_it_evidences": "The Saint Martin's Island impact (the most severe documented damage in Bangladesh) and the relief/host-community response, and the statement that the island is in Teknaf upazila of Cox's Bazar district — which is why the truth set carries Cox's Bazar rather than an island."
+        }
+      ],
+      "detection": {
+        "named_districts": 4,
+        "districts_with_a_scored_row": 4,
+        "flagged_any_class": 4,
+        "flagged_the_episode_class": 0,
+        "episode_class_over_threshold": 0,
+        "alarm_threshold": 0.5,
+        "per_horizon": {
+          "7_days": {
+            "named_districts_with_a_row": 4,
+            "flagged_any_class": 4
+          },
+          "15_days": {
+            "named_districts_with_a_row": 4,
+            "flagged_any_class": 4
+          }
+        }
+      },
+      "scores": {
+        "status": "ok",
+        "status_reason": null,
+        "scored_samples": 8,
+        "predictions": 128,
+        "outcomes": 4,
+        "matched": 8,
+        "unmatched_no_outcome": 120,
+        "hits": 0,
+        "misses": 0,
+        "false_alarms": 8,
+        "observed_events": 0,
+        "forecast_events": 8,
+        "pod": null,
+        "far": 1,
+        "csi": 0
+      },
+      "drivers": {
+        "shipped": {
+          "name": "era5_10m_sustained",
+          "rows": 128,
+          "wind_kmh_min": 18.1,
+          "wind_kmh_max": 51,
+          "episode_class_score_min": 0,
+          "episode_class_score_max": 0.2173,
+          "named_the_episode_class": 0,
+          "episode_class_over_threshold": 0,
+          "top_class_distribution": {
+            "Fire": 126,
+            "Flash Flood": 2
+          }
+        },
+        "archive": {
+          "name": "era5_10m_gust",
+          "rows": 128,
+          "wind_kmh_min": 36.7,
+          "wind_kmh_max": 85.3,
+          "episode_class_score_min": 0,
+          "episode_class_score_max": 0.3773,
+          "named_the_episode_class": 0,
+          "episode_class_over_threshold": 0,
+          "top_class_distribution": {
+            "Fire": 126,
+            "Flash Flood": 2
+          }
+        },
+        "finding": "With the sustained maximum the shipped pipeline uses, the episode's class scores 0.0000–0.2173 and crosses the 0.5 band on 0 of 128 rows; with the gust field the archive also carries it scores 0.0000–0.3773 and crosses on 0. Even the gust field leaves the episode class below the band, so the wind argument alone does not explain the miss: at this distance from the track the driver the pipeline uses cannot represent the hazard, and the class the formula describes is unreachable for this event. Note what neither number fixes: the track's top class is Fire under either driver, so the separation between the wind-driven classes is a second, independent defect."
+      },
+      "saturation": {
+        "fire_wind": {
+          "rows": 128,
+          "rows_at_ceiling": 74
+        },
+        "fire_drying": {
+          "rows": 128,
+          "rows_at_ceiling": 128
+        },
+        "heat_persistence": {
+          "rows": 128,
+          "rows_at_ceiling": 128
+        },
+        "cold_persistence": {
+          "rows": 128,
+          "rows_at_ceiling": 128
+        }
+      },
+      "top_class_distribution": {
+        "shipped": {
+          "Fire": 126,
+          "Flash Flood": 2
+        },
+        "counterfactual": {
+          "Fire": 126,
+          "Flash Flood": 2
+        }
+      },
+      "counterfactual_finding": "In the shipped wiring the fire formula's drying term is at its ceiling on every row because it receives the horizon ET total, and both persistence terms are at theirs because they receive the horizon length. The counterfactual recomputes those three arguments with the quantities their formulas describe (mean daily ET, exceedance days above 30 °C / below 16 °C) and reports the difference. This is a wiring finding for the pipeline owner, measured here rather than asserted: the formulas themselves are not changed by this harness.",
+      "alarmed_without_a_recorded_impact": 120,
+      "caveats": [
+        "Reanalysis rather than archived forecast fields: this measures whether the physics track, given the weather that occurred, flags the districts that were hit — a ceiling on detection, not forecast skill (identical to the other three episodes; the harness has no ECMWF MARS/CDS credential).",
+        "The CNN was not re-run: its input tensor needs Sentinel-1/2, Landsat and ERA5-Land bands over Earth Engine for the historical window.",
+        "The Bangladesh impact was a near-miss outward wind field rather than a direct eye crossing, so a district-centroid wind from a reanalysis grid will under-represent whatever the coast actually experienced — the same driver-fidelity limit the 2020/2021 cyclone episodes expose, in the opposite direction.",
+        "A district centroid cannot represent Saint Martin's Island (about 8 km², 120 km south of the Teknaf mainland): the island took the most severe documented damage in Bangladesh and is not a district.",
+        "The truth set has 4 districts, so the false-alarm denominator stays absent for the same reason as in the other episodes (`absence_means_no_event: false`). Any FAR this episode reports is a reporting boundary, not an operational false-alarm rate."
+      ]
+    },
+    {
       "id": "eastern-flood-2024",
       "title": "Eastern flash floods — Feni, Cumilla, Noakhali, 20–30 August 2024",
       "hazard_class": "Flash Flood",
@@ -382,8 +538,8 @@
       ],
       "report": {
         "path": "data/hindcast/reports/eastern-flood-2024.json",
-        "sha256": "11c770ae691a260eb7d816041e4cef6b9f46c3777f3f564dbf2e12d66abcc856",
-        "generated_at": "2026-09-17T23:20:50Z"
+        "sha256": "208db4ff22e23e948e39de973c1568af271c3b6426026e9f3267c75f41e026f7",
+        "generated_at": "2026-09-18T00:33:59Z"
       },
       "sources": [
         {
@@ -544,8 +700,8 @@
       ],
       "report": {
         "path": "data/hindcast/reports/northeast-flood-2025.json",
-        "sha256": "d86c61420140a4f411e0ad300b969c845e2e3af07396df32291d5537d1fe91ee",
-        "generated_at": "2026-09-17T23:20:52Z"
+        "sha256": "9d5629ab84c6137fc525b21e3eb4132e180da362fe0a66aa05948e7bb572c380",
+        "generated_at": "2026-09-18T00:35:51Z"
       },
       "sources": [
         {
@@ -728,6 +884,39 @@
       "far": 0.153846
     },
     {
+      "episode": "mocha-2023",
+      "alarm_threshold": 0.4,
+      "band": "PRODUCT_SPEC §1.3 WATCH band",
+      "scored_samples": 8,
+      "hits": 0,
+      "misses": 0,
+      "false_alarms": 8,
+      "pod": null,
+      "far": 1
+    },
+    {
+      "episode": "mocha-2023",
+      "alarm_threshold": 0.5,
+      "band": "harness default",
+      "scored_samples": 8,
+      "hits": 0,
+      "misses": 0,
+      "false_alarms": 8,
+      "pod": null,
+      "far": 1
+    },
+    {
+      "episode": "mocha-2023",
+      "alarm_threshold": 0.65,
+      "band": "PRODUCT_SPEC §1.3 WARNING band",
+      "scored_samples": 8,
+      "hits": 0,
+      "misses": 0,
+      "false_alarms": 8,
+      "pod": null,
+      "far": 1
+    },
+    {
       "episode": "northeast-flood-2025",
       "alarm_threshold": 0.4,
       "band": "PRODUCT_SPEC §1.3 WATCH band",
@@ -801,6 +990,11 @@
     "The affected set is the districts named in the cited assessments. Non-listed districts are unknown, not clear.",
     "Identical to the Amphan episode: reanalysis rather than archived forecast fields, CNN not re-run, peak precipitation approximated by the wettest day, unnamed districts unknown.",
     "Amphan (2020) had not been recovered from when Yaas struck; the affected set therefore overlaps almost completely, which is a property of the coast, not of the truth set.",
+    "Reanalysis rather than archived forecast fields: this measures whether the physics track, given the weather that occurred, flags the districts that were hit — a ceiling on detection, not forecast skill (identical to the other three episodes; the harness has no ECMWF MARS/CDS credential).",
+    "The CNN was not re-run: its input tensor needs Sentinel-1/2, Landsat and ERA5-Land bands over Earth Engine for the historical window.",
+    "The Bangladesh impact was a near-miss outward wind field rather than a direct eye crossing, so a district-centroid wind from a reanalysis grid will under-represent whatever the coast actually experienced — the same driver-fidelity limit the 2020/2021 cyclone episodes expose, in the opposite direction.",
+    "A district centroid cannot represent Saint Martin's Island (about 8 km², 120 km south of the Teknaf mainland): the island took the most severe documented damage in Bangladesh and is not a district.",
+    "The truth set has 4 districts, so the false-alarm denominator stays absent for the same reason as in the other episodes (`absence_means_no_event: false`). Any FAR this episode reports is a reporting boundary, not an operational false-alarm rate.",
     "Reanalysis, not archived forecast — the number is a ceiling on detection, and the plan's lead-time requirement needs forecast fields the harness cannot see (same as the cyclone episodes).",
     "The physics track was not re-run for this window and the CNN is not evaluated: detection is the independent cross-check track only.",
     "Peak precipitation is approximated by the wettest day inside the window, and a district centroid cannot represent the hill-stream catchments that actually flooded — the same driver-fidelity limit the cyclone episodes expose, in the rainfall dimension.",
@@ -851,6 +1045,24 @@
       "id": "ifrc-dref-final",
       "citation": "Bangladesh: Cyclone YAAS — Final Report, DREF operation MDRBD027 (IFRC, December 2021).",
       "url": "https://reliefweb.int/report/bangladesh/bangladesh-cyclone-yaas-final-report-n-mdrbd027",
+      "accessed": "2026-09-18"
+    },
+    {
+      "id": "modmr-initial-damage",
+      "citation": "Bangladesh: Cyclone Mocha Humanitarian Response Situation Report, as of 15 May 2023 — Inter Sector Coordination Group (ISCG) / UN Bangladesh, reporting the Department of Disaster Management (DDM) and Ministry of Disaster Management and Relief (MoDMR) initial damage information.",
+      "url": "https://bangladesh.un.org/en/231958-bangladesh-cyclone-mocha-humanitarian-response-situation-report-15-may-2023",
+      "accessed": "2026-09-18"
+    },
+    {
+      "id": "acaps-mocha",
+      "citation": "Bangladesh and Myanmar: Impact of Cyclone Mocha — ACAPS Briefing Note, 23 May 2023.",
+      "url": "https://www.acaps.org/fileadmin/Data_Product/Main_media/20230523_acaps_briefing_note_bangladesh_and_myanmar_impact_of_cyclone_mocha_0.pdf",
+      "accessed": "2026-09-18"
+    },
+    {
+      "id": "start-fund-stmartin",
+      "citation": "Briefing Note: Cyclone Mocha, Saint Martin Island, 18 May 2023 — Start Fund Bangladesh.",
+      "url": "https://reliefweb.int/report/bangladesh/briefing-note-cyclone-mocha-saint-martin-island-18-may-2023",
       "accessed": "2026-09-18"
     },
     {

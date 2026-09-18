@@ -1,6 +1,6 @@
 {
   "schema": "hazardnet-content-index/v1",
-  "generated_at": "2026-09-18T00:26:14.949Z",
+  "generated_at": "2026-09-18T00:36:31.418Z",
   "generated_by": "scripts/build_content_engine.mjs",
   "origin": "https://www.hazardnet.live",
   "inputs": {
@@ -15,23 +15,27 @@
     "model_performance": {
       "path": "frontend/public/data/model-performance.json",
       "hindcast_version": "1.0.0",
-      "episodes": 4,
+      "episodes": 5,
       "built_from": [
         {
           "path": "data/hindcast/reports/amphan-2020.json",
-          "sha256": "9b060a1aa4894951f035bfc7a195115f262878c04b8e6ec8616ea75197ed47e1"
+          "sha256": "3f307c35afb39361d8693c8332b884c6e12823ee6072ad1279532b270eee0513"
         },
         {
           "path": "data/hindcast/reports/eastern-flood-2024.json",
-          "sha256": "11c770ae691a260eb7d816041e4cef6b9f46c3777f3f564dbf2e12d66abcc856"
+          "sha256": "208db4ff22e23e948e39de973c1568af271c3b6426026e9f3267c75f41e026f7"
+        },
+        {
+          "path": "data/hindcast/reports/mocha-2023.json",
+          "sha256": "471b29b172fe3b0d05e19dad709e790993a54995837cbeefc3f70c68f7dd300c"
         },
         {
           "path": "data/hindcast/reports/northeast-flood-2025.json",
-          "sha256": "d86c61420140a4f411e0ad300b969c845e2e3af07396df32291d5537d1fe91ee"
+          "sha256": "9d5629ab84c6137fc525b21e3eb4132e180da362fe0a66aa05948e7bb572c380"
         },
         {
           "path": "data/hindcast/reports/yaas-2021.json",
-          "sha256": "ccbd419c24f813a2b95be93812516133d72b34f1d5460591f6e17a911e06c948"
+          "sha256": "7582bd40db371db502d7dd2519e138e1f2afe1b9275bae7c7a64f9ee2636cfd3"
         }
       ]
     }
@@ -43,7 +47,7 @@
     "districts_with_outlook": 60,
     "districts_without_outlook": 4,
     "retrospectives": 0,
-    "model_performance_episodes": 4,
+    "model_performance_episodes": 5,
     "prerendered_html_files": 97,
     "sitemap_urls": 88
   },
