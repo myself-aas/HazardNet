@@ -2,30 +2,26 @@
 /**
  * Build the static forecast snapshot that ships inside the website bundle.
  *
- * Two producers refresh backend/data/forecasts/hazardnet_forecasts_latest.csv
- * and then run this script to emit frontend/public/data/forecasts-latest.json:
- *
- *   1. GitHub-native (default since 2026-09-16): `.github/workflows/daily_forecast.yml`
- *      runs scripts/auto_forecast.py on the runner (GEE + Open-Meteo + TFLite)
- *      and promotes its CSV with scripts/publish_forecast_csv.py. No Kaggle.
- *   2. Kaggle (legacy, dispatch-only): forecast-pipeline/hourly/weekly download
- *      the notebook's output (`kaggle kernels output
- *      ashifahmedshuvo/hazardnet-auto-forecast-pipeline`).
+ * The producer is `.github/workflows/daily_forecast.yml` (and nothing else
+ * since 2026-09-17, when the Kaggle-backed workflows were removed): it runs
+ * scripts/auto_forecast.py on the runner (GEE + Open-Meteo + TFLite), promotes
+ * the CSV with scripts/publish_forecast_csv.py, and then runs this script to
+ * emit frontend/public/data/forecasts-latest.json.
  *
  * The provenance stamped into `source`/`producer` therefore follows the
- * caller: set SNAPSHOT_SOURCE (and SNAPSHOT_KERNEL if the slug differs) so a
- * snapshot can never claim to come from a producer that did not make it.
+ * caller: set SNAPSHOT_SOURCE so a snapshot can never claim to come from a
+ * producer that did not make it.
  *
  * Why a static snapshot?
  *  - The committed CSV alone only reaches the API after an ingest into the
  *    forecast store. The snapshot makes the refreshed data part of the
  *    website codebase itself: it is bundled by Vite, served by the backend's
  *    static handler, and redeployed on every push — so the site carries the
- *    latest hourly forecast even if the API/store is unreachable (the
+ *    latest forecast even if the API/store is unreachable (the
  *    frontend's useForecasts() hook falls back to it, see
  *    frontend/src/lib/forecasts.ts → fetchStaticForecastSnapshot()).
- *  - It is also a cache-busting input: the file is committed hourly whenever
- *    the Kaggle output changed, which triggers a fresh deployment.
+ *  - It is also a cache-busting input: the file is committed whenever the
+ *    forecast data changed, which triggers a fresh deployment.
  *
  * Usage:
  *   node scripts/build_forecast_snapshot.mjs [csvPath] [outPath]
@@ -34,7 +30,7 @@
  *   outPath = frontend/public/data/forecasts-latest.json
  * Env:
  *   SNAPSHOT_SOURCE = provenance string written to `source`
- *                     (default: "kaggle kernels output <SNAPSHOT_KERNEL>")
+ *                     (default: the daily workflow's SNAPSHOT_SOURCE string)
  *
  * Zero runtime dependencies (hand-rolled RFC4180 CSV reader) so the pipeline
  * never needs an install step just to refresh the website data.
@@ -45,10 +41,10 @@ import { dirname, resolve } from 'node:path';
 
 const CSV_PATH = resolve(process.argv[2] || 'backend/data/forecasts/hazardnet_forecasts_latest.csv');
 const OUT_PATH = resolve(process.argv[3] || 'frontend/public/data/forecasts-latest.json');
-const KERNEL = process.env.SNAPSHOT_KERNEL || 'ashifahmedshuvo/hazardnet-auto-forecast-pipeline';
-// Provenance is caller-supplied: the Kaggle workers keep the historical
-// string, the GitHub-native producer passes its own (see the header).
-const SOURCE = process.env.SNAPSHOT_SOURCE || `kaggle kernels output ${KERNEL}`;
+// Provenance is caller-supplied: daily_forecast.yml passes its own string
+// (same as this default — SNAPSHOT_SOURCE in the workflow's env: block).
+const SOURCE = process.env.SNAPSHOT_SOURCE
+  || 'github-actions: scripts/auto_forecast.py (GEE + Open-Meteo + TFLite)';
 
 // ─── Minimal RFC4180 CSV parser (handles quotes, escaped quotes, CRLF) ───
 function parseCsv(text) {
@@ -89,7 +85,7 @@ const num = (v) => {
 function main() {
   if (!existsSync(CSV_PATH)) {
     console.error(`❌ Forecast CSV not found: ${CSV_PATH}`);
-    console.error('   Run scripts/fetch_kaggle_forecast.py first (or the hourly workflow).');
+    console.error('   Run scripts/auto_forecast.py first (or the daily_forecast workflow).');
     process.exit(1);
   }
 
@@ -205,7 +201,6 @@ function main() {
     schema: 'hazardnet-forecast-snapshot/v1',
     generated_at: new Date().toISOString(),
     source: SOURCE,
-    kernel: KERNEL,
     prediction_date: predictionDates.size > 0 ? [...predictionDates].sort().at(-1) : null,
     horizons,
   };

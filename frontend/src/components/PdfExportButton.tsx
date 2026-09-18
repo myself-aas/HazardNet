@@ -262,8 +262,8 @@ export const PdfExportButton: React.FC<PdfExportButtonProps> = ({
 
         {isOpenMenu && (
           <>
-            <div className="fixed inset-0 z-40" onClick={() => setIsOpenMenu(false)} />
-            <div className="absolute right-0 top-full mt-1.5 w-72 bg-white border border-slate-200 rounded-xl shadow-xl z-50 p-1.5 text-xs animate-in fade-in slide-in-from-top-1 duration-150">
+            <div className="fixed inset-0 z-[9994]" onClick={() => setIsOpenMenu(false)} />
+            <div className="absolute right-0 top-full mt-1.5 w-72 max-w-[calc(100vw-2rem)] bg-white border border-slate-200 rounded-xl shadow-xl z-[9994] p-1.5 text-xs animate-in fade-in slide-in-from-top-1 duration-150">
               <div className="px-2.5 py-1.5 text-[10px] font-mono font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 flex items-center justify-between">
                 <span>Official PDF & Print</span>
                 <span className="text-amber-600 font-bold">SOD 2019</span>

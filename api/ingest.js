@@ -19,7 +19,7 @@ const ForecastSchema = z.object({
   severity_score: z.number(),
   target_date: z.string().refine((v) => !isNaN(Date.parse(v)), { message: 'Invalid date' }),
   prediction_date: z.string().refine((v) => !isNaN(Date.parse(v)), { message: 'Invalid date' }),
-  // Dual-track severity + admin context (weekly Kaggle pipeline CSV shape) — optional.
+  // Dual-track severity + admin context (forecast pipeline CSV shape) — optional.
   model_severity: z.number().min(0).max(1).optional(),
   physics_severity: z.number().min(0).max(1).optional(),
   division: z.string().optional(),

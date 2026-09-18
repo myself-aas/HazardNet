@@ -29,7 +29,7 @@ This runbook covers production deployment procedures, monitoring, incident respo
 - **Backend API:** Node.js 20 + Express 4.18.2 on Vercel Serverless Functions
 - **ML Inference:** TensorFlow.js 4.12.0 (TFLite FP32 model ~0.75MB)
 - **Databases:** Firebase Firestore (forecasts) + Supabase (users/auth)
-- **Data Pipeline:** Kaggle Notebooks → GitHub Actions → Firestore
+- **Data Pipeline:** GitHub Actions runner (`daily_forecast.yml`: GEE + Open-Meteo + TFLite) → Firestore (no Kaggle — removed 2026-09-17)
 - **CDN:** Vercel Edge Network
 - **Monitoring:** Prometheus (metrics), Sentry (errors), UptimeRobot (availability)
 
@@ -188,10 +188,6 @@ SENTRY_DSN=<sentry-project-dsn>
 VERCEL_TOKEN=<vercel-api-token>
 VERCEL_ORG_ID=<vercel-org-id>
 VERCEL_PROJECT_ID=<vercel-project-id>
-
-# Kaggle (Forecast Pipeline)
-KAGGLE_USERNAME=<kaggle-username>
-KAGGLE_KEY=<kaggle-api-key>
 
 # Firebase (Data Ingestion)
 FIREBASE_SERVICE_ACCOUNT=<base64-encoded-service-account-json>
@@ -402,23 +398,16 @@ vercel --prod
 **Diagnosis:**
 ```bash
 # Check GitHub Actions forecast pipeline status
-gh run list --workflow=forecast-pipeline.yml
+gh run list --workflow=daily_forecast.yml
 
 # Check last successful run
 gh run view <run-id>
-
-# Check Kaggle notebook status
-python scripts/kaggle_trigger.py
 ```
 
 **Resolution:**
 ```bash
-# Manual trigger forecast pipeline
-gh workflow run forecast-pipeline.yml
-
-# Or run Kaggle notebook manually
-cd kaggle_notebooks/hazardnet-auto-forecast-pipeline
-kaggle kernels push
+# Manual trigger forecast pipeline (runs on the GitHub runner)
+gh workflow run daily_forecast.yml
 
 # Verify data updated in Firestore
 # Check /api/v1/forecasts?district_id=1
@@ -487,7 +476,7 @@ gcloud firestore import gs://hazardnet-backups/2026-09-10
 
 # Or manually revert forecast data
 # Trigger forecast pipeline to regenerate
-gh workflow run forecast-pipeline.yml
+gh workflow run daily_forecast.yml
 ```
 
 #### Supabase Rollback
@@ -501,21 +490,17 @@ gh workflow run forecast-pipeline.yml
 
 ## Data Pipeline Management
 
-### Kaggle Forecast Pipeline
+### Forecast Pipeline (GitHub Actions runner — no Kaggle)
 
 #### Pipeline Schedule
-- **Frequency:** Daily at 00:00 UTC (GitHub Actions cron)
-- **Duration:** ~45-90 minutes (GEE extraction + inference + upload)
+- **Frequency:** Daily at 00:00 UTC (GitHub Actions cron, `daily_forecast.yml`)
+- **Duration:** ~19-25 minutes (GEE extraction + Open-Meteo + TFLite inference)
 - **Output:** CSV + JSON (554 locations × 3 horizons = 1662 records)
 
 #### Manual Trigger
 ```bash
 # Via GitHub Actions
-gh workflow run forecast-pipeline.yml
-
-# Via Python script
-cd scripts
-python kaggle_trigger.py
+gh workflow run daily_forecast.yml
 
 # Validate output
 python validate_forecasts.py
@@ -524,7 +509,7 @@ python validate_forecasts.py
 #### Monitoring Pipeline Health
 ```bash
 # Check last run status
-gh run list --workflow=forecast-pipeline.yml --limit 5
+gh run list --workflow=daily_forecast.yml --limit 5
 
 # View logs
 gh run view <run-id> --log
@@ -540,14 +525,8 @@ curl https://hazardnet.vercel.app/api/v1/forecasts?district_id=1 | \
 # 1. Check GitHub Actions logs
 gh run view <run-id> --log-failed
 
-# 2. Check Kaggle notebook status
-kaggle kernels status <username>/hazardnet-auto-forecast
-
-# 3. Retry pipeline
-gh workflow run forecast-pipeline.yml
-
-# 4. If retry fails, run notebook manually via Kaggle UI
-# https://www.kaggle.com/code/<username>/hazardnet-auto-forecast
+# 2. Retry pipeline
+gh workflow run daily_forecast.yml
 ```
 
 ---
@@ -590,9 +569,6 @@ vercel env add BACKEND_API_KEY production
 
 # Update in GitHub Actions
 gh secret set BACKEND_API_KEY
-
-# Update Kaggle notebook ingestion script
-# (Manual update required)
 ```
 
 ---

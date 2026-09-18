@@ -150,7 +150,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 bg-slate-900/20 backdrop-blur-sm z-[9999]"
+            className="fixed inset-0 bg-slate-900/20 backdrop-blur-sm z-[10001]"
             onClick={onClose}
           />
 
@@ -165,7 +165,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
             animate={{ x: 0 }}
             exit={{ x: '-100%' }}
             transition={{ type: 'spring', stiffness: 350, damping: 30 }}
-            className="fixed inset-y-0 left-0 z-[10000] w-80 max-w-[85vw] bg-gradient-to-b from-[#e8e4e1] to-[#cfd1c4] rounded-r-3xl shadow-2xl flex flex-col font-sans select-none text-slate-800 overflow-hidden"
+            className="fixed inset-y-0 left-0 z-[10002] w-80 max-w-[85vw] bg-gradient-to-b from-[#e8e4e1] to-[#cfd1c4] rounded-r-3xl shadow-2xl flex flex-col font-sans select-none text-slate-800 overflow-hidden"
           >
             {/* Drawer Header */}
             <div className="px-6 py-6 flex items-center justify-between shrink-0">
@@ -183,7 +183,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                     }
                     onClose();
                   }}
-                  className="w-10 h-10 rounded-full bg-black/5 hover:bg-black/10 flex items-center justify-center transition-colors"
+                  className="tap-target w-11 h-11 rounded-full bg-black/5 hover:bg-black/10 flex items-center justify-center transition-colors"
                   title={user ? 'Profile' : 'Sign In'}
                 >
                   {user ? (
@@ -196,7 +196,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                 </button>
                 {/*
                   In-panel dismiss control. The header hamburger sits under this
-                  panel (z-[10000]) once the drawer is open, so without this the
+                  panel (z-[10002]) once the drawer is open, so without this the
                   only way out was tapping the translucent backdrop — no visible
                   close affordance and nothing keyboard reachable.
                 */}

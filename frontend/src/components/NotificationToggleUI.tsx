@@ -33,7 +33,7 @@ export const NotificationToggleUI: React.FC<NotificationToggleUIProps> = ({
       {variant === 'icon' ? (
         <button
           onClick={onToggleOpen}
-          className="w-10 h-10 rounded-full bg-black/5 hover:bg-black/10 flex items-center justify-center transition-colors"
+          className="tap-target w-11 h-11 rounded-full bg-black/5 hover:bg-black/10 flex items-center justify-center transition-colors"
           title="Push Alerts"
         >
           <NotificationIcon size={20} className={isSubscribed ? "text-amber-600" : "text-slate-700"} duration={0} isState={isSubscribed} />

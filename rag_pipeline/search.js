@@ -103,20 +103,24 @@ function searchRAG(query, options = {}) {
   scoredDocs.sort((a, b) => b.score - a.score);
   const topDocs = scoredDocs.slice(0, limit);
 
-  // Retrieve District Baseline & Contacts if matching district is mentioned
+  // Retrieve District Baseline & Contacts if matching district is mentioned.
+  // Baseline entries key the district under `name` (district_economic_
+  // baselines.json) — `d.district` alone never matched, so the district
+  // context silently never reached the LLM prompt (fixed 2026-09-17).
+  const districtNameOf = (d) => (d.district || d.name || '').toLowerCase();
   let matchingDistrictBaseline = null;
   if (Array.isArray(cachedBaselines)) {
     matchingDistrictBaseline = cachedBaselines.find(d => 
       targetDistrict && (
-        (d.district || '').toLowerCase().includes(targetDistrict) ||
-        targetDistrict.includes((d.district || '').toLowerCase())
+        districtNameOf(d).includes(targetDistrict) ||
+        targetDistrict.includes(districtNameOf(d))
       )
     ) || null;
 
     // If query didn't explicitly match a district, try to extract one from query tokens
     if (!matchingDistrictBaseline) {
       for (const d of cachedBaselines) {
-        const dName = (d.district || '').toLowerCase();
+        const dName = districtNameOf(d);
         if (dName && tokens.some(t => t.includes(dName) || dName.includes(t))) {
           matchingDistrictBaseline = d;
           break;

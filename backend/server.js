@@ -119,8 +119,8 @@ app.get('/health', (req, res) => {
 
 // Never serve model artifacts or preprocessing assets from the public server.
 // NOTE: the int8 entry is deliberately kept — no true INT8 model exists
-// (TFLite CONV_3D constraint, ADR 0007), but the external Kaggle conversion
-// bundle still emits a misnamed optimized-FP32 file under that filename, and
+// (TFLite CONV_3D constraint, ADR 0007), but the historical external
+// conversion bundle emitted a misnamed optimized-FP32 file under that filename, and
 // model artifacts must never be publicly served regardless of precision.
 app.use(['/Models', '/models', '/hazardnet_fp32.tflite', '/hazardnet_int8.tflite', '/normalization_stats.json', '/labels.json'], (req, res) => {
   res.status(404).json({ error: 'Not found' });
@@ -179,8 +179,9 @@ export default app;
 const invokedAsScript = process.argv[1] !== undefined
   && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
 if (invokedAsScript) {
-  // 3001 keeps the API out of Vite's way in dev (vite.config.ts proxies /api here).
-  const PORT = 3000;
+  // 3001 keeps the API out of Vite's way in dev (vite.config.ts proxies /api
+  // here). PORT can still override it for container/PaaS deployments.
+  const PORT = process.env.PORT || 3001;
   app.listen(PORT, '0.0.0.0', () => {
     console.log(`HazardNet Backend running on port ${PORT}`);
   });

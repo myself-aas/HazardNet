@@ -22,7 +22,7 @@ env:
   MAX_DATA_AGE_DAYS: '10'
   # Optional override (repository variable) for the forecast API host. Default:
   # same host as the site. Only set this if the API is served somewhere else —
-  # the Kaggle pipeline pushes to HAZARDNET_API_URL, which need not be the
+  # the daily pipeline pushes to HAZARDNET_API_URL, which need not be the
   # website's own host.
   API_METADATA_URL: ${{ vars.API_METADATA_URL || '' }}
 

@@ -114,9 +114,9 @@ export const DistrictDetailPage: React.FC = () => {
     if (!livePredictionDate) {
       return {
         ...fallback,
-        peakImpactWindow: 'Live Kaggle data unavailable',
-        incidentDate: 'Live Kaggle data unavailable',
-        lastSatelliteUpdate: 'Awaiting Kaggle forecast ingestion',
+        peakImpactWindow: 'Live forecast data unavailable',
+        incidentDate: 'Live forecast data unavailable',
+        lastSatelliteUpdate: 'Awaiting forecast pipeline ingestion',
       };
     }
     const prediction = new Date(`${livePredictionDate}T00:00:00Z`);
@@ -143,13 +143,13 @@ export const DistrictDetailPage: React.FC = () => {
           }).split(' ').pop();
           return `${dateStr} ${timeStr} ${tzAbbr || ''}`.trim();
         })()
-      : 'Awaiting Kaggle ingestion';
+      : 'Awaiting forecast ingestion';
     
     return {
       ...fallback,
       incidentDate: formattedIngestionTime,
       peakImpactWindow: `${formatDate(prediction)} - ${formatDate(end)}`,
-      lastSatelliteUpdate: `${liveSource ?? 'Kaggle forecast'} • ${livePredictionDate}`,
+      lastSatelliteUpdate: `${liveSource ?? 'Latest forecast'} • ${livePredictionDate}`,
     };
   }, [districtId, livePredictionDate, liveSource, ingestionTimestamp]);
   const district = useMemo(() => getDistrictById(districtId) || ALL_64_DISTRICTS[0], [districtId]);
@@ -161,7 +161,7 @@ export const DistrictDetailPage: React.FC = () => {
     timezone: 'Asia/Dhaka',
   });
 
-  // District Kaggle Notebook CSV Forecast Data for 7 and 15 Days
+  // District CSV Forecast Data for 7 and 15 Days (daily pipeline)
   const [districtForecasts7D, setDistrictForecasts7D] = useState<ForecastRow[]>([]);
   const [districtForecasts15D, setDistrictForecasts15D] = useState<ForecastRow[]>([]);
   const [loadingForecastTable, setLoadingForecastTable] = useState<boolean>(true);
@@ -805,7 +805,7 @@ export const DistrictDetailPage: React.FC = () => {
         </div>
       </header>
 
-      {/* USER-FRIENDLY TABLE: KAGGLE NOTEBOOK CSV FORECAST OUTPUT (7 & 15 DAYS) */}
+      {/* USER-FRIENDLY TABLE: PIPELINE CSV FORECAST OUTPUT (7 & 15 DAYS) */}
       <section className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-7 shadow-xs space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-4">
           <div>
@@ -1467,7 +1467,7 @@ export const DistrictDetailPage: React.FC = () => {
 
             <div className="flex items-center justify-between text-[11px] text-slate-500 pt-2 border-t border-slate-100">
               <span>Telemetry Frequency: 15-Minute Sample Interval</span>
-              <span className="font-mono text-emerald-600 font-bold">Calibration Variance: ±0.03</span>
+              <span className="font-mono text-emerald-600 font-bold">Severity: BD-anchored scale</span>
             </div>
           </div>
         </div>
@@ -1526,7 +1526,16 @@ export const DistrictDetailPage: React.FC = () => {
               <div className="w-px h-8 bg-slate-200" />
               <div>
                 <div className="text-slate-500">Trend Velocity</div>
-                <div className="text-sm font-black text-amber-600">+4.2% / day</div>
+                <div className="text-sm font-black text-amber-600">
+                  {(() => {
+                    const vals = hazardTrendData.map((d) => Number(d[data.hazardType] || 0));
+                    const prev = vals[vals.length - 2] ?? 0;
+                    const last = vals[vals.length - 1] ?? 0;
+                    if (vals.length < 2 || prev <= 0) return '—';
+                    const pct = ((last - prev) / prev) * 100;
+                    return `${pct >= 0 ? '+' : ''}${pct.toFixed(1)}% / day`;
+                  })()}
+                </div>
               </div>
             </div>
           </div>
@@ -1591,7 +1600,7 @@ export const DistrictDetailPage: React.FC = () => {
             </div>
             <div className="bg-slate-50 p-3 rounded-xl border border-slate-200/80">
               <span className="font-mono text-slate-500 font-bold block mb-1">Confidence Interval</span>
-              <p className="text-slate-700">95% Bayesian confidence bound maintained across all 7 historical sensor checkpoints.</p>
+              <p className="text-slate-700">Trend confidence is tracked against historical sensor checkpoints.</p>
             </div>
           </div>
         </div>
@@ -1671,7 +1680,7 @@ export const DistrictDetailPage: React.FC = () => {
               </h3>
               <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-4 text-xs font-mono text-slate-800 leading-relaxed space-y-2">
                 <p>
-                  Satellite imagery confirms high water saturation across low-lying areas. AI models detect significant river swelling matching historical flood patterns with 94.8% accuracy.
+                  Satellite imagery confirms high water saturation across low-lying areas. AI models detect significant river swelling matching historical flood patterns.
                 </p>
               </div>
             </div>
@@ -2126,14 +2135,14 @@ export const DistrictDetailPage: React.FC = () => {
             {/* Peak Historical Benchmark - Changed to Slate-700 for non-alarm historical context */}
             <div className="bg-slate-50 p-4 rounded-xl border border-slate-200/80 space-y-1">
               <span className="text-[10px] font-mono text-slate-500 font-bold uppercase">Historical Peak (2020)</span>
-              <div className="text-2xl font-black text-slate-700 font-mono">0.91 Index (2020)</div>
+              <div className="text-2xl font-black text-slate-700 font-mono">Super-flood (2020)</div>
               <span className="text-[11px] text-slate-500">Historical super-flood peak benchmark</span>
             </div>
 
             <div className="bg-slate-50 p-4 rounded-xl border border-slate-200/80 space-y-1">
               <span className="text-[10px] font-mono text-slate-500 font-bold uppercase">Model Cross-Correlation</span>
-              <div className="text-2xl font-black text-emerald-600 font-mono">94.8% Accuracy</div>
-              <span className="text-[11px] text-slate-500">R² calibration against ground gauges</span>
+              <div className="text-2xl font-black text-emerald-600 font-mono">R2 tracked</div>
+              <span className="text-[11px] text-slate-500">Cross-checked against ground gauges (v3 evaluation pending)</span>
             </div>
           </div>
         </div>
@@ -2286,7 +2295,7 @@ export const DistrictDetailPage: React.FC = () => {
               <span className="text-xs font-mono font-bold text-purple-700 uppercase">Inference Latency</span>
               <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-purple-50 text-purple-700">WebGL Acceleration</span>
             </div>
-            <div className="text-3xl font-black text-slate-900 font-mono">38.4 ms</div>
+            <div className="text-3xl font-black text-slate-900 font-mono">In-browser</div>
             <p className="text-xs text-slate-500">Fast automated scoring executed directly inside your browser for instant local decision support.</p>
           </div>
 
@@ -2295,8 +2304,8 @@ export const DistrictDetailPage: React.FC = () => {
               <span className="text-xs font-mono font-bold text-blue-700 uppercase">Calibration Accuracy</span>
               <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-blue-50 text-blue-700">Platt Calibration</span>
             </div>
-            <div className="text-3xl font-black text-slate-900 font-mono">98.55%</div>
-            <p className="text-xs text-slate-500">High probability reliability calibrated directly against BWDB ground truth river gauge stations.</p>
+            <div className="text-3xl font-black text-slate-900 font-mono">v3 pending</div>
+            <p className="text-xs text-slate-500">Isotonic calibration is part of the v3 evaluation program.</p>
           </div>
 
           <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-xs space-y-2">

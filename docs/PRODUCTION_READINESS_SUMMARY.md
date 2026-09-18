@@ -1,5 +1,13 @@
 # HazardNet Production Readiness - Implementation Summary
 
+> **Status update (2026-09-17):** the Kaggle pipeline is gone. The four
+Kaggle-backed workflows (`forecast-pipeline`, `hourly_forecast`,
+`weekly_forecast`, `manual_forecast_ingest`) and their scripts
+(`kaggle_trigger.py`, `fetch_kaggle_forecast.py`) were **deleted** — nothing
+runs on the Kaggle platform. The single forecast producer is
+`.github/workflows/daily_forecast.yml`, which runs entirely on the GitHub
+runner (GEE + Open-Meteo + TFLite). Kaggle references below are historical.
+
 **Date:** 2026-09-11  
 **Version:** v2.1.911  
 **Status:** ✅ Production Ready (with minor follow-ups)

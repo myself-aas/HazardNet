@@ -1205,14 +1205,14 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
       ref={mainWrapperRef}
       className={
         isFullScreen || isBrowserFullscreen
-          ? 'w-full h-full min-h-dvh h-dvh bg-slate-900 overflow-hidden text-slate-900 relative z-[10]'
+          ? 'w-full h-full min-h-dvh h-dvh bg-slate-900 overflow-hidden text-slate-900 relative'
           : className
           ? className
           : `w-full ${customHeight || 'h-full min-h-[500px] lg:min-h-[700px]'} bg-slate-100 rounded-[28px] overflow-hidden text-slate-900 relative border border-slate-200 shadow-sm`
       }
     >
       {/* Absolute Headers Overlay */}
-      <div className="absolute top-0 left-0 right-0 z-[100] flex flex-col pointer-events-none">
+      <div className="absolute top-0 left-0 right-0 z-30 flex flex-col pointer-events-none">
         <div className="pointer-events-auto w-full flex flex-col">
           {/* Top Header Bar (Only when NOT isFullScreen) */}
           <AnimatePresence mode="wait">
@@ -1475,7 +1475,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="absolute inset-0 z-[1200] p-6 bg-white/95 backdrop-blur-2xl flex flex-col justify-center"
+            className="absolute inset-0 z-30 p-6 bg-white/95 backdrop-blur-2xl flex flex-col justify-center"
           >
             <DataProcessingSkeleton
               title="PROCESSING SATELLITE TILES & HIGH-CONTRAST RASTER"
@@ -1496,7 +1496,11 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
             ref={mapContainerRef}
             role="region"
             aria-label="Interactive Bangladesh Hazard Leaflet GIS Map with keyboard-navigable district pins and risk data"
-            className="w-full h-full z-10 bg-transparent pointer-events-auto"
+            /* `relative` makes the z-10 effective (z-index is ignored on
+               static elements) — without it Leaflet's internal panes
+               (z-index 200–1000) escape to the root stacking context and
+               would paint over the sticky header (z-40). */
+            className="relative w-full h-full z-10 bg-transparent pointer-events-auto"
           />
         </div>
 
@@ -1528,7 +1532,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.2 }}
-              className="absolute top-20 sm:top-24 left-4 right-4 sm:left-auto sm:right-6 z-[1050] pointer-events-auto sm:max-w-[320px] w-auto sm:w-full"
+              className="absolute top-20 sm:top-24 left-4 right-4 sm:left-auto sm:right-6 z-10 pointer-events-auto sm:max-w-[320px] w-auto sm:w-full"
             >
               <div className="bg-white/98 border-2 border-amber-400 rounded-2xl p-4 shadow-2xl text-slate-800 flex flex-col gap-2.5">
                 <div className="flex items-center justify-between border-b border-slate-200 pb-2">
@@ -1608,7 +1612,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.2 }}
-              className="absolute top-24 sm:top-6 left-4 right-4 sm:right-auto sm:left-20 z-[1050] pointer-events-auto sm:max-w-sm w-auto sm:w-full"
+              className="absolute top-24 sm:top-6 left-4 right-4 sm:right-auto sm:left-20 z-10 pointer-events-auto sm:max-w-sm w-auto sm:w-full"
             >
               <div className="bg-slate-900/95 backdrop-blur-md text-white border-2 border-amber-500/80 rounded-2xl p-3.5 shadow-2xl flex flex-col gap-2.5">
                 <div className="flex items-center justify-between border-b border-slate-700/80 pb-2 text-xs font-bold">
@@ -1738,7 +1742,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
               animate={{ opacity: 1, y: 0, x: "-50%" }}
               exit={{ opacity: 0, y: -20, x: "-50%" }}
               transition={{ duration: 0.3 }}
-              className="absolute top-20 left-1/2 z-[1100] pointer-events-auto bg-slate-900/95 text-emerald-300 border border-emerald-500/80 px-4 py-2.5 rounded-2xl shadow-2xl flex items-center gap-3 text-xs font-bold backdrop-blur-md"
+              className="absolute top-20 left-1/2 z-20 pointer-events-auto bg-slate-900/95 text-emerald-300 border border-emerald-500/80 px-4 py-2.5 rounded-2xl shadow-2xl flex items-center gap-3 text-xs font-bold backdrop-blur-md"
             >
               <span className="text-emerald-400 text-sm"><MaterialIcon name="photo_camera" className="w-4 h-4 inline-block align-middle" /></span>
               <span>{exportSuccessMsg}</span>
@@ -1761,7 +1765,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
               animate={{ opacity: 1, y: 0, x: "-50%" }}
               exit={{ opacity: 0, y: -20, x: "-50%" }}
               transition={{ duration: 0.3 }}
-              className="absolute top-20 left-1/2 z-[1100] pointer-events-auto bg-slate-900/95 text-amber-300 border border-amber-500/80 px-4 py-2.5 rounded-2xl shadow-2xl flex items-center gap-3 text-xs font-bold backdrop-blur-md"
+              className="absolute top-20 left-1/2 z-20 pointer-events-auto bg-slate-900/95 text-amber-300 border border-amber-500/80 px-4 py-2.5 rounded-2xl shadow-2xl flex items-center gap-3 text-xs font-bold backdrop-blur-md"
             >
               <span className="text-amber-400 text-sm"><MaterialIcon name="warning" className="w-4 h-4 inline-block align-middle" /></span>
               <span>{userLocationError}</span>
@@ -1784,7 +1788,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
               animate={{ opacity: 1, y: 0, x: "-50%" }}
               exit={{ opacity: 0, y: -20, x: "-50%" }}
               transition={{ duration: 0.3 }}
-              className="absolute top-20 left-1/2 z-[1200] pointer-events-auto bg-slate-900/95 text-sky-300 border border-sky-500/80 px-4 py-2.5 rounded-2xl shadow-2xl flex items-center gap-3 text-xs font-bold backdrop-blur-md"
+              className="absolute top-20 left-1/2 z-20 pointer-events-auto bg-slate-900/95 text-sky-300 border border-sky-500/80 px-4 py-2.5 rounded-2xl shadow-2xl flex items-center gap-3 text-xs font-bold backdrop-blur-md"
             >
               <span className="text-sky-400 text-sm"><MaterialIcon name="refresh" className="w-4 h-4 inline-block align-middle" /></span>
               <span>{syncToastMessage}</span>
@@ -1806,7 +1810,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
               animate={{ opacity: 1, y: 0, x: "-50%" }}
               exit={{ opacity: 0, y: -20, x: "-50%" }}
               transition={{ duration: 0.3 }}
-              className="absolute top-20 left-1/2 z-[1200] pointer-events-auto bg-slate-900/95 text-emerald-300 border border-emerald-500/80 px-4 py-2.5 rounded-2xl shadow-2xl flex items-center gap-3 text-xs font-bold backdrop-blur-md"
+              className="absolute top-20 left-1/2 z-20 pointer-events-auto bg-slate-900/95 text-emerald-300 border border-emerald-500/80 px-4 py-2.5 rounded-2xl shadow-2xl flex items-center gap-3 text-xs font-bold backdrop-blur-md"
             >
               <span className="text-emerald-400 text-sm"><MaterialIcon name="check_circle" className="w-4 h-4 inline-block align-middle" /></span>
               <span>{reportSuccessMsg}</span>
@@ -2567,7 +2571,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
               animate={{ opacity: 1, y: 0, x: "-50%" }}
               exit={{ opacity: 0, y: 20, x: "-50%" }}
               transition={{ duration: 0.3 }}
-              className="absolute bottom-20 sm:bottom-12 left-1/2 z-[1000] pointer-events-auto flex items-center gap-2 max-w-[90vw]"
+              className="absolute bottom-20 sm:bottom-12 left-1/2 z-10 pointer-events-auto flex items-center gap-2 max-w-[90vw]"
             >
               <button
                 onClick={() => {
@@ -2591,12 +2595,12 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
           </AnimatePresence>
 
           {/* Bottom-Right Hazard Actions Menu */}
-          <div className="absolute bottom-20 sm:bottom-12 right-3 sm:right-6 z-[1000] pointer-events-auto flex flex-col items-end gap-2">
+          <div className="absolute bottom-20 sm:bottom-12 right-3 sm:right-6 z-10 pointer-events-auto flex flex-col items-end gap-2">
             <AnimatedSocialIcons icons={hazardActions} iconSize={18} />
           </div>
 
           {/* Coordinates Readout, Performance Clustering & IndexedDB Tile Cache Indicator */}
-          <div className="absolute bottom-4 right-24 z-[1000] bg-white/95 backdrop-blur-md px-3.5 py-1.5 rounded-xl border border-slate-200 text-[11px] font-mono font-bold text-slate-700 shadow-lg pointer-events-auto hidden sm:flex items-center gap-3">
+          <div className="absolute bottom-4 right-24 z-10 bg-white/95 backdrop-blur-md px-3.5 py-1.5 rounded-xl border border-slate-200 text-[11px] font-mono font-bold text-slate-700 shadow-lg pointer-events-auto hidden sm:flex items-center gap-3">
             <span>Lat: {currentCoords.lat.toFixed(4)}° N</span>
             <span>Lng: {currentCoords.lng.toFixed(4)}° E</span>
             <span className="text-slate-300">|</span>

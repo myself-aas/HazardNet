@@ -1,26 +1,27 @@
 # HazardNet alert rules (backlog #5 — forecast freshness SLO).
 #
-# Threshold rationale: the canonical pipeline runs WEEKLY (Sunday ~02:00 UTC,
-# .github/workflows/weekly_forecast.yml). With date-granular prediction_date
-# values, a healthy gauge saws between ~2h (just after a run) and ~170h (just
-# before the next). The deployment guide's original 48h threshold assumed its
-# own daily-run schedule and would false-fire ~5 of 7 days at weekly cadence;
-# 192h (8 days) = one missed run plus ~22h of grace.
+# Threshold rationale: the canonical pipeline runs DAILY at 00:00 UTC
+# (.github/workflows/daily_forecast.yml — GitHub runner, GEE + Open-Meteo +
+# TFLite; the Kaggle workflows were removed on 2026-09-17). With date-granular
+# prediction_date values, a healthy gauge saws between ~2h (just after a run)
+# and ~25h (just before the next). 48h (2 days) = one missed run plus ~22h of
+# grace — the weekly-cadence 192h calibration applied only while the Kaggle
+# weekly pipeline was the producer.
 
 groups:
   - name: hazardnet-forecast-freshness
     rules:
       - alert: HazardNetForecastStale
-        expr: hazardnet_forecast_age_hours > 192
+        expr: hazardnet_forecast_age_hours > 48
         for: 10m
         labels:
           severity: warning
         annotations:
           summary: "Forecast data is stale ({{ $value | printf \"%.0f\" }}h old)"
           description: >-
-            The newest prediction_date in the forecast store is older than 8
-            days — the Sunday weekly pipeline likely missed a run. Check the
-            latest weekly_forecast.yml run and the ingest endpoint logs.
+            The newest prediction_date in the forecast store is older than 2
+            days — the daily pipeline likely missed a run. Check the
+            latest daily_forecast.yml run and the ingest endpoint logs.
 
       - alert: HazardNetForecastDataMissing
         expr: absent(hazardnet_forecast_age_hours)

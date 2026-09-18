@@ -10,10 +10,10 @@ that file into the committed artifacts the rest of the system reads:
     backend/data/forecasts/hazardnet_forecasts_latest.json  (JSON sidecar)
     backend/data/forecasts/manifest.json                    (provenance)
 
-It replaces the Kaggle path (`kaggle kernels output` +
-`scripts/fetch_kaggle_forecast.py`), which needed a Kaggle token, a live kernel
-and a network download. The validation helpers are shared with that script so
-both paths apply the same schema/hazard sanity check.
+It replaces the former Kaggle path (`kaggle kernels output` +
+`scripts/fetch_kaggle_forecast.py`, removed 2026-09-17 along with the four
+Kaggle-backed workflows), which needed a Kaggle token, a live kernel and a
+network download.
 
 Nothing here talks to the network and nothing is pushed: the caller decides what
 to do with `CHANGED=true` (commit, rebuild the snapshot, ingest into a store).
@@ -25,22 +25,94 @@ Exit codes: 0 = artifacts written (or already current), 1 = invalid input.
 """
 
 import argparse
+import csv
+import hashlib
 import json
 import shutil
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-SCRIPTS_DIR = Path(__file__).resolve().parent
-sys.path.insert(0, str(SCRIPTS_DIR))
+# ── CSV sanity/validation helpers ────────────────────────────────────────────
+# These lived in scripts/fetch_kaggle_forecast.py and were shared with the
+# legacy Kaggle path; they moved here (verbatim) when the Kaggle workflows were
+# removed on 2026-09-17 — the runner-generated pipeline is now the only producer.
 
-# Shared with the (legacy) Kaggle fetcher — one implementation of the sanity
-# check, so the two data paths cannot drift apart.
-from fetch_kaggle_forecast import (  # noqa: E402
-    compute_sha256,
-    convert_csv_to_json_records,
-    sanity_check,
+VALID_HAZARDS = {
+    'Cold Wave', 'Drought', 'Fire', 'Flash Flood',
+    'Flood', 'Heat Wave', 'Severe Local Storm', 'Tropical Cyclone'
+}
+
+# Canonical meteorological columns — mirrors backend/utils/forecastRow.js
+# METEOROLOGICAL_FIELDS. They must be NUMBERS in the JSON sidecar: the ingest
+# path drops non-numeric values, and the committed sidecar is the auditable
+# record of what the generator actually produced. (Found 2026-09-16: these
+# arrived as strings "27.5" from every producer, because the converter's numeric
+# allowlist only covered the severity/confidence columns and the legacy om_*.)
+METEOROLOGICAL_FIELDS = (
+    'temperature_mean', 'temperature_max', 'temperature_min',
+    'precipitation_mm', 'wind_max_kmh', 'dewpoint_mean',
+    'solar_radiation_mj_m2', 'evapotranspiration_mm',
 )
+
+NUMERIC_FIELDS = (
+    'model_severity', 'physics_severity', 'severity_score', 'confidence',
+    'severity', 'latitude', 'longitude',
+    *METEOROLOGICAL_FIELDS,
+)
+
+
+def compute_sha256(file_path):
+    h = hashlib.sha256()
+    with open(file_path, 'rb') as f:
+        while chunk := f.read(65536):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def convert_csv_to_json_records(csv_path):
+    records = []
+    with open(csv_path, 'r', encoding='utf-8') as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            parsed_row = {}
+            for k, v in row.items():
+                if k in ('district_id', 'location_id'):
+                    parsed_row[k] = int(v) if v else 0
+                elif k in NUMERIC_FIELDS or k.startswith('om_'):
+                    try:
+                        parsed_row[k] = float(v)
+                    except (ValueError, TypeError):
+                        parsed_row[k] = 0.0
+                else:
+                    parsed_row[k] = v
+            records.append(parsed_row)
+    return records
+
+
+def sanity_check(csv_path):
+    with open(csv_path, 'r', encoding='utf-8') as f:
+        reader = csv.DictReader(f)
+        fieldnames = set(reader.fieldnames or [])
+        rows = list(reader)
+
+    if not rows:
+        return False, "CSV contains zero rows"
+
+    has_severity = ('model_severity' in fieldnames or 'severity_score' in fieldnames)
+    if not has_severity:
+        return False, "Missing severity column"
+
+    has_district_or_loc = ('district_id' in fieldnames or 'location_id' in fieldnames)
+    if not has_district_or_loc:
+        return False, "Missing location/district identifier"
+
+    for i, row in enumerate(rows):
+        hazard = row.get('hazard_type', '').strip()
+        if hazard not in VALID_HAZARDS:
+            return False, f"Row {i + 1} has invalid hazard_type: '{hazard}'"
+
+    return True, f"sanity check passed ({len(rows)} rows)"
 
 
 def main():

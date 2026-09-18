@@ -172,12 +172,12 @@ describe('GET /api/v1/forecasts/history (Vercel)', () => {
 });
 
 describe('GET /api/v1/forecasts/metadata (Vercel)', () => {
-  test('serves prediction date, ingestion stamp, and Kaggle provenance', async () => {
+  test('serves prediction date, ingestion stamp, and pipeline provenance', async () => {
     const res = await invoke(metadataHandler);
     expect(res.statusCode).toBe(200);
     expect(res.body.prediction_date).toBe('2026-09-12');
     expect(res.body.ingestion_timestamp).toBe('2026-09-12T02:00:00Z');
-    expect(res.body.notebook_source).toContain('hazardnet-auto-forecast-pipeline');
+    expect(res.body.pipeline_source).toContain('daily_forecast.yml');
     expect(res.body.datasets).toHaveLength(2);
     expect(res.headers['cache-control']).toContain('no-store');
   });

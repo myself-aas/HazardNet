@@ -155,11 +155,12 @@ jobs:
       - name: Install Python test deps
         run: pip install --requirement scripts/requirements-pipeline.txt pytest
 
-      # Guards the Kaggle pipeline scripts AND the workflow files themselves:
-      # every .github/workflows/*.yml must parse as YAML and must not use the
-      # `secrets` context in ANY `if:` (job or step — GitHub rejects the whole
-      # file with zero jobs either way; gate on a resolved step output
-      # instead — the Sept 2026 CI outage). See scripts/tests/.
+      # Guards the pipeline scripts AND the workflow files themselves: every
+      # .github/workflows/*.yml must parse as YAML, must not use the `secrets`
+      # context in ANY `if:` (job or step — GitHub rejects the whole file with
+      # zero jobs either way; gate on a resolved step output instead — the
+      # Sept 2026 CI outage), and must not depend on Kaggle (removed
+      # 2026-09-17; the runner pipeline is the only producer). See scripts/tests/.
       - name: Run pipeline script tests
         run: python -m pytest scripts/tests -q
 
@@ -313,6 +314,15 @@ jobs:
             exit 1
           fi
           echo "✅ Models/VERSION.json matches the artifacts on disk"
+
+      # PRD REQ-006 / TASK-008 / TRD INT-CLAIM-01: every metric-shaped number
+      # in public copy must be registered in docs/CLAIMS.md with a strategy
+      # label. Fabricated or unregistered metrics fail the build.
+      # Guarded by scripts/tests/test_workflows.py::test_claims_gate_step_present.
+      - name: Claims registry gate (PRD REQ-006)
+        run: |
+          node scripts/check-claims.mjs --claims docs/CLAIMS.md --src frontend/src --html frontend/index.html dist/index.html
+
 
       - name: Serverless functions load as ESM
         run: |
