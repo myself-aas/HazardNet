@@ -8,6 +8,12 @@ import { expect, test } from '@playwright/test';
 import { BASE, expectNoHorizontalOverflow, waitForAppShell } from './helpers';
 
 test.describe('HazardNet smoke', () => {
+  // This file's tests boot a full SPA several times each, and on a loaded CI runner (four
+  // workers, cold caches) the *fixture* setup — browser launch and first paint — was what ran
+  // out of the 60 s default. Set the budget for the file rather than per test, so it covers
+  // setup as well as the body.
+  test.describe.configure({ timeout: 120_000 });
+
   test('front door renders core UI', async ({ page }) => {
     await page.goto(BASE);
     await expect(page).toHaveTitle(/HazardNet/i);
@@ -69,28 +75,31 @@ test.describe('HazardNet smoke', () => {
     // generated validation page (tables, added with Phase 9 §8.1 — a wide table is exactly
     // the kind of content that quietly widens a phone page).
     //
-    // That is sixteen full page loads in one test, and the default 60 s budget is not
-    // enough for it: CI failed here on 2026-09-18 with `page.goto: net::ERR_ABORTED`
-    // followed by the test timing out — a navigation that never settled, not an overflow
-    // assertion (the assertion reports the offending element and the measured pixels, and
-    // this run reported neither). `slow()` triples the budget, and `domcontentloaded`
-    // stops the navigation waiting on a `load` event these SPA pages fire late — readiness
-    // is asserted explicitly below, on the element the measurement actually needs.
-    test.slow();
+    // One page load per route, then four viewport widths measured on the *same* loaded page.
+    // That is what the assertion is about — a reflow — and it removes the failure mode CI hit
+    // on 2026-09-18: sixteen full navigations inside one test, one of which came back
+    // `net::ERR_ABORTED` and burned the whole budget (`Test timeout of 60000ms exceeded`, with
+    // no measured overflow reported). `domcontentloaded` stops the navigation waiting on a
+    // `load` event these SPA pages fire late, and readiness is asserted explicitly below, on
+    // the element the measurement actually needs, before any width is measured.
     for (const path of ['/', '/live', '/advisories', '/model-performance']) {
+      await page.setViewportSize({ width: 375, height: 900 });
+      await page.goto(`${BASE}${path}`, { waitUntil: 'domcontentloaded' });
+      // Measure only once the lazy route has rendered. Asserting immediately
+      // after `goto` measured an empty shell and reported 0px overflow while
+      // the real page scrolled ~285px sideways on a phone. The console at
+      // `/live` is the exception to the <h1> wait: its stage is a full-bleed
+      // map with no document heading, so its own readiness signal is the map.
+      if (path === '/live') {
+        await expect(page.locator('.leaflet-container').first()).toBeVisible({ timeout: 20_000 });
+      } else {
+        await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 20_000 });
+      }
       for (const width of [320, 375, 768, 1280]) {
         await page.setViewportSize({ width, height: 900 });
-        await page.goto(`${BASE}${path}`, { waitUntil: 'domcontentloaded' });
-        // Measure only once the lazy route has rendered. Asserting immediately
-        // after `goto` measured an empty shell and reported 0px overflow while
-        // the real page scrolled ~285px sideways on a phone. The console at
-        // `/live` is the exception to the <h1> wait: its stage is a full-bleed
-        // map with no document heading, so its own readiness signal is the map.
-        if (path === '/live') {
-          await expect(page.locator('.leaflet-container').first()).toBeVisible({ timeout: 20_000 });
-        } else {
-          await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 20_000 });
-        }
+        // Let the media queries and any resize listener settle before measuring; a resize
+        // that has not been laid out yet measures the previous width's boxes.
+        await page.waitForTimeout(150);
         await expectNoHorizontalOverflow(page, `${path} @${width}px`);
       }
     }
