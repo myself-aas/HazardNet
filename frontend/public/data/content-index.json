@@ -1,6 +1,6 @@
 {
   "schema": "hazardnet-content-index/v1",
-  "generated_at": "2026-09-18T00:36:31.418Z",
+  "generated_at": "2026-09-18T00:47:11.837Z",
   "generated_by": "scripts/build_content_engine.mjs",
   "origin": "https://www.hazardnet.live",
   "inputs": {
@@ -61,7 +61,7 @@
     },
     {
       "path": "/model-performance",
-      "title": "Hindcast validation: what HazardNet detected on four historical Bangladesh episodes",
+      "title": "Hindcast validation: what HazardNet detected on five historical Bangladesh episodes",
       "robots": "index,follow",
       "in_sitemap": true
     },

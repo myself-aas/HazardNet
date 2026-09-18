@@ -61,7 +61,7 @@ workflow (`.github/workflows/hindcast.yml`).
 
 Three properties are recorded in the files themselves rather than left to the reader:
 
-* **`completeness: "named-affected-only"` for all four.** The truth set names affected districts; it
+* **`completeness: "named-affected-only"` for all five.** The truth set names affected districts; it
   does not claim to have surveyed the other 55. `absence_means_no_event: false` follows, and so
   does the consequence: **the false-alarm ratio is not measurable** against this truth set, because
   there is no legitimate negative sample. The reports say that in words, and `far` is reported as
@@ -293,7 +293,7 @@ right. Each is now a test.
 * **No forecast skill.** The drivers are reanalysis — the weather that occurred. Every report says
   the number is a *ceiling on detection*, and that a lead-time hindcast needs archived forecast
   fields (ECMWF MARS/CDS), which is an owner credential.
-* **No CNN evaluation.** `cnn_evaluated: false` in all four reports, with the reason: the tensor
+* **No CNN evaluation.** `cnn_evaluated: false` in all five reports, with the reason: the tensor
   needs Sentinel-1/2, Landsat and ERA5-Land bands over Earth Engine for the historical window.
 * **No false-alarm ratio.** See §3.2; the denominator does not exist yet.
 * **No operational claim, and no accuracy claim on the site.** The Phase 8 content engine still

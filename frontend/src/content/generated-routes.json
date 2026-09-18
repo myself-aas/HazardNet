@@ -1,6 +1,6 @@
 {
   "schema": "hazardnet-generated-routes/v1",
-  "generated_at": "2026-09-18T00:36:31.418Z",
+  "generated_at": "2026-09-18T00:47:11.837Z",
   "generated_by": "scripts/build_content_engine.mjs",
   "origin": "https://www.hazardnet.live",
   "inputs": {
@@ -158,8 +158,8 @@
     {
       "path": "/model-performance",
       "label": "Hindcast validation",
-      "title": "Hindcast validation: what HazardNet detected on four historical Bangladesh episodes",
-      "description": "Per-episode detection counts, POD/FAR/CSI and threshold-band sensitivity for 5 historical episodes (Cyclone Amphan 2020, Cyclone Yaas 2021, the August 2024 eastern floods, the June 2025 northeast floods), computed from reanalysis drivers and published with the limits stated. Four episodes are not a validation set, and these are a ceiling on detection rather than forecast skill. The page publishes no single accuracy percentage, because this system cannot support one.",
+      "title": "Hindcast validation: what HazardNet detected on five historical Bangladesh episodes",
+      "description": "Per-episode detection counts, POD/FAR/CSI and threshold-band sensitivity for 5 historical episodes (Cyclone Amphan, Cyclone Yaas, Cyclone Mocha, Eastern flash floods, Northeast and coastal monsoon floods), computed from reanalysis drivers and published with the limits stated. Five episodes are not a validation set, and these are a ceiling on detection rather than forecast skill. The page publishes no single accuracy percentage, because this system cannot support one.",
       "keywords": [
         "HazardNet validation",
         "hindcast Bangladesh flood 2024",
@@ -211,7 +211,7 @@
       "standfirst": "Across 5 episodes and 50 district-episode pairs that the cited assessments name, the physics track flagged 50 under some class, 12 under the class that occurred, and 23 scored the occurring class above the alarm band. Those three numbers are not the same number, and the difference between them is the most useful thing on this page.",
       "sections": [
         {
-          "h2": "The four episodes",
+          "h2": "The five episodes",
           "paragraphs": [
             "Each episode is a committed file — a sourced truth set, a driver series and a report — and each report is recomputed in CI from those inputs. The tables on this page are that recomputation, projected, not a re-analysis."
           ],
@@ -227,7 +227,7 @@
           "h2": "Read this first",
           "callout": {
             "tone": "warning",
-            "text": "These are four episodes, not a validation set. Detection is counted only over the districts the cited sources name — a district nobody named is unknown, not clear — and the drivers are reanalysis (the weather that occurred), so every number here is a ceiling on detection, not forecast skill."
+            "text": "These are five episodes, not a validation set. Detection is counted only over the districts the cited sources name — a district nobody named is unknown, not clear — and the drivers are reanalysis (the weather that occurred), so every number here is a ceiling on detection, not forecast skill."
           },
           "paragraphs": [
             "Drivers: Open-Meteo historical archive (ERA5 / ERA5-Land era reanalysis) (https://archive-api.open-meteo.com/v1/archive), temperature_2m_max, temperature_2m_min, precipitation_sum, wind_speed_10m_max, wind_gusts_10m_max, et0_fao_evapotranspiration. Reanalysis knows the weather that occurred inside the window. This measures whether the physics track, given that weather, flags the districts that were hit — a ceiling on detection, not forecast skill. A lead-time hindcast needs archived forecast fields (ECMWF MARS/CDS), which this harness has no credential for.",
@@ -702,7 +702,7 @@
         {
           "h2": "Saturated terms: three formula inputs that carry no information",
           "paragraphs": [
-            "The physics cross-check feeds each formula an argument taken from the forecast unit. Four of those arguments, measured across all four episodes, sit at the top of their formula on every row — so the term cannot distinguish one district from another, and any severity difference attributed to it is an artefact of the wiring rather than of the weather.",
+            "The physics cross-check feeds each formula an argument taken from the forecast unit. Four of those arguments, measured across all five episodes, sit at the top of their formula on every row — so the term cannot distinguish one district from another, and any severity difference attributed to it is an artefact of the wiring rather than of the weather.",
             "In the shipped wiring the fire formula's drying term is at its ceiling on every row because it receives the horizon ET total, and both persistence terms are at theirs because they receive the horizon length. The counterfactual recomputes those three arguments with the quantities their formulas describe (mean daily ET, exceedance days above 30 °C / below 16 °C) and reports the difference. This is a wiring finding for the pipeline owner, measured here rather than asserted: the formulas themselves are not changed by this harness."
           ],
           "table": {
@@ -831,7 +831,7 @@
       "faqs": [
         {
           "question": "Is there an accuracy number for the forecast model?",
-          "answer": "No, and this deployment will not publish one. Four episodes are not a validation set, the drivers are reanalysis rather than archived forecast fields, and no district is treated as a confirmed negative. What is published is what the reports actually measured: how many of the named districts were flagged, and POD/FAR/CSI with their denominators stated."
+          "answer": "No, and this deployment will not publish one. Five episodes are not a validation set, the drivers are reanalysis rather than archived forecast fields, and no district is treated as a confirmed negative. What is published is what the reports actually measured: how many of the named districts were flagged, and POD/FAR/CSI with their denominators stated."
         },
         {
           "question": "Why does Cyclone Amphan show a false alarm ratio of 1.000 and no POD?",

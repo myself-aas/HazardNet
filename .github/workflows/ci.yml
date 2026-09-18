@@ -182,7 +182,12 @@ jobs:
             const fs = require('node:fs');
             const d = JSON.parse(fs.readFileSync('/tmp/model-performance.json', 'utf8'));
             if (d.schema !== 'hazardnet-model-performance/v1') throw new Error('schema tag missing');
-            if (d.episodes.length !== 4) throw new Error('expected 4 episodes, got ' + d.episodes.length);
+            // Derived, not hard-coded: the episode count is a property of the committed reports,
+            // so adding an episode must not require editing this assertion (it once did).
+            const reports = fs.readdirSync('data/hindcast/reports').filter((n) => n.endsWith('.json'));
+            if (d.episodes.length !== reports.length) {
+              throw new Error('published ' + d.episodes.length + ' episodes for ' + reports.length + ' reports');
+            }
             if (d.method.cnn_evaluated !== false) throw new Error('CNN evaluation claim leaked');
             if (d.method.is_forecast !== false) throw new Error('forecast-skill claim leaked');
             const text = fs.readFileSync('/tmp/model-performance.json', 'utf8');

@@ -182,6 +182,15 @@ describe('the builder refuses to publish an overstatement', () => {
 });
 
 describe('the generated /model-performance route', () => {
+  it('counts the episodes it actually publishes, in its own copy', () => {
+    const words = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'];
+    const count = words[artifact.episodes.length] ?? String(artifact.episodes.length);
+    expect(route.title).toContain(`${count} historical Bangladesh episodes`);
+    expect(route.sections[0].h2).toBe(`The ${count} episodes`);
+    expect(route.sections.find((section) => section.callout)?.callout.text).toContain(`These are ${count} episodes`);
+    for (const episode of artifact.episodes) expect(route.description).toContain(episode.title.split(' — ')[0]);
+  });
+
   it('exists, is indexable and joins the sitemap', () => {
     expect(route).toBeTruthy();
     expect(route.robots).toBe('index,follow');
@@ -201,8 +210,11 @@ describe('the generated /model-performance route', () => {
       'Eastern flash floods',
       'Northeast and coastal monsoon floods',
     ]);
-    // …and the full titles are still on the page, in the episode list above the tables.
-    const episodeList = route.sections.find((section) => section.h2 === 'The four episodes');
+    // …and the full titles are still on the page, in the episode list above the tables. The
+    // heading counts the episodes, so it is matched by shape rather than by a hard-coded word.
+    const episodeList = route.sections.find((section) => /^The \w+ episodes$/.test(section.h2 ?? ''));
+    expect(episodeList).toBeTruthy();
+    expect(episodeList.bullets).toHaveLength(artifact.episodes.length);
     for (const episode of artifact.episodes) {
       expect(episodeList.bullets.some((bullet) => bullet.includes(episode.title))).toBe(true);
     }

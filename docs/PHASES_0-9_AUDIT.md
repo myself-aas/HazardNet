@@ -162,7 +162,7 @@ the findings in `docs/phase-reports/phase-9-validation-and-soft-launch.md`:
 * **Verification metrics:** the 2024 eastern flood is the project's first measured detection —
   POD 1.0, FAR 0.154, CSI 0.846 over 26 scored windows; the other three episodes give `misses: 0`,
   `POD: None`, `FAR: 1.0` under the class-strict rule, which the report explains rather than hides.
-* **Threshold independence:** the 0.40 / 0.50 / 0.65 bands produce identical splits on all four
+* **Threshold independence:** the 0.40 / 0.50 / 0.65 bands produce identical splits on all five
   episodes — so the calibration workstream cannot fix what the hindcast found.
 * **Four findings with numbers:** the ERA5 sustained 10 m wind at district centroids on Amphan's
   landfall day is 44–69 km/h where the cyclone carried 130–155 km/h ashore; three physics terms are
@@ -242,7 +242,7 @@ the overflow spec, so a third could exist undetected.
 | "The model is X % accurate" | no fitted calibration, and the hindcast's FAR denominator is a reporting boundary. Three separate gates now refuse such a number: the hindcast report schema never computes one, `scripts/build_model_performance.mjs` fails the build if a forbidden metric key appears, and its `--check` runs in CI. |
 | "Detects N of 5 events" | the five episodes are not independent samples (six districts are shared between the 2024 and 2025 floods; the two south-western cyclones overlap almost completely; Mocha's four districts are the smallest truth set in the set). |
 | "Early warning at 7–15 days" | the drivers are reanalysis. Every report calls the result a *ceiling on detection*, not lead-time skill; archived forecast fields (ECMWF MARS/CDS) are what a lead-time claim needs. |
-| "Validated with the CNN" | `cnn_evaluated: false` in all four reports; the tensor needs Earth Engine credentials for historical windows. |
+| "Validated with the CNN" | `cnn_evaluated: false` in all five reports; the tensor needs Earth Engine credentials for historical windows. |
 | "2,931 events ingested" | the model card says *reported, not verified*; the loader reports drift. Nothing here restates it as achieved. |
 | "Submitted to Search Console / listed on ReliefWeb / …" | Action 10–11 are owner actions and have not happened. No submission, no listing, no backlink is claimed. |
 | "Security headers verified live" | Action 7 is open; the probe is red by fact. |

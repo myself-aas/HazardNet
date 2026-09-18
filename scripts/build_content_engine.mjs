@@ -648,6 +648,12 @@ function modelPerformanceRoute({ performance }) {
    * loses, because the episode list below carries every full title.
    */
   const shortTitle = (episode) => String(episode.title ?? '').split(' — ')[0].trim() || episode.id;
+  // Spelled-out counts: the copy says "these are five episodes, not a validation set", and that
+  // sentence has to stay true when a sixth is added — a hard-coded word is how a page starts
+  // contradicting its own table.
+  const WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'];
+  const howMany = (n) => WORDS[n] ?? String(n);
+  const capitalised = (text) => text.charAt(0).toUpperCase() + text.slice(1);
 
   // `updated` is the newest report's own build date — a field of an input, never the clock, so
   // this route is stable across rebuilds and `--check` stays exact.
@@ -662,12 +668,12 @@ function modelPerformanceRoute({ performance }) {
   return {
     path: '/model-performance',
     label: 'Hindcast validation',
-    title: 'Hindcast validation: what HazardNet detected on four historical Bangladesh episodes',
+    title: `Hindcast validation: what HazardNet detected on ${howMany(episodes.length)} historical Bangladesh episodes`,
     description:
       `Per-episode detection counts, POD/FAR/CSI and threshold-band sensitivity for ${episodes.length} historical episodes ` +
-      `(Cyclone Amphan 2020, Cyclone Yaas 2021, the August 2024 eastern floods, the June 2025 northeast floods), computed from ` +
-      'reanalysis drivers and published with the limits stated. Four episodes are not a validation set, and these are a ceiling ' +
-      'on detection rather than forecast skill. The page publishes no single accuracy percentage, because this system cannot support one.',
+      `(${episodes.map(shortTitle).join(', ')}), computed from ` +
+      `reanalysis drivers and published with the limits stated. ${howMany(episodes.length)[0].toUpperCase()}${howMany(episodes.length).slice(1)} episodes are not a validation set, ` +
+      'and these are a ceiling on detection rather than forecast skill. The page publishes no single accuracy percentage, because this system cannot support one.',
     keywords: [
       'HazardNet validation',
       'hindcast Bangladesh flood 2024',
@@ -710,7 +716,7 @@ function modelPerformanceRoute({ performance }) {
       'them is the most useful thing on this page.',
     sections: [
       {
-        h2: 'The four episodes',
+        h2: `The ${howMany(episodes.length)} episodes`,
         paragraphs: [
           'Each episode is a committed file — a sourced truth set, a driver series and a report — and each report is recomputed in CI from those inputs. The tables on this page are that recomputation, projected, not a re-analysis.',
         ],
@@ -724,8 +730,8 @@ function modelPerformanceRoute({ performance }) {
         callout: {
           tone: 'warning',
           text:
-            'These are four episodes, not a validation set. Detection is counted only over the districts the cited sources name — ' +
-            'a district nobody named is unknown, not clear — and the drivers are reanalysis (the weather that occurred), so every ' +
+            `These are ${howMany(episodes.length)} episodes, not a validation set. Detection is counted only over the districts the cited sources ` +
+            'name — a district nobody named is unknown, not clear — and the drivers are reanalysis (the weather that occurred), so every ' +
             'number here is a ceiling on detection, not forecast skill.',
         },
         paragraphs: [
@@ -851,7 +857,9 @@ function modelPerformanceRoute({ performance }) {
       {
         h2: 'Saturated terms: three formula inputs that carry no information',
         paragraphs: [
-          'The physics cross-check feeds each formula an argument taken from the forecast unit. Four of those arguments, measured across all four episodes, sit at the top of their formula on every row — so the term cannot distinguish one district from another, and any severity difference attributed to it is an artefact of the wiring rather than of the weather.',
+          `The physics cross-check feeds each formula an argument taken from the forecast unit. Four of those arguments, measured across ` +
+            `all ${howMany(episodes.length)} episodes, sit at the top of their formula on every row — so the term cannot distinguish one ` +
+            'district from another, and any severity difference attributed to it is an artefact of the wiring rather than of the weather.',
           ...episodes
             .map((episode) => episode.counterfactual_finding)
             .filter(Boolean)
@@ -902,7 +910,7 @@ function modelPerformanceRoute({ performance }) {
       {
         question: 'Is there an accuracy number for the forecast model?',
         answer:
-          'No, and this deployment will not publish one. Four episodes are not a validation set, the drivers are reanalysis rather than archived forecast fields, and no district is treated as a confirmed negative. What is published is what the reports actually measured: how many of the named districts were flagged, and POD/FAR/CSI with their denominators stated.',
+          `No, and this deployment will not publish one. ${capitalised(howMany(episodes.length))} episodes are not a validation set, the drivers are reanalysis rather than archived forecast fields, and no district is treated as a confirmed negative. What is published is what the reports actually measured: how many of the named districts were flagged, and POD/FAR/CSI with their denominators stated.`,
       },
       {
         question: 'Why does Cyclone Amphan show a false alarm ratio of 1.000 and no POD?',
