@@ -41,6 +41,10 @@ import {
   YAxis,
 } from 'recharts';
 import Breadcrumbs from '../components/Breadcrumbs';
+// Per-route title/description/canonical/JSON-LD. Without it this page inherits the
+// generic shell metadata in index.html, which is a real defect for a page whose
+// whole purpose is to be found and cited.
+import { usePageSeo } from '../hooks/usePageSeo';
 import {
   ABSENT,
   formatMaybe,
@@ -81,6 +85,12 @@ function Stat({ label, value, note }: { label: string; value: string; note?: str
 }
 
 export default function HazardArchivePage() {
+  // `/archive` is the canonical address; `/history` and `/events` are aliases kept
+  // for deep links. All three resolve their metadata from the same `/archive` entry
+  // in src/content/site-routes.json, so the canonical tag points at one URL rather
+  // than three — otherwise the alias pages compete with the real one in search.
+  usePageSeo('/archive');
+
   const [archive, setArchive] = useState<HazardArchive | null>(null);
   const [state, setState] = useState<'loading' | 'loaded' | 'absent' | 'unreadable'>('loading');
   const [hazardFilter, setHazardFilter] = useState<string | null>(null);
@@ -109,7 +119,7 @@ export default function HazardArchivePage() {
   if (!archive) {
     return (
       <div className="max-w-3xl mx-auto px-4 py-16 space-y-4">
-        <Breadcrumbs items={[{ label: 'Home', to: '/' }, { label: 'Hazard archive' }]} />
+        <Breadcrumbs customItems={[{ label: 'Home', path: '/' }, { label: 'Hazard archive' }]} />
         <h1 className="text-3xl font-bold text-slate-900">Historical hazard archive</h1>
         <p className="text-slate-600 leading-relaxed">
           This deployment has <strong>no hazard archive artifact loaded</strong>, so this page states no
@@ -157,7 +167,7 @@ node scripts/build_hazard_archive.mjs --events data/events/hazardnet-events.json
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-10 space-y-8">
-      <Breadcrumbs items={[{ label: 'Home', to: '/' }, { label: 'Hazard archive' }]} />
+      <Breadcrumbs customItems={[{ label: 'Home', path: '/' }, { label: 'Hazard archive' }]} />
 
       <header className="space-y-3">
         <h1 className="text-3xl sm:text-4xl font-bold text-slate-900">Historical hazard archive</h1>

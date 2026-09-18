@@ -96,8 +96,14 @@ export const BangladeshSvgMap: React.FC<BangladeshSvgMapProps> = ({
           </p>
         </div>
 
-        {/* Mode & Hazard Filter Tabs */}
-        <div className="flex flex-wrap items-center gap-2">
+        {/* Mode & Hazard Filter Tabs.
+            `w-full sm:w-auto` matters: the parent is `flex-col items-start` on small
+            screens, so without it this row sizes to its *content* (463 px) instead of
+            the card (327 px) — `flex-wrap` then has nothing to wrap against, the row
+            overflows, and the ancestor's `overflow-hidden` clips the last filters with
+            no scrollbar and no keyboard path. Measured at 375 px: row 463 px → 293 px,
+            card no longer clips, every chip reachable. */}
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
           
           {/* Districts vs Divisions Toggle */}
           <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs">
@@ -124,8 +130,11 @@ export const BangladeshSvgMap: React.FC<BangladeshSvgMapProps> = ({
           </div>
 
           {/* Hazard Quick Filters */}
+          {/* `min-w-0` lets the hazard scroller shrink inside the flex row instead of
+              forcing the row to its content width; without it the scroll container
+              never becomes scrollable because the row grows past the card first. */}
           {viewMode === 'districts' && (
-            <div className="flex items-center gap-1 overflow-x-auto max-w-full">
+            <div className="flex items-center gap-1 overflow-x-auto max-w-full min-w-0">
               {['All', 'Flash Flood', 'Monsoon Flood', 'Tropical Cyclone', 'Drought'].map((f) => {
                 const isAct = hazardFilter === f;
                 return (

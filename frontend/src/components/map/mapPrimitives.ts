@@ -76,19 +76,38 @@ export const BANGLADESH_RIVERS = [
   },
 ];
 
+/**
+ * Accessible name for a district hazard marker.
+ *
+ * Exported because the *element* that carries it is Leaflet's own wrapper
+ * (`.leaflet-marker-icon`, which has `role="button"` + `tabindex="0"` and its own
+ * Enter/Space handling), not the icon's inner HTML. `LiveMapView.attachMarkerA11y`
+ * applies it there. Keeping the wording here — next to the marker it describes, and
+ * shared with nothing else — stops the label and the icon drifting apart.
+ */
+export const hazardMarkerLabel = (
+  severity: number,
+  hazardType: string,
+  districtName: string,
+  riskLevel?: string,
+) => {
+  const hazardDef = HAZARD_LAYERS.find((h) => h.id === hazardType) || { name: hazardType };
+  const effectiveRisk = riskLevel || (severity >= 0.7 ? 'High' : severity >= 0.4 ? 'Moderate' : 'Low');
+  return `${districtName} District, Risk: ${effectiveRisk}, Hazard: ${hazardDef.name}, Severity: ${(severity * 100).toFixed(0)}%`;
+};
+
 // Custom High-Contrast Marker Generator for Leaflet
-export const createCustomIcon = (severity: number, isSelected: boolean, hazardType: string, districtName: string, riskLevel?: string) => {
+export const createCustomIcon = (severity: number, isSelected: boolean, hazardType: string, districtName: string) => {
   const hazardDef = HAZARD_LAYERS.find((h) => h.id === hazardType) || { name: hazardType };
   const color = getSeverityColor(severity);
   const glowColor = color;
-  const effectiveRisk = riskLevel || (severity >= 0.7 ? 'High' : severity >= 0.4 ? 'Moderate' : 'Low');
-  const ariaLabel = `${districtName} District, Risk: ${effectiveRisk}, Hazard: ${hazardDef.name}, Severity: ${(severity * 100).toFixed(0)}%`;
-
+  // The accessible name is NOT set here any more. Leaflet's own wrapper
+  // (`.leaflet-marker-icon`) already carries `role="button"` + `tabindex="0"` and handles
+  // Enter/Space; `LiveMapView` sets the name on that wrapper in `attachMarkerA11y`. Putting
+  // the same role/tabindex on this inner div created a second interactive element inside
+  // the first — the `nested-interactive` violation that fired on 53 markers per map route.
   const html = isSelected ? `
     <div
-      tabindex="0"
-      role="button"
-      aria-label="${ariaLabel}"
       style="
       display: inline-flex;
       align-items: center;
@@ -125,9 +144,6 @@ export const createCustomIcon = (severity: number, isSelected: boolean, hazardTy
     </div>
   ` : `
     <div
-      tabindex="0"
-      role="button"
-      aria-label="${ariaLabel}"
       style="
       width: 30px;
       height: 30px;

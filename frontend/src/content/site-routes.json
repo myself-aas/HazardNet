@@ -1143,6 +1143,58 @@
           ]
         }
       ]
+    },
+    {
+      "path": "/archive",
+      "label": "Hazard archive",
+      "title": "Historical hazard archive for Bangladesh, 2000–2025",
+      "description": "2,931 recorded event-district observations across Bangladesh's 64 districts and eight hazard classes, grouped into 251 physical episodes, with every data-quality limit stated on the page.",
+      "keywords": [
+        "Bangladesh historical hazards",
+        "hazard archive Bangladesh",
+        "GLIDE disaster identifiers",
+        "flood and cyclone history Bangladesh",
+        "agricultural disaster record"
+      ],
+      "robots": "index,follow",
+      "sitemap": {
+        "changefreq": "monthly",
+        "priority": 0.85
+      },
+      "appShell": false,
+      "h1": "Historical hazard archive",
+      "standfirst": "Every hazard record this platform holds for Bangladesh between 2000 and 2025, grouped so the numbers can be read for what they are. The archive holds 2,931 event-district observations covering 64 districts and eight hazard classes. Those rows describe 251 distinct physical episodes, because a national event is recorded once per district — a row is an observation, not a disaster. The page states the archive's own limits: which year is missing, how far its hazard labels disagree with the GLIDE identifiers, and which columns carried no information at all.",
+      "updated": "2026-09-19",
+      "sections": [
+        {
+          "h2": "What the archive records, and what a row means",
+          "paragraphs": [
+            "The archive is a compilation of dated hazard events for Bangladesh, assembled from third-party records and loaded through this repository's own event contract. Each row is one district on one date for one hazard class. That unit matters: a cyclone that crossed the coast and affected all 64 districts appears as 64 rows and one physical episode. Reading the row count as a count of disasters overstates the record by roughly an order of magnitude, so the observation count and the episode count are printed next to each other everywhere on this site.",
+            "Rows are grouped into episodes by their public GLIDE event identifier where one exists. Of the 251 episodes, 41 are national in coverage and 18 are partial; 192 rows carry no GLIDE identifier at all and are grouped by date and hazard class instead."
+          ]
+        },
+        {
+          "h2": "What the archive does not record",
+          "bullets": [
+            "The year 2001 is entirely absent from the archive. A gap in a hazard record is a gap in reporting, not a quiet year, and the timeline on the archive page says so rather than plotting zero.",
+            "The source archive's casualty field is zero for every row, which means 'not recorded' rather than 'nobody was affected'. No page on this site publishes an affected or death figure from it.",
+            "The archive's hazard label and its GLIDE identifier disagree on 846 rows, most often between severe local storm and tropical cyclone, or between flood and flash flood. Both values are preserved and the disagreement is reported rather than reconciled.",
+            "Three source columns are constant across all 2,931 rows and carry no information. The loader refuses to map them, so they cannot be mistaken for data."
+          ]
+        },
+        {
+          "h2": "Where these numbers come from",
+          "paragraphs": [
+            "The figures on the archive page are read from a published artifact built by this repository's build scripts from a validated load of the source archive, not computed in the browser. The loader enforces the same event contract as every other hazard source this platform ingests, and the build refuses to publish an artifact whose counts no longer agree with the data it was built from. The artifact carries aggregate counts, public GLIDE identifiers and summary statistics only: no per-row records, no coordinates and none of the source's descriptive text, because the source compilation is not redistributed here."
+          ]
+        },
+        {
+          "h2": "Publication status of derived measures",
+          "paragraphs": [
+            "A severity index derived from this archive, together with its weighting scheme, is part of unpublished research and is withheld from public copy until the associated publication is released. The archive page states this explicitly rather than leaving an unexplained gap. The severity statistics that are published alongside the archive are computed from the severity values the source archive itself reports, and are labelled as such wherever they appear."
+          ]
+        }
+      ]
     }
   ],
   "appScreens": [

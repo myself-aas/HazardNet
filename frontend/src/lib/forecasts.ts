@@ -391,7 +391,6 @@ const DISTRICT_NAME_ALIASES: Record<string, string> = {
   // its card, so the site showed the static baseline despite having a forecast
   // (found 2026-09-17 while wiring coverage accounting).
   nawabganj: 'chapainawabganj',
-  khagrachari: 'khagrachhari',
 };
 
 export const canonicalKey = (name: string): string => {

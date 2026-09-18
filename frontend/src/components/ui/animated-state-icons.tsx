@@ -57,7 +57,21 @@ export function MenuCloseIcon({ size = 40, color = "currentColor", className, du
   const open = useToggleState(duration, isState);
   return (
     <svg viewBox="0 0 40 40" fill="none" className={cn("", className)} style={{ width: size, height: size }}>
+      {/*
+        `y1`/`y2` are set as static attributes as well as animated values. They used
+        to exist only inside `animate`, so before the first animation frame resolved
+        framer-motion wrote the string "undefined" into the SVG:
+
+            <line> attribute y1: Expected length, "undefined".
+
+        That is invalid geometry for one frame and a console error on every page of
+        the site, because the Navbar — and therefore this icon — is global. React
+        reports invalid SVG attributes through console.error rather than as an
+        uncaught error, so `pageerror`-based gates never saw it. Values match the
+        resting state in `animate`.
+      */}
       <motion.line x1="10" x2="30" stroke={color} strokeWidth={2.5} strokeLinecap="round"
+        initial={{ y1: 12, y2: 12, rotate: 0 }}
         animate={open
           ? { y1: 20, y2: 20, rotate: 45 }
           : { y1: 12, y2: 12, rotate: 0 }}
@@ -70,6 +84,7 @@ export function MenuCloseIcon({ size = 40, color = "currentColor", className, du
         style={{ transformOrigin: "20px 20px" }}
       />
       <motion.line x1="10" x2="30" stroke={color} strokeWidth={2.5} strokeLinecap="round"
+        initial={{ y1: 28, y2: 28, rotate: 0 }}
         animate={open
           ? { y1: 20, y2: 20, rotate: -45 }
           : { y1: 28, y2: 28, rotate: 0 }}

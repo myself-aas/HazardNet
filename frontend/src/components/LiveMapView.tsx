@@ -51,7 +51,7 @@ export {
 
 // River data, hazard layer registry & marker icon builder moved to
 // ./map/mapPrimitives (see P2 decomposition plan in docs/audits/).
-import { BANGLADESH_RIVERS, HAZARD_LAYERS, createCustomIcon } from './map/mapPrimitives';
+import { BANGLADESH_RIVERS, HAZARD_LAYERS, createCustomIcon, hazardMarkerLabel } from './map/mapPrimitives';
 import DistrictForecastCard from './map/DistrictForecastCard';
 import type { HazardLayerDef } from './map/mapPrimitives';
 
@@ -602,7 +602,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
         });
 
         // Pin Marker with DivIcon
-        const icon = createCustomIcon(dist.severity, isSel, dist.hazardType, dist.name, dist.risk);
+        const icon = createCustomIcon(dist.severity, isSel, dist.hazardType, dist.name);
         const marker = L.marker([dist.lat, dist.lng], { icon });
         const severityPct = (dist.severity * 100).toFixed(0);
 
@@ -621,7 +621,8 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
         marker.on('click', triggerClick);
         circle.on('click', triggerClick);
 
-        const districtAriaLabel = `${dist.name} District, Risk: ${dist.risk || (dist.severity >= 0.7 ? 'High' : dist.severity >= 0.4 ? 'Moderate' : 'Low')}, Hazard: ${dist.hazardType}, Severity: ${Math.round(dist.severity * 100)}%`;
+        // Single source of truth for the marker's accessible name (see mapPrimitives).
+        const districtAriaLabel = hazardMarkerLabel(dist.severity, dist.hazardType, dist.name, dist.risk);
 
         const attachMarkerA11y = () => {
           const el = marker.getElement();
@@ -660,7 +661,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
       try {
         const userPinIcon = L.divIcon({
           html: `
-            <div tabindex="0" role="button" aria-label="User Stored Pinpoint GPS Location: ${pinpointLat.toFixed(4)}°N, ${pinpointLng.toFixed(4)}°E" style="position: relative; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; outline: none; cursor: pointer;">
+            <div style="position: relative; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; outline: none; cursor: pointer;">
               <div style="position: absolute; inset: -8px; border-radius: 50%; background: rgba(2, 132, 199, 0.4); filter: blur(4px);" class="radar-ping-ring"></div>
               <div style="position: relative; width: 32px; height: 32px; border-radius: 50%; background: #0284c7; border: 2.5px solid #ffffff; display: flex; align-items: center; justify-content: center; color: #ffffff; box-shadow: 0 4px 16px rgba(2, 132, 199, 0.6);">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="display:block;"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="12" cy="12" r="3" fill="currentColor"/><line x1="12" y1="2" x2="12" y2="6" stroke="currentColor" stroke-width="2"/><line x1="12" y1="18" x2="12" y2="22" stroke="currentColor" stroke-width="2"/><line x1="2" y1="12" x2="6" y2="12" stroke="currentColor" stroke-width="2"/><line x1="18" y1="12" x2="22" y2="12" stroke="currentColor" stroke-width="2"/></svg>
@@ -766,7 +767,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
 
         const userGpsIcon = L.divIcon({
           html: `
-            <div tabindex="0" role="button" aria-label="Active Real-time GPS Position: ${userGpsPos.lat.toFixed(4)}°N, ${userGpsPos.lng.toFixed(4)}°E" style="position: relative; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; outline: none; cursor: pointer;">
+            <div style="position: relative; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; outline: none; cursor: pointer;">
               <div style="position: absolute; inset: -10px; border-radius: 50%; background: rgba(2, 132, 199, 0.45); filter: blur(6px);" class="radar-ping-ring"></div>
               <div style="position: relative; width: 36px; height: 36px; border-radius: 50%; background: #0284c7; border: 2.5px solid #ffffff; display: flex; align-items: center; justify-content: center; color: #ffffff; box-shadow: 0 4px 20px rgba(2, 132, 199, 0.7);">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="display:block;"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="12" cy="12" r="3" fill="currentColor"/><line x1="12" y1="2" x2="12" y2="6" stroke="currentColor" stroke-width="2"/><line x1="12" y1="18" x2="12" y2="22" stroke="currentColor" stroke-width="2"/><line x1="2" y1="12" x2="6" y2="12" stroke="currentColor" stroke-width="2"/><line x1="18" y1="12" x2="22" y2="12" stroke="currentColor" stroke-width="2"/></svg>
@@ -919,7 +920,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
     if (inspectedPoint && isValidLatLng(inspectedPoint.lat, inspectedPoint.lng)) {
       const inspectIcon = L.divIcon({
         html: `
-          <div tabindex="0" role="button" aria-label="Inspected Geographic Point: ${inspectedPoint.lat.toFixed(4)}°N, ${inspectedPoint.lng.toFixed(4)}°E" style="position: relative; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; outline: none; cursor: pointer;">
+          <div style="position: relative; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; outline: none; cursor: pointer;">
             <div style="position: absolute; inset: -12px; border-radius: 50%; background: rgba(249, 168, 37, 0.45); filter: blur(6px);" class="radar-ping-ring"></div>
             <div style="position: relative; width: 30px; height: 30px; border-radius: 50%; background: #ffffff; border: 3px solid #f64137; display: flex; align-items: center; justify-content: center; color: #0f172a; font-size: 14px; font-weight: 900; box-shadow: 0 4px 16px rgba(249, 168, 37, 0.5);">
               <MaterialIcon name="search" className="w-4 h-4 inline-block align-middle" />

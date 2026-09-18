@@ -317,9 +317,13 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
                 <span>{dbSource === 'firestore' ? 'Firestore Live Sync' : 'Local Forecast Baseline'}</span>
               </span>
             </div>
-            <h1 className="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+            {/* `h2`, not `h1`: this component is embedded inside `AnalyticsPage`, whose
+                own `<h1>` is the page heading. Two `<h1>`s on `/analytics` split the
+                document outline and made the axe census report a duplicate top-level
+                heading. The visual size is unchanged. */}
+            <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
               District Hazard Forecast Analytics
-            </h1>
+            </h2>
             <p className="text-slate-600 text-xs sm:text-sm max-w-3xl leading-relaxed">
               Real-time multi-hazard risk quantification and weather trends across Bangladesh's 64 agricultural districts powered by CNN AI model inference and Open-Meteo observations.
             </p>

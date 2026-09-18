@@ -90,4 +90,16 @@
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
+  <!--
+    Kept in step with src/content/site-routes.json. The real sitemap is generated
+    at build time by scripts/prerender.mjs from that registry; this file is the
+    fallback a dev server serves, and it only listed the 15 hand-written routes, so
+    a page could look correctly registered in review and still be absent here.
+  -->
+  <url>
+    <loc>https://www.hazardnet.live/archive</loc>
+    <lastmod>2026-09-19</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+  </url>
 </urlset>
