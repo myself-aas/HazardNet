@@ -427,6 +427,24 @@ jobs:
       - name: RAG knowledge-base freshness
         run: npm run check:rag-freshness
 
+      # A derived severity index and its weights are part of UNPUBLISHED research and
+      # must not appear in public copy. This is the control, not a comment: it scans
+      # every visitor-readable surface and fails the build on derivation language,
+      # weights, calibrated thresholds and cluster assignments. Composite-index copy
+      # that predates the embargo is printed as a review item without failing, so the
+      # question stays visible instead of being answered once and forgotten.
+      - name: Severity-index publication embargo
+        run: npm run check:embargo
+
+      # The historical-archive artifact and its RAG documents are projections of the
+      # committed ETL export, so they fail the build when they no longer describe it —
+      # the same clock-blind pattern as the other derived-artifact gates above.
+      - name: Hazard archive artifact describes its inputs
+        run: npm run archive:check
+
+      - name: RAG archive documents describe the artifact
+        run: npm run archive:rag:check
+
       # A `git diff --exit-code` gate alone cannot see a MISSING file: an
       # untracked Models/VERSION.json diffs clean, so the handshake stayed
       # absent on main while this step reported success — and the backend suite

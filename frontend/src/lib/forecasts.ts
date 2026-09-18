@@ -376,6 +376,9 @@ const DISTRICT_NAME_ALIASES: Record<string, string> = {
   chittagong: 'chattogram',
   comilla: 'cumilla',
   barishal: 'barisal',
+  // GAUL/BBS renders Khagrachhari "Khagrachari"; the committed event archive uses
+  // this spelling. Must stay in step with scripts/etl/districts.py ALIASES.
+  khagrachari: 'khagrachhari',
   bogura: 'bogra',
   jaipurhat: 'joypurhat',
   netrakona: 'netrokona',

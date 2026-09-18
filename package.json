@@ -43,7 +43,13 @@
     "alerts:snapshot": "node scripts/rehearse_alert_engine.mjs --out /tmp/alert-run.json --quiet && node scripts/build_alert_snapshot.mjs --in /tmp/alert-run.json",
     "check:bundle": "node scripts/check-bundle.mjs",
     "check:rag-freshness": "node scripts/check-rag-freshness.mjs",
-    "check:env": "node scripts/validate_env.mjs"
+    "check:env": "node scripts/validate_env.mjs",
+    "check:embargo": "node scripts/check-severity-embargo.mjs",
+    "archive:build": "node scripts/build_hazard_archive.mjs",
+    "archive:check": "node scripts/build_hazard_archive.mjs --check",
+    "archive:rag": "node scripts/build_archive_rag_docs.mjs",
+    "archive:rag:check": "node scripts/build_archive_rag_docs.mjs --check",
+    "archive:load": "cd scripts && python3 -m etl.cli events --input ../data/events/historical_hazard_records_with_HazardNet_severity.csv --adapter bgd-climatic-hazards --claimed-total 2931 --export-json ../data/events/hazardnet-events.json"
   },
   "dependencies": {
     "@google/genai": "^2.15.0",

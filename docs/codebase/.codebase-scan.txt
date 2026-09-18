@@ -88,8 +88,10 @@
 .claude/skills/web-design-guidelines/SKILL.md
 .claude/skills/writing-guidelines
 .claude/skills/writing-guidelines/SKILL.md
+.env.example
 .firebaserc
 .github
+.github/dependabot.yml
 .github/workflow-templates
 .github/workflow-templates/README.md
 .github/workflow-templates/hazardnet-daemon-cli-linux.yml
@@ -98,31 +100,96 @@
 .github/workflow-templates/hazardnet-npm-package.yml
 .github/workflow-templates/hazardnet-python-package.yml
 .github/workflows
+.github/workflows/Supabase-cutover-verify.yml
 .github/workflows/ci.yml
+.github/workflows/daily_forecast.yml
+.github/workflows/forecast-pipeline.yml
+.github/workflows/hindcast.yml
+.github/workflows/hourly_forecast.yml
+.github/workflows/manual_forecast_ingest.yml
+.github/workflows/mlops.yml
+.github/workflows/model-validation.yml
+.github/workflows/site-health.yml
+.github/workflows/v3-ml-contracts.yml
+.github/workflows/verify-secrets.yml
 .github/workflows/weekly_forecast.yml
-.github/workflows/weekly_hazardnet.yml
 .gitignore
-.npmrc
 .prettierrc
+ARTIFACTS.yaml
+CITATION.cff
 HAZARDNET_WEBAPP_DEPLOYMENT_GUIDE.md
 HazardNet.md
 LICENSE
 Models
+Models/README.md
+Models/REGISTRY.json
 Models/VERSION.json
+Models/calibration
+Models/calibration/confidence_map.template.json
 Models/hazardnet_fp32.tflite
+Models/hazardnet_int8.tflite
+Models/inference_example.py
 Models/labels.json
 Models/normalization_stats.json
 Models/preprocessing_config.json
 README.md
+SECURITY.md
+VERCEL_ENV_TEMPLATE.md
 __tests__
+__tests__/alertReplay.test.js
+__tests__/alertSnapshot.test.js
+__tests__/alerts
+__tests__/alerts/assess.test.js
+__tests__/alerts/channels.test.js
+__tests__/alerts/digest.test.js
+__tests__/alerts/lifecycle.test.js
+__tests__/alerts/notify.test.js
+__tests__/alerts/policy.test.js
+__tests__/alerts/report.test.js
+__tests__/alerts/service.test.js
+__tests__/api
+__tests__/api/alerts.test.js
+__tests__/api/chatPromptBounds.test.js
+__tests__/api/forecasts.test.js
+__tests__/api/predict.test.js
+__tests__/api/security.test.js
+__tests__/api/serverlessGuard.test.js
+__tests__/calibratedConfidence.test.js
+__tests__/chatService.test.js
+__tests__/claimsGate.test.js
+__tests__/contentEngine.test.js
 __tests__/conversions.test.js
+__tests__/cors.test.js
+__tests__/csvSafety.test.js
+__tests__/firebaseAuth.test.js
+__tests__/firestoreRules.test.js
+__tests__/forecastFreshness.test.js
+__tests__/forecastRow.test.js
+__tests__/forecastServe.test.js
+__tests__/forecastStore.test.js
+__tests__/forecastsHistory.test.js
+__tests__/forecastsUpdate.test.js
+__tests__/freshnessArtifact.test.js
+__tests__/inference.test.js
 __tests__/ingest.test.js
+__tests__/metricsApi.test.js
+__tests__/modelInfo.test.js
+__tests__/modelPerformance.test.js
+__tests__/nasaTokens.test.js
 __tests__/normalization.test.js
 __tests__/predict.test.js
+__tests__/predictFromStore.test.js
 __tests__/predictionCache.test.js
+__tests__/publicSurface.test.js
 __tests__/push.test.js
 __tests__/security.test.js
-__tests__/supabaseAuth.test.js
+__tests__/securityHeadersParity.test.js
+__tests__/securityTxt.test.js
+__tests__/seoFoundations.test.js
+__tests__/serviceWorker.test.js
+__tests__/statusPagePrerender.test.js
+__tests__/structuredData.test.js
+__tests__/vercelForecasts.test.js
 agent
 agent/skills
 agent/skills/deploy-to-vercel
@@ -133,80 +200,96 @@ agent/skills/vercel-composition-patterns
 agent/skills/vercel-composition-patterns/SKILL.md
 agent/skills/vercel-optimize
 agent/skills/vercel-optimize/SKILL.md
-agent/skills/vercel-react-best-practices
-agent/skills/vercel-react-best-practices/SKILL.md
-agent/skills/vercel-react-native-skills
-agent/skills/vercel-react-native-skills/SKILL.md
-agent/skills/vercel-react-view-transitions
-agent/skills/vercel-react-view-transitions/SKILL.md
-agent/skills/web-design-guidelines
-agent/skills/web-design-guidelines/SKILL.md
-agent/skills/writing-guidelines
-agent/skills/writing-guidelines/SKILL.md
-api
-api/forecasts.js
-api/ingest.js
-api/metrics.js
-assets
-assets/docs
-assets/docs/MODEL_CARD.md
-assets/icons
-assets/icons/hazard_profiles.json
-babel.config.cjs
-backend
-backend/db.js
-backend/inference.js
-backend/metrics.js
-backend/middleware
-backend/middleware/rateLimit.js
-backend/middleware/requestId.js
-backend/middleware/supabaseAuth.js
-backend/middleware/validation.js
-backend/modelInfo.js
-backend/routes
-backend/routes/advisory.js
-backend/routes/agent.js
-backend/routes/chat.js
-backend/routes/conversions.js
-backend/routes/forecasts.js
-backend/routes/predict.js
-backend/routes/push.js
-backend/server.js
-backend/services
-backend/services/advisoryAgent.js
-backend/tfjs.js
-backend/utils
-backend/utils/ai_fallback_engine.js
-backend/utils/apiKeyAuth.js
-backend/utils/conversionTracker.js
-backend/utils/normalization.js
-backend/utils/predictionCache.js
-backend/utils/vapid.js
-bun.lock
-docs
-docs/adr
-docs/adr/0001-backend-identity.md
-docs/adr/0002-forecast-consolidation.md
-docs/adr/0003-deploy-topology.md
-docs/audits
-docs/audits/2026-08-28-full-stack-audit.md
-docs/audits/2026-08-28-master-reaudit.md
-docs/blog-admin-setup.md
-docs/blog-monetization.md
-docs/codebase
-docs/codebase/.codebase-scan.txt
-docs/codebase/ARCHITECTURE.md
-docs/codebase/CONCERNS.md
-docs/codebase/CONVENTIONS.md
-docs/codebase/INTEGRATIONS.md
-docs/codebase/STACK.md
 
 === STACK DETECTION (manifest files) ===
 
+--- package-lock.json ---
+{
+  "name": "hazardnet",
+  "version": "2.1.9",
+  "lockfileVersion": 3,
+  "requires": true,
+  "packages": {
+    "": {
+      "name": "hazardnet",
+      "version": "2.1.9",
+      "license": "MIT",
+      "workspaces": [
+        "frontend"
+      ],
+      "dependencies": {
+        "@google/genai": "^2.15.0",
+        "@tensorflow/tfjs": "^4.12.0",
+        "@tensorflow/tfjs-node": "^4.22.0",
+        "busboy": "^1.6.0",
+        "cors": "^2.8.5",
+        "csv-parser": "^3.2.1",
+        "dompurify": "^3.4.15",
+        "dotenv": "^17.4.2",
+        "express": "^4.18.2",
+        "express-rate-limit": "^7.5.0",
+        "firebase": "^12.17.0",
+        "helmet": "^8.1.0",
+        "jsonwebtoken": "^9.0.0",
+        "multer": "^2.2.0",
+        "prom-client": "^15.1.3",
+        "web-push": "^3.6.7",
+        "zod": "^3.23.0"
+      },
+      "devDependencies": {
+        "@babel/core": "^7.22.11",
+        "@babel/preset-env": "^7.22.11",
+        "@babel/preset-react": "^7.22.6",
+        "@babel/preset-typescript": "^7.22.5",
+        "@eslint/js": "^9.39.5",
+        "@playwright/test": "^1.62.1",
+        "@testing-library/jest-dom": "^6.9.1",
+        "@testing-library/react": "^14.3.1",
+        "@types/jest": "^29.5.14",
+        "@types/jest-axe": "^3.5.9",
+        "@types/supertest": "^7.2.1",
+        "@vitejs/plugin-react": "^6.1.1",
+        "babel-jest": "^30.4.1",
+        "babel-plugin-transform-import-meta": "^2.3.3",
+        "eslint": "^9.39.0",
+        "eslint-plugin-react-hooks": "^5.2.0",
+        "firebase-admin": "^14.4.0",
+        "globals": "^17.11.0",
+        "jest": "^29.7.0",
+        "jest-axe": "^9.0.0",
+        "jest-environment-jsdom": "^30.4.1",
+        "node-mocks-http": "^1.11.0",
+        "prettier": "^3.6.2",
+        "supertest": "^7.2.2",
+        "ts-jest": "^29.4.12",
+        "typescript": "^5.4.5",
+        "typescript-eslint": "^8.46.0"
+      },
+      "engines": {
+        "node": ">=20"
+      }
+    },
+    "frontend": {
+      "name": "hazardnet-frontend",
+      "version": "0.1.0",
+      "dependencies": {
+        "@base-ui/react": "^1.6.0",
+        "@emotion/react": "^11.11.0",
+        "@emotion/styled": "^11.11.0",
+        "@fontsource-variable/inter": "^5.3.0",
+        "@fontsource-variable/public-sans": "^5.3.0",
+        "@fontsource/dm-mono": "^5.3.0",
+        "@mui/material": "^6.0.0",
+        "@supabase/ssr": "^0.12.4",
+        "@supabase/supabase-js": "^2.111.0",
+        "@tailwindcss/vite": "^4.3.3",
+        "@tanstack/react-query": "^5.0.0",
+
+[TRUNCATED] Showing first 80 of 23268 lines.
 --- package.json ---
 {
   "name": "hazardnet",
-  "version": "2.1.911",
+  "version": "2.1.9",
   "description": "Multi-Hazard AI Classification & Severity Quantification for Bangladesh Agricultural Disaster Risk",
   "keywords": [
     "HazardNet",
@@ -245,25 +328,30 @@ docs/codebase/STACK.md
     "test": "jest --passWithNoTests",
     "lint:eslint": "eslint .",
     "format": "prettier --write \"frontend/src/**/*.{ts,tsx}\" \"backend/**/*.js\" \"api/**/*.js\"",
+    "alerts:rehearse": "node scripts/rehearse_alert_engine.mjs --out /tmp/alert-run.json",
+    "alerts:snapshot": "node scripts/rehearse_alert_engine.mjs --out /tmp/alert-run.json --quiet && node scripts/build_alert_snapshot.mjs --in /tmp/alert-run.json",
     "check:bundle": "node scripts/check-bundle.mjs",
-    "check:rag-freshness": "node scripts/check-rag-freshness.mjs"
+    "check:rag-freshness": "node scripts/check-rag-freshness.mjs",
+    "check:env": "node scripts/validate_env.mjs"
   },
   "dependencies": {
     "@google/genai": "^2.15.0",
     "@tensorflow/tfjs": "^4.12.0",
+    "@tensorflow/tfjs-node": "^4.22.0",
     "busboy": "^1.6.0",
     "cors": "^2.8.5",
     "csv-parser": "^3.2.1",
+    "dompurify": "^3.4.15",
     "dotenv": "^17.4.2",
     "express": "^4.18.2",
     "express-rate-limit": "^7.5.0",
     "firebase": "^12.17.0",
     "helmet": "^8.1.0",
-    "jsonwebtoken": "9",
+    "jsonwebtoken": "^9.0.0",
     "multer": "^2.2.0",
     "prom-client": "^15.1.3",
     "web-push": "^3.6.7",
-    "zod": "^4.4.3"
+    "zod": "^3.23.0"
   },
   "devDependencies": {
     "@babel/core": "^7.22.11",
@@ -275,17 +363,12 @@ docs/codebase/STACK.md
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^14.3.1",
     "@types/jest": "^29.5.14",
+    "@types/jest-axe": "^3.5.9",
     "@types/supertest": "^7.2.1",
+    "@vitejs/plugin-react": "^6.1.1",
     "babel-jest": "^30.4.1",
-    "eslint": "^9.39.0",
-    "eslint-plugin-react-hooks": "^5.2.0",
-    "globals": "^17.11.0",
-    "jest": "^29.7.0",
-    "jest-environment-jsdom": "^30.4.1",
-    "node-mocks-http": "^1.11.0",
-    "prettier": "^3.6.2",
 
-[TRUNCATED] Showing first 80 of 89 lines.
+[TRUNCATED] Showing first 80 of 99 lines.
 
 === ENTRY POINTS ===
 No common entry points found. Check 'main' or 'scripts.start' in manifest files above.
@@ -295,13 +378,95 @@ Found: eslint.config.js
 Found: .prettierrc
 
 === ENVIRONMENT VARIABLE TEMPLATES ===
-No .env.example or .env.template found. Identify required environment variables by searching the code and config for environment variable reads.
+--- .env.example ---
+# HazardNet environment template.
+#
+# NO REAL CREDENTIAL MAY APPEAR IN THIS FILE. It is tracked in git, and
+# `scripts/check-secrets.sh` (wired into CI) fails the build when a value in a
+# tracked file looks like a credential. That gate used to be blind to this very
+# file — see docs/audits/2026-09-18-secret-scan-false-negative.md — and the
+# provider keys that had accumulated here are now placeholders; the real values
+# must be rotated (they exist in git history).
+#
+# `public by design` marks values that are compiled into the browser bundle or
+# are published identifiers. They are safe to commit; everything else is set per
+# environment (Vercel project env vars, GitHub Actions secrets, or the local
+# `.env` file, which is git-ignored).
+
+# ── Backend ───────────────────────────────────────────────────────────────────
+# Shared key for the pipeline/ingest routes; the backend returns 503 when unset
+# (fail-closed, backend/utils/apiKeyAuth.js).
+BACKEND_API_KEY=REPLACE_WITH_64_HEX_CHARS
+BENCH_URL=https://hazardnet.live/api/ingest
+CSP_ENFORCE=false
+
+# ── Storage ───────────────────────────────────────────────────────────────────
+DATABASE_URL=https://hazardnet-aas48424-default-rtdb.firebaseio.com
+FORECAST_STORE=firebase
+
+# ── Edge / CORS ───────────────────────────────────────────────────────────────
+# Comma-separated allowlist. Production fails closed when unset.
+FRONTEND_ORIGIN=https://www.hazardnet.live,https://hazardnet.live
+VERCEL_ENV=production
+
+# ── AI providers (all optional; the engine degrades in order) ────────────────
+GEMINI_API_KEY=REPLACE_WITH_GOOGLE_AI_STUDIO_KEY
+GEMINI_API_KEY_BACKUP=REPLACE_WITH_GOOGLE_AI_STUDIO_KEY
+OPENROUTER_API_KEY=REPLACE_WITH_OPENROUTER_KEY
+GROQ_API_KEY=REPLACE_WITH_GROQ_KEY
+HUGGINGFACE_API_KEY=REPLACE_WITH_HUGGINGFACE_TOKEN
+
+# ── Data pipeline ────────────────────────────────────────────────────────────
+KAGGLE_DATASET=ashifahmedshuvo/hazardnet-weekly-forecasts
+
+# ── Web push (VAPID pair — regenerate with `npx web-push generate-vapid-keys`) ─
+VAPID_PRIVATE_KEY=REPLACE_WITH_VAPID_PRIVATE_KEY
+VAPID_PUBLIC_KEY=REPLACE_WITH_VAPID_PUBLIC_KEY
+WEB_PUSH_CONTACT=mailto:ashif-ahmed-shuvo@hazardnet-aas48424.iam.gserviceaccount.com
+
+# ── Frontend (public by design: these ship in the browser bundle) ────────────
+VITE_ADSENSE_CLIENT=VITE_ADSENSE_CLIENT
+VITE_ADSENSE_SLOT_ARTICLE_FOOTER=VITE_ADSENSE_SLOT_ARTICLE_FOOTER
+VITE_ADSENSE_SLOT_ARTICLE_INLINE=VITE_ADSENSE_SLOT_ARTICLE_INLINE
+VITE_ADSENSE_SLOT_BLOG_INDEX=VITE_ADSENSE_SLOT_BLOG_INDEX
+VITE_FIREBASE_API_KEY=AIzaSyBwyxWm0MIQlTmjJ-NKPKjl72AYLS7oDqQ
+VITE_FIREBASE_APP_ID=1:1053636076316:web:0fbe66d8e4b90c2de9d0d9
+VITE_FIREBASE_AUTH_DOMAIN=hazardnet-aas48424.firebaseapp.com
+VITE_FIREBASE_DATABASE_URL=https://hazardnet-aas48424-default-rtdb.firebaseio.com
+VITE_FIREBASE_FIRESTORE_DATABASE_ID=default
+VITE_FIREBASE_MEASUREMENT_ID=G-G40YRHHD94
+VITE_FIREBASE_MESSAGING_SENDER_ID=1053636076316
+VITE_FIREBASE_PROJECT_ID=hazardnet-aas48424
+VITE_FIREBASE_STORAGE_BUCKET=hazardnet-aas48424.firebasestorage.app
+VITE_VAPID_PUBLIC_KEY=REPLACE_WITH_VAPID_PUBLIC_KEY
+VITE_VERCEL_ANALYTICS=vcp_0BIONpJARYHz3ZwJ3KvCVcPwWPcAsQmzsdqg9JFsePWFyRV4413tRKtw
+
+# ── Alert engine (PRODUCT_SPEC §1.3 levels, §1.6 human-in-the-loop) ────────────
+# See docs/alerts/ALERT_ENGINE.md. All optional: the defaults are conservative and
+# the engine reports which values are overrides on GET /api/v1/alerts/policy.
+ALERT_WATCH_PROBABILITY=
+ALERT_WARNING_PROBABILITY=
+ALERT_WATCH_SEVERITY=
+ALERT_DIVERGENCE_WATCH=
+ALERT_ALLOW_UNCALIBRATED_WARNING=
+ALERT_MAX_AUTO_PUBLISH_LEVEL=
+ALERT_MAX_PREDICTION_AGE_HOURS=
+ALERT_AUTO_PUBLISH=
+ALERT_AUTO_PUBLISH_MINUTES=
+ALERT_NOTIFY_TIMEOUT_MS=
+# Comma-separated Firebase uids/emails allowed to approve or reject an alert.
+ALERT_DUTY_OFFICERS=
+# SMS gateway: SMS_PROVIDER=bulksmsbd|greenweb|none, SMS_DRY_RUN=true previews the
+# exact request (credentials redacted) without sending. Bengali messages are UCS-2
+# and cost ~3x the segments of English — SMS_MAX_PER_RUN caps the bill.
+
+[TRUNCATED] Showing first 80 of 88 lines.
 
 === TODO / FIXME / HACK (production code only, test dirs excluded) ===
-frontend/src/services/firebase.ts:18: // TODO: Add SDKs for Firebase products that you want to use
+frontend/src/services/firebase.ts:17: // TODO: Add SDKs for Firebase products that you want to use
 
 === GIT RECENT COMMITS (last 20) ===
-72524ed Refactor code structure for improved readability and maintainability
+ab2add2 Delete scripts/mlops/1-hazardnet-bgd-climatic-hazards.ipynb
 
 === HIGH-CHURN FILES (last 90 days, top 20) ===
    1 .agents/skills/deploy-to-vercel/SKILL.md
@@ -329,26 +494,27 @@ frontend/src/services/firebase.ts:18: // TODO: Add SDKs for Firebase products th
 package.json has 'workspaces' field (npm/yarn workspaces monorepo)
 
 === CODE METRICS ===
-Total files scanned: 624
-Total lines of code: 62867
+Total files scanned: 1017
+Total lines of code: 211040
 
 Files by language:
-  Other: 431
-  TypeScript/React: 95
-  TypeScript: 56
-  JavaScript: 42
+  Other: 621
+  JavaScript: 128
+  TypeScript/React: 121
+  TypeScript: 86
+  Python: 61
 
 Top 10 largest files:
+ml/1-hazardnet-bgd-climatic-hazards.ipynb: 7785.7KB
+data/events/historical_hazard_records_with_HazardNet_severity.csv: 7095.4KB
+data/events/BGD_climatic_hazards_dataset_2000_2026.csv: 7056.2KB
+package-lock.json: 837.3KB
 Models/hazardnet_fp32.tflite: 772.0KB
-bun.lock: 416.4KB
-HazardNet.md: 183.7KB
-frontend/src/components/LiveMapView.tsx: 130.0KB
-.agents/skills/vercel-react-best-practices/AGENTS.md: 105.7KB
-frontend/src/pages/DistrictDetailPage.tsx: 103.7KB
-frontend/src/data/sectorAdvisoriesData.ts: 88.6KB
-.agents/skills/vercel-react-native-skills/AGENTS.md: 72.0KB
-frontend/src/pages/Dashboard.tsx: 66.3KB
-.agents/skills/vercel-optimize/lib/verify-claim.mjs: 59.6KB
+Models/hazardnet_int8.tflite: 772.0KB
+frontend/src/content/generated-routes.json: 492.3KB
+bun.lock: 408.4KB
+ml/HazardNet_auto_train.ipynb: 319.9KB
+docs/HazardNet.md: 244.0KB
 
 === CI/CD PIPELINES ===
 CI/CD: GitHub Actions
@@ -357,7 +523,7 @@ CI/CD: GitHub Actions
 No containerization configs detected.
 
 === SECURITY & COMPLIANCE ===
-No security configs detected.
+Security: SECURITY.md
 
 === PERFORMANCE & TESTING ===
 No performance testing configs detected.

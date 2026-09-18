@@ -1,0 +1,6754 @@
+{
+  "schema": "hazardnet-hazard-archive/v1",
+  "generated_at": "2026-09-18T20:47:17.451Z",
+  "provenance": {
+    "source": "bgd-climatic-hazards",
+    "loader": "scripts/etl/cli.py events --adapter bgd-climatic-hazards",
+    "export_schema": "hazardnet-events-export/v1",
+    "ingested": 2931,
+    "claimed_total": 2931,
+    "drift": 0,
+    "note": "Aggregate statistics and public GLIDE event identifiers only. The archive's own per-row records and third-party descriptions are not redistributed — see data/events/README.md."
+  },
+  "totals": {
+    "rows": 2931,
+    "episodes": 251,
+    "national_episodes": 41,
+    "partial_episodes": 18,
+    "episodes_without_glide": 192,
+    "districts": 64,
+    "divisions": 7,
+    "hazards": 8,
+    "year_range": [
+      "2000",
+      "2025"
+    ]
+  },
+  "by_year": {
+    "2000": 256,
+    "2002": 257,
+    "2003": 192,
+    "2004": 128,
+    "2005": 192,
+    "2006": 256,
+    "2007": 320,
+    "2008": 128,
+    "2009": 261,
+    "2010": 73,
+    "2011": 65,
+    "2012": 3,
+    "2013": 2,
+    "2014": 12,
+    "2015": 67,
+    "2016": 74,
+    "2017": 128,
+    "2018": 64,
+    "2019": 12,
+    "2020": 64,
+    "2021": 65,
+    "2022": 64,
+    "2023": 69,
+    "2024": 164,
+    "2025": 15
+  },
+  "by_month": {
+    "January": 320,
+    "February": 0,
+    "March": 194,
+    "April": 170,
+    "May": 720,
+    "June": 407,
+    "July": 459,
+    "August": 209,
+    "September": 64,
+    "October": 256,
+    "November": 130,
+    "December": 2
+  },
+  "by_hazard": {
+    "Cold Wave": 322,
+    "Drought": 64,
+    "Fire": 65,
+    "Flash Flood": 331,
+    "Flood": 890,
+    "Heat Wave": 36,
+    "Severe Local Storm": 514,
+    "Tropical Cyclone": 709
+  },
+  "by_division": {
+    "Dhaka": 769,
+    "Chittagong": 507,
+    "Khulna": 450,
+    "Rangpur": 373,
+    "Rajshahi": 366,
+    "Barisal": 279,
+    "Sylhet": 187
+  },
+  "by_district": {
+    "Bandarban": 49,
+    "Bhola": 49,
+    "Lalmonirhat": 49,
+    "Cox's Bazar": 48,
+    "Gaibandha": 48,
+    "Jamalpur": 48,
+    "Kurigram": 48,
+    "Sirajganj": 48,
+    "Sunamganj": 48,
+    "Sylhet": 48,
+    "Barguna": 47,
+    "Bogra": 47,
+    "Feni": 47,
+    "Netrokona": 47,
+    "Nilphamari": 47,
+    "Noakhali": 47,
+    "Patuakhali": 47,
+    "Tangail": 47,
+    "Bagerhat": 46,
+    "Barisal": 46,
+    "Brahmanbaria": 46,
+    "Faridpur": 46,
+    "Habiganj": 46,
+    "Khulna": 46,
+    "Naogaon": 46,
+    "Pirojpur": 46,
+    "Rajshahi": 46,
+    "Rangamati": 46,
+    "Rangpur": 46,
+    "Chattogram": 45,
+    "Chuadanga": 45,
+    "Cumilla": 45,
+    "Dhaka": 45,
+    "Dinajpur": 45,
+    "Gazipur": 45,
+    "Gopalganj": 45,
+    "Jhenaidah": 45,
+    "Joypurhat": 45,
+    "Khagrachhari": 45,
+    "Kushtia": 45,
+    "Lakshmipur": 45,
+    "Madaripur": 45,
+    "Magura": 45,
+    "Manikganj": 45,
+    "Meherpur": 45,
+    "Moulvibazar": 45,
+    "Mymensingh": 45,
+    "Natore": 45,
+    "Pabna": 45,
+    "Panchagarh": 45,
+    "Rajbari": 45,
+    "Satkhira": 45,
+    "Shariatpur": 45,
+    "Sherpur": 45,
+    "Thakurgaon": 45,
+    "Chandpur": 44,
+    "Chapainawabganj": 44,
+    "Jashore": 44,
+    "Jhalokati": 44,
+    "Kishoreganj": 44,
+    "Munshiganj": 44,
+    "Narail": 44,
+    "Narayanganj": 44,
+    "Narsingdi": 44
+  },
+  "district_division": {
+    "Bagerhat": "Khulna",
+    "Bandarban": "Chittagong",
+    "Barguna": "Barisal",
+    "Barisal": "Barisal",
+    "Bhola": "Barisal",
+    "Bogra": "Rajshahi",
+    "Brahmanbaria": "Chittagong",
+    "Chandpur": "Chittagong",
+    "Chapainawabganj": "Rajshahi",
+    "Chattogram": "Chittagong",
+    "Chuadanga": "Khulna",
+    "Cox's Bazar": "Chittagong",
+    "Cumilla": "Chittagong",
+    "Dhaka": "Dhaka",
+    "Dinajpur": "Rangpur",
+    "Faridpur": "Dhaka",
+    "Feni": "Chittagong",
+    "Gaibandha": "Rangpur",
+    "Gazipur": "Dhaka",
+    "Gopalganj": "Dhaka",
+    "Habiganj": "Sylhet",
+    "Jamalpur": "Dhaka",
+    "Jashore": "Khulna",
+    "Jhalokati": "Barisal",
+    "Jhenaidah": "Khulna",
+    "Joypurhat": "Rajshahi",
+    "Khagrachhari": "Chittagong",
+    "Khulna": "Khulna",
+    "Kishoreganj": "Dhaka",
+    "Kurigram": "Rangpur",
+    "Kushtia": "Khulna",
+    "Lakshmipur": "Chittagong",
+    "Lalmonirhat": "Rangpur",
+    "Madaripur": "Dhaka",
+    "Magura": "Khulna",
+    "Manikganj": "Dhaka",
+    "Meherpur": "Khulna",
+    "Moulvibazar": "Sylhet",
+    "Munshiganj": "Dhaka",
+    "Mymensingh": "Dhaka",
+    "Naogaon": "Rajshahi",
+    "Narail": "Khulna",
+    "Narayanganj": "Dhaka",
+    "Narsingdi": "Dhaka",
+    "Natore": "Rajshahi",
+    "Netrokona": "Dhaka",
+    "Nilphamari": "Rangpur",
+    "Noakhali": "Chittagong",
+    "Pabna": "Rajshahi",
+    "Panchagarh": "Rangpur",
+    "Patuakhali": "Barisal",
+    "Pirojpur": "Barisal",
+    "Rajbari": "Dhaka",
+    "Rajshahi": "Rajshahi",
+    "Rangamati": "Chittagong",
+    "Rangpur": "Rangpur",
+    "Satkhira": "Khulna",
+    "Shariatpur": "Dhaka",
+    "Sherpur": "Dhaka",
+    "Sirajganj": "Rajshahi",
+    "Sunamganj": "Sylhet",
+    "Sylhet": "Sylhet",
+    "Tangail": "Dhaka",
+    "Thakurgaon": "Rangpur"
+  },
+  "by_district_hazard": {
+    "Bagerhat": {
+      "Cold Wave": 5,
+      "Drought": 1,
+      "Fire": 1,
+      "Flash Flood": 5,
+      "Flood": 13,
+      "Heat Wave": 1,
+      "Severe Local Storm": 8,
+      "Tropical Cyclone": 12
+    },
+    "Bandarban": {
+      "Cold Wave": 5,
+      "Drought": 1,
+      "Fire": 1,
+      "Flash Flood": 7,
+      "Flood": 16,
+      "Severe Local Storm": 8,
+      "Tropical Cyclone": 11
+    },
+    "Barguna": {
+      "Cold Wave": 5,
+      "Drought": 1,
+      "Fire": 1,
+      "Flash Flood": 5,
+      "Flood": 14,
+      "Heat Wave": 1,
+      "Severe Local Storm": 8,
+      "Tropical Cyclone": 12
+    },
+    "Barisal": {
+      "Cold Wave": 5,
+      "Drought": 1,
+      "Fire": 1,
+      "Flash Flood": 5,
+      "Flood": 14,
+      "Heat Wave": 1,
+      "Severe Local Storm": 8,
+      "Tropical Cyclone": 11
+    },
+    "Bhola": {
+      "Cold Wave": 5,
+      "Drought": 1,
+      "Fire": 1,
+      "Flash Flood": 7,
+      "Flood": 14,
+      "Heat Wave": 1,
+      "Severe Local Storm": 8,
+      "Tropical Cyclone": 12
+    },
+    "Bogra": {
+      "Cold Wave": 5,
+      "Drought": 1,
+      "Fire": 1,
+      "Flash Flood": 5,
+      "Flood": 16,
+      "Severe Local Storm": 8,
+      "Tropical Cyclone": 11
+    },
+    "Brahmanbaria": {
+      "Cold Wave": 5,
+      "Drought": 1,
+      "Fire": 1,
+      "Flash Flood": 5,
+      "Flood": 14,
+      "Severe Local Storm": 9,
+      "Tropical Cyclone": 11
+    },
+    "Chandpur": {
+      "Cold Wave": 5,
+      "Drought": 1,
+      "Fire": 1,
+      "Flash Flood": 5,
+      "Flood": 13,
+      "Severe Local Storm": 8,
+      "Tropical Cyclone": 11
+    },
+    "Chapainawabganj": {
+      "Cold Wave": 5,
+      "Drought": 1,
+      "Fire": 1,
+      "Flash Flood": 5,
+      "Flood": 13,
+      "Severe Local Storm": 8,
+      "Tropical Cyclone": 11
+    },
+    "Chattogram": {
+      "Cold Wave": 5,
+      "Drought": 1,
+      "Fire": 1,
+      "Flash Flood": 6,
+      "Flood": 13,
+      "Severe Local Storm": 8,
+      "Tropical Cyclone": 11
+    },
+    "Chuadanga": {
+      "Cold Wave": 5,
+      "Drought": 1,
+      "Fire": 1,
+      "Flash Flood": 5,
+      "Flood": 13,
+      "Heat Wave": 1,
+      "Severe Local Storm": 8,
+      "Tropical Cyclone": 11
+    },
+    "Cox's Bazar": {
+      "Cold Wave": 5,
+      "Drought": 1,
+      "Fire": 2,
+      "Flash Flood": 6,
+      "Flood": 15,
+      "Severe Local Storm": 8,
+      "Tropical Cyclone": 11
+    },
+    "Cumilla": {
+      "Cold Wave": 5,
+      "Drought": 1,
+      "Fire": 1,
+      "Flash Flood": 5,
+      "Flood": 14,
+      "Severe Local Storm": 8,
+      "Tropical Cyclone": 11
+    },
+    "Dhaka": {
+      "Cold Wave": 5,
+      "Drought": 1,
+      "Fire": 1,
+      "Flash Flood": 5,
+      "Flood": 13,
+      "Heat Wave": 1,
+      "Severe Local Storm": 8,
+      "Tropical Cyclone": 11
+    },
+    "Dinajpur": {
+      "Cold Wave": 6,
+      "Drought": 1,
+      "Fire": 1,
+      "Flash Flood": 5,
+      "Flood": 13,
+      "Severe Local Storm": 8,
+      "Tropical Cyclone": 11
+    },
+    "Faridpur": {
+      "Cold Wave": 5,
+      "Drought": 1,
+      "Fire": 1,
+      "Flash Flood": 5,
+      "Flood": 14,
+      "Heat Wave": 1,
+      "Severe Local Storm": 8,
+      "Tropical Cyclone": 11
+    },
+    "Feni": {
+      "Cold Wave": 5,
+      "Drought": 1,
+      "Fire": 1,
+      "Flash Flood": 7,
+      "Flood": 14,
+      "Severe Local Storm": 8,
+      "Tropical Cyclone": 11
+    },
+    "Gaibandha": {
+      "Cold Wave": 5,
+      "Drought": 1,
+      "Fire": 1,
+      "Flash Flood": 5,
+      "Flood": 16,
+      "Heat Wave": 1,
+      "Severe Local Storm": 8,
+      "Tropical Cyclone": 11
+    },
+    "Gazipur": {
+      "Cold Wave": 5,
+      "Drought": 1,
+      "Fire": 1,
+      "Flash Flood": 5,
+      "Flood": 13,
+      "Heat Wave": 1,
+      "Severe Local Storm": 8,
+      "Tropical Cyclone": 11
+    },
+    "Gopalganj": {
+      "Cold Wave": 5,
+      "Drought": 1,
+      "Fire": 1,
+      "Flash Flood": 5,
+      "Flood": 13,
+      "Heat Wave": 1,
+      "Severe Local Storm": 8,
+      "Tropical Cyclone": 11
+    },
+    "Habiganj": {
+      "Cold Wave": 5,
+      "Drought": 1,
+      "Fire": 1,
+      "Flash Flood": 5,
+      "Flood": 15,
+      "Severe Local Storm": 8,
+      "Tropical Cyclone": 11
+    },
+    "Jamalpur": {
+      "Cold Wave": 5,
+      "Drought": 1,
+      "Fire": 1,
+      "Flash Flood": 5,
+      "Flood": 16,
+      "Heat Wave": 1,
+      "Severe Local Storm": 8,
+      "Tropical Cyclone": 11
+    },
+    "Jashore": {
+      "Cold Wave": 5,
+      "Drought": 1,
+      "Fire": 1,
+      "Flash Flood": 5,
+      "Flood": 13,
+      "Severe Local Storm": 8,
+      "Tropical Cyclone": 11
+    },
+    "Jhalokati": {
+      "Cold Wave": 5,
+      "Drought": 1,
+      "Fire": 1,
+      "Flash Flood": 5,
+      "Flood": 13,
+      "Severe Local Storm": 8,
+      "Tropical Cyclone": 11
+    },
+    "Jhenaidah": {
+      "Cold Wave": 5,
+      "Drought": 1,
+      "Fire": 1,
+      "Flash Flood": 5,
+      "Flood": 13,
+      "Heat Wave": 1,
+      "Severe Local Storm": 8,
+      "Tropical Cyclone": 11
+    },
+    "Joypurhat": {
+      "Cold Wave": 5,
+      "Drought": 1,
+      "Fire": 1,
+      "Flash Flood": 5,
+      "Flood": 13,
+      "Heat Wave": 1,
+      "Severe Local Storm": 8,
+      "Tropical Cyclone": 11
+    },
+    "Khagrachhari": {
+      "Cold Wave": 5,
+      "Drought": 1,
+      "Fire": 1,
+      "Flash Flood": 5,
+      "Flood": 14,
+      "Severe Local Storm": 8,
+      "Tropical Cyclone": 11
+    },
+    "Khulna": {
+      "Cold Wave": 5,
+      "Drought": 1,
+      "Fire": 1,
+      "Flash Flood": 5,
+      "Flood": 14,
+      "Heat Wave": 1,
+      "Severe Local Storm": 8,
+      "Tropical Cyclone": 11
+    },
+    "Kishoreganj": {
+      "Cold Wave": 5,
+      "Drought": 1,
+      "Fire": 1,
+      "Flash Flood": 5,
+      "Flood": 13,
+      "Severe Local Storm": 8,
+      "Tropical Cyclone": 11
+    },
+    "Kurigram": {
+      "Cold Wave": 5,
+      "Drought": 1,
+      "Fire": 1,
+      "Flash Flood": 5,
+      "Flood": 17,
+      "Severe Local Storm": 8,
+      "Tropical Cyclone": 11
+    },
+    "Kushtia": {
+      "Cold Wave": 5,
+      "Drought": 1,
+      "Fire": 1,
+      "Flash Flood": 5,
+      "Flood": 13,
+      "Heat Wave": 1,
+      "Severe Local Storm": 8,
+      "Tropical Cyclone": 11
+    },
+    "Lakshmipur": {
+      "Cold Wave": 5,
+      "Drought": 1,
+      "Fire": 1,
+      "Flash Flood": 5,
+      "Flood": 14,
+      "Severe Local Storm": 8,
+      "Tropical Cyclone": 11
+    },
+    "Lalmonirhat": {
+      "Cold Wave": 5,
+      "Drought": 1,
+      "Fire": 1,
+      "Flash Flood": 5,
+      "Flood": 16,
+      "Heat Wave": 1,
+      "Severe Local Storm": 9,
+      "Tropical Cyclone": 11
+    },
+    "Madaripur": {
+      "Cold Wave": 5,
+      "Drought": 1,
+      "Fire": 1,
+      "Flash Flood": 5,
+      "Flood": 13,
+      "Heat Wave": 1,
+      "Severe Local Storm": 8,
+      "Tropical Cyclone": 11
+    },
+    "Magura": {
+      "Cold Wave": 5,
+      "Drought": 1,
+      "Fire": 1,
+      "Flash Flood": 5,
+      "Flood": 13,
+      "Heat Wave": 1,
+      "Severe Local Storm": 8,
+      "Tropical Cyclone": 11
+    },
+    "Manikganj": {
+      "Cold Wave": 5,
+      "Drought": 1,
+      "Fire": 1,
+      "Flash Flood": 5,
+      "Flood": 13,
+      "Heat Wave": 1,
+      "Severe Local Storm": 8,
+      "Tropical Cyclone": 11
+    },
+    "Meherpur": {
+      "Cold Wave": 5,
+      "Drought": 1,
+      "Fire": 1,
+      "Flash Flood": 5,
+      "Flood": 13,
+      "Heat Wave": 1,
+      "Severe Local Storm": 8,
+      "Tropical Cyclone": 11
+    },
+    "Moulvibazar": {
+      "Cold Wave": 5,
+      "Drought": 1,
+      "Fire": 1,
+      "Flash Flood": 5,
+      "Flood": 14,
+      "Severe Local Storm": 8,
+      "Tropical Cyclone": 11
+    },
+    "Munshiganj": {
+      "Cold Wave": 5,
+      "Drought": 1,
+      "Fire": 1,
+      "Flash Flood": 5,
+      "Flood": 13,
+      "Severe Local Storm": 8,
+      "Tropical Cyclone": 11
+    },
+    "Mymensingh": {
+      "Cold Wave": 5,
+      "Drought": 1,
+      "Fire": 1,
+      "Flash Flood": 5,
+      "Flood": 13,
+      "Heat Wave": 1,
+      "Severe Local Storm": 8,
+      "Tropical Cyclone": 11
+    },
+    "Naogaon": {
+      "Cold Wave": 5,
+      "Drought": 1,
+      "Fire": 1,
+      "Flash Flood": 5,
+      "Flood": 14,
+      "Heat Wave": 1,
+      "Severe Local Storm": 8,
+      "Tropical Cyclone": 11
+    },
+    "Narail": {
+      "Cold Wave": 5,
+      "Drought": 1,
+      "Fire": 1,
+      "Flash Flood": 5,
+      "Flood": 13,
+      "Severe Local Storm": 8,
+      "Tropical Cyclone": 11
+    },
+    "Narayanganj": {
+      "Cold Wave": 5,
+      "Drought": 1,
+      "Fire": 1,
+      "Flash Flood": 5,
+      "Flood": 13,
+      "Severe Local Storm": 8,
+      "Tropical Cyclone": 11
+    },
+    "Narsingdi": {
+      "Cold Wave": 5,
+      "Drought": 1,
+      "Fire": 1,
+      "Flash Flood": 5,
+      "Flood": 13,
+      "Severe Local Storm": 8,
+      "Tropical Cyclone": 11
+    },
+    "Natore": {
+      "Cold Wave": 5,
+      "Drought": 1,
+      "Fire": 1,
+      "Flash Flood": 5,
+      "Flood": 13,
+      "Heat Wave": 1,
+      "Severe Local Storm": 8,
+      "Tropical Cyclone": 11
+    },
+    "Netrokona": {
+      "Cold Wave": 5,
+      "Drought": 1,
+      "Fire": 1,
+      "Flash Flood": 5,
+      "Flood": 16,
+      "Severe Local Storm": 8,
+      "Tropical Cyclone": 11
+    },
+    "Nilphamari": {
+      "Cold Wave": 5,
+      "Drought": 1,
+      "Fire": 1,
+      "Flash Flood": 5,
+      "Flood": 15,
+      "Heat Wave": 1,
+      "Severe Local Storm": 8,
+      "Tropical Cyclone": 11
+    },
+    "Noakhali": {
+      "Cold Wave": 5,
+      "Drought": 1,
+      "Fire": 1,
+      "Flash Flood": 6,
+      "Flood": 14,
+      "Severe Local Storm": 8,
+      "Tropical Cyclone": 12
+    },
+    "Pabna": {
+      "Cold Wave": 5,
+      "Drought": 1,
+      "Fire": 1,
+      "Flash Flood": 5,
+      "Flood": 13,
+      "Heat Wave": 1,
+      "Severe Local Storm": 8,
+      "Tropical Cyclone": 11
+    },
+    "Panchagarh": {
+      "Cold Wave": 5,
+      "Drought": 1,
+      "Fire": 1,
+      "Flash Flood": 5,
+      "Flood": 13,
+      "Heat Wave": 1,
+      "Severe Local Storm": 8,
+      "Tropical Cyclone": 11
+    },
+    "Patuakhali": {
+      "Cold Wave": 5,
+      "Drought": 1,
+      "Fire": 1,
+      "Flash Flood": 6,
+      "Flood": 14,
+      "Heat Wave": 1,
+      "Severe Local Storm": 8,
+      "Tropical Cyclone": 11
+    },
+    "Pirojpur": {
+      "Cold Wave": 5,
+      "Drought": 1,
+      "Fire": 1,
+      "Flash Flood": 5,
+      "Flood": 13,
+      "Heat Wave": 1,
+      "Severe Local Storm": 8,
+      "Tropical Cyclone": 12
+    },
+    "Rajbari": {
+      "Cold Wave": 5,
+      "Drought": 1,
+      "Fire": 1,
+      "Flash Flood": 5,
+      "Flood": 13,
+      "Heat Wave": 1,
+      "Severe Local Storm": 8,
+      "Tropical Cyclone": 11
+    },
+    "Rajshahi": {
+      "Cold Wave": 6,
+      "Drought": 1,
+      "Fire": 1,
+      "Flash Flood": 5,
+      "Flood": 13,
+      "Heat Wave": 1,
+      "Severe Local Storm": 8,
+      "Tropical Cyclone": 11
+    },
+    "Rangamati": {
+      "Cold Wave": 5,
+      "Drought": 1,
+      "Fire": 1,
+      "Flash Flood": 6,
+      "Flood": 14,
+      "Severe Local Storm": 8,
+      "Tropical Cyclone": 11
+    },
+    "Rangpur": {
+      "Cold Wave": 5,
+      "Drought": 1,
+      "Fire": 1,
+      "Flash Flood": 5,
+      "Flood": 14,
+      "Heat Wave": 1,
+      "Severe Local Storm": 8,
+      "Tropical Cyclone": 11
+    },
+    "Satkhira": {
+      "Cold Wave": 5,
+      "Drought": 1,
+      "Fire": 1,
+      "Flash Flood": 5,
+      "Flood": 13,
+      "Heat Wave": 1,
+      "Severe Local Storm": 8,
+      "Tropical Cyclone": 11
+    },
+    "Shariatpur": {
+      "Cold Wave": 5,
+      "Drought": 1,
+      "Fire": 1,
+      "Flash Flood": 5,
+      "Flood": 14,
+      "Severe Local Storm": 8,
+      "Tropical Cyclone": 11
+    },
+    "Sherpur": {
+      "Cold Wave": 5,
+      "Drought": 1,
+      "Fire": 1,
+      "Flash Flood": 5,
+      "Flood": 13,
+      "Heat Wave": 1,
+      "Severe Local Storm": 8,
+      "Tropical Cyclone": 11
+    },
+    "Sirajganj": {
+      "Cold Wave": 5,
+      "Drought": 1,
+      "Fire": 1,
+      "Flash Flood": 5,
+      "Flood": 16,
+      "Heat Wave": 1,
+      "Severe Local Storm": 8,
+      "Tropical Cyclone": 11
+    },
+    "Sunamganj": {
+      "Cold Wave": 5,
+      "Drought": 1,
+      "Fire": 1,
+      "Flash Flood": 5,
+      "Flood": 17,
+      "Severe Local Storm": 8,
+      "Tropical Cyclone": 11
+    },
+    "Sylhet": {
+      "Cold Wave": 5,
+      "Drought": 1,
+      "Fire": 1,
+      "Flash Flood": 5,
+      "Flood": 17,
+      "Severe Local Storm": 8,
+      "Tropical Cyclone": 11
+    },
+    "Tangail": {
+      "Cold Wave": 5,
+      "Drought": 1,
+      "Fire": 1,
+      "Flash Flood": 5,
+      "Flood": 15,
+      "Heat Wave": 1,
+      "Severe Local Storm": 8,
+      "Tropical Cyclone": 11
+    },
+    "Thakurgaon": {
+      "Cold Wave": 5,
+      "Drought": 1,
+      "Fire": 1,
+      "Flash Flood": 5,
+      "Flood": 13,
+      "Heat Wave": 1,
+      "Severe Local Storm": 8,
+      "Tropical Cyclone": 11
+    }
+  },
+  "severity_by_hazard": {
+    "Cold Wave": {
+      "n": 322,
+      "min": 0,
+      "p25": 0.0119,
+      "median": 0.5357,
+      "p75": 0.6905,
+      "max": 1,
+      "mean": 0.4561
+    },
+    "Drought": {
+      "n": 64,
+      "min": 0,
+      "p25": 0.7689,
+      "median": 0.7724,
+      "p75": 0.7743,
+      "max": 1,
+      "mean": 0.7151
+    },
+    "Fire": {
+      "n": 65,
+      "min": 0,
+      "p25": 0.0526,
+      "median": 0.1534,
+      "p75": 0.402,
+      "max": 1,
+      "mean": 0.2441
+    },
+    "Flash Flood": {
+      "n": 331,
+      "min": 0,
+      "p25": 1,
+      "median": 1,
+      "p75": 1,
+      "max": 1,
+      "mean": 0.995
+    },
+    "Flood": {
+      "n": 890,
+      "min": 0,
+      "p25": 0.9958,
+      "median": 0.9975,
+      "p75": 0.9995,
+      "max": 1,
+      "mean": 0.9451
+    },
+    "Heat Wave": {
+      "n": 36,
+      "min": 0,
+      "p25": 0.0638,
+      "median": 0.4116,
+      "p75": 0.6502,
+      "max": 1,
+      "mean": 0.4219
+    },
+    "Severe Local Storm": {
+      "n": 514,
+      "min": 0,
+      "p25": 0.245,
+      "median": 0.417,
+      "p75": 0.7193,
+      "max": 1,
+      "mean": 0.4675
+    },
+    "Tropical Cyclone": {
+      "n": 709,
+      "min": 0,
+      "p25": 0.0477,
+      "median": 0.8318,
+      "p75": 0.8318,
+      "max": 1,
+      "mean": 0.5484
+    }
+  },
+  "quality": {
+    "full_years": [
+      "2000",
+      "2002",
+      "2003",
+      "2004",
+      "2005",
+      "2006",
+      "2007",
+      "2008",
+      "2009",
+      "2010",
+      "2011",
+      "2012",
+      "2013",
+      "2014",
+      "2015",
+      "2016",
+      "2017",
+      "2018",
+      "2019",
+      "2020",
+      "2021",
+      "2022",
+      "2023",
+      "2024",
+      "2025"
+    ],
+    "missing_years": [
+      2001
+    ],
+    "review_flagged_rows": 312,
+    "glide_checked_rows": 2739,
+    "glide_disagreement_rows": 846,
+    "glide_disagreement_rate": 0.3089,
+    "glide_disagreements": {
+      "Severe Local Storm → Tropical Cyclone": 256,
+      "Flood → Flash Flood": 202,
+      "Tornado → Severe Local Storm": 128,
+      "Tropical Cyclone → Flood": 66,
+      "Flood → Severe Local Storm": 64,
+      "Flash Flood → Flood": 64,
+      "Landslide → Flash Flood": 64,
+      "Extreme Temperature → Cold Wave": 1,
+      "Tropical Cyclone → Flash Flood": 1
+    },
+    "excluded_constant_columns": {
+      "Severity_Score": "1.0 for all 2931 rows — no discriminating information",
+      "Severity_Index_Name": "MODERATE_RISK for all 2931 rows — contradicts Severity_Score",
+      "Validated_Affected": "0.0 for all 2931 rows — means \"not recorded\", not \"none affected\""
+    },
+    "casualties_present": false,
+    "casualties_note": "No casualty field carries data in this archive, so no page states a death toll. Rows whose affected count was recorded as 0 were not written as 0 — the field is absent, because \"not recorded\" and \"nobody affected\" are different claims.",
+    "division_vintage": "The archive resolves to 7 divisions, not 8: Mymensingh division (created 2015) is carried under Dhaka in the ETL district table (scripts/etl/districts.py). Counts by division therefore follow the pre-2015 structure."
+  },
+  "embargo": {
+    "active": true,
+    "withheld": [
+      "derived_severity_index",
+      "severity_weights",
+      "cluster_membership",
+      "model_predictions"
+    ],
+    "reason": "A derived severity index and its weights are part of unpublished research. They are withheld from all public copy until the associated publication is released.",
+    "disclosed_field": "severity_by_hazard is computed from the archive's own reported Severity_Index column, which is already present in the source data and is not a HazardNet contribution.",
+    "enforcement": "scripts/check-severity-embargo.mjs (CI: npm run check:embargo)"
+  },
+  "episodes": [
+    {
+      "id": "ST-2000-000211-BGD",
+      "glide": "ST-2000-000211-BGD",
+      "hazard_type": "Severe Local Storm",
+      "start_date": "2000-05-02",
+      "division": "Barisal",
+      "district_count": 64,
+      "severity": {
+        "n": 64,
+        "min": 0.2983,
+        "p25": 0.4766,
+        "median": 0.7174,
+        "p75": 0.9588,
+        "max": 1,
+        "mean": 0.6979
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2000-03-13..2000-06-21",
+      "national": true
+    },
+    {
+      "id": "FL-2000-000373-BGD",
+      "glide": "FL-2000-000373-BGD",
+      "hazard_type": "Severe Local Storm",
+      "start_date": "2000-05-29",
+      "division": "Barisal",
+      "district_count": 64,
+      "severity": {
+        "n": 64,
+        "min": 0.2983,
+        "p25": 0.4766,
+        "median": 0.7174,
+        "p75": 0.9588,
+        "max": 1,
+        "mean": 0.698
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2000-04-09..2000-07-18",
+      "national": true
+    },
+    {
+      "id": "FL-2000-000617-BGD",
+      "glide": "FL-2000-000617-BGD",
+      "hazard_type": "Flood",
+      "start_date": "2000-08-21",
+      "division": "Barisal",
+      "district_count": 64,
+      "severity": {
+        "n": 64,
+        "min": 0.9909,
+        "p25": 0.9956,
+        "median": 0.9969,
+        "p75": 0.9975,
+        "max": 0.9995,
+        "mean": 0.9964
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2000-07-02..2000-10-10",
+      "national": true
+    },
+    {
+      "id": "ST-2000-000713-BGD",
+      "glide": "ST-2000-000713-BGD",
+      "hazard_type": "Tropical Cyclone",
+      "start_date": "2000-10-29",
+      "division": "Barisal",
+      "district_count": 64,
+      "severity": {
+        "n": 64,
+        "min": 0.7012,
+        "p25": 0.8318,
+        "median": 0.8318,
+        "p75": 0.8318,
+        "max": 0.8318,
+        "mean": 0.8197
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2000-09-09..2000-12-18",
+      "national": true
+    },
+    {
+      "id": "ST-2002-000233-BGD",
+      "glide": "ST-2002-000233-BGD",
+      "hazard_type": "Tropical Cyclone",
+      "start_date": "2002-05-03",
+      "division": "Barisal",
+      "district_count": 64,
+      "severity": {
+        "n": 64,
+        "min": 0.8318,
+        "p25": 0.8318,
+        "median": 0.8318,
+        "p75": 0.8318,
+        "max": 0.8318,
+        "mean": 0.8318
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2002-03-14..2002-06-22",
+      "national": true
+    },
+    {
+      "id": "FL-2002-000402-BGD",
+      "glide": "FL-2002-000402-BGD",
+      "hazard_type": "Flood",
+      "start_date": "2002-07-17",
+      "division": "Barisal",
+      "district_count": 64,
+      "severity": {
+        "n": 64,
+        "min": 0.9939,
+        "p25": 0.9964,
+        "median": 0.9971,
+        "p75": 0.998,
+        "max": 0.9996,
+        "mean": 0.9971
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2002-05-28..2002-09-05",
+      "national": true
+    },
+    {
+      "id": "FL-2002-000536-MMR",
+      "glide": "FL-2002-000536-MMR",
+      "hazard_type": "Flood",
+      "start_date": "2002-08-22",
+      "division": "Barisal",
+      "district_count": 64,
+      "severity": {
+        "n": 64,
+        "min": 0.9898,
+        "p25": 0.995,
+        "median": 0.996,
+        "p75": 0.9972,
+        "max": 0.9991,
+        "mean": 0.9959
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2002-07-03..2002-10-11",
+      "national": true
+    },
+    {
+      "id": "ST-2002-000702-IND",
+      "glide": "ST-2002-000702-IND",
+      "hazard_type": "Tropical Cyclone",
+      "start_date": "2002-11-15",
+      "division": "Barisal",
+      "district_count": 64,
+      "severity": {
+        "n": 64,
+        "min": 0.3518,
+        "p25": 0.5739,
+        "median": 0.6312,
+        "p75": 0.7025,
+        "max": 0.8318,
+        "mean": 0.6344
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2002-09-26..2003-01-04",
+      "national": true
+    },
+    {
+      "id": "ET-2002-000819-BGD",
+      "glide": "ET-2002-000819-BGD",
+      "hazard_type": "Cold Wave",
+      "start_date": "2002-12-15",
+      "division": "Rajshahi",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.8214,
+        "p25": 0.8214,
+        "median": 0.8214,
+        "p75": 0.8214,
+        "max": 0.8214,
+        "mean": 0.8214
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2002-10-26..2003-02-03",
+      "national": false
+    },
+    {
+      "id": "Event_0513",
+      "glide": null,
+      "hazard_type": "Cold Wave",
+      "start_date": "2003-01-13",
+      "division": "Barisal",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.5357,
+        "p25": 0.5357,
+        "median": 0.5357,
+        "p75": 0.5357,
+        "max": 0.5357,
+        "mean": 0.5357
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2002-11-24..2003-03-04",
+      "national": false
+    },
+    {
+      "id": "Event_0514",
+      "glide": null,
+      "hazard_type": "Cold Wave",
+      "start_date": "2003-01-13",
+      "division": "Barisal",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.5833,
+        "p25": 0.5833,
+        "median": 0.5833,
+        "p75": 0.5833,
+        "max": 0.5833,
+        "mean": 0.5833
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2002-11-24..2003-03-04",
+      "national": false
+    },
+    {
+      "id": "Event_0515",
+      "glide": null,
+      "hazard_type": "Cold Wave",
+      "start_date": "2003-01-13",
+      "division": "Barisal",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.381,
+        "p25": 0.381,
+        "median": 0.381,
+        "p75": 0.381,
+        "max": 0.381,
+        "mean": 0.381
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2002-11-24..2003-03-04",
+      "national": false
+    },
+    {
+      "id": "Event_0516",
+      "glide": null,
+      "hazard_type": "Cold Wave",
+      "start_date": "2003-01-13",
+      "division": "Barisal",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.619,
+        "p25": 0.619,
+        "median": 0.619,
+        "p75": 0.619,
+        "max": 0.619,
+        "mean": 0.619
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2002-11-24..2003-03-04",
+      "national": false
+    },
+    {
+      "id": "Event_0517",
+      "glide": null,
+      "hazard_type": "Cold Wave",
+      "start_date": "2003-01-13",
+      "division": "Barisal",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.6786,
+        "p25": 0.6786,
+        "median": 0.6786,
+        "p75": 0.6786,
+        "max": 0.6786,
+        "mean": 0.6786
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2002-11-24..2003-03-04",
+      "national": false
+    },
+    {
+      "id": "Event_0518",
+      "glide": null,
+      "hazard_type": "Cold Wave",
+      "start_date": "2003-01-13",
+      "division": "Barisal",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.6548,
+        "p25": 0.6548,
+        "median": 0.6548,
+        "p75": 0.6548,
+        "max": 0.6548,
+        "mean": 0.6548
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2002-11-24..2003-03-04",
+      "national": false
+    },
+    {
+      "id": "Event_0519",
+      "glide": null,
+      "hazard_type": "Cold Wave",
+      "start_date": "2003-01-13",
+      "division": "Chittagong",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.4643,
+        "p25": 0.4643,
+        "median": 0.4643,
+        "p75": 0.4643,
+        "max": 0.4643,
+        "mean": 0.4643
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2002-11-24..2003-03-04",
+      "national": false
+    },
+    {
+      "id": "Event_0520",
+      "glide": null,
+      "hazard_type": "Cold Wave",
+      "start_date": "2003-01-13",
+      "division": "Chittagong",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.6548,
+        "p25": 0.6548,
+        "median": 0.6548,
+        "p75": 0.6548,
+        "max": 0.6548,
+        "mean": 0.6548
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2002-11-24..2003-03-04",
+      "national": false
+    },
+    {
+      "id": "Event_0521",
+      "glide": null,
+      "hazard_type": "Cold Wave",
+      "start_date": "2003-01-13",
+      "division": "Chittagong",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.4881,
+        "p25": 0.4881,
+        "median": 0.4881,
+        "p75": 0.4881,
+        "max": 0.4881,
+        "mean": 0.4881
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2002-11-24..2003-03-04",
+      "national": false
+    },
+    {
+      "id": "Event_0522",
+      "glide": null,
+      "hazard_type": "Cold Wave",
+      "start_date": "2003-01-13",
+      "division": "Chittagong",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.25,
+        "p25": 0.25,
+        "median": 0.25,
+        "p75": 0.25,
+        "max": 0.25,
+        "mean": 0.25
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2002-11-24..2003-03-04",
+      "national": false
+    },
+    {
+      "id": "Event_0523",
+      "glide": null,
+      "hazard_type": "Cold Wave",
+      "start_date": "2003-01-13",
+      "division": "Chittagong",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.6786,
+        "p25": 0.6786,
+        "median": 0.6786,
+        "p75": 0.6786,
+        "max": 0.6786,
+        "mean": 0.6786
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2002-11-24..2003-03-04",
+      "national": false
+    },
+    {
+      "id": "Event_0524",
+      "glide": null,
+      "hazard_type": "Cold Wave",
+      "start_date": "2003-01-13",
+      "division": "Chittagong",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.1786,
+        "p25": 0.1786,
+        "median": 0.1786,
+        "p75": 0.1786,
+        "max": 0.1786,
+        "mean": 0.1786
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2002-11-24..2003-03-04",
+      "national": false
+    },
+    {
+      "id": "Event_0525",
+      "glide": null,
+      "hazard_type": "Cold Wave",
+      "start_date": "2003-01-13",
+      "division": "Chittagong",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.6548,
+        "p25": 0.6548,
+        "median": 0.6548,
+        "p75": 0.6548,
+        "max": 0.6548,
+        "mean": 0.6548
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2002-11-24..2003-03-04",
+      "national": false
+    },
+    {
+      "id": "Event_0526",
+      "glide": null,
+      "hazard_type": "Cold Wave",
+      "start_date": "2003-01-13",
+      "division": "Chittagong",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.6786,
+        "p25": 0.6786,
+        "median": 0.6786,
+        "p75": 0.6786,
+        "max": 0.6786,
+        "mean": 0.6786
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2002-11-24..2003-03-04",
+      "national": false
+    },
+    {
+      "id": "Event_0527",
+      "glide": null,
+      "hazard_type": "Cold Wave",
+      "start_date": "2003-01-13",
+      "division": "Chittagong",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.5119,
+        "p25": 0.5119,
+        "median": 0.5119,
+        "p75": 0.5119,
+        "max": 0.5119,
+        "mean": 0.5119
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2002-11-24..2003-03-04",
+      "national": false
+    },
+    {
+      "id": "Event_0528",
+      "glide": null,
+      "hazard_type": "Cold Wave",
+      "start_date": "2003-01-13",
+      "division": "Chittagong",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.6548,
+        "p25": 0.6548,
+        "median": 0.6548,
+        "p75": 0.6548,
+        "max": 0.6548,
+        "mean": 0.6548
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2002-11-24..2003-03-04",
+      "national": false
+    },
+    {
+      "id": "Event_0529",
+      "glide": null,
+      "hazard_type": "Cold Wave",
+      "start_date": "2003-01-13",
+      "division": "Chittagong",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.2619,
+        "p25": 0.2619,
+        "median": 0.2619,
+        "p75": 0.2619,
+        "max": 0.2619,
+        "mean": 0.2619
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2002-11-24..2003-03-04",
+      "national": false
+    },
+    {
+      "id": "Event_0530",
+      "glide": null,
+      "hazard_type": "Cold Wave",
+      "start_date": "2003-01-13",
+      "division": "Dhaka",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.6905,
+        "p25": 0.6905,
+        "median": 0.6905,
+        "p75": 0.6905,
+        "max": 0.6905,
+        "mean": 0.6905
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2002-11-24..2003-03-04",
+      "national": false
+    },
+    {
+      "id": "Event_0531",
+      "glide": null,
+      "hazard_type": "Cold Wave",
+      "start_date": "2003-01-13",
+      "division": "Dhaka",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.5952,
+        "p25": 0.5952,
+        "median": 0.5952,
+        "p75": 0.5952,
+        "max": 0.5952,
+        "mean": 0.5952
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2002-11-24..2003-03-04",
+      "national": false
+    },
+    {
+      "id": "Event_0532",
+      "glide": null,
+      "hazard_type": "Cold Wave",
+      "start_date": "2003-01-13",
+      "division": "Dhaka",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.7143,
+        "p25": 0.7143,
+        "median": 0.7143,
+        "p75": 0.7143,
+        "max": 0.7143,
+        "mean": 0.7143
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2002-11-24..2003-03-04",
+      "national": false
+    },
+    {
+      "id": "Event_0533",
+      "glide": null,
+      "hazard_type": "Cold Wave",
+      "start_date": "2003-01-13",
+      "division": "Dhaka",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.7857,
+        "p25": 0.7857,
+        "median": 0.7857,
+        "p75": 0.7857,
+        "max": 0.7857,
+        "mean": 0.7857
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2002-11-24..2003-03-04",
+      "national": false
+    },
+    {
+      "id": "Event_0534",
+      "glide": null,
+      "hazard_type": "Cold Wave",
+      "start_date": "2003-01-13",
+      "division": "Dhaka",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.5952,
+        "p25": 0.5952,
+        "median": 0.5952,
+        "p75": 0.5952,
+        "max": 0.5952,
+        "mean": 0.5952
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2002-11-24..2003-03-04",
+      "national": false
+    },
+    {
+      "id": "Event_0535",
+      "glide": null,
+      "hazard_type": "Cold Wave",
+      "start_date": "2003-01-13",
+      "division": "Dhaka",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.6071,
+        "p25": 0.6071,
+        "median": 0.6071,
+        "p75": 0.6071,
+        "max": 0.6071,
+        "mean": 0.6071
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2002-11-24..2003-03-04",
+      "national": false
+    },
+    {
+      "id": "Event_0536",
+      "glide": null,
+      "hazard_type": "Cold Wave",
+      "start_date": "2003-01-13",
+      "division": "Dhaka",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.6548,
+        "p25": 0.6548,
+        "median": 0.6548,
+        "p75": 0.6548,
+        "max": 0.6548,
+        "mean": 0.6548
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2002-11-24..2003-03-04",
+      "national": false
+    },
+    {
+      "id": "Event_0537",
+      "glide": null,
+      "hazard_type": "Cold Wave",
+      "start_date": "2003-01-13",
+      "division": "Dhaka",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.4524,
+        "p25": 0.4524,
+        "median": 0.4524,
+        "p75": 0.4524,
+        "max": 0.4524,
+        "mean": 0.4524
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2002-11-24..2003-03-04",
+      "national": false
+    },
+    {
+      "id": "Event_0538",
+      "glide": null,
+      "hazard_type": "Cold Wave",
+      "start_date": "2003-01-13",
+      "division": "Dhaka",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.5238,
+        "p25": 0.5238,
+        "median": 0.5238,
+        "p75": 0.5238,
+        "max": 0.5238,
+        "mean": 0.5238
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2002-11-24..2003-03-04",
+      "national": false
+    },
+    {
+      "id": "Event_0539",
+      "glide": null,
+      "hazard_type": "Cold Wave",
+      "start_date": "2003-01-13",
+      "division": "Dhaka",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.6667,
+        "p25": 0.6667,
+        "median": 0.6667,
+        "p75": 0.6667,
+        "max": 0.6667,
+        "mean": 0.6667
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2002-11-24..2003-03-04",
+      "national": false
+    },
+    {
+      "id": "Event_0540",
+      "glide": null,
+      "hazard_type": "Cold Wave",
+      "start_date": "2003-01-13",
+      "division": "Dhaka",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.7024,
+        "p25": 0.7024,
+        "median": 0.7024,
+        "p75": 0.7024,
+        "max": 0.7024,
+        "mean": 0.7024
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2002-11-24..2003-03-04",
+      "national": false
+    },
+    {
+      "id": "Event_0541",
+      "glide": null,
+      "hazard_type": "Cold Wave",
+      "start_date": "2003-01-13",
+      "division": "Dhaka",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.4762,
+        "p25": 0.4762,
+        "median": 0.4762,
+        "p75": 0.4762,
+        "max": 0.4762,
+        "mean": 0.4762
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2002-11-24..2003-03-04",
+      "national": false
+    },
+    {
+      "id": "Event_0542",
+      "glide": null,
+      "hazard_type": "Cold Wave",
+      "start_date": "2003-01-13",
+      "division": "Dhaka",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.7143,
+        "p25": 0.7143,
+        "median": 0.7143,
+        "p75": 0.7143,
+        "max": 0.7143,
+        "mean": 0.7143
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2002-11-24..2003-03-04",
+      "national": false
+    },
+    {
+      "id": "Event_0543",
+      "glide": null,
+      "hazard_type": "Cold Wave",
+      "start_date": "2003-01-13",
+      "division": "Khulna",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.6429,
+        "p25": 0.6429,
+        "median": 0.6429,
+        "p75": 0.6429,
+        "max": 0.6429,
+        "mean": 0.6429
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2002-11-24..2003-03-04",
+      "national": false
+    },
+    {
+      "id": "Event_0544",
+      "glide": null,
+      "hazard_type": "Cold Wave",
+      "start_date": "2003-01-13",
+      "division": "Khulna",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.8333,
+        "p25": 0.8333,
+        "median": 0.8333,
+        "p75": 0.8333,
+        "max": 0.8333,
+        "mean": 0.8333
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2002-11-24..2003-03-04",
+      "national": false
+    },
+    {
+      "id": "Event_0545",
+      "glide": null,
+      "hazard_type": "Cold Wave",
+      "start_date": "2003-01-13",
+      "division": "Khulna",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.9286,
+        "p25": 0.9286,
+        "median": 0.9286,
+        "p75": 0.9286,
+        "max": 0.9286,
+        "mean": 0.9286
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2002-11-24..2003-03-04",
+      "national": false
+    },
+    {
+      "id": "Event_0546",
+      "glide": null,
+      "hazard_type": "Cold Wave",
+      "start_date": "2003-01-13",
+      "division": "Khulna",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.7738,
+        "p25": 0.7738,
+        "median": 0.7738,
+        "p75": 0.7738,
+        "max": 0.7738,
+        "mean": 0.7738
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2002-11-24..2003-03-04",
+      "national": false
+    },
+    {
+      "id": "Event_0547",
+      "glide": null,
+      "hazard_type": "Cold Wave",
+      "start_date": "2003-01-13",
+      "division": "Khulna",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.6429,
+        "p25": 0.6429,
+        "median": 0.6429,
+        "p75": 0.6429,
+        "max": 0.6429,
+        "mean": 0.6429
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2002-11-24..2003-03-04",
+      "national": false
+    },
+    {
+      "id": "Event_0548",
+      "glide": null,
+      "hazard_type": "Cold Wave",
+      "start_date": "2003-01-13",
+      "division": "Khulna",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.7619,
+        "p25": 0.7619,
+        "median": 0.7619,
+        "p75": 0.7619,
+        "max": 0.7619,
+        "mean": 0.7619
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2002-11-24..2003-03-04",
+      "national": false
+    },
+    {
+      "id": "Event_0549",
+      "glide": null,
+      "hazard_type": "Cold Wave",
+      "start_date": "2003-01-13",
+      "division": "Khulna",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.7857,
+        "p25": 0.7857,
+        "median": 0.7857,
+        "p75": 0.7857,
+        "max": 0.7857,
+        "mean": 0.7857
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2002-11-24..2003-03-04",
+      "national": false
+    },
+    {
+      "id": "Event_0550",
+      "glide": null,
+      "hazard_type": "Cold Wave",
+      "start_date": "2003-01-13",
+      "division": "Khulna",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.8333,
+        "p25": 0.8333,
+        "median": 0.8333,
+        "p75": 0.8333,
+        "max": 0.8333,
+        "mean": 0.8333
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2002-11-24..2003-03-04",
+      "national": false
+    },
+    {
+      "id": "Event_0551",
+      "glide": null,
+      "hazard_type": "Cold Wave",
+      "start_date": "2003-01-13",
+      "division": "Khulna",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.869,
+        "p25": 0.869,
+        "median": 0.869,
+        "p75": 0.869,
+        "max": 0.869,
+        "mean": 0.869
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2002-11-24..2003-03-04",
+      "national": false
+    },
+    {
+      "id": "Event_0552",
+      "glide": null,
+      "hazard_type": "Cold Wave",
+      "start_date": "2003-01-13",
+      "division": "Khulna",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.6905,
+        "p25": 0.6905,
+        "median": 0.6905,
+        "p75": 0.6905,
+        "max": 0.6905,
+        "mean": 0.6905
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2002-11-24..2003-03-04",
+      "national": false
+    },
+    {
+      "id": "Event_0553",
+      "glide": null,
+      "hazard_type": "Cold Wave",
+      "start_date": "2003-01-13",
+      "division": "Dhaka",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.6905,
+        "p25": 0.6905,
+        "median": 0.6905,
+        "p75": 0.6905,
+        "max": 0.6905,
+        "mean": 0.6905
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2002-11-24..2003-03-04",
+      "national": false
+    },
+    {
+      "id": "Event_0554",
+      "glide": null,
+      "hazard_type": "Cold Wave",
+      "start_date": "2003-01-13",
+      "division": "Dhaka",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.6667,
+        "p25": 0.6667,
+        "median": 0.6667,
+        "p75": 0.6667,
+        "max": 0.6667,
+        "mean": 0.6667
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2002-11-24..2003-03-04",
+      "national": false
+    },
+    {
+      "id": "Event_0555",
+      "glide": null,
+      "hazard_type": "Cold Wave",
+      "start_date": "2003-01-13",
+      "division": "Dhaka",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.7262,
+        "p25": 0.7262,
+        "median": 0.7262,
+        "p75": 0.7262,
+        "max": 0.7262,
+        "mean": 0.7262
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2002-11-24..2003-03-04",
+      "national": false
+    },
+    {
+      "id": "Event_0556",
+      "glide": null,
+      "hazard_type": "Cold Wave",
+      "start_date": "2003-01-13",
+      "division": "Dhaka",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.7381,
+        "p25": 0.7381,
+        "median": 0.7381,
+        "p75": 0.7381,
+        "max": 0.7381,
+        "mean": 0.7381
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2002-11-24..2003-03-04",
+      "national": false
+    },
+    {
+      "id": "Event_0557",
+      "glide": null,
+      "hazard_type": "Cold Wave",
+      "start_date": "2003-01-13",
+      "division": "Rajshahi",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.8571,
+        "p25": 0.8571,
+        "median": 0.8571,
+        "p75": 0.8571,
+        "max": 0.8571,
+        "mean": 0.8571
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2002-11-24..2003-03-04",
+      "national": false
+    },
+    {
+      "id": "Event_0558",
+      "glide": null,
+      "hazard_type": "Cold Wave",
+      "start_date": "2003-01-13",
+      "division": "Rajshahi",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.869,
+        "p25": 0.869,
+        "median": 0.869,
+        "p75": 0.869,
+        "max": 0.869,
+        "mean": 0.869
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2002-11-24..2003-03-04",
+      "national": false
+    },
+    {
+      "id": "Event_0559",
+      "glide": null,
+      "hazard_type": "Cold Wave",
+      "start_date": "2003-01-13",
+      "division": "Rajshahi",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.7976,
+        "p25": 0.7976,
+        "median": 0.7976,
+        "p75": 0.7976,
+        "max": 0.7976,
+        "mean": 0.7976
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2002-11-24..2003-03-04",
+      "national": false
+    },
+    {
+      "id": "Event_0560",
+      "glide": null,
+      "hazard_type": "Cold Wave",
+      "start_date": "2003-01-13",
+      "division": "Rajshahi",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.7976,
+        "p25": 0.7976,
+        "median": 0.7976,
+        "p75": 0.7976,
+        "max": 0.7976,
+        "mean": 0.7976
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2002-11-24..2003-03-04",
+      "national": false
+    },
+    {
+      "id": "Event_0561",
+      "glide": null,
+      "hazard_type": "Cold Wave",
+      "start_date": "2003-01-13",
+      "division": "Rajshahi",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.7857,
+        "p25": 0.7857,
+        "median": 0.7857,
+        "p75": 0.7857,
+        "max": 0.7857,
+        "mean": 0.7857
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2002-11-24..2003-03-04",
+      "national": false
+    },
+    {
+      "id": "Event_0562",
+      "glide": null,
+      "hazard_type": "Cold Wave",
+      "start_date": "2003-01-13",
+      "division": "Rajshahi",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.75,
+        "p25": 0.75,
+        "median": 0.75,
+        "p75": 0.75,
+        "max": 0.75,
+        "mean": 0.75
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2002-11-24..2003-03-04",
+      "national": false
+    },
+    {
+      "id": "Event_0563",
+      "glide": null,
+      "hazard_type": "Cold Wave",
+      "start_date": "2003-01-13",
+      "division": "Rajshahi",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.8214,
+        "p25": 0.8214,
+        "median": 0.8214,
+        "p75": 0.8214,
+        "max": 0.8214,
+        "mean": 0.8214
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2002-11-24..2003-03-04",
+      "national": false
+    },
+    {
+      "id": "Event_0564",
+      "glide": null,
+      "hazard_type": "Cold Wave",
+      "start_date": "2003-01-13",
+      "division": "Rajshahi",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.7024,
+        "p25": 0.7024,
+        "median": 0.7024,
+        "p75": 0.7024,
+        "max": 0.7024,
+        "mean": 0.7024
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2002-11-24..2003-03-04",
+      "national": false
+    },
+    {
+      "id": "Event_0565",
+      "glide": null,
+      "hazard_type": "Cold Wave",
+      "start_date": "2003-01-13",
+      "division": "Rangpur",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.9167,
+        "p25": 0.9167,
+        "median": 0.9167,
+        "p75": 0.9167,
+        "max": 0.9167,
+        "mean": 0.9167
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2002-11-24..2003-03-04",
+      "national": false
+    },
+    {
+      "id": "Event_0566",
+      "glide": null,
+      "hazard_type": "Cold Wave",
+      "start_date": "2003-01-13",
+      "division": "Rangpur",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.7857,
+        "p25": 0.7857,
+        "median": 0.7857,
+        "p75": 0.7857,
+        "max": 0.7857,
+        "mean": 0.7857
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2002-11-24..2003-03-04",
+      "national": false
+    },
+    {
+      "id": "Event_0567",
+      "glide": null,
+      "hazard_type": "Cold Wave",
+      "start_date": "2003-01-13",
+      "division": "Rangpur",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.6905,
+        "p25": 0.6905,
+        "median": 0.6905,
+        "p75": 0.6905,
+        "max": 0.6905,
+        "mean": 0.6905
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2002-11-24..2003-03-04",
+      "national": false
+    },
+    {
+      "id": "Event_0568",
+      "glide": null,
+      "hazard_type": "Cold Wave",
+      "start_date": "2003-01-13",
+      "division": "Rangpur",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.7619,
+        "p25": 0.7619,
+        "median": 0.7619,
+        "p75": 0.7619,
+        "max": 0.7619,
+        "mean": 0.7619
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2002-11-24..2003-03-04",
+      "national": false
+    },
+    {
+      "id": "Event_0569",
+      "glide": null,
+      "hazard_type": "Cold Wave",
+      "start_date": "2003-01-13",
+      "division": "Rangpur",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.7738,
+        "p25": 0.7738,
+        "median": 0.7738,
+        "p75": 0.7738,
+        "max": 0.7738,
+        "mean": 0.7738
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2002-11-24..2003-03-04",
+      "national": false
+    },
+    {
+      "id": "Event_0570",
+      "glide": null,
+      "hazard_type": "Cold Wave",
+      "start_date": "2003-01-13",
+      "division": "Rangpur",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.7619,
+        "p25": 0.7619,
+        "median": 0.7619,
+        "p75": 0.7619,
+        "max": 0.7619,
+        "mean": 0.7619
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2002-11-24..2003-03-04",
+      "national": false
+    },
+    {
+      "id": "Event_0571",
+      "glide": null,
+      "hazard_type": "Cold Wave",
+      "start_date": "2003-01-13",
+      "division": "Rangpur",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.75,
+        "p25": 0.75,
+        "median": 0.75,
+        "p75": 0.75,
+        "max": 0.75,
+        "mean": 0.75
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2002-11-24..2003-03-04",
+      "national": false
+    },
+    {
+      "id": "Event_0572",
+      "glide": null,
+      "hazard_type": "Cold Wave",
+      "start_date": "2003-01-13",
+      "division": "Rangpur",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.8095,
+        "p25": 0.8095,
+        "median": 0.8095,
+        "p75": 0.8095,
+        "max": 0.8095,
+        "mean": 0.8095
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2002-11-24..2003-03-04",
+      "national": false
+    },
+    {
+      "id": "Event_0573",
+      "glide": null,
+      "hazard_type": "Cold Wave",
+      "start_date": "2003-01-13",
+      "division": "Sylhet",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.6905,
+        "p25": 0.6905,
+        "median": 0.6905,
+        "p75": 0.6905,
+        "max": 0.6905,
+        "mean": 0.6905
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2002-11-24..2003-03-04",
+      "national": false
+    },
+    {
+      "id": "Event_0574",
+      "glide": null,
+      "hazard_type": "Cold Wave",
+      "start_date": "2003-01-13",
+      "division": "Sylhet",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.6071,
+        "p25": 0.6071,
+        "median": 0.6071,
+        "p75": 0.6071,
+        "max": 0.6071,
+        "mean": 0.6071
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2002-11-24..2003-03-04",
+      "national": false
+    },
+    {
+      "id": "Event_0575",
+      "glide": null,
+      "hazard_type": "Cold Wave",
+      "start_date": "2003-01-13",
+      "division": "Sylhet",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.8452,
+        "p25": 0.8452,
+        "median": 0.8452,
+        "p75": 0.8452,
+        "max": 0.8452,
+        "mean": 0.8452
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2002-11-24..2003-03-04",
+      "national": false
+    },
+    {
+      "id": "Event_0576",
+      "glide": null,
+      "hazard_type": "Cold Wave",
+      "start_date": "2003-01-13",
+      "division": "Sylhet",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.7738,
+        "p25": 0.7738,
+        "median": 0.7738,
+        "p75": 0.7738,
+        "max": 0.7738,
+        "mean": 0.7738
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2002-11-24..2003-03-04",
+      "national": false
+    },
+    {
+      "id": "ST-2003-000211-BGD",
+      "glide": "ST-2003-000211-BGD",
+      "hazard_type": "Tropical Cyclone",
+      "start_date": "2003-05-06",
+      "division": "Barisal",
+      "district_count": 64,
+      "severity": {
+        "n": 64,
+        "min": 0,
+        "p25": 0.8318,
+        "median": 0.8318,
+        "p75": 0.8318,
+        "max": 0.8318,
+        "mean": 0.8188
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 1,
+      "gee_window": "2003-03-17..2003-06-25",
+      "national": true
+    },
+    {
+      "id": "Event_0641",
+      "glide": null,
+      "hazard_type": "Flash Flood",
+      "start_date": "2003-07-02",
+      "division": "Barisal",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.9969,
+        "p25": 0.9969,
+        "median": 0.9969,
+        "p75": 0.9969,
+        "max": 0.9969,
+        "mean": 0.9969
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2003-05-13..2003-08-21",
+      "national": false
+    },
+    {
+      "id": "Event_0642",
+      "glide": null,
+      "hazard_type": "Flash Flood",
+      "start_date": "2003-07-02",
+      "division": "Barisal",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.9981,
+        "p25": 0.9981,
+        "median": 0.9981,
+        "p75": 0.9981,
+        "max": 0.9981,
+        "mean": 0.9981
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2003-05-13..2003-08-21",
+      "national": false
+    },
+    {
+      "id": "Event_0643",
+      "glide": null,
+      "hazard_type": "Flash Flood",
+      "start_date": "2003-07-02",
+      "division": "Barisal",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.9979,
+        "p25": 0.9979,
+        "median": 0.9979,
+        "p75": 0.9979,
+        "max": 0.9979,
+        "mean": 0.9979
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2003-05-13..2003-08-21",
+      "national": false
+    },
+    {
+      "id": "Event_0644",
+      "glide": null,
+      "hazard_type": "Flash Flood",
+      "start_date": "2003-07-02",
+      "division": "Barisal",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.9984,
+        "p25": 0.9984,
+        "median": 0.9984,
+        "p75": 0.9984,
+        "max": 0.9984,
+        "mean": 0.9984
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2003-05-13..2003-08-21",
+      "national": false
+    },
+    {
+      "id": "Event_0645",
+      "glide": null,
+      "hazard_type": "Flash Flood",
+      "start_date": "2003-07-02",
+      "division": "Barisal",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.9969,
+        "p25": 0.9969,
+        "median": 0.9969,
+        "p75": 0.9969,
+        "max": 0.9969,
+        "mean": 0.9969
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2003-05-13..2003-08-21",
+      "national": false
+    },
+    {
+      "id": "Event_0646",
+      "glide": null,
+      "hazard_type": "Flash Flood",
+      "start_date": "2003-07-02",
+      "division": "Barisal",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.9986,
+        "p25": 0.9986,
+        "median": 0.9986,
+        "p75": 0.9986,
+        "max": 0.9986,
+        "mean": 0.9986
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2003-05-13..2003-08-21",
+      "national": false
+    },
+    {
+      "id": "Event_0647",
+      "glide": null,
+      "hazard_type": "Flash Flood",
+      "start_date": "2003-07-02",
+      "division": "Chittagong",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.9972,
+        "p25": 0.9972,
+        "median": 0.9972,
+        "p75": 0.9972,
+        "max": 0.9972,
+        "mean": 0.9972
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2003-05-13..2003-08-21",
+      "national": false
+    },
+    {
+      "id": "Event_0648",
+      "glide": null,
+      "hazard_type": "Flash Flood",
+      "start_date": "2003-07-02",
+      "division": "Chittagong",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.9939,
+        "p25": 0.9939,
+        "median": 0.9939,
+        "p75": 0.9939,
+        "max": 0.9939,
+        "mean": 0.9939
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2003-05-13..2003-08-21",
+      "national": false
+    },
+    {
+      "id": "Event_0649",
+      "glide": null,
+      "hazard_type": "Flash Flood",
+      "start_date": "2003-07-02",
+      "division": "Chittagong",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.9973,
+        "p25": 0.9973,
+        "median": 0.9973,
+        "p75": 0.9973,
+        "max": 0.9973,
+        "mean": 0.9973
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2003-05-13..2003-08-21",
+      "national": false
+    },
+    {
+      "id": "Event_0650",
+      "glide": null,
+      "hazard_type": "Flash Flood",
+      "start_date": "2003-07-02",
+      "division": "Chittagong",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.9978,
+        "p25": 0.9978,
+        "median": 0.9978,
+        "p75": 0.9978,
+        "max": 0.9978,
+        "mean": 0.9978
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2003-05-13..2003-08-21",
+      "national": false
+    },
+    {
+      "id": "Event_0651",
+      "glide": null,
+      "hazard_type": "Flash Flood",
+      "start_date": "2003-07-02",
+      "division": "Chittagong",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.9968,
+        "p25": 0.9968,
+        "median": 0.9968,
+        "p75": 0.9968,
+        "max": 0.9968,
+        "mean": 0.9968
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2003-05-13..2003-08-21",
+      "national": false
+    },
+    {
+      "id": "Event_0652",
+      "glide": null,
+      "hazard_type": "Flash Flood",
+      "start_date": "2003-07-02",
+      "division": "Chittagong",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.9951,
+        "p25": 0.9951,
+        "median": 0.9951,
+        "p75": 0.9951,
+        "max": 0.9951,
+        "mean": 0.9951
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2003-05-13..2003-08-21",
+      "national": false
+    },
+    {
+      "id": "Event_0653",
+      "glide": null,
+      "hazard_type": "Flash Flood",
+      "start_date": "2003-07-02",
+      "division": "Chittagong",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.9976,
+        "p25": 0.9976,
+        "median": 0.9976,
+        "p75": 0.9976,
+        "max": 0.9976,
+        "mean": 0.9976
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2003-05-13..2003-08-21",
+      "national": false
+    },
+    {
+      "id": "Event_0654",
+      "glide": null,
+      "hazard_type": "Flash Flood",
+      "start_date": "2003-07-02",
+      "division": "Chittagong",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.9967,
+        "p25": 0.9967,
+        "median": 0.9967,
+        "p75": 0.9967,
+        "max": 0.9967,
+        "mean": 0.9967
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2003-05-13..2003-08-21",
+      "national": false
+    },
+    {
+      "id": "Event_0655",
+      "glide": null,
+      "hazard_type": "Flash Flood",
+      "start_date": "2003-07-02",
+      "division": "Chittagong",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.9986,
+        "p25": 0.9986,
+        "median": 0.9986,
+        "p75": 0.9986,
+        "max": 0.9986,
+        "mean": 0.9986
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2003-05-13..2003-08-21",
+      "national": false
+    },
+    {
+      "id": "Event_0656",
+      "glide": null,
+      "hazard_type": "Flash Flood",
+      "start_date": "2003-07-02",
+      "division": "Chittagong",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.9992,
+        "p25": 0.9992,
+        "median": 0.9992,
+        "p75": 0.9992,
+        "max": 0.9992,
+        "mean": 0.9992
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2003-05-13..2003-08-21",
+      "national": false
+    },
+    {
+      "id": "Event_0657",
+      "glide": null,
+      "hazard_type": "Flash Flood",
+      "start_date": "2003-07-02",
+      "division": "Chittagong",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.9968,
+        "p25": 0.9968,
+        "median": 0.9968,
+        "p75": 0.9968,
+        "max": 0.9968,
+        "mean": 0.9968
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2003-05-13..2003-08-21",
+      "national": false
+    },
+    {
+      "id": "Event_0658",
+      "glide": null,
+      "hazard_type": "Flash Flood",
+      "start_date": "2003-07-02",
+      "division": "Dhaka",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.9938,
+        "p25": 0.9938,
+        "median": 0.9938,
+        "p75": 0.9938,
+        "max": 0.9938,
+        "mean": 0.9938
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2003-05-13..2003-08-21",
+      "national": false
+    },
+    {
+      "id": "Event_0659",
+      "glide": null,
+      "hazard_type": "Flash Flood",
+      "start_date": "2003-07-02",
+      "division": "Dhaka",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.995,
+        "p25": 0.995,
+        "median": 0.995,
+        "p75": 0.995,
+        "max": 0.995,
+        "mean": 0.995
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2003-05-13..2003-08-21",
+      "national": false
+    },
+    {
+      "id": "Event_0660",
+      "glide": null,
+      "hazard_type": "Flash Flood",
+      "start_date": "2003-07-02",
+      "division": "Dhaka",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.9938,
+        "p25": 0.9938,
+        "median": 0.9938,
+        "p75": 0.9938,
+        "max": 0.9938,
+        "mean": 0.9938
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2003-05-13..2003-08-21",
+      "national": false
+    },
+    {
+      "id": "Event_0661",
+      "glide": null,
+      "hazard_type": "Flash Flood",
+      "start_date": "2003-07-02",
+      "division": "Dhaka",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.9984,
+        "p25": 0.9984,
+        "median": 0.9984,
+        "p75": 0.9984,
+        "max": 0.9984,
+        "mean": 0.9984
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2003-05-13..2003-08-21",
+      "national": false
+    },
+    {
+      "id": "Event_0662",
+      "glide": null,
+      "hazard_type": "Flash Flood",
+      "start_date": "2003-07-02",
+      "division": "Dhaka",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.9949,
+        "p25": 0.9949,
+        "median": 0.9949,
+        "p75": 0.9949,
+        "max": 0.9949,
+        "mean": 0.9949
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2003-05-13..2003-08-21",
+      "national": false
+    },
+    {
+      "id": "Event_0663",
+      "glide": null,
+      "hazard_type": "Flash Flood",
+      "start_date": "2003-07-02",
+      "division": "Dhaka",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.9977,
+        "p25": 0.9977,
+        "median": 0.9977,
+        "p75": 0.9977,
+        "max": 0.9977,
+        "mean": 0.9977
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2003-05-13..2003-08-21",
+      "national": false
+    },
+    {
+      "id": "Event_0664",
+      "glide": null,
+      "hazard_type": "Flash Flood",
+      "start_date": "2003-07-02",
+      "division": "Dhaka",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.9943,
+        "p25": 0.9943,
+        "median": 0.9943,
+        "p75": 0.9943,
+        "max": 0.9943,
+        "mean": 0.9943
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2003-05-13..2003-08-21",
+      "national": false
+    },
+    {
+      "id": "Event_0665",
+      "glide": null,
+      "hazard_type": "Flash Flood",
+      "start_date": "2003-07-02",
+      "division": "Dhaka",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.993,
+        "p25": 0.993,
+        "median": 0.993,
+        "p75": 0.993,
+        "max": 0.993,
+        "mean": 0.993
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2003-05-13..2003-08-21",
+      "national": false
+    },
+    {
+      "id": "Event_0666",
+      "glide": null,
+      "hazard_type": "Flash Flood",
+      "start_date": "2003-07-02",
+      "division": "Dhaka",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.9945,
+        "p25": 0.9945,
+        "median": 0.9945,
+        "p75": 0.9945,
+        "max": 0.9945,
+        "mean": 0.9945
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2003-05-13..2003-08-21",
+      "national": false
+    },
+    {
+      "id": "Event_0667",
+      "glide": null,
+      "hazard_type": "Flash Flood",
+      "start_date": "2003-07-02",
+      "division": "Dhaka",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.9949,
+        "p25": 0.9949,
+        "median": 0.9949,
+        "p75": 0.9949,
+        "max": 0.9949,
+        "mean": 0.9949
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2003-05-13..2003-08-21",
+      "national": false
+    },
+    {
+      "id": "Event_0668",
+      "glide": null,
+      "hazard_type": "Flash Flood",
+      "start_date": "2003-07-02",
+      "division": "Dhaka",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.9951,
+        "p25": 0.9951,
+        "median": 0.9951,
+        "p75": 0.9951,
+        "max": 0.9951,
+        "mean": 0.9951
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2003-05-13..2003-08-21",
+      "national": false
+    },
+    {
+      "id": "Event_0669",
+      "glide": null,
+      "hazard_type": "Flash Flood",
+      "start_date": "2003-07-02",
+      "division": "Dhaka",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.9973,
+        "p25": 0.9973,
+        "median": 0.9973,
+        "p75": 0.9973,
+        "max": 0.9973,
+        "mean": 0.9973
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2003-05-13..2003-08-21",
+      "national": false
+    },
+    {
+      "id": "Event_0670",
+      "glide": null,
+      "hazard_type": "Flash Flood",
+      "start_date": "2003-07-02",
+      "division": "Dhaka",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.994,
+        "p25": 0.994,
+        "median": 0.994,
+        "p75": 0.994,
+        "max": 0.994,
+        "mean": 0.994
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2003-05-13..2003-08-21",
+      "national": false
+    },
+    {
+      "id": "Event_0671",
+      "glide": null,
+      "hazard_type": "Flash Flood",
+      "start_date": "2003-07-02",
+      "division": "Khulna",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.999,
+        "p25": 0.999,
+        "median": 0.999,
+        "p75": 0.999,
+        "max": 0.999,
+        "mean": 0.999
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2003-05-13..2003-08-21",
+      "national": false
+    },
+    {
+      "id": "Event_0672",
+      "glide": null,
+      "hazard_type": "Flash Flood",
+      "start_date": "2003-07-02",
+      "division": "Khulna",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.9953,
+        "p25": 0.9953,
+        "median": 0.9953,
+        "p75": 0.9953,
+        "max": 0.9953,
+        "mean": 0.9953
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2003-05-13..2003-08-21",
+      "national": false
+    },
+    {
+      "id": "Event_0673",
+      "glide": null,
+      "hazard_type": "Flash Flood",
+      "start_date": "2003-07-02",
+      "division": "Khulna",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.9946,
+        "p25": 0.9946,
+        "median": 0.9946,
+        "p75": 0.9946,
+        "max": 0.9946,
+        "mean": 0.9946
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2003-05-13..2003-08-21",
+      "national": false
+    },
+    {
+      "id": "Event_0674",
+      "glide": null,
+      "hazard_type": "Flash Flood",
+      "start_date": "2003-07-02",
+      "division": "Khulna",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.9944,
+        "p25": 0.9944,
+        "median": 0.9944,
+        "p75": 0.9944,
+        "max": 0.9944,
+        "mean": 0.9944
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2003-05-13..2003-08-21",
+      "national": false
+    },
+    {
+      "id": "Event_0675",
+      "glide": null,
+      "hazard_type": "Flash Flood",
+      "start_date": "2003-07-02",
+      "division": "Khulna",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.9991,
+        "p25": 0.9991,
+        "median": 0.9991,
+        "p75": 0.9991,
+        "max": 0.9991,
+        "mean": 0.9991
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2003-05-13..2003-08-21",
+      "national": false
+    },
+    {
+      "id": "Event_0676",
+      "glide": null,
+      "hazard_type": "Flash Flood",
+      "start_date": "2003-07-02",
+      "division": "Khulna",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.9961,
+        "p25": 0.9961,
+        "median": 0.9961,
+        "p75": 0.9961,
+        "max": 0.9961,
+        "mean": 0.9961
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2003-05-13..2003-08-21",
+      "national": false
+    },
+    {
+      "id": "Event_0677",
+      "glide": null,
+      "hazard_type": "Flash Flood",
+      "start_date": "2003-07-02",
+      "division": "Khulna",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.9937,
+        "p25": 0.9937,
+        "median": 0.9937,
+        "p75": 0.9937,
+        "max": 0.9937,
+        "mean": 0.9937
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2003-05-13..2003-08-21",
+      "national": false
+    },
+    {
+      "id": "Event_0678",
+      "glide": null,
+      "hazard_type": "Flash Flood",
+      "start_date": "2003-07-02",
+      "division": "Khulna",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.9954,
+        "p25": 0.9954,
+        "median": 0.9954,
+        "p75": 0.9954,
+        "max": 0.9954,
+        "mean": 0.9954
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2003-05-13..2003-08-21",
+      "national": false
+    },
+    {
+      "id": "Event_0679",
+      "glide": null,
+      "hazard_type": "Flash Flood",
+      "start_date": "2003-07-02",
+      "division": "Khulna",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.9986,
+        "p25": 0.9986,
+        "median": 0.9986,
+        "p75": 0.9986,
+        "max": 0.9986,
+        "mean": 0.9986
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2003-05-13..2003-08-21",
+      "national": false
+    },
+    {
+      "id": "Event_0680",
+      "glide": null,
+      "hazard_type": "Flash Flood",
+      "start_date": "2003-07-02",
+      "division": "Khulna",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.9956,
+        "p25": 0.9956,
+        "median": 0.9956,
+        "p75": 0.9956,
+        "max": 0.9956,
+        "mean": 0.9956
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2003-05-13..2003-08-21",
+      "national": false
+    },
+    {
+      "id": "Event_0681",
+      "glide": null,
+      "hazard_type": "Flash Flood",
+      "start_date": "2003-07-02",
+      "division": "Dhaka",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.9977,
+        "p25": 0.9977,
+        "median": 0.9977,
+        "p75": 0.9977,
+        "max": 0.9977,
+        "mean": 0.9977
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2003-05-13..2003-08-21",
+      "national": false
+    },
+    {
+      "id": "Event_0682",
+      "glide": null,
+      "hazard_type": "Flash Flood",
+      "start_date": "2003-07-02",
+      "division": "Dhaka",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.9931,
+        "p25": 0.9931,
+        "median": 0.9931,
+        "p75": 0.9931,
+        "max": 0.9931,
+        "mean": 0.9931
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2003-05-13..2003-08-21",
+      "national": false
+    },
+    {
+      "id": "Event_0683",
+      "glide": null,
+      "hazard_type": "Flash Flood",
+      "start_date": "2003-07-02",
+      "division": "Dhaka",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.9918,
+        "p25": 0.9918,
+        "median": 0.9918,
+        "p75": 0.9918,
+        "max": 0.9918,
+        "mean": 0.9918
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2003-05-13..2003-08-21",
+      "national": false
+    },
+    {
+      "id": "Event_0684",
+      "glide": null,
+      "hazard_type": "Flash Flood",
+      "start_date": "2003-07-02",
+      "division": "Dhaka",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.9964,
+        "p25": 0.9964,
+        "median": 0.9964,
+        "p75": 0.9964,
+        "max": 0.9964,
+        "mean": 0.9964
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2003-05-13..2003-08-21",
+      "national": false
+    },
+    {
+      "id": "Event_0685",
+      "glide": null,
+      "hazard_type": "Flash Flood",
+      "start_date": "2003-07-02",
+      "division": "Rajshahi",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.9981,
+        "p25": 0.9981,
+        "median": 0.9981,
+        "p75": 0.9981,
+        "max": 0.9981,
+        "mean": 0.9981
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2003-05-13..2003-08-21",
+      "national": false
+    },
+    {
+      "id": "Event_0686",
+      "glide": null,
+      "hazard_type": "Flash Flood",
+      "start_date": "2003-07-02",
+      "division": "Rajshahi",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.9987,
+        "p25": 0.9987,
+        "median": 0.9987,
+        "p75": 0.9987,
+        "max": 0.9987,
+        "mean": 0.9987
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2003-05-13..2003-08-21",
+      "national": false
+    },
+    {
+      "id": "Event_0687",
+      "glide": null,
+      "hazard_type": "Flash Flood",
+      "start_date": "2003-07-02",
+      "division": "Rajshahi",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.999,
+        "p25": 0.999,
+        "median": 0.999,
+        "p75": 0.999,
+        "max": 0.999,
+        "mean": 0.999
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2003-05-13..2003-08-21",
+      "national": false
+    },
+    {
+      "id": "Event_0688",
+      "glide": null,
+      "hazard_type": "Flash Flood",
+      "start_date": "2003-07-02",
+      "division": "Rajshahi",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.9981,
+        "p25": 0.9981,
+        "median": 0.9981,
+        "p75": 0.9981,
+        "max": 0.9981,
+        "mean": 0.9981
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2003-05-13..2003-08-21",
+      "national": false
+    },
+    {
+      "id": "Event_0689",
+      "glide": null,
+      "hazard_type": "Flash Flood",
+      "start_date": "2003-07-02",
+      "division": "Rajshahi",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.9961,
+        "p25": 0.9961,
+        "median": 0.9961,
+        "p75": 0.9961,
+        "max": 0.9961,
+        "mean": 0.9961
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2003-05-13..2003-08-21",
+      "national": false
+    },
+    {
+      "id": "Event_0690",
+      "glide": null,
+      "hazard_type": "Flash Flood",
+      "start_date": "2003-07-02",
+      "division": "Rajshahi",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.9959,
+        "p25": 0.9959,
+        "median": 0.9959,
+        "p75": 0.9959,
+        "max": 0.9959,
+        "mean": 0.9959
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2003-05-13..2003-08-21",
+      "national": false
+    },
+    {
+      "id": "Event_0691",
+      "glide": null,
+      "hazard_type": "Flash Flood",
+      "start_date": "2003-07-02",
+      "division": "Rajshahi",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.9969,
+        "p25": 0.9969,
+        "median": 0.9969,
+        "p75": 0.9969,
+        "max": 0.9969,
+        "mean": 0.9969
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2003-05-13..2003-08-21",
+      "national": false
+    },
+    {
+      "id": "Event_0692",
+      "glide": null,
+      "hazard_type": "Flash Flood",
+      "start_date": "2003-07-02",
+      "division": "Rajshahi",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.9938,
+        "p25": 0.9938,
+        "median": 0.9938,
+        "p75": 0.9938,
+        "max": 0.9938,
+        "mean": 0.9938
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2003-05-13..2003-08-21",
+      "national": false
+    },
+    {
+      "id": "Event_0693",
+      "glide": null,
+      "hazard_type": "Flash Flood",
+      "start_date": "2003-07-02",
+      "division": "Rangpur",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.9938,
+        "p25": 0.9938,
+        "median": 0.9938,
+        "p75": 0.9938,
+        "max": 0.9938,
+        "mean": 0.9938
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2003-05-13..2003-08-21",
+      "national": false
+    },
+    {
+      "id": "Event_0694",
+      "glide": null,
+      "hazard_type": "Flash Flood",
+      "start_date": "2003-07-02",
+      "division": "Rangpur",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.9951,
+        "p25": 0.9951,
+        "median": 0.9951,
+        "p75": 0.9951,
+        "max": 0.9951,
+        "mean": 0.9951
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2003-05-13..2003-08-21",
+      "national": false
+    },
+    {
+      "id": "Event_0695",
+      "glide": null,
+      "hazard_type": "Flash Flood",
+      "start_date": "2003-07-02",
+      "division": "Rangpur",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.9925,
+        "p25": 0.9925,
+        "median": 0.9925,
+        "p75": 0.9925,
+        "max": 0.9925,
+        "mean": 0.9925
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2003-05-13..2003-08-21",
+      "national": false
+    },
+    {
+      "id": "Event_0696",
+      "glide": null,
+      "hazard_type": "Flash Flood",
+      "start_date": "2003-07-02",
+      "division": "Rangpur",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.9961,
+        "p25": 0.9961,
+        "median": 0.9961,
+        "p75": 0.9961,
+        "max": 0.9961,
+        "mean": 0.9961
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2003-05-13..2003-08-21",
+      "national": false
+    },
+    {
+      "id": "Event_0697",
+      "glide": null,
+      "hazard_type": "Flash Flood",
+      "start_date": "2003-07-02",
+      "division": "Rangpur",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.9954,
+        "p25": 0.9954,
+        "median": 0.9954,
+        "p75": 0.9954,
+        "max": 0.9954,
+        "mean": 0.9954
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2003-05-13..2003-08-21",
+      "national": false
+    },
+    {
+      "id": "Event_0698",
+      "glide": null,
+      "hazard_type": "Flash Flood",
+      "start_date": "2003-07-02",
+      "division": "Rangpur",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.9961,
+        "p25": 0.9961,
+        "median": 0.9961,
+        "p75": 0.9961,
+        "max": 0.9961,
+        "mean": 0.9961
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2003-05-13..2003-08-21",
+      "national": false
+    },
+    {
+      "id": "Event_0699",
+      "glide": null,
+      "hazard_type": "Flash Flood",
+      "start_date": "2003-07-02",
+      "division": "Rangpur",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.9954,
+        "p25": 0.9954,
+        "median": 0.9954,
+        "p75": 0.9954,
+        "max": 0.9954,
+        "mean": 0.9954
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2003-05-13..2003-08-21",
+      "national": false
+    },
+    {
+      "id": "Event_0700",
+      "glide": null,
+      "hazard_type": "Flash Flood",
+      "start_date": "2003-07-02",
+      "division": "Rangpur",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.9929,
+        "p25": 0.9929,
+        "median": 0.9929,
+        "p75": 0.9929,
+        "max": 0.9929,
+        "mean": 0.9929
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2003-05-13..2003-08-21",
+      "national": false
+    },
+    {
+      "id": "Event_0701",
+      "glide": null,
+      "hazard_type": "Flash Flood",
+      "start_date": "2003-07-02",
+      "division": "Sylhet",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.9941,
+        "p25": 0.9941,
+        "median": 0.9941,
+        "p75": 0.9941,
+        "max": 0.9941,
+        "mean": 0.9941
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2003-05-13..2003-08-21",
+      "national": false
+    },
+    {
+      "id": "Event_0702",
+      "glide": null,
+      "hazard_type": "Flash Flood",
+      "start_date": "2003-07-02",
+      "division": "Sylhet",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.9907,
+        "p25": 0.9907,
+        "median": 0.9907,
+        "p75": 0.9907,
+        "max": 0.9907,
+        "mean": 0.9907
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2003-05-13..2003-08-21",
+      "national": false
+    },
+    {
+      "id": "Event_0703",
+      "glide": null,
+      "hazard_type": "Flash Flood",
+      "start_date": "2003-07-02",
+      "division": "Sylhet",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.9953,
+        "p25": 0.9953,
+        "median": 0.9953,
+        "p75": 0.9953,
+        "max": 0.9953,
+        "mean": 0.9953
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2003-05-13..2003-08-21",
+      "national": false
+    },
+    {
+      "id": "Event_0704",
+      "glide": null,
+      "hazard_type": "Flash Flood",
+      "start_date": "2003-07-02",
+      "division": "Sylhet",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.9942,
+        "p25": 0.9942,
+        "median": 0.9942,
+        "p75": 0.9942,
+        "max": 0.9942,
+        "mean": 0.9942
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2003-05-13..2003-08-21",
+      "national": false
+    },
+    {
+      "id": "Event_0705",
+      "glide": null,
+      "hazard_type": "Severe Local Storm",
+      "start_date": "2004-04-15",
+      "division": "Barisal",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.3319,
+        "p25": 0.3319,
+        "median": 0.3319,
+        "p75": 0.3319,
+        "max": 0.3319,
+        "mean": 0.3319
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2004-02-25..2004-06-04",
+      "national": false
+    },
+    {
+      "id": "Event_0706",
+      "glide": null,
+      "hazard_type": "Severe Local Storm",
+      "start_date": "2004-04-15",
+      "division": "Barisal",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.395,
+        "p25": 0.395,
+        "median": 0.395,
+        "p75": 0.395,
+        "max": 0.395,
+        "mean": 0.395
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2004-02-25..2004-06-04",
+      "national": false
+    },
+    {
+      "id": "Event_0707",
+      "glide": null,
+      "hazard_type": "Severe Local Storm",
+      "start_date": "2004-04-15",
+      "division": "Barisal",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.3057,
+        "p25": 0.3057,
+        "median": 0.3057,
+        "p75": 0.3057,
+        "max": 0.3057,
+        "mean": 0.3057
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2004-02-25..2004-06-04",
+      "national": false
+    },
+    {
+      "id": "Event_0708",
+      "glide": null,
+      "hazard_type": "Severe Local Storm",
+      "start_date": "2004-04-15",
+      "division": "Barisal",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.395,
+        "p25": 0.395,
+        "median": 0.395,
+        "p75": 0.395,
+        "max": 0.395,
+        "mean": 0.395
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2004-02-25..2004-06-04",
+      "national": false
+    },
+    {
+      "id": "Event_0709",
+      "glide": null,
+      "hazard_type": "Severe Local Storm",
+      "start_date": "2004-04-15",
+      "division": "Barisal",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.3319,
+        "p25": 0.3319,
+        "median": 0.3319,
+        "p75": 0.3319,
+        "max": 0.3319,
+        "mean": 0.3319
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2004-02-25..2004-06-04",
+      "national": false
+    },
+    {
+      "id": "Event_0710",
+      "glide": null,
+      "hazard_type": "Severe Local Storm",
+      "start_date": "2004-04-15",
+      "division": "Barisal",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.3435,
+        "p25": 0.3435,
+        "median": 0.3435,
+        "p75": 0.3435,
+        "max": 0.3435,
+        "mean": 0.3435
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2004-02-25..2004-06-04",
+      "national": false
+    },
+    {
+      "id": "Event_0711",
+      "glide": null,
+      "hazard_type": "Severe Local Storm",
+      "start_date": "2004-04-15",
+      "division": "Chittagong",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.5063,
+        "p25": 0.5063,
+        "median": 0.5063,
+        "p75": 0.5063,
+        "max": 0.5063,
+        "mean": 0.5063
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2004-02-25..2004-06-04",
+      "national": false
+    },
+    {
+      "id": "Event_0712",
+      "glide": null,
+      "hazard_type": "Severe Local Storm",
+      "start_date": "2004-04-15",
+      "division": "Chittagong",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.7878,
+        "p25": 0.7878,
+        "median": 0.7878,
+        "p75": 0.7878,
+        "max": 0.7878,
+        "mean": 0.7878
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2004-02-25..2004-06-04",
+      "national": false
+    },
+    {
+      "id": "Event_0713",
+      "glide": null,
+      "hazard_type": "Severe Local Storm",
+      "start_date": "2004-04-15",
+      "division": "Chittagong",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.5641,
+        "p25": 0.5641,
+        "median": 0.5641,
+        "p75": 0.5641,
+        "max": 0.5641,
+        "mean": 0.5641
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2004-02-25..2004-06-04",
+      "national": false
+    },
+    {
+      "id": "Event_0714",
+      "glide": null,
+      "hazard_type": "Severe Local Storm",
+      "start_date": "2004-04-15",
+      "division": "Chittagong",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.9275,
+        "p25": 0.9275,
+        "median": 0.9275,
+        "p75": 0.9275,
+        "max": 0.9275,
+        "mean": 0.9275
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2004-02-25..2004-06-04",
+      "national": false
+    },
+    {
+      "id": "Event_0715",
+      "glide": null,
+      "hazard_type": "Severe Local Storm",
+      "start_date": "2004-04-15",
+      "division": "Chittagong",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 1,
+        "p25": 1,
+        "median": 1,
+        "p75": 1,
+        "max": 1,
+        "mean": 1
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2004-02-25..2004-06-04",
+      "national": false
+    },
+    {
+      "id": "Event_0716",
+      "glide": null,
+      "hazard_type": "Severe Local Storm",
+      "start_date": "2004-04-15",
+      "division": "Chittagong",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.77,
+        "p25": 0.77,
+        "median": 0.77,
+        "p75": 0.77,
+        "max": 0.77,
+        "mean": 0.77
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2004-02-25..2004-06-04",
+      "national": false
+    },
+    {
+      "id": "Event_0717",
+      "glide": null,
+      "hazard_type": "Severe Local Storm",
+      "start_date": "2004-04-15",
+      "division": "Chittagong",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.6922,
+        "p25": 0.6922,
+        "median": 0.6922,
+        "p75": 0.6922,
+        "max": 0.6922,
+        "mean": 0.6922
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2004-02-25..2004-06-04",
+      "national": false
+    },
+    {
+      "id": "Event_0718",
+      "glide": null,
+      "hazard_type": "Severe Local Storm",
+      "start_date": "2004-04-15",
+      "division": "Chittagong",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.958,
+        "p25": 0.958,
+        "median": 0.958,
+        "p75": 0.958,
+        "max": 0.958,
+        "mean": 0.958
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2004-02-25..2004-06-04",
+      "national": false
+    },
+    {
+      "id": "Event_0719",
+      "glide": null,
+      "hazard_type": "Severe Local Storm",
+      "start_date": "2004-04-15",
+      "division": "Chittagong",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.355,
+        "p25": 0.355,
+        "median": 0.355,
+        "p75": 0.355,
+        "max": 0.355,
+        "mean": 0.355
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2004-02-25..2004-06-04",
+      "national": false
+    },
+    {
+      "id": "Event_0720",
+      "glide": null,
+      "hazard_type": "Severe Local Storm",
+      "start_date": "2004-04-15",
+      "division": "Chittagong",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.4517,
+        "p25": 0.4517,
+        "median": 0.4517,
+        "p75": 0.4517,
+        "max": 0.4517,
+        "mean": 0.4517
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2004-02-25..2004-06-04",
+      "national": false
+    },
+    {
+      "id": "Event_0721",
+      "glide": null,
+      "hazard_type": "Severe Local Storm",
+      "start_date": "2004-04-15",
+      "division": "Chittagong",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.791,
+        "p25": 0.791,
+        "median": 0.791,
+        "p75": 0.791,
+        "max": 0.791,
+        "mean": 0.791
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2004-02-25..2004-06-04",
+      "national": false
+    },
+    {
+      "id": "Event_0722",
+      "glide": null,
+      "hazard_type": "Severe Local Storm",
+      "start_date": "2004-04-15",
+      "division": "Dhaka",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.3792,
+        "p25": 0.3792,
+        "median": 0.3792,
+        "p75": 0.3792,
+        "max": 0.3792,
+        "mean": 0.3792
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2004-02-25..2004-06-04",
+      "national": false
+    },
+    {
+      "id": "Event_0723",
+      "glide": null,
+      "hazard_type": "Severe Local Storm",
+      "start_date": "2004-04-15",
+      "division": "Dhaka",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.3624,
+        "p25": 0.3624,
+        "median": 0.3624,
+        "p75": 0.3624,
+        "max": 0.3624,
+        "mean": 0.3624
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2004-02-25..2004-06-04",
+      "national": false
+    },
+    {
+      "id": "Event_0724",
+      "glide": null,
+      "hazard_type": "Severe Local Storm",
+      "start_date": "2004-04-15",
+      "division": "Dhaka",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.4401,
+        "p25": 0.4401,
+        "median": 0.4401,
+        "p75": 0.4401,
+        "max": 0.4401,
+        "mean": 0.4401
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2004-02-25..2004-06-04",
+      "national": false
+    },
+    {
+      "id": "Event_0725",
+      "glide": null,
+      "hazard_type": "Severe Local Storm",
+      "start_date": "2004-04-15",
+      "division": "Dhaka",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.3887,
+        "p25": 0.3887,
+        "median": 0.3887,
+        "p75": 0.3887,
+        "max": 0.3887,
+        "mean": 0.3887
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2004-02-25..2004-06-04",
+      "national": false
+    },
+    {
+      "id": "Event_0726",
+      "glide": null,
+      "hazard_type": "Severe Local Storm",
+      "start_date": "2004-04-15",
+      "division": "Dhaka",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 1,
+        "p25": 1,
+        "median": 1,
+        "p75": 1,
+        "max": 1,
+        "mean": 1
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2004-02-25..2004-06-04",
+      "national": false
+    },
+    {
+      "id": "Event_0727",
+      "glide": null,
+      "hazard_type": "Severe Local Storm",
+      "start_date": "2004-04-15",
+      "division": "Dhaka",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.4034,
+        "p25": 0.4034,
+        "median": 0.4034,
+        "p75": 0.4034,
+        "max": 0.4034,
+        "mean": 0.4034
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2004-02-25..2004-06-04",
+      "national": false
+    },
+    {
+      "id": "Event_0728",
+      "glide": null,
+      "hazard_type": "Severe Local Storm",
+      "start_date": "2004-04-15",
+      "division": "Dhaka",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.2847,
+        "p25": 0.2847,
+        "median": 0.2847,
+        "p75": 0.2847,
+        "max": 0.2847,
+        "mean": 0.2847
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2004-02-25..2004-06-04",
+      "national": false
+    },
+    {
+      "id": "Event_0729",
+      "glide": null,
+      "hazard_type": "Severe Local Storm",
+      "start_date": "2004-04-15",
+      "division": "Dhaka",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.5137,
+        "p25": 0.5137,
+        "median": 0.5137,
+        "p75": 0.5137,
+        "max": 0.5137,
+        "mean": 0.5137
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2004-02-25..2004-06-04",
+      "national": false
+    },
+    {
+      "id": "Event_0730",
+      "glide": null,
+      "hazard_type": "Severe Local Storm",
+      "start_date": "2004-04-15",
+      "division": "Dhaka",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.5137,
+        "p25": 0.5137,
+        "median": 0.5137,
+        "p75": 0.5137,
+        "max": 0.5137,
+        "mean": 0.5137
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2004-02-25..2004-06-04",
+      "national": false
+    },
+    {
+      "id": "Event_0731",
+      "glide": null,
+      "hazard_type": "Severe Local Storm",
+      "start_date": "2004-04-15",
+      "division": "Dhaka",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.479,
+        "p25": 0.479,
+        "median": 0.479,
+        "p75": 0.479,
+        "max": 0.479,
+        "mean": 0.479
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2004-02-25..2004-06-04",
+      "national": false
+    },
+    {
+      "id": "Event_0732",
+      "glide": null,
+      "hazard_type": "Severe Local Storm",
+      "start_date": "2004-04-15",
+      "division": "Dhaka",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.291,
+        "p25": 0.291,
+        "median": 0.291,
+        "p75": 0.291,
+        "max": 0.291,
+        "mean": 0.291
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2004-02-25..2004-06-04",
+      "national": false
+    },
+    {
+      "id": "Event_0733",
+      "glide": null,
+      "hazard_type": "Severe Local Storm",
+      "start_date": "2004-04-15",
+      "division": "Dhaka",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.3477,
+        "p25": 0.3477,
+        "median": 0.3477,
+        "p75": 0.3477,
+        "max": 0.3477,
+        "mean": 0.3477
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2004-02-25..2004-06-04",
+      "national": false
+    },
+    {
+      "id": "Event_0734",
+      "glide": null,
+      "hazard_type": "Severe Local Storm",
+      "start_date": "2004-04-15",
+      "division": "Dhaka",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.3477,
+        "p25": 0.3477,
+        "median": 0.3477,
+        "p75": 0.3477,
+        "max": 0.3477,
+        "mean": 0.3477
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2004-02-25..2004-06-04",
+      "national": false
+    },
+    {
+      "id": "Event_0735",
+      "glide": null,
+      "hazard_type": "Severe Local Storm",
+      "start_date": "2004-04-15",
+      "division": "Khulna",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.3529,
+        "p25": 0.3529,
+        "median": 0.3529,
+        "p75": 0.3529,
+        "max": 0.3529,
+        "mean": 0.3529
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2004-02-25..2004-06-04",
+      "national": false
+    },
+    {
+      "id": "Event_0736",
+      "glide": null,
+      "hazard_type": "Severe Local Storm",
+      "start_date": "2004-04-15",
+      "division": "Khulna",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.4128,
+        "p25": 0.4128,
+        "median": 0.4128,
+        "p75": 0.4128,
+        "max": 0.4128,
+        "mean": 0.4128
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2004-02-25..2004-06-04",
+      "national": false
+    },
+    {
+      "id": "Event_0737",
+      "glide": null,
+      "hazard_type": "Severe Local Storm",
+      "start_date": "2004-04-15",
+      "division": "Khulna",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.3172,
+        "p25": 0.3172,
+        "median": 0.3172,
+        "p75": 0.3172,
+        "max": 0.3172,
+        "mean": 0.3172
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2004-02-25..2004-06-04",
+      "national": false
+    },
+    {
+      "id": "Event_0738",
+      "glide": null,
+      "hazard_type": "Severe Local Storm",
+      "start_date": "2004-04-15",
+      "division": "Khulna",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.4118,
+        "p25": 0.4118,
+        "median": 0.4118,
+        "p75": 0.4118,
+        "max": 0.4118,
+        "mean": 0.4118
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2004-02-25..2004-06-04",
+      "national": false
+    },
+    {
+      "id": "Event_0739",
+      "glide": null,
+      "hazard_type": "Severe Local Storm",
+      "start_date": "2004-04-15",
+      "division": "Khulna",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.3204,
+        "p25": 0.3204,
+        "median": 0.3204,
+        "p75": 0.3204,
+        "max": 0.3204,
+        "mean": 0.3204
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2004-02-25..2004-06-04",
+      "national": false
+    },
+    {
+      "id": "Event_0740",
+      "glide": null,
+      "hazard_type": "Severe Local Storm",
+      "start_date": "2004-04-15",
+      "division": "Khulna",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.3729,
+        "p25": 0.3729,
+        "median": 0.3729,
+        "p75": 0.3729,
+        "max": 0.3729,
+        "mean": 0.3729
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2004-02-25..2004-06-04",
+      "national": false
+    },
+    {
+      "id": "Event_0741",
+      "glide": null,
+      "hazard_type": "Severe Local Storm",
+      "start_date": "2004-04-15",
+      "division": "Khulna",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.3981,
+        "p25": 0.3981,
+        "median": 0.3981,
+        "p75": 0.3981,
+        "max": 0.3981,
+        "mean": 0.3981
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2004-02-25..2004-06-04",
+      "national": false
+    },
+    {
+      "id": "Event_0742",
+      "glide": null,
+      "hazard_type": "Severe Local Storm",
+      "start_date": "2004-04-15",
+      "division": "Khulna",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.4128,
+        "p25": 0.4128,
+        "median": 0.4128,
+        "p75": 0.4128,
+        "max": 0.4128,
+        "mean": 0.4128
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2004-02-25..2004-06-04",
+      "national": false
+    },
+    {
+      "id": "Event_0743",
+      "glide": null,
+      "hazard_type": "Severe Local Storm",
+      "start_date": "2004-04-15",
+      "division": "Khulna",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.3267,
+        "p25": 0.3267,
+        "median": 0.3267,
+        "p75": 0.3267,
+        "max": 0.3267,
+        "mean": 0.3267
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2004-02-25..2004-06-04",
+      "national": false
+    },
+    {
+      "id": "Event_0744",
+      "glide": null,
+      "hazard_type": "Severe Local Storm",
+      "start_date": "2004-04-15",
+      "division": "Khulna",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.3718,
+        "p25": 0.3718,
+        "median": 0.3718,
+        "p75": 0.3718,
+        "max": 0.3718,
+        "mean": 0.3718
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2004-02-25..2004-06-04",
+      "national": false
+    },
+    {
+      "id": "Event_0745",
+      "glide": null,
+      "hazard_type": "Severe Local Storm",
+      "start_date": "2004-04-15",
+      "division": "Dhaka",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.4422,
+        "p25": 0.4422,
+        "median": 0.4422,
+        "p75": 0.4422,
+        "max": 0.4422,
+        "mean": 0.4422
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2004-02-25..2004-06-04",
+      "national": false
+    },
+    {
+      "id": "Event_0746",
+      "glide": null,
+      "hazard_type": "Severe Local Storm",
+      "start_date": "2004-04-15",
+      "division": "Dhaka",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.6439,
+        "p25": 0.6439,
+        "median": 0.6439,
+        "p75": 0.6439,
+        "max": 0.6439,
+        "mean": 0.6439
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2004-02-25..2004-06-04",
+      "national": false
+    },
+    {
+      "id": "Event_0747",
+      "glide": null,
+      "hazard_type": "Severe Local Storm",
+      "start_date": "2004-04-15",
+      "division": "Dhaka",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.959,
+        "p25": 0.959,
+        "median": 0.959,
+        "p75": 0.959,
+        "max": 0.959,
+        "mean": 0.959
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2004-02-25..2004-06-04",
+      "national": false
+    },
+    {
+      "id": "Event_0748",
+      "glide": null,
+      "hazard_type": "Severe Local Storm",
+      "start_date": "2004-04-15",
+      "division": "Dhaka",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.4422,
+        "p25": 0.4422,
+        "median": 0.4422,
+        "p75": 0.4422,
+        "max": 0.4422,
+        "mean": 0.4422
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2004-02-25..2004-06-04",
+      "national": false
+    },
+    {
+      "id": "Event_0749",
+      "glide": null,
+      "hazard_type": "Severe Local Storm",
+      "start_date": "2004-04-15",
+      "division": "Rajshahi",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.7195,
+        "p25": 0.7195,
+        "median": 0.7195,
+        "p75": 0.7195,
+        "max": 0.7195,
+        "mean": 0.7195
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2004-02-25..2004-06-04",
+      "national": false
+    },
+    {
+      "id": "Event_0750",
+      "glide": null,
+      "hazard_type": "Severe Local Storm",
+      "start_date": "2004-04-15",
+      "division": "Rajshahi",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.7069,
+        "p25": 0.7069,
+        "median": 0.7069,
+        "p75": 0.7069,
+        "max": 0.7069,
+        "mean": 0.7069
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2004-02-25..2004-06-04",
+      "national": false
+    },
+    {
+      "id": "Event_0751",
+      "glide": null,
+      "hazard_type": "Severe Local Storm",
+      "start_date": "2004-04-15",
+      "division": "Rajshahi",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.6429,
+        "p25": 0.6429,
+        "median": 0.6429,
+        "p75": 0.6429,
+        "max": 0.6429,
+        "mean": 0.6429
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2004-02-25..2004-06-04",
+      "national": false
+    },
+    {
+      "id": "Event_0752",
+      "glide": null,
+      "hazard_type": "Severe Local Storm",
+      "start_date": "2004-04-15",
+      "division": "Rajshahi",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.4916,
+        "p25": 0.4916,
+        "median": 0.4916,
+        "p75": 0.4916,
+        "max": 0.4916,
+        "mean": 0.4916
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2004-02-25..2004-06-04",
+      "national": false
+    },
+    {
+      "id": "Event_0753",
+      "glide": null,
+      "hazard_type": "Severe Local Storm",
+      "start_date": "2004-04-15",
+      "division": "Rajshahi",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.2542,
+        "p25": 0.2542,
+        "median": 0.2542,
+        "p75": 0.2542,
+        "max": 0.2542,
+        "mean": 0.2542
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2004-02-25..2004-06-04",
+      "national": false
+    },
+    {
+      "id": "Event_0754",
+      "glide": null,
+      "hazard_type": "Severe Local Storm",
+      "start_date": "2004-04-15",
+      "division": "Rajshahi",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.3288,
+        "p25": 0.3288,
+        "median": 0.3288,
+        "p75": 0.3288,
+        "max": 0.3288,
+        "mean": 0.3288
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2004-02-25..2004-06-04",
+      "national": false
+    },
+    {
+      "id": "Event_0755",
+      "glide": null,
+      "hazard_type": "Severe Local Storm",
+      "start_date": "2004-04-15",
+      "division": "Rajshahi",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.27,
+        "p25": 0.27,
+        "median": 0.27,
+        "p75": 0.27,
+        "max": 0.27,
+        "mean": 0.27
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2004-02-25..2004-06-04",
+      "national": false
+    },
+    {
+      "id": "Event_0756",
+      "glide": null,
+      "hazard_type": "Severe Local Storm",
+      "start_date": "2004-04-15",
+      "division": "Rajshahi",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 1,
+        "p25": 1,
+        "median": 1,
+        "p75": 1,
+        "max": 1,
+        "mean": 1
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2004-02-25..2004-06-04",
+      "national": false
+    },
+    {
+      "id": "Event_0757",
+      "glide": null,
+      "hazard_type": "Severe Local Storm",
+      "start_date": "2004-04-15",
+      "division": "Rangpur",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.5536,
+        "p25": 0.5536,
+        "median": 0.5536,
+        "p75": 0.5536,
+        "max": 0.5536,
+        "mean": 0.5536
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2004-02-25..2004-06-04",
+      "national": false
+    },
+    {
+      "id": "Event_0758",
+      "glide": null,
+      "hazard_type": "Severe Local Storm",
+      "start_date": "2004-04-15",
+      "division": "Rangpur",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.8162,
+        "p25": 0.8162,
+        "median": 0.8162,
+        "p75": 0.8162,
+        "max": 0.8162,
+        "mean": 0.8162
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2004-02-25..2004-06-04",
+      "national": false
+    },
+    {
+      "id": "Event_0759",
+      "glide": null,
+      "hazard_type": "Severe Local Storm",
+      "start_date": "2004-04-15",
+      "division": "Rangpur",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.855,
+        "p25": 0.855,
+        "median": 0.855,
+        "p75": 0.855,
+        "max": 0.855,
+        "mean": 0.855
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2004-02-25..2004-06-04",
+      "national": false
+    },
+    {
+      "id": "Event_0760",
+      "glide": null,
+      "hazard_type": "Severe Local Storm",
+      "start_date": "2004-04-15",
+      "division": "Rangpur",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.9506,
+        "p25": 0.9506,
+        "median": 0.9506,
+        "p75": 0.9506,
+        "max": 0.9506,
+        "mean": 0.9506
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2004-02-25..2004-06-04",
+      "national": false
+    },
+    {
+      "id": "Event_0761",
+      "glide": null,
+      "hazard_type": "Severe Local Storm",
+      "start_date": "2004-04-15",
+      "division": "Rangpur",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.73,
+        "p25": 0.73,
+        "median": 0.73,
+        "p75": 0.73,
+        "max": 0.73,
+        "mean": 0.73
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2004-02-25..2004-06-04",
+      "national": false
+    },
+    {
+      "id": "Event_0762",
+      "glide": null,
+      "hazard_type": "Severe Local Storm",
+      "start_date": "2004-04-15",
+      "division": "Rangpur",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.7952,
+        "p25": 0.7952,
+        "median": 0.7952,
+        "p75": 0.7952,
+        "max": 0.7952,
+        "mean": 0.7952
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2004-02-25..2004-06-04",
+      "national": false
+    },
+    {
+      "id": "Event_0763",
+      "glide": null,
+      "hazard_type": "Severe Local Storm",
+      "start_date": "2004-04-15",
+      "division": "Rangpur",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.8319,
+        "p25": 0.8319,
+        "median": 0.8319,
+        "p75": 0.8319,
+        "max": 0.8319,
+        "mean": 0.8319
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2004-02-25..2004-06-04",
+      "national": false
+    },
+    {
+      "id": "Event_0764",
+      "glide": null,
+      "hazard_type": "Severe Local Storm",
+      "start_date": "2004-04-15",
+      "division": "Rangpur",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.8824,
+        "p25": 0.8824,
+        "median": 0.8824,
+        "p75": 0.8824,
+        "max": 0.8824,
+        "mean": 0.8824
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2004-02-25..2004-06-04",
+      "national": false
+    },
+    {
+      "id": "Event_0765",
+      "glide": null,
+      "hazard_type": "Severe Local Storm",
+      "start_date": "2004-04-15",
+      "division": "Sylhet",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 1,
+        "p25": 1,
+        "median": 1,
+        "p75": 1,
+        "max": 1,
+        "mean": 1
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2004-02-25..2004-06-04",
+      "national": false
+    },
+    {
+      "id": "Event_0766",
+      "glide": null,
+      "hazard_type": "Severe Local Storm",
+      "start_date": "2004-04-15",
+      "division": "Sylhet",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 1,
+        "p25": 1,
+        "median": 1,
+        "p75": 1,
+        "max": 1,
+        "mean": 1
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2004-02-25..2004-06-04",
+      "national": false
+    },
+    {
+      "id": "Event_0767",
+      "glide": null,
+      "hazard_type": "Severe Local Storm",
+      "start_date": "2004-04-15",
+      "division": "Sylhet",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 1,
+        "p25": 1,
+        "median": 1,
+        "p75": 1,
+        "max": 1,
+        "mean": 1
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2004-02-25..2004-06-04",
+      "national": false
+    },
+    {
+      "id": "Event_0768",
+      "glide": null,
+      "hazard_type": "Severe Local Storm",
+      "start_date": "2004-04-15",
+      "division": "Sylhet",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 1,
+        "p25": 1,
+        "median": 1,
+        "p75": 1,
+        "max": 1,
+        "mean": 1
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2004-02-25..2004-06-04",
+      "national": false
+    },
+    {
+      "id": "FL-2004-000044-BGD",
+      "glide": "FL-2004-000044-BGD",
+      "hazard_type": "Flood",
+      "start_date": "2004-06-28",
+      "division": "Barisal",
+      "district_count": 64,
+      "severity": {
+        "n": 64,
+        "min": 0.9928,
+        "p25": 0.9969,
+        "median": 0.9975,
+        "p75": 0.9983,
+        "max": 0.9994,
+        "mean": 0.9973
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2004-05-09..2004-08-17",
+      "national": true
+    },
+    {
+      "id": "TO-2005-000049-BGD",
+      "glide": "TO-2005-000049-BGD",
+      "hazard_type": "Severe Local Storm",
+      "start_date": "2005-03-24",
+      "division": "Barisal",
+      "district_count": 64,
+      "severity": {
+        "n": 64,
+        "min": 0.0935,
+        "p25": 0.2416,
+        "median": 0.3929,
+        "p75": 0.6332,
+        "max": 1,
+        "mean": 0.4444
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2005-02-02..2005-05-13",
+      "national": true
+    },
+    {
+      "id": "ST-2005-000162-IND",
+      "glide": "ST-2005-000162-IND",
+      "hazard_type": "Severe Local Storm",
+      "start_date": "2005-09-21",
+      "division": "Barisal",
+      "district_count": 64,
+      "severity": {
+        "n": 64,
+        "min": 0,
+        "p25": 0.4367,
+        "median": 0.7122,
+        "p75": 0.958,
+        "max": 1,
+        "mean": 0.6641
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 1,
+      "gee_window": "2005-08-02..2005-11-10",
+      "national": true
+    },
+    {
+      "id": "FL-2005-000176-BGD",
+      "glide": "FL-2005-000176-BGD",
+      "hazard_type": "Flood",
+      "start_date": "2005-10-13",
+      "division": "Barisal",
+      "district_count": 64,
+      "severity": {
+        "n": 64,
+        "min": 0,
+        "p25": 0.1411,
+        "median": 0.2996,
+        "p75": 0.4069,
+        "max": 0.7139,
+        "mean": 0.283
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2005-08-24..2005-12-02",
+      "national": true
+    },
+    {
+      "id": "CW-2006-000005-IND",
+      "glide": "CW-2006-000005-IND",
+      "hazard_type": "Cold Wave",
+      "start_date": "2006-01-17",
+      "division": "Barisal",
+      "district_count": 64,
+      "severity": {
+        "n": 64,
+        "min": 0,
+        "p25": 0.4494,
+        "median": 0.5297,
+        "p75": 0.5982,
+        "max": 0.7619,
+        "mean": 0.505
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2005-11-28..2006-03-08",
+      "national": true
+    },
+    {
+      "id": "TO-2006-000032-BGD",
+      "glide": "TO-2006-000032-BGD",
+      "hazard_type": "Severe Local Storm",
+      "start_date": "2006-03-06",
+      "division": "Barisal",
+      "district_count": 64,
+      "severity": {
+        "n": 64,
+        "min": 0,
+        "p25": 0.0937,
+        "median": 0.1765,
+        "p75": 0.2699,
+        "max": 1,
+        "mean": 0.2314
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2006-01-15..2006-04-25",
+      "national": true
+    },
+    {
+      "id": "FL-2006-000131-BGD",
+      "glide": "FL-2006-000131-BGD",
+      "hazard_type": "Flood",
+      "start_date": "2006-08-29",
+      "division": "Barisal",
+      "district_count": 64,
+      "severity": {
+        "n": 64,
+        "min": 0.9899,
+        "p25": 0.9958,
+        "median": 0.9969,
+        "p75": 0.9976,
+        "max": 0.9986,
+        "mean": 0.9964
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2006-07-10..2006-10-18",
+      "national": true
+    },
+    {
+      "id": "ST-2006-000152-BGD",
+      "glide": "ST-2006-000152-BGD",
+      "hazard_type": "Severe Local Storm",
+      "start_date": "2006-10-19",
+      "division": "Barisal",
+      "district_count": 64,
+      "severity": {
+        "n": 64,
+        "min": 0.2374,
+        "p25": 0.3233,
+        "median": 0.3581,
+        "p75": 0.5302,
+        "max": 1,
+        "mean": 0.4307
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2006-08-30..2006-12-08",
+      "national": true
+    },
+    {
+      "id": "CW-2007-000001-BGD",
+      "glide": "CW-2007-000001-BGD",
+      "hazard_type": "Cold Wave",
+      "start_date": "2007-01-03",
+      "division": "Barisal",
+      "district_count": 64,
+      "severity": {
+        "n": 64,
+        "min": 0.1429,
+        "p25": 0.4703,
+        "median": 0.5893,
+        "p75": 0.7054,
+        "max": 0.881,
+        "mean": 0.572
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2006-11-14..2007-02-22",
+      "national": true
+    },
+    {
+      "id": "TC-2007-000060-BGD",
+      "glide": "TC-2007-000060-BGD",
+      "hazard_type": "Tropical Cyclone",
+      "start_date": "2007-05-15",
+      "division": "Barisal",
+      "district_count": 64,
+      "severity": {
+        "n": 64,
+        "min": 0.8318,
+        "p25": 0.8318,
+        "median": 0.8318,
+        "p75": 0.8318,
+        "max": 0.8318,
+        "mean": 0.8318
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2007-03-26..2007-07-04",
+      "national": true
+    },
+    {
+      "id": "FF-2007-000080-BGD",
+      "glide": "FF-2007-000080-BGD",
+      "hazard_type": "Flood",
+      "start_date": "2007-06-11",
+      "division": "Barisal",
+      "district_count": 64,
+      "severity": {
+        "n": 64,
+        "min": 0.9943,
+        "p25": 0.9964,
+        "median": 0.9973,
+        "p75": 0.9981,
+        "max": 0.9989,
+        "mean": 0.9972
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2007-04-22..2007-07-31",
+      "national": true
+    },
+    {
+      "id": "FL-2007-000129-PAK",
+      "glide": "FL-2007-000129-PAK",
+      "hazard_type": "Flood",
+      "start_date": "2007-06-19",
+      "division": "Barisal",
+      "district_count": 64,
+      "severity": {
+        "n": 64,
+        "min": 0.9887,
+        "p25": 0.9955,
+        "median": 0.9979,
+        "p75": 0.9988,
+        "max": 0.9991,
+        "mean": 0.9968
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2007-04-30..2007-08-08",
+      "national": true
+    },
+    {
+      "id": "TC-2007-000208-BGD",
+      "glide": "TC-2007-000208-BGD",
+      "hazard_type": "Tropical Cyclone",
+      "start_date": "2007-11-15",
+      "division": "Barisal",
+      "district_count": 64,
+      "severity": {
+        "n": 64,
+        "min": 0,
+        "p25": 0,
+        "median": 0.3602,
+        "p75": 0.8318,
+        "max": 0.8965,
+        "mean": 0.4163
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 32,
+      "gee_window": "2007-09-26..2008-01-04",
+      "national": true
+    },
+    {
+      "id": "FL-2008-000096-BGD",
+      "glide": "FL-2008-000096-BGD",
+      "hazard_type": "Flood",
+      "start_date": "2008-06-22",
+      "division": "Barisal",
+      "district_count": 64,
+      "severity": {
+        "n": 64,
+        "min": 0.9931,
+        "p25": 0.9962,
+        "median": 0.9979,
+        "p75": 0.9985,
+        "max": 0.9996,
+        "mean": 0.9973
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2008-05-03..2008-08-11",
+      "national": true
+    },
+    {
+      "id": "TC-2008-000204-BGD",
+      "glide": "TC-2008-000204-BGD",
+      "hazard_type": "Tropical Cyclone",
+      "start_date": "2008-10-27",
+      "division": "Barisal",
+      "district_count": 64,
+      "severity": {
+        "n": 64,
+        "min": 0,
+        "p25": 0,
+        "median": 0,
+        "p75": 0,
+        "max": 0,
+        "mean": 0
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 64,
+      "gee_window": "2008-09-07..2008-12-16",
+      "national": true
+    },
+    {
+      "id": "TC-2009-000078-BGD",
+      "glide": "TC-2009-000078-BGD",
+      "hazard_type": "Tropical Cyclone",
+      "start_date": "2009-04-17",
+      "division": "Barisal",
+      "district_count": 5,
+      "severity": {
+        "n": 5,
+        "min": 0,
+        "p25": 0,
+        "median": 0,
+        "p75": 0,
+        "max": 0,
+        "mean": 0
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 5,
+      "gee_window": "2009-02-26..2009-06-06",
+      "national": false
+    },
+    {
+      "id": "ST-2009-000092-IND",
+      "glide": "ST-2009-000092-IND",
+      "hazard_type": "Severe Local Storm",
+      "start_date": "2009-05-03",
+      "division": "Barisal",
+      "district_count": 64,
+      "severity": {
+        "n": 64,
+        "min": 0,
+        "p25": 0,
+        "median": 0,
+        "p75": 0,
+        "max": 0,
+        "mean": 0
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 64,
+      "gee_window": "2009-03-14..2009-06-22",
+      "national": true
+    },
+    {
+      "id": "TC-2009-000105-BGD",
+      "glide": "TC-2009-000105-BGD",
+      "hazard_type": "Tropical Cyclone",
+      "start_date": "2009-05-25",
+      "division": "Barisal",
+      "district_count": 64,
+      "severity": {
+        "n": 64,
+        "min": 0,
+        "p25": 0,
+        "median": 0,
+        "p75": 0,
+        "max": 0,
+        "mean": 0
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 64,
+      "gee_window": "2009-04-05..2009-07-14",
+      "national": true
+    },
+    {
+      "id": "FL-2009-000123-BGD",
+      "glide": "FL-2009-000123-BGD",
+      "hazard_type": "Flood",
+      "start_date": "2009-07-04",
+      "division": "Barisal",
+      "district_count": 64,
+      "severity": {
+        "n": 64,
+        "min": 0.9915,
+        "p25": 0.9958,
+        "median": 0.9968,
+        "p75": 0.9976,
+        "max": 0.9992,
+        "mean": 0.9965
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2009-05-15..2009-08-23",
+      "national": true
+    },
+    {
+      "id": "DR-2009-000153-IND",
+      "glide": "DR-2009-000153-IND",
+      "hazard_type": "Drought",
+      "start_date": "2009-07-28",
+      "division": "Barisal",
+      "district_count": 64,
+      "severity": {
+        "n": 64,
+        "min": 0,
+        "p25": 0.7689,
+        "median": 0.7724,
+        "p75": 0.7743,
+        "max": 1,
+        "mean": 0.7151
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2009-06-08..2009-09-16",
+      "national": true
+    },
+    {
+      "id": "CW-2010-000005-IND",
+      "glide": "CW-2010-000005-IND",
+      "hazard_type": "Cold Wave",
+      "start_date": "2010-01-04",
+      "division": "Barisal",
+      "district_count": 64,
+      "severity": {
+        "n": 64,
+        "min": 0,
+        "p25": 0,
+        "median": 0,
+        "p75": 0,
+        "max": 0,
+        "mean": 0
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 64,
+      "gee_window": "2009-11-15..2010-02-23",
+      "national": true
+    },
+    {
+      "id": "ST-2010-000074-IND",
+      "glide": "ST-2010-000074-IND",
+      "hazard_type": "Severe Local Storm",
+      "start_date": "2010-04-14",
+      "division": "Rangpur",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0,
+        "p25": 0,
+        "median": 0,
+        "p75": 0,
+        "max": 0,
+        "mean": 0
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 1,
+      "gee_window": "2010-02-23..2010-06-03",
+      "national": false
+    },
+    {
+      "id": "FL-2010-000114-BGD",
+      "glide": "FL-2010-000114-BGD",
+      "hazard_type": "Flood",
+      "start_date": "2010-06-15",
+      "division": "Chittagong",
+      "district_count": 8,
+      "severity": {
+        "n": 8,
+        "min": 0.9946,
+        "p25": 0.995,
+        "median": 0.9961,
+        "p75": 0.998,
+        "max": 0.9996,
+        "mean": 0.9967
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2010-04-26..2010-08-04",
+      "national": false
+    },
+    {
+      "id": "CW-2011-000004-BGD",
+      "glide": "CW-2011-000004-BGD",
+      "hazard_type": "Cold Wave",
+      "start_date": "2011-01-07",
+      "division": "Barisal",
+      "district_count": 64,
+      "severity": {
+        "n": 64,
+        "min": 0,
+        "p25": 0.25,
+        "median": 0.6786,
+        "p75": 0.7381,
+        "max": 0.881,
+        "mean": 0.5136
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 16,
+      "gee_window": "2010-11-18..2011-02-26",
+      "national": true
+    },
+    {
+      "id": "FL-2011-000093-BGD",
+      "glide": "FL-2011-000093-BGD",
+      "hazard_type": "Flood",
+      "start_date": "2011-07-04",
+      "division": "Chittagong",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.9961,
+        "p25": 0.9961,
+        "median": 0.9961,
+        "p75": 0.9961,
+        "max": 0.9961,
+        "mean": 0.9961
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2011-05-15..2011-08-23",
+      "national": false
+    },
+    {
+      "id": "FL-2012-000106-BGD",
+      "glide": "FL-2012-000106-BGD",
+      "hazard_type": "Flash Flood",
+      "start_date": "2012-06-27",
+      "division": "Barisal",
+      "district_count": 2,
+      "severity": {
+        "n": 2,
+        "min": 0.9983,
+        "p25": 0.9986,
+        "median": 0.9989,
+        "p75": 0.9992,
+        "max": 0.9995,
+        "mean": 0.9989
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2012-05-08..2012-08-16",
+      "national": false
+    },
+    {
+      "id": "CW-2013-000001-BGD",
+      "glide": "CW-2013-000001-BGD",
+      "hazard_type": "Cold Wave",
+      "start_date": "2012-12-26",
+      "division": "Rangpur",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 1,
+        "p25": 1,
+        "median": 1,
+        "p75": 1,
+        "max": 1,
+        "mean": 1
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2012-11-06..2013-02-14",
+      "national": false
+    },
+    {
+      "id": "ST-2013-000032-BGD",
+      "glide": "ST-2013-000032-BGD",
+      "hazard_type": "Severe Local Storm",
+      "start_date": "2013-03-22",
+      "division": "Chittagong",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.9454,
+        "p25": 0.9454,
+        "median": 0.9454,
+        "p75": 0.9454,
+        "max": 0.9454,
+        "mean": 0.9454
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2013-01-31..2013-05-11",
+      "national": false
+    },
+    {
+      "id": "TC-2013-000060-LKA",
+      "glide": "TC-2013-000060-LKA",
+      "hazard_type": "Flash Flood",
+      "start_date": "2013-05-15",
+      "division": "Barisal",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.9929,
+        "p25": 0.9929,
+        "median": 0.9929,
+        "p75": 0.9929,
+        "max": 0.9929,
+        "mean": 0.9929
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2013-03-26..2013-07-04",
+      "national": false
+    },
+    {
+      "id": "FL-2014-000117-BGD",
+      "glide": "FL-2014-000117-BGD",
+      "hazard_type": "Flood",
+      "start_date": "2014-08-27",
+      "division": "Chittagong",
+      "district_count": 12,
+      "severity": {
+        "n": 12,
+        "min": 0.9978,
+        "p25": 1,
+        "median": 1,
+        "p75": 1,
+        "max": 1,
+        "mean": 0.9997
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2014-07-08..2014-10-16",
+      "national": false
+    },
+    {
+      "id": "FL-2015-000068-BGD",
+      "glide": "FL-2015-000068-BGD",
+      "hazard_type": "Flash Flood",
+      "start_date": "2015-06-10",
+      "division": "Barisal",
+      "district_count": 3,
+      "severity": {
+        "n": 3,
+        "min": 0.997,
+        "p25": 0.997,
+        "median": 0.997,
+        "p75": 0.9973,
+        "max": 0.9975,
+        "mean": 0.9972
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2015-04-21..2015-07-30",
+      "national": false
+    },
+    {
+      "id": "TC-2015-000101-BGD",
+      "glide": "TC-2015-000101-BGD",
+      "hazard_type": "Tropical Cyclone",
+      "start_date": "2015-07-29",
+      "division": "Barisal",
+      "district_count": 64,
+      "severity": {
+        "n": 64,
+        "min": 0.8318,
+        "p25": 0.8318,
+        "median": 0.8318,
+        "p75": 0.8318,
+        "max": 0.8318,
+        "mean": 0.8318
+      },
+      "data_sources": [
+        "API_Corrected"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2015-06-09..2015-09-17",
+      "national": true
+    },
+    {
+      "id": "TC-2016-000052-MMR",
+      "glide": "TC-2016-000052-MMR",
+      "hazard_type": "Flood",
+      "start_date": "2016-05-20",
+      "division": "Barisal",
+      "district_count": 64,
+      "severity": {
+        "n": 64,
+        "min": 0.8291,
+        "p25": 0.998,
+        "median": 1,
+        "p75": 1,
+        "max": 1,
+        "mean": 0.9962
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2016-03-31..2016-07-09",
+      "national": true
+    },
+    {
+      "id": "FL-2016-000075-BGD",
+      "glide": "FL-2016-000075-BGD",
+      "hazard_type": "Flood",
+      "start_date": "2016-07-04",
+      "division": "Dhaka",
+      "district_count": 10,
+      "severity": {
+        "n": 10,
+        "min": 0.9955,
+        "p25": 1,
+        "median": 1,
+        "p75": 1,
+        "max": 1,
+        "mean": 0.9996
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2016-05-15..2016-08-23",
+      "national": false
+    },
+    {
+      "id": "TC-2017-000058-BGD",
+      "glide": "TC-2017-000058-BGD",
+      "hazard_type": "Tropical Cyclone",
+      "start_date": "2017-05-27",
+      "division": "Barisal",
+      "district_count": 64,
+      "severity": {
+        "n": 64,
+        "min": 0,
+        "p25": 0.0893,
+        "median": 0.1286,
+        "p75": 0.8318,
+        "max": 0.8318,
+        "mean": 0.3964
+      },
+      "data_sources": [
+        "API_Corrected",
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2017-04-07..2017-07-16",
+      "national": true
+    },
+    {
+      "id": "LS-2017-000068-BGD",
+      "glide": "LS-2017-000068-BGD",
+      "hazard_type": "Flash Flood",
+      "start_date": "2017-06-13",
+      "division": "Barisal",
+      "district_count": 64,
+      "severity": {
+        "n": 64,
+        "min": 1,
+        "p25": 1,
+        "median": 1,
+        "p75": 1,
+        "max": 1,
+        "mean": 1
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2017-04-24..2017-08-02",
+      "national": true
+    },
+    {
+      "id": "FL-2018-000105-BGD",
+      "glide": "FL-2018-000105-BGD",
+      "hazard_type": "Flash Flood",
+      "start_date": "2018-04-18",
+      "division": "Barisal",
+      "district_count": 64,
+      "severity": {
+        "n": 64,
+        "min": 0,
+        "p25": 1,
+        "median": 1,
+        "p75": 1,
+        "max": 1,
+        "mean": 0.9797
+      },
+      "data_sources": [
+        "API_Corrected",
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2018-02-27..2018-06-07",
+      "national": true
+    },
+    {
+      "id": "FL-2019-000079-BGD",
+      "glide": "FL-2019-000079-BGD",
+      "hazard_type": "Flood",
+      "start_date": "2019-06-21",
+      "division": "Chittagong",
+      "district_count": 10,
+      "severity": {
+        "n": 10,
+        "min": 1,
+        "p25": 1,
+        "median": 1,
+        "p75": 1,
+        "max": 1,
+        "mean": 1
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2019-05-02..2019-08-10",
+      "national": false
+    },
+    {
+      "id": "TC-2019-000147-BGD",
+      "glide": "TC-2019-000147-BGD",
+      "hazard_type": "Flood",
+      "start_date": "2019-11-01",
+      "division": "Barisal",
+      "district_count": 2,
+      "severity": {
+        "n": 2,
+        "min": 0.7543,
+        "p25": 0.8157,
+        "median": 0.8772,
+        "p75": 0.9386,
+        "max": 1,
+        "mean": 0.8772
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2019-09-12..2019-12-21",
+      "national": false
+    },
+    {
+      "id": "FL-2020-000161-BGD",
+      "glide": "FL-2020-000161-BGD",
+      "hazard_type": "Flood",
+      "start_date": "2020-07-01",
+      "division": "Barisal",
+      "district_count": 64,
+      "severity": {
+        "n": 64,
+        "min": 1,
+        "p25": 1,
+        "median": 1,
+        "p75": 1,
+        "max": 1,
+        "mean": 1
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2020-05-12..2020-08-20",
+      "national": true
+    },
+    {
+      "id": "FR-2021-000027-BGD",
+      "glide": "FR-2021-000027-BGD",
+      "hazard_type": "Fire",
+      "start_date": "2021-03-22",
+      "division": "Chittagong",
+      "district_count": 1,
+      "severity": {
+        "n": 1,
+        "min": 0.218,
+        "p25": 0.218,
+        "median": 0.218,
+        "p75": 0.218,
+        "max": 0.218,
+        "mean": 0.218
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2021-01-31..2021-05-11",
+      "national": false
+    },
+    {
+      "id": "FL-2021-000097-BGD",
+      "glide": "FL-2021-000097-BGD",
+      "hazard_type": "Flood",
+      "start_date": "2021-07-27",
+      "division": "Barisal",
+      "district_count": 64,
+      "severity": {
+        "n": 64,
+        "min": 0.391,
+        "p25": 1,
+        "median": 1,
+        "p75": 1,
+        "max": 1,
+        "mean": 0.9905
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2021-06-07..2021-09-15",
+      "national": true
+    },
+    {
+      "id": "FL-2022-000217-BGD",
+      "glide": "FL-2022-000217-BGD",
+      "hazard_type": "Flash Flood",
+      "start_date": "2022-05-17",
+      "division": "Barisal",
+      "district_count": 64,
+      "severity": {
+        "n": 64,
+        "min": 0.9285,
+        "p25": 1,
+        "median": 1,
+        "p75": 1,
+        "max": 1,
+        "mean": 0.9989
+      },
+      "data_sources": [
+        "API_Corrected",
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2022-03-28..2022-07-06",
+      "national": true
+    },
+    {
+      "id": "FR-2023-000031-BGD",
+      "glide": "FR-2023-000031-BGD",
+      "hazard_type": "Fire",
+      "start_date": "2023-03-05",
+      "division": "Barisal",
+      "district_count": 64,
+      "severity": {
+        "n": 64,
+        "min": 0,
+        "p25": 0.0526,
+        "median": 0.1511,
+        "p75": 0.403,
+        "max": 1,
+        "mean": 0.2445
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2023-01-14..2023-04-24",
+      "national": true
+    },
+    {
+      "id": "FL-2023-000157-BGD",
+      "glide": "FL-2023-000157-BGD",
+      "hazard_type": "Flash Flood",
+      "start_date": "2023-08-07",
+      "division": "Chittagong",
+      "district_count": 5,
+      "severity": {
+        "n": 5,
+        "min": 1,
+        "p25": 1,
+        "median": 1,
+        "p75": 1,
+        "max": 1,
+        "mean": 1
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2023-06-18..2023-09-26",
+      "national": false
+    },
+    {
+      "id": "HT-2024-000056-BGD",
+      "glide": "HT-2024-000056-BGD",
+      "hazard_type": "Heat Wave",
+      "start_date": "2024-04-21",
+      "division": "Barisal",
+      "district_count": 36,
+      "severity": {
+        "n": 36,
+        "min": 0,
+        "p25": 0.0638,
+        "median": 0.4116,
+        "p75": 0.6502,
+        "max": 1,
+        "mean": 0.4219
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2024-03-02..2024-06-10",
+      "national": false
+    },
+    {
+      "id": "TC-2024-000083-BGD",
+      "glide": "TC-2024-000083-BGD",
+      "hazard_type": "Tropical Cyclone",
+      "start_date": "2024-05-26",
+      "division": "Barisal",
+      "district_count": 64,
+      "severity": {
+        "n": 64,
+        "min": 0.0165,
+        "p25": 0.0865,
+        "median": 0.5445,
+        "p75": 0.8622,
+        "max": 1,
+        "mean": 0.4948
+      },
+      "data_sources": [
+        "API_Corrected",
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2024-04-06..2024-07-15",
+      "national": true
+    },
+    {
+      "id": "FL-2024-000088-BGD",
+      "glide": "FL-2024-000088-BGD",
+      "hazard_type": "Flash Flood",
+      "start_date": "2024-06-18",
+      "division": "Barisal",
+      "district_count": 64,
+      "severity": {
+        "n": 64,
+        "min": 1,
+        "p25": 1,
+        "median": 1,
+        "p75": 1,
+        "max": 1,
+        "mean": 1
+      },
+      "data_sources": [
+        "API_Corrected",
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2024-04-29..2024-08-07",
+      "national": true
+    },
+    {
+      "id": "FL-2025-000076-BGD",
+      "glide": "FL-2025-000076-BGD",
+      "hazard_type": "Flood",
+      "start_date": "2025-05-29",
+      "division": "Barisal",
+      "district_count": 15,
+      "severity": {
+        "n": 15,
+        "min": 1,
+        "p25": 1,
+        "median": 1,
+        "p75": 1,
+        "max": 1,
+        "mean": 1
+      },
+      "data_sources": [
+        "TIF_Calculated"
+      ],
+      "flagged_for_review": 0,
+      "gee_window": "2025-04-09..2025-07-18",
+      "national": false
+    }
+  ]
+}

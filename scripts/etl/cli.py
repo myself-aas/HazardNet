@@ -33,6 +33,7 @@ _SCRIPTS_DIR = _HERE.parent
 if str(_SCRIPTS_DIR) not in sys.path:
     sys.path.insert(0, str(_SCRIPTS_DIR))
 
+import adapters as adapters_module  # noqa: E402
 import bulletins as bulletins_module  # noqa: E402
 import cog as cog_module  # noqa: E402
 import db as db_module  # noqa: E402
@@ -73,7 +74,30 @@ def cmd_districts(args) -> int:
 
 def cmd_events(args) -> int:
     started_at = _now()
-    raw = events_module.load_events(args.input)
+    adapter_key = getattr(args, 'adapter', None)
+    if adapter_key:
+        # A raw third-party archive: translate its column vocabulary into the event
+        # contract first, then validate through the SAME strict path below. The
+        # adapter renames columns only — it does not classify, resolve or clamp.
+        try:
+            adapter = adapters_module.get(adapter_key)
+        except KeyError:
+            known = ', '.join(sorted(adapters_module.ADAPTERS))
+            return _emit({
+                'command': 'events',
+                'status': 'failed',
+                'reason': 'adapter',
+                'detail': f'unknown adapter {adapter_key!r}; known: {known}',
+                'input': args.input,
+            }, code=1)
+        records = adapters_module.read_records(args.input)
+        raw = adapter.adapt(records)
+        if not args.source or args.source == 'archive':
+            # The adapter names its own source; --source stays available as an
+            # explicit override but must not silently rename the archive and re-key it.
+            args.source = getattr(adapter, 'SOURCE', args.source)
+    else:
+        raw = events_module.load_events(args.input)
     strict = not args.lenient
     try:
         outcome = events_module.normalize_events(raw, strict=strict)
@@ -340,6 +364,10 @@ def build_parser() -> argparse.ArgumentParser:
 
     p = subparsers.add_parser('events', help='normalise + validate historical events and emit load SQL')
     p.add_argument('--input', required=True, help='CSV, JSON array or JSON-lines of events')
+    p.add_argument('--adapter', metavar='KEY',
+                   help='translate a raw third-party archive into the event contract before '
+                        'validation (see scripts/etl/adapters/README.md; '
+                        '"--adapter list" prints the registered keys)')
     p.add_argument('--source', default='archive', help='source name recorded on the ingest run')
     p.add_argument('--claimed-total', type=int, default=2931,
                    help='the count docs/MODEL_CARD.md quotes; the run reports the drift, never asserts it')
