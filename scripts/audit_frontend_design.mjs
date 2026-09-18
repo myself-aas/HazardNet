@@ -215,6 +215,134 @@ const PROBE = () => {
     width: round(element.getBoundingClientRect().width),
   }));
 
+  // Contrast and touch targets: measurable, and the two things a hazard dashboard gets wrong
+  // when it grows a design system faster than it grows a test suite.
+  // Tailwind v4 emits `oklch()` and `oklab()`, the HDS tokens emit `rgb()`, and a contrast
+  // check that understands only one of them reports white-on-white for every dark panel. The
+  // first pass of this probe did exactly that; the conversion below is why it no longer does.
+  const oklabToRgb = (L, a, b, alpha) => {
+    const l = (L + 0.3963377774 * a + 0.2158037573 * b) ** 3;
+    const m = (L - 0.1055613458 * a - 0.0638541728 * b) ** 3;
+    const s = (L - 0.0894841775 * a - 1.291485548 * b) ** 3;
+    const channel = (linear) => {
+      const c = linear <= 0.0031308 ? 12.92 * linear : 1.055 * linear ** (1 / 2.4) - 0.055;
+      return Math.max(0, Math.min(255, Math.round(c * 255)));
+    };
+    return {
+      r: channel(4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s),
+      g: channel(-1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s),
+      b: channel(-0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s),
+      a: alpha,
+    };
+  };
+  const parseColor = (value) => {
+    if (!value) return null;
+    const rgb = value.match(/rgba?\(([^)]+)\)/);
+    if (rgb) {
+      const parts = rgb[1].split(/[,\s/]+/).filter(Boolean).map(Number);
+      return { r: parts[0], g: parts[1], b: parts[2], a: parts.length > 3 ? parts[3] : 1 };
+    }
+    const oklch = value.match(/oklch\(([^)]+)\)/);
+    if (oklch) {
+      const parts = oklch[1].split(/[\s/]+/).filter(Boolean);
+      const L = parseFloat(parts[0]);
+      const C = parseFloat(parts[1]);
+      const H = parseFloat(parts[2]);
+      const alpha = parts.length > 3 ? parseFloat(parts[3]) : 1;
+      if ([L, C, H].some(Number.isNaN)) return null;
+      const radians = (H * Math.PI) / 180;
+      return oklabToRgb(L, C * Math.cos(radians), C * Math.sin(radians), alpha);
+    }
+    const oklab = value.match(/oklab\(([^)]+)\)/);
+    if (oklab) {
+      const parts = oklab[1].split(/[\s/]+/).filter(Boolean);
+      const alpha = parts.length > 3 ? parseFloat(parts[3]) : 1;
+      const [L, a, b] = parts.slice(0, 3).map(parseFloat);
+      if ([L, a, b].some(Number.isNaN)) return null;
+      return oklabToRgb(L, a, b, alpha);
+    }
+    return null;
+  };
+  const luminance = ({ r, g, b }) => {
+    const channel = (v) => {
+      const c = v / 255;
+      return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+    };
+    return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b);
+  };
+  const blend = (front, back) => ({
+    r: front.r * front.a + back.r * (1 - front.a),
+    g: front.g * front.a + back.g * (1 - front.a),
+    b: front.b * front.a + back.b * (1 - front.a),
+    a: 1,
+  });
+  const backgroundOf = (element) => {
+    let node = element;
+    let result = { r: 255, g: 255, b: 255, a: 1 };
+    const layers = [];
+    while (node && node !== document.documentElement.parentElement) {
+      const parsed = parseColor(getComputedStyle(node).backgroundColor);
+      if (parsed && parsed.a > 0) layers.push(parsed);
+      node = node.parentElement;
+    }
+    for (let i = layers.length - 1; i >= 0; i -= 1) result = blend(layers[i], result);
+    return result;
+  };
+  const sampleText = Array.from(document.querySelectorAll('p,li,td,th,h1,h2,h3,h4,a,span,button,label,dd,dt'))
+    .filter((element) => {
+      if (!visible(element)) return false;
+      const text = Array.from(element.childNodes).filter((n) => n.nodeType === 3 && n.textContent.trim());
+      if (!text.length) return false;
+      return parseFloat(getComputedStyle(element).fontSize) > 0;
+    });
+  const contrast = { checked: 0, belowAA: [], belowAAA: 0, minimum: 21 };
+  for (const element of sampleText.slice(0, 900)) {
+    const style = getComputedStyle(element);
+    const foreground = parseColor(style.color);
+    if (!foreground) continue;
+    const background = backgroundOf(element);
+    const fg = blend(foreground, background);
+    const l1 = luminance(fg);
+    const l2 = luminance(background);
+    const ratio = (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
+    const size = parseFloat(style.fontSize);
+    const weight = Number(style.fontWeight) || 400;
+    const large = size >= 24 || (size >= 18.66 && weight >= 700);
+    const need = large ? 3 : 4.5;
+    contrast.checked += 1;
+    contrast.minimum = Math.min(contrast.minimum, round(ratio));
+    if (ratio < 7) contrast.belowAAA += 1;
+    if (ratio < need) {
+      contrast.belowAA.push({
+        tag: element.tagName.toLowerCase(),
+        text: (element.textContent || '').trim().slice(0, 50),
+        ratio: round(ratio),
+        need,
+        color: style.color,
+        background: `rgb(${Math.round(background.r)}, ${Math.round(background.g)}, ${Math.round(background.b)})`,
+        size: `${size}px/${weight}`,
+      });
+    }
+  }
+
+  const touchTargets = [];
+  for (const element of Array.from(document.querySelectorAll('a,button,[role="button"],input,select,textarea'))) {
+    const rect = element.getBoundingClientRect();
+    if (rect.width === 0 || rect.height === 0) continue;
+    const label = (element.getAttribute('aria-label') || element.textContent || '').trim().slice(0, 40);
+    // Inline links inside prose are exempt from the 24x24 rule only in the WCAG 2.2 sense of
+    // "in a sentence"; a control a thumb has to hit is not. Flag interactive controls below 24px
+    // in either axis, with 44px reported separately as the mobile-comfort target.
+    if (rect.width < 24 || rect.height < 24) {
+      touchTargets.push({
+        tag: element.tagName.toLowerCase(),
+        label,
+        size: `${round(rect.width)}x${round(rect.height)}`,
+        inline: element.tagName === 'A' && element.closest('p,li,td'),
+      });
+    }
+  }
+
   const overflowers = [];
   const documentWidth = document.documentElement.clientWidth;
   for (const element of all) {
@@ -246,6 +374,8 @@ const PROBE = () => {
     animations,
     controls,
     images,
+    contrast,
+    touchTargets,
     counts: {
       elements: all.length,
       tables: document.querySelectorAll('table').length,
@@ -342,7 +472,54 @@ const main = async () => {
     }
   }
 
-  // A single keyboard walk at the widest viewport, on the front door and the console.
+  // A keyboard walk at the widest viewport, on the four routes that carry the header and drawer.
+  //
+  // Whether a control is *visible when focused* cannot be answered by reading the focused element's
+  // own `outline`: a treatment may live on an ancestor (an underline sibling, a wrapper that changes
+  // colour). The first version of this probe read only the element and reported ten header controls
+  // with "no focus indicator"; the diff-based measurement below showed every one of them draws a
+  // visible change, so the naive version was measuring the probe, not the site. Each stop is
+  // therefore captured twice — focused and unfocused — and the whole four-level ancestor chain is
+  // compared. A stop with no difference anywhere is the finding.
+  const FOCUS_PROBE = () => {
+    const el = document.activeElement;
+    if (!el || el === document.body) return null;
+    const read = (node) => {
+      const s = getComputedStyle(node);
+      return [s.outlineStyle, s.outlineWidth, s.outlineColor, s.boxShadow, s.borderColor,
+        s.borderBottomColor, s.backgroundColor, s.textDecorationLine, s.color].join('|');
+    };
+    const chain = [read(el)];
+    let node = el.parentElement;
+    for (let i = 0; i < 3 && node && node !== document.body; i += 1) {
+      chain.push(read(node));
+      node = node.parentElement;
+    }
+    const name = (el.getAttribute('aria-label') || el.textContent || '').trim().slice(0, 40);
+    return { marker: `${el.tagName}|${name}`, tag: el.tagName.toLowerCase(), text: name, focusedChain: chain };
+  };
+  const FOCUS_UNFOCUSED = (markers) => {
+    const read = (node) => {
+      const s = getComputedStyle(node);
+      return [s.outlineStyle, s.outlineWidth, s.outlineColor, s.boxShadow, s.borderColor,
+        s.borderBottomColor, s.backgroundColor, s.textDecorationLine, s.color].join('|');
+    };
+    const map = {};
+    for (const marker of markers) {
+      const el = Array.from(document.querySelectorAll('a,button,[role="button"],input,select'))
+        .find((candidate) => `${candidate.tagName}|${(candidate.getAttribute('aria-label') || candidate.textContent || '').trim().slice(0, 40)}` === marker);
+      if (!el) { map[marker] = null; continue; }
+      const chain = [read(el)];
+      let node = el.parentElement;
+      for (let i = 0; i < 3 && node && node !== document.body; i += 1) {
+        chain.push(read(node));
+        node = node.parentElement;
+      }
+      map[marker] = chain;
+    }
+    return map;
+  };
+
   const focus = {};
   for (const route of ROUTES.slice(0, 4)) {
     const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
@@ -357,9 +534,27 @@ const main = async () => {
       const stops = [];
       for (let i = 0; i < 14; i += 1) {
         await page.keyboard.press('Tab');
-        stops.push(await page.evaluate(FOCUS_PROBE).then((result) => result[result.length - 1]));
+        await page.waitForTimeout(90);
+        const stop = await page.evaluate(FOCUS_PROBE);
+        if (stop) stops.push(stop);
       }
-      focus[route] = stops;
+      await page.evaluate(() => document.activeElement instanceof HTMLElement && document.activeElement.blur());
+      await page.waitForTimeout(200);
+      const unfocused = await page.evaluate(FOCUS_UNFOCUSED, stops.map((stop) => stop.marker));
+      focus[route] = stops.map((stop) => {
+        const before = unfocused[stop.marker];
+        const changed = before ? stop.focusedChain.some((value, index) => value !== before[index]) : null;
+        return {
+          tag: stop.tag,
+          text: stop.text,
+          outline: stop.focusedChain[0].split('|').slice(0, 3).join(' '),
+          visibleIndicator: changed,
+        };
+      });
+      focus[`${route}#summary`] = {
+        stops: focus[route].length,
+        withoutIndicator: focus[route].filter((stop) => stop.visibleIndicator === false).map((stop) => `${stop.tag}:${stop.text}`),
+      };
     } catch (error) {
       focus[route] = { error: String(error).slice(0, 200) };
     }
