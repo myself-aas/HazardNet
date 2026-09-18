@@ -30,7 +30,7 @@ export const RequireSuperAdmin: React.FC<{ children: React.ReactNode }> = ({ chi
         </p>
         <Link
           to={`/login?next=${encodeURIComponent(location.pathname)}`}
-          className="rounded-2xl bg-[#f9a825] px-5 py-3 text-sm font-black text-slate-950 shadow-md transition-colors hover:bg-[#d08305]"
+          className="rounded-2xl bg-nasa-red px-5 py-3 text-sm font-black text-slate-950 shadow-md transition-colors hover:bg-nasa-red-shade"
         >
           Go to sign in
         </Link>

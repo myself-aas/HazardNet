@@ -82,7 +82,7 @@ export default function SetPasswordPage() {
   }
 
   const inputClass =
-    'mt-1.5 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-base sm:text-sm text-slate-900 outline-none transition-all focus:border-[#f9a825] focus:ring-2 focus:ring-[#f9a825]/40'
+    'mt-1.5 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-base sm:text-sm text-slate-900 outline-none transition-all focus:border-nasa-blue focus:ring-2 focus:ring-nasa-blue/40'
 
   if (phase === 'done') {
     return (
@@ -113,7 +113,7 @@ export default function SetPasswordPage() {
     >
       {phase === 'waiting' && !user ? (
         <div className="flex flex-col items-center gap-3 py-6" role="status" data-testid="set-password-waiting">
-          <span className="h-8 w-8 animate-spin rounded-full border-[3px] border-slate-200 border-t-[#f9a825]" />
+          <span className="h-8 w-8 animate-spin rounded-full border-[3px] border-slate-200 border-t-nasa-red" />
           <p className="text-xs text-slate-500">Verifying your email link…</p>
         </div>
       ) : (
@@ -200,7 +200,7 @@ export default function SetPasswordPage() {
           <button
             type="submit"
             disabled={saving || (!user && !isSupabaseConfigured)}
-            className="w-full rounded-2xl bg-[#f9a825] py-3.5 text-sm font-extrabold text-slate-950 transition-colors hover:bg-[#d08305] disabled:opacity-50 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f9a825]/60 focus-visible:ring-offset-2"
+            className="w-full rounded-2xl bg-nasa-red py-3.5 text-sm font-extrabold text-slate-950 transition-colors hover:bg-nasa-red-shade disabled:opacity-50 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nasa-blue/60 focus-visible:ring-offset-2"
           >
             {saving ? 'Saving password…' : 'Save password & open my dashboard'}
           </button>

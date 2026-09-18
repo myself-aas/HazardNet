@@ -270,7 +270,7 @@ export function useLeafletMap(
               align-items: center;
               justify-content: center;
               color: #ffffff;
-              font-family: 'Playfair Display', serif;
+              font-family: var(--hds-font-family-heading);
               cursor: pointer;
               transition: transform 0.2s ease;
               outline: none;

@@ -166,11 +166,11 @@ export function useMapMeasurements({
               width: 28px;
               height: 28px;
               border-radius: 50%;
-              background: ${isStart ? '#16a34a' : isEnd ? '#dc2626' : '#f9a825'};
+              background: ${isStart ? '#16a34a' : isEnd ? '#dc2626' : '#f64137'};
               border: 3px solid #ffffff;
               box-shadow: 0 4px 14px rgba(0,0,0,0.35);
               color: #ffffff;
-              font-family: 'Playfair Display', serif;
+              font-family: var(--hds-font-family-heading);
               font-size: 11px;
               font-weight: 900;
               display: flex;
@@ -192,7 +192,7 @@ export function useMapMeasurements({
       // Connecting Polyline & Midpoint Analysis Leaflet Popup
       if (measurePoints.length >= 2) {
         const line = L.polyline(measurePoints, {
-          color: '#f9a825',
+          color: '#f64137',
           weight: 5,
           opacity: 0.95,
           dashArray: '8, 8',
@@ -215,7 +215,7 @@ export function useMapMeasurements({
                 height: 28px;
                 border-radius: 50%;
                 background: #ffffff;
-                border: 3px solid #f9a825;
+                border: 3px solid #f64137;
                 box-shadow: 0 4px 16px rgba(249, 168, 37, 0.6);
                 display: flex;
                 align-items: center;
@@ -241,12 +241,12 @@ export function useMapMeasurements({
               .replace(/>/g, '&gt;');
 
           const popupContent = `
-            <div style="padding: 10px; font-family: 'Playfair Display', serif; color: #0f172a; min-width: 250px; max-width: 290px;">
+            <div style="padding: 10px; font-family: var(--hds-font-family-heading); color: #0f172a; min-width: 250px; max-width: 290px;">
               <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; margin-bottom: 8px;">
                 <strong style="font-size: 12px; color: #0f172a; font-weight: 900; display: flex; align-items: center; gap: 4px;">
                   📏 Path Measurement
                 </strong>
-                <span style="font-size: 11px; font-weight: 900; background: #f9a825; color: #ffffff; padding: 2px 8px; border-radius: 9999px;">
+                <span style="font-size: 11px; font-weight: 900; background: #f64137; color: #ffffff; padding: 2px 8px; border-radius: 9999px;">
                   ${analysis.totalDistanceKm.toFixed(1)} km
                 </span>
               </div>

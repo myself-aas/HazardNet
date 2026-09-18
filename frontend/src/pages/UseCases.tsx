@@ -141,7 +141,7 @@ export const UseCases: React.FC = () => {
 
       {/* Header Banner */}
       <div className="bg-white border border-slate-200/90 rounded-3xl p-6 md:p-8 shadow-md relative overflow-hidden group space-y-3">
-        <div className="absolute top-0 left-0 w-full h-1 bg-[#f9a825]"></div>
+        <div className="absolute top-0 left-0 w-full h-1 bg-nasa-red"></div>
         <div className="flex items-center gap-2">
           <span className="px-3 py-1 rounded-full text-[10px] font-mono font-extrabold bg-amber-50 text-amber-900 border border-amber-300 uppercase tracking-wider shadow-2xs">
             Agricultural Disaster AI
@@ -151,7 +151,7 @@ export const UseCases: React.FC = () => {
         </div>
 
         <h1 className="text-2xl md:text-3xl font-brand font-black text-slate-900 tracking-tight">
-          Hazard<span className="text-[#d08305]">Net</span> Operational Use Cases & Field Impact
+          Hazard<span className="text-nasa-red-shade">Net</span> Operational Use Cases & Field Impact
         </h1>
         <p className="text-slate-600 text-xs md:text-sm leading-relaxed max-w-3xl">
           Discover how HazardNet's 15-band multi-task neural network mitigates disaster risks across distinct agro-ecological zones in Bangladesh, protecting food security and rural livelihoods.
@@ -170,7 +170,7 @@ export const UseCases: React.FC = () => {
               onClick={() => setActiveCaseId(item.id)}
               className={`p-4 rounded-2xl border text-left transition-all duration-300 flex flex-col justify-between gap-3 shadow-sm hover:shadow-md cursor-pointer ${
                 isSelected
-                  ? 'bg-amber-50/90 text-slate-900 border-[#f9a825] ring-2 ring-[#f9a825]/40 shadow-amber-500/10'
+                  ? 'bg-amber-50/90 text-slate-900 border-nasa-blue ring-2 ring-nasa-blue/40 shadow-amber-500/10'
                   : 'bg-white text-slate-800 border-slate-200 hover:border-slate-300 hover:bg-slate-50/50'
               }`}
             >
@@ -305,7 +305,7 @@ export const UseCases: React.FC = () => {
           <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
             <Link
               to="/download"
-              className="px-5 py-2.5 rounded-xl bg-[#f9a825] hover:bg-[#d08305] text-slate-950 font-black text-xs transition-all shadow-md hover:shadow-lg inline-block cursor-pointer"
+              className="px-5 py-2.5 rounded-xl bg-nasa-red hover:bg-nasa-red-shade text-slate-950 font-black text-xs transition-all shadow-md hover:shadow-lg inline-block cursor-pointer"
             >
               <MaterialIcon name="download" className="w-4 h-4" /> Download Software
             </Link>

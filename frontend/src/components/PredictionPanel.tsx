@@ -99,7 +99,7 @@ const PredictionPanel: React.FC<PredictionPanelProps> = ({
       <div className="bg-slate-50/90 border border-slate-200/90 rounded-2xl p-6 relative overflow-hidden shadow-2xs hover:shadow-sm transition-all duration-300">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
           <div className="flex items-center gap-4">
-            <span className="w-16 h-16 bg-[#f9a825]/15 border border-[#f9a825]/30 rounded-2xl flex items-center justify-center text-xl font-black text-[#b87002] shrink-0 font-mono shadow-2xs">
+            <span className="w-16 h-16 bg-nasa-red/15 border border-nasa-blue/30 rounded-2xl flex items-center justify-center text-xl font-black text-[#b87002] shrink-0 font-mono shadow-2xs">
               {primary.name.substring(0, 2).toUpperCase()}
             </span>
             <div className="space-y-1">
@@ -312,7 +312,7 @@ const PredictionPanel: React.FC<PredictionPanelProps> = ({
               }
             }}
             disabled={isSaving}
-            className="px-4 py-2.5 bg-[#f9a825] hover:bg-[#d08305] text-slate-900 font-extrabold rounded-xl text-xs transition-all duration-200 flex items-center gap-2 min-h-[44px] shadow-xs disabled:opacity-50 active:scale-98"
+            className="px-4 py-2.5 bg-nasa-red hover:bg-nasa-red-shade text-slate-900 font-extrabold rounded-xl text-xs transition-all duration-200 flex items-center gap-2 min-h-[44px] shadow-xs disabled:opacity-50 active:scale-98"
           >
             {isSaving ? (
               <span>Saving...</span>

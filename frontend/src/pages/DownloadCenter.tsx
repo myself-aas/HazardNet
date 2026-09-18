@@ -76,7 +76,7 @@ const AssetButton: React.FC<{
     onClick={() => onDownload(asset)}
     className={
       primary
-        ? 'px-5 py-2.5 rounded-xl bg-[#f9a825] hover:bg-[#d08305] text-slate-950 text-xs font-black transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 shrink-0 cursor-pointer'
+        ? 'px-5 py-2.5 rounded-xl bg-nasa-red hover:bg-nasa-red-shade text-slate-950 text-xs font-black transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 shrink-0 cursor-pointer'
         : 'px-3.5 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-800 text-[11px] font-bold font-mono transition-all flex items-center gap-1.5 shrink-0 cursor-pointer'
     }
     title={`Download ${asset.name}`}
@@ -334,7 +334,7 @@ export const DownloadCenter: React.FC = () => {
 
       {/* Hero Header */}
       <div className="bg-white border border-slate-200/90 rounded-3xl p-6 md:p-8 shadow-md relative overflow-hidden space-y-3">
-        <div className="absolute top-0 left-0 w-full h-1 bg-[#f9a825]"></div>
+        <div className="absolute top-0 left-0 w-full h-1 bg-nasa-red"></div>
         <div className="flex items-center gap-2">
           <span className="px-3 py-1 rounded-full text-[10px] font-mono font-extrabold bg-amber-50 text-amber-900 border border-amber-300 uppercase tracking-wider shadow-2xs">
             Open Software Center
@@ -344,7 +344,7 @@ export const DownloadCenter: React.FC = () => {
         </div>
 
         <h1 className="text-2xl md:text-3xl font-brand font-black text-slate-900 tracking-tight">
-          Hazard<span className="text-[#d08305]">Net</span> Multi-Platform Downloads
+          Hazard<span className="text-nasa-red-shade">Net</span> Multi-Platform Downloads
         </h1>
         <p className="text-slate-600 text-xs md:text-sm leading-relaxed max-w-3xl">
           Every artifact below is built and published automatically by the HazardNet product repositories&apos; release
@@ -364,7 +364,7 @@ export const DownloadCenter: React.FC = () => {
             onClick={() => setSelectedTab(tab.id)}
             className={`px-4 py-2.5 rounded-xl transition-all duration-200 shrink-0 whitespace-nowrap cursor-pointer flex items-center gap-2 ${
               selectedTab === tab.id
-                ? 'bg-[#f9a825] text-slate-950 font-black shadow-md shadow-amber-500/20'
+                ? 'bg-nasa-red text-slate-950 font-black shadow-md shadow-amber-500/20'
                 : 'bg-white text-slate-700 border border-slate-200/90 hover:bg-slate-50 shadow-2xs'
             }`}
           >

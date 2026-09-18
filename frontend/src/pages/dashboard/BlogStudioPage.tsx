@@ -92,11 +92,11 @@ export const BlogStudioPage: React.FC = () => {
 
       {/* Header */}
       <div className="bg-white border border-slate-200/90 rounded-3xl p-6 shadow-md relative overflow-hidden space-y-4">
-        <div aria-hidden="true" className="absolute top-0 left-0 w-full h-1 bg-[#f9a825]" />
+        <div aria-hidden="true" className="absolute top-0 left-0 w-full h-1 bg-nasa-red" />
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <div className="flex items-center gap-2 text-[10px] font-mono font-bold text-slate-500 uppercase tracking-wider">
-              <MaterialIcon name="article" className="w-3.5 h-3.5 text-[#d08305]" />
+              <MaterialIcon name="article" className="w-3.5 h-3.5 text-nasa-red-shade" />
               User Dashboard · Content Administration
             </div>
             <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight mt-1">Blog Studio</h1>
@@ -107,7 +107,7 @@ export const BlogStudioPage: React.FC = () => {
           </div>
           <Link
             to="/dashboard/blog/new"
-            className="shrink-0 inline-flex items-center gap-2 rounded-2xl bg-[#f9a825] px-4 py-2.5 text-xs font-black text-slate-950 shadow-md transition-colors hover:bg-[#d08305] cursor-pointer"
+            className="shrink-0 inline-flex items-center gap-2 rounded-2xl bg-nasa-red px-4 py-2.5 text-xs font-black text-slate-950 shadow-md transition-colors hover:bg-nasa-red-shade cursor-pointer"
           >
             <MaterialIcon name="doc" className="w-4 h-4" /> New article
           </Link>
@@ -152,7 +152,7 @@ export const BlogStudioPage: React.FC = () => {
             <p className="text-xs text-slate-500">Write the first HazardNet field report or research deep-dive.</p>
             <Link
               to="/dashboard/blog/new"
-              className="inline-block rounded-2xl bg-[#f9a825] px-4 py-2.5 text-xs font-black text-slate-950 shadow-md hover:bg-[#d08305]"
+              className="inline-block rounded-2xl bg-nasa-red px-4 py-2.5 text-xs font-black text-slate-950 shadow-md hover:bg-nasa-red-shade"
             >
               Start writing
             </Link>

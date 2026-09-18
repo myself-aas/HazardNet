@@ -139,7 +139,7 @@ export const ThirtyDayTrendChart: React.FC<ThirtyDayTrendChartProps> = ({
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-200 pb-5">
         <div className="space-y-1">
           <div className="flex items-center gap-2.5">
-            <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-[#f9a825]/10 text-[#d08305] border border-[#f9a825]/20 shadow-2xs">
+            <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-nasa-red/10 text-nasa-red-shade border border-nasa-blue/20 shadow-2xs">
               30-Day Historical Telemetry
             </span>
             <span className="text-slate-300">•</span>
@@ -161,7 +161,7 @@ export const ThirtyDayTrendChart: React.FC<ThirtyDayTrendChartProps> = ({
               onClick={() => setSelectedHazard(h)}
               className={`px-3.5 py-2 rounded-full text-xs font-bold transition-all duration-200 min-h-[38px] cursor-pointer ${
                 selectedHazard === h
-                  ? 'bg-[#f9a825] text-slate-900 shadow-2xs scale-[1.02]'
+                  ? 'bg-nasa-red text-slate-900 shadow-2xs scale-[1.02]'
                   : 'bg-slate-50 text-slate-600 hover:text-slate-900 border border-slate-200 hover:bg-slate-100'
               }`}
             >

@@ -707,7 +707,7 @@ function modelPerformanceRoute({ performance }) {
         keywords: ['Bangladesh', 'hazard verification', 'hindcast', 'early warning'],
       },
     },
-    h1: 'What the model did on four historical episodes',
+    h1: `What the model did on ${howMany(episodes.length)} historical episodes`,
     standfirst:
       `Across ${count(totals.episodes)} episodes and ${count(totals.named_districts)} district-episode pairs that the ` +
       `cited assessments name, the physics track flagged ${count(totals.flagged_any_class)} under some class, ` +

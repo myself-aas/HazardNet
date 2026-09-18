@@ -96,10 +96,10 @@ export const createCustomIcon = (severity: number, isSelected: boolean, hazardTy
       padding: 6px 14px;
       border-radius: 9999px;
       background: rgba(255, 255, 255, 0.98);
-      border: 3px solid #f9a825;
+      border: 3px solid #f64137;
       box-shadow: 0 6px 24px rgba(0,0,0,0.25), 0 0 20px ${glowColor};
       color: #0f172a;
-      font-family: 'Playfair Display', serif;
+      font-family: var(--hds-font-family-heading);
       font-size: 11px;
       font-weight: 900;
       white-space: nowrap;
@@ -136,7 +136,7 @@ export const createCustomIcon = (severity: number, isSelected: boolean, hazardTy
       border: 3px solid ${color};
       box-shadow: 0 4px 14px rgba(0,0,0,0.2), 0 0 12px ${glowColor};
       color: #0f172a;
-      font-family: 'Playfair Display', serif;
+      font-family: var(--hds-font-family-heading);
       font-size: 11px;
       font-weight: 900;
       display: flex;

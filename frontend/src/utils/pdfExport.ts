@@ -292,7 +292,7 @@ export async function exportElementToPdf(options: PdfExportOptions = {}): Promis
             th.emergency-protocol-title {
               background-color: #0f172a !important;
               color: #ffffff !important;
-              font-family: 'JetBrains Mono', monospace, ui-monospace, sans-serif !important;
+              font-family: 'DM Mono', Consolas, monospace !important;
               font-size: 8pt !important;
               font-weight: 900 !important;
               text-transform: uppercase !important;

@@ -187,6 +187,10 @@ describe('the generated /model-performance route', () => {
     const count = words[artifact.episodes.length] ?? String(artifact.episodes.length);
     expect(route.title).toContain(`${count} historical Bangladesh episodes`);
     expect(route.sections[0].h2).toBe(`The ${count} episodes`);
+    // The H1 was the last hard-coded count on the page ("four historical episodes" while the
+    // table beneath it listed five). It is derived now, and this is the assertion that keeps it
+    // derived — the page must never name a number the artifact does not contain.
+    expect(route.h1).toBe(`What the model did on ${count} historical episodes`);
     expect(route.sections.find((section) => section.callout)?.callout.text).toContain(`These are ${count} episodes`);
     for (const episode of artifact.episodes) expect(route.description).toContain(episode.title.split(' — ')[0]);
   });
@@ -258,7 +262,9 @@ maybe('the built page', () => {
   const html = built ? readFileSync(pageFile, 'utf8') : '';
 
   it('is prerendered with the episode table, not the SPA shell', () => {
-    expect(html).toContain('What the model did on four historical episodes');
+    const words = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'];
+    const count = words[artifact.episodes.length] ?? String(artifact.episodes.length);
+    expect(html).toContain(`What the model did on ${count} historical episodes`);
     expect(html).toContain('Cyclone Amphan');
     expect(html).toContain('Northeast and coastal monsoon floods');
     expect(html).toContain('<table>');

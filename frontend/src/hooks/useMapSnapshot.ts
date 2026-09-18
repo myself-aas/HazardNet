@@ -142,12 +142,12 @@ export function useMapSnapshot(
 
                   headerDiv.innerHTML = `
                     <div style="display: flex; align-items: center; gap: 14px;">
-                      <div style="width: 48px; height: 48px; border-radius: 14px; background: #f9a825; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 24px; color: #0f172a; border: 2px solid #ffffff; flex-shrink: 0;">
+                      <div style="width: 48px; height: 48px; border-radius: 14px; background: #f64137; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 24px; color: #0f172a; border: 2px solid #ffffff; flex-shrink: 0;">
                         🛡️
                       </div>
                       <div>
                         <div style="display: flex; align-items: center; gap: 8px;">
-                          <span style="background: #f9a825; color: #0f172a; font-weight: 900; font-size: 10px; padding: 2px 9px; border-radius: 9999px; text-transform: uppercase; letter-spacing: 0.05em;">
+                          <span style="background: #f64137; color: #0f172a; font-weight: 900; font-size: 10px; padding: 2px 9px; border-radius: 9999px; text-transform: uppercase; letter-spacing: 0.05em;">
                             HAZARDNET AI GEOSPATIAL REPORT
                           </span>
                           <span style="font-size: 11px; color: #94a3b8; font-family: monospace;">
@@ -201,7 +201,7 @@ export function useMapSnapshot(
 
                   legendDiv.innerHTML = `
                     <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #334155; padding-bottom: 6px;">
-                      <strong style="color: #f9a825; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em;">Multi-Hazard Severity Key</strong>
+                      <strong style="color: #f64137; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em;">Multi-Hazard Severity Key</strong>
                       <span style="color: #94a3b8; font-size: 10px; font-family: monospace;">HazardNet v2.4</span>
                     </div>
                     <div style="display: flex; align-items: center; gap: 12px;">

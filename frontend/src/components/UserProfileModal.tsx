@@ -242,7 +242,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                 className="w-12 h-12 rounded-xl object-cover border border-slate-200 shadow-xs"
               />
             ) : (
-              <div className="w-12 h-12 rounded-xl bg-[#f9a825]/10 border border-[#f9a825]/20 text-[#d08305] font-black text-lg flex items-center justify-center shadow-xs">
+              <div className="w-12 h-12 rounded-xl bg-nasa-red/10 border border-nasa-blue/20 text-nasa-red-shade font-black text-lg flex items-center justify-center shadow-xs">
                 {(displayName || 'U')[0].toUpperCase()}
               </div>
             )}
@@ -297,13 +297,13 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                     onClick={() => setUserRole(roleKey)}
                     className={`p-3 rounded-xl text-left border transition-all flex items-center gap-2.5 ${
                       isSelected
-                        ? 'bg-amber-50 text-[#d08305] border-[#f9a825] shadow-xs font-bold'
+                        ? 'bg-amber-50 text-nasa-red-shade border-nasa-blue shadow-xs font-bold'
                         : 'bg-white text-slate-700 border-slate-200 hover:border-slate-400'
                     }`}
                   >
                     <div className="flex-1 min-w-0">
                       <div className="text-xs font-bold truncate">{item.label}</div>
-                      <div className={`text-[10px] truncate ${isSelected ? 'text-[#d08305]' : 'text-slate-500'}`}>
+                      <div className={`text-[10px] truncate ${isSelected ? 'text-nasa-red-shade' : 'text-slate-500'}`}>
                         {item.tag}
                       </div>
                     </div>
@@ -554,7 +554,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                 type="text"
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
-                className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-900 font-medium focus:outline-none focus:border-[#f9a825]"
+                className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-900 font-medium focus:outline-none focus:border-nasa-blue"
               />
             </div>
 
@@ -565,7 +565,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                 placeholder="+880 1712-345678"
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
-                className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-900 font-medium focus:outline-none focus:border-[#f9a825]"
+                className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-900 font-medium focus:outline-none focus:border-nasa-blue"
               />
             </div>
 
@@ -576,7 +576,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                 placeholder="e.g. DAE Rangpur / Self Farm"
                 value={organization}
                 onChange={(e) => setOrganization(e.target.value)}
-                className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-900 font-medium focus:outline-none focus:border-[#f9a825]"
+                className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-900 font-medium focus:outline-none focus:border-nasa-blue"
               />
             </div>
 
@@ -588,7 +588,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                 min="0"
                 value={farmSizeHectares}
                 onChange={(e) => setFarmSizeHectares(parseFloat(e.target.value) || 0)}
-                className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-900 font-medium focus:outline-none focus:border-[#f9a825]"
+                className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-900 font-medium focus:outline-none focus:border-nasa-blue"
               />
             </div>
 
@@ -598,7 +598,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                 type="text"
                 value={primaryDivision}
                 onChange={(e) => setPrimaryDivision(e.target.value)}
-                className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-900 font-medium focus:outline-none focus:border-[#f9a825]"
+                className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-900 font-medium focus:outline-none focus:border-nasa-blue"
               />
             </div>
 
@@ -608,7 +608,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                 type="text"
                 value={primaryDistrict}
                 onChange={(e) => setPrimaryDistrict(e.target.value)}
-                className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-900 font-medium focus:outline-none focus:border-[#f9a825]"
+                className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-900 font-medium focus:outline-none focus:border-nasa-blue"
               />
             </div>
 
@@ -619,7 +619,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                 placeholder="e.g. Boro Paddy, Aman Rice, Jute, Potato, Maize"
                 value={targetCrops}
                 onChange={(e) => setTargetCrops(e.target.value)}
-                className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-900 font-medium focus:outline-none focus:border-[#f9a825]"
+                className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-900 font-medium focus:outline-none focus:border-nasa-blue"
               />
             </div>
           </div>
@@ -740,7 +740,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
             <button
               type="submit"
               disabled={isSaving}
-              className="px-6 py-2 bg-[#f9a825] hover:bg-[#d08305] text-slate-900 font-extrabold rounded-xl text-xs shadow-xs transition-colors disabled:opacity-50 cursor-pointer"
+              className="px-6 py-2 bg-nasa-red hover:bg-nasa-red-shade text-slate-900 font-extrabold rounded-xl text-xs shadow-xs transition-colors disabled:opacity-50 cursor-pointer"
             >
               {isSaving ? 'Saving to Firestore...' : 'Save Profile Changes'}
             </button>

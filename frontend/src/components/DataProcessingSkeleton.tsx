@@ -79,12 +79,12 @@ export const DataProcessingSkeleton: React.FC<DataProcessingSkeletonProps> = ({
       <div className="relative z-20 flex items-center justify-between border-b border-slate-200 pb-3 mb-4">
         <div className="flex items-center gap-3">
           <div className="relative flex items-center justify-center w-8 h-8 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 shadow-xs" aria-hidden="true">
-            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-[#f9a825] animate-ping" />
+            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-nasa-red animate-ping" />
           </div>
 
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-[10px] font-mono font-extrabold uppercase tracking-widest text-[#d08305] bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+              <span className="text-[10px] font-mono font-extrabold uppercase tracking-widest text-nasa-red-shade bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
                 Loading
               </span>
               <span className="text-[10px] font-mono text-slate-500">Forecasts · map layers</span>
@@ -168,7 +168,7 @@ export const DataProcessingSkeleton: React.FC<DataProcessingSkeletonProps> = ({
                   <div className="w-1/2 h-1/2 bg-amber-400/20 origin-bottom-right rounded-tl-full border-r border-amber-500/60" />
                 </div>
 
-                <div className="w-2.5 h-2.5 rounded-full bg-[#f9a825]" />
+                <div className="w-2.5 h-2.5 rounded-full bg-nasa-red" />
               </div>
 
               <div className="mt-3 font-mono text-[10px] text-slate-500 font-bold tracking-widest text-center">
@@ -235,7 +235,7 @@ export const DataProcessingSkeleton: React.FC<DataProcessingSkeletonProps> = ({
             role="progressbar"
             aria-label="Loading forecast data"
           >
-            <div className="h-full w-1/3 bg-[#f9a825] rounded-full cyber-skeleton-shimmer" />
+            <div className="h-full w-1/3 bg-nasa-red rounded-full cyber-skeleton-shimmer" />
           </div>
           <span className="text-slate-500 font-bold font-mono">loading</span>
         </div>

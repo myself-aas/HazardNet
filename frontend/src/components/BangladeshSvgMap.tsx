@@ -83,7 +83,7 @@ export const BangladeshSvgMap: React.FC<BangladeshSvgMapProps> = ({
       <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-3 pb-3 border-b border-slate-200">
         <div>
           <div className="flex items-center gap-2">
-            <span className={`w-2.5 h-2.5 rounded-full bg-[#f9a825] ${lowBandwidth ? '' : 'animate-ping'}`}></span>
+            <span className={`w-2.5 h-2.5 rounded-full bg-nasa-red ${lowBandwidth ? '' : 'animate-ping'}`}></span>
             <h3 className="text-sm font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
               <span>Vector Spatial Heatmap</span>
             </h3>
@@ -105,7 +105,7 @@ export const BangladeshSvgMap: React.FC<BangladeshSvgMapProps> = ({
               onClick={() => setViewMode('districts')}
               className={`px-2.5 py-1 rounded-lg font-bold transition-all ${
                 viewMode === 'districts'
-                  ? 'bg-[#f9a825] text-white shadow-xs'
+                  ? 'bg-nasa-red text-white shadow-xs'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
@@ -115,7 +115,7 @@ export const BangladeshSvgMap: React.FC<BangladeshSvgMapProps> = ({
               onClick={() => setViewMode('divisions')}
               className={`px-2.5 py-1 rounded-lg font-bold transition-all ${
                 viewMode === 'divisions'
-                  ? 'bg-[#f9a825] text-white shadow-xs'
+                  ? 'bg-nasa-red text-white shadow-xs'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
@@ -232,7 +232,7 @@ export const BangladeshSvgMap: React.FC<BangladeshSvgMapProps> = ({
                 <path
                   d={div.path}
                   fill={isSelectedDiv ? 'rgba(249, 168, 37, 0.25)' : '#f1f5f9'}
-                  stroke={isSelectedDiv ? '#f9a825' : '#cbd5e1'}
+                  stroke={isSelectedDiv ? '#f64137' : '#cbd5e1'}
                   strokeWidth={isSelectedDiv ? '1.2' : '0.5'}
                   strokeDasharray={viewMode === 'divisions' ? 'none' : '1 1'}
                   onMouseEnter={() => setHoveredDivision(div)}

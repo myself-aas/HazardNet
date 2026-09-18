@@ -209,7 +209,7 @@ export const NationalOverview: React.FC<NationalOverviewProps> = ({
       <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-slate-200">
         <div className="space-y-3">
           <div className="flex flex-wrap items-center gap-2.5">
-            <span className="px-3 py-1 rounded-full text-xs font-mono font-black uppercase tracking-wider bg-[#f9a825]/10 text-[#d08305] border border-[#f9a825]/20 shadow-2xs flex items-center gap-1.5">
+            <span className="px-3 py-1 rounded-full text-xs font-mono font-black uppercase tracking-wider bg-nasa-red/10 text-nasa-red-shade border border-nasa-blue/20 shadow-2xs flex items-center gap-1.5">
               National AI Overview Mode
             </span>
             <span className="text-slate-300 hidden sm:inline">•</span>
@@ -255,7 +255,7 @@ export const NationalOverview: React.FC<NationalOverviewProps> = ({
             onClick={() => setActiveTab('top3')}
             className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center gap-2 ${
               activeTab === 'top3'
-                ? 'bg-[#f9a825] text-slate-900 shadow-xs scale-[1.02]'
+                ? 'bg-nasa-red text-slate-900 shadow-xs scale-[1.02]'
                 : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
             }`}
           >
@@ -266,7 +266,7 @@ export const NationalOverview: React.FC<NationalOverviewProps> = ({
             onClick={() => setActiveTab('divisions')}
             className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center gap-2 ${
               activeTab === 'divisions'
-                ? 'bg-[#f9a825] text-slate-900 shadow-xs scale-[1.02]'
+                ? 'bg-nasa-red text-slate-900 shadow-xs scale-[1.02]'
                 : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
             }`}
           >
@@ -277,7 +277,7 @@ export const NationalOverview: React.FC<NationalOverviewProps> = ({
             onClick={() => setActiveTab('all_hazards')}
             className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center gap-2 ${
               activeTab === 'all_hazards'
-                ? 'bg-[#f9a825] text-slate-900 shadow-xs scale-[1.02]'
+                ? 'bg-nasa-red text-slate-900 shadow-xs scale-[1.02]'
                 : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
             }`}
           >
@@ -288,7 +288,7 @@ export const NationalOverview: React.FC<NationalOverviewProps> = ({
             onClick={() => setActiveTab('formula')}
             className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center gap-2 ${
               activeTab === 'formula'
-                ? 'bg-[#f9a825] text-slate-900 shadow-xs scale-[1.02]'
+                ? 'bg-nasa-red text-slate-900 shadow-xs scale-[1.02]'
                 : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
             }`}
           >

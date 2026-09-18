@@ -22,7 +22,7 @@ import { validateUsername } from '../lib/username';
  */
 
 const inputClass =
-  'w-full px-4 py-3 text-base sm:text-sm bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 placeholder-slate-400 font-medium transition-all focus:outline-none focus:border-[#f9a825] focus:ring-2 focus:ring-[#f9a825]/40';
+  'w-full px-4 py-3 text-base sm:text-sm bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 placeholder-slate-400 font-medium transition-all focus:outline-none focus:border-nasa-blue focus:ring-2 focus:ring-nasa-blue/40';
 
 const describeError = (err: unknown): string => {
   const message = err instanceof Error ? err.message : String(err ?? '');
@@ -279,7 +279,7 @@ const SignUpPage: React.FC = () => {
             type="checkbox"
             checked={acceptedTerms}
             onChange={(e) => setAcceptedTerms(e.target.checked)}
-            className="mt-0.5 h-4 w-4 rounded border-slate-300 accent-[#f9a825] cursor-pointer"
+            className="mt-0.5 h-4 w-4 rounded border-slate-300 accent-nasa-blue cursor-pointer"
           />
           <span className="text-[11px] leading-relaxed text-slate-600">
             I agree to the{' '}
@@ -300,7 +300,7 @@ const SignUpPage: React.FC = () => {
           data-testid="signup-submit-btn"
           type="submit"
           disabled={loading}
-          className="w-full py-3.5 bg-[#f9a825] hover:bg-[#d08305] text-slate-950 font-extrabold rounded-2xl text-sm transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#f9a825]/60 focus-visible:ring-offset-2"
+          className="w-full py-3.5 bg-nasa-red hover:bg-nasa-red-shade text-slate-950 font-extrabold rounded-2xl text-sm transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nasa-blue/60 focus-visible:ring-offset-2"
         >
           {loading ? (
             <>

@@ -37,7 +37,7 @@ export const Footer: React.FC = () => {
           <div className="flex flex-wrap items-center gap-3">
             <Link
               to="/download"
-              className="px-4 py-2.5 rounded-xl bg-[#f9a825] hover:bg-[#d08305] text-white font-extrabold shadow-sm transition-all flex items-center gap-2"
+              className="px-4 py-2.5 rounded-xl bg-nasa-red hover:bg-nasa-red-shade text-white font-extrabold shadow-sm transition-all flex items-center gap-2"
             >
               <span>Download Software & Apps</span>
             </Link>
@@ -231,7 +231,7 @@ export const Footer: React.FC = () => {
             <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5 font-sans">
               <span className="font-mono text-slate-400 font-bold text-xs">© {new Date().getFullYear()}</span>
               <span className="font-brand font-black text-slate-900 tracking-tight">
-                Hazard<span className="text-[#d08305]">Net</span>
+                Hazard<span className="text-nasa-red-shade">Net</span>
                 <span className="font-sans font-semibold text-slate-700 ml-1">Research Team.</span>
               </span>
               <span className="text-slate-300 font-black">•</span>
@@ -309,7 +309,7 @@ export const Footer: React.FC = () => {
               <form onSubmit={handleFeedbackSubmit} className="space-y-4">
                 <div>
                   <label className="block text-xs font-bold mb-1 text-slate-700">Feedback Type</label>
-                  <select required className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-[#f9a825] text-slate-800">
+                  <select required className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-nasa-blue text-slate-800">
                     <option value="">Select type...</option>
                     <option value="false_positive">Report False Positive (False Alarm)</option>
                     <option value="false_negative">Report False Negative (Missed Hazard)</option>
@@ -321,7 +321,7 @@ export const Footer: React.FC = () => {
                   <textarea 
                     required 
                     rows={4} 
-                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-[#f9a825] text-slate-800 resize-none"
+                    className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-nasa-blue text-slate-800 resize-none"
                     placeholder="Describe the discrepancy..."
                   ></textarea>
                 </div>
@@ -335,7 +335,7 @@ export const Footer: React.FC = () => {
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 bg-[#f9a825] text-white font-extrabold rounded-xl hover:bg-[#d08305] transition-colors shadow-sm"
+                    className="px-4 py-2 bg-nasa-red text-white font-extrabold rounded-xl hover:bg-nasa-red-shade transition-colors shadow-sm"
                   >
                     Submit Report
                   </button>

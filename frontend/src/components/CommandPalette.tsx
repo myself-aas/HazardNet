@@ -458,8 +458,8 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onSelectDistrict
 
         {/* Dynamic Active Pulse Indicator */}
         <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#f9a825] opacity-75"></span>
-          <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#f9a825] border border-white"></span>
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-nasa-red opacity-75"></span>
+          <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-nasa-red border border-white"></span>
         </span>
       </button>
 
@@ -492,7 +492,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onSelectDistrict
             >
               {/* Header / Search Input */}
             <div className="relative flex items-center px-4 py-3 border-b border-slate-200 bg-slate-50">
-              <MaterialIcon name="search" className="text-xl text-[#d08305] ml-1 shrink-0" />
+              <MaterialIcon name="search" className="text-xl text-nasa-red-shade ml-1 shrink-0" />
 
               <input
                 ref={inputRef}
@@ -546,7 +546,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onSelectDistrict
                   }}
                   className={`px-3 py-1 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
                     selectedCategory === cat
-                      ? 'bg-[#f9a825] text-white shadow-sm'
+                      ? 'bg-nasa-red text-white shadow-sm'
                       : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
                   }`}
                 >
@@ -599,7 +599,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onSelectDistrict
                         <span className="hidden sm:inline-block px-2 py-0.5 rounded-full text-[9px] font-mono font-semibold bg-slate-100 border border-slate-200 text-slate-600">
                           {item.category}
                         </span>
-                        <span className="text-[#d08305] text-xs font-mono font-bold">SELECT</span>
+                        <span className="text-nasa-red-shade text-xs font-mono font-bold">SELECT</span>
                       </div>
                     </div>
                   );
@@ -614,7 +614,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onSelectDistrict
                 <span><kbd className="px-1.5 py-0.5 bg-white rounded border border-slate-200 text-slate-800">ENTER</kbd> Select</span>
                 <span><kbd className="px-1.5 py-0.5 bg-white rounded border border-slate-200 text-slate-800">ESC</kbd> Close</span>
               </div>
-              <span className="font-brand font-black text-slate-900 hidden sm:inline">Hazard<span className="text-[#d08305]">Net</span> Search</span>
+              <span className="font-brand font-black text-slate-900 hidden sm:inline">Hazard<span className="text-nasa-red-shade">Net</span> Search</span>
             </div>
           </motion.div>
         </motion.div>

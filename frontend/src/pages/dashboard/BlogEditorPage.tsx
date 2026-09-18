@@ -32,7 +32,7 @@ import { effectiveMetaDescription, effectiveMetaTitle, seoScore } from '../../li
 const CATEGORIES = ['Remote Sensing', 'Field Deployment', 'Edge AI', 'Agronomy', 'Research', 'General'];
 
 const inputClass =
-  'w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs text-slate-900 placeholder-slate-400 font-medium transition-all focus:outline-none focus:border-[#f9a825] focus:ring-2 focus:ring-[#f9a825]/40';
+  'w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs text-slate-900 placeholder-slate-400 font-medium transition-all focus:outline-none focus:border-nasa-blue focus:ring-2 focus:ring-nasa-blue/40';
 
 const autosaveKey = (id: string) => `hazardnet.blog.draft.${id}`;
 
@@ -329,11 +329,11 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
 
       {/* Editor header */}
       <div className="bg-white border border-slate-200/90 rounded-3xl p-5 shadow-md relative overflow-hidden space-y-3">
-        <div aria-hidden="true" className="absolute top-0 left-0 w-full h-1 bg-[#f9a825]" />
+        <div aria-hidden="true" className="absolute top-0 left-0 w-full h-1 bg-nasa-red" />
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <div className="flex items-center gap-2 text-[10px] font-mono font-bold text-slate-500 uppercase tracking-wider">
-              <MaterialIcon name="doc" className="w-3.5 h-3.5 text-[#d08305]" />
+              <MaterialIcon name="doc" className="w-3.5 h-3.5 text-nasa-red-shade" />
               Blog Studio · {mode === 'new' ? 'New article' : 'Editing'}
             </div>
             <h1 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight mt-1">
@@ -364,7 +364,7 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
               type="button"
               onClick={() => handleSave('published')}
               disabled={saving}
-              className="px-4 py-2 rounded-xl bg-[#f9a825] text-[11px] font-black text-slate-950 shadow-md hover:bg-[#d08305] disabled:opacity-50 cursor-pointer"
+              className="px-4 py-2 rounded-xl bg-nasa-red text-[11px] font-black text-slate-950 shadow-md hover:bg-nasa-red-shade disabled:opacity-50 cursor-pointer"
             >
               {saving ? 'Publishing…' : status === 'published' ? 'Update & keep live' : 'Publish'}
             </button>
@@ -440,7 +440,7 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
           <div className="bg-white border border-slate-200/90 rounded-3xl p-5 shadow-sm space-y-4" data-testid="seo-panel">
             <div className="flex items-center justify-between gap-2">
               <h3 className="text-xs font-black uppercase tracking-wider text-slate-900 font-mono flex items-center gap-1.5">
-                <MaterialIcon name="search" className="w-4 h-4 text-[#d08305]" /> SEO &amp; Google Search Console
+                <MaterialIcon name="search" className="w-4 h-4 text-nasa-red-shade" /> SEO &amp; Google Search Console
               </h3>
               <span
                 className={`rounded-full px-2.5 py-1 text-[10px] font-black ${
@@ -530,7 +530,7 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
                 type="checkbox"
                 checked={robotsNoIndex}
                 onChange={(e) => markDirty(setRobotsNoIndex)(e.target.checked)}
-                className="h-4 w-4 rounded border-slate-300 accent-[#f9a825] cursor-pointer"
+                className="h-4 w-4 rounded border-slate-300 accent-nasa-blue cursor-pointer"
               />
               <span className="text-[11px] font-semibold text-slate-600">
                 Hide from search engines <span className="font-mono text-[10px] text-slate-400">(meta robots: noindex, follow)</span>
@@ -541,7 +541,7 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
             <div className="rounded-2xl border border-slate-200 p-4 space-y-3" data-testid="faq-builder">
               <div className="flex items-center justify-between">
                 <p className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                  <MaterialIcon name="faq" className="w-4 h-4 text-[#d08305]" /> FAQ section
+                  <MaterialIcon name="faq" className="w-4 h-4 text-nasa-red-shade" /> FAQ section
                   <span className="text-[10px] font-medium text-slate-400">(emits FAQPage schema → Google rich results)</span>
                 </p>
                 <button
@@ -750,7 +750,7 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
                 type="checkbox"
                 checked={containsAffiliateLinks}
                 onChange={(e) => markDirty(setContainsAffiliateLinks)(e.target.checked)}
-                className="mt-0.5 h-4 w-4 rounded border-slate-300 accent-[#f9a825] cursor-pointer"
+                className="mt-0.5 h-4 w-4 rounded border-slate-300 accent-nasa-blue cursor-pointer"
               />
               <span className="text-[11px] font-semibold leading-relaxed text-slate-600">
                 Contains affiliate links

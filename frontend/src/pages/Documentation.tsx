@@ -16,14 +16,14 @@ export const Documentation: React.FC = () => {
       {/* Title Banner */}
       <div className="bg-white border border-slate-200 rounded-2xl p-6 md:p-8 shadow-xs">
         <div className="flex items-center gap-2 mb-2">
-          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider bg-[#f9a825]/10 text-[#d08305] border border-[#f9a825]/20">
+          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider bg-nasa-red/10 text-nasa-red-shade border border-nasa-blue/20">
             HazardNet Technical Specifications
           </span>
           <span className="text-slate-300">•</span>
           <span className="text-xs text-slate-500 font-medium">System Documentation 2026</span>
         </div>
         <h1 className="text-2xl md:text-3xl font-brand font-black text-slate-900 tracking-tight">
-          Hazard<span className="text-[#d08305]">Net</span> Model Architecture & Pipeline
+          Hazard<span className="text-nasa-red-shade">Net</span> Model Architecture & Pipeline
         </h1>
         <p className="text-xs md:text-sm text-slate-600 mt-2 leading-relaxed">
           Spatio-temporal 3D Depthwise-Separable CNN with Squeeze-and-Excitation (SE) blocks for joint multi-hazard classification and continuous physical severity quantification.
@@ -143,7 +143,7 @@ export const Documentation: React.FC = () => {
           <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
             <Link
               to="/contact?form=api"
-              className="px-4 py-2.5 rounded-xl bg-[#f9a825] text-slate-900 font-bold text-xs hover:bg-[#d08305] transition-all shadow-xs"
+              className="px-4 py-2.5 rounded-xl bg-nasa-red text-slate-900 font-bold text-xs hover:bg-nasa-red-shade transition-all shadow-xs"
             >
               🔑 Request API Key
             </Link>

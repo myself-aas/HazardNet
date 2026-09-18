@@ -166,7 +166,7 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
           onClick={() => onSetActiveTab('upazilas')}
           className={`pb-2.5 px-3 font-bold border-b-2 transition-all whitespace-nowrap flex items-center gap-1.5 ${
             activeTab === 'upazilas'
-              ? 'border-[#f9a825] text-[#d08305]'
+              ? 'border-nasa-blue text-nasa-red-shade'
               : 'border-transparent text-slate-500 hover:text-slate-800'
           }`}
         >
@@ -177,7 +177,7 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
           onClick={() => onSetActiveTab('aiModel')}
           className={`pb-2.5 px-3 font-bold border-b-2 transition-all whitespace-nowrap flex items-center gap-1.5 ${
             activeTab === 'aiModel'
-              ? 'border-[#f9a825] text-[#d08305]'
+              ? 'border-nasa-blue text-nasa-red-shade'
               : 'border-transparent text-slate-500 hover:text-slate-800'
           }`}
         >
@@ -188,7 +188,7 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
           onClick={() => onSetActiveTab('emergency')}
           className={`pb-2.5 px-3 font-bold border-b-2 transition-all whitespace-nowrap flex items-center gap-1.5 ${
             activeTab === 'emergency'
-              ? 'border-[#f9a825] text-[#d08305]'
+              ? 'border-nasa-blue text-nasa-red-shade'
               : 'border-transparent text-slate-500 hover:text-slate-800'
           }`}
         >
@@ -199,7 +199,7 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
           onClick={() => onSetActiveTab('history')}
           className={`pb-2.5 px-3 font-bold border-b-2 transition-all whitespace-nowrap flex items-center gap-1.5 ${
             activeTab === 'history'
-              ? 'border-[#f9a825] text-[#d08305]'
+              ? 'border-nasa-blue text-nasa-red-shade'
               : 'border-transparent text-slate-500 hover:text-slate-800'
           }`}
         >
@@ -336,7 +336,7 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
               <ul className="space-y-2 text-xs text-slate-700">
                 {data.emergencyResponse.advisoryBullets.map((bullet, idx) => (
                   <li key={idx} className="flex items-start gap-2 bg-white p-2.5 rounded-lg border border-slate-200">
-                    <span className="text-[#f9a825] font-bold">•</span>
+                    <span className="text-nasa-red-shade font-bold">•</span>
                     <span>{bullet}</span>
                   </li>
                 ))}
@@ -605,7 +605,7 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
             <div className="w-12 h-1.5 bg-slate-300 rounded-full mb-2" />
             <div className="w-full flex items-center justify-between">
               <div className="flex items-center gap-2 min-w-0">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#f9a825] animate-pulse shrink-0"></span>
+                <span className="w-2.5 h-2.5 rounded-full bg-nasa-red animate-pulse shrink-0"></span>
                 <h3 className="text-base font-black text-slate-900 tracking-tight leading-none truncate">
                   {data.districtName} Hazard Report
                 </h3>
@@ -657,7 +657,7 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
               <div className="flex items-center gap-2 pt-1">
                 <button
                   onClick={() => onSetSheetMode('half')}
-                  className="flex-1 py-2.5 bg-[#f9a825] active:bg-[#d08305] text-slate-900 font-extrabold text-xs rounded-xl shadow-xs transition-all flex items-center justify-center gap-1.5 min-h-[44px]"
+                  className="flex-1 py-2.5 bg-nasa-red active:bg-nasa-red-shade text-slate-900 font-extrabold text-xs rounded-xl shadow-xs transition-all flex items-center justify-center gap-1.5 min-h-[44px]"
                 >
                   <span>View Detailed Analytics & Action Plan ▲</span>
                 </button>

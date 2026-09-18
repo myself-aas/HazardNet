@@ -210,7 +210,8 @@ export const FreshnessPanel: React.FC = () => {
             district/horizon units — coverage status <strong>{coverage.status ?? 'unreported'}</strong>.
           </p>
           {coverage.horizons && coverage.units_per_horizon && (
-            <table className="w-full border-collapse text-left text-xs md:text-sm">
+            <div className="overflow-x-auto">
+            <table className="w-full min-w-[24rem] border-collapse text-left text-xs md:text-sm">
               <caption className="sr-only">Units produced per forecast horizon</caption>
               <thead>
                 <tr className="border-b border-slate-200 text-[11px] uppercase tracking-wide text-slate-500">
@@ -229,6 +230,7 @@ export const FreshnessPanel: React.FC = () => {
                 ))}
               </tbody>
             </table>
+            </div>
           )}
         </div>
       )}
@@ -281,7 +283,8 @@ export const FreshnessPanel: React.FC = () => {
       <div className="space-y-2">
         <h3 className="text-sm font-bold text-slate-900">Last site-health probe</h3>
         {probeChecks.length > 0 ? (
-          <table className="w-full border-collapse text-left text-xs md:text-sm">
+          <div className="overflow-x-auto">
+          <table className="w-full min-w-[32rem] border-collapse text-left text-xs md:text-sm">
             <caption className="sr-only">
               Checks performed by the last published site-health probe run
             </caption>
@@ -304,6 +307,7 @@ export const FreshnessPanel: React.FC = () => {
               ))}
             </tbody>
           </table>
+          </div>
         ) : (
           <p className="text-xs leading-relaxed text-slate-600 md:text-sm">
             No probe result has been published to this checkout, so the live-surface checks are{' '}

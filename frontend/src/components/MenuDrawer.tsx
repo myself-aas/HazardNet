@@ -299,7 +299,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                     to="/signup"
                     data-testid="drawer-signup-link"
                     onClick={onClose}
-                    className="w-full py-3 rounded-2xl bg-[#f9a825] hover:bg-[#d08305] text-slate-950 text-[13px] font-extrabold text-center shadow-2xs transition-all focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:outline-none"
+                    className="w-full py-3 rounded-2xl bg-nasa-red hover:bg-nasa-red-shade text-slate-950 text-[13px] font-extrabold text-center shadow-2xs transition-all focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:outline-none"
                   >
                     Sign up free
                   </Link>

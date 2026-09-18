@@ -43,7 +43,7 @@ export const NotificationToggleUI: React.FC<NotificationToggleUIProps> = ({
           onClick={onToggleOpen}
           className={`px-2.5 py-1.5 rounded-lg border transition-all flex items-center gap-1.5 text-xs font-semibold ${
             isSubscribed
-              ? 'bg-[#f9a825] text-white border-[#f9a825] hover:bg-[#d08305] shadow-xs'
+              ? 'bg-nasa-red text-white border-nasa-blue hover:bg-nasa-red-shade shadow-xs'
               : 'bg-white/40 text-slate-800 border-slate-200/60 hover:bg-white/70 backdrop-blur-md'
           }`}
           title="Web Push Certificate & Emergency Alerts"
@@ -57,7 +57,7 @@ export const NotificationToggleUI: React.FC<NotificationToggleUIProps> = ({
         <div className="absolute right-0 mt-2 w-80 bg-white border border-slate-200 rounded-xl shadow-2xl p-4 z-[3000] text-slate-800 font-sans">
           <div className="flex items-center justify-between border-b border-slate-200 pb-2.5 mb-3">
             <div className="flex items-center gap-2">
-              <MaterialIcon name="verified_user" className="text-[#d08305] text-lg" />
+              <MaterialIcon name="verified_user" className="text-nasa-red-shade text-lg" />
               <span className="font-bold text-sm text-slate-900">Web Push Certificates</span>
             </div>
             <button onClick={onClose} className="text-slate-400 hover:text-slate-700 text-xs">
@@ -92,7 +92,7 @@ export const NotificationToggleUI: React.FC<NotificationToggleUIProps> = ({
                 className={`w-full py-2 px-3 rounded-lg font-bold text-xs flex items-center justify-center gap-2 transition-all ${
                   isSubscribed
                     ? 'bg-slate-100 text-slate-700 border border-slate-300 hover:bg-slate-200'
-                    : 'bg-[#f9a825] text-white hover:bg-[#d08305] shadow-sm'
+                    : 'bg-nasa-red text-white hover:bg-nasa-red-shade shadow-sm'
                 }`}
               >
                 <NotificationIcon size={18} duration={0} isState={!isSubscribed} />
@@ -105,7 +105,7 @@ export const NotificationToggleUI: React.FC<NotificationToggleUIProps> = ({
                   disabled={loading}
                   className="w-full py-1.5 px-3 rounded-lg bg-slate-50 text-slate-700 hover:bg-slate-100 font-medium text-xs flex items-center justify-center gap-1.5 border border-slate-200"
                 >
-                  <MaterialIcon name="send" className="text-[#d08305] text-sm" />
+                  <MaterialIcon name="send" className="text-nasa-red-shade text-sm" />
                   <span>Send Test Emergency Alert</span>
                 </button>
               )}

@@ -1,6 +1,6 @@
 {
   "schema": "hazardnet-generated-routes/v1",
-  "generated_at": "2026-09-18T00:47:11.837Z",
+  "generated_at": "2026-09-18T01:47:27.391Z",
   "generated_by": "scripts/build_content_engine.mjs",
   "origin": "https://www.hazardnet.live",
   "inputs": {
@@ -207,7 +207,7 @@
           ]
         }
       },
-      "h1": "What the model did on four historical episodes",
+      "h1": "What the model did on five historical episodes",
       "standfirst": "Across 5 episodes and 50 district-episode pairs that the cited assessments name, the physics track flagged 50 under some class, 12 under the class that occurred, and 23 scored the occurring class above the alarm band. Those three numbers are not the same number, and the difference between them is the most useful thing on this page.",
       "sections": [
         {

@@ -175,7 +175,7 @@ const PublicProfilePage: React.FC = () => {
           </p>
           <Link
             to="/signup"
-            className="mt-5 inline-block rounded-2xl bg-[#f9a825] px-5 py-3 text-xs font-extrabold text-slate-950 shadow-md transition-colors hover:bg-[#d08305]"
+            className="mt-5 inline-block rounded-2xl bg-nasa-red px-5 py-3 text-xs font-extrabold text-slate-950 shadow-md transition-colors hover:bg-nasa-red-shade"
           >
             Claim this username
           </Link>

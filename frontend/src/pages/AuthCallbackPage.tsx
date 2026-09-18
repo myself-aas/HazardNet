@@ -106,7 +106,7 @@ export default function AuthCallbackPage() {
   if (phase === 'exchanging') {
     return (
       <Shell>
-        <span className="h-9 w-9 animate-spin rounded-full border-[3px] border-slate-200 border-t-[#f9a825]" />
+        <span className="h-9 w-9 animate-spin rounded-full border-[3px] border-slate-200 border-t-nasa-red" />
         <p className="text-sm font-bold text-slate-800">Completing secure sign-in…</p>
         <p className="text-xs text-slate-500">Verifying the authorization code with your provider.</p>
       </Shell>
@@ -131,7 +131,7 @@ export default function AuthCallbackPage() {
         </p>
         <Link
           to={returnTo && returnTo.startsWith('/') ? returnTo : '/'}
-          className="rounded-xl bg-[#f9a825] px-4 py-2 text-xs font-black text-slate-950 shadow-md transition-colors hover:bg-[#d08305]"
+          className="rounded-xl bg-nasa-red px-4 py-2 text-xs font-black text-slate-950 shadow-md transition-colors hover:bg-nasa-red-shade"
         >
           Continue now
         </Link>

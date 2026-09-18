@@ -44,7 +44,7 @@ export const NotFoundPage: React.FC = () => {
           </button>
           <Link
             to="/"
-            className="flex-1 py-2.5 px-4 bg-[#f9a825] hover:bg-[#d08305] text-slate-900 font-extrabold rounded-2xl text-xs text-center transition-colors shadow-xs"
+            className="flex-1 py-2.5 px-4 bg-nasa-red hover:bg-nasa-red-shade text-slate-900 font-extrabold rounded-2xl text-xs text-center transition-colors shadow-xs"
           >
             Return to Dashboard
           </Link>

@@ -858,7 +858,7 @@ export const DistrictDetailPage: React.FC = () => {
             <button
               onClick={handleDownloadTableCsv}
               title="Download specific 7 and 15-day hazard intelligence records as CSV"
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs transition-all shadow-xs cursor-pointer ml-1"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-nasa-red hover:bg-nasa-red-shade text-slate-950 font-black text-xs transition-all shadow-xs cursor-pointer ml-1"
             >
               <Download className="w-3.5 h-3.5" />
               <span>Download CSV</span>

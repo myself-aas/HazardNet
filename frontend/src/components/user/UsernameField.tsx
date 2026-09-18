@@ -110,9 +110,9 @@ export const UsernameField: React.FC<UsernameFieldProps> = ({
   }, [value, currentUsername, checkUsernameAvailability]);
 
   const statusStyles: Record<UsernameStatus, { ring: string; icon: string; text: string; iconClass: string }> = {
-    idle: { ring: 'focus-within:border-[#f9a825] focus-within:ring-[#f9a825]/40', icon: '', text: 'text-slate-500', iconClass: '' },
+    idle: { ring: 'focus-within:border-nasa-blue focus-within:ring-nasa-blue/40', icon: '', text: 'text-slate-500', iconClass: '' },
     invalid: { ring: 'border-rose-300 focus-within:ring-rose-200', icon: 'error', text: 'text-rose-700', iconClass: 'text-rose-500' },
-    checking: { ring: 'focus-within:border-[#f9a825] focus-within:ring-[#f9a825]/40', icon: 'hourglass_top', text: 'text-slate-500', iconClass: 'text-slate-400' },
+    checking: { ring: 'focus-within:border-nasa-blue focus-within:ring-nasa-blue/40', icon: 'hourglass_top', text: 'text-slate-500', iconClass: 'text-slate-400' },
     available: { ring: 'border-emerald-300 focus-within:ring-emerald-200', icon: 'check_circle', text: 'text-emerald-700', iconClass: 'text-emerald-600' },
     taken: { ring: 'border-orange-300 focus-within:ring-orange-200', icon: 'error', text: 'text-orange-700', iconClass: 'text-orange-500' },
   };
@@ -192,7 +192,7 @@ export const UsernameField: React.FC<UsernameFieldProps> = ({
                     key={suggestion}
                     type="button"
                     onClick={() => onChange(suggestion)}
-                    className="rounded-full border border-slate-200 bg-white px-3 py-1 text-[11px] font-bold text-slate-700 shadow-xs transition-all hover:border-[#f9a825] hover:bg-amber-50 hover:text-amber-900 cursor-pointer"
+                    className="rounded-full border border-slate-200 bg-white px-3 py-1 text-[11px] font-bold text-slate-700 shadow-xs transition-all hover:border-nasa-blue hover:bg-amber-50 hover:text-amber-900 cursor-pointer"
                   >
                     @{suggestion}
                   </button>

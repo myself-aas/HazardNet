@@ -103,7 +103,7 @@ export default function ChatBot() {
             exit={{ scale: 0, opacity: 0 }}
             whileHover={{ scale: 1.08 }}
             whileTap={{ scale: 0.92 }}
-            className="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-[9995] px-4 sm:px-5 py-2.5 sm:py-3 rounded-full bg-amber-400 hover:bg-amber-500 text-slate-950 font-extrabold text-xs shadow-xl flex items-center gap-2 cursor-pointer"
+            className="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-[9995] px-4 sm:px-5 py-2.5 sm:py-3 rounded-full bg-nasa-red hover:bg-nasa-red-shade text-slate-950 font-extrabold text-xs shadow-xl flex items-center gap-2 cursor-pointer"
           >
             <span className="w-2 h-2 rounded-full bg-slate-950/70 animate-ping" />
             AI Advisor
@@ -152,7 +152,7 @@ export default function ChatBot() {
                   className="space-y-4"
                 >
                   <div className="flex gap-3">
-                    <div className="w-8 h-8 rounded-full bg-[#f9a825] text-white flex items-center justify-center shrink-0 font-bold text-xs shadow-sm">
+                    <div className="w-8 h-8 rounded-full bg-nasa-red text-white flex items-center justify-center shrink-0 font-bold text-xs shadow-sm">
                       AI
                     </div>
                     <div className="bg-white border border-slate-200 rounded-2xl rounded-tl-none p-4 shadow-sm text-sm text-slate-800">
@@ -177,7 +177,7 @@ export default function ChatBot() {
                           whileHover={{ scale: 1.01, x: 2 }}
                           whileTap={{ scale: 0.98 }}
                           onClick={() => sendMessage(q)}
-                          className="text-left text-xs bg-white border border-slate-200 text-slate-700 p-3 rounded-xl hover:bg-amber-50 hover:border-amber-200 hover:text-[#d08305] transition-colors shadow-sm cursor-pointer"
+                          className="text-left text-xs bg-white border border-slate-200 text-slate-700 p-3 rounded-xl hover:bg-amber-50 hover:border-amber-200 hover:text-nasa-red-shade transition-colors shadow-sm cursor-pointer"
                         >
                           {q}
                         </motion.button>
@@ -229,7 +229,7 @@ export default function ChatBot() {
                   animate={{ opacity: 1, y: 0 }}
                   className="flex gap-3"
                 >
-                  <div className="w-8 h-8 rounded-full bg-[#f9a825] text-white flex items-center justify-center shrink-0 font-bold text-xs shadow-sm">
+                  <div className="w-8 h-8 rounded-full bg-nasa-red text-white flex items-center justify-center shrink-0 font-bold text-xs shadow-sm">
                     AI
                   </div>
                   <div className="bg-white border border-slate-200 rounded-2xl rounded-tl-none px-4 py-3 shadow-sm flex items-center gap-2">
@@ -249,7 +249,7 @@ export default function ChatBot() {
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={handleKeyDown}
                   placeholder="Ask about agriculture, hazards, contacts..."
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-4 pr-16 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-[#f9a825] resize-none h-[50px] scrollbar-hide"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-4 pr-16 text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:border-nasa-blue resize-none h-[50px] scrollbar-hide"
                   rows={1}
                 />
                 <motion.button
@@ -257,7 +257,7 @@ export default function ChatBot() {
                   whileTap={{ scale: 0.95 }}
                   onClick={() => sendMessage(input)}
                   disabled={!input.trim() || loading}
-                  className="absolute right-2 px-3 py-1.5 bg-amber-400 text-slate-950 font-bold text-xs rounded-lg hover:bg-amber-500 disabled:opacity-40 transition-colors shadow-sm cursor-pointer"
+                  className="absolute right-2 px-3 py-1.5 bg-nasa-red text-white font-bold text-xs rounded-control hover:bg-nasa-red-shade disabled:opacity-40 transition-colors cursor-pointer"
                 >
                   Send
                 </motion.button>
