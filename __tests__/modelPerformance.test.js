@@ -40,7 +40,13 @@ const routes = JSON.parse(readFileSync(join(repoRoot, 'frontend/src/content/gene
 const route = routes.find((entry) => entry.path === '/model-performance');
 const pageFile = join(repoRoot, 'frontend/dist/model-performance/index.html');
 const built = existsSync(pageFile);
-const reportFiles = ['amphan-2020.json', 'yaas-2021.json', 'eastern-flood-2024.json', 'northeast-flood-2025.json'];
+const reportFiles = [
+  'amphan-2020.json',
+  'yaas-2021.json',
+  'mocha-2023.json',
+  'eastern-flood-2024.json',
+  'northeast-flood-2025.json',
+];
 
 const report = (name) => JSON.parse(readFileSync(join(reportsDir, name), 'utf8'));
 
@@ -61,9 +67,12 @@ describe('the committed validation artifact', () => {
   });
 
   it('carries one episode per committed report, oldest onset first', () => {
+    // Oldest onset first — the 2023 episode (added under §8 item 9.7) sorts between the two
+    // south-western cyclones and the 2024 flood.
     expect(artifact.episodes.map((episode) => episode.id)).toEqual([
       'amphan-2020',
       'yaas-2021',
+      'mocha-2023',
       'eastern-flood-2024',
       'northeast-flood-2025',
     ]);
@@ -184,10 +193,11 @@ describe('the generated /model-performance route', () => {
     const tables = route.sections.filter((section) => section.table).map((section) => section.table);
     expect(tables.length).toBeGreaterThanOrEqual(4);
     const detection = tables[0];
-    expect(detection.rows).toHaveLength(4);
+    expect(detection.rows).toHaveLength(artifact.episodes.length);
     expect(detection.rows.map((row) => row[0])).toEqual([
       'Cyclone Amphan',
       'Cyclone Yaas',
+      'Cyclone Mocha',
       'Eastern flash floods',
       'Northeast and coastal monsoon floods',
     ]);

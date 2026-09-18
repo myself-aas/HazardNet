@@ -294,10 +294,10 @@ artefact handshake (`Models/VERSION.json`) enforced in CI.
 precision/recall/F1 values, no ROC/PR curves, no calibration curve, no confusion matrix, and no
 lead-time or POD/FAR/CSI numbers anywhere in the repository.
 
-**What now does exist, and is published (Phase 9, 2026-09-18):** four committed hindcast episodes —
-Cyclone Amphan 2020, Cyclone Yaas 2021, the August 2024 eastern floods and the June 2025 northeast
-floods — scored by `scripts/hindcast/` against sourced truth sets, each recomputed in CI from its
-committed inputs. Their detection counts and the one computable POD/FAR/CSI triple are published at
+**What now does exist, and is published (Phase 9, 2026-09-18):** five committed hindcast episodes —
+Cyclone Amphan 2020, Cyclone Yaas 2021, Cyclone Mocha 2023, the August 2024 eastern floods and the
+June 2025 northeast floods — scored by `scripts/hindcast/` against sourced truth sets, each
+recomputed in CI from its committed inputs. Their detection counts and the one computable POD/FAR/CSI triple are published at
 **`/model-performance`** (`scripts/build_model_performance.mjs` →
 `frontend/public/data/model-performance.json`), together with the ceiling that makes them readable:
 the drivers are *reanalysis*, not archived forecast fields, so they measure detection given the

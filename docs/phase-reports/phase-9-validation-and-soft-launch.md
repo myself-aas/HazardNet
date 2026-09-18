@@ -5,13 +5,14 @@ plan reserved for the two questions every earlier phase deferred — *does the p
 hazards we know happened?* and *is anything here fit to put in front of a user?*
 
 **Headline:** the hindcast exists, it runs in CI, and its numbers are recomputable from committed
-inputs (`python -m hindcast.cli check`). Four episodes — **Amphan 2020, Yaas 2021, the August 2024
-eastern flash floods, the June 2025 monsoon floods** — were replayed through the pipeline's
-independent physics track over real reanalysis drivers. Every one of the **46 named affected
-districts reached the alarm list at both horizons (46/46)**, and the track named the class that
-occurred for **12 of them** — all 12 in the 2024 flood episode, whose class score is rainfall-driven.
-On the two cyclones it named **0 of 23**, because the ERA5 daily-maximum 10 m wind at a district
-centroid on Amphan's landfall day is **44–69 km/h** where the cyclone carried 130–155 km/h ashore.
+inputs (`python -m hindcast.cli check`). Five episodes — **Amphan 2020, Yaas 2021, Cyclone Mocha
+2023, the August 2024 eastern flash floods, the June 2025 monsoon floods** — were replayed through
+the pipeline's independent physics track over real reanalysis drivers. Every one of the **50 named
+affected districts reached the alarm list at both horizons (50/50)**, and the track named the class
+that occurred for **12 of them** — all 12 in the 2024 flood episode, whose class score is
+rainfall-driven. On the three cyclones it named **0 of 27**, because the ERA5 daily-maximum 10 m
+wind at a district centroid on Amphan's landfall day is **44–69 km/h** where the cyclone carried
+130–155 km/h ashore.
 The first measured detection in the project's history is therefore also its most useful finding:
 **the hindcast found a driver-fidelity problem, three saturated physics terms, and two
 inseparable class pairs — not a skill number.**
@@ -49,7 +50,7 @@ the rest auditable: `python -m hindcast.cli check` recomputes every published nu
 network access or credentials, in CI (`.github/workflows/ci.yml`) and inside the producing
 workflow (`.github/workflows/hindcast.yml`).
 
-### 2.2 The four episodes (`data/hindcast/episodes/`)
+### 2.2 The five episodes (`data/hindcast/episodes/`)
 
 | Episode | Class | Onset scored | Truth | Sources |
 | --- | --- | --- | --- | --- |
@@ -93,8 +94,9 @@ Three properties are recorded in the files themselves rather than left to the re
 
 ## 3. Results
 
-All numbers below are read from the committed reports at `7db70fb`; `python -m hindcast.cli check
---require-reports` reproduces every one of them from the committed drivers.
+All numbers below are read from the committed reports (the four of `7db70fb`, plus `mocha-2023`
+added under §8 item 9.7); `python -m hindcast.cli check --require-reports` reproduces every one of
+them from the committed drivers.
 
 ### 3.1 Detection, under three explicit definitions
 
@@ -107,11 +109,12 @@ them would state either a false disaster or a false success, so the report carri
 | --- | --- | --- | --- | --- |
 | `amphan-2020` (Tropical Cyclone) | 14 | **14 / 14** | 0 | 0 / 14 |
 | `yaas-2021` (Tropical Cyclone) | 9 | **9 / 9** | 0 | 0 / 9 |
+| `mocha-2023` (Tropical Cyclone) | 4 | **4 / 4** | 0 | 0 / 4 |
 | `eastern-flood-2024` (Flash Flood) | 13 | **13 / 13** | **12** | 13 / 13 |
 | `northeast-flood-2025` (Flood) | 10 | **10 / 10** | 0 | 10 / 10 |
-| **all four** | **46** | **46 / 46** | **12** | 23 / 46 |
+| **all five** | **50** | **50 / 50** | **12** | 23 / 50 |
 
-Same table by horizon: the any-class column is identical at 7 days and at 15 days in all four
+Same table by horizon: the any-class column is identical at 7 days and at 15 days in all five
 episodes — nothing in this hindcast is a lead-time story, and `lead_time_days` is
 `{min 7, max 15, mean 11.0, samples_with_lead_over_0 = all}` by construction rather than by skill.
 
@@ -121,16 +124,17 @@ episodes — nothing in this hindcast is a lead-time story, and `lead_time_days`
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | `amphan-2020` | 28 | 0 | 0 | 28 | — (no hit possible) | 1.0 | 0.0 |
 | `yaas-2021` | 18 | 0 | 0 | 18 | — | 1.0 | 0.0 |
+| `mocha-2023` | 8 | 0 | 0 | 8 | — | 1.0 | 0.0 |
 | `eastern-flood-2024` | 26 | 22 | 0 | 4 | **1.0** | **0.154** | **0.846** |
 | `northeast-flood-2025` | 20 | 0 | 0 | 20 | — | 1.0 | 0.0 |
 
 Four readings that a table alone would hide, each of which the report states:
 
-1. **`misses: 0` everywhere, and `POD` is `None` on three episodes.** Every scored window carried an
+1. **`misses: 0` everywhere, and `POD` is `None` on four episodes.** Every scored window carried an
    alarm, so there is no non-alarmed scored window to be a miss: POD is undefined, not zero. The
    project may not say "we missed no events" on this evidence.
 2. **`FAR: 1.0` on the cyclones is not "every alarm was wrong."** It is the class-strict reading of
-   23 alarms that were *called by another name*: all 14 Amphan districts were alarmed, under
+   27 alarms that were *called by another name*: all 14 Amphan districts were alarmed, under
    `Fire`. The class-agnostic count (14/14) sits beside it precisely so that a reader cannot take
    the 1.0 for a false-alarm rate.
 3. **The 2024 flood's `FAR: 0.154` is a real, measured false-alarm ratio** — 4 of 26 scored windows
@@ -151,7 +155,7 @@ Four readings that a table alone would hide, each of which the report states:
 | 0.50 (harness default) | identical | identical | identical | identical |
 | 0.65 (WARNING band) | identical | identical | identical | identical |
 
-The three bands give byte-identical splits on all four episodes. **Threshold tuning cannot fix what
+The three bands give byte-identical splits on all five episodes. **Threshold tuning cannot fix what
 this hindcast found**, because the alarms are not marginal: they are either far above the band under
 a saturated term, or the correct class is scoring 0.03–0.25. That is the single most important
 sentence for the Phase 9 calibration workstream, and it is why §4 is a wiring finding rather than a
@@ -186,10 +190,10 @@ cyclone. The finding sentence says so.
 
 | Term | Formula as wired | Argument it receives | Rows at ceiling |
 | --- | --- | --- | --- |
-| `fire_wind` | `(wind − 5) / 20` | the daily max wind (≥ 25 km/h on a coastal afternoon) | 128/128 (2025) · 116/128 (Amphan) · 86/128 (Yaas) · 36/128 (2024) |
-| `fire_drying` | `et_sum_mm / 6` | the **horizon total** ET (the divisor is a *daily* value; the formula's own default is 3 mm) | **128/128 in all four episodes** |
-| `heat_persistence` | `duration_days / 5` | the horizon **length** (7 or 15 days), not an exceedance count | **128/128 in all four** |
-| `cold_persistence` | `duration_days / 5` | the same | **128/128 in all four** |
+| `fire_wind` | `(wind − 5) / 20` | the daily max wind (≥ 25 km/h on a coastal afternoon) | 128/128 (2025) · 116/128 (Amphan) · 86/128 (Yaas) · 74/128 (Mocha) · 36/128 (2024) |
+| `fire_drying` | `et_sum_mm / 6` | the **horizon total** ET (the divisor is a *daily* value; the formula's own default is 3 mm) | **128/128 in all five episodes** |
+| `heat_persistence` | `duration_days / 5` | the horizon **length** (7 or 15 days), not an exceedance count | **128/128 in all five** |
+| `cold_persistence` | `duration_days / 5` | the same | **128/128 in all five** |
 
 Measured effect of correcting them (the *counterfactual*, recomputed by the harness with mean daily
 ET and exceedance days — the shipped formulas are **not** changed here, because changing published
@@ -225,6 +229,28 @@ reports it as the track's "own pick", every downstream comparison inherits the n
 This is the finding the plan's "class fidelity" question was actually asking, and it now has numbers:
 detection is *class-conditional*, and the physics family's four rain/wind classes are not
 distinguishable at district-point resolution.
+
+### 4.4 Cyclone Mocha 2023: the fourth data point, and the same two defects
+
+The 2023 episode added under §8 item 9.7 is the set's first *eastern*-coast cyclone and its first
+near-miss: Mocha's eye crossed into Myanmar while the Cox's Bazar coast took the outer wind field.
+The result is consistent with the three earlier episodes rather than different from them, which is
+the useful part:
+
+* the four named districts (Cox's Bazar, Chattogram, Feni, Noakhali) were all flagged under some
+  class, and **none under `Tropical Cyclone`** — the score range at district centroids is
+  18.1–51.0 km/h sustained and 36.7–85.3 km/h gust, and **neither driver moves the cyclone class
+  over the 0.5 band on any of the 128 rows**;
+* `Fire` is the track's top class on **126 of 128** rows, and the counterfactual substitutions do
+  not change that at all (127 vs 126 on the shipped wiring);
+* three terms are again at their ceiling on every row (`fire_drying`, `heat_persistence`,
+  `cold_persistence`), and `fire_wind` on 74 of 128;
+* `POD` is `None` and `FAR` is 1.0 for the same structural reason as the other two cyclones — the
+  truth set names districts, and no dated outcome exists inside the prediction window.
+
+In other words, adding a fourth vulnerability cycle and a third year did not produce a new finding:
+it reproduced the two pipeline defects on an episode the harness had never seen, which is what a
+validation episode is for.
 
 ## 5. Calibration — still the blocker, and the hindcast says why
 
@@ -310,7 +336,7 @@ a metrics dashboard, and the honest dashboard for this system is the three-numbe
 | The coupling | `hindcast.yml` now rebuilds and commits `model-performance.json`, `generated-routes.json` and `content-index.json` together with the reports it writes | A gate on a derived artifact is only honest if the workflow that changes the inputs also regenerates the outputs; without this step the bot's own commit would fail the gate it feeds |
 | The tests | `__tests__/modelPerformance.test.js` (22 tests) | The artifact equals what the reports produce; `null` POD stays `null` and renders as `—`; no forbidden key; the route's tables match the artifact; the prerendered HTML carries the same numbers and the limits |
 
-**What the page publishes:** the detection table (all four episodes), POD/FAR/CSI with the
+**What the page publishes:** the detection table (all five episodes), POD/FAR/CSI with the
 uncomputable values explained in place, the 0.40/0.50/0.65 band comparison (12 rows), the
 shipped-versus-gust wind comparison (8 rows) with each report's finding, the saturated-term table,
 the 14 deduplicated caveats, the four reading notes, and the 12 truth-set citations. **What it does
@@ -330,7 +356,7 @@ would publish. The site may not claim operational validation until that record e
 | Gate condition | State |
 | --- | --- |
 | A fitted calibration map, `WARNING` reachable | ❌ `Models/calibration/confidence_map.template.json` is deliberately unfit; `WARNING` is unreachable by design |
-| A hindcast with published caveats | ✅ four episodes, CI-verified, recomputable offline |
+| A hindcast with published caveats | ✅ five episodes, CI-verified, recomputable offline |
 | POD/FAR/CSI + lead-time distribution | ✅ computed; ❌ not publishable as a skill claim (see §3.2) |
 | A written tabletop record | ❌ Action 13a |
 | Public metrics dashboard | ✅ `/model-performance`, generated from the reports, CI-gated (§8.1) |
