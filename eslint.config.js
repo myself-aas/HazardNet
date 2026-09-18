@@ -67,6 +67,14 @@ export default tseslint.config(
     rules: { 'no-console': 'off' },
   },
   {
+    // scripts/audit_frontend_design.mjs drives the built app in a real browser: its probe
+    // functions (PROBE, FOCUS_PROBE, FOCUS_UNFOCUSED and the inline page.evaluate callbacks)
+    // execute inside the page via Playwright, so the source legitimately references browser
+    // globals (document, getComputedStyle, HTMLElement) that never run in the Node host.
+    files: ['scripts/audit_frontend_design.mjs'],
+    languageOptions: { globals: { ...globals.browser } },
+  },
+  {
     // Jest globals for test files.
     files: ['**/__tests__/**/*.{ts,tsx,js}', '**/*.test.{ts,tsx,js}'],
     languageOptions: { globals: { ...globals.jest, ...globals.node, process: 'readonly' } },

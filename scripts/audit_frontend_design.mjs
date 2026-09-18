@@ -394,27 +394,6 @@ const PROBE = () => {
   };
 };
 
-/** Walk the tab order and record the focus ring each stop draws. */
-const FOCUS_PROBE = () => {
-  const results = [];
-  for (let i = 0; i < 14; i += 1) {
-    const element = document.activeElement;
-    if (!element || element === document.body) {
-      results.push({ stop: i, tag: null, note: 'focus left the document' });
-      return results;
-    }
-    const style = getComputedStyle(element);
-    results.push({
-      stop: i,
-      tag: element.tagName.toLowerCase(),
-      text: (element.textContent || element.getAttribute('aria-label') || '').trim().slice(0, 40),
-      outline: `${style.outlineWidth} ${style.outlineStyle} ${style.outlineColor}`,
-      boxShadow: style.boxShadow === 'none' ? null : style.boxShadow,
-    });
-  }
-  return results;
-};
-
 const main = async () => {
   mkdirSync(OUT, { recursive: true });
   const browser = await chromium.launch({
