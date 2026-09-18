@@ -1,7 +1,7 @@
 {
   "schema": "hazardnet-hindcast-report/v1",
   "hindcast_version": "1.0.0",
-  "generated_at": "2026-09-18T04:46:55Z",
+  "generated_at": "2026-09-18T04:55:29Z",
   "episode": {
     "id": "mocha-2023",
     "title": "Cyclone Mocha \u2014 Cox's Bazar coast and Teknaf, 14 May 2023",
@@ -274,7 +274,7 @@
         "wind_gusts_10m_max",
         "et0_fao_evapotranspiration"
       ],
-      "driver_series_loaded_from": "/home/user/HazardNet/data/hindcast/drivers/mocha-2023.json",
+      "driver_series_loaded_from": "/home/runner/work/HazardNet/HazardNet/data/hindcast/drivers/mocha-2023.json",
       "is_forecast": false,
       "is_forecast_note": "Reanalysis knows the weather that occurred inside the window. This measures whether the physics track, given that weather, flags the districts that were hit \u2014 a ceiling on detection, not forecast skill. A lead-time hindcast needs archived forecast fields (ECMWF MARS/CDS), which this harness has no credential for.",
       "aggregation": {

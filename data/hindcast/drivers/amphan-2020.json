@@ -1,7 +1,7 @@
 {
  "endpoint": "https://archive-api.open-meteo.com/v1/archive",
  "episode_id": "amphan-2020",
- "fetched_at": "2026-09-18T00:33:55Z",
+ "fetched_at": "2026-09-18T04:55:24Z",
  "note": "Daily reanalysis values per district centroid, exactly as fetched. Committed so the report computed from them can be re-derived offline (see scripts/hindcast/README.md).",
  "product": "Open-Meteo historical archive (ERA5 / ERA5-Land era reanalysis)",
  "requested_window": {
