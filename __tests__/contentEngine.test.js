@@ -45,6 +45,9 @@ const snapshot = JSON.parse(
 const committed = JSON.parse(
   readFileSync(join(repoRoot, 'frontend/src/content/generated-routes.json'), 'utf8')
 );
+const performance = JSON.parse(
+  readFileSync(join(repoRoot, 'frontend/public/data/model-performance.json'), 'utf8')
+);
 
 const districts = parseDistrictTable(districtsSource);
 
@@ -151,7 +154,7 @@ describe('reading a loaded archive', () => {
 });
 
 describe('the generated document', () => {
-  const built = buildRoutes({ districts, snapshot, archive: null, methodology, now: new Date('2026-01-01T00:00:00Z') });
+  const built = buildRoutes({ districts, snapshot, performance, archive: null, methodology, now: new Date('2026-01-01T00:00:00Z') });
 
   it('declares the schema, the origin and the inputs it used', () => {
     expect(built.summary.schema).toBe(GENERATED_SCHEMA);
@@ -162,8 +165,8 @@ describe('the generated document', () => {
   });
 
   it('is clock-independent once built, so --check cannot rot', () => {
-    const earlier = buildRoutes({ districts, snapshot, archive: null, methodology, now: new Date('2026-01-01T00:00:00Z') });
-    const later = buildRoutes({ districts, snapshot, archive: null, methodology, now: new Date('2027-06-30T12:00:00Z') });
+    const earlier = buildRoutes({ districts, snapshot, performance, archive: null, methodology, now: new Date('2026-01-01T00:00:00Z') });
+    const later = buildRoutes({ districts, snapshot, performance, archive: null, methodology, now: new Date('2027-06-30T12:00:00Z') });
     expect(stableView({ ...later.summary, routes: later.routes })).toEqual(
       stableView({ ...earlier.summary, routes: earlier.routes })
     );
@@ -179,6 +182,8 @@ describe('the generated document', () => {
     const paths = built.routes.map((route) => route.path);
     expect(paths).toContain('/hazards');
     expect(paths).toContain('/districts');
+    // Phase 9 §8.1 — the validation page is generated from the hindcast reports, never hand-written.
+    expect(paths).toContain('/model-performance');
     expect(paths.filter((path) => path.startsWith('/hazards/'))).toHaveLength(methodology.hazards.length);
     expect(paths.filter((path) => path.startsWith('/districts/'))).toHaveLength(64);
     expect(new Set(paths).size).toBe(paths.length);

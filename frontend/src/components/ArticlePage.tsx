@@ -20,12 +20,25 @@ interface SectionLink {
   href: string;
 }
 
+interface SectionTable {
+  caption?: string;
+  columns: string[];
+  rows: string[][];
+}
+
 interface Section {
   h2?: string;
   paragraphs?: string[];
   bullets?: string[];
   callout?: { tone?: string; text?: string };
   links?: SectionLink[];
+  /**
+   * A data table, carried in the route content rather than fetched, so the page the crawler and
+   * the page the visitor sees are the same numbers (Phase 9 §8.1 — `/model-performance`). The
+   * wrapper scrolls horizontally on a phone: a wide table must never widen the document, which
+   * the E2E overflow check would (correctly) fail.
+   */
+  table?: SectionTable;
 }
 
 const CALLOUT_STYLES: Record<string, string> = {
@@ -54,6 +67,34 @@ const InlineLink: React.FC<{ link: SectionLink }> = ({ link }) => {
     </Link>
   );
 };
+
+const SectionTableBlock: React.FC<{ table: SectionTable }> = ({ table }) => (
+  <div className="w-full min-w-0 overflow-x-auto rounded-xl border border-slate-200">
+    <table className="w-full border-collapse text-left text-[11px] md:text-xs">
+      {table.caption && <caption className="bg-slate-50 px-3 py-2 text-left text-[11px] text-slate-500">{table.caption}</caption>}
+      <thead>
+        <tr className="bg-slate-100/80">
+          {table.columns.map((column) => (
+            <th key={column} scope="col" className="whitespace-nowrap px-3 py-2 font-semibold text-slate-700">
+              {column}
+            </th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {table.rows.map((row, rowIndex) => (
+          <tr key={rowIndex} className="border-t border-slate-200 align-top">
+            {row.map((cell, cellIndex) => (
+              <td key={cellIndex} className={`px-3 py-2 ${cellIndex === 0 ? 'font-medium text-slate-800' : 'text-slate-600'}`}>
+                {cell}
+              </td>
+            ))}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+);
 
 /**
  * `introSlot` lets a page inject live content (the `/status` freshness panel) directly under
@@ -107,7 +148,7 @@ export const ArticlePage: React.FC<{ path: string; introSlot?: React.ReactNode }
         <section key={index} className="space-y-3 rounded-2xl border border-slate-200 bg-white p-6 shadow-xs md:p-7">
           {section.h2 && <h2 className="text-lg font-bold text-slate-900">{section.h2}</h2>}
           {(section.paragraphs ?? []).map((paragraph, i) => (
-            <p key={i} className="text-xs leading-relaxed text-slate-600 md:text-sm">
+            <p key={i} className="break-words text-xs leading-relaxed text-slate-600 md:text-sm">
               {paragraph}
             </p>
           ))}
@@ -116,11 +157,14 @@ export const ArticlePage: React.FC<{ path: string; introSlot?: React.ReactNode }
               {(section.bullets ?? []).map((bullet, i) => (
                 <li key={i} className="flex gap-2 text-xs leading-relaxed text-slate-600 md:text-sm">
                   <MaterialIcon name="chevron_right" className="mt-0.5 shrink-0 text-sm text-amber-600" />
-                  <span>{bullet}</span>
+                  {/* `break-words`: the truth-set citations carry full URLs, and an unbroken
+                      90-character URL is 126px of document-level overflow on a 375px phone. */}
+                  <span className="min-w-0 break-words">{bullet}</span>
                 </li>
               ))}
             </ul>
           )}
+          {section.table && <SectionTableBlock table={section.table} />}
           {section.callout?.text && (
             <div
               className={`rounded-xl border p-4 text-xs leading-relaxed md:text-sm ${

@@ -170,6 +170,45 @@ jobs:
         working-directory: scripts
         run: python -m hindcast.cli check --require-reports
 
+      # Phase 9 §8.1: the validation artifact is the first place this repository publishes its
+      # own measured performance, so the property that matters is what the builder *refuses*.
+      # A report that claims the CNN was evaluated, or whose drivers claim to be forecast fields,
+      # must fail the build rather than reach the page.
+      - name: Model performance builder smoke test
+        run: |
+          set -euo pipefail
+          node scripts/build_model_performance.mjs --out /tmp/model-performance.json
+          node -e "
+            const fs = require('node:fs');
+            const d = JSON.parse(fs.readFileSync('/tmp/model-performance.json', 'utf8'));
+            if (d.schema !== 'hazardnet-model-performance/v1') throw new Error('schema tag missing');
+            if (d.episodes.length !== 4) throw new Error('expected 4 episodes, got ' + d.episodes.length);
+            if (d.method.cnn_evaluated !== false) throw new Error('CNN evaluation claim leaked');
+            if (d.method.is_forecast !== false) throw new Error('forecast-skill claim leaked');
+            const text = fs.readFileSync('/tmp/model-performance.json', 'utf8');
+            for (const key of ['accuracy', 'f1', 'precision', 'recall', 'brier', 'log_loss']) {
+              if (text.includes('"' + key + '"')) throw new Error('forbidden metric published: ' + key);
+            }
+            if (!d.not_published.length) throw new Error('no caveats carried with the numbers');
+            console.log('model performance OK:', d.episodes.length, 'episodes,',
+              d.totals.named_districts, 'named districts,', d.not_published.length, 'caveats');
+          "
+          # The committed artifact must equal what the committed reports produce.
+          node scripts/build_model_performance.mjs --check
+          # …and a report that overstates the harness must fail the build.
+          mkdir -p /tmp/hn-overstated
+          node -e "
+            const fs = require('node:fs');
+            const report = JSON.parse(fs.readFileSync('data/hindcast/reports/amphan-2020.json', 'utf8'));
+            report.what_was_hindcast.cnn_evaluated = true;
+            fs.writeFileSync('/tmp/hn-overstated/amphan-2020.json', JSON.stringify(report));
+          "
+          if node scripts/build_model_performance.mjs --reports-dir /tmp/hn-overstated --out /tmp/hn-overstated/out.json 2>/dev/null; then
+            echo "::error::the builder published a report that claims the CNN was evaluated"
+            exit 1
+          fi
+          echo "✅ the builder refuses to publish an overstated report"
+
       - name: Snapshot builder smoke test
         run: |
           python scripts/tests/make_fixture_csv.py /tmp/fixture_forecasts.csv
@@ -440,6 +479,10 @@ jobs:
         run: |
           node scripts/build_content_engine.mjs --check
           node scripts/build_freshness_artifact.mjs --check
+          # Phase 9 §8.1: the published validation numbers are projected from the committed
+          # hindcast reports, so a hand-edited model-performance.json fails here — as does a
+          # report that has been re-scored without regenerating the page that cites it.
+          node scripts/build_model_performance.mjs --check
 
       # The build rewrites `frontend/public/data/content-index.json` (Vite copies `public/` into
       # `dist/` before the prerenderer runs, so the prerenderer writes both copies). The rewrite
@@ -485,7 +528,8 @@ jobs:
           npx jest --ci --config jest.config.cjs --rootDir . \
             __tests__/seoFoundations.test.js \
             __tests__/statusPagePrerender.test.js \
-            __tests__/structuredData.test.js
+            __tests__/structuredData.test.js \
+            __tests__/modelPerformance.test.js
 
       - name: Upload build artifacts
         if: always()

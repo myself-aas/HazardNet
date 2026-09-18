@@ -38,6 +38,8 @@ interface RouteContent {
     bullets?: string[];
     callout?: { tone?: string; text?: string };
     links?: Array<{ label: string; href: string }>;
+    /** Phase 9 §8.1: the validation page publishes tables composed by the content engine. */
+    table?: { caption?: string; columns: string[]; rows: string[][] };
   }>;
   faqs?: Array<{ question: string; answer: string }>;
 }
@@ -51,7 +53,11 @@ interface RouteSeoExtras {
   breadcrumb?: Array<{ name: string; path?: string }>;
   structuredData?: {
     place?: Record<string, unknown>;
-    dataset?: { kind: 'event-archive' | 'forecast'; name?: string; temporalCoverage?: string };
+    dataset?: {
+      kind: 'event-archive' | 'forecast' | 'hindcast-validation';
+      name?: string;
+      temporalCoverage?: string;
+    };
   };
 }
 

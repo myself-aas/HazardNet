@@ -108,6 +108,33 @@ function datasetNode(route, origin, attribution) {
       // would assert something the repository cannot back up.
     };
   }
+  if (hint.kind === 'hindcast-validation') {
+    // The third dataset this deployment genuinely has: the four committed episode scores. It is
+    // ours (MIT), so unlike the event archive it may carry a licence and a download URL.
+    const pageUrl = `${trimSlash(origin)}/model-performance`;
+    return {
+      '@type': 'Dataset',
+      '@id': `${trimSlash(origin)}/#hindcast-validation`,
+      name: hint.name,
+      description: hint.description,
+      url: pageUrl,
+      sameAs: `${trimSlash(origin)}/data/model-performance.json`,
+      spatialCoverage: { '@type': 'Place', name: 'Bangladesh' },
+      ...(hint.temporalCoverage ? { temporalCoverage: hint.temporalCoverage } : {}),
+      variableMeasured: hint.variableMeasured ?? [],
+      distribution: {
+        '@type': 'DataDownload',
+        contentUrl: `${trimSlash(origin)}/data/model-performance.json`,
+        encodingFormat: 'application/json',
+      },
+      creator: { '@id': authorNode['@id'] },
+      publisher: { '@id': `${trimSlash(origin)}/#organization` },
+      license: `${trimSlash(origin)}/terms`,
+      isAccessibleForFree: true,
+      citation: attribution.work.citationText,
+      keywords: hint.keywords ?? [],
+    };
+  }
   return {
     '@type': 'Dataset',
     '@id': `${origin}/data-sources#forecast-archive`,

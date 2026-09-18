@@ -1,6 +1,6 @@
 {
   "schema": "hazardnet-generated-routes/v1",
-  "generated_at": "2026-09-17T22:34:13.575Z",
+  "generated_at": "2026-09-18T00:26:14.949Z",
   "generated_by": "scripts/build_content_engine.mjs",
   "origin": "https://www.hazardnet.live",
   "inputs": {
@@ -11,16 +11,40 @@
       "prediction_date": "2026-09-16",
       "generated_at": "2026-09-17T16:11:19.128Z"
     },
-    "event_archive": null
+    "event_archive": null,
+    "model_performance": {
+      "path": "frontend/public/data/model-performance.json",
+      "hindcast_version": "1.0.0",
+      "episodes": 4,
+      "built_from": [
+        {
+          "path": "data/hindcast/reports/amphan-2020.json",
+          "sha256": "9b060a1aa4894951f035bfc7a195115f262878c04b8e6ec8616ea75197ed47e1"
+        },
+        {
+          "path": "data/hindcast/reports/eastern-flood-2024.json",
+          "sha256": "11c770ae691a260eb7d816041e4cef6b9f46c3777f3f564dbf2e12d66abcc856"
+        },
+        {
+          "path": "data/hindcast/reports/northeast-flood-2025.json",
+          "sha256": "d86c61420140a4f411e0ad300b969c845e2e3af07396df32291d5537d1fe91ee"
+        },
+        {
+          "path": "data/hindcast/reports/yaas-2021.json",
+          "sha256": "ccbd419c24f813a2b95be93812516133d72b34f1d5460591f6e17a911e06c948"
+        }
+      ]
+    }
   },
   "unmatched_snapshot_districts": [],
   "counts": {
-    "routes": 74,
+    "routes": 75,
     "hazards": 8,
     "districts": 64,
     "districts_with_outlook": 60,
     "districts_without_outlook": 4,
-    "retrospectives": 0
+    "retrospectives": 0,
+    "model_performance_episodes": 4
   },
   "freshness_hint": "see frontend/public/data/freshness.json for the age of the inputs",
   "routes": [
@@ -124,6 +148,609 @@
         {
           "question": "Which class is most likely in the current run?",
           "answer": "The current-run counts are listed above, and each hazard page repeats them. What the counts do not tell you is which is likely — they describe one model run, not a climatology."
+        }
+      ]
+    },
+    {
+      "path": "/model-performance",
+      "label": "Hindcast validation",
+      "title": "Hindcast validation: what HazardNet detected on four historical Bangladesh episodes",
+      "description": "Per-episode detection counts, POD/FAR/CSI and threshold-band sensitivity for 4 historical episodes (Cyclone Amphan 2020, Cyclone Yaas 2021, the August 2024 eastern floods, the June 2025 northeast floods), computed from reanalysis drivers and published with the limits stated. Four episodes are not a validation set, and these are a ceiling on detection rather than forecast skill. The page publishes no single accuracy percentage, because this system cannot support one.",
+      "keywords": [
+        "HazardNet validation",
+        "hindcast Bangladesh flood 2024",
+        "cyclone Amphan 2020 warning skill",
+        "POD FAR CSI",
+        "early warning system verification",
+        "reanalysis hindcast"
+      ],
+      "robots": "index,follow",
+      "sitemap": {
+        "changefreq": "monthly",
+        "priority": 0.7
+      },
+      "appShell": true,
+      "updated": "2026-09-17",
+      "breadcrumb": [
+        {
+          "name": "Hindcast validation",
+          "path": "/model-performance"
+        }
+      ],
+      "structuredData": {
+        "place": {
+          "@type": "Country",
+          "name": "Bangladesh"
+        },
+        "dataset": {
+          "kind": "hindcast-validation",
+          "name": "HazardNet hindcast validation runs, Bangladesh (2020–2025)",
+          "description": "Detection counts, POD/FAR/CSI and threshold sensitivity for 4 historical episodes, scored by scripts/hindcast/ (reanalysis drivers; the CNN was not re-run). Each episode file records the truth-set sources it scored against.",
+          "temporalCoverage": "2020-05-20/2025-06-01",
+          "variableMeasured": [
+            "districts with a scored row",
+            "districts flagged (any class)",
+            "districts flagged with the episode class",
+            "probability of detection",
+            "false alarm ratio",
+            "critical success index"
+          ],
+          "keywords": [
+            "Bangladesh",
+            "hazard verification",
+            "hindcast",
+            "early warning"
+          ]
+        }
+      },
+      "h1": "What the model did on four historical episodes",
+      "standfirst": "Across 4 episodes and 46 district-episode pairs that the cited assessments name, the physics track flagged 46 under some class, 12 under the class that occurred, and 23 scored the occurring class above the alarm band. Those three numbers are not the same number, and the difference between them is the most useful thing on this page.",
+      "sections": [
+        {
+          "h2": "The four episodes",
+          "paragraphs": [
+            "Each episode is a committed file — a sourced truth set, a driver series and a report — and each report is recomputed in CI from those inputs. The tables on this page are that recomputation, projected, not a re-analysis."
+          ],
+          "bullets": [
+            "Cyclone Amphan — Bangladesh landfall, 20 May 2020 — onset 2020-05-20, 14 districts named as affected, truth completeness: named-affected-only.",
+            "Cyclone Yaas — Bangladesh coast, 26 May 2021 — onset 2021-05-26, 9 districts named as affected, truth completeness: named-affected-only.",
+            "Eastern flash floods — Feni, Cumilla, Noakhali, 20–30 August 2024 — onset 2024-08-24, 13 districts named as affected, truth completeness: named-affected-only.",
+            "Northeast and coastal monsoon floods — Sylhet, Sunamganj and the hill districts, 1 June 2025 — onset 2025-06-01, 10 districts named as affected, truth completeness: named-affected-only."
+          ]
+        },
+        {
+          "h2": "Read this first",
+          "callout": {
+            "tone": "warning",
+            "text": "These are four episodes, not a validation set. Detection is counted only over the districts the cited sources name — a district nobody named is unknown, not clear — and the drivers are reanalysis (the weather that occurred), so every number here is a ceiling on detection, not forecast skill."
+          },
+          "paragraphs": [
+            "Drivers: Open-Meteo historical archive (ERA5 / ERA5-Land era reanalysis) (https://archive-api.open-meteo.com/v1/archive), temperature_2m_max, temperature_2m_min, precipitation_sum, wind_speed_10m_max, wind_gusts_10m_max, et0_fao_evapotranspiration. Reanalysis knows the weather that occurred inside the window. This measures whether the physics track, given that weather, flags the districts that were hit — a ceiling on detection, not forecast skill. A lead-time hindcast needs archived forecast fields (ECMWF MARS/CDS), which this harness has no credential for.",
+            "Alarm band: 0.500 on the class severity score, at 7-day and 15-day horizons. The truth set below names the districts the cited assessments report as affected. Districts nobody named are UNKNOWN, not negatives: the same reports do not claim to have surveyed all 64 districts, and the 2020 reporting was constrained by the COVID-19 response. Counting them as negatives would manufacture a false-alarm rate."
+          ],
+          "bullets": [
+            "The CNN was not evaluated. Severity and class come from the independent physics cross-check (scripts/physics_severity.py) run on reanalysis drivers. The CNN was not re-run: its t2 tensor needs Sentinel-1/2 + Landsat + ERA5-Land bands over Earth Engine for the historical window. These are not model-skill numbers.",
+            "Scores are shown to three decimals; the unrounded values, the per-district rows and the input hashes are in the machine-readable copy this page is generated from."
+          ],
+          "links": [
+            {
+              "label": "How severity and confidence are computed",
+              "href": "/methodology"
+            },
+            {
+              "label": "Model card and stated limits",
+              "href": "/model"
+            },
+            {
+              "label": "Data sources and licences",
+              "href": "/data-sources"
+            }
+          ]
+        },
+        {
+          "h2": "Detection: did the run flag the districts the sources name?",
+          "paragraphs": [
+            "Each row is one episode, scored against that episode's own truth set. \"Flagged any class\" counts a district as flagged when any of the eight classes crossed the alarm band; \"flagged the class\" counts only the class that occurred, which is the strict reading. The last column separates a district the track scored low from a district it scored high but classified under another class.",
+            "Totals: 46 of 46 named district-episode pairs carried a scored row, 46 were flagged under some class, and 12 named the class that occurred."
+          ],
+          "table": {
+            "caption": "Detection per episode, over the districts the cited sources name (class-agnostic and class-strict counts are both shown).",
+            "columns": [
+              "Episode",
+              "Class",
+              "Onset",
+              "Named districts",
+              "With a scored row",
+              "Flagged any class",
+              "Flagged the class",
+              "Class over band"
+            ],
+            "rows": [
+              [
+                "Cyclone Amphan",
+                "Tropical Cyclone",
+                "2020-05-20",
+                "14",
+                "14",
+                "14",
+                "0",
+                "0"
+              ],
+              [
+                "Cyclone Yaas",
+                "Tropical Cyclone",
+                "2021-05-26",
+                "9",
+                "9",
+                "9",
+                "0",
+                "0"
+              ],
+              [
+                "Eastern flash floods",
+                "Flash Flood",
+                "2024-08-24",
+                "13",
+                "13",
+                "13",
+                "12",
+                "13"
+              ],
+              [
+                "Northeast and coastal monsoon floods",
+                "Flood",
+                "2025-06-01",
+                "10",
+                "10",
+                "10",
+                "0",
+                "10"
+              ]
+            ]
+          }
+        },
+        {
+          "h2": "Scores: POD, FAR and CSI — and the rows where they do not exist",
+          "paragraphs": [
+            "These are the standard verification scores, computed over the district-horizon samples in each episode's window. POD is \"—\" for amphan-2020, yaas-2021, northeast-flood-2025: the truth set names affected districts but records no dated outcome inside the prediction window, so there is no observed event to divide by. A false alarm ratio of 1.000 in that situation means \"no negative sample existed\", not \"every alarm was wrong\" — with no named event there is nothing for an alarm to be right about.",
+            "The false alarm ratio is measurable only against districts where an event was recorded as absent. The reports say plainly that no district is treated as a confirmed negative, so treat the FAR column as a bound on the fraction of alarms that hit a district nobody reported as affected — which is the drift signal the district pages also expose."
+          ],
+          "table": {
+            "caption": "Verification scores at the shipped alarm band. \"Scored samples\" is the denominator each row was computed from; \"—\" is a score the report states cannot be computed.",
+            "columns": [
+              "Episode",
+              "Scored samples",
+              "Hits",
+              "Misses",
+              "False alarms",
+              "POD",
+              "FAR",
+              "CSI"
+            ],
+            "rows": [
+              [
+                "Cyclone Amphan",
+                "28",
+                "0",
+                "0",
+                "28",
+                "—",
+                "1.000",
+                "0.000"
+              ],
+              [
+                "Cyclone Yaas",
+                "18",
+                "0",
+                "0",
+                "18",
+                "—",
+                "1.000",
+                "0.000"
+              ],
+              [
+                "Eastern flash floods",
+                "26",
+                "22",
+                "0",
+                "4",
+                "1.000",
+                "0.154",
+                "0.846"
+              ],
+              [
+                "Northeast and coastal monsoon floods",
+                "20",
+                "0",
+                "0",
+                "20",
+                "—",
+                "1.000",
+                "0.000"
+              ]
+            ]
+          }
+        },
+        {
+          "h2": "Threshold bands: 0.40, 0.50, 0.65",
+          "paragraphs": [
+            "The product spec bands an alarm as WATCH from 0.40, the harness default is 0.50, and WARNING starts at 0.65. The rows below are the same scoring run at each band, which is how much the published decision depends on where the band is drawn.",
+            "In every one of these episodes the three bands produce the identical split: the severity scores are not clustered near the thresholds, so moving the band does not move the alarm set. That is a property of these four windows, not a general result."
+          ],
+          "table": {
+            "caption": "The same scoring run at the three published alarm bands.",
+            "columns": [
+              "Episode",
+              "Band",
+              "Threshold",
+              "Scored",
+              "Hits",
+              "Misses",
+              "False alarms",
+              "POD",
+              "FAR"
+            ],
+            "rows": [
+              [
+                "Cyclone Amphan",
+                "WATCH band",
+                "0.400",
+                "28",
+                "0",
+                "0",
+                "28",
+                "—",
+                "1.000"
+              ],
+              [
+                "Cyclone Amphan",
+                "harness default",
+                "0.500",
+                "28",
+                "0",
+                "0",
+                "28",
+                "—",
+                "1.000"
+              ],
+              [
+                "Cyclone Amphan",
+                "WARNING band",
+                "0.650",
+                "28",
+                "0",
+                "0",
+                "28",
+                "—",
+                "1.000"
+              ],
+              [
+                "Eastern flash floods",
+                "WATCH band",
+                "0.400",
+                "26",
+                "22",
+                "0",
+                "4",
+                "1.000",
+                "0.154"
+              ],
+              [
+                "Eastern flash floods",
+                "harness default",
+                "0.500",
+                "26",
+                "22",
+                "0",
+                "4",
+                "1.000",
+                "0.154"
+              ],
+              [
+                "Eastern flash floods",
+                "WARNING band",
+                "0.650",
+                "26",
+                "22",
+                "0",
+                "4",
+                "1.000",
+                "0.154"
+              ],
+              [
+                "Northeast and coastal monsoon floods",
+                "WATCH band",
+                "0.400",
+                "20",
+                "0",
+                "0",
+                "20",
+                "—",
+                "1.000"
+              ],
+              [
+                "Northeast and coastal monsoon floods",
+                "harness default",
+                "0.500",
+                "20",
+                "0",
+                "0",
+                "20",
+                "—",
+                "1.000"
+              ],
+              [
+                "Northeast and coastal monsoon floods",
+                "WARNING band",
+                "0.650",
+                "20",
+                "0",
+                "0",
+                "20",
+                "—",
+                "1.000"
+              ],
+              [
+                "Cyclone Yaas",
+                "WATCH band",
+                "0.400",
+                "18",
+                "0",
+                "0",
+                "18",
+                "—",
+                "1.000"
+              ],
+              [
+                "Cyclone Yaas",
+                "harness default",
+                "0.500",
+                "18",
+                "0",
+                "0",
+                "18",
+                "—",
+                "1.000"
+              ],
+              [
+                "Cyclone Yaas",
+                "WARNING band",
+                "0.650",
+                "18",
+                "0",
+                "0",
+                "18",
+                "—",
+                "1.000"
+              ]
+            ]
+          }
+        },
+        {
+          "h2": "The wind driver, and why it decides detection",
+          "paragraphs": [
+            "The shipped pipeline scores the sustained 10 m maximum. The driver archive also carries the gust maximum, so each report re-scores the same episode with it. Where those two rows differ, the driver choice — not the formula — is what decides whether the district point was detectable.",
+            "With the sustained maximum the shipped pipeline uses, the episode's class scores 0.0136–0.2480 and crosses the 0.5 band on 0 of 128 rows; with the gust field the archive also carries it scores 0.0987–0.5145 and crosses on 2. The wind driver, not the formula alone, decides whether this event was detectable at the district point. Note what neither number fixes: the track's top class is Fire under either driver, so the separation between the wind-driven classes is a second, independent defect.",
+            "With the sustained maximum the shipped pipeline uses, the episode's class scores 0.0285–0.2457 and crosses the 0.5 band on 0 of 128 rows; with the gust field the archive also carries it scores 0.0388–0.3166 and crosses on 0. Even the gust field leaves the episode class below the band, so the wind argument alone does not explain the miss: at this distance from the track the driver the pipeline uses cannot represent the hazard, and the class the formula describes is unreachable for this event. Note what neither number fixes: the track's top class is Fire under either driver, so the separation between the wind-driven classes is a second, independent defect.",
+            "With the sustained maximum the shipped pipeline uses, the episode's class scores 0.1175–1.0000 and crosses the 0.5 band on 83 of 128 rows; with the gust field the archive also carries it scores 0.1175–1.0000 and crosses on 83. The wind driver, not the formula alone, decides whether this event was detectable at the district point. Note what neither number fixes: the track's top class is Fire under either driver, so the separation between the wind-driven classes is a second, independent defect.",
+            "With the sustained maximum the shipped pipeline uses, the episode's class scores 0.2097–1.0000 and crosses the 0.5 band on 101 of 128 rows; with the gust field the archive also carries it scores 0.2097–1.0000 and crosses on 101. The wind driver, not the formula alone, decides whether this event was detectable at the district point. Note what neither number fixes: the track's top class is Fire under either driver, so the separation between the wind-driven classes is a second, independent defect."
+          ],
+          "table": {
+            "caption": "Episode-class score range and over-band count under each wind driver, per episode (128 district-horizon rows each).",
+            "columns": [
+              "Episode",
+              "Driver",
+              "Rows",
+              "Wind (km/h)",
+              "Episode-class score",
+              "Rows over band",
+              "Top class"
+            ],
+            "rows": [
+              [
+                "Cyclone Amphan",
+                "sustained max (shipped)",
+                "128",
+                "19.2–69.1",
+                "0.0136–0.2480",
+                "0",
+                "Fire (127), Flash Flood (1)"
+              ],
+              [
+                "Cyclone Amphan",
+                "gust max (archive)",
+                "128",
+                "51.1–133.9",
+                "0.0987–0.5145",
+                "2",
+                "Fire (127), Flash Flood (1)"
+              ],
+              [
+                "Cyclone Yaas",
+                "sustained max (shipped)",
+                "128",
+                "14.8–43.3",
+                "0.0285–0.2457",
+                "0",
+                "Fire (127), Flash Flood (1)"
+              ],
+              [
+                "Cyclone Yaas",
+                "gust max (archive)",
+                "128",
+                "37.4–84.6",
+                "0.0388–0.3166",
+                "0",
+                "Fire (127), Flash Flood (1)"
+              ],
+              [
+                "Eastern flash floods",
+                "sustained max (shipped)",
+                "128",
+                "15.0–31.3",
+                "0.1175–1.0000",
+                "83",
+                "Fire (88), Flash Flood (40)"
+              ],
+              [
+                "Eastern flash floods",
+                "gust max (archive)",
+                "128",
+                "33.1–53.6",
+                "0.1175–1.0000",
+                "83",
+                "Fire (97), Flash Flood (31)"
+              ],
+              [
+                "Northeast and coastal monsoon floods",
+                "sustained max (shipped)",
+                "128",
+                "25.7–44.5",
+                "0.2097–1.0000",
+                "101",
+                "Fire (75), Flash Flood (53)"
+              ],
+              [
+                "Northeast and coastal monsoon floods",
+                "gust max (archive)",
+                "128",
+                "49.0–85.0",
+                "0.2097–1.0000",
+                "101",
+                "Fire (75), Flash Flood (53)"
+              ]
+            ]
+          }
+        },
+        {
+          "h2": "Saturated terms: three formula inputs that carry no information",
+          "paragraphs": [
+            "The physics cross-check feeds each formula an argument taken from the forecast unit. Four of those arguments, measured across all four episodes, sit at the top of their formula on every row — so the term cannot distinguish one district from another, and any severity difference attributed to it is an artefact of the wiring rather than of the weather.",
+            "In the shipped wiring the fire formula's drying term is at its ceiling on every row because it receives the horizon ET total, and both persistence terms are at theirs because they receive the horizon length. The counterfactual recomputes those three arguments with the quantities their formulas describe (mean daily ET, exceedance days above 30 °C / below 16 °C) and reports the difference. This is a wiring finding for the pipeline owner, measured here rather than asserted: the formulas themselves are not changed by this harness."
+          ],
+          "table": {
+            "caption": "Rows at the term's ceiling, out of the rows scored, per episode. A term at its ceiling on every row carries no information.",
+            "columns": [
+              "Episode",
+              "Rows",
+              "fire_wind",
+              "fire_drying",
+              "heat_persistence",
+              "cold_persistence"
+            ],
+            "rows": [
+              [
+                "Cyclone Amphan",
+                "128",
+                "116 of 128",
+                "128 of 128",
+                "128 of 128",
+                "128 of 128"
+              ],
+              [
+                "Cyclone Yaas",
+                "128",
+                "86 of 128",
+                "128 of 128",
+                "128 of 128",
+                "128 of 128"
+              ],
+              [
+                "Eastern flash floods",
+                "128",
+                "36 of 128",
+                "128 of 128",
+                "128 of 128",
+                "128 of 128"
+              ],
+              [
+                "Northeast and coastal monsoon floods",
+                "128",
+                "128 of 128",
+                "128 of 128",
+                "128 of 128",
+                "128 of 128"
+              ]
+            ]
+          }
+        },
+        {
+          "h2": "What is not claimed here",
+          "bullets": [
+            "Reanalysis is not the forecast that existed on the issue date. This measures whether the physics track, given the weather that actually occurred in the window, flags the districts that were hit — a ceiling on detection, not a forecast skill score.",
+            "The CNN is NOT re-run: the t2 tensor needs Sentinel-1/2 + Landsat + ERA5-Land bands over GEE for the historical window, which this environment cannot reach (Earth Engine credentials) and which the Phase 9 plan assigns to the archive-loaded run.",
+            "Peak 24 h precipitation is approximated by the wettest reanalysis day in the window; the live pipeline uses the peak 6-hourly accumulation. A forward-flood term is therefore slightly understated.",
+            "The affected set is the districts named in the cited assessments. Non-listed districts are unknown, not clear.",
+            "Identical to the Amphan episode: reanalysis rather than archived forecast fields, CNN not re-run, peak precipitation approximated by the wettest day, unnamed districts unknown.",
+            "Amphan (2020) had not been recovered from when Yaas struck; the affected set therefore overlaps almost completely, which is a property of the coast, not of the truth set.",
+            "Reanalysis, not archived forecast — the number is a ceiling on detection, and the plan's lead-time requirement needs forecast fields the harness cannot see (same as the cyclone episodes).",
+            "The physics track was not re-run for this window and the CNN is not evaluated: detection is the independent cross-check track only.",
+            "Peak precipitation is approximated by the wettest day inside the window, and a district centroid cannot represent the hill-stream catchments that actually flooded — the same driver-fidelity limit the cyclone episodes expose, in the rainfall dimension.",
+            "`Flash Flood` is the class chosen for an event that was partly riverine: the Feni, Muhuri and Gomti rivers reached record levels, while the Khagrachhari/Rangamati and Sylhet-division flooding was flash and hill-stream in character. Flood and Flash Flood share their rainfall inputs in `physics_severity`, so the distinction is a reporting choice, not a measurement — recorded here so nobody reads a class match as a validation of the distinction.",
+            "Single-sourced truth set, and an onset date taken from the situation report rather than from a dated event record.",
+            "Reanalysis, not archived forecast — a ceiling on detection, as with every episode here.",
+            "CNN not re-run; detection is the physics cross-check track only.",
+            "Basin flooding depends on upstream rainfall in Meghalaya and Assam that the Bangladesh district centroids do not sample; the driver limitation is structural for the Sylhet/Sunamganj part of this affected set."
+          ]
+        },
+        {
+          "h2": "How to read the two tracks",
+          "bullets": [
+            "`evaluation.scores.events` is class-strict: an alarm is a hit only when the predict track *named* the class that occurred. A district correctly flagged under a different class therefore appears there as a false alarm, which is why the class-agnostic `detection.flagged_any_class` exists — read them together.",
+            "`evaluation.scores.per_class` is one-vs-rest per class. `pod: 0.0` with `misses: N` for the episode class means the track never named that class, not that it scored the district low; `detection.episode_class_over_threshold` separates the two.",
+            "`detection` counts over the districts the sources name, per horizon.",
+            "Nothing in this report covers a district nobody named. Unknown is not clear, and the far column is unmeasurable rather than zero when no negative sample exists."
+          ]
+        },
+        {
+          "h2": "Truth sets and citations",
+          "paragraphs": [
+            "Each episode was scored against the districts the sources below name as affected. They are the same sources recorded in the committed episode files, with the same access date."
+          ],
+          "bullets": [
+            "HCTT Response Plan — Cyclone Amphan, United Nations Bangladesh Coordinated Appeal (June–September 2020), citing MoDMR preliminary reports. — https://reliefweb.int/report/bangladesh/hctt-response-plan-cyclone-amphan-united-nations-bangladesh-coordinated-appeal (accessed 2026-09-18)",
+            "HCTT Cyclone Amphan Response Plan: Monitoring Dashboard (10 August 2020). — https://reliefweb.int/report/bangladesh/hctt-cyclone-amphan-response-plan-monitoring-dashboard-10-august-2020 (accessed 2026-09-18)",
+            "Mapping floods in Bangladesh caused by Cyclone Amphan to support humanitarian response (PreventionWeb / UN-SPIDER partner mapping, May 2020). — https://www.preventionweb.net/news/mapping-floods-bangladesh-caused-cyclone-amphan-support-humanitarian-response (accessed 2026-09-18)",
+            "Cyclone Amphan in Bangladesh: An Overview — Living Deltas Hub (2022). — https://livingdeltas.org/blog/cyclone-amphan-in-bangladesh-an-overview (accessed 2026-09-18)",
+            "Cyclone YAAS: Light Coordinated Joint Needs Analysis — Needs Assessment Working Group (NAWG) & Information Management Working Group, Bangladesh, 6 June 2021. — https://reliefweb.int/report/bangladesh/cyclone-yaas-light-coordinated-joint-needs-analysis-needs-assessment-working-group (accessed 2026-09-18)",
+            "Bangladesh: Cyclone YAAS — Final Report, DREF operation MDRBD027 (IFRC, December 2021). — https://reliefweb.int/report/bangladesh/bangladesh-cyclone-yaas-final-report-n-mdrbd027 (accessed 2026-09-18)",
+            "BDRCS Situation Report 3 — Southeastern Flood, August 2024 (Bangladesh Red Crescent Society, 28 August 2024), citing 11 districts: Feni, Cumilla, Chattogram, Khagrachari, Noakhali, Moulvibazar, Habiganj, Brahmanbaria, Sylhet, Lakshmipur, Cox's Bazar. — https://bdrcs.org/wp-content/uploads/2024/08/BDRCS-Sitrep-3-Southeastern-Flood-August-2024.pdf (accessed 2026-09-18)",
+            "Rising Waters, Rising Challenges: WHO's Response to Severe Flooding in Bangladesh (WHO Bangladesh, 4 November 2024). — https://www.who.int/bangladesh/news/detail/04-11-2024-rising-waters--rising-challenges-who-s-response-to-severe-flooding-in-bangladesh (accessed 2026-09-18)",
+            "Bangladesh Flooding August 2024 — Disasters activations (NASA Applied Sciences, 28 August 2024). — https://appliedsciences.nasa.gov/what-we-do/disasters/disasters-activations/bangladesh-flooding-august-2024 (accessed 2026-09-18)",
+            "Bangladesh floods claim 15 lives, affect more than 4.4 million (VOA News, 23 August 2024, reporting the MoDMR briefing). — https://www.voanews.com/a/bangladesh-floods-claim-15-lives-affect-more-than-4-4-million-/7754825.html (accessed 2026-09-18)",
+            "Global Rapid Post-Disaster Damage Estimation (GRADE) Report — August 2024 Floods, Bangladesh (World Bank, 2024). — https://documents1.worldbank.org/curated/en/099921506192542727/pdf/IDU-3c0e1de6-9af6-40b9-99a3-78397d1041ac.pdf (accessed 2026-09-18)",
+            "Situation Report 1 — Flood 2025 (Bangladesh Red Crescent Society, 2 June 2025), reporting the situation as of 1 June 2025: Sylhet, Sunamganj, Moulvibazar, Habiganj, Netrokona, Noakhali, Bhola, Khagrachari, Bandarban and Rangamati severely affected. — https://bdrcs.org/situation-report-1-flood-2025/ (accessed 2026-09-18)"
+          ]
+        },
+        {
+          "h2": "Reproducing this page",
+          "paragraphs": [
+            "Every number here is recomputed in CI from the committed episode files and driver series: `python -m hindcast.cli check --require-reports` re-runs each report and fails if a single value differs, and `node scripts/build_model_performance.mjs --check` fails if the artifact this page is generated from no longer matches those reports. The machine-readable copy is linked below."
+          ],
+          "links": [
+            {
+              "label": "model-performance.json (machine-readable)",
+              "href": "/data/model-performance.json"
+            }
+          ]
+        }
+      ],
+      "faqs": [
+        {
+          "question": "Is there an accuracy number for the forecast model?",
+          "answer": "No, and this deployment will not publish one. Four episodes are not a validation set, the drivers are reanalysis rather than archived forecast fields, and no district is treated as a confirmed negative. What is published is what the reports actually measured: how many of the named districts were flagged, and POD/FAR/CSI with their denominators stated."
+        },
+        {
+          "question": "Why does Cyclone Amphan show a false alarm ratio of 1.000 and no POD?",
+          "answer": "The Amphan truth set names the affected districts but records no dated outcome inside the prediction window, so there is no observed event to divide by and POD cannot be computed. Every alarm then counts as a false alarm because no negative sample exists either. The report says this in place rather than presenting a zero as a score."
+        },
+        {
+          "question": "Was the CNN evaluated on these episodes?",
+          "answer": "No. The class and severity in every episode come from the independent physics cross-check. The CNN was not re-run: its input tensor needs Sentinel-1/2, Landsat and ERA5-Land bands over Earth Engine for the historical window, which this harness has no credential for."
+        },
+        {
+          "question": "Does this page change when the forecast model is updated?",
+          "answer": "Only when the committed hindcast reports change. The page is generated from an artifact whose own provenance is the reports' hashes, so a model update that is not re-scored on these episodes does not silently rewrite the validation numbers."
         }
       ]
     },

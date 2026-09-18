@@ -662,4 +662,7 @@ scope. Recommended framing, to be recorded here before anyone links the site pub
 * **Out of scope, stated on the site:** operational evacuation decisions; anything above `WATCH`;
   any accuracy claim (the hindcast ceiling is a *ceiling on detection*, not forecast skill).
 * **Who owns the number:** one named person who answers for the published metrics, so an
-  experimental beta cannot drift into an implied operational service by silence.
+  experimental beta cannot drift into an implied operational service by silence. The metrics such a
+  person would own now exist as a single published artifact — `/model-performance`, generated from
+  the committed hindcast reports by `scripts/build_model_performance.mjs` and gated in CI — so the
+  scope question is answerable with the page open rather than from memory.

@@ -271,13 +271,17 @@ right. Each is now a test.
   needs Sentinel-1/2, Landsat and ERA5-Land bands over Earth Engine for the historical window.
 * **No false-alarm ratio.** See §3.2; the denominator does not exist yet.
 * **No operational claim, and no accuracy claim on the site.** The Phase 8 content engine still
-  fails any build that publishes a number nobody read from a committed artifact.
+  fails any build that publishes a number nobody read from a committed artifact, and the validation
+  page added below refuses the metric itself: `scripts/build_model_performance.mjs` fails the build
+  if `accuracy`, `f1`, `precision`, `recall`, `frequency_bias`, `brier` or `log_loss` appears
+  anywhere in the published artifact, and it refuses a report that claims `cnn_evaluated: true` or
+  `drivers.is_forecast: true`.
 
 ## 8. Remaining work in this phase, with owners
 
 | # | Item | Owner | Why it is not done here |
 | --- | --- | --- | --- |
-| 9.1 | Publish the model-performance page (`/model-performance`, SSR, generated from `data/hindcast/reports/*.json` by the Phase 8 content engine) | code — next increment | scoped in §8.1; the numbers now exist, so it is a build task, not a research task |
+| 9.1 | ~~Publish the model-performance page~~ **done** — `/model-performance`, prerendered, generated from `data/hindcast/reports/*.json` via `frontend/public/data/model-performance.json` | shipped | see §8.1 for what it publishes and what it refuses |
 | 9.2 | Fix the three saturated terms (§4.2) and the `Fire` dominance (§4.3) in `scripts/physics_severity.py` / `auto_forecast.py` | pipeline owner | changes published values; the measurement is in the reports and the counterfactual is already implemented and tested |
 | 9.3 | Switch the wind driver (or add the gust as a second driver) in the live pipeline (§4.1) | pipeline owner | same reason; the evidence is the wind-driver block of every report |
 | 9.4 | Load the event archive, then fit and stamp the calibration map (Action 12 + 13b) | owner | needs the archive; 2,931 events is the model card's claim and nothing here restates it |
@@ -285,15 +289,32 @@ right. Each is now a test.
 | 9.6 | Open the soft-launch beta gate (Action 13c) | owner | needs a stated scope and a named number owner; §10 lists the exact gate |
 | 9.7 | A 2023 monsoon episode (and any second cycle) to break the overlap between 2024 and 2025 | anyone | one JSON file plus a source list; the workflow picks it up automatically |
 
-### 8.1 The metrics page, precisely
+### 8.1 The metrics page — spec, and what shipped
 
-`frontend/public/data/model-performance.json` generated from the committed reports by a new
+**Spec.** `frontend/public/data/model-performance.json` generated from the committed reports by a new
 `scripts/build_model_performance.mjs`, rendered as a prerendered route (the Phase 8 pattern: routes
 in `frontend/src/content/generated-routes.json`, `--check` in CI, sitemap auto-derived), showing:
 the four-episode detection table of §3.1, the POD/FAR/CSI table of §3.2 with the `None`s explained,
 the threshold band comparison of §3.3, the driver comparison of §4.1, and the "what is not claimed"
 list of §7 verbatim. It must **not** show a single headline accuracy percentage: the plan asked for
 a metrics dashboard, and the honest dashboard for this system is the three-number one.
+
+**Shipped.** All of the above, at `/model-performance` (75th generated route; in the built sitemap).
+
+| Piece | Where | What it enforces |
+| --- | --- | --- |
+| The artifact | `frontend/public/data/model-performance.json` (`hazardnet-model-performance/v1`) | Every field is copied through an explicit allow-list, never spread; the document carries no clock (only the reports' own `generated_at` and their sha256), so rebuilding without a changed input is byte-identical and `--check` is exact |
+| The builder | `scripts/build_model_performance.mjs` | Refuses an empty report directory, a mixed `hindcast_version`, a duplicate episode, `cnn_evaluated: true`, `drivers.is_forecast: true`, a report with no caveats or no citations, and any forbidden metric key in the output |
+| The page | composed in `scripts/build_content_engine.mjs`; tables rendered by `ArticlePage`/`prerender.mjs`; route registered in `App.tsx`; `Dataset` node (`kind: hindcast-validation`) emitted by `src/lib/structuredData.js` | Every number on the page is read from the artifact; the framing copy is fixed text, and the reports' findings, caveats and reading notes are reproduced verbatim |
+| The gate | `ci.yml` — `build_model_performance.mjs --check` beside the other derived-artifact gates, plus a Pipeline Scripts smoke test that asserts the refusals | A hand-edited artifact or a re-scored report fails CI before it reaches a deploy |
+| The tests | `__tests__/modelPerformance.test.js` (22 tests) | The artifact equals what the reports produce; `null` POD stays `null` and renders as `—`; no forbidden key; the route's tables match the artifact; the prerendered HTML carries the same numbers and the limits |
+
+**What the page publishes:** the detection table (all four episodes), POD/FAR/CSI with the
+uncomputable values explained in place, the 0.40/0.50/0.65 band comparison (12 rows), the
+shipped-versus-gust wind comparison (8 rows) with each report's finding, the saturated-term table,
+the 14 deduplicated caveats, the four reading notes, and the 12 truth-set citations. **What it does
+not publish:** any accuracy percentage — the words are absent and the metric keys are structurally
+impossible.
 
 ## 9. Tabletop exercise
 
@@ -311,13 +332,15 @@ would publish. The site may not claim operational validation until that record e
 | A hindcast with published caveats | ✅ four episodes, CI-verified, recomputable offline |
 | POD/FAR/CSI + lead-time distribution | ✅ computed; ❌ not publishable as a skill claim (see §3.2) |
 | A written tabletop record | ❌ Action 13a |
-| Public metrics dashboard | ❌ §8.1 |
+| Public metrics dashboard | ✅ `/model-performance`, generated from the reports, CI-gated (§8.1) |
 | A stated beta scope and a named owner of the numbers | ❌ Action 13c |
 | Live deployment security headers (Phase 6 Action 7) | ❌ still owner-blocked; the probe stays red until then |
 
-**Verdict:** the validation half of Phase 9 is now evidenced; the launch half is not, and the honest
-recommendation is to publish the *findings* (they are the most valuable thing this repository has
-produced) while keeping the operational framing closed.
+**Verdict:** the validation half of Phase 9 is evidenced and now *published* — the findings are no
+longer only in a phase report but on a prerendered, CI-gated page that states its own limits. The
+launch half remains owner-gated, and the honest recommendation is unchanged: publish the findings,
+keep the operational framing closed until the calibration map, the tabletop and a named owner of
+the numbers exist.
 
 ---
 
@@ -326,6 +349,12 @@ produced) while keeping the operational framing closed.
 * **Harness, episodes, workflow:** commits `f5a86db`, `fc9dcdb`, `242cd92`, `181d07a`, `f3963d4`,
   `db047ac`, `7276314` on `arena/01a0afa0-hazardnet`; the four reports are the bot commits
   `49ed7e2`, `7c9a0b9`, `9d48b74`, `f648ab5`, `7db70fb`.
+* **The published page (§8.1):** `scripts/build_model_performance.mjs`,
+  `frontend/public/data/model-performance.json`, the `/model-performance` route in
+  `frontend/src/content/generated-routes.json`, `__tests__/modelPerformance.test.js`, and the two
+  CI gates in `.github/workflows/ci.yml`. The E2E failure that was still red when this report was
+  first written is fixed in `e2cd663` and verified by run `35289414892` (all jobs green); the audit's
+  §5.1 carries that evidence chain.
 * **Drivers:** Open-Meteo historical archive (`archive-api.open-meteo.com/v1/archive`), ERA5/ERA5-Land
   era reanalysis, fetched by GitHub Actions (the sandbox has no route to the endpoint). Committed at
   `data/hindcast/drivers/`.

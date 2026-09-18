@@ -617,8 +617,10 @@ export const DistrictDetailPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Right: Executive Action Controls */}
-        <div className="flex items-center gap-2">
+        {/* Right: Executive Action Controls.
+            `flex-wrap`: bookmark + share + PDF + JSON is ~357px of controls, which is a 37px
+            document overflow at 320px if they are forced onto one line. They wrap instead. */}
+        <div className="flex flex-wrap items-center gap-2">
           {/* Bookmark / Watchlist */}
           <button
             onClick={handleToggleSave}
@@ -830,7 +832,9 @@ export const DistrictDetailPage: React.FC = () => {
               7-Day & 15-Day Forecast Records ({data.districtName})
             </h2>
           </div>
-          <div className="flex items-center gap-2">
+          {/* `flex-wrap`: the two horizon toggles plus "Download CSV" are ~357px, which is a
+              37px document overflow at 320px. They wrap rather than widen the page. */}
+          <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={() => setActiveTableHorizon('7_days')}
               className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${

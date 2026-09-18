@@ -29,7 +29,8 @@ export interface Attribution {
 }
 
 export interface DatasetHint {
-  kind: 'event-archive' | 'forecast';
+  /** `hindcast-validation` is the committed hindcast reports' own dataset (Phase 9 §8.1). */
+  kind: 'event-archive' | 'forecast' | 'hindcast-validation';
   name?: string;
   description?: string;
   temporalCoverage?: string;

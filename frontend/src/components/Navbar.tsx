@@ -597,13 +597,17 @@ export const Navbar: React.FC<NavbarProps> = ({
                           </div>
                         </motion.button>
 
-                        <motion.button whileHover={{ x: 3 }} onClick={() => { navigate('/analytics/model-metrics'); setActiveMenu(null); }} className="w-full p-2.5 text-left flex items-start gap-3 rounded-xl hover:bg-slate-100/90 transition-all cursor-pointer group">
+                        {/* Phase 9 §8.1: this entry used to advertise "ML accuracy & F1 scores" and
+                            point at an analytics screen. The repository has no such number to
+                            publish, so it now links to the page that publishes what was actually
+                            measured — detection counts and POD/FAR/CSI on four historical episodes. */}
+                        <motion.button whileHover={{ x: 3 }} onClick={() => { navigate('/model-performance'); setActiveMenu(null); }} className="w-full p-2.5 text-left flex items-start gap-3 rounded-xl hover:bg-slate-100/90 transition-all cursor-pointer group">
                           <div className="p-2 rounded-xl bg-purple-50 text-purple-700 group-hover:bg-purple-100 transition-colors shrink-0">
                             <MaterialIcon name="monitoring" className="text-lg" />
                           </div>
                           <div>
-                            <div className="font-semibold text-slate-900 text-[13.5px]">AI Model Performance</div>
-                            <div className="text-[11.5px] text-slate-500 leading-tight mt-0.5">ML accuracy & F1 scores</div>
+                            <div className="font-semibold text-slate-900 text-[13.5px]">Hindcast Validation</div>
+                            <div className="text-[11.5px] text-slate-500 leading-tight mt-0.5">Four historical episodes, with limits</div>
                           </div>
                         </motion.button>
 

@@ -7,11 +7,12 @@ rather than inferring it from intent.
 
 **The question this answers:** *are phases 0–9 of the deployment plan complete?*
 **The short answer:** **six phases are complete (0, 1, 2, 3, 5, 7), three are complete in-repository
-and blocked on owner action for their last mile (4, 6, 8), and one — Phase 9 — is half done: the
-validation half is now evidenced, the launch half is not.** Nothing in the plan is blocked on
-engineering. Four things are blocked on credentials or people: the leaked-credential rotation, the
-deployment root + live headers, the calibration map (which needs the event archive loaded), and the
-tabletop exercise.
+and blocked on owner action for their last mile (4, 6, 8), and one — Phase 9 — has its entire
+engineering half complete: the validation is evidenced, the public metrics dashboard is published
+and CI-gated, and the E2E suite is green again. What remains in Phase 9 is a launch decision that
+needs people and credentials, not code.** Nothing in the plan is blocked on engineering. Four things
+are blocked on credentials or people: the leaked-credential rotation, the deployment root + live
+headers, the calibration map (which needs the event archive loaded), and the tabletop exercise.
 
 ---
 
@@ -46,7 +47,7 @@ they are labelled with what the repository actually knows about them.
 | **6** | Security pass | 🟡 **Owner-gated** | commit `2315b19` + `4227bc0`; `docs/phase-reports/phase-6-security.md`: eleven findings, nine fixed in-repo | the leaked credentials are still live (Action 1) and the live headers are still unverified (Action 7) |
 | **7** | Observability: freshness artifact + status page + probe | ✅ **Verified** | commit `ebd67e9`; `frontend/public/data/freshness.json`, `/status`, `.github/workflows/site-health.yml` | the probe stays red until Action 7 |
 | **8** | SEO + content engine + structured data | 🟡 **Owner-gated** | commit `c9a4f70`; `docs/phase-reports/phase-8-seo-content.md`: 96 prerendered pages / 87 sitemap URLs, 9 tests | Search Console/Bing submission and every portal listing are owner actions (10, 11) — **none has been made, and none is claimed** |
-| **9** | Validation (hindcast + calibration) and soft launch | ❌ **Half done** | `docs/phase-reports/phase-9-validation-and-soft-launch.md`; four CI-verified hindcast reports; `scripts/tests/test_hindcast.py` (23 tests) | calibration map, tabletop, metrics page, beta gate |
+| **9** | Validation (hindcast + calibration) and soft launch | ✅ **In-repo complete** (launch ⛔ owner-gated) | `docs/phase-reports/phase-9-validation-and-soft-launch.md`; four CI-verified hindcast reports; `scripts/tests/test_hindcast.py` (23 tests); `/model-performance` published, generated from them by `scripts/build_model_performance.mjs` and gated by `__tests__/modelPerformance.test.js` | calibration map (needs the archive), tabletop (needs people), beta gate (owner decision) |
 
 **Score: 6 ✅ · 3 🟡 · 1 ❌.** The ❌ is one phase, not one deliverable: its validation half is now
 the strongest evidence the project has, and its launch half is deliberately closed.
@@ -148,7 +149,7 @@ formula against `scripts/physics_severity.py`.
 portals). **No submission and no backlink is claimed anywhere**, and the audit treats the "pursue
 listings" step as open.
 
-### Phase 9 — Validation and soft launch ❌ (validation ✅ · launch ❌)
+### Phase 9 — Validation and soft launch ✅ in-repo (launch ⛔ owner-gated)
 
 *Delivered this phase:* the hindcast harness (`scripts/hindcast/`, four modules), four curated
 episodes with sourced truth sets, four committed driver series, four CI-verified reports, a producing
@@ -169,8 +170,21 @@ in `docs/phase-reports/phase-9-validation-and-soft-launch.md`:
   wind-driven classes (TC vs SLS) and the two rain-driven classes (Flood vs Flash Flood) are not
   separable at district-point resolution.
 
+*Delivered since the first pass of this audit — §8.1, the public metrics dashboard:*
+**`/model-performance`**, built from `frontend/public/data/model-performance.json`, which
+`scripts/build_model_performance.mjs` projects from the four committed hindcast reports. The page
+carries the detection table, POD/FAR/CSI with every `None` explained in place, the threshold-band
+comparison, the shipped-versus-gust wind-driver comparison, the saturated-term table, the reports'
+caveats and reading notes verbatim, and the truth-set citations. It publishes **no** headline
+accuracy percentage, and that is enforced structurally rather than by convention: the builder
+copies fields through an explicit allow-list, fails the build on any of
+`accuracy`/`f1`/`precision`/`recall`/`frequency_bias`/`brier`/`log_loss` appearing in the artifact,
+and refuses a report that claims `cnn_evaluated: true` or `is_forecast: true`. `--check` runs in
+CI next to the other derived-artifact gates, and `__tests__/modelPerformance.test.js` asserts the
+refusals against the built page.
+
 *Blocked:* the calibration map (needs the archive; Action 12 → 13b), the tabletop (Action 13a, needs
-people), the metrics page (§8.1 of the phase report, engineering), the beta gate (Action 13c).
+people), the beta gate (Action 13c, an owner decision).
 
 ## 4. What the repository can prove today
 
@@ -179,17 +193,21 @@ people), the metrics page (§8.1 of the phase report, engineering), the beta gat
 | Whole Python suite | `python -m pytest scripts/tests -q` | **531 passed, 1 skipped** |
 | Hindcast reports recompute from committed inputs | `cd scripts && python -m hindcast.cli check --require-reports` | ✅ 4 reports, every number matches |
 | Backend + frontend JS suites | `npx jest` (root `jest.config.cjs`) | **passed in CI** on PR #29's run `35286726745` (Backend Tests, Frontend Tests, Code Quality & Build, Security Audit, TFLite bundle smoke) — the JS suites could not be re-run locally because `npm ci` cannot reach `storage.googleapis.com` from the sandbox |
-| End-to-end browser suite | `npx playwright test` (CI job `E2E Tests`) | ❌ **failing** — see §5.1, which is the one red job on this branch |
-| Content engine snapshot | `node scripts/build_content_engine.mjs --check` | 87 routes match their inputs |
+| End-to-end browser suite | `npx playwright test` (CI job `E2E Tests`) | ✅ **23 passed** in CI run `35289414892` (job `105428805001`) and 23/23 locally; §5.1 records the failure this fixed |
+| Content engine snapshot | `node scripts/build_content_engine.mjs --check` | 75 routes match their inputs (74 generated pages plus `/model-performance`) |
+| Validation artifact matches the hindcast reports | `node scripts/build_model_performance.mjs --check` | ✅ 4 episodes, byte-identical to what the committed reports produce |
+| Published validation page | `npx jest __tests__/modelPerformance.test.js` | 22 tests: the artifact, the builder's refusals, the route, and the prerendered HTML |
 | Hindcast end-to-end | `gh workflow run hindcast.yml -f episode=all` | run `35286394326`: fetch → score → check → test → commit |
 | Phase reports | `docs/phase-reports/` | phase-2 … phase-9 present |
 
-### 5.1 The one red job: E2E on this branch, and its evidence chain
+### 5.1 The red job: E2E on this branch — the evidence chain, and the fix
 
-This is the most important operational finding of the audit, and it was invisible until the PR was
+This was the most important operational finding of the audit, and it was invisible until the PR was
 opened: **`ci.yml` runs only on pushes to `main`/`develop` and on pull requests into them**, so the
 531-test suite and the browser suite were never executed by GitHub for this branch's commits until
-PR #29.
+PR #29. It is recorded here in full, because the sequence (three consecutive E2E-only red runs, a
+local reproduction, two real layout defects, a green run) is the audit's own proof that the gate
+does what it claims.
 
 | Fact | Evidence |
 | --- | --- |
@@ -198,24 +216,29 @@ PR #29.
 | The failure is in the test run, not the build | the job's steps `Install dependencies`, `Install Playwright browsers`, `Build frontend` and `Start preview server` all succeeded; step `Run E2E tests` failed |
 | The cause is therefore in phases 0–9 | the only difference between the green run and this one is this branch's commits |
 | It is **deterministic**, not flaky | two consecutive runs on this branch (`35286726745` @ `939ef6b` and `35287273862` @ `f79f958`) both fail the same job while the other five stay green |
-| It cannot be attributed from the sandbox | the job logs and the `playwright-report` artifact are served from `results-receiver.actions.githubusercontent.com` and Azure blob storage, both unreachable here; and Playwright's browser download plus `npm ci`'s binaries are blocked, so the suite cannot be reproduced locally |
+| It could not be attributed from CI | the job logs and the `playwright-report` artifact are served from `results-receiver.actions.githubusercontent.com` and Azure blob storage, both unreachable from the sandbox — so the failure had to be reproduced rather than read |
+| Third consecutive failure | run `35287610101` (head `17ebb69`, the run linked from the PR): `E2E Tests` **failure**, every other job **success** |
+| Reproduced locally | the suite was run against the built bundle with a sandbox Chromium (`npm ci --ignore-scripts`, `npm run build:frontend`, preview on `:3000`): **21 passed / 2 failed** — `smoke.spec.ts:58` (`/advisories` overflowing by **86 px** at 1280) and `critical-paths.spec.ts:242` (the district brief overflowing by **20 px** at 375) |
+| Root cause 1 | the desktop navbar activates at `xl` (1280 px) and, with the P8 `Alerts` link added, measured **1366 px** inside a 1280 px viewport |
+| Root cause 2 | the printed district brief's "Interactive Dashboard" row: a label plus an unbroken 44-character URL cannot share a 375 px line |
+| Fix | commit `e2cd663` — the "Locate Me" label becomes `2xl:`, nav items `px-2.5 2xl:px-3`, nav gap `gap-0.5 2xl:gap-1`; the brief's URL row wraps (`flex-wrap`, `min-w-0`, `break-all`). Two component files, no content or route changes |
+| Verified green | run `35289414892` (head `e2cd663`): **all six jobs success**, `E2E Tests` job `105428805001` with its `Run E2E tests` step green; `gh pr checks 29` all pass; local re-run **23/23** |
+| Audited afterwards | the branch tip now also regenerates the derived artifacts, so the gates above stay meaningful: `build_content_engine.mjs --check` (75 routes) and `build_model_performance.mjs --check` (4 episodes) both pass |
 
-**Consequence:** the branch is not mergeable as it stands — not because the work is wrong, but
-because nobody has yet seen *which* E2E spec regressed. The fix path is one of two, and either is
-fine: run `npx playwright test` on a machine with browsers (the suite's own README command), or
-re-run the CI job and read the report artifact. The likeliest areas, given what the phases touched
-and what the specs assert, are the surfaces Phase 5/7/8 edited — `Navbar.tsx`, `MenuDrawer.tsx`,
-`Footer.tsx`, the `/documentation → /docs` redirect added in `c9a4f70`, and the strict
-"no horizontal overflow" checks at 320/375/768/1280 px.
+**Consequence:** the branch is mergeable and the one red job is resolved rather than explained. The
+lesson recorded for future phases is the one the failure demonstrated: a layout change on the
+`xl` boundary has no unit test, so the browser suite is the only place it is observable — which is
+why it is worth keeping strict.
 
-*What is **not** claimed here:* that the E2E suite is fine, that the failure is flaky, or that it is
-unrelated to the phase work. It is a red job on a green baseline.
+*What is **not** claimed here:* that the E2E suite is exhaustive. It exercises one page's overflow at
+four widths; the second defect (the district brief) was found by the mobile-navigation spec, not by
+the overflow spec, so a third could exist undetected.
 
 ## 5. Claims that are **not** made (and must not be)
 
 | Claim | Why it may not be made yet |
 | --- | --- |
-| "The model is X % accurate" | no fitted calibration, and the hindcast's FAR denominator is a reporting boundary. The site's own content engine fails a build that publishes such a number. |
+| "The model is X % accurate" | no fitted calibration, and the hindcast's FAR denominator is a reporting boundary. Three separate gates now refuse such a number: the hindcast report schema never computes one, `scripts/build_model_performance.mjs` fails the build if a forbidden metric key appears, and its `--check` runs in CI. |
 | "Detects N of 4 events" | the four episodes are not independent samples (six districts shared between 2024 and 2025; the two cyclones overlap almost completely). |
 | "Early warning at 7–15 days" | the drivers are reanalysis. Every report calls the result a *ceiling on detection*, not lead-time skill; archived forecast fields (ECMWF MARS/CDS) are what a lead-time claim needs. |
 | "Validated with the CNN" | `cnn_evaluated: false` in all four reports; the tensor needs Earth Engine credentials for historical windows. |
@@ -244,10 +267,11 @@ unrelated to the phase work. It is a red job on a green baseline.
 5. **Fit and stamp the calibration map** once the archive is in (Action 13b), then set the WARNING
    threshold in writing (Action 5a). Expect the first genuine `WARNING`-band alert to be *wrong in
    class* until P2-6 lands — see the hindcast §5.
-6. **Publish the model-performance page** (§8.1 of the Phase 9 report): four episodes' detection
-   table, POD/FAR/CSI with the `None`s explained, the threshold-band comparison, the driver
-   comparison, and the "not claimed" list. This is the plan's public metrics dashboard, and it is a
-   build task now, not a research task.
+6. ~~**Publish the model-performance page**~~ — **done.** `/model-performance` is live in the build,
+   generated by `scripts/build_model_performance.mjs` from the four committed reports and gated by
+   `--check` in CI plus `__tests__/modelPerformance.test.js`; it publishes the detection table,
+   POD/FAR/CSI with the `None`s explained in place, the threshold bands, the driver comparison, the
+   saturated-term table and the "not claimed" list, and no accuracy percentage.
 
 ### P2 — the substantive fixes the hindcast found (pipeline owner)
 
@@ -292,6 +316,9 @@ unrelated to the phase work. It is a red job on a green baseline.
 
 ## Provenance and attribution
 
+**E2E fix and validation page:** `e2cd663` (layout fix) · `__tests__/modelPerformance.test.js`,
+`scripts/build_model_performance.mjs`, `frontend/public/data/model-performance.json` ·
+`docs/phase-reports/phase-9-validation-and-soft-launch.md` §8.1.
 **Phase commits:** P0 `3651bc5` · P1 `0337e4c` · P2 `24e79f1` · P2/P3 spine `ab1de5c` · P3 `951085b` ·
 P4 `e15eb8f` (+`47d7c1a`) · P5 `18295b5`, `9dfee27` · P6 `2315b19`, `4227bc0` · P7 `ebd67e9` ·
 P8 `c9a4f70` · P9 `f5a86db`, `fc9dcdb`, `242cd92`, `181d07a`, `f3963d4`, `db047ac`, `7276314` plus the

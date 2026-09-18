@@ -143,6 +143,22 @@ function renderLinks(links) {
   return `<nav aria-label="Related pages"><ul>${items.join('')}</ul></nav>`;
 }
 
+/**
+ * A section table. Cells are escaped through `renderInline`, so the composed copy can carry
+ * emphasis but never markup — the same rule as paragraphs. The wrapper is a plain `<div>`: the
+ * static CSS already makes tables full-width, and the React renderer adds the horizontal scroll
+ * affordance (`.hn-static` has no client-side navigation to hide a stray column behind).
+ */
+function renderTable(table) {
+  if (!table || !Array.isArray(table.columns) || !Array.isArray(table.rows)) return '';
+  const head = table.columns.map((column) => `<th scope="col">${renderInline(column)}</th>`).join('');
+  const body = table.rows
+    .map((row) => `<tr>${row.map((cell) => `<td>${renderInline(cell)}</td>`).join('')}</tr>`)
+    .join('');
+  const caption = table.caption ? `<caption>${renderInline(table.caption)}</caption>` : '';
+  return `<div class="hn-tablewrap"><table>${caption}<thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div>`;
+}
+
 function renderSections(sections) {
   if (!Array.isArray(sections) || sections.length === 0) return '';
   return sections
@@ -157,7 +173,7 @@ function renderSections(sections) {
       const callout = section.callout?.text
         ? `<p class="hn-callout hn-callout--${escapeHtml(section.callout.tone ?? 'info')}">${renderInline(section.callout.text)}</p>`
         : '';
-      return `<section>${heading}${paragraphs}${bullets}${callout}${renderLinks(section.links)}</section>`;
+      return `<section>${heading}${paragraphs}${bullets}${renderTable(section.table)}${callout}${renderLinks(section.links)}</section>`;
     })
     .join('');
 }
@@ -276,14 +292,16 @@ const STATIC_STYLES = `<style>
   .hn-static{max-width:60rem;margin:0 auto;padding:5.5rem 1.25rem 3rem;font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans",sans-serif;color:#0f172a;line-height:1.65}
   .hn-static h1{font-size:1.9rem;line-height:1.2;margin:0 0 .75rem;font-weight:800}
   .hn-static h2{font-size:1.15rem;margin:2rem 0 .5rem;font-weight:700}
-  .hn-static p{margin:.6rem 0;color:#334155}
+  .hn-static p{margin:.6rem 0;color:#334155;overflow-wrap:anywhere}
   .hn-static .hn-lead{font-size:1.03rem;color:#1e293b}
   .hn-static ul{margin:.5rem 0 1rem;padding-left:1.15rem;color:#334155}
   .hn-static li{margin:.3rem 0}
   .hn-static a{color:#b45309}
   .hn-static .hn-callout{border-left:3px solid #f9a825;background:#fffbeb;padding:.7rem .9rem;border-radius:.4rem;font-size:.94rem}
   .hn-static .hn-meta{font-size:.8rem;color:#64748b;border-top:1px solid #e2e8f0;padding-top:.9rem;margin-top:2rem}
-  .hn-static table{width:100%;border-collapse:collapse;margin:.75rem 0 1rem;font-size:.92rem}
+  .hn-static .hn-tablewrap{overflow-x:auto;margin:.75rem 0 1rem}
+  .hn-static table{width:100%;border-collapse:collapse;font-size:.92rem}
+  .hn-static li,.hn-static td,.hn-static th{overflow-wrap:anywhere}
   .hn-static caption{text-align:left;font-size:.8rem;color:#64748b;padding-bottom:.35rem}
   .hn-static th,.hn-static td{border-bottom:1px solid #e2e8f0;padding:.45rem .6rem .45rem 0;text-align:left;vertical-align:top}
   .hn-static .hn-state{display:inline-block;border:1px solid #cbd5e1;border-radius:999px;padding:.1rem .5rem;font-size:.75rem;font-weight:700;white-space:nowrap}

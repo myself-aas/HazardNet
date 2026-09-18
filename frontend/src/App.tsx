@@ -228,6 +228,10 @@ const AppContent: React.FC = () => {
               <Route path="/hazards" element={<GeneratedContentPage />} />
               <Route path="/hazards/:slug" element={<GeneratedContentPage />} />
               <Route path="/districts" element={<GeneratedContentPage />} />
+              {/* Phase 9 §8.1 — composed from the committed hindcast reports by the content
+                  engine. The route must exist here as well as in the prerendered HTML: the
+                  page a visitor reaches by clicking is served by the SPA. */}
+              <Route path="/model-performance" element={<GeneratedContentPage />} />
               <Route path="/districts/:id" element={<GeneratedContentPage />} />
               <Route path="/retrospectives" element={<GeneratedContentPage />} />
               <Route path="/retrospectives/:year" element={<GeneratedContentPage />} />

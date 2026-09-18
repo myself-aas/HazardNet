@@ -56,14 +56,19 @@ test.describe('HazardNet smoke', () => {
   });
 
   test('no horizontal overflow at common widths', async ({ page }) => {
-    for (const width of [320, 375, 768, 1280]) {
-      await page.setViewportSize({ width, height: 900 });
-      await page.goto(`${BASE}/advisories`);
-      // Measure only once the lazy route has rendered. Asserting immediately
-      // after `goto` measured an empty shell and reported 0px overflow while
-      // the real page scrolled ~285px sideways on a phone.
-      await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 20_000 });
-      await expectNoHorizontalOverflow(page, `/advisories @${width}px`);
+    // Two very different pages: the advisory screen (cards, chips, controls) and the
+    // generated validation page (eight-column tables). The second was added with Phase 9
+    // §8.1 — a wide table is exactly the kind of content that quietly widens a phone page.
+    for (const path of ['/advisories', '/model-performance']) {
+      for (const width of [320, 375, 768, 1280]) {
+        await page.setViewportSize({ width, height: 900 });
+        await page.goto(`${BASE}${path}`);
+        // Measure only once the lazy route has rendered. Asserting immediately
+        // after `goto` measured an empty shell and reported 0px overflow while
+        // the real page scrolled ~285px sideways on a phone.
+        await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 20_000 });
+        await expectNoHorizontalOverflow(page, `${path} @${width}px`);
+      }
     }
   });
 });

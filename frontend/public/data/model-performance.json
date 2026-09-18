@@ -1,0 +1,893 @@
+{
+  "schema": "hazardnet-model-performance/v1",
+  "generated_by": "scripts/build_model_performance.mjs",
+  "origin": "https://www.hazardnet.live",
+  "artifact_url": "https://www.hazardnet.live/data/model-performance.json",
+  "hindcast_version": "1.0.0",
+  "built_from": [
+    {
+      "path": "data/hindcast/reports/amphan-2020.json",
+      "sha256": "9b060a1aa4894951f035bfc7a195115f262878c04b8e6ec8616ea75197ed47e1",
+      "generated_at": "2026-09-17T23:20:48Z"
+    },
+    {
+      "path": "data/hindcast/reports/eastern-flood-2024.json",
+      "sha256": "11c770ae691a260eb7d816041e4cef6b9f46c3777f3f564dbf2e12d66abcc856",
+      "generated_at": "2026-09-17T23:20:50Z"
+    },
+    {
+      "path": "data/hindcast/reports/northeast-flood-2025.json",
+      "sha256": "d86c61420140a4f411e0ad300b969c845e2e3af07396df32291d5537d1fe91ee",
+      "generated_at": "2026-09-17T23:20:52Z"
+    },
+    {
+      "path": "data/hindcast/reports/yaas-2021.json",
+      "sha256": "ccbd419c24f813a2b95be93812516133d72b34f1d5460591f6e17a911e06c948",
+      "generated_at": "2026-09-17T23:21:56Z"
+    }
+  ],
+  "method": {
+    "driver_series_dir": "data/hindcast/drivers/",
+    "product": "Open-Meteo historical archive (ERA5 / ERA5-Land era reanalysis)",
+    "endpoint": "https://archive-api.open-meteo.com/v1/archive",
+    "variables": [
+      "temperature_2m_max",
+      "temperature_2m_min",
+      "precipitation_sum",
+      "wind_speed_10m_max",
+      "wind_gusts_10m_max",
+      "et0_fao_evapotranspiration"
+    ],
+    "is_forecast": false,
+    "is_forecast_note": "Reanalysis knows the weather that occurred inside the window. This measures whether the physics track, given that weather, flags the districts that were hit — a ceiling on detection, not forecast skill. A lead-time hindcast needs archived forecast fields (ECMWF MARS/CDS), which this harness has no credential for.",
+    "cnn_evaluated": false,
+    "cnn_note": "Severity and class come from the independent physics cross-check (scripts/physics_severity.py) run on reanalysis drivers. The CNN was not re-run: its t2 tensor needs Sentinel-1/2 + Landsat + ERA5-Land bands over Earth Engine for the historical window. These are not model-skill numbers.",
+    "alarm_threshold": 0.5,
+    "horizons": [
+      {
+        "name": "7_days",
+        "lead_days": 7
+      },
+      {
+        "name": "15_days",
+        "lead_days": 15
+      }
+    ],
+    "absence_means_no_event": false,
+    "absence_means_no_event_reason": "The truth set below names the districts the cited assessments report as affected. Districts nobody named are UNKNOWN, not negatives: the same reports do not claim to have surveyed all 64 districts, and the 2020 reporting was constrained by the COVID-19 response. Counting them as negatives would manufacture a false-alarm rate."
+  },
+  "totals": {
+    "episodes": 4,
+    "named_districts": 46,
+    "districts_with_a_scored_row": 46,
+    "flagged_any_class": 46,
+    "flagged_the_episode_class": 12,
+    "episode_class_over_threshold": 23,
+    "scored_samples": 92,
+    "alarmed_without_a_recorded_impact": 420,
+    "episodes_with_a_computable_pod": 1
+  },
+  "episodes": [
+    {
+      "id": "amphan-2020",
+      "title": "Cyclone Amphan — Bangladesh landfall, 20 May 2020",
+      "hazard_class": "Tropical Cyclone",
+      "onset_date": "2020-05-20",
+      "affected_count": 14,
+      "truth_completeness": "named-affected-only",
+      "truth_notes": [
+        "The named set is the evidence this harness scores against; the count claims are larger because the assessments did not name every district.",
+        "Implication for the score: recall (POD) is measurable against the named set, and the false-alarm ratio is NOT — the engine reports it as unmeasurable, which is the honest reading of a survey that covered the affected belt rather than all 64 districts.",
+        "Several named districts are spelled differently in the 2020 reporting ('Jessore', 'Jhalakati', 'Shatkhira', 'Pirozpur', 'Gopalgonj'); `as_written` records the source spelling and the resolver maps it to the app's district id."
+      ],
+      "known_limitations": [
+        "Reanalysis is not the forecast that existed on the issue date. This measures whether the physics track, given the weather that actually occurred in the window, flags the districts that were hit — a ceiling on detection, not a forecast skill score.",
+        "The CNN is NOT re-run: the t2 tensor needs Sentinel-1/2 + Landsat + ERA5-Land bands over GEE for the historical window, which this environment cannot reach (Earth Engine credentials) and which the Phase 9 plan assigns to the archive-loaded run.",
+        "Peak 24 h precipitation is approximated by the wettest reanalysis day in the window; the live pipeline uses the peak 6-hourly accumulation. A forward-flood term is therefore slightly understated.",
+        "The affected set is the districts named in the cited assessments. Non-listed districts are unknown, not clear."
+      ],
+      "report": {
+        "path": "data/hindcast/reports/amphan-2020.json",
+        "sha256": "9b060a1aa4894951f035bfc7a195115f262878c04b8e6ec8616ea75197ed47e1",
+        "generated_at": "2026-09-17T23:20:48Z"
+      },
+      "sources": [
+        {
+          "id": "hctt-response-plan",
+          "citation": "HCTT Response Plan — Cyclone Amphan, United Nations Bangladesh Coordinated Appeal (June–September 2020), citing MoDMR preliminary reports.",
+          "url": "https://reliefweb.int/report/bangladesh/hctt-response-plan-cyclone-amphan-united-nations-bangladesh-coordinated-appeal",
+          "accessed": "2026-09-18",
+          "what_it_evidences": "The nine most-impacted districts (Khulna, Satkhira, Barguna, Bhola, Patuakhali, Pirojpur, Noakhali, Bagerhat, Jessore) and the 19-district / 10-million-people affected claim."
+        },
+        {
+          "id": "hctt-monitoring-dashboard",
+          "citation": "HCTT Cyclone Amphan Response Plan: Monitoring Dashboard (10 August 2020).",
+          "url": "https://reliefweb.int/report/bangladesh/hctt-cyclone-amphan-response-plan-monitoring-dashboard-10-august-2020",
+          "accessed": "2026-09-18",
+          "what_it_evidences": "The seven districts the humanitarian response targeted (Khulna, Satkhira, Bagerhat, Patuakhali, Barguna, Bhola, Jashore) out of the nine most severely affected."
+        },
+        {
+          "id": "sentinel1-flood-mapping",
+          "citation": "Mapping floods in Bangladesh caused by Cyclone Amphan to support humanitarian response (PreventionWeb / UN-SPIDER partner mapping, May 2020).",
+          "url": "https://www.preventionweb.net/news/mapping-floods-bangladesh-caused-cyclone-amphan-support-humanitarian-response",
+          "accessed": "2026-09-18",
+          "what_it_evidences": "District-level flood inundation after landfall (Bagerhat, Barisal, Bhola, Barguna, Gopalganj, Jessore, Jhalakati, Jhenaidah, Khulna, Lakshmipur, Patuakhali, Pirojpur, Satkhira), from Sentinel-1 imagery of 22 May 2020."
+        },
+        {
+          "id": "delta-hub-overview",
+          "citation": "Cyclone Amphan in Bangladesh: An Overview — Living Deltas Hub (2022).",
+          "url": "https://livingdeltas.org/blog/cyclone-amphan-in-bangladesh-an-overview",
+          "accessed": "2026-09-18",
+          "what_it_evidences": "The storm's track, the great-danger-signal-10 alert for 11 coastal districts, and the '26 districts' framing."
+        }
+      ],
+      "detection": {
+        "named_districts": 14,
+        "districts_with_a_scored_row": 14,
+        "flagged_any_class": 14,
+        "flagged_the_episode_class": 0,
+        "episode_class_over_threshold": 0,
+        "alarm_threshold": 0.5,
+        "per_horizon": {
+          "7_days": {
+            "named_districts_with_a_row": 14,
+            "flagged_any_class": 14
+          },
+          "15_days": {
+            "named_districts_with_a_row": 14,
+            "flagged_any_class": 14
+          }
+        }
+      },
+      "scores": {
+        "status": "ok",
+        "status_reason": null,
+        "scored_samples": 28,
+        "predictions": 128,
+        "outcomes": 14,
+        "matched": 28,
+        "unmatched_no_outcome": 100,
+        "hits": 0,
+        "misses": 0,
+        "false_alarms": 28,
+        "observed_events": 0,
+        "forecast_events": 28,
+        "pod": null,
+        "far": 1,
+        "csi": 0
+      },
+      "drivers": {
+        "shipped": {
+          "name": "era5_10m_sustained",
+          "rows": 128,
+          "wind_kmh_min": 19.2,
+          "wind_kmh_max": 69.1,
+          "episode_class_score_min": 0.0136,
+          "episode_class_score_max": 0.248,
+          "named_the_episode_class": 0,
+          "episode_class_over_threshold": 0,
+          "top_class_distribution": {
+            "Fire": 127,
+            "Flash Flood": 1
+          }
+        },
+        "archive": {
+          "name": "era5_10m_gust",
+          "rows": 128,
+          "wind_kmh_min": 51.1,
+          "wind_kmh_max": 133.9,
+          "episode_class_score_min": 0.0987,
+          "episode_class_score_max": 0.5145,
+          "named_the_episode_class": 0,
+          "episode_class_over_threshold": 2,
+          "top_class_distribution": {
+            "Fire": 127,
+            "Flash Flood": 1
+          }
+        },
+        "finding": "With the sustained maximum the shipped pipeline uses, the episode's class scores 0.0136–0.2480 and crosses the 0.5 band on 0 of 128 rows; with the gust field the archive also carries it scores 0.0987–0.5145 and crosses on 2. The wind driver, not the formula alone, decides whether this event was detectable at the district point. Note what neither number fixes: the track's top class is Fire under either driver, so the separation between the wind-driven classes is a second, independent defect."
+      },
+      "saturation": {
+        "fire_wind": {
+          "rows": 128,
+          "rows_at_ceiling": 116
+        },
+        "fire_drying": {
+          "rows": 128,
+          "rows_at_ceiling": 128
+        },
+        "heat_persistence": {
+          "rows": 128,
+          "rows_at_ceiling": 128
+        },
+        "cold_persistence": {
+          "rows": 128,
+          "rows_at_ceiling": 128
+        }
+      },
+      "top_class_distribution": {
+        "shipped": {
+          "Fire": 127,
+          "Flash Flood": 1
+        },
+        "counterfactual": {
+          "Fire": 118,
+          "Flash Flood": 10
+        }
+      },
+      "counterfactual_finding": "In the shipped wiring the fire formula's drying term is at its ceiling on every row because it receives the horizon ET total, and both persistence terms are at theirs because they receive the horizon length. The counterfactual recomputes those three arguments with the quantities their formulas describe (mean daily ET, exceedance days above 30 °C / below 16 °C) and reports the difference. This is a wiring finding for the pipeline owner, measured here rather than asserted: the formulas themselves are not changed by this harness.",
+      "alarmed_without_a_recorded_impact": 100,
+      "caveats": [
+        "Reanalysis is not the forecast that existed on the issue date. This measures whether the physics track, given the weather that actually occurred in the window, flags the districts that were hit — a ceiling on detection, not a forecast skill score.",
+        "The CNN is NOT re-run: the t2 tensor needs Sentinel-1/2 + Landsat + ERA5-Land bands over GEE for the historical window, which this environment cannot reach (Earth Engine credentials) and which the Phase 9 plan assigns to the archive-loaded run.",
+        "Peak 24 h precipitation is approximated by the wettest reanalysis day in the window; the live pipeline uses the peak 6-hourly accumulation. A forward-flood term is therefore slightly understated.",
+        "The affected set is the districts named in the cited assessments. Non-listed districts are unknown, not clear."
+      ]
+    },
+    {
+      "id": "yaas-2021",
+      "title": "Cyclone Yaas — Bangladesh coast, 26 May 2021",
+      "hazard_class": "Tropical Cyclone",
+      "onset_date": "2021-05-26",
+      "affected_count": 9,
+      "truth_completeness": "named-affected-only",
+      "truth_notes": [
+        "The NAWG table publishes district-level affected populations for these nine districts; that table is what makes this episode's truth set stronger than Amphan's.",
+        "The 16-district framing again exceeds the named set, so the same rule applies: unnamed districts are unknown, not negative."
+      ],
+      "known_limitations": [
+        "Identical to the Amphan episode: reanalysis rather than archived forecast fields, CNN not re-run, peak precipitation approximated by the wettest day, unnamed districts unknown.",
+        "Amphan (2020) had not been recovered from when Yaas struck; the affected set therefore overlaps almost completely, which is a property of the coast, not of the truth set."
+      ],
+      "report": {
+        "path": "data/hindcast/reports/yaas-2021.json",
+        "sha256": "ccbd419c24f813a2b95be93812516133d72b34f1d5460591f6e17a911e06c948",
+        "generated_at": "2026-09-17T23:21:56Z"
+      },
+      "sources": [
+        {
+          "id": "nawg-jna",
+          "citation": "Cyclone YAAS: Light Coordinated Joint Needs Analysis — Needs Assessment Working Group (NAWG) & Information Management Working Group, Bangladesh, 6 June 2021.",
+          "url": "https://reliefweb.int/report/bangladesh/cyclone-yaas-light-coordinated-joint-needs-analysis-needs-assessment-working-group",
+          "accessed": "2026-09-18",
+          "what_it_evidences": "The district-level affected-population table (Bagerhat, Barguna, Barisal, Bhola, Jhalokathi, Khulna, Patuakhali, Pirozpur, Satkhira) and the 16-district / 1.3-million-people framing."
+        },
+        {
+          "id": "ifrc-dref-final",
+          "citation": "Bangladesh: Cyclone YAAS — Final Report, DREF operation MDRBD027 (IFRC, December 2021).",
+          "url": "https://reliefweb.int/report/bangladesh/bangladesh-cyclone-yaas-final-report-n-mdrbd027",
+          "accessed": "2026-09-18",
+          "what_it_evidences": "The nine coastal districts reached by the response, the most-affected ranking, and the housing/latrine/water-point damage figures."
+        }
+      ],
+      "detection": {
+        "named_districts": 9,
+        "districts_with_a_scored_row": 9,
+        "flagged_any_class": 9,
+        "flagged_the_episode_class": 0,
+        "episode_class_over_threshold": 0,
+        "alarm_threshold": 0.5,
+        "per_horizon": {
+          "7_days": {
+            "named_districts_with_a_row": 9,
+            "flagged_any_class": 9
+          },
+          "15_days": {
+            "named_districts_with_a_row": 9,
+            "flagged_any_class": 9
+          }
+        }
+      },
+      "scores": {
+        "status": "ok",
+        "status_reason": null,
+        "scored_samples": 18,
+        "predictions": 128,
+        "outcomes": 9,
+        "matched": 18,
+        "unmatched_no_outcome": 110,
+        "hits": 0,
+        "misses": 0,
+        "false_alarms": 18,
+        "observed_events": 0,
+        "forecast_events": 18,
+        "pod": null,
+        "far": 1,
+        "csi": 0
+      },
+      "drivers": {
+        "shipped": {
+          "name": "era5_10m_sustained",
+          "rows": 128,
+          "wind_kmh_min": 14.8,
+          "wind_kmh_max": 43.3,
+          "episode_class_score_min": 0.0285,
+          "episode_class_score_max": 0.2457,
+          "named_the_episode_class": 0,
+          "episode_class_over_threshold": 0,
+          "top_class_distribution": {
+            "Fire": 127,
+            "Flash Flood": 1
+          }
+        },
+        "archive": {
+          "name": "era5_10m_gust",
+          "rows": 128,
+          "wind_kmh_min": 37.4,
+          "wind_kmh_max": 84.6,
+          "episode_class_score_min": 0.0388,
+          "episode_class_score_max": 0.3166,
+          "named_the_episode_class": 0,
+          "episode_class_over_threshold": 0,
+          "top_class_distribution": {
+            "Fire": 127,
+            "Flash Flood": 1
+          }
+        },
+        "finding": "With the sustained maximum the shipped pipeline uses, the episode's class scores 0.0285–0.2457 and crosses the 0.5 band on 0 of 128 rows; with the gust field the archive also carries it scores 0.0388–0.3166 and crosses on 0. Even the gust field leaves the episode class below the band, so the wind argument alone does not explain the miss: at this distance from the track the driver the pipeline uses cannot represent the hazard, and the class the formula describes is unreachable for this event. Note what neither number fixes: the track's top class is Fire under either driver, so the separation between the wind-driven classes is a second, independent defect."
+      },
+      "saturation": {
+        "fire_wind": {
+          "rows": 128,
+          "rows_at_ceiling": 86
+        },
+        "fire_drying": {
+          "rows": 128,
+          "rows_at_ceiling": 128
+        },
+        "heat_persistence": {
+          "rows": 128,
+          "rows_at_ceiling": 128
+        },
+        "cold_persistence": {
+          "rows": 128,
+          "rows_at_ceiling": 128
+        }
+      },
+      "top_class_distribution": {
+        "shipped": {
+          "Fire": 127,
+          "Flash Flood": 1
+        },
+        "counterfactual": {
+          "Fire": 127,
+          "Flash Flood": 1
+        }
+      },
+      "counterfactual_finding": "In the shipped wiring the fire formula's drying term is at its ceiling on every row because it receives the horizon ET total, and both persistence terms are at theirs because they receive the horizon length. The counterfactual recomputes those three arguments with the quantities their formulas describe (mean daily ET, exceedance days above 30 °C / below 16 °C) and reports the difference. This is a wiring finding for the pipeline owner, measured here rather than asserted: the formulas themselves are not changed by this harness.",
+      "alarmed_without_a_recorded_impact": 110,
+      "caveats": [
+        "Identical to the Amphan episode: reanalysis rather than archived forecast fields, CNN not re-run, peak precipitation approximated by the wettest day, unnamed districts unknown.",
+        "Amphan (2020) had not been recovered from when Yaas struck; the affected set therefore overlaps almost completely, which is a property of the coast, not of the truth set."
+      ]
+    },
+    {
+      "id": "eastern-flood-2024",
+      "title": "Eastern flash floods — Feni, Cumilla, Noakhali, 20–30 August 2024",
+      "hazard_class": "Flash Flood",
+      "onset_date": "2024-08-24",
+      "affected_count": 13,
+      "truth_completeness": "named-affected-only",
+      "truth_notes": [
+        "The 11-district framing (Feni, Cumilla, Chattogram, Khagrachari, Noakhali, Moulvibazar, Habiganj, Brahmanbaria, Sylhet, Lakshmipur, Cox's Bazar) is consistent across the Red Crescent sitrep, the WHO update and the World Bank GRADE report; that agreement is why 11 of the 13 named rows carry tier `stated_affected`, and only the four districts WHO singles out carry `most_affected`.",
+        "Chandpur and Rangamati are named by different sources than the 11-district list (the NASA Disasters activation and UNICEF's report on the Khagrachhari–Rangamati belt). They are kept as `stated_affected` with their own source rather than dropped, and the count claim they are not part of is recorded above so the disagreement is visible.",
+        "The World Bank GRADE report puts 70 % of estimated damages in Noakhali, Cumilla and Feni — a second, independent ranking that agrees with the tier assignment.",
+        "The district spellings here are the *canonical* ones (`Cumilla`, `Cox's Bazar`, `Khagrachhari`) rather than the sources' (`Cumilla`, `Cox's Bazar`, `Khagrachari`); `scripts/hindcast/score.py` resolves every truth-set name through `etl.districts` before joining it to a prediction, so an alias spelling can no longer drop a district out of the table. The history is worth keeping: the first version of this file used `Comilla`/`Coxs Bazar` as the `district` value and the CI gate caught two districts missing from `per_district`."
+      ],
+      "known_limitations": [
+        "Reanalysis, not archived forecast — the number is a ceiling on detection, and the plan's lead-time requirement needs forecast fields the harness cannot see (same as the cyclone episodes).",
+        "The physics track was not re-run for this window and the CNN is not evaluated: detection is the independent cross-check track only.",
+        "Peak precipitation is approximated by the wettest day inside the window, and a district centroid cannot represent the hill-stream catchments that actually flooded — the same driver-fidelity limit the cyclone episodes expose, in the rainfall dimension.",
+        "`Flash Flood` is the class chosen for an event that was partly riverine: the Feni, Muhuri and Gomti rivers reached record levels, while the Khagrachhari/Rangamati and Sylhet-division flooding was flash and hill-stream in character. Flood and Flash Flood share their rainfall inputs in `physics_severity`, so the distinction is a reporting choice, not a measurement — recorded here so nobody reads a class match as a validation of the distinction."
+      ],
+      "report": {
+        "path": "data/hindcast/reports/eastern-flood-2024.json",
+        "sha256": "11c770ae691a260eb7d816041e4cef6b9f46c3777f3f564dbf2e12d66abcc856",
+        "generated_at": "2026-09-17T23:20:50Z"
+      },
+      "sources": [
+        {
+          "id": "bdrcs-sitrep3",
+          "citation": "BDRCS Situation Report 3 — Southeastern Flood, August 2024 (Bangladesh Red Crescent Society, 28 August 2024), citing 11 districts: Feni, Cumilla, Chattogram, Khagrachari, Noakhali, Moulvibazar, Habiganj, Brahmanbaria, Sylhet, Lakshmipur, Cox's Bazar.",
+          "url": "https://bdrcs.org/wp-content/uploads/2024/08/BDRCS-Sitrep-3-Southeastern-Flood-August-2024.pdf",
+          "accessed": "2026-09-18",
+          "what_it_evidences": "The 11-district affected list and the 73-upazila / 528-union scale of the event."
+        },
+        {
+          "id": "who-response",
+          "citation": "Rising Waters, Rising Challenges: WHO's Response to Severe Flooding in Bangladesh (WHO Bangladesh, 4 November 2024).",
+          "url": "https://www.who.int/bangladesh/news/detail/04-11-2024-rising-waters--rising-challenges-who-s-response-to-severe-flooding-in-bangladesh",
+          "accessed": "2026-09-18",
+          "what_it_evidences": "The most-severely-affected ranking (Feni, Noakhali, Lakshmipur, Cumilla) and the 11-district framing used by the health cluster."
+        },
+        {
+          "id": "nasa-disasters",
+          "citation": "Bangladesh Flooding August 2024 — Disasters activations (NASA Applied Sciences, 28 August 2024).",
+          "url": "https://appliedsciences.nasa.gov/what-we-do/disasters/disasters-activations/bangladesh-flooding-august-2024",
+          "accessed": "2026-09-18",
+          "what_it_evidences": "The 20 August 2024 start of the flooding, the depression over the Bay of Bengal as the meteorological trigger, and the Khagrachhari/Rangamati dimension of the affected area."
+        },
+        {
+          "id": "voa-modmr",
+          "citation": "Bangladesh floods claim 15 lives, affect more than 4.4 million (VOA News, 23 August 2024, reporting the MoDMR briefing).",
+          "url": "https://www.voanews.com/a/bangladesh-floods-claim-15-lives-affect-more-than-4-4-million-/7754825.html",
+          "accessed": "2026-09-18",
+          "what_it_evidences": "The 4.4-million / 887,000-family / 77-upazila figures from the Ministry of Disaster Management and Relief press briefing."
+        },
+        {
+          "id": "world-bank-grade",
+          "citation": "Global Rapid Post-Disaster Damage Estimation (GRADE) Report — August 2024 Floods, Bangladesh (World Bank, 2024).",
+          "url": "https://documents1.worldbank.org/curated/en/099921506192542727/pdf/IDU-3c0e1de6-9af6-40b9-99a3-78397d1041ac.pdf",
+          "accessed": "2026-09-18",
+          "what_it_evidences": "The spatial concentration of damages (over 70 % in Noakhali, Cumilla and Feni), the 74-deaths-across-9-districts count and the record water levels since 1988."
+        }
+      ],
+      "detection": {
+        "named_districts": 13,
+        "districts_with_a_scored_row": 13,
+        "flagged_any_class": 13,
+        "flagged_the_episode_class": 12,
+        "episode_class_over_threshold": 13,
+        "alarm_threshold": 0.5,
+        "per_horizon": {
+          "7_days": {
+            "named_districts_with_a_row": 13,
+            "flagged_any_class": 13
+          },
+          "15_days": {
+            "named_districts_with_a_row": 13,
+            "flagged_any_class": 13
+          }
+        }
+      },
+      "scores": {
+        "status": "ok",
+        "status_reason": null,
+        "scored_samples": 26,
+        "predictions": 128,
+        "outcomes": 13,
+        "matched": 26,
+        "unmatched_no_outcome": 102,
+        "hits": 22,
+        "misses": 0,
+        "false_alarms": 4,
+        "observed_events": 22,
+        "forecast_events": 26,
+        "pod": 1,
+        "far": 0.153846,
+        "csi": 0.846154
+      },
+      "drivers": {
+        "shipped": {
+          "name": "era5_10m_sustained",
+          "rows": 128,
+          "wind_kmh_min": 15,
+          "wind_kmh_max": 31.3,
+          "episode_class_score_min": 0.1175,
+          "episode_class_score_max": 1,
+          "named_the_episode_class": 40,
+          "episode_class_over_threshold": 83,
+          "top_class_distribution": {
+            "Fire": 88,
+            "Flash Flood": 40
+          }
+        },
+        "archive": {
+          "name": "era5_10m_gust",
+          "rows": 128,
+          "wind_kmh_min": 33.1,
+          "wind_kmh_max": 53.6,
+          "episode_class_score_min": 0.1175,
+          "episode_class_score_max": 1,
+          "named_the_episode_class": 31,
+          "episode_class_over_threshold": 83,
+          "top_class_distribution": {
+            "Fire": 97,
+            "Flash Flood": 31
+          }
+        },
+        "finding": "With the sustained maximum the shipped pipeline uses, the episode's class scores 0.1175–1.0000 and crosses the 0.5 band on 83 of 128 rows; with the gust field the archive also carries it scores 0.1175–1.0000 and crosses on 83. The wind driver, not the formula alone, decides whether this event was detectable at the district point. Note what neither number fixes: the track's top class is Fire under either driver, so the separation between the wind-driven classes is a second, independent defect."
+      },
+      "saturation": {
+        "fire_wind": {
+          "rows": 128,
+          "rows_at_ceiling": 36
+        },
+        "fire_drying": {
+          "rows": 128,
+          "rows_at_ceiling": 128
+        },
+        "heat_persistence": {
+          "rows": 128,
+          "rows_at_ceiling": 128
+        },
+        "cold_persistence": {
+          "rows": 128,
+          "rows_at_ceiling": 128
+        }
+      },
+      "top_class_distribution": {
+        "shipped": {
+          "Fire": 88,
+          "Flash Flood": 40
+        },
+        "counterfactual": {
+          "Fire": 69,
+          "Flash Flood": 59
+        }
+      },
+      "counterfactual_finding": "In the shipped wiring the fire formula's drying term is at its ceiling on every row because it receives the horizon ET total, and both persistence terms are at theirs because they receive the horizon length. The counterfactual recomputes those three arguments with the quantities their formulas describe (mean daily ET, exceedance days above 30 °C / below 16 °C) and reports the difference. This is a wiring finding for the pipeline owner, measured here rather than asserted: the formulas themselves are not changed by this harness.",
+      "alarmed_without_a_recorded_impact": 102,
+      "caveats": [
+        "Reanalysis, not archived forecast — the number is a ceiling on detection, and the plan's lead-time requirement needs forecast fields the harness cannot see (same as the cyclone episodes).",
+        "The physics track was not re-run for this window and the CNN is not evaluated: detection is the independent cross-check track only.",
+        "Peak precipitation is approximated by the wettest day inside the window, and a district centroid cannot represent the hill-stream catchments that actually flooded — the same driver-fidelity limit the cyclone episodes expose, in the rainfall dimension.",
+        "`Flash Flood` is the class chosen for an event that was partly riverine: the Feni, Muhuri and Gomti rivers reached record levels, while the Khagrachhari/Rangamati and Sylhet-division flooding was flash and hill-stream in character. Flood and Flash Flood share their rainfall inputs in `physics_severity`, so the distinction is a reporting choice, not a measurement — recorded here so nobody reads a class match as a validation of the distinction."
+      ]
+    },
+    {
+      "id": "northeast-flood-2025",
+      "title": "Northeast and coastal monsoon floods — Sylhet, Sunamganj and the hill districts, 1 June 2025",
+      "hazard_class": "Flood",
+      "onset_date": "2025-06-01",
+      "affected_count": 10,
+      "truth_completeness": "named-affected-only",
+      "truth_notes": [
+        "One reporter, one tier: unlike the cyclone episodes this truth set has a single source and therefore no independent agreement to lean on. Every row is `severely_affected` — a tier the source's own wording supports — and the report's detection counts are correspondingly weaker evidence than the 2024 episode's, which three organisations agree on.",
+        "The 2024 eastern flood and this event share six districts (Sylhet, Moulvibazar, Habiganj, Noakhali, Khagrachari and the hill belt). Two episodes are therefore not two independent samples, and the report says so rather than adding them into a '2 of 4 events detected' figure."
+      ],
+      "known_limitations": [
+        "Single-sourced truth set, and an onset date taken from the situation report rather than from a dated event record.",
+        "Reanalysis, not archived forecast — a ceiling on detection, as with every episode here.",
+        "CNN not re-run; detection is the physics cross-check track only.",
+        "Basin flooding depends on upstream rainfall in Meghalaya and Assam that the Bangladesh district centroids do not sample; the driver limitation is structural for the Sylhet/Sunamganj part of this affected set."
+      ],
+      "report": {
+        "path": "data/hindcast/reports/northeast-flood-2025.json",
+        "sha256": "d86c61420140a4f411e0ad300b969c845e2e3af07396df32291d5537d1fe91ee",
+        "generated_at": "2026-09-17T23:20:52Z"
+      },
+      "sources": [
+        {
+          "id": "bdrcs-flood-2025",
+          "citation": "Situation Report 1 — Flood 2025 (Bangladesh Red Crescent Society, 2 June 2025), reporting the situation as of 1 June 2025: Sylhet, Sunamganj, Moulvibazar, Habiganj, Netrokona, Noakhali, Bhola, Khagrachari, Bandarban and Rangamati severely affected.",
+          "url": "https://bdrcs.org/situation-report-1-flood-2025/",
+          "accessed": "2026-09-18",
+          "what_it_evidences": "The ten-district affected list and the losses (lives, displacement, housing, agriculture) as of 1 June 2025."
+        }
+      ],
+      "detection": {
+        "named_districts": 10,
+        "districts_with_a_scored_row": 10,
+        "flagged_any_class": 10,
+        "flagged_the_episode_class": 0,
+        "episode_class_over_threshold": 10,
+        "alarm_threshold": 0.5,
+        "per_horizon": {
+          "7_days": {
+            "named_districts_with_a_row": 10,
+            "flagged_any_class": 10
+          },
+          "15_days": {
+            "named_districts_with_a_row": 10,
+            "flagged_any_class": 10
+          }
+        }
+      },
+      "scores": {
+        "status": "ok",
+        "status_reason": null,
+        "scored_samples": 20,
+        "predictions": 128,
+        "outcomes": 10,
+        "matched": 20,
+        "unmatched_no_outcome": 108,
+        "hits": 0,
+        "misses": 0,
+        "false_alarms": 20,
+        "observed_events": 0,
+        "forecast_events": 20,
+        "pod": null,
+        "far": 1,
+        "csi": 0
+      },
+      "drivers": {
+        "shipped": {
+          "name": "era5_10m_sustained",
+          "rows": 128,
+          "wind_kmh_min": 25.7,
+          "wind_kmh_max": 44.5,
+          "episode_class_score_min": 0.2097,
+          "episode_class_score_max": 1,
+          "named_the_episode_class": 0,
+          "episode_class_over_threshold": 101,
+          "top_class_distribution": {
+            "Fire": 75,
+            "Flash Flood": 53
+          }
+        },
+        "archive": {
+          "name": "era5_10m_gust",
+          "rows": 128,
+          "wind_kmh_min": 49,
+          "wind_kmh_max": 85,
+          "episode_class_score_min": 0.2097,
+          "episode_class_score_max": 1,
+          "named_the_episode_class": 0,
+          "episode_class_over_threshold": 101,
+          "top_class_distribution": {
+            "Fire": 75,
+            "Flash Flood": 53
+          }
+        },
+        "finding": "With the sustained maximum the shipped pipeline uses, the episode's class scores 0.2097–1.0000 and crosses the 0.5 band on 101 of 128 rows; with the gust field the archive also carries it scores 0.2097–1.0000 and crosses on 101. The wind driver, not the formula alone, decides whether this event was detectable at the district point. Note what neither number fixes: the track's top class is Fire under either driver, so the separation between the wind-driven classes is a second, independent defect."
+      },
+      "saturation": {
+        "fire_wind": {
+          "rows": 128,
+          "rows_at_ceiling": 128
+        },
+        "fire_drying": {
+          "rows": 128,
+          "rows_at_ceiling": 128
+        },
+        "heat_persistence": {
+          "rows": 128,
+          "rows_at_ceiling": 128
+        },
+        "cold_persistence": {
+          "rows": 128,
+          "rows_at_ceiling": 128
+        }
+      },
+      "top_class_distribution": {
+        "shipped": {
+          "Fire": 75,
+          "Flash Flood": 53
+        },
+        "counterfactual": {
+          "Fire": 54,
+          "Flash Flood": 74
+        }
+      },
+      "counterfactual_finding": "In the shipped wiring the fire formula's drying term is at its ceiling on every row because it receives the horizon ET total, and both persistence terms are at theirs because they receive the horizon length. The counterfactual recomputes those three arguments with the quantities their formulas describe (mean daily ET, exceedance days above 30 °C / below 16 °C) and reports the difference. This is a wiring finding for the pipeline owner, measured here rather than asserted: the formulas themselves are not changed by this harness.",
+      "alarmed_without_a_recorded_impact": 108,
+      "caveats": [
+        "Single-sourced truth set, and an onset date taken from the situation report rather than from a dated event record.",
+        "Reanalysis, not archived forecast — a ceiling on detection, as with every episode here.",
+        "CNN not re-run; detection is the physics cross-check track only.",
+        "Basin flooding depends on upstream rainfall in Meghalaya and Assam that the Bangladesh district centroids do not sample; the driver limitation is structural for the Sylhet/Sunamganj part of this affected set."
+      ]
+    }
+  ],
+  "threshold_sensitivity": [
+    {
+      "episode": "amphan-2020",
+      "alarm_threshold": 0.4,
+      "band": "PRODUCT_SPEC §1.3 WATCH band",
+      "scored_samples": 28,
+      "hits": 0,
+      "misses": 0,
+      "false_alarms": 28,
+      "pod": null,
+      "far": 1
+    },
+    {
+      "episode": "amphan-2020",
+      "alarm_threshold": 0.5,
+      "band": "harness default",
+      "scored_samples": 28,
+      "hits": 0,
+      "misses": 0,
+      "false_alarms": 28,
+      "pod": null,
+      "far": 1
+    },
+    {
+      "episode": "amphan-2020",
+      "alarm_threshold": 0.65,
+      "band": "PRODUCT_SPEC §1.3 WARNING band",
+      "scored_samples": 28,
+      "hits": 0,
+      "misses": 0,
+      "false_alarms": 28,
+      "pod": null,
+      "far": 1
+    },
+    {
+      "episode": "eastern-flood-2024",
+      "alarm_threshold": 0.4,
+      "band": "PRODUCT_SPEC §1.3 WATCH band",
+      "scored_samples": 26,
+      "hits": 22,
+      "misses": 0,
+      "false_alarms": 4,
+      "pod": 1,
+      "far": 0.153846
+    },
+    {
+      "episode": "eastern-flood-2024",
+      "alarm_threshold": 0.5,
+      "band": "harness default",
+      "scored_samples": 26,
+      "hits": 22,
+      "misses": 0,
+      "false_alarms": 4,
+      "pod": 1,
+      "far": 0.153846
+    },
+    {
+      "episode": "eastern-flood-2024",
+      "alarm_threshold": 0.65,
+      "band": "PRODUCT_SPEC §1.3 WARNING band",
+      "scored_samples": 26,
+      "hits": 22,
+      "misses": 0,
+      "false_alarms": 4,
+      "pod": 1,
+      "far": 0.153846
+    },
+    {
+      "episode": "northeast-flood-2025",
+      "alarm_threshold": 0.4,
+      "band": "PRODUCT_SPEC §1.3 WATCH band",
+      "scored_samples": 20,
+      "hits": 0,
+      "misses": 0,
+      "false_alarms": 20,
+      "pod": null,
+      "far": 1
+    },
+    {
+      "episode": "northeast-flood-2025",
+      "alarm_threshold": 0.5,
+      "band": "harness default",
+      "scored_samples": 20,
+      "hits": 0,
+      "misses": 0,
+      "false_alarms": 20,
+      "pod": null,
+      "far": 1
+    },
+    {
+      "episode": "northeast-flood-2025",
+      "alarm_threshold": 0.65,
+      "band": "PRODUCT_SPEC §1.3 WARNING band",
+      "scored_samples": 20,
+      "hits": 0,
+      "misses": 0,
+      "false_alarms": 20,
+      "pod": null,
+      "far": 1
+    },
+    {
+      "episode": "yaas-2021",
+      "alarm_threshold": 0.4,
+      "band": "PRODUCT_SPEC §1.3 WATCH band",
+      "scored_samples": 18,
+      "hits": 0,
+      "misses": 0,
+      "false_alarms": 18,
+      "pod": null,
+      "far": 1
+    },
+    {
+      "episode": "yaas-2021",
+      "alarm_threshold": 0.5,
+      "band": "harness default",
+      "scored_samples": 18,
+      "hits": 0,
+      "misses": 0,
+      "false_alarms": 18,
+      "pod": null,
+      "far": 1
+    },
+    {
+      "episode": "yaas-2021",
+      "alarm_threshold": 0.65,
+      "band": "PRODUCT_SPEC §1.3 WARNING band",
+      "scored_samples": 18,
+      "hits": 0,
+      "misses": 0,
+      "false_alarms": 18,
+      "pod": null,
+      "far": 1
+    }
+  ],
+  "not_published": [
+    "Reanalysis is not the forecast that existed on the issue date. This measures whether the physics track, given the weather that actually occurred in the window, flags the districts that were hit — a ceiling on detection, not a forecast skill score.",
+    "The CNN is NOT re-run: the t2 tensor needs Sentinel-1/2 + Landsat + ERA5-Land bands over GEE for the historical window, which this environment cannot reach (Earth Engine credentials) and which the Phase 9 plan assigns to the archive-loaded run.",
+    "Peak 24 h precipitation is approximated by the wettest reanalysis day in the window; the live pipeline uses the peak 6-hourly accumulation. A forward-flood term is therefore slightly understated.",
+    "The affected set is the districts named in the cited assessments. Non-listed districts are unknown, not clear.",
+    "Identical to the Amphan episode: reanalysis rather than archived forecast fields, CNN not re-run, peak precipitation approximated by the wettest day, unnamed districts unknown.",
+    "Amphan (2020) had not been recovered from when Yaas struck; the affected set therefore overlaps almost completely, which is a property of the coast, not of the truth set.",
+    "Reanalysis, not archived forecast — the number is a ceiling on detection, and the plan's lead-time requirement needs forecast fields the harness cannot see (same as the cyclone episodes).",
+    "The physics track was not re-run for this window and the CNN is not evaluated: detection is the independent cross-check track only.",
+    "Peak precipitation is approximated by the wettest day inside the window, and a district centroid cannot represent the hill-stream catchments that actually flooded — the same driver-fidelity limit the cyclone episodes expose, in the rainfall dimension.",
+    "`Flash Flood` is the class chosen for an event that was partly riverine: the Feni, Muhuri and Gomti rivers reached record levels, while the Khagrachhari/Rangamati and Sylhet-division flooding was flash and hill-stream in character. Flood and Flash Flood share their rainfall inputs in `physics_severity`, so the distinction is a reporting choice, not a measurement — recorded here so nobody reads a class match as a validation of the distinction.",
+    "Single-sourced truth set, and an onset date taken from the situation report rather than from a dated event record.",
+    "Reanalysis, not archived forecast — a ceiling on detection, as with every episode here.",
+    "CNN not re-run; detection is the physics cross-check track only.",
+    "Basin flooding depends on upstream rainfall in Meghalaya and Assam that the Bangladesh district centroids do not sample; the driver limitation is structural for the Sylhet/Sunamganj part of this affected set."
+  ],
+  "how_to_read": [
+    "`evaluation.scores.events` is class-strict: an alarm is a hit only when the predict track *named* the class that occurred. A district correctly flagged under a different class therefore appears there as a false alarm, which is why the class-agnostic `detection.flagged_any_class` exists — read them together.",
+    "`evaluation.scores.per_class` is one-vs-rest per class. `pod: 0.0` with `misses: N` for the episode class means the track never named that class, not that it scored the district low; `detection.episode_class_over_threshold` separates the two.",
+    "`detection` counts over the districts the sources name, per horizon.",
+    "Nothing in this report covers a district nobody named. Unknown is not clear, and the far column is unmeasurable rather than zero when no negative sample exists."
+  ],
+  "citations": [
+    {
+      "id": "hctt-response-plan",
+      "citation": "HCTT Response Plan — Cyclone Amphan, United Nations Bangladesh Coordinated Appeal (June–September 2020), citing MoDMR preliminary reports.",
+      "url": "https://reliefweb.int/report/bangladesh/hctt-response-plan-cyclone-amphan-united-nations-bangladesh-coordinated-appeal",
+      "accessed": "2026-09-18"
+    },
+    {
+      "id": "hctt-monitoring-dashboard",
+      "citation": "HCTT Cyclone Amphan Response Plan: Monitoring Dashboard (10 August 2020).",
+      "url": "https://reliefweb.int/report/bangladesh/hctt-cyclone-amphan-response-plan-monitoring-dashboard-10-august-2020",
+      "accessed": "2026-09-18"
+    },
+    {
+      "id": "sentinel1-flood-mapping",
+      "citation": "Mapping floods in Bangladesh caused by Cyclone Amphan to support humanitarian response (PreventionWeb / UN-SPIDER partner mapping, May 2020).",
+      "url": "https://www.preventionweb.net/news/mapping-floods-bangladesh-caused-cyclone-amphan-support-humanitarian-response",
+      "accessed": "2026-09-18"
+    },
+    {
+      "id": "delta-hub-overview",
+      "citation": "Cyclone Amphan in Bangladesh: An Overview — Living Deltas Hub (2022).",
+      "url": "https://livingdeltas.org/blog/cyclone-amphan-in-bangladesh-an-overview",
+      "accessed": "2026-09-18"
+    },
+    {
+      "id": "nawg-jna",
+      "citation": "Cyclone YAAS: Light Coordinated Joint Needs Analysis — Needs Assessment Working Group (NAWG) & Information Management Working Group, Bangladesh, 6 June 2021.",
+      "url": "https://reliefweb.int/report/bangladesh/cyclone-yaas-light-coordinated-joint-needs-analysis-needs-assessment-working-group",
+      "accessed": "2026-09-18"
+    },
+    {
+      "id": "ifrc-dref-final",
+      "citation": "Bangladesh: Cyclone YAAS — Final Report, DREF operation MDRBD027 (IFRC, December 2021).",
+      "url": "https://reliefweb.int/report/bangladesh/bangladesh-cyclone-yaas-final-report-n-mdrbd027",
+      "accessed": "2026-09-18"
+    },
+    {
+      "id": "bdrcs-sitrep3",
+      "citation": "BDRCS Situation Report 3 — Southeastern Flood, August 2024 (Bangladesh Red Crescent Society, 28 August 2024), citing 11 districts: Feni, Cumilla, Chattogram, Khagrachari, Noakhali, Moulvibazar, Habiganj, Brahmanbaria, Sylhet, Lakshmipur, Cox's Bazar.",
+      "url": "https://bdrcs.org/wp-content/uploads/2024/08/BDRCS-Sitrep-3-Southeastern-Flood-August-2024.pdf",
+      "accessed": "2026-09-18"
+    },
+    {
+      "id": "who-response",
+      "citation": "Rising Waters, Rising Challenges: WHO's Response to Severe Flooding in Bangladesh (WHO Bangladesh, 4 November 2024).",
+      "url": "https://www.who.int/bangladesh/news/detail/04-11-2024-rising-waters--rising-challenges-who-s-response-to-severe-flooding-in-bangladesh",
+      "accessed": "2026-09-18"
+    },
+    {
+      "id": "nasa-disasters",
+      "citation": "Bangladesh Flooding August 2024 — Disasters activations (NASA Applied Sciences, 28 August 2024).",
+      "url": "https://appliedsciences.nasa.gov/what-we-do/disasters/disasters-activations/bangladesh-flooding-august-2024",
+      "accessed": "2026-09-18"
+    },
+    {
+      "id": "voa-modmr",
+      "citation": "Bangladesh floods claim 15 lives, affect more than 4.4 million (VOA News, 23 August 2024, reporting the MoDMR briefing).",
+      "url": "https://www.voanews.com/a/bangladesh-floods-claim-15-lives-affect-more-than-4-4-million-/7754825.html",
+      "accessed": "2026-09-18"
+    },
+    {
+      "id": "world-bank-grade",
+      "citation": "Global Rapid Post-Disaster Damage Estimation (GRADE) Report — August 2024 Floods, Bangladesh (World Bank, 2024).",
+      "url": "https://documents1.worldbank.org/curated/en/099921506192542727/pdf/IDU-3c0e1de6-9af6-40b9-99a3-78397d1041ac.pdf",
+      "accessed": "2026-09-18"
+    },
+    {
+      "id": "bdrcs-flood-2025",
+      "citation": "Situation Report 1 — Flood 2025 (Bangladesh Red Crescent Society, 2 June 2025), reporting the situation as of 1 June 2025: Sylhet, Sunamganj, Moulvibazar, Habiganj, Netrokona, Noakhali, Bhola, Khagrachari, Bandarban and Rangamati severely affected.",
+      "url": "https://bdrcs.org/situation-report-1-flood-2025/",
+      "accessed": "2026-09-18"
+    }
+  ]
+}
