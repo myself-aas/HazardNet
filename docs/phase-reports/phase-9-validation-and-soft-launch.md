@@ -287,7 +287,7 @@ right. Each is now a test.
 | 9.4 | Load the event archive, then fit and stamp the calibration map (Action 12 + 13b) | owner | needs the archive; 2,931 events is the model card's claim and nothing here restates it |
 | 9.5 | Run the tabletop exercise and write its record into `docs/ops/owner-actions.md` (Action 13a) | owner + duty desk | a facilitated exercise with people; the script and pass criteria are written |
 | 9.6 | Open the soft-launch beta gate (Action 13c) | owner | needs a stated scope and a named number owner; §10 lists the exact gate |
-| 9.7 | A 2023 monsoon episode (and any second cycle) to break the overlap between 2024 and 2025 | anyone | one JSON file plus a source list; the workflow picks it up automatically |
+| 9.7 | A 2023 episode and a second cycle to break the overlap between 2024 and 2025 | **done** — `data/hindcast/episodes/mocha-2023.json` (Cyclone Mocha, Cox's Bazar coast, 14 May 2023) | the episode is committed and validated (`hindcast.cli list` shows it); its drivers and report are produced by `hindcast.yml`, which fetches from Open-Meteo — the sandbox has no route to that endpoint |
 
 ### 8.1 The metrics page — spec, and what shipped
 
@@ -307,6 +307,7 @@ a metrics dashboard, and the honest dashboard for this system is the three-numbe
 | The builder | `scripts/build_model_performance.mjs` | Refuses an empty report directory, a mixed `hindcast_version`, a duplicate episode, `cnn_evaluated: true`, `drivers.is_forecast: true`, a report with no caveats or no citations, and any forbidden metric key in the output |
 | The page | composed in `scripts/build_content_engine.mjs`; tables rendered by `ArticlePage`/`prerender.mjs`; route registered in `App.tsx`; `Dataset` node (`kind: hindcast-validation`) emitted by `src/lib/structuredData.js` | Every number on the page is read from the artifact; the framing copy is fixed text, and the reports' findings, caveats and reading notes are reproduced verbatim |
 | The gate | `ci.yml` — `build_model_performance.mjs --check` beside the other derived-artifact gates, plus a Pipeline Scripts smoke test that asserts the refusals | A hand-edited artifact or a re-scored report fails CI before it reaches a deploy |
+| The coupling | `hindcast.yml` now rebuilds and commits `model-performance.json`, `generated-routes.json` and `content-index.json` together with the reports it writes | A gate on a derived artifact is only honest if the workflow that changes the inputs also regenerates the outputs; without this step the bot's own commit would fail the gate it feeds |
 | The tests | `__tests__/modelPerformance.test.js` (22 tests) | The artifact equals what the reports produce; `null` POD stays `null` and renders as `—`; no forbidden key; the route's tables match the artifact; the prerendered HTML carries the same numbers and the limits |
 
 **What the page publishes:** the detection table (all four episodes), POD/FAR/CSI with the
