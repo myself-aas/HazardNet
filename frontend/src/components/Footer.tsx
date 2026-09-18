@@ -63,7 +63,7 @@ export const Footer: React.FC = () => {
             </h4>
             <ul className="space-y-2 text-slate-600">
               <li>
-                <Link to="/" className="hover:text-slate-900 transition-colors">
+                <Link to="/live" className="hover:text-slate-900 transition-colors">
                   GIS Live Map
                 </Link>
               </li>

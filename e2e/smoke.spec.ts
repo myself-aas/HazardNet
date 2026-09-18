@@ -8,13 +8,21 @@ import { expect, test } from '@playwright/test';
 import { BASE, expectNoHorizontalOverflow, waitForAppShell } from './helpers';
 
 test.describe('HazardNet smoke', () => {
-  test('dashboard renders core UI', async ({ page }) => {
+  test('front door renders core UI', async ({ page }) => {
     await page.goto(BASE);
     await expect(page).toHaveTitle(/HazardNet/i);
     // The app shell must render a navigation landmark quickly.
     await expect(page.getByRole('banner').or(page.locator('header')).first()).toBeVisible({
       timeout: 15_000,
     });
+    // `/` is the editorial front door; the console is `/live` (PR #29).
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 15_000 });
+  });
+
+  test('the console boots at /live', async ({ page }) => {
+    await page.goto(`${BASE}/live`);
+    await waitForAppShell(page);
+    await expect(page.locator('.leaflet-container').first()).toBeVisible({ timeout: 20_000 });
   });
 
   test('advisory page exposes print/PDF export path', async ({ page }) => {
@@ -56,17 +64,24 @@ test.describe('HazardNet smoke', () => {
   });
 
   test('no horizontal overflow at common widths', async ({ page }) => {
-    // Two very different pages: the advisory screen (cards, chips, controls) and the
-    // generated validation page (eight-column tables). The second was added with Phase 9
-    // §8.1 — a wide table is exactly the kind of content that quietly widens a phone page.
-    for (const path of ['/advisories', '/model-performance']) {
+    // Four very different pages: the editorial front door and the console it links to
+    // (added with the PR #29 split), the advisory screen (cards, chips, controls) and the
+    // generated validation page (eight-column tables, added with Phase 9 §8.1 — a wide
+    // table is exactly the kind of content that quietly widens a phone page).
+    for (const path of ['/', '/live', '/advisories', '/model-performance']) {
       for (const width of [320, 375, 768, 1280]) {
         await page.setViewportSize({ width, height: 900 });
         await page.goto(`${BASE}${path}`);
         // Measure only once the lazy route has rendered. Asserting immediately
         // after `goto` measured an empty shell and reported 0px overflow while
-        // the real page scrolled ~285px sideways on a phone.
-        await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 20_000 });
+        // the real page scrolled ~285px sideways on a phone. The console at
+        // `/live` is the exception to the <h1> wait: its stage is a full-bleed
+        // map with no document heading, so its own readiness signal is the map.
+        if (path === '/live') {
+          await expect(page.locator('.leaflet-container').first()).toBeVisible({ timeout: 20_000 });
+        } else {
+          await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 20_000 });
+        }
         await expectNoHorizontalOverflow(page, `${path} @${width}px`);
       }
     }

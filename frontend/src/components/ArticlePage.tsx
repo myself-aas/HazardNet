@@ -109,7 +109,7 @@ export const ArticlePage: React.FC<{ path: string; introSlot?: React.ReactNode }
       <div className="mx-auto max-w-3xl space-y-4 py-16 text-center">
         <h1 className="text-xl font-black text-slate-900">Page unavailable</h1>
         <p className="text-sm text-slate-600">
-          This page&apos;s content could not be loaded. Return to the <Link to="/" className="font-bold text-amber-700">live map</Link>.
+          This page&apos;s content could not be loaded. Return to the <Link to="/live" className="font-bold text-nasa-blue-shade">live map</Link>.
         </p>
       </div>
     );

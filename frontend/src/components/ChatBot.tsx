@@ -92,7 +92,9 @@ export default function ChatBot() {
 
   return (
     <>
-      {/* Floating Action Button */}
+      {/* Floating Action Button. HDS semantics: this control *does something
+          here* (it opens the on-page assistant), so it is blue. Red is reserved
+          for "go somewhere" — navigation CTAs and errors. */}
       <AnimatePresence>
         {!isOpen && (
           <motion.button
@@ -103,7 +105,7 @@ export default function ChatBot() {
             exit={{ scale: 0, opacity: 0 }}
             whileHover={{ scale: 1.08 }}
             whileTap={{ scale: 0.92 }}
-            className="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-[9995] px-4 sm:px-5 py-2.5 sm:py-3 rounded-full bg-nasa-red hover:bg-nasa-red-shade text-slate-950 font-extrabold text-xs shadow-xl flex items-center gap-2 cursor-pointer"
+            className="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-[9995] px-4 sm:px-5 py-2.5 sm:py-3 rounded-full bg-nasa-blue hover:bg-nasa-blue-shade text-white font-extrabold text-xs shadow-xl flex items-center gap-2 cursor-pointer"
           >
             <span className="w-2 h-2 rounded-full bg-slate-950/70 animate-ping" />
             AI Advisor
@@ -257,7 +259,7 @@ export default function ChatBot() {
                   whileTap={{ scale: 0.95 }}
                   onClick={() => sendMessage(input)}
                   disabled={!input.trim() || loading}
-                  className="absolute right-2 px-3 py-1.5 bg-nasa-red text-white font-bold text-xs rounded-control hover:bg-nasa-red-shade disabled:opacity-40 transition-colors cursor-pointer"
+                  className="absolute right-2 px-3 py-1.5 bg-nasa-blue text-white font-bold text-xs rounded-control hover:bg-nasa-blue-shade disabled:opacity-40 transition-colors cursor-pointer"
                 >
                   Send
                 </motion.button>

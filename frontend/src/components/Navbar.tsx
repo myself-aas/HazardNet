@@ -110,8 +110,17 @@ export const Navbar: React.FC<NavbarProps> = ({
     setActiveMenu((prev) => (prev === menu ? null : menu));
   };
 
-  const isTransparentMode = isTransparent ?? (
+  // The transparent masthead belongs to the full-bleed map console (`/live`). The
+  // editorial front door at `/` is an ordinary page with an ordinary navbar.
+  /** The nav item covers both the editorial overview and the console it links to. */
+  const isHomeMenuRoute =
     location.pathname === '/' ||
+    location.pathname === '/live' ||
+    location.pathname.startsWith('/home') ||
+    location.pathname === '/forecast/overview';
+
+  const isTransparentMode = isTransparent ?? (
+    location.pathname === '/live' ||
     location.pathname === '/home' ||
     location.pathname === '/home/overview' ||
     location.pathname === '/forecast/overview'
@@ -223,7 +232,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     whileTap={{ scale: 0.98 }}
                     onClick={() => toggleMenu('home')}
                     className={`hn-nav-link px-1 2xl:px-2.5 py-2 transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0 focus-visible:outline-none ${
-                      activeMenu === 'home' || location.pathname.startsWith('/home')
+                      activeMenu === 'home' || isHomeMenuRoute
                         ? 'hn-nav-link-active'
                         : ''
                     }`}
@@ -248,14 +257,29 @@ export const Navbar: React.FC<NavbarProps> = ({
                       >
                         <motion.button
                           whileHover={{ x: 3 }}
-                          onClick={() => { navigate('/home/overview'); setActiveMenu(null); }}
+                          onClick={() => { navigate('/'); setActiveMenu(null); }}
+                          className="w-full p-2.5 text-left flex items-start gap-3 rounded-xl hover:bg-slate-100/90 transition-all cursor-pointer group"
+                        >
+                          <div className="p-2 rounded-xl bg-nasa-blue/10 text-nasa-blue-shade group-hover:bg-nasa-blue/20 transition-colors shrink-0">
+                            <MaterialIcon name="description" className="text-lg" />
+                          </div>
+                          <div>
+                            <div className="font-semibold text-slate-900 text-[13.5px]">Overview</div>
+                            <div className="text-[11.5px] text-slate-500 leading-tight mt-0.5">
+                              What this platform is for, what the last run produced, and where every number can be checked
+                            </div>
+                          </div>
+                        </motion.button>
+                        <motion.button
+                          whileHover={{ x: 3 }}
+                          onClick={() => { navigate('/live'); setActiveMenu(null); }}
                           className="w-full p-2.5 text-left flex items-start gap-3 rounded-xl hover:bg-slate-100/90 transition-all cursor-pointer group"
                         >
                           <div className="p-2 rounded-xl bg-nasa-blue/10 text-nasa-blue-shade group-hover:bg-nasa-blue/20 transition-colors shrink-0">
                             <MaterialIcon name="public" className="text-lg" />
                           </div>
                           <div>
-                            <div className="font-semibold text-slate-900 text-[13.5px]">GIS Overview & Earth Stage</div>
+                            <div className="font-semibold text-slate-900 text-[13.5px]">Live map & GIS console</div>
                             <div className="text-[11.5px] text-slate-500 leading-tight mt-0.5">Interactive 3D Bangladesh hazard map</div>
                           </div>
                         </motion.button>
@@ -651,7 +675,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 whileTap={{ scale: 0.97 }}
                 onClick={handleNavbarLocate}
                 disabled={isLocatingInNavbar}
-                className="px-3 py-1.5 rounded-xl bg-nasa-red hover:bg-nasa-red-shade text-slate-950 font-bold text-xs shadow-2xs border border-amber-300/80 transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-amber-500/50 focus-visible:outline-none"
+                className="px-3 py-1.5 rounded-control bg-nasa-blue hover:bg-nasa-blue-shade text-white font-bold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 focus-visible:outline-none"
                 title="Detect my location & map to nearest district"
               >
                 {isLocatingInNavbar ? (
@@ -772,7 +796,8 @@ export const Navbar: React.FC<NavbarProps> = ({
         onOpenProfile={() => setIsProfileModalOpen(true)}
         onOpenAuth={() => navigate('/login')}
         onSelectPage={(page) => {
-          if (page.toLowerCase().includes('home')) navigate('/home/overview');
+          if (page.toLowerCase().includes('overview')) navigate('/live');
+          else if (page.toLowerCase().includes('front door')) navigate('/');
           else if (page.toLowerCase().includes('alert')) navigate('/alerts');
           else if (page.toLowerCase().includes('forecast')) navigate('/forecast/overview');
           else if (page.toLowerCase().includes('advisories')) navigate('/advisories');

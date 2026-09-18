@@ -1,6 +1,6 @@
 {
   "schema": "hazardnet-content-index/v1",
-  "generated_at": "2026-09-18T01:47:27.391Z",
+  "generated_at": "2026-09-18T02:20:52.547Z",
   "generated_by": "scripts/build_content_engine.mjs",
   "origin": "https://www.hazardnet.live",
   "inputs": {
@@ -48,8 +48,8 @@
     "districts_without_outlook": 4,
     "retrospectives": 0,
     "model_performance_episodes": 5,
-    "prerendered_html_files": 97,
-    "sitemap_urls": 88
+    "prerendered_html_files": 98,
+    "sitemap_urls": 89
   },
   "unmatched_snapshot_districts": [],
   "routes": [

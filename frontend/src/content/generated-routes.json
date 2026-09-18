@@ -1,6 +1,6 @@
 {
   "schema": "hazardnet-generated-routes/v1",
-  "generated_at": "2026-09-18T01:47:27.391Z",
+  "generated_at": "2026-09-18T02:20:52.547Z",
   "generated_by": "scripts/build_content_engine.mjs",
   "origin": "https://www.hazardnet.live",
   "inputs": {

@@ -48,6 +48,9 @@ const ChatBot = lazy(() => import('./components/ChatBot'));
 // Long-form public reference pages. Copy lives in src/content/site-routes.json
 // and is prerendered to static HTML at build time (scripts/prerender.mjs).
 const ArticlePage = lazy(() => import('./components/ArticlePage'));
+// The editorial front door at `/`. Its copy is the `/` entry in the same
+// site-routes.json the prerenderer reads; only the live artifact panels are React.
+const FrontDoor = lazy(() => import('./pages/FrontDoor'));
 
 /**
  * Generated content pages (Phase 8). The hazard methodology pages, the district outlooks and the
@@ -81,8 +84,15 @@ const AppContent: React.FC = () => {
     initializeAttributionCapture();
   }, []);
 
+  /**
+   * `/live` — and only `/live` — is the full-bleed console: transparent navbar over the
+   * map, no page padding, no footer. `/` is an editorial page and gets the ordinary
+   * document flow (PR #29, "front door" split). `/home`, `/home/overview` and
+   * `/forecast/overview` remain valid console deep links, so they keep the full-bleed
+   * layout even though they are no longer the canonical address.
+   */
   const isHomePage =
-    location.pathname === '/' ||
+    location.pathname === '/live' ||
     location.pathname === '/home' ||
     location.pathname === '/home/overview' ||
     location.pathname === '/forecast/overview';
@@ -161,7 +171,11 @@ const AppContent: React.FC = () => {
           >
             <Suspense fallback={<RouteFallback />}>
               <Routes location={location}>
-              <Route path="/" element={<Dashboard defaultTab="gis" isFullScreen={true} />} />
+              {/* `/` is the editorial front door; the console lives at `/live`. The
+                  `/home*` and `/forecast/overview` paths are kept as console deep links
+                  because they were published for the whole life of the project. */}
+              <Route path="/" element={<FrontDoor />} />
+              <Route path="/live" element={<Dashboard defaultTab="gis" isFullScreen={true} />} />
               <Route path="/home" element={<Dashboard defaultTab="gis" isFullScreen={true} />} />
               <Route path="/home/overview" element={<Dashboard defaultTab="gis" isFullScreen={true} />} />
               <Route path="/forecast/overview" element={<Dashboard defaultTab="gis" isFullScreen={true} />} />

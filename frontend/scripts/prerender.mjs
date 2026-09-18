@@ -105,6 +105,14 @@ const ALLOWED_LINK_HOSTS = new Set([
   'openstreetmap.org',
   'www.openstreetmap.org',
   'data.humdata.org',
+  // Added with the editorial front door (PR #29): the authority-boundary section
+  // links to the bodies that issue Bangladesh's official warnings, and the
+  // attribution block links to the author's ORCID record and the university.
+  'modmr.gov.bd',
+  'www.modmr.gov.bd',
+  'orcid.org',
+  'bau.edu.bd',
+  'csm.bau.edu.bd',
 ]);
 
 /**
@@ -178,6 +186,41 @@ function renderSections(sections) {
     .join('');
 }
 
+/**
+ * The attribution block, injected into the front door's static HTML.
+ *
+ * `src/content/attribution.json` is the single copy of these facts — the same file the
+ * JSON-LD graph and `CITATION.cff` are built from. Rendering it into the static body means
+ * a reader with no JavaScript, and a crawler that does not execute any, still sees who
+ * wrote this and under whose supervision, instead of only finding it in structured data.
+ */
+function renderAttribution(person) {
+  const author = person.author ?? {};
+  const work = person.work ?? {};
+  const supervisor = person.supervisor ?? {};
+  const coSupervisor = person.coSupervisor ?? {};
+  const department = person.department ?? {};
+  return [
+    '<section aria-labelledby="attribution-heading">',
+    '<h2 id="attribution-heading">Attribution</h2>',
+    '<p>',
+    renderInline(`${author.name ?? ''} (${author.role ?? ''}${author.orcid ? `, ORCID ${author.orcid}` : ''}) — ${work.name ?? ''}.`),
+    ` ${renderInline(`${work.type ?? 'Work'}, ${department.name ?? ''}, ${department.university ?? ''}`)}`,
+    supervisor.name ? `, supervised by ${renderInline(supervisor.name)} (${renderInline(supervisor.role ?? 'Supervisor')}).` : '.',
+    '</p>',
+    work.citationText ? `<p class="hn-meta">${renderInline(work.citationText)}</p>` : '',
+    (supervisor.url || coSupervisor.url || work.repository)
+      ? `<nav aria-label="Project links"><ul>${renderLinks([
+          work.repository ? { label: 'Repository', href: work.repository } : null,
+          department.url ? { label: 'Institution', href: department.url } : null,
+          supervisor.url ? { label: 'Supervisor profile', href: supervisor.url } : null,
+          coSupervisor.url ? { label: 'Co-supervisor profile', href: coSupervisor.url } : null,
+        ].filter(Boolean))}</ul></nav>`
+      : '',
+    '</section>',
+  ].join('');
+}
+
 function renderFaqs(faqs) {
   if (!Array.isArray(faqs) || faqs.length === 0) return '';
   const items = faqs
@@ -200,6 +243,9 @@ function renderBody(route) {
     `<h1>${renderInline(route.h1 ?? route.title)}</h1>`,
     route.standfirst ? `<p class="hn-lead">${renderInline(route.standfirst)}</p>` : '',
     route.path === '/status' ? renderStatusPanel(statusArtifact) : '',
+    // The front door is the page whose job is to say who is behind the numbers, so the
+    // attribution block ships in its static HTML rather than only in the hydrated app.
+    route.path === '/' ? renderAttribution(attribution) : '',
     renderSections(route.sections),
     renderFaqs(route.faqs),
     route.updated
@@ -289,15 +335,15 @@ function renderHead(route) {
  * so a visitor does not see a jarring flash before React mounts.
  */
 const STATIC_STYLES = `<style>
-  .hn-static{max-width:60rem;margin:0 auto;padding:5.5rem 1.25rem 3rem;font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans",sans-serif;color:#0f172a;line-height:1.65}
+  .hn-static{max-width:60rem;margin:0 auto;padding:5.5rem 1.25rem 3rem;font-family:"Inter","Public Sans Web",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:#17171b;line-height:1.65}
   .hn-static h1{font-size:1.9rem;line-height:1.2;margin:0 0 .75rem;font-weight:800}
   .hn-static h2{font-size:1.15rem;margin:2rem 0 .5rem;font-weight:700}
   .hn-static p{margin:.6rem 0;color:#334155;overflow-wrap:anywhere}
   .hn-static .hn-lead{font-size:1.03rem;color:#1e293b}
   .hn-static ul{margin:.5rem 0 1rem;padding-left:1.15rem;color:#334155}
   .hn-static li{margin:.3rem 0}
-  .hn-static a{color:#b45309}
-  .hn-static .hn-callout{border-left:3px solid #f9a825;background:#fffbeb;padding:.7rem .9rem;border-radius:.4rem;font-size:.94rem}
+  .hn-static a{color:#0b3d91}
+  .hn-static .hn-callout{border-left:3px solid #ea6f24;background:#fce3ca;padding:.7rem .9rem;border-radius:0;font-size:.94rem}
   .hn-static .hn-meta{font-size:.8rem;color:#64748b;border-top:1px solid #e2e8f0;padding-top:.9rem;margin-top:2rem}
   .hn-static .hn-tablewrap{overflow-x:auto;margin:.75rem 0 1rem}
   .hn-static table{width:100%;border-collapse:collapse;font-size:.92rem}
@@ -305,9 +351,9 @@ const STATIC_STYLES = `<style>
   .hn-static caption{text-align:left;font-size:.8rem;color:#64748b;padding-bottom:.35rem}
   .hn-static th,.hn-static td{border-bottom:1px solid #e2e8f0;padding:.45rem .6rem .45rem 0;text-align:left;vertical-align:top}
   .hn-static .hn-state{display:inline-block;border:1px solid #cbd5e1;border-radius:999px;padding:.1rem .5rem;font-size:.75rem;font-weight:700;white-space:nowrap}
-  .hn-static .hn-state-fresh{border-color:#86efac;background:#f0fdf4;color:#166534}
-  .hn-static .hn-state-stale{border-color:#fcd34d;background:#fffbeb;color:#92400e}
-  .hn-static .hn-state-failing{border-color:#fca5a5;background:#fef2f2;color:#991b1b}
+  .hn-static .hn-state-fresh{border-color:#47da84;background:#f6f6f6;color:#17171b}
+  .hn-static .hn-state-stale{border-color:#ea6f24;background:#fce3ca;color:#3b1b00}
+  .hn-static .hn-state-failing{border-color:#f64137;background:#fce3ca;color:#b60109}
   .hn-static .hn-state-unknown{border-color:#cbd5e1;background:#f8fafc;color:#475569}
   .hn-static .hn-reason{display:block;font-weight:400;font-size:.8rem;color:#64748b}
   .hn-static .hn-path{display:block;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.72rem;color:#94a3b8}
@@ -316,7 +362,7 @@ const STATIC_STYLES = `<style>
   .hn-static .hn-loading{font-size:.8rem;color:#94a3b8}
   .hn-static details{border-bottom:1px solid #e2e8f0;padding:.55rem 0}
   .hn-static summary{font-weight:600;cursor:pointer}
-  @media (prefers-color-scheme:dark){body{background:#0b1120}.hn-static{color:#e2e8f0}.hn-static p,.hn-static ul,.hn-static li{color:#cbd5e1}.hn-static .hn-callout{background:#1e293b;border-left-color:#f9a825}}
+  @media (prefers-color-scheme:dark){body{background:#17171b}.hn-static{color:#e3e3e3}.hn-static p,.hn-static ul,.hn-static li{color:#d1d1d1}.hn-static .hn-callout{background:#2e2e32;border-left-color:#ea6f24}.hn-static a{color:#288bff}}
 </style>`;
 
 function buildHtml(route) {

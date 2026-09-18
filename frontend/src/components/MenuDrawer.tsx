@@ -90,7 +90,8 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
       category: 'National Maps',
       icon: 'map',
       items: [
-        { id: 'overview', title: 'GIS Overview', path: '/home/overview', icon: 'public', badge: '3D' },
+        { id: 'live', title: 'Live Map & GIS Console', path: '/live', icon: 'public', badge: '3D' },
+        { id: 'front-door', title: 'Overview (front door)', path: '/', icon: 'description' },
         { id: 'alerts', title: 'Alerts', path: '/alerts', icon: 'notifications_active' },
         { id: 'my-districts', title: 'Saved Districts', path: '/forecast/my-districts', icon: 'bookmark' },
         { id: 'compare', title: 'Compare Districts', path: '/forecast/compare', icon: 'compare_arrows' },
