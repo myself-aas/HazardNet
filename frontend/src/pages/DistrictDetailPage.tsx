@@ -787,16 +787,21 @@ export const DistrictDetailPage: React.FC = () => {
                 <span className="text-slate-500 font-medium">Surface Elevation Datum:</span>
                 <span className="font-mono font-bold text-slate-900">{data.elevationMeters} m MSL</span>
               </div>
-              <div className="flex items-center justify-between">
+              {/* `flex-wrap` + `break-all`: the printed brief carries the full URL, and on a
+                  375px viewport the label and the unbroken URL cannot share a line — this row was
+                  the 20px of document-level horizontal overflow the E2E suite caught on
+                  /forecast/district/dhaka. The URL must stay readable, so it wraps rather than
+                  being truncated. */}
+              <div className="flex flex-wrap items-center justify-between gap-1">
                 <span className="text-slate-500 font-medium">Interactive Dashboard:</span>
                 <a
                   href={`https://www.hazardnet.live/forecast/district/${districtId}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="text-blue-700 hover:text-blue-900 font-bold inline-flex items-center gap-1 underline"
+                  className="text-blue-700 hover:text-blue-900 font-bold inline-flex items-center gap-1 underline min-w-0 break-all"
                 >
                   <span>www.hazardnet.live/forecast/district/{districtId}</span>
-                  <ExternalLink className="w-3 h-3" />
+                  <ExternalLink className="w-3 h-3 shrink-0" />
                 </a>
               </div>
             </div>

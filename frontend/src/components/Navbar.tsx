@@ -214,7 +214,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               </motion.div>
 
               {/* Desktop Navigation Tabs */}
-              <nav className="flex items-center gap-1" aria-label="Main Navigation">
+              <nav className="flex items-center gap-0.5 2xl:gap-1" aria-label="Main Navigation">
                 
                 {/* 1. Home */}
                 <div className="relative">
@@ -222,7 +222,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => toggleMenu('home')}
-                    className={`px-3 py-1.5 text-[13.5px] font-medium rounded-xl transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0 focus-visible:ring-2 focus-visible:ring-teal-500/50 focus-visible:outline-none ${
+                    className={`px-2.5 2xl:px-3 py-1.5 text-[13.5px] font-medium rounded-xl transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0 focus-visible:ring-2 focus-visible:ring-teal-500/50 focus-visible:outline-none ${
                       activeMenu === 'home' || location.pathname.startsWith('/home')
                         ? 'bg-teal-600/10 text-teal-900 font-semibold border border-teal-600/30 shadow-2xs'
                         : 'text-slate-700 hover:text-slate-950 hover:bg-slate-900/5'
@@ -270,7 +270,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => toggleMenu('forecasts')}
-                    className={`px-3 py-1.5 text-[13.5px] font-medium rounded-xl transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0 focus-visible:ring-2 focus-visible:ring-teal-500/50 focus-visible:outline-none ${
+                    className={`px-2.5 2xl:px-3 py-1.5 text-[13.5px] font-medium rounded-xl transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0 focus-visible:ring-2 focus-visible:ring-teal-500/50 focus-visible:outline-none ${
                       activeMenu === 'forecasts' || location.pathname.startsWith('/forecast')
                         ? 'bg-teal-600/10 text-teal-900 font-semibold border border-teal-600/30 shadow-2xs'
                         : 'text-slate-700 hover:text-slate-950 hover:bg-slate-900/5'
@@ -360,7 +360,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => toggleMenu('advisories')}
-                    className={`px-3 py-1.5 text-[13.5px] font-medium rounded-xl transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0 focus-visible:ring-2 focus-visible:ring-teal-500/50 focus-visible:outline-none ${
+                    className={`px-2.5 2xl:px-3 py-1.5 text-[13.5px] font-medium rounded-xl transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0 focus-visible:ring-2 focus-visible:ring-teal-500/50 focus-visible:outline-none ${
                       activeMenu === 'advisories' || location.pathname.startsWith('/advisories')
                         ? 'bg-teal-600/10 text-teal-900 font-semibold border border-teal-600/30 shadow-2xs'
                         : 'text-slate-700 hover:text-slate-950 hover:bg-slate-900/5'
@@ -478,7 +478,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => toggleMenu('docs')}
-                    className={`px-3 py-1.5 text-[13.5px] font-medium rounded-xl transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0 focus-visible:ring-2 focus-visible:ring-teal-500/50 focus-visible:outline-none ${
+                    className={`px-2.5 2xl:px-3 py-1.5 text-[13.5px] font-medium rounded-xl transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0 focus-visible:ring-2 focus-visible:ring-teal-500/50 focus-visible:outline-none ${
                       activeMenu === 'docs' || location.pathname.startsWith('/docs') || location.pathname.startsWith('/download') || location.pathname.startsWith('/blogs') || location.pathname.startsWith('/about')
                         ? 'bg-teal-600/10 text-teal-900 font-semibold border border-teal-600/30 shadow-2xs'
                         : 'text-slate-700 hover:text-slate-950 hover:bg-slate-900/5'
@@ -562,7 +562,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => toggleMenu('analytics')}
-                    className={`px-3 py-1.5 text-[13.5px] font-medium rounded-xl transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0 focus-visible:ring-2 focus-visible:ring-teal-500/50 focus-visible:outline-none ${
+                    className={`px-2.5 2xl:px-3 py-1.5 text-[13.5px] font-medium rounded-xl transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0 focus-visible:ring-2 focus-visible:ring-teal-500/50 focus-visible:outline-none ${
                       activeMenu === 'analytics' || location.pathname.startsWith('/analytics')
                         ? 'bg-teal-600/10 text-teal-900 font-semibold border border-teal-600/30 shadow-2xs'
                         : 'text-slate-700 hover:text-slate-950 hover:bg-slate-900/5'
@@ -625,7 +625,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     returning visitor comes back for, and it must cost one tap. */}
                 <Link
                   to="/alerts"
-                  className={`px-3 py-1.5 text-[13.5px] font-medium rounded-xl transition-all flex items-center gap-1.5 whitespace-nowrap shrink-0 no-underline focus-visible:ring-2 focus-visible:ring-teal-500/50 focus-visible:outline-none ${
+                  className={`px-2.5 2xl:px-3 py-1.5 text-[13.5px] font-medium rounded-xl transition-all flex items-center gap-1.5 whitespace-nowrap shrink-0 no-underline focus-visible:ring-2 focus-visible:ring-teal-500/50 focus-visible:outline-none ${
                     location.pathname.startsWith('/alerts')
                       ? 'bg-amber-500/15 text-amber-950 font-bold border border-amber-500/40 shadow-2xs'
                       : 'text-slate-700 hover:text-slate-950 hover:bg-slate-900/5'
@@ -655,7 +655,11 @@ export const Navbar: React.FC<NavbarProps> = ({
                 ) : (
                   <>
                     <MaterialIcon name="person_pin_circle" className="w-4 h-4" />
-                    <span className="hidden xl:inline text-[12px] whitespace-nowrap">Locate Me</span>
+                    {/* The label is a 2xl-only affordance: the desktop bar carries brand + six nav
+                        items + five controls, and at exactly 1280px it has no room for this word.
+                        The E2E overflow check in e2e/smoke.spec.ts is the guard — adding any item
+                        to this bar must be measured against it. */}
+                    <span className="hidden 2xl:inline text-[12px] whitespace-nowrap">Locate Me</span>
                   </>
                 )}
               </motion.button>
