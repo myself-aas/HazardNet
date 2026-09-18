@@ -1,12 +1,74 @@
 # HazardNet Design System — Master Source of Truth
 
-Derived with the [ui-ux-pro-max-skill](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill)
-design-intelligence tooling (design-system query: *"agricultural disaster risk monitoring
-dashboard, real-time maps & charts"*), adapted to HazardNet's existing brand.
+HazardNet's global UI/UX is built on **NASA's Horizon Design System** ([`nasa/hds-core`](https://github.com/nasa/hds-core),
+CC0-1.0 — NASA's design system for `*.nasa.gov`). Its tokens are vendored verbatim in
+`data/design/nasa-hds/tokens.json`, compiled to CSS custom properties by
+`scripts/import_nasa_tokens.mjs`, and mapped onto this application's semantic roles in
+`frontend/src/index.css`. Provenance, licence and the regeneration commands are in
+`data/design/nasa-hds/PROVENANCE.md`.
+
+The full technical account — what was found, what changed, what the tests caught, and what is
+still open — is in [`nasa-hds-integration.md`](./nasa-hds-integration.md).
+
+The earlier local system (derived with the [ui-ux-pro-max-skill](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill)
+design-intelligence tooling from the query *"agricultural disaster risk monitoring dashboard,
+real-time maps & charts"*) is retained in structure — same token layers, same names, same
+components — with its **values replaced by NASA's**. Nothing about the component API changed;
+what changed is what every token resolves to.
 
 - **Product pattern:** Real-Time / Operations dashboard (live telemetry, maps, charts)
-- **Style:** Light glassmorphism ("mission control") — frosted panels, layered depth
+- **Style:** NASA HDS — flat surfaces, 1px rules, square corners, dashed focus rings,
+  red = "go somewhere", blue = "do something here"
 - **Mode:** Light-first. Dark mode is a future extension (`@custom-variant dark` is wired).
+
+## NASA token layer (Layer 1b)
+
+```
+data/design/nasa-hds/tokens.json              vendored NASA token source (CC0-1.0)
+        │  node scripts/import_nasa_tokens.mjs
+        ▼
+frontend/src/styles/nasa-hds.css              --hds-* custom properties, NASA's own names
+        │  referenced by
+        ▼
+frontend/src/index.css  Layer 1b (--hn-hds-*) → Layer 2 (semantic) → Layer 3 (component)
+```
+
+`--hds-*` names are identical to NASA's published custom properties, so any value here can be
+looked up in NASA's system and vice versa. 174 properties are compiled: colour, spacing,
+breakpoints, borders, focus, layout, line-height, letter-spacing, font-weight, font-size,
+font-family, 16 composite typography styles, the categorical dataviz palette (light and dark,
+plus HDS's recommended five-series assignment) and the yellow/orange sequential ramps.
+
+**The rules travel with the values.** NASA's token descriptions are usage rules, and the ones
+that constrain product decisions are enforced in code review and recorded in
+`frontend/src/index.css`:
+
+| Token | Rule (NASA's words) | How HazardNet honours it |
+| --- | --- | --- |
+| `--hds-color-nasa-red` | "Red means 'go somewhere'… never for on-page actions, decorative use, or dataviz." | Every filled primary CTA (`.bg-nasa-red`), error states. Never a chart series, never a map fill. |
+| `--hds-color-nasa-blue` | "Blue means 'do something here'… never for navigation CTAs or dataviz." | Controls, toggles, selection borders/rings, info states, the map's on-page toolbars. Never the "Sign up" button. |
+| `--hds-color-international-orange` | "For status emphasis or decorative markers… never for primary actions." | The caution/moderate step of the warm ramp and status badges. |
+| `--hds-color-active-green` | "Never for branding, decorative backgrounds, or dataviz." | Reserved for active/success states only. |
+| `--hds-dataviz-*` | `nasa-red`/`nasa-blue` are barred from dataviz. | `--chart-1…5` come from HDS's categorical set, not from the brand pair. |
+
+### Contrast (measured, not estimated)
+
+Ratios below were computed from the token values (WCAG 2.x relative luminance). They are the
+reason for two deliberate deviations from a literal reading of the palette:
+
+| Pair | Ratio | Verdict |
+| --- | --- | --- |
+| `carbon-90` on `carbon-05` (body on page) | 17.4:1 | AAA |
+| `carbon-60` on white (muted/caption text) | 7.1:1 | AAA |
+| `carbon-50` on white | 4.46:1 | **below AA** → excluded from text roles; borders/icons only |
+| white on `nasa-red` (NASA's own button) | 3.1:1 | AA-large only |
+| white on `nasa-red-shade` (`--primary-strong`) | 7.0:1 | AA/AAA — used for small-label CTAs |
+| `nasa-blue-shade` on white (info/link text) | 9.9:1 | AAA |
+| `carbon-20` on white (hairline rules) | 1.4:1 | decorative only, by design |
+
+Because white-on-`nasa-red` fails AA for a 14px bold label, small-label CTAs use
+`--primary-strong` (the HDS red shade) rather than the bright red; large/bold labels and
+icons may use the bright red exactly as NASA does.
 
 ## Token architecture (three layers)
 
@@ -47,15 +109,24 @@ compatibility and are **deprecated** — do not use them in new code.
 
 ## Typography
 
-| Role | Family | Usage |
-| --- | --- | --- |
-| Display / brand | **Playfair Display Variable** (`font-brand`) | Wordmark, `h1`/`h2` page & section titles |
-| UI / body / data | **Noto Sans Variable** (`font-sans`) | Body (16px base), nav, buttons, labels, `h3` card titles |
-| Data readouts | **JetBrains Mono** (`font-mono`, tabular numerals) | Scores, dates, telemetry, badges (`.hn-data-readout`, `.hn-badge`) |
+| Role | Family | Token | Usage |
+| --- | --- | --- | --- |
+| Display / brand / headings | **Inter** (`font-brand`, `font-heading`, `font-display`) | `--hds-font-family-heading` | Wordmark, `h1`–`h4`, masthead nav links |
+| UI / body | **Public Sans** (`font-sans`) | `--hds-font-family-body` | Body (16px/1.62), nav, buttons, labels, tables |
+| Data readouts | **DM Mono** (`font-mono`, tabular numerals) | `--hds-font-family-mono` | Scores, coordinates, telemetry, badges (`.hn-data-readout`, `.hn-badge`) |
 
-Fonts are self-hosted via `@fontsource-variable/*` (offline-friendly with the service
-worker). JetBrains Mono remains CDN-loaded. Base body size is **16px**; the smallest
-caption size is **12px** (never below).
+These are the three families NASA HDS ships. All are self-hosted through `@fontsource`
+(offline-friendly with the service worker); no third-party font request is made. Base body
+size is **16px** (`--hds-font-size-xs`); the smallest caption size is **12px** (never below),
+and metadata/eyebrows use HDS's `metadata` composite via the `.hn-metadata` utility:
+uppercase, 12px, weight 700, track `+0.025em`, line-height 1.75.
+
+Corner radius follows HDS's two values: **0px** for surfaces (cards, panels, modals, the
+masthead) and **2px** for small interactive controls (`rounded-control`, `rounded-sm`,
+`rounded-md`). `rounded-full` is intentionally untouched — avatars, status dots and circular
+icon buttons must stay round. Depth comes from 1px `carbon-20` rules, not shadows; focus
+rings are **1px dashed, 1px offset** in `carbon-60` on light surfaces and `carbon-30` on dark
+ones (`.hn-surface-dark`, `.leaflet-container`).
 
 Scale (`.hn-*` utilities): wordmark 20–22px/800 · h1 28–32px/700 · h2 22px/700 ·
 h3 16–18px/600 · body 16px/400 · nav 14px/500–600 · buttons 14px/600 ·
