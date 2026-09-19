@@ -1,170 +1,355 @@
-# HazardNet MLOps Architecture (Two-Profile Split)
+# HazardNet MLOps Architecture (Kaggle produces, GitHub pulls)
 
-This document describes how HazardNet decouples **everyday inference** (cheap, frequent, CPU) from **model retraining** (expensive, infrequent, GPU) so the entire pipeline runs on zero-cost infrastructure.
+Two profiles, one direction of travel. **Everyday inference** happens on Kaggle, where
+the notebooks, the Earth Engine token and the trained model already live; GitHub Actions
+pulls the result, validates it, publishes it and commits it. **Model retraining** happens
+on a Colab T4 once a month, driven by a person, and lands as a pull request that CI gates
+and a human merges. Nothing in `.github/workflows/` trains a model or generates a forecast.
+
+Decided in [ADR 0013](../adr/0013-kaggle-is-the-forecast-producer.md) (2026-09-20),
+reversing the 2026-09-16 "the runner is the producer" arrangement and deleting the Colab
+automation that never worked.
 
 ```
-                          ┌──────────────────────────────┐
-                          │  Google Colab (free T4 GPU)  │
-                          │  ml/train_and_convert.ipynb  │
-                          │  ~3 h, once/month or quarter │
-                          └──────────────┬───────────────┘
-                                         │ git push (PR → main)
-                                         ▼
-                         ┌───────────────────────────────┐
-                         │        GitHub repository       │
-                         │  Models/hazardnet_fp32.tflite  │
-                         │  Models/normalization_stats.jsn│
-                         └──────────────┬────────────────┘
-                                        │ checkout on schedule
-                                        ▼
-            ┌─────────────────────────────────────────────────────────┐
-            │  GitHub Actions — daily_forecast.yml (ubuntu-latest)   │
-            │  • Python 3.11, tflite-runtime (~2 MB), cv2 headless   │
-            │  • ~19 min wall-time, ~45 s pip install               │
-            │  • GEE imagery + Open-Meteo forecasts → TFLite infer   │
-            │  • POST CSV → https://hazardnet.live/api/v1/forecast…  │
-            └──────────────────────────────┬──────────────────────────┘
-                                           │ Bearer-authenticated POST
-                                           ▼
-                                 ┌─────────────────────┐
-                                 │ Production (Vercel / │
-                                 │ Supabase / Firestore)│
-                                 └─────────────────────┘
+  KAGGLE — four notebooks on Kaggle's own daily schedule
+  ┌────────────────────────────────────────────────────────────────────────┐
+  │ 1-hazardnet-bgd-climatic-hazards  →  3-hazardnet-with-severity         │
+  │        →  4-hazardnet-dataset-builder                                  │
+  │              publishes the `hazardnet-datasets` dataset:               │
+  │              master_tensors.h5 · normalization_stats.json ·            │
+  │              dataset_config.json · fold CSVs                           │
+  │        →  hazardnet-auto-forecast-pipeline                             │
+  │              reads that dataset + the `hazardnet-model-conversion`     │
+  │              bundle + the `ee-token-json` EE key, and writes           │
+  │              hazardnet_advisories_latest.csv (64 districts × 7/15 d)   │
+  └───────────────────────────┬───────────────────────┬────────────────────┘
+                              │ kaggle kernels output │ kaggle datasets download -f
+                              ▼                       ▼
+  GITHUB ACTIONS — daily_forecast.yml (0 0 * * * UTC, ~6 min)
+  ┌──────────────────────────────────────┐  ┌──────────────────────────────────────┐
+  │ fetch_kaggle_forecast.py             │  │ fetch_kaggle_dataset_meta.py         │
+  │  advisory shape → canonical row      │  │  normalization_stats.json +          │
+  │  identity from the published artifact│  │  dataset_config.json →               │
+  │  ∪ git HEAD ∪ the 64-district        │  │  data/kaggle/dataset-meta/           │
+  │  snapshot                            │  │  + a drift report against the        │
+  │  prediction_date = target − horizon  │  │  normalization the MODEL shipped with│
+  │  coverage tally + model provenance   │  │  (continue-on-error: advisory)       │
+  └───────────────┬──────────────────────┘  └──────────────────────────────────────┘
+                  ▼
+  validate_forecasts.py (schema · hazards · bounds · freshness · coverage)
+                  ▼
+  store ingest (optional) → alert engine → alert + forecast snapshots
+                  ▼
+  commit backend/data/forecasts/* · frontend/public/data/* · data/kaggle/dataset-meta/*
+                  ▼
+        Production (Vercel / Supabase / Firestore) redeploys carrying the new data
+
+  COLAB T4 — monthly, a person at the keyboard
+  ┌────────────────────────────────────────────────────────────────────────┐
+  │ ml/HazardNet_auto_train.ipynb                                          │
+  │  reads master_tensors.h5 from Drive or from `hazardnet-datasets`       │
+  │  event_kfold training → ONNX → TFLite + a golden parity gate           │
+  │  writes run_manifest.json, then the last cell:                         │
+  │   stage Models/ → write_version_handshake → getpass PAT →              │
+  │   GitHub API (blobs · tree · commit · ref · pull request)              │
+  └───────────────────────────────┬────────────────────────────────────────┘
+                                  ▼
+        model_intake.yml gates the PR (bundle · manifest · handshake currency ·
+        TFLite smoke test · promote dry run) and comments. A human merges.
+                                  ▼
+                    Models/hazardnet_fp32.tflite + VERSION.json + REGISTRY.json
+                    ⚠ the Kaggle notebook still loads its model from the
+                      `hazardnet-model-conversion` output — refreshing that is a
+                      separate owner step (see "To retrain the model" below).
 ```
 
-## Profile 1 — Daily Auto-Forecast (CPU)
-
-> **2026-09-16 — this is now the ONLY scheduled forecast producer.** The three
-> Kaggle-backed workflows (`forecast-pipeline`, `hourly_forecast`, `weekly_forecast`)
-> were retired from the schedule and are `workflow_dispatch`-only legacy: they
-> need a valid Kaggle token *and* a runnable kernel, and after the token rotation
-> every scheduled run failed at the first Kaggle call with a bare `exit code 1`.
-> Nothing in the forecast path needed Kaggle any more — this job generates the
-> forecasts itself. See
-> [`docs/audits/2026-09-15-ci-backend-tests-and-workflow-green.md`](../audits/2026-09-15-ci-backend-tests-and-workflow-green.md).
+## Profile 1 — Daily forecast pull (CPU, ~6 minutes)
 
 | | |
 |---|---|
 | **Where** | GitHub Actions: `.github/workflows/daily_forecast.yml` |
-| **Schedule** | `0 0 * * *` UTC (midnight) + `workflow_dispatch` |
-| **Runtime** | `ubuntu-latest` · 2-core CPU · 7 GB RAM · 6 h job limit |
-| **Wall-time** | ~19 minutes |
-| **Cost** | Free (unlimited minutes for public repos; private repos have 2,000 min/month) |
-| **Script** | `scripts/auto_forecast.py` |
-| **Dependencies** | `scripts/requirements-inference.txt` |
+| **Schedule** | `0 0 * * *` UTC (06:00 Bangladesh) + `workflow_dispatch` |
+| **Runtime** | `ubuntu-latest` · Python 3.11 · Node 20 |
+| **Producer** | the Kaggle notebook `ashifahmedshuvo/hazardnet-auto-forecast-pipeline`, on Kaggle's schedule |
+| **Scripts** | `scripts/fetch_kaggle_forecast.py`, `scripts/fetch_kaggle_dataset_meta.py`, `scripts/validate_forecasts.py`, `scripts/build_forecast_snapshot.mjs` |
+| **Dependencies** | `scripts/requirements-pipeline.txt` (kaggle CLI 1.8.x, pandas) + `npm ci` for the snapshot and content builders |
+| **Secrets** | `KAGGLE_USERNAME`, `KAGGLE_KEY`; optionally `BACKEND_API_KEY`/`HAZARDNET_API_*` for the store ingest |
 
-### How the dependencies stay small
+### What the run does, in order
 
-The daily job **does not** install TensorFlow (~500 MB) or PyTorch (~2 GB):
+1. **Preflight.** Writes `~/.kaggle/kaggle.json` (0600) from the two secrets and asks
+   `kaggle kernels status` whether the kernel is visible. A 401, a 403 and a 404 are three
+   different owner actions — rotate the token, fix the notebook's ownership, repoint the
+   `KAGGLE_KERNEL` repository variable — and the preflight says which one instead of
+   letting the CLI die with a bare exit code mid-pipeline.
+2. **Pull.** `kaggle kernels output` into `data/kaggle_notebook_output/` (gitignored,
+   uploaded as a run artifact). The CSV to publish is chosen **by name** —
+   `hazardnet_forecasts_latest.csv`, then `hazardnet_advisories_latest.csv`, then a lone
+   `*.csv` — and two unrecognised CSVs is a hard failure: glob order once decided which
+   file became the day's forecast.
+3. **Bridge the shape.** See below.
+4. **Validate.** `scripts/validate_forecasts.py` with both gates on: freshness
+   (`prediction_date` within three days) and coverage (the manifest's tally against the
+   rows). A partial day is allowed; an unlabelled one is not.
+5. **Dataset metadata.** `scripts/fetch_kaggle_dataset_meta.py` pulls
+   `normalization_stats.json` and `dataset_config.json` from `hazardnet-datasets` into
+   `data/kaggle/dataset-meta/`, validates their shape, and reports drift against
+   `Models/normalization_stats.json`. `continue-on-error`: a Kaggle-side gap must not cost
+   the day's forecast its commit.
+6. **Publish.** Store ingest (guarded on `BACKEND_API_KEY`) → alert engine → alert and
+   forecast snapshots → content rebuild → commit → run summary with the age of the rows.
 
-| Heavy package | Replaced by | Savings |
+### The shape bridge
+
+The producer writes an **advisory** table; the repository's artifact, validator, ingest
+path and website snapshot all expect the **canonical** row. The bridge is
+`scripts/fetch_kaggle_forecast.py`, and its rule is that anything it cannot derive from
+real data is left empty rather than invented.
+
+| canonical | from the advisory table | note |
 |---|---|---|
-| `tensorflow` | `tflite-runtime` (~2 MB) | ~500 MB install, ~1.5 GB RAM at runtime |
-| `torch.nn.functional.interpolate` | `cv2.resize` (`opencv-python-headless`) | ~2 GB install |
-| `geopandas` (unused import) | removed | ~100 MB of GDAL/SHAPELY wheels |
+| `district_name` | `district` | the producer's own spelling (FAO GAUL 2015) |
+| `district_id`, `pcode`, `division` | the identity table | see below |
+| `hazard_type` | `hazard` | must be one of the 8 model classes |
+| `model_severity` | `cnn_severity` | |
+| `physics_severity`, `confidence` | same names | |
+| `target_date` | `target_date` | |
+| `prediction_date` | **derived** | `target_date − horizon_days`, cross-checked across every row; rows that disagree fail the run |
+| `data_source` | **set** | `Kaggle_Advisory_Pipeline` |
+| `om_max_temp_k`, `om_min_temp_k` | `om_*_temp_c` + 273.15 | conversions, not guesses |
+| `om_precip_m` | `om_precip_mm` / 1000 | |
+| `om_wind_max_ms` | `om_wind_kmh` / 3.6 | |
+| `om_dewpoint_k`, `om_solar_rad_j`, `om_et_sum_m`, `dewpoint_mean`, `solar_radiation_mj_m2`, `evapotranspiration_mm` | **empty** | the notebook does not fetch them; empty becomes `null` in the JSON sidecar, never `0.0` |
+| `final_severity`, `advisory_tier` | **manifest only** | the notebook's editorial blend; no canonical column exists for it and inventing one would put an unvalidated severity into the website's data path |
 
-A cold-start pip install now takes ~45 seconds instead of ~4 minutes.
+**The identity table.** `district_id` and `pcode` are real identifiers, so they come from
+real records, in three layers:
 
-### Inputs (GitHub Actions Secrets)
+1. the last published canonical artifact (`backend/data/forecasts/hazardnet_forecasts_latest.csv`);
+2. `git show HEAD:` of the same file — a floor, so a day when the producer reports fewer
+   districts cannot erode the table and lose them permanently;
+3. `scripts/etl/districts.py`, the repository's tested 64-district snapshot, which supplies
+   pcode and division for whatever the artifact lacks, and whose `resolve()` maps GAUL
+   spellings ("Chittagong", "Jessore") onto the current ones ("Chattogram", "Jashore").
 
-| Secret | Purpose | Required? |
-|---|---|---|
-| `EE_SERVICE_ACCOUNT_JSON` | Google Earth Engine service-account key — the satellite data source, so this one is unavoidable | **yes** |
-| `HAZARDNET_API_URL` | Ingest endpoint (e.g. `https://hazardnet.live/api/v1/forecasts/update`) | only with `PUSH_TO_API=true` |
-| `HAZARDNET_API_KEY` | Bearer token for the ingest endpoint | only with `PUSH_TO_API=true` |
+Layer 3 also supplies `district_id` for those districts, by the rule both producers already
+follow — enumerate FAO GAUL ADM2 sorted by name, number from 1 — and that rule is **checked
+against every published id before it is used for a single new one**. When it does not
+reproduce them, the derivation is refused and the rows are dropped and reported instead.
+This matters concretely: on 2026-09-19 the published artifact carried 60 of the 64
+districts, because the runner-side generator had dropped Bandarban, Barisal, Jhenaidah and
+Khagrachhari. Without layer 3 a faithful 64-row pull would have published 60 forever, with
+the gap reported as "unmatchable" rather than as a hole.
 
-No Kaggle credential is needed anywhere in this path.
+A district that still cannot be identified is **dropped and reported** — never matched by
+fuzzy name, because the alternative is one district wearing another district's pcode.
 
-### Output — one chain, three artifacts
+### The payload boundary
 
-`scripts/auto_forecast.py` writes `hazardnet_forecasts_latest.csv` into the
-workspace; the job then runs the same steps the website depends on:
+Pulled daily: the forecast CSV, its JSON sidecar, the manifest, and two kilobyte-scale
+dataset documents. **Not** pulled: `master_tensors.h5` (hundreds of megabytes; the training
+notebook reads it straight from the Kaggle dataset) and anything under `Models/` — model
+artifacts arrive through the monthly pull request and its gate, never through a data pull.
+`scripts/tests/test_workflows.py` fails a workflow that writes `Models/` from the daily job.
 
-1. `scripts/publish_forecast_csv.py` → `backend/data/forecasts/hazardnet_forecasts_latest.{csv,json}`
-   + `manifest.json` (provenance, row count, sha256);
-2. `scripts/validate_forecasts.py` → schema/hazard/bounds gate;
-3. `scripts/build_forecast_snapshot.mjs` → `frontend/public/data/forecasts-latest.json`
-   (the bundle-carried snapshot `useForecasts()` falls back to);
-4. **commit** of 1–3 on the branch → the site redeploys carrying the new data.
+### The generator that is no longer scheduled
 
-The store write is the optional 5th step: with the repository variable
-`PUSH_TO_API=true`, the CSV is POSTed to `POST $HAZARDNET_API_URL` with
-`Authorization: Bearer $HAZARDNET_API_KEY` and `Content-Type: text/csv`, and the
-server upserts rows into Firestore/Supabase. It ships **off** by default because
-the production deployment does not serve an ingest API yet
-(`/api/v1/forecasts/*` → 404, see [`docs/ops/owner-actions.md`](../ops/owner-actions.md) §2a-bis) —
-so the committed snapshot is the delivery path that always works. Once an API is
-deployed, set the variable and the push becomes a hard gate.
+`scripts/auto_forecast.py` (Earth Engine + Open-Meteo + TFLite, ~19 min) is still in the
+repository, still tested, and still runnable by hand — it is the offline fallback for a
+Kaggle outage. It needs `EE_SERVICE_ACCOUNT_JSON`, which is why it is not on the schedule:
+when that key rotated, the scheduled run died one minute in with a bare traceback while the
+site kept serving the last committed snapshot. No workflow invokes it any more, and
+`test_workflows.py` fails if one does.
 
 ### Guard-rails
 
-* The workflow has a preflight step that checks all three secrets are present and that `HAZARDNET_API_URL` starts with `http(s)://` — failures produce an actionable `::error::` annotation instead of a Python traceback.
-* A separate `.github/workflows/model-validation.yml` workflow runs on every change to `Models/**` and smoke-tests the TFLite bundle with `tflite-runtime` (same wheel the daily job uses), so a bad conversion from Colab cannot land silently.
-* All workflow hygiene invariants (permissions, concurrency, timeouts, action version consistency) are enforced by `scripts/tests/test_workflows.py` in CI.
+* The preflight maps Kaggle's 401/403/404 onto named remedies, and never prints a
+  credential (the only expansion allowed is the write into `~/.kaggle/kaggle.json`).
+* `validate_forecasts.py` runs with freshness **and** coverage on.
+* `model-validation.yml` smoke-tests the TFLite bundle on every change to `Models/**`.
+* Workflow hygiene invariants (permissions, concurrency, timeouts, action versions, shell
+  syntax of every `run:` block, no `secrets` in `if:`) are enforced by
+  `scripts/tests/test_workflows.py`; the pull's own refusals by
+  `scripts/tests/test_kaggle_forecast_fetch.py` and `test_kaggle_dataset_meta.py`.
 
-## Profile 2 — Training & Conversion (GPU)
+## Profile 2 — Monthly training & conversion (GPU, human-driven)
 
 | | |
 |---|---|
-| **Where** | Google Colab (Free Tier) — `ml/train_and_convert.ipynb` |
-| **Cadence** | Manual, once per month/quarter |
-| **Hardware** | NVIDIA T4 GPU (16 GB VRAM), same as Kaggle |
-| **Runtime** | ~3 hours |
-| **Cost** | Free (Colab Free Tier) |
-| **Output** | `Models/hazardnet_fp32.tflite` + `Models/normalization_stats.json` + `Models/labels.json` |
+| **Where** | Google Colab (free T4) — [`ml/HazardNet_auto_train.ipynb`](../../ml/HazardNet_auto_train.ipynb) |
+| **Cadence** | Monthly, started by the owner |
+| **Runtime** | 7–9 h for 50 epochs under `event_kfold`, across as many sessions as the free tier allows |
+| **Cost** | Free (Colab free tier); a few runner-minutes for the PR gate |
+| **Output** | a pull request touching `Models/*` + `data/mlops/bundles/<run_id>/run_manifest.json`, opened by the notebook and merged by a human |
+| **Credentials** | a fine-grained PAT typed into a `getpass` prompt in the last cell; `~/.kaggle/kaggle.json` only if Drive has no tensor |
 
-### Dataset hosting (zero-cost options)
+### Why it is manual
 
-1. **Google Drive** (simplest): mount with `from google.colab import drive; drive.mount('/content/drive')` and copy from Drive. The first `wget`/copy happens once; subsequent runs are instant.
-2. **HuggingFace Datasets**: host the `master_tensors.h5` file (hundreds of GB free) and pull with `wget <hf raw URL>`.
+The automated version existed for three weeks in September 2026 and never worked. Colab
+exposes no non-interactive session: `colab auth` and `drivemount` need a TTY and browser
+consent, and a free-tier session can be recycled at any moment. The chain was a launcher
+that provisioned a VM, a watcher on a twenty-minute cron that followed a run marker through
+git, and a collector that pulled the bundle over SSH — three workflows and two Python
+modules whose only observed behaviour was failing. All of it is deleted, and
+`scripts/tests/test_workflows.py` fails if any of it returns.
 
-### Auto-push to GitHub
+What survives from that design is the part that was actually valuable: the **schemas**.
+`scripts/mlops/retrain_state.py` still defines the run manifest, the artifact inventory,
+the resume-state contract and the version handshake, and the notebook still imports it
+inside Colab — one definition, two machines, so the notebook cannot claim a version the PR
+gate will not reproduce.
 
-The notebook's final cell:
+### Surviving a recycled session
 
-1. Configures git identity.
-2. Shallow-clones `myself-aas/HazardNet` using a Fine-Grained Personal Access Token.
-3. Copies the new `Models/` bundle in.
-4. Creates a branch named `auto-ml/model-update-<timestamp>`, commits, pushes, and opens a Pull Request against `main` via the GitHub REST API.
+Free-tier sessions die mid-epoch, so the notebook writes two files per epoch:
 
-Using a PR (instead of a direct push to `main`) gives CI (`model-validation.yml`) a chance to smoke-test the new artifact before it becomes the production model.
+* `<fold>_resume.pt` — model, optimizer, cosine scheduler, both RNGs, best-val state and
+  the epoch reached. A restart restores all of it and continues the fold; restoring weights
+  alone would silently restart the learning-rate schedule and converge to something nobody
+  validated. A fold deletes its own resume state when it finishes, so a completed fold
+  cannot be "resumed" and reported twice.
+* `heartbeat.json` — phase, fold, epoch, validation loss and accuracy. No watcher reads it
+  now; it is the run's own diary, and an eight-hour run that dies in fold four should leave
+  a record of how far it got on a disk that outlives the session.
 
-> To skip the PR flow and push directly to `main`, replace the branch/push cell with `!git checkout main && !git push origin main`.
+Mount Drive when you run it: checkpoints and the published bundle then survive a recycle on
+their own. Without a mount they live on the VM, and the last cell has to run before the VM
+is recycled.
 
-## Why this is better than the all-Kaggle setup
+The training tensor is resolved in the order that survives the most situations: a path in
+`run_config.json`, then Drive
+(`HazardNet_Deployment/tensors_output/HazardNet_Event_Based_Datasets/master_tensors.h5`),
+then a download of the `hazardnet-datasets` Kaggle dataset. Once local it stays local —
+reading 5 GB of HDF5 batch by batch through a FUSE mount is the slowest way to feed a GPU.
 
-> Acted on 2026-09-16: the Kaggle schedulers are off. What follows is the
-> original rationale — now the state of the repository rather than the plan.
+### What the run publishes
 
-* **CI/CD decoupling.** Your GitHub repository is the single source of truth. The web app pulls models from Git; GitHub Actions runs the cron jobs. No dependency on Kaggle's notebook scheduler or uptime.
-* **Cold-start speed.** Stripping TF/PyTorch from the operational pipeline cuts install time from ~4 minutes to ~45 seconds.
-* **No file wrangling.** Models flow Colab → GitHub PR → merge → daily Action automatically. Data flows GEE/Open-Meteo → Actions → Firestore automatically.
-* **Safer promotion.** New TFLite models are validated by CI before hitting production.
-* **Zero cost.** No cloud GPU, no Actions minutes overage, no Kaggle dataset quotas.
+The publishing cell writes `run_manifest.json`: every artifact with its size and sha256,
+the fold metrics the training actually returned, the converter's ONNX→TFLite parity
+numbers, and the environment that produced them. It validates that manifest with the same
+function the PR gate uses and refuses to publish one it would reject — failing in the
+session, where the log can be read, rather than hours later in a pull request nobody can
+act on.
+
+The parity gate is `retrain_state.PARITY_GATE_PCT` (99.0% hazard agreement between PyTorch
+and TFLite) and it **stops the run**. It used to print `[WARN] BELOW 95% THRESHOLD` and
+carry on, which published a conversion that had changed the model's predictions. A
+conversion that changes predictions is not a conversion.
+
+### The pull request the notebook opens
+
+The last cell stages the five contract artifacts into the shallow clone, writes
+`Models/VERSION.json` and `Models/REGISTRY.json` through
+`retrain_state.write_version_handshake` and `mlops.cli registry --write` (the repository's
+canonical writers), prompts for a fine-grained PAT with `getpass`, and creates blobs, a
+tree, a commit, a ref and a pull request over the GitHub API.
+
+The API rather than `git push` because a push needs the token inside a remote URL, and git
+copies remote URLs into `.git/config` — a credential at rest, on a VM whose lifetime nobody
+controls. The token is asked for once, in the last cell, used for those calls, cleared, and
+never written to a file, a remote or an output cell. `scripts/tests/test_retrain_notebook.py`
+pins all of it: the prompt exists in exactly one cell, and no cell pushes, merges or
+promotes.
+
+Two writers produce `Models/VERSION.json` — Node (`scripts/gen-model-version.mjs`) in CI and
+Python on the VM, where there is no Node.js. `scripts/tests/test_model_handshake.py` runs
+both over identical bytes and fails if the version strings, artifact entries or key order
+differ, and it also fails if the committed handshake does not match the committed artifacts.
+
+### What CI does with the PR
+
+`model_intake.yml` triggers on `Models/**` and:
+
+1. records what the PR changed under `Models/`, with sizes and sha256s;
+2. runs `scripts/validate_model_bundle.py` — the same validator `model-validation.yml` runs;
+3. validates `run_manifest.json` with `retrain_state.validate_manifest` and prints the fold
+   metrics, the parity numbers and the artifact table into the report (and says loudly when
+   the PR carries no manifest, because then the run's claims are unverifiable);
+4. regenerates `VERSION.json` and `REGISTRY.json` from the PR's own bytes and **fails if they
+   differ** — reporting rather than repairing, because a silently fixed handshake hides a
+   notebook that stopped writing one;
+5. smoke-tests every `.tflite` under `tflite-runtime==2.14.0` (the wheel the API loads, and
+   the pins `model-validation.yml` uses — a test asserts the two files agree);
+6. runs `mlops.cli evaluate` + `mlops.cli promote` **without `--write`** and prints the
+   decision, labelled as a preview and not a sign-off;
+7. comments all of it on the PR and stops.
+
+It never merges, never pushes, never records a champion. Merging is the review; promotion is
+a second act that needs `python -m mlops.cli promote --artifact hazardnet_fp32.tflite
+--report <evaluation.json> --by <you> --write`.
+
+## Why one producer
+
+* **One artifact, one writer.** Two producers for `hazardnet_forecasts_latest.csv` meant
+  whichever job ran last decided what the website served, with different schemas and
+  different district sets, and no way to say which one a given day came from except a
+  `data_source` string nobody validated.
+* **The fragile credential stays where the work is.** The Earth Engine key lives in Kaggle
+  (the `ee-token-json` dataset), not in GitHub secrets, so its rotation cannot kill the
+  scheduled run.
+* **The promotion decision is visible.** It was never automatable; the automation only hid
+  who makes it. Now it is a PR a person reads, with the fold metrics and parity numbers in
+  the body and a gate comment underneath.
+* **Zero cost.** No cloud GPU, no Actions minutes overage, no paid Kaggle tier.
+
+The accepted cost: the site's freshness now depends on a third-party scheduler. If the
+Kaggle notebooks do not run, the pull publishes the previous run's rows; the freshness gate
+fails the run once `prediction_date` is more than three days old, and the run summary
+reports the age of the rows it committed.
 
 ## Operational playbook
 
 ### To retrain the model
 
-1. Open [`ml/train_and_convert.ipynb`](../../ml/train_and_convert.ipynb) in Colab (GitHub → Open in Colab).
-2. Runtime → Change runtime type → **GPU (T4)**.
-3. Run all cells. Paste your GitHub PAT when prompted.
-4. Wait for the PR to appear on GitHub.
-5. Review the diff (should only touch `Models/*`), wait for the `model-validation` check to pass, then merge.
-6. The next 00:00 UTC daily run automatically uses the new model.
+1. Open [`ml/HazardNet_auto_train.ipynb`](../../ml/HazardNet_auto_train.ipynb) in Colab with
+   a T4 runtime. Mount Drive when prompted (or decline and rely on the Kaggle tensor
+   download).
+2. Run the cells in order. Watch the fold metrics and the conversion parity numbers; the
+   notebook stops the run if parity is below 99%.
+3. Run the last cell. It stages the bundle, writes the handshake, asks for a fine-grained
+   PAT (**Contents: read/write** and **Pull requests: read/write** on this repository only)
+   and opens the pull request.
+4. Read the `Model Bundle PR Gate` comment on the PR, review the diff (it should touch only
+   `Models/*` and `data/mlops/bundles/<run_id>/`), wait for `model-validation`, and merge.
+5. **Refresh the Kaggle model output.** The forecast notebook loads
+   `/kaggle/input/notebooks/ashifahmedshuvo/hazardnet-model-conversion/.../hazardnet_fp32.tflite`,
+   so merging alone changes nothing about what Kaggle infers with. Re-run (or re-upload)
+   the `hazardnet-model-conversion` notebook so its output carries the new bundle, and check
+   the daily pull's manifest `model_version` against the bundle you published. Until that
+   step, the site is served by the previous model — which is why the manifest says
+   `model_bytes_verified: false` rather than claiming a version it cannot check.
+6. Optionally promote: `cd scripts && python -m mlops.cli evaluate … && python -m mlops.cli
+   promote --artifact hazardnet_fp32.tflite --report <evaluation.json> --by <you> --write`.
+
+Full detail and failure triage: [`RETRAIN_AND_PROMOTION.md`](RETRAIN_AND_PROMOTION.md).
+
+### When the daily pull fails
+
+Read the run summary first — it names the shape, the row and district counts, the derived
+`prediction_date`, the coverage verdict and any dropped districts. Then
+[`docs/ops/kaggle-pipeline-triage.md`](../ops/kaggle-pipeline-triage.md), which maps each
+failure onto an owner action. The two most common:
+
+* **preflight 401/403/404** — a rotated Kaggle token, a notebook owned by another account,
+  or a renamed slug (fix with the `KAGGLE_KERNEL` repository variable, no code change);
+* **freshness gate** — the Kaggle notebooks did not run; the site is still serving the last
+  committed snapshot, which is now more than three days old.
 
 ### To verify everything is wired up
 
-1. Run `Actions → Verify GitHub Actions Secrets` to confirm the secrets are
-   present — `EE_SERVICE_ACCOUNT_JSON` is the one the forecast path requires.
-2. Trigger `Actions → HazardNet Daily Forecast Pipeline → Run workflow` and
-   confirm it completes in ~19 minutes (no Kaggle involved at any step).
-3. Check that the run committed `backend/data/forecasts/` +
-   `frontend/public/data/forecasts-latest.json` with today's `prediction_date`
-   (`jq . prediction_date frontend/public/data/forecasts-latest.json`).
-4. If `PUSH_TO_API=true`: check `$HAZARDNET_API_URL`'s sibling metadata route for
-   a fresh `prediction_date`.
+1. `Actions → Verify GitHub Actions Secrets` — `KAGGLE_USERNAME` and `KAGGLE_KEY` are the
+   ones the forecast path requires; `EE_SERVICE_ACCOUNT_JSON` is no longer in it.
+2. `Actions → HazardNet Daily Forecast Pipeline → Run workflow` and confirm the summary
+   reports the shape, the district count and the coverage verdict.
+3. Check the committed artifact carries today's `prediction_date`
+   (`jq -r .prediction_date frontend/public/data/forecasts-latest.json`).
+4. Check the dataset-metadata step committed `data/kaggle/dataset-meta/` and read its drift
+   report — a growing delta between the dataset's normalization and the shipped model's is
+   the signal that the model is due for its monthly run.
 
 ## Rollback
 
-If a new model produces bad forecasts, revert the merge commit on `main` (or roll forward with a hotfix PR). The daily job pulls `Models/hazardnet_fp32.tflite` from the tip of `main` at checkout time, so a revert is effective on the next scheduled run.
+If a new model produces bad forecasts, revert the merge commit on `main` — and revert the
+Kaggle `hazardnet-model-conversion` output to the previous bundle, because that is what the
+producer actually loads. If a daily pull publishes bad rows, revert the data commit; the
+site redeploys from the committed snapshot, and the next scheduled pull overwrites it.

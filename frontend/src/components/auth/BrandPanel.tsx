@@ -115,13 +115,13 @@ const useCountUp = (target: number, durationMs = 1200, enabled = true): number =
 const Stat: React.FC<{ stat: StatItem; animate: boolean; durationMs?: number }> = ({ stat, animate, durationMs = 1200 }) => {
   const value = useCountUp(stat.value, durationMs, animate);
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900/60 px-3.5 py-3 backdrop-blur-sm">
+    <div className="rounded-2xl border border-carbon-80 bg-carbon-90/60 px-3.5 py-3 backdrop-blur-sm">
       <p className="font-mono text-lg xl:text-xl font-black text-white tabular-nums">
         {stat.prefix}
         {value}
         {stat.suffix}
       </p>
-      <p className="mt-0.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">{stat.label}</p>
+      <p className="mt-0.5 text-[10px] font-bold uppercase tracking-wider text-carbon-60">{stat.label}</p>
     </div>
   );
 };
@@ -154,7 +154,7 @@ export const BrandPanel: React.FC<BrandPanelProps> = ({ mode, intervalMs = 5200 
   const animateStats = !reduceMotion;
 
   return (
-    <aside className="hidden lg:flex lg:w-[46%] xl:w-[42%] relative overflow-hidden bg-slate-950 text-slate-100 flex-col justify-between p-10 xl:p-14">
+    <aside className="hidden lg:flex lg:w-[46%] xl:w-[42%] relative overflow-hidden bg-carbon-black text-carbon-10 flex-col justify-between p-10 xl:p-14">
       {/* ── motion layer: aurora + grid + floating glyphs ─────────────── */}
       <style>{`
         @keyframes hn-aurora-a { 0%,100% { transform: translate(-8%,-6%) scale(1); } 50% { transform: translate(6%,8%) scale(1.18); } }
@@ -177,7 +177,7 @@ export const BrandPanel: React.FC<BrandPanelProps> = ({ mode, intervalMs = 5200 
         {FLOATING_GLYPHS.map((glyph) => (
           <span
             key={glyph.icon}
-            className={`hn-float-chip absolute ${glyph.className} text-slate-500/50`}
+            className={`hn-float-chip absolute ${glyph.className} text-carbon-60/50`}
             style={{ animation: reduceMotion ? undefined : `hn-float ${glyph.duration} ease-in-out ${glyph.delay} infinite` }}
           >
             <MaterialIcon name={glyph.icon} className="h-6 w-6" />
@@ -190,7 +190,7 @@ export const BrandPanel: React.FC<BrandPanelProps> = ({ mode, intervalMs = 5200 
         <HazardNetBrand size="md" variant="dark" />
         <Link
           to="/"
-          className="rounded-xl border border-slate-700 px-3.5 py-2 text-[11px] font-bold text-slate-300 transition-colors hover:border-slate-500 hover:text-white"
+          className="rounded-xl border border-carbon-70 px-3.5 py-2 text-[11px] font-bold text-carbon-30 transition-colors hover:border-carbon-50 hover:text-white"
         >
           ← Back to site
         </Link>
@@ -228,7 +228,7 @@ export const BrandPanel: React.FC<BrandPanelProps> = ({ mode, intervalMs = 5200 
               <p className="text-3xl xl:text-4xl font-black leading-tight tracking-tight text-white">
                 {message.headline}
               </p>
-              <p className="mt-4 text-sm leading-relaxed text-slate-300">{message.body}</p>
+              <p className="mt-4 text-sm leading-relaxed text-carbon-30">{message.body}</p>
             </motion.div>
           </AnimatePresence>
         </div>
@@ -245,7 +245,7 @@ export const BrandPanel: React.FC<BrandPanelProps> = ({ mode, intervalMs = 5200 
                 aria-label={`Highlight ${dot + 1} of ${messages.length}`}
                 onClick={() => setIndex(dot)}
                 className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
-                  dot === index ? 'w-7 bg-nasa-red' : 'w-2.5 bg-slate-700 hover:bg-slate-500'
+                  dot === index ? 'w-7 bg-nasa-red' : 'w-2.5 bg-carbon-70 hover:bg-carbon-50'
                 }`}
               />
             ))}
@@ -260,13 +260,13 @@ export const BrandPanel: React.FC<BrandPanelProps> = ({ mode, intervalMs = 5200 
             <Stat key={stat.label} stat={stat} animate={animateStats} />
           ))}
         </div>
-        <p className="text-[11px] text-slate-500">
+        <p className="text-[11px] text-carbon-60">
           HazardNet · Multi-hazard early warning for Bangladesh agriculture ·{' '}
-          <Link to="/terms" className="font-semibold text-slate-400 underline-offset-2 hover:underline">
+          <Link to="/terms" className="font-semibold text-carbon-60 underline-offset-2 hover:underline">
             Terms
           </Link>{' '}
           ·{' '}
-          <Link to="/privacy" className="font-semibold text-slate-400 underline-offset-2 hover:underline">
+          <Link to="/privacy" className="font-semibold text-carbon-60 underline-offset-2 hover:underline">
             Privacy
           </Link>
         </p>

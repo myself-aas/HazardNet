@@ -117,7 +117,7 @@ export const createCustomIcon = (severity: number, isSelected: boolean, hazardTy
       background: rgba(255, 255, 255, 0.98);
       border: 3px solid #f64137;
       box-shadow: 0 6px 24px rgba(0,0,0,0.25), 0 0 20px ${glowColor};
-      color: #0f172a;
+      color: #17171b;
       font-family: var(--hds-font-family-heading);
       font-size: 11px;
       font-weight: 900;
@@ -128,7 +128,7 @@ export const createCustomIcon = (severity: number, isSelected: boolean, hazardTy
       -webkit-backdrop-filter: blur(14px);
       outline: none;
     ">
-      <span style="color: #0f172a; letter-spacing: -0.2px;">${districtName}: <span style="color: #0284c7;">${hazardDef.name}</span></span>
+      <span style="color: #17171b; letter-spacing: -0.2px;">${districtName}: <span style="color: #0284c7;">${hazardDef.name}</span></span>
       <span style="
         background: ${color};
         color: #ffffff;
@@ -151,7 +151,7 @@ export const createCustomIcon = (severity: number, isSelected: boolean, hazardTy
       background: #ffffff;
       border: 3px solid ${color};
       box-shadow: 0 4px 14px rgba(0,0,0,0.2), 0 0 12px ${glowColor};
-      color: #0f172a;
+      color: #17171b;
       font-family: var(--hds-font-family-heading);
       font-size: 11px;
       font-weight: 900;

@@ -45,17 +45,17 @@ export const AnalyticsAnalyticsPage: React.FC = () => {
       transition={{ duration: 0.35, ease: 'easeOut' }}
       className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 space-y-6"
     >
-      <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-md relative overflow-hidden transition-all duration-300 hover:shadow-lg">
+      <div className="bg-white border border-carbon-20/90 rounded-3xl p-6 sm:p-8 shadow-md relative overflow-hidden transition-all duration-300 hover:shadow-lg">
         <div className="relative z-10">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-900 text-xs font-mono font-bold mb-3 shadow-2xs">
             <span>RESEARCHER & ADMIN ANALYTICS</span>
             <span>•</span>
             <span>TensorFlow & CI/CD Telemetry</span>
           </div>
-          <h1 className="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+          <h1 className="text-2xl sm:text-4xl font-extrabold text-carbon-90 tracking-tight">
             Model Diagnostics & Pipeline Observability
           </h1>
-          <p className="text-slate-600 mt-2 max-w-3xl text-xs sm:text-sm leading-relaxed">
+          <p className="text-carbon-60 mt-2 max-w-3xl text-xs sm:text-sm leading-relaxed">
             What this deployment can actually show: the freshness and provenance of the last forecast snapshot, the
             raw forecast store, and the pipeline that produced it. Accuracy metrics (latency, MAE, ECE) appear here
             only after a benchmark has been run and recorded — until then this page says so instead of quoting
@@ -65,13 +65,13 @@ export const AnalyticsAnalyticsPage: React.FC = () => {
       </div>
 
       {/* Sub-navigation */}
-      <div className="flex items-center gap-2.5 border-b border-slate-200/90 pb-4 overflow-x-auto scrollbar-none touch-scroll">
+      <div className="flex items-center gap-2.5 border-b border-carbon-20/90 pb-4 overflow-x-auto scrollbar-none touch-scroll">
         <motion.button
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           onClick={() => navigate('/analytics/forecast-dashboard')}
           className={`px-4 py-2.5 rounded-2xl text-xs font-extrabold transition-all shrink-0 whitespace-nowrap cursor-pointer ${
-            activeTab === 'forecast-dashboard' ? 'bg-amber-500 text-slate-900 shadow-2xs' : 'bg-white text-slate-700 border border-slate-200/90 hover:bg-slate-50 shadow-2xs'
+            activeTab === 'forecast-dashboard' ? 'bg-amber-500 text-carbon-90 shadow-2xs' : 'bg-white text-carbon-70 border border-carbon-20/90 hover:bg-carbon-05 shadow-2xs'
           }`}
         >
           Forecast Dashboard (Firestore & Recharts)
@@ -81,7 +81,7 @@ export const AnalyticsAnalyticsPage: React.FC = () => {
           whileTap={{ scale: 0.98 }}
           onClick={() => navigate('/analytics/model-metrics')}
           className={`px-4 py-2.5 rounded-2xl text-xs font-extrabold transition-all shrink-0 whitespace-nowrap cursor-pointer ${
-            activeTab === 'model-metrics' ? 'bg-amber-500 text-slate-900 shadow-2xs' : 'bg-white text-slate-700 border border-slate-200/90 hover:bg-slate-50 shadow-2xs'
+            activeTab === 'model-metrics' ? 'bg-amber-500 text-carbon-90 shadow-2xs' : 'bg-white text-carbon-70 border border-carbon-20/90 hover:bg-carbon-05 shadow-2xs'
           }`}
         >
           Model Metrics (Latency, MAE, ECE)
@@ -91,7 +91,7 @@ export const AnalyticsAnalyticsPage: React.FC = () => {
           whileTap={{ scale: 0.98 }}
           onClick={() => navigate('/analytics/pipeline-status')}
           className={`px-4 py-2.5 rounded-2xl text-xs font-extrabold transition-all shrink-0 whitespace-nowrap cursor-pointer ${
-            activeTab === 'pipeline-status' ? 'bg-amber-500 text-slate-900 shadow-2xs' : 'bg-white text-slate-700 border border-slate-200/90 hover:bg-slate-50 shadow-2xs'
+            activeTab === 'pipeline-status' ? 'bg-amber-500 text-carbon-90 shadow-2xs' : 'bg-white text-carbon-70 border border-carbon-20/90 hover:bg-carbon-05 shadow-2xs'
           }`}
         >
           Pipeline Status (Kaggle / GitHub CI/CD)
@@ -101,7 +101,7 @@ export const AnalyticsAnalyticsPage: React.FC = () => {
           whileTap={{ scale: 0.98 }}
           onClick={() => navigate('/analytics/historical')}
           className={`px-4 py-2.5 rounded-2xl text-xs font-extrabold transition-all shrink-0 whitespace-nowrap cursor-pointer ${
-            activeTab === 'historical' ? 'bg-amber-500 text-slate-900 shadow-2xs' : 'bg-white text-slate-700 border border-slate-200/90 hover:bg-slate-50 shadow-2xs'
+            activeTab === 'historical' ? 'bg-amber-500 text-carbon-90 shadow-2xs' : 'bg-white text-carbon-70 border border-carbon-20/90 hover:bg-carbon-05 shadow-2xs'
           }`}
         >
           Historical EM-DAT vs Prediction Explorer
@@ -130,26 +130,26 @@ export const AnalyticsAnalyticsPage: React.FC = () => {
             transition={{ duration: 0.25 }}
             className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6"
           >
-            <motion.div whileHover={{ y: -4, scale: 1.01 }} whileTap={{ scale: 0.98 }} className="bg-white border border-slate-200/90 rounded-3xl p-6 shadow-md hover:shadow-lg transition-all space-y-3 cursor-pointer">
-              <div className="text-xs font-mono text-slate-500 font-bold">INFERENCE LATENCY</div>
-              <div className="text-2xl font-black text-slate-400">Not published</div>
-              <p className="text-xs text-slate-600 leading-relaxed">
+            <motion.div whileHover={{ y: -4, scale: 1.01 }} whileTap={{ scale: 0.98 }} className="bg-white border border-carbon-20/90 rounded-3xl p-6 shadow-md hover:shadow-lg transition-all space-y-3 cursor-pointer">
+              <div className="text-xs font-mono text-carbon-60 font-bold">INFERENCE LATENCY</div>
+              <div className="text-2xl font-black text-carbon-60">Not published</div>
+              <p className="text-xs text-carbon-60 leading-relaxed">
                 No committed benchmark measures end-to-end inference latency. Per-request timing, where the inference
                 API is reachable, stays on the device that made the request.
               </p>
             </motion.div>
-            <motion.div whileHover={{ y: -4, scale: 1.01 }} whileTap={{ scale: 0.98 }} className="bg-white border border-slate-200/90 rounded-3xl p-6 shadow-md hover:shadow-lg transition-all space-y-3 cursor-pointer">
-              <div className="text-xs font-mono text-slate-500 font-bold">MEAN ABSOLUTE ERROR (MAE)</div>
-              <div className="text-2xl font-black text-slate-400">Not published</div>
-              <p className="text-xs text-slate-600 leading-relaxed">
+            <motion.div whileHover={{ y: -4, scale: 1.01 }} whileTap={{ scale: 0.98 }} className="bg-white border border-carbon-20/90 rounded-3xl p-6 shadow-md hover:shadow-lg transition-all space-y-3 cursor-pointer">
+              <div className="text-xs font-mono text-carbon-60 font-bold">MEAN ABSOLUTE ERROR (MAE)</div>
+              <div className="text-2xl font-black text-carbon-60">Not published</div>
+              <p className="text-xs text-carbon-60 leading-relaxed">
                 The classifier has not yet been scored against independent BMD/FFWC station records, so no error
                 metric is quoted here. The model card documents the validation status that does exist.
               </p>
             </motion.div>
-            <motion.div whileHover={{ y: -4, scale: 1.01 }} whileTap={{ scale: 0.98 }} className="bg-white border border-slate-200/90 rounded-3xl p-6 shadow-md hover:shadow-lg transition-all space-y-3 sm:col-span-2 md:col-span-1 cursor-pointer">
-              <div className="text-xs font-mono text-slate-500 font-bold">EXPECTED CALIBRATION ERROR (ECE)</div>
-              <div className="text-2xl font-black text-slate-400">Not published</div>
-              <p className="text-xs text-slate-600 leading-relaxed">
+            <motion.div whileHover={{ y: -4, scale: 1.01 }} whileTap={{ scale: 0.98 }} className="bg-white border border-carbon-20/90 rounded-3xl p-6 shadow-md hover:shadow-lg transition-all space-y-3 sm:col-span-2 md:col-span-1 cursor-pointer">
+              <div className="text-xs font-mono text-carbon-60 font-bold">EXPECTED CALIBRATION ERROR (ECE)</div>
+              <div className="text-2xl font-black text-carbon-60">Not published</div>
+              <p className="text-xs text-carbon-60 leading-relaxed">
                 No calibration map has been fitted against observed outcomes, so no calibration error is quoted here.
               </p>
             </motion.div>
@@ -163,19 +163,19 @@ export const AnalyticsAnalyticsPage: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.25 }}
-            className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-md space-y-6"
+            className="bg-white border border-carbon-20/90 rounded-3xl p-6 sm:p-8 shadow-md space-y-6"
           >
-            <h2 className="text-xl font-bold text-slate-900">GitHub Actions & Kaggle Notebook Sync Logs</h2>
+            <h2 className="text-xl font-bold text-carbon-90">GitHub Actions & Kaggle Notebook Sync Logs</h2>
             <div className="space-y-3 font-mono text-xs">
-              <motion.div whileHover={{ x: 3 }} className="bg-slate-50/80 p-4 rounded-2xl border border-slate-200/90 shadow-2xs text-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <motion.div whileHover={{ x: 3 }} className="bg-carbon-05/80 p-4 rounded-2xl border border-carbon-20/90 shadow-2xs text-carbon-80 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <span>[SUCCESS] Kaggle Dataset Sync: Sentinel-2 & MODIS NDVI rasters fetched (07:00 UTC)</span>
                 <span className="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 font-bold w-fit border border-emerald-200">OK</span>
               </motion.div>
-              <motion.div whileHover={{ x: 3 }} className="bg-slate-50/80 p-4 rounded-2xl border border-slate-200/90 shadow-2xs text-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <motion.div whileHover={{ x: 3 }} className="bg-carbon-05/80 p-4 rounded-2xl border border-carbon-20/90 shadow-2xs text-carbon-80 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <span>[SUCCESS] TensorFlow Spatial Attention Model weights updated to v4.8</span>
                 <span className="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 font-bold w-fit border border-emerald-200">OK</span>
               </motion.div>
-              <motion.div whileHover={{ x: 3 }} className="bg-slate-50/80 p-4 rounded-2xl border border-slate-200/90 shadow-2xs text-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <motion.div whileHover={{ x: 3 }} className="bg-carbon-05/80 p-4 rounded-2xl border border-carbon-20/90 shadow-2xs text-carbon-80 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <span>[RUNNING] Firebase Firestore real-time sync worker active</span>
                 <span className="px-2.5 py-1 rounded-full bg-amber-100 text-amber-900 font-bold w-fit border border-amber-200">LIVE</span>
               </motion.div>
@@ -190,11 +190,11 @@ export const AnalyticsAnalyticsPage: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.25 }}
-            className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-md space-y-6"
+            className="bg-white border border-carbon-20/90 rounded-3xl p-6 sm:p-8 shadow-md space-y-6"
           >
-            <h2 className="text-xl font-bold text-slate-900">EM-DAT International Disaster Database vs HazardNet Predictions</h2>
-            <p className="text-sm text-slate-600 leading-relaxed">Comparative analysis of historical flood, cyclone, and drought events (1990-2026) in Bangladesh mapped against neural tensor forecasts.</p>
-            <div className="h-64 bg-slate-50/80 rounded-2xl border border-slate-200/90 shadow-2xs flex items-center justify-center text-slate-500 font-mono text-xs px-4 text-center">
+            <h2 className="text-xl font-bold text-carbon-90">EM-DAT International Disaster Database vs HazardNet Predictions</h2>
+            <p className="text-sm text-carbon-60 leading-relaxed">Comparative analysis of historical flood, cyclone, and drought events (1990-2026) in Bangladesh mapped against neural tensor forecasts.</p>
+            <div className="h-64 bg-carbon-05/80 rounded-2xl border border-carbon-20/90 shadow-2xs flex items-center justify-center text-carbon-60 font-mono text-xs px-4 text-center">
               Interactive EM-DAT Comparison Chart (Authorized Researcher View)
             </div>
           </motion.div>

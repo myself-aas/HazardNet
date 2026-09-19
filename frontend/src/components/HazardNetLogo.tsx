@@ -27,7 +27,7 @@ export const HazardNetLogo: React.FC<HazardNetLogoProps> = ({
 
   const textClasses = variant === 'dark' 
     ? "text-white font-brand font-black tracking-tight" 
-    : "text-slate-900 font-brand font-black tracking-tight";
+    : "text-carbon-90 font-brand font-black tracking-tight";
 
   return (
     <div className="inline-flex items-center justify-center shrink-0 leading-none">
@@ -106,7 +106,7 @@ export const HazardNetBrand: React.FC<HazardNetBrandProps> = ({
         <HazardNetLogo className={currentSize.logo} variant={variant} />
       </div>
       <span className={`font-montserrat font-[800] tracking-[0.05em] leading-none inline-flex items-center ${currentSize.text}`}>
-        <span className={isDark ? 'text-white' : 'text-slate-900'}>
+        <span className={isDark ? 'text-white' : 'text-carbon-90'}>
           Hazard
         </span>
         <span className="text-nasa-red-shade dark:text-nasa-red-tint">

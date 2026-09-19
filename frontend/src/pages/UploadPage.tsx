@@ -182,17 +182,17 @@ const UploadPage: React.FC = () => {
       className="space-y-6"
     >
       {/* Header Banner */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-5 md:p-6 shadow-xs">
+      <div className="bg-white border border-carbon-20 rounded-2xl p-5 md:p-6 shadow-xs">
         <div className="flex items-center gap-2 mb-1">
           <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider bg-amber-50 text-amber-900 border border-amber-200">
             Multispectral Tensor Ingestion
           </span>
         </div>
-        <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">
+        <h1 className="text-2xl md:text-3xl font-extrabold text-carbon-90 tracking-tight">
           GeoTIFF & Multispectral Raster Ingestion
         </h1>
-        <p className="text-xs md:text-sm text-slate-600 mt-1 max-w-2xl">
-          Upload 15-channel spatio-temporal tensors <code className="text-slate-900 font-bold">(1, 15, 10, 64, 64)</code> in NCDHW format or test with sample satellite tiles.
+        <p className="text-xs md:text-sm text-carbon-60 mt-1 max-w-2xl">
+          Upload 15-channel spatio-temporal tensors <code className="text-carbon-90 font-bold">(1, 15, 10, 64, 64)</code> in NCDHW format or test with sample satellite tiles.
         </p>
       </div>
 
@@ -205,7 +205,7 @@ const UploadPage: React.FC = () => {
           <div
             onDrop={handleDrop}
             onDragOver={(e) => e.preventDefault()}
-            className="bg-white border-2 border-dashed border-slate-300 hover:border-nasa-blue transition-all rounded-2xl p-6 text-center cursor-pointer relative overflow-hidden group shadow-xs"
+            className="bg-white border-2 border-dashed border-carbon-30 hover:border-nasa-blue transition-all rounded-2xl p-6 text-center cursor-pointer relative overflow-hidden group shadow-xs"
           >
             <input
               type="file"
@@ -218,17 +218,17 @@ const UploadPage: React.FC = () => {
               <MaterialIcon name="satellite_alt" className="w-4 h-4 inline-block mr-1" />
             </div>
             
-            <h3 className="text-sm font-bold text-slate-900">
+            <h3 className="text-sm font-bold text-carbon-90">
               {fileName ? `Loaded: ${fileName}` : 'Drop GeoTIFF Raster File Here'}
             </h3>
-            <p className="text-xs text-slate-500 mt-1">
+            <p className="text-xs text-carbon-60 mt-1">
               Supports .tif, .geotiff multi-band files with 15 spectral & climate layers.
             </p>
             
             <motion.button
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
-              className="mt-4 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs rounded-xl border border-slate-800 transition-colors shadow-xs"
+              className="mt-4 px-4 py-2 bg-carbon-90 hover:bg-carbon-80 text-white font-semibold text-xs rounded-xl border border-carbon-80 transition-colors shadow-xs"
             >
               Browse Local Files
             </motion.button>
@@ -248,8 +248,8 @@ const UploadPage: React.FC = () => {
           </AnimatePresence>
 
           {/* Preset Sample Satellite Raster Injectors */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-4 space-y-3 shadow-xs">
-            <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+          <div className="bg-white border border-carbon-20 rounded-2xl p-4 space-y-3 shadow-xs">
+            <h3 className="text-xs font-bold text-carbon-90 uppercase tracking-wider">
               Test Sample Satellite Raster Tensors:
             </h3>
             <div className="space-y-2">
@@ -267,15 +267,15 @@ const UploadPage: React.FC = () => {
                     setFileName(sample.name);
                     processRasterTensor(sample.name, true);
                   }}
-                  className="w-full flex items-center justify-between p-3 bg-slate-50 hover:bg-amber-50/60 border border-slate-200 hover:border-amber-300 rounded-xl text-left transition-all group"
+                  className="w-full flex items-center justify-between p-3 bg-carbon-05 hover:bg-amber-50/60 border border-carbon-20 hover:border-amber-300 rounded-xl text-left transition-all group"
                 >
                   <div className="flex items-center gap-3">
                     <MaterialIcon name="{sample.icon}" className="w-4 h-4 inline-block mr-1" />
                     <div>
-                      <span className="text-xs font-bold text-slate-900 block group-hover:text-amber-900">
+                      <span className="text-xs font-bold text-carbon-90 block group-hover:text-amber-900">
                         {sample.name}
                       </span>
-                      <span className="text-[10px] text-slate-500">
+                      <span className="text-[10px] text-carbon-60">
                         Target: {sample.hazard}
                       </span>
                     </div>
@@ -289,11 +289,11 @@ const UploadPage: React.FC = () => {
           </div>
 
           {/* Tensor Channel Mapping Info */}
-          <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-xs font-mono space-y-2 text-slate-700">
-            <h4 className="font-bold text-slate-900 uppercase text-[11px] tracking-wider">
+          <div className="bg-carbon-05 border border-carbon-20 rounded-2xl p-4 text-xs font-mono space-y-2 text-carbon-70">
+            <h4 className="font-bold text-carbon-90 uppercase text-[11px] tracking-wider">
               15-Channel Spatial Mappings
             </h4>
-            <div className="grid grid-cols-2 gap-1 text-[11px] text-slate-600">
+            <div className="grid grid-cols-2 gap-1 text-[11px] text-carbon-60">
               <div>Ch 0: SAR VV</div>
               <div>Ch 1: SAR VH</div>
               <div>Ch 2: Sentinel Blue</div>
@@ -320,11 +320,11 @@ const UploadPage: React.FC = () => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-12 text-center space-y-4 shadow-xs"
+                className="bg-white border border-carbon-20 rounded-2xl p-6 sm:p-12 text-center space-y-4 shadow-xs"
               >
                 <div className="w-12 h-12 border-4 border-nasa-blue border-t-transparent rounded-full animate-spin mx-auto"></div>
-                <h3 className="text-base font-bold text-slate-900">Running 3D-CNN Inference...</h3>
-                <p className="text-xs text-slate-500">
+                <h3 className="text-base font-bold text-carbon-90">Running 3D-CNN Inference...</h3>
+                <p className="text-xs text-carbon-60">
                   Transposing NCDHW to NDHWC tensor and querying TFLite FP32 Dual-Head Model.
                 </p>
               </motion.div>
@@ -349,10 +349,10 @@ const UploadPage: React.FC = () => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-12 text-center text-slate-500 space-y-2 shadow-xs"
+                className="bg-white border border-carbon-20 rounded-2xl p-6 sm:p-12 text-center text-carbon-60 space-y-2 shadow-xs"
               >
                 <span className="text-3xl sm:text-4xl block"><MaterialIcon name="satellite_alt" className="w-4 h-4 inline-block mr-1" /></span>
-                <h3 className="text-sm font-bold text-slate-900">No Raster Loaded Yet</h3>
+                <h3 className="text-sm font-bold text-carbon-90">No Raster Loaded Yet</h3>
                 <p className="text-xs">Drag & drop a GeoTIFF raster file or click one of the sample satellite tensors on the left.</p>
               </motion.div>
             )}

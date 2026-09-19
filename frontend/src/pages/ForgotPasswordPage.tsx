@@ -58,7 +58,7 @@ const ForgotPasswordPage: React.FC = () => {
               <div className="w-8 h-8 rounded-xl bg-nasa-red/20 flex items-center justify-center text-sm shrink-0 font-bold text-amber-900">
                 🔑
               </div>
-              <p className="text-xs text-slate-600 leading-relaxed">
+              <p className="text-xs text-carbon-60 leading-relaxed">
                 Enter your registered HazardNet email address and we'll send you instructions to reset your password.
               </p>
             </div>
@@ -78,7 +78,7 @@ const ForgotPasswordPage: React.FC = () => {
             </AnimatePresence>
 
             <div>
-              <label className="block text-xs font-bold text-slate-800 mb-1.5" htmlFor="forgot-email">
+              <label className="block text-xs font-bold text-carbon-80 mb-1.5" htmlFor="forgot-email">
                 Registered Email
               </label>
               <input
@@ -89,7 +89,7 @@ const ForgotPasswordPage: React.FC = () => {
                 placeholder="user@example.com"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs text-slate-900 placeholder-slate-400 font-medium focus:outline-none focus:border-nasa-blue focus:ring-1 focus:ring-nasa-blue transition-all"
+                className="w-full px-3.5 py-2.5 bg-carbon-05 border border-carbon-20 rounded-2xl text-xs text-carbon-90 placeholder-carbon-40 font-medium focus:outline-none focus:border-nasa-blue focus:ring-1 focus:ring-nasa-blue transition-all"
               />
             </div>
 
@@ -97,11 +97,11 @@ const ForgotPasswordPage: React.FC = () => {
               id="forgot-submit-btn"
               type="submit"
               disabled={loading || !email.trim()}
-              className="w-full py-3 bg-nasa-red text-slate-900 hover:bg-nasa-red-shade font-extrabold rounded-2xl text-xs transition-all shadow-xs disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
+              className="w-full py-3 bg-nasa-red text-carbon-90 hover:bg-nasa-red-shade font-extrabold rounded-2xl text-xs transition-all shadow-xs disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
             >
               {loading ? (
                 <>
-                  <svg className="animate-spin h-4 w-4 text-slate-900" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <svg className="animate-spin h-4 w-4 text-carbon-90" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
                   </svg>
@@ -112,7 +112,7 @@ const ForgotPasswordPage: React.FC = () => {
               )}
             </button>
 
-            <div className="text-center text-xs text-slate-600 pt-2 space-y-1.5 border-t border-slate-100">
+            <div className="text-center text-xs text-carbon-60 pt-2 space-y-1.5 border-t border-carbon-10">
               <p>
                 Remembered your password?{' '}
                 <Link to="/login" className="text-amber-800 hover:underline font-extrabold">Log In</Link>
@@ -129,13 +129,13 @@ const ForgotPasswordPage: React.FC = () => {
               ✓
             </div>
             <div>
-              <h4 className="text-sm font-extrabold text-slate-900">Check Your Inbox</h4>
-              <p className="text-xs text-slate-600 mt-1">
-                We sent a password reset link to <strong className="text-slate-900 break-all">{email}</strong>.
+              <h4 className="text-sm font-extrabold text-carbon-90">Check Your Inbox</h4>
+              <p className="text-xs text-carbon-60 mt-1">
+                We sent a password reset link to <strong className="text-carbon-90 break-all">{email}</strong>.
               </p>
             </div>
 
-            <p className="text-[11px] text-slate-500 bg-slate-50 border border-slate-200 rounded-2xl p-3 text-left">
+            <p className="text-[11px] text-carbon-60 bg-carbon-05 border border-carbon-20 rounded-2xl p-3 text-left">
               Please check your spam or junk folder if the email does not appear in your primary inbox within 2 minutes.
             </p>
 
@@ -143,14 +143,14 @@ const ForgotPasswordPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => navigate('/login')}
-                className="w-full py-2.5 bg-nasa-red hover:bg-nasa-red-shade text-slate-900 rounded-2xl text-xs font-extrabold transition-all shadow-xs cursor-pointer"
+                className="w-full py-2.5 bg-nasa-red hover:bg-nasa-red-shade text-carbon-90 rounded-2xl text-xs font-extrabold transition-all shadow-xs cursor-pointer"
               >
                 Proceed to Sign In
               </button>
               <button
                 type="button"
                 onClick={() => setIsSubmitted(false)}
-                className="w-full py-2 bg-slate-50 hover:bg-slate-100 text-slate-700 rounded-2xl text-xs font-bold border border-slate-200 transition-colors cursor-pointer"
+                className="w-full py-2 bg-carbon-05 hover:bg-carbon-10 text-carbon-70 rounded-2xl text-xs font-bold border border-carbon-20 transition-colors cursor-pointer"
               >
                 Enter a different email
               </button>

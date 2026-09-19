@@ -1,11 +1,15 @@
 # ADR 0008 — Hourly Kaggle-output refresh with a committed snapshot fallback
 
-- **Status:** Accepted (2026-09-13)
+- **Status:** Accepted (2026-09-13); **partly superseded 2026-09-20 by ADR 0013** —
+  the hourly refresh job (`hourly_forecast.yml`) is deleted and the daily pull from
+  Kaggle is the producer. What stands from this ADR is the second half: the committed
+  snapshot and the frontend's live → snapshot → static-baseline freshness ordering.
 - **Context:** production-readiness audit finding #2 ("production serves mock
   data"); user report "site does not refresh from the updated forecasted CSV
   despite manual notebook runs"
 - **Related:** ADR 0002 (forecast consolidation), ADR 0003 (deploy topology),
-  ADR 0004 (retire legacy weekly pipeline), `docs/ops/hourly_forecast.md`
+  ADR 0004 (retire legacy weekly pipeline), ADR 0013 (the daily Kaggle pull that
+  replaced the hourly job), `docs/ops/hourly_forecast.md` (deleted with it)
 
 ## Context
 

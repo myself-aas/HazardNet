@@ -77,8 +77,8 @@ export const AccountSection: React.FC = () => {
       {/* Email */}
       <Card title="Email address" subtitle="Your sign-in address. Changes require confirming the new inbox." icon={<MaterialIcon name="mail" size={18} />}>
         <div className="space-y-4">
-          <div className="flex flex-wrap items-center gap-2 rounded-2xl bg-slate-50 px-4 py-3">
-            <span className="text-sm font-bold text-slate-800">{user?.email ?? userProfile?.email ?? '—'}</span>
+          <div className="flex flex-wrap items-center gap-2 rounded-2xl bg-carbon-05 px-4 py-3">
+            <span className="text-sm font-bold text-carbon-80">{user?.email ?? userProfile?.email ?? '—'}</span>
             {emailVerified ? (
               <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-emerald-700">
                 <MaterialIcon name="check_badge" size={12} /> Verified
@@ -103,7 +103,7 @@ export const AccountSection: React.FC = () => {
                 type="button"
                 onClick={handleEmailChange}
                 disabled={emailBusy || !newEmail.trim()}
-                className="shrink-0 rounded-xl bg-slate-900 px-4 py-2.5 text-xs font-extrabold text-white transition-colors hover:bg-slate-800 disabled:opacity-40 cursor-pointer"
+                className="shrink-0 rounded-xl bg-carbon-90 px-4 py-2.5 text-xs font-extrabold text-white transition-colors hover:bg-carbon-80 disabled:opacity-40 cursor-pointer"
               >
                 {emailBusy ? 'Sending…' : 'Update email'}
               </button>
@@ -127,12 +127,12 @@ export const AccountSection: React.FC = () => {
             type="button"
             onClick={handlePasswordReset}
             disabled={resetBusy || !userProfile?.email}
-            className="flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-xs font-extrabold text-white transition-colors hover:bg-slate-800 disabled:opacity-40 cursor-pointer"
+            className="flex items-center gap-2 rounded-xl bg-carbon-90 px-4 py-2.5 text-xs font-extrabold text-white transition-colors hover:bg-carbon-80 disabled:opacity-40 cursor-pointer"
           >
             {resetBusy && <span className="h-3 w-3 animate-spin rounded-full border-2 border-white/40 border-t-white" />}
             {passwordProvider === 'social' ? 'Email me a password-setup link' : 'Email me a password-reset link'}
           </button>
-          <p className="text-[11px] leading-relaxed text-slate-500">
+          <p className="text-[11px] leading-relaxed text-carbon-60">
             For security the link goes to <strong>{userProfile?.email ?? 'your inbox'}</strong> and opens the
             set-password page.
           </p>

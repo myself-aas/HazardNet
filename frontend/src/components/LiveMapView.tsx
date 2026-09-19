@@ -699,40 +699,40 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
 
         userPinMarker.bindPopup(`
           <div style="padding: 12px; font-family: var(--hds-font-family-heading); color: #023246; min-width: 240px; max-width: 280px;">
-            <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px; margin-bottom: 10px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #d1d1d1; padding-bottom: 8px; margin-bottom: 10px;">
               <div style="display: flex; align-items: center; gap: 4px;">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="display:block;"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="12" cy="12" r="3" fill="currentColor"/><line x1="12" y1="2" x2="12" y2="6" stroke="currentColor" stroke-width="2"/><line x1="12" y1="18" x2="12" y2="22" stroke="currentColor" stroke-width="2"/><line x1="2" y1="12" x2="6" y2="12" stroke="currentColor" stroke-width="2"/><line x1="18" y1="12" x2="22" y2="12" stroke="currentColor" stroke-width="2"/></svg>
-                <strong style="font-size: 13px; color: #0f172a; font-weight: 800;">Stored Location Pin</strong>
+                <strong style="font-size: 13px; color: #17171b; font-weight: 800;">Stored Location Pin</strong>
               </div>
               <span style="font-size: 10px; font-weight: 900; padding: 2px 7px; border-radius: 6px; background: rgba(56, 189, 248, 0.15); color: #0284c7; border: 1px solid rgba(56, 189, 248, 0.3);">Synced GPS</span>
             </div>
 
-            <div style="font-size: 11px; color: #475569; line-height: 1.6;">
-              <div style="display: flex; justify-content: space-between; font-family: monospace; background: #f1f5f9; padding: 4px 8px; border-radius: 6px;">
+            <div style="font-size: 11px; color: #58585b; line-height: 1.6;">
+              <div style="display: flex; justify-content: space-between; font-family: monospace; background: #e3e3e3; padding: 4px 8px; border-radius: 6px;">
                 <span>Lat: <strong>${pinpointLat.toFixed(4)}°N</strong></span>
                 <span>Lng: <strong>${pinpointLng.toFixed(4)}°E</strong></span>
               </div>
 
               ${pinDist ? `
-                <div style="margin-top: 8px; padding: 8px 10px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
-                  <div style="font-size: 9px; font-weight: 800; color: #64748b; text-transform: uppercase;">Identified District</div>
-                  <div style="font-size: 13px; font-weight: 900; color: #0f172a; margin-top: 1px;">
-                    ${pinDist.name} <span style="font-size: 10px; font-weight: 600; color: #64748b;">(${pinDist.division})</span>
+                <div style="margin-top: 8px; padding: 8px 10px; background: #f6f6f6; border-radius: 8px; border: 1px solid #d1d1d1;">
+                  <div style="font-size: 9px; font-weight: 800; color: #77777a; text-transform: uppercase;">Identified District</div>
+                  <div style="font-size: 13px; font-weight: 900; color: #17171b; margin-top: 1px;">
+                    ${pinDist.name} <span style="font-size: 10px; font-weight: 600; color: #77777a;">(${pinDist.division})</span>
                   </div>
 
-                  <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 8px; padding-top: 6px; border-top: 1px dashed #cbd5e1;">
+                  <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 8px; padding-top: 6px; border-top: 1px dashed #b9b9bb;">
                     <div>
-                      <div style="font-size: 9px; color: #64748b; font-weight: 700; text-transform: uppercase;">Hazard Type</div>
-                      <div style="font-size: 11px; font-weight: 800; color: #0f172a; margin-top: 1px;"><MaterialIcon name="warning" className="w-4 h-4 inline-block align-middle" /> ${pinDist.hazardType}</div>
+                      <div style="font-size: 9px; color: #77777a; font-weight: 700; text-transform: uppercase;">Hazard Type</div>
+                      <div style="font-size: 11px; font-weight: 800; color: #17171b; margin-top: 1px;"><MaterialIcon name="warning" className="w-4 h-4 inline-block align-middle" /> ${pinDist.hazardType}</div>
                     </div>
                     <div style="text-align: right;">
-                      <div style="font-size: 9px; color: #64748b; font-weight: 700; text-transform: uppercase;">Severity Score</div>
+                      <div style="font-size: 9px; color: #77777a; font-weight: 700; text-transform: uppercase;">Severity Score</div>
                       <span style="font-size: 10px; font-weight: 900; padding: 2px 6px; border-radius: 4px; background: ${pinRiskBg}; color: ${pinRiskColor}; display: inline-block; margin-top: 1px;">
                         ${pinSevPct}% (${pinDist.risk})
                       </span>
                     </div>
                   </div>
-                  <div style="margin-top: 6px; font-size: 10px; color: #475569;">
+                  <div style="margin-top: 6px; font-size: 10px; color: #58585b;">
                     🌱 Vulnerable Crop: <strong style="color: #059669;">${pinDist.mainCrop}</strong>
                   </div>
                   <button onclick="window.selectHazardDistrict('${pinDist.id}')" style="margin-top: 8px; width: 100%; padding: 6px 10px; background: #0284c7; color: #ffffff; font-size: 11px; font-weight: 800; border: none; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px; box-shadow: 0 2px 6px rgba(2, 132, 199, 0.3);">
@@ -805,30 +805,30 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
 
         gpsMarker.bindPopup(`
           <div style="padding: 12px; font-family: var(--hds-font-family-heading); color: #023246; min-width: 250px; max-width: 290px;">
-            <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px; margin-bottom: 10px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #d1d1d1; padding-bottom: 8px; margin-bottom: 10px;">
               <div style="display: flex; align-items: center; gap: 4px;">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="display:block;"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="12" cy="12" r="3" fill="currentColor"/><line x1="12" y1="2" x2="12" y2="6" stroke="currentColor" stroke-width="2"/><line x1="12" y1="18" x2="12" y2="22" stroke="currentColor" stroke-width="2"/><line x1="2" y1="12" x2="6" y2="12" stroke="currentColor" stroke-width="2"/><line x1="18" y1="12" x2="22" y2="12" stroke="currentColor" stroke-width="2"/></svg>
-                <strong style="font-size: 13px; color: #0f172a; font-weight: 800;">GPS Device Position</strong>
+                <strong style="font-size: 13px; color: #17171b; font-weight: 800;">GPS Device Position</strong>
               </div>
               <span style="font-size: 10px; font-weight: 900; padding: 2px 7px; border-radius: 6px; background: rgba(56, 189, 248, 0.15); color: #0284c7; border: 1px solid rgba(56, 189, 248, 0.3);">Active GPS</span>
             </div>
 
-            <div style="font-size: 11px; color: #334155; line-height: 1.5;">
-              <div style="display: flex; justify-content: space-between; font-family: monospace; background: #f1f5f9; padding: 6px 8px; border-radius: 6px; border: 1px solid #e2e8f0;">
+            <div style="font-size: 11px; color: #444447; line-height: 1.5;">
+              <div style="display: flex; justify-content: space-between; font-family: monospace; background: #e3e3e3; padding: 6px 8px; border-radius: 6px; border: 1px solid #d1d1d1;">
                 <div>Latitude: <strong>${userGpsPos.lat.toFixed(4)}°N</strong></div>
                 <div>Longitude: <strong>${userGpsPos.lng.toFixed(4)}°E</strong></div>
               </div>
-              <div style="margin-top: 4px; font-size: 10px; color: #64748b; font-family: monospace; text-align: right;">
+              <div style="margin-top: 4px; font-size: 10px; color: #77777a; font-family: monospace; text-align: right;">
                 GPS Accuracy: <strong>~${userGpsPos.accuracy || 10}m</strong>
               </div>
 
               ${dist ? `
-                <div style="margin-top: 8px; padding: 10px; background: #f8fafc; border-radius: 10px; border: 1px solid #e2e8f0;">
+                <div style="margin-top: 8px; padding: 10px; background: #f6f6f6; border-radius: 10px; border: 1px solid #d1d1d1;">
                   <div style="display: flex; align-items: center; justify-content: space-between;">
                     <div>
-                      <div style="font-size: 9px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px;">Identified District</div>
-                      <div style="font-size: 14px; font-weight: 900; color: #0f172a; margin-top: 1px;">
-                        ${dist.name} <span style="font-size: 11px; font-weight: 600; color: #64748b;">(${dist.division})</span>
+                      <div style="font-size: 9px; font-weight: 800; color: #77777a; text-transform: uppercase; letter-spacing: 0.5px;">Identified District</div>
+                      <div style="font-size: 14px; font-weight: 900; color: #17171b; margin-top: 1px;">
+                        ${dist.name} <span style="font-size: 11px; font-weight: 600; color: #77777a;">(${dist.division})</span>
                       </div>
                     </div>
                     <span style="font-size: 10px; font-weight: 700; color: #0284c7; background: #e0f2fe; padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(2, 132, 199, 0.2);">
@@ -836,13 +836,13 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                     </span>
                   </div>
 
-                  <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 8px; padding-top: 8px; border-top: 1px dashed #cbd5e1;">
+                  <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 8px; padding-top: 8px; border-top: 1px dashed #b9b9bb;">
                     <div>
-                      <div style="font-size: 9px; color: #64748b; font-weight: 700; text-transform: uppercase;">Identified Hazard</div>
-                      <div style="font-size: 12px; font-weight: 800; color: #0f172a; margin-top: 1px;"><MaterialIcon name="warning" className="w-4 h-4 inline-block align-middle" /> ${dist.hazardType}</div>
+                      <div style="font-size: 9px; color: #77777a; font-weight: 700; text-transform: uppercase;">Identified Hazard</div>
+                      <div style="font-size: 12px; font-weight: 800; color: #17171b; margin-top: 1px;"><MaterialIcon name="warning" className="w-4 h-4 inline-block align-middle" /> ${dist.hazardType}</div>
                     </div>
                     <div style="text-align: right;">
-                      <div style="font-size: 9px; color: #64748b; font-weight: 700; text-transform: uppercase;">Severity Score</div>
+                      <div style="font-size: 9px; color: #77777a; font-weight: 700; text-transform: uppercase;">Severity Score</div>
                       <div style="margin-top: 2px;">
                         <span style="font-size: 11px; font-weight: 900; padding: 2px 7px; border-radius: 5px; background: ${riskBg}; color: ${riskColor}; border: 1px solid ${riskBorder}; display: inline-block;">
                           ${sevPct}% (${dist.risk})
@@ -851,7 +851,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                     </div>
                   </div>
 
-                  <div style="margin-top: 8px; padding-top: 6px; border-top: 1px solid #f1f5f9; font-size: 10px; color: #475569; display: flex; align-items: center; gap: 4px;">
+                  <div style="margin-top: 8px; padding-top: 6px; border-top: 1px solid #e3e3e3; font-size: 10px; color: #58585b; display: flex; align-items: center; gap: 4px;">
                     <span>🌱 Vulnerable Crop:</span>
                     <strong style="color: #059669; font-weight: 800;">${dist.mainCrop}</strong>
                   </div>
@@ -922,7 +922,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
         html: `
           <div style="position: relative; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; outline: none; cursor: pointer;">
             <div style="position: absolute; inset: -12px; border-radius: 50%; background: rgba(249, 168, 37, 0.45); filter: blur(6px);" class="radar-ping-ring"></div>
-            <div style="position: relative; width: 30px; height: 30px; border-radius: 50%; background: #ffffff; border: 3px solid #f64137; display: flex; align-items: center; justify-content: center; color: #0f172a; font-size: 14px; font-weight: 900; box-shadow: 0 4px 16px rgba(249, 168, 37, 0.5);">
+            <div style="position: relative; width: 30px; height: 30px; border-radius: 50%; background: #ffffff; border: 3px solid #f64137; display: flex; align-items: center; justify-content: center; color: #17171b; font-size: 14px; font-weight: 900; box-shadow: 0 4px 16px rgba(249, 168, 37, 0.5);">
               <MaterialIcon name="search" className="w-4 h-4 inline-block align-middle" />
             </div>
           </div>
@@ -973,7 +973,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
           riverPolyline.bindTooltip(
             `<div style="font-family: var(--hds-font-family-heading); font-size: 11px; font-weight: 900; color: #0284c7;">
               <MaterialIcon name="water" className="w-4 h-4 inline-block align-middle" /> ${river.name}<br/>
-              <span style="font-size: 10px; color: #64748b; font-weight: normal;">${river.status}</span>
+              <span style="font-size: 10px; color: #77777a; font-weight: normal;">${river.status}</span>
             </div>`,
             { permanent: false, direction: 'top' }
           );
@@ -1193,7 +1193,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
       Icon: Contrast,
       title: "Toggle Tile High Contrast Visual Filter Boost",
       onClick: () => setIsHighContrastBoost(!isHighContrastBoost),
-      className: isHighContrastBoost ? "bg-slate-900/20 text-slate-900" : ""
+      className: isHighContrastBoost ? "bg-carbon-90/20 text-carbon-90" : ""
     }
   ];
 
@@ -1206,10 +1206,10 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
       ref={mainWrapperRef}
       className={
         isFullScreen || isBrowserFullscreen
-          ? 'w-full h-full min-h-dvh h-dvh bg-slate-900 overflow-hidden text-slate-900 relative'
+          ? 'w-full h-full min-h-dvh h-dvh bg-carbon-90 overflow-hidden text-carbon-90 relative'
           : className
           ? className
-          : `w-full ${customHeight || 'h-full min-h-[500px] lg:min-h-[700px]'} bg-slate-100 rounded-[28px] overflow-hidden text-slate-900 relative border border-slate-200 shadow-sm`
+          : `w-full ${customHeight || 'h-full min-h-[500px] lg:min-h-[700px]'} bg-carbon-10 rounded-[28px] overflow-hidden text-carbon-90 relative border border-carbon-20 shadow-sm`
       }
     >
       {/* Absolute Headers Overlay */}
@@ -1223,12 +1223,12 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className="p-2.5 px-4 bg-white/90 backdrop-blur-md border-b border-slate-200/70 flex items-center justify-between gap-3 text-xs shadow-xs"
+              className="p-2.5 px-4 bg-white/90 backdrop-blur-md border-b border-carbon-20/70 flex items-center justify-between gap-3 text-xs shadow-xs"
             >
               <div className="flex items-center gap-2.5">
                 
-                <span className="font-extrabold text-slate-900">GIS Satellite Engine</span>
-                <span className="text-[10px] text-slate-500 font-mono hidden sm:inline">
+                <span className="font-extrabold text-carbon-90">GIS Satellite Engine</span>
+                <span className="text-[10px] text-carbon-60 font-mono hidden sm:inline">
                   • {filteredDistricts.length} Districts Active
                 </span>
               </div>
@@ -1240,8 +1240,8 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                     onClick={() => setActiveLayer(key)}
                     className={`px-2.5 py-1 rounded-lg text-[10px] font-extrabold transition-all ${
                       activeLayer === key
-                        ? 'bg-nasa-red text-slate-900 shadow-xs'
-                        : 'bg-slate-100/90 text-slate-700 hover:text-slate-900'
+                        ? 'bg-nasa-red text-carbon-90 shadow-xs'
+                        : 'bg-carbon-10/90 text-carbon-70 hover:text-carbon-90'
                     }`}
                   >
                     {key === 'esriSatellite' ? 'Satellite' : key === 'esriClarity' ? 'Clarity' : 'Dark GIS'}
@@ -1250,7 +1250,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
 
                 <button
                   onClick={() => setIsHeaderCollapsed(false)}
-                  className="px-2.5 py-1 bg-slate-900 hover:bg-slate-800 text-white text-[10px] font-extrabold rounded-lg shadow-xs transition-all cursor-pointer flex items-center gap-1"
+                  className="px-2.5 py-1 bg-carbon-90 hover:bg-carbon-80 text-white text-[10px] font-extrabold rounded-lg shadow-xs transition-all cursor-pointer flex items-center gap-1"
                   title="Expand map controls and filters"
                 >
                   <span>Controls 🔽</span>
@@ -1266,7 +1266,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
-              className="p-4 sm:p-5 bg-white/80 backdrop-blur-md border-b border-slate-200/50 flex flex-col lg:flex-row lg:items-center justify-between gap-4"
+              className="p-4 sm:p-5 bg-white/80 backdrop-blur-md border-b border-carbon-20/50 flex flex-col lg:flex-row lg:items-center justify-between gap-4"
             >
               {/* Title & Telemetry Status */}
           <div className="flex items-center gap-3.5">
@@ -1275,18 +1275,18 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
             </div>
             <div>
               <div className="flex flex-wrap items-center gap-2">
-                <h3 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight">
+                <h3 className="text-lg sm:text-xl font-black text-carbon-90 tracking-tight">
                   High-Contrast GIS & Satellite Engine
                 </h3>
                 <span className="px-3 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-50 text-[#ad6d04] border border-amber-200 flex items-center gap-1.5">
                   
                   HD TERRAIN STREAM
                 </span>
-                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-slate-100 text-slate-700 border border-slate-200">
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-carbon-10 text-carbon-70 border border-carbon-20">
                   {filteredDistricts.length} / {liveDistricts.length} Districts Active
                 </span>
               </div>
-              <p className="text-xs text-slate-500 mt-0.5 leading-relaxed font-medium">
+              <p className="text-xs text-carbon-60 mt-0.5 leading-relaxed font-medium">
                 14-vertex vector boundaries, live river basin overlays, point telemetry inspection & geodesic ruler
               </p>
             </div>
@@ -1294,7 +1294,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
 
           {/* Map Engine Layer Switcher & High Contrast Toggle */}
           <div className="flex flex-wrap items-center gap-2.5">
-            <div className="flex items-center bg-slate-100/80 p-1 rounded-2xl border border-slate-200 overflow-x-auto max-w-full">
+            <div className="flex items-center bg-carbon-10/80 p-1 rounded-2xl border border-carbon-20 overflow-x-auto max-w-full">
               {(Object.keys(MAP_LAYERS) as Array<keyof typeof MAP_LAYERS>).map((key) => {
                 const isAct = activeLayer === key;
                 const labels: Record<string, string> = {
@@ -1312,7 +1312,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                     className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all whitespace-nowrap ${
                       isAct
                         ? 'bg-nasa-red text-white shadow-sm'
-                        : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
+                        : 'text-carbon-60 hover:text-carbon-90 hover:bg-white/60'
                     }`}
                   >
                     {labels[key]}
@@ -1326,7 +1326,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
               className={`px-3.5 py-2 rounded-2xl text-xs font-black transition-all border shadow-xs min-h-[40px] flex items-center gap-1.5 ${
                 isHighContrastBoost
                   ? 'bg-sky-600 text-white border-sky-600 shadow-sm'
-                  : 'bg-white/80 text-slate-700 border-slate-200 hover:bg-white'
+                  : 'bg-white/80 text-carbon-70 border-carbon-20 hover:bg-white'
               }`}
               title="Toggle Tile High Contrast Visual Enhancement"
             >
@@ -1354,7 +1354,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
 
             <button
               onClick={() => setIsHeaderCollapsed(true)}
-              className="px-3.5 py-2 rounded-2xl text-xs font-black bg-slate-900 text-white hover:bg-slate-800 transition-all border border-slate-800 shadow-xs min-h-[40px] flex items-center gap-1.5 cursor-pointer"
+              className="px-3.5 py-2 rounded-2xl text-xs font-black bg-carbon-90 text-white hover:bg-carbon-80 transition-all border border-carbon-80 shadow-xs min-h-[40px] flex items-center gap-1.5 cursor-pointer"
               title="Collapse controls overlay to maximize visible interactive map stage"
             >
               <span>Collapse 🔼</span>
@@ -1372,7 +1372,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.3, delay: 0.1 }}
-          className="px-4 py-3 bg-white/80 backdrop-blur-md border-b border-slate-200/50 flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs"
+          className="px-4 py-3 bg-white/80 backdrop-blur-md border-b border-carbon-20/50 flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs"
         >
           {/* Search Bar */}
           <div className="relative w-full md:w-80">
@@ -1381,7 +1381,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
               placeholder="Search districts, hazards, or divisions..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-4 py-2 bg-white/90 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 text-xs focus:outline-none focus:border-nasa-blue font-semibold shadow-xs"
+              className="w-full px-4 py-2 bg-white/90 border border-carbon-20 rounded-xl text-carbon-80 placeholder-carbon-40 text-xs focus:outline-none focus:border-nasa-blue font-semibold shadow-xs"
             />
           </div>
 
@@ -1394,8 +1394,8 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                 aria-pressed={forecastHorizon === h}
                 className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all whitespace-nowrap ${
                   forecastHorizon === h
-                    ? 'bg-slate-900 text-white'
-                    : 'text-slate-600 bg-white/90 hover:bg-slate-100 border border-slate-200'
+                    ? 'bg-carbon-90 text-white'
+                    : 'text-carbon-60 bg-white/90 hover:bg-carbon-10 border border-carbon-20'
                 }`}
               >
                 {formatHorizonLabel(h)}
@@ -1405,7 +1405,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
               className={`px-2 py-1 rounded-lg text-[10px] font-bold whitespace-nowrap border ${
                 isLive
                   ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                  : 'bg-slate-50 text-slate-500 border-slate-200'
+                  : 'bg-carbon-05 text-carbon-60 border-carbon-20'
               }`}
               title={
                 isLive
@@ -1429,8 +1429,8 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
               }}
               className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all whitespace-nowrap ${
                 selectedHazards.length === HAZARD_LAYERS.length
-                  ? 'bg-slate-900 text-white'
-                  : 'text-slate-600 bg-white/90 hover:bg-slate-100 border border-slate-200'
+                  ? 'bg-carbon-90 text-white'
+                  : 'text-carbon-60 bg-white/90 hover:bg-carbon-10 border border-carbon-20'
               }`}
             >
               All Hazards ({selectedHazards.length}/{HAZARD_LAYERS.length})
@@ -1445,11 +1445,11 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                   className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap flex items-center gap-1.5 ${
                     isAct
                       ? 'bg-nasa-red text-white font-black shadow-xs'
-                      : 'text-slate-600 bg-white/90 hover:bg-slate-100 border border-slate-200'
+                      : 'text-carbon-60 bg-white/90 hover:bg-carbon-10 border border-carbon-20'
                   }`}
                 >
                   <span>{h.name}</span>
-                  <span className={`px-1.5 py-0.5 text-[10px] rounded font-mono ${isAct ? 'bg-amber-700/30 text-white' : 'bg-slate-100 text-slate-500'}`}>
+                  <span className={`px-1.5 py-0.5 text-[10px] rounded font-mono ${isAct ? 'bg-amber-700/30 text-white' : 'bg-carbon-10 text-carbon-60'}`}>
                     {count}
                   </span>
                 </button>
@@ -1535,35 +1535,35 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
               transition={{ duration: 0.2 }}
               className="absolute top-20 sm:top-24 left-4 right-4 sm:left-auto sm:right-6 z-10 pointer-events-auto sm:max-w-[320px] w-auto sm:w-full"
             >
-              <div className="bg-white/98 border-2 border-amber-400 rounded-2xl p-4 shadow-2xl text-slate-800 flex flex-col gap-2.5">
-                <div className="flex items-center justify-between border-b border-slate-200 pb-2">
+              <div className="bg-white/98 border-2 border-amber-400 rounded-2xl p-4 shadow-2xl text-carbon-80 flex flex-col gap-2.5">
+                <div className="flex items-center justify-between border-b border-carbon-20 pb-2">
                   <div>
                     <div className="flex items-center gap-1.5 text-[10px] font-mono font-bold text-amber-600 uppercase tracking-wider">
                       
                       POINT INSPECTION TELEMETRY
                     </div>
-                    <h4 className="text-sm font-black text-slate-900 tracking-tight mt-0.5">
+                    <h4 className="text-sm font-black text-carbon-90 tracking-tight mt-0.5">
                       Lat: {inspectedPoint.lat}° N, Lng: {inspectedPoint.lng}° E
                     </h4>
                   </div>
                   <button
                     onClick={() => setInspectedPoint(null)}
-                    className="w-6 h-6 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold flex items-center justify-center text-xs"
+                    className="w-6 h-6 rounded-full bg-carbon-10 hover:bg-carbon-20 text-carbon-60 font-bold flex items-center justify-center text-xs"
                   >
                     ✕
                   </button>
                 </div>
 
                 <div className="bg-amber-50/80 border border-amber-200 rounded-xl p-2.5 text-xs space-y-1">
-                  <div className="flex justify-between font-bold text-slate-800">
+                  <div className="flex justify-between font-bold text-carbon-80">
                     <span>Nearest District:</span>
                     <span className="text-amber-800">{nearestDistrictData.district.name}</span>
                   </div>
-                  <div className="flex justify-between text-slate-600 font-mono text-[11px]">
+                  <div className="flex justify-between text-carbon-60 font-mono text-[11px]">
                     <span>Distance to Center:</span>
                     <span>{nearestDistrictData.distanceKm.toFixed(1)} km</span>
                   </div>
-                  <div className="flex justify-between text-slate-600 font-mono text-[11px]">
+                  <div className="flex justify-between text-carbon-60 font-mono text-[11px]">
                     <span>Vulnerability Index:</span>
                     <span className="font-bold text-rose-600">{(nearestDistrictData.district.severity * 92).toFixed(0)} / 100</span>
                   </div>
@@ -1589,13 +1589,13 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                       handleSelectDistrict(nearestDistrictData.district);
                       setInspectedPoint(null);
                     }}
-                    className="flex-1 py-1.5 bg-slate-900 hover:bg-slate-800 text-white font-black text-xs rounded-xl shadow-sm text-center"
+                    className="flex-1 py-1.5 bg-carbon-90 hover:bg-carbon-80 text-white font-black text-xs rounded-xl shadow-sm text-center"
                   >
                     Focus {nearestDistrictData.district.name}
                   </button>
                   <button
                     onClick={() => setInspectedPoint(null)}
-                    className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl"
+                    className="px-3 py-1.5 bg-carbon-10 hover:bg-carbon-20 text-carbon-70 font-bold text-xs rounded-xl"
                   >
                     Close
                   </button>
@@ -1615,8 +1615,8 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
               transition={{ duration: 0.2 }}
               className="absolute top-24 sm:top-6 left-4 right-4 sm:right-auto sm:left-20 z-10 pointer-events-auto sm:max-w-sm w-auto sm:w-full"
             >
-              <div className="bg-slate-900/95 backdrop-blur-md text-white border-2 border-amber-500/80 rounded-2xl p-3.5 shadow-2xl flex flex-col gap-2.5">
-                <div className="flex items-center justify-between border-b border-slate-700/80 pb-2 text-xs font-bold">
+              <div className="bg-carbon-90/95 backdrop-blur-md text-white border-2 border-amber-500/80 rounded-2xl p-3.5 shadow-2xl flex flex-col gap-2.5">
+                <div className="flex items-center justify-between border-b border-carbon-70/80 pb-2 text-xs font-bold">
                   <span className="flex items-center gap-2 text-amber-400 font-mono tracking-wide">
                     <span className="text-base">📏</span> MEASUREMENT & HAZARD ANALYZER
                   </span>
@@ -1625,21 +1625,21 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                       setIsMeasuring(false);
                       setMeasurePoints([]);
                     }}
-                    className="text-slate-400 hover:text-white text-xs font-semibold px-2 py-0.5 rounded-md hover:bg-slate-800 transition-colors"
+                    className="text-carbon-40 hover:text-white text-xs font-semibold px-2 py-0.5 rounded-md hover:bg-carbon-80 transition-colors"
                   >
                     Close
                   </button>
                 </div>
 
                 {measurePoints.length === 0 && (
-                  <div className="bg-slate-800/80 p-2.5 rounded-xl border border-slate-700 text-xs text-slate-300 flex items-center gap-2">
-                    <span className="text-amber-400 text-sm animate-bounce">👇</span>
+                  <div className="bg-carbon-80/80 p-2.5 rounded-xl border border-carbon-70 text-xs text-carbon-30 flex items-center gap-2">
+                    <MaterialIcon name="touch_app" className="w-4 h-4 shrink-0 text-[#ea6f24]" />
                     <span>Click any location on the map to set <strong>Point 1 (Origin)</strong>.</span>
                   </div>
                 )}
 
                 {measurePoints.length === 1 && (
-                  <div className="bg-slate-800/80 p-2.5 rounded-xl border border-slate-700 text-xs text-slate-300 space-y-1">
+                  <div className="bg-carbon-80/80 p-2.5 rounded-xl border border-carbon-70 text-xs text-carbon-30 space-y-1">
                     <div className="flex items-center gap-1.5 text-sky-400 font-bold">
                       <MaterialIcon name="location_on" className="w-4 h-4 inline-block align-middle" /><span>Point 1 (Origin):</span>
                       <span>{findNearestDistrict(measurePoints[0][0], measurePoints[0][1]).district.name}</span>
@@ -1652,26 +1652,26 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
 
                 {measurePoints.length >= 2 && pathAnalysis && (
                   <div className="text-xs space-y-2">
-                    <div className="bg-slate-800/90 p-2.5 rounded-xl border border-slate-700 space-y-1.5">
+                    <div className="bg-carbon-80/90 p-2.5 rounded-xl border border-carbon-70 space-y-1.5">
                       <div className="flex items-center justify-between font-mono font-extrabold text-amber-300 text-sm">
                         <span>Distance:</span>
                         <span>
                           {pathAnalysis.totalDistanceKm.toFixed(2)} km{' '}
-                          <span className="text-slate-400 text-xs font-normal">
+                          <span className="text-carbon-60 text-xs font-normal">
                             ({(pathAnalysis.totalDistanceKm * 0.621371).toFixed(2)} mi)
                           </span>
                         </span>
                       </div>
 
                       <div className="flex items-center justify-between text-[11px]">
-                        <span className="text-slate-400">Path Span:</span>
-                        <span className="font-bold text-slate-200">
+                        <span className="text-carbon-60">Path Span:</span>
+                        <span className="font-bold text-carbon-20">
                           {pathAnalysis.startDistrict?.name} ➔ {pathAnalysis.endDistrict?.name}
                         </span>
                       </div>
 
-                      <div className="flex items-center justify-between text-[11px] border-t border-slate-700/60 pt-1.5">
-                        <span className="text-slate-400">Max Hazard Severity:</span>
+                      <div className="flex items-center justify-between text-[11px] border-t border-carbon-70/60 pt-1.5">
+                        <span className="text-carbon-60">Max Hazard Severity:</span>
                         <span
                           className={`font-black px-1.5 py-0.5 rounded text-[10px] ${
                             pathAnalysis.riskRating === 'High'
@@ -1688,7 +1688,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
 
                     {pathAnalysis.hazardsDetected.length > 0 && (
                       <div className="space-y-1">
-                        <div className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">
+                        <div className="text-[10px] text-carbon-60 uppercase font-bold tracking-wider">
                           Intersects Hazard Zones:
                         </div>
                         <div className="flex flex-wrap gap-1">
@@ -1704,19 +1704,19 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                       </div>
                     )}
 
-                    <div className="text-[10px] text-slate-400 font-mono">
+                    <div className="text-[10px] text-carbon-60 font-mono">
                       Transiting {pathAnalysis.districtsAlongPath.length} district(s):{' '}
-                      <span className="text-slate-300 font-sans font-medium">
+                      <span className="text-carbon-30 font-sans font-medium">
                         {pathAnalysis.districtsAlongPath.map((d) => d.district.name).join(', ')}
                       </span>
                     </div>
                   </div>
                 )}
 
-                <div className="flex items-center gap-2 pt-1 border-t border-slate-700/80">
+                <div className="flex items-center gap-2 pt-1 border-t border-carbon-70/80">
                   <button
                     onClick={() => setMeasurePoints([])}
-                    className="flex-1 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs rounded-xl transition-colors border border-slate-700"
+                    className="flex-1 py-1.5 bg-carbon-80 hover:bg-carbon-70 text-carbon-20 font-bold text-xs rounded-xl transition-colors border border-carbon-70"
                   >
                     Reset Points
                   </button>
@@ -1725,7 +1725,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                       setIsMeasuring(false);
                       setMeasurePoints([]);
                     }}
-                    className="px-3 py-1.5 bg-nasa-red hover:bg-nasa-red-shade text-slate-950 font-black text-xs rounded-xl transition-all shadow-md"
+                    className="px-3 py-1.5 bg-nasa-red hover:bg-nasa-red-shade text-carbon-black font-black text-xs rounded-xl transition-all shadow-md"
                   >
                     Exit Ruler
                   </button>
@@ -1743,13 +1743,13 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
               animate={{ opacity: 1, y: 0, x: "-50%" }}
               exit={{ opacity: 0, y: -20, x: "-50%" }}
               transition={{ duration: 0.3 }}
-              className="absolute top-20 left-1/2 z-20 pointer-events-auto bg-slate-900/95 text-emerald-300 border border-emerald-500/80 px-4 py-2.5 rounded-2xl shadow-2xl flex items-center gap-3 text-xs font-bold backdrop-blur-md"
+              className="absolute top-20 left-1/2 z-20 pointer-events-auto bg-carbon-90/95 text-emerald-300 border border-emerald-500/80 px-4 py-2.5 rounded-2xl shadow-2xl flex items-center gap-3 text-xs font-bold backdrop-blur-md"
             >
               <span className="text-emerald-400 text-sm"><MaterialIcon name="photo_camera" className="w-4 h-4 inline-block align-middle" /></span>
               <span>{exportSuccessMsg}</span>
               <button
                 onClick={() => setExportSuccessMsg(null)}
-                className="w-5 h-5 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold flex items-center justify-center text-xs ml-2"
+                className="w-5 h-5 rounded-full bg-carbon-80 hover:bg-carbon-70 text-carbon-30 font-bold flex items-center justify-center text-xs ml-2"
                 title="Dismiss"
               >
                 ✕
@@ -1766,13 +1766,13 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
               animate={{ opacity: 1, y: 0, x: "-50%" }}
               exit={{ opacity: 0, y: -20, x: "-50%" }}
               transition={{ duration: 0.3 }}
-              className="absolute top-20 left-1/2 z-20 pointer-events-auto bg-slate-900/95 text-amber-300 border border-amber-500/80 px-4 py-2.5 rounded-2xl shadow-2xl flex items-center gap-3 text-xs font-bold backdrop-blur-md"
+              className="absolute top-20 left-1/2 z-20 pointer-events-auto bg-carbon-90/95 text-amber-300 border border-amber-500/80 px-4 py-2.5 rounded-2xl shadow-2xl flex items-center gap-3 text-xs font-bold backdrop-blur-md"
             >
               <span className="text-amber-400 text-sm"><MaterialIcon name="warning" className="w-4 h-4 inline-block align-middle" /></span>
               <span>{userLocationError}</span>
               <button
                 onClick={() => setUserLocationError(null)}
-                className="w-5 h-5 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold flex items-center justify-center text-xs ml-2"
+                className="w-5 h-5 rounded-full bg-carbon-80 hover:bg-carbon-70 text-carbon-30 font-bold flex items-center justify-center text-xs ml-2"
                 title="Dismiss"
               >
                 ✕
@@ -1789,13 +1789,13 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
               animate={{ opacity: 1, y: 0, x: "-50%" }}
               exit={{ opacity: 0, y: -20, x: "-50%" }}
               transition={{ duration: 0.3 }}
-              className="absolute top-20 left-1/2 z-20 pointer-events-auto bg-slate-900/95 text-sky-300 border border-sky-500/80 px-4 py-2.5 rounded-2xl shadow-2xl flex items-center gap-3 text-xs font-bold backdrop-blur-md"
+              className="absolute top-20 left-1/2 z-20 pointer-events-auto bg-carbon-90/95 text-sky-300 border border-sky-500/80 px-4 py-2.5 rounded-2xl shadow-2xl flex items-center gap-3 text-xs font-bold backdrop-blur-md"
             >
               <span className="text-sky-400 text-sm"><MaterialIcon name="refresh" className="w-4 h-4 inline-block align-middle" /></span>
               <span>{syncToastMessage}</span>
               <button
                 onClick={() => setSyncToastMessage(null)}
-                className="w-5 h-5 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold flex items-center justify-center text-xs ml-2"
+                className="w-5 h-5 rounded-full bg-carbon-80 hover:bg-carbon-70 text-carbon-30 font-bold flex items-center justify-center text-xs ml-2"
               >
                 ✕
               </button>
@@ -1811,13 +1811,13 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
               animate={{ opacity: 1, y: 0, x: "-50%" }}
               exit={{ opacity: 0, y: -20, x: "-50%" }}
               transition={{ duration: 0.3 }}
-              className="absolute top-20 left-1/2 z-20 pointer-events-auto bg-slate-900/95 text-emerald-300 border border-emerald-500/80 px-4 py-2.5 rounded-2xl shadow-2xl flex items-center gap-3 text-xs font-bold backdrop-blur-md"
+              className="absolute top-20 left-1/2 z-20 pointer-events-auto bg-carbon-90/95 text-emerald-300 border border-emerald-500/80 px-4 py-2.5 rounded-2xl shadow-2xl flex items-center gap-3 text-xs font-bold backdrop-blur-md"
             >
               <span className="text-emerald-400 text-sm"><MaterialIcon name="check_circle" className="w-4 h-4 inline-block align-middle" /></span>
               <span>{reportSuccessMsg}</span>
               <button
                 onClick={() => setReportSuccessMsg(null)}
-                className="w-5 h-5 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold flex items-center justify-center text-xs ml-2"
+                className="w-5 h-5 rounded-full bg-carbon-80 hover:bg-carbon-70 text-carbon-30 font-bold flex items-center justify-center text-xs ml-2"
               >
                 ✕
               </button>
@@ -1828,26 +1828,26 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
           {/* Report Field Hazard Modal */}
           <AnimatePresence>
           {isReportModalOpen && (
-            <div className="fixed inset-0 z-[2000] bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 pointer-events-auto">
+            <div className="fixed inset-0 z-[2000] bg-carbon-black/70 backdrop-blur-sm flex items-center justify-center p-4 pointer-events-auto">
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl border border-slate-200 text-slate-900 flex flex-col gap-4"
+                className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl border border-carbon-20 text-carbon-90 flex flex-col gap-4"
               >
-                <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div className="flex items-center justify-between border-b border-carbon-10 pb-3">
                   <div className="flex items-center gap-2">
                     <div className="w-8 h-8 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center font-bold">
                       <MaterialIcon name="warning" className="w-4 h-4 inline-block align-middle" />
                     </div>
                     <div>
                       <h3 className="text-base font-black tracking-tight">Report Field Hazard Incident</h3>
-                      <p className="text-xs text-slate-500">Log real-time ground observation for telemetry analysis</p>
+                      <p className="text-xs text-carbon-60">Log real-time ground observation for telemetry analysis</p>
                     </div>
                   </div>
                   <button
                     onClick={() => setIsReportModalOpen(false)}
-                    className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-black flex items-center justify-center text-sm"
+                    className="w-8 h-8 rounded-full bg-carbon-10 hover:bg-carbon-20 text-carbon-70 font-black flex items-center justify-center text-sm"
                   >
                     ✕
                   </button>
@@ -1855,11 +1855,11 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
 
                 <div className="space-y-3 text-xs">
                   <div>
-                    <label className="block font-bold text-slate-700 mb-1">Target District</label>
+                    <label className="block font-bold text-carbon-70 mb-1">Target District</label>
                     <select
                       value={reportDistrictId}
                       onChange={(e) => setReportDistrictId(e.target.value)}
-                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800 focus:outline-none focus:border-nasa-blue"
+                      className="w-full px-3 py-2 bg-carbon-05 border border-carbon-20 rounded-xl font-semibold text-carbon-80 focus:outline-none focus:border-nasa-blue"
                     >
                       {liveDistricts.map((d) => (
                         <option key={d.id} value={d.id}>
@@ -1870,11 +1870,11 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                   </div>
 
                   <div>
-                    <label className="block font-bold text-slate-700 mb-1">Hazard Category</label>
+                    <label className="block font-bold text-carbon-70 mb-1">Hazard Category</label>
                     <select
                       value={reportHazardType}
                       onChange={(e) => setReportHazardType(e.target.value)}
-                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800 focus:outline-none focus:border-nasa-blue"
+                      className="w-full px-3 py-2 bg-carbon-05 border border-carbon-20 rounded-xl font-semibold text-carbon-80 focus:outline-none focus:border-nasa-blue"
                     >
                       {HAZARD_LAYERS.map((h) => (
                         <option key={h.id} value={h.id}>
@@ -1885,7 +1885,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                   </div>
 
                   <div>
-                    <div className="flex justify-between font-bold text-slate-700 mb-1">
+                    <div className="flex justify-between font-bold text-carbon-70 mb-1">
                       <span>Severity Level</span>
                       <span className="text-rose-600 font-mono">{(reportSeverity * 100).toFixed(0)}%</span>
                     </div>
@@ -1901,21 +1901,21 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                   </div>
 
                   <div>
-                    <label className="block font-bold text-slate-700 mb-1">Field Observation Notes</label>
+                    <label className="block font-bold text-carbon-70 mb-1">Field Observation Notes</label>
                     <textarea
                       rows={3}
                       placeholder="Describe water level, crop damage, wind speed, or local impacts..."
                       value={reportNotes}
                       onChange={(e) => setReportNotes(e.target.value)}
-                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-800 focus:outline-none focus:border-nasa-blue"
+                      className="w-full px-3 py-2 bg-carbon-05 border border-carbon-20 rounded-xl font-medium text-carbon-80 focus:outline-none focus:border-nasa-blue"
                     />
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 pt-2 border-t border-slate-100">
+                <div className="flex items-center gap-2 pt-2 border-t border-carbon-10">
                   <button
                     onClick={() => setIsReportModalOpen(false)}
-                    className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition-colors"
+                    className="flex-1 py-2.5 bg-carbon-10 hover:bg-carbon-20 text-carbon-70 font-bold rounded-xl text-xs transition-colors"
                   >
                     Cancel
                   </button>
@@ -1947,26 +1947,26 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
           {/* Advanced Filter Modal */}
           <AnimatePresence>
           {isFilterModalOpen && (
-            <div className="fixed inset-0 z-[2000] bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 pointer-events-auto">
+            <div className="fixed inset-0 z-[2000] bg-carbon-black/70 backdrop-blur-sm flex items-center justify-center p-4 pointer-events-auto">
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                className="bg-white rounded-3xl p-6 max-w-lg w-full shadow-2xl border border-slate-200 text-slate-900 flex flex-col gap-4 max-h-[90vh] overflow-y-auto"
+                className="bg-white rounded-3xl p-6 max-w-lg w-full shadow-2xl border border-carbon-20 text-carbon-90 flex flex-col gap-4 max-h-[90vh] overflow-y-auto"
               >
-                <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div className="flex items-center justify-between border-b border-carbon-10 pb-3">
                   <div className="flex items-center gap-2">
                     <div className="w-8 h-8 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center font-bold">
                       <MaterialIcon name="search" className="w-4 h-4 inline-block align-middle" />
                     </div>
                     <div>
                       <h3 className="text-base font-black tracking-tight">Advanced District & Hazard Filter</h3>
-                      <p className="text-xs text-slate-500">Filter telemetry data across divisions and hazard parameters</p>
+                      <p className="text-xs text-carbon-60">Filter telemetry data across divisions and hazard parameters</p>
                     </div>
                   </div>
                   <button
                     onClick={() => setIsFilterModalOpen(false)}
-                    className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-black flex items-center justify-center text-sm"
+                    className="w-8 h-8 rounded-full bg-carbon-10 hover:bg-carbon-20 text-carbon-70 font-black flex items-center justify-center text-sm"
                   >
                     ✕
                   </button>
@@ -1974,14 +1974,14 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
 
                 <div className="space-y-4 text-xs">
                   <div>
-                    <label className="block font-bold text-slate-700 mb-1.5">Division Selector</label>
+                    <label className="block font-bold text-carbon-70 mb-1.5">Division Selector</label>
                     <div className="grid grid-cols-3 gap-2">
                       <button
                         onClick={() => setSelectedDivision('All')}
                         className={`py-2 px-3 rounded-xl font-bold text-xs transition-all border ${
                           selectedDivision === 'All'
                             ? 'bg-nasa-red text-white border-nasa-blue'
-                            : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                            : 'bg-carbon-05 text-carbon-70 border-carbon-20 hover:bg-carbon-10'
                         }`}
                       >
                         All Divisions
@@ -1995,7 +1995,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                             className={`py-2 px-3 rounded-xl font-bold text-xs transition-all border truncate ${
                               selectedDivision.toLowerCase() === divName.toLowerCase()
                                 ? 'bg-nasa-red text-white border-nasa-blue'
-                                : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                                : 'bg-carbon-05 text-carbon-70 border-carbon-20 hover:bg-carbon-10'
                             }`}
                           >
                             {divName}
@@ -2007,10 +2007,10 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
 
                   <div>
                     <div className="flex items-center justify-between mb-1.5">
-                      <label className="font-bold text-slate-700">Hazard Types ({selectedHazards.length}/{HAZARD_LAYERS.length})</label>
+                      <label className="font-bold text-carbon-70">Hazard Types ({selectedHazards.length}/{HAZARD_LAYERS.length})</label>
                       <div className="flex gap-2">
                         <button onClick={selectAllHazards} className="text-[10px] text-sky-600 font-bold hover:underline">Select All</button>
-                        <span className="text-slate-300">|</span>
+                        <span className="text-carbon-30">|</span>
                         <button onClick={clearAllHazards} className="text-[10px] text-rose-600 font-bold hover:underline">Clear All</button>
                       </div>
                     </div>
@@ -2024,7 +2024,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                             className={`py-2 px-3 rounded-xl font-bold text-xs flex items-center justify-between border transition-all ${
                               isAct
                                 ? 'bg-amber-50 text-amber-900 border-amber-300 font-black'
-                                : 'bg-slate-50 text-slate-500 border-slate-200 opacity-60'
+                                : 'bg-carbon-05 text-carbon-60 border-carbon-20 opacity-60'
                             }`}
                           >
                             <span>{h.name}</span>
@@ -2036,20 +2036,20 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 pt-3 border-t border-slate-100">
+                <div className="flex items-center gap-2 pt-3 border-t border-carbon-10">
                   <button
                     onClick={() => {
                       setSelectedDivision('All');
                       selectAllHazards();
                       setSearchQuery('');
                     }}
-                    className="py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition-colors"
+                    className="py-2.5 px-4 bg-carbon-10 hover:bg-carbon-20 text-carbon-70 font-bold rounded-xl text-xs transition-colors"
                   >
                     Reset Filters
                   </button>
                   <button
                     onClick={() => setIsFilterModalOpen(false)}
-                    className="flex-1 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-black rounded-xl text-xs shadow-md transition-all"
+                    className="flex-1 py-2.5 bg-carbon-90 hover:bg-carbon-80 text-white font-black rounded-xl text-xs shadow-md transition-all"
                   >
                     Apply Filters ({filteredDistricts.length} districts match)
                   </button>
@@ -2062,26 +2062,26 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
           {/* GIS Layers Control Modal */}
           <AnimatePresence>
           {isLayerModalOpen && (
-            <div className="fixed inset-0 z-[2000] bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 pointer-events-auto">
+            <div className="fixed inset-0 z-[2000] bg-carbon-black/70 backdrop-blur-sm flex items-center justify-center p-4 pointer-events-auto">
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl border border-slate-200 text-slate-900 flex flex-col gap-4"
+                className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl border border-carbon-20 text-carbon-90 flex flex-col gap-4"
               >
-                <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div className="flex items-center justify-between border-b border-carbon-10 pb-3">
                   <div className="flex items-center gap-2">
                     <div className="w-8 h-8 rounded-xl bg-sky-100 text-sky-700 flex items-center justify-center font-bold">
                       🗺️
                     </div>
                     <div>
                       <h3 className="text-base font-black tracking-tight">GIS & Map Layers Control</h3>
-                      <p className="text-xs text-slate-500">Configure satellite rasters, overlays & visual layers</p>
+                      <p className="text-xs text-carbon-60">Configure satellite rasters, overlays & visual layers</p>
                     </div>
                   </div>
                   <button
                     onClick={() => setIsLayerModalOpen(false)}
-                    className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-black flex items-center justify-center text-sm"
+                    className="w-8 h-8 rounded-full bg-carbon-10 hover:bg-carbon-20 text-carbon-70 font-black flex items-center justify-center text-sm"
                   >
                     ✕
                   </button>
@@ -2089,7 +2089,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
 
                 <div className="space-y-4 text-xs">
                   <div>
-                    <label className="block font-bold text-slate-700 mb-1.5">Base Raster Tile Provider</label>
+                    <label className="block font-bold text-carbon-70 mb-1.5">Base Raster Tile Provider</label>
                     <div className="grid grid-cols-2 gap-2">
                       {(Object.keys(MAP_LAYERS) as Array<keyof typeof MAP_LAYERS>).map((key) => {
                         const isAct = activeLayer === key;
@@ -2100,7 +2100,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                             className={`py-2.5 px-3 rounded-xl font-bold text-xs border text-left transition-all ${
                               isAct
                                 ? 'bg-nasa-red text-white border-nasa-blue shadow-xs'
-                                : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                                : 'bg-carbon-05 text-carbon-70 border-carbon-20 hover:bg-carbon-10'
                             }`}
                           >
                             {MAP_LAYERS[key].name.split('(')[0].trim()}
@@ -2110,51 +2110,51 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                     </div>
                   </div>
 
-                  <div className="space-y-2 pt-2 border-t border-slate-100">
-                    <label className="block font-bold text-slate-700">Analytical Map Overlays</label>
+                  <div className="space-y-2 pt-2 border-t border-carbon-10">
+                    <label className="block font-bold text-carbon-70">Analytical Map Overlays</label>
                     
-                    <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200">
-                      <span className="font-bold text-slate-800"><MaterialIcon name="water" className="w-4 h-4 inline-block align-middle" /> River Basins Flow Polyline</span>
+                    <div className="flex items-center justify-between p-2.5 rounded-xl bg-carbon-05 border border-carbon-20">
+                      <span className="font-bold text-carbon-80"><MaterialIcon name="water" className="w-4 h-4 inline-block align-middle" /> River Basins Flow Polyline</span>
                       <button
                         onClick={() => setIsRiverLayerActive(!isRiverLayerActive)}
                         className={`px-3 py-1 rounded-lg font-black text-xs transition-all ${
-                          isRiverLayerActive ? 'bg-sky-600 text-white' : 'bg-slate-200 text-slate-600'
+                          isRiverLayerActive ? 'bg-sky-600 text-white' : 'bg-carbon-20 text-carbon-60'
                         }`}
                       >
                         {isRiverLayerActive ? 'Enabled' : 'Disabled'}
                       </button>
                     </div>
 
-                    <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200">
-                      <span className="font-bold text-slate-800"><MaterialIcon name="local_fire_department" className="w-4 h-4 inline-block align-middle" /> Hazard Heatmap Density</span>
+                    <div className="flex items-center justify-between p-2.5 rounded-xl bg-carbon-05 border border-carbon-20">
+                      <span className="font-bold text-carbon-80"><MaterialIcon name="local_fire_department" className="w-4 h-4 inline-block align-middle" /> Hazard Heatmap Density</span>
                       <button
                         onClick={() => setIsHeatmapActive(!isHeatmapActive)}
                         className={`px-3 py-1 rounded-lg font-black text-xs transition-all ${
-                          isHeatmapActive ? 'bg-nasa-red text-white' : 'bg-slate-200 text-slate-600'
+                          isHeatmapActive ? 'bg-nasa-red text-white' : 'bg-carbon-20 text-carbon-60'
                         }`}
                       >
                         {isHeatmapActive ? 'Enabled' : 'Disabled'}
                       </button>
                     </div>
 
-                    <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200">
-                      <span className="font-bold text-slate-800">Doppler Weather Radar Simulation</span>
+                    <div className="flex items-center justify-between p-2.5 rounded-xl bg-carbon-05 border border-carbon-20">
+                      <span className="font-bold text-carbon-80">Doppler Weather Radar Simulation</span>
                       <button
                         onClick={() => setIsRadarActive(!isRadarActive)}
                         className={`px-3 py-1 rounded-lg font-black text-xs transition-all ${
-                          isRadarActive ? 'bg-purple-600 text-white' : 'bg-slate-200 text-slate-600'
+                          isRadarActive ? 'bg-purple-600 text-white' : 'bg-carbon-20 text-carbon-60'
                         }`}
                       >
                         {isRadarActive ? 'Enabled' : 'Disabled'}
                       </button>
                     </div>
 
-                    <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200">
-                      <span className="font-bold text-slate-800"><MaterialIcon name="bolt" className="w-4 h-4 inline-block align-middle" /> High Contrast Raster Boost</span>
+                    <div className="flex items-center justify-between p-2.5 rounded-xl bg-carbon-05 border border-carbon-20">
+                      <span className="font-bold text-carbon-80"><MaterialIcon name="bolt" className="w-4 h-4 inline-block align-middle" /> High Contrast Raster Boost</span>
                       <button
                         onClick={() => setIsHighContrastBoost(!isHighContrastBoost)}
                         className={`px-3 py-1 rounded-lg font-black text-xs transition-all ${
-                          isHighContrastBoost ? 'bg-slate-900 text-white' : 'bg-slate-200 text-slate-600'
+                          isHighContrastBoost ? 'bg-carbon-90 text-white' : 'bg-carbon-20 text-carbon-60'
                         }`}
                       >
                         {isHighContrastBoost ? 'Active' : 'Normal'}
@@ -2173,7 +2173,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                       <button
                         onClick={() => setIsClusteringActive(!isClusteringActive)}
                         className={`px-3 py-1.5 rounded-lg font-black text-xs transition-all shrink-0 ${
-                          isClusteringActive ? 'bg-emerald-700 text-white shadow-xs' : 'bg-slate-200 text-slate-700'
+                          isClusteringActive ? 'bg-emerald-700 text-white shadow-xs' : 'bg-carbon-20 text-carbon-70'
                         }`}
                       >
                         {isClusteringActive ? 'Clustered (Auto)' : '64 Pins (Raw)'}
@@ -2209,12 +2209,12 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                       {/* Storage Stats Pill */}
                       <div className="grid grid-cols-2 gap-2 text-[11px] bg-white/80 p-2.5 rounded-xl border border-amber-200">
                         <div>
-                          <span className="text-slate-400 font-medium block text-[9px] uppercase">Storage Used</span>
-                          <span className="font-bold text-slate-800 font-mono text-xs">{cacheStats.formattedSize}</span>
+                          <span className="text-carbon-60 font-medium block text-[9px] uppercase">Storage Used</span>
+                          <span className="font-bold text-carbon-80 font-mono text-xs">{cacheStats.formattedSize}</span>
                         </div>
                         <div>
-                          <span className="text-slate-400 font-medium block text-[9px] uppercase">Tiles in IndexedDB</span>
-                          <span className="font-bold text-slate-800 font-mono text-xs">{cacheStats.totalTiles} cached</span>
+                          <span className="text-carbon-60 font-medium block text-[9px] uppercase">Tiles in IndexedDB</span>
+                          <span className="font-bold text-carbon-80 font-mono text-xs">{cacheStats.totalTiles} cached</span>
                         </div>
                       </div>
 
@@ -2264,7 +2264,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                             }
                           }}
                           disabled={isPreCaching || !isOnline}
-                          className="px-3 py-2 bg-slate-800 hover:bg-slate-900 disabled:opacity-50 text-white text-[11px] font-black rounded-xl shadow-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                          className="px-3 py-2 bg-carbon-80 hover:bg-carbon-90 disabled:opacity-50 text-white text-[11px] font-black rounded-xl shadow-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
                           title="Download high-resolution satellite/topo tiles for active district"
                         >
                           <Layers className="w-3.5 h-3.5" />
@@ -2276,7 +2276,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                         <button
                           onClick={() => clearCache()}
                           disabled={isPreCaching || cacheStats.totalTiles === 0}
-                          className="text-[10px] text-slate-500 hover:text-rose-600 disabled:opacity-40 font-bold flex items-center gap-1 cursor-pointer transition-colors"
+                          className="text-[10px] text-carbon-60 hover:text-rose-600 disabled:opacity-40 font-bold flex items-center gap-1 cursor-pointer transition-colors"
                         >
                           <Trash2 className="w-3 h-3" />
                           <span>Purge Offline Storage</span>
@@ -2287,10 +2287,10 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                   </div>
                 </div>
 
-                <div className="pt-2 border-t border-slate-100">
+                <div className="pt-2 border-t border-carbon-10">
                   <button
                     onClick={() => setIsLayerModalOpen(false)}
-                    className="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-black rounded-xl text-xs shadow-md"
+                    className="w-full py-2.5 bg-carbon-90 hover:bg-carbon-80 text-white font-black rounded-xl text-xs shadow-md"
                   >
                     Apply & Close Layers Panel
                   </button>
@@ -2303,39 +2303,39 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
           {/* High-Resolution Map Report Capture & Sharing Modal */}
           <AnimatePresence>
           {isExportModalOpen && (
-            <div className="fixed inset-0 z-[2200] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 pointer-events-auto overflow-y-auto">
+            <div className="fixed inset-0 z-[2200] bg-carbon-black/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 pointer-events-auto overflow-y-auto">
               <motion.div
                 initial={{ opacity: 0, scale: 0.96, y: 10 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.96, y: 10 }}
-                className="bg-white rounded-3xl p-5 sm:p-7 max-w-4xl w-full shadow-2xl border border-slate-200 text-slate-900 flex flex-col gap-5 my-auto"
+                className="bg-white rounded-3xl p-5 sm:p-7 max-w-4xl w-full shadow-2xl border border-carbon-20 text-carbon-90 flex flex-col gap-5 my-auto"
               >
                 {/* Modal Header */}
-                <div className="flex items-start justify-between border-b border-slate-100 pb-4">
+                <div className="flex items-start justify-between border-b border-carbon-10 pb-4">
                   <div className="flex items-center gap-3">
                     <div className="w-11 h-11 rounded-2xl bg-nasa-red/15 text-nasa-red-shade border border-nasa-blue/30 flex items-center justify-center font-black text-xl shrink-0">
                       <MaterialIcon name="photo_camera" className="w-4 h-4 inline-block align-middle" />
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="px-2.5 py-0.5 rounded-full bg-nasa-red text-slate-950 font-black text-[10px] tracking-wide uppercase">
+                        <span className="px-2.5 py-0.5 rounded-full bg-nasa-red text-carbon-black font-black text-[10px] tracking-wide uppercase">
                           Geospatial Export
                         </span>
-                        <span className="text-xs font-mono font-bold text-slate-400">
+                        <span className="text-xs font-mono font-bold text-carbon-60">
                           {exportScale === 3 ? 'Ultra-HD 4K (300 DPI)' : exportScale === 2 ? 'HD 2K (200 DPI)' : 'Standard HD'}
                         </span>
                       </div>
-                      <h3 className="text-xl font-black tracking-tight text-slate-900 mt-0.5">
+                      <h3 className="text-xl font-black tracking-tight text-carbon-90 mt-0.5">
                         Capture High-Resolution Hazard Map Report
                       </h3>
-                      <p className="text-xs text-slate-500">
+                      <p className="text-xs text-carbon-60">
                         Export visible map view with active vector overlays, legend keys, and verified metadata watermarks
                       </p>
                     </div>
                   </div>
                   <button
                     onClick={() => setIsExportModalOpen(false)}
-                    className="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-black flex items-center justify-center text-base transition-colors shrink-0"
+                    className="w-9 h-9 rounded-full bg-carbon-10 hover:bg-carbon-20 text-carbon-70 font-black flex items-center justify-center text-base transition-colors shrink-0"
                   >
                     ✕
                   </button>
@@ -2346,7 +2346,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                   {/* Left Column: Image Preview Canvas Viewport (7 Cols) */}
                   <div className="lg:col-span-7 flex flex-col gap-3">
                     <div className="flex items-center justify-between text-xs">
-                      <span className="font-bold text-slate-700 flex items-center gap-1.5">
+                      <span className="font-bold text-carbon-70 flex items-center gap-1.5">
                         <ImageIcon className="w-4 h-4 text-nasa-red-shade" /> Captured Map Image Preview
                       </span>
                       {capturedPreviewUrl && (
@@ -2356,13 +2356,13 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                       )}
                     </div>
 
-                    <div className="relative aspect-[16/10] bg-slate-950 rounded-2xl overflow-hidden border-2 border-slate-800 shadow-inner flex items-center justify-center group">
+                    <div className="relative aspect-[16/10] bg-carbon-black rounded-2xl overflow-hidden border-2 border-carbon-80 shadow-inner flex items-center justify-center group">
                       {isGeneratingSnapshot ? (
-                        <div className="flex flex-col items-center justify-center gap-3 p-6 text-center text-slate-300">
+                        <div className="flex flex-col items-center justify-center gap-3 p-6 text-center text-carbon-30">
                           <div className="w-10 h-10 border-4 border-nasa-blue border-t-transparent rounded-full animate-spin"></div>
                           <div>
                             <p className="font-black text-sm text-white">Rendering High-Resolution Canvas...</p>
-                            <p className="text-xs text-slate-400 mt-1">Applying raster layers, vector polygons & watermark headers</p>
+                            <p className="text-xs text-carbon-60 mt-1">Applying raster layers, vector polygons & watermark headers</p>
                           </div>
                         </div>
                       ) : capturedPreviewUrl ? (
@@ -2370,23 +2370,23 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                           <img
                             src={capturedPreviewUrl}
                             alt="Captured Hazard Map Report"
-                            className="w-full h-full object-contain bg-slate-900"
+                            className="w-full h-full object-contain bg-carbon-90"
                           />
                           <a
                             href={capturedPreviewUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="absolute bottom-3 right-3 px-3 py-1.5 bg-slate-900/80 hover:bg-slate-900 text-white rounded-xl text-xs font-bold backdrop-blur-md border border-slate-700 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                            className="absolute bottom-3 right-3 px-3 py-1.5 bg-carbon-90/80 hover:bg-carbon-90 text-white rounded-xl text-xs font-bold backdrop-blur-md border border-carbon-70 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
                           >
                             <MaterialIcon name="search" className="w-4 h-4 inline-block align-middle" /><span>View Full Resolution</span>
                           </a>
                         </>
                       ) : (
-                        <div className="text-center text-slate-400 p-6">
+                        <div className="text-center text-carbon-60 p-6">
                           <p className="font-bold text-sm">No Preview Captured</p>
                           <button
                             onClick={() => generateMapSnapshot()}
-                            className="mt-2 px-3 py-1.5 bg-nasa-red text-slate-950 font-bold text-xs rounded-xl"
+                            className="mt-2 px-3 py-1.5 bg-nasa-red text-carbon-black font-bold text-xs rounded-xl"
                           >
                             Generate Map Image
                           </button>
@@ -2394,7 +2394,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                       )}
                     </div>
 
-                    <div className="bg-slate-50 rounded-xl p-3 border border-slate-200 text-xs flex items-center justify-between text-slate-600">
+                    <div className="bg-carbon-05 rounded-xl p-3 border border-carbon-20 text-xs flex items-center justify-between text-carbon-60">
                       <span><strong>Format:</strong> {exportFormat.toUpperCase()}</span>
                       <span><strong>Resolution:</strong> {exportScale === 3 ? '3840 x 2160 (3x)' : exportScale === 2 ? '2560 x 1440 (2x)' : '1920 x 1080 (1.5x)'}</span>
                       <span><strong>Location:</strong> {currentSelected?.name || 'National Overview'}</span>
@@ -2406,19 +2406,19 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                     <div className="space-y-4 text-xs">
                       {/* Report Title */}
                       <div>
-                        <label className="block font-bold text-slate-700 mb-1">Custom Report Header Title</label>
+                        <label className="block font-bold text-carbon-70 mb-1">Custom Report Header Title</label>
                         <input
                           type="text"
                           value={customReportTitle}
                           onChange={(e) => setCustomReportTitle(e.target.value)}
                           placeholder="e.g. Flood Situation Report - Sylhet Division"
-                          className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800 focus:outline-none focus:border-nasa-blue transition-colors"
+                          className="w-full px-3 py-2 bg-carbon-05 border border-carbon-20 rounded-xl font-semibold text-carbon-80 focus:outline-none focus:border-nasa-blue transition-colors"
                         />
                       </div>
 
                       {/* Resolution Selector */}
                       <div>
-                        <label className="block font-bold text-slate-700 mb-1.5">Output Image Quality & Scale</label>
+                        <label className="block font-bold text-carbon-70 mb-1.5">Output Image Quality & Scale</label>
                         <div className="grid grid-cols-3 gap-2">
                           <button
                             onClick={() => {
@@ -2428,7 +2428,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                             className={`py-2 px-2.5 rounded-xl font-black text-xs border transition-all text-center ${
                               exportScale === 3
                                 ? 'bg-nasa-red text-white border-nasa-blue shadow-xs'
-                                : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                                : 'bg-carbon-05 text-carbon-70 border-carbon-20 hover:bg-carbon-10'
                             }`}
                           >
                             Ultra 4K (3x)
@@ -2441,7 +2441,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                             className={`py-2 px-2.5 rounded-xl font-black text-xs border transition-all text-center ${
                               exportScale === 2
                                 ? 'bg-nasa-red text-white border-nasa-blue shadow-xs'
-                                : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                                : 'bg-carbon-05 text-carbon-70 border-carbon-20 hover:bg-carbon-10'
                             }`}
                           >
                             <MaterialIcon name="photo_camera" className="w-4 h-4 inline-block align-middle" /> 2K HD (2x)
@@ -2454,7 +2454,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                             className={`py-2 px-2.5 rounded-xl font-black text-xs border transition-all text-center ${
                               exportScale === 1.5
                                 ? 'bg-nasa-red text-white border-nasa-blue shadow-xs'
-                                : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                                : 'bg-carbon-05 text-carbon-70 border-carbon-20 hover:bg-carbon-10'
                             }`}
                           >
                             <MaterialIcon name="smartphone" className="w-4 h-4 inline-block align-middle" /> HD (1.5x)
@@ -2464,14 +2464,14 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
 
                       {/* Format Selector */}
                       <div>
-                        <label className="block font-bold text-slate-700 mb-1.5">Image Format</label>
+                        <label className="block font-bold text-carbon-70 mb-1.5">Image Format</label>
                         <div className="grid grid-cols-2 gap-2">
                           <button
                             onClick={() => setExportFormat('png')}
                             className={`py-2 px-3 rounded-xl font-bold text-xs border transition-all ${
                               exportFormat === 'png'
-                                ? 'bg-slate-900 text-white border-slate-900'
-                                : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                                ? 'bg-carbon-90 text-white border-carbon-90'
+                                : 'bg-carbon-05 text-carbon-70 border-carbon-20 hover:bg-carbon-10'
                             }`}
                           >
                             PNG (Lossless Quality)
@@ -2480,8 +2480,8 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                             onClick={() => setExportFormat('jpeg')}
                             className={`py-2 px-3 rounded-xl font-bold text-xs border transition-all ${
                               exportFormat === 'jpeg'
-                                ? 'bg-slate-900 text-white border-slate-900'
-                                : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                                ? 'bg-carbon-90 text-white border-carbon-90'
+                                : 'bg-carbon-05 text-carbon-70 border-carbon-20 hover:bg-carbon-10'
                             }`}
                           >
                             JPEG (Compact Size)
@@ -2490,10 +2490,10 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                       </div>
 
                       {/* Watermark & Legend Toggles */}
-                      <div className="space-y-2 pt-2 border-t border-slate-100">
-                        <label className="block font-bold text-slate-700">Watermark & Legend Overlays</label>
-                        <label className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200 cursor-pointer">
-                          <span className="font-semibold text-slate-800"><MaterialIcon name="shield" className="w-4 h-4 inline-block align-middle" /> Official HazardNet Banner</span>
+                      <div className="space-y-2 pt-2 border-t border-carbon-10">
+                        <label className="block font-bold text-carbon-70">Watermark & Legend Overlays</label>
+                        <label className="flex items-center justify-between p-2.5 rounded-xl bg-carbon-05 border border-carbon-20 cursor-pointer">
+                          <span className="font-semibold text-carbon-80"><MaterialIcon name="shield" className="w-4 h-4 inline-block align-middle" /> Official HazardNet Banner</span>
                           <input
                             type="checkbox"
                             checked={includeWatermarkHeader}
@@ -2503,8 +2503,8 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                             className="w-4 h-4 accent-nasa-blue rounded cursor-pointer"
                           />
                         </label>
-                        <label className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200 cursor-pointer">
-                          <span className="font-semibold text-slate-800">Hazard Severity Index Key</span>
+                        <label className="flex items-center justify-between p-2.5 rounded-xl bg-carbon-05 border border-carbon-20 cursor-pointer">
+                          <span className="font-semibold text-carbon-80">Hazard Severity Index Key</span>
                           <input
                             type="checkbox"
                             checked={includeOverlayLegend}
@@ -2518,7 +2518,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                     </div>
 
                     {/* Action Toolbar */}
-                    <div className="space-y-2 pt-3 border-t border-slate-100">
+                    <div className="space-y-2 pt-3 border-t border-carbon-10">
                       <button
                         onClick={() => handleDownloadImage()}
                         disabled={isGeneratingSnapshot || !capturedPreviewUrl}
@@ -2531,9 +2531,9 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                         <button
                           onClick={handleCopyImageToClipboard}
                           disabled={isGeneratingSnapshot || !capturedBlob}
-                          className="py-2.5 px-3 bg-slate-100 hover:bg-slate-200 disabled:opacity-50 text-slate-800 font-bold rounded-xl text-xs transition-colors flex items-center justify-center gap-1.5"
+                          className="py-2.5 px-3 bg-carbon-10 hover:bg-carbon-20 disabled:opacity-50 text-carbon-80 font-bold rounded-xl text-xs transition-colors flex items-center justify-center gap-1.5"
                         >
-                          <Copy className="w-3.5 h-3.5 text-slate-600" /> Copy Image
+                          <Copy className="w-3.5 h-3.5 text-carbon-60" /> Copy Image
                         </button>
                         <button
                           onClick={handleShareReport}
@@ -2547,7 +2547,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                       <button
                         onClick={() => generateMapSnapshot()}
                         disabled={isGeneratingSnapshot}
-                        className="w-full py-2 bg-slate-50 hover:bg-slate-100 text-slate-600 font-bold rounded-xl text-[11px] border border-slate-200 transition-colors flex items-center justify-center gap-1.5"
+                        className="w-full py-2 bg-carbon-05 hover:bg-carbon-10 text-carbon-60 font-bold rounded-xl text-[11px] border border-carbon-20 transition-colors flex items-center justify-center gap-1.5"
                       >
                         <RefreshCw className={`w-3 h-3 ${isGeneratingSnapshot ? 'animate-spin' : ''}`} /> Re-render Snapshot Preview
                       </button>
@@ -2584,10 +2584,10 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                     mapInstanceRef.current.flyTo([23.8103, 90.4125], 7, { duration: 1.2 });
                   }
                 }}
-                className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs rounded-full shadow-xl flex items-center gap-2 transition-all hover:scale-105"
+                className="px-4 py-2 bg-carbon-90 hover:bg-carbon-80 text-white font-extrabold text-xs rounded-full shadow-xl flex items-center gap-2 transition-all hover:scale-105"
               >
                 <span className="flex items-center gap-1.5">
-                  <span className="w-4 h-4 rounded-full bg-slate-700 text-slate-200 flex items-center justify-center text-[10px]"><MaterialIcon name="close" className="w-4 h-4" /></span>
+                  <span className="w-4 h-4 rounded-full bg-carbon-70 text-carbon-20 flex items-center justify-center text-[10px]"><MaterialIcon name="close" className="w-4 h-4" /></span>
                   <span>Clear Active Overlays & Filter</span>
                 </span>
               </button>
@@ -2601,30 +2601,30 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
           </div>
 
           {/* Coordinates Readout, Performance Clustering & IndexedDB Tile Cache Indicator */}
-          <div className="absolute bottom-4 right-24 z-[1000] bg-white/95 backdrop-blur-md px-3.5 py-1.5 rounded-xl border border-slate-200 text-[11px] font-mono font-bold text-slate-700 shadow-lg pointer-events-auto hidden sm:flex items-center gap-3">
+          <div className="absolute bottom-4 right-24 z-[1000] bg-white/95 backdrop-blur-md px-3.5 py-1.5 rounded-xl border border-carbon-20 text-[11px] font-mono font-bold text-carbon-70 shadow-lg pointer-events-auto hidden sm:flex items-center gap-3">
             <span>Lat: {currentCoords.lat.toFixed(4)}° N</span>
             <span>Lng: {currentCoords.lng.toFixed(4)}° E</span>
-            <span className="text-slate-300">|</span>
+            <span className="text-carbon-30">|</span>
             <span>Zoom: {currentCoords.zoom}</span>
-            <span className="text-slate-300">|</span>
+            <span className="text-carbon-30">|</span>
             <button
               onClick={() => setIsClusteringActive(!isClusteringActive)}
               className={`flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] cursor-pointer transition-colors border ${
                 isClusteringActive
                   ? 'bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100'
-                  : 'bg-slate-100 text-slate-600 border-slate-300 hover:bg-slate-200'
+                  : 'bg-carbon-10 text-carbon-60 border-carbon-30 hover:bg-carbon-20'
               }`}
               title="Toggle District Marker Clustering for low-power mobile optimization"
             >
               <span>{isClusteringActive ? '● Clustered (Auto)' : '○ 64 Pins (Raw)'}</span>
             </button>
-            <span className="text-slate-300">|</span>
+            <span className="text-carbon-30">|</span>
             <button
               onClick={() => setIsLayerModalOpen(true)}
               className={`flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] border font-sans font-semibold cursor-pointer transition-colors ${
                 !isOnline
                   ? 'bg-rose-50 text-rose-800 border-rose-300 animate-pulse'
-                  : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                  : 'bg-carbon-05 text-carbon-70 border-carbon-20 hover:bg-carbon-10'
               }`}
               title="IndexedDB Offline Emergency Tile Cache Status - Click to manage"
             >
@@ -2644,11 +2644,11 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 20 }}
           transition={{ duration: 0.3 }}
-          className="p-4 bg-slate-50 border-t border-slate-200 flex flex-wrap items-center justify-between gap-3 text-xs"
+          className="p-4 bg-carbon-05 border-t border-carbon-20 flex flex-wrap items-center justify-between gap-3 text-xs"
         >
           <div className="flex items-center gap-2">
             
-            <span className="font-extrabold text-slate-700 text-[11px] uppercase tracking-wider font-mono">
+            <span className="font-extrabold text-carbon-70 text-[11px] uppercase tracking-wider font-mono">
               Agricultural Vulnerability Hotspot Quick Jumps:
             </span>
           </div>
@@ -2671,7 +2671,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                   className={`px-3 py-1.5 rounded-xl border text-[11px] font-bold transition-all ${
                     isAct
                       ? 'bg-nasa-red border-nasa-blue text-white shadow-xs'
-                      : 'bg-white border-slate-200 text-slate-700 hover:text-slate-900 hover:bg-slate-100'
+                      : 'bg-white border-carbon-20 text-carbon-70 hover:text-carbon-90 hover:bg-carbon-10'
                   }`}
                 >
                   {preset.label}

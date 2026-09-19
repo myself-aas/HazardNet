@@ -42,7 +42,7 @@ const describeError = (err: unknown): string => {
 };
 
 const inputClass =
-  'w-full px-4 py-3 text-base sm:text-sm bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 placeholder-slate-400 font-medium transition-all focus:outline-none focus:border-nasa-blue focus:ring-2 focus:ring-nasa-blue/40';
+  'w-full px-4 py-3 text-base sm:text-sm bg-carbon-05 border border-carbon-20 rounded-2xl text-carbon-90 placeholder-carbon-40 font-medium transition-all focus:outline-none focus:border-nasa-blue focus:ring-2 focus:ring-nasa-blue/40';
 
 const LoginPage: React.FC = () => {
   const { signInWithEmail, user } = useAuth();
@@ -104,7 +104,7 @@ const LoginPage: React.FC = () => {
         </AnimatePresence>
 
         <div>
-          <label className="block text-xs font-bold text-slate-800 mb-1.5" htmlFor="login-email">
+          <label className="block text-xs font-bold text-carbon-80 mb-1.5" htmlFor="login-email">
             Email address
           </label>
           <input
@@ -124,7 +124,7 @@ const LoginPage: React.FC = () => {
 
         <div>
           <div className="flex items-center justify-between mb-1.5">
-            <label className="block text-xs font-bold text-slate-800" htmlFor="login-password">
+            <label className="block text-xs font-bold text-carbon-80" htmlFor="login-password">
               Password
             </label>
             <Link
@@ -150,7 +150,7 @@ const LoginPage: React.FC = () => {
             <button
               type="button"
               onClick={() => setShowPassword((value) => !value)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-slate-400 hover:text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-nasa-blue/60 cursor-pointer"
+              className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-carbon-60 hover:text-carbon-70 focus:outline-none focus-visible:ring-2 focus-visible:ring-nasa-blue/60 cursor-pointer"
               aria-label={showPassword ? 'Hide password' : 'Show password'}
             >
               <EyeToggleIcon isState={showPassword} size={20} duration={0} />
@@ -162,8 +162,8 @@ const LoginPage: React.FC = () => {
         <AuthSocialButtons onSuccess={() => navigate(next, { replace: true })} />
 
         <div className="relative flex items-center justify-center pt-1" aria-hidden="true">
-          <div className="border-t border-slate-200 w-full" />
-          <span className="bg-white px-3 text-[10px] text-slate-400 font-bold uppercase tracking-wider absolute">
+          <div className="border-t border-carbon-20 w-full" />
+          <span className="bg-white px-3 text-[10px] text-carbon-60 font-bold uppercase tracking-wider absolute">
             or sign in with email
           </span>
         </div>
@@ -172,11 +172,11 @@ const LoginPage: React.FC = () => {
           id="login-page-submit-btn"
           type="submit"
           disabled={loading || !email.trim() || !password}
-          className="w-full py-3.5 bg-nasa-red hover:bg-nasa-red-shade text-slate-950 font-extrabold rounded-2xl text-sm transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nasa-blue/60 focus-visible:ring-offset-2"
+          className="w-full py-3.5 bg-nasa-red hover:bg-nasa-red-shade text-carbon-black font-extrabold rounded-2xl text-sm transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nasa-blue/60 focus-visible:ring-offset-2"
         >
           {loading ? (
             <>
-              <span className="h-4 w-4 animate-spin rounded-full border-2 border-slate-800 border-t-transparent" />
+              <span className="h-4 w-4 animate-spin rounded-full border-2 border-carbon-80 border-t-transparent" />
               Signing in…
             </>
           ) : (
@@ -185,7 +185,7 @@ const LoginPage: React.FC = () => {
         </button>
       </form>
 
-      <p className="text-center text-xs sm:text-[13px] text-slate-600">
+      <p className="text-center text-xs sm:text-[13px] text-carbon-60">
         New to HazardNet?{' '}
         <Link
           to={next !== '/' ? `/signup?next=${encodeURIComponent(next)}` : '/signup'}

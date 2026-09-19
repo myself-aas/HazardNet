@@ -18,7 +18,7 @@ const isSupabaseConfigured = true;
  */
 
 const Requirement: React.FC<{ met: boolean; children: React.ReactNode }> = ({ met, children }) => (
-  <li className={`flex items-center gap-1.5 ${met ? 'text-emerald-700' : 'text-slate-500'}`}>
+  <li className={`flex items-center gap-1.5 ${met ? 'text-emerald-700' : 'text-carbon-60'}`}>
     <span aria-hidden="true">{met ? '✓' : '○'}</span>
     <span className="text-[11px] font-medium">{children}</span>
   </li>
@@ -82,7 +82,7 @@ export default function SetPasswordPage() {
   }
 
   const inputClass =
-    'mt-1.5 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-base sm:text-sm text-slate-900 outline-none transition-all focus:border-nasa-blue focus:ring-2 focus:ring-nasa-blue/40'
+    'mt-1.5 w-full rounded-2xl border border-carbon-20 bg-carbon-05 px-4 py-3 text-base sm:text-sm text-carbon-90 outline-none transition-all focus:border-nasa-blue focus:ring-2 focus:ring-nasa-blue/40'
 
   if (phase === 'done') {
     return (
@@ -95,7 +95,7 @@ export default function SetPasswordPage() {
           >
             <MaterialIcon name="check" className="h-6 w-6" />
           </motion.div>
-          <p className="text-sm text-slate-600">Taking you to your dashboard…</p>
+          <p className="text-sm text-carbon-60">Taking you to your dashboard…</p>
         </div>
       </AuthLayout>
     )
@@ -113,8 +113,8 @@ export default function SetPasswordPage() {
     >
       {phase === 'waiting' && !user ? (
         <div className="flex flex-col items-center gap-3 py-6" role="status" data-testid="set-password-waiting">
-          <span className="h-8 w-8 animate-spin rounded-full border-[3px] border-slate-200 border-t-nasa-red" />
-          <p className="text-xs text-slate-500">Verifying your email link…</p>
+          <span className="h-8 w-8 animate-spin rounded-full border-[3px] border-carbon-20 border-t-nasa-red" />
+          <p className="text-xs text-carbon-60">Verifying your email link…</p>
         </div>
       ) : (
         <form onSubmit={submit} className="space-y-4" data-testid="set-password-form">
@@ -136,7 +136,7 @@ export default function SetPasswordPage() {
           )}
 
           <div>
-            <label className="block text-xs font-bold text-slate-800" htmlFor="set-password-input">
+            <label className="block text-xs font-bold text-carbon-80" htmlFor="set-password-input">
               New password
             </label>
             <input
@@ -153,7 +153,7 @@ export default function SetPasswordPage() {
 
           {/* Live strength meter + requirement checklist */}
           <div className="space-y-1.5">
-            <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
+            <div className="h-1.5 w-full overflow-hidden rounded-full bg-carbon-10">
               <div
                 className={`h-full rounded-full transition-all duration-300 ${strength.barClass}`}
                 style={{ width: `${(password.length === 0 ? 0 : (strength.score + 1) / 5) * 100}%` }}
@@ -164,7 +164,7 @@ export default function SetPasswordPage() {
               <button
                 type="button"
                 onClick={() => setShowPassword((value) => !value)}
-                className="text-[11px] font-bold text-slate-400 hover:text-slate-700 cursor-pointer"
+                className="text-[11px] font-bold text-carbon-60 hover:text-carbon-70 cursor-pointer"
               >
                 {showPassword ? 'Hide' : 'Show'}
               </button>
@@ -179,7 +179,7 @@ export default function SetPasswordPage() {
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-800" htmlFor="set-password-confirm">
+            <label className="block text-xs font-bold text-carbon-80" htmlFor="set-password-confirm">
               Confirm password
             </label>
             <input
@@ -200,12 +200,12 @@ export default function SetPasswordPage() {
           <button
             type="submit"
             disabled={saving || (!user && !isSupabaseConfigured)}
-            className="w-full rounded-2xl bg-nasa-red py-3.5 text-sm font-extrabold text-slate-950 transition-colors hover:bg-nasa-red-shade disabled:opacity-50 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nasa-blue/60 focus-visible:ring-offset-2"
+            className="w-full rounded-2xl bg-nasa-red py-3.5 text-sm font-extrabold text-carbon-black transition-colors hover:bg-nasa-red-shade disabled:opacity-50 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nasa-blue/60 focus-visible:ring-offset-2"
           >
             {saving ? 'Saving password…' : 'Save password & open my dashboard'}
           </button>
 
-          <p className="text-center text-[11px] text-slate-400">
+          <p className="text-center text-[11px] text-carbon-60">
             Already set a password?{' '}
             <Link to="/login" className="font-bold text-amber-800 hover:underline">
               Sign in

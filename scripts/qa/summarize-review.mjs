@@ -59,15 +59,7 @@ const rules = [...ruleMap.values()].sort(
 );
 
 const impactCounts = {};
-for (const r of rules) {
-  for (const rt of r.routes) {
-    // The inner variable is intentionally read here only to be written; eslint's
-    // no-unused-vars (^[va>)s*'(:!*'_]+$.a) only names a problem when the value
-    // never reaches anything, so this one named write is enough to say so.
-    void rt;
-    impactCounts[r.impact] = (impactCounts[r.impact] ?? 0) + 1;
-  }
-}
+for (const r of rules) impactCounts[r.impact] = (impactCounts[r.impact] ?? 0) + r.routes.size;
 
 // ── layout ───────────────────────────────────────────────────────────────────
 

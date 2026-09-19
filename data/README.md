@@ -54,8 +54,8 @@ Upload the notebook's `/kaggle/working/hazardnet_forecasts_latest.csv` to
 
 It is skipped when the CSV's sha256 still matches the committed manifest and
 `force_refresh` is not set. It triggers on `push` to `main` only — pushing the
-CSV on a feature branch will not run it. The hourly job then supersedes this
-data on its next run.
+CSV on a feature branch will not run it. The next daily pull then supersedes this
+data.
 
 ⚠️ The workflow trusts the file: it stamps its own provenance
 (`source: kaggle kernels output ashifahmedshuvo/hazardnet-auto-forecast-pipeline`)
@@ -64,32 +64,47 @@ notebook output, not a fixture — anything else will be published as a forecast
 (The GitHub-native producer stamps its own source explicitly, so a snapshot can
 never claim a producer that did not make it: `SNAPSHOT_SOURCE`.)
 
-## Lifecycle (daily, GitHub-native — the production path)
+## Lifecycle (daily, pulled from Kaggle — the production path)
 
-1. `daily_forecast.yml` runs `scripts/auto_forecast.py` on the runner
-   (GEE + Open-Meteo + TFLite); the CSV lands in the workspace root. No Kaggle.
-2. `scripts/publish_forecast_csv.py` sanity-checks it and writes
-   `backend/data/forecasts/*.csv|json` + `manifest.json` (provenance + sha256).
-3. `scripts/validate_forecasts.py` gates the promoted artifacts.
-4. `build_forecast_snapshot.mjs` regenerates the frontend snapshot with the
-   `SNAPSHOT_SOURCE` provenance.
-5. The workflow commits `backend/data/forecasts/` + the snapshot, so the site
-   redeploys with the new data. With `PUSH_TO_API=true` it additionally POSTs the
-   CSV to the ingest API (the store path).
+The producer is the Kaggle notebook
+`ashifahmedshuvo/hazardnet-auto-forecast-pipeline`, on Kaggle's own daily schedule;
+`daily_forecast.yml` (00:00 UTC) pulls what it wrote. See
+[`docs/adr/0013-kaggle-is-the-forecast-producer.md`](../docs/adr/0013-kaggle-is-the-forecast-producer.md).
 
-## Lifecycle (hourly, legacy Kaggle worker — dispatch-only since 2026-09-16)
+1. The preflight writes `~/.kaggle/kaggle.json` from `KAGGLE_USERNAME`/`KAGGLE_KEY`
+   and asks Kaggle whether it can see the kernel — a 401, a 403 and a 404 are three
+   different owner actions, and the step says which.
+2. `scripts/fetch_kaggle_forecast.py` downloads the notebook output into
+   `data/kaggle_notebook_output/` (gitignored scratch, uploaded as a run artifact),
+   picks the CSV **by name**, bridges the advisory shape onto the canonical row
+   schema, and writes `backend/data/forecasts/*.csv|json` + `manifest.json`
+   (provenance, sha256, a coverage tally and the promoted model version).
+3. `scripts/validate_forecasts.py` gates the promoted artifacts with freshness
+   **and** coverage on: a partial day is allowed, an unlabelled one is not.
+4. `scripts/fetch_kaggle_dataset_meta.py` also pulls the dataset builder's
+   `normalization_stats.json` + `dataset_config.json` into `data/kaggle/dataset-meta/`
+   and reports how far they have drifted from the normalization the shipped model was
+   trained with. Advisory (`continue-on-error`): a Kaggle-side gap must not cost the
+   day's forecast its commit.
+5. Store ingest (when `BACKEND_API_KEY` is set) → alert engine →
+   `build_alert_snapshot.mjs` / `build_forecast_snapshot.mjs` /
+   `build_freshness_artifact.mjs` → content rebuild.
+6. The workflow commits `backend/data/forecasts/`, `frontend/public/data/` and
+   `data/kaggle/dataset-meta/`, so the site redeploys with the new data.
 
-The `hourly_forecast.yml` steps below still work when dispatched by hand and its
-Kernel token + slug are valid; it no longer runs on a timer.
+`scripts/auto_forecast.py` (the runner-side GEE + Open-Meteo + TFLite generator) is
+still in the repository and still tested, but no schedule invokes it: it is the offline
+fallback for a Kaggle outage, and it needs `EE_SERVICE_ACCOUNT_JSON`, which is no longer
+part of the daily path.
 
-1. `hourly_forecast.yml` downloads the notebook's latest-run output into
-   `data/kaggle_notebook_output/` (gitignored scratch).
-2. `scripts/validate_forecasts.py` gates the CSV; on success the validated
-   files land in `backend/data/forecasts/`.
-3. The CSV is ingested into the forecast store (`POST /api/v1/forecasts/update`).
-4. `build_forecast_snapshot.mjs` regenerates the frontend snapshot.
-5. The workflow commits `backend/data/forecasts/` + the snapshot (API path and
-   codebase path stay in lockstep).
+## Lifecycle (dispatch-only)
+
+`forecast-pipeline.yml` triggers the notebook, waits for it and pulls the result — use it
+after changing the notebook, when you want today's rows from the new code rather than
+waiting for Kaggle's schedule. `weekly_forecast.yml` is the heavy weekly run (ADM3/507
+units, OSM exposure overlay) and the patch release around it. Both need a valid token and
+a runnable kernel, which is why neither is scheduled: a dispatch failure is read by the
+person who clicked the button.
 
 ## Local development
 
@@ -101,9 +116,11 @@ Kernel token + slug are valid; it no longer runs on a timer.
 
 ## Further reading
 
-- `docs/ops/hourly_forecast.md` — hourly refresher runbook.
+- `docs/ops/kaggle-pipeline-triage.md` — the decision table behind a red pull.
+- `docs/adr/0013-kaggle-is-the-forecast-producer.md` — one producer, and what the
+  pull may and may not write.
 - `docs/adr/0008-hourly-refresh-snapshot-fallback.md` — why two paths (API +
-  committed snapshot) exist.
+  committed snapshot) exist; its cadence half is superseded by ADR 0013.
 - `docs/adr/0002-forecast-consolidation.md` — the forecast store abstraction.
 
 ## Alert snapshot (added Phase 5, 2026-09-18)

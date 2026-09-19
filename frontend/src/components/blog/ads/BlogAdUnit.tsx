@@ -70,7 +70,7 @@ export const BlogAdUnit: React.FC<BlogAdUnitProps> = ({
 
   return (
     <div className={`relative ${className}`} data-testid="blog-ad-unit" aria-label={label}>
-      <span className="mb-1 block text-center text-[9px] font-bold uppercase tracking-[0.2em] text-slate-300">
+      <span className="mb-1 block text-center text-[9px] font-bold uppercase tracking-[0.2em] text-carbon-30">
         {label}
       </span>
       {configured ? (
@@ -88,7 +88,7 @@ export const BlogAdUnit: React.FC<BlogAdUnitProps> = ({
       ) : (
         <div
           data-testid="blog-ad-placeholder"
-          className="flex min-h-[110px] w-full flex-col items-center justify-center gap-1 rounded-2xl border border-dashed border-slate-200 bg-slate-50/60 text-slate-400"
+          className="flex min-h-[110px] w-full flex-col items-center justify-center gap-1 rounded-2xl border border-dashed border-carbon-20 bg-carbon-05/60 text-carbon-60"
         >
           <MaterialIcon name="monetization_on" className="h-5 w-5" />
           <p className="text-[10px] font-bold uppercase tracking-wider">Ad slot (dev placeholder)</p>

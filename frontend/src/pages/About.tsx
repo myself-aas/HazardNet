@@ -12,7 +12,7 @@ export const About: React.FC = () => {
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, ease: 'easeOut' }}
-      className="space-y-8 max-w-5xl mx-auto text-slate-800"
+      className="space-y-8 max-w-5xl mx-auto text-carbon-80"
     >
       <Breadcrumbs />
 
@@ -20,20 +20,20 @@ export const About: React.FC = () => {
       <motion.div
         whileHover={{ y: -2 }}
         transition={{ duration: 0.2 }}
-        className="bg-white border border-slate-200 rounded-2xl p-6 md:p-8 shadow-xs space-y-4"
+        className="bg-white border border-carbon-20 rounded-2xl p-6 md:p-8 shadow-xs space-y-4"
       >
         <div className="flex items-center gap-2">
           <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider bg-amber-50 text-amber-900 border border-amber-200">
             HazardNet Early Warning Initiative
           </span>
-          <span className="text-slate-300">•</span>
-          <span className="text-xs text-slate-500 font-medium">Active Deployment: 2026</span>
+          <span className="text-carbon-30">•</span>
+          <span className="text-xs text-carbon-60 font-medium">Active Deployment: 2026</span>
         </div>
         
-        <h1 className="text-2xl md:text-3xl font-brand font-black text-slate-900 tracking-tight">
+        <h1 className="text-2xl md:text-3xl font-brand font-black text-carbon-90 tracking-tight">
           Hazard<span className="text-nasa-red-shade">Net</span> Agro-Climatic Intelligence Platform
         </h1>
-        <p className="text-xs md:text-sm text-slate-600 leading-relaxed max-w-3xl">
+        <p className="text-xs md:text-sm text-carbon-60 leading-relaxed max-w-3xl">
           Automated multi-hazard early warning, 15-band satellite feature classification, physical severity quantification, and offline-capable edge computing for agricultural extension across Bangladesh.
         </p>
 
@@ -41,7 +41,7 @@ export const About: React.FC = () => {
           <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
             <Link
               to="/use-cases"
-              className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition-all shadow-xs inline-block"
+              className="px-4 py-2 rounded-xl bg-carbon-90 hover:bg-carbon-80 text-white text-xs font-bold transition-all shadow-xs inline-block"
             >
               Explore Regional Use Cases
             </Link>
@@ -50,7 +50,7 @@ export const About: React.FC = () => {
           <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
             <Link
               to="/download"
-              className="px-4 py-2 rounded-xl bg-nasa-red hover:bg-nasa-red-shade text-slate-900 text-xs font-bold transition-all shadow-xs inline-block"
+              className="px-4 py-2 rounded-xl bg-nasa-red hover:bg-nasa-red-shade text-carbon-90 text-xs font-bold transition-all shadow-xs inline-block"
             >
               Download Offline Software
             </Link>
@@ -61,7 +61,7 @@ export const About: React.FC = () => {
               href="https://github.com/myself-aas/HazardNet"
               target="_blank"
               rel="noopener noreferrer"
-              className="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold border border-slate-200 hover:text-slate-900 hover:bg-slate-200 transition-all inline-block"
+              className="px-4 py-2 rounded-xl bg-carbon-10 text-carbon-70 text-xs font-bold border border-carbon-20 hover:text-carbon-90 hover:bg-carbon-20 transition-all inline-block"
             >
               GitHub Repository
             </a>
@@ -83,11 +83,11 @@ export const About: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: i * 0.08 }}
             whileHover={{ y: -3, scale: 1.01 }}
-            className="bg-white border border-slate-200 p-5 rounded-2xl space-y-1 shadow-xs cursor-pointer"
+            className="bg-white border border-carbon-20 p-5 rounded-2xl space-y-1 shadow-xs cursor-pointer"
           >
-            <span className="text-[10px] font-mono uppercase text-slate-500 font-bold block">{stat.label}</span>
-            <span className="text-xl font-extrabold text-slate-900">{stat.val}</span>
-            <p className="text-[11px] text-slate-500">{stat.detail}</p>
+            <span className="text-[10px] font-mono uppercase text-carbon-60 font-bold block">{stat.label}</span>
+            <span className="text-xl font-extrabold text-carbon-90">{stat.val}</span>
+            <p className="text-[11px] text-carbon-60">{stat.detail}</p>
           </motion.div>
         ))}
       </div>
@@ -98,9 +98,9 @@ export const About: React.FC = () => {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.4 }}
-        className="bg-white border border-slate-200 rounded-2xl p-6 md:p-8 space-y-6 shadow-xs"
+        className="bg-white border border-carbon-20 rounded-2xl p-6 md:p-8 space-y-6 shadow-xs"
       >
-        <h2 className="text-lg font-bold text-slate-900">
+        <h2 className="text-lg font-bold text-carbon-90">
           Institutional Collaborators & Research Partners
         </h2>
 
@@ -114,11 +114,11 @@ export const About: React.FC = () => {
             <motion.div
               key={i}
               whileHover={{ y: -2 }}
-              className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-1 transition-all"
+              className="p-4 rounded-xl bg-carbon-05 border border-carbon-20 space-y-1 transition-all"
             >
-              <h3 className="font-bold text-slate-900">{partner.name}</h3>
-              <p className="text-slate-700 font-medium text-[11px]">{partner.role}</p>
-              <p className="text-slate-500 text-[10px]">{partner.location}</p>
+              <h3 className="font-bold text-carbon-90">{partner.name}</h3>
+              <p className="text-carbon-70 font-medium text-[11px]">{partner.role}</p>
+              <p className="text-carbon-60 text-[10px]">{partner.location}</p>
             </motion.div>
           ))}
         </div>
@@ -130,13 +130,13 @@ export const About: React.FC = () => {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.4 }}
-        className="bg-white border border-slate-200 rounded-2xl p-6 md:p-8 space-y-4 shadow-xs"
+        className="bg-white border border-carbon-20 rounded-2xl p-6 md:p-8 space-y-4 shadow-xs"
       >
-        <h2 className="text-lg font-bold text-slate-900">
+        <h2 className="text-lg font-bold text-carbon-90">
           Agro-Ecological Vulnerability Context in Bangladesh
         </h2>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-slate-700">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-carbon-70">
           {[
             {
               title: 'Haor Basin & Pre-Monsoon Flash Floods',
@@ -166,12 +166,12 @@ export const About: React.FC = () => {
             <motion.div
               key={idx}
               whileHover={{ scale: 1.01 }}
-              className="bg-slate-50 border border-slate-200 p-4 rounded-xl space-y-2 transition-all"
+              className="bg-carbon-05 border border-carbon-20 p-4 rounded-xl space-y-2 transition-all"
             >
-              <h3 className="font-bold text-slate-900">
+              <h3 className="font-bold text-carbon-90">
                 {item.title}
               </h3>
-              <p className="leading-relaxed text-slate-600">
+              <p className="leading-relaxed text-carbon-60">
                 {item.desc}
               </p>
               <Link to={item.link} className="text-amber-800 font-bold underline inline-block pt-1 hover:text-amber-900">
@@ -188,15 +188,15 @@ export const About: React.FC = () => {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.4 }}
-        className="bg-white border border-slate-200 rounded-2xl p-6 md:p-8 space-y-3 shadow-xs"
+        className="bg-white border border-carbon-20 rounded-2xl p-6 md:p-8 space-y-3 shadow-xs"
       >
-        <h2 className="text-lg font-bold text-slate-900">
+        <h2 className="text-lg font-bold text-carbon-90">
           Open Source Code & License
         </h2>
-        <p className="text-xs text-slate-600 leading-relaxed">
+        <p className="text-xs text-carbon-60 leading-relaxed">
           The HazardNet platform is licensed under the <strong>Creative Commons Attribution 4.0 International (CC BY 4.0)</strong> license. You are free to copy, redistribute, and build upon our model files and early warning algorithms, provided proper credit is given to the project.
         </p>
-        <div className="p-4 bg-slate-900 text-slate-100 rounded-xl font-mono text-xs select-all overflow-x-auto border border-slate-800">
+        <div className="p-4 bg-carbon-90 text-carbon-10 rounded-xl font-mono text-xs select-all overflow-x-auto border border-carbon-80">
           {`# Clone the HazardNet GitHub Repository
 git clone https://github.com/myself-aas/HazardNet.git
 cd HazardNet

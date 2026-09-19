@@ -169,7 +169,7 @@ export const Contact: React.FC = () => {
   };
 
   const inputClass =
-    'w-full p-2.5 rounded-xl border border-slate-300 bg-slate-50 text-slate-900 font-medium outline-none focus:border-amber-600 focus:ring-2 focus:ring-amber-200';
+    'w-full p-2.5 rounded-xl border border-carbon-30 bg-carbon-05 text-carbon-90 font-medium outline-none focus:border-amber-600 focus:ring-2 focus:ring-amber-200';
 
   return (
     <motion.div
@@ -180,16 +180,16 @@ export const Contact: React.FC = () => {
     >
       <Breadcrumbs />
 
-      <header className="bg-white border border-slate-200 rounded-2xl p-6 md:p-8 shadow-xs space-y-3">
+      <header className="bg-white border border-carbon-20 rounded-2xl p-6 md:p-8 shadow-xs space-y-3">
         <div className="flex items-center gap-2">
           <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-50 text-amber-900 border border-amber-200 uppercase tracking-wider">
             Support &amp; communications
           </span>
         </div>
-        <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight">
+        <h1 className="text-2xl md:text-3xl font-extrabold text-carbon-90 tracking-tight">
           Contact, incident reporting &amp; API access
         </h1>
-        <p className="text-slate-600 text-xs md:text-sm leading-relaxed max-w-3xl">
+        <p className="text-carbon-60 text-xs md:text-sm leading-relaxed max-w-3xl">
           Ground-truth reports are how HazardNet improves. Describe the district, hazard and what you saw; the form
           prepares a complete report you can file publicly (GitHub, so it can be tracked) or send by email.
         </p>
@@ -203,8 +203,8 @@ export const Contact: React.FC = () => {
       </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 bg-white border border-slate-200 rounded-2xl p-6 md:p-8 shadow-xs space-y-6">
-          <div className="flex items-center gap-2 border-b border-slate-200 pb-3 text-xs font-bold overflow-x-auto scrollbar-none">
+        <div className="lg:col-span-2 bg-white border border-carbon-20 rounded-2xl p-6 md:p-8 shadow-xs space-y-6">
+          <div className="flex items-center gap-2 border-b border-carbon-20 pb-3 text-xs font-bold overflow-x-auto scrollbar-none">
             {(
               [
                 ['report', 'Ground-truth report'],
@@ -223,8 +223,8 @@ export const Contact: React.FC = () => {
                 }}
                 className={`px-3.5 py-1.5 rounded-xl transition-all whitespace-nowrap cursor-pointer ${
                   activeForm === kind
-                    ? 'bg-amber-500 text-slate-900 font-bold shadow-xs'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900'
+                    ? 'bg-amber-500 text-carbon-90 font-bold shadow-xs'
+                    : 'bg-carbon-10 text-carbon-60 hover:bg-carbon-20 hover:text-carbon-90'
                 }`}
               >
                 {label}
@@ -256,13 +256,13 @@ export const Contact: React.FC = () => {
                   href={issueUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="rounded-xl bg-slate-900 px-4 py-2 font-bold text-white hover:bg-slate-700"
+                  className="rounded-xl bg-carbon-90 px-4 py-2 font-bold text-white hover:bg-carbon-70"
                 >
                   Open a prefilled GitHub issue
                 </a>
                 <a
                   href={mailtoUrl}
-                  className="rounded-xl border border-slate-300 bg-white px-4 py-2 font-bold text-slate-800 hover:bg-slate-50"
+                  className="rounded-xl border border-carbon-30 bg-white px-4 py-2 font-bold text-carbon-80 hover:bg-carbon-05"
                 >
                   Send by email instead
                 </a>
@@ -275,7 +275,7 @@ export const Contact: React.FC = () => {
               <>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label htmlFor="district" className="block font-bold text-slate-900 mb-1">
+                    <label htmlFor="district" className="block font-bold text-carbon-90 mb-1">
                       District or upazila
                     </label>
                     <select
@@ -294,7 +294,7 @@ export const Contact: React.FC = () => {
                     </select>
                   </div>
                   <div>
-                    <label htmlFor="hazardType" className="block font-bold text-slate-900 mb-1">
+                    <label htmlFor="hazardType" className="block font-bold text-carbon-90 mb-1">
                       Observed hazard
                     </label>
                     <select
@@ -323,7 +323,7 @@ export const Contact: React.FC = () => {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label htmlFor="severityObserved" className="block font-bold text-slate-900 mb-1">
+                    <label htmlFor="severityObserved" className="block font-bold text-carbon-90 mb-1">
                       Observed severity vs the forecast
                     </label>
                     <select
@@ -340,7 +340,7 @@ export const Contact: React.FC = () => {
                     </select>
                   </div>
                   <div>
-                    <label htmlFor="reporterName" className="block font-bold text-slate-900 mb-1">
+                    <label htmlFor="reporterName" className="block font-bold text-carbon-90 mb-1">
                       Your name or role
                     </label>
                     <input
@@ -355,7 +355,7 @@ export const Contact: React.FC = () => {
                 </div>
 
                 <div>
-                  <label htmlFor="contactEmail" className="block font-bold text-slate-900 mb-1">
+                  <label htmlFor="contactEmail" className="block font-bold text-carbon-90 mb-1">
                     Reply address (email or phone)
                   </label>
                   <input
@@ -369,7 +369,7 @@ export const Contact: React.FC = () => {
                 </div>
 
                 <div>
-                  <label htmlFor="comments" className="block font-bold text-slate-900 mb-1">
+                  <label htmlFor="comments" className="block font-bold text-carbon-90 mb-1">
                     What did you observe?
                   </label>
                   <textarea
@@ -387,7 +387,7 @@ export const Contact: React.FC = () => {
             {activeForm === 'api' && (
               <>
                 <div>
-                  <label htmlFor="institution" className="block font-bold text-slate-900 mb-1">
+                  <label htmlFor="institution" className="block font-bold text-carbon-90 mb-1">
                     Institution or organisation
                   </label>
                   <input
@@ -401,7 +401,7 @@ export const Contact: React.FC = () => {
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label htmlFor="institutionEmail" className="block font-bold text-slate-900 mb-1">
+                    <label htmlFor="institutionEmail" className="block font-bold text-carbon-90 mb-1">
                       Institutional email
                     </label>
                     <input
@@ -414,7 +414,7 @@ export const Contact: React.FC = () => {
                     />
                   </div>
                   <div>
-                    <label htmlFor="requestRate" className="block font-bold text-slate-900 mb-1">
+                    <label htmlFor="requestRate" className="block font-bold text-carbon-90 mb-1">
                       Expected request rate
                     </label>
                     <select
@@ -430,7 +430,7 @@ export const Contact: React.FC = () => {
                   </div>
                 </div>
                 <div>
-                  <label htmlFor="message" className="block font-bold text-slate-900 mb-1">
+                  <label htmlFor="message" className="block font-bold text-carbon-90 mb-1">
                     Intended use
                   </label>
                   <textarea
@@ -449,7 +449,7 @@ export const Contact: React.FC = () => {
               <>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label htmlFor="fullName" className="block font-bold text-slate-900 mb-1">
+                    <label htmlFor="fullName" className="block font-bold text-carbon-90 mb-1">
                       Full name
                     </label>
                     <input
@@ -461,7 +461,7 @@ export const Contact: React.FC = () => {
                     />
                   </div>
                   <div>
-                    <label htmlFor="email" className="block font-bold text-slate-900 mb-1">
+                    <label htmlFor="email" className="block font-bold text-carbon-90 mb-1">
                       Reply address
                     </label>
                     <input
@@ -475,7 +475,7 @@ export const Contact: React.FC = () => {
                   </div>
                 </div>
                 <div>
-                  <label htmlFor="generalMessage" className="block font-bold text-slate-900 mb-1">
+                  <label htmlFor="generalMessage" className="block font-bold text-carbon-90 mb-1">
                     Message
                   </label>
                   <textarea
@@ -492,12 +492,12 @@ export const Contact: React.FC = () => {
 
             <button
               type="submit"
-              className="px-6 py-3 rounded-xl bg-nasa-red text-slate-900 font-bold transition-all shadow-xs flex items-center gap-2 text-xs hover:bg-nasa-red-shade cursor-pointer"
+              className="px-6 py-3 rounded-xl bg-nasa-red text-carbon-90 font-bold transition-all shadow-xs flex items-center gap-2 text-xs hover:bg-nasa-red-shade cursor-pointer"
             >
               <SendIcon size={18} duration={0} isState={false} />
               <span>Prepare report</span>
             </button>
-            <p className="text-[11px] leading-relaxed text-slate-500">
+            <p className="text-[11px] leading-relaxed text-carbon-60">
               The button prepares your report and shows sending options. It does not transmit anything by itself, and
               HazardNet does not store these forms on its servers.
             </p>
@@ -505,8 +505,8 @@ export const Contact: React.FC = () => {
         </div>
 
         <aside className="space-y-6">
-          <div className="bg-white text-slate-900 rounded-2xl p-6 shadow-xs space-y-4 border border-slate-200">
-            <h2 className="font-extrabold text-sm uppercase tracking-wider font-mono text-slate-900">
+          <div className="bg-white text-carbon-90 rounded-2xl p-6 shadow-xs space-y-4 border border-carbon-20">
+            <h2 className="font-extrabold text-sm uppercase tracking-wider font-mono text-carbon-90">
               Official hotlines
             </h2>
 
@@ -526,8 +526,8 @@ export const Contact: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs space-y-3 text-xs text-slate-600">
-            <h2 className="font-bold text-slate-900 text-sm flex items-center gap-2">
+          <div className="bg-white border border-carbon-20 rounded-2xl p-6 shadow-xs space-y-3 text-xs text-carbon-60">
+            <h2 className="font-bold text-carbon-90 text-sm flex items-center gap-2">
               <MaterialIcon name="hub" className="text-amber-800" /> Where reports go
             </h2>
             <p className="leading-relaxed">
@@ -561,7 +561,7 @@ export const Contact: React.FC = () => {
         </aside>
       </div>
 
-      <p className="text-[11px] text-slate-500">
+      <p className="text-[11px] text-carbon-60">
         HazardNet is decision support, not an official warning service. See the{' '}
         <a className="font-bold text-amber-700 hover:text-amber-900" href="/methodology">
           methodology

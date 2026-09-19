@@ -35,28 +35,28 @@ export const PrintQrCode: React.FC<PrintQrCodeProps> = ({
 
   return (
     <div
-      className={`print-qr-code-box ${showInScreen ? 'flex' : 'hidden print:flex print-only'} items-center gap-3 p-2 bg-white border border-slate-300 rounded-xl ${className}`}
+      className={`print-qr-code-box ${showInScreen ? 'flex' : 'hidden print:flex print-only'} items-center gap-3 p-2 bg-white border border-carbon-30 rounded-xl ${className}`}
     >
       {/* High-Resolution Vector QR Code */}
-      <div className="p-1 bg-white border border-slate-200 rounded-lg shrink-0">
+      <div className="p-1 bg-white border border-carbon-20 rounded-lg shrink-0">
         <QRCodeSVG
           value={resolvedUrl}
           size={size}
           level="M"
           includeMargin={false}
-          fgColor="#0f172a"
+          fgColor="#17171b"
           bgColor="#ffffff"
         />
       </div>
 
       {/* Clean Identification */}
       <div className="flex-1 min-w-0 font-sans">
-        <div className="flex items-center gap-1 text-[8pt] font-mono font-black text-slate-900 uppercase tracking-tight">
-          <QrCode className="w-3 h-3 text-slate-700 shrink-0" />
+        <div className="flex items-center gap-1 text-[8pt] font-mono font-black text-carbon-90 uppercase tracking-tight">
+          <QrCode className="w-3 h-3 text-carbon-70 shrink-0" />
           <span>{title}</span>
         </div>
 
-        <p className="text-[7pt] text-slate-600 font-medium leading-tight mt-0.5">
+        <p className="text-[7pt] text-carbon-60 font-medium leading-snug mt-0.5">
           {subtitle}
         </p>
       </div>

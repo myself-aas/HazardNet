@@ -74,7 +74,7 @@ const GeneratedContentPage: React.FC = () => {
 /** Full-height fallback shown while a lazy route chunk streams in. */
 const RouteFallback = () => (
   <div className="w-full min-h-[50vh] flex items-center justify-center" role="status" aria-label="Loading page">
-    <span className="w-8 h-8 border-[3px] border-slate-300 border-t-amber-500 rounded-full animate-spin" />
+    <span className="w-8 h-8 border-[3px] border-carbon-30 border-t-amber-500 rounded-full animate-spin" />
   </div>
 );
 
@@ -116,8 +116,8 @@ const AppContent: React.FC = () => {
     <div
       className={
         isHomePage
-          ? 'h-dvh w-full overflow-hidden bg-transparent text-slate-900 flex flex-col font-sans relative pointer-events-none'
-          : 'min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans selection:bg-amber-100 selection:text-amber-900 pointer-events-none'
+          ? 'h-dvh w-full overflow-hidden bg-transparent text-carbon-90 flex flex-col font-sans relative pointer-events-none'
+          : 'min-h-screen bg-carbon-05 text-carbon-90 flex flex-col font-sans selection:bg-amber-100 selection:text-amber-900 pointer-events-none'
       }
     >
       <Toaster
@@ -128,8 +128,8 @@ const AppContent: React.FC = () => {
         toastOptions={{
           style: {
             background: '#ffffff',
-            color: '#0f172a',
-            border: '1px solid #e2e8f0',
+            color: '#17171b',
+            border: '1px solid #d1d1d1',
             boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)',
           },
         }}
@@ -140,7 +140,7 @@ const AppContent: React.FC = () => {
           the content. Visible only while focused. */}
       <a
         href="#main-content"
-        className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-[9999] focus:rounded-xl focus:bg-slate-900 focus:px-4 focus:py-2.5 focus:text-sm focus:font-bold focus:text-white focus:shadow-lg"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-[9999] focus:rounded-xl focus:bg-carbon-90 focus:px-4 focus:py-2.5 focus:text-sm focus:font-bold focus:text-white focus:shadow-lg"
       >
         Skip to main content
       </a>

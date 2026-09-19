@@ -35,7 +35,7 @@ export const WeatherBadge: React.FC<WeatherBadgeProps> = ({
 
   if (loading && !data) {
     return (
-      <span className={`${base} bg-slate-100 text-slate-400 dark:bg-slate-800`}>
+      <span className={`${base} bg-carbon-10 text-carbon-40 dark:bg-carbon-80`}>
         <Loader2 size={12} className="animate-spin" />
         <span>Weather…</span>
       </span>
@@ -59,7 +59,7 @@ export const WeatherBadge: React.FC<WeatherBadgeProps> = ({
 
   return (
     <span
-      className={`${base} bg-sky-50 text-slate-700 dark:bg-sky-900/30 dark:text-sky-100`}
+      className={`${base} bg-sky-50 text-carbon-70 dark:bg-sky-900/30 dark:text-sky-100`}
       onClick={onClick}
       role={onClick ? 'button' : undefined}
     >

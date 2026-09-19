@@ -18,6 +18,8 @@ write permissions for data commits, concurrency guards, required files).
 import json
 import re
 import shlex
+import shutil
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -27,13 +29,14 @@ ROOT = Path(__file__).resolve().parents[2]
 WORKFLOWS_DIR = ROOT / '.github' / 'workflows'
 
 # The data-pipeline workflows that must exist for the website-refresh story:
-# daily producer, hourly refresher, manual CSV ingest, weekly release.
+# the daily Kaggle pull, the on-demand Kaggle trigger+pull, the manual CSV ingest,
+# the weekly release, and the gate on the monthly model PR.
 REQUIRED_WORKFLOWS = {
     'ci.yml',
     'daily_forecast.yml',
     'forecast-pipeline.yml',
-    'hourly_forecast.yml',
     'manual_forecast_ingest.yml',
+    'model_intake.yml',
     'model-validation.yml',
     'site-health.yml',
     'Supabase-cutover-verify.yml',
@@ -45,19 +48,21 @@ REQUIRED_WORKFLOWS = {
 }
 
 # Workflows that must have contents:write (they push data/commits).
-# daily_forecast.yml joined on 2026-09-16: the GitHub-native producer commits
-# the refreshed CSV + website snapshot, which is the only delivery path that
-# works while the deployment serves no ingest API.
+# daily_forecast.yml commits the pulled Kaggle forecast, the website snapshot and
+# the dataset builder's metadata — the only delivery path that works while the
+# deployment serves no ingest API.
 DATA_COMMIT_WORKFLOWS = {
     'daily_forecast.yml',
     'forecast-pipeline.yml',
-    'hourly_forecast.yml',
     'manual_forecast_ingest.yml',
     'weekly_forecast.yml',
 }
 
-# Kaggle-dependent workflows, retired from the schedule on 2026-09-16.
-KAGGLE_WORKFLOWS = ('forecast-pipeline.yml', 'hourly_forecast.yml', 'weekly_forecast.yml')
+# Kaggle-dependent workflows that must stay dispatch-only. daily_forecast.yml is
+# NOT in this list: since 2026-09-20 the schedule belongs to the Kaggle pull, and
+# these two are the manual entry points around it (trigger the notebook and wait,
+# or run the weekly release).
+KAGGLE_WORKFLOWS = ('forecast-pipeline.yml', 'weekly_forecast.yml')
 
 # model-validation.yml needs pull-requests:write to leave a status summary;
 # other workflows that only read should default to contents:read.
@@ -150,18 +155,22 @@ def test_data_pipelines_have_concurrency_guards(workflows):
         )
 
 
-def test_forecast_generation_runs_on_the_runner_not_kaggle(workflows):
-    """The GitHub-native pipeline must be the scheduled producer, and the
-    Kaggle-backed workflows must not run on a schedule.
+def test_the_daily_forecast_is_pulled_from_kaggle_not_generated_on_the_runner(workflows):
+    """One producer, and it is the Kaggle notebook the owner already schedules.
 
-    Two things were true before 2026-09-16: every scheduled forecast job went
-    through Kaggle (`kaggle kernels push` / `kernels output`), and after the
-    token rotation all of them failed with a bare exit code 1 — while
-    `scripts/auto_forecast.py`, which needs only the GEE service account and
-    runs on the runner, sat idle in daily_forecast.yml without ever committing
-    its output. The schedule now belongs to the runner.
+    Until 2026-09-20 the runner generated the forecast itself
+    (`scripts/auto_forecast.py`: Earth Engine + Open-Meteo + TFLite) while four
+    Kaggle notebooks generated one too, on Kaggle's own daily schedule. Two
+    producers for one artifact meant whichever job happened to run last decided
+    what the website served, and the runner-side producer needed an Earth Engine
+    service-account key in GitHub secrets — when that key rotated, the scheduled
+    run died one minute in with a bare traceback and the site silently kept
+    serving the last committed snapshot.
+
+    The notebooks stay the producers (they are the ones with the EE token, the
+    severity pipeline and the trained model). This workflow pulls their output,
+    translates the advisory shape into the committed canonical shape, and commits.
     """
-    # 1. The runner-based producer is scheduled.
     daily = workflows['daily_forecast.yml']
     crons = [(s or {}).get('cron', '') for s in (daily.get('on') or {}).get('schedule') or []]
     assert crons, 'daily_forecast.yml must keep a schedule — it is the production producer'
@@ -169,50 +178,99 @@ def test_forecast_generation_runs_on_the_runner_not_kaggle(workflows):
         'daily_forecast.yml must stay manually dispatchable'
     )
 
-    # 2. …and it actually generates the forecast on the runner.
-    runs = [
-        str(step.get('run', ''))
-        for job in daily['jobs'].values()
-        for step in (job.get('steps') or [])
-    ]
-    whole = '\n'.join(runs)
-    assert 'scripts/auto_forecast.py' in whole, (
-        'daily_forecast.yml must run scripts/auto_forecast.py (the GEE + TFLite generator)'
+    runs = _all_run_text(daily)
+    assert 'scripts/fetch_kaggle_forecast.py' in runs, (
+        'daily_forecast.yml must pull the forecast from the Kaggle notebook output'
     )
-    assert 'publish_forecast_csv' in whole, (
-        'daily_forecast.yml must promote the generated CSV into backend/data/forecasts/'
+    assert 'scripts/validate_forecasts.py' in runs, (
+        'daily_forecast.yml must validate what it pulled before publishing it'
     )
-    assert 'build_forecast_snapshot.mjs' in whole, (
+    assert 'build_forecast_snapshot.mjs' in runs, (
         'daily_forecast.yml must rebuild the website snapshot it commits'
     )
-    # The workflow must not *invoke* Kaggle or read its secrets. Prose is
-    # allowed (the file explains why Kaggle is gone), executed commands are not:
-    # strip comment lines, then look for CLI calls and secret references.
-    kaggle_calls = []
-    for job_id, job in daily['jobs'].items():
-        for step in job.get('steps') or []:
-            if 'secrets.KAGGLE' in json.dumps(step.get('env') or {}):
-                kaggle_calls.append(f'{job_id}/{step.get("name")}: reads a KAGGLE_* secret')
-            commands = '\n'.join(
-                line for line in str(step.get('run', '')).splitlines()
-                if not line.strip().startswith('#')
-            )
-            if re.search(r'\bkaggle\s+(kernels|datasets|config)', commands):
-                kaggle_calls.append(f'{job_id}/{step.get("name")}: calls the kaggle CLI')
-    assert not kaggle_calls, (
-        'the production forecast pipeline must not depend on Kaggle:\n'
-        + '\n'.join(kaggle_calls)
+    assert 'scripts/fetch_kaggle_dataset_meta.py' in runs, (
+        'daily_forecast.yml must also pull the dataset builder\'s normalization + config'
     )
 
-    # 3. No workflow that needs Kaggle is on a schedule any more.
-    scheduled = []
-    for name in KAGGLE_WORKFLOWS:
-        doc = workflows[name]
-        if (doc.get('on') or {}).get('schedule'):
-            scheduled.append(name)
+    # The runner must not generate a second forecast. `auto_forecast.py` stays in
+    # the repository (tested, dispatchable nowhere) as the offline fallback; what
+    # it must not be is a scheduled producer alongside the Kaggle pull.
+    for line in _executed_lines(daily):
+        assert 'auto_forecast.py' not in line, (
+            f'daily_forecast.yml executes the runner-side generator ({line!r}); two '
+            'producers for one artifact is how the site served whichever ran last'
+        )
+        # The Earth Engine key was the fragile dependency this rewrite removed.
+        assert 'EE_SERVICE_ACCOUNT_JSON' not in line, (
+            f'daily_forecast.yml still needs an Earth Engine secret ({line!r}); the '
+            'notebook holds the EE token, the runner only reads Kaggle output'
+        )
+
+    # Kaggle credentials are required, and the workflow must authenticate before
+    # pulling rather than let the CLI fail with a bare 403.
+    whole = _all_text(daily)
+    assert 'secrets.KAGGLE_USERNAME' in whole and 'secrets.KAGGLE_KEY' in whole, (
+        'daily_forecast.yml must read the Kaggle credentials from repository secrets'
+    )
+
+    # The other Kaggle workflows stay dispatch-only: they trigger or re-run the
+    # notebook, which is a human decision, not a cron.
+    scheduled = [
+        name for name in KAGGLE_WORKFLOWS
+        if (workflows[name].get('on') or {}).get('schedule')
+    ]
     assert not scheduled, (
-        'these Kaggle-backed workflows must stay dispatch-only (they need a valid '
-        f'token + a runnable kernel; production runs on the runner): {scheduled}'
+        'these Kaggle-backed workflows must stay dispatch-only (they push and run a '
+        f'notebook, which the daily pull already consumes): {scheduled}'
+    )
+
+
+def test_the_daily_pull_takes_metadata_but_never_writes_a_model(workflows):
+    """The payload boundary: forecast CSV + kilobytes of dataset metadata in, and
+    nothing under Models/ out.
+
+    `master_tensors.h5` is hundreds of megabytes and Colab reads it straight from
+    the Kaggle dataset, so pulling it into git would buy nothing and cost the
+    repository its clone time. The metadata that *is* pulled
+    (normalization_stats.json, dataset_config.json) exists so the shipped model's
+    normalization can be compared against what the pipeline is producing now —
+    a drift report, not a model update. A daily job that could write Models/ would
+    be an unattended promotion path.
+    """
+    daily = workflows['daily_forecast.yml']
+    runs = _all_run_text(daily)
+    assert 'normalization_stats' in runs or 'dataset-meta' in runs, (
+        'daily_forecast.yml must pull the dataset builder metadata'
+    )
+    for line in _executed_lines(daily):
+        if re.search(r'\bgit\s+(add|commit|checkout|restore|push)\b', line):
+            assert 'Models/' not in line, (
+                f'daily_forecast.yml writes into Models/ ({line!r}): model artifacts '
+                'arrive through the monthly notebook PR and its gate, never through '
+                'the daily data pull'
+            )
+        assert 'master_tensors' not in line, (
+            f'daily_forecast.yml pulls the tensor archive ({line!r}); Colab reads it '
+            'from the Kaggle dataset directly'
+        )
+
+    # The metadata pull is advisory: a Kaggle-side gap must not cost the day's
+    # forecast its commit. The forecast pull itself is not allowed to fail soft.
+    meta_step = next(
+        step for _, step in _steps(daily)
+        if 'fetch_kaggle_dataset_meta.py' in str(step.get('run', ''))
+    )
+    assert meta_step.get('continue-on-error') is True, (
+        'the dataset-metadata step must be continue-on-error: the forecast commit '
+        'cannot depend on the builder notebook having published metadata that day'
+    )
+    fetch_step = next(
+        step for _, step in _steps(daily)
+        if 'fetch_kaggle_forecast.py' in str(step.get('run', ''))
+    )
+    assert not fetch_step.get('continue-on-error'), (
+        'the forecast pull must fail the run: a silent skip is how the site serves '
+        'a stale forecast with a green check next to it'
     )
 
 
@@ -393,9 +451,11 @@ REQUIRED_ACTION_VERSIONS = {
 # concurrency guard to avoid overlapping runs.
 CONCURRENCY_REQUIRED = {
     'ci.yml',
+    # The model PR gate: two overlapping runs would post two reports and interleave
+    # writes into Models/ while regenerating the handshake.
+    'model_intake.yml',
     'daily_forecast.yml',
     'forecast-pipeline.yml',
-    'hourly_forecast.yml',
     'manual_forecast_ingest.yml',
     'site-health.yml',
     'Supabase-cutover-verify.yml',
@@ -491,26 +551,54 @@ def test_every_job_has_timeout(workflows):
 
 
 def test_daily_forecast_has_secret_preflight(workflows):
-    """The daily forecast script exits with a cryptic traceback when
-    EE_SERVICE_ACCOUNT_JSON / HAZARDNET_API_* are missing. The workflow must
-    run a preflight step that checks them and fails fast with a clear
-    message (mirroring the pattern used by forecast-pipeline, hourly,
-    weekly, and manual-ingest)."""
+    """A missing credential must produce a sentence, not a traceback.
+
+    `kaggle kernels output` answers 401/403/404 with a one-line CLI error and a
+    non-zero exit; three different owner actions (rotate the token, fix the
+    ownership, repoint the slug) look identical in the log unless the workflow
+    says which one it is. The preflight checks both secrets are set, writes
+    ~/.kaggle/kaggle.json with 0600, and asks Kaggle whether it can see the
+    kernel before anything depends on the answer.
+    """
     doc = workflows['daily_forecast.yml']
-    preflight_seen = False
-    for job in doc['jobs'].values():
-        for step in job.get('steps') or []:
-            run = step.get('run', '') or ''
-            name = (step.get('name') or '').lower()
-            if ('preflight' in name or 'secret' in name or 'required' in name) \
-               and 'EE_SERVICE_ACCOUNT_JSON' in run and 'HAZARDNET_API' in run:
-                preflight_seen = True
-                break
-    assert preflight_seen, (
+    preflight = None
+    for _, step in _steps(doc):
+        run = step.get('run', '') or ''
+        name = (step.get('name') or '').lower()
+        if ('preflight' in name or 'credential' in name) \
+           and 'KAGGLE_USERNAME' in run and 'KAGGLE_KEY' in run:
+            preflight = run
+            break
+    assert preflight, (
         'daily_forecast.yml must include a preflight step that verifies '
-        'EE_SERVICE_ACCOUNT_JSON / HAZARDNET_API_URL / HAZARDNET_API_KEY are '
-        'set before running auto_forecast.py (see other pipelines for the pattern)'
+        'KAGGLE_USERNAME / KAGGLE_KEY are set before pulling from Kaggle'
     )
+    assert 'kaggle.json' in preflight, (
+        'the preflight must write ~/.kaggle/kaggle.json — the CLI reads its '
+        'credentials from that file, not from the environment'
+    )
+    assert 'chmod 600' in preflight or 'chmod 0600' in preflight, (
+        'the preflight must chmod 600 the credentials file it writes'
+    )
+    assert 'kernels status' in preflight, (
+        'the preflight must confirm Kaggle can see the kernel, so a rotated token '
+        'or a renamed slug fails here with a named remedy instead of mid-pipeline'
+    )
+    # Naming the secret in guidance is what keeps it from being missing next
+    # month; expanding its value into the log is the leak. Writing the
+    # credentials file is the one legitimate expansion — it redirects into
+    # ~/.kaggle/kaggle.json instead of into the runner log.
+    for line in preflight.splitlines():
+        stripped = line.strip()
+        if not stripped.startswith(('echo', 'cat', 'printf')):
+            continue
+        expands = any(token in stripped for token in
+                      ('$KAGGLE_KEY', '${KAGGLE_KEY', '$KAGGLE_USERNAME', '${KAGGLE_USERNAME'))
+        if not expands:
+            continue
+        assert re.search(r'>\s*\S*kaggle\.json', stripped) or 'wc -c' in stripped, (
+            f'the preflight prints a Kaggle credential into the log: {stripped}'
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -522,7 +610,11 @@ def test_daily_forecast_has_secret_preflight(workflows):
 # exit code 1. Each guard below pins the invariant that makes the failure
 # legible instead of silent.
 
-KAGGLE_KERNEL_WORKFLOWS = ('forecast-pipeline.yml', 'hourly_forecast.yml', 'weekly_forecast.yml')
+KAGGLE_KERNEL_WORKFLOWS = (
+    'daily_forecast.yml',
+    'forecast-pipeline.yml',
+    'weekly_forecast.yml',
+)
 KAGGLE_KERNEL_SLUG = 'ashifahmedshuvo/hazardnet-auto-forecast-pipeline'
 
 
@@ -637,3 +729,329 @@ def test_kaggle_backed_workflows_take_the_kernel_from_a_repo_variable(workflows)
                             f'{key} is hardcoded and would shadow the repository '
                             'variable'
                         )
+
+
+# ── shell syntax of every `run:` block ────────────────────────────────────────
+#
+# GitHub hands a `run:` block to a shell verbatim (after resolving `${{ }}`
+# expressions), so a shell syntax error in a workflow is a guaranteed red step —
+# and a *silent* one whenever an earlier `exit 0` guard means bash never parses
+# as far as the broken line. That is exactly how daily_forecast.yml shipped an
+# unbalanced quote in the alert-engine step: the credential guard returned first,
+# so the defect only armed itself on the first run where the alert engine was
+# actually configured to run.
+#
+# `bash -n` parses without executing, which makes this a cheap whole-fleet gate.
+
+def _run_blocks(doc):
+    """Yield (job_id, step_name, shell, script) for every `run:` step."""
+    default_shell = (doc.get('defaults') or {}).get('run', {}).get('shell')
+    for job_id, job in (doc.get('jobs') or {}).items():
+        job_shell = (job.get('defaults') or {}).get('run', {}).get('shell')
+        for index, step in enumerate(job.get('steps') or []):
+            script = step.get('run')
+            if not isinstance(script, str):
+                continue
+            shell = step.get('shell') or job_shell or default_shell or 'bash'
+            yield job_id, step.get('name') or f'step {index}', shell, script
+
+
+def _workflow_files():
+    """Live workflows plus the product-repo templates (both are shell-bearing)."""
+    dirs = [WORKFLOWS_DIR, ROOT / '.github' / 'workflow-templates']
+    files = []
+    for directory in dirs:
+        files += sorted(directory.glob('*.yml')) + sorted(directory.glob('*.yaml'))
+    return files
+
+
+def test_every_run_block_is_valid_shell():
+    """Every bash/sh `run:` block in every workflow must parse.
+
+    `${{ … }}` is rewritten to `${ … }` first: GitHub substitutes expressions
+    before the shell sees the script, and a value like `${{ secrets.X }}` is not
+    shell syntax on its own.
+    """
+    bash = shutil.which('bash')
+    if not bash:
+        pytest.skip('bash not available on this platform')
+
+    failures = []
+    checked = 0
+    for path in _workflow_files():
+        with open(path, encoding='utf-8') as fh:
+            doc = yaml.safe_load(fh)
+        if True in doc and 'on' not in doc:
+            doc['on'] = doc.pop(True)
+        rel = path.relative_to(ROOT)
+        for job_id, step_name, shell, script in _run_blocks(doc):
+            if not (shell == 'sh' or shell.startswith('bash')):
+                continue  # pwsh/python/etc. are not bash's problem
+            checked += 1
+            probe = script.replace('${{', '${').replace('}}', '}')
+            result = subprocess.run(
+                [bash, '-n'], input=probe, capture_output=True, text=True
+            )
+            if result.returncode != 0:
+                failures.append(
+                    f'{rel} [{job_id}] "{step_name}" ({shell}): '
+                    f'{result.stderr.strip().splitlines()[-1] if result.stderr.strip() else "parse error"}'
+                )
+
+    assert checked, 'no bash/sh run blocks found — the extractor is broken'
+    assert not failures, (
+        f'{len(failures)} run block(s) are not valid shell (bash -n):\n  '
+        + '\n  '.join(failures)
+    )
+
+
+# ── every script a workflow invokes must exist ────────────────────────────────
+#
+# `Supabase-cutover-verify.yml` was committed invoking
+# `scripts/verify-supabase-cutover.mjs`, a file that was never written (as were
+# `scripts/db/002_forecasts_supabase.sql` and
+# `scripts/migrate-firestore-to-supabase.mjs`, which ADR 0002 and
+# scripts/db/README.md both name). Dispatching the workflow died with
+# `Cannot find module …` — an error that reads like a database or credentials
+# failure and is neither. A workflow that describes work nobody did is worse than
+# no workflow: it reports a red run whose cause is not in the run.
+
+SCRIPT_INVOKE_RE = re.compile(
+    r'\b(?:python3?|node|npx|bash|sh)\s+'
+    r'((?:scripts|frontend|backend|api|ml|e2e|data)/[A-Za-z0-9_./-]+\.(?:mjs|cjs|js|ts|py|sh))'
+)
+NPM_RUN_RE = re.compile(r'npm\s+(?:(--prefix\s+frontend)\s+)?run\s+([A-Za-z0-9:_-]+)')
+
+
+def _package_scripts():
+    root = json.loads((ROOT / 'package.json').read_text(encoding='utf-8')).get('scripts') or {}
+    frontend_path = ROOT / 'frontend' / 'package.json'
+    frontend = {}
+    if frontend_path.exists():
+        frontend = json.loads(frontend_path.read_text(encoding='utf-8')).get('scripts') or {}
+    return root, frontend
+
+
+def _strip_shell_comments(script):
+    """Drop whole-line shell comments before looking for invocations.
+
+    A commented-out `node scripts/foo.mjs` is documentation, not an invocation —
+    and `Supabase-cutover-verify.yml` keeps exactly that: the step it will restore
+    once the missing artifact is committed (Action 14). Only lines whose first
+    non-space character is `#` are dropped, so a `#` inside a quoted string cannot
+    hide a real invocation.
+    """
+    return '\n'.join(
+        line for line in script.splitlines() if not line.lstrip().startswith('#')
+    )
+
+
+def test_workflows_only_invoke_scripts_that_exist():
+    """No workflow may run a file that is not in the repository.
+
+    A step may invoke a script it has just checked for (`[ -f path ]` in the same
+    `run:` block) — that is how a workflow refuses to pretend an artifact exists
+    while still being ready for the day it does.
+    """
+    root_scripts, frontend_scripts = _package_scripts()
+    problems = []
+
+    for path in sorted(WORKFLOWS_DIR.glob('*.yml')) + sorted(WORKFLOWS_DIR.glob('*.yaml')):
+        doc = yaml.safe_load(path.read_text(encoding='utf-8'))
+        if True in doc and 'on' not in doc:
+            doc['on'] = doc.pop(True)
+        rel = path.relative_to(ROOT)
+        for job_id, job in (doc.get('jobs') or {}).items():
+            for step in job.get('steps') or []:
+                run = step.get('run')
+                if not isinstance(run, str):
+                    continue
+                label = f'{rel} [{job_id}] "{step.get("name") or "step"}"'
+                run = _strip_shell_comments(run)
+
+                for target in SCRIPT_INVOKE_RE.findall(run):
+                    if (ROOT / target).exists():
+                        continue
+                    guarded = f'-f "{target}"' in run or f'-e "{target}"' in run
+                    if not guarded:
+                        problems.append(f'{label} invokes `{target}`, which does not exist')
+
+                for prefix, name in NPM_RUN_RE.findall(run):
+                    scripts = frontend_scripts if prefix else root_scripts
+                    if name not in scripts and name not in root_scripts:
+                        problems.append(f'{label} runs `npm run {name}`, which no package.json defines')
+
+    assert not problems, (
+        f'{len(problems)} workflow step(s) invoke artifacts the repository does not have:\n  '
+        + '\n  '.join(problems)
+    )
+
+# ── the monthly model PR gate (model_intake.yml) ─────────────────────────────
+#
+# The training run is a human act: the owner opens ml/HazardNet_auto_train.ipynb on
+# Colab (T4), runs the monthly block, and the notebook's own PR cell writes the
+# version handshake, pushes a branch with a PAT typed at a getpass prompt, and opens
+# the pull request. CI's job on that PR is to *gate* it — prove the bundle loads,
+# prove the handshake the notebook committed is the one the canonical writers
+# produce, show what a promotion decision would say — and then stop. Merging and
+# recording a champion stay human acts (docs/mlops/RETRAIN_AND_PROMOTION.md).
+#
+# What used to live here: a launch workflow that provisioned a Colab VM, a watcher
+# on a twenty-minute cron that followed a run marker through git, and an intake that
+# collected the bundle over SSH. All three are deleted; the tests below pin that they
+# stay deleted, because "we automated the monthly run" is an attractive nuisance that
+# will be proposed again the first time somebody forgets why it failed.
+
+INTAKE_GATE = 'model_intake.yml'
+
+
+def _steps(doc):
+    for job_id, job in (doc.get('jobs') or {}).items():
+        for step in job.get('steps') or []:
+            yield job_id, step
+
+
+def _all_run_text(doc):
+    return '\n'.join(step.get('run', '') for _, step in _steps(doc) if isinstance(step.get('run'), str))
+
+
+def _all_text(doc):
+    """Every string a workflow could execute or resolve: runs, env, with-args.
+
+    Pins and slugs live in `env:` as often as in `run:`, and a test that only reads
+    run blocks happily passes while the value it is guarding has moved.
+    """
+    return json.dumps(doc)
+
+
+def _promote_commands(text):
+    """Each `mlops.cli promote` invocation, with its line continuations joined.
+
+    Prose in the same file names the command too (the report explains that the dry
+    run records nothing), so a window scan over the raw text reads an explanation
+    as an invocation. Only lines that could execute count.
+    """
+    lines = text.splitlines()
+    commands = []
+    for index, line in enumerate(lines):
+        stripped = line.strip()
+        if 'mlops.cli promote' not in stripped:
+            continue
+        if stripped.startswith(('#', 'echo', 'printf', 'cat')):
+            continue
+        command = stripped
+        cursor = index
+        while command.endswith('\\') and cursor + 1 < len(lines):
+            cursor += 1
+            command = command[:-1].strip() + ' ' + lines[cursor].strip()
+        commands.append(command)
+    return commands
+
+
+def _executed_lines(doc):
+    """Run-block lines that are not comments — what the runner actually executes."""
+    for _, step in _steps(doc):
+        run = step.get('run')
+        if not isinstance(run, str):
+            continue
+        for line in run.splitlines():
+            stripped = line.strip()
+            if stripped and not stripped.startswith('#'):
+                yield stripped
+
+
+def test_the_retrain_automation_stays_deleted(workflows):
+    """The Colab chain is gone: workflows, CLI modules, and the marker directory."""
+    deleted_workflows = ('model_retrain.yml', 'model_retrain_watch.yml', 'hourly_forecast.yml')
+    present = [name for name in deleted_workflows if name in workflows]
+    assert not present, (
+        f'{", ".join(present)} exists again. The monthly training run is manual '
+        '(a human on Colab T4) and the forecast is pulled from Kaggle once a day; '
+        'both of these workflows existed to drive a machine through a surface that '
+        'only accepts a human session.'
+    )
+    deleted_scripts = (
+        'scripts/mlops/colab_session.py',
+        'scripts/mlops/retrain_cli.py',
+        'scripts/tests/test_retrain_automation.py',
+    )
+    resurrected = [path for path in deleted_scripts if (ROOT / path).exists()]
+    assert not resurrected, f'deleted Colab automation came back: {resurrected}'
+    assert not (ROOT / 'data' / 'mlops' / 'retrain-runs').exists(), (
+        'data/mlops/retrain-runs/ was the launch→watcher handoff; nothing writes it now'
+    )
+
+
+def test_the_intake_gate_is_a_pull_request_check_that_never_promotes(workflows):
+    """The gate proves the bundle and reports to the human. It does not decide."""
+    doc = workflows[INTAKE_GATE]
+    pull = (doc.get('on') or {}).get('pull_request') or {}
+    paths = pull.get('paths') or []
+    assert any(p.startswith('Models') for p in paths), (
+        f'{INTAKE_GATE} must trigger on changes under Models/ (found paths: {paths})'
+    )
+    assert 'workflow_dispatch' in (doc.get('on') or {}), (
+        f'{INTAKE_GATE} must stay dispatchable so a gate can be re-run on demand'
+    )
+
+    runs = _all_run_text(doc)
+    # It verifies the notebook's own handshake instead of trusting it.
+    assert 'node scripts/gen-model-version.mjs' in runs, (
+        f'{INTAKE_GATE} must regenerate Models/VERSION.json with the canonical writer'
+    )
+    assert 'mlops.cli registry --write' in runs, (
+        f'{INTAKE_GATE} must rebuild Models/REGISTRY.json with the canonical writer'
+    )
+    assert 'scripts/validate_model_bundle.py' in runs, (
+        f'{INTAKE_GATE} must run the same bundle validator model-validation.yml runs'
+    )
+    # It reports to the reviewer, in the PR, and stops there.
+    assert 'gh pr comment' in runs, (
+        f'{INTAKE_GATE} must post its findings on the pull request it gates'
+    )
+    assert 'gh pr merge' not in runs and 'git push' not in runs, (
+        f'{INTAKE_GATE} must neither merge nor push: the merge is the human gate'
+    )
+    # `promote --write` is the one command that records a champion; the dry run is
+    # allowed (and wanted) because a reviewer should see the decision before merging.
+    commands = _promote_commands(runs)
+    assert commands, (
+        f'{INTAKE_GATE} must show the promotion decision (dry run) in the PR body'
+    )
+    for command in commands:
+        assert '--write' not in command, (
+            f'{INTAKE_GATE} records a promotion automatically ({command!r}); '
+            '`champion` requires a named human approver'
+        )
+
+
+def test_no_workflow_drives_a_colab_session(workflows):
+    """Nothing in CI may start, watch, or collect from a Colab VM.
+
+    Colab exposes no non-interactive execution surface: `colab auth` and
+    `drivemount` are interactive-only, and a session can be recycled at any moment.
+    A workflow that reaches for it produces a red run that looks like a training
+    failure. The commands below are the ones the deleted automation used.
+    """
+    offenders = []
+    for name, doc in workflows.items():
+        for line in _executed_lines(doc):
+            if re.search(r'\bcolab\s+(exec|ssh|auth|drivemount)\b', line) \
+               or 'nbconvert' in line \
+               or 'mlops.retrain_cli' in line \
+               or 'mlops.colab_session' in line:
+                offenders.append(f'{name}: {line}')
+    assert not offenders, (
+        'CI drives a Colab session (the monthly run is manual — see '
+        'docs/mlops/RETRAIN_AND_PROMOTION.md):\n  ' + '\n  '.join(offenders)
+    )
+
+
+def test_the_candidate_gate_runs_the_same_runtime_ci_will(workflows):
+    """The gate's pins must match model-validation.yml, or a reviewer reads a green
+    gate that the merge check immediately turns red."""
+    intake = _all_text(workflows[INTAKE_GATE])
+    validation = _all_text(workflows['model-validation.yml'])
+    for pin in ('tflite-runtime==2.14.0', 'numpy==1.26.4'):
+        assert pin in intake, f'{INTAKE_GATE} does not pin {pin}'
+        assert pin in validation, f'model-validation.yml no longer pins {pin} — update both together'

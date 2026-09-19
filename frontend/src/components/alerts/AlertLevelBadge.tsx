@@ -109,7 +109,7 @@ export interface AlertLevelLegendProps {
 
 /** The legend the map and the list share, so a colour is explained wherever it appears. */
 export const AlertLevelLegend: React.FC<AlertLevelLegendProps> = ({ levels, className = '' }) => (
-  <ul className={`flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-slate-700 ${className}`}>
+  <ul className={`flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-carbon-70 ${className}`}>
     {levels.map(({ level, label, description }) => (
       <li key={level} className="flex items-center gap-1.5" title={description}>
         <span

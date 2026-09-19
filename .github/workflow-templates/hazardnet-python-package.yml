@@ -10,6 +10,14 @@
 # See .github/workflow-templates/README.md for adoption steps, secrets and
 # tag conventions.
 #
+# NOT ADOPTED BY THIS PROJECT (ADR 0011, docs/adr/0011-distribution-without-
+# package-registries.md): HazardNet does not publish to PyPI, and the website's
+# Download Center therefore renders no `pip install hazardnet` and never queries
+# pypi.org. This template is kept as reference material for a product repository
+# that one day decides otherwise — adopting it means reversing that ADR, and
+# recording the reversal.
+#
+
 # CI (every pull request and push to the default branch):
 #   - fail-fast check for a packaging manifest (pyproject.toml/setup.py/setup.cfg)
 #   - tests across a configurable Python version matrix

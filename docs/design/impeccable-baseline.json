@@ -1,0 +1,80 @@
+{
+  "$comment": "Design-quality baseline for scripts/check-design-quality.mjs. `waivers` are accepted on purpose and each names the check that covers the same risk. `outstanding` is the work left to do; it may only shrink without a commit that explains why it grew.",
+  "generatedAt": "2026-09-19T16:06:25.326Z",
+  "impeccable": {
+    "cli": "4.1.0",
+    "engine": "0.1.5",
+    "skills": "4.3.1",
+    "upstream": "https://github.com/pbakaus/impeccable",
+    "upstreamCommit": "f2c7051853848826aac2f4646581d62a732155ad",
+    "licence": "Apache-2.0"
+  },
+  "targets": [
+    "frontend/src",
+    "frontend/dist/**/*.html"
+  ],
+  "waivers": [
+    {
+      "rule": "tight-leading",
+      "snippet": "line-height 0.13x",
+      "reason": "NASA's composite display tokens declare 100% leading (--hds-typography-h1-2xl: 700 7.5rem/1, --hds-typography-number-lg: 300 7.5rem/1), which the detector divides as 1/7.5 and reports as 0.13x. Those tokens are vendored verbatim from data/design/nasa-hds/tokens.json (CC0-1.0) by scripts/import_nasa_tokens.mjs and must not be edited; --hds-line-height-1 documents 100% as NASA's own choice for h1, h2 display and numbers. Compensated by __tests__/designTypography.test.js, which requires >=1.3 leading on every body-scale rule in frontend/src/index.css and in the prerendered static shell, requires any tighter leading in the vendored token file to be a --hds-* declaration rather than an applied style, and forbids tight Tailwind leading on elements that wrap unless they are display scale or cannot wrap."
+    },
+    {
+      "rule": "oversized-h1",
+      "snippet": "288px h1",
+      "reason": "The detector converts the print stylesheet's `h1 { font-size: 18pt !important }` as though pt were rem and reports a 288px heading on every page that carries the print sheet. On screen the h1 is 28px, rising to 32px at 640px, per frontend/src/index.css. Compensated by __tests__/designTypography.test.js, which fails if a point size appears outside @media print or the paper-emulation scopes (.pdf-capture-mode, .print-preview-rendered-body, .print-*) and if any screen h1 exceeds NASA's 3rem/48px h1 ceiling."
+    }
+  ],
+  "counts": {
+    "waived": 65,
+    "outstanding": 4,
+    "byRule": {
+      "side-tab": 3,
+      "border-accent-on-rounded": 1
+    }
+  },
+  "outstandingFindings": [
+    {
+      "rule": "border-accent-on-rounded",
+      "file": "frontend/src/pages/DistrictDetailPage.tsx",
+      "snippet": "border-b-2"
+    },
+    {
+      "rule": "side-tab",
+      "file": "frontend/src/index.css",
+      "snippet": "border-left: 4px solid #f9a825"
+    },
+    {
+      "rule": "side-tab",
+      "file": "frontend/src/pages/BlogArticlePage.tsx",
+      "snippet": "border-l-4"
+    },
+    {
+      "rule": "side-tab",
+      "file": "frontend/src/pages/DistrictDetailPage.tsx",
+      "snippet": "border-l-4"
+    }
+  ],
+  "outstanding": [
+    {
+      "rule": "border-accent-on-rounded",
+      "file": "frontend/src/pages/DistrictDetailPage.tsx",
+      "snippet": "border-b-2"
+    },
+    {
+      "rule": "side-tab",
+      "file": "frontend/src/index.css",
+      "snippet": "border-left: 4px solid #f9a825"
+    },
+    {
+      "rule": "side-tab",
+      "file": "frontend/src/pages/BlogArticlePage.tsx",
+      "snippet": "border-l-4"
+    },
+    {
+      "rule": "side-tab",
+      "file": "frontend/src/pages/DistrictDetailPage.tsx",
+      "snippet": "border-l-4"
+    }
+  ]
+}

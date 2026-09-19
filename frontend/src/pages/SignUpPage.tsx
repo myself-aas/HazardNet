@@ -22,7 +22,7 @@ import { validateUsername } from '../lib/username';
  */
 
 const inputClass =
-  'w-full px-4 py-3 text-base sm:text-sm bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 placeholder-slate-400 font-medium transition-all focus:outline-none focus:border-nasa-blue focus:ring-2 focus:ring-nasa-blue/40';
+  'w-full px-4 py-3 text-base sm:text-sm bg-carbon-05 border border-carbon-20 rounded-2xl text-carbon-90 placeholder-carbon-40 font-medium transition-all focus:outline-none focus:border-nasa-blue focus:ring-2 focus:ring-nasa-blue/40';
 
 const describeError = (err: unknown): string => {
   const message = err instanceof Error ? err.message : String(err ?? '');
@@ -143,12 +143,12 @@ const SignUpPage: React.FC = () => {
             <MaterialIcon name="mail_check" className="h-6 w-6" />
           </motion.div>
           <div className="space-y-2">
-            <p className="text-sm text-slate-700 leading-relaxed">
+            <p className="text-sm text-carbon-70 leading-relaxed">
               We sent a verification link to{' '}
-              <strong className="text-slate-900">{email.trim()}</strong>. Open it on this device to
-              activate your account and <strong className="text-slate-900">choose your password</strong>.
+              <strong className="text-carbon-90">{email.trim()}</strong>. Open it on this device to
+              activate your account and <strong className="text-carbon-90">choose your password</strong>.
             </p>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-carbon-60">
               Tip: check your spam folder if it hasn’t arrived within a few minutes.
             </p>
           </div>
@@ -157,14 +157,14 @@ const SignUpPage: React.FC = () => {
               type="button"
               onClick={resend}
               disabled={resendIn > 0 || loading}
-              className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-xs font-bold text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-50 cursor-pointer"
+              className="w-full rounded-2xl border border-carbon-20 bg-white px-4 py-3 text-xs font-bold text-carbon-70 transition-colors hover:bg-carbon-05 disabled:opacity-50 cursor-pointer"
             >
               {resendIn > 0 ? `Resend link available in ${resendIn}s` : 'Resend verification link'}
             </button>
             <button
               type="button"
               onClick={() => setPendingVerification(false)}
-              className="text-[11px] font-bold text-slate-500 hover:text-slate-800 cursor-pointer"
+              className="text-[11px] font-bold text-carbon-60 hover:text-carbon-80 cursor-pointer"
             >
               Wrong email? Edit details
             </button>
@@ -210,7 +210,7 @@ const SignUpPage: React.FC = () => {
         </AnimatePresence>
 
         <div>
-          <label className="block text-xs font-bold text-slate-800 mb-1.5" htmlFor="signup-name">
+          <label className="block text-xs font-bold text-carbon-80 mb-1.5" htmlFor="signup-name">
             Full name
           </label>
           <input
@@ -241,7 +241,7 @@ const SignUpPage: React.FC = () => {
         )}
 
         <div>
-          <label className="block text-xs font-bold text-slate-800 mb-1.5" htmlFor="signup-email">
+          <label className="block text-xs font-bold text-carbon-80 mb-1.5" htmlFor="signup-email">
             Email address
           </label>
           <input
@@ -258,7 +258,7 @@ const SignUpPage: React.FC = () => {
             className={inputClass}
           />
           {fieldErrors.email && <p className="mt-1 text-[11px] font-semibold text-rose-700">{fieldErrors.email}</p>}
-          <p className="mt-1 text-[11px] text-slate-400">
+          <p className="mt-1 text-[11px] text-carbon-60">
             We’ll email you a verification link to activate the account and set your password.
           </p>
         </div>
@@ -267,8 +267,8 @@ const SignUpPage: React.FC = () => {
         <AuthSocialButtons label="Sign up with Google" onSuccess={() => navigate(next, { replace: true })} />
 
         <div className="relative flex items-center justify-center pt-1" aria-hidden="true">
-          <div className="border-t border-slate-200 w-full" />
-          <span className="bg-white px-3 text-[10px] text-slate-400 font-bold uppercase tracking-wider absolute">
+          <div className="border-t border-carbon-20 w-full" />
+          <span className="bg-white px-3 text-[10px] text-carbon-60 font-bold uppercase tracking-wider absolute">
             or sign up with email
           </span>
         </div>
@@ -279,9 +279,9 @@ const SignUpPage: React.FC = () => {
             type="checkbox"
             checked={acceptedTerms}
             onChange={(e) => setAcceptedTerms(e.target.checked)}
-            className="mt-0.5 h-4 w-4 rounded border-slate-300 accent-nasa-blue cursor-pointer"
+            className="mt-0.5 h-4 w-4 rounded border-carbon-30 accent-nasa-blue cursor-pointer"
           />
-          <span className="text-[11px] leading-relaxed text-slate-600">
+          <span className="text-[11px] leading-relaxed text-carbon-60">
             I agree to the{' '}
             <Link to="/terms" className="font-bold text-amber-800 hover:underline">
               Terms
@@ -300,11 +300,11 @@ const SignUpPage: React.FC = () => {
           data-testid="signup-submit-btn"
           type="submit"
           disabled={loading}
-          className="w-full py-3.5 bg-nasa-red hover:bg-nasa-red-shade text-slate-950 font-extrabold rounded-2xl text-sm transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nasa-blue/60 focus-visible:ring-offset-2"
+          className="w-full py-3.5 bg-nasa-red hover:bg-nasa-red-shade text-carbon-black font-extrabold rounded-2xl text-sm transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nasa-blue/60 focus-visible:ring-offset-2"
         >
           {loading ? (
             <>
-              <span className="h-4 w-4 animate-spin rounded-full border-2 border-slate-800 border-t-transparent" />
+              <span className="h-4 w-4 animate-spin rounded-full border-2 border-carbon-80 border-t-transparent" />
               Sending verification link…
             </>
           ) : (
@@ -313,7 +313,7 @@ const SignUpPage: React.FC = () => {
         </button>
       </form>
 
-      <p className="text-center text-xs sm:text-[13px] text-slate-600">
+      <p className="text-center text-xs sm:text-[13px] text-carbon-60">
         Already have an account?{' '}
         <Link
           to={next && next !== '/' ? `/login?next=${encodeURIComponent(next)}` : '/login'}

@@ -9,7 +9,7 @@
       "physics": {
         "form": "0.5 · clip(P_total / 300 mm) + 0.5 · clip(P_peak / 100 mm)",
         "drivers": ["precipitation accumulated over the horizon (P_total)", "wettest 24 hours in that horizon (P_peak)"],
-        "note": "Both terms are required and must be different quantities. The pipeline this project inherited passed the horizon total twice, which made a wet fortnight indistinguishable from a three-day burst; the corrected signature is pinned by scripts/tests/test_physics_severity.py.",
+        "note": "Both terms are required and must be different quantities. The pipeline this project inherited passed the horizon total twice, which made a wet fortnight indistinguishable from a three-day burst.",
         "expr": "0.5*clip(P_total/300) + 0.5*clip(P_peak/100)"
       },
       "model": "The classifier labels the district-horizon unit from the same meteorological drivers (rainfall, temperature, wind, humidity, radiation, evapotranspiration). Its class and its severity index are separate outputs: the class says which hazard the drivers most resemble, the severity says how strong the resemblance is.",
@@ -39,7 +39,7 @@
         "Haor and hill-district flash floods are driven by upstream rainfall outside the district boundary; the drivers are district-aggregated.",
         "A 24-hour peak inside a 15-day horizon is a coarse instrument for an event that lasts hours."
       ],
-      "sources": ["Open-Meteo forecast (rainfall intensity)", "ERA5-Land daily aggregates", "FFWC bulletins (hydrological context, ingested as text)"]
+      "sources": ["Open-Meteo forecast (rainfall intensity)", "ERA5-Land daily aggregates", "FFWC river levels — an ingestion adapter exists and is tested, but no FFWC record is supplied to any run in this deployment, so this score carries no hydrology: it is rainfall intensity alone"]
     },
     {
       "slug": "tropical-cyclone",
@@ -59,7 +59,7 @@
         "Storm surge — the main killer on the Bangladesh coast — depends on bathymetry and tide, neither of which is an input.",
         "The 15-day horizon is inside the range where a numerical weather model still has skill for wind, but the boundary between 'cyclone remnant' and 'strong monsoon wind' is not something this proxy resolves."
       ],
-      "sources": ["Open-Meteo forecast (wind, rainfall)", "ERA5-Land daily aggregates", "BMD bulletins (warnings, ingested as text)"]
+      "sources": ["Open-Meteo forecast (wind, rainfall)", "ERA5-Land daily aggregates", "BMD bulletins — a parser exists and is tested, but no bulletin is supplied to any run in this deployment, so nothing published here is derived from a BMD warning"]
     },
     {
       "slug": "drought",
@@ -158,12 +158,12 @@
         "Peak wind in a district aggregate understates the local maximum that damages a bazaar.",
         "Hail and lightning — the two things that actually kill in a Kalbaishakhi — are not represented at all."
       ],
-      "sources": ["Open-Meteo forecast (wind, rainfall)", "ERA5-Land daily aggregates", "BMD bulletins (warnings, ingested as text)"]
+      "sources": ["Open-Meteo forecast (wind, rainfall)", "ERA5-Land daily aggregates", "BMD bulletins — a parser exists and is tested, but no bulletin is supplied to any run in this deployment, so nothing published here is derived from a BMD warning"]
     }
   ],
   "shared": {
     "physicsNotation": "clip(x) clamps a term to [0, 1] — max(0, min(1, x)) — which is how every formula in the pipeline bounds its terms. Each term is clipped before it is weighted, so no single driver can run away with a score.",
-    "classVocabulary": "The eight classes above are the model's entire output vocabulary (`Models/labels.json`), enforced on ingest. A hazard outside the list is not mapped onto a nearest neighbour — an unrecognised label is rejected and reported.",
+    "classVocabulary": "The eight classes above are the model's entire output vocabulary, enforced on ingest. A hazard outside the list is not mapped onto a nearest neighbour — an unrecognised label is rejected and reported.",
     "confidencePolicy": "Confidence bins (Certain ≥ 0.85, Probable 0.70–0.85, Uncertain < 0.70) describe the model's own certainty in the class it chose. They are not accuracy, and no accuracy figure is published because no held-out evaluation has been run on real labels.",
     "publicationGate": "Nothing above the WATCH level can be published automatically while no calibration map exists, and nothing at all can be published while the pipeline stamps no model version — the alert engine records that as `publication_blocked` rather than issuing the alert.",
     "groundTruth": "Ground-truth reports (district, hazard, horizon, date, what was observed) are the only route by which this project can publish skill metrics. The contact page reaches the maintainers."

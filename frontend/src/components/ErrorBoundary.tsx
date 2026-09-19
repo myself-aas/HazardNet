@@ -42,32 +42,32 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
       return (
         <div
           role="alert"
-          className="min-h-dvh flex items-center justify-center bg-slate-50 p-6 font-sans text-slate-900"
+          className="min-h-dvh flex items-center justify-center bg-carbon-05 p-6 font-sans text-carbon-90"
         >
           <div className="nasa-glass-panel max-w-md w-full p-8 text-center space-y-4">
             <div className="mx-auto w-12 h-12 rounded-2xl bg-amber-100 border border-amber-300 flex items-center justify-center text-2xl">
               ⚠️
             </div>
             <h1 className="hn-h2">Something went wrong</h1>
-            <p className="hn-body text-slate-600">
+            <p className="hn-body text-carbon-60">
               The HazardNet dashboard hit an unexpected error. Your saved data is safe —
               reload the app to continue monitoring hazards.
             </p>
             {this.state.error && (
-              <pre className="text-left text-[11px] font-mono bg-slate-100 border border-slate-200 rounded-xl p-3 overflow-x-auto text-slate-600">
+              <pre className="text-left text-[11px] font-mono bg-carbon-10 border border-carbon-20 rounded-xl p-3 overflow-x-auto text-carbon-60">
                 {this.state.error.message}
               </pre>
             )}
             <div className="flex flex-col sm:flex-row gap-2 justify-center pt-2">
               <button
                 onClick={this.handleReload}
-                className="px-4 py-2.5 rounded-xl bg-nasa-red hover:bg-nasa-red-shade text-slate-950 font-bold text-sm transition-colors cursor-pointer"
+                className="px-4 py-2.5 rounded-xl bg-nasa-red hover:bg-nasa-red-shade text-carbon-black font-bold text-sm transition-colors cursor-pointer"
               >
                 Reload HazardNet
               </button>
               <button
                 onClick={this.handleGoHome}
-                className="px-4 py-2.5 rounded-xl bg-white hover:bg-slate-100 border border-slate-300 text-slate-800 font-semibold text-sm transition-colors cursor-pointer"
+                className="px-4 py-2.5 rounded-xl bg-white hover:bg-carbon-10 border border-carbon-30 text-carbon-80 font-semibold text-sm transition-colors cursor-pointer"
               >
                 Go to Dashboard
               </button>

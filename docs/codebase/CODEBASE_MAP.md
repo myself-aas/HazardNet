@@ -121,7 +121,7 @@ Stack: Vite 8, React 18.3, react-router 6, TanStack Query, MUI 6 + Tailwind 4 + 
 
 ## 7. Data & ML pipeline
 
-1. `.github/workflows/daily_forecast.yml` (plus `hourly_forecast.yml`, `weekly_forecast.yml`) runs `scripts/auto_forecast.py` on the runner: GEE Sentinel-1/2 + ERA5-Land history, Open-Meteo deterministic forecast, TFLite inference for 64 districts × {7,15} days.
+1. Kaggle produces, GitHub pulls (ADR 0013): four notebooks run daily on Kaggle and `.github/workflows/daily_forecast.yml` (00:00 UTC) pulls the forecast CSV via `scripts/fetch_kaggle_forecast.py` — advisory shape → canonical row, district identity from the published artifact ∪ `git HEAD` ∪ `scripts/etl/districts.py`, `prediction_date` derived as `target_date − horizon`, coverage tally + model provenance in the manifest — plus the dataset builder's `normalization_stats.json`/`dataset_config.json` via `scripts/fetch_kaggle_dataset_meta.py` into `data/kaggle/dataset-meta/` with a drift report against `Models/`. `forecast-pipeline.yml` (trigger + pull) and `weekly_forecast.yml` (heavy ADM3 run + patch release) are dispatch-only. `scripts/auto_forecast.py` (GEE + Open-Meteo + TFLite on the runner) remains as the unscheduled offline fallback.
 2. `scripts/validate_forecasts.py` + `scripts/validate_model_bundle.py` gate the CSV and the model bundle.
 3. Promoted into `backend/data/forecasts/` and `data/hazardnet_forecasts_latest.csv`; `scripts/build_forecast_snapshot.mjs` / `build_alert_snapshot.mjs` / `build_freshness_artifact.mjs` bake committed JSON snapshots under `frontend/public/data/` so the site works with the API down (ADR 0008).
 4. Optional `POST` into the store when repo var `PUSH_TO_API=true`; ingest contract in `backend/utils/forecastRow.js`.

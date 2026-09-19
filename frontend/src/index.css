@@ -236,11 +236,11 @@
 
   /* Sidebar slots (shadcn) */
   --sidebar: #ffffff;
-  --sidebar-foreground: #0f172a;
+  --sidebar-foreground: var(--hds-color-carbon-90);
   --sidebar-primary: var(--primary);
   --sidebar-primary-foreground: var(--primary-foreground);
   --sidebar-accent: var(--surface-sunken);
-  --sidebar-accent-foreground: #0f172a;
+  --sidebar-accent-foreground: var(--hds-color-carbon-90);
   --sidebar-border: var(--border);
   --sidebar-ring: var(--ring);
 
@@ -295,13 +295,13 @@ body {
 }
 
 .nasa-glass-panel:hover {
-  border-color: #cbd5e1;
+  border-color: var(--hds-color-carbon-30);
   box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
 }
 
 /* Custom Leaflet Map Light Styling */
 .leaflet-container {
-  background: #f1f5f9 !important;
+  background: var(--hds-color-carbon-10) !important;
   font-family: inherit;
   border-radius: 1.25rem;
 }
@@ -365,8 +365,8 @@ body {
 .custom-modern-leaflet-popup .leaflet-popup-content-wrapper,
 .leaflet-popup-content-wrapper {
   background: #ffffff !important;
-  color: #1e293b !important;
-  border: 1px solid #e2e8f0 !important;
+  color: var(--hds-color-carbon-80) !important;
+  border: 1px solid var(--hds-color-carbon-20) !important;
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   border-radius: 1rem !important;
@@ -388,12 +388,12 @@ body {
 
 .leaflet-popup-tip {
   background: #ffffff !important;
-  border: 1px solid #e2e8f0 !important;
+  border: 1px solid var(--hds-color-carbon-20) !important;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
 }
 
 .leaflet-container a.leaflet-popup-close-button {
-  color: #64748b !important;
+  color: var(--hds-color-carbon-50) !important;
   padding: 8px 12px 0 0 !important;
   font-size: 18px !important;
   font-weight: bold !important;
@@ -401,7 +401,7 @@ body {
 }
 
 .leaflet-container a.leaflet-popup-close-button:hover {
-  color: #0f172a !important;
+  color: var(--hds-color-carbon-90) !important;
 }
 
 @media (max-width: 640px) {
@@ -531,16 +531,16 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: var(--hds-color-carbon-10);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: var(--hds-color-carbon-30);
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: var(--hds-color-carbon-40);
 }
 
 /* Safe Padding for Mobile Bottom Nav */
@@ -624,6 +624,91 @@ body {
   --color-carbon-70: var(--hds-color-carbon-70);
   --color-carbon-80: var(--hds-color-carbon-80);
   --color-carbon-90: var(--hds-color-carbon-90);
+  --color-carbon-black: var(--hds-color-carbon-black);
+  --color-spacesuit: var(--hds-color-spacesuit-white);
+
+  /* Neutral ramp — Tailwind's five grey families re-pointed at NASA's carbon ramp, the
+     same treatment the warm ramp above gets.
+
+     As of the 2026-09-19 consolidation nothing in the source wears these names any more:
+     all 4,030 neutral utility classes were renamed onto carbon (bg-slate-50 → bg-carbon-05
+     … bg-slate-950 → bg-carbon-black) and all 252 hard-coded neutral literals — inline
+     styles, SVG fills, canvas and map layer colours, jsPDF text colours, the manifest and
+     theme-color — were moved onto the token values. What remains here is a safety net: if a
+     component reaches for a Tailwind grey again it still renders NASA's carbon rather than
+     Tailwind's slate, and the design gate (npm run check:design) reports the legacy name as
+     a new finding, because the impeccable detector reads class names rather than resolved
+     values. __tests__/paletteTokens.test.js pins the same thing from the source side.
+
+     The mapping is ordinal (50→05 … 900→90, 950→black) and was chosen on measured relative
+     luminance rather than on name similarity: carbon 40–90 sit within 0.03 of the slate step
+     they replace, so text and dark surfaces kept the contrast they had (slate-900 on white
+     measures 17.85:1, carbon-90 17.88:1). The light end is deliberately stronger, because
+     HDS draws a visible 1px rule and #d1d1d1 is NASA's border grey where #e2e8f0 was
+     Tailwind's. Two steps moved further than the ramp: slate-400 and slate-500 as muted text
+     on a light surface measure 2.56:1 and 4.76:1, so the 616 sites wearing them were
+     rewritten to carbon-60 (7.09:1) rather than aliased — the 12 that sit on a dark panel
+     kept their step, where carbon measures what slate did. Measured pair by pair in
+     docs/design-system/MASTER.md §Neutral ramp. */
+  --color-slate-50: var(--hds-color-carbon-05);
+  --color-slate-100: var(--hds-color-carbon-10);
+  --color-slate-200: var(--hds-color-carbon-20);
+  --color-slate-300: var(--hds-color-carbon-30);
+  --color-slate-400: var(--hds-color-carbon-40);
+  --color-slate-500: var(--hds-color-carbon-50);
+  --color-slate-600: var(--hds-color-carbon-60);
+  --color-slate-700: var(--hds-color-carbon-70);
+  --color-slate-800: var(--hds-color-carbon-80);
+  --color-slate-900: var(--hds-color-carbon-90);
+  --color-slate-950: var(--hds-color-carbon-black);
+
+  --color-gray-50: var(--hds-color-carbon-05);
+  --color-gray-100: var(--hds-color-carbon-10);
+  --color-gray-200: var(--hds-color-carbon-20);
+  --color-gray-300: var(--hds-color-carbon-30);
+  --color-gray-400: var(--hds-color-carbon-40);
+  --color-gray-500: var(--hds-color-carbon-50);
+  --color-gray-600: var(--hds-color-carbon-60);
+  --color-gray-700: var(--hds-color-carbon-70);
+  --color-gray-800: var(--hds-color-carbon-80);
+  --color-gray-900: var(--hds-color-carbon-90);
+  --color-gray-950: var(--hds-color-carbon-black);
+
+  --color-zinc-50: var(--hds-color-carbon-05);
+  --color-zinc-100: var(--hds-color-carbon-10);
+  --color-zinc-200: var(--hds-color-carbon-20);
+  --color-zinc-300: var(--hds-color-carbon-30);
+  --color-zinc-400: var(--hds-color-carbon-40);
+  --color-zinc-500: var(--hds-color-carbon-50);
+  --color-zinc-600: var(--hds-color-carbon-60);
+  --color-zinc-700: var(--hds-color-carbon-70);
+  --color-zinc-800: var(--hds-color-carbon-80);
+  --color-zinc-900: var(--hds-color-carbon-90);
+  --color-zinc-950: var(--hds-color-carbon-black);
+
+  --color-neutral-50: var(--hds-color-carbon-05);
+  --color-neutral-100: var(--hds-color-carbon-10);
+  --color-neutral-200: var(--hds-color-carbon-20);
+  --color-neutral-300: var(--hds-color-carbon-30);
+  --color-neutral-400: var(--hds-color-carbon-40);
+  --color-neutral-500: var(--hds-color-carbon-50);
+  --color-neutral-600: var(--hds-color-carbon-60);
+  --color-neutral-700: var(--hds-color-carbon-70);
+  --color-neutral-800: var(--hds-color-carbon-80);
+  --color-neutral-900: var(--hds-color-carbon-90);
+  --color-neutral-950: var(--hds-color-carbon-black);
+
+  --color-stone-50: var(--hds-color-carbon-05);
+  --color-stone-100: var(--hds-color-carbon-10);
+  --color-stone-200: var(--hds-color-carbon-20);
+  --color-stone-300: var(--hds-color-carbon-30);
+  --color-stone-400: var(--hds-color-carbon-40);
+  --color-stone-500: var(--hds-color-carbon-50);
+  --color-stone-600: var(--hds-color-carbon-60);
+  --color-stone-700: var(--hds-color-carbon-70);
+  --color-stone-800: var(--hds-color-carbon-80);
+  --color-stone-900: var(--hds-color-carbon-90);
+  --color-stone-950: var(--hds-color-carbon-black);
   /* Status */
   --color-success: var(--success);
   --color-success-foreground: var(--success-foreground);
@@ -1049,17 +1134,6 @@ caption {
   line-height: 1.4;
 }
 
-.brand-gradient-text {
-  background: linear-gradient(135deg, #0f172a 0%, #334155 60%, #0f172a 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.brand-accent-text {
-  background: linear-gradient(135deg, #d97706 0%, #ea580c 50%, #dc2626 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
 
 
 
@@ -1163,20 +1237,20 @@ caption {
       font-family: "Times New Roman", Times, serif;
       font-size: 8.5pt;
       font-weight: 600;
-      color: #475569;
+      color: var(--hds-color-carbon-60);
     }
     @bottom-center {
       content: "SOD 2019 Disaster Management Compliance";
       font-family: "Times New Roman", Times, serif;
       font-size: 8pt;
-      color: #94a3b8;
+      color: var(--hds-color-carbon-40);
     }
     @bottom-right {
       content: "Page " counter(page) " of " counter(pages);
       font-family: "Times New Roman", Times, serif;
       font-size: 9pt;
       font-weight: 800;
-      color: #0f172a;
+      color: var(--hds-color-carbon-90);
     }
   }
 
@@ -1201,7 +1275,7 @@ caption {
   .print-district-brief {
     background-color: #ffffff !important;
     background: #ffffff !important;
-    color: #0f172a !important;
+    color: var(--hds-color-carbon-90) !important;
     font-family: "Times New Roman", Times, serif !important;
     font-size: 12pt !important;
     line-height: 1.5 !important;
@@ -1332,17 +1406,17 @@ caption {
 
   /* 7. Card & Box Flattening for Crisp Ink-friendly Handouts */
   .bg-white,
-  .bg-slate-50,
-  .bg-slate-100,
-  .bg-slate-900,
-  .bg-slate-950,
+  .bg-carbon-05,
+  .bg-carbon-10,
+  .bg-carbon-90,
+  .bg-carbon-black,
   .nasa-glass-panel,
   [class*="rounded-3xl"],
   [class*="rounded-2xl"] {
     background-color: #ffffff !important;
     background: #ffffff !important;
-    color: #0f172a !important;
-    border: 1pt solid #cbd5e1 !important;
+    color: var(--hds-color-carbon-90) !important;
+    border: 1pt solid var(--hds-color-carbon-30) !important;
     border-radius: 6pt !important;
     box-shadow: none !important;
     backdrop-filter: none !important;
@@ -1351,7 +1425,7 @@ caption {
 
   /* 8. Text Color & Contrast Overrides (H1: 18pt, H2: 16pt, H3: 14pt) */
   h1, h2, h3, h4, h5, h6 {
-    color: #0f172a !important;
+    color: var(--hds-color-carbon-90) !important;
     font-weight: 800 !important;
     page-break-after: avoid !important;
     break-after: avoid !important;
@@ -1364,20 +1438,20 @@ caption {
   p, span, li, td, th {
     font-size: 12pt !important;
     line-height: 1.5 !important;
-    color: #1e293b !important;
+    color: var(--hds-color-carbon-80) !important;
   }
 
   .text-white,
-  .text-slate-100,
-  .text-slate-200,
-  .text-slate-300,
-  .text-slate-400 {
-    color: #334155 !important;
+  .text-carbon-10,
+  .text-carbon-20,
+  .text-carbon-30,
+  .text-carbon-40 {
+    color: var(--hds-color-carbon-70) !important;
   }
 
   /* 9. Hyperlink Formatting for Physical Emergency Handouts */
   a {
-    color: #0f172a !important;
+    color: var(--hds-color-carbon-90) !important;
     text-decoration: none !important;
   }
 
@@ -1388,7 +1462,7 @@ caption {
     font-size: 7pt !important;
     font-family: 'DM Mono', Consolas, monospace !important;
     font-weight: 500 !important;
-    color: #475569 !important;
+    color: var(--hds-color-carbon-60) !important;
     word-break: break-all !important;
   }
 
@@ -1408,25 +1482,25 @@ caption {
     font-size: 7.5pt !important;
     font-family: 'DM Mono', Consolas, monospace !important;
     font-weight: 700 !important;
-    color: #0f172a !important;
+    color: var(--hds-color-carbon-90) !important;
   }
 
   a[href^="mailto:"]:after {
     content: " [" attr(href) "]";
     font-size: 7pt !important;
     font-family: 'DM Mono', Consolas, monospace !important;
-    color: #334155 !important;
+    color: var(--hds-color-carbon-70) !important;
   }
 
   a[href^="tel:"] {
     font-weight: 800 !important;
     font-family: 'DM Mono', Consolas, monospace !important;
-    color: #0f172a !important;
+    color: var(--hds-color-carbon-90) !important;
   }
 
   /* 10. Emergency Contacts & Directory Cards Formatting */
   .emergency-contact-card,
-  [class*="border-slate-200"] > div,
+  [class*="border-carbon-20"] > div,
   .space-y-4 > div {
     page-break-inside: avoid !important;
     break-inside: avoid !important;
@@ -1608,9 +1682,9 @@ caption {
   [class*="bg-rose-50"],
   [class*="bg-emerald-50"],
   [class*="bg-blue-50"],
-  [class*="bg-slate-50"] {
-    background-color: #f8fafc !important;
-    border: 1pt solid #94a3b8 !important;
+  [class*="bg-carbon-05"] {
+    background-color: var(--hds-color-carbon-05) !important;
+    border: 1pt solid var(--hds-color-carbon-40) !important;
     border-radius: 4pt !important;
     padding: 5pt 7pt !important;
   }
@@ -1619,9 +1693,9 @@ caption {
   [class*="rounded-full"],
   [class*="rounded-lg"],
   [class*="rounded-md"] {
-    border: 0.75pt solid #64748b !important;
-    background-color: #f1f5f9 !important;
-    color: #0f172a !important;
+    border: 0.75pt solid var(--hds-color-carbon-50) !important;
+    background-color: var(--hds-color-carbon-10) !important;
+    color: var(--hds-color-carbon-90) !important;
     font-weight: 700 !important;
     border-radius: 3pt !important;
   }
@@ -1630,7 +1704,7 @@ caption {
   table {
     width: 100% !important;
     border-collapse: collapse !important;
-    border: 1.5pt solid #0f172a !important;
+    border: 1.5pt solid var(--hds-color-carbon-90) !important;
     font-size: 8pt !important;
     margin-top: 6pt !important;
     margin-bottom: 8pt !important;
@@ -1653,14 +1727,14 @@ caption {
     display: table-header-group !important;
     page-break-inside: avoid !important;
     break-inside: avoid !important;
-    background-color: #0f172a !important;
+    background-color: var(--hds-color-carbon-90) !important;
     color: #ffffff !important;
   }
 
   .print-table-emergency-header th,
   thead tr.print-table-emergency-header th,
   th.emergency-protocol-title {
-    background-color: #0f172a !important;
+    background-color: var(--hds-color-carbon-90) !important;
     color: #ffffff !important;
     font-family: 'DM Mono', Consolas, monospace !important;
     font-size: 8pt !important;
@@ -1668,16 +1742,16 @@ caption {
     text-transform: uppercase !important;
     letter-spacing: 0.06em !important;
     padding: 4pt 7pt !important;
-    border: 1.5pt solid #0f172a !important;
+    border: 1.5pt solid var(--hds-color-carbon-90) !important;
     text-align: left !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
 
   thead tr:not(.print-table-emergency-header) th {
-    background-color: #e2e8f0 !important;
-    color: #0f172a !important;
-    border: 1pt solid #475569 !important;
+    background-color: var(--hds-color-carbon-20) !important;
+    color: var(--hds-color-carbon-90) !important;
+    border: 1pt solid var(--hds-color-carbon-60) !important;
     font-weight: 800 !important;
     font-family: 'DM Mono', Consolas, monospace !important;
     font-size: 7.5pt !important;
@@ -1691,16 +1765,16 @@ caption {
   }
 
   td {
-    border: 0.75pt solid #cbd5e1 !important;
+    border: 0.75pt solid var(--hds-color-carbon-30) !important;
     padding: 4pt 6pt !important;
-    color: #0f172a !important;
+    color: var(--hds-color-carbon-90) !important;
     vertical-align: top !important;
     word-break: break-word !important;
     overflow-wrap: break-word !important;
   }
 
   tbody tr:nth-child(even) td {
-    background-color: #f8fafc !important;
+    background-color: var(--hds-color-carbon-05) !important;
   }
 
   /* 13. Dynamic QR Code Print Layout */
@@ -1709,7 +1783,7 @@ caption {
     page-break-inside: avoid !important;
     break-inside: avoid !important;
     background-color: #ffffff !important;
-    border: 1pt solid #475569 !important;
+    border: 1pt solid var(--hds-color-carbon-60) !important;
     border-radius: 6pt !important;
     padding: 4pt 6pt !important;
     margin: 4pt 0 !important;
@@ -1724,24 +1798,24 @@ caption {
     display: inline-flex !important;
     align-items: center !important;
     gap: 4pt !important;
-    background-color: #f8fafc !important;
-    border: 1pt solid #64748b !important;
+    background-color: var(--hds-color-carbon-05) !important;
+    border: 1pt solid var(--hds-color-carbon-50) !important;
     border-radius: 4pt !important;
     padding: 2.5pt 6pt !important;
     font-family: 'DM Mono', Consolas, monospace !important;
     font-size: 7.5pt !important;
     font-weight: 700 !important;
-    color: #0f172a !important;
+    color: var(--hds-color-carbon-90) !important;
   }
 
   .print-last-updated strong {
-    color: #0f172a !important;
+    color: var(--hds-color-carbon-90) !important;
     font-weight: 900 !important;
   }
 
   .print-currency-tag {
     display: inline-block !important;
-    background-color: #0f172a !important;
+    background-color: var(--hds-color-carbon-90) !important;
     color: #ffffff !important;
     font-family: 'DM Mono', Consolas, monospace !important;
     font-size: 6.5pt !important;
@@ -1764,8 +1838,8 @@ caption {
     align-items: center !important;
     font-family: 'DM Mono', Consolas, monospace !important;
     font-size: 7pt !important;
-    color: #475569 !important;
-    border-top: 0.75pt solid #94a3b8 !important;
+    color: var(--hds-color-carbon-60) !important;
+    border-top: 0.75pt solid var(--hds-color-carbon-40) !important;
     padding-top: 2pt !important;
     background-color: #ffffff !important;
     z-index: 999;
@@ -1775,7 +1849,7 @@ caption {
     counter-increment: page;
     content: "Page " counter(page);
     font-weight: 800 !important;
-    color: #0f172a !important;
+    color: var(--hds-color-carbon-90) !important;
   }
 
   /* 16. Structured Advisory Renderer: Uncollapse all sections */
@@ -1852,25 +1926,25 @@ body.pdf-exporting .no-print,
 
 /* Card & Box Flattening for Crisp Ink-friendly Handouts */
 .pdf-capture-mode .bg-white,
-.pdf-capture-mode .bg-slate-50,
-.pdf-capture-mode .bg-slate-100,
-.pdf-capture-mode .bg-slate-900,
-.pdf-capture-mode .bg-slate-950,
+.pdf-capture-mode .bg-carbon-05,
+.pdf-capture-mode .bg-carbon-10,
+.pdf-capture-mode .bg-carbon-90,
+.pdf-capture-mode .bg-carbon-black,
 .pdf-capture-mode .nasa-glass-panel,
 .pdf-capture-mode [class*="rounded-3xl"],
 .pdf-capture-mode [class*="rounded-2xl"],
 .print-preview-rendered-body .bg-white,
-.print-preview-rendered-body .bg-slate-50,
-.print-preview-rendered-body .bg-slate-100,
-.print-preview-rendered-body .bg-slate-900,
-.print-preview-rendered-body .bg-slate-950,
+.print-preview-rendered-body .bg-carbon-05,
+.print-preview-rendered-body .bg-carbon-10,
+.print-preview-rendered-body .bg-carbon-90,
+.print-preview-rendered-body .bg-carbon-black,
 .print-preview-rendered-body .nasa-glass-panel,
 .print-preview-rendered-body [class*="rounded-3xl"],
 .print-preview-rendered-body [class*="rounded-2xl"] {
   background-color: #ffffff !important;
   background: #ffffff !important;
-  color: #0f172a !important;
-  border: 1pt solid #cbd5e1 !important;
+  color: var(--hds-color-carbon-90) !important;
+  border: 1pt solid var(--hds-color-carbon-30) !important;
   border-radius: 6pt !important;
   box-shadow: none !important;
 }
@@ -1901,22 +1975,22 @@ body.pdf-exporting .no-print,
 .print-preview-rendered-body .print-qr-code-box {
   display: flex !important;
   background-color: #ffffff !important;
-  border: 1pt solid #475569 !important;
+  border: 1pt solid var(--hds-color-carbon-60) !important;
   border-radius: 6pt !important;
 }
 
 .pdf-capture-mode .print-last-updated,
 .print-preview-rendered-body .print-last-updated {
   display: inline-flex !important;
-  background-color: #f8fafc !important;
-  border: 1pt solid #64748b !important;
-  color: #0f172a !important;
+  background-color: var(--hds-color-carbon-05) !important;
+  border: 1pt solid var(--hds-color-carbon-50) !important;
+  color: var(--hds-color-carbon-90) !important;
 }
 
 .pdf-capture-mode .print-currency-tag,
 .print-preview-rendered-body .print-currency-tag {
   display: inline-block !important;
-  background-color: #0f172a !important;
+  background-color: var(--hds-color-carbon-90) !important;
   color: #ffffff !important;
 }
 
@@ -1924,7 +1998,7 @@ body.pdf-exporting .no-print,
 .print-preview-rendered-body table {
   width: 100% !important;
   border-collapse: collapse !important;
-  border: 1.5pt solid #0f172a !important;
+  border: 1.5pt solid var(--hds-color-carbon-90) !important;
   font-size: 8pt !important;
   margin-top: 6pt !important;
   margin-bottom: 8pt !important;
@@ -1943,7 +2017,7 @@ body.pdf-exporting .no-print,
 .print-preview-rendered-body thead tr.print-table-emergency-header,
 .pdf-capture-mode .print-table-emergency-header,
 .print-preview-rendered-body .print-table-emergency-header {
-  background-color: #0f172a !important;
+  background-color: var(--hds-color-carbon-90) !important;
   color: #ffffff !important;
 }
 
@@ -1951,7 +2025,7 @@ body.pdf-exporting .no-print,
 .pdf-capture-mode th.emergency-protocol-title,
 .print-preview-rendered-body thead tr.print-table-emergency-header th,
 .print-preview-rendered-body th.emergency-protocol-title {
-  background-color: #0f172a !important;
+  background-color: var(--hds-color-carbon-90) !important;
   color: #ffffff !important;
   font-family: 'DM Mono', Consolas, monospace !important;
   font-size: 8pt !important;
@@ -1959,15 +2033,15 @@ body.pdf-exporting .no-print,
   text-transform: uppercase !important;
   letter-spacing: 0.06em !important;
   padding: 4pt 7pt !important;
-  border: 1.5pt solid #0f172a !important;
+  border: 1.5pt solid var(--hds-color-carbon-90) !important;
   text-align: left !important;
 }
 
 .pdf-capture-mode thead tr:not(.print-table-emergency-header) th,
 .print-preview-rendered-body thead tr:not(.print-table-emergency-header) th {
-  background-color: #e2e8f0 !important;
-  color: #0f172a !important;
-  border: 1pt solid #475569 !important;
+  background-color: var(--hds-color-carbon-20) !important;
+  color: var(--hds-color-carbon-90) !important;
+  border: 1pt solid var(--hds-color-carbon-60) !important;
   padding: 4pt 6pt !important;
   font-weight: 800;
   font-size: 7.5pt;
@@ -1976,24 +2050,24 @@ body.pdf-exporting .no-print,
 
 .pdf-capture-mode td,
 .print-preview-rendered-body td {
-  border: 0.75pt solid #cbd5e1 !important;
+  border: 0.75pt solid var(--hds-color-carbon-30) !important;
   padding: 4pt 6pt !important;
   font-size: 7.5pt !important;
-  color: #1e293b !important;
+  color: var(--hds-color-carbon-80) !important;
 }
 
 .pdf-capture-mode tr:nth-child(even) td,
 .print-preview-rendered-body tr:nth-child(even) td {
-  background-color: #f8fafc !important;
+  background-color: var(--hds-color-carbon-05) !important;
 }
 
 .pdf-capture-mode .text-white,
-.pdf-capture-mode .text-slate-400,
-.pdf-capture-mode .text-slate-300,
+.pdf-capture-mode .text-carbon-40,
+.pdf-capture-mode .text-carbon-30,
 .print-preview-rendered-body .text-white,
-.print-preview-rendered-body .text-slate-400,
-.print-preview-rendered-body .text-slate-300 {
-  color: #0f172a !important;
+.print-preview-rendered-body .text-carbon-40,
+.print-preview-rendered-body .text-carbon-30 {
+  color: var(--hds-color-carbon-90) !important;
 }
 
 .pdf-capture-mode h1,
@@ -2002,7 +2076,7 @@ body.pdf-exporting .no-print,
 .print-preview-rendered-body h1,
 .print-preview-rendered-body h2,
 .print-preview-rendered-body h3 {
-  color: #0f172a !important;
+  color: var(--hds-color-carbon-90) !important;
 }
 
 /* Ink-Saver High Contrast Field Print Mode */
@@ -2027,9 +2101,9 @@ body.pdf-exporting .no-print,
 }
 
 /* ─── Blog article typography (prose-blog) ─────────────────────────────── */
-.prose-blog h1 { font-size: 1.6rem; font-weight: 900; color: #0f172a; margin: 1.4rem 0 0.6rem; letter-spacing: -0.01em; }
-.prose-blog h2 { font-size: 1.3rem; font-weight: 900; color: #0f172a; margin: 1.3rem 0 0.5rem; }
-.prose-blog h3 { font-size: 1.1rem; font-weight: 800; color: #1e293b; margin: 1.1rem 0 0.4rem; }
+.prose-blog h1 { font-size: 1.6rem; font-weight: 900; color: var(--hds-color-carbon-90); margin: 1.4rem 0 0.6rem; letter-spacing: -0.01em; }
+.prose-blog h2 { font-size: 1.3rem; font-weight: 900; color: var(--hds-color-carbon-90); margin: 1.3rem 0 0.5rem; }
+.prose-blog h3 { font-size: 1.1rem; font-weight: 800; color: var(--hds-color-carbon-80); margin: 1.1rem 0 0.4rem; }
 .prose-blog p  { margin: 0.75rem 0; line-height: 1.75; }
 .prose-blog ul, .prose-blog ol { margin: 0.75rem 0 0.75rem 1.4rem; line-height: 1.7; }
 .prose-blog ul { list-style: disc; }
@@ -2038,17 +2112,17 @@ body.pdf-exporting .no-print,
 .prose-blog a  { color: #b45309; font-weight: 700; text-decoration: underline; text-underline-offset: 2px; }
 .prose-blog a:hover { color: #92400e; }
 .prose-blog blockquote { margin: 1rem 0; padding: 0.6rem 1rem; border-left: 4px solid #f9a825; background: #fffbeb; border-radius: 0 0.75rem 0.75rem 0; color: #78350f; font-style: italic; }
-.prose-blog pre { margin: 1rem 0; padding: 0.9rem 1rem; background: #0f172a; color: #e2e8f0; border-radius: 0.75rem; overflow-x: auto; font-size: 0.78rem; line-height: 1.6; }
-.prose-blog code { font-family: var(--hds-font-family-code); font-size: 0.82em; background: #f1f5f9; padding: 0.1rem 0.35rem; border-radius: 0.35rem; color: #b91c1c; }
+.prose-blog pre { margin: 1rem 0; padding: 0.9rem 1rem; background: var(--hds-color-carbon-90); color: var(--hds-color-carbon-20); border-radius: 0.75rem; overflow-x: auto; font-size: 0.78rem; line-height: 1.6; }
+.prose-blog code { font-family: var(--hds-font-family-code); font-size: 0.82em; background: var(--hds-color-carbon-10); padding: 0.1rem 0.35rem; border-radius: 0.35rem; color: #b91c1c; }
 .prose-blog pre code { background: transparent; color: inherit; padding: 0; }
-.prose-blog img { max-width: 100%; height: auto; border-radius: 0.75rem; margin: 1rem 0; border: 1px solid #e2e8f0; }
-.prose-blog hr { margin: 1.5rem 0; border: none; border-top: 1px solid #e2e8f0; }
+.prose-blog img { max-width: 100%; height: auto; border-radius: 0.75rem; margin: 1rem 0; border: 1px solid var(--hds-color-carbon-20); }
+.prose-blog hr { margin: 1.5rem 0; border: none; border-top: 1px solid var(--hds-color-carbon-20); }
 .prose-blog [style*="text-align: center"], .prose-blog [style*="text-align:center"] { text-align: center; }
 .prose-blog [style*="text-align: right"], .prose-blog [style*="text-align:right"] { text-align: right; }
 
 /* Editor empty placeholder */
 [contenteditable][data-placeholder]:empty::before {
   content: attr(data-placeholder);
-  color: #94a3b8;
+  color: var(--hds-color-carbon-40);
   pointer-events: none;
 }

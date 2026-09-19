@@ -155,7 +155,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 bg-slate-900/20 backdrop-blur-sm z-[10001]"
+            className="fixed inset-0 bg-carbon-90/20 backdrop-blur-sm z-[10001]"
             onClick={onClose}
           />
 
@@ -170,7 +170,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
             animate={{ x: 0 }}
             exit={{ x: '-100%' }}
             transition={{ type: 'spring', stiffness: 350, damping: 30 }}
-            className="fixed inset-y-0 left-0 z-[10002] w-80 max-w-[85vw] bg-gradient-to-b from-[#e8e4e1] to-[#cfd1c4] rounded-r-3xl shadow-2xl flex flex-col font-sans select-none text-slate-800 overflow-hidden"
+            className="fixed inset-y-0 left-0 z-[10002] w-80 max-w-[85vw] bg-gradient-to-b from-[#e8e4e1] to-[#cfd1c4] rounded-r-3xl shadow-2xl flex flex-col font-sans select-none text-carbon-80 overflow-hidden"
           >
             {/* Drawer Header */}
             <div className="px-6 py-6 flex items-center justify-between shrink-0">
@@ -192,11 +192,11 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                   title={user ? 'Profile' : 'Sign In'}
                 >
                   {user ? (
-                    <span className="font-bold text-sm text-slate-800">
+                    <span className="font-bold text-sm text-carbon-80">
                       {(user.displayName || user.email || 'U')[0].toUpperCase()}
                     </span>
                   ) : (
-                    <MaterialIcon name="person" className="text-[20px] text-slate-800" />
+                    <MaterialIcon name="person" className="text-[20px] text-carbon-80" />
                   )}
                 </button>
                 {/*
@@ -212,7 +212,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                   title="Close menu"
                   className="w-10 h-10 rounded-full bg-black/5 hover:bg-black/10 flex items-center justify-center transition-colors focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:outline-none"
                 >
-                  <MaterialIcon name="close" className="text-[20px] text-slate-800" />
+                  <MaterialIcon name="close" className="text-[20px] text-carbon-80" />
                 </button>
               </div>
             </div>
@@ -232,12 +232,12 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                       }`}
                     >
                       <div className="flex items-center gap-4">
-                        <MaterialIcon name={section.icon} className="text-[22px] text-slate-800" />
-                        <span className="text-[15px] font-medium text-slate-900">
+                        <MaterialIcon name={section.icon} className="text-[22px] text-carbon-80" />
+                        <span className="text-[15px] font-medium text-carbon-90">
                           {section.category}
                         </span>
                       </div>
-                      <div className="bg-slate-900 text-white text-[10px] font-bold px-2 py-0.5 rounded-full min-w-[24px] text-center">
+                      <div className="bg-carbon-90 text-white text-[10px] font-bold px-2 py-0.5 rounded-full min-w-[24px] text-center">
                         {section.items.length}
                       </div>
                     </button>
@@ -251,7 +251,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                           exit={{ height: 0, opacity: 0 }}
                           className="overflow-hidden"
                         >
-                          <div className="ml-7 pl-6 py-2 border-l border-slate-900/10 space-y-1 my-1">
+                          <div className="ml-7 pl-6 py-2 border-l border-carbon-90/10 space-y-1 my-1">
                             {section.items.map((item) => {
                               const isActive =
                                 location.pathname === item.path ||
@@ -262,18 +262,18 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                                   key={item.id}
                                   onClick={() => handleNavigate(item.path)}
                                   className={`w-full flex items-center justify-between py-2.5 px-4 rounded-full transition-all ${
-                                    isActive ? 'bg-black/5 font-semibold text-slate-900' : 'hover:bg-black/5 font-medium text-slate-700'
+                                    isActive ? 'bg-black/5 font-semibold text-carbon-90' : 'hover:bg-black/5 font-medium text-carbon-70'
                                   }`}
                                 >
                                   <div className="flex items-center gap-3">
                                     <MaterialIcon
                                       name={item.icon}
-                                      className={`text-[18px] ${isActive ? 'text-slate-900' : 'text-slate-600'}`}
+                                      className={`text-[18px] ${isActive ? 'text-carbon-90' : 'text-carbon-60'}`}
                                     />
                                     <span className="text-[14px]">{item.title}</span>
                                   </div>
                                   {item.badge && (
-                                    <span className="text-[10px] bg-black/10 text-slate-800 px-1.5 py-0.5 rounded-md font-bold">
+                                    <span className="text-[10px] bg-black/10 text-carbon-80 px-1.5 py-0.5 rounded-md font-bold">
                                       {item.badge}
                                     </span>
                                   )}
@@ -300,7 +300,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                     to="/signup"
                     data-testid="drawer-signup-link"
                     onClick={onClose}
-                    className="w-full py-3 rounded-2xl bg-nasa-red hover:bg-nasa-red-shade text-slate-950 text-[13px] font-extrabold text-center shadow-2xs transition-all focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:outline-none"
+                    className="w-full py-3 rounded-2xl bg-nasa-red hover:bg-nasa-red-shade text-carbon-black text-[13px] font-extrabold text-center shadow-2xs transition-all focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:outline-none"
                   >
                     Sign up free
                   </Link>
@@ -308,17 +308,17 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                     to="/login"
                     data-testid="drawer-signin-link"
                     onClick={onClose}
-                    className="w-full py-3 rounded-2xl border border-slate-900/15 hover:bg-black/5 text-slate-800 text-[13px] font-bold text-center transition-all focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:outline-none"
+                    className="w-full py-3 rounded-2xl border border-carbon-90/15 hover:bg-black/5 text-carbon-80 text-[13px] font-bold text-center transition-all focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:outline-none"
                   >
                     Sign in
                   </Link>
                 </div>
               )}
               <FirebaseRealtimeStatus variant="compact" />
-              <div className="flex items-center justify-between text-[11px] font-mono text-slate-500">
+              <div className="flex items-center justify-between text-[11px] font-mono text-carbon-60">
                 <span className="flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                  <strong className="text-slate-800">HazardNet</strong>
+                  <strong className="text-carbon-80">HazardNet</strong>
                 </span>
                 {user && (
                    <button

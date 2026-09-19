@@ -28,7 +28,7 @@ export const SavedAssessmentsModalUI: React.FC<SavedAssessmentsModalUIProps> = (
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.15 }}
-          className="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs"
+          className="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-carbon-90/50 backdrop-blur-xs"
           onClick={(e) => {
             if (e.target === e.currentTarget) onClose();
           }}
@@ -39,13 +39,13 @@ export const SavedAssessmentsModalUI: React.FC<SavedAssessmentsModalUIProps> = (
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 15 }}
             transition={{ type: 'spring', stiffness: 350, damping: 25 }}
-            className="bg-white border border-slate-200 rounded-2xl max-w-2xl w-full p-6 shadow-xl space-y-5 max-h-[90vh] flex flex-col text-slate-900"
+            className="bg-white border border-carbon-20 rounded-2xl max-w-2xl w-full p-6 shadow-xl space-y-5 max-h-[90vh] flex flex-col text-carbon-90"
           >
             {/* Header */}
-            <div className="flex items-center justify-between pb-4 border-b border-slate-200">
+            <div className="flex items-center justify-between pb-4 border-b border-carbon-20">
               <div>
-                <h2 className="text-lg font-extrabold text-slate-900">Saved Cloud Assessments</h2>
-                <p className="text-xs text-slate-500 font-medium">
+                <h2 className="text-lg font-extrabold text-carbon-90">Saved Cloud Assessments</h2>
+                <p className="text-xs text-carbon-60 font-medium">
                   Persistent predictions stored in Firebase Firestore
                 </p>
               </div>
@@ -53,7 +53,7 @@ export const SavedAssessmentsModalUI: React.FC<SavedAssessmentsModalUIProps> = (
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={onClose}
-                className="px-2.5 py-1 text-xs font-black text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-100 transition-colors border border-slate-200 cursor-pointer flex items-center gap-1"
+                className="px-2.5 py-1 text-xs font-black text-carbon-60 hover:text-carbon-90 rounded-lg hover:bg-carbon-10 transition-colors border border-carbon-20 cursor-pointer flex items-center gap-1"
                 title="Close Modal"
                 aria-label="Close Modal"
               >
@@ -65,13 +65,13 @@ export const SavedAssessmentsModalUI: React.FC<SavedAssessmentsModalUIProps> = (
             {/* Content list */}
             <div className="flex-1 overflow-y-auto space-y-3 pr-1">
               {loading ? (
-                <div className="py-12 text-center text-slate-500 text-sm animate-pulse">
+                <div className="py-12 text-center text-carbon-60 text-sm animate-pulse">
                   Loading assessments from Firestore...
                 </div>
               ) : assessments.length === 0 ? (
-                <div className="py-12 text-center text-slate-500 space-y-2">
-                  <p className="text-sm font-semibold text-slate-900">No saved assessments found.</p>
-                  <p className="text-xs text-slate-500">
+                <div className="py-12 text-center text-carbon-60 space-y-2">
+                  <p className="text-sm font-semibold text-carbon-90">No saved assessments found.</p>
+                  <p className="text-xs text-carbon-60">
                     Run an AI hazard prediction on any district and click "Save to Cloud" to persist it in Firestore.
                   </p>
                 </div>
@@ -84,12 +84,12 @@ export const SavedAssessmentsModalUI: React.FC<SavedAssessmentsModalUIProps> = (
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, scale: 0.95, x: -20 }}
-                      className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-all"
+                      className="bg-carbon-05 border border-carbon-20 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-all"
                     >
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="font-extrabold text-sm text-slate-900">{item.districtName}</span>
-                          <span className="px-2 py-0.5 bg-white text-slate-700 rounded-full text-[10px] font-mono font-bold border border-slate-200">
+                          <span className="font-extrabold text-sm text-carbon-90">{item.districtName}</span>
+                          <span className="px-2 py-0.5 bg-white text-carbon-70 rounded-full text-[10px] font-mono font-bold border border-carbon-20">
                             {item.primaryHazard}
                           </span>
                           <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
@@ -100,12 +100,12 @@ export const SavedAssessmentsModalUI: React.FC<SavedAssessmentsModalUIProps> = (
                             {item.severityBin || 'Moderate'} ({item.severityScore.toFixed(2)})
                           </span>
                         </div>
-                        <div className="text-xs text-slate-500 mt-1 flex items-center gap-3 font-mono">
+                        <div className="text-xs text-carbon-60 mt-1 flex items-center gap-3 font-mono">
                           <span>Confidence: <strong>{(item.confidence * 100).toFixed(1)}%</strong></span>
                           <span>Saved: {new Date(item.createdAt).toLocaleDateString()}</span>
                         </div>
                         {item.notes && (
-                          <p className="text-xs text-slate-700 italic mt-1.5 bg-white p-2 rounded-xl border border-slate-200">
+                          <p className="text-xs text-carbon-70 italic mt-1.5 bg-white p-2 rounded-xl border border-carbon-20">
                             "{item.notes}"
                           </p>
                         )}
@@ -119,7 +119,7 @@ export const SavedAssessmentsModalUI: React.FC<SavedAssessmentsModalUIProps> = (
                               onSelectDistrict(item.districtId);
                               onClose();
                             }}
-                            className="px-3 py-1.5 bg-nasa-red hover:bg-nasa-red-shade text-slate-900 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer"
+                            className="px-3 py-1.5 bg-nasa-red hover:bg-nasa-red-shade text-carbon-90 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer"
                           >
                             View Map
                           </motion.button>
@@ -141,13 +141,13 @@ export const SavedAssessmentsModalUI: React.FC<SavedAssessmentsModalUIProps> = (
             </div>
 
             {/* Footer */}
-            <div className="pt-3 border-t border-slate-200 flex items-center justify-between text-xs text-slate-600">
-              <span>Total Saved: <strong className="text-slate-900">{assessments.length}</strong></span>
+            <div className="pt-3 border-t border-carbon-20 flex items-center justify-between text-xs text-carbon-60">
+              <span>Total Saved: <strong className="text-carbon-90">{assessments.length}</strong></span>
               <motion.button
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
                 onClick={onClose}
-                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold rounded-xl border border-slate-200 transition-all cursor-pointer"
+                className="px-4 py-2 bg-carbon-10 hover:bg-carbon-20 text-carbon-80 font-bold rounded-xl border border-carbon-20 transition-all cursor-pointer"
               >
                 Close
               </motion.button>

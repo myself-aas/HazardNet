@@ -65,7 +65,7 @@ export const AlertDetailPage: React.FC = () => {
 
   if (loading && !result) {
     return (
-      <div className="mx-auto w-full max-w-[900px] px-4 py-10 text-sm text-slate-600" role="status">
+      <div className="mx-auto w-full max-w-[900px] px-4 py-10 text-sm text-carbon-60" role="status">
         {t('common.loading')}
       </div>
     );
@@ -74,12 +74,12 @@ export const AlertDetailPage: React.FC = () => {
   if (!alert) {
     return (
       <div className="mx-auto w-full max-w-[900px] px-4 py-10">
-        <h1 className="text-xl font-black text-slate-900">{t('alerts.detail.title')}</h1>
-        <p className="mt-2 text-sm text-slate-700">{t('alerts.detail.notFound')}</p>
-        <p className="mt-1 font-mono text-[11px] text-slate-500">{id}</p>
+        <h1 className="text-xl font-black text-carbon-90">{t('alerts.detail.title')}</h1>
+        <p className="mt-2 text-sm text-carbon-70">{t('alerts.detail.notFound')}</p>
+        <p className="mt-1 font-mono text-[11px] text-carbon-60">{id}</p>
         <Link
           to="/alerts"
-          className="mt-4 inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border border-slate-300 px-3 py-2 text-xs font-bold text-slate-800 hover:bg-slate-50"
+          className="mt-4 inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border border-carbon-30 px-3 py-2 text-xs font-bold text-carbon-80 hover:bg-carbon-05"
         >
           <MaterialIcon name="arrow_back" className="text-base" aria-hidden="true" />
           {t('alerts.page.listTitle')}
@@ -93,7 +93,7 @@ export const AlertDetailPage: React.FC = () => {
       <nav aria-label={t('alerts.detail.title')} className="no-print mb-3 flex items-center justify-between gap-2">
         <Link
           to="/alerts"
-          className="inline-flex min-h-[44px] items-center gap-1.5 text-xs font-bold text-slate-700 hover:text-amber-800"
+          className="inline-flex min-h-[44px] items-center gap-1.5 text-xs font-bold text-carbon-70 hover:text-amber-800"
         >
           <MaterialIcon name="arrow_back" className="text-base" aria-hidden="true" />
           {t('alerts.page.listTitle')}
@@ -103,8 +103,8 @@ export const AlertDetailPage: React.FC = () => {
 
       <div className="no-print mb-3 flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-xl font-black text-slate-900 sm:text-2xl">{t('alerts.detail.title')}</h1>
-          <p className="mt-1 flex flex-wrap items-center gap-2 text-xs text-slate-600">
+          <h1 className="text-xl font-black text-carbon-90 sm:text-2xl">{t('alerts.detail.title')}</h1>
+          <p className="mt-1 flex flex-wrap items-center gap-2 text-xs text-carbon-60">
             <AlertLevelBadge
               level={alert.level}
               label={t(`alerts.level.${alert.level}`)}
@@ -130,7 +130,7 @@ export const AlertDetailPage: React.FC = () => {
       <EvidenceCard alert={alert} disclaimer={alert.disclaimer} />
 
       <section className="mt-4 no-print" aria-labelledby="alert-summary-heading">
-        <h2 id="alert-summary-heading" className="mb-2 text-sm font-bold text-slate-900">
+        <h2 id="alert-summary-heading" className="mb-2 text-sm font-bold text-carbon-90">
           {t('alerts.page.listTitle')}
         </h2>
         <AlertCard alert={alert} variant="compact" />
@@ -138,22 +138,22 @@ export const AlertDetailPage: React.FC = () => {
 
       {alert.reasons && alert.reasons.length > 0 && (
         <section className="mt-4" aria-labelledby="alert-reasons-heading">
-          <h2 id="alert-reasons-heading" className="text-sm font-bold text-slate-900">
+          <h2 id="alert-reasons-heading" className="text-sm font-bold text-carbon-90">
             {t('alerts.detail.audit')}
           </h2>
-          <ul className="mt-2 space-y-1 text-xs text-slate-700">
+          <ul className="mt-2 space-y-1 text-xs text-carbon-70">
             {alert.reasons.map((reason, index) => (
               <li
                 key={`${reason.rule || 'reason'}-${index}`}
-                className="rounded-xl border border-slate-200 bg-white px-3 py-2"
+                className="rounded-xl border border-carbon-20 bg-white px-3 py-2"
               >
-                <span className="font-mono font-semibold text-slate-900">{reason.rule || 'rule'}</span>
+                <span className="font-mono font-semibold text-carbon-90">{reason.rule || 'rule'}</span>
                 {reason.track && (
-                  <span className="ml-2 rounded border border-slate-300 px-1 py-0.5 text-[10px] font-bold uppercase text-slate-600">
+                  <span className="ml-2 rounded border border-carbon-30 px-1 py-0.5 text-[10px] font-bold uppercase text-carbon-60">
                     {reason.track}
                   </span>
                 )}
-                {reason.detail && <p className="mt-0.5 text-[11px] text-slate-600">{reason.detail}</p>}
+                {reason.detail && <p className="mt-0.5 text-[11px] text-carbon-60">{reason.detail}</p>}
               </li>
             ))}
           </ul>
@@ -163,7 +163,7 @@ export const AlertDetailPage: React.FC = () => {
       <Disclaimer className="mt-4 no-print" variant="banner" text={alert.disclaimer} />
 
       {lowBandwidth && (
-        <p className="mt-3 text-[11px] text-slate-500">{t('bandwidth.on')}</p>
+        <p className="mt-3 text-[11px] text-carbon-60">{t('bandwidth.on')}</p>
       )}
     </div>
   );

@@ -50,7 +50,7 @@ export const DataSourceBanner: React.FC<DataSourceBannerProps> = ({
   const stale = withinSlo === false || source === 'cache';
   const tone = source === 'none' || stale
     ? 'border-amber-400 bg-amber-50 text-amber-950'
-    : 'border-slate-200 bg-white text-slate-700';
+    : 'border-carbon-20 bg-white text-carbon-70';
 
   const ageText = typeof ageHours === 'number' && Number.isFinite(ageHours)
     ? t('source.staleNote', { hours: formatNumber(Math.round(ageHours), { maximumFractionDigits: 0 }) })
@@ -83,11 +83,11 @@ export const DataSourceBanner: React.FC<DataSourceBannerProps> = ({
       {offline && <span className="font-bold">{t('source.offlineNote')}</span>}
 
       {source === 'snapshot' && !offline && generatedAt && (
-        <span className="text-slate-500">{t('source.snapshotNote', { when: formatDate(generatedAt) })}</span>
+        <span className="text-carbon-60">{t('source.snapshotNote', { when: formatDate(generatedAt) })}</span>
       )}
 
       {source === 'cache' && generatedAt && (
-        <span className="text-slate-600">{t('source.cacheNote', { when: formatDate(generatedAt) })}</span>
+        <span className="text-carbon-60">{t('source.cacheNote', { when: formatDate(generatedAt) })}</span>
       )}
 
       {lineagePartial && (

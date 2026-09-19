@@ -103,14 +103,14 @@ export const UserAvatarField: React.FC<{ size?: number; editable?: boolean }> = 
           />
         ) : (
           <div
-            className="flex h-full w-full items-center justify-center rounded-full bg-gradient-to-tr from-amber-500 to-amber-300 text-slate-950 shadow-md"
+            className="flex h-full w-full items-center justify-center rounded-full bg-gradient-to-tr from-amber-500 to-amber-300 text-carbon-black shadow-md"
             style={{ fontSize: size * 0.36 }}
           >
             <span className="font-black">{initial}</span>
           </div>
         )}
         {busy && (
-          <span className="absolute inset-0 flex items-center justify-center rounded-full bg-slate-950/40">
+          <span className="absolute inset-0 flex items-center justify-center rounded-full bg-carbon-black/40">
             <span className="h-6 w-6 animate-spin rounded-full border-2 border-white/50 border-t-white" />
           </span>
         )}
@@ -123,7 +123,7 @@ export const UserAvatarField: React.FC<{ size?: number; editable?: boolean }> = 
               type="button"
               disabled={busy}
               onClick={() => fileInputRef.current?.click()}
-              className="flex items-center gap-1.5 rounded-xl bg-slate-900 px-3.5 py-2 text-xs font-extrabold text-white shadow-sm transition-all hover:bg-slate-800 disabled:opacity-50 cursor-pointer"
+              className="flex items-center gap-1.5 rounded-xl bg-carbon-90 px-3.5 py-2 text-xs font-extrabold text-white shadow-sm transition-all hover:bg-carbon-80 disabled:opacity-50 cursor-pointer"
             >
               <MaterialIcon name="photo_camera" size={15} />
               {photoURL ? 'Replace photo' : 'Upload photo'}
@@ -133,13 +133,13 @@ export const UserAvatarField: React.FC<{ size?: number; editable?: boolean }> = 
                 type="button"
                 disabled={busy}
                 onClick={handleRemove}
-                className="rounded-xl border border-slate-200 px-3 py-2 text-xs font-bold text-slate-600 transition-colors hover:bg-slate-50 disabled:opacity-50 cursor-pointer"
+                className="rounded-xl border border-carbon-20 px-3 py-2 text-xs font-bold text-carbon-60 transition-colors hover:bg-carbon-05 disabled:opacity-50 cursor-pointer"
               >
                 Remove
               </button>
             )}
           </div>
-          <p className="mt-1.5 text-[11px] leading-relaxed text-slate-400" aria-live="polite">
+          <p className="mt-1.5 text-[11px] leading-relaxed text-carbon-60" aria-live="polite">
             {stage ??
               `JPG, PNG or WebP — auto-resized to ${AVATAR_MAX_DIMENSION}×${AVATAR_MAX_DIMENSION}px & compressed, old copy replaced.`}
           </p>

@@ -117,16 +117,16 @@ export const AlertsPage: React.FC = () => {
     <div className="mx-auto w-full max-w-[1100px] px-3 pb-16 pt-6 sm:px-6">
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
-          <h1 className="text-2xl font-black tracking-tight text-slate-900 sm:text-3xl">
+          <h1 className="text-2xl font-black tracking-tight text-carbon-90 sm:text-3xl">
             {t('alerts.title')}
           </h1>
-          <p className="mt-1 max-w-2xl text-sm leading-relaxed text-slate-600">
+          <p className="mt-1 max-w-2xl text-sm leading-relaxed text-carbon-60">
             {t('alerts.standfirst')}
           </p>
         </div>
         <div className="flex flex-col items-end gap-2">
           <LanguageToggle variant="switch" />
-          <label className="flex min-h-[44px] cursor-pointer items-center gap-2 text-xs font-semibold text-slate-700">
+          <label className="flex min-h-[44px] cursor-pointer items-center gap-2 text-xs font-semibold text-carbon-70">
             <input
               type="checkbox"
               className="h-4 w-4 accent-amber-600"
@@ -136,10 +136,10 @@ export const AlertsPage: React.FC = () => {
             />
             {t('bandwidth.toggle')}
             {override === null && (
-              <span className="text-[10px] font-normal text-slate-500">(auto)</span>
+              <span className="text-[10px] font-normal text-carbon-60">(auto)</span>
             )}
           </label>
-          <span id="low-bandwidth-hint" className="max-w-[240px] text-right text-[10px] text-slate-500">
+          <span id="low-bandwidth-hint" className="max-w-[240px] text-right text-[10px] text-carbon-60">
             {t('bandwidth.toggleHint')}
           </span>
         </div>
@@ -154,11 +154,11 @@ export const AlertsPage: React.FC = () => {
           offline={typeof navigator !== 'undefined' && navigator.onLine === false}
           lineagePartial={data.warnings.some((warning) => /lineage|scene/i.test(warning))}
         />
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-slate-600">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-carbon-60">
           <button
             type="button"
             onClick={data.refresh}
-            className="inline-flex min-h-[32px] items-center gap-1 rounded-lg border border-slate-300 px-2 py-1 font-bold text-slate-800 hover:bg-slate-50"
+            className="inline-flex min-h-[32px] items-center gap-1 rounded-lg border border-carbon-30 px-2 py-1 font-bold text-carbon-80 hover:bg-carbon-05"
           >
             <MaterialIcon name="refresh" className="text-sm" aria-hidden="true" />
             {t('alerts.page.refresh')}
@@ -166,7 +166,7 @@ export const AlertsPage: React.FC = () => {
           {data.fetchedAt && (
             <span>{t('alerts.page.loadedAt', { time: formatDate(data.fetchedAt, { withTime: true }) })}</span>
           )}
-          <span aria-live="polite" className="font-semibold text-slate-800">{headline}</span>
+          <span aria-live="polite" className="font-semibold text-carbon-80">{headline}</span>
           {data.assessed !== null && (
             <span>{t('alerts.page.assessed', { count: formatNumber(data.assessed, { maximumFractionDigits: 0 }) })}</span>
           )}
@@ -179,7 +179,7 @@ export const AlertsPage: React.FC = () => {
             <button
               type="button"
               onClick={onExportCsv}
-              className="inline-flex min-h-[32px] items-center gap-1 rounded-lg border border-slate-300 px-2 py-1 font-bold text-slate-800 hover:bg-slate-50"
+              className="inline-flex min-h-[32px] items-center gap-1 rounded-lg border border-carbon-30 px-2 py-1 font-bold text-carbon-80 hover:bg-carbon-05"
             >
               <MaterialIcon name="download" className="text-sm" aria-hidden="true" />
               {t('alerts.page.csv')}
@@ -199,7 +199,7 @@ export const AlertsPage: React.FC = () => {
       {/* Map + counts */}
       <section className="mt-6" aria-labelledby="alerts-map-heading">
         <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-          <h2 id="alerts-map-heading" className="text-sm font-bold text-slate-900">
+          <h2 id="alerts-map-heading" className="text-sm font-bold text-carbon-90">
             {t('alerts.page.mapTitle')}
           </h2>
           <AlertLevelLegend
@@ -217,7 +217,7 @@ export const AlertsPage: React.FC = () => {
           onSelectDistrict={(district) => onSelectDistrict(district.name)}
           legendSlot={
             <div className="flex flex-wrap items-center gap-3">
-              <span className="font-bold text-slate-700">{t('map.legend.alerts')}:</span>
+              <span className="font-bold text-carbon-70">{t('map.legend.alerts')}:</span>
               <AlertLevelLegend
                 levels={ALERT_LEVELS.map((level) => ({
                   level,
@@ -228,21 +228,21 @@ export const AlertsPage: React.FC = () => {
             </div>
           }
         />
-        <p className="mt-1.5 text-[11px] leading-relaxed text-slate-600">{t('map.layer.note')}</p>
+        <p className="mt-1.5 text-[11px] leading-relaxed text-carbon-60">{t('map.layer.note')}</p>
       </section>
 
       {/* Filters + list/table */}
       <section className="mt-8" aria-labelledby="alerts-list-heading">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-          <h2 id="alerts-list-heading" className="text-sm font-bold text-slate-900">
+          <h2 id="alerts-list-heading" className="text-sm font-bold text-carbon-90">
             {t('alerts.page.listTitle')}
           </h2>
-          <div className="no-print inline-flex items-center rounded-xl border border-slate-300 bg-white p-0.5 text-xs font-semibold">
+          <div className="no-print inline-flex items-center rounded-xl border border-carbon-30 bg-white p-0.5 text-xs font-semibold">
             <button
               type="button"
               onClick={() => setView('cards')}
               aria-pressed={view === 'cards'}
-              className={`min-h-[36px] rounded-lg px-2.5 py-1 ${view === 'cards' ? 'bg-slate-900 text-white' : 'text-slate-700 hover:bg-slate-100'}`}
+              className={`min-h-[36px] rounded-lg px-2.5 py-1 ${view === 'cards' ? 'bg-carbon-90 text-white' : 'text-carbon-70 hover:bg-carbon-10'}`}
             >
               {t('alerts.page.viewCards')}
             </button>
@@ -250,7 +250,7 @@ export const AlertsPage: React.FC = () => {
               type="button"
               onClick={() => setView('list')}
               aria-pressed={view === 'list'}
-              className={`min-h-[36px] rounded-lg px-2.5 py-1 ${view === 'list' ? 'bg-slate-900 text-white' : 'text-slate-700 hover:bg-slate-100'}`}
+              className={`min-h-[36px] rounded-lg px-2.5 py-1 ${view === 'list' ? 'bg-carbon-90 text-white' : 'text-carbon-70 hover:bg-carbon-10'}`}
             >
               {t('alerts.page.viewList')}
             </button>
@@ -266,20 +266,20 @@ export const AlertsPage: React.FC = () => {
         />
 
         {data.loading && data.alerts.length === 0 && (
-          <p className="text-sm text-slate-600" role="status">{t('common.loading')}</p>
+          <p className="text-sm text-carbon-60" role="status">{t('common.loading')}</p>
         )}
 
         {!data.loading && data.alerts.length === 0 && (
-          <div className="rounded-2xl border border-slate-200 bg-white p-4">
-            <h3 className="text-sm font-bold text-slate-900">
+          <div className="rounded-2xl border border-carbon-20 bg-white p-4">
+            <h3 className="text-sm font-bold text-carbon-90">
               {data.source === 'none' ? t('alerts.empty.unavailable') : t('alerts.empty.title')}
             </h3>
             {data.source === 'none' && data.error && (
-              <p className="mt-1 font-mono text-[11px] text-slate-500">
+              <p className="mt-1 font-mono text-[11px] text-carbon-60">
                 {data.error}
               </p>
             )}
-            <p className="mt-1 text-xs text-slate-600">
+            <p className="mt-1 text-xs text-carbon-60">
               {suppressed > 0
                 ? t('alerts.empty.blocked', {
                   assessed: formatNumber(data.assessed ?? suppressed, { maximumFractionDigits: 0 }),
@@ -287,7 +287,7 @@ export const AlertsPage: React.FC = () => {
                 : t('alerts.empty.body')}
             </p>
             {data.assessed !== null && (
-              <p className="mt-1 text-[11px] font-semibold text-slate-500">
+              <p className="mt-1 text-[11px] font-semibold text-carbon-60">
                 {t('alerts.page.assessed', { count: formatNumber(data.assessed, { maximumFractionDigits: 0 }) })}
               </p>
             )}
@@ -298,7 +298,7 @@ export const AlertsPage: React.FC = () => {
           <div id={DISTRICT_ALERT_LAYER_ID}>
             {view === 'cards' ? (
               sorted.length === 0 ? (
-                <p className="rounded-2xl border border-slate-200 bg-white p-4 text-xs text-slate-600">
+                <p className="rounded-2xl border border-carbon-20 bg-white p-4 text-xs text-carbon-60">
                   {t('alerts.filter.results', { shown: '0', total: String(data.alerts.length) })}
                 </p>
               ) : (
@@ -329,9 +329,9 @@ export const AlertsPage: React.FC = () => {
       </section>
 
       {/* Official sources */}
-      <section className="mt-6 rounded-2xl border border-slate-200 bg-white p-4">
-        <h2 className="text-sm font-bold text-slate-900">{t('alerts.page.official')}</h2>
-        <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs font-semibold text-slate-800">
+      <section className="mt-6 rounded-2xl border border-carbon-20 bg-white p-4">
+        <h2 className="text-sm font-bold text-carbon-90">{t('alerts.page.official')}</h2>
+        <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs font-semibold text-carbon-80">
           {EMERGENCY_NUMBERS.map((entry) => (
             <li key={entry.number}>
               <a href={`tel:${entry.number}`} className="underline decoration-dotted underline-offset-2 hover:text-amber-800">
@@ -364,7 +364,7 @@ export const AlertsPage: React.FC = () => {
 
       <Disclaimer variant="banner" className="mt-4" text={data.policy?.disclaimer} />
 
-      <p className="mt-4 text-[11px] text-slate-500">
+      <p className="mt-4 text-[11px] text-carbon-60">
         {t('alerts.page.policyNote')}{' '}
         <Link to="/methodology" className="underline decoration-dotted underline-offset-2">
           {t('nav.methodology')}

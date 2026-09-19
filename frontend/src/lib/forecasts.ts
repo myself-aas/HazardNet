@@ -73,7 +73,7 @@ export interface ForecastMetadata {
  * Load freshness metadata without ever substituting a client/request timestamp.
  *
  * Three-stage fallback (mirrors loadForecasts): live /metadata → live /bulk →
- * the committed hourly snapshot. The Peak Hazard Window / Incident Ingestion
+ * the committed snapshot. The Peak Hazard Window / Incident Ingestion
  * cards therefore keep showing the latest Kaggle prediction_date even when
  * the API/store is unreachable, as long as the deployment bundle carries a
  * snapshot. Throws only when all three sources fail.
@@ -133,7 +133,7 @@ export async function fetchForecastMetadata(): Promise<ForecastMetadata> {
     // fall through to the snapshot
   }
 
-  // 3. Committed hourly snapshot (bundled with the deployment).
+  // 3. Committed snapshot (bundled with the deployment).
   const snapshotMetadata = await fetchSnapshotMetadata();
   if (snapshotMetadata.predictionDate) return snapshotMetadata;
 
@@ -218,15 +218,15 @@ export function parseBulkResponse(payload: unknown): ForecastRow[] {
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// Static hourly snapshot — the website's committed fallback data
+// Static snapshot — the website's committed fallback data
 // ─────────────────────────────────────────────────────────────────────────
-// The hourly GitHub workflow (hourly_forecast.yml) downloads the Kaggle
+// The daily GitHub workflow (daily_forecast.yml) downloads the Kaggle
 // notebook's CSV output and regenerates this file inside the website bundle
 // (scripts/build_forecast_snapshot.mjs), so every deployment of the codebase
-// ships with forecasts at most one hour behind the latest notebook run —
+// ships with forecasts at most one day behind the latest notebook run —
 // even when the forecast API/store is unreachable.
 
-/** Public path of the committed hourly snapshot (frontend/public/data/...). */
+/** Public path of the committed snapshot (frontend/public/data/...). */
 export const FORECAST_SNAPSHOT_URL = '/data/forecasts-latest.json';
 
 /**
@@ -289,7 +289,7 @@ export function parseSnapshotResponse(payload: unknown, horizon: ForecastHorizon
 }
 
 /**
- * Fetch the committed hourly snapshot for one horizon. Used as the fallback
+ * Fetch the committed snapshot for one horizon. Used as the fallback
  * when the live API is unreachable — resolves to [] (not throw) when the
  * snapshot itself is missing, so callers degrade to the static baseline.
  */
@@ -304,7 +304,7 @@ export async function fetchStaticForecastSnapshot(horizon: ForecastHorizon): Pro
 }
 
 /**
- * Freshness metadata from the committed hourly snapshot — the offline-capable
+ * Freshness metadata from the committed snapshot — the offline-capable
  * equivalent of /metadata for the Peak Hazard Window / Incident Ingestion
  * cards. Never throws: resolves to all-null when the snapshot is missing or
  * malformed. The snapshot's prediction_date wins; when absent, the newest row

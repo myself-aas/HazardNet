@@ -74,10 +74,10 @@ export const FirebaseRealtimeStatus: React.FC<FirebaseRealtimeStatusProps> = ({
     return (
       <div className={`p-2.5 rounded-xl border flex items-center justify-between text-xs font-medium ${
         status === 'connected'
-          ? 'bg-emerald-50/70 border-emerald-200 text-slate-800'
+          ? 'bg-emerald-50/70 border-emerald-200 text-carbon-80'
           : status === 'connecting'
-          ? 'bg-amber-50/70 border-amber-200 text-slate-800'
-          : 'bg-rose-50/70 border-rose-200 text-slate-800'
+          ? 'bg-amber-50/70 border-amber-200 text-carbon-80'
+          : 'bg-rose-50/70 border-rose-200 text-carbon-80'
       } ${className}`}>
         <div className="flex items-center gap-2">
           <span className="relative flex h-2.5 w-2.5 shrink-0">
@@ -89,8 +89,8 @@ export const FirebaseRealtimeStatus: React.FC<FirebaseRealtimeStatusProps> = ({
             }`} />
           </span>
           <div>
-            <span className="font-bold text-slate-900">Firebase Realtime DB</span>
-            <span className="ml-1.5 text-[11px] text-slate-500">
+            <span className="font-bold text-carbon-90">Firebase Realtime DB</span>
+            <span className="ml-1.5 text-[11px] text-carbon-60">
               {status === 'connected' ? 'Connected' : status === 'connecting' ? 'Connecting...' : 'Offline'}
             </span>
           </div>
@@ -106,7 +106,7 @@ export const FirebaseRealtimeStatus: React.FC<FirebaseRealtimeStatusProps> = ({
 
   // Full Card Variant for User Profile Menu
   return (
-    <div className={`bg-slate-50/90 border border-slate-200 rounded-xl p-4 space-y-3 font-inter text-slate-800 shadow-2xs ${className}`}>
+    <div className={`bg-carbon-05/90 border border-carbon-20 rounded-xl p-4 space-y-3 font-inter text-carbon-80 shadow-2xs ${className}`}>
       {/* Header Row */}
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2.5">
@@ -121,7 +121,7 @@ export const FirebaseRealtimeStatus: React.FC<FirebaseRealtimeStatusProps> = ({
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h4 className="text-xs font-extrabold text-slate-900">Firebase Realtime Database Status</h4>
+              <h4 className="text-xs font-extrabold text-carbon-90">Firebase Realtime Database Status</h4>
               <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold tracking-wide uppercase border ${
                 status === 'connected'
                   ? 'bg-emerald-100 text-emerald-900 border-emerald-300'
@@ -132,7 +132,7 @@ export const FirebaseRealtimeStatus: React.FC<FirebaseRealtimeStatusProps> = ({
                 {status === 'connected' ? 'CONNECTED' : status === 'connecting' ? 'CONNECTING' : 'DISCONNECTED'}
               </span>
             </div>
-            <p className="text-[11px] text-slate-500 mt-0.5">
+            <p className="text-[11px] text-carbon-60 mt-0.5">
               Live WebSocket synchronization telemetry for Realtime Database
             </p>
           </div>
@@ -144,7 +144,7 @@ export const FirebaseRealtimeStatus: React.FC<FirebaseRealtimeStatusProps> = ({
             type="button"
             onClick={() => ping()}
             disabled={isPinging}
-            className="px-2.5 py-1 text-[11px] font-bold text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-100 border border-slate-200 rounded-lg transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-1"
+            className="px-2.5 py-1 text-[11px] font-bold text-carbon-70 hover:text-carbon-90 bg-white hover:bg-carbon-10 border border-carbon-20 rounded-lg transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-1"
             title="Check round-trip latency to Firebase RTDB"
           >
             <span className={isPinging ? 'animate-spin' : ''}><MaterialIcon name="refresh" className="w-4 h-4 inline-block mr-1" /></span>
@@ -153,7 +153,7 @@ export const FirebaseRealtimeStatus: React.FC<FirebaseRealtimeStatusProps> = ({
           <button
             type="button"
             onClick={() => setShowTelemetry(!showTelemetry)}
-            className="p-1.5 text-xs text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-100 border border-slate-200 rounded-lg transition-colors cursor-pointer"
+            className="p-1.5 text-xs text-carbon-60 hover:text-carbon-90 bg-white hover:bg-carbon-10 border border-carbon-20 rounded-lg transition-colors cursor-pointer"
             title="Toggle Connection Telemetry Details"
           >
             {showTelemetry ? '▲' : '▼'}
@@ -163,8 +163,8 @@ export const FirebaseRealtimeStatus: React.FC<FirebaseRealtimeStatusProps> = ({
 
       {/* Metrics Row */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
-        <div className="bg-white border border-slate-200/80 rounded-lg p-2 flex flex-col justify-between">
-          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Live Connection</span>
+        <div className="bg-white border border-carbon-20/80 rounded-lg p-2 flex flex-col justify-between">
+          <span className="text-[10px] font-bold text-carbon-60 uppercase tracking-wider">Live Connection</span>
           <div className="flex items-center gap-1.5 mt-1">
             <span className="relative flex h-2 w-2">
               {status === 'connected' && (
@@ -174,22 +174,22 @@ export const FirebaseRealtimeStatus: React.FC<FirebaseRealtimeStatusProps> = ({
                 status === 'connected' ? 'bg-emerald-500' : status === 'connecting' ? 'bg-amber-500' : 'bg-rose-500'
               }`} />
             </span>
-            <span className="font-extrabold text-slate-900 text-xs">
+            <span className="font-extrabold text-carbon-90 text-xs">
               {status === 'connected' ? 'Active WebSocket' : status === 'connecting' ? 'Handshake...' : 'Disconnected'}
             </span>
           </div>
         </div>
 
-        <div className="bg-white border border-slate-200/80 rounded-lg p-2 flex flex-col justify-between">
-          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Latency Ping</span>
-          <div className="font-mono font-black text-slate-900 text-xs mt-1">
+        <div className="bg-white border border-carbon-20/80 rounded-lg p-2 flex flex-col justify-between">
+          <span className="text-[10px] font-bold text-carbon-60 uppercase tracking-wider">Latency Ping</span>
+          <div className="font-mono font-black text-carbon-90 text-xs mt-1">
             {latency !== null ? `${latency} ms` : '—'}
           </div>
         </div>
 
-        <div className="bg-white border border-slate-200/80 rounded-lg p-2 flex flex-col justify-between col-span-2 sm:col-span-1">
-          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Last Check</span>
-          <div className="font-mono text-xs font-semibold text-slate-700 mt-1 truncate">
+        <div className="bg-white border border-carbon-20/80 rounded-lg p-2 flex flex-col justify-between col-span-2 sm:col-span-1">
+          <span className="text-[10px] font-bold text-carbon-60 uppercase tracking-wider">Last Check</span>
+          <div className="font-mono text-xs font-semibold text-carbon-70 mt-1 truncate">
             {lastChecked || 'Initial loading'}
           </div>
         </div>
@@ -205,8 +205,8 @@ export const FirebaseRealtimeStatus: React.FC<FirebaseRealtimeStatusProps> = ({
             transition={{ duration: 0.2 }}
             className="overflow-hidden pt-1"
           >
-            <div className="bg-white border border-slate-200 rounded-lg p-3 space-y-2 text-[11px]">
-              <div className="font-bold text-slate-900 pb-1 border-b border-slate-100 flex items-center justify-between">
+            <div className="bg-white border border-carbon-20 rounded-lg p-3 space-y-2 text-[11px]">
+              <div className="font-bold text-carbon-90 pb-1 border-b border-carbon-10 flex items-center justify-between">
                 <span>Firebase RTDB Endpoint Specifications</span>
                 <button
                   type="button"
@@ -217,24 +217,24 @@ export const FirebaseRealtimeStatus: React.FC<FirebaseRealtimeStatusProps> = ({
                 </button>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1.5 font-mono text-slate-600">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1.5 font-mono text-carbon-60">
                 <div>
-                  <span className="text-slate-400">Database ID:</span>{' '}
-                  <span className="text-slate-800 font-bold">{dbName}</span>
+                  <span className="text-carbon-60">Database ID:</span>{' '}
+                  <span className="text-carbon-80 font-bold">{dbName}</span>
                 </div>
                 <div className="truncate">
-                  <span className="text-slate-400">Database URL:</span>{' '}
-                  <span className="text-slate-800 font-bold truncate" title={databaseUrl}>
+                  <span className="text-carbon-60">Database URL:</span>{' '}
+                  <span className="text-carbon-80 font-bold truncate" title={databaseUrl}>
                     {databaseUrl}
                   </span>
                 </div>
                 <div>
-                  <span className="text-slate-400">Protocol:</span>{' '}
-                  <span className="text-slate-800 font-bold">WebSocket / HTTPS WSS</span>
+                  <span className="text-carbon-60">Protocol:</span>{' '}
+                  <span className="text-carbon-80 font-bold">WebSocket / HTTPS WSS</span>
                 </div>
                 <div>
-                  <span className="text-slate-400">Server Clock Offset:</span>{' '}
-                  <span className="text-slate-800 font-bold">
+                  <span className="text-carbon-60">Server Clock Offset:</span>{' '}
+                  <span className="text-carbon-80 font-bold">
                     {serverTimeOffset !== null ? `${serverTimeOffset > 0 ? '+' : ''}${serverTimeOffset} ms` : 'Syncing'}
                   </span>
                 </div>

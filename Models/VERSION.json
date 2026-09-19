@@ -1,0 +1,26 @@
+{
+  "generatedAt": "2026-09-19T19:39:21.731Z",
+  "artifacts": [
+    {
+      "name": "hazardnet_fp32.tflite",
+      "bytes": 790504,
+      "sha256": "6b76d7ef2aab8e3f9b661afc21449b6bdf01046de9e061afaa96336287143d1c"
+    },
+    {
+      "name": "labels.json",
+      "bytes": 169,
+      "sha256": "55d5512f379299587e7730e0dd22582428e1eb023e597dab6f07eea563565514"
+    },
+    {
+      "name": "normalization_stats.json",
+      "bytes": 1184,
+      "sha256": "a37429bc2989c05a47ae6cae0ad69443d543fc75aacaacb9e33936680275df35"
+    },
+    {
+      "name": "preprocessing_config.json",
+      "bytes": 1588,
+      "sha256": "9df8ab079e03e331ac717f352737c38ca9925ae2c09f39d435cba8b99d1300c5"
+    }
+  ],
+  "version": "2.1.9+model.0bb5bdaf1789"
+}

@@ -144,14 +144,14 @@ const PublicProfilePage: React.FC = () => {
     <div className="mx-auto w-full max-w-3xl">
       <div className="mb-6 flex items-center justify-between">
         <HazardNetBrand size="sm" />
-        <Link to="/" className="rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-[11px] font-extrabold text-slate-700 shadow-xs transition-colors hover:bg-slate-50">
+        <Link to="/" className="rounded-xl border border-carbon-20 bg-white px-3.5 py-2 text-[11px] font-extrabold text-carbon-70 shadow-xs transition-colors hover:bg-carbon-05">
           Explore forecasts →
         </Link>
       </div>
 
       {state === 'loading' && (
         <div className="flex min-h-[40vh] items-center justify-center" role="status" aria-label="Loading profile">
-          <span className="h-9 w-9 animate-spin rounded-full border-[3px] border-slate-200 border-t-amber-500" />
+          <span className="h-9 w-9 animate-spin rounded-full border-[3px] border-carbon-20 border-t-amber-500" />
         </div>
       )}
 
@@ -159,23 +159,23 @@ const PublicProfilePage: React.FC = () => {
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="rounded-3xl border border-slate-200 bg-white p-6 sm:p-10 text-center shadow-sm"
+          className="rounded-3xl border border-carbon-20 bg-white p-6 sm:p-10 text-center shadow-sm"
           data-testid="profile-not-found"
         >
-          <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-slate-100 text-slate-400">
+          <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-carbon-10 text-carbon-60">
             <MaterialIcon name="person" size={26} />
           </span>
-          <h1 className="mt-4 text-lg font-black text-slate-900">
+          <h1 className="mt-4 text-lg font-black text-carbon-90">
             {state === 'offline' ? `@${username} hasn’t synced yet` : `@${username} isn’t on HazardNet… yet`}
           </h1>
-          <p className="mx-auto mt-1.5 max-w-sm text-xs leading-relaxed text-slate-500">
+          <p className="mx-auto mt-1.5 max-w-sm text-xs leading-relaxed text-carbon-60">
             {state === 'offline'
               ? 'This deployment isn’t connected to Supabase, so public profiles can’t be loaded right now.'
               : 'The username may be unclaimed or the profile is set to private.'}
           </p>
           <Link
             to="/signup"
-            className="mt-5 inline-block rounded-2xl bg-nasa-red px-5 py-3 text-xs font-extrabold text-slate-950 shadow-md transition-colors hover:bg-nasa-red-shade"
+            className="mt-5 inline-block rounded-2xl bg-nasa-red px-5 py-3 text-xs font-extrabold text-carbon-black shadow-md transition-colors hover:bg-nasa-red-shade"
           >
             Claim this username
           </Link>
@@ -186,14 +186,14 @@ const PublicProfilePage: React.FC = () => {
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="rounded-3xl border border-slate-200 bg-white p-6 sm:p-10 text-center shadow-sm"
+          className="rounded-3xl border border-carbon-20 bg-white p-6 sm:p-10 text-center shadow-sm"
           data-testid="profile-private"
         >
-          <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-slate-100 text-slate-400">
+          <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-carbon-10 text-carbon-60">
             <MaterialIcon name="lock" size={24} />
           </span>
-          <h1 className="mt-4 text-lg font-black text-slate-900">This profile is private</h1>
-          <p className="mx-auto mt-1.5 max-w-sm text-xs leading-relaxed text-slate-500">
+          <h1 className="mt-4 text-lg font-black text-carbon-90">This profile is private</h1>
+          <p className="mx-auto mt-1.5 max-w-sm text-xs leading-relaxed text-carbon-60">
             @{username} keeps their details visible only to themselves.
           </p>
         </motion.div>
@@ -204,37 +204,37 @@ const PublicProfilePage: React.FC = () => {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
-          className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm"
+          className="overflow-hidden rounded-3xl border border-carbon-20 bg-white shadow-sm"
           data-testid="public-profile-card"
         >
-          <div className="h-28 bg-gradient-to-r from-slate-900 via-slate-800 to-[#b45309]" />
+          <div className="h-28 bg-gradient-to-r from-carbon-90 via-carbon-80 to-[#b45309]" />
           <div className="px-6 pb-6 sm:px-8">
             <div className="-mt-12 mb-4">
               {profile.photoURL ? (
                 <img src={profile.photoURL} alt={profile.displayName} className="h-24 w-24 rounded-full border-4 border-white object-cover shadow-md" />
               ) : (
-                <div className="flex h-24 w-24 items-center justify-center rounded-full border-4 border-white bg-gradient-to-tr from-amber-500 to-amber-300 text-3xl font-black text-slate-950 shadow-md">
+                <div className="flex h-24 w-24 items-center justify-center rounded-full border-4 border-white bg-gradient-to-tr from-amber-500 to-amber-300 text-3xl font-black text-carbon-black shadow-md">
                   {profile.displayName.charAt(0).toUpperCase()}
                 </div>
               )}
             </div>
 
             <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-              <h1 className="text-2xl font-black tracking-tight text-slate-900">{profile.displayName}</h1>
+              <h1 className="text-2xl font-black tracking-tight text-carbon-90">{profile.displayName}</h1>
               <span className="text-sm font-bold text-amber-700">@{profile.username ?? username}</span>
             </div>
-            <p className="mt-1 text-xs font-semibold text-slate-400">
+            <p className="mt-1 text-xs font-semibold text-carbon-60">
               {profile.userRole?.replace(/_/g, ' ')}
               {profile.organization ? ` · ${profile.organization}` : ''}
               {memberSince ? ` · Member since ${memberSince}` : ''}
             </p>
 
-            {profile.bio && <p className="mt-3 max-w-xl text-sm leading-relaxed text-slate-600">{profile.bio}</p>}
+            {profile.bio && <p className="mt-3 max-w-xl text-sm leading-relaxed text-carbon-60">{profile.bio}</p>}
 
             <div className="mt-4 flex flex-wrap gap-1.5">
               {(district || division) && (
-                <span className="rounded-full bg-slate-100 px-3 py-1.5 text-[11px] font-extrabold text-slate-700">
-                  <MaterialIcon name="pin" size={12} className="mr-1 inline text-slate-500" />
+                <span className="rounded-full bg-carbon-10 px-3 py-1.5 text-[11px] font-extrabold text-carbon-70">
+                  <MaterialIcon name="pin" size={12} className="mr-1 inline text-carbon-60" />
                   {[district, division, profile.country ?? 'Bangladesh'].filter(Boolean).join(', ')}
                 </span>
               )}
@@ -254,7 +254,7 @@ const PublicProfilePage: React.FC = () => {
                 </span>
               )}
               {profile.soilType && (
-                <span className="rounded-full bg-stone-100 px-3 py-1.5 text-[11px] font-extrabold text-stone-600">
+                <span className="rounded-full bg-carbon-10 px-3 py-1.5 text-[11px] font-extrabold text-carbon-60">
                   {profile.soilType} soil
                 </span>
               )}
@@ -266,13 +266,13 @@ const PublicProfilePage: React.FC = () => {
             </div>
 
             {(SOCIALS.some(([key]) => profile[key]) || profile.website) && (
-              <div className="mt-5 flex flex-wrap gap-2 border-t border-slate-100 pt-4">
+              <div className="mt-5 flex flex-wrap gap-2 border-t border-carbon-10 pt-4">
                 {profile.website && (
                   <a
                     href={profile.website.startsWith('http') ? profile.website : `https://${profile.website}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="rounded-xl bg-slate-900 px-3.5 py-2 text-[11px] font-extrabold text-white transition-colors hover:bg-slate-800"
+                    className="rounded-xl bg-carbon-90 px-3.5 py-2 text-[11px] font-extrabold text-white transition-colors hover:bg-carbon-80"
                   >
                     🌐 Website
                   </a>
@@ -285,7 +285,7 @@ const PublicProfilePage: React.FC = () => {
                       href={url.startsWith('http') ? url : `https://${url}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="rounded-xl border border-slate-200 px-3.5 py-2 text-[11px] font-extrabold text-slate-700 transition-colors hover:bg-slate-50"
+                      className="rounded-xl border border-carbon-20 px-3.5 py-2 text-[11px] font-extrabold text-carbon-70 transition-colors hover:bg-carbon-05"
                     >
                       {label} ↗
                     </a>
@@ -297,9 +297,9 @@ const PublicProfilePage: React.FC = () => {
         </motion.article>
       )}
 
-      <p className="mt-6 text-center text-[11px] text-slate-400">
+      <p className="mt-6 text-center text-[11px] text-carbon-60">
         Every HazardNet member gets a profile like this at{' '}
-        <span className="font-bold text-slate-500">hazardnet.live/u/username</span>.{' '}
+        <span className="font-bold text-carbon-60">hazardnet.live/u/username</span>.{' '}
         <Link to="/signup" className="font-bold text-amber-700 hover:underline">
           Claim yours →
         </Link>

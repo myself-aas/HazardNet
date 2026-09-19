@@ -176,6 +176,9 @@ export function seoScore(article: BlogArticle): SeoScoreResult {
   const subheadings = (article.contentHtml.match(/<h[23][\s>]/gi) ?? []).length;
   const internalLinks = (article.contentHtml.match(/href="[^"]*(\/blogs|\/advisories|\/docs|\/analytics)[^"]*"/gi) ?? []).length;
   const externalLinks = (article.contentHtml.match(/href="https?:\/\//gi) ?? []).length;
+  // This regular expression audits blog HTML for images missing alt text; it is not an image
+  // tag a browser would render, so the detector's broken-image rule does not apply here.
+  // impeccable-disable-next-line broken-image
   const imagesWithoutAlt = (article.contentHtml.match(/<img(?![^>]*\balt=)[^>]*>/gi) ?? []).length;
   const first100Words = text.split(' ').slice(0, 100).join(' ');
   const slugKebab = article.slug.replace(/-/g, ' ');

@@ -36,25 +36,25 @@ export const PolicyPanel: React.FC<PolicyPanelProps> = ({ policy, className = ''
 
   return (
     <section
-      className={`rounded-2xl border border-slate-200 bg-white p-4 ${className}`}
+      className={`rounded-2xl border border-carbon-20 bg-white p-4 ${className}`}
       aria-labelledby="alert-policy-heading"
     >
-      <h2 id="alert-policy-heading" className="flex items-center gap-1.5 text-sm font-bold text-slate-900">
-        <MaterialIcon name="balance" className="text-base text-slate-600" aria-hidden="true" />
+      <h2 id="alert-policy-heading" className="flex items-center gap-1.5 text-sm font-bold text-carbon-90">
+        <MaterialIcon name="balance" className="text-base text-carbon-60" aria-hidden="true" />
         {t('alerts.policy.title')}
       </h2>
-      <p className="mt-1 text-[11px] font-mono text-slate-500">
+      <p className="mt-1 text-[11px] font-mono text-carbon-60">
         {policy?.version ? `${policy.version}${policy.source ? ` · ${policy.source}` : ''}` : t('common.none')}
       </p>
 
-      <p className="mt-2 text-xs leading-relaxed text-slate-700">
+      <p className="mt-2 text-xs leading-relaxed text-carbon-70">
         {t('alerts.policy.ceiling', { ceiling })}
       </p>
 
-      <h3 className="mt-3 text-[11px] font-bold uppercase tracking-wide text-slate-600">
+      <h3 className="mt-3 text-[11px] font-bold uppercase tracking-wide text-carbon-60">
         {t('alerts.policy.thresholds')}
       </h3>
-      <dl className="mt-1 grid grid-cols-2 gap-x-3 gap-y-1 text-[11px] text-slate-700">
+      <dl className="mt-1 grid grid-cols-2 gap-x-3 gap-y-1 text-[11px] text-carbon-70">
         <div>
           <dt className="font-semibold">{t('alerts.level.WATCH')}</dt>
           <dd className="font-mono">
@@ -78,7 +78,7 @@ export const PolicyPanel: React.FC<PolicyPanelProps> = ({ policy, className = ''
       </p>
 
       {Array.isArray(policy?.overridden) && policy.overridden.length > 0 && (
-        <details className="mt-2 text-[11px] text-slate-600">
+        <details className="mt-2 text-[11px] text-carbon-60">
           <summary className="cursor-pointer font-semibold">overrides</summary>
           <ul className="mt-1 list-disc pl-4 font-mono">
             {policy.overridden.map((entry) => (
@@ -118,10 +118,10 @@ export const AlertLevelLadder: React.FC<{ maxAutoLevel?: string | null; classNam
 
   return (
     <section
-      className={`rounded-2xl border border-slate-200 bg-white p-4 ${className}`}
+      className={`rounded-2xl border border-carbon-20 bg-white p-4 ${className}`}
       aria-labelledby="alert-ladder-heading"
     >
-      <h2 id="alert-ladder-heading" className="text-sm font-bold text-slate-900">
+      <h2 id="alert-ladder-heading" className="text-sm font-bold text-carbon-90">
         {t('alerts.legend.title')}
       </h2>
       <ul className="mt-2 space-y-2">
@@ -135,10 +135,10 @@ export const AlertLevelLadder: React.FC<{ maxAutoLevel?: string | null; classNam
                 description={t(`alerts.level.${level}.desc`)}
                 size="sm"
               />
-              <span className="flex-1 text-[11px] leading-snug text-slate-700">
+              <span className="flex-1 text-[11px] leading-snug text-carbon-70">
                 {t(`alerts.level.${level}.desc`)}
                 {level !== 'NO_ALERT' && (
-                  <span className="ml-1 font-semibold text-slate-500">
+                  <span className="ml-1 font-semibold text-carbon-60">
                     {canAuto ? `· ${t('alerts.card.autoPublished')}` : `· ${t('alerts.card.requiresReview')}`}
                   </span>
                 )}

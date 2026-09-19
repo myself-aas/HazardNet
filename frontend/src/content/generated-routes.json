@@ -1,6 +1,6 @@
 {
   "schema": "hazardnet-generated-routes/v1",
-  "generated_at": "2026-09-18T12:58:12.505Z",
+  "generated_at": "2026-09-19T19:50:12.432Z",
   "generated_by": "scripts/build_content_engine.mjs",
   "origin": "https://www.hazardnet.live",
   "inputs": {
@@ -19,23 +19,23 @@
       "built_from": [
         {
           "path": "data/hindcast/reports/amphan-2020.json",
-          "sha256": "9c8fca5dadd8e180302c4a99fd900ac0ee7dfd63f5c41dcfdec7f3ba045dffd0"
+          "sha256": "79e3e0bffc763143fbff2c7d189b78205c8a79137e4accaddcd4250f8985cd65"
         },
         {
           "path": "data/hindcast/reports/eastern-flood-2024.json",
-          "sha256": "8f4a5046277b5d4d7cd1c5daf221e6832226a7e5dbc1755b25be735da811ae76"
+          "sha256": "4fc4b3be2aaa6a77b0bd5caae5926a06ba6f745bc059e0a2a7f2290373c154a2"
         },
         {
           "path": "data/hindcast/reports/mocha-2023.json",
-          "sha256": "f45e06339931e66f893248db2c8f0428b2151e877e425b12b149e6cce7575df6"
+          "sha256": "2fd7d44073cfbe98fdf6c1d3c3fe76537e40f8c7407e71b265bbaaa262a87802"
         },
         {
           "path": "data/hindcast/reports/northeast-flood-2025.json",
-          "sha256": "aabc3c45675b74f93ff97b8e5040ccb159a9b9a88739381c48df3a2e0c744b8a"
+          "sha256": "0dabc045b674322df8075d2350a3d4a8ce9fe263a28871e8ddb0b64a89cd1a43"
         },
         {
           "path": "data/hindcast/reports/yaas-2021.json",
-          "sha256": "f2d55d2d7b6e7940a41a3487146c2d2f49f369de4372e532f66d166bbfcd5822"
+          "sha256": "c4a9e846eefa848dfc1baedbf6744ba86da45a767fcd94f0d563d357503a2860"
         }
       ]
     }
@@ -138,7 +138,7 @@
         {
           "h2": "Shared rules across every class",
           "bullets": [
-            "The eight classes above are the model's entire output vocabulary (`Models/labels.json`), enforced on ingest. A hazard outside the list is not mapped onto a nearest neighbour — an unrecognised label is rejected and reported.",
+            "The eight classes above are the model's entire output vocabulary, enforced on ingest. A hazard outside the list is not mapped onto a nearest neighbour — an unrecognised label is rejected and reported.",
             "Confidence bins (Certain ≥ 0.85, Probable 0.70–0.85, Uncertain < 0.70) describe the model's own certainty in the class it chose. They are not accuracy, and no accuracy figure is published because no held-out evaluation has been run on real labels.",
             "Nothing above the WATCH level can be published automatically while no calibration map exists, and nothing at all can be published while the pipeline stamps no model version — the alert engine records that as `publication_blocked` rather than issuing the alert."
           ]
@@ -147,7 +147,7 @@
       "faqs": [
         {
           "question": "Why only eight classes?",
-          "answer": "Eight is the model's output vocabulary (Models/labels.json), fixed by the training data and enforced on ingest. A hazard outside that list is not mapped onto a nearest neighbour: the event loader rejects and reports the label instead, and the forecast ingest refuses the row."
+          "answer": "Eight is the model's output vocabulary, fixed by the training data and enforced on ingest. A hazard outside that list is not mapped onto a nearest neighbour: the event loader rejects and reports the label instead, and the forecast ingest refuses the row."
         },
         {
           "question": "Which class is most likely in the current run?",
@@ -174,7 +174,7 @@
         "priority": 0.7
       },
       "appShell": true,
-      "updated": "2026-09-18",
+      "updated": "2026-09-19",
       "breadcrumb": [
         {
           "name": "Hindcast validation",
@@ -234,7 +234,7 @@
             "Alarm band: 0.500 on the class severity score, at 7-day and 15-day horizons. The truth set below names the districts the cited assessments report as affected. Districts nobody named are UNKNOWN, not negatives: the same reports do not claim to have surveyed all 64 districts, and the 2020 reporting was constrained by the COVID-19 response. Counting them as negatives would manufacture a false-alarm rate."
           ],
           "bullets": [
-            "The CNN was not evaluated. Severity and class come from the independent physics cross-check (scripts/physics_severity.py) run on reanalysis drivers. The CNN was not re-run: its t2 tensor needs Sentinel-1/2 + Landsat + ERA5-Land bands over Earth Engine for the historical window. These are not model-skill numbers.",
+            "The CNN was not evaluated. Severity and class come from the independent physics cross-check run on reanalysis drivers. The CNN was not re-run: its t2 tensor needs Sentinel-1/2 + Landsat + ERA5-Land bands over Earth Engine for the historical window. These are not model-skill numbers.",
             "Scores are shown to three decimals; the unrounded values, the per-district rows and the input hashes are in the machine-readable copy this page is generated from."
           ],
           "links": [
@@ -906,11 +906,11 @@
         {
           "h2": "Reproducing this page",
           "paragraphs": [
-            "Every number here is recomputed in CI from the committed episode files and driver series: `python -m hindcast.cli check --require-reports` re-runs each report and fails if a single value differs, and `node scripts/build_model_performance.mjs --check` fails if the artifact this page is generated from no longer matches those reports. The machine-readable copy is linked below."
+            "Every number here is recomputed in CI from the committed episode files and driver series. The machine-readable copy is linked below."
           ],
           "links": [
             {
-              "label": "model-performance.json (machine-readable)",
+              "label": "Machine-readable copy",
               "href": "/data/model-performance.json"
             }
           ]
@@ -977,13 +977,13 @@
         {
           "h2": "The independent physics cross-check",
           "paragraphs": [
-            "Both terms are required and must be different quantities. The pipeline this project inherited passed the horizon total twice, which made a wet fortnight indistinguishable from a three-day burst; the corrected signature is pinned by scripts/tests/test_physics_severity.py.",
+            "Both terms are required and must be different quantities. The pipeline this project inherited passed the horizon total twice, which made a wet fortnight indistinguishable from a three-day burst.",
             "Drivers: precipitation accumulated over the horizon (P_total) · wettest 24 hours in that horizon (P_peak).",
             "clip(x) clamps a term to [0, 1] — max(0, min(1, x)) — which is how every formula in the pipeline bounds its terms. Each term is clipped before it is weighted, so no single driver can run away with a score."
           ],
           "bullets": [
             "Expression: 0.5*clip(P_total/300) + 0.5*clip(P_peak/100)",
-            "That expression is executed against scripts/physics_severity.py by scripts/tests/test_content_engine.py — this page cannot silently describe a formula the pipeline no longer runs."
+            "That expression is executed against the pipeline’s own implementation by the content tests in CI — this page cannot silently describe a formula the pipeline no longer runs."
           ]
         },
         {
@@ -1092,7 +1092,7 @@
           ],
           "bullets": [
             "Expression: 0.5*clip(P_total/300) + 0.5*clip(P_peak/100)",
-            "That expression is executed against scripts/physics_severity.py by scripts/tests/test_content_engine.py — this page cannot silently describe a formula the pipeline no longer runs."
+            "That expression is executed against the pipeline’s own implementation by the content tests in CI — this page cannot silently describe a formula the pipeline no longer runs."
           ]
         },
         {
@@ -1133,7 +1133,7 @@
           "bullets": [
             "Open-Meteo forecast (rainfall intensity)",
             "ERA5-Land daily aggregates",
-            "FFWC bulletins (hydrological context, ingested as text)"
+            "FFWC river levels — an ingestion adapter exists and is tested, but no FFWC record is supplied to any run in this deployment, so this score carries no hydrology: it is rainfall intensity alone"
           ],
           "paragraphs": [
             "Ground-truth reports (district, hazard, horizon, date, what was observed) are the only route by which this project can publish skill metrics. The contact page reaches the maintainers."
@@ -1203,7 +1203,7 @@
           ],
           "bullets": [
             "Expression: 0.7*clip((W-50)/150) + 0.3*clip(P_total/300)",
-            "That expression is executed against scripts/physics_severity.py by scripts/tests/test_content_engine.py — this page cannot silently describe a formula the pipeline no longer runs."
+            "That expression is executed against the pipeline’s own implementation by the content tests in CI — this page cannot silently describe a formula the pipeline no longer runs."
           ]
         },
         {
@@ -1244,7 +1244,7 @@
           "bullets": [
             "Open-Meteo forecast (wind, rainfall)",
             "ERA5-Land daily aggregates",
-            "BMD bulletins (warnings, ingested as text)"
+            "BMD bulletins — a parser exists and is tested, but no bulletin is supplied to any run in this deployment, so nothing published here is derived from a BMD warning"
           ],
           "paragraphs": [
             "Ground-truth reports (district, hazard, horizon, date, what was observed) are the only route by which this project can publish skill metrics. The contact page reaches the maintainers."
@@ -1314,7 +1314,7 @@
           ],
           "bullets": [
             "Expression: 0.6*clip((T_max-25)/20) + 0.4*clip((200-P_total)/200)",
-            "That expression is executed against scripts/physics_severity.py by scripts/tests/test_content_engine.py — this page cannot silently describe a formula the pipeline no longer runs."
+            "That expression is executed against the pipeline’s own implementation by the content tests in CI — this page cannot silently describe a formula the pipeline no longer runs."
           ]
         },
         {
@@ -1423,7 +1423,7 @@
           ],
           "bullets": [
             "Expression: 0.7*clip((T_max-30)/15) + 0.3*clip(duration/5)",
-            "That expression is executed against scripts/physics_severity.py by scripts/tests/test_content_engine.py — this page cannot silently describe a formula the pipeline no longer runs."
+            "That expression is executed against the pipeline’s own implementation by the content tests in CI — this page cannot silently describe a formula the pipeline no longer runs."
           ]
         },
         {
@@ -1531,7 +1531,7 @@
           ],
           "bullets": [
             "Expression: 0.7*clip((16-T_min)/10) + 0.3*clip(duration/5)",
-            "That expression is executed against scripts/physics_severity.py by scripts/tests/test_content_engine.py — this page cannot silently describe a formula the pipeline no longer runs."
+            "That expression is executed against the pipeline’s own implementation by the content tests in CI — this page cannot silently describe a formula the pipeline no longer runs."
           ]
         },
         {
@@ -1638,7 +1638,7 @@
           ],
           "bullets": [
             "Expression: 0.4*clip((T_max-25)/15) + 0.3*clip((W-5)/20) + 0.3*clip(ET/6)",
-            "That expression is executed against scripts/physics_severity.py by scripts/tests/test_content_engine.py — this page cannot silently describe a formula the pipeline no longer runs."
+            "That expression is executed against the pipeline’s own implementation by the content tests in CI — this page cannot silently describe a formula the pipeline no longer runs."
           ]
         },
         {
@@ -1747,7 +1747,7 @@
           ],
           "bullets": [
             "Expression: 0.6*clip((W-50)/100) + 0.4*clip(P_peak/100)",
-            "That expression is executed against scripts/physics_severity.py by scripts/tests/test_content_engine.py — this page cannot silently describe a formula the pipeline no longer runs."
+            "That expression is executed against the pipeline’s own implementation by the content tests in CI — this page cannot silently describe a formula the pipeline no longer runs."
           ]
         },
         {
@@ -1786,7 +1786,7 @@
           "bullets": [
             "Open-Meteo forecast (wind, rainfall)",
             "ERA5-Land daily aggregates",
-            "BMD bulletins (warnings, ingested as text)"
+            "BMD bulletins — a parser exists and is tested, but no bulletin is supplied to any run in this deployment, so nothing published here is derived from a BMD warning"
           ],
           "paragraphs": [
             "Ground-truth reports (district, hazard, horizon, date, what was observed) are the only route by which this project can publish skill metrics. The contact page reaches the maintainers."

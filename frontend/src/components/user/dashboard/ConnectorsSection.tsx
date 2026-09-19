@@ -40,7 +40,7 @@ const ConnectorCard: React.FC<{
   return (
     <div
       className={`group relative flex flex-col rounded-2xl border p-4 transition-all ${
-        connected ? 'border-emerald-200 bg-emerald-50/40 shadow-xs' : 'border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm'
+        connected ? 'border-emerald-200 bg-emerald-50/40 shadow-xs' : 'border-carbon-20 bg-white hover:border-carbon-30 hover:shadow-sm'
       }`}
       data-testid={`connector-${connector.key}`}
     >
@@ -57,12 +57,12 @@ const ConnectorCard: React.FC<{
           </span>
         )}
       </div>
-      <h4 className="mt-3 text-sm font-extrabold text-slate-900">{connector.name}</h4>
-      <p className="mt-1 flex-1 text-[11.5px] leading-relaxed text-slate-500">{connector.tagline}</p>
+      <h4 className="mt-3 text-sm font-extrabold text-carbon-90">{connector.name}</h4>
+      <p className="mt-1 flex-1 text-[11.5px] leading-relaxed text-carbon-60">{connector.tagline}</p>
 
       {connector.asksFor && configOpen && !connected && (
         <div className="mt-3 space-y-1.5">
-          <label htmlFor={`connector-config-${connector.key}`} className="text-[10px] font-bold uppercase tracking-wide text-slate-500">
+          <label htmlFor={`connector-config-${connector.key}`} className="text-[10px] font-bold uppercase tracking-wide text-carbon-60">
             {connector.asksFor.label}
           </label>
           <input
@@ -82,7 +82,7 @@ const ConnectorCard: React.FC<{
             type="button"
             disabled={busy}
             onClick={() => onDisconnect(connector)}
-            className="flex-1 rounded-xl border border-slate-200 bg-white px-3 py-2 text-[11px] font-extrabold text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-50 cursor-pointer"
+            className="flex-1 rounded-xl border border-carbon-20 bg-white px-3 py-2 text-[11px] font-extrabold text-carbon-70 transition-colors hover:bg-carbon-05 disabled:opacity-50 cursor-pointer"
           >
             Disconnect
           </button>
@@ -91,7 +91,7 @@ const ConnectorCard: React.FC<{
             type="button"
             disabled={busy}
             onClick={startConnect}
-            className="flex-1 rounded-xl bg-slate-900 px-3 py-2 text-[11px] font-extrabold text-white transition-colors hover:bg-slate-800 disabled:opacity-50 cursor-pointer"
+            className="flex-1 rounded-xl bg-carbon-90 px-3 py-2 text-[11px] font-extrabold text-white transition-colors hover:bg-carbon-80 disabled:opacity-50 cursor-pointer"
           >
             {busy ? '…' : configOpen && connector.asksFor ? 'Save & connect' : 'Connect'}
           </button>
@@ -101,13 +101,13 @@ const ConnectorCard: React.FC<{
           target="_blank"
           rel="noopener noreferrer"
           title="Documentation"
-          className="rounded-xl border border-slate-200 p-2 text-slate-400 transition-colors hover:text-slate-700"
+          className="rounded-xl border border-carbon-20 p-2 text-carbon-60 transition-colors hover:text-carbon-70"
         >
           <MaterialIcon name="info" size={13} />
         </a>
       </div>
       {connected && state?.connectedAt && (
-        <p className="mt-1.5 text-[10px] text-slate-400">Since {new Date(state.connectedAt).toLocaleDateString()}</p>
+        <p className="mt-1.5 text-[10px] text-carbon-60">Since {new Date(state.connectedAt).toLocaleDateString()}</p>
       )}
     </div>
   );
@@ -177,12 +177,12 @@ export const ConnectorsSection: React.FC = () => {
         subtitle="Wire HazardNet into the tools you already use — forecasts in, alerts out."
         icon={<MaterialIcon name="hub" size={18} />}
         actions={
-          <span className="rounded-full bg-slate-100 px-3 py-1 text-[11px] font-extrabold text-slate-700">
+          <span className="rounded-full bg-carbon-10 px-3 py-1 text-[11px] font-extrabold text-carbon-70">
             {connectedCount} connected
           </span>
         }
       >
-        <p className="text-xs leading-relaxed text-slate-500">
+        <p className="text-xs leading-relaxed text-carbon-60">
           Connectors store only non-secret identifiers (webhook URLs, phone numbers) on your profile. Secrets for
           production pipelines live server-side. The built-in connectors — Open-Meteo and Email Digest — work out of
           the box.
@@ -192,7 +192,7 @@ export const ConnectorsSection: React.FC = () => {
       {loading ? (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" aria-busy="true">
           {Array.from({ length: 6 }).map((_, index) => (
-            <div key={index} className="h-44 animate-pulse rounded-2xl bg-slate-100" />
+            <div key={index} className="h-44 animate-pulse rounded-2xl bg-carbon-10" />
           ))}
         </div>
       ) : (
@@ -200,7 +200,7 @@ export const ConnectorsSection: React.FC = () => {
           const connectors = CONNECTOR_CATALOG.filter((connector) => connector.category === category);
           return (
             <section key={category}>
-              <h3 className="mb-2.5 text-[11px] font-extrabold uppercase tracking-wider text-slate-400">{category}</h3>
+              <h3 className="mb-2.5 text-[11px] font-extrabold uppercase tracking-wider text-carbon-60">{category}</h3>
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {connectors.map((connector) => (
                   <ConnectorCard

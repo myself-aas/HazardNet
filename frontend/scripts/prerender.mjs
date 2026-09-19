@@ -236,6 +236,42 @@ function renderFaqs(faqs) {
  * The fallback body injected into #root. React replaces it on mount, so it is
  * both the no-JavaScript page and the first paint on slow connections.
  */
+/**
+ * A ledger cell written as `@review-date:/model-performance` is not copy: it is a reference to
+ * the review date that route carries, resolved at build time.
+ *
+ * Why it exists: the front door's knowledge-product ledger lists each product with the date its
+ * own page carries, and `/model-performance`'s date is *derived* — `build_content_engine.mjs`
+ * sets it to the newest hindcast report's build date. So every time the Hindcast workflow runs,
+ * that date moves, and a date typed into the ledger by hand goes stale. The drift is caught by
+ * `__tests__/publicSurface.test.js`, but catching it is not the same as not having it: the cell
+ * is now read from the same route table the page it describes is built from, in both renderers.
+ */
+const REVIEW_DATE_REF = /^@review-date:(\/\S+)$/;
+
+let reviewDates = new Map();
+
+function resolveReviewDates(sections) {
+  if (!Array.isArray(sections)) return sections;
+  return sections.map((section) => {
+    if (!section.table || !Array.isArray(section.table.rows)) return section;
+    return {
+      ...section,
+      table: {
+        ...section.table,
+        rows: section.table.rows.map((row) =>
+          row.map((cell) => {
+            const match = typeof cell === 'string' ? cell.match(REVIEW_DATE_REF) : null;
+            if (!match) return cell;
+            // A reference to a route with no review date renders as absent, never as a guess.
+            return reviewDates.get(match[1]) ?? 'review date not reported';
+          })
+        ),
+      },
+    };
+  });
+}
+
 function renderBody(route) {
   const parts = [
     `<!--HN_STATIC_START-->`,
@@ -246,7 +282,7 @@ function renderBody(route) {
     // The front door is the page whose job is to say who is behind the numbers, so the
     // attribution block ships in its static HTML rather than only in the hydrated app.
     route.path === '/' ? renderAttribution(attribution) : '',
-    renderSections(route.sections),
+    renderSections(resolveReviewDates(route.sections)),
     renderFaqs(route.faqs),
     route.updated
       ? `<p class="hn-meta">Content reviewed ${escapeHtml(route.updated)}. HazardNet is decision support, not an official warning service — see the <a href="/methodology">methodology</a> for scope and limitations.</p>`
@@ -335,34 +371,59 @@ function renderHead(route) {
  * so a visitor does not see a jarring flash before React mounts.
  */
 const STATIC_STYLES = `<style>
-  .hn-static{max-width:60rem;margin:0 auto;padding:5.5rem 1.25rem 3rem;font-family:"Inter","Public Sans Web",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:#17171b;line-height:1.65}
-  .hn-static h1{font-size:1.9rem;line-height:1.2;margin:0 0 .75rem;font-weight:800}
-  .hn-static h2{font-size:1.15rem;margin:2rem 0 .5rem;font-weight:700}
-  .hn-static p{margin:.6rem 0;color:#334155;overflow-wrap:anywhere}
-  .hn-static .hn-lead{font-size:1.03rem;color:#1e293b}
-  .hn-static ul{margin:.5rem 0 1rem;padding-left:1.15rem;color:#334155}
+  /* Static fallback shell. Colours, type and shape are NASA Horizon Design System
+     tokens: carbon neutrals for text, Public Sans Web for body, Inter for headings,
+     1px rules, square corners, 2px on small controls. Values are literals here because
+     this CSS ships before the app's stylesheet does, and this document must not name
+     the tree it was built from. */
+  .hn-static{max-width:60rem;margin:0 auto;padding:5.5rem 1.25rem 3rem;background:#ffffff;font-family:"Public Sans Web","Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-size:1rem;color:#17171b;line-height:1.62}
+  .hn-static h1,.hn-static h2,.hn-static h3,.hn-static summary,.hn-static th{font-family:"Inter","Helvetica Neue",Helvetica,Arial,sans-serif}
+  .hn-static h1{font-size:1.9rem;line-height:1.15;letter-spacing:-.02em;margin:0 0 .75rem;font-weight:700}
+  .hn-static h2{font-size:1.15rem;line-height:1.35;letter-spacing:-.02em;margin:2rem 0 .5rem;font-weight:700}
+  .hn-static p{margin:.6rem 0;color:#444447;overflow-wrap:anywhere}
+  .hn-static .hn-lead{font-size:1.03rem;line-height:1.5;color:#17171b}
+  .hn-static ul{margin:.5rem 0 1rem;padding-left:1.15rem;color:#444447}
   .hn-static li{margin:.3rem 0}
   .hn-static a{color:#0b3d91}
-  .hn-static .hn-callout{border-left:3px solid #ea6f24;background:#fce3ca;padding:.7rem .9rem;border-radius:0;font-size:.94rem}
-  .hn-static .hn-meta{font-size:.8rem;color:#64748b;border-top:1px solid #e2e8f0;padding-top:.9rem;margin-top:2rem}
+  .hn-static .hn-callout{border-left:2px solid #ea6f24;background:#fce3ca;color:#3b1b00;padding:.7rem .9rem;border-radius:0;font-size:.94rem}
+  .hn-static .hn-meta{font-size:.8rem;line-height:1.75;letter-spacing:.025em;color:#58585b;border-top:1px solid #e3e3e3;padding-top:.9rem;margin-top:2rem}
+  .hn-static .hn-meta-line{font-size:.8rem;line-height:1.75;letter-spacing:.025em;color:#58585b}
   .hn-static .hn-tablewrap{overflow-x:auto;margin:.75rem 0 1rem}
   .hn-static table{width:100%;border-collapse:collapse;font-size:.92rem}
   .hn-static li,.hn-static td,.hn-static th{overflow-wrap:anywhere}
-  .hn-static caption{text-align:left;font-size:.8rem;color:#64748b;padding-bottom:.35rem}
-  .hn-static th,.hn-static td{border-bottom:1px solid #e2e8f0;padding:.45rem .6rem .45rem 0;text-align:left;vertical-align:top}
-  .hn-static .hn-state{display:inline-block;border:1px solid #cbd5e1;border-radius:999px;padding:.1rem .5rem;font-size:.75rem;font-weight:700;white-space:nowrap}
+  .hn-static caption{text-align:left;font-size:.8rem;line-height:1.75;letter-spacing:.025em;color:#58585b;padding-bottom:.35rem}
+  .hn-static th,.hn-static td{border-bottom:1px solid #e3e3e3;padding:.45rem .6rem .45rem 0;text-align:left;vertical-align:top}
+  .hn-static th{font-weight:700}
+  .hn-static .hn-state{display:inline-block;border:1px solid #b9b9bb;border-radius:2px;background:#ffffff;color:#17171b;padding:.1rem .5rem;font-size:.75rem;font-weight:700;white-space:nowrap}
   .hn-static .hn-state-fresh{border-color:#47da84;background:#f6f6f6;color:#17171b}
   .hn-static .hn-state-stale{border-color:#ea6f24;background:#fce3ca;color:#3b1b00}
   .hn-static .hn-state-failing{border-color:#f64137;background:#fce3ca;color:#b60109}
-  .hn-static .hn-state-unknown{border-color:#cbd5e1;background:#f8fafc;color:#475569}
-  .hn-static .hn-reason{display:block;font-weight:400;font-size:.8rem;color:#64748b}
-  .hn-static .hn-path{display:block;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.72rem;color:#94a3b8}
-  .hn-static .hn-meta-line{font-size:.8rem;color:#64748b}
+  .hn-static .hn-state-unknown{border-color:#b9b9bb;background:#f6f6f6;color:#444447}
+  .hn-static .hn-reason{display:block;font-weight:400;font-size:.8rem;color:#58585b}
   .hn-static .hn-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-  .hn-static .hn-loading{font-size:.8rem;color:#94a3b8}
-  .hn-static details{border-bottom:1px solid #e2e8f0;padding:.55rem 0}
+  .hn-static .hn-loading{font-size:.8rem;color:#58585b}
+  .hn-static details{border-bottom:1px solid #e3e3e3;padding:.55rem 0}
   .hn-static summary{font-weight:600;cursor:pointer}
-  @media (prefers-color-scheme:dark){body{background:#17171b}.hn-static{color:#e3e3e3}.hn-static p,.hn-static ul,.hn-static li{color:#d1d1d1}.hn-static .hn-callout{background:#2e2e32;border-left-color:#ea6f24}.hn-static a{color:#288bff}}
+  /* Dark scheme. Every rule restates its own background next to its text colour so the
+     pairing stays legible to a reader (and to a static contrast checker) that does not
+     cascade media queries. Ratios on the stated backgrounds are all >= 4.5:1. */
+  @media (prefers-color-scheme:dark){
+    body{background:#17171b}
+    .hn-static{background:#17171b;color:#e3e3e3}
+    .hn-static p,.hn-static ul,.hn-static li{color:#d1d1d1}
+    .hn-static .hn-lead{color:#e3e3e3}
+    .hn-static a{color:#288bff}
+    .hn-static .hn-callout{background:#2e2e32;border-left-color:#ea6f24;color:#fce3ca}
+    .hn-static .hn-meta{background:#17171b;border-top-color:#444447;color:#b9b9bb}
+    .hn-static .hn-meta-line,.hn-static caption,.hn-static .hn-reason,.hn-static .hn-loading{color:#b9b9bb}
+    .hn-static th,.hn-static td{border-bottom-color:#444447}
+    .hn-static details{border-bottom-color:#444447}
+    .hn-static .hn-state{background:#2e2e32;border-color:#58585b;color:#e3e3e3}
+    .hn-static .hn-state-fresh{background:#2e2e32;border-color:#47da84;color:#e3e3e3}
+    .hn-static .hn-state-stale{background:#5c2b00;border-color:#ea6f24;color:#fce3ca}
+    .hn-static .hn-state-failing{background:#241000;border-color:#f64137;color:#ff5c52}
+    .hn-static .hn-state-unknown{background:#2e2e32;border-color:#58585b;color:#b9b9bb}
+  }
 </style>`;
 
 function buildHtml(route) {
@@ -606,8 +667,8 @@ function renderStatusPanel(artifact) {
   if (!artifact || !Array.isArray(artifact.sources) || artifact.sources.length === 0) {
     return (
       '<section aria-labelledby="hn-status-right-now"><h2 id="hn-status-right-now">Right now</h2>' +
-      '<p role="status">The freshness artifact (<code>frontend/public/data/freshness.json</code>) is not ' +
-      'present in this build, so this page cannot state the age of the data the deployment ships. ' +
+      '<p role="status">The freshness artifact is not present in this build, so this page ' +
+      'cannot state the age of the data the deployment ships. ' +
       'That is not a statement that the data is fresh.</p></section>'
     );
   }
@@ -620,7 +681,7 @@ function renderStatusPanel(artifact) {
         '<tr>' +
         `<th scope="row">${renderInline(source.label ?? source.id)}` +
         (source.reason ? `<span class="hn-reason">${renderInline(source.reason)}</span>` : '') +
-        `<span class="hn-path">${escapeHtml(source.artifact ?? '')}</span></th>` +
+        '</th>' +
         `<td>${stateBadge(source.state)}</td>` +
         `<td>${ageText(source.age_hours)}</td>` +
         `<td>${typeof source.slo_hours === 'number' ? `${source.slo_hours} h` : '—'}</td>` +
@@ -679,9 +740,7 @@ function renderStatusPanel(artifact) {
     '<section aria-labelledby="hn-status-right-now">' +
     '<h2 id="hn-status-right-now">Right now</h2>' +
     `<p>${renderInline(artifact.what_this_is ?? 'A derived statement about the committed data artifacts this deployment ships.')}</p>` +
-    `<p class="hn-meta-line">Derived ${escapeHtml(builtAt)} by <code>${escapeHtml(
-      String(artifact.generated_by ?? 'unknown producer')
-    )}</code>. ${artifact.overall?.counts?.fresh ?? 0} of ${artifact.sources.length} sources within their SLO.</p>` +
+    `<p class="hn-meta-line">Derived ${escapeHtml(builtAt)}. ${artifact.overall?.counts?.fresh ?? 0} of ${artifact.sources.length} sources within their SLO.</p>` +
     `<table><caption class="hn-sr">Each data source this deployment ships, its state, its age and the SLO it is measured against.</caption>` +
     '<thead><tr><th scope="col">Source</th><th scope="col">State</th><th scope="col">Age</th>' +
     '<th scope="col">SLO</th><th scope="col">Latest data</th></tr></thead>' +
@@ -773,6 +832,15 @@ if (new URL(origin).host !== CANONICAL_HOST) {
 
 const generated = loadGeneratedRoutes();
 const blogArticleCount = loadBlogIndex().length;
+
+// Every route this build publishes, so a ledger reference can be resolved against the same
+// table the referenced page is rendered from.
+reviewDates = new Map(
+  [...site.routes, ...(site.appScreens ?? []), ...generated.routes].map((route) => [
+    route.path,
+    typeof route.updated === 'string' ? route.updated : null,
+  ])
+);
 
 const prerendered = [];
 for (const route of site.routes) {

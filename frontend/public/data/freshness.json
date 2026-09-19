@@ -19,7 +19,7 @@
   "sources": [
     {
       "id": "forecast_ingest",
-      "label": "Forecast ingest run (backend/data/forecasts/manifest.json)",
+      "label": "Forecast ingest run",
       "artifact": "backend/data/forecasts/manifest.json",
       "state": "fresh",
       "reason": null,
@@ -36,7 +36,7 @@
     },
     {
       "id": "forecast_snapshot",
-      "label": "Website forecast snapshot (frontend/public/data/forecasts-latest.json)",
+      "label": "Website forecast snapshot",
       "artifact": "frontend/public/data/forecasts-latest.json",
       "state": "fresh",
       "reason": null,
@@ -52,7 +52,7 @@
     },
     {
       "id": "alert_engine",
-      "label": "Alert snapshot (frontend/public/data/alerts-latest.json)",
+      "label": "Alert snapshot",
       "artifact": "frontend/public/data/alerts-latest.json",
       "state": "fresh",
       "reason": null,
@@ -70,7 +70,7 @@
     },
     {
       "id": "site_probe",
-      "label": "Site-health probe (data/site-health/latest.json, every 30 min on the default branch)",
+      "label": "Site-health probe (every 30 min)",
       "artifact": "data/site-health/latest.json",
       "generated_at": null,
       "age_hours": null,

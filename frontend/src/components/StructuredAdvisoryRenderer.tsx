@@ -61,8 +61,8 @@ const PriorityRankedListItem = ({ node, children, ...props }: any) => {
   const isUrgent = /urgent|critical|emergency|immediate/i.test(cleanText);
   const isWarning = /warning|severe|watch/i.test(cleanText);
   
-  let bgClass = "bg-slate-50 border-slate-200 text-slate-700";
-  let icon = <Info className="w-4 h-4 text-slate-500 mt-0.5 shrink-0" />;
+  let bgClass = "bg-carbon-05 border-carbon-20 text-carbon-70";
+  let icon = <Info className="w-4 h-4 text-carbon-60 mt-0.5 shrink-0" />;
   
   if (isUrgent) {
     bgClass = "bg-rose-50 border-rose-200 text-rose-900";
@@ -80,7 +80,7 @@ const PriorityRankedListItem = ({ node, children, ...props }: any) => {
       </div>
       {/* 2. Enhance the markdown template engine to automatically append source attribution labels */}
       {sourceAttribution && (
-        <span className="shrink-0 ml-2 px-2 py-0.5 bg-white/60 border border-black/10 rounded text-[10px] font-mono font-extrabold text-slate-600 self-start mt-0.5">
+        <span className="shrink-0 ml-2 px-2 py-0.5 bg-white/60 border border-black/10 rounded text-[10px] font-mono font-extrabold text-carbon-60 self-start mt-0.5">
           Source: {sourceAttribution}
         </span>
       )}
@@ -122,13 +122,13 @@ export const StructuredAdvisoryRenderer: React.FC<StructuredAdvisoryRendererProp
   return (
     <div className="space-y-6">
       {/* PRINT-ONLY ADVISORY DISPATCH HEADER */}
-      <div className="print-only mb-4 p-3 bg-white border border-slate-300 rounded-xl space-y-2">
+      <div className="print-only mb-4 p-3 bg-white border border-carbon-30 rounded-xl space-y-2">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <div className="text-[8pt] font-mono font-bold text-slate-500 uppercase">
+            <div className="text-[8pt] font-mono font-bold text-carbon-60 uppercase">
               HAZARDNET AI DISASTER SYNTHESIS • BANGLADESH AGROMET DESK
             </div>
-            <div className="text-sm font-black text-slate-900">
+            <div className="text-sm font-black text-carbon-90">
               Operational Agricultural Hazard Directive
             </div>
             <div className="flex items-center gap-2 mt-1">
@@ -153,11 +153,11 @@ export const StructuredAdvisoryRenderer: React.FC<StructuredAdvisoryRendererProp
 
       {/* ISSUE SECTION */}
       <div className="space-y-2">
-        <h3 className="font-extrabold text-xs text-slate-500 uppercase tracking-wider font-mono flex items-center gap-2">
+        <h3 className="font-extrabold text-xs text-carbon-60 uppercase tracking-wider font-mono flex items-center gap-2">
           <AlertTriangle className="w-4 h-4 text-amber-500" />
           Issue Detected
         </h3>
-        <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-sm">
+        <div className="bg-white border border-carbon-20/90 rounded-2xl p-4 shadow-sm">
           <ReactMarkdown components={customComponents}>{issueText}</ReactMarkdown>
         </div>
       </div>
@@ -166,7 +166,7 @@ export const StructuredAdvisoryRenderer: React.FC<StructuredAdvisoryRendererProp
       <div className="space-y-2">
         <button 
           onClick={() => setImpactExpanded(!impactExpanded)}
-          className="w-full flex items-center justify-between font-extrabold text-xs text-slate-500 uppercase tracking-wider font-mono hover:text-slate-700 transition-colors screen-only"
+          className="w-full flex items-center justify-between font-extrabold text-xs text-carbon-60 uppercase tracking-wider font-mono hover:text-carbon-70 transition-colors screen-only"
         >
           <span className="flex items-center gap-2">
             <Info className="w-4 h-4 text-blue-500" />
@@ -176,7 +176,7 @@ export const StructuredAdvisoryRenderer: React.FC<StructuredAdvisoryRendererProp
         </button>
 
         {/* Print-only heading */}
-        <h3 className="print-only font-extrabold text-xs text-slate-500 uppercase tracking-wider font-mono flex items-center gap-2">
+        <h3 className="print-only font-extrabold text-xs text-carbon-60 uppercase tracking-wider font-mono flex items-center gap-2">
           <Info className="w-4 h-4 text-blue-500" />
           Vulnerability & Impact Analysis
         </h3>
@@ -184,25 +184,25 @@ export const StructuredAdvisoryRenderer: React.FC<StructuredAdvisoryRendererProp
         {/* Screen Interactive view */}
         <div className="screen-only">
           {impactExpanded ? (
-            <div className="bg-slate-50 border border-slate-200/90 rounded-2xl p-4 shadow-inner animate-in slide-in-from-top-2 fade-in duration-200">
+            <div className="bg-carbon-05 border border-carbon-20/90 rounded-2xl p-4 shadow-inner animate-in slide-in-from-top-2 fade-in duration-200">
               <ReactMarkdown components={customComponents}>{impactMd}</ReactMarkdown>
             </div>
           ) : (
-            <div className="bg-slate-50/50 border border-slate-200/50 rounded-2xl p-4 shadow-sm text-sm text-slate-500 italic cursor-pointer hover:bg-slate-50" onClick={() => setImpactExpanded(true)}>
+            <div className="bg-carbon-05/50 border border-carbon-20/50 rounded-2xl p-4 shadow-sm text-sm text-carbon-60 italic cursor-pointer hover:bg-carbon-05" onClick={() => setImpactExpanded(true)}>
               Click to expand long-form vulnerability analysis...
             </div>
           )}
         </div>
 
         {/* Print-only always-expanded view */}
-        <div className="print-only bg-slate-50 border border-slate-200/90 rounded-2xl p-4">
+        <div className="print-only bg-carbon-05 border border-carbon-20/90 rounded-2xl p-4">
           <ReactMarkdown components={customComponents}>{impactMd}</ReactMarkdown>
         </div>
       </div>
 
       {/* MITIGATION SECTION */}
       <div className="space-y-2">
-        <h3 className="font-extrabold text-xs text-slate-500 uppercase tracking-wider font-mono flex items-center gap-2">
+        <h3 className="font-extrabold text-xs text-carbon-60 uppercase tracking-wider font-mono flex items-center gap-2">
           <ShieldCheck className="w-4 h-4 text-emerald-500" />
           Mitigation & Actions
         </h3>
@@ -212,8 +212,8 @@ export const StructuredAdvisoryRenderer: React.FC<StructuredAdvisoryRendererProp
       </div>
 
       {/* MAIN SOURCE ATTRIBUTION */}
-      <div className="flex justify-end pt-2 border-t border-slate-100">
-        <span className="px-3 py-1 rounded-full text-[10px] font-mono font-extrabold bg-slate-100 text-slate-600 border border-slate-200 shadow-sm">
+      <div className="flex justify-end pt-2 border-t border-carbon-10">
+        <span className="px-3 py-1 rounded-full text-[10px] font-mono font-extrabold bg-carbon-10 text-carbon-60 border border-carbon-20 shadow-sm">
           Report Source: {providerSource}
         </span>
       </div>

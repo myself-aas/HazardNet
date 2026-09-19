@@ -145,12 +145,12 @@ const Stat: React.FC<{
   value: string;
   sub?: React.ReactNode;
 }> = ({ icon, label, value, sub }) => (
-  <div className="flex items-start gap-3 rounded-lg bg-slate-50 dark:bg-slate-800/60 p-3">
-    <div className="mt-0.5 text-slate-500 dark:text-slate-400">{icon}</div>
+  <div className="flex items-start gap-3 rounded-lg bg-carbon-05 dark:bg-carbon-80/60 p-3">
+    <div className="mt-0.5 text-carbon-60 dark:text-carbon-40">{icon}</div>
     <div className="min-w-0">
-      <div className="text-[11px] uppercase tracking-wide text-slate-500 dark:text-slate-400">{label}</div>
-      <div className="text-sm font-semibold text-slate-800 dark:text-slate-100 leading-tight">{value}</div>
-      {sub && <div className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{sub}</div>}
+      <div className="text-[11px] uppercase tracking-wide text-carbon-60 dark:text-carbon-40">{label}</div>
+      <div className="text-sm font-semibold text-carbon-80 dark:text-carbon-10 leading-tight">{value}</div>
+      {sub && <div className="text-xs text-carbon-60 dark:text-carbon-40 mt-0.5">{sub}</div>}
     </div>
   </div>
 );
@@ -160,17 +160,17 @@ const Section: React.FC<{ title: string; icon?: React.ReactNode; children: React
 }) => {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-900/40 overflow-hidden">
+    <div className="rounded-xl border border-carbon-20 dark:border-carbon-70 bg-white/70 dark:bg-carbon-90/40 overflow-hidden">
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="w-full flex items-center justify-between gap-2 px-4 py-3 text-left hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+        className="w-full flex items-center justify-between gap-2 px-4 py-3 text-left hover:bg-carbon-05 dark:hover:bg-carbon-80/50 transition-colors"
       >
-        <div className="flex items-center gap-2 text-sm font-semibold text-slate-800 dark:text-slate-100">
+        <div className="flex items-center gap-2 text-sm font-semibold text-carbon-80 dark:text-carbon-10">
           {icon}
           {title}
         </div>
-        {open ? <ChevronUp size={18} className="text-slate-500" /> : <ChevronDown size={18} className="text-slate-500" />}
+        {open ? <ChevronUp size={18} className="text-carbon-60" /> : <ChevronDown size={18} className="text-carbon-60" />}
       </button>
       <AnimatePresence initial={false}>
         {open && (
@@ -204,7 +204,7 @@ export const WeatherPanel: React.FC<WeatherPanelProps> = ({
   const SunMoon = isDay ? Sun : Moon;
 
   return (
-    <div className="w-full space-y-4 text-slate-800 dark:text-slate-100">
+    <div className="w-full space-y-4 text-carbon-80 dark:text-carbon-10">
       {/* ── Header / current conditions ───────────────────────────── */}
       <div className="rounded-2xl bg-gradient-to-br from-sky-500 to-indigo-600 text-white p-5 shadow-lg relative overflow-hidden">
         <div className="flex items-start justify-between gap-3 relative z-10">
@@ -344,13 +344,13 @@ export const WeatherPanel: React.FC<WeatherPanelProps> = ({
                   <stop offset="95%" stopColor="#f59e0b" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" className="dark:opacity-20" />
+              <CartesianGrid strokeDasharray="3 3" stroke="#d1d1d1" className="dark:opacity-20" />
               <XAxis
                 dataKey="time"
                 tick={{ fontSize: 11 }}
                 interval="preserveStartEnd"
                 minTickGap={30}
-                stroke="#94a3b8"
+                stroke="#959599"
               />
               <YAxis
                 yAxisId="temp"
@@ -367,7 +367,7 @@ export const WeatherPanel: React.FC<WeatherPanelProps> = ({
                 unit="mm"
               />
               <Tooltip
-                contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #e2e8f0' }}
+                contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #d1d1d1' }}
               />
               <Area
                 yAxisId="temp"
@@ -404,8 +404,8 @@ export const WeatherPanel: React.FC<WeatherPanelProps> = ({
         <div className="h-40 w-full mt-4">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={hours48} margin={{ top: 8, right: 8, left: -18, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" className="dark:opacity-20" />
-              <XAxis dataKey="time" tick={{ fontSize: 11 }} interval="preserveStartEnd" minTickGap={30} stroke="#94a3b8" />
+              <CartesianGrid strokeDasharray="3 3" stroke="#d1d1d1" className="dark:opacity-20" />
+              <XAxis dataKey="time" tick={{ fontSize: 11 }} interval="preserveStartEnd" minTickGap={30} stroke="#959599" />
               <YAxis yAxisId="wind" tick={{ fontSize: 11 }} stroke="#10b981" unit="" />
               <YAxis yAxisId="hum" orientation="right" tick={{ fontSize: 11 }} stroke="#06b6d4" unit="%" />
               <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8 }} />
@@ -423,7 +423,7 @@ export const WeatherPanel: React.FC<WeatherPanelProps> = ({
         <div className="mt-2 overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-left text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700">
+              <tr className="text-left text-xs uppercase tracking-wide text-carbon-60 dark:text-carbon-40 border-b border-carbon-20 dark:border-carbon-70">
                 <th className="py-2 pr-3">Day</th>
                 <th className="py-2 px-3">Cond.</th>
                 <th className="py-2 px-3 text-right">Hi / Lo</th>
@@ -441,7 +441,7 @@ export const WeatherPanel: React.FC<WeatherPanelProps> = ({
                 return (
                   <tr
                     key={String(d.iso)}
-                    className="border-b border-slate-100 dark:border-slate-800 last:border-0"
+                    className="border-b border-carbon-10 dark:border-carbon-80 last:border-0"
                   >
                     <td className="py-2 pr-3 font-medium whitespace-nowrap">{String(d.date)}</td>
                     <td className="py-2 px-3">
@@ -458,7 +458,7 @@ export const WeatherPanel: React.FC<WeatherPanelProps> = ({
                     <td className="py-2 px-3 text-right font-mono text-xs">
                       {mm(d.precipitation_sum)}
                       {typeof d.precipitation_probability_max === 'number' && (
-                        <span className="text-slate-400 ml-1">({Math.round(d.precipitation_probability_max)}%)</span>
+                        <span className="text-carbon-60 ml-1">({Math.round(d.precipitation_probability_max)}%)</span>
                       )}
                     </td>
                     <td className="py-2 px-3 text-right font-mono text-xs">{mm(d.rain_sum)}</td>
@@ -466,7 +466,7 @@ export const WeatherPanel: React.FC<WeatherPanelProps> = ({
                     <td className="py-2 px-3 text-right font-mono text-xs">
                       {msToKmh(d.wind_speed_10m_max)}
                       {typeof d.wind_direction_10m_dominant === 'number' && (
-                        <span className="text-slate-400 ml-1">
+                        <span className="text-carbon-60 ml-1">
                           {windDirectionLabel(d.wind_direction_10m_dominant)}
                         </span>
                       )}
@@ -502,7 +502,7 @@ export const WeatherPanel: React.FC<WeatherPanelProps> = ({
       </Section>
 
       {/* ── Footer / source ─────────────────────────────────────── */}
-      <div className="text-center text-[11px] text-slate-400 dark:text-slate-500 pt-2 pb-1">
+      <div className="text-center text-[11px] text-carbon-60 dark:text-carbon-50 pt-2 pb-1">
         Data from <a href="https://open-meteo.com/" target="_blank" rel="noreferrer" className="underline hover:text-sky-500">Open-Meteo</a>
         {' · '}
         {data._meta.license}

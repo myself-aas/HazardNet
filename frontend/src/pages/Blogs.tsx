@@ -134,20 +134,20 @@ export const Blogs: React.FC = () => {
       <Breadcrumbs />
 
       {/* Header Banner */}
-      <div className="bg-white border border-slate-200/90 rounded-3xl p-6 md:p-8 shadow-md relative overflow-hidden space-y-3">
+      <div className="bg-white border border-carbon-20/90 rounded-3xl p-6 md:p-8 shadow-md relative overflow-hidden space-y-3">
         <div className="absolute top-0 left-0 w-full h-1 bg-nasa-red"></div>
         <div className="flex items-center gap-2">
           <span className="px-3 py-1 rounded-full text-[10px] font-mono font-extrabold bg-amber-50 text-amber-900 border border-amber-300 uppercase tracking-wider shadow-2xs">
             Research Insights & Field Reports
           </span>
-          <span className="text-slate-300">•</span>
-          <span className="text-xs text-slate-500 font-semibold">HazardNet Knowledge Base</span>
+          <span className="text-carbon-30">•</span>
+          <span className="text-xs text-carbon-60 font-semibold">HazardNet Knowledge Base</span>
         </div>
 
-        <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">
+        <h1 className="text-2xl md:text-3xl font-black text-carbon-90 tracking-tight">
           HazardNet AI Blog & Field Deployment Studies
         </h1>
-        <p className="text-slate-600 text-xs md:text-sm leading-relaxed max-w-3xl">
+        <p className="text-carbon-60 text-xs md:text-sm leading-relaxed max-w-3xl">
           Technical deep-dives, remote sensing methodologies, field deployment case studies, and edge WebAssembly optimizations written by the HazardNet research team.
         </p>
 
@@ -155,7 +155,7 @@ export const Blogs: React.FC = () => {
           <Link
             to="/dashboard/blog"
             data-testid="blog-studio-btn"
-            className="inline-flex items-center gap-2 rounded-2xl bg-slate-900 px-4 py-2.5 text-xs font-black text-white shadow-md transition-colors hover:bg-slate-700"
+            className="inline-flex items-center gap-2 rounded-2xl bg-carbon-90 px-4 py-2.5 text-xs font-black text-white shadow-md transition-colors hover:bg-carbon-70"
           >
             <MaterialIcon name="doc" className="w-4 h-4" /> Blog Studio — write & manage articles
           </Link>
@@ -165,7 +165,7 @@ export const Blogs: React.FC = () => {
       {/* Published articles from the Blog Studio (each at /blogs/:slug) */}
       {liveArticles.length > 0 && (
         <section className="space-y-3" data-testid="live-articles">
-          <h2 className="text-sm font-black text-slate-900 uppercase tracking-wider font-mono flex items-center gap-2">
+          <h2 className="text-sm font-black text-carbon-90 uppercase tracking-wider font-mono flex items-center gap-2">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
             Latest articles
           </h2>
@@ -179,14 +179,14 @@ export const Blogs: React.FC = () => {
                 <div className="space-y-2">
                   <div className="flex items-center justify-between text-[10px] font-mono font-bold">
                     <span className="px-2 py-0.5 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200">{article.category}</span>
-                    <span className="text-slate-400">{readingTimeMinutes(article.contentHtml)} min read</span>
+                    <span className="text-carbon-60">{readingTimeMinutes(article.contentHtml)} min read</span>
                   </div>
-                  <h3 className="text-sm font-black text-slate-900 group-hover:text-amber-900 leading-snug">{article.title}</h3>
-                  <p className="text-xs text-slate-600 line-clamp-2">{article.excerpt}</p>
+                  <h3 className="text-sm font-black text-carbon-90 group-hover:text-amber-900 leading-snug">{article.title}</h3>
+                  <p className="text-xs text-carbon-60 line-clamp-2">{article.excerpt}</p>
                 </div>
-                <div className="text-[10px] font-mono text-slate-400 flex items-center justify-between">
+                <div className="text-[10px] font-mono text-carbon-60 flex items-center justify-between">
                   <span>{article.authorName}</span>
-                  <span className="font-black text-slate-900 group-hover:text-amber-900">Read → /blogs/{article.slug}</span>
+                  <span className="font-black text-carbon-90 group-hover:text-amber-900">Read → /blogs/{article.slug}</span>
                 </div>
               </Link>
             ))}
@@ -207,8 +207,8 @@ export const Blogs: React.FC = () => {
             onClick={() => setFilterCategory(cat)}
             className={`px-4 py-2 rounded-xl whitespace-nowrap transition-all duration-200 cursor-pointer ${
               filterCategory === cat
-                ? 'bg-nasa-red text-slate-950 font-black shadow-md shadow-amber-500/20'
-                : 'bg-white text-slate-700 border border-slate-200/90 hover:bg-slate-50 hover:border-slate-300 shadow-2xs'
+                ? 'bg-nasa-red text-carbon-black font-black shadow-md shadow-amber-500/20'
+                : 'bg-white text-carbon-70 border border-carbon-20/90 hover:bg-carbon-05 hover:border-carbon-30 shadow-2xs'
             }`}
           >
             {cat}
@@ -229,28 +229,28 @@ export const Blogs: React.FC = () => {
               key={post.id}
               whileHover={{ y: -4 }}
               onClick={() => setSelectedPost(post)}
-              className="bg-white border border-slate-200/90 rounded-3xl p-6 shadow-sm hover:border-amber-400/80 hover:shadow-xl transition-all duration-300 cursor-pointer flex flex-col justify-between gap-5 group relative overflow-hidden"
+              className="bg-white border border-carbon-20/90 rounded-3xl p-6 shadow-sm hover:border-amber-400/80 hover:shadow-xl transition-all duration-300 cursor-pointer flex flex-col justify-between gap-5 group relative overflow-hidden"
             >
               <div className="space-y-3">
                 <div className="flex items-center justify-between text-[11px] font-mono">
-                  <span className="px-2.5 py-1 rounded-lg font-extrabold bg-slate-100 text-slate-800 border border-slate-200/80 group-hover:bg-amber-100 group-hover:border-amber-200 transition-colors">
+                  <span className="px-2.5 py-1 rounded-lg font-extrabold bg-carbon-10 text-carbon-80 border border-carbon-20/80 group-hover:bg-amber-100 group-hover:border-amber-200 transition-colors">
                     {post.category}
                   </span>
-                  <span className="text-slate-500 font-medium">{post.readTime}</span>
+                  <span className="text-carbon-60 font-medium">{post.readTime}</span>
                 </div>
 
-                <h2 className="text-base font-black text-slate-900 group-hover:text-amber-900 transition-colors leading-snug">
+                <h2 className="text-base font-black text-carbon-90 group-hover:text-amber-900 transition-colors leading-snug">
                   {post.title}
                 </h2>
 
-                <p className="text-xs text-slate-600 leading-relaxed line-clamp-3 font-normal">
+                <p className="text-xs text-carbon-60 leading-relaxed line-clamp-3 font-normal">
                   {post.summary}
                 </p>
               </div>
 
-              <div className="pt-4 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
-                <span className="font-medium text-slate-500">{post.date}</span>
-                <span className="font-black text-slate-900 group-hover:text-amber-900 transition-colors flex items-center gap-1">
+              <div className="pt-4 border-t border-carbon-10 flex items-center justify-between text-[11px] text-carbon-60">
+                <span className="font-medium text-carbon-60">{post.date}</span>
+                <span className="font-black text-carbon-90 group-hover:text-amber-900 transition-colors flex items-center gap-1">
                   <span>Read Full Article</span>
                   <span className="group-hover:translate-x-1 transition-transform">→</span>
                 </span>
@@ -267,19 +267,19 @@ export const Blogs: React.FC = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[10001] bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4"
+            className="fixed inset-0 z-[10001] bg-carbon-black/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4"
           >
             <motion.div
               initial={{ opacity: 0, scale: 0.92, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.92, y: 20 }}
               transition={{ type: 'spring', stiffness: 350, damping: 25 }}
-              className="bg-white border border-slate-200 rounded-3xl max-w-3xl w-full max-h-[85vh] overflow-y-auto p-6 md:p-8 space-y-6 shadow-2xl relative text-slate-900"
+              className="bg-white border border-carbon-20 rounded-3xl max-w-3xl w-full max-h-[85vh] overflow-y-auto p-6 md:p-8 space-y-6 shadow-2xl relative text-carbon-90"
             >
               
               <button
                 onClick={() => setSelectedPost(null)}
-                className="absolute top-5 right-5 p-2 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-extrabold text-xs transition-colors cursor-pointer"
+                className="absolute top-5 right-5 p-2 px-3 rounded-xl bg-carbon-10 hover:bg-carbon-20 text-carbon-80 font-extrabold text-xs transition-colors cursor-pointer"
               >
                 ✕ Close
               </button>
@@ -289,23 +289,23 @@ export const Blogs: React.FC = () => {
                   <span className="px-2.5 py-1 rounded-lg font-extrabold bg-amber-100 text-amber-950 border border-amber-200">
                     {selectedPost.category}
                   </span>
-                  <span className="text-slate-300">•</span>
-                  <span className="text-slate-500 font-semibold">{selectedPost.date}</span>
-                  <span className="text-slate-300">•</span>
-                  <span className="text-slate-500 font-semibold">{selectedPost.readTime}</span>
+                  <span className="text-carbon-30">•</span>
+                  <span className="text-carbon-60 font-semibold">{selectedPost.date}</span>
+                  <span className="text-carbon-30">•</span>
+                  <span className="text-carbon-60 font-semibold">{selectedPost.readTime}</span>
                 </div>
 
-                <h2 className="text-xl md:text-2xl font-black text-slate-900 tracking-tight">
+                <h2 className="text-xl md:text-2xl font-black text-carbon-90 tracking-tight">
                   {selectedPost.title}
                 </h2>
 
-                <p className="text-xs text-slate-700 font-extrabold flex items-center gap-1.5">
+                <p className="text-xs text-carbon-70 font-extrabold flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-amber-500"></span>
                   <span>By {selectedPost.author}</span>
                 </p>
               </div>
 
-              <div className="space-y-4 text-xs md:text-sm text-slate-700 leading-relaxed border-t border-b border-slate-100 py-6">
+              <div className="space-y-4 text-xs md:text-sm text-carbon-70 leading-relaxed border-t border-b border-carbon-10 py-6">
                 {selectedPost.content.map((paragraph, idx) => (
                   <p key={idx}>{paragraph}</p>
                 ))}
@@ -314,7 +314,7 @@ export const Blogs: React.FC = () => {
               <div className="flex flex-wrap items-center justify-between gap-4 pt-2">
                 <div className="flex flex-wrap gap-2">
                   {selectedPost.tags.map((tag, idx) => (
-                    <span key={idx} className="px-2.5 py-1 rounded-lg text-[10px] font-mono font-bold bg-slate-100 border border-slate-200 text-slate-700">
+                    <span key={idx} className="px-2.5 py-1 rounded-lg text-[10px] font-mono font-bold bg-carbon-10 border border-carbon-20 text-carbon-70">
                       #{tag}
                     </span>
                   ))}
@@ -324,7 +324,7 @@ export const Blogs: React.FC = () => {
                   <Link
                     to={`/?district=${selectedPost.relatedDistrict}`}
                     onClick={() => setSelectedPost(null)}
-                    className="px-4 py-2.5 rounded-xl bg-slate-900 text-white text-xs font-extrabold hover:bg-slate-800 transition-all flex items-center gap-1.5 shadow-md cursor-pointer"
+                    className="px-4 py-2.5 rounded-xl bg-carbon-90 text-white text-xs font-extrabold hover:bg-carbon-80 transition-all flex items-center gap-1.5 shadow-md cursor-pointer"
                   >
                     <MaterialIcon name="satellite_alt" className="w-4 h-4 inline-block mr-1" /> View on GIS Map
                   </Link>
