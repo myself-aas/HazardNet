@@ -209,6 +209,9 @@ const GLIDE_PREFIX_HAZARD = {
   WF: 'Wildfire',
 };
 
+// `options` is part of the Callers' surface today even with no call-site reading it yet — keep the contract
+// explicit and do not let the importer's behaviour depend on whether the argument was threaded.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function buildArchive(exportPayload, options = {}) {
   const rows = Array.isArray(exportPayload) ? exportPayload : exportPayload?.events;
   if (!Array.isArray(rows)) throw new Error('archive: expected an array of events or {events: [...]}');
