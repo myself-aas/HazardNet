@@ -300,6 +300,21 @@ jobs:
         # The value is in the runtime, not the input: a model converted against a
         # newer TFLite schema loads fine under tensorflow and fails here, which is
         # the failure the API would have had in production.
+        #
+        # Two traps this step has already fallen into. Both look like reasonable
+        # code, so they stay written down here and pinned by
+        # scripts/tests/test_model_intake_smoke.py, which runs this exact block
+        # against a stub interpreter:
+        #   * `get_input_details()[0]['shape']` is a numpy int32 array, so
+        #     `isinstance(d, int)` is False for every dimension. A comprehension
+        #     guarded on it silently turned [1,10,64,64,15] into [1,1,1,1,1] and
+        #     set_tensor failed with "Dimension mismatch. Got 1 but expected 10".
+        #     Read `shape_signature` — it carries the dynamic batch dim as -1 —
+        #     and coerce through int().
+        #   * Only output[0] was read, so a candidate whose severity head went
+        #     non-finite would have passed. Every output is now read and required
+        #     to be finite and non-empty, which is what validate_model_bundle.py
+        #     also checks.
         run: |
           python - <<'PY'
           import glob
@@ -317,24 +332,52 @@ jobs:
               interp = Interpreter(model_path=path)
               interp.allocate_tensors()
               details = interp.get_input_details()[0]
-              shape = [d if isinstance(d, int) and d > 0 else 1 for d in details['shape']]
+              signature = details.get('shape_signature')
+              if signature is None or len(signature) == 0:
+                  signature = details['shape']
+              shape = [int(d) if int(d) > 0 else 1 for d in signature]
               dtype = details['dtype']
-              value = np.zeros(shape, dtype=dtype)
-              if dtype in (np.float32, np.float64):
-                  scale, zero = details.get('quantization', (0.0, 0))
+              scale, zero_point = details.get('quantization', (0.0, 0))
+              if np.issubdtype(dtype, np.integer):
+                  # A quantized input's zero is its zero point, not 0.
+                  value = np.full(shape, int(zero_point), dtype=dtype)
+              else:
+                  value = np.zeros(shape, dtype=dtype)
                   if scale:
-                      value = ((value / scale) + zero).astype(dtype)
+                      value = ((value / scale) + zero_point).astype(dtype)
               interp.set_tensor(details['index'], value)
               interp.invoke()
-              out = interp.get_tensor(interp.get_output_details()[0]['index'])
-              finite = bool(np.isfinite(out).all())
+              outputs = interp.get_output_details()
+              described = []
+              finite = True
+              for out in outputs:
+                  arr = interp.get_tensor(out['index'])
+                  ok = arr.size > 0 and bool(np.isfinite(arr).all())
+                  finite = finite and ok
+                  described.append(f"{out['name']}{tuple(int(x) for x in arr.shape)}")
               print(f'{os.path.basename(path)}: input {shape} {dtype.__name__} -> '
-                    f'output {out.shape} finite={finite}')
+                    f'{len(outputs)} output(s) {", ".join(described)} finite={finite}')
               if not finite:
-                  print(f'::error::{os.path.basename(path)} produced non-finite output')
+                  print(f'::error::{os.path.basename(path)} produced a non-finite or empty output')
                   sys.exit(1)
           print(f'✅ smoke-tested {len(models)} artifact(s) under {os.environ["TFLITE_PIN"]}')
           PY
+
+      - name: Run the smoke test's own contract tests
+        # The block above is inline Python in a workflow file, which no collector picks
+        # up. It reached CI untested once and failed on a numpy integer type that
+        # `isinstance(d, int)` does not recognise, so the shape derivation, the
+        # quantization handling, the every-output-head-is-finite rule and the refusals are
+        # now pinned by scripts/tests/test_model_intake_smoke.py — which lifts the block
+        # out of this file rather than copying it. That file runs in the scripts suite on
+        # every push against a stub interpreter; the real-runtime case is skipped there
+        # because tflite-runtime is not installed, and this job is where it is, so this is
+        # the run that exercises the committed bundle under the pinned wheel.
+        run: |
+          # The harness pins come from the same file the scripts suite installs, so the
+          # two runs of these tests cannot drift apart.
+          pip install $(grep -E '^(pytest|pyyaml)==' scripts/requirements-pipeline.txt)
+          python -m pytest scripts/tests/test_model_intake_smoke.py -q
 
       - name: Preview the promotion decision
         # Dry run only: `promote` without --write evaluates and prints, and never

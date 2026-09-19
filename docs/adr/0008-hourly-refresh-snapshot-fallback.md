@@ -8,7 +8,8 @@
   data"); user report "site does not refresh from the updated forecasted CSV
   despite manual notebook runs"
 - **Related:** ADR 0002 (forecast consolidation), ADR 0003 (deploy topology),
-  ADR 0004 (retire legacy weekly pipeline), `docs/ops/hourly_forecast.md`
+  ADR 0004 (retire legacy weekly pipeline), ADR 0013 (the daily Kaggle pull that
+  replaced the hourly job), `docs/ops/hourly_forecast.md` (deleted with it)
 
 ## Context
 

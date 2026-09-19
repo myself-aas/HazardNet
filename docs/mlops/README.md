@@ -55,17 +55,25 @@ and both stay visible.
 | `scripts/mlops/evaluate.py` | The prediction↔outcome join, scoring, lead time | `test_mlops_evaluate_drift.py` |
 | `scripts/mlops/drift.py` | PSI over the published driver columns, class shares, severity | `test_mlops_evaluate_drift.py` |
 | `scripts/mlops/cli.py` | The commands above | via the suites plus `test_mlops_artifacts.py` |
-| `scripts/mlops/retrain_state.py` | The retrain run's contract: marker, heartbeat, manifest, state machine, manifest gate | `test_retrain_automation.py`, `test_retrain_notebook.py` |
-| `scripts/mlops/colab_session.py` | The Colab CLI wrapped for unattended use: timeouts, actionable errors, detached launch | `test_retrain_automation.py` |
-| `scripts/mlops/retrain_cli.py` | `start`, `watch`, `collect`, `validate`, `mark`, `status` | `test_retrain_automation.py` |
+| `scripts/mlops/retrain_state.py` | The training run's contract: version handshake, run manifest, the manifest gate | `test_retrain_notebook.py`, `test_model_handshake.py` |
+| `scripts/gen-model-version.mjs` | The Node writer of the same handshake, for CI and the verify gates | `test_model_handshake.py` |
+| `.github/workflows/model_intake.yml` | The PR gate's inline smoke test: every `.tflite` loaded under `tflite-runtime` and fed a zero input | `test_model_intake_smoke.py` |
 
 Everything is stdlib-only and offline: the same code runs on a GitHub runner, in CI
-with no network, and on an analyst's laptop. `colab_session.py` is the one module that
-shells out — it drives the Colab CLI — and its tests drive a stub `colab` binary on
-`PATH`, so even that is exercised without a Google account. The parts that genuinely
-need a model runtime or Earth Engine credentials (quantizing, verifying against
-observed outcomes) are not implemented here and are not simulated to look implemented
-— see [`RETRAIN_AND_PROMOTION.md`](RETRAIN_AND_PROMOTION.md).
+with no network, and on an analyst's laptop. The parts that genuinely need a model
+runtime or Earth Engine credentials (quantizing, verifying against observed outcomes)
+are not implemented here and are not simulated to look implemented — see
+[`RETRAIN_AND_PROMOTION.md`](RETRAIN_AND_PROMOTION.md).
+
+The one piece of model-side logic that lives in a workflow rather than a module is the
+gate's smoke test, and it is tested where it lives: `test_model_intake_smoke.py` lifts
+the Python block out of `model_intake.yml` and runs it against a stub interpreter, so a
+change to the step is a change to code under test. It earned that treatment the hard way
+— the step's first run failed because `get_input_details()['shape']` is a numpy `int32`
+array and `isinstance(d, int)` is False for every element of one, which collapsed the
+input to all-ones and made a healthy bundle look unloadable. The same file runs the block
+against the committed artifacts in the gate job, which is the only job that installs
+`tflite-runtime`.
 
 ## The FP32/INT8 question
 
@@ -83,15 +91,21 @@ reports as artifacts) and quarterly (the retrain brief, which opens or updates a
 issue). It never promotes a model and never stamps a calibrated probability: both of
 those are human steps, by design.
 
-The retrain itself is automated as of 2026-09-19 by three workflows that hand off
-through a committed run marker — `model_retrain.yml` (monthly: provision a Colab T4
-and launch the notebook detached), `model_retrain_watch.yml` (every 20 min: keep the
-session warm, relaunch a dead one from its Drive checkpoints) and `model_intake.yml`
-(hourly: collect the bundle, validate it, open the pull request). What stays human is
-unchanged: merging the pull request, and `promote --by <approver>`.
+The retrain itself is **not** automated, as of 2026-09-20. The monthly run is a human
+act: the owner opens [`ml/HazardNet_auto_train.ipynb`](../../ml/HazardNet_auto_train.ipynb)
+on a Colab T4, runs the monthly block, and the notebook's last cell takes a fine-grained
+PAT at a `getpass` prompt, pushes an artifact branch and opens the pull request itself.
+`model_intake.yml` then gates that PR — bundle validator, run manifest, handshake
+regeneration, the smoke test, a dry-run promotion preview — comments the report and
+stops. What was automated before (a launcher that provisioned the VM, a watcher on a
+20-minute cron that kept the session warm, and a collector that pulled the bundle over
+SSH and opened the PR) is deleted, because every hop depended on a machine reaching a
+surface Colab only exposes interactively. ADR 0013 and
+[`RETRAIN_AND_PROMOTION.md`](RETRAIN_AND_PROMOTION.md) record the reasoning and the
+removal; `scripts/tests/test_retrain_notebook.py` fails if the automation comes back.
 
-Read [`COLAB_AUTOMATION.md`](COLAB_AUTOMATION.md) for the one-time setup, the triage
-table and the limits — including the ones that matter most: the free tier does not
-guarantee a T4, and intake cannot prove a new model *verifies* better, only that it is
-the bundle its manifest describes and that the conversion did not change its
+What stays human is unchanged, and is now the only path: merging the pull request, and
+`promote --by <approver>`. The limits that matter most are also unchanged — the free tier
+does not guarantee a T4, and intake cannot prove a new model *verifies* better, only that
+it is the bundle its manifest describes and that the conversion did not change its
 predictions.
