@@ -105,6 +105,14 @@ def _normalize(name: str) -> str:
 #: ``scripts/tests/test_district_name_parity.py``.
 ALIASES = {
     'brahamanbaria': 'Brahmanbaria',
+    # GAUL/BBS renders Barisal "Barishal" and Khagrachhari "Khagrachari"; the
+    # committed event archive uses both, and without these two the resolver
+    # returned None and the loader refused the rows ("district ... is not one of
+    # the 64"). `barishal` was already aliased in frontend/src/lib/forecasts.ts and
+    # missing here — a parity drift in the direction the parity test does not
+    # check (it asserts pipeline → site, not site → pipeline).
+    'barishal': 'Barisal',
+    'khagrachari': 'Khagrachhari',
     'chittagong': 'Chattogram',
     'comilla': 'Cumilla',
     'maulvibazar': 'Moulvibazar',

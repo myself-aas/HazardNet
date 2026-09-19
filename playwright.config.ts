@@ -15,6 +15,12 @@ import { defineConfig, devices } from '@playwright/test';
  */
 export default defineConfig({
   testDir: './e2e',
+  // CI invokes `npx playwright test` with no `-c`, which is why the whole-app QA
+  // suite is matched here and not only in `playwright.qa.config.ts` (that file exists
+  // to override the Chromium and base URL in a sandbox where `npx playwright install`
+  // has no working browser download). The QA spec reads `E2E_BASE_URL` — the variable
+  // the CI job already exports.
+  testMatch: /full-app-qa\.spec\.ts/,
   timeout: 60_000,
   fullyParallel: true,
   workers: 4,

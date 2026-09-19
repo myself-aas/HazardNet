@@ -77,3 +77,6 @@ yarn-error.log
 
 # Runbook v3: acceptance-gate evidence files must be committed (docs/RUNBOOK_LOG.md)
 !results/*.log
+
+# QA harness output (playwright.qa.config.ts)
+/test-results-qa

@@ -231,7 +231,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => toggleMenu('home')}
-                    className={`hn-nav-link px-1 2xl:px-2.5 py-2 transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0 focus-visible:outline-none ${
+                    className={`hn-nav-link px-1 2xl:px-2.5 py-2 transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0 focus-visible:ring-2 focus-visible:ring-nasa-blue/60 focus-visible:outline-none ${
                       activeMenu === 'home' || isHomeMenuRoute
                         ? 'hn-nav-link-active'
                         : ''
@@ -294,7 +294,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => toggleMenu('forecasts')}
-                    className={`hn-nav-link px-1 2xl:px-2.5 py-2 transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0 focus-visible:outline-none ${
+                    className={`hn-nav-link px-1 2xl:px-2.5 py-2 transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0 focus-visible:ring-2 focus-visible:ring-nasa-blue/60 focus-visible:outline-none ${
                       activeMenu === 'forecasts' || location.pathname.startsWith('/forecast')
                         ? 'hn-nav-link-active'
                         : ''
@@ -384,7 +384,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => toggleMenu('advisories')}
-                    className={`hn-nav-link px-1 2xl:px-2.5 py-2 transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0 focus-visible:outline-none ${
+                    className={`hn-nav-link px-1 2xl:px-2.5 py-2 transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0 focus-visible:ring-2 focus-visible:ring-nasa-blue/60 focus-visible:outline-none ${
                       activeMenu === 'advisories' || location.pathname.startsWith('/advisories')
                         ? 'hn-nav-link-active'
                         : ''
@@ -502,7 +502,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => toggleMenu('docs')}
-                    className={`hn-nav-link px-1 2xl:px-2.5 py-2 transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0 focus-visible:outline-none ${
+                    className={`hn-nav-link px-1 2xl:px-2.5 py-2 transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0 focus-visible:ring-2 focus-visible:ring-nasa-blue/60 focus-visible:outline-none ${
                       activeMenu === 'docs' || location.pathname.startsWith('/docs') || location.pathname.startsWith('/download') || location.pathname.startsWith('/blogs') || location.pathname.startsWith('/about')
                         ? 'hn-nav-link-active'
                         : ''
@@ -586,7 +586,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => toggleMenu('analytics')}
-                    className={`hn-nav-link px-1 2xl:px-2.5 py-2 transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0 focus-visible:outline-none ${
+                    className={`hn-nav-link px-1 2xl:px-2.5 py-2 transition-all flex items-center gap-1.5 cursor-pointer whitespace-nowrap shrink-0 focus-visible:ring-2 focus-visible:ring-nasa-blue/60 focus-visible:outline-none ${
                       activeMenu === 'analytics' || location.pathname.startsWith('/analytics')
                         ? 'hn-nav-link-active'
                         : ''
@@ -675,7 +675,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 whileTap={{ scale: 0.97 }}
                 onClick={handleNavbarLocate}
                 disabled={isLocatingInNavbar}
-                className="px-3 py-1.5 rounded-control bg-nasa-blue hover:bg-nasa-blue-shade text-white font-bold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 focus-visible:outline-none"
+                className="px-3 py-1.5 rounded-control bg-nasa-blue hover:bg-nasa-blue-shade text-white font-bold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-nasa-blue/60 focus-visible:ring-offset-2 focus-visible:outline-none"
                 title="Detect my location & map to nearest district"
               >
                 {isLocatingInNavbar ? (

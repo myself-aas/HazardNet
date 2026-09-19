@@ -2,8 +2,12 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import Breadcrumbs from '../components/Breadcrumbs';
 import MaterialIcon from '../components/MaterialIcon';
+import { usePageSeo } from '../hooks/usePageSeo';
 
 export const Documentation: React.FC = () => {
+  // Per-route <head>: the prerenderer writes these into the static HTML, but a
+  // client-side transition needs the hook to keep title/canonical/robots correct.
+  usePageSeo('/docs');
   return (
     <motion.div
       initial={{ opacity: 0, y: 15 }}

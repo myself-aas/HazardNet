@@ -376,6 +376,9 @@ const DISTRICT_NAME_ALIASES: Record<string, string> = {
   chittagong: 'chattogram',
   comilla: 'cumilla',
   barishal: 'barisal',
+  // GAUL/BBS renders Khagrachhari "Khagrachari"; the committed event archive uses
+  // this spelling. Must stay in step with scripts/etl/districts.py ALIASES.
+  khagrachari: 'khagrachhari',
   bogura: 'bogra',
   jaipurhat: 'joypurhat',
   netrakona: 'netrokona',
@@ -388,7 +391,6 @@ const DISTRICT_NAME_ALIASES: Record<string, string> = {
   // its card, so the site showed the static baseline despite having a forecast
   // (found 2026-09-17 while wiring coverage accounting).
   nawabganj: 'chapainawabganj',
-  khagrachari: 'khagrachhari',
 };
 
 export const canonicalKey = (name: string): string => {

@@ -1,3 +1,18 @@
 # The historical event archive is not redistributed by this repository — see README.md
 # in this directory. A deployment that has the export drops it here and rebuilds.
+#
+# Both the normalised export (`*.json`) and the raw source CSVs (`*.csv`) are untracked.
+# The raw CSVs were committed here until 2026-09-18, which contradicted this directory's
+# own policy: 14 MB of third-party compilation sat in git history while the README stated
+# it was not redistributed. They are now ignored so a `git add -A` cannot re-add them.
+#
+# What IS committed, and why it is not a redistribution:
+#   · frontend/public/data/hazard-archive.json — aggregate counts, public GLIDE event
+#     identifiers and summary statistics only. It carries no per-row records, no
+#     coordinates and none of the source's descriptive prose.
+#   · rag_pipeline/references/08_hazard_archive/*.md — generated narrative over those
+#     same aggregates.
+# Both are projections of the validated export (scripts/build_hazard_archive.mjs), and
+# both are gated in CI against the export they came from.
 *.json
+*.csv

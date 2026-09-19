@@ -26,7 +26,9 @@ export function AnimatedSocialIcons({
 }: AnimatedSocialIconsProps) {
   const [active, setActive] = useState(false)
 
-  const buttonSize = "size-10 sm:size-12" // Reduced size a bit for dashboard
+  // `size-11` is 44 px — the WCAG 2.5.5 target size. It was `size-10` (40 px), which
+  // the responsive audit flagged on 38 routes; `sm:size-12` (48 px) was already fine.
+  const buttonSize = "size-11 sm:size-12" // Reduced size a bit for dashboard
 
   return (
     <div className={cn("relative flex items-end justify-end", className)}>
@@ -51,6 +53,8 @@ export function AnimatedSocialIcons({
               duration: 0.5,
             }}
             title="Hazard Actions"
+            aria-label={active ? "Close hazard actions" : "Open hazard actions"}
+            aria-expanded={active}
           >
             <Plus 
               size={iconSize} 
@@ -75,11 +79,17 @@ export function AnimatedSocialIcons({
                 buttonSize,
                 "absolute right-0 bottom-0 rounded-full flex items-center justify-center",
                 "bg-background shadow-lg hover:shadow-xl",
-                "border border-border z-10",
+                // The border lives on the control (not here): a `border-box` wrapper of
+                // 44 px with a 1 px border leaves the button inside it 42 px, which is
+                // 2 px short of the 44 px target the audit measures.
+                "z-10",
                 className
               )}
-              title={title}
-              onClick={onClick}
+              /* The wrapper is presentational. It used to carry `title` and `onClick`
+                 itself, which made a bare div the real click target wrapping a focusable
+                 <a>/<button> — the `nested-interactive` violation (970 nodes) — and left
+                 the inner control with no accessible name (340 `button-name` nodes).
+                 Interaction and labelling now live on the control. */
               animate={{
                 filter: active ? "blur(0px)" : "blur(2px)",
                 scale: active ? 1 : 0.4,
@@ -93,24 +103,42 @@ export function AnimatedSocialIcons({
                 damping: 20,
                 delay: active ? index * 0.02 : 0,
               }}
+              // Collapsed actions are invisible; they must not swallow clicks either.
+              style={{ pointerEvents: active ? "auto" : "none" }}
             >
+              {/* Collapsed actions are also hidden from assistive tech and out of the tab
+                  order, so the keyboard cannot land on a control the user cannot see.
+                  `aria-hidden` with `tabIndex={-1}` is the combination axe accepts. */}
               {href ? (
-                <a 
+                <a
                   href={href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-center w-full h-full cursor-pointer"
+                  aria-label={title ?? "Hazard action"}
+                  title={title}
+                  aria-hidden={!active}
+                  tabIndex={active ? 0 : -1}
+                  onClick={onClick}
+                  className="flex items-center justify-center w-full h-full cursor-pointer rounded-full border border-border focus-visible:ring-2 focus-visible:ring-nasa-blue/60 focus-visible:ring-offset-2 focus-visible:outline-none"
                 >
-                  <Icon 
+                  <Icon
                     size={iconSize}
-                    className="text-muted-foreground transition-all hover:text-foreground hover:scale-110" 
+                    className="text-muted-foreground transition-all hover:text-foreground hover:scale-110"
                   />
                 </a>
               ) : (
-                <button className="flex items-center justify-center w-full h-full cursor-pointer">
-                  <Icon 
+                <button
+                  type="button"
+                  aria-label={title ?? "Hazard action"}
+                  title={title}
+                  aria-hidden={!active}
+                  tabIndex={active ? 0 : -1}
+                  onClick={onClick}
+                  className="flex items-center justify-center w-full h-full cursor-pointer rounded-full border border-border focus-visible:ring-2 focus-visible:ring-nasa-blue/60 focus-visible:ring-offset-2 focus-visible:outline-none"
+                >
+                  <Icon
                     size={iconSize}
-                    className="text-muted-foreground transition-all hover:text-foreground hover:scale-110" 
+                    className="text-muted-foreground transition-all hover:text-foreground hover:scale-110"
                   />
                 </button>
               )}

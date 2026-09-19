@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Breadcrumbs from '../components/Breadcrumbs';
 import MaterialIcon from '../components/MaterialIcon';
 import { SendIcon } from '../components/ui/animated-state-icons';
+import { usePageSeo } from '../hooks/usePageSeo';
 
 /**
  * Contact, incident reporting and API access.
@@ -106,6 +107,8 @@ function buildBody(kind: FormKind, form: FormState): string {
 }
 
 export const Contact: React.FC = () => {
+  // Per-route <head>: see the note in frontend/src/hooks/usePageSeo.ts.
+  usePageSeo('/contact');
   const [activeForm, setActiveForm] = useState<FormKind>('report');
   const [form, setForm] = useState<FormState>(INITIAL);
   const [prepared, setPrepared] = useState<{ kind: FormKind; subject: string; body: string } | null>(null);

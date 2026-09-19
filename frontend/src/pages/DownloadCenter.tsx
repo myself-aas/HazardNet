@@ -15,6 +15,7 @@ import {
   resolveChannels,
 } from '../lib/downloadChannels';
 import { ChannelState, orderAssets, useReleaseChannels } from '../hooks/useReleaseChannels';
+import { usePageSeo } from '../hooks/usePageSeo';
 
 type TabId = 'software' | 'python' | 'npm';
 
@@ -292,6 +293,8 @@ const ChannelCard: React.FC<{ channel: DownloadChannel; state: ChannelState }> =
 };
 
 export const DownloadCenter: React.FC = () => {
+  // Per-route <head>: see the note in frontend/src/hooks/usePageSeo.ts.
+  usePageSeo('/download');
   const [searchParams] = useSearchParams();
   const platformParam = searchParams.get('platform');
   const [selectedTab, setSelectedTab] = useState<TabId>(
@@ -347,10 +350,12 @@ export const DownloadCenter: React.FC = () => {
           Hazard<span className="text-nasa-red-shade">Net</span> Multi-Platform Downloads
         </h1>
         <p className="text-slate-600 text-xs md:text-sm leading-relaxed max-w-3xl">
-          Every artifact below is built and published automatically by the HazardNet product repositories&apos; release
+          Every artifact below is produced automatically by the HazardNet product repositories&apos; release
           pipelines — native Android and Windows apps, the Linux daemon/CLI, and the Python &amp; JavaScript libraries.
           Files are served straight from GitHub Releases and the public package registries, with SHA-256 checksums
-          attached to every release.
+          attached to every release. Each card states its own live state: a card whose registry or release lookup
+          has not returned a listing is marked <em>pending</em> or <em>temporarily unavailable</em> rather than shown
+          as downloadable.
         </p>
       </div>
 
@@ -414,8 +419,15 @@ export const DownloadCenter: React.FC = () => {
           </li>
           <li>Android builds are signed when release signing is configured; Windows installers are Authenticode-signed when a certificate is present.</li>
           <li>
-            The Python SDK and JavaScript library are published to PyPI and npm by the same gated pipelines; registry
-            listings on this page are verified against the HazardNet source repositories before being shown.
+            {/* This sentence used to assert publication ("are published to PyPI and npm") while the
+                registry chips on the same screen read "pending" — the two contradicted each other and
+                a reader could not tell which was true. The copy now describes what the page actually
+                does (checks the registries live and verifies ownership) and leaves the state to the
+                chip, which is the thing backed by a lookup. */}
+            The Python SDK and JavaScript library are checked against the PyPI and npm registries on
+            load: a listing is shown only when the registry returns it <em>and</em> it names a HazardNet
+            source repository. A <span className="font-mono font-bold">pending</span> state means the
+            registry returned no listing yet, so the install command below is not usable at that time.
           </li>
         </ul>
       </div>
