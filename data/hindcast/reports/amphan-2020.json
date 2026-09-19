@@ -1,7 +1,7 @@
 {
   "schema": "hazardnet-hindcast-report/v1",
   "hindcast_version": "1.0.0",
-  "generated_at": "2026-09-19T11:02:46Z",
+  "generated_at": "2026-09-19T19:49:36Z",
   "episode": {
     "id": "amphan-2020",
     "title": "Cyclone Amphan \u2014 Bangladesh landfall, 20 May 2020",
