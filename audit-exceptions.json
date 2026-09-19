@@ -1,5 +1,5 @@
 {
-  "_comment": "Accepted-risk exceptions for the `node scripts/npm-audit-ci.mjs` CI gate (replaces bare `npm audit --audit-level=high`, which can never pass while these unfixable transitive advisories exist). Every entry MUST carry an expiry — the gate fails on expired entries to force re-review. List advisories by GHSA id (stable across versions); the gate fails closed on ANY unlisted high/critical advisory.",
+  "_comment": "Accepted-risk exceptions for the `node scripts/npm-audit-ci.mjs` CI gate (replaces bare `npm audit --audit-level=high`, which can never pass while these unfixable transitive advisories exist). Every entry MUST carry an expiry \u2014 the gate fails on expired entries to force re-review. List advisories by GHSA id (stable across versions); the gate fails closed on ANY unlisted high/critical advisory.",
   "exceptions": [
     {
       "ghsa": "GHSA-34x7-hfp2-rc4v",
@@ -97,6 +97,13 @@
       "package": "adm-zip (transitive via @tensorflow/tfjs-node)",
       "severity": "high",
       "reason": "Install-time only (see GHSA-xcpc-8h2w-3j85).",
+      "expires": "2026-12-12"
+    },
+    {
+      "ghsa": "GHSA-7q85-xj36-vmfc",
+      "package": "adm-zip (transitive via @tensorflow/tfjs-node)",
+      "severity": "high",
+      "reason": "DoS via uncontrolled memory allocation: adm-zip trusts an uncompressed size from the archive header when constructing buffers; fixed upstream in 0.6.1. Installed is 0.5.18. It is install-time only (extracts the tfjs-node prebuilt libtensorflow tarball from a trusted, pinned URL during `npm ci`; the package list at runtime contains no import). npm's `fixAvailable` is @tensorflow/tfjs-node@0.1.11 (`isSemVerMajor: true`) \u2014 the downgrade path exists but is breaking. Accepted as install-time only with expiry 2026-12-12 (the date already used for the tfjs-node exceptions); revisit on the tfjs-node u",
       "expires": "2026-12-12"
     }
   ]

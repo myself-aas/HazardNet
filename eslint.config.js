@@ -67,6 +67,15 @@ export default tseslint.config(
     rules: { 'no-console': 'off' },
   },
   {
+    // scripts/qa/*.mjs and scripts/audit_frontend_design.mjs are the same work in two
+    // files: Playwright `page.evaluate` probes whose source is Node-linted but runs
+    // inside the page. Without browser globals here they fail on every
+    // `document`/`getComputedStyle`/`window` reference while the archive-quality
+    // probes read as Node.
+    files: ['scripts/qa/**/*.mjs', 'scripts/audit_frontend_design.mjs'],
+    languageOptions: { globals: { ...globals.node, ...globals.browser, process: 'readonly' } },
+  },
+  {
     // scripts/audit_frontend_design.mjs drives the built app in a real browser: its probe
     // functions (PROBE, FOCUS_PROBE, FOCUS_UNFOCUSED and the inline page.evaluate callbacks)
     // execute inside the page via Playwright, so the source legitimately references browser
