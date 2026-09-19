@@ -42,6 +42,12 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+// Data-authored prose can carry a location in this repository's tree (the hindcast reports
+// name the module that produced a score). The artifacts keep those paths — they are what
+// makes a number auditable by a script — and the published page drops them, because a
+// visitor cannot open one. See scripts/lib/public-text.mjs and docs/PUBLIC_SURFACE.md §3.
+import { findRepoPaths, withoutRepoPaths } from './lib/public-text.mjs';
+
 export const GENERATED_SCHEMA = 'hazardnet-generated-routes/v1';
 export const PERFORMANCE_SCHEMA = 'hazardnet-model-performance/v1';
 export const CLAIMED_EVENT_TOTAL = 2931;
@@ -405,7 +411,13 @@ function hazardRoute({ hazard, outlook, now, methodology }) {
         ].filter(Boolean),
         bullets: [
           `Expression: ${hazard.physics.expr ?? hazard.physics.form}`,
-          `That expression is executed against scripts/physics_severity.py by scripts/tests/test_content_engine.py — this page cannot silently describe a formula the pipeline no longer runs.`,
+          // The second half of this pair used to name the module the expression is executed
+          // against and the test that runs it. Both halves are still true and still checked
+          // in CI; only the naming went, because a visitor cannot open either file from a
+          // browser (docs/PUBLIC_SURFACE.md §3). What the page must keep is the assurance —
+          // that the formula shown here is executed against the implementation, so this
+          // copy cannot drift from what the pipeline runs.
+          'That expression is executed against the pipeline’s own implementation by the content tests in CI — this page cannot silently describe a formula the pipeline no longer runs.',
         ],
       },
       {
@@ -479,12 +491,12 @@ function districtRoute({ district, rows, archive, now, outlook, shared }) {
         h2: `Recorded hazard history, ${archive.date_range[0]?.slice(0, 4) ?? '—'}–${archive.date_range[1]?.slice(0, 4) ?? '—'}`,
         paragraphs: [
           events.length
-            ? `${plural(events.length, 'recorded event')} in this district in the archive this deployment loaded (${archive.source_path}), out of ${plural(archive.total, 'event')} nationally. ${listText(
+            ? `${plural(events.length, 'recorded event')} in this district in the archive this deployment loaded, out of ${plural(archive.total, 'event')} nationally. ${listText(
                 Object.entries(byHazard)
                   .sort((a, b) => b[1] - a[1])
                   .map(([hazard, count]) => `${hazard}: ${count}`),
               )}.`
-            : `The archive this deployment loaded (${archive.source_path}) records no event for ${district.name}, out of ${plural(archive.total, 'event')} nationally. An unrecorded event is not the same as an absent event — reporting coverage differs by district and decade.`,
+            : `The archive this deployment loaded records no event for ${district.name}, out of ${plural(archive.total, 'event')} nationally. An unrecorded event is not the same as an absent event — reporting coverage differs by district and decade.`,
           `The archive reports ${plural(archive.total, 'event')} against the ${claimedText} the model card quotes (drift ${archive.drift >= 0 ? '+' : ''}${archive.drift}); the measured number is what this page uses.`,
         ],
         bullets: [
@@ -557,7 +569,7 @@ function districtRoute({ district, rows, archive, now, outlook, shared }) {
             dataset: {
               kind: 'event-archive',
               name: 'HazardNet historical hazard event archive (Bangladesh, 2000–2025)',
-              description: `Normalised historical hazard events for Bangladesh districts, compiled for the model's climatological prior and validated by the ETL (scripts/etl/events.py). Loaded for this deployment from ${archive.source_path}.`,
+              description: `Normalised historical hazard events for Bangladesh districts, compiled for the model's climatological prior and validated by the ETL.`,
               temporalCoverage: `${archive.date_range[0]}/${archive.date_range[1]}`,
               variableMeasured: ['hazard class', 'district', 'event window', 'severity basis', 'fatalities'],
               keywords: ['Bangladesh', 'disaster history', 'hazard events'],
@@ -748,14 +760,20 @@ function modelPerformanceRoute({ performance }) {
             'number here is a ceiling on detection, not forecast skill.',
         },
         paragraphs: [
-          `Drivers: ${method.product ?? '—'} (${method.endpoint ?? '—'}), ${Array.isArray(method.variables) ? method.variables.join(', ') : '—'}. ` +
-            `${method.is_forecast_note ?? ''}`,
-          `Alarm band: ${score(method.alarm_threshold)} on the class severity score${
-            horizons.length ? `, at ${horizons.map((horizon) => `${horizon.lead_days}-day`).join(' and ')} horizons` : ''
-          }. ${method.absence_means_no_event_reason ?? ''}`,
+          withoutRepoPaths(
+            `Drivers: ${method.product ?? '—'} (${method.endpoint ?? '—'}), ${Array.isArray(method.variables) ? method.variables.join(', ') : '—'}. ` +
+              `${method.is_forecast_note ?? ''}`,
+          ),
+          withoutRepoPaths(
+            `Alarm band: ${score(method.alarm_threshold)} on the class severity score${
+              horizons.length ? `, at ${horizons.map((horizon) => `${horizon.lead_days}-day`).join(' and ')} horizons` : ''
+            }. ${method.absence_means_no_event_reason ?? ''}`,
+          ),
         ],
         bullets: [
-          `The CNN was ${method.cnn_evaluated ? 'evaluated' : 'not evaluated'}. ${method.cnn_note ?? ''}`,
+          withoutRepoPaths(
+            `The CNN was ${method.cnn_evaluated ? 'evaluated' : 'not evaluated'}. ${method.cnn_note ?? ''}`,
+          ),
           'Scores are shown to three decimals; the unrounded values, the per-district rows and the input hashes are in the machine-readable copy this page is generated from.',
         ],
         links: [
@@ -953,9 +971,9 @@ function modelPerformanceRoute({ performance }) {
       {
         h2: 'Reproducing this page',
         paragraphs: [
-          'Every number here is recomputed in CI from the committed episode files and driver series: `python -m hindcast.cli check --require-reports` re-runs each report and fails if a single value differs, and `node scripts/build_model_performance.mjs --check` fails if the artifact this page is generated from no longer matches those reports. The machine-readable copy is linked below.',
+          'Every number here is recomputed in CI from the committed episode files and driver series. The machine-readable copy is linked below.',
         ],
-        links: [{ label: 'model-performance.json (machine-readable)', href: '/data/model-performance.json' }],
+        links: [{ label: 'Machine-readable copy', href: '/data/model-performance.json' }],
       },
     ],
     faqs: [
@@ -1048,7 +1066,7 @@ export function buildRoutes({ districts, snapshot, archive, methodology, perform
       {
         question: 'Why only eight classes?',
         answer:
-          'Eight is the model\'s output vocabulary (Models/labels.json), fixed by the training data and enforced on ingest. A hazard outside that list is not mapped onto a nearest neighbour: the event loader rejects and reports the label instead, and the forecast ingest refuses the row.',
+          'Eight is the model\'s output vocabulary, fixed by the training data and enforced on ingest. A hazard outside that list is not mapped onto a nearest neighbour: the event loader rejects and reports the label instead, and the forecast ingest refuses the row.',
       },
       {
         question: 'Which class is most likely in the current run?',
@@ -1159,7 +1177,7 @@ export function buildRoutes({ districts, snapshot, archive, methodology, perform
         dataset: {
           kind: 'event-archive',
           name: 'HazardNet historical hazard event archive (Bangladesh, 2000–2025)',
-          description: `Normalised historical hazard events for Bangladesh districts, compiled for the model's climatological prior and validated by the ETL. Loaded for this deployment from ${archive.source_path}.`,
+          description: `Normalised historical hazard events for Bangladesh districts, compiled for the model's climatological prior and validated by the ETL.`,
           temporalCoverage: `${archive.date_range[0]}/${archive.date_range[1]}`,
           variableMeasured: ['hazard class', 'district', 'event window', 'severity basis', 'fatalities'],
           keywords: ['Bangladesh', 'disaster history', 'hazard events'],
@@ -1173,7 +1191,7 @@ export function buildRoutes({ districts, snapshot, archive, methodology, perform
         {
           h2: 'What these pages are',
           paragraphs: [
-            `Assembled from ${archive.source_path ?? 'the loaded archive'} — ${plural(archive.total, 'event')} spanning ${archive.date_range[0]} to ${archive.date_range[1]}. The archive reports ${plural(archive.total, 'event')} against the ${claimedText} the model card quotes (drift ${archive.drift >= 0 ? '+' : ''}${archive.drift}); the measured number is used here.`,
+            `Assembled from the archive this deployment loaded — ${plural(archive.total, 'event')} spanning ${archive.date_range[0]} to ${archive.date_range[1]}. The archive reports ${plural(archive.total, 'event')} against the ${claimedText} the model card quotes (drift ${archive.drift >= 0 ? '+' : ''}${archive.drift}); the measured number is used here.`,
             'A retrospective counts what was recorded. Reporting coverage varies by decade, district and hazard class, so a rise in a year\'s count can be a rise in reporting rather than in hazard. The pages say which sources each year draws on.',
           ],
           links: years.map((year) => ({ label: `${year}`, href: `/retrospectives/${year}` })),
@@ -1223,7 +1241,7 @@ export function buildRoutes({ districts, snapshot, archive, methodology, perform
           dataset: {
             kind: 'event-archive',
             name: `HazardNet historical hazard event archive — ${year} subset (Bangladesh)`,
-            description: `The ${year} subset of the normalised historical hazard event archive this deployment loaded (${archive.source_path}); ${inYear.length} recorded events.`,
+            description: `The ${year} subset of the normalised historical hazard event archive this deployment loaded; ${inYear.length} recorded events.`,
             temporalCoverage: `${year}-01-01/${year}-12-31`,
             variableMeasured: ['hazard class', 'district', 'event window', 'severity basis', 'fatalities'],
             keywords: [`Bangladesh ${year}`, 'disaster history', 'hazard events'],
@@ -1394,6 +1412,25 @@ function main() {
 
   const { summary, routes } = buildRoutes({ ...inputs, now: new Date() });
   const document = { ...summary, routes };
+
+  // Fail here rather than publish a page that prints a location in this repository's tree.
+  // The strings above come from three places — literals in this script, committed data
+  // files (a hindcast report's note, the methodology copy) and interpolated fields of a
+  // loaded archive — and only the first is visible to a grep of the source. The rule and
+  // its reasoning are in scripts/lib/public-text.mjs and docs/PUBLIC_SURFACE.md §3; the
+  // same scan runs over the built documents in CI (scripts/check-public-paths.mjs).
+  const leaks = findRepoPaths(document);
+  if (leaks.length > 0) {
+    console.error(`[content] ${leaks.length} generated string(s) name a location in this repository:`);
+    for (const { pointer, value } of leaks.slice(0, 20)) {
+      console.error(`  ${pointer}: ${value.slice(0, 160)}`);
+    }
+    console.error(
+      '  Delete the location from the copy that renders it, or apply withoutRepoPaths() to the\n' +
+        '  string if it arrives from a data file the build must not rewrite.',
+    );
+    process.exit(1);
+  }
 
   if (args.check) {
     const existing = readJsonSafe(paths.out);

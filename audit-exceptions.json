@@ -1,5 +1,5 @@
 {
-  "_comment": "Accepted-risk exceptions for the `node scripts/npm-audit-ci.mjs` CI gate (replaces bare `npm audit --audit-level=high`, which can never pass while these unfixable transitive advisories exist). Every entry MUST carry an expiry \u2014 the gate fails on expired entries to force re-review. List advisories by GHSA id (stable across versions); the gate fails closed on ANY unlisted high/critical advisory.",
+  "_comment": "Accepted-risk exceptions for the `node scripts/npm-audit-ci.mjs` CI gate (replaces bare `npm audit --audit-level=high`, which can never pass while these unfixable transitive advisories exist). Every entry MUST carry an expiry — the gate fails on expired entries to force re-review. List advisories by GHSA id (stable across versions); the gate fails closed on ANY unlisted high/critical advisory.",
   "exceptions": [
     {
       "ghsa": "GHSA-34x7-hfp2-rc4v",
@@ -101,9 +101,9 @@
     },
     {
       "ghsa": "GHSA-7q85-xj36-vmfc",
-      "package": "adm-zip (transitive via @tensorflow/tfjs-node)",
+      "package": "adm-zip@0.5.18 (transitive via @tensorflow/tfjs-node@4.22.0)",
       "severity": "high",
-      "reason": "DoS via uncontrolled memory allocation: adm-zip trusts an uncompressed size from the archive header when constructing buffers; fixed upstream in 0.6.1. Installed is 0.5.18. It is install-time only (extracts the tfjs-node prebuilt libtensorflow tarball from a trusted, pinned URL during `npm ci`; the package list at runtime contains no import). npm's `fixAvailable` is @tensorflow/tfjs-node@0.1.11 (`isSemVerMajor: true`) \u2014 the downgrade path exists but is breaking. Accepted as install-time only with expiry 2026-12-12 (the date already used for the tfjs-node exceptions); revisit on the tfjs-node u",
+      "reason": "Install-time only (see GHSA-xcpc-8h2w-3j85): adm-zip is used by the tfjs-node installer to unpack the prebuilt libtensorflow archive during `npm ci`, and is never required/imported by backend/, api/, frontend/src, rag_pipeline/ or scripts/ (re-verified 2026-09-19 with `npm ls adm-zip --omit=dev`). The advisory is a decompression DoS on a crafted ZIP, so exploitation needs an attacker-controlled archive handed to the installer — the installer only fetches storage.googleapis.com/tensorflow/libtensorflow over HTTPS. `npm audit` reports no non-breaking fix (fixAvailable is isSemVerMajor to tfjs-node 0.1.11, i.e. not a fix). Published 2026-09 after the last exception review; expiry aligned with the existing adm-zip/tar batch so the whole install-toolchain set is re-reviewed on one date.",
       "expires": "2026-12-12"
     }
   ]

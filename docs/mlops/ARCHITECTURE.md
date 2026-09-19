@@ -3,13 +3,31 @@
 This document describes how HazardNet decouples **everyday inference** (cheap, frequent, CPU) from **model retraining** (expensive, infrequent, GPU) so the entire pipeline runs on zero-cost infrastructure.
 
 ```
-                          ┌──────────────────────────────┐
-                          │  Google Colab (free T4 GPU)  │
-                          │  ml/train_and_convert.ipynb  │
-                          │  ~3 h, once/month or quarter │
-                          └──────────────┬───────────────┘
-                                         │ git push (PR → main)
-                                         ▼
+   model_retrain.yml (monthly, ~5 min)      Google Colab — free T4
+   ┌────────────────────────────────┐      ┌──────────────────────────────────┐
+   │ colab new --gpu T4             │─────▶│ ml/HazardNet_auto_train.ipynb    │
+   │ upload notebook + run_config   │      │ launched detached, 7–9 h         │
+   │ launch over `colab ssh`, exit  │      │ checkpoints + heartbeat + bundle │
+   └────────────────┬───────────────┘      └───────────┬───────────────┬──────┘
+                    │ commits                          │               │ mirrored to
+                    ▼                                  │               ▼ Google Drive
+   ┌────────────────────────────────┐                  │   (survives a recycled session)
+   │ data/mlops/retrain-runs/<id>.json│◀─── heartbeat ──┘
+   │  the run marker: git is how a   │
+   │  run that outlives every job    │      model_retrain_watch.yml (every 20 min)
+   │  keeps one history              │      status · classify · carry the newest
+   └────────────────┬───────────────┘      checkpoint out to a workflow artifact ·
+                    │                      relaunch with resume · release the VM
+                    │
+                    ▼  reads a marker whose status is `complete`
+   ┌────────────────────────────────────────────────────┐
+   │ model_intake.yml — `colab download` the bundle,    │
+   │ validate it against its manifest, smoke-test it    │
+   │ with tflite-runtime, regenerate VERSION.json,      │
+   │ rebuild REGISTRY.json, open a pull request         │
+   └───────────────────────────┬────────────────────────┘
+                               │ a human reviews and merges
+                               ▼
                          ┌───────────────────────────────┐
                          │        GitHub repository       │
                          │  Models/hazardnet_fp32.tflite  │
@@ -102,34 +120,108 @@ deployed, set the variable and the push becomes a hard gate.
 * A separate `.github/workflows/model-validation.yml` workflow runs on every change to `Models/**` and smoke-tests the TFLite bundle with `tflite-runtime` (same wheel the daily job uses), so a bad conversion from Colab cannot land silently.
 * All workflow hygiene invariants (permissions, concurrency, timeouts, action version consistency) are enforced by `scripts/tests/test_workflows.py` in CI.
 
-## Profile 2 — Training & Conversion (GPU)
+## Profile 2 — Training & Conversion (GPU, unattended)
 
 | | |
 |---|---|
-| **Where** | Google Colab (Free Tier) — `ml/train_and_convert.ipynb` |
-| **Cadence** | Manual, once per month/quarter |
-| **Hardware** | NVIDIA T4 GPU (16 GB VRAM), same as Kaggle |
-| **Runtime** | ~3 hours |
-| **Cost** | Free (Colab Free Tier) |
-| **Output** | `Models/hazardnet_fp32.tflite` + `Models/normalization_stats.json` + `Models/labels.json` |
+| **Where** | Google Colab (Free Tier) — [`ml/HazardNet_auto_train.ipynb`](../../ml/HazardNet_auto_train.ipynb) |
+| **Cadence** | Monthly, by cron: `model_retrain.yml` at 18:00 UTC on the 1st (00:00 BDT on the 2nd) |
+| **Hardware** | NVIDIA T4 (16 GB VRAM), requested with `colab new --gpu T4` |
+| **Runtime** | 7–9 h for 50 epochs under `event_kfold`, spread over as many sessions as the free tier allows |
+| **Cost** | Free (Colab Free Tier) + a few runner-minutes a month |
+| **Output** | a pull request touching `Models/*`, opened by `model_intake.yml` and merged by a human |
+| **Setup** | one repository secret — see [`COLAB_AUTOMATION.md`](COLAB_AUTOMATION.md) |
 
-### Dataset hosting (zero-cost options)
+### Why three workflows and not one
 
-1. **Google Drive** (simplest): mount with `from google.colab import drive; drive.mount('/content/drive')` and copy from Drive. The first `wget`/copy happens once; subsequent runs are instant.
-2. **HuggingFace Datasets**: host the `master_tensors.h5` file (hundreds of GB free) and pull with `wget <hf raw URL>`.
+Training takes longer than a GitHub-hosted job is allowed to exist: the runner is killed at
+six hours, and a Colab free-tier session is recycled whenever Google decides, without telling
+anybody. So the run is split into three short jobs that pass state through two durable places
+— git for the run's history, Drive for its bytes:
 
-### Auto-push to GitHub
+| Workflow | Cadence | Job length | What it does |
+|---|---|---|---|
+| `model_retrain.yml` | monthly cron + dispatch | ~5 min | provisions a T4, uploads the notebook and its `run_config.json`, launches it **detached** over `colab ssh`, commits the run marker |
+| `model_retrain_watch.yml` | every 20 min | ~2 min | re-attaches to the session (which refreshes the CLI's keep-alive), reads the heartbeat, and either leaves a live run alone, relaunches a dead one with `resume: true`, releases the VM on completion, or gives up with a reason |
+| `model_intake.yml` | hourly + dispatch | ~10 min | downloads the bundle, validates it against its manifest, smoke-tests it with the same pins `model-validation.yml` uses, regenerates `Models/VERSION.json` with the repository's canonical writer (`scripts/gen-model-version.mjs`), rebuilds `Models/REGISTRY.json`, opens the pull request |
 
-The notebook's final cell:
+The handoff between them is `data/mlops/retrain-runs/<run_id>.json`, committed by the launch
+and updated by every watch tick. That is what makes the split safe: no job has to stay alive to
+remember what happened, and the question "did we retrain this month, and what happened" is
+answerable from the repository alone, without a Colab account. Schemas and the state machine
+live in [`scripts/mlops/retrain_state.py`](../../scripts/mlops/retrain_state.py), which the
+notebook imports *inside Colab* — one definition, two machines.
 
-1. Configures git identity.
-2. Shallow-clones `myself-aas/HazardNet` using a Fine-Grained Personal Access Token.
-3. Copies the new `Models/` bundle in.
-4. Creates a branch named `auto-ml/model-update-<timestamp>`, commits, pushes, and opens a Pull Request against `main` via the GitHub REST API.
+### Surviving a recycled session
 
-Using a PR (instead of a direct push to `main`) gives CI (`model-validation.yml`) a chance to smoke-test the new artifact before it becomes the production model.
+Free-tier sessions die mid-epoch, so the notebook writes two files per epoch:
 
-> To skip the PR flow and push directly to `main`, replace the branch/push cell with `!git checkout main && !git push origin main`.
+* `<fold>_resume.pt` — model, optimizer, cosine scheduler, RNGs, best-val state and the epoch
+  reached. A relaunched attempt restores all of it and continues the fold. Restoring weights
+  alone would silently restart the learning-rate schedule and converge to something nobody
+  validated. A fold deletes its own resume state when it finishes, so a completed fold cannot
+  be "resumed" and reported twice.
+* `heartbeat.json` — phase, fold, epoch, validation loss and accuracy. This is the only signal
+  that crosses from the VM to a runner, and it is what lets the watcher tell "inside a long
+  epoch" from "the session was recycled forty minutes ago". Those need opposite responses, so
+  the thresholds are explicit: 45 min of silence is a dead session, 25 min without a first
+  heartbeat is a provisioning failure, 15 h is the budget for one run, three attempts is the
+  budget for one month.
+
+**Where those files live is the part that is easy to get wrong.** `colab drivemount` needs a TTY
+and browser consent, so a *headless* session — every session Actions launches — has no Google
+Drive at all. Checkpoints therefore go to the VM's own disk, and the watcher downloads every
+`*_resume.pt` on each tick and uploads it as a workflow artifact, deleting the previous one:
+GitHub is the durable store, in the same trust boundary as the rest of the pipeline and with no
+third credential. A relaunch fetches that artifact and uploads the states back into the fresh VM
+at the same path, which is what makes `resume: true` mean something. An interactive run with
+Drive mounted keeps its checkpoints there instead, where they survive on their own.
+
+The same reasoning applies to the finished bundle: the watcher carries it off the VM on the tick
+that sees the manifest, because a run that completes and then loses its session ten minutes later
+has still done the work.
+
+The training tensor is resolved in the order that survives the most situations — a path Actions
+staged, then Drive when it is mounted, then the Kaggle dataset the Drive copy was made from
+(using the repository's existing `KAGGLE_USERNAME`/`KAGGLE_KEY`, uploaded to the VM as
+`~/.kaggle/kaggle.json`). Once local it stays local: reading 5 GB of HDF5 batch by batch through
+a FUSE mount is the slowest way to feed a GPU, and slow epochs are what make a live run look dead
+from outside.
+
+### What the run publishes
+
+The notebook's last publishing cell writes `run_manifest.json`: every artifact with its size
+and sha256, the fold metrics the training actually returned, the converter's ONNX→TFLite parity
+numbers, and the environment that produced them. It validates that manifest with the same
+function intake uses, and refuses to publish one it would reject — failing in the session, where
+the log can be read, rather than hours later in a pull request nobody can act on.
+
+The parity gate is `retrain_state.PARITY_GATE_PCT` (99.0% hazard agreement between PyTorch and
+TFLite) and it now **stops the run**. It used to print `[WARN] BELOW 95% THRESHOLD` and carry on,
+which published a conversion that had changed the model's predictions and let the pull request be
+the first place anybody noticed. A conversion that changes predictions is not a conversion.
+
+### Credentials
+
+Two secrets: `COLAB_TOKEN_JSON` for the VM, and the `KAGGLE_USERNAME`/`KAGGLE_KEY` the forecast
+workflows already use, for the training data. And `COLAB_TOKEN_JSON` first: the contents of `~/.config/colab-cli/token.json` after a human
+runs `colab auth` once. Colab quota and Drive belong to a person, so there is no service-account
+variant of this — the CLI's `--auth=adc` path has no free-tier GPU allocation to draw on. The
+token is written 0600 on the runner, never echoed, and never passed on a command line.
+
+The notebook holds no GitHub credential at all. It used to prompt for a fine-grained PAT with
+`getpass` — which makes an unattended run impossible, since a prompt nobody answers hangs until
+the session is recycled — and then clone, push and open a PR from inside Colab. All git work now
+happens in Actions with `GITHUB_TOKEN`, scoped to one run.
+
+### Dataset hosting
+
+1. **Google Drive** (the supported path): the master tensor lives at
+   `HazardNet_Deployment/tensors_output/HazardNet_Event_Based_Datasets/master_tensors.h5`, and the
+   notebook's dataset cell downloads from Kaggle only when that file is absent — so an unattended
+   run never depends on a `kaggle.json` being present in a Drive folder.
+2. **HuggingFace Datasets**: the branch is still there and still refuses to guess a repository
+   URL; it says so and exits instead of interpolating a name nothing defines.
 
 ## Why this is better than the all-Kaggle setup
 
@@ -138,7 +230,7 @@ Using a PR (instead of a direct push to `main`) gives CI (`model-validation.yml`
 
 * **CI/CD decoupling.** Your GitHub repository is the single source of truth. The web app pulls models from Git; GitHub Actions runs the cron jobs. No dependency on Kaggle's notebook scheduler or uptime.
 * **Cold-start speed.** Stripping TF/PyTorch from the operational pipeline cuts install time from ~4 minutes to ~45 seconds.
-* **No file wrangling.** Models flow Colab → GitHub PR → merge → daily Action automatically. Data flows GEE/Open-Meteo → Actions → Firestore automatically.
+* **No file wrangling.** Models flow Colab → Drive → intake PR → merge → daily Action automatically. Data flows GEE/Open-Meteo → Actions → Firestore automatically.
 * **Safer promotion.** New TFLite models are validated by CI before hitting production.
 * **Zero cost.** No cloud GPU, no Actions minutes overage, no Kaggle dataset quotas.
 
@@ -146,12 +238,28 @@ Using a PR (instead of a direct push to `main`) gives CI (`model-validation.yml`
 
 ### To retrain the model
 
-1. Open [`ml/train_and_convert.ipynb`](../../ml/train_and_convert.ipynb) in Colab (GitHub → Open in Colab).
-2. Runtime → Change runtime type → **GPU (T4)**.
-3. Run all cells. Paste your GitHub PAT when prompted.
-4. Wait for the PR to appear on GitHub.
-5. Review the diff (should only touch `Models/*`), wait for the `model-validation` check to pass, then merge.
-6. The next 00:00 UTC daily run automatically uses the new model.
+Nothing, normally: `model_retrain.yml` runs on the 1st of each month and
+`model_intake.yml` opens the pull request when the run finishes. To do it deliberately:
+
+1. `Actions → Monthly Model Retrain (Colab T4) → Run workflow`, pick the validation
+   strategy, and watch the launch (about five minutes — it provisions the T4 and hands
+   the notebook to it, then exits).
+2. `Actions → Retrain Watcher` follows the run every twenty minutes. Its summary says
+   which phase the run is in and, when it relaunches a dead session, that it resumed from
+   checkpoints rather than starting over.
+3. When the run completes, `Actions → Model Intake` collects the bundle on its next hourly
+   tick and opens a pull request whose body carries the fold metrics, the parity numbers,
+   the artifact hashes and the proposed `Models/VERSION.json` version.
+4. Review the diff (it should touch only `Models/*`), wait for the `model-validation`
+   check, and merge. Merging replaces the bundle the daily forecast runs; it does **not**
+   promote anything — the artifact enters the registry as a `candidate`, and `champion`
+   still needs `python -m mlops.cli promote --by <you>` against a challenger report.
+5. The next 00:00 UTC daily run uses the new model.
+
+To run it by hand instead, open the notebook in Colab with a T4 runtime and run all cells:
+with no `run_config.json` on the VM it behaves as an interactive run, prints the same
+manifest, and touches no GitHub credential. Full setup and failure triage:
+[`COLAB_AUTOMATION.md`](COLAB_AUTOMATION.md).
 
 ### To verify everything is wired up
 

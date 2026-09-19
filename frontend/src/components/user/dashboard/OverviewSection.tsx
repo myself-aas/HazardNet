@@ -41,13 +41,13 @@ export function computeProfileCompletion(profile: Record<string, unknown> | null
 }
 
 const StatTile: React.FC<{ icon: string; label: string; value: React.ReactNode; accent: string }> = ({ icon, label, value, accent }) => (
-  <div className="flex items-center gap-3 rounded-2xl border border-slate-200/90 bg-white p-4 shadow-xs">
+  <div className="flex items-center gap-3 rounded-2xl border border-carbon-20/90 bg-white p-4 shadow-xs">
     <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-white" style={{ backgroundColor: accent }}>
       <MaterialIcon name={icon} size={19} />
     </span>
     <div className="min-w-0">
-      <p className="text-lg font-black leading-tight text-slate-900">{value}</p>
-      <p className="truncate text-[11px] font-semibold uppercase tracking-wide text-slate-400">{label}</p>
+      <p className="truncate text-lg font-black leading-tight text-carbon-90">{value}</p>
+      <p className="truncate text-[11px] font-semibold uppercase tracking-wide text-carbon-60">{label}</p>
     </div>
   </div>
 );
@@ -115,7 +115,7 @@ export const OverviewSection: React.FC<{ onNavigate: (tab: 'profile' | 'connecto
             type="button"
             onClick={handleResend}
             disabled={resendBusy}
-            className="rounded-xl bg-amber-500 px-3 py-1.5 text-[11px] font-extrabold text-slate-950 transition-colors hover:bg-amber-400 disabled:opacity-50 cursor-pointer"
+            className="rounded-xl bg-amber-500 px-3 py-1.5 text-[11px] font-extrabold text-carbon-black transition-colors hover:bg-amber-400 disabled:opacity-50 cursor-pointer"
           >
             {resendBusy ? 'Sending…' : 'Resend link'}
           </button>
@@ -130,20 +130,20 @@ export const OverviewSection: React.FC<{ onNavigate: (tab: 'profile' | 'connecto
       >
         {username ? (
           <div className="flex flex-wrap items-center gap-2">
-            <code className="flex-1 truncate rounded-xl bg-slate-50 px-4 py-2.5 font-mono text-xs font-semibold text-slate-700 ring-1 ring-slate-200">
+            <code className="flex-1 truncate rounded-xl bg-carbon-05 px-4 py-2.5 font-mono text-xs font-semibold text-carbon-70 ring-1 ring-carbon-20">
               {profileUrl}
             </code>
             <button
               type="button"
               onClick={copyProfileUrl}
-              className="flex items-center gap-1.5 rounded-xl bg-slate-900 px-3.5 py-2.5 text-[11px] font-extrabold text-white transition-colors hover:bg-slate-800 cursor-pointer"
+              className="flex items-center gap-1.5 rounded-xl bg-carbon-90 px-3.5 py-2.5 text-[11px] font-extrabold text-white transition-colors hover:bg-carbon-80 cursor-pointer"
             >
               <MaterialIcon name={copied ? 'check' : 'content_copy'} size={13} />
               {copied ? 'Copied!' : 'Copy link'}
             </button>
             <Link
               to={profilePath(username)}
-              className="flex items-center gap-1.5 rounded-xl border border-slate-200 px-3.5 py-2.5 text-[11px] font-extrabold text-slate-700 transition-colors hover:bg-slate-50"
+              className="flex items-center gap-1.5 rounded-xl border border-carbon-20 px-3.5 py-2.5 text-[11px] font-extrabold text-carbon-70 transition-colors hover:bg-carbon-05"
             >
               <MaterialIcon name="visibility" size={13} />
               View public profile
@@ -151,11 +151,11 @@ export const OverviewSection: React.FC<{ onNavigate: (tab: 'profile' | 'connecto
           </div>
         ) : (
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="text-xs text-slate-500">You haven’t claimed your username yet — it becomes hazardnet.live/u/&lt;username&gt;.</p>
+            <p className="text-xs text-carbon-60">You haven’t claimed your username yet — it becomes hazardnet.live/u/&lt;username&gt;.</p>
             <button
               type="button"
               onClick={() => onNavigate('profile')}
-              className="rounded-xl bg-nasa-red px-3.5 py-2 text-[11px] font-extrabold text-slate-950 transition-colors hover:bg-nasa-red-shade cursor-pointer"
+              className="rounded-xl bg-nasa-red px-3.5 py-2 text-[11px] font-extrabold text-carbon-black transition-colors hover:bg-nasa-red-shade cursor-pointer"
             >
               Claim username
             </button>
@@ -179,7 +179,7 @@ export const OverviewSection: React.FC<{ onNavigate: (tab: 'profile' | 'connecto
       {/* Completion + quick actions */}
       <div className="grid gap-5 lg:grid-cols-2">
         <Card title="Complete your profile" subtitle="A complete profile unlocks sharper, farm-tuned advisories." icon={<MaterialIcon name="user_check" size={18} />}>
-          <div className="mb-3 h-2 w-full overflow-hidden rounded-full bg-slate-100">
+          <div className="mb-3 h-2 w-full overflow-hidden rounded-full bg-carbon-10">
             <div
               className="h-full rounded-full bg-gradient-to-r from-amber-500 to-emerald-500 transition-all duration-500"
               style={{ width: `${completion.percent}%` }}
@@ -187,15 +187,15 @@ export const OverviewSection: React.FC<{ onNavigate: (tab: 'profile' | 'connecto
           </div>
           {completion.missing.length > 0 ? (
             <>
-              <p className="text-[11px] font-semibold text-slate-500">Still missing:</p>
+              <p className="text-[11px] font-semibold text-carbon-60">Still missing:</p>
               <div className="mt-1.5 flex flex-wrap gap-1.5">
                 {completion.missing.slice(0, 8).map((missing) => (
-                  <span key={missing} className="rounded-full bg-slate-100 px-2.5 py-1 text-[10.5px] font-bold text-slate-600">
+                  <span key={missing} className="rounded-full bg-carbon-10 px-2.5 py-1 text-[10.5px] font-bold text-carbon-60">
                     {missing}
                   </span>
                 ))}
                 {completion.missing.length > 8 && (
-                  <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[10.5px] font-bold text-slate-600">
+                  <span className="rounded-full bg-carbon-10 px-2.5 py-1 text-[10.5px] font-bold text-carbon-60">
                     +{completion.missing.length - 8} more
                   </span>
                 )}
@@ -207,7 +207,7 @@ export const OverviewSection: React.FC<{ onNavigate: (tab: 'profile' | 'connecto
           <button
             type="button"
             onClick={() => onNavigate('profile')}
-            className="mt-4 w-full rounded-xl border border-slate-200 px-4 py-2.5 text-xs font-extrabold text-slate-800 transition-colors hover:bg-slate-50 cursor-pointer"
+            className="mt-4 w-full rounded-xl border border-carbon-20 px-4 py-2.5 text-xs font-extrabold text-carbon-80 transition-colors hover:bg-carbon-05 cursor-pointer"
           >
             Edit profile fields
           </button>
@@ -217,7 +217,7 @@ export const OverviewSection: React.FC<{ onNavigate: (tab: 'profile' | 'connecto
           <div className="grid gap-2">
             <Link
               to="/forecast/overview"
-              className="flex items-center justify-between rounded-xl border border-slate-200 px-4 py-3 text-xs font-bold text-slate-800 transition-colors hover:bg-slate-50"
+              className="flex items-center justify-between rounded-xl border border-carbon-20 px-4 py-3 text-xs font-bold text-carbon-80 transition-colors hover:bg-carbon-05"
             >
               <span className="flex items-center gap-2">
                 <MaterialIcon name="public" size={15} className="text-sky-600" /> Open district forecasts
@@ -227,11 +227,11 @@ export const OverviewSection: React.FC<{ onNavigate: (tab: 'profile' | 'connecto
             <button
               type="button"
               onClick={() => onNavigate('connectors')}
-              className="flex items-center justify-between rounded-xl border border-slate-200 px-4 py-3 text-xs font-bold text-slate-800 transition-colors hover:bg-slate-50 cursor-pointer"
+              className="flex items-center justify-between rounded-xl border border-carbon-20 px-4 py-3 text-xs font-bold text-carbon-80 transition-colors hover:bg-carbon-05 cursor-pointer"
             >
               <span className="flex items-center gap-2">
                 <MaterialIcon name="hub" size={15} className="text-teal-600" /> Manage connectors
-                <span className="rounded-full bg-slate-100 px-1.5 py-0.5 text-[9.5px] font-extrabold text-slate-500">
+                <span className="rounded-full bg-carbon-10 px-1.5 py-0.5 text-[9.5px] font-extrabold text-carbon-60">
                   {CONNECTOR_CATALOG.length} available
                 </span>
               </span>
@@ -240,7 +240,7 @@ export const OverviewSection: React.FC<{ onNavigate: (tab: 'profile' | 'connecto
             <button
               type="button"
               onClick={() => onNavigate('account')}
-              className="flex items-center justify-between rounded-xl border border-slate-200 px-4 py-3 text-xs font-bold text-slate-800 transition-colors hover:bg-slate-50 cursor-pointer"
+              className="flex items-center justify-between rounded-xl border border-carbon-20 px-4 py-3 text-xs font-bold text-carbon-80 transition-colors hover:bg-carbon-05 cursor-pointer"
             >
               <span className="flex items-center gap-2">
                 <MaterialIcon name="shield" size={15} className="text-emerald-600" /> Email, password & security

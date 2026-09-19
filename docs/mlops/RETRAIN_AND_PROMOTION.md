@@ -1,6 +1,6 @@
 # Retraining and champion/challenger promotion
 
-The quarterly cycle, the promotion gates, and how to roll back.
+The monthly cycle, the promotion gates, and how to roll back.
 
 ## Stages
 
@@ -43,30 +43,49 @@ and regenerating the handshake:
 node scripts/gen-model-version.mjs && python -m mlops.cli audit
 ```
 
-## The quarterly retrain
+## The monthly retrain
 
-Triggered by `.github/workflows/mlops.yml` (first of Jan/Apr/Jul/Oct), which opens or
-updates an issue with the brief. **The workflow does not retrain anything**: training
-runs `ml/HazardNet_auto_train.ipynb` on a machine with Earth Engine credentials, and
-that is a deliberate human step.
+Two things happen each month, and only one of them is a machine's job.
+
+**Automated.** `model_retrain.yml` runs at 18:00 UTC on the 1st (00:00 BDT on the 2nd),
+provisions a Colab T4, and launches `ml/HazardNet_auto_train.ipynb` detached;
+`model_retrain_watch.yml` follows it every twenty minutes and relaunches it from its
+Drive checkpoints when the free tier recycles the session; `model_intake.yml` collects
+the finished bundle, validates it against the manifest the notebook wrote, regenerates
+the handshake and opens a pull request. Setup, triage and the limits are in
+[`COLAB_AUTOMATION.md`](COLAB_AUTOMATION.md).
+
+`.github/workflows/mlops.yml` still opens the quarterly brief issue, because the brief
+is about *whether* retraining is worth anything this quarter — a question the automated
+run cannot ask, since it has no idea what the truth data says.
+
+**Human.** Everything below. Automation produces a candidate; it does not decide the
+window, fit calibration, score the challenger, or promote.
 
 Checklist:
 
 1. **Refresh the archive.** `python -m etl.cli events --input <fresh extract> --apply`
    (or `--dry-run` first — see `scripts/etl/README.md`). Record the ingested count
-   against the 2,931-event claim; drift is reported, not assumed away.
+   against the 2,931-event claim; drift is reported, not assumed away. *This one has to
+   come first: the automated run trains on whatever tensor is already in Drive, so an
+   archive refreshed after it produces a candidate that cannot be compared with the
+   champion.*
 2. **Freeze the window.** Choose the train/validation/test split and write it down
    *before* fitting anything. Temporal leakage is the failure mode
    `docs/MODEL_CARD.md` §4.1 records, and it is why the evaluation join refuses to
-   score an outcome that predates its forecast.
-3. **Retrain** (`ml/HazardNet_auto_train.ipynb`), keeping the preprocessing contract
-   intact: band order and z-score statistics come from
-   `Models/preprocessing_config.json`, and `SOIL_MODE` decides how the unobserved
-   soil channels are handled (`mean` or `forbid`). Changing either invalidates
-   comparisons with the previous champion.
-4. **Publish the artifacts** and regenerate the handshake
-   (`node scripts/gen-model-version.mjs`); CI fails if `Models/VERSION.json` is stale.
-   Record the new artifact hash in the registry (`mlops.cli registry --write`).
+   score an outcome that predates its forecast. The notebook's strategy
+   (`event_kfold`, `spatial_lodo`, `temporal`, `spatio_temporal`) is the split; it is a
+   `workflow_dispatch` input, and the run marker records which one was used.
+3. **Retrain** — automated, but the contract is still yours to keep intact: band order
+   and z-score statistics come from `Models/preprocessing_config.json`, and `SOIL_MODE`
+   decides how the unobserved soil channels are handled (`mean` or `forbid`). Changing
+   either invalidates comparisons with the previous champion, and the manifest will not
+   tell you: it records what ran, not whether what ran is comparable.
+4. **Publish the artifacts** — automated up to the pull request. `model_intake.yml`
+   copies the bundle into `Models/`, runs `node scripts/gen-model-version.mjs` (the only
+   writer of `Models/VERSION.json`; CI fails if it is stale) and `mlops.cli registry
+   --write`, then opens the PR with the fold metrics, the parity numbers and the artifact
+   hashes in the body. **Merging is the human step**, and merging is not promotion.
 5. **Fit calibration on held-out outcomes only** — never on the training window, and
    never on the same rows used to compute the champion's reliability
    (`docs/mlops/CALIBRATION.md`). A map fitted on the rows it is evaluated on has an

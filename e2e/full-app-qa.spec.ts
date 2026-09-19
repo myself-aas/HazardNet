@@ -71,15 +71,72 @@ function isEnvironmental(text: string): boolean {
  * duplicates of those messages are dropped. (`net::ERR_*` failures never produce a
  * response at all, so the console rule above still covers them.)
  */
-const ENVIRONMENTAL_URLS: Array<{ pattern: RegExp; why: string }> = [
+/**
+ * Statuses that mean "there is no API runtime behind this server", as distinct
+ * from "the API ran and answered with an error".
+ *
+ *  - 404/501 — the deployment serves nothing at that path. Production answers
+ *    /api/v1/forecasts/* this way (Vercel Root Directory; site-health.yml probes
+ *    it and docs/ops/owner-actions.md §2a-bis tracks the owner action).
+ *  - 502/503/504 — `vite preview` proxies /api to `127.0.0.1:3001`
+ *    (frontend/vite.config.ts), and the CI E2E job starts no backend, so the
+ *    proxy itself answers for every API call. This is what the 18 red tests of
+ *    2026-09-19 were: `502 http://127.0.0.1:3000/api/v1/forecasts/bulk…` and
+ *    `502 …/api/predict` on seven routes, twice (desktop + mobile).
+ *
+ * A 500 is deliberately absent: that is an API runtime failing, wherever it runs,
+ * and must keep reddening the route.
+ */
+const NO_API_RUNTIME_STATUSES = [404, 501, 502, 503, 504];
+
+/**
+ * Set by a runner that serves the built frontend with no API runtime behind it
+ * (the CI E2E job sets it next to `E2E_BASE_URL`). Opt-in on purpose: when this
+ * suite is pointed at a deployment that *does* run the API, a gateway error there
+ * is a real outage and must fail the run rather than be excused.
+ */
+const NO_API_RUNTIME = /^(1|true|yes)$/i.test(process.env.QA_NO_API_RUNTIME ?? '');
+
+const ENVIRONMENTAL_URLS: Array<{ pattern: RegExp; why: string; statuses?: number[]; when?: boolean }> = [
   { pattern: /firebase|firebaseio|googleapis|googletagmanager/i, why: 'third-party hosts blocked in sandbox' },
   { pattern: /cartocdn|arcgis(online)?\.com|tile\.openstreetmap|opentopomap/i, why: 'basemap tiles blocked; service worker serves its offline tile' },
   { pattern: /\/api\/v1\/(weather|alerts)/i, why: 'upstream weather/alert feeds unreachable without egress' },
   { pattern: /_vercel\/insights/i, why: 'Vercel-only analytics asset' },
+  {
+    // The forecast API is not served by the environment this suite runs in. The
+    // CI job serves the built frontend with `vite preview` (static assets only —
+    // no Node API runtime), and the production deployment answers
+    // /api/v1/forecasts/* with 404 for the same reason (Vercel Root Directory;
+    // site-health.yml probes it and docs/ops/owner-actions.md §2a-bis tracks the
+    // owner action). ADR 0008 makes the committed snapshot the fallback, so a
+    // 404 here is the documented delivery path, not a defect — and the
+    // `forecast data comes from a documented source` test below asserts the
+    // fallback actually resolved instead of trusting the mute.
+    // Scoped to 404/501 on purpose: a 500 from a deployed API is a real failure
+    // and must still redden the route.
+    pattern: /\/api\/v1\/forecasts\//i,
+    why: 'no API runtime in this environment; ADR 0008 snapshot fallback is the delivery path',
+    statuses: [404, 501],
+  },
+  {
+    // The general form of the rule above, for a runner that has no API at all:
+    // every /api call is answered by the proxy, not by an application. Gated on
+    // QA_NO_API_RUNTIME so it cannot excuse a gateway error from a deployment
+    // that is supposed to serve the API.
+    pattern: /\/api\//i,
+    why: 'QA_NO_API_RUNTIME is set: this server has no API runtime, so the preview proxy answers every /api call',
+    statuses: NO_API_RUNTIME_STATUSES,
+    when: NO_API_RUNTIME,
+  },
 ];
 
-function isEnvironmentalUrl(url: string): boolean {
-  return ENVIRONMENTAL_URLS.some(({ pattern }) => pattern.test(url));
+function isEnvironmentalUrl(url: string, status?: number): boolean {
+  return ENVIRONMENTAL_URLS.some(
+    ({ pattern, statuses, when }) =>
+      when !== false &&
+      pattern.test(url) &&
+      (!statuses || (status !== undefined && statuses.includes(status))),
+  );
 }
 
 /** Attach console+error+response collectors; returns the live arrays. */
@@ -87,6 +144,8 @@ function collectConsole(page: Page) {
   const errors: string[] = [];
   const pageErrors: string[] = [];
   const badResponses: string[] = [];
+  /** Every response seen, so a test can assert a source *was* used. */
+  const responses: Array<{ url: string; status: number }> = [];
   page.on('console', (msg: ConsoleMessage) => {
     if (msg.type() !== 'error') return;
     const text = msg.text();
@@ -100,12 +159,14 @@ function collectConsole(page: Page) {
     pageErrors.push(`${err.name}: ${err.message}`);
   });
   page.on('response', (res) => {
-    if (res.status() < 400) return;
     const url = res.url();
-    if (isEnvironmentalUrl(url)) return;
-    badResponses.push(`${res.status()} ${url}`);
+    const status = res.status();
+    responses.push({ url, status });
+    if (status < 400) return;
+    if (isEnvironmentalUrl(url, status)) return;
+    badResponses.push(`${status} ${url}`);
   });
-  return { errors, pageErrors, badResponses };
+  return { errors, pageErrors, badResponses, responses };
 }
 
 /** Every visitor-reachable route, mirroring scripts/qa/design-review.mjs. */
@@ -234,6 +295,36 @@ test.describe('Console health — the blind spot in the existing gate', () => {
   });
 });
 
+test.describe('Forecast data source — the ADR 0008 fallback chain', () => {
+  // `/api/*` gateway statuses are filtered out of the failure lists above when
+  // the runner has no API runtime (see ENVIRONMENTAL_URLS / QA_NO_API_RUNTIME).
+  // A mute that is not paired with a positive assertion is exactly how a broken
+  // fallback stays green, so these tests prove each forecast surface resolved
+  // its rows from one of the two documented sources: the live API, or the
+  // committed snapshot the deployment ships with.
+  const FORECAST_ROUTES = ['/live', '/forecast/overview', '/forecast/district/dhaka'];
+
+  for (const route of FORECAST_ROUTES) {
+    test(`${route} resolves forecast data from the API or the committed snapshot`, async ({ page }) => {
+      const { responses } = collectConsole(page);
+      await page.goto(BASE + route, { waitUntil: 'domcontentloaded' });
+      await waitForRoute(page);
+      await page.waitForTimeout(2500); // the fallback chain is sequential: /metadata → /bulk → snapshot
+
+      const api = responses.filter((r) => /\/api\/v1\/forecasts\//.test(r.url));
+      const snapshot = responses.filter((r) => r.url.includes('/data/forecasts-latest.json'));
+      const apiServed = api.some((r) => r.status < 400);
+      const snapshotServed = snapshot.some((r) => r.status < 400);
+
+      expect(
+        apiServed || snapshotServed,
+        `${route} resolved no forecast source — api: [${api.map((r) => r.status).join(', ') || 'not requested'}], ` +
+          `snapshot: [${snapshot.map((r) => r.status).join(', ') || 'not requested'}]`,
+      ).toBe(true);
+    });
+  }
+});
+
 test.describe('Historical archive surface', () => {
   test('states its unit of measurement before its first figure', async ({ page }) => {
     await page.goto(`${BASE}/archive`, { waitUntil: 'domcontentloaded' });
@@ -311,9 +402,17 @@ test.describe('Historical archive surface', () => {
     await waitForRoute(page);
     const body = await page.locator('body').innerText();
 
-    // Copy the gate in scripts/check-severity-embargo.mjs blocks. This is the
-    // runtime witness to that build-time rule: the gate proves it at build time,
-    // this proves it reached the browser.
+    // Runtime witness to the build-time gate (scripts/check-severity-embargo.mjs).
+    //
+    // Two different rules, and the difference matters: the composite-index phrases
+    // are NOT blocked repository-wide. ADR 0012 classified them as presentation
+    // aggregations (district count × the mean of the already-published per-district
+    // severity) that stay on the national-overview dashboard surface *labelled as
+    // such*, and the gate fails the build if that label goes missing. What the
+    // archive surface may carry is narrower still: only the archive's own reported
+    // Severity_Index field. So this asserts the archive page publishes no composite
+    // of any kind — the block-tier rules (weights, calibrated thresholds, cluster
+    // membership) are covered by the same gate at build time.
     for (const forbidden of [/composite hazard score/i, /composite risk index/i, /\bweights?\b\s*[:=]/i, /cluster (centroid|assignment)/i]) {
       expect(body, `embargoed term rendered on /archive: ${forbidden}`).not.toMatch(forbidden);
     }

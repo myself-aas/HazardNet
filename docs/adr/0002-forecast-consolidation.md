@@ -120,6 +120,12 @@ if desired.
       path is active)
 - [ ] `scripts/db/002_forecasts_supabase.sql` applied in Supabase
       (runbook step 1; verified by `scripts/verify-supabase-cutover.mjs`)
+      — **2026-09-19: neither file is in the repository**, and neither is
+      `scripts/migrate-firestore-to-supabase.mjs` (runbook step 3). The
+      `Supabase-cutover-verify` workflow used to invoke the missing verifier and
+      failed every dispatch with `Cannot find module`; it now preflights the three
+      paths and names them. Writing them, or retiring this workflow and striking
+      these references, is `docs/ops/owner-actions.md` Action 14.
 - [ ] Migration executed / confirmed unnecessary (Firestore expected empty;
       dry-run reports the count — runbook step 3)
 - [ ] `FORECAST_STORE=supabase` + `DATABASE_URL` set in backend/Vercel/workflow;

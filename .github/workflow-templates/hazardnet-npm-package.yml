@@ -9,6 +9,15 @@
 # See .github/workflow-templates/README.md for adoption steps, secrets and
 # tag conventions.
 #
+# NOT ADOPTED BY THIS PROJECT (ADR 0011, docs/adr/0011-distribution-without-
+# package-registries.md): HazardNet does not publish to the npm registry, and
+# the root package.json is `"private": true`. The website's Download Center
+# therefore renders no `npm install hazardnet` and never queries
+# registry.npmjs.org. This template is kept as reference material for a product
+# repository that one day decides otherwise — adopting it means reversing that
+# ADR, and recording the reversal.
+#
+
 # CI (every pull request and push to the default branch):
 #   - fail-fast checks for package.json and the committed lockfile
 #   - install with the repository lockfile (npm ci by default)

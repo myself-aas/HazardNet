@@ -53,7 +53,7 @@ const USE_CASES: UseCaseData[] = [
     hazardType: 'Tropical Cyclone',
     impactLevel: 'Severe Coastal Inundation',
     icon: 'cyclone',
-    bannerColor: 'border-slate-300 bg-slate-50 text-slate-900',
+    bannerColor: 'border-carbon-30 bg-carbon-05 text-carbon-90',
     districtId: 'satkhira',
     summary: 'Category 1-3 cyclones originating in the Bay of Bengal generate +2m to +4m storm surges that breach polders, flooding shrimp ghers and salinizing agricultural soils.',
     satelliteData: 'Sentinel-2 NDWI (Normalized Difference Water Index) combined with ERA5 reanalysis surface wind vectors (>120 km/h).',
@@ -143,20 +143,20 @@ export const UseCases: React.FC = () => {
       <Breadcrumbs />
 
       {/* Header Banner */}
-      <div className="bg-white border border-slate-200/90 rounded-3xl p-6 md:p-8 shadow-md relative overflow-hidden group space-y-3">
+      <div className="bg-white border border-carbon-20/90 rounded-3xl p-6 md:p-8 shadow-md relative overflow-hidden group space-y-3">
         <div className="absolute top-0 left-0 w-full h-1 bg-nasa-red"></div>
         <div className="flex items-center gap-2">
           <span className="px-3 py-1 rounded-full text-[10px] font-mono font-extrabold bg-amber-50 text-amber-900 border border-amber-300 uppercase tracking-wider shadow-2xs">
             Agricultural Disaster AI
           </span>
-          <span className="text-slate-300">•</span>
-          <span className="text-xs text-slate-500 font-semibold">South Asia Regional Deployment</span>
+          <span className="text-carbon-30">•</span>
+          <span className="text-xs text-carbon-60 font-semibold">South Asia Regional Deployment</span>
         </div>
 
-        <h1 className="text-2xl md:text-3xl font-brand font-black text-slate-900 tracking-tight">
+        <h1 className="text-2xl md:text-3xl font-brand font-black text-carbon-90 tracking-tight">
           Hazard<span className="text-nasa-red-shade">Net</span> Operational Use Cases & Field Impact
         </h1>
-        <p className="text-slate-600 text-xs md:text-sm leading-relaxed max-w-3xl">
+        <p className="text-carbon-60 text-xs md:text-sm leading-relaxed max-w-3xl">
           Discover how HazardNet's 15-band multi-task neural network mitigates disaster risks across distinct agro-ecological zones in Bangladesh, protecting food security and rural livelihoods.
         </p>
       </div>
@@ -173,22 +173,22 @@ export const UseCases: React.FC = () => {
               onClick={() => setActiveCaseId(item.id)}
               className={`p-4 rounded-2xl border text-left transition-all duration-300 flex flex-col justify-between gap-3 shadow-sm hover:shadow-md cursor-pointer ${
                 isSelected
-                  ? 'bg-amber-50/90 text-slate-900 border-nasa-blue ring-2 ring-nasa-blue/40 shadow-amber-500/10'
-                  : 'bg-white text-slate-800 border-slate-200 hover:border-slate-300 hover:bg-slate-50/50'
+                  ? 'bg-amber-50/90 text-carbon-90 border-nasa-blue ring-2 ring-nasa-blue/40 shadow-amber-500/10'
+                  : 'bg-white text-carbon-80 border-carbon-20 hover:border-carbon-30 hover:bg-carbon-05/50'
               }`}
             >
               <div className="flex items-center justify-between">
                 <MaterialIcon name={item.icon} className="w-4 h-4" />
                 <span className={`px-2.5 py-1 rounded-full text-[10px] font-mono font-extrabold border ${
-                  isSelected ? 'bg-amber-200/90 text-amber-950 border-amber-300' : 'bg-slate-100 text-slate-700 border-slate-200'
+                  isSelected ? 'bg-amber-200/90 text-amber-950 border-amber-300' : 'bg-carbon-10 text-carbon-70 border-carbon-20'
                 }`}>
                   {item.hazardType}
                 </span>
               </div>
 
               <div>
-                <h3 className="font-extrabold text-xs sm:text-sm leading-snug line-clamp-2 text-slate-900">{item.title}</h3>
-                <p className={`text-[11px] mt-1 font-medium line-clamp-1 ${isSelected ? 'text-slate-700' : 'text-slate-500'}`}>
+                <h3 className="font-extrabold text-xs sm:text-sm leading-snug line-clamp-2 text-carbon-90">{item.title}</h3>
+                <p className={`text-[11px] mt-1 font-medium line-clamp-1 ${isSelected ? 'text-carbon-70' : 'text-carbon-60'}`}>
                   {item.region}
                 </p>
               </div>
@@ -205,7 +205,7 @@ export const UseCases: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -12 }}
           transition={{ duration: 0.25 }}
-          className="bg-white border border-slate-200/90 rounded-3xl p-6 md:p-8 shadow-lg space-y-6 relative overflow-hidden"
+          className="bg-white border border-carbon-20/90 rounded-3xl p-6 md:p-8 shadow-lg space-y-6 relative overflow-hidden"
         >
           
           {/* Case Banner */}
@@ -213,15 +213,15 @@ export const UseCases: React.FC = () => {
             <div className="flex items-center gap-3.5">
               <MaterialIcon name={activeCase.icon} className="w-4 h-4" />
               <div>
-                <h2 className="text-lg font-black text-slate-900 tracking-tight">{activeCase.title}</h2>
-                <p className="text-xs font-semibold text-slate-700 opacity-90 mt-0.5">{activeCase.region} • {activeCase.impactLevel}</p>
+                <h2 className="text-lg font-black text-carbon-90 tracking-tight">{activeCase.title}</h2>
+                <p className="text-xs font-semibold text-carbon-70 opacity-90 mt-0.5">{activeCase.region} • {activeCase.impactLevel}</p>
               </div>
             </div>
 
             <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
               <Link
                 to={`/?district=${activeCase.districtId}&report=true`}
-                className="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-black transition-all shadow-md hover:shadow-lg shrink-0 text-center inline-block cursor-pointer"
+                className="px-4 py-2.5 rounded-xl bg-carbon-90 hover:bg-carbon-80 text-white text-xs font-black transition-all shadow-md hover:shadow-lg shrink-0 text-center inline-block cursor-pointer"
               >
                 <MaterialIcon name="satellite_alt" className="w-4 h-4" /> Simulate Hazard on Live GIS
               </Link>
@@ -231,29 +231,29 @@ export const UseCases: React.FC = () => {
           {/* Stats Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {activeCase.stats.map((st, i) => (
-              <motion.div whileHover={{ y: -3 }} key={i} className="p-4 sm:p-5 rounded-2xl bg-slate-50/90 border border-slate-200/80 hover:border-amber-300/80 hover:shadow-md transition-all duration-300 space-y-1.5">
-                <span className="text-[10px] font-mono font-bold text-slate-500 uppercase tracking-wider block">{st.label}</span>
-                <span className="text-xl sm:text-2xl font-black text-slate-900">{st.value}</span>
+              <motion.div whileHover={{ y: -3 }} key={i} className="p-4 sm:p-5 rounded-2xl bg-carbon-05/90 border border-carbon-20/80 hover:border-amber-300/80 hover:shadow-md transition-all duration-300 space-y-1.5">
+                <span className="text-[10px] font-mono font-bold text-carbon-60 uppercase tracking-wider block">{st.label}</span>
+                <span className="text-xl sm:text-2xl font-black text-carbon-90">{st.value}</span>
               </motion.div>
             ))}
           </div>
 
           {/* Core Summary & Satellite Method */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-3 p-5 rounded-2xl bg-slate-50/80 border border-slate-200/80 hover:border-slate-300 transition-all shadow-2xs">
-              <h3 className="font-bold text-xs uppercase font-mono text-slate-900 flex items-center gap-2">
+            <div className="space-y-3 p-5 rounded-2xl bg-carbon-05/80 border border-carbon-20/80 hover:border-carbon-30 transition-all shadow-2xs">
+              <h3 className="font-bold text-xs uppercase font-mono text-carbon-90 flex items-center gap-2">
                 <span className="p-1 rounded-lg bg-amber-100 text-amber-900"><MaterialIcon name="content_copy" className="w-4 h-4" /></span> Problem Statement & Threat
               </h3>
-              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-normal">
+              <p className="text-xs sm:text-sm text-carbon-60 leading-relaxed font-normal">
                 {activeCase.summary}
               </p>
             </div>
 
-            <div className="space-y-3 p-5 rounded-2xl bg-slate-50/80 border border-slate-200/80 hover:border-slate-300 transition-all shadow-2xs">
-              <h3 className="font-bold text-xs uppercase font-mono text-slate-900 flex items-center gap-2">
+            <div className="space-y-3 p-5 rounded-2xl bg-carbon-05/80 border border-carbon-20/80 hover:border-carbon-30 transition-all shadow-2xs">
+              <h3 className="font-bold text-xs uppercase font-mono text-carbon-90 flex items-center gap-2">
                 <span className="p-1 rounded-lg bg-cyan-100 text-cyan-900"><MaterialIcon name="satellite_alt" className="w-4 h-4" /></span> Satellite Sentinel Radar & Spectral Signature
               </h3>
-              <p className="text-xs text-slate-700 leading-relaxed font-mono bg-white p-3.5 rounded-xl border border-slate-200 shadow-2xs">
+              <p className="text-xs text-carbon-70 leading-relaxed font-mono bg-white p-3.5 rounded-xl border border-carbon-20 shadow-2xs">
                 {activeCase.satelliteData}
               </p>
             </div>
@@ -263,12 +263,12 @@ export const UseCases: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             
             <div className="space-y-3">
-              <h3 className="font-extrabold text-sm text-slate-900 flex items-center gap-2">
+              <h3 className="font-extrabold text-sm text-carbon-90 flex items-center gap-2">
                 <MaterialIcon name="agriculture" className="w-4 h-4 text-emerald-600" /> Vulnerable Crops & Local Commodities
               </h3>
               <ul className="space-y-2 text-xs">
                 {activeCase.affectedCrops.map((crop, i) => (
-                  <motion.li whileHover={{ x: 3 }} key={i} className="p-3 rounded-xl bg-slate-50/90 border border-slate-200/80 text-slate-700 flex items-center gap-2.5 font-semibold hover:border-emerald-300/80 transition-all shadow-2xs">
+                  <motion.li whileHover={{ x: 3 }} key={i} className="p-3 rounded-xl bg-carbon-05/90 border border-carbon-20/80 text-carbon-70 flex items-center gap-2.5 font-semibold hover:border-emerald-300/80 transition-all shadow-2xs">
                     <span className="text-emerald-600 font-extrabold bg-emerald-100/80 rounded-full p-0.5 px-1 text-[10px]">✔</span>
                     <span>{crop}</span>
                   </motion.li>
@@ -277,12 +277,12 @@ export const UseCases: React.FC = () => {
             </div>
 
             <div className="space-y-3">
-              <h3 className="font-extrabold text-sm text-slate-900 flex items-center gap-2">
+              <h3 className="font-extrabold text-sm text-carbon-90 flex items-center gap-2">
                 <MaterialIcon name="shield" className="w-4 h-4" /> Automated Agronomic 72-Hour Mitigation Steps
               </h3>
               <ul className="space-y-2 text-xs">
                 {activeCase.mitigationSteps.map((step, i) => (
-                  <motion.li whileHover={{ x: 3 }} key={i} className="p-3 rounded-xl bg-slate-50/90 border border-slate-200/80 text-slate-700 flex items-start gap-2.5 hover:border-amber-300/80 transition-all shadow-2xs">
+                  <motion.li whileHover={{ x: 3 }} key={i} className="p-3 rounded-xl bg-carbon-05/90 border border-carbon-20/80 text-carbon-70 flex items-start gap-2.5 hover:border-amber-300/80 transition-all shadow-2xs">
                     <span className="font-black text-amber-900 bg-amber-100/80 px-2 py-0.5 rounded-lg text-xs shrink-0">{i + 1}</span>
                     <span className="font-medium pt-0.5">{step}</span>
                   </motion.li>
@@ -296,10 +296,10 @@ export const UseCases: React.FC = () => {
       </AnimatePresence>
 
       {/* Cross-Link Quick Actions */}
-      <div className="bg-amber-50/80 border border-amber-200 rounded-3xl p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-xs text-slate-900">
+      <div className="bg-amber-50/80 border border-amber-200 rounded-3xl p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-xs text-carbon-90">
         <div className="space-y-1 text-center md:text-left">
-          <h3 className="text-lg font-black text-slate-900 tracking-tight">Ready to test these models locally on your system?</h3>
-          <p className="text-xs text-slate-600 font-medium">
+          <h3 className="text-lg font-black text-carbon-90 tracking-tight">Ready to test these models locally on your system?</h3>
+          <p className="text-xs text-carbon-60 font-medium">
             Download our standalone Wasm runtime, desktop GUI, or Python PyPI library for offline satellite tensor evaluation.
           </p>
         </div>
@@ -308,7 +308,7 @@ export const UseCases: React.FC = () => {
           <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
             <Link
               to="/download"
-              className="px-5 py-2.5 rounded-xl bg-nasa-red hover:bg-nasa-red-shade text-slate-950 font-black text-xs transition-all shadow-md hover:shadow-lg inline-block cursor-pointer"
+              className="px-5 py-2.5 rounded-xl bg-nasa-red hover:bg-nasa-red-shade text-carbon-black font-black text-xs transition-all shadow-md hover:shadow-lg inline-block cursor-pointer"
             >
               <MaterialIcon name="download" className="w-4 h-4" /> Download Software
             </Link>
@@ -316,7 +316,7 @@ export const UseCases: React.FC = () => {
           <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
             <Link
               to="/docs"
-              className="px-5 py-2.5 rounded-xl bg-white text-slate-900 font-bold text-xs hover:bg-slate-100 transition-all border border-slate-300 shadow-xs inline-block cursor-pointer"
+              className="px-5 py-2.5 rounded-xl bg-white text-carbon-90 font-bold text-xs hover:bg-carbon-10 transition-all border border-carbon-30 shadow-xs inline-block cursor-pointer"
             >
               <MaterialIcon name="menu_book" className="w-4 h-4" /> Read Research Docs
             </Link>

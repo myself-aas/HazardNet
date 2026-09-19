@@ -106,9 +106,9 @@ export default function AuthCallbackPage() {
   if (phase === 'exchanging') {
     return (
       <Shell>
-        <span className="h-9 w-9 animate-spin rounded-full border-[3px] border-slate-200 border-t-nasa-red" />
-        <p className="text-sm font-bold text-slate-800">Completing secure sign-in…</p>
-        <p className="text-xs text-slate-500">Verifying the authorization code with your provider.</p>
+        <span className="h-9 w-9 animate-spin rounded-full border-[3px] border-carbon-20 border-t-nasa-red" />
+        <p className="text-sm font-bold text-carbon-80">Completing secure sign-in…</p>
+        <p className="text-xs text-carbon-60">Verifying the authorization code with your provider.</p>
       </Shell>
     )
   }
@@ -123,15 +123,15 @@ export default function AuthCallbackPage() {
         >
           ✓
         </motion.span>
-        <p className="text-sm font-bold text-slate-800">
+        <p className="text-sm font-bold text-carbon-80">
           {providerLabel ? `Signed in with ${providerLabel}` : 'Signed in successfully'}
         </p>
-        <p className="text-xs text-slate-500">
+        <p className="text-xs text-carbon-60">
           Returning you to HazardNet{returnTo && returnTo !== '/' ? ` (${returnTo})` : ''} in {countdown}…
         </p>
         <Link
           to={returnTo && returnTo.startsWith('/') ? returnTo : '/'}
-          className="rounded-xl bg-nasa-red px-4 py-2 text-xs font-black text-slate-950 shadow-md transition-colors hover:bg-nasa-red-shade"
+          className="rounded-xl bg-nasa-red px-4 py-2 text-xs font-black text-carbon-black shadow-md transition-colors hover:bg-nasa-red-shade"
         >
           Continue now
         </Link>
@@ -145,7 +145,7 @@ export default function AuthCallbackPage() {
       <span className="flex h-11 w-11 items-center justify-center rounded-full bg-rose-100 text-xl text-rose-700">
         ✕
       </span>
-      <p className="text-sm font-bold text-slate-800">Sign-in could not complete</p>
+      <p className="text-sm font-bold text-carbon-80">Sign-in could not complete</p>
       <div className="max-w-md rounded-xl border border-rose-200 bg-rose-50 p-3 text-left">
         <p className="text-xs font-extrabold text-rose-900">{resolved.title}</p>
         <p className="mt-0.5 text-[11px] font-medium leading-relaxed text-rose-800">{resolved.hint}</p>
@@ -153,13 +153,13 @@ export default function AuthCallbackPage() {
       <div className="flex items-center gap-2">
         <Link
           to="/login"
-          className="rounded-xl bg-slate-900 px-4 py-2 text-xs font-black text-white transition-colors hover:bg-slate-700"
+          className="rounded-xl bg-carbon-90 px-4 py-2 text-xs font-black text-white transition-colors hover:bg-carbon-70"
         >
           Back to sign in
         </Link>
         <Link
           to="/"
-          className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-black text-slate-700 transition-colors hover:bg-slate-50"
+          className="rounded-xl border border-carbon-20 bg-white px-4 py-2 text-xs font-black text-carbon-70 transition-colors hover:bg-carbon-05"
         >
           Go to home
         </Link>

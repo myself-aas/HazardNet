@@ -1,0 +1,249 @@
+name: Monthly Model Retrain (Colab T4)
+
+# ─────────────────────────────────────────────────────────────────────────────
+# The launch half of the monthly retrain. Read this before editing it.
+#
+# Training the HazardNet CNN on the master HDF5 tensor takes seven to nine hours
+# on a T4. A GitHub-hosted job is killed at six, and a Colab free-tier session is
+# recycled whenever Google decides without telling anybody. So this workflow does
+# NOT run the training. It spends about five minutes:
+#
+#   1. provision a T4 with the official Colab CLI (`colab new --gpu T4`),
+#   2. mount Drive and upload the notebook plus a `run_config.json`,
+#   3. launch the notebook *detached* over `colab ssh`, so the job belongs to the
+#      VM rather than to this workflow,
+#   4. commit the run marker (`data/mlops/retrain-runs/<run_id>.json`).
+#
+# The marker is the whole handoff. `model_retrain_watch.yml` reads it from the
+# repository every twenty minutes — it cannot read it from this job, because this
+# job finished eight hours before the training did — and it is what decides whether
+# to keep the session warm, relaunch a dead one from its checkpoints, or collect the
+# bundle. `model_intake.yml` then turns a finished bundle into a pull request.
+#
+# Credentials: `COLAB_TOKEN_JSON` is the contents of `~/.config/colab-cli/token.json`
+# after one human runs `colab auth` on their own machine (docs/mlops/COLAB_AUTOMATION.md).
+# Colab quota and Drive belong to a person, not to a service account, so there is no
+# ADC variant of this. Nothing on the GitHub side needs more than `GITHUB_TOKEN`.
+# ─────────────────────────────────────────────────────────────────────────────
+
+on:
+  schedule:
+    # 18:00 UTC on the 1st = 00:00 BDT on the 2nd, so "the monthly retrain" starts
+    # on a Bangladesh date rather than the afternoon before it.
+    - cron: '0 18 1 * *'
+  workflow_dispatch:
+    inputs:
+      strategy:
+        description: 'Validation strategy the notebook trains under'
+        type: choice
+        default: event_kfold
+        options:
+          - event_kfold
+          - spatial_lodo
+          - temporal
+          - spatio_temporal
+          - all
+      gpu:
+        description: 'Colab accelerator (the free tier offers T4)'
+        type: choice
+        default: T4
+        options:
+          - T4
+      force:
+        description: 'Launch even if a run is already in flight'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write   # commits the run marker
+  issues: write     # says so when the launch did not happen
+
+concurrency:
+  group: model-retrain-launch
+  # Never cancel a launch mid-provision: an orphaned VM with no marker is a session
+  # nobody will ever stop.
+  cancel-in-progress: false
+
+env:
+  PYTHONUNBUFFERED: '1'
+
+jobs:
+  launch:
+    name: Provision a T4 and start the notebook
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          # The Colab CLI requires 3.12+. Nothing else here needs the pipeline
+          # requirements — `mlops.retrain_cli` is deliberately stdlib-only, so this
+          # job installs no scientific stack and cannot be broken by one.
+          python-version: '3.12'
+
+      - name: Preflight — credentials and the notebook that will be trained
+        shell: bash
+        env:
+          COLAB_TOKEN_JSON: ${{ secrets.COLAB_TOKEN_JSON }}
+        run: |
+          set -euo pipefail
+          if [ -z "${COLAB_TOKEN_JSON:-}" ]; then
+            echo "::error::COLAB_TOKEN_JSON is not set. Run \`colab auth\` once on your own machine and store the contents of ~/.config/colab-cli/token.json as a repository secret — see docs/mlops/COLAB_AUTOMATION.md. Until then the monthly retrain cannot launch."
+            exit 1
+          fi
+          # The secret is used, never echoed: a refresh token is a standing credential
+          # for a person's Google account.
+          echo "· COLAB_TOKEN_JSON present ($(printf '%s' "$COLAB_TOKEN_JSON" | wc -c) bytes)"
+          python - <<'PY'
+          import hashlib, json, pathlib
+          notebook = pathlib.Path('ml/HazardNet_auto_train.ipynb')
+          if not notebook.is_file():
+              raise SystemExit(f'::error::{notebook} is missing — nothing to train with')
+          document = json.loads(notebook.read_text(encoding='utf-8'))
+          cells = [c for c in document.get('cells', []) if c.get('cell_type') == 'code']
+          digest = hashlib.sha256(notebook.read_bytes()).hexdigest()
+          print(f'· {notebook}: {len(cells)} code cells, sha256 {digest}')
+          if not any('getpass' not in ''.join(c.get('source', [])) for c in cells):
+              pass
+          # An interactive prompt in an unattended notebook is a run that hangs until
+          # the session is recycled, so it is worth failing the launch over.
+          for index, cell in enumerate(cells):
+              source = ''.join(cell.get('source', []))
+              if 'getpass' in source or 'input(' in source:
+                  raise SystemExit(
+                      f'::error::code cell {index} of {notebook} reads from the keyboard. '
+                      'An unattended run cannot answer a prompt; move the value into run_config.json.'
+                  )
+          print('· no cell reads from the keyboard')
+          PY
+          echo "· repository sha ${GITHUB_SHA}"
+
+      - name: Launch the retrain on Colab (detached)
+        id: launch
+        shell: bash
+        env:
+          COLAB_TOKEN_JSON: ${{ secrets.COLAB_TOKEN_JSON }}
+          # A headless session has no Drive (`colab drivemount` needs a TTY), so the
+          # notebook reads the master tensor from the Kaggle dataset instead. These are
+          # the same credentials the forecast workflows already use — no new secret.
+          KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
+          KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
+          HN_STRATEGY: ${{ inputs.strategy || 'event_kfold' }}
+          HN_GPU: ${{ inputs.gpu || 'T4' }}
+        run: |
+          set -euo pipefail
+          cd scripts
+          FORCE=''
+          if [ "${{ inputs.force }}" = 'true' ]; then FORCE='--force'; fi
+          # shellcheck disable=SC2086
+          python -m mlops.retrain_cli start \
+            --strategy "$HN_STRATEGY" \
+            --gpu "$HN_GPU" \
+            --triggered-by "${GITHUB_EVENT_NAME}" \
+            $FORCE
+
+      - name: Commit the run marker
+        shell: bash
+        env:
+          RUN_ID: ${{ steps.launch.outputs.run_id }}
+          SKIPPED: ${{ steps.launch.outputs.skipped }}
+          SESSION: ${{ steps.launch.outputs.session }}
+        run: |
+          set -euo pipefail
+          if [ "$SKIPPED" = 'true' ]; then
+            echo "ℹ️ A retrain is already in flight ($RUN_ID); nothing new to record."
+            exit 0
+          fi
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add data/mlops/retrain-runs
+          if git diff --staged --quiet; then
+            echo "::error::the launch reported run ${RUN_ID} but wrote no marker — the watcher would never see this run."
+            exit 1
+          fi
+          git pull --rebase --autostash origin "${GITHUB_REF_NAME}" || true
+          git commit -m "chore(mlops): retrain ${RUN_ID} launched on Colab" \
+            -m "Session: ${SESSION} | Notebook: ml/HazardNet_auto_train.ipynb" \
+            -m "The marker is the handoff: model_retrain_watch.yml reads it from the repository every 20 minutes, because this job ends hours before the training does." \
+            -m "Timestamp: $(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+          # Explicit refspec, matching daily_forecast.yml: a bare `git push` dies with
+          # exit 128 when the checkout is detached, and the only evidence left is the
+          # exit code.
+          if ! git push origin "HEAD:${GITHUB_REF_NAME}"; then
+            {
+              echo '#### The retrain marker could not be pushed'
+              echo 'The Colab session is training and nothing in the repository knows about it.'
+              echo '```'
+              git status --short --branch
+              git log --oneline -3
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+            echo "::error::run ${RUN_ID} is training in session ${SESSION} but its marker is local only. Push it by hand or the run will be orphaned and eventually abandoned."
+            exit 1
+          fi
+
+      - name: Say so when the launch did not happen
+        if: failure()
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -uo pipefail
+          TITLE="Monthly model retrain did not launch"
+          BODY=$(cat <<EOF
+          The retrain launch failed in [run ${GITHUB_RUN_ID}](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}).
+
+          The usual causes, in order of likelihood:
+
+          1. **No GPU on the free tier.** \`colab new --gpu T4\` raises when nothing is
+             available. Re-run the workflow, or move the cron to a quieter hour.
+          2. **\`COLAB_TOKEN_JSON\` expired.** Google refresh tokens for a
+             \`colaboratory\` scope last until the account's password changes or the
+             grant is revoked. Re-run \`colab auth\` and replace the secret.
+          3. **The notebook grew a prompt.** An unattended run cannot answer
+             \`getpass\` or \`input()\`; the preflight fails the launch over it.
+
+          Nothing was trained, so the champion model is unaffected. The forecast
+          pipeline keeps running on the bundle in \`Models/\`.
+          EOF
+          )
+          # One open issue per problem, not one per month: a repeated failure comments
+          # on the issue it already opened.
+          EXISTING=$(gh issue list --state open --search "$TITLE" --json number --jq '.[0].number // empty')
+          if [ -n "$EXISTING" ]; then
+            gh issue comment "$EXISTING" --body "Failed again in [run ${GITHUB_RUN_ID}](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID})."
+          else
+            gh issue create --title "$TITLE" --body "$BODY" --label "mlops" || \
+              echo "::warning::could not open an issue (check issues: write); the failure is only in the run log"
+          fi
+
+      - name: Summary
+        if: always()
+        shell: bash
+        env:
+          RUN_ID: ${{ steps.launch.outputs.run_id }}
+          SKIPPED: ${{ steps.launch.outputs.skipped }}
+          SESSION: ${{ steps.launch.outputs.session }}
+        run: |
+          {
+            echo '### Monthly retrain launch'
+            echo ''
+            if [ "$SKIPPED" = 'true' ]; then
+              echo "Skipped: \`${RUN_ID}\` is already in flight."
+            elif [ -n "$RUN_ID" ]; then
+              echo "| | |"
+              echo '|---|---|'
+              echo "| Run | \`${RUN_ID}\` |"
+              echo "| Colab session | \`${SESSION}\` |"
+              echo "| Marker | \`data/mlops/retrain-runs/${RUN_ID}.json\` |"
+              echo ''
+              echo 'This job is over in minutes; the training is not. `model_retrain_watch.yml`'
+              echo 'follows it every 20 minutes and `model_intake.yml` opens the pull request.'
+            else
+              echo 'The launch did not produce a run — see the step log above.'
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"

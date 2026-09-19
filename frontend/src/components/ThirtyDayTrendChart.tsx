@@ -86,10 +86,10 @@ const HAZARD_PALETTE = {
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-white border border-slate-200 p-3.5 rounded-xl shadow-lg text-xs font-sans space-y-2 z-50 text-slate-800">
-        <div className="flex items-center justify-between gap-4 border-b border-slate-200 pb-1.5">
-          <span className="font-extrabold text-slate-900 text-sm">{label}, 2026</span>
-          <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200 font-bold">
+      <div className="bg-white border border-carbon-20 p-3.5 rounded-xl shadow-lg text-xs font-sans space-y-2 z-50 text-carbon-80">
+        <div className="flex items-center justify-between gap-4 border-b border-carbon-20 pb-1.5">
+          <span className="font-extrabold text-carbon-90 text-sm">{label}, 2026</span>
+          <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-carbon-10 text-carbon-70 border border-carbon-20 font-bold">
             30-Day GIS History
           </span>
         </div>
@@ -98,9 +98,9 @@ const CustomTooltip = ({ active, payload, label }: any) => {
             <div key={`item-${index}`} className="flex items-center justify-between gap-6 font-mono text-[11px]">
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: entry.color || entry.fill }}></span>
-                <span className="text-slate-600 font-sans">{entry.name}:</span>
+                <span className="text-carbon-60 font-sans">{entry.name}:</span>
               </div>
-              <span className="font-extrabold text-slate-900">{entry.value}%</span>
+              <span className="font-extrabold text-carbon-90">{entry.value}%</span>
             </div>
           ))}
         </div>
@@ -133,22 +133,22 @@ export const ThirtyDayTrendChart: React.FC<ThirtyDayTrendChartProps> = ({
   }, [chartData]);
 
   return (
-    <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-md space-y-6 transition-all duration-300 hover:shadow-lg">
+    <div className="bg-white border border-carbon-20/90 rounded-3xl p-6 sm:p-8 shadow-md space-y-6 transition-all duration-300 hover:shadow-lg">
       
       {/* Header & Controls */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-200 pb-5">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-carbon-20 pb-5">
         <div className="space-y-1">
           <div className="flex items-center gap-2.5">
             <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-nasa-red/10 text-nasa-red-shade border border-nasa-blue/20 shadow-2xs">
               30-Day Historical Telemetry
             </span>
-            <span className="text-slate-300">•</span>
-            <span className="text-xs sm:text-sm font-mono text-slate-500 font-bold">{districtName} District</span>
+            <span className="text-carbon-30">•</span>
+            <span className="text-xs sm:text-sm font-mono text-carbon-60 font-bold">{districtName} District</span>
           </div>
-          <h3 className="text-lg sm:text-xl font-extrabold text-slate-900 flex items-center gap-2">
+          <h3 className="text-lg sm:text-xl font-extrabold text-carbon-90 flex items-center gap-2">
             <MaterialIcon name="severity" className="w-4 h-4 text-rose-600" /> 30-Day Historical Hazard Severity Index
           </h3>
-          <p className="text-xs sm:text-sm text-slate-600">
+          <p className="text-xs sm:text-sm text-carbon-60">
             Daily Sentinel-2 multispectral and ERA5-Land reanalysis severity quantification (Jul 2 - Jul 31)
           </p>
         </div>
@@ -161,8 +161,8 @@ export const ThirtyDayTrendChart: React.FC<ThirtyDayTrendChartProps> = ({
               onClick={() => setSelectedHazard(h)}
               className={`px-3.5 py-2 rounded-full text-xs font-bold transition-all duration-200 min-h-[38px] cursor-pointer ${
                 selectedHazard === h
-                  ? 'bg-nasa-red text-slate-900 shadow-2xs scale-[1.02]'
-                  : 'bg-slate-50 text-slate-600 hover:text-slate-900 border border-slate-200 hover:bg-slate-100'
+                  ? 'bg-nasa-red text-carbon-90 shadow-2xs scale-[1.02]'
+                  : 'bg-carbon-05 text-carbon-60 hover:text-carbon-90 border border-carbon-20 hover:bg-carbon-10'
               }`}
             >
               {h}
@@ -172,21 +172,21 @@ export const ThirtyDayTrendChart: React.FC<ThirtyDayTrendChartProps> = ({
       </div>
 
       {/* KPI Stats Bar */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 bg-slate-50/80 p-5 rounded-2xl border border-slate-200/90 shadow-2xs">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 bg-carbon-05/80 p-5 rounded-2xl border border-carbon-20/90 shadow-2xs">
         <div className="space-y-1">
-          <span className="text-[10px] sm:text-xs font-mono uppercase text-slate-500 font-bold block">30-Day Peak Severity</span>
+          <span className="text-[10px] sm:text-xs font-mono uppercase text-carbon-60 font-bold block">30-Day Peak Severity</span>
           <span className="text-xl sm:text-2xl font-extrabold text-rose-600 font-mono">{stats.max}%</span>
         </div>
         <div className="space-y-1">
-          <span className="text-[10px] sm:text-xs font-mono uppercase text-slate-500 font-bold block">30-Day Mean Index</span>
+          <span className="text-[10px] sm:text-xs font-mono uppercase text-carbon-60 font-bold block">30-Day Mean Index</span>
           <span className="text-xl sm:text-2xl font-extrabold text-amber-600 font-mono">{stats.avg}%</span>
         </div>
         <div className="space-y-1">
-          <span className="text-[10px] sm:text-xs font-mono uppercase text-slate-500 font-bold block">Latest Telemetry (Today)</span>
-          <span className="text-xl sm:text-2xl font-extrabold text-slate-900 font-mono">{stats.latest}%</span>
+          <span className="text-[10px] sm:text-xs font-mono uppercase text-carbon-60 font-bold block">Latest Telemetry (Today)</span>
+          <span className="text-xl sm:text-2xl font-extrabold text-carbon-90 font-mono">{stats.latest}%</span>
         </div>
         <div className="space-y-1">
-          <span className="text-[10px] sm:text-xs font-mono uppercase text-slate-500 font-bold block">24h Severity Trend</span>
+          <span className="text-[10px] sm:text-xs font-mono uppercase text-carbon-60 font-bold block">24h Severity Trend</span>
           <span className={`text-xl sm:text-2xl font-extrabold font-mono ${stats.diff > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
             {stats.diff > 0 ? `+${stats.diff}%` : `${stats.diff}%`}
           </span>
@@ -216,11 +216,11 @@ export const ThirtyDayTrendChart: React.FC<ThirtyDayTrendChartProps> = ({
               </linearGradient>
             </defs>
 
-            <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
-            <XAxis dataKey="date" stroke="#64748b" fontSize={11} tickLine={false} />
-            <YAxis stroke="#64748b" fontSize={11} tickLine={false} unit="%" domain={[0, 100]} />
+            <CartesianGrid strokeDasharray="3 3" stroke="#d1d1d1" vertical={false} />
+            <XAxis dataKey="date" stroke="#77777a" fontSize={11} tickLine={false} />
+            <YAxis stroke="#77777a" fontSize={11} tickLine={false} unit="%" domain={[0, 100]} />
             <Tooltip content={<CustomTooltip />} />
-            <Legend wrapperStyle={{ fontSize: '11px', color: '#475569', paddingTop: '8px' }} />
+            <Legend wrapperStyle={{ fontSize: '11px', color: '#58585b', paddingTop: '8px' }} />
 
             <ReferenceLine y={75} stroke="#f43f5e" strokeDasharray="3 3" label={{ value: 'Catastrophic Threshold (75%)', fill: '#f43f5e', fontSize: 10, position: 'insideTopRight' }} />
 
@@ -276,12 +276,12 @@ export const ThirtyDayTrendChart: React.FC<ThirtyDayTrendChartProps> = ({
       </div>
 
       {/* Footer Info */}
-      <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-200 text-[11px] text-slate-500">
+      <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-carbon-20 text-[11px] text-carbon-60">
         <span className="flex items-center gap-1.5 font-mono">
           
           <span>Continuous Severity Normalization [0.0 - 1.0]</span>
         </span>
-        <span className="font-mono text-slate-700 font-bold">
+        <span className="font-mono text-carbon-70 font-bold">
           Source: Sentinel-2 L2A & ERA5-Land Continuous Satellite Stream
         </span>
       </div>

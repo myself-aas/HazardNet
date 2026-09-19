@@ -192,7 +192,24 @@ jobs:
             git commit -m "chore(data): update 3-hour forecasts $(date -u +%Y-%m-%dT%H:%M:%SZ)" \
                         -m "Automated 3-hour forecast update from Kaggle pipeline" \
                         -m "Timestamp: $(date -u +"%Y-%m-%dT%H:%M:%SZ")"
-            git push
+            # An explicit refspec, not a bare `git push`: with no upstream configured — and
+            # whenever the checkout is not sitting on a local branch — git dies with exit 128
+            # and the only thing the run reports is "Process completed with exit code 128",
+            # which is how hindcast.yml failed on 2026-09-19 (run 35430992137) after every
+            # scoring step had passed. The summary block below makes the next one legible:
+            # branch state, the last commits and the remote answer for themselves.
+            if ! git push origin "HEAD:${GITHUB_REF_NAME}"; then
+              {
+                echo '#### The 3-hour forecast commit could not be pushed'
+                echo '```'
+                git status --short --branch
+                git log --oneline -3
+                git remote -v
+                echo '```'
+              } >> "$GITHUB_STEP_SUMMARY"
+              echo "::error::the bot commit is local only — nothing was published to ${GITHUB_REF_NAME}. The job summary says whether the push was rejected (branch protection, read-only token) or the ref did not resolve."
+              exit 1
+            fi
           fi
 
       - name: Upload Artifacts

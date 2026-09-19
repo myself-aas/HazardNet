@@ -298,7 +298,7 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
   return (
     <div className="w-full space-y-6">
       {/* Header Banner & Status */}
-      <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-md relative overflow-hidden transition-all duration-300 hover:shadow-lg">
+      <div className="bg-white border border-carbon-20/90 rounded-3xl p-6 sm:p-8 shadow-md relative overflow-hidden transition-all duration-300 hover:shadow-lg">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
           <div className="space-y-2">
             <div className="flex flex-wrap items-center gap-2">
@@ -310,10 +310,10 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
                 className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-bold border ${
                   dbSource === 'firestore'
                     ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
-                    : 'bg-slate-100 border-slate-200 text-slate-700'
+                    : 'bg-carbon-10 border-carbon-20 text-carbon-70'
                 }`}
               >
-                <span className={`w-2 h-2 rounded-full ${dbSource === 'firestore' ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`} />
+                <span className={`w-2 h-2 rounded-full ${dbSource === 'firestore' ? 'bg-emerald-500 animate-pulse' : 'bg-carbon-40'}`} />
                 <span>{dbSource === 'firestore' ? 'Firestore Live Sync' : 'Local Forecast Baseline'}</span>
               </span>
             </div>
@@ -321,10 +321,10 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
                 own `<h1>` is the page heading. Two `<h1>`s on `/analytics` split the
                 document outline and made the axe census report a duplicate top-level
                 heading. The visual size is unchanged. */}
-            <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+            <h2 className="text-2xl sm:text-4xl font-extrabold text-carbon-90 tracking-tight">
               District Hazard Forecast Analytics
             </h2>
-            <p className="text-slate-600 text-xs sm:text-sm max-w-3xl leading-relaxed">
+            <p className="text-carbon-60 text-xs sm:text-sm max-w-3xl leading-relaxed">
               Real-time multi-hazard risk quantification and weather trends across Bangladesh's 64 agricultural districts powered by CNN AI model inference and Open-Meteo observations.
             </p>
           </div>
@@ -334,7 +334,7 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={handleExportCsv}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-slate-900 text-white text-xs font-extrabold shadow-sm hover:bg-slate-800 transition-all cursor-pointer"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-carbon-90 text-white text-xs font-extrabold shadow-sm hover:bg-carbon-80 transition-all cursor-pointer"
             >
               <MaterialIcon name="download" className="w-4 h-4 text-amber-400" />
               <span>Export CSV Data</span>
@@ -347,70 +347,70 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
       <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <motion.div
           whileHover={{ y: -2 }}
-          className="bg-white border border-slate-200/90 rounded-2xl p-4 sm:p-5 shadow-2xs space-y-1"
+          className="bg-white border border-carbon-20/90 rounded-2xl p-4 sm:p-5 shadow-2xs space-y-1"
         >
-          <div className="flex items-center justify-between text-slate-500">
+          <div className="flex items-center justify-between text-carbon-60">
             <span className="text-xs font-mono font-bold uppercase tracking-wider">Total Active Forecasts</span>
-            <MaterialIcon name="list_alt" className="w-4 h-4 text-slate-400" />
+            <MaterialIcon name="list_alt" className="w-4 h-4 text-carbon-60" />
           </div>
-          <div className="text-2xl sm:text-3xl font-black text-slate-900">{stats.total}</div>
-          <p className="text-[11px] text-slate-500 font-mono">Horizon: {selectedHorizon.replace('_', ' ')}</p>
+          <div className="text-2xl sm:text-3xl font-black text-carbon-90">{stats.total}</div>
+          <p className="text-[11px] text-carbon-60 font-mono">Horizon: {selectedHorizon.replace('_', ' ')}</p>
         </motion.div>
 
         <motion.div
           whileHover={{ y: -2 }}
-          className="bg-white border border-slate-200/90 rounded-2xl p-4 sm:p-5 shadow-2xs space-y-1"
+          className="bg-white border border-carbon-20/90 rounded-2xl p-4 sm:p-5 shadow-2xs space-y-1"
         >
           <div className="flex items-center justify-between text-rose-600">
             <span className="text-xs font-mono font-bold uppercase tracking-wider">High Risk Districts</span>
             <MaterialIcon name="warning" className="w-4 h-4 text-rose-500" />
           </div>
           <div className="text-2xl sm:text-3xl font-black text-rose-600">{stats.highRisk}</div>
-          <p className="text-[11px] text-slate-500 font-mono">Severity ≥ 67%</p>
+          <p className="text-[11px] text-carbon-60 font-mono">Severity ≥ 67%</p>
         </motion.div>
 
         <motion.div
           whileHover={{ y: -2 }}
-          className="bg-white border border-slate-200/90 rounded-2xl p-4 sm:p-5 shadow-2xs space-y-1"
+          className="bg-white border border-carbon-20/90 rounded-2xl p-4 sm:p-5 shadow-2xs space-y-1"
         >
           <div className="flex items-center justify-between text-amber-600">
             <span className="text-xs font-mono font-bold uppercase tracking-wider">Moderate Risk</span>
             <MaterialIcon name="error_outline" className="w-4 h-4 text-amber-500" />
           </div>
           <div className="text-2xl sm:text-3xl font-black text-amber-600">{stats.modRisk}</div>
-          <p className="text-[11px] text-slate-500 font-mono">Severity 34% - 66%</p>
+          <p className="text-[11px] text-carbon-60 font-mono">Severity 34% - 66%</p>
         </motion.div>
 
         <motion.div
           whileHover={{ y: -2 }}
-          className="bg-white border border-slate-200/90 rounded-2xl p-4 sm:p-5 shadow-2xs space-y-1"
+          className="bg-white border border-carbon-20/90 rounded-2xl p-4 sm:p-5 shadow-2xs space-y-1"
         >
           <div className="flex items-center justify-between text-emerald-600">
             <span className="text-xs font-mono font-bold uppercase tracking-wider">Avg AI Confidence</span>
             <MaterialIcon name="verified" className="w-4 h-4 text-emerald-500" />
           </div>
-          <div className="text-2xl sm:text-3xl font-black text-slate-900">{stats.avgConfidence.toFixed(1)}%</div>
-          <p className="text-[11px] text-slate-500 font-mono">Latest Run: {stats.latestDate}</p>
+          <div className="text-2xl sm:text-3xl font-black text-carbon-90">{stats.avgConfidence.toFixed(1)}%</div>
+          <p className="text-[11px] text-carbon-60 font-mono">Latest Run: {stats.latestDate}</p>
         </motion.div>
       </div>
 
       {/* Control Toolbar / Filters */}
-      <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-2xs space-y-3">
+      <div className="bg-white border border-carbon-20/90 rounded-2xl p-4 shadow-2xs space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           {/* Search bar */}
           <div className="relative flex-1 min-w-[200px] max-w-md">
-            <MaterialIcon name="search" className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <MaterialIcon name="search" className="w-4 h-4 text-carbon-60 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search district, hazard, or division..."
-              className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 placeholder:text-slate-400 focus:outline-hidden focus:ring-2 focus:ring-amber-400"
+              className="w-full pl-9 pr-4 py-2 bg-carbon-05 border border-carbon-20 rounded-xl text-xs font-medium text-carbon-90 placeholder:text-carbon-60 focus:outline-hidden focus:ring-2 focus:ring-amber-400"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-carbon-60 hover:text-carbon-60"
               >
                 <MaterialIcon name="close" className="w-3.5 h-3.5" />
               </button>
@@ -418,11 +418,11 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
           </div>
 
           {/* Horizon Switcher */}
-          <div className="inline-flex rounded-xl p-1 bg-slate-100 border border-slate-200 shrink-0">
+          <div className="inline-flex rounded-xl p-1 bg-carbon-10 border border-carbon-20 shrink-0">
             <button
               onClick={() => setSelectedHorizon('7_days')}
               className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                selectedHorizon === '7_days' ? 'bg-white text-slate-900 shadow-2xs font-extrabold' : 'text-slate-600 hover:text-slate-900'
+                selectedHorizon === '7_days' ? 'bg-white text-carbon-90 shadow-2xs font-extrabold' : 'text-carbon-60 hover:text-carbon-90'
               }`}
             >
               7-Day Tactical
@@ -430,7 +430,7 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
             <button
               onClick={() => setSelectedHorizon('15_days')}
               className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                selectedHorizon === '15_days' ? 'bg-white text-slate-900 shadow-2xs font-extrabold' : 'text-slate-600 hover:text-slate-900'
+                selectedHorizon === '15_days' ? 'bg-white text-carbon-90 shadow-2xs font-extrabold' : 'text-carbon-60 hover:text-carbon-90'
               }`}
             >
               15-Day Strategic
@@ -439,16 +439,16 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
         </div>
 
         {/* Filter Dropdowns */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-slate-100">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-carbon-10">
           <div>
-            <label className="block text-[10px] font-mono font-bold text-slate-500 uppercase mb-1">Filter District</label>
+            <label className="block text-[10px] font-mono font-bold text-carbon-60 uppercase mb-1">Filter District</label>
             <select
               value={selectedDistrict}
               onChange={(e) => {
                 setSelectedDistrict(e.target.value);
                 if (onSelectDistrict && e.target.value) onSelectDistrict(e.target.value);
               }}
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-amber-400"
+              className="w-full bg-carbon-05 border border-carbon-20 rounded-xl px-3 py-2 text-xs font-medium text-carbon-80 focus:outline-hidden focus:ring-2 focus:ring-amber-400"
             >
               <option value="">All 64 Districts</option>
               {availableDistricts.map((d) => (
@@ -460,11 +460,11 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
           </div>
 
           <div>
-            <label className="block text-[10px] font-mono font-bold text-slate-500 uppercase mb-1">Filter Hazard Type</label>
+            <label className="block text-[10px] font-mono font-bold text-carbon-60 uppercase mb-1">Filter Hazard Type</label>
             <select
               value={selectedHazard}
               onChange={(e) => setSelectedHazard(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-amber-400"
+              className="w-full bg-carbon-05 border border-carbon-20 rounded-xl px-3 py-2 text-xs font-medium text-carbon-80 focus:outline-hidden focus:ring-2 focus:ring-amber-400"
             >
               <option value="all">All Hazard Types</option>
               {availableHazards.map((h) => (
@@ -476,11 +476,11 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
           </div>
 
           <div>
-            <label className="block text-[10px] font-mono font-bold text-slate-500 uppercase mb-1">Risk Severity Level</label>
+            <label className="block text-[10px] font-mono font-bold text-carbon-60 uppercase mb-1">Risk Severity Level</label>
             <select
               value={selectedRiskLevel}
               onChange={(e) => setSelectedRiskLevel(e.target.value as any)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-amber-400"
+              className="w-full bg-carbon-05 border border-carbon-20 rounded-xl px-3 py-2 text-xs font-medium text-carbon-80 focus:outline-hidden focus:ring-2 focus:ring-amber-400"
             >
               <option value="all">All Risk Levels</option>
               <option value="high">High Risk (≥ 67%)</option>
@@ -492,14 +492,14 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
       </div>
 
       {/* Main Charts Container */}
-      <div className="bg-white border border-slate-200/90 rounded-3xl p-6 shadow-md space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+      <div className="bg-white border border-carbon-20/90 rounded-3xl p-6 shadow-md space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-carbon-10 pb-4">
           <div>
-            <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+            <h2 className="text-lg font-bold text-carbon-90 flex items-center gap-2">
               <MaterialIcon name="show_chart" className="w-5 h-5 text-amber-500" />
               <span>Interactive Risk Trend & Visualization</span>
             </h2>
-            <p className="text-xs text-slate-500 mt-0.5">
+            <p className="text-xs text-carbon-60 mt-0.5">
               Recharts powered analytics displaying forecasted hazard severity across prediction dates.
             </p>
           </div>
@@ -508,7 +508,7 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
             <button
               onClick={() => setActiveChartTab('trends')}
               className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                activeChartTab === 'trends' ? 'bg-amber-500 text-slate-900 shadow-2xs font-extrabold' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                activeChartTab === 'trends' ? 'bg-amber-500 text-carbon-90 shadow-2xs font-extrabold' : 'bg-carbon-10 text-carbon-60 hover:bg-carbon-20'
               }`}
             >
               Hazard Severity Trends
@@ -516,7 +516,7 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
             <button
               onClick={() => setActiveChartTab('comparison')}
               className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                activeChartTab === 'comparison' ? 'bg-amber-500 text-slate-900 shadow-2xs font-extrabold' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                activeChartTab === 'comparison' ? 'bg-amber-500 text-carbon-90 shadow-2xs font-extrabold' : 'bg-carbon-10 text-carbon-60 hover:bg-carbon-20'
               }`}
             >
               District Risk Bar Chart
@@ -524,7 +524,7 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
             <button
               onClick={() => setActiveChartTab('dualTrack')}
               className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                activeChartTab === 'dualTrack' ? 'bg-amber-500 text-slate-900 shadow-2xs font-extrabold' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                activeChartTab === 'dualTrack' ? 'bg-amber-500 text-carbon-90 shadow-2xs font-extrabold' : 'bg-carbon-10 text-carbon-60 hover:bg-carbon-20'
               }`}
             >
               CNN vs Physics Dual-Track
@@ -535,8 +535,8 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
         {loading ? (
           <div className="h-72 w-full flex items-center justify-center">
             <div className="flex flex-col items-center gap-3">
-              <span className="w-8 h-8 border-3 border-slate-300 border-t-amber-500 rounded-full animate-spin" />
-              <span className="text-xs font-mono text-slate-500">Querying Firestore Forecast Store...</span>
+              <span className="w-8 h-8 border-3 border-carbon-30 border-t-amber-500 rounded-full animate-spin" />
+              <span className="text-xs font-mono text-carbon-60">Querying Firestore Forecast Store...</span>
             </div>
           </div>
         ) : (
@@ -559,15 +559,15 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
                         <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.0} />
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                    <XAxis dataKey="date" stroke="#64748b" fontSize={11} tickLine={false} />
-                    <YAxis domain={[0, 100]} stroke="#64748b" fontSize={11} tickFormatter={(val) => `${val}%`} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e3e3e3" />
+                    <XAxis dataKey="date" stroke="#77777a" fontSize={11} tickLine={false} />
+                    <YAxis domain={[0, 100]} stroke="#77777a" fontSize={11} tickFormatter={(val) => `${val}%`} />
                     <Tooltip
                       content={({ active, payload, label }) => {
                         if (active && payload && payload.length) {
                           return (
-                            <div className="bg-white border border-slate-200 p-3 rounded-xl shadow-lg text-xs space-y-1.5 z-50">
-                              <div className="font-extrabold text-slate-900 border-b border-slate-100 pb-1">
+                            <div className="bg-white border border-carbon-20 p-3 rounded-xl shadow-lg text-xs space-y-1.5 z-50">
+                              <div className="font-extrabold text-carbon-90 border-b border-carbon-10 pb-1">
                                 Date: {label}
                               </div>
                               {payload.map((entry: any, i: number) => (
@@ -610,25 +610,25 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
               <div className="h-80 w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={districtComparisonData} margin={{ top: 10, right: 30, left: 10, bottom: 40 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e3e3e3" />
                     <XAxis
                       dataKey="name"
-                      stroke="#64748b"
+                      stroke="#77777a"
                       fontSize={11}
                       angle={-35}
                       textAnchor="end"
                       interval={0}
                     />
-                    <YAxis domain={[0, 100]} stroke="#64748b" fontSize={11} tickFormatter={(val) => `${val}%`} />
+                    <YAxis domain={[0, 100]} stroke="#77777a" fontSize={11} tickFormatter={(val) => `${val}%`} />
                     <Tooltip
                       content={({ active, payload, label }) => {
                         if (active && payload && payload.length) {
                           const data = payload[0].payload;
                           return (
-                            <div className="bg-white border border-slate-200 p-3 rounded-xl shadow-lg text-xs space-y-1">
-                              <div className="font-extrabold text-slate-900">{label}</div>
-                              <div className="text-slate-600 font-mono">Primary Hazard: {data.hazard}</div>
-                              <div className="text-slate-900 font-mono font-bold">Severity Score: {data.maxSeverity}%</div>
+                            <div className="bg-white border border-carbon-20 p-3 rounded-xl shadow-lg text-xs space-y-1">
+                              <div className="font-extrabold text-carbon-90">{label}</div>
+                              <div className="text-carbon-60 font-mono">Primary Hazard: {data.hazard}</div>
+                              <div className="text-carbon-90 font-mono font-bold">Severity Score: {data.maxSeverity}%</div>
                               <div className="text-emerald-700 font-mono">AI Confidence: {data.confidence}%</div>
                             </div>
                           );
@@ -654,9 +654,9 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
               <div className="h-80 w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <ComposedChart data={trendChartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                    <XAxis dataKey="date" stroke="#64748b" fontSize={11} />
-                    <YAxis domain={[0, 100]} stroke="#64748b" fontSize={11} tickFormatter={(val) => `${val}%`} />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e3e3e3" />
+                    <XAxis dataKey="date" stroke="#77777a" fontSize={11} />
+                    <YAxis domain={[0, 100]} stroke="#77777a" fontSize={11} tickFormatter={(val) => `${val}%`} />
                     <Tooltip />
                     <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
                     <ReferenceLine y={67} stroke="#ef4444" strokeDasharray="4 4" />
@@ -686,18 +686,18 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
       </div>
 
       {/* District Forecast Details Table */}
-      <div className="bg-white border border-slate-200/90 rounded-3xl p-6 shadow-md space-y-4">
+      <div className="bg-white border border-carbon-20/90 rounded-3xl p-6 shadow-md space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-            <MaterialIcon name="table_chart" className="w-4 h-4 text-slate-600" />
+          <h3 className="text-base font-bold text-carbon-90 flex items-center gap-2">
+            <MaterialIcon name="table_chart" className="w-4 h-4 text-carbon-60" />
             <span>Detailed District Forecast Records ({filteredForecasts.length})</span>
           </h3>
         </div>
 
-        <div className="overflow-x-auto rounded-2xl border border-slate-200/90">
+        <div className="overflow-x-auto rounded-2xl border border-carbon-20/90">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-mono uppercase text-slate-500 font-bold">
+              <tr className="bg-carbon-05 border-b border-carbon-20 text-[11px] font-mono uppercase text-carbon-60 font-bold">
                 <th className="p-3">District</th>
                 <th className="p-3">Hazard Type</th>
                 <th className="p-3">Physics Severity</th>
@@ -709,10 +709,10 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
                 <th className="p-3 text-right">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 text-xs">
+            <tbody className="divide-y divide-carbon-10 text-xs">
               {filteredForecasts.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="p-8 text-center text-slate-500">
+                  <td colSpan={9} className="p-8 text-center text-carbon-60">
                     No forecast records match the selected filters.
                   </td>
                 </tr>
@@ -724,16 +724,16 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
                   const isMod = physScore >= RISK_THRESHOLDS.MODERATE && physScore < RISK_THRESHOLDS.HIGH;
 
                   return (
-                    <tr key={idx} className="hover:bg-slate-50/80 transition-colors">
-                      <td className="p-3 font-bold text-slate-900">
+                    <tr key={idx} className="hover:bg-carbon-05/80 transition-colors">
+                      <td className="p-3 font-bold text-carbon-90">
                         {item.district_name}
-                        {item.division && <span className="text-[10px] text-slate-400 font-normal block">{item.division}</span>}
+                        {item.division && <span className="text-[10px] text-carbon-60 font-normal block">{item.division}</span>}
                       </td>
                       <td className="p-3">
-                        <span className="inline-flex items-center gap-1.5 font-medium text-slate-800">
+                        <span className="inline-flex items-center gap-1.5 font-medium text-carbon-80">
                           <span
                             className="w-2 h-2 rounded-full shrink-0"
-                            style={{ backgroundColor: HAZARD_COLORS[item.hazard_type] || '#64748b' }}
+                            style={{ backgroundColor: HAZARD_COLORS[item.hazard_type] || '#77777a' }}
                           />
                           {item.hazard_type}
                         </span>
@@ -751,17 +751,17 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
                           {Math.round(physScore * 100)}% ({isHigh ? 'High' : isMod ? 'Moderate' : 'Low'})
                         </span>
                       </td>
-                      <td className="p-3 font-mono text-slate-700">
+                      <td className="p-3 font-mono text-carbon-70">
                         {Math.round(modelScore * 100)}%
                       </td>
                       <td className="p-3 font-mono font-bold text-emerald-700">
                         {Math.round((item.confidence ?? 0) * 100)}%
                       </td>
-                      <td className="p-3 font-mono text-slate-600">{item.target_date || item.prediction_date}</td>
-                      <td className="p-3 font-mono text-slate-600">
+                      <td className="p-3 font-mono text-carbon-60">{item.target_date || item.prediction_date}</td>
+                      <td className="p-3 font-mono text-carbon-60">
                         {item.temperature_mean !== undefined ? `${item.temperature_mean.toFixed(1)}°C` : '—'}
                       </td>
-                      <td className="p-3 font-mono text-slate-600">
+                      <td className="p-3 font-mono text-carbon-60">
                         {item.precipitation_mm !== undefined ? `${item.precipitation_mm.toFixed(1)} mm` : '—'}
                       </td>
                       <td className="p-3 text-right">

@@ -67,20 +67,17 @@ export default tseslint.config(
     rules: { 'no-console': 'off' },
   },
   {
-    // scripts/qa/*.mjs and scripts/audit_frontend_design.mjs are the same work in two
-    // files: Playwright `page.evaluate` probes whose source is Node-linted but runs
-    // inside the page. Without browser globals here they fail on every
-    // `document`/`getComputedStyle`/`window` reference while the archive-quality
-    // probes read as Node.
-    files: ['scripts/qa/**/*.mjs', 'scripts/audit_frontend_design.mjs'],
-    languageOptions: { globals: { ...globals.node, ...globals.browser, process: 'readonly' } },
-  },
-  {
-    // scripts/audit_frontend_design.mjs drives the built app in a real browser: its probe
-    // functions (PROBE, FOCUS_PROBE, FOCUS_UNFOCUSED and the inline page.evaluate callbacks)
-    // execute inside the page via Playwright, so the source legitimately references browser
-    // globals (document, getComputedStyle, HTMLElement) that never run in the Node host.
-    files: ['scripts/audit_frontend_design.mjs'],
+    // Browser-driving scripts: their probe functions (PROBE, FOCUS_PROBE,
+    // FOCUS_UNFOCUSED and the inline page.evaluate callbacks) execute inside the
+    // page via Playwright, so the source legitimately references browser globals
+    // (document, window, getComputedStyle, HTMLElement) that never run in the Node
+    // host. `scripts/audit_frontend_design.mjs` was the only such file until the
+    // 2026-09-19 QA harness (`scripts/qa/`) added five more; without this block
+    // they lint as `no-undef` (58 errors on a clean checkout — the ESLint step of
+    // ci.yml `verify` was red on main from the merge that introduced them).
+    // Node globals stay in scope: these files match the `**/*.mjs` block above too,
+    // and flat config merges the `languageOptions.globals` of every match.
+    files: ['scripts/audit_frontend_design.mjs', 'scripts/qa/**/*.mjs'],
     languageOptions: { globals: { ...globals.browser } },
   },
   {

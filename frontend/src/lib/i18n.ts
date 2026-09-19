@@ -39,8 +39,7 @@ export const LANGUAGE_STORAGE_KEY = 'hazardnet-language';
 /** BCP-47 tag for `<html lang>` and `Intl` formatting. */
 export const languageTag = (language: Language): string => (language === 'bn' ? 'bn-BD' : 'en');
 
-export const isLanguage = (value: unknown): value is Language =>
-  value === 'en' || value === 'bn';
+export const isLanguage = (value: unknown): value is Language => value === 'en' || value === 'bn';
 
 const EN = {
   'common.language': 'Language',
@@ -119,8 +118,7 @@ const EN = {
   'alerts.evidence.noPhysics': 'No independent physics score on this row',
   'alerts.policy.title': 'How these levels are decided',
   'alerts.policy.ceiling':
-    'The pipeline publishes at or below {ceiling} automatically. Anything higher waits for a ' +
-    'named duty officer.',
+    'The pipeline publishes at or below {ceiling} automatically. Anything higher waits for a ' + 'named duty officer.',
   'alerts.policy.calibration':
     'Warnings require a calibrated probability. No calibration map is fitted yet, so a warning ' +
     'cannot currently be issued from model evidence — a watch is the highest automatic level.',
@@ -170,8 +168,7 @@ const EN = {
     'scene lineage existed). Treat their provenance as incomplete.',
 
   'alerts.levelLabel': 'Alert level',
-  'alerts.confidence.calibratedLong':
-    'The calibrated probability of this outcome is {score}.',
+  'alerts.confidence.calibratedLong': 'The calibrated probability of this outcome is {score}.',
   'alerts.confidence.uncalibratedLong':
     'Model score {score}. This is a softmax output used as a relative priority signal — it is ' +
     'not a probability that the hazard will occur. No calibration map is fitted for this model ' +
@@ -181,8 +178,7 @@ const EN = {
   'alerts.page.mapTitle': 'District map',
   'alerts.page.refresh': 'Refresh',
   'alerts.page.loadedAt': 'Loaded {time}',
-  'alerts.page.dropped':
-    '{count} rows in the payload were not in the PUBLISHED state and were ignored.',
+  'alerts.page.dropped': '{count} rows in the payload were not in the PUBLISHED state and were ignored.',
   'alerts.page.degraded': 'Notes from reading the payload:',
   'alerts.page.viewCards': 'Cards',
   'alerts.page.viewList': 'Text list',
@@ -191,8 +187,7 @@ const EN = {
   'alerts.page.assessed': '{count} districts assessed in this run',
   'alerts.page.noneAssessed': 'This run did not report how many districts it assessed.',
   'alerts.page.policyNote':
-    'Levels, thresholds and the human-review rule come from the policy document below, not from ' +
-    'this page.',
+    'Levels, thresholds and the human-review rule come from the policy document below, not from ' + 'this page.',
   'alerts.legend.title': 'Alert level',
 
   'evidence.alertId': 'Alert id',
@@ -211,8 +206,7 @@ const EN = {
   'evidence.exportPdf': 'Download as PDF',
   'evidence.exporting': 'Building PDF…',
   'evidence.exportFailed':
-    'The PDF could not be built in this browser. Use the browser print dialog and choose ' +
-    '"Save as PDF" instead.',
+    'The PDF could not be built in this browser. Use the browser print dialog and choose ' + '"Save as PDF" instead.',
 
   'map.legend.severity': 'Baseline severity',
   'map.legend.alerts': 'Alert level',
@@ -222,8 +216,131 @@ const EN = {
 
   'district.alerts': 'Alerts for {district}',
   'district.noAlert': 'No published alert for this district.',
-  'district.baselineOnly':
-    'This district has no row in the current run, so the card above shows the static baseline.',
+  'district.baselineOnly': 'This district has no row in the current run, so the card above shows the static baseline.',
+
+  /* ── The front door (`/`), added 2026-09-19 with the landing-page redesign ──
+     The editorial half of `/` is bilingual too, so the page a Bengali reader lands on
+     first is not an English article with Bengali badges pinned to it. Long-form copy
+     lives in the route's own `i18n.bn` block in `src/content/site-routes.json`; the
+     keys below are the labels and sentences the page renders around that copy.
+
+     One deliberate exception to "same meaning, two languages": `frontdoor.language.other`
+     is written *in the language it offers* (English shows বাংলায় পড়ুন, Bengali shows
+     "Read in English"), which is how a language switcher has to work — a reader who
+     cannot read the current language must still be able to find their own.
+
+     REVIEW STATUS: these Bengali strings and the route's `bn` block were read and approved
+     by the project owner on 2026-09-19 (owner Action 6c, closed for this surface). The
+     approval is recorded on the route itself — `i18n.bn.review` in `site-routes.json` — so
+     the copy and its review status cannot drift apart. New Bengali copy starts as
+     `pending-native-speaker` and is not announced until it is read. */
+  'frontdoor.language.other': 'বাংলায় পড়ুন',
+  'frontdoor.relatedPages': 'Related pages',
+  'frontdoor.hero.reviewed': 'reviewed {date}',
+  'frontdoor.hero.reviewedUnknown': 'review date unknown',
+  'frontdoor.hero.ctaMap': 'Open the live map',
+  'frontdoor.hero.ctaMethodology': 'How a forecast is produced',
+  'frontdoor.hero.ctaScorecard': 'Read the validation scorecard',
+  'frontdoor.hero.authority':
+    'HazardNet is decision support, not an official warning service. Weather warnings, cyclone signals and flood bulletins come from the Bangladesh Meteorological Department and the Flood Forecasting and Warning Centre; in an emergency call 999.',
+  'frontdoor.hero.authorityMap': 'The live map carries the current outlooks.',
+
+  'frontdoor.strip.label': 'Current publication status',
+  'frontdoor.strip.publishedNow': 'Published now',
+  'frontdoor.strip.reading': 'Reading the alerts artifact …',
+  'frontdoor.strip.unreadable':
+    'The alerts artifact could not be read on this load, so no count is shown here — an unread file is never reported as zero.',
+  'frontdoor.strip.districts': 'Districts covered',
+  'frontdoor.strip.assessed': 'Assessed rows',
+  'frontdoor.strip.updated': 'Updated',
+  'frontdoor.strip.navLabel': 'Alert and map pages',
+  'frontdoor.strip.allAlerts': 'All published alerts',
+  'frontdoor.strip.liveMap': 'Live map',
+  'frontdoor.strip.districtUnnamed': 'District not named',
+  'frontdoor.strip.nonePublished': 'No alert is published at the moment of this read.',
+  'frontdoor.strip.withheld':
+    'The run assessed {assessed} district forecasts and withheld {withheld} of them from publication — a statement about the publisher, not about the weather.',
+  'frontdoor.strip.withheldUnknown':
+    'The run reported no assessed or withheld counts, so the reason cannot be stated from this artifact.',
+  'frontdoor.strip.whyHeld': 'Why a run may be held',
+
+  'frontdoor.runVisual.eyebrow': 'The last run, from the committed artifacts',
+  'frontdoor.runVisual.reading': 'Reading /data/freshness.json …',
+  'frontdoor.runVisual.unreadable':
+    'The freshness artifact could not be read, so this panel states nothing about ages or coverage. The status page will show the same failure.',
+  'frontdoor.runVisual.statusPage': 'status page',
+  'frontdoor.runVisual.coverage': 'Districts with a row in the last run',
+  'frontdoor.runVisual.coverageStatus': 'coverage status',
+  'frontdoor.runVisual.units': 'forecast units produced',
+  'frontdoor.runVisual.outcome': 'What it published',
+  'frontdoor.runVisual.outcomeUnknown':
+    'The alert artifact could not be read, so this panel does not state an outcome.',
+  'frontdoor.runVisual.publishedSome':
+    '{count} alerts are published from this run; each one carries its evidence, its policy version and its reviewer.',
+  'frontdoor.runVisual.publishedNone':
+    'No alert is published from this run. {withheld} assessed rows were withheld by the review gate rather than dropped silently.',
+  'frontdoor.runVisual.artifacts': 'Artifacts this deployment ships',
+  'frontdoor.runVisual.honesty': 'What the run reports against itself',
+  'frontdoor.runVisual.moreHonesty': 'This card shows the first three of {total} notes; the rest are on the',
+  'frontdoor.runVisual.provenance':
+    'Every value on this card is read from /data/freshness.json and /data/alerts-latest.json',
+
+  'frontdoor.covers.h2': 'What this deployment covers',
+  'frontdoor.covers.hazards': 'Hazard classes, from cold wave to tropical cyclone',
+  'frontdoor.covers.districts': 'Districts addressed on the live map',
+  'frontdoor.covers.horizons': 'Forecast horizons, in days, from one deterministic weather window',
+  'frontdoor.covers.episodes': 'Historical episodes scored in the hindcast report',
+  'frontdoor.covers.coverageValue': '{covered} of {expected} districts',
+  'frontdoor.covers.noteLead':
+    'Coverage is stated from the artifacts, not from the design: the last forecast snapshot covered',
+  'frontdoor.covers.noteUnits': '({units} forecast units produced)',
+  'frontdoor.covers.noteTail': 'shows where each artifact came from and how old it is.',
+  'frontdoor.covers.statusLink': 'status page',
+
+  'frontdoor.run.h2': 'The last published alerts',
+  'frontdoor.run.aside': 'read from the committed artifacts on every load',
+  'frontdoor.run.publishedEyebrow': 'Published alerts',
+  'frontdoor.run.reading': 'Reading the alerts artifact …',
+  'frontdoor.run.noneLead': 'That is a statement about the publisher, not about the weather. The run behind this read',
+  'frontdoor.run.noneTitle': 'No alert is published at the moment of this read.',
+  'frontdoor.run.noneAssessed': 'assessed {assessed} district forecasts',
+  'frontdoor.run.noneAssessedUnknown': 'assessed an unreported number of forecasts',
+  'frontdoor.run.noneHeld': 'and held {held} of them out of publication',
+  'frontdoor.run.nonePublishedNone': 'and published none',
+  'frontdoor.run.noneDropped': ', dropping {dropped}',
+  'frontdoor.run.noneGenerated': '; it was generated {at}.',
+  'frontdoor.run.noneSilence':
+    'Silence on an agricultural platform is easily misread as safety, so the distinction matters:',
+  'frontdoor.run.distinction': 'no published alert is not the same as no hazard',
+  'frontdoor.run.noneRead': 'Read the',
+  'frontdoor.run.noneLiveLink': 'live map',
+  'frontdoor.run.noneFor': 'for the current outlooks and the',
+  'frontdoor.run.noneStatusLink': 'status page',
+  'frontdoor.run.noneTail': 'for why a run may be held.',
+  'frontdoor.run.errorPrefix': 'The alert source reported: {error}',
+  'frontdoor.run.horizon': '{horizon} horizon',
+  'frontdoor.run.valid': 'valid {date}',
+  'frontdoor.run.published': 'published {at}',
+  'frontdoor.run.publishedUnknown': 'publication time not reported',
+  'frontdoor.run.alertNav': 'Alert pages',
+  'frontdoor.run.failed':
+    'At least one artifact could not be read on this load. The panels above say so where it applies; a blank is never rendered as a zero.',
+
+  'frontdoor.faq.h2': 'Direct answers',
+  'frontdoor.attribution.eyebrow': 'Attribution',
+  'frontdoor.attribution.h2': 'Who built this, and under whose supervision',
+  'frontdoor.attribution.body':
+    '{author} ({role}) — {work}. {type}, {department}, {university}, supervised by {supervisor} ({supervisorRole}){coSupervision}.',
+  'frontdoor.attribution.orcid': 'ORCID {id}',
+  // A fragment, not a sentence: the co-supervisor in this repository's attribution data
+  // carries a role and a profile URL but no name, so the sentence can only acknowledge one.
+  'frontdoor.attribution.coSupervised': ' with a co-supervisor',
+  'frontdoor.attribution.citationLabel': 'Cite this work',
+  'frontdoor.attribution.links': 'Project links',
+  'frontdoor.attribution.repository': 'Repository',
+  'frontdoor.attribution.institution': 'Institution',
+  'frontdoor.attribution.supervisor': 'Supervisor profile',
+  'frontdoor.attribution.coSupervisor': 'Co-supervisor profile',
 
   'a11y.skipToList': 'Skip to the district list',
   'a11y.mapRegion': 'Interactive map of Bangladesh',
@@ -320,8 +437,7 @@ const BN: Record<string, string> = {
   'alerts.policy.readFull': 'সম্পূর্ণ নীতি পড়ুন',
   'alerts.detail.title': 'প্রমাণপত্র',
   'alerts.detail.audit': 'পর্যালোচনার নথি',
-  'alerts.detail.notFound':
-    'সতর্কবার্তাটি পাওয়া যায়নি। নতুন পূর্বাভাসের কারণে এটি বাতিল হয়ে থাকতে পারে।',
+  'alerts.detail.notFound': 'সতর্কবার্তাটি পাওয়া যায়নি। নতুন পূর্বাভাসের কারণে এটি বাতিল হয়ে থাকতে পারে।',
   'alerts.detail.downloadPdf': 'PDF হিসেবে ডাউনলোড',
   'alerts.detail.downloadCsv': 'সব সতর্কবার্তা ডাউনলোড (CSV)',
 
@@ -379,8 +495,7 @@ const BN: Record<string, string> = {
   'alerts.page.csv': 'সব সতর্কবার্তা ডাউনলোড (CSV)',
   'alerts.page.assessed': 'এই রানে {count}টি জেলা পর্যালোচনা করা হয়েছে',
   'alerts.page.noneAssessed': 'এই রান কতটি জেলা পর্যালোচনা করেছে তা জানায়নি।',
-  'alerts.page.policyNote':
-    'স্তর, থ্রেশহোল্ড ও মানব-পর্যালোচনার নিয়ম এই পাতার নয়, নিচের নীতি-দলিল থেকে আসে।',
+  'alerts.page.policyNote': 'স্তর, থ্রেশহোল্ড ও মানব-পর্যালোচনার নিয়ম এই পাতার নয়, নিচের নীতি-দলিল থেকে আসে।',
   'alerts.legend.title': 'সতর্কতার মাত্রা',
 
   'evidence.alertId': 'সতর্কবার্তার আইডি',
@@ -398,8 +513,7 @@ const BN: Record<string, string> = {
   'evidence.generated': 'তৈরি',
   'evidence.exportPdf': 'PDF হিসেবে ডাউনলোড',
   'evidence.exporting': 'PDF তৈরি হচ্ছে…',
-  'evidence.exportFailed':
-    'এই ব্রাউজারে PDF তৈরি করা যায়নি। ব্রাউজারের প্রিন্ট থেকে "Save as PDF" বেছে নিন।',
+  'evidence.exportFailed': 'এই ব্রাউজারে PDF তৈরি করা যায়নি। ব্রাউজারের প্রিন্ট থেকে "Save as PDF" বেছে নিন।',
 
   'map.legend.severity': 'ভিত্তিমান গুরুতরতা',
   'map.legend.alerts': 'সতর্কতার মাত্রা',
@@ -409,8 +523,115 @@ const BN: Record<string, string> = {
 
   'district.alerts': '{district}-এর সতর্কবার্তা',
   'district.noAlert': 'এই জেলার জন্য কোনো প্রকাশিত সতর্কবার্তা নেই।',
-  'district.baselineOnly':
-    'বর্তমান রানে এই জেলার কোনো সারি নেই, তাই উপরের কার্ডে স্থির ভিত্তিমান দেখানো হচ্ছে।',
+  'district.baselineOnly': 'বর্তমান রানে এই জেলার কোনো সারি নেই, তাই উপরের কার্ডে স্থির ভিত্তিমান দেখানো হচ্ছে।',
+
+  /* ── The front door (`/`) — see the note on the English side: drafted, awaiting the
+     native-speaker review recorded as owner Action 6c. ── */
+  'frontdoor.language.other': 'Read in English',
+  'frontdoor.relatedPages': 'সংশ্লিষ্ট পাতা',
+  'frontdoor.hero.reviewed': 'পর্যালোচনা {date}',
+  'frontdoor.hero.reviewedUnknown': 'পর্যালোচনার তারিখ অজানা',
+  'frontdoor.hero.ctaMap': 'লাইভ মানচিত্র খুলুন',
+  'frontdoor.hero.ctaMethodology': 'কীভাবে পূর্বাভাস তৈরি হয়',
+  'frontdoor.hero.ctaScorecard': 'যাচাই স্কোরকার্ড পড়ুন',
+  'frontdoor.hero.authority':
+    'HazardNet সিদ্ধান্ত সহায়তা মাত্র, কোনো সরকারি সতর্কবার্তা সেবা নয়। আবহাওয়ার সতর্কবার্তা, ঘূর্ণিঝড় সংকেত ও বন্যা বুলেটিন প্রকাশ করে বাংলাদেশ আবহাওয়া অধিদপ্তর এবং প্লাবন পূর্বাভাস ও সতর্কীকরণ কেন্দ্র (FFWC); জরুরি অবস্থায় ৯৯৯ নম্বরে কল করুন।',
+  'frontdoor.hero.authorityMap': 'বর্তমান পূর্বাভাস লাইভ মানচিত্রে দেখা যাবে।',
+
+  'frontdoor.strip.label': 'প্রকাশনার বর্তমান অবস্থা',
+  'frontdoor.strip.publishedNow': 'এই মুহূর্তে প্রকাশিত',
+  'frontdoor.strip.reading': 'সতর্কবার্তার আর্টিফ্যাক্ট পড়া হচ্ছে…',
+  'frontdoor.strip.unreadable':
+    'এইবার আর্টিফ্যাক্টটি পড়া যায়নি, তাই এখানে কোনো সংখ্যা দেখানো হচ্ছে না — ফাইল পড়া না গেলে তা শূন্য হিসেবে দেখানো হয় না।',
+  'frontdoor.strip.districts': 'আওতাভুক্ত জেলা',
+  'frontdoor.strip.assessed': 'মূল্যায়িত সারি',
+  'frontdoor.strip.updated': 'হালনাগাদ',
+  'frontdoor.strip.navLabel': 'সতর্কবার্তা ও মানচিত্রের পাতা',
+  'frontdoor.strip.allAlerts': 'প্রকাশিত সব সতর্কবার্তা',
+  'frontdoor.strip.liveMap': 'লাইভ মানচিত্র',
+  'frontdoor.strip.districtUnnamed': 'জেলার নাম দেওয়া নেই',
+  'frontdoor.strip.nonePublished': 'এই মুহূর্তে কোনো সতর্কবার্তা প্রকাশিত নেই।',
+  'frontdoor.strip.withheld':
+    'এই রানে {assessed}টি জেলা-পূর্বাভাস মূল্যায়ন করা হয়েছে এবং {withheld}টি প্রকাশ থেকে বিরত রাখা হয়েছে — এটি প্রকাশকের অবস্থা, আবহাওয়ার নয়।',
+  'frontdoor.strip.withheldUnknown':
+    'এই রানে মূল্যায়ন বা বিরত রাখার সংখ্যা জানানো হয়নি, তাই এই আর্টিফ্যাক্ট থেকে কারণ বলা যাচ্ছে না।',
+  'frontdoor.strip.whyHeld': 'কেন একটি রান আটকে থাকতে পারে',
+
+  'frontdoor.runVisual.eyebrow': 'সংরক্ষিত আর্টিফ্যাক্ট অনুযায়ী শেষ রান',
+  'frontdoor.runVisual.reading': '/data/freshness.json পড়া হচ্ছে…',
+  'frontdoor.runVisual.unreadable':
+    'ফ্রেশনেস আর্টিফ্যাক্ট পড়া যায়নি, তাই এই প্যানেলে বয়স বা আচ্ছাদন সম্পর্কে কিছু বলা হচ্ছে না। স্ট্যাটাস পাতায় একই ব্যর্থতা দেখা যাবে।',
+  'frontdoor.runVisual.statusPage': 'স্ট্যাটাস পাতা',
+  'frontdoor.runVisual.coverage': 'শেষ রানে যেসব জেলার তথ্যসারি আছে',
+  'frontdoor.runVisual.coverageStatus': 'আচ্ছাদনের অবস্থা',
+  'frontdoor.runVisual.units': 'পূর্বাভাস ইউনিট তৈরি হয়েছে',
+  'frontdoor.runVisual.outcome': 'এই রানে যা প্রকাশিত হয়েছে',
+  'frontdoor.runVisual.outcomeUnknown':
+    'সতর্কবার্তার আর্টিফ্যাক্ট পড়া যায়নি, তাই এই প্যানেল ফলাফল সম্পর্কে কিছু বলছে না।',
+  'frontdoor.runVisual.publishedSome':
+    'এই রান থেকে {count}টি সতর্কবার্তা প্রকাশিত; প্রতিটির সঙ্গে তার প্রমাণ, নীতির সংস্করণ ও পর্যালোচনাকারীর পরিচয় আছে।',
+  'frontdoor.runVisual.publishedNone':
+    'এই রান থেকে কোনো সতর্কবার্তা প্রকাশিত হয়নি। মূল্যায়িত {withheld}টি সারি নীরবে বাদ না দিয়ে পর্যালোচনা-গেটে আটকে রাখা হয়েছে।',
+  'frontdoor.runVisual.artifacts': 'এই ডিপ্লয়মেন্ট যেসব আর্টিফ্যাক্ট সরবরাহ করে',
+  'frontdoor.runVisual.honesty': 'রান নিজেই যেসব সীমাবদ্ধতা জানিয়েছে',
+  'frontdoor.runVisual.moreHonesty': 'এই কার্ডে {total}টি নোটের প্রথম তিনটি দেখানো হলো; বাকিগুলো আছে',
+  'frontdoor.runVisual.provenance':
+    'এই কার্ডের প্রতিটি সংখ্যা /data/freshness.json ও /data/alerts-latest.json থেকে নেওয়া',
+
+  'frontdoor.covers.h2': 'এই ডিপ্লয়মেন্ট যা আওতা করে',
+  'frontdoor.covers.hazards': 'দুর্যোগের শ্রেণি, শৈতপ্রবাহ থেকে ঘূর্ণিঝড় পর্যন্ত',
+  'frontdoor.covers.districts': 'লাইভ মানচিত্রে আওতাভুক্ত জেলা',
+  'frontdoor.covers.horizons': 'একটি নির্ধারিত আবহাওয়া উইন্ডো থেকে পূর্বাভাসের সময়কাল (দিনে)',
+  'frontdoor.covers.episodes': 'হিন্ডকাস্ট প্রতিবেদনে মূল্যায়িত ঐতিহাসিক ঘটনা',
+  'frontdoor.covers.coverageValue': '{expected}টির মধ্যে {covered}টি জেলা',
+  'frontdoor.covers.noteLead':
+    'আচ্ছাদন নকশা থেকে নয়, আর্টিফ্যাক্ট থেকে বলা হয়েছে: শেষ পূর্বাভাস স্ন্যাপশট আওতা করেছে',
+  'frontdoor.covers.noteUnits': '({units}টি পূর্বাভাস ইউনিট তৈরি)',
+  'frontdoor.covers.noteTail': 'দেখায় প্রতিটি আর্টিফ্যাক্ট কোথা থেকে এসেছে এবং কত পুরনো।',
+  'frontdoor.covers.statusLink': 'স্ট্যাটাস পাতা',
+
+  'frontdoor.run.h2': 'সর্বশেষ প্রকাশিত সতর্কবার্তা',
+  'frontdoor.run.aside': 'প্রতিবার লোড করলে সংরক্ষিত আর্টিফ্যাক্ট থেকে পড়া হয়',
+  'frontdoor.run.publishedEyebrow': 'প্রকাশিত সতর্কবার্তা',
+  'frontdoor.run.reading': 'সতর্কবার্তার আর্টিফ্যাক্ট পড়া হচ্ছে…',
+  'frontdoor.run.noneLead': 'এটি প্রকাশক সম্পর্কে একটি বিবৃতি, আবহাওয়া সম্পর্কে নয়। এই পাঠের পেছনের রান',
+  'frontdoor.run.noneTitle': 'এই মুহূর্তে কোনো সতর্কবার্তা প্রকাশিত নেই।',
+  'frontdoor.run.noneAssessed': '{assessed}টি জেলা-পূর্বাভাস মূল্যায়ন করেছে',
+  'frontdoor.run.noneAssessedUnknown': 'অজানা সংখ্যক পূর্বাভাস মূল্যায়ন করেছে',
+  'frontdoor.run.noneHeld': 'এবং {held}টি প্রকাশ থেকে বিরত রেখেছে',
+  'frontdoor.run.nonePublishedNone': 'এবং কোনোটিই প্রকাশ করেনি',
+  'frontdoor.run.noneDropped': ', বাদ দিয়েছে {dropped}টি',
+  'frontdoor.run.noneGenerated': '; এটি তৈরি হয়েছে {at}।',
+  'frontdoor.run.noneSilence':
+    'কৃষিবিষয়ক প্ল্যাটফর্মে নীরবতা সহজেই নিরাপত্তা বলে ভুল বোঝা যায়, তাই এই পার্থক্য গুরুত্বপূর্ণ:',
+  'frontdoor.run.distinction': 'প্রকাশিত সতর্কবার্তা নেই মানে এই নয় যে দুর্যোগ নেই',
+  'frontdoor.run.noneRead': 'বর্তমান পূর্বাভাসের জন্য দেখুন',
+  'frontdoor.run.noneLiveLink': 'লাইভ মানচিত্র',
+  'frontdoor.run.noneFor': 'এবং একটি রান কেন আটকে থাকতে পারে তা জানতে',
+  'frontdoor.run.noneStatusLink': 'স্ট্যাটাস পাতা',
+  'frontdoor.run.noneTail': 'দেখুন।',
+  'frontdoor.run.errorPrefix': 'সতর্কবার্তার উৎস জানিয়েছে: {error}',
+  'frontdoor.run.horizon': '{horizon} সময়কাল',
+  'frontdoor.run.valid': 'প্রযোজ্য {date}',
+  'frontdoor.run.published': 'প্রকাশিত {at}',
+  'frontdoor.run.publishedUnknown': 'প্রকাশের সময় জানানো হয়নি',
+  'frontdoor.run.alertNav': 'সতর্কবার্তার পাতা',
+  'frontdoor.run.failed':
+    'এইবার অন্তত একটি আর্টিফ্যাক্ট পড়া যায়নি। যেখানে প্রযোজ্য, ওপরের প্যানেলগুলো তা জানিয়েছে; খালি ঘর কখনো শূন্য হিসেবে দেখানো হয় না।',
+
+  'frontdoor.faq.h2': 'সরাসরি উত্তর',
+  'frontdoor.attribution.eyebrow': 'স্বীকৃতি',
+  'frontdoor.attribution.h2': 'কে তৈরি করেছেন এবং কার তত্ত্বাবধানে',
+  'frontdoor.attribution.body':
+    '{author} ({role}) — {work}. {type}, {department}, {university}; তত্ত্বাবধানে {supervisor} ({supervisorRole}){coSupervision}।',
+  'frontdoor.attribution.orcid': 'ওআরসিআইডি {id}',
+  'frontdoor.attribution.coSupervised': ', সহ-তত্ত্বাবধায়কসহ',
+  'frontdoor.attribution.citationLabel': 'উদ্ধৃতি',
+  'frontdoor.attribution.links': 'প্রকল্পের লিংক',
+  'frontdoor.attribution.repository': 'রিপোজিটরি',
+  'frontdoor.attribution.institution': 'প্রতিষ্ঠান',
+  'frontdoor.attribution.supervisor': 'তত্ত্বাবধায়কের প্রোফাইল',
+  'frontdoor.attribution.coSupervisor': 'সহ-তত্ত্বাবধায়কের প্রোফাইল',
 
   'a11y.skipToList': 'জেলার তালিকায় যান',
   'a11y.mapRegion': 'বাংলাদেশের ইন্টারঅ্যাকটিভ মানচিত্র',
@@ -425,11 +646,13 @@ export const DICTIONARIES: Record<Language, Record<string, string>> = { en: EN, 
  * language of most of the intended audience, so `navigator.languages` is honoured
  * rather than ignored) → English. Pure, so the decision is testable.
  */
-export function resolveInitialLanguage(options: {
-  stored?: string | null;
-  navigatorLanguages?: readonly string[] | null;
-  fallback?: Language;
-} = {}): Language {
+export function resolveInitialLanguage(
+  options: {
+    stored?: string | null;
+    navigatorLanguages?: readonly string[] | null;
+    fallback?: Language;
+  } = {},
+): Language {
   const { stored, navigatorLanguages, fallback = DEFAULT_LANGUAGE } = options;
   if (isLanguage(stored)) return stored;
   for (const tag of navigatorLanguages || []) {
@@ -444,18 +667,13 @@ export function resolveInitialLanguage(options: {
  * Translate a key. Never throws and never returns a raw key when a translation
  * exists in either language.
  */
-export function translate(
-  language: Language,
-  key: string,
-  vars?: Record<string, string | number>,
-): string {
+export function translate(language: Language, key: string, vars?: Record<string, string | number>): string {
   const dictionary = DICTIONARIES[language] || DICTIONARIES[DEFAULT_LANGUAGE];
   let value = dictionary[key];
   if (value === undefined) value = DICTIONARIES[DEFAULT_LANGUAGE][key];
   if (value === undefined) return key;
   if (!vars) return value;
-  return value.replace(/\{(\w+)\}/g, (match, name) =>
-    (name in vars ? String(vars[name]) : match));
+  return value.replace(/\{(\w+)\}/g, (match, name) => (name in vars ? String(vars[name]) : match));
 }
 
 const BN_DIGITS = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
@@ -484,10 +702,34 @@ export function formatNumber(
   return language === 'bn' && !/[০-৯]/.test(rendered) ? toBengaliNumerals(rendered) : rendered;
 }
 
-const EN_MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July',
-  'August', 'September', 'October', 'November', 'December'];
-const BN_MONTHS = ['জানুয়ারি', 'ফেব্রুয়ারি', 'মার্চ', 'এপ্রিল', 'মে', 'জুন',
-  'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর'];
+const EN_MONTHS = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+];
+const BN_MONTHS = [
+  'জানুয়ারি',
+  'ফেব্রুয়ারি',
+  'মার্চ',
+  'এপ্রিল',
+  'মে',
+  'জুন',
+  'জুলাই',
+  'আগস্ট',
+  'সেপ্টেম্বর',
+  'অক্টোবর',
+  'নভেম্বর',
+  'ডিসেম্বর',
+];
 
 /**
  * `2026-09-23` or an ISO timestamp → `23 September 2026` / `২৩ সেপ্টেম্বর ২০২৬`.

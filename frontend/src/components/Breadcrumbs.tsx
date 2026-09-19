@@ -38,19 +38,19 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({ customItems }) => {
   const items = getBreadcrumbsFromPath();
 
   return (
-    <nav className="flex items-center justify-between gap-4 py-2.5 px-4 bg-white border border-slate-200 rounded-xl mb-6 text-xs shadow-xs text-slate-600">
+    <nav className="flex items-center justify-between gap-4 py-2.5 px-4 bg-white border border-carbon-20 rounded-xl mb-6 text-xs shadow-xs text-carbon-60">
       <div className="flex items-center gap-1.5 flex-wrap">
         {items.map((item, index) => {
           const isLast = index === items.length - 1;
           return (
             <React.Fragment key={index}>
-              {index > 0 && <span className="text-slate-400 font-mono">/</span>}
+              {index > 0 && <span className="text-carbon-60 font-mono">/</span>}
               {isLast || !item.path ? (
-                <span className="font-bold text-slate-900">{item.label}</span>
+                <span className="font-bold text-carbon-90">{item.label}</span>
               ) : (
                 <Link
                   to={item.path}
-                  className="text-slate-500 hover:text-nasa-red-shade font-medium transition-colors"
+                  className="text-carbon-60 hover:text-nasa-red-shade font-medium transition-colors"
                 >
                   {item.label}
                 </Link>

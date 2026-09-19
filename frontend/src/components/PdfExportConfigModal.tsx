@@ -277,12 +277,12 @@ export const PdfExportConfigModal: React.FC<PdfExportConfigModalProps> = ({
       role="dialog"
       aria-modal="true"
       aria-labelledby="pdf-config-modal-title"
-      className="fixed inset-0 z-[10000] flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-150"
+      className="fixed inset-0 z-[10000] flex items-center justify-center p-3 sm:p-4 bg-carbon-black/80 backdrop-blur-sm animate-in fade-in duration-150"
     >
       {/* Modal Container */}
-      <div className="relative w-full max-w-xl bg-white border border-slate-200 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
+      <div className="relative w-full max-w-xl bg-white border border-carbon-20 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
         {/* Modal Header */}
-        <div className="flex items-center justify-between px-5 py-4 bg-slate-900 text-white border-b border-slate-800 shrink-0">
+        <div className="flex items-center justify-between px-5 py-4 bg-carbon-90 text-white border-b border-carbon-80 shrink-0">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-xl bg-amber-400/10 border border-amber-400/30 text-amber-400">
               <FileDown className="w-5 h-5" />
@@ -290,11 +290,11 @@ export const PdfExportConfigModal: React.FC<PdfExportConfigModalProps> = ({
             <div>
               <h3 id="pdf-config-modal-title" className="text-base font-bold text-white tracking-tight flex items-center gap-2">
                 <span>PDF Export Configuration</span>
-                <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-slate-800 text-amber-300 border border-slate-700">
+                <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-carbon-80 text-amber-300 border border-carbon-70">
                   SOD 2019
                 </span>
               </h3>
-              <p className="text-xs text-slate-400 font-medium">
+              <p className="text-xs text-carbon-60 font-medium">
                 Customize document filename, dynamic tags, and layout before downloading
               </p>
             </div>
@@ -303,7 +303,7 @@ export const PdfExportConfigModal: React.FC<PdfExportConfigModalProps> = ({
           <button
             onClick={onClose}
             disabled={isExporting}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer disabled:opacity-50"
+            className="p-1.5 rounded-lg text-carbon-40 hover:text-white hover:bg-carbon-80 transition-colors cursor-pointer disabled:opacity-50"
             title="Close dialog (Esc)"
           >
             <X className="w-5 h-5" />
@@ -311,19 +311,19 @@ export const PdfExportConfigModal: React.FC<PdfExportConfigModalProps> = ({
         </div>
 
         {/* Modal Body */}
-        <div className="p-5 overflow-y-auto space-y-5 custom-scrollbar text-slate-800">
+        <div className="p-5 overflow-y-auto space-y-5 custom-scrollbar text-carbon-80">
           {/* Section 1: Filename Template Input */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <label htmlFor="pdf-filename-template-input" className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
-                <FileText className="w-3.5 h-3.5 text-slate-500" />
+              <label htmlFor="pdf-filename-template-input" className="text-xs font-bold text-carbon-70 flex items-center gap-1.5">
+                <FileText className="w-3.5 h-3.5 text-carbon-60" />
                 <span>Filename Template</span>
               </label>
 
               <button
                 type="button"
                 onClick={handleResetToDefault}
-                className="text-[11px] text-slate-500 hover:text-slate-900 font-mono underline transition-colors cursor-pointer"
+                className="text-[11px] text-carbon-60 hover:text-carbon-90 font-mono underline transition-colors cursor-pointer"
                 title="Reset template to default pattern"
               >
                 Reset Default
@@ -339,19 +339,19 @@ export const PdfExportConfigModal: React.FC<PdfExportConfigModalProps> = ({
                 onChange={handleTemplateChange}
                 disabled={isExporting}
                 placeholder="HazardNet_{docType}_{region}_{date}.pdf"
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 focus:border-slate-900 focus:bg-white rounded-xl text-xs sm:text-sm font-mono text-slate-900 focus:ring-2 focus:ring-slate-900/20 outline-none transition-all"
+                className="w-full px-3.5 py-2.5 bg-carbon-05 border border-carbon-30 focus:border-carbon-90 focus:bg-white rounded-xl text-xs sm:text-sm font-mono text-carbon-90 focus:ring-2 focus:ring-carbon-90/20 outline-none transition-all"
               />
             </div>
           </div>
 
           {/* Section 2: Placeholder Chips (Click to Insert) */}
-          <div className="space-y-2 bg-slate-50/80 p-3.5 rounded-xl border border-slate-200/80">
+          <div className="space-y-2 bg-carbon-05/80 p-3.5 rounded-xl border border-carbon-20/80">
             <div className="flex items-center justify-between text-xs">
-              <span className="font-bold text-slate-700 flex items-center gap-1.5">
+              <span className="font-bold text-carbon-70 flex items-center gap-1.5">
                 <Sparkles className="w-3.5 h-3.5 text-amber-500" />
                 <span>Available Placeholders</span>
               </span>
-              <span className="text-[10px] text-slate-500">Click a tag to insert into template</span>
+              <span className="text-[10px] text-carbon-60">Click a tag to insert into template</span>
             </div>
 
             <div className="flex flex-wrap gap-1.5">
@@ -364,11 +364,11 @@ export const PdfExportConfigModal: React.FC<PdfExportConfigModalProps> = ({
                     onClick={() => handleInsertPlaceholder(ph.tag)}
                     disabled={isExporting}
                     title={`${ph.description} • Example: "${previewVal}"`}
-                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white hover:bg-amber-50 text-slate-700 hover:text-amber-950 text-xs font-mono border border-slate-200 hover:border-amber-300 transition-all shadow-2xs cursor-pointer group"
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white hover:bg-amber-50 text-carbon-70 hover:text-amber-950 text-xs font-mono border border-carbon-20 hover:border-amber-300 transition-all shadow-2xs cursor-pointer group"
                   >
                     {getPlaceholderIcon(ph.category)}
-                    <strong className="font-bold text-slate-900 group-hover:text-amber-900">{ph.tag}</strong>
-                    <span className="text-[10px] text-slate-400 font-sans">({previewVal})</span>
+                    <strong className="font-bold text-carbon-90 group-hover:text-amber-900">{ph.tag}</strong>
+                    <span className="text-[10px] text-carbon-60 font-sans">({previewVal})</span>
                   </button>
                 );
               })}
@@ -399,8 +399,8 @@ export const PdfExportConfigModal: React.FC<PdfExportConfigModalProps> = ({
 
           {/* Section 4: Quick Presets */}
           <div className="space-y-1.5">
-            <label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
-              <Bookmark className="w-3.5 h-3.5 text-slate-500" />
+            <label className="text-xs font-bold text-carbon-70 flex items-center gap-1.5">
+              <Bookmark className="w-3.5 h-3.5 text-carbon-60" />
               <span>Quick Filename Presets</span>
             </label>
 
@@ -415,12 +415,12 @@ export const PdfExportConfigModal: React.FC<PdfExportConfigModalProps> = ({
                     disabled={isExporting}
                     className={`p-2.5 text-left rounded-xl border text-xs transition-all cursor-pointer ${
                       isSelected
-                        ? 'bg-slate-900 text-white border-slate-900 shadow-xs'
-                        : 'bg-white hover:bg-slate-50 text-slate-800 border-slate-200 hover:border-slate-300'
+                        ? 'bg-carbon-90 text-white border-carbon-90 shadow-xs'
+                        : 'bg-white hover:bg-carbon-05 text-carbon-80 border-carbon-20 hover:border-carbon-30'
                     }`}
                   >
                     <div className="font-bold">{preset.name}</div>
-                    <div className={`font-mono text-[10px] truncate mt-0.5 ${isSelected ? 'text-amber-300' : 'text-slate-500'}`}>
+                    <div className={`font-mono text-[10px] truncate mt-0.5 ${isSelected ? 'text-amber-300' : 'text-carbon-60'}`}>
                       {preset.template}
                     </div>
                   </button>
@@ -430,18 +430,18 @@ export const PdfExportConfigModal: React.FC<PdfExportConfigModalProps> = ({
           </div>
 
           {/* Section 5: Document Layout Options (Orientation & Ink-Saver) */}
-          <div className="pt-2 border-t border-slate-200 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+          <div className="pt-2 border-t border-carbon-20 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
             {/* Page Orientation */}
             <div className="space-y-1.5">
-              <span className="font-bold text-slate-700 block">Page Orientation</span>
-              <div className="flex items-center gap-2 bg-slate-100 p-1 rounded-xl border border-slate-200">
+              <span className="font-bold text-carbon-70 block">Page Orientation</span>
+              <div className="flex items-center gap-2 bg-carbon-10 p-1 rounded-xl border border-carbon-20">
                 <button
                   type="button"
                   onClick={() => handleOrientationChange('portrait')}
                   className={`flex-1 py-1.5 px-2 rounded-lg font-bold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
                     orientation === 'portrait'
-                      ? 'bg-white text-slate-900 shadow-xs'
-                      : 'text-slate-600 hover:text-slate-900'
+                      ? 'bg-white text-carbon-90 shadow-xs'
+                      : 'text-carbon-60 hover:text-carbon-90'
                   }`}
                 >
                   <span>Portrait (A4)</span>
@@ -451,8 +451,8 @@ export const PdfExportConfigModal: React.FC<PdfExportConfigModalProps> = ({
                   onClick={() => handleOrientationChange('landscape')}
                   className={`flex-1 py-1.5 px-2 rounded-lg font-bold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
                     orientation === 'landscape'
-                      ? 'bg-white text-slate-900 shadow-xs'
-                      : 'text-slate-600 hover:text-slate-900'
+                      ? 'bg-white text-carbon-90 shadow-xs'
+                      : 'text-carbon-60 hover:text-carbon-90'
                   }`}
                 >
                   <span>Landscape (A4)</span>
@@ -462,14 +462,14 @@ export const PdfExportConfigModal: React.FC<PdfExportConfigModalProps> = ({
 
             {/* Ink-Saver High Contrast Switch */}
             <div className="space-y-1.5">
-              <span className="font-bold text-slate-700 block">Printer Optimization</span>
+              <span className="font-bold text-carbon-70 block">Printer Optimization</span>
               <button
                 type="button"
                 onClick={() => handleInkSaverChange(!inkSaver)}
                 className={`w-full py-1.5 px-3 rounded-xl border font-bold text-xs transition-all flex items-center justify-between cursor-pointer ${
                   inkSaver
                     ? 'bg-amber-50 border-amber-300 text-amber-950'
-                    : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'
+                    : 'bg-white border-carbon-20 text-carbon-70 hover:bg-carbon-05'
                 }`}
               >
                 <span className="flex items-center gap-1.5">
@@ -477,7 +477,7 @@ export const PdfExportConfigModal: React.FC<PdfExportConfigModalProps> = ({
                   <span>Ink-Saver Mode</span>
                 </span>
                 <span className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded ${
-                  inkSaver ? 'bg-amber-200 text-amber-900' : 'bg-slate-200 text-slate-600'
+                  inkSaver ? 'bg-amber-200 text-amber-900' : 'bg-carbon-20 text-carbon-60'
                 }`}>
                   {inkSaver ? 'ON' : 'OFF'}
                 </span>
@@ -487,7 +487,7 @@ export const PdfExportConfigModal: React.FC<PdfExportConfigModalProps> = ({
         </div>
 
         {/* Modal Footer */}
-        <div className="px-5 py-3.5 bg-slate-50 border-t border-slate-200 flex flex-wrap items-center justify-between gap-2.5 shrink-0">
+        <div className="px-5 py-3.5 bg-carbon-05 border-t border-carbon-20 flex flex-wrap items-center justify-between gap-2.5 shrink-0">
           <div className="flex items-center gap-2">
             {onOpenPreview && (
               <button
@@ -497,9 +497,9 @@ export const PdfExportConfigModal: React.FC<PdfExportConfigModalProps> = ({
                   onOpenPreview();
                 }}
                 disabled={isExporting}
-                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 text-xs font-bold transition-all cursor-pointer disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white border border-carbon-30 hover:bg-carbon-10 text-carbon-70 text-xs font-bold transition-all cursor-pointer disabled:opacity-50"
               >
-                <Eye className="w-3.5 h-3.5 text-slate-600" />
+                <Eye className="w-3.5 h-3.5 text-carbon-60" />
                 <span>Open Print Preview</span>
               </button>
             )}
@@ -510,7 +510,7 @@ export const PdfExportConfigModal: React.FC<PdfExportConfigModalProps> = ({
               type="button"
               onClick={onClose}
               disabled={isExporting}
-              className="px-4 py-2 rounded-xl bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 text-xs font-bold transition-all cursor-pointer disabled:opacity-50"
+              className="px-4 py-2 rounded-xl bg-white border border-carbon-30 hover:bg-carbon-10 text-carbon-70 text-xs font-bold transition-all cursor-pointer disabled:opacity-50"
             >
               Cancel
             </button>
@@ -519,7 +519,7 @@ export const PdfExportConfigModal: React.FC<PdfExportConfigModalProps> = ({
               type="button"
               onClick={handleStartExport}
               disabled={isExporting}
-              className="inline-flex items-center gap-2 px-5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition-all shadow-md cursor-pointer hover:scale-102 active:scale-98 disabled:opacity-60 disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-2 px-5 py-2 rounded-xl bg-carbon-90 hover:bg-carbon-80 text-white text-xs font-bold transition-all shadow-md cursor-pointer hover:scale-102 active:scale-98 disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {isExporting ? (
                 <>

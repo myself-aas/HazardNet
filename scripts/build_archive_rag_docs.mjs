@@ -47,7 +47,7 @@
  *   node scripts/build_archive_rag_docs.mjs --check     # CI: docs describe the artifact
  */
 
-import { readFileSync, writeFileSync, existsSync, mkdirSync, rmSync } from 'node:fs'; // readdirSync was imported for a count that the separated archive writer now owns (see build_archive_rag_docs.mjs header).
+import { readFileSync, writeFileSync, existsSync, mkdirSync, rmSync } from 'node:fs';
 import { dirname, resolve, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 

@@ -149,7 +149,7 @@ export const CONNECTOR_CATALOG: ConnectorDefinition[] = [
     tagline: 'POST hazard alerts to any HTTP endpoint you control.',
     category: 'Developer',
     icon: 'api',
-    accent: '#334155',
+    accent: '#444447',
     docsUrl: 'https://github.com/myself-aas/HazardNet',
     asksFor: { key: 'endpoint', label: 'Endpoint URL', placeholder: 'https://your-service.example.com/hooks/hazardnet', type: 'url' },
   },

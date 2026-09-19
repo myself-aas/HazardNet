@@ -140,9 +140,9 @@ export const PdfExportButton: React.FC<PdfExportButtonProps> = ({
           <button
             onClick={handleOpenConfig}
             title="Configure and Export PDF (Customize Filename, Date & Region tags)"
-            className={`inline-flex items-center justify-center p-2 rounded-xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-all shadow-2xs cursor-pointer ${className}`}
+            className={`inline-flex items-center justify-center p-2 rounded-xl bg-white border border-carbon-20 text-carbon-70 hover:bg-carbon-05 hover:text-carbon-90 transition-all shadow-2xs cursor-pointer ${className}`}
           >
-            <FileDown className="w-4 h-4 text-slate-700" />
+            <FileDown className="w-4 h-4 text-carbon-70" />
           </button>
         </div>
 
@@ -181,17 +181,17 @@ export const PdfExportButton: React.FC<PdfExportButtonProps> = ({
         <div className="relative inline-flex gap-2">
           <button
             onClick={handleOpenPreview}
-            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition-all border border-slate-300 cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-carbon-10 hover:bg-carbon-20 text-carbon-80 text-xs font-bold transition-all border border-carbon-30 cursor-pointer"
             title="Preview physical A4 handout before exporting"
           >
-            <Eye className="w-3.5 h-3.5 text-slate-700 shrink-0" />
+            <Eye className="w-3.5 h-3.5 text-carbon-70 shrink-0" />
             <span>Print Preview</span>
           </button>
 
           <button
             onClick={handlePrimaryClick}
             disabled={isExporting}
-            className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition-all shadow-sm cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed ${className}`}
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-carbon-90 hover:bg-carbon-80 text-white text-xs font-bold transition-all shadow-sm cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed ${className}`}
             title="Configure Filename & Download PDF"
           >
             {isExporting ? (
@@ -245,7 +245,7 @@ export const PdfExportButton: React.FC<PdfExportButtonProps> = ({
         <button
           onClick={handleOpenConfig}
           title="Configure Filename (Date, Region & Hazard placeholders) & Export PDF"
-          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-l-xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:text-slate-900 text-xs font-bold transition-all cursor-pointer"
+          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-l-xl bg-white border border-carbon-20 text-carbon-70 hover:bg-carbon-05 hover:text-carbon-90 text-xs font-bold transition-all cursor-pointer"
         >
           <FileDown className="w-3.5 h-3.5 text-amber-500 shrink-0" />
           <span>{title}</span>
@@ -254,7 +254,7 @@ export const PdfExportButton: React.FC<PdfExportButtonProps> = ({
         {/* Dropdown for Preview, Presets & Direct Print */}
         <button
           onClick={() => setIsOpenMenu(!isOpenMenu)}
-          className="inline-flex items-center px-2 py-2 rounded-r-xl bg-white border-y border-r border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all cursor-pointer"
+          className="inline-flex items-center px-2 py-2 rounded-r-xl bg-white border-y border-r border-carbon-20 text-carbon-60 hover:bg-carbon-05 hover:text-carbon-90 transition-all cursor-pointer"
           title="More print & export options"
         >
           <ChevronDown className="w-3.5 h-3.5" />
@@ -263,8 +263,8 @@ export const PdfExportButton: React.FC<PdfExportButtonProps> = ({
         {isOpenMenu && (
           <>
             <div className="fixed inset-0 z-[9994]" onClick={() => setIsOpenMenu(false)} />
-            <div className="absolute right-0 top-full mt-1.5 w-72 max-w-[calc(100vw-2rem)] bg-white border border-slate-200 rounded-xl shadow-xl z-[9994] p-1.5 text-xs animate-in fade-in slide-in-from-top-1 duration-150">
-              <div className="px-2.5 py-1.5 text-[10px] font-mono font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100 flex items-center justify-between">
+            <div className="absolute right-0 top-full mt-1.5 w-72 max-w-[calc(100vw-2rem)] bg-white border border-carbon-20 rounded-xl shadow-xl z-[9994] p-1.5 text-xs animate-in fade-in slide-in-from-top-1 duration-150">
+              <div className="px-2.5 py-1.5 text-[10px] font-mono font-bold text-carbon-60 uppercase tracking-wider border-b border-carbon-10 flex items-center justify-between">
                 <span>Official PDF & Print</span>
                 <span className="text-amber-600 font-bold">SOD 2019</span>
               </div>
@@ -272,27 +272,27 @@ export const PdfExportButton: React.FC<PdfExportButtonProps> = ({
               {/* Configure Filename & Download */}
               <button
                 onClick={handleOpenConfig}
-                className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-slate-700 hover:bg-amber-50 hover:text-amber-950 font-medium text-left cursor-pointer transition-colors"
+                className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-carbon-70 hover:bg-amber-50 hover:text-amber-950 font-medium text-left cursor-pointer transition-colors"
               >
                 <Sliders className="w-4 h-4 text-amber-500 shrink-0" />
                 <div>
-                  <div className="font-bold text-slate-900 flex items-center gap-1.5">
+                  <div className="font-bold text-carbon-90 flex items-center gap-1.5">
                     <span>Configure Filename & Export</span>
                     <span className="px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 text-[9px] font-mono">Custom</span>
                   </div>
-                  <div className="text-[10px] text-slate-500">Add {`{date}`}, {`{region}`} or {`{hazard}`} tags</div>
+                  <div className="text-[10px] text-carbon-60">Add {`{date}`}, {`{region}`} or {`{hazard}`} tags</div>
                 </div>
               </button>
 
               {/* Print Preview */}
               <button
                 onClick={handleOpenPreview}
-                className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-slate-700 hover:bg-slate-100 hover:text-slate-900 font-medium text-left cursor-pointer transition-colors"
+                className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-carbon-70 hover:bg-carbon-10 hover:text-carbon-90 font-medium text-left cursor-pointer transition-colors"
               >
                 <Eye className="w-4 h-4 text-blue-500 shrink-0" />
                 <div>
-                  <div className="font-bold text-slate-900">Print Preview & Sheet Layout</div>
-                  <div className="text-[10px] text-slate-500">Inspect multi-page A4 & QR tags</div>
+                  <div className="font-bold text-carbon-90">Print Preview & Sheet Layout</div>
+                  <div className="text-[10px] text-carbon-60">Inspect multi-page A4 & QR tags</div>
                 </div>
               </button>
 
@@ -300,24 +300,24 @@ export const PdfExportButton: React.FC<PdfExportButtonProps> = ({
               <button
                 onClick={handleDirectQuickExport}
                 disabled={isExporting}
-                className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-slate-700 hover:bg-slate-100 hover:text-slate-900 font-medium text-left cursor-pointer transition-colors"
+                className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-carbon-70 hover:bg-carbon-10 hover:text-carbon-90 font-medium text-left cursor-pointer transition-colors"
               >
                 <FileDown className="w-4 h-4 text-emerald-600 shrink-0" />
                 <div>
-                  <div className="font-bold text-slate-900">Quick Download PDF</div>
-                  <div className="text-[10px] text-slate-500">Save immediately with default template</div>
+                  <div className="font-bold text-carbon-90">Quick Download PDF</div>
+                  <div className="text-[10px] text-carbon-60">Save immediately with default template</div>
                 </div>
               </button>
 
               {/* Native Print */}
               <button
                 onClick={handleNativePrint}
-                className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-slate-700 hover:bg-slate-100 hover:text-slate-900 font-medium text-left cursor-pointer transition-colors border-t border-slate-100 mt-1"
+                className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-carbon-70 hover:bg-carbon-10 hover:text-carbon-90 font-medium text-left cursor-pointer transition-colors border-t border-carbon-10 mt-1"
               >
-                <Printer className="w-4 h-4 text-slate-700 shrink-0" />
+                <Printer className="w-4 h-4 text-carbon-70 shrink-0" />
                 <div>
-                  <div className="font-bold text-slate-900">Browser Print / Physical Sheet</div>
-                  <div className="text-[10px] text-slate-500">Native browser print dialog</div>
+                  <div className="font-bold text-carbon-90">Browser Print / Physical Sheet</div>
+                  <div className="text-[10px] text-carbon-60">Native browser print dialog</div>
                 </div>
               </button>
             </div>

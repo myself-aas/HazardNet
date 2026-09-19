@@ -117,19 +117,19 @@ const districtMap: Record<string, District> = {
 const CustomDarkTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-white/95 border border-slate-200 p-3 rounded-xl shadow-lg backdrop-blur-md text-xs font-sans space-y-1.5 z-50">
-        <p className="font-extrabold text-slate-900 border-b border-slate-200 pb-1 flex items-center justify-between gap-4">
+      <div className="bg-white/95 border border-carbon-20 p-3 rounded-xl shadow-lg backdrop-blur-md text-xs font-sans space-y-1.5 z-50">
+        <p className="font-extrabold text-carbon-90 border-b border-carbon-20 pb-1 flex items-center justify-between gap-4">
           <span>{label}</span>
-          <span className="text-[10px] font-mono text-slate-500 font-normal">HazardNet Analytics</span>
+          <span className="text-[10px] font-mono text-carbon-60 font-normal">HazardNet Analytics</span>
         </p>
         <div className="space-y-1 pt-1">
           {payload.map((entry: any, index: number) => (
             <div key={`item-${index}`} className="flex items-center justify-between gap-4 font-mono">
               <div className="flex items-center gap-1.5">
                 <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: entry.color || entry.fill }}></span>
-                <span className="text-slate-600 font-sans">{entry.name}:</span>
+                <span className="text-carbon-60 font-sans">{entry.name}:</span>
               </div>
-              <span className="font-bold text-slate-900">{entry.value}{entry.unit || '%'}</span>
+              <span className="font-bold text-carbon-90">{entry.value}{entry.unit || '%'}</span>
             </div>
           ))}
         </div>
@@ -154,10 +154,10 @@ export const RiskAnalytics: React.FC<RiskAnalyticsProps> = ({ onSelectDistrict }
     <div className="space-y-6">
 
       {/* Top Banner KPI Header */}
-      <div className="bg-white border border-slate-200/90 rounded-3xl p-6 md:p-8 shadow-md relative overflow-hidden">
+      <div className="bg-white border border-carbon-20/90 rounded-3xl p-6 md:p-8 shadow-md relative overflow-hidden">
         
         {/* Subtle Ambient Glow */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-slate-100/50 rounded-full blur-3xl pointer-events-none"></div>
+        <div className="absolute top-0 right-0 w-96 h-96 bg-carbon-10/50 rounded-full blur-3xl pointer-events-none"></div>
 
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div>
@@ -165,27 +165,27 @@ export const RiskAnalytics: React.FC<RiskAnalyticsProps> = ({ onSelectDistrict }
               <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider bg-rose-50 text-rose-700 border border-rose-200/80">
                 Multi-Regional Trend Intelligence
               </span>
-              <span className="text-slate-300">•</span>
-              <span className="text-xs font-mono text-slate-500 font-semibold">
+              <span className="text-carbon-30">•</span>
+              <span className="text-xs font-mono text-carbon-60 font-semibold">
                 Recharts Powered Time-Series
               </span>
             </div>
-            <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
+            <h2 className="text-2xl md:text-3xl font-extrabold text-carbon-90 tracking-tight flex items-center gap-2">
               Regional Risk Analytics & Climate Trends
             </h2>
-            <p className="text-xs md:text-sm text-slate-600 mt-1 max-w-3xl">
+            <p className="text-xs md:text-sm text-carbon-60 mt-1 max-w-3xl">
               Multi-year historical and neural model projected trend analysis for agricultural disaster hazards in Bangladesh divisions (2018-2026).
             </p>
           </div>
 
           {/* Metric Mode Toggle */}
-          <div className="flex items-center bg-slate-100/80 p-1.5 rounded-2xl border border-slate-200/90 self-start lg:self-center shadow-2xs">
+          <div className="flex items-center bg-carbon-10/80 p-1.5 rounded-2xl border border-carbon-20/90 self-start lg:self-center shadow-2xs">
             <button
               onClick={() => setMetricMode('severity')}
               className={`px-3.5 py-1.5 rounded-xl text-xs font-bold font-mono transition-all flex items-center gap-1.5 cursor-pointer ${
                 metricMode === 'severity'
-                  ? 'bg-white text-slate-900 shadow-sm'
-                  : 'text-slate-600 hover:text-slate-900'
+                  ? 'bg-white text-carbon-90 shadow-sm'
+                  : 'text-carbon-60 hover:text-carbon-90'
               }`}
             >
               <span>Severity Index (%)</span>
@@ -194,8 +194,8 @@ export const RiskAnalytics: React.FC<RiskAnalyticsProps> = ({ onSelectDistrict }
               onClick={() => setMetricMode('frequency')}
               className={`px-3.5 py-1.5 rounded-xl text-xs font-bold font-mono transition-all flex items-center gap-1.5 cursor-pointer ${
                 metricMode === 'frequency'
-                  ? 'bg-white text-slate-900 shadow-sm'
-                  : 'text-slate-600 hover:text-slate-900'
+                  ? 'bg-white text-carbon-90 shadow-sm'
+                  : 'text-carbon-60 hover:text-carbon-90'
               }`}
             >
               <span>Occurrence Count (Events/yr)</span>
@@ -204,50 +204,50 @@ export const RiskAnalytics: React.FC<RiskAnalyticsProps> = ({ onSelectDistrict }
         </div>
 
         {/* 4 KPI Stat Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-6 pt-5 border-t border-slate-200/90">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-6 pt-5 border-t border-carbon-20/90">
           
-          <div className="bg-slate-50/80 border border-slate-200/90 p-4 rounded-2xl space-y-1 shadow-2xs hover:shadow-md transition-all">
-            <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">
+          <div className="bg-carbon-05/80 border border-carbon-20/90 p-4 rounded-2xl space-y-1 shadow-2xs hover:shadow-md transition-all">
+            <span className="text-[10px] font-mono text-carbon-60 uppercase tracking-wider block font-bold">
               Highest Risk Region
             </span>
             <div className="flex items-baseline justify-between">
-              <span className="text-base font-extrabold text-slate-900">Sylhet Haor Basin</span>
+              <span className="text-base font-extrabold text-carbon-90">Sylhet Haor Basin</span>
               <span className="text-xs font-bold text-rose-600 font-mono">Flash Flood</span>
             </div>
-            <p className="text-[11px] text-slate-500">Pre-monsoon flash flood vulnerability</p>
+            <p className="text-[11px] text-carbon-60">Pre-monsoon flash flood vulnerability</p>
           </div>
 
-          <div className="bg-slate-50/80 border border-slate-200/90 p-4 rounded-2xl space-y-1 shadow-2xs hover:shadow-md transition-all">
-            <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">
+          <div className="bg-carbon-05/80 border border-carbon-20/90 p-4 rounded-2xl space-y-1 shadow-2xs hover:shadow-md transition-all">
+            <span className="text-[10px] font-mono text-carbon-60 uppercase tracking-wider block font-bold">
               Fastest Severity Spike
             </span>
             <div className="flex items-baseline justify-between">
               <span className="text-base font-extrabold text-amber-700">Barind Tract (Rajshahi)</span>
               <span className="text-xs font-bold text-amber-700 font-mono">Rising trend</span>
             </div>
-            <p className="text-[11px] text-slate-500">Intensified seasonal drought & heat stress</p>
+            <p className="text-[11px] text-carbon-60">Intensified seasonal drought & heat stress</p>
           </div>
 
-          <div className="bg-slate-50/80 border border-slate-200/90 p-4 rounded-2xl space-y-1 shadow-2xs hover:shadow-md transition-all">
-            <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">
+          <div className="bg-carbon-05/80 border border-carbon-20/90 p-4 rounded-2xl space-y-1 shadow-2xs hover:shadow-md transition-all">
+            <span className="text-[10px] font-mono text-carbon-60 uppercase tracking-wider block font-bold">
               Coastal Cyclone Hotspot
             </span>
             <div className="flex items-baseline justify-between">
               <span className="text-base font-extrabold text-rose-700">Satkhira & Cox's Bazar</span>
               <span className="text-xs font-bold text-rose-600 font-mono">Storm surge</span>
             </div>
-            <p className="text-[11px] text-slate-500">Tropical storm surge peak in Oct-Nov</p>
+            <p className="text-[11px] text-carbon-60">Tropical storm surge peak in Oct-Nov</p>
           </div>
 
-          <div className="bg-slate-50/80 border border-slate-200/90 p-4 rounded-2xl space-y-1 shadow-2xs hover:shadow-md transition-all">
-            <span className="text-[10px] font-mono text-slate-500 uppercase tracking-wider block font-bold">
+          <div className="bg-carbon-05/80 border border-carbon-20/90 p-4 rounded-2xl space-y-1 shadow-2xs hover:shadow-md transition-all">
+            <span className="text-[10px] font-mono text-carbon-60 uppercase tracking-wider block font-bold">
               Protected Crop Acreage
             </span>
             <div className="flex items-baseline justify-between">
               <span className="text-base font-extrabold text-emerald-700">Coastal & Haor Belts</span>
               <span className="text-xs font-bold text-emerald-600 font-mono">Advisory active</span>
             </div>
-            <p className="text-[11px] text-slate-500">Early harvest advisories for pre-monsoon windows</p>
+            <p className="text-[11px] text-carbon-60">Early harvest advisories for pre-monsoon windows</p>
           </div>
 
         </div>
@@ -255,29 +255,29 @@ export const RiskAnalytics: React.FC<RiskAnalyticsProps> = ({ onSelectDistrict }
       </div>
 
       {/* Main Chart 1: Multi-Year Regional Trend Lines */}
-      <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-md space-y-4">
+      <div className="bg-white border border-carbon-20/90 rounded-3xl p-6 sm:p-8 shadow-md space-y-4">
         
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-3">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-carbon-20 pb-3">
           <div>
-            <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+            <h3 className="text-base font-bold text-carbon-90 flex items-center gap-2">
               Regional Multi-Year Hazard Occurrence Trends (2018-2026)
             </h3>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-carbon-60">
               Interactive Recharts line trajectories showing regional escalation curves for Bangladesh
             </p>
           </div>
 
           {/* Region Filter Buttons */}
           <div className="flex flex-wrap items-center gap-1.5">
-            <span className="text-[11px] text-slate-500 font-mono mr-1">Filter Region:</span>
+            <span className="text-[11px] text-carbon-60 font-mono mr-1">Filter Region:</span>
             {['All', 'Sylhet', 'Rangpur', 'Rajshahi', 'Khulna', 'Chattogram', 'Dhaka'].map((reg) => (
               <button
                 key={reg}
                 onClick={() => setSelectedRegionFilter(reg)}
                 className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all ${
                   selectedRegionFilter === reg
-                    ? 'bg-slate-900 text-white shadow-xs'
-                    : 'bg-slate-100 text-slate-700 hover:text-slate-900 border border-slate-200'
+                    ? 'bg-carbon-90 text-white shadow-xs'
+                    : 'bg-carbon-10 text-carbon-70 hover:text-carbon-90 border border-carbon-20'
                 }`}
               >
                 {reg}
@@ -293,19 +293,19 @@ export const RiskAnalytics: React.FC<RiskAnalyticsProps> = ({ onSelectDistrict }
               data={trendDataToUse}
               margin={{ top: 10, right: 20, left: -10, bottom: 0 }}
             >
-              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#d1d1d1" vertical={false} />
               <XAxis
                 dataKey="year"
-                stroke="#64748b"
+                stroke="#77777a"
                 fontSize={12}
                 tickLine={false}
-                axisLine={{ stroke: '#cbd5e1' }}
+                axisLine={{ stroke: '#b9b9bb' }}
               />
               <YAxis
-                stroke="#64748b"
+                stroke="#77777a"
                 fontSize={12}
                 tickLine={false}
-                axisLine={{ stroke: '#cbd5e1' }}
+                axisLine={{ stroke: '#b9b9bb' }}
                 unit={metricMode === 'severity' ? '%' : ''}
                 domain={metricMode === 'severity' ? [0, 100] : [0, 'auto']}
               />
@@ -331,8 +331,8 @@ export const RiskAnalytics: React.FC<RiskAnalyticsProps> = ({ onSelectDistrict }
         </div>
 
         {/* Regional Quick Jump Trigger */}
-        <div className="pt-2 border-t border-slate-200 flex flex-wrap items-center justify-between gap-2 text-xs">
-          <span className="text-slate-500 font-mono text-[11px]">
+        <div className="pt-2 border-t border-carbon-20 flex flex-wrap items-center justify-between gap-2 text-xs">
+          <span className="text-carbon-60 font-mono text-[11px]">
             <MaterialIcon name="bolt" className="w-4 h-4 inline-block mr-1" /> Click region hotspot to inspect GIS location:
           </span>
           <div className="flex flex-wrap gap-2">
@@ -342,7 +342,7 @@ export const RiskAnalytics: React.FC<RiskAnalyticsProps> = ({ onSelectDistrict }
                 <button
                   key={reg}
                   onClick={() => onSelectDistrict && onSelectDistrict(d)}
-                  className="px-2.5 py-1 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-slate-800 font-medium text-[11px] transition-all flex items-center gap-1.5"
+                  className="px-2.5 py-1 bg-carbon-05 hover:bg-carbon-10 border border-carbon-20 rounded-lg text-carbon-80 font-medium text-[11px] transition-all flex items-center gap-1.5"
                 >
                   <span className="w-2 h-2 rounded-full" style={{ backgroundColor: REGION_COLORS[reg as keyof typeof REGION_COLORS] }}></span>
                   <span>{d.name}</span>
@@ -358,19 +358,19 @@ export const RiskAnalytics: React.FC<RiskAnalyticsProps> = ({ onSelectDistrict }
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
         {/* Monthly Seasonal Vulnerability Cycle Area Chart */}
-        <div className="lg:col-span-7 bg-white border border-slate-200/90 rounded-3xl p-6 shadow-md space-y-4 flex flex-col justify-between">
+        <div className="lg:col-span-7 bg-white border border-carbon-20/90 rounded-3xl p-6 shadow-md space-y-4 flex flex-col justify-between">
           
           <div>
-            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+            <div className="flex items-center justify-between border-b border-carbon-20 pb-3">
               <div>
-                <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                <h3 className="text-base font-bold text-carbon-90 flex items-center gap-2">
                   <MaterialIcon name="calendar_month" className="w-4 h-4 text-amber-600" /> Annual Seasonal Hazard Probability Cycle
                 </h3>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-carbon-60">
                   Month-by-month probability curve across Bangladesh's agricultural harvest calendar
                 </p>
               </div>
-              <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-slate-100 text-slate-600 border border-slate-200">
+              <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-carbon-10 text-carbon-60 border border-carbon-20">
                 12-Month Area Overlay
               </span>
             </div>
@@ -400,9 +400,9 @@ export const RiskAnalytics: React.FC<RiskAnalyticsProps> = ({ onSelectDistrict }
                     </linearGradient>
                   </defs>
 
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
-                  <XAxis dataKey="month" stroke="#64748b" fontSize={11} tickLine={false} />
-                  <YAxis stroke="#64748b" fontSize={11} tickLine={false} unit="%" domain={[0, 100]} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#d1d1d1" vertical={false} />
+                  <XAxis dataKey="month" stroke="#77777a" fontSize={11} tickLine={false} />
+                  <YAxis stroke="#77777a" fontSize={11} tickLine={false} unit="%" domain={[0, 100]} />
                   <Tooltip content={<CustomDarkTooltip />} />
                   <Legend wrapperStyle={{ fontSize: '11px', color: '#023246' }} />
 
@@ -447,25 +447,25 @@ export const RiskAnalytics: React.FC<RiskAnalyticsProps> = ({ onSelectDistrict }
             </div>
           </div>
 
-          <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 text-[11px] text-slate-600 flex items-center gap-3">
+          <div className="bg-carbon-05 p-3 rounded-xl border border-carbon-20 text-[11px] text-carbon-60 flex items-center gap-3">
             <span className="text-lg"><MaterialIcon name="lightbulb" className="w-4 h-4 inline-block mr-1" /></span>
             <p>
-              <strong className="text-slate-900">Agricultural Insight:</strong> Pre-monsoon flash flood peaks in April-May coincide with physiological maturity of Boro Rice in Sylhet, whereas monsoon river floods peak in July-August across Rangpur/Sirajganj.
+              <strong className="text-carbon-90">Agricultural Insight:</strong> Pre-monsoon flash flood peaks in April-May coincide with physiological maturity of Boro Rice in Sylhet, whereas monsoon river floods peak in July-August across Rangpur/Sirajganj.
             </p>
           </div>
 
         </div>
 
         {/* Hazard Breakdown Stacked Bar Chart */}
-        <div className="lg:col-span-5 bg-white border border-slate-200/90 rounded-3xl p-6 shadow-md space-y-4 flex flex-col justify-between">
+        <div className="lg:col-span-5 bg-white border border-carbon-20/90 rounded-3xl p-6 shadow-md space-y-4 flex flex-col justify-between">
           
           <div>
-            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+            <div className="flex items-center justify-between border-b border-carbon-20 pb-3">
               <div>
-                <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                <h3 className="text-base font-bold text-carbon-90 flex items-center gap-2">
                   <MaterialIcon name="public" className="w-4 h-4 text-sky-600" /> Regional Hazard Composition (%)
                 </h3>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-carbon-60">
                   Dominant disaster risk share by region
                 </p>
               </div>
@@ -478,9 +478,9 @@ export const RiskAnalytics: React.FC<RiskAnalyticsProps> = ({ onSelectDistrict }
                   layout="vertical"
                   margin={{ top: 10, right: 10, left: 20, bottom: 0 }}
                 >
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" horizontal={false} />
-                  <XAxis type="number" stroke="#64748b" fontSize={11} unit="%" domain={[0, 100]} />
-                  <YAxis dataKey="region" type="category" stroke="#64748b" fontSize={10} width={90} tickLine={false} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#d1d1d1" horizontal={false} />
+                  <XAxis type="number" stroke="#77777a" fontSize={11} unit="%" domain={[0, 100]} />
+                  <YAxis dataKey="region" type="category" stroke="#77777a" fontSize={10} width={90} tickLine={false} />
                   <Tooltip content={<CustomDarkTooltip />} />
                   <Legend wrapperStyle={{ fontSize: '10px', color: '#023246' }} />
 
@@ -494,9 +494,9 @@ export const RiskAnalytics: React.FC<RiskAnalyticsProps> = ({ onSelectDistrict }
             </div>
           </div>
 
-          <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 text-[11px] text-slate-600 flex items-center justify-between">
-            <span className="font-mono text-slate-500 font-bold">Model Resolution: 250m Spatial Tile</span>
-            <span className="font-bold text-slate-900">6 Divisions Analyzed</span>
+          <div className="bg-carbon-05 p-3 rounded-xl border border-carbon-20 text-[11px] text-carbon-60 flex items-center justify-between">
+            <span className="font-mono text-carbon-60 font-bold">Model Resolution: 250m Spatial Tile</span>
+            <span className="font-bold text-carbon-90">6 Divisions Analyzed</span>
           </div>
 
         </div>

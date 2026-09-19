@@ -55,8 +55,12 @@ maybe('the built /status page', () => {
     const html = readFileSync(statusHtmlPath, 'utf8');
 
     for (const source of artifact.sources) {
-      // Every source is present by its artifact path, so a reader can check the claim.
-      expect(html).toContain(source.artifact);
+      // Every source is present by its label, its state and its reason. It used to be
+      // identified by its artifact path as well; that is a location in this repository,
+      // which a reader of the page cannot open, so the page no longer prints it — the
+      // artifact keeps the field for anything that can (docs/PUBLIC_SURFACE.md §3).
+      expect(html).toContain(source.label);
+      expect(html).not.toContain(source.artifact);
     }
     // The state vocabulary is rendered as words, not only as colour.
     const labels = ['Within SLO', 'Past SLO', 'Checks failing', 'No data', 'Unknown'];

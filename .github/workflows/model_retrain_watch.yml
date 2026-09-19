@@ -1,0 +1,277 @@
+name: Retrain Watcher (Colab session)
+
+# ─────────────────────────────────────────────────────────────────────────────
+# The watch half of the monthly retrain: the thing that makes an eight-hour run on
+# a free-tier GPU survivable.
+#
+# A Colab session that is recycled does not notify anybody — the VM simply stops
+# existing, and a notebook that was mid-epoch at 03:41 produces nothing at all. So
+# this workflow runs every twenty minutes and asks the only question that can be
+# answered from outside: is the run still writing its heartbeat?
+#
+#   fresh heartbeat      → re-attach to the session (which refreshes the CLI's
+#                          keep-alive tunnel) and do nothing else
+#   silence < 25 min     → still provisioning; leave it
+#   silence > 45 min     → the session is gone. Provision a replacement and relaunch
+#                          the same run id with `resume: true`, so the notebook
+#                          continues from the `*_resume.pt` checkpoints the dead
+#                          attempt wrote to Drive instead of starting over
+#   manifest present     → complete: release the VM, leave the bundle to intake
+#   past the 15 h budget → abandoned, with the reason recorded in the marker
+#   three dead attempts  → abandoned, and an issue that says the free tier is not
+#                          keeping up
+#
+# Relaunching rather than failing is the point: on a free tier a dead session is
+# weather, not a defect. What is a defect is a run nobody noticed had died, which is
+# why every transition is appended to the marker's event log and committed.
+#
+# State crosses job boundaries through git, never through memory: the marker in
+# `data/mlops/retrain-runs/` is read at the start of every tick and written at the
+# end. Two ticks never overlap (see `concurrency`), so they cannot race on it.
+# ─────────────────────────────────────────────────────────────────────────────
+
+on:
+  schedule:
+    - cron: '*/20 * * * *'
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: 'Watch a specific run (default: whatever is in flight)'
+        required: false
+        type: string
+      keep_session:
+        description: 'Do not release the VM after a complete run'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: write   # updates the run marker
+  issues: write     # reports a run that could not be recovered
+
+concurrency:
+  group: model-retrain-watch
+  # Queue, do not cancel: two ticks provisioning sessions at once is how you end up
+  # with two VMs training the same run on one free-tier quota.
+  cancel-in-progress: false
+
+env:
+  PYTHONUNBUFFERED: '1'
+
+jobs:
+  watch:
+    name: Follow the in-flight retrain
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'   # the Colab CLI requires 3.12+
+
+      - name: Nothing to watch?
+        id: active
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Most ticks of the month have no run in flight, and those must not touch
+          # credentials, provision anything, or fail: a watcher that cries wolf every
+          # twenty minutes gets its notifications muted, which is how a real death
+          # goes unnoticed.
+          if ls data/mlops/retrain-runs/*.json >/dev/null 2>&1; then
+            cd scripts
+            python -m mlops.retrain_cli status --limit 3
+            echo "any=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "· no retrain runs have ever been recorded"
+            echo "any=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Install the Colab CLI
+        if: steps.active.outputs.any == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --quiet --disable-pip-version-check google-colab-cli
+          colab --version
+
+      - name: Probe the run
+        if: steps.active.outputs.any == 'true'
+        id: watch
+        continue-on-error: true
+        shell: bash
+        env:
+          COLAB_TOKEN_JSON: ${{ secrets.COLAB_TOKEN_JSON }}
+          HN_RUN_ID: ${{ inputs.run_id }}
+        run: |
+          set -euo pipefail
+          cd scripts
+          EXTRA=''
+          if [ -n "${HN_RUN_ID:-}" ]; then EXTRA="$EXTRA --run-id $HN_RUN_ID"; fi
+          if [ "${{ inputs.keep_session }}" = 'true' ]; then EXTRA="$EXTRA --keep-session"; fi
+          # Probe only: observe, classify, and carry out anything worth keeping. Never
+          # provision — that is the relaunch step below, so a GitHub artifact download can
+          # sit between the diagnosis and the cure.
+          # shellcheck disable=SC2086
+          python -m mlops.retrain_cli watch --mode probe --tail $EXTRA
+
+      - name: Archive the resumable checkpoints
+        if: steps.watch.outputs.checkpoint_dir != ''
+        uses: actions/upload-artifact@v7
+        with:
+          # One live artifact per run: a headless session has no Drive, so this is the
+          # only copy of the run's resumable state that outlives the VM. The next step
+          # deletes the previous one, because a checkpoint per tick would be a gigabyte
+          # of storage for a run whose only useful state is the newest epoch.
+          name: ${{ steps.watch.outputs.checkpoint_artifact }}
+          path: ${{ steps.watch.outputs.checkpoint_dir }}
+          if-no-files-found: warn
+          retention-days: 14
+          overwrite: true
+
+      - name: Drop the superseded checkpoint archive
+        if: steps.watch.outputs.checkpoint_artifact != ''
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          KEEP: ${{ steps.watch.outputs.checkpoint_artifact }}
+        run: |
+          set -uo pipefail
+          gh api --paginate "repos/${GITHUB_REPOSITORY}/actions/artifacts?per_page=100" \
+            --jq '.artifacts[] | select(.name | startswith("retrain-checkpoint-")) | "\(.id) \(.name)"' \
+          | while read -r id name; do
+              if [ "$name" != "$KEEP" ]; then
+                gh api -X DELETE "repos/${GITHUB_REPOSITORY}/actions/artifacts/${id}" \
+                  && echo "· deleted the superseded archive ${name}"
+              fi
+            done
+
+      - name: Archive a finished bundle
+        if: steps.watch.outputs.bundle_dir != ''
+        uses: actions/upload-artifact@v7
+        with:
+          # A run that completes and then loses its VM ten minutes later has still done
+          # the work. This is what keeps eight hours from evaporating.
+          name: retrain-bundle-${{ steps.watch.outputs.run_id }}
+          path: ${{ steps.watch.outputs.bundle_dir }}
+          if-no-files-found: warn
+          retention-days: 14
+          overwrite: true
+
+      - name: Relaunch a run whose session died
+        if: steps.watch.outputs.status == 'stalled'
+        id: relaunch
+        continue-on-error: true
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          COLAB_TOKEN_JSON: ${{ secrets.COLAB_TOKEN_JSON }}
+          RUN_ID: ${{ steps.watch.outputs.run_id }}
+        run: |
+          set -uo pipefail
+          RESUME_DIR="${RUNNER_TEMP}/resume"
+          mkdir -p "$RESUME_DIR"
+          # Find the newest checkpoint archive for this run and put it back where the CLI
+          # can upload it into the replacement VM. Without it a relaunch is a restart.
+          ARTIFACT=$(gh api --paginate "repos/${GITHUB_REPOSITORY}/actions/artifacts?per_page=100" \
+            --jq "[.artifacts[] | select(.name | startswith(\"retrain-checkpoint-${RUN_ID}-\"))] | sort_by(.created_at) | last | .id // empty")
+          if [ -n "$ARTIFACT" ]; then
+            gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${ARTIFACT}/zip" > "${RUNNER_TEMP}/checkpoint.zip"
+            unzip -o -q "${RUNNER_TEMP}/checkpoint.zip" -d "$RESUME_DIR"
+            echo "· restored $(find "$RESUME_DIR" -name '*_resume.pt' | wc -l) resumable state(s)"
+          else
+            echo "::warning::no checkpoint archive for ${RUN_ID}; the relaunch will start this run over"
+          fi
+          cd scripts
+          python -m mlops.retrain_cli watch --mode relaunch --resume-from "$RESUME_DIR"
+
+      - name: Commit the marker
+        if: steps.active.outputs.any == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add data/mlops/retrain-runs
+          if git diff --staged --quiet; then
+            echo "· the marker did not change"
+            exit 0
+          fi
+          STATUS="${{ steps.watch.outputs.status }}"
+          git pull --rebase --autostash origin "${GITHUB_REF_NAME}" || true
+          git commit -m "chore(mlops): retrain watch — ${STATUS:-unknown}" \
+            -m "Heartbeat and status transitions recorded by model_retrain_watch.yml." \
+            -m "Timestamp: $(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+          if ! git push origin "HEAD:${GITHUB_REF_NAME}"; then
+            echo "::error::the marker update is local only; the next tick will re-read the old status and may relaunch a run that already finished."
+            exit 1
+          fi
+
+      - name: Report a run that could not be recovered
+        if: steps.watch.outcome == 'failure' || steps.relaunch.outcome == 'failure'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          STATUS: ${{ steps.watch.outputs.status }}
+          REASON: ${{ steps.watch.outputs.reason }}
+          RUN_ID: ${{ steps.watch.outputs.run_id }}
+          RELAUNCH: ${{ steps.relaunch.outcome }}
+        run: |
+          set -uo pipefail
+          STATUS="${STATUS:-unknown}"
+          TITLE="Model retrain ${RUN_ID:-} ended as ${STATUS}"
+          BODY=$(cat <<EOF
+          The monthly retrain \`${RUN_ID:-unknown}\` ended as **${STATUS}**.
+
+          ${REASON:-The watcher log has the reason.}
+
+          What this means:
+
+          * The champion model in \`Models/\` is untouched — a retrain only ever
+            becomes live through a pull request a human merges.
+          * \`data/mlops/retrain-runs/${RUN_ID:-unknown}.json\` carries the event log:
+            every status transition, every relaunch, and the last heartbeat the
+            notebook managed to write.
+          * If the status is \`stalled\` after three attempts, the free tier is
+            recycling sessions faster than the checkpoints can save work. The fixes
+            are a Colab Pro+ seat, a self-hosted GPU runner, or a smaller epoch
+            budget — in that order of cost.
+
+          [Watcher run ${GITHUB_RUN_ID}](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID})
+          EOF
+          )
+          EXISTING=$(gh issue list --state open --search "Model retrain" --json number,title \
+            --jq '.[] | select(.title | startswith("Model retrain")) | .number' | head -1)
+          if [ -n "$EXISTING" ]; then
+            gh issue comment "$EXISTING" --body "$BODY"
+          else
+            gh issue create --title "$TITLE" --body "$BODY" --label "mlops" || \
+              echo "::warning::could not open an issue; the failure is only in the run log"
+          fi
+
+      - name: Summary
+        if: always()
+        shell: bash
+        env:
+          STATUS: ${{ steps.watch.outputs.status }}
+          RUN_ID: ${{ steps.watch.outputs.run_id }}
+        run: |
+          {
+            echo '### Retrain watcher'
+            echo ''
+            case "${STATUS:-none}" in
+              none)       echo 'No retrain in flight.' ;;
+              training|converting|provisioning)
+                          echo "\`${RUN_ID}\` is **${STATUS}**; the session was re-attached and left alone." ;;
+              relaunched) echo "\`${RUN_ID}\` had gone quiet, so a replacement session was provisioned and the run resumed from the checkpoints the previous ticks archived." ;;
+              complete)   echo "\`${RUN_ID}\` finished and its manifest validates. \`model_intake.yml\` collects the bundle on its own schedule and opens the pull request." ;;
+              stalled)    echo "\`${RUN_ID}\` is **stalled** — no GPU was available to relaunch it, or the relaunch failed. The next tick tries again." ;;
+              abandoned|failed)
+                          echo "\`${RUN_ID}\` ended as **${STATUS}**. An issue was opened; the champion model is unaffected." ;;
+              *)          echo "Status: \`${STATUS:-unknown}\`." ;;
+            esac
+          } >> "$GITHUB_STEP_SUMMARY"

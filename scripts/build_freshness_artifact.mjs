@@ -123,7 +123,7 @@ function forecastIngestSource({ manifest, now }) {
   if (!isRecord(manifest)) {
     return {
       id: 'forecast_ingest',
-      label: 'Forecast ingest run (backend/data/forecasts/manifest.json)',
+      label: 'Forecast ingest run',
       artifact: DEFAULT_PATHS.manifest,
       state: 'missing',
       reason: 'no readable ingest manifest — the pipeline has not published a run to this checkout',
@@ -140,7 +140,7 @@ function forecastIngestSource({ manifest, now }) {
   const state = classify(age, FORECAST_SLO_HOURS);
   return {
     id: 'forecast_ingest',
-    label: 'Forecast ingest run (backend/data/forecasts/manifest.json)',
+    label: 'Forecast ingest run',
     artifact: DEFAULT_PATHS.manifest,
     state,
     reason:
@@ -166,7 +166,7 @@ function forecastSnapshotSource({ snapshot, now }) {
   if (!isRecord(snapshot)) {
     return {
       id: 'forecast_snapshot',
-      label: 'Website forecast snapshot (frontend/public/data/forecasts-latest.json)',
+      label: 'Website forecast snapshot',
       artifact: DEFAULT_PATHS.snapshot,
       state: 'missing',
       reason: 'no readable website snapshot — the deployable build has no forecast data',
@@ -183,7 +183,7 @@ function forecastSnapshotSource({ snapshot, now }) {
   const state = classify(age, FORECAST_SLO_HOURS);
   return {
     id: 'forecast_snapshot',
-    label: 'Website forecast snapshot (frontend/public/data/forecasts-latest.json)',
+    label: 'Website forecast snapshot',
     artifact: DEFAULT_PATHS.snapshot,
     state,
     reason:
@@ -208,7 +208,7 @@ function alertEngineSource({ alerts, now }) {
   if (!isRecord(alerts)) {
     return {
       id: 'alert_engine',
-      label: 'Alert snapshot (frontend/public/data/alerts-latest.json)',
+      label: 'Alert snapshot',
       artifact: DEFAULT_PATHS.alerts,
       state: 'missing',
       reason: 'no readable alert snapshot — the alert page has only its live API path',
@@ -222,7 +222,7 @@ function alertEngineSource({ alerts, now }) {
   const state = classify(age, ALERTS_SLO_HOURS);
   return {
     id: 'alert_engine',
-    label: 'Alert snapshot (frontend/public/data/alerts-latest.json)',
+    label: 'Alert snapshot',
     artifact: DEFAULT_PATHS.alerts,
     state,
     reason:
@@ -248,7 +248,7 @@ function alertEngineSource({ alerts, now }) {
 function siteProbeSource({ probe, now }) {
   const base = {
     id: 'site_probe',
-    label: 'Site-health probe (data/site-health/latest.json, every 30 min on the default branch)',
+    label: 'Site-health probe (every 30 min)',
     artifact: DEFAULT_PATHS.probe,
     generated_at: null,
     age_hours: null,

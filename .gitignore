@@ -80,3 +80,7 @@ yarn-error.log
 
 # QA harness output (playwright.qa.config.ts)
 /test-results-qa
+
+# Collected retrain bundles (model_intake.yml downloads them, validates them and
+# opens a pull request; the bytes belong in the PR, not in the repository twice).
+data/mlops/incoming/

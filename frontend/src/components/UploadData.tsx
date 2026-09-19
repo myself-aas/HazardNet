@@ -37,11 +37,11 @@ export const UploadData: React.FC = () => {
   };
 
   return (
-    <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 shadow-2xl space-y-6 relative overflow-hidden">
+    <div className="bg-carbon-90/90 border border-carbon-80 rounded-2xl p-6 shadow-2xl space-y-6 relative overflow-hidden">
       
       {/* Cyber Grid Processing Screen Overlay */}
       {isProcessing && (
-        <div className="absolute inset-0 z-50 p-4 bg-slate-950/95 backdrop-blur-md flex flex-col justify-center animate-fadeIn">
+        <div className="absolute inset-0 z-50 p-4 bg-carbon-black/95 backdrop-blur-md flex flex-col justify-center animate-fadeIn">
           <DataProcessingSkeleton
             title="RASTERIZING MULTI-SPECTRAL SATELLITE INPUT"
             subtitle={`Ingesting ${file?.name || 'satellite tensor'} & generating GeoTIFF risk tiles...`}
@@ -52,14 +52,14 @@ export const UploadData: React.FC = () => {
       )}
 
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+      <div className="flex items-center justify-between border-b border-carbon-80 pb-4">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 font-bold text-xl shadow-inner">
             <MaterialIcon name="satellite_alt" className="w-4 h-4 inline-block mr-1" />
           </div>
           <div>
             <h2 className="text-lg font-bold text-white tracking-tight">GeoTIFF & Hydro-Met Raster Ingestion</h2>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-carbon-60">
               Upload multi-spectral GeoTIFF, NetCDF4, or tabular CSV weather streams for TFLite inference
             </p>
           </div>
@@ -82,8 +82,8 @@ export const UploadData: React.FC = () => {
           dragOver
             ? 'border-cyan-400 bg-cyan-950/30 shadow-[0_0_20px_rgba(6,182,212,0.2)]'
             : file
-            ? 'border-emerald-500/50 bg-slate-950/60'
-            : 'border-slate-700/80 hover:border-slate-600 bg-slate-950/40'
+            ? 'border-emerald-500/50 bg-carbon-black/60'
+            : 'border-carbon-70/80 hover:border-carbon-60 bg-carbon-black/40'
         }`}
       >
         <input
@@ -94,7 +94,7 @@ export const UploadData: React.FC = () => {
         />
 
         <div className="space-y-3 pointer-events-none">
-          <div className="w-16 h-16 mx-auto rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-center text-3xl shadow-lg">
+          <div className="w-16 h-16 mx-auto rounded-2xl bg-carbon-90 border border-carbon-80 flex items-center justify-center text-3xl shadow-lg">
             {file ? 'description' : '📥'}
           </div>
 
@@ -103,7 +103,7 @@ export const UploadData: React.FC = () => {
               <span className="text-sm font-bold text-emerald-400 font-mono block">
                 {file.name}
               </span>
-              <span className="text-xs text-slate-400 font-mono block">
+              <span className="text-xs text-carbon-60 font-mono block">
                 {(file.size / (1024 * 1024)).toFixed(2)} MB • Ready for neural rasterization
               </span>
             </div>
@@ -112,7 +112,7 @@ export const UploadData: React.FC = () => {
               <span className="text-sm font-bold text-white block">
                 Drag & drop multi-spectral satellite file or click to browse
               </span>
-              <span className="text-xs text-slate-400 font-mono block">
+              <span className="text-xs text-carbon-60 font-mono block">
                 Supports .tif, .tiff, .nc, .csv, .geojson (Max 250MB)
               </span>
             </div>
@@ -122,7 +122,7 @@ export const UploadData: React.FC = () => {
 
       {/* Action Bar */}
       <div className="flex items-center justify-between pt-2">
-        <div className="text-xs text-slate-400 font-mono">
+        <div className="text-xs text-carbon-60 font-mono">
           {file ? `Selected: ${file.name}` : 'No file selected'}
         </div>
 
@@ -132,7 +132,7 @@ export const UploadData: React.FC = () => {
           className={`px-5 py-2.5 rounded-xl font-bold text-xs font-mono transition-all flex items-center gap-2 whitespace-nowrap shrink-0 ${
             file && !isProcessing
               ? 'bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white shadow-xs cursor-pointer active:scale-95'
-              : 'bg-slate-800 text-slate-500 border border-slate-700/60 cursor-not-allowed'
+              : 'bg-carbon-80 text-carbon-50 border border-carbon-70/60 cursor-not-allowed'
           }`}
         >
           <MaterialIcon name="bolt" className="w-4 h-4 inline-block mr-1" />

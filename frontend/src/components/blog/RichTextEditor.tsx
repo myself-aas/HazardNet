@@ -171,7 +171,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
       onClick={onClick}
       disabled={disabled}
       className={`h-8 min-w-8 px-1.5 rounded-lg text-[13px] font-black transition-colors cursor-pointer disabled:opacity-40 ${
-        active ? 'bg-amber-100 text-amber-900 border border-amber-300' : 'text-slate-600 hover:bg-slate-100 border border-transparent'
+        active ? 'bg-amber-100 text-amber-900 border border-amber-300' : 'text-carbon-60 hover:bg-carbon-10 border border-transparent'
       }`}
     >
       <MaterialIcon name={icon} className="w-4 h-4" />
@@ -179,10 +179,10 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
   );
 
   return (
-    <div className="border border-slate-200 rounded-2xl overflow-hidden bg-white shadow-xs" data-testid="rich-text-editor">
+    <div className="border border-carbon-20 rounded-2xl overflow-hidden bg-white shadow-xs" data-testid="rich-text-editor">
       {/* Toolbar */}
       <div
-        className="flex flex-wrap items-center gap-1 p-2 border-b border-slate-200 bg-slate-50/80 sticky top-0 z-10"
+        className="flex flex-wrap items-center gap-1 p-2 border-b border-carbon-20 bg-carbon-05/80 sticky top-0 z-10"
         role="toolbar"
         aria-label="Formatting toolbar"
       >
@@ -191,7 +191,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
           onChange={(e) => applyBlock(e.target.value)}
           disabled={disabled}
           aria-label="Block format"
-          className="h-8 rounded-lg border border-slate-200 bg-white px-2 text-[11px] font-bold text-slate-700 cursor-pointer disabled:opacity-40"
+          className="h-8 rounded-lg border border-carbon-20 bg-white px-2 text-[11px] font-bold text-carbon-70 cursor-pointer disabled:opacity-40"
         >
           {BLOCK_OPTIONS.map((option) => (
             <option key={option.value} value={option.value}>
@@ -200,11 +200,11 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
           ))}
         </select>
 
-        <span className="w-px h-6 bg-slate-200 mx-1" aria-hidden="true" />
+        <span className="w-px h-6 bg-carbon-20 mx-1" aria-hidden="true" />
 
         {INLINE_TOOLS.map((tool) => toolButton(tool.cmd, tool.label, tool.icon, () => runTool(tool.cmd)))}
 
-        <span className="w-px h-6 bg-slate-200 mx-1" aria-hidden="true" />
+        <span className="w-px h-6 bg-carbon-20 mx-1" aria-hidden="true" />
 
         {toolButton('link', 'Insert link', 'share', insertLink)}
         {toolButton('affiliate', 'Insert affiliate link (rel=sponsored)', 'attach_money', insertAffiliateLink)}
@@ -212,10 +212,10 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
         {toolButton('image', 'Insert image from URL', 'camera', insertImage)}
         {toolButton('hr', 'Horizontal rule', 'expand_less', insertHr)}
 
-        <span className="w-px h-6 bg-slate-200 mx-1" aria-hidden="true" />
+        <span className="w-px h-6 bg-carbon-20 mx-1" aria-hidden="true" />
 
         <div className="flex items-center gap-1" role="group" aria-label="Text color">
-          {['#0f172a', '#b91c1c', '#1d4ed8', '#15803d', '#b60109'].map((color) => (
+          {['#17171b', '#b91c1c', '#1d4ed8', '#15803d', '#b60109'].map((color) => (
             <button
               key={color}
               type="button"
@@ -224,7 +224,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
               onMouseDown={(e) => e.preventDefault()}
               onClick={() => textColor(color)}
               disabled={disabled}
-              className="h-6 w-6 rounded-full border border-slate-300 hover:scale-110 transition-transform cursor-pointer disabled:opacity-40"
+              className="h-6 w-6 rounded-full border border-carbon-30 hover:scale-110 transition-transform cursor-pointer disabled:opacity-40"
               style={{ backgroundColor: color }}
             />
           ))}
@@ -237,7 +237,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
           onClick={() => setSourceView((v) => !v)}
           disabled={disabled}
           className={`h-8 px-2.5 rounded-lg text-[10px] font-black transition-colors cursor-pointer disabled:opacity-40 ${
-            sourceView ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100'
+            sourceView ? 'bg-carbon-90 text-white' : 'text-carbon-60 hover:bg-carbon-10'
           }`}
           title="Toggle HTML source view"
         >
@@ -252,7 +252,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
           onChange={(e) => onChange(e.target.value)}
           spellCheck={false}
           aria-label="HTML source"
-          className={`w-full ${minHeightClass} p-4 font-mono text-xs text-slate-800 outline-none resize-y bg-slate-950 text-slate-100`}
+          className={`w-full ${minHeightClass} p-4 font-mono text-xs text-carbon-80 outline-none resize-y bg-carbon-black text-carbon-10`}
         />
       ) : (
         <div
@@ -265,12 +265,12 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
           aria-multiline="true"
           aria-label="Article body"
           data-placeholder="Write your article… use the toolbar for headings, lists, quotes, links and images."
-          className={`w-full ${minHeightClass} p-4 sm:p-5 text-sm leading-relaxed text-slate-800 prose-blog outline-none overflow-y-auto max-h-[60vh] disabled:opacity-50`}
+          className={`w-full ${minHeightClass} p-4 sm:p-5 text-sm leading-relaxed text-carbon-80 prose-blog outline-none overflow-y-auto max-h-[60vh] disabled:opacity-50`}
         />
       )}
 
       {/* Status bar */}
-      <div className="flex items-center justify-between gap-3 px-3.5 py-2 border-t border-slate-200 bg-slate-50/80 text-[10px] font-bold text-slate-500">
+      <div className="flex items-center justify-between gap-3 px-3.5 py-2 border-t border-carbon-20 bg-carbon-05/80 text-[10px] font-bold text-carbon-60">
         <span className="font-mono">{words} words · ~{readingTimeMinutes(value)} min read</span>
         <span className="font-mono">{sourceView ? 'SOURCE VIEW' : 'VISUAL EDITOR'}</span>
       </div>

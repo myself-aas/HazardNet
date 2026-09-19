@@ -38,6 +38,29 @@ jobs:
     timeout-minutes: 10
 
     steps:
+      # The probe itself only needs curl + jq (both on the runner image), but the
+      # two publish steps at the end need the repository: `build_freshness_artifact.mjs`
+      # is a repo script, and "Publish the probe result to the branch" runs git.
+      # Until this checkout existed the job had NO working tree, so every run since
+      # the publish step was added failed with
+      #   ::warning::could not rebuild the freshness artifact   (no such script)
+      #   fatal: not in a git directory → exit 128               (no repository)
+      # while the probes themselves were green — the run looked like a site outage
+      # and was actually a missing step. `persist-credentials` is left at its
+      # default (true) so the push below authenticates with GITHUB_TOKEN, which
+      # has contents:write from the workflow-level permissions block.
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        # For scripts/build_freshness_artifact.mjs only. That script imports
+        # node:fs / node:path / node:url and nothing else, so there is deliberately
+        # no `npm ci` here: this job must stay fast (it runs every 30 minutes) and
+        # must not fail because an unrelated dependency tree moved.
+        uses: actions/setup-node@v7
+        with:
+          node-version: '20'
+
       # `-L` (follow redirects) is required, not cosmetic: the canonical
       # deployment is www.hazardnet.live and the apex answers 308. Without -L
       # curl reported that redirect *as* the probe result, so every scheduled
@@ -318,26 +341,47 @@ jobs:
 
           # A representative page from each generated family, plus one the engine marked
           # noindex (it must still render honestly — it explains why the run did not cover it).
+          #
+          # The sample is HTML *and* one JSON artifact, so the body assertion has to
+          # depend on which: `HN_STATIC_START` is the prerenderer's marker inside an
+          # HTML document, and a JSON file can never carry it. Requiring it of every
+          # sampled path made this step red on every single run — the failure was
+          # always "/data/content-index.json returned 200 without the prerendered body"
+          # while all 20-odd HTML pages passed — which is the worst kind of red: a
+          # standing failure that trains everyone to ignore the probe. Each path is now
+          # checked against the contract it actually has.
           jq -r '.routes[].path' /tmp/content-index.json | awk '!/^\/districts\/[a-z0-9-]+$/ || seen++ <= 2' > /tmp/content-sample.txt
           for path in /hazards /hazards/flood /districts /data/content-index.json; do
             echo "$path" >> /tmp/content-sample.txt
           done
           sort -u /tmp/content-sample.txt > /tmp/content-sample-unique.txt
-          echo "checking $(wc -l < /tmp/content-sample-unique.txt) generated pages"
+          echo "checking $(wc -l < /tmp/content-sample-unique.txt) generated paths"
           while read -r path; do
             [ -z "$path" ] && continue
-            code=$(curl -sSL --max-redirs 5 -o /tmp/page.html -w '%{http_code}' --max-time 30 "$SITE_URL$path" || echo 000)
+            code=$(curl -sSL --max-redirs 5 -o /tmp/page-body -w '%{http_code}' --max-time 30 "$SITE_URL$path" || echo 000)
             if [ "$code" != "200" ]; then
-              echo "::error::$path → HTTP $code (generated content page not served)"
+              echo "::error::$path → HTTP $code (generated content path not served)"
               FAILED=1
               continue
             fi
-            if ! grep -q 'HN_STATIC_START' /tmp/page.html; then
-              echo "::error::$path returned 200 without the prerendered body — the SPA shell was served instead."
-              FAILED=1
-            fi
+            case "$path" in
+              *.json)
+                # The artifact must be the artifact: valid JSON carrying its schema tag,
+                # not an HTML shell that happens to answer 200 on a rewrite.
+                if ! jq -e '.schema' /tmp/page-body >/dev/null 2>&1; then
+                  echo "::error::$path returned 200 but is not a JSON document with a schema field — the SPA shell was served instead."
+                  FAILED=1
+                fi
+                ;;
+              *)
+                if ! grep -q 'HN_STATIC_START' /tmp/page-body; then
+                  echo "::error::$path returned 200 without the prerendered body — the SPA shell was served instead."
+                  FAILED=1
+                fi
+                ;;
+            esac
           done < /tmp/content-sample-unique.txt
-          [ "$FAILED" = "0" ] && echo "✅ generated content pages are served with their prerendered bodies"
+          [ "$FAILED" = "0" ] && echo "✅ generated content paths are served with their own bodies (prerendered HTML / JSON artifact)"
           exit "$FAILED"
 
       # The result is published in two forms: a machine-readable record the status
@@ -412,7 +456,12 @@ jobs:
           OUTCOME=$(jq -r '.outcome' data/site-health/latest.json)
           git pull --rebase --autostash origin main || true
           git commit -m "chore(ops): site-health probe ${OUTCOME} $(date -u +%Y-%m-%dT%H:%MZ)"
-          if ! git push; then
+          # HEAD:main rather than a bare `git push`: a scheduled run checks the ref
+          # out at a sha, and pushing a detached HEAD without an explicit refspec
+          # fails with "You are not currently on a branch" even when the token has
+          # write access — which the warning below would then misreport as a
+          # read-only-permissions problem.
+          if ! git push origin HEAD:main; then
             echo "::warning::could not publish the probe result to the branch — this repository's workflow permissions are read-only (docs/ops/owner-actions.md, Action 9). The result is still in the run summary and the uploaded artifact."
           fi
 

@@ -77,20 +77,20 @@ export const IdentityConnections: React.FC = () => {
   )
 
   return (
-    <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3">
+    <div className="bg-carbon-05 border border-carbon-20 rounded-xl p-4 space-y-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <ProviderGlyph provider="linkedin" className="h-4 w-4" />
-          <h4 className="text-xs font-extrabold text-slate-900 uppercase tracking-wide">
+          <h4 className="text-xs font-extrabold text-carbon-90 uppercase tracking-wide">
             Connected Accounts & Social Sign-In
           </h4>
         </div>
-        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
+        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-carbon-10 text-carbon-70 border border-carbon-20">
           {linked.length} linked
         </span>
       </div>
 
-      <p className="text-[11px] text-slate-600 leading-relaxed">
+      <p className="text-[11px] text-carbon-60 leading-relaxed">
         Link providers (LinkedIn, GitHub, Slack, Discord, X, Figma…) to sign into this same HazardNet account
         with any of them. Disconnecting removes only the sign-in method — your advisories and saved assessments stay.
       </p>
@@ -109,13 +109,13 @@ export const IdentityConnections: React.FC = () => {
             return (
               <li
                 key={identity.identityId}
-                className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white p-2.5"
+                className="flex items-center justify-between gap-3 rounded-lg border border-carbon-20 bg-white p-2.5"
               >
                 <div className="flex min-w-0 items-center gap-2.5">
                   <ProviderGlyph provider={identity.provider} className="h-5 w-5" />
                   <div className="min-w-0">
-                    <p className="truncate text-xs font-bold text-slate-800">{config.label}</p>
-                    <p className="truncate text-[10px] text-slate-500">
+                    <p className="truncate text-xs font-bold text-carbon-80">{config.label}</p>
+                    <p className="truncate text-[10px] text-carbon-60">
                       {identity.email ?? 'Identity linked'}
                       {isLastIdentity && ' — last sign-in method'}
                     </p>
@@ -142,7 +142,7 @@ export const IdentityConnections: React.FC = () => {
 
       {available.length > 0 && (
         <div className="space-y-1.5">
-          <p className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500">Connect another provider</p>
+          <p className="text-[10px] font-extrabold uppercase tracking-wider text-carbon-60">Connect another provider</p>
           <div className="flex flex-wrap gap-1.5" data-testid="linkable-providers">
             {available.map((provider) => {
               const config = getProvider(provider)
@@ -153,10 +153,10 @@ export const IdentityConnections: React.FC = () => {
                   whileTap={{ scale: 0.96 }}
                   onClick={() => handleLink(provider)}
                   disabled={linking !== null}
-                  className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-[10px] font-bold text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-50 disabled:cursor-wait disabled:opacity-60"
+                  className="flex items-center gap-1.5 rounded-lg border border-carbon-20 bg-white px-2.5 py-1.5 text-[10px] font-bold text-carbon-70 transition-colors hover:border-carbon-30 hover:bg-carbon-05 disabled:cursor-wait disabled:opacity-60"
                 >
                   {linking === provider ? (
-                    <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-slate-300 border-t-slate-600" />
+                    <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-carbon-30 border-t-carbon-60" />
                   ) : (
                     <ProviderGlyph provider={provider} className="h-3.5 w-3.5" />
                   )}

@@ -1,6 +1,7 @@
 {
   "name": "hazardnet",
   "version": "2.1.9",
+  "private": true,
   "description": "Multi-Hazard AI Classification & Severity Quantification for Bangladesh Agricultural Disaster Risk",
   "keywords": [
     "HazardNet",
@@ -42,6 +43,11 @@
     "alerts:rehearse": "node scripts/rehearse_alert_engine.mjs --out /tmp/alert-run.json",
     "alerts:snapshot": "node scripts/rehearse_alert_engine.mjs --out /tmp/alert-run.json --quiet && node scripts/build_alert_snapshot.mjs --in /tmp/alert-run.json",
     "check:bundle": "node scripts/check-bundle.mjs",
+    "check:design": "node scripts/check-design-quality.mjs",
+    "check:paths": "node scripts/check-public-paths.mjs",
+    "check:design:update": "node scripts/check-design-quality.mjs --update",
+    "design:detect": "impeccable detect frontend/src frontend/dist --no-advisory",
+    "design:help": "impeccable help",
     "check:rag-freshness": "node scripts/check-rag-freshness.mjs",
     "check:env": "node scripts/validate_env.mjs",
     "check:embargo": "node scripts/check-severity-embargo.mjs",
@@ -89,6 +95,7 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "firebase-admin": "^14.4.0",
     "globals": "^17.11.0",
+    "impeccable": "^4.1.0",
     "jest": "^29.7.0",
     "jest-axe": "^9.0.0",
     "jest-environment-jsdom": "^30.4.1",

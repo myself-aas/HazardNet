@@ -81,7 +81,7 @@ export const AlertFilters: React.FC<AlertFiltersProps> = ({
   const update = (patch: Partial<AlertFilterState>) => onChange({ ...filters, ...patch });
 
   const selectClass =
-    'min-h-[44px] w-full rounded-xl border border-slate-300 bg-white px-2.5 py-2 text-xs font-semibold text-slate-800 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-300';
+    'min-h-[44px] w-full rounded-xl border border-carbon-30 bg-white px-2.5 py-2 text-xs font-semibold text-carbon-80 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-300';
 
   return (
     <form
@@ -91,7 +91,7 @@ export const AlertFilters: React.FC<AlertFiltersProps> = ({
       onSubmit={(event) => event.preventDefault()}
     >
       <div className="col-span-1">
-        <label htmlFor="alert-filter-level" className="mb-1 block text-[11px] font-bold text-slate-600">
+        <label htmlFor="alert-filter-level" className="mb-1 block text-[11px] font-bold text-carbon-60">
           {t('alerts.filter.level')}
         </label>
         <select
@@ -108,7 +108,7 @@ export const AlertFilters: React.FC<AlertFiltersProps> = ({
       </div>
 
       <div className="col-span-1">
-        <label htmlFor="alert-filter-hazard" className="mb-1 block text-[11px] font-bold text-slate-600">
+        <label htmlFor="alert-filter-hazard" className="mb-1 block text-[11px] font-bold text-carbon-60">
           {t('alerts.filter.hazard')}
         </label>
         <select
@@ -126,7 +126,7 @@ export const AlertFilters: React.FC<AlertFiltersProps> = ({
 
       {options.divisions.length > 1 && (
         <div className="col-span-1">
-          <label htmlFor="alert-filter-division" className="mb-1 block text-[11px] font-bold text-slate-600">
+          <label htmlFor="alert-filter-division" className="mb-1 block text-[11px] font-bold text-carbon-60">
             {t('alerts.filter.division')}
           </label>
           <select
@@ -144,13 +144,13 @@ export const AlertFilters: React.FC<AlertFiltersProps> = ({
       )}
 
       <div className="col-span-2 sm:col-span-1">
-        <label htmlFor="alert-filter-query" className="mb-1 block text-[11px] font-bold text-slate-600">
+        <label htmlFor="alert-filter-query" className="mb-1 block text-[11px] font-bold text-carbon-60">
           {t('alerts.filter.search')}
         </label>
         <div className="relative">
           <MaterialIcon
             name="search"
-            className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-base text-slate-400"
+            className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-base text-carbon-60"
             aria-hidden="true"
           />
           <input
@@ -165,7 +165,7 @@ export const AlertFilters: React.FC<AlertFiltersProps> = ({
         </div>
       </div>
 
-      <p className="col-span-2 text-[11px] font-semibold text-slate-600 sm:col-span-1 sm:self-end" aria-live="polite">
+      <p className="col-span-2 text-[11px] font-semibold text-carbon-60 sm:col-span-1 sm:self-end" aria-live="polite">
         {t('alerts.filter.results', {
           shown: formatNumber(shown, { maximumFractionDigits: 0 }),
           total: formatNumber(alerts.length, { maximumFractionDigits: 0 }),

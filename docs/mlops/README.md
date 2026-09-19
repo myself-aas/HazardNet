@@ -55,12 +55,17 @@ and both stay visible.
 | `scripts/mlops/evaluate.py` | The prediction↔outcome join, scoring, lead time | `test_mlops_evaluate_drift.py` |
 | `scripts/mlops/drift.py` | PSI over the published driver columns, class shares, severity | `test_mlops_evaluate_drift.py` |
 | `scripts/mlops/cli.py` | The commands above | via the suites plus `test_mlops_artifacts.py` |
+| `scripts/mlops/retrain_state.py` | The retrain run's contract: marker, heartbeat, manifest, state machine, manifest gate | `test_retrain_automation.py`, `test_retrain_notebook.py` |
+| `scripts/mlops/colab_session.py` | The Colab CLI wrapped for unattended use: timeouts, actionable errors, detached launch | `test_retrain_automation.py` |
+| `scripts/mlops/retrain_cli.py` | `start`, `watch`, `collect`, `validate`, `mark`, `status` | `test_retrain_automation.py` |
 
 Everything is stdlib-only and offline: the same code runs on a GitHub runner, in CI
-with no network, and on an analyst's laptop. The parts that genuinely need a model
-runtime or Earth Engine credentials (retraining, quantizing) are not implemented
-here and are not simulated to look implemented — see
-[`RETRAIN_AND_PROMOTION.md`](RETRAIN_AND_PROMOTION.md).
+with no network, and on an analyst's laptop. `colab_session.py` is the one module that
+shells out — it drives the Colab CLI — and its tests drive a stub `colab` binary on
+`PATH`, so even that is exercised without a Google account. The parts that genuinely
+need a model runtime or Earth Engine credentials (quantizing, verifying against
+observed outcomes) are not implemented here and are not simulated to look implemented
+— see [`RETRAIN_AND_PROMOTION.md`](RETRAIN_AND_PROMOTION.md).
 
 ## The FP32/INT8 question
 
@@ -77,3 +82,16 @@ writing one that cannot be run or verified would be worse than the honest gap.
 reports as artifacts) and quarterly (the retrain brief, which opens or updates an
 issue). It never promotes a model and never stamps a calibrated probability: both of
 those are human steps, by design.
+
+The retrain itself is automated as of 2026-09-19 by three workflows that hand off
+through a committed run marker — `model_retrain.yml` (monthly: provision a Colab T4
+and launch the notebook detached), `model_retrain_watch.yml` (every 20 min: keep the
+session warm, relaunch a dead one from its Drive checkpoints) and `model_intake.yml`
+(hourly: collect the bundle, validate it, open the pull request). What stays human is
+unchanged: merging the pull request, and `promote --by <approver>`.
+
+Read [`COLAB_AUTOMATION.md`](COLAB_AUTOMATION.md) for the one-time setup, the triage
+table and the limits — including the ones that matter most: the free tier does not
+guarantee a T4, and intake cannot prove a new model *verifies* better, only that it is
+the bundle its manifest describes and that the conversion did not change its
+predictions.

@@ -40,7 +40,7 @@ export default function UpdatePasswordPage() {
   }
 
   const inputClass =
-    'mt-1.5 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-base sm:text-sm text-slate-900 outline-none transition-all focus:border-nasa-blue focus:ring-2 focus:ring-nasa-blue/40'
+    'mt-1.5 w-full rounded-2xl border border-carbon-20 bg-carbon-05 px-4 py-3 text-base sm:text-sm text-carbon-90 outline-none transition-all focus:border-nasa-blue focus:ring-2 focus:ring-nasa-blue/40'
 
   return (
     <AuthLayout
@@ -64,7 +64,7 @@ export default function UpdatePasswordPage() {
               {error}
             </p>
           )}
-          <label className="block text-xs font-bold text-slate-800" htmlFor="new-password">
+          <label className="block text-xs font-bold text-carbon-80" htmlFor="new-password">
             New password
             <input
               id="new-password"
@@ -77,7 +77,7 @@ export default function UpdatePasswordPage() {
               className={inputClass}
             />
           </label>
-          <label className="block text-xs font-bold text-slate-800" htmlFor="confirm-password">
+          <label className="block text-xs font-bold text-carbon-80" htmlFor="confirm-password">
             Confirm new password
             <input
               id="confirm-password"
@@ -93,7 +93,7 @@ export default function UpdatePasswordPage() {
           <button
             type="submit"
             disabled={saving || !ready}
-            className="w-full rounded-2xl bg-nasa-red py-3.5 text-sm font-extrabold text-slate-900 transition-colors hover:bg-nasa-red-shade disabled:opacity-50 cursor-pointer"
+            className="w-full rounded-2xl bg-nasa-red py-3.5 text-sm font-extrabold text-carbon-90 transition-colors hover:bg-nasa-red-shade disabled:opacity-50 cursor-pointer"
           >
             {saving ? 'Updating password…' : 'Update password'}
           </button>

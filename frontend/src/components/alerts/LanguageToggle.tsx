@@ -16,23 +16,51 @@
 import React from 'react';
 import { useI18n } from '../../hooks/useI18n';
 
+/**
+ * Colour tokens per surface.
+ *
+ * The alerts/map surfaces were built on the slate palette and keep it; the editorial front
+ * door uses the NASA HDS tokens (`carbon-*`, `nasa-*`) that `docs/PUBLIC_SURFACE.md` and the
+ * rest of `/` are written in. Rather than fork a second toggle — two implementations of the
+ * same `aria-pressed` logic is exactly how a control drifts out of one of them — the palette
+ * is a prop, and the *behaviour* stays in one place.
+ */
+const TONES = {
+  slate: {
+    wrapper: 'rounded-xl border border-carbon-30 bg-white p-0.5',
+    button: 'rounded-lg',
+    active: 'bg-carbon-90 text-white',
+    idle: 'text-carbon-70 hover:bg-carbon-10',
+  },
+  hds: {
+    wrapper: 'rounded-none border border-carbon-20 bg-white p-0.5',
+    button: 'rounded-none',
+    active: 'bg-carbon-90 text-white',
+    idle: 'text-carbon-70 hover:bg-carbon-05',
+  },
+} as const;
+
 export interface LanguageToggleProps {
   className?: string;
   /** `compact` renders a single button; `switch` renders both labels. */
   variant?: 'compact' | 'switch';
+  /** Palette of the surface it sits on. Defaults to the alerts/map slate palette. */
+  tone?: keyof typeof TONES;
 }
 
 export const LanguageToggle: React.FC<LanguageToggleProps> = ({
   className = '',
   variant = 'compact',
+  tone = 'slate',
 }) => {
   const { language, setLanguage, toggleLanguage, t } = useI18n();
   const bengaliActive = language === 'bn';
+  const palette = TONES[tone];
 
   if (variant === 'switch') {
     return (
       <div
-        className={`inline-flex items-center rounded-xl border border-slate-300 bg-white p-0.5 text-xs font-semibold ${className}`}
+        className={`inline-flex items-center ${palette.wrapper} text-xs font-semibold ${className}`}
         role="group"
         aria-label={t('common.language')}
       >
@@ -40,8 +68,8 @@ export const LanguageToggle: React.FC<LanguageToggleProps> = ({
           type="button"
           onClick={() => setLanguage('en')}
           aria-pressed={!bengaliActive}
-          className={`px-2.5 py-1 rounded-lg transition-colors ${
-            !bengaliActive ? 'bg-slate-900 text-white' : 'text-slate-700 hover:bg-slate-100'
+          className={`px-2.5 py-1 transition-colors ${palette.button} ${
+            !bengaliActive ? palette.active : palette.idle
           }`}
         >
           <span lang="en">{t('common.english')}</span>
@@ -50,9 +78,7 @@ export const LanguageToggle: React.FC<LanguageToggleProps> = ({
           type="button"
           onClick={() => setLanguage('bn')}
           aria-pressed={bengaliActive}
-          className={`px-2.5 py-1 rounded-lg transition-colors ${
-            bengaliActive ? 'bg-slate-900 text-white' : 'text-slate-700 hover:bg-slate-100'
-          }`}
+          className={`px-2.5 py-1 transition-colors ${palette.button} ${bengaliActive ? palette.active : palette.idle}`}
         >
           <span lang="bn">{t('common.bengali')}</span>
         </button>
@@ -66,14 +92,18 @@ export const LanguageToggle: React.FC<LanguageToggleProps> = ({
       onClick={toggleLanguage}
       aria-pressed={bengaliActive}
       title={t('common.language')}
-      className={`inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs font-bold text-slate-800 hover:bg-slate-50 ${className}`}
+      className={`inline-flex items-center gap-1.5 rounded-lg border border-carbon-30 bg-white px-2.5 py-1.5 text-xs font-bold text-carbon-80 hover:bg-carbon-05 ${className}`}
     >
-      <span className="text-slate-500" aria-hidden="true">EN</span>
-      <span className="text-slate-300" aria-hidden="true">/</span>
-      <span lang="bn" className="text-slate-900">বাং</span>
-      <span className="sr-only">
-        {bengaliActive ? 'Switch to English' : 'বাংলায় দেখুন'}
+      <span className="text-carbon-60" aria-hidden="true">
+        EN
       </span>
+      <span className="text-carbon-30" aria-hidden="true">
+        /
+      </span>
+      <span lang="bn" className="text-carbon-90">
+        বাং
+      </span>
+      <span className="sr-only">{bengaliActive ? 'Switch to English' : 'বাংলায় দেখুন'}</span>
     </button>
   );
 };

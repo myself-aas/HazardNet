@@ -113,11 +113,14 @@ const RULES = [
   },
 
   // ── review tier: pre-existing copy an owner must classify ────────────────────
-  // These do not fail the build. They are printed on every run so the question stays
-  // visible instead of being answered once by an allowlist and forgotten. A composite
-  // that merely COUNTS and AVERAGES existing severity values is a presentation
-  // aggregation; one that derives a new severity value is embargoed. Only the owner
-  // can say which this is, so the gate asks rather than decides.
+  // These do not fail the build on their own. They are printed on every run so the
+  // question stays visible instead of being answered once by an allowlist and
+  // forgotten. A composite that merely COUNTS and AVERAGES existing severity values
+  // is a presentation aggregation; one that derives a new severity value is
+  // embargoed. Only the owner can say which this is, so the gate asks rather than
+  // decides — and once the owner answers, the answer is recorded in
+  // REVIEW_CLASSIFICATIONS below (see ADR 0012) so the same question is not asked
+  // again on every build while a NEW unclassified phrase still is.
   {
     tier: 'review',
     id: 'composite-index',
@@ -128,7 +131,100 @@ const RULES = [
       'severity value from weights it is embargoed; if it only counts/averages the ' +
       'model\'s existing severity it is a presentation aggregation. Owner must classify it.',
   },
+  // Found while recording the ADR 0012 classifications, and deliberately NOT
+  // classified there: this is a different block of copy in the same component.
+  // `Vulnerability Formula = (Division Avg District Severity × 0.6) + (High Risk
+  // Ratio × 0.4)` prints explicit coefficients on a visitor surface. C1 withholds
+  // derived-index weights from public copy, so either the coefficients are the
+  // embargoed index's (a leak — withdraw them) or they are a presentation-level
+  // ranking of two already-published values (keep — and label them the way the
+  // composite blocks now are). That is the owner's call, not the gate's, so the
+  // gate reports it on every run instead of deciding it. `formula|weighting|
+  // coefficients` rather than `weights`: the block-tier `index-weights` rule
+  // already owns that word, and matching it twice would report one leak as two.
+  {
+    tier: 'review',
+    id: 'weighted-formula',
+    pattern: /\b(vulnerability|exposure|risk|severity|hazard)\s+(formula|weighting|coefficients?)\b/gi,
+    why:
+      'Visitor copy that prints a weighted formula. If the coefficients belong to the ' +
+      'embargoed derived severity index this is a leak; if they rank already-published ' +
+      'values for presentation the copy must say so. Owner must classify it (ADR 0012, ' +
+      '"Not decided here").',
+  },
 ];
+
+/**
+ * Owner classifications for the review tier — the answer to `[ASK USER] 4`
+ * (2026-09-19, ADR 0012), recorded as data so the gate enforces it.
+ *
+ * Both pre-existing entries are the same quantity in the same component:
+ * `compositeScore = districtCount × avgSeverity`, where `avgSeverity` is the
+ * arithmetic mean of the per-district severity the product already publishes on
+ * the map, the district cards and the same table. Classified
+ * **presentation-aggregation**: it re-expresses two numbers already on screen,
+ * carries no weights, no calibrated threshold, no cluster membership and no
+ * model internals, so it is not the embargoed derived severity index.
+ *
+ * The classification is "keep, LABELLED", and that is the part the gate checks:
+ * `label` must appear within `LABEL_WINDOW_CHARS` of the phrase, so the number a
+ * visitor reads is never separable from the statement of what it is. Deleting the
+ * label — or copying the phrase into a new file without one — fails the build.
+ *
+ * A match with no entry here is still reported as awaiting classification, so
+ * this list can never become a blanket allowlist for composite-index copy.
+ */
+export const REVIEW_CLASSIFICATIONS = [
+  {
+    file: 'frontend/src/components/NationalOverview.tsx',
+    match: 'Composite Hazard Score',
+    classification: 'presentation-aggregation',
+    decided: '2026-09-19',
+    basis:
+      'districtCount × mean(per-district severity). Both factors are published on the same ' +
+      'screen (the telemetry matrix prints the count and the average next to the product); ' +
+      'no weights, thresholds, clusters or model internals are disclosed.',
+    label: /presentation aggregation/i,
+  },
+  {
+    file: 'frontend/src/components/NationalOverview.tsx',
+    match: 'Composite Risk Index',
+    classification: 'presentation-aggregation',
+    decided: '2026-09-19',
+    basis:
+      'The same product restated as the Top-3 ranking rule (Hazard District Count × Average ' +
+      'Severity Score). Ranking key over published values, not a derived severity index.',
+    label: /presentation aggregation/i,
+  },
+];
+
+/** How far from the classified phrase its disclosure label may sit. */
+export const LABEL_WINDOW_CHARS = 1400;
+
+/** The recorded owner decision for a (file, matched phrase) pair, if any. */
+export function findClassification(relPath, matched) {
+  const needle = matched.trim().toLowerCase();
+  return REVIEW_CLASSIFICATIONS.find(
+    (entry) =>
+      entry.file === relPath &&
+      (needle === entry.match.toLowerCase() ||
+        needle.includes(entry.match.toLowerCase()) ||
+        entry.match.toLowerCase().includes(needle)),
+  ) || null;
+}
+
+/** Classifications whose phrase no longer appears anywhere (copy withdrawn). */
+function staleClassifications(violations) {
+  // `v.classification` is set whenever an entry matched — including the entries
+  // that escalated to a block for a missing label — so a label regression is not
+  // also reported as "the copy went away".
+  const seen = new Set(
+    violations.filter((v) => v.classification).map((v) => `${v.file}::${v.match.trim().toLowerCase()}`),
+  );
+  return REVIEW_CLASSIFICATIONS.filter(
+    (entry) => !seen.has(`${entry.file}::${entry.match.toLowerCase()}`),
+  );
+}
 
 function* walk(target) {
   if (!existsSync(target)) return;
@@ -145,6 +241,43 @@ function* walk(target) {
 
 function isAllowed(relPath) {
   return ALLOWLIST.some((entry) => relPath === entry || relPath.startsWith(entry));
+}
+
+/**
+ * Attach the recorded owner decision to a review-tier match — or escalate it to a
+ * block when the disclosure label the decision was granted on is no longer next to
+ * the phrase.
+ *
+ * "Keep, labelled" is the classification the owner gave (ADR 0012). An unlabelled
+ * composite is exactly what the embargo exists to prevent, so the label is a build
+ * requirement rather than a courtesy. Pure and exported so the escalation can be
+ * tested without editing public copy (__tests__/severityEmbargo.test.js).
+ */
+export function applyClassification(violation, text, matchIndex) {
+  const decision = findClassification(violation.file, violation.match);
+  if (!decision) return violation;
+
+  const window = text.slice(
+    Math.max(0, matchIndex - LABEL_WINDOW_CHARS),
+    matchIndex + violation.match.length + LABEL_WINDOW_CHARS,
+  );
+  const annotated = {
+    ...violation,
+    classification: decision.classification,
+    decided: decision.decided,
+    basis: decision.basis,
+  };
+
+  if (!decision.label.test(window)) {
+    annotated.tier = 'block';
+    annotated.rule = `${violation.rule}-unlabelled`;
+    annotated.why =
+      `Classified '${decision.classification}' by the owner on ${decision.decided} on the ` +
+      'condition that the copy states what the number is. That disclosure label is gone, ' +
+      'so the phrase now reads as an unqualified derived index. Restore the label ' +
+      '(or withdraw the number) — see ADR 0012.';
+  }
+  return annotated;
 }
 
 export function scan() {
@@ -168,14 +301,16 @@ export function scan() {
             if (rule.unless.test(window)) continue;
           }
           const line = text.slice(0, match.index).split('\n').length;
-          violations.push({
+          const violation = {
             tier: rule.tier,
             file: rel,
             line,
             rule: rule.id,
             match: match[0],
             why: rule.why,
-          });
+          };
+
+          violations.push(applyClassification(violation, text, match.index));
         }
       }
     }
@@ -190,19 +325,45 @@ function main() {
   const blocks = violations.filter((v) => v.tier === 'block');
   const review = violations.filter((v) => v.tier === 'review');
 
+  const classified = review.filter((v) => v.classification);
+  const unclassified = review.filter((v) => !v.classification);
+  const stale = staleClassifications(violations);
+
   if (asJson) {
-    console.log(JSON.stringify({ ok: blocks.length === 0, blocked: blocks, review }, null, 2));
+    console.log(
+      JSON.stringify(
+        { ok: blocks.length === 0, blocked: blocks, review: unclassified, classified, stale_classifications: stale },
+        null,
+        2,
+      ),
+    );
     return blocks.length ? 1 : 0;
   }
 
-  if (review.length) {
-    console.warn(`[embargo] review: ${review.length} composite-index reference(s) awaiting owner classification.`);
-    for (const v of review) {
+  if (classified.length) {
+    console.log(`[embargo] classified: ${classified.length} composite-index reference(s) carry a recorded owner decision (ADR 0012).`);
+    for (const v of classified) {
+      console.log(`  ${v.file}:${v.line}  "${v.match}"  → ${v.classification} (${v.decided}), disclosure label present`);
+    }
+  }
+
+  if (stale.length) {
+    console.log(`[embargo] note: ${stale.length} recorded classification(s) no longer match any copy — the phrase was`);
+    for (const entry of stale) {
+      console.log(`  withdrawn or reworded. Remove the entry from REVIEW_CLASSIFICATIONS: ${entry.file} "${entry.match}"`);
+    }
+  }
+
+  if (unclassified.length) {
+    console.warn(`[embargo] review: ${unclassified.length} reference(s) awaiting owner classification.`);
+    for (const v of unclassified) {
       console.warn(`  ${v.file}:${v.line}  [${v.rule}]  "${v.match}"`);
     }
     console.warn('  → These do not fail the build. Classify each as (a) a presentation aggregation of\n' +
-      '    existing severity values, or (b) a derived index — in which case remove it from\n' +
-      '    public copy until the research is published.\n');
+      '    already-published values — keep it, labelled — or (b) a derived index or its weights,\n' +
+      '    in which case remove it from public copy until the research is published. Record the\n' +
+      '    answer in REVIEW_CLASSIFICATIONS so the gate enforces it, and label enforcement with\n' +
+      '    it (ADR 0012).\n');
   }
 
   if (!blocks.length) {

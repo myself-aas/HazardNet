@@ -56,7 +56,7 @@ sandbox's own network blocks is worse than no report — the same reasoning that
 | Layout / responsive | **0 of 180 pages scroll sideways**; 0 touch-target or clipping problems that survive the exclusions except `/alerts` | 1 app defect |
 | Headings | 4 routes with **zero `<h1>`** (first heading `h4`), 1 route with two `<h1>` | App defect |
 | Discoverability | 7 registered routes do not apply their metadata in the SPA (shell defaults, including `noindex`); prerendered production HTML is correct | App defect, bounded (§5.4) |
-| Content trust | `/download` queries `registry.npmjs.org/hazardnet` and `pypi.org/pypi/hazardnet/json` → **both 404** | App defect |
+| Content trust | `/download` queries `registry.npmjs.org/hazardnet` and `pypi.org/pypi/hazardnet/json` → **both 404** (resolved 2026-09-19 — ADR 0011: lookups removed, page states what is distributed) | App defect — **fixed** |
 | Resilience | Every upstream failure renders a complete page | Passing, with caveats (§6) |
 
 ### 2.1 Suite run history (kept because the corrections are part of the evidence)
@@ -199,7 +199,19 @@ Computed-style transcript (fresh page, 12 `Tab` presses): the skip link and Sear
 `dashed 1px`/`dashed 3px` outlines; the six above show `none 3px`.
 **Evidence:** `/tmp/seo_nav.cjs` transcript; screenshot `/tmp/hn-focus-nav.png`.
 
-### 5.3 [P1] `/download` offers software that is not published (external 404s)  ·  **copy fixed, 404s open**
+### 5.3 [P1] `/download` offers software that is not published (external 404s)  ·  ~~**copy fixed, 404s open**~~  **RESOLVED 2026-09-19 (ADR 0011)**
+
+> **Resolution.** The owner decided HazardNet is *not* published to npm or PyPI and that the page must
+> stop querying the registries. Both lookups are removed from
+> `frontend/src/lib/downloadChannels.ts` / `frontend/src/hooks/useReleaseChannels.ts` — removed, not
+> feature-flagged off — so `/download` now issues **zero** external requests by default and the four
+> console errors recorded below cannot recur. Each channel states what *is* distributed (GitHub
+> Release assets on the product repository, or "release pipeline prepared" until one exists) instead of
+> rendering a `pip install` / `npm install` command with a version no registry can supply. Live GitHub
+> Releases lookups are opt-in (`VITE_DOWNLOAD_LIVE_RELEASES=true`); the root `package.json` carries
+> `"private": true` so `npm publish` from this repository fails outright. See
+> `docs/adr/0011-distribution-without-package-registries.md`. The findings below are the evidence that
+> led to that decision and are kept as recorded.
 
 `/download` requests `https://registry.npmjs.org/hazardnet` and
 `https://pypi.org/pypi/hazardnet/json`; both return **404**. This is the *only* application console

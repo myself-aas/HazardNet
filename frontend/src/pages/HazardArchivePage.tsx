@@ -64,10 +64,10 @@ const MONTH_SHORT: Record<string, string> = {
 
 function Panel({ title, caption, children }: { title: string; caption?: string; children: React.ReactNode }) {
   return (
-    <section className="bg-white border border-slate-200 rounded-3xl p-5 shadow-xs space-y-3">
+    <section className="bg-white border border-carbon-20 rounded-3xl p-5 shadow-xs space-y-3">
       <header className="space-y-1">
         <h3 className="text-xs font-mono font-bold text-sky-800 uppercase tracking-wider">{title}</h3>
-        {caption ? <p className="text-xs text-slate-500 leading-relaxed">{caption}</p> : null}
+        {caption ? <p className="text-xs text-carbon-60 leading-relaxed">{caption}</p> : null}
       </header>
       {children}
     </section>
@@ -76,10 +76,10 @@ function Panel({ title, caption, children }: { title: string; caption?: string; 
 
 function Stat({ label, value, note }: { label: string; value: string; note?: string }) {
   return (
-    <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4">
-      <div className="text-[11px] font-mono uppercase tracking-wider text-slate-500">{label}</div>
-      <div className="text-2xl font-bold text-slate-900 mt-1 tabular-nums">{value}</div>
-      {note ? <div className="text-[11px] text-slate-500 mt-1 leading-snug">{note}</div> : null}
+    <div className="bg-carbon-05 border border-carbon-20 rounded-2xl p-4">
+      <div className="text-[11px] font-mono uppercase tracking-wider text-carbon-60">{label}</div>
+      <div className="text-2xl font-bold text-carbon-90 mt-1 tabular-nums">{value}</div>
+      {note ? <div className="text-[11px] text-carbon-60 mt-1 leading-snug">{note}</div> : null}
     </div>
   );
 }
@@ -113,30 +113,22 @@ export default function HazardArchivePage() {
   }, [archive, hazardFilter]);
 
   if (state === 'loading') {
-    return <div className="max-w-6xl mx-auto px-4 py-16 text-sm text-slate-500 font-mono">Loading archive artifact…</div>;
+    return <div className="max-w-6xl mx-auto px-4 py-16 text-sm text-carbon-60 font-mono">Loading archive artifact…</div>;
   }
 
   if (!archive) {
     return (
       <div className="max-w-3xl mx-auto px-4 py-16 space-y-4">
         <Breadcrumbs customItems={[{ label: 'Home', path: '/' }, { label: 'Hazard archive' }]} />
-        <h1 className="text-3xl font-bold text-slate-900">Historical hazard archive</h1>
-        <p className="text-slate-600 leading-relaxed">
+        <h1 className="text-3xl font-bold text-carbon-90">Historical hazard archive</h1>
+        <p className="text-carbon-60 leading-relaxed">
           This deployment has <strong>no hazard archive artifact loaded</strong>, so this page states no
-          historical count. The archive is not redistributed with the repository
-          (<code className="text-xs">data/events/README.md</code>), and the published figures come from
-          <code className="text-xs"> /data/hazard-archive.json</code>, built from the validated ETL export.
+          historical count. The archive is not redistributed with the repository.
         </p>
-        <p className="text-slate-600 leading-relaxed">
-          To load it: run the loader, then the builder, then redeploy.
-        </p>
-        <pre className="bg-slate-900 text-slate-100 text-xs rounded-2xl p-4 overflow-x-auto">{`python -m etl.cli events \\
-  --input data/events/historical_hazard_records_with_HazardNet_severity.csv \\
-  --adapter bgd-climatic-hazards --claimed-total 2931 \\
-  --export-json data/events/hazardnet-events.json
-
-node scripts/build_hazard_archive.mjs --events data/events/hazardnet-events.json`}</pre>
-        <p className="text-xs text-slate-500">
+        {/* The loader and builder commands that used to be printed here live in the archive's
+            quality record under docs/ops/, where an operator has a shell to run them in. A
+            visitor to this page does not, and a command they cannot run is not provenance. */}
+        <p className="text-xs text-carbon-60">
           This page renders an absence rather than a zero, on purpose: a chart drawn at zero would read
           as &ldquo;no hazards were recorded&rdquo;, which is a different and false claim.
         </p>
@@ -170,8 +162,8 @@ node scripts/build_hazard_archive.mjs --events data/events/hazardnet-events.json
       <Breadcrumbs customItems={[{ label: 'Home', path: '/' }, { label: 'Hazard archive' }]} />
 
       <header className="space-y-3">
-        <h1 className="text-3xl sm:text-4xl font-bold text-slate-900">Historical hazard archive</h1>
-        <p className="text-slate-600 leading-relaxed max-w-3xl">
+        <h1 className="text-3xl sm:text-4xl font-bold text-carbon-90">Historical hazard archive</h1>
+        <p className="text-carbon-60 leading-relaxed max-w-3xl">
           {plural(t.rows, 'recorded event-district observation')} from{' '}
           {t.year_range ? `${t.year_range[0]} to ${t.year_range[1]}` : 'the archive range'}, covering{' '}
           {plural(t.districts, 'district')} and {plural(t.divisions, 'division')}. Those rows describe{' '}
@@ -182,7 +174,7 @@ node scripts/build_hazard_archive.mjs --events data/events/hazardnet-events.json
 
       {/* Provenance first: a reader should be able to check the numbers before reading them. */}
       <div className="bg-sky-50 border border-sky-200 rounded-2xl p-4 text-xs font-mono text-sky-900 space-y-1">
-        <div className="font-bold text-slate-900">Provenance</div>
+        <div className="font-bold text-carbon-90">Provenance</div>
         <div>loader: {archive.provenance.loader}</div>
         <div>
           ingested {archive.provenance.ingested.toLocaleString('en-US')} rows · claimed{' '}
@@ -206,7 +198,7 @@ node scripts/build_hazard_archive.mjs --events data/events/hazardnet-events.json
         <div className="h-72 w-full">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={years} margin={{ top: 10, right: 20, left: -10, bottom: 10 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+              <CartesianGrid strokeDasharray="3 3" stroke="#d1d1d1" />
               <XAxis dataKey="year" tick={{ fontSize: 11 }} />
               <YAxis tick={{ fontSize: 11 }} />
               <Tooltip formatter={(value: number) => [value.toLocaleString('en-US'), 'observations']} />
@@ -260,7 +252,7 @@ node scripts/build_hazard_archive.mjs --events data/events/hazardnet-events.json
           <div className="h-72 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={severityRows} margin={{ top: 10, right: 20, left: -10, bottom: 40 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#d1d1d1" />
                 <XAxis dataKey="hazard" tick={{ fontSize: 10 }} angle={-30} textAnchor="end" interval={0} />
                 <YAxis domain={[0, 1]} tick={{ fontSize: 11 }} />
                 <Tooltip />
@@ -275,7 +267,7 @@ node scripts/build_hazard_archive.mjs --events data/events/hazardnet-events.json
         <div className="h-64 w-full">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={months} margin={{ top: 10, right: 20, left: -10, bottom: 10 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+              <CartesianGrid strokeDasharray="3 3" stroke="#d1d1d1" />
               <XAxis dataKey="month" tick={{ fontSize: 11 }} />
               <YAxis tick={{ fontSize: 11 }} />
               <Tooltip formatter={(value: number) => [value.toLocaleString('en-US'), 'observations']} />
@@ -290,7 +282,7 @@ node scripts/build_hazard_archive.mjs --events data/events/hazardnet-events.json
           <div className="h-72 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={divisionRows} layout="vertical" margin={{ top: 5, right: 30, left: 40, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#d1d1d1" />
                 <XAxis type="number" tick={{ fontSize: 11 }} />
                 <YAxis type="category" dataKey="division" tick={{ fontSize: 11 }} width={80} />
                 <Tooltip formatter={(value: number) => [value.toLocaleString('en-US'), 'observations']} />
@@ -304,7 +296,7 @@ node scripts/build_hazard_archive.mjs --events data/events/hazardnet-events.json
           <div className="h-72 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={topDistricts} layout="vertical" margin={{ top: 5, right: 30, left: 50, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#d1d1d1" />
                 <XAxis type="number" tick={{ fontSize: 11 }} />
                 <YAxis type="category" dataKey="district" tick={{ fontSize: 10 }} width={90} />
                 <Tooltip formatter={(value: number) => [value.toLocaleString('en-US'), 'observations']} />
@@ -331,7 +323,7 @@ node scripts/build_hazard_archive.mjs --events data/events/hazardnet-events.json
         <div className="overflow-x-auto -mx-1">
           <table className="w-full text-xs">
             <thead>
-              <tr className="text-left text-slate-500 font-mono uppercase tracking-wider border-b border-slate-200">
+              <tr className="text-left text-carbon-60 font-mono uppercase tracking-wider border-b border-carbon-20">
                 <th className="py-2 pr-3">Date</th>
                 <th className="py-2 pr-3">GLIDE</th>
                 <th className="py-2 pr-3">Hazard</th>
@@ -342,29 +334,30 @@ node scripts/build_hazard_archive.mjs --events data/events/hazardnet-events.json
             </thead>
             <tbody>
               {episodes.slice(0, 120).map((episode) => (
-                <tr key={episode.id} className="border-b border-slate-100 hover:bg-slate-50">
-                  <td className="py-1.5 pr-3 font-mono text-slate-700 whitespace-nowrap">{episode.start_date}</td>
-                  <td className="py-1.5 pr-3 font-mono text-slate-500 whitespace-nowrap">
-                    {episode.glide ?? <span className="text-slate-400">not tagged</span>}
+                <tr key={episode.id} className="border-b border-carbon-10 hover:bg-carbon-05">
+                  <td className="py-1.5 pr-3 font-mono text-carbon-70 whitespace-nowrap">{episode.start_date}</td>
+                  <td className="py-1.5 pr-3 font-mono text-carbon-60 whitespace-nowrap">
+                    {episode.glide ?? <span className="text-carbon-60">not tagged</span>}
                   </td>
-                  <td className="py-1.5 pr-3 text-slate-800">{episode.hazard_type}</td>
-                  <td className="py-1.5 pr-3 text-right tabular-nums text-slate-700">
+                  <td className="py-1.5 pr-3 text-carbon-80">{episode.hazard_type}</td>
+                  <td className="py-1.5 pr-3 text-right tabular-nums text-carbon-70">
                     {episode.district_count}
-                    {episode.national ? <span className="text-slate-400"> · national</span> : null}
+                    {episode.national ? <span className="text-carbon-60"> · national</span> : null}
                   </td>
-                  <td className="py-1.5 pr-3 text-right tabular-nums text-slate-700">
+                  <td className="py-1.5 pr-3 text-right tabular-nums text-carbon-70">
                     {formatMaybe(episode.severity.median)}
                   </td>
-                  <td className="py-1.5 pr-3 font-mono text-slate-500">{episode.data_sources.join(', ') || ABSENT}</td>
+                  <td className="py-1.5 pr-3 font-mono text-carbon-60">{episode.data_sources.join(', ') || ABSENT}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
         {episodes.length > 120 ? (
-          <p className="text-xs text-slate-500">
-            Showing the first 120 of {episodes.length} episodes. The full list is in{' '}
-            <code>/data/hazard-archive.json</code>.
+          <p className="text-xs text-carbon-60">
+            Showing the first 120 of {episodes.length} episodes. The full list is served at{' '}
+            <code>/data/hazard-archive.json</code> — a URL on this site, which is the difference
+            between a pointer a reader can follow and one they cannot.
           </p>
         ) : null}
       </Panel>
@@ -372,7 +365,7 @@ node scripts/build_hazard_archive.mjs --events data/events/hazardnet-events.json
       {/* Quality and embargo are on the page: a reader who finds these alone would distrust the rest. */}
       <div className="grid lg:grid-cols-2 gap-6">
         <Panel title="What this archive does not tell you" caption="Reported rather than repaired — these are properties of the source data.">
-          <ul className="text-xs text-slate-700 space-y-2 leading-relaxed">
+          <ul className="text-xs text-carbon-70 space-y-2 leading-relaxed">
             <li>
               <strong>No casualty figures.</strong> {archive.quality.casualties_note}
             </li>
@@ -402,32 +395,30 @@ node scripts/build_hazard_archive.mjs --events data/events/hazardnet-events.json
 
         <Panel title="Publication status" caption="What is withheld from this page, and why.">
           {archive.embargo.active ? (
-            <div className="text-xs text-slate-700 space-y-3 leading-relaxed">
+            <div className="text-xs text-carbon-70 space-y-3 leading-relaxed">
               <p>
                 <span className="inline-block text-[10px] font-mono uppercase tracking-wider bg-amber-100 text-amber-900 border border-amber-300 rounded-full px-2 py-0.5">
                   withheld
                 </span>
               </p>
               <p>{archive.embargo.reason}</p>
-              <p className="text-slate-500">
+              <p className="text-carbon-60">
                 Withheld: {archive.embargo.withheld.join(', ')}.
               </p>
-              <p className="text-slate-500">{archive.embargo.disclosed_field}</p>
+              <p className="text-carbon-60">{archive.embargo.disclosed_field}</p>
             </div>
           ) : (
-            <p className="text-xs text-slate-700 leading-relaxed">
+            <p className="text-xs text-carbon-70 leading-relaxed">
               No embargoed material is withheld from this page. {archive.embargo.disclosed_field}
             </p>
           )}
         </Panel>
       </div>
 
-      <footer className="text-xs text-slate-500 space-y-2 border-t border-slate-200 pt-4">
-        <p>
-          Measured quality of this archive, including every known defect:{' '}
-          <code>docs/ops/HAZARD_ARCHIVE_QUALITY.md</code>. Column mapping:{' '}
-          <code>scripts/etl/adapters/bgd_climatic_hazards.py</code>.
-        </p>
+      <footer className="text-xs text-carbon-60 space-y-2 border-t border-carbon-20 pt-4">
+        {/* The measured quality of this archive, including every known defect, and the
+            column mapping, are recorded in the archive's quality document under docs/ops/.
+            Both were printed here as file names, which a visitor cannot open. */}
         <p>
           Related: <Link className="text-sky-700 hover:text-sky-900 underline" to="/districts">district pages</Link>{' '}
           carry their own history once an export is loaded ·{' '}

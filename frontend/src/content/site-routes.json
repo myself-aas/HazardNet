@@ -48,7 +48,7 @@
       "appShell": false,
       "h1": "A forecast you can check, not just read",
       "standfirst": "HazardNet is an independent, open research platform that turns satellite observations and weather forecasts into 7- and 15-day outlooks for eight climate hazards across Bangladesh’s 64 districts. Every figure it shows comes from a named artifact with a build date, the validation scorecard is published whether it flatters the model or not, and the boundary between this platform and the agencies that issue official warnings is stated on every page.",
-      "updated": "2026-09-18",
+      "updated": "2026-09-19",
       "sections": [
         {
           "h2": "What this platform is for",
@@ -80,6 +80,32 @@
           ]
         },
         {
+          "h2": "The current outlook, and where to see it",
+          "paragraphs": [
+            "This page is the record; the live map is the outlook. The split is deliberate and documented, because the two questions need different pages: \"where is the hazard now\" is answered by a map, and \"who produced this, from what, and how would I know if it stopped working\" is answered by a document with dates on it.",
+            "The strip under the headline reads the committed alert artifact on every load: how many alerts are published at each level, how many districts the last run covered, and how many assessed rows the publication gate withheld. When nothing is published it says so, and says why — silence on a hazard platform is read as safety, so this page does not leave that to be inferred."
+          ],
+          "bullets": [
+            "The live map addresses all 64 districts. A district the current run does not cover keeps its static baseline colour and says so on its own page, rather than borrowing a neighbour's number.",
+            "Every published alert carries its own evidence: the drivers behind the level, the policy version applied, and whether a duty officer reviewed it or the engine published it on its own at or below its automatic-publishing ceiling.",
+            "The status page carries the age of every artifact this deployment ships, measured against the SLO it is held to, together with the notes each run reports against itself."
+          ],
+          "links": [
+            {
+              "label": "Open the live map",
+              "href": "/live"
+            },
+            {
+              "label": "Published alerts",
+              "href": "/alerts"
+            },
+            {
+              "label": "System status",
+              "href": "/status"
+            }
+          ]
+        },
+        {
           "h2": "How a forecast is produced",
           "paragraphs": [
             "The pipeline is deliberately narrow so that every step can be inspected. Nothing on this site is written by a language model, and no number is interpolated to fill a gap in a run."
@@ -89,7 +115,7 @@
             "Assembly: one 15-channel tensor per district per forecast date, in a fixed band order, z-scored against the training period.",
             "Inference: a single TFLite pass per unit emits the hazard class, the severity index and the confidence bin. There is one inference path, so two parts of the site cannot disagree.",
             "Cross-check: an independent formula — a vegetation-health index for drought, an excess-heat factor for heat waves, and so on — is computed beside the model and published even when the two tracks diverge.",
-            "Publication: the alert engine applies a documented policy, refuses to publish from a stale run, and requires human review above its automatic-publishing level."
+            "Publication: the alert engine applies a documented policy and may publish on its own only at or below its configured ceiling — WATCH in this deployment. Anything above that level requires a named duty officer, whose identity is stored on the alert. A run that stamps no model version cannot publish above the ceiling at all, and the engine records publication_blocked rather than issuing the alert."
           ],
           "links": [
             {
@@ -153,37 +179,37 @@
               [
                 "Model card",
                 "Architecture, the 15 input channels, intended use and out-of-scope use",
-                "2026-09-17",
+                "@review-date:/model",
                 "/model"
               ],
               [
                 "Hindcast validation",
                 "Per-episode detection counts, POD, FAR and CSI for five historical episodes, with the limits stated",
-                "2026-09-18",
+                "@review-date:/model-performance",
                 "/model-performance"
               ],
               [
                 "Data-source ledger",
                 "Licence, cadence and the file behind every input channel",
-                "2026-09-17",
+                "@review-date:/data-sources",
                 "/data-sources"
               ],
               [
                 "System status",
                 "The age of each committed artifact against its SLO, and the honesty notes attached to them",
-                "2026-09-18",
+                "@review-date:/status",
                 "/status"
               ],
               [
                 "Alerts",
                 "Published alert cards, each with its evidence, blockers and policy version",
-                "2026-09-18",
+                "@review-date:/alerts",
                 "/alerts"
               ],
               [
                 "Sector advisories",
                 "Phased protocols that name the issuing authority at each step",
-                "2026-09-17",
+                "@review-date:/advisories",
                 "/advisories"
               ]
             ]
@@ -265,8 +291,270 @@
         {
           "question": "Why is the training archive not published here?",
           "answer": "The model card reports a 2,931-event archive (2000–2025) assembled from third-party records whose own licences govern redistribution. Rather than ship a stale copy that pages would quote as current, the repository ships the loader and the district and season pages state that no archive is loaded. The claim stays a claim until a deployment loads the export."
+        },
+        {
+          "question": "Is this page available in Bengali?",
+          "answer": "Yes — the switch at the top of this page renders the front door's editorial copy and its controls in Bengali. Where a sentence has no Bengali version, the English one is shown rather than a gap: the English copy is the structural authority, so a translation can reword a page but cannot shorten or reorder one. The alert cards, the map and the district tables were translated first; the long-form knowledge products — the model card, the methodology and the data-source ledger — remain English-only."
         }
-      ]
+      ],
+      "i18n": {
+        "bn": {
+          "review": "approved-native-speaker",
+          "reviewedAt": "2026-09-19",
+          "reviewedBy": "project owner",
+          "label": "সারসংক্ষেপ",
+          "h1": "এমন এক পূর্বাভাস, যা আপনি কেবল পড়বেন না — যাচাইও করতে পারবেন",
+          "standfirst": "HazardNet একটি স্বাধীন ও উন্মুক্ত গবেষণা প্ল্যাটফর্ম, যা উপগ্রহ পর্যবেক্ষণ ও আবহাওয়া পূর্বাভাস থেকে বাংলাদেশের ৬৪টি জেলার জন্য আটটি জলবায়ু-দুর্যোগের ৭ ও ১৫ দিনের পূর্বাভাস তৈরি করে। এতে দেখানো প্রতিটি সংখ্যা একটি নির্দিষ্ট আর্টিফ্যাক্ট থেকে আসে যার নির্মাণ-তারিখ আছে; যাচাই স্কোরকার্ড প্রকাশ করা হয় তা মডেলের পক্ষে যাক বা না যাক; এবং সরকারি সতর্কবার্তা প্রকাশকারী সংস্থাগুলোর সঙ্গে এই প্ল্যাটফর্মের সীমারেখা প্রতিটি পাতায় লেখা থাকে।",
+          "sections": [
+            {
+              "h2": "এই প্ল্যাটফর্ম কীসের জন্য",
+              "paragraphs": [
+                "বাংলাদেশের কৃষিতে বাস্তব প্রশ্ন খুব কমই এই নয় যে দুর্যোগ আসবে কি না; বরং প্রশ্ন হলো কোন জেলাগুলোতে, ফসলের কোন পর্যায়ে, কত দিনের অগ্রিম বার্তা নিয়ে, এবং সংখ্যাটিকে কতটা গুরুত্ব দেওয়া উচিত। HazardNet তৈরি হয়েছে এই দ্বিতীয় প্রশ্নগুলোর উত্তর দেওয়ার জন্য। প্রতিটি জেলা ও প্রতিটি সময়কালের জন্য এটি প্রকাশ করে একটি দুর্যোগ-শ্রেণি, একটি গুরুতরতা সূচক, একটি আস্থার শ্রেণি ও একটি স্বতন্ত্র ভৌত-নিয়ম অনুমান — সঙ্গে এগুলো কোন রান থেকে এসেছে তার তথ্য।"
+              ],
+              "bullets": [
+                "লাইভ মানচিত্রে ৬৪টি জেলা; প্রকাশিত পরামর্শ আর্কাইভ আওতা করে ৫০৭টি ADM3 ইউনিট (৪৯৫টি উপজেলা ও ১২টি সিটি কর্পোরেশন)।",
+                "আটটি দুর্যোগ-শ্রেণি: শৈতপ্রবাহ, খরা, অগ্নিকাণ্ড, আকস্মিক বন্যা, বন্যা, তাপপ্রবাহ, তীব্র স্থানীয় ঝড় ও ক্রান্তীয় ঘূর্ণিঝড়।",
+                "বিনামূল্যে ও অবাণিজ্যিক; মানচিত্র দেখতে কোনো অ্যাকাউন্ট লাগে না। অ্যাপটি PWA হিসেবে ইনস্টল করা যায়, ম্যাপ-টাইল সংরক্ষণ করে এবং সংযোগ না থাকলেও কাজ চালিয়ে যায়।"
+              ],
+              "links": [
+                {
+                  "label": "লাইভ মানচিত্র খুলুন",
+                  "href": "/live"
+                },
+                {
+                  "label": "সতর্কবার্তা",
+                  "href": "/alerts"
+                },
+                {
+                  "label": "খাতভিত্তিক পরামর্শ",
+                  "href": "/advisories"
+                },
+                {
+                  "label": "ব্যবহারের ক্ষেত্র",
+                  "href": "/use-cases"
+                }
+              ]
+            },
+            {
+              "h2": "বর্তমান পূর্বাভাস, এবং তা কোথায় দেখবেন",
+              "paragraphs": [
+                "এই পাতাটি দলিল; লাইভ মানচিত্র হলো পূর্বাভাস। এই বিভাজন ইচ্ছাকৃত ও নথিভুক্ত, কারণ দুটি প্রশ্নের জন্য দুই ধরনের পাতা দরকার: 'দুর্যোগ এখন কোথায়' — এর উত্তর দেয় মানচিত্র; আর 'এটি কে তৈরি করেছে, কী থেকে তৈরি করেছে, এবং কাজ করা বন্ধ করলে আমি তা জানব কীভাবে' — এর উত্তর দেয় তারিখ-সহ একটি দলিল।",
+                "শিরোনামের নিচের স্ট্রিপটি প্রতিবার লোড করলে সংরক্ষিত সতর্কবার্তা-আর্টিফ্যাক্ট পড়ে: প্রতিটি স্তরে কতটি সতর্কবার্তা প্রকাশিত, শেষ রান কতটি জেলা আওতা করেছে, এবং প্রকাশনা-গেট মূল্যায়িত কতটি সারি আটকে রেখেছে। কিছু প্রকাশিত না হলে সেটি স্পষ্ট করে বলা হয় এবং কারণও বলা হয় — দুর্যোগ প্ল্যাটফর্মে নীরবতাকে নিরাপত্তা বলে ধরে নেওয়া হয়, তাই এই পাতা সেটি অনুমানের ওপর ছেড়ে দেয় না।"
+              ],
+              "bullets": [
+                "লাইভ মানচিত্র ৬৪টি জেলার সবগুলোকেই আওতা করে। বর্তমান রানে যেসব জেলার তথ্য নেই, সেগুলো স্থির ভিত্তিমান রঙেই থাকে এবং নিজের পাতায় তা জানিয়ে দেয় — পাশের জেলার সংখ্যা ধার নেয় না।",
+                "প্রকাশিত প্রতিটি সতর্কবার্তার সঙ্গে তার নিজস্ব প্রমাণ থাকে: স্তরের পেছনের চালকগুলো, প্রয়োগ হওয়া নীতির সংস্করণ, এবং এটি কোনো দায়িত্বরত কর্মকর্তা পর্যালোচনা করেছেন নাকি ইঞ্জিন স্বয়ংক্রিয়-প্রকাশের সীমার মধ্যে থেকে নিজে প্রকাশ করেছে।",
+                "স্ট্যাটাস পাতায় এই ডিপ্লয়মেন্টের প্রতিটি আর্টিফ্যাক্টের বয়স থাকে — যে SLO মেনে চলার কথা তার বিপরীতে মাপা — এবং প্রতিটি রান নিজের বিরুদ্ধে যেসব নোট জানায় তাও থাকে।"
+              ],
+              "links": [
+                {
+                  "label": "লাইভ মানচিত্র খুলুন",
+                  "href": "/live"
+                },
+                {
+                  "label": "প্রকাশিত সতর্কবার্তা",
+                  "href": "/alerts"
+                },
+                {
+                  "label": "সিস্টেম স্ট্যাটাস",
+                  "href": "/status"
+                }
+              ]
+            },
+            {
+              "h2": "কীভাবে একটি পূর্বাভাস তৈরি হয়",
+              "paragraphs": [
+                "পাইপলাইনটি ইচ্ছাকৃতভাবেই সীমিত পরিসরে রাখা হয়েছে যাতে প্রতিটি ধাপ পরীক্ষা করা যায়। এই সাইটের কোনো লেখাই ভাষা-মডেলের লেখা নয়, এবং কোনো সংখ্যাই রানের ফাঁক ভরাট করতে অনুমানে বসানো হয় না।"
+              ],
+              "bullets": [
+                "ইনপুট: Google Earth Engine-এর মাধ্যমে Sentinel-1 রাডার ও Sentinel-2 অপটিক্যাল চিত্র, ERA5-Land রি-অ্যানালাইসিস, Open-Meteo নির্ধারিত পূর্বাভাস, HDX COD-AB প্রশাসনিক সীমানা ও OpenStreetMap এক্সপোজার তথ্য।",
+                "গঠন: প্রতিটি জেলার জন্য প্রতিটি পূর্বাভাস-তারিখে একটি ১৫-চ্যানেল টেনসর, নির্দিষ্ট ব্যান্ড-ক্রমে, প্রশিক্ষণ-কালের সাপেক্ষে z-score করা।",
+                "অনুমান: প্রতিটি ইউনিটের জন্য একটি মাত্র TFLite পাস দুর্যোগ-শ্রেণি, গুরুতরতা সূচক ও আস্থার শ্রেণি নির্গত করে। অনুমানের পথ একটিই, তাই সাইটের দুটি অংশ পরস্পরের সঙ্গে অমিল করতে পারে না।",
+                "ক্রস-চেক: মডেলের পাশাপাশি একটি স্বতন্ত্র সূত্র — খরার জন্য ভেজিটেশন-হেলথ সূচক, তাপপ্রবাহের জন্য অতিরিক্ত-তাপ ফ্যাক্টর, ইত্যাদি — হিসাব করা হয় এবং দুই ট্র্যাকের ফল মিল না হলেও তা প্রকাশ করা হয়।",
+                "প্রকাশনা: সতর্কবার্তা ইঞ্জিন একটি নথিভুক্ত নীতি মেনে চলে এবং নিজ থেকে কেবল নির্ধারিত সীমা পর্যন্ত প্রকাশ করতে পারে — এই ডিপ্লয়মেন্টে সেই সীমা 'সতর্ক দৃষ্টি' (WATCH)। এর ওপরের যেকোনো স্তরের জন্য একজন নাম-উল্লেখিত দায়িত্বরত কর্মকর্তা প্রয়োজন, যাঁর পরিচয় সতর্কবার্তার সঙ্গে সংরক্ষিত থাকে। যে রানে কোনো মডেল-সংস্করণ মুদ্রিত থাকে না, তা এই সীমার ওপরে কিছুই প্রকাশ করতে পারে না; তখন ইঞ্জিন সতর্কবার্তা জারি না করে publication_blocked নথিভুক্ত করে।"
+              ],
+              "links": [
+                {
+                  "label": "পদ্ধতি",
+                  "href": "/methodology"
+                },
+                {
+                  "label": "মডেল কার্ড",
+                  "href": "/model"
+                },
+                {
+                  "label": "তথ্যসূত্র",
+                  "href": "/data-sources"
+                }
+              ]
+            },
+            {
+              "h2": "এই সাইটের যেকোনো সংখ্যা কীভাবে যাচাই করবেন",
+              "paragraphs": [
+                "যে দাবি যাচাই করা যায় না, সেটি বিপণন। তাই এই প্ল্যাটফর্ম দাবির পাশেই তার প্রমাণ প্রকাশ করে — প্রমাণ যেসব জায়গায় পাতলা, সেসব জায়গাসহ।"
+              ],
+              "bullets": [
+                "স্ট্যাটাস পাতা সংরক্ষিত আর্টিফ্যাক্টগুলো পড়ে এবং প্রতিটির বয়স তার SLO-র বিপরীতে জানায় — কোনো উৎস পুরনো, ব্যর্থ বা উৎস-পরিচয়বিহীন হলেও, যে অবস্থাটি দেখানোর জন্যই এই পাতাটির অস্তিত্ব।",
+                "যাচাই স্কোরকার্ড পাঁচটি ঐতিহাসিক ঘটনার জন্য ঘটনা-প্রতি শনাক্তকরণ সংখ্যা, POD, FAR ও CSI প্রকাশ করে, এবং এই মেট্রিকগুলো কী সমর্থন করতে পারে না তাও বলে: পাঁচটি ঘটনা কোনো যাচাই-সেট নয়, আর হিন্ডকাস্টে শনাক্তকরণ হলো পাইপলাইন কতটুকু দেখতে পারে তার ঊর্ধ্বসীমা — কোনো পূর্বাভাস-দক্ষতার স্কোর নয়।",
+                "মডেল কার্ডে জানা ব্যর্থতার ধরন ও ব্যবহারের অযোগ্য ক্ষেত্রগুলো তালিকাভুক্ত, এবং ২,৯৩১ ঘটনার প্রশিক্ষণ-দাবিটি যাচাইকৃত হিসেবে নয়, প্রতিবেদিত হিসেবেই রাখা হয়েছে — এই রিপোজিটরি সেই আর্কাইভ পুনর্বিতরণ করে না, এবং যেসব পাতায় তা দরকার সেগুলো সংখ্যাটি উদ্ধৃত না করে তার অনুপস্থিতিই জানিয়ে দেয়।",
+                "কোড, আর্টিফ্যাক্ট ও বিল্ড-স্ক্রিপ্ট একই পাবলিক রিপোজিটরিতে আছে, এবং এই সাইট সেখান থেকেই পুনর্নির্মাণ হয়: যে পাইপলাইন একটি সংখ্যা প্রকাশ করে, সেই পাইপলাইনই তার যাচাইও প্রকাশ করে।"
+              ],
+              "links": [
+                {
+                  "label": "সিস্টেম স্ট্যাটাস",
+                  "href": "/status"
+                },
+                {
+                  "label": "হিন্ডকাস্ট যাচাই",
+                  "href": "/model-performance"
+                },
+                {
+                  "label": "তথ্যসূত্র",
+                  "href": "/data-sources"
+                },
+                {
+                  "label": "রিপোজিটরি",
+                  "href": "https://github.com/myself-aas/HazardNet"
+                }
+              ]
+            },
+            {
+              "h2": "জ্ঞান-পণ্য",
+              "paragraphs": [
+                "এই ডিপ্লয়মেন্ট যে তারিখ-সহ পণ্যগুলো প্রকাশ করে। পর্যালোচনার তারিখ হলো সেই তারিখ যা পাতাটি নিজেই বহন করে, ফলে একটি পুরনো পণ্যকে পুরনো বলেই চেনা যায়।"
+              ],
+              "table": {
+                "caption": "প্রকাশিত পণ্য, তারা কী নথিভুক্ত করে এবং সর্বশেষ কবে পর্যালোচনা হয়েছে",
+                "columns": [
+                  "পণ্য",
+                  "যা নথিভুক্ত করে",
+                  "পর্যালোচনা",
+                  "কোথায় আছে"
+                ],
+                "rows": [
+                  [
+                    "মডেল কার্ড",
+                    "আর্কিটেকচার, ১৫টি ইনপুট চ্যানেল, উদ্দিষ্ট ব্যবহার ও ব্যবহারের অযোগ্য ক্ষেত্র",
+                    "@review-date:/model",
+                    "/model"
+                  ],
+                  [
+                    "হিন্ডকাস্ট যাচাই",
+                    "পাঁচটি ঐতিহাসিক ঘটনার ঘটনা-প্রতি শনাক্তকরণ সংখ্যা, POD, FAR ও CSI — সীমাবদ্ধতাসহ",
+                    "@review-date:/model-performance",
+                    "/model-performance"
+                  ],
+                  [
+                    "তথ্যসূত্র খতিয়ান",
+                    "প্রতিটি ইনপুট চ্যানেলের লাইসেন্স, হালনাগাদের হার ও পেছনের ফাইল",
+                    "@review-date:/data-sources",
+                    "/data-sources"
+                  ],
+                  [
+                    "সিস্টেম স্ট্যাটাস",
+                    "প্রতিটি সংরক্ষিত আর্টিফ্যাক্টের বয়স তার SLO-র বিপরীতে, এবং সেগুলোর সঙ্গে যুক্ত সততার নোট",
+                    "@review-date:/status",
+                    "/status"
+                  ],
+                  [
+                    "সতর্কবার্তা",
+                    "প্রকাশিত সতর্কবার্তা কার্ড, প্রতিটির প্রমাণ, বাধা ও নীতি-সংস্করণসহ",
+                    "@review-date:/alerts",
+                    "/alerts"
+                  ],
+                  [
+                    "খাতভিত্তিক পরামর্শ",
+                    "ধাপে ধাপে প্রোটোকল, যেখানে প্রতিটি ধাপে বার্তা প্রকাশকারী কর্তৃপক্ষের নাম দেওয়া",
+                    "@review-date:/advisories",
+                    "/advisories"
+                  ]
+                ]
+              }
+            },
+            {
+              "h2": "সরকারি নথি, এবং তা কোথায় আছে",
+              "paragraphs": [
+                "HazardNet কোনো সতর্কবার্তা, ঘূর্ণিঝড় সংকেত বা আশ্রয়ণ-নির্দেশনা জারি করে না, এবং একে কখনোই তাই মনে করা যাবে না। যেসব সংস্থা এগুলো জারি করে তাদের নাম নিচে দেওয়া; তাদের বুলেটিন এই সাইটের যেকোনো কিছুর চেয়ে অগ্রাধিকার পাবে।"
+              ],
+              "bullets": [
+                "বাংলাদেশ আবহাওয়া অধিদপ্তর (BMD) — আবহাওয়ার পূর্বাভাস, ঘূর্ণিঝড় সংকেত, এবং তাপ, শৈত ও ঝড় সম্পর্কিত সতর্কবার্তা।",
+                "প্লাবন পূর্বাভাস ও সতর্কীকরণ কেন্দ্র (FFWC) — নদীর পানির স্তরের পূর্বাভাস ও বন্যা বুলেটিন।",
+                "দুর্যোগ ব্যবস্থাপনা অধিদপ্তর (DDM), দুর্যোগ ব্যবস্থাপনা ও ত্রাণ মন্ত্রণালয় — দুর্যোগ বিষয়ক স্থায়ী আদেশ (Standing Orders on Disaster), ত্রাণ ও সাড়াদান।",
+                "জরুরি অবস্থায় জাতীয় হটলাইন ৯৯৯ নম্বরে কল করুন, এবং এখানে প্রকাশিত যেকোনো কিছুর চেয়ে আপনার স্থানীয় প্রশাসনের নির্দেশনা মেনে চলুন।"
+              ],
+              "links": [
+                {
+                  "label": "বাংলাদেশ আবহাওয়া অধিদপ্তর",
+                  "href": "https://bmd.gov.bd/"
+                },
+                {
+                  "label": "প্লাবন পূর্বাভাস ও সতর্কীকরণ কেন্দ্র",
+                  "href": "https://ffwc.gov.bd/"
+                },
+                {
+                  "label": "দুর্যোগ ব্যবস্থাপনা অধিদপ্তর",
+                  "href": "https://ddm.gov.bd/"
+                },
+                {
+                  "label": "দুর্যোগ ব্যবস্থাপনা ও ত্রাণ মন্ত্রণালয়",
+                  "href": "https://modmr.gov.bd/"
+                },
+                {
+                  "label": "প্রশাসনিক সীমানা (HDX COD-AB)",
+                  "href": "https://data.humdata.org/"
+                }
+              ]
+            },
+            {
+              "h2": "অংশ নিন",
+              "paragraphs": [
+                "এই প্ল্যাটফর্মটি বাংলাদেশ কৃষি বিশ্ববিদ্যালয়ের এক এমএস থিসিস প্রকল্প হিসেবে রক্ষণাবেক্ষণ করা হয়, এবং অনুশীলনকারীরা এর সমালোচনা করলেই এটি সবচেয়ে দ্রুত উন্নত হয়।"
+              ],
+              "bullets": [
+                "মাঠে ব্যবহার করুন এবং কোথায় ভুল ছিল তা জানান। একটি জেলা, একটি তারিখ আর আপনি কী প্রত্যক্ষ করেছেন — কাজ করার জন্য এটুকুই যথেষ্ট।",
+                "তথ্য পুনর্ব্যবহার করুন: ডাউনলোড সেন্টারে পূর্বাভাস স্ন্যাপশট ও অফলাইন বিল্ড আছে, এবং কোড MIT লাইসেন্সযুক্ত — এই পাতায় উদ্ধৃতি দেওয়া আছে।",
+                "কোনো পাতা ভাঙা, রান পুরনো বা পূর্বাভাস ভুল মনে হলে যোগাযোগ পাতা থেকে জানান — প্রতিটি রিপোর্ট পড়া হয়।"
+              ],
+              "links": [
+                {
+                  "label": "অ্যাকাউন্ট খুলুন",
+                  "href": "/signup"
+                },
+                {
+                  "label": "তথ্য ও অ্যাপ ডাউনলোড",
+                  "href": "/download"
+                },
+                {
+                  "label": "যোগাযোগ",
+                  "href": "/contact"
+                },
+                {
+                  "label": "প্রকল্প সম্পর্কে",
+                  "href": "/about"
+                }
+              ]
+            }
+          ],
+          "faqs": [
+            {
+              "question": "HazardNet কি কোনো সরকারি সতর্কবার্তা সেবা?",
+              "answer": "না। এটি কৃষির জন্য স্বাধীন সিদ্ধান্ত সহায়তা। সরকারি সতর্কবার্তা আসে আবহাওয়া-জনিত দুর্যোগের ক্ষেত্রে বাংলাদেশ আবহাওয়া অধিদপ্তর থেকে, নদীর বন্যার ক্ষেত্রে প্লাবন পূর্বাভাস ও সতর্কীকরণ কেন্দ্র (FFWC) থেকে, এবং সাড়াদানের ক্ষেত্রে দুর্যোগ ব্যবস্থাপনা অধিদপ্তর ও আপনার স্থানীয় প্রশাসন থেকে। জরুরি অবস্থায় ৯৯৯ নম্বরে কল করুন। HazardNet-এর উদ্দেশ্য প্রস্তুতির জন্য আপনাকে বেশি অগ্রিম সময় দেওয়া, ওই কর্তৃপক্ষগুলোর বিকল্প হওয়া নয়।"
+            },
+            {
+              "question": "HazardNet কীভাবে উদ্ধৃত করব?",
+              "answer": "লেখক, তত্ত্বাবধায়ক ও প্রতিষ্ঠানের নাম এই পাতার স্বীকৃতি-অংশে দেওয়া আছে, এবং একই তথ্য মেশিন-পাঠযোগ্য রূপে CITATION.cff ফাইলে রিপোজিটরিতে আছে। কোড MIT লাইসেন্সযুক্ত; এর পেছনের তৃতীয় পক্ষের তথ্যের নিজস্ব শর্ত বহাল থাকে, যা তথ্যসূত্র পাতায় একেকটি ডেটাসেট হিসেবে তালিকাভুক্ত।"
+            },
+            {
+              "question": "প্রশিক্ষণ আর্কাইভ কেন এখানে প্রকাশ করা হয়নি?",
+              "answer": "মডেল কার্ডে ২,৯৩১ ঘটনার একটি আর্কাইভের (২০০০–২০২৫) কথা বলা হয়েছে, যা তৃতীয় পক্ষের রেকর্ড থেকে সংকলিত এবং যার নিজস্ব লাইসেন্স পুনর্বিতরণ নিয়ন্ত্রণ করে। একটি পুরনো কপি রেখে দেওয়ার চেয়ে — যা পাতাগুলো হালনাগাদ হিসেবে উদ্ধৃত করত — এই রিপোজিটরি লোডারটি সরবরাহ করে, এবং জেলা ও মৌসুমের পাতাগুলো জানিয়ে দেয় যে কোনো আর্কাইভ লোড করা নেই। যতদিন না কোনো ডিপ্লয়মেন্ট এক্সপোর্টটি লোড করে, ততদিন দাবিটি দাবিই থাকে।"
+            },
+            {
+              "question": "এই পাতা কি বাংলায় পাওয়া যায়?",
+              "answer": "হ্যাঁ — এই পাতার ওপরের সুইচ ব্যবহার করলে সম্মুখপৃষ্ঠার সম্পাদকীয় লেখা ও নিয়ন্ত্রণগুলো বাংলায় দেখা যাবে। কোনো বাক্যের বাংলা সংস্করণ না থাকলে ফাঁকা না রেখে ইংরেজিটিই দেখানো হয়: ইংরেজি লেখাটিই কাঠামোগত ভিত্তি, তাই অনুবাদ একটি পাতাকে নতুন করে লিখতে পারে কিন্তু সংক্ষিপ্ত বা এলোমেলো করতে পারে না। সতর্কবার্তা কার্ড, মানচিত্র ও জেলার তালিকা আগেই অনূদিত হয়েছে; বিস্তারিত জ্ঞান-পণ্য — মডেল কার্ড, পদ্ধতি ও তথ্যসূত্র খতিয়ান — এখনো ইংরেজিতেই আছে।"
+            }
+          ]
+        }
+      }
     },
     {
       "path": "/live",
@@ -449,7 +737,7 @@
         {
           "h2": "6 · What is validated — and what is not",
           "bullets": [
-            "Validated in CI: the TFLite bundle loads, its sha256 matches Models/VERSION.json, labels and normalisation statistics are present, and the bundle is not served publicly.",
+            "Validated in CI: the TFLite bundle loads, labels and normalisation statistics are present, and the bundle is not served publicly.",
             "Checked at runtime: freshness of the served snapshot, with a hard failure in the health probe when the data is older than the freshness threshold.",
             "Cross-checked: model severity versus physics severity for every unit and horizon.",
             "Not yet validated: forecast skill against observed hazard outcomes. HazardNet does not currently publish a hit rate, false-alarm rate or Brier score against BMD/FFWC records. Until it does, treat severity as a relative prioritisation signal rather than a calibrated probability."
@@ -506,7 +794,7 @@
             "Hazard classes (8): cold wave, drought, fire, flash flood, flood, heat wave, severe local storm, tropical cyclone.",
             "Input: 15-channel spatio-temporal tensor (Sentinel-1 VV/VH, Sentinel-2 indices, ERA5-Land surface and soil state, precipitation and wind from Open-Meteo).",
             "Architecture: 3D depthwise-separable convolutional network with a shared trunk and two heads — 8-way softmax classification and severity regression.",
-            "Bundle: FP32 TFLite, roughly 0.75 MB, sha256-manifested in Models/VERSION.json and refreshed by the pipeline.",
+            "Bundle: FP32 TFLite, roughly 0.75 MB and refreshed by the pipeline.",
             "Execution: server-side for scheduled runs, and in the visitor's browser through TensorFlow.js WASM for interactive and offline use."
           ]
         },
@@ -726,7 +1014,7 @@
         {
           "h2": "How this page is produced",
           "paragraphs": [
-            "The numbers above are derived from four committed files: the website forecast snapshot (frontend/public/data/forecasts-latest.json), the ingest run manifest (backend/data/forecasts/manifest.json), the alert snapshot (frontend/public/data/alerts-latest.json) and, when one has been published, the site-health probe result (data/site-health/latest.json). A build script (scripts/build_freshness_artifact.mjs) turns them into frontend/public/data/freshness.json, and this page renders that artifact — the same file a script or a monitoring system can read.",
+            "The numbers above are derived from four committed files: the website forecast snapshot, the ingest run manifest, the alert snapshot and, when one has been published, the site-health probe result. A build script turns them into one artifact, served at /data/freshness.json: that is what this page renders, and what a script or a monitoring system can read.",
             "The derived timestamp printed above each table is when that artifact was produced. It moves when the pipeline commits new data, when the probe commits a new result, and when the site is rebuilt."
           ]
         },

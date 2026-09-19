@@ -397,13 +397,42 @@ If the pipeline will not stamp provenance before the soft launch, the page's cur
 wording is correct but blunt. The alternative — hiding `/alerts` from the nav until the
 first alert exists — is a product decision; the route is live and prerendered either way.
 
-### 6c. Review the Bengali copy with a native-speaker field reviewer
+### 6c. Review the Bengali copy with a native-speaker field reviewer — 🟡 front door closed 2026-09-19
+
+> **Front door: done.** The owner read and approved the Bengali editorial block for `/` and the
+> ~70 `frontdoor.*` strings on 2026-09-19. The approval is recorded on the route itself
+> (`i18n.bn.review: approved-native-speaker`, with `reviewedAt` and `reviewedBy`), and
+> `__tests__/publicSurface.test.js` fails if the marker is removed or if an approval names no date
+> and no reader.
+>
+> **Still open: the Phase 5 surfaces** described below — the alert cards, the map, the district
+> tables and `lib/legal.ts`. Those strings predate this review and were not part of it.
 
 The Bengali strings were written for this phase (alert levels, confidence caveat,
 low-bandwidth explanations, emergency numbers, hazard-class names). They have not been
 reviewed by a native speaker working in the districts. This is a soft-launch blocker for
 a product whose audience reads Bengali first. Files: `frontend/src/lib/i18n.ts`,
 `frontend/src/hooks/useHazardLabel.ts`, `frontend/src/lib/legal.ts`.
+
+**Scope grew on 2026-09-19 (landing-page redesign).** The front door is now bilingual too,
+so this action now also covers:
+
+* the whole editorial copy of `/` — headline, standfirst, seven sections, the knowledge-product
+  ledger and four direct answers — in the `i18n.bn` block of the `/` route in
+  `frontend/src/content/site-routes.json`;
+* roughly seventy `frontdoor.*` strings in `frontend/src/lib/i18n.ts`, including the wording of
+  the live status strip's zero-alert case, which is the single most consequential sentence on
+  the page: it is what tells a reader that "nothing published" is a statement about the
+  publisher and not about the weather.
+
+The route carries its review status as data — `"review": "approved-native-speaker"` since
+2026-09-19, `"pending-native-speaker"` for any new draft — and `__tests__/publicSurface.test.js`
+fails if that marker is removed, if an approval names no date or no reader, or if the Bengali block
+stops mirroring the English structure. Two things this review must decide, because a machine cannot:
+whether the terminology reads the way a district agricultural officer would say it
+(পূর্বাভাস / সতর্কবার্তা / আওতাভুক্ত জেলা / গুরুতরতা সূচক), and whether the register is right for a
+page that a farmer, a journalist and a reviewer all land on. Until it is read, the front door
+should not be announced as available in Bengali (`docs/PUBLIC_SURFACE.md` §3 rule 8).
 
 ### 6d. Accessibility walk-through on real devices
 
@@ -509,6 +538,18 @@ permissions"**, then dispatch the probe once (`Actions → Site Health Probe →
 confirm `data/site-health/latest.json` gained a commit. Nothing else in the repository needs
 write access from this workflow, and every other workflow keeps its own least-privilege
 `permissions:` block.
+
+**Update 2026-09-19 — the workflow half of this is fixed; the settings half is still yours.**
+The probe job had no `actions/checkout` step at all, so it ran with no working tree: the
+freshness-artifact rebuild warned `could not rebuild the freshness artifact` (there was no
+script on disk) and the publish step died with `fatal: not in a git directory` (exit 128) even
+when the repository permissions were correct. It also required every sampled content path —
+including `/data/content-index.json` — to carry the prerenderer's `HN_STATIC_START` marker,
+which a JSON artifact can never do, so that step was red on every run while the HTML pages
+passed. Both are fixed in `.github/workflows/site-health.yml` (checkout + Node 20 added; each
+path is now checked against the contract it actually has — prerendered HTML marker, or valid
+JSON carrying its `schema` field; the push uses an explicit `HEAD:main` refspec). What remains
+is only the repository setting described above.
 
 **Until Action 7 is done, expect the probe to be red** — and expect the status page to say so.
 That is the page working: the live deployment serves none of the declared security headers, its
@@ -666,3 +707,100 @@ scope. Recommended framing, to be recorded here before anyone links the site pub
   person would own now exist as a single published artifact — `/model-performance`, generated from
   the committed hindcast reports by `scripts/build_model_performance.mjs` and gated in CI — so the
   scope question is answerable with the page open rather than from memory.
+
+---
+
+## Action 14 — The ADR 0002 cutover checklist has no code 🟡 (~1 h, or delete the workflow)
+
+**What is missing.** Three artifacts that ADR 0002 and `scripts/db/README.md` both name do not
+exist in the repository:
+
+| Referenced by | Artifact | Purpose |
+|---|---|---|
+| ADR 0002 §Runbook step 2, `scripts/db/README.md` apply order item 2 | `scripts/db/002_forecasts_supabase.sql` | the consolidation schema — forecasts table, RLS (public read, service-role write) |
+| ADR 0002 §Runbook step 2 + verification checklist | `scripts/verify-supabase-cutover.mjs` | "the ADR checklist as code": 15-column schema, the 10/20/30 horizon CHECK, the unique key, indexes, RLS + the public-read policy, a row report |
+| ADR 0002 §Runbook step 3 | `scripts/migrate-firestore-to-supabase.mjs` | Firestore → Supabase migration, dry-run by default |
+
+**What it did to CI.** `.github/workflows/Supabase-cutover-verify.yml` (manual dispatch) ran
+`node scripts/verify-supabase-cutover.mjs` unconditionally, so every dispatch failed with
+`Error: Cannot find module …` — an exit that reads like a database or credential failure and is
+neither. As of 2026-09-19 the workflow instead **preflights the three paths and names each one
+that is missing**, then still runs the live backend smoke test (`FORECAST_STORE=supabase`,
+`/health`, `/bulk`, `/history`, `/metrics`), which needs none of them. A committed test
+(`scripts/tests/test_workflows.py::test_workflows_only_invoke_scripts_that_exist`) now fails any
+workflow that invokes a file the repository does not have, so this cannot be re-introduced
+silently.
+
+**Your two options.**
+
+1. **Write them** (recommended if the Supabase cutover is still the plan — ADR 0002 is
+   `Proposed`, and Actions 7/8 both assume the store story is unsettled). The verifier is the
+   valuable one: it is read-only (`information_schema` + `pg_policies`), it turns the ADR's
+   checklist into a pass/fail, and `scripts/db/verify_forecasts_meteorological.sql`,
+   `verify_blog_articles_rls.sql` and `verify_hazard_events.sql` are the existing pattern to
+   follow. When it lands, restore the step the workflow's comment spells out verbatim, and drop
+   `!cancelled()` from the smoke test's `if:`.
+2. **Retire the workflow and annotate ADR 0002** the way ADR 0004 retired
+   `weekly_hazardnet.yml`: delete `.github/workflows/Supabase-cutover-verify.yml`, strike the
+   three references in ADR 0002 §Runbook, and remove apply-order item 2 from
+   `scripts/db/README.md` (renumbering the rest). A documented plan with no code is fine; a
+   workflow that pretends otherwise is not.
+
+**Either way**, `scripts/db/README.md` currently tells an operator to apply `002` as step 2 of
+the sequence and `007` "after `002`" — both impossible today. That is the part most likely to
+cost someone an hour.
+
+
+---
+
+## Action 15 — The district surface renders series no data source produced 🔴 (P0 for trust, owner decision then ~2-4 h)
+
+**What is there.** `/forecast/district/:id` (and the disaster detail modal) show a visitor:
+
+* sensor readings — "Max Sustained Wind Speed 143 km/h", "Predicted Storm Surge Height 3.6 m",
+  "SPEI Drought Index −1.65 (Extreme)", "Radar Echo Intensity 58 dBZ" — attributed to a named
+  station, computed as `Math.round(110 + sev * 65)` and friends in
+  `frontend/src/data/disasterDetails.ts`;
+* a four-way "softmax probability distribution" from `0.62 + sev * 0.32`;
+* a 24-hour **Water Stage Level** chart in metres with a red **Danger Threshold** line
+  (`DistrictDetailPage.tsx:277`, whose own comment says `Simulated`);
+* a 7-day chart of **Compound Vulnerability** and **Historical Seasonal Benchmark**
+  (`:354` — the benchmark is `55 + Math.cos(i * 0.7) * 8`, a cosine with no history behind it);
+* a 30-day anomaly chart with a **Catastrophic Threshold (75 %)** line
+  (`ThirtyDayTrendChart.tsx:51`, comment: `Simulate weather anomaly waves`);
+* hardcoded datelines — `incidentDate: '2026-07-31 06:00 BST'`,
+  `lastSatelliteUpdate: 'Sentinel-1 SAR • 2026-08-01 03:20 UTC'` — and real-world historical
+  claims ("closely aligns with Cyclone Sidr (2007) and Amphan (2020)", "severe driest period
+  recorded in Barind since 2016");
+* a printable **"HAZARDNET OFFICIAL DISASTER INTELLIGENCE BRIEF"** that quotes the fabricated
+  station telemetry (`DistrictDetailPage.tsx:441`).
+
+Full evidence table: `docs/audits/2026-09-19-workflow-errors-and-fabricated-series.md` §3.
+
+**Why it matters more than the last sweep.** `docs/RUNBOOK_LOG.md` records 30 fabricated
+*readouts* removed across 9 files. These are the fabricated *series* — and they are invisible to
+`scripts/check-claims.mjs`, which registers metric-shaped **literals**: a computed value has no
+literal to find, so the gate reports "75 sources scanned, 20 registered values" over a tree that
+renders hundreds of unregistered numbers per district. This is C2 (*real data only*) and C3
+(*every published number auditable*), and the exportable "official brief" carries the fabrication
+off the site.
+
+**Your three options** (each is defensible; each changes what the page looks like, which is why
+it is yours):
+
+1. **Delete the panels** — the sensor strip, both trend charts, the softmax card and the brief.
+   What remains is the real forecast for that district. Fastest, and the only option that cannot
+   be misread.
+2. **Label them unmistakably** — not a tooltip: a visible "illustrative — not measured" band on
+   each panel, plus removal of the hardcoded datelines and the historical comparison claims.
+   Weaker: a danger threshold on a sine wave is still a danger threshold on a sine wave.
+3. **Feed them from real drivers** — the pipeline already fetches Open-Meteo per district
+   (`scripts/auto_forecast.py`), and `GET /api/v1/forecasts/history` serves up to 90 days, so a
+   genuine 7-day series and a genuine benchmark are both reachable. The sensor strip and the
+   storm-surge/SPEI/dBZ values have no real source in this repository and cannot be wired; they
+   would still have to go.
+
+**Whichever you choose**, two follow-ups are worth doing in the same pass: teach
+`scripts/check-claims.mjs` about computed numbers (or accept that it cannot and say so in
+`docs/CLAIMS.md`), and re-read `Compound Vulnerability` against ADR 0012 — a weighted composite
+on a visitor surface is the same shape the owner had to classify for the national overview.

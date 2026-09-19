@@ -211,10 +211,10 @@ export const ProfileSection: React.FC = () => {
             type="button"
             onClick={handleDetectLocation}
             disabled={locating}
-            className="flex items-center gap-1.5 rounded-xl border border-slate-200 px-3 py-1.5 text-[11px] font-bold text-slate-600 transition-colors hover:bg-slate-50 disabled:opacity-50 cursor-pointer"
+            className="flex items-center gap-1.5 rounded-xl border border-carbon-20 px-3 py-1.5 text-[11px] font-bold text-carbon-60 transition-colors hover:bg-carbon-05 disabled:opacity-50 cursor-pointer"
           >
             {locating ? (
-              <span className="h-3 w-3 animate-spin rounded-full border-2 border-slate-300 border-t-slate-600" />
+              <span className="h-3 w-3 animate-spin rounded-full border-2 border-carbon-30 border-t-carbon-60" />
             ) : (
               <MaterialIcon name="person_pin_circle" size={14} />
             )}
@@ -319,7 +319,7 @@ export const ProfileSection: React.FC = () => {
 
       {/* Preferences */}
       <Card title="Notifications & privacy" subtitle="Choose what HazardNet sends you and who can see your profile." icon={<MaterialIcon name="notifications" size={18} />}>
-        <div className="divide-y divide-slate-100">
+        <div className="divide-y divide-carbon-10">
           <ToggleField id="notify-email" label="Email notifications" description="Hazard alerts for your district, product updates." checked={draft.notifyEmail !== false} onChange={set('notifyEmail')} />
           <ToggleField id="notify-sms" label="SMS alerts" description="Critical warnings by text message (requires SMS connector)." checked={draft.notifySms === true} onChange={set('notifySms')} />
           <ToggleField id="notify-push" label="Push notifications" description="Browser push for severe hazards within 6 hours." checked={draft.notifyPush !== false} onChange={set('notifyPush')} />

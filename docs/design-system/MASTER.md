@@ -70,6 +70,65 @@ Because white-on-`nasa-red` fails AA for a 14px bold label, small-label CTAs use
 `--primary-strong` (the HDS red shade) rather than the bright red; large/bold labels and
 icons may use the bright red exactly as NASA does.
 
+### Neutral ramp (consolidated 2026-09-19)
+
+Every neutral in the application is NASA's carbon ramp. Tailwind ships five grey families
+and the UI had grown into four of them — 4,030 utility classes and 252 hard-coded literals —
+so the consolidation was done in two moves rather than one, because the detector and the
+browser disagree about what a colour is:
+
+1. **Values first.** `@theme inline` in `frontend/src/index.css` re-pointed the
+   `slate`/`gray`/`zinc`/`neutral`/`stone` keys at `--hds-color-carbon-*`. One CSS block, no
+   component churn, and every grey on screen became NASA's immediately. The alias stays in
+   place as a safety net: a component that reaches for `text-slate-500` again still renders
+   carbon, and the design gate reports the legacy name.
+2. **Names second.** The classes and literals were then renamed onto carbon, because
+   impeccable's `gray-on-color` rule reads class names, not resolved values: 233 findings
+   before the rename, 0 after. Renaming is a no-op visually once step 1 has landed, which is
+   what made 4,030 edits safe to make mechanically.
+
+The mapping is ordinal and was chosen on measured relative luminance, not on name
+similarity:
+
+| Tailwind | Hex | Carbon | Hex | Text on white, before → after |
+| --- | --- | --- | --- | --- |
+| `*-50` | `#f8fafc` | `carbon-05` | `#f6f6f6` | surface |
+| `*-100` | `#f1f5f9` | `carbon-10` | `#e3e3e3` | surface |
+| `*-200` | `#e2e8f0` | `carbon-20` | `#d1d1d1` | rule, 1.23:1 → 1.53:1 |
+| `*-300` | `#cbd5e1` | `carbon-30` | `#b9b9bb` | 1.48:1 → 1.96:1 |
+| `*-400` | `#94a3b8` | `carbon-40` | `#959599` | 2.56:1 → 2.98:1 |
+| `*-500` | `#64748b` | `carbon-50` | `#77777a` | 4.76:1 → **4.46:1** |
+| `*-600` | `#475569` | `carbon-60` | `#58585b` | 7.58:1 → 7.09:1 |
+| `*-700` | `#334155` | `carbon-70` | `#444447` | 10.35:1 → 9.71:1 |
+| `*-800` | `#1e293b` | `carbon-80` | `#2e2e32` | 14.63:1 → 13.52:1 |
+| `*-900` | `#0f172a` | `carbon-90` | `#17171b` | 17.85:1 → 17.88:1 |
+| `*-950` | `#020617` | `carbon-black` | `#000000` | 20.17:1 → 21.00:1 |
+
+Two things in that table are decisions rather than arithmetic:
+
+* **The light end is deliberately stronger.** Carbon 05–30 are darker than the slate steps
+  they replace, so hairline rules and sunken surfaces gained contrast (1.23:1 → 1.53:1 for
+  the 683 `border-*-200` call sites). That is the HDS look — NASA draws a visible 1px rule —
+  and it is why the alias could not be tuned per utility: `@theme` maps a colour, not a
+  `border-` or `bg-` prefix.
+* **`*-500` is the one step that regresses, so it is not aliased for text.** Carbon-50
+  measures 4.46:1 on white, below AA, and the table in §Contrast already excludes it from
+  text roles. `text-slate-400` (2.56:1) and `text-slate-500` (4.76:1) were the app's two
+  muted-text classes, so the 616 sites wearing them on a light surface were rewritten to
+  `text-carbon-60` (7.09:1) instead of being aliased. The 12 sites that sit on a dark panel
+  kept their step, where carbon measures what slate did (`text-carbon-40` on `carbon-90` is
+  5.99:1, as `text-slate-400` on `slate-900` was 6.96:1). Hierarchy is preserved by the step
+  from carbon-90/black body text (17.9–21:1) to carbon-60 muted text (7.1:1).
+
+Hard-coded literals moved with the classes: inline styles, SVG fills, canvas and map layer
+colours (`LiveMapView`, `useMapSnapshot`, `useMapMeasurements`, `mapPrimitives`), jsPDF text
+colours (`pdfExport.ts`, where the 6.5pt dispatch footer is carbon-60 rather than carbon-50
+for the same AA reason), `frontend/index.html`'s `theme-color` and the PWA manifest's
+`theme_color`. In `index.css` the literals became `var(--hds-color-carbon-*)` so the CSS has
+one source of truth; in TypeScript they stayed literals, because canvas and PDF contexts
+cannot resolve a custom property. `__tests__/paletteTokens.test.js` fails if a Tailwind
+neutral class or literal comes back.
+
 ## Token architecture (three layers)
 
 Defined in `frontend/src/index.css`. **Components consume Layer 2/3 only — never raw hex.**
@@ -168,6 +227,19 @@ labels 12–13px/500 · captions 12px/400 · data readouts 13–16px/600 · badg
 
 - Remaining hardcoded `#f9a825 + text-white` combos in secondary components
   (AuthCard, AuthModal, DisasterDetailModalUI, Footer, Map, …) should migrate to
-  `bg-amber-400 text-slate-950` or semantic tokens.
+  `bg-amber-400 text-carbon-black` or semantic tokens.
+- The warm ramp still wears Tailwind's name: `amber-*` resolves to HDS's yellow and
+  international-orange sequences through `@theme`, which puts NASA's values on screen but
+  leaves 732 call sites named `amber`. Exposing `seq-orange-*`/`seq-yellow-*` as first-class
+  utilities and renaming is the same two-step move the neutral ramp just made.
+- State colours are still Tailwind's: `rose-*` (319), `emerald-*` (322), `sky-*` (93),
+  `purple-*`/`violet-*`/`indigo-*` (49). HDS offers no ramp for them — one green, one blue
+  and a red with a tint and a shade each — so these migrate onto the semantic tokens
+  (`--success*`, `--info*`, `--destructive*`, `--severity-*`) by role rather than by shade,
+  and the purple family is deleted outright: it is impeccable's `ai-color-palette` finding
+  (20 today) and NASA's palette has no violet in it.
+- Outstanding design-gate findings after the neutral consolidation: 4 (3 `side-tab`,
+  1 `border-accent-on-rounded`). The `designSystem.*` detector rules stay off until the warm
+  and state colours land, because they read class names and would report every `amber-*`.
 - `--severity-*` should replace bespoke hazard color literals in map layer code.
 - Dark mode: add a `.dark` token override block once light theme is fully tokenized.

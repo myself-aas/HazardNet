@@ -46,8 +46,8 @@ export const Disclaimer: React.FC<DisclaimerProps> = ({
 
   if (variant === 'print') {
     return (
-      <div className={`text-[10px] leading-snug text-slate-600 ${className}`} data-testid="disclaimer-print">
-        <p className="font-bold uppercase tracking-wide text-slate-700">{heading}</p>
+      <div className={`text-[10px] leading-snug text-carbon-60 ${className}`} data-testid="disclaimer-print">
+        <p className="font-bold uppercase tracking-wide text-carbon-70">{heading}</p>
         <p lang={bodyLang}>{body}</p>
       </div>
     );
@@ -55,7 +55,7 @@ export const Disclaimer: React.FC<DisclaimerProps> = ({
 
   const shell = variant === 'banner'
     ? 'rounded-2xl border border-amber-300 bg-amber-50 p-3 sm:p-4'
-    : 'rounded-xl border border-slate-200 bg-slate-50 p-3';
+    : 'rounded-xl border border-carbon-20 bg-carbon-05 p-3';
 
   // `role="note"` rather than `<aside>`: a complementary landmark must be top-level, and
   // the evidence card (a region) legitimately contains this. axe-core flags the nested
@@ -67,9 +67,9 @@ export const Disclaimer: React.FC<DisclaimerProps> = ({
         <MaterialIcon name="info" className="text-amber-700 text-base mt-0.5" aria-hidden="true" />
         <div className="space-y-1">
           <p className="text-[11px] font-bold uppercase tracking-wide text-amber-900">{heading}</p>
-          <p className="text-xs leading-relaxed text-slate-700" lang={bodyLang}>{body}</p>
+          <p className="text-xs leading-relaxed text-carbon-70" lang={bodyLang}>{body}</p>
           {withNumbers && (
-            <ul className="flex flex-wrap gap-x-3 gap-y-1 pt-0.5 text-[11px] font-semibold text-slate-800">
+            <ul className="flex flex-wrap gap-x-3 gap-y-1 pt-0.5 text-[11px] font-semibold text-carbon-80">
               {EMERGENCY_NUMBERS.map((entry) => (
                 <li key={entry.number}>
                   <a

@@ -18,6 +18,8 @@ write permissions for data commits, concurrency guards, required files).
 import json
 import re
 import shlex
+import shutil
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -393,6 +395,12 @@ REQUIRED_ACTION_VERSIONS = {
 # concurrency guard to avoid overlapping runs.
 CONCURRENCY_REQUIRED = {
     'ci.yml',
+    # The retrain trio: launch, watcher, intake. The watcher is the one that most
+    # needs the guard — two overlapping ticks would provision two VMs and race on the
+    # same run marker in git.
+    'model_retrain.yml',
+    'model_retrain_watch.yml',
+    'model_intake.yml',
     'daily_forecast.yml',
     'forecast-pipeline.yml',
     'hourly_forecast.yml',
@@ -637,3 +645,279 @@ def test_kaggle_backed_workflows_take_the_kernel_from_a_repo_variable(workflows)
                             f'{key} is hardcoded and would shadow the repository '
                             'variable'
                         )
+
+
+# ── shell syntax of every `run:` block ────────────────────────────────────────
+#
+# GitHub hands a `run:` block to a shell verbatim (after resolving `${{ }}`
+# expressions), so a shell syntax error in a workflow is a guaranteed red step —
+# and a *silent* one whenever an earlier `exit 0` guard means bash never parses
+# as far as the broken line. That is exactly how daily_forecast.yml shipped an
+# unbalanced quote in the alert-engine step: the credential guard returned first,
+# so the defect only armed itself on the first run where the alert engine was
+# actually configured to run.
+#
+# `bash -n` parses without executing, which makes this a cheap whole-fleet gate.
+
+def _run_blocks(doc):
+    """Yield (job_id, step_name, shell, script) for every `run:` step."""
+    default_shell = (doc.get('defaults') or {}).get('run', {}).get('shell')
+    for job_id, job in (doc.get('jobs') or {}).items():
+        job_shell = (job.get('defaults') or {}).get('run', {}).get('shell')
+        for index, step in enumerate(job.get('steps') or []):
+            script = step.get('run')
+            if not isinstance(script, str):
+                continue
+            shell = step.get('shell') or job_shell or default_shell or 'bash'
+            yield job_id, step.get('name') or f'step {index}', shell, script
+
+
+def _workflow_files():
+    """Live workflows plus the product-repo templates (both are shell-bearing)."""
+    dirs = [WORKFLOWS_DIR, ROOT / '.github' / 'workflow-templates']
+    files = []
+    for directory in dirs:
+        files += sorted(directory.glob('*.yml')) + sorted(directory.glob('*.yaml'))
+    return files
+
+
+def test_every_run_block_is_valid_shell():
+    """Every bash/sh `run:` block in every workflow must parse.
+
+    `${{ … }}` is rewritten to `${ … }` first: GitHub substitutes expressions
+    before the shell sees the script, and a value like `${{ secrets.X }}` is not
+    shell syntax on its own.
+    """
+    bash = shutil.which('bash')
+    if not bash:
+        pytest.skip('bash not available on this platform')
+
+    failures = []
+    checked = 0
+    for path in _workflow_files():
+        with open(path, encoding='utf-8') as fh:
+            doc = yaml.safe_load(fh)
+        if True in doc and 'on' not in doc:
+            doc['on'] = doc.pop(True)
+        rel = path.relative_to(ROOT)
+        for job_id, step_name, shell, script in _run_blocks(doc):
+            if not (shell == 'sh' or shell.startswith('bash')):
+                continue  # pwsh/python/etc. are not bash's problem
+            checked += 1
+            probe = script.replace('${{', '${').replace('}}', '}')
+            result = subprocess.run(
+                [bash, '-n'], input=probe, capture_output=True, text=True
+            )
+            if result.returncode != 0:
+                failures.append(
+                    f'{rel} [{job_id}] "{step_name}" ({shell}): '
+                    f'{result.stderr.strip().splitlines()[-1] if result.stderr.strip() else "parse error"}'
+                )
+
+    assert checked, 'no bash/sh run blocks found — the extractor is broken'
+    assert not failures, (
+        f'{len(failures)} run block(s) are not valid shell (bash -n):\n  '
+        + '\n  '.join(failures)
+    )
+
+
+# ── every script a workflow invokes must exist ────────────────────────────────
+#
+# `Supabase-cutover-verify.yml` was committed invoking
+# `scripts/verify-supabase-cutover.mjs`, a file that was never written (as were
+# `scripts/db/002_forecasts_supabase.sql` and
+# `scripts/migrate-firestore-to-supabase.mjs`, which ADR 0002 and
+# scripts/db/README.md both name). Dispatching the workflow died with
+# `Cannot find module …` — an error that reads like a database or credentials
+# failure and is neither. A workflow that describes work nobody did is worse than
+# no workflow: it reports a red run whose cause is not in the run.
+
+SCRIPT_INVOKE_RE = re.compile(
+    r'\b(?:python3?|node|npx|bash|sh)\s+'
+    r'((?:scripts|frontend|backend|api|ml|e2e|data)/[A-Za-z0-9_./-]+\.(?:mjs|cjs|js|ts|py|sh))'
+)
+NPM_RUN_RE = re.compile(r'npm\s+(?:(--prefix\s+frontend)\s+)?run\s+([A-Za-z0-9:_-]+)')
+
+
+def _package_scripts():
+    root = json.loads((ROOT / 'package.json').read_text(encoding='utf-8')).get('scripts') or {}
+    frontend_path = ROOT / 'frontend' / 'package.json'
+    frontend = {}
+    if frontend_path.exists():
+        frontend = json.loads(frontend_path.read_text(encoding='utf-8')).get('scripts') or {}
+    return root, frontend
+
+
+def _strip_shell_comments(script):
+    """Drop whole-line shell comments before looking for invocations.
+
+    A commented-out `node scripts/foo.mjs` is documentation, not an invocation —
+    and `Supabase-cutover-verify.yml` keeps exactly that: the step it will restore
+    once the missing artifact is committed (Action 14). Only lines whose first
+    non-space character is `#` are dropped, so a `#` inside a quoted string cannot
+    hide a real invocation.
+    """
+    return '\n'.join(
+        line for line in script.splitlines() if not line.lstrip().startswith('#')
+    )
+
+
+def test_workflows_only_invoke_scripts_that_exist():
+    """No workflow may run a file that is not in the repository.
+
+    A step may invoke a script it has just checked for (`[ -f path ]` in the same
+    `run:` block) — that is how a workflow refuses to pretend an artifact exists
+    while still being ready for the day it does.
+    """
+    root_scripts, frontend_scripts = _package_scripts()
+    problems = []
+
+    for path in sorted(WORKFLOWS_DIR.glob('*.yml')) + sorted(WORKFLOWS_DIR.glob('*.yaml')):
+        doc = yaml.safe_load(path.read_text(encoding='utf-8'))
+        if True in doc and 'on' not in doc:
+            doc['on'] = doc.pop(True)
+        rel = path.relative_to(ROOT)
+        for job_id, job in (doc.get('jobs') or {}).items():
+            for step in job.get('steps') or []:
+                run = step.get('run')
+                if not isinstance(run, str):
+                    continue
+                label = f'{rel} [{job_id}] "{step.get("name") or "step"}"'
+                run = _strip_shell_comments(run)
+
+                for target in SCRIPT_INVOKE_RE.findall(run):
+                    if (ROOT / target).exists():
+                        continue
+                    guarded = f'-f "{target}"' in run or f'-e "{target}"' in run
+                    if not guarded:
+                        problems.append(f'{label} invokes `{target}`, which does not exist')
+
+                for prefix, name in NPM_RUN_RE.findall(run):
+                    scripts = frontend_scripts if prefix else root_scripts
+                    if name not in scripts and name not in root_scripts:
+                        problems.append(f'{label} runs `npm run {name}`, which no package.json defines')
+
+    assert not problems, (
+        f'{len(problems)} workflow step(s) invoke artifacts the repository does not have:\n  '
+        + '\n  '.join(problems)
+    )
+
+
+# ── the unattended retrain chain (model_retrain / _watch / model_intake) ──────
+#
+# Three workflows that only work together: a launch that provisions a Colab T4 and
+# commits a run marker, a watcher that follows the marker every twenty minutes, and
+# an intake that turns a finished bundle into a pull request. Each leg is short —
+# the training itself is eight hours long and runs on a VM, not on a runner — so the
+# invariants below are about the handoffs, which are the parts that fail silently.
+
+RETRAIN_CHAIN = ('model_retrain.yml', 'model_retrain_watch.yml', 'model_intake.yml')
+
+
+def _steps(doc):
+    for job_id, job in (doc.get('jobs') or {}).items():
+        for step in job.get('steps') or []:
+            yield job_id, step
+
+
+def _all_run_text(doc):
+    return '\n'.join(step.get('run', '') for _, step in _steps(doc) if isinstance(step.get('run'), str))
+
+
+def test_the_retrain_chain_exists(workflows):
+    missing = [name for name in RETRAIN_CHAIN if name not in workflows]
+    assert not missing, (
+        f'missing {", ".join(missing)}: the monthly retrain is three workflows that hand off '
+        'through data/mlops/retrain-runs/, and a chain with a leg removed fails silently'
+    )
+
+
+def test_the_launch_commits_the_marker_the_watcher_reads(workflows):
+    """The handoff is git. A launch that does not commit leaves an orphaned VM."""
+    launch = _all_run_text(workflows['model_retrain.yml'])
+    assert 'mlops.retrain_cli start' in launch
+    assert 'data/mlops/retrain-runs' in launch
+    assert 'git push origin' in launch
+
+    watch = _all_run_text(workflows['model_retrain_watch.yml'])
+    assert 'mlops.retrain_cli watch' in watch
+    assert 'data/mlops/retrain-runs' in watch
+
+
+def test_the_watcher_runs_often_enough_to_notice_a_recycled_session(workflows):
+    triggers = workflows['model_retrain_watch.yml']['on']
+    crons = [entry['cron'] for entry in triggers.get('schedule') or []]
+    assert crons, 'the watcher has no schedule: nothing would notice a dead session'
+    # A free-tier session can vanish at any moment; a watcher that runs hourly would
+    # leave the run dead for an hour and lose an hour of the monthly window.
+    assert any(cron.startswith('*/') and int(cron.split('/')[1].split()[0]) <= 30 for cron in crons), crons
+
+
+def test_no_workflow_runs_the_training_in_the_foreground(workflows):
+    """`colab exec` blocks until the notebook finishes — a job is killed at six hours.
+
+    The training has to be handed to the VM detached (`colab ssh` + nohup, which is
+    what `retrain_cli start` does) and observed afterwards. This pins the reason: if
+    somebody "simplifies" the launch into a blocking exec, the run dies at hour six
+    every month and the failure looks like a training bug.
+    """
+    for name in RETRAIN_CHAIN:
+        text = _all_run_text(workflows[name])
+        assert 'colab exec -f' not in text, f'{name} runs a notebook in the foreground'
+        assert 'nbconvert' not in text, (
+            f'{name} invokes nbconvert on the runner; execution belongs to the Colab VM'
+        )
+    for job_id, job in (workflows['model_retrain.yml'].get('jobs') or {}).items():
+        timeout = job.get('timeout-minutes') or 0
+        assert timeout <= 60, (
+            f'model_retrain.yml job `{job_id}` has timeout-minutes {timeout}: the launch is '
+            'minutes long, and a long timeout here means somebody is training on the runner'
+        )
+
+
+def test_intake_opens_a_pull_request_and_never_promotes(workflows):
+    """Merging is the human's step; `promote --write` is the machine's forbidden one."""
+    intake = _all_run_text(workflows['model_intake.yml'])
+    assert 'gh pr create' in intake
+    # The handshake is regenerated by the repository's canonical writer, not by a
+    # second implementation living in the Python CLI.
+    assert 'node scripts/gen-model-version.mjs' in intake
+    assert 'scripts/validate_model_bundle.py' in intake
+    assert 'promote --write' not in intake and 'promote\n' not in intake
+    for name in RETRAIN_CHAIN:
+        text = _all_run_text(workflows[name])
+        assert 'mlops.cli promote' not in text or '--write' not in text.split('mlops.cli promote')[1][:200], (
+            f'{name} records a promotion automatically; `champion` requires a named approver'
+        )
+
+
+def test_the_candidate_job_runs_the_same_runtime_the_gate_will(workflows):
+    """The smoke test in intake must match model-validation.yml, or the PR reviewer
+    reads a green check that CI is about to turn red."""
+    intake = _all_run_text(workflows['model_intake.yml'])
+    validation = _all_run_text(workflows['model-validation.yml'])
+    for pin in ('tflite-runtime==2.14.0', 'numpy==1.26.4'):
+        assert pin in intake, f'model_intake.yml does not install {pin}'
+        assert pin in validation, f'model-validation.yml no longer pins {pin} — update both together'
+
+
+def test_the_colab_token_is_used_but_never_printed(workflows):
+    """A refresh token is a standing credential for a person's Google account."""
+    for name in RETRAIN_CHAIN:
+        for job_id, step in _steps(workflows[name]):
+            run = step.get('run')
+            if not isinstance(run, str):
+                continue
+            for line in run.splitlines():
+                stripped = line.strip()
+                # Naming the secret in an error message is the guidance that keeps it
+                # from being missing next month; *expanding* it is the leak.
+                if not stripped.startswith(('echo', 'cat', 'printf')):
+                    continue
+                expands = '$COLAB_TOKEN_JSON' in stripped or '${COLAB_TOKEN_JSON' in stripped
+                if not expands:
+                    continue
+                # The one allowed expansion is a byte count, which prints a number.
+                assert 'wc -c' in stripped, (
+                    f'{name} [{job_id}] "{step.get("name")}" prints the Colab token: {stripped}'
+                )

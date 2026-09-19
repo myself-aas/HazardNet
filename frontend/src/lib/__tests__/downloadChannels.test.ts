@@ -5,9 +5,7 @@ import {
   formatBytes,
   githubReleasesUrl,
   githubRepoUrl,
-  npmPackageUrl,
-  ownsRegistryProject,
-  pypiProjectUrl,
+  liveReleaseLookupsEnabled,
   resolveChannels,
 } from '../downloadChannels';
 
@@ -55,39 +53,64 @@ describe('downloadChannels — resolveChannels', () => {
     expect(channels.find((c) => c.id === 'linux')?.repoSlug).toBe('bd-disaster-lab/hazardnet-daemon-cli');
   });
 
-  it('keeps install commands in sync with registry name overrides', () => {
-    const channels = resolveChannels({
-      VITE_PYPI_PACKAGE_NAME: 'hazardnet-sdk',
-      VITE_NPM_PACKAGE_NAME: '@hazardnet/client',
-    });
-    const python = channels.find((c) => c.id === 'python');
-    const npm = channels.find((c) => c.id === 'npm');
-    expect(python?.pypiName).toBe('hazardnet-sdk');
-    expect(python?.installCommand).toBe('pip install hazardnet-sdk');
-    expect(npm?.npmName).toBe('@hazardnet/client');
-    expect(npm?.installCommand).toBe('npm install @hazardnet/client');
-  });
-
   it('ignores empty-string overrides', () => {
     const channels = resolveChannels({ VITE_DOWNLOAD_REPO_ANDROID: '  ' });
     expect(channels.find((c) => c.id === 'android')?.repoSlug).toBe('myself-aas/hazardnet-field-agent');
   });
+
+  it('states a distribution path for every channel', () => {
+    for (const channel of resolveChannels({})) {
+      expect(channel.distribution).toBeTruthy();
+      expect(channel.distribution.length).toBeGreaterThan(20);
+    }
+  });
 });
 
-describe('downloadChannels — registry ownership guard', () => {
-  it('accepts project URLs that reference hazardnet or the owner', () => {
-    expect(ownsRegistryProject(['https://github.com/myself-aas/hazardnet-python'])).toBe(true);
-    expect(ownsRegistryProject(['https://hazardnet.live'])).toBe(true);
+/**
+ * ADR 0011 (owner decision, 2026-09-19): HazardNet does not publish packages to
+ * npm or PyPI, and `/download` must not query either registry. `hazardnet`
+ * returned 404 on both, so every visit fired two requests that could only fail
+ * and printed an install command that could not work — the whole-app QA gate
+ * (e2e/full-app-qa.spec.ts › Route health › /download) fails a route that serves
+ * a non-environmental 4xx, which is how this stayed visible.
+ *
+ * These tests are the regression guard: a registry field, a registry URL helper
+ * or an install command coming back is a re-opened decision, not a feature.
+ */
+describe('downloadChannels — no package-registry publication (ADR 0011)', () => {
+  it('carries no registry name, no install command and no registry URL helper', () => {
+    for (const channel of resolveChannels({})) {
+      expect(channel).not.toHaveProperty('pypiName');
+      expect(channel).not.toHaveProperty('npmName');
+      expect(channel).not.toHaveProperty('installCommand');
+    }
   });
 
-  it('rejects squatted names with unrelated project URLs', () => {
-    expect(ownsRegistryProject(['https://example.com/unrelated'])).toBe(false);
-    expect(ownsRegistryProject([''])).toBe(false);
-    expect(ownsRegistryProject([], 'myself-aas')).toBe(false);
+  it('ignores the retired registry-name environment overrides', () => {
+    const channels = resolveChannels({
+      VITE_PYPI_PACKAGE_NAME: 'hazardnet-sdk',
+      VITE_NPM_PACKAGE_NAME: '@hazardnet/client',
+    });
+    expect(channels.find((c) => c.id === 'python')).not.toHaveProperty('installCommand');
+    expect(channels.find((c) => c.id === 'npm')).not.toHaveProperty('installCommand');
   });
 
-  it('honours a custom owner', () => {
-    expect(ownsRegistryProject(['https://github.com/bd-disaster-lab/anything'], 'bd-disaster-lab')).toBe(true);
+  it('says on the card that the SDK channels are not on a registry', () => {
+    const channels = resolveChannels({});
+    expect(channels.find((c) => c.id === 'python')?.distribution).toMatch(/not published to pypi/i);
+    expect(channels.find((c) => c.id === 'npm')?.distribution).toMatch(/not published to the npm registry/i);
+    // …and never implies the retired command exists.
+    for (const channel of channels) {
+      expect(channel.distribution).not.toMatch(/^\s*(pip|npm) install /i);
+    }
+  });
+
+  it('keeps release lookups off unless the deployment opts in', () => {
+    expect(liveReleaseLookupsEnabled({})).toBe(false);
+    expect(liveReleaseLookupsEnabled({ VITE_DOWNLOAD_LIVE_RELEASES: '' })).toBe(false);
+    expect(liveReleaseLookupsEnabled({ VITE_DOWNLOAD_LIVE_RELEASES: 'false' })).toBe(false);
+    expect(liveReleaseLookupsEnabled({ VITE_DOWNLOAD_LIVE_RELEASES: 'true' })).toBe(true);
+    expect(liveReleaseLookupsEnabled({ VITE_DOWNLOAD_LIVE_RELEASES: ' TRUE ' })).toBe(true);
   });
 });
 
@@ -102,7 +125,5 @@ describe('downloadChannels — formatting and URLs', () => {
   it('derives stable URLs', () => {
     expect(githubRepoUrl('myself-aas/hazardnet-npm')).toBe('https://github.com/myself-aas/hazardnet-npm');
     expect(githubReleasesUrl('a/b')).toBe('https://github.com/a/b/releases/latest');
-    expect(pypiProjectUrl('hazardnet')).toBe('https://pypi.org/project/hazardnet/');
-    expect(npmPackageUrl('hazardnet')).toBe('https://www.npmjs.com/package/hazardnet');
   });
 });

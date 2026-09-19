@@ -88,10 +88,10 @@ export const DistrictAlertTable: React.FC<DistrictAlertTableProps> = ({
     <button
       type="button"
       onClick={() => toggleSort(key)}
-      className="inline-flex items-center gap-1 font-bold text-slate-800 hover:text-amber-800"
+      className="inline-flex items-center gap-1 font-bold text-carbon-80 hover:text-amber-800"
     >
       {label}
-      <span aria-hidden="true" className={sort === key ? 'text-slate-900' : 'text-slate-400'}>
+      <span aria-hidden="true" className={sort === key ? 'text-carbon-90' : 'text-carbon-60'}>
         {sort === key ? (ascending ? '↑' : '↓') : '↕'}
       </span>
     </button>
@@ -99,14 +99,14 @@ export const DistrictAlertTable: React.FC<DistrictAlertTableProps> = ({
 
   return (
     <div className={`space-y-2 ${className}`}>
-      <p className="text-xs text-slate-600">{t('map.listAlternativeHint')}</p>
-      <div className="overflow-auto max-h-[70vh] rounded-xl border border-slate-200" tabIndex={0}>
+      <p className="text-xs text-carbon-60">{t('map.listAlternativeHint')}</p>
+      <div className="overflow-auto max-h-[70vh] rounded-xl border border-carbon-20" tabIndex={0}>
         <table id={id} className="min-w-full border-collapse text-xs">
           <caption className="sr-only">
             {t('map.listAlternative')} — {t('map.column.district')}, {t('map.column.division')},{' '}
             {t('map.column.level')}, {t('map.column.hazard')}
           </caption>
-          <thead className="sticky top-0 bg-slate-100 text-left text-slate-700">
+          <thead className="sticky top-0 bg-carbon-10 text-left text-carbon-70">
             <tr>
               <th scope="col" className="px-3 py-2" aria-sort={ariaSort('district')}>
                 {sortButton('district', t('map.column.district'))}
@@ -129,9 +129,9 @@ export const DistrictAlertTable: React.FC<DistrictAlertTableProps> = ({
               return (
                 <tr
                   key={row.district}
-                  className="border-t border-slate-100 hover:bg-amber-50/40 focus-within:bg-amber-50/60"
+                  className="border-t border-carbon-10 hover:bg-amber-50/40 focus-within:bg-amber-50/60"
                 >
-                  <th scope="row" className="px-3 py-2 text-left font-semibold text-slate-900">
+                  <th scope="row" className="px-3 py-2 text-left font-semibold text-carbon-90">
                     {onSelectDistrict ? (
                       <button
                         type="button"
@@ -142,12 +142,12 @@ export const DistrictAlertTable: React.FC<DistrictAlertTableProps> = ({
                       </button>
                     ) : row.district}
                     {row.baselineOnly && (
-                      <span className="ml-1.5 rounded border border-slate-300 bg-slate-100 px-1 py-0.5 text-[10px] font-bold uppercase text-slate-600">
+                      <span className="ml-1.5 rounded border border-carbon-30 bg-carbon-10 px-1 py-0.5 text-[10px] font-bold uppercase text-carbon-60">
                         {t('coverage.baselineBadge')}
                       </span>
                     )}
                   </th>
-                  <td className="px-3 py-2 text-slate-600">{row.division || '—'}</td>
+                  <td className="px-3 py-2 text-carbon-60">{row.division || '—'}</td>
                   <td className="px-3 py-2">
                     <span className="inline-flex items-center gap-1.5">
                       <span
@@ -155,11 +155,11 @@ export const DistrictAlertTable: React.FC<DistrictAlertTableProps> = ({
                         className="inline-block h-2.5 w-2.5 rounded-sm border border-black/10"
                         style={{ backgroundColor: LEVEL_COLOURS[level as AlertLevel] }}
                       />
-                      <span className="font-semibold text-slate-800">{t(levelLabelKey(level))}</span>
+                      <span className="font-semibold text-carbon-80">{t(levelLabelKey(level))}</span>
                     </span>
                   </td>
-                  <td className="px-3 py-2 text-slate-700">{hazard || '—'}</td>
-                  <td className="px-3 py-2 text-right font-mono text-slate-800">
+                  <td className="px-3 py-2 text-carbon-70">{hazard || '—'}</td>
+                  <td className="px-3 py-2 text-right font-mono text-carbon-80">
                     {severity === null ? '—' : formatNumber(severity)}
                   </td>
                 </tr>

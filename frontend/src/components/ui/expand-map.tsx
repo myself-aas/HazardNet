@@ -312,7 +312,7 @@ export function LocationMap({
   return (
     <div
       ref={containerRef}
-      className={`relative w-full rounded-2xl overflow-hidden border border-slate-200 shadow-md bg-slate-900 text-white select-none ${className}`}
+      className={`relative w-full rounded-2xl overflow-hidden border border-carbon-20 shadow-md bg-carbon-90 text-white select-none ${className}`}
     >
       {/* Map View Container with Dynamic Height */}
       <motion.div
@@ -328,23 +328,23 @@ export function LocationMap({
           /* relative makes z-0 effective so Leaflet's internal panes
              (z-index 200+) stay contained instead of escaping to the root
              stacking context over the sticky header. */
-          className="relative w-full h-full z-0 bg-slate-950 cursor-grab active:cursor-grabbing"
+          className="relative w-full h-full z-0 bg-carbon-black cursor-grab active:cursor-grabbing"
         />
 
         {/* Top HUD Controls Overlay */}
         <div className="absolute top-2 left-2 right-2 z-10 flex items-center justify-between pointer-events-none">
           {/* Layer Selector & Indicator */}
-          <div className="flex items-center gap-1 bg-slate-950/80 backdrop-blur-md px-2 py-1 rounded-full border border-slate-700/80 shadow-xs pointer-events-auto">
+          <div className="flex items-center gap-1 bg-carbon-black/80 backdrop-blur-md px-2 py-1 rounded-full border border-carbon-70/80 shadow-xs pointer-events-auto">
             <span
               className="w-2 h-2 rounded-full animate-pulse"
               style={{ backgroundColor: riskColor }}
             />
-            <span className="text-[10px] font-mono font-bold tracking-tight text-slate-200">
+            <span className="text-[10px] font-mono font-bold tracking-tight text-carbon-20">
               {MINI_MAP_LAYERS[activeLayerKey].label}
             </span>
 
             {/* Quick Layer Switch Toggle */}
-            <div className="flex items-center gap-0.5 ml-1 border-l border-slate-700 pl-1">
+            <div className="flex items-center gap-0.5 ml-1 border-l border-carbon-70 pl-1">
               {(["satellite", "streets", "dark"] as MiniMapLayer[]).map((key) => (
                 <button
                   key={key}
@@ -355,8 +355,8 @@ export function LocationMap({
                   }}
                   className={`px-1.5 py-0.5 rounded text-[9px] font-bold transition-all cursor-pointer ${
                     activeLayerKey === key
-                      ? "bg-amber-400 text-slate-950 shadow-xs"
-                      : "text-slate-400 hover:text-white"
+                      ? "bg-amber-400 text-carbon-black shadow-xs"
+                      : "text-carbon-60 hover:text-white"
                   }`}
                   aria-label={`Switch to ${MINI_MAP_LAYERS[key].name}`}
                   title={MINI_MAP_LAYERS[key].name}
@@ -373,18 +373,18 @@ export function LocationMap({
             <button
               type="button"
               onClick={handleRecenter}
-              className="w-7 h-7 rounded-full bg-slate-950/80 hover:bg-slate-800 text-slate-200 hover:text-white backdrop-blur-md border border-slate-700/80 flex items-center justify-center text-xs shadow-xs transition-colors cursor-pointer"
+              className="w-7 h-7 rounded-full bg-carbon-black/80 hover:bg-carbon-80 text-carbon-20 hover:text-white backdrop-blur-md border border-carbon-70/80 flex items-center justify-center text-xs shadow-xs transition-colors cursor-pointer"
               title="Recenter Map on Target Coordinates"
               aria-label="Recenter Map"
             >
-              <RotateCcw className="w-3.5 h-3.5 text-slate-300" />
+              <RotateCcw className="w-3.5 h-3.5 text-carbon-30" />
             </button>
 
             {/* Zoom In */}
             <button
               type="button"
               onClick={handleZoomIn}
-              className="w-7 h-7 rounded-full bg-slate-950/80 hover:bg-slate-800 text-slate-200 hover:text-white backdrop-blur-md border border-slate-700/80 flex items-center justify-center text-xs shadow-xs transition-colors cursor-pointer"
+              className="w-7 h-7 rounded-full bg-carbon-black/80 hover:bg-carbon-80 text-carbon-20 hover:text-white backdrop-blur-md border border-carbon-70/80 flex items-center justify-center text-xs shadow-xs transition-colors cursor-pointer"
               title="Zoom In"
               aria-label="Zoom In"
             >
@@ -395,7 +395,7 @@ export function LocationMap({
             <button
               type="button"
               onClick={handleZoomOut}
-              className="w-7 h-7 rounded-full bg-slate-950/80 hover:bg-slate-800 text-slate-200 hover:text-white backdrop-blur-md border border-slate-700/80 flex items-center justify-center text-xs shadow-xs transition-colors cursor-pointer"
+              className="w-7 h-7 rounded-full bg-carbon-black/80 hover:bg-carbon-80 text-carbon-20 hover:text-white backdrop-blur-md border border-carbon-70/80 flex items-center justify-center text-xs shadow-xs transition-colors cursor-pointer"
               title="Zoom Out"
               aria-label="Zoom Out"
             >
@@ -409,7 +409,7 @@ export function LocationMap({
                 e.stopPropagation();
                 setIsExpanded(!isExpanded);
               }}
-              className="w-7 h-7 rounded-full bg-slate-950/80 hover:bg-slate-800 text-amber-400 hover:text-amber-300 backdrop-blur-md border border-slate-700/80 flex items-center justify-center text-xs shadow-xs transition-colors cursor-pointer"
+              className="w-7 h-7 rounded-full bg-carbon-black/80 hover:bg-carbon-80 text-amber-400 hover:text-amber-300 backdrop-blur-md border border-carbon-70/80 flex items-center justify-center text-xs shadow-xs transition-colors cursor-pointer"
               title={isExpanded ? "Collapse Mini Map" : "Expand Mini Map View"}
               aria-label={isExpanded ? "Collapse Mini Map" : "Expand Mini Map View"}
             >
@@ -429,16 +429,16 @@ export function LocationMap({
       </motion.div>
 
       {/* Bottom Info & Telemetry Bar */}
-      <div className="bg-slate-950/95 border-t border-slate-800 p-2.5 flex items-center justify-between gap-2">
+      <div className="bg-carbon-black/95 border-t border-carbon-80 p-2.5 flex items-center justify-between gap-2">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5">
             <MapPin className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-            <span className="text-xs font-bold text-slate-100 truncate">{location}</span>
+            <span className="text-xs font-bold text-carbon-10 truncate">{location}</span>
           </div>
-          <div className="flex items-center gap-2 text-[10px] text-slate-400 font-mono mt-0.5">
+          <div className="flex items-center gap-2 text-[10px] text-carbon-60 font-mono mt-0.5">
             <span>{displayCoordinates}</span>
             {typeof elevation === "number" && (
-              <span className="text-slate-500">• {elevation}m MSL</span>
+              <span className="text-carbon-60">• {elevation}m MSL</span>
             )}
           </div>
         </div>
@@ -448,7 +448,7 @@ export function LocationMap({
           <button
             type="button"
             onClick={handleCopyCoordinates}
-            className="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 active:bg-slate-600 text-slate-200 text-[10px] font-bold flex items-center gap-1 border border-slate-700 transition-colors cursor-pointer"
+            className="px-2 py-1 rounded-lg bg-carbon-80 hover:bg-carbon-70 active:bg-carbon-60 text-carbon-20 text-[10px] font-bold flex items-center gap-1 border border-carbon-70 transition-colors cursor-pointer"
             title="Copy Coordinates to Clipboard"
             aria-label="Copy Coordinates"
           >
@@ -459,7 +459,7 @@ export function LocationMap({
               </>
             ) : (
               <>
-                <Copy className="w-3 h-3 text-slate-400" />
+                <Copy className="w-3 h-3 text-carbon-60" />
                 <span>Copy</span>
               </>
             )}
@@ -468,7 +468,7 @@ export function LocationMap({
           <button
             type="button"
             onClick={handleOpenExternal}
-            className="p-1 rounded-lg bg-slate-800 hover:bg-slate-700 active:bg-slate-600 text-slate-300 hover:text-white border border-slate-700 transition-colors cursor-pointer"
+            className="p-1 rounded-lg bg-carbon-80 hover:bg-carbon-70 active:bg-carbon-60 text-carbon-30 hover:text-white border border-carbon-70 transition-colors cursor-pointer"
             title="Open in Google Maps"
             aria-label="Open in Google Maps"
           >

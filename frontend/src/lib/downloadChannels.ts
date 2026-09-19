@@ -7,7 +7,26 @@
  *   - GitHub Releases  → native binaries/installers/archives, attached by the
  *                        release workflow templates in
  *                        .github/workflow-templates/ of the HazardNet repo
- *   - PyPI / npm       → package registries for the Python SDK and npm library
+ *
+ * DISTRIBUTION DECISION (owner, 2026-09-19 — ADR 0011)
+ * ----------------------------------------------------
+ * HazardNet does **not** publish packages to npm or PyPI, and this page no
+ * longer queries either registry. Both lookups returned 404 for `hazardnet`
+ * (the packages do not exist), so every visit to `/download` fired two
+ * requests that could only fail and rendered an install command
+ * (`pip install hazardnet` / `npm install hazardnet`) that could not work.
+ * The registries were removed from the channel model rather than left
+ * "pending": a distribution channel the project has decided not to use is
+ * not a channel that is awaiting its first release.
+ *
+ * The same reasoning applies to the release lookups, with one difference: a
+ * GitHub Releases listing *will* exist once a product repository is created,
+ * so that lookup is kept — but it is opt-in (`VITE_DOWNLOAD_LIVE_RELEASES`,
+ * default off). Until the owner flips it, `/download` makes **no** network
+ * requests at all: it states what is distributed and links to the repository
+ * and the workflow template that will produce the artifacts. That is also
+ * what keeps the page inside the whole-app QA gate, which fails a route that
+ * serves any non-environmental 4xx (e2e/full-app-qa.spec.ts).
  *
  * The default repository slugs below are the *expected* product repository
  * names; they are placeholders until each product repository is created and
@@ -19,13 +38,7 @@
  *   VITE_DOWNLOAD_REPO_LINUX       (default: hazardnet-daemon-cli)
  *   VITE_DOWNLOAD_REPO_PYTHON      (default: hazardnet-python)
  *   VITE_DOWNLOAD_REPO_NPM         (default: hazardnet-npm)
- *   VITE_PYPI_PACKAGE_NAME         (default: hazardnet)
- *   VITE_NPM_PACKAGE_NAME          (default: hazardnet)
- *
- * Registry lookups carry an ownership guard: a PyPI/npm project only counts
- * as "ours" when its declared project/repository URLs reference HazardNet or
- * the configured GitHub owner. This prevents the Download Center from ever
- * linking to an unrelated package that squatted the name.
+ *   VITE_DOWNLOAD_LIVE_RELEASES    (default: off — see above)
  */
 
 /** Identifiers of the five release channels (deep-link ?platform=<id>). */
@@ -58,19 +71,6 @@ export interface GithubReleaseInfo {
   assets: ReleaseAsset[];
 }
 
-export interface RegistryInfo {
-  /** Package name on the registry. */
-  name: string;
-  /** Latest version on the registry. */
-  version: string;
-  /** Human-facing project page (PyPI project / npm package page). */
-  url: string;
-  /** Registry kind, for labels. */
-  registry: 'pypi' | 'npm';
-  /** True when the ownership guard passed. */
-  verified: boolean;
-}
-
 export interface DownloadChannel {
   id: ChannelId;
   title: string;
@@ -83,12 +83,12 @@ export interface DownloadChannel {
   repoSlug: string;
   /** Link to the workflow template that builds and publishes the artifacts. */
   workflowTemplate: string;
-  /** PyPI project name (python channel only). */
-  pypiName?: string;
-  /** npm package name (npm channel only). */
-  npmName?: string;
-  /** Registry install command shown with a copy button, when applicable. */
-  installCommand?: string;
+  /**
+   * Where this channel's artifacts actually come from. Stated on the card so
+   * the page never implies a distribution path the project does not use — no
+   * channel is published to a package registry (ADR 0011).
+   */
+  distribution: string;
   /** Preferred asset kinds for the primary download button, in order. */
   primaryAssetKinds: AssetKind[];
 }
@@ -110,6 +110,7 @@ const BASE_CHANNELS: Omit<DownloadChannel, 'repoSlug'>[] = [
       'Offline-first Android companion app for agricultural extension officers and emergency responders: offline district map caching, GPS geotagging, push advisory delivery and on-device TFLite hazard inference for the field.',
     requirements: 'Android 8.0+ (API 26) • ~100 MB storage • GPS recommended',
     workflowTemplate: `${TEMPLATE_BASE}/hazardnet-field-agent-android.yml`,
+    distribution: 'Signed APK / AAB attached to the product repository’s GitHub Releases by the Android release workflow.',
     primaryAssetKinds: ['apk', 'aab'],
   },
   {
@@ -122,6 +123,7 @@ const BASE_CHANNELS: Omit<DownloadChannel, 'repoSlug'>[] = [
       'Native Windows workstation for high-resolution satellite tile batch processing, multi-layer GIS composition and print-quality hazard map export, with GPU-accelerated inference for district-scale analysis.',
     requirements: 'Windows 10/11 64-bit • 4 GB RAM • DirectX 12 GPU recommended',
     workflowTemplate: `${TEMPLATE_BASE}/hazardnet-gis-workstation-windows.yml`,
+    distribution: 'Installer / zip archive attached to the product repository’s GitHub Releases by the Windows release workflow.',
     primaryAssetKinds: ['installer', 'archive'],
   },
   {
@@ -134,34 +136,35 @@ const BASE_CHANNELS: Omit<DownloadChannel, 'repoSlug'>[] = [
       'Headless Linux daemon and CLI for automated tile pipeline ingestion, scheduled forecasting jobs, Prometheus metrics export and REST API serving — the same engine that powers the web platform, packaged for servers.',
     requirements: 'Ubuntu 20.04+ / Debian 11+ / RHEL 8+ • x86_64 (ARM64 on roadmap)',
     workflowTemplate: `${TEMPLATE_BASE}/hazardnet-daemon-cli-linux.yml`,
+    distribution: 'tar.gz archive (plus SHA256SUMS.txt) attached to the product repository’s GitHub Releases by the Linux release workflow.',
     primaryAssetKinds: ['archive'],
   },
   {
     id: 'python',
     title: 'HazardNet Python SDK',
-    platform: 'Python (PyPI)',
+    platform: 'Python',
     icon: 'python',
     badge: 'SDK / Library',
     description:
       'Python library for 15-channel satellite tensor construction, ONNX/TFLite model evaluation, physical severity indexing and advisory retrieval — the building blocks for research pipelines and custom integrations.',
     requirements: 'Python 3.10–3.13 • NumPy • rasterio (optional, GeoTIFF inputs)',
     workflowTemplate: `${TEMPLATE_BASE}/hazardnet-python-package.yml`,
-    pypiName: 'hazardnet',
-    installCommand: 'pip install hazardnet',
+    distribution:
+      'Source and built sdist/wheel from the product repository. Not published to PyPI (ADR 0011) — there is no `pip install hazardnet`.',
     primaryAssetKinds: ['wheel', 'sdist'],
   },
   {
     id: 'npm',
     title: 'HazardNet JavaScript Library',
-    platform: 'Node.js (npm)',
+    platform: 'Node.js',
     icon: 'code',
-    badge: 'npm Package',
+    badge: 'JS / TS Library',
     description:
       'TypeScript/JavaScript client for the HazardNet forecast and advisory APIs: typed forecast objects, district lookups, advisory rendering helpers and shared HazardNet types for web and Node integrations.',
     requirements: 'Node.js 18+ (LTS recommended) • npm 9+',
     workflowTemplate: `${TEMPLATE_BASE}/hazardnet-npm-package.yml`,
-    npmName: 'hazardnet',
-    installCommand: 'npm install hazardnet',
+    distribution:
+      'Source and packed tarball from the product repository. Not published to the npm registry (ADR 0011) — there is no `npm install hazardnet`.',
     primaryAssetKinds: ['tarball'],
   },
 ];
@@ -184,33 +187,39 @@ const DEFAULT_REPO_NAME: Record<ChannelId, string> = {
   npm: 'hazardnet-npm',
 };
 
-/** Build the channel list, applying Vite env overrides for slugs and names. */
+/** Build the channel list, applying Vite env overrides for repository slugs. */
 export function resolveChannels(
   env: Record<string, string | undefined> = {},
 ): DownloadChannel[] {
   const owner = env.VITE_DOWNLOAD_GITHUB_OWNER?.trim() || DEFAULT_OWNER;
-  const pypiName = env.VITE_PYPI_PACKAGE_NAME?.trim() || 'hazardnet';
-  const npmName = env.VITE_NPM_PACKAGE_NAME?.trim() || 'hazardnet';
 
   return BASE_CHANNELS.map((base) => {
     const repoName =
       env[`VITE_DOWNLOAD_REPO_${REPO_ENV_SUFFIX[base.id]}`]?.trim() ||
       DEFAULT_REPO_NAME[base.id];
-    const channel: DownloadChannel = {
+    return {
       ...base,
       repoSlug: `${owner}/${repoName}`,
     };
-    // Keep install commands in sync with overridden registry names.
-    if (base.id === 'python') {
-      channel.pypiName = pypiName;
-      channel.installCommand = `pip install ${pypiName}`;
-    }
-    if (base.id === 'npm') {
-      channel.npmName = npmName;
-      channel.installCommand = `npm install ${npmName}`;
-    }
-    return channel;
   });
+}
+
+/**
+ * Whether the Download Center may query the GitHub Releases API at all.
+ *
+ * Off by default (ADR 0011): the five product repositories do not exist yet, so
+ * every lookup would be a 404 the visitor's browser has to make and the page
+ * would render a state that says less than the static copy does. Set
+ * `VITE_DOWNLOAD_LIVE_RELEASES=true` in the deployment environment once the
+ * product repositories publish releases and the live asset buttons are wanted.
+ *
+ * There is deliberately no equivalent flag for PyPI/npm: those registries are
+ * not a distribution path for this project, so there is nothing to enable.
+ */
+export function liveReleaseLookupsEnabled(
+  env: Record<string, string | undefined> = {},
+): boolean {
+  return env.VITE_DOWNLOAD_LIVE_RELEASES?.trim().toLowerCase() === 'true';
 }
 
 /** Repository root URL for a slug (owner/name). */
@@ -221,28 +230,6 @@ export function githubRepoUrl(slug: string): string {
 /** Human-facing "latest release" URL (works even when the API is rate-limited). */
 export function githubReleasesUrl(slug: string): string {
   return `https://github.com/${slug}/releases/latest`;
-}
-
-/** PyPI project page URL. */
-export function pypiProjectUrl(name: string): string {
-  return `https://pypi.org/project/${name}/`;
-}
-
-/** npm package page URL. */
-export function npmPackageUrl(name: string): string {
-  return `https://www.npmjs.com/package/${name}`;
-}
-
-/**
- * Ownership guard for registry projects: at least one declared project URL
- * (source/home/repository) must reference HazardNet or the GitHub owner.
- */
-export function ownsRegistryProject(projectUrls: string[], owner: string = DEFAULT_OWNER): boolean {
-  return projectUrls.some(
-    (url) =>
-      typeof url === 'string' &&
-      (url.toLowerCase().includes('hazardnet') || url.toLowerCase().includes(owner.toLowerCase())),
-  );
 }
 
 /** Classify a release asset filename into an AssetKind (case-insensitive). */

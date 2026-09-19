@@ -106,20 +106,20 @@ export const DistrictForecastCard: React.FC<DistrictForecastCardProps> = ({
       role="dialog"
       aria-label={`${district.name} district forecast`}
     >
-      <div className="flex flex-col flex-1 min-h-0 bg-white/85 backdrop-blur-md border border-slate-200/70 rounded-2xl shadow-xl text-slate-800 relative overflow-hidden">
+      <div className="flex flex-col flex-1 min-h-0 bg-white/85 backdrop-blur-md border border-carbon-20/70 rounded-2xl shadow-xl text-carbon-80 relative overflow-hidden">
         {/* amber identity strip */}
         <div aria-hidden="true" className="absolute top-0 left-0 w-full h-1 bg-nasa-red" />
 
         {/* Header (fixed) */}
-        <div className="flex items-start justify-between gap-2 border-b border-slate-200/60 pb-2 pt-3 px-3.5 shrink-0">
+        <div className="flex items-start justify-between gap-2 border-b border-carbon-20/60 pb-2 pt-3 px-3.5 shrink-0">
           <div className="min-w-0">
-            <div className="flex items-center gap-1.5 text-[9px] font-mono font-bold text-slate-500 uppercase tracking-wider">
+            <div className="flex items-center gap-1.5 text-[9px] font-mono font-bold text-carbon-60 uppercase tracking-wider">
               <MaterialIcon name="radar" className="w-3 h-3 text-nasa-red-shade" />
               District Forecast
             </div>
-            <h4 className="text-sm font-black text-slate-900 tracking-tight mt-0.5 truncate">
+            <h4 className="text-sm font-black text-carbon-90 tracking-tight mt-0.5 truncate">
               {district.name} District
-              <span className="ml-1.5 font-mono text-[9px] font-bold text-slate-400">{district.division.toUpperCase()}</span>
+              <span className="ml-1.5 font-mono text-[9px] font-bold text-carbon-60">{district.division.toUpperCase()}</span>
             </h4>
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
@@ -129,7 +129,7 @@ export const DistrictForecastCard: React.FC<DistrictForecastCardProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="w-6 h-6 rounded-full bg-slate-100/80 hover:bg-slate-200 text-slate-700 font-black flex items-center justify-center text-[11px] transition-colors cursor-pointer border border-slate-200/80"
+              className="w-6 h-6 rounded-full bg-carbon-10/80 hover:bg-carbon-20 text-carbon-70 font-black flex items-center justify-center text-[11px] transition-colors cursor-pointer border border-carbon-20/80"
               title="Close district forecast"
               aria-label="Close district forecast"
             >
@@ -143,14 +143,14 @@ export const DistrictForecastCard: React.FC<DistrictForecastCardProps> = ({
           {/* Primary hazard + severity meter */}
           <div className={`bg-white/60 border ${tone.ring} rounded-xl px-2.5 py-2 flex flex-col gap-1.5`}>
             <div className="flex items-center justify-between gap-2">
-              <span className="text-[11px] font-extrabold text-slate-900 flex items-center gap-1.5">
+              <span className="text-[11px] font-extrabold text-carbon-90 flex items-center gap-1.5">
                 <span className={`w-1.5 h-1.5 rounded-full ${tone.bar} animate-pulse`} aria-hidden="true" />
                 {district.hazardType}
               </span>
               <span className={`text-[11px] font-black font-mono ${tone.text}`}>{severityPct}% Severity</span>
             </div>
             <div
-              className="w-full h-1.5 bg-slate-200/80 rounded-full overflow-hidden"
+              className="w-full h-1.5 bg-carbon-20/80 rounded-full overflow-hidden"
               role="meter"
               aria-valuenow={severityPct}
               aria-valuemin={0}
@@ -166,16 +166,16 @@ export const DistrictForecastCard: React.FC<DistrictForecastCardProps> = ({
 
           {/* District facts — single compact row */}
           <div className="grid grid-cols-3 gap-1.5 text-[10px]">
-            <div className="bg-white/60 p-1.5 rounded-lg border border-slate-200/70 min-w-0" title={`Main crop: ${district.mainCrop}`}>
-              <span className="text-slate-500 block text-[8px] font-bold uppercase tracking-wide">Main Crop</span>
-              <span className="font-bold text-slate-800 truncate block">{district.mainCrop}</span>
+            <div className="bg-white/60 p-1.5 rounded-lg border border-carbon-20/70 min-w-0" title={`Main crop: ${district.mainCrop}`}>
+              <span className="text-carbon-60 block text-[8px] font-bold uppercase tracking-wide">Main Crop</span>
+              <span className="font-bold text-carbon-80 truncate block">{district.mainCrop}</span>
             </div>
-            <div className="bg-white/60 p-1.5 rounded-lg border border-slate-200/70 min-w-0">
-              <span className="text-slate-500 block text-[8px] font-bold uppercase tracking-wide">Elevation</span>
-              <span className="font-bold text-slate-800">{district.elevationMeters}m MSL</span>
+            <div className="bg-white/60 p-1.5 rounded-lg border border-carbon-20/70 min-w-0">
+              <span className="text-carbon-60 block text-[8px] font-bold uppercase tracking-wide">Elevation</span>
+              <span className="font-bold text-carbon-80">{district.elevationMeters}m MSL</span>
             </div>
-            <div className="bg-white/60 p-1.5 rounded-lg border border-slate-200/70 min-w-0">
-              <span className="text-slate-500 block text-[8px] font-bold uppercase tracking-wide">Coords</span>
+            <div className="bg-white/60 p-1.5 rounded-lg border border-carbon-20/70 min-w-0">
+              <span className="text-carbon-60 block text-[8px] font-bold uppercase tracking-wide">Coords</span>
               <span className="font-bold font-mono text-sky-700">
                 {district.lat.toFixed(2)}°N, {district.lng.toFixed(2)}°E
               </span>
@@ -187,7 +187,7 @@ export const DistrictForecastCard: React.FC<DistrictForecastCardProps> = ({
             type="button"
             onClick={() => setShowLocationMap((value) => !value)}
             aria-expanded={showLocationMap}
-            className="flex items-center justify-between gap-2 rounded-lg border border-slate-200/70 bg-white/60 px-2.5 py-1.5 text-[10px] font-bold text-slate-600 hover:bg-white/90 transition-colors cursor-pointer"
+            className="flex items-center justify-between gap-2 rounded-lg border border-carbon-20/70 bg-white/60 px-2.5 py-1.5 text-[10px] font-bold text-carbon-60 hover:bg-white/90 transition-colors cursor-pointer"
           >
             <span className="flex items-center gap-1.5">
               <MaterialIcon name="map" className="w-3 h-3 text-nasa-red-shade" />

@@ -376,6 +376,20 @@ jobs:
         run: npx playwright test
         env:
           E2E_BASE_URL: http://127.0.0.1:3000
+          # This job serves the built frontend with `vite preview` and starts no
+          # backend, so the proxy in frontend/vite.config.ts answers every /api
+          # call with 502. That is a property of the runner, not of the app: the
+          # flag tells the QA suite to treat gateway statuses on /api as
+          # environmental (e2e/full-app-qa.spec.ts → NO_API_RUNTIME_STATUSES).
+          #
+          # It is opt-in for exactly that reason — the same suite pointed at a
+          # deployment that *does* run the API must still fail on a 502 — and it
+          # is not a blanket mute: a 500 is never excused, and the
+          # `Forecast data source — the ADR 0008 fallback chain` tests assert
+          # positively that each forecast surface resolved its rows from the API
+          # or from the committed snapshot. Without that pairing a broken
+          # fallback would stay green behind the mute.
+          QA_NO_API_RUNTIME: '1'
 
       - name: Upload test results
         if: always()
@@ -502,6 +516,27 @@ jobs:
 
       - name: Bundle budget check
         run: npm run check:bundle
+
+      # Impeccable design-quality gate. The detector is vendored in
+      # .agents/skills/impeccable (skills 4.3.1, Apache-2.0) and installed as a
+      # devDependency for its binary; docs/design/impeccable.md records both, plus why
+      # each suppression in .impeccable/config.json is legitimate and what covers the
+      # same risk instead. It scans what we author (frontend/src, where findings carry a
+      # file and line) and what ships (every prerendered document under frontend/dist),
+      # and fails on any finding that is neither waived with a reason nor already in
+      # docs/design/impeccable-baseline.json. The baseline only shrinks: fixing a
+      # finding is followed by `npm run check:design:update` in the same commit.
+      - name: Design quality gate
+        run: npm run check:design
+
+      # No location in this repository's tree may appear in a shipped document — rendered
+      # text, HTML comments, JSON-LD or inline styles. The rule, its reasoning and what the
+      # artifacts keep instead are in docs/PUBLIC_SURFACE.md §3; the pattern is shared with
+      # the build scripts and the browser (scripts/lib/public-text.mjs,
+      # frontend/src/lib/publicText.ts) and __tests__/noRepoPaths.test.js covers the
+      # surfaces that are rendered only in the browser.
+      - name: Public surface names no repository path
+        run: npm run check:paths
 
       # Phase 8: the derived artifacts must still describe the committed inputs. Both gates are
       # clock-blind (they compare a time-independent projection), so they cannot rot as the

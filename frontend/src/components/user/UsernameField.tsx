@@ -110,9 +110,9 @@ export const UsernameField: React.FC<UsernameFieldProps> = ({
   }, [value, currentUsername, checkUsernameAvailability]);
 
   const statusStyles: Record<UsernameStatus, { ring: string; icon: string; text: string; iconClass: string }> = {
-    idle: { ring: 'focus-within:border-nasa-blue focus-within:ring-nasa-blue/40', icon: '', text: 'text-slate-500', iconClass: '' },
+    idle: { ring: 'focus-within:border-nasa-blue focus-within:ring-nasa-blue/40', icon: '', text: 'text-carbon-60', iconClass: '' },
     invalid: { ring: 'border-rose-300 focus-within:ring-rose-200', icon: 'error', text: 'text-rose-700', iconClass: 'text-rose-500' },
-    checking: { ring: 'focus-within:border-nasa-blue focus-within:ring-nasa-blue/40', icon: 'hourglass_top', text: 'text-slate-500', iconClass: 'text-slate-400' },
+    checking: { ring: 'focus-within:border-nasa-blue focus-within:ring-nasa-blue/40', icon: 'hourglass_top', text: 'text-carbon-60', iconClass: 'text-carbon-60' },
     available: { ring: 'border-emerald-300 focus-within:ring-emerald-200', icon: 'check_circle', text: 'text-emerald-700', iconClass: 'text-emerald-600' },
     taken: { ring: 'border-orange-300 focus-within:ring-orange-200', icon: 'error', text: 'text-orange-700', iconClass: 'text-orange-500' },
   };
@@ -120,13 +120,13 @@ export const UsernameField: React.FC<UsernameFieldProps> = ({
 
   return (
     <div data-testid="username-field">
-      <label className="block text-xs font-bold text-slate-800 mb-1.5" htmlFor={id}>
+      <label className="block text-xs font-bold text-carbon-80 mb-1.5" htmlFor={id}>
         {label}
       </label>
       <div
-        className={`flex items-center gap-0 rounded-2xl border border-slate-200 bg-slate-50 transition-all focus-within:ring-2 ${style.ring}`}
+        className={`flex items-center gap-0 rounded-2xl border border-carbon-20 bg-carbon-05 transition-all focus-within:ring-2 ${style.ring}`}
       >
-        <span className="pl-4 text-sm font-bold text-slate-400 select-none" aria-hidden="true">
+        <span className="pl-4 text-sm font-bold text-carbon-60 select-none" aria-hidden="true">
           @
         </span>
         <input
@@ -143,12 +143,12 @@ export const UsernameField: React.FC<UsernameFieldProps> = ({
           autoFocus={autoFocus}
           onChange={(event) => onChange(sanitizeUsernameInput(event.target.value))}
           aria-describedby={`${id}-status`}
-          className="w-full bg-transparent px-2 py-3 text-base sm:text-sm text-slate-900 placeholder-slate-400 font-medium outline-none"
+          className="w-full bg-transparent px-2 py-3 text-base sm:text-sm text-carbon-90 placeholder-carbon-40 font-medium outline-none"
         />
         {status !== 'idle' && (
           <span className="pr-4 flex items-center" aria-hidden="true">
             {status === 'checking' ? (
-              <span className="h-4 w-4 animate-spin rounded-full border-2 border-slate-300 border-t-slate-500" />
+              <span className="h-4 w-4 animate-spin rounded-full border-2 border-carbon-30 border-t-carbon-50" />
             ) : (
               <MaterialIcon name={style.icon} className={style.iconClass} size={18} />
             )}
@@ -165,7 +165,7 @@ export const UsernameField: React.FC<UsernameFieldProps> = ({
       {showRules && (
         <ul className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1" data-testid="username-rules">
           {USERNAME_RULES.map((rule) => (
-            <li key={rule} className="flex items-center gap-1 text-[10.5px] font-medium text-slate-400">
+            <li key={rule} className="flex items-center gap-1 text-[10.5px] font-medium text-carbon-60">
               <span aria-hidden="true">•</span>
               {rule}
             </li>
@@ -184,15 +184,15 @@ export const UsernameField: React.FC<UsernameFieldProps> = ({
             className="overflow-hidden"
             data-testid="username-suggestions"
           >
-            <div className="mt-2 rounded-2xl border border-slate-200 bg-slate-50/70 p-2.5">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Try one of these</p>
+            <div className="mt-2 rounded-2xl border border-carbon-20 bg-carbon-05/70 p-2.5">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-carbon-60 mb-1.5">Try one of these</p>
               <div className="flex flex-wrap gap-1.5">
                 {suggestions.map((suggestion) => (
                   <button
                     key={suggestion}
                     type="button"
                     onClick={() => onChange(suggestion)}
-                    className="rounded-full border border-slate-200 bg-white px-3 py-1 text-[11px] font-bold text-slate-700 shadow-xs transition-all hover:border-nasa-blue hover:bg-amber-50 hover:text-amber-900 cursor-pointer"
+                    className="rounded-full border border-carbon-20 bg-white px-3 py-1 text-[11px] font-bold text-carbon-70 shadow-xs transition-all hover:border-nasa-blue hover:bg-amber-50 hover:text-amber-900 cursor-pointer"
                   >
                     @{suggestion}
                   </button>

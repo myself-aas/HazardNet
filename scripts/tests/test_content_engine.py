@@ -305,10 +305,23 @@ def test_an_archive_page_publishes_the_dataset_it_actually_has(with_archive):
     assert dataset['temporalCoverage'].startswith(year['path'].rsplit('/', 1)[-1])
 
 
-def test_the_archive_path_is_printed_as_the_operator_gave_it(with_archive):
+def test_the_archive_is_described_by_what_it_holds_not_by_where_it_was_read_from(with_archive):
+    """The page states the archive's own figures; the location it came from stays in `inputs`.
+
+    This test used to require the operator's path to be printed on /retrospectives, so a
+    reader could check the claim against the file. A reader of the deployed site cannot open
+    a location in this repository's tree, so the surface now says what the archive holds and
+    the generated document keeps where it was read from in its machine-readable `inputs` —
+    which is what a script auditing a published number reads (docs/PUBLIC_SURFACE.md §3).
+    The drift sentence is the half that had to survive: it is the page saying that the
+    measured count, not the count the model card quotes, is the one it uses.
+    """
     index = next(r for r in with_archive['routes'] if r['path'] == '/retrospectives')
     text = ' '.join(' '.join(s.get('paragraphs', [])) for s in index['sections'])
-    assert '/hazardnet-events.json' in text or 'hazardnet-events.json' in text
+    assert 'the archive this deployment loaded' in text
+    assert 'drift' in text
+    assert 'hazardnet-events.json' not in text
+    assert with_archive['inputs']['event_archive']['path'].endswith('hazardnet-events.json')
 
 
 # ── 6. the export the content engine consumes is the loader's own ────────────

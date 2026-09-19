@@ -133,7 +133,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.3, ease: 'easeOut' }}
         ref={headerRef}
-        className={`sticky top-0 z-[2000] border-b text-slate-800 transition-all duration-300 select-none h-14 sm:h-16 flex items-center ${
+        className={`sticky top-0 z-[2000] border-b text-carbon-80 transition-all duration-300 select-none h-14 sm:h-16 flex items-center ${
           /* HDS chrome is flat and opaque: no backdrop blur, depth from the 1px
              rule beneath the bar rather than a shadow. */
           isTransparentMode
@@ -165,12 +165,12 @@ export const Navbar: React.FC<NavbarProps> = ({
               className={
                 isMenuDrawerOpen
                   ? "tap-target p-2 rounded-xl border backdrop-blur-md shadow-2xs transition-colors flex items-center justify-center shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:outline-none bg-amber-500/20 text-amber-900 border-amber-500/50 shadow-xs"
-                  : "tap-target p-2 rounded-xl border backdrop-blur-md shadow-2xs transition-colors flex items-center justify-center shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:outline-none bg-white/80 hover:bg-white text-slate-800 border-slate-200/80"
+                  : "tap-target p-2 rounded-xl border backdrop-blur-md shadow-2xs transition-colors flex items-center justify-center shrink-0 cursor-pointer focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:outline-none bg-white/80 hover:bg-white text-carbon-80 border-carbon-20/80"
               }
               aria-label={isMenuDrawerOpen ? 'Close navigation menu' : 'Open navigation menu'}
               title={isMenuDrawerOpen ? 'Close Menu' : 'Open Menu'}
             >
-              <MenuCloseIcon size={20} className={isMenuDrawerOpen ? 'text-amber-700' : 'text-slate-800'} duration={0} isState={isMenuDrawerOpen} />
+              <MenuCloseIcon size={20} className={isMenuDrawerOpen ? 'text-amber-700' : 'text-carbon-80'} duration={0} isState={isMenuDrawerOpen} />
             </motion.button>
 
             {/* Center: Brand Logo */}
@@ -181,7 +181,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             >
               <Link
                 to="/"
-                className="flex items-center justify-center gap-1.5 px-2.5 py-1 rounded-xl text-slate-900 hover:bg-white/40 transition-all focus-visible:ring-2 focus-visible:ring-nasa-blue/60 focus-visible:outline-none"
+                className="flex items-center justify-center gap-1.5 px-2.5 py-1 rounded-xl text-carbon-90 hover:bg-white/40 transition-all focus-visible:ring-2 focus-visible:ring-nasa-blue/60 focus-visible:outline-none"
                 title="HazardNet"
               >
                 <HazardNetBrand size="sm" />
@@ -198,7 +198,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 aria-label="Locate me"
               >
                 {isLocatingInNavbar ? (
-                  <span className="w-3.5 h-3.5 border-2 border-slate-950 border-t-transparent rounded-full animate-spin"></span>
+                  <span className="w-3.5 h-3.5 border-2 border-carbon-black border-t-transparent rounded-full animate-spin"></span>
                 ) : (
                   <MaterialIcon name="person_pin_circle" className="w-4 h-4" />
                 )}
@@ -215,7 +215,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} className="flex items-center justify-center">
                 <Link
                   to="/"
-                  className="flex items-center justify-center gap-2 px-2.5 py-1.5 hover:bg-white/50 rounded-xl text-slate-900 transition-colors shrink-0 focus-visible:ring-2 focus-visible:ring-nasa-blue/60 focus-visible:outline-none"
+                  className="flex items-center justify-center gap-2 px-2.5 py-1.5 hover:bg-white/50 rounded-xl text-carbon-90 transition-colors shrink-0 focus-visible:ring-2 focus-visible:ring-nasa-blue/60 focus-visible:outline-none"
                   title="HazardNet Early Warning System"
                 >
                   <HazardNetBrand size="md" />
@@ -241,7 +241,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     <motion.span
                       animate={{ rotate: activeMenu === 'home' ? 180 : 0 }}
                       transition={{ duration: 0.2 }}
-                      className="text-[10px] text-slate-500 inline-block"
+                      className="text-[10px] text-carbon-60 inline-block"
                     >
                       <MaterialIcon name="chevron_down" className="w-3 h-3 inline-block opacity-70 ml-1" />
                     </motion.span>
@@ -253,19 +253,19 @@ export const Navbar: React.FC<NavbarProps> = ({
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 6, scale: 0.97 }}
                         transition={{ duration: 0.15 }}
-                        className="absolute top-full left-0 mt-2 w-72 bg-white/95 backdrop-blur-2xl border border-slate-200/90 rounded-2xl shadow-xl shadow-slate-900/10 p-1.5 z-50 text-slate-800"
+                        className="absolute top-full left-0 mt-2 w-72 bg-white/95 backdrop-blur-2xl border border-carbon-20/90 rounded-2xl shadow-xl shadow-carbon-90/10 p-1.5 z-50 text-carbon-80"
                       >
                         <motion.button
                           whileHover={{ x: 3 }}
                           onClick={() => { navigate('/'); setActiveMenu(null); }}
-                          className="w-full p-2.5 text-left flex items-start gap-3 rounded-xl hover:bg-slate-100/90 transition-all cursor-pointer group"
+                          className="w-full p-2.5 text-left flex items-start gap-3 rounded-xl hover:bg-carbon-10/90 transition-all cursor-pointer group"
                         >
                           <div className="p-2 rounded-xl bg-nasa-blue/10 text-nasa-blue-shade group-hover:bg-nasa-blue/20 transition-colors shrink-0">
                             <MaterialIcon name="description" className="text-lg" />
                           </div>
                           <div>
-                            <div className="font-semibold text-slate-900 text-[13.5px]">Overview</div>
-                            <div className="text-[11.5px] text-slate-500 leading-tight mt-0.5">
+                            <div className="font-semibold text-carbon-90 text-[13.5px]">Overview</div>
+                            <div className="text-[11.5px] text-carbon-60 leading-tight mt-0.5">
                               What this platform is for, what the last run produced, and where every number can be checked
                             </div>
                           </div>
@@ -273,14 +273,14 @@ export const Navbar: React.FC<NavbarProps> = ({
                         <motion.button
                           whileHover={{ x: 3 }}
                           onClick={() => { navigate('/live'); setActiveMenu(null); }}
-                          className="w-full p-2.5 text-left flex items-start gap-3 rounded-xl hover:bg-slate-100/90 transition-all cursor-pointer group"
+                          className="w-full p-2.5 text-left flex items-start gap-3 rounded-xl hover:bg-carbon-10/90 transition-all cursor-pointer group"
                         >
                           <div className="p-2 rounded-xl bg-nasa-blue/10 text-nasa-blue-shade group-hover:bg-nasa-blue/20 transition-colors shrink-0">
                             <MaterialIcon name="public" className="text-lg" />
                           </div>
                           <div>
-                            <div className="font-semibold text-slate-900 text-[13.5px]">Live map & GIS console</div>
-                            <div className="text-[11.5px] text-slate-500 leading-tight mt-0.5">Interactive 3D Bangladesh hazard map</div>
+                            <div className="font-semibold text-carbon-90 text-[13.5px]">Live map & GIS console</div>
+                            <div className="text-[11.5px] text-carbon-60 leading-tight mt-0.5">Interactive 3D Bangladesh hazard map</div>
                           </div>
                         </motion.button>
                       </motion.div>
@@ -304,7 +304,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     <motion.span
                       animate={{ rotate: activeMenu === 'forecasts' ? 180 : 0 }}
                       transition={{ duration: 0.2 }}
-                      className="text-[10px] text-slate-500 inline-block"
+                      className="text-[10px] text-carbon-60 inline-block"
                     >
                       <MaterialIcon name="chevron_down" className="w-3 h-3 inline-block opacity-70 ml-1" />
                     </motion.span>
@@ -316,61 +316,61 @@ export const Navbar: React.FC<NavbarProps> = ({
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 6, scale: 0.97 }}
                         transition={{ duration: 0.15 }}
-                        className="absolute top-full left-0 mt-2 w-80 bg-white/95 backdrop-blur-2xl border border-slate-200/90 rounded-2xl shadow-xl shadow-slate-900/10 p-1.5 z-50 text-slate-800"
+                        className="absolute top-full left-0 mt-2 w-80 bg-white/95 backdrop-blur-2xl border border-carbon-20/90 rounded-2xl shadow-xl shadow-carbon-90/10 p-1.5 z-50 text-carbon-80"
                       >
                         <motion.button
                           whileHover={{ x: 3 }}
                           onClick={() => { navigate('/forecast/overview'); setActiveMenu(null); }}
-                          className="w-full p-2.5 text-left flex items-start gap-3 rounded-xl hover:bg-slate-100/90 transition-all cursor-pointer group"
+                          className="w-full p-2.5 text-left flex items-start gap-3 rounded-xl hover:bg-carbon-10/90 transition-all cursor-pointer group"
                         >
                           <div className="p-2 rounded-xl bg-blue-50 text-blue-700 group-hover:bg-blue-100 transition-colors shrink-0">
                             <MaterialIcon name="map" className="text-lg" />
                           </div>
                           <div>
-                            <div className="font-semibold text-slate-900 text-[13.5px]">Forecast Overview</div>
-                            <div className="text-[11.5px] text-slate-500 leading-tight mt-0.5">National risk map & predictions</div>
+                            <div className="font-semibold text-carbon-90 text-[13.5px]">Forecast Overview</div>
+                            <div className="text-[11.5px] text-carbon-60 leading-tight mt-0.5">National risk map & predictions</div>
                           </div>
                         </motion.button>
 
                         <motion.button
                           whileHover={{ x: 3 }}
                           onClick={() => { navigate('/forecast/my-districts'); setActiveMenu(null); if (onToggleHeatmap) onToggleHeatmap(); }}
-                          className="w-full p-2.5 text-left flex items-start gap-3 rounded-xl hover:bg-slate-100/90 transition-all cursor-pointer group"
+                          className="w-full p-2.5 text-left flex items-start gap-3 rounded-xl hover:bg-carbon-10/90 transition-all cursor-pointer group"
                         >
                           <div className="p-2 rounded-xl bg-amber-50 text-amber-700 group-hover:bg-amber-100 transition-colors shrink-0">
                             <MaterialIcon name="bookmarks" className="text-lg" />
                           </div>
                           <div>
-                            <div className="font-semibold text-slate-900 text-[13.5px]">My Saved Districts</div>
-                            <div className="text-[11.5px] text-slate-500 leading-tight mt-0.5">Personalized district watchlist & alerts</div>
+                            <div className="font-semibold text-carbon-90 text-[13.5px]">My Saved Districts</div>
+                            <div className="text-[11.5px] text-carbon-60 leading-tight mt-0.5">Personalized district watchlist & alerts</div>
                           </div>
                         </motion.button>
 
                         <motion.button
                           whileHover={{ x: 3 }}
                           onClick={() => { navigate('/forecast/district/mymensingh'); setActiveMenu(null); }}
-                          className="w-full p-2.5 text-left flex items-start gap-3 rounded-xl hover:bg-slate-100/90 transition-all cursor-pointer group"
+                          className="w-full p-2.5 text-left flex items-start gap-3 rounded-xl hover:bg-carbon-10/90 transition-all cursor-pointer group"
                         >
                           <div className="p-2 rounded-xl bg-purple-50 text-purple-700 group-hover:bg-purple-100 transition-colors shrink-0">
                             <MaterialIcon name="insights" className="text-lg" />
                           </div>
                           <div>
-                            <div className="font-semibold text-slate-900 text-[13.5px]">District Tensor Details</div>
-                            <div className="text-[11.5px] text-slate-500 leading-tight mt-0.5">Deep-dive district ML metrics</div>
+                            <div className="font-semibold text-carbon-90 text-[13.5px]">District Tensor Details</div>
+                            <div className="text-[11.5px] text-carbon-60 leading-tight mt-0.5">Deep-dive district ML metrics</div>
                           </div>
                         </motion.button>
 
                         <motion.button
                           whileHover={{ x: 3 }}
                           onClick={() => { navigate('/forecast/compare'); setActiveMenu(null); }}
-                          className="w-full p-2.5 text-left flex items-start gap-3 rounded-xl hover:bg-slate-100/90 transition-all cursor-pointer group"
+                          className="w-full p-2.5 text-left flex items-start gap-3 rounded-xl hover:bg-carbon-10/90 transition-all cursor-pointer group"
                         >
                           <div className="p-2 rounded-xl bg-emerald-50 text-emerald-700 group-hover:bg-emerald-100 transition-colors shrink-0">
                             <MaterialIcon name="compare_arrows" className="text-lg" />
                           </div>
                           <div>
-                            <div className="font-semibold text-slate-900 text-[13.5px]">Comparative Matrix</div>
-                            <div className="text-[11.5px] text-slate-500 leading-tight mt-0.5">Side-by-side risk score benchmarking</div>
+                            <div className="font-semibold text-carbon-90 text-[13.5px]">Comparative Matrix</div>
+                            <div className="text-[11.5px] text-carbon-60 leading-tight mt-0.5">Side-by-side risk score benchmarking</div>
                           </div>
                         </motion.button>
                       </motion.div>
@@ -394,7 +394,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     <motion.span
                       animate={{ rotate: activeMenu === 'advisories' ? 180 : 0 }}
                       transition={{ duration: 0.2 }}
-                      className="text-[10px] text-slate-500 inline-block"
+                      className="text-[10px] text-carbon-60 inline-block"
                     >
                       <MaterialIcon name="chevron_down" className="w-3 h-3 inline-block opacity-70 ml-1" />
                     </motion.span>
@@ -406,89 +406,89 @@ export const Navbar: React.FC<NavbarProps> = ({
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 6, scale: 0.97 }}
                         transition={{ duration: 0.15 }}
-                        className="absolute top-full left-0 mt-2 w-80 bg-white/95 backdrop-blur-2xl border border-slate-200/90 rounded-2xl shadow-xl shadow-slate-900/10 p-1.5 z-50 text-slate-800"
+                        className="absolute top-full left-0 mt-2 w-80 bg-white/95 backdrop-blur-2xl border border-carbon-20/90 rounded-2xl shadow-xl shadow-carbon-90/10 p-1.5 z-50 text-carbon-80"
                       >
                         <motion.button
                           whileHover={{ x: 3 }}
                           onClick={() => { navigate('/advisories/crops'); setActiveMenu(null); }}
-                          className="w-full p-2.5 text-left flex items-start gap-3 rounded-xl hover:bg-slate-100/90 transition-all cursor-pointer group"
+                          className="w-full p-2.5 text-left flex items-start gap-3 rounded-xl hover:bg-carbon-10/90 transition-all cursor-pointer group"
                         >
                           <div className="p-2 rounded-xl bg-green-50 text-green-700 group-hover:bg-green-100 transition-colors shrink-0">
                             <MaterialIcon name="agriculture" className="text-lg" />
                           </div>
                           <div>
-                            <div className="font-semibold text-slate-900 text-[13.5px]">Crop Protection</div>
-                            <div className="text-[11.5px] text-slate-500 leading-tight mt-0.5">Flood & heat stress farming guidance</div>
+                            <div className="font-semibold text-carbon-90 text-[13.5px]">Crop Protection</div>
+                            <div className="text-[11.5px] text-carbon-60 leading-tight mt-0.5">Flood & heat stress farming guidance</div>
                           </div>
                         </motion.button>
 
                         <motion.button
                           whileHover={{ x: 3 }}
                           onClick={() => { navigate('/advisories/livestock'); setActiveMenu(null); }}
-                          className="w-full p-2.5 text-left flex items-start gap-3 rounded-xl hover:bg-slate-100/90 transition-all cursor-pointer group"
+                          className="w-full p-2.5 text-left flex items-start gap-3 rounded-xl hover:bg-carbon-10/90 transition-all cursor-pointer group"
                         >
                           <div className="p-2 rounded-xl bg-orange-50 text-orange-700 group-hover:bg-orange-100 transition-colors shrink-0">
                             <MaterialIcon name="pets" className="text-lg" />
                           </div>
                           <div>
-                            <div className="font-semibold text-slate-900 text-[13.5px]">Livestock & Veterinary</div>
-                            <div className="text-[11.5px] text-slate-500 leading-tight mt-0.5">Cattle shelter & disease mitigation</div>
+                            <div className="font-semibold text-carbon-90 text-[13.5px]">Livestock & Veterinary</div>
+                            <div className="text-[11.5px] text-carbon-60 leading-tight mt-0.5">Cattle shelter & disease mitigation</div>
                           </div>
                         </motion.button>
 
                         <motion.button
                           whileHover={{ x: 3 }}
                           onClick={() => { navigate('/advisories/fisheries'); setActiveMenu(null); }}
-                          className="w-full p-2.5 text-left flex items-start gap-3 rounded-xl hover:bg-slate-100/90 transition-all cursor-pointer group"
+                          className="w-full p-2.5 text-left flex items-start gap-3 rounded-xl hover:bg-carbon-10/90 transition-all cursor-pointer group"
                         >
                           <div className="p-2 rounded-xl bg-cyan-50 text-cyan-700 group-hover:bg-cyan-100 transition-colors shrink-0">
                             <MaterialIcon name="water_drop" className="text-lg" />
                           </div>
                           <div>
-                            <div className="font-semibold text-slate-900 text-[13.5px]">Fisheries & Aquaculture</div>
-                            <div className="text-[11.5px] text-slate-500 leading-tight mt-0.5">Inundation risk for aquaculture ponds</div>
+                            <div className="font-semibold text-carbon-90 text-[13.5px]">Fisheries & Aquaculture</div>
+                            <div className="text-[11.5px] text-carbon-60 leading-tight mt-0.5">Inundation risk for aquaculture ponds</div>
                           </div>
                         </motion.button>
 
                         <motion.button
                           whileHover={{ x: 3 }}
                           onClick={() => { navigate('/advisories/health-wash'); setActiveMenu(null); }}
-                          className="w-full p-2.5 text-left flex items-start gap-3 rounded-xl hover:bg-slate-100/90 transition-all cursor-pointer group"
+                          className="w-full p-2.5 text-left flex items-start gap-3 rounded-xl hover:bg-carbon-10/90 transition-all cursor-pointer group"
                         >
                           <div className="p-2 rounded-xl bg-rose-50 text-rose-700 group-hover:bg-rose-100 transition-colors shrink-0">
                             <MaterialIcon name="medical_services" className="text-lg" />
                           </div>
                           <div>
-                            <div className="font-semibold text-slate-900 text-[13.5px]">Public Health & WASH</div>
-                            <div className="text-[11.5px] text-slate-500 leading-tight mt-0.5">Waterborne disease prevention</div>
+                            <div className="font-semibold text-carbon-90 text-[13.5px]">Public Health & WASH</div>
+                            <div className="text-[11.5px] text-carbon-60 leading-tight mt-0.5">Waterborne disease prevention</div>
                           </div>
                         </motion.button>
 
                         <motion.button
                           whileHover={{ x: 3 }}
                           onClick={() => { navigate('/advisories/seasonal-calendar'); setActiveMenu(null); }}
-                          className="w-full p-2.5 text-left flex items-start gap-3 rounded-xl hover:bg-slate-100/90 transition-all cursor-pointer group"
+                          className="w-full p-2.5 text-left flex items-start gap-3 rounded-xl hover:bg-carbon-10/90 transition-all cursor-pointer group"
                         >
                           <div className="p-2 rounded-xl bg-indigo-50 text-indigo-700 group-hover:bg-indigo-100 transition-colors shrink-0">
                             <MaterialIcon name="event_note" className="text-lg" />
                           </div>
                           <div>
-                            <div className="font-semibold text-slate-900 text-[13.5px]">Seasonal Calendar</div>
-                            <div className="text-[11.5px] text-slate-500 leading-tight mt-0.5">Monsoon & cyclone timing guidance</div>
+                            <div className="font-semibold text-carbon-90 text-[13.5px]">Seasonal Calendar</div>
+                            <div className="text-[11.5px] text-carbon-60 leading-tight mt-0.5">Monsoon & cyclone timing guidance</div>
                           </div>
                         </motion.button>
 
                         <motion.button
                           whileHover={{ x: 3 }}
                           onClick={() => { navigate('/advisories/emergency-response'); setActiveMenu(null); }}
-                          className="w-full p-2.5 text-left flex items-start gap-3 rounded-xl hover:bg-slate-100/90 transition-all cursor-pointer group"
+                          className="w-full p-2.5 text-left flex items-start gap-3 rounded-xl hover:bg-carbon-10/90 transition-all cursor-pointer group"
                         >
                           <div className="p-2 rounded-xl bg-red-50 text-red-700 group-hover:bg-red-100 transition-colors shrink-0">
                             <MaterialIcon name="emergency" className="text-lg" />
                           </div>
                           <div>
-                            <div className="font-semibold text-slate-900 text-[13.5px]">Emergency Response SOP</div>
-                            <div className="text-[11.5px] text-slate-500 leading-tight mt-0.5">Relief requisition & cluster hotlines</div>
+                            <div className="font-semibold text-carbon-90 text-[13.5px]">Emergency Response SOP</div>
+                            <div className="text-[11.5px] text-carbon-60 leading-tight mt-0.5">Relief requisition & cluster hotlines</div>
                           </div>
                         </motion.button>
                       </motion.div>
@@ -512,7 +512,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     <motion.span
                       animate={{ rotate: activeMenu === 'docs' ? 180 : 0 }}
                       transition={{ duration: 0.2 }}
-                      className="text-[10px] text-slate-500 inline-block"
+                      className="text-[10px] text-carbon-60 inline-block"
                     >
                       <MaterialIcon name="chevron_down" className="w-3 h-3 inline-block opacity-70 ml-1" />
                     </motion.span>
@@ -524,55 +524,55 @@ export const Navbar: React.FC<NavbarProps> = ({
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 6, scale: 0.97 }}
                         transition={{ duration: 0.15 }}
-                        className="absolute top-full left-0 mt-2 w-80 bg-white/95 backdrop-blur-2xl border border-slate-200/90 rounded-2xl shadow-xl shadow-slate-900/10 p-1.5 z-50 text-slate-800"
+                        className="absolute top-full left-0 mt-2 w-80 bg-white/95 backdrop-blur-2xl border border-carbon-20/90 rounded-2xl shadow-xl shadow-carbon-90/10 p-1.5 z-50 text-carbon-80"
                       >
-                        <motion.button whileHover={{ x: 3 }} onClick={() => { navigate('/docs'); setActiveMenu(null); }} className="w-full p-2.5 text-left flex items-start gap-3 rounded-xl hover:bg-slate-100/90 transition-all cursor-pointer group">
-                          <div className="p-2 rounded-xl bg-slate-100 text-slate-700 group-hover:bg-slate-200 transition-colors shrink-0">
+                        <motion.button whileHover={{ x: 3 }} onClick={() => { navigate('/docs'); setActiveMenu(null); }} className="w-full p-2.5 text-left flex items-start gap-3 rounded-xl hover:bg-carbon-10/90 transition-all cursor-pointer group">
+                          <div className="p-2 rounded-xl bg-carbon-10 text-carbon-70 group-hover:bg-carbon-20 transition-colors shrink-0">
                             <MaterialIcon name="menu_book" className="text-lg" />
                           </div>
                           <div>
-                            <div className="font-semibold text-slate-900 text-[13.5px]">System Documentation</div>
-                            <div className="text-[11.5px] text-slate-500 leading-tight mt-0.5">API specs & methodology</div>
+                            <div className="font-semibold text-carbon-90 text-[13.5px]">System Documentation</div>
+                            <div className="text-[11.5px] text-carbon-60 leading-tight mt-0.5">API specs & methodology</div>
                           </div>
                         </motion.button>
 
-                        <motion.button whileHover={{ x: 3 }} onClick={() => { navigate('/upload'); setActiveMenu(null); }} className="w-full p-2.5 text-left flex items-start gap-3 rounded-xl hover:bg-slate-100/90 transition-all cursor-pointer group">
+                        <motion.button whileHover={{ x: 3 }} onClick={() => { navigate('/upload'); setActiveMenu(null); }} className="w-full p-2.5 text-left flex items-start gap-3 rounded-xl hover:bg-carbon-10/90 transition-all cursor-pointer group">
                           <div className="p-2 rounded-xl bg-sky-50 text-sky-700 group-hover:bg-sky-100 transition-colors shrink-0">
                             <MaterialIcon name="cloud_upload" className="text-lg" />
                           </div>
                           <div>
-                            <div className="font-semibold text-slate-900 text-[13.5px]">Upload Sensor & Gauge Data</div>
-                            <div className="text-[11.5px] text-slate-500 leading-tight mt-0.5">Ingest local CSV or raster data</div>
+                            <div className="font-semibold text-carbon-90 text-[13.5px]">Upload Sensor & Gauge Data</div>
+                            <div className="text-[11.5px] text-carbon-60 leading-tight mt-0.5">Ingest local CSV or raster data</div>
                           </div>
                         </motion.button>
 
-                        <motion.button whileHover={{ x: 3 }} onClick={() => { navigate('/download'); setActiveMenu(null); }} className="w-full p-2.5 text-left flex items-start gap-3 rounded-xl hover:bg-slate-100/90 transition-all cursor-pointer group">
+                        <motion.button whileHover={{ x: 3 }} onClick={() => { navigate('/download'); setActiveMenu(null); }} className="w-full p-2.5 text-left flex items-start gap-3 rounded-xl hover:bg-carbon-10/90 transition-all cursor-pointer group">
                           <div className="p-2 rounded-xl bg-nasa-blue/10 text-nasa-blue-shade group-hover:bg-nasa-blue/20 transition-colors shrink-0">
                             <MaterialIcon name="download" className="text-lg" />
                           </div>
                           <div>
-                            <div className="font-semibold text-slate-900 text-[13.5px]">Download Center</div>
-                            <div className="text-[11.5px] text-slate-500 leading-tight mt-0.5">Export GeoJSON, shapefiles & bulletins</div>
+                            <div className="font-semibold text-carbon-90 text-[13.5px]">Download Center</div>
+                            <div className="text-[11.5px] text-carbon-60 leading-tight mt-0.5">Export GeoJSON, shapefiles & bulletins</div>
                           </div>
                         </motion.button>
 
-                        <motion.button whileHover={{ x: 3 }} onClick={() => { navigate('/blogs'); setActiveMenu(null); }} className="w-full p-2.5 text-left flex items-start gap-3 rounded-xl hover:bg-slate-100/90 transition-all cursor-pointer group">
+                        <motion.button whileHover={{ x: 3 }} onClick={() => { navigate('/blogs'); setActiveMenu(null); }} className="w-full p-2.5 text-left flex items-start gap-3 rounded-xl hover:bg-carbon-10/90 transition-all cursor-pointer group">
                           <div className="p-2 rounded-xl bg-violet-50 text-violet-700 group-hover:bg-violet-100 transition-colors shrink-0">
                             <MaterialIcon name="article" className="text-lg" />
                           </div>
                           <div>
-                            <div className="font-semibold text-slate-900 text-[13.5px]">Technical Insights</div>
-                            <div className="text-[11.5px] text-slate-500 leading-tight mt-0.5">Research papers & early warnings</div>
+                            <div className="font-semibold text-carbon-90 text-[13.5px]">Technical Insights</div>
+                            <div className="text-[11.5px] text-carbon-60 leading-tight mt-0.5">Research papers & early warnings</div>
                           </div>
                         </motion.button>
 
-                        <motion.button whileHover={{ x: 3 }} onClick={() => { navigate('/about'); setActiveMenu(null); }} className="w-full p-2.5 text-left flex items-start gap-3 rounded-xl hover:bg-slate-100/90 transition-all cursor-pointer group">
-                          <div className="p-2 rounded-xl bg-slate-100 text-slate-700 group-hover:bg-slate-200 transition-colors shrink-0">
+                        <motion.button whileHover={{ x: 3 }} onClick={() => { navigate('/about'); setActiveMenu(null); }} className="w-full p-2.5 text-left flex items-start gap-3 rounded-xl hover:bg-carbon-10/90 transition-all cursor-pointer group">
+                          <div className="p-2 rounded-xl bg-carbon-10 text-carbon-70 group-hover:bg-carbon-20 transition-colors shrink-0">
                             <MaterialIcon name="info" className="text-lg" />
                           </div>
                           <div>
-                            <div className="font-semibold text-slate-900 text-[13.5px]">About Initiative</div>
-                            <div className="text-[11.5px] text-slate-500 leading-tight mt-0.5">Bangladesh Early Warning Initiative</div>
+                            <div className="font-semibold text-carbon-90 text-[13.5px]">About Initiative</div>
+                            <div className="text-[11.5px] text-carbon-60 leading-tight mt-0.5">Bangladesh Early Warning Initiative</div>
                           </div>
                         </motion.button>
                       </motion.div>
@@ -597,7 +597,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     <motion.span
                       animate={{ rotate: activeMenu === 'analytics' ? 180 : 0 }}
                       transition={{ duration: 0.2 }}
-                      className="text-[10px] text-slate-500 inline-block"
+                      className="text-[10px] text-carbon-60 inline-block"
                     >
                       <MaterialIcon name="chevron_down" className="w-3 h-3 inline-block opacity-70 ml-1" />
                     </motion.span>
@@ -609,15 +609,15 @@ export const Navbar: React.FC<NavbarProps> = ({
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 6, scale: 0.97 }}
                         transition={{ duration: 0.15 }}
-                        className="absolute top-full left-0 mt-2 w-80 bg-white/95 backdrop-blur-2xl border border-slate-200/90 rounded-2xl shadow-xl shadow-slate-900/10 p-1.5 z-50 text-slate-800"
+                        className="absolute top-full left-0 mt-2 w-80 bg-white/95 backdrop-blur-2xl border border-carbon-20/90 rounded-2xl shadow-xl shadow-carbon-90/10 p-1.5 z-50 text-carbon-80"
                       >
-                        <motion.button whileHover={{ x: 3 }} onClick={() => { navigate('/analytics/pipeline-status'); setActiveMenu(null); }} className="w-full p-2.5 text-left flex items-start gap-3 rounded-xl hover:bg-slate-100/90 transition-all cursor-pointer group">
+                        <motion.button whileHover={{ x: 3 }} onClick={() => { navigate('/analytics/pipeline-status'); setActiveMenu(null); }} className="w-full p-2.5 text-left flex items-start gap-3 rounded-xl hover:bg-carbon-10/90 transition-all cursor-pointer group">
                           <div className="p-2 rounded-xl bg-blue-50 text-blue-700 group-hover:bg-blue-100 transition-colors shrink-0">
                             <MaterialIcon name="hub" className="text-lg" />
                           </div>
                           <div>
-                            <div className="font-semibold text-slate-900 text-[13.5px]">Data Ingestion Pipeline</div>
-                            <div className="text-[11.5px] text-slate-500 leading-tight mt-0.5">Satellite & sensor streams</div>
+                            <div className="font-semibold text-carbon-90 text-[13.5px]">Data Ingestion Pipeline</div>
+                            <div className="text-[11.5px] text-carbon-60 leading-tight mt-0.5">Satellite & sensor streams</div>
                           </div>
                         </motion.button>
 
@@ -625,23 +625,23 @@ export const Navbar: React.FC<NavbarProps> = ({
                             point at an analytics screen. The repository has no such number to
                             publish, so it now links to the page that publishes what was actually
                             measured — detection counts and POD/FAR/CSI on every scored hindcast episode. */}
-                        <motion.button whileHover={{ x: 3 }} onClick={() => { navigate('/model-performance'); setActiveMenu(null); }} className="w-full p-2.5 text-left flex items-start gap-3 rounded-xl hover:bg-slate-100/90 transition-all cursor-pointer group">
+                        <motion.button whileHover={{ x: 3 }} onClick={() => { navigate('/model-performance'); setActiveMenu(null); }} className="w-full p-2.5 text-left flex items-start gap-3 rounded-xl hover:bg-carbon-10/90 transition-all cursor-pointer group">
                           <div className="p-2 rounded-xl bg-purple-50 text-purple-700 group-hover:bg-purple-100 transition-colors shrink-0">
                             <MaterialIcon name="monitoring" className="text-lg" />
                           </div>
                           <div>
-                            <div className="font-semibold text-slate-900 text-[13.5px]">Hindcast Validation</div>
-                            <div className="text-[11.5px] text-slate-500 leading-tight mt-0.5">Four historical episodes, with limits</div>
+                            <div className="font-semibold text-carbon-90 text-[13.5px]">Hindcast Validation</div>
+                            <div className="text-[11.5px] text-carbon-60 leading-tight mt-0.5">Four historical episodes, with limits</div>
                           </div>
                         </motion.button>
 
-                        <motion.button whileHover={{ x: 3 }} onClick={() => { navigate('/analytics/historical'); setActiveMenu(null); }} className="w-full p-2.5 text-left flex items-start gap-3 rounded-xl hover:bg-slate-100/90 transition-all cursor-pointer group">
+                        <motion.button whileHover={{ x: 3 }} onClick={() => { navigate('/analytics/historical'); setActiveMenu(null); }} className="w-full p-2.5 text-left flex items-start gap-3 rounded-xl hover:bg-carbon-10/90 transition-all cursor-pointer group">
                           <div className="p-2 rounded-xl bg-amber-50 text-amber-700 group-hover:bg-amber-100 transition-colors shrink-0">
                             <MaterialIcon name="history" className="text-lg" />
                           </div>
                           <div>
-                            <div className="font-semibold text-slate-900 text-[13.5px]">Historical Hazard Archive</div>
-                            <div className="text-[11.5px] text-slate-500 leading-tight mt-0.5">Decadal flood & cyclone logs</div>
+                            <div className="font-semibold text-carbon-90 text-[13.5px]">Historical Hazard Archive</div>
+                            <div className="text-[11.5px] text-carbon-60 leading-tight mt-0.5">Decadal flood & cyclone logs</div>
                           </div>
                         </motion.button>
                       </motion.div>
@@ -656,7 +656,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   className={`px-2.5 2xl:px-3 py-1.5 text-[13.5px] font-medium rounded-xl transition-all flex items-center gap-1.5 whitespace-nowrap shrink-0 no-underline focus-visible:ring-2 focus-visible:ring-nasa-blue/60 focus-visible:outline-none ${
                     location.pathname.startsWith('/alerts')
                       ? 'bg-amber-500/15 text-amber-950 font-bold border border-amber-500/40 shadow-2xs'
-                      : 'text-slate-700 hover:text-slate-950 hover:bg-slate-900/5'
+                      : 'text-carbon-70 hover:text-carbon-black hover:bg-carbon-90/5'
                   }`}
                 >
                   <MaterialIcon name="notifications_active" className="w-4 h-4" />
@@ -679,7 +679,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 title="Detect my location & map to nearest district"
               >
                 {isLocatingInNavbar ? (
-                  <span className="w-3.5 h-3.5 border-2 border-slate-950 border-t-transparent rounded-full animate-spin"></span>
+                  <span className="w-3.5 h-3.5 border-2 border-carbon-black border-t-transparent rounded-full animate-spin"></span>
                 ) : (
                   <>
                     <MaterialIcon name="person_pin_circle" className="w-4 h-4" />
@@ -727,7 +727,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   whileHover={{ scale: 1.04 }}
                   whileTap={{ scale: 0.96 }}
                   onClick={() => navigate('/dashboard')}
-                  className="flex items-center gap-2 p-1 pl-1.5 pr-2.5 rounded-xl bg-white/70 hover:bg-white/95 border border-slate-200/80 shadow-2xs transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-nasa-blue/60 focus-visible:outline-none"
+                  className="flex items-center gap-2 p-1 pl-1.5 pr-2.5 rounded-xl bg-white/70 hover:bg-white/95 border border-carbon-20/80 shadow-2xs transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-nasa-blue/60 focus-visible:outline-none"
                   title="Open my dashboard"
                   data-testid="navbar-dashboard-btn"
                 >
@@ -735,14 +735,14 @@ export const Navbar: React.FC<NavbarProps> = ({
                     <img
                       src={userProfile.photoURL}
                       alt=""
-                      className="w-7 h-7 rounded-full border border-slate-200 object-cover shadow-xs"
+                      className="w-7 h-7 rounded-full border border-carbon-20 object-cover shadow-xs"
                     />
                   ) : (
-                    <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-amber-500 to-amber-400 text-slate-950 font-black text-xs flex items-center justify-center shadow-xs">
+                    <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-amber-500 to-amber-400 text-carbon-black font-black text-xs flex items-center justify-center shadow-xs">
                       {(user.displayName || user.email || 'U')[0].toUpperCase()}
                     </div>
                   )}
-                  <span className="text-xs font-semibold text-slate-800 max-w-[100px] truncate">
+                  <span className="text-xs font-semibold text-carbon-80 max-w-[100px] truncate">
                     {userProfile?.username
                       ? `@${userProfile.username}`
                       : user?.displayName
@@ -755,14 +755,14 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <Link
                     to="/login"
                     data-testid="navbar-signin-link"
-                    className="px-3 py-2 rounded-xl text-xs font-bold text-slate-700 hover:text-slate-950 hover:bg-white/70 border border-transparent hover:border-slate-200/80 transition-all focus-visible:ring-2 focus-visible:ring-nasa-blue/60 focus-visible:outline-none"
+                    className="px-3 py-2 rounded-xl text-xs font-bold text-carbon-70 hover:text-carbon-black hover:bg-white/70 border border-transparent hover:border-carbon-20/80 transition-all focus-visible:ring-2 focus-visible:ring-nasa-blue/60 focus-visible:outline-none"
                   >
                     Sign in
                   </Link>
                   <Link
                     to="/signup"
                     data-testid="navbar-signup-link"
-                    className="px-3.5 py-2 rounded-xl text-xs font-extrabold text-slate-950 bg-nasa-red hover:bg-nasa-red-shade shadow-2xs transition-all focus-visible:ring-2 focus-visible:ring-nasa-blue/60 focus-visible:ring-offset-2 focus-visible:outline-none"
+                    className="px-3.5 py-2 rounded-xl text-xs font-extrabold text-carbon-black bg-nasa-red hover:bg-nasa-red-shade shadow-2xs transition-all focus-visible:ring-2 focus-visible:ring-nasa-blue/60 focus-visible:ring-offset-2 focus-visible:outline-none"
                   >
                     Sign up
                   </Link>

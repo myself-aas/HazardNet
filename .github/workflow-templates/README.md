@@ -299,34 +299,35 @@ npm publish **and** GitHub Release with the tarball + `SHA256SUMS.txt`.
 
 ## Downloads page integration (`/download`)
 
-The HazardNet frontend ships a Download Center at `/download` that mirrors
-these five templates. Each channel (Android, Windows, Linux, Python, npm)
-renders a section with real download buttons served **straight from the
-product repository's GitHub Releases** and live install commands from
-PyPI/npm — no artifacts are hosted or proxied by the website.
+The HazardNet frontend ships a Download Center at `/download`. It describes the
+five channels these templates exist for and makes no claim the project has not
+decided to make (ADR 0011 — `docs/adr/0011-distribution-without-package-registries.md`):
 
-How it resolves data (client-side, public APIs only):
-
-- **GitHub Releases API** (`/repos/{slug}/releases/latest`) supplies the
-  version, asset buttons (APK/AAB, installer/zip, tar.gz archives,
-  sdist/wheel, npm tarball) and the `SHA256SUMS.txt` link.
-- **PyPI / npm JSON APIs** supply the latest SDK/library version shown next
-  to the `pip install` / `npm install` commands, with a 10-minute
-  session cache to respect the unauthenticated GitHub API rate budget.
-- **Ownership guard**: a PyPI/npm project only appears if its declared
-  project URLs reference HazardNet or the configured GitHub owner — a
-  squatted third-party package shows as "awaiting release" instead of a
-  download link.
-- Until a product repository publishes its first strict-semver tag, the
-  section shows a "release pipeline prepared" state linking to that
-  repository and its workflow template — never fake versions or dummy files.
+- Distribution is by GitHub Release asset on the product repository, plus the
+  deployed website itself. **Nothing is published to PyPI or to the npm
+  registry**, so the page renders no `pip install` / `npm install` command. Each
+  channel states what is actually distributed instead — the `distribution` field
+  of the channel definitions in `frontend/src/lib/downloadChannels.ts` — rather
+  than an install line no registry could fulfil.
+- The page issues **no network requests by default**. It used to call the GitHub
+  Releases API plus the PyPI and npm JSON APIs on every visit; with no published
+  packages those two lookups could only ever answer 404, or resolve to a
+  squatted third-party project, and they were the source of the external 404s
+  the QA audit kept reporting on `/download`.
+- Live lookups are **opt-in**: `VITE_DOWNLOAD_LIVE_RELEASES=true` re-enables the
+  GitHub Releases API (version, asset buttons, `SHA256SUMS.txt`) for a
+  deployment whose product repositories exist and publish releases. Results are
+  session-cached (`hazardnet.download.v2`) to stay inside the unauthenticated
+  GitHub API rate budget. There is no equivalent switch for PyPI/npm: that code
+  path was removed, not disabled.
+- Until a product repository publishes its first strict-semver tag, the channel
+  shows a "release pipeline prepared" state linking to that repository and to
+  its workflow template — never a fake version or a dummy file.
 
 Channel wiring lives in `frontend/src/lib/downloadChannels.ts` (data in
 `frontend/src/hooks/useReleaseChannels.ts`, UI in
-`frontend/src/pages/DownloadCenter.tsx`). Repository slugs and package names
-default to the expected product names (`myself-aas/hazardnet-field-agent`,
-`…-gis-workstation`, `…-daemon-cli`, `…-python`, `…-npm`; PyPI/npm name
-`hazardnet`) and are overridable per deployment with Vite env vars:
+`frontend/src/pages/DownloadCenter.tsx`). Repository slugs default to the
+expected product repository names and are overridable per deployment:
 
 | Env var | Default | Purpose |
 | --- | --- | --- |
@@ -334,13 +335,26 @@ default to the expected product names (`myself-aas/hazardnet-field-agent`,
 | `VITE_DOWNLOAD_REPO_ANDROID` | `hazardnet-field-agent` | Android product repo name |
 | `VITE_DOWNLOAD_REPO_WINDOWS` | `hazardnet-gis-workstation` | Windows product repo name |
 | `VITE_DOWNLOAD_REPO_LINUX` | `hazardnet-daemon-cli` | Daemon/CLI product repo name |
-| `VITE_DOWNLOAD_REPO_PYTHON` | `hazardnet-python` | Python package product repo name |
-| `VITE_DOWNLOAD_REPO_NPM` | `hazardnet-npm` | npm package product repo name |
-| `VITE_PYPI_PACKAGE_NAME` | `hazardnet` | PyPI project name |
-| `VITE_NPM_PACKAGE_NAME` | `hazardnet` | npm package name |
+| `VITE_DOWNLOAD_REPO_PYTHON` | `hazardnet-python` | Python product repo name |
+| `VITE_DOWNLOAD_REPO_NPM` | `hazardnet-npm` | JavaScript/TypeScript product repo name |
+| `VITE_DOWNLOAD_LIVE_RELEASES` | *(unset — off)* | Opt in to GitHub Releases API lookups |
 
-Update these when the real product repositories are created so the download
-buttons and the release pipelines point at the same place.
+`VITE_PYPI_PACKAGE_NAME` and `VITE_NPM_PACKAGE_NAME` were removed together with
+the registry lookups; setting them now does nothing.
+
+Update the repository names when the real product repositories are created so
+the download links and the release pipelines point at the same place.
+
+### Status of the two registry templates
+
+`hazardnet-npm-package.yml` and `hazardnet-python-package.yml` are **reference
+material, not an adopted pipeline**. They are inert — nothing under
+`.github/workflows/` runs them — and ADR 0011 records that this project does not
+publish to a package registry. The root `package.json` carries
+`"private": true`, so `npm publish` from this repository fails outright rather
+than depending on someone remembering the decision. Copying either template into
+a product repository is a decision to reverse that ADR, and should be recorded
+as one before it happens.
 
 ## Validation performed here (structural only)
 

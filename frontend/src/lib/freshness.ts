@@ -98,9 +98,9 @@ export function stateTone(state: FreshnessState): string {
     case 'failing':
       return 'border-rose-300 bg-rose-50 text-rose-900';
     case 'missing':
-      return 'border-slate-400 bg-slate-100 text-slate-800';
+      return 'border-carbon-40 bg-carbon-10 text-carbon-80';
     default:
-      return 'border-slate-300 bg-slate-50 text-slate-700';
+      return 'border-carbon-30 bg-carbon-05 text-carbon-70';
   }
 }
 

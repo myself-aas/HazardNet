@@ -174,7 +174,7 @@ export async function exportElementToPdf(options: PdfExportOptions = {}): Promis
           clonedElement.style.setProperty('max-width', '100%', 'important');
           clonedElement.style.setProperty('box-sizing', 'border-box', 'important');
           clonedElement.style.setProperty('background', '#ffffff', 'important');
-          clonedElement.style.setProperty('color', '#0f172a', 'important');
+          clonedElement.style.setProperty('color', '#17171b', 'important');
           clonedElement.style.setProperty('padding', '24px', 'important');
           clonedElement.style.setProperty('margin', '0 auto', 'important');
 
@@ -227,39 +227,39 @@ export async function exportElementToPdf(options: PdfExportOptions = {}): Promis
             }
             :root {
               --background: #ffffff;
-              --foreground: #0f172a;
+              --foreground: #17171b;
               --card: #ffffff;
-              --card-foreground: #0f172a;
-              --primary: #0f172a;
-              --primary-foreground: #f8fafc;
-              --secondary: #f1f5f9;
-              --secondary-foreground: #0f172a;
-              --muted: #f1f5f9;
-              --muted-foreground: #64748b;
-              --border: #e2e8f0;
-              --input: #e2e8f0;
+              --card-foreground: #17171b;
+              --primary: #17171b;
+              --primary-foreground: #f6f6f6;
+              --secondary: #e3e3e3;
+              --secondary-foreground: #17171b;
+              --muted: #e3e3e3;
+              --muted-foreground: #77777a;
+              --border: #d1d1d1;
+              --input: #d1d1d1;
             }
             body {
               background: #ffffff !important;
-              color: #0f172a !important;
+              color: #17171b !important;
               font-family: "Times New Roman", Times, serif !important;
               font-size: 12pt !important;
               line-height: 1.5 !important;
             }
             .pdf-capture-mode {
               background: #ffffff !important;
-              color: #0f172a !important;
+              color: #17171b !important;
               font-family: "Times New Roman", Times, serif !important;
               font-size: 12pt !important;
               line-height: 1.5 !important;
             }
-            .bg-white, .bg-slate-50, .bg-slate-100, .bg-slate-900, .bg-slate-950, [class*="bg-slate-"] {
+            .bg-white, .bg-carbon-05, .bg-carbon-10, .bg-carbon-90, .bg-carbon-black, [class*="bg-slate-"] {
               background-color: ${inkSaver ? '#ffffff' : '#ffffff'} !important;
-              color: #0f172a !important;
-              border-color: #cbd5e1 !important;
+              color: #17171b !important;
+              border-color: #b9b9bb !important;
             }
             h1, h2, h3, h4, h5, h6 {
-              color: #0f172a !important;
+              color: #17171b !important;
               font-weight: 800 !important;
               page-break-after: avoid !important;
               break-after: avoid !important;
@@ -271,17 +271,17 @@ export async function exportElementToPdf(options: PdfExportOptions = {}): Promis
             p, span, li, td, th {
               font-size: 12pt !important;
               line-height: 1.5 !important;
-              color: #1e293b !important;
+              color: #2e2e32 !important;
             }
             table {
               width: 100% !important;
               border-collapse: collapse !important;
-              border: 1.5px solid #0f172a !important;
+              border: 1.5px solid #17171b !important;
             }
             th, td {
-              border: 1px solid #cbd5e1 !important;
+              border: 1px solid #b9b9bb !important;
               padding: 6px 8px !important;
-              color: #0f172a !important;
+              color: #17171b !important;
             }
             thead,
             .print-table-emergency-header,
@@ -290,7 +290,7 @@ export async function exportElementToPdf(options: PdfExportOptions = {}): Promis
             }
             .print-table-emergency-header th,
             th.emergency-protocol-title {
-              background-color: #0f172a !important;
+              background-color: #17171b !important;
               color: #ffffff !important;
               font-family: 'DM Mono', Consolas, monospace !important;
               font-size: 8pt !important;
@@ -457,7 +457,7 @@ export async function exportElementToPdf(options: PdfExportOptions = {}): Promis
       if (index > 0) {
         pdf.setFont('helvetica', 'bold');
         pdf.setFontSize(6.5);
-        pdf.setTextColor(71, 85, 105); // slate-600
+        pdf.setTextColor(88, 88, 91); // carbon-60
         pdf.text('HAZARDNET BANGLADESH • SOD 2019 DISASTER DIRECTIVE', marginX, 6.5);
         pdf.setFont('helvetica', 'normal');
         pdf.text(`REF: ${dispatchRef}`, page.width - marginX, 6.5, { align: 'right' });
@@ -466,12 +466,15 @@ export async function exportElementToPdf(options: PdfExportOptions = {}): Promis
       // Bottom Vector Footer: Reference, SOD 2019 Compliance Stamp, BST Time, Page Numbering
       pdf.setFont('helvetica', 'bold');
       pdf.setFontSize(7);
-      pdf.setTextColor(15, 23, 42); // slate-900
+      pdf.setTextColor(23, 23, 27); // carbon-90
       pdf.text('HAZARDNET BANGLADESH', marginX, page.height - footerOffsetMm);
 
       pdf.setFont('helvetica', 'normal');
       pdf.setFontSize(6.5);
-      pdf.setTextColor(100, 116, 139); // slate-500
+      // carbon-60, not carbon-50: 6.5pt footer text on white measures 4.46:1 at carbon-50
+      // and 7.09:1 at carbon-60, and small print in a document somebody files as an official
+      // record is the last place to spend contrast.
+      pdf.setTextColor(88, 88, 91); // carbon-60
       pdf.text(
         `${documentType.toUpperCase()} • DISPATCH ${dispatchRef} • ${generatedDateStr} ${generatedTimeStr} BST`,
         page.width / 2,
@@ -481,7 +484,7 @@ export async function exportElementToPdf(options: PdfExportOptions = {}): Promis
 
       pdf.setFont('helvetica', 'bold');
       pdf.setFontSize(7);
-      pdf.setTextColor(15, 23, 42);
+      pdf.setTextColor(23, 23, 27);
       pdf.text(`Page ${index + 1} of ${plan.length}`, page.width - marginX, page.height - footerOffsetMm, {
         align: 'right',
       });

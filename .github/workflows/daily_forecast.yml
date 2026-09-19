@@ -115,18 +115,110 @@ jobs:
           HAZARDNET_API_URL: ${{ secrets.HAZARDNET_API_URL }}
           HAZARDNET_API_KEY: ${{ secrets.HAZARDNET_API_KEY }}
 
+      # `scripts/auto_forecast.py` calls `ee.Initialize()` at import time with no
+      # handler around it, so a rotated, truncated or mistyped service-account key
+      # surfaces as a bare Python traceback about a minute into a scheduled run —
+      # which is what the 2026-09-19 02:00 UTC run produced (failed in 1m46s at
+      # this step, after a 16-minute run had got all the way to publishing the day
+      # before). The step above only proves the secret is non-empty; this one
+      # proves it authenticates, names the cause, and costs ~10 seconds.
+      - name: Preflight -- Earth Engine credential authenticates
+        shell: bash
+        env:
+          EE_SERVICE_ACCOUNT_JSON: ${{ secrets.EE_SERVICE_ACCOUNT_JSON }}
+          EE_SERVICE_ACCOUNT_EMAIL: ${{ vars.EE_SERVICE_ACCOUNT_EMAIL || '' }}
+        run: |
+          python - <<'PY'
+          import json, os, sys, tempfile
+
+          raw = (os.environ.get('EE_SERVICE_ACCOUNT_JSON') or '').strip()
+          try:
+              key = json.loads(raw)
+          except ValueError as exc:
+              print(f"::error::EE_SERVICE_ACCOUNT_JSON is not valid JSON ({exc}). "
+                    "Re-paste the complete service-account key file into the repository secret "
+                    "(docs/ops/owner-actions.md, Action 1b).")
+              sys.exit(1)
+
+          required = ('type', 'project_id', 'private_key_id', 'private_key', 'client_email', 'token_uri')
+          missing = [field for field in required if not key.get(field)]
+          if key.get('type') != 'service_account' or missing:
+              print(f"::error::EE_SERVICE_ACCOUNT_JSON is not a complete service-account key "
+                    f"(type={key.get('type')!r}, missing={missing or 'none'}). Regenerate it in "
+                    "GCP -> IAM & Admin -> Service accounts -> Keys, then update the secret.")
+              sys.exit(1)
+
+          email = (os.environ.get('EE_SERVICE_ACCOUNT_EMAIL') or '').strip() or key['client_email']
+          if email != key['client_email']:
+              print(f"::error::EE_SERVICE_ACCOUNT_EMAIL ({email}) does not match the key's "
+                    f"client_email ({key['client_email']}) — the variable and the secret describe "
+                    "two different service accounts, so Earth Engine would reject the pair.")
+              sys.exit(1)
+
+          path = None
+          try:
+              import ee
+              with tempfile.NamedTemporaryFile('w', suffix='.json', delete=False) as handle:
+                  handle.write(raw)
+                  path = handle.name
+              ee.Initialize(ee.ServiceAccountCredentials(email, path))
+              # Initialize can be lazy; one trivial authenticated call proves the token
+              # exchange actually worked rather than failing 19 minutes in.
+              ee.Number(1).getInfo()
+          except Exception as exc:  # noqa: BLE001 - reported as the owner action it is
+              print(f"::error::Earth Engine rejected the credential for {email}: "
+                    f"{type(exc).__name__}: {str(exc)[:400]}. Rotate the key and confirm the "
+                    "account has Earth Engine API access (docs/ops/owner-actions.md, Action 1b).")
+              sys.exit(1)
+          finally:
+              if path:
+                  try:
+                      os.remove(path)
+                  except OSError:
+                      pass
+
+          print(f"✅ Earth Engine authenticated as {email} (project {key['project_id']})")
+          PY
+
       - name: Execute pipeline (GEE + Open-Meteo + TFLite inference)
         # ~19 min: GEE imagery + Open-Meteo per district, then TFLite inference
         # for the 7-day and 15-day horizons. Writes hazardnet_forecasts_latest.csv
         # into the workspace. HAZARDNET_API_URL/KEY are passed only when
         # PUSH_TO_API=true; the script then POSTs the CSV and fails the job if
         # the ingest is rejected.
+        #
+        # The output is tee'd to a file and its tail copied into the job summary:
+        # Actions log storage is a separate blob host from the API, so a failure
+        # diagnosed from `gh run view` alone shows the exit code but not the
+        # traceback that explains it. The summary travels with the run page.
+        shell: bash
         env:
           EE_SERVICE_ACCOUNT_JSON: ${{ secrets.EE_SERVICE_ACCOUNT_JSON }}
           EE_SERVICE_ACCOUNT_EMAIL: ${{ vars.EE_SERVICE_ACCOUNT_EMAIL || '' }}
           HAZARDNET_API_URL: ${{ vars.PUSH_TO_API == 'true' && secrets.HAZARDNET_API_URL || '' }}
           HAZARDNET_API_KEY: ${{ vars.PUSH_TO_API == 'true' && secrets.HAZARDNET_API_KEY || '' }}
-        run: python scripts/auto_forecast.py
+        run: |
+          # `shell: bash` on a Linux runner means `bash -eo pipefail`, so a
+          # non-zero python would abort the step at the pipeline and the summary
+          # block below would never run. errexit is lifted for the pipeline only,
+          # and the generator's own status is taken from PIPESTATUS (tee always
+          # succeeds, so $? would report the wrong thing).
+          set +e
+          python scripts/auto_forecast.py 2>&1 | tee auto-forecast.log
+          STATUS=${PIPESTATUS[0]}
+          set -e
+          if [ "$STATUS" -ne 0 ]; then
+            {
+              echo ""
+              echo "#### Generator failure — last 40 lines of \`scripts/auto_forecast.py\`"
+              echo ""
+              echo '```'
+              tail -n 40 auto-forecast.log
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+            echo "::error::scripts/auto_forecast.py exited ${STATUS}. The tail of its output is in the job summary; the full log is the auto-forecast.log entry of the daily-forecast-output artifact."
+          fi
+          exit "$STATUS"
 
       - name: Publish CSV to the pipeline paths
         id: publish
@@ -170,8 +262,15 @@ jobs:
           jq -r '"alert engine: rows=" + (.rows|tostring) + " published=" + (.persisted.published|tostring) + " pending_review=" + (.persisted.pending_review|tostring) + " blocked=" + (.persisted.blocked|tostring) + " published_rows=" + ((.published_alerts // [])|length|tostring) + " levels=" + (.batch.counts|tojson)' alert-run.json | tee -a "$GITHUB_STEP_SUMMARY"
           # Fail here, not later, if the report does not carry the rows the snapshot
           # needs: a stripped report must never be read as "nothing to publish".
+          # NOTE: this line once ended with a stray unbalanced double quote
+          # (`… exit 1; }"`), which is a bash *syntax* error at end-of-input. The
+          # step still exited 0 on every run because the credential guard above
+          # returns before bash parses this far — so the defect only arms itself on
+          # the first run where HAZARDNET_API_KEY and BACKEND_API_URL are both set,
+          # i.e. exactly when the alert engine is supposed to work. Guarded by
+          # scripts/tests/test_workflows.py::test_every_run_block_is_valid_shell.
           jq -e 'has("published_alerts") or has("alerts") or (.batch.alerts | type == "array")' alert-run.json > /dev/null \
-            || { echo "::error::alert run report carries no alert rows (published_alerts/alerts/batch.alerts all absent) — the snapshot cannot be built from it"; exit 1; }"
+            || { echo "::error::alert run report carries no alert rows (published_alerts/alerts/batch.alerts all absent) — the snapshot cannot be built from it"; exit 1; }
 
       - name: Upload the alert run report
         if: always()
@@ -263,7 +362,24 @@ jobs:
             -m "Source: scripts/auto_forecast.py on GitHub Actions (GEE + Open-Meteo + TFLite)" \
             -m "Rows: ${ROW_COUNT} | Generators: .github/workflows/daily_forecast.yml" \
             -m "Timestamp: $(date -u +"%Y-%m-%dT%H:%M:%SZ")"
-          git push
+          # An explicit refspec, not a bare `git push`: with no upstream configured — and
+          # whenever the checkout is not sitting on a local branch — git dies with exit 128
+          # and the only thing the run reports is "Process completed with exit code 128",
+          # which is how hindcast.yml failed on 2026-09-19 (run 35430992137) after every
+          # scoring step had passed. The summary block below makes the next one legible:
+          # branch state, the last commits and the remote answer for themselves.
+          if ! git push origin "HEAD:${GITHUB_REF_NAME}"; then
+            {
+              echo '#### The daily forecast commit could not be pushed'
+              echo '```'
+              git status --short --branch
+              git log --oneline -3
+              git remote -v
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+            echo "::error::the bot commit is local only — nothing was published to ${GITHUB_REF_NAME}. The job summary says whether the push was rejected (branch protection, read-only token) or the ref did not resolve."
+            exit 1
+          fi
 
       - name: Upload forecast artifacts
         if: always()
@@ -271,6 +387,7 @@ jobs:
         with:
           name: daily-forecast-output
           path: |
+            auto-forecast.log
             hazardnet_forecasts_latest.csv
             hazardnet_run_report.json
             hazardnet_scene_manifest.json

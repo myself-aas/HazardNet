@@ -4,46 +4,56 @@ import {
   ChannelId,
   DownloadChannel,
   GithubReleaseInfo,
-  RegistryInfo,
   ReleaseAsset,
   classifyAsset,
   githubReleasesUrl,
-  npmPackageUrl,
-  ownsRegistryProject,
-  pypiProjectUrl,
 } from '../lib/downloadChannels';
 
 /**
- * Live release state for the Download Center channels.
+ * Release state for the Download Center channels.
  *
- * Data sources (all public, no credentials):
- *   - GitHub Releases API  → latest release + assets per product repository
- *   - PyPI / npm JSON APIs → latest published version of the SDK packages
+ * ONE data source, and it is opt-in (ADR 0011, owner decision 2026-09-19):
  *
- * Robustness:
+ *   - GitHub Releases API → latest release + assets per product repository,
+ *     fetched only when `liveReleaseLookupsEnabled()` is true for this
+ *     deployment. Off by default, because none of the five product
+ *     repositories exists yet: every lookup was a guaranteed 404 that the
+ *     visitor's browser had to make.
+ *   - PyPI / npm JSON APIs → REMOVED. HazardNet does not publish packages to
+ *     a registry, so there is nothing to look up and no install command to
+ *     show. The previous `fetchRegistry()` + ownership guard existed to stop
+ *     the page linking to a squatted name; not querying at all is the stronger
+ *     form of the same guarantee.
+ *
+ * With lookups off this hook performs no network I/O: every channel resolves
+ * synchronously to a `pending` state whose `note` is the exact sentence the
+ * card renders, so the page states what is distributed instead of reporting
+ * the absence of a listing it never asked for.
+ *
+ * Robustness (live mode only):
  *   - sessionStorage TTL cache (10 min) so repeat visits do not burn the
  *     unauthenticated GitHub API rate budget (60 req/h per IP)
  *   - stale-while-error: on fetch failure a cached older payload is reused
  *   - 404  → "pending": the product repository has not published a release yet
- *   - 403  → "rate-limited": the UI falls back to the human release page URL
- *   - registry ownership guard → a squatted name shows as pending, never as
- *     a download link to someone else's package
+ *   - 403/429 → "unavailable": the UI falls back to the human release page URL
  */
 
-const CACHE_PREFIX = 'hazardnet.download.v1';
+const CACHE_PREFIX = 'hazardnet.download.v2';
 const CACHE_TTL_MS = 10 * 60 * 1000;
 const FETCH_TIMEOUT_MS = 7000;
+
+/** Note shown on every card while release lookups are switched off. */
+export const LOOKUPS_DISABLED_NOTE =
+  'Release files are not fetched on this deployment — open the repository’s Releases page to see whether artifacts have been published.';
 
 export type ChannelStatus = 'loading' | 'ready' | 'pending' | 'unavailable';
 
 export interface ChannelState {
-  status: ChannelStatus;
-  /** Latest GitHub release for the channel's product repository. */
+  /** Latest GitHub release for the channel's product repository (live mode). */
   release?: GithubReleaseInfo;
-  /** Latest registry (PyPI/npm) information for SDK channels. */
-  registry?: RegistryInfo;
   /** Human-readable explanation for pending/unavailable states. */
   note?: string;
+  status: ChannelStatus;
 }
 
 export type ChannelStates = Record<ChannelId, ChannelState>;
@@ -51,7 +61,6 @@ export type ChannelStates = Record<ChannelId, ChannelState>;
 interface CachedChannel {
   ts: number;
   release?: GithubReleaseInfo;
-  registry?: RegistryInfo;
 }
 
 function readCache(id: ChannelId): CachedChannel | null {
@@ -144,71 +153,10 @@ async function fetchGithubRelease(
   }
 }
 
-async function fetchRegistry(channel: DownloadChannel): Promise<Pick<ChannelState, 'registry' | 'note'>> {
-  try {
-    if (channel.pypiName) {
-      const name = channel.pypiName;
-      const { status, body } = await fetchJson(`https://pypi.org/pypi/${encodeURIComponent(name)}/json`);
-      if (status === 404) return { note: 'Not yet published on PyPI' };
-      if (status !== 200 || !body) return { note: 'PyPI lookup unavailable' };
-      const info = (body as { info?: { version?: string; project_url?: string; project_urls?: Record<string, string> } }).info;
-      if (!info?.version) return { note: 'PyPI payload missing version' };
-      const urls = Object.values(info.project_urls ?? {});
-      if (info.project_url) urls.push(info.project_url);
-      const verified = ownsRegistryProject(urls);
-      return {
-        registry: {
-          name,
-          version: info.version,
-          url: pypiProjectUrl(name),
-          registry: 'pypi',
-          verified,
-        },
-        ...(verified ? {} : { note: 'PyPI name exists but is not published by HazardNet' }),
-      };
-    }
-    if (channel.npmName) {
-      const name = channel.npmName;
-      const { status, body } = await fetchJson(`https://registry.npmjs.org/${encodeURIComponent(name)}`);
-      if (status === 404) return { note: 'Not yet published on npm' };
-      if (status !== 200 || !body) return { note: 'npm lookup unavailable' };
-      const doc = body as {
-        'dist-tags'?: Record<string, string>;
-        repository?: { url?: string } | string;
-        homepage?: string;
-      };
-      const version = doc['dist-tags']?.latest;
-      if (!version) return { note: 'npm payload missing version' };
-      const repoUrl = typeof doc.repository === 'string' ? doc.repository : doc.repository?.url;
-      const urls = [repoUrl ?? '', doc.homepage ?? ''];
-      const verified = ownsRegistryProject(urls);
-      return {
-        registry: {
-          name,
-          version,
-          url: npmPackageUrl(name),
-          registry: 'npm',
-          verified,
-        },
-        ...(verified ? {} : { note: 'npm name exists but is not published by HazardNet' }),
-      };
-    }
-  } catch {
-    return { note: 'Network error while contacting the registry' };
-  }
-  return {};
-}
-
-function deriveStatus(
-  github: Pick<ChannelState, 'release' | 'note'>,
-  registry: Pick<ChannelState, 'registry' | 'note'>,
-): ChannelStatus {
-  const registryReady = registry.registry?.verified === true;
-  if (github.release || registryReady) return 'ready';
+function deriveStatus(github: Pick<ChannelState, 'release' | 'note'>): ChannelStatus {
+  if (github.release) return 'ready';
   // A verifiable release is simply not published yet (expected pre-launch).
-  const hardFailure = /rate limit|network error|malformed|unavailable/i.test(
-    `${github.note ?? ''} ${registry.note ?? ''}`,
-  );
+  const hardFailure = /rate limit|network error|malformed|unavailable/i.test(github.note ?? '');
   return hardFailure ? 'unavailable' : 'pending';
 }
 
@@ -221,15 +169,28 @@ export function orderAssets(assets: ReleaseAsset[], preferred: AssetKind[]): Rel
   return [...assets].sort((a, b) => rank(a.kind) - rank(b.kind) || a.name.localeCompare(b.name));
 }
 
-/** Fetch live release/registry state for every channel (cached, resilient). */
-export function useReleaseChannels(channels: DownloadChannel[]): ChannelStates {
+/**
+ * Release state for every channel.
+ *
+ * @param channels resolved channel definitions (`resolveChannels`)
+ * @param live     whether release lookups are permitted for this deployment
+ *                 (`liveReleaseLookupsEnabled(import.meta.env)`); default off
+ */
+export function useReleaseChannels(channels: DownloadChannel[], live = false): ChannelStates {
   const [states, setStates] = useState<ChannelStates>(() =>
     Object.fromEntries(
-      channels.map((c) => [c.id, { status: 'loading' } as ChannelState]),
+      channels.map((c) => [
+        c.id,
+        // No lookup to wait for when live mode is off, so the first paint is
+        // already the final state — no "Checking releases…" spinner for a
+        // request that is never made.
+        live ? ({ status: 'loading' } as ChannelState) : ({ status: 'pending', note: LOOKUPS_DISABLED_NOTE } as ChannelState),
+      ]),
     ) as ChannelStates,
   );
 
   useEffect(() => {
+    if (!live) return;
     let cancelled = false;
 
     const loadChannel = async (channel: DownloadChannel) => {
@@ -239,28 +200,24 @@ export function useReleaseChannels(channels: DownloadChannel[]): ChannelStates {
           setStates((prev) => ({
             ...prev,
             [channel.id]: {
-              status: cached.release || cached.registry?.verified ? 'ready' : 'pending',
+              status: cached.release ? 'ready' : 'pending',
               release: cached.release,
-              registry: cached.registry,
+              note: cached.release ? undefined : 'No release published yet',
             },
           }));
         }
         return;
       }
 
-      const [github, registry] = await Promise.all([
-        fetchGithubRelease(channel),
-        fetchRegistry(channel),
-      ]);
-      writeCache(channel.id, { ts: Date.now(), release: github.release, registry: registry.registry });
+      const github = await fetchGithubRelease(channel);
+      writeCache(channel.id, { ts: Date.now(), release: github.release });
       if (!cancelled) {
         setStates((prev) => ({
           ...prev,
           [channel.id]: {
-            status: deriveStatus(github, registry),
+            status: deriveStatus(github),
             release: github.release,
-            registry: registry.registry,
-            note: github.note ?? registry.note,
+            note: github.note,
           },
         }));
       }
@@ -274,8 +231,8 @@ export function useReleaseChannels(channels: DownloadChannel[]): ChannelStates {
       cancelled = true;
     };
     // Channels come from static config; refetch only when the set of
-    // repositories/package names changes (stable across renders in practice).
-  }, [channels.map((c) => c.repoSlug + c.pypiName + c.npmName).join('|')]);
+    // repositories changes (stable across renders in practice).
+  }, [live, channels.map((c) => c.repoSlug).join('|')]);
 
   return states;
 }

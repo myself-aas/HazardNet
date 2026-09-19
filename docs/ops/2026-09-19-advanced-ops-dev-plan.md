@@ -68,7 +68,7 @@ the system operable and keep the embargo honest.
 |---|---|---|---|
 | 1 | 6 navbar controls have no focus indicator (`Navbar.tsx:234,297,387,505,589,678`) | Replace `focus-visible:outline-none` with `focus-visible:ring-2 focus-visible:ring-nasa-blue/60` (pattern already at `:184`) | ✅ **DONE** — 12/12 stops show an indicator |
 | 2 | 4 dashboard routes have no `<h1>` at all; first heading is `h4` | Give `/live`, `/home`, `/home/overview`, `/forecast/overview` a real `<h1>`; demote the second `/analytics` `<h1>` to `<h2>` | ✅ **DONE** — `h1Count: 1` on all 5; zero `h1Count≠1` loads in 4 viewports |
-| 3 | `/download` queries `registry.npmjs.org/hazardnet` and `pypi.org/pypi/hazardnet/json` → both 404 | Publish the packages **or** remove the lookups and state what is distributed — owner decision, §8 `[ASK USER] 1` | ⚠️ **PARTIAL** — the self-contradicting copy is fixed (the page no longer claims publication while showing “pending”); the 404s persist until the owner chooses, and that choice is the only thing keeping this test red |
+| 3 | `/download` queries `registry.npmjs.org/hazardnet` and `pypi.org/pypi/hazardnet/json` → both 404 | Publish the packages **or** remove the lookups and state what is distributed — owner decision, §8 `[ASK USER] 1` | ✅ **DONE 2026-09-19 (ADR 0011)** — owner chose *do not publish, stop querying*. The registry lookups, their types, the ownership guard and `VITE_PYPI_PACKAGE_NAME`/`VITE_NPM_PACKAGE_NAME` are removed; the page issues **no** network request by default and each channel states what is distributed (GitHub Release assets) instead of an install command. Live GitHub Releases lookups are opt-in via `VITE_DOWNLOAD_LIVE_RELEASES=true`. `package.json` is now `"private": true` |
 | 4 | 7 registered routes never apply their metadata in the SPA (`/docs /about /contact /privacy /terms /use-cases /download`) | Call `usePageSeo(path)` in those 7 components (same one-line pattern as `/archive`) | ✅ **DONE** — all 7 serve registry title/canonical/`index,follow`, including after client-side navigation |
 | 5 | `/alerts` filter row 465 px wide in a 375 px viewport; 131 px unreachable | `w-full sm:w-auto` at `BangladeshSvgMap.tsx:100` + `min-w-0` on the inner scroller | ✅ **DONE** — row 463→293 px, `cardClipped: false`, all chips reachable, 0 document scroll |
 | 6 | FAB: 15×15, unlabelled, nested inside a clickable `div` → 340 critical + 970 serious axe nodes | `aria-label`, 44×44 hit area, flatten to one interactive element | ✅ **DONE** — `button-name` 340→0, `nested-interactive` →0, items 44×44, collapsed items out of the tab order, modal still opens |
@@ -178,7 +178,7 @@ place that says so.
 
 | Task | Detail |
 |---|---|
-| Classification of the two pre-existing composite-index entries | `NationalOverview.tsx:540,718` publish a composite index **with a stated formula**. The embargo checker prints them as review items instead of failing, by design. Either they predate the embargo (then they are a disclosed prior artifact and should be labelled as such in copy) or they are derived (then they must be withheld). Owner decision — §8 `[ASK USER] 4` |
+| Classification of the two pre-existing composite-index entries | ✅ **DONE 2026-09-19 (ADR 0012)** — classified `presentation-aggregation` (`districtCount × mean(per-district severity)`, both factors already published on the same screen; no weights, thresholds or clusters) and **kept, labelled**. The decision is recorded as data in `REVIEW_CLASSIFICATIONS`, and the gate now *fails the build* if either phrase loses its disclosure label (`LABEL_WINDOW_CHARS = 1400`; verified by deleting one — exit 1). The checker reports `classified: 2`. One item is deliberately left open and escalated to the owner: `NationalOverview.tsx:434` prints a weighted `Vulnerability Formula` (× 0.6 / × 0.4), which a new `review`-tier rule reports on every run — see ADR 0012, "Not decided here" |
 | Release-day procedure | One document: flip the archive placeholder to published, enable the methodology page, regenerate RAG documents, re-run `check:embargo` expecting the allowlist to shrink to zero, and archive the pre-release state |
 | Keep the gate honest | The checker must keep failing on *new* derivation language, weights, thresholds and cluster assignments; the review-item path is for pre-existing copy only and must never grow |
 | Provenance page | The archive already exposes `provenance` (source, loader command, export schema, ingested vs claimed). Surface it on `/archive` so C3 is visible to a reader, not just to a maintainer |
@@ -259,19 +259,37 @@ file/fix/screenshot → unfixed with reasons → recommendations).
 
 ### `[ASK USER]` — numbered questions
 
-1. **`/download` packages:** should `hazardnet` be published to npm/PyPI, or should the page stop
+1. ~~**`/download` packages:** should `hazardnet` be published to npm/PyPI, or should the page stop
    querying the registries and simply state what is distributed? (Both registries return 404 today;
    `react`/`requests` return 200 from the same sandbox, so the lookups are working and the packages
-   are absent.)
+   are absent.)~~ — **✅ ANSWERED 2026-09-19: do not publish; stop querying.** Recorded as
+   **ADR 0011** (`docs/adr/0011-distribution-without-package-registries.md`). Distribution is the
+   deployed site, GitHub Release assets and the repository. `/download` makes no network request by
+   default (GitHub Releases lookups are opt-in via `VITE_DOWNLOAD_LIVE_RELEASES`), each channel
+   states what is distributed instead of rendering an install command, and the root `package.json`
+   is `"private": true` so `npm publish` fails outright. The two registry workflow templates stay in
+   `.github/workflow-templates/` as inert reference material, annotated `NOT ADOPTED`.
 2. **FAB behaviour on mobile:** keep the floating action buttons (fixed, once they have labels and a
    44 px hit area) or move them into a toolbar? The 15×15 unlabelled control is the single largest
    source of axe failures (1,310 nodes).
 3. **Contrast direction:** approve promoting body-copy greys `slate-400 → slate-500` and the amber
    chip surface to a darker pairing? This is a visible design change across ~20 routes — I will not
    ship it without your sign-off.
-4. **Embargo classification (C1):** are the composite-index blocks at `NationalOverview.tsx:540,718`
+4. ~~**Embargo classification (C1):** are the composite-index blocks at `NationalOverview.tsx:540,718`
    pre-publication artifacts (safe to keep, labelled) or derived from the unpublished index (must be
-   withdrawn)? The checker currently prints them as review items instead of failing.
+   withdrawn)? The checker currently prints them as review items instead of failing.~~ —
+   **✅ ANSWERED 2026-09-19: pre-publication aggregation — safe to keep, labelled.** Recorded as
+   **ADR 0012** (`docs/adr/0012-composite-index-classification.md`). Both blocks (now
+   `NationalOverview.tsx:553` and `:745`) compute `districtCount × mean(per-district severity)` from
+   values the same screen already publishes, so they are not the embargoed derived index. The
+   decision lives in the checker's `REVIEW_CLASSIFICATIONS` with its date and basis, each block
+   carries a disclosure label next to the number, and the gate escalates to a **build failure** if a
+   label is deleted or drifts out of the 1400-character window.
+   **Still open (escalated, not decided):** `NationalOverview.tsx:434` prints
+   `Vulnerability Formula = (Division Avg District Severity × 0.6) + (High Risk Ratio × 0.4)` — explicit
+   coefficients on a visitor surface. If those are the embargoed index's weights the coefficients must
+   come off the page; if they rank already-published values, keep and label them. A new `review`-tier
+   rule (`weighted-formula`) reports it on every run until that is answered.
 5. **Paper timeline:** when should OP-6 be scheduled, and do you want the release-day copy (archive
    placeholder → published state) drafted now so publication is a single flip?
 6. **Admin/blog testing:** can you provide a test account (or approve a local auth stub) so the one
@@ -285,7 +303,7 @@ file/fix/screenshot → unfixed with reasons → recommendations).
 | (My earlier claim) "no tsc/lint/bundle gate exists in CI" | **Wrong, and corrected in both reports.** `ci.yml:388` `verify` runs `tsc`, eslint, `check:embargo`, `archive:check`, `archive:rag:check`, `build` + `check:bundle` | The process fix is *run CI's commands locally and keep the branch pushed*, not add a gate |
 | (My earlier claim) "0 of 180 elements miss a focus ring" | True of the metric (first tab stop), false of the interface: **6 navbar controls have no indicator** | Corrected in the design report §9.1; OP-1 item 1 |
 | Stage A "landed partly" | Confirmed: `/archive` + aliases + SEO for them only; episodes, divisions, clusters and the broader SEO layer are absent | OP-3 |
-| "100 % trust" | Two pre-existing composite-index blocks publish a formula; the `/download` page advertises non-existent packages; `/archive` charts have no accessible names | OP-1 items 3 & 6, OP-6 |
+| "100 % trust" | Two pre-existing composite-index blocks publish a formula (**resolved 2026-09-19, ADR 0012** — classified, labelled, label enforced by the gate); the `/download` page advertises non-existent packages (**resolved 2026-09-19, ADR 0011** — no registries, no lookups); `/archive` charts have no accessible names | OP-1 items 3 & 6, OP-6 |
 
 ### `[TODO]` — unknowns to resolve before M2
 
@@ -294,7 +312,10 @@ file/fix/screenshot → unfixed with reasons → recommendations).
 - `[TODO]` Daily-run archive location and retention (GitHub artifacts expire; a durable store is an
   owner decision).
 - `[TODO]` Whether `/clusters` should exist at all before publication, or be a documented tombstone
-  in the sitemap — depends on `[ASK USER] 4`.
+  in the sitemap — no longer blocked on `[ASK USER] 4` (answered: ADR 0012 classifies the composite
+  blocks as presentation aggregations and says nothing about cluster surfaces, which the gate's
+  `cluster-membership` rule still blocks outright). This is now its own question: cluster *ids,
+  centroids and membership* remain embargoed, so `/clusters` cannot publish them either way.
 - `[TODO]` Bundle budget for the new pages once built (`check:bundle` thresholds are already committed
   but were never exercised in this sandbox).
 

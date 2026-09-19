@@ -456,12 +456,12 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onSelectDistrict
            overflowed the viewport at exactly 1280 (e2e/smoke.spec.ts). The
            desktop bar is cursor-driven, so it keeps the natural icon width.
            Utilities (not .tap-target) so the xl: variant reliably overrides. */
-        className="relative min-w-[44px] min-h-[44px] xl:min-w-0 p-2 rounded-xl bg-white/40 hover:bg-white/70 active:bg-white/90 border border-slate-200/50 text-slate-800 hover:text-slate-950 backdrop-blur-md transition-all duration-200 hover:scale-105 active:scale-95 shadow-2xs flex items-center justify-center group shrink-0"
+        className="relative min-w-[44px] min-h-[44px] xl:min-w-0 p-2 rounded-xl bg-white/40 hover:bg-white/70 active:bg-white/90 border border-carbon-20/50 text-carbon-80 hover:text-carbon-black backdrop-blur-md transition-all duration-200 hover:scale-105 active:scale-95 shadow-2xs flex items-center justify-center group shrink-0"
         title="Search HazardNet (Ctrl+K)"
         aria-label="Search HazardNet"
         data-testid="district-search-trigger"
       >
-        <MaterialIcon name="search" className="text-lg text-slate-800 group-hover:text-slate-950 transition-all duration-200 group-hover:scale-110" />
+        <MaterialIcon name="search" className="text-lg text-carbon-80 group-hover:text-carbon-black transition-all duration-200 group-hover:scale-110" />
 
         {/* Dynamic Active Pulse Indicator */}
         <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
@@ -486,7 +486,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onSelectDistrict
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.15 }}
-            className="fixed inset-0 z-[9999] bg-slate-900/40 backdrop-blur-xs flex items-start justify-center pt-12 sm:pt-20 px-4"
+            className="fixed inset-0 z-[9999] bg-carbon-90/40 backdrop-blur-xs flex items-start justify-center pt-12 sm:pt-20 px-4"
             onClick={(e) => {
               if (e.target === e.currentTarget) setIsOpen(false);
             }}
@@ -502,10 +502,10 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onSelectDistrict
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.94, y: -12 }}
               transition={{ type: 'spring', stiffness: 350, damping: 25 }}
-              className="max-w-2xl w-full bg-white border border-slate-200 rounded-3xl shadow-2xl overflow-hidden text-slate-800 flex flex-col max-h-[85vh]"
+              className="max-w-2xl w-full bg-white border border-carbon-20 rounded-3xl shadow-2xl overflow-hidden text-carbon-80 flex flex-col max-h-[85vh]"
             >
               {/* Header / Search Input */}
-            <div className="relative flex items-center px-4 py-3 border-b border-slate-200 bg-slate-50">
+            <div className="relative flex items-center px-4 py-3 border-b border-carbon-20 bg-carbon-05">
               <MaterialIcon name="search" className="text-xl text-nasa-red-shade ml-1 shrink-0" />
 
               <input
@@ -520,7 +520,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onSelectDistrict
                 data-testid="district-search-input"
                 aria-label="Search districts, hazards and documents"
                 placeholder="Search 64 districts, hazard reports, profiles, or docs..."
-                className="w-full pl-3 pr-10 py-1.5 bg-transparent text-slate-900 placeholder-slate-400 text-sm font-medium focus:outline-none"
+                className="w-full pl-3 pr-10 py-1.5 bg-transparent text-carbon-90 placeholder-carbon-40 text-sm font-medium focus:outline-none"
                 autoFocus
               />
 
@@ -531,7 +531,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onSelectDistrict
                     setSelectedIndex(0);
                     inputRef.current?.focus();
                   }}
-                  className="p-1 rounded-md text-slate-400 hover:text-slate-800 hover:bg-slate-200 transition-colors text-xs font-mono font-bold"
+                  className="p-1 rounded-md text-carbon-60 hover:text-carbon-80 hover:bg-carbon-20 transition-colors text-xs font-mono font-bold"
                   title="Clear search"
                 >
                   <MaterialIcon name="close" className="text-sm" />
@@ -539,7 +539,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onSelectDistrict
               ) : (
                 <button
                   onClick={() => setIsOpen(false)}
-                  className="px-2 py-1 rounded-md bg-white border border-slate-200 text-[10px] font-mono text-slate-500 hover:text-slate-900 transition-colors"
+                  className="px-2 py-1 rounded-md bg-white border border-carbon-20 text-[10px] font-mono text-carbon-60 hover:text-carbon-90 transition-colors"
                 >
                   ESC
                 </button>
@@ -547,8 +547,8 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onSelectDistrict
             </div>
 
             {/* Category Filter Tabs */}
-            <div className="px-4 py-2.5 bg-white border-b border-slate-200 flex items-center gap-1.5 overflow-x-auto text-xs scrollbar-none shrink-0">
-              <span className="text-slate-400 font-mono text-[10px] uppercase font-bold mr-1">Filter:</span>
+            <div className="px-4 py-2.5 bg-white border-b border-carbon-20 flex items-center gap-1.5 overflow-x-auto text-xs scrollbar-none shrink-0">
+              <span className="text-carbon-60 font-mono text-[10px] uppercase font-bold mr-1">Filter:</span>
               {(['All', 'Hazard Report', 'Location', 'Hazard Profile', 'Documentation'] as const).map((cat) => (
                 <button
                   key={cat}
@@ -561,13 +561,13 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onSelectDistrict
                   className={`px-3 py-1 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
                     selectedCategory === cat
                       ? 'bg-nasa-red text-white shadow-sm'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                      : 'text-carbon-60 hover:text-carbon-90 hover:bg-carbon-10'
                   }`}
                 >
                   {cat === 'Hazard Report' ? 'Reports' : cat === 'Location' ? 'Locations' : cat === 'Hazard Profile' ? 'Hazards' : cat === 'Documentation' ? 'Docs' : 'All'}
                 </button>
               ))}
-              <span className="ml-auto text-[10px] font-mono text-slate-500 hidden sm:inline-block">
+              <span className="ml-auto text-[10px] font-mono text-carbon-60 hidden sm:inline-block">
                 {filteredItems.length} match{filteredItems.length === 1 ? '' : 'es'}
               </span>
             </div>
@@ -575,10 +575,10 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onSelectDistrict
             {/* Search Results List */}
             <div ref={listRef} className="overflow-y-auto p-3 space-y-1.5 flex-1 max-h-[50vh]">
               {filteredItems.length === 0 ? (
-                <div className="p-10 text-center text-slate-500 text-xs space-y-2">
-                  <p className="font-bold text-slate-900 text-base">No results found for "{query}"</p>
-                  <p className="text-slate-500 text-xs max-w-sm mx-auto">
-                    Try searching for <span className="text-slate-800 font-semibold">"Kurigram"</span>, <span className="text-slate-800 font-semibold">"Sylhet Report"</span>, <span className="text-slate-800 font-semibold">"Flash Flood"</span>, or <span className="text-slate-800 font-semibold">"TFLite"</span>.
+                <div className="p-10 text-center text-carbon-60 text-xs space-y-2">
+                  <p className="font-bold text-carbon-90 text-base">No results found for "{query}"</p>
+                  <p className="text-carbon-60 text-xs max-w-sm mx-auto">
+                    Try searching for <span className="text-carbon-80 font-semibold">"Kurigram"</span>, <span className="text-carbon-80 font-semibold">"Sylhet Report"</span>, <span className="text-carbon-80 font-semibold">"Flash Flood"</span>, or <span className="text-carbon-80 font-semibold">"TFLite"</span>.
                   </p>
                 </div>
               ) : (
@@ -591,26 +591,26 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onSelectDistrict
                       onMouseEnter={() => setSelectedIndex(index)}
                       className={`p-3 rounded-2xl cursor-pointer transition-all flex items-center justify-between gap-3 border ${
                         isSelected
-                          ? 'bg-amber-50 border-amber-300 text-slate-900 shadow-sm'
-                          : 'bg-white border-slate-100 hover:bg-slate-50 text-slate-700'
+                          ? 'bg-amber-50 border-amber-300 text-carbon-90 shadow-sm'
+                          : 'bg-white border-carbon-10 hover:bg-carbon-05 text-carbon-70'
                       }`}
                     >
                       <div className="flex items-center gap-3 min-w-0">
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <span className="font-bold text-xs sm:text-sm text-slate-900 truncate">{item.title}</span>
+                            <span className="font-bold text-xs sm:text-sm text-carbon-90 truncate">{item.title}</span>
                             {item.badge && (
                               <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-amber-100 text-[#ad6d04] border border-amber-200 shrink-0">
                                 {item.badge}
                               </span>
                             )}
                           </div>
-                          <p className="text-[11px] text-slate-500 mt-0.5 truncate">{item.subtitle}</p>
+                          <p className="text-[11px] text-carbon-60 mt-0.5 truncate">{item.subtitle}</p>
                         </div>
                       </div>
 
                       <div className="flex items-center gap-2 shrink-0">
-                        <span className="hidden sm:inline-block px-2 py-0.5 rounded-full text-[9px] font-mono font-semibold bg-slate-100 border border-slate-200 text-slate-600">
+                        <span className="hidden sm:inline-block px-2 py-0.5 rounded-full text-[9px] font-mono font-semibold bg-carbon-10 border border-carbon-20 text-carbon-60">
                           {item.category}
                         </span>
                         <span className="text-nasa-red-shade text-xs font-mono font-bold">SELECT</span>
@@ -622,13 +622,13 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onSelectDistrict
             </div>
 
             {/* Footer Keyboard Hints */}
-            <div className="px-4 py-2.5 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-[10px] font-mono text-slate-500 gap-2 shrink-0">
+            <div className="px-4 py-2.5 bg-carbon-05 border-t border-carbon-20 flex items-center justify-between text-[10px] font-mono text-carbon-60 gap-2 shrink-0">
               <div className="flex items-center gap-3">
-                <span><kbd className="px-1.5 py-0.5 bg-white rounded border border-slate-200 text-slate-800">UP/DOWN</kbd> Navigate</span>
-                <span><kbd className="px-1.5 py-0.5 bg-white rounded border border-slate-200 text-slate-800">ENTER</kbd> Select</span>
-                <span><kbd className="px-1.5 py-0.5 bg-white rounded border border-slate-200 text-slate-800">ESC</kbd> Close</span>
+                <span><kbd className="px-1.5 py-0.5 bg-white rounded border border-carbon-20 text-carbon-80">UP/DOWN</kbd> Navigate</span>
+                <span><kbd className="px-1.5 py-0.5 bg-white rounded border border-carbon-20 text-carbon-80">ENTER</kbd> Select</span>
+                <span><kbd className="px-1.5 py-0.5 bg-white rounded border border-carbon-20 text-carbon-80">ESC</kbd> Close</span>
               </div>
-              <span className="font-brand font-black text-slate-900 hidden sm:inline">Hazard<span className="text-nasa-red-shade">Net</span> Search</span>
+              <span className="font-brand font-black text-carbon-90 hidden sm:inline">Hazard<span className="text-nasa-red-shade">Net</span> Search</span>
             </div>
           </motion.div>
         </motion.div>

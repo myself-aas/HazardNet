@@ -84,10 +84,10 @@ const AdvisoryPanel: React.FC<AdvisoryPanelProps> = ({
 
   if (loading) {
     return (
-      <div className="w-full bg-white rounded-3xl border border-slate-200/90 shadow-md p-6 sm:p-8 mt-6 animate-pulse space-y-4">
-        <div className="h-6 bg-slate-200/80 rounded-full w-1/3 mb-2"></div>
-        <div className="h-4 bg-slate-200/80 rounded-full w-full"></div>
-        <div className="h-4 bg-slate-200/80 rounded-full w-5/6"></div>
+      <div className="w-full bg-white rounded-3xl border border-carbon-20/90 shadow-md p-6 sm:p-8 mt-6 animate-pulse space-y-4">
+        <div className="h-6 bg-carbon-20/80 rounded-full w-1/3 mb-2"></div>
+        <div className="h-4 bg-carbon-20/80 rounded-full w-full"></div>
+        <div className="h-4 bg-carbon-20/80 rounded-full w-5/6"></div>
       </div>
     );
   }
@@ -104,10 +104,10 @@ const AdvisoryPanel: React.FC<AdvisoryPanelProps> = ({
   if (!advisory) return null;
 
   return (
-    <div id="advisory-panel-container" className="w-full bg-white rounded-3xl border border-slate-200/90 shadow-md p-6 sm:p-8 space-y-6 transition-all duration-300 hover:shadow-lg text-slate-900">
-      <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-200/80">
+    <div id="advisory-panel-container" className="w-full bg-white rounded-3xl border border-carbon-20/90 shadow-md p-6 sm:p-8 space-y-6 transition-all duration-300 hover:shadow-lg text-carbon-90">
+      <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-carbon-20/80">
         <div className="space-y-1">
-          <h3 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+          <h3 className="text-lg sm:text-xl font-black text-carbon-90 tracking-tight flex items-center gap-2">
             <span>AI Agricultural Advisory</span>
           </h3>
           <div className="flex flex-wrap items-center gap-2">
@@ -120,7 +120,7 @@ const AdvisoryPanel: React.FC<AdvisoryPanelProps> = ({
               </span>
             )}
             {advisory.provider_source && (
-              <span className="px-3 py-1 rounded-full text-[11px] font-mono font-extrabold bg-slate-100 text-slate-800 border border-slate-200/80 shadow-2xs">
+              <span className="px-3 py-1 rounded-full text-[11px] font-mono font-extrabold bg-carbon-10 text-carbon-80 border border-carbon-20/80 shadow-2xs">
                 Source: {advisory.provider_source}
               </span>
             )}
