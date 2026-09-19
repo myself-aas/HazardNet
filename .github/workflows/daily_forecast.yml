@@ -1,59 +1,99 @@
-name: HazardNet Daily Forecast Pipeline
+name: HazardNet Daily Kaggle Sync (forecast + dataset metadata)
 
 # ─────────────────────────────────────────────────────────────────────────────
-# THE production forecast pipeline (MLOps Profile 1). It generates the
-# forecast ON THE RUNNER — no Kaggle, no notebook scheduler, no kernel slug:
+# THE production data pipeline (MLOps Profile 1). Nothing here generates a
+# forecast: the generating is done on Kaggle, on Kaggle's own daily schedule, by
+# the notebook this repository keeps a copy of —
 #
-#   scripts/auto_forecast.py     GEE satellite imagery + Open-Meteo forecasts
-#                                → TFLite inference (tflite-runtime + cv2)
-#                                → hazardnet_forecasts_latest.csv
-#   scripts/publish_forecast_csv.py
-#                                → backend/data/forecasts/*.csv|json + manifest
-#   scripts/build_forecast_snapshot.mjs
-#                                → frontend/public/data/forecasts-latest.json
-#   commit                       → the website redeploys carrying the new data
+#   ml/hazardnet-auto-forecast-pipeline.ipynb
+#     Earth Engine imagery + Open-Meteo drivers + the deployed TFLite model
+#     → /kaggle/working/hazardnet_advisories_latest.csv
 #
-# The three Kaggle-backed workflows (forecast-pipeline, hourly_forecast,
-# weekly_forecast) lost their schedules on 2026-09-16 and are dispatch-only
-# legacy: they need a live Kaggle token + kernel and produced red runs for days
-# while this path needed only the GEE service account. See
-# docs/mlops/ARCHITECTURE.md ("Why this is better than the all-Kaggle setup").
+# Kaggle is where the Earth Engine service account is attached
+# (`ashifahmedshuvo/ee-token-json`), so it is the only place in this pipeline that
+# can read satellite imagery. This job fetches what that run produced, translates
+# it into the repository's canonical row schema, validates it, rebuilds every
+# derived artifact that quotes it, and commits:
 #
-# Delivery is the committed snapshot by default (the production deployment
-# serves the SPA + bundled snapshot). Set the repository VARIABLE
-# `PUSH_TO_API=true` once an ingest API is deployed to also POST the CSV to
-# `HAZARDNET_API_URL` — that push is then a hard gate.
+#   scripts/fetch_kaggle_forecast.py       kernel output → canonical CSV/JSON + manifest
+#   scripts/validate_forecasts.py          schema, bounds, and a ≤3-day freshness gate
+#   scripts/fetch_kaggle_dataset_meta.py   the dataset builder's normalization + config,
+#                                          and how far they have drifted from the model
+#   scripts/build_forecast_snapshot.mjs    → frontend/public/data/forecasts-latest.json
+#   scripts/build_freshness_artifact.mjs   → frontend/public/data/freshness.json
+#   npm run build:frontend                 → the generated pages + the content index
+#   commit                                 → the website redeploys carrying the new data
+#
+# WHY NOT GENERATE ON THE RUNNER
+# `scripts/auto_forecast.py` did exactly that (GEE + Open-Meteo + TFLite, ~19 min)
+# and was this workflow's engine until 2026-09-20. It needed an Earth Engine
+# service-account key in GitHub secrets, and when that key rotated the run died one
+# minute in with a bare traceback — after which the site silently served the last
+# committed snapshot. It is still in the repository, still tested, and still
+# runnable by hand (`python scripts/auto_forecast.py`) as the path that does not
+# depend on Kaggle; it is no longer on a schedule, because two generators for one
+# artifact means the committed rows depend on which job won. The owner's decision,
+# 2026-09-20: Kaggle produces, Actions publishes.
+#
+# DELIVERY is the committed snapshot (the production deployment serves the SPA plus
+# the bundled snapshot). The store ingest below is skipped, with a notice, unless
+# BACKEND_API_KEY is set.
+#
+# THE OTHER FORECAST WORKFLOWS
+#   forecast-pipeline.yml        dispatch: *trigger* a Kaggle run, wait, then pull
+#   weekly_forecast.yml          dispatch: trigger + pull + cut a patch release
+#   manual_forecast_ingest.yml   dispatch: publish a hand-run CSV, no Kaggle API
+# `hourly_forecast.yml` was deleted on 2026-09-20: polling an output that is
+# produced once a day cannot find anything new, and everything it did — fetch,
+# validate, snapshot, ingest, commit — is this job.
+# Triage for a red Kaggle step: docs/ops/kaggle-pipeline-triage.md
 # ─────────────────────────────────────────────────────────────────────────────
 
 on:
   schedule:
-    - cron: '0 0 * * *' # Daily at midnight UTC (06:00 Bangladesh time)
-  workflow_dispatch: # Manual trigger for debugging
+    # Midnight UTC (06:00 Bangladesh). Deliberately the schedule this workflow has
+    # always kept: if Kaggle's own daily run lands later in the day, this pull
+    # publishes the previous run's rows — still inside the freshness gate below, and
+    # still a real forecast rather than a stale one silently re-dated. Move the cron
+    # to sit after the Kaggle schedule when the two are known; the recency step in
+    # the summary says which day the rows came from.
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+    inputs:
+      force_refresh:
+        description: 'Rebuild and commit even when the notebook output is unchanged'
+        required: false
+        default: 'false'
+      require_dataset_meta:
+        description: 'Fail if the dataset builder has no metadata on Kaggle'
+        required: false
+        default: 'false'
 
 concurrency:
   group: daily-forecast-${{ github.ref }}
   cancel-in-progress: false
 
 permissions:
-  contents: write # commits the refreshed CSV + snapshot
+  contents: write # commits the refreshed CSV, snapshot and dataset metadata
 
 env:
-  # Stream Python stdout line-by-line. During the 2026-09-17 zero-rows incident
-  # the block-buffered output flushed only at exit, so every "Processing X..."
-  # line carried the final-flush timestamp and the real error ordering was
-  # unrecoverable from the log.
+  # Stream Python stdout line-by-line. During the 2026-09-17 zero-rows incident the
+  # block-buffered output flushed only at exit, so every "Processing X..." line
+  # carried the final-flush timestamp and the real error ordering was unrecoverable.
   PYTHONUNBUFFERED: '1'
-  SNAPSHOT_SOURCE: 'github-actions: scripts/auto_forecast.py (GEE + Open-Meteo + TFLite)'
-  # Only push to an ingest API when one is known to be deployed; otherwise the
-  # generator runs artifact-only and the site is served by the committed
-  # snapshot (see docs/ops/owner-actions.md §2a-bis for the deployment state).
-  PUSH_TO_API: ${{ vars.PUSH_TO_API || 'false' }}
+  # Repository variables, so a renamed Kaggle notebook is repointed without a code
+  # change or a PR (docs/ops/kaggle-pipeline-triage.md §3).
+  KAGGLE_KERNEL: ${{ vars.KAGGLE_KERNEL || 'ashifahmedshuvo/hazardnet-auto-forecast-pipeline' }}
+  KAGGLE_BUILDER_KERNEL: ${{ vars.KAGGLE_BUILDER_KERNEL || 'ashifahmedshuvo/4-hazardnet-dataset-builder' }}
+  KAGGLE_DATASET: ${{ vars.KAGGLE_DATASET || 'ashifahmedshuvo/hazardnet-datasets' }}
+  SNAPSHOT_SOURCE: 'kaggle: hazardnet-auto-forecast-pipeline (Earth Engine + Open-Meteo + TFLite)'
+  FORECAST_STORE: ${{ vars.FORECAST_STORE || 'firestore' }}
 
 jobs:
-  run-forecast:
-    name: Generate forecasts on the runner + publish
+  sync:
+    name: Pull the Kaggle outputs + publish
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 45
 
     steps:
       - name: Checkout Code
@@ -64,178 +104,212 @@ jobs:
         with:
           python-version: '3.11'
           cache: 'pip'
-          cache-dependency-path: scripts/requirements-inference.txt
+          cache-dependency-path: scripts/requirements-pipeline.txt
 
       - name: Set up Node.js
-        # The snapshot/policy scripts have zero npm dependencies, but the content
-        # rebuild below runs the real build (engine -> vite -> prerender) so the
-        # committed content pages and the content index are refreshed together —
-        # see the "Rebuild generated content pages and the content index" step.
+        # The snapshot/freshness builders have no npm dependencies, but the content
+        # rebuild below runs the real build (engine → vite → prerender) so the
+        # committed pages and the content index are refreshed together.
         uses: actions/setup-node@v7
         with:
           node-version: '20'
           cache: 'npm'
 
-      - name: Install Optimized Dependencies
-        run: pip install -r scripts/requirements-inference.txt
+      - name: Install the pipeline dependencies
+        # kaggle (the CLI), pandas, numpy, pyyaml — pinned in this file so every run
+        # resolves the same tree. No tflite-runtime, no earthengine-api, no opencv:
+        # this job does not run a model or talk to Earth Engine.
+        run: pip install --requirement scripts/requirements-pipeline.txt
 
       - name: Install workspace dependencies
-        # Root install: `frontend/` is an npm workspace, so this is what gives the
-        # build below its toolchain (vite, the prerenderer's deps).
         run: npm ci --no-audit --no-fund
 
-      - name: Preflight -- verify required secrets
+      - name: Preflight — Kaggle credentials, then the kernel they can see
+        id: preflight
         shell: bash
+        env:
+          KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
+          KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
         run: |
+          # Presence first, then authentication. A preflight that only checks that a
+          # secret is non-empty passes on a rotated token and then fails one step
+          # later with the CLI's own 401 — which is what the Kaggle-backed workflows
+          # did for four days in September 2026 (docs/ops/kaggle-pipeline-triage.md).
           missing=0
-          # Earth Engine is the one credential this pipeline cannot avoid: it
-          # is the satellite data source (Kaggle is not involved at all).
-          if [ -z "$EE_SERVICE_ACCOUNT_JSON" ]; then
-            echo "::error::'EE_SERVICE_ACCOUNT_JSON' is not configured (repo -> Settings -> Secrets and variables -> Actions). It is required: scripts/auto_forecast.py authenticates to Google Earth Engine with it."
-            missing=1
-          fi
-          if [ "$PUSH_TO_API" = "true" ]; then
-            for var in HAZARDNET_API_URL HAZARDNET_API_KEY; do
-              if [ -z "${!var}" ]; then
-                echo "::error::'$var' is not configured but the PUSH_TO_API repository variable is 'true'. Set both, or set PUSH_TO_API=false to publish through the committed snapshot only."
-                missing=1
-              fi
-            done
-            case "$HAZARDNET_API_URL" in
-              http://*|https://*) ;;
-              *) echo "::error::HAZARDNET_API_URL does not start with http(s)://: $HAZARDNET_API_URL"; missing=1 ;;
-            esac
-          else
-            echo "ℹ️ PUSH_TO_API=$PUSH_TO_API — generating artifacts only (no API POST)."
-          fi
+          for var in KAGGLE_USERNAME KAGGLE_KEY; do
+            if [ -z "${!var}" ]; then
+              echo "::error::'$var' is not configured (repo → Settings → Secrets and variables → Actions). The forecast and the dataset metadata are both produced on Kaggle; without these two there is nothing to pull."
+              missing=1
+            fi
+          done
           if [ "$missing" -ne 0 ]; then exit 1; fi
-          echo "✅ Required secrets present."
-        env:
-          EE_SERVICE_ACCOUNT_JSON: ${{ secrets.EE_SERVICE_ACCOUNT_JSON }}
-          HAZARDNET_API_URL: ${{ secrets.HAZARDNET_API_URL }}
-          HAZARDNET_API_KEY: ${{ secrets.HAZARDNET_API_KEY }}
 
-      # `scripts/auto_forecast.py` calls `ee.Initialize()` at import time with no
-      # handler around it, so a rotated, truncated or mistyped service-account key
-      # surfaces as a bare Python traceback about a minute into a scheduled run —
-      # which is what the 2026-09-19 02:00 UTC run produced (failed in 1m46s at
-      # this step, after a 16-minute run had got all the way to publishing the day
-      # before). The step above only proves the secret is non-empty; this one
-      # proves it authenticates, names the cause, and costs ~10 seconds.
-      - name: Preflight -- Earth Engine credential authenticates
-        shell: bash
-        env:
-          EE_SERVICE_ACCOUNT_JSON: ${{ secrets.EE_SERVICE_ACCOUNT_JSON }}
-          EE_SERVICE_ACCOUNT_EMAIL: ${{ vars.EE_SERVICE_ACCOUNT_EMAIL || '' }}
-        run: |
-          python - <<'PY'
-          import json, os, sys, tempfile
+          mkdir -p ~/.kaggle
+          printf '{"username":"%s","key":"%s"}' "$KAGGLE_USERNAME" "$KAGGLE_KEY" > ~/.kaggle/kaggle.json
+          chmod 600 ~/.kaggle/kaggle.json
+          kaggle --version
 
-          raw = (os.environ.get('EE_SERVICE_ACCOUNT_JSON') or '').strip()
-          try:
-              key = json.loads(raw)
-          except ValueError as exc:
-              print(f"::error::EE_SERVICE_ACCOUNT_JSON is not valid JSON ({exc}). "
-                    "Re-paste the complete service-account key file into the repository secret "
-                    "(docs/ops/owner-actions.md, Action 1b).")
-              sys.exit(1)
-
-          required = ('type', 'project_id', 'private_key_id', 'private_key', 'client_email', 'token_uri')
-          missing = [field for field in required if not key.get(field)]
-          if key.get('type') != 'service_account' or missing:
-              print(f"::error::EE_SERVICE_ACCOUNT_JSON is not a complete service-account key "
-                    f"(type={key.get('type')!r}, missing={missing or 'none'}). Regenerate it in "
-                    "GCP -> IAM & Admin -> Service accounts -> Keys, then update the secret.")
-              sys.exit(1)
-
-          email = (os.environ.get('EE_SERVICE_ACCOUNT_EMAIL') or '').strip() or key['client_email']
-          if email != key['client_email']:
-              print(f"::error::EE_SERVICE_ACCOUNT_EMAIL ({email}) does not match the key's "
-                    f"client_email ({key['client_email']}) — the variable and the secret describe "
-                    "two different service accounts, so Earth Engine would reject the pair.")
-              sys.exit(1)
-
-          path = None
-          try:
-              import ee
-              with tempfile.NamedTemporaryFile('w', suffix='.json', delete=False) as handle:
-                  handle.write(raw)
-                  path = handle.name
-              ee.Initialize(ee.ServiceAccountCredentials(email, path))
-              # Initialize can be lazy; one trivial authenticated call proves the token
-              # exchange actually worked rather than failing 19 minutes in.
-              ee.Number(1).getInfo()
-          except Exception as exc:  # noqa: BLE001 - reported as the owner action it is
-              print(f"::error::Earth Engine rejected the credential for {email}: "
-                    f"{type(exc).__name__}: {str(exc)[:400]}. Rotate the key and confirm the "
-                    "account has Earth Engine API access (docs/ops/owner-actions.md, Action 1b).")
-              sys.exit(1)
-          finally:
-              if path:
-                  try:
-                      os.remove(path)
-                  except OSError:
-                      pass
-
-          print(f"✅ Earth Engine authenticated as {email} (project {key['project_id']})")
-          PY
-
-      - name: Execute pipeline (GEE + Open-Meteo + TFLite inference)
-        # ~19 min: GEE imagery + Open-Meteo per district, then TFLite inference
-        # for the 7-day and 15-day horizons. Writes hazardnet_forecasts_latest.csv
-        # into the workspace. HAZARDNET_API_URL/KEY are passed only when
-        # PUSH_TO_API=true; the script then POSTs the CSV and fails the job if
-        # the ingest is rejected.
-        #
-        # The output is tee'd to a file and its tail copied into the job summary:
-        # Actions log storage is a separate blob host from the API, so a failure
-        # diagnosed from `gh run view` alone shows the exit code but not the
-        # traceback that explains it. The summary travels with the run page.
-        shell: bash
-        env:
-          EE_SERVICE_ACCOUNT_JSON: ${{ secrets.EE_SERVICE_ACCOUNT_JSON }}
-          EE_SERVICE_ACCOUNT_EMAIL: ${{ vars.EE_SERVICE_ACCOUNT_EMAIL || '' }}
-          HAZARDNET_API_URL: ${{ vars.PUSH_TO_API == 'true' && secrets.HAZARDNET_API_URL || '' }}
-          HAZARDNET_API_KEY: ${{ vars.PUSH_TO_API == 'true' && secrets.HAZARDNET_API_KEY || '' }}
-        run: |
-          # `shell: bash` on a Linux runner means `bash -eo pipefail`, so a
-          # non-zero python would abort the step at the pipeline and the summary
-          # block below would never run. errexit is lifted for the pipeline only,
-          # and the generator's own status is taken from PIPESTATUS (tee always
-          # succeeds, so $? would report the wrong thing).
+          # `kernels status` is the cheapest authenticated call that names the kernel:
+          # it answers 401 for a rejected token, 403 for a token that does not own the
+          # kernel, 404 for a slug that moved, and "never been run" for a notebook that
+          # exists but has no output to fetch. Ten seconds here saves a 45-minute job
+          # failing at the same place with a less useful message.
           set +e
-          python scripts/auto_forecast.py 2>&1 | tee auto-forecast.log
-          STATUS=${PIPESTATUS[0]}
+          status=$(kaggle kernels status "$KAGGLE_KERNEL" 2>&1)
+          code=$?
           set -e
-          if [ "$STATUS" -ne 0 ]; then
-            {
-              echo ""
-              echo "#### Generator failure — last 40 lines of \`scripts/auto_forecast.py\`"
-              echo ""
-              echo '```'
-              tail -n 40 auto-forecast.log
-              echo '```'
-            } >> "$GITHUB_STEP_SUMMARY"
-            echo "::error::scripts/auto_forecast.py exited ${STATUS}. The tail of its output is in the job summary; the full log is the auto-forecast.log entry of the daily-forecast-output artifact."
+          echo "$status"
+          if [ "$code" -ne 0 ]; then
+            case "$status" in
+              *401*|*Unauthorized*|*unauthorized*)
+                echo "::error::Kaggle rejected the credentials (401). KAGGLE_USERNAME/KAGGLE_KEY are present but no longer accepted — rotate them at kaggle.com → Settings → API → Create New Token, update both secrets, then run the 'Verify GitHub Actions Secrets' workflow." ;;
+              *403*|*Forbidden*)
+                echo "::error::Kaggle answered 403 for '$KAGGLE_KERNEL': the token is valid but does not own that kernel. KAGGLE_USERNAME must be the notebook's owner, or the notebook must be forked under the account the token belongs to." ;;
+              *404*|*"not found"*|*"Not Found"*)
+                echo "::error::Kaggle has no kernel '$KAGGLE_KERNEL' (404). It was renamed, re-uploaded or deleted — set the repository VARIABLE KAGGLE_KERNEL to the current slug (Settings → Secrets and variables → Actions → Variables)." ;;
+              *)
+                echo "::error::'kaggle kernels status $KAGGLE_KERNEL' failed: $status" ;;
+            esac
+            exit 1
           fi
-          exit "$STATUS"
+          case "$status" in
+            *error*|*ERROR*|*cancel*|*CANCEL*|*fail*|*FAIL*)
+              # The notebook ran and did not succeed. Its log lives on Kaggle, and
+              # pulling its output would publish whatever the last *good* run left —
+              # which is the right data but the wrong story, so say so and stop.
+              echo "::error::the last run of '$KAGGLE_KERNEL' did not complete ($status). Fix it on Kaggle (https://www.kaggle.com/code/$KAGGLE_KERNEL), re-run it, then re-run this workflow. Nothing was published."
+              exit 1
+              ;;
+          esac
+          echo "kernel_status=$(echo "$status" | tail -n 1)" >> "$GITHUB_OUTPUT"
+          echo "✅ Kaggle authenticated; '$KAGGLE_KERNEL' is runnable."
 
-      - name: Publish CSV to the pipeline paths
-        id: publish
+      - name: Fetch the forecast the notebook produced
+        id: fetch
         shell: bash
         run: |
-          # --run-report is mandatory: it carries the coverage tally (how many of
-          # the requested district x horizon units were actually produced), the
-          # model provenance and the scene-manifest block (the per-row
-          # dataset_version). Without it a partial run would ship looking complete
-          # — the defect fixed on 2026-09-17 — and a run whose lineage failed would
-          # ship rows that cannot name their inputs (PRODUCT_SPEC §5.8).
-          python scripts/publish_forecast_csv.py \
-            --csv hazardnet_forecasts_latest.csv \
-            --run-report hazardnet_run_report.json \
-            --source "$SNAPSHOT_SOURCE" | tee publish.log
-          CHANGED=$(grep -oE 'CHANGED=(true|false)' publish.log | tail -n 1 | cut -d= -f2)
-          echo "changed=${CHANGED:-true}" >> "$GITHUB_OUTPUT"
+          # Writes the canonical CSV + typed JSON sidecar + manifest into
+          # backend/data/forecasts/, translating the notebook's advisory table into
+          # the repository's row schema (district identity from the committed
+          # artifact, prediction_date derived as target_date − horizon and
+          # cross-checked across rows). See the script's docstring for what is
+          # mapped, what is derived, and what is deliberately left null.
+          set -o pipefail
+          python scripts/fetch_kaggle_forecast.py \
+            --kernel "$KAGGLE_KERNEL" \
+            --dest data/kaggle_notebook_output \
+            --attempts 5 --retry-delay 30 \
+            --summary-out fetch-summary.md 2>&1 | tee fetch.log
+          cat fetch-summary.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Validate the forecast rows
+        shell: bash
+        run: |
+          # Both gates ON.
+          #
+          # Freshness: `prediction_date` must be within three days, which is what turns a
+          # silently dead Kaggle schedule into a red run instead of a site that keeps
+          # publishing last week's forecast as today's.
+          #
+          # Coverage: the pull writes the tally itself (`coverage_tally` in the fetch
+          # script) — 64 districts from scripts/etl/districts.py × the horizons the
+          # producer used, against the rows it published. So a day when the notebook
+          # skips four districts because their Earth Engine fetch failed is labelled
+          # partial and names them, instead of looking like a complete 60-district run.
+          # This used to be --skip-coverage, which is exactly how the runner-side
+          # generator's 25-of-64 day went unnoticed (audit 2026-09-17).
+          python scripts/validate_forecasts.py \
+            --manifest backend/data/forecasts/manifest.json
+
+      - name: Fetch the dataset builder's metadata
+        id: meta
+        shell: bash
+        continue-on-error: true
+        run: |
+          # normalization_stats.json + dataset_config.json — kilobytes, not the
+          # hundreds of megabytes of tensors beside them (Colab reads those straight
+          # from the Kaggle dataset when a retrain needs them).
+          #
+          # It reports how far today's normalization has moved from the one the
+          # *shipped model* was trained with, and never writes into Models/: that copy
+          # belongs to the deployed bundle and only a training PR may change it.
+          set -o pipefail
+          python scripts/fetch_kaggle_dataset_meta.py \
+            --builder-kernel "$KAGGLE_BUILDER_KERNEL" \
+            --dataset "$KAGGLE_DATASET" \
+            --dest data/kaggle/dataset-meta \
+            --attempts 3 --retry-delay 20 \
+            ${{ inputs.require_dataset_meta == 'true' && '--required' || '' }} \
+            --summary-out meta-summary.md 2>&1 | tee meta.log
+          cat meta-summary.md >> "$GITHUB_STEP_SUMMARY" || true
+
+      - name: Report a dataset-metadata failure without hiding it
+        if: steps.meta.outcome == 'failure'
+        shell: bash
+        run: |
+          # `continue-on-error` keeps a missing builder kernel from blocking the day's
+          # forecast — the two are different payloads with different consequences. It
+          # must not make the failure invisible, so it is re-reported here as a
+          # warning annotation and in the summary, and the run still shows green only
+          # because the forecast, which is what the site serves, was published.
+          echo "::warning::the dataset metadata pull failed (see the 'Fetch the dataset builder's metadata' step). Today's forecast was published without it; the committed copy in data/kaggle/dataset-meta/ is unchanged."
+          {
+            echo '#### Dataset metadata was not refreshed'
+            echo '```'
+            tail -n 25 meta.log 2>/dev/null || echo '(no log)'
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Ingest the refreshed CSV into the forecast store
+        id: ingest
+        shell: bash
+        env:
+          BACKEND_API_KEY: ${{ secrets.BACKEND_API_KEY }}
+          PORT: '3001'
+        run: |
+          # Delivery is the committed snapshot; the store ingest is what makes the
+          # /api surfaces agree with it. Skipped, loudly, when the key is absent —
+          # a silent skip here is how the API ends up serving rows the site does not.
+          if [ -z "$BACKEND_API_KEY" ]; then
+            echo "::notice::store ingest skipped: BACKEND_API_KEY is not configured, so only the committed snapshot is refreshed"
+            echo "ingested=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          node backend/server.js > backend-server.log 2>&1 &
+          echo $! > backend-server.pid
+          for i in $(seq 1 30); do
+            if curl -sf "http://localhost:${PORT}/health" > /dev/null; then
+              echo "✅ backend is healthy"
+              break
+            fi
+            if [ "$i" = "30" ]; then
+              echo "❌ backend did not become healthy. Server log:"
+              cat backend-server.log
+              exit 1
+            fi
+            sleep 2
+          done
+          HTTP_CODE=$(curl -sS -X POST "http://localhost:${PORT}/api/v1/forecasts/update" \
+            -H "Authorization: Bearer $BACKEND_API_KEY" \
+            -F "file=@backend/data/forecasts/hazardnet_forecasts_latest.csv" \
+            -o ingest_response.json -w "%{http_code}")
+          echo "ingest responded HTTP $HTTP_CODE:"
+          cat ingest_response.json
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "::error::store ingest failed with HTTP $HTTP_CODE — the committed snapshot is refreshed but the API is not. The two must not disagree silently."
+            exit 1
+          fi
+          jq -e '.status == "success"' ingest_response.json > /dev/null
+          echo "ingested=true" >> "$GITHUB_OUTPUT"
+
+      - name: Stop the backend server
+        if: always()
+        shell: bash
+        run: |
+          if [ -f backend-server.pid ]; then
+            kill "$(cat backend-server.pid)" 2>/dev/null || true
+          fi
+          pkill -f "backend/server\\.js" 2>/dev/null || true
 
       - name: Run the alert engine (§1.3 levels, §1.6 gate)
         id: alerts
@@ -243,8 +317,8 @@ jobs:
           HAZARDNET_API_KEY: ${{ secrets.HAZARDNET_API_KEY }}
           BACKEND_API_URL: ${{ vars.BACKEND_API_URL }}
         run: |
-          # The engine lives behind /api/v1/alerts/run (backend/routes/alerts.js):
-          # it assesses the latest stored rows, auto-publishes at or below WATCH, and
+          # The engine lives behind /api/v1/alerts/run (backend/routes/alerts.js): it
+          # assesses the latest stored rows, auto-publishes at or below WATCH, and
           # queues anything above it for a named duty officer. Nothing above WATCH can
           # be published by this step, by construction.
           if [ -z "$HAZARDNET_API_KEY" ] || [ -z "$BACKEND_API_URL" ]; then
@@ -252,9 +326,9 @@ jobs:
             exit 0
           fi
           # include_alerts: true is load-bearing. Without it the route strips
-          # `batch.alerts` (it answers with `alerts_omitted`) and the snapshot step below
-          # has no rows to read — which is exactly how the first version of this wiring
-          # would have published "no alerts" every night while alerts existed.
+          # `batch.alerts` (answering `alerts_omitted`) and the snapshot step below has
+          # no rows to read — which is how the first version of this wiring would have
+          # published "no alerts" every night while alerts existed.
           curl -sS -f -X POST "$BACKEND_API_URL/api/v1/alerts/run" \
             -H "Authorization: Bearer $HAZARDNET_API_KEY" \
             -H 'Content-Type: application/json' \
@@ -262,13 +336,6 @@ jobs:
           jq -r '"alert engine: rows=" + (.rows|tostring) + " published=" + (.persisted.published|tostring) + " pending_review=" + (.persisted.pending_review|tostring) + " blocked=" + (.persisted.blocked|tostring) + " published_rows=" + ((.published_alerts // [])|length|tostring) + " levels=" + (.batch.counts|tojson)' alert-run.json | tee -a "$GITHUB_STEP_SUMMARY"
           # Fail here, not later, if the report does not carry the rows the snapshot
           # needs: a stripped report must never be read as "nothing to publish".
-          # NOTE: this line once ended with a stray unbalanced double quote
-          # (`… exit 1; }"`), which is a bash *syntax* error at end-of-input. The
-          # step still exited 0 on every run because the credential guard above
-          # returns before bash parses this far — so the defect only arms itself on
-          # the first run where HAZARDNET_API_KEY and BACKEND_API_URL are both set,
-          # i.e. exactly when the alert engine is supposed to work. Guarded by
-          # scripts/tests/test_workflows.py::test_every_run_block_is_valid_shell.
           jq -e 'has("published_alerts") or has("alerts") or (.batch.alerts | type == "array")' alert-run.json > /dev/null \
             || { echo "::error::alert run report carries no alert rows (published_alerts/alerts/batch.alerts all absent) — the snapshot cannot be built from it"; exit 1; }
 
@@ -289,7 +356,7 @@ jobs:
           # snapshot. The builder only carries PUBLISHED rows, stamps the §1.7
           # disclaimer on any row missing it, and refuses (exit 3) to replace a
           # non-empty snapshot with an empty one — a failed run must not read as
-          # "all clear". Re-run with --allow-empty when the quiet result is real.
+          # "all clear".
           if [ ! -f alert-run.json ]; then
             echo "::notice::alert snapshot not rebuilt: the alert engine did not run in this workflow"
             exit 0
@@ -298,38 +365,31 @@ jobs:
             --in alert-run.json \
             --out frontend/public/data/alerts-latest.json
 
-      - name: Validate forecast data
-        # Includes the coverage gate: the manifest must account for every
-        # requested unit, and a partial run must say so.
-        shell: bash
-        run: python scripts/validate_forecasts.py --manifest backend/data/forecasts/manifest.json
-
       - name: Rebuild website snapshot
         shell: bash
         env:
-          # The snapshot carries the run's coverage tally, provenance and lineage;
-          # without the run report it can only report what the CSV itself proves,
-          # and without the scene manifest it must say the rows' inputs are unnamed.
-          SNAPSHOT_RUN_REPORT: hazardnet_run_report.json
-          SCENE_MANIFEST: hazardnet_scene_manifest.json
+          # The snapshot's `source` and `kernel` fields are provenance: they are what
+          # lets a reader of frontend/public/data/forecasts-latest.json name the
+          # producer without reading this file. Unset, the builder writes
+          # "unspecified: built outside a workflow", which is a true statement nobody
+          # wants published to the status surface.
+          SNAPSHOT_SOURCE: ${{ env.SNAPSHOT_SOURCE }}
+          SNAPSHOT_KERNEL: ${{ env.KAGGLE_KERNEL }}
         run: node scripts/build_forecast_snapshot.mjs
 
-      # Phase 7: the freshness artifact quotes the snapshot and the manifest, so it is
-      # rebuilt in the same run that rewrites them — a status page derived from yesterday's
+      # The freshness artifact quotes the snapshot and the manifest, so it is rebuilt
+      # in the same run that rewrites them — a status page derived from yesterday's
       # inputs would be the exact lie it exists to prevent.
       - name: Rebuild freshness artifact
         shell: bash
         run: node scripts/build_freshness_artifact.mjs
 
-      # Phase 8: the content engine's pages are derived from the snapshot above, so they are
-      # rebuilt in the same run that rewrites it. A district page quoting yesterday's run is the
-      # same class of lie the freshness artifact exists to prevent.
-      # The full build, not just the engine: `npm run build` regenerates
-      # `frontend/src/content/generated-routes.json` from the snapshot this run just
-      # published and then prerenders every route, which is what rewrites the committed
-      # `frontend/public/data/content-index.json` (and the served `dist/` copy). Both are
-      # staged by the commit step below, so the repository can never carry pages or an
-      # inventory that describe a different snapshot than the one published here.
+      # The content engine's pages are derived from the snapshot above. The full build,
+      # not just the engine: `npm run build:frontend` regenerates
+      # frontend/src/content/generated-routes.json from the snapshot this run published
+      # and then prerenders every route, which rewrites the committed content index.
+      # All three are staged by the commit step, so the repository can never carry
+      # pages that describe a different snapshot than the one published here.
       - name: Rebuild generated content pages and the content index
         shell: bash
         run: npm run build:frontend
@@ -337,40 +397,57 @@ jobs:
       - name: Commit refreshed data
         shell: bash
         run: |
+          if [ "${{ steps.fetch.outputs.changed }}" != "true" ] && [ "${{ inputs.force_refresh }}" != "true" ]; then
+            echo "ℹ️ the notebook output is byte-identical to what is already committed — nothing to publish."
+            exit 0
+          fi
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           git add backend/data/forecasts/ frontend/public/data/forecasts-latest.json
           # The derived status artifact travels with the data it describes (Phase 7).
           git add frontend/public/data/freshness.json
-          # Content engine output (Phase 8): the generated pages plus the committed index of
-          # what the build published. `--check` in CI fails if they stop matching the snapshot.
+          # Content engine output (Phase 8): the generated pages plus the committed
+          # index of what the build published. `--check` in CI fails if they stop
+          # matching the snapshot.
           git add frontend/src/content/generated-routes.json
           git add frontend/public/data/content-index.json
-          # Only stages the alert snapshot when the builder actually produced one;
+          # The dataset builder's metadata is committed beside the forecast it
+          # contextualises, with the provenance record that says which kernel it came
+          # from and how far it has drifted from the shipped model's normalization.
+          # Guarded like the alert snapshot: `git add` on a path that does not exist
+          # fails the step, and this directory is absent whenever the metadata pull
+          # was skipped or failed — which must not cost the day's forecast its commit.
+          if [ -d data/kaggle/dataset-meta ]; then
+            git add data/kaggle/dataset-meta/
+          fi
+          # Only stage the alert snapshot when the builder actually produced one;
           # `git add` on a missing path would fail the whole commit step.
           if [ -f frontend/public/data/alerts-latest.json ]; then
             git add frontend/public/data/alerts-latest.json
           fi
           if git diff --staged --quiet; then
-            echo "ℹ️ Forecast data unchanged since the last run — nothing to commit."
+            echo "ℹ️ nothing changed once the derived artifacts were rebuilt — no commit."
             exit 0
           fi
           PREDICTION_DATE=$(jq -r '.prediction_date // "unknown"' backend/data/forecasts/manifest.json)
           ROW_COUNT=$(jq -r '.row_count // 0' backend/data/forecasts/manifest.json)
+          DISTRICTS=$(jq -r '.district_count // 0' backend/data/forecasts/manifest.json)
+          SHAPE=$(jq -r '.source_shape // "unknown"' backend/data/forecasts/manifest.json)
+          DRIFT=$(jq -r '.normalization_vs_shipped_model.state // "not compared"' data/kaggle/dataset-meta/PROVENANCE.json 2>/dev/null || echo 'not pulled')
           git pull --rebase --autostash origin "${GITHUB_REF_NAME}" || true
-          git commit -m "chore(data): daily forecast refresh ${PREDICTION_DATE}" \
-            -m "Source: scripts/auto_forecast.py on GitHub Actions (GEE + Open-Meteo + TFLite)" \
-            -m "Rows: ${ROW_COUNT} | Generators: .github/workflows/daily_forecast.yml" \
+          git commit -m "chore(data): daily Kaggle sync ${PREDICTION_DATE}" \
+            -m "Source: kaggle kernels output ${KAGGLE_KERNEL} (${SHAPE} schema)" \
+            -m "Rows: ${ROW_COUNT} across ${DISTRICTS} districts | Dataset normalization vs shipped model: ${DRIFT}" \
+            -m "Publisher: .github/workflows/daily_forecast.yml" \
             -m "Timestamp: $(date -u +"%Y-%m-%dT%H:%M:%SZ")"
-          # An explicit refspec, not a bare `git push`: with no upstream configured — and
-          # whenever the checkout is not sitting on a local branch — git dies with exit 128
-          # and the only thing the run reports is "Process completed with exit code 128",
-          # which is how hindcast.yml failed on 2026-09-19 (run 35430992137) after every
-          # scoring step had passed. The summary block below makes the next one legible:
-          # branch state, the last commits and the remote answer for themselves.
+          # An explicit refspec, not a bare `git push`: with no upstream configured —
+          # and whenever the checkout is not sitting on a local branch — git dies with
+          # exit 128 and the run reports only "Process completed with exit code 128",
+          # which is how hindcast.yml failed on 2026-09-19 after every scoring step had
+          # passed. The summary block below makes the next one legible.
           if ! git push origin "HEAD:${GITHUB_REF_NAME}"; then
             {
-              echo '#### The daily forecast commit could not be pushed'
+              echo '#### The daily sync commit could not be pushed'
               echo '```'
               git status --short --branch
               git log --oneline -3
@@ -381,20 +458,21 @@ jobs:
             exit 1
           fi
 
-      - name: Upload forecast artifacts
+      - name: Upload sync artifacts
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: daily-forecast-output
+          name: daily-kaggle-sync
           path: |
-            auto-forecast.log
-            hazardnet_forecasts_latest.csv
-            hazardnet_run_report.json
-            hazardnet_scene_manifest.json
-            publish.log
+            fetch.log
+            fetch-summary.md
+            meta.log
+            meta-summary.md
+            ingest_response.json
+            data/kaggle_notebook_output/
             backend/data/forecasts/manifest.json
+            data/kaggle/dataset-meta/PROVENANCE.json
             frontend/public/data/forecasts-latest.json
-            frontend/public/data/alerts-latest.json
             frontend/public/data/freshness.json
           if-no-files-found: ignore
           retention-days: 14
@@ -404,11 +482,15 @@ jobs:
         shell: bash
         run: |
           {
-            echo "### Daily forecast pipeline — $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            echo "### Daily Kaggle sync — $(date -u +%Y-%m-%dT%H:%M:%SZ)"
             echo ""
-            echo "- generator: \`scripts/auto_forecast.py\` (GEE + Open-Meteo + TFLite) on the runner — no Kaggle"
-            echo "- publish: \`scripts/publish_forecast_csv.py\` (changed: ${{ steps.publish.outputs.changed || 'n/a' }})"
-            echo "- delivery: committed snapshot \`frontend/public/data/forecasts-latest.json\`"
+            echo "- producer: \`$KAGGLE_KERNEL\` on Kaggle (Earth Engine + Open-Meteo + TFLite), kernel status: ${{ steps.preflight.outputs.kernel_status || 'not checked' }}"
+            echo "- publisher: this workflow — fetch, translate, validate, rebuild, commit"
+            echo "- changed since the committed artifact: ${{ steps.fetch.outputs.changed || 'n/a' }} (schema: ${{ steps.fetch.outputs.shape || 'n/a' }})"
+            echo "- rows: ${{ steps.fetch.outputs.rows || '0' }} across ${{ steps.fetch.outputs.districts || '0' }} districts, prediction date ${{ steps.fetch.outputs.prediction_date || 'unknown' }}"
+            echo "- districts dropped for want of an identity: ${{ steps.fetch.outputs.unmatched || '0' }}"
+            echo "- store ingest: ${{ steps.ingest.outputs.ingested || 'skipped' }} (store: $FORECAST_STORE)"
+            echo "- dataset metadata: ${{ steps.meta.outputs.source || 'not pulled' }}, normalization drift ${{ steps.meta.outputs.drift || 'n/a' }} (${{ steps.meta.outputs.drift_values || '0' }} value(s))"
             if [ -f frontend/public/data/alerts-latest.json ]; then
               echo "- alerts snapshot: $(jq -r '(.alerts|length)|tostring' frontend/public/data/alerts-latest.json) published row(s) committed, schema $(jq -r '.schema' frontend/public/data/alerts-latest.json)"
             fi
@@ -417,12 +499,14 @@ jobs:
             else
               echo "- alerts: not run (see the alert engine step notice)"
             fi
-            echo "- API push: PUSH_TO_API=$PUSH_TO_API"
-            if [ -f backend/data/forecasts/manifest.json ]; then
-              jq -r '"- prediction_date: " + (.prediction_date // "unknown") + "\n- rows: " + ((.row_count // 0) | tostring) + "\n- source: " + (.source // "unknown")' backend/data/forecasts/manifest.json
-              jq -r '"- coverage: " + ((.coverage.produced_units // 0) | tostring) + "/" + ((.coverage.requested_units // 0) | tostring) + " units (" + (.coverage_status // "unknown") + "), districts: " + ((.coverage.districts_with_any_horizon // 0) | tostring) + "\n- model: " + (.model_version // "unrecorded") + "\n- soil channels fabricated: " + ((.soil_channels_fabricated // false) | tostring) + "\n- dataset_version: " + (.dataset_version // "unrecorded") + " (" + ((.scene_manifest.rows_stamped // 0) | tostring) + " rows carry a scene version, scenes_enumerated=" + ((.scene_manifest.scenes_enumerated // false) | tostring) + ")"' backend/data/forecasts/manifest.json
-              if [ "$(jq -r '.coverage_status // "unknown"' backend/data/forecasts/manifest.json)" != "complete" ]; then
-                echo "- ⚠️ partial run: districts missing a forecast are labelled as baseline on the site" >> "$GITHUB_STEP_SUMMARY"
+            # Recency, stated rather than assumed: a Kaggle schedule that quietly stopped
+            # is visible here as a prediction date that stops advancing, long before the
+            # three-day freshness gate in validate_forecasts.py turns it red.
+            if [ -n "${{ steps.fetch.outputs.prediction_date }}" ]; then
+              AGE_DAYS=$(( ( $(date -u +%s) - $(date -u -d "${{ steps.fetch.outputs.prediction_date }}" +%s) ) / 86400 ))
+              echo "- the rows are ${AGE_DAYS} day(s) old; this cron runs at 00:00 UTC, so a Kaggle schedule later in the day shows up here as 1"
+              if [ "$AGE_DAYS" -gt 1 ]; then
+                echo "- ⚠️ more than a day old: check the notebook's Kaggle schedule, or align this workflow's cron with it"
               fi
             fi
           } >> "$GITHUB_STEP_SUMMARY"
@@ -430,4 +514,4 @@ jobs:
       - name: Notify on failure
         if: failure()
         run: |
-          echo "::error::Daily forecast pipeline failed -- the site keeps serving the last committed snapshot. The generator now fails fast with the real cause in the 'Execute pipeline' step (GEE/Open-Meteo availability, credentials, or a schema change in scripts/auto_forecast.py); the publish sanity check no longer masks it."
+          echo "::error::The daily Kaggle sync failed — the site keeps serving the last committed snapshot, which is the intended failure mode. The failing step names the cause: the preflight maps Kaggle's 401/403/404 onto the owner action it needs, the fetch step reports a schema this publisher does not know, and the validation step reports rows that are out of bounds or older than three days. Decision table: docs/ops/kaggle-pipeline-triage.md."

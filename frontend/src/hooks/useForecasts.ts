@@ -2,13 +2,13 @@
  * Forecast data hooks — TanStack Query wrappers around
  * `GET /api/v1/forecasts/bulk` (the Kaggle pipeline's serving path).
  *
- * Data cadence: the daily workflow re-runs the Kaggle notebook, and the
- * hourly workflow (hourly_forecast.yml) pulls the notebook's latest CSV
- * output (`kaggle kernels output ashifahmedshuvo/hazardnet-auto-forecast-pipeline`)
- * into the forecast store and into the committed static snapshot. The client
- * polls for fresh data so an open map picks up each hourly refresh without a
- * page reload. When the API is unreachable, the hook falls back to the
- * committed hourly snapshot (/data/forecasts-latest.json); when that is also
+ * Data cadence: the Kaggle notebooks run daily on Kaggle's own schedule, and
+ * `daily_forecast.yml` pulls the forecast notebook's output
+ * (`kaggle kernels output ashifahmedshuvo/hazardnet-auto-forecast-pipeline`)
+ * into the forecast store and into the committed static snapshot at 00:00 UTC.
+ * The client still polls, so an open map picks up a re-run or a dispatched pull
+ * without a page reload. When the API is unreachable, the hook falls back to the
+ * committed snapshot (/data/forecasts-latest.json); when that is also
  * unavailable, callers degrade to the static `ALL_64_DISTRICTS` baseline via
  * `useLiveDistricts`.
  */
@@ -29,7 +29,7 @@ import {
 
 /**
  * Fetch + defensively parse the bulk forecast payload for one horizon.
- * Falls back to the committed hourly snapshot when the API is unreachable,
+ * Falls back to the committed snapshot when the API is unreachable,
  * and throws only when both sources fail (so TanStack Query reports an
  * error and the static baseline remains in use).
  */
@@ -42,11 +42,11 @@ export async function loadForecasts(horizon: ForecastHorizon): Promise<ForecastR
     const rows = parseBulkResponse(await res.json());
     if (rows.length > 0) return rows;
   } catch {
-    // fall through to the committed hourly snapshot
+    // fall through to the committed snapshot
   }
   const snapshotRows = await fetchStaticForecastSnapshot(horizon);
   if (snapshotRows.length > 0) return snapshotRows;
-  throw new Error('Forecast API and hourly snapshot are both unavailable');
+  throw new Error('Forecast API and committed snapshot are both unavailable');
 }
 
 /** Fetch + defensively parse the bulk forecast payload for one horizon. */
@@ -54,9 +54,9 @@ export function useForecasts(horizon: ForecastHorizon = '7_days') {
   return useQuery({
     queryKey: ['forecasts', 'bulk', horizon],
     queryFn: () => loadForecasts(horizon),
-    // The dataset is refreshed hourly by the Kaggle pipeline. Poll in the
-    // background so an open map receives each new ingestion without
-    // requiring a page reload.
+    // The dataset is refreshed daily by the Kaggle pull (and whenever that
+    // workflow is dispatched by hand). Poll in the background so an open map
+    // receives a new ingestion without requiring a page reload.
     staleTime: 5 * 60 * 1000,
     gcTime: 24 * 60 * 60 * 1000,
     refetchInterval: 5 * 60 * 1000,

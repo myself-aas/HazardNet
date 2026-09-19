@@ -176,12 +176,15 @@ don't wait for the 00:00 UTC clock:
    - Open the site: Peak Hazard Window / Incident Ingestion cards show live dates
      instead of the *"live data unavailable"* fallback.
 
-> Kaggle is now optional everywhere. The three Kaggle workflows
-> (`forecast-pipeline`, `hourly_forecast`, `weekly_forecast`) are
-> `workflow_dispatch`-only legacy — see
-> [`docs/ops/kaggle-pipeline-triage.md`](kaggle-pipeline-triage.md). Rotating the
-> Kaggle token (§1a-3) is therefore **no longer needed to keep the site fresh**;
-> it only matters if you dispatch one of those legacy jobs.
+> Kaggle is the producer again (ADR 0013, 2026-09-20): `daily_forecast.yml` pulls
+> the forecast notebook's output at 00:00 UTC, so **`KAGGLE_USERNAME`/`KAGGLE_KEY`
+> are now the credentials that keep the site fresh** — rotating them (§1a-3) is a
+> production action, not an optional one. `EE_SERVICE_ACCOUNT_JSON` is no longer in
+> the daily path (the notebook holds the Earth Engine key on Kaggle); it is only
+> needed to run the unscheduled fallback `scripts/auto_forecast.py` by hand.
+> `forecast-pipeline` and `weekly_forecast` remain `workflow_dispatch`-only, and
+> [`docs/ops/kaggle-pipeline-triage.md`](kaggle-pipeline-triage.md) is the decision
+> table for a red pull.
 
 ## Action 3 — Confirm branch protection 🟡 (~10 min, after the merge)
 

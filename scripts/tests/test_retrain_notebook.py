@@ -1,21 +1,24 @@
-"""The training notebook is now an automation input, so it gets tested like one.
+"""The training notebook is a contract with CI, so it gets tested like one.
 
-`ml/HazardNet_auto_train.ipynb` used to be a document a person drove: it prompted for a
-GitHub PAT with `getpass`, `cd`'d into a Drive folder whose name did not match the one
-every later cell read, hardcoded one fold's checkpoint path, warned-but-continued when the
-ONNX→TFLite conversion changed the model's predictions, and printed "Conversion
-placeholder" above 569 lines of real converter. Every one of those is survivable with a
-human at the keyboard and fatal at hour six of an unattended run on a free-tier GPU.
+`ml/HazardNet_auto_train.ipynb` is the monthly training run, and a person drives it: it is
+opened on a Colab T4, run top to bottom, and the last cell publishes the bundle into a pull
+request. What used to be true — that a workflow launched it, watched it every twenty
+minutes and collected the bundle over SSH — was never actually true in practice: Colab has
+no non-interactive session, so that automation is deleted
+(`model_retrain.yml`, `model_retrain_watch.yml`, `scripts/mlops/colab_session.py`,
+`scripts/mlops/retrain_cli.py`).
 
-`model_retrain.yml` now executes this notebook with nobody watching, so the properties
-that used to be "the author knows" have to be checked:
+Being human-driven does not make it untestable, because everything CI consumes from this
+notebook is a *file with a schema*, and those properties are checkable by reading the
+notebook as data:
 
 * it parses, cell by cell, and defines every name before a later cell uses it;
-* nothing in it can block on a keyboard or hold a credential;
-* the run contract is wired in — heartbeat, resumable state, manifest publish — because
-  those are the only signals that cross from the VM to a GitHub runner;
+* the run contract is wired in — phase log, resumable state, manifest publish — using
+  `scripts/mlops/retrain_state.py`, the same module `model_intake.yml` validates against;
 * the parity gate it enforces is the contract's gate, not a looser local one;
-* the fold it converts is the fold it trained.
+* the fold it converts is the fold it trained;
+* the credential prompt exists in exactly one place, the last cell, and the token it takes
+  is never written to a file, a git remote or an output.
 
 These run in CI with no GPU, no Colab account and no TensorFlow: they read the notebook as
 data, which is the only way to test something that executes somewhere else.
@@ -99,16 +102,32 @@ def test_no_cell_is_collapsed_onto_one_line(cells):
 
 
 @pytest.mark.parametrize('needle,why', [
-    ('getpass', 'a prompt nobody can answer hangs the run until the session is recycled'),
-    ('GITHUB_PAT', 'a fine-grained token in a notebook is a standing write credential'),
-    ('GIT_USER_EMAIL', 'git identity belongs to Actions, which has GITHUB_TOKEN'),
-    ('api.github.com', 'the notebook must not open pull requests'),
-    ('git push', 'pushing from inside a session is what the intake workflow is for'),
+    ('GITHUB_PAT', 'a token bound to a name that suggests it is stored, not prompted for'),
+    ('GIT_USER_EMAIL', 'the commit identity comes from the authenticated API user, not a constant'),
+    ('git push', 'a push needs the token inside a remote URL, which git copies into .git/config'),
+    ('git remote', 'same reason: no remote may ever hold the credential'),
     ('HazardNet Deployment', 'the space-spelled Drive folder no cell could ever read'),
 ])
 def test_the_notebook_cannot_block_or_leak(cells, needle, why):
     for index, source in enumerate(cells):
         assert needle not in _code_only(source), f'cell {index} still contains {needle!r}: {why}'
+
+
+def test_the_credential_prompt_is_the_last_cell_and_only_the_last(cells):
+    """One prompt, at the end, answered by whoever just read the parity numbers.
+
+    `getpass` in an early cell means the token sits in the notebook's memory for the eight
+    hours the training takes; `getpass` in several cells means several tokens. Both the
+    prompt and the API host it talks to belong to the publishing cell alone.
+    """
+    prompting = [i for i, source in enumerate(cells) if 'getpass' in _code_only(source)]
+    publishing = [i for i, source in enumerate(cells) if 'api.github.com' in _code_only(source)]
+    assert prompting == [len(cells) - 1], (
+        f'getpass appears in cells {prompting}; the token prompt must be in the last cell only'
+    )
+    assert publishing == [len(cells) - 1], (
+        f'GitHub API calls appear in cells {publishing}; publishing must be the last cell only'
+    )
 
 
 def test_the_tensor_has_a_headless_path(cells):
@@ -124,7 +143,8 @@ def test_the_tensor_has_a_headless_path(cells):
 def test_the_drive_mount_is_not_assumed(cells):
     mount = _cell('DRIVE_MOUNTED = Path(')
     assert 'if not DRIVE_MOUNTED and not UNATTENDED' in mount, (
-        'drive.mount() prompts for a code: an unattended run must never call it'
+        'drive.mount() prompts for a code and opens a browser tab: it must stay behind the '
+        'mount check, and behind the run_config flag that says a session is unattended'
     )
 
 
@@ -337,11 +357,71 @@ def test_the_published_set_is_the_contract_set(cells):
     }
 
 
-def test_the_notebook_ends_without_touching_git(cells):
-    """The last cell used to clone with a PAT, push a branch and open a pull request from
-    inside the session. Intake does that now, with GITHUB_TOKEN, on a runner."""
+def test_the_notebook_ends_by_opening_a_pull_request(cells):
+    """The last cell is the handoff to CI: publish, then let the gate and the human decide.
+
+    It creates blobs, a tree, a commit and a ref over the GitHub API rather than pushing,
+    so the token never reaches a git config. It stops at `POST /pulls`: nothing in the
+    notebook merges, and nothing in it records a champion.
+    """
+    last = _code_only(cells[-1])
+    for needle, why in [
+        ('/git/blobs', 'the artifacts are uploaded as blobs, so binaries survive base64 intact'),
+        ('/git/trees', 'a tree built on main\'s tree, so the PR contains only what changed'),
+        ('/git/commits', 'the commit is created through the API, not through a local push'),
+        ('/git/refs', 'the branch is created through the API'),
+        ('/pulls', 'the cell opens a pull request — that is the whole point of it'),
+        ('rs.write_version_handshake', 'VERSION.json must come from the canonical writer'),
+        ('mlops.cli', 'REGISTRY.json must come from the canonical writer too'),
+        ('run_manifest.json', 'the run manifest travels with the bundle it describes'),
+        ('rs.REQUIRED_ARTIFACTS', 'the published set is the contract set, not a local list'),
+    ]:
+        assert needle in last, f'the publishing cell no longer {why} ({needle!r} missing)'
+    assert 'git push' not in last, 'a push would put the token in .git/config'
+
+    # The cell's own prose names `promote` and `merge` — it tells the reviewer those are
+    # their two remaining steps — so the check has to be on invocations, not on words.
+    invocations = re.findall(r'subprocess\.run\(\s*\[([^\]]*)\]', last, re.S)
+    assert invocations, 'the publishing cell runs no subprocess at all?'
+    for argv in invocations:
+        for verb in ('promote', 'push', 'merge', 'gh '):
+            assert verb not in argv, f'the publishing cell invokes {verb!r}: {argv.strip()}'
+    api_paths = re.findall(r"_api\('POST',\s*f?'([^']+)'", last)
+    assert api_paths, 'the publishing cell creates nothing through the API?'
+    for path in api_paths:
+        assert not path.endswith(('/merge', '/promote')), (
+            f'the publishing cell calls {path!r}: merging and promotion are human acts'
+        )
+    # `registry --write` is the one legitimate write flag here; `promote --write` records a
+    # champion, and appears in this cell only as an instruction to the reviewer.
+    assert "'registry', '--write'" in last, 'REGISTRY.json must be rebuilt by the CLI'
+    assert 'promote' not in '\n'.join(invocations)
+
+
+def test_the_prompted_token_is_never_written_or_printed(cells):
+    """The token is asked for, used in an Authorization header, and cleared.
+
+    It must not reach a file, an environment variable, a notebook output or an exception
+    message. `getpass` covers the echo-to-terminal case; the rest is on this notebook.
+    """
     last = cells[-1]
-    assert 'git' not in _code_only(last).lower()
-    assert 'TFLITE_PATH' in last or 'beat(' in last, (
-        'the notebook should end with the smoke test, not with a publishing step'
+    assert 'TOKEN = getpass.getpass(' in last, 'the token must come from a getpass prompt'
+    assert "TOKEN = ''" in last, 'the cell must clear the token when it is done with it'
+    assert 'Authorization' in last, 'the token is used as a bearer header and nowhere else'
+    for leak in ('print(TOKEN', 'print(f\'{TOKEN', 'os.environ[\'HN_TOKEN',
+                 'os.environ["HN_TOKEN', 'write_text(TOKEN', 'kaggle.json'):
+        assert leak not in last, f'the publishing cell writes or prints the token: {leak!r}'
+    # A prompt that names the scopes it needs is what keeps the token from being an
+    # admin PAT somebody reached for in a hurry.
+    assert 'Contents' in last and 'Pull requests' in last, (
+        'the prompt must name the two scopes the token needs, so a broader one is not used'
     )
+
+
+def test_the_pr_body_carries_the_numbers_the_gate_will_check(cells):
+    """The reviewer reads fold metrics, parity and sha256s in the PR, not in a Colab log
+    that is already gone."""
+    body = _cell('_pr_body')
+    for needle in ('hazard_agreement_pct', 'PARITY_GATE_PCT', 'sha256', 'accuracy',
+                   'duration_seconds', 'environment'):
+        assert needle in body, f'the PR body must report {needle}'

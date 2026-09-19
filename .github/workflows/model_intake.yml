@@ -1,438 +1,439 @@
-name: Model Intake (bundle → pull request)
+name: Model Bundle PR Gate
 
 # ─────────────────────────────────────────────────────────────────────────────
-# The third leg: a finished bundle becomes a pull request, and nothing more.
+# WHAT THIS GATES
 #
-# This workflow never promotes a model. It collects what a Colab run produced,
-# proves the bundle is the bundle its manifest describes, stamps the handshake
-# `scripts/auto_forecast.py` refuses to run without, rebuilds the registry, and
-# opens a pull request whose body carries the evidence. A human reads it and merges
-# — that is the standing rule (`docs/mlops/RETRAIN_AND_PROMOTION.md`), and it is why
-# the last step of the promotion ladder is a merge button rather than a script.
+# The monthly training run is a human act. The owner opens
+# ml/HazardNet_auto_train.ipynb on Colab (T4), runs the monthly block, and the
+# notebook's own PR cell:
+#   1. writes Models/VERSION.json and Models/REGISTRY.json through
+#      mlops.retrain_state.write_version_handshake (the repository's canonical
+#      writers — no second implementation of the version scheme),
+#   2. pushes a branch with a fine-grained PAT typed at a getpass prompt (never
+#      stored in the notebook, never in CI),
+#   3. opens the pull request.
 #
-# Two jobs, because two toolchains:
-#   collect    Python 3.12 + the Colab CLI (which requires 3.12+) to pull the bundle
-#              off the VM — or out of Drive in a scratch session, if the VM that made
-#              it is gone, which by the time a run finishes it usually is.
-#   candidate  Python 3.11 + tflite-runtime==2.14.0, the exact pins
-#              model-validation.yml uses, so the smoke test that gates this PR is the
-#              same smoke test that will run on it.
+# What CI owes that PR is a gate, not a promotion. This workflow proves the
+# bundle is loadable under the runtime the API actually uses, proves the
+# handshake the notebook committed is byte-identical to what the canonical
+# writers produce from the same artifacts, runs the same smoke test
+# model-validation.yml will run, and shows what a promotion decision would say
+# today. Then it stops and comments. Merging is the human's step, and recording
+# a champion requires a named approver (docs/mlops/RETRAIN_AND_PROMOTION.md) —
+# a workflow that could promote would make "human merge gate" a comment rather
+# than a constraint.
 #
-# Hourly rather than event-driven: a workflow that dispatches another workflow gets a
-# `GITHUB_TOKEN` that cannot push or open a PR, so the handoff between "the run
-# finished" and "the bundle is a PR" goes through the run marker in git instead. Most
-# ticks find nothing and cost a minute.
+# WHAT WAS HERE BEFORE (deleted 2026-09-20)
+#
+# A two-job collector: `collect` polled a Colab VM that model_retrain.yml had
+# started, verified a run marker the launcher had committed, pulled the bundle
+# over SSH and opened the PR itself; a watcher workflow on a 20-minute cron
+# existed only to notice a recycled session. Every hop depended on a machine
+# reaching a surface Colab exposes interactively — the launcher's own comment
+# conceded the CLI had no non-interactive auth path. With the monthly run back
+# in a human's hands, the collector had nothing left to collect from, so
+# model_retrain.yml, model_retrain_watch.yml, scripts/mlops/colab_session.py and
+# scripts/mlops/retrain_cli.py are gone and this file is the only remaining
+# model-side workflow besides model-validation.yml and the nightly mlops.yml.
 # ─────────────────────────────────────────────────────────────────────────────
 
 on:
-  schedule:
-    - cron: '10 * * * *'
+  pull_request:
+    paths:
+      - 'Models/**'
+      - 'ml/HazardNet_auto_train.ipynb'
+      - 'scripts/mlops/**'
+      - 'scripts/validate_model_bundle.py'
+      - 'scripts/gen-model-version.mjs'
+      - '.github/workflows/model_intake.yml'
+      - '.github/workflows/model-validation.yml'
   workflow_dispatch:
     inputs:
-      run_id:
-        description: 'Collect a specific run (default: the oldest complete one not yet intaken)'
+      pr:
+        description: 'Pull request number to comment the gate report on (blank: validate the checkout, comment nowhere)'
         required: false
-        type: string
-      skip_pr:
-        description: 'Collect and validate only; do not open a pull request'
-        required: false
-        type: boolean
-        default: false
+        default: ''
 
 permissions:
-  contents: write        # pushes the candidate branch and the marker update
-  pull-requests: write   # opens the pull request
-  issues: write          # reports a bundle that did not validate
+  contents: read
+  pull-requests: write
+  checks: write
 
+# One gate per PR head: two overlapping runs would post two reports and could
+# interleave writes into Models/ while regenerating the handshake.
 concurrency:
-  group: model-intake
+  group: model-intake-${{ github.event.pull_request.number || inputs.pr || github.ref }}
   cancel-in-progress: false
 
 env:
-  PYTHONUNBUFFERED: '1'
+  BUNDLE_DIR: Models
+  # These two pins are the contract with model-validation.yml: the gate must fail
+  # for the same reasons CI will, or a reviewer reads a green gate that the merge
+  # immediately turns red. scripts/tests/test_workflows.py asserts both files
+  # carry the same pins, so they cannot drift silently.
+  TFLITE_PIN: tflite-runtime==2.14.0
+  NUMPY_PIN: numpy==1.26.4
 
 jobs:
-  collect:
-    name: Collect the bundle from Colab
+  gate:
+    name: Gate the candidate bundle
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    outputs:
-      # The fallback step re-runs the same collection against an archive, so its answers
-      # win when it produced any.
-      found: ${{ steps.fallback.outputs.found || steps.collect.outputs.found }}
-      valid: ${{ steps.fallback.outputs.valid || steps.collect.outputs.valid }}
-      run_id: ${{ steps.fallback.outputs.run_id || steps.collect.outputs.run_id }}
-
     steps:
-      - name: Checkout
+      - name: Check out the pull request
         uses: actions/checkout@v7
+        with:
+          # The registry rebuild and the "what did this PR change under Models/"
+          # diff both read history; a depth-1 checkout makes the diff empty and
+          # the report useless.
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v7
         with:
-          python-version: '3.12'
-
-      - name: Install the Colab CLI
-        shell: bash
-        run: |
-          set -euo pipefail
-          python -m pip install --quiet --disable-pip-version-check google-colab-cli
-          colab --version
-
-      - name: Collect and validate against the manifest
-        id: collect
-        continue-on-error: true
-        shell: bash
-        env:
-          COLAB_TOKEN_JSON: ${{ secrets.COLAB_TOKEN_JSON }}
-          HN_RUN_ID: ${{ inputs.run_id }}
-        run: |
-          set -euo pipefail
-          cd scripts
-          EXTRA=''
-          if [ -n "${HN_RUN_ID:-}" ]; then EXTRA="--run-id $HN_RUN_ID"; fi
-          # shellcheck disable=SC2086
-          python -m mlops.retrain_cli collect --bundle-dir "${GITHUB_WORKSPACE}/data/mlops/incoming" $EXTRA
-
-      - name: Fall back to the archive the watcher made
-        id: fallback
-        if: steps.collect.outputs.valid != 'true'
-        shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          set -uo pipefail
-          # The VM that made a bundle is usually gone by the time it is collected — that
-          # is what a free tier does. The watcher archives the bundle on the tick that
-          # sees the manifest, so intake can still validate it; `collect` recognises a
-          # bundle already on disk and skips the VM entirely.
-          PICK="${{ inputs.run_id }}"
-          ARTIFACT=$(gh api --paginate "repos/${GITHUB_REPOSITORY}/actions/artifacts?per_page=100" \
-            --jq "[.artifacts[] | select(.name | startswith(\"retrain-bundle-\")${PICK:+ | select(.name | endswith(\"${PICK}\"))}] | sort_by(.created_at) | last | .id // empty")
-          if [ -z "$ARTIFACT" ]; then
-            echo "· no archived bundle to fall back to"
-            exit 0
-          fi
-          NAME=$(gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${ARTIFACT}" --jq '.name')
-          RUN_ID="${NAME#retrain-bundle-}"
-          echo "· falling back to ${NAME}"
-          DEST="data/mlops/incoming/${RUN_ID}"
-          mkdir -p "$DEST"
-          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts/${ARTIFACT}/zip" > "${RUNNER_TEMP}/bundle.zip"
-          unzip -o -q "${RUNNER_TEMP}/bundle.zip" -d "$DEST"
-          cd scripts
-          python -m mlops.retrain_cli collect --run-id "$RUN_ID" \
-            --bundle-dir "${GITHUB_WORKSPACE}/data/mlops/incoming"
-
-      - name: Upload the collected bundle
-        if: steps.collect.outputs.found == 'true'
-        uses: actions/upload-artifact@v7
-        with:
-          name: retrain-bundle-${{ steps.collect.outputs.run_id }}
-          path: data/mlops/incoming/${{ steps.collect.outputs.run_id }}/
-          if-no-files-found: error
-          retention-days: 14
-
-      - name: Report a bundle that did not validate
-        if: steps.collect.outcome == 'failure'
-        shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
-          RUN_ID: ${{ steps.collect.outputs.run_id }}
-        run: |
-          set -uo pipefail
-          TITLE="Retrain bundle ${RUN_ID:-} did not validate"
-          BODY=$(cat <<EOF
-          A completed retrain produced a bundle that intake will not turn into a pull request.
-
-          The manifest gate rejected it — missing artifacts, a size that cannot be the CNN,
-          a hash that does not match the bytes, fold metrics outside 0..1, or (the one that
-          matters most) an ONNX→TFLite parity below 99%, which means the conversion changed
-          the model's predictions rather than re-expressing them.
-
-          The run marker at \`data/mlops/retrain-runs/${RUN_ID:-unknown}.json\` keeps the run
-          eligible, so a bundle that becomes complete on a later attempt is picked up
-          automatically. The champion model is unaffected either way.
-
-          [Intake run ${GITHUB_RUN_ID}](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}) —
-          the \`Collect and validate\` step lists every reason.
-          EOF
-          )
-          EXISTING=$(gh issue list --state open --search "did not validate" --json number --jq '.[0].number // empty')
-          if [ -n "$EXISTING" ]; then
-            gh issue comment "$EXISTING" --body "$BODY"
-          else
-            gh issue create --title "$TITLE" --body "$BODY" --label "mlops" || \
-              echo "::warning::could not open an issue; the reasons are only in the run log"
-          fi
-
-  candidate:
-    name: Open the promotion pull request
-    needs: collect
-    if: needs.collect.outputs.valid == 'true'
-    runs-on: ubuntu-latest
-    timeout-minutes: 40
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v7
-
-      - name: Set up Python
-        uses: actions/setup-python@v7
-        with:
-          # The pins model-validation.yml runs, so this job's smoke test and the one
-          # that will gate the PR are the same test on the same runtime.
           python-version: '3.11'
-
-      - name: Download the collected bundle
-        uses: actions/download-artifact@v7
-        with:
-          name: retrain-bundle-${{ needs.collect.outputs.run_id }}
-          path: data/mlops/incoming/${{ needs.collect.outputs.run_id }}
 
       - name: Set up Node
         uses: actions/setup-node@v7
         with:
-          # For one script: `scripts/gen-model-version.mjs` writes the handshake, and it
-          # is the only writer of Models/VERSION.json in the repository.
-          node-version: '22'
+          node-version: '20'
 
       - name: Install the model runtime
-        shell: bash
-        run: |
-          set -euo pipefail
-          python -m pip install --quiet --disable-pip-version-check tflite-runtime==2.14.0 numpy==1.26.4
+        # tflite-runtime, not tensorflow: this is the wheel the API loads at
+        # inference time, and the whole point of the smoke test is that the
+        # candidate behaves under *that* runtime.
+        run: pip install "$TFLITE_PIN" "$NUMPY_PIN"
 
-      - name: Put the bundle where it would ship
-        id: place
-        shell: bash
-        env:
-          RUN_ID: ${{ needs.collect.outputs.run_id }}
-        run: |
-          set -euo pipefail
-          BUNDLE="data/mlops/incoming/${RUN_ID}"
-          test -f "${BUNDLE}/run_manifest.json" || { echo "::error::the bundle has no manifest"; exit 1; }
-          # Only the artifacts the manifest claims are copied. VERSION.json is stamped
-          # below rather than taken from the run, and REGISTRY.json is rebuilt, because
-          # both describe the repository's state and not the VM's.
-          for artifact in hazardnet_fp32.tflite hazardnet_int8.tflite labels.json \
-                          normalization_stats.json preprocessing_config.json; do
-            if [ -f "${BUNDLE}/${artifact}" ]; then
-              cp "${BUNDLE}/${artifact}" "Models/${artifact}"
-              echo "· Models/${artifact} ← $(stat -c %s "Models/${artifact}") bytes"
-            fi
-          done
-          echo "bundle=${BUNDLE}" >> "$GITHUB_OUTPUT"
-
-      - name: Regenerate the handshake and rebuild the registry
-        shell: bash
-        run: |
-          set -euo pipefail
-          # The canonical writer of Models/VERSION.json — the same script the weekly
-          # pipeline runs and the same one CI checks for staleness. `<package.json
-          # version>+model.<hash of the four claimed artifact hashes>`, idempotent, and
-          # not something this workflow gets to reinvent.
-          node scripts/gen-model-version.mjs
-          jq -r '.version' Models/VERSION.json
-          cd scripts
-          # Rebuilding carries the stages and approvals already on disk, so a promotion a
-          # human recorded is never lost by an automated refresh.
-          python -m mlops.cli registry --write
-
-      - name: Smoke-test the bundle exactly as CI will
-        shell: bash
-        run: |
-          set -euo pipefail
-          # Same script, same runtime, same input tensor shape the daily forecast uses.
-          # If this fails here it would fail on the pull request too, and the reviewer
-          # would be reading a red check instead of a decision.
-          python scripts/validate_model_bundle.py
-
-      - name: Audit the handshake
-        id: audit
-        shell: bash
-        run: |
-          set -euo pipefail
-          cd scripts
-          python -m mlops.cli audit --json "${GITHUB_WORKSPACE}/data/mlops/incoming/audit.json" | tail -20
-          echo "· audit written"
-
-      - name: Write the pull request body
-        id: body
-        shell: bash
-        env:
-          RUN_ID: ${{ needs.collect.outputs.run_id }}
-          BUNDLE: ${{ steps.place.outputs.bundle }}
-        run: |
-          set -euo pipefail
-          python - "$RUN_ID" "$BUNDLE" <<'PY' > pr-body.md
-          import json, pathlib, sys
-          run_id, bundle = sys.argv[1], pathlib.Path(sys.argv[2])
-          manifest = json.loads((bundle / 'run_manifest.json').read_text(encoding='utf-8'))
-          report_path = bundle / 'intake-report.json'
-          report = json.loads(report_path.read_text(encoding='utf-8')) if report_path.is_file() else {}
-          version = json.loads(pathlib.Path('Models/VERSION.json').read_text(encoding='utf-8'))
-          parity = manifest.get('parity') or {}
-          environment = manifest.get('environment') or {}
-
-          def row(label, value):
-              return f'| {label} | {value} |'
-
-          print(f'## Retrained model candidate — `{run_id}`\n')
-          print('A Colab T4 run trained, converted and validated this bundle unattended. '
-                '**Nothing here is live until a human merges this pull request**, and merging '
-                'it does not promote anything: the new artifact enters the registry as a '
-                '`candidate`, and `champion` still needs `python -m mlops.cli promote --by <you>`.\n')
-          print('### What the run reported\n')
-          print('| | |')
-          print('|---|---|')
-          print(row('Strategy', manifest.get('strategy', '?')))
-          print(row('Version proposed', f'`{version.get("version")}`'))
-          print(row('Training time', f'{float(manifest.get("duration_seconds", 0)) / 3600:.1f} h'))
-          print(row('GPU', environment.get('gpu', '?')))
-          print(row('Torch / TF', f'{environment.get("torch", "?")} / {environment.get("tensorflow", "?")}'))
-          print(row('Repository sha', manifest.get('repo_sha', '?')))
-          resumed = manifest.get('resumed_from') or []
-          print(row('Resumed from', f'{len(resumed)} dead session(s)' if resumed else 'a single uninterrupted session'))
-          print('')
-          print('### Fold metrics (held-out, as the notebook measured them)\n')
-          print('| fold | accuracy | F1 | RMSE | MAE | R² |')
-          print('|---|---|---|---|---|---|')
-          for fold in manifest.get('folds') or []:
-              print('| {fold} | {a:.4f} | {f:.4f} | {r:.4f} | {m:.4f} | {s:.4f} |'.format(
-                  fold=fold.get('fold', '?'), a=fold.get('accuracy', 0) or 0, f=fold.get('f1', 0) or 0,
-                  r=fold.get('rmse', 0) or 0, m=fold.get('mae', 0) or 0, s=fold.get('r2', 0) or 0))
-          print('')
-          print('### Conversion parity (the gate that makes a TFLite bundle trustworthy)\n')
-          print('| | |')
-          print('|---|---|')
-          print(row('Hazard agreement', f'{parity.get("hazard_agreement_pct", "?")}% (gate: 99.0%)'))
-          print(row('Severity MAE vs PyTorch', parity.get('severity_mae', '?')))
-          print('')
-          print('### Artifacts\n')
-          print('| file | bytes | sha256 |')
-          print('|---|---|---|')
-          for entry in report.get('inventory') or []:
-              if entry.get('present'):
-                  print(f'| `{entry["name"]}` | {entry["bytes"]:,} | `{entry["sha256"][:16]}…` |')
-          print('')
-          print('`hazardnet_int8.tflite` is byte-identical to the FP32 file, as ADR 0007 records: '
-                "TFLite's converter crashes on `CONV_3D` under INT8, so the name is historical and the "
-                'registry reports it as a duplicate rather than a second model.\n')
-          print('### What this pull request cannot prove\n')
-          print('Verification scores (POD/FAR/CSI, reliability, drift) need *observed outcomes*, and a '
-                'model trained today has none yet. The nightly `mlops.yml` job produces them; promotion '
-                'to `champion` should wait for a challenger report:\n')
-          print('```bash')
-          print('cd scripts')
-          print(f'python -m mlops.cli evaluate --predictions <challenger predictions> --outcomes <observed> \\')
-          print('  --json /tmp/challenger.json')
-          print('python -m mlops.cli promote --artifact hazardnet_fp32.tflite \\')
-          print('  --report /tmp/challenger.json --champion <the current champion report> --by <your name>')
-          print('```')
-          print('')
-          print('Merging this pull request is safe without that: it replaces the bundle the daily '
-                'forecast runs, and the smoke test above plus the parity gate are what stand between a '
-                'conversion bug and production. It is *not* a claim that the new model verifies better '
-                'than the old one — that claim needs truth data and a named approver.')
-          PY
-          echo "· pull request body: $(wc -l < pr-body.md) lines"
-
-      - name: Open the pull request
+      - name: Resolve the pull request to comment on
         id: pr
-        shell: bash
         env:
-          GH_TOKEN: ${{ github.token }}
-          RUN_ID: ${{ needs.collect.outputs.run_id }}
+          INPUT_PR: ${{ inputs.pr }}
+          EVENT_PR: ${{ github.event.pull_request.number }}
         run: |
-          set -euo pipefail
-          if [ "${{ inputs.skip_pr }}" = 'true' ]; then
-            echo "· --skip-pr: the bundle is validated and left in the run artifacts"
-            echo "url=" >> "$GITHUB_OUTPUT"
-            exit 0
+          # A dispatch with a PR number gates that PR's head; a dispatch without
+          # one still validates the default branch but has nowhere to comment.
+          number="${EVENT_PR:-$INPUT_PR}"
+          echo "number=$number" >> "$GITHUB_OUTPUT"
+          if [ -n "$number" ]; then
+            echo "Pull request #$number"
+          else
+            echo "No pull request resolved — validating the checkout only"
           fi
-          BRANCH="mlops/retrain-${RUN_ID}"
-          # A tick that already opened this PR must not open a second one: the marker
-          # update below lands on the default branch only after a successful push, so
-          # there is a window in which the same bundle looks un-intaken.
-          EXISTING=$(gh pr list --head "$BRANCH" --state open --json url --jq '.[0].url // empty')
-          if [ -n "$EXISTING" ]; then
-            echo "· a pull request is already open: $EXISTING"
-            echo "url=$EXISTING" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          git checkout -b "$BRANCH"
-          git add Models/
-          if git diff --staged --quiet; then
-            echo "ℹ️ The bundle is byte-identical to what already ships — nothing to propose."
-            echo "url=" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          git commit -m "feat(models): retrained bundle ${RUN_ID}" \
-            -m "Trained unattended on a Colab T4 by model_retrain.yml, watched by model_retrain_watch.yml, collected and validated by model_intake.yml." \
-            -m "The new artifact enters Models/REGISTRY.json as a candidate. Promotion to champion needs \`python -m mlops.cli promote --by <approver>\` — see docs/mlops/RETRAIN_AND_PROMOTION.md." \
-            -m "Timestamp: $(date -u +"%Y-%m-%dT%H:%M:%SZ")"
-          git push --force-with-lease origin "$BRANCH"
-          URL=$(gh pr create --base "${GITHUB_REF_NAME}" --head "$BRANCH" \
-            --title "Retrained model candidate ${RUN_ID}" \
-            --body-file pr-body.md \
-            --label "mlops")
-          echo "url=$URL" >> "$GITHUB_OUTPUT"
-          echo "✓ opened $URL"
 
-      - name: Record the intake on the default branch
-        if: steps.pr.outputs.url != ''
-        uses: actions/checkout@v7
-        with:
-          # A second working tree, so the marker bookkeeping lands on the default
-          # branch without disturbing the candidate branch that was just pushed.
-          path: marker-repo
-
-      - name: Mark the run as intaken
-        if: steps.pr.outputs.url != ''
-        shell: bash
-        env:
-          RUN_ID: ${{ needs.collect.outputs.run_id }}
-          PR_URL: ${{ steps.pr.outputs.url }}
-        run: |
-          set -euo pipefail
-          cd marker-repo
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          cd scripts
-          python -m mlops.retrain_cli mark --run-id "$RUN_ID" --pr "$PR_URL"
-          cd ..
-          git add data/mlops/retrain-runs
-          if git diff --staged --quiet; then
-            echo "· the marker was already up to date"
-            exit 0
-          fi
-          git commit -m "chore(mlops): ${RUN_ID} is a pull request" \
-            -m "Recorded so the hourly intake does not collect the same bundle again: ${PR_URL}"
-          git push origin "HEAD:${GITHUB_REF_NAME}"
-
-      - name: Summary
-        if: always()
-        shell: bash
-        env:
-          RUN_ID: ${{ needs.collect.outputs.run_id }}
-          PR_URL: ${{ steps.pr.outputs.url }}
+      - name: Record what this PR changed under Models/
+        id: diff
         run: |
           {
-            echo '### Model intake'
-            echo ''
-            echo "Run: \`${RUN_ID}\`"
-            echo ''
-            if [ -n "${PR_URL}" ]; then
-              echo "Pull request: ${PR_URL}"
-              echo ''
-              echo 'Merging it replaces the bundle the daily forecast runs. It does **not** promote'
-              echo 'anything: the artifact enters the registry as a `candidate`, and `champion` still'
-              echo 'needs `python -m mlops.cli promote --by <approver>`.'
-            else
-              echo 'No pull request was opened — either the bundle was byte-identical to what ships,'
-              echo 'or `--skip-pr` was requested. The validated bundle is in the run artifacts.'
-            fi
-          } >> "$GITHUB_STEP_SUMMARY"
+            echo "base=${{ github.event.pull_request.base.sha || github.sha }}"
+            echo "head=${{ github.event.pull_request.head.sha || github.sha }}"
+          } >> "$GITHUB_OUTPUT"
+          base="${{ github.event.pull_request.base.sha || github.sha }}"
+          head="${{ github.event.pull_request.head.sha || github.sha }}"
+          echo "### Changed model artifacts" >> /tmp/models_diff.md
+          if git diff --name-status "$base" "$head" -- Models/ | tee -a /tmp/models_diff.md | grep -q .; then
+            echo "" >> /tmp/models_diff.md
+            echo '```' >> /tmp/models_diff.md
+            # sha256 of every changed binary, so a reviewer can compare against
+            # the manifest the notebook printed without downloading anything.
+            for path in $(git diff --name-only "$base" "$head" -- Models/); do
+              if [ -f "$path" ]; then
+                printf '%s  %s bytes  sha256:%s\n' "$path" "$(stat -c%s "$path")" \
+                  "$(sha256sum "$path" | cut -c1-16)" >> /tmp/models_diff.md
+              fi
+            done
+            echo '```' >> /tmp/models_diff.md
+          else
+            echo "_no changes under Models/_" >> /tmp/models_diff.md
+          fi
+
+      - name: Validate the bundle
+        id: bundle
+        # The repository's bundle validator: expected artifacts present, loadable,
+        # input/output shapes matching the documented contract. This is the same
+        # script model-validation.yml runs, so a green gate and a green merge check
+        # are the same statement.
+        run: python scripts/validate_model_bundle.py
+
+      - name: Validate the training-run manifest, if this PR carries one
+        # The manifest is the notebook's own account of the run: fold metrics,
+        # the parity gate between the float model and the TFLite conversions, and
+        # the int8/fp32 byte-identity claim from ADR 0007. It is validated here
+        # rather than trusted in the PR body because a number a human typed into
+        # Markdown and a number the registry can check are not the same evidence.
+        # Absent, the gate says so loudly: the reviewer then has the artifacts but
+        # not the run's claims, and should ask for them before merging.
+        id: manifest
+        run: |
+          found=""
+          for candidate in \
+            Models/run_manifest.json \
+            data/mlops/bundles/*/run_manifest.json \
+            data/mlops/incoming/*/run_manifest.json; do
+            for path in $candidate; do
+              [ -f "$path" ] || continue
+              found="$path"
+              break 2
+            done
+          done
+          if [ -z "$found" ]; then
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            {
+              echo "### Training-run manifest"
+              echo ""
+              echo "⚠️ **This PR carries no \`run_manifest.json\`.** The gate could load and"
+              echo "smoke-test the artifacts, but it could not check the run's own claims"
+              echo "(fold metrics, float↔TFLite parity, the int8 byte-identity assertion)."
+              echo "Ask for the manifest — \`mlops.retrain_state.build_run_manifest\` writes it —"
+              echo "before merging a monthly candidate."
+            } > /tmp/manifest_report.md
+            echo "::warning::no run_manifest.json in this PR — the training claims are unverifiable here"
+            exit 0
+          fi
+          echo "present=true" >> "$GITHUB_OUTPUT"
+          echo "path=$found" >> "$GITHUB_OUTPUT"
+          cd scripts
+          python - "$found" <<'PY' | tee /tmp/manifest_report.md
+          import json
+          import sys
+          from pathlib import Path
+
+          from mlops import retrain_state as rs
+
+          raw = Path(sys.argv[1])
+          path = raw if raw.is_absolute() else Path('..') / raw
+          manifest = json.loads(path.read_text(encoding='utf-8'))
+          # validate_manifest returns the list of reasons this bundle may not be
+          # promoted; an empty list is the only pass.
+          problems = rs.validate_manifest(manifest)
+
+          print('### Training-run manifest')
+          print()
+          print(f'`{path.name}` — run_id `{manifest.get("run_id", "?")}`, '
+                f'strategy `{manifest.get("strategy", "?")}`, '
+                f'{manifest.get("duration_seconds", "?")}s on '
+                f'`{(manifest.get("environment") or {}).get("gpu", "unknown gpu")}`')
+          print()
+          if problems:
+              print(f'❌ **{len(problems)} problem(s):**')
+              print()
+              for problem in problems:
+                  print(f'- {problem}')
+          else:
+              print('✅ passes `mlops.retrain_state.validate_manifest`')
+
+          folds = manifest.get('folds') or []
+          if folds:
+              print()
+              print('| fold | accuracy | f1 |')
+              print('| --- | --- | --- |')
+              for fold in folds:
+                  if isinstance(fold, dict):
+                      print(f"| {fold.get('fold', '?')} | {fold.get('accuracy', '?')} "
+                            f"| {fold.get('f1', '?')} |")
+
+          parity = manifest.get('parity')
+          if isinstance(parity, dict):
+              print()
+              print('Conversion parity (the ONNX→TFLite golden test):')
+              print()
+              print('```json')
+              print(json.dumps(parity, indent=2, sort_keys=True))
+              print('```')
+
+          artifacts = manifest.get('artifacts') or []
+          present = [a for a in artifacts if isinstance(a, dict) and a.get('present')]
+          if present:
+              print()
+              print('| artifact | bytes | sha256 (first 16) |')
+              print('| --- | --- | --- |')
+              for entry in present:
+                  print(f"| {entry.get('name')} | {entry.get('bytes')} "
+                        f"| {str(entry.get('sha256', ''))[:16]} |")
+
+          if problems:
+              raise SystemExit(1)
+          PY
+
+      - name: Regenerate the handshake and rebuild the registry
+        # The notebook writes these two files itself, which is the point: the
+        # version string is derived from the artifacts' sha256, so a bundle and a
+        # stale VERSION.json cannot coexist without this step noticing. If the
+        # regenerated files differ, the PR is incomplete — and the gate says which
+        # command fixes it rather than fixing it silently, because a silently
+        # repaired handshake hides a notebook that stopped writing one.
+        id: handshake
+        run: |
+          node scripts/gen-model-version.mjs
+          (cd scripts && python -m mlops.cli registry --write)
+          if git diff --quiet -- Models/VERSION.json Models/REGISTRY.json; then
+            echo "current=true" >> "$GITHUB_OUTPUT"
+            echo "✅ VERSION.json and REGISTRY.json match the artifacts in this PR"
+          else
+            echo "current=false" >> "$GITHUB_OUTPUT"
+            echo "::error::Models/VERSION.json or Models/REGISTRY.json is stale relative to the artifacts in this PR"
+            git --no-pager diff --stat -- Models/VERSION.json Models/REGISTRY.json
+            {
+              echo "### Handshake"
+              echo ""
+              echo "❌ **Stale.** Regenerating from the PR's own artifacts changed these files:"
+              echo ""
+              echo '```'
+              git --no-pager diff -- Models/VERSION.json Models/REGISTRY.json | head -60
+              echo '```'
+              echo ""
+              echo "Re-run the notebook's version-handshake cell"
+              echo "(`retrain_state.write_version_handshake()`) and push, or run:"
+              echo ""
+              echo '```bash'
+              echo 'node scripts/gen-model-version.mjs'
+              echo 'cd scripts && python -m mlops.cli registry --write'
+              echo '```'
+            } > /tmp/handshake_report.md
+            # Restore the PR's own files: the gate reports, it does not rewrite the
+            # branch it is reviewing.
+            git checkout -- Models/VERSION.json Models/REGISTRY.json
+            exit 1
+          fi
+
+      - name: Smoke-test the bundle exactly as CI will
+        # Loads each .tflite under tflite-runtime and runs a zero input through it.
+        # The value is in the runtime, not the input: a model converted against a
+        # newer TFLite schema loads fine under tensorflow and fails here, which is
+        # the failure the API would have had in production.
+        run: |
+          python - <<'PY'
+          import glob
+          import os
+          import sys
+
+          import numpy as np
+          from tflite_runtime.interpreter import Interpreter
+
+          models = sorted(glob.glob(os.path.join(os.environ['BUNDLE_DIR'], '*.tflite')))
+          if not models:
+              print('::error::no .tflite artifacts under ' + os.environ['BUNDLE_DIR'])
+              sys.exit(1)
+          for path in models:
+              interp = Interpreter(model_path=path)
+              interp.allocate_tensors()
+              details = interp.get_input_details()[0]
+              shape = [d if isinstance(d, int) and d > 0 else 1 for d in details['shape']]
+              dtype = details['dtype']
+              value = np.zeros(shape, dtype=dtype)
+              if dtype in (np.float32, np.float64):
+                  scale, zero = details.get('quantization', (0.0, 0))
+                  if scale:
+                      value = ((value / scale) + zero).astype(dtype)
+              interp.set_tensor(details['index'], value)
+              interp.invoke()
+              out = interp.get_tensor(interp.get_output_details()[0]['index'])
+              finite = bool(np.isfinite(out).all())
+              print(f'{os.path.basename(path)}: input {shape} {dtype.__name__} -> '
+                    f'output {out.shape} finite={finite}')
+              if not finite:
+                  print(f'::error::{os.path.basename(path)} produced non-finite output')
+                  sys.exit(1)
+          print(f'✅ smoke-tested {len(models)} artifact(s) under {os.environ["TFLITE_PIN"]}')
+          PY
+
+      - name: Preview the promotion decision
+        # Dry run only: `promote` without --write evaluates and prints, and never
+        # touches Models/REGISTRY.json. What it evaluates is the *published*
+        # forecast against the event archive — the state of the union today, which
+        # is the context a reviewer needs, not a verdict on the new bundle's
+        # accuracy (that is what the manifest's fold metrics and the hindcast are
+        # for). A non-approved decision is reported, not fatal: it usually means
+        # there is no outcome data to compare yet, and blocking the PR on it would
+        # hide the bundle behind a data-availability question.
+        id: promote
+        continue-on-error: true
+        run: |
+          mkdir -p mlops-reports
+          cd scripts
+          python -m mlops.cli evaluate \
+            --predictions ../backend/data/forecasts/hazardnet_forecasts_latest.csv \
+            --outcomes tests/fixtures/etl/events_sample.csv \
+            --json ../mlops-reports/evaluation.json || echo "::warning::evaluation produced no report"
+          if [ ! -f ../mlops-reports/evaluation.json ]; then
+            echo "decision=unavailable" >> "$GITHUB_OUTPUT"
+            echo '### Promotion preview' > /tmp/promotion_report.md
+            echo '' >> /tmp/promotion_report.md
+            echo '_No evaluation report — the promotion preview could not run._' >> /tmp/promotion_report.md
+            exit 0
+          fi
+          # `bash -e` is the default shell here, so a non-zero promote would end the
+          # step before the report was written — and a not-approved decision is
+          # exactly the case the reviewer most needs to read. Capture, then report.
+          set +e
+          python -m mlops.cli promote \
+            --artifact hazardnet_fp32.tflite \
+            --report ../mlops-reports/evaluation.json \
+            --by "${{ github.event.pull_request.user.login || github.actor }} (PREVIEW — not a sign-off)" \
+            --json ../mlops-reports/promotion-preview.json \
+            > /tmp/promotion_stdout.txt 2>&1
+          code=$?
+          set -e
+          cat /tmp/promotion_stdout.txt
+          echo "decision=$([ $code -eq 0 ] && echo approved || echo not-approved)" >> "$GITHUB_OUTPUT"
+          {
+            echo "### Promotion preview (dry run)"
+            echo ""
+            echo '```'
+            cat /tmp/promotion_stdout.txt
+            echo '```'
+            echo ""
+            echo "Dry run: nothing was recorded, and Models/REGISTRY.json is untouched."
+            echo "Recording a champion is a separate human act that needs the registry"
+            echo "write flag and a named approver — docs/mlops/RETRAIN_AND_PROMOTION.md."
+          } > /tmp/promotion_report.md
+
+      - name: Assemble the gate report
+        if: always()
+        id: report
+        run: |
+          mkdir -p mlops-reports
+          {
+            echo "## 🧪 Model bundle gate"
+            echo ""
+            echo "| check | result |"
+            echo "| --- | --- |"
+            echo "| bundle validator | ${{ steps.bundle.outcome }} |"
+            echo "| run manifest | ${{ steps.manifest.outputs.present == 'true' && format('validated — {0}', steps.manifest.outputs.path) || '⚠️ not present — training claims unverifiable' }} |"
+            echo "| VERSION.json / REGISTRY.json | ${{ steps.handshake.outputs.current == 'true' && '✅ current' || '❌ stale' }} |"
+            echo "| promotion preview | ${{ steps.promote.outputs.decision || 'not run' }} |"
+            echo ""
+            cat /tmp/models_diff.md 2>/dev/null || true
+            echo ""
+            cat /tmp/manifest_report.md 2>/dev/null || true
+            echo ""
+            cat /tmp/handshake_report.md 2>/dev/null || true
+            echo ""
+            cat /tmp/promotion_report.md 2>/dev/null || true
+            echo ""
+            echo "---"
+            echo ""
+            echo "**Merging this PR is a human decision.** Nothing in this workflow promotes a"
+            echo "model, writes to the registry, or merges. Runtime pins in force:"
+            echo "\`${TFLITE_PIN}\`, \`${NUMPY_PIN}\` — identical to model-validation.yml."
+          } > mlops-reports/gate_report.md
+          cat mlops-reports/gate_report.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Comment the report on the pull request
+        if: always() && steps.pr.outputs.number != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ steps.pr.outputs.number }}
+        run: |
+          # One comment per gate run. A fresh comment each push is deliberate: an
+          # edited comment hides the fact that an earlier candidate failed, and the
+          # PR timeline is the audit trail for what was actually merged.
+          gh pr comment "$PR_NUMBER" --body-file mlops-reports/gate_report.md
+
+      - name: Upload the gate artifacts
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: model-gate-report
+          path: mlops-reports/
+          if-no-files-found: ignore
+          retention-days: 14

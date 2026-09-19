@@ -1,20 +1,23 @@
 name: HazardNet Automated Forecast Pipeline
 
 # ─────────────────────────────────────────────────────────────────────────────
-# RETIRED FROM THE SCHEDULE 2026-09-16 — dispatch-only legacy.
+# DISPATCH-ONLY: this triggers a Kaggle notebook run and pulls its output.
 #
-# Production forecasts are generated on the GitHub runner by
-# `.github/workflows/daily_forecast.yml` (scripts/auto_forecast.py: GEE +
-# Open-Meteo + TFLite; no Kaggle anywhere in the path). This workflow needs a
-# valid Kaggle token AND a runnable kernel, and after the 2026-09-15 token
-# rotation it failed every scheduled run with a bare exit code 1 — it was
-# retired rather than left red (see
-# docs/audits/2026-09-15-ci-backend-tests-and-workflow-green.md §3 and
-# docs/mlops/ARCHITECTURE.md, "Why this is better than the all-Kaggle setup").
+# The daily producer is `.github/workflows/daily_forecast.yml`, which pulls the
+# notebook's output on a schedule (since 2026-09-20 — see
+# docs/adr/0013-kaggle-is-the-forecast-producer.md). This workflow is the manual
+# half of the same path: push the notebook, wait for it, pull and publish. Use it
+# when you have changed the notebook and want today's rows from the new code
+# rather than waiting for Kaggle's own schedule.
 #
-# Kept for the cases the GitHub path does not cover (heavy ADM3/507-unit run,
-# OSM exposure overlay, release archiving): re-enable by adding back a
-# `schedule:` block under `on:`, and set the `KAGGLE_KERNEL` repository
+# It needs a valid Kaggle token AND a runnable kernel, which is why it stays off
+# the schedule: after the 2026-09-15 token rotation every scheduled Kaggle run
+# failed with a bare exit code 1 while the site silently served the last
+# committed snapshot (docs/audits/2026-09-15-ci-backend-tests-and-workflow-green.md
+# §3). A dispatch failure is read by the person who clicked the button.
+#
+# Also kept for the cases the daily pull does not cover (heavy ADM3/507-unit run,
+# OSM exposure overlay, release archiving). Set the `KAGGLE_KERNEL` repository
 # variable if the notebook slug changed. Triage: docs/ops/kaggle-pipeline-triage.md
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -133,7 +136,10 @@ jobs:
 
       - name: Validate Forecast Data
         run: |
-          python scripts/validate_forecasts.py --skip-coverage  # legacy Kaggle producer: no run report / coverage tally
+          # Coverage gate ON: scripts/fetch_kaggle_forecast.py writes the tally
+          # (64-district vocabulary × horizons vs published rows), so a short
+          # producer run is labelled partial rather than passing as complete.
+          python scripts/validate_forecasts.py
 
       - name: Ingest refreshed CSV into Firebase and backend store
         env:
