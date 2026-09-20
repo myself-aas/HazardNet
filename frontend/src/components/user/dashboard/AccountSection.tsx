@@ -7,7 +7,7 @@ import MaterialIcon from '../../MaterialIcon';
 import { IdentityConnections } from '../../IdentityConnections';
 
 /**
- * "Account & Security" tab — email change (re-verified by Supabase), password
+ * "Account & Security" tab — email change (re-verified by Firebase), password
  * set/change, linked social identities, and session controls.
  */
 

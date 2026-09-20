@@ -21,8 +21,8 @@ import MaterialIcon from '../../MaterialIcon';
 
 /**
  * "Edit Profile" tab — the full data-collection surface. Every field maps to
- * a column on the Supabase `profiles` table (scripts/db/003_user_dashboard.sql)
- * and is editable with a dirty-state save bar.
+ * a field on the Firestore `profiles` document and is editable with a
+ * dirty-state save bar.
  */
 
 const PERSONAS: Array<{ value: UserRolePersona; label: string }> = [
@@ -82,7 +82,7 @@ export const ProfileSection: React.FC = () => {
 
   const save = async () => {
     if (!user) {
-      toast('Design preview — connect Supabase to persist profile changes.', { icon: 'ℹ️' });
+      toast('Design preview — sign in to persist profile changes.', { icon: 'ℹ️' });
       return;
     }
     const changed: Record<string, unknown> = {};
@@ -96,7 +96,7 @@ export const ProfileSection: React.FC = () => {
       await updateUserProfile(changed as Partial<UserProfileData>);
       await refreshProfile();
       setDraft((current) => ({ ...current }));
-      setMessage('Profile saved to Supabase.');
+      setMessage('Profile saved to your HazardNet account.');
       toast.success('Profile updated');
     } catch (error) {
       console.error(error);

@@ -16,7 +16,7 @@ import { Card } from '../components/user/dashboard/ui';
  * The dedicated per-user dashboard — unique URL: /dashboard (auth required).
  *
  * Five sections: Overview (stats + completeness), Profile (all editable data
- * stored in Supabase), Account & Security (email/password/identities),
+ * stored in Firestore), Account & Security (email/password/identities),
  * Connectors (integrations), Public Profile (live preview of /u/<username>).
  */
 

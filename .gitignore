@@ -35,6 +35,7 @@
 *.pem
 *.pid
 *.pid.lock
+bun.lock
 *.pyc
 *.seed
 *.swp

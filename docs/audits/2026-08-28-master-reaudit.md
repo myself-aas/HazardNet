@@ -48,7 +48,7 @@ The re-audit also did its real job: **it found 4 defects in the remediation itse
 | V15 | ML-04 fix | uniform vs precip-spike probes | ✅ severity/features input-driven (0.97-vs-1.0 corruption gone) |
 | V16 | Edge headers/config | `vercel.json` parse + review | ✅ valid; HSTS/XFO/Permissions-Policy enforcing, CSP report-only |
 | V17 | ESLint baseline | `npx eslint .` | ✅ superseded by P3-5 burn-down: **268 problems (0 E / 268 W)** after P3 |
-| V18 | AI identity lanes | live boot w/ `SUPABASE_JWT_SECRET` | ✅ invalid token → 10×400 then 429 (anon 10/min); valid HS256 → 13 req no 429 (authed 60/min); separate anon IP unaffected; secret unset → flat 20/min fallback |
+| V18 | AI identity lanes | live boot w/ the Firebase JWT verification | ✅ invalid token → 10×400 then 429 (anon 10/min); valid HS256 → 13 req no 429 (authed 60/min); separate anon IP unaffected; secret unset → flat 20/min fallback |
 | V19 | Prediction cache | same 614,400-float tensor POSTed twice | ✅ 2nd response `inference.cached: true`, identical prediction, 1131 ms → 210 ms (5.4× here; tfjs CPU backend ~300 ms on this box, 6.7 s on benchmark hardware) |
 | V20 | RAG freshness gate | `npm run check:rag-freshness` | ✅ PASS on fresh tree; negative test (source doc +3 h) → exit 1 |
 | V21 | Coverage ratchet | `npx jest --coverage` | ✅ measured 34.0/37.7/35.4/33.6; gate raised 30/33/28/30 → **32/35/30/31** (40% target stays gated on tfjs-node + route tests) |
@@ -93,8 +93,8 @@ First run reported 572 → then 639 problems after P2 files landed; triage showe
 `requestId.js` carried a `no-console` disable that is a no-op for backend files (rule off there). Removed.
 
 **N-4 · 🟡 Medium — duplicate, conflicting SQL schemas for `forecasts`** *(open)*
-`backend/migrations/001_create_forecasts.sql` declares `id SERIAL PRIMARY KEY` while `scripts/db/001_init_forecasts.sql` declares `id UUID … uuid_generate_v4()` — and ADR 0002's new `002_forecasts_supabase.sql` assumes `gen_random_uuid()`. Whichever ran (or runs) last wins; the weekly pipeline writes blind to this ambiguity.
-**Recommendation:** delete `backend/migrations/001` (superseded), make `scripts/db/` the single migration home, and add a P3 note in ADR 0002's checklist to confirm the live Supabase schema matches 002 before the cutover.
+`backend/migrations/001_create_forecasts.sql` declares `id SERIAL PRIMARY KEY` while `scripts/db/001_init_forecasts.sql` declares `id UUID … uuid_generate_v4()` — and ADR 0002's new `002_forecasts_postgres.sql` assumes `gen_random_uuid()`. Whichever ran (or runs) last wins; the weekly pipeline writes blind to this ambiguity.
+**Recommendation:** delete `backend/migrations/001` (superseded), make `scripts/db/` the single migration home, and add a P3 note in ADR 0002's checklist to confirm the live Postgres schema matches 002 before the cutover.
 
 **N-5 · 🔵 Low — no `engines` field in `package.json`** *(open)*
 Node 20 is the de facto runtime (CI, Vercel) but nothing enforces it locally. Add `"engines": { "node": ">=20" }` (+ `"packageManager"` if you want corepack pinning of a PM).
@@ -103,7 +103,7 @@ Node 20 is the de facto runtime (CI, Vercel) but nothing enforces it locally. Ad
 README still says the backend runs on `http://localhost:3000`; it now defaults to **3001** (P0-4). Update the dev-quickstart block and the `VITE_API_BASE_URL` example is already 3001 — just the prose is stale.
 
 **N-7 · 🔵 Low — scratch & dead files remain at the perimeter** *(open, P3 batch)*
-Root: `list-models.js`, `pointer-test.js`, `test-gemini.js` (manual experiments). Frontend: `lib/client.ts` + `lib/server.ts` (unused Supabase SSR helpers — `server.ts` reads `process.env` client-side patterns), `components/ui/motion-navigation-demo.tsx`, empty Redux `store/`. None are harmful; all are noise that taxes every future audit and the ESLint baseline.
+Root: `list-models.js`, `pointer-test.js`, `test-gemini.js` (manual experiments). Frontend: `lib/client.ts` + `lib/server.ts` (unused Postgres SSR helpers — `server.ts` reads `process.env` client-side patterns), `components/ui/motion-navigation-demo.tsx`, empty Redux `store/`. None are harmful; all are noise that taxes every future audit and the ESLint baseline.
 
 **N-8 · 🟠 High (environmental, not code) — `ci.yml` still cannot be pushed**
 The GitHub App connection lacks the `workflows` permission (attempted again this session). Until it lands, nothing enforces V1–V8 on PRs. **Action: reconnect GitHub in Arena with workflows permission**, then push the prepared file — it now also contains the bundle-budget and ESLint (non-blocking) steps.
@@ -111,7 +111,7 @@ The GitHub App connection lacks the `workflows` permission (attempted again this
 **N-9 · 🔵 Low — ML-03 RAG freshness check still open** *(carried from original audit)*
 No CI verification that `rag_pipeline/agent_knowledge_base.json` is newer than `references/` sources. One-liner CI step when workflows land.
 
-**Carried-open P2 deferrals (unchanged, tracked):** Firestore→Supabase cutover (schema + migration script ready; needs credentials), `CSP_ENFORCE=true` flip (needs a browser violation-monitoring window), `@tensorflow/tfjs-node` install + re-benchmark (loader ready), backend workspace split, LiveMapView decomposition (first slice done).
+**Carried-open P2 deferrals (unchanged, tracked):** Firestore→Postgres cutover (schema + migration script ready; needs credentials), `CSP_ENFORCE=true` flip (needs a browser violation-monitoring window), `@tensorflow/tfjs-node` install + re-benchmark (loader ready), backend workspace split, LiveMapView decomposition (first slice done).
 
 ---
 
@@ -120,7 +120,7 @@ No CI verification that `rag_pipeline/agent_knowledge_base.json` is newer than `
 1. **Reconnect GitHub in Arena with the `workflows` permission** → I push `.github/workflows/ci.yml` (+ `.github/workflows/e2e.yml` if desired). This single action converts most of this report from "verified once by an agent" to "continuously enforced."
 2. **Set production env in Vercel:** `BACKEND_API_KEY` (now mandatory for ingest/push — fail-closed), `GEMINI_API_KEY`, `FRONTEND_ORIGIN`, `VITE_FIREBASE_*`, later `CSP_ENFORCE=true`.
 3. **Install `@tensorflow/tfjs-node`** in the deploy environment → the resolver activates the native path automatically → re-run `node scripts/bench-predict.mjs` and expect a large drop from the recorded **p50 ≈ 6,679 ms** baseline.
-4. **Run the forecast migration when ready:** apply `scripts/db/002_forecasts_supabase.sql`, dry-run `scripts/migrate-firestore-to-supabase.mjs`, verify counts, then `FIRESTORE_TO_SUPABASE_MIGRATION=RUN`; close ADR 0002's checklist.
+4. **Run the forecast migration when ready:** apply `scripts/db/002_forecasts_postgres.sql`, dry-run `scripts/migrate-firestore-to-postgres.mjs`, verify counts, then `FIRESTORE_TO_POSTGRES_MIGRATION=RUN`; close ADR 0002's checklist.
 5. **CSP:** watch report-only violations for a week (both server header and Vercel edge header), then flip `CSP_ENFORCE` and tighten the edge CSP to enforcing.
 
 ---
@@ -134,7 +134,7 @@ No CI verification that `rag_pipeline/agent_knowledge_base.json` is newer than `
 | 3 | `engines` field + README quickstart refresh (N-5/N-6) | 30 min | onboarding correctness |
 | 4 | Delete scratch/dead perimeter files (N-7) | 1 h | hygiene, smaller lint baseline |
 | 5 | ESLint burn-down: `no-unused-vars` (147) first — mostly mechanical | 1 week casual | errors → 0-ish, then flip CI to blocking |
-| 6 | AI-route identity auth: verify Supabase JWT on `/api/chat`+`/api/agent`, keep a tight anonymous lane | 3 h | closes the last High security item (SEC-01 remainder) |
+| 6 | AI-route identity auth: verify Postgres JWT on `/api/chat`+`/api/agent`, keep a tight anonymous lane | 3 h | closes the last High security item (SEC-01 remainder) |
 | 7 | Prediction response cache (5-min TTL per district+horizon) | 2 h | cheap wins vs 6.7 s inference until tfjs-node lands |
 | 8 | Coverage ratchet: 30 → 40% statements when tfjs-node + route tests land | ongoing | keeps QA honest |
 
@@ -147,7 +147,7 @@ No CI verification that `rag_pipeline/agent_knowledge_base.json` is newer than `
 | 3 | engines + README (N-5/N-6) | ✅ done | `engines.node >=20`; two-terminal quickstart (backend 3001 / frontend 3000) |
 | 4 | Dead perimeter (N-7) | ✅ done | 6 scratch files + `frontend/src/store/` deleted; Redux fully removed (deps + App.tsx); `lib/client.ts`/`lib/server.ts` deleted |
 | 5 | ESLint burn-down | ✅ **exceeded** | 90 errors → **0** (321 → 268 total); serviceworker/scratch scopes added at cause; CI step flipped to blocking; 268 warnings (any/unused-vars) remain tracked |
-| 6 | AI-route identity (SEC-01 remainder) | ✅ done + V18 | `backend/middleware/supabaseAuth.js`: HS256 verify → dynamic lanes 60/10/20; 5 unit tests + live 3-lane check |
+| 6 | AI-route identity (SEC-01 remainder) | ✅ done + V18 | `backend/middleware/postgresAuth.js`: HS256 verify → dynamic lanes 60/10/20; 5 unit tests + live 3-lane check |
 | 7 | Prediction cache | ✅ done + V19 | upgraded design: **full-tensor sha256 key** (stricter than district+horizon — immune to horizon/param drift), TTL 5 min, LRU 128; `inference.cached` flag; 5 unit tests |
 | 8 | Coverage ratchet | ✅ partial by design | gate 32/35/30/31 (V21); 40% statement target deferred with tfjs-node |
 
@@ -161,7 +161,7 @@ Net after P3: 11 suites / 64 tests, tsc clean, eslint 0-error (blocking in CI), 
 - **Playwright e2e was not executed** (browser binary downloads are blocked in this sandbox); the suite is written, type-checked, and jest-excluded, but first real execution must happen in CI or locally.
 - **Vercel-side behaviors** (function packaging with bun workspaces, edge headers) are config-reviewed, not deploy-verified.
 - **tfjs-node performance claims** are directional (public benchmarks) — the repo's own before/after requires the install step above.
-- The Firestore→Supabase migration script is dry-run-verified for logic only (no live credentials here).
+- The Firestore→Postgres migration script is dry-run-verified for logic only (no live credentials here).
 
 ---
 

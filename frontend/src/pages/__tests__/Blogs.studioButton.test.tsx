@@ -3,7 +3,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { Blogs } from '../Blogs'
 import { useAuth } from '../../context/AuthContext'
 
-// The blog data layer talks to Supabase/localStorage; stub it for the
+// The blog data layer talks to Firestore/localStorage; stub it for the
 // gating tests (studio articles list is irrelevant here).
 jest.mock('../../lib/blogArticles', () => ({
   listPublishedArticles: async () => ({ data: [], error: null, localDemo: true }),

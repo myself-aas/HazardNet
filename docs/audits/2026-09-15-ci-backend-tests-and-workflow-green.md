@@ -178,7 +178,7 @@ Neither cause is fixable from the repository, but three things are, and are done
 3. **A triage runbook for the owner**: [`docs/ops/kaggle-pipeline-triage.md`](../ops/kaggle-pipeline-triage.md).
 
 Untouched and still red until an owner acts: the two Kaggle schedules above, the
-`Supabase cutover verify` dispatch run (2026-09-12, needs `SUPABASE_DB_URL`),
+`Postgres cutover verify` dispatch run (2026-09-12, needs `DATABASE_URL`),
 and `weekly_forecast.yml` (last run 2026-09-13, same Kaggle trigger).
 `daily_forecast.yml` and `manual_forecast_ingest.yml` have never run — they are
 schedule/path-triggered and have nothing to report.
@@ -262,7 +262,7 @@ was still on `@v4`. Bumped to `@v5` (`runs.using: node24`, requires runner
    `HazardNet Automated Forecast Pipeline` / `Hourly Forecast Refresh`.
 5. **Kernel slug** (legacy only) — if those still fail with `404`, set the `KAGGLE_KERNEL`
    repository variable to the notebook's current slug.
-6. **Supabase** — re-dispatch `Supabase cutover verify` once `SUPABASE_DB_URL`
+6. **Postgres** — re-dispatch `Postgres cutover verify` once `DATABASE_URL`
    is configured; that job has not had a green run.
 7. **Site probe** — the next 30-minute schedule after the merge is the live
    verification of the `-L` fix. The homepage probe should pass; the metadata

@@ -28,7 +28,7 @@ Notes:
   producer.)
 - The gauge is refreshed **scrape-driven** on every `/metrics` request, via a
   60s-cached store probe (`backend/utils/forecastFreshness.js`) — a 30s scrape
-  interval costs ≤ ~2 indexed reads (Firestore) / `max()` queries (Supabase)
+  interval costs ≤ ~2 indexed reads (Firestore)
   per minute, and the age is recomputed from the cached date on every scrape
   so it keeps advancing between probes. On lookup failure the gauge is *reset*
   (series absent) rather than left showing a flat, stale lie.

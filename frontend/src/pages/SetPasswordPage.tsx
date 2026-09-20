@@ -6,7 +6,7 @@ import { useAuth } from '../context/AuthContext'
 import MaterialIcon from '../components/MaterialIcon'
 import { PASSWORD_REQUIREMENTS, passwordStrength } from '../lib/passwordStrength'
 import { auth } from '../services/firebase';
-const isSupabaseConfigured = true;
+const isAuthConfigured = true;
 
 /**
  * Dedicated password-setup page — unique URL: /set-password
@@ -199,7 +199,7 @@ export default function SetPasswordPage() {
 
           <button
             type="submit"
-            disabled={saving || (!user && !isSupabaseConfigured)}
+            disabled={saving || (!user && !isAuthConfigured)}
             className="w-full rounded-2xl bg-nasa-red py-3.5 text-sm font-extrabold text-carbon-black transition-colors hover:bg-nasa-red-shade disabled:opacity-50 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nasa-blue/60 focus-visible:ring-offset-2"
           >
             {saving ? 'Saving password…' : 'Save password & open my dashboard'}

@@ -1,7 +1,7 @@
 -- =============================================================================
 -- HazardNet · 007_forecasts_meteorological.sql
 --
--- FIX: the Supabase forecast store silently dropped the notebook's eight
+-- FIX: the forecast store silently dropped the notebook's eight
 -- meteorological columns, so GET endpoints could never serve the weather data
 -- that ships with every forecast.
 --
@@ -16,12 +16,12 @@
 --     them in the response parser.
 --
 -- But the pre-cutover Firestore store wrote `{ ...row, created_at }` (the whole
--- object), while the ADR 0002 Supabase store writes an explicit 15-column
+-- object), while the Firestore store writes an explicit 15-column
 -- INSERT — and none of the eight were in that list. The cutover therefore
 -- dropped them on the floor, and because the columns did not exist there was no
 -- error: the data simply vanished between the CSV and the API.
 --
--- Idempotent — safe to re-run. Run after 002_forecasts_supabase.sql.
+-- Idempotent — safe to re-run.
 -- =============================================================================
 
 alter table public.forecasts

@@ -30,7 +30,7 @@ export const metadata = {
 
 // Covers NextAuth, Clerk, JWT, Bearer, plus Next dynamic-render APIs.
 // FP on cacheable routes that read a session is acceptable — verifier decides.
-const AUTH_RE = /\b(cookies\(\)|headers\(\)|getSession\(|getServerSession\(|currentUser\(|clerkClient|auth\(\)|verifyJWT|verifyToken|jwt\.verify|decode\(|Bearer\s|Authorization|supabase\.auth\.)/i;
+const AUTH_RE = /\b(cookies\(\)|headers\(\)|getSession\(|getServerSession\(|currentUser\(|clerkClient|auth\(\)|verifyJWT|verifyToken|jwt\.verify|decode\(|Bearer\s|Authorization|getAuth\(|firebase\.auth\.)/i;
 
 const NO_STORE_RE = /cache\s*:\s*['"]no-store['"]/;
 const REVALIDATE_ZERO_RE = /next\s*:\s*\{[^}]*revalidate\s*:\s*0\b/;

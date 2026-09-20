@@ -69,7 +69,7 @@ app.set('trust proxy', 1);
 // drifted — the ad-network allowlist existed in one edition only).
 // CSP mode (ADR 0003): enforcing in production by default; Report-Only in
 // development. Override explicitly per environment with CSP_ENFORCE=true|false.
-// connect-src includes wss: for Supabase/Firebase realtime channels.
+// connect-src includes wss: for Firebase realtime channels.
 const cspEnforce = process.env.CSP_ENFORCE !== undefined
   ? process.env.CSP_ENFORCE === 'true'
   : (process.env.NODE_ENV === 'production' || process.env.VERCEL_ENV === 'production');

@@ -5,6 +5,7 @@ import { getAnalytics, isSupported as isAnalyticsSupported, Analytics } from "fi
 import { 
   getAuth, 
   GoogleAuthProvider, 
+  GithubAuthProvider, 
   signInWithPopup, 
   signOut, 
   createUserWithEmailAndPassword, 
@@ -41,6 +42,7 @@ export const db = dbId ? getFirestore(app, dbId) : getFirestore(app);
 export const rtdb: Database = getDatabase(app, firebaseConfig.databaseURL);
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
+export const githubProvider = new GithubAuthProvider();
 
 export { app };
 

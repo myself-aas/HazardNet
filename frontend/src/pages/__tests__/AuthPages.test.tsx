@@ -15,7 +15,7 @@ jest.mock('../../context/AuthContext', () => ({
 }))
 
 const signInWithEmail = jest.fn()
-const sendVerificationEmail = jest.fn()
+const signUpWithEmail = jest.fn()
 const updatePassword = jest.fn()
 const signInWithOAuth = jest.fn()
 const checkUsernameAvailability = jest.fn()
@@ -25,8 +25,7 @@ const mockAuth = (overrides: Record<string, unknown> = {}) => {
     user: null,
     userProfile: null,
     signInWithEmail,
-    signUpWithEmail: jest.fn(),
-    sendVerificationEmail,
+    signUpWithEmail,
     signInWithOAuth,
     updatePassword,
     checkUsernameAvailability,
@@ -57,28 +56,35 @@ describe('LoginPage — dedicated /login page', () => {
     mockAuth()
   })
 
-  it('renders the sign-in form, Google-first social block and page links', () => {
+  it('renders the sign-in form, Google + GitHub buttons and page links', () => {
     mount('/login')
     expect(screen.getByRole('heading', { name: /sign in to hazardnet/i })).toBeInTheDocument()
     expect(screen.getByLabelText(/email address/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/^password/i)).toBeInTheDocument()
     expect(screen.getByTestId('connect-google-btn')).toBeInTheDocument()
-    expect(screen.getByTestId('auth-provider-icons')).toBeInTheDocument()
+    expect(screen.getByTestId('connect-github-btn')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: /forgot password/i })).toHaveAttribute('href', '/forgot-password')
     expect(screen.getByRole('link', { name: /create an account/i })).toHaveAttribute('href', '/signup')
   })
 
-  it('orders fields per spec: email → password → Google → provider icons → email submit', () => {
+  it('orders fields per spec: email → password → sign in → social options', () => {
     const { container } = mount('/login')
     const email = screen.getByLabelText(/email address/i)
     const password = screen.getByLabelText(/^password/i)
+    const submit = screen.getByRole('button', { name: /^sign in with email$/i })
     const google = screen.getByTestId('connect-google-btn')
-    const icons = screen.getByTestId('auth-provider-icons')
-    const submit = screen.getByRole('button', { name: /^sign in$/i })
     expect(orderOf(email, password)).toBe(true)
-    expect(orderOf(password, google)).toBe(true)
-    expect(orderOf(google, icons)).toBe(true)
-    expect(orderOf(icons, submit)).toBe(true)
+    expect(orderOf(password, submit)).toBe(true)
+    expect(orderOf(submit, google)).toBe(true)
+    void container
+  })
+
+  it('shows only Google and GitHub as social options', () => {
+    mount('/login')
+    expect(screen.queryByRole('button', { name: /orcid/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /linkedin/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /apple/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /microsoft/i })).not.toBeInTheDocument()
   })
 
   it('preserves the ?next destination in the sign-up link', () => {
@@ -94,7 +100,7 @@ describe('LoginPage — dedicated /login page', () => {
     mount('/login')
     fireEvent.change(screen.getByLabelText(/email address/i), { target: { value: 'a@b.co' } })
     fireEvent.change(screen.getByLabelText(/^password/i), { target: { value: 'wrong' } })
-    fireEvent.click(screen.getByRole('button', { name: /^sign in$/i }))
+    fireEvent.click(screen.getByRole('button', { name: /^sign in with email$/i }))
     expect(await screen.findByRole('alert')).toHaveTextContent(/doesn’t match/i)
   })
 
@@ -103,11 +109,11 @@ describe('LoginPage — dedicated /login page', () => {
     mount('/login')
     fireEvent.change(screen.getByLabelText(/email address/i), { target: { value: 'a@b.co' } })
     fireEvent.change(screen.getByLabelText(/^password/i), { target: { value: 'correct-horse' } })
-    fireEvent.click(screen.getByRole('button', { name: /^sign in$/i }))
+    fireEvent.click(screen.getByRole('button', { name: /^sign in with email$/i }))
     expect(await screen.findByTestId('home-probe')).toBeInTheDocument()
   })
 
-  it('starts the Google flow when Connect with Google is clicked', async () => {
+  it('starts the Google flow when Continue with Google is clicked', async () => {
     signInWithOAuth.mockResolvedValue(undefined)
     mount('/login')
     fireEvent.click(screen.getByTestId('connect-google-btn'))
@@ -116,7 +122,7 @@ describe('LoginPage — dedicated /login page', () => {
   })
 })
 
-describe('SignUpPage — verification-link flow', () => {
+describe('SignUpPage — email/password account creation', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     mockAuth()
@@ -127,24 +133,26 @@ describe('SignUpPage — verification-link flow', () => {
     fireEvent.change(screen.getByLabelText(/full name/i), { target: { value: 'Ashif Ahmed' } })
     fireEvent.change(screen.getByLabelText(/username/i), { target: { value: 'ashif_ahmed' } })
     fireEvent.change(screen.getByLabelText(/email address/i), { target: { value: 'a@b.co' } })
+    fireEvent.change(screen.getByLabelText(/^password/i), { target: { value: 'Str0ng!pass' } })
     fireEvent.click(screen.getByLabelText(/i agree to the/i))
   }
 
-  it('renders the sign-up form with username field, Google-first socials and terms', () => {
+  it('renders the sign-up form with username, password, Google/GitHub and terms', () => {
     mount('/signup')
     expect(screen.getByRole('heading', { name: /create your hazardnet account/i })).toBeInTheDocument()
     expect(screen.getByLabelText(/full name/i)).toBeInTheDocument()
     expect(screen.getByTestId('username-field')).toBeInTheDocument()
+    expect(screen.getByLabelText(/^password/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/i agree to the/i)).toBeInTheDocument()
     expect(screen.getByTestId('connect-google-btn')).toBeInTheDocument()
+    expect(screen.getByTestId('connect-github-btn')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: /^sign in$/i })).toHaveAttribute('href', '/login')
   })
 
-  it('places Google before the email submit button', () => {
-    const { container } = mount('/signup')
-    const google = screen.getByTestId('connect-google-btn')
-    const submit = screen.getByRole('button', { name: /create account/i })
-    expect(orderOf(google, submit)).toBe(true)
+  it('shows only Google and GitHub as social options', () => {
+    mount('/signup')
+    expect(screen.queryByRole('button', { name: /orcid/i })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /linkedin/i })).not.toBeInTheDocument()
   })
 
   it('sanitizes the username while typing (lowercase, letters/digits/underscore only)', () => {
@@ -156,40 +164,38 @@ describe('SignUpPage — verification-link flow', () => {
     expect((usernameInput as HTMLInputElement).value).toBe('okuser__')
   })
 
-  it('blocks submission without consent and does not send verification', async () => {
+  it('blocks submission without consent and does not create an account', async () => {
     mount('/signup')
     fireEvent.change(screen.getByLabelText(/full name/i), { target: { value: 'Ashif Ahmed' } })
     fireEvent.change(screen.getByLabelText(/username/i), { target: { value: 'ashif_ahmed' } })
     fireEvent.change(screen.getByLabelText(/email address/i), { target: { value: 'a@b.co' } })
-    fireEvent.click(screen.getByRole('button', { name: /create account/i }))
+    fireEvent.change(screen.getByLabelText(/^password/i), { target: { value: 'Str0ng!pass' } })
+    fireEvent.click(screen.getByRole('button', { name: /create my account/i }))
     expect(await screen.findByText(/please accept the terms/i)).toBeInTheDocument()
-    expect(sendVerificationEmail).not.toHaveBeenCalled()
+    expect(signUpWithEmail).not.toHaveBeenCalled()
   })
 
-  it('sends a verification link and shows the check-your-inbox state', async () => {
-    sendVerificationEmail.mockResolvedValue(undefined)
+  it('creates the account and navigates home', async () => {
+    signUpWithEmail.mockResolvedValue('session')
     mount('/signup')
     fillValid()
-    fireEvent.click(screen.getByRole('button', { name: /create account/i }))
-    expect(await screen.findByTestId('signup-verification-sent')).toBeInTheDocument()
-    expect(sendVerificationEmail).toHaveBeenCalledWith('a@b.co', {
-      nextTo: '/set-password',
-      displayName: 'Ashif Ahmed',
+    fireEvent.click(screen.getByRole('button', { name: /create my account/i }))
+    expect(await screen.findByTestId('home-probe')).toBeInTheDocument()
+    expect(signUpWithEmail).toHaveBeenCalledWith('a@b.co', 'Str0ng!pass', 'Ashif Ahmed', {
       username: 'ashif_ahmed',
     })
-    expect(screen.getByText(/a@b\.co/i)).toBeInTheDocument()
   })
 
-  it('surfaces errors when the verification email cannot be sent', async () => {
-    sendVerificationEmail.mockRejectedValue(new Error('already registered'))
+  it('surfaces errors when sign-up fails', async () => {
+    signUpWithEmail.mockRejectedValue(new Error('Account already exists'))
     mount('/signup')
     fillValid()
-    fireEvent.click(screen.getByRole('button', { name: /create account/i }))
+    fireEvent.click(screen.getByRole('button', { name: /create my account/i }))
     expect(await screen.findByRole('alert')).toHaveTextContent(/already exists/i)
   })
 })
 
-describe('SetPasswordPage — password setup after email verification', () => {
+describe('SetPasswordPage — password setup', () => {
   const verifiedUser = { id: 'u-1', email: 'a@b.co', email_confirmed_at: new Date().toISOString() }
 
   beforeEach(() => {

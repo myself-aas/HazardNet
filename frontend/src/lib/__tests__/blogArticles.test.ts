@@ -103,7 +103,7 @@ describe('blogArticles — slugs and content helpers', () => {
   })
 })
 
-describe('blogArticles — local demo store (no Supabase env)', () => {
+describe('blogArticles — local demo store (no Firestore env)', () => {
   beforeEach(() => {
     localStorage.clear()
   })

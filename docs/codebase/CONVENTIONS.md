@@ -44,7 +44,7 @@ contract, not decoration: `SEC-06` (API-key auth), `SEC-13` (client-safe errors)
 
 ### 3) Import and Module Conventions
 
-- **Module system**: ESM everywhere. Root `package.json` declares `"type": "module"`; a comment in `api/forecasts.js` records the consequence: *"CJS `require` fails here"*. Config files that must be CJS use the `.cjs` extension (`jest.config.cjs`, `babel.config.cjs`, `fix.cjs`).
+- **Module system**: ESM everywhere. Root `package.json` declares `"type": "module"`; a comment in `api/forecasts.js` records the consequence: *"CJS `require` fails here"*. Config files that must be CJS use the `.cjs` extension (`jest.config.cjs`, `babel.config.cjs`).
 - **Import grouping/order**: no linter-enforced ordering. The observed convention in backend/frontend sources is: Node builtins → third-party → local (`./`, `../`), e.g. `backend/utils/ai_fallback_engine.js` imports `node:crypto` first; `frontend/src/context/AuthContext.tsx` imports React, then `firebase/auth`, then `../services/firebase`. Node builtins use the `node:` prefix (`node:crypto`, `node:fs`).
 - **Alias vs relative policy**: `@/*` → `frontend/src/*` for the frontend, declared in **both** `frontend/tsconfig.json#paths` and `frontend/vite.config.ts#resolve.alias` (the Vite config comment states Vite does not read tsconfig `paths`). `backend/` and `api/` use **relative imports only** — no path aliases.
 - **Public exports**: named exports are the norm (`export function`, `export const`). `export default` is reserved for the serverless handler shape (`api/**/*.js` — required by Vercel) and for `clientError`/`db` convenience. Barrel files are not used; tests and modules import concrete paths.

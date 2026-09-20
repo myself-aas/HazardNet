@@ -309,7 +309,7 @@ test` run and would be easy to commit by accident.
    regression net: `no JavaScript errors on critical pages` and
    `.leaflet-container` visibility both fail loudly if this breaks again.
 4. **🟡 Carried forward from the prior reaudit:** rotate the leaked credentials
-   (Supabase DB password, Codecov token, Vercel token/org/project); confirm `main` branch
+   (Postgres DB password, Codecov token, Vercel token/org/project); confirm `main` branch
    protection requires `verify` + `test-e2e` + `security-audit`; `audit-exceptions.json`
    expires **2026-12-12**.
 

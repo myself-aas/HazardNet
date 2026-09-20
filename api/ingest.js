@@ -12,8 +12,7 @@ import { guardRequest } from '../backend/middleware/serverlessGuard.js';
 const ForecastSchema = z.object({
   district_id: z.union([z.string(), z.number()]),
   district_name: z.string(),
-  // Keep in sync with backend/utils/forecastRow.js VALID_HORIZONS and the
-  // public.forecasts CHECK constraint (scripts/db/002_forecasts_supabase.sql).
+  // Keep in sync with backend/utils/forecastRow.js VALID_HORIZONS.
   horizon: z.enum(['7_days', '15_days']),
   hazard_type: z.string(),
   confidence: z.number(),
@@ -119,8 +118,7 @@ export default async function handler(req, res) {
   const { chunk } = parseResult.data;
 
   try {
-    // Upsert through the forecast store (Firestore batch or Supabase upsert,
-    // per FORECAST_STORE — ADR 0002).
+    // Append through the forecast store (Firestore batch).
     await getForecastStore().appendForecasts(chunk);
 
     logger.info(`Ingested ${chunk.length} forecast rows into the ${getForecastStore().mode} forecast store`);

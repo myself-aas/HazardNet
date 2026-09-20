@@ -64,7 +64,7 @@ resolve this.
 - No code changes beyond the guard comment; no test changes (nothing
   referenced INT8 behavior).
 - Closes backlog #9; with it, every audit-backlog code item (1–9) is resolved
-  — the only open halves are ops: backlog #4's Supabase flip (credentials)
+  — the only open halves are ops: backlog #4's Postgres flip (credentials)
   and backlog #8's first live ADM3 run (next Sunday pipeline).
 
 ## Verification checklist

@@ -42,7 +42,7 @@ automation that never worked.
                   ▼
   commit backend/data/forecasts/* · frontend/public/data/* · data/kaggle/dataset-meta/*
                   ▼
-        Production (Vercel / Supabase / Firestore) redeploys carrying the new data
+        Production (Vercel / Postgres / Firestore) redeploys carrying the new data
 
   COLAB T4 — monthly, a person at the keyboard
   ┌────────────────────────────────────────────────────────────────────────┐

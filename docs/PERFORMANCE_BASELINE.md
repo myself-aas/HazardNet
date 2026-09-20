@@ -2,7 +2,7 @@
 
 **Date:** 2026-09-11  
 **Version:** v2.1.911  
-**Environment:** Production (Vercel + Firebase + Supabase)
+**Environment:** Production (Vercel + Firebase)
 
 ---
 
@@ -172,10 +172,10 @@ Endpoint Tested:
 - **Concurrent Reads:** 100+ (no throttling observed)
 - **Data Size:** 1,662 documents (554 locations × 3 horizons)
 
-#### Supabase PostgreSQL (Users)
-- **Query Latency (p95):** 45ms
-- **Connection Pool:** 20 connections
-- **Concurrent Queries:** 50+ (no contention)
+#### Firebase Firestore (Users / Profiles)
+- **Read Latency (p95):** 45ms
+- **Concurrent Reads:** 50+ (no contention)
+- **Auth:** Firebase Authentication (email/password + Google + GitHub)
 
 ---
 

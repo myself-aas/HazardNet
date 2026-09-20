@@ -12,7 +12,7 @@
 | Primary language | JavaScript (ESM) for backend, `api/`, `scripts/`; TypeScript/TSX for `frontend/src` | `package.json` (`"type": "module"`), `frontend/tsconfig.json` |
 | Runtime + version | Node.js `>=20` (enforced via `engines`); CI pins `node-version: '20'` | `package.json`, `.github/workflows/ci.yml` |
 | Secondary runtime | Python 3.11 for the pipeline + ETL/hindcast scripts and their pytest suite | `.github/workflows/ci.yml` (`python-version: '3.11'`), `scripts/requirements-pipeline.txt` |
-| Package manager | npm — `package-lock.json` (lockfileVersion 3), `npm ci` in CI. A second `bun.lock` also exists (see CONCERNS) | `package-lock.json`, `.github/workflows/ci.yml` |
+| Package manager | npm — `package-lock.json` (lockfileVersion 3), `npm ci` in CI | `package-lock.json`, `.github/workflows/ci.yml` |
 | Module/build system | ESM throughout; Vite 8 builds the SPA; `tsc -p frontend/tsconfig.json --noEmit` is the type gate | `package.json` scripts, `frontend/vite.config.ts` |
 | Workspaces | npm workspace, single member: `frontend` | `package.json` `"workspaces": ["frontend"]` |
 
@@ -50,7 +50,7 @@ Frontend workspace (`frontend/package.json` `dependencies`).
 | `@tanstack/react-query` | ^5.0.0 | Server-state fetching for forecast/alert hooks | `frontend/src/hooks/useForecasts.ts`, `frontend/src/hooks/useAlertsData.ts` |
 | `recharts`, `framer-motion`, `lucide-react` | ^2.9.0 / ^13.0.0 / ^1.28.0 | Charts + animation + iconography | `frontend/src/components/ThirtyDayTrendChart.tsx` |
 | `jspdf`, `html2canvas`, `html2canvas-pro` | ^4.2.1 / ^1.4.1 / ^2.4.0 | Client-side PDF export of alert evidence cards | `frontend/src/components/PdfExportButton.tsx` |
-| `@supabase/supabase-js`, `@supabase/ssr` | ^2.111.0 / ^0.12.4 | Declared but **not imported anywhere in `frontend/src`** — pending cutover | `frontend/package.json`; see CONCERNS |
+| `firebase`, `firebase` | ^2.111.0 / ^0.12.4 | Declared but **not imported anywhere in `frontend/src`** — pending cutover | `frontend/package.json`; see CONCERNS |
 | `react-markdown`, `react-hot-toast`, `qrcode.react`, `clsx`, `tailwind-merge`, `class-variance-authority` | see manifest | Rendering/support utilities | `frontend/package.json` |
 
 ### 3) Development Toolchain

@@ -17,11 +17,11 @@ AUDIT_PASSED=true
 # ==========================================
 echo "🔍 Checking dependency vulnerabilities..."
 
-if npm audit --audit-level=high --production > /dev/null 2>&1; then
-  echo "  ✅ No high/critical vulnerabilities in production dependencies"
+if node scripts/npm-audit-ci.mjs > /dev/null 2>&1; then
+  echo "  ✅ No high/critical vulnerabilities outside audit-exceptions.json"
 else
-  echo "  ❌ High or critical vulnerabilities found!"
-  npm audit --audit-level=high --production
+  echo "  ❌ High or critical vulnerabilities found (outside audit-exceptions.json)!"
+  node scripts/npm-audit-ci.mjs
   AUDIT_PASSED=false
 fi
 echo ""
@@ -33,8 +33,6 @@ echo "🔐 Verifying environment variables..."
 
 REQUIRED_PRODUCTION_VARS=(
   "BACKEND_API_KEY"
-  "SUPABASE_URL"
-  "SUPABASE_ANON_KEY"
   "FIREBASE_PROJECT_ID"
   "NODE_ENV"
 )
@@ -94,7 +92,7 @@ else
 fi
 
 # Check for timing-safe comparison in code
-if grep -q "crypto.timingSafeEqual" backend/middleware/apiKeyAuth.js 2>/dev/null; then
+if grep -q "crypto.timingSafeEqual" backend/utils/apiKeyAuth.js 2>/dev/null; then
   echo "  ✅ Timing-safe API key comparison implemented"
 else
   echo "  ❌ Timing-safe comparison not found"
@@ -198,26 +196,15 @@ echo ""
 # ==========================================
 echo "🔍 Scanning for hardcoded secrets..."
 
-SECRET_PATTERNS=(
-  "AIzaSy[0-9A-Za-z_-]{33}"           # Google API keys
-  "sk_live_[0-9A-Za-z]{24,}"          # Stripe live keys
-  "ghp_[0-9A-Za-z]{36}"               # GitHub personal tokens
-  "AKIA[0-9A-Z]{16}"                  # AWS access keys
-  "password\s*=\s*['\"][^'\"]{8,}"    # Hardcoded passwords
-  "api_key\s*=\s*['\"][^'\"]{20,}"    # Hardcoded API keys
-)
-
-found_secrets=false
-for pattern in "${SECRET_PATTERNS[@]}"; do
-  if grep -rE "$pattern" backend/ frontend/src/ api/ --exclude-dir=node_modules 2>/dev/null; then
-    found_secrets=true
-  fi
-done
-
-if [ "$found_secrets" = false ]; then
-  echo "  ✅ No hardcoded secrets detected"
+# Delegates to the canonical scanner (scripts/check-secrets.sh), which is the
+# gate CI runs. It knows the two public-by-design shapes — the Firebase web
+# API key (a browser-shipped identifier, not a secret) — and therefore does
+# not false-positive on frontend/src/lib/config.ts and firebase-applet-config.json.
+if bash scripts/check-secrets.sh > /dev/null 2>&1; then
+  echo "  ✅ No hardcoded secrets detected (scripts/check-secrets.sh)"
 else
   echo "  ❌ Potential secrets found in code!"
+  bash scripts/check-secrets.sh
   AUDIT_PASSED=false
 fi
 echo ""
@@ -243,14 +230,8 @@ echo ""
 # ==========================================
 echo "👤 Verifying authentication security..."
 
-if grep -q "supabase\|@supabase/supabase-js" package.json 2>/dev/null; then
-  echo "  ✅ Supabase authentication configured"
-  
-  if [ -n "$SUPABASE_SERVICE_ROLE_KEY" ]; then
-    echo "  ✅ Supabase service role key set"
-  else
-    echo "  ⚠️ SUPABASE_SERVICE_ROLE_KEY not set"
-  fi
+if grep -q '"firebase"' package.json 2>/dev/null; then
+  echo "  ✅ Firebase authentication configured"
 else
   echo "  ⚠️ Authentication library not detected"
 fi

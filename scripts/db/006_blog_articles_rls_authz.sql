@@ -18,7 +18,7 @@
 -- instead of "who is this?".
 --
 -- Because sign-up is open (frontend/src/context/AuthContext.tsx calls
--- supabase.auth.signUp with no invite gate), any account could send
+-- createUserWithEmailAndPassword with no invite gate), any account could send
 -- author_email = <a superadmin address> and pass. The delete policy's USING
 -- clause tested the SAME column, and every genuine article carries a
 -- superadmin value there — so `delete from blog_articles` removed the entire
@@ -87,7 +87,7 @@ $$;
 comment on function public.is_blog_superadmin() is
   'True when the JWT subject (auth.uid()) belongs to a primary HazardNet blog superadmin. Resolves the email from auth.users at call time, so it is immune to client-supplied columns and to stale JWT email claims.';
 
--- Supabase grants EXECUTE to PUBLIC by default; be explicit so the write
+-- Postgres grants EXECUTE to PUBLIC by default; be explicit so the write
 -- policies produce a clean RLS violation for signed-out callers rather than a
 -- "permission denied for function" error.
 revoke all on function public.is_blog_superadmin() from public;

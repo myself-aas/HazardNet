@@ -3,7 +3,7 @@
 -- Dedicated user dashboards: unique usernames (profile URLs), rich profile
 -- data, connectors, avatars storage, and public profile visibility.
 --
--- Run in the Supabase SQL editor AFTER 002_forecasts_supabase.sql.
+-- Run in your Postgres SQL editor.
 -- Safe to re-run (idempotent: `if not exists` / `drop policy if exists`).
 -- =============================================================================
 

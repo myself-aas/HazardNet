@@ -40,7 +40,7 @@ Two hard constraints shaped the decision:
    the ADM3 name; `pcode` the ADM3 P-code.
 4. **Additive identity columns** on the ingest/store path: `admin_level`
    (int, 3), `adm2_name`, `adm2_pcode` (parent district context, enables
-   future ADM2 aggregation/drill-down). `002_forecasts_supabase.sql` adds
+   future ADM2 aggregation/drill-down). `002_forecasts_postgres.sql` adds
    them idempotently; the history CSV export emits them.
 5. **Horizons: 10/20/30 days** end-to-end — notebook `HORIZONS`, backend
    `VALID_HORIZONS`, ingest zod enum, SQL CHECK constraints, frontend
@@ -62,7 +62,7 @@ Two hard constraints shaped the decision:
   `LiveMapView` overlay keeps covering all 64 districts. True upazila-level
   drill-down (pcode-keyed district data / admin selector) remains future
   work; the API serves all 507 units regardless.
-- 001/002 SQL CHECK constraints widened (idempotent swap); the Supabase
+- 001/002 SQL CHECK constraints widened (idempotent swap); the Postgres
   upsert now writes 15 columns.
 - Exposure overlay (OSM/Geofabrik sjoin) and PostGIS/Tippecanoe map work are
   **out of scope** (phases 8b/8c).

@@ -1,7 +1,7 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { AuthSocialButtons } from '../AuthSocialButtons'
 import { useAuth } from '../../../context/AuthContext'
-import { SECONDARY_AFTER_GOOGLE_PROVIDER_IDS, getProvider } from '../../../lib/oauthProviders'
+import { SUPPORTED_PROVIDER_IDS } from '../../../lib/oauthProviders'
 
 jest.mock('../../../context/AuthContext', () => ({
   useAuth: jest.fn(),
@@ -9,34 +9,27 @@ jest.mock('../../../context/AuthContext', () => ({
 
 const signInWithOAuth = jest.fn()
 
-describe('AuthSocialButtons — Google-first social sign-in', () => {
+describe('AuthSocialButtons — Google + GitHub social sign-in', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     ;(useAuth as unknown as jest.Mock).mockReturnValue({ signInWithOAuth })
   })
 
-  it('renders the prominent Connect-with-Google button first', () => {
+  it('renders a button for each enabled provider and nothing else', () => {
     render(<AuthSocialButtons />)
-    const google = screen.getByRole('button', { name: /connect with google/i })
-    expect(google).toHaveAttribute('data-testid', 'connect-google-btn')
+    expect(screen.getByTestId('connect-google-btn')).toBeInTheDocument()
+    expect(screen.getByTestId('connect-github-btn')).toBeInTheDocument()
+    expect(SUPPORTED_PROVIDER_IDS).toEqual(['google', 'github'])
+    const buttons = screen.getAllByRole('button')
+    expect(buttons).toHaveLength(2)
   })
 
-  it('shows every other provider as a compact side-by-side icon row', () => {
-    render(<AuthSocialButtons />)
-    const iconRow = screen.getByTestId('auth-provider-icons')
-    SECONDARY_AFTER_GOOGLE_PROVIDER_IDS.forEach((id) => {
-      expect(
-        iconRow.querySelector(`button[aria-label="Continue with ${getProvider(id).label}"]`),
-      ).not.toBeNull()
-    })
-  })
-
-  it('places Google before the icon row in DOM order', () => {
+  it('places Google before GitHub in DOM order', () => {
     render(<AuthSocialButtons />)
     const google = screen.getByTestId('connect-google-btn')
-    const iconRow = screen.getByTestId('auth-provider-icons')
+    const github = screen.getByTestId('connect-github-btn')
     expect(
-      google.compareDocumentPosition(iconRow) & Node.DOCUMENT_POSITION_FOLLOWING,
+      google.compareDocumentPosition(github) & Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy()
   })
 
@@ -47,17 +40,24 @@ describe('AuthSocialButtons — Google-first social sign-in', () => {
     await waitFor(() => expect(signInWithOAuth).toHaveBeenCalledWith('google'))
   })
 
+  it('starts the GitHub OAuth flow when clicked', async () => {
+    signInWithOAuth.mockResolvedValue(undefined)
+    render(<AuthSocialButtons />)
+    fireEvent.click(screen.getByTestId('connect-github-btn'))
+    await waitFor(() => expect(signInWithOAuth).toHaveBeenCalledWith('github'))
+  })
+
   it('surfaces actionable guidance when a provider is not enabled', async () => {
-    signInWithOAuth.mockRejectedValue(new Error('Provider is not enabled'))
+    signInWithOAuth.mockRejectedValue(new Error('OPERATION_NOT_ALLOWED: identity provider not enabled'))
     render(<AuthSocialButtons />)
     fireEvent.click(screen.getByRole('button', { name: /continue with github/i }))
     const alert = await screen.findByRole('alert')
     expect(alert.textContent).toMatch(/Provider not enabled/)
-    expect(alert.textContent).toMatch(/Supabase dashboard/)
+    expect(alert.textContent).toMatch(/Firebase console/)
   })
 
   it('supports a custom Google label (e.g. sign-up)', () => {
-    render(<AuthSocialButtons label="Sign up with Google" />)
+    render(<AuthSocialButtons googleLabel="Sign up with Google" />)
     expect(screen.getByRole('button', { name: /sign up with google/i })).toBeInTheDocument()
   })
 })

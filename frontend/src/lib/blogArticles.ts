@@ -1,14 +1,13 @@
 /**
  * Blog article data layer for HazardNet.
  *
- * Storage adapters:
- *  - Supabase (production): the `blog_articles` table (SQL + RLS in
- *    docs/blog-admin-setup.md). Writes are restricted by RLS to the primary
- *    superadmin emails; the UI gates on the same allowlist.
- *  - Local demo mode: when Supabase env vars are absent (mock client), articles
- *    persist to localStorage so the studio remains fully explorable. A banner
- *    makes the active mode explicit so demo content is never mistaken for
- *    published production content.
+ * Storage:
+ *  - Firebase Firestore (production): the `blog_articles` collection. Writes
+ *    are gated in the UI to the primary superadmin emails.
+ *  - Local demo mode: when Firestore is unavailable, articles persist to
+ *    localStorage so the studio remains fully explorable. A banner makes the
+ *    active mode explicit so demo content is never mistaken for published
+ *    production content.
  */
 
 import DOMPurify from 'dompurify';

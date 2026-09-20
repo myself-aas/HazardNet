@@ -15,7 +15,7 @@ import {
  * Username field with as-you-type validation:
  *   · input is sanitized live (lowercase, a–z / 0–9 / underscore only)
  *   · format problems + the rule list render while typing
- *   · availability is checked (debounced) against Supabase
+ *   · availability is checked (debounced) against the profiles collection
  *   · when invalid or taken, suggestion chips (lowercase / _ / number
  *     variants) appear — one tap applies the suggestion
  */

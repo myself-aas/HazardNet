@@ -5,8 +5,6 @@ import { auth } from '../services/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import {
   describeOAuthError,
-  getProvider,
-  isOAuthProviderId,
   parseOAuthCallbackParams,
   resolveOAuthReturnTo,
 } from '../lib/oauthProviders'
@@ -14,12 +12,16 @@ import {
 type CallbackPhase = 'exchanging' | 'success' | 'error'
 type Explanation = ReturnType<typeof describeOAuthError>
 
+/**
+ * Post-auth landing page — unique URL: /auth/callback
+ *
+ * Sign-in now completes in a popup (Firebase `signInWithPopup`), so this page
+ * is a fallback for any direct/redirect visit: it waits for the Firebase auth
+ * state, then returns the user to where they were heading.
+ */
 export default function AuthCallbackPage() {
   const navigate = useNavigate()
-  const params = useMemo(
-    () => parseOAuthCallbackParams(window.location.search, window.location.hash),
-    [],
-  )
+  const params = useMemo(() => parseOAuthCallbackParams(window.location.search), [])
 
   const [phase, setPhase] = useState<CallbackPhase>(params.error ? 'error' : 'exchanging')
   const [explanation, setExplanation] = useState<Explanation | null>(
@@ -27,7 +29,6 @@ export default function AuthCallbackPage() {
   )
 
   const [returnTo, setReturnTo] = useState<string | null>(null)
-  const [providerLabel, setProviderLabel] = useState<string | null>(null)
   const [countdown, setCountdown] = useState(3)
   const settled = useRef(false)
 
@@ -43,21 +44,6 @@ export default function AuthCallbackPage() {
 
     let unsubscribe: () => void = () => {}
 
-    const finish = (sessionUser: unknown) => {
-      if (settled.current) return
-      settled.current = true
-
-      const identities =
-        (sessionUser as { identities?: Array<{ provider?: string }> } | null)?.identities ?? []
-      const usedProvider = identities
-        .map((identity) => identity.provider)
-        .find((provider): provider is string => Boolean(provider) && isOAuthProviderId(provider as string))
-
-      setProviderLabel(usedProvider && isOAuthProviderId(usedProvider) ? getProvider(usedProvider).label : null)
-      setReturnTo(resolveOAuthReturnTo(params.next))
-      setPhase('success')
-    }
-
     const fail = (error: unknown) => {
       if (settled.current) return
       settled.current = true
@@ -66,23 +52,27 @@ export default function AuthCallbackPage() {
     }
 
     void auth.authStateReady().then(() => {
-      if (auth.currentUser) finish(auth.currentUser)
+      if (!settled.current && auth.currentUser) {
+        settled.current = true
+        setReturnTo(resolveOAuthReturnTo(params.next))
+        setPhase('success')
+      }
     })
 
     try {
-      unsubscribe = onAuthStateChanged(auth, (user) => {
-        if (user) finish(user)
+      unsubscribe = onAuthStateChanged(auth, (authUser) => {
+        if (!authUser) return
+        if (settled.current) return
+        settled.current = true
+        setReturnTo(resolveOAuthReturnTo(params.next))
+        setPhase('success')
       })
     } catch (err) {
-      // Listener is best-effort; the getSession poll covers the exchange.
+      // Listener is best-effort; the poll covers the exchange.
     }
 
     const timeout = window.setTimeout(() => {
-      fail(
-        params.error
-          ? new Error(params.errorDescription ?? params.error)
-          : new Error('Timed out waiting for the sign-in session. Please try again.'),
-      )
+      fail(params.error ? new Error(params.errorDescription ?? params.error) : new Error('Timed out waiting for the sign-in session. Please try again.'))
     }, 12000)
 
     return () => {
@@ -108,7 +98,7 @@ export default function AuthCallbackPage() {
       <Shell>
         <span className="h-9 w-9 animate-spin rounded-full border-[3px] border-carbon-20 border-t-nasa-red" />
         <p className="text-sm font-bold text-carbon-80">Completing secure sign-in…</p>
-        <p className="text-xs text-carbon-60">Verifying the authorization code with your provider.</p>
+        <p className="text-xs text-carbon-60">Restoring your HazardNet session.</p>
       </Shell>
     )
   }
@@ -123,9 +113,7 @@ export default function AuthCallbackPage() {
         >
           ✓
         </motion.span>
-        <p className="text-sm font-bold text-carbon-80">
-          {providerLabel ? `Signed in with ${providerLabel}` : 'Signed in successfully'}
-        </p>
+        <p className="text-sm font-bold text-carbon-80">Signed in successfully</p>
         <p className="text-xs text-carbon-60">
           Returning you to HazardNet{returnTo && returnTo !== '/' ? ` (${returnTo})` : ''} in {countdown}…
         </p>

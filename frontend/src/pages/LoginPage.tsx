@@ -10,24 +10,24 @@ import MaterialIcon from '../components/MaterialIcon';
 /**
  * Dedicated sign-in page — unique URL: /login
  *
- * Field order follows the product spec: email + password inputs first, then
- * the prominent "Connect with Google" button, then a compact side-by-side row
- * of circular icons for the other providers, and finally the classic email
- * submit beneath a divider. Split-screen on desktop, single column on mobile.
+ * Field order: email + password first, then the email submit, then Google and
+ * GitHub as one-tap social options beneath a divider. Split-screen on
+ * desktop, single column on mobile.
  */
 
 /** Translate email-auth failures into actionable, non-leaky messages. */
 const describeError = (err: unknown): string => {
   const message = err instanceof Error ? err.message : String(err ?? '');
-  const text = message.toLowerCase();
-  if (text.includes('invalid login credentials') || text.includes('wrong-password') || text.includes('invalid-credential')) {
+  const code = (err as { code?: string } | null)?.code ?? '';
+  const text = `${code} ${message}`.toLowerCase();
+  if (text.includes('invalid login credentials') || text.includes('wrong-password') || text.includes('invalid-credential') || text.includes('user-not-found')) {
     return 'That email and password combination doesn’t match. Check for typos or reset your password below.';
   }
   if (text.includes('email not confirmed')) {
     return 'Your email address isn’t confirmed yet. Open the confirmation link we sent you, then sign in.';
   }
-  if (text.includes('user not found')) {
-    return 'No account exists for this email yet. Create one below — it takes a minute.';
+  if (text.includes('invalid-email')) {
+    return 'Enter a valid email address.';
   }
   if (text.includes('too many requests') || text.includes('rate limit')) {
     return 'Too many attempts — wait a minute and try again.';
@@ -35,8 +35,8 @@ const describeError = (err: unknown): string => {
   if (text.includes('failed to fetch') || text.includes('network')) {
     return 'Network problem while signing in. Check your connection and retry.';
   }
-  if (text.includes('not configured')) {
-    return 'Authentication isn’t configured for this deployment yet.';
+  if (text.includes('operation-not-allowed') || text.includes('operation not allowed')) {
+    return 'Email/password sign-in is not enabled on this project yet.';
   }
   return message || 'Sign-in failed. Please try again.';
 };
@@ -158,16 +158,6 @@ const LoginPage: React.FC = () => {
           </div>
         </div>
 
-        {/* ── Social sign-in first: Google, then compact provider icons ── */}
-        <AuthSocialButtons onSuccess={() => navigate(next, { replace: true })} />
-
-        <div className="relative flex items-center justify-center pt-1" aria-hidden="true">
-          <div className="border-t border-carbon-20 w-full" />
-          <span className="bg-white px-3 text-[10px] text-carbon-60 font-bold uppercase tracking-wider absolute">
-            or sign in with email
-          </span>
-        </div>
-
         <button
           id="login-page-submit-btn"
           type="submit"
@@ -180,10 +170,19 @@ const LoginPage: React.FC = () => {
               Signing in…
             </>
           ) : (
-            'Sign in'
+            'Sign in with email'
           )}
         </button>
       </form>
+
+      {/* ── Social options: Google and GitHub (Firebase providers) ── */}
+      <div className="relative flex items-center justify-center" aria-hidden="true">
+        <div className="border-t border-carbon-20 w-full" />
+        <span className="bg-white px-3 text-[10px] text-carbon-60 font-bold uppercase tracking-wider absolute">
+          or continue with
+        </span>
+      </div>
+      <AuthSocialButtons onSuccess={() => navigate(next, { replace: true })} />
 
       <p className="text-center text-xs sm:text-[13px] text-carbon-60">
         New to HazardNet?{' '}

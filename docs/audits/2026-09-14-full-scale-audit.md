@@ -94,14 +94,14 @@ assign('author_email', article.authorEmail);
 authorEmail: signedInAuthor.email,
 ```
 
-The policy compares that value against the allowlist. Supabase evaluates `with check`
+The policy compares that value against the allowlist. Postgres evaluates `with check`
 against the row being written, so a request that *sets* `author_email` to a superadmin
 address satisfies it. Nothing else enforces the identity: there is no trigger, no
 `default auth.email()`, and `auth.email()` appears nowhere in the file
 (`grep -n 'auth\.' docs/blog-admin-setup.md` → no matches).
 
 **Reachability.** Registration is open — `signUpWithEmail` calls
-`supabase.auth.signUp` with no invite, approval or allowlist gate. So the actor is
+`createUserWithEmailAndPassword` with no invite, approval or allowlist gate. So the actor is
 "anyone who can create an account", not "a known insider".
 
 **Impact.** With a single authenticated `insert`, an unauthenticated-in-effect attacker
@@ -121,7 +121,7 @@ correctly elsewhere — `scripts/db/003_user_dashboard.sql` uses `auth.uid() = i
 `with check (auth.uid() = user_id)` for every user-scoped table. The blog table is the
 outlier.
 
-**Fix (owner action — must be run in Supabase; a code change alone does not fix it):**
+**Fix (owner action — must be run in Postgres; a code change alone does not fix it):**
 
 ```sql
 drop policy if exists "blog_superadmin_write"  on public.blog_articles;
@@ -143,7 +143,7 @@ create policy "blog_superadmin_delete" on public.blog_articles for delete
 keep `author_email` for display but stop deriving permission from it, and move this SQL
 into `scripts/db/` so it is reviewable and diffable (§4.4).
 
-**Severity caveat.** This audit could not read the live policies — no Supabase
+**Severity caveat.** This audit could not read the live policies — no Postgres
 credentials here. The finding is against the SQL the repo documents as its deployed
 state. Confirm with `select * from pg_policies where tablename = 'blog_articles';`
 before treating it as closed.
@@ -162,7 +162,7 @@ It is a hand-rolled blocklist: remove `script,iframe,object,embed,link,style,for
 
 **Reproduction** (16 payloads executed through the real function under jsdom; the scratch
 harness was removed afterwards, so re-create it as a test file under
-`frontend/src/lib/__tests__/` with `jest.mock('../supabase', …)` as the existing
+`frontend/src/lib/__tests__/` with `jest.mock('../postgres', …)` as the existing
 `blogArticles.test.ts` does):
 
 ```
@@ -424,7 +424,7 @@ the only advisories, and they are reasoned.
 
 | Order | Action | Effort | Owner |
 |---|---|---|---|
-| 1 | Replace the three blog RLS policies with `auth.email()` (§3.1) | minutes | owner (Supabase) |
+| 1 | Replace the three blog RLS policies with `auth.email()` (§3.1) | minutes | owner (Postgres) |
 | 2 | Swap `sanitizeBlogHtml` for DOMPurify + regression tests (§3.2) | ~1 h | code |
 | 3 | Fix the CI backend-test argv and add a guard test (§4.1) | minutes | code |
 | 4 | Enable Dependabot alerts; stagger exception expiries (§4.2) | minutes | owner |
@@ -444,7 +444,7 @@ correctness, hygiene and durability.
 - **No browser E2E run.** `npx playwright test` needs browsers from the CDN, which this
   environment cannot reach; the suite passed in CI (`E2E Tests`, 2 m 8 s) on the same
   commit, so E2E is green but unverified *here*.
-- **No Vercel/Supabase credentials**, so runtime behaviour of the deployed site was not
+- **No Vercel/Postgres credentials**, so runtime behaviour of the deployed site was not
   observed; `site-health.yml` covers that externally.
 - **Branch protection could not be read** (the token lacks admin scope). Whether the CI
   jobs are *required* checks before merge is unknown, and that determines the real

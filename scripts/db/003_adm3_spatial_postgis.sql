@@ -2,7 +2,7 @@
 -- 003 — ADM3 spatial layer (PostGIS) — phase 8c, ADR 0006
 --
 -- SELF-HOST MODULE (per ADR 0003): applies to a Postgres instance with the
--- PostGIS extension (plain self-host Postgres; Supabase also supports PostGIS
+-- PostGIS extension (plain self-host Postgres)
 -- via the dashboard if this is ever wanted there). It is NOT required by the
 -- Vercel deployment, the API, or the frontend — the serving path reads the
 -- `forecasts` table only.
