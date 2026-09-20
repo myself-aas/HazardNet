@@ -560,7 +560,7 @@ export const DistrictDetailPage: React.FC = () => {
   const riskStyles = getRiskColor(data.modelAssessment.riskCategory);
 
   return (
-    <div id="district-detail-container" className="w-full max-w-7xl mx-auto space-y-8 font-sans pb-16">
+    <div id="district-detail-container" className="w-full max-w-7xl mx-auto min-w-0 overflow-x-hidden space-y-8 font-sans pb-16">
       
       {/* 1. TOP UTILITY HEADER / ACTION BAR */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2 screen-only">
@@ -708,7 +708,7 @@ export const DistrictDetailPage: React.FC = () => {
       {/* CONSOLIDATED OFFICIAL DISTRICT DISASTER INTELLIGENCE HEADER */}
       <header className="district-brief-header mb-6 border-b-2 border-carbon-90 pb-4 bg-white rounded-3xl p-5 sm:p-7 border border-carbon-20/90 shadow-xs space-y-4">
         {/* Single-line Top Bar (font-size: 8px) with 'HazardNet' branding on left and 'Dispatch ID' and 'Date' on right */}
-        <div className="flex items-center justify-between border-b border-carbon-20/80 pb-2 text-[8px] font-mono text-carbon-70 leading-tight">
+        <div className="flex flex-wrap items-center justify-between gap-1 border-b border-carbon-20/80 pb-2 text-[8px] font-mono text-carbon-70 leading-tight min-w-0">
           <div className="flex items-center gap-1.5 text-[8px]">
             <span className="font-black text-carbon-black uppercase tracking-wider text-[8px]">HazardNet</span>
             <span className="text-carbon-60 text-[8px]">•</span>
@@ -775,8 +775,8 @@ export const DistrictDetailPage: React.FC = () => {
             <ExternalLink className="w-3 h-3" />
           </Link>
           {climaticEventsData && (
-            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200">
-              <History className="w-3.5 h-3.5 text-slate-500" />
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium bg-carbon-10 text-carbon-70 border border-carbon-20">
+              <History className="w-3.5 h-3.5 text-carbon-60" />
               <span>{climaticEventsData.totalEvents} Verified Historical Events (2000–2026)</span>
             </span>
           )}
@@ -1363,7 +1363,7 @@ export const DistrictDetailPage: React.FC = () => {
               Hazard Severity Heatmap — {data.districtName} District Sub-Regions
             </h3>
           </div>
-          <div className="flex items-center gap-3 text-xs font-mono">
+          <div className="flex flex-wrap items-center gap-3 text-xs font-mono min-w-0">
             <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-md bg-emerald-500" /> Low (0-33%)</span>
             <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-md bg-amber-500" /> Moderate (34-66%)</span>
             <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-md bg-rose-600" /> Critical (67-100%)</span>
@@ -1420,8 +1420,8 @@ export const DistrictDetailPage: React.FC = () => {
           })}
         </div>
 
-        <div className="text-[11px] font-mono text-carbon-60 bg-carbon-05 border border-carbon-20 rounded-xl p-3 flex items-center justify-between">
-          <span>Spatial Grid Resolution: ADM3 Upazila Boundary Ingestion • Model Confidence: {data.modelAssessment.confidenceLevel}%</span>
+        <div className="text-[11px] font-mono text-carbon-60 bg-carbon-05 border border-carbon-20 rounded-xl p-3 flex flex-wrap items-center justify-between gap-2 min-w-0">
+          <span className="min-w-0 break-words">Spatial Grid Resolution: ADM3 Upazila Boundary Ingestion • Model Confidence: {data.modelAssessment.confidenceLevel}%</span>
           <span className="font-bold text-carbon-90">Total Sub-Regions Mapped: {data.impactedUpazilas.length}</span>
         </div>
       </section>
@@ -1556,7 +1556,7 @@ export const DistrictDetailPage: React.FC = () => {
               <TrendingUp className="w-4 h-4" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-carbon-90 tracking-tight">Hazard Trend: 7-Day Risk Level Fluctuations</h2>
+             g-tight">Hazard Trend: 7-Day Risk Level Fluctuations</h2>
               <p className="text-xs text-carbon-60">Longitudinal risk scoring and multi-hazard severity progression over the past week.</p>
             </div>
           </div>
@@ -1801,7 +1801,7 @@ export const DistrictDetailPage: React.FC = () => {
         {/* Filter Controls Bar */}
         <div className="bg-white border border-carbon-20 rounded-2xl p-4 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4 screen-only">
           <div className="flex flex-wrap items-center gap-2">
-            <div className="relative min-w-[200px]">
+            <div className="relative w-full min-w-0 sm:min-w-[200px] sm:w-auto">
               <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-carbon-60" />
               <input
                 type="text"
@@ -1856,6 +1856,7 @@ export const DistrictDetailPage: React.FC = () => {
             ) : (
               processedUpazilas.map((up, idx) => (
                 <article
+                  key={idx}
                   key={idx}
                   className="upazila-card pagination-protected break-inside-avoid bg-white border border-carbon-20 rounded-2xl p-5 shadow-xs space-y-3 hover:border-carbon-30 transition-all flex flex-col justify-between"
                 >
@@ -2135,7 +2136,7 @@ export const DistrictDetailPage: React.FC = () => {
           </div>
 
           {/* Quick Guidance Box & Recommended Varieties (1 col) */}
-          <div className="bg-white border border-carbon-20 rounded-2xl p-6 shadow-xs space-y-4 flex flex-col justify-between">
+          <div className="b-20 rounded-2xl p-6 shadow-xs space-y-4 flex flex-col justify-between">
             <div className="space-y-3">
               <h3 className="text-sm font-bold text-carbon-90 flex items-center gap-2">
                 <Sprout className="w-4 h-4 text-emerald-600" />
@@ -2268,11 +2269,11 @@ export const DistrictDetailPage: React.FC = () => {
                 <div className="h-56 w-full pt-2">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={climaticEventsData.yearlyTrend} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                      <XAxis dataKey="year" tick={{ fontSize: 10, fill: '#64748b' }} />
-                      <YAxis tick={{ fontSize: 10, fill: '#64748b' }} />
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e3e3e3" vertical={false} />
+                      <XAxis dataKey="year" tick={{ fontSize: 10, fill: '#77777a' }} />
+                      <YAxis tick={{ fontSize: 10, fill: '#77777a' }} />
                       <Tooltip
-                        contentStyle={{ backgroundColor: '#ffffff', borderColor: '#e2e8f0', borderRadius: '0.5rem', fontSize: '11px' }}
+                        contentStyle={{ backgroundColor: '#ffffff', borderColor: '#d1d1d1', borderRadius: '0.5rem', fontSize: '11px' }}
                       />
                       <Bar dataKey="count" name="Disaster Events" fill="#3b82f6" radius={[4, 4, 0, 0]} />
                     </BarChart>
@@ -2300,11 +2301,11 @@ export const DistrictDetailPage: React.FC = () => {
                           <stop offset="95%" stopColor="#f59e0b" stopOpacity={0.0} />
                         </linearGradient>
                       </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                      <XAxis dataKey="monthName" tick={{ fontSize: 10, fill: '#64748b' }} />
-                      <YAxis tick={{ fontSize: 10, fill: '#64748b' }} />
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e3e3e3" vertical={false} />
+                      <XAxis dataKey="monthName" tick={{ fontSize: 10, fill: '#77777a' }} />
+                      <YAxis tick={{ fontSize: 10, fill: '#77777a' }} />
                       <Tooltip
-                        contentStyle={{ backgroundColor: '#ffffff', borderColor: '#e2e8f0', borderRadius: '0.5rem', fontSize: '11px' }}
+                        contentStyle={{ backgroundColor: '#ffffff', borderColor: '#d1d1d1', borderRadius: '0.5rem', fontSize: '11px' }}
                       />
                       <Area type="monotone" dataKey="count" name="Historical Events" stroke="#d97706" strokeWidth={2} fill="url(#districtSeasonGrad)" />
                     </AreaChart>
@@ -2372,7 +2373,7 @@ export const DistrictDetailPage: React.FC = () => {
                                 <span className={`px-2 py-0.5 rounded text-[10px] ${
                                   event.severity >= 3.0 ? 'bg-red-50 text-red-700 border border-red-200' :
                                   event.severity >= 2.0 ? 'bg-amber-50 text-amber-700 border border-amber-200' :
-                                  'bg-slate-100 text-slate-700'
+                                  'bg-carbon-10 text-carbon-70'
                                 }`}>
                                   {event.severity ? event.severity.toFixed(2) : '1.00'}
                                 </span>

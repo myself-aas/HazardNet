@@ -77,9 +77,12 @@ const cspEnforce = process.env.CSP_ENFORCE !== undefined
 
 app.use(
   helmet({
-    // In AI Studio preview environment, allow framing so the preview iframe functions
-    frameguard: false,
-    contentSecurityPolicy: false,
+    // No framing use-case exists; DENY matches CSP frame-ancestors 'none'.
+    frameguard: { action: 'deny' },
+    contentSecurityPolicy: {
+      reportOnly: !cspEnforce,
+      directives: cspDirectivesFromString(),
+    },
   })
 );
 
