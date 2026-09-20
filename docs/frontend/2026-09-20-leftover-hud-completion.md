@@ -45,4 +45,4 @@ Stored-only forecasts; `/` vs `/live`; no new photos; alert review unchanged; Br
 
 ## Next (Phase 4 remaining / UX-MAP)
 
-`features/map/` extraction, map/table parity, and `DistrictDetailPage` god-file split were **not** this slice. See `docs/frontend/2026-09-20-phase-4-remaining.md`.
+`features/map/` extraction and map/table parity shipped separately. `DistrictDetailPage` god-file split + outlook-before-CSV shipped 2026-09-21 (`frontend/src/components/district/`). See `docs/frontend/2026-09-20-phase-5-implementation-report.md`.

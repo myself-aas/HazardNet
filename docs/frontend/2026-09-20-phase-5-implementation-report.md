@@ -66,9 +66,28 @@ Existing ALERT_UI honesty tests (disclaimer, uncalibrated ≠ probability, table
 
 ## Remaining gaps (not this slice)
 
-- `DistrictDetailPage.tsx` is still a ~2.6k-line god file. Many inner cards keep `rounded-2xl/3xl`, 11px captions, purple wells, simulated dispatch, and print-footer 8px. Full Section 3 **order** (h1 → horizon → source/date → outlook → alert → guidance → evidence → charts → export) is only partially applied: the alert strip sits under the title, but the CSV table still precedes the outlook body.
+- Inner-card pixel leftovers on the brief (some 10.5px badges, mixed radii, purple appendix chrome) were **not** a full HDS sweep.
+- Full Section 3 **order** is still partial: alert strip remains under the title (Phase 5 first slice). Outlook now precedes the CSV table (follow-up extract, 2026-09-21).
+- Dispatch remains a **UI simulation** (timeout + toast); labeled as such. No live SOP wire.
 - `AdvisoriesPage` / `StructuredAdvisoryRenderer` / `ThirtyDayTrendChart` / division–hazard editorial grids were out of this slice.
-- Phase 6 (front door, archive, auth) is next.
+
+## Follow-up (2026-09-21) — god-file split + outlook-before-CSV
+
+`DistrictDetailPage.tsx` keeps data/hooks only (~450 lines). JSX lives under `frontend/src/components/district/`:
+
+| Module | Role |
+|---|---|
+| `DistrictBriefActions` | District switcher + print/export |
+| `DistrictBriefHeader` | h1, source/date, published-alert strip |
+| `DistrictOutlookCard` | Stored outlook hero |
+| `DistrictForecastRecords` | 7/15-day CSV table (text equivalent of the chart) |
+| `DistrictBriefBody` | Evidence, guidance, history, ops, appendix |
+| `DistrictPrintFooter` | Print running footer |
+| `districtBriefUtils` | Shared hazard icon / risk colour |
+
+Page render order: actions → header → **outlook** → **forecast records** → body → print footer.
+
+Phase 5 Jest now concatenates `components/district/` so honesty rules cannot hide in extracted files.
 
 ## Definition of done (Phase 5)
 
