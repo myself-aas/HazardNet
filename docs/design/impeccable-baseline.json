@@ -25,56 +25,11 @@
       "reason": "The detector converts the print stylesheet's `h1 { font-size: 18pt !important }` as though pt were rem and reports a 288px heading on every page that carries the print sheet. On screen the h1 is 28px, rising to 32px at 640px, per frontend/src/index.css. Compensated by __tests__/designTypography.test.js, which fails if a point size appears outside @media print or the paper-emulation scopes (.pdf-capture-mode, .print-preview-rendered-body, .print-*) and if any screen h1 exceeds NASA's 3rem/48px h1 ceiling."
     }
   ],
-  "counts": {
-    "waived": 65,
-    "outstanding": 4,
-    "byRule": {
-      "side-tab": 3,
-      "border-accent-on-rounded": 1
-    }
-  },
-  "outstandingFindings": [
-    {
-      "rule": "border-accent-on-rounded",
-      "file": "frontend/src/pages/DistrictDetailPage.tsx",
-      "snippet": "border-b-2"
+    "counts": {
+      "waived": 65,
+      "outstanding": 0,
+      "byRule": {}
     },
-    {
-      "rule": "side-tab",
-      "file": "frontend/src/index.css",
-      "snippet": "border-left: 4px solid #f9a825"
-    },
-    {
-      "rule": "side-tab",
-      "file": "frontend/src/pages/BlogArticlePage.tsx",
-      "snippet": "border-l-4"
-    },
-    {
-      "rule": "side-tab",
-      "file": "frontend/src/pages/DistrictDetailPage.tsx",
-      "snippet": "border-l-4"
-    }
-  ],
-  "outstanding": [
-    {
-      "rule": "border-accent-on-rounded",
-      "file": "frontend/src/pages/DistrictDetailPage.tsx",
-      "snippet": "border-b-2"
-    },
-    {
-      "rule": "side-tab",
-      "file": "frontend/src/index.css",
-      "snippet": "border-left: 4px solid #f9a825"
-    },
-    {
-      "rule": "side-tab",
-      "file": "frontend/src/pages/BlogArticlePage.tsx",
-      "snippet": "border-l-4"
-    },
-    {
-      "rule": "side-tab",
-      "file": "frontend/src/pages/DistrictDetailPage.tsx",
-      "snippet": "border-l-4"
-    }
-  ]
+    "outstandingFindings": [],
+    "outstanding": []
 }

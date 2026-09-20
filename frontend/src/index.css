@@ -2135,7 +2135,7 @@ body.pdf-exporting .no-print,
 .prose-blog li { margin: 0.3rem 0; }
 .prose-blog a  { color: #b45309; font-weight: 700; text-decoration: underline; text-underline-offset: 2px; }
 .prose-blog a:hover { color: #92400e; }
-.prose-blog blockquote { margin: 1rem 0; padding: 0.6rem 1rem; border-left: 4px solid #f9a825; background: #fffbeb; border-radius: 0 0.75rem 0.75rem 0; color: #78350f; font-style: italic; }
+.prose-blog blockquote { margin: 1rem 0; padding: 0.6rem 1rem; border: 1px solid var(--hds-color-carbon-20); background: #fffbeb; color: #78350f; font-style: italic; }
 .prose-blog pre { margin: 1rem 0; padding: 0.9rem 1rem; background: var(--hds-color-carbon-90); color: var(--hds-color-carbon-20); border-radius: 0.75rem; overflow-x: auto; font-size: 0.78rem; line-height: 1.6; }
 .prose-blog code { font-family: var(--hds-font-family-code); font-size: 0.82em; background: var(--hds-color-carbon-10); padding: 0.1rem 0.35rem; border-radius: 0.35rem; color: #b91c1c; }
 .prose-blog pre code { background: transparent; color: inherit; padding: 0; }

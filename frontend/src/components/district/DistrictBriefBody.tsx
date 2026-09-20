@@ -945,7 +945,7 @@ export const DistrictBriefBody: React.FC = () => {
               {data.emergencyResponse.advisoryBullets.map((bullet, idx) => (
                 <div
                   key={idx}
-                  className="bg-carbon-05 border border-carbon-20/90 border-l-4 border-l-emerald-500 p-4 sm:p-5 flex flex-wrap items-start gap-4 hover:border-carbon-30 transition-colors"
+                  className="bg-carbon-05 border border-carbon-20/90 p-4 sm:p-5 flex flex-wrap items-start gap-4 hover:border-carbon-30 transition-colors"
                 >
                   <span className="w-8 h-8 rounded-sm bg-carbon-10 text-carbon-80 font-mono text-sm flex items-center justify-center shrink-0 font-extrabold mt-0.5 border border-carbon-20">
                     {idx + 1}

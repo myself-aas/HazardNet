@@ -204,7 +204,7 @@ export const BlogArticlePage: React.FC = () => {
           </div>
 
           <h1 className="text-2xl sm:text-3xl font-black text-carbon-90 tracking-tight leading-tight">{article.title}</h1>
-          <p className="text-sm text-carbon-60 leading-relaxed border-l-4 border-nasa-blue/60 pl-3">{article.excerpt}</p>
+          <p className="text-sm text-carbon-60 leading-relaxed">{article.excerpt}</p>
 
           <div className="flex items-center justify-between gap-3 border-y border-carbon-10 py-3">
             <div className="flex items-center gap-2.5 min-w-0">

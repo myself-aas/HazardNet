@@ -37,6 +37,7 @@ runNode('scripts/check-claims.mjs', [
   'frontend/index.html',
 ]);
 runNode('scripts/check-phase7.mjs');
+runNode('scripts/check-design-quality.mjs', ['--source-only']);
 
 const app = read('frontend/src/App.tsx');
 if (!/path="\/"\s+element=\{<FrontDoor/.test(app) || !/path="\/live"\s+element=\{<Dashboard/.test(app)) {
@@ -83,5 +84,5 @@ if (failures.length) {
   process.exit(1);
 }
 
-console.log('[check-ux-release] PASS: embargo, claims, Phase 7, stored-only lookup, / vs /live, no FrontDoor photos.');
+console.log('[check-ux-release] PASS: embargo, claims, Phase 7, design source, stored-only lookup, / vs /live, no FrontDoor photos.');
 console.log('[check-ux-release] Owner still: NVDA/TalkBack, production CWV, native-speaker BN, physical 400% zoom, preview sign-off.');
