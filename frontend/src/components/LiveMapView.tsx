@@ -1,6 +1,8 @@
 import MaterialIcon from "./MaterialIcon";
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { MapLegendUI } from './MapLegendUI';
+import { MapLegend } from './map/MapLegend';
+import MapToolbar, { type MapViewMode } from './map/MapToolbar';
+import MapDistrictTable from './map/MapDistrictTable';
 import { useNavigate } from 'react-router-dom';
 import L from 'leaflet';
 import 'leaflet.heat';
@@ -38,7 +40,7 @@ import {
 import { useMapSnapshot } from '../hooks/useMapSnapshot';
 import { useTileCache } from '../hooks/useTileCache';
 import { useLiveDistricts } from '../hooks/useForecasts';
-import { FORECAST_HORIZONS, formatHorizonLabel, type ForecastHorizon } from '../lib/forecasts';
+import { type ForecastHorizon } from '../lib/forecasts';
 
 export type { DistrictGeo, PathAnalysisResult, MapLayerKey };
 export const liveDistrictsData: DistrictGeo[] = ALL_64_DISTRICTS;
@@ -94,6 +96,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
 
   // Header collapse state
   const [isHeaderCollapsed, setIsHeaderCollapsed] = useState<boolean>(compactHeader);
+  const [viewMode, setViewMode] = useState<MapViewMode>('map');
 
   useEffect(() => {
     setIsHeaderCollapsed(compactHeader);
@@ -211,6 +214,12 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
       (localStorage.getItem('hazardnet_auto_detect_location') !== 'false'),
     lowBandwidth,
   });
+
+  useEffect(() => {
+    if (viewMode !== 'map') return;
+    const id = window.setTimeout(() => mapInstanceRef.current?.invalidateSize(), 80);
+    return () => window.clearTimeout(id);
+  }, [viewMode]);
 
   // Extracted Hook 2: useTileCache (IndexedDB Tile Caching & Offline Emergency Storage)
   const {
@@ -520,6 +529,14 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
     const matchesDivision = selectedDivision === 'All' || d.division.toLowerCase() === selectedDivision.toLowerCase();
     return matchesSearch && matchesHazard && matchesDivision;
   });
+
+  const hazardCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const layer of HAZARD_LAYERS) {
+      counts[layer.id] = liveDistricts.filter((d) => d.hazardType === layer.id).length;
+    }
+    return counts;
+  }, [liveDistricts]);
 
   // 3. Render Markers & Outlined District Boundaries
   useEffect(() => {
@@ -1215,214 +1232,38 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
           : `w-full ${customHeight || 'h-full min-h-[360px] lg:min-h-[560px]'} bg-carbon-10 overflow-hidden text-carbon-90 relative flex flex-col border border-carbon-20`
       }
     >
-      <div className="shrink-0 z-[var(--z-sticky)] w-full flex flex-col bg-white border-b border-carbon-20">
-          {!isFullScreen && isHeaderCollapsed && (
-            <div className="p-2 lg:px-4 bg-white flex items-center justify-between gap-2 flex-wrap">
-              <div className="flex items-center gap-2 min-w-0">
-                <span className="text-sm font-semibold text-carbon-90">Map</span>
-                <span className="text-xs text-carbon-60 font-mono hidden sm:inline tabular-nums">
-                  {filteredDistricts.length} districts
-                </span>
-              </div>
-
-              <div className="flex items-center gap-2 flex-wrap">
-                {(Object.keys(MAP_LAYERS) as Array<keyof typeof MAP_LAYERS>).slice(0, 3).map((key) => (
-                  <button
-                    key={key}
-                    type="button"
-                    onClick={() => setActiveLayer(key)}
-                    aria-pressed={activeLayer === key}
-                    className={`min-h-[44px] px-3 py-2 rounded-control border text-xs font-semibold touch-manipulation ${
- activeLayer === key
- ? 'bg-nasa-blue text-white border-nasa-blue'
- : 'bg-white text-carbon-70 border-carbon-20'
- }`}
-                  >
-                    {key === 'esriSatellite' ? 'Satellite' : key === 'esriClarity' ? 'Clarity' : 'Dark GIS'}
-                  </button>
-                ))}
-
-                <button
-                  type="button"
-                  onClick={() => setIsHeaderCollapsed(false)}
-                  className="min-h-[44px] px-3 py-2 bg-carbon-90 text-white text-xs font-semibold touch-manipulation"
-                  title="Expand map controls and filters"
-                >
-                  Controls
-                </button>
-              </div>
-            </div>
-          )}
-
-          {!isFullScreen && !isHeaderCollapsed && (
-            <div className="p-2 lg:px-4 lg:py-2 bg-white flex flex-col lg:flex-row lg:items-center justify-between gap-2">
-          <div className="flex items-center gap-2 min-w-0">
-            <div className="px-3 min-h-[44px] bg-nasa-blue text-white flex items-center justify-center font-semibold text-xs shrink-0 uppercase tracking-wide">
-              GIS
-            </div>
-            <div className="min-w-0">
-              <h3 className="text-base font-bold text-carbon-90 tracking-tight">
-                Hazard map
-              </h3>
-              <p className="text-xs text-carbon-60">
-                {filteredDistricts.length} / {liveDistricts.length} districts
-                {lowBandwidth ? ' · data saver (street map)' : ''}
-              </p>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="flex items-center gap-2 overflow-x-auto max-w-full" role="group" aria-label="Base map layer">
-              {(Object.keys(MAP_LAYERS) as Array<keyof typeof MAP_LAYERS>).map((key) => {
-                const isAct = activeLayer === key;
-                const labels: Record<string, string> = {
-                  esriSatellite: 'Satellite',
-                  esriClarity: 'Clarity',
-                  cartoDark: 'Dark GIS',
-                  osmStandard: 'Street Map',
-                  esriShadedRelief: 'Relief',
-                  topoMap: 'Topo',
-                };
-                return (
-                  <button
-                    key={key}
-                    type="button"
-                    onClick={() => setActiveLayer(key)}
-                    aria-pressed={isAct}
-                    className={`min-h-[44px] px-3 py-2 rounded-control border text-xs font-semibold whitespace-nowrap touch-manipulation ${
- isAct
- ? 'bg-nasa-blue text-white border-nasa-blue'
- : 'bg-white text-carbon-70 border-carbon-20'
- }`}
-                  >
-                    {labels[key]}
-                  </button>
-                );
-              })}
-            </div>
-
-            <button
-              type="button"
-              onClick={() => setIsHighContrastBoost(!isHighContrastBoost)}
-              aria-pressed={isHighContrastBoost}
-              className={`min-h-[44px] px-3 py-2 rounded-control border text-xs font-semibold flex items-center gap-2 touch-manipulation ${
- isHighContrastBoost
- ? 'bg-nasa-blue text-white border-nasa-blue'
- : 'bg-white text-carbon-70 border-carbon-20'
- }`}
-              title="Toggle high-contrast tiles"
-            >
-              <MaterialIcon name="bolt" className="w-4 h-4" />
-              {isHighContrastBoost ? 'Contrast on' : 'Contrast off'}
-            </button>
-
-            <button
-              type="button"
-              onClick={handleExportMapImage}
-              disabled={isExportingMap}
-              className="min-h-[44px] px-3 py-2 bg-nasa-blue text-white text-xs font-semibold flex items-center gap-2 touch-manipulation disabled:opacity-50"
-              title="Export visible map as an image"
-            >
-              <MaterialIcon name="photo_camera" className="w-4 h-4" />
-              {isExportingMap ? 'Capturing…' : 'Export'}
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setIsHeaderCollapsed(true)}
-              className="min-h-[44px] px-3 py-2 bg-carbon-90 text-white text-xs font-semibold touch-manipulation"
-              title="Collapse map controls"
-            >
-              Collapse
-            </button>
-          </div>
+      {!isFullScreen && (
+        <div className="shrink-0 z-[var(--z-sticky)] w-full flex flex-col bg-white border-b border-carbon-20">
+          <MapToolbar
+            collapsed={isHeaderCollapsed}
+            onCollapsedChange={setIsHeaderCollapsed}
+            viewMode={viewMode}
+            onViewModeChange={setViewMode}
+            activeLayer={activeLayer}
+            onLayerChange={setActiveLayer}
+            highContrast={isHighContrastBoost}
+            onHighContrastChange={setIsHighContrastBoost}
+            exporting={isExportingMap}
+            onExport={handleExportMapImage}
+            searchQuery={searchQuery}
+            onSearchQueryChange={setSearchQuery}
+            forecastHorizon={forecastHorizon}
+            onForecastHorizonChange={setForecastHorizon}
+            isLive={isLive}
+            liveCount={liveCount}
+            predictionDate={predictionDate}
+            hazardLayers={HAZARD_LAYERS}
+            selectedHazards={selectedHazards}
+            onToggleHazard={toggleHazard}
+            onSelectAllHazards={selectAllHazards}
+            onClearHazards={clearAllHazards}
+            hazardCounts={hazardCounts}
+            filteredCount={filteredDistricts.length}
+            totalCount={liveDistricts.length}
+            lowBandwidth={lowBandwidth}
+          />
         </div>
       )}
-
-      {!isFullScreen && !isHeaderCollapsed && (
-        <div className="px-2 py-2 lg:px-4 bg-white border-t border-carbon-20 flex flex-col lg:flex-row lg:items-center justify-between gap-2">
-          <div className="relative w-full lg:w-[320px]">
-            <label htmlFor="map-district-search" className="sr-only">Search districts</label>
-            <input
-              id="map-district-search"
-              type="search"
-              placeholder="Search districts, hazards, or divisions"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-12 lg:h-11 px-4 bg-white border border-carbon-20 rounded-control text-carbon-80 placeholder-carbon-60 text-base focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-1"
-            />
-          </div>
-
-          <div className="flex items-center gap-2 shrink-0 flex-wrap" role="group" aria-label="Forecast horizon">
-            {FORECAST_HORIZONS.map((h) => (
-              <button
-                key={h}
-                type="button"
-                onClick={() => setForecastHorizon(h)}
-                aria-pressed={forecastHorizon === h}
-                className={`min-h-[44px] px-3 py-2 rounded-control border text-xs font-semibold whitespace-nowrap touch-manipulation ${
- forecastHorizon === h
- ? 'bg-nasa-blue text-white border-nasa-blue'
- : 'text-carbon-70 bg-white border-carbon-20'
- }`}
-              >
-                {formatHorizonLabel(h)}
-              </button>
-            ))}
-            <span
-              className="px-2 min-h-[24px] inline-flex items-center rounded-control text-xs font-semibold whitespace-nowrap border border-carbon-20 bg-carbon-05 text-carbon-70"
-              title={
-                isLive
-                  ? `Stored pipeline forecast — ${liveCount}/64 districts matched, prediction date ${predictionDate}`
-                  : 'Static baseline data — the forecast API is offline or has no rows yet'
-              }
-            >
-              {isLive ? `Stored ${liveCount}/64` : 'Baseline'}
-            </span>
-          </div>
-
-          <div className="flex items-center gap-2 overflow-x-auto py-1 custom-scrollbar">
-            <button
-              type="button"
-              onClick={() => {
-                if (selectedHazards.length === HAZARD_LAYERS.length) {
-                  clearAllHazards();
-                } else {
-                  selectAllHazards();
-                }
-              }}
-              className={`min-h-[44px] px-3 py-2 rounded-control border text-xs font-semibold whitespace-nowrap touch-manipulation ${
- selectedHazards.length === HAZARD_LAYERS.length
- ? 'bg-carbon-90 text-white border-carbon-90'
- : 'text-carbon-70 bg-white border-carbon-20'
- }`}
-            >
-              All hazards ({selectedHazards.length}/{HAZARD_LAYERS.length})
-            </button>
-            {HAZARD_LAYERS.map((h) => {
-              const isAct = selectedHazards.includes(h.id);
-              const count = liveDistricts.filter((d) => d.hazardType === h.id).length;
-              return (
-                <button
-                  key={h.id}
-                  type="button"
-                  onClick={() => toggleHazard(h.id)}
-                  aria-pressed={isAct}
-                  className={`min-h-[44px] px-3 py-2 rounded-control border text-xs font-semibold whitespace-nowrap flex items-center gap-2 touch-manipulation ${
- isAct
- ? 'bg-nasa-blue text-white border-nasa-blue'
- : 'text-carbon-70 bg-white border-carbon-20'
- }`}
-                >
-                  <span>{h.name}</span>
-                  <span className="font-mono tabular-nums text-xs">{count}</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
-      </div>
 
       {/* Main Map Stage Container */}
       <div
@@ -1452,8 +1293,8 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
 
         <div
           className={`w-full flex-1 min-h-[360px] bg-carbon-10 map-perspective-container ${
- is3DTilted ? 'map-perspective-tilted' : ''
- } ${isHighContrastBoost ? 'map-tile-high-contrast' : ''}`}
+            viewMode === 'table' ? 'hidden' : ''
+          } ${is3DTilted ? 'map-perspective-tilted' : ''} ${isHighContrastBoost ? 'map-tile-high-contrast' : ''}`}
         >
           <div
             ref={mapContainerRef}
@@ -1466,6 +1307,17 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
             className="relative w-full h-full z-10 bg-transparent pointer-events-auto"
           />
         </div>
+
+        {viewMode === 'table' && (
+          <MapDistrictTable
+            districts={filteredDistricts}
+            selectedDistrictId={selectedDistrictId}
+            onSelectDistrict={(row) => {
+              const found = filteredDistricts.find((d) => d.id === row.id);
+              if (found) handleSelectDistrict(found);
+            }}
+          />
+        )}
 
         {currentSelected && !inspectedPoint && (
           <div
@@ -1486,8 +1338,8 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
         <div
           onMouseEnter={handleActivity}
           className={`absolute inset-0 pointer-events-none ${
- isHudVisible ? 'opacity-100' : 'opacity-0'
- }`}
+            viewMode === 'table' ? 'hidden' : ''
+          } ${isHudVisible ? 'opacity-100' : 'opacity-0'}`}
         >
 
           {/* Point Telemetry Click Inspection HUD */}
@@ -2477,7 +2329,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
           )}
           </AnimatePresence>
 
-                    <MapLegendUI
+          <MapLegend
             isRadarActive={isRadarActive}
             setIsRadarActive={setIsRadarActive}
           />
