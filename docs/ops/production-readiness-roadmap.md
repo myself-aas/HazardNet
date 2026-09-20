@@ -2,7 +2,7 @@
 
 **Date:** 2026-09-17
 **Input:** "HazardNet Deployment Plan — Early Warning & Emergency Support Web App, Production Readiness Roadmap" (owner draft, 9 phases / 21 steps)
-**Method:** every item of the draft was checked against the actual repository (code, ADRs 0001–0008, `assets/docs/MODEL_CARD.md`, `scripts/db/` migrations, CI, monitoring) and against what the deployment topology really is (ADR 0003: Vercel + Supabase + GitHub Actions). The draft's *principles* are adopted almost wholesale; its *stack* is not — it describes a greenfield system, but HazardNet is a deployed, CI-green product. Rewriting it would be risk without reward.
+**Method:** every item of the draft was checked against the actual repository (code, ADRs 0001–0008, `assets/docs/MODEL_CARD.md`, `scripts/db/` migrations, CI, monitoring) and against what the deployment topology really is (ADR 0003: Vercel + Postgres + GitHub Actions). The draft's *principles* are adopted almost wholesale; its *stack* is not — it describes a greenfield system, but HazardNet is a deployed, CI-green product. Rewriting it would be risk without reward.
 
 ---
 
@@ -35,13 +35,13 @@
 |---|---|---|---|
 | M1 | Next.js 14 App Router PWA | **Keep React 18 + Vite SPA**; prerender only the trust/methodology pages if Search Console data shows SPA crawl problems | PWA already ships (`manifest.json`, service worker, offline forecast snapshot); 45 jest suites + e2e green; blog already carries the SEO surface with per-article meta |
 | M2 | FastAPI core API | **Keep Express (`backend/`) + Vercel serverless (`api/`)**; Python stays the pipeline language (`scripts/auto_forecast.py`) | The API parity split (Express ↔ Vercel functions) is tested and documented; a second language runtime doubles ops burden for zero user-facing gain |
-| M3 | PostgreSQL 15 + PostGIS on VPS | **Supabase Postgres** (already the cutover target, ADR 0002; migrations 001–007 exist; PostGIS ADM3 layer already written in `003_adm3_spatial_postgis.sql`) | Same engine, already wired: `FORECAST_STORE=supabase`, RLS on blog tables, pooled connections |
+| M3 | PostgreSQL 15 + PostGIS on VPS | **self-host Postgres** (already the cutover target, ADR 0002; migrations 001–007 exist; PostGIS ADM3 layer already written in `003_adm3_spatial_postgis.sql`) | Same engine, already wired: `FORECAST_STORE=postgres`, RLS on blog tables, pooled connections |
 | M4 | Redis + Celery/NATS queue | **GitHub Actions schedules** (the daily pipeline is the proof this pattern works) + a `jobs` table if async user-facing work appears | No always-on worker exists today; Vercel functions + Actions cover the cadence |
 | M5 | Triton / GPU inference service | **Keep TFLite CPU on the runner + TF.js client-side** | Model is 0.75 MB, 1.2M params, 64-district scan runs in minutes on a free runner; GPU has no justification at this scale |
 | M6 | Export FP32 **and INT8** TFLite, verify <1% F1 drop | **Struck entirely** | ADR 0007: TFLite `CONV_3D` crashes under INT8; the bundle is FP32-only by design, documented in the model card |
 | M7 | MLflow registry | **In-repo registry first**: `Models/VERSION.json` (sha256 manifest, CI-gated by `gen-model-version.mjs`) + git tags + model card + eval artifacts; MLflow deferred (see A.6) | One model, one artifact, quarterly retrain — a server is not yet justified |
 | M8 | MapLibre + TiTiler + COG/MVT | **Keep Leaflet** (cluster/heat already built, mobile-tuned this month); Tippecanoe tiles via `scripts/tiles/` only when raster layers actually ship | 64-district GeoJSON is kilobytes; a tile server is infrastructure without a customer today |
-| M9 | Docker → K8s, Terraform + Ansible, 2–3 VPS | **Deferred** (see A.6) | ADR 0003 topology (Vercel + Supabase + Actions) is deployed, monitored, and free-tier |
+| M9 | Docker → K8s, Terraform + Ansible, 2–3 VPS | **Deferred** (see A.6) | ADR 0003 topology (Vercel + Postgres + Actions) is deployed, monitored, and free-tier |
 | M10 | SMS (SSL Wireless/Infobip) in alert engine v1 | **Phase-gated**: v1 publishes via web push (VAPID, already live) + site + (optional) Telegram bot; SMS when a named partner commits to receiving it | `plugins/plugin_manifest.json` has an `sms_gateway` *stub* only; an emergency SMS channel nobody has agreed to receive is a liability |
 | M11 | "Replace the fake-terminal aesthetic" on landing | **Adopt the intent, smaller move**: landing becomes a trust page (positioning, live alert summary, methodology, disclaimer); the GIS dashboard moves to `/map`; terminal-styled logs move to `/status` | The landing *is* currently the full-screen GIS dashboard (`/` → Dashboard gis tab) |
 | M12 | `GET /v1/regations/{id}/history` | Fixed typo → `/v1/regions/{id}/history`; served from the new `hazard_events` table | — |
@@ -65,7 +65,7 @@
 | Grafana dashboards | `monitoring/grafana-dashboard.json` |
 | PWA + offline fallback | Service worker + committed forecast snapshot (`useForecasts()` fallback chain) |
 | SEO foundations | `robots.txt`, `sitemap.xml`, blog with RLS + per-article meta, structured data |
-| Auth | Firebase (frontend) + Supabase (JWT attach middleware), rate limiting, CSP/helmet |
+| Auth | Firebase (frontend) + Postgres (JWT attach middleware), rate limiting, CSP/helmet |
 | Model artifact integrity | `Models/VERSION.json` sha256 manifest, CI gate on regeneration |
 | Push notifications | VAPID web push, live in the UI |
 | AI advisory layer | RAG advisor with multi-LLM free-tier cascade (Gemini/Groq/OpenRouter/HF) |
@@ -77,7 +77,7 @@
 | MLflow registry | >2 models in rotation, or challenger/shadow runs become routine |
 | TiTiler / Tippecanoe tile serving | First raster layer (e.g. flood-extent COG) ships |
 | SMS aggregator integration | A named DDM/NGO partner commits in writing to receiving SMS alerts |
-| K8s / VPS / Terraform | Vercel or Supabase free tiers are exceeded, or an always-on worker (queue) is genuinely needed |
+| K8s / VPS / Terraform | Vercel or Postgres free tiers are exceeded, or an always-on worker (queue) is genuinely needed |
 | Upazila (ADM3) alerting | Fusion validated at district level + events DB proves spatial resolution supports it |
 | Bengali voice/SMS | After bn locale ships and terminology is DDM-reviewed |
 
@@ -90,7 +90,7 @@
                         │  EXISTING (unchanged)                    │
   React 18 + Vite PWA ──┤  Vercel edge + serverless (api/*)        │
   Leaflet map, RAG chat │  Express backend (self-host/dev twin)    │
-                        │  Supabase Postgres (+PostGIS ADM3, RLS)  │
+                        │  self-host Postgres (+PostGIS ADM3, RLS)  │
                         │  GitHub Actions: daily_forecast pipeline │
                         │  Firestore (legacy store, ADR 0002)      │
                         └──────────────┬───────────────────────────┘
@@ -113,7 +113,7 @@
                         └──────────────────────────────────────────┘
 ```
 
-**Data model additions (Supabase, expand-migrate pattern):**
+**Data model additions (Postgres, expand-migrate pattern):**
 `hazard_events(id, type, start/end, district_id, geometry, severity, source, source_url, deaths, affected, damage_bdt, dataset_version)` · `alerts(id, district, hazard, level, calibrated_probability, fusion_breakdown jsonb, evidence jsonb, state, model_version, dataset_version, created_by, published_by, published_at)` · `alert_reviews(alert_id, reviewer, action, reason, at)` · `feedback(id, district, report_type, payload jsonb, user_id?, status)` · `input_scenes(prediction_id, scene_id, source, acquired_at, preprocessing_version)`.
 
 ---
@@ -136,7 +136,7 @@ Tags: **[agent]** = executable in this repo by the coding agent · **[owner]** =
 
 | # | Task | Tag | Exit criteria |
 |---|---|---|---|
-| T1 | Consolidate the 2,931-event archive (from the GEE training corpus / owner export) → `data/hazard_events/v1.0/` CSV + Supabase migration (renumber the duplicate `003` first) | [owner] export → [agent] everything else | Table queryable; changelog + `dataset_version` |
+| T1 | Consolidate the 2,931-event archive (from the GEE training corpus / owner export) → `data/hazard_events/v1.0/` CSV + Postgres migration (renumber the duplicate `003` first) | [owner] export → [agent] everything else | Table queryable; changelog + `dataset_version` |
 | T2 | `scripts/audit_events.py`: class balance per hazard × district × season; imbalance report committed as `docs/audits/events-imbalance.md` | [agent] | Report answers "can this model ever learn landslides?" honestly |
 | T3 | `scripts/calibrate.py`: isotonic regression of `severity_score` vs. observed events on a **temporally held-out recent window** (≥2023); emit thresholds per hazard (recall-first for SEVERE) + reliability curve data | [agent] | `Models/calibration.json` versioned next to the model |
 | T4 | Wire calibrated thresholds into `auto_forecast.py` output (store raw + calibrated) | [agent] | Daily CSV carries both scores |
@@ -148,7 +148,7 @@ Tags: **[agent]** = executable in this repo by the coding agent · **[owner]** =
 | # | Task | Tag | Exit criteria |
 |---|---|---|---|
 | T1 | `backend/utils/fusionScore.js` + tests: w1 model severity, w3 Open-Meteo, w4 prior from `hazard_events`; w2 FFWC interface **stubbed** (returns neutral until T6) | [agent] | Unit tests pin weights + fallbacks |
-| T2 | Supabase migrations: `alerts`, `alert_reviews`, `feedback`, `input_scenes` (RLS: public read published, service-role/reviewer write) | [agent] | Applied on staging project |
+| T2 | Postgres migrations: `alerts`, `alert_reviews`, `feedback`, `input_scenes` (RLS: public read published, service-role/reviewer write) | [agent] | Applied on staging project |
 | T3 | API: `GET/POST /api/v1/alerts…`, `POST /alerts/{id}/review` (RBAC `alert.review`), `POST /feedback`, idempotency keys on publish | [agent] | Express ↔ Vercel parity tests (chatService pattern) |
 | T4 | Alert generation job (Actions, after daily pipeline): fusion → threshold → auto-DRAFT alerts; never auto-publish | [agent] | Draft alerts appear in staging queue |
 | T5 | Reviewer console `/dashboard`: queue, evidence trail (fusion breakdown + sources + freshness), approve/reject/escalate | [agent] | HITL round-trip works e2e in e2e test |
@@ -205,7 +205,7 @@ Tags: **[agent]** = executable in this repo by the coding agent · **[owner]** =
 3. FFWC river-level access (scrape/API/contact) — or explicitly defer w2.
 4. Bengali disaster-terminology review by a native speaker familiar with DDM usage.
 5. Recruit 3–5 tabletop reviewers (DDM/FFWC/NGO).
-6. Supabase staging + production project credentials for new migrations (env-injected, never committed).
+6. Postgres staging + production project credentials for new migrations (env-injected, never committed).
 7. Decide the SMS partner question when a recipient organization commits.
 
 ---

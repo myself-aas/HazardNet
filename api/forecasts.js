@@ -58,8 +58,8 @@ export default async function handler(req, res) {
           res.status(422).json({ error: 'No valid rows', validation_errors: errors });
           return;
         }
-        // Write through the forecast store (Firestore or Supabase per
-        // FORECAST_STORE — ADR 0002): replace-all for this prediction_date.
+        // Write through the forecast store (Firestore): replace-all for this
+        // prediction_date.
         try {
           const predictionDate = results[0].prediction_date;
           await getForecastStore().replaceForecastsForPredictionDate(predictionDate, results);

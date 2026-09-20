@@ -53,7 +53,7 @@ ADM3 transition. The original plan's "554 locations" and uppercase
   recommended ops follow-up).
 - The forecast CSV schema is unchanged (1,521 rows); exposure/locations/
   GeoJSON are separate Release artifacts — ingest and API need no changes.
-- PostGIS stays optional: no migration of the production Supabase is implied
+- PostGIS stays optional: no migration of the production Postgres is implied
   (it supports PostGIS if ever wanted).
 - The frontend "Live N/64" overlay works again after the rollup; true
   upazila-level drill-down (507 polygons in the UI) waits on the map-

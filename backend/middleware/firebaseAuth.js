@@ -99,9 +99,6 @@ export async function attachFirebaseAuthUser(req, _res, next) {
   next();
 }
 
-// Alias for backwards compatibility
-export const attachSupabaseUser = attachFirebaseAuthUser;
-
 /** Picks the correct rate-limit bucket based on identity. */
 export function dynamicAiLimiter(req, res, next) {
   return (req.user ? authedLimiter : anonymousLimiter)(req, res, next);

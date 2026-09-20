@@ -10,7 +10,7 @@
 
 HazardNet is a ~32,000-line codebase: a React 18 + Vite + Tailwind v4 frontend (≈29.0k LOC), an Express + TensorFlow.js inference backend (≈2.7k LOC), three Vercel serverless functions, a RAG knowledge pipeline, and weekly Kaggle forecast automation. The product ambition (multi-hazard AI early warning for Bangladesh's 64 districts, offline-capable, SOD-2019-compliant outputs) is genuinely impressive, and several layers are **better engineered than typical projects of this size** — default-deny Firestore rules with field validation, Zod-validated ingestion, graceful AI fallback chains, Prometheus metrics, and a service worker with bounded tile caching.
 
-However, the audit found **68 actionable findings**, of which **4 are Critical** and **11 High**. The dominant theme is **architectural fragmentation**: three backend platforms are wired simultaneously (Supabase auth + two different Firebase projects + RTDB), two frontends exist in the repo (the app and a forgotten `app/applet` copy), dependencies are declared in the wrong manifests (a Postman MCP server ships as a *production* dependency carrying **1 Critical + 9 High CVEs**), and two of three serverless functions use a module format that cannot load under the repo's own `"type": "module"` declaration. For a disaster early-warning system, the most serious finding is an **integrity** one: the prediction endpoint fabricates *random synthetic tensors* when input is missing and returns them as real model output.
+However, the audit found **68 actionable findings**, of which **4 are Critical** and **11 High**. The dominant theme is **architectural fragmentation**: three backend platforms are wired simultaneously (Postgres auth + two different Firebase projects + RTDB), two frontends exist in the repo (the app and a forgotten `app/applet` copy), dependencies are declared in the wrong manifests (a Postman MCP server ships as a *production* dependency carrying **1 Critical + 9 High CVEs**), and two of three serverless functions use a module format that cannot load under the repo's own `"type": "module"` declaration. For a disaster early-warning system, the most serious finding is an **integrity** one: the prediction endpoint fabricates *random synthetic tensors* when input is missing and returns them as real model output.
 
 **Overall health: 5.6 / 10** — a strong core held back by integration debt that is very fixable in a focused 2–3 week effort.
 
@@ -45,7 +45,7 @@ Reproduction commands for every claim are in **Appendix A**.
 ```
                          ┌────────────────────────────────────────────────┐
    Browser (PWA)         │ frontend/ (React 18, Vite 5, Tailwind 4, RTK*) │
-   • Leaflet maps        │  Auth → SUPABASE (lib/supabase, AuthContext)   │
+   • Leaflet maps        │  Auth → FIREBASE (services/firebase, AuthContext)   │
    • TFLite WASM model   │  Realtime status → FIREBASE RTDB (services/firebase.ts)
    • SW offline cache    │  Dead config → src/firebase.ts (project "hazardnet-live", imported by nobody)
                          └───────┬───────────────────────┬────────────────┘
@@ -62,7 +62,7 @@ Reproduction commands for every claim are in **Appendix A**.
                          └───────┬───────────────────────────┘
                                  │
         Firestore "ai-studio-hazardnet-…"(dbId from firebase-applet-config.json)
-        + Supabase Postgres (profiles, assessments) + Kaggle→Supabase weekly pipeline
+        + self-host Postgres (profiles, assessments) + Kaggle→Postgres weekly pipeline
         + second app copy: app/applet/frontend/ (unused duplicate UI)
 ```
 
@@ -81,7 +81,7 @@ Severity: 🔴 Critical · 🟠 High · 🟡 Medium · 🔵 Low. Each finding li
 1. `npm ws add express-rate-limit` (root, backend workspace).
 2. Create `backend/middleware/rateLimit.js`: per-IP limiter (`windowMs: 60_000, limit: 20`) for AI routes; `limit: 120` for read routes.
 3. Apply `app.use('/api/chat', chatLimiter, chatRoutes)` etc. in `backend/server.js`.
-4. For chat, additionally require a Firebase/Supabase **ID token** (`Authorization: Bearer <jwt>`, verified with the admin SDK) for anonymous-cost protection, keeping a quota'd anonymous lane if desired.
+4. For chat, additionally require a Firebase/Postgres **ID token** (`Authorization: Bearer <jwt>`, verified with the admin SDK) for anonymous-cost protection, keeping a quota'd anonymous lane if desired.
 5. Add 429 responses to the frontend `ChatBot` error handling.
 
 **SEC-02 · 🔴 Critical — 18 vulnerabilities in production dependencies (1 Critical, 9 High)**
@@ -108,17 +108,17 @@ Severity: 🔴 Critical · 🟠 High · 🟡 Medium · 🔵 Low. Each finding li
 
 **SEC-05 · 🟡 Medium — Minimal security headers; no helmet**
 *Evidence:* `server.js` sets only `X-Content-Type-Options`, `X-XSS-Protection` (obsolete header), `Referrer-Policy`. No CSP, HSTS, `X-Frame-Options`, Permissions-Policy.
-*Fix:* Add `helmet()` with a CSP allowing `connect-src` for Firebase/Supabase/Gemini domains, `worker-src blob:`, `img-src` tile hosts + `data:`; drop `X-XSS-Protection`. Set HSTS at the Vercel edge too.
+*Fix:* Add `helmet()` with a CSP allowing `connect-src` for Firebase/Postgres/Gemini domains, `worker-src blob:`, `img-src` tile hosts + `data:`; drop `X-XSS-Protection`. Set HSTS at the Vercel edge too.
 
 **SEC-06 · 🟡 Medium — Bearer-key comparison is not constant-time; key-undefined behavior is silent**
 *Evidence:* `backend/routes/forecasts.js:40`, `push.js:95`, `api/ingest.js` — `token !== process.env.BACKEND_API_KEY`.
 *Impact:* Theoretical timing side channel; and if the env var is unset at deploy, every ingest fails with 401 and no signal.
 *Fix:* `crypto.timingSafeEqual(Buffer.from(token), Buffer.from(key))` guarded by `if (!key) { logger.error('BACKEND_API_KEY unset'); return 500 }`. Add a startup assertion in `server.js`.
 
-**SEC-07 · 🟡 Medium — Three Firebase configurations and a Supabase config coexist**
-*Evidence:* `frontend/src/firebase.ts` (project **hazardnet-live**, `getAnalytics`, imported by nobody), `frontend/src/services/firebase.ts` (project **hazardnet-aas48424**, used by connectivity hooks), `firebase-applet-config.json` + `backend/db.js` (Firestore db `ai-studio-hazardnet-28005e8f-…`), and `lib/supabase.ts` (auth/profiles). `.firebaserc` pins `hazardnet-aas48424`.
+**SEC-07 · 🟡 Medium — Three Firebase configurations and a Postgres config coexist**
+*Evidence:* `frontend/src/firebase.ts` (project **hazardnet-live**, `getAnalytics`, imported by nobody), `frontend/src/services/firebase.ts` (project **hazardnet-aas48424**, used by connectivity hooks), `firebase-applet-config.json` + `backend/db.js` (Firestore db `ai-studio-hazardnet-28005e8f-…`), and `services/firebase.ts` (auth/profiles). `.firebaserc` pins `hazardnet-aas48424`.
 *Impact:* Client API keys are public by design (not a leak), but orphaned configs invite misconfiguration and confuse rule enforcement across projects; a rules change on the wrong project silently breaks the other.
-*Fix:* See ARC-01 — single source of truth via env vars; delete `src/firebase.ts`; keep exactly one Firebase project + Supabase, each behind `VITE_`/server env vars with no committed fallback literals.
+*Fix:* See ARC-01 — single source of truth via env vars; delete `src/firebase.ts`; keep exactly one Firebase project + Postgres, each behind `VITE_`/server env vars with no committed fallback literals.
 
 **SEC-08 · 🔵 Low — `dangerouslySetInnerHTML` in PrintPreviewModal**
 *Evidence:* `PrintPreviewModal.tsx` renders a DOM clone string. Content derives from the app's own DOM (low risk), but any future third-party embed in a captured container becomes an XSS sink.
@@ -133,11 +133,11 @@ Severity: 🔴 Critical · 🟠 High · 🟡 Medium · 🔵 Low. Each finding li
 ### B. Architecture
 
 **ARC-01 · 🟠 High — Three-backend identity crisis (decision required)**
-Auth/profiles/assessments live in **Supabase**; forecasts in **Firestore** (via an "AI Studio applet" config); realtime presence in **Firebase RTDB**; and a *third* Firebase project is configured but unused. Every new feature must guess which backend applies.
+Auth/profiles/assessments live in **Postgres**; forecasts in **Firestore** (via an "AI Studio applet" config); realtime presence in **Firebase RTDB**; and a *third* Firebase project is configured but unused. Every new feature must guess which backend applies.
 *Fix (decide, then migrate in thin slices):*
-1. Write an ADR: e.g., "Supabase = identity + relational data; Firebase = only RTDB presence (or migrate that too to Supabase Realtime)".
+1. Write an ADR: e.g., "Postgres = identity + relational data; Firebase = only RTDB presence (or migrate that too to Postgres Realtime)".
 2. Centralize config: one `frontend/src/lib/config.ts` reading env only; **delete** `src/firebase.ts`; remove hardcoded literals from `services/firebase.ts`.
-3. Plan Firestore→Supabase migration for `forecasts` (weekly pipeline already targets Supabase via `DATABASE_URL`) — the two stores duplicate the same domain data today.
+3. Plan Firestore→Postgres migration for `forecasts` (weekly pipeline already targets Postgres via `DATABASE_URL`) — the two stores duplicate the same domain data today.
 
 **ARC-02 · 🟡 Medium — `app/applet/frontend/` is a duplicated mini-app**
 *Evidence:* near-identical copies of `App.tsx`, `MenuDrawer.tsx`, `MaterialIcon.tsx`… in `app/applet/frontend/`.
@@ -194,10 +194,10 @@ Auth/profiles/assessments live in **Supabase**; forecasts in **Firestore** (via 
 *Fix:* Self-host Material Symbols subset (you already self-host Noto/Playfair via fontsource); add a top-level `ErrorBoundary` with an offline-friendly fallback UI and report hook.
 
 **FE-03 · 🟡 Medium — 2 of 6 test suites cannot run (ESM-only dependency in jest)**
-*Evidence:* `npx jest` → `RegionSelector.test.tsx`, `AdvisoryPanel.test.tsx` fail: "unexpected token" from `@supabase/supabase-js` ESM pulled in via `AuthContext` (jest's default `transformIgnorePatterns` skips `node_modules`).
+*Evidence:* `npx jest` → `RegionSelector.test.tsx`, `AdvisoryPanel.test.tsx` fail: "unexpected token" from `firebase` ESM pulled in via `AuthContext` (jest's default `transformIgnorePatterns` skips `node_modules`).
 *Fix:* In `jest.config.cjs` add:
 ```js
-transformIgnorePatterns: ['/node_modules/(?!(@supabase)/)'],
+transformIgnorePatterns: ['/node_modules/(?!(firebase)/)'],
 ```
 (or `jest.mock('../../context/AuthContext')` in the suites), then make CI run `jest --ci`.
 
@@ -206,7 +206,7 @@ transformIgnorePatterns: ['/node_modules/(?!(@supabase)/)'],
 *Fix:* Add `eslint@9` flat config + `typescript-eslint` + `eslint-plugin-react-hooks`/`jsx-a11y` + Prettier; start with `--max-warnings 0` on new code only (`eslint . --ext .ts,.tsx` with suppressions file for legacy); replace `as any` with real types incrementally (39 is tractable).
 
 **FE-05 · 🔵 Low — Dead/misleading frontend code**
-`src/firebase.ts` (unused project + analytics init), `lib/client.ts`/`lib/server.ts` (Supabase SSR helpers unused in a SPA; `server.ts` misreads `process.env.VITE_*` on the server), `AnalyticsAnalyticsPage` export name, `ui/motion-navigation-demo.tsx`.
+`src/firebase.ts` (unused project + analytics init), `lib/client.ts`/`lib/server.ts` (Postgres SSR helpers unused in a SPA; `server.ts` misreads `process.env.VITE_*` on the server), `AnalyticsAnalyticsPage` export name, `ui/motion-navigation-demo.tsx`.
 *Fix:* delete or rename; keep one lib per concern.
 
 **FE-06 · 🔵 Low — `AuthContext.tsx` is written as near-minified single-line statements** (~120-char lines with 8+ declarations each) — the file works but resists review/diffing. Reformat with Prettier print-width 100.
@@ -297,7 +297,7 @@ jobs:
 | 4 | `PORT = env.PORT \|\| 3001` | BE-02 | ✅ boot-verified |
 | 5 | Convert `api/forecasts.js` to ESM + import CI smoke check | BE-01 | ✅ 3/3 functions load |
 | 6 | Add `ci.yml` (lint, test, build, audit) | OPS-01 | ✅ |
-| 7 | Fix jest for ESM deps (`@supabase`, `react-markdown` ecosystem) | FE-03 | ✅ 7/7 suites |
+| 7 | Fix jest for ESM deps (`firebase`, `react-markdown` ecosystem) | FE-03 | ✅ 7/7 suites |
 | 8 | Delete `frontend/src/firebase.ts` (orphan project) | SEC-07/FE-05 | ✅ |
 
 ### P1 — this month (structural)
@@ -334,12 +334,12 @@ jobs:
 > suite (key handling 503/401, chat bounds, 429); LiveMapView first slice
 > extracted (map primitives module); ADRs 0002/0003; Vercel edge security
 > headers + asset caching; Playwright smoke suite ready (e2e/);
-> CONCERNS.md refreshed. Deferred: Firestore→Supabase cutover (schema +
+> CONCERNS.md refreshed. Deferred: Firestore→Postgres cutover (schema +
 > migration script ready, execution needs live credentials), CSP_ENFORCE
 > flip (needs browser-based violation monitoring), backend workspace split.
 
 1. ✅ Delete/extract `app/applet` duplicate (ARC-02).
-2. Firestore→Supabase consolidation for forecasts if ADR approves (ARC-01).
+2. Firestore→Postgres consolidation for forecasts if ADR approves (ARC-01).
 3. Playwright offline/PDF/mobile smoke suite, weekly (QA-02).
 4. Coverage gate 40%→60%; model VERSION.json handshake (QA-01/ML-02).
 5. Decide single deploy target (Vercel functions + static vs. Node server on Railway/Fly) — today `firebase.json`, `vercel.json`, and a Node server all coexist with divergent assumptions (BE-01 exists only because of this).

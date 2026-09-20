@@ -3,9 +3,9 @@
  *
  * "Connectors" let a HazardNet account pull data from and push alerts to the
  * services farmers, NGOs and researchers already use. Connection state lives
- * in the `user_connectors` table (Supabase), so a user's dashboard is fully
- * portable across devices. Catalog metadata (name, category, accent, docs)
- * is code-owned; only per-user state is stored.
+ * in the `user_connectors` Firestore collection, so a user's dashboard is
+ * fully portable across devices. Catalog metadata (name, category, accent,
+ * docs) is code-owned; only per-user state is stored.
  */
 
 import { db } from '../services/firebase';

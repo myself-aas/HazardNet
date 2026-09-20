@@ -32,7 +32,7 @@ runs via the `docker run` commands in `monitoring/README.md`.
 |---|---|
 | Daily 00:00 UTC runs; 10/20/30-day horizons | **Weekly Sunday 02:00 UTC** (`weekly_forecast.yml`); **10/20/30-day** horizons (restored 2026-09-12, ADR 0005; Open-Meteo's 16-day cap documented there) |
 | 64 districts + 490 upazilas (554 locations) | **507 ADM3 units** — 495 Upazilas + 12 City Corporations (HDX COD-AB, ADR 0005; the 554 figure matches neither COD 507 nor raw 600) |
-| Static JSON/CSV under `backend/data/` | Forecast store — Firestore (default) / Supabase (ADR 0002) — behind `backend/forecastStore.js` |
+| Static JSON/CSV under `backend/data/` | Forecast store — Firestore (default) — behind `backend/forecastStore.js` |
 | Express CJS + morgan, no ML inference | ESM, no morgan, **TFJS on-demand inference** (`/api/predict`) |
 | Redux Toolkit + RTK Query; Mapbox GL | **TanStack Query** (`useForecasts`); **Leaflet** |
 | Docker Compose deploy | **Vercel** (ADR 0003) + Node self-host |
@@ -44,7 +44,7 @@ runs via the `docker run` commands in `monitoring/README.md`.
 
 ### 1.1 Technology Stack
 
-> ⚠️ **Reconciled (2026-09-12):** Several rows are aspirational — Frontend is **Leaflet** (not Mapbox GL), State Mgmt is **TanStack Query** (not RTK Query), Data Storage is the **forecast store** (Firestore/Supabase per ADR 0002, not static files), the Backend **does** run TFJS inference (`/api/predict`), Deployment is **Vercel + Node self-host** (ADR 0003, no Docker), and Monitoring now ships in `monitoring/`. See the table above and `docs/codebase/STACK.md`.
+> ⚠️ **Reconciled (2026-09-12):** Several rows are aspirational — Frontend is **Leaflet** (not Mapbox GL), State Mgmt is **TanStack Query** (not RTK Query), Data Storage is the **forecast store** (Firestore, not static files), the Backend **does** run TFJS inference (`/api/predict`), Deployment is **Vercel + Node self-host** (ADR 0003, no Docker), and Monitoring now ships in `monitoring/`. See the table above and `docs/codebase/STACK.md`.
 
 
 ```
@@ -865,7 +865,7 @@ module.exports = router;
 
 ### STEP 2.3: Create Forecast Service
 
-> ⚠️ **Reconciled (2026-09-12):** **Never implemented** — no static-file reader or `CACHE_TTL`. Replaced by `backend/forecastStore.js`: Firestore (default) or Supabase Postgres (`FORECAST_STORE` env, ADR 0002). The freshness info this service was meant to provide is the `hazardnet_forecast_age_hours` gauge on `/metrics`.
+> ⚠️ **Reconciled (2026-09-12):** **Never implemented** — no static-file reader or `CACHE_TTL`. Replaced by `backend/forecastStore.js`: Firestore (default; `FORECAST_STORE` env, ADR 0002). The freshness info this service was meant to provide is the `hazardnet_forecast_age_hours` gauge on `/metrics`.
 
 
 **File**: `backend/services/forecastService.js`
@@ -1563,7 +1563,7 @@ If Kaggle limits become restrictive:
 
 ## PART 11: TROUBLESHOOTING
 
-> ⚠️ **Reconciled (2026-09-12):** Rows referencing this guide's unimplemented stack: ">48hrs old" → at weekly cadence the staleness threshold is **192h** (`monitoring/alerts.yml`); "Forecast JSON missing in `backend/data/forecasts/`" → data lives in the forecast store (Firestore/Supabase), and a 503 from authenticated endpoints means `BACKEND_API_KEY` is unset — fail-closed by design; "`CACHE_TTL` in `forecastService.js`" → no such service (store-backed reads).
+> ⚠️ **Reconciled (2026-09-12):** Rows referencing this guide's unimplemented stack: ">48hrs old" → at weekly cadence the staleness threshold is **192h** (`monitoring/alerts.yml`); "Forecast JSON missing in `backend/data/forecasts/`" → data lives in the forecast store (Firestore), and a 503 from authenticated endpoints means `BACKEND_API_KEY` is unset — fail-closed by design; "`CACHE_TTL` in `forecastService.js`" → no such service (store-backed reads).
 
 
 | Issue | Root Cause | Solution |

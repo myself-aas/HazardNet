@@ -14,7 +14,7 @@
  *
  * The store lookup is cached for `maxAgeMs` (default 60 s) so a 15–30 s
  * Prometheus scrape interval — or a public /metrics being hammered — costs at
- * most one indexed read (Firestore) / one max() query (Supabase) per minute.
+ * most one indexed read (Firestore) per minute.
  * The age itself is recomputed from the cached date on every call, so the
  * gauge keeps advancing between lookups.
  */

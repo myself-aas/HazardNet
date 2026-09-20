@@ -16,9 +16,8 @@ import {
  * Profile-picture field for the user dashboard.
  *
  * · Client-side resize: square center-crop → ≤512×512 → WebP/JPEG ≤ ~160 KB
- *   (keeps Supabase Storage tiny).
- * · Replace-on-update: after a successful upload the previous object is
- *   deleted from the bucket so storage never accumulates.
+ *   (keeps the stored profile picture small).
+ * · Replace-on-update: the previous picture is replaced on the profile document.
  * · Instant local preview while the network round-trip completes.
  */
 
@@ -41,8 +40,8 @@ export const UserAvatarField: React.FC<{ size?: number; editable?: boolean }> = 
       setPreview(URL.createObjectURL(resized.blob));
       setStage('Compressed to ' + formatBytes(resized.blob.size));
       if (!user) {
-        // Design preview without Supabase: show the local result only.
-        toast('Design preview — connect Supabase to store your photo.', { icon: 'ℹ️' });
+        // Design preview without an authenticated user: show the local result only.
+        toast('Design preview — sign in to store your photo.', { icon: 'ℹ️' });
         setStage(null);
         return;
       }

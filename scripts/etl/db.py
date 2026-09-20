@@ -57,7 +57,7 @@ def sql_literal(value) -> str:
 def _geom_expression(pcode: str) -> str:
     """Expression deriving ADM2 geometry from the ADM3 layer when available.
 
-    `003_adm3_spatial_postgis.sql` establishes the 507-unit ADM3 table; a district
+    `003_adm3_spatial_postgis.sql` establishes the 507-unit ADM3 table in Postgres; a district
     outline is the union of its upazilas. When that table (or PostGIS) is absent
     the expression is NULL, and the migration's own check keeps the column honest.
     """

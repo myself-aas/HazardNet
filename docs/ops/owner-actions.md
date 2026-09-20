@@ -36,8 +36,8 @@ public. **Rotation (revoke → replace) is the fix; nothing in code can do it.**
 
 | # | Credential | Where to rotate (exact path) |
 |---|---|---|
-| 1 | Supabase DB password (+ pooled URL) | Supabase Dashboard → project → **Settings → Database → Connection string → Reset password**. Copy the new pooler URL (`aws-0-…pooler.supabase.com:6543`) |
-| 2 | Supabase API keys (if the JWT/anon/service values were committed) | Supabase Dashboard → **Settings → API → API Keys → Regenerate** (legacy `service_role` / `anon`) |
+| 1 | Firebase service-account private key | Firebase console → **Project settings → Service accounts → Generate new private key**; store the new JSON in `FIREBASE_PRIVATE_KEY` (and `FIREBASE_CLIENT_EMAIL` / `FIREBASE_PROJECT_ID`) |
+| 2 | Firebase web API key (if rotated) | Firebase console → **Project settings → General → Web API Key**; update `VITE_FIREBASE_API_KEY` in Vercel/`.env` (it is public-by-design, not a secret) |
 | 3 | Kaggle API token | kaggle.com → avatar → **Settings → API → Revoke** old token → **Create New Token** (gives `username` + `key`) |
 | 4 | Gemini API key (+ backup) | Google AI Studio → **API keys → Delete** old → **Create API key** |
 | 5 | OpenRouter key | openrouter.ai → **Keys → Delete → New key** (set a spend limit) |
@@ -54,15 +54,15 @@ public. **Rotation (revoke → replace) is the fix; nothing in code can do it.**
 Repo → **Settings → Secrets and variables → Actions** → update each (never commit values):
 
 Secrets (9): `BACKEND_API_KEY`, `CODECOV_TOKEN`, `GEMINI_API_KEY`,
-`KAGGLE_KEY`, `KAGGLE_USERNAME`, `SUPABASE_DB_URL` (= new pooler URL from 1a-1),
-`VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`.
+`KAGGLE_KEY`, `KAGGLE_USERNAME`, `EE_SERVICE_ACCOUNT_JSON`,
+`FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, `FIREBASE_PRIVATE_KEY`.
 (`GITHUB_TOKEN` there is automatic — nothing to set.)
 
-Additionally required by the GitHub-native forecast pipeline (2026-09-16):
-`EE_SERVICE_ACCOUNT_JSON` (GEE — the data source) and, only when
-`PUSH_TO_API=true`, `HAZARDNET_API_URL` + `HAZARDNET_API_KEY`.
+Only when `PUSH_TO_API=true`: `HAZARDNET_API_URL` + `HAZARDNET_API_KEY`.
+Vercel deploy secrets (`VERCEL_TOKEN` etc.) are **not** read by any workflow —
+see §1c.
 
-Variables: `FORECAST_STORE` = `supabase`; `PUSH_TO_API` = `true` **only** once an
+Variables: `FORECAST_STORE` = `firestore`; `PUSH_TO_API` = `true` **only** once an
 ingest API is deployed and reachable (`/api/v1/forecasts/update` returning 200,
 see §2a-bis); `KAGGLE_KERNEL` only for the legacy Kaggle dispatches.
 
@@ -73,8 +73,9 @@ Also refresh your own local `.env` from `.env.example` (gitignored — verify wi
 
 - Old values are dead: e.g. `curl -H "Authorization: Bearer <OLD>" …` fails;
   old Kaggle `key` in `~/.kaggle/kaggle.json` returns 401.
-- New values are live: `kaggle datasets list` works; Supabase pooler URL connects
-  (`psql "<new-url>" -c 'select 1'`); Codecov upload succeeds on the next CI run.
+- New values are live: `kaggle datasets list` works; the Firebase private key
+  authenticates (any `gcloud`/`firebase` CLI admin call succeeds); Codecov upload
+  succeeds on the next CI run.
 - **Not required for deploying: no Vercel secret is read by any workflow.**
   Vercel's Git integration builds every preview and the production site on its
   own (`Vercel` commit status), so `VERCEL_TOKEN` / `VERCEL_ORG_ID` /
@@ -128,28 +129,21 @@ Set each for **Production** (and Preview, except where noted):
 
 | Variable | Value | Why |
 |---|---|---|
-| `FORECAST_STORE` | `supabase` | Serverless functions read the Supabase store |
-| `DATABASE_URL` | `<new Supabase pooler URL>` (same value as the `SUPABASE_DB_URL` GitHub secret — the runtime reads `DATABASE_URL`) | Postgres connection for `api/v1/forecasts/*` |
-| `SUPABASE_SSL` | `true` | TLS to the pooler |
+| `FORECAST_STORE` | `firestore` | Serverless functions read the Firestore store |
+| `DATABASE_URL` | `https://hazardnet-aas48424-default-rtdb.firebaseio.com` | Realtime Database URL (public-by-design) |
 | `BACKEND_API_KEY` | `<same openssl value as GitHub secret>` | Authenticates `api/ingest.js` |
 | `FRONTEND_ORIGIN` | `https://www.hazardnet.live,https://hazardnet.live` | CORS allowlist (comma-separated; production fails closed without it — include apex **and** `www`; add preview domains as needed) |
 | `GEMINI_API_KEY` | `<new key>` | Serverless advisory/chat routes (recommended) |
-| `NEXT_PUBLIC_SUPABASE_URL` | `https://<project>.supabase.co` | Frontend Supabase client — **not** `VITE_SUPABASE_URL`, see below |
-| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | `<publishable key>` | Frontend Supabase client (public-by-design) — not `VITE_SUPABASE_PUBLISHABLE_KEY` |
-| `NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL` | `https://www.hazardnet.live` | Auth redirects — not `VITE_SUPABASE_REDIRECT_URL` |
+| `VITE_FIREBASE_API_KEY` | `<public web api key>` | Frontend Firebase client (public-by-design) |
+| `VITE_FIREBASE_PROJECT_ID` | `hazardnet-aas48424` | Frontend Firebase project |
+| `VITE_FIREBASE_FIRESTORE_DATABASE_ID` | `default` | Frontend Firestore database id |
 | `VITE_VAPID_PUBLIC_KEY` | `<new public key>` | Push subscriptions (only the public key goes here) |
 
-> ⚠️ **The three Supabase names above are the `NEXT_PUBLIC_` forms on purpose.**
-> `frontend/vite.config.ts` injects the client's `VITE_SUPABASE_*` values with an
-> explicit `define` block that reads the **repository root** env, and a `define`
-> substitution wins over anything Vite loads. Setting `VITE_SUPABASE_URL` (in the
-> dashboard *or* in `frontend/.env`) has no effect at all — verified by build: the
-> value never reaches the bundle, while the `NEXT_PUBLIC_`/`SUPABASE_` forms do.
-> Prefix aliases `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY` also work.
-> Full list: `.env.example` §7.
-
-(Firebase `VITE_*` have committed defaults — skip unless you use Firebase.
-AdSense/download `VITE_*` are optional features.)
+> **Firebase is the single data store.** The `VITE_FIREBASE_*` values are public
+> by design (they ship in the browser bundle) and have committed defaults in
+> `frontend/src/lib/config.ts` + `.env.example`. Override them per environment
+> in Vercel or in `frontend/.env`. The frontend no longer reads any `VITE_`
+> prefix for a second database. Full list: `.env.example`.
 
 Then **redeploy**: Deployments → latest → **⋯ → Redeploy** (env changes don't
 apply retroactively). The merge to `main` also triggers a fresh production build.
@@ -217,7 +211,7 @@ rejected; next hourly run pushes its data commit successfully.
 ## Done checklist
 
 - [ ] All 12 credentials rotated; old values confirmed dead
-- [ ] 9 GitHub secrets + `FORECAST_STORE=supabase` variable updated
+- [ ] 9 GitHub secrets + `FORECAST_STORE=firestore` variable updated
 - [ ] PR merged with fully green CI
 - [ ] 10 Vercel env vars set (Production + Preview) and redeployed
 - [ ] Manual hourly run green; `/metadata` shows a real `prediction_date`; site cards live
@@ -713,45 +707,21 @@ scope. Recommended framing, to be recorded here before anyone links the site pub
 
 ---
 
-## Action 14 — The ADR 0002 cutover checklist has no code 🟡 (~1 h, or delete the workflow)
+## Action 14 — The ADR 0002 cutover checklist has no code 🟡 → ✅ RESOLVED (2026-09-20)
 
-**What is missing.** Three artifacts that ADR 0002 and `scripts/db/README.md` both name do not
-exist in the repository:
+**What was missing.** Three migrations artifacts that ADR 0002 and `scripts/db/README.md` both
+named (`002_forecasts_*.sql`, a cutover verifier, `migrate-firestore-to-*.mjs`) did not exist in
+the repository, and the old `.github/workflows/*-cutover-verify.yml` invoked the verifier
+unconditionally, so every dispatch failed with `Error: Cannot find module …`.
 
-| Referenced by | Artifact | Purpose |
-|---|---|---|
-| ADR 0002 §Runbook step 2, `scripts/db/README.md` apply order item 2 | `scripts/db/002_forecasts_supabase.sql` | the consolidation schema — forecasts table, RLS (public read, service-role write) |
-| ADR 0002 §Runbook step 2 + verification checklist | `scripts/verify-supabase-cutover.mjs` | "the ADR checklist as code": 15-column schema, the 10/20/30 horizon CHECK, the unique key, indexes, RLS + the public-read policy, a row report |
-| ADR 0002 §Runbook step 3 | `scripts/migrate-firestore-to-supabase.mjs` | Firestore → Supabase migration, dry-run by default |
+**Resolution (taken).** Option 2 was executed: the cutover-verify workflow was **deleted** and
+replaced by `.github/workflows/Firebase-Store-Verify.yml`, which boots the backend against the
+real Firebase project (Firestore forecast store) and hard-gates
+`GET /api/v1/forecasts/bulk?horizon=7_days` on HTTP 200. ADR 0002 was annotated as retired, and
+`scripts/db/README.md` now names only the SQL modules that actually exist (the self-host PostGIS
+schemas). `scripts/tests/test_workflows.py` expects the new workflow and its concurrency guard.
 
-**What it did to CI.** `.github/workflows/Supabase-cutover-verify.yml` (manual dispatch) ran
-`node scripts/verify-supabase-cutover.mjs` unconditionally, so every dispatch failed with
-`Error: Cannot find module …` — an exit that reads like a database or credential failure and is
-neither. As of 2026-09-19 the workflow instead **preflights the three paths and names each one
-that is missing**, then still runs the live backend smoke test (`FORECAST_STORE=supabase`,
-`/health`, `/bulk`, `/history`, `/metrics`), which needs none of them. A committed test
-(`scripts/tests/test_workflows.py::test_workflows_only_invoke_scripts_that_exist`) now fails any
-workflow that invokes a file the repository does not have, so this cannot be re-introduced
-silently.
-
-**Your two options.**
-
-1. **Write them** (recommended if the Supabase cutover is still the plan — ADR 0002 is
-   `Proposed`, and Actions 7/8 both assume the store story is unsettled). The verifier is the
-   valuable one: it is read-only (`information_schema` + `pg_policies`), it turns the ADR's
-   checklist into a pass/fail, and `scripts/db/verify_forecasts_meteorological.sql`,
-   `verify_blog_articles_rls.sql` and `verify_hazard_events.sql` are the existing pattern to
-   follow. When it lands, restore the step the workflow's comment spells out verbatim, and drop
-   `!cancelled()` from the smoke test's `if:`.
-2. **Retire the workflow and annotate ADR 0002** the way ADR 0004 retired
-   `weekly_hazardnet.yml`: delete `.github/workflows/Supabase-cutover-verify.yml`, strike the
-   three references in ADR 0002 §Runbook, and remove apply-order item 2 from
-   `scripts/db/README.md` (renumbering the rest). A documented plan with no code is fine; a
-   workflow that pretends otherwise is not.
-
-**Either way**, `scripts/db/README.md` currently tells an operator to apply `002` as step 2 of
-the sequence and `007` "after `002`" — both impossible today. That is the part most likely to
-cost someone an hour.
+No further action is required here.
 
 
 ---

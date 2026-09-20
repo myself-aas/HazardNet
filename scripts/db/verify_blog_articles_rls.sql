@@ -2,7 +2,7 @@
 -- HazardNet · verify_blog_articles_rls.sql
 --
 -- Self-assessing verification for the blog_articles authorisation fix.
--- Run it in the Supabase SQL editor TWICE:
+-- Run it in your Postgres SQL editor TWICE:
 --
 --   • BEFORE scripts/db/006_blog_articles_rls_authz.sql — expect FAILs. A FAIL
 --     on the "author_email" checks means your database is currently vulnerable.
@@ -122,7 +122,7 @@ order by ord;
 -- =============================================================================
 -- PART 2 · Behavioural proof — does it actually refuse the real attack?
 --
--- Impersonates real accounts via the JWT claim mechanism Supabase itself uses
+-- Impersonates real accounts via the JWT claim mechanism the platform uses
 -- (auth.uid() / auth.email() read these settings), then attempts the exact
 -- writes the vulnerability allowed. Every attempt is wrapped in a plpgsql
 -- subtransaction that ALWAYS ends by raising, so nothing is persisted.

@@ -362,7 +362,7 @@ degraded.
 
 | Gap | Why it matters |
 |---|---|
-| No authenticated session (`/dashboard/blog*`, Supabase/Firestore writes) | The largest untested surface. Requires a test account or seeded local auth. |
+| No authenticated session (`/dashboard/blog*`, Postgres/Firestore writes) | The largest untested surface. Requires a test account or seeded local auth. |
 | No visual regression baseline | Screenshots exist (`/tmp/hn-design-shots/`) but nothing compares them run-to-run. |
 | Interactions are sampled, not exhaustive | Drawer open/close, keyboard traversal, and overflow are covered; filter/tab/upload flows are not asserted beyond rendering. |
 | No load/perf budget measured locally | `check:bundle` **is** wired into CI (`ci.yml:504`, after `npm run build`), but this pass never ran a production build (`frontend/dist` does not exist in the sandbox), so no bundle number is quoted here. |

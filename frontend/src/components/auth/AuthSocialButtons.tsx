@@ -3,54 +3,57 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { useAuth } from '../../context/AuthContext'
 import ProviderGlyph from '../ProviderGlyph'
 import {
-  OAuthProviderId,
-  SECONDARY_AFTER_GOOGLE_PROVIDER_IDS,
+  SUPPORTED_PROVIDER_IDS,
   describeOAuthError,
   getProvider,
+  type OAuthProviderId,
 } from '../../lib/oauthProviders'
 
 /**
- * Google-first social sign-in block for the auth pages.
+ * Social sign-in block for the auth pages.
  *
- * Order (per product spec): immediately after the email + password fields the
- * prominent "Continue with Google" button appears, followed by a compact row
- * of side-by-side circular icons for every other provider. The classic email
- * submit button sits below a divider.
+ * Exactly two providers are offered — Google and GitHub — because those are the
+ * only sign-in providers enabled on the Firebase project. Each is a full
+ * button with its brand glyph and label; no other identity provider is shown.
  */
 
-/** Circular brand icon button for the secondary providers. */
-const ProviderIconButton: React.FC<{
+const ProviderButton: React.FC<{
   provider: OAuthProviderId
+  label: string
   active: OAuthProviderId | null
   onPick: (provider: OAuthProviderId) => void
-}> = ({ provider, active, onPick }) => {
+}> = ({ provider, label, active, onPick }) => {
   const config = getProvider(provider)
   const busy = active === provider
+  const disabled = active !== null
   return (
     <button
       type="button"
-      disabled={active !== null}
+      disabled={disabled}
       onClick={() => onPick(provider)}
-      aria-label={`Continue with ${config.label}`}
-      title={config.note ? `${config.label} — ${config.note}` : `Continue with ${config.label}`}
-      className="group relative flex h-10 w-10 items-center justify-center rounded-full border border-carbon-20 bg-white shadow-xs transition-all hover:-translate-y-0.5 hover:border-carbon-30 hover:shadow-sm disabled:cursor-wait disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nasa-blue/60 cursor-pointer"
+      data-testid={`connect-${provider}-btn`}
+      aria-label={label}
+      className="group flex w-full items-center justify-center gap-3 rounded-2xl border border-carbon-30 bg-white px-4 py-3 text-sm font-bold text-carbon-80 shadow-sm transition-all hover:border-carbon-40 hover:shadow-md disabled:cursor-wait disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nasa-blue/60 focus-visible:ring-offset-2 cursor-pointer"
     >
       {busy ? (
-        <span className="h-4 w-4 animate-spin rounded-full border-2 border-carbon-30 border-t-carbon-70" />
+        <span className="h-5 w-5 animate-spin rounded-full border-2 border-carbon-30 border-t-carbon-70" />
       ) : (
         <span className="h-5 w-5 transition-transform group-hover:scale-110">
           <ProviderGlyph provider={provider} />
         </span>
       )}
+      {busy ? `Connecting to ${config.label}…` : label}
     </button>
   )
 }
 
 export function AuthSocialButtons({
-  label = 'Connect with Google',
+  googleLabel = 'Continue with Google',
+  githubLabel = 'Continue with GitHub',
   onSuccess,
 }: {
-  label?: string
+  googleLabel?: string
+  githubLabel?: string
   onSuccess?: () => void
 }) {
   const { signInWithOAuth } = useAuth()
@@ -70,36 +73,25 @@ export function AuthSocialButtons({
     }
   }
 
+  const labels: Record<OAuthProviderId, string> = {
+    google: googleLabel,
+    github: githubLabel,
+  }
+
   return (
     <div className="space-y-3" data-testid="auth-social-buttons">
-      {/* ── Primary: Connect with Google ──────────────────────────────── */}
-      <button
-        type="button"
-        disabled={active !== null}
-        onClick={() => handleProvider('google')}
-        data-testid="connect-google-btn"
-        aria-label={label}
-        className="group flex w-full items-center justify-center gap-3 rounded-2xl border border-carbon-30 bg-white px-4 py-3 text-sm font-bold text-carbon-80 shadow-sm transition-all hover:border-carbon-40 hover:shadow-md disabled:cursor-wait disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nasa-blue/60 focus-visible:ring-offset-2 cursor-pointer"
-      >
-        {active === 'google' ? (
-          <span className="h-5 w-5 animate-spin rounded-full border-2 border-carbon-30 border-t-carbon-70" />
-        ) : (
-          <span className="h-5 w-5 transition-transform group-hover:scale-110">
-            <ProviderGlyph provider="google" />
-          </span>
-        )}
-        {active === 'google' ? 'Connecting to Google…' : label}
-      </button>
-
-      {/* ── Secondary providers: compact side-by-side icons ───────────── */}
-      <div className="flex items-center justify-center gap-2" data-testid="auth-provider-icons">
-        {SECONDARY_AFTER_GOOGLE_PROVIDER_IDS.map((provider) => (
-          <ProviderIconButton key={provider} provider={provider} active={active} onPick={handleProvider} />
-        ))}
-      </div>
+      {SUPPORTED_PROVIDER_IDS.map((provider) => (
+        <ProviderButton
+          key={provider}
+          provider={provider}
+          label={labels[provider]}
+          active={active}
+          onPick={handleProvider}
+        />
+      ))}
 
       <p className="text-center text-[10px] text-carbon-60">
-        Fast, one-tap sign-in — no password needed with social accounts.
+        One-tap sign-in through Google or GitHub — no additional password needed.
       </p>
 
       <AnimatePresence>

@@ -21,7 +21,6 @@
 #       HAZARDNET_API_URL:      ${{ secrets.HAZARDNET_API_URL }}
 #       HAZARDNET_API_KEY:      ${{ secrets.HAZARDNET_API_KEY }}
 #       EE_SERVICE_ACCOUNT_JSON:${{ secrets.EE_SERVICE_ACCOUNT_JSON }}
-#       SUPABASE_DB_URL:        ${{ secrets.SUPABASE_DB_URL }}
 #       CODECOV_TOKEN:          ${{ secrets.CODECOV_TOKEN }}
 #       BENCH_URL:              ${{ secrets.BENCH_URL }}
 #     run: bash scripts/verify-actions-secrets.sh
@@ -46,7 +45,7 @@ set -euo pipefail
 
 SECRETS_CATALOG=(
   # Core backend
-  "BACKEND_API_KEY|yes|manual-ingest, Supabase-cutover-verify|Bearer token for POST /api/v1/forecasts/update"
+  "BACKEND_API_KEY|yes|manual-ingest, Firebase-Store-Verify|Bearer token for POST /api/v1/forecasts/update"
   "GEMINI_API_KEY|opt|weekly|Advisory generation (deterministic fallback if unset)"
   # Kaggle — LEGACY (2026-09-16): the Kaggle workflows are dispatch-only now.
   # Production forecasts run on the runner via scripts/auto_forecast.py, so a
@@ -60,8 +59,10 @@ SECRETS_CATALOG=(
   "HAZARDNET_API_URL|opt|daily_forecast (only when PUSH_TO_API=true)|Ingest endpoint for auto_forecast.py push"
   "HAZARDNET_API_KEY|opt|daily_forecast (only when PUSH_TO_API=true)|Bearer token for HAZARDNET_API_URL"
   "EE_SERVICE_ACCOUNT_JSON|yes|daily_forecast|GEE service account JSON key (the pipeline's data source)"
-  # Supabase cutover
-  "SUPABASE_DB_URL|opt|Supabase-cutover-verify|Mapped to DATABASE_URL at step scope"
+  # Firebase (Firestore forecast store + Auth) — the single database backend
+  "FIREBASE_PROJECT_ID|yes|Firebase-Store-Verify|Firebase project id (hazardnet-aas48424)"
+  "FIREBASE_CLIENT_EMAIL|yes|Firebase-Store-Verify|Firebase service-account client email"
+  "FIREBASE_PRIVATE_KEY|yes|Firebase-Store-Verify|Firebase service-account private key (backend boots against it)"
   # CI / coverage
   "CODECOV_TOKEN|opt|ci (test-backend, test-frontend)|Codecov upload (warn-only if absent)"
   # Benchmarking

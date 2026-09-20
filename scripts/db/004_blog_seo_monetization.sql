@@ -3,7 +3,7 @@
 -- SEO metadata (Google Search Console), editable author bylines and
 -- monetization (affiliate disclosure) fields for blog_articles.
 --
--- Run in the Supabase SQL editor AFTER docs/blog-admin-setup.md created the
+-- Run in your Postgres SQL editor AFTER docs/blog-admin-setup.md created the
 -- blog_articles table. Idempotent — safe to re-run. RLS policies are unchanged
 -- (writes still restricted to the three primary superadmin emails).
 -- =============================================================================

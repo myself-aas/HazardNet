@@ -63,7 +63,7 @@ npm-workspace monorepo. Root manifest owns backend + tooling; `frontend/` is the
 ```
 backend/
   server.js            mount table
-  forecastStore.js     switchable Firestore/Supabase persistence (ADR 0002)
+  forecastStore.js     switchable Firestore/Postgres persistence (ADR 0002)
   inference.js, tfjs.js, modelInfo.js    TFLite/TFJS single inference path (ADR 0009)
   db.js, metrics.js    Postgres pool, prom-client registry
   routes/              advisory agent chat alerts conversions forecasts predict push weather
@@ -115,7 +115,7 @@ frontend/src/
 
 Key route split: `/` is the editorial **front door**; the interactive map console lives at `/live` (with `/home*`, `/forecast/overview` as deep links). `/hazards/*`, `/districts/*`, `/retrospectives/*`, `/model-performance` are **build-time generated** pages (`scripts/build_content_engine.mjs` → `generated-routes.json` → prerendered static HTML + sitemap).
 
-Stack: Vite 8, React 18.3, react-router 6, TanStack Query, MUI 6 + Tailwind 4 + shadcn, Leaflet (not Mapbox, despite README), Recharts, framer-motion, jsPDF/html2canvas for evidence-card export, Supabase + Firebase SDKs.
+Stack: Vite 8, React 18.3, react-router 6, TanStack Query, MUI 6 + Tailwind 4 + shadcn, Leaflet (not Mapbox, despite README), Recharts, framer-motion, jsPDF/html2canvas for evidence-card export, Postgres + Firebase SDKs.
 
 ---
 
@@ -169,6 +169,6 @@ Stack: Vite 8, React 18.3, react-router 6, TanStack Query, MUI 6 + Tailwind 4 + 
 - ADR 0005 (507 ADM3 units, 10/20/30-day horizons) is **accepted but unimplemented**; `scripts/tests/test_model_claims.py` enforces that copy stays at 64 districts / 7+15 days.
 - Model scores are **uncalibrated**; `Certain/Probable/Uncertain` are relative bands only (`docs/mlops/CALIBRATION.md`, `docs/MODEL_CARD.md` §6).
 - Four duplicated skill-pack trees (`skills/`, `agent/`, `.agents/`, `.claude/`) drift independently.
-- Loose one-off root scripts (`fix.cjs`, `replace_auth.js`, `rewrite_*.cjs`, `finish.sh`) are historical codemods, not part of any build.
-- Both `bun.lock` (418 KB) and `package-lock.json` (857 KB) are committed.
+- The one-off Firebase migration codemods that once lived at the repo root (`fix.cjs`, `replace_auth.js`, `rewrite_*.cjs`) were deleted after the cutover completed; they are not part of any build.
+- Only `package-lock.json` is committed (npm — the CI installer). `bun.lock` was deleted on 2026-09-20 (see CONCERNS.md "Two lockfiles").
 - `docs/codebase/CONCERNS.md` (486 lines) is the maintained list of known issues — read it before large changes.

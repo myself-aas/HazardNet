@@ -3,7 +3,7 @@ import { Link, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { db } from '../services/firebase';
 import { collection, query, getDocs, where, getDoc, doc } from 'firebase/firestore';
-const isSupabaseConfigured = true;
+const isProfileStoreConfigured = true;
 import { HazardNetBrand } from '../components/HazardNetLogo';
 import MaterialIcon from '../components/MaterialIcon';
 import { sanitizeUsernameInput } from '../lib/username';
@@ -66,9 +66,9 @@ const PublicProfilePage: React.FC = () => {
     setState('loading');
     setProfile(null);
 
-    if (!isSupabaseConfigured || !username) {
-      // Demo mode without Supabase: show a friendly sample card instead of a
-      // hard error so the route is still explorable.
+    if (!isProfileStoreConfigured || !username) {
+      // Store unavailable: show a friendly card instead of a hard error so
+      // the route is still explorable.
       setState('offline');
       return () => {
         cancelled = true;
@@ -170,7 +170,7 @@ const PublicProfilePage: React.FC = () => {
           </h1>
           <p className="mx-auto mt-1.5 max-w-sm text-xs leading-relaxed text-carbon-60">
             {state === 'offline'
-              ? 'This deployment isn’t connected to Supabase, so public profiles can’t be loaded right now.'
+              ? 'This deployment isn’t connected to the profile store, so public profiles can’t be loaded right now.'
               : 'The username may be unclaimed or the profile is set to private.'}
           </p>
           <Link

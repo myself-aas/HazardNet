@@ -128,7 +128,7 @@ export const BlogStudioPage: React.FC = () => {
 
         {localDemo && (
           <p className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-[11px] font-semibold text-amber-900">
-            Local demo mode — Supabase is not configured, so articles persist in this browser only. Configure Supabase
+            Local demo mode — Firestore is not configured, so articles persist in this browser only. Configure Firestore
             for production storage.
           </p>
         )}

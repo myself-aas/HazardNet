@@ -284,6 +284,7 @@ function siteProbeSource({ probe, now }) {
     state,
     outcome,
     reason,
+    generated_at: typeof probe.ran_at === 'string' ? probe.ran_at : null,
     ran_at: typeof probe.ran_at === 'string' ? probe.ran_at : null,
     age_hours: round1(age),
     detail: {

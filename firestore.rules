@@ -203,7 +203,7 @@ service cloud.firestore {
     // so any authenticated visitor could publish, edit or delete content on the
     // public site; the superadmin check existed only in the UI
     // (frontend/src/components/blog/RequireSuperAdmin.tsx). Writes are now
-    // pinned to the same allowlist as the Supabase RLS policy
+    // pinned to the same allowlist as frontend/src/lib/superadmins.ts
     // (scripts/db/006_blog_articles_rls_authz.sql) and the UI gate
     // (frontend/src/lib/superadmins.ts); scripts/tests/test_blog_authz_parity.py
     // fails CI if the three lists drift apart.

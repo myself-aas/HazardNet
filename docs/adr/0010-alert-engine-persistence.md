@@ -1,4 +1,4 @@
-# ADR 0010 — Alert-engine persistence: Supabase Postgres for lifecycle + audit, Firestore stays the forecast store
+# ADR 0010 — Alert-engine persistence: self-host Postgres for lifecycle + audit, Firestore stays the forecast store
 
 - **Status:** Proposed (2026-09-17) — Phase 4 dependency; nothing is built on it yet.
 - **Context:** deployment plan Phase 4 (alert state machine, HITL review, audit trail, idempotency);
@@ -17,7 +17,7 @@ Today's storage:
 | Store | Holds | Notes |
 | ----- | ----- | ----- |
 | Firestore (`backend/db.js`, `backend/forecastStore.js`) | `forecasts` collection — append-only, district/horizon keyed, read-only to clients | Works; ADR 0002 keeps it |
-| Supabase Postgres | `blog_articles` (RLS per ADR 0006 of the blog setup) + the cutover tooling already in `scripts/db/` | Already deployed, already the identity for content |
+| self-host Postgres | `blog_articles` (RLS per ADR 0006 of the blog setup) + the cutover tooling already in `scripts/db/` | Already deployed, already the identity for content |
 | Committed snapshot (`frontend/public/data/forecasts-latest.json`) | the forecast the site serves when the API is unreachable | ADR 0008 |
 | Firestore rules | per-collection access control | Hand-tuned; two authorization defects found on 2026-09-17 |
 
@@ -26,7 +26,7 @@ Today's storage:
 1. **Forecasts stay where they are.** No migration. The `forecasts` collection is append-only,
    keyed by `(district_id, horizon, prediction_date)`, and read-mostly — SQL buys nothing it needs.
    ADR 0002 stands.
-2. **Alert lifecycle + audit go to Supabase Postgres**, in a new `alerts` schema with
+2. **Alert lifecycle + audit go to self-host Postgres**, in a new `alerts` schema with
    `alerts`, `alert_reviews`, `alert_audit` tables and (when server-side geometry is actually needed)
    the PostGIS extension. Reasons, in order of weight:
    - **Transactions across rows.** Publishing = insert alert version + append audit row + flip the
@@ -39,10 +39,10 @@ Today's storage:
      are boring and provable. `firestore.rules` would need to express the same guarantees per
      collection, and this codebase already demonstrates (SEC-02/SEC-05, 2026-09-17) how easily that
      drifts.
-   - **One reviewer identity model.** Supabase is already the identity used for content authorization;
+   - **One reviewer identity model.** Postgres is already the identity used for content authorization;
      the alert gate should not invent a second one.
    - **PostGIS without a new service.** IF containment (which ADM3 unit / district contains a report's
-     coordinates) is needed server-side, it is available in the same database. Supabase's PostGIS is
+     coordinates) is needed server-side, it is available in the same database. Postgres's PostGIS is
      standard; there is no premium tier requirement.
 3. **Geospatial work is deferred, not assumed.** v1 alerts do not need PostGIS: district/upazila
    containment can be resolved from the committed HDX COD-AB boundaries (ADR 0005) in the client or
@@ -65,7 +65,7 @@ Today's storage:
 
 - Phase 4 gets transactional review/audit semantics without touching the forecast path, so the
   daily pipeline and the site keep working unchanged while the alert engine is built.
-- The project gains a second database to operate — mitigated by the fact that Supabase is already in
+- The project gains a second database to operate — mitigated by the fact that Postgres is already in
   the stack for content, so this is a second *schema*, not a second vendor.
 - Backup/PITR, migration tooling (Alembic-style expand/migrate/contract, as the deployment plan
   Step 20 specifies) and CI database tests become requirements for Phase 4, not optional extras.

@@ -28,7 +28,7 @@ This runbook covers production deployment procedures, monitoring, incident respo
 - **Frontend:** Vercel (Primary), Firebase Hosting (Fallback)
 - **Backend API:** Node.js 20 + Express 4.18.2 on Vercel Serverless Functions
 - **ML Inference:** TensorFlow.js 4.12.0 (TFLite FP32 model ~0.75MB)
-- **Databases:** Firebase Firestore (forecasts) + Supabase (users/auth)
+- **Databases:** Firebase — Firestore (forecasts, profiles, blogs, connectors, alerts) + Realtime Database (presence)
 - **Data Pipeline:** Kaggle Notebooks → GitHub Actions → Firestore
 - **CDN:** Vercel Edge Network
 - **Monitoring:** Prometheus (metrics), Sentry (errors), UptimeRobot (availability)
@@ -157,10 +157,10 @@ firebase hosting:sites:list
 BACKEND_API_KEY=<secure-random-256-bit-key>
 NODE_ENV=production
 
-# Supabase (User Authentication)
-SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_ANON_KEY=<supabase-anon-key>
-SUPABASE_SERVICE_ROLE_KEY=<supabase-service-role-key>
+# Firebase Auth (email/password + Google + GitHub providers)
+VITE_FIREBASE_API_KEY=<public-firebase-web-api-key>
+VITE_FIREBASE_PROJECT_ID=hazardnet-aas48424
+VITE_FIREBASE_FIRESTORE_DATABASE_ID=default
 
 # Firebase (Firestore Forecasts)
 FIREBASE_PROJECT_ID=hazardnet-production
@@ -479,7 +479,7 @@ vercel promote <deployment-url> --scope=hazardnet
 
 ### Rollback Database Changes
 
-#### Firestore Rollback
+#### Firebase Rollback (Firestore)
 ```bash
 # Firestore has automatic backups (7-day retention)
 # Restore from backup:
@@ -490,11 +490,10 @@ gcloud firestore import gs://hazardnet-backups/2026-09-10
 gh workflow run forecast-pipeline.yml
 ```
 
-#### Supabase Rollback
+#### Realtime Database Rollback
 ```bash
-# Supabase has point-in-time recovery
-# Contact Supabase support or use dashboard:
-# https://supabase.com/dashboard/project/<project-id>/database/backups
+# Firebase Realtime Database has no PITR on the free tier; presence is
+# ephemeral telemetry only, so no rollback is needed.
 ```
 
 ---
@@ -564,7 +563,7 @@ gh workflow run forecast-pipeline.yml
 #### Weekly Tasks
 - [ ] Review Dependabot security alerts
 - [ ] Run `npm audit` and address high/critical vulnerabilities
-- [ ] Check Supabase auth logs for anomalies
+- [ ] Check Firebase Authentication console for anomalies
 
 #### Monthly Tasks
 - [ ] Rotate API keys (BACKEND_API_KEY, GEMINI_API_KEY)
@@ -605,7 +604,7 @@ gh secret set BACKEND_API_KEY
 | DevOps Lead | devops-lead@hazardnet.io | Slack DM |
 | Security Team | security@hazardnet.io | Emergency: +880-XXX-XXXX |
 | Vercel Support | https://vercel.com/support | Via Dashboard |
-| Supabase Support | https://supabase.com/support | Via Dashboard |
+| Firebase Support | https://firebase.google.com/support | Via Console |
 
 ---
 

@@ -1,14 +1,15 @@
 # OAuth Provider Setup — Social Sign-Up / Sign-In
 
-HazardNet's social authentication runs on **Supabase Auth** (PKCE redirect
-flow). The frontend (`frontend/src/lib/oauthProviders.ts` is the registry)
-starts the flow with `supabase.auth.signInWithOAuth({ provider })`, the user
-authenticates at the provider, and Supabase exchanges the code server-side.
-**No provider secrets ever touch the frontend** — each provider only needs a
-client ID/secret configured once in the Supabase dashboard.
+HazardNet's social authentication runs on **Firebase Authentication**. The
+frontend (`frontend/src/lib/oauthProviders.ts` is the registry) starts the
+flow with `signInWithPopup(auth, provider)`, the user authenticates at the
+provider, and Firebase exchanges the credential. **No provider secrets ever
+touch the frontend** — each enabled provider only needs its client ID/secret
+configured once in the Firebase console.
 
-Supported providers: **LinkedIn, GitHub, Slack, Discord, X (Twitter),
-Figma** — plus Google, Microsoft, Apple and ORCID (custom OIDC).
+Supported providers: **Google, GitHub** — exactly these two, plus
+email/password. No other identity provider (ORCID, LinkedIn, Microsoft, Apple,
+Slack, …) is enabled or surfaced anywhere.
 
 ## One-time wiring (all providers)
 
@@ -17,75 +18,60 @@ Every provider follows the same three steps:
 1. **Create a developer app** with the provider (links in the table below).
 2. **Copy the OAuth callback/redirect URL** into that app:
    ```
-   https://<PROJECT_REF>.supabase.co/auth/v1/callback
+   https://hazardnet-aas48424.firebaseapp.com/__/auth/handler
    ```
-   (`<PROJECT_REF>` is the id of your Supabase project.)
-3. **Paste the client ID/secret** into Supabase → Authentication → Sign In /
-   Up → Providers → *provider* → Enable.
+3. **Paste the client ID/secret** into Firebase → Authentication → Sign-in
+   method → *provider* → Enable.
 
-Also add the site callback to **Authentication → URL Configuration → Redirect
-URLs** so Supabase can send users back after login:
+Also add the site domain to **Authentication → Settings → Authorized
+domains** so Firebase can complete the popup:
 
 ```
-https://www.hazardnet.live/auth/callback
-http://localhost:3000/auth/callback
+www.hazardnet.live
+hazardnet.live
+localhost
 ```
 
-| Provider | Create app at | Supabase guide | Notes |
+| Provider | Create app at | Firebase guide | Notes |
 | --- | --- | --- | --- |
-| LinkedIn | https://www.linkedin.com/developers/apps/new | [auth-linkedin](https://supabase.com/docs/guides/auth/social-clients/auth-linkedin) | Enable the **"Sign In with LinkedIn using OpenID Connect"** product on the app; request `openid profile email`. |
-| GitHub | https://github.com/settings/applications/new | [auth-github](https://supabase.com/docs/guides/auth/social-clients/auth-github) | OAuth app; scopes `read:user user:email` are requested automatically. |
-| Slack | https://api.slack.com/apps?new_app=1 | [auth-slack](https://supabase.com/docs/guides/auth/social-clients/auth-slack) | Enable **Sign in with Slack** user scopes (`users:read email`). |
-| Discord | https://discord.com/developers/applications | [auth-discord](https://supabase.com/docs/guides/auth/social-clients/auth-discord) | Add the callback under **OAuth2 → Redirects**; scopes `identify email`. |
-| X (Twitter) | https://developer.x.com/en/portal/dashboard | [auth-twitter](https://supabase.com/docs/guides/auth/social-clients/auth-twitter) | Set up **OAuth 2.0** user authentication (not OAuth 1.0a). X only releases emails for approved developer accounts; users without an email are prompted to add one at first sign-up. |
-| Figma | https://www.figma.com/developers/ | [auth-figma](https://supabase.com/docs/guides/auth/social-clients/auth-figma) | Standard OAuth app under Figma developer settings. |
-| Google | https://console.cloud.google.com/apis/credentials | [auth-google](https://supabase.com/docs/guides/auth/social-clients/auth-google) | Configure the OAuth consent screen + web client. |
-| Microsoft | https://portal.azure.com/#blade/Microsoft_AAD_RegisteredApps/ApplicationsListBlade | [auth-azure](https://supabase.com/docs/guides/auth/social-clients/auth-azure) | Azure app registration; redirect URL same as above. |
-| Apple | https://developer.apple.com/account/resources/identifiers/list/serviceId | [auth-apple](https://supabase.com/docs/guides/auth/social-clients/auth-apple) | Create a Services ID (Sign in with Apple). |
-| ORCID | https://orcid.org/developer-tools | [auth-orcid](https://supabase.com/docs/guides/auth/social-clients/auth-orcid) | Configured as a **custom OIDC** provider in Supabase (name the custom provider `orcid`). |
+| Google | https://console.cloud.google.com/apis/credentials | [google-signin](https://firebase.google.com/docs/auth/web/google-signin) | Configure the OAuth consent screen + web client. |
+| GitHub | https://github.com/settings/developers | [github-auth](https://firebase.google.com/docs/auth/web/github-auth) | OAuth app; scopes `read:user user:email` are requested automatically. |
 
 ## Frontend behavior
 
 - **Buttons** live in `frontend/src/components/auth/AuthSocialButtons.tsx`
-  (sign-in and sign-up pages). Per product spec the prominent **Connect with
-  Google** button renders immediately after the email/password fields, then
-  every other provider appears as compact side-by-side circular icons
-  (`SECONDARY_AFTER_GOOGLE_PROVIDER_IDS` in `src/lib/oauthProviders.ts`).
-- **Callback** (`/auth/callback`, `AuthCallbackPage.tsx`) exchanges the code
-  via the Supabase client, shows success/failure states with actionable
-  hints, and returns the user to the page they started from
+  (sign-in and sign-up pages). Two full-width buttons render — **Continue
+  with Google** and **Continue with GitHub** — beneath the email/password
+  form (`SUPPORTED_PROVIDER_IDS` in `src/lib/oauthProviders.ts`).
+- **Popup**: sign-in completes in a popup (`signInWithPopup`), so the user
+  never leaves the page. `/auth/callback` (`AuthCallbackPage.tsx`) remains as
+  a fallback landing page for any redirect/email-link visit and returns the
+  user to the page they started from
   (`sessionStorage: hazardnet.auth.returnTo`).
-- **Sign-up**: passwordless — we send a verification (magic) link that opens
-  `/set-password` where the user chooses their password. The first social
-  sign-in automatically creates the user's `profiles` row seeded from
-  provider metadata (name, email, avatar, generated username).
+- **Sign-up**: email + password creates the account immediately; the
+  `profiles` document is written to Firestore at first sign-up. A Firebase
+  verification email is sent automatically. Email magic links continue to
+  land on `/auth/callback`.
 - **Account linking**: Profile → **Connected Accounts & Social Sign-In**
-  links/unlinks providers to the signed-in account
+  links/unlinks Google and GitHub to the signed-in account
   (`linkIdentity`/`unlinkIdentity`). The last remaining sign-in method cannot
-  be disconnected (enforced client-side and by Supabase).
-- **Errors** (`describeOAuthError` in `oauthProviders.ts`) translate provider
-  failures into fixes: disabled provider, redirect URL not allow-listed,
-  cancelled authorization, expired state, already-linked identity, email
-  conflicts.
+  be disconnected.
+- **Errors** (`describeOAuthError` in `oauthProviders.ts`) translate Firebase
+  failures into fixes: disabled provider, unauthorized domain,
+  account-exists-with-different-credential, cancelled authorization, and
+  network problems.
 
 ## Environment
 
-Social sign-in itself needs no frontend env vars beyond the existing Supabase
-URL and publishable key. Set them at the **repository root** as
-`NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (aliases:
-`SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`) — *not* `VITE_SUPABASE_*` in
-`frontend/.env`, which `frontend/vite.config.ts` shadows with a `define` block
-and therefore ignores. See `.env.example` §7.
-
-If those are absent the UI still renders, but starting a flow explains that
-authentication is unconfigured (a mock client is used — see `lib/supabase.ts`).
+Social sign-in and email/password auth use the public Firebase web config in
+`frontend/src/lib/config.ts` (overridable with the `VITE_FIREBASE_*` build
+values — all public-by-design and committed in `.env.example`).
 
 ## Security notes
 
-- Authorization codes are exchanged with PKCE by supabase-js; the client
-  never sees provider client secrets.
-- Sessions persist in browser storage with auto-refresh; sign-out clears
-  session plus local caches.
-- Provider tokens (if you later request API scopes beyond login) are stored
-  server-side by Supabase only when explicitly enabled — HazardNet requests
-  login-level scopes only.
+- Firebase exchanges credentials while the client never sees provider client
+  secrets (only the public web app id is shipped; client IDs are public by
+  design).
+- Sessions persist in the Firebase auth SDK; sign-out clears the session and
+  local caches.
+- HazardNet requests login-level scopes only.

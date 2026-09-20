@@ -1,10 +1,10 @@
 /**
- * Avatar pipeline: client-side resize/compress → Supabase Storage upload →
- * profiles.photo_url update → old object removal (replace-on-update).
+ * Avatar pipeline: client-side resize/compress → profiles document
+ * photo_url/avatar_path update → previous picture replaced.
  *
  * Images are center-cropped to a square and downscaled to at most 512×512,
- * encoded as WebP (JPEG fallback) and compressed until they fit well under
- * the 2 MB bucket limit — typically 20–60 KB per avatar.
+ * encoded as WebP (JPEG fallback) and compressed — typically 20–60 KB per
+ * avatar — before being stored on the profile document.
  */
 
 import { db } from '../services/firebase';
@@ -113,7 +113,7 @@ export interface UploadAvatarResult {
   storagePath: string;
   bytes: number;
   replacedOld: boolean;
-  /** Local preview to use when Supabase is not configured (dev mode). */
+  /** Local preview to use when the profile store is unavailable (dev mode). */
   localPreviewUrl?: string;
 }
 

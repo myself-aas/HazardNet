@@ -3,7 +3,7 @@
 --
 -- Self-assessing verification for 007_forecasts_meteorological.sql, the
 -- migration that adds the eight Open-Meteo meteorological columns the weekly
--- notebook emits. Run it in the Supabase SQL editor:
+-- notebook emits. Run it in your Postgres SQL editor:
 --
 --   • BEFORE scripts/db/007_forecasts_meteorological.sql — expect FAILs. A FAIL
 --     on the first block means the columns are absent, and because the ingest's
@@ -24,7 +24,7 @@
 -- PART 1 · Schema: are the eight columns present, with the expected types?
 -- =============================================================================
 -- `numeric`, matching the neighbouring severity_score / confidence columns in
--- 002_forecasts_supabase.sql. The driver returns numeric as strings and the
+-- the forecasts schema. The driver returns numeric as strings and the
 -- store coerces them, exactly as it already does for severity.
 with expected(ord, column_name, data_type) as (
   values

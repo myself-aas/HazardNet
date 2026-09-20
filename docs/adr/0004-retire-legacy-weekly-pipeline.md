@@ -38,7 +38,7 @@ frontend deploys happen via Vercel Git integration.
    2026-09-12, see the audit §3.1).
 2. Do not resurrect the missing Python scripts — the API ingest route is the
    single supported write path to the forecast store (and, per ADR 0002, both
-   converge on Supabase after the cutover).
+   converge on Postgres after the cutover).
 3. The `FIREBASE_SERVICE_ACCOUNT` secret is no longer referenced by any
    workflow; it may be removed from repo secrets (keep only if used for
    manual applet operations).

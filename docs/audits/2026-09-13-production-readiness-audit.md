@@ -15,7 +15,7 @@ HazardNet is an unusually well-architected codebase — ADR-governed, layered se
 
 | # | Severity | Finding | Status |
 |---|----------|---------|--------|
-| 1 | 🔴 **P0** | **Live credentials committed to the repo** (Gemini/OpenRouter/Groq/HF keys, Supabase JWT secret + DB URL, Kaggle API token, GitHub PAT, VAPID private key in `.env.example` & `.github/secrets.env`) | **Sanitized in this audit; ROTATION still mandatory** (values persist in git history) |
+| 1 | 🔴 **P0** | **Live credentials committed to the repo** (Gemini/OpenRouter/Groq/HF keys, Postgres JWT secret + DB URL, Kaggle API token, GitHub PAT, VAPID private key in `.env.example` & `.github/secrets.env`) | **Sanitized in this audit; ROTATION still mandatory** (values persist in git history) |
 | 2 | 🔴 **P0** | **Production site serves mock data** — hazardnet.live renders the hardcoded `ALL_64_DISTRICTS` baseline (verified live), because no real forecast rows have ever been ingested and the Vercel deployment has **no GET handler for `/api/v1/forecasts/bulk`** | Hourly pipeline built (this branch); enablement pending workflow-file push permission |
 | 3 | 🟠 **P1** | **CI is red on `main`** — 22 tests in 3 suites fail (`rag_pipeline/index.js` uses `import.meta.url` under Jest's CJS transform, cascading through `backend/server.js`) | Root cause identified (§5.3) |
 | 4 | 🟠 **P1** | **`main` branch unprotected** (no protection rules, 0 rulesets) while bots push data commits directly to it | Recommend ruleset (§9) |
@@ -54,7 +54,7 @@ Kaggle notebook (ashifahmedshuvo/hazardnet-auto-forecast-pipeline)
                                               │
               ┌───────────────────────────────┼──────────────────────────────┐
    POST /api/v1/forecasts/update     backend/data/forecasts/*        frontend/public/data/forecasts-latest.json
-   (forecast store: Firestore|Supabase)   (committed, archived)          (bundled into website; offline fallback)
+   (forecast store: Firestore|Postgres)   (committed, archived)          (bundled into website; offline fallback)
 ```
 
 ### 2.2 Findings
@@ -63,9 +63,9 @@ Kaggle notebook (ashifahmedshuvo/hazardnet-auto-forecast-pipeline)
 - ✅ **Validation repaired**: `validate_forecasts.py` previously hard-required an ADM3 `location_*` schema the committed notebook never produces — the daily pipeline's validation step could never have passed. Now schema-adaptive (`location_*` **or** `district_*`), tested against both shapes + a negative case.
 - ✅ **Daily trigger repaired**: `scripts/kaggle_trigger.py` now prefers the notebook's own kernel output as CSV source (dataset download demoted to fallback) — single source of truth across all three cadences.
 - ✅ **Website refresh guarantee**: the hourly workflow commits `backend/data/forecasts/*` **and** the bundled `frontend/public/data/forecasts-latest.json`; pushing to the branch triggers `ci.yml`'s `deploy-production` (Vercel), so the deployed codebase carries data ≤ 1 h old after each notebook run. Frontend `useForecasts()` now falls back to that snapshot when the API is unreachable (see §4.2).
-- 🟠 **Real-data enablement blocked (process)**: the Arena GitHub App lacks `workflows` permission, so `.github/workflows/*` cannot be pushed from this environment; additionally the sandbox's egress allowlist blocks Kaggle/Open-Meteo/GCS/Supabase, so no real CSV can be fetched locally. **Real data can only enter via GitHub Actions runners** — the workflow file must be added to GitHub (owner paste or permission grant). Verified: no forecast data exists anywhere in the repo today, and the live store is unreachable from this environment.
+- 🟠 **Real-data enablement blocked (process)**: the Arena GitHub App lacks `workflows` permission, so `.github/workflows/*` cannot be pushed from this environment; additionally the sandbox's egress allowlist blocks Kaggle/Open-Meteo/GCS/Postgres, so no real CSV can be fetched locally. **Real data can only enter via GitHub Actions runners** — the workflow file must be added to GitHub (owner paste or permission grant). Verified: no forecast data exists anywhere in the repo today, and the live store is unreachable from this environment.
 - 🟡 **Cadence semantics**: "hourly" means *pickup latency* ≤ 1 h after each notebook completion; the notebook itself runs on its Kaggle schedule (GEE + inference is too heavy for hourly re-execution within Kaggle quotas). Documented in `docs/ops/hourly_forecast.md`.
-- 🟡 **Supabase store untested end-to-end from this environment** (connection blocked by sandbox egress). Cutover runbook exists (ADR 0002, `docs/ops/supabase-cutover-verify.workflow.yml`); store-parity unit coverage is strong (forecastStore.js 88.7 %).
+- 🟡 **Postgres store untested end-to-end from this environment** (connection blocked by sandbox egress). Cutover runbook exists (ADR 0002, `docs/ops/postgres-cutover-verify.workflow.yml`); store-parity unit coverage is strong (forecastStore.js 88.7 %).
 
 ---
 
@@ -79,7 +79,7 @@ Kaggle notebook (ashifahmedshuvo/hazardnet-auto-forecast-pipeline)
 | `forecast-pipeline.yml` | cron daily 00:00 | ✅ | ✅ |
 | `weekly_forecast.yml` | cron Sun 02:00 | 🔴→✅ | ✅ |
 | `ci.yml` | push/PR main,develop | ✅ | ✅ |
-| `Supabase-cutover-verify.yml` | manual | ✅ | ✅ |
+| `Postgres-cutover-verify.yml` | manual | ✅ | ✅ |
 
 - 🔴 **Fixed:** `weekly_forecast.yml` contained a column-0 shell continuation inside a `run: |` block — the literal scalar terminated early and the file was **unparseable YAML**; GitHub could not load the workflow at all. Repaired (`$'\n'` concatenation).
 - ✅ Concurrency groups added to hourly + daily pipelines (no overlapping runs).
@@ -115,7 +115,7 @@ Kaggle notebook (ashifahmedshuvo/hazardnet-auto-forecast-pipeline)
 ### 4.2 Findings
 
 - ✅ **Ingest contract robust**: shared parser (`backend/utils/forecastRow.js`) accepts legacy single-track and notebook dual-track CSVs; integration-tested (`__tests__/forecastsUpdate.test.js`); replace-all-per-prediction-date semantics; advisory generation fail-soft.
-- ✅ **Dual-store abstraction** (Firestore ↔ Supabase) with documented cutover runbook and shape-parity tests.
+- ✅ **Dual-store abstraction** (Firestore ↔ Postgres) with documented cutover runbook and shape-parity tests.
 - 🟡 `api/forecasts.js` 0 % test coverage; `backend/inference.js` 0 % (edge inference path untested).
 - 🟡 `scripts/gen-model-version.mjs` exists but `VERSION.json` is absent → `/health` degrades to legacy literal.
 
@@ -149,11 +149,11 @@ Scan (`ghp_/sk-/KGAT_/AIza/BEGIN/xox/AKIA` patterns) hit four tracked files:
 
 | File | Leaked material | Action |
 |---|---|---|
-| `.env.example` | Gemini ×2, OpenRouter, Groq, HuggingFace, VAPID private key, Supabase JWT secret, **Supabase DB URL with password**, Kaggle API token, GitHub PAT | **Sanitized to placeholders in this audit** |
+| `.env.example` | Gemini ×2, OpenRouter, Groq, HuggingFace, VAPID private key, Postgres JWT secret, **Postgres DB URL with password**, Kaggle API token, GitHub PAT | **Sanitized to placeholders in this audit** |
 | `.github/secrets.env` | GitHub PAT (`ghp_…`) | **Sanitized in this audit** |
 | `firebase-applet-config.json`, `frontend/src/lib/config.ts` | Firebase **web app** config only | ✅ Public-by-design; risk controlled by Security Rules (default-deny verified in `firestore.rules`) |
 
-⚠️ **Sanitization does not un-leak these values — they persist in git history. All listed keys/tokens must be rotated** (Gemini, OpenRouter, Groq, HF, VAPID pair, Supabase JWT + DB password, Kaggle token, GitHub PAT), then optionally history-scrubbed (`git filter-repo`) with a force-push window.
+⚠️ **Sanitization does not un-leak these values — they persist in git history. All listed keys/tokens must be rotated** (Gemini, OpenRouter, Groq, HF, VAPID pair, Postgres JWT + DB password, Kaggle token, GitHub PAT), then optionally history-scrubbed (`git filter-repo`) with a force-push window.
 
 ### 6.2 CORS (runtime-verified)
 
@@ -222,7 +222,7 @@ pip: fetch_kaggle_forecast.py e2e w/ mocked kaggle CLI + 1024-row fixture       
 node scripts/build_forecast_snapshot.mjs <fixture>                                   # snapshot shape == API row shape
 curl https://hazardnet.live (via fetch tool)                                         # live site renders static baseline
 gh api repos/myself-aas/HazardNet/branches/main                                      # protected:false; rulesets:0
-egress probes: pypi/github 200; kaggle/GCS/open-meteo/supabase 000                    # sandbox network constraint documented
+egress probes: pypi/github 200; kaggle/GCS/open-meteo/postgres 000                    # sandbox network constraint documented
 ```
 
 ---

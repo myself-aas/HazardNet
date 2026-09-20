@@ -6,11 +6,7 @@
 // (backend/utils/forecastServe.js) + the forecast store (ADR 0002) — the
 // response shape is identical to backend/routes/forecasts.js by construction.
 //
-// Runtime env (Vercel project settings): FORECAST_STORE=supabase,
-// DATABASE_URL=<service-role Postgres connection string>, SUPABASE_SSL=true.
-// (FORECAST_STORE=firestore also works for reads once the /forecasts
-// public-read rule in firestore.rules is deployed.)
-
+// Runtime env (Vercel project settings): the forecast store reads Firestore.
 import { parseBulkQuery, metadataDataSource } from '../../../backend/utils/forecastServe.js';
 import { getForecastStore } from '../../../backend/forecastStore.js';
 import { clientError } from '../../../backend/utils/clientError.js';

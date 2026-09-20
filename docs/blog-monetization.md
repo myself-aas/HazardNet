@@ -60,7 +60,7 @@ growing passive income from it.
 1. Add property `https://hazardnet.live` (Domain property recommended).
 2. Verify via DNS TXT (Vercel domain) — one-time.
 3. Submit sitemap: generate one from the `blog_articles` table (a scheduled
-   GitHub Action or Supabase Edge Function writing `public/sitemap.xml` is the
+   GitHub Action or scheduled GitHub Action writing `public/sitemap.xml` is the
    simplest path; the URL set is `/blogs` + every published `/blogs/:slug`).
 4. Use **URL Inspection → Request Indexing** for each new article on publish
    day; GSC Performance reports then show queries/CTR per article — feed the

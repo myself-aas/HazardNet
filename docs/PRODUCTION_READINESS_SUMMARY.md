@@ -198,7 +198,7 @@ This document summarizes the production readiness implementation completed on 20
 #### Infrastructure ✅
 - [x] Vercel project configured
 - [x] Firebase Firestore production database
-- [x] Supabase production database
+- [x] Firebase Authentication (email/password + Google + GitHub)
 - [x] Kaggle notebook ready for automation
 - [x] GitHub Actions secrets configured
 
@@ -306,12 +306,10 @@ Verify these 37 environment variables are set in Vercel dashboard before deploym
 
 ### Critical (Required)
 - `BACKEND_API_KEY` (256-bit secure random key)
-- `SUPABASE_URL` (Supabase project URL)
-- `SUPABASE_ANON_KEY` (Supabase anonymous key)
-- `SUPABASE_SERVICE_ROLE_KEY` (Supabase service role key)
 - `FIREBASE_PROJECT_ID` (Firebase project ID)
 - `FIREBASE_PRIVATE_KEY` (Firebase service account private key)
 - `FIREBASE_CLIENT_EMAIL` (Firebase service account email)
+- `VITE_FIREBASE_API_KEY` / `VITE_FIREBASE_PROJECT_ID` / `VITE_FIREBASE_AUTH_DOMAIN` (frontend web config — public-by-design, committed defaults in `.env.example`)
 
 ### Optional (Recommended)
 - `GEMINI_API_KEY` (Google AI Studio API key for advisory generation)

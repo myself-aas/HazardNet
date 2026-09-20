@@ -51,7 +51,7 @@ describe('formatBytes', () => {
 
 describe('avatarPathFromUrl', () => {
   it('extracts the storage path from a public avatar URL', () => {
-    const url = 'https://xyz.supabase.co/storage/v1/object/public/avatars/user-1/avatar-1700000000.webp'
+    const url = 'https://storage.example.com/avatars/user-1/avatar-1700000000.webp'
     expect(avatarPathFromUrl(url)).toBe('user-1/avatar-1700000000.webp')
   })
 

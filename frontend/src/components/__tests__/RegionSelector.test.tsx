@@ -5,7 +5,7 @@ import { RegionSelector } from '../RegionSelector';
 import { AuthProvider } from '../../context/AuthContext';
 
 // Mock AuthContext fully — do NOT `jest.requireActual` here: the real module
-// imports lib/supabase which reads import.meta.env (Vite-only, unavailable in
+// imports Firebase which reads import.meta.env (Vite-only, unavailable in
 // CJS jest). RegionSelector only consumes useAuth/AuthProvider.
 jest.mock('../../context/AuthContext', () => ({
   useAuth: () => ({

@@ -150,7 +150,14 @@ def test_probe_result_is_reported_honestly(artifact):
     failed = [c for c in published['checks'] if c['outcome'] != 'success']
     expected = 'fail' if (published['outcome'] != 'pass' or failed) else 'pass'
     assert probe['outcome'] == expected
-    assert probe['state'] == ('failing' if expected == 'fail' else 'fresh')
+    if expected == 'fail':
+        assert probe['state'] == 'failing', 'a failing probe must be reported as failing'
+    else:
+        # A passing probe is `fresh` or `stale` depending on how old the result
+        # is relative to its SLO — never `missing`, `unknown` or `failing`.
+        assert probe['state'] in ('fresh', 'stale'), (
+            f'a passing probe must be fresh or stale, got {probe["state"]!r}'
+        )
     assert len(published['checks']) >= 6, 'the probe must cover the whole public surface'
 
 

@@ -35,10 +35,11 @@ not ratified. Two of them are ADRs: [`0009` (one inference path)](../adr/0009-si
                         ┌───────────────▼──────────────────────────────┐
                         │ Firebase                                     │
                         │  · Firestore `forecasts`  ◄── forecast store │
+                        │  · Firestore `profiles`, `blog_articles`,    │
+                        │    `assessments`, `user_connectors`, alerts  │
                         │  · Auth (users, roles)                       │
+                        │  · RTDB (presence/telemetry)                 │
                         │  · rules: firestore.rules                    │
-                        │ Supabase                                     │
-                        │  · Postgres `blog_articles` + RLS            │
                         └───────────────▲──────────────────────────────┘
                                         │ ingest (API-key gated)
    ┌────────────────────────────────────┴─────────────────────────────┐
@@ -110,9 +111,9 @@ New components are marked `◆ new`, changed ones `▲`, and deferred-with-a-tri
 ┌──────────────────────────────────────▼───────────────────────▼───────────────┐
 │ DATA                                                                          │
 │  Firestore `forecasts`            forecasts (unchanged, append-only)   ADR 0002│
+│  Firestore `blog_articles`        blog articles (unchanged)                    │
 │  Committed snapshot              fallback the site always has           ADR 0008│
-│  ◆ Supabase Postgres             alerts + reviews + audit (transactional) ADR 0010│
-│  Supabase Postgres               blog_articles (unchanged)                    │
+│  ◆ self-host Postgres             alerts + reviews + audit (transactional) ADR 0010│
 │  ◆ Published freshness artifact  data/freshness.json, written by the pipeline │
 │  ◇ Object storage (S3/R2)        only when rasters/exports outgrow Git        │
 │  ◇ Tiles (COG + TiTiler / MVT)   only when HazardNet serves its own rasters   │
@@ -303,7 +304,7 @@ the code.
 | Inference placement | **Batch only** ([ADR 0009](../adr/0009-single-inference-path.md)) | Decoupling is the plan's own principle; the interactive path is dead in production and has no weights | Inline inference on request (6.7 s CPU, needs GEE creds); a heuristic "fast path" (that is the defect being removed) | Measured need for sub-daily, per-unit refresh — then a real TFLite/ONNX worker, never a second scorer |
 | Inference compute | **CPU `tflite_runtime` in GitHub Actions** *(unchanged)* | Runs today; a 790 KB FP32 model on 64 districts is minutes, not hours | GPU worker / Triton — infrastructure with no current workload; INT8 edge bundle (ADR 0007: blocked by `CONV_3D`) | Per-unit (ADM3) scans at sub-daily cadence, or a wall-clock budget breach measured in `run_report` |
 | Forecast storage | **Firestore `forecasts`** *(unchanged, ADR 0002)* | Append-only, keyed, read-mostly, already served by the API and the snapshot | Postgres+PostGIS for forecasts — no query the current access pattern needs; adds a migration with no owner | Need for server-side spatial joins or cross-forecast analytics that Firestore cannot express |
-| Alert/audit storage | **Supabase Postgres (+PostGIS only when needed)** ([ADR 0010](../adr/0010-alert-engine-persistence.md)) | Transactions across publish+audit; provable append-only audit; reuses the identity already used for content | Firestore for alerts (no cross-document transaction with the concurrency semantics HITL needs); a new database vendor | — (decision is structural; revisit only if alerts are dropped from scope) |
+| Alert/audit storage | **self-host Postgres (+PostGIS only when needed)** ([ADR 0010](../adr/0010-alert-engine-persistence.md)) | Transactions across publish+audit; provable append-only audit; reuses the identity already used for content | Firestore for alerts (no cross-document transaction with the concurrency semantics HITL needs); a new database vendor | — (decision is structural; revisit only if alerts are dropped from scope) |
 | Jobs / queue | **GitHub Actions schedules** *(unchanged)* | The pipeline already runs there with GEE credentials and artifact provenance; a daily job needs no broker | Redis + Celery/RQ; NATS — a broker with no consumer, for a single daily job | User-triggered or sub-hourly refreshes (§3.3 job dispatch) |
 | Geospatial serving | **Static boundaries (HDX COD-AB) + client-side lookup** *(unchanged)*; PostGIS deferred | Containment is a lookup, not a query; boundaries are already committed (ADR 0005) | A tile server / COG pipeline now | Publishing rasters (not point scores) as a product, or server-side spatial aggregation |
 | Tiles / raster serving | **Deferred** ◇ | The map uses public basemaps + client layers; HazardNet publishes scores, not imagery | TiTiler + COG, MVT from PostGIS | First raster product (flood extent layer, exposure map) |
@@ -325,7 +326,7 @@ the code.
 | Stage | What it is | How it is isolated |
 | ----- | ---------- | ------------------ |
 | dev | `npm run dev` (Vite :5173) + `npm start` (Express :3000) + the committed snapshot | Local `.env`; no cloud writes |
-| staging | A Vercel **preview deployment** of a branch, plus a **test Firebase project** and a Supabase staging schema | Preview URL + separate project credentials; never the production Firestore |
+| staging | A Vercel **preview deployment** of a branch, plus a **test Firebase project** and a Postgres staging schema | Preview URL + separate project credentials; never the production Firestore |
 | production | The Vercel production deployment (`www.hazardnet.live`) | As today |
 
 Gaps to close in Phase 2 (they are prerequisites for Phase 4, not architecture): the pipeline's

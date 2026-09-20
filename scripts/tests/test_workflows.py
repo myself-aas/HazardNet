@@ -39,7 +39,7 @@ REQUIRED_WORKFLOWS = {
     'model_intake.yml',
     'model-validation.yml',
     'site-health.yml',
-    'Supabase-cutover-verify.yml',
+    'Firebase-Store-Verify.yml',
     'verify-secrets.yml',
     'weekly_forecast.yml',
     # v3 ML contract tests: severity normalizer proofs + 57 BD threshold
@@ -458,7 +458,7 @@ CONCURRENCY_REQUIRED = {
     'forecast-pipeline.yml',
     'manual_forecast_ingest.yml',
     'site-health.yml',
-    'Supabase-cutover-verify.yml',
+    'Firebase-Store-Verify.yml',
     'verify-secrets.yml',
     'weekly_forecast.yml',
     'v3-ml-contracts.yml',
@@ -807,14 +807,10 @@ def test_every_run_block_is_valid_shell():
 
 # ── every script a workflow invokes must exist ────────────────────────────────
 #
-# `Supabase-cutover-verify.yml` was committed invoking
-# `scripts/verify-supabase-cutover.mjs`, a file that was never written (as were
-# `scripts/db/002_forecasts_supabase.sql` and
-# `scripts/migrate-firestore-to-supabase.mjs`, which ADR 0002 and
-# scripts/db/README.md both name). Dispatching the workflow died with
-# `Cannot find module …` — an error that reads like a database or credentials
-# failure and is neither. A workflow that describes work nobody did is worse than
-# no workflow: it reports a red run whose cause is not in the run.
+# A workflow that runs a file that is not in the repository dies with a bare
+# `Cannot find module` — an error that reads like a database or credentials
+# failure and is neither. Each run block is scanned for script invocations and
+# each one must resolve inside the tree.
 
 SCRIPT_INVOKE_RE = re.compile(
     r'\b(?:python3?|node|npx|bash|sh)\s+'
@@ -835,11 +831,9 @@ def _package_scripts():
 def _strip_shell_comments(script):
     """Drop whole-line shell comments before looking for invocations.
 
-    A commented-out `node scripts/foo.mjs` is documentation, not an invocation —
-    and `Supabase-cutover-verify.yml` keeps exactly that: the step it will restore
-    once the missing artifact is committed (Action 14). Only lines whose first
-    non-space character is `#` are dropped, so a `#` inside a quoted string cannot
-    hide a real invocation.
+    A commented-out `node scripts/foo.mjs` is documentation, not an invocation.
+    Only lines whose first non-space character is `#` are dropped, so a `#`
+    inside a quoted string cannot hide a real invocation.
     """
     return '\n'.join(
         line for line in script.splitlines() if not line.lstrip().startswith('#')

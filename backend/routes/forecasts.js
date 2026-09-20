@@ -87,7 +87,7 @@ router.post('/update', upload.single('file'), (req, res, next) => {
         const predictionDate = results[0].prediction_date;
 
         // Replace all rows for this prediction_date (delete + insert in one
-        // store-level operation; Supabase runs it in a transaction).
+        // store-level batch).
         await getForecastStore().replaceForecastsForPredictionDate(predictionDate, results);
 
         // Generate advisories for each inserted row
@@ -277,7 +277,7 @@ router.get('/bulk', async (req, res) => {
 
     try {
         // Latest row per district for this horizon (grouping happens in the
-        // store: JS grouping on Firestore, DISTINCT ON in Supabase).
+        // store, on Firestore).
         const rows = await getForecastStore().getLatestForecastsByHorizon(horizon);
 
         res.setHeader('Cache-Control', 'no-store, max-age=0');

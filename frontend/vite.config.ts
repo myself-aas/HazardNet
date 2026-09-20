@@ -124,7 +124,7 @@ export default defineConfig(({ mode }) => {
         // long-cacheable chunks so the root chunk stays lean and repeat
         // visits only re-download what changed. (jspdf/html2canvas power the
         // PDF export buttons; leaflet the maps; mui+emotion the design
-        // system; firebase+supabase auth/data; recharts the charts.)
+        // system; firebase auth/data; recharts the charts.)
         manualChunks(id) {
           if (!id.includes('node_modules')) return undefined;
           if (id.includes('node_modules/recharts')) return 'vendor-recharts';
@@ -142,7 +142,6 @@ export default defineConfig(({ mode }) => {
           if (id.includes('node_modules/firebase') || id.includes('node_modules/@firebase')) {
             return 'vendor-firebase';
           }
-          if (id.includes('node_modules/@supabase')) return 'vendor-supabase';
           if (
             id.includes('node_modules/react') ||
             id.includes('node_modules/react-dom') ||
@@ -161,9 +160,6 @@ export default defineConfig(({ mode }) => {
     // Boolean literal (not a string) so the client can do a plain
     // `=== true` check — see lib/vercelAnalytics.ts.
     'import.meta.env.VITE_VERCEL_ANALYTICS': JSON.stringify(vercelAnalyticsEnabled),
-    'import.meta.env.VITE_SUPABASE_URL': JSON.stringify(env.NEXT_PUBLIC_SUPABASE_URL ?? env.SUPABASE_URL),
-    'import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY': JSON.stringify(env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? env.SUPABASE_PUBLISHABLE_KEY ?? env.NEXT_PUBLIC_SUPABASE_ANON_KEY),
-    'import.meta.env.VITE_SUPABASE_REDIRECT_URL': JSON.stringify(env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL),
   },
   };
 });
