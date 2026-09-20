@@ -89,3 +89,32 @@ arbitrary renamed mathematical expressions could never bypass a text scanner.
 Final local result: 98 Jest suites / 1,074 tests passed; build and TypeScript passed.
 ESLint reported no errors (311 warnings). Claims, embargo, environment, bundle and
 public-path checks passed. Conversion route code was left unchanged.
+
+### Node 20 clean-install compatibility (CI follow-up)
+
+CI run `35517794848` failed because Firebase Admin 14.4 and its optional
+`@google-cloud/firestore` 9.x dependency require Node 22, while the backend job
+installs with Node 20. npm skipped the incompatible optional Firestore package;
+importing the writer then failed before several test suites could run. Running
+Node 20 against dependencies previously installed under Node 22 did not reproduce
+that installation failure.
+
+Retain the repository's Node 20 runtime contract using Firebase Admin 13.10.x
+(the manifest allows compatible 13.x updates) and Firestore 7.11.x. Firestore is
+now an explicit production dependency, since it is mandatory for forecast writes
+even though Firebase Admin declares it optional. Do not upgrade either package
+across its next major without reviewing the runtime requirements of CI and the
+forecast ingestion workflows together.
+
+Verification after a clean `npm ci --no-audit --no-fund` using Node 20.20.2 / npm
+10.9.9: native Firestore import passed; the backend CI coverage command passed
+57 suites / 656 tests; the full Jest suite passed 99 suites / 1,077 tests. The
+production dependency audit gate passed with no high/critical advisories (10
+moderate advisories remain). The existing dev-only Impeccable package still emits
+its separate Node >=22.18 engine warning on Node 20; this patch does not claim to
+resolve that broader tooling-runtime mismatch.
+
+`__tests__/runtimeDependencies.test.js` guards the required production/lockfile
+classification and imports the writer in a fresh native Node subprocess without
+initializing credentials or making a cloud request. Cloud durability verification
+remains a separate deployment prerequisite.

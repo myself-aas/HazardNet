@@ -58,6 +58,7 @@
     "archive:load": "cd scripts && python3 -m etl.cli events --input ../data/events/historical_hazard_records_with_HazardNet_severity.csv --adapter bgd-climatic-hazards --claimed-total 2931 --export-json ../data/events/hazardnet-events.json"
   },
   "dependencies": {
+    "@google-cloud/firestore": "^7.11.6",
     "@google/genai": "^2.15.0",
     "busboy": "^1.6.0",
     "cors": "^2.8.5",
@@ -67,13 +68,13 @@
     "express": "^4.18.2",
     "express-rate-limit": "^7.5.0",
     "firebase": "^12.17.0",
+    "firebase-admin": "^13.10.0",
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.0",
     "multer": "^2.2.0",
     "prom-client": "^15.1.3",
     "web-push": "^3.6.7",
-    "zod": "^3.23.0",
-    "firebase-admin": "^14.4.0"
+    "zod": "^3.23.0"
   },
   "devDependencies": {
     "@babel/core": "^7.22.11",
