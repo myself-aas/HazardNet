@@ -12,7 +12,14 @@
       }
     ]
   },
-  "firestore": {
-    "rules": "firestore.rules"
-  }
+  "firestore": [
+    {
+      "database": "(default)",
+      "rules": "firestore.rules"
+    },
+    {
+      "database": "ai-studio-hazardnet-55b49dbf-625b-492b-9cff-feabd729e843",
+      "rules": "firestore.rules"
+    }
+  ]
 }

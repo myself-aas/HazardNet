@@ -160,7 +160,8 @@ NODE_ENV=production
 # Firebase Auth (email/password + Google + GitHub providers)
 VITE_FIREBASE_API_KEY=<public-firebase-web-api-key>
 VITE_FIREBASE_PROJECT_ID=hazardnet-aas48424
-VITE_FIREBASE_FIRESTORE_DATABASE_ID=default
+# Use the AI-Studio applet database id in production; (default) works for local dev
+VITE_FIREBASE_FIRESTORE_DATABASE_ID=ai-studio-hazardnet-55b49dbf-625b-492b-9cff-feabd729e843
 
 # Firebase (Firestore Forecasts)
 FIREBASE_PROJECT_ID=hazardnet-production

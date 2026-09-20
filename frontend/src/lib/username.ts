@@ -101,7 +101,23 @@ export function seedFromIdentity(name?: string | null, email?: string | null): s
     .replace(/^_+|_+$/g, '')
     .replace(/_{2,}/g, '_')
     .slice(0, 16);
-  if (seed.length < 3 || !/^[a-z]/.test(seed)) seed = `farmer_${seed.replace(/[^a-z0-9]/g, '')}`.slice(0, 12);
+  if (seed.length < 3 || !/^[a-z]/.test(seed)) {
+    const cleaned = seed.replace(/[^a-z0-9]/g, '');
+    seed = `farmer_${cleaned}`.slice(0, 12);
+    // Ensure after farmer_ prefix we still start with letter and have enough length
+    if (seed.length < 3) seed = `farmer_${Math.floor(Math.random() * 900 + 100)}`;
+  }
+  // Avoid reserved words — append suffix if reserved
+  if (RESERVED_USERNAMES.has(seed)) {
+    seed = `${seed}_1`.slice(0, USERNAME_MAX);
+    if (RESERVED_USERNAMES.has(seed)) {
+      seed = `farmer_${seed}`.slice(0, USERNAME_MAX);
+    }
+  }
+  // Final sanitization to ensure rules still hold
+  seed = seed.replace(/_{2,}/g, '_').replace(/_+$/g, '');
+  if (seed.length > USERNAME_MAX) seed = seed.slice(0, USERNAME_MAX).replace(/_+$/g, '');
+  if (seed.length < USERNAME_MIN) seed = `${seed}_${Math.floor(Math.random() * 90 + 10)}`.slice(0, USERNAME_MAX);
   return seed;
 }
 

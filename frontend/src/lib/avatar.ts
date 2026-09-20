@@ -8,7 +8,7 @@
  */
 
 import { db } from '../services/firebase';
-import { doc, updateDoc } from 'firebase/firestore';
+import { doc, setDoc, updateDoc } from 'firebase/firestore';
 
 export const AVATAR_MAX_DIMENSION = 512;
 export const AVATAR_TARGET_BYTES = 160 * 1024; // keep final blob under ~160 KB
@@ -134,6 +134,9 @@ export function avatarPathFromUrl(url?: string | null): string | null {
 /**
  * Full avatar update flow. Resizes locally, converts to Data URL, and writes photo_url
  * onto the profile doc in Firestore.
+ *
+ * Uses setDoc merge so it works even if the profile document does not yet exist
+ * (e.g., OAuth user whose bootstrap failed).
  */
 export async function uploadAvatar({
   file,
@@ -154,7 +157,8 @@ export async function uploadAvatar({
   const dataUrl = await dataUrlPromise;
 
   onStage?.('finalizing');
-  await updateDoc(doc(db, 'profiles', userId), { avatar_path: storagePath, photo_url: dataUrl });
+  // Use setDoc with merge to create doc if missing and avoid updateDoc failure
+  await setDoc(doc(db, 'profiles', userId), { avatar_path: storagePath, photo_url: dataUrl, updated_at: new Date().toISOString() }, { merge: true });
 
   onStage?.('done');
   return { publicUrl: dataUrl, storagePath, bytes: resized.blob.size, replacedOld: false };
@@ -162,5 +166,5 @@ export async function uploadAvatar({
 
 /** Remove the stored avatar entirely (user cleared their photo). */
 export async function deleteAvatar(userId: string): Promise<void> {
-  await updateDoc(doc(db, 'profiles', userId), { avatar_path: null, photo_url: null });
+  await setDoc(doc(db, 'profiles', userId), { avatar_path: null, photo_url: null, updated_at: new Date().toISOString() }, { merge: true });
 }

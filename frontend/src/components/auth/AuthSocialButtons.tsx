@@ -64,7 +64,14 @@ export function AuthSocialButtons({
     setActive(provider)
     setFailure(null)
     try {
-      await signInWithOAuth(provider)
+      // Respect ?next= param if present
+      let nextTo: string | undefined
+      try {
+        const params = new URLSearchParams(window.location.search)
+        const raw = params.get('next')
+        if (raw && raw.startsWith('/')) nextTo = raw
+      } catch {}
+      await signInWithOAuth(provider, nextTo ? { nextTo } : undefined)
       onSuccess?.()
     } catch (reason) {
       const explanation = describeOAuthError(reason)
@@ -91,7 +98,7 @@ export function AuthSocialButtons({
       ))}
 
       <p className="text-center text-[10px] text-carbon-60">
-        One-tap sign-in through Google or GitHub — no additional password needed.
+        One-tap sign-in through Google or GitHub — no additional password needed. If popup is blocked, we will redirect.
       </p>
 
       <AnimatePresence>
