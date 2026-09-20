@@ -75,10 +75,12 @@ import { fetchForecastMetadata, fetchStaticForecastSnapshot, ForecastRow, canoni
 import { WeatherPanel } from '../components/WeatherPanel';
 import { useWeather } from '../hooks/useWeather';
 import { fetchDistrictEvents, DistrictEventsResponse } from '../lib/eventsClient';
+import { useI18n } from '../hooks/useI18n';
 
 export const DistrictDetailPage: React.FC = () => {
   const { id } = useParams<{ id?: string }>();
   const navigate = useNavigate();
+  const { formatDate } = useI18n();
   const districtId = id || 'kurigram';
 
   const [livePredictionDate, setLivePredictionDate] = useState<string | null>(null);
@@ -125,9 +127,7 @@ export const DistrictDetailPage: React.FC = () => {
     }
     const prediction = new Date(`${livePredictionDate}T00:00:00Z`);
     const end = new Date(prediction.getTime() + 6 * 86_400_000);
-    const formatDate = (value: Date) => value.toLocaleDateString('en-GB', {
-      day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC'
-    });
+    const endIso = end.toISOString().slice(0, 10);
     
     const formattedIngestionTime = ingestionTimestamp
       ? (() => {
@@ -433,6 +433,11 @@ export const DistrictDetailPage: React.FC = () => {
       'Max Temp (°C)',
       'Precipitation (mm)',
       'Wind Max (km/h)'
+    ];
+    const csvRows = [headers.join(',')];
+    for (const r of rowsToExport) {
+      const values = [
+        r.district'
     ];
     const csvRows = [headers.join(',')];
     for (const r of rowsToExport) {

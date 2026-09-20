@@ -11,6 +11,7 @@ import {
   saveUserConnector,
 } from '../../../lib/connectors';
 import { Card, inputClass } from './ui';
+import { useI18n } from '../../../hooks/useI18n';
 
 /**
  * "Connectors" tab — one-click integrations between a HazardNet account and
@@ -28,6 +29,7 @@ const ConnectorCard: React.FC<{
   const [configOpen, setConfigOpen] = useState(false);
   const [configValue, setConfigValue] = useState(state?.config?.[connector.asksFor?.key ?? ''] ?? '');
   const connected = state?.status === 'connected';
+  const { formatDate } = useI18n();
 
   const startConnect = () => {
     if (connector.asksFor && !configValue.trim()) {
@@ -107,7 +109,7 @@ const ConnectorCard: React.FC<{
         </a>
       </div>
       {connected && state?.connectedAt && (
-        <p className="mt-1.5 text-xs text-carbon-60">Since {new Date(state.connectedAt).toLocaleDateString()}</p>
+        <p className="mt-1.5 text-xs text-carbon-60">Since {formatDate(state.connectedAt)}</p>
       )}
     </div>
   );

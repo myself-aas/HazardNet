@@ -38,4 +38,14 @@ test.describe('Forecast UX', () => {
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 20_000 });
     await expectNoHorizontalOverflow(page, '/upload @360px');
   });
+
+  test('lookup district and horizon are keyboard reachable', async ({ page }) => {
+    await page.goto(`${BASE}/upload`);
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 20_000 });
+    const district = page.getByLabel(/district|জেলা/i);
+    await district.focus();
+    await expect(district).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(page.getByLabel(/horizon|সময়সীমা/i)).toBeFocused();
+  });
 });

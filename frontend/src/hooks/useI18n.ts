@@ -12,7 +12,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import {
-  type Language, DEFAULT_LANGUAGE, formatDate, formatNumber, getLanguage, setLanguage as setActiveLanguage,
+  type Language, type FormatDateOptions, DEFAULT_LANGUAGE, formatDate, formatNumber, getLanguage, setLanguage as setActiveLanguage,
   subscribeLanguage, translate,
 } from '../lib/i18n';
 
@@ -23,7 +23,7 @@ export interface UseI18n {
   t: (key: string, vars?: Record<string, string | number>) => string;
   isBengali: boolean;
   formatNumber: (value: number | null | undefined, options?: Intl.NumberFormatOptions) => string;
-  formatDate: (value: string | null | undefined, options?: { withTime?: boolean }) => string;
+  formatDate: (value: string | null | undefined, options?: FormatDateOptions) => string;
 }
 
 export function useI18n(): UseI18n {
@@ -52,7 +52,7 @@ export function useI18n(): UseI18n {
   );
 
   const date = useCallback(
-    (value: string | null | undefined, options?: { withTime?: boolean }) =>
+    (value: string | null | undefined, options?: FormatDateOptions) =>
       formatDate(value, language, options),
     [language],
   );

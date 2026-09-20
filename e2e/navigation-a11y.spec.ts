@@ -53,4 +53,45 @@ test.describe('Navigation a11y', () => {
       await expectNoHorizontalOverflow(page, `/ @ zoom ${zoom * 100}%`);
     }
   });
+
+  test('200% zoom does not force overflow on lookup or alerts', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    for (const route of ['/upload', '/alerts']) {
+      await page.goto(`${BASE}${route}`, { waitUntil: 'domcontentloaded' });
+      await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 20_000 });
+      await page.evaluate(() => {
+        document.documentElement.style.zoom = '2';
+      });
+      await page.waitForTimeout(150);
+      await expectNoHorizontalOverflow(page, `${route} @ zoom 200%`);
+      await page.evaluate(() => {
+        document.documentElement.style.zoom = '1';
+      });
+    }
+  });
+
+  test('language toggle writes html lang', async ({ page }) => {
+    await page.goto(BASE);
+    await waitForAppShell(page);
+    const toggle = page.getByTestId('language-toggle').first();
+    await expect(toggle).toBeVisible({ timeout: 15_000 });
+    const current = await page.locator('html').getAttribute('lang');
+    if (current === 'en') {
+      const bengali = page.getByRole('button', { name: 'বাংলা' });
+      if (await bengali.count()) {
+        await bengali.click();
+      } else {
+        await toggle.click();
+      }
+      await expect(page.locator('html')).toHaveAttribute('lang', /bn/);
+    } else {
+      const english = page.getByRole('button', { name: 'English' });
+      if (await english.count()) {
+        await english.click();
+      } else {
+        await toggle.click();
+      }
+      await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+    }
+  });
 });

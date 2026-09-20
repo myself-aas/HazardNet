@@ -7,6 +7,7 @@ const isProfileStoreConfigured = true;
 import { HazardNetBrand } from '../components/HazardNetLogo';
 import MaterialIcon from '../components/MaterialIcon';
 import { sanitizeUsernameInput } from '../lib/username';
+import { useI18n } from '../hooks/useI18n';
 
 /**
  * Public profile page — unique URL: /u/<username>
@@ -60,6 +61,7 @@ const PublicProfilePage: React.FC = () => {
   const username = sanitizeUsernameInput(rawUsername ?? '');
   const [state, setState] = useState<LoadState>('loading');
   const [profile, setProfile] = useState<PublicProfile | null>(null);
+  const { formatDate } = useI18n();
 
   useEffect(() => {
     let cancelled = false;
@@ -137,7 +139,7 @@ const PublicProfilePage: React.FC = () => {
   const district = profile?.district || profile?.primaryDistrict;
   const division = profile?.division || profile?.primaryDivision;
   const memberSince = profile?.createdAt
-    ? new Date(profile.createdAt).toLocaleDateString(undefined, { month: 'long', year: 'numeric' })
+    ? formatDate(profile.createdAt, { monthYear: true })
     : null;
 
   return (

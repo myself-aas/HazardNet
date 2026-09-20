@@ -11,6 +11,7 @@ import MaterialIcon from '../components/MaterialIcon';
 import { HazardNetBrand } from '../components/HazardNetLogo';
 import { profilePath, sanitizeUsernameInput } from '../lib/username';
 import { Card } from '../components/user/dashboard/ui';
+import { useI18n } from '../hooks/useI18n';
 
 /**
  * The dedicated per-user dashboard — unique URL: /dashboard (auth required).
@@ -32,6 +33,7 @@ const TABS: Array<{ id: Tab; label: string; icon: string; hint: string }> = [
 
 const PublicProfilePreview: React.FC = () => {
   const { userProfile, user } = useAuth();
+  const { formatDate } = useI18n();
   const username = userProfile?.username ? sanitizeUsernameInput(userProfile.username) : 'your-username';
   const socials = [
     ['socialFacebook', 'Facebook', userProfile?.socialFacebook],
@@ -94,7 +96,7 @@ const PublicProfilePreview: React.FC = () => {
               ['Irrigation', userProfile?.irrigationType],
               ['Soil', userProfile?.soilType],
               ['Organization', userProfile?.organization],
-              ['Member since', userProfile?.createdAt ? new Date(userProfile.createdAt).toLocaleDateString(undefined, { month: 'short', year: 'numeric' }) : null],
+              ['Member since', userProfile?.createdAt ? formatDate(userProfile.createdAt, { monthYear: true }) : null],
             ] as Array<[string, string | null | undefined]>)
               .filter(([, value]) => Boolean(value))
               .map(([label, value]) => (

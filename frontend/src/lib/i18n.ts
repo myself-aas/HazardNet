@@ -833,10 +833,12 @@ const BN_MONTHS = [
  * (Phase 7 / `useI18n` Intl contract). Unparseable input is returned as-is
  * rather than `Invalid Date`.
  */
+export type FormatDateOptions = { withTime?: boolean; monthYear?: boolean };
+
 export function formatDate(
   value: string | null | undefined,
   language: Language,
-  { withTime = false }: { withTime?: boolean } = {},
+  { withTime = false, monthYear = false }: FormatDateOptions = {},
 ): string {
   if (!value) return '—';
   const raw = String(value);
@@ -845,6 +847,9 @@ export function formatDate(
   const [, year, month, day, hours, minutes] = match;
   const monthName = (language === 'bn' ? BN_MONTHS : EN_MONTHS)[Number(month) - 1] || month;
   const dayNumber = Number(day);
+  if (monthYear) {
+    return language === 'bn' ? `${monthName} ${toBengaliNumerals(year)}` : `${monthName} ${year}`;
+  }
   const time = withTime && hours ? `, ${hours}:${minutes} UTC` : '';
   if (language === 'bn') {
     return `${toBengaliNumerals(dayNumber)} ${monthName} ${toBengaliNumerals(year)}${toBengaliNumerals(time)}`;

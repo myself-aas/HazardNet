@@ -806,6 +806,7 @@ body {
   html {
     @apply font-sans;
     -webkit-text-size-adjust: 100%;
+    overflow-x: clip;
   }
 
   /* Headings are HDS's heading face (Inter) at NASA's measured tracking; the
@@ -1118,7 +1119,7 @@ button {
 /* 11. Badges (FLOOD, SEV-3, district code): DM Mono, 11 px, 600, +0.08 em, caps, colored per severity token */
 .hn-badge {
   font-family: var(--hds-font-family-code);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;

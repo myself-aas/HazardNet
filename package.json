@@ -43,6 +43,7 @@
     "alerts:rehearse": "node scripts/rehearse_alert_engine.mjs --out /tmp/alert-run.json",
     "alerts:snapshot": "node scripts/rehearse_alert_engine.mjs --out /tmp/alert-run.json --quiet && node scripts/build_alert_snapshot.mjs --in /tmp/alert-run.json",
     "check:bundle": "node scripts/check-bundle.mjs",
+    "check:phase7": "node scripts/check-phase7.mjs",
     "check:design": "node scripts/check-design-quality.mjs",
     "check:paths": "node scripts/check-public-paths.mjs",
     "check:design:update": "node scripts/check-design-quality.mjs --update",

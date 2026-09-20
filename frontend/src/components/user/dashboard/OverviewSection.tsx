@@ -6,6 +6,7 @@ import MaterialIcon from '../../MaterialIcon';
 import { profilePath, sanitizeUsernameInput } from '../../../lib/username';
 import { CONNECTOR_CATALOG, fetchUserConnectors } from '../../../lib/connectors';
 import { Card } from './ui';
+import { useI18n } from '../../../hooks/useI18n';
 
 /**
  * "Overview" tab — the at-a-glance home of the user dashboard: profile
@@ -54,6 +55,7 @@ const StatTile: React.FC<{ icon: string; label: string; value: React.ReactNode; 
 
 export const OverviewSection: React.FC<{ onNavigate: (tab: 'profile' | 'connectors' | 'account') => void }> = ({ onNavigate }) => {
   const { user, userProfile, fetchUserAssessments, sendVerificationEmail } = useAuth();
+  const { formatDate } = useI18n();
   const [assessmentCount, setAssessmentCount] = useState<number | null>(null);
   const [connectorCount, setConnectorCount] = useState<number>(0);
   const [copied, setCopied] = useState(false);
@@ -171,7 +173,7 @@ export const OverviewSection: React.FC<{ onNavigate: (tab: 'profile' | 'connecto
         <StatTile
           icon="calendar_month"
           label="Member since"
-          value={userProfile?.createdAt ? new Date(userProfile.createdAt).toLocaleDateString(undefined, { month: 'short', year: 'numeric' }) : '—'}
+          value={userProfile?.createdAt ? formatDate(userProfile.createdAt, { monthYear: true }) : '—'}
           accent="#17171b"
         />
       </div>

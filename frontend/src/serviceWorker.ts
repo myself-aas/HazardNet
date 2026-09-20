@@ -1,7 +1,7 @@
 // Service Worker for offline mode, Web Push Notifications, and GIS map tiles.
 
 // Invalidate old app bundles containing the withdrawn research presentation.
-const CACHE_NAME = 'hazardnet-offline-v2';
+const CACHE_NAME = 'hazardnet-offline-v3';
 const TILE_CACHE_NAME = 'hazardnet-tiles-v1';
 const MAX_TILE_CACHE_ITEMS = 1200;
 
