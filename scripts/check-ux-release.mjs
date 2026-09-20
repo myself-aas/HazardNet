@@ -39,7 +39,7 @@ runNode('scripts/check-claims.mjs', [
 runNode('scripts/check-phase7.mjs');
 
 const app = read('frontend/src/App.tsx');
-if (!/path=\"\/\"\s+element=\{<FrontDoor/.test(app) || !/path=\"\/live\"\s+element=\{<Dashboard/.test(app)) {
+if (!/path="\/"\s+element=\{<FrontDoor/.test(app) || !/path="\/live"\s+element=\{<Dashboard/.test(app)) {
   failures.push('App.tsx lost the / FrontDoor vs /live Dashboard split');
 }
 

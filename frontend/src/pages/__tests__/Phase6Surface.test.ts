@@ -60,8 +60,8 @@ describe('Phase 6 surface contracts (§14.3 / §14.7 / §14.8)', () => {
     });
 
     it('offers 44px home and live links on 404', () => {
-      expect(notFound).toMatch(/to=\"\/\"/);
-      expect(notFound).toMatch(/to=\"\/live\"/);
+      expect(notFound).toMatch(/to="\/"/);
+      expect(notFound).toMatch(/to="\/live"/);
       expect(notFound).toMatch(/min-h-\[44px\]/);
       expect(notFound).toMatch(/text-\[28px\]/);
     });

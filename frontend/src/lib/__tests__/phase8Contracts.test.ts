@@ -15,8 +15,8 @@ const read = (relative: string) => fs.readFileSync(path.join(root, relative), 'u
 describe('Phase 8 rollout contracts', () => {
   it('keeps the public front door separate from the live console', () => {
     const app = read('frontend/src/App.tsx');
-    expect(app).toMatch(/path=\"\/\"\s+element=\{<FrontDoor/);
-    expect(app).toMatch(/path=\"\/live\"\s+element=\{<Dashboard/);
+    expect(app).toMatch(/path="\/"\s+element=\{<FrontDoor/);
+    expect(app).toMatch(/path="\/live"\s+element=\{<Dashboard/);
   });
 
   it('keeps RunVisual as the front-door hero and refuses stock photo URLs', () => {
