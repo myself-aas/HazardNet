@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { auth } from '../services/firebase';
-import { onAuthStateChanged } from 'firebase/auth';
+import { getRedirectResult, onAuthStateChanged } from 'firebase/auth';
 import {
   describeOAuthError,
   parseOAuthCallbackParams,
@@ -15,9 +15,10 @@ type Explanation = ReturnType<typeof describeOAuthError>
 /**
  * Post-auth landing page — unique URL: /auth/callback
  *
- * Sign-in now completes in a popup (Firebase `signInWithPopup`), so this page
- * is a fallback for any direct/redirect visit: it waits for the Firebase auth
- * state, then returns the user to where they were heading.
+ * Handles both popup and redirect flows:
+ * - Popup: signInWithPopup completes in main window, this page is fallback
+ * - Redirect: signInWithRedirect navigates away and back; getRedirectResult
+ *   contains the user, and authStateReady/onAuthStateChanged confirms session.
  */
 export default function AuthCallbackPage() {
   const navigate = useNavigate()
@@ -51,13 +52,36 @@ export default function AuthCallbackPage() {
       setPhase('error')
     }
 
-    void auth.authStateReady().then(() => {
-      if (!settled.current && auth.currentUser) {
-        settled.current = true
-        setReturnTo(resolveOAuthReturnTo(params.next))
-        setPhase('success')
+    // Try redirect result first (for signInWithRedirect flow)
+    void (async () => {
+      try {
+        const result = await getRedirectResult(auth)
+        if (result?.user && !settled.current) {
+          settled.current = true
+          setReturnTo(resolveOAuthReturnTo(params.next))
+          setPhase('success')
+          return
+        }
+      } catch (e) {
+        console.warn('getRedirectResult failed:', e)
+        // If redirect result itself errors, surface it
+        if (!settled.current) {
+          // Don't fail immediately — authStateReady might still have user
+          console.warn('Redirect result error, will try authStateReady:', e)
+        }
       }
-    })
+
+      try {
+        await auth.authStateReady()
+        if (!settled.current && auth.currentUser) {
+          settled.current = true
+          setReturnTo(resolveOAuthReturnTo(params.next))
+          setPhase('success')
+        }
+      } catch (e) {
+        console.warn('authStateReady failed:', e)
+      }
+    })()
 
     try {
       unsubscribe = onAuthStateChanged(auth, (authUser) => {
@@ -72,7 +96,7 @@ export default function AuthCallbackPage() {
     }
 
     const timeout = window.setTimeout(() => {
-      fail(params.error ? new Error(params.errorDescription ?? params.error) : new Error('Timed out waiting for the sign-in session. Please try again.'))
+      fail(params.error ? new Error(params.errorDescription ?? params.error) : new Error('Timed out waiting for the sign-in session. Please try again. If popup was blocked, allow popups and retry, or try email sign-in.'))
     }, 12000)
 
     return () => {

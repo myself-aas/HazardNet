@@ -6,6 +6,7 @@ import { AuthSocialButtons } from '../components/auth/AuthSocialButtons';
 import { EyeToggleIcon } from '../components/ui/animated-state-icons';
 import { AuthLayout } from '../components/auth/AuthLayout';
 import MaterialIcon from '../components/MaterialIcon';
+import { parseAuthError } from '../lib/authErrors';
 
 /**
  * Dedicated sign-in page — unique URL: /login
@@ -17,28 +18,13 @@ import MaterialIcon from '../components/MaterialIcon';
 
 /** Translate email-auth failures into actionable, non-leaky messages. */
 const describeError = (err: unknown): string => {
-  const message = err instanceof Error ? err.message : String(err ?? '');
-  const code = (err as { code?: string } | null)?.code ?? '';
-  const text = `${code} ${message}`.toLowerCase();
-  if (text.includes('invalid login credentials') || text.includes('wrong-password') || text.includes('invalid-credential') || text.includes('user-not-found')) {
-    return 'That email and password combination doesn’t match. Check for typos or reset your password below.';
-  }
-  if (text.includes('email not confirmed')) {
+  const parsed = parseAuthError(err);
+  // Special case: email not confirmed (custom message not in parseAuthError)
+  const text = `${parsed.code} ${parsed.message}`.toLowerCase();
+  if (text.includes('email not confirmed') || text.includes('email-not-verified')) {
     return 'Your email address isn’t confirmed yet. Open the confirmation link we sent you, then sign in.';
   }
-  if (text.includes('invalid-email')) {
-    return 'Enter a valid email address.';
-  }
-  if (text.includes('too many requests') || text.includes('rate limit')) {
-    return 'Too many attempts — wait a minute and try again.';
-  }
-  if (text.includes('failed to fetch') || text.includes('network')) {
-    return 'Network problem while signing in. Check your connection and retry.';
-  }
-  if (text.includes('operation-not-allowed') || text.includes('operation not allowed')) {
-    return 'Email/password sign-in is not enabled on this project yet.';
-  }
-  return message || 'Sign-in failed. Please try again.';
+  return parsed.userMessage;
 };
 
 const inputClass =

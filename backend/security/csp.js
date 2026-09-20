@@ -34,21 +34,54 @@ export const AD_SCRIPT_ORIGINS = Object.freeze([
   'https://adservice.google.com',
 ]);
 
+/** Firebase / Google Auth origins required for sign-in with Google/GitHub. */
+export const AUTH_SCRIPT_ORIGINS = Object.freeze([
+  'https://www.gstatic.com',
+  'https://apis.google.com',
+  'https://www.googletagmanager.com',
+  'https://www.google.com',
+]);
+
+export const AUTH_CONNECT_ORIGINS = Object.freeze([
+  'https://*.googleapis.com',
+  'https://*.firebaseio.com',
+  'https://*.firebaseapp.com',
+  'https://*.google.com',
+  'https://*.gstatic.com',
+  'https://*.github.com',
+  'https://api.github.com',
+  'https://github.com',
+]);
+
+export const AUTH_FRAME_ORIGINS = Object.freeze([
+  'https://*.firebaseapp.com',
+  'https://accounts.google.com',
+  'https://github.com',
+  'https://*.github.com',
+]);
+
+export const AUTH_FORM_ACTION_ORIGINS = Object.freeze([
+  'https://*.firebaseapp.com',
+  'https://accounts.google.com',
+  'https://github.com',
+  'https://*.github.com',
+]);
+
 export const CSP = [
   "default-src 'self'",
-  `script-src 'self' ${AD_SCRIPT_ORIGINS.join(' ')}`,
-  "style-src 'self' 'unsafe-inline'",
+  `script-src 'self' ${[...AUTH_SCRIPT_ORIGINS, ...AD_SCRIPT_ORIGINS].join(' ')}`,
+  "style-src 'self' 'unsafe-inline' https://www.gstatic.com https://fonts.googleapis.com",
   "img-src 'self' data: blob: https:",
-  "font-src 'self' data:",
-  "connect-src 'self' https: wss:",
-  "frame-src 'self' https:",
+  "font-src 'self' data: https://fonts.gstatic.com",
+  `connect-src 'self' https: wss: ${AUTH_CONNECT_ORIGINS.join(' ')}`,
+  `frame-src 'self' https: ${AUTH_FRAME_ORIGINS.join(' ')}`,
   "worker-src 'self' blob:",
   "media-src 'self' blob:",
   "manifest-src 'self'",
   "object-src 'none'",
   "frame-ancestors 'none'",
   "base-uri 'self'",
-  "form-action 'self'",
+  `form-action 'self' ${AUTH_FORM_ACTION_ORIGINS.join(' ')}`,
   'upgrade-insecure-requests',
 ].join('; ');
 

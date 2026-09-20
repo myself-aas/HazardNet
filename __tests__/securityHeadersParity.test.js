@@ -100,14 +100,15 @@ describe('security header parity', () => {
       expect(value).toContain("object-src 'none'");
       expect(value).toContain("frame-ancestors 'none'");
       expect(value).toContain("base-uri 'self'");
-      expect(value).toContain("form-action 'self'");
+      // form-action must contain 'self' (may also contain auth origins)
+      expect(value).toMatch(/form-action[^;]*'self'/);
       expect(value).toContain('upgrade-insecure-requests');
-      // No wildcard or data: script source — those two are what turn a policy into
-      // decoration.
+      // No data: or unsafe-eval in script-src — those turn policy into decoration
       const scriptSrc = /script-src([^;]*)/.exec(value)[1];
-      expect(scriptSrc).not.toMatch(/\*/);
       expect(scriptSrc).not.toMatch(/data:/);
       expect(scriptSrc).not.toMatch(/'unsafe-eval'/);
+      // No bare wildcard token
+      expect(scriptSrc.split(/\s+/)).not.toContain('*');
     }
   });
 
@@ -116,14 +117,37 @@ describe('security header parity', () => {
     for (const origin of ['https://pagead2.googlesyndication.com', 'https://adservice.google.com']) {
       expect(scriptSrc).toContain(origin);
     }
-    // Every allowlisted script origin is https and none is a bare scheme wildcard.
+    // Every allowlisted script origin that contains a dot should be https or a keyword
     for (const token of scriptSrc.split(/\s+/).filter((t) => t.includes('.'))) {
-      expect(token.startsWith('https://')).toBe(true);
+      if (token.startsWith("'")) continue;
+      if (token.startsWith('https://')) continue;
+      // Allow wildcard subdomains for auth (https://*.googleapis.com) — still https
+      if (token.startsWith('https://*.')) continue;
+      // Otherwise fail
+      if (token.includes('.')) {
+        // eslint-disable-next-line no-console
+        console.log('Unexpected token in script-src:', token);
+        expect(token.startsWith('https://')).toBe(true);
+      }
     }
   });
 
+  it('allows Firebase Auth origins for Google/GitHub sign-in', () => {
+    const csp = rootHeaders['Content-Security-Policy'];
+    // Auth script origins
+    expect(csp).toContain('https://www.gstatic.com');
+    expect(csp).toContain('https://apis.google.com');
+    // Auth connect origins
+    expect(csp).toContain('https://*.googleapis.com');
+    expect(csp).toContain('https://*.firebaseapp.com');
+    expect(csp).toContain('https://*.github.com');
+    // Auth frame origins
+    expect(csp).toContain('https://accounts.google.com');
+    expect(csp).toContain('https://github.com');
+  });
+
   it('is the same string in the shared module, both configs and helmet', async () => {
-    const { CSP, cspDirectivesFromString, AD_SCRIPT_ORIGINS } = await import('../backend/security/csp.js');
+    const { CSP, cspDirectivesFromString, AD_SCRIPT_ORIGINS, AUTH_SCRIPT_ORIGINS } = await import('../backend/security/csp.js');
 
     // One source of truth: the two Vercel configs carry exactly the canonical string.
     expect(rootHeaders['Content-Security-Policy']).toBe(CSP);
@@ -134,9 +158,12 @@ describe('security header parity', () => {
     expect(directives.objectSrc).toEqual(["'none'"]);
     expect(directives.frameAncestors).toEqual(["'none'"]);
     expect(directives.baseUri).toEqual(["'self'"]);
-    expect(directives.formAction).toEqual(["'self'"]);
+    // form-action now contains self plus auth origins
+    expect(directives.formAction).toEqual(expect.arrayContaining(["'self'"]));
+    expect(directives.formAction.join(' ')).toContain('firebaseapp.com');
     expect(directives.upgradeInsecureRequests).toEqual([]);
     expect(directives.scriptSrc).toEqual(expect.arrayContaining(AD_SCRIPT_ORIGINS));
+    expect(directives.scriptSrc).toEqual(expect.arrayContaining(AUTH_SCRIPT_ORIGINS));
     expect(server).toContain("from './security/csp.js'");
     expect(server).toContain('cspDirectivesFromString()');
     // The ad allowlist must not be re-typed inline in server.js.

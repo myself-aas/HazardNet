@@ -27,6 +27,30 @@ export const firebaseConfig = {
   measurementId: env.VITE_FIREBASE_MEASUREMENT_ID || 'G-G40YRHHD94',
 };
 
-/** Firestore database id (the AI-Studio applet database used for forecasts). */
-export const firestoreDatabaseId =
-  env.VITE_FIREBASE_FIRESTORE_DATABASE_ID || 'ai-studio-hazardnet-55b49dbf-625b-492b-9cff-feabd729e843';
+/**
+ * Firestore database id (the AI-Studio applet database used for forecasts).
+ *
+ * The Firebase JS SDK expects `(default)` for the default database, not `default`.
+ * We normalize common mistakes (`default`, empty, `(default)`) to `null` so callers
+ * can decide to use `getFirestore(app)` (default) vs `getFirestore(app, id)` (named).
+ * The canonical production value is the AI-Studio applet database, but `(default)`
+ * is accepted for local/dev setups that followed older templates.
+ */
+function normalizeFirestoreDatabaseId(raw: unknown): string | null {
+  const value = typeof raw === 'string' ? raw.trim() : '';
+  if (!value) return null;
+  if (value === 'default' || value === '(default)') return null;
+  return value;
+}
+
+const rawFirestoreId = env.VITE_FIREBASE_FIRESTORE_DATABASE_ID;
+const normalizedFromEnv = rawFirestoreId ? normalizeFirestoreDatabaseId(rawFirestoreId) : undefined;
+// If env var is set (even to `default`/`(default)` which normalizes to null), respect it.
+// Only when env var is absent do we fall back to the canonical AI-Studio id.
+export const firestoreDatabaseId: string | null =
+  rawFirestoreId === undefined
+    ? 'ai-studio-hazardnet-55b49dbf-625b-492b-9cff-feabd729e843'
+    : (normalizedFromEnv ?? null);
+
+/** Raw value as configured (for debugging), may be `default` etc. */
+export const rawFirestoreDatabaseId = rawFirestoreId ?? 'ai-studio-hazardnet-55b49dbf-625b-492b-9cff-feabd729e843';

@@ -9,6 +9,7 @@ import MaterialIcon from '../components/MaterialIcon';
 import { EyeToggleIcon } from '../components/ui/animated-state-icons';
 import { validateUsername } from '../lib/username';
 import { PASSWORD_REQUIREMENTS as PW_RULES } from '../lib/passwordStrength';
+import { parseAuthError } from '../lib/authErrors';
 
 /**
  * Dedicated sign-up page — unique URL: /signup  (/sign-up redirects here)
@@ -22,28 +23,8 @@ const inputClass =
   'w-full px-4 py-3 text-base sm:text-sm bg-carbon-05 border border-carbon-20 rounded-2xl text-carbon-90 placeholder-carbon-40 font-medium transition-all focus:outline-none focus:border-nasa-blue focus:ring-2 focus:ring-nasa-blue/40';
 
 const describeError = (err: unknown): string => {
-  const message = err instanceof Error ? err.message : String(err ?? '');
-  const code = (err as { code?: string } | null)?.code ?? '';
-  const text = `${code} ${message}`.toLowerCase();
-  if (text.includes('email-already-in-use') || text.includes('already exists') || text.includes('already registered')) {
-    return 'An account already exists with this email. Sign in instead — or reset your password if you forgot it.';
-  }
-  if (text.includes('weak-password') || text.includes('password should be at least')) {
-    return 'That password is too weak — use at least 6 characters.';
-  }
-  if (text.includes('invalid-email')) {
-    return 'Enter a valid email address.';
-  }
-  if (text.includes('too many requests') || text.includes('rate limit')) {
-    return 'Too many attempts — wait a minute and try again.';
-  }
-  if (text.includes('failed to fetch') || text.includes('network')) {
-    return 'Network problem while creating your account. Check your connection and retry.';
-  }
-  if (text.includes('operation-not-allowed') || text.includes('operation not allowed')) {
-    return 'Email/password sign-up is not enabled on this project yet.';
-  }
-  return message || 'We couldn’t create your account. Please try again.';
+  const parsed = parseAuthError(err);
+  return parsed.userMessage || 'We couldn’t create your account. Please try again.';
 };
 
 const SignUpPage: React.FC = () => {

@@ -139,28 +139,40 @@ export function describeOAuthError(rawError: unknown): OAuthErrorExplanation {
   if (text.includes('account-exists-with-different-credential')) {
     return {
       title: 'Email already in use with another sign-in method',
-      hint: 'An account already exists with this email under a different provider. Sign in with the original method first, then link this account from your dashboard.',
+      hint: 'An account already exists with this email under a different provider. Sign in with the original method first (check your email for which provider you used), then link this account from your dashboard under Identity Connections.',
     };
   }
-  if (text.includes('popup-closed-by-user') || text.includes('popup blocked') || text.includes('popup-blocked')) {
+  if (text.includes('popup-closed-by-user')) {
     return {
       title: 'Sign-in window closed',
-      hint: 'The sign-in popup was closed or blocked before finishing. Allow popups for this site and try again.',
+      hint: 'The sign-in popup was closed before finishing. Click again to retry.',
+    };
+  }
+  if (text.includes('popup-blocked') || text.includes('popup blocked') || text.includes('blocked by browser')) {
+    return {
+      title: 'Popup blocked by browser',
+      hint: 'Your browser blocked the sign-in popup. Allow popups for hazardnet.live and www.hazardnet.live, then try again. If it keeps failing, we will try a redirect instead.',
     };
   }
   if (text.includes('operation-not-allowed') || text.includes('operation not allowed')) {
     return {
       title: 'Provider not enabled',
-      hint: 'Enable this provider under Authentication → Sign-in method in the Firebase console, then configure its client ID/secret.',
+      hint: 'This sign-in provider is not enabled in the Firebase console. Enable Google and GitHub under Authentication → Sign-in method, and configure their OAuth client IDs.',
     };
   }
-  if (text.includes('invalid-credential') && (text.includes('provider') || text.includes('idp'))) {
+  if (text.includes('invalid-credential') && (text.includes('provider') || text.includes('idp') || text.includes('github') || text.includes('google'))) {
     return {
       title: 'Provider configuration mismatch',
-      hint: 'The client ID/secret configured in the Firebase console does not match the provider’s developer app. Re-check both.',
+      hint: 'The OAuth client ID/secret in Firebase does not match the provider’s developer app. For GitHub: check that the callback URL is https://hazardnet-aas48424.firebaseapp.com/__/auth/handler and the client secret is current. For Google: ensure the OAuth consent screen is configured.',
     };
   }
-  if (text.includes('access-denied') || text.includes('access_denied') || text.includes('cancelled') || text.includes('canceled')) {
+  if (text.includes('auth/invalid-credential') || text.includes('wrong-password') || text.includes('invalid login credentials') || text.includes('user-not-found')) {
+    return {
+      title: 'Invalid credentials',
+      hint: 'Email or password is incorrect, or no account exists with that email. Check for typos or create a new account.',
+    };
+  }
+  if (text.includes('access-denied') || text.includes('access_denied') || text.includes('cancelled') || text.includes('canceled') || text.includes('user-cancelled')) {
     return {
       title: 'Sign-in cancelled',
       hint: 'Authorization was cancelled at the provider. Try again when you are ready.',
@@ -169,24 +181,30 @@ export function describeOAuthError(rawError: unknown): OAuthErrorExplanation {
   if (text.includes('unauthorized-domain') || text.includes('unauthorized domain')) {
     return {
       title: 'Domain not authorized',
-      hint: 'Add this site’s domain to Authentication → Settings → Authorized domains in the Firebase console.',
+      hint: 'Add this site’s domain (hazardnet.live, www.hazardnet.live, localhost) to Authentication → Settings → Authorized domains in the Firebase console.',
     };
   }
-  if (text.includes('too many requests') || text.includes('rate limit') || text.includes('quota')) {
+  if (text.includes('too many requests') || text.includes('rate limit') || text.includes('quota') || text.includes('auth/too-many-requests')) {
     return {
       title: 'Too many attempts',
-      hint: 'Wait a minute and try signing in again.',
+      hint: 'Too many sign-in attempts — Firebase has temporarily throttled this. Wait a minute and try again, or reset your password.',
     };
   }
-  if (text.includes('network') || text.includes('failed to fetch')) {
+  if (text.includes('network') || text.includes('failed to fetch') || text.includes('network-request-failed')) {
     return {
       title: 'Network problem',
-      hint: 'Check your connection and try again.',
+      hint: 'Check your internet connection and try again. If you are behind a firewall, ensure https://*.googleapis.com and https://*.firebaseapp.com are reachable.',
+    };
+  }
+  if (text.includes('email-already-in-use') || text.includes('already exists')) {
+    return {
+      title: 'Email already registered',
+      hint: 'An account already exists with this email. Sign in instead, or use forgot password if you forgot it.',
     };
   }
   return {
     title: 'Sign-in could not complete',
-    hint: message ? `${message}` : 'Unexpected error during sign-in. Please try again.',
+    hint: message ? `${message}` : 'Unexpected error during sign-in. Please try again. If this persists, check browser console for details.',
   };
 }
 

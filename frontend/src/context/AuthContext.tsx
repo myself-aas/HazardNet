@@ -14,6 +14,8 @@ import {
   sendPasswordResetEmail,
   signInWithEmailAndPassword,
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   signOut as fbSignOut,
   unlink as fbUnlink,
   updateEmail as fbUpdateEmail,
@@ -33,7 +35,7 @@ import {
   updateDoc,
   where,
 } from 'firebase/firestore';
-import { seedFromIdentity } from '../lib/username';
+import { RESERVED_USERNAMES, seedFromIdentity } from '../lib/username';
 import { AUTH_RETURN_TO_KEY, type OAuthProviderId, getProvider } from '../lib/oauthProviders';
 
 /** Auth screens themselves are never a useful post-login destination. */
@@ -195,85 +197,120 @@ const toAppUser = (user: FirebaseAuthUser | null): AppUser | null =>
       }
     : null;
 
-const toProfile = (row: Record<string, unknown>): UserProfileData => ({
-  uid: row.id as string,
-  email: typeof row.email === 'string' ? row.email : '',
-  displayName: typeof row.display_name === 'string' ? row.display_name : 'User',
-  username: typeof row.username === 'string' ? row.username : undefined,
-  photoURL: typeof row.photo_url === 'string' ? row.photo_url : undefined,
-  avatarPath: typeof row.avatar_path === 'string' ? row.avatar_path : undefined,
-  role: row.role as UserProfileData['role'],
-  userRole: row.user_role as UserRolePersona,
-  organization: row.organization as string | undefined,
-  farmSizeHectares: row.farm_size_hectares as number | undefined,
-  primaryDivision: row.primary_division as string | undefined,
-  primaryDistrict: row.primary_district as string | undefined,
-  homeDistrictId: row.home_district_id as string | undefined,
-  homeDistrictName: row.home_district_name as string | undefined,
-  autoDetectLocationEnabled: row.auto_detect_location_enabled as boolean | undefined,
-  targetCrops: row.target_crops as string | undefined,
-  phoneNumber: row.phone_number as string | undefined,
-  pinpointLat: row.pinpoint_lat as number | undefined,
-  pinpointLng: row.pinpoint_lng as number | undefined,
-  firstName: row.first_name as string | undefined,
-  lastName: row.last_name as string | undefined,
-  bio: row.bio as string | undefined,
-  website: row.website as string | undefined,
-  whatsappNumber: row.whatsapp_number as string | undefined,
-  dateOfBirth: row.date_of_birth as string | undefined,
-  gender: row.gender as string | undefined,
-  pronouns: row.pronouns as string | undefined,
-  nationality: row.nationality as string | undefined,
-  preferredLanguage: row.preferred_language as string | undefined,
-  timezone: row.timezone as string | undefined,
-  country: row.country as string | undefined,
-  division: row.division as string | undefined,
-  district: row.district as string | undefined,
-  upazila: row.upazila as string | undefined,
-  village: row.village as string | undefined,
-  postalCode: row.postal_code as string | undefined,
-  address: row.address as string | undefined,
-  occupation: row.occupation as string | undefined,
-  farmingExperienceYears: row.farming_experience_years as number | undefined,
-  irrigationType: row.irrigation_type as string | undefined,
-  soilType: row.soil_type as string | undefined,
-  livestock: row.livestock as string | undefined,
-  annualIncomeBdt: row.annual_income_bdt as number | undefined,
-  socialFacebook: row.social_facebook as string | undefined,
-  socialX: row.social_x as string | undefined,
-  socialLinkedin: row.social_linkedin as string | undefined,
-  socialGithub: row.social_github as string | undefined,
-  socialYoutube: row.social_youtube as string | undefined,
-  socialInstagram: row.social_instagram as string | undefined,
-  notifyEmail: row.notify_email as boolean | undefined,
-  notifySms: row.notify_sms as boolean | undefined,
-  notifyPush: row.notify_push as boolean | undefined,
-  notifyWeeklyDigest: row.notify_weekly_digest as boolean | undefined,
-  notifyEmergencyAlerts: row.notify_emergency_alerts as boolean | undefined,
-  marketingOptIn: row.marketing_opt_in as boolean | undefined,
-  profileVisibility: row.profile_visibility === 'private' ? 'private' : 'public',
-  emailVerified: Boolean(row.email_verified_at) || undefined,
-  onboardingCompleted: row.onboarding_completed as boolean | undefined,
-  lastLoginAt: row.last_login_at as string | undefined,
-  loginCount: row.login_count as number | undefined,
-  createdAt: row.created_at as string | undefined,
-  updatedAt: row.updated_at as string | undefined,
-});
+/**
+ * Robust camelCase -> snake_case that handles consecutive capitals (photoURL -> photo_url).
+ * 1. Insert _ between lower/digit and upper: aB -> a_B
+ * 2. Insert _ between acronym and next word: URLLoader -> URL_Loader, then lowercased
+ */
+function toSnakeCase(key: string): string {
+  return key
+    .replace(/([a-z0-9])([A-Z])/g, '$1_$2')
+    .replace(/([A-Z]+)([A-Z][a-z])/g, '$1_$2')
+    .toLowerCase();
+}
+
+const toProfile = (row: Record<string, unknown>, fallbackId?: string): UserProfileData => {
+  // row may contain `id` (written by writeProfile) or may be missing; fallback to doc id
+  const uid = (typeof row.id === 'string' && row.id) || (typeof row.uid === 'string' && row.uid) || fallbackId || '';
+  return {
+    uid,
+    email: typeof row.email === 'string' ? row.email : '',
+    displayName: typeof row.display_name === 'string' ? row.display_name : (typeof row.displayName === 'string' ? (row.displayName as string) : 'User'),
+    username: typeof row.username === 'string' ? row.username : undefined,
+    photoURL: typeof row.photo_url === 'string' ? row.photo_url : (typeof row.photoURL === 'string' ? (row.photoURL as string) : undefined),
+    avatarPath: typeof row.avatar_path === 'string' ? row.avatar_path : (typeof row.avatarPath === 'string' ? (row.avatarPath as string) : undefined),
+    role: row.role as UserProfileData['role'],
+    userRole: (row.user_role as UserRolePersona) ?? (row.userRole as UserRolePersona),
+    organization: (row.organization as string) ?? undefined,
+    farmSizeHectares: (row.farm_size_hectares as number) ?? (row.farmSizeHectares as number) ?? undefined,
+    primaryDivision: (row.primary_division as string) ?? (row.primaryDivision as string) ?? undefined,
+    primaryDistrict: (row.primary_district as string) ?? (row.primaryDistrict as string) ?? undefined,
+    homeDistrictId: (row.home_district_id as string) ?? (row.homeDistrictId as string) ?? undefined,
+    homeDistrictName: (row.home_district_name as string) ?? (row.homeDistrictName as string) ?? undefined,
+    autoDetectLocationEnabled: (row.auto_detect_location_enabled as boolean) ?? (row.autoDetectLocationEnabled as boolean) ?? undefined,
+    targetCrops: (row.target_crops as string) ?? (row.targetCrops as string) ?? undefined,
+    phoneNumber: (row.phone_number as string) ?? (row.phoneNumber as string) ?? undefined,
+    pinpointLat: (row.pinpoint_lat as number) ?? (row.pinpointLat as number) ?? undefined,
+    pinpointLng: (row.pinpoint_lng as number) ?? (row.pinpointLng as number) ?? undefined,
+    firstName: (row.first_name as string) ?? (row.firstName as string) ?? undefined,
+    lastName: (row.last_name as string) ?? (row.lastName as string) ?? undefined,
+    bio: row.bio as string | undefined,
+    website: row.website as string | undefined,
+    whatsappNumber: (row.whatsapp_number as string) ?? (row.whatsappNumber as string) ?? undefined,
+    dateOfBirth: (row.date_of_birth as string) ?? (row.dateOfBirth as string) ?? undefined,
+    gender: row.gender as string | undefined,
+    pronouns: row.pronouns as string | undefined,
+    nationality: row.nationality as string | undefined,
+    preferredLanguage: (row.preferred_language as string) ?? (row.preferredLanguage as string) ?? undefined,
+    timezone: row.timezone as string | undefined,
+    country: row.country as string | undefined,
+    division: row.division as string | undefined,
+    district: row.district as string | undefined,
+    upazila: row.upazila as string | undefined,
+    village: row.village as string | undefined,
+    postalCode: (row.postal_code as string) ?? (row.postalCode as string) ?? undefined,
+    address: row.address as string | undefined,
+    occupation: row.occupation as string | undefined,
+    farmingExperienceYears: (row.farming_experience_years as number) ?? (row.farmingExperienceYears as number) ?? undefined,
+    irrigationType: (row.irrigation_type as string) ?? (row.irrigationType as string) ?? undefined,
+    soilType: (row.soil_type as string) ?? (row.soilType as string) ?? undefined,
+    livestock: row.livestock as string | undefined,
+    annualIncomeBdt: (row.annual_income_bdt as number) ?? (row.annualIncomeBdt as number) ?? undefined,
+    socialFacebook: (row.social_facebook as string) ?? (row.socialFacebook as string) ?? undefined,
+    socialX: (row.social_x as string) ?? (row.socialX as string) ?? undefined,
+    socialLinkedin: (row.social_linkedin as string) ?? (row.socialLinkedin as string) ?? undefined,
+    socialGithub: (row.social_github as string) ?? (row.socialGithub as string) ?? undefined,
+    socialYoutube: (row.social_youtube as string) ?? (row.socialYoutube as string) ?? undefined,
+    socialInstagram: (row.social_instagram as string) ?? (row.socialInstagram as string) ?? undefined,
+    notifyEmail: (row.notify_email as boolean) ?? (row.notifyEmail as boolean) ?? undefined,
+    notifySms: (row.notify_sms as boolean) ?? (row.notifySms as boolean) ?? undefined,
+    notifyPush: (row.notify_push as boolean) ?? (row.notifyPush as boolean) ?? undefined,
+    notifyWeeklyDigest: (row.notify_weekly_digest as boolean) ?? (row.notifyWeeklyDigest as boolean) ?? undefined,
+    notifyEmergencyAlerts: (row.notify_emergency_alerts as boolean) ?? (row.notifyEmergencyAlerts as boolean) ?? undefined,
+    marketingOptIn: (row.marketing_opt_in as boolean) ?? (row.marketingOptIn as boolean) ?? undefined,
+    profileVisibility: row.profile_visibility === 'private' ? 'private' : (row.profileVisibility === 'private' ? 'private' : 'public'),
+    emailVerified: Boolean(row.email_verified_at) || (row.emailVerified as boolean) || undefined,
+    onboardingCompleted: (row.onboarding_completed as boolean) ?? (row.onboardingCompleted as boolean) ?? undefined,
+    lastLoginAt: (row.last_login_at as string) ?? (row.lastLoginAt as string) ?? undefined,
+    loginCount: (row.login_count as number) ?? (row.loginCount as number) ?? undefined,
+    createdAt: (row.created_at as string) ?? (row.createdAt as string) ?? undefined,
+    updatedAt: (row.updated_at as string) ?? (row.updatedAt as string) ?? undefined,
+  };
+};
 
 /** Resolve the Firebase Auth provider instance for a HazardNet provider id. */
 function providerFor(id: OAuthProviderId) {
   switch (id) {
-    case 'google':
-      return new GoogleAuthProvider();
+    case 'google': {
+      const provider = new GoogleAuthProvider();
+      try {
+        provider.setCustomParameters({ prompt: 'select_account' });
+      } catch {}
+      return provider;
+    }
     case 'github': {
       const provider = new GithubAuthProvider();
-      provider.addScope('read:user');
-      provider.addScope('user:email');
+      try {
+        provider.addScope('read:user');
+        provider.addScope('user:email');
+      } catch {}
       return provider;
     }
     default:
       throw new Error(`Unsupported provider: ${id}`);
   }
+}
+
+/** Ensure username is not reserved; if reserved, append a suffix. */
+function ensureNonReservedUsername(username: string): string {
+  let candidate = username;
+  if (!RESERVED_USERNAMES.has(candidate)) return candidate;
+  // Append _1, _2 etc until free (max 5 tries)
+  for (let i = 1; i <= 5; i++) {
+    const withSuffix = `${candidate.slice(0, 18)}_${i}`;
+    if (!RESERVED_USERNAMES.has(withSuffix)) return withSuffix;
+  }
+  return `farmer_${candidate.slice(0, 8)}`;
 }
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -285,7 +322,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const docSnap = await getDoc(doc(db, 'profiles', authUser.uid));
       const data = docSnap.exists() ? { id: docSnap.id, ...docSnap.data() } : null;
-      if (data) setUserProfile(toProfile(data as Record<string, unknown>));
+      if (data) setUserProfile(toProfile(data as Record<string, unknown>, authUser.uid));
       return data;
     } catch (e) {
       console.warn('Profile load exception:', e);
@@ -295,8 +332,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     let mounted = true;
+
+    const handleRedirectResult = async () => {
+      try {
+        const result = await getRedirectResult(auth);
+        if (result?.user && mounted) {
+          const profile = await loadProfile(result.user);
+          if (!profile) await bootstrapProfile(result.user);
+          await recordLogin(result.user);
+        }
+      } catch (e) {
+        console.warn('Redirect result handling failed:', e);
+      }
+    };
+
     const initAuth = async () => {
       try {
+        await handleRedirectResult();
         const authUser = auth.currentUser;
         if (mounted) {
           setUser(toAppUser(authUser));
@@ -340,14 +392,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const refreshAuthUser = async (): Promise<FirebaseAuthUser> => {
     if (!auth.currentUser) throw new Error('Not authenticated.');
     await fbReload(auth.currentUser);
+    if (!auth.currentUser) throw new Error('Not authenticated after reload.');
     return auth.currentUser;
   };
 
   /** Create or update the profiles document. Trigger source of profile state. */
   const writeProfile = async (profile: UserProfileData): Promise<void> => {
     const now = new Date().toISOString();
+    const safeUsername = profile.username ? ensureNonReservedUsername(profile.username) : undefined;
     const row: Record<string, unknown> = {
       id: profile.uid,
+      uid: profile.uid,
       email: profile.email,
       display_name: profile.displayName,
       role: profile.role ?? 'user',
@@ -360,14 +415,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       target_crops: profile.targetCrops ?? '',
       phone_number: profile.phoneNumber ?? '',
       photo_url: profile.photoURL ?? '',
+      avatar_path: profile.avatarPath ?? '',
       profile_visibility: profile.profileVisibility ?? 'public',
       email_verified_at: profile.emailVerified ? now : null,
       created_at: profile.createdAt ?? now,
       updated_at: now,
     };
-    if (profile.username) row.username = profile.username;
+    if (safeUsername) row.username = safeUsername;
+    // Use setDoc merge to ensure creation even if doc missing
     await setDoc(doc(db, 'profiles', profile.uid), row, { merge: true });
-    await loadProfile(auth.currentUser!);
+    try {
+      if (auth.currentUser) await loadProfile(auth.currentUser);
+    } catch (e) {
+      console.warn('Post-write profile reload failed:', e);
+    }
   };
 
   /** Build a full profile the first time a user appears (sign-up or OAuth). */
@@ -381,11 +442,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const displayName =
       name?.trim() || authUser.displayName || existing?.displayName || authUser.email?.split('@')[0] || 'User';
     const avatarUrl = authUser.photoURL ?? existing?.photoURL ?? '';
+    const rawUsername = initialProfile?.username ?? seedFromIdentity(displayName, authUser.email ?? '');
     return {
       uid: authUser.uid,
       email: authUser.email ?? existing?.email ?? '',
       displayName,
-      username: initialProfile?.username ?? seedFromIdentity(displayName, authUser.email ?? ''),
+      username: ensureNonReservedUsername(rawUsername),
       photoURL: avatarUrl || undefined,
       avatarPath: undefined,
       role: initialProfile?.role ?? 'user',
@@ -422,17 +484,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   /** Record a successful sign-in on the profile (login count / last login). */
   const recordLogin = async (authUser: FirebaseAuthUser) => {
     try {
-      const dSnap = await getDoc(doc(db, 'profiles', authUser.uid));
+      const docRef = doc(db, 'profiles', authUser.uid);
+      const dSnap = await getDoc(docRef);
       const data = dSnap.exists() ? { id: dSnap.id, ...dSnap.data() } : null;
       const now = new Date().toISOString();
       const existingCount = typeof (data as Record<string, unknown> | null)?.login_count === 'number'
         ? ((data as Record<string, unknown>).login_count as number)
-        : 0;
-      await updateDoc(doc(db, 'profiles', authUser.uid), {
+        : (typeof (data as Record<string, unknown> | null)?.loginCount === 'number'
+            ? ((data as Record<string, unknown>).loginCount as number)
+            : 0);
+      // Use setDoc merge so it works even if profile doesn't exist yet
+      await setDoc(docRef, {
         last_login_at: now,
         login_count: existingCount + 1,
         updated_at: now,
-      });
+      }, { merge: true });
     } catch (e) {
       console.warn('Could not record login:', e);
     }
@@ -444,8 +510,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     name: string,
     initialProfile?: Partial<UserProfileData>,
   ): Promise<'session' | 'confirmation-required'> => {
-    const cred = await createUserWithEmailAndPassword(auth, email, pass);
-    if (cred.user) {
+    try {
+      const cred = await createUserWithEmailAndPassword(auth, email, pass);
+      if (!cred.user) throw new Error('Account creation did not return a user.');
       if (name.trim()) {
         try {
           await fbUpdateProfile(cred.user, { displayName: name.trim() });
@@ -453,29 +520,58 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           console.warn('Display-name update skipped:', e);
         }
       }
-      const current = await refreshAuthUser();
-      if (!current.emailVerified) {
-        try {
+      // Best effort email verification — failure should not block sign-up
+      try {
+        const current = auth.currentUser ?? cred.user;
+        if (current && !current.emailVerified) {
           await sendEmailVerification(current);
-        } catch (e) {
-          console.warn('Verification email skipped:', e);
         }
+      } catch (e) {
+        console.warn('Verification email skipped:', e);
       }
-      await writeProfile(makeProfileSeed(current, name.trim(), initialProfile));
-      return current.emailVerified ? 'session' : 'confirmation-required';
+      try {
+        const current = await refreshAuthUser();
+        await writeProfile(makeProfileSeed(current, name.trim(), initialProfile));
+        return current.emailVerified ? 'session' : 'confirmation-required';
+      } catch (profileError) {
+        console.warn('Profile creation after sign-up failed, but auth succeeded:', profileError);
+        // Still try to bootstrap with cred.user if refresh failed
+        try {
+          await writeProfile(makeProfileSeed(cred.user, name.trim(), initialProfile));
+        } catch (e) {
+          console.warn('Fallback profile write failed:', e);
+        }
+        return 'confirmation-required';
+      }
+    } catch (e) {
+      // Re-throw with Firebase code preserved for UI
+      throw e;
     }
-    return 'confirmation-required';
   };
 
   const signIn = async (email: string, pass: string): Promise<EmailCredential> => {
     const cred = await signInWithEmailAndPassword(auth, email, pass);
+    // Load profile eagerly so UI has it
+    try {
+      const profile = await loadProfile(cred.user);
+      if (!profile) await bootstrapProfile(cred.user);
+    } catch (e) {
+      console.warn('Post sign-in profile bootstrap failed:', e);
+    }
     await recordLogin(cred.user);
     return cred;
   };
 
   const signInWithOAuth = async (provider: OAuthProvider, options?: { nextTo?: string }) => {
+    // Resolve intended return path: explicit option > ?next= param > current path (if not auth screen) > /
+    let nextFromQuery: string | null = null;
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const rawNext = params.get('next');
+      if (rawNext && rawNext.startsWith('/')) nextFromQuery = rawNext;
+    } catch {}
     const currentPath = `${window.location.pathname}${window.location.search}`;
-    const nextTo = options?.nextTo ?? (isAuthScreen(currentPath) ? '/' : currentPath);
+    const nextTo = options?.nextTo ?? nextFromQuery ?? (isAuthScreen(currentPath) ? '/' : currentPath);
     try {
       sessionStorage.setItem(AUTH_RETURN_TO_KEY, nextTo);
     } catch {
@@ -486,12 +582,38 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const profile = await loadProfile(result.user);
       if (!profile) await bootstrapProfile(result.user);
       await recordLogin(result.user);
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e);
-      const text = msg.toLowerCase();
-      if (text.includes('popup') && text.includes('already') === false) {
-        // Re-throw as-is; UI translates popup-blocked/closed messages.
+    } catch (e: any) {
+      const code = e?.code ? String(e.code) : '';
+      const message = e instanceof Error ? e.message : String(e);
+      const text = `${code} ${message}`.toLowerCase();
+
+      // Handle account-exists-with-different-credential: tell user which provider to use
+      if (text.includes('account-exists-with-different-credential')) {
+        const email = e?.customData?.email || e?.email || '';
+        if (email) {
+          try {
+            const methods = await fetchSignInMethodsForEmail(auth, email);
+            const hint = methods.length > 0 ? ` Try signing in with ${methods.join(' or ')} first, then link ${provider} from your dashboard.` : '';
+            throw Object.assign(new Error(`An account already exists with ${email} using a different sign-in method.${hint}`), { code: e.code });
+          } catch (fetchErr) {
+            // If fetching methods fails, fall through to original error
+            if ((fetchErr as any)?.message?.includes('account already exists')) throw fetchErr;
+          }
+        }
       }
+
+      // Popup blocked / closed — try redirect as fallback for better UX
+      if (text.includes('popup-blocked') || text.includes('popup closed') || text.includes('popup_closed') || text.includes('blocked')) {
+        try {
+          // For blocked popup, attempt redirect flow which will land on /auth/callback
+          await signInWithRedirect(auth, providerFor(provider));
+          return; // Redirect will navigate away
+        } catch (redirectErr) {
+          console.warn('Redirect fallback failed:', redirectErr);
+          // Fall through to throw original popup error
+        }
+      }
+
       throw e;
     }
   };
@@ -501,8 +623,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   /** Link an additional provider identity to the signed-in account. */
   const linkIdentity = async (provider: OAuthProvider) => {
     if (!auth.currentUser) throw new Error('Must be signed in to link an account.');
-    await linkWithPopup(auth.currentUser, providerFor(provider));
-    await refreshProfile();
+    try {
+      await linkWithPopup(auth.currentUser, providerFor(provider));
+      await refreshProfile();
+    } catch (e: any) {
+      // Improve message for already linked etc.
+      throw e;
+    }
   };
 
   /** Remove a linked provider identity from the signed-in account. */
@@ -550,29 +677,44 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         actionCodeSent = true;
       } catch (e) {
         console.warn('Verification email to current user failed:', e);
+        throw e;
       }
     }
     if (!actionCodeSent) {
-      const methods = await fetchSignInMethodsForEmail(auth, email);
-      if (methods.length > 0) {
-        throw Object.assign(new Error('Email already registered'), {
-          code: 'auth/email-already-in-use',
-        });
+      try {
+        const methods = await fetchSignInMethodsForEmail(auth, email);
+        if (methods.length > 0) {
+          throw Object.assign(new Error('Email already registered — sign in instead, or reset your password.'), {
+            code: 'auth/email-already-in-use',
+          });
+        }
+      } catch (e: any) {
+        if (e?.code === 'auth/email-already-in-use') throw e;
+        // If fetch fails for other reason, continue to throw no-current-user
+        console.warn('fetchSignInMethods failed:', e);
       }
-      throw Object.assign(new Error('Verification link is sent after sign-up; create the account first.'), {
+      throw Object.assign(new Error('Verification link is sent after sign-up; create the account first or sign in to resend.'), {
         code: 'auth/no-current-user',
       });
     }
-    await loadProfile(current!);
+    try {
+      if (current) await loadProfile(current);
+    } catch {}
     void options;
   };
 
   const checkUsernameAvailability = async (username: string) => {
     try {
-      const q = query(collection(db, 'profiles'), where('username', '==', username));
+      const trimmed = username.trim().toLowerCase();
+      if (!trimmed) return false;
+      // Quick reserved check
+      if (RESERVED_USERNAMES.has(trimmed)) return false;
+      const q = query(collection(db, 'profiles'), where('username', '==', trimmed));
       const snap = await getDocs(q);
       return snap.empty;
-    } catch {
+    } catch (e) {
+      console.warn('Username availability check failed, assuming available to avoid blocking:', e);
+      // Return true to avoid blocking sign-up when offline, but log warning
       return true;
     }
   };
@@ -581,7 +723,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!auth.currentUser) throw new Error('Not authenticated.');
     await fbUpdateEmail(auth.currentUser, email);
     if (user) {
-      await updateDoc(doc(db, 'profiles', user.uid), { email });
+      try {
+        await setDoc(doc(db, 'profiles', user.uid), { email, updated_at: new Date().toISOString() }, { merge: true });
+      } catch (e) {
+        console.warn('Profile email update failed:', e);
+      }
     }
     await refreshProfile();
   };
@@ -593,9 +739,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(null);
       setUserProfile(null);
       try {
-        sessionStorage.clear();
+        sessionStorage.removeItem(AUTH_RETURN_TO_KEY);
       } catch {
-        // Best effort only.
+        try { sessionStorage.clear(); } catch {}
       }
     }
   };
@@ -606,44 +752,53 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return;
     }
     const row = Object.fromEntries(
-      Object.entries(data).map(([key, value]) => [key.replace(/[A-Z]/g, (m) => `_${m.toLowerCase()}`), value]),
+      Object.entries(data)
+        .filter(([, value]) => value !== undefined)
+        .map(([key, value]) => [toSnakeCase(key), value]),
     );
-    await updateDoc(doc(db, 'profiles', user.uid), { ...row, updated_at: new Date().toISOString() });
-    await loadProfile(user);
+    // Ensure we never write photo_u_r_l etc — toSnakeCase fixes it
+    await setDoc(doc(db, 'profiles', user.uid), { ...row, updated_at: new Date().toISOString() }, { merge: true });
+    await loadProfile(user as unknown as FirebaseAuthUser);
   };
 
   const saveAssessment = async (data: Omit<UserAssessment, 'id' | 'userId' | 'userEmail' | 'createdAt'>) => {
     if (!user) throw new Error('Must be authenticated to save assessments.');
-    const docRef = await addDoc(collection(db, 'assessments'), {
+    const row: Record<string, unknown> = {
       user_id: user.uid,
-      ...Object.fromEntries(
-        Object.entries(data).map(([key, value]) => [key.replace(/[A-Z]/g, (m) => `_${m.toLowerCase()}`), value]),
-      ),
       created_at: new Date().toISOString(),
-    });
+    };
+    for (const [key, value] of Object.entries(data)) {
+      row[toSnakeCase(key)] = value;
+    }
+    const docRef = await addDoc(collection(db, 'assessments'), row);
     return docRef.id;
   };
 
   const fetchUserAssessments = async (): Promise<UserAssessment[]> => {
     if (!user) return [];
-    const q = query(collection(db, 'assessments'), where('user_id', '==', user.uid), orderBy('created_at', 'desc'));
-    const snap = await getDocs(q);
-    return snap.docs.map((d) => {
-      const row = d.data() as Record<string, unknown>;
-      return {
-        id: d.id,
-        userId: String(row.user_id ?? ''),
-        userEmail: user.email ?? '',
-        districtId: String(row.district_id ?? ''),
-        districtName: String(row.district_name ?? ''),
-        primaryHazard: String(row.primary_hazard ?? ''),
-        confidence: Number(row.confidence ?? 0),
-        severityScore: Number(row.severity_score ?? 0),
-        severityBin: row.severity_bin as string | undefined,
-        notes: row.notes as string | undefined,
-        createdAt: String(row.created_at ?? ''),
-      };
-    });
+    try {
+      const q = query(collection(db, 'assessments'), where('user_id', '==', user.uid), orderBy('created_at', 'desc'));
+      const snap = await getDocs(q);
+      return snap.docs.map((d) => {
+        const row = d.data() as Record<string, unknown>;
+        return {
+          id: d.id,
+          userId: String(row.user_id ?? row.userId ?? ''),
+          userEmail: user.email ?? '',
+          districtId: String(row.district_id ?? row.districtId ?? ''),
+          districtName: String(row.district_name ?? row.districtName ?? ''),
+          primaryHazard: String(row.primary_hazard ?? row.primaryHazard ?? ''),
+          confidence: Number(row.confidence ?? 0),
+          severityScore: Number(row.severity_score ?? row.severityScore ?? 0),
+          severityBin: (row.severity_bin ?? row.severityBin) as string | undefined,
+          notes: row.notes as string | undefined,
+          createdAt: String(row.created_at ?? row.createdAt ?? ''),
+        };
+      });
+    } catch (e) {
+      console.warn('fetchUserAssessments failed:', e);
+      return [];
+    }
   };
 
   const deleteAssessment = async (id: string) => {
