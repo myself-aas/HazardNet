@@ -1,13 +1,9 @@
 import fs from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
 import { routeSkills } from './skill_router.js';
 import { searchRAG, GOVT_OFFICE_DIRECTORY } from './search.js';
 
-const ragModuleFile = fileURLToPath(import.meta.url);
-const ragModuleDir = path.dirname(ragModuleFile);
-
-const RAG_DIR = ragModuleDir;
+const RAG_DIR = typeof __dirname !== 'undefined' ? __dirname : path.resolve(process.cwd(), 'rag_pipeline');
 const AGENT_MD_PATH = path.join(RAG_DIR, 'agent.md');
 const KB_PATH = path.join(RAG_DIR, 'agent_knowledge_base.json');
 const SPATIAL_MAP_PATH = path.join(RAG_DIR, 'references', '05_spatial_context', 'district_division_mapping.json');

@@ -13,6 +13,7 @@
  *     "error communicating with the AI" for a key/quota outage.
  */
 
+import { jest } from '@jest/globals';
 import { handleChatQuery } from '../backend/utils/chatService.js';
 import { generateAdvisoryWithFallback } from '../backend/utils/ai_fallback_engine.js';
 

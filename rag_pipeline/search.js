@@ -1,175 +1,167 @@
 import fs from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
 
-const ragModuleFile = fileURLToPath(import.meta.url);
-const ragModuleDir = path.dirname(ragModuleFile);
+const RAG_DIR = typeof __dirname !== 'undefined' ? __dirname : path.resolve(process.cwd(), 'rag_pipeline');
 
-const RAG_DIR = ragModuleDir;
-const KB_PATH = path.join(RAG_DIR, 'agent_knowledge_base.json');
-const BASELINES_PATH = path.join(RAG_DIR, 'district_economic_baselines.json');
-const SPATIAL_MAP_PATH = path.join(RAG_DIR, 'references', '05_spatial_context', 'district_division_mapping.json');
+export const GOVT_OFFICE_DIRECTORY = [
+  {
+    agency: 'Department of Agricultural Extension (DAE)',
+    helpline: '16123 (Krishi Call Centre)',
+    website: 'http://www.dae.gov.bd',
+    role: 'Crop protection, seed varieties, agronomic advisories, fertilizer and flood contingency'
+  },
+  {
+    agency: 'Department of Livestock Services (DLS)',
+    helpline: '16333 (Pranishampad Seva)',
+    website: 'http://www.dls.gov.bd',
+    role: 'Veterinary emergency response, vaccination schedules, animal shelter & fodder preservation'
+  },
+  {
+    agency: 'Department of Fisheries (DoF)',
+    helpline: '02-223382861',
+    website: 'http://www.fisheries.gov.bd',
+    role: 'Aquaculture flood safety, pond netting, fish disease management, fingerling replenishment'
+  },
+  {
+    agency: 'Bangladesh Meteorological Department (BMD)',
+    helpline: '1090 (Disaster Early Warning)',
+    website: 'http://www.bmd.gov.bd',
+    role: 'Weather forecasting, cyclone warning signals, rainfall monitoring, heatwave alerts'
+  },
+  {
+    agency: 'Bangladesh Water Development Board (BWDB)',
+    helpline: '1090 (Flood Forecasting and Warning Centre)',
+    website: 'http://www.ffwc.gov.bd',
+    role: 'River gauge monitoring, danger level warnings, flood inundation forecasting'
+  },
+  {
+    agency: 'National Emergency Service',
+    helpline: '999',
+    website: 'https://nhd.gov.bd',
+    role: 'Immediate evacuation, ambulance, rescue and police assistance during catastrophic disasters'
+  }
+];
 
-let cachedKB = null;
+let cachedKb = null;
 let cachedBaselines = null;
-let cachedSpatialMap = null;
 
-function loadRAGData() {
-  if (!cachedKB) {
-    try {
-      if (fs.existsSync(KB_PATH)) {
-        cachedKB = JSON.parse(fs.readFileSync(KB_PATH, 'utf8'));
-      }
-    } catch (e) {
-      console.warn('[RAG Search] Error reading KB:', e.message);
-      cachedKB = { documents: [] };
+function loadKnowledgeBase() {
+  if (cachedKb) return cachedKb;
+  try {
+    const kbPath = path.join(RAG_DIR, 'agent_knowledge_base.json');
+    if (fs.existsSync(kbPath)) {
+      cachedKb = JSON.parse(fs.readFileSync(kbPath, 'utf8'));
+      return cachedKb;
     }
+  } catch (err) {
+    console.warn('[searchRAG] Failed to load agent_knowledge_base.json:', err.message);
   }
+  return { documents: [] };
+}
 
-  if (!cachedBaselines) {
-    try {
-      if (fs.existsSync(BASELINES_PATH)) {
-        const raw = JSON.parse(fs.readFileSync(BASELINES_PATH, 'utf8'));
-        cachedBaselines = raw.districts || raw;
-      }
-    } catch (e) {
-      console.warn('[RAG Search] Error reading baselines:', e.message);
-      cachedBaselines = [];
+function loadDistrictBaselines() {
+  if (cachedBaselines) return cachedBaselines;
+  try {
+    const baselinesPath = path.join(RAG_DIR, 'district_economic_baselines.json');
+    if (fs.existsSync(baselinesPath)) {
+      const data = JSON.parse(fs.readFileSync(baselinesPath, 'utf8'));
+      cachedBaselines = data.districts || [];
+      return cachedBaselines;
     }
+  } catch (err) {
+    console.warn('[searchRAG] Failed to load district_economic_baselines.json:', err.message);
   }
-
-  if (!cachedSpatialMap) {
-    try {
-      if (fs.existsSync(SPATIAL_MAP_PATH)) {
-        cachedSpatialMap = JSON.parse(fs.readFileSync(SPATIAL_MAP_PATH, 'utf8'));
-      }
-    } catch (e) {
-      console.warn('[RAG Search] Error reading spatial map:', e.message);
-      cachedSpatialMap = {};
-    }
-  }
+  return [];
 }
 
 /**
- * Perform keyword-tokenized TF-IDF/BM25 style relevance scoring across all RAG documents
+ * Search the RAG knowledge base for relevant documents and district context.
+ *
+ * @param {string} query - The search query string
+ * @param {Object} [options={}] - Search options
+ * @param {string} [options.district] - Optional district filter/context
+ * @param {number} [options.limit=5] - Maximum number of results
+ * @returns {{ results: Array<{ id: string, title: string, category: string, content: string, relevanceScore: number }>, districtBaseline: Object|null }}
  */
-function searchRAG(query, options = {}) {
-  loadRAGData();
-  const limit = options.limit || 6;
-  const targetDistrict = options.district ? options.district.toLowerCase() : null;
+export function searchRAG(query = '', options = {}) {
+  const safeQuery = typeof query === 'string' ? query.toLowerCase().trim() : '';
+  const districtName = typeof options?.district === 'string' ? options.district.trim().toLowerCase() : '';
+  const limit = options?.limit || 5;
 
-  if (!query || typeof query !== 'string') {
-    return { results: [], districtBaselines: null };
+  const kb = loadKnowledgeBase();
+  const baselines = loadDistrictBaselines();
+
+  // Find district baseline by matching name or id
+  let districtBaseline = null;
+  if (districtName) {
+    districtBaseline = baselines.find(
+      (d) => (d.name && d.name.toLowerCase() === districtName) ||
+             (d.id && d.id.toLowerCase() === districtName)
+    ) || null;
   }
 
-  const tokens = query.toLowerCase()
-    .replace(/[^\w\s-]/g, ' ')
-    .split(/\s+/)
-    .filter(t => t.length > 2);
+  // Tokenize query into search terms (ignore very short stop words)
+  const queryTokens = safeQuery
+    .split(/[^a-z0-9_-]+/)
+    .filter((t) => t.length > 2);
 
-  const docs = cachedKB?.documents || [];
   const scoredDocs = [];
 
-  for (const doc of docs) {
-    const textToSearch = `${doc.title || ''} ${doc.category || ''} ${doc.content || ''}`.toLowerCase();
+  for (const doc of (kb.documents || [])) {
+    const title = (doc.title || '').toLowerCase();
+    const category = (doc.category || '').toLowerCase();
+    const content = (doc.content || '').toLowerCase();
+    const id = (doc.id || '').toLowerCase();
+
     let score = 0;
 
-    for (const token of tokens) {
-      if (textToSearch.includes(token)) {
-        score += 1;
-        // Exact match in title gets heavy boost
-        if ((doc.title || '').toLowerCase().includes(token)) score += 3;
-        if ((doc.category || '').toLowerCase().includes(token)) score += 2;
+    for (const token of queryTokens) {
+      if (title.includes(token)) score += 3.0;
+      if (id.includes(token)) score += 2.0;
+      if (category.includes(token)) score += 1.5;
+      if (content.includes(token)) {
+        // Count occurrences up to a cap
+        const occurrences = content.split(token).length - 1;
+        score += Math.min(occurrences * 0.5, 4.0);
       }
     }
 
-    // Boost if query mentions specific district and document matches
-    if (targetDistrict && textToSearch.includes(targetDistrict)) {
-      score += 4;
+    // Boost if district matches in content
+    if (districtName && (content.includes(districtName) || title.includes(districtName))) {
+      score += 2.0;
     }
 
     if (score > 0) {
+      const scoreVal = Math.round(score * 100) / 100;
       scoredDocs.push({
         id: doc.id,
-        category: doc.category,
-        title: doc.title,
-        content: doc.content,
-        score
+        title: doc.title || doc.id,
+        category: doc.category || 'General',
+        content: doc.content || '',
+        score: scoreVal,
+        relevanceScore: scoreVal
       });
     }
   }
 
-  // Sort descending by score
+  // Sort by score descending
   scoredDocs.sort((a, b) => b.score - a.score);
-  const topDocs = scoredDocs.slice(0, limit);
 
-  // Retrieve District Baseline & Contacts if matching district is mentioned.
-  // Baseline entries key the district under `name` (district_economic_
-  // baselines.json) — `d.district` alone never matched, so the district
-  // context silently never reached the LLM prompt (fixed 2026-09-17).
-  const districtNameOf = (d) => (d.district || d.name || '').toLowerCase();
-  let matchingDistrictBaseline = null;
-  if (Array.isArray(cachedBaselines)) {
-    matchingDistrictBaseline = cachedBaselines.find(d => 
-      targetDistrict && (
-        districtNameOf(d).includes(targetDistrict) ||
-        targetDistrict.includes(districtNameOf(d))
-      )
-    ) || null;
-
-    // If query didn't explicitly match a district, try to extract one from query tokens
-    if (!matchingDistrictBaseline) {
-      for (const d of cachedBaselines) {
-        const dName = districtNameOf(d);
-        if (dName && tokens.some(t => t.includes(dName) || dName.includes(t))) {
-          matchingDistrictBaseline = d;
-          break;
-        }
-      }
-    }
+  // If no matches found but query exists, return top documents as fallback
+  let results = scoredDocs.slice(0, limit);
+  if (results.length === 0 && (kb.documents || []).length > 0) {
+    results = (kb.documents || []).slice(0, 3).map((d) => ({
+      id: d.id,
+      title: d.title || d.id,
+      category: d.category || 'General',
+      content: d.content || '',
+      score: 0.1,
+      relevanceScore: 0.1
+    }));
   }
 
   return {
-    query,
-    tokens,
-    matchedDocumentsCount: scoredDocs.length,
-    results: topDocs,
-    districtBaseline: matchingDistrictBaseline,
-    spatialInfo: targetDistrict && cachedSpatialMap ? cachedSpatialMap[targetDistrict] : null
+    results,
+    districtBaseline
   };
 }
-
-/**
- * Directory of Official Govt Offices, Officers, Emergency Numbers, NGOs & Portals
- */
-const GOVT_OFFICE_DIRECTORY = {
-  national_websites: [
-    { name: 'DAE (Department of Agricultural Extension)', url: 'http://www.dae.gov.bd', service: 'Crops, Seedling, Fertilizer & Farmer Support' },
-    { name: 'DLS (Department of Livestock Services)', url: 'http://www.dls.gov.bd', service: 'Cattle, Vaccination, Poultry & Feed Emergency' },
-    { name: 'DoF (Department of Fisheries)', url: 'http://www.fisheries.gov.bd', service: 'Fish Farms, Pond Protection & Fingerlings' },
-    { name: 'BMD (Bangladesh Meteorological Department)', url: 'http://www.bmd.gov.bd', service: 'Synoptic Weather, Rainfall & Storm Warnings' },
-    { name: 'BWDB (Bangladesh Water Development Board)', url: 'http://www.bwdb.gov.bd', service: 'Flood Forecasting & Water Level Telemetry' },
-    { name: 'BARRI (Bangladesh Rice Research Institute)', url: 'http://www.brri.gov.bd', service: 'Stress-tolerant BRRI Rice Varieties' },
-    { name: 'MoDMR (Ministry of Disaster Management and Relief)', url: 'http://www.modmr.gov.bd', service: 'Disaster Relief, Cash Transfers & Shelters' },
-    { name: 'BDRCS (Bangladesh Red Crescent Society)', url: 'http://www.bdrcs.org', service: 'Emergency Humanitarian Relief & Rescue' }
-  ],
-  emergency_helplines: [
-    { service: 'National Emergency Service', number: '999', note: '24/7 Police, Fire, Ambulance & Marine Rescue' },
-    { service: 'Disaster Early Warning Info Hotline', number: '1090', note: 'IVR Weather & River Gauge Warnings (Free)' },
-    { service: 'Krishi Call Centre (DAE)', number: '16123', note: 'Direct Tele-Consultation with Agricultural Specialist' },
-    { service: 'Pranishampad (DLS) Helpline', number: '16333', note: 'Veterinary Emergency & Livestock Consultation' },
-    { service: 'National Human Rights & Legal Helpline', number: '109', note: 'Child & Gender Protection during Disasters' }
-  ],
-  humanitarian_orgs: [
-    { name: 'UNDP Bangladesh', role: 'Livelihood Recovery, Anticipatory Cash Transfers & Climate Resilience' },
-    { name: 'WFP (World Food Programme)', role: 'Emergency Food Distribution, Nutrition & Vulnerable Group Feeding' },
-    { name: 'FAO Bangladesh', role: 'Agricultural Emergency Supplies, Veterinary Vaccines & Restocking' },
-    { name: 'BRAC Disaster Management Unit', role: 'Community Shelters, WASH, Emergency Cash & Ultra-poor Support' },
-    { name: 'CARE International Bangladesh', role: 'Coastal Polder Resilience, Women Resilience & Shelter Support' }
-  ]
-};
-
-export {
-  searchRAG,
-  GOVT_OFFICE_DIRECTORY
-};

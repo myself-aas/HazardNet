@@ -9,7 +9,11 @@ import { Readable } from 'node:stream';
 import csvParser from 'csv-parser';
 import { parseCsvForecastRow } from './forecastRow.js';
 import { getForecastStore, getForecastStoreMode } from '../forecastStore.js';
-import { logger } from '../../utils/logger.js';
+const logger = {
+  info: (...args) => console.log('[csvIngestion]', ...args),
+  warn: (...args) => console.warn('[csvIngestion]', ...args),
+  error: (...args) => console.error('[csvIngestion]', ...args),
+};
 
 /**
  * Parse raw CSV string content into array of object records.

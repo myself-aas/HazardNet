@@ -92,6 +92,8 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
       items: [
         { id: 'live', title: 'Live Map & GIS Console', path: '/live', icon: 'public', badge: '3D' },
         { id: 'front-door', title: 'Overview (front door)', path: '/', icon: 'description' },
+        { id: 'divisions', title: '8 Divisions Analytics', path: '/divisions', icon: 'domain', badge: 'New' },
+        { id: 'hazards', title: 'Climatic Hazards Matrix', path: '/hazards', icon: 'warning', badge: '9 Perils' },
         { id: 'alerts', title: 'Alerts', path: '/alerts', icon: 'notifications_active' },
         { id: 'my-districts', title: 'Saved Districts', path: '/forecast/my-districts', icon: 'bookmark' },
         { id: 'compare', title: 'Compare Districts', path: '/forecast/compare', icon: 'compare_arrows' },

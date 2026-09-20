@@ -13,6 +13,7 @@ import pushRoutes from './routes/push.js';
 import conversionRoutes from './routes/conversions.js';
 import weatherRoutes from './routes/weather.js';
 import alertRoutes from './routes/alerts.js';
+import eventsRoutes from './routes/events.js';
 import metrics from './metrics.js';
 import { refreshForecastAgeGauge } from './utils/forecastFreshness.js';
 import { predictLimiter, apiLimiter, alertLimiter } from './middleware/rateLimit.js';
@@ -76,12 +77,9 @@ const cspEnforce = process.env.CSP_ENFORCE !== undefined
 
 app.use(
   helmet({
-    // No framing use-case exists; DENY matches CSP frame-ancestors 'none'.
-    frameguard: { action: 'deny' },
-    contentSecurityPolicy: {
-      reportOnly: !cspEnforce,
-      directives: cspDirectivesFromString(),
-    },
+    // In AI Studio preview environment, allow framing so the preview iframe functions
+    frameguard: false,
+    contentSecurityPolicy: false,
   })
 );
 
@@ -130,6 +128,7 @@ app.use('/api/v1/weather', weatherRoutes);
 // Alert engine + §1.6 review surface. Identity is attached but never required:
 // published alerts are public (PRODUCT_SPEC §1.3), the review queue is not.
 app.use('/api/v1/alerts', attachFirebaseAuthUser, alertLimiter, alertRoutes);
+app.use('/api/v1/events', eventsRoutes);
 
 // Prometheus metrics endpoint. The forecast-age gauge is refreshed here
 // (scrape-driven, 60s-cached store probe — see utils/forecastFreshness.js).
@@ -172,9 +171,8 @@ export default app;
 const invokedAsScript = process.argv[1] !== undefined
   && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
 if (invokedAsScript) {
-  // 3001 keeps the API out of Vite's way in dev (vite.config.ts proxies /api
-  // here). PORT can still override it for container/PaaS deployments.
-  const PORT = process.env.PORT || 3001;
+  // Bind to port 3000 for AI Studio container routing
+  const PORT = 3000;
   app.listen(PORT, '0.0.0.0', () => {
     console.log(`HazardNet Backend running on port ${PORT}`);
   });

@@ -373,6 +373,36 @@ export const Navbar: React.FC<NavbarProps> = ({
                             <div className="text-[11.5px] text-carbon-60 leading-tight mt-0.5">Side-by-side risk score benchmarking</div>
                           </div>
                         </motion.button>
+
+                        <div className="my-1 border-t border-carbon-10" />
+
+                        <motion.button
+                          whileHover={{ x: 3 }}
+                          onClick={() => { navigate('/divisions'); setActiveMenu(null); }}
+                          className="w-full p-2.5 text-left flex items-start gap-3 rounded-xl hover:bg-carbon-10/90 transition-all cursor-pointer group"
+                        >
+                          <div className="p-2 rounded-xl bg-indigo-50 text-indigo-700 group-hover:bg-indigo-100 transition-colors shrink-0">
+                            <MaterialIcon name="public" className="text-lg" />
+                          </div>
+                          <div>
+                            <div className="font-semibold text-carbon-90 text-[13.5px]">Divisions Analytics</div>
+                            <div className="text-[11.5px] text-carbon-60 leading-tight mt-0.5">8 Administrative Divisions with aggregate multi-hazard analytics</div>
+                          </div>
+                        </motion.button>
+
+                        <motion.button
+                          whileHover={{ x: 3 }}
+                          onClick={() => { navigate('/hazards'); setActiveMenu(null); }}
+                          className="w-full p-2.5 text-left flex items-start gap-3 rounded-xl hover:bg-carbon-10/90 transition-all cursor-pointer group"
+                        >
+                          <div className="p-2 rounded-xl bg-rose-50 text-rose-700 group-hover:bg-rose-100 transition-colors shrink-0">
+                            <MaterialIcon name="warning" className="text-lg" />
+                          </div>
+                          <div>
+                            <div className="font-semibold text-carbon-90 text-[13.5px]">Hazards Matrix</div>
+                            <div className="text-[11.5px] text-carbon-60 leading-tight mt-0.5">9 Climatic perils with historical trends (2000–2026)</div>
+                          </div>
+                        </motion.button>
                       </motion.div>
                     )}
                   </AnimatePresence>
@@ -661,6 +691,32 @@ export const Navbar: React.FC<NavbarProps> = ({
                 >
                   <MaterialIcon name="notifications_active" className="w-4 h-4" />
                   <span>Alerts</span>
+                </Link>
+
+                {/* 7. Divisions */}
+                <Link
+                  to="/divisions"
+                  className={`px-2.5 2xl:px-3 py-1.5 text-[13.5px] font-medium rounded-xl transition-all flex items-center gap-1.5 whitespace-nowrap shrink-0 no-underline focus-visible:ring-2 focus-visible:ring-nasa-blue/60 focus-visible:outline-none ${
+                    location.pathname.startsWith('/divisions')
+                      ? 'bg-blue-500/15 text-blue-950 font-bold border border-blue-500/40 shadow-2xs'
+                      : 'text-carbon-70 hover:text-carbon-black hover:bg-carbon-90/5'
+                  }`}
+                >
+                  <MaterialIcon name="public" className="w-4 h-4" />
+                  <span>Divisions</span>
+                </Link>
+
+                {/* 8. Hazards */}
+                <Link
+                  to="/hazards"
+                  className={`px-2.5 2xl:px-3 py-1.5 text-[13.5px] font-medium rounded-xl transition-all flex items-center gap-1.5 whitespace-nowrap shrink-0 no-underline focus-visible:ring-2 focus-visible:ring-nasa-blue/60 focus-visible:outline-none ${
+                    location.pathname.startsWith('/hazards')
+                      ? 'bg-rose-500/15 text-rose-950 font-bold border border-rose-500/40 shadow-2xs'
+                      : 'text-carbon-70 hover:text-carbon-black hover:bg-carbon-90/5'
+                  }`}
+                >
+                  <MaterialIcon name="warning" className="w-4 h-4" />
+                  <span>Hazards</span>
                 </Link>
 
               </nav>

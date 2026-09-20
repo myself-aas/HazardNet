@@ -17,8 +17,13 @@ import {
   updateProfile, 
   sendPasswordResetEmail 
 } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import { getFirestore, setLogLevel } from 'firebase/firestore';
 import { getDatabase, Database } from 'firebase/database';
+
+// Suppress internal gRPC stream retry logs for unprovisioned or offline databases
+try {
+  setLogLevel('silent');
+} catch {}
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 

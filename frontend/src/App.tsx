@@ -38,6 +38,10 @@ const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
 const AdvisoriesPage = lazy(() => import('./pages/AdvisoriesPage').then((m) => ({ default: m.AdvisoriesPage })));
 const AnalyticsAnalyticsPage = lazy(() => import('./pages/AnalyticsPage').then((m) => ({ default: m.AnalyticsAnalyticsPage })));
 const DistrictDetailPage = lazy(() => import('./pages/DistrictDetailPage').then((m) => ({ default: m.DistrictDetailPage })));
+const DivisionsPage = lazy(() => import('./pages/DivisionsPage'));
+const DivisionDetailPage = lazy(() => import('./pages/DivisionDetailPage'));
+const HazardsPage = lazy(() => import('./pages/HazardsPage'));
+const HazardDetailPage = lazy(() => import('./pages/HazardDetailPage'));
 const AlertsPage = lazy(() => import('./pages/AlertsPage').then((m) => ({ default: m.AlertsPage })));
 const AlertDetailPage = lazy(() => import('./pages/AlertDetailPage').then((m) => ({ default: m.AlertDetailPage })));
 const StatusPage = lazy(() => import('./pages/StatusPage').then((m) => ({ default: m.StatusPage })));
@@ -247,8 +251,11 @@ const AppContent: React.FC = () => {
               {/* Phase 8 content engine: hazard-by-hazard methodology, a page per district built
                   from the run this deployment serves, and (when an event archive is loaded)
                   annual retrospectives. All three are prerendered statically at build time. */}
-              <Route path="/hazards" element={<GeneratedContentPage />} />
-              <Route path="/hazards/:slug" element={<GeneratedContentPage />} />
+              {/* Real-time Climatic Events & Forecast Analytics: Divisions & Hazards */}
+              <Route path="/divisions" element={<DivisionsPage />} />
+              <Route path="/divisions/:id" element={<DivisionDetailPage />} />
+              <Route path="/hazards" element={<HazardsPage />} />
+              <Route path="/hazards/:slug" element={<HazardDetailPage />} />
               <Route path="/districts" element={<GeneratedContentPage />} />
               {/* Phase 9 §8.1 — composed from the committed hindcast reports by the content
                   engine. The route must exist here as well as in the prerendered HTML: the

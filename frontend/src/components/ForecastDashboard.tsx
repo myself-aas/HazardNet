@@ -100,8 +100,11 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
           }
         },
         (error) => {
-          // Graceful handling if Firestore is offline or unreachable
-          console.warn('Firestore real-time subscription offline or unavailable:', error?.message || error);
+          // Immediately detach listener so SDK stops retrying gRPC stream in background
+          if (unsubscribe) {
+            try { unsubscribe(); } catch {}
+            unsubscribe = undefined;
+          }
           if (isMounted) {
             setDbSource('fallback');
             setLoading(false);
