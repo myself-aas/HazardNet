@@ -1,6 +1,6 @@
 import { forecastViewStateFromQuery, parseLookupParams } from '../forecastView';
 import { StoredPredictionError } from '../storedPrediction';
-import { VALID_STORED_FORECAST } from './fixtures/storedForecast';
+import { VALID_STORED_FORECAST } from '../fixtures/storedForecast';
 
 const selection = { districtId: 'dhaka', horizon: '7_days' as const };
 
