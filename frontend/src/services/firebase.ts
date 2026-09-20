@@ -23,7 +23,9 @@ import { getDatabase, Database } from 'firebase/database';
 // Suppress internal gRPC stream retry logs for unprovisioned or offline databases
 try {
   setLogLevel('silent');
-} catch {}
+} catch {
+  // setLogLevel is unavailable in some test stubs.
+}
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -84,11 +86,15 @@ export const githubProvider = new GithubAuthProvider();
 // Prefer select_account for Google so users can switch accounts.
 try {
   googleProvider.setCustomParameters({ prompt: 'select_account' });
-} catch {}
+} catch {
+  // Custom parameters are optional; popup still works without them.
+}
 try {
   githubProvider.addScope('read:user');
   githubProvider.addScope('user:email');
-} catch {}
+} catch {
+  // GitHub scopes are best-effort; authentication still proceeds.
+}
 
 export { app };
 

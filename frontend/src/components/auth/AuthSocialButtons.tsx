@@ -70,7 +70,9 @@ export function AuthSocialButtons({
         const params = new URLSearchParams(window.location.search)
         const raw = params.get('next')
         if (raw && raw.startsWith('/')) nextTo = raw
-      } catch {}
+      } catch {
+        // Search params may be unavailable in tests; default to no next path.
+      }
       // Only pass the options object when we have a destination — calling
       // `signInWithOAuth(id, undefined)` fails the Jest arity check
       // (`toHaveBeenCalledWith('google')`) and left Frontend Tests red on

@@ -23,7 +23,9 @@ dotenv.config();
 // Suppress internal gRPC stream logging for unprovisioned or offline database states
 try {
   setLogLevel('silent');
-} catch {}
+} catch {
+  // setLogLevel is unavailable in some firebase-admin stubs used by tests.
+}
 
 const configPath = path.resolve(process.cwd(), 'firebase-applet-config.json');
 let firebaseConfig = {};
