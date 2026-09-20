@@ -216,7 +216,7 @@ export const HazardDetailPage: React.FC = () => {
     return (
       <div className="min-h-screen bg-carbon-05 flex items-center justify-center p-6">
         <div className="text-center">
-          <RefreshCw className="w-8 h-8 text-blue-600 animate-spin mx-auto mb-3" />
+          <RefreshCw className="w-8 h-8 text-nasa-blue-shade animate-spin mx-auto mb-3" />
           <p className="text-sm font-medium text-carbon-70">Loading {data?.hazard || currentSlug} hazard data...</p>
           <p className="text-xs text-carbon-60 mt-1">Cross-referencing historical events & active warning tensors</p>
         </div>
@@ -227,13 +227,13 @@ export const HazardDetailPage: React.FC = () => {
   if (error || !data) {
     return (
       <div className="min-h-screen bg-carbon-05 flex items-center justify-center p-6">
-        <div className="bg-white border border-carbon-20 rounded-2xl p-8 max-w-md text-center shadow-xs">
+        <div className="bg-white border border-carbon-20 p-8 max-w-md text-center">
           <AlertTriangle className="w-10 h-10 text-red-500 mx-auto mb-3" />
           <h2 className="text-lg font-bold text-carbon-90">Failed to Load Hazard Data</h2>
           <p className="text-xs text-carbon-60 mt-2">{error || 'Hazard data not found.'}</p>
           <Link
             to="/hazards"
-            className="mt-5 inline-block px-4 py-2 bg-blue-600 text-white text-xs font-semibold rounded-xl hover:bg-blue-700 transition-colors"
+            className="mt-5 inline-flex min-h-[44px] items-center px-4 bg-nasa-blue text-white text-sm font-semibold hover:bg-nasa-blue-shade"
           >
             Back to Hazards
           </Link>
@@ -243,12 +243,12 @@ export const HazardDetailPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-carbon-05 text-carbon-80 pb-20 pt-6 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+    <div className="min-h-screen bg-carbon-05 text-carbon-80 pb-8 pt-6 px-4 sm:px-6 lg:px-8 max-w-[1200px] mx-auto">
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-xs text-carbon-60 mb-4">
-        <Link to="/" className="hover:text-blue-600 transition-colors">Home</Link>
+        <Link to="/" className="hover:text-nasa-blue-shade transition-colors">Home</Link>
         <span>/</span>
-        <Link to="/hazards" className="hover:text-blue-600 transition-colors">Hazards</Link>
+        <Link to="/hazards" className="hover:text-nasa-blue-shade transition-colors">Hazards</Link>
         <span>/</span>
         <span className="text-carbon-80 font-medium">{data.hazard}</span>
       </div>
@@ -262,10 +262,10 @@ export const HazardDetailPage: React.FC = () => {
             <button
               key={h.slug}
               onClick={() => navigate(`/hazards/${h.slug}`)}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all cursor-pointer flex items-center gap-1.5 ${
+              className={`inline-flex min-h-[44px] items-center gap-1.5 px-3 text-sm font-semibold whitespace-nowrap touch-manipulation ${
                 isActive
-                  ? 'bg-blue-600 text-white shadow-xs'
-                  : 'bg-white border border-carbon-20 text-carbon-60 hover:bg-carbon-10 hover:text-carbon-90'
+                  ? 'bg-nasa-blue text-white'
+                  : 'bg-white border border-carbon-20 text-carbon-70 hover:bg-carbon-10 hover:text-carbon-90'
               }`}
             >
               <Icon className="w-3.5 h-3.5" />
@@ -276,17 +276,17 @@ export const HazardDetailPage: React.FC = () => {
       </div>
 
       {/* Hazard Profile Header */}
-      <div className="bg-white border border-carbon-20 rounded-2xl p-6 sm:p-8 shadow-xs mb-8">
+      <div className="bg-white border border-carbon-20 p-6 sm:p-8 mb-8">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold mb-3" style={{ backgroundColor: `${meta.color}15`, color: meta.color, border: `1px solid ${meta.color}30` }}>
+            <div className="inline-flex items-center gap-2 px-3 py-1 text-xs font-semibold mb-3" style={{ backgroundColor: `${meta.color}15`, color: meta.color, border: `1px solid ${meta.color}30` }}>
               <ShieldAlert className="w-3.5 h-3.5" />
               <span>National Peril Profile</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-carbon-90 tracking-tight">
+            <h1 className="text-[28px] font-bold sm:text-[32px] text-carbon-90 tracking-tight">
               {data.hazard}
             </h1>
-            <p className="mt-2 text-sm text-carbon-60 max-w-2xl leading-relaxed">
+            <p className="mt-2 text-base leading-[1.62] text-carbon-70 max-w-2xl">
               {meta.definition}
             </p>
             <div className="mt-3 flex flex-wrap items-center gap-y-1 gap-x-4 text-xs text-carbon-60">
@@ -296,15 +296,15 @@ export const HazardDetailPage: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 w-full md:w-auto">
-            <div className="bg-carbon-05 border border-carbon-20/80 rounded-xl p-3 text-center">
-              <div className="text-xl font-bold text-blue-700">{data.totalEvents.toLocaleString()}</div>
+            <div className="bg-carbon-05 border border-carbon-20/80 p-3 text-center">
+              <div className="text-xl font-bold text-nasa-blue-shade">{data.totalEvents.toLocaleString()}</div>
               <div className="text-xs text-carbon-60 font-medium">Historical Records</div>
             </div>
-            <div className="bg-carbon-05 border border-carbon-20/80 rounded-xl p-3 text-center">
+            <div className="bg-carbon-05 border border-carbon-20/80 p-3 text-center">
               <div className="text-xl font-bold text-amber-700">{data.forecasts.length}</div>
               <div className="text-xs text-carbon-60 font-medium">Active Forecasts</div>
             </div>
-            <div className="bg-carbon-05 border border-carbon-20/80 rounded-xl p-3 text-center col-span-2 sm:col-span-1">
+            <div className="bg-carbon-05 border border-carbon-20/80 p-3 text-center col-span-2 sm:col-span-1">
               <div className="text-xl font-bold text-carbon-90">{data.forecastDistrictsCount}</div>
               <div className="text-xs text-carbon-60 font-medium">Districts Under Alert</div>
             </div>
@@ -314,7 +314,7 @@ export const HazardDetailPage: React.FC = () => {
 
       {/* Active Forecast Alert Matrix for this Hazard */}
       {data.forecasts.length > 0 && (
-        <div className="bg-white border border-carbon-20 rounded-2xl p-6 shadow-xs mb-8">
+        <div className="bg-white border border-carbon-20 p-6 mb-8">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-4 border-b border-carbon-10 gap-2">
             <div>
               <h2 className="text-base font-semibold text-carbon-90 flex items-center gap-2">
@@ -353,17 +353,17 @@ export const HazardDetailPage: React.FC = () => {
                     <tr key={`${fc.districtName}-${fc.horizon}-${idx}`} className="hover:bg-carbon-05/80 transition-colors">
                       <td className="p-3 font-semibold text-carbon-90">{fc.districtName}</td>
                       <td className="p-3 text-carbon-60">
-                        <Link to={`/divisions/${fc.division.toLowerCase()}`} className="hover:text-blue-600">
+                        <Link to={`/divisions/${fc.division.toLowerCase()}`} className="hover:text-nasa-blue-shade">
                           {fc.division}
                         </Link>
                       </td>
                       <td className="p-3">
-                        <span className="px-2 py-0.5 rounded text-[11px] font-medium bg-carbon-10 text-carbon-70">
+                        <span className="px-2 py-0.5 rounded text-xs font-medium bg-carbon-10 text-carbon-70">
                           {fc.horizon === '7_days' ? '7-Day' : '15-Day'}
                         </span>
                       </td>
                       <td className="p-3 text-carbon-60 whitespace-nowrap">{fc.targetDate}</td>
-                      <td className="p-3 font-semibold text-blue-700">{fc.modelSeverity.toFixed(2)}</td>
+                      <td className="p-3 font-semibold text-nasa-blue-shade">{fc.modelSeverity.toFixed(2)}</td>
                       <td className="p-3 font-semibold text-amber-700">{fc.physicsSeverity.toFixed(2)}</td>
                       <td className="p-3 text-carbon-60">{Math.round(fc.confidence * 100)}%</td>
                       <td className="p-3 text-carbon-60">{fc.precipitationMm.toFixed(1)} mm</td>
@@ -371,7 +371,7 @@ export const HazardDetailPage: React.FC = () => {
                       <td className="p-3 text-right">
                         <Link
                           to={`/forecast/district/${districtSlug}`}
-                          className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 font-semibold"
+                          className="inline-flex items-center gap-1 text-nasa-blue-shade hover:text-nasa-blue-shade font-semibold"
                         >
                           <span>District Page</span>
                           <ArrowRight className="w-3 h-3" />
@@ -389,11 +389,11 @@ export const HazardDetailPage: React.FC = () => {
       {/* Interactive Recharts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         {/* Chart 1: 26-Year Historical Disaster Trend */}
-        <div className="bg-white border border-carbon-20 rounded-2xl p-6 shadow-xs">
+        <div className="bg-white border border-carbon-20 p-6">
           <div className="flex items-center justify-between pb-3 border-b border-carbon-10">
             <div>
               <h3 className="text-sm font-bold text-carbon-90 flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 text-blue-600" />
+                <TrendingUp className="w-4 h-4 text-nasa-blue-shade" />
                 26-Year Historical Occurrence Trend (2000–2026)
               </h3>
               <p className="text-xs text-carbon-60">Annual occurrences of {data.hazard} across Bangladesh</p>
@@ -418,11 +418,11 @@ export const HazardDetailPage: React.FC = () => {
         </div>
 
         {/* Chart 2: Top 15 Most Impacted Districts */}
-        <div className="bg-white border border-carbon-20 rounded-2xl p-6 shadow-xs">
+        <div className="bg-white border border-carbon-20 p-6">
           <div className="flex items-center justify-between pb-3 border-b border-carbon-10">
             <div>
               <h3 className="text-sm font-bold text-carbon-90 flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-blue-600" />
+                <MapPin className="w-4 h-4 text-nasa-blue-shade" />
                 Top 15 Most Impacted Districts
               </h3>
               <p className="text-xs text-carbon-60">Districts recording highest {data.hazard} episodes</p>
@@ -444,11 +444,11 @@ export const HazardDetailPage: React.FC = () => {
         </div>
 
         {/* Chart 3: Monthly Seasonality Curve */}
-        <div className="bg-white border border-carbon-20 rounded-2xl p-6 shadow-xs">
+        <div className="bg-white border border-carbon-20 p-6">
           <div className="flex items-center justify-between pb-3 border-b border-carbon-10">
             <div>
               <h3 className="text-sm font-bold text-carbon-90 flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-blue-600" />
+                <Calendar className="w-4 h-4 text-nasa-blue-shade" />
                 Monthly Seasonality Curve (Jan–Dec)
               </h3>
               <p className="text-xs text-carbon-60">Distribution of historical occurrences by calendar month</p>
@@ -476,11 +476,11 @@ export const HazardDetailPage: React.FC = () => {
         </div>
 
         {/* Chart 4: Division Exposure Breakdown */}
-        <div className="bg-white border border-carbon-20 rounded-2xl p-6 shadow-xs">
+        <div className="bg-white border border-carbon-20 p-6">
           <div className="flex items-center justify-between pb-3 border-b border-carbon-10">
             <div>
               <h3 className="text-sm font-bold text-carbon-90 flex items-center gap-2">
-                <Layers className="w-4 h-4 text-blue-600" />
+                <Layers className="w-4 h-4 text-nasa-blue-shade" />
                 Regional Division Breakdown
               </h3>
               <p className="text-xs text-carbon-60">Geographic distribution of {data.hazard} across the 8 divisions</p>
@@ -503,11 +503,11 @@ export const HazardDetailPage: React.FC = () => {
       </div>
 
       {/* Historical Disaster Events Archive Table for this Hazard */}
-      <div className="bg-white border border-carbon-20 rounded-2xl p-6 shadow-xs">
+      <div className="bg-white border border-carbon-20 p-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between pb-4 border-b border-carbon-10 gap-4">
           <div>
             <h3 className="text-base font-bold text-carbon-90 flex items-center gap-2">
-              <Layers className="w-4 h-4 text-blue-600" />
+              <Layers className="w-4 h-4 text-nasa-blue-shade" />
               Verified Event Log ({data.hazard})
             </h3>
             <p className="text-xs text-carbon-60">
@@ -524,14 +524,14 @@ export const HazardDetailPage: React.FC = () => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search events, district, GLIDE..."
-                className="pl-8 pr-3 py-1.5 text-xs border border-carbon-20 rounded-xl bg-carbon-05 text-carbon-80 placeholder-carbon-40 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="h-11 min-h-[44px] pl-8 pr-3 text-base border border-carbon-20 bg-carbon-05 text-carbon-80 placeholder-carbon-40 focus:outline-none focus-visible:outline focus-visible:outline-offset-1"
               />
             </div>
 
             <select
               value={selectedDivision}
               onChange={(e) => { setSelectedDivision(e.target.value); setSelectedDistrict('all'); }}
-              className="py-1.5 px-2.5 text-xs border border-carbon-20 rounded-xl bg-carbon-05 text-carbon-70 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="h-11 min-h-[44px] py-1.5 px-2.5 text-base border border-carbon-20 bg-carbon-05 text-carbon-70 focus:outline-none focus-visible:outline focus-visible:outline-offset-1"
             >
               <option value="all">All Divisions</option>
               {availableDivisions.map(d => (
@@ -542,7 +542,7 @@ export const HazardDetailPage: React.FC = () => {
             <select
               value={selectedDistrict}
               onChange={(e) => setSelectedDistrict(e.target.value)}
-              className="py-1.5 px-2.5 text-xs border border-carbon-20 rounded-xl bg-carbon-05 text-carbon-70 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="h-11 min-h-[44px] py-1.5 px-2.5 text-base border border-carbon-20 bg-carbon-05 text-carbon-70 focus:outline-none focus-visible:outline focus-visible:outline-offset-1"
             >
               <option value="all">All Districts</option>
               {availableDistricts.map(d => (
@@ -576,15 +576,15 @@ export const HazardDetailPage: React.FC = () => {
                     <tr className="hover:bg-carbon-05/80 transition-colors">
                       <td className="p-3 font-medium text-carbon-90 whitespace-nowrap">{event.date}</td>
                       <td className="p-3 font-semibold text-carbon-80">
-                        <Link to={`/forecast/district/${districtSlug}`} className="hover:text-blue-600">
+                        <Link to={`/forecast/district/${districtSlug}`} className="hover:text-nasa-blue-shade">
                           {event.district}
                         </Link>
                       </td>
                       <td className="p-3 text-carbon-60">{event.division}</td>
                       <td className="p-3 font-mono text-carbon-60 whitespace-nowrap">{event.glide || '—'}</td>
                       <td className="p-3 font-bold text-carbon-70">
-                        <span className={`px-2 py-0.5 rounded text-[11px] ${
-                          event.severity >= 3.0 ? 'bg-red-50 text-red-700 border border-red-200' :
+                        <span className={`px-2 py-0.5 rounded text-xs ${
+                          event.severity >= 3.0 ? 'bg-carbon-05 text-nasa-red-shade border border-carbon-20' :
                           event.severity >= 2.0 ? 'bg-amber-50 text-amber-700 border border-amber-200' :
                           'bg-carbon-10 text-carbon-70'
                         }`}>
@@ -597,7 +597,7 @@ export const HazardDetailPage: React.FC = () => {
                       <td className="p-3 text-right whitespace-nowrap">
                         <button
                           onClick={() => setExpandedEventId(isExpanded ? null : event.id)}
-                          className="text-blue-600 hover:text-blue-800 font-semibold inline-flex items-center gap-1 cursor-pointer"
+                          className="text-nasa-blue-shade font-semibold inline-flex min-h-[44px] items-center gap-1 cursor-pointer touch-manipulation"
                         >
                           <span>{isExpanded ? 'Less' : 'Details'}</span>
                           {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
@@ -605,9 +605,9 @@ export const HazardDetailPage: React.FC = () => {
                       </td>
                     </tr>
                     {isExpanded && (
-                      <tr className="bg-blue-50/30">
+                      <tr className="bg-carbon-05/30">
                         <td colSpan={7} className="p-4 border-b border-carbon-20">
-                          <div className="bg-white border border-carbon-20 rounded-xl p-4 text-xs space-y-2">
+                          <div className="bg-white border border-carbon-20 p-4 text-xs space-y-2">
                             <div className="flex items-center justify-between text-carbon-60 pb-2 border-b border-carbon-10">
                               <span><strong>Event ID:</strong> {event.id}</span>
                               <span><strong>Coordinates:</strong> {event.lat.toFixed(4)}, {event.lng.toFixed(4)}</span>
@@ -619,7 +619,7 @@ export const HazardDetailPage: React.FC = () => {
                             <div className="pt-2 flex justify-end">
                               <Link
                                 to={`/forecast/district/${districtSlug}`}
-                                className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 font-semibold"
+                                className="inline-flex items-center gap-1 text-nasa-blue-shade hover:text-nasa-blue-shade font-semibold"
                               >
                                 <span>Go to {event.district} District Dashboard</span>
                                 <ArrowRight className="w-3.5 h-3.5" />

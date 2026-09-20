@@ -19,6 +19,7 @@
  *
  * Usage:
  *   node scripts/check-design-quality.mjs             fail on any finding not in the baseline
+ *   node scripts/check-design-quality.mjs --source-only  scan frontend/src only (no dist)
  *   node scripts/check-design-quality.mjs --update    rewrite the baseline (ratchet it down)
  *   node scripts/check-design-quality.mjs --json      print the summary as JSON
  *   node scripts/check-design-quality.mjs --quiet     only print the verdict
@@ -49,6 +50,7 @@ const args = process.argv.slice(2);
 const wantsUpdate = args.includes('--update');
 const wantsJson = args.includes('--json');
 const quiet = args.includes('--quiet');
+const sourceOnly = args.includes('--source-only');
 
 function fail(message) {
   console.error(`\n[design-quality] ${message}`);
@@ -117,15 +119,26 @@ function isWaived(finding, waivers) {
   );
 }
 
-if (!existsSync(DIST_DIR)) {
-  fail('frontend/dist does not exist — run `npm run build:frontend` before the design-quality gate.');
+if (wantsUpdate && sourceOnly) {
+  fail('--update cannot run with --source-only; a source-only rewrite would drop prerendered HTML findings from the baseline.');
 }
+
 if (!existsSync(join(ROOT, SOURCE_TARGET))) {
   fail(`${SOURCE_TARGET} does not exist.`);
 }
 
-const htmlTargets = walkHtml(DIST_DIR).sort();
-if (htmlTargets.length === 0) fail('no prerendered HTML found under frontend/dist.');
+let htmlTargets = [];
+if (sourceOnly) {
+  if (!quiet) {
+    console.log('[design-quality] source-only: scanning frontend/src (no prerendered HTML).');
+  }
+} else {
+  if (!existsSync(DIST_DIR)) {
+    fail('frontend/dist does not exist — run `npm run build:frontend` before the design-quality gate, or pass --source-only.');
+  }
+  htmlTargets = walkHtml(DIST_DIR).sort();
+  if (htmlTargets.length === 0) fail('no prerendered HTML found under frontend/dist.');
+}
 
 const raw = runDetector([join(ROOT, SOURCE_TARGET), ...htmlTargets]);
 const findings = raw.map(normalise);

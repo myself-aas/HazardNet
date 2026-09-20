@@ -2,7 +2,7 @@
 // Implements push notification handlers and prediction queue sync.
 
 // Invalidate old app bundles containing the withdrawn research presentation.
-const CACHE_NAME = 'hazardnet-offline-v2';
+const CACHE_NAME = 'hazardnet-offline-v3';
 const TILE_CACHE_NAME = 'hazardnet-tiles-v1';
 const MAX_TILE_CACHE_ITEMS = 1200;
 
@@ -339,6 +339,19 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
       fetch(request).catch(() => caches.match(request))
     );
+    return;
+  }
+
+  // Never cache HTML / navigations. A stale document shell can keep withdrawn
+  // research UI on disk after a deploy that removed it (Phase 7 §14.10).
+  const accept = (request.headers && request.headers.get && request.headers.get('Accept')) || '';
+  const isDocument =
+    request.mode === 'navigate' ||
+    request.destination === 'document' ||
+    String(accept).indexOf('text/html') !== -1 ||
+    url.pathname.endsWith('.html');
+  if (isDocument) {
+    event.respondWith(fetch(request));
     return;
   }
 

@@ -43,8 +43,8 @@ interface FieldProps {
 
 const Field: React.FC<FieldProps> = ({ label, value, mono = false }) => (
   <div className="min-w-0">
-    <dt className="text-[10px] font-bold uppercase tracking-wide text-carbon-60">{label}</dt>
-    <dd className={`text-xs text-carbon-90 break-words ${mono ? 'font-mono' : ''}`}>{value}</dd>
+    <dt className="text-xs font-bold uppercase tracking-wide text-carbon-60">{label}</dt>
+    <dd className={`text-base text-carbon-90 break-words ${mono ? 'font-mono' : ''}`}>{value}</dd>
   </div>
 );
 
@@ -64,11 +64,11 @@ export const EvidenceCard: React.FC<EvidenceCardProps> = ({ alert, disclaimer, c
   return (
     <section
       id={EVIDENCE_CARD_ID}
-      className={`rounded-2xl border border-carbon-30 bg-white p-4 sm:p-6 ${className}`}
+      className={`border border-carbon-20 bg-white p-4 sm:p-6 ${className}`}
       aria-labelledby="evidence-card-title"
     >
       <header className="border-b border-carbon-20 pb-3">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-carbon-60">
+        <p className="text-xs font-bold uppercase tracking-widest text-carbon-60">
           {t('alerts.card.evidenceCard')} · HazardNet {t('nav.alerts')}
         </p>
         <h2 id="evidence-card-title" className="mt-1 text-lg font-black text-carbon-90">
@@ -86,7 +86,7 @@ export const EvidenceCard: React.FC<EvidenceCardProps> = ({ alert, disclaimer, c
             {alert.division || '—'} · {alert.horizon?.replace('_', ' ') || '—'}
           </span>
           {alert.requires_human_review && (
-            <span className="rounded-full border border-amber-400 bg-amber-50 px-2 py-0.5 text-[11px] font-bold text-amber-950">
+            <span className="rounded-control border border-carbon-20 bg-carbon-05 px-2 py-1 text-xs font-semibold text-carbon-90">
               {t('alerts.card.requiresReview')}
             </span>
           )}
@@ -107,14 +107,14 @@ export const EvidenceCard: React.FC<EvidenceCardProps> = ({ alert, disclaimer, c
       </dl>
 
       <div className="mt-5 grid gap-4 sm:grid-cols-2">
-        <div className="rounded-xl border border-carbon-20 bg-carbon-05 p-3">
-          <h3 className="text-[11px] font-bold uppercase tracking-wide text-carbon-60">
+        <div className="border border-carbon-20 bg-carbon-05 p-4">
+          <h3 className="text-xs font-bold uppercase tracking-wide text-carbon-60">
             {t('alerts.evidence.modelSeverity')}
           </h3>
-          <p className="mt-1 font-mono text-2xl font-bold text-carbon-90">
+          <p className="mt-1 font-mono text-2xl font-bold text-carbon-90 tabular-nums">
             {formatNumber(model.model_severity ?? alert.severity_score)}
           </p>
-          <ul className="mt-2 space-y-1 text-[11px] text-carbon-70">
+          <ul className="mt-2 space-y-1 text-xs text-carbon-70">
             <li>
               <span className="font-semibold">{t('evidence.confidence')}:</span>{' '}
               {formatNumber(alert.confidence)}
@@ -130,16 +130,16 @@ export const EvidenceCard: React.FC<EvidenceCardProps> = ({ alert, disclaimer, c
           </ul>
         </div>
 
-        <div className="rounded-xl border border-carbon-20 bg-carbon-05 p-3">
-          <h3 className="text-[11px] font-bold uppercase tracking-wide text-carbon-60">
+        <div className="border border-carbon-20 bg-carbon-05 p-4">
+          <h3 className="text-xs font-bold uppercase tracking-wide text-carbon-60">
             {t('alerts.evidence.physicsSeverity')}
           </h3>
-          <p className="mt-1 font-mono text-2xl font-bold text-carbon-90">
+          <p className="mt-1 font-mono text-2xl font-bold text-carbon-90 tabular-nums">
             {physics.physics_severity === null || physics.physics_severity === undefined
               ? '—'
               : formatNumber(physics.physics_severity)}
           </p>
-          <ul className="mt-2 space-y-1 text-[11px] text-carbon-70">
+          <ul className="mt-2 space-y-1 text-xs text-carbon-70">
             <li>
               <span className="font-semibold">{t('alerts.evidence.divergence')}:</span>{' '}
               {physics.divergence === null || physics.divergence === undefined
@@ -156,17 +156,17 @@ export const EvidenceCard: React.FC<EvidenceCardProps> = ({ alert, disclaimer, c
             </li>
           </ul>
           {(physics.physics_severity === null || physics.physics_severity === undefined) && (
-            <p className="mt-2 text-[11px] leading-snug text-amber-900">{t('alerts.evidence.noPhysics')}</p>
+            <p className="mt-2 text-xs leading-snug text-carbon-70">{t('alerts.evidence.noPhysics')}</p>
           )}
         </div>
       </div>
 
       {evidenceLine.length > 0 && (
         <div className="mt-4">
-          <h3 className="text-[11px] font-bold uppercase tracking-wide text-carbon-60">
+          <h3 className="text-xs font-bold uppercase tracking-wide text-carbon-60">
             {t('evidence.drivers')}
           </h3>
-          <ul className="mt-1.5 space-y-0.5 text-[11px] text-carbon-80">
+          <ul className="mt-1.5 space-y-0.5 text-xs text-carbon-80">
             {evidenceLine.map((item) => (
               <li key={item} className="font-mono">{item}</li>
             ))}
@@ -174,11 +174,11 @@ export const EvidenceCard: React.FC<EvidenceCardProps> = ({ alert, disclaimer, c
         </div>
       )}
 
-      <div className="mt-4 rounded-xl border border-carbon-20 p-3">
-        <h3 className="text-[11px] font-bold uppercase tracking-wide text-carbon-60">
+      <details className="mt-4 border border-carbon-20 p-0" open>
+        <summary className="min-h-[44px] cursor-pointer list-none px-4 py-3 text-xs font-bold uppercase tracking-wide text-carbon-60 touch-manipulation">
           {t('evidence.publicationTrail')}
-        </h3>
-        <ul className="mt-1.5 space-y-1 text-[11px] text-carbon-70">
+        </summary>
+        <ul className="space-y-1 border-t border-carbon-20 px-4 pb-4 pt-3 text-xs text-carbon-70">
           <li>
             <span className="font-semibold">{t('evidence.publishedAt')}:</span>{' '}
             {formatDate(alert.published?.at, { withTime: true })}
@@ -196,9 +196,9 @@ export const EvidenceCard: React.FC<EvidenceCardProps> = ({ alert, disclaimer, c
             {dash(alert.published?.mode)}
           </li>
         </ul>
-      </div>
+      </details>
 
-      <p className="mt-4 text-[11px] leading-relaxed text-carbon-70">
+      <p className="mt-4 text-base leading-[1.62] text-carbon-70">
         {calibrated
           ? t('alerts.confidence.calibratedLong', { score: formatNumber(alert.confidence) })
           : t('alerts.confidence.uncalibratedLong', { score: formatNumber(alert.confidence) })}
@@ -208,7 +208,7 @@ export const EvidenceCard: React.FC<EvidenceCardProps> = ({ alert, disclaimer, c
       <Disclaimer className="mt-4 no-print" text={disclaimer} variant="inline" />
       <Disclaimer className="mt-4 hidden print:block" text={disclaimer} variant="print" showNumbers={false} />
 
-      <footer className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-carbon-20 pt-3 text-[10px] text-carbon-60">
+      <footer className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-carbon-20 pt-3 text-xs text-carbon-60">
         <span className="font-mono">
           HazardNet · {alert.horizon?.replace('_', ' ') || '—'} · {alert.district_id || '—'}
         </span>
@@ -263,13 +263,13 @@ export const EvidenceCardExportButton: React.FC<EvidenceCardExportButtonProps> =
         onClick={onExport}
         disabled={state === 'working'}
         aria-busy={state === 'working'}
-        className="no-print inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border border-carbon-30 bg-white px-3 py-2 text-xs font-bold text-carbon-80 hover:bg-carbon-05 disabled:opacity-60"
+        className="no-print inline-flex min-h-[44px] items-center gap-1.5 border border-carbon-20 bg-nasa-blue px-3 py-2 text-sm font-semibold text-white hover:bg-nasa-blue-shade disabled:opacity-60 touch-manipulation"
       >
         <MaterialIcon name="download" className="text-base" aria-hidden="true" />
         {state === 'working' ? t('evidence.exporting') : t('evidence.exportPdf')}
       </button>
       {state === 'error' && (
-        <p role="alert" className="max-w-xs text-right text-[11px] font-semibold text-red-700">
+        <p role="alert" className="max-w-xs text-right text-sm font-semibold text-nasa-red-shade">
           {t('evidence.exportFailed')}
         </p>
       )}

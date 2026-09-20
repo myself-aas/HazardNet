@@ -109,10 +109,10 @@ export const LiveStatusStrip: React.FC<LiveStatusStripProps> = ({
       className="border border-carbon-20 bg-carbon-05"
       data-testid="front-door-status-strip"
     >
-      <div className="flex flex-wrap items-center gap-x-5 gap-y-3 p-4 md:p-5">
+      <div className="flex flex-wrap items-center gap-x-5 gap-y-3 p-4 lg:p-6">
         {/* ── level counts ─────────────────────────────────────────────────── */}
         <div className="flex flex-wrap items-center gap-2">
-          <p className="font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-carbon-60">
+          <p className="font-mono text-xs font-bold uppercase tracking-[0.025em] text-carbon-60">
             {t('frontdoor.strip.publishedNow')}
           </p>
           {loading && <p className="text-xs text-carbon-60">{t('frontdoor.strip.reading')}</p>}
@@ -144,7 +144,7 @@ export const LiveStatusStrip: React.FC<LiveStatusStripProps> = ({
         {/* ── coverage + the run's own timestamp ───────────────────────────── */}
         <dl className="flex flex-wrap items-center gap-x-5 gap-y-1 text-xs text-carbon-70">
           <div className="flex items-center gap-1.5">
-            <dt className="font-mono text-[10px] uppercase tracking-wider text-carbon-60">
+            <dt className="font-mono text-xs uppercase tracking-wide text-carbon-60">
               {t('frontdoor.strip.districts')}
             </dt>
             <dd className="font-mono font-bold text-carbon-90">
@@ -153,13 +153,13 @@ export const LiveStatusStrip: React.FC<LiveStatusStripProps> = ({
             </dd>
           </div>
           <div className="flex items-center gap-1.5">
-            <dt className="font-mono text-[10px] uppercase tracking-wider text-carbon-60">
+            <dt className="font-mono text-xs uppercase tracking-wide text-carbon-60">
               {t('frontdoor.strip.assessed')}
             </dt>
             <dd className="font-mono font-bold text-carbon-90">{assessed != null ? formatNumber(assessed) : '—'}</dd>
           </div>
           <div className="flex items-center gap-1.5">
-            <dt className="font-mono text-[10px] uppercase tracking-wider text-carbon-60">
+            <dt className="font-mono text-xs uppercase tracking-wide text-carbon-60">
               {t('frontdoor.strip.updated')}
             </dt>
             <dd className="font-mono text-carbon-80">
@@ -170,10 +170,10 @@ export const LiveStatusStrip: React.FC<LiveStatusStripProps> = ({
         </dl>
 
         <nav aria-label={t('frontdoor.strip.navLabel')} className="ml-auto flex flex-wrap gap-x-4 gap-y-1">
-          <Link to="/alerts" className="text-xs font-bold text-nasa-blue-shade underline underline-offset-2">
+          <Link to="/alerts" className="inline-flex min-h-[44px] items-center text-base font-bold text-nasa-blue-shade underline underline-offset-4">
             {t('frontdoor.strip.allAlerts')}
           </Link>
-          <Link to="/live" className="text-xs font-bold text-nasa-blue-shade underline underline-offset-2">
+          <Link to="/live" className="inline-flex min-h-[44px] items-center text-base font-bold text-nasa-blue-shade underline underline-offset-4">
             {t('frontdoor.strip.liveMap')}
           </Link>
         </nav>
@@ -200,7 +200,7 @@ export const LiveStatusStrip: React.FC<LiveStatusStripProps> = ({
                 </Link>
                 {alert.hazard_type && <span className="text-xs text-carbon-70">{hazardLabel(alert.hazard_type)}</span>}
                 {alert.target_date && (
-                  <span className="font-mono text-[10px] text-carbon-60">
+                  <span className="font-mono text-xs text-carbon-60">
                     {t('common.targetDate')}: {alert.target_date}
                   </span>
                 )}
@@ -211,7 +211,7 @@ export const LiveStatusStrip: React.FC<LiveStatusStripProps> = ({
       )}
 
       {!loading && counts !== null && published === 0 && (
-        <p className="border-t border-carbon-20 bg-white px-4 py-3 text-xs leading-relaxed text-carbon-70 md:px-5">
+        <p className="border-t border-carbon-20 bg-white px-4 py-3 text-base leading-[1.62] text-carbon-70 lg:px-6">
           <strong className="font-bold text-carbon-90">{t('frontdoor.strip.nonePublished')}</strong>{' '}
           {withheld != null || assessed != null ? (
             <span lang={isBengali ? 'bn' : undefined}>

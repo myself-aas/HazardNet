@@ -34,8 +34,10 @@ REPORTS_DIR = ROOT / 'docs' / 'mlops'
 
 #: Every file that authors user-facing text about the model (Phase 0's list plus
 #: the district detail surfaces Phase 3 touched).
+DISTRICT_DIR = ROOT / 'frontend' / 'src' / 'components' / 'district'
 COPY_FILES = [
     ROOT / 'frontend' / 'src' / 'pages' / 'DistrictDetailPage.tsx',
+    *sorted(DISTRICT_DIR.glob('*.tsx')),
     ROOT / 'frontend' / 'src' / 'components' / 'DisasterDetailModalUI.tsx',
     ROOT / 'frontend' / 'src' / 'data' / 'disasterDetails.ts',
     ROOT / 'frontend' / 'src' / 'content' / 'site-routes.json',
@@ -167,7 +169,9 @@ def test_no_copy_reinstates_a_retired_confidence_claim():
 
 
 def test_the_district_page_says_the_score_is_uncalibrated():
-    text = (ROOT / 'frontend' / 'src' / 'pages' / 'DistrictDetailPage.tsx').read_text()
+    # Brief copy lives in components/district/ after the Phase 5 god-file split.
+    parts = [ROOT / 'frontend' / 'src' / 'pages' / 'DistrictDetailPage.tsx', *sorted(DISTRICT_DIR.glob('*.tsx'))]
+    text = '\n'.join(path.read_text(encoding='utf-8') for path in parts if path.exists())
     assert 'uncalibrated' in text
     assert 'Model Score' in text
 

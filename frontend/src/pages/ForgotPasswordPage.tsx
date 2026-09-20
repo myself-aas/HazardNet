@@ -54,11 +54,8 @@ const ForgotPasswordPage: React.FC = () => {
 
         {!isSubmitted ? (
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="flex items-start gap-3 p-3.5 bg-amber-50 border border-amber-200/90 rounded-2xl">
-              <div className="w-8 h-8 rounded-xl bg-nasa-red/20 flex items-center justify-center text-sm shrink-0 font-bold text-amber-900">
-                🔑
-              </div>
-              <p className="text-xs text-carbon-60 leading-relaxed">
+            <div className="border-l-2 border-nasa-orange bg-white p-4">
+              <p className="text-base leading-[1.62] text-carbon-70">
                 Enter your registered HazardNet email address and we'll send you instructions to reset your password.
               </p>
             </div>
@@ -69,7 +66,8 @@ const ForgotPasswordPage: React.FC = () => {
                   initial={{ opacity: 0, y: -5 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -5 }}
-                  className="p-3 bg-rose-50 border border-rose-200 rounded-2xl text-xs text-rose-800 font-medium flex items-start gap-2"
+                  role="alert"
+                  className="flex items-start gap-2 border-l-2 border-nasa-red bg-white p-4 text-sm font-medium text-nasa-red-shade"
                 >
                   <span className="shrink-0"><MaterialIcon name="warning" className="w-4 h-4 inline-block mr-1" /></span>
                   <span>{error}</span>
@@ -78,18 +76,22 @@ const ForgotPasswordPage: React.FC = () => {
             </AnimatePresence>
 
             <div>
-              <label className="block text-xs font-bold text-carbon-80 mb-1.5" htmlFor="forgot-email">
+              <label className="mb-1.5 block text-sm font-medium text-carbon-80" htmlFor="forgot-email">
                 Registered Email
               </label>
               <input
                 id="forgot-email"
                 type="email"
                 required
-                autoFocus
+                autoFocus={
+                  typeof window !== 'undefined' &&
+                  typeof window.matchMedia === 'function' &&
+                  window.matchMedia('(pointer: fine)').matches
+                }
                 placeholder="user@example.com"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-carbon-05 border border-carbon-20 rounded-2xl text-xs text-carbon-90 placeholder-carbon-40 font-medium focus:outline-none focus:border-nasa-blue focus:ring-1 focus:ring-nasa-blue transition-all"
+                className="h-12 w-full rounded-sm border border-carbon-20 bg-carbon-05 px-4 py-3 text-base text-carbon-90 placeholder-carbon-40 font-medium focus:border-nasa-blue focus:outline-none focus:ring-2 focus:ring-nasa-blue/40"
               />
             </div>
 
@@ -97,7 +99,7 @@ const ForgotPasswordPage: React.FC = () => {
               id="forgot-submit-btn"
               type="submit"
               disabled={loading || !email.trim()}
-              className="w-full py-3 bg-nasa-red text-carbon-90 hover:bg-nasa-red-shade font-extrabold rounded-2xl text-xs transition-all shadow-xs disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
+              className="flex min-h-[44px] w-full cursor-pointer items-center justify-center gap-2 bg-nasa-red-shade px-6 py-3 text-base font-semibold text-white hover:bg-nasa-red disabled:opacity-50 touch-manipulation"
             >
               {loading ? (
                 <>
@@ -115,17 +117,17 @@ const ForgotPasswordPage: React.FC = () => {
             <div className="text-center text-xs text-carbon-60 pt-2 space-y-1.5 border-t border-carbon-10">
               <p>
                 Remembered your password?{' '}
-                <Link to="/login" className="text-amber-800 hover:underline font-extrabold">Log In</Link>
+                <Link to="/login" className="text-nasa-blue-shade hover:underline font-extrabold">Log In</Link>
               </p>
               <p>
                 Need an account?{' '}
-                <Link to="/signup" className="text-amber-800 hover:underline font-extrabold">Sign Up</Link>
+                <Link to="/signup" className="text-nasa-blue-shade hover:underline font-extrabold">Sign Up</Link>
               </p>
             </div>
           </form>
         ) : (
           <div className="space-y-4 text-center py-2">
-            <div className="w-12 h-12 bg-emerald-50 border border-emerald-200 rounded-full flex items-center justify-center mx-auto text-xl shadow-inner text-emerald-600">
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full border border-carbon-20 bg-carbon-05 text-xl text-carbon-80">
               ✓
             </div>
             <div>
@@ -135,7 +137,7 @@ const ForgotPasswordPage: React.FC = () => {
               </p>
             </div>
 
-            <p className="text-[11px] text-carbon-60 bg-carbon-05 border border-carbon-20 rounded-2xl p-3 text-left">
+            <p className="text-xs text-carbon-60 bg-carbon-05 border border-carbon-20 p-3 text-left">
               Please check your spam or junk folder if the email does not appear in your primary inbox within 2 minutes.
             </p>
 
@@ -143,14 +145,14 @@ const ForgotPasswordPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => navigate('/login')}
-                className="w-full py-2.5 bg-nasa-red hover:bg-nasa-red-shade text-carbon-90 rounded-2xl text-xs font-extrabold transition-all shadow-xs cursor-pointer"
+                className="min-h-[44px] w-full cursor-pointer bg-nasa-red-shade px-6 py-3 text-base font-semibold text-white hover:bg-nasa-red touch-manipulation"
               >
                 Proceed to Sign In
               </button>
               <button
                 type="button"
                 onClick={() => setIsSubmitted(false)}
-                className="w-full py-2 bg-carbon-05 hover:bg-carbon-10 text-carbon-70 rounded-2xl text-xs font-bold border border-carbon-20 transition-colors cursor-pointer"
+                className="min-h-[44px] w-full cursor-pointer border border-carbon-20 bg-carbon-05 px-6 py-3 text-base font-semibold text-carbon-70 hover:bg-carbon-10 touch-manipulation"
               >
                 Enter a different email
               </button>

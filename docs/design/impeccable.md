@@ -109,7 +109,7 @@ files. By rule, and what happened to each:
 | `gradient-text` | 199 | **Fixed.** `.brand-gradient-text` and `.brand-accent-text` deleted from `frontend/src/index.css`. Neither was used anywhere; gradient text is decoration that reads as an AI tell. |
 | `overused-font` | 199 | 197 were Inter, NASA HDS's own heading face — suppressed with the reason recorded. The remaining two (`font-family: Helvetica`, `font-family: Inter`) are in the built bundle's utility layer. |
 | `tight-leading` | 43 | Waived: NASA's composite display tokens declare 100% leading. Compensated by a leading test over the CSS we author. |
-| `side-tab` | 20 | 14 were the static shell's 3px callout edge, now 2px per HDS's emphasis-border token. Outstanding: a 4px amber left border on the blog blockquote (`frontend/src/index.css:2029`) and `border-l-4` accents in `BlogArticlePage.tsx` and `DistrictDetailPage.tsx`. |
+| `side-tab` | 20 | 14 were the static shell's 3px callout edge, now 2px per HDS's emphasis-border token. The remaining 4px left accents (blog blockquote, `BlogArticlePage` excerpt, district brief directive cards) were removed: the detector flags any coloured left border, including 2px, so the cards keep a full 1px carbon hairline instead. |
 | `ai-color-palette` | 20 | Outstanding, 8 in scope: purple, violet and indigo headings in seven files. HDS has no violet. |
 | `border-accent-on-rounded` | 9 | Outstanding, 1 in scope: `border-b-2` on a rounded element in `DistrictDetailPage.tsx`. |
 | `bounce-easing` | 6 | **Fixed**, 1 real: the map's measure-tool hint no longer bounces a pointing emoji; it uses a static international-orange icon. The other five were easing curves and animation names inside bundled third-party libraries, which the scope excludes. |

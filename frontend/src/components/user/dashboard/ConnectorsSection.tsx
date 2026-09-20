@@ -11,6 +11,7 @@ import {
   saveUserConnector,
 } from '../../../lib/connectors';
 import { Card, inputClass } from './ui';
+import { useI18n } from '../../../hooks/useI18n';
 
 /**
  * "Connectors" tab — one-click integrations between a HazardNet account and
@@ -28,6 +29,7 @@ const ConnectorCard: React.FC<{
   const [configOpen, setConfigOpen] = useState(false);
   const [configValue, setConfigValue] = useState(state?.config?.[connector.asksFor?.key ?? ''] ?? '');
   const connected = state?.status === 'connected';
+  const { formatDate } = useI18n();
 
   const startConnect = () => {
     if (connector.asksFor && !configValue.trim()) {
@@ -39,30 +41,30 @@ const ConnectorCard: React.FC<{
 
   return (
     <div
-      className={`group relative flex flex-col rounded-2xl border p-4 transition-all ${
-        connected ? 'border-emerald-200 bg-emerald-50/40 shadow-xs' : 'border-carbon-20 bg-white hover:border-carbon-30 hover:shadow-sm'
+      className={`group relative flex flex-col border p-4 transition-all ${
+        connected ? 'border-carbon-20 bg-carbon-05/40' : 'border-carbon-20 bg-white hover:border-carbon-30 hover:shadow-sm'
       }`}
       data-testid={`connector-${connector.key}`}
     >
       <div className="flex items-start justify-between gap-2">
         <span
-          className="flex h-10 w-10 items-center justify-center rounded-xl text-white shadow-sm"
+          className="flex h-10 w-10 items-center justify-center text-white"
           style={{ backgroundColor: connector.accent }}
         >
           <MaterialIcon name={connector.icon} size={20} />
         </span>
         {connected && (
-          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[9.5px] font-extrabold uppercase tracking-wider text-emerald-800">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> Connected
+          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-extrabold uppercase tracking-wider text-carbon-80">
+            <span className="h-1.5 w-1.5 rounded-full bg-nasa-green" /> Connected
           </span>
         )}
       </div>
       <h4 className="mt-3 text-sm font-extrabold text-carbon-90">{connector.name}</h4>
-      <p className="mt-1 flex-1 text-[11.5px] leading-relaxed text-carbon-60">{connector.tagline}</p>
+      <p className="mt-1 flex-1 text-xs leading-relaxed text-carbon-60">{connector.tagline}</p>
 
       {connector.asksFor && configOpen && !connected && (
         <div className="mt-3 space-y-1.5">
-          <label htmlFor={`connector-config-${connector.key}`} className="text-[10px] font-bold uppercase tracking-wide text-carbon-60">
+          <label htmlFor={`connector-config-${connector.key}`} className="text-xs font-bold uppercase tracking-wide text-carbon-60">
             {connector.asksFor.label}
           </label>
           <input
@@ -82,7 +84,7 @@ const ConnectorCard: React.FC<{
             type="button"
             disabled={busy}
             onClick={() => onDisconnect(connector)}
-            className="flex-1 rounded-xl border border-carbon-20 bg-white px-3 py-2 text-[11px] font-extrabold text-carbon-70 transition-colors hover:bg-carbon-05 disabled:opacity-50 cursor-pointer"
+            className="flex-1 border border-carbon-20 bg-white px-3 py-2 text-xs font-extrabold text-carbon-70 transition-colors hover:bg-carbon-05 disabled:opacity-50 cursor-pointer"
           >
             Disconnect
           </button>
@@ -91,7 +93,7 @@ const ConnectorCard: React.FC<{
             type="button"
             disabled={busy}
             onClick={startConnect}
-            className="flex-1 rounded-xl bg-carbon-90 px-3 py-2 text-[11px] font-extrabold text-white transition-colors hover:bg-carbon-80 disabled:opacity-50 cursor-pointer"
+            className="flex-1 bg-carbon-90 px-3 py-2 text-xs font-extrabold text-white transition-colors hover:bg-carbon-80 disabled:opacity-50 cursor-pointer"
           >
             {busy ? '…' : configOpen && connector.asksFor ? 'Save & connect' : 'Connect'}
           </button>
@@ -101,13 +103,13 @@ const ConnectorCard: React.FC<{
           target="_blank"
           rel="noopener noreferrer"
           title="Documentation"
-          className="rounded-xl border border-carbon-20 p-2 text-carbon-60 transition-colors hover:text-carbon-70"
+          className="border border-carbon-20 p-2 text-carbon-60 transition-colors hover:text-carbon-70"
         >
           <MaterialIcon name="info" size={13} />
         </a>
       </div>
       {connected && state?.connectedAt && (
-        <p className="mt-1.5 text-[10px] text-carbon-60">Since {new Date(state.connectedAt).toLocaleDateString()}</p>
+        <p className="mt-1.5 text-xs text-carbon-60">Since {formatDate(state.connectedAt)}</p>
       )}
     </div>
   );
@@ -177,7 +179,7 @@ export const ConnectorsSection: React.FC = () => {
         subtitle="Wire HazardNet into the tools you already use — forecasts in, alerts out."
         icon={<MaterialIcon name="hub" size={18} />}
         actions={
-          <span className="rounded-full bg-carbon-10 px-3 py-1 text-[11px] font-extrabold text-carbon-70">
+          <span className="rounded-full bg-carbon-10 px-3 py-1 text-xs font-extrabold text-carbon-70">
             {connectedCount} connected
           </span>
         }
@@ -192,7 +194,7 @@ export const ConnectorsSection: React.FC = () => {
       {loading ? (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" aria-busy="true">
           {Array.from({ length: 6 }).map((_, index) => (
-            <div key={index} className="h-44 animate-pulse rounded-2xl bg-carbon-10" />
+            <div key={index} className="h-44 animate-pulse bg-carbon-10" />
           ))}
         </div>
       ) : (
@@ -200,7 +202,7 @@ export const ConnectorsSection: React.FC = () => {
           const connectors = CONNECTOR_CATALOG.filter((connector) => connector.category === category);
           return (
             <section key={category}>
-              <h3 className="mb-2.5 text-[11px] font-extrabold uppercase tracking-wider text-carbon-60">{category}</h3>
+              <h3 className="mb-2.5 text-xs font-extrabold uppercase tracking-wider text-carbon-60">{category}</h3>
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {connectors.map((connector) => (
                   <ConnectorCard

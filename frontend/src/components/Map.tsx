@@ -40,42 +40,43 @@ const Map: React.FC<MapProps> = ({
 
   return (
     <div className={isFullScreen ? "w-full h-full flex flex-col space-y-0" : "space-y-3 h-full"}>
-      {/* Map Engine Mode Toggle */}
       {!isFullScreen && (
-        <div className="bg-white border border-carbon-20 p-1.5 rounded-2xl flex items-center justify-between gap-2 text-xs shadow-xs text-carbon-70">
-          <div className="flex items-center gap-1.5 px-3 py-1 font-semibold text-carbon-90">
-            <span className="w-2.5 h-2.5 rounded-full bg-nasa-red animate-pulse"></span>
-            <span>GIS Visualization Engine</span>
+        <div className="bg-white border border-carbon-20 p-2 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 text-sm text-carbon-70">
+          <div className="flex items-center gap-2 px-2 min-h-[44px] font-semibold text-carbon-90">
+            <span>Map view</span>
           </div>
 
-          <div className="flex items-center gap-1 bg-carbon-10 p-1 rounded-xl border border-carbon-20">
+          <div className="flex items-center gap-2" role="group" aria-label="Map engine">
             <button
+              type="button"
               onClick={() => setMapMode('leaflet')}
-              className={`px-3 py-1.5 rounded-lg font-bold transition-all flex items-center gap-1.5 ${
+              aria-pressed={mapMode === 'leaflet'}
+              className={`min-h-[44px] px-3 py-2 font-semibold text-sm flex items-center gap-2 touch-manipulation border ${
                 mapMode === 'leaflet'
-                  ? 'bg-nasa-red text-carbon-90 shadow-xs'
-                  : 'text-carbon-60 hover:text-carbon-90'
+                  ? 'bg-nasa-blue text-white border-nasa-blue'
+                  : 'bg-white text-carbon-70 border-carbon-20'
               }`}
             >
-              <MaterialIcon name="satellite_alt" className="w-4 h-4 inline-block mr-1" />
-              <span>Satellite Leaflet GIS</span>
+              <MaterialIcon name="satellite_alt" className="w-4 h-4" />
+              <span>Leaflet map</span>
             </button>
             <button
+              type="button"
               onClick={() => setMapMode('svg')}
-              className={`px-3 py-1.5 rounded-lg font-bold transition-all flex items-center gap-1.5 ${
+              aria-pressed={mapMode === 'svg'}
+              className={`min-h-[44px] px-3 py-2 font-semibold text-sm flex items-center gap-2 touch-manipulation border ${
                 mapMode === 'svg'
-                  ? 'bg-nasa-red text-carbon-90 shadow-xs'
-                  : 'text-carbon-60 hover:text-carbon-90'
+                  ? 'bg-nasa-blue text-white border-nasa-blue'
+                  : 'bg-white text-carbon-70 border-carbon-20'
               }`}
             >
               <MaterialIcon name="gis" className="w-4 h-4" />
-              <span>Vector Spatial Heatmap</span>
+              <span>District list map</span>
             </button>
           </div>
         </div>
       )}
 
-      {/* Render Selected Map Engine */}
       {mapMode === 'leaflet' ? (
         <LiveMapView
           selectedDistrictId={selectedDistrictId}
@@ -116,4 +117,3 @@ const Map: React.FC<MapProps> = ({
 };
 
 export default Map;
-

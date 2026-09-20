@@ -20,7 +20,7 @@ import { parseAuthError } from '../lib/authErrors';
  */
 
 const inputClass =
-  'w-full px-4 py-3 text-base sm:text-sm bg-carbon-05 border border-carbon-20 rounded-2xl text-carbon-90 placeholder-carbon-40 font-medium transition-all focus:outline-none focus:border-nasa-blue focus:ring-2 focus:ring-nasa-blue/40';
+  'h-12 w-full rounded-sm border border-carbon-20 bg-carbon-05 px-4 py-3 text-base text-carbon-90 placeholder-carbon-40 font-medium focus:border-nasa-blue focus:outline-none focus:ring-2 focus:ring-nasa-blue/40';
 
 const describeError = (err: unknown): string => {
   const parsed = parseAuthError(err);
@@ -98,7 +98,7 @@ const SignUpPage: React.FC = () => {
               exit={{ opacity: 0, y: -5 }}
               role="alert"
               aria-live="polite"
-              className="p-3.5 bg-rose-50 border border-rose-200 rounded-2xl text-xs text-rose-800 font-medium flex items-start gap-2"
+              className="flex items-start gap-2 border-l-2 border-nasa-red bg-white p-4 text-sm font-medium text-nasa-red-shade"
             >
               <span className="shrink-0 mt-0.5">
                 <MaterialIcon name="warning" className="w-4 h-4" />
@@ -116,7 +116,7 @@ const SignUpPage: React.FC = () => {
         </AnimatePresence>
 
         <div>
-          <label className="block text-xs font-bold text-carbon-80 mb-1.5" htmlFor="signup-name">
+          <label className="mb-1.5 block text-sm font-medium text-carbon-80" htmlFor="signup-name">
             Full name
           </label>
           <input
@@ -131,7 +131,7 @@ const SignUpPage: React.FC = () => {
             aria-invalid={Boolean(fieldErrors.name)}
             className={inputClass}
           />
-          {fieldErrors.name && <p className="mt-1 text-[11px] font-semibold text-rose-700">{fieldErrors.name}</p>}
+          {fieldErrors.name && <p className="mt-1 text-sm font-semibold text-nasa-red-shade">{fieldErrors.name}</p>}
         </div>
 
         <UsernameField
@@ -142,11 +142,11 @@ const SignUpPage: React.FC = () => {
           email={email}
         />
         {fieldErrors.username && (
-          <p className="-mt-2 text-[11px] font-semibold text-rose-700">{fieldErrors.username}</p>
+          <p className="-mt-2 text-sm font-semibold text-nasa-red-shade">{fieldErrors.username}</p>
         )}
 
         <div>
-          <label className="block text-xs font-bold text-carbon-80 mb-1.5" htmlFor="signup-email">
+          <label className="mb-1.5 block text-sm font-medium text-carbon-80" htmlFor="signup-email">
             Email address
           </label>
           <input
@@ -162,11 +162,11 @@ const SignUpPage: React.FC = () => {
             aria-invalid={Boolean(fieldErrors.email)}
             className={inputClass}
           />
-          {fieldErrors.email && <p className="mt-1 text-[11px] font-semibold text-rose-700">{fieldErrors.email}</p>}
+          {fieldErrors.email && <p className="mt-1 text-sm font-semibold text-nasa-red-shade">{fieldErrors.email}</p>}
         </div>
 
         <div>
-          <label className="block text-xs font-bold text-carbon-80 mb-1.5" htmlFor="signup-password">
+          <label className="mb-1.5 block text-sm font-medium text-carbon-80" htmlFor="signup-password">
             Password
           </label>
           <div className="relative">
@@ -186,14 +186,14 @@ const SignUpPage: React.FC = () => {
             <button
               type="button"
               onClick={() => setShowPassword((value) => !value)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-carbon-60 hover:text-carbon-70 focus:outline-none focus-visible:ring-2 focus-visible:ring-nasa-blue/60 cursor-pointer"
+              className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center text-carbon-60 hover:text-carbon-70 focus:outline-none focus-visible:ring-2 focus-visible:ring-nasa-blue/60 cursor-pointer touch-manipulation"
               aria-label={showPassword ? 'Hide password' : 'Show password'}
             >
               <EyeToggleIcon isState={showPassword} size={20} duration={0} />
             </button>
           </div>
           {fieldErrors.password && (
-            <p className="mt-1 text-[11px] font-semibold text-rose-700">{fieldErrors.password}</p>
+            <p className="mt-1 text-sm font-semibold text-nasa-red-shade">{fieldErrors.password}</p>
           )}
         </div>
 
@@ -205,26 +205,26 @@ const SignUpPage: React.FC = () => {
             onChange={(e) => setAcceptedTerms(e.target.checked)}
             className="mt-0.5 h-4 w-4 rounded border-carbon-30 accent-nasa-blue cursor-pointer"
           />
-          <span className="text-[11px] leading-relaxed text-carbon-60">
+          <span className="text-sm leading-[1.62] text-carbon-60">
             I agree to the{' '}
-            <Link to="/terms" className="font-bold text-amber-800 hover:underline">
+            <Link to="/terms" className="font-bold text-nasa-blue-shade hover:underline">
               Terms
             </Link>{' '}
             and{' '}
-            <Link to="/privacy" className="font-bold text-amber-800 hover:underline">
+            <Link to="/privacy" className="font-bold text-nasa-blue-shade hover:underline">
               Privacy Policy
             </Link>
             , including weather-data processing for my district.
           </span>
         </label>
-        {fieldErrors.terms && <p className="-mt-2 text-[11px] font-semibold text-rose-700">{fieldErrors.terms}</p>}
+        {fieldErrors.terms && <p className="-mt-2 text-sm font-semibold text-nasa-red-shade">{fieldErrors.terms}</p>}
 
         <button
           id="signup-page-submit-btn"
           data-testid="signup-submit-btn"
           type="submit"
           disabled={loading}
-          className="w-full py-3.5 bg-nasa-red hover:bg-nasa-red-shade text-carbon-black font-extrabold rounded-2xl text-sm transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nasa-blue/60 focus-visible:ring-offset-2"
+          className="flex min-h-[44px] w-full cursor-pointer items-center justify-center gap-2 bg-nasa-red-shade px-6 py-3 text-base font-semibold text-white hover:bg-nasa-red disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nasa-blue/60 focus-visible:ring-offset-2 touch-manipulation"
         >
           {loading ? (
             <>
@@ -238,7 +238,7 @@ const SignUpPage: React.FC = () => {
 
         <div className="relative flex items-center justify-center pt-1" aria-hidden="true">
           <div className="border-t border-carbon-20 w-full" />
-          <span className="bg-white px-3 text-[10px] text-carbon-60 font-bold uppercase tracking-wider absolute">
+          <span className="bg-white px-3 text-xs text-carbon-60 font-bold uppercase tracking-wider absolute">
             or continue with
           </span>
         </div>
@@ -250,11 +250,11 @@ const SignUpPage: React.FC = () => {
         />
       </form>
 
-      <p className="text-center text-xs sm:text-[13px] text-carbon-60">
+      <p className="text-center text-sm text-carbon-60">
         Already have an account?{' '}
         <Link
           to={next && next !== '/' ? `/login?next=${encodeURIComponent(next)}` : '/login'}
-          className="font-extrabold text-amber-800 hover:text-amber-900 hover:underline"
+          className="font-extrabold text-nasa-blue-shade hover:text-nasa-blue hover:underline"
         >
           Sign in
         </Link>

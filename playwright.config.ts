@@ -12,15 +12,14 @@ import { defineConfig, devices } from '@playwright/test';
  * plugin in frontend/vite.config.ts). With the suite green and completing in
  * ~1 minute, the normal bounds are back: retries absorb CI runner variance
  * instead of masking real failures behind a hard timeout.
+ *
+ * Phase 7 (UX-09): default `testMatch` must discover the forecast UX and
+ * navigation a11y specs as well as the whole-app QA sweep. CI invokes
+ * `npx playwright test` with no `-c`.
  */
 export default defineConfig({
   testDir: './e2e',
-  // CI invokes `npx playwright test` with no `-c`, which is why the whole-app QA
-  // suite is matched here and not only in `playwright.qa.config.ts` (that file exists
-  // to override the Chromium and base URL in a sandbox where `npx playwright install`
-  // has no working browser download). The QA spec reads `E2E_BASE_URL` — the variable
-  // the CI job already exports.
-  testMatch: /full-app-qa\.spec\.ts/,
+  testMatch: /(?:full-app-qa|forecast-ux|navigation-a11y)\.spec\.ts/,
   timeout: 60_000,
   fullyParallel: true,
   workers: 4,

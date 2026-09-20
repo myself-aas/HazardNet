@@ -8,10 +8,10 @@ import { MemoryRouter } from "react-router-dom";
  * The navbar's full-screen overlays (menu drawer, saved assessments) used
  * to render INSIDE the header wrapper's stacking context. The user profile
  * is a dedicated /profile page, not a modal.
- * with z-50 while the header bar itself is z-[2000] — so the sticky header
+ * with z-50 while the header bar itself used z-[2000] — so the sticky header
  * painted on top of the popups (the reported "popup overlaps the header"
- * mobile bug). They must now portal to document.body and carry a z-index
- * above every other layer (header z-40, chat window z-[10000]).
+ * mobile bug). They must now portal to document.body and sit on the overlay
+ * token (--z-overlay: 50), above the masthead (--z-nav: 40) and chat (--z-sticky).
  */
 
 // Navbar pulls the whole auth/firebase stack; only the layering matters here.
@@ -86,8 +86,8 @@ describe("Navbar overlay layering", () => {
     expect(drawer.closest("header")).toBeNull();
     expect(document.body.contains(drawer)).toBe(true);
 
-    // Above the chat window (z-[10000]) and the header (z-40).
-    expect(drawer.className).toContain("z-[10002]");
+    // Overlay token sits above chat (--z-sticky) and the header (--z-nav).
+    expect(drawer.className).toContain("z-[var(--z-overlay)]");
   });
 
   it("gives the drawer backdrop the overlay z-tier, above the chat window", async () => {
@@ -100,7 +100,7 @@ describe("Navbar overlay layering", () => {
       expect(el).not.toBeNull();
       return el as HTMLElement;
     });
-    expect(backdrop.className).toContain("z-[10001]");
+    expect(backdrop.className).toContain("z-[var(--z-overlay)]");
     expect(backdrop.className).toContain("fixed inset-0");
   });
 

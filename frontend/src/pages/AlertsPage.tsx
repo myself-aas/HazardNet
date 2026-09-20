@@ -117,10 +117,10 @@ export const AlertsPage: React.FC = () => {
     <div className="mx-auto w-full max-w-[1100px] px-3 pb-16 pt-6 sm:px-6">
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
-          <h1 className="text-2xl font-black tracking-tight text-carbon-90 sm:text-3xl">
+          <h1 className="text-[28px] font-bold leading-[1.2] tracking-tight text-carbon-90 sm:text-[32px]">
             {t('alerts.title')}
           </h1>
-          <p className="mt-1 max-w-2xl text-sm leading-relaxed text-carbon-60">
+          <p className="mt-1 max-w-2xl text-base leading-[1.62] text-carbon-70">
             {t('alerts.standfirst')}
           </p>
         </div>
@@ -136,10 +136,10 @@ export const AlertsPage: React.FC = () => {
             />
             {t('bandwidth.toggle')}
             {override === null && (
-              <span className="text-[10px] font-normal text-carbon-60">(auto)</span>
+              <span className="text-xs font-normal text-carbon-60">(auto)</span>
             )}
           </label>
-          <span id="low-bandwidth-hint" className="max-w-[240px] text-right text-[10px] text-carbon-60">
+          <span id="low-bandwidth-hint" className="max-w-[240px] text-right text-xs text-carbon-60">
             {t('bandwidth.toggleHint')}
           </span>
         </div>
@@ -154,11 +154,11 @@ export const AlertsPage: React.FC = () => {
           offline={typeof navigator !== 'undefined' && navigator.onLine === false}
           lineagePartial={data.warnings.some((warning) => /lineage|scene/i.test(warning))}
         />
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-carbon-60">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs text-carbon-60">
           <button
             type="button"
             onClick={data.refresh}
-            className="inline-flex min-h-[32px] items-center gap-1 rounded-lg border border-carbon-30 px-2 py-1 font-bold text-carbon-80 hover:bg-carbon-05"
+            className="inline-flex min-h-[44px] items-center gap-1 border border-carbon-20 bg-nasa-blue px-3 py-2 font-semibold text-white hover:bg-nasa-blue-shade touch-manipulation"
           >
             <MaterialIcon name="refresh" className="text-sm" aria-hidden="true" />
             {t('alerts.page.refresh')}
@@ -179,7 +179,7 @@ export const AlertsPage: React.FC = () => {
             <button
               type="button"
               onClick={onExportCsv}
-              className="inline-flex min-h-[32px] items-center gap-1 rounded-lg border border-carbon-30 px-2 py-1 font-bold text-carbon-80 hover:bg-carbon-05"
+              className="inline-flex min-h-[44px] items-center gap-1 border border-carbon-20 px-3 py-2 font-semibold text-carbon-80 hover:bg-carbon-05 touch-manipulation"
             >
               <MaterialIcon name="download" className="text-sm" aria-hidden="true" />
               {t('alerts.page.csv')}
@@ -187,8 +187,8 @@ export const AlertsPage: React.FC = () => {
           )}
         </div>
         {data.warnings.length > 0 && (
-          <details className="rounded-xl border border-amber-300 bg-amber-50 px-3 py-2 text-[11px] text-amber-950">
-            <summary className="cursor-pointer font-bold">{t('alerts.page.degraded')}</summary>
+          <details className="border border-carbon-20 border-l-[2px] border-l-[#ea6f24] bg-white p-4 text-base text-carbon-90">
+            <summary className="min-h-[44px] cursor-pointer font-bold">{t('alerts.page.degraded')}</summary>
             <ul className="mt-1 list-disc space-y-0.5 pl-4">
               {data.warnings.map((warning) => <li key={warning}>{warning}</li>)}
             </ul>
@@ -196,53 +196,20 @@ export const AlertsPage: React.FC = () => {
         )}
       </div>
 
-      {/* Map + counts */}
-      <section className="mt-6" aria-labelledby="alerts-map-heading">
-        <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-          <h2 id="alerts-map-heading" className="text-sm font-bold text-carbon-90">
-            {t('alerts.page.mapTitle')}
-          </h2>
-          <AlertLevelLegend
-            levels={ALERT_LEVELS.map((level) => ({
-              level,
-              label: t(`alerts.level.${level}`),
-              description: t(`alerts.level.${level}.desc`),
-            }))}
-          />
-        </div>
-        <BangladeshSvgMap
-          lowBandwidth={lowBandwidth}
-          alertLevels={alertLayers}
-          alertLevelLabels={levelLabels}
-          onSelectDistrict={(district) => onSelectDistrict(district.name)}
-          legendSlot={
-            <div className="flex flex-wrap items-center gap-3">
-              <span className="font-bold text-carbon-70">{t('map.legend.alerts')}:</span>
-              <AlertLevelLegend
-                levels={ALERT_LEVELS.map((level) => ({
-                  level,
-                  label: t(`alerts.level.${level}`),
-                  description: t(`alerts.level.${level}.desc`),
-                }))}
-              />
-            </div>
-          }
-        />
-        <p className="mt-1.5 text-[11px] leading-relaxed text-carbon-60">{t('map.layer.note')}</p>
-      </section>
-
-      {/* Filters + list/table */}
-      <section className="mt-8" aria-labelledby="alerts-list-heading">
+      {/* List first in the DOM (mobile). CSS order puts the map first on desktop. */}
+      <div className="mt-6 flex flex-col">
+{/* Filters + list/table */}
+      <section className="order-1 mt-8 lg:order-2" aria-labelledby="alerts-list-heading">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-          <h2 id="alerts-list-heading" className="text-sm font-bold text-carbon-90">
+          <h2 id="alerts-list-heading" className="text-base font-bold text-carbon-90">
             {t('alerts.page.listTitle')}
           </h2>
-          <div className="no-print inline-flex items-center rounded-xl border border-carbon-30 bg-white p-0.5 text-xs font-semibold">
+          <div className="no-print inline-flex items-center border border-carbon-20 bg-white p-0.5 text-sm font-semibold">
             <button
               type="button"
               onClick={() => setView('cards')}
               aria-pressed={view === 'cards'}
-              className={`min-h-[36px] rounded-lg px-2.5 py-1 ${view === 'cards' ? 'bg-carbon-90 text-white' : 'text-carbon-70 hover:bg-carbon-10'}`}
+              className={`min-h-[44px] px-3 py-2 touch-manipulation ${view === 'cards' ? 'bg-nasa-blue text-white' : 'text-carbon-70'}`}
             >
               {t('alerts.page.viewCards')}
             </button>
@@ -250,7 +217,7 @@ export const AlertsPage: React.FC = () => {
               type="button"
               onClick={() => setView('list')}
               aria-pressed={view === 'list'}
-              className={`min-h-[36px] rounded-lg px-2.5 py-1 ${view === 'list' ? 'bg-carbon-90 text-white' : 'text-carbon-70 hover:bg-carbon-10'}`}
+              className={`min-h-[44px] px-3 py-2 touch-manipulation ${view === 'list' ? 'bg-nasa-blue text-white' : 'text-carbon-70'}`}
             >
               {t('alerts.page.viewList')}
             </button>
@@ -270,12 +237,12 @@ export const AlertsPage: React.FC = () => {
         )}
 
         {!data.loading && data.alerts.length === 0 && (
-          <div className="rounded-2xl border border-carbon-20 bg-white p-4">
+          <div className="border border-carbon-20 bg-white p-4">
             <h3 className="text-sm font-bold text-carbon-90">
               {data.source === 'none' ? t('alerts.empty.unavailable') : t('alerts.empty.title')}
             </h3>
             {data.source === 'none' && data.error && (
-              <p className="mt-1 font-mono text-[11px] text-carbon-60">
+              <p className="mt-1 font-mono text-xs text-carbon-60">
                 {data.error}
               </p>
             )}
@@ -287,7 +254,7 @@ export const AlertsPage: React.FC = () => {
                 : t('alerts.empty.body')}
             </p>
             {data.assessed !== null && (
-              <p className="mt-1 text-[11px] font-semibold text-carbon-60">
+              <p className="mt-1 text-xs font-semibold text-carbon-60">
                 {t('alerts.page.assessed', { count: formatNumber(data.assessed, { maximumFractionDigits: 0 }) })}
               </p>
             )}
@@ -298,7 +265,7 @@ export const AlertsPage: React.FC = () => {
           <div id={DISTRICT_ALERT_LAYER_ID}>
             {view === 'cards' ? (
               sorted.length === 0 ? (
-                <p className="rounded-2xl border border-carbon-20 bg-white p-4 text-xs text-carbon-60">
+                <p className="border border-carbon-20 bg-white p-4 text-sm text-carbon-60">
                   {t('alerts.filter.results', { shown: '0', total: String(data.alerts.length) })}
                 </p>
               ) : (
@@ -322,6 +289,43 @@ export const AlertsPage: React.FC = () => {
         )}
       </section>
 
+<section className="order-2 mt-8 lg:order-1 lg:mt-0" aria-labelledby="alerts-map-heading">
+        <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+          <h2 id="alerts-map-heading" className="text-base font-bold text-carbon-90">
+            {t('alerts.page.mapTitle')}
+          </h2>
+          <AlertLevelLegend
+            levels={ALERT_LEVELS.map((level) => ({
+              level,
+              label: t(`alerts.level.${level}`),
+              description: t(`alerts.level.${level}.desc`),
+            }))}
+          />
+        </div>
+        <div className="h-[240px] overflow-hidden border border-carbon-20 lg:h-[320px]">
+        <BangladeshSvgMap
+          lowBandwidth={lowBandwidth}
+          alertLevels={alertLayers}
+          alertLevelLabels={levelLabels}
+          onSelectDistrict={(district) => onSelectDistrict(district.name)}
+          legendSlot={
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="font-bold text-carbon-70">{t('map.legend.alerts')}:</span>
+              <AlertLevelLegend
+                levels={ALERT_LEVELS.map((level) => ({
+                  level,
+                  label: t(`alerts.level.${level}`),
+                  description: t(`alerts.level.${level}.desc`),
+                }))}
+              />
+            </div>
+          }
+        />
+        </div>
+        <p className="mt-1.5 text-xs leading-relaxed text-carbon-60">{t('map.layer.note')}</p>
+      </section>
+      </div>
+
       {/* Policy in force */}
       <section className="mt-8 grid gap-4 lg:grid-cols-2">
         <PolicyPanel policy={data.policy} />
@@ -329,7 +333,7 @@ export const AlertsPage: React.FC = () => {
       </section>
 
       {/* Official sources */}
-      <section className="mt-6 rounded-2xl border border-carbon-20 bg-white p-4">
+      <section className="mt-6 border border-carbon-20 bg-white p-4">
         <h2 className="text-sm font-bold text-carbon-90">{t('alerts.page.official')}</h2>
         <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs font-semibold text-carbon-80">
           {EMERGENCY_NUMBERS.map((entry) => (
@@ -364,7 +368,7 @@ export const AlertsPage: React.FC = () => {
 
       <Disclaimer variant="banner" className="mt-4" text={data.policy?.disclaimer} />
 
-      <p className="mt-4 text-[11px] text-carbon-60">
+      <p className="mt-4 text-xs text-carbon-60">
         {t('alerts.page.policyNote')}{' '}
         <Link to="/methodology" className="underline decoration-dotted underline-offset-2">
           {t('nav.methodology')}

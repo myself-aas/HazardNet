@@ -63,12 +63,13 @@ export const LanguageToggle: React.FC<LanguageToggleProps> = ({
         className={`inline-flex items-center ${palette.wrapper} text-xs font-semibold ${className}`}
         role="group"
         aria-label={t('common.language')}
+        data-testid="language-toggle"
       >
         <button
           type="button"
           onClick={() => setLanguage('en')}
           aria-pressed={!bengaliActive}
-          className={`px-2.5 py-1 transition-colors ${palette.button} ${
+          className={`inline-flex min-h-[44px] min-w-[44px] items-center justify-center px-3 py-2 transition-colors touch-manipulation ${palette.button} ${
             !bengaliActive ? palette.active : palette.idle
           }`}
         >
@@ -78,7 +79,7 @@ export const LanguageToggle: React.FC<LanguageToggleProps> = ({
           type="button"
           onClick={() => setLanguage('bn')}
           aria-pressed={bengaliActive}
-          className={`px-2.5 py-1 transition-colors ${palette.button} ${bengaliActive ? palette.active : palette.idle}`}
+          className={`inline-flex min-h-[44px] min-w-[44px] items-center justify-center px-3 py-2 transition-colors touch-manipulation ${palette.button} ${bengaliActive ? palette.active : palette.idle}`}
         >
           <span lang="bn">{t('common.bengali')}</span>
         </button>
@@ -92,7 +93,8 @@ export const LanguageToggle: React.FC<LanguageToggleProps> = ({
       onClick={toggleLanguage}
       aria-pressed={bengaliActive}
       title={t('common.language')}
-      className={`inline-flex items-center gap-1.5 rounded-lg border border-carbon-30 bg-white px-2.5 py-1.5 text-xs font-bold text-carbon-80 hover:bg-carbon-05 ${className}`}
+      data-testid="language-toggle"
+      className={`inline-flex min-h-[44px] min-w-[44px] items-center gap-1.5 rounded-lg border border-carbon-30 bg-white px-3 py-2 text-xs font-bold text-carbon-80 hover:bg-carbon-05 touch-manipulation ${className}`}
     >
       <span className="text-carbon-60" aria-hidden="true">
         EN

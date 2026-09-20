@@ -77,14 +77,14 @@ export const AccountSection: React.FC = () => {
       {/* Email */}
       <Card title="Email address" subtitle="Your sign-in address. Changes require confirming the new inbox." icon={<MaterialIcon name="mail" size={18} />}>
         <div className="space-y-4">
-          <div className="flex flex-wrap items-center gap-2 rounded-2xl bg-carbon-05 px-4 py-3">
+          <div className="flex flex-wrap items-center gap-2 bg-carbon-05 px-4 py-3">
             <span className="text-sm font-bold text-carbon-80">{user?.email ?? userProfile?.email ?? '—'}</span>
             {emailVerified ? (
-              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-emerald-700">
+              <span className="inline-flex items-center gap-1 rounded-full bg-carbon-05 px-2.5 py-0.5 text-xs font-extrabold uppercase tracking-wide text-carbon-80">
                 <MaterialIcon name="check_badge" size={12} /> Verified
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-amber-700">
+              <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-extrabold uppercase tracking-wide text-amber-700">
                 <MaterialIcon name="mail" size={12} /> Pending verification
               </span>
             )}
@@ -103,7 +103,7 @@ export const AccountSection: React.FC = () => {
                 type="button"
                 onClick={handleEmailChange}
                 disabled={emailBusy || !newEmail.trim()}
-                className="shrink-0 rounded-xl bg-carbon-90 px-4 py-2.5 text-xs font-extrabold text-white transition-colors hover:bg-carbon-80 disabled:opacity-40 cursor-pointer"
+                className="shrink-0 bg-carbon-90 px-4 py-2.5 text-xs font-extrabold text-white transition-colors hover:bg-carbon-80 disabled:opacity-40 cursor-pointer"
               >
                 {emailBusy ? 'Sending…' : 'Update email'}
               </button>
@@ -127,12 +127,12 @@ export const AccountSection: React.FC = () => {
             type="button"
             onClick={handlePasswordReset}
             disabled={resetBusy || !userProfile?.email}
-            className="flex items-center gap-2 rounded-xl bg-carbon-90 px-4 py-2.5 text-xs font-extrabold text-white transition-colors hover:bg-carbon-80 disabled:opacity-40 cursor-pointer"
+            className="flex items-center gap-2 bg-carbon-90 px-4 py-2.5 text-xs font-extrabold text-white transition-colors hover:bg-carbon-80 disabled:opacity-40 cursor-pointer"
           >
             {resetBusy && <span className="h-3 w-3 animate-spin rounded-full border-2 border-white/40 border-t-white" />}
             {passwordProvider === 'social' ? 'Email me a password-setup link' : 'Email me a password-reset link'}
           </button>
-          <p className="text-[11px] leading-relaxed text-carbon-60">
+          <p className="text-xs leading-relaxed text-carbon-60">
             For security the link goes to <strong>{userProfile?.email ?? 'your inbox'}</strong> and opens the
             set-password page.
           </p>
@@ -150,7 +150,7 @@ export const AccountSection: React.FC = () => {
           type="button"
           onClick={handleSignOut}
           disabled={signOutBusy}
-          className="flex items-center gap-2 rounded-xl border border-rose-200 bg-rose-50 px-4 py-2.5 text-xs font-extrabold text-rose-700 transition-colors hover:bg-rose-100 disabled:opacity-40 cursor-pointer"
+          className="flex items-center gap-2 border border-nasa-red bg-white px-4 py-2.5 text-xs font-extrabold text-nasa-red-shade transition-colors hover:bg-rose-100 disabled:opacity-40 cursor-pointer"
         >
           <MaterialIcon name="logout" size={14} />
           {signOutBusy ? 'Signing out…' : 'Sign out'}

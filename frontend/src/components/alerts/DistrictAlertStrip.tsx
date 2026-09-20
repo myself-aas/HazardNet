@@ -44,7 +44,7 @@ export const DistrictAlertStrip: React.FC<DistrictAlertStripProps> = ({
 
   if (loading && alerts.length === 0) {
     return (
-      <div className={`rounded-2xl border border-carbon-20 bg-white p-3 text-xs text-carbon-60 ${className}`} role="status">
+      <div className={`border border-carbon-20 bg-white p-4 text-sm text-carbon-60 ${className}`} role="status">
         {t('common.loading')}
       </div>
     );
@@ -52,18 +52,18 @@ export const DistrictAlertStrip: React.FC<DistrictAlertStripProps> = ({
 
   if (!alert) {
     return (
-      <div className={`rounded-2xl border border-carbon-20 bg-white p-3 ${className}`}>
-        <h2 className="text-xs font-bold text-carbon-90">
+      <div className={`border border-carbon-20 bg-white p-4 ${className}`}>
+        <h2 className="text-base font-bold text-carbon-90">
           {t('district.alerts', { district: district || '—' })}
         </h2>
-        <p className="mt-1 text-xs text-carbon-70">
+        <p className="mt-1 text-base leading-[1.62] text-carbon-70">
           {t('district.noAlert')}
           {source === 'none' ? ` ${t('alerts.empty.unavailable')}` : ''}
         </p>
-        {baselineOnly && <p className="mt-1 text-[11px] text-amber-900">{t('district.baselineOnly')}</p>}
+        {baselineOnly && <p className="mt-1 text-xs text-carbon-70">{t('district.baselineOnly')}</p>}
         <Link
           to="/alerts"
-          className="mt-2 inline-flex min-h-[36px] items-center gap-1 text-[11px] font-bold text-carbon-80 underline decoration-dotted underline-offset-2 hover:text-amber-800"
+          className="mt-2 inline-flex min-h-[44px] items-center gap-1 text-sm font-semibold text-nasa-blue-shade underline decoration-dotted underline-offset-4"
         >
           <MaterialIcon name="notifications_active" className="text-sm" aria-hidden="true" />
           {t('alerts.page.listTitle')}
@@ -74,11 +74,11 @@ export const DistrictAlertStrip: React.FC<DistrictAlertStripProps> = ({
 
   return (
     <div
-      className={`rounded-2xl border border-amber-300 bg-amber-50 p-3 ${className}`}
+      className={`border border-carbon-20 border-l-[2px] border-l-[#ea6f24] bg-white p-4 ${className}`}
       data-alert-id={alert.id}
     >
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-xs font-bold text-carbon-90">
+        <h2 className="text-base font-bold text-carbon-90">
           {t('district.alerts', { district: alert.district_name || district || '—' })}
         </h2>
         <AlertLevelBadge
@@ -89,7 +89,7 @@ export const DistrictAlertStrip: React.FC<DistrictAlertStripProps> = ({
           srPrefix={t('alerts.levelLabel')}
         />
       </div>
-      <p className="mt-1.5 text-xs text-carbon-80">
+      <p className="mt-1.5 text-sm text-carbon-80">
         {hazardLabel(alert.hazard_type)} · {alert.horizon?.replace('_', ' ') || '—'} ·{' '}
         {t('common.targetDate')} {formatDate(alert.target_date)}
         {typeof alert.severity_score === 'number' && (
@@ -98,7 +98,7 @@ export const DistrictAlertStrip: React.FC<DistrictAlertStripProps> = ({
       </p>
       <Link
         to={`/alerts/${encodeURIComponent(alert.id)}`}
-        className="mt-2 inline-flex min-h-[36px] items-center gap-1 text-[11px] font-bold text-carbon-90 underline decoration-dotted underline-offset-2 hover:text-amber-900"
+        className="mt-2 inline-flex min-h-[44px] items-center gap-1 text-sm font-semibold text-nasa-blue-shade underline decoration-dotted underline-offset-4"
       >
         <MaterialIcon name="description" className="text-sm" aria-hidden="true" />
         {t('alerts.card.evidenceCard')}

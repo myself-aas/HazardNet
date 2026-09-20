@@ -27,8 +27,13 @@ const describeError = (err: unknown): string => {
   return parsed.userMessage;
 };
 
+const finePointer =
+  typeof window !== 'undefined' && typeof window.matchMedia === 'function'
+    ? window.matchMedia('(pointer: fine)').matches
+    : false;
+
 const inputClass =
-  'w-full px-4 py-3 text-base sm:text-sm bg-carbon-05 border border-carbon-20 rounded-2xl text-carbon-90 placeholder-carbon-40 font-medium transition-all focus:outline-none focus:border-nasa-blue focus:ring-2 focus:ring-nasa-blue/40';
+  'h-12 w-full rounded-sm border border-carbon-20 bg-carbon-05 px-4 py-3 text-base text-carbon-90 placeholder-carbon-40 font-medium focus:border-nasa-blue focus:outline-none focus:ring-2 focus:ring-nasa-blue/40';
 
 const LoginPage: React.FC = () => {
   const { signInWithEmail, user } = useAuth();
@@ -79,7 +84,7 @@ const LoginPage: React.FC = () => {
               exit={{ opacity: 0, y: -5 }}
               role="alert"
               aria-live="polite"
-              className="p-3.5 bg-rose-50 border border-rose-200 rounded-2xl text-xs text-rose-800 font-medium flex items-start gap-2"
+              className="flex items-start gap-2 border-l-2 border-nasa-red bg-white p-4 text-sm font-medium text-nasa-red-shade"
             >
               <span className="shrink-0 mt-0.5">
                 <MaterialIcon name="warning" className="w-4 h-4" />
@@ -90,7 +95,7 @@ const LoginPage: React.FC = () => {
         </AnimatePresence>
 
         <div>
-          <label className="block text-xs font-bold text-carbon-80 mb-1.5" htmlFor="login-email">
+          <label className="mb-1.5 block text-sm font-medium text-carbon-80" htmlFor="login-email">
             Email address
           </label>
           <input
@@ -100,7 +105,7 @@ const LoginPage: React.FC = () => {
             required
             autoComplete="email"
             inputMode="email"
-            autoFocus
+            autoFocus={finePointer}
             placeholder="you@example.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -110,13 +115,13 @@ const LoginPage: React.FC = () => {
 
         <div>
           <div className="flex items-center justify-between mb-1.5">
-            <label className="block text-xs font-bold text-carbon-80" htmlFor="login-password">
+            <label className="block text-sm font-medium text-carbon-80" htmlFor="login-password">
               Password
             </label>
             <Link
               id="login-page-forgot-pwd-btn"
               to="/forgot-password"
-              className="text-[11px] font-bold text-amber-800 hover:text-amber-900 hover:underline"
+              className="text-xs font-bold text-nasa-blue-shade hover:text-nasa-blue hover:underline"
             >
               Forgot password?
             </Link>
@@ -136,7 +141,7 @@ const LoginPage: React.FC = () => {
             <button
               type="button"
               onClick={() => setShowPassword((value) => !value)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1.5 text-carbon-60 hover:text-carbon-70 focus:outline-none focus-visible:ring-2 focus-visible:ring-nasa-blue/60 cursor-pointer"
+              className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center text-carbon-60 hover:text-carbon-70 focus:outline-none focus-visible:ring-2 focus-visible:ring-nasa-blue/60 cursor-pointer touch-manipulation"
               aria-label={showPassword ? 'Hide password' : 'Show password'}
             >
               <EyeToggleIcon isState={showPassword} size={20} duration={0} />
@@ -148,7 +153,7 @@ const LoginPage: React.FC = () => {
           id="login-page-submit-btn"
           type="submit"
           disabled={loading || !email.trim() || !password}
-          className="w-full py-3.5 bg-nasa-red hover:bg-nasa-red-shade text-carbon-black font-extrabold rounded-2xl text-sm transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nasa-blue/60 focus-visible:ring-offset-2"
+          className="flex min-h-[44px] w-full cursor-pointer items-center justify-center gap-2 bg-nasa-red-shade px-6 py-3 text-base font-semibold text-white hover:bg-nasa-red disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nasa-blue/60 focus-visible:ring-offset-2 touch-manipulation"
         >
           {loading ? (
             <>
@@ -164,7 +169,7 @@ const LoginPage: React.FC = () => {
       {/* ── Social options: Google and GitHub (Firebase providers) ── */}
       <div className="relative flex items-center justify-center" aria-hidden="true">
         <div className="border-t border-carbon-20 w-full" />
-        <span className="bg-white px-3 text-[10px] text-carbon-60 font-bold uppercase tracking-wider absolute">
+        <span className="bg-white px-3 text-xs text-carbon-60 font-bold uppercase tracking-wider absolute">
           or continue with
         </span>
       </div>
@@ -174,7 +179,7 @@ const LoginPage: React.FC = () => {
         New to HazardNet?{' '}
         <Link
           to={next !== '/' ? `/signup?next=${encodeURIComponent(next)}` : '/signup'}
-          className="font-extrabold text-amber-800 hover:text-amber-900 hover:underline"
+          className="font-extrabold text-nasa-blue-shade hover:text-nasa-blue hover:underline"
         >
           Create an account
         </Link>

@@ -140,4 +140,9 @@ describe('numbers and dates', () => {
     expect(formatDate('not-a-date', 'en')).toBe('not-a-date');
     expect(formatNumber(null, 'bn')).toBe('—');
   });
+
+  it('renders month and year from calendar components, not local midnight', () => {
+    expect(formatDate('2026-01-15', 'en', { monthYear: true })).toBe('January 2026');
+    expect(formatDate('2026-01-15', 'bn', { monthYear: true })).toBe('জানুয়ারি ২০২৬');
+  });
 });

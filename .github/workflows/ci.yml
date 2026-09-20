@@ -511,6 +511,13 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-vite-cache-
 
+      # Source-only design scan before the production build. The full gate below
+      # still needs prerendered HTML, but a class-level finding (side-tab, leftover
+      # 4px accent after a file move) is visible in frontend/src and must fail
+      # without waiting for dist. `check:ux-release` runs the same flag locally.
+      - name: Design quality gate (source)
+        run: npm run check:design:source
+
       - name: Production build
         run: npm run build
 

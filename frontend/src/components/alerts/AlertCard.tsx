@@ -55,7 +55,7 @@ export const AlertCard: React.FC<AlertCardProps> = ({ alert, onOpen, className =
 
   return (
     <article
-      className={`rounded-2xl border border-carbon-20 bg-white p-3 sm:p-4 shadow-sm ${className}`}
+      className={`border border-carbon-20 bg-white p-4 ${className}`}
       aria-labelledby={headingId}
       data-alert-id={alert.id}
       data-level={level}
@@ -81,7 +81,7 @@ export const AlertCard: React.FC<AlertCardProps> = ({ alert, onOpen, className =
           <button
             type="button"
             onClick={() => onOpen(alert)}
-            className="inline-flex items-center gap-1 rounded-lg border border-carbon-30 px-2.5 py-1.5 text-xs font-bold text-carbon-80 hover:bg-carbon-05"
+            className="inline-flex min-h-[44px] items-center gap-1 border border-carbon-20 px-3 py-2 text-sm font-semibold text-carbon-80 hover:bg-carbon-05 touch-manipulation"
           >
             <MaterialIcon name="description" className="text-sm" aria-hidden="true" />
             {t('alerts.card.evidenceCard')}
@@ -89,7 +89,7 @@ export const AlertCard: React.FC<AlertCardProps> = ({ alert, onOpen, className =
         )}
       </div>
 
-      <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-1.5 text-[11px] text-carbon-70">
+      <dl className="mt-3 grid grid-cols-2 gap-x-3 gap-y-2 text-xs text-carbon-70">
         <div>
           <dt className="font-semibold text-carbon-60">{t('common.targetDate')}</dt>
           <dd>{formatDate(alert.target_date)}</dd>
@@ -113,11 +113,11 @@ export const AlertCard: React.FC<AlertCardProps> = ({ alert, onOpen, className =
       </dl>
 
       {variant === 'full' && (
-        <div className="mt-3 rounded-xl bg-carbon-05 p-2.5">
-          <p className="text-[11px] font-bold uppercase tracking-wide text-carbon-60">
+        <div className="mt-3 bg-carbon-05 border border-carbon-20 p-3">
+          <p className="text-xs font-bold uppercase tracking-wide text-carbon-60">
             {t('alerts.card.evidence')}
           </p>
-          <ul className="mt-1 space-y-0.5 text-[11px] text-carbon-70">
+          <ul className="mt-1 space-y-0.5 text-xs text-carbon-70">
             <li>
               <span className="font-semibold">{t('alerts.evidence.modelSeverity')}:</span>{' '}
               {formatNumber(model.model_severity ?? alert.severity_score)}
@@ -138,17 +138,17 @@ export const AlertCard: React.FC<AlertCardProps> = ({ alert, onOpen, className =
         </div>
       )}
 
-      <p className="mt-3 text-[11px] leading-relaxed text-carbon-60">{confidenceText}</p>
+      <p className="mt-3 text-xs leading-relaxed text-carbon-70">{confidenceText}</p>
 
       {reviewLabel && (
-        <p className="mt-1.5 inline-flex items-center gap-1 text-[11px] font-semibold text-carbon-60">
+        <p className="mt-1.5 inline-flex items-center gap-1 text-xs font-semibold text-carbon-70">
           <MaterialIcon name="verified_user" className="text-sm" aria-hidden="true" />
           {reviewLabel}
         </p>
       )}
 
       {alert.provenance?.model_version && (
-        <p className="mt-1 font-mono text-[10px] text-carbon-60">
+        <p className="mt-1 font-mono text-xs text-carbon-60">
           {t('common.updated')}: {formatDate(alert.prediction_date)} · {alert.provenance.model_version}
           {alert.policy_version ? ` · ${alert.policy_version}` : ''}
         </p>

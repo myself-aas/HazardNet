@@ -1,7 +1,7 @@
 // Service Worker for offline mode, Web Push Notifications, and GIS map tiles.
 
 // Invalidate old app bundles containing the withdrawn research presentation.
-const CACHE_NAME = 'hazardnet-offline-v2';
+const CACHE_NAME = 'hazardnet-offline-v3';
 const TILE_CACHE_NAME = 'hazardnet-tiles-v1';
 const MAX_TILE_CACHE_ITEMS = 1200;
 
@@ -249,6 +249,19 @@ self.addEventListener('fetch', (event: any) => {
     event.respondWith(
       fetch(request).catch(() => caches.match(request))
     );
+    return;
+  }
+
+  // Never cache HTML / navigations. A stale document shell can keep withdrawn
+  // research UI on disk after a deploy that removed it (Phase 7 §14.10).
+  const accept = request.headers.get('Accept') || '';
+  const isDocument =
+    request.mode === 'navigate' ||
+    request.destination === 'document' ||
+    accept.includes('text/html') ||
+    url.pathname.endsWith('.html');
+  if (isDocument) {
+    event.respondWith(fetch(request));
     return;
   }
 

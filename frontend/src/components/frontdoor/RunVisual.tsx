@@ -45,7 +45,7 @@ export interface RunVisualProps {
 }
 
 const Eyebrow: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <p className="font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-carbon-60">{children}</p>
+  <p className="font-mono text-xs font-bold uppercase tracking-[0.025em] text-carbon-60">{children}</p>
 );
 
 export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, published, withheld }) => {
@@ -65,7 +65,7 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
        figure its accessible name, so the eyebrow is read rather than skipped. */
     <figure
       aria-labelledby="front-door-run-visual-caption"
-      className="border border-carbon-20 bg-white p-5 md:p-6"
+      className="border border-carbon-20 bg-white p-4 lg:p-6"
       data-testid="front-door-run-visual"
     >
       <figcaption id="front-door-run-visual-caption">
@@ -108,7 +108,7 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
                 style={{ width: `${pct ?? 0}%` }}
               />
             </div>
-            <p className="mt-2 font-mono text-[10px] leading-relaxed text-carbon-60">
+            <p className="mt-2 font-mono text-xs leading-relaxed text-carbon-60">
               {coverage?.status ? `${t('frontdoor.runVisual.coverageStatus')}: ${coverage.status}` : '—'}
               {coverage?.produced_units != null
                 ? ` · ${formatNumber(coverage.produced_units)} ${t('frontdoor.runVisual.units')}`
@@ -157,14 +157,14 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
               <p className="text-xs font-bold text-carbon-90">{t('frontdoor.runVisual.honesty')}</p>
               <ul className="mt-2 space-y-1.5">
                 {honesty.slice(0, 3).map((note) => (
-                  <li key={note} className="flex min-w-0 gap-2 text-[11px] leading-relaxed text-carbon-70">
+                  <li key={note} className="flex min-w-0 gap-2 text-xs leading-[1.62] text-carbon-70">
                     <span aria-hidden="true" className="mt-[6px] h-[5px] w-[5px] shrink-0 bg-nasa-orange" />
                     <span className="min-w-0 break-words">{note}</span>
                   </li>
                 ))}
               </ul>
               {honesty.length > 3 && (
-                <p className="mt-2 font-mono text-[10px] text-carbon-60">
+                <p className="mt-2 font-mono text-xs text-carbon-60">
                   {t('frontdoor.runVisual.moreHonesty', { total: formatNumber(honesty.length) })}{' '}
                   <Link to="/status" className="font-bold text-nasa-blue-shade underline underline-offset-2">
                     {t('frontdoor.runVisual.statusPage')}
@@ -174,7 +174,7 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
             </div>
           )}
 
-          <p className="border-t border-carbon-10 pt-3 font-mono text-[10px] leading-relaxed text-carbon-60">
+          <p className="border-t border-carbon-10 pt-3 font-mono text-xs leading-relaxed text-carbon-60">
             {t('frontdoor.runVisual.provenance')} · built {freshness.built_at ?? 'timestamp not reported'}
           </p>
         </div>

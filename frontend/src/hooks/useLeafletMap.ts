@@ -148,6 +148,8 @@ export interface UseLeafletMapOptions {
   onMapClick?: (lat: number, lng: number) => void;
   onAutoLocateDistrict?: (district: DistrictData) => void;
   autoLocateEnabled?: boolean;
+  /** When true, imagery rasters fall back to OSM (see `effectiveMapLayer`). */
+  lowBandwidth?: boolean;
 }
 
 export function useLeafletMap(
@@ -155,7 +157,7 @@ export function useLeafletMap(
   activeLayer: MapLayerKey = 'esriSatellite',
   options: UseLeafletMapOptions = {}
 ) {
-  const { onMapClick, onAutoLocateDistrict, autoLocateEnabled = true } = options;
+  const { onMapClick, onAutoLocateDistrict, autoLocateEnabled = true, lowBandwidth = false } = options;
 
   const mapInstanceRef = useRef<L.Map | null>(null);
   const tileLayerRef = useRef<L.TileLayer | null>(null);
@@ -200,7 +202,7 @@ export function useLeafletMap(
       attributionControl: false,
     });
 
-    const baseLayerKey = effectiveMapLayer(activeLayer);
+    const baseLayerKey = effectiveMapLayer(activeLayer, lowBandwidth);
     const config = MAP_LAYERS[baseLayerKey] || MAP_LAYERS.osmStandard;
     const tileLayer = createCachedTileLayer(config.url, baseLayerKey, {
       maxZoom: config.maxZoom,
@@ -398,7 +400,7 @@ export function useLeafletMap(
   useEffect(() => {
     if (!mapInstanceRef.current) return;
     setIsProcessingData(true);
-    const baseLayerKey = effectiveMapLayer(activeLayer);
+    const baseLayerKey = effectiveMapLayer(activeLayer, lowBandwidth);
     const config = MAP_LAYERS[baseLayerKey] || MAP_LAYERS.osmStandard;
 
     if (tileLayerRef.current) {
@@ -420,7 +422,7 @@ export function useLeafletMap(
       setIsProcessingData(false);
     }, 600);
     return () => clearTimeout(timer);
-  }, [activeLayer]);
+  }, [activeLayer, lowBandwidth]);
 
   // Handler to center on user location manually
   const centerOnUserLocation = useCallback(async () => {

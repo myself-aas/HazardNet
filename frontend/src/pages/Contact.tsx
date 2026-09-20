@@ -169,7 +169,7 @@ export const Contact: React.FC = () => {
   };
 
   const inputClass =
-    'w-full p-2.5 rounded-xl border border-carbon-30 bg-carbon-05 text-carbon-90 font-medium outline-none focus:border-amber-600 focus:ring-2 focus:ring-amber-200';
+    'w-full p-2.5 border border-carbon-30 bg-carbon-05 text-carbon-90 font-medium outline-none focus:border-amber-600 focus:ring-2 focus:ring-amber-200';
 
   return (
     <motion.div
@@ -180,9 +180,9 @@ export const Contact: React.FC = () => {
     >
       <Breadcrumbs />
 
-      <header className="bg-white border border-carbon-20 rounded-2xl p-6 md:p-8 shadow-xs space-y-3">
+      <header className="bg-white border border-carbon-20 p-6 md:p-8 space-y-3">
         <div className="flex items-center gap-2">
-          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-50 text-amber-900 border border-amber-200 uppercase tracking-wider">
+          <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-amber-50 text-amber-900 border border-amber-200 uppercase tracking-wider">
             Support &amp; communications
           </span>
         </div>
@@ -195,7 +195,7 @@ export const Contact: React.FC = () => {
         </p>
         <p
           role="note"
-          className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-[11px] font-semibold leading-relaxed text-rose-900"
+          className="border border-nasa-red bg-white p-3 text-xs font-semibold leading-relaxed text-nasa-red-shade"
         >
           This is not an emergency channel and it is not monitored around the clock. In an emergency call{' '}
           <strong>999</strong>, and follow BMD, FFWC, DDM and local administration instructions.
@@ -203,7 +203,7 @@ export const Contact: React.FC = () => {
       </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 bg-white border border-carbon-20 rounded-2xl p-6 md:p-8 shadow-xs space-y-6">
+        <div className="lg:col-span-2 bg-white border border-carbon-20 p-6 md:p-8 space-y-6">
           <div className="flex items-center gap-2 border-b border-carbon-20 pb-3 text-xs font-bold overflow-x-auto scrollbar-none">
             {(
               [
@@ -221,9 +221,9 @@ export const Contact: React.FC = () => {
                   setPrepared(null);
                   setErrors([]);
                 }}
-                className={`px-3.5 py-1.5 rounded-xl transition-all whitespace-nowrap cursor-pointer ${
+                className={`px-3.5 py-1.5 transition-all whitespace-nowrap cursor-pointer ${
                   activeForm === kind
-                    ? 'bg-amber-500 text-carbon-90 font-bold shadow-xs'
+                    ? 'bg-amber-500 text-carbon-90 font-bold'
                     : 'bg-carbon-10 text-carbon-60 hover:bg-carbon-20 hover:text-carbon-90'
                 }`}
               >
@@ -233,7 +233,7 @@ export const Contact: React.FC = () => {
           </div>
 
           {errors.length > 0 && (
-            <div role="alert" className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-xs text-rose-900">
+            <div role="alert" className="border border-nasa-red bg-white p-4 text-xs text-nasa-red-shade">
               <p className="font-bold">Please fix the following before continuing:</p>
               <ul className="mt-1 list-disc pl-5">
                 {errors.map((problem) => (
@@ -244,7 +244,7 @@ export const Contact: React.FC = () => {
           )}
 
           {prepared && (
-            <div role="status" className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-xs text-emerald-950 space-y-2">
+            <div role="status" className="border border-carbon-20 bg-carbon-05 p-4 text-xs text-carbon-80 space-y-2">
               <p className="font-bold">Your report is prepared — choose how to send it:</p>
               <p className="leading-relaxed">
                 Nothing has been submitted yet. HazardNet has no server-side inbox for these forms, so pick a channel
@@ -256,13 +256,13 @@ export const Contact: React.FC = () => {
                   href={issueUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="rounded-xl bg-carbon-90 px-4 py-2 font-bold text-white hover:bg-carbon-70"
+                  className="bg-carbon-90 px-4 py-2 font-bold text-white hover:bg-carbon-70"
                 >
                   Open a prefilled GitHub issue
                 </a>
                 <a
                   href={mailtoUrl}
-                  className="rounded-xl border border-carbon-30 bg-white px-4 py-2 font-bold text-carbon-80 hover:bg-carbon-05"
+                  className="border border-carbon-30 bg-white px-4 py-2 font-bold text-carbon-80 hover:bg-carbon-05"
                 >
                   Send by email instead
                 </a>
@@ -492,12 +492,12 @@ export const Contact: React.FC = () => {
 
             <button
               type="submit"
-              className="px-6 py-3 rounded-xl bg-nasa-red text-carbon-90 font-bold transition-all shadow-xs flex items-center gap-2 text-xs hover:bg-nasa-red-shade cursor-pointer"
+              className="px-6 py-3 bg-nasa-red text-carbon-90 font-bold transition-all flex items-center gap-2 text-xs hover:bg-nasa-red-shade cursor-pointer"
             >
               <SendIcon size={18} duration={0} isState={false} />
               <span>Prepare report</span>
             </button>
-            <p className="text-[11px] leading-relaxed text-carbon-60">
+            <p className="text-xs leading-relaxed text-carbon-60">
               The button prepares your report and shows sending options. It does not transmit anything by itself, and
               HazardNet does not store these forms on its servers.
             </p>
@@ -505,28 +505,28 @@ export const Contact: React.FC = () => {
         </div>
 
         <aside className="space-y-6">
-          <div className="bg-white text-carbon-90 rounded-2xl p-6 shadow-xs space-y-4 border border-carbon-20">
+          <div className="bg-white text-carbon-90 p-6 space-y-4 border border-carbon-20">
             <h2 className="font-extrabold text-sm uppercase tracking-wider font-mono text-carbon-90">
               Official hotlines
             </h2>
 
             <div className="space-y-3 text-xs">
-              <div className="p-3 bg-rose-50 rounded-xl border border-rose-200 space-y-1">
-                <span className="font-bold text-rose-900 block">National emergency service</span>
-                <p className="font-mono text-sm font-bold text-rose-800">📞 999</p>
+              <div className="p-3 bg-white border border-nasa-red space-y-1">
+                <span className="font-bold text-nasa-red-shade block">National emergency service</span>
+                <p className="font-mono text-sm font-bold text-nasa-red-shade">📞 999</p>
               </div>
-              <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 space-y-1">
+              <div className="p-3 bg-amber-50 border border-amber-200 space-y-1">
                 <span className="font-bold text-amber-900 block">Department of Agricultural Extension (DAE)</span>
                 <p className="font-mono text-sm font-bold text-amber-800">📞 16123</p>
               </div>
-              <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 space-y-1">
+              <div className="p-3 bg-amber-50 border border-amber-200 space-y-1">
                 <span className="font-bold text-amber-900 block">Disaster management helpline</span>
                 <p className="font-mono text-sm font-bold text-amber-800">📞 1090</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white border border-carbon-20 rounded-2xl p-6 shadow-xs space-y-3 text-xs text-carbon-60">
+          <div className="bg-white border border-carbon-20 p-6 space-y-3 text-xs text-carbon-60">
             <h2 className="font-bold text-carbon-90 text-sm flex items-center gap-2">
               <MaterialIcon name="hub" className="text-amber-800" /> Where reports go
             </h2>
@@ -561,7 +561,7 @@ export const Contact: React.FC = () => {
         </aside>
       </div>
 
-      <p className="text-[11px] text-carbon-60">
+      <p className="text-xs text-carbon-60">
         HazardNet is decision support, not an official warning service. See the{' '}
         <a className="font-bold text-amber-700 hover:text-amber-900" href="/methodology">
           methodology
