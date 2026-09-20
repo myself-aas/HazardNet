@@ -148,11 +148,11 @@ export const BlogArticlePage: React.FC = () => {
             : 'This URL does not match a published HazardNet article. It may be a draft, renamed, or removed.'}
         </p>
         <div className="flex items-center gap-2">
-          <Link to="/blogs" className="rounded-2xl bg-nasa-red px-4 py-2.5 text-xs font-black text-carbon-black shadow-md hover:bg-nasa-red-shade">
+          <Link to="/blogs" className="bg-nasa-red px-4 py-2.5 text-xs font-black text-white hover:bg-nasa-red-shade">
             Browse all articles
           </Link>
           {isPrimarySuperAdmin(user?.email) && (
-            <Link to="/dashboard/blog" className="rounded-2xl border border-carbon-20 bg-white px-4 py-2.5 text-xs font-black text-carbon-70 hover:bg-carbon-05">
+            <Link to="/dashboard/blog" className="border border-carbon-20 bg-white px-4 py-2.5 text-xs font-black text-carbon-70 hover:bg-carbon-05">
               Open Blog Studio
             </Link>
           )}
@@ -191,13 +191,13 @@ export const BlogArticlePage: React.FC = () => {
       <AdSenseScript />
       <Breadcrumbs />
 
-      <article className="bg-white border border-carbon-20/90 rounded-3xl shadow-md overflow-hidden">
+      <article className="bg-white border border-carbon-20/90 overflow-hidden">
         {article.coverImageUrl && (
           <img src={article.coverImageUrl} alt={article.title} className="w-full h-48 sm:h-64 object-cover" />
         )}
         <div className="p-6 sm:p-9 space-y-5">
-          <div className="flex items-center gap-2 flex-wrap text-[10px] font-mono font-bold uppercase tracking-wider">
-            <span className="px-2.5 py-1 rounded-lg bg-amber-50 border border-amber-200 text-amber-900">{article.category}</span>
+          <div className="flex items-center gap-2 flex-wrap text-xs font-mono font-bold uppercase tracking-wider">
+            <span className="px-2.5 py-1 rounded-sm bg-amber-50 border border-amber-200 text-amber-900">{article.category}</span>
             <span className="text-carbon-60">{date}</span>
             <span className="text-carbon-30">•</span>
             <span className="text-carbon-60">{readingTimeMinutes(article.contentHtml)} min read</span>
@@ -211,19 +211,19 @@ export const BlogArticlePage: React.FC = () => {
               {article.authorAvatarUrl ? (
                 <img src={article.authorAvatarUrl} alt="" className="h-10 w-10 rounded-full border border-carbon-20 object-cover shrink-0" />
               ) : (
-                <span className="h-8 w-8 rounded-full bg-gradient-to-tr from-amber-500 to-amber-300 text-carbon-black font-black text-xs flex items-center justify-center shrink-0">
+                <span className="h-8 w-8 rounded-full bg-gradient-to-tr from-amber-500 to-amber-300 text-white font-black text-xs flex items-center justify-center shrink-0">
                   {(article.authorName || 'H')[0].toUpperCase()}
                 </span>
               )}
               <div className="min-w-0">
                 <p className="text-xs font-black text-carbon-90 truncate">{article.authorName}</p>
-                <p className="text-[10px] font-mono text-carbon-60 truncate">{article.authorTitle || 'HazardNet Research Team'}</p>
+                <p className="text-xs font-mono text-carbon-60 truncate">{article.authorTitle || 'HazardNet Research Team'}</p>
               </div>
             </div>
             <button
               type="button"
               onClick={copyLink}
-              className="shrink-0 inline-flex items-center gap-1.5 rounded-xl border border-carbon-20 px-3 py-1.5 text-[10px] font-black text-carbon-60 hover:bg-carbon-10 cursor-pointer"
+              className="shrink-0 inline-flex items-center gap-1.5 border border-carbon-20 px-3 py-1.5 text-xs font-black text-carbon-60 hover:bg-carbon-10 cursor-pointer"
               title="Copy article link"
             >
               <MaterialIcon name="share" className="w-3.5 h-3.5" /> Copy link
@@ -232,7 +232,7 @@ export const BlogArticlePage: React.FC = () => {
 
           {/* Affiliate disclosure (FTC + Google policy) */}
           {article.containsAffiliateLinks && (
-            <p className="rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3 text-[11px] font-medium leading-relaxed text-sky-900" data-testid="affiliate-disclosure">
+            <p className="border border-sky-200 bg-carbon-05 px-4 py-3 text-xs font-medium leading-relaxed text-sky-900" data-testid="affiliate-disclosure">
               <MaterialIcon name="attach_money" className="mr-1 inline h-3.5 w-3.5" />
               {disclosure}
             </p>
@@ -259,7 +259,7 @@ export const BlogArticlePage: React.FC = () => {
           {article.tags.length > 0 && (
             <div className="flex flex-wrap gap-1.5 pt-2 border-t border-carbon-10">
               {article.tags.map((tag) => (
-                <span key={tag} className="px-2 py-1 rounded-lg bg-carbon-10 border border-carbon-20 text-[10px] font-bold text-carbon-60">
+                <span key={tag} className="px-2 py-1 rounded-sm bg-carbon-10 border border-carbon-20 text-xs font-bold text-carbon-60">
                   #{tag}
                 </span>
               ))}
@@ -269,7 +269,7 @@ export const BlogArticlePage: React.FC = () => {
           {relatedDistrict && (
             <Link
               to={`/?district=${relatedDistrict}`}
-              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-carbon-90 text-white text-xs font-extrabold hover:bg-carbon-80 transition-all shadow-md"
+              className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-carbon-90 text-white text-xs font-extrabold hover:bg-carbon-80 transition-all"
             >
               <MaterialIcon name="satellite_alt" className="w-4 h-4" /> View {relatedDistrict} on GIS Map
             </Link>
@@ -277,26 +277,26 @@ export const BlogArticlePage: React.FC = () => {
 
           {/* Author bio box (E-E-A-T) */}
           {(article.authorBio || article.authorWebsite) && (
-            <div className="flex items-start gap-3 rounded-2xl bg-carbon-05 border border-carbon-10 p-4">
+            <div className="flex items-start gap-3 bg-carbon-05 border border-carbon-10 p-4">
               {article.authorAvatarUrl ? (
                 <img src={article.authorAvatarUrl} alt="" className="h-12 w-12 rounded-full border border-carbon-20 object-cover shrink-0" />
               ) : (
-                <span className="h-12 w-12 rounded-full bg-gradient-to-tr from-amber-500 to-amber-300 text-carbon-black font-black text-sm flex items-center justify-center shrink-0">
+                <span className="h-12 w-12 rounded-full bg-gradient-to-tr from-amber-500 to-amber-300 text-white font-black text-sm flex items-center justify-center shrink-0">
                   {(article.authorName || 'H')[0].toUpperCase()}
                 </span>
               )}
               <div className="min-w-0">
                 <p className="text-xs font-black text-carbon-90">
                   {article.authorName}
-                  {article.authorTitle && <span className="ml-1.5 font-mono text-[10px] font-bold text-carbon-60">{article.authorTitle}</span>}
+                  {article.authorTitle && <span className="ml-1.5 font-mono text-xs font-bold text-carbon-60">{article.authorTitle}</span>}
                 </p>
-                {article.authorBio && <p className="mt-1 text-[11px] leading-relaxed text-carbon-60">{article.authorBio}</p>}
+                {article.authorBio && <p className="mt-1 text-xs leading-relaxed text-carbon-60">{article.authorBio}</p>}
                 {article.authorWebsite && (
                   <a
                     href={article.authorWebsite.startsWith('http') ? article.authorWebsite : `https://${article.authorWebsite}`}
                     target="_blank"
                     rel="noopener nofollow"
-                    className="mt-1 inline-block text-[10px] font-black text-amber-700 hover:underline"
+                    className="mt-1 inline-block text-xs font-black text-amber-700 hover:underline"
                   >
                     {article.authorWebsite.replace(/^https?:\/\//, '').replace(/\/$/, '')} ↗
                   </a>

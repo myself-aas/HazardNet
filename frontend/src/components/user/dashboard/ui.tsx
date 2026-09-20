@@ -8,7 +8,7 @@ import { motion } from 'framer-motion';
  */
 
 export const inputClass =
-  'w-full px-3.5 py-2.5 text-sm bg-white border border-carbon-20 rounded-xl text-carbon-90 placeholder-carbon-40 font-medium transition-all focus:outline-none focus:border-nasa-blue focus:ring-2 focus:ring-nasa-blue/30 disabled:bg-carbon-05 disabled:text-carbon-60';
+  'h-12 w-full rounded-sm border border-carbon-20 bg-white px-4 py-3 text-base text-carbon-90 placeholder-carbon-40 font-medium focus:border-nasa-blue focus:outline-none focus:ring-2 focus:ring-nasa-blue/30 disabled:bg-carbon-05 disabled:text-carbon-60';
 
 export const Card: React.FC<{
   title?: string;
@@ -18,24 +18,24 @@ export const Card: React.FC<{
   children: React.ReactNode;
   className?: string;
 }> = ({ title, subtitle, icon, actions, children, className = '' }) => (
-  <section className={`rounded-3xl border border-carbon-20/90 bg-white shadow-xs ${className}`}>
+  <section className={`border border-carbon-20 bg-white ${className}`}>
     {(title || actions) && (
-      <header className="flex items-start justify-between gap-3 border-b border-carbon-10 px-5 py-4 sm:px-6">
+      <header className="flex items-start justify-between gap-3 border-b border-carbon-10 px-6 py-4">
         <div className="flex items-start gap-3">
           {icon && (
-            <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-700">
+            <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center bg-amber-50 text-amber-700">
               {icon}
             </span>
           )}
           <div>
-            <h3 className="text-sm font-extrabold tracking-tight text-carbon-90">{title}</h3>
-            {subtitle && <p className="mt-0.5 text-xs leading-relaxed text-carbon-60">{subtitle}</p>}
+            <h3 className="text-lg font-bold tracking-tight text-carbon-90">{title}</h3>
+            {subtitle && <p className="mt-0.5 text-base leading-[1.62] text-carbon-60">{subtitle}</p>}
           </div>
         </div>
         {actions}
       </header>
     )}
-    <div className="px-5 py-4 sm:px-6 sm:py-5">{children}</div>
+    <div className="p-6">{children}</div>
   </section>
 );
 
@@ -48,12 +48,12 @@ export const Field: React.FC<{
   className?: string;
 }> = ({ label, htmlFor, hint, error, children, className = '' }) => (
   <div className={className}>
-    <label htmlFor={htmlFor} className="mb-1 block text-[11px] font-bold uppercase tracking-wide text-carbon-60">
+    <label htmlFor={htmlFor} className="mb-1 block text-xs font-bold uppercase tracking-wide text-carbon-60">
       {label}
     </label>
     {children}
-    {hint && !error && <p className="mt-1 text-[11px] leading-relaxed text-carbon-60">{hint}</p>}
-    {error && <p className="mt-1 text-[11px] font-semibold text-rose-700">{error}</p>}
+    {hint && !error && <p className="mt-1 text-base leading-[1.62] text-carbon-60">{hint}</p>}
+    {error && <p className="mt-1 text-sm font-semibold text-nasa-red-shade">{error}</p>}
   </div>
 );
 
@@ -163,7 +163,7 @@ export const NumberField: React.FC<{
         className={`${inputClass} ${suffix ? 'pr-14' : ''}`}
       />
       {suffix && (
-        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] font-bold text-carbon-60">{suffix}</span>
+        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-carbon-60">{suffix}</span>
       )}
     </div>
   </Field>
@@ -200,7 +200,7 @@ export const ToggleField: React.FC<{
       <label htmlFor={id} className="block text-xs font-bold text-carbon-80">
         {label}
       </label>
-      {description && <p className="mt-0.5 text-[11px] leading-relaxed text-carbon-60">{description}</p>}
+      {description && <p className="mt-0.5 text-xs leading-relaxed text-carbon-60">{description}</p>}
     </div>
     <button
       id={id}
@@ -209,7 +209,7 @@ export const ToggleField: React.FC<{
       aria-checked={checked}
       onClick={() => onChange(!checked)}
       className={`relative h-6 w-11 shrink-0 rounded-full transition-colors duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nasa-blue/60 ${
-        checked ? 'bg-emerald-500' : 'bg-carbon-30'
+        checked ? 'bg-nasa-green' : 'bg-carbon-30'
       }`}
     >
       <motion.span
@@ -232,23 +232,23 @@ export const SaveBar: React.FC<{
 }> = ({ dirty, saving, message, onSave, onReset, label = 'Save changes' }) => (
   <div className="sticky bottom-4 z-20 mt-5" aria-live="polite">
     <div
-      className={`flex flex-wrap items-center justify-between gap-3 rounded-2xl border px-4 py-3 shadow-md backdrop-blur transition-all ${
+      className={`flex flex-wrap items-center justify-between gap-3 border px-4 py-3  transition-all ${
         message
-          ? 'border-emerald-200 bg-emerald-50/95'
+          ? 'border-carbon-20 bg-white'
           : dirty
             ? 'border-amber-200 bg-amber-50/95'
             : 'border-carbon-20 bg-white/95'
       }`}
     >
-      <p className={`text-xs font-bold ${message ? 'text-emerald-800' : dirty ? 'text-amber-800' : 'text-carbon-60'}`}>
-        {message ?? (dirty ? 'You have unsaved changes.' : 'All changes saved.')}
+      <p className={`text-sm font-semibold ${message ? 'text-carbon-80' : dirty ? 'text-amber-800' : 'text-carbon-60'}`}>
+        {message ?? (dirty ? 'You have unsaved changes.' : 'No unsaved changes.')}
       </p>
       <div className="flex items-center gap-2">
         <button
           type="button"
           onClick={onReset}
           disabled={!dirty || saving}
-          className="rounded-xl px-3 py-2 text-xs font-bold text-carbon-60 transition-colors hover:bg-carbon-10 disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed"
+          className="min-h-[44px] px-3 py-2 text-sm font-semibold text-carbon-60 hover:bg-carbon-10 disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed touch-manipulation"
         >
           Discard
         </button>
@@ -256,7 +256,7 @@ export const SaveBar: React.FC<{
           type="button"
           onClick={onSave}
           disabled={!dirty || saving}
-          className="flex items-center gap-2 rounded-xl bg-carbon-90 px-4 py-2 text-xs font-extrabold text-white shadow-sm transition-all hover:bg-carbon-80 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+          className="inline-flex min-h-[44px] items-center gap-2 bg-nasa-blue px-6 py-2 text-base font-semibold text-white hover:bg-nasa-blue-shade disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer touch-manipulation"
         >
           {saving && <span className="h-3 w-3 animate-spin rounded-full border-2 border-white/40 border-t-white" />}
           {saving ? 'Saving…' : label}

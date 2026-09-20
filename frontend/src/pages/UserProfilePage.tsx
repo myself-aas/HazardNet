@@ -223,47 +223,47 @@ export const UserProfilePage: React.FC = () => {
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25 }}
-      className="mx-auto w-full max-w-3xl space-y-4 pb-10"
+      className="mx-auto w-full max-w-3xl space-y-6 pb-10"
       data-testid="user-profile-page"
     >
       <Breadcrumbs />
-      <div className="bg-white border border-carbon-20 rounded-2xl w-full p-4 sm:p-6 shadow-md space-y-4 sm:space-y-5 flex flex-col text-carbon-80">
+      <div className="bg-white border border-carbon-20 w-full p-6 space-y-6 flex flex-col text-carbon-80">
             <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3 pb-3 sm:pb-4 border-b border-carbon-20">
           <div className="flex items-center gap-3 min-w-0">
             {user.photoURL ? (
               <img
                 src={user.photoURL}
                 alt={displayName}
-                className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl object-cover border border-carbon-20 shadow-xs shrink-0"
+                className="h-16 w-16 sm:h-24 sm:w-24 rounded-full object-cover border border-carbon-20 shrink-0"
               />
             ) : (
-              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-nasa-red/10 border border-nasa-blue/20 text-nasa-red-shade font-black text-lg flex items-center justify-center shadow-xs shrink-0">
+              <div className="h-16 w-16 sm:h-24 sm:w-24 rounded-full bg-nasa-red text-white font-black text-lg flex items-center justify-center shrink-0">
                 {(displayName || 'U')[0].toUpperCase()}
               </div>
             )}
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
-                <h1 className="text-base sm:text-lg font-extrabold text-carbon-90 truncate max-w-[55vw] sm:max-w-none">{displayName || 'User Profile'}</h1>
-                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-carbon-10 text-carbon-70 border border-carbon-20 whitespace-nowrap">
+                <h1 className="text-[28px] font-bold leading-tight text-carbon-90 truncate max-w-[55vw] sm:max-w-none">{displayName || 'User Profile'}</h1>
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-carbon-10 text-carbon-70 border border-carbon-20 whitespace-nowrap">
                   {personaInfo.label}
                 </span>
               </div>
-              <p className="text-xs text-carbon-60 font-medium truncate max-w-[60vw] sm:max-w-none">{user.email}</p>
-              <p className="text-[10px] font-mono text-carbon-60 mt-0.5">hazardnet.live/profile</p>
+              <p className="text-base leading-[1.62] text-carbon-60 font-medium truncate max-w-[60vw] sm:max-w-none">{user.email}</p>
+              <p className="text-xs font-mono text-carbon-60 mt-0.5">hazardnet.live/profile</p>
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">
             {publicUsername && (
               <Link
                 to={profilePath(publicUsername)}
-                className="min-h-[36px] px-3 py-1.5 text-xs font-black text-amber-800 hover:text-amber-950 rounded-lg hover:bg-amber-50 transition-colors border border-amber-200 flex items-center gap-1"
+                className="min-h-[44px] px-3 py-2 text-base font-semibold text-nasa-blue-shade hover:bg-carbon-05 rounded-sm border border-carbon-20 flex items-center gap-1 touch-manipulation"
               >
                 Public page /u/{publicUsername}
               </Link>
             )}
             <Link
               to="/dashboard"
-              className="min-h-[36px] px-3 py-1.5 text-xs font-black text-carbon-60 hover:text-carbon-90 rounded-lg hover:bg-carbon-10 transition-colors border border-carbon-20 flex items-center gap-1"
+              className="min-h-[44px] px-3 py-2 text-base font-semibold text-carbon-60 hover:text-carbon-90 rounded-sm hover:bg-carbon-10 border border-carbon-20 flex items-center gap-1 touch-manipulation"
             >
               Dashboard
             </Link>
@@ -274,8 +274,8 @@ export const UserProfilePage: React.FC = () => {
         <form onSubmit={handleSaveProfile} className="flex-1 overflow-y-auto space-y-4 pr-1">
           
           {saveMessage && (
-            <div className={`p-3 rounded-xl text-xs font-bold border ${
-              saveMessage.includes('updated') ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : 'bg-rose-50 text-rose-800 border-rose-200'
+            <div className={`p-3 text-xs font-bold border ${
+              saveMessage.includes('updated') ? 'bg-carbon-05 text-carbon-80 border-carbon-20' : 'bg-white text-nasa-red-shade border-nasa-red'
             }`}>
               {saveMessage}
             </div>
@@ -285,7 +285,7 @@ export const UserProfilePage: React.FC = () => {
           <FirebaseRealtimeStatus variant="card" />
 
           {/* Persona Card Selector */}
-          <div className="bg-carbon-05 border border-carbon-20 rounded-xl p-4 space-y-2">
+          <div className="bg-carbon-05 border border-carbon-20 p-4 space-y-2">
             <label className="block text-xs font-extrabold text-carbon-90">
               Stakeholder Role & Persona Tailoring
             </label>
@@ -298,15 +298,15 @@ export const UserProfilePage: React.FC = () => {
                     type="button"
                     key={roleKey}
                     onClick={() => setUserRole(roleKey)}
-                    className={`p-3 rounded-xl text-left border transition-all flex items-center gap-2.5 ${
+                    className={`p-3 text-left border transition-all flex items-center gap-2.5 ${
                       isSelected
-                        ? 'bg-amber-50 text-nasa-red-shade border-nasa-blue shadow-xs font-bold'
+                        ? 'bg-amber-50 text-nasa-red-shade border-nasa-blue font-bold'
                         : 'bg-white text-carbon-70 border-carbon-20 hover:border-carbon-40'
                     }`}
                   >
                     <div className="flex-1 min-w-0">
                       <div className="text-xs font-bold truncate">{item.label}</div>
-                      <div className={`text-[10px] truncate ${isSelected ? 'text-nasa-red-shade' : 'text-carbon-60'}`}>
+                      <div className={`text-xs truncate ${isSelected ? 'text-nasa-red-shade' : 'text-carbon-60'}`}>
                         {item.tag}
                       </div>
                     </div>
@@ -317,10 +317,10 @@ export const UserProfilePage: React.FC = () => {
           </div>
 
           {/* Use Current Location for District Setting Toggle */}
-          <div className="bg-carbon-05 border border-carbon-20 rounded-xl p-4 transition-all">
+          <div className="bg-carbon-05 border border-carbon-20 p-4 transition-all">
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-start gap-3">
-                <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-sm shrink-0 transition-colors ${
+                <div className={`w-9 h-9 flex items-center justify-center font-bold text-sm shrink-0 transition-colors ${
                   autoDetectLocationEnabled ? 'bg-amber-100 text-amber-900 border border-amber-300' : 'bg-carbon-20 text-carbon-60 border border-carbon-30'
                 }`}>
                   <MaterialIcon name="my_location" className="w-5 h-5 text-current" filled />
@@ -328,13 +328,13 @@ export const UserProfilePage: React.FC = () => {
                 <div>
                   <div className="flex items-center gap-2">
                     <h4 className="text-xs font-extrabold text-carbon-90">Use Current Location for District</h4>
-                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-black ${
                       autoDetectLocationEnabled ? 'bg-emerald-100 text-emerald-900 border border-emerald-300' : 'bg-carbon-20 text-carbon-70 border border-carbon-30'
                     }`}>
                       {autoDetectLocationEnabled ? 'ENABLED' : 'DISABLED'}
                     </span>
                   </div>
-                  <p className="text-[11px] text-carbon-60 mt-0.5 leading-relaxed">
+                  <p className="text-xs text-carbon-60 mt-0.5 leading-relaxed">
                     Automatically detect your geographic GPS / IP location on app launch and map to the nearest Bangladesh district.
                   </p>
                 </div>
@@ -353,7 +353,7 @@ export const UserProfilePage: React.FC = () => {
               >
                 <span className="sr-only">Use Current Location for District</span>
                 <span
-                  className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-amber-400 shadow-md ring-0 transition duration-200 ease-in-out ${
+                  className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-amber-400 ring-0 transition duration-200 ease-in-out ${
                     autoDetectLocationEnabled ? 'translate-x-5' : 'translate-x-0'
                   }`}
                 />
@@ -362,34 +362,34 @@ export const UserProfilePage: React.FC = () => {
           </div>
 
           {/* Pinpoint Geolocation Box */}
-          <div className="bg-carbon-05 border border-carbon-20 rounded-xl p-4 space-y-3">
+          <div className="bg-carbon-05 border border-carbon-20 p-4 space-y-3">
             <div className="flex items-center justify-between">
               <div>
                 <h4 className="text-xs font-extrabold text-carbon-90">IP & GPS Precise Pinpoint Coordinates</h4>
-                <p className="text-[11px] text-carbon-60">Auto-detect nearest Bangladesh district and exact lat/lng</p>
+                <p className="text-xs text-carbon-60">Auto-detect nearest Bangladesh district and exact lat/lng</p>
               </div>
               <button
                 type="button"
                 onClick={handleDetectLocation}
                 disabled={detectingLoc}
-                className="px-3 py-1.5 bg-carbon-90 hover:bg-carbon-80 text-white font-bold text-xs rounded-xl border border-carbon-90 transition-all shadow-xs disabled:opacity-50"
+                className="px-3 py-1.5 bg-carbon-90 hover:bg-carbon-80 text-white font-bold text-xs border border-carbon-90 transition-all disabled:opacity-50"
               >
                 {detectingLoc ? 'Detecting...' : 'Pinpoint Location'}
               </button>
             </div>
 
             {locResult && (
-              <div className="bg-white border border-carbon-20 rounded-xl p-3 text-xs space-y-2 animate-in fade-in shadow-xs">
+              <div className="bg-white border border-carbon-20 p-3 text-xs space-y-2 animate-in fade-in">
                 <div className="flex items-center justify-between font-bold text-carbon-90">
                   <span>Method: {locResult.method.toUpperCase()}</span>
                   <span>Nearest: {locResult.nearestDistrict.name} ({locResult.distanceKm.toFixed(1)} km away)</span>
                 </div>
-                <div className="font-mono text-[11px] text-carbon-60 flex items-center justify-between">
+                <div className="font-mono text-xs text-carbon-60 flex items-center justify-between">
                   <span>Lat: {locResult.lat.toFixed(4)}, Lng: {locResult.lng.toFixed(4)}</span>
                   {locResult.accuracyMeters && <span>Accuracy: ±{Math.round(locResult.accuracyMeters)}m</span>}
                 </div>
                 {locResult.city && (
-                  <div className="text-[10px] text-carbon-60">
+                  <div className="text-xs text-carbon-60">
                     City/ISP: {locResult.city}, {locResult.country} ({locResult.isp || 'IP Geolocation'})
                   </div>
                 )}
@@ -399,14 +399,14 @@ export const UserProfilePage: React.FC = () => {
                     onClick={() => {
                       navigate(`/?district=${locResult.nearestDistrict.id}`);
                     }}
-                    className="py-1.5 px-3 bg-carbon-90 hover:bg-carbon-80 text-white border border-carbon-90 font-bold rounded-xl text-xs transition-colors shadow-xs"
+                    className="py-1.5 px-3 bg-carbon-90 hover:bg-carbon-80 text-white border border-carbon-90 font-bold text-xs transition-colors"
                   >
                     Sync Map to {locResult.nearestDistrict.name}
                   </button>
                   <button
                     type="button"
                     onClick={() => handleSetHomeDistrict(locResult.nearestDistrict.id)}
-                    className="py-1.5 px-3 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 font-extrabold rounded-xl text-xs transition-colors shadow-xs flex items-center justify-center gap-1.5"
+                    className="py-1.5 px-3 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 font-extrabold text-xs transition-colors flex items-center justify-center gap-1.5"
                   >
                     <MaterialIcon name="home" className="w-4 h-4 inline-block mr-1" /><span>Set as Default Home District</span>
                   </button>
@@ -415,32 +415,32 @@ export const UserProfilePage: React.FC = () => {
             )}
 
             {isValidCoordinate(pinpointLat) && isValidCoordinate(pinpointLng) && isValidLatLng(pinpointLat, pinpointLng) && !locResult && (
-              <div className="text-xs text-carbon-70 font-mono bg-white p-2.5 rounded-xl border border-carbon-20 flex items-center justify-between shadow-xs">
+              <div className="text-xs text-carbon-70 font-mono bg-white p-2.5 border border-carbon-20 flex items-center justify-between">
                 <span>Stored Coordinates: <strong>{pinpointLat.toFixed(4)}, {pinpointLng.toFixed(4)}</strong></span>
-                <span className="text-[10px] text-carbon-60 font-sans">Synced with Firestore</span>
+                <span className="text-xs text-carbon-60 font-sans">Synced with Firestore</span>
               </div>
             )}
           </div>
 
           {/* Dedicated Default Home District Preference Card */}
-          <div className="bg-amber-50/70 border border-amber-200 rounded-xl p-4 space-y-3">
+          <div className="bg-amber-50/70 border border-amber-200 p-4 space-y-3">
             <div className="flex items-center justify-between">
               <div>
                 <div className="flex items-center gap-2">
                   <span className="text-sm"><MaterialIcon name="home" className="w-4 h-4 inline-block mr-1" /></span>
                   <h4 className="text-xs font-extrabold text-carbon-90">Default Home District Preference</h4>
                 </div>
-                <p className="text-[11px] text-carbon-60 mt-0.5">
+                <p className="text-xs text-carbon-60 mt-0.5">
                   The application will automatically load and map this district on every visit.
                 </p>
               </div>
               {homeDistrictId ? (
-                <span className="px-2.5 py-1 rounded-full text-[11px] font-extrabold bg-amber-200 text-amber-950 border border-amber-300 flex items-center gap-1">
+                <span className="px-2.5 py-1 rounded-full text-xs font-extrabold bg-amber-200 text-amber-950 border border-amber-300 flex items-center gap-1">
                   <MaterialIcon name="home" className="w-4 h-4 inline-block mr-1" />
                   <span>{ALL_64_DISTRICTS.find(d => d.id === homeDistrictId)?.name || homeDistrictId}</span>
                 </span>
               ) : (
-                <span className="px-2.5 py-1 rounded-full text-[10px] font-medium bg-carbon-20 text-carbon-60">
+                <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-carbon-20 text-carbon-60">
                   Not configured
                 </span>
               )}
@@ -451,7 +451,7 @@ export const UserProfilePage: React.FC = () => {
                 <select
                   value={homeDistrictId}
                   onChange={(e) => handleSetHomeDistrict(e.target.value)}
-                  className="w-full px-3.5 py-2 bg-white border border-amber-300 rounded-xl text-xs font-bold text-carbon-90 focus:outline-none focus:border-amber-500"
+                  className="w-full px-3.5 py-2 bg-white border border-amber-300 text-xs font-bold text-carbon-90 focus:outline-none focus:border-amber-500"
                 >
                   <option value="">-- Select Default Home District (64 Districts) --</option>
                   {ALL_64_DISTRICTS.map((d) => (
@@ -469,7 +469,7 @@ export const UserProfilePage: React.FC = () => {
                       setHomeDistrictId('');
                       try { localStorage.removeItem('hazardnet_home_district'); } catch { /* best-effort */ }
                     }}
-                    className="w-full py-2 px-3 bg-white hover:bg-rose-50 text-rose-700 border border-rose-200 font-bold rounded-xl text-xs transition-colors cursor-pointer"
+                    className="w-full py-2 px-3 bg-white hover:bg-white text-nasa-red-shade border border-nasa-red font-bold text-xs transition-colors cursor-pointer"
                   >
                     Clear Home District
                   </button>
@@ -485,7 +485,7 @@ export const UserProfilePage: React.FC = () => {
             const severityScorePct = currentDistrictObj ? Math.round(currentDistrictObj.severity * 100) : 75;
 
             return (
-              <div className="bg-carbon-90 text-white border border-carbon-80 rounded-2xl p-4 space-y-3 shadow-md relative overflow-hidden">
+              <div className="bg-carbon-90 text-white border border-carbon-80 p-4 space-y-3 relative overflow-hidden">
                 <div className="flex items-center justify-between border-b border-carbon-80 pb-2.5">
                   <div className="flex items-center gap-2">
                     <span className="text-amber-400 font-bold text-sm"><MaterialIcon name="shield" className="w-4 h-4 inline-block mr-1" /></span>
@@ -493,47 +493,47 @@ export const UserProfilePage: React.FC = () => {
                       <h4 className="text-xs font-extrabold text-white tracking-wide uppercase font-mono">
                         District Hazard & Severity Identification
                       </h4>
-                      <p className="text-[10px] text-carbon-60 font-sans">
+                      <p className="text-xs text-carbon-60 font-sans">
                         Identified using user district ({currentDistrictObj.name}) instead of raw lat/lon coordinates
                       </p>
                     </div>
                   </div>
-                  <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono font-black border ${
-                    currentDistrictObj.risk === 'High' ? 'bg-rose-500/20 text-rose-300 border-rose-500/40' :
+                  <span className={`px-2.5 py-0.5 rounded-full text-xs font-mono font-black border ${
+                    currentDistrictObj.risk === 'High' ? 'bg-nasa-red/20 text-nasa-red border-nasa-red/40' :
                     currentDistrictObj.risk === 'Moderate' ? 'bg-amber-500/20 text-amber-300 border-amber-500/40' :
-                    'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                    'bg-nasa-green/20 text-emerald-300 border-emerald-500/40'
                   }`}>
                     {currentDistrictObj.risk} Risk ({severityScorePct}% Severity)
                   </span>
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-                  <div className="bg-carbon-80/80 p-2.5 rounded-xl border border-carbon-70/60">
-                    <span className="text-[10px] font-mono text-carbon-60 block uppercase">Selected District</span>
+                  <div className="bg-carbon-80/80 p-2.5 border border-carbon-70/60">
+                    <span className="text-xs font-mono text-carbon-60 block uppercase">Selected District</span>
                     <strong className="text-amber-400 font-black truncate block mt-0.5">{currentDistrictObj.name} ({currentDistrictObj.division})</strong>
                   </div>
-                  <div className="bg-carbon-80/80 p-2.5 rounded-xl border border-carbon-70/60">
-                    <span className="text-[10px] font-mono text-carbon-60 block uppercase">Primary Hazard</span>
+                  <div className="bg-carbon-80/80 p-2.5 border border-carbon-70/60">
+                    <span className="text-xs font-mono text-carbon-60 block uppercase">Primary Hazard</span>
                     <strong className="text-white font-black truncate block mt-0.5">{currentDistrictObj.hazardType}</strong>
                   </div>
-                  <div className="bg-carbon-80/80 p-2.5 rounded-xl border border-carbon-70/60">
-                    <span className="text-[10px] font-mono text-carbon-60 block uppercase">Severity Score</span>
+                  <div className="bg-carbon-80/80 p-2.5 border border-carbon-70/60">
+                    <span className="text-xs font-mono text-carbon-60 block uppercase">Severity Score</span>
                     <strong className="text-rose-400 font-mono font-black block mt-0.5">{severityScorePct}%</strong>
                   </div>
-                  <div className="bg-carbon-80/80 p-2.5 rounded-xl border border-carbon-70/60">
-                    <span className="text-[10px] font-mono text-carbon-60 block uppercase">Vulnerable Crop</span>
+                  <div className="bg-carbon-80/80 p-2.5 border border-carbon-70/60">
+                    <span className="text-xs font-mono text-carbon-60 block uppercase">Vulnerable Crop</span>
                     <strong className="text-emerald-400 font-black truncate block mt-0.5">{currentDistrictObj.mainCrop}</strong>
                   </div>
                 </div>
 
                 {granular?.modelAssessment?.softmaxProbabilities && (
-                  <div className="pt-2 border-t border-carbon-80 text-[11px] space-y-1.5">
-                    <span className="text-[10px] font-mono text-carbon-60 font-extrabold uppercase tracking-wider block">
+                  <div className="pt-2 border-t border-carbon-80 text-xs space-y-1.5">
+                    <span className="text-xs font-mono text-carbon-60 font-extrabold uppercase tracking-wider block">
                       Multi-Hazard Risk Distribution for {currentDistrictObj.name}:
                     </span>
                     <div className="flex flex-wrap gap-2">
                       {granular.modelAssessment.softmaxProbabilities.map((item: { hazard: string; probability: number }, idx: number) => (
-                        <div key={idx} className="px-2.5 py-1 rounded-lg bg-carbon-80 border border-carbon-70 text-[10px] flex items-center gap-1.5 font-mono">
+                        <div key={idx} className="px-2.5 py-1 rounded-sm bg-carbon-80 border border-carbon-70 text-xs flex items-center gap-1.5 font-mono">
                           <span className="text-carbon-30 font-bold">{item.hazard}:</span>
                           <span className="text-amber-400 font-black">{Math.round(item.probability * 100)}%</span>
                         </div>
@@ -548,83 +548,83 @@ export const UserProfilePage: React.FC = () => {
           {/* Form Fields */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-carbon-70 mb-1">Display Name</label>
+              <label className="block text-sm font-semibold text-carbon-70 mb-1">Display Name</label>
               <input
                 type="text"
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
-                className="w-full px-3.5 py-2 bg-white border border-carbon-20 rounded-xl text-xs text-carbon-90 font-medium focus:outline-none focus:border-nasa-blue"
+                className="h-12 w-full rounded-sm px-4 py-3 bg-white border border-carbon-20 text-base text-carbon-90 font-medium focus:outline-none focus:border-nasa-blue"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-carbon-70 mb-1">Phone Number</label>
+              <label className="block text-sm font-semibold text-carbon-70 mb-1">Phone Number</label>
               <input
                 type="text"
                 placeholder="+880 1712-345678"
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
-                className="w-full px-3.5 py-2 bg-white border border-carbon-20 rounded-xl text-xs text-carbon-90 font-medium focus:outline-none focus:border-nasa-blue"
+                className="h-12 w-full rounded-sm px-4 py-3 bg-white border border-carbon-20 text-base text-carbon-90 font-medium focus:outline-none focus:border-nasa-blue"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-carbon-70 mb-1">Organization / Department</label>
+              <label className="block text-sm font-semibold text-carbon-70 mb-1">Organization / Department</label>
               <input
                 type="text"
                 placeholder="e.g. DAE Rangpur / Self Farm"
                 value={organization}
                 onChange={(e) => setOrganization(e.target.value)}
-                className="w-full px-3.5 py-2 bg-white border border-carbon-20 rounded-xl text-xs text-carbon-90 font-medium focus:outline-none focus:border-nasa-blue"
+                className="h-12 w-full rounded-sm px-4 py-3 bg-white border border-carbon-20 text-base text-carbon-90 font-medium focus:outline-none focus:border-nasa-blue"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-carbon-70 mb-1">Farm / Land Area (Hectares)</label>
+              <label className="block text-sm font-semibold text-carbon-70 mb-1">Farm / Land Area (Hectares)</label>
               <input
                 type="number"
                 step="0.1"
                 min="0"
                 value={farmSizeHectares}
                 onChange={(e) => setFarmSizeHectares(parseFloat(e.target.value) || 0)}
-                className="w-full px-3.5 py-2 bg-white border border-carbon-20 rounded-xl text-xs text-carbon-90 font-medium focus:outline-none focus:border-nasa-blue"
+                className="h-12 w-full rounded-sm px-4 py-3 bg-white border border-carbon-20 text-base text-carbon-90 font-medium focus:outline-none focus:border-nasa-blue"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-carbon-70 mb-1">Primary Division</label>
+              <label className="block text-sm font-semibold text-carbon-70 mb-1">Primary Division</label>
               <input
                 type="text"
                 value={primaryDivision}
                 onChange={(e) => setPrimaryDivision(e.target.value)}
-                className="w-full px-3.5 py-2 bg-white border border-carbon-20 rounded-xl text-xs text-carbon-90 font-medium focus:outline-none focus:border-nasa-blue"
+                className="h-12 w-full rounded-sm px-4 py-3 bg-white border border-carbon-20 text-base text-carbon-90 font-medium focus:outline-none focus:border-nasa-blue"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-carbon-70 mb-1">Primary District</label>
+              <label className="block text-sm font-semibold text-carbon-70 mb-1">Primary District</label>
               <input
                 type="text"
                 value={primaryDistrict}
                 onChange={(e) => setPrimaryDistrict(e.target.value)}
-                className="w-full px-3.5 py-2 bg-white border border-carbon-20 rounded-xl text-xs text-carbon-90 font-medium focus:outline-none focus:border-nasa-blue"
+                className="h-12 w-full rounded-sm px-4 py-3 bg-white border border-carbon-20 text-base text-carbon-90 font-medium focus:outline-none focus:border-nasa-blue"
               />
             </div>
 
             <div className="sm:col-span-2">
-              <label className="block text-xs font-bold text-carbon-70 mb-1">Target Crops / Cultivations</label>
+              <label className="block text-sm font-semibold text-carbon-70 mb-1">Target Crops / Cultivations</label>
               <input
                 type="text"
                 placeholder="e.g. Boro Paddy, Aman Rice, Jute, Potato, Maize"
                 value={targetCrops}
                 onChange={(e) => setTargetCrops(e.target.value)}
-                className="w-full px-3.5 py-2 bg-white border border-carbon-20 rounded-xl text-xs text-carbon-90 font-medium focus:outline-none focus:border-nasa-blue"
+                className="h-12 w-full rounded-sm px-4 py-3 bg-white border border-carbon-20 text-base text-carbon-90 font-medium focus:outline-none focus:border-nasa-blue"
               />
             </div>
           </div>
 
           {/* Account Security & Session Management Card */}
-          <div className="bg-carbon-05 border border-carbon-20 rounded-xl p-4 space-y-3">
+          <div className="bg-carbon-05 border border-carbon-20 p-4 space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span className="text-sm"><MaterialIcon name="lock" className="w-4 h-4 inline-block mr-1" /></span>
@@ -632,22 +632,22 @@ export const UserProfilePage: React.FC = () => {
                   Account Security & Active Session
                 </h4>
               </div>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+              <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-carbon-80 border border-carbon-20">
                 Authenticated
               </span>
             </div>
 
-            <p className="text-[11px] text-carbon-60 leading-relaxed">
+            <p className="text-xs text-carbon-60 leading-relaxed">
               You are signed in as <strong className="text-carbon-90">{user.email || user.displayName || 'User'}</strong>. Logging out terminates your sign-in session and clears local application caches and cached district preferences from this browser.
             </p>
 
-            <div className="p-3 bg-amber-50 rounded-lg border border-amber-200 text-[11px] text-carbon-60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="p-3 bg-amber-50 rounded-sm border border-amber-200 text-xs text-carbon-60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="space-y-0.5">
                 <div className="font-bold text-carbon-80 flex items-center gap-1.5">
                   <MaterialIcon name="grid_view" className="w-4 h-4" />
                   <span>Full User Dashboard</span>
                 </div>
-                <div className="text-[10px] text-carbon-60">
+                <div className="text-xs text-carbon-60">
                   Edit every profile field, connectors, avatar and your unique /u/&lt;username&gt; page.
                 </div>
               </div>
@@ -656,19 +656,19 @@ export const UserProfilePage: React.FC = () => {
                 onClick={() => {
                   navigate('/dashboard');
                 }}
-                className="px-3 py-1.5 bg-carbon-90 hover:bg-carbon-80 text-white font-bold rounded-lg text-xs shadow-2xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer shrink-0"
+                className="px-3 py-1.5 bg-carbon-90 hover:bg-carbon-80 text-white font-bold rounded-sm text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer shrink-0"
               >
                 <MaterialIcon name="arrow_right" className="w-4 h-4" />
                 <span>Open Dashboard</span>
               </button>
             </div>
 
-            <div className="p-3 bg-white rounded-lg border border-carbon-20 text-[11px] text-carbon-60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="p-3 bg-white rounded-sm border border-carbon-20 text-xs text-carbon-60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="space-y-0.5">
                 <div className="font-mono text-carbon-60">
                   <span className="font-semibold text-carbon-70">Account UID:</span> {user.uid}
                 </div>
-                <div className="text-[10px] text-carbon-60">
+                <div className="text-xs text-carbon-60">
                   Provider: <span className="font-semibold text-carbon-70">{user.providerData[0]?.providerId || 'password'}</span>
                 </div>
               </div>
@@ -677,7 +677,7 @@ export const UserProfilePage: React.FC = () => {
                 type="button"
                 onClick={handleLogout}
                 disabled={isLoggingOut}
-                className="px-3.5 py-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 hover:text-rose-800 font-bold rounded-lg border border-rose-200 text-xs shadow-2xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 shrink-0"
+                className="px-3.5 py-1.5 bg-white hover:bg-white text-nasa-red-shade hover:text-nasa-red-shade font-bold rounded-sm border border-nasa-red text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 shrink-0"
               >
                 <span>{isLoggingOut ? 'refresh' : '🚪'}</span>
                 <span>{isLoggingOut ? 'Signing Out...' : 'Log Out & Clear Local State'}</span>
@@ -685,13 +685,13 @@ export const UserProfilePage: React.FC = () => {
             </div>
 
             {user.email && (
-              <div className="p-3 bg-white rounded-lg border border-carbon-20 text-[11px] text-carbon-60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="p-3 bg-white rounded-sm border border-carbon-20 text-xs text-carbon-60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="space-y-0.5">
                   <div className="font-bold text-carbon-80 flex items-center gap-1.5">
                     <MaterialIcon name="key" className="w-4 h-4" />
                     <span>Password & Recovery</span>
                   </div>
-                  <div className="text-[10px] text-carbon-60">
+                  <div className="text-xs text-carbon-60">
                     Need to update your password? Request a recovery link for {user.email}.
                   </div>
                 </div>
@@ -701,7 +701,7 @@ export const UserProfilePage: React.FC = () => {
                   type="button"
                   onClick={handleSendResetEmail}
                   disabled={isSendingReset}
-                  className="px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-900 font-bold rounded-lg border border-amber-200 text-xs shadow-2xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 shrink-0"
+                  className="px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-900 font-bold rounded-sm border border-amber-200 text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 shrink-0"
                 >
                   <span>{isSendingReset ? 'refresh' : 'mail'}</span>
                   <span>{isSendingReset ? 'Sending...' : 'Send Password Reset Email'}</span>
@@ -719,7 +719,7 @@ export const UserProfilePage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => navigate('/dashboard')}
-                className="px-4 py-2 bg-white hover:bg-carbon-10 text-carbon-70 font-bold rounded-xl border border-carbon-20 text-xs shadow-xs cursor-pointer"
+                className="px-4 py-2 bg-white hover:bg-carbon-10 text-carbon-70 font-bold border border-carbon-20 text-xs cursor-pointer"
               >
                 Back to dashboard
               </button>
@@ -728,7 +728,7 @@ export const UserProfilePage: React.FC = () => {
                   type="button"
                   onClick={handleLogout}
                   disabled={isLoggingOut}
-                  className="px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold rounded-xl border border-rose-200 text-xs shadow-xs cursor-pointer transition-colors disabled:opacity-50"
+                  className="px-3 py-2 bg-white hover:bg-white text-nasa-red-shade font-bold border border-nasa-red text-xs cursor-pointer transition-colors disabled:opacity-50"
                   title="Sign out and clear local state"
                 >
                   {isLoggingOut ? 'Signing Out...' : 'Sign Out'}
@@ -738,7 +738,7 @@ export const UserProfilePage: React.FC = () => {
             <button
               type="submit"
               disabled={isSaving}
-              className="px-6 py-2 bg-nasa-red hover:bg-nasa-red-shade text-carbon-90 font-extrabold rounded-xl text-xs shadow-xs transition-colors disabled:opacity-50 cursor-pointer"
+              className="inline-flex min-h-[44px] items-center px-6 py-2 bg-nasa-blue hover:bg-nasa-blue-shade text-white font-semibold text-base disabled:opacity-50 cursor-pointer touch-manipulation"
             >
               {isSaving ? 'Saving to Firestore...' : 'Save Profile Changes'}
             </button>

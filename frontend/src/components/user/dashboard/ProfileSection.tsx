@@ -211,7 +211,7 @@ export const ProfileSection: React.FC = () => {
             type="button"
             onClick={handleDetectLocation}
             disabled={locating}
-            className="flex items-center gap-1.5 rounded-xl border border-carbon-20 px-3 py-1.5 text-[11px] font-bold text-carbon-60 transition-colors hover:bg-carbon-05 disabled:opacity-50 cursor-pointer"
+            className="flex items-center gap-1.5 border border-carbon-20 px-3 py-1.5 text-xs font-bold text-carbon-60 transition-colors hover:bg-carbon-05 disabled:opacity-50 cursor-pointer"
           >
             {locating ? (
               <span className="h-3 w-3 animate-spin rounded-full border-2 border-carbon-30 border-t-carbon-60" />

@@ -44,7 +44,7 @@ interface Section {
 const CALLOUT_STYLES: Record<string, string> = {
   warning: 'border-amber-300 bg-amber-50 text-amber-950',
   info: 'border-carbon-30 bg-carbon-05 text-carbon-80',
-  danger: 'border-rose-300 bg-rose-50 text-rose-950',
+  danger: 'border-rose-300 bg-white text-nasa-red-shade',
 };
 
 const InlineLink: React.FC<{ link: SectionLink }> = ({ link }) => {
@@ -55,23 +55,23 @@ const InlineLink: React.FC<{ link: SectionLink }> = ({ link }) => {
         href={link.href}
         target="_blank"
         rel="noopener noreferrer"
-        className="font-bold text-amber-700 hover:text-amber-900 underline underline-offset-4"
+        className="font-bold text-nasa-blue-shade hover:text-nasa-blue underline underline-offset-4"
       >
         {link.label}
       </a>
     );
   }
   return (
-    <Link to={link.href} className="font-bold text-amber-700 hover:text-amber-900 underline underline-offset-4">
+    <Link to={link.href} className="font-bold text-nasa-blue-shade hover:text-nasa-blue underline underline-offset-4">
       {link.label}
     </Link>
   );
 };
 
 const SectionTableBlock: React.FC<{ table: SectionTable }> = ({ table }) => (
-  <div className="w-full min-w-0 overflow-x-auto rounded-xl border border-carbon-20">
-    <table className="w-full border-collapse text-left text-[11px] md:text-xs">
-      {table.caption && <caption className="bg-carbon-05 px-3 py-2 text-left text-[11px] text-carbon-60">{table.caption}</caption>}
+  <div className="w-full min-w-0 overflow-x-auto border border-carbon-20">
+    <table className="w-full border-collapse text-left text-xs">
+      {table.caption && <caption className="bg-carbon-05 px-3 py-2 text-left text-xs text-carbon-60">{table.caption}</caption>}
       <thead>
         <tr className="bg-carbon-10/80">
           {table.columns.map((column) => (
@@ -127,9 +127,9 @@ export const ArticlePage: React.FC<{ path: string; introSlot?: React.ReactNode }
     >
       <Breadcrumbs />
 
-      <header className="space-y-4 rounded-2xl border border-carbon-20 bg-white p-6 shadow-xs md:p-8">
+      <header className="space-y-4 border border-carbon-20 bg-white p-6 md:p-8">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider text-amber-900">
+          <span className="rounded-sm border border-carbon-20 bg-carbon-05 px-2.5 py-0.5 font-mono text-xs font-bold uppercase tracking-wider text-amber-900">
             {content.label ?? 'Reference'}
           </span>
           {content.updated && (
@@ -138,24 +138,24 @@ export const ArticlePage: React.FC<{ path: string; introSlot?: React.ReactNode }
             </span>
           )}
         </div>
-        <h1 className="text-2xl font-black tracking-tight text-carbon-90 md:text-3xl">{content.h1 ?? content.title}</h1>
-        {content.standfirst && <p className="max-w-3xl text-xs leading-relaxed text-carbon-60 md:text-sm">{content.standfirst}</p>}
+        <h1 className="text-[28px] font-bold leading-tight tracking-tight text-carbon-90 sm:text-[32px]">{content.h1 ?? content.title}</h1>
+        {content.standfirst && <p className="max-w-3xl text-base leading-[1.62] text-carbon-60">{content.standfirst}</p>}
       </header>
 
       {introSlot}
 
       {sections.map((section, index) => (
-        <section key={index} className="space-y-3 rounded-2xl border border-carbon-20 bg-white p-6 shadow-xs md:p-7">
+        <section key={index} className="space-y-3 border border-carbon-20 bg-white p-6 md:p-7">
           {section.h2 && <h2 className="text-lg font-bold text-carbon-90">{section.h2}</h2>}
           {(section.paragraphs ?? []).map((paragraph, i) => (
-            <p key={i} className="break-words text-xs leading-relaxed text-carbon-60 md:text-sm">
+            <p key={i} className="break-words text-base leading-[1.62] text-carbon-60">
               {paragraph}
             </p>
           ))}
           {(section.bullets ?? []).length > 0 && (
             <ul className="space-y-2 pl-1">
               {(section.bullets ?? []).map((bullet, i) => (
-                <li key={i} className="flex gap-2 text-xs leading-relaxed text-carbon-60 md:text-sm">
+                <li key={i} className="flex gap-2 text-base leading-[1.62] text-carbon-60">
                   <MaterialIcon name="chevron_right" className="mt-0.5 shrink-0 text-sm text-amber-600" />
                   {/* `break-words`: the truth-set citations carry full URLs, and an unbroken
                       90-character URL is 126px of document-level overflow on a 375px phone. */}
@@ -167,7 +167,7 @@ export const ArticlePage: React.FC<{ path: string; introSlot?: React.ReactNode }
           {section.table && <SectionTableBlock table={section.table} />}
           {section.callout?.text && (
             <div
-              className={`rounded-xl border p-4 text-xs leading-relaxed md:text-sm ${
+              className={`border p-4 text-base leading-[1.62] ${
                 CALLOUT_STYLES[section.callout.tone ?? 'info'] ?? CALLOUT_STYLES.info
               }`}
               role={section.callout.tone === 'warning' ? 'note' : undefined}
@@ -186,27 +186,27 @@ export const ArticlePage: React.FC<{ path: string; introSlot?: React.ReactNode }
       ))}
 
       {faqs.length > 0 && (
-        <section aria-label="Frequently asked questions" className="space-y-2 rounded-2xl border border-carbon-20 bg-white p-6 shadow-xs md:p-7">
+        <section aria-label="Frequently asked questions" className="space-y-2 border border-carbon-20 bg-white p-6 md:p-7">
           <h2 className="mb-2 text-lg font-bold text-carbon-90">Questions and answers</h2>
           {faqs.map((faq) => (
             <details key={faq.question} className="group border-b border-carbon-20 py-2 last:border-b-0">
-              <summary className="cursor-pointer list-none text-xs font-bold text-carbon-80 marker:hidden md:text-sm">
+              <summary className="cursor-pointer list-none text-base font-bold text-carbon-80 marker:hidden">
                 <span className="inline-flex items-start gap-2">
                   <MaterialIcon name="help" className="mt-0.5 text-sm text-amber-600" />
                   {faq.question}
                 </span>
               </summary>
-              <p className="mt-2 pl-6 text-xs leading-relaxed text-carbon-60 md:text-sm">{faq.answer}</p>
+              <p className="mt-2 pl-6 text-base leading-[1.62] text-carbon-60">{faq.answer}</p>
             </details>
           ))}
         </section>
       )}
 
-      <footer className="rounded-2xl border border-carbon-20 bg-carbon-05 p-5 text-[11px] leading-relaxed text-carbon-60">
+      <footer className="border border-carbon-20 bg-carbon-05 p-5 text-base leading-[1.62] text-carbon-60">
         HazardNet is an independent decision-support platform. It does not replace official warnings from the Bangladesh
         Meteorological Department (BMD), the Flood Forecasting and Warning Centre (FFWC), the Department of Disaster
         Management (DDM) or your local administration. National emergency hotline: 999.{' '}
-        <Link to="/contact" className="font-bold text-amber-700 hover:text-amber-900">
+        <Link to="/contact" className="font-bold text-nasa-blue-shade hover:text-nasa-blue">
           Report a problem
         </Link>
         .

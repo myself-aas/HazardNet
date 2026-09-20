@@ -342,6 +342,53 @@ const EN = {
   'frontdoor.attribution.supervisor': 'Supervisor profile',
   'frontdoor.attribution.coSupervisor': 'Co-supervisor profile',
 
+  'lookup.title': 'District forecast lookup',
+  'lookup.standfirst':
+    'Read a previously published forecast. Raster uploads and on-demand inference are not supported; selecting a district does not run a model.',
+  'lookup.district': 'District',
+  'lookup.horizon': 'Horizon',
+  'lookup.horizon.7_days': '7 days',
+  'lookup.horizon.15_days': '15 days',
+  'lookup.submit': 'Load stored forecast',
+  'lookup.submitting': 'Loading stored forecast…',
+  'lookup.idle.title': 'Choose a district and horizon',
+  'lookup.idle.body':
+    'Nothing has been requested yet. Select a district and a 7-day or 15-day horizon, then load the stored forecast. This page does not run a model.',
+  'lookup.loading': 'Loading stored forecast…',
+  'lookup.uncovered.title': 'No stored coverage',
+  'lookup.uncovered.body':
+    'There is no stored forecast for {district} at the {horizon} horizon. This is a coverage gap, not a zero-risk result.',
+  'lookup.error.offline.title': 'You appear to be offline',
+  'lookup.error.offline.body':
+    'The stored forecast could not be loaded because this device is offline. Retry when a connection is available. A missing result is not an all-clear.',
+  'lookup.error.rateLimited.title': 'Too many requests',
+  'lookup.error.rateLimited.body':
+    'The forecast service asked this page to wait before trying again. Use Try again in a moment.',
+  'lookup.error.server.title': 'Stored forecast could not be loaded',
+  'lookup.error.server.body':
+    'The service did not return a stored forecast. Try again later. This is not a statement about hazard conditions.',
+  'lookup.error.invalid.title': 'Stored forecast could not be read',
+  'lookup.error.invalid.body':
+    'The service returned a response this page could not use. No hazard score is shown rather than guessing.',
+  'lookup.ready.title': 'Stored forecast: {hazard}',
+  'lookup.source.stored': 'Stored forecast',
+  'lookup.freshness.label': 'As of',
+  'lookup.freshness.unknown': 'date not recorded',
+  'lookup.districtUnknown': 'District not recorded',
+  'lookup.target': 'Target',
+  'lookup.target.unknown': 'not recorded',
+  'lookup.horizonLabel': 'Horizon',
+  'lookup.horizon.unknown': 'not recorded',
+  'lookup.severity': 'Severity score',
+  'lookup.confidence.calibrated': 'Calibrated probability',
+  'lookup.confidence.uncalibrated': 'Uncalibrated top-class score (not an event probability)',
+  'lookup.modelVersion': 'Model version',
+  'lookup.modelVersion.missing': 'Not recorded for this row',
+  'lookup.evidence.summary': 'Evidence notes',
+  'lookup.evidence.missingDrivers':
+    'No inference was run for this request. Per-class probabilities, top-three classes and satellite drivers are not recorded for this row.',
+  'lookup.disclaimer': 'Decision support only. Follow official BMD, FFWC and DDM instructions.',
+
   'a11y.skipToList': 'Skip to the district list',
   'a11y.mapRegion': 'Interactive map of Bangladesh',
 } as const;
@@ -633,6 +680,54 @@ const BN: Record<string, string> = {
   'frontdoor.attribution.supervisor': 'তত্ত্বাবধায়কের প্রোফাইল',
   'frontdoor.attribution.coSupervisor': 'সহ-তত্ত্বাবধায়কের প্রোফাইল',
 
+  'lookup.title': 'জেলার পূর্বাভাস খুঁজুন',
+  'lookup.standfirst':
+    'আগে প্রকাশিত একটি পূর্বাভাস পড়ুন। রাস্টার আপলোড বা চাহিদামতো ইনফারেন্স এখানে নেই; জেলা বেছে নিলে মডেল চলে না।',
+  'lookup.district': 'জেলা',
+  'lookup.horizon': 'সময়সীমা',
+  'lookup.horizon.7_days': '৭ দিন',
+  'lookup.horizon.15_days': '১৫ দিন',
+  'lookup.submit': 'সংরক্ষিত পূর্বাভাস লোড করুন',
+  'lookup.submitting': 'সংরক্ষিত পূর্বাভাস লোড হচ্ছে…',
+  'lookup.idle.title': 'একটি জেলা ও সময়সীমা বেছে নিন',
+  'lookup.idle.body':
+    'এখনো কোনো অনুরোধ করা হয়নি। একটি জেলা এবং ৭ দিন বা ১৫ দিনের সময়সীমা বেছে নিয়ে সংরক্ষিত পূর্বাভাস লোড করুন। এই পাতা কোনো মডেল চালায় না।',
+  'lookup.loading': 'সংরক্ষিত পূর্বাভাস লোড হচ্ছে…',
+  'lookup.uncovered.title': 'সংরক্ষিত আওতা নেই',
+  'lookup.uncovered.body':
+    '{district} জেলার {horizon} সময়সীমায় কোনো সংরক্ষিত পূর্বাভাস নেই। এটি আওতার ঘাটতি, শূন্য-ঝুঁকির ফল নয়।',
+  'lookup.error.offline.title': 'আপনি অফলাইনে আছেন বলে মনে হচ্ছে',
+  'lookup.error.offline.body':
+    'এই যন্ত্র অফলাইন থাকায় সংরক্ষিত পূর্বাভাস লোড করা যায়নি। সংযোগ ফিরলে আবার চেষ্টা করুন। ফল না আসা মানে নিরাপদ নয়।',
+  'lookup.error.rateLimited.title': 'অনুরোধের সংখ্যা বেশি',
+  'lookup.error.rateLimited.body':
+    'সেবা এই পাতাকে একটু অপেক্ষা করতে বলেছে। কিছুক্ষণ পর আবার চেষ্টা করুন।',
+  'lookup.error.server.title': 'সংরক্ষিত পূর্বাভাস লোড করা যায়নি',
+  'lookup.error.server.body':
+    'সেবা কোনো সংরক্ষিত পূর্বাভাস ফেরত দেয়নি। পরে আবার চেষ্টা করুন। এটি আবহাওয়ার অবস্থা সম্পর্কে কোনো বিবৃতি নয়।',
+  'lookup.error.invalid.title': 'সংরক্ষিত পূর্বাভাস পড়া যায়নি',
+  'lookup.error.invalid.body':
+    'সেবার উত্তর এই পাতা ব্যবহার করতে পারেনি। অনুমান করে কোনো স্কোর দেখানো হয়নি।',
+  'lookup.ready.title': 'সংরক্ষিত পূর্বাভাস: {hazard}',
+  'lookup.source.stored': 'সংরক্ষিত পূর্বাভাস',
+  'lookup.freshness.label': 'তারিখ',
+  'lookup.freshness.unknown': 'তারিখ নথিভুক্ত নেই',
+  'lookup.districtUnknown': 'জেলার নাম নথিভুক্ত নেই',
+  'lookup.target': 'প্রযোজ্য',
+  'lookup.target.unknown': 'নথিভুক্ত নেই',
+  'lookup.horizonLabel': 'সময়সীমা',
+  'lookup.horizon.unknown': 'নথিভুক্ত নেই',
+  'lookup.severity': 'তীব্রতার স্কোর',
+  'lookup.confidence.calibrated': 'ক্রমাঙ্কিত সম্ভাবনা',
+  'lookup.confidence.uncalibrated': 'অক্রমাঙ্কিত শীর্ষ-শ্রেণির স্কোর (ঘটনার সম্ভাবনা নয়)',
+  'lookup.modelVersion': 'মডেল সংস্করণ',
+  'lookup.modelVersion.missing': 'এই সারিতে নথিভুক্ত নেই',
+  'lookup.evidence.summary': 'প্রমাণের নোট',
+  'lookup.evidence.missingDrivers':
+    'এই অনুরোধে কোনো ইনফারেন্স চালানো হয়নি। শ্রেণিভিত্তিক সম্ভাবনা, শীর্ষ তিন শ্রেণি ও উপগ্রহ চালক এই সারিতে নথিভুক্ত নেই।',
+  'lookup.disclaimer':
+    'কেবল সিদ্ধান্ত সহায়তা। সরকারি নির্দেশনার জন্য বিএমডি, এফএফডব্লিউসি ও ডিডিএম অনুসরণ করুন।',
+
   'a11y.skipToList': 'জেলার তালিকায় যান',
   'a11y.mapRegion': 'বাংলাদেশের ইন্টারঅ্যাকটিভ মানচিত্র',
 };
@@ -733,7 +828,10 @@ const BN_MONTHS = [
 
 /**
  * `2026-09-23` or an ISO timestamp → `23 September 2026` / `২৩ সেপ্টেম্বর ২০২৬`.
- * Returns the input for anything unparseable rather than `Invalid Date`.
+ * Date-only values are parsed as calendar components (not as local midnight),
+ * so a Bangladeshi `YYYY-MM-DD` never timezone-shifts into the previous day
+ * (Phase 7 / `useI18n` Intl contract). Unparseable input is returned as-is
+ * rather than `Invalid Date`.
  */
 export function formatDate(
   value: string | null | undefined,

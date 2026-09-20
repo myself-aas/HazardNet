@@ -252,6 +252,19 @@ self.addEventListener('fetch', (event: any) => {
     return;
   }
 
+  // Never cache HTML / navigations. A stale document shell can keep withdrawn
+  // research UI on disk after a deploy that removed it (Phase 7 §14.10).
+  const accept = request.headers.get('Accept') || '';
+  const isDocument =
+    request.mode === 'navigate' ||
+    request.destination === 'document' ||
+    accept.includes('text/html') ||
+    url.pathname.endsWith('.html');
+  if (isDocument) {
+    event.respondWith(fetch(request));
+    return;
+  }
+
   event.respondWith(
     caches.match(request).then((cached) => {
       const network = fetch(request).then((response) => {

@@ -38,7 +38,7 @@ interface Loaded {
 
 const StateBadge: React.FC<{ state: FreshnessArtifact['overall']['state'] }> = ({ state }) => (
   <span
-    className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide ${stateTone(state)}`}
+    className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs font-bold uppercase tracking-wide ${stateTone(state)}`}
   >
     {stateLabel(state)}
   </span>
@@ -90,12 +90,12 @@ export const FreshnessPanel: React.FC = () => {
     return (
       <section
         aria-labelledby="freshness-heading"
-        className="rounded-2xl border border-carbon-20 bg-white p-6 shadow-xs md:p-7"
+        className="border border-carbon-20 bg-white p-6 md:p-7"
       >
         <h2 id="freshness-heading" className="text-lg font-bold text-carbon-90">
           Right now
         </h2>
-        <p className="mt-2 text-xs text-carbon-60 md:text-sm" role="status">
+        <p className="mt-2 text-base leading-[1.62] text-carbon-60" role="status">
           Loading the freshness artifact this deployment ships…
         </p>
       </section>
@@ -106,12 +106,12 @@ export const FreshnessPanel: React.FC = () => {
     return (
       <section
         aria-labelledby="freshness-heading"
-        className="rounded-2xl border border-amber-300 bg-amber-50 p-6 shadow-xs md:p-7"
+        className="border border-amber-300 bg-amber-50 p-6 md:p-7"
       >
         <h2 id="freshness-heading" className="text-lg font-bold text-amber-950">
           Right now
         </h2>
-        <p className="mt-2 text-xs leading-relaxed text-amber-950 md:text-sm" role="status">
+        <p className="mt-2 text-base leading-[1.62] text-amber-950" role="status">
           The freshness artifact could not be loaded ({error ?? 'unknown error'}), so this page
           cannot state the age of the data this deployment serves. That is not a statement that
           the data is fresh, and it is not a statement that it is stale — it is unknown. The
@@ -120,7 +120,7 @@ export const FreshnessPanel: React.FC = () => {
         <button
           type="button"
           onClick={reload}
-          className="mt-3 inline-flex min-h-11 items-center gap-1 rounded-lg border border-amber-400 bg-white px-3 py-1.5 text-xs font-bold text-amber-900 hover:bg-amber-100"
+          className="mt-3 inline-flex min-h-[44px] items-center gap-1 rounded-sm border border-amber-400 bg-white px-3 py-1.5 text-base font-semibold text-amber-900 hover:bg-amber-100 touch-manipulation"
         >
           <MaterialIcon name="refresh" className="text-sm" /> Retry
         </button>
@@ -140,7 +140,7 @@ export const FreshnessPanel: React.FC = () => {
   return (
     <section
       aria-labelledby="freshness-heading"
-      className="space-y-5 rounded-2xl border border-carbon-20 bg-white p-6 shadow-xs md:p-7"
+      className="space-y-5 border border-carbon-20 bg-white p-6 md:p-7"
     >
       <div className="space-y-2">
         <div className="flex flex-wrap items-center gap-2">
@@ -149,11 +149,11 @@ export const FreshnessPanel: React.FC = () => {
           </h2>
           <StateBadge state={overall.state} />
         </div>
-        <p className="text-xs leading-relaxed text-carbon-60 md:text-sm">
+        <p className="text-base leading-[1.62] text-carbon-60">
           {artifact.what_this_is ??
             'A derived statement about the committed data artifacts this deployment ships.'}
         </p>
-        <p className="text-[11px] text-carbon-60">
+        <p className="text-xs text-carbon-60">
           Derived <time dateTime={artifact.built_at ?? undefined}>{describeStamp(artifact.built_at)}</time>.{' '}
           {withinSlo} of {sources.length} sources within their SLO.
         </p>
@@ -166,7 +166,7 @@ export const FreshnessPanel: React.FC = () => {
             against.
           </caption>
           <thead>
-            <tr className="border-b border-carbon-20 text-[11px] uppercase tracking-wide text-carbon-60">
+            <tr className="border-b border-carbon-20 text-xs uppercase tracking-wide text-carbon-60">
               <th scope="col" className="py-2 pr-3 font-bold">Source</th>
               <th scope="col" className="py-2 pr-3 font-bold">State</th>
               <th scope="col" className="py-2 pr-3 font-bold">Age</th>
@@ -180,7 +180,7 @@ export const FreshnessPanel: React.FC = () => {
                 <th scope="row" className="py-2 pr-3 font-semibold text-carbon-80">
                   {source.label}
                   {source.reason && (
-                    <span className="mt-1 block font-normal text-[11px] leading-relaxed text-carbon-60">
+                    <span className="mt-1 block font-normal text-base leading-[1.62] text-carbon-60">
                       {source.reason}
                     </span>
                   )}
@@ -204,7 +204,7 @@ export const FreshnessPanel: React.FC = () => {
       {coverage && (
         <div className="space-y-2">
           <h3 className="text-sm font-bold text-carbon-90">Coverage of the current run</h3>
-          <p className="text-xs leading-relaxed text-carbon-60 md:text-sm">
+          <p className="text-base leading-[1.62] text-carbon-60">
             {coverage.districts_covered ?? 'unknown'} of {coverage.districts_expected ?? 'unknown'} districts
             have a row for at least one horizon, from {coverage.produced_units ?? 'unknown'} produced
             district/horizon units — coverage status <strong>{coverage.status ?? 'unreported'}</strong>.
@@ -214,7 +214,7 @@ export const FreshnessPanel: React.FC = () => {
             <table className="w-full min-w-[24rem] border-collapse text-left text-xs md:text-sm">
               <caption className="sr-only">Units produced per forecast horizon</caption>
               <thead>
-                <tr className="border-b border-carbon-20 text-[11px] uppercase tracking-wide text-carbon-60">
+                <tr className="border-b border-carbon-20 text-xs uppercase tracking-wide text-carbon-60">
                   <th scope="col" className="py-1.5 pr-3 font-bold">Horizon</th>
                   <th scope="col" className="py-1.5 font-bold">Units</th>
                 </tr>
@@ -238,7 +238,7 @@ export const FreshnessPanel: React.FC = () => {
       {model && (
         <div className="space-y-2">
           <h3 className="text-sm font-bold text-carbon-90">Model provenance</h3>
-          <p className="text-xs leading-relaxed text-carbon-60 md:text-sm">
+          <p className="text-base leading-[1.62] text-carbon-60">
             {model.stamped ? (
               <>
                 This deployment&apos;s rows carry <code>{model.model_version}</code>
@@ -253,7 +253,7 @@ export const FreshnessPanel: React.FC = () => {
               </>
             )}
           </p>
-          <dl className="grid grid-cols-1 gap-x-6 gap-y-1 text-[11px] text-carbon-60 sm:grid-cols-2">
+          <dl className="grid grid-cols-1 gap-x-6 gap-y-1 text-sm text-carbon-60 sm:grid-cols-2">
             <div>
               <dt className="font-bold">Tensor build</dt>
               <dd><code>{model.tensor_build_id ?? '—'}</code></dd>
@@ -289,7 +289,7 @@ export const FreshnessPanel: React.FC = () => {
               Checks performed by the last published site-health probe run
             </caption>
             <thead>
-              <tr className="border-b border-carbon-20 text-[11px] uppercase tracking-wide text-carbon-60">
+              <tr className="border-b border-carbon-20 text-xs uppercase tracking-wide text-carbon-60">
                 <th scope="col" className="py-1.5 pr-3 font-bold">Check</th>
                 <th scope="col" className="py-1.5 pr-3 font-bold">Outcome</th>
                 <th scope="col" className="py-1.5 font-bold">Detail</th>
@@ -309,7 +309,7 @@ export const FreshnessPanel: React.FC = () => {
           </table>
           </div>
         ) : (
-          <p className="text-xs leading-relaxed text-carbon-60 md:text-sm">
+          <p className="text-base leading-[1.62] text-carbon-60">
             No probe result has been published to this checkout, so the live-surface checks are{' '}
             <strong>unknown here</strong> — not passing. The probe runs every 30 minutes on the
             default branch and commits its result; until that commit lands, this page cannot state
@@ -317,7 +317,7 @@ export const FreshnessPanel: React.FC = () => {
           </p>
         )}
         {probe && detailEntries(probe.detail).length > 0 && (
-          <p className="text-[11px] text-carbon-60">
+          <p className="text-xs text-carbon-60">
             {detailEntries(probe.detail)
               .map(([key, value]) => `${key}: ${value}`)
               .join(' · ')}
@@ -326,11 +326,11 @@ export const FreshnessPanel: React.FC = () => {
       </div>
 
       {artifact.honesty.length > 0 && (
-        <div role="note" className="rounded-xl border border-carbon-30 bg-carbon-05 p-4">
+        <div role="note" className="border border-carbon-30 bg-carbon-05 p-4">
           <h3 className="text-sm font-bold text-carbon-90">What this page is not saying</h3>
           <ul className="mt-2 space-y-1.5">
             {artifact.honesty.map((note, index) => (
-              <li key={index} className="text-[11px] leading-relaxed text-carbon-60">
+              <li key={index} className="text-base leading-[1.62] text-carbon-60">
                 {note}
               </li>
             ))}

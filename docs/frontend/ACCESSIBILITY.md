@@ -87,3 +87,19 @@ Recorded honestly, because an axe-only "AA pass" would overstate the result:
   reviewer; that is an owner action before the Phase 9 soft launch.
 * **The PDF.** The evidence card's print variant keeps the text and the disclaimer, but
   PDF/UA tagging is not implemented — the export is a rasterised page image.
+
+---
+
+## 5. Phase 7 — zoom, AT, dictionaries
+
+Status: **started 2026-09-20**. This pass does not claim a WCAG certification.
+
+| Check | How it is met | Remaining |
+|---|---|---|
+| Dictionaries complete in EN and BN | `i18n.test.ts` fails on empty or missing keys | Long-form `site-routes.json` pages stay English-only by documented choice (`/status` included) |
+| Dates and numbers follow the language | `formatDate` / `formatNumber` via `useI18n`; date-only strings are calendar components, not TZ-shifted timestamps | Native-speaker review still required for any *new* safety copy |
+| Zoom not locked | `frontend/index.html` viewport is `width=device-width, initial-scale=1.0, viewport-fit=cover` — no `user-scalable=no` | Manual 200%/400% on a physical device |
+| 200% / 400% reflow | `e2e/navigation-a11y.spec.ts` applies `documentElement.style.zoom` on `/` | Lab zoom ≠ OS pinch-zoom; TalkBack/NVDA still an owner action |
+| Assistive technology | Skip link first in tab order; drawer is `role=dialog` + Escape; one `main` | No driven AT in this environment |
+| Service worker | `serviceWorker.ts` does not cache HTML/navigations (withdrawn research UI must not persist on disk) | Tile cache unchanged |
+| Production profiling | Bundle gate remains `scripts/check-bundle.mjs`; field CWV not measured here | Owner: p75 LCP/INP/CLS on production |

@@ -32,7 +32,7 @@ import { effectiveMetaDescription, effectiveMetaTitle, seoScore } from '../../li
 const CATEGORIES = ['Remote Sensing', 'Field Deployment', 'Edge AI', 'Agronomy', 'Research', 'General'];
 
 const inputClass =
-  'w-full px-3.5 py-2.5 bg-carbon-05 border border-carbon-20 rounded-2xl text-xs text-carbon-90 placeholder-carbon-40 font-medium transition-all focus:outline-none focus:border-nasa-blue focus:ring-2 focus:ring-nasa-blue/40';
+  'w-full px-3.5 py-2.5 bg-carbon-05 border border-carbon-20 text-xs text-carbon-90 placeholder-carbon-40 font-medium transition-all focus:outline-none focus:border-nasa-blue focus:ring-2 focus:ring-nasa-blue/40';
 
 const autosaveKey = (id: string) => `hazardnet.blog.draft.${id}`;
 
@@ -40,13 +40,13 @@ const SeoCheckRow: React.FC<{ passed: boolean; label: string; advice: string }> 
   <li className="flex items-start gap-2" title={advice}>
     <span
       aria-hidden="true"
-      className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[9px] font-black ${
-        passed ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
+      className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-xs font-black ${
+        passed ? 'bg-emerald-100 text-carbon-80' : 'bg-amber-100 text-amber-700'
       }`}
     >
       {passed ? '✓' : '!'}
     </span>
-    <span className={`text-[11px] leading-relaxed ${passed ? 'text-carbon-60 line-through decoration-carbon-30' : 'font-semibold text-carbon-70'}`}>
+    <span className={`text-xs leading-relaxed ${passed ? 'text-carbon-60 line-through decoration-carbon-30' : 'font-semibold text-carbon-70'}`}>
       {label}
     </span>
   </li>
@@ -312,7 +312,7 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
         <span className="text-3xl">📄</span>
         <h1 className="text-lg font-black text-carbon-90">Article unavailable</h1>
         <p className="text-sm text-carbon-60">{loadError}</p>
-        <Link to="/dashboard/blog" className="rounded-2xl bg-carbon-90 px-4 py-2.5 text-xs font-black text-white hover:bg-carbon-70">
+        <Link to="/dashboard/blog" className="bg-carbon-90 px-4 py-2.5 text-xs font-black text-white hover:bg-carbon-70">
           Back to Blog Studio
         </Link>
       </div>
@@ -328,11 +328,11 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
       <Breadcrumbs />
 
       {/* Editor header */}
-      <div className="bg-white border border-carbon-20/90 rounded-3xl p-5 shadow-md relative overflow-hidden space-y-3">
+      <div className="bg-white border border-carbon-20/90 p-5 relative overflow-hidden space-y-3">
         <div aria-hidden="true" className="absolute top-0 left-0 w-full h-1 bg-nasa-red" />
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <div className="flex items-center gap-2 text-[10px] font-mono font-bold text-carbon-60 uppercase tracking-wider">
+            <div className="flex items-center gap-2 text-xs font-mono font-bold text-carbon-60 uppercase tracking-wider">
               <MaterialIcon name="doc" className="w-3.5 h-3.5 text-nasa-red-shade" />
               Blog Studio · {mode === 'new' ? 'New article' : 'Editing'}
             </div>
@@ -340,7 +340,7 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
               {mode === 'new' ? 'Write a new article' : 'Edit article'}
             </h1>
             {publishedSlug && (
-              <Link to={`/blogs/${publishedSlug}`} className="text-[11px] font-bold font-mono text-amber-700 hover:underline">
+              <Link to={`/blogs/${publishedSlug}`} className="text-xs font-bold font-mono text-amber-700 hover:underline">
                 Live at /blogs/{publishedSlug} ↗
               </Link>
             )}
@@ -348,7 +348,7 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
           <div className="flex items-center gap-2">
             <Link
               to="/dashboard/blog"
-              className="px-3.5 py-2 rounded-xl border border-carbon-20 bg-white text-[11px] font-black text-carbon-70 hover:bg-carbon-10"
+              className="px-3.5 py-2 border border-carbon-20 bg-white text-xs font-black text-carbon-70 hover:bg-carbon-10"
             >
               ← All articles
             </Link>
@@ -356,7 +356,7 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
               type="button"
               onClick={() => handleSave('draft')}
               disabled={saving}
-              className="px-3.5 py-2 rounded-xl border border-carbon-30 bg-white text-[11px] font-black text-carbon-80 hover:bg-carbon-10 disabled:opacity-50 cursor-pointer"
+              className="px-3.5 py-2 border border-carbon-30 bg-white text-xs font-black text-carbon-80 hover:bg-carbon-10 disabled:opacity-50 cursor-pointer"
             >
               {saving ? 'Saving…' : 'Save draft'}
             </button>
@@ -364,13 +364,13 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
               type="button"
               onClick={() => handleSave('published')}
               disabled={saving}
-              className="px-4 py-2 rounded-xl bg-nasa-red text-[11px] font-black text-carbon-black shadow-md hover:bg-nasa-red-shade disabled:opacity-50 cursor-pointer"
+              className="px-4 py-2 bg-nasa-red text-xs font-black text-white hover:bg-nasa-red-shade disabled:opacity-50 cursor-pointer"
             >
               {saving ? 'Publishing…' : status === 'published' ? 'Update & keep live' : 'Publish'}
             </button>
           </div>
         </div>
-        <p className="text-[10px] font-mono text-carbon-60">
+        <p className="text-xs font-mono text-carbon-60">
           {dirty ? 'Unsaved changes — autosaving locally…' : lastAutosavedAt ? `Local autosave ${lastAutosavedAt}` : 'Changes autosave locally as you write.'}
           {isLocalDemoMode() && ' · Local demo mode (browser storage only)'}
         </p>
@@ -380,7 +380,7 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-5 items-start">
         <div className="xl:col-span-2 space-y-4">
           {/* Core content */}
-          <div className="bg-white border border-carbon-20/90 rounded-3xl p-5 shadow-sm space-y-4">
+          <div className="bg-white border border-carbon-20/90 p-5 space-y-4">
             <div>
               <label htmlFor="blog-title" className="block text-xs font-bold text-carbon-80 mb-1.5">Title</label>
               <input
@@ -413,7 +413,7 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
                       setSlugEdited(false);
                       setSlug(slugify(title));
                     }}
-                    className="shrink-0 px-2.5 py-2 rounded-xl border border-carbon-20 text-[10px] font-black text-carbon-60 hover:bg-carbon-10 cursor-pointer"
+                    className="shrink-0 px-2.5 py-2 border border-carbon-20 text-xs font-black text-carbon-60 hover:bg-carbon-10 cursor-pointer"
                     title="Re-generate from title"
                   >
                     Auto
@@ -437,14 +437,14 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
           <RichTextEditor value={contentHtml} onChange={markDirty(setContentHtml)} />
 
           {/* ── SEO & Google Search Console ───────────────────────────── */}
-          <div className="bg-white border border-carbon-20/90 rounded-3xl p-5 shadow-sm space-y-4" data-testid="seo-panel">
+          <div className="bg-white border border-carbon-20/90 p-5 space-y-4" data-testid="seo-panel">
             <div className="flex items-center justify-between gap-2">
               <h3 className="text-xs font-black uppercase tracking-wider text-carbon-90 font-mono flex items-center gap-1.5">
                 <MaterialIcon name="search" className="w-4 h-4 text-nasa-red-shade" /> SEO &amp; Google Search Console
               </h3>
               <span
-                className={`rounded-full px-2.5 py-1 text-[10px] font-black ${
-                  seo.score >= 80 ? 'bg-emerald-50 text-emerald-700' : seo.score >= 50 ? 'bg-amber-50 text-amber-700' : 'bg-rose-50 text-rose-700'
+                className={`rounded-full px-2.5 py-1 text-xs font-black ${
+                  seo.score >= 80 ? 'bg-carbon-05 text-carbon-80' : seo.score >= 50 ? 'bg-amber-50 text-amber-700' : 'bg-white text-nasa-red-shade'
                 }`}
                 data-testid="seo-score"
               >
@@ -453,11 +453,11 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
             </div>
 
             {/* Google SERP preview */}
-            <div className="rounded-2xl border border-carbon-20 bg-carbon-05 p-4" data-testid="serp-preview">
-              <p className="mb-2 text-[9px] font-black uppercase tracking-[0.18em] text-carbon-60">Google result preview</p>
-              <p className="truncate text-[11px] text-[#4d5156] leading-none mb-1">{serpUrl}</p>
+            <div className="border border-carbon-20 bg-carbon-05 p-4" data-testid="serp-preview">
+              <p className="mb-2 text-xs font-black uppercase tracking-[0.18em] text-carbon-60">Google result preview</p>
+              <p className="truncate text-xs text-[#4d5156] leading-none mb-1">{serpUrl}</p>
               <p className="text-[15px] leading-snug text-[#1a0dab] font-medium truncate">{serpTitle || 'Your SEO title appears here'}</p>
-              <p className="mt-1 text-[11px] leading-relaxed text-[#4d5156] line-clamp-2">
+              <p className="mt-1 text-xs leading-relaxed text-[#4d5156] line-clamp-2">
                 {serpDescription || 'Your meta description appears here — write 120–160 characters that make searchers click.'}
               </p>
             </div>
@@ -532,31 +532,31 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
                 onChange={(e) => markDirty(setRobotsNoIndex)(e.target.checked)}
                 className="h-4 w-4 rounded border-carbon-30 accent-nasa-blue cursor-pointer"
               />
-              <span className="text-[11px] font-semibold text-carbon-60">
-                Hide from search engines <span className="font-mono text-[10px] text-carbon-60">(meta robots: noindex, follow)</span>
+              <span className="text-xs font-semibold text-carbon-60">
+                Hide from search engines <span className="font-mono text-xs text-carbon-60">(meta robots: noindex, follow)</span>
               </span>
             </label>
 
             {/* FAQ builder → FAQPage rich results */}
-            <div className="rounded-2xl border border-carbon-20 p-4 space-y-3" data-testid="faq-builder">
+            <div className="border border-carbon-20 p-4 space-y-3" data-testid="faq-builder">
               <div className="flex items-center justify-between">
                 <p className="text-xs font-bold text-carbon-80 flex items-center gap-1.5">
                   <MaterialIcon name="faq" className="w-4 h-4 text-nasa-red-shade" /> FAQ section
-                  <span className="text-[10px] font-medium text-carbon-60">(emits FAQPage schema → Google rich results)</span>
+                  <span className="text-xs font-medium text-carbon-60">(emits FAQPage schema → Google rich results)</span>
                 </p>
                 <button
                   type="button"
                   onClick={() => markDirty(setFaqs)([...faqs, { question: '', answer: '' }])}
-                  className="rounded-xl border border-carbon-20 px-2.5 py-1.5 text-[10px] font-black text-carbon-70 hover:bg-carbon-10 cursor-pointer"
+                  className="border border-carbon-20 px-2.5 py-1.5 text-xs font-black text-carbon-70 hover:bg-carbon-10 cursor-pointer"
                 >
                   + Add question
                 </button>
               </div>
               {faqs.length === 0 && (
-                <p className="text-[11px] text-carbon-60">3–5 concise Q&amp;As targeting “People also ask” queries works best.</p>
+                <p className="text-xs text-carbon-60">3–5 concise Q&amp;As targeting “People also ask” queries works best.</p>
               )}
               {faqs.map((faq, index) => (
-                <div key={index} className="space-y-2 rounded-xl bg-carbon-05 p-3">
+                <div key={index} className="space-y-2 bg-carbon-05 p-3">
                   <div className="flex items-center gap-2">
                     <input
                       value={faq.question}
@@ -568,7 +568,7 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
                     <button
                       type="button"
                       onClick={() => markDirty(setFaqs)(faqs.filter((_, i) => i !== index))}
-                      className="shrink-0 rounded-xl border border-rose-200 p-2 text-rose-500 hover:bg-rose-50 cursor-pointer"
+                      className="shrink-0 border border-nasa-red p-2 text-rose-500 hover:bg-white cursor-pointer"
                       aria-label={`Remove FAQ ${index + 1}`}
                     >
                       <MaterialIcon name="delete" className="w-3.5 h-3.5" />
@@ -592,13 +592,13 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
                 type="button"
                 onClick={() => setShowSeoTips((v) => !v)}
                 aria-expanded={showSeoTips}
-                className="flex w-full items-center justify-between rounded-xl px-1 py-1.5 text-[11px] font-black text-carbon-60 hover:text-carbon-90 cursor-pointer"
+                className="flex w-full items-center justify-between px-1 py-1.5 text-xs font-black text-carbon-60 hover:text-carbon-90 cursor-pointer"
               >
                 <span>SEO checklist ({seo.passedCount}/{seo.checks.length} passed · {seo.wordCount} words)</span>
                 <span aria-hidden="true">{showSeoTips ? '▾' : '▸'}</span>
               </button>
               {showSeoTips && (
-                <ul className="mt-2 space-y-1.5 rounded-2xl bg-carbon-05 p-3.5" data-testid="seo-checklist">
+                <ul className="mt-2 space-y-1.5 bg-carbon-05 p-3.5" data-testid="seo-checklist">
                   {seo.checks.map((check) => (
                     <SeoCheckRow key={check.id} passed={check.passed} label={check.label} advice={check.advice} />
                   ))}
@@ -610,7 +610,7 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
 
         {/* Sidebar settings */}
         <aside className="space-y-4">
-          <div className="bg-white border border-carbon-20/90 rounded-3xl p-5 shadow-sm space-y-4">
+          <div className="bg-white border border-carbon-20/90 p-5 space-y-4">
             <h3 className="text-xs font-black uppercase tracking-wider text-carbon-90 font-mono">Publishing</h3>
             <div>
               <label htmlFor="blog-status" className="block text-xs font-bold text-carbon-80 mb-1.5">Status</label>
@@ -659,13 +659,13 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
                 className={inputClass}
               />
               {coverImageUrl && (
-                <img src={coverImageUrl} alt="Cover preview" className="mt-2 rounded-xl border border-carbon-20 h-28 w-full object-cover" />
+                <img src={coverImageUrl} alt="Cover preview" className="mt-2 border border-carbon-20 h-28 w-full object-cover" />
               )}
             </div>
           </div>
 
           {/* Editable author byline */}
-          <div className="bg-white border border-carbon-20/90 rounded-3xl p-5 shadow-sm space-y-3" data-testid="author-panel">
+          <div className="bg-white border border-carbon-20/90 p-5 space-y-3" data-testid="author-panel">
             <div className="flex items-center justify-between">
               <h3 className="text-xs font-black uppercase tracking-wider text-carbon-90 font-mono">Author byline</h3>
               <button
@@ -674,14 +674,14 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
                   markDirty(setAuthorName)(signedInAuthor.name);
                   setDirty(true);
                 }}
-                className="rounded-lg px-2 py-1 text-[10px] font-black text-amber-700 hover:bg-amber-50 cursor-pointer"
+                className="rounded-sm px-2 py-1 text-xs font-black text-amber-700 hover:bg-amber-50 cursor-pointer"
                 title="Reset display name to your account name"
               >
                 Use my profile
               </button>
             </div>
             <div>
-              <label htmlFor="blog-author-name" className="block text-[11px] font-bold text-carbon-80 mb-1">Display name</label>
+              <label htmlFor="blog-author-name" className="block text-xs font-bold text-carbon-80 mb-1">Display name</label>
               <input
                 id="blog-author-name"
                 value={authorName}
@@ -691,7 +691,7 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
               />
             </div>
             <div>
-              <label htmlFor="blog-author-title" className="block text-[11px] font-bold text-carbon-80 mb-1">Title / role</label>
+              <label htmlFor="blog-author-title" className="block text-xs font-bold text-carbon-80 mb-1">Title / role</label>
               <input
                 id="blog-author-title"
                 value={authorTitle}
@@ -701,7 +701,7 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
               />
             </div>
             <div>
-              <label htmlFor="blog-author-bio" className="block text-[11px] font-bold text-carbon-80 mb-1">Short bio</label>
+              <label htmlFor="blog-author-bio" className="block text-xs font-bold text-carbon-80 mb-1">Short bio</label>
               <textarea
                 id="blog-author-bio"
                 value={authorBio}
@@ -713,7 +713,7 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
               />
             </div>
             <div>
-              <label htmlFor="blog-author-avatar" className="block text-[11px] font-bold text-carbon-80 mb-1">Avatar URL</label>
+              <label htmlFor="blog-author-avatar" className="block text-xs font-bold text-carbon-80 mb-1">Avatar URL</label>
               <input
                 id="blog-author-avatar"
                 value={authorAvatarUrl}
@@ -726,7 +726,7 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
               )}
             </div>
             <div>
-              <label htmlFor="blog-author-website" className="block text-[11px] font-bold text-carbon-80 mb-1">Website / profile link</label>
+              <label htmlFor="blog-author-website" className="block text-xs font-bold text-carbon-80 mb-1">Website / profile link</label>
               <input
                 id="blog-author-website"
                 value={authorWebsite}
@@ -735,14 +735,14 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
                 className={`${inputClass} font-mono`}
               />
             </div>
-            <p className="rounded-xl bg-carbon-05 p-2.5 text-[10px] leading-relaxed text-carbon-60">
+            <p className="bg-carbon-05 p-2.5 text-xs leading-relaxed text-carbon-60">
               Publisher account (permissions): <span className="font-mono font-bold text-carbon-60">{signedInAuthor.email || 'signed-out'}</span> — only
               primary superadmins can save; the public byline above is fully editable.
             </p>
           </div>
 
           {/* Monetization */}
-          <div className="bg-white border border-carbon-20/90 rounded-3xl p-5 shadow-sm space-y-3" data-testid="monetization-panel">
+          <div className="bg-white border border-carbon-20/90 p-5 space-y-3" data-testid="monetization-panel">
             <h3 className="text-xs font-black uppercase tracking-wider text-carbon-90 font-mono">Monetization</h3>
             <label htmlFor="blog-affiliate" className="flex items-start gap-2.5 cursor-pointer select-none">
               <input
@@ -752,9 +752,9 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
                 onChange={(e) => markDirty(setContainsAffiliateLinks)(e.target.checked)}
                 className="mt-0.5 h-4 w-4 rounded border-carbon-30 accent-nasa-blue cursor-pointer"
               />
-              <span className="text-[11px] font-semibold leading-relaxed text-carbon-60">
+              <span className="text-xs font-semibold leading-relaxed text-carbon-60">
                 Contains affiliate links
-                <span className="block text-[10px] font-medium text-carbon-60">
+                <span className="block text-xs font-medium text-carbon-60">
                   Shows a disclosure notice and tags outbound links rel=&quot;sponsored nofollow&quot; (Google policy).
                 </span>
               </span>
@@ -768,7 +768,7 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
               className={`${inputClass} resize-y`}
               aria-label="Affiliate disclosure text"
             />
-            <p className="text-[10px] leading-relaxed text-carbon-60">
+            <p className="text-xs leading-relaxed text-carbon-60">
               AdSense runs automatically on the blog pages once{' '}
               <span className="font-mono">VITE_ADSENSE_CLIENT</span> is configured.
             </p>
