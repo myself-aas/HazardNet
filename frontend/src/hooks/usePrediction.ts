@@ -1,16 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
+import { fetchStoredPrediction } from '../lib/storedPrediction';
 
-export const usePrediction = (payload: any) => {
-  return useQuery({
-    queryKey: ['predict', payload],
-    queryFn: async () => {
-      const res = await fetch('/api/predict', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-      return res.json();
-    },
-    enabled: Boolean(payload),
+export const usePrediction = (payload: { districtId: string; horizon?: string } | null) =>
+  useQuery({
+    queryKey: ['stored-prediction', payload],
+    queryFn: () => fetchStoredPrediction(payload!.districtId, payload!.horizon),
+    enabled: Boolean(payload?.districtId),
   });
-};

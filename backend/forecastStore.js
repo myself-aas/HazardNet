@@ -7,7 +7,8 @@
  * Read-shape: numeric fields as JS numbers, dates as 'YYYY-MM-DD' strings.
  */
 
-import { db, collection, getDocs, query, where, orderBy, limit, doc, writeBatch } from './db.js';
+import { db, collection, getDocs, query, where, orderBy, limit } from './db.js';
+import { persistForecasts } from './forecastPersistence.js';
 import fs from 'fs';
 import path from 'path';
 
@@ -77,6 +78,31 @@ function loadSnapshotData() {
 // Resilient Firestore implementation with snapshot fallback
 // ─────────────────────────────────────────────────────────────────────────
 
+// Bound offline client-SDK reads so the existing snapshot fallback is reachable.
+async function readForecasts(queryRef) {
+  let timer;
+  try {
+    return await Promise.race([
+      getDocs(queryRef),
+      new Promise((_, reject) => {
+        timer = setTimeout(() => reject(new Error('Forecast read deadline exceeded')), 2500);
+      }),
+    ]);
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function commitForecasts(rows, predictionDate) {
+  try {
+    return await persistForecasts(rows, predictionDate);
+  } catch (cause) {
+    const error = new Error('Forecast persistence failed', { cause });
+    error.status = 503;
+    throw error;
+  }
+}
+
 function createFirestoreStore() {
   const snapshot = loadSnapshotData();
   let memoryRows = [...snapshot.rows];
@@ -132,7 +158,7 @@ function createFirestoreStore() {
             where('district_id', '==', districtId),
             where('horizon', '==', horizon)
           );
-          const snap = await getDocs(q);
+          const snap = await readForecasts(q);
           const rows = [];
           snap.forEach((d) => rows.push(d.data()));
           if (rows.length > 0) {
@@ -151,7 +177,7 @@ function createFirestoreStore() {
       if (!isFirestoreInCooldown()) {
         try {
           const q = query(collection(db, 'forecasts'), where('horizon', '==', horizon));
-          const snap = await getDocs(q);
+          const snap = await readForecasts(q);
           if (snap && snap.size > 0) {
             firestoreAvailable = true;
             const districtMap = new Map();
@@ -177,7 +203,7 @@ function createFirestoreStore() {
       if (!isFirestoreInCooldown()) {
         try {
           const q = query(collection(db, 'forecasts'), orderBy('prediction_date', 'desc'), limit(1));
-          const snap = await getDocs(q);
+          const snap = await readForecasts(q);
           let latest = null;
           snap.forEach((d) => {
             const row = d.data();
@@ -199,7 +225,7 @@ function createFirestoreStore() {
       if (!isFirestoreInCooldown()) {
         try {
           const q = query(collection(db, 'forecasts'), orderBy('created_at', 'desc'), limit(1));
-          const snap = await getDocs(q);
+          const snap = await readForecasts(q);
           let latest = null;
           snap.forEach((d) => {
             const row = d.data();
@@ -229,7 +255,7 @@ function createFirestoreStore() {
           if (districtId !== undefined && districtId !== null) {
             constraints.push(where('district_id', '==', districtId));
           }
-          const snap = await getDocs(query(collection(db, 'forecasts'), ...constraints));
+          const snap = await readForecasts(query(collection(db, 'forecasts'), ...constraints));
           const rows = [];
           snap.forEach((d) => rows.push(d.data()));
           if (rows.length > 0) {
@@ -265,54 +291,31 @@ function createFirestoreStore() {
     },
 
     async replaceForecastsForPredictionDate(predictionDate, rows) {
-      // Update memory store immediately
-      memoryRows = memoryRows.filter((r) => r.prediction_date !== predictionDate);
+      if (rows.some((row) => row.prediction_date !== predictionDate)) {
+        throw new Error('Replacement rows must share the prediction date');
+      }
       const timestamp = new Date().toISOString();
-      const enrichedRows = rows.map((r) => ({ ...r, created_at: timestamp }));
+      const enrichedRows = rows.map((row) => ({ ...row, created_at: timestamp }));
+      // A rejected/ambiguous cloud write must never be advertised as success or
+      // installed in the process-local read fallback (ADR 0014).
+      const result = await commitForecasts(enrichedRows, predictionDate);
+      memoryRows = memoryRows.filter((row) => row.prediction_date !== predictionDate);
       memoryRows.push(...enrichedRows);
       memoryPredictionDate = predictionDate;
       memoryIngestionTimestamp = timestamp;
-
-      // Attempt Firestore persistence if accessible
-      try {
-        const forecastsRef = collection(db, 'forecasts');
-        const qOld = query(forecastsRef, where('prediction_date', '==', predictionDate));
-        const oldSnap = await getDocs(qOld);
-        const batch = writeBatch(db);
-        oldSnap.forEach((d) => batch.delete(d.ref));
-        for (const row of enrichedRows) {
-          batch.set(doc(collection(db, 'forecasts')), row);
-        }
-        await batch.commit();
-        firestoreAvailable = true;
-      } catch (err) {
-        handleFirestoreFailure(err);
-      }
-
-      return { written: rows.length };
+      firestoreAvailable = true;
+      return result;
     },
 
     async appendForecasts(rows) {
       const timestamp = new Date().toISOString();
-      const enrichedRows = rows.map((r) => ({ ...r, created_at: timestamp }));
+      const enrichedRows = rows.map((row) => ({ ...row, created_at: timestamp }));
+      const result = await commitForecasts(enrichedRows);
       memoryRows.push(...enrichedRows);
-      if (rows.length > 0 && rows[0].prediction_date) {
-        memoryPredictionDate = rows[0].prediction_date;
-      }
+      memoryPredictionDate = [...memoryRows].map((row) => row.prediction_date).sort().at(-1) ?? null;
       memoryIngestionTimestamp = timestamp;
-
-      try {
-        const batch = writeBatch(db);
-        for (const row of enrichedRows) {
-          batch.set(doc(collection(db, 'forecasts')), row);
-        }
-        await batch.commit();
-        firestoreAvailable = true;
-      } catch (err) {
-        handleFirestoreFailure(err);
-      }
-
-      return { written: rows.length };
+      firestoreAvailable = true;
+      return result;
     },
   };
 }

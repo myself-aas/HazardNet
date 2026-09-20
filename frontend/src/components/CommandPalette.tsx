@@ -275,10 +275,10 @@ const DOCUMENTATION_ITEMS: SearchItem[] = [
   },
   {
     id: 'doc-ingestion',
-    title: 'GeoTIFF / Raster Tile Ingestion Pipeline',
+    title: 'District Forecast Lookup',
     category: 'Documentation',
-    subtitle: 'Upload multi-channel GeoTIFF tiles for live model evaluation & severity mapping',
-    badge: 'Raster Ingestion',
+    subtitle: 'Read published forecasts by district and horizon; no on-demand inference',
+    badge: 'Stored Forecasts',
     actionPath: '/upload',
   },
   {

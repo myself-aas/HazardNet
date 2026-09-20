@@ -189,7 +189,7 @@ describe('alert payloads', () => {
       fetchImpl: async () => new Response('body', { status: 200 }),
     });
     await respond(handlers, request({ url: 'https://www.hazardnet.live/assets/app-123.js' }));
-    expect(puts.map((p) => p.name)).toEqual(['hazardnet-offline-v1']);
+    expect(puts.map((p) => p.name)).toEqual(['hazardnet-offline-v2']);
   });
 
   it('keeps the alert cache alive across activations', async () => {
@@ -197,8 +197,8 @@ describe('alert payloads', () => {
     const handlers = loadWorker({ caches, fetchImpl: async () => jsonResponse({}) });
     const deleted = [];
     caches.delete = async (name) => { deleted.push(name); return true; };
-    caches.keys = async () => ['hazardnet-offline-v1', 'hazardnet-tiles-v1', 'hazardnet-alerts-v1', 'stale-cache'];
+    caches.keys = async () => ['hazardnet-offline-v1', 'hazardnet-offline-v2', 'hazardnet-tiles-v1', 'hazardnet-alerts-v1', 'stale-cache'];
     await handlers.activate({ waitUntil: (p) => p });
-    expect(deleted).toEqual(['stale-cache']);
+    expect(deleted).toEqual(['hazardnet-offline-v1', 'stale-cache']);
   });
 });

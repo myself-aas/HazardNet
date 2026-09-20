@@ -4,7 +4,7 @@
  * Forecast store (backend/forecastStore.js) tests.
  */
 import { getForecastStore, getForecastStoreMode, resetForecastStore } from '../backend/forecastStore.js';
-import { getDocs as _getDocs, writeBatch as _writeBatch, orderBy as _orderBy, limit as _limit } from '../backend/db.js';
+import { getDocs as _getDocs, orderBy as _orderBy, limit as _limit } from '../backend/db.js';
 
 jest.mock('../backend/db.js', () => ({
   db: {},
@@ -19,7 +19,8 @@ jest.mock('../backend/db.js', () => ({
 }));
 
 const mockGetDocs = jest.mocked(_getDocs);
-const mockWriteBatch = jest.mocked(_writeBatch);
+import { persistForecasts } from '../backend/forecastPersistence.js';
+jest.mock('../backend/forecastPersistence.js', () => ({ persistForecasts: jest.fn() }));
 const mockOrderBy = jest.mocked(_orderBy);
 const mockLimit = jest.mocked(_limit);
 
@@ -41,6 +42,7 @@ const row = (over = {}) => ({
 beforeEach(() => {
   jest.clearAllMocks();
   resetForecastStore();
+  persistForecasts.mockReset().mockImplementation(async (rows) => ({ written: rows.length }));
 });
 
 describe('mode selection', () => {
@@ -116,17 +118,54 @@ describe('firestore store', () => {
     ]);
   });
 
-  it('replaceForecastsForPredictionDate deletes old rows then writes new ones', async () => {
-    const batch = { delete: jest.fn(), set: jest.fn(), commit: jest.fn().mockResolvedValue(true) };
-    mockWriteBatch.mockReturnValueOnce(batch);
-    mockGetDocs.mockResolvedValue({
-      forEach: (cb) => cb({ ref: 'old-doc-ref', data: () => row() }),
-    });
+  it('only publishes committed replacement rows into the fallback', async () => {
+    mockGetDocs.mockResolvedValue({ size: 0, forEach: () => {} });
     const store = getForecastStore();
-    const { written } = await store.replaceForecastsForPredictionDate('2026-09-12', [row(), row({ district_id: 30 })]);
-    expect(written).toBe(2);
-    expect(batch.delete).toHaveBeenCalledWith('old-doc-ref');
-    expect(batch.set).toHaveBeenCalledTimes(2);
-    expect(batch.commit).toHaveBeenCalledTimes(1);
+    const result = await store.replaceForecastsForPredictionDate('2026-09-12', [row()]);
+    expect(result).toEqual({ written: 1 });
+    expect(persistForecasts).toHaveBeenCalledWith([expect.objectContaining(row())], '2026-09-12');
+    expect(await store.getLatestForecastByDistrict(19, '7_days')).toMatchObject(row());
   });
+
+  test.each(['replace', 'append'])('%s failure neither acknowledges nor contaminates fallback', async (mode) => {
+    mockGetDocs.mockResolvedValue({ size: 0, forEach: () => {} });
+    const store = getForecastStore();
+    await store.replaceForecastsForPredictionDate('2026-09-12', [row()]);
+    persistForecasts.mockRejectedValue(new Error('denied'));
+    const next = row({ severity_score: 0.99 });
+    const operation = mode === 'replace' ? store.replaceForecastsForPredictionDate('2026-09-12', [next]) : store.appendForecasts([next]);
+    await expect(operation).rejects.toMatchObject({ status: 503, message: 'Forecast persistence failed' });
+    expect((await store.getLatestForecastByDistrict(19, '7_days')).severity_score).toBe(0.55);
+  });
+
+  it('does not acknowledge while persistence is pending', async () => {
+    let commit;
+    persistForecasts.mockImplementation(() => new Promise((resolve) => { commit = resolve; }));
+    mockGetDocs.mockResolvedValue({ size: 0, forEach: () => {} });
+    const store = getForecastStore();
+    const pending = store.appendForecasts([row()]);
+    expect(await store.getLatestForecastByDistrict(19, '7_days')).toBeNull();
+    commit({ written: 1 });
+    await expect(pending).resolves.toEqual({ written: 1 });
+    expect(await store.getLatestForecastByDistrict(19, '7_days')).toMatchObject(row());
+  });
+
+  it('reads durable rows after the singleton is recreated', async () => {
+    const durable = [];
+    persistForecasts.mockImplementation(async (rows) => { durable.push(...rows); return { written: rows.length }; });
+    mockGetDocs.mockImplementation(async () => ({ forEach: (fn) => durable.forEach((value) => fn({ data: () => value })) }));
+    await getForecastStore().appendForecasts([row()]);
+    resetForecastStore();
+    expect(await getForecastStore().getLatestForecastByDistrict(19, '7_days')).toMatchObject(row());
+  });
+});
+
+it('reaches snapshot fallback when the cloud read never settles', async () => {
+  jest.useFakeTimers();
+  try {
+    mockGetDocs.mockImplementationOnce(() => new Promise(() => {}));
+    const result = getForecastStore().getLatestForecastsByHorizon('7_days');
+    await jest.advanceTimersByTimeAsync(2500);
+    expect((await result).length).toBeGreaterThan(0);
+  } finally { jest.useRealTimers(); }
 });

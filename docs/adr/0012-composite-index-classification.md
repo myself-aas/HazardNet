@@ -75,7 +75,15 @@ question stays open forever — and this one had been open since the checker lan
    the gate says the entry should be removed, so the registry tracks the copy
    instead of accumulating history.
 
-## Not decided here (escalated to the owner)
+## Additional owner decision — resolved 2026-09-20
+
+The owner classified the “Vulnerability Formula” as **embargoed research**, not
+presentation aggregation. See [ADR 0014](0014-codebase-owner-decisions.md). Its public
+formula, weights and derived research output must be withheld. The formula, computed division score and ranking have been removed from the public
+component; known-pattern blocking checks and regression tests now enforce this decision; the two earlier presentation-aggregation
+approvals above are unchanged.
+
+### Historical escalation (answered)
 
 Classifying the two composite blocks turned up a third thing in the same component
 that the gate had never looked at, and it is **not** the same shape:

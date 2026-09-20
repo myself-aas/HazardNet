@@ -149,7 +149,16 @@ describe('predictFromStore / refuses to invent', () => {
 describe('predictFromStore / declared gaps match actual gaps', () => {
   it('reports exactly the fields that came back null', () => {
     const envelope = predictFromStore(firstRow());
-    expect(new Set(envelope.metadata.fields_unavailable)).toEqual(new Set(NULLABLE_PATHS));
+    const actual = [];
+    const walk = (value, path = '') => {
+      for (const [key, child] of Object.entries(value)) {
+        const name = path ? `${path}.${key}` : key;
+        if (child === null) actual.push(name);
+        else if (child && typeof child === 'object' && !Array.isArray(child)) walk(child, name);
+      }
+    };
+    walk(envelope);
+    expect(new Set(envelope.metadata.fields_unavailable)).toEqual(new Set(actual));
   });
 
   it('keeps metadata.fields_unavailable consistent in both directions', () => {
@@ -208,18 +217,4 @@ describe('severity binning', () => {
     expect(severityBin(1)).toBe('High');
   });
 
-  it('matches the thresholds still hard-coded in backend/inference.js', () => {
-    // DRIFT GUARD, temporary by design: two implementations of the same banding
-    // exist only until Phase 4 deletes backend/inference.js (ADR 0009). When
-    // that file is gone, delete this test with it.
-    const inference = readFileSync(
-      path.resolve(__dirname, '..', 'backend', 'inference.js'),
-      'utf8'
-    );
-    const thresholds = inference
-      .match(/function severityBin[\s\S]*?\n}/)?.[0]
-      .match(/score <= ([\d.]+)/g)
-      ?.map((s) => s.replace('score <= ', ''));
-    expect(thresholds).toEqual(['0.33', '0.66']);
-  });
 });
