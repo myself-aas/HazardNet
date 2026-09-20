@@ -82,7 +82,7 @@ const ALLOWLIST = [
  * `unless`   a co-occurring phrase that makes the match legitimate (the archive's own
  *            reported field, or the embargo notice itself)
  */
-const RULES = [
+export const RULES = [
   // ── block tier: derivation of a NEW severity value or its parameters ──────────
   {
     tier: 'block',
@@ -131,17 +131,20 @@ const RULES = [
       'severity value from weights it is embargoed; if it only counts/averages the ' +
       'model\'s existing severity it is a presentation aggregation. Owner must classify it.',
   },
-  // Found while recording the ADR 0012 classifications, and deliberately NOT
-  // classified there: this is a different block of copy in the same component.
-  // `Vulnerability Formula = (Division Avg District Severity × 0.6) + (High Risk
-  // Ratio × 0.4)` prints explicit coefficients on a visitor surface. C1 withholds
-  // derived-index weights from public copy, so either the coefficients are the
-  // embargoed index's (a leak — withdraw them) or they are a presentation-level
-  // ranking of two already-published values (keep — and label them the way the
-  // composite blocks now are). That is the owner's call, not the gate's, so the
-  // gate reports it on every run instead of deciding it. `formula|weighting|
-  // coefficients` rather than `weights`: the block-tier `index-weights` rule
-  // already owns that word, and matching it twice would report one leak as two.
+  {
+    tier: 'block',
+    id: 'embargoed-division-formula',
+    pattern: /\bvulnerability\s+formula\b/gi,
+    why: 'Owner-classified research formula must not be published (ADR 0014).',
+  },
+  // ADR 0014: owner classified the division formula and its output as embargoed.
+  {
+    tier: 'block',
+    id: 'embargoed-vulnerability',
+    files: ['frontend/src/components/NationalOverview.tsx'],
+    pattern: /\bvulnerability(?:\s+(?:formula|index|score)|Score)\b/gi,
+    why: 'Owner-classified embargoed research (ADR 0014); public formula and derived output must be withheld.',
+  },
   {
     tier: 'review',
     id: 'weighted-formula',
@@ -290,6 +293,7 @@ export function scan() {
 
       const text = readFileSync(file, 'utf8');
       for (const rule of RULES) {
+        if (rule.files && !rule.files.includes(rel)) continue;
         const re = new RegExp(rule.pattern.source, rule.pattern.flags);
         let match;
         while ((match = re.exec(text)) !== null) {

@@ -1,9 +1,11 @@
 /**
  * @jest-environment node
  */
+import { persistForecasts } from '../backend/forecastPersistence.js';
+jest.mock('../backend/forecastPersistence.js', () => ({ persistForecasts: jest.fn(async (rows) => ({ written: rows.length })) }));
 import { createMocks } from 'node-mocks-http';
 import handler from '../api/ingest.js';
-import { writeBatch } from '../backend/db.js';
+
 
 jest.mock('../backend/db.js', () => ({
   db: {},
@@ -48,7 +50,7 @@ describe('Ingest API Handler', () => {
         body: JSON.stringify({ chunk }),
       });
       await handler(req, res);
-      expect(writeBatch).toHaveBeenCalled();
+      expect(persistForecasts).toHaveBeenCalled();
       expect(res.statusCode).toBe(200);
       
       const data = JSON.parse(res._getData());
@@ -57,3 +59,13 @@ describe('Ingest API Handler', () => {
   });
 });
 
+
+it('returns non-success when durable persistence fails', async () => {
+  process.env.BACKEND_API_KEY = 'secret';
+  persistForecasts.mockRejectedValueOnce(new Error('credential denied'));
+  const chunk = [{ district_id: '1', district_name: 'A', horizon: '7_days', hazard_type: 'Fire', confidence: 0.9, severity_score: 0.5, target_date: '2024-01-08', prediction_date: '2024-01-01' }];
+  const { req, res } = createMocks({ method: 'POST', headers: { authorization: 'Bearer secret' }, body: JSON.stringify({ chunk }) });
+  await handler(req, res);
+  expect(res.statusCode).toBe(500);
+  expect(res._getJSONData()).toEqual({ error: 'Forecast store write failed' });
+});

@@ -174,7 +174,7 @@ router.post('/ingest-csv', async (req, res) => {
             ...result
         });
     } catch (error) {
-        clientError(res, error, { status: 400, scope: 'backend/forecasts', fallback: 'CSV ingestion failed' });
+        clientError(res, error, { status: error.status || 400, scope: 'backend/forecasts', fallback: 'CSV ingestion failed' });
     }
 });
 

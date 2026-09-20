@@ -10,6 +10,8 @@
  * Firestore and the advisory agent are mocked — this tests the HTTP + CSV
  * parsing + validation contract only.
  */
+import { persistForecasts } from '../backend/forecastPersistence.js';
+jest.mock('../backend/forecastPersistence.js', () => ({ persistForecasts: jest.fn(async (rows) => ({ written: rows.length })) }));
 import express from 'express';
 import request from 'supertest';
 import { Buffer } from 'node:buffer';
@@ -126,4 +128,15 @@ describe('POST /api/v1/forecasts/update (CSV ingest)', () => {
 
     expect(res.statusCode).toBe(401);
   });
+});
+
+it('does not acknowledge a failed durable replacement or expose driver details', async () => {
+  process.env.BACKEND_API_KEY = 'test-secret';
+  persistForecasts.mockRejectedValueOnce(new Error('private driver detail'));
+  const res = await request(app).post('/api/v1/forecasts/update')
+    .set('Authorization', 'Bearer test-secret')
+    .attach('file', Buffer.from(LEGACY_CSV), 'forecast.csv');
+  expect(res.status).toBe(503);
+  expect(JSON.stringify(res.body)).not.toContain('private driver detail');
+  expect(res.body.status).not.toBe('success');
 });

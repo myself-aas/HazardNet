@@ -1,6 +1,7 @@
 // Service Worker for offline mode, Web Push Notifications, and GIS map tiles.
 
-const CACHE_NAME = 'hazardnet-offline-v1';
+// Invalidate old app bundles containing the withdrawn research presentation.
+const CACHE_NAME = 'hazardnet-offline-v2';
 const TILE_CACHE_NAME = 'hazardnet-tiles-v1';
 const MAX_TILE_CACHE_ITEMS = 1200;
 
@@ -128,11 +129,17 @@ async function syncPredictions() {
       getAll.onsuccess = () => {
         const queue = getAll.result || [];
         for (const item of queue) {
+          if (!item.payload?.districtId || item.payload.tensor || item.payload.rasterName) {
+            const obsolete = db.transaction('prediction-queue', 'readwrite');
+            obsolete.objectStore('prediction-queue').delete(item.id);
+            continue;
+          }
           fetch('/api/predict', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(item.payload),
-          }).then(() => {
+            body: JSON.stringify({ districtId: item.payload.districtId, horizon: item.payload.horizon || '7_days' }),
+          }).then((response) => {
+            if (!response.ok) throw new Error('Stored forecast unavailable');
             const delTx = db.transaction('prediction-queue', 'readwrite');
             delTx.objectStore('prediction-queue').delete(item.id);
           }).catch(() => {});

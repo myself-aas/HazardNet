@@ -128,7 +128,7 @@ describe('Input Validation', () => {
     expect(response.status).toBe(413);
   }, 30000);
 
-  test('rejects a missing tensor with 422 and never echoes input', async () => {
+  test('rejects a missing district with 422 and never echoes input', async () => {
     const response = await request(app)
       .post('/api/predict')
       .send({ malicious: '<script>alert("xss")</script>' })

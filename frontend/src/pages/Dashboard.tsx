@@ -1,10 +1,11 @@
 import MaterialIcon from "../components/MaterialIcon";
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import Map from '../components/Map';
-import PredictionPanel from '../components/PredictionPanel';
+import StoredForecastPanel from '../components/StoredForecastPanel';
+import { fetchStoredPrediction, type StoredPrediction } from '../lib/storedPrediction';
 import AdvisoryPanel from '../components/AdvisoryPanel';
 import OfflineBadge from '../components/OfflineBadge';
 import RiskAnalytics from '../components/RiskAnalytics';
@@ -18,89 +19,6 @@ import { useAuth } from '../context/AuthContext';
 import { findNearestDistrict } from '../services/geolocationService';
 
 type District = DistrictData;
-
-const hazardProfiles = {
-  'Cold Wave': {
-    description: 'Abnormally low temperatures endangering winter crops (Boro seedlings, mustard).',
-    impact: 'Seedling stunting, cold injury, reduced yield',
-    mitigation: [
-      'Maintain 3-5 cm standing water in Boro seedbeds',
-      'Cover seedbeds with transparent polythene sheets overnight',
-      'Apply light irrigation during severe cold snaps'
-    ],
-    icon: ''
-  },
-  Drought: {
-    description: 'Extended dry periods with soil moisture deficit & elevated land surface temperature.',
-    impact: 'Crop wilting, soil degradation, severe yield reduction',
-    mitigation: [
-      'Deploy supplemental drip or micro-sprinkler irrigation',
-      'Apply organic straw mulching to conserve topsoil moisture',
-      'Promote drought-tolerant Aus/Aman rice varieties (BRRI dhan56/57)'
-    ],
-    icon: ''
-  },
-  Fire: {
-    description: 'High thermal anomaly with elevated SWIR reflectance in dry crop residues.',
-    impact: 'Loss of ripe crop harvest, smoke pollution, soil organic burn',
-    mitigation: [
-      'Enforce crop residue management instead of stubble burning',
-      'Establish 5m wide wet perimeter firebreaks around storage granaries',
-      'Deploy localized water pump reserves during dry harvest months'
-    ],
-    icon: ''
-  },
-  'Flash Flood': {
-    description: 'Sudden, rapid water level rise in northeastern haor areas from upstream heavy rainfall.',
-    impact: 'Complete inundation of ripening pre-monsoon Boro paddy',
-    mitigation: [
-      'Early harvest when Boro rice reaches 80% physiological maturity',
-      'Strengthen submersible char embankments and drainage canals',
-      'Utilize short-duration Boro varieties (BRRI dhan28/88)'
-    ],
-    icon: ''
-  },
-  Flood: {
-    description: 'Monsoon inundation with high precipitation accumulation & sharp SAR backscatter drops.',
-    impact: 'Widespread standing crop damage, soil erosion, farmer displacement',
-    mitigation: [
-      'Cultivate submergence-tolerant rice varieties (BRRI dhan51/52, Bina-11)',
-      'Construct elevated floating seedbeds (Dhap) for vegetable production',
-      'Establish community grain banks and elevated fodder shelters'
-    ],
-    icon: ''
-  },
-  'Heat Wave': {
-    description: 'Extreme maximum temperatures (>38°C) causing spikelet sterility.',
-    impact: 'Grain flower abortion, heat stress, forced maturity',
-    mitigation: [
-      'Keep paddy fields flooded with 5-7 cm cool standing water',
-      'Foliar spray of 1% potassium chloride (KCl) solution to boost heat tolerance',
-      'Shift sowing dates to align flowering with milder temperature windows'
-    ],
-    icon: ''
-  },
-  'Severe Local Storm': {
-    description: 'Convective storm system (Nor\'wester/Kalbaishakhi) with high winds & hail.',
-    impact: 'Crop lodging, physical hail damage, fruit shedding',
-    mitigation: [
-      'Provide mechanical staking for banana, sugarcane, and vegetables',
-      'Drain excess rainwater immediately after storm events',
-      'Erect windbreak trees along northern and western field perimeters'
-    ],
-    icon: ''
-  },
-  'Tropical Cyclone': {
-    description: 'Severe coastal storm surge and high wind system causing storm inundation.',
-    impact: 'Saline water intrusion, severe structural and crop devastation',
-    mitigation: [
-      'Harvest mature coastal crops immediately upon cyclone warning (Signal 4+)',
-      'Construct multi-purpose coastal sluice gates and polder embankments',
-      'Plant salt-tolerant Aman varieties (BRRI dhan73/87) post-event'
-    ],
-    icon: ''
-  }
-};
 
 const defaultDistricts: Record<string, District> = {
   kurigram: getDistrictById('kurigram')!,
@@ -125,17 +43,16 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
   );
   const [selectedDistrict, setSelectedDistrict] = useState<District | null>(null);
   const [loading, setLoading] = useState(false);
-  const [prediction, setPrediction] = useState<number[]>([0.1, 0.05, 0.02, 0.2, 0.5, 0.03, 0.05, 0.05]);
+  const [storedForecast, setStoredForecast] = useState<StoredPrediction | null>(null);
+  const requestSequence = useRef(0);
   const [severity, setSeverity] = useState<number>(0.78);
-  // 0 means "no inference has been measured on this device" — never render a
-  // placeholder number as if it were a measurement (UI-14).
-  const [processingTimeMs, setProcessingTimeMs] = useState<number>(0);
+
   // Provenance for the numbers above. `live` is set only when /api/predict
   // actually answered; the catch branch shows a static district baseline and
   // the UI must label it as such (UI-01/UX-12).
   const [predictionSource, setPredictionSource] = useState<'live' | 'baseline'>('baseline');
   const [liveSummary, setLiveSummary] = useState<{ hazard: string; confidence: number } | null>(null);
-  const [channelFeatures, setChannelFeatures] = useState<any>(null);
+
 
   // Offline Cache & Storage Management State
   const [tileCacheStats, setTileCacheStats] = useState<{ count: number; estimatedSizeMb: number; loading: boolean }>({
@@ -310,58 +227,24 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
   }, [defaultTab]);
 
   const runPrediction = useCallback(async (dist: District) => {
+    const sequence = ++requestSequence.current;
     setLoading(true);
-    const start = performance.now();
-
+    setStoredForecast(null);
+    setLiveSummary(null);
+    setPredictionSource('baseline');
     try {
-      const res = await fetch('/api/predict', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ districtId: dist.id, risk: dist.risk })
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        const pred = data.prediction;
-        const probs = pred.class_probabilities
-          ? pred.class_probabilities.map((p: any) => p.score)
-          : [0.1, 0.1, 0.05, 0.15, 0.4, 0.05, 0.05, 0.1];
-
-        setPrediction(probs);
-        setSeverity(pred.severity_score ?? 0.75);
-        setChannelFeatures(pred.channel_features || null);
-        setProcessingTimeMs(data.inference?.latency_ms ?? Math.round(performance.now() - start));
-        setLiveSummary({
-          hazard: typeof pred.hazard === 'string' ? pred.hazard : dist.hazardType,
-          confidence:
-            typeof pred.confidence === 'number' ? pred.confidence : Math.max(...probs.map(Number)),
-        });
-        setPredictionSource('live');
-      } else {
-        throw new Error('API returned non-200');
-      }
-    } catch (e) {
-      // The inference API is unreachable (it is not deployed on the Vercel
-      // surface yet). Fall back to the static district baseline and *say so*:
-      // presenting the climatological prior as a softmax result, with a
-      // fabricated latency, is exactly the fake-precision defect the audit
-      // flagged (UI-01/UI-14/UX-12).
-      console.warn('[HazardNet] live inference unavailable — showing static district baseline', e);
-      if (dist.risk === 'High') {
-        setPrediction([0.02, 0.08, 0.01, 0.25, 0.55, 0.02, 0.04, 0.03]);
-        setSeverity(0.85);
-      } else if (dist.risk === 'Moderate') {
-        setPrediction([0.15, 0.35, 0.05, 0.10, 0.15, 0.10, 0.05, 0.05]);
-        setSeverity(0.48);
-      } else {
-        setPrediction([0.05, 0.10, 0.02, 0.05, 0.12, 0.05, 0.05, 0.02]);
-        setSeverity(0.22);
-      }
-      setLiveSummary(null);
-      setPredictionSource('baseline');
-      setProcessingTimeMs(0);
+      const data = await fetchStoredPrediction(dist.id);
+      if (sequence !== requestSequence.current) return;
+      setStoredForecast(data);
+      setSeverity(data.prediction.severity_score);
+      setLiveSummary({ hazard: data.prediction.hazard, confidence: data.prediction.confidence });
+      setPredictionSource('live');
+    } catch (error) {
+      if (sequence !== requestSequence.current) return;
+      console.warn('[HazardNet] stored forecast unavailable', error);
+      setSeverity(dist.severity);
     } finally {
-      setLoading(false);
+      if (sequence === requestSequence.current) setLoading(false);
     }
   }, []);
 
@@ -390,9 +273,9 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
 
   const downloadReport = () => {
     if (!selectedDistrict) return;
-    const csvContent = "data:text/csv;charset=utf-8," 
+    const csvContent = "data:text/csv;charset=utf-8,"
       + "Region,Latitude,Longitude,Risk,Main Crop,Severity Score,Source\n"
-      + `${selectedDistrict.name},${selectedDistrict.lat},${selectedDistrict.lng},${selectedDistrict.risk},${selectedDistrict.mainCrop},${(severity * 100).toFixed(0)}%,${predictionSource === 'live' ? 'Live model inference' : 'Static baseline (model unavailable)'}`;
+      + `${selectedDistrict.name},${selectedDistrict.lat},${selectedDistrict.lng},${selectedDistrict.risk},${selectedDistrict.mainCrop},${(severity * 100).toFixed(0)}%,${predictionSource === 'live' ? 'Stored forecast' : 'Static baseline (stored forecast unavailable)'}`;
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
@@ -406,7 +289,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
   if (isFullScreen && activeView === 'gis') {
     return (
       <div className="relative w-full h-full bg-transparent overflow-hidden flex flex-col font-sans text-carbon-90">
-        
+
         {/*
           Page title. This branch renders the map canvas with no heading at all, so
           `/live`, `/home`, `/home/overview` and `/forecast/overview` had no `<h1>` —
@@ -451,7 +334,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
                 transition={{ type: 'spring', stiffness: 350, damping: 28 }}
                 className="absolute top-16 right-3 left-3 sm:left-auto bottom-20 sm:bottom-4 sm:w-[480px] lg:w-[540px] z-[1100] bg-white/95 backdrop-blur-md border border-carbon-20 rounded-3xl p-4 sm:p-5 overflow-y-auto shadow-2xl flex flex-col space-y-5 sm:space-y-6 text-carbon-90 custom-scrollbar"
               >
-                
+
                 {/* Drawer Header */}
                 <div className="flex items-center justify-between pb-4 border-b border-carbon-20">
                   <div className="space-y-1">
@@ -474,21 +357,15 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
                 </div>
 
                 {/* Prediction Panel */}
-                <PredictionPanel
-                  hazardProfiles={hazardProfiles}
-                  prediction={prediction}
-                  severity={severity}
-                  processingTimeMs={processingTimeMs}
-                  channelFeatures={channelFeatures}
-                />
+                <StoredForecastPanel forecast={storedForecast} />
 
                 {/* Advisory Panel */}
-                <AdvisoryPanel
+                {storedForecast && (<AdvisoryPanel
                   districtName={selectedDistrict.name}
-                  hazardType={selectedDistrict.risk === 'High' ? 'Flood' : 'Tropical Cyclone'}
+                  hazardType={storedForecast.prediction.hazard}
                   severityScore={severity}
-                  confidence={0.88}
-                />
+                  confidence={storedForecast.prediction.confidence}
+                />)}
 
                 {/* 30-Day Severity Trend Chart */}
                 <ThirtyDayTrendChart
@@ -516,7 +393,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
   return (
     <div className={isFullScreen ? "w-full h-full h-dvh overflow-y-auto px-4 sm:px-6 lg:px-8 pt-24 custom-scrollbar bg-carbon-05 relative z-10" : "w-full"}>
       <div id="dashboard-content" className="max-w-[1600px] mx-auto space-y-8 sm:space-y-10 md:space-y-12 pb-12">
-      
+
       {/* Top Header Card */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -533,14 +410,14 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
             </span>
             <span className="text-carbon-30 hidden sm:inline">•</span>
             <span className="text-xs sm:text-sm font-mono text-carbon-60">
-              Hosted Dual Head Inference: <code className="text-carbon-90 font-bold bg-carbon-10 px-2 py-0.5 rounded-lg border border-carbon-20">HazardNet_FP32</code>
+              Stored Forecast Product: <code className="text-carbon-90 font-bold bg-carbon-10 px-2 py-0.5 rounded-lg border border-carbon-20">HazardNet_FP32</code>
             </span>
           </div>
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-carbon-90 tracking-tight leading-tight">
             Multi-Hazard AI Classification & Severity Index
           </h1>
           <p className="text-sm sm:text-base text-carbon-60 max-w-4xl leading-relaxed">
-            Real-time inference over 15 multispectral raster bands (SAR VV/VH, Sentinel-2, ERA5-Land) for agricultural risk assessment across Bangladesh.
+            Published district forecasts for agricultural decision support across Bangladesh. This page reads stored results; it does not run a model.
           </p>
         </div>
 
@@ -557,7 +434,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
           >
             <MaterialIcon name="settings" className="w-4 h-4 inline-block sm:mr-1" /><span className="hidden sm:inline">Settings</span>
           </button>
-          
+
           <PdfExportButton
             elementId="dashboard-content"
             filename={`HazardNet_MultiHazard_AI_Report_{region}_{date}.pdf`}
@@ -587,7 +464,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
             <MaterialIcon name="download" className="w-4 h-4 inline-block sm:hidden" />
             <span className="hidden sm:inline">Export CSV</span>
           </button>
-          
+
           <button
             onClick={() => { if (selectedDistrict) runPrediction(selectedDistrict); }}
             disabled={loading}
@@ -918,16 +795,16 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
                       <p className="text-xs text-carbon-60 mt-1">
                         {predictionSource === 'live' && liveSummary ? (
                           <>
-                            Live model output:{' '}
+                            Stored forecast as of {storedForecast?.provenance.prediction_date ?? 'date not recorded'}:{' '}
                             <strong className="text-carbon-80">
-                              {liveSummary.hazard} · {(liveSummary.confidence * 100).toFixed(1)}% top-class confidence
+                              {liveSummary.hazard} · {(liveSummary.confidence * 100).toFixed(1)}% top-class score
                             </strong>
-                            {processingTimeMs > 0 && <> · measured {processingTimeMs} ms</>}
+
                           </>
                         ) : (
                           <>
                             Static baseline band:{' '}
-                            <strong className="text-carbon-80">{selectedDistrict.risk}</strong> — live inference
+                            <strong className="text-carbon-80">{selectedDistrict.risk}</strong> — stored forecast
                             unavailable, showing the district's climatological prior (not a model output)
                           </>
                         )}
@@ -1042,7 +919,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
                 Offline Map Tile Cache & Storage Settings
               </h2>
               <p className="text-xs sm:text-sm text-carbon-30 leading-relaxed font-normal">
-                Manage locally cached satellite GIS map tiles, baseline neural network tensors, and offline storage. Manually clear tile caches to free up browser disk space without losing saved districts or system settings.
+                Manage locally cached satellite GIS map tiles, published forecast snapshots, and offline storage. Manually clear tile caches to free up browser disk space without losing saved districts or system settings.
               </p>
             </div>
 
@@ -1151,7 +1028,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
                     <MaterialIcon name="psychology" className="w-4 h-4 inline-block mr-1" />
                   </div>
                   <div>
-                    <h4 className="text-sm font-black text-carbon-90">Hosted Inference & App Bundles</h4>
+                    <h4 className="text-sm font-black text-carbon-90">Forecast Data & App Bundles</h4>
                     <p className="text-[11px] text-carbon-60 font-mono">Model weights remain server-side</p>
                   </div>
                 </div>
@@ -1159,7 +1036,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
                 <div className="space-y-2.5 text-xs">
                   <div className="p-3 rounded-xl bg-carbon-05 border border-carbon-20 flex items-center justify-between">
                     <div>
-                      <span className="font-bold text-carbon-80 block">HazardNet inference engine</span>
+                      <span className="font-bold text-carbon-80 block">HazardNet forecast product</span>
                       <span className="text-[10px] text-carbon-60 font-mono">Authorized prediction responses only</span>
                     </div>
                     <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 font-mono font-bold text-[10px] rounded">Protected</span>
@@ -1295,21 +1172,15 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
             className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start"
           >
             <div className="lg:col-span-7">
-              <PredictionPanel
-                hazardProfiles={hazardProfiles}
-                prediction={prediction}
-                severity={severity}
-                processingTimeMs={processingTimeMs}
-                channelFeatures={channelFeatures}
-              />
+              <StoredForecastPanel forecast={storedForecast} />
             </div>
             <div className="lg:col-span-5">
-              <AdvisoryPanel
+              {storedForecast && (<AdvisoryPanel
                 districtName={selectedDistrict.name}
-                hazardType={selectedDistrict.risk === 'High' ? 'Flood' : 'Tropical Cyclone'}
+                hazardType={storedForecast.prediction.hazard}
                 severityScore={severity}
-                confidence={0.88}
-              />
+                confidence={storedForecast.prediction.confidence}
+              />)}
             </div>
           </motion.div>
 
@@ -1372,27 +1243,21 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
                     </p>
                   </div>
                   <span className="text-xs font-mono text-amber-900 bg-amber-50 px-3.5 py-1.5 rounded-full border border-amber-200 shrink-0">
-                    Neural Inference Engine • 15 Bands
+                    Stored Forecast • Published Results
                   </span>
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                   <div className="lg:col-span-7">
-                    <PredictionPanel
-                      hazardProfiles={hazardProfiles}
-                      prediction={prediction}
-                      severity={severity}
-                      processingTimeMs={processingTimeMs}
-                      channelFeatures={channelFeatures}
-                    />
+                    <StoredForecastPanel forecast={storedForecast} />
                   </div>
                   <div className="lg:col-span-5">
-                    <AdvisoryPanel
+                    {storedForecast && (<AdvisoryPanel
                       districtName="National Overview (Bangladesh)"
                       hazardType="Monsoon Flood & Cyclone"
                       severityScore={severity}
                       confidence={0.92}
-                    />
+                    />)}
                   </div>
                 </div>
               </motion.div>

@@ -569,8 +569,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                             <MaterialIcon name="cloud_upload" className="text-lg" />
                           </div>
                           <div>
-                            <div className="font-semibold text-carbon-90 text-[13.5px]">Upload Sensor & Gauge Data</div>
-                            <div className="text-[11.5px] text-carbon-60 leading-tight mt-0.5">Ingest local CSV or raster data</div>
+                            <div className="font-semibold text-carbon-90 text-[13.5px]">District Forecast Lookup</div>
+                            <div className="text-[11.5px] text-carbon-60 leading-tight mt-0.5">Read published district and horizon results</div>
                           </div>
                         </motion.button>
 

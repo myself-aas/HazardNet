@@ -37,12 +37,11 @@ export interface HazardSummary {
   color: string;
 }
 
-export interface VulnerableDivisionSummary {
+export interface DivisionSummary {
   division: DivisionData;
   districtCount: number;
   highRiskDistrictCount: number;
   avgSeverity: number;
-  vulnerabilityScore: number; // weighted formula
   primaryHazard: string;
   districts: DistrictData[];
 }
@@ -142,9 +141,9 @@ export const NationalOverview: React.FC<NationalOverviewProps> = ({
     };
   }, [districts]);
 
-  // 2. Calculate Most Vulnerable Divisions/Regions
-  const vulnerableDivisions = useMemo(() => {
-    const list: VulnerableDivisionSummary[] = ALL_8_DIVISIONS.map((div) => {
+  // 2. Calculate Division Summaries/Regions
+  const divisionSummaries = useMemo(() => {
+    const list: DivisionSummary[] = ALL_8_DIVISIONS.map((div) => {
       const districtsInDiv = districts.filter(
         (d) => d.division.toLowerCase() === div.id.toLowerCase() || div.name.toLowerCase().includes(d.division.toLowerCase())
       );
@@ -154,10 +153,6 @@ export const NationalOverview: React.FC<NationalOverviewProps> = ({
       const avgSev = count > 0 ? sumSeverity / count : div.avgSeverity;
 
       const highRiskCount = districtsInDiv.filter((d) => d.risk === 'High').length;
-
-      // Vulnerability Score formula = (avgSeverity * 0.6) + ((highRiskCount / count) * 0.4)
-      const highRiskRatio = count > 0 ? highRiskCount / count : 0.5;
-      const vulnerabilityScore = avgSev * 0.6 + highRiskRatio * 0.4;
 
       // Primary hazard in this division
       const hazardCounts: Record<string, number> = {};
@@ -178,14 +173,13 @@ export const NationalOverview: React.FC<NationalOverviewProps> = ({
         districtCount: count,
         highRiskDistrictCount: highRiskCount,
         avgSeverity: avgSev,
-        vulnerabilityScore,
         primaryHazard: primaryH,
         districts: districtsInDiv
       };
     });
 
-    // Sort by vulnerability score descending
-    list.sort((a, b) => b.vulnerabilityScore - a.vulnerabilityScore);
+    // Alphabetical browsing only; no research-derived ranking.
+    list.sort((a, b) => a.division.name.localeCompare(b.division.name));
     return list;
   }, [districts]);
 
@@ -219,10 +213,10 @@ export const NationalOverview: React.FC<NationalOverviewProps> = ({
           </div>
 
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-carbon-90 tracking-tight leading-tight">
-            National Hazard & Regional Vulnerability Overview
+            National Hazard & Division Overview
           </h2>
           <p className="text-xs sm:text-sm text-carbon-60 max-w-4xl leading-relaxed">
-            Aggregating multi-spectral telemetry across all 64 districts of Bangladesh to predict the <strong className="text-carbon-90 font-bold">Top 3 National Hazards</strong> and rank the <strong className="text-carbon-90 font-bold">Most Vulnerable Divisions & Regions</strong>.
+            Aggregating multi-spectral telemetry across all 64 districts of Bangladesh to predict the <strong className="text-carbon-90 font-bold">Top 3 National Hazards</strong> and browse the <strong className="text-carbon-90 font-bold">Division Summaries</strong>.
           </p>
         </div>
 
@@ -270,7 +264,7 @@ export const NationalOverview: React.FC<NationalOverviewProps> = ({
                 : 'text-carbon-60 hover:text-carbon-90 hover:bg-carbon-10'
             }`}
           >
-            <span>🗺️ Most Vulnerable Divisions ({vulnerableDivisions.length})</span>
+            <span>🗺️ Division Summaries ({divisionSummaries.length})</span>
           </button>
 
           <button
@@ -419,19 +413,19 @@ export const NationalOverview: React.FC<NationalOverviewProps> = ({
         </div>
       )}
 
-      {/* SECTION 2: MOST VULNERABLE DIVISIONS / REGIONS */}
+      {/* SECTION 2: DIVISION SUMMARIES */}
       {(activeTab === 'divisions' || activeTab === 'formula' || activeTab === 'top3') && (
         <div className="space-y-4 pt-4 border-t border-carbon-20">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
               <h3 className="text-lg sm:text-xl font-extrabold text-carbon-90 flex items-center gap-2">
-                <span>Most Vulnerable Divisions & Regions</span>
+                <span>Division Summaries</span>
                 <span className="px-2 py-0.5 rounded bg-rose-100 text-rose-800 text-xs font-mono font-bold">
-                  Ranked 1 to {vulnerableDivisions.length}
+                  {divisionSummaries.length} divisions
                 </span>
               </h3>
               <p className="text-xs text-carbon-60 font-mono mt-0.5">
-                Vulnerability Formula = (Division Avg District Severity × 0.6) + (High Risk Ratio × 0.4)
+                Divisions listed alphabetically. Counts and mean district severity are descriptive summaries.
               </p>
             </div>
 
@@ -443,7 +437,7 @@ export const NationalOverview: React.FC<NationalOverviewProps> = ({
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {vulnerableDivisions.map((item, idx) => {
+            {divisionSummaries.map((item) => {
               const isSelected = selectedDivisionFilter === item.division.id || selectedDivisionFilter === item.division.name;
               const severityPct = (item.avgSeverity * 100).toFixed(0);
 
@@ -459,20 +453,6 @@ export const NationalOverview: React.FC<NationalOverviewProps> = ({
                     isSelected ? 'border-2 border-sky-600 ring-2 ring-sky-600/20' : 'border-carbon-20 hover:border-carbon-30'
                   } rounded-2xl p-4 transition-all duration-200 hover:scale-[1.01] flex flex-col justify-between space-y-3 relative overflow-hidden shadow-xs`}
                 >
-                  {/* Division Card Header */}
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-mono font-extrabold px-2.5 py-1 bg-carbon-10 text-carbon-70 border border-carbon-20 rounded-lg">
-                      #{idx + 1} Rank
-                    </span>
-                    <span className={`px-2.5 py-0.5 text-xs font-mono font-bold rounded-full ${
-                      item.vulnerabilityScore > 0.75 ? 'bg-rose-100 text-rose-800 border border-rose-200' :
-                      item.vulnerabilityScore > 0.60 ? 'bg-amber-100 text-amber-800 border border-amber-200' :
-                      'bg-emerald-100 text-emerald-800 border border-emerald-200'
-                    }`}>
-                      {(item.vulnerabilityScore * 100).toFixed(0)} Vulnerability Index
-                    </span>
-                  </div>
-
                   {/* Division Name & Primary Hazard */}
                   <div>
                     <h4 className="text-base font-black text-carbon-90">{item.division.name}</h4>

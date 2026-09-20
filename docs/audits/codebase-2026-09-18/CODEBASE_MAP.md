@@ -1,5 +1,7 @@
 # HazardNet — Codebase Map
 
+> Historical snapshot, archived 2026-09-20. Several architecture claims below are superseded; use `docs/codebase/` for the current evidence-backed map.
+
 *Generated 2026-09-18 from a read-only walk of the repo at `add4a1f`. Complements the older `docs/codebase/STRUCTURE.md` (2026-09-11), which is partly stale — see "Drift" at the bottom.*
 
 ---

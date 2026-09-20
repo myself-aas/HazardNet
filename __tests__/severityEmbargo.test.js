@@ -18,14 +18,14 @@
  * classified and clean, and removing the disclosure label turns the phrase back
  * into a build failure instead of silently becoming an unqualified index.
  *
- * One review item is left open on purpose and pinned below: the weighted
- * `Vulnerability Formula` in the same component, which the ADR escalates to the
- * owner rather than classifies.
+ * ADR 0014 subsequently classified the division formula as embargoed; its public
+ * computation and presentation are removed and reintroduction is blocked.
  */
 
 import { spawnSync } from 'node:child_process';
 
 import {
+  RULES,
   LABEL_WINDOW_CHARS,
   REVIEW_CLASSIFICATIONS,
   applyClassification,
@@ -56,18 +56,13 @@ describe('severity embargo — the live tree', () => {
     expect(violations.filter((v) => v.tier === 'block')).toEqual([]);
   });
 
-  it('has exactly one review item still open, and it is the named one', () => {
-    // ADR 0012 classified the two composite-index blocks. The weighted
-    // `Vulnerability Formula` in the same component is deliberately left open: it
-    // prints explicit coefficients (× 0.6 / × 0.4), and whether those belong to
-    // the embargoed index or to a presentation-level ranking is the owner's call,
-    // not the gate's (ADR 0012, "Not decided here"). Pinning the exact list means
-    // a *second* unclassified phrase fails this test instead of quietly joining
-    // the standing noise — the failure mode that kept the original two open.
-    const awaiting = violations.filter((v) => v.tier === 'review' && !v.classification);
-    expect(awaiting.map((v) => `${v.file} [${v.rule}] "${v.match}"`)).toEqual([
-      `${COMPONENT} [weighted-formula] "Vulnerability Formula"`,
-    ]);
+  it('has no unclassified review item after the owner decision', () => {
+    expect(violations.filter((v) => v.tier === 'review' && !v.classification)).toEqual([]);
+  });
+  it.each(['Vulnerability Formula', 'Vulnerability Index', 'vulnerabilityScore'])('blocks reintroduced research: %s', (text) => {
+    const rule = RULES.find((item) => item.id === 'embargoed-vulnerability');
+    expect(rule.tier).toBe('block');
+    expect(new RegExp(rule.pattern.source, rule.pattern.flags).test(text)).toBe(true);
   });
 
   it('reports exactly the two classified blocks, with the decision attached', () => {
@@ -161,14 +156,12 @@ describe('severity embargo — the gate as CI runs it', () => {
     expect(stdout).toMatch(/PASS/);
   });
 
-  it('keeps the undecided item visible even while the gate passes', () => {
-    // Passing must not read as "nothing is open". The review tier goes to stderr,
-    // so a green run still names what the owner has not classified yet — here the
-    // weighted `Vulnerability Formula` that ADR 0012 escalates instead of deciding.
+  it('no longer reports the resolved owner question', () => {
+    // The owner decision is resolved and the public formula removed.
     const { status, stderr } = run();
     expect(status).toBe(0);
-    expect(stderr).toMatch(/review: 1 reference\(s\) awaiting owner classification/);
-    expect(stderr).toMatch(/weighted-formula\]\s+"Vulnerability Formula"/);
+    expect(stderr).not.toMatch(/awaiting owner classification/);
+    expect(stderr).not.toMatch(/weighted-formula/);
   });
 
   it('reports the same thing as JSON', () => {
@@ -178,7 +171,6 @@ describe('severity embargo — the gate as CI runs it', () => {
     expect(json.ok).toBe(true);
     expect(json.blocked).toEqual([]);
     expect(json.review.map((v) => `${v.file} [${v.rule}] "${v.match}"`)).toEqual([
-      `${COMPONENT} [weighted-formula] "Vulnerability Formula"`,
     ]);
     expect(json.classified).toHaveLength(2);
     expect(json.stale_classifications).toEqual([]);

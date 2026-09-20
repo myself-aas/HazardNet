@@ -1,7 +1,17 @@
 # ADR 0002 — Consolidate forecast storage from Firestore to Postgres
 
-- **Status:** Accepted (2026-08-28) — **expand phase implemented 2026-09-12**; cutover flip pending ops (credentials)
+- **Status:** Superseded (2026-09-20) by [ADR 0014](0014-codebase-owner-decisions.md), by explicit owner decision.
 - **Context:** Audit ARC-01; ADR 0001 declares Postgres the system of record
+
+## Current disposition
+
+Firestore remains the application forecast store. Do not perform the PostgreSQL
+cutover below or treat its claimed implementation as the current checkout state.
+The current store has no PostgreSQL selector or implementation. Independent spatial
+PostgreSQL/PostGIS tooling is outside this supersession.
+
+The remaining text is preserved as a historical decision record, including its
+now-stale implementation claims.
 
 ## Context
 

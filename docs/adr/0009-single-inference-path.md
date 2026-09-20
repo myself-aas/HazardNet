@@ -1,13 +1,18 @@
 # ADR 0009 — One inference path: the batch pipeline is the model; `/api/predict` becomes a read of stored forecasts
 
-- **Status:** Proposed (2026-09-17) — decision recommended by the Phase 1 architecture review;
-  the code deletions it schedules are **Phase 4** work and need owner sign-off before they start.
+- **Status:** Accepted by the owner (2026-09-20); originally proposed 2026-09-17.
+  Implemented in the working tree on 2026-09-20; deployment verification remains an operator task. Approval and acceptance criteria are recorded in
+  [ADR 0014](0014-codebase-owner-decisions.md).
 - **Context:** `docs/PRODUCT_SPEC.md` §5.7, `docs/MODEL_CARD.md` §7 (Phase 0 ground-truth audit);
   deployment plan Phase 1 Step 4 ("inference is decoupled from the web app"); ADR 0003 (deploy topology)
 - **Supersedes:** the inference half of ADR 0003's server description; resolves audit backlog item
   "two models, two answers"
 
 ## Context
+
+Historical observations below describe the proposal baseline. The handwritten scorer and tensor request path have now been removed; both HTTP runtimes use `backend/utils/storedPrediction.js`. See `docs/ops/2026-09-20-stored-forecasts.md` for the implemented contract.
+The current daily workflow publishes Kaggle-produced results (ADR 0013); the legacy
+`auto_forecast.py` path is not the current daily producer.
 
 HazardNet has two code paths that both call themselves "the model", and only one of them is.
 
@@ -44,7 +49,7 @@ The audit then established three facts that decide this ADR:
 1. **`/api/predict` is redefined as a read**, not a computation: it returns the newest stored
    forecast for a district + horizon, shaped into the envelope the frontend already consumes, with
    unknown fields explicitly `null` and a machine-readable list of what the stored row cannot fill.
-   The adapter is `backend/utils/predictFromStore.js` (added with this ADR; not yet wired to a route).
+   The adapter is `backend/utils/predictFromStore.js` (now shared by Express and Vercel through `storedPrediction.js`).
 2. **The heuristic scorer is deleted**, not flag-gated. `backend/inference.js`, the tensor branch of
    `backend/middleware/validation.js`, `backend/utils/normalization.js`,
    `backend/utils/predictionCache.js`, `backend/tfjs.js` and `backend/routes/predict.js` go with it
@@ -61,7 +66,7 @@ The pipeline job is therefore a first-class service in the target architecture, 
 stamp and provenance** out. The provenance stamp stops being cosmetic at that point, because the API
 can no longer claim a model version the pipeline did not record.
 
-## Consequences
+## Consequences (proposal-era rationale; implementation status above)
 
 **Good**
 

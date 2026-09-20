@@ -3,8 +3,8 @@ import rateLimit from 'express-rate-limit';
 /**
  * Per-route request rate limiters (SEC-01).
  *
- * The AI routes proxy paid Gemini API calls and /api/predict runs CPU-bound
- * TensorFlow inference, so abuse has direct cost/availability impact.
+ * The AI routes proxy paid Gemini API calls; forecast reads also consume
+ * database resources, so abuse has cost/availability impact.
  * Layered limits: a base limiter on all /api routes plus tighter buckets
  * for the expensive ones.
  *
@@ -27,7 +27,7 @@ export const aiLimiter = buildLimiter({
   message: 'Too many AI requests from this address. Please wait a minute and try again.',
 });
 
-/** CPU-bound TensorFlow inference. 60 req/min/IP. */
+/** Stored forecast reads. 60 req/min/IP. */
 export const predictLimiter = buildLimiter({
   windowMs: 60_000,
   limit: 60,

@@ -126,27 +126,12 @@ export async function ingestForecastCsv(csvContent, options = {}) {
   const storeMode = getForecastStoreMode();
   let totalWritten = 0;
 
-  // Split validRows into chunks <= batchSize
-  const chunks = [];
-  for (let i = 0; i < validRows.length; i += batchSize) {
-    chunks.push(validRows.slice(i, i + batchSize));
-  }
-
-  logger.info(`Processing ${validRows.length} valid forecast rows in ${chunks.length} batch(es)`);
-
-  for (let idx = 0; idx < chunks.length; idx++) {
-    const chunk = chunks[idx];
-
-    if (mode === 'replace' && idx === 0) {
-      // First chunk under 'replace' mode purges old records for this prediction_date first
-      const res = await store.replaceForecastsForPredictionDate(targetPredictionDate, chunk);
-      totalWritten += res.written || chunk.length;
-    } else {
-      // Subsequent chunks or 'append' mode append rows into Firestore
-      const res = await store.appendForecasts(chunk);
-      totalWritten += res.written || chunk.length;
-    }
-  }
+  // One durable operation per request. Splitting replacement into chunks could
+  // leave the date partially replaced when a later chunk fails.
+  const result = mode === 'replace'
+    ? await store.replaceForecastsForPredictionDate(targetPredictionDate, validRows)
+    : await store.appendForecasts(validRows);
+  totalWritten = result.written;
 
   const durationMs = Date.now() - startTime;
   logger.info(`CSV ingestion complete: ${totalWritten} records written to ${storeMode} in ${durationMs}ms`);
