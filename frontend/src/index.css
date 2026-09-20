@@ -252,11 +252,26 @@
   --panel-shadow: 0 1px 2px rgb(23 23 27 / 0.06);    /* HDS is flat: depth comes from 1px borders, not shadows */
   --control-min-size: 44px; /* minimum touch target (iOS HIG / WCAG 2.5.8) */
   --navbar-height: 3.5rem;
+
+  /* Stacking scale (plan §13.7) — replace ad hoc 9999 / 10050 / 2000. */
+  --z-base: 0;
+  --z-sticky: 10;
+  --z-map: 400;
+  --z-nav: 40;
+  --z-overlay: 50;
+  --z-modal: 60;
+  --z-toast: 70;
+  --z-a11y: 80;
 }
 @media (min-width: 40rem) {
   :root {
     --navbar-height: 4rem;
   }
+}
+
+html {
+  scroll-padding-top: calc(var(--navbar-height) + 8px);
+  overflow-x: clip;
 }
 
 body {
@@ -276,9 +291,9 @@ body {
   overflow-x: clip;
 }
 
-/* Material 3 & Motion Transitions */
+/* Named transitions — never `transition: all`. */
 .m3-transition {
-  transition-property: all;
+  transition-property: color, background-color, border-color, opacity, transform;
   transition-duration: 300ms;
   transition-timing-function: var(--m3-sys-motion-easing-emphasized);
 }
@@ -296,14 +311,14 @@ body {
 
 .nasa-glass-panel:hover {
   border-color: var(--hds-color-carbon-30);
-  box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+  box-shadow: none;
 }
 
 /* Custom Leaflet Map Light Styling */
 .leaflet-container {
   background: var(--hds-color-carbon-10) !important;
   font-family: inherit;
-  border-radius: 1.25rem;
+  border-radius: 0;
 }
 
 /* Map tiles enhancement for light theme */
@@ -330,6 +345,10 @@ body {
 }
 
 .radar-ping-ring {
+  animation: none;
+}
+
+html[data-map-debug-fx='true'] .radar-ping-ring {
   animation: radarPing 2s cubic-bezier(0, 0.2, 0.8, 1) infinite;
 }
 
@@ -349,6 +368,10 @@ body {
 }
 
 .cluster-pulse-ring {
+  animation: none;
+}
+
+html[data-map-debug-fx='true'] .cluster-pulse-ring {
   animation: clusterPulse 2.4s cubic-bezier(0.2, 0, 0.4, 1) infinite;
 }
 
@@ -367,10 +390,10 @@ body {
   background: #ffffff !important;
   color: var(--hds-color-carbon-80) !important;
   border: 1px solid var(--hds-color-carbon-20) !important;
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border-radius: 1rem !important;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05) !important;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-radius: 0 !important;
+  box-shadow: none !important;
   padding: 0 !important;
   overflow: hidden !important;
 }
@@ -407,7 +430,7 @@ body {
 @media (max-width: 640px) {
   .leaflet-popup-content-wrapper {
     max-width: 88vw !important;
-    border-radius: 1rem !important;
+    border-radius: 0 !important;
   }
 
   .leaflet-container a.leaflet-popup-close-button {
@@ -517,6 +540,10 @@ body {
 }
 
 .marker-high-risk {
+  animation: none;
+}
+
+html[data-map-debug-fx='true'] .marker-high-risk {
   animation: cyberPulse 2s infinite;
 }
 
@@ -526,8 +553,8 @@ body {
 
 /* Custom Scrollbar for Light Theme */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
@@ -536,7 +563,7 @@ body {
 
 ::-webkit-scrollbar-thumb {
   background: var(--hds-color-carbon-30);
-  border-radius: 9999px;
+  border-radius: 0;
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -806,7 +833,6 @@ body {
   html {
     @apply font-sans;
     -webkit-text-size-adjust: 100%;
-    overflow-x: clip;
   }
 
   /* Headings are HDS's heading face (Inter) at NASA's measured tracking; the
@@ -844,13 +870,10 @@ body {
      that act on the current page. */
   .hn-nav-link {
     font-family: var(--font-heading);
-    /* HDS metadata is 12px, but uppercase + tracking makes the masthead ~30% wider than the
-       sentence-case links it replaced, which overflowed a 1280px viewport (caught by the
-       overflow e2e test). 11px at xl, the full 12px from 2xl — the HDS composite is used
-       verbatim wherever there is room for it. */
-    font-size: 0.6875rem;
+    /* HDS metadata is 12px. If a 1280px masthead overflows, drop to 11px — never 10px. */
+    font-size: var(--hds-font-size-3xs);
     font-weight: var(--hds-font-weight-bold);
-    letter-spacing: 0.02em;
+    letter-spacing: var(--hds-letter-spacing-1);
     text-transform: uppercase;
     color: var(--hn-hds-ink-soft);
     border-bottom: 2px solid transparent;
@@ -1065,13 +1088,13 @@ h3 {
   }
 }
 
-/* 7. Body text: sans, 16 px, 400, line-height 1.55 */
+/* 7. Body text: sans, 16 px, 400, line-height 1.62 */
 .hn-body,
 p {
   font-family: var(--font-sans);
   font-size: 16px;
   font-weight: 400;
-  line-height: 1.55;
+  line-height: 1.62;
 }
 
 /* 8. Form labels & field hints: sans, 12–13 px, 500, +0.04 em */
@@ -1079,7 +1102,7 @@ p {
 label,
 .hn-field-hint {
   font-family: var(--font-sans);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
   letter-spacing: 0.04em;
 }
@@ -1119,7 +1142,7 @@ button {
 /* 11. Badges (FLOOD, SEV-3, district code): DM Mono, 11 px, 600, +0.08 em, caps, colored per severity token */
 .hn-badge {
   font-family: var(--hds-font-family-code);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;

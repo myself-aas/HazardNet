@@ -40,7 +40,7 @@ export default function UpdatePasswordPage() {
   }
 
   const inputClass =
-    'mt-1.5 w-full rounded-2xl border border-carbon-20 bg-carbon-05 px-4 py-3 text-base sm:text-sm text-carbon-90 outline-none transition-all focus:border-nasa-blue focus:ring-2 focus:ring-nasa-blue/40'
+    'mt-1.5 h-12 w-full rounded-sm border border-carbon-20 bg-carbon-05 px-4 py-3 text-base text-carbon-90 outline-none focus:border-nasa-blue focus:ring-2 focus:ring-nasa-blue/40'
 
   return (
     <AuthLayout
@@ -50,21 +50,21 @@ export default function UpdatePasswordPage() {
     >
       {status ? (
         <div role="status" className="space-y-4 text-center">
-          <p className="rounded-2xl border border-emerald-200 bg-emerald-50 p-3.5 text-xs font-medium text-emerald-800">
+          <p className="border-l-2 border-nasa-blue bg-white p-4 text-sm font-medium text-carbon-80">
             {status}
           </p>
-          <Link to="/login" className="font-bold text-amber-800 hover:underline">
+          <Link to="/login" className="font-bold text-nasa-blue-shade hover:underline">
             Return to sign in
           </Link>
         </div>
       ) : (
         <form onSubmit={submit} className="space-y-4">
           {error && (
-            <p role="alert" className="rounded-2xl border border-rose-200 bg-rose-50 p-3.5 text-xs font-medium text-rose-800">
+            <p role="alert" className="border-l-2 border-nasa-red bg-white p-4 text-sm font-medium text-nasa-red-shade">
               {error}
             </p>
           )}
-          <label className="block text-xs font-bold text-carbon-80" htmlFor="new-password">
+          <label className="block text-sm font-medium text-carbon-80" htmlFor="new-password">
             New password
             <input
               id="new-password"
@@ -77,7 +77,7 @@ export default function UpdatePasswordPage() {
               className={inputClass}
             />
           </label>
-          <label className="block text-xs font-bold text-carbon-80" htmlFor="confirm-password">
+          <label className="block text-sm font-medium text-carbon-80" htmlFor="confirm-password">
             Confirm new password
             <input
               id="confirm-password"
@@ -93,7 +93,7 @@ export default function UpdatePasswordPage() {
           <button
             type="submit"
             disabled={saving || !ready}
-            className="w-full rounded-2xl bg-nasa-red py-3.5 text-sm font-extrabold text-carbon-90 transition-colors hover:bg-nasa-red-shade disabled:opacity-50 cursor-pointer"
+            className="min-h-[44px] w-full cursor-pointer bg-nasa-red-shade py-3 text-base font-semibold text-white hover:bg-nasa-red disabled:opacity-50 touch-manipulation"
           >
             {saving ? 'Updating password…' : 'Update password'}
           </button>

@@ -121,8 +121,8 @@ export default function AuthCallbackPage() {
     return (
       <Shell>
         <span className="h-9 w-9 animate-spin rounded-full border-[3px] border-carbon-20 border-t-nasa-red" />
-        <p className="text-sm font-bold text-carbon-80">Completing secure sign-in…</p>
-        <p className="text-xs text-carbon-60">Restoring your HazardNet session.</p>
+        <p className="text-base font-bold text-carbon-80">Completing secure sign-in…</p>
+        <p className="text-base text-carbon-60">Restoring your HazardNet session.</p>
       </Shell>
     )
   }
@@ -137,13 +137,13 @@ export default function AuthCallbackPage() {
         >
           ✓
         </motion.span>
-        <p className="text-sm font-bold text-carbon-80">Signed in successfully</p>
-        <p className="text-xs text-carbon-60">
+        <p className="text-base font-bold text-carbon-80">Signed in successfully</p>
+        <p className="text-base text-carbon-60">
           Returning you to HazardNet{returnTo && returnTo !== '/' ? ` (${returnTo})` : ''} in {countdown}…
         </p>
         <Link
           to={returnTo && returnTo.startsWith('/') ? returnTo : '/'}
-          className="rounded-xl bg-nasa-red px-4 py-2 text-xs font-black text-carbon-black shadow-md transition-colors hover:bg-nasa-red-shade"
+          className="inline-flex min-h-[44px] items-center bg-nasa-red-shade px-6 py-3 text-base font-semibold text-white hover:bg-nasa-red"
         >
           Continue now
         </Link>
@@ -154,24 +154,24 @@ export default function AuthCallbackPage() {
   const resolved = explanation ?? describeOAuthError(params.errorDescription ?? params.error)
   return (
     <Shell>
-      <span className="flex h-11 w-11 items-center justify-center rounded-full bg-rose-100 text-xl text-rose-700">
+      <span className="flex h-11 w-11 items-center justify-center rounded-full bg-carbon-05 text-xl text-nasa-red-shade">
         ✕
       </span>
       <p className="text-sm font-bold text-carbon-80">Sign-in could not complete</p>
-      <div className="max-w-md rounded-xl border border-rose-200 bg-rose-50 p-3 text-left">
-        <p className="text-xs font-extrabold text-rose-900">{resolved.title}</p>
-        <p className="mt-0.5 text-[11px] font-medium leading-relaxed text-rose-800">{resolved.hint}</p>
+      <div className="max-w-md border border-nasa-red bg-white p-3 text-left">
+        <p className="text-xs font-extrabold text-nasa-red-shade">{resolved.title}</p>
+        <p className="mt-0.5 text-xs font-medium leading-relaxed text-nasa-red-shade">{resolved.hint}</p>
       </div>
       <div className="flex items-center gap-2">
         <Link
           to="/login"
-          className="rounded-xl bg-carbon-90 px-4 py-2 text-xs font-black text-white transition-colors hover:bg-carbon-70"
+          className="inline-flex min-h-[44px] items-center bg-carbon-90 px-6 py-3 text-base font-semibold text-white hover:bg-carbon-70"
         >
           Back to sign in
         </Link>
         <Link
           to="/"
-          className="rounded-xl border border-carbon-20 bg-white px-4 py-2 text-xs font-black text-carbon-70 transition-colors hover:bg-carbon-05"
+          className="border border-carbon-20 bg-white px-4 py-2 text-xs font-black text-carbon-70 transition-colors hover:bg-carbon-05"
         >
           Go to home
         </Link>

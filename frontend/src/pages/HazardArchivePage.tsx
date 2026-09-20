@@ -64,9 +64,9 @@ const MONTH_SHORT: Record<string, string> = {
 
 function Panel({ title, caption, children }: { title: string; caption?: string; children: React.ReactNode }) {
   return (
-    <section className="bg-white border border-carbon-20 rounded-3xl p-5 shadow-xs space-y-3">
+    <section className="bg-white border border-carbon-20 p-5 space-y-3">
       <header className="space-y-1">
-        <h3 className="text-xs font-mono font-bold text-sky-800 uppercase tracking-wider">{title}</h3>
+        <h3 className="text-xs font-mono font-bold text-nasa-blue-shade uppercase tracking-wider">{title}</h3>
         {caption ? <p className="text-xs text-carbon-60 leading-relaxed">{caption}</p> : null}
       </header>
       {children}
@@ -76,10 +76,10 @@ function Panel({ title, caption, children }: { title: string; caption?: string; 
 
 function Stat({ label, value, note }: { label: string; value: string; note?: string }) {
   return (
-    <div className="bg-carbon-05 border border-carbon-20 rounded-2xl p-4">
-      <div className="text-[11px] font-mono uppercase tracking-wider text-carbon-60">{label}</div>
+    <div className="bg-carbon-05 border border-carbon-20 p-4">
+      <div className="text-xs font-mono uppercase tracking-wider text-carbon-60">{label}</div>
       <div className="text-2xl font-bold text-carbon-90 mt-1 tabular-nums">{value}</div>
-      {note ? <div className="text-[11px] text-carbon-60 mt-1 leading-snug">{note}</div> : null}
+      {note ? <div className="text-xs text-carbon-60 mt-1 leading-snug">{note}</div> : null}
     </div>
   );
 }
@@ -120,7 +120,7 @@ export default function HazardArchivePage() {
     return (
       <div className="max-w-3xl mx-auto px-4 py-16 space-y-4">
         <Breadcrumbs customItems={[{ label: 'Home', path: '/' }, { label: 'Hazard archive' }]} />
-        <h1 className="text-3xl font-bold text-carbon-90">Historical hazard archive</h1>
+        <h1 className="text-[28px] font-bold leading-[1.2] tracking-tight text-carbon-90">Historical hazard archive</h1>
         <p className="text-carbon-60 leading-relaxed">
           This deployment has <strong>no hazard archive artifact loaded</strong>, so this page states no
           historical count. The archive is not redistributed with the repository.
@@ -162,7 +162,7 @@ export default function HazardArchivePage() {
       <Breadcrumbs customItems={[{ label: 'Home', path: '/' }, { label: 'Hazard archive' }]} />
 
       <header className="space-y-3">
-        <h1 className="text-3xl sm:text-4xl font-bold text-carbon-90">Historical hazard archive</h1>
+        <h1 className="text-[28px] font-bold leading-[1.2] tracking-tight text-carbon-90 sm:text-[32px]">Historical hazard archive</h1>
         <p className="text-carbon-60 leading-relaxed max-w-3xl">
           {plural(t.rows, 'recorded event-district observation')} from{' '}
           {t.year_range ? `${t.year_range[0]} to ${t.year_range[1]}` : 'the archive range'}, covering{' '}
@@ -173,7 +173,7 @@ export default function HazardArchivePage() {
       </header>
 
       {/* Provenance first: a reader should be able to check the numbers before reading them. */}
-      <div className="bg-sky-50 border border-sky-200 rounded-2xl p-4 text-xs font-mono text-sky-900 space-y-1">
+      <div className="border-l-2 border-carbon-20 bg-carbon-05 p-4 text-xs font-mono text-carbon-80 space-y-1">
         <div className="font-bold text-carbon-90">Provenance</div>
         <div>loader: {archive.provenance.loader}</div>
         <div>
@@ -181,7 +181,7 @@ export default function HazardArchivePage() {
           {archive.provenance.claimed_total ?? ABSENT} · drift {archive.provenance.drift ?? ABSENT}
         </div>
         <div>artifact generated: {new Date(archive.generated_at).toISOString()}</div>
-        <div className="text-sky-800/80">{archive.provenance.note}</div>
+        <div className="text-carbon-60">{archive.provenance.note}</div>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
@@ -199,15 +199,15 @@ export default function HazardArchivePage() {
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={years} margin={{ top: 10, right: 20, left: -10, bottom: 10 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#d1d1d1" />
-              <XAxis dataKey="year" tick={{ fontSize: 11 }} />
-              <YAxis tick={{ fontSize: 11 }} />
+              <XAxis dataKey="year" tick={{ fontSize: 12 }} />
+              <YAxis tick={{ fontSize: 12 }} />
               <Tooltip formatter={(value: number) => [value.toLocaleString('en-US'), 'observations']} />
               <Line type="monotone" dataKey="count" stroke="#0369a1" strokeWidth={2} dot={{ r: 2 }} />
             </LineChart>
           </ResponsiveContainer>
         </div>
         {archive.quality.missing_years.length ? (
-          <p className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-xl p-3">
+          <p className="text-xs text-amber-800 bg-amber-50 border border-amber-200 p-3">
             <strong>No records at all for {archive.quality.missing_years.join(', ')}.</strong> The archive
             runs {t.year_range?.[0]}–{t.year_range?.[1]} with this gap; it is stated rather than smoothed,
             because a zero plotted as a data point would read as a hazard-free year.
@@ -238,7 +238,7 @@ export default function HazardArchivePage() {
                     <Cell key={row.hazard} fill={row.fill} opacity={hazardFilter && hazardFilter !== row.hazard ? 0.3 : 1} />
                   ))}
                 </Pie>
-                <Legend wrapperStyle={{ fontSize: 11 }} />
+                <Legend wrapperStyle={{ fontSize: 12 }} />
                 <Tooltip formatter={(value: number) => value.toLocaleString('en-US')} />
               </PieChart>
             </ResponsiveContainer>
@@ -253,8 +253,8 @@ export default function HazardArchivePage() {
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={severityRows} margin={{ top: 10, right: 20, left: -10, bottom: 40 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#d1d1d1" />
-                <XAxis dataKey="hazard" tick={{ fontSize: 10 }} angle={-30} textAnchor="end" interval={0} />
-                <YAxis domain={[0, 1]} tick={{ fontSize: 11 }} />
+                <XAxis dataKey="hazard" tick={{ fontSize: 12 }} angle={-30} textAnchor="end" interval={0} />
+                <YAxis domain={[0, 1]} tick={{ fontSize: 12 }} />
                 <Tooltip />
                 <Bar dataKey="median" fill="#0f766e" radius={[4, 4, 0, 0]} />
               </BarChart>
@@ -268,8 +268,8 @@ export default function HazardArchivePage() {
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={months} margin={{ top: 10, right: 20, left: -10, bottom: 10 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#d1d1d1" />
-              <XAxis dataKey="month" tick={{ fontSize: 11 }} />
-              <YAxis tick={{ fontSize: 11 }} />
+              <XAxis dataKey="month" tick={{ fontSize: 12 }} />
+              <YAxis tick={{ fontSize: 12 }} />
               <Tooltip formatter={(value: number) => [value.toLocaleString('en-US'), 'observations']} />
               <Bar dataKey="count" fill="#7c3aed" radius={[4, 4, 0, 0]} />
             </BarChart>
@@ -283,8 +283,8 @@ export default function HazardArchivePage() {
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={divisionRows} layout="vertical" margin={{ top: 5, right: 30, left: 40, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#d1d1d1" />
-                <XAxis type="number" tick={{ fontSize: 11 }} />
-                <YAxis type="category" dataKey="division" tick={{ fontSize: 11 }} width={80} />
+                <XAxis type="number" tick={{ fontSize: 12 }} />
+                <YAxis type="category" dataKey="division" tick={{ fontSize: 12 }} width={80} />
                 <Tooltip formatter={(value: number) => [value.toLocaleString('en-US'), 'observations']} />
                 <Bar dataKey="count" fill="#0369a1" radius={[0, 4, 4, 0]} />
               </BarChart>
@@ -297,8 +297,8 @@ export default function HazardArchivePage() {
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={topDistricts} layout="vertical" margin={{ top: 5, right: 30, left: 50, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#d1d1d1" />
-                <XAxis type="number" tick={{ fontSize: 11 }} />
-                <YAxis type="category" dataKey="district" tick={{ fontSize: 10 }} width={90} />
+                <XAxis type="number" tick={{ fontSize: 12 }} />
+                <YAxis type="category" dataKey="district" tick={{ fontSize: 12 }} width={90} />
                 <Tooltip formatter={(value: number) => [value.toLocaleString('en-US'), 'observations']} />
                 <Bar dataKey="count" fill="#0891b2" radius={[0, 4, 4, 0]} />
               </BarChart>
@@ -315,7 +315,7 @@ export default function HazardArchivePage() {
           <button
             type="button"
             onClick={() => setHazardFilter(null)}
-            className="text-xs font-mono text-sky-700 hover:text-sky-900 underline"
+            className="inline-flex min-h-[44px] items-center text-sm font-mono text-nasa-blue-shade underline underline-offset-4"
           >
             clear filter
           </button>
@@ -397,7 +397,7 @@ export default function HazardArchivePage() {
           {archive.embargo.active ? (
             <div className="text-xs text-carbon-70 space-y-3 leading-relaxed">
               <p>
-                <span className="inline-block text-[10px] font-mono uppercase tracking-wider bg-amber-100 text-amber-900 border border-amber-300 rounded-full px-2 py-0.5">
+                <span className="inline-block text-xs font-mono uppercase tracking-wider bg-amber-100 text-amber-900 border border-amber-300 rounded-sm px-2 py-0.5">
                   withheld
                 </span>
               </p>
@@ -420,11 +420,11 @@ export default function HazardArchivePage() {
             column mapping, are recorded in the archive's quality document under docs/ops/.
             Both were printed here as file names, which a visitor cannot open. */}
         <p>
-          Related: <Link className="text-sky-700 hover:text-sky-900 underline" to="/districts">district pages</Link>{' '}
+          Related: <Link className="text-nasa-blue-shade hover:text-nasa-blue underline" to="/districts">district pages</Link>{' '}
           carry their own history once an export is loaded ·{' '}
-          <Link className="text-sky-700 hover:text-sky-900 underline" to="/retrospectives">season retrospectives</Link>{' '}
+          <Link className="text-nasa-blue-shade hover:text-nasa-blue underline" to="/retrospectives">season retrospectives</Link>{' '}
           aggregate by year ·{' '}
-          <Link className="text-sky-700 hover:text-sky-900 underline" to="/data-sources">data sources and terms</Link>.
+          <Link className="text-nasa-blue-shade hover:text-nasa-blue underline" to="/data-sources">data sources and terms</Link>.
         </p>
       </footer>
     </div>

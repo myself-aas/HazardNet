@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import MaterialIcon from './MaterialIcon';
 
 interface MapLegendUIProps {
   isRadarActive: boolean;
@@ -8,41 +8,43 @@ interface MapLegendUIProps {
 
 /**
  * Live Doppler radar reflectivity legend, shown on the map while the radar
- * layer is active. (The former "Hazard Risk & GIS Layer Legend" panel was
- * removed by design — risk thresholds and hazard toggles live in the map
- * controls and the district forecast card instead.)
+ * layer is active. Colour plus words; 12px type; 44×44 dismiss.
  */
-export const MapLegendUI: React.FC<MapLegendUIProps> = ({ isRadarActive, setIsRadarActive }) => (
-  <AnimatePresence>
-    {isRadarActive && (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: 20 }}
-        transition={{ duration: 0.3 }}
-        className="absolute bottom-40 sm:bottom-14 left-4 right-4 sm:left-6 sm:right-auto z-[1000] pointer-events-auto"
-      >
-        <div className="bg-white/95 border border-carbon-20 rounded-2xl p-3 shadow-xl text-carbon-80 text-xs flex flex-col gap-1.5">
-          <div className="flex items-center justify-between gap-2 border-b border-carbon-10 pb-1">
-            <div className="font-black text-[11px] text-carbon-90 uppercase tracking-wider flex items-center gap-1.5">
-              DOPPLER RADAR REFLECTIVITY (dBZ)
-            </div>
-            <button
-              onClick={() => setIsRadarActive(false)}
-              className="w-5 h-5 rounded-full bg-carbon-10 hover:bg-carbon-20 active:bg-carbon-30 text-carbon-70 font-black flex items-center justify-center text-[10px] transition-colors cursor-pointer shrink-0 ml-2"
-              title="Dismiss Radar Legend"
-              aria-label="Dismiss Radar Legend"
-            >
-              ✕
-            </button>
+export const MapLegendUI: React.FC<MapLegendUIProps> = ({ isRadarActive, setIsRadarActive }) => {
+  if (!isRadarActive) return null;
+
+  return (
+    <div className="absolute bottom-16 left-4 right-4 sm:left-4 sm:right-auto z-[var(--z-sticky)] pointer-events-auto max-w-[320px]">
+      <div className="bg-white border border-carbon-20 p-4 text-carbon-80 text-xs flex flex-col gap-2">
+        <div className="flex items-center justify-between gap-2 border-b border-carbon-20 pb-2">
+          <div className="font-bold text-xs text-carbon-90 uppercase tracking-wide">
+            Doppler radar reflectivity (dBZ)
           </div>
-          <div className="flex items-center gap-1 text-[10px] font-mono">
-            <span className="px-2 py-0.5 rounded bg-sky-500 text-white font-bold">20 dBZ Light</span>
-            <span className="px-2 py-0.5 rounded bg-amber-500 text-white font-bold">38 dBZ Moderate</span>
-            <span className="px-2 py-0.5 rounded bg-rose-600 text-white font-bold">55+ dBZ Heavy</span>
-          </div>
+          <button
+            type="button"
+            onClick={() => setIsRadarActive(false)}
+            className="tap-target w-11 h-11 rounded-control bg-carbon-05 hover:bg-carbon-10 text-carbon-70 flex items-center justify-center shrink-0 touch-manipulation"
+            title="Dismiss Radar Legend"
+            aria-label="Dismiss Radar Legend"
+          >
+            <MaterialIcon name="close" className="w-5 h-5" />
+          </button>
         </div>
-      </motion.div>
-    )}
-  </AnimatePresence>
-);
+        <ul className="flex flex-col gap-2 text-xs font-mono">
+          <li className="flex items-center gap-2">
+            <span className="w-3 h-3 bg-sky-500 shrink-0" aria-hidden="true" />
+            <span>20 dBZ Light</span>
+          </li>
+          <li className="flex items-center gap-2">
+            <span className="w-3 h-3 bg-amber-500 shrink-0" aria-hidden="true" />
+            <span>38 dBZ Moderate</span>
+          </li>
+          <li className="flex items-center gap-2">
+            <span className="w-3 h-3 bg-rose-600 shrink-0" aria-hidden="true" />
+            <span>55+ dBZ Heavy</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+  );
+};

@@ -16,18 +16,18 @@ export const Privacy: React.FC = () => {
     >
       <Breadcrumbs />
 
-      <div className="bg-white border border-carbon-20 rounded-2xl p-6 md:p-8 shadow-xs space-y-6 text-xs text-carbon-70 leading-relaxed">
+      <div className="max-w-[65ch] space-y-6 border border-carbon-20 bg-white p-6 text-base leading-[1.62] text-carbon-70 lg:p-8">
         
         <div className="border-b border-carbon-20 pb-4 space-y-2">
           <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-50 text-amber-900 border border-amber-200 uppercase">
+            <span className="rounded-sm border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-xs font-mono font-bold uppercase text-amber-900">
               Privacy Policy
             </span>
             <span className="text-carbon-30">•</span>
             <span className="text-xs text-carbon-60 font-medium">Updated: August 1, 2026</span>
           </div>
 
-          <h1 className="text-2xl font-extrabold text-carbon-90">
+          <h1 className="text-[28px] font-bold leading-[1.2] tracking-tight text-carbon-90">
             HazardNet AI Telemetry & Data Privacy Policy
           </h1>
         </div>
@@ -56,7 +56,7 @@ export const Privacy: React.FC = () => {
 
         <section className="space-y-2">
           <h2 className="text-sm font-bold text-carbon-90">3. Zero Third-Party Tracker Guarantee</h2>
-          <p className="p-3 bg-amber-50 border border-amber-200 text-amber-900 rounded-xl font-medium">
+          <p className="p-3 bg-amber-50 border border-amber-200 text-amber-900 font-medium">
             HazardNet contains <strong>no third-party advertising trackers</strong>, no social media tracking scripts, and no commercial data brokers. All telemetry is limited to anonymous error logs required for system uptime maintenance.
           </p>
         </section>
@@ -64,7 +64,7 @@ export const Privacy: React.FC = () => {
         <section className="space-y-2">
           <h2 className="text-sm font-bold text-carbon-90">4. Contact Our Privacy Lead</h2>
           <p>
-            If you have questions regarding data privacy or wish to request data removal, contact us via our <Link to="/contact" className="text-amber-800 font-bold underline">Contact Page</Link> or view our <Link to="/terms" className="text-amber-800 font-bold underline">Terms of Service</Link>.
+            If you have questions regarding data privacy or wish to request data removal, contact us via our <Link to="/contact" className="font-bold text-nasa-blue-shade underline underline-offset-4">Contact Page</Link> or view our <Link to="/terms" className="font-bold text-nasa-blue-shade underline underline-offset-4">Terms of Service</Link>.
           </p>
         </section>
 

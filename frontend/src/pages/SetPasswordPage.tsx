@@ -20,7 +20,7 @@ const isAuthConfigured = true;
 const Requirement: React.FC<{ met: boolean; children: React.ReactNode }> = ({ met, children }) => (
   <li className={`flex items-center gap-1.5 ${met ? 'text-emerald-700' : 'text-carbon-60'}`}>
     <span aria-hidden="true">{met ? '✓' : '○'}</span>
-    <span className="text-[11px] font-medium">{children}</span>
+    <span className="text-xs font-medium">{children}</span>
   </li>
 )
 
@@ -82,7 +82,7 @@ export default function SetPasswordPage() {
   }
 
   const inputClass =
-    'mt-1.5 w-full rounded-2xl border border-carbon-20 bg-carbon-05 px-4 py-3 text-base sm:text-sm text-carbon-90 outline-none transition-all focus:border-nasa-blue focus:ring-2 focus:ring-nasa-blue/40'
+    'mt-1.5 h-12 w-full rounded-sm border border-carbon-20 bg-carbon-05 px-4 py-3 text-base text-carbon-90 outline-none focus:border-nasa-blue focus:ring-2 focus:ring-nasa-blue/40'
 
   if (phase === 'done') {
     return (
@@ -91,7 +91,7 @@ export default function SetPasswordPage() {
           <motion.div
             initial={{ scale: 0.7, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100 text-emerald-700"
+            className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-carbon-20 bg-carbon-05 text-carbon-80"
           >
             <MaterialIcon name="check" className="h-6 w-6" />
           </motion.div>
@@ -119,7 +119,7 @@ export default function SetPasswordPage() {
       ) : (
         <form onSubmit={submit} className="space-y-4" data-testid="set-password-form">
           {!user && phase === 'ready' && (
-            <p role="alert" className="rounded-2xl border border-amber-200 bg-amber-50 p-3.5 text-xs font-medium text-amber-800">
+            <p role="alert" className="border-l-2 border-nasa-orange bg-white p-4 text-sm font-medium text-carbon-80">
               We couldn’t detect your verification session. Open the newest link we emailed you — it must be
               opened on this browser — or{' '}
               <Link to="/signup" className="font-extrabold underline underline-offset-2">
@@ -130,13 +130,13 @@ export default function SetPasswordPage() {
           )}
 
           {error && (
-            <p role="alert" className="rounded-2xl border border-rose-200 bg-rose-50 p-3.5 text-xs font-medium text-rose-800">
+            <p role="alert" className="border-l-2 border-nasa-red bg-white p-4 text-sm font-medium text-nasa-red-shade">
               {error}
             </p>
           )}
 
           <div>
-            <label className="block text-xs font-bold text-carbon-80" htmlFor="set-password-input">
+            <label className="block text-sm font-medium text-carbon-80" htmlFor="set-password-input">
               New password
             </label>
             <input
@@ -160,11 +160,11 @@ export default function SetPasswordPage() {
               />
             </div>
             <div className="flex items-center justify-between">
-              <span className={`text-[11px] font-extrabold ${strength.textClass}`}>{strength.label}</span>
+              <span className={`text-xs font-extrabold ${strength.textClass}`}>{strength.label}</span>
               <button
                 type="button"
                 onClick={() => setShowPassword((value) => !value)}
-                className="text-[11px] font-bold text-carbon-60 hover:text-carbon-70 cursor-pointer"
+                className="text-xs font-bold text-carbon-60 hover:text-carbon-70 cursor-pointer"
               >
                 {showPassword ? 'Hide' : 'Show'}
               </button>
@@ -179,7 +179,7 @@ export default function SetPasswordPage() {
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-carbon-80" htmlFor="set-password-confirm">
+            <label className="block text-sm font-medium text-carbon-80" htmlFor="set-password-confirm">
               Confirm password
             </label>
             <input
@@ -193,21 +193,21 @@ export default function SetPasswordPage() {
               className={inputClass}
             />
             {confirmation.length > 0 && confirmation !== password && (
-              <p className="mt-1 text-[11px] font-semibold text-rose-700">Passwords don’t match yet.</p>
+              <p className="mt-1 text-sm font-semibold text-nasa-red-shade">Passwords don’t match yet.</p>
             )}
           </div>
 
           <button
             type="submit"
             disabled={saving || (!user && !isAuthConfigured)}
-            className="w-full rounded-2xl bg-nasa-red py-3.5 text-sm font-extrabold text-carbon-black transition-colors hover:bg-nasa-red-shade disabled:opacity-50 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nasa-blue/60 focus-visible:ring-offset-2"
+            className="min-h-[44px] w-full cursor-pointer bg-nasa-red-shade py-3 text-base font-semibold text-white hover:bg-nasa-red disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nasa-blue/60 focus-visible:ring-offset-2 touch-manipulation"
           >
             {saving ? 'Saving password…' : 'Save password & open my dashboard'}
           </button>
 
-          <p className="text-center text-[11px] text-carbon-60">
+          <p className="text-center text-sm text-carbon-60">
             Already set a password?{' '}
-            <Link to="/login" className="font-bold text-amber-800 hover:underline">
+            <Link to="/login" className="font-bold text-nasa-blue-shade hover:underline">
               Sign in
             </Link>
           </p>

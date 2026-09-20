@@ -137,7 +137,7 @@ function useLiveFacts(): LiveFacts {
 /* ─────────────────────────────── presentation ──────────────────────────────── */
 
 const Eyebrow: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <p className="font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-carbon-60">{children}</p>
+  <p className="font-mono text-xs font-bold uppercase tracking-[0.025em] text-carbon-60">{children}</p>
 );
 
 /**
@@ -151,7 +151,7 @@ const Eyebrow: React.FC<{ children: React.ReactNode }> = ({ children }) => (
  */
 const Figure: React.FC<{ value: string; label: string }> = ({ value, label }) => (
   <div className="border-t-2 border-nasa-red bg-white p-4">
-    <p className="font-mono text-2xl font-light leading-none text-carbon-90 md:text-3xl">{value}</p>
+    <p className="font-mono text-[32px] font-light leading-none text-carbon-90 tabular-nums">{value}</p>
     <p className="mt-2 text-xs font-bold leading-snug text-carbon-90">{label}</p>
   </div>
 );
@@ -161,15 +161,15 @@ const SectionBody: React.FC<{ section: Section }> = ({ section }) => {
   return (
     <>
       {(section.paragraphs ?? []).map((paragraph, index) => (
-        <p key={index} className="min-w-0 break-words text-sm leading-relaxed text-carbon-70">
+        <p key={index} className="min-w-0 break-words text-base leading-[1.62] text-carbon-70">
           {paragraph}
         </p>
       ))}
       {(section.bullets ?? []).length > 0 && (
         <ul className="space-y-2">
           {(section.bullets ?? []).map((bullet, index) => (
-            <li key={index} className="flex min-w-0 gap-2 text-sm leading-relaxed text-carbon-70">
-              <span aria-hidden="true" className="mt-[7px] h-[5px] w-[5px] shrink-0 bg-nasa-blue" />
+            <li key={index} className="flex min-w-0 gap-2 text-base leading-[1.62] text-carbon-70">
+              <span aria-hidden="true" className="mt-2 h-1 w-1 shrink-0 bg-nasa-blue" />
               <span className="min-w-0 break-words">{bullet}</span>
             </li>
           ))}
@@ -179,7 +179,7 @@ const SectionBody: React.FC<{ section: Section }> = ({ section }) => {
         <div className="w-full min-w-0 overflow-x-auto border border-carbon-20">
           <table className="w-full border-collapse text-left text-xs">
             {section.table.caption && (
-              <caption className="bg-carbon-05 px-3 py-2 text-left text-[11px] text-carbon-60">
+              <caption className="bg-carbon-05 px-3 py-2 text-left text-xs text-carbon-60">
                 {section.table.caption}
               </caption>
             )}
@@ -189,7 +189,7 @@ const SectionBody: React.FC<{ section: Section }> = ({ section }) => {
                   <th
                     key={column}
                     scope="col"
-                    className="px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-carbon-60"
+                    className="px-3 py-2 text-xs font-bold uppercase tracking-wide text-carbon-60"
                   >
                     {column}
                   </th>
@@ -216,7 +216,7 @@ const SectionBody: React.FC<{ section: Section }> = ({ section }) => {
       {section.callout?.text && (
         <p
           role={section.callout.tone === 'warning' ? 'note' : undefined}
-          className="border-l-2 border-nasa-orange bg-white p-4 text-sm leading-relaxed text-carbon-80"
+          className="border-l-2 border-nasa-orange bg-white p-4 text-base leading-[1.62] text-carbon-80"
         >
           {section.callout.text}
         </p>
@@ -241,7 +241,7 @@ const SectionBody: React.FC<{ section: Section }> = ({ section }) => {
 const ExternalOrInternalLink: React.FC<{ href: string; label: string }> = ({ href, label }) => {
   const external = /^https?:\/\//i.test(href);
   const className =
-    'inline-flex items-center gap-1 text-sm font-bold text-nasa-blue-shade underline decoration-carbon-30 underline-offset-4 hover:decoration-nasa-blue-shade';
+    'inline-flex min-h-[44px] items-center gap-1 text-base font-bold text-nasa-blue-shade underline decoration-carbon-30 underline-offset-4 hover:decoration-nasa-blue-shade';
   if (external) {
     return (
       <a href={href} target="_blank" rel="noopener noreferrer" className={className}>
@@ -327,7 +327,7 @@ export const FrontDoor: React.FC = () => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.25, ease: 'easeOut' }}
-      className="mx-auto w-full max-w-[1200px] space-y-10"
+      className="mx-auto w-full max-w-[1200px] space-y-8 lg:space-y-12"
     >
       {/* ── Hero: what this platform is, and the last run drawn from its own artifacts ── */}
       <header className="border border-carbon-20 bg-white p-6 md:p-10">
@@ -346,38 +346,38 @@ export const FrontDoor: React.FC = () => {
 
         <div className="mt-4 grid grid-cols-1 items-start gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,22rem)]">
           <div className="min-w-0">
-            <h1 className="max-w-3xl text-3xl font-bold leading-[1.1] tracking-tight text-carbon-90 md:text-5xl">
+            <h1 className="max-w-3xl text-balance text-[28px] font-bold leading-[1.1] tracking-tight text-carbon-90 sm:text-[32px] md:text-5xl md:leading-[1.06]">
               {localised.h1 ?? localised.title}
             </h1>
             {localised.standfirst && (
-              <p className="mt-5 max-w-2xl text-base leading-relaxed text-carbon-70 md:text-lg">
+              <p className="mt-5 max-w-2xl text-base leading-[1.62] text-carbon-70 md:text-lg md:leading-[1.5]">
                 {localised.standfirst}
               </p>
             )}
 
-            <div className="mt-7 flex flex-wrap items-center gap-3">
+            <div className="mt-7 flex flex-wrap items-center gap-2 sm:gap-3">
               <Link
                 to="/live"
-                className="inline-flex items-center gap-2 bg-nasa-red px-5 py-3 text-sm font-bold text-white hover:bg-nasa-red-shade"
+                className="inline-flex min-h-[44px] items-center gap-2 bg-nasa-red-shade px-6 py-3 text-base font-semibold text-white hover:bg-nasa-red touch-manipulation"
               >
                 <MaterialIcon name="public" className="text-base" />
                 {t('frontdoor.hero.ctaMap')}
               </Link>
               <Link
                 to="/methodology"
-                className="inline-flex items-center gap-2 border border-nasa-blue px-5 py-3 text-sm font-bold text-nasa-blue-shade hover:bg-nasa-blue/5"
+                className="inline-flex min-h-[44px] items-center gap-2 border-2 border-nasa-blue px-6 py-3 text-base font-semibold text-nasa-blue-shade hover:bg-nasa-blue/5 touch-manipulation"
               >
                 {t('frontdoor.hero.ctaMethodology')}
               </Link>
               <Link
                 to="/model-performance"
-                className="inline-flex items-center gap-2 border border-carbon-20 px-5 py-3 text-sm font-bold text-carbon-80 hover:border-carbon-30"
+                className="inline-flex min-h-[44px] items-center gap-2 border border-carbon-20 px-6 py-3 text-base font-semibold text-carbon-80 hover:border-carbon-30 touch-manipulation"
               >
                 {t('frontdoor.hero.ctaScorecard')}
               </Link>
             </div>
 
-            <p className="mt-6 max-w-2xl border-t border-carbon-10 pt-4 text-xs leading-relaxed text-carbon-60">
+            <p className="mt-6 max-w-2xl border-t border-carbon-10 pt-4 text-xs leading-[1.62] text-carbon-60">
               {t('frontdoor.hero.authority')}{' '}
               <Link to="/live" className="font-bold text-nasa-blue-shade underline underline-offset-2">
                 {t('frontdoor.hero.authorityMap')}
@@ -405,7 +405,7 @@ export const FrontDoor: React.FC = () => {
 
       {/* ── Trust strip: every figure carries the artifact it was read from ── */}
       <section aria-labelledby="trust-heading" className="space-y-3">
-        <h2 id="trust-heading" className="text-lg font-bold text-carbon-90">
+          <h2 id="trust-heading" className="text-[22px] font-bold tracking-tight text-carbon-90">
           {t('frontdoor.covers.h2')}
         </h2>
         <div className="grid grid-cols-1 gap-px bg-carbon-20 sm:grid-cols-2 lg:grid-cols-4">
@@ -446,7 +446,7 @@ export const FrontDoor: React.FC = () => {
           <h2 id="run-heading" className="text-lg font-bold text-carbon-90">
             {t('frontdoor.run.h2')}
           </h2>
-          <p className="font-mono text-[10px] uppercase tracking-wider text-carbon-60">{t('frontdoor.run.aside')}</p>
+          <p className="font-mono text-xs uppercase tracking-wider text-carbon-60">{t('frontdoor.run.aside')}</p>
         </div>
 
         <div className="border border-carbon-20 bg-white p-5">
@@ -473,7 +473,7 @@ export const FrontDoor: React.FC = () => {
                     </Link>
                     <span className="text-xs text-carbon-60">{hazardLabel(alert.hazard_type)}</span>
                   </div>
-                  <p className="mt-1 font-mono text-[10px] text-carbon-60">
+                  <p className="mt-1 font-mono text-xs text-carbon-60">
                     {alert.horizon ? `${t('frontdoor.run.horizon', { horizon: alert.horizon })} · ` : ''}
                     {alert.target_date ? `${t('frontdoor.run.valid', { date: alert.target_date })} · ` : ''}
                     {alert.published?.at
@@ -551,7 +551,7 @@ export const FrontDoor: React.FC = () => {
           className="space-y-4 border-t border-carbon-20 pt-6"
         >
           {section.h2 && (
-            <h2 id={`section-${index}`} className="text-xl font-bold tracking-tight text-carbon-90 md:text-2xl">
+            <h2 id={`section-${index}`} className="text-[22px] font-bold tracking-tight text-carbon-90 lg:text-2xl">
               {section.h2}
             </h2>
           )}
@@ -562,30 +562,30 @@ export const FrontDoor: React.FC = () => {
       {/* ── Questions the front door should answer ────────────────────────── */}
       {faqs.length > 0 && (
         <section aria-labelledby="faq-heading" className="space-y-3 border-t border-carbon-20 pt-6">
-          <h2 id="faq-heading" className="text-xl font-bold tracking-tight text-carbon-90 md:text-2xl">
+          <h2 id="faq-heading" className="text-[22px] font-bold tracking-tight text-carbon-90 lg:text-2xl">
             {t('frontdoor.faq.h2')}
           </h2>
           {faqs.map((faq) => (
             <details key={faq.question} className="border-b border-carbon-20 py-3 last:border-b-0">
-              <summary className="cursor-pointer list-none text-sm font-bold text-carbon-90 marker:hidden">
+              <summary className="min-h-[44px] cursor-pointer list-none text-base font-bold text-carbon-90 marker:hidden">
                 <span className="inline-flex items-start gap-2">
                   <MaterialIcon name="help" className="mt-0.5 text-base text-nasa-blue" />
                   {faq.question}
                 </span>
               </summary>
-              <p className="mt-2 pl-6 text-sm leading-relaxed text-carbon-70">{faq.answer}</p>
+              <p className="mt-2 pl-6 text-base leading-[1.62] text-carbon-70">{faq.answer}</p>
             </details>
           ))}
         </section>
       )}
 
       {/* ── Attribution: the exact block, from the committed data ─────────── */}
-      <section aria-labelledby="attribution-heading" className="border border-carbon-20 bg-white p-6 md:p-8">
+      <section aria-labelledby="attribution-heading" className="border border-carbon-20 bg-white p-6 lg:p-8">
         <Eyebrow>{t('frontdoor.attribution.eyebrow')}</Eyebrow>
-        <h2 id="attribution-heading" className="mt-3 text-lg font-bold text-carbon-90">
+        <h2 id="attribution-heading" className="mt-3 text-[22px] font-bold tracking-tight text-carbon-90">
           {t('frontdoor.attribution.h2')}
         </h2>
-        <p className="mt-3 max-w-3xl text-sm leading-relaxed text-carbon-70">
+        <p className="mt-3 max-w-3xl text-base leading-[1.62] text-carbon-70">
           {t('frontdoor.attribution.body', {
             author: attribution.author.name,
             role: attribution.author.role,
@@ -610,13 +610,13 @@ export const FrontDoor: React.FC = () => {
             (JSON-LD, CITATION.cff, this block). It is deliberately not translated and is
             marked `translate="no"` so a browser's own translation does not either: a
             citation a reader cannot paste back into a reference manager is not a citation. */}
-        <p className="mt-4 font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-carbon-60">
+        <p className="mt-4 font-mono text-xs font-bold uppercase tracking-[0.025em] text-carbon-60">
           {t('frontdoor.attribution.citationLabel')}
         </p>
         <p
           lang="en"
           translate="no"
-          className="mt-1 max-w-3xl border-l-2 border-carbon-20 bg-carbon-05 p-3 font-mono text-[11px] leading-relaxed text-carbon-70"
+          className="mt-1 max-w-3xl border-l-2 border-carbon-20 bg-carbon-05 p-3 font-mono text-xs leading-[1.62] text-carbon-70"
         >
           {attribution.work.citationText}
         </p>

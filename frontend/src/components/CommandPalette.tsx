@@ -456,7 +456,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onSelectDistrict
            overflowed the viewport at exactly 1280 (e2e/smoke.spec.ts). The
            desktop bar is cursor-driven, so it keeps the natural icon width.
            Utilities (not .tap-target) so the xl: variant reliably overrides. */
-        className="relative min-w-[44px] min-h-[44px] xl:min-w-0 p-2 rounded-xl bg-white/40 hover:bg-white/70 active:bg-white/90 border border-carbon-20/50 text-carbon-80 hover:text-carbon-black backdrop-blur-md transition-all duration-200 hover:scale-105 active:scale-95 shadow-2xs flex items-center justify-center group shrink-0"
+        className="relative min-w-[44px] min-h-[44px] xl:min-w-0 p-2 bg-white border border-carbon-20 text-carbon-80 hover:bg-carbon-05 flex items-center justify-center group shrink-0"
         title="Search HazardNet (Ctrl+K)"
         aria-label="Search HazardNet"
         data-testid="district-search-trigger"
@@ -486,7 +486,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onSelectDistrict
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.15 }}
-            className="fixed inset-0 z-[9999] bg-carbon-90/40 backdrop-blur-xs flex items-start justify-center pt-12 sm:pt-20 px-4"
+            className="fixed inset-0 z-[var(--z-overlay)] bg-carbon-90/40 flex items-start justify-center pt-12 sm:pt-20 px-4"
             onClick={(e) => {
               if (e.target === e.currentTarget) setIsOpen(false);
             }}
@@ -539,7 +539,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onSelectDistrict
               ) : (
                 <button
                   onClick={() => setIsOpen(false)}
-                  className="px-2 py-1 rounded-md bg-white border border-carbon-20 text-[10px] font-mono text-carbon-60 hover:text-carbon-90 transition-colors"
+                  className="min-h-[44px] px-2 py-1 bg-white border border-carbon-20 text-xs font-mono text-carbon-60 hover:text-carbon-90 transition-colors"
                 >
                   ESC
                 </button>
@@ -548,7 +548,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onSelectDistrict
 
             {/* Category Filter Tabs */}
             <div className="px-4 py-2.5 bg-white border-b border-carbon-20 flex items-center gap-1.5 overflow-x-auto text-xs scrollbar-none shrink-0">
-              <span className="text-carbon-60 font-mono text-[10px] uppercase font-bold mr-1">Filter:</span>
+              <span className="text-carbon-60 font-mono text-xs uppercase font-bold mr-1">Filter:</span>
               {(['All', 'Hazard Report', 'Location', 'Hazard Profile', 'Documentation'] as const).map((cat) => (
                 <button
                   key={cat}
@@ -567,7 +567,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onSelectDistrict
                   {cat === 'Hazard Report' ? 'Reports' : cat === 'Location' ? 'Locations' : cat === 'Hazard Profile' ? 'Hazards' : cat === 'Documentation' ? 'Docs' : 'All'}
                 </button>
               ))}
-              <span className="ml-auto text-[10px] font-mono text-carbon-60 hidden sm:inline-block">
+              <span className="ml-auto text-xs font-mono text-carbon-60 hidden sm:inline-block">
                 {filteredItems.length} match{filteredItems.length === 1 ? '' : 'es'}
               </span>
             </div>
@@ -589,7 +589,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onSelectDistrict
                       key={item.id}
                       onClick={() => handleSelectItem(item)}
                       onMouseEnter={() => setSelectedIndex(index)}
-                      className={`p-3 rounded-2xl cursor-pointer transition-all flex items-center justify-between gap-3 border ${
+                      className={`p-3 min-h-[44px] cursor-pointer transition-all flex items-center justify-between gap-3 border ${
                         isSelected
                           ? 'bg-amber-50 border-amber-300 text-carbon-90 shadow-sm'
                           : 'bg-white border-carbon-10 hover:bg-carbon-05 text-carbon-70'
@@ -600,12 +600,12 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onSelectDistrict
                           <div className="flex items-center gap-2 flex-wrap">
                             <span className="font-bold text-xs sm:text-sm text-carbon-90 truncate">{item.title}</span>
                             {item.badge && (
-                              <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-amber-100 text-[#ad6d04] border border-amber-200 shrink-0">
+                              <span className="px-2 py-0.5 text-xs font-mono font-bold bg-carbon-10 text-carbon-70 border border-carbon-20 shrink-0">
                                 {item.badge}
                               </span>
                             )}
                           </div>
-                          <p className="text-[11px] text-carbon-60 mt-0.5 truncate">{item.subtitle}</p>
+                          <p className="text-xs text-carbon-60 mt-0.5 truncate">{item.subtitle}</p>
                         </div>
                       </div>
 
@@ -622,7 +622,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onSelectDistrict
             </div>
 
             {/* Footer Keyboard Hints */}
-            <div className="px-4 py-2.5 bg-carbon-05 border-t border-carbon-20 flex items-center justify-between text-[10px] font-mono text-carbon-60 gap-2 shrink-0">
+            <div className="px-4 py-2.5 bg-carbon-05 border-t border-carbon-20 flex items-center justify-between text-xs font-mono text-carbon-60 gap-2 shrink-0">
               <div className="flex items-center gap-3">
                 <span><kbd className="px-1.5 py-0.5 bg-white rounded border border-carbon-20 text-carbon-80">UP/DOWN</kbd> Navigate</span>
                 <span><kbd className="px-1.5 py-0.5 bg-white rounded border border-carbon-20 text-carbon-80">ENTER</kbd> Select</span>

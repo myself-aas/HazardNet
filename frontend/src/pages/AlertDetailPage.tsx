@@ -76,10 +76,10 @@ export const AlertDetailPage: React.FC = () => {
       <div className="mx-auto w-full max-w-[900px] px-4 py-10">
         <h1 className="text-xl font-black text-carbon-90">{t('alerts.detail.title')}</h1>
         <p className="mt-2 text-sm text-carbon-70">{t('alerts.detail.notFound')}</p>
-        <p className="mt-1 font-mono text-[11px] text-carbon-60">{id}</p>
+        <p className="mt-1 font-mono text-xs text-carbon-60">{id}</p>
         <Link
           to="/alerts"
-          className="mt-4 inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border border-carbon-30 px-3 py-2 text-xs font-bold text-carbon-80 hover:bg-carbon-05"
+          className="mt-4 inline-flex min-h-[44px] items-center gap-1.5 border border-carbon-20 px-3 py-2 text-sm font-semibold text-carbon-80 hover:bg-carbon-05 touch-manipulation"
         >
           <MaterialIcon name="arrow_back" className="text-base" aria-hidden="true" />
           {t('alerts.page.listTitle')}
@@ -103,7 +103,7 @@ export const AlertDetailPage: React.FC = () => {
 
       <div className="no-print mb-3 flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-xl font-black text-carbon-90 sm:text-2xl">{t('alerts.detail.title')}</h1>
+          <h1 className="text-[28px] font-bold leading-[1.2] tracking-tight text-carbon-90 sm:text-[32px]">{t('alerts.detail.title')}</h1>
           <p className="mt-1 flex flex-wrap items-center gap-2 text-xs text-carbon-60">
             <AlertLevelBadge
               level={alert.level}
@@ -115,7 +115,17 @@ export const AlertDetailPage: React.FC = () => {
             <span className="font-mono">{alert.id}</span>
           </p>
         </div>
-        <EvidenceCardExportButton alert={alert} />
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => window.print()}
+            className="no-print inline-flex min-h-[44px] items-center gap-1.5 border border-carbon-20 bg-nasa-blue px-3 py-2 text-sm font-semibold text-white touch-manipulation"
+          >
+            <MaterialIcon name="print" className="text-base" aria-hidden="true" />
+            {t('common.print')}
+          </button>
+          <EvidenceCardExportButton alert={alert} />
+        </div>
       </div>
 
       <DataSourceBanner
@@ -145,15 +155,15 @@ export const AlertDetailPage: React.FC = () => {
             {alert.reasons.map((reason, index) => (
               <li
                 key={`${reason.rule || 'reason'}-${index}`}
-                className="rounded-xl border border-carbon-20 bg-white px-3 py-2"
+                className="border border-carbon-20 bg-white px-3 py-2"
               >
                 <span className="font-mono font-semibold text-carbon-90">{reason.rule || 'rule'}</span>
-                {reason.track && (
-                  <span className="ml-2 rounded border border-carbon-30 px-1 py-0.5 text-[10px] font-bold uppercase text-carbon-60">
+                    {reason.track && (
+                  <span className="ml-2 rounded-control border border-carbon-20 px-1.5 py-0.5 text-xs font-bold uppercase text-carbon-60">
                     {reason.track}
                   </span>
                 )}
-                {reason.detail && <p className="mt-0.5 text-[11px] text-carbon-60">{reason.detail}</p>}
+                {reason.detail && <p className="mt-0.5 text-xs text-carbon-60">{reason.detail}</p>}
               </li>
             ))}
           </ul>
@@ -163,7 +173,7 @@ export const AlertDetailPage: React.FC = () => {
       <Disclaimer className="mt-4 no-print" variant="banner" text={alert.disclaimer} />
 
       {lowBandwidth && (
-        <p className="mt-3 text-[11px] text-carbon-60">{t('bandwidth.on')}</p>
+        <p className="mt-3 text-xs text-carbon-60">{t('bandwidth.on')}</p>
       )}
     </div>
   );

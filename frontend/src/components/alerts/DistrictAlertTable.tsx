@@ -97,69 +97,147 @@ export const DistrictAlertTable: React.FC<DistrictAlertTableProps> = ({
     </button>
   );
 
+  const renderRowMeta = (row: DistrictAlertRow) => {
+    const level = row.alert?.level || row.baselineLevel || 'NO_ALERT';
+    const hazard = row.alert?.hazard_type || row.baselineHazard || null;
+    const severity = row.alert?.severity_score ?? null;
+    return { level, hazard, severity };
+  };
+
   return (
     <div className={`space-y-2 ${className}`}>
       <p className="text-xs text-carbon-60">{t('map.listAlternativeHint')}</p>
-      <div className="overflow-auto max-h-[70vh] rounded-xl border border-carbon-20" tabIndex={0}>
-        <table id={id} className="min-w-full border-collapse text-xs">
+
+      <div className="flex flex-wrap gap-2 lg:hidden">
+        {sortButton('district', t('map.column.district'))}
+        {sortButton('level', t('map.column.level'))}
+        {sortButton('severity', t('alerts.card.evidence'))}
+      </div>
+
+      <ul className="space-y-2 lg:hidden">
+        {sorted.map((row) => {
+          const { level, hazard, severity } = renderRowMeta(row);
+          return (
+            <li key={row.district} className="border border-carbon-20 bg-white p-4">
+              <dl className="space-y-2 text-sm">
+                <div>
+                  <dt className="text-xs font-bold uppercase tracking-wide text-carbon-60">
+                    {t('map.column.district')}
+                  </dt>
+                  <dd className="font-semibold text-carbon-90">
+                    {onSelectDistrict ? (
+                      <button
+                        type="button"
+                        onClick={() => onSelectDistrict(row.district)}
+                        className="inline-flex min-h-[44px] items-center underline decoration-dotted underline-offset-4 text-nasa-blue-shade touch-manipulation"
+                      >
+                        {row.district}
+                      </button>
+                    ) : row.district}
+                    {row.baselineOnly && (
+                      <span className="ml-1.5 rounded-control border border-carbon-20 bg-carbon-10 px-1.5 py-0.5 text-xs font-bold uppercase text-carbon-60">
+                        {t('coverage.baselineBadge')}
+                      </span>
+                    )}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-xs font-bold uppercase tracking-wide text-carbon-60">
+                    {t('map.column.division')}
+                  </dt>
+                  <dd className="text-carbon-70">{row.division || '—'}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs font-bold uppercase tracking-wide text-carbon-60">
+                    {t('map.column.level')}
+                  </dt>
+                  <dd className="inline-flex items-center gap-1.5">
+                    <span
+                      aria-hidden="true"
+                      className="inline-block h-3 w-3 border border-carbon-20"
+                      style={{ backgroundColor: LEVEL_COLOURS[level as AlertLevel] }}
+                    />
+                    <span className="font-semibold text-carbon-80">{t(levelLabelKey(level))}</span>
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-xs font-bold uppercase tracking-wide text-carbon-60">
+                    {t('map.column.hazard')}
+                  </dt>
+                  <dd className="text-carbon-70">{hazard || '—'}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs font-bold uppercase tracking-wide text-carbon-60">
+                    {t('alerts.card.evidence')}
+                  </dt>
+                  <dd className="font-mono tabular-nums text-carbon-80">
+                    {severity === null ? '—' : formatNumber(severity)}
+                  </dd>
+                </div>
+              </dl>
+            </li>
+          );
+        })}
+      </ul>
+
+      <div className="hidden overflow-auto max-h-[70vh] border border-carbon-20 lg:block" tabIndex={0}>
+        <table id={id} className="min-w-full border-collapse text-sm">
           <caption className="sr-only">
             {t('map.listAlternative')} — {t('map.column.district')}, {t('map.column.division')},{' '}
             {t('map.column.level')}, {t('map.column.hazard')}
           </caption>
-          <thead className="sticky top-0 bg-carbon-10 text-left text-carbon-70">
+          <thead className="sticky top-0 bg-carbon-05 text-left text-carbon-70">
             <tr>
-              <th scope="col" className="px-3 py-2" aria-sort={ariaSort('district')}>
+              <th scope="col" className="px-3 py-3" aria-sort={ariaSort('district')}>
                 {sortButton('district', t('map.column.district'))}
               </th>
-              <th scope="col" className="px-3 py-2">{t('map.column.division')}</th>
-              <th scope="col" className="px-3 py-2" aria-sort={ariaSort('level')}>
+              <th scope="col" className="px-3 py-3">{t('map.column.division')}</th>
+              <th scope="col" className="px-3 py-3" aria-sort={ariaSort('level')}>
                 {sortButton('level', t('map.column.level'))}
               </th>
-              <th scope="col" className="px-3 py-2">{t('map.column.hazard')}</th>
-              <th scope="col" className="px-3 py-2 text-right" aria-sort={ariaSort('severity')}>
+              <th scope="col" className="px-3 py-3">{t('map.column.hazard')}</th>
+              <th scope="col" className="px-3 py-3 text-right" aria-sort={ariaSort('severity')}>
                 {sortButton('severity', t('alerts.card.evidence'))}
               </th>
             </tr>
           </thead>
           <tbody>
             {sorted.map((row) => {
-              const level = row.alert?.level || row.baselineLevel || 'NO_ALERT';
-              const hazard = row.alert?.hazard_type || row.baselineHazard || null;
-              const severity = row.alert?.severity_score ?? null;
+              const { level, hazard, severity } = renderRowMeta(row);
               return (
                 <tr
                   key={row.district}
-                  className="border-t border-carbon-10 hover:bg-amber-50/40 focus-within:bg-amber-50/60"
+                  className="border-t border-carbon-10"
                 >
-                  <th scope="row" className="px-3 py-2 text-left font-semibold text-carbon-90">
+                  <th scope="row" className="px-3 py-3 text-left font-semibold text-carbon-90">
                     {onSelectDistrict ? (
                       <button
                         type="button"
                         onClick={() => onSelectDistrict(row.district)}
-                        className="underline decoration-dotted underline-offset-2 hover:text-amber-800"
+                        className="min-h-[44px] underline decoration-dotted underline-offset-4 text-nasa-blue-shade touch-manipulation"
                       >
                         {row.district}
                       </button>
                     ) : row.district}
                     {row.baselineOnly && (
-                      <span className="ml-1.5 rounded border border-carbon-30 bg-carbon-10 px-1 py-0.5 text-[10px] font-bold uppercase text-carbon-60">
+                      <span className="ml-1.5 rounded-control border border-carbon-20 bg-carbon-10 px-1.5 py-0.5 text-xs font-bold uppercase text-carbon-60">
                         {t('coverage.baselineBadge')}
                       </span>
                     )}
                   </th>
-                  <td className="px-3 py-2 text-carbon-60">{row.division || '—'}</td>
-                  <td className="px-3 py-2">
+                  <td className="px-3 py-3 text-carbon-60">{row.division || '—'}</td>
+                  <td className="px-3 py-3">
                     <span className="inline-flex items-center gap-1.5">
                       <span
                         aria-hidden="true"
-                        className="inline-block h-2.5 w-2.5 rounded-sm border border-black/10"
+                        className="inline-block h-3 w-3 border border-carbon-20"
                         style={{ backgroundColor: LEVEL_COLOURS[level as AlertLevel] }}
                       />
                       <span className="font-semibold text-carbon-80">{t(levelLabelKey(level))}</span>
                     </span>
                   </td>
-                  <td className="px-3 py-2 text-carbon-70">{hazard || '—'}</td>
-                  <td className="px-3 py-2 text-right font-mono text-carbon-80">
+                  <td className="px-3 py-3 text-carbon-70">{hazard || '—'}</td>
+                  <td className="px-3 py-3 text-right font-mono tabular-nums text-carbon-80">
                     {severity === null ? '—' : formatNumber(severity)}
                   </td>
                 </tr>

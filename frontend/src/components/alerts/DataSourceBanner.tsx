@@ -49,7 +49,7 @@ export const DataSourceBanner: React.FC<DataSourceBannerProps> = ({
 
   const stale = withinSlo === false || source === 'cache';
   const tone = source === 'none' || stale
-    ? 'border-amber-400 bg-amber-50 text-amber-950'
+    ? 'border-carbon-20 border-l-[2px] border-l-[#ea6f24] bg-white text-carbon-90'
     : 'border-carbon-20 bg-white text-carbon-70';
 
   const ageText = typeof ageHours === 'number' && Number.isFinite(ageHours)
@@ -58,7 +58,7 @@ export const DataSourceBanner: React.FC<DataSourceBannerProps> = ({
 
   return (
     <div
-      className={`flex flex-wrap items-center gap-x-3 gap-y-1 rounded-xl border px-3 py-2 text-[11px] font-medium ${tone} ${className}`}
+      className={`flex flex-wrap items-center gap-x-3 gap-y-1 border p-4 text-base font-medium ${tone} ${className}`}
       role="status"
       data-testid="data-source-banner"
       data-source={source}

@@ -1,7 +1,7 @@
 import { useEffect, lazy, Suspense } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { Analytics } from '@vercel/analytics/react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import SignUpPage from './pages/SignUpPage';
@@ -79,111 +79,15 @@ const GeneratedContentPage: React.FC = () => {
 /** Full-height fallback shown while a lazy route chunk streams in. */
 const RouteFallback = () => (
   <div className="w-full min-h-[50vh] flex items-center justify-center" role="status" aria-label="Loading page">
-    <span className="w-8 h-8 border-[3px] border-carbon-30 border-t-amber-500 rounded-full animate-spin" />
+    <span className="w-8 h-8 border-2 border-carbon-30 border-t-nasa-blue motion-safe:animate-spin motion-reduce:animate-none" />
+    <span className="sr-only">Loading page…</span>
   </div>
 );
 
 const queryClient = new QueryClient();
 
-const AppContent: React.FC = () => {
-  const { userProfile } = useAuth();
-  useHazardNotifications(userProfile?.homeDistrictId);
-  const location = useLocation();
-
-  useEffect(() => {
-    initializeAttributionCapture();
-  }, []);
-
-  /**
-   * `/live` — and only `/live` — is the full-bleed console: transparent navbar over the
-   * map, no page padding, no footer. `/` is an editorial page and gets the ordinary
-   * document flow (PR #29, "front door" split). `/home`, `/home/overview` and
-   * `/forecast/overview` remain valid console deep links, so they keep the full-bleed
-   * layout even though they are no longer the canonical address.
-   */
-  const isHomePage =
-    location.pathname === '/live' ||
-    location.pathname === '/home' ||
-    location.pathname === '/home/overview' ||
-    location.pathname === '/forecast/overview';
-
-  // Dedicated full-bleed auth pages (own layout, no navbar/footer/chat).
-  const isAuthPage =
-    location.pathname === '/login' ||
-    location.pathname === '/signup' ||
-    location.pathname === '/sign-up' ||
-    location.pathname === '/forgot-password' ||
-    location.pathname === '/update-password' ||
-    location.pathname === '/set-password' ||
-    location.pathname.startsWith('/auth/');
-
-  return (
-    <div
-      className={
-        isHomePage
-          ? 'h-dvh w-full overflow-hidden bg-transparent text-carbon-90 flex flex-col font-sans relative pointer-events-none'
-          : 'min-h-screen bg-carbon-05 text-carbon-90 flex flex-col font-sans selection:bg-amber-100 selection:text-amber-900 pointer-events-none'
-      }
-    >
-      <Toaster
-        position="top-right"
-        /* Above every overlay (modals sit at z-[10001]+; the old default 9999
-           let profile-save toasts render behind the modal backdrop). */
-        containerStyle={{ zIndex: 10050 }}
-        toastOptions={{
-          style: {
-            background: '#ffffff',
-            color: '#17171b',
-            border: '1px solid #d1d1d1',
-            boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)',
-          },
-        }}
-      />
-
-      {/* Skip link (WCAG 2.4.1): first focusable element on every page, so a
-          keyboard or screen-reader user can jump past the navbar straight to
-          the content. Visible only while focused. */}
-      <a
-        href="#main-content"
-        className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-[9999] focus:rounded-xl focus:bg-carbon-90 focus:px-4 focus:py-2.5 focus:text-sm focus:font-bold focus:text-white focus:shadow-lg"
-      >
-        Skip to main content
-      </a>
-
-      {/* Top Navigation - Upper layer overlay with near-transparent background */}
-      {!['/terms', '/privacy'].some((p) => location.pathname.startsWith(p)) && !isAuthPage && (
-        <div
-          className={`z-40 pointer-events-auto w-full ${
-            isHomePage ? 'absolute top-0 left-0 right-0' : 'sticky top-0'
-          }`}
-        >
-          <Navbar isTransparent={isHomePage} />
-        </div>
-      )}
-
-      {/* Main Content Area */}
-      <main
-        id="main-content"
-        tabIndex={-1}
-        className={
-          isAuthPage
-            ? 'flex-1 relative w-full pointer-events-auto'
-            : isHomePage
-            ? 'w-full h-full h-dvh overflow-hidden p-0 m-0 pointer-events-auto absolute inset-0'
-            : 'flex-1 relative max-w-7xl w-full mx-auto p-3 sm:p-4 md:p-6 lg:p-8 pb-28 md:pb-8 pointer-events-auto'
-        }
-      >
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={location.pathname}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.22, ease: 'easeInOut' }}
-            className="w-full h-full"
-          >
-            <Suspense fallback={<RouteFallback />}>
-              <Routes location={location}>
+const AppRoutes: React.FC<{ location: ReturnType<typeof useLocation> }> = ({ location }) => (
+  <Routes location={location}>
               {/* `/` is the editorial front door; the console lives at `/live`. The
                   `/home*` and `/forecast/overview` paths are kept as console deep links
                   because they were published for the whole life of the project. */}
@@ -287,15 +191,134 @@ const AppContent: React.FC = () => {
               <Route path="/profile" element={<UserProfilePage />} />
               <Route path="/u/:username" element={<PublicProfilePage />} />
               <Route path="*" element={<NotFoundPage />} />
-              </Routes>
-            </Suspense>
-          </motion.div>
-        </AnimatePresence>
-      </main>
+  </Routes>
+);
+
+const AppContent: React.FC = () => {
+  const { userProfile } = useAuth();
+  useHazardNotifications(userProfile?.homeDistrictId);
+  const location = useLocation();
+  const reduceMotion = useReducedMotion();
+
+  useEffect(() => {
+    initializeAttributionCapture();
+  }, []);
+
+  /**
+   * `/live` — and only `/live` — is the full-bleed console: transparent navbar over the
+   * map, no page padding, no footer. `/` is an editorial page and gets the ordinary
+   * document flow (PR #29, "front door" split). `/home`, `/home/overview` and
+   * `/forecast/overview` remain valid console deep links, so they keep the full-bleed
+   * layout even though they are no longer the canonical address.
+   */
+  const isHomePage =
+    location.pathname === '/live' ||
+    location.pathname === '/home' ||
+    location.pathname === '/home/overview' ||
+    location.pathname === '/forecast/overview';
+
+  // Dedicated full-bleed auth pages (own layout, no navbar/footer/chat).
+  const isAuthPage =
+    location.pathname === '/login' ||
+    location.pathname === '/signup' ||
+    location.pathname === '/sign-up' ||
+    location.pathname === '/forgot-password' ||
+    location.pathname === '/update-password' ||
+    location.pathname === '/set-password' ||
+    location.pathname.startsWith('/auth/');
+
+  return (
+    <div
+      className={
+        isHomePage
+          ? 'h-dvh w-full overflow-hidden bg-transparent text-carbon-90 flex flex-col font-sans relative pointer-events-none'
+          : 'min-h-screen bg-carbon-05 text-carbon-90 flex flex-col font-sans selection:bg-amber-100 selection:text-amber-900 pointer-events-none'
+      }
+    >
+      <Toaster
+        position="top-right"
+        containerStyle={{
+          top: 'calc(8px + env(safe-area-inset-top, 0px))',
+          right: 'calc(8px + env(safe-area-inset-right, 0px))',
+          zIndex: 70,
+        }}
+        toastOptions={{
+          style: {
+            background: '#ffffff',
+            color: '#17171b',
+            border: '1px solid #d1d1d1',
+            borderRadius: 0,
+            boxShadow: 'none',
+            fontSize: '16px',
+          },
+        }}
+      />
+
+      {/* Skip link (WCAG 2.4.1): first focusable element on every page, so a
+          keyboard or screen-reader user can jump past the navbar straight to
+          the content. Visible only while focused. */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-[var(--z-a11y)] focus:bg-carbon-90 focus:px-4 focus:py-3 focus:text-base focus:font-semibold focus:text-white"
+      >
+        Skip to main content
+      </a>
+
+      {!['/terms', '/privacy'].some((p) => location.pathname.startsWith(p)) && !isAuthPage && (
+        <div
+          className={`z-[var(--z-nav)] pointer-events-auto w-full ${
+            isHomePage ? 'absolute top-0 left-0 right-0' : 'sticky top-0'
+          }`}
+        >
+          <Navbar isTransparent={isHomePage} />
+        </div>
+      )}
+
+      {/* Auth pages own <main> in AuthLayout — do not wrap them in a second landmark. */}
+      {isAuthPage ? (
+        <div className="flex-1 relative w-full pointer-events-auto">
+          <Suspense fallback={<RouteFallback />}>
+            <AppRoutes location={location} />
+          </Suspense>
+        </div>
+      ) : (
+        <main
+          id="main-content"
+          tabIndex={-1}
+          className={
+            isHomePage
+              ? 'w-full h-full h-dvh overflow-hidden p-0 m-0 pointer-events-auto absolute inset-0'
+              : 'flex-1 relative max-w-[1200px] w-full mx-auto px-4 lg:px-8 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] lg:pb-8 pointer-events-auto'
+          }
+        >
+          {reduceMotion ? (
+            <div className="w-full h-full">
+              <Suspense fallback={<RouteFallback />}>
+                <AppRoutes location={location} />
+              </Suspense>
+            </div>
+          ) : (
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={location.pathname}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.15, ease: 'easeOut' }}
+                className="w-full h-full"
+              >
+                <Suspense fallback={<RouteFallback />}>
+                  <AppRoutes location={location} />
+                </Suspense>
+              </motion.div>
+            </AnimatePresence>
+          )}
+        </main>
+      )}
 
       {/* Render Footer only on subpages; homepage is a full-screen Google Earth stage */}
       {!isHomePage && !isAuthPage && (
-        <div className="pointer-events-auto mt-auto pb-20 md:pb-0">
+        <div className="pointer-events-auto mt-auto">
           <Footer />
         </div>
       )}
@@ -308,10 +331,6 @@ const AppContent: React.FC = () => {
           </Suspense>
         </div>
       )}
-
-      {/* Mobile Bottom Navigation Bar (5-tab navigation for phones/tablets) */}
-      <div className="pointer-events-auto">
-      </div>
     </div>
   );
 };

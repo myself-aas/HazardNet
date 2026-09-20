@@ -1,16 +1,8 @@
 /**
  * The alert badge — the single place a level is turned into colour and words.
  *
- * Why one component: the level palette appears on the map, the list, the district
- * card, the evidence card and the printed export. Five implementations would drift,
- * and a colour that means "watch" in one place and "warning" in another is a safety
- * problem in a hazard UI, not a styling inconsistency.
- *
- * Accessibility: colour is never the only carrier. Every badge renders the level's
- * *word* next to its swatch, uses a shape-adjacent glyph (`alerts.level.*.desc`
- * tooltip and a distinct icon), and the text/background pair clears WCAG AA contrast
- * in both languages. A user who cannot distinguish red from amber still reads
- * "সতর্কতা / Warning".
+ * Colour is never the only carrier. Every badge renders the level word next to
+ * its swatch. Minimum type is 12px (HDS metadata floor).
  */
 
 import React from 'react';
@@ -18,38 +10,34 @@ import type { AlertLevel } from '../../lib/alerts';
 import MaterialIcon from '../MaterialIcon';
 
 export interface LevelTokens {
-  /** Tailwind classes for the pill (text + background + border). */
   pill: string;
-  /** Solid hex, for the map fill and any canvas/SVG consumer. */
   solid: string;
-  /** Icon name (Material Symbols). */
   icon: string;
 }
 
 const LEVEL_TOKENS: Record<AlertLevel, LevelTokens> = {
   NO_ALERT: {
-    pill: 'bg-emerald-50 text-emerald-900 border-emerald-300',
+    pill: 'bg-severity-low-surface text-severity-low border-severity-low',
     solid: '#15803d',
     icon: 'check_circle',
   },
   WATCH: {
-    pill: 'bg-amber-50 text-amber-950 border-amber-400',
+    pill: 'bg-severity-moderate-surface text-severity-moderate border-severity-moderate',
     solid: '#f59e0b',
     icon: 'visibility',
   },
   WARNING: {
-    pill: 'bg-orange-100 text-orange-950 border-orange-500',
+    pill: 'bg-severity-moderate-surface text-severity-moderate border-international-orange',
     solid: '#ea580c',
     icon: 'warning',
   },
   SEVERE: {
-    pill: 'bg-red-100 text-red-950 border-red-600',
+    pill: 'bg-severity-high-surface text-severity-high border-severity-high',
     solid: '#b91c1c',
     icon: 'shield_alert',
   },
 };
 
-/** Map/legend colours, keyed by level, for SVG and raster consumers. */
 export const LEVEL_COLOURS: Record<AlertLevel, string> = {
   NO_ALERT: LEVEL_TOKENS.NO_ALERT.solid,
   WATCH: LEVEL_TOKENS.WATCH.solid,
@@ -63,20 +51,17 @@ export function levelTokens(level: string | null | undefined): LevelTokens {
 
 export interface AlertLevelBadgeProps {
   level: string | null | undefined;
-  /** Already-translated level name. */
   label: string;
-  /** Already-translated one-line description, used as the accessible title. */
   description?: string;
   size?: 'sm' | 'md' | 'lg';
   className?: string;
-  /** Prefix read by screen readers before the level name (e.g. "Alert level"). */
   srPrefix?: string;
 }
 
 const SIZES = {
-  sm: { wrapper: 'px-2 py-0.5 text-[11px] gap-1', icon: 'text-[13px]' },
-  md: { wrapper: 'px-2.5 py-1 text-xs gap-1.5', icon: 'text-[15px]' },
-  lg: { wrapper: 'px-3 py-1.5 text-sm gap-2', icon: 'text-[18px]' },
+  sm: { wrapper: 'min-h-6 px-2 py-1 text-xs gap-1', icon: 'text-sm' },
+  md: { wrapper: 'min-h-6 px-2 py-1 text-xs gap-1.5', icon: 'text-base' },
+  lg: { wrapper: 'min-h-8 px-3 py-1.5 text-sm gap-2', icon: 'text-lg' },
 };
 
 export const AlertLevelBadge: React.FC<AlertLevelBadgeProps> = ({
@@ -91,7 +76,7 @@ export const AlertLevelBadge: React.FC<AlertLevelBadgeProps> = ({
   const sizes = SIZES[size];
   return (
     <span
-      className={`inline-flex items-center rounded-full border font-bold uppercase tracking-wide ${tokens.pill} ${sizes.wrapper} ${className}`}
+      className={`inline-flex items-center rounded-control border font-semibold tracking-wide ${tokens.pill} ${sizes.wrapper} ${className}`}
       title={description}
       data-level={level || 'NO_ALERT'}
     >
@@ -107,13 +92,12 @@ export interface AlertLevelLegendProps {
   className?: string;
 }
 
-/** The legend the map and the list share, so a colour is explained wherever it appears. */
 export const AlertLevelLegend: React.FC<AlertLevelLegendProps> = ({ levels, className = '' }) => (
   <ul className={`flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-carbon-70 ${className}`}>
     {levels.map(({ level, label, description }) => (
       <li key={level} className="flex items-center gap-1.5" title={description}>
         <span
-          className="inline-block w-3 h-3 rounded-sm border border-black/10"
+          className="inline-block w-3 h-3 border border-carbon-20"
           style={{ backgroundColor: LEVEL_COLOURS[level] }}
           aria-hidden="true"
         />

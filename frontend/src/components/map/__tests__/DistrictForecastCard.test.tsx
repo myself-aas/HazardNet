@@ -1,7 +1,6 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen, fireEvent } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
-import DistrictForecastCard from '../DistrictForecastCard'
-import { DistrictWithRisk } from '../DistrictForecastCard'
+import DistrictForecastCard, { DistrictWithRisk } from '../DistrictForecastCard'
 
 jest.mock('../../ui/expand-map', () => ({
   LocationMap: () => <div data-testid="location-map-tile" />,
@@ -30,7 +29,7 @@ const mount = () =>
     </MemoryRouter>,
   )
 
-describe('DistrictForecastCard (redesigned district popup)', () => {
+describe('DistrictForecastCard (HDS selected panel)', () => {
   beforeEach(() => jest.clearAllMocks())
 
   it('renders the district forecast with hazard, severity and compact facts', () => {
@@ -42,7 +41,6 @@ describe('DistrictForecastCard (redesigned district popup)', () => {
     expect(screen.getByTitle(/Main crop: Aman Rice & Jute/i)).toBeInTheDocument()
     expect(screen.getByText(/28m MSL/i)).toBeInTheDocument()
     expect(screen.getByText(/25\.81°N, 89\.64°E/)).toBeInTheDocument()
-    // location map starts collapsed in the compact edition
     expect(screen.queryByTestId('location-map-tile')).not.toBeInTheDocument()
   })
 
@@ -52,52 +50,20 @@ describe('DistrictForecastCard (redesigned district popup)', () => {
     expect(screen.getByTestId('location-map-tile')).toBeInTheDocument()
   })
 
-  it('docks below the top navbar and is height-capped above the map bottom', () => {
+  it('is an in-flow opaque card, not a glass overlay covering the map', () => {
     const { container } = mount()
     const card = container.firstElementChild as HTMLElement
-    expect(card.className).toContain('top-20')
-    expect(card.className).toContain('sm:top-24')
-    expect(card.className).not.toContain('top-6')
-    // CSS fallback caps (JS-measured inline maxHeight is the primary guard)
-    expect(card.className).toContain('max-h-[calc(100%_-_5.5rem)]')
-    expect(card.className).toContain('sm:max-h-[calc(100%_-_7rem)]')
+    expect(card.className).not.toContain('absolute')
+    expect(card.className).not.toContain('top-20')
+    expect(card.className).not.toContain('backdrop-blur')
+    expect(card.className).toContain('bg-white')
+    expect(card.className).toContain('border-carbon-20')
   })
 
-  it('caps its height to the measured map viewport via inline maxHeight', async () => {
-    const orig = Element.prototype.getBoundingClientRect
-    Element.prototype.getBoundingClientRect = function (this: Element) {
-      const el = this as HTMLElement
-      if (el.getAttribute?.('data-testid') === 'hud') {
-        return { top: 0, bottom: 800, height: 800, width: 800, left: 0, right: 800, x: 0, y: 0 } as DOMRect
-      }
-      if (el.getAttribute?.('role') === 'dialog') {
-        return { top: 96, bottom: 400, height: 304, width: 340, left: 0, right: 340, x: 0, y: 96 } as DOMRect
-      }
-      return orig.call(this)
-    }
-    try {
-      const { container } = render(
-        <div data-testid="hud">
-          <MemoryRouter>
-            <DistrictForecastCard district={district} onClose={onClose} onOpenAnalytics={onOpenAnalytics} />
-          </MemoryRouter>
-        </div>,
-      )
-      const card = container.querySelector('[role="dialog"]') as HTMLElement
-      // 800 (map bottom) - 96 (card top, below navbar) - 12 (breathing room)
-      await waitFor(() => expect(card.style.maxHeight).toBe('692px'))
-    } finally {
-      Element.prototype.getBoundingClientRect = orig
-    }
-  })
-
-  it('uses the compact width and a translucent glass background', () => {
-    const { container } = mount()
-    const card = container.firstElementChild as HTMLElement
-    expect(card.className).toContain('sm:max-w-[440px]')
-    const glass = card.firstElementChild as HTMLElement
-    expect(glass.className).toContain('bg-white/85')
-    expect(glass.className).toContain('backdrop-blur-md')
+  it('uses a 44px close control', () => {
+    mount()
+    const close = screen.getByRole('button', { name: /close district forecast/i })
+    expect(close.className).toContain('tap-target')
   })
 
   it('exposes severity via an accessible meter', () => {

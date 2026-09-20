@@ -190,6 +190,20 @@ describe('AlertsPage', () => {
     expect(screen.getByText(/vector map and skip animations/)).toBeInTheDocument();
   });
 
+  it('places the published-alert list before the map in the document', async () => {
+    renderPage();
+    await screen.findByRole('heading', { name: /Sunamganj/ });
+    const list = screen.getByRole('heading', { name: /Published alerts/ });
+    const map = screen.getByRole('heading', { name: /District map/ });
+    expect(list.compareDocumentPosition(map) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it('gives Refresh a 44px minimum height', async () => {
+    renderPage();
+    const refresh = await screen.findByRole('button', { name: /Refresh/ });
+    expect(refresh.className).toMatch(/min-h-\[44px\]/);
+  });
+
   it('turns the mode on by itself on a low-end device, without a stored preference', async () => {
     localStorage.clear();
     renderPage();

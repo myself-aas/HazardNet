@@ -117,7 +117,7 @@ export default function ChatBot() {
             exit={{ scale: 0, opacity: 0 }}
             whileHover={{ scale: 1.08 }}
             whileTap={{ scale: 0.92 }}
-            className="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-[9995] px-4 sm:px-5 py-3 sm:py-3 min-h-[44px] rounded-full bg-nasa-blue hover:bg-nasa-blue-shade text-white font-extrabold text-xs shadow-xl flex items-center gap-2 cursor-pointer"
+            className="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-[var(--z-sticky)] px-4 sm:px-5 py-3 min-h-[44px] bg-nasa-blue hover:bg-nasa-blue-shade text-white font-semibold text-sm flex items-center gap-2 cursor-pointer touch-manipulation"
             aria-label="Open AI Advisor chat"
           >
             <span className="w-2 h-2 rounded-full bg-carbon-black/70 animate-ping" />
@@ -139,7 +139,7 @@ export default function ChatBot() {
                 at top-12 while the sticky header is h-14, so its top edge sat
                 8px into the header and the half-covered bar looked broken.
                 Desktop: anchored bottom-right panel, unchanged. */
-            className="fixed inset-x-0 bottom-0 top-0 sm:top-auto sm:bottom-6 sm:right-6 sm:left-auto z-[10000] w-full sm:w-[450px] h-auto sm:h-[600px] sm:max-h-[calc(100dvh-3rem)] max-h-dvh bg-white sm:rounded-2xl shadow-2xl flex flex-col border border-carbon-20 pb-[env(safe-area-inset-bottom)] sm:pb-0"
+            className="fixed inset-x-0 bottom-0 top-0 sm:top-auto sm:bottom-6 sm:right-6 sm:left-auto z-[var(--z-sticky)] w-full sm:w-[450px] h-auto sm:h-[600px] sm:max-h-[calc(100dvh-3rem)] max-h-dvh bg-white  flex flex-col border border-carbon-20 pb-[env(safe-area-inset-bottom)] sm:pb-0"
             role="dialog"
             aria-modal="true"
             aria-label="HazardNet AI Advisor chat"
@@ -153,7 +153,7 @@ export default function ChatBot() {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setIsOpen(false)}
-                className="min-h-[36px] sm:min-h-[32px] px-3 py-1.5 hover:bg-carbon-20 text-carbon-70 hover:text-carbon-90 rounded-md text-xs font-black transition-colors cursor-pointer flex items-center gap-1 border border-carbon-20"
+                className="min-h-[44px] px-3 hover:bg-carbon-20 text-carbon-70 hover:text-carbon-90 text-sm font-semibold cursor-pointer flex items-center gap-1 border border-carbon-20 touch-manipulation"
                 title="Close Assistant"
                 aria-label="Close Assistant"
               >
@@ -177,7 +177,7 @@ export default function ChatBot() {
                     <div className="w-8 h-8 rounded-full bg-nasa-red text-white flex items-center justify-center shrink-0 font-bold text-xs shadow-sm">
                       AI
                     </div>
-                    <div className="bg-white border border-carbon-20 rounded-2xl rounded-tl-none p-4 shadow-sm text-sm text-carbon-80">
+                    <div className="bg-white border border-carbon-20 border border-carbon-20 p-4 text-sm text-carbon-80">
                       <p className="mb-2 font-semibold">Hello! I'm HazardNet.</p>
                       <p>You can ask me anything about:</p>
                       <ul className="list-disc pl-4 mt-2 space-y-1 text-xs text-carbon-60">
@@ -233,7 +233,7 @@ export default function ChatBot() {
                     {msg.role === 'user' ? 'You' : 'AI'}
                   </div>
                   <div 
-                    className={`max-w-[85%] rounded-2xl p-4 shadow-sm text-sm prose prose-sm max-w-none ${
+                    className={`max-w-[85%] p-4 text-sm prose prose-sm max-w-none ${
                       msg.role === 'user' 
                         ? 'bg-amber-100 text-amber-950 border border-amber-200 rounded-tr-none font-medium' 
                         : 'bg-white border border-carbon-20 text-carbon-80 rounded-tl-none'
@@ -254,7 +254,7 @@ export default function ChatBot() {
                   <div className="w-8 h-8 rounded-full bg-nasa-red text-white flex items-center justify-center shrink-0 font-bold text-xs shadow-sm">
                     AI
                   </div>
-                  <div className="bg-white border border-carbon-20 rounded-2xl rounded-tl-none px-4 py-3 shadow-sm flex items-center gap-2">
+                  <div className="bg-white border border-carbon-20 border border-carbon-20 px-4 py-3 flex items-center gap-2">
                     <span className="text-sm text-carbon-60 animate-pulse font-medium">Searching knowledge base...</span>
                   </div>
                 </motion.div>
@@ -285,7 +285,7 @@ export default function ChatBot() {
                 </motion.button>
               </div>
               <div className="text-center mt-2">
-                 <span className="text-[10px] text-carbon-60 font-medium">HazardNet can make mistakes. Verify critical information.</span>
+                 <span className="text-xs text-carbon-60 font-medium">HazardNet can make mistakes. Verify critical information.</span>
               </div>
             </div>
 

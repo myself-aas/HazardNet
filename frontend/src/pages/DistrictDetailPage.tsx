@@ -11,7 +11,6 @@ import {
   XAxis,
   YAxis,
   Tooltip,
-  ReferenceLine,
   LineChart,
   Line,
   CartesianGrid,
@@ -66,7 +65,6 @@ import {
 
 import { getGranularDisasterData, GranularDisasterData, UpazilaImpact } from '../data/disasterDetails';
 import { ALL_64_DISTRICTS, getDistrictById } from '../data/bangladeshDistricts';
-import { StructuredAdvisoryRenderer } from '../components/StructuredAdvisoryRenderer';
 import AdvisoryPanel from '../components/AdvisoryPanel';
 import { PrintQrCode } from '../components/PrintQrCode';
 import { PdfExportButton } from '../components/PdfExportButton';
@@ -152,10 +150,10 @@ export const DistrictDetailPage: React.FC = () => {
     return {
       ...fallback,
       incidentDate: formattedIngestionTime,
-      peakImpactWindow: `${formatDate(prediction)} - ${formatDate(end)}`,
+      peakImpactWindow: `${formatDate(livePredictionDate)} - ${formatDate(endIso)}`,
       lastSatelliteUpdate: `${liveSource ?? 'Latest forecast'} • ${livePredictionDate}`,
     };
-  }, [districtId, livePredictionDate, liveSource, ingestionTimestamp]);
+  }, [districtId, livePredictionDate, liveSource, ingestionTimestamp, formatDate]);
   const district = useMemo(() => getDistrictById(districtId) || ALL_64_DISTRICTS[0], [districtId]);
 
   // Live Open-Meteo weather (current + 48h hourly + 16-day daily) for this
@@ -301,102 +299,16 @@ export const DistrictDetailPage: React.FC = () => {
       });
   }, [data.impactedUpazilas, upazilaSearch, upazilaFilter, upazilaSortBy]);
 
-  // Simulated 24-Hour Telemetry Sparkline based on Hazard Profile
-  const telemetryTrendData = useMemo(() => {
-    const hours = ['00:00', '03:00', '06:00', '09:00', '12:00', '15:00', '18:00', '21:00', '24:00'];
-    const sev = data.modelAssessment.continuousSeverityIndex;
-
-    switch (data.hazardType) {
-      case 'Flash Flood':
-      case 'Monsoon Flood': {
-        const baseLevel = 8.5;
-        const dangerLevel = 10.0;
-        return hours.map((h, i) => {
-          const rise = Math.sin((i / 8) * Math.PI) * (1.8 + sev * 1.5) + (i * 0.15);
-          const currentVal = Number((baseLevel + rise).toFixed(2));
-          return {
-            time: h,
-            value: currentVal,
-            danger: dangerLevel,
-            unit: 'm',
-            label: 'Water Stage Level'
-          };
-        });
-      }
-      case 'Tropical Cyclone': {
-        const dangerSpeed = 80;
-        return hours.map((h, i) => {
-          const curve = Math.pow(i / 8, 2) * (70 + sev * 60) + 35;
-          return {
-            time: h,
-            value: Math.round(curve),
-            danger: dangerSpeed,
-            unit: 'km/h',
-            label: 'Sustained Wind Speed'
-          };
-        });
-      }
-      case 'Drought': {
-        const dangerDeficit = 15;
-        return hours.map((h, i) => {
-          const drop = 26 - (i * (1.2 + sev * 0.6));
-          return {
-            time: h,
-            value: Number(Math.max(5, drop).toFixed(1)),
-            danger: dangerDeficit,
-            unit: '%',
-            label: 'Volumetric Soil Moisture'
-          };
-        });
-      }
-      case 'Cold Wave': {
-        const warningTemp = 8.0;
-        return hours.map((h, i) => {
-          const temp = 14.5 - (Math.sin((i / 8) * Math.PI) * (7 + sev * 4));
-          return {
-            time: h,
-            value: Number(temp.toFixed(1)),
-            danger: warningTemp,
-            unit: '°C',
-            label: 'Air Temperature'
-          };
-        });
-      }
-      default: {
-        const dangerGust = 65;
-        return hours.map((h, i) => {
-          const gust = 35 + (Math.sin((i / 8) * Math.PI * 2) * 20) + (sev * 45);
-          return {
-            time: h,
-            value: Math.round(gust),
-            danger: dangerGust,
-            unit: 'km/h',
-            label: 'Squall Gust Velocity'
-          };
-        });
-      }
-    }
-  }, [data.hazardType, data.modelAssessment.continuousSeverityIndex]);
-
-  // 7-day risk level fluctuations for specific hazards
+  // 7-day hazard series from the stored outlook only. Compound Vulnerability is
+  // withheld (UX-11): it is not a registered producer value.
   const hazardTrendData = useMemo(() => {
-    const baseSev = data.modelAssessment.continuousSeverityIndex * 100;
-    const daysAgo = ['6 Days Ago', '5 Days Ago', '4 Days Ago', '3 Days Ago', '2 Days Ago', 'Yesterday', 'Today'];
-    
-    return daysAgo.map((day, i) => {
-      const wave = Math.sin((i / 6) * Math.PI * 1.2);
-      const primaryRisk = Math.min(100, Math.max(10, Math.round(baseSev + wave * 14 + (i * 1.8))));
-      const secondaryRisk = Math.min(100, Math.max(10, Math.round(primaryRisk * 0.78 + (i * 2.1) - 5)));
-      const historicalAvg = Math.min(100, Math.max(15, Math.round(55 + Math.cos(i * 0.7) * 8)));
-      
-      return {
-        day,
-        [data.hazardType]: primaryRisk,
-        'Compound Vulnerability': secondaryRisk,
-        'Historical Seasonal Benchmark': historicalAvg,
-      };
-    });
-  }, [data.hazardType, data.modelAssessment.continuousSeverityIndex]);
+    const rows = activeTableHorizon === '7_days' ? districtForecasts7D : districtForecasts15D;
+    if (rows.length === 0) return [];
+    return rows.map((r) => ({
+      day: r.target_date,
+      [data.hazardType]: Math.round((r.severity_score ?? 0) * 100),
+    }));
+  }, [data.hazardType, districtForecasts7D, districtForecasts15D, activeTableHorizon]);
 
   // Actions
   const handleDownloadReport = () => {
@@ -411,6 +323,10 @@ export const DistrictDetailPage: React.FC = () => {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
     toast.success(`District telemetry report exported for ${data.districtName}`);
+  };
+
+  const handlePrintBrief = () => {
+    window.print();
   };
 
   const handleDownloadTableCsv = () => {
@@ -433,11 +349,6 @@ export const DistrictDetailPage: React.FC = () => {
       'Max Temp (°C)',
       'Precipitation (mm)',
       'Wind Max (km/h)'
-    ];
-    const csvRows = [headers.join(',')];
-    for (const r of rowsToExport) {
-      const values = [
-        r.district'
     ];
     const csvRows = [headers.join(',')];
     for (const r of rowsToExport) {
@@ -533,14 +444,14 @@ export const DistrictDetailPage: React.FC = () => {
       case 'Cold Wave':
         return <Snowflake className="w-5 h-5 text-indigo-600" />;
       default:
-        return <CloudLightning className="w-5 h-5 text-purple-600" />;
+        return <CloudLightning className="w-5 h-5 text-nasa-blue" />;
     }
   };
 
   const getRiskColor = (risk: string) => {
     if (risk === 'High') {
       return {
-        bg: 'bg-rose-50 border-rose-200 text-rose-800',
+        bg: 'bg-carbon-05 border-carbon-20 text-rose-800',
         badge: 'bg-[var(--severity-red)] text-white',
         bar: 'bg-[var(--severity-red)]',
         text: 'text-[var(--severity-red)]',
@@ -555,7 +466,7 @@ export const DistrictDetailPage: React.FC = () => {
       };
     }
     return {
-      bg: 'bg-emerald-50 border-emerald-200 text-emerald-900',
+      bg: 'bg-carbon-05 border-carbon-20 text-emerald-900',
       badge: 'bg-[var(--severity-green)] text-white',
       bar: 'bg-[var(--severity-green)]',
       text: 'text-[var(--severity-green)]',
@@ -573,7 +484,7 @@ export const DistrictDetailPage: React.FC = () => {
         <div className="flex flex-wrap items-center gap-3">
           <button
             onClick={() => navigate('/')}
-            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white border border-carbon-20 text-carbon-70 hover:bg-carbon-05 hover:text-carbon-90 text-xs font-bold transition-all shadow-xs cursor-pointer group"
+            className="inline-flex min-h-[44px] items-center gap-2 px-3 py-2 bg-white border border-carbon-20 text-carbon-70 hover:bg-carbon-05 hover:text-carbon-90 text-sm font-semibold cursor-pointer group touch-manipulation"
             title="Return to Bangladesh National Overview Map"
           >
             <ArrowLeft className="w-4 h-4 text-carbon-60 group-hover:-translate-x-0.5 transition-transform" />
@@ -584,7 +495,7 @@ export const DistrictDetailPage: React.FC = () => {
           <div className="relative">
             <button
               onClick={() => setDistrictDropdownOpen(!districtDropdownOpen)}
-              className="inline-flex items-center gap-2.5 px-3.5 py-2 rounded-xl bg-white border border-carbon-20 text-carbon-90 hover:border-carbon-30 text-xs font-bold transition-all shadow-xs cursor-pointer"
+              className="inline-flex min-h-[44px] items-center gap-2.5 px-3 py-2 bg-white border border-carbon-20 text-carbon-90 hover:border-carbon-30 text-sm font-semibold cursor-pointer touch-manipulation"
             >
               <MapPin className="w-3.5 h-3.5 text-amber-600" />
               <span>Switch District: <strong className="text-carbon-black">{data.districtName}</strong></span>
@@ -599,7 +510,7 @@ export const DistrictDetailPage: React.FC = () => {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 6, scale: 0.98 }}
                   transition={{ duration: 0.15 }}
-                  className="absolute left-0 top-full mt-2 w-72 sm:w-80 bg-white border border-carbon-20 rounded-2xl shadow-xl z-50 p-3 space-y-2"
+                  className="absolute left-0 top-full mt-2 w-72 sm:w-80 bg-white border border-carbon-20 z-[var(--z-overlay)] p-3 space-y-2"
                 >
                   <div className="relative">
                     <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-carbon-60" />
@@ -608,7 +519,7 @@ export const DistrictDetailPage: React.FC = () => {
                       placeholder="Search 64 districts or division..."
                       value={searchDistrict}
                       onChange={(e) => setSearchDistrict(e.target.value)}
-                      className="w-full pl-8 pr-3 py-1.5 text-xs bg-carbon-05 border border-carbon-20 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
+                      className="w-full pl-8 pr-3 py-1.5 text-xs bg-carbon-05 border border-carbon-20 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
                       autoFocus
                     />
                   </div>
@@ -625,18 +536,18 @@ export const DistrictDetailPage: React.FC = () => {
                             setSearchDistrict('');
                             navigate(`/forecast/district/${d.id}`);
                           }}
-                          className={`w-full flex items-center justify-between p-2 rounded-xl text-xs transition-colors cursor-pointer ${
+                          className={`w-full flex items-center justify-between p-2 text-xs transition-colors cursor-pointer ${
                             d.id === districtId ? 'bg-amber-50 text-amber-950 font-bold' : 'hover:bg-carbon-05 text-carbon-70'
                           }`}
                         >
                           <div className="flex items-center gap-2">
                             <span className="font-medium">{d.name}</span>
-                            <span className="text-[10px] text-carbon-60">({d.division})</span>
+                            <span className="text-xs text-carbon-60">({d.division})</span>
                           </div>
-                          <span className={`text-[10px] px-2 py-0.5 rounded-full font-mono font-bold ${
+                          <span className={`text-xs px-2 py-0.5 rounded-sm font-mono font-bold ${
                             d.risk === 'High' ? 'bg-rose-100 text-rose-700' :
                             d.risk === 'Moderate' ? 'bg-amber-100 text-amber-700' :
-                            'bg-emerald-100 text-emerald-700'
+                            'bg-carbon-10 text-carbon-80'
                           }`}>
                             {(d.severity * 100).toFixed(0)}%
                           </span>
@@ -658,9 +569,9 @@ export const DistrictDetailPage: React.FC = () => {
           <button
             onClick={handleToggleSave}
             title={saved ? 'District Saved to Watchlist' : 'Add District to Watchlist'}
-            className={`p-2.5 rounded-xl border transition-all flex items-center justify-center cursor-pointer shadow-xs ${
+            className={`min-h-[44px] min-w-[44px] border flex items-center justify-center cursor-pointer touch-manipulation ${
               saved
-                ? 'bg-rose-50 border-rose-200 text-rose-600'
+                ? 'bg-carbon-05 border-carbon-20 text-carbon-90'
                 : 'bg-white border-carbon-20 text-carbon-60 hover:bg-carbon-05 hover:text-carbon-90'
             }`}
           >
@@ -671,13 +582,23 @@ export const DistrictDetailPage: React.FC = () => {
           <button
             onClick={handleShareAlert}
             title="Copy Executive Intelligence Briefing"
-            className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white border border-carbon-20 text-carbon-70 hover:bg-carbon-05 hover:text-carbon-90 text-xs font-bold transition-all shadow-xs cursor-pointer"
+            className="inline-flex min-h-[44px] items-center gap-2 px-3 py-2 bg-white border border-carbon-20 text-carbon-70 hover:bg-carbon-05 hover:text-carbon-90 text-sm font-semibold cursor-pointer touch-manipulation"
           >
             <Share2 className="w-4 h-4 text-blue-600" />
             <span className="hidden md:inline">{copiedAlert ? 'Copied Brief' : 'Share Brief'}</span>
           </button>
 
-          {/* Print / Export Report with Filename Configuration */}
+          <button
+            type="button"
+            onClick={handlePrintBrief}
+            title="Print this district brief (HTML print is the primary export)"
+            className="inline-flex min-h-[44px] items-center gap-2 px-3 py-2 bg-nasa-blue text-white text-sm font-semibold cursor-pointer touch-manipulation"
+          >
+            <Printer className="w-4 h-4" />
+            <span>Print brief</span>
+          </button>
+
+          {/* Optional PDF filename configuration (secondary to HTML print) */}
           <PdfExportButton
             elementId="district-detail-container"
             filename={`HazardNet_${data.districtName}_{hazard}_{docType}_{date}.pdf`}
@@ -702,7 +623,7 @@ export const DistrictDetailPage: React.FC = () => {
           <button
             onClick={handleDownloadReport}
             title="Download Raw Machine-Readable JSON Telemetry"
-            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-carbon-90 hover:bg-carbon-80 text-white text-xs font-bold transition-all shadow-sm cursor-pointer"
+            className="inline-flex min-h-[44px] items-center gap-2 px-3.5 py-2 bg-carbon-90 hover:bg-carbon-80 text-white text-sm font-semibold cursor-pointer touch-manipulation"
           >
             <Download className="w-4 h-4 text-amber-400" />
             <span>Export Data</span>
@@ -711,35 +632,34 @@ export const DistrictDetailPage: React.FC = () => {
       </div>
 
       {/* CONSOLIDATED OFFICIAL DISTRICT DISASTER INTELLIGENCE HEADER */}
-      <header className="district-brief-header mb-6 border-b-2 border-carbon-90 pb-4 bg-white rounded-3xl p-5 sm:p-7 border border-carbon-20/90 shadow-xs space-y-4">
-        {/* Single-line Top Bar (font-size: 8px) with 'HazardNet' branding on left and 'Dispatch ID' and 'Date' on right */}
-        <div className="flex flex-wrap items-center justify-between gap-1 border-b border-carbon-20/80 pb-2 text-[8px] font-mono text-carbon-70 leading-tight min-w-0">
-          <div className="flex items-center gap-1.5 text-[8px]">
-            <span className="font-black text-carbon-black uppercase tracking-wider text-[8px]">HazardNet</span>
-            <span className="text-carbon-60 text-[8px]">•</span>
-            <span className="text-[8px] font-semibold text-carbon-60">MoDMR / NDMA Disaster Intelligence</span>
+      <header className="district-brief-header mb-6 border-b-2 border-carbon-90 pb-4 bg-white p-4 sm:p-6 border border-carbon-20 space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-carbon-20 pb-2 text-xs font-mono text-carbon-70 leading-tight min-w-0">
+          <div className="flex items-center gap-1.5">
+            <span className="font-bold text-carbon-90 uppercase tracking-wider">HazardNet</span>
+            <span className="text-carbon-60">•</span>
+            <span className="font-semibold text-carbon-60">MoDMR / NDMA Disaster Intelligence</span>
           </div>
-          <div className="flex items-center gap-2 text-[8px]">
-            <span className="text-[8px]">DISPATCH ID: <strong className="text-carbon-black font-bold text-[8px]">HN-BD-2026-{data.districtId.toUpperCase().slice(0, 4)}-{new Date().toISOString().slice(5, 10).replace('-', '')}</strong></span>
-            <span className="text-carbon-60 text-[8px]">•</span>
-            <span className="text-[8px]">DATE: {new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}, {new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })} BST</span>
+          <div className="flex items-center gap-2">
+            <span>DISPATCH ID: <strong className="text-carbon-90 font-bold">HN-BD-2026-{data.districtId.toUpperCase().slice(0, 4)}-{new Date().toISOString().slice(5, 10).replace('-', '')}</strong></span>
+            <span className="text-carbon-60">•</span>
+            <span>DATE: {new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}, {new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })} BST</span>
           </div>
         </div>
 
         {/* Header Title with Prominent Risk Badge */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="space-y-1">
-            <div className="text-[10px] font-mono font-bold text-carbon-60 uppercase tracking-wider">
+            <div className="text-xs font-mono font-bold text-carbon-60 uppercase tracking-wider">
               DISTRICT DISASTER INTELLIGENCE BRIEF
             </div>
-            <h1 className="text-2xl sm:text-3xl font-black text-carbon-black tracking-tight">
+            <h1 className="text-[28px] sm:text-[32px] font-bold text-carbon-90 tracking-tight leading-[1.2]">
               {data.districtName} District <span className="text-carbon-30 font-light mx-1">|</span> {data.hazardType}
             </h1>
           </div>
 
           {/* Prominent Risk Badge */}
           <div className="shrink-0">
-            <span className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-mono font-black shadow-xs ${
+            <span className={`inline-flex min-h-6 items-center gap-2 px-3 py-1 rounded-control text-xs font-mono font-bold ${
               data.modelAssessment.riskCategory === 'High' ? 'bg-[#dc2626] text-white' :
               data.modelAssessment.riskCategory === 'Moderate' ? 'bg-[#f59e0b] text-carbon-black' :
               'bg-[#16a34a] text-white'
@@ -765,7 +685,7 @@ export const DistrictDetailPage: React.FC = () => {
         <div className="flex flex-wrap items-center gap-2 pt-1">
           <Link
             to={`/divisions/${(climaticEventsData?.division || data.division).toLowerCase()}`}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 hover:text-blue-800 transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 hover:text-blue-800 transition-colors cursor-pointer"
           >
             <MapPin className="w-3.5 h-3.5" />
             <span>{climaticEventsData?.division || data.division} Division Dashboard</span>
@@ -773,14 +693,14 @@ export const DistrictDetailPage: React.FC = () => {
           </Link>
           <Link
             to={`/hazards/${(climaticEventsData?.primaryHazard || data.hazardType).toLowerCase().replace(/\s+/g, '-')}`}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100 hover:text-amber-900 transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100 hover:text-amber-900 transition-colors cursor-pointer"
           >
             <AlertTriangle className="w-3.5 h-3.5" />
             <span>{climaticEventsData?.primaryHazard || data.hazardType} Peril Analytics</span>
             <ExternalLink className="w-3 h-3" />
           </Link>
           {climaticEventsData && (
-            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium bg-carbon-10 text-carbon-70 border border-carbon-20">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-carbon-10 text-carbon-70 border border-carbon-20">
               <History className="w-3.5 h-3.5 text-carbon-60" />
               <span>{climaticEventsData.totalEvents} Verified Historical Events (2000–2026)</span>
             </span>
@@ -788,13 +708,13 @@ export const DistrictDetailPage: React.FC = () => {
         </div>
 
         {/* Highlighted Hazard & Peak Severity Occurrence Date Banner */}
-        <div className="bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 border border-amber-200 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-xs font-mono shadow-xs">
+        <div className="bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 border border-amber-200 p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-xs font-mono">
           <div className="flex items-center gap-3">
-            <span className="p-2.5 rounded-xl bg-amber-500 text-carbon-black font-black shadow-xs">
+            <span className="p-2.5 bg-amber-500 text-carbon-black font-black">
               <Calendar className="w-5 h-5" />
             </span>
             <div>
-              <div className="text-carbon-60 font-semibold uppercase tracking-wider text-[10px]">Peak Severity Occurrence Date</div>
+              <div className="text-carbon-60 font-semibold uppercase tracking-wider text-xs">Peak Severity Occurrence Date</div>
               <div className="text-carbon-black font-black text-sm sm:text-base flex items-center gap-2">
                 <span>{peakSeverityInfo.peakDate}</span>
                 <span className="px-2 py-0.5 rounded bg-red-600 text-white text-xs font-black">
@@ -805,18 +725,18 @@ export const DistrictDetailPage: React.FC = () => {
           </div>
           <div className="flex items-center gap-6 sm:border-l sm:border-amber-200/80 sm:pl-6">
             <div>
-              <div className="text-carbon-60 font-semibold uppercase tracking-wider text-[10px]">Highlighted Hazard</div>
+              <div className="text-carbon-60 font-semibold uppercase tracking-wider text-xs">Highlighted Hazard</div>
               <div className="text-red-700 font-black uppercase tracking-wider text-sm">{peakSeverityInfo.hazard}</div>
             </div>
             <div>
-              <div className="text-carbon-60 font-semibold uppercase tracking-wider text-[10px]">Model Confidence</div>
+              <div className="text-carbon-60 font-semibold uppercase tracking-wider text-xs">Model Confidence</div>
               <div className="text-carbon-black font-extrabold text-sm">{Math.round(peakSeverityInfo.confidence * 100)}%</div>
             </div>
           </div>
         </div>
 
         {/* Consolidated Metadata Block (Two-Column Layout) */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-carbon-05 border border-carbon-20/90 rounded-2xl p-4 text-[9pt]">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-carbon-05 border border-carbon-20/90 p-4 text-sm">
           {/* Column 1: Hazard Sub-type & Regional Ingestion */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
@@ -881,7 +801,7 @@ export const DistrictDetailPage: React.FC = () => {
       </header>
 
       {/* USER-FRIENDLY TABLE: PIPELINE CSV FORECAST OUTPUT (7 & 15 DAYS) */}
-      <section className="bg-white border border-carbon-20/90 rounded-3xl p-6 sm:p-7 shadow-xs space-y-6">
+      <section className="bg-white border border-carbon-20 p-4 sm:p-6 space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-carbon-20 pb-4">
           <div>
             <div className="text-xs font-mono font-bold text-amber-600 uppercase tracking-wider">
@@ -896,9 +816,9 @@ export const DistrictDetailPage: React.FC = () => {
           <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={() => setActiveTableHorizon('7_days')}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              className={`min-h-[44px] px-4 py-2 text-sm font-semibold cursor-pointer touch-manipulation ${
                 activeTableHorizon === '7_days'
-                  ? 'bg-carbon-90 text-white shadow-sm'
+                  ? 'bg-nasa-blue text-white'
                   : 'bg-carbon-10 hover:bg-carbon-20 text-carbon-70'
               }`}
             >
@@ -906,9 +826,9 @@ export const DistrictDetailPage: React.FC = () => {
             </button>
             <button
               onClick={() => setActiveTableHorizon('15_days')}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              className={`min-h-[44px] px-4 py-2 text-sm font-semibold cursor-pointer touch-manipulation ${
                 activeTableHorizon === '15_days'
-                  ? 'bg-carbon-90 text-white shadow-sm'
+                  ? 'bg-nasa-blue text-white'
                   : 'bg-carbon-10 hover:bg-carbon-20 text-carbon-70'
               }`}
             >
@@ -917,7 +837,7 @@ export const DistrictDetailPage: React.FC = () => {
             <button
               onClick={handleDownloadTableCsv}
               title="Download specific 7 and 15-day hazard intelligence records as CSV"
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-nasa-red hover:bg-nasa-red-shade text-carbon-black font-black text-xs transition-all shadow-xs cursor-pointer ml-1"
+              className="inline-flex min-h-[44px] items-center gap-1.5 px-3.5 py-2 bg-nasa-blue text-white font-semibold text-sm cursor-pointer ml-1 touch-manipulation"
             >
               <Download className="w-3.5 h-3.5" />
               <span>Download CSV</span>
@@ -927,13 +847,13 @@ export const DistrictDetailPage: React.FC = () => {
 
         {/* Trend Analysis Line Chart */}
         {!loadingForecastTable && chartData.length > 0 && (
-          <div className="bg-carbon-05 border border-carbon-20/80 rounded-2xl p-4 sm:p-5 space-y-3">
+          <div className="bg-carbon-05 border border-carbon-20/80 p-4 sm:p-5 space-y-3">
             <div className="flex items-center justify-between">
               <div className="text-xs font-mono font-bold text-carbon-70 uppercase tracking-wider flex items-center gap-1.5">
                 <TrendingUp className="w-4 h-4 text-amber-600" />
                 <span>Hazard Progression Trend ({activeTableHorizon === '7_days' ? '7-Day' : '15-Day'} Horizon)</span>
               </div>
-              <div className="text-[11px] font-mono text-carbon-60">
+              <div className="text-xs font-mono text-carbon-60">
                 Severity Index (%) vs Target Date
               </div>
             </div>
@@ -960,10 +880,10 @@ export const DistrictDetailPage: React.FC = () => {
             Loading pipeline CSV forecast logs for {data.districtName}...
           </div>
         ) : (
-          <div className="overflow-x-auto rounded-2xl border border-carbon-20/90 shadow-2xs">
+          <div className="overflow-x-auto border border-carbon-20/90">
             <table className="w-full text-left border-collapse text-xs font-sans">
               <thead>
-                <tr className="bg-carbon-90 text-white font-bold text-[11px] uppercase tracking-wider font-mono">
+                <tr className="bg-carbon-90 text-white font-bold text-xs uppercase tracking-wider font-mono">
                   <th className="px-3.5 py-3">Target Date</th>
                   <th className="px-3.5 py-3">Prediction</th>
                   <th className="px-3.5 py-3">Hazard Type</th>
@@ -992,10 +912,10 @@ export const DistrictDetailPage: React.FC = () => {
                       <td className="px-3.5 py-3 font-mono text-carbon-60 whitespace-nowrap">{row.prediction_date}</td>
                       <td className="px-3.5 py-3 font-semibold text-carbon-80">{row.hazard_type}</td>
                       <td className="px-3.5 py-3 font-mono font-bold whitespace-nowrap">
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black ${
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-black ${
                           (row.physics_severity ?? row.severity_score) >= 0.67 ? 'bg-red-100 text-red-800' :
                           (row.physics_severity ?? row.severity_score) >= 0.34 ? 'bg-amber-100 text-amber-800' :
-                          'bg-emerald-100 text-emerald-800'
+                          'bg-carbon-10 text-carbon-80'
                         }`}>
                           {Math.round((row.physics_severity ?? row.severity_score) * 100)}%
                         </span>
@@ -1027,33 +947,33 @@ export const DistrictDetailPage: React.FC = () => {
       </section>
 
       {/* MAIN DOCUMENT BODY */}
-      <main className="space-y-8">
+      <div className="space-y-8">
         {/* 2. EXECUTIVE HERO COMMAND CARD */}
-        <section className="bg-white border border-carbon-20/90 rounded-3xl p-6 sm:p-8 shadow-xs relative overflow-hidden">
+        <section className="bg-white border border-carbon-20 p-4 sm:p-6 relative overflow-hidden">
           {/* Subtle decorative background glow */}
-          <div className="absolute top-0 right-0 w-96 h-96 bg-amber-500/5 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20 screen-only" />
+
           
           <div className="relative z-10 space-y-6">
             {/* Status indicators & Descriptive summary — Starts directly with descriptive summary */}
             <div className="space-y-4">
               <div className="flex flex-wrap items-center gap-2 screen-only">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-carbon-10 border border-carbon-20 text-carbon-70 text-xs font-mono font-bold">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-sm bg-carbon-10 border border-carbon-20 text-carbon-70 text-xs font-mono font-bold">
                   <MapPin className="w-3 h-3 text-carbon-60" />
                   {data.division} Division
                 </span>
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-carbon-10 border border-carbon-20 text-carbon-70 text-xs font-mono font-bold">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-sm bg-carbon-10 border border-carbon-20 text-carbon-70 text-xs font-mono font-bold">
                   <Compass className="w-3 h-3 text-carbon-60" />
                   {district.lat.toFixed(3)}°N, {district.lng.toFixed(3)}°E
                 </span>
-                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs font-mono font-extrabold ${riskStyles.bg}`}>
+                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-sm border text-xs font-mono font-extrabold ${riskStyles.bg}`}>
                   <span className={`w-2 h-2 rounded-full ${
                     data.modelAssessment.riskCategory === 'High' ? 'bg-[var(--severity-red)] animate-pulse' :
                     data.modelAssessment.riskCategory === 'Moderate' ? 'bg-[var(--severity-amber)]' : 'bg-[var(--severity-green)]'
                   }`} />
                   {data.modelAssessment.riskCategory} Risk Classification
                 </span>
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-50 border border-purple-200 text-purple-800 text-xs font-mono font-bold">
-                  <Bot className="w-3 h-3 text-purple-600" />
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-sm bg-carbon-05 border border-carbon-20 text-nasa-blue-shade text-xs font-mono font-bold">
+                  <Bot className="w-3 h-3 text-nasa-blue" />
                   Model Score: {data.modelAssessment.confidenceLevel}% (uncalibrated)
                 </span>
               </div>
@@ -1068,7 +988,7 @@ export const DistrictDetailPage: React.FC = () => {
                 </p>
 
                 {/* Quick Live Link / QR preview for Screen */}
-                <div className="hidden lg:flex items-center gap-3 bg-carbon-05 border border-carbon-20/80 rounded-2xl p-3 shrink-0 screen-only">
+                <div className="hidden lg:flex items-center gap-3 bg-carbon-05 border border-carbon-20/80 p-3 shrink-0 screen-only">
                   <div className="shrink-0">
                     <PrintQrCode
                       url={`https://www.hazardnet.live/forecast/district/${districtId}`}
@@ -1078,7 +998,7 @@ export const DistrictDetailPage: React.FC = () => {
                     />
                   </div>
                   <div className="text-xs space-y-1">
-                    <span className="font-bold text-carbon-90 block font-mono text-[11px]">LIVE TELEMETRY STREAM</span>
+                    <span className="font-bold text-carbon-90 block font-mono text-xs">LIVE TELEMETRY STREAM</span>
                     <a
                       href={`https://www.hazardnet.live/forecast/district/${districtId}`}
                       target="_blank"
@@ -1096,10 +1016,10 @@ export const DistrictDetailPage: React.FC = () => {
           {/* 3-Column Key Metrics Summary Card */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2 border-t border-carbon-10">
             {/* Metric 1: Severity Gauge */}
-            <div className="metric-card bg-carbon-05 border border-carbon-20/80 rounded-2xl p-4 space-y-2">
+            <div className="metric-card bg-carbon-05 border border-carbon-20 p-4 sm:p-6 space-y-2">
               <div className="flex items-center justify-between text-xs">
                 <span className="font-mono font-bold text-carbon-60 uppercase">Severity Gauge</span>
-                <span className={`px-2 py-0.5 rounded-md text-[10px] font-mono font-extrabold ${riskStyles.badge}`}>
+                <span className={`px-2 py-0.5 rounded-sm text-xs font-mono font-extrabold ${riskStyles.badge}`}>
                   {data.modelAssessment.riskCategory}
                 </span>
               </div>
@@ -1112,49 +1032,49 @@ export const DistrictDetailPage: React.FC = () => {
                   | {data.hazardType}
                 </span>
               </div>
-              <div className="w-full bg-carbon-20 h-2 rounded-full overflow-hidden">
+              <div className="w-full bg-carbon-20 h-2 rounded-sm overflow-hidden">
                 <div
-                  className={`h-full rounded-full transition-all duration-700 ${riskStyles.bar}`}
+                  className={`h-full rounded-sm transition-all duration-700 ${riskStyles.bar}`}
                   style={{ width: `${Math.min(100, Math.max(5, data.modelAssessment.continuousSeverityIndex * 100))}%` }}
                 />
               </div>
-              <div className="text-[11px] text-carbon-60 font-medium">
+              <div className="text-xs text-carbon-60 font-medium">
                 Continuous vulnerability indexing
               </div>
             </div>
 
             {/* Metric 2: AI Model Confidence */}
-            <div className="metric-card bg-carbon-05 border border-carbon-20/80 rounded-2xl p-4 space-y-2">
+            <div className="metric-card bg-carbon-05 border border-carbon-20 p-4 sm:p-6 space-y-2">
               <div className="flex items-center justify-between text-xs">
                 <span className="font-mono font-bold text-carbon-60 uppercase">AI Model Confidence</span>
-                <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-emerald-100 text-emerald-800">
+                <span className="px-2 py-0.5 rounded-sm text-xs font-mono font-bold bg-carbon-10 text-carbon-80">
                   ▲ High Reliability
                 </span>
               </div>
               <div className="flex items-baseline gap-2">
-                <span className="text-2xl sm:text-3xl font-black text-emerald-700 font-mono">
+                <span className="text-2xl sm:text-3xl font-black text-carbon-80 font-mono">
                   {data.modelAssessment.confidenceLevel}%
                 </span>
                 <span className="text-xs font-mono font-bold text-carbon-60">
                   | Neural Attention
                 </span>
               </div>
-              <div className="w-full bg-carbon-20 h-2 rounded-full overflow-hidden">
+              <div className="w-full bg-carbon-20 h-2 rounded-sm overflow-hidden">
                 <div
-                  className="h-full rounded-full bg-emerald-500 transition-all duration-700"
+                  className="h-full rounded-sm bg-nasa-green transition-all duration-700"
                   style={{ width: `${data.modelAssessment.confidenceLevel}%` }}
                 />
               </div>
-              <div className="text-[11px] text-carbon-60 font-medium">
+              <div className="text-xs text-carbon-60 font-medium">
                 Trained on GCM & ECMWF Ensembles
               </div>
             </div>
 
             {/* Metric 3: Hydro-Dynamic Elevation */}
-            <div className="metric-card bg-carbon-05 border border-carbon-20/80 rounded-2xl p-4 space-y-2">
+            <div className="metric-card bg-carbon-05 border border-carbon-20 p-4 sm:p-6 space-y-2">
               <div className="flex items-center justify-between text-xs">
                 <span className="font-mono font-bold text-carbon-60 uppercase">Elevation Datum</span>
-                <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-blue-100 text-blue-800">
+                <span className="px-2 py-0.5 rounded-sm text-xs font-mono font-bold bg-blue-100 text-blue-800">
                   SRTM Geodetic
                 </span>
               </div>
@@ -1167,13 +1087,13 @@ export const DistrictDetailPage: React.FC = () => {
                   | Mean Sea Level
                 </span>
               </div>
-              <div className="w-full bg-carbon-20 h-2 rounded-full overflow-hidden">
+              <div className="w-full bg-carbon-20 h-2 rounded-sm overflow-hidden">
                 <div
-                  className="h-full rounded-full bg-blue-500 transition-all duration-700"
+                  className="h-full rounded-sm bg-blue-500 transition-all duration-700"
                   style={{ width: `${Math.min(100, (data.elevationMeters / 40) * 100)}%` }}
                 />
               </div>
-              <div className="text-[11px] text-carbon-60 font-medium truncate">
+              <div className="text-xs text-carbon-60 font-medium truncate">
                 Station: {data.physicalSensorMetrics.sensorStationName}
               </div>
             </div>
@@ -1182,9 +1102,9 @@ export const DistrictDetailPage: React.FC = () => {
       </section>
 
       {/* 3. STICKY EXECUTIVE SECTION JUMP BAR */}
-      <div className="sticky top-[64px] z-30 bg-white/90 backdrop-blur-md border border-carbon-20/90 rounded-2xl p-1.5 shadow-sm overflow-x-auto scrollbar-none screen-only">
-        <div className="flex items-center gap-1 min-w-max text-xs font-bold">
-          <span className="px-3 text-carbon-60 font-mono text-[10px] uppercase font-extrabold">Jump:</span>
+      <div className="sticky top-[var(--navbar-height)] z-[var(--z-sticky)] bg-white border border-carbon-20 overflow-x-auto scrollbar-none screen-only">
+        <div className="flex items-center gap-1 min-w-max text-sm font-semibold">
+          <span className="px-3 text-carbon-60 font-mono text-xs uppercase font-bold">Jump:</span>
           {[
             { id: 'sec-impact', label: 'Impact & Demographics', icon: <Users className="w-3.5 h-3.5" /> },
             { id: 'sec-telemetry', label: 'Hydro-Met Sensor Telemetry', icon: <Activity className="w-3.5 h-3.5" /> },
@@ -1199,16 +1119,16 @@ export const DistrictDetailPage: React.FC = () => {
             <button
               key={sec.id}
               onClick={() => scrollToSection(sec.id)}
-              className={`inline-flex items-center gap-2 px-3 py-2 rounded-xl transition-all cursor-pointer ${
+              className={`inline-flex min-h-[44px] items-center gap-2 px-3 py-2 cursor-pointer touch-manipulation ${
                 activeSection === sec.id
-                  ? 'bg-amber-500 text-carbon-black font-extrabold shadow-2xs'
-                  : 'text-carbon-60 hover:text-carbon-black hover:bg-carbon-10'
+                  ? 'bg-nasa-blue text-white font-semibold'
+                  : 'text-carbon-60 hover:text-carbon-90 hover:bg-carbon-10'
               }`}
             >
               {sec.icon}
               <span>{sec.label}</span>
               {sec.badge !== undefined && (
-                <span className="px-1.5 py-0.2 bg-carbon-20 text-carbon-80 rounded-full font-mono text-[10px] font-extrabold">
+                <span className="px-1.5 py-0.2 bg-carbon-20 text-carbon-80 rounded-sm font-mono text-xs font-extrabold">
                   {sec.badge}
                 </span>
               )}
@@ -1220,10 +1140,10 @@ export const DistrictDetailPage: React.FC = () => {
       {/* ========================================================================= */}
       {/* SECTION 1: CORE IMPACT & HUMANITARIAN TELEMETRY */}
       {/* ========================================================================= */}
-      <section id="sec-impact" className="space-y-4 pt-2">
+      <section id="sec-impact" className="scroll-mt-[calc(var(--navbar-height)+8px)] space-y-4 pt-2">
         <div className="flex items-center justify-between border-b border-carbon-20 pb-3">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-rose-50 border border-rose-200 flex items-center justify-center text-rose-600">
+            <div className="w-8 h-8 bg-carbon-05 border border-carbon-20 flex items-center justify-center text-nasa-red-shade">
               <Users className="w-4 h-4" />
             </div>
             <div>
@@ -1231,17 +1151,17 @@ export const DistrictDetailPage: React.FC = () => {
               <p className="text-xs text-carbon-60">Spatial territory exposure, population vulnerability, and standing crop risk estimations.</p>
             </div>
           </div>
-          <span className="text-[11px] font-mono text-carbon-60 bg-carbon-10 px-2.5 py-1 rounded-lg">SECTION I</span>
+          <span className="text-xs font-mono text-carbon-60 bg-carbon-10 px-2.5 py-1">SECTION I</span>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Card 1: Estimated Impact Area */}
-          <div className="impact-metric-pill bg-white border border-carbon-20 rounded-2xl p-5 shadow-xs space-y-3 hover:border-carbon-30 transition-all">
+          <div className="impact-metric-pill bg-white border border-carbon-20 p-5 space-y-3 hover:border-carbon-30 transition-all">
             <div className="flex items-center gap-3">
-              <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
-                data.modelAssessment.riskCategory === 'High' ? 'bg-rose-50 border border-rose-100 text-[var(--severity-red)]' :
+              <div className={`w-9 h-9 flex items-center justify-center shrink-0 ${
+                data.modelAssessment.riskCategory === 'High' ? 'bg-carbon-05 border border-rose-100 text-[var(--severity-red)]' :
                 data.modelAssessment.riskCategory === 'Moderate' ? 'bg-amber-50 border border-amber-100 text-[var(--severity-amber)]' :
-                'bg-emerald-50 border border-emerald-100 text-[var(--severity-green)]'
+                'bg-carbon-05 border border-emerald-100 text-[var(--severity-green)]'
               }`}>
                 <Waves className="w-4 h-4 shrink-0" />
               </div>
@@ -1261,23 +1181,23 @@ export const DistrictDetailPage: React.FC = () => {
                   'text-[var(--severity-green)]'
                 }`}>{data.impactAreaPercentage}%</strong>
               </div>
-              <div className="w-full bg-carbon-10 h-2 rounded-full overflow-hidden">
-                <div className={`h-full rounded-full transition-all duration-700 ${
+              <div className="w-full bg-carbon-10 h-2 rounded-sm overflow-hidden">
+                <div className={`h-full rounded-sm transition-all duration-700 ${
                   data.modelAssessment.riskCategory === 'High' ? 'bg-[var(--severity-red)]' :
                   data.modelAssessment.riskCategory === 'Moderate' ? 'bg-[var(--severity-amber)]' :
                   'bg-[var(--severity-green)]'
                 }`} style={{ width: `${data.impactAreaPercentage}%` }} />
               </div>
             </div>
-            <div className="text-[11px] text-carbon-60 truncate">
+            <div className="text-xs text-carbon-60 truncate">
               Total landmass: {data.totalDistrictAreaKm2.toLocaleString()} km²
             </div>
           </div>
 
           {/* Card 2: Affected Population & Households */}
-          <div className="impact-metric-pill bg-white border border-carbon-20 rounded-2xl p-5 shadow-xs space-y-3 hover:border-carbon-30 transition-all">
+          <div className="impact-metric-pill bg-white border border-carbon-20 p-5 space-y-3 hover:border-carbon-30 transition-all">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 shrink-0">
+              <div className="w-9 h-9 bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 shrink-0">
                 <Users className="w-4 h-4 shrink-0" />
               </div>
               <div className="min-w-0">
@@ -1292,19 +1212,19 @@ export const DistrictDetailPage: React.FC = () => {
                 <span>Vulnerable Families</span>
                 <strong className="font-bold text-carbon-90">{data.affectedHouseholds.toLocaleString()} HH</strong>
               </div>
-              <div className="w-full bg-carbon-10 h-2 rounded-full overflow-hidden">
-                <div className="bg-blue-500 h-full rounded-full" style={{ width: '68%' }} />
+              <div className="w-full bg-carbon-10 h-2 rounded-sm overflow-hidden">
+                <div className="bg-blue-500 h-full rounded-sm" style={{ width: '68%' }} />
               </div>
             </div>
-            <div className="text-[11px] text-carbon-60 truncate">
+            <div className="text-xs text-carbon-60 truncate">
               Density: 4.4 members / household
             </div>
           </div>
 
           {/* Card 3: Crop Land & Agriculture */}
-          <div className="impact-metric-pill bg-white border border-carbon-20 rounded-2xl p-5 shadow-xs space-y-3 hover:border-carbon-30 transition-all">
+          <div className="impact-metric-pill bg-white border border-carbon-20 p-5 space-y-3 hover:border-carbon-30 transition-all">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-600 shrink-0">
+              <div className="w-9 h-9 bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-600 shrink-0">
                 <Sprout className="w-4 h-4 shrink-0" />
               </div>
               <div className="min-w-0">
@@ -1319,19 +1239,19 @@ export const DistrictDetailPage: React.FC = () => {
                 <span>Standing Crops</span>
                 <strong className="font-bold text-carbon-90 truncate ml-1">{data.primaryCropsAtRisk.join(', ')}</strong>
               </div>
-              <div className="w-full bg-carbon-10 h-2 rounded-full overflow-hidden">
-                <div className="bg-amber-500 h-full rounded-full" style={{ width: '84%' }} />
+              <div className="w-full bg-carbon-10 h-2 rounded-sm overflow-hidden">
+                <div className="bg-amber-500 h-full rounded-sm" style={{ width: '84%' }} />
               </div>
             </div>
-            <div className="text-[11px] text-carbon-60 truncate">
+            <div className="text-xs text-carbon-60 truncate">
               Vegetative & harvest phase alert
             </div>
           </div>
 
           {/* Card 4: Active Emergency Shelters */}
-          <div className="impact-metric-pill bg-white border border-carbon-20 rounded-2xl p-5 shadow-xs space-y-3 hover:border-carbon-30 transition-all">
+          <div className="impact-metric-pill bg-white border border-carbon-20 p-5 space-y-3 hover:border-carbon-30 transition-all">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 shrink-0">
+              <div className="w-9 h-9 bg-carbon-05 border border-emerald-100 flex items-center justify-center text-carbon-80 shrink-0">
                 <Building2 className="w-4 h-4 shrink-0" />
               </div>
               <div className="min-w-0">
@@ -1344,13 +1264,13 @@ export const DistrictDetailPage: React.FC = () => {
             <div className="space-y-1 pt-1 border-t border-carbon-10">
               <div className="flex items-center justify-between text-xs text-carbon-60">
                 <span>Capacity Utilized</span>
-                <strong className="font-bold text-emerald-700">{data.emergencyResponse.shelterCapacityUsedPercent}%</strong>
+                <strong className="font-bold text-carbon-80">{data.emergencyResponse.shelterCapacityUsedPercent}%</strong>
               </div>
-              <div className="w-full bg-carbon-10 h-2 rounded-full overflow-hidden">
-                <div className="bg-emerald-500 h-full rounded-full" style={{ width: `${data.emergencyResponse.shelterCapacityUsedPercent}%` }} />
+              <div className="w-full bg-carbon-10 h-2 rounded-sm overflow-hidden">
+                <div className="bg-nasa-green h-full rounded-sm" style={{ width: `${data.emergencyResponse.shelterCapacityUsedPercent}%` }} />
               </div>
             </div>
-            <div className="text-[11px] text-carbon-60 truncate">
+            <div className="text-xs text-carbon-60 truncate">
               Equipped with solar & water purification
             </div>
           </div>
@@ -1358,7 +1278,7 @@ export const DistrictDetailPage: React.FC = () => {
       </section>
 
       {/* GEOSPATIAL HAZARD SEVERITY MINI-HEATMAP */}
-      <section className="bg-white border border-carbon-20/90 rounded-3xl p-6 sm:p-8 shadow-xs space-y-6">
+      <section className="bg-white border border-carbon-20/90 p-6 sm:p-8 space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-carbon-20 pb-4">
           <div>
             <div className="text-xs font-mono font-bold text-amber-600 uppercase tracking-wider">
@@ -1369,9 +1289,9 @@ export const DistrictDetailPage: React.FC = () => {
             </h3>
           </div>
           <div className="flex flex-wrap items-center gap-3 text-xs font-mono min-w-0">
-            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-md bg-emerald-500" /> Low (0-33%)</span>
-            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-md bg-amber-500" /> Moderate (34-66%)</span>
-            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-md bg-rose-600" /> Critical (67-100%)</span>
+            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-nasa-green" /> Low (0-33%)</span>
+            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-amber-500" /> Moderate (34-66%)</span>
+            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-nasa-red-shade" /> Critical (67-100%)</span>
           </div>
         </div>
 
@@ -1383,8 +1303,8 @@ export const DistrictDetailPage: React.FC = () => {
             return (
               <div
                 key={idx}
-                className={`rounded-2xl p-4 border transition-all relative overflow-hidden flex flex-col justify-between space-y-3 ${
-                  isCrit ? 'bg-rose-50/70 border-rose-200 shadow-2xs' :
+                className={`p-4 border transition-all relative overflow-hidden flex flex-col justify-between space-y-3 ${
+                  isCrit ? 'bg-carbon-05/70 border-carbon-20' :
                   isHigh ? 'bg-amber-50/70 border-amber-200' :
                   'bg-carbon-05 border-carbon-20'
                 }`}
@@ -1392,15 +1312,15 @@ export const DistrictDetailPage: React.FC = () => {
                 {/* Heatmap background intensity bar */}
                 <div
                   className={`absolute bottom-0 left-0 h-1 transition-all duration-500 ${
-                    isCrit ? 'bg-rose-600' : isHigh ? 'bg-amber-500' : 'bg-emerald-500'
+                    isCrit ? 'bg-nasa-red-shade' : isHigh ? 'bg-amber-500' : 'bg-nasa-green'
                   }`}
                   style={{ width: `${scorePct}%` }}
                 />
 
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-carbon-90 text-sm">{upazila.name}</span>
-                  <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono font-black ${
-                    isCrit ? 'bg-rose-600 text-white animate-pulse' :
+                  <span className={`px-2.5 py-0.5 rounded-sm text-xs font-mono font-black ${
+                    isCrit ? 'bg-nasa-red-shade text-white animate-pulse' :
                     isHigh ? 'bg-amber-500 text-carbon-black' :
                     'bg-emerald-600 text-white'
                   }`}>
@@ -1411,7 +1331,7 @@ export const DistrictDetailPage: React.FC = () => {
                 <div className="space-y-1 text-xs font-mono">
                   <div className="flex items-center justify-between text-carbon-60">
                     <span>Status:</span>
-                    <strong className={`font-bold ${isCrit ? 'text-rose-700' : isHigh ? 'text-amber-800' : 'text-emerald-700'}`}>
+                    <strong className={`font-bold ${isCrit ? 'text-rose-700' : isHigh ? 'text-amber-800' : 'text-carbon-80'}`}>
                       {upazila.status}
                     </strong>
                   </div>
@@ -1425,7 +1345,7 @@ export const DistrictDetailPage: React.FC = () => {
           })}
         </div>
 
-        <div className="text-[11px] font-mono text-carbon-60 bg-carbon-05 border border-carbon-20 rounded-xl p-3 flex flex-wrap items-center justify-between gap-2 min-w-0">
+        <div className="text-xs font-mono text-carbon-60 bg-carbon-05 border border-carbon-20 p-3 flex flex-wrap items-center justify-between gap-2 min-w-0">
           <span className="min-w-0 break-words">Spatial Grid Resolution: ADM3 Upazila Boundary Ingestion • Model Confidence: {data.modelAssessment.confidenceLevel}%</span>
           <span className="font-bold text-carbon-90">Total Sub-Regions Mapped: {data.impactedUpazilas.length}</span>
         </div>
@@ -1434,10 +1354,10 @@ export const DistrictDetailPage: React.FC = () => {
       {/* ========================================================================= */}
       {/* SECTION 2: HYDRO-MET SENSOR TELEMETRY & 24-HOUR TREND */}
       {/* ========================================================================= */}
-      <section id="sec-telemetry" className="space-y-4 pt-4 pagination-protected">
+      <section id="sec-telemetry" className="scroll-mt-[calc(var(--navbar-height)+8px)] space-y-4 pt-4 pagination-protected">
         <div className="flex items-center justify-between border-b border-carbon-20 pb-3">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600">
+            <div className="w-8 h-8 bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600">
               <Activity className="w-4 h-4" />
             </div>
             <div>
@@ -1447,39 +1367,39 @@ export const DistrictDetailPage: React.FC = () => {
               </p>
             </div>
           </div>
-          <span className="text-[11px] font-mono text-carbon-60 bg-carbon-10 px-2.5 py-1 rounded-lg">SECTION II</span>
+          <span className="text-xs font-mono text-carbon-60 bg-carbon-10 px-2.5 py-1">SECTION II</span>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Telemetry Sensor Gauges (1 col) */}
-          <div className="bg-white border border-carbon-20 rounded-2xl p-6 shadow-xs space-y-4 flex flex-col justify-between">
+          <div className="bg-white border border-carbon-20 p-6 space-y-4 flex flex-col justify-between">
             <div className="space-y-3">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-carbon-10 text-carbon-70 text-xs font-mono font-bold">
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-carbon-10 text-carbon-70 text-xs font-mono font-bold">
                 <Crosshair className="w-3.5 h-3.5 text-blue-600" />
                 <span>Station: {data.physicalSensorMetrics.sensorStationName}</span>
               </div>
 
               <div className="space-y-3 pt-2">
-                <div className="bg-carbon-05 p-4 rounded-xl border border-carbon-20/80 space-y-1">
+                <div className="bg-carbon-05 p-4 border border-carbon-20/80 space-y-1">
                   <span className="text-xs font-mono text-carbon-60 font-bold uppercase">{data.physicalSensorMetrics.primaryMetricName}</span>
                   <div className={`text-2xl font-black font-mono ${
-                    data.modelAssessment.riskCategory === 'High' ? 'text-rose-600' :
+                    data.modelAssessment.riskCategory === 'High' ? 'text-nasa-red-shade' :
                     data.modelAssessment.riskCategory === 'Moderate' ? 'text-amber-600' :
-                    'text-emerald-600'
+                    'text-carbon-80'
                   }`}>
                     {data.physicalSensorMetrics.primaryMetricValue}
                   </div>
-                  <span className="text-[11px] text-carbon-60">
+                  <span className="text-xs text-carbon-60">
                     {data.modelAssessment.riskCategory === 'High' ? 'Critical danger threshold exceeded' :
                      data.modelAssessment.riskCategory === 'Moderate' ? 'Approaching danger threshold' :
                      'Within normal operational safety limits'}
                   </span>
                 </div>
 
-                <div className="bg-carbon-05 p-4 rounded-xl border border-carbon-20/80 space-y-1">
+                <div className="bg-carbon-05 p-4 border border-carbon-20/80 space-y-1">
                   <span className="text-xs font-mono text-carbon-60 font-bold uppercase">{data.physicalSensorMetrics.secondaryMetricName}</span>
                   <div className="text-2xl font-black text-blue-600 font-mono">{data.physicalSensorMetrics.secondaryMetricValue}</div>
-                  <span className="text-[11px] text-carbon-60">Secondary telemetry vector</span>
+                  <span className="text-xs text-carbon-60">Secondary telemetry vector</span>
                 </div>
               </div>
             </div>
@@ -1496,57 +1416,12 @@ export const DistrictDetailPage: React.FC = () => {
             </div>
           </div>
 
-          {/* 24-Hour Telemetry Area Chart (2 cols) */}
-          <div className="chart-card pagination-protected bg-white border border-carbon-20 rounded-2xl p-6 shadow-xs space-y-4 lg:col-span-2 flex flex-col justify-between overflow-hidden">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-              <div>
-                <h3 className="text-sm font-bold text-carbon-90 flex items-center gap-2">
-                  <TrendingUp className="w-4 h-4 text-amber-600" />
-                  24-Hour Forecast & Danger Threshold Curve
-                </h3>
-                <p className="text-xs text-carbon-60">Simulated hydro-meteorological trajectory vs safety baseline.</p>
-              </div>
-              <div className="flex items-center gap-3 text-xs font-mono">
-                <span className="flex items-center gap-1.5 text-blue-600 font-bold">
-                  <span className="w-2.5 h-2.5 rounded-full bg-blue-500" />
-                  Observed Stage
-                </span>
-                <span className="flex items-center gap-1.5 text-rose-600 font-bold">
-                  <span className="w-2.5 h-0.5 bg-rose-500" />
-                  Danger Level Line
-                </span>
-              </div>
-            </div>
-
-            {/* Recharts Area Container */}
-            <div className="h-64 w-full pt-2">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={telemetryTrendData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                  <defs>
-                    <linearGradient id="telemetryGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.4} />
-                      <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.0} />
-                    </linearGradient>
-                  </defs>
-                  <XAxis dataKey="time" stroke="#959599" fontSize={11} tickLine={false} />
-                  <YAxis stroke="#959599" fontSize={11} tickLine={false} />
-                  <Tooltip
-                    contentStyle={{ backgroundColor: '#ffffff', borderRadius: '12px', border: '1px solid #d1d1d1', fontSize: '12px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}
-                    formatter={(value: any, name: string) => [
-                      `${value} ${telemetryTrendData[0]?.unit || ''}`,
-                      name === 'value' ? 'Current Metric' : 'Danger Threshold'
-                    ]}
-                  />
-                  <ReferenceLine y={telemetryTrendData[0]?.danger} stroke="#ef4444" strokeDasharray="4 4" label={{ value: 'Danger Threshold', position: 'insideTopRight', fill: '#ef4444', fontSize: 10, fontWeight: 700 }} />
-                  <Area type="monotone" dataKey="value" stroke="#2563eb" strokeWidth={2.5} fillOpacity={1} fill="url(#telemetryGrad)" />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-
-            <div className="flex items-center justify-between text-[11px] text-carbon-60 pt-2 border-t border-carbon-10">
-              <span>Source: the daily model forecast (Earth Engine + Open-Meteo)</span>
-              <span className="font-mono text-carbon-60 font-bold">Reference: regional danger threshold</span>
-            </div>
+          <div className="chart-card pagination-protected bg-white border border-carbon-20 p-4 sm:p-6 space-y-4 lg:col-span-2 flex flex-col justify-center">
+            <h3 className="text-base font-bold text-carbon-90">24-hour gauge trend</h3>
+            <p className="text-base leading-[1.62] text-carbon-70">
+              A 24-hour station sparkline is not recorded for this district. Station values above are the latest stored readings; no interpolated hydro-met trajectory is shown.
+            </p>
+            <p className="text-xs text-carbon-60">Source: not recorded</p>
           </div>
         </div>
       </section>
@@ -1554,10 +1429,10 @@ export const DistrictDetailPage: React.FC = () => {
       {/* ========================================================================= */}
       {/* SECTION 2.5: HAZARD TREND - 7-DAY RISK LEVEL FLUCTUATIONS */}
       {/* ========================================================================= */}
-      <section id="sec-hazard-trend" className="space-y-4 pt-4 pagination-protected">
+      <section id="sec-hazard-trend" className="scroll-mt-[calc(var(--navbar-height)+8px)] space-y-4 pt-4 pagination-protected">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-carbon-20 pb-3 gap-3">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600">
+            <div className="w-8 h-8 bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600">
               <TrendingUp className="w-4 h-4" />
             </div>
             <div>
@@ -1565,13 +1440,13 @@ export const DistrictDetailPage: React.FC = () => {
               <p className="text-xs text-carbon-60">Longitudinal risk scoring and multi-hazard severity progression over the past week.</p>
             </div>
           </div>
-          <div className="flex items-center gap-2 bg-carbon-10 p-1 rounded-xl text-xs font-bold screen-only">
+          <div className="flex items-center gap-2 bg-carbon-10 p-1 text-xs font-bold screen-only">
             {(['all', 'primary', 'comparison'] as const).map((mode) => (
               <button
                 key={mode}
                 onClick={() => setTrendViewMode(mode)}
-                className={`px-3 py-1 rounded-lg transition-all cursor-pointer capitalize ${
-                  trendViewMode === mode ? 'bg-white text-carbon-90 shadow-2xs font-extrabold' : 'text-carbon-60 hover:text-carbon-black'
+                className={`px-3 py-1 transition-all cursor-pointer capitalize ${
+                  trendViewMode === mode ? 'bg-white text-carbon-90 font-extrabold' : 'text-carbon-60 hover:text-carbon-black'
                 }`}
               >
                 {mode === 'all' ? 'All Vectors' : mode === 'primary' ? data.hazardType : 'Historical Benchmarks'}
@@ -1580,25 +1455,25 @@ export const DistrictDetailPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="chart-card bg-white border border-carbon-20 rounded-3xl p-6 shadow-xs space-y-6">
+        <div className="chart-card bg-white border border-carbon-20 p-6 space-y-6">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <span className="text-xs font-mono font-bold text-amber-700 bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200">
+              <span className="text-xs font-mono font-bold text-amber-700 bg-amber-50 px-2.5 py-1 border border-amber-200">
                 Longitudinal AI Telemetry (7-Day Window)
               </span>
               <h3 className="text-base font-extrabold text-carbon-90 mt-2">
-                {data.districtName} — 7-Day {data.hazardType} & Compound Risk Index
+                {data.districtName} — stored {data.hazardType} outlook
               </h3>
               <p className="text-xs text-carbon-60 mt-0.5">
                 Evaluated against historical multi-year EM-DAT disaster recurrence models and satellite radar observations.
               </p>
             </div>
 
-            <div className="flex items-center gap-4 text-xs font-mono bg-carbon-05 p-3 rounded-2xl border border-carbon-20/80">
+            <div className="flex items-center gap-4 text-xs font-mono bg-carbon-05 p-3 border border-carbon-20/80">
               <div>
                 <div className="text-carbon-60">7-Day Peak Risk</div>
-                <div className="text-sm font-black text-rose-600">
-                  {Math.max(...hazardTrendData.map(d => Number(d[data.hazardType] || 0)))} / 100
+                <div className="text-sm font-black text-nasa-red-shade">
+                  {hazardTrendData.length ? Math.max(...hazardTrendData.map(d => Number(d[data.hazardType] || 0))) : "\u2014"} / 100
                 </div>
               </div>
               <div className="w-px h-8 bg-carbon-20" />
@@ -1633,41 +1508,21 @@ export const DistrictDetailPage: React.FC = () => {
                     activeDot={{ r: 6 }}
                   />
                 )}
-                {(trendViewMode === 'all' || trendViewMode === 'comparison') && (
-                  <Line
-                    type="monotone"
-                    dataKey="Compound Vulnerability"
-                    name="Compound Vulnerability Index"
-                    stroke="#f59e0b"
-                    strokeWidth={2.5}
-                    strokeDasharray="4 4"
-                    dot={{ r: 3, fill: '#f59e0b' }}
-                  />
-                )}
-                {(trendViewMode === 'all' || trendViewMode === 'comparison') && (
-                  <Line
-                    type="monotone"
-                    dataKey="Historical Seasonal Benchmark"
-                    name="Historical Seasonal Benchmark"
-                    stroke="#77777a"
-                    strokeWidth={2}
-                    dot={{ r: 3, fill: '#77777a' }}
-                  />
-                )}
+
               </LineChart>
             </ResponsiveContainer>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-4 border-t border-carbon-10 text-xs">
-            <div className="bg-carbon-05 p-3 rounded-xl border border-carbon-20/80">
+            <div className="bg-carbon-05 p-3 border border-carbon-20/80">
               <span className="font-mono text-carbon-60 font-bold block mb-1">Early Warning Indicator</span>
               <p className="text-carbon-70">Risk index crossed moderate threshold 4 days prior due to cumulative catchment basin rainfall.</p>
             </div>
-            <div className="bg-carbon-05 p-3 rounded-xl border border-carbon-20/80">
+            <div className="bg-carbon-05 p-3 border border-carbon-20/80">
               <span className="font-mono text-carbon-60 font-bold block mb-1">Compound Threat Vector</span>
               <p className="text-carbon-70">Secondary river bank erosion correlates directly with upstream water stage fluctuations.</p>
             </div>
-            <div className="bg-carbon-05 p-3 rounded-xl border border-carbon-20/80">
+            <div className="bg-carbon-05 p-3 border border-carbon-20/80">
               <span className="font-mono text-carbon-60 font-bold block mb-1">Confidence Interval</span>
               <p className="text-carbon-70">No calibration map has been fitted — the model card documents what is and is not measured.</p>
             </div>
@@ -1678,10 +1533,10 @@ export const DistrictDetailPage: React.FC = () => {
       {/* ========================================================================= */}
       {/* SECTION 3: EXECUTIVE AI RISK OVERVIEW & SPATIAL RADAR BACKSCATTER */}
       {/* ========================================================================= */}
-      <section id="sec-ai-overview" className="space-y-4 pt-4 pagination-protected">
+      <section id="sec-ai-overview" className="scroll-mt-[calc(var(--navbar-height)+8px)] space-y-4 pt-4 pagination-protected">
         <div className="flex items-center justify-between border-b border-carbon-20 pb-3">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-purple-50 border border-purple-200 flex items-center justify-center text-purple-600">
+            <div className="w-8 h-8 bg-carbon-05 border border-carbon-20 flex items-center justify-center text-nasa-blue">
               <Cpu className="w-4 h-4" />
             </div>
             <div>
@@ -1693,25 +1548,25 @@ export const DistrictDetailPage: React.FC = () => {
             <a
               href="#appendix-a"
               onClick={(e) => { e.preventDefault(); scrollToSection('appendix-a'); }}
-              className="text-xs text-purple-700 hover:text-purple-900 font-mono font-bold inline-flex items-center gap-1 screen-only"
+              className="text-xs text-nasa-blue-shade hover:text-carbon-90 font-mono font-bold inline-flex items-center gap-1 screen-only"
             >
               <span>View Technical Appendix</span>
               <ExternalLink className="w-3 h-3" />
             </a>
-            <span className="text-[11px] font-mono text-carbon-60 bg-carbon-10 px-2.5 py-1 rounded-lg">SECTION III</span>
+            <span className="text-xs font-mono text-carbon-60 bg-carbon-10 px-2.5 py-1">SECTION III</span>
           </div>
         </div>
 
         {/* Probabilities & Diagnosis Narrative */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Probability Breakdown Bars */}
-          <div className="bg-white border border-carbon-20 rounded-2xl p-6 shadow-xs space-y-4">
+          <div className="bg-white border border-carbon-20 p-6 space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-bold text-carbon-90 flex items-center gap-2">
-                <BarChart3 className="w-4 h-4 text-purple-600" />
+                <BarChart3 className="w-4 h-4 text-nasa-blue" />
                 Hazard Probability Breakdown
               </h3>
-              <span className="text-[11px] font-mono text-carbon-60">Total = 100%</span>
+              <span className="text-xs font-mono text-carbon-60">Total = 100%</span>
             </div>
 
             <div className="space-y-3 pt-1">
@@ -1724,14 +1579,14 @@ export const DistrictDetailPage: React.FC = () => {
                     </span>
                     <span className="font-mono font-bold text-carbon-90">{(prob.probability * 100).toFixed(1)}%</span>
                   </div>
-                  <div className="w-full bg-carbon-10 h-2.5 rounded-full overflow-hidden">
+                  <div className="w-full bg-carbon-10 h-2.5 rounded-sm overflow-hidden">
                     <motion.div
                       initial={{ width: 0 }}
                       whileInView={{ width: `${prob.probability * 100}%` }}
                       viewport={{ once: true }}
                       transition={{ duration: 0.6, delay: i * 0.1 }}
-                      className={`h-full rounded-full ${
-                        i === 0 ? 'bg-purple-600' : i === 1 ? 'bg-blue-500' : 'bg-carbon-40'
+                      className={`h-full rounded-sm ${
+                        i === 0 ? 'bg-nasa-blue' : i === 1 ? 'bg-nasa-orange' : 'bg-carbon-40'
                       }`}
                     />
                   </div>
@@ -1741,21 +1596,21 @@ export const DistrictDetailPage: React.FC = () => {
           </div>
 
           {/* AI Diagnosis Narrative */}
-          <div className="bg-white border border-carbon-20 rounded-2xl p-6 shadow-xs space-y-4 flex flex-col justify-between">
+          <div className="bg-white border border-carbon-20 p-6 space-y-4 flex flex-col justify-between">
             <div className="space-y-3">
               <h3 className="text-sm font-bold text-carbon-90 flex items-center gap-2">
                 <Info className="w-4 h-4 text-blue-600" />
                 Executive Spatial Risk Verification
               </h3>
-              <div className="bg-carbon-05 border border-carbon-20/80 rounded-xl p-4 text-xs font-mono text-carbon-80 leading-relaxed space-y-2">
+              <div className="bg-carbon-05 border border-carbon-20/80 p-4 text-xs font-mono text-carbon-80 leading-relaxed space-y-2">
                 <p>
                   Satellite imagery shows high water saturation across low-lying areas, and the severity index is computed from the day's Earth Engine and Open-Meteo inputs.
                 </p>
               </div>
             </div>
 
-            <div className="pt-2 border-t border-carbon-10 flex items-center justify-between text-[11px] text-carbon-60 font-mono">
-              <span>Model Confidence: <strong className="text-emerald-700 font-bold">{data.modelAssessment.confidenceLevel}% (High)</strong></span>
+            <div className="pt-2 border-t border-carbon-10 flex items-center justify-between text-xs text-carbon-60 font-mono">
+              <span>Model Confidence: <strong className="text-carbon-80 font-bold">{data.modelAssessment.confidenceLevel}% (High)</strong></span>
               <span>Updated: {data.lastSatelliteUpdate.split('•')[0]}</span>
             </div>
           </div>
@@ -1765,10 +1620,10 @@ export const DistrictDetailPage: React.FC = () => {
       {/* ========================================================================= */}
       {/* SECTION 4: UPAZILA / THANA VULNERABILITY MATRIX (GRID OF DATA CARDS) */}
       {/* ========================================================================= */}
-      <section id="sec-upazilas" className="space-y-4 pt-4 upazila-matrix-section">
+      <section id="sec-upazilas" className="scroll-mt-[calc(var(--navbar-height)+8px)] space-y-4 pt-4 upazila-matrix-section">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-carbon-20 pb-3">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600">
+            <div className="w-8 h-8 bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600">
               <Layers className="w-4 h-4" />
             </div>
             <div>
@@ -1778,33 +1633,33 @@ export const DistrictDetailPage: React.FC = () => {
           </div>
           <div className="flex items-center gap-2 self-start sm:self-auto">
             {/* View Mode Toggle for Screen */}
-            <div className="flex items-center bg-carbon-10 p-1 rounded-xl text-xs font-bold screen-only">
+            <div className="flex items-center bg-carbon-10 p-1 text-xs font-bold screen-only">
               <button
                 onClick={() => setUpazilaViewMode('cards')}
-                className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
-                  upazilaViewMode === 'cards' ? 'bg-white text-carbon-90 shadow-2xs font-extrabold' : 'text-carbon-60 hover:text-carbon-black'
+                className={`px-3 py-1 transition-all cursor-pointer ${
+                  upazilaViewMode === 'cards' ? 'bg-white text-carbon-90 font-extrabold' : 'text-carbon-60 hover:text-carbon-black'
                 }`}
               >
                 Cards View
               </button>
               <button
                 onClick={() => setUpazilaViewMode('table')}
-                className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
-                  upazilaViewMode === 'table' ? 'bg-white text-carbon-90 shadow-2xs font-extrabold' : 'text-carbon-60 hover:text-carbon-black'
+                className={`px-3 py-1 transition-all cursor-pointer ${
+                  upazilaViewMode === 'table' ? 'bg-white text-carbon-90 font-extrabold' : 'text-carbon-60 hover:text-carbon-black'
                 }`}
               >
                 Table View
               </button>
             </div>
-            <span className="text-[11px] font-mono text-carbon-60 bg-carbon-10 px-2.5 py-1 rounded-lg">
+            <span className="text-xs font-mono text-carbon-60 bg-carbon-10 px-2.5 py-1">
               {processedUpazilas.length} UPAZILAS LISTED
             </span>
-            <span className="text-[11px] font-mono text-carbon-60 bg-carbon-10 px-2.5 py-1 rounded-lg">SECTION IV</span>
+            <span className="text-xs font-mono text-carbon-60 bg-carbon-10 px-2.5 py-1">SECTION IV</span>
           </div>
         </div>
 
         {/* Filter Controls Bar */}
-        <div className="bg-white border border-carbon-20 rounded-2xl p-4 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4 screen-only">
+        <div className="bg-white border border-carbon-20 p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 screen-only">
           <div className="flex flex-wrap items-center gap-2">
             <div className="relative w-full min-w-0 sm:min-w-[200px] sm:w-auto">
               <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-carbon-60" />
@@ -1813,7 +1668,7 @@ export const DistrictDetailPage: React.FC = () => {
                 placeholder="Filter upazilas..."
                 value={upazilaSearch}
                 onChange={(e) => setUpazilaSearch(e.target.value)}
-                className="w-full pl-8 pr-3 py-1.5 text-xs bg-carbon-05 border border-carbon-20 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
+                className="w-full pl-8 pr-3 py-1.5 text-xs bg-carbon-05 border border-carbon-20 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
               />
             </div>
 
@@ -1823,9 +1678,9 @@ export const DistrictDetailPage: React.FC = () => {
                 <button
                   key={filterVal}
                   onClick={() => setUpazilaFilter(filterVal)}
-                  className={`px-3 py-1.5 rounded-xl font-bold transition-all cursor-pointer ${
+                  className={`px-3 py-1.5 font-bold transition-all cursor-pointer ${
                     upazilaFilter === filterVal
-                      ? 'bg-carbon-90 text-white shadow-2xs'
+                      ? 'bg-carbon-90 text-white'
                       : 'bg-carbon-10 text-carbon-60 hover:bg-carbon-20'
                   }`}
                 >
@@ -1842,7 +1697,7 @@ export const DistrictDetailPage: React.FC = () => {
             <select
               value={upazilaSortBy}
               onChange={(e: any) => setUpazilaSortBy(e.target.value)}
-              className="bg-carbon-05 border border-carbon-20 rounded-xl px-2.5 py-1.5 text-xs font-bold text-carbon-80 focus:outline-none cursor-pointer"
+              className="bg-carbon-05 border border-carbon-20 px-2.5 py-1.5 text-xs font-bold text-carbon-80 focus:outline-none cursor-pointer"
             >
               <option value="severity">Severity Score (Highest)</option>
               <option value="households">Affected Households</option>
@@ -1855,28 +1710,28 @@ export const DistrictDetailPage: React.FC = () => {
         {(upazilaViewMode === 'cards' || typeof window === 'undefined') ? (
           <div className="upazila-grid grid grid-cols-1 md:grid-cols-2 gap-4">
             {processedUpazilas.length === 0 ? (
-              <div className="col-span-2 py-8 text-center text-carbon-60 bg-white border border-carbon-20 rounded-2xl">
+              <div className="col-span-2 py-8 text-center text-carbon-60 bg-white border border-carbon-20">
                 No sub-districts matched the selected filter criteria.
               </div>
             ) : (
               processedUpazilas.map((up, idx) => (
                 <article
                   key={idx}
-                  className="upazila-card pagination-protected break-inside-avoid bg-white border border-carbon-20 rounded-2xl p-5 shadow-xs space-y-3 hover:border-carbon-30 transition-all flex flex-col justify-between"
+                  className="upazila-card pagination-protected break-inside-avoid bg-white border border-carbon-20 p-5 space-y-3 hover:border-carbon-30 transition-all flex flex-col justify-between"
                 >
                   {/* Card Header: Upazila Name + Geocode + Priority Badge */}
                   <div className="flex items-start justify-between gap-3 border-b border-carbon-10 pb-3">
                     <div>
                       <h3 className="font-extrabold text-carbon-black text-base flex items-center gap-2">
                         <span>{up.name}</span>
-                        <span className="text-[10px] font-mono text-carbon-60 font-normal">
+                        <span className="text-xs font-mono text-carbon-60 font-normal">
                           (GEO-{data.districtId.toUpperCase().slice(0, 3)}-{idx + 101})
                         </span>
                       </h3>
                       <div className="flex items-center gap-2 mt-1">
-                        <span className={`px-2.5 py-0.5 rounded-full text-[10.5px] font-mono font-black ${
-                          up.status === 'Critically Inundated' ? 'bg-rose-100 text-rose-800 border border-rose-200' :
-                          up.status === 'High Risk' ? 'bg-rose-50 text-rose-900 border border-rose-200' :
+                        <span className={`px-2.5 py-0.5 rounded-sm text-[10.5px] font-mono font-black ${
+                          up.status === 'Critically Inundated' ? 'bg-rose-100 text-rose-800 border border-carbon-20' :
+                          up.status === 'High Risk' ? 'bg-carbon-05 text-rose-900 border border-carbon-20' :
                           up.status === 'Moderate Impact' ? 'bg-amber-100 text-amber-900 border border-amber-200' :
                           'bg-blue-100 text-blue-800 border border-blue-200'
                         }`}>
@@ -1885,8 +1740,8 @@ export const DistrictDetailPage: React.FC = () => {
                       </div>
                     </div>
 
-                    <span className={`px-2.5 py-1 rounded-lg text-[10px] font-mono font-black tracking-wide shrink-0 ${
-                      up.severityScore >= 0.8 ? 'bg-rose-600 text-white' :
+                    <span className={`px-2.5 py-1 text-xs font-mono font-black tracking-wide shrink-0 ${
+                      up.severityScore >= 0.8 ? 'bg-nasa-red-shade text-white' :
                       up.severityScore >= 0.5 ? 'bg-amber-500 text-carbon-black font-bold' :
                       'bg-carbon-10 text-carbon-70'
                     }`}>
@@ -1896,37 +1751,37 @@ export const DistrictDetailPage: React.FC = () => {
 
                   {/* 4-Item Sub-Grid Metrics */}
                   <div className="grid grid-cols-2 gap-3 text-xs pt-1">
-                    <div className="bg-carbon-05 p-2.5 rounded-xl border border-carbon-10 space-y-1">
-                      <span className="text-[10px] font-mono text-carbon-60 font-bold uppercase block">Severity Score</span>
+                    <div className="bg-carbon-05 p-2.5 border border-carbon-10 space-y-1">
+                      <span className="text-xs font-mono text-carbon-60 font-bold uppercase block">Severity Score</span>
                       <div className="flex items-center justify-between">
                         <span className="text-base font-black text-carbon-90 font-mono">
                           {(up.severityScore * 100).toFixed(0)}%
                         </span>
-                        <span className="text-[10px] font-mono text-carbon-60">/ 100</span>
+                        <span className="text-xs font-mono text-carbon-60">/ 100</span>
                       </div>
-                      <div className="w-full bg-carbon-20 h-1.5 rounded-full overflow-hidden">
+                      <div className="w-full bg-carbon-20 h-1.5 rounded-sm overflow-hidden">
                         <div
-                          className={`h-full rounded-full ${
-                            up.severityScore >= 0.8 ? 'bg-rose-500' : up.severityScore >= 0.5 ? 'bg-amber-500' : 'bg-blue-500'
+                          className={`h-full rounded-sm ${
+                            up.severityScore >= 0.8 ? 'bg-nasa-green' : up.severityScore >= 0.5 ? 'bg-amber-500' : 'bg-blue-500'
                           }`}
                           style={{ width: `${up.severityScore * 100}%` }}
                         />
                       </div>
                     </div>
 
-                    <div className="bg-carbon-05 p-2.5 rounded-xl border border-carbon-10 space-y-1">
-                      <span className="text-[10px] font-mono text-carbon-60 font-bold uppercase block">Exposed Households</span>
+                    <div className="bg-carbon-05 p-2.5 border border-carbon-10 space-y-1">
+                      <span className="text-xs font-mono text-carbon-60 font-bold uppercase block">Exposed Households</span>
                       <div className="text-base font-black text-carbon-90 font-mono">
                         {up.householdsAffected.toLocaleString()}
                       </div>
-                      <div className="text-[10px] text-carbon-60 truncate">
+                      <div className="text-xs text-carbon-60 truncate">
                         Est. ~{(up.householdsAffected * 4.4).toLocaleString()} residents
                       </div>
                     </div>
                   </div>
 
                   {/* Action Directive Footnote */}
-                  <div className="pt-2 border-t border-carbon-10 flex items-center justify-between text-[11px] text-carbon-60 font-medium">
+                  <div className="pt-2 border-t border-carbon-10 flex items-center justify-between text-xs text-carbon-60 font-medium">
                     <span className="truncate">
                       {up.severityScore >= 0.8
                         ? 'Immediate relief boats & evacuation required'
@@ -1942,7 +1797,7 @@ export const DistrictDetailPage: React.FC = () => {
           </div>
         ) : (
           /* ALTERNATIVE TABLE VIEW (SCREEN-ONLY) */
-          <div className="bg-white border border-carbon-20 rounded-2xl shadow-xs overflow-hidden screen-only">
+          <div className="bg-white border border-carbon-20 overflow-hidden screen-only">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
                 <thead>
@@ -1959,11 +1814,11 @@ export const DistrictDetailPage: React.FC = () => {
                     <tr key={idx} className="hover:bg-carbon-05/80 transition-colors">
                       <td className="py-4 px-5">
                         <div className="font-bold text-carbon-90 text-sm">{up.name}</div>
-                        <div className="text-[11px] text-carbon-60 font-mono">Geocode: {data.districtId}-{idx + 101}</div>
+                        <div className="text-xs text-carbon-60 font-mono">Geocode: {data.districtId}-{idx + 101}</div>
                       </td>
                       <td className="py-4 px-4">
-                        <span className={`px-2.5 py-1 rounded-full text-[11px] font-mono font-extrabold ${
-                          up.status === 'Critically Inundated' ? 'bg-rose-100 text-rose-800 border border-rose-200' :
+                        <span className={`px-2.5 py-1 rounded-sm text-xs font-mono font-extrabold ${
+                          up.status === 'Critically Inundated' ? 'bg-rose-100 text-rose-800 border border-carbon-20' :
                           up.status === 'High Risk' ? 'bg-amber-100 text-amber-900 border border-amber-200' :
                           'bg-blue-100 text-blue-800 border border-blue-200'
                         }`}>
@@ -1972,10 +1827,10 @@ export const DistrictDetailPage: React.FC = () => {
                       </td>
                       <td className="py-4 px-4">
                         <div className="flex items-center gap-2">
-                          <div className="w-20 bg-carbon-10 h-2 rounded-full overflow-hidden">
+                          <div className="w-20 bg-carbon-10 h-2 rounded-sm overflow-hidden">
                             <div
-                              className={`h-full rounded-full ${
-                                up.severityScore >= 0.8 ? 'bg-rose-500' : up.severityScore >= 0.5 ? 'bg-amber-500' : 'bg-blue-500'
+                              className={`h-full rounded-sm ${
+                                up.severityScore >= 0.8 ? 'bg-nasa-green' : up.severityScore >= 0.5 ? 'bg-amber-500' : 'bg-blue-500'
                               }`}
                               style={{ width: `${up.severityScore * 100}%` }}
                             />
@@ -1989,8 +1844,8 @@ export const DistrictDetailPage: React.FC = () => {
                         {up.householdsAffected.toLocaleString()} families
                       </td>
                       <td className="py-4 px-5 text-right">
-                        <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold font-mono ${
-                          up.severityScore >= 0.8 ? 'bg-rose-600 text-white' :
+                        <span className={`inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold font-mono ${
+                          up.severityScore >= 0.8 ? 'bg-nasa-red-shade text-white' :
                           up.severityScore >= 0.5 ? 'bg-amber-100 text-amber-900' :
                           'bg-carbon-10 text-carbon-70'
                         }`}>
@@ -2009,10 +1864,10 @@ export const DistrictDetailPage: React.FC = () => {
       {/* ========================================================================= */}
       {/* SECTION 5: INSTITUTIONAL DIRECTIVES & AGRICULTURAL ADVISORIES */}
       {/* ========================================================================= */}
-      <section id="sec-advisories" className="space-y-4 pt-4 pagination-protected">
+      <section id="sec-advisories" className="scroll-mt-[calc(var(--navbar-height)+8px)] space-y-4 pt-4 pagination-protected">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-carbon-20 pb-3">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600">
+            <div className="w-8 h-8 bg-carbon-05 border border-carbon-20 flex items-center justify-center text-carbon-80">
               <ShieldCheck className="w-4 h-4" />
             </div>
             <div>
@@ -2023,31 +1878,31 @@ export const DistrictDetailPage: React.FC = () => {
           <div className="flex items-center gap-2 self-start sm:self-auto">
             <button
               onClick={() => setShowLiveAiAdvisory(!showLiveAiAdvisory)}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer screen-only ${
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold transition-all cursor-pointer screen-only ${
                 showLiveAiAdvisory
-                  ? 'bg-amber-500 text-carbon-black shadow-xs'
+                  ? 'bg-amber-500 text-carbon-black'
                   : 'bg-white border border-carbon-20 text-carbon-70 hover:bg-carbon-05 hover:text-carbon-90'
               }`}
             >
               <Sparkles className="w-3.5 h-3.5 text-amber-600" />
               <span>{showLiveAiAdvisory ? 'Hide AI Synthesizer' : 'Synthesize Gemini AI Advisory'}</span>
             </button>
-            <span className="text-[11px] font-mono text-carbon-60 bg-carbon-10 px-2.5 py-1 rounded-lg">SECTION V</span>
+            <span className="text-xs font-mono text-carbon-60 bg-carbon-10 px-2.5 py-1">SECTION V</span>
           </div>
         </div>
 
         {/* Live AI Advisory Synthesizer (When toggled) */}
         {showLiveAiAdvisory && (
-          <div className="bg-carbon-90 text-white rounded-3xl p-6 sm:p-8 shadow-md border border-carbon-80 space-y-4 screen-only">
+          <div className="bg-carbon-90 text-white p-6 sm:p-8 border border-carbon-80 space-y-4 screen-only">
             <div className="flex items-center justify-between border-b border-carbon-80 pb-4">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-amber-400/20 border border-amber-400/30 flex items-center justify-center text-amber-400">
+                <div className="w-8 h-8 bg-amber-400/20 border border-amber-400/30 flex items-center justify-center text-amber-400">
                   <Bot className="w-4 h-4" />
                 </div>
                 <div>
                   <h3 className="text-sm font-bold text-white flex items-center gap-2">
                     <span>Gemini 2.5 Dynamic Advisory Engine</span>
-                    <span className="px-2 py-0.5 rounded-md bg-amber-400/20 text-amber-300 text-[10px] font-mono font-bold">ONLINE</span>
+                    <span className="px-2 py-0.5 rounded-sm bg-amber-400/20 text-amber-300 text-xs font-mono font-bold">ONLINE</span>
                   </h3>
                   <p className="text-xs text-carbon-60">Real-time LLM inference synthesizing localized meteorological & agrarian guidance.</p>
                 </div>
@@ -2072,7 +1927,7 @@ export const DistrictDetailPage: React.FC = () => {
             <h2 className="text-base font-bold text-carbon-80 dark:text-carbon-10">
               Live Weather — {data.districtName}
             </h2>
-            <span className="text-[11px] font-mono text-carbon-60 ml-auto">
+            <span className="text-xs font-mono text-carbon-60 ml-auto">
               {weather.loading && !weather.data ? 'Loading…' : weather.error ? 'Unavailable' : 'Open-Meteo 16-day'}
             </span>
           </div>
@@ -2084,7 +1939,7 @@ export const DistrictDetailPage: React.FC = () => {
               error={weather.error}
             />
           ) : weather.error ? (
-            <div className="rounded-xl border border-amber-200 bg-amber-50 text-amber-900 px-4 py-3 text-sm flex items-start gap-2">
+            <div className="border border-amber-200 bg-amber-50 text-amber-900 px-4 py-3 text-sm flex items-start gap-2">
               <AlertTriangle size={16} className="mt-0.5 shrink-0" />
               <div>
                 <div className="font-semibold">Weather data temporarily unavailable</div>
@@ -2092,11 +1947,11 @@ export const DistrictDetailPage: React.FC = () => {
               </div>
             </div>
           ) : (
-            <div className="rounded-xl border border-carbon-20 bg-white p-6 animate-pulse">
-              <div className="h-20 bg-carbon-10 rounded-lg mb-3" />
+            <div className="border border-carbon-20 bg-white p-6 animate-pulse">
+              <div className="h-20 bg-carbon-10 mb-3" />
               <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                 {Array.from({ length: 8 }).map((_, i) => (
-                  <div key={i} className="h-14 bg-carbon-10 rounded-lg" />
+                  <div key={i} className="h-14 bg-carbon-10" />
                 ))}
               </div>
             </div>
@@ -2105,9 +1960,9 @@ export const DistrictDetailPage: React.FC = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Actionable Protocol Cards (2 cols) */}
-          <div className="bg-white border border-carbon-20 rounded-2xl p-6 shadow-xs space-y-4 lg:col-span-2">
+          <div className="bg-white border border-carbon-20 p-6 space-y-4 lg:col-span-2">
             <div className="flex items-center justify-between">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-mono font-bold">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-sm bg-carbon-05 border border-carbon-20 text-carbon-80 text-xs font-mono font-bold">
                 <ShieldCheck className="w-3.5 h-3.5" />
                 <span>BRRI & DAE ACTION DIRECTIVES</span>
               </div>
@@ -2119,9 +1974,9 @@ export const DistrictDetailPage: React.FC = () => {
               {data.emergencyResponse.advisoryBullets.map((bullet, idx) => (
                 <div
                   key={idx}
-                  className="bg-carbon-05 border border-carbon-20/90 border-l-4 border-l-emerald-500 rounded-xl p-4 sm:p-5 flex flex-wrap items-start gap-4 hover:border-carbon-30 transition-colors shadow-2xs"
+                  className="bg-carbon-05 border border-carbon-20/90 border-l-4 border-l-emerald-500 p-4 sm:p-5 flex flex-wrap items-start gap-4 hover:border-carbon-30 transition-colors"
                 >
-                  <span className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-800 font-mono text-sm flex items-center justify-center shrink-0 font-extrabold mt-0.5 shadow-2xs border border-emerald-300">
+                  <span className="w-8 h-8 rounded-sm bg-carbon-10 text-carbon-80 font-mono text-sm flex items-center justify-center shrink-0 font-extrabold mt-0.5 border border-carbon-20">
                     {idx + 1}
                   </span>
                   <div className="flex-1 text-sm sm:text-[15px] text-carbon-80 leading-relaxed font-normal">
@@ -2131,7 +1986,7 @@ export const DistrictDetailPage: React.FC = () => {
                       shrink-0, so on a 375px phone it used to push the whole
                       document 20px into horizontal scroll. On its own line it
                       costs nothing. */}
-                  <span className="shrink-0 basis-full sm:basis-auto px-2.5 py-1 bg-white border border-carbon-20 rounded-md text-[10px] font-mono font-extrabold text-carbon-60">
+                  <span className="shrink-0 basis-full sm:basis-auto px-2.5 py-1 bg-white border border-carbon-20 rounded-sm text-xs font-mono font-extrabold text-carbon-60">
                     DAE/BRRI Official Protocol
                   </span>
                 </div>
@@ -2140,10 +1995,10 @@ export const DistrictDetailPage: React.FC = () => {
           </div>
 
           {/* Quick Guidance Box & Recommended Varieties (1 col) */}
-          <div className="b-20 rounded-2xl p-6 shadow-xs space-y-4 flex flex-col justify-between">
+          <div className="b-20 p-6 space-y-4 flex flex-col justify-between">
             <div className="space-y-3">
               <h3 className="text-sm font-bold text-carbon-90 flex items-center gap-2">
-                <Sprout className="w-4 h-4 text-emerald-600" />
+                <Sprout className="w-4 h-4 text-carbon-80" />
                 Recommended Crop Stress Varieties
               </h3>
               <p className="text-xs text-carbon-60 leading-relaxed">
@@ -2151,18 +2006,18 @@ export const DistrictDetailPage: React.FC = () => {
               </p>
 
               <div className="space-y-2.5 pt-1">
-                <div className="bg-emerald-50/70 border border-emerald-200 rounded-xl p-3.5 text-xs space-y-1">
+                <div className="bg-carbon-05 border border-carbon-20 p-3.5 text-xs space-y-1">
                   <strong className="font-bold text-emerald-950">Submergence Tolerant Rice:</strong>
                   <div className="text-carbon-70 font-mono">BRRI dhan51, BRRI dhan52, BINA dhan-11 (Survives 14-21 days waterlogged)</div>
                 </div>
-                <div className="bg-amber-50/70 border border-amber-200 rounded-xl p-3.5 text-xs space-y-1">
+                <div className="bg-amber-50/70 border border-amber-200 p-3.5 text-xs space-y-1">
                   <strong className="font-bold text-amber-950">Saline/Drought Tolerant:</strong>
                   <div className="text-carbon-70 font-mono">BRRI dhan67, BRRI dhan56, BINA dhan-8</div>
                 </div>
               </div>
             </div>
 
-            <div className="pt-3 border-t border-carbon-10 text-[11px] text-carbon-60">
+            <div className="pt-3 border-t border-carbon-10 text-xs text-carbon-60">
               Department of Agricultural Extension Hotline: <strong className="font-mono text-carbon-80">16123</strong>
             </div>
           </div>
@@ -2172,10 +2027,10 @@ export const DistrictDetailPage: React.FC = () => {
       {/* ========================================================================= */}
       {/* SECTION 6: HISTORICAL CLIMATIC HAZARDS DATASET & BENCHMARKS (2000–2026) */}
       {/* ========================================================================= */}
-      <section id="sec-history" className="space-y-4 pt-4 pagination-protected">
+      <section id="sec-history" className="scroll-mt-[calc(var(--navbar-height)+8px)] space-y-4 pt-4 pagination-protected">
         <div className="flex items-center justify-between border-b border-carbon-20 pb-3">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-700">
+            <div className="w-8 h-8 bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-700">
               <History className="w-4 h-4" />
             </div>
             <div>
@@ -2183,10 +2038,10 @@ export const DistrictDetailPage: React.FC = () => {
               <p className="text-xs text-carbon-60">Verified empirical disaster records from BGD_climatic_hazards_dataset_2000_2026.csv cross-referenced with HazardNet forecast tensors.</p>
             </div>
           </div>
-          <span className="text-[11px] font-mono text-blue-700 bg-blue-50 border border-blue-200 px-2.5 py-1 rounded-lg font-bold">SECTION VI</span>
+          <span className="text-xs font-mono text-blue-700 bg-blue-50 border border-blue-200 px-2.5 py-1 font-bold">SECTION VI</span>
         </div>
 
-        <div className="bg-white border border-carbon-20 rounded-2xl p-6 sm:p-8 shadow-xs space-y-6">
+        <div className="bg-white border border-carbon-20 p-6 sm:p-8 space-y-6">
           {/* Historical Narrative */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
@@ -2211,45 +2066,45 @@ export const DistrictDetailPage: React.FC = () => {
                 </div>
               )}
             </div>
-            <p className="text-sm text-carbon-80 leading-relaxed font-medium bg-carbon-05 p-4 rounded-xl border border-carbon-20/80">
+            <p className="text-sm text-carbon-80 leading-relaxed font-medium bg-carbon-05 p-4 border border-carbon-20/80">
               {data.historicalComparison} {climaticEventsData && `Historical analysis of ${climaticEventsData.totalEvents} recorded disaster events between 2000 and 2026 confirms ${climaticEventsData.primaryHazard} as the primary catastrophic threat for ${data.districtName}, peaking notably during seasonal monsoon and pre-monsoon transitions.`}
             </p>
           </div>
 
           {/* 4 Quantitative Metrics Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-carbon-05 p-4 rounded-xl border border-carbon-20/80 space-y-1">
-              <span className="text-[10px] font-mono text-carbon-60 font-bold uppercase">Recorded Historical Events</span>
+            <div className="bg-carbon-05 p-4 border border-carbon-20/80 space-y-1">
+              <span className="text-xs font-mono text-carbon-60 font-bold uppercase">Recorded Historical Events</span>
               <div className="text-2xl font-black text-blue-700">
                 {climaticEventsData ? `${climaticEventsData.totalEvents} Events` : 'Analyzing...'}
               </div>
-              <span className="text-[11px] text-carbon-60">Verified in BGD Dataset (2000–2026)</span>
+              <span className="text-xs text-carbon-60">Verified in BGD Dataset (2000–2026)</span>
             </div>
 
-            <div className="bg-carbon-05 p-4 rounded-xl border border-carbon-20/80 space-y-1">
-              <span className="text-[10px] font-mono text-carbon-60 font-bold uppercase">Primary Historical Threat</span>
+            <div className="bg-carbon-05 p-4 border border-carbon-20/80 space-y-1">
+              <span className="text-xs font-mono text-carbon-60 font-bold uppercase">Primary Historical Threat</span>
               <div className="text-2xl font-black text-amber-700 truncate">
                 {climaticEventsData ? climaticEventsData.primaryHazard : district.hazardType}
               </div>
-              <span className="text-[11px] text-carbon-60">Dominant hazard frequency</span>
+              <span className="text-xs text-carbon-60">Dominant hazard frequency</span>
             </div>
 
-            <div className="bg-carbon-05 p-4 rounded-xl border border-carbon-20/80 space-y-1">
-              <span className="text-[10px] font-mono text-carbon-60 font-bold uppercase">Active Forecast Warnings</span>
+            <div className="bg-carbon-05 p-4 border border-carbon-20/80 space-y-1">
+              <span className="text-xs font-mono text-carbon-60 font-bold uppercase">Active Forecast Warnings</span>
               <div className="text-2xl font-black text-carbon-90">
                 {climaticEventsData ? `${climaticEventsData.forecasts.length} Active` : `${districtForecasts7D.length + districtForecasts15D.length} Records`}
               </div>
-              <span className="text-[11px] text-carbon-60">From hazardnet_forecasts_latest.csv</span>
+              <span className="text-xs text-carbon-60">From hazardnet_forecasts_latest.csv</span>
             </div>
 
-            <div className="bg-carbon-05 p-4 rounded-xl border border-carbon-20/80 space-y-1">
-              <span className="text-[10px] font-mono text-carbon-60 font-bold uppercase">Peak Historical Severity</span>
+            <div className="bg-carbon-05 p-4 border border-carbon-20/80 space-y-1">
+              <span className="text-xs font-mono text-carbon-60 font-bold uppercase">Peak Historical Severity</span>
               <div className="text-2xl font-black text-rose-700">
                 {climaticEventsData && climaticEventsData.allEvents.length > 0
                   ? Math.max(...climaticEventsData.allEvents.map(e => e.severity || 1)).toFixed(2)
                   : '3.40'} / 5.0
               </div>
-              <span className="text-[11px] text-carbon-60">Max impact score in records</span>
+              <span className="text-xs text-carbon-60">Max impact score in records</span>
             </div>
           </div>
 
@@ -2257,16 +2112,16 @@ export const DistrictDetailPage: React.FC = () => {
           {climaticEventsData && climaticEventsData.allEvents.length > 0 && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-2">
               {/* Chart 1: Multi-Year Historical Trend */}
-              <div className="border border-carbon-20 rounded-xl p-5 bg-white space-y-3">
+              <div className="border border-carbon-20 p-5 bg-white space-y-3">
                 <div className="flex items-center justify-between pb-2 border-b border-carbon-10">
                   <div>
                     <h4 className="text-xs font-bold text-carbon-90 flex items-center gap-1.5">
                       <TrendingUp className="w-3.5 h-3.5 text-blue-600" />
                       Multi-Year Disaster Frequency (2000–2026)
                     </h4>
-                    <p className="text-[11px] text-carbon-60">Annual count of documented disaster events in {data.districtName}</p>
+                    <p className="text-xs text-carbon-60">Annual count of documented disaster events in {data.districtName}</p>
                   </div>
-                  <span className="text-[10px] font-mono bg-blue-50 text-blue-700 px-2 py-0.5 rounded font-bold">
+                  <span className="text-xs font-mono bg-blue-50 text-blue-700 px-2 py-0.5 rounded font-bold">
                     {climaticEventsData.totalEvents} Total
                   </span>
                 </div>
@@ -2286,14 +2141,14 @@ export const DistrictDetailPage: React.FC = () => {
               </div>
 
               {/* Chart 2: Monthly Seasonality Curve */}
-              <div className="border border-carbon-20 rounded-xl p-5 bg-white space-y-3">
+              <div className="border border-carbon-20 p-5 bg-white space-y-3">
                 <div className="flex items-center justify-between pb-2 border-b border-carbon-10">
                   <div>
                     <h4 className="text-xs font-bold text-carbon-90 flex items-center gap-1.5">
                       <Calendar className="w-3.5 h-3.5 text-amber-600" />
                       Seasonal Vulnerability Profile (Jan–Dec)
                     </h4>
-                    <p className="text-[11px] text-carbon-60">Historical event distribution across calendar months</p>
+                    <p className="text-xs text-carbon-60">Historical event distribution across calendar months</p>
                   </div>
                 </div>
                 <div className="h-56 w-full pt-2">
@@ -2328,18 +2183,18 @@ export const DistrictDetailPage: React.FC = () => {
                     <Layers className="w-3.5 h-3.5 text-blue-600" />
                     Verified Historical Event Records for {data.districtName} (2000–2026)
                   </h4>
-                  <p className="text-[11px] text-carbon-60">
+                  <p className="text-xs text-carbon-60">
                     Showing {climaticEventsData.allEvents.filter(e => eventHazardFilter === 'all' || e.hazard === eventHazardFilter).length} recorded incidents
                   </p>
                 </div>
 
                 {/* Filter by hazard */}
                 <div className="flex items-center gap-2">
-                  <span className="text-[11px] text-carbon-60 font-medium">Filter Hazard:</span>
+                  <span className="text-xs text-carbon-60 font-medium">Filter Hazard:</span>
                   <select
                     value={eventHazardFilter}
                     onChange={(e) => setEventHazardFilter(e.target.value)}
-                    className="py-1 px-2 text-xs border border-carbon-20 rounded-lg bg-carbon-05 text-carbon-80 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="py-1 px-2 text-xs border border-carbon-20 bg-carbon-05 text-carbon-80 focus:outline-none focus:ring-1 focus:ring-blue-500"
                   >
                     <option value="all">All Hazards ({climaticEventsData.totalEvents})</option>
                     {climaticEventsData.hazardBreakdown.map(h => (
@@ -2374,7 +2229,7 @@ export const DistrictDetailPage: React.FC = () => {
                               <td className="p-2.5 font-semibold text-blue-700">{event.hazard}</td>
                               <td className="p-2.5 font-mono text-carbon-60 whitespace-nowrap">{event.glide || '—'}</td>
                               <td className="p-2.5 font-bold">
-                                <span className={`px-2 py-0.5 rounded text-[10px] ${
+                                <span className={`px-2 py-0.5 rounded text-xs ${
                                   event.severity >= 3.0 ? 'bg-red-50 text-red-700 border border-red-200' :
                                   event.severity >= 2.0 ? 'bg-amber-50 text-amber-700 border border-amber-200' :
                                   'bg-carbon-10 text-carbon-70'
@@ -2395,8 +2250,8 @@ export const DistrictDetailPage: React.FC = () => {
                             {isExpanded && (
                               <tr className="bg-blue-50/20">
                                 <td colSpan={6} className="p-3 border-b border-carbon-20">
-                                  <div className="bg-white border border-carbon-20 rounded-xl p-3 text-xs space-y-1.5">
-                                    <div className="flex items-center justify-between text-carbon-60 border-b border-carbon-10 pb-1 text-[11px]">
+                                  <div className="bg-white border border-carbon-20 p-3 text-xs space-y-1.5">
+                                    <div className="flex items-center justify-between text-carbon-60 border-b border-carbon-10 pb-1 text-xs">
                                       <span><strong>ID:</strong> {event.id}</span>
                                       <span><strong>Coordinates:</strong> {event.lat.toFixed(4)}, {event.lng.toFixed(4)}</span>
                                       <span><strong>GLIDE:</strong> {event.glide || 'N/A'}</span>
@@ -2422,10 +2277,10 @@ export const DistrictDetailPage: React.FC = () => {
       {/* ========================================================================= */}
       {/* SECTION 7: EMERGENCY OPERATIONS, LOGISTICS & DISPATCH COMMAND */}
       {/* ========================================================================= */}
-      <section id="sec-ops" className="space-y-4 pt-4 pagination-protected">
+      <section id="sec-ops" className="scroll-mt-[calc(var(--navbar-height)+8px)] space-y-4 pt-4 pagination-protected">
         <div className="flex items-center justify-between border-b border-carbon-20 pb-3">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-rose-50 border border-rose-200 flex items-center justify-center text-rose-600">
+            <div className="w-8 h-8 bg-carbon-05 border border-carbon-20 flex items-center justify-center text-nasa-red-shade">
               <Radio className="w-4 h-4" />
             </div>
             <div>
@@ -2433,63 +2288,63 @@ export const DistrictDetailPage: React.FC = () => {
               <p className="text-xs text-carbon-60">Resource deployments, shelter logistics, and instant authority dispatch transmission.</p>
             </div>
           </div>
-          <span className="text-[11px] font-mono text-carbon-60 bg-carbon-10 px-2.5 py-1 rounded-lg">SECTION VII</span>
+          <span className="text-xs font-mono text-carbon-60 bg-carbon-10 px-2.5 py-1">SECTION VII</span>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Logistics Summary with Standardized Color Coding */}
-          <div className="bg-white border border-carbon-20 rounded-2xl p-6 shadow-xs space-y-4">
+          <div className="bg-white border border-carbon-20 p-6 space-y-4">
             <h3 className="text-sm font-bold text-carbon-90 flex items-center gap-2">
-              <Building2 className="w-4 h-4 text-rose-600" />
+              <Building2 className="w-4 h-4 text-nasa-red-shade" />
               Emergency Relief & Resource Logistics
             </h3>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
               {/* Active Safe Shelters - Emerald (#059669) for resources, Amber (#f59e0b) for occupancy */}
-              <div className="bg-carbon-05 p-4 rounded-xl border border-carbon-20/80 space-y-1">
+              <div className="bg-carbon-05 p-4 border border-carbon-20/80 space-y-1">
                 <span className="text-carbon-60 font-medium">Active Safe Shelters</span>
-                <div className="text-xl font-bold text-emerald-700 font-mono">{data.emergencyResponse.activeShelters} Facilities</div>
-                <span className="text-[11px] font-mono text-amber-700 font-bold">{data.emergencyResponse.shelterCapacityUsedPercent}% occupied</span>
+                <div className="text-xl font-bold text-carbon-80 font-mono">{data.emergencyResponse.activeShelters} Facilities</div>
+                <span className="text-xs font-mono text-amber-700 font-bold">{data.emergencyResponse.shelterCapacityUsedPercent}% occupied</span>
               </div>
 
               {/* Relief Grain Allocated - Emerald (#059669) */}
-              <div className="bg-carbon-05 p-4 rounded-xl border border-carbon-20/80 space-y-1">
+              <div className="bg-carbon-05 p-4 border border-carbon-20/80 space-y-1">
                 <span className="text-carbon-60 font-medium">Relief Grain Allocated</span>
-                <div className="text-xl font-bold text-emerald-700 font-mono">{data.emergencyResponse.reliefDistributedTons} Metric Tons</div>
-                <span className="text-[11px] text-carbon-60">Rice, lentils & dry provisions</span>
+                <div className="text-xl font-bold text-carbon-80 font-mono">{data.emergencyResponse.reliefDistributedTons} Metric Tons</div>
+                <span className="text-xs text-carbon-60">Rice, lentils & dry provisions</span>
               </div>
 
               {/* Rapid Medical Teams - Blue (#2563eb) */}
-              <div className="bg-carbon-05 p-4 rounded-xl border border-carbon-20/80 space-y-1">
+              <div className="bg-carbon-05 p-4 border border-carbon-20/80 space-y-1">
                 <span className="text-carbon-60 font-medium">Rapid Medical Teams</span>
                 <div className="text-xl font-bold text-blue-600 font-mono">{data.emergencyResponse.medicalTeamsDeployed} Mobile Units</div>
-                <span className="text-[11px] text-carbon-60">Equipped with IV & ORS</span>
+                <span className="text-xs text-carbon-60">Equipped with IV & ORS</span>
               </div>
 
               {/* Water Purification Units - Emerald (#059669) */}
-              <div className="bg-carbon-05 p-4 rounded-xl border border-carbon-20/80 space-y-1">
+              <div className="bg-carbon-05 p-4 border border-carbon-20/80 space-y-1">
                 <span className="text-carbon-60 font-medium">Water Purification Units</span>
-                <div className="text-xl font-bold text-emerald-700 font-mono">12 Mobile Vans</div>
-                <span className="text-[11px] text-carbon-60">20,000 L/hr capacity</span>
+                <div className="text-xl font-bold text-carbon-80 font-mono">12 Mobile Vans</div>
+                <span className="text-xs text-carbon-60">20,000 L/hr capacity</span>
               </div>
             </div>
           </div>
 
           {/* Emergency Hotline & Interactive Dispatch Console */}
-          <div className="bg-white border border-carbon-20 rounded-2xl p-6 shadow-xs space-y-4 flex flex-col justify-between">
+          <div className="bg-white border border-carbon-20 p-6 space-y-4 flex flex-col justify-between">
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-bold text-carbon-90 flex items-center gap-2">
-                  <PhoneCall className="w-4 h-4 text-emerald-600" />
+                  <PhoneCall className="w-4 h-4 text-carbon-80" />
                   National Emergency Hotlines
                 </h3>
-                <span className="text-[11px] font-mono text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded">24/7 ACTIVE</span>
+                <span className="text-xs font-mono text-carbon-80 font-bold bg-carbon-05 px-2 py-0.5 rounded">24/7 ACTIVE</span>
               </div>
 
-              <div className="bg-carbon-05 p-4 rounded-xl border border-carbon-20/80 text-xs font-mono space-y-2">
+              <div className="bg-carbon-05 p-4 border border-carbon-20/80 text-xs font-mono space-y-2">
                 <div className="flex justify-between items-center text-carbon-90 font-bold">
                   <span>Disaster Early Warning (BMD/FFWC):</span>
-                  <span className="text-rose-600 text-sm">1090 (Toll Free)</span>
+                  <span className="text-nasa-red-shade text-sm">1090 (Toll Free)</span>
                 </div>
                 <div className="flex justify-between items-center text-carbon-90 font-bold">
                   <span>National Emergency Police/Fire:</span>
@@ -2497,7 +2352,7 @@ export const DistrictDetailPage: React.FC = () => {
                 </div>
                 <div className="flex justify-between items-center text-carbon-90 font-bold">
                   <span>Krishi Call Center (DAE):</span>
-                  <span className="text-emerald-700 text-sm">16123</span>
+                  <span className="text-carbon-80 text-sm">16123</span>
                 </div>
                 <div className="flex justify-between items-center text-carbon-60 pt-1.5 border-t border-carbon-20/60">
                   <span>{data.districtName} DC Control Desk:</span>
@@ -2511,7 +2366,7 @@ export const DistrictDetailPage: React.FC = () => {
               <button
                 onClick={handleTriggerDispatch}
                 disabled={dispatchStatus === 'broadcasting'}
-                className="w-full py-3 px-4 rounded-xl bg-rose-600 hover:bg-rose-700 active:bg-rose-800 text-white font-extrabold text-xs transition-all flex items-center justify-center gap-2 shadow-xs cursor-pointer disabled:opacity-50"
+                className="w-full py-3 px-4 bg-nasa-red-shade hover:bg-nasa-red active:bg-nasa-red-shade text-white font-extrabold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
               >
                 <Radio className={`w-4 h-4 ${dispatchStatus === 'broadcasting' ? 'animate-spin' : ''}`} />
                 <span>
@@ -2525,7 +2380,7 @@ export const DistrictDetailPage: React.FC = () => {
 
               {/* Logs */}
               {dispatchLogs.length > 0 && (
-                <div className="bg-carbon-90 text-carbon-20 p-3 rounded-xl text-[10px] font-mono space-y-1 max-h-24 overflow-y-auto">
+                <div className="bg-carbon-90 text-carbon-20 p-3 text-xs font-mono space-y-1 max-h-24 overflow-y-auto">
                   {dispatchLogs.map((log, i) => (
                     <div key={i} className="text-emerald-400">{log}</div>
                   ))}
@@ -2539,10 +2394,10 @@ export const DistrictDetailPage: React.FC = () => {
       {/* ========================================================================= */}
       {/* APPENDIX A: TECHNICAL METHODOLOGY & OPERATIONAL DIAGNOSTICS */}
       {/* ========================================================================= */}
-      <section id="appendix-a" className="print-appendix-break appendix-section pagination-protected space-y-4 pt-6">
+      <section id="appendix-a" className="scroll-mt-[calc(var(--navbar-height)+8px)] print-appendix-break appendix-section pagination-protected space-y-4 pt-6">
         <div className="flex items-center justify-between border-b-2 border-purple-900 pb-3">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-purple-100 border border-purple-300 flex items-center justify-center text-purple-900">
+            <div className="w-8 h-8 bg-carbon-10 border border-carbon-20 flex items-center justify-center text-carbon-90">
               <Cpu className="w-4.5 h-4.5" />
             </div>
             <div>
@@ -2554,26 +2409,26 @@ export const DistrictDetailPage: React.FC = () => {
               </p>
             </div>
           </div>
-          <span className="text-[11px] font-mono font-bold text-purple-900 bg-purple-100 px-2.5 py-1 rounded-lg">
+          <span className="text-xs font-mono font-bold text-carbon-90 bg-carbon-10 px-2.5 py-1">
             TECHNICAL AUDIT LOG
           </span>
         </div>
 
         {/* Inference Metrics Triad */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-white border border-carbon-20 rounded-2xl p-5 shadow-xs space-y-2">
+          <div className="bg-white border border-carbon-20 p-5 space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-mono font-bold text-purple-700 uppercase">Inference Latency</span>
-              <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-carbon-10 text-carbon-60">Not measured</span>
+              <span className="text-xs font-mono font-bold text-nasa-blue-shade uppercase">Inference Latency</span>
+              <span className="px-2 py-0.5 rounded text-xs font-mono font-bold bg-carbon-10 text-carbon-60">Not measured</span>
             </div>
             <div className="text-3xl font-black text-carbon-60 font-mono">—</div>
             <p className="text-xs text-carbon-60">Latencies for the daily pipeline are not measured on this page, so none is quoted.</p>
           </div>
 
-          <div className="bg-white border border-carbon-20 rounded-2xl p-5 shadow-xs space-y-2">
+          <div className="bg-white border border-carbon-20 p-5 space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-xs font-mono font-bold text-blue-700 uppercase">Calibration</span>
-              <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-50 text-amber-700">Not yet fitted</span>
+              <span className="px-2 py-0.5 rounded text-xs font-mono font-bold bg-amber-50 text-amber-700">Not yet fitted</span>
             </div>
             <div className="text-3xl font-black text-carbon-90 font-mono">—</div>
             <p className="text-xs text-carbon-60">
@@ -2583,10 +2438,10 @@ export const DistrictDetailPage: React.FC = () => {
             </p>
           </div>
 
-          <div className="bg-white border border-carbon-20 rounded-2xl p-5 shadow-xs space-y-2">
+          <div className="bg-white border border-carbon-20 p-5 space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-mono font-bold text-emerald-700 uppercase">Model Score</span>
-              <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-50 text-emerald-700">Softmax</span>
+              <span className="text-xs font-mono font-bold text-carbon-80 uppercase">Model Score</span>
+              <span className="px-2 py-0.5 rounded text-xs font-mono font-bold bg-carbon-05 text-carbon-80">Softmax</span>
             </div>
             <div className="text-3xl font-black text-carbon-90 font-mono">{data.modelAssessment.confidenceLevel}%</div>
             <p className="text-xs text-carbon-60">The classifier's own score for its chosen class — uncalibrated, and not an ensemble or ground-station agreement measure.</p>
@@ -2594,13 +2449,13 @@ export const DistrictDetailPage: React.FC = () => {
         </div>
 
         {/* Plain-English Methodology & Calibration Diagnostics */}
-        <div className="bg-white border border-carbon-20 rounded-2xl p-6 shadow-xs space-y-4 text-xs font-sans">
+        <div className="bg-white border border-carbon-20 p-6 space-y-4 text-xs font-sans">
           <h3 className="text-sm font-bold text-carbon-90 flex items-center gap-2">
-            <Bot className="w-4 h-4 text-purple-600" />
+            <Bot className="w-4 h-4 text-nasa-blue" />
             Model Architecture & Operational Methodology (Plain-English Summary)
           </h3>
 
-          <div className="bg-carbon-05 border border-carbon-20 rounded-xl p-4 sm:p-5 space-y-3.5 text-carbon-80 leading-relaxed">
+          <div className="bg-carbon-05 border border-carbon-20 p-4 sm:p-5 space-y-3.5 text-carbon-80 leading-relaxed">
             <div>
               <strong className="text-carbon-black font-bold block mb-1">[1] Satellite Image Analysis (ResNet-50 FPN):</strong>
               <p className="text-carbon-70">
@@ -2627,10 +2482,10 @@ export const DistrictDetailPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 text-[11px] text-carbon-60 font-mono">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 text-xs text-carbon-60 font-mono">
             <div>Engine: <strong className="text-carbon-80">HazardNet-Vision v3.4.1</strong></div>
             <div>Model Checkpoint: <strong className="text-carbon-80">tf-sar-ensemble-2026.08</strong></div>
-            <div>Verification: <strong className="text-emerald-700">Verified by DDMC Telemetry</strong></div>
+            <div>Verification: <strong className="text-carbon-80">Verified by DDMC Telemetry</strong></div>
           </div>
         </div>
       </section>
@@ -2638,35 +2493,35 @@ export const DistrictDetailPage: React.FC = () => {
       {/* ========================================================================= */}
       {/* FINAL PAGE: DEDICATED OFFICIAL END OF BRIEF PAGE (8px Typography) */}
       {/* ========================================================================= */}
-      <section className="end-of-brief-page print-end-of-brief mt-12 pt-8 text-[8px] font-mono text-carbon-80 space-y-4">
+      <section className="end-of-brief-page print-end-of-brief mt-12 pt-8 text-xs font-mono text-carbon-80 space-y-4">
         {/* 1. Horizontal Rule */}
         <hr className="border-t-2 border-carbon-90 w-full mb-4" />
 
         {/* 2. Centered Text: END OF INTELLIGENCE BRIEF */}
         <div className="text-center space-y-1">
-          <div className="text-[8px] font-black tracking-widest text-carbon-black uppercase font-mono">
+          <div className="text-xs font-black tracking-widest text-carbon-black uppercase font-mono">
             END OF INTELLIGENCE BRIEF
           </div>
-          <div className="text-[8px] text-carbon-60 font-medium">
+          <div className="text-xs text-carbon-60 font-medium">
             HazardNet Bangladesh • District Disaster Management Committee (DDMC) Operational Briefing
           </div>
         </div>
 
         {/* 3. Classification Notice: OFFICIAL USE ONLY */}
-        <div className="text-center py-2 px-4 bg-carbon-05 border border-carbon-30 rounded-lg max-w-xl mx-auto space-y-0.5">
-          <div className="text-[8px] font-black text-carbon-90 tracking-wider uppercase">
+        <div className="text-center py-2 px-4 bg-carbon-05 border border-carbon-30 max-w-xl mx-auto space-y-0.5">
+          <div className="text-xs font-black text-carbon-90 tracking-wider uppercase">
             OFFICIAL USE ONLY
           </div>
-          <div className="text-[8px] text-carbon-60">
+          <div className="text-xs text-carbon-60">
             DISTRIBUTION RESTRICTED TO AUTHORIZED DISASTER RESPONSE PERSONNEL ONLY
           </div>
-          <div className="text-[8px] text-carbon-60">
+          <div className="text-xs text-carbon-60">
             Ministry of Disaster Management and Relief (MoDMR) • Standing Orders on Disaster (SOD 2019) Compliant
           </div>
         </div>
 
         {/* 4. Version Control Timestamp & Node Metadata */}
-        <div className="text-center text-[8px] text-carbon-60 space-y-0.5 pt-2 border-t border-carbon-20 max-w-xl mx-auto">
+        <div className="text-center text-xs text-carbon-60 space-y-0.5 pt-2 border-t border-carbon-20 max-w-xl mx-auto">
           <div>
             Document Version: 1.0 • System Node: HNET-EOC-{data.districtId.toUpperCase().slice(0, 3)} • Auth Hash: 7F8E-2B4A-91C0 (PKI Verified)
           </div>
@@ -2675,11 +2530,11 @@ export const DistrictDetailPage: React.FC = () => {
           </div>
         </div>
       </section>
-    </main>
+      </div>
 
       {/* PRINT-ONLY FIXED RUNNING FOOTER WITH DYNAMIC CSS PAGE NUMBERING */}
-      <footer className="print-only print-page-footer py-1 text-[8px]">
-        <div className="flex items-center justify-between w-full text-[8px]">
+      <footer className="print-only print-page-footer py-1 text-xs">
+        <div className="flex items-center justify-between w-full text-xs">
           <span>HAZARDNET • SOD 2019 INTELLIGENCE BRIEF</span>
           <span>DISTRICT: {data.districtName.toUpperCase()} ({data.division.toUpperCase()} DIV)</span>
           <span className="print-page-number font-mono"></span>
