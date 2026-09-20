@@ -291,19 +291,14 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
       <div className="relative w-full h-full bg-transparent overflow-hidden flex flex-col font-sans text-carbon-90">
 
         {/*
-          Page title. This branch renders the map canvas with no heading at all, so
-          `/live`, `/home`, `/home/overview` and `/forecast/overview` had no `<h1>` —
-          the document outline started at an `h4` inside the district card, and the
-          main region had no accessible name for a screen reader. The chip is placed
-          in the map's top-left dead space, above the canvas and below the navbar,
-          and is pointer-transparent so it can never intercept a map drag or tap.
+          Page title. Global `h1` is 28–32px, so a visible heading on the map
+          reads as a banner. Keep an sr-only h1 for the outline; the on-map
+          label is 11px metadata in the top-left, pointer-transparent.
         */}
-        <div className="absolute top-0 left-0 right-0 z-[900] px-3 pt-2 pointer-events-none">
-          <h1 className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-mono font-bold uppercase tracking-wider bg-white/90 backdrop-blur-md border border-carbon-20 text-carbon-70 shadow-2xs">
-            <span className="w-1.5 h-1.5 rounded-full bg-nasa-red animate-pulse" aria-hidden="true" />
-            Live GIS — Multi-Hazard Situational Awareness
-          </h1>
-        </div>
+        <h1 className="sr-only">Live map — multi-hazard situational awareness</h1>
+        <p className="pointer-events-none absolute top-2 left-2 z-[var(--z-sticky)] border border-carbon-20 bg-white/90 px-1.5 py-0.5 text-[11px] font-semibold uppercase leading-none tracking-wide text-carbon-60">
+          Live map
+        </p>
 
         {/* Full Viewport Canvas Stage - Clean MapView Only */}
         <div className="relative w-full h-full flex-1 overflow-hidden">

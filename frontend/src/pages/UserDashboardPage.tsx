@@ -79,13 +79,13 @@ const PublicProfilePreview: React.FC = () => {
             {userProfile?.userRole && <span className="rounded-sm bg-carbon-10 px-2.5 py-1 text-xs font-bold text-carbon-80">{userProfile.userRole.replace(/_/g, ' ')}</span>}
             {(userProfile?.district || userProfile?.primaryDistrict) && (
               <span className="rounded-sm bg-carbon-10 px-2.5 py-1 text-xs font-bold text-carbon-60">
-                📍 {userProfile?.district || userProfile?.primaryDistrict}
+                {userProfile?.district || userProfile?.primaryDistrict}
                 {userProfile?.division ? `, ${userProfile.division}` : ''}
               </span>
             )}
             {userProfile?.targetCrops && (
               <span className="rounded-sm bg-carbon-05 px-2.5 py-1 text-xs font-bold text-carbon-80">
-                🌾 {userProfile.targetCrops}
+                {userProfile.targetCrops}
               </span>
             )}
           </div>
@@ -175,7 +175,7 @@ const UserDashboardPage: React.FC = () => {
   };
 
   return (
-    <div className="mx-auto w-full max-w-7xl">
+    <div className="mx-auto w-full max-w-[1200px]">
 
       {/* ── Header ─────────────────────────────────────────────────────── */}
       <motion.header
@@ -219,7 +219,7 @@ const UserDashboardPage: React.FC = () => {
             <h1 className="text-[28px] font-bold leading-tight tracking-tight text-carbon-90 sm:text-[32px]">
               {userProfile?.displayName || user?.email?.split('@')[0] || 'Welcome'}
             </h1>
-            {username && <span className="text-sm font-bold text-amber-700">@{username}</span>}
+            {username && <span className="text-sm font-bold text-carbon-60">@{username}</span>}
             {userProfile?.emailVerified && (
               <span className="inline-flex items-center gap-1 rounded-sm bg-carbon-05 px-2 py-0.5 text-xs font-bold uppercase tracking-wide text-carbon-80">
                 <MaterialIcon name="check_badge" size={11} /> Verified
