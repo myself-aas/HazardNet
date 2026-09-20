@@ -1,4 +1,4 @@
-import type { StoredPrediction } from '../../storedPrediction';
+import type { StoredPrediction } from '../storedPrediction';
 
 /** Valid stored row fixture. Labelled as a test fixture — not operational data. */
 export const VALID_STORED_FORECAST: StoredPrediction = {
