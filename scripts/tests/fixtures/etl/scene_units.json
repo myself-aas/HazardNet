@@ -1,0 +1,90 @@
+{
+  "prediction_date": "2026-09-17",
+  "pipeline_version": "etl/1.0.0",
+  "model_version": "2.1.9+model.d7b1a5b48aa6",
+  "driver": {
+    "source": "open-meteo",
+    "url": "https://api.open-meteo.com/v1/forecast",
+    "params": {
+      "latitude": 25.02,
+      "longitude": 91.87,
+      "forecast_days": 7,
+      "timezone": "UTC"
+    },
+    "payload_sha256": "1111111111111111111111111111111111111111111111111111111111111111"
+  },
+  "units": [
+    {
+      "district_id": "sylhet",
+      "district_name": "Sylhet",
+      "horizon": "7_days",
+      "scenes_enumerated": true,
+      "steps": [
+        {
+          "step": 0,
+          "window_start": "2026-09-08",
+          "window_end": "2026-09-17",
+          "collections": [
+            "COPERNICUS/S1_GRD",
+            "COPERNICUS/S2_SR_HARMONIZED",
+            "ECMWF/ERA5_LAND/DAILY_AGGR"
+          ],
+          "tensor_sha256": "aaaa1",
+          "shape": [
+            9,
+            15,
+            64,
+            64
+          ],
+          "scenes": [
+            {
+              "source": "sentinel-2",
+              "collection": "COPERNICUS/S2_SR_HARMONIZED",
+              "item_id": "S2B_MSIL2A_20260912T044659",
+              "acquired": "2026-09-12"
+            }
+          ]
+        },
+        {
+          "step": 1,
+          "window_start": "2026-09-18",
+          "window_end": "2026-09-27",
+          "collections": [
+            "COPERNICUS/S1_GRD",
+            "ECMWF/ERA5_LAND/DAILY_AGGR"
+          ],
+          "tensor_sha256": "aaaa2",
+          "shape": [
+            9,
+            15,
+            64,
+            64
+          ]
+        }
+      ]
+    },
+    {
+      "district_id": "kurigram",
+      "district_name": "Kurigram",
+      "horizon": "15_days",
+      "scenes_enumerated": false,
+      "steps": [
+        {
+          "step": 0,
+          "window_start": "2026-09-08",
+          "window_end": "2026-09-17",
+          "collections": [
+            "COPERNICUS/S1_GRD"
+          ],
+          "tensor_sha256": "bbbb1",
+          "shape": [
+            9,
+            15,
+            64,
+            64
+          ]
+        }
+      ]
+    }
+  ]
+}

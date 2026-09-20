@@ -5,10 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && node scripts/prerender.mjs",
+    "build": "node ../scripts/build_model_performance.mjs && node ../scripts/build_content_engine.mjs && vite build && node scripts/prerender.mjs",
     "blog-index": "node scripts/export-blog-index.mjs",
     "preview": "vite preview",
-    "test": "jest --config ../jest.config.cjs --rootDir .. frontend/src"
+    "test": "jest --config ../jest.config.cjs --rootDir .. frontend/src",
+    "content": "node ../scripts/build_content_engine.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",
