@@ -1556,7 +1556,7 @@ export const DistrictDetailPage: React.FC = () => {
               <TrendingUp className="w-4 h-4" />
             </div>
             <div>
-             g-tight">Hazard Trend: 7-Day Risk Level Fluctuations</h2>
+              <h2 className="text-lg font-bold text-carbon-90 tracking-tight">Hazard Trend: 7-Day Risk Level Fluctuations</h2>
               <p className="text-xs text-carbon-60">Longitudinal risk scoring and multi-hazard severity progression over the past week.</p>
             </div>
           </div>
@@ -1856,7 +1856,6 @@ export const DistrictDetailPage: React.FC = () => {
             ) : (
               processedUpazilas.map((up, idx) => (
                 <article
-                  key={idx}
                   key={idx}
                   className="upazila-card pagination-protected break-inside-avoid bg-white border border-carbon-20 rounded-2xl p-5 shadow-xs space-y-3 hover:border-carbon-30 transition-all flex flex-col justify-between"
                 >
