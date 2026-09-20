@@ -71,6 +71,7 @@ describe('firestore store', () => {
 
   it('getLatestForecastsByHorizon groups by district keeping the latest row', async () => {
     mockGetDocs.mockResolvedValue({
+      size: 3,
       forEach: (cb) => {
         cb({ data: () => row({ district_id: 19, prediction_date: '2026-09-05' }) });
         cb({ data: () => row({ district_id: 19, prediction_date: '2026-09-12' }) });
@@ -93,10 +94,11 @@ describe('firestore store', () => {
     expect(mockLimit).toHaveBeenCalledWith(1);
   });
 
-  it('getLatestPredictionDate returns null when the collection is empty', async () => {
-    mockGetDocs.mockResolvedValue({ forEach: () => {} });
+  it('getLatestPredictionDate falls back to the committed snapshot when Firestore is empty', async () => {
+    mockGetDocs.mockResolvedValue({ size: 0, forEach: () => {} });
     const store = getForecastStore();
-    await expect(store.getLatestPredictionDate()).resolves.toBeNull();
+    const date = await store.getLatestPredictionDate();
+    expect(date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
   });
 
   it('getForecastHistory filters by date range and sorts asc by prediction_date then district_id', async () => {

@@ -102,7 +102,11 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
         (error) => {
           // Immediately detach listener so SDK stops retrying gRPC stream in background
           if (unsubscribe) {
-            try { unsubscribe(); } catch {}
+            try {
+              unsubscribe();
+            } catch {
+              // Listener may already be detached after a stream error.
+            }
             unsubscribe = undefined;
           }
           if (isMounted) {

@@ -25,6 +25,8 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({ customItems }) => {
       if (name === 'use-cases') label = 'Use Cases & Profiles';
       if (name === 'download') label = 'Download Software Center';
       if (name === 'blogs') label = 'Research Blog & Insights';
+      if (name === 'profile') label = 'My Profile';
+      if (name === 'dashboard') label = 'Dashboard';
       if (name === 'contact') label = 'Contact & Support';
       if (name === 'terms') label = 'Terms & Conditions';
       if (name === 'privacy') label = 'Privacy Policy';

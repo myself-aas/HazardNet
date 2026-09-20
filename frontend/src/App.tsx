@@ -46,6 +46,7 @@ const AlertsPage = lazy(() => import('./pages/AlertsPage').then((m) => ({ defaul
 const AlertDetailPage = lazy(() => import('./pages/AlertDetailPage').then((m) => ({ default: m.AlertDetailPage })));
 const StatusPage = lazy(() => import('./pages/StatusPage').then((m) => ({ default: m.StatusPage })));
 const UserDashboardPage = lazy(() => import('./pages/UserDashboardPage'));
+const UserProfilePage = lazy(() => import('./pages/UserProfilePage'));
 const PublicProfilePage = lazy(() => import('./pages/PublicProfilePage'));
 const SetPasswordPage = lazy(() => import('./pages/SetPasswordPage'));
 const ChatBot = lazy(() => import('./components/ChatBot'));
@@ -281,8 +282,9 @@ const AppContent: React.FC = () => {
               <Route path="/update-password" element={<UpdatePasswordPage />} />
               <Route path="/set-password" element={<SetPasswordPage />} />
               <Route path="/auth/callback" element={<AuthCallbackPage />} />
-              {/* Dedicated per-user dashboard + unique public profile URLs */}
+              {/* Dedicated per-user dashboard + unique profile URLs (no popups) */}
               <Route path="/dashboard" element={<UserDashboardPage />} />
+              <Route path="/profile" element={<UserProfilePage />} />
               <Route path="/u/:username" element={<PublicProfilePage />} />
               <Route path="*" element={<NotFoundPage />} />
               </Routes>

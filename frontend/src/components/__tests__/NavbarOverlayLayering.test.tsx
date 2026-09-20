@@ -5,8 +5,9 @@ import { MemoryRouter } from "react-router-dom";
 /**
  * Mobile overlay layering contract (2026-09-17 fix).
  *
- * The navbar's full-screen overlays (menu drawer, profile modal, saved
- * assessments) used to render INSIDE the header wrapper's stacking context
+ * The navbar's full-screen overlays (menu drawer, saved assessments) used
+ * to render INSIDE the header wrapper's stacking context. The user profile
+ * is a dedicated /profile page, not a modal.
  * with z-50 while the header bar itself is z-[2000] — so the sticky header
  * painted on top of the popups (the reported "popup overlaps the header"
  * mobile bug). They must now portal to document.body and carry a z-index

@@ -214,11 +214,11 @@ export const HazardDetailPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
+      <div className="min-h-screen bg-carbon-05 flex items-center justify-center p-6">
         <div className="text-center">
           <RefreshCw className="w-8 h-8 text-blue-600 animate-spin mx-auto mb-3" />
-          <p className="text-sm font-medium text-slate-700">Loading {data?.hazard || currentSlug} hazard data...</p>
-          <p className="text-xs text-slate-500 mt-1">Cross-referencing historical events & active warning tensors</p>
+          <p className="text-sm font-medium text-carbon-70">Loading {data?.hazard || currentSlug} hazard data...</p>
+          <p className="text-xs text-carbon-60 mt-1">Cross-referencing historical events & active warning tensors</p>
         </div>
       </div>
     );
@@ -226,11 +226,11 @@ export const HazardDetailPage: React.FC = () => {
 
   if (error || !data) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
-        <div className="bg-white border border-slate-200 rounded-2xl p-8 max-w-md text-center shadow-xs">
+      <div className="min-h-screen bg-carbon-05 flex items-center justify-center p-6">
+        <div className="bg-white border border-carbon-20 rounded-2xl p-8 max-w-md text-center shadow-xs">
           <AlertTriangle className="w-10 h-10 text-red-500 mx-auto mb-3" />
-          <h2 className="text-lg font-bold text-slate-900">Failed to Load Hazard Data</h2>
-          <p className="text-xs text-slate-600 mt-2">{error || 'Hazard data not found.'}</p>
+          <h2 className="text-lg font-bold text-carbon-90">Failed to Load Hazard Data</h2>
+          <p className="text-xs text-carbon-60 mt-2">{error || 'Hazard data not found.'}</p>
           <Link
             to="/hazards"
             className="mt-5 inline-block px-4 py-2 bg-blue-600 text-white text-xs font-semibold rounded-xl hover:bg-blue-700 transition-colors"
@@ -243,14 +243,14 @@ export const HazardDetailPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 pb-20 pt-6 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+    <div className="min-h-screen bg-carbon-05 text-carbon-80 pb-20 pt-6 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
       {/* Breadcrumb */}
-      <div className="flex items-center gap-2 text-xs text-slate-500 mb-4">
+      <div className="flex items-center gap-2 text-xs text-carbon-60 mb-4">
         <Link to="/" className="hover:text-blue-600 transition-colors">Home</Link>
         <span>/</span>
         <Link to="/hazards" className="hover:text-blue-600 transition-colors">Hazards</Link>
         <span>/</span>
-        <span className="text-slate-800 font-medium">{data.hazard}</span>
+        <span className="text-carbon-80 font-medium">{data.hazard}</span>
       </div>
 
       {/* Hazard Switcher Pills */}
@@ -265,7 +265,7 @@ export const HazardDetailPage: React.FC = () => {
               className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all cursor-pointer flex items-center gap-1.5 ${
                 isActive
                   ? 'bg-blue-600 text-white shadow-xs'
-                  : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                  : 'bg-white border border-carbon-20 text-carbon-60 hover:bg-carbon-10 hover:text-carbon-90'
               }`}
             >
               <Icon className="w-3.5 h-3.5" />
@@ -276,37 +276,37 @@ export const HazardDetailPage: React.FC = () => {
       </div>
 
       {/* Hazard Profile Header */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-xs mb-8">
+      <div className="bg-white border border-carbon-20 rounded-2xl p-6 sm:p-8 shadow-xs mb-8">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold mb-3" style={{ backgroundColor: `${meta.color}15`, color: meta.color, border: `1px solid ${meta.color}30` }}>
               <ShieldAlert className="w-3.5 h-3.5" />
               <span>National Peril Profile</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-bold text-carbon-90 tracking-tight">
               {data.hazard}
             </h1>
-            <p className="mt-2 text-sm text-slate-600 max-w-2xl leading-relaxed">
+            <p className="mt-2 text-sm text-carbon-60 max-w-2xl leading-relaxed">
               {meta.definition}
             </p>
-            <div className="mt-3 flex flex-wrap items-center gap-y-1 gap-x-4 text-xs text-slate-500">
-              <div><strong className="text-slate-700">Peak Season:</strong> {meta.season}</div>
-              <div><strong className="text-slate-700">Key Triggers:</strong> {meta.triggers}</div>
+            <div className="mt-3 flex flex-wrap items-center gap-y-1 gap-x-4 text-xs text-carbon-60">
+              <div><strong className="text-carbon-70">Peak Season:</strong> {meta.season}</div>
+              <div><strong className="text-carbon-70">Key Triggers:</strong> {meta.triggers}</div>
             </div>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 w-full md:w-auto">
-            <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-3 text-center">
+            <div className="bg-carbon-05 border border-carbon-20/80 rounded-xl p-3 text-center">
               <div className="text-xl font-bold text-blue-700">{data.totalEvents.toLocaleString()}</div>
-              <div className="text-xs text-slate-500 font-medium">Historical Records</div>
+              <div className="text-xs text-carbon-60 font-medium">Historical Records</div>
             </div>
-            <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-3 text-center">
+            <div className="bg-carbon-05 border border-carbon-20/80 rounded-xl p-3 text-center">
               <div className="text-xl font-bold text-amber-700">{data.forecasts.length}</div>
-              <div className="text-xs text-slate-500 font-medium">Active Forecasts</div>
+              <div className="text-xs text-carbon-60 font-medium">Active Forecasts</div>
             </div>
-            <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-3 text-center col-span-2 sm:col-span-1">
-              <div className="text-xl font-bold text-slate-900">{data.forecastDistrictsCount}</div>
-              <div className="text-xs text-slate-500 font-medium">Districts Under Alert</div>
+            <div className="bg-carbon-05 border border-carbon-20/80 rounded-xl p-3 text-center col-span-2 sm:col-span-1">
+              <div className="text-xl font-bold text-carbon-90">{data.forecastDistrictsCount}</div>
+              <div className="text-xs text-carbon-60 font-medium">Districts Under Alert</div>
             </div>
           </div>
         </div>
@@ -314,14 +314,14 @@ export const HazardDetailPage: React.FC = () => {
 
       {/* Active Forecast Alert Matrix for this Hazard */}
       {data.forecasts.length > 0 && (
-        <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs mb-8">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-4 border-b border-slate-100 gap-2">
+        <div className="bg-white border border-carbon-20 rounded-2xl p-6 shadow-xs mb-8">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-4 border-b border-carbon-10 gap-2">
             <div>
-              <h2 className="text-base font-semibold text-slate-900 flex items-center gap-2">
+              <h2 className="text-base font-semibold text-carbon-90 flex items-center gap-2">
                 <AlertTriangle className="w-4 h-4 text-amber-600" />
                 Active Forecast Warnings for {data.hazard} Across Bangladesh
               </h2>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-carbon-60">
                 Identified in latest run from hazardnet_forecasts_latest.csv
               </p>
             </div>
@@ -332,7 +332,7 @@ export const HazardDetailPage: React.FC = () => {
 
           <div className="overflow-x-auto mt-4">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
+              <thead className="bg-carbon-05 text-carbon-60 font-semibold border-b border-carbon-20">
                 <tr>
                   <th className="p-3">District</th>
                   <th className="p-3">Division</th>
@@ -346,28 +346,28 @@ export const HazardDetailPage: React.FC = () => {
                   <th className="p-3 text-right">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-carbon-10">
                 {data.forecasts.map((fc, idx) => {
                   const districtSlug = fc.districtName.toLowerCase().replace(/[^a-z0-9]/g, '');
                   return (
-                    <tr key={`${fc.districtName}-${fc.horizon}-${idx}`} className="hover:bg-slate-50/80 transition-colors">
-                      <td className="p-3 font-semibold text-slate-900">{fc.districtName}</td>
-                      <td className="p-3 text-slate-600">
+                    <tr key={`${fc.districtName}-${fc.horizon}-${idx}`} className="hover:bg-carbon-05/80 transition-colors">
+                      <td className="p-3 font-semibold text-carbon-90">{fc.districtName}</td>
+                      <td className="p-3 text-carbon-60">
                         <Link to={`/divisions/${fc.division.toLowerCase()}`} className="hover:text-blue-600">
                           {fc.division}
                         </Link>
                       </td>
                       <td className="p-3">
-                        <span className="px-2 py-0.5 rounded text-[11px] font-medium bg-slate-100 text-slate-700">
+                        <span className="px-2 py-0.5 rounded text-[11px] font-medium bg-carbon-10 text-carbon-70">
                           {fc.horizon === '7_days' ? '7-Day' : '15-Day'}
                         </span>
                       </td>
-                      <td className="p-3 text-slate-600 whitespace-nowrap">{fc.targetDate}</td>
+                      <td className="p-3 text-carbon-60 whitespace-nowrap">{fc.targetDate}</td>
                       <td className="p-3 font-semibold text-blue-700">{fc.modelSeverity.toFixed(2)}</td>
                       <td className="p-3 font-semibold text-amber-700">{fc.physicsSeverity.toFixed(2)}</td>
-                      <td className="p-3 text-slate-600">{Math.round(fc.confidence * 100)}%</td>
-                      <td className="p-3 text-slate-600">{fc.precipitationMm.toFixed(1)} mm</td>
-                      <td className="p-3 text-slate-600">{fc.windMaxKmh.toFixed(1)} km/h</td>
+                      <td className="p-3 text-carbon-60">{Math.round(fc.confidence * 100)}%</td>
+                      <td className="p-3 text-carbon-60">{fc.precipitationMm.toFixed(1)} mm</td>
+                      <td className="p-3 text-carbon-60">{fc.windMaxKmh.toFixed(1)} km/h</td>
                       <td className="p-3 text-right">
                         <Link
                           to={`/forecast/district/${districtSlug}`}
@@ -389,27 +389,27 @@ export const HazardDetailPage: React.FC = () => {
       {/* Interactive Recharts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         {/* Chart 1: 26-Year Historical Disaster Trend */}
-        <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div className="bg-white border border-carbon-20 rounded-2xl p-6 shadow-xs">
+          <div className="flex items-center justify-between pb-3 border-b border-carbon-10">
             <div>
-              <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+              <h3 className="text-sm font-bold text-carbon-90 flex items-center gap-2">
                 <TrendingUp className="w-4 h-4 text-blue-600" />
                 26-Year Historical Occurrence Trend (2000–2026)
               </h3>
-              <p className="text-xs text-slate-500">Annual occurrences of {data.hazard} across Bangladesh</p>
+              <p className="text-xs text-carbon-60">Annual occurrences of {data.hazard} across Bangladesh</p>
             </div>
-            <span className="text-xs font-semibold px-2 py-0.5 bg-slate-100 text-slate-700 rounded">
+            <span className="text-xs font-semibold px-2 py-0.5 bg-carbon-10 text-carbon-70 rounded">
               {data.totalEvents} Total Events
             </span>
           </div>
           <div className="h-64 w-full pt-4">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={data.yearlyTrend} margin={{ top: 10, right: 10, left: -15, bottom: 10 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                <XAxis dataKey="year" tick={{ fontSize: 11, fill: '#475569' }} />
-                <YAxis tick={{ fontSize: 11, fill: '#475569' }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#e3e3e3" vertical={false} />
+                <XAxis dataKey="year" tick={{ fontSize: 11, fill: '#58585b' }} />
+                <YAxis tick={{ fontSize: 11, fill: '#58585b' }} />
                 <Tooltip
-                  contentStyle={{ backgroundColor: '#ffffff', borderColor: '#e2e8f0', borderRadius: '0.75rem', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                  contentStyle={{ backgroundColor: '#ffffff', borderColor: '#d1d1d1', borderRadius: '0.75rem', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                 />
                 <Bar dataKey="count" name="Recorded Events" fill={meta.color} radius={[4, 4, 0, 0]} />
               </BarChart>
@@ -418,24 +418,24 @@ export const HazardDetailPage: React.FC = () => {
         </div>
 
         {/* Chart 2: Top 15 Most Impacted Districts */}
-        <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div className="bg-white border border-carbon-20 rounded-2xl p-6 shadow-xs">
+          <div className="flex items-center justify-between pb-3 border-b border-carbon-10">
             <div>
-              <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+              <h3 className="text-sm font-bold text-carbon-90 flex items-center gap-2">
                 <MapPin className="w-4 h-4 text-blue-600" />
                 Top 15 Most Impacted Districts
               </h3>
-              <p className="text-xs text-slate-500">Districts recording highest {data.hazard} episodes</p>
+              <p className="text-xs text-carbon-60">Districts recording highest {data.hazard} episodes</p>
             </div>
           </div>
           <div className="h-64 w-full pt-4">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={top15Districts} layout="vertical" margin={{ top: 10, right: 20, left: 30, bottom: 10 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={false} />
-                <XAxis type="number" tick={{ fontSize: 11, fill: '#475569' }} />
-                <YAxis dataKey="district" type="category" tick={{ fontSize: 11, fill: '#475569' }} width={80} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#e3e3e3" horizontal={false} />
+                <XAxis type="number" tick={{ fontSize: 11, fill: '#58585b' }} />
+                <YAxis dataKey="district" type="category" tick={{ fontSize: 11, fill: '#58585b' }} width={80} />
                 <Tooltip
-                  contentStyle={{ backgroundColor: '#ffffff', borderColor: '#e2e8f0', borderRadius: '0.75rem', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                  contentStyle={{ backgroundColor: '#ffffff', borderColor: '#d1d1d1', borderRadius: '0.75rem', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                 />
                 <Bar dataKey="count" name="Disaster Events" fill="#3b82f6" radius={[0, 4, 4, 0]} />
               </BarChart>
@@ -444,14 +444,14 @@ export const HazardDetailPage: React.FC = () => {
         </div>
 
         {/* Chart 3: Monthly Seasonality Curve */}
-        <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div className="bg-white border border-carbon-20 rounded-2xl p-6 shadow-xs">
+          <div className="flex items-center justify-between pb-3 border-b border-carbon-10">
             <div>
-              <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+              <h3 className="text-sm font-bold text-carbon-90 flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-blue-600" />
                 Monthly Seasonality Curve (Jan–Dec)
               </h3>
-              <p className="text-xs text-slate-500">Distribution of historical occurrences by calendar month</p>
+              <p className="text-xs text-carbon-60">Distribution of historical occurrences by calendar month</p>
             </div>
           </div>
           <div className="h-64 w-full pt-4">
@@ -463,11 +463,11 @@ export const HazardDetailPage: React.FC = () => {
                     <stop offset="95%" stopColor={meta.color} stopOpacity={0.0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                <XAxis dataKey="monthName" tick={{ fontSize: 11, fill: '#475569' }} />
-                <YAxis tick={{ fontSize: 11, fill: '#475569' }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#e3e3e3" vertical={false} />
+                <XAxis dataKey="monthName" tick={{ fontSize: 11, fill: '#58585b' }} />
+                <YAxis tick={{ fontSize: 11, fill: '#58585b' }} />
                 <Tooltip
-                  contentStyle={{ backgroundColor: '#ffffff', borderColor: '#e2e8f0', borderRadius: '0.75rem', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                  contentStyle={{ backgroundColor: '#ffffff', borderColor: '#d1d1d1', borderRadius: '0.75rem', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                 />
                 <Area type="monotone" dataKey="count" name="Events" stroke={meta.color} strokeWidth={2.5} fillOpacity={1} fill="url(#hazardSeasonGrad)" />
               </AreaChart>
@@ -476,24 +476,24 @@ export const HazardDetailPage: React.FC = () => {
         </div>
 
         {/* Chart 4: Division Exposure Breakdown */}
-        <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div className="bg-white border border-carbon-20 rounded-2xl p-6 shadow-xs">
+          <div className="flex items-center justify-between pb-3 border-b border-carbon-10">
             <div>
-              <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+              <h3 className="text-sm font-bold text-carbon-90 flex items-center gap-2">
                 <Layers className="w-4 h-4 text-blue-600" />
                 Regional Division Breakdown
               </h3>
-              <p className="text-xs text-slate-500">Geographic distribution of {data.hazard} across the 8 divisions</p>
+              <p className="text-xs text-carbon-60">Geographic distribution of {data.hazard} across the 8 divisions</p>
             </div>
           </div>
           <div className="h-64 w-full pt-4">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={data.divisionBreakdown} margin={{ top: 10, right: 10, left: -15, bottom: 10 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                <XAxis dataKey="division" tick={{ fontSize: 11, fill: '#475569' }} />
-                <YAxis tick={{ fontSize: 11, fill: '#475569' }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#e3e3e3" vertical={false} />
+                <XAxis dataKey="division" tick={{ fontSize: 11, fill: '#58585b' }} />
+                <YAxis tick={{ fontSize: 11, fill: '#58585b' }} />
                 <Tooltip
-                  contentStyle={{ backgroundColor: '#ffffff', borderColor: '#e2e8f0', borderRadius: '0.75rem', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                  contentStyle={{ backgroundColor: '#ffffff', borderColor: '#d1d1d1', borderRadius: '0.75rem', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                 />
                 <Bar dataKey="count" name="Events" fill="#06b6d4" radius={[4, 4, 0, 0]} />
               </BarChart>
@@ -503,14 +503,14 @@ export const HazardDetailPage: React.FC = () => {
       </div>
 
       {/* Historical Disaster Events Archive Table for this Hazard */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs">
-        <div className="flex flex-col md:flex-row md:items-center justify-between pb-4 border-b border-slate-100 gap-4">
+      <div className="bg-white border border-carbon-20 rounded-2xl p-6 shadow-xs">
+        <div className="flex flex-col md:flex-row md:items-center justify-between pb-4 border-b border-carbon-10 gap-4">
           <div>
-            <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+            <h3 className="text-base font-bold text-carbon-90 flex items-center gap-2">
               <Layers className="w-4 h-4 text-blue-600" />
               Verified Event Log ({data.hazard})
             </h3>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-carbon-60">
               Showing {filteredEvents.length} of {data.totalEvents} recorded incidents from BGD_climatic_hazards_dataset_2000_2026.csv
             </p>
           </div>
@@ -518,20 +518,20 @@ export const HazardDetailPage: React.FC = () => {
           {/* Search and Filters */}
           <div className="flex flex-wrap items-center gap-2">
             <div className="relative">
-              <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-carbon-60" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search events, district, GLIDE..."
-                className="pl-8 pr-3 py-1.5 text-xs border border-slate-200 rounded-xl bg-slate-50 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                className="pl-8 pr-3 py-1.5 text-xs border border-carbon-20 rounded-xl bg-carbon-05 text-carbon-80 placeholder-carbon-40 focus:outline-none focus:ring-1 focus:ring-blue-500"
               />
             </div>
 
             <select
               value={selectedDivision}
               onChange={(e) => { setSelectedDivision(e.target.value); setSelectedDistrict('all'); }}
-              className="py-1.5 px-2.5 text-xs border border-slate-200 rounded-xl bg-slate-50 text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="py-1.5 px-2.5 text-xs border border-carbon-20 rounded-xl bg-carbon-05 text-carbon-70 focus:outline-none focus:ring-1 focus:ring-blue-500"
             >
               <option value="all">All Divisions</option>
               {availableDivisions.map(d => (
@@ -542,7 +542,7 @@ export const HazardDetailPage: React.FC = () => {
             <select
               value={selectedDistrict}
               onChange={(e) => setSelectedDistrict(e.target.value)}
-              className="py-1.5 px-2.5 text-xs border border-slate-200 rounded-xl bg-slate-50 text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="py-1.5 px-2.5 text-xs border border-carbon-20 rounded-xl bg-carbon-05 text-carbon-70 focus:outline-none focus:ring-1 focus:ring-blue-500"
             >
               <option value="all">All Districts</option>
               {availableDistricts.map(d => (
@@ -555,7 +555,7 @@ export const HazardDetailPage: React.FC = () => {
         {/* Table */}
         <div className="overflow-x-auto mt-4">
           <table className="w-full text-left text-xs">
-            <thead className="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
+            <thead className="bg-carbon-05 text-carbon-60 font-semibold border-b border-carbon-20">
               <tr>
                 <th className="p-3">Date</th>
                 <th className="p-3">District</th>
@@ -566,32 +566,32 @@ export const HazardDetailPage: React.FC = () => {
                 <th className="p-3 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-carbon-10">
               {filteredEvents.slice(0, 40).map((event) => {
                 const isExpanded = expandedEventId === event.id;
                 const districtSlug = event.district.toLowerCase().replace(/[^a-z0-9]/g, '');
 
                 return (
                   <React.Fragment key={event.id}>
-                    <tr className="hover:bg-slate-50/80 transition-colors">
-                      <td className="p-3 font-medium text-slate-900 whitespace-nowrap">{event.date}</td>
-                      <td className="p-3 font-semibold text-slate-800">
+                    <tr className="hover:bg-carbon-05/80 transition-colors">
+                      <td className="p-3 font-medium text-carbon-90 whitespace-nowrap">{event.date}</td>
+                      <td className="p-3 font-semibold text-carbon-80">
                         <Link to={`/forecast/district/${districtSlug}`} className="hover:text-blue-600">
                           {event.district}
                         </Link>
                       </td>
-                      <td className="p-3 text-slate-600">{event.division}</td>
-                      <td className="p-3 font-mono text-slate-500 whitespace-nowrap">{event.glide || '—'}</td>
-                      <td className="p-3 font-bold text-slate-700">
+                      <td className="p-3 text-carbon-60">{event.division}</td>
+                      <td className="p-3 font-mono text-carbon-60 whitespace-nowrap">{event.glide || '—'}</td>
+                      <td className="p-3 font-bold text-carbon-70">
                         <span className={`px-2 py-0.5 rounded text-[11px] ${
                           event.severity >= 3.0 ? 'bg-red-50 text-red-700 border border-red-200' :
                           event.severity >= 2.0 ? 'bg-amber-50 text-amber-700 border border-amber-200' :
-                          'bg-slate-100 text-slate-700'
+                          'bg-carbon-10 text-carbon-70'
                         }`}>
                           {event.severity ? event.severity.toFixed(2) : '1.00'}
                         </span>
                       </td>
-                      <td className="p-3 text-slate-600 max-w-xs truncate">
+                      <td className="p-3 text-carbon-60 max-w-xs truncate">
                         {event.desc || 'No descriptive summary logged'}
                       </td>
                       <td className="p-3 text-right whitespace-nowrap">
@@ -606,14 +606,14 @@ export const HazardDetailPage: React.FC = () => {
                     </tr>
                     {isExpanded && (
                       <tr className="bg-blue-50/30">
-                        <td colSpan={7} className="p-4 border-b border-slate-200">
-                          <div className="bg-white border border-slate-200 rounded-xl p-4 text-xs space-y-2">
-                            <div className="flex items-center justify-between text-slate-500 pb-2 border-b border-slate-100">
+                        <td colSpan={7} className="p-4 border-b border-carbon-20">
+                          <div className="bg-white border border-carbon-20 rounded-xl p-4 text-xs space-y-2">
+                            <div className="flex items-center justify-between text-carbon-60 pb-2 border-b border-carbon-10">
                               <span><strong>Event ID:</strong> {event.id}</span>
                               <span><strong>Coordinates:</strong> {event.lat.toFixed(4)}, {event.lng.toFixed(4)}</span>
                               <span><strong>GLIDE:</strong> {event.glide || 'None assigned'}</span>
                             </div>
-                            <p className="text-slate-700 leading-relaxed pt-1">
+                            <p className="text-carbon-70 leading-relaxed pt-1">
                               <strong>Report Summary:</strong> {event.desc || 'No detailed narrative logged for this event.'}
                             </p>
                             <div className="pt-2 flex justify-end">
@@ -635,7 +635,7 @@ export const HazardDetailPage: React.FC = () => {
             </tbody>
           </table>
           {filteredEvents.length === 0 && (
-            <div className="py-8 text-center text-slate-400 text-xs">
+            <div className="py-8 text-center text-carbon-60 text-xs">
               No historical events match the specified filters.
             </div>
           )}

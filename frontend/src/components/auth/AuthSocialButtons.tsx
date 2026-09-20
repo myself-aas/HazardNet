@@ -70,8 +70,18 @@ export function AuthSocialButtons({
         const params = new URLSearchParams(window.location.search)
         const raw = params.get('next')
         if (raw && raw.startsWith('/')) nextTo = raw
-      } catch {}
-      await signInWithOAuth(provider, nextTo ? { nextTo } : undefined)
+      } catch {
+        // Search params may be unavailable in tests; default to no next path.
+      }
+      // Only pass the options object when we have a destination — calling
+      // `signInWithOAuth(id, undefined)` fails the Jest arity check
+      // (`toHaveBeenCalledWith('google')`) and left Frontend Tests red on
+      // PR #41 (run 35502660580) after the optional-next wiring landed.
+      if (nextTo) {
+        await signInWithOAuth(provider, { nextTo })
+      } else {
+        await signInWithOAuth(provider)
+      }
       onSuccess?.()
     } catch (reason) {
       const explanation = describeOAuthError(reason)

@@ -285,7 +285,9 @@ function providerFor(id: OAuthProviderId) {
       const provider = new GoogleAuthProvider();
       try {
         provider.setCustomParameters({ prompt: 'select_account' });
-      } catch {}
+      } catch {
+        // Some Auth builds reject custom parameters; popup still works without them.
+      }
       return provider;
     }
     case 'github': {
@@ -293,7 +295,9 @@ function providerFor(id: OAuthProviderId) {
       try {
         provider.addScope('read:user');
         provider.addScope('user:email');
-      } catch {}
+      } catch {
+        // Scope requests are best-effort; GitHub still authenticates without them.
+      }
       return provider;
     }
     default:
@@ -303,7 +307,7 @@ function providerFor(id: OAuthProviderId) {
 
 /** Ensure username is not reserved; if reserved, append a suffix. */
 function ensureNonReservedUsername(username: string): string {
-  let candidate = username;
+  const candidate = username;
   if (!RESERVED_USERNAMES.has(candidate)) return candidate;
   // Append _1, _2 etc until free (max 5 tries)
   for (let i = 1; i <= 5; i++) {
@@ -510,42 +514,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     name: string,
     initialProfile?: Partial<UserProfileData>,
   ): Promise<'session' | 'confirmation-required'> => {
-    try {
-      const cred = await createUserWithEmailAndPassword(auth, email, pass);
-      if (!cred.user) throw new Error('Account creation did not return a user.');
-      if (name.trim()) {
-        try {
-          await fbUpdateProfile(cred.user, { displayName: name.trim() });
-        } catch (e) {
-          console.warn('Display-name update skipped:', e);
-        }
-      }
-      // Best effort email verification — failure should not block sign-up
+    const cred = await createUserWithEmailAndPassword(auth, email, pass);
+    if (!cred.user) throw new Error('Account creation did not return a user.');
+    if (name.trim()) {
       try {
-        const current = auth.currentUser ?? cred.user;
-        if (current && !current.emailVerified) {
-          await sendEmailVerification(current);
-        }
+        await fbUpdateProfile(cred.user, { displayName: name.trim() });
       } catch (e) {
-        console.warn('Verification email skipped:', e);
+        console.warn('Display-name update skipped:', e);
       }
-      try {
-        const current = await refreshAuthUser();
-        await writeProfile(makeProfileSeed(current, name.trim(), initialProfile));
-        return current.emailVerified ? 'session' : 'confirmation-required';
-      } catch (profileError) {
-        console.warn('Profile creation after sign-up failed, but auth succeeded:', profileError);
-        // Still try to bootstrap with cred.user if refresh failed
-        try {
-          await writeProfile(makeProfileSeed(cred.user, name.trim(), initialProfile));
-        } catch (e) {
-          console.warn('Fallback profile write failed:', e);
-        }
-        return 'confirmation-required';
+    }
+    // Best effort email verification — failure should not block sign-up
+    try {
+      const current = auth.currentUser ?? cred.user;
+      if (current && !current.emailVerified) {
+        await sendEmailVerification(current);
       }
     } catch (e) {
-      // Re-throw with Firebase code preserved for UI
-      throw e;
+      console.warn('Verification email skipped:', e);
+    }
+    try {
+      const current = await refreshAuthUser();
+      await writeProfile(makeProfileSeed(current, name.trim(), initialProfile));
+      return current.emailVerified ? 'session' : 'confirmation-required';
+    } catch (profileError) {
+      console.warn('Profile creation after sign-up failed, but auth succeeded:', profileError);
+      // Still try to bootstrap with cred.user if refresh failed
+      try {
+        await writeProfile(makeProfileSeed(cred.user, name.trim(), initialProfile));
+      } catch (e) {
+        console.warn('Fallback profile write failed:', e);
+      }
+      return 'confirmation-required';
     }
   };
 
@@ -569,7 +568,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const params = new URLSearchParams(window.location.search);
       const rawNext = params.get('next');
       if (rawNext && rawNext.startsWith('/')) nextFromQuery = rawNext;
-    } catch {}
+    } catch {
+      // window.location may be unavailable in non-browser tests.
+    }
     const currentPath = `${window.location.pathname}${window.location.search}`;
     const nextTo = options?.nextTo ?? nextFromQuery ?? (isAuthScreen(currentPath) ? '/' : currentPath);
     try {
@@ -623,13 +624,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   /** Link an additional provider identity to the signed-in account. */
   const linkIdentity = async (provider: OAuthProvider) => {
     if (!auth.currentUser) throw new Error('Must be signed in to link an account.');
-    try {
-      await linkWithPopup(auth.currentUser, providerFor(provider));
-      await refreshProfile();
-    } catch (e: any) {
-      // Improve message for already linked etc.
-      throw e;
-    }
+    await linkWithPopup(auth.currentUser, providerFor(provider));
+    await refreshProfile();
   };
 
   /** Remove a linked provider identity from the signed-in account. */
@@ -699,7 +695,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
     try {
       if (current) await loadProfile(current);
-    } catch {}
+    } catch {
+      // Profile reload is best-effort after a verification send.
+    }
     void options;
   };
 
@@ -741,7 +739,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       try {
         sessionStorage.removeItem(AUTH_RETURN_TO_KEY);
       } catch {
-        try { sessionStorage.clear(); } catch {}
+        try {
+          sessionStorage.clear();
+        } catch {
+          // sessionStorage can throw in private mode.
+        }
       }
     }
   };

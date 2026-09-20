@@ -4,12 +4,6 @@ import path from 'path';
 import {
   ensureDataLoaded,
   getEventsSummary,
-  ALL_DIVISIONS_LIST,
-  ALL_HAZARDS_LIST,
-  getDivisionEvents,
-  getHazardEvents,
-  getDistrictEvents,
-  DISTRICT_DIVISION_MAP
 } from '../backend/services/eventsService.js';
 
 async function buildArtifacts() {
