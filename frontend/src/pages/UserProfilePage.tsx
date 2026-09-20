@@ -1,20 +1,23 @@
-import MaterialIcon from "./MaterialIcon";
+import MaterialIcon from "../components/MaterialIcon";
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { useAuth, UserRolePersona } from '../context/AuthContext';
 import { detectExactPinpointLocation, LocationDetectionResult, findNearestDistrict, isValidLatLng, isValidCoordinate } from '../services/geolocationService';
 import { ALL_64_DISTRICTS } from '../data/bangladeshDistricts';
 import { getGranularDisasterData } from '../data/disasterDetails';
-import { FirebaseRealtimeStatus } from './FirebaseRealtimeStatus';
-import IdentityConnections from './IdentityConnections';
+import { FirebaseRealtimeStatus } from '../components/FirebaseRealtimeStatus';
+import IdentityConnections from '../components/IdentityConnections';
+import Breadcrumbs from '../components/Breadcrumbs';
+import { profilePath } from '../lib/username';
 
-interface UserProfileModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onSelectDistrict?: (districtId: string) => void;
-}
+/**
+ * Signed-in user profile — unique URL: /profile
+ *
+ * Replaces the navbar UserProfileModal overlay. The public-facing page for
+ * the same person lives at /u/<username>.
+ */
 
 const PERSONA_LABELS: Record<UserRolePersona, { label: string; tag: string }> = {
   smallholder_farmer: { label: 'Rural Smallholder Farmer', tag: 'Micro-Farm & Local Advisory' },
@@ -24,13 +27,9 @@ const PERSONA_LABELS: Record<UserRolePersona, { label: string; tag: string }> = 
   commercial_agribusiness: { label: 'Commercial Agro-Business', tag: 'Supply Chain & Logistics' },
 };
 
-export const UserProfileModal: React.FC<UserProfileModalProps> = ({
-  isOpen,
-  onClose,
-  onSelectDistrict,
-}) => {
+export const UserProfilePage: React.FC = () => {
   const navigate = useNavigate();
-  const { user, userProfile, updateUserProfile, signOut, sendPasswordResetEmail } = useAuth();
+  const { user, userProfile, loading, updateUserProfile, signOut, sendPasswordResetEmail } = useAuth();
 
   const [displayName, setDisplayName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -76,7 +75,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
       setPinpointLat(validLat);
       setPinpointLng(validLng);
     }
-  }, [userProfile, user, isOpen]);
+  }, [userProfile, user]);
 
   const handleToggleAutoDetect = async (enabled: boolean) => {
     setAutoDetectLocationEnabled(enabled);
@@ -158,17 +157,13 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
       }
 
       if (matchedDist) {
-        if (onSelectDistrict) {
-          onSelectDistrict(matchedDist.id);
-        }
         navigate(`/?district=${matchedDist.id}`);
       }
 
       setSaveMessage('Profile settings and Home District saved successfully!');
       setTimeout(() => {
         setSaveMessage('');
-        onClose();
-      }, 1200);
+      }, 1800);
     } catch (err: any) {
       console.error(err);
       setSaveMessage('Failed to save profile changes.');
@@ -182,7 +177,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
     try {
       await signOut();
       toast.success('Signed out securely. Session state cleared.');
-      onClose();
+      navigate('/', { replace: true });
     } catch (err: any) {
       console.error('Logout error:', err);
       toast.error('Failed to sign out. Please try again.');
@@ -209,33 +204,30 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
   };
 
   const personaInfo = PERSONA_LABELS[userRole] || PERSONA_LABELS.smallholder_farmer;
+  const publicUsername = userProfile?.username;
+
+  if (loading) {
+    return (
+      <div className="min-h-[50vh] flex items-center justify-center" role="status" aria-label="Loading profile">
+        <span className="w-8 h-8 border-[3px] border-carbon-20 border-t-amber-500 rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Navigate to="/login?next=/profile" replace />;
+  }
 
   return (
-    <AnimatePresence>
-      {isOpen && user && (
-        <motion.div
-          key="user-profile-backdrop"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.15 }}
-          className="fixed inset-0 z-[10001] flex items-center justify-center p-4 bg-carbon-90/50 backdrop-blur-xs"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) onClose();
-          }}
-        >
-          <motion.div
-            key="user-profile-modal"
-            initial={{ opacity: 0, scale: 0.9, y: 15 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: 15 }}
-            transition={{ type: 'spring', stiffness: 350, damping: 25 }}
-            className="bg-white border border-carbon-20 rounded-2xl max-w-2xl w-full p-4 sm:p-6 shadow-2xl space-y-4 sm:space-y-5 max-h-[calc(100dvh-1.5rem)] sm:max-h-[90vh] flex flex-col text-carbon-80"
-            role="dialog"
-            aria-modal="true"
-            aria-label="User profile settings"
-          >
-            {/* Header */}
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25 }}
+      className="mx-auto w-full max-w-3xl space-y-4 pb-10"
+      data-testid="user-profile-page"
+    >
+      <Breadcrumbs />
+      <div className="bg-white border border-carbon-20 rounded-2xl w-full p-4 sm:p-6 shadow-md space-y-4 sm:space-y-5 flex flex-col text-carbon-80">
             <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3 pb-3 sm:pb-4 border-b border-carbon-20">
           <div className="flex items-center gap-3 min-w-0">
             {user.photoURL ? (
@@ -251,23 +243,31 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
             )}
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
-                <h2 className="text-base sm:text-lg font-extrabold text-carbon-90 truncate max-w-[55vw] sm:max-w-none">{displayName || 'User Profile'}</h2>
+                <h1 className="text-base sm:text-lg font-extrabold text-carbon-90 truncate max-w-[55vw] sm:max-w-none">{displayName || 'User Profile'}</h1>
                 <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-carbon-10 text-carbon-70 border border-carbon-20 whitespace-nowrap">
                   {personaInfo.label}
                 </span>
               </div>
               <p className="text-xs text-carbon-60 font-medium truncate max-w-[60vw] sm:max-w-none">{user.email}</p>
+              <p className="text-[10px] font-mono text-carbon-60 mt-0.5">hazardnet.live/profile</p>
             </div>
           </div>
-          <button
-            onClick={onClose}
-            className="min-h-[36px] px-3 py-1.5 text-xs font-black text-carbon-60 hover:text-carbon-90 rounded-lg hover:bg-carbon-10 transition-colors border border-carbon-20 flex items-center gap-1 cursor-pointer shrink-0"
-            title="Close Profile Modal"
-            aria-label="Close Profile Modal"
-          >
-            <MaterialIcon name="close" className="w-4 h-4" />
-            <span>CLOSE</span>
-          </button>
+          <div className="flex items-center gap-2 shrink-0">
+            {publicUsername && (
+              <Link
+                to={profilePath(publicUsername)}
+                className="min-h-[36px] px-3 py-1.5 text-xs font-black text-amber-800 hover:text-amber-950 rounded-lg hover:bg-amber-50 transition-colors border border-amber-200 flex items-center gap-1"
+              >
+                Public page /u/{publicUsername}
+              </Link>
+            )}
+            <Link
+              to="/dashboard"
+              className="min-h-[36px] px-3 py-1.5 text-xs font-black text-carbon-60 hover:text-carbon-90 rounded-lg hover:bg-carbon-10 transition-colors border border-carbon-20 flex items-center gap-1"
+            >
+              Dashboard
+            </Link>
+          </div>
         </div>
 
         {/* Scrollable Form Content */}
@@ -397,11 +397,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                   <button
                     type="button"
                     onClick={() => {
-                      if (onSelectDistrict) {
-                        onSelectDistrict(locResult.nearestDistrict.id);
-                      }
                       navigate(`/?district=${locResult.nearestDistrict.id}`);
-                      onClose();
                     }}
                     className="py-1.5 px-3 bg-carbon-90 hover:bg-carbon-80 text-white border border-carbon-90 font-bold rounded-xl text-xs transition-colors shadow-xs"
                   >
@@ -658,7 +654,6 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
               <button
                 type="button"
                 onClick={() => {
-                  onClose();
                   navigate('/dashboard');
                 }}
                 className="px-3 py-1.5 bg-carbon-90 hover:bg-carbon-80 text-white font-bold rounded-lg text-xs shadow-2xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer shrink-0"
@@ -723,10 +718,10 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
             <div className="flex items-center gap-2">
               <button
                 type="button"
-                onClick={onClose}
+                onClick={() => navigate('/dashboard')}
                 className="px-4 py-2 bg-white hover:bg-carbon-10 text-carbon-70 font-bold rounded-xl border border-carbon-20 text-xs shadow-xs cursor-pointer"
               >
-                Cancel
+                Back to dashboard
               </button>
               {user && (
                 <button
@@ -750,10 +745,9 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
           </div>
 
         </form>
-
-      </motion.div>
+      </div>
     </motion.div>
-  )}
-</AnimatePresence>
-);
+  );
 };
+
+export default UserProfilePage;

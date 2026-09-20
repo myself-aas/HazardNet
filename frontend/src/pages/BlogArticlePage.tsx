@@ -11,6 +11,49 @@ import { useSeoHead } from '../lib/seoHead';
 import { ADSENSE_SLOT_ARTICLE_FOOTER, ADSENSE_SLOT_ARTICLE_INLINE } from '../lib/adsense';
 import { useAuth } from '../context/AuthContext';
 import { isPrimarySuperAdmin } from '../lib/superadmins';
+import { getStaticBlogPostBySlug, type StaticBlogPost } from '../lib/staticBlogPosts';
+
+const escapeHtml = (value: string): string =>
+  value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+
+/** Lift a shipped editorial post onto the same article shape the studio uses. */
+const staticPostToArticle = (post: StaticBlogPost): BlogArticle => {
+  const iso = new Date(post.date).toISOString();
+  return {
+    id: post.id,
+    slug: post.slug,
+    title: post.title,
+    excerpt: post.summary,
+    contentHtml: post.content.map((paragraph) => `<p>${escapeHtml(paragraph)}</p>`).join(''),
+    coverImageUrl: null,
+    category: post.category,
+    tags: post.tags,
+    status: 'published',
+    authorId: null,
+    authorEmail: '',
+    authorName: post.author,
+    createdAt: iso,
+    updatedAt: iso,
+    publishedAt: iso,
+    metaTitle: post.title.slice(0, 60),
+    metaDescription: post.summary.slice(0, 160),
+    focusKeyword: post.tags[0] ?? '',
+    canonicalUrl: '',
+    ogImageUrl: '',
+    robotsNoIndex: false,
+    faqs: [],
+    authorTitle: '',
+    authorBio: '',
+    authorAvatarUrl: '',
+    authorWebsite: '',
+    containsAffiliateLinks: false,
+    affiliateDisclosure: '',
+  };
+};
 
 /** Neutral head applied while the article loads (replaced once it resolves). */
 const LOADING_HEAD = {
@@ -61,9 +104,18 @@ export const BlogArticlePage: React.FC = () => {
       }
       const result = await getArticleBySlug(slug);
       if (cancelled) return;
-      if (result.error) setError(result.error);
-      else if (!result.data || result.data.status !== 'published') setNotFound(true);
-      else setArticle(result.data);
+      if (result.data && result.data.status === 'published') {
+        setArticle(result.data);
+      } else {
+        const staticPost = getStaticBlogPostBySlug(slug);
+        if (staticPost) {
+          setArticle(staticPostToArticle(staticPost));
+        } else if (result.error) {
+          setError(result.error);
+        } else {
+          setNotFound(true);
+        }
+      }
       setLoading(false);
     })();
     return () => {
@@ -114,6 +166,7 @@ export const BlogArticlePage: React.FC = () => {
     month: 'long',
     year: 'numeric',
   });
+  const relatedDistrict = getStaticBlogPostBySlug(article.slug)?.relatedDistrict;
 
   const copyLink = async () => {
     const url = `${window.location.origin}/blogs/${article.slug}`;
@@ -211,6 +264,15 @@ export const BlogArticlePage: React.FC = () => {
                 </span>
               ))}
             </div>
+          )}
+
+          {relatedDistrict && (
+            <Link
+              to={`/?district=${relatedDistrict}`}
+              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-carbon-90 text-white text-xs font-extrabold hover:bg-carbon-80 transition-all shadow-md"
+            >
+              <MaterialIcon name="satellite_alt" className="w-4 h-4" /> View {relatedDistrict} on GIS Map
+            </Link>
           )}
 
           {/* Author bio box (E-E-A-T) */}

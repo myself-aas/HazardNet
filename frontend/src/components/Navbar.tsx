@@ -7,7 +7,6 @@ import MaterialIcon from './MaterialIcon';
 import CommandPalette from './CommandPalette';
 import { useAuth } from '../context/AuthContext';
 import { SavedAssessmentsModal } from './SavedAssessmentsModal';
-import { UserProfileModal } from './UserProfileModal';
 import { NotificationToggle } from './NotificationToggle';
 import { FirebaseRealtimeStatus } from './FirebaseRealtimeStatus';
 import { MenuDrawer } from './MenuDrawer';
@@ -40,7 +39,6 @@ export const Navbar: React.FC<NavbarProps> = ({
   const { user, userProfile } = useAuth();
 
   const [isSavedModalOpen, setIsSavedModalOpen] = useState(false);
-  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isMenuDrawerOpen, setIsMenuDrawerOpen] = useState(false);
   const [activeMenu, setActiveMenu] = useState<'home' | 'forecasts' | 'advisories' | 'docs' | 'analytics' | null>(null);
 
@@ -761,7 +759,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               <div
                 onClick={() => {
                   if (user) {
-                    setIsProfileModalOpen(true);
+                    navigate('/profile');
                   } else {
                     navigate('/login');
                   }
@@ -782,10 +780,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <motion.button
                   whileHover={{ scale: 1.04 }}
                   whileTap={{ scale: 0.96 }}
-                  onClick={() => navigate('/dashboard')}
+                  onClick={() => navigate('/profile')}
                   className="flex items-center gap-2 p-1 pl-1.5 pr-2.5 rounded-xl bg-white/70 hover:bg-white/95 border border-carbon-20/80 shadow-2xs transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-nasa-blue/60 focus-visible:outline-none"
-                  title="Open my dashboard"
-                  data-testid="navbar-dashboard-btn"
+                  title="Open my profile"
+                  data-testid="navbar-profile-btn"
                 >
                   {userProfile?.photoURL ? (
                     <img
@@ -850,20 +848,11 @@ export const Navbar: React.FC<NavbarProps> = ({
       )}
 
       {createPortal(
-        <UserProfileModal
-          isOpen={isProfileModalOpen}
-          onClose={() => setIsProfileModalOpen(false)}
-          onSelectDistrict={onSelectDistrict}
-        />,
-        document.body
-      )}
-
-      {createPortal(
         <MenuDrawer
           isOpen={isMenuDrawerOpen}
           onClose={() => setIsMenuDrawerOpen(false)}
           user={user}
-          onOpenProfile={() => setIsProfileModalOpen(true)}
+          onOpenProfile={() => navigate('/profile')}
           onOpenAuth={() => navigate('/login')}
           onSelectPage={(page) => {
             if (page.toLowerCase().includes('overview')) navigate('/live');
