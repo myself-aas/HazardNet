@@ -296,7 +296,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
           label is 11px metadata in the top-left, pointer-transparent.
         */}
         <h1 className="sr-only">Live map — multi-hazard situational awareness</h1>
-        <p className="pointer-events-none absolute top-2 left-2 z-[var(--z-sticky)] border border-carbon-20 bg-white/90 px-1.5 py-0.5 text-[11px] font-semibold uppercase leading-none tracking-wide text-carbon-60">
+        <p className="pointer-events-none absolute top-2 left-2 z-[var(--z-sticky)] border border-carbon-20 bg-white/90 px-1.5 py-0.5 text-[11px] font-semibold uppercase leading-none tracking-wide text-carbon-60 whitespace-nowrap">
           Live map
         </p>
 

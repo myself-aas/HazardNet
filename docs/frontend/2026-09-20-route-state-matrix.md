@@ -1,7 +1,7 @@
 # Route / state matrix (Phase 0 excerpt)
 
 **Status:** Working notes for the 2026-09-20 UI revision. Not a claim that screenshots have been captured.  
-**Fixtures:** `frontend/src/lib/__tests__/fixtures/storedForecast.ts` (labelled test data only).
+**Fixtures:** `frontend/src/lib/fixtures/storedForecast.ts` (labelled test data only).
 
 | Route family | Path examples | First question | Idle | Loading | Ready | Uncovered / empty | Error |
 |---|---|---|---|---|---|---|---|

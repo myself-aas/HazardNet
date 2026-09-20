@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import StoredForecastPanel from '../StoredForecastPanel';
-import { VALID_STORED_FORECAST } from '../../lib/__tests__/fixtures/storedForecast';
+import { VALID_STORED_FORECAST } from '../../lib/fixtures/storedForecast';
 import { resetLanguageForTests } from '../../lib/i18n';
 
 beforeEach(() => {

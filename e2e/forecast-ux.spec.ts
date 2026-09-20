@@ -42,10 +42,12 @@ test.describe('Forecast UX', () => {
   test('lookup district and horizon are keyboard reachable', async ({ page }) => {
     await page.goto(`${BASE}/upload`);
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible({ timeout: 20_000 });
-    const district = page.getByLabel(/district|জেলা/i);
+    // The lookup <section> is also named with “District …”, so getByLabel(/district/)
+    // is ambiguous. Target the labelled controls by id.
+    const district = page.locator('#lookup-district');
     await district.focus();
     await expect(district).toBeFocused();
     await page.keyboard.press('Tab');
-    await expect(page.getByLabel(/horizon|সময়সীমা/i)).toBeFocused();
+    await expect(page.locator('#lookup-horizon')).toBeFocused();
   });
 });

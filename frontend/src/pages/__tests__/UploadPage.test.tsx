@@ -3,7 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter } from 'react-router-dom';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import UploadPage from '../UploadPage';
-import { VALID_STORED_FORECAST } from '../../lib/__tests__/fixtures/storedForecast';
+import { VALID_STORED_FORECAST } from '../../lib/fixtures/storedForecast';
 import { resetLanguageForTests } from '../../lib/i18n';
 
 expect.extend(toHaveNoViolations);

@@ -17,7 +17,7 @@ This report covers **Phases 0–7**. It does not claim WCAG certification, field
 | Planned | Outcome |
 |---|---|
 | Route / state matrix | `docs/frontend/2026-09-20-route-state-matrix.md` — idle / loading / ready / uncovered / error per family. **Not** a screenshot audit. |
-| Lookup fixtures | `frontend/src/lib/__tests__/fixtures/storedForecast.ts` (labelled test data). |
+| Lookup fixtures | `frontend/src/lib/fixtures/storedForecast.ts` (labelled test data). |
 | Capture 360–1440, EN/BN, 200% zoom | **Not captured** in this environment. Review widths remain the plan’s list. |
 | Value-source register | UX-11: “Compound Vulnerability” withheld on the district trend (Phase 5). Composite labels on National Overview stay under ADR 0012. |
 
