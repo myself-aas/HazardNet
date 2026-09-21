@@ -1,5 +1,7 @@
 import dotenv from 'dotenv';
 import express from 'express';
+import http from 'http';
+import { execSync } from 'child_process';
 import { corsMiddleware } from './middleware/cors.js';
 import path from 'path';
 import fs from 'fs';
@@ -14,6 +16,8 @@ import conversionRoutes from './routes/conversions.js';
 import weatherRoutes from './routes/weather.js';
 import alertRoutes from './routes/alerts.js';
 import eventsRoutes from './routes/events.js';
+import groundingRoutes from './routes/grounding.js';
+import { liveVoiceRouter, setupLiveVoiceWebSocket } from './routes/liveVoice.js';
 import metrics from './metrics.js';
 import { refreshForecastAgeGauge } from './utils/forecastFreshness.js';
 import { predictLimiter, apiLimiter, alertLimiter } from './middleware/rateLimit.js';
@@ -123,6 +127,7 @@ app.use('/api', apiLimiter);
 app.use('/api/v1/forecasts', forecastRoutes);
 app.use('/api/advisory', advisoryRoutes);
 app.use('/api/chat', attachFirebaseAuthUser, dynamicAiLimiter, chatRoutes);
+app.use('/api/grounding', attachFirebaseAuthUser, dynamicAiLimiter, groundingRoutes);
 app.use('/api/agent', attachFirebaseAuthUser, dynamicAiLimiter, agentRoutes);
 app.use('/api/predict', predictLimiter, predictRoutes);
 app.use('/api/push', pushRoutes);
@@ -132,6 +137,7 @@ app.use('/api/v1/weather', weatherRoutes);
 // published alerts are public (PRODUCT_SPEC §1.3), the review queue is not.
 app.use('/api/v1/alerts', attachFirebaseAuthUser, alertLimiter, alertRoutes);
 app.use('/api/v1/events', eventsRoutes);
+app.use('/api/live-voice', liveVoiceRouter);
 
 // Prometheus metrics endpoint. The forecast-age gauge is refreshed here
 // (scrape-driven, 60s-cached store probe — see utils/forecastFreshness.js).
@@ -173,11 +179,71 @@ export default app;
 // (parallel suites would otherwise collide with EADDRINUSE).
 const invokedAsScript = process.argv[1] !== undefined
   && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+
 if (invokedAsScript) {
-  // Bind to port 3000 for AI Studio container routing
+  // Bind to port 3000 for AI Studio container routing (do NOT change or override)
   const PORT = 3000;
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`HazardNet Backend running on port ${PORT}`);
-  });
+
+  const freePort = (targetPort) => {
+    try {
+      const ssOut = execSync(`ss -tulpn 2>/dev/null | grep :${targetPort} || true`, { encoding: 'utf8' });
+      const pids = [...ssOut.matchAll(/pid=(\d+)/g)].map((m) => parseInt(m[1], 10));
+      for (const pid of pids) {
+        if (pid && pid !== process.pid && pid !== process.ppid) {
+          console.warn(`[server] Freeing port ${targetPort}: terminating stale process ${pid}...`);
+          try { process.kill(pid, 'SIGKILL'); } catch (_) {}
+        }
+      }
+    } catch (_) {}
+  };
+
+  const startServer = (port, maxRetries = 5, retryDelayMs = 1000) => {
+    let retries = 0;
+    freePort(port);
+
+    const server = http.createServer(app);
+    setupLiveVoiceWebSocket(server);
+
+    server.on('error', (err) => {
+      if (err.code === 'EADDRINUSE') {
+        retries++;
+        console.warn(`[server] Port ${port} is in use (EADDRINUSE). Attempting to clear stale socket (${retries}/${maxRetries})...`);
+        freePort(port);
+        if (retries <= maxRetries) {
+          setTimeout(() => {
+            try { server.close(); } catch (_) {}
+            server.listen(port, '0.0.0.0');
+          }, retryDelayMs);
+        } else {
+          console.error(`[server] Port ${port} remained in use after ${maxRetries} attempts.`);
+          process.exit(1);
+        }
+      } else {
+        console.error('[server] Fatal server error:', err);
+        process.exit(1);
+      }
+    });
+
+    server.listen(port, '0.0.0.0', () => {
+      console.log(`HazardNet Backend running on port ${port}`);
+    });
+
+    const shutdown = (signal) => {
+      console.log(`[server] Received ${signal}, closing server...`);
+      server.close(() => {
+        console.log('[server] HTTP server closed gracefully.');
+        process.exit(0);
+      });
+      setTimeout(() => {
+        console.warn('[server] Shutdown timeout expired, exiting.');
+        process.exit(0);
+      }, 3000).unref();
+    };
+
+    process.on('SIGTERM', () => shutdown('SIGTERM'));
+    process.on('SIGINT', () => shutdown('SIGINT'));
+  };
+
+  startServer(PORT);
 }
 

@@ -12,10 +12,38 @@
  * split backend/utils/forecastServe.js already uses for the forecast API.
  */
 
-import { searchRAG, GOVT_OFFICE_DIRECTORY } from '../../rag_pipeline/index.js';
+import { searchRAG, routeSkills, GOVT_OFFICE_DIRECTORY } from '../../rag_pipeline/index.js';
 import { generateAdvisoryWithFallback } from './ai_fallback_engine.js';
+import { detectGroundingIntent, executeMapsGrounding, executeSearchGrounding } from './gemini_grounding.js';
 
 export { GOVT_OFFICE_DIRECTORY };
+
+/**
+ * Infer primary hazard theme from query & district baseline for institutional skill routing.
+ */
+function inferHazardTheme(query = '', baseline = null) {
+  const q = String(query).toLowerCase();
+  if (/flood|submerg|flash flood|water log|inundat|haor|surma|kushiyara|jamuna|brahmaputra/i.test(q)) {
+    return 'Flood';
+  }
+  if (/cyclone|storm|surge|salin|tidal|coastal|wind gust|depression|super cyclone/i.test(q)) {
+    return 'Cyclone';
+  }
+  if (/drought|heat|arid|dry spell|water stress|scarcity|awd/i.test(q)) {
+    return 'Drought';
+  }
+  if (/cold|fog|frost|late blight|dense fog/i.test(q)) {
+    return 'Cold Wave';
+  }
+  if (baseline?.predominant_hazards && baseline.predominant_hazards.length > 0) {
+    const first = baseline.predominant_hazards[0];
+    if (/flood/i.test(first)) return 'Flood';
+    if (/cyclone/i.test(first)) return 'Cyclone';
+    if (/drought/i.test(first)) return 'Drought';
+    if (/cold/i.test(first)) return 'Cold Wave';
+  }
+  return 'Multi-Hazard';
+}
 
 const systemPrompt = `You are the HazardNet RAG Assistant — an expert AI advisor for Bangladesh Agriculture, Disaster Risk Management, Veterinary Care, Livestock, Fisheries, Agricultural Economics, Environmental Protection, and Humanitarian Relief.
 
@@ -122,6 +150,18 @@ export function directoryHandler(_req, res) {
   sendJson(res, 200, GOVT_OFFICE_DIRECTORY);
 }
 
+function getDistrictContacts(baseline) {
+  if (!baseline) return null;
+  return {
+    district: baseline.district || baseline.name,
+    dae_officer: baseline.dae_officer || 'Upazila Agriculture Officer (UAO)',
+    dls_officer: baseline.dls_officer || 'Upazila Livestock Officer (ULO)',
+    dof_officer: baseline.dof_officer || 'Upazila Fisheries Officer (UFO)',
+    dc_control_room: baseline.control_room || 'District Disaster Management Control Room',
+    contact_lines: baseline.contact_lines || ['16123 (Krishi Call Centre)', '1090 (Disaster Hotline)']
+  };
+}
+
 /**
  * Execute one RAG retrieval + multi-tier AI generation turn.
  * POST /api/chat/query  (Express route + Vercel function both call this)
@@ -134,7 +174,7 @@ export function directoryHandler(_req, res) {
  *   `statusCode` (400) so transports can map them to HTTP codes.
  */
 export async function handleChatQuery(input) {
-  const { query, district, conversationHistory = [] } = input || {};
+  const { query, district, conversationHistory = [], groundingMode = 'auto', userCoordinates } = input || {};
 
   if (!query || typeof query !== 'string' || query.trim() === '') {
     const err = new Error('Query parameter is required');
@@ -169,6 +209,90 @@ export async function handleChatQuery(input) {
 
   contextText += `\n=== OFFICIAL GOVT HELPLINES & WEBSITES ===\n`;
   contextText += JSON.stringify(GOVT_OFFICE_DIRECTORY, null, 2) + '\n';
+
+  // 3. Detect Grounding Intent (Maps vs Search vs Standard RAG)
+  const intent = detectGroundingIntent(sanitizedQuery, groundingMode);
+
+  // If Maps Grounding is explicitly selected or auto-detected and GEMINI_API_KEY is present
+  if (intent === 'maps' && process.env.GEMINI_API_KEY) {
+    try {
+      const mapsRes = await executeMapsGrounding({
+        query: sanitizedQuery,
+        district: sanitizedDistrict || ragResult.districtBaseline?.district || ragResult.districtBaseline?.name,
+        userCoordinates,
+        contextText
+      });
+
+      if (mapsRes && mapsRes.answer) {
+        return {
+          query,
+          answer: mapsRes.answer,
+          grounding_type: 'maps',
+          facilities: mapsRes.facilities || [],
+          coordinates: mapsRes.coordinates,
+          retrieved_sources: ragResult.results.map(r => ({
+            id: r.id,
+            title: r.title,
+            category: r.category,
+            relevanceScore: r.score
+          })),
+          district_baseline: ragResult.districtBaseline,
+          district_contacts: getDistrictContacts(ragResult.districtBaseline),
+          govt_directory: GOVT_OFFICE_DIRECTORY,
+          suggested_followups: [
+            `Show emergency shelters in ${sanitizedDistrict || 'my district'} on Google Maps`,
+            'What is the hotline for livestock emergency?',
+            'Find nearest DAE Upazila Agriculture Office'
+          ],
+          provider_source: mapsRes.provider,
+          cached: false,
+          prompt: { chars: sanitizedQuery.length, truncated: false }
+        };
+      }
+    } catch (mapsErr) {
+      console.warn('[Chat Service] Maps Grounding error, cascading to standard engine:', mapsErr.message);
+    }
+  }
+
+  // If Search Grounding is explicitly selected or auto-detected and GEMINI_API_KEY is present
+  if (intent === 'search' && process.env.GEMINI_API_KEY) {
+    try {
+      const searchRes = await executeSearchGrounding({
+        query: sanitizedQuery,
+        district: sanitizedDistrict || ragResult.districtBaseline?.district || ragResult.districtBaseline?.name,
+        contextText
+      });
+
+      if (searchRes && searchRes.answer) {
+        return {
+          query,
+          answer: searchRes.answer,
+          grounding_type: 'search',
+          grounding_sources: searchRes.sources || [],
+          search_queries: searchRes.searchQueries || [],
+          retrieved_sources: ragResult.results.map(r => ({
+            id: r.id,
+            title: r.title,
+            category: r.category,
+            relevanceScore: r.score
+          })),
+          district_baseline: ragResult.districtBaseline,
+          district_contacts: getDistrictContacts(ragResult.districtBaseline),
+          govt_directory: GOVT_OFFICE_DIRECTORY,
+          suggested_followups: [
+            `What is the latest BMD weather warning for ${sanitizedDistrict || 'Bangladesh'}?`,
+            'What are the active flood danger levels from FFWC?',
+            'Recommended recovery steps for submerged crops'
+          ],
+          provider_source: searchRes.provider,
+          cached: false,
+          prompt: { chars: sanitizedQuery.length, truncated: false }
+        };
+      }
+    } catch (searchErr) {
+      console.warn('[Chat Service] Search Grounding error, cascading to standard engine:', searchErr.message);
+    }
+  }
 
   // 3. Format Conversation History (the sanitized copy — capped above — so a
   //    hostile/oversized history cannot bloat the prompt)
@@ -213,17 +337,36 @@ fences, no surrounding prose:
   // verify the bound is enforced rather than merely computed.
   const promptStats = { chars: fullUserPrompt.length, truncated: promptTruncated };
 
-  // 4. Generate Answer via Multi-Provider HA Fallback Engine
+  // 4. Generate Answer via Multi-Provider HA Fallback Engine with RAG Skills Routing
+  const targetDistrict = district || ragResult.districtBaseline?.district || ragResult.districtBaseline?.name || 'Bangladesh';
+  const detectedHazard = inferHazardTheme(sanitizedQuery, ragResult.districtBaseline);
+
+  let routedSkillsPrompt = '';
+  try {
+    routedSkillsPrompt = routeSkills({
+      district_name: targetDistrict,
+      hazard_type: detectedHazard,
+      severity_score: 0.65,
+      confidence: 0.90
+    });
+  } catch (skillErr) {
+    console.warn('[Chat Service] routeSkills routing warning:', skillErr.message);
+  }
+
+  const effectiveSystemPrompt = routedSkillsPrompt
+    ? `${routedSkillsPrompt}\n\n=== ADDITIONAL ADVISOR DIRECTIVES ===\n${systemPrompt}`
+    : systemPrompt;
+
   const aiParams = {
-    district_name: district || ragResult.districtBaseline?.district || ragResult.districtBaseline?.name || 'Bangladesh',
-    hazard_type: 'General Agriculture & Hazard Inquiry',
-    severity_score: 0.5,
+    district_name: targetDistrict,
+    hazard_type: detectedHazard,
+    severity_score: 0.65,
     confidence: 0.90
   };
 
   let aiResponse;
   try {
-    aiResponse = await generateAdvisoryWithFallback(aiParams, systemPrompt, fullUserPrompt);
+    aiResponse = await generateAdvisoryWithFallback(aiParams, effectiveSystemPrompt, fullUserPrompt);
   } catch (e) {
     console.warn('[Chat Service] AI engine fallback error:', e.message);
   }
@@ -289,6 +432,11 @@ fences, no surrounding prose:
     district_baseline: ragResult.districtBaseline,
     district_contacts: districtContacts,
     govt_directory: GOVT_OFFICE_DIRECTORY,
+    routed_skills: {
+      hazard_category: detectedHazard,
+      routed: Boolean(routedSkillsPrompt),
+      institutional_protocols: ['DAE', 'BRRI', 'BARI', 'DLS', 'DoF', 'BMD', 'BWDB']
+    },
     suggested_followups: followups,
     provider_source: aiResponse?.provider_source || 'HazardNet RAG Knowledge Engine',
     cached: aiResponse?.cached || false,

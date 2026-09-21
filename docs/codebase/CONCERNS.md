@@ -1,42 +1,22 @@
 # Codebase Concerns
-# Concerns
 
 > Evidence baseline: `df67e529073939344167e298dcc0f7628039bdba`, inspected 2026-09-20. This documents the checkout, not a verified live deployment.
-**Evidence:** README intent vs actual code, `package.json`, `frontend/package.json`, `.github/workflows/`, `scripts/db/` vs ADR 0014, `vercel.json`, `audit-exceptions.json`, `HazardNet.md` Phase 7 horizon mismatch, `docs/audits/`, file-size signals from `find`.
 
 ## Implemented owner decisions (2026-09-20)
-## Intent vs. Reality Divergences
 
 - Handwritten scoring, tensor validation/normalization/cache runtime and TFJS npm dependencies removed. Express and Vercel now share stored-forecast serving.
 - Forecast writes use a dedicated Admin transaction; failure is non-success and cannot install uncommitted rows in fallback memory. Provision and staging-test credentials before enabling production ingestion. Other client-SDK services, including the alert engine, are unchanged.
 - `firebase-admin` moved to runtime dependencies.
 - Public division formula, derived score, ranking and score-based styling removed; known-pattern embargo regression checks now block reintroduction.
 - PostgreSQL forecast cutover superseded; conversion endpoint authentication remains unchanged per owner decision.
-1. **Mapbox GL vs Leaflet.** README and `.env` template mention Mapbox GL and `VITE_MAPBOX_TOKEN`, but `frontend/package.json` ships `leaflet`, `leaflet.heat`, `leaflet.markercluster` — there is no `mapbox-gl` dependency. README architecture diagram and install guide are out of date.
-2. **Horizon claims (ADR 0005 pending).** `HazardNet.md` Phase 7 and the Kaggle forecast notebook implement 10/20/30-day horizons (`HORIZONS = {'10_days':10,'20_days':20,'30_days':30}`), while the canonical backend (`VALID_HORIZONS = ['7_days','15_days']`), the UI (`frontend/src/lib/forecasts.ts` per README), and `test_model_claims.py` enforce 7/15 days. ADR 0005 accepts the expansion but it is not shipped; the Kaggle producer must still output 7/15 or the bridge will reject rows.
-3. **INT8 model file is misnamed.** `Models/hazardnet_int8.tflite` exists but is actually FP32. ADR 0007 documents that TFLite CONV_3D kernels require FP32 and INT8 crashes. The server explicitly blocks both filenames at the public static route; however the misnomer can mislead downstream tooling.
-4. **PostgreSQL migrations exist but are superseded.** `scripts/db/001…008.sql` describe a Postgres/PostGIS schema, but ADR 0014 names Firestore as the durable forecast store. The README still mentions PostgreSQL in the docker-compose quick start.
-5. **In-browser CNN inference (Edge Mode).** README §System Architecture mentions "Edge Mode: TFLite WASM loader + Service Worker", but `frontend/package.json` has no `@tensorflow/tfjs` or TFLite WASM dependency, and the product spec/ADR 0009 says the web app does not run a CNN — it reads stored forecasts. TFLite WASM edge mode is aspirational/removed.
-6. **Docker Compose.** README documents `docker-compose up -d --build` but no `docker-compose.yml` or `Dockerfile` exists at the repo root (verified). The docker path is aspirational or lives in a separate deployment repo.
 
 Evidence: `docs/ops/2026-09-20-stored-forecasts.md`, `backend/forecastPersistence.js`, `backend/utils/storedPrediction.js`, `api/predict.js`, `frontend/src/components/NationalOverview.tsx`.
-## Technical Debt
 
 ## Core Sections (Required)
-- **Dual deployment shape (Express + Vercel functions).** API handlers are duplicated between `backend/routes/*.js` (used by the Express server) and `api/*.js` (Vercel serverless entry points). Keeping them in sync is error-prone; the `securityHeadersParity` test exists because drift has happened before.
-- **Advisory schema translation in `fetch_kaggle_forecast.py`.** The bridge maps `hazardnet_advisories_latest.csv` onto the canonical schema by hand, including unit-conversion footguns documented at length in the script (`om_temp_2m_k` is Celsius, `om_et_sum_m` is mm, etc.). Once the notebook emits canonical columns directly, this translation should be deleted.
-- **Large `HazardNet.md` (≈188 KB).** This single file contains all seven phases of the scientific pipeline as embedded Python code blocks in Markdown. It is excellent narrative but hard to reference/import; the actionable code lives in `training/`, `ml/`, and Kaggle notebooks. Consider splitting per phase.
-- **Historical SQL migrations accumulate.** `scripts/db/001_init_forecasts.sql` through `008_hazard_events_postgis.sql` are PostgreSQL-specific but the app uses Firestore. If there is no plan to cut over, they should be moved to `docs/archive/` to avoid onboarding confusion.
-- **No strict TypeScript "engines" enforcement.** README says Node 20+ but `package.json` does not declare `engines`.
-- **Impeccable/Vercel skill vendor files** under `.agents/skills/` and `agent/skills/` are ~thousands of files; they are vendored agent skill packs but not application code. They add noise to the tree and could be gitignored or submoduled if they are regenerable.
-- **Root `venv/` is committed.** `venv/bin/python*` exists in the working tree and appeared in `git log`, and `.gitignore` only excludes `.venv/` (dot-prefixed), not `venv/`. This is a 10+ MB virtualenv in version control and should be gitignored/removed.
 
 ### 1) Top Risks (Prioritized)
-## Bugs & Issues Found in Code Reading
 
 Static findings are distinguished from live reproduction. Suggested actions below are recommendations, not changes made during discovery.
-- None of the sampled source files contained obvious logic bugs. The codebase uses guards (NaN guards, zero-division guards, invalid-band guards, unit conversion notes) and tests specifically target previously-encountered regressions (see docs/ops and docs/audits for a historical record).
-- The dual-naming issue for INT8 and horizons is an *accepted, documented* drift, not an unknown bug.
 
 | Severity | Concern | Evidence | Impact | Suggested action |
 |---|---|---|---|---|
@@ -44,15 +24,8 @@ Static findings are distinguished from live reproduction. Suggested actions belo
 | High | Unauthenticated conversion debug/dispatch/reconciliation routes | `backend/routes/conversions.js`, `backend/server.js` | In the Express runtime, debug returns buffered attribution records without an identity/owner check; baseline rate limiting is not authorization | Owner declined auth change (ADR 0014); retain this as accepted exposure, not a remediated issue |
 | High | Historical credential exposure acknowledged, rotation not verified | `.env.example`, `docs/audits/2026-09-18-secret-scan-false-negative.md` | Removing secrets from current files does not revoke historical values | Confirm revocation/rotation privately; do not copy secrets into docs |
 | Medium | Development/monitoring port disagreement | `backend/server.js`, `frontend/vite.config.ts`, `monitoring/prometheus.yml` | Express binds 3000; Vite proxies/scraper expect 3001 | Centralize port config and test split-dev setup |
-## Security Risks
 
 ### 2) Technical Debt
-1. **Rotated credential history.** `.env.example` explicitly notes: "the real values must be rotated (they exist in git history)". Confirm rotation actually occurred.
-2. **CSP parity.** Past drift between `backend/security/csp.js` and `vercel.json` caused ad-network allowlist divergence (documented in `server.js` comments). The `securityHeadersParity` test now gates this.
-3. **AI prompt injection surface.** Chat/agent routes accept arbitrary user input and call Gemini with RAG context. `chatPromptBounds.test.js` exists to bound behaviour; confirm prompt-bound tests cover role injection and instruction override.
-4. **CSV ingestion.** `csvSafety.js` and CSV injection guards are tested; however any authenticated ingest (BACKEND_API_KEY leak) could write adversarial rows.
-5. **Service worker scope.** The offline SW caches forecast snapshots. Confirm cache invalidation logic cannot serve indefinitely-stale data past the prediction window.
-6. **Firestore rules surface (`firestore.rules`, 11 KB).** Complex RLS rules warrant targeted testing for blog articles, user dashboards, and forecast reads; `__tests__/firestoreRules.test.js` exists but breadth of coverage should be audited.
 
 | Debt item | Why it exists / known context | Where | Risk if ignored | Suggested fix |
 |---|---|---|---|---|
@@ -61,18 +34,10 @@ Static findings are distinguished from live reproduction. Suggested actions belo
 | Checked-in interpreter binaries | Three identical 5,937,672-byte executable blobs are tracked; reason [TODO] | `venv/bin/python`, `venv/bin/python3`, `venv/bin/python3.10` | Nonportable checkout weight; stale interpreter may be used accidentally | Remove from tracking only in a separately approved cleanup; use a recreated virtualenv |
 | Duplicate/misnamed model artifact | INT8 artifact is documented as retired/misnamed | `Models/REGISTRY.json`, `Models/hazardnet_int8.tflite`, ADR 0007 | False quantization assumptions | Preserve provenance but remove misleading consumption/copy |
 | Large mixed UI modules | Inspection sees map/render/control code in large source files; original motivation [TODO] | `LiveMapView.tsx`, `DistrictDetailPage.tsx`, `Dashboard.tsx` | Large change surface and difficult isolated tests | Extract bounded behavior behind existing tests, not a blind rewrite |
-## Performance Bottlenecks & Scaling Risks
 
 Source-marker audit on 2026-09-20: **one** TODO/FIXME/HACK line across tracked JS/MJS/TS/TSX/Python under backend, api, frontend, scripts, training, rag_pipeline, utils, excluding tests, __tests__, public: `frontend/src/services/firebase.ts:29` (“Add SDKs…”). This narrow count is not a debt metric. Test TODOs/coverage limitations are discussed in `TESTING.md`, separately from production debt.
-- **Kaggle → GitHub Actions daily pull** is single-threaded per district and bound by GEE task scheduling inside the Kaggle kernel (not the Vercel side). Bridge-side, `fetch_kaggle_forecast.py` is I/O bound and runs in <30 seconds.
-- **Firestore forecast reads** are keyed by district+horizon with 64 districts × 2 horizons → tiny documents; not a bottleneck. Bulk heatmap reads fetch 128 rows per request.
-- **Serverless function cold starts.** `api/chat/query.js` bundles `rag_pipeline/**` (`vercel.json` `includeFiles`); cold start will be larger than pure API handlers. Predict/forecasts functions are lightweight.
-- **Alert fan-out** is capped by `SMS_MAX_PER_RUN` and per-channel rate limits (Telegram/BulkSMS).
-- **TFLite conversion.** INT8 quantisation is explicitly unsupported because TFLite CONV_3D requires FP32. The FP32 model fits comfortably under 150 MB edge target per the deployment converter, but is not small for microcontrollers.
-- **Bundle size** is monitored by `scripts/check-bundle.mjs`; Leaflet + Recharts + MUI + Framer Motion is a heavy frontend. The low-bandwidth mode swaps raster tiles for vector to mitigate.
 
 ### 3) Security Concerns
-## High-Churn Files (signals from git)
 
 | Risk | OWASP category | Evidence | Current mitigation | Gap |
 |---|---|---|---|---|
@@ -82,16 +47,10 @@ Source-marker audit on 2026-09-20: **one** TODO/FIXME/HACK line across tracked J
 | Historical exposed provider credentials | A05 misconfiguration | `.env.example`, secret-scan audit | Placeholders, ignore rules, CI scanner | [TODO] Rotation completion |
 | URL query values enter request logs | N/A; sensitive logging risk | `backend/middleware/requestId.js` | UUID request correlation | No query redaction in this middleware; avoid credentials in query strings |
 | Broad outbound CSP allowance | A05 hardening consideration | `backend/security/csp.js`, `vercel.json` | CSP, frame denial, HTTPS headers | `connect-src https: wss:` is broad; review supported origins before narrowing |
-[TODO] Run `git log --pretty=format: --name-only -n 200 | sort | uniq -c | sort -rn | head -20` to identify high-churn files. Flag the top 5 here.
 
 No live penetration test or dependency vulnerability audit was performed. Existing security gates are evidence of controls, not proof of absence of vulnerabilities.
-## Test Coverage Gaps (in test/ directories only — NOT production debt)
 
 ### 4) Performance and Scaling Concerns
-- E2E coverage for the alert duty-officer review flow (Playwright spec exists [TODO] confirm coverage).
-- RAG retrieval relevance tests for the chat/agent routes are not apparent (mostly contract / prompt-bound tests).
-- Cross-browser Bengali typography rendering — visual regression is covered by `scripts/qa/design-review.mjs` but not automated per-commit.
-- Load tests (`load-tests/`) exist but are not wired into CI.
 
 | Concern | Evidence | Current symptom | Scaling risk | Suggested improvement |
 |---|---|---|---|---|
@@ -158,9 +117,3 @@ questions remain open. Canonical decision record: `docs/adr/0014-codebase-owner-
 The pre-existing standalone map and scan were archived without deleting their historical contents to `docs/audits/codebase-2026-09-18/`; the old map is explicitly labelled superseded. The prior discovery docs were cross-checked for unresolved risks, including conversion endpoint exposure and PostgreSQL ADR drift.
 
 The upstream skill and templates were fetched using GitHub CLI after a direct Python HTTPS download failed. The scan was run from the repository root with output in external scratch storage, deliberately keeping `docs/codebase/` to exactly the seven required Markdown files. Scanner output was cross-checked against source (notably its missed performance harnesses and unusable shallow-history churn ranking).
-[ASK USER]
-1. Is Mapbox still used anywhere (tile endpoints, styles) or should the README Mapbox references be retired in favour of Leaflet-only?
-2. Are the PostgreSQL migrations under `scripts/db/` still planned to be used, or can they be archived?
-3. Is Edge/TFJS inference still a roadmap goal (README mentions a WASM loader that isn't in the dependency tree) or should it be removed from the architecture diagram?
-4. What is the status of the 10/20/30-day horizon work (Kaggle Phase 7) — is it waiting for a coordinated backend/UI cutover?
-5. Is the `venv/` directory at the repo root supposed to be gitignored?

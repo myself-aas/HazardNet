@@ -1,8 +1,9 @@
 {
   "name": "HazardNet",
-  "description": "AI-powered Geospatial Multi-Hazard Intelligence & Early Warning System for Bangladesh with offline map tile caching and Ultra-HD map report export.",
+  "description": "AI-powered Geospatial Multi-Hazard Intelligence & Early Warning System for Bangladesh with real-time gemini-3.8-live voice conversation, RAG institutional protocols, and Google Search & Maps Grounding.",
   "requestFramePermissions": [
-    "geolocation"
+    "geolocation",
+    "microphone"
   ],
   "majorCapabilities": [
     "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"

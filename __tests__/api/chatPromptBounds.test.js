@@ -18,6 +18,7 @@ jest.mock('../../rag_pipeline/index.js', () => ({
     districtBaseline: null,
   })),
   GOVT_OFFICE_DIRECTORY: [],
+  routeSkills: jest.fn(() => 'test routed skills'),
   getAgentInstructions: jest.fn(() => 'test instructions'),
 }));
 

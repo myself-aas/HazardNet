@@ -32,8 +32,8 @@ async function queryHandler(req, res) {
   // real rationing stays with the limiter written for this endpoint.
   if (guardRequest(req, res, { bucket: 'read' })) return;
   try {
-    const { query, district, conversationHistory } = req.body || {};
-    const payload = await handleChatQuery({ query, district, conversationHistory });
+    const { query, district, conversationHistory, groundingMode, userCoordinates } = req.body || {};
+    const payload = await handleChatQuery({ query, district, conversationHistory, groundingMode, userCoordinates });
     res.json(payload);
   } catch (err) {
     if (err.statusCode) {

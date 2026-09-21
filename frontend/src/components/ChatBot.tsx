@@ -3,10 +3,31 @@ import { useState, useEffect, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { motion, AnimatePresence } from 'framer-motion';
 import { HazardNetBrand } from './HazardNetLogo';
+import { LiveVoiceAdvisor } from './LiveVoiceAdvisor';
+import { Mic, MessageSquare, Radio } from 'lucide-react';
+
+interface GroundingFacility {
+  title: string;
+  uri: string;
+  snippet?: string;
+  type?: string;
+}
+
+interface GroundingSource {
+  title: string;
+  uri: string;
+  domain?: string;
+  type?: string;
+}
 
 interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
+  groundingType?: 'maps' | 'search' | 'auto' | 'none';
+  facilities?: GroundingFacility[];
+  groundingSources?: GroundingSource[];
+  searchQueries?: string[];
+  providerSource?: string;
 }
 
 interface ChatResponse {
@@ -15,13 +36,20 @@ interface ChatResponse {
   district_contacts?: any;
   provider_source?: string;
   retrieved_sources?: any[];
+  grounding_type?: 'maps' | 'search';
+  facilities?: GroundingFacility[];
+  grounding_sources?: GroundingSource[];
+  search_queries?: string[];
 }
 
 export default function ChatBot() {
   const [isOpen, setIsOpen] = useState(false);
+  const [chatMode, setChatMode] = useState<'text' | 'voice'>('text');
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [groundingMode, setGroundingMode] = useState<'auto' | 'maps' | 'search'>('auto');
+  const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);
   const [sampleQuestions, setSampleQuestions] = useState<any[]>([]);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -38,6 +66,24 @@ export default function ChatBot() {
     }
   }, [messages, loading]);
 
+  // Request browser location if available for Google Maps grounding
+  const requestLocation = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          setUserLocation({
+            latitude: pos.coords.latitude,
+            longitude: pos.coords.longitude
+          });
+        },
+        (err) => {
+          console.log('[ChatBot] Geolocation access optional or denied:', err.message);
+        },
+        { timeout: 5000 }
+      );
+    }
+  };
+
   const fetchSampleQuestions = async () => {
     try {
       const res = await fetch('/api/chat/sample-questions');
@@ -48,9 +94,10 @@ export default function ChatBot() {
     }
   };
 
-  const sendMessage = async (text: string) => {
+  const sendMessage = async (text: string, overrideMode?: 'auto' | 'maps' | 'search') => {
     if (!text.trim()) return;
     
+    const modeToUse = overrideMode || groundingMode;
     const newMsg: ChatMessage = { role: 'user', content: text };
     setMessages(prev => [...prev, newMsg]);
     setInput('');
@@ -62,12 +109,12 @@ export default function ChatBot() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           query: text,
+          groundingMode: modeToUse,
+          userCoordinates: userLocation,
           conversationHistory: messages.slice(-4)
         })
       });
 
-      // A proxy/404 can answer with HTML — surface the HTTP status instead of
-      // dying on the JSON parse with a generic "error communicating" bubble.
       const data: ChatResponse = await res.json().catch(() => ({}) as ChatResponse);
 
       let answer = data.answer ||
@@ -79,14 +126,17 @@ export default function ChatBot() {
          answer += `\n\n**Suggested Questions:**\n` + data.suggested_followups.map(q => `- ${q}`).join('\n');
       }
 
-      // Provenance footer — shows which engine answered (Gemini / OpenRouter /
-      // Groq free-tier LLM over the RAG knowledge base, or the offline
-      // deterministic tier when every API key is unavailable).
-      if (data.provider_source) {
-        answer += `\n\n---\n*Source: ${data.provider_source}*`;
-      }
+      const assistantMsg: ChatMessage = {
+        role: 'assistant',
+        content: answer,
+        groundingType: data.grounding_type,
+        facilities: data.facilities,
+        groundingSources: data.grounding_sources,
+        searchQueries: data.search_queries,
+        providerSource: data.provider_source
+      };
 
-      setMessages(prev => [...prev, { role: 'assistant', content: answer }]);
+      setMessages(prev => [...prev, assistantMsg]);
     } catch (err) {
       console.error(err);
       setMessages(prev => [...prev, { role: 'assistant', content: 'There was an error communicating with the AI. Please try again later.' }]);
@@ -104,25 +154,49 @@ export default function ChatBot() {
 
   return (
     <>
-      {/* Floating Action Button. HDS semantics: this control *does something
-          here* (it opens the on-page assistant), so it is blue. Red is reserved
-          for "go somewhere" — navigation CTAs and errors. */}
+      {/* Floating Action Button */}
       <AnimatePresence>
         {!isOpen && (
-          <motion.button
-            key="chat-fab"
-            onClick={() => setIsOpen(true)}
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0, opacity: 0 }}
-            whileHover={{ scale: 1.08 }}
-            whileTap={{ scale: 0.92 }}
-            className="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-[var(--z-sticky)] px-4 sm:px-5 py-3 min-h-[44px] bg-nasa-blue hover:bg-nasa-blue-shade text-white font-semibold text-sm flex items-center gap-2 cursor-pointer touch-manipulation"
-            aria-label="Open AI Advisor chat"
-          >
-            <span className="w-2 h-2 rounded-full bg-carbon-black/70 animate-ping" />
-            AI Advisor
-          </motion.button>
+          <div className="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-[var(--z-sticky)] flex items-center gap-2">
+            <motion.button
+              key="voice-fab"
+              id="launch-voice-advisor-fab"
+              onClick={() => {
+                setChatMode('voice');
+                setIsOpen(true);
+              }}
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0, opacity: 0 }}
+              whileHover={{ scale: 1.06 }}
+              whileTap={{ scale: 0.94 }}
+              className="p-3 min-w-[44px] min-h-[44px] rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-xl flex items-center justify-center cursor-pointer transition border border-white/20"
+              title="Live Voice Advisor (gemini-3.8-live)"
+              aria-label="Open Live Voice Advisor"
+            >
+              <Mic className="w-5 h-5 text-white animate-pulse" />
+            </motion.button>
+            <motion.button
+              key="chat-fab"
+              id="launch-text-advisor-fab"
+              onClick={() => {
+                setChatMode('text');
+                setIsOpen(true);
+                requestLocation();
+              }}
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0, opacity: 0 }}
+              whileHover={{ scale: 1.06 }}
+              whileTap={{ scale: 0.94 }}
+              className="px-4 sm:px-5 py-3 min-h-[44px] bg-nasa-blue hover:bg-nasa-blue-shade text-white font-semibold text-sm flex items-center gap-2 cursor-pointer touch-manipulation shadow-lg rounded-full"
+              aria-label="Open AI Advisor chat"
+            >
+              <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
+              <span>AI Advisor</span>
+              <span className="text-[10px] bg-white/20 px-1.5 py-0.5 rounded font-mono uppercase tracking-wider">Voice & Text</span>
+            </motion.button>
+          </div>
         )}
       </AnimatePresence>
 
@@ -131,39 +205,72 @@ export default function ChatBot() {
         {isOpen && (
           <motion.div
             key="chat-window"
-            initial={{ opacity: 0, scale: 0.85, y: 30, transformOrigin: 'bottom right' }}
+            initial={{ opacity: 0, scale: 0.88, y: 30, transformOrigin: 'bottom right' }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.85, y: 30 }}
-            transition={{ type: 'spring', stiffness: 350, damping: 25 }}
-            /* Mobile: a true full-screen sheet (inset-0). It previously opened
-                at top-12 while the sticky header is h-14, so its top edge sat
-                8px into the header and the half-covered bar looked broken.
-                Desktop: anchored bottom-right panel, unchanged. */
-            className="fixed inset-x-0 bottom-0 top-0 sm:top-auto sm:bottom-6 sm:right-6 sm:left-auto z-[var(--z-sticky)] w-full sm:w-[450px] h-auto sm:h-[600px] sm:max-h-[calc(100dvh-3rem)] max-h-dvh bg-white  flex flex-col border border-carbon-20 pb-[env(safe-area-inset-bottom)] sm:pb-0"
+            exit={{ opacity: 0, scale: 0.88, y: 30 }}
+            transition={{ type: 'spring', stiffness: 350, damping: 26 }}
+            className="fixed inset-x-0 bottom-0 top-0 sm:top-auto sm:bottom-6 sm:right-6 sm:left-auto z-[var(--z-sticky)] w-full sm:w-[480px] h-auto sm:h-[640px] sm:max-h-[calc(100dvh-3rem)] max-h-dvh bg-white flex flex-col border border-carbon-20 shadow-2xl pb-[env(safe-area-inset-bottom)] sm:pb-0 sm:rounded-2xl overflow-hidden"
             role="dialog"
             aria-modal="true"
             aria-label="HazardNet AI Advisor chat"
           >
             {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-carbon-20 bg-carbon-05 text-carbon-90 sm:rounded-t-2xl pt-[max(1rem,env(safe-area-inset-top))] sm:pt-4 shrink-0">
+            <div className="flex items-center justify-between p-3 border-b border-carbon-20 bg-carbon-05 text-carbon-90 shrink-0">
               <div className="flex items-center gap-2">
                 <HazardNetBrand size="sm" />
+                <div className="flex items-center bg-carbon-10 rounded-lg p-0.5 border border-carbon-20">
+                  <button
+                    id="tab-text-mode-btn"
+                    type="button"
+                    onClick={() => setChatMode('text')}
+                    className={`px-2.5 py-1 text-xs font-semibold rounded-md flex items-center gap-1.5 transition cursor-pointer ${
+                      chatMode === 'text' 
+                        ? 'bg-white text-carbon-90 shadow-2xs border border-carbon-20' 
+                        : 'text-carbon-60 hover:text-carbon-90'
+                    }`}
+                  >
+                    <MessageSquare className="w-3 h-3" />
+                    <span>Text</span>
+                  </button>
+                  <button
+                    id="tab-voice-mode-btn"
+                    type="button"
+                    onClick={() => setChatMode('voice')}
+                    className={`px-2.5 py-1 text-xs font-semibold rounded-md flex items-center gap-1.5 transition cursor-pointer ${
+                      chatMode === 'voice' 
+                        ? 'bg-blue-600 text-white shadow-2xs' 
+                        : 'text-blue-700 hover:text-blue-900'
+                    }`}
+                  >
+                    <Radio className="w-3 h-3 animate-pulse" />
+                    <span>Live Voice</span>
+                  </button>
+                </div>
               </div>
-              <motion.button 
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setIsOpen(false)}
-                className="min-h-[44px] px-3 hover:bg-carbon-20 text-carbon-70 hover:text-carbon-90 text-sm font-semibold cursor-pointer flex items-center gap-1 border border-carbon-20 touch-manipulation"
-                title="Close Assistant"
-                aria-label="Close Assistant"
-              >
-                <MaterialIcon name="close" className="w-4 h-4" />
-                <span>Close</span>
-              </motion.button>
+              <div className="flex items-center gap-2">
+                <motion.button 
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setIsOpen(false)}
+                  className="min-h-[36px] px-2.5 hover:bg-carbon-20 text-carbon-70 hover:text-carbon-90 text-sm font-semibold cursor-pointer flex items-center gap-1 border border-carbon-20 rounded touch-manipulation"
+                  title="Close Assistant"
+                  aria-label="Close Assistant"
+                >
+                  <MaterialIcon name="close" className="w-4 h-4" />
+                  <span>Close</span>
+                </motion.button>
+              </div>
             </div>
 
+            {chatMode === 'voice' ? (
+              <div className="flex-1 overflow-hidden flex flex-col">
+                <LiveVoiceAdvisor onSwitchToText={() => setChatMode('text')} onClose={() => setIsOpen(false)} />
+              </div>
+            ) : (
+              <>
+
             {/* Message Area */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-6 bg-carbon-05">
+            <div className="flex-1 overflow-y-auto p-4 space-y-5 bg-carbon-05">
               
               {/* Welcome Message */}
               {messages.length === 0 && (
@@ -177,44 +284,87 @@ export default function ChatBot() {
                     <div className="w-8 h-8 rounded-full bg-nasa-red text-white flex items-center justify-center shrink-0 font-bold text-xs shadow-sm">
                       AI
                     </div>
-                    <div className="bg-white border border-carbon-20 border border-carbon-20 p-4 text-sm text-carbon-80">
-                      <p className="mb-2 font-semibold">Hello! I'm HazardNet.</p>
-                      <p>You can ask me anything about:</p>
-                      <ul className="list-disc pl-4 mt-2 space-y-1 text-xs text-carbon-60">
-                        <li>Disaster risk management & flood protocols</li>
-                        <li>Agricultural advice, crop stages, and resilient seeds</li>
-                        <li>Veterinary emergency & livestock care</li>
-                        <li>Fisheries, aquaculture, and pond protection</li>
-                        <li>Govt offices, helplines, NGOs, and resources</li>
-                      </ul>
+                    <div className="bg-white border border-carbon-20 p-4 text-sm text-carbon-80 rounded-xl shadow-xs">
+                      <p className="mb-2 font-semibold text-carbon-90">Hello! I am HazardNet AI Advisor.</p>
+                      <p className="text-xs text-carbon-70 mb-3">
+                        Grounded with <strong>gemini-3.5-flash</strong>, <strong>Google Maps</strong>, and <strong>Google Search</strong> for real-time agricultural advice, flood alerts, and emergency facilities.
+                      </p>
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div className="p-2 bg-blue-50/70 border border-blue-200/60 rounded-lg">
+                          <div className="font-semibold text-blue-900 flex items-center gap-1 mb-1">
+                            <span>📍</span> Google Maps Data
+                          </div>
+                          <span className="text-blue-800/80">Locate nearest DAE offices, veterinary clinics, cyclone and flood shelters.</span>
+                        </div>
+                        <div className="p-2 bg-emerald-50/70 border border-emerald-200/60 rounded-lg">
+                          <div className="font-semibold text-emerald-900 flex items-center gap-1 mb-1">
+                            <span>🌐</span> Google Search Data
+                          </div>
+                          <span className="text-emerald-800/80">Retrieve live BMD weather warnings, FFWC river danger levels, and news.</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Grounded Quick Actions */}
+                  <div className="space-y-2">
+                    <p className="text-xs font-semibold text-carbon-60 uppercase tracking-wider px-1">
+                      Quick Grounded Inquiries:
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <button
+                        onClick={() => sendMessage('Where is the nearest Upazila Agriculture Office (DAE) in Sunamganj?', 'maps')}
+                        className="text-left text-xs bg-white border border-carbon-20 text-carbon-80 p-2.5 rounded-lg hover:border-nasa-blue hover:bg-blue-50/50 transition-colors flex items-start gap-2 shadow-2xs cursor-pointer"
+                      >
+                        <span className="text-base shrink-0">📍</span>
+                        <span>Find nearest DAE Agriculture Office (Sunamganj)</span>
+                      </button>
+
+                      <button
+                        onClick={() => sendMessage("Locate cyclone and flood shelters near Cox's Bazar", 'maps')}
+                        className="text-left text-xs bg-white border border-carbon-20 text-carbon-80 p-2.5 rounded-lg hover:border-nasa-blue hover:bg-blue-50/50 transition-colors flex items-start gap-2 shadow-2xs cursor-pointer"
+                      >
+                        <span className="text-base shrink-0">📍</span>
+                        <span>Locate Cyclone Shelters (Cox's Bazar)</span>
+                      </button>
+
+                      <button
+                        onClick={() => sendMessage('Latest Bangladesh flood situation and river danger levels today', 'search')}
+                        className="text-left text-xs bg-white border border-carbon-20 text-carbon-80 p-2.5 rounded-lg hover:border-emerald-500 hover:bg-emerald-50/50 transition-colors flex items-start gap-2 shadow-2xs cursor-pointer"
+                      >
+                        <span className="text-base shrink-0">🌐</span>
+                        <span>Latest Flood Situation & Warnings (Live Search)</span>
+                      </button>
+
+                      <button
+                        onClick={() => sendMessage('Current BMD cyclone and severe weather bulletins', 'search')}
+                        className="text-left text-xs bg-white border border-carbon-20 text-carbon-80 p-2.5 rounded-lg hover:border-emerald-500 hover:bg-emerald-50/50 transition-colors flex items-start gap-2 shadow-2xs cursor-pointer"
+                      >
+                        <span className="text-base shrink-0">🌐</span>
+                        <span>Current BMD Weather Bulletins (Live Search)</span>
+                      </button>
                     </div>
                   </div>
 
                   {/* Sample Questions Grid */}
                   {sampleQuestions.length > 0 && (
-                    <div className="grid grid-cols-1 gap-2 mt-4">
-                      {sampleQuestions[0].questions.map((q: string, i: number) => (
-                        <motion.button
-                          key={i}
-                          whileHover={{ scale: 1.01, x: 2 }}
-                          whileTap={{ scale: 0.98 }}
-                          onClick={() => sendMessage(q)}
-                          className="text-left text-xs bg-white border border-carbon-20 text-carbon-70 p-3 rounded-xl hover:bg-amber-50 hover:border-amber-200 hover:text-nasa-red-shade transition-colors shadow-sm cursor-pointer"
-                        >
-                          {q}
-                        </motion.button>
-                      ))}
-                      <button 
-                        className="text-center text-xs text-carbon-60 hover:text-carbon-80 mt-2 font-medium cursor-pointer"
-                        onClick={() => {
-                          if (sampleQuestions.length > 1) {
-                             const cat = sampleQuestions[Math.floor(Math.random() * sampleQuestions.length)];
-                             sendMessage(cat.questions[Math.floor(Math.random() * cat.questions.length)]);
-                          }
-                        }}
-                      >
-                        Show more suggestions...
-                      </button>
+                    <div className="space-y-2 mt-2">
+                      <p className="text-xs font-semibold text-carbon-60 uppercase tracking-wider px-1">
+                        Agronomic & Disaster Protocols:
+                      </p>
+                      <div className="grid grid-cols-1 gap-1.5">
+                        {sampleQuestions[0].questions.slice(0, 3).map((q: string, i: number) => (
+                          <motion.button
+                            key={i}
+                            whileHover={{ scale: 1.01, x: 2 }}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={() => sendMessage(q)}
+                            className="text-left text-xs bg-white border border-carbon-20 text-carbon-70 p-2.5 rounded-lg hover:bg-amber-50 hover:border-amber-200 transition-colors shadow-2xs cursor-pointer"
+                          >
+                            {q}
+                          </motion.button>
+                        ))}
+                      </div>
                     </div>
                   )}
                 </motion.div>
@@ -232,14 +382,103 @@ export default function ChatBot() {
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 font-bold text-xs shadow-sm ${msg.role === 'user' ? 'bg-carbon-80 text-white' : 'bg-amber-400 text-carbon-black'}`}>
                     {msg.role === 'user' ? 'You' : 'AI'}
                   </div>
-                  <div 
-                    className={`max-w-[85%] p-4 text-sm prose prose-sm max-w-none ${
-                      msg.role === 'user' 
-                        ? 'bg-amber-100 text-amber-950 border border-amber-200 rounded-tr-none font-medium' 
-                        : 'bg-white border border-carbon-20 text-carbon-80 rounded-tl-none'
-                    }`}
-                  >
-                    <ReactMarkdown>{msg.content}</ReactMarkdown>
+                  
+                  <div className="max-w-[88%] space-y-2">
+                    {/* Assistant Message Bubble */}
+                    <div 
+                      className={`p-4 text-sm prose prose-sm max-w-none rounded-xl ${
+                        msg.role === 'user' 
+                          ? 'bg-amber-100 text-amber-950 border border-amber-200 font-medium' 
+                          : 'bg-white border border-carbon-20 text-carbon-80 shadow-2xs'
+                      }`}
+                    >
+                      {/* Grounding Header Pill */}
+                      {msg.role === 'assistant' && msg.groundingType === 'maps' && (
+                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 mb-3 bg-blue-50 border border-blue-200 rounded-md text-xs font-semibold text-blue-900 not-prose">
+                          <span>📍</span>
+                          <span>Grounded with Google Maps (gemini-3.5-flash)</span>
+                        </div>
+                      )}
+                      {msg.role === 'assistant' && msg.groundingType === 'search' && (
+                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 mb-3 bg-emerald-50 border border-emerald-200 rounded-md text-xs font-semibold text-emerald-900 not-prose">
+                          <span>🌐</span>
+                          <span>Grounded with Google Search (gemini-3.5-flash)</span>
+                        </div>
+                      )}
+
+                      <ReactMarkdown>{msg.content}</ReactMarkdown>
+                    </div>
+
+                    {/* Google Maps Grounded Facilities (Always extracted & linked as required by SKILL.md) */}
+                    {msg.facilities && msg.facilities.length > 0 && (
+                      <div className="bg-white border border-blue-200 rounded-xl p-3 shadow-xs space-y-2 text-xs">
+                        <div className="flex items-center justify-between text-blue-900 font-semibold border-b border-blue-100 pb-1.5">
+                          <span className="flex items-center gap-1.5">
+                            <span>📍</span> Verified Google Maps Locations ({msg.facilities.length})
+                          </span>
+                          <span className="text-[10px] text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded">Google Maps Data</span>
+                        </div>
+                        <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                          {msg.facilities.map((fac, fIdx) => (
+                            <div key={fIdx} className="p-2 bg-blue-50/50 rounded-lg border border-blue-100/70 hover:bg-blue-50 transition-colors">
+                              <div className="font-semibold text-carbon-90 flex items-start justify-between gap-2">
+                                <span>{fac.title}</span>
+                                <a
+                                  href={fac.uri}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-nasa-blue hover:text-nasa-blue-shade font-semibold whitespace-nowrap flex items-center gap-0.5 text-[11px] underline underline-offset-2"
+                                  title="Open in Google Maps"
+                                >
+                                  <span>View on Maps</span>
+                                  <span>↗</span>
+                                </a>
+                              </div>
+                              {fac.snippet && (
+                                <p className="text-carbon-60 text-[11px] mt-1 line-clamp-2">
+                                  {fac.snippet}
+                                </p>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Google Search Grounded Sources (Extracted & linked as required by SKILL.md) */}
+                    {msg.groundingSources && msg.groundingSources.length > 0 && (
+                      <div className="bg-white border border-emerald-200 rounded-xl p-3 shadow-xs space-y-2 text-xs">
+                        <div className="flex items-center justify-between text-emerald-900 font-semibold border-b border-emerald-100 pb-1.5">
+                          <span className="flex items-center gap-1.5">
+                            <span>🌐</span> Verified Search Citations ({msg.groundingSources.length})
+                          </span>
+                          <span className="text-[10px] text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded">Google Search Data</span>
+                        </div>
+                        <div className="space-y-1.5 max-h-40 overflow-y-auto pr-1">
+                          {msg.groundingSources.map((src, sIdx) => (
+                            <a
+                              key={sIdx}
+                              href={src.uri}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="block p-2 bg-emerald-50/50 rounded-lg border border-emerald-100/70 hover:bg-emerald-50 transition-colors group"
+                            >
+                              <div className="font-medium text-emerald-950 group-hover:text-emerald-700 flex items-center justify-between">
+                                <span className="line-clamp-1">{src.title}</span>
+                                <span className="text-[10px] font-mono text-emerald-700 ml-2 shrink-0">{src.domain || 'source'} ↗</span>
+                              </div>
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Provenance Footer */}
+                    {msg.providerSource && (
+                      <div className="text-[11px] text-carbon-50 px-1 flex items-center justify-between">
+                        <span>Engine: {msg.providerSource}</span>
+                      </div>
+                    )}
                   </div>
                 </motion.div>
               ))}
@@ -254,8 +493,15 @@ export default function ChatBot() {
                   <div className="w-8 h-8 rounded-full bg-nasa-red text-white flex items-center justify-center shrink-0 font-bold text-xs shadow-sm">
                     AI
                   </div>
-                  <div className="bg-white border border-carbon-20 border border-carbon-20 px-4 py-3 flex items-center gap-2">
-                    <span className="text-sm text-carbon-60 animate-pulse font-medium">Searching knowledge base...</span>
+                  <div className="bg-white border border-carbon-20 px-4 py-3 rounded-xl flex items-center gap-2.5 shadow-2xs">
+                    <span className="w-2 h-2 rounded-full bg-nasa-blue animate-ping" />
+                    <span className="text-xs text-carbon-70 font-medium">
+                      {groundingMode === 'maps' 
+                        ? 'Grounding with Google Maps data (gemini-3.5-flash)...' 
+                        : groundingMode === 'search' 
+                        ? 'Retrieving live Google Search bulletins (gemini-3.5-flash)...' 
+                        : 'Querying RAG knowledge base & grounding engine...'}
+                    </span>
                   </div>
                 </motion.div>
               )}
@@ -263,31 +509,109 @@ export default function ChatBot() {
               <div ref={messagesEndRef} />
             </div>
 
+            {/* Grounding Mode Selector Toolbar */}
+            <div className="px-3 pt-2.5 pb-1 bg-white border-t border-carbon-20 flex items-center justify-between text-xs gap-1.5 overflow-x-auto">
+              <span className="text-[11px] font-semibold text-carbon-60 uppercase shrink-0">Grounding:</span>
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => setGroundingMode('auto')}
+                  className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors cursor-pointer ${
+                    groundingMode === 'auto'
+                      ? 'bg-carbon-90 text-white font-semibold'
+                      : 'bg-carbon-10 text-carbon-70 hover:bg-carbon-20'
+                  }`}
+                >
+                  Auto
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setGroundingMode('maps');
+                    requestLocation();
+                  }}
+                  className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors flex items-center gap-1 cursor-pointer ${
+                    groundingMode === 'maps'
+                      ? 'bg-blue-600 text-white font-semibold shadow-xs'
+                      : 'bg-blue-50 text-blue-800 hover:bg-blue-100 border border-blue-200'
+                  }`}
+                >
+                  <span>📍</span>
+                  <span>Google Maps</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setGroundingMode('search')}
+                  className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors flex items-center gap-1 cursor-pointer ${
+                    groundingMode === 'search'
+                      ? 'bg-emerald-600 text-white font-semibold shadow-xs'
+                      : 'bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border border-emerald-200'
+                  }`}
+                >
+                  <span>🌐</span>
+                  <span>Google Search</span>
+                </button>
+              </div>
+            </div>
+
             {/* Input Area */}
-            <div className="p-3 sm:p-4 border-t border-carbon-20 bg-white sm:rounded-b-2xl pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+            <div className="p-3 sm:p-4 bg-white border-t border-carbon-15 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
               <div className="relative flex items-center">
                 <textarea
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  placeholder="Ask about agriculture, hazards, contacts..."
-                  className="w-full bg-carbon-05 border border-carbon-20 rounded-xl py-3 pl-4 pr-16 text-sm text-carbon-80 placeholder-carbon-40 focus:outline-none focus:border-nasa-blue resize-none h-[50px] scrollbar-hide"
+                  placeholder={
+                    groundingMode === 'maps'
+                      ? "Ask to locate emergency shelters, DAE offices, veterinary clinics..."
+                      : groundingMode === 'search'
+                      ? "Search current weather warnings, flood updates, river levels..."
+                      : "Ask about agriculture, hazards, emergency contacts..."
+                  }
+                  className="w-full bg-carbon-05 border border-carbon-20 rounded-xl py-2.5 pl-3.5 pr-28 text-xs sm:text-sm text-carbon-90 placeholder-carbon-40 focus:outline-none focus:border-nasa-blue resize-none h-[48px] scrollbar-hide"
                   rows={1}
                 />
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => sendMessage(input)}
-                  disabled={!input.trim() || loading}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 min-h-[36px] px-3 py-1.5 bg-nasa-blue text-white font-bold text-xs rounded-control hover:bg-nasa-blue-shade disabled:opacity-40 transition-colors cursor-pointer"
-                >
-                  Send
-                </motion.button>
+                <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
+                  <motion.button
+                    whileHover={{ scale: 1.04 }}
+                    whileTap={{ scale: 0.96 }}
+                    type="button"
+                    onClick={() => setChatMode('voice')}
+                    className="min-h-[32px] px-2 bg-blue-50 text-blue-700 border border-blue-200 font-semibold text-xs rounded-lg hover:bg-blue-100 transition-colors flex items-center gap-1 cursor-pointer"
+                    title="Switch to Live Voice Advisor (gemini-3.8-live)"
+                  >
+                    <Mic className="w-3.5 h-3.5 text-blue-600" />
+                    <span className="hidden sm:inline">Voice</span>
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.04 }}
+                    whileTap={{ scale: 0.96 }}
+                    onClick={() => sendMessage(input)}
+                    disabled={!input.trim() || loading}
+                    className="min-h-[32px] px-3 py-1 bg-nasa-blue text-white font-bold text-xs rounded-lg hover:bg-nasa-blue-shade disabled:opacity-40 transition-colors cursor-pointer"
+                  >
+                    Send
+                  </motion.button>
+                </div>
               </div>
-              <div className="text-center mt-2">
-                 <span className="text-xs text-carbon-60 font-medium">HazardNet can make mistakes. Verify critical information.</span>
+              <div className="flex items-center justify-between text-[11px] text-carbon-50 mt-1.5 px-0.5">
+                <span>Grounded with gemini-3.5-flash & Live API</span>
+                {userLocation ? (
+                  <span className="text-blue-700 flex items-center gap-0.5">
+                    <span>📍</span> Location Active
+                  </span>
+                ) : (
+                  <button 
+                    onClick={requestLocation}
+                    className="hover:underline text-carbon-60 cursor-pointer"
+                  >
+                    Enable Location
+                  </button>
+                )}
               </div>
             </div>
+            </>
+            )}
 
           </motion.div>
         )}

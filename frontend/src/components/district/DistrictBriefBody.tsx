@@ -10,6 +10,7 @@ import {
   Radio, PhoneCall, FileText,
 } from 'lucide-react';
 import AdvisoryPanel from '../AdvisoryPanel';
+import { GroundingIntelligencePanel } from '../GroundingIntelligencePanel';
 import { WeatherPanel } from '../WeatherPanel';
 import { getHazardIcon } from './districtBriefUtils';
 
@@ -888,6 +889,12 @@ export const DistrictBriefBody: React.FC = () => {
                 confidence={data.modelAssessment.confidenceLevel}
               />
             </div>
+
+            {/* Google Maps & Google Search Grounding Intelligence Panel */}
+            <GroundingIntelligencePanel
+              districtId={districtId}
+              districtName={data.districtName}
+            />
           </div>
         )}
 

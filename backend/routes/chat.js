@@ -15,8 +15,8 @@ const router = express.Router();
  */
 router.post('/query', async (req, res) => {
   try {
-    const { query, district, conversationHistory } = req.body || {};
-    const payload = await handleChatQuery({ query, district, conversationHistory });
+    const { query, district, conversationHistory, groundingMode, userCoordinates } = req.body || {};
+    const payload = await handleChatQuery({ query, district, conversationHistory, groundingMode, userCoordinates });
     res.json(payload);
   } catch (err) {
     if (err.statusCode) {
