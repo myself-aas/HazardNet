@@ -63,3 +63,61 @@ Express `/metrics` exports prom-client metrics; Vercel `/api/metrics` exposes fo
 - `backend/db.js`, `backend/forecastStore.js`, `firestore.rules`, `scripts/db/README.md`
 - `backend/utils/ai_fallback_engine.js`, `backend/utils/openMeteo.js`, `backend/alerts/channels/sms.js`
 - `backend/metrics.js`, `api/metrics.js`, `monitoring/prometheus.yml`
+# Integrations
+
+**Evidence:** `package.json` dependencies, `backend/server.js`, `backend/utils/openMeteo.js`, `backend/middleware/firebaseAuth.js`, `scripts/fetch_kaggle_forecast.py`, `.env.example`, `firebase.json`, `firestore.rules`, `vercel.json`, `backend/alerts/channels/{sms,telegram}.js`, `scripts/etl/sources.py`, `rag_pipeline/search.js`, `HazardNet.md`.
+
+## External APIs & Data Sources
+
+| Integration | Purpose | Credentials | Code entry point |
+|-------------|---------|-------------|------------------|
+| **Google Earth Engine** (Sentinel-1 GRD, Sentinel-2 SR Harmonized, Landsat 5/7/8, ERA5-Land Daily Aggregates) | Historical raster tensors (15 channels × 10 timesteps × 64×64 @ 10m) | GEE service account `hazardnet-ee-service-kaggle@hazardnet-aas48424.iam.gserviceaccount.com`; JSON key via Kaggle dataset | `HazardNet.md` Phases 1/7 (GEE pipeline runs inside Kaggle kernels, NOT in this repo) |
+| **Open-Meteo** `api.open-meteo.com/v1/forecast`, `archive-api.open-meteo.com/v1/archive` | Deterministic forecast drivers injected into T-0 climate bands; archive for fallback physics scores; weather proxy route | None (public API, rate-limited 0.5s/request in training code) | `backend/utils/openMeteo.js` (Express), `HazardNet.md` Phase 2/7 `om_calc_*` functions |
+| **Kaggle API** (`kaggle kernels output`) | Pull daily forecast CSV from the scheduled producer notebook | `KAGGLE_USERNAME` + `KAGGLE_KEY` in GitHub Actions secrets | `scripts/fetch_kaggle_forecast.py` |
+| **Google Gemini 2.0** (`@google/genai`) | Chat/advisory agent natural-language answers | `GEMINI_API_KEY` (backup: `GEMINI_API_KEY_BACKUP`, fallbacks: OpenRouter, Groq, HuggingFace) | `backend/utils/chatService.js`, `backend/services/advisoryAgent.js`; fallback: `backend/utils/ai_fallback_engine.js` |
+| **Firebase Auth** (`firebase`, `firebase-admin`) | Email/password (+ verify), Google, GitHub sign-in; ID-token verification for protected routes | `VITE_FIREBASE_*` (public) + `FIREBASE_SERVICE_ACCOUNT_JSON` (server) | `backend/middleware/firebaseAuth.js`, `frontend/src/context/AuthContext` (inferred) |
+| **Cloud Firestore** (`@google-cloud/firestore`) | Forecast rows, user dashboards (~40 profile fields), alerts, blog articles; transactional writes | Application Default Credentials / service account JSON | `backend/db.js`, `backend/forecastStore.js`, `backend/forecastPersistence.js`, `backend/alerts/store.js` |
+| **Firebase Realtime Database** (legacy) | Referenced from `.env.example` `DATABASE_URL` but Firestore is current per ADR 0014 | `VITE_FIREBASE_DATABASE_URL` | Legacy; no active reader observed in sampled code |
+| **Firebase Storage** | Avatar uploads (client-side resize/replace) | `VITE_FIREBASE_STORAGE_BUCKET` | User dashboard (frontend) |
+| **VAPID Web Push** (`web-push`) | Browser push for alerts/updates | `VAPID_PUBLIC_KEY` + `VAPID_PRIVATE_KEY` (server-only) | `backend/routes/push.js`, `backend/utils/vapid.js` |
+| **BulkSMS BD / GreenWeb** | SMS delivery for Bengali/English alerts (UCS-2 for Bengali) | `BULKSMSBD_API_KEY` / `GREENWEB_API_KEY`, `SMS_SENDER_ID`; dry-run mode | `backend/alerts/channels/sms.js` |
+| **Telegram Bot API** | Telegram alert channel | `TELEGRAM_BOT_TOKEN`, `TELEGRAM_ALERT_CHAT_ID` | `backend/alerts/channels/telegram.js` |
+| **Mapbox GL** | [TODO] README mentions Mapbox GL but `frontend/package.json` lists `leaflet` with no `mapbox-gl` dependency — the live map uses Leaflet. Confirm whether Mapbox tiles are still used as a raster source. | `VITE_MAPBOX_TOKEN` mentioned in README (does not appear in `.env.example` or frontend code sampled) | [TODO] see CONCERNS.md |
+| **Vercel Analytics** | Privacy-friendly analytics | `VITE_VERCEL_ANALYTICS` (public) | `frontend` (imported in app root) |
+| **Google AdSense** | Monetization (blog/article pages) | `VITE_ADSENSE_CLIENT`, slot IDs | Rendered ad slots; CSP in `vercel.json` explicitly allows AdSense script sources |
+| **Prometheus** | Metrics scraping (internal ops, not third-party) | Scraped at `/metrics` | `backend/metrics.js` |
+| **GitHub** (OAuth sign-in + Releases + Actions) | OAuth login; weekly artifact release attachment; CI/CD | `GITHUB_TOKEN` provided by Actions; OAuth via Firebase GitHub provider | `.github/workflows/*.yml`, Releases |
+
+## Internal Services / Subsystems
+
+- **RAG pipeline** (`rag_pipeline/`) — a small JavaScript retrieval system (`search.js`, `skill_router.js`) over Markdown knowledge packs (hazard protocols, agricultural institutions, agronomy, humanitarian partners, skills, hazard archives). The chat service consults it before calling Gemini, and the agent/skill router selects domain-appropriate guidance. Source references live in `references/` and `rag_pipeline/references/`.
+- **Alert engine** (`backend/alerts/`) — see `docs/alerts/ALERT_ENGINE.md`. Ladder: NO_ALERT → WATCH → WARNING → SEVERE (PRODUCT_SPEC §1.3). Auto-publish capped at WATCH (configurable via `ALERT_MAX_AUTO_PUBLISH_LEVEL`). Duty-officer allowlist (`ALERT_DUTY_OFFICERS`) gates WARNING/SEVERE publication. Digest schedule and SMS/Telegram delivery are configured via env.
+- **Content engine** (`scripts/build_content_engine.mjs`) — at build time, composes `/hazards/<hazard>` and `/districts/<district>` static pages from `frontend/src/content/hazard-methodology.json` and the latest forecast snapshot, with JSON-LD, breadcrumbs, canonical URLs, and sitemap.
+- **Design token pipeline** — `data/design/nasa-hds/tokens.json` (vendored from nasa/hds-core, CC0-1.0) → `scripts/import_nasa_tokens.mjs` → `frontend/src/styles/nasa-hds.css` (generated, `--hds-*` names) → `frontend/src/index.css` maps to semantic `--hn-hds-*` and shadcn-compatible layer.
+- **ETL** (`scripts/etl/`) — `adapters/bgd_climatic_hazards.py`, `bulletins.py` (BMD), `cog.py` (Cloud-Optimized GeoTIFF STAC), `hydrology.py` (FFWC), `sources.py`, `scene_manifest.py` (Sentinel-2 scenes), `events.py`, `districts.py` (canonical 64-district resolver with GAUL 2015 aliases).
+- **MLOps** (`scripts/mlops/`) — `calibration.py`, `drift.py`, `evaluate.py`, `metrics.py`, `registry.py`, `retrain_state.py`, exposed through `cli.py`.
+- **Hindcast** (`scripts/hindcast/`) — `episodes.py`, `fetch.py`, `score.py` for historical event re-forecasts; drivers in `data/hindcast/drivers/` (e.g. Cyclone Amphan 2020).
+
+## Databases & Persistence
+
+1. **Cloud Firestore** (primary) — forecasts, alerts, users, blog articles, subscriptions. RLS in `firestore.rules`.
+2. **Committed files** in `backend/data/forecasts/*.{csv,json,manifest}` — shipped with every deploy for offline/recovery reads.
+3. **GitHub Releases** — weekly forecast CSV + ADM3 matrices attached as artifacts (queryable via `/api/v1/forecasts/history`).
+4. **PostgreSQL** — SQL migrations exist in `scripts/db/` (001–008) but ADR 0014 ("Kaggle is the forecast producer, Firestore is the durable store") supersedes the PostgreSQL cutover (ADR 0002). The migrations are retained for blog/RLS and historical context.
+5. **HDF5 master tensor store** — `master_tensors.h5` (gzip) used during training/ablation; NOT deployed to production.
+
+## Auth Model
+
+- **Client ↔ API:** Firebase ID tokens sent as `Authorization: Bearer <token>` and verified by `backend/middleware/firebaseAuth.js` (attaching a `req.user`). Public endpoints (forecast reads, published alerts) don't require auth; chat/agent attach the user for rate-limit accounting and per-user quotas; alert review and dashboard endpoints require a verified token with an allowlisted uid/email for duty-officer actions.
+- **Service-to-service (ingest):** `X-API-Key: <BACKEND_API_KEY>` validated by `backend/utils/apiKeyAuth.js`. 503 when unset.
+- **Signed-out / offline users:** Public forecast surface works fully; personalisation (dashboard, push subscriptions, saved districts) requires sign-in.
+
+## Deployment Targets (from `.github/workflow-templates/`)
+
+- `hazardnet-daemon-cli-linux.yml` — Linux CLI packaging.
+- `hazardnet-field-agent-android.yml` — Android field-agent app.
+- `hazardnet-gis-workstation-windows.yml` — Windows GIS workstation packaging.
+- `hazardnet-npm-package.yml` / `hazardnet-python-package.yml` — Client library publishing.
+
+[TODO] `backend/services/eventsService.js` details and event-store integration were not inspected deeply. `backend/routes/agent.js` exact agent prompt/routing strategy also warrants closer review.
+[ASK USER] Confirm whether Mapbox is still used for any tile source in the Leaflet build or whether the README's Mapbox reference is stale.
