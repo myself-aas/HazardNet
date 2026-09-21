@@ -64,3 +64,163 @@ Frontend uses layer-oriented folders with feature subfolders; backend mixes laye
 ## Historical Discovery Material
 
 The prior standalone map and scan are preserved under `docs/audits/codebase-2026-09-18/`. They are historical evidence, not current architecture guidance. The seven files here replace the prior seven-document discovery set; their required section ordering is retained for existing references (including `CONCERNS.md` §3).
+# Structure
+
+**Evidence:** directory tree from `find`, `package.json` `workspaces`, `vercel.json`, `backend/server.js`, `frontend/src/`.
+
+## Top-Level Layout
+
+```
+HazardNet/
+├── api/                      # Vercel serverless function entry points (mirrors backend/routes for serverless deploy)
+│   ├── chat/{query,sample-questions}.js
+│   ├── forecasts.js
+│   ├── ingest.js
+│   ├── metrics.js
+│   ├── predict.js
+│   └── v1/{alerts,forecasts,weather,batch,history,metadata}.js
+├── backend/                  # Express server and server-side logic (also runs as Vercel functions via vercel.json rewrites)
+│   ├── server.js             # Express app, Helmet/CSP/rate limit mount, static fallback
+│   ├── db.js                 # Firestore client init
+│   ├── forecastStore.js      # Firestore-backed forecast CRUD (upsert, fetch latest/history/bulk)
+│   ├── forecastPersistence.js# Higher-level persistence with transactional writes
+│   ├── modelInfo.js          # Returns model version from Models/VERSION.json
+│   ├── metrics.js            # Prom-client registry (forecast-age gauge, request counters)
+│   ├── middleware/
+│   │   ├── cors.js           # FRONTEND_ORIGIN-scoped CORS (fail-closed in prod)
+│   │   ├── firebaseAuth.js   # Firebase ID token verification + dynamic AI rate limiter
+│   │   ├── rateLimit.js      # apiLimiter / predictLimiter / alertLimiter
+│   │   ├── requestId.js      # Correlated request IDs (X-Request-Id)
+│   │   ├── securityHeaders.js# Extra hardening headers
+│   │   └── serverlessGuard.js# Vercel serverless runtime guards (payload/time)
+│   ├── routes/               # Express Routers mounted under /api/*
+│   │   ├── forecasts.js      # GET /api/v1/forecasts, /bulk, /metadata, /history
+│   │   ├── predict.js        # POST /api/predict → storedPrediction
+│   │   ├── alerts.js         # /api/v1/alerts CRUD, evidence, review, policy
+│   │   ├── chat.js           # /api/chat (Gemini-powered Q&A with RAG)
+│   │   ├── agent.js          # /api/agent advisory agent
+│   │   ├── advisory.js       # /api/advisory (deterministic heuristic fallback)
+│   │   ├── events.js         # /api/v1/events historical archive
+│   │   ├── push.js           # Web push subscription management
+│   │   ├── conversions.js    # Unit conversions endpoint
+│   │   └── weather.js        # Open-Meteo proxy
+│   ├── security/csp.js       # CSP directive builder
+│   ├── services/
+│   │   ├── advisoryAgent.js
+│   │   └── eventsService.js
+│   ├── alerts/               # Alert engine (Phase 4)
+│   │   ├── assess.js         # Ladder: NO_ALERT→WATCH→WARNING→SEVERE
+│   │   ├── channels/{sms,telegram}.js
+│   │   ├── digest.js
+│   │   ├── lifecycle.js
+│   │   ├── notify.js
+│   │   ├── policy.js         # Configurable thresholds, duty-officer gating
+│   │   ├── report.js
+│   │   ├── service.js
+│   │   └── store.js
+│   └── utils/
+│       ├── forecastRow.js            # CANONICAL ROW PARSER (dual-track severity, meteorological unit conversion, calibrated confidence)
+│       ├── forecastServe.js          # Row → API response shaping
+│       ├── forecastFreshness.js      # 60s-cached Firestore age probe
+│       ├── storedPrediction.js       # POST /api/predict handler (reads latest stored row, ADR 0009)
+│       ├── predictFromStore.js       # Shared prediction-from-store path
+│       ├── csvIngestion.js, csvSafety.js
+│       ├── chatService.js            # Gemini + RAG orchestration
+│       ├── ai_fallback_engine.js     # Deterministic heuristic when Gemini unavailable
+│       ├── openMeteo.js
+│       ├── vapid.js
+│       ├── apiKeyAuth.js, alertAuth.js, clientError.js, conversionTracker.js
+│       └── logger.js (root utils/logger.js)
+├── frontend/                 # React 18 + TypeScript + Vite client (npm workspace)
+│   ├── index.html
+│   ├── vite.config.ts        # Proxy `/api` to :3001 in dev, build config
+│   ├── public/               # Static assets, committed forecast snapshot (data/forecasts-latest.json), sw.js
+│   ├── src/
+│   │   ├── main.tsx          # React root
+│   │   ├── App.tsx           # Router shell
+│   │   ├── components/       # UI primitives (cards, gauges, chips, map popups, alert list, severity chart, …)
+│   │   ├── pages/            # Route-level components (/, /live, /alerts, /alerts/:id, /district/:id, /dashboard, /u/:username, /hazards, /districts, …)
+│   │   ├── hooks/            # React hooks (useForecast, useAlerts, useAuth, useOfflineStatus, useLowBandwidth, …)
+│   │   ├── context/          # AuthContext, ThemeContext, AlertContext
+│   │   ├── services/         # API client wrappers (fetch with RTK Query under services/api.ts or bespoke fetch)
+│   │   ├── lib/              # Domain logic (forecasts.ts with FORECAST_HORIZONS, severity binning, i18n helpers)
+│   │   ├── content/          # Static/curated content (site-routes.json, hazard-methodology.json, attribution.json, …)
+│   │   ├── data/             # Static GeoJSON (ADM0/ADM1/ADM2 boundaries), district metadata
+│   │   ├── styles/           # NASA HDS CSS (generated nasa-hds.css + shadcn layer in index.css)
+│   │   ├── types/            # TS type definitions
+│   │   ├── utils/            # Helpers (formatting, bengali numerals, colour, confidence bins)
+│   │   └── serviceWorker.ts  # Offline cache, snapshot fallback
+│   ├── scripts/prerender.mjs # Static prerender for SEO/SSG pages
+│   └── vercel.json           # Frontend Vercel config (separate from root)
+├── Models/                   # Shipped ML artifacts
+│   ├── hazardnet_fp32.tflite
+│   ├── hazardnet_int8.tflite (misnamed FP32 — ADR 0007)
+│   ├── labels.json, normalization_stats.json, preprocessing_config.json
+│   ├── REGISTRY.json, VERSION.json (model registry with SHA-256)
+│   ├── calibration/confidence_map.template.json
+│   ├── inference_example.py  # Standalone TF Lite inference
+│   └── README.md
+├── scripts/                  # Build, QA, ETL, MLOps, DB migrations
+│   ├── fetch_kaggle_forecast.py   # DAILY BRIDGE: Kaggle output → canonical CSV/JSON/manifest
+│   ├── validate_forecasts.py      # Freshness + coverage gate
+│   ├── ingest_forecast_csv.mjs    # CSV → Firestore ingest
+│   ├── publish_forecast_csv.py    # GitHub Release attachment
+│   ├── build_forecast_snapshot.mjs, build_alert_snapshot.mjs, build_freshness_artifact.mjs
+│   ├── build_content_engine.mjs   # Static /hazards and /districts pages from snapshot
+│   ├── build_model_performance.mjs
+│   ├── build_hazard_archive.mjs, build_archive_rag_docs.mjs
+│   ├── build_climatic_data_artifacts.mjs
+│   ├── check-{bundle,claims,design,phase7,public-paths,rag-freshness,severity-embargo,ux-release}.mjs
+│   ├── validate_env.mjs, validate_model_bundle.py
+│   ├── auto_forecast.py, physics_severity.py, kaggle_trigger.py
+│   ├── gen-model-version.mjs, generate-icons.mjs, copy-dist.mjs, import_nasa_tokens.mjs, npm-audit-ci.mjs
+│   ├── check-secrets.sh, security_audit.sh, setup_monitoring.sh, verify-actions-secrets.sh
+│   ├── db/                  # SQL migrations (historical; Firestore is current per ADR 0014)
+│   ├── etl/                 # Python ETL (GEE, COG, bulletins, districts, hydrology, events, sources, scene_manifest, db)
+│   ├── mlops/               # Python MLOps (calibration, drift, evaluate, metrics, registry, retrain_state, cli)
+│   ├── hindcast/            # Hindcast episodes/fetch/score for historical validation
+│   ├── qa/                  # Browser/layout/design/accessibility audits
+│   ├── tiles/build-adm3-tiles.sh
+│   └── tests/               # Python + JS tests for scripts and fixtures
+├── __tests__/                # Jest tests (Jest config at root) — API, alerts, forecasting, security, design tokens, SEO, SW
+├── ml/                       # Training notebooks (train_and_convert.ipynb, HazardNet_auto_train.ipynb, hazardnet-auto-forecast-pipeline output)
+├── training/                 # Python training pipeline (hazardnet_scientific_pipeline.py, hazardnet_bd_thresholds.py, run_bd_proofs.py)
+├── data/                     # Data at rest
+│   ├── hazardnet_forecasts_latest.csv
+│   ├── events/{BGD_climatic_hazards_dataset_2000_2026.csv, hazardnet-events.json}
+│   ├── design/nasa-hds/{tokens.json, PROVENANCE.md}
+│   ├── hindcast/, rag/
+│   └── icons/hazard_profiles.json
+├── backend/data/forecasts/   # Committed latest forecast CSV/JSON/manifest (auto-updated by daily workflow)
+├── docs/                     # Project documentation (ADRs, DESIGN-SYSTEM, MLOPS, ALERTS, RUNBOOKS)
+│   └── codebase/             # The seven Acquire-Codebase-Knowledge docs
+├── skills/                   # Markdown knowledge modules for agent skills (tensor interpretation, severity quantification, hazard protocols, agricultural/meteorological institutions, etc.)
+├── references/               # Source reference material (fisheries, livestock, variety database, spatial context, agent skills)
+├── rag_pipeline/             # RAG retrieval components for the chat agent
+│   ├── search.js, skill_router.js
+│   └── references/           # Markdown KB files (hazard archives)
+├── assets/docs/MODEL_CARD.md
+├── utils/logger.js            # Root-level Winston/Pino-style lightweight logger used by scripts
+├── .github/workflows/        # 12 CI/CD workflows (daily_forecast, forecast-pipeline, hindcast, model-validation, mlops, ci, v3-ml-contracts, etc.)
+├── vercel.json               # Vercel project config (build command, headers, redirects, rewrites, functions includeFiles)
+├── firebase.json, firestore.rules, firebase-applet-config.json, firebase-blueprint.json, .firebaserc
+├── DESIGN.md                 # Design-system YAML tokens and spec
+├── HazardNet.md              # Full 7-phase scientific pipeline code (Phases 1–7, Colab/Kaggle source)
+├── README.md, LICENSE, CITATION.cff, SECURITY.md, ARTIFACTS.yaml
+├── babel.config.cjs, jest.config.cjs, jest.setup.ts, eslint.config.js, .prettierrc, playwright.config.ts
+├── .env.example              # All env vars documented
+├── audit-exceptions.json     # Accepted audit exceptions
+└── e2e/, load-tests/, memory/, monitoring/, plugins/
+```
+
+## Entry Points
+
+- **Production serverless entry points (Vercel):** files under `api/*` (e.g. `api/predict.js`, `api/forecasts.js`, `api/v1/alerts/index.js`).
+- **Self-hosted Express server:** `backend/server.js` (serves API + static frontend from `frontend/dist`).
+- **Frontend dev/build:** `frontend/src/main.tsx` (Vite).
+- **CLI scripts:** invoked through `npm run …` (see `package.json` scripts) or `python3 -m scripts.etl.cli`, `python3 -m scripts.mlops.cli`, `python3 -m scripts.hindcast.cli`.
+- **Training:** Jupyter notebooks in `ml/` and Python modules in `training/`.
+- **Daily forecast pipeline:** GitHub Actions → `.github/workflows/daily_forecast.yml` → `scripts/fetch_kaggle_forecast.py` → `scripts/validate_forecasts.py` → `scripts/build_forecast_snapshot.mjs` → commit.
+
+## TypeScript Path Aliases
+[TODO] `frontend/tsconfig.json` baseUrl/paths mapping was not loaded during this pass; imports in `frontend/src` appear to use relative paths throughout (no `@/` alias usage observed in sampled files). [ASK USER] Confirm whether any `@/` or `~/` path aliases exist in `frontend/tsconfig.json` that should be documented.
