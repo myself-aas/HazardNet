@@ -17,6 +17,8 @@ import { DistrictForecastRecords } from '../components/district/DistrictForecast
 import { DistrictBriefBody } from '../components/district/DistrictBriefBody';
 import { DistrictPrintFooter } from '../components/district/DistrictPrintFooter';
 
+// Model Score is uncalibrated — the classifier's own softmax, not a calibrated probability.
+
 export const DistrictDetailPage: React.FC = () => {
   const { id } = useParams<{ id?: string }>();
   const navigate = useNavigate();

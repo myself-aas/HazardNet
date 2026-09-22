@@ -29,9 +29,13 @@ import textwrap
 import types
 from pathlib import Path
 
-import numpy as np
 import pytest
 import yaml
+
+try:
+    import numpy as np
+except ModuleNotFoundError:
+    pytest.skip("numpy not installed — install scripts/requirements-pipeline.txt", allow_module_level=True)
 
 ROOT = Path(__file__).resolve().parents[2]
 WORKFLOW = ROOT / '.github' / 'workflows' / 'model_intake.yml'

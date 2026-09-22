@@ -62,7 +62,7 @@ jobs:
         # main (see `git ls-tree origin/main -- scripts/`). Those suites will
         # be re-enabled when the scripts land; ignoring them here keeps the
         # backend job green while the frontend motion upgrade is verified.
-        run: npx jest --ci --coverage --coverageDirectory=./coverage/backend --testPathIgnorePatterns='/node_modules/' '/e2e/' '/frontend/' '/__tests__/severityEmbargo' '/__tests__/securityTxt' '/__tests__/securityHeadersParity' '/__tests__/nasaTokens' '/__tests__/freshnessArtifact' '/__tests__/contentEngine' '/__tests__/claimsGate' '/__tests__/alertSnapshot' '/__tests__/alertReplay'
+        run: npx jest --ci --coverage --coverageDirectory=./coverage/backend --testPathIgnorePatterns='/node_modules/' '/e2e/' '/frontend/' '/__tests__/severityEmbargo/' '/__tests__/securityTxt/' '/__tests__/securityHeadersParity/' '/__tests__/nasaTokens/' '/__tests__/freshnessArtifact/' '/__tests__/contentEngine/' '/__tests__/claimsGate/' '/__tests__/alertSnapshot/' '/__tests__/alertReplay/'
 
       - name: Upload backend coverage
         if: always()
