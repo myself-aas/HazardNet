@@ -288,20 +288,25 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
   // Dedicated Full-Page Google Earth View Mode
   if (isFullScreen && activeView === 'gis') {
     return (
-      <div className="relative w-full h-full bg-transparent overflow-hidden flex flex-col font-sans text-carbon-90">
-
-        {/*
-          Page title. Global `h1` is 28–32px, so a visible heading on the map
-          reads as a banner. Keep an sr-only h1 for the outline; the on-map
-          label is 11px metadata in the top-left, pointer-transparent.
-        */}
+      <div className="relative isolate flex h-full min-h-0 w-full flex-col overflow-hidden bg-[#eef1f1] font-mono text-[#101416]">
         <h1 className="sr-only">Live map — multi-hazard situational awareness</h1>
-        <p className="pointer-events-none absolute top-2 left-2 z-[var(--z-sticky)] border border-carbon-20 bg-white/90 px-1.5 py-0.5 text-[11px] font-semibold uppercase leading-none tracking-wide text-carbon-60 whitespace-nowrap">
-          Live map
-        </p>
 
-        {/* Full Viewport Canvas Stage - Clean MapView Only */}
-        <div className="relative w-full h-full flex-1 overflow-hidden">
+        {/* Reference-inspired operational header: compact, legible, and always available above the map. */}
+        <header className="pointer-events-none absolute inset-x-0 top-0 z-[var(--z-sticky)] flex items-start justify-between gap-3 p-3 sm:p-5">
+          <div className="pointer-events-auto flex min-w-0 items-center gap-2 rounded-[6px] border border-white/70 bg-[#f8f9f7]/95 px-3 py-2 shadow-[0_1px_3px_rgb(0_0_0/0.12)] backdrop-blur-md">
+            <span className="h-2 w-2 shrink-0 animate-pulse rounded-full bg-[#ff0000]" aria-hidden="true" />
+            <div className="min-w-0">
+              <p className="truncate text-[10px] font-bold uppercase tracking-[0.14em] text-[#5d6668]">HazardNet / live</p>
+              <p className="truncate text-xs font-bold text-[#101416]">National situational map</p>
+            </div>
+          </div>
+          <div className="pointer-events-auto hidden items-center gap-2 rounded-[6px] border border-white/70 bg-[#f8f9f7]/95 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.12em] text-[#5d6668] shadow-[0_1px_3px_rgb(0_0_0/0.12)] backdrop-blur-md sm:flex">
+            <span className="inline-block h-2 w-2 rounded-full bg-[#36a66d]" aria-hidden="true" />
+            {predictionSource === 'live' ? 'Forecast synced' : 'Baseline coverage'}
+          </div>
+        </header>
+
+        <div className="relative min-h-0 flex-1 overflow-hidden">
           <Map
             selectedDistrictId={selectedDistrict?.id}
             onOpenDisasterModal={handleOpenDisasterModal}
@@ -317,6 +322,58 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
               setSelectedDistrict(fullDistrict as District);
             }}
           />
+
+          {/* Bottom-sheet information architecture mirrors the supplied delivery-tracking references. */}
+          <AnimatePresence>
+            {selectedDistrict && (
+              <motion.aside
+                key="selected-district-sheet"
+                initial={{ opacity: 0, y: 24 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 24 }}
+                transition={{ type: 'spring', stiffness: 360, damping: 30 }}
+                className="absolute inset-x-3 bottom-3 z-[var(--z-sticky)] max-h-[min(58vh,440px)] overflow-y-auto rounded-[7px] border border-white/80 bg-[#f8f9f7]/95 p-4 shadow-[0_4px_18px_rgb(0_0_0/0.16)] backdrop-blur-xl sm:inset-x-auto sm:right-5 sm:w-[390px] sm:p-5"
+                aria-label={`${selectedDistrict.name} district status`}
+              >
+                <div className="mb-4 flex items-start justify-between gap-3 border-b border-[#d9dedd] pb-3">
+                  <div>
+                    <p className="mb-1 text-[10px] font-bold uppercase tracking-[0.16em] text-[#7a8384]">Selected district</p>
+                    <h2 className="text-lg font-black tracking-[-0.04em] text-[#101416]">{selectedDistrict.name}</h2>
+                    <p className="mt-0.5 text-xs text-[#5d6668]">{selectedDistrict.division} Division · {selectedDistrict.hazardType}</p>
+                  </div>
+                  <button type="button" onClick={() => setSelectedDistrict(null)} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[5px] border border-[#d9dedd] text-[#5d6668] transition-colors hover:bg-[#e9edeb]" aria-label="Clear selected district">
+                    <MaterialIcon name="close" className="h-4 w-4" />
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { label: 'Risk index', value: `${Math.round(severity * 100)}%`, accent: true },
+                    { label: 'Status', value: selectedDistrict.risk, accent: false },
+                    { label: 'Crop watch', value: selectedDistrict.mainCrop, accent: false },
+                  ].map((stat) => (
+                    <div key={stat.label} className="rounded-[5px] border border-[#d9dedd] bg-white/70 px-2.5 py-2.5">
+                      <p className="truncate text-[9px] font-bold uppercase tracking-[0.1em] text-[#7a8384]">{stat.label}</p>
+                      <p className={`mt-1 truncate text-xs font-black ${stat.accent ? 'text-[#c40000]' : 'text-[#101416]'}`}>{stat.value}</p>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-3 flex items-center justify-between gap-3 rounded-[5px] border border-[#edcaca] bg-[#fff5f5] px-3 py-2.5">
+                  <div className="flex min-w-0 items-center gap-2">
+                    <MaterialIcon name="warning" className="h-4 w-4 shrink-0 text-[#ff0000]" />
+                    <p className="truncate text-[11px] font-bold text-[#681919]">Monitor {selectedDistrict.hazardType.toLowerCase()} conditions</p>
+                  </div>
+                  <span className="shrink-0 text-[10px] font-bold uppercase text-[#b90000]">Active</span>
+                </div>
+
+                <button type="button" onClick={() => setIsDrawerOpen(true)} className="mt-3 flex min-h-11 w-full items-center justify-between rounded-[5px] bg-[#101416] px-3.5 text-left text-white transition-colors hover:bg-[#273034]">
+                  <span className="flex items-center gap-2 text-xs font-bold"><MaterialIcon name="insights" className="h-4 w-4 text-[#ff0000]" />Open district intelligence</span>
+                  <MaterialIcon name="arrow_forward" className="h-4 w-4" />
+                </button>
+              </motion.aside>
+            )}
+          </AnimatePresence>
 
           {/* Slide-Over AI Prediction & Advisory Drawer */}
           <AnimatePresence>
