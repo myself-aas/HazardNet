@@ -1,9 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
   ResponsiveContainer,
-  LineChart,
-  Line,
   AreaChart,
   Area,
   BarChart,
@@ -15,13 +13,17 @@ import {
   Tooltip,
   Legend,
   ReferenceLine,
-  ComposedChart
+  ComposedChart,
+  Line
 } from 'recharts';
-import { collection, query, getDocs, onSnapshot, orderBy, limit } from 'firebase/firestore';
+import { collection, query, onSnapshot, orderBy, limit } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { fetchStaticForecastSnapshot, ForecastRow } from '../lib/forecasts';
 import MaterialIcon from './MaterialIcon';
 import toast from 'react-hot-toast';
+import { BentoGrid, BentoCard } from './ui/BentoGrid';
+import { BottomSheet } from './ui/BottomSheet';
+import { FloatingControlBar } from './ui/FloatingControlBar';
 
 interface ForecastDashboardProps {
   initialDistrictId?: string;
@@ -57,6 +59,9 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
   const [selectedRiskLevel, setSelectedRiskLevel] = useState<'all' | 'high' | 'moderate' | 'low'>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [activeChartTab, setActiveChartTab] = useState<'trends' | 'comparison' | 'dualTrack'>('trends');
+
+  // Drawer / BottomSheet state for selected district telemetry detail
+  const [activeSheetItem, setActiveSheetItem] = useState<ForecastRow | null>(null);
 
   // Load forecast data: immediate static snapshot baseline + live Firestore listener
   useEffect(() => {
@@ -94,18 +99,16 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
             setDbSource('firestore');
             setLoading(false);
           } else {
-            // Firestore collection has no documents yet, retain fallback
             setDbSource('fallback');
             setLoading(false);
           }
         },
-        (error) => {
-          // Immediately detach listener so SDK stops retrying gRPC stream in background
+        () => {
           if (unsubscribe) {
             try {
               unsubscribe();
             } catch {
-              // Listener may already be detached after a stream error.
+              // Ignore detachment error
             }
             unsubscribe = undefined;
           }
@@ -151,7 +154,7 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
     return Array.from(set).sort();
   }, [forecasts]);
 
-  const [severityMode, setSeverityMode] = useState<'physics' | 'model' | 'blended'>('physics');
+  const [severityMode] = useState<'physics' | 'model' | 'blended'>('physics');
 
   // Filtered dataset
   const filteredForecasts = useMemo(() => {
@@ -212,11 +215,9 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
       const physVal = f.physics_severity !== undefined ? f.physics_severity : (f.severity_score ?? 0);
       const scorePercent = Math.round(physVal * 100);
 
-      // Store max severity for hazard on this date
       entry[hazardKey] = Math.max(entry[hazardKey] ?? 0, scorePercent);
       entry.maxSeverity = Math.max(entry.maxSeverity ?? 0, scorePercent);
 
-      // Model vs Physics dual-track values
       if (f.model_severity !== undefined) {
         entry.modelSeverity = Math.round((f.model_severity ?? 0) * 100);
       }
@@ -228,7 +229,7 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
     return Array.from(dateMap.values()).sort((a, b) => a.date.localeCompare(b.date));
   }, [filteredForecasts]);
 
-  // District comparison bar chart data (Top 12 districts by severity)
+  // District comparison bar chart data
   const districtComparisonData = useMemo(() => {
     const districtMap = new Map<string, { name: string; maxSeverity: number; hazard: string; confidence: number }>();
 
@@ -270,9 +271,6 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
       'confidence',
       'prediction_date',
       'target_date',
-      'temperature_mean',
-      'precipitation_mm',
-      'wind_max_kmh',
     ];
 
     const rows = filteredForecasts.map((f) => [
@@ -285,9 +283,6 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
       f.confidence,
       f.prediction_date,
       f.target_date,
-      f.temperature_mean ?? '',
-      f.precipitation_mm ?? '',
-      f.wind_max_kmh ?? '',
     ]);
 
     const csvContent = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
@@ -324,10 +319,7 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
                 <span>{dbSource === 'firestore' ? 'Firestore Live Sync' : 'Local Forecast Baseline'}</span>
               </span>
             </div>
-            {/* `h2`, not `h1`: this component is embedded inside `AnalyticsPage`, whose
-                own `<h1>` is the page heading. Two `<h1>`s on `/analytics` split the
-                document outline and made the axe census report a duplicate top-level
-                heading. The visual size is unchanged. */}
+
             <h2 className="text-2xl sm:text-4xl font-extrabold text-carbon-90 tracking-tight">
               District Hazard Forecast Analytics
             </h2>
@@ -341,7 +333,7 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={handleExportCsv}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-carbon-90 text-white text-xs font-extrabold shadow-sm hover:bg-carbon-80 transition-all cursor-pointer"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-carbon-90 text-white text-xs font-extrabold shadow-sm hover:bg-carbon-80 transition-all cursor-pointer min-h-[44px]"
             >
               <MaterialIcon name="download" className="w-4 h-4 text-amber-400" />
               <span>Export CSV Data</span>
@@ -350,85 +342,67 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
         </div>
       </div>
 
-      {/* KPI Stats Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <motion.div
-          whileHover={{ y: -2 }}
-          className="bg-white border border-carbon-20/90 rounded-2xl p-4 sm:p-5 shadow-2xs space-y-1"
-        >
-          <div className="flex items-center justify-between text-carbon-60">
-            <span className="text-xs font-mono font-bold uppercase tracking-wider">Total Active Forecasts</span>
-            <MaterialIcon name="list_alt" className="w-4 h-4 text-carbon-60" />
-          </div>
-          <div className="text-2xl sm:text-3xl font-black text-carbon-90">{stats.total}</div>
-          <p className="text-[11px] text-carbon-60 font-mono">Horizon: {selectedHorizon.replace('_', ' ')}</p>
-        </motion.div>
+      {/* Mobile Bento Box Telemetry Grid */}
+      <BentoGrid>
+        <BentoCard
+          title="Active Forecasts"
+          value={stats.total}
+          unit="Districts"
+          subtitle={`Horizon: ${selectedHorizon.replace('_', ' ')}`}
+          statusBadge={{ label: 'TACTICAL', color: '#1c67e3' }}
+          icon={<MaterialIcon name="assessment" />}
+        />
+        <BentoCard
+          title="High Risk Watch"
+          value={stats.highRisk}
+          unit="Districts"
+          subtitle="Severity Score ≥ 67%"
+          statusBadge={{ label: 'CRITICAL', color: '#dc2626' }}
+          icon={<MaterialIcon name="warning" />}
+          gaugePercent={Math.min(100, (stats.highRisk / Math.max(1, stats.total)) * 100 * 2)}
+        />
+        <BentoCard
+          title="Moderate Risk"
+          value={stats.modRisk}
+          unit="Districts"
+          subtitle="Severity Score 34% - 66%"
+          statusBadge={{ label: 'ADVISORY', color: '#ea6f24' }}
+          icon={<MaterialIcon name="error_outline" />}
+          gaugePercent={Math.min(100, (stats.modRisk / Math.max(1, stats.total)) * 100 * 1.5)}
+        />
+        <BentoCard
+          title="Avg AI Confidence"
+          value={`${stats.avgConfidence.toFixed(1)}%`}
+          subtitle={`Latest Run: ${stats.latestDate}`}
+          statusBadge={{ label: 'VERIFIED', color: '#16a34a' }}
+          icon={<MaterialIcon name="verified" />}
+          gaugePercent={stats.avgConfidence}
+        />
+      </BentoGrid>
 
-        <motion.div
-          whileHover={{ y: -2 }}
-          className="bg-white border border-carbon-20/90 rounded-2xl p-4 sm:p-5 shadow-2xs space-y-1"
-        >
-          <div className="flex items-center justify-between text-rose-600">
-            <span className="text-xs font-mono font-bold uppercase tracking-wider">High Risk Districts</span>
-            <MaterialIcon name="warning" className="w-4 h-4 text-rose-500" />
-          </div>
-          <div className="text-2xl sm:text-3xl font-black text-rose-600">{stats.highRisk}</div>
-          <p className="text-[11px] text-carbon-60 font-mono">Severity ≥ 67%</p>
-        </motion.div>
+      {/* Floating Glass Search & Control Bar */}
+      <FloatingControlBar
+        searchValue={searchQuery}
+        onSearchChange={setSearchQuery}
+        placeholder="Search district, hazard, or division..."
+        chips={[
+          { id: 'all', label: 'All Hazards', active: selectedHazard === 'all' },
+          { id: 'Flood', label: 'Floods', active: selectedHazard === 'Flood' },
+          { id: 'Flash Flood', label: 'Flash Flood', active: selectedHazard === 'Flash Flood' },
+          { id: 'Tropical Cyclone', label: 'Cyclone', active: selectedHazard === 'Tropical Cyclone' },
+          { id: 'Drought', label: 'Drought', active: selectedHazard === 'Drought' },
+        ]}
+        onSelectChip={(chipId) => setSelectedHazard(chipId)}
+      />
 
-        <motion.div
-          whileHover={{ y: -2 }}
-          className="bg-white border border-carbon-20/90 rounded-2xl p-4 sm:p-5 shadow-2xs space-y-1"
-        >
-          <div className="flex items-center justify-between text-amber-600">
-            <span className="text-xs font-mono font-bold uppercase tracking-wider">Moderate Risk</span>
-            <MaterialIcon name="error_outline" className="w-4 h-4 text-amber-500" />
-          </div>
-          <div className="text-2xl sm:text-3xl font-black text-amber-600">{stats.modRisk}</div>
-          <p className="text-[11px] text-carbon-60 font-mono">Severity 34% - 66%</p>
-        </motion.div>
-
-        <motion.div
-          whileHover={{ y: -2 }}
-          className="bg-white border border-carbon-20/90 rounded-2xl p-4 sm:p-5 shadow-2xs space-y-1"
-        >
-          <div className="flex items-center justify-between text-emerald-600">
-            <span className="text-xs font-mono font-bold uppercase tracking-wider">Avg AI Confidence</span>
-            <MaterialIcon name="verified" className="w-4 h-4 text-emerald-500" />
-          </div>
-          <div className="text-2xl sm:text-3xl font-black text-carbon-90">{stats.avgConfidence.toFixed(1)}%</div>
-          <p className="text-[11px] text-carbon-60 font-mono">Latest Run: {stats.latestDate}</p>
-        </motion.div>
-      </div>
-
-      {/* Control Toolbar / Filters */}
+      {/* Control Toolbar / Horizon Filters */}
       <div className="bg-white border border-carbon-20/90 rounded-2xl p-4 shadow-2xs space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          {/* Search bar */}
-          <div className="relative flex-1 min-w-[200px] max-w-md">
-            <MaterialIcon name="search" className="w-4 h-4 text-carbon-60 absolute left-3 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search district, hazard, or division..."
-              className="w-full pl-9 pr-4 py-2 bg-carbon-05 border border-carbon-20 rounded-xl text-xs font-medium text-carbon-90 placeholder:text-carbon-60 focus:outline-hidden focus:ring-2 focus:ring-amber-400"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery('')}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-carbon-60 hover:text-carbon-60"
-              >
-                <MaterialIcon name="close" className="w-3.5 h-3.5" />
-              </button>
-            )}
-          </div>
-
           {/* Horizon Switcher */}
           <div className="inline-flex rounded-xl p-1 bg-carbon-10 border border-carbon-20 shrink-0">
             <button
               onClick={() => setSelectedHorizon('7_days')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all min-h-[44px] ${
                 selectedHorizon === '7_days' ? 'bg-white text-carbon-90 shadow-2xs font-extrabold' : 'text-carbon-60 hover:text-carbon-90'
               }`}
             >
@@ -436,26 +410,24 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
             </button>
             <button
               onClick={() => setSelectedHorizon('15_days')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all min-h-[44px] ${
                 selectedHorizon === '15_days' ? 'bg-white text-carbon-90 shadow-2xs font-extrabold' : 'text-carbon-60 hover:text-carbon-90'
               }`}
             >
               15-Day Strategic
             </button>
           </div>
-        </div>
 
-        {/* Filter Dropdowns */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-carbon-10">
-          <div>
-            <label className="block text-[10px] font-mono font-bold text-carbon-60 uppercase mb-1">Filter District</label>
+          {/* Filter Dropdowns */}
+          <div className="flex flex-wrap gap-2 flex-1 justify-end">
             <select
               value={selectedDistrict}
               onChange={(e) => {
                 setSelectedDistrict(e.target.value);
                 if (onSelectDistrict && e.target.value) onSelectDistrict(e.target.value);
               }}
-              className="w-full bg-carbon-05 border border-carbon-20 rounded-xl px-3 py-2 text-xs font-medium text-carbon-80 focus:outline-hidden focus:ring-2 focus:ring-amber-400"
+              aria-label="Filter District"
+              className="bg-carbon-05 border border-carbon-20 rounded-xl px-3 py-2 text-xs font-medium text-carbon-80 focus:outline-none min-h-[44px]"
             >
               <option value="">All 64 Districts</option>
               {availableDistricts.map((d) => (
@@ -464,30 +436,12 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
                 </option>
               ))}
             </select>
-          </div>
 
-          <div>
-            <label className="block text-[10px] font-mono font-bold text-carbon-60 uppercase mb-1">Filter Hazard Type</label>
-            <select
-              value={selectedHazard}
-              onChange={(e) => setSelectedHazard(e.target.value)}
-              className="w-full bg-carbon-05 border border-carbon-20 rounded-xl px-3 py-2 text-xs font-medium text-carbon-80 focus:outline-hidden focus:ring-2 focus:ring-amber-400"
-            >
-              <option value="all">All Hazard Types</option>
-              {availableHazards.map((h) => (
-                <option key={h} value={h}>
-                  {h}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-[10px] font-mono font-bold text-carbon-60 uppercase mb-1">Risk Severity Level</label>
             <select
               value={selectedRiskLevel}
               onChange={(e) => setSelectedRiskLevel(e.target.value as any)}
-              className="w-full bg-carbon-05 border border-carbon-20 rounded-xl px-3 py-2 text-xs font-medium text-carbon-80 focus:outline-hidden focus:ring-2 focus:ring-amber-400"
+              aria-label="Filter Risk Severity Level"
+              className="bg-carbon-05 border border-carbon-20 rounded-xl px-3 py-2 text-xs font-medium text-carbon-80 focus:outline-none min-h-[44px]"
             >
               <option value="all">All Risk Levels</option>
               <option value="high">High Risk (≥ 67%)</option>
@@ -514,27 +468,27 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
           <div className="flex items-center gap-2">
             <button
               onClick={() => setActiveChartTab('trends')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all min-h-[44px] ${
                 activeChartTab === 'trends' ? 'bg-amber-500 text-carbon-90 shadow-2xs font-extrabold' : 'bg-carbon-10 text-carbon-60 hover:bg-carbon-20'
               }`}
             >
-              Hazard Severity Trends
+              Trends
             </button>
             <button
               onClick={() => setActiveChartTab('comparison')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all min-h-[44px] ${
                 activeChartTab === 'comparison' ? 'bg-amber-500 text-carbon-90 shadow-2xs font-extrabold' : 'bg-carbon-10 text-carbon-60 hover:bg-carbon-20'
               }`}
             >
-              District Risk Bar Chart
+              Bar Chart
             </button>
             <button
               onClick={() => setActiveChartTab('dualTrack')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all min-h-[44px] ${
                 activeChartTab === 'dualTrack' ? 'bg-amber-500 text-carbon-90 shadow-2xs font-extrabold' : 'bg-carbon-10 text-carbon-60 hover:bg-carbon-20'
               }`}
             >
-              CNN vs Physics Dual-Track
+              Dual-Track
             </button>
           </div>
         </div>
@@ -552,49 +506,13 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
               <div className="h-80 w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={trendChartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-                    <defs>
-                      <linearGradient id="highRiskGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#ef4444" stopOpacity={0.4} />
-                        <stop offset="95%" stopColor="#ef4444" stopOpacity={0.0} />
-                      </linearGradient>
-                      <linearGradient id="modRiskGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.4} />
-                        <stop offset="95%" stopColor="#f59e0b" stopOpacity={0.0} />
-                      </linearGradient>
-                      <linearGradient id="floodGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.4} />
-                        <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.0} />
-                      </linearGradient>
-                    </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="#e3e3e3" />
                     <XAxis dataKey="date" stroke="#77777a" fontSize={11} tickLine={false} />
                     <YAxis domain={[0, 100]} stroke="#77777a" fontSize={11} tickFormatter={(val) => `${val}%`} />
-                    <Tooltip
-                      content={({ active, payload, label }) => {
-                        if (active && payload && payload.length) {
-                          return (
-                            <div className="bg-white border border-carbon-20 p-3 rounded-xl shadow-lg text-xs space-y-1.5 z-50">
-                              <div className="font-extrabold text-carbon-90 border-b border-carbon-10 pb-1">
-                                Date: {label}
-                              </div>
-                              {payload.map((entry: any, i: number) => (
-                                <div key={i} className="flex items-center justify-between gap-4 text-xs font-mono">
-                                  <span className="flex items-center gap-1.5">
-                                    <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: entry.color }} />
-                                    {entry.name}:
-                                  </span>
-                                  <span className="font-bold">{entry.value}%</span>
-                                </div>
-                              ))}
-                            </div>
-                          );
-                        }
-                        return null;
-                      }}
-                    />
+                    <Tooltip />
                     <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
-                    <ReferenceLine y={67} stroke="#ef4444" strokeDasharray="4 4" label={{ value: 'High Risk (67%)', fill: '#ef4444', fontSize: 10 }} />
-                    <ReferenceLine y={34} stroke="#f59e0b" strokeDasharray="4 4" label={{ value: 'Moderate Risk (34%)', fill: '#f59e0b', fontSize: 10 }} />
+                    <ReferenceLine y={67} stroke="#ef4444" strokeDasharray="4 4" />
+                    <ReferenceLine y={34} stroke="#f59e0b" strokeDasharray="4 4" />
 
                     {availableHazards.map((hazard) => (
                       <Area
@@ -618,31 +536,9 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={districtComparisonData} margin={{ top: 10, right: 30, left: 10, bottom: 40 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#e3e3e3" />
-                    <XAxis
-                      dataKey="name"
-                      stroke="#77777a"
-                      fontSize={11}
-                      angle={-35}
-                      textAnchor="end"
-                      interval={0}
-                    />
+                    <XAxis dataKey="name" stroke="#77777a" fontSize={11} angle={-35} textAnchor="end" interval={0} />
                     <YAxis domain={[0, 100]} stroke="#77777a" fontSize={11} tickFormatter={(val) => `${val}%`} />
-                    <Tooltip
-                      content={({ active, payload, label }) => {
-                        if (active && payload && payload.length) {
-                          const data = payload[0].payload;
-                          return (
-                            <div className="bg-white border border-carbon-20 p-3 rounded-xl shadow-lg text-xs space-y-1">
-                              <div className="font-extrabold text-carbon-90">{label}</div>
-                              <div className="text-carbon-60 font-mono">Primary Hazard: {data.hazard}</div>
-                              <div className="text-carbon-90 font-mono font-bold">Severity Score: {data.maxSeverity}%</div>
-                              <div className="text-emerald-700 font-mono">AI Confidence: {data.confidence}%</div>
-                            </div>
-                          );
-                        }
-                        return null;
-                      }}
-                    />
+                    <Tooltip />
                     <ReferenceLine y={67} stroke="#ef4444" strokeDasharray="4 4" />
                     <Bar dataKey="maxSeverity" name="Severity Score %" radius={[6, 6, 0, 0]}>
                       {districtComparisonData.map((entry, index) => (
@@ -666,24 +562,8 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
                     <YAxis domain={[0, 100]} stroke="#77777a" fontSize={11} tickFormatter={(val) => `${val}%`} />
                     <Tooltip />
                     <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
-                    <ReferenceLine y={67} stroke="#ef4444" strokeDasharray="4 4" />
-                    <Line
-                      type="monotone"
-                      dataKey="modelSeverity"
-                      name="CNN Neural Net Severity %"
-                      stroke="#8b5cf6"
-                      strokeWidth={3}
-                      dot={{ r: 4 }}
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="physicsSeverity"
-                      name="Physics-Based Proxy Severity %"
-                      stroke="#06b6d4"
-                      strokeWidth={2}
-                      strokeDasharray="4 4"
-                      dot={{ r: 3 }}
-                    />
+                    <Line type="monotone" dataKey="modelSeverity" name="CNN Neural Net %" stroke="#8b5cf6" strokeWidth={3} />
+                    <Line type="monotone" dataKey="physicsSeverity" name="Physics Proxy %" stroke="#06b6d4" strokeWidth={2} strokeDasharray="4 4" />
                   </ComposedChart>
                 </ResponsiveContainer>
               </div>
@@ -692,7 +572,7 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
         )}
       </div>
 
-      {/* District Forecast Details Table */}
+      {/* District Forecast Records Table */}
       <div className="bg-white border border-carbon-20/90 rounded-3xl p-6 shadow-md space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-base font-bold text-carbon-90 flex items-center gap-2">
@@ -707,31 +587,31 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
               <tr className="bg-carbon-05 border-b border-carbon-20 text-[11px] font-mono uppercase text-carbon-60 font-bold">
                 <th className="p-3">District</th>
                 <th className="p-3">Hazard Type</th>
-                <th className="p-3">Physics Severity</th>
-                <th className="p-3">CNN Severity</th>
-                <th className="p-3">HazardNet Confidence</th>
+                <th className="p-3">Severity Score</th>
+                <th className="p-3">Confidence</th>
                 <th className="p-3">Target Date</th>
-                <th className="p-3">Temperature</th>
-                <th className="p-3">Precipitation</th>
                 <th className="p-3 text-right">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-carbon-10 text-xs">
               {filteredForecasts.length === 0 ? (
                 <tr>
-                  <td colSpan={9} className="p-8 text-center text-carbon-60">
+                  <td colSpan={6} className="p-8 text-center text-carbon-60">
                     No forecast records match the selected filters.
                   </td>
                 </tr>
               ) : (
                 filteredForecasts.slice(0, 30).map((item, idx) => {
                   const physScore = item.physics_severity !== undefined ? item.physics_severity : (item.severity_score ?? 0);
-                  const modelScore = item.model_severity !== undefined ? item.model_severity : (item.severity_score ?? 0);
                   const isHigh = physScore >= RISK_THRESHOLDS.HIGH;
                   const isMod = physScore >= RISK_THRESHOLDS.MODERATE && physScore < RISK_THRESHOLDS.HIGH;
 
                   return (
-                    <tr key={idx} className="hover:bg-carbon-05/80 transition-colors">
+                    <tr
+                      key={idx}
+                      onClick={() => setActiveSheetItem(item)}
+                      className="hover:bg-carbon-05/80 transition-colors cursor-pointer"
+                    >
                       <td className="p-3 font-bold text-carbon-90">
                         {item.district_name}
                         {item.division && <span className="text-[10px] text-carbon-60 font-normal block">{item.division}</span>}
@@ -758,28 +638,20 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
                           {Math.round(physScore * 100)}% ({isHigh ? 'High' : isMod ? 'Moderate' : 'Low'})
                         </span>
                       </td>
-                      <td className="p-3 font-mono text-carbon-70">
-                        {Math.round(modelScore * 100)}%
-                      </td>
                       <td className="p-3 font-mono font-bold text-emerald-700">
                         {Math.round((item.confidence ?? 0) * 100)}%
                       </td>
                       <td className="p-3 font-mono text-carbon-60">{item.target_date || item.prediction_date}</td>
-                      <td className="p-3 font-mono text-carbon-60">
-                        {item.temperature_mean !== undefined ? `${item.temperature_mean.toFixed(1)}°C` : '—'}
-                      </td>
-                      <td className="p-3 font-mono text-carbon-60">
-                        {item.precipitation_mm !== undefined ? `${item.precipitation_mm.toFixed(1)} mm` : '—'}
-                      </td>
                       <td className="p-3 text-right">
-                        {onSelectDistrict && (
-                          <button
-                            onClick={() => onSelectDistrict(String(item.district_id))}
-                            className="text-amber-600 hover:text-amber-800 font-extrabold text-[11px] hover:underline cursor-pointer"
-                          >
-                            View Map
-                          </button>
-                        )}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setActiveSheetItem(item);
+                          }}
+                          className="text-nasa-blue font-extrabold text-xs hover:underline cursor-pointer min-h-[44px] px-2"
+                        >
+                          Inspect Sheet
+                        </button>
                       </td>
                     </tr>
                   );
@@ -789,6 +661,73 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
           </table>
         </div>
       </div>
+
+      {/* Glassmorphic Contextual Telemetry BottomSheet */}
+      <BottomSheet
+        isOpen={Boolean(activeSheetItem)}
+        onClose={() => setActiveSheetItem(null)}
+        title={activeSheetItem?.district_name ? `${activeSheetItem.district_name} District Telemetry` : 'District Telemetry'}
+        subtitle={activeSheetItem?.division ? `Division: ${activeSheetItem.division}` : undefined}
+        footerContent={
+          <div className="flex items-center justify-between gap-3">
+            <button
+              onClick={() => setActiveSheetItem(null)}
+              className="px-4 py-2.5 rounded-xl border border-carbon-20 font-sans font-semibold text-xs text-carbon-80 hover:bg-carbon-10 min-h-[44px]"
+            >
+              Dismiss
+            </button>
+            {activeSheetItem && onSelectDistrict && (
+              <button
+                onClick={() => {
+                  onSelectDistrict(String(activeSheetItem.district_id));
+                  setActiveSheetItem(null);
+                }}
+                className="px-5 py-2.5 rounded-xl bg-nasa-blue text-white font-sans font-semibold text-xs hover:bg-nasa-blue-shade shadow-xs min-h-[44px]"
+              >
+                View on Live GIS Map
+              </button>
+            )}
+          </div>
+        }
+      >
+        {activeSheetItem && (
+          <div className="space-y-4 text-carbon-90 dark:text-carbon-05">
+            <div className="p-4 rounded-2xl bg-carbon-05 dark:bg-carbon-80 border border-carbon-20/60 flex items-center justify-between">
+              <div>
+                <span className="text-xs font-mono text-carbon-60 uppercase">Primary Climate Hazard</span>
+                <p className="text-lg font-heading font-bold text-carbon-90 dark:text-carbon-05 mt-0.5">
+                  {activeSheetItem.hazard_type}
+                </p>
+              </div>
+              <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-nasa-red/10 text-nasa-red border border-nasa-red/20">
+                Score: {Math.round((activeSheetItem.severity_score ?? 0) * 100)}/100
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="p-3 rounded-xl bg-white dark:bg-carbon-90 border border-carbon-20/60">
+                <span className="text-[11px] font-mono text-carbon-60 uppercase">AI Model Confidence</span>
+                <p className="text-xl font-mono font-bold text-emerald-600 mt-1">
+                  {Math.round((activeSheetItem.confidence ?? 0) * 100)}%
+                </p>
+              </div>
+              <div className="p-3 rounded-xl bg-white dark:bg-carbon-90 border border-carbon-20/60">
+                <span className="text-[11px] font-mono text-carbon-60 uppercase">Forecast Horizon</span>
+                <p className="text-xl font-mono font-bold text-carbon-90 dark:text-carbon-05 mt-1">
+                  {activeSheetItem.horizon || selectedHorizon}
+                </p>
+              </div>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-surface-page dark:bg-carbon-80 border border-carbon-20/60 space-y-2">
+              <h4 className="font-heading font-semibold text-sm">Agricultural Advisory Note</h4>
+              <p className="text-xs text-carbon-70 dark:text-carbon-30 leading-relaxed">
+                Elevated multi-hazard risk detected for {activeSheetItem.district_name}. High salinity and rainfall forecast indicates immediate field drainage and crop protection measures recommended.
+              </p>
+            </div>
+          </div>
+        )}
+      </BottomSheet>
     </div>
   );
 };

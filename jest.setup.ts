@@ -18,3 +18,21 @@ if (typeof globalThis.ReadableStream === 'undefined') {
     TransformStream: webStreams.TransformStream
   });
 }
+
+// Polyfill IntersectionObserver for jsdom environment (Framer Motion whileInView support)
+if (typeof globalThis.IntersectionObserver === 'undefined') {
+  class MockIntersectionObserver {
+    readonly root: Element | null = null;
+    readonly rootMargin: string = '';
+    readonly thresholds: ReadonlyArray<number> = [];
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+    takeRecords() { return []; }
+  }
+  Object.defineProperty(globalThis, 'IntersectionObserver', {
+    writable: true,
+    configurable: true,
+    value: MockIntersectionObserver,
+  });
+}

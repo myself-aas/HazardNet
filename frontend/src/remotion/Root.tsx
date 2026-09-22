@@ -13,10 +13,27 @@ import { HeroComposition } from './compositions/HeroComposition';
 import { RunVisualComposition } from './compositions/RunVisualComposition';
 import { LiveStatusComposition } from './compositions/LiveStatusComposition';
 import { HazardNetBrandComposition } from './compositions/HazardNetBrandComposition';
+import { HazardAlertStory } from './compositions/HazardAlertStory';
 
 export const RemotionRoot: React.FC = () => {
   return (
     <>
+      {/* Mobile Social Warning Story — 9:16 vertical video format (1080x1920) */}
+      <Composition
+        id="HazardNet-AlertStory"
+        component={HazardAlertStory}
+        durationInFrames={150}
+        fps={30}
+        width={1080}
+        height={1920}
+        defaultProps={{
+          district: 'Sylhet',
+          hazardType: 'Flash Flood Early Warning',
+          severityScore: 0.88,
+          date: '2026-09-22',
+          affectedPeopleText: '42,000+ Agricultural Households At Risk',
+        }}
+      />
       {/* Hero — 16:9, cinematic, web hero preview */}
       <Composition
         id="HazardNet-Hero"

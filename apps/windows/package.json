@@ -1,0 +1,21 @@
+{
+  "name": "@hazardnet/windows",
+  "version": "2.2.0",
+  "private": true,
+  "type": "module",
+  "main": "App.windows.tsx",
+  "scripts": {
+    "start": "react-native start",
+    "windows": "react-native run-windows"
+  },
+  "dependencies": {
+    "@hazardnet/core": "*",
+    "@hazardnet/design-system": "*",
+    "react": "18.2.0",
+    "react-native": "0.74.0-rc.9",
+    "react-native-windows": "0.74.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5"
+  }
+}

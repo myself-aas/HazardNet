@@ -100,6 +100,8 @@ export default defineConfig(({ mode }) => {
     // "Rollup failed to resolve import '@/...'" on shadcn-generated components.
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
+      '@hazardnet/design-system': fileURLToPath(new URL('../packages/design-system/src/index.ts', import.meta.url)),
+      '@hazardnet/core': fileURLToPath(new URL('../packages/core/src/index.ts', import.meta.url)),
     },
   },
   server: {

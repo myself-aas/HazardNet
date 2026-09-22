@@ -1,0 +1,45 @@
+{
+  "expo": {
+    "name": "HazardNet Mobile",
+    "slug": "hazardnet-mobile",
+    "version": "2.2.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#f6f6f6"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "live.hazardnet.mobile",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "HazardNet uses your location to display local multi-hazard agricultural disaster alerts and high-precision weather forecasts for your district.",
+        "NSCameraUsageDescription": "HazardNet uses your camera to allow agricultural officers to upload field disaster photos.",
+        "NSRemindersUsageDescription": "HazardNet uses reminders to schedule emergency crop protection directives."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#f6f6f6"
+      },
+      "package": "live.hazardnet.mobile",
+      "targetSdkVersion": 34,
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "POST_NOTIFICATIONS",
+        "VIBRATE",
+        "RECEIVE_BOOT_COMPLETED"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    }
+  }
+}
