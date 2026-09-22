@@ -1,6 +1,6 @@
 {
   "schema": "hazardnet-freshness/v1",
-  "built_at": "2026-09-22T11:25:08.893Z",
+  "built_at": "2026-09-22T12:23:44.984Z",
   "generated_by": "scripts/build_freshness_artifact.mjs",
   "what_this_is": "A derived statement about the committed data artifacts this deployment ships. It is not a live probe and it does not measure the running services — the site-health probe result it carries is whatever the last scheduled run published.",
   "overall": {
@@ -26,8 +26,8 @@
       "reason": null,
       "generated_at": "2026-09-16T03:14:42Z",
       "prediction_date": "2026-09-16",
-      "age_hours": 155.4,
-      "run_age_hours": 152.2,
+      "age_hours": 156.4,
+      "run_age_hours": 153.2,
       "slo_hours": 192,
       "detail": {
         "source": "github-actions: scripts/auto_forecast.py (GEE + Open-Meteo + TFLite)",
@@ -43,8 +43,8 @@
       "reason": null,
       "generated_at": "2026-09-17T16:11:19.128Z",
       "prediction_date": "2026-09-16",
-      "age_hours": 155.4,
-      "run_age_hours": 115.2,
+      "age_hours": 156.4,
+      "run_age_hours": 116.2,
       "slo_hours": 192,
       "detail": {
         "schema": "hazardnet-forecast-snapshot/v2",
@@ -56,9 +56,9 @@
       "label": "Alert snapshot",
       "artifact": "frontend/public/data/alerts-latest.json",
       "state": "stale",
-      "reason": "the snapshot was built 110.3 h ago (SLO 48 h)",
+      "reason": "the snapshot was built 111.3 h ago (SLO 48 h)",
       "generated_at": "2026-09-17T21:08:14.217Z",
-      "age_hours": 110.3,
+      "age_hours": 111.3,
       "slo_hours": 48,
       "detail": {
         "schema": "hazardnet-alerts/v1",
@@ -73,11 +73,11 @@
       "id": "site_probe",
       "label": "Site-health probe (every 30 min)",
       "artifact": "data/site-health/latest.json",
-      "generated_at": "2026-09-22T01:39:56Z",
-      "age_hours": 9.8,
+      "generated_at": "2026-09-22T06:59:03Z",
+      "age_hours": 5.4,
       "slo_hours": 2,
       "detail": {
-        "run_url": "https://github.com/myself-aas/HazardNet/actions/runs/35676576198",
+        "run_url": "https://github.com/myself-aas/HazardNet/actions/runs/35697298355",
         "site_url": "https://hazardnet.live",
         "passed": 7,
         "failed": 0,
@@ -121,8 +121,8 @@
       },
       "state": "stale",
       "outcome": "pass",
-      "reason": "the last probe result is 9.8 h old (SLO 2 h)",
-      "ran_at": "2026-09-22T01:39:56Z"
+      "reason": "the last probe result is 5.4 h old (SLO 2 h)",
+      "ran_at": "2026-09-22T06:59:03Z"
     }
   ],
   "coverage": {
@@ -174,7 +174,7 @@
     },
     "site_probe": {
       "path": "data/site-health/latest.json",
-      "ran_at": "2026-09-22T01:39:56Z"
+      "ran_at": "2026-09-22T06:59:03Z"
     }
   }
 }

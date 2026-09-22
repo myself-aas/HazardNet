@@ -82,8 +82,18 @@ const ALLOWLIST = [
  * `unless`   a co-occurring phrase that makes the match legitimate (the archive's own
  *            reported field, or the embargo notice itself)
  */
-const RULES = [
+export const RULES = [
   // ── block tier: derivation of a NEW severity value or its parameters ──────────
+  {
+    tier: 'block',
+    id: 'embargoed-vulnerability',
+    // ADR 0014 §3: the Vulnerability Formula (and its index/score aliases) is
+    // embargoed research — withhold formula, weights and derived output from
+    // public surfaces. `\b` after `index` keeps ordinary prose like
+    // "vulnerability indexing" out of the block tier.
+    pattern: /\bvulnerability[\s_-]?(?:formula|index|score)\b/gi,
+    why: 'ADR 0014: the Vulnerability Formula is embargoed research and must not appear on public surfaces.',
+  },
   {
     tier: 'block',
     id: 'index-weights',
