@@ -121,13 +121,16 @@ jobs:
       - name: Install Node dependencies
         run: npm ci --no-audit --no-fund
 
-      # Regenerates `frontend/public/data/model-performance.json` (the published validation
-      # numbers), `frontend/src/content/generated-routes.json` (the /model-performance page
-      # content, including its tables) and `frontend/public/data/content-index.json` (the
-      # published inventory) from the reports this run just wrote. Building is the only way the
-      # content index is produced, which is why this is a build and not two script calls.
+      # Rebuild the report-derived JSON before prerendering. The hindcast runner writes a fresh
+      # report (including its generated_at and input hash) on every run, so the committed
+      # validation document and the generated /model-performance route must be regenerated from
+      # those exact reports before the consistency checks below. `build:frontend` only bundles
+      # and prerenders; it does not run either report builder.
       - name: Rebuild the artifacts derived from the reports
-        run: npm run build:frontend
+        run: |
+          node scripts/build_model_performance.mjs
+          node scripts/build_content_engine.mjs
+          npm run build:frontend
 
       - name: The derived artifacts describe the reports this run wrote
         run: |
