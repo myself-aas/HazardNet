@@ -143,11 +143,11 @@ export const Documentation: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-3 shrink-0">
+        <div className="flex flex-wrap items-center gap-3 shrink-0">
           <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
             <Link
               to="/contact?form=api"
-              className="px-4 py-2.5 bg-nasa-red text-carbon-90 font-bold text-xs hover:bg-nasa-red-shade transition-all"
+              className="inline-flex min-h-[44px] items-center px-4 py-2.5 bg-nasa-red text-white font-bold text-sm hover:bg-nasa-red-shade transition-all touch-manipulation tap-target"
             >
               🔑 Request API Key
             </Link>
@@ -155,7 +155,7 @@ export const Documentation: React.FC = () => {
           <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
             <Link
               to="/use-cases"
-              className="px-4 py-2.5 bg-carbon-80 text-white font-bold text-xs hover:bg-carbon-70 transition-all border border-carbon-70"
+              className="inline-flex min-h-[44px] items-center px-4 py-2.5 bg-carbon-80 text-white font-bold text-sm hover:bg-carbon-70 transition-all border border-carbon-70 touch-manipulation tap-target"
             >
               🌾 View Use Cases
             </Link>

@@ -206,10 +206,15 @@ describe('AlertsPage', () => {
 
   it('turns the mode on by itself on a low-end device, without a stored preference', async () => {
     localStorage.clear();
+    const originalConcurrency = navigator.hardwareConcurrency;
+    Object.defineProperty(navigator, 'hardwareConcurrency', { value: 2, configurable: true });
+    
     renderPage();
-    // jsdom reports 2 cores, so the library rule decides the device cannot carry raster
+    // jsdom reports 2 cores (mocked above), so the library rule decides the device cannot carry raster
     // tiles + animation, and the page must land on the cheapest view that still informs.
     await screen.findByRole('table');
     expect(screen.getByRole('checkbox', { name: /Low-bandwidth mode/ })).toBeChecked();
+    
+    Object.defineProperty(navigator, 'hardwareConcurrency', { value: originalConcurrency, configurable: true });
   });
 });

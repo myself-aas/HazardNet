@@ -2,6 +2,7 @@
   "name": "hazardnet-frontend",
   "version": "0.1.0",
   "private": true,
+  "license": "MIT",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -58,6 +59,9 @@
     "@vitejs/plugin-react": "^6.1.1",
     "ts-jest": "^29.4.12",
     "typescript": "^5.4.5",
-    "vite": "^8.3.0"
+    "vite": "^8.3.0",
+    "vite-plugin-pwa": "^1.3.0",
+    "workbox-precaching": "^7.4.1",
+    "workbox-window": "^7.4.1"
   }
 }

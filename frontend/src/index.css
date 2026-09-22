@@ -109,6 +109,15 @@
   --hn-hds-ink-soft: var(--hds-color-carbon-60);       /* 7.1:1 on white — smallest text gray that clears AA */
   --hn-hds-ink: var(--hds-color-carbon-90);            /* #17171b — body text */
 
+  /* Typography Families — Google Fonts Suite (Bengali + Modern Latin) */
+  --hn-font-sans: 'Plus Jakarta Sans', 'Public Sans Web', 'Noto Sans Bengali', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --hn-font-heading: 'Instrument Sans', 'Plus Jakarta Sans', 'Anek Bangla', 'Inter', sans-serif;
+  --hn-font-display: 'Plus Jakarta Sans', 'Baloo Da 2', sans-serif;
+  --hn-font-brand: 'Instrument Sans', 'Plus Jakarta Sans', sans-serif;
+  --hn-font-bengali: 'Noto Sans Bengali', 'Anek Bangla', sans-serif;
+  --hn-font-bengali-display: 'Baloo Da 2', 'Anek Bangla', sans-serif;
+  --hn-font-bengali-serif: 'Noto Serif Bengali', serif;
+
   /* Motion */
   --ease-emphasized: cubic-bezier(0.2, 0, 0, 1);
   --ease-standard: cubic-bezier(0.2, 0, 0.2, 1);
@@ -247,7 +256,7 @@
   /* ---- Layer 3 · Component ----------------------------------------------- */
   --panel-bg: var(--surface-card);
   --panel-border: var(--border);
-  --panel-radius: var(--hds-border-radius-default);  /* 0px — HDS cards are square */
+  --panel-radius: var(--hds-border-radius-control);  /* 2px unified border-radius for cohesive product feel */
   --panel-blur: 20px;
   --panel-shadow: 0 1px 2px rgb(23 23 27 / 0.06);    /* HDS is flat: depth comes from 1px borders, not shadows */
   --control-min-size: 44px; /* minimum touch target (iOS HIG / WCAG 2.5.8) */
@@ -591,19 +600,23 @@ html[data-map-debug-fx='true'] .marker-high-risk {
 }
 
 @theme inline {
-  /* Typography — NASA HDS's three families, expressed as the app's existing keys
-     so no component had to be rewritten to change typeface:
-       sans  → Public Sans  (HDS body: paragraphs, UI, tables)
-       brand → Inter        (HDS headings: h1-h3, display, wordmark)
-       mono  → DM Mono      (HDS data: figures, coordinates, metrics, code)
-     Each family resolves through var(--hds-font-family-*) so the stack keeps a
-     single source of truth in NASA's tokens. */
-  --font-sans: var(--hds-font-family-body);
-  --font-brand: var(--hds-font-family-heading);
-  --font-heading: var(--hds-font-family-heading);
-  --font-display: var(--hds-font-family-heading);
-  --font-serif: var(--hds-font-family-heading);
-  --font-montserrat: var(--hds-font-family-heading);
+  /* Typography — Google Fonts Suite with NASA HDS fallbacks:
+       sans            → Plus Jakarta Sans / Public Sans / Noto Sans Bengali (body, UI, cards)
+       heading / brand → Instrument Sans / Plus Jakarta Sans / Anek Bangla / Inter (headings, wordmark)
+       display         → Plus Jakarta Sans / Baloo Da 2 (hero headers, high-impact titles)
+       bengali         → Noto Sans Bengali / Anek Bangla
+       bengali-display → Baloo Da 2 / Anek Bangla
+       bengali-serif   → Noto Serif Bengali
+       mono            → DM Mono (data, coordinates, metrics, code) */
+  --font-sans: var(--hn-font-sans);
+  --font-brand: var(--hn-font-brand);
+  --font-heading: var(--hn-font-heading);
+  --font-display: var(--hn-font-display);
+  --font-serif: var(--hn-font-bengali-serif);
+  --font-bengali: var(--hn-font-bengali);
+  --font-bengali-display: var(--hn-font-bengali-display);
+  --font-bengali-serif: var(--hn-font-bengali-serif);
+  --font-montserrat: var(--hn-font-heading);
   --font-mono: var(--hds-font-family-code);
 
   /* Corner radius: see the radius keys at the foot of this block — HDS's two
@@ -835,8 +848,8 @@ html[data-map-debug-fx='true'] .marker-high-risk {
     -webkit-text-size-adjust: 100%;
   }
 
-  /* Headings are HDS's heading face (Inter) at NASA's measured tracking; the
-     balance/pretty wrapping avoids orphaned words on narrow viewports. */
+  /* Headings use the modern editorial heading face (Instrument Sans / Anek Bangla)
+     at measured tracking; the balance/pretty wrapping avoids orphaned words on narrow viewports. */
   h1,
   h2,
   h3,
@@ -969,8 +982,10 @@ html[data-low-bandwidth='true'] {
 }
 
 /* Brand Typography & Wordmark Utilities per CSV Spec
-   Roles: brand/display = Inter (headings, wordmark); UI/body/nav/buttons/labels =
-   Public Sans; data readouts = DM Mono — the three NASA HDS families. */
+   Roles: brand/display = Instrument Sans / Plus Jakarta Sans;
+   headings = Instrument Sans / Anek Bangla;
+   UI/body/nav/buttons/labels = Plus Jakarta Sans / Public Sans / Noto Sans Bengali;
+   data readouts = DM Mono — NASA HDS & Google Fonts suite. */
 .font-montserrat {
   font-family: var(--font-brand);
 }
@@ -983,13 +998,50 @@ html[data-low-bandwidth='true'] {
   font-family: var(--font-brand);
 }
 
-/* 1. Top-bar wordmark: display serif, 20–22 px, 800, +0.05 em; sits in 56–64 px header */
+.font-heading {
+  font-family: var(--font-heading);
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
+
+.font-bengali {
+  font-family: var(--font-bengali);
+}
+
+.font-bengali-display {
+  font-family: var(--font-bengali-display);
+}
+
+.font-bengali-serif {
+  font-family: var(--font-bengali-serif);
+}
+
+/* Global Mobile-First Touch & Tap Targets (WCAG AAA / React Native parity) */
+.tap-target {
+  min-height: 44px;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+button,
+[role="button"],
+input[type="button"],
+input[type="submit"],
+input[type="reset"] {
+  touch-action: manipulation;
+}
+
+/* 1. Top-bar wordmark: brand, 20–22 px, 600 (Semibold), +0.02 em; sits in 56–64 px header */
 .hn-topbar-wordmark {
   font-family: var(--font-brand);
   font-size: 20px;
-  font-weight: 800;
-  letter-spacing: 0.05em;
-  line-height: 1.2;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  line-height: 1.3;
 }
 
 @media (min-width: 640px) {
@@ -1097,31 +1149,134 @@ p {
   line-height: 1.62;
 }
 
-/* 8. Form labels & field hints: sans, 12–13 px, 500, +0.04 em */
-.hn-label,
-label,
-.hn-field-hint {
+/* 8. Metadata / caption / helper text: sans, 12–13 px, 400, line-height 1.4 */
+.hn-caption {
   font-family: var(--font-sans);
-  font-size: 13px;
-  font-weight: 500;
-  letter-spacing: 0.04em;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.4;
+  color: var(--text-subtle);
 }
 
 @media (min-width: 640px) {
-
-  .hn-label,
-  label,
-  .hn-field-hint {
+  .hn-caption {
     font-size: 13px;
   }
 }
 
-/* 9. Buttons: sans, 14 px, 600 */
+/* 9. Buttons & Interactive Triggers: sans, 600 (Semibold), line-height 1.3, -0.01em tracking */
 .hn-btn,
-button {
+button,
+[role="button"],
+.hn-btn-primary,
+.hn-btn-secondary,
+.hn-btn-outline,
+.hn-btn-ghost,
+.hn-nav-link {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+
+.hn-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 8px 16px;
+  background-color: var(--hn-hds-red-shade);
+  color: #ffffff;
   font-family: var(--font-sans);
   font-size: 14px;
   font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: 0.01em;
+  border-radius: var(--hds-border-radius-control);
+  transition: background-color 150ms var(--ease-standard);
+  touch-action: manipulation;
+}
+
+.hn-btn-primary:hover {
+  background-color: var(--hn-hds-red);
+}
+
+.hn-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 8px 16px;
+  background-color: var(--hn-hds-blue);
+  color: #ffffff;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: var(--hds-border-radius-control);
+  transition: background-color 150ms var(--ease-standard);
+  touch-action: manipulation;
+}
+
+.hn-btn-secondary:hover {
+  background-color: var(--hn-hds-blue-shade);
+}
+
+.hn-btn-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 8px 16px;
+  background-color: #ffffff;
+  color: var(--hn-hds-ink);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 600;
+  border: 1px solid var(--hn-hds-line);
+  border-radius: var(--hds-border-radius-control);
+  transition: background-color 150ms var(--ease-standard), border-color 150ms var(--ease-standard);
+  touch-action: manipulation;
+}
+
+.hn-btn-outline:hover {
+  background-color: var(--hn-hds-surface);
+  border-color: var(--hn-hds-line-strong);
+}
+
+.hn-btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 8px 16px;
+  background-color: transparent;
+  color: var(--hn-hds-ink);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: var(--hds-border-radius-control);
+  transition: background-color 150ms var(--ease-standard), color 150ms var(--ease-standard);
+  touch-action: manipulation;
+}
+
+.hn-btn-ghost:hover {
+  background-color: var(--hn-hds-surface);
+}
+
+.hn-card {
+  background-color: #ffffff;
+  border: 1px solid var(--hn-hds-line);
+  border-radius: var(--hds-border-radius-control);
+  color: var(--hn-hds-ink);
+}
+
+.hn-card-elevated {
+  background-color: #ffffff;
+  border: 1px solid var(--hn-hds-line);
+  border-radius: var(--hds-border-radius-control);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  color: var(--hn-hds-ink);
+  transition: transform 150ms var(--ease-standard), box-shadow 150ms var(--ease-standard);
 }
 
 /* 10. Data readouts (severity score, confidence, dates): DM Mono, 13–16 px, 600, tabular figures */
@@ -2150,3 +2305,84 @@ body.pdf-exporting .no-print,
   color: var(--hds-color-carbon-40);
   pointer-events: none;
 }
+
+@layer base {
+  button,
+  [role="button"],
+  input[type="submit"],
+  input[type="button"],
+  input[type="reset"] {
+    @apply min-h-[44px] min-w-[44px] touch-manipulation;
+    border-radius: var(--hds-border-radius-control);
+  }
+
+  /* Global 150ms Smooth Transitions for all interactive components */
+  button,
+  [role="button"],
+  a,
+  input,
+  select,
+  textarea,
+  .tap-target,
+  .hn-btn-primary,
+  .hn-btn-secondary,
+  .hn-btn-outline,
+  .hn-btn-ghost,
+  .hn-card-elevated,
+  .hn-nav-link {
+    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform;
+    transition-timing-function: var(--ease-standard);
+    transition-duration: 150ms;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  button,
+  [role="button"],
+  a,
+  input,
+  select,
+  textarea,
+  .tap-target,
+  .hn-btn-primary,
+  .hn-btn-secondary,
+  .hn-btn-outline,
+  .hn-btn-ghost,
+  .hn-card-elevated,
+  .hn-nav-link {
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Accessible Touch Target Expansion for Content Links (44px WCAG / Apple HIG) */
+.touch-target-link,
+a.touch-target-link,
+footer a {
+  position: relative;
+  touch-action: manipulation;
+}
+
+.touch-target-link::before,
+a.touch-target-link::before,
+footer a::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  min-width: 44px;
+  min-height: 44px;
+  width: 100%;
+  height: 100%;
+  pointer-events: auto;
+}
+
+/* Accessibility contrast enhancement: for captions (< 14px), carbon-70 is bumped to carbon-80 to guarantee WCAG AAA (7:1) */
+.text-xs.text-carbon-70,
+.text-\[11px\].text-carbon-70,
+.text-\[12px\].text-carbon-70,
+.text-\[10px\].text-carbon-70 {
+  color: var(--hds-color-carbon-80);
+}
+
+

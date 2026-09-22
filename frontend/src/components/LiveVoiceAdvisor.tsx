@@ -82,7 +82,9 @@ export const LiveVoiceAdvisor: React.FC<LiveVoiceAdvisorProps> = ({
       try {
         source.stop();
         source.disconnect();
-      } catch (_) {}
+      } catch {
+        // Source already stopped or disconnected; safely ignore
+      }
     });
     activeSourcesRef.current = [];
     nextStartTimeRef.current = 0;

@@ -221,7 +221,7 @@ export const Contact: React.FC = () => {
                   setPrepared(null);
                   setErrors([]);
                 }}
-                className={`px-3.5 py-1.5 transition-all whitespace-nowrap cursor-pointer ${
+                className={`min-h-[44px] px-4 py-2 transition-all whitespace-nowrap cursor-pointer touch-manipulation tap-target inline-flex items-center justify-center ${
                   activeForm === kind
                     ? 'bg-amber-500 text-carbon-90 font-bold'
                     : 'bg-carbon-10 text-carbon-60 hover:bg-carbon-20 hover:text-carbon-90'
@@ -256,13 +256,13 @@ export const Contact: React.FC = () => {
                   href={issueUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="bg-carbon-90 px-4 py-2 font-bold text-white hover:bg-carbon-70"
+                  className="min-h-[44px] bg-carbon-90 px-4 py-2 font-bold text-white hover:bg-carbon-70 touch-manipulation tap-target inline-flex items-center justify-center"
                 >
                   Open a prefilled GitHub issue
                 </a>
                 <a
                   href={mailtoUrl}
-                  className="border border-carbon-30 bg-white px-4 py-2 font-bold text-carbon-80 hover:bg-carbon-05"
+                  className="min-h-[44px] border border-carbon-30 bg-white px-4 py-2 font-bold text-carbon-80 hover:bg-carbon-05 touch-manipulation tap-target inline-flex items-center justify-center"
                 >
                   Send by email instead
                 </a>
@@ -492,9 +492,9 @@ export const Contact: React.FC = () => {
 
             <button
               type="submit"
-              className="px-6 py-3 bg-nasa-red text-carbon-90 font-bold transition-all flex items-center gap-2 text-xs hover:bg-nasa-red-shade cursor-pointer"
+              className="min-h-[44px] px-6 py-3 bg-nasa-red text-white font-bold transition-all inline-flex items-center gap-2 text-sm hover:bg-nasa-red-shade cursor-pointer touch-manipulation tap-target"
             >
-              <SendIcon size={18} duration={0} isState={false} />
+              <SendIcon size={18} duration={0.15} isState={false} />
               <span>Prepare report</span>
             </button>
             <p className="text-xs leading-relaxed text-carbon-60">

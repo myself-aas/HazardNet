@@ -113,7 +113,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
             animate={{ x: 0 }}
             exit={reduceMotion ? { x: 0, opacity: 0 } : { x: '-100%' }}
             transition={{ duration: 0.15, ease: 'easeOut' }}
-            className="fixed inset-y-0 left-0 z-[var(--z-overlay)] w-full max-w-[320px] bg-white border-r border-carbon-20 flex flex-col font-sans select-none text-carbon-80 overflow-hidden"
+            className="fixed inset-y-0 left-0 z-[var(--z-overlay)] w-full max-w-[320px] bg-white border-r border-carbon-20 flex flex-col font-sans select-none text-carbon-80 overflow-hidden menu-container"
           >
             <div className="px-4 flex items-center justify-between shrink-0 pt-[max(1rem,env(safe-area-inset-top))] pb-4">
               <div className="flex items-center gap-2">
@@ -201,18 +201,18 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                                   className={`w-full min-h-[44px] flex items-center justify-between py-2 px-2 transition-colors touch-manipulation ${
                                     isActive
                                       ? 'bg-carbon-05 font-semibold text-carbon-90'
-                                      : 'hover:bg-carbon-05 font-medium text-carbon-70'
+                                      : 'hover:bg-carbon-05 font-medium text-carbon-80'
                                   }`}
                                 >
                                   <div className="flex items-center gap-2">
                                     <MaterialIcon
                                       name={item.icon}
-                                      className={`text-[12px] ${isActive ? 'text-carbon-90' : 'text-carbon-60'}`}
+                                      className={`text-[13px] ${isActive ? 'text-carbon-90' : 'text-carbon-80'}`}
                                     />
                                     <span className="text-base leading-[1.35]">{item.title}</span>
                                   </div>
                                   {item.badge && (
-                                    <span className="hn-badge bg-carbon-10 text-carbon-80 px-1.5 py-0.5">
+                                    <span className="hn-badge bg-carbon-10 text-carbon-90 px-1.5 py-0.5 font-bold">
                                       {item.badge}
                                     </span>
                                   )}
@@ -250,10 +250,10 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                 </div>
               )}
               <FirebaseRealtimeStatus variant="compact" />
-              <div className="flex items-center justify-between text-xs font-mono text-carbon-60">
+              <div className="flex items-center justify-between text-xs font-mono text-carbon-80">
                 <span className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-nasa-green" />
-                  <strong className="text-carbon-80">HazardNet</strong>
+                  <strong className="text-carbon-90">HazardNet</strong>
                 </span>
                 {user && (
                   <button

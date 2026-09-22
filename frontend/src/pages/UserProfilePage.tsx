@@ -298,7 +298,7 @@ export const UserProfilePage: React.FC = () => {
                     type="button"
                     key={roleKey}
                     onClick={() => setUserRole(roleKey)}
-                    className={`p-3 text-left border transition-all flex items-center gap-2.5 ${
+                    className={`min-h-[44px] p-3 text-left border transition-all flex items-center gap-2.5 touch-manipulation tap-target ${
                       isSelected
                         ? 'bg-amber-50 text-nasa-red-shade border-nasa-blue font-bold'
                         : 'bg-white text-carbon-70 border-carbon-20 hover:border-carbon-40'
@@ -372,7 +372,7 @@ export const UserProfilePage: React.FC = () => {
                 type="button"
                 onClick={handleDetectLocation}
                 disabled={detectingLoc}
-                className="px-3 py-1.5 bg-carbon-90 hover:bg-carbon-80 text-white font-bold text-xs border border-carbon-90 transition-all disabled:opacity-50"
+                className="min-h-[44px] px-3.5 py-2 bg-carbon-90 hover:bg-carbon-80 text-white font-bold text-xs border border-carbon-90 transition-all disabled:opacity-50 touch-manipulation tap-target inline-flex items-center justify-center"
               >
                 {detectingLoc ? 'Detecting...' : 'Pinpoint Location'}
               </button>
@@ -399,14 +399,14 @@ export const UserProfilePage: React.FC = () => {
                     onClick={() => {
                       navigate(`/?district=${locResult.nearestDistrict.id}`);
                     }}
-                    className="py-1.5 px-3 bg-carbon-90 hover:bg-carbon-80 text-white border border-carbon-90 font-bold text-xs transition-colors"
+                    className="min-h-[44px] py-2 px-3 bg-carbon-90 hover:bg-carbon-80 text-white border border-carbon-90 font-bold text-xs transition-colors touch-manipulation tap-target inline-flex items-center justify-center"
                   >
                     Sync Map to {locResult.nearestDistrict.name}
                   </button>
                   <button
                     type="button"
                     onClick={() => handleSetHomeDistrict(locResult.nearestDistrict.id)}
-                    className="py-1.5 px-3 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 font-extrabold text-xs transition-colors flex items-center justify-center gap-1.5"
+                    className="min-h-[44px] py-2 px-3 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 font-extrabold text-xs transition-colors flex items-center justify-center gap-1.5 touch-manipulation tap-target"
                   >
                     <MaterialIcon name="home" className="w-4 h-4 inline-block mr-1" /><span>Set as Default Home District</span>
                   </button>
@@ -677,7 +677,7 @@ export const UserProfilePage: React.FC = () => {
                 type="button"
                 onClick={handleLogout}
                 disabled={isLoggingOut}
-                className="px-3.5 py-1.5 bg-white hover:bg-white text-nasa-red-shade hover:text-nasa-red-shade font-bold rounded-sm border border-nasa-red text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 shrink-0"
+                className="min-h-[44px] px-3.5 py-2 bg-white hover:bg-white text-nasa-red-shade hover:text-nasa-red-shade font-bold rounded-sm border border-nasa-red text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 shrink-0 touch-manipulation tap-target"
               >
                 <span>{isLoggingOut ? 'refresh' : '🚪'}</span>
                 <span>{isLoggingOut ? 'Signing Out...' : 'Log Out & Clear Local State'}</span>
@@ -719,7 +719,7 @@ export const UserProfilePage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => navigate('/dashboard')}
-                className="px-4 py-2 bg-white hover:bg-carbon-10 text-carbon-70 font-bold border border-carbon-20 text-xs cursor-pointer"
+                className="min-h-[44px] px-4 py-2 bg-white hover:bg-carbon-10 text-carbon-70 font-bold border border-carbon-20 text-xs cursor-pointer touch-manipulation tap-target inline-flex items-center justify-center"
               >
                 Back to dashboard
               </button>
@@ -728,7 +728,7 @@ export const UserProfilePage: React.FC = () => {
                   type="button"
                   onClick={handleLogout}
                   disabled={isLoggingOut}
-                  className="px-3 py-2 bg-white hover:bg-white text-nasa-red-shade font-bold border border-nasa-red text-xs cursor-pointer transition-colors disabled:opacity-50"
+                  className="min-h-[44px] px-3.5 py-2 bg-white hover:bg-white text-nasa-red-shade font-bold border border-nasa-red text-xs cursor-pointer transition-colors disabled:opacity-50 touch-manipulation tap-target inline-flex items-center justify-center"
                   title="Sign out and clear local state"
                 >
                   {isLoggingOut ? 'Signing Out...' : 'Sign Out'}

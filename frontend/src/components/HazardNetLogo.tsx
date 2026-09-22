@@ -105,7 +105,7 @@ export const HazardNetBrand: React.FC<HazardNetBrandProps> = ({
       <div className="shrink-0 flex items-center justify-center">
         <HazardNetLogo className={currentSize.logo} variant={variant} />
       </div>
-      <span className={`font-montserrat font-[800] tracking-[0.05em] leading-none inline-flex items-center ${currentSize.text}`}>
+      <span className={`font-brand font-semibold tracking-[0.02em] leading-none inline-flex items-center ${currentSize.text}`}>
         <span className={isDark ? 'text-white' : 'text-carbon-90'}>
           Hazard
         </span>

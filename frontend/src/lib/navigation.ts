@@ -22,7 +22,7 @@ export interface NavSection {
   items: NavItem[];
 }
 
-export type DesktopMenuId = 'home' | 'forecasts' | 'advisories' | 'docs' | 'analytics';
+export type DesktopMenuId = 'home' | 'forecasts' | 'alerts' | 'advisories' | 'docs' | 'analytics';
 
 export interface DesktopMenu {
   id: DesktopMenuId;
@@ -123,6 +123,28 @@ export const DESKTOP_MENUS: DesktopMenu[] = [
     ],
   },
   {
+    id: 'alerts',
+    label: 'Alerts',
+    panelWidthClass: 'w-80',
+    isCurrent: (pathname) => pathname.startsWith('/alerts'),
+    items: [
+      {
+        id: 'active-alerts',
+        title: 'Active Hazard Bulletins',
+        path: '/alerts',
+        icon: 'notifications_active',
+        description: 'Live CAP alert feed & critical hazard warnings',
+      },
+      {
+        id: 'district-watchlist',
+        title: 'District Alert Watchlist',
+        path: '/forecast/my-districts',
+        icon: 'bookmarks',
+        description: 'Personalized district notifications & watchlist',
+      },
+    ],
+  },
+  {
     id: 'advisories',
     label: 'Advisories',
     panelWidthClass: 'w-80',
@@ -180,7 +202,9 @@ export const DESKTOP_MENUS: DesktopMenu[] = [
       pathname.startsWith('/docs') ||
       pathname.startsWith('/download') ||
       pathname.startsWith('/blogs') ||
-      pathname.startsWith('/about'),
+      pathname.startsWith('/about') ||
+      pathname.startsWith('/analytics') ||
+      pathname === '/model-performance',
     items: [
       {
         id: 'documentation',
@@ -198,10 +222,10 @@ export const DESKTOP_MENUS: DesktopMenu[] = [
       },
       {
         id: 'download',
-        title: 'Download Center',
+        title: 'Download Center & Apps',
         path: '/download',
         icon: 'download',
-        description: 'Export GeoJSON, shapefiles & bulletins',
+        description: 'Export GeoJSON, shapefiles & install web apps',
       },
       {
         id: 'blogs',
@@ -216,6 +240,28 @@ export const DESKTOP_MENUS: DesktopMenu[] = [
         path: '/about',
         icon: 'info',
         description: 'Bangladesh Early Warning Initiative',
+      },
+      {
+        id: 'pipeline',
+        title: 'Data Ingestion Pipeline',
+        path: '/analytics/pipeline-status',
+        icon: 'hub',
+        description: 'Satellite & sensor telemetry ingestion streams',
+        badge: 'ADMIN',
+      },
+      {
+        id: 'hindcast',
+        title: 'Hindcast Validation',
+        path: '/model-performance',
+        icon: 'monitoring',
+        description: 'Episodic validation against historical models',
+      },
+      {
+        id: 'historical',
+        title: 'Historical Hazard Archive',
+        path: '/analytics/historical',
+        icon: 'history',
+        description: 'Decadal flood & cyclone archive logs',
       },
     ],
   },
@@ -258,20 +304,6 @@ export const DESKTOP_LINKS: DesktopLink[] = [
     path: '/alerts',
     icon: 'notifications_active',
     isCurrent: (pathname) => pathname.startsWith('/alerts'),
-  },
-  {
-    id: 'divisions',
-    title: 'Divisions',
-    path: '/divisions',
-    icon: 'public',
-    isCurrent: (pathname) => pathname.startsWith('/divisions'),
-  },
-  {
-    id: 'hazards',
-    title: 'Hazards',
-    path: '/hazards',
-    icon: 'warning',
-    isCurrent: (pathname) => pathname.startsWith('/hazards'),
   },
 ];
 

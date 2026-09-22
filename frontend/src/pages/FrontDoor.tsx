@@ -55,6 +55,7 @@ import { AlertLevelBadge } from '../components/alerts/AlertLevelBadge';
 import { LanguageToggle } from '../components/alerts/LanguageToggle';
 import LiveStatusStrip from '../components/frontdoor/LiveStatusStrip';
 import RunVisual from '../components/frontdoor/RunVisual';
+import HeroCinematicBackground from '../components/HeroCinematicBackground';
 import { localiseRoute, usePageSeo } from '../hooks/usePageSeo';
 import { useAlertsData } from '../hooks/useAlertsData';
 import { useHazardLabel } from '../hooks/useHazardLabel';
@@ -327,69 +328,78 @@ export const FrontDoor: React.FC = () => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.25, ease: 'easeOut' }}
-      className="mx-auto w-full max-w-[1200px] space-y-8 lg:space-y-12"
+      className="w-full"
     >
-      {/* ── Hero: what this platform is, and the last run drawn from its own artifacts ── */}
-      <header className="border border-carbon-20 bg-white p-6 md:p-10">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <Eyebrow>
-            {localised.label ?? 'Overview'} · HazardNet ·{' '}
-            {content.updated
-              ? t('frontdoor.hero.reviewed', { date: content.updated })
-              : t('frontdoor.hero.reviewedUnknown')}
-          </Eyebrow>
-          {/* The switch lives on the front door because the front door is bilingual: a
-              reader who cannot read this language cannot be expected to find the control
-              on a page they have not reached yet. */}
-          <LanguageToggle variant="switch" tone="hds" />
-        </div>
+      {/* ── Hero: NASA-Inspired Global Observatory with Dynamic Video Background ── */}
+      <header className="relative w-full overflow-hidden bg-black text-white min-h-[600px] lg:min-h-screen flex items-center -mt-14 sm:-mt-16 pt-[100px] pb-12 sm:pb-16 shadow-2xl">
+        {/* Remotion-Inspired 5-Layer Cinematic Motion Background (BgMesh, Video, HUD, Grade, Grain & Vignette) */}
+        <HeroCinematicBackground />
 
-        <div className="mt-4 grid grid-cols-1 items-start gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,22rem)]">
-          <div className="min-w-0">
-            <h1 className="max-w-3xl text-balance text-[28px] font-bold leading-[1.1] tracking-tight text-carbon-90 sm:text-[32px] md:text-5xl md:leading-[1.06]">
-              {localised.h1 ?? localised.title}
-            </h1>
-            {localised.standfirst && (
-              <p className="mt-5 max-w-2xl text-base leading-[1.62] text-carbon-70 md:text-lg md:leading-[1.5]">
-                {localised.standfirst}
-              </p>
-            )}
-
-            <div className="mt-7 flex flex-wrap items-center gap-2 sm:gap-3">
-              <Link
-                to="/live"
-                className="inline-flex min-h-[44px] items-center gap-2 bg-nasa-red-shade px-6 py-3 text-base font-semibold text-white hover:bg-nasa-red touch-manipulation"
-              >
-                <MaterialIcon name="public" className="text-base" />
-                {t('frontdoor.hero.ctaMap')}
-              </Link>
-              <Link
-                to="/methodology"
-                className="inline-flex min-h-[44px] items-center gap-2 border-2 border-nasa-blue px-6 py-3 text-base font-semibold text-nasa-blue-shade hover:bg-nasa-blue/5 touch-manipulation"
-              >
-                {t('frontdoor.hero.ctaMethodology')}
-              </Link>
-              <Link
-                to="/model-performance"
-                className="inline-flex min-h-[44px] items-center gap-2 border border-carbon-20 px-6 py-3 text-base font-semibold text-carbon-80 hover:border-carbon-30 touch-manipulation"
-              >
-                {t('frontdoor.hero.ctaScorecard')}
-              </Link>
-            </div>
-
-            <p className="mt-6 max-w-2xl border-t border-carbon-10 pt-4 text-xs leading-[1.62] text-carbon-60">
-              {t('frontdoor.hero.authority')}{' '}
-              <Link to="/live" className="font-bold text-nasa-blue-shade underline underline-offset-2">
-                {t('frontdoor.hero.authorityMap')}
-              </Link>
+        <div className="relative z-10 w-full max-w-[1200px] mx-auto px-4 xl:px-8">
+          <div className="flex flex-wrap items-start justify-between gap-3 text-white/80">
+            <p className="font-mono text-xs font-bold uppercase tracking-[0.025em] text-white/80">
+              {localised.label ?? 'Overview'} · HazardNet ·{' '}
+              {content.updated
+                ? t('frontdoor.hero.reviewed', { date: content.updated })
+                : t('frontdoor.hero.reviewedUnknown')}
             </p>
+            {/* The switch lives on the front door because the front door is bilingual */}
+            <div className="bg-black/40 backdrop-blur-md p-1 border border-white/20">
+              <LanguageToggle variant="switch" tone="hds" />
+            </div>
           </div>
 
-          {/* The hero visual. Not a photograph and not a map — see the file's header
-              comment and `docs/PUBLIC_SURFACE.md` §3 rule 5. */}
-          <RunVisual freshness={freshness} loading={loading} published={published} withheld={withheld} />
+          <div className="mt-6 grid grid-cols-1 items-center gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)] xl:gap-12">
+            <div className="min-w-0">
+              <h1 className="max-w-3xl text-balance text-[28px] font-bold leading-[1.1] tracking-tight text-white sm:text-[32px] md:text-5xl md:leading-[1.06] drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+                {localised.h1 ?? localised.title}
+              </h1>
+              {localised.standfirst && (
+                <p className="mt-5 max-w-2xl text-base leading-[1.62] text-white/90 md:text-lg md:leading-[1.5] drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+                  {localised.standfirst}
+                </p>
+              )}
+
+              <div className="mt-7 flex flex-wrap items-center gap-2 sm:gap-3">
+                <Link
+                  to="/live"
+                  className="inline-flex min-h-[44px] items-center gap-2 bg-nasa-red-shade px-6 py-3 text-base font-semibold text-white hover:bg-nasa-red tracking-[0.01em] touch-manipulation shadow-lg transition-transform duration-150 active:scale-95"
+                >
+                  <MaterialIcon name="public" className="text-base" />
+                  {t('frontdoor.hero.ctaMap')}
+                </Link>
+                <Link
+                  to="/methodology"
+                  className="inline-flex min-h-[44px] items-center gap-2 border-2 border-white/80 px-6 py-3 text-base font-semibold text-white hover:bg-white/10 touch-manipulation backdrop-blur-xs transition-colors duration-150"
+                >
+                  {t('frontdoor.hero.ctaMethodology')}
+                </Link>
+                <Link
+                  to="/model-performance"
+                  className="inline-flex min-h-[44px] items-center gap-2 border border-white/40 px-6 py-3 text-base font-semibold text-white/90 hover:border-white/80 hover:bg-white/10 touch-manipulation backdrop-blur-xs transition-colors duration-150"
+                >
+                  {t('frontdoor.hero.ctaScorecard')}
+                </Link>
+              </div>
+
+              <p className="mt-6 max-w-2xl border-t border-white/20 pt-4 text-xs leading-[1.62] text-white/75">
+                {t('frontdoor.hero.authority')}{' '}
+                <Link to="/live" className="font-bold text-white underline underline-offset-2 hover:text-white/90">
+                  {t('frontdoor.hero.authorityMap')}
+                </Link>
+              </p>
+            </div>
+
+            {/* The hero visual card. Solid White background with Carbon-90 text for clean paper-like readability */}
+            <div className="relative z-10 w-full text-carbon-90 bg-white shadow-2xl overflow-hidden rounded-sm">
+              <RunVisual freshness={freshness} loading={loading} published={published} withheld={withheld} />
+            </div>
+          </div>
         </div>
       </header>
+
+      {/* ── Main Content Container: Live status strip, Outlook, and Methodology ── */}
+      <div className="mx-auto w-full max-w-[1200px] px-4 xl:px-8 space-y-8 lg:space-y-12 mt-8 lg:mt-12">
 
       {/* ── The live strip: what is published at the moment of this read ──────────────── */}
       <LiveStatusStrip
@@ -633,6 +643,7 @@ export const FrontDoor: React.FC = () => {
           ))}
         </nav>
       </section>
+      </div>
     </motion.div>
   );
 };

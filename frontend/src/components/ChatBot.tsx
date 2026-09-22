@@ -154,47 +154,36 @@ export default function ChatBot() {
 
   return (
     <>
-      {/* Floating Action Button */}
+      {/* Floating Action Button - Unified Icon-Only 60x60px Circular FAB */}
       <AnimatePresence>
         {!isOpen && (
-          <div className="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-[var(--z-sticky)] flex items-center gap-2">
+          <div className="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-[var(--z-sticky)] flex items-center">
             <motion.button
-              key="voice-fab"
-              id="launch-voice-advisor-fab"
+              key="ai-advisor-fab"
+              id="launch-ai-advisor-fab"
               onClick={() => {
-                setChatMode('voice');
-                setIsOpen(true);
-              }}
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0, opacity: 0 }}
-              whileHover={{ scale: 1.06 }}
-              whileTap={{ scale: 0.94 }}
-              className="p-3 min-w-[44px] min-h-[44px] rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-xl flex items-center justify-center cursor-pointer transition border border-white/20"
-              title="Live Voice Advisor (gemini-3.8-live)"
-              aria-label="Open Live Voice Advisor"
-            >
-              <Mic className="w-5 h-5 text-white animate-pulse" />
-            </motion.button>
-            <motion.button
-              key="chat-fab"
-              id="launch-text-advisor-fab"
-              onClick={() => {
-                setChatMode('text');
                 setIsOpen(true);
                 requestLocation();
               }}
               initial={{ scale: 0, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0, opacity: 0 }}
-              whileHover={{ scale: 1.06 }}
-              whileTap={{ scale: 0.94 }}
-              className="px-4 sm:px-5 py-3 min-h-[44px] bg-nasa-blue hover:bg-nasa-blue-shade text-white font-semibold text-sm flex items-center gap-2 cursor-pointer touch-manipulation shadow-lg rounded-full"
-              aria-label="Open AI Advisor chat"
+              whileHover={{ scale: 1.08 }}
+              whileTap={{ scale: 0.92 }}
+              className="w-[60px] h-[60px] rounded-full bg-nasa-blue hover:bg-nasa-blue-shade text-white shadow-[0_12px_20px_-5px_rgba(0,0,0,0.3),0_6px_12px_rgba(28,103,227,0.3)] border border-white/20 flex items-center justify-center cursor-pointer touch-manipulation tap-target focus:outline-none focus:ring-2 focus:ring-nasa-blue focus:ring-offset-2 transition-transform duration-150"
+              aria-label="Open AI Advisor"
+              title="Open AI Advisor"
             >
-              <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
-              <span>AI Advisor</span>
-              <span className="text-[10px] bg-white/20 px-1.5 py-0.5 rounded font-mono uppercase tracking-wider">Voice & Text</span>
+              <svg 
+                viewBox="0 0 24 24" 
+                className="w-8 h-8 fill-white shrink-0" 
+                xmlns="http://www.w3.org/2000/svg"
+                aria-hidden="true"
+              >
+                <path 
+                  d="M17.7530511,13.999921 C18.9956918,13.999921 20.0030511,15.0072804 20.0030511,16.249921 L20.0030511,17.1550008 C20.0030511,18.2486786 19.5255957,19.2878579 18.6957793,20.0002733 C17.1303315,21.344244 14.8899962,22.0010712 12,22.0010712 C9.11050247,22.0010712 6.87168436,21.3444691 5.30881727,20.0007885 C4.48019625,19.2883988 4.00354153,18.2500002 4.00354153,17.1572408 L4.00354153,16.249921 C4.00354153,15.0072804 5.01090084,13.999921 6.25354153,13.999921 L17.7530511,13.999921 Z M11.8985607,2.00734093 L12.0003312,2.00049432 C12.380027,2.00049432 12.6938222,2.2826482 12.7434846,2.64872376 L12.7503312,2.75049432 L12.7495415,3.49949432 L16.25,3.5 C17.4926407,3.5 18.5,4.50735931 18.5,5.75 L18.5,10.254591 C18.5,11.4972317 17.4926407,12.504591 16.25,12.504591 L7.75,12.504591 C6.50735931,12.504591 5.5,11.4972317 5.5,10.254591 L5.5,5.75 C5.5,4.50735931 6.50735931,3.5 7.75,3.5 L11.2495415,3.49949432 L11.2503312,2.75049432 C11.2503312,2.37079855 11.5324851,2.05700336 11.8985607,2.00734093 L12.0003312,2.00049432 L11.8985607,2.00734093 Z M9.74928905,6.5 C9.05932576,6.5 8.5,7.05932576 8.5,7.74928905 C8.5,8.43925235 9.05932576,8.99857811 9.74928905,8.99857811 C10.4392523,8.99857811 10.9985781,8.43925235 10.9985781,7.74928905 C10.9985781,7.05932576 10.4392523,6.5 9.74928905,6.5 Z M14.2420255,6.5 C13.5520622,6.5 12.9927364,7.05932576 12.9927364,7.74928905 C12.9927364,8.43925235 13.5520622,8.99857811 14.2420255,8.99857811 C14.9319888,8.99857811 15.4913145,8.43925235 15.4913145,7.74928905 C15.4913145,7.05932576 14.9319888,6.5 14.2420255,6.5 Z" 
+                />
+              </svg>
             </motion.button>
           </div>
         )}

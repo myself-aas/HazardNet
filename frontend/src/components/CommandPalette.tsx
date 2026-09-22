@@ -311,9 +311,10 @@ const SEARCH_DATABASE: SearchItem[] = [
 
 interface CommandPaletteProps {
   onSelectDistrict?: (districtId: string) => void;
+  isTransparent?: boolean;
 }
 
-export const CommandPalette: React.FC<CommandPaletteProps> = ({ onSelectDistrict }) => {
+export const CommandPalette: React.FC<CommandPaletteProps> = ({ onSelectDistrict, isTransparent = false }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<'All' | 'Hazard Report' | 'Location' | 'Hazard Profile' | 'Documentation'>('All');
@@ -456,12 +457,21 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onSelectDistrict
            overflowed the viewport at exactly 1280 (e2e/smoke.spec.ts). The
            desktop bar is cursor-driven, so it keeps the natural icon width.
            Utilities (not .tap-target) so the xl: variant reliably overrides. */
-        className="relative min-w-[44px] min-h-[44px] xl:min-w-0 p-2 bg-white border border-carbon-20 text-carbon-80 hover:bg-carbon-05 flex items-center justify-center group shrink-0"
+        className={`relative min-w-[44px] min-h-[44px] xl:min-w-0 p-2 flex items-center justify-center group shrink-0 transition-all duration-200 cursor-pointer ${
+          isTransparent
+            ? 'bg-transparent border-0 text-white hover:bg-white/15 drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]'
+            : 'bg-white border border-carbon-20 text-carbon-80 hover:bg-carbon-05'
+        }`}
         title="Search HazardNet (Ctrl+K)"
         aria-label="Search HazardNet"
         data-testid="district-search-trigger"
       >
-        <MaterialIcon name="search" className="text-lg text-carbon-80 group-hover:text-carbon-black transition-all duration-200 group-hover:scale-110" />
+        <MaterialIcon
+          name="map_search"
+          className={`text-lg transition-transform duration-200 group-hover:scale-110 group-hover:rotate-6 ${
+            isTransparent ? 'text-white' : 'text-carbon-80 group-hover:text-carbon-black'
+          }`}
+        />
 
         {/* Dynamic Active Pulse Indicator */}
         <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">

@@ -1,7 +1,7 @@
 import { useEffect, lazy, Suspense } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion, LazyMotion, domAnimation } from 'framer-motion';
 import { Analytics } from '@vercel/analytics/react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import SignUpPage from './pages/SignUpPage';
@@ -288,6 +288,8 @@ const AppContent: React.FC = () => {
           className={
             isHomePage
               ? 'w-full h-full h-dvh overflow-hidden p-0 m-0 pointer-events-auto absolute inset-0'
+              : location.pathname === '/'
+              ? 'flex-1 relative w-full mx-auto pb-[calc(1rem+env(safe-area-inset-bottom,0px))] lg:pb-8 pointer-events-auto'
               : 'flex-1 relative max-w-[1200px] w-full mx-auto px-4 lg:px-8 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] lg:pb-8 pointer-events-auto'
           }
         >
@@ -339,9 +341,11 @@ const App: React.FC = () => (
   <ErrorBoundary>
     <AuthProvider>
       <QueryClientProvider client={queryClient}>
-        <Router>
-          <AppContent />
-        </Router>
+        <LazyMotion features={domAnimation} strict={false}>
+          <Router>
+            <AppContent />
+          </Router>
+        </LazyMotion>
       </QueryClientProvider>
     </AuthProvider>
     {/*

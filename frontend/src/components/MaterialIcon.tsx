@@ -850,6 +850,28 @@ export const MaterialIcon: React.FC<MaterialIconProps> = ({
             <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3M12 17h.01" />
           </>
         );
+      case 'menu_open':
+        return (
+          <>
+            <path d="M3 18h13v-2H3v2zm0-5h10v-2H3v2zm0-7v2h13V6H3zm18 9.59L17.42 12 21 8.41 19.59 7l-5 5 5 5L21 15.59z" fill="currentColor" />
+          </>
+        );
+      case 'location_on':
+      case 'location':
+      case 'pin':
+        return (
+          <>
+            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" fill="currentColor" />
+          </>
+        );
+      case 'map_search':
+        return (
+          <>
+            <circle cx="11" cy="11" r="7" />
+            <path d="m21 21-4.3-4.3" />
+            <path d="M11 8v6M8 11h6" />
+          </>
+        );
 
       // Default clean fallback (Never renders text ligatures)
       default:

@@ -2,6 +2,7 @@ import { fileURLToPath } from 'node:url';
 import { defineConfig, loadEnv, type PluginOption } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
+import { VitePWA } from 'vite-plugin-pwa';
 
 /**
  * Rolldown interop shim for the pre-ESM Leaflet plugins (production
@@ -80,7 +81,19 @@ export default defineConfig(({ mode }) => {
     : env.VERCEL === '1';
 
   return {
-  plugins: [leafletGlobalShim(), react(), tailwindcss()],
+  plugins: [
+    leafletGlobalShim(),
+    react(),
+    tailwindcss(),
+    VitePWA({
+      strategies: 'injectManifest',
+      srcDir: 'public',
+      filename: 'serviceWorker.js',
+      injectManifest: {
+        injectionPoint: 'self.__WB_MANIFEST',
+      },
+    }),
+  ],
   resolve: {
     // Mirrors the `@/*` -> `src/*` mapping in frontend/tsconfig.json. Vite does
     // not read tsconfig `paths`, so without this alias the build fails with

@@ -1,6 +1,11 @@
 // Service Worker for offline mode, Web Push Notifications, and GIS map tiles.
 // Implements push notification handlers and prediction queue sync.
 
+import { precacheAndRoute } from 'workbox-precaching';
+
+// Precache the Vite app shell (HTML, JS, CSS)
+precacheAndRoute(self.__WB_MANIFEST || []);
+
 // Invalidate old app bundles containing the withdrawn research presentation.
 const CACHE_NAME = 'hazardnet-offline-v3';
 const TILE_CACHE_NAME = 'hazardnet-tiles-v1';

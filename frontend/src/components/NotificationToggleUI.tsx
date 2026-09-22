@@ -36,19 +36,19 @@ export const NotificationToggleUI: React.FC<NotificationToggleUIProps> = ({
           className="tap-target w-11 h-11 rounded-full bg-black/5 hover:bg-black/10 flex items-center justify-center transition-colors"
           title="Push Alerts"
         >
-          <NotificationIcon size={20} className={isSubscribed ? "text-amber-600" : "text-carbon-70"} duration={0} isState={isSubscribed} />
+          <NotificationIcon size={20} className={isSubscribed ? "text-amber-600" : "text-carbon-80"} duration={0} isState={isSubscribed} />
         </button>
       ) : (
         <button
           onClick={onToggleOpen}
-          className={`px-2.5 py-1.5 rounded-lg border transition-all flex items-center gap-1.5 text-xs font-semibold ${
+          className={`min-h-[44px] px-2.5 py-1.5 rounded-lg border transition-all flex items-center gap-1.5 text-xs font-semibold touch-manipulation ${
             isSubscribed
               ? 'bg-nasa-red text-white border-nasa-blue hover:bg-nasa-red-shade shadow-xs'
               : 'bg-white/40 text-carbon-80 border-carbon-20/60 hover:bg-white/70 backdrop-blur-md'
           }`}
           title="Web Push Certificate & Emergency Alerts"
         >
-          <NotificationIcon size={20} className={isSubscribed ? "text-white" : "text-carbon-70"} duration={0} isState={isSubscribed} />
+          <NotificationIcon size={20} className={isSubscribed ? "text-white" : "text-carbon-80"} duration={0} isState={isSubscribed} />
           <span className="hidden lg:inline">{isSubscribed ? 'Alerts Active' : 'Push Alerts'}</span>
         </button>
       )}
