@@ -133,21 +133,25 @@ def test_private_key_pasted_into_a_public_key_variable_still_fails(tmp_path: Pat
 
 def test_the_shipped_env_example_is_clean() -> None:
     """The tracked template must stay placeholder-only — this file is the one that leaked."""
-    text = REAL_EXAMPLE.read_text(encoding="utf-8")
-    assignments = [
-        line for line in text.splitlines()
-        if line.strip() and not line.lstrip().startswith("#") and "=" in line
-    ]
-    assert assignments, "the template should document the environment"
+    # `.env.example` is optional in the tree (it was removed from main on
+    # 2026-09-22); when present it must be placeholder-only. The scanner run
+    # below always executes either way — that is the gate over the real tree.
+    if REAL_EXAMPLE.exists():
+        text = REAL_EXAMPLE.read_text(encoding="utf-8")
+        assignments = [
+            line for line in text.splitlines()
+            if line.strip() and not line.lstrip().startswith("#") and "=" in line
+        ]
+        assert assignments, "the template should document the environment"
 
-    # Nothing that looks like a credential, by the same shapes the scanner uses.
-    suspicious = [
-        line for line in assignments
-        if any(prefix in line for prefix in ("gsk_", "hf_", "sk-or-v1-", "AQ.", "ghp_", "vcp_"))
-        and "REPLACE_WITH" not in line
-        and "VITE_VERCEL_ANALYTICS" not in line
-    ]
-    assert suspicious == [], f"real-looking values in .env.example: {suspicious}"
+        # Nothing that looks like a credential, by the same shapes the scanner uses.
+        suspicious = [
+            line for line in assignments
+            if any(prefix in line for prefix in ("gsk_", "hf_", "sk-or-v1-", "AQ.", "ghp_", "vcp_"))
+            and "REPLACE_WITH" not in line
+            and "VITE_VERCEL_ANALYTICS" not in line
+        ]
+        assert suspicious == [], f"real-looking values in .env.example: {suspicious}"
 
     # …and the scanner agrees, run over the real tree from the repo root.
     result = subprocess.run(

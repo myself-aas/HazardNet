@@ -48,6 +48,11 @@ const DIST_DIR = join(ROOT, 'frontend/dist');
 const args = process.argv.slice(2);
 const wantsUpdate = args.includes('--update');
 const wantsJson = args.includes('--json');
+// `--source-only`: scan frontend/src without requiring a build. CI runs this
+// gate *before* Production build (class-level findings are visible in source),
+// so a missing frontend/dist must not be fatal in this mode — only the full
+// post-build gate needs prerendered HTML.
+const wantsSourceOnly = args.includes('--source-only');
 const quiet = args.includes('--quiet');
 
 function fail(message) {
@@ -117,17 +122,22 @@ function isWaived(finding, waivers) {
   );
 }
 
-if (!existsSync(DIST_DIR)) {
+if (!wantsSourceOnly && !existsSync(DIST_DIR)) {
   fail('frontend/dist does not exist — run `npm run build:frontend` before the design-quality gate.');
 }
 if (!existsSync(join(ROOT, SOURCE_TARGET))) {
   fail(`${SOURCE_TARGET} does not exist.`);
 }
 
-const htmlTargets = walkHtml(DIST_DIR).sort();
-if (htmlTargets.length === 0) fail('no prerendered HTML found under frontend/dist.');
+const htmlTargets = wantsSourceOnly ? [] : walkHtml(DIST_DIR).sort();
+if (!wantsSourceOnly && htmlTargets.length === 0) {
+  fail('no prerendered HTML found under frontend/dist.');
+}
 
-const raw = runDetector([join(ROOT, SOURCE_TARGET), ...htmlTargets]);
+const detectorTargets = wantsSourceOnly
+  ? [join(ROOT, SOURCE_TARGET)]
+  : [join(ROOT, SOURCE_TARGET), ...htmlTargets];
+const raw = runDetector(detectorTargets);
 const findings = raw.map(normalise);
 
 const baseline = loadBaseline();
@@ -191,8 +201,11 @@ if (wantsUpdate) {
 if (wantsJson) {
   console.log(JSON.stringify({ ...summary, newFindings: fresh, fixed }, null, 2));
 } else if (!quiet) {
+  const scope = wantsSourceOnly
+    ? `${SOURCE_TARGET} (source-only)`
+    : `${htmlTargets.length} documents + ${SOURCE_TARGET}`;
   console.log(
-    `[design-quality] ${htmlTargets.length} documents + ${SOURCE_TARGET}: ` +
+    `[design-quality] ${scope}: ` +
       `${live.length} outstanding, ${waived.length} waived, ${fresh.length} new.`,
   );
   for (const [rule, n] of byRule(live)) console.log(`  ${String(n).padStart(4)}  ${rule}`);
