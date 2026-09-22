@@ -26,6 +26,7 @@
 - [Installation & Local Development](#installation--local-development)
 - [Configuration](#configuration)
 - [Usage Guide](#usage-guide)
+- [Mobile & Windows Apps](#mobile--windows-apps)
 - [Scientific Reproducibility (IEEE TGRS)](#scientific-reproducibility-ieee-tgrs)
 - [Contributing](#contributing)
 - [License](#license)
@@ -184,6 +185,31 @@ VITE_ENABLE_OFFLINE_MODE=true
    - **Severity Gauges**: Compare the AI Model Severity (0-100%) with the Physics-Based Severity. High alignment indicates high reliability.
    - **Mitigation Tips**: Scroll down for hazard-specific, actionable agricultural advice (e.g., "Raise field embankments" for Flood).
 5. **Offline Mode**: Disconnect your internet. The Service Worker can serve previously cached assets and forecast data. Offline viewing does not run inference or refresh a forecast.
+
+---
+
+## 📱🪟 Mobile & Windows Apps
+
+Native clients live in the `apps/` workspace — **source only, no binaries in the repo**:
+
+| App | Path | Stack | Executable |
+| --- | --- | --- | --- |
+| HazardNet Mobile | `apps/mobile` | Expo (React Native) | `.apk` / `.aab` / `.ipa` |
+| HazardNet Windows | `apps/windows` | React Native for Windows (UWP, C++ host) | `.msix` / `.exe` |
+
+Executables are built by the **App Releases (Android APK / Windows MSIX)**
+workflow (`.github/workflows/app-releases.yml`) and published to
+[GitHub Releases](https://github.com/myself-aas/HazardNet/releases):
+
+- Tag a release (`git tag v2.3.0 && git push origin v2.3.0`) or run the
+  workflow manually from the Actions tab.
+- Android APKs are signed via the `ANDROID_KEYSTORE_*` repository secrets
+  (a throw-away CI key is generated when none are set).
+- Windows builds embed the JS bundle (Hermes) and ship a double-clickable
+  `.msix` plus an unpacked `.exe`.
+
+See [docs/APP_RELEASES.md](docs/APP_RELEASES.md) for the full operator guide
+(signing, local builds, troubleshooting).
 
 ---
 
