@@ -21,8 +21,9 @@
  * counted 88 of).
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import MaterialIcon from '../MaterialIcon';
 
 import { useI18n } from '../../hooks/useI18n';
 import { describeAge, stateLabel, type FreshnessArtifact, type FreshnessState } from '../../lib/freshness';
@@ -50,6 +51,7 @@ const Eyebrow: React.FC<{ children: React.ReactNode }> = ({ children }) => (
 
 export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, published, withheld }) => {
   const { t, formatNumber } = useI18n();
+  const [honestyExpanded, setHonestyExpanded] = useState(false);
 
   const coverage = freshness?.coverage ?? null;
   const covered = coverage?.districts_covered ?? null;
@@ -74,7 +76,7 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
       >
         <div className="flex items-center gap-2.5 min-w-0">
           <span className="relative flex h-2.5 w-2.5 shrink-0" aria-hidden="true">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-nasa-green opacity-75" />
+            <span className="motion-safe:animate-ping absolute inline-flex h-full w-full rounded-full bg-nasa-green opacity-75" />
             <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-nasa-green" />
           </span>
           <Eyebrow>{t('frontdoor.runVisual.eyebrow')}</Eyebrow>
@@ -98,7 +100,7 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
       )}
 
       {!loading && !freshness && (
-        <div className="mt-4 rounded-md border border-carbon-20 bg-carbon-05 p-4">
+        <div className="mt-4 rounded-sm border border-carbon-20 bg-carbon-05 p-4">
           <p className="text-sm leading-[1.62] text-carbon-70">
             {t('frontdoor.runVisual.unreadable')}{' '}
             <Link
@@ -184,7 +186,7 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
               )}
             </div>
             <div
-              className={`mt-2 rounded-md p-3 border ${
+              className={`mt-2 rounded-sm p-3 border ${
                 published == null
                   ? 'bg-carbon-05 border-carbon-20 text-carbon-70'
                   : published > 0
@@ -218,7 +220,7 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
               {freshness.sources.map((source) => (
                 <li
                   key={source.id}
-                  className="flex min-w-0 items-center justify-between gap-2.5 rounded-md border border-carbon-10 bg-carbon-05/70 px-3 py-2 text-xs transition-colors hover:bg-carbon-05"
+                  className="flex min-w-0 items-center justify-between gap-2.5 rounded-sm border border-carbon-10 bg-carbon-05/70 px-3 py-2 text-xs transition-colors hover:bg-carbon-05"
                 >
                   <div className="flex min-w-0 items-center gap-2.5">
                     <span
@@ -238,7 +240,7 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
             </ul>
           </div>
 
-          {/* ── the run's own honesty notes, verbatim ────────────────────── */}
+          {/* ── the run's own honesty notes, verbatim — expandable inline (audit #9) ── */}
           {honesty.length > 0 && (
             <div className="border-t border-carbon-10 pt-4">
               <div className="flex items-center justify-between gap-2">
@@ -249,9 +251,9 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
                   SELF-REPORTED AUDIT
                 </span>
               </div>
-              <div className="mt-2.5 rounded-md border border-carbon-20 bg-carbon-05/80 p-3">
+              <div className="mt-2.5 rounded-sm border border-carbon-20 bg-carbon-05/80 p-3">
                 <ul className="space-y-2">
-                  {honesty.slice(0, 3).map((note) => (
+                  {(honestyExpanded ? honesty : honesty.slice(0, 3)).map((note) => (
                     <li key={note} className="flex min-w-0 items-start gap-2.5 text-xs leading-[1.62] text-carbon-70">
                       <span
                         aria-hidden="true"
@@ -262,15 +264,35 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
                   ))}
                 </ul>
                 {honesty.length > 3 && (
-                  <p className="mt-2.5 border-t border-carbon-10 pt-2 font-mono text-xs leading-[1.62] text-carbon-60">
-                    {t('frontdoor.runVisual.moreHonesty', { total: formatNumber(honesty.length) })}{' '}
-                    <Link
-                      to="/status"
-                      className="font-bold text-nasa-blue-shade underline underline-offset-2 hover:text-nasa-blue"
-                    >
-                      {t('frontdoor.runVisual.statusPage')}
-                    </Link>
-                  </p>
+                  <div className="mt-2.5 border-t border-carbon-10 pt-2 space-y-2">
+                    {!honestyExpanded && (
+                      <p className="font-mono text-xs leading-[1.62] text-carbon-60">
+                        {t('frontdoor.runVisual.moreHonesty', { total: formatNumber(honesty.length) })}{' '}
+                        <Link to="/status" className="font-bold text-nasa-blue-shade underline underline-offset-2 hover:text-nasa-blue">
+                          {t('frontdoor.runVisual.statusPage')}
+                        </Link>
+                      </p>
+                    )}
+                    <div className="flex flex-wrap items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setHonestyExpanded((v) => !v)}
+                        aria-expanded={honestyExpanded}
+                        className="inline-flex min-h-[32px] items-center gap-1.5 text-xs font-bold text-nasa-blue-shade underline underline-offset-2 hover:text-nasa-blue"
+                      >
+                        <MaterialIcon name={honestyExpanded ? 'expand_less' : 'expand_more'} className="text-sm" />
+                        {honestyExpanded ? t('common.showLess') : t('frontdoor.runVisual.showMore', { remaining: formatNumber(honesty.length - 3) })}
+                      </button>
+                      {honestyExpanded && (
+                        <Link
+                          to="/status"
+                          className="font-bold text-nasa-blue-shade underline underline-offset-2 hover:text-nasa-blue text-xs"
+                        >
+                          {t('frontdoor.runVisual.statusPage')}
+                        </Link>
+                      )}
+                    </div>
+                  </div>
                 )}
               </div>
             </div>
@@ -285,9 +307,7 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
               className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-carbon-05 border border-carbon-20 text-carbon-70"
               aria-hidden="true"
             >
-              <svg className="h-3 w-3 text-nasa-green" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-              </svg>
+              <MaterialIcon name="verified" className="text-[14px] text-nasa-green" />
               <span>VERIFIED ARTIFACT</span>
             </div>
           </div>

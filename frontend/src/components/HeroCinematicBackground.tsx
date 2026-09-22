@@ -1,4 +1,5 @@
 import React from 'react';
+import { useReducedMotion } from 'framer-motion';
 import {
   EARTH_HERO_VIDEO_1080P,
   EARTH_HERO_VIDEO_720P,
@@ -20,8 +21,11 @@ import { remotionTheme } from '../lib/remotionTheme';
  *
  * @see https://github.com/haidrrrry/claude-remotion-skill/blob/main/remotion-motion-graphics/SKILL.md
  */
-export const HeroCinematicBackground: React.FC = () => {
+export const HeroCinematicBackground: React.FC<{ paused?: boolean }> = ({ paused = false }) => {
   const isTest = typeof process !== 'undefined' && process.env.NODE_ENV === 'test';
+  const reduceMotion = useReducedMotion();
+  const shouldAnimate = !reduceMotion && !paused && !isTest;
+  const shouldPlayVideo = shouldAnimate;
 
   return (
     <div
@@ -33,24 +37,26 @@ export const HeroCinematicBackground: React.FC = () => {
       <div className="absolute inset-0 overflow-hidden">
         {/* Primary NASA Blue orbital glow (top-left towards center) */}
         <div
-          className="absolute -top-[25%] -left-[15%] w-[850px] h-[850px] sm:w-[1100px] sm:h-[1100px] rounded-full blur-[90px] opacity-40 animate-pulse pointer-events-none"
+          className={`absolute -top-[25%] -left-[15%] w-[850px] h-[850px] sm:w-[1100px] sm:h-[1100px] rounded-full opacity-40 pointer-events-none ${shouldAnimate ? 'animate-pulse' : ''}`}
           style={{
             background: `radial-gradient(circle, ${remotionTheme.colors.primary}55 0%, ${remotionTheme.colors.primaryShade}22 50%, transparent 70%)`,
-            animationDuration: '9s',
+            filter: 'blur(var(--hero-glow-blur-primary))',
+            animationDuration: shouldAnimate ? '9s' : undefined,
           }}
         />
         {/* Atmospheric Cyan secondary reflection (bottom-right) */}
         <div
-          className="absolute -bottom-[20%] -right-[10%] w-[700px] h-[700px] sm:w-[900px] sm:h-[900px] rounded-full blur-[100px] opacity-30 pointer-events-none"
+          className="absolute -bottom-[20%] -right-[10%] w-[700px] h-[700px] sm:w-[900px] sm:h-[900px] rounded-full opacity-30 pointer-events-none"
           style={{
             background: `radial-gradient(circle, ${remotionTheme.colors.accent}44 0%, transparent 68%)`,
+            filter: 'blur(var(--hero-glow-blur-secondary))',
           }}
         />
       </div>
 
       {/* ── Layer 2: Video Asset (HeroVideoAsset with Idle Breathing) ── */}
-      {!isTest ? (
-        <div className="absolute inset-0 w-full h-full transform scale-[1.02] motion-safe:animate-[pulse_14s_ease-in-out_infinite] transition-transform duration-1000">
+      {shouldPlayVideo ? (
+        <div className={`absolute inset-0 w-full h-full transform scale-[1.02] transition-transform duration-1000 ${shouldAnimate ? 'motion-safe:animate-[pulse_14s_ease-in-out_infinite]' : ''}`}>
           <video
             autoPlay
             loop
@@ -66,7 +72,7 @@ export const HeroCinematicBackground: React.FC = () => {
           </video>
         </div>
       ) : (
-        /* Poster fallback placeholder in test environments for instant JSDOM execution */
+        /* Poster fallback: reduced-motion, paused, or test — no video decode, no motion drain */
         <div
           className="absolute inset-0 w-full h-full bg-cover bg-center"
           style={{ backgroundImage: `url("${EARTH_HERO_POSTER}")` }}
@@ -77,7 +83,7 @@ export const HeroCinematicBackground: React.FC = () => {
       <div className="absolute inset-0 z-[2] font-mono text-[10px] tracking-wider text-white/30 select-none pointer-events-none hidden md:block">
         {/* Top-left Telemetry Coordinates: Bangladesh Geostationary Apex */}
         <div className="absolute top-20 left-6 flex items-center gap-2">
-          <span className="inline-block w-1.5 h-1.5 bg-sky-400 rounded-full animate-ping" />
+          <span className={`inline-block w-1.5 h-1.5 bg-sky-400 rounded-full ${shouldAnimate ? 'animate-ping' : ''}`} />
           <span className="text-white/50">GEO-SYNC · 23°42&apos;N 90°22&apos;E · APEX 35,786 KM</span>
         </div>
 
