@@ -22,7 +22,7 @@ export const remotionTheme = {
     // High-contrast text & telemetry
     text: '#FFFFFF',
     textDim: '#A1A1AA',
-    textTelemetry: '#E2E8F0',
+    textTelemetry: '#d1d1d1',
     
     // Telemetry and HUD accents
     hudBorder: 'rgba(255, 255, 255, 0.12)',

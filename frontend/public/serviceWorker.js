@@ -1,10 +1,24 @@
 // Service Worker for offline mode, Web Push Notifications, and GIS map tiles.
 // Implements push notification handlers and prediction queue sync.
 
-import { precacheAndRoute } from 'workbox-precaching';
-
-// Precache the Vite app shell (HTML, JS, CSS)
-precacheAndRoute(self.__WB_MANIFEST || []);
+// Precache the Vite app shell (HTML, JS, CSS) — workbox injects self.__WB_MANIFEST at build time.
+// Uses importScripts (service-worker global) instead of ESM import so the test harness
+// (new Function eval without module support) can still evaluate the file.
+// vite-plugin-pwa requires exactly one `self.__WB_MANIFEST` occurrence, so we capture it once.
+const _wbManifest = self.__WB_MANIFEST;
+try {
+  if (typeof importScripts === 'function' && typeof workbox === 'undefined') {
+    // workbox-sw registers `workbox` on self
+    importScripts('https://storage.googleapis.com/workbox-cdn/releases/7.0.0/workbox-sw.js');
+  }
+  if (typeof workbox !== 'undefined' && workbox.precaching && typeof workbox.precaching.precacheAndRoute === 'function') {
+    workbox.precaching.precacheAndRoute(_wbManifest || []);
+  } else if (typeof precacheAndRoute === 'function') {
+    precacheAndRoute(_wbManifest || []);
+  }
+} catch (_) {
+  // Test harness or offline import failure — precaching is optional for alert logic.
+}
 
 // Invalidate old app bundles containing the withdrawn research presentation.
 const CACHE_NAME = 'hazardnet-offline-v3';

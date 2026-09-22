@@ -1,0 +1,6 @@
+# Pipeline test dependencies — minimal set for CI `pip install --requirement scripts/requirements-pipeline.txt`
+# The daily/weekly pipelines install heavier dependencies (xarray, pandas, etc.) via
+# their own requirements files; this file only pins what `scripts/tests/test_workflows.py`
+# needs to import.
+pytest>=7.0
+pyyaml>=6.0

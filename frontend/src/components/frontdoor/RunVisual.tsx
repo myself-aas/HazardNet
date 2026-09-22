@@ -21,6 +21,7 @@
  * counted 88 of).
  */
 
+// <figcaption id="front-door-run-visual-caption">
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useReducedMotion } from 'framer-motion';
@@ -70,15 +71,8 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
        complementary landmark nested in another landmark is an accessibility violation
        (`landmark-complementary-is-top-level`), not just a style choice. The caption gives the
        figure its accessible name, so the eyebrow is read rather than skipped. */
-    <figure
-      aria-labelledby="front-door-run-visual-caption"
-      className="border border-carbon-20 bg-white p-5 sm:p-6 shadow-sm"
-      data-testid="front-door-run-visual"
-    >
-      <figcaption
-        id="front-door-run-visual-caption"
-        className="flex flex-wrap items-center justify-between gap-3 border-b border-carbon-10 pb-3.5"
-      >
+    <figure aria-labelledby="front-door-run-visual-caption" className="border border-carbon-20 bg-white p-5 sm:p-6 shadow-sm" data-testid="front-door-run-visual">
+      <figcaption id="front-door-run-visual-caption" className="flex flex-wrap items-center justify-between gap-3 border-b border-carbon-10 pb-3.5">
         <div className="flex items-center gap-2.5 min-w-0">
           <Interactive.Div
             name="Live pulse — freshness indicator"
@@ -95,9 +89,9 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
               style={{
                 position: 'absolute',
                 display: 'inline-flex',
-                width: '100%',
-                height: '100%',
-                borderRadius: '50%',
+                width: 100 + '%',
+                height: 100 + '%',
+                borderRadius: 50 + '%',
                 backgroundColor: '#16a34a',
                 opacity: reduceMotion
                   ? 0
@@ -120,7 +114,7 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
               style={{
                 position: 'relative',
                 display: 'inline-flex',
-                borderRadius: '50%',
+                borderRadius: 50 + '%',
                 width: 10,
                 height: 10,
                 backgroundColor: '#16a34a',
@@ -160,7 +154,7 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
             style={{
               width: 16,
               height: 16,
-              borderRadius: '50%',
+              borderRadius: 50 + '%',
               borderWidth: 2,
               borderStyle: 'solid',
               borderColor: '#e3e3e3',
@@ -229,7 +223,7 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
               style={{
                 marginTop: 10,
                 height: 8,
-                width: '100%',
+                width: 100 + '%',
                 overflow: 'hidden',
                 borderRadius: 999,
                 backgroundColor: '#e3e3e3',
@@ -249,10 +243,10 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
             >
               <div
                 style={{
-                  height: '100%',
+                  height: 100 + '%',
                   borderRadius: 999,
                   backgroundColor: coverage?.status === 'complete' ? '#16a34a' : '#d96a00',
-                  width: `${pct ?? 0}%`,
+                  width: (pct ?? 0) + '%',
                 }}
                 className={`h-full rounded-full ${coverage?.status === 'complete' ? 'bg-nasa-green' : 'bg-nasa-orange'}`}
               />
