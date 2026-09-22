@@ -1,7 +1,9 @@
 import { useEffect, lazy, Suspense } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
-import { motion, AnimatePresence, useReducedMotion, LazyMotion, domAnimation } from 'framer-motion';
+import { AnimatePresence, useReducedMotion, LazyMotion, domAnimation } from 'framer-motion';
+import { Interactive } from './components/interactive/Interactive';
+import { useWebFrame, interpolate, Easing } from './lib/motion-interpolate';
 import { Analytics } from '@vercel/analytics/react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import SignUpPage from './pages/SignUpPage';
@@ -77,12 +79,47 @@ const GeneratedContentPage: React.FC = () => {
 };
 
 /** Full-height fallback shown while a lazy route chunk streams in. */
-const RouteFallback = () => (
-  <div className="w-full min-h-[50vh] flex items-center justify-center" role="status" aria-label="Loading page">
-    <span className="w-8 h-8 border-2 border-carbon-30 border-t-nasa-blue motion-safe:animate-spin motion-reduce:animate-none" />
-    <span className="sr-only">Loading page…</span>
-  </div>
-);
+const RouteFallback = () => {
+  const reduceMotion = useReducedMotion();
+  const frame = useWebFrame(30);
+  return (
+    <Interactive.Div
+      name="Route fallback — loading"
+      style={{
+        width: '100%',
+        minHeight: '50vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+      role="status"
+      aria-label="Loading page"
+      className="w-full min-h-[50vh] flex items-center justify-center"
+    >
+      <Interactive.Div
+        name="Loading spinner"
+        style={{
+          width: 32,
+          height: 32,
+          borderWidth: 2,
+          borderStyle: 'solid',
+          borderColor: '#d1d1d1',
+          borderTopColor: '#1c67e3',
+          borderRadius: '50%',
+          rotate: reduceMotion
+            ? '0deg'
+            : interpolate(frame, [0, 30], ['0deg', '360deg'], {
+                easing: Easing.bezier(0.4, 0, 0.2, 1),
+                extrapolateLeft: 'clamp',
+                extrapolateRight: 'clamp',
+              }),
+        }}
+        className="w-8 h-8 border-2 border-carbon-30 border-t-nasa-blue"
+      />
+      <span className="sr-only">Loading page…</span>
+    </Interactive.Div>
+  );
+};
 
 const queryClient = new QueryClient();
 
@@ -199,6 +236,7 @@ const AppContent: React.FC = () => {
   useHazardNotifications(userProfile?.homeDistrictId);
   const location = useLocation();
   const reduceMotion = useReducedMotion();
+  const frame = useWebFrame(30);
 
   useEffect(() => {
     initializeAttributionCapture();
@@ -294,25 +332,38 @@ const AppContent: React.FC = () => {
           }
         >
           {reduceMotion ? (
-            <div className="w-full h-full">
+            <Interactive.Div
+              name="Page container — reduced motion"
+              style={{
+                width: '100%',
+                height: '100%',
+              }}
+              className="w-full h-full"
+            >
               <Suspense fallback={<RouteFallback />}>
                 <AppRoutes location={location} />
               </Suspense>
-            </div>
+            </Interactive.Div>
           ) : (
             <AnimatePresence mode="wait">
-              <motion.div
+              <Interactive.Div
                 key={location.pathname}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.15, ease: 'easeOut' }}
+                name={`Page transition — ${location.pathname}`}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  opacity: interpolate(frame, [0, 6], [0, 1], {
+                    easing: Easing.bezier(0.16, 1, 0.3, 1),
+                    extrapolateLeft: 'clamp',
+                    extrapolateRight: 'clamp',
+                  }),
+                }}
                 className="w-full h-full"
               >
                 <Suspense fallback={<RouteFallback />}>
                   <AppRoutes location={location} />
                 </Suspense>
-              </motion.div>
+              </Interactive.Div>
             </AnimatePresence>
           )}
         </main>

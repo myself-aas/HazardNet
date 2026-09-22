@@ -24,6 +24,9 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useReducedMotion } from 'framer-motion';
+import { Interactive } from '../interactive/Interactive';
+import { useWebFrame, interpolate, Easing } from '../../lib/motion-interpolate';
 
 import { AlertLevelBadge } from '../alerts/AlertLevelBadge';
 import { useI18n } from '../../hooks/useI18n';
@@ -96,6 +99,8 @@ export const LiveStatusStrip: React.FC<LiveStatusStripProps> = ({
 }) => {
   const { t, formatNumber, isBengali } = useI18n();
   const hazardLabel = useHazardLabel();
+  const reduceMotion = useReducedMotion();
+  const frame = useWebFrame(30);
 
   const published = alerts.length;
   const ageHours = ageHoursFrom(generatedAt);
@@ -105,7 +110,28 @@ export const LiveStatusStrip: React.FC<LiveStatusStripProps> = ({
       : null;
 
   return (
-    <section
+    <Interactive.Section
+      name="Live status strip — published now"
+      style={{
+        borderWidth: 1,
+        borderStyle: 'solid',
+        borderColor: '#d1d1d1',
+        backgroundColor: '#f6f6f6',
+        opacity: reduceMotion
+          ? 1
+          : interpolate(frame, [0, 10], [0, 1], {
+              easing: Easing.bezier(0.16, 1, 0.3, 1),
+              extrapolateLeft: 'clamp',
+              extrapolateRight: 'clamp',
+            }),
+        translate: reduceMotion
+          ? '0px 0px'
+          : interpolate(frame, [0, 10], ['0px 8px', '0px 0px'], {
+              easing: Easing.spring({ damping: 200 }),
+              extrapolateLeft: 'clamp',
+              extrapolateRight: 'clamp',
+            }),
+      }}
       role="status"
       aria-live="polite"
       aria-label={t('frontdoor.strip.label')}
@@ -244,7 +270,32 @@ export const LiveStatusStrip: React.FC<LiveStatusStripProps> = ({
       )}
 
       {!loading && error && (
-        <div role="alert" className="border-t border-carbon-20 bg-white px-4 py-3 md:px-5 flex flex-wrap items-center gap-3">
+        <Interactive.Div
+          name="Status error — retry"
+          style={{
+            borderTopWidth: 1,
+            borderTopStyle: 'solid',
+            borderTopColor: '#d1d1d1',
+            backgroundColor: 'white',
+            paddingLeft: 16,
+            paddingRight: 16,
+            paddingTop: 12,
+            paddingBottom: 12,
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            gap: 12,
+            opacity: reduceMotion
+              ? 1
+              : interpolate(frame, [0, 8], [0, 1], {
+                  easing: Easing.bezier(0.16, 1, 0.3, 1),
+                  extrapolateLeft: 'clamp',
+                  extrapolateRight: 'clamp',
+                }),
+          }}
+          role="alert"
+          className="border-t border-carbon-20 bg-white px-4 py-3 md:px-5 flex flex-wrap items-center gap-3"
+        >
           <p className="text-sm leading-[1.62] text-nasa-red-shade flex-1 min-w-[12rem]">{error}</p>
           {onRetry && (
             <button
@@ -255,9 +306,9 @@ export const LiveStatusStrip: React.FC<LiveStatusStripProps> = ({
               {t('common.retry')}
             </button>
           )}
-        </div>
+        </Interactive.Div>
       )}
-    </section>
+    </Interactive.Section>
   );
 };
 

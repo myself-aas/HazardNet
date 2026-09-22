@@ -48,7 +48,9 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { Link, Navigate, useLocation, useSearchParams } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { useReducedMotion } from 'framer-motion';
+import { Interactive } from '../components/interactive/Interactive';
+import { useWebFrame, interpolate, Easing } from '../lib/motion-interpolate';
 
 import MaterialIcon from '../components/MaterialIcon';
 import { AlertLevelBadge } from '../components/alerts/AlertLevelBadge';
@@ -339,11 +341,22 @@ export const FrontDoor: React.FC = () => {
         })
       : '—';
 
+  const reduceMotion = useReducedMotion();
+  const frame = useWebFrame(30);
+
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.25, ease: 'easeOut' }}
+    <Interactive.Div
+      name="FrontDoor page — editorial front door"
+      style={{
+        width: '100%',
+        opacity: reduceMotion
+          ? 1
+          : interpolate(frame, [0, 8], [0, 1], {
+              easing: Easing.bezier(0.16, 1, 0.3, 1),
+              extrapolateLeft: 'clamp',
+              extrapolateRight: 'clamp',
+            }),
+      }}
       className="w-full"
     >
       {/* ── Hero: NASA-Inspired Global Observatory with Dynamic Video Background ── */}
@@ -710,7 +723,7 @@ export const FrontDoor: React.FC = () => {
         </nav>
       </section>
       </div>
-    </motion.div>
+    </Interactive.Div>
   );
 };
 
