@@ -73,6 +73,15 @@ python -m hindcast.cli check --require-reports
 python -m pytest tests/test_hindcast.py -q
 ```
 
+## When CI runs it
+
+`.github/workflows/hindcast.yml` has **no cron** — an episode is curated, not
+scheduled. It fires on `workflow_dispatch` (Run workflow button) or on a push to
+`main` that touches this directory, `data/hindcast/episodes/`, or the workflow
+file itself. Driver/report commits the bot makes under `data/hindcast/drivers/`
+and `data/hindcast/reports/` are deliberately outside those path filters, so a
+bot commit cannot re-trigger the workflow that produced it.
+
 ## What it still cannot do
 
 * **No CNN score.** Detection is the physics track's; model skill stays unmeasured until the
