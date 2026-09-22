@@ -1,0 +1,56 @@
+{
+  "payloads": [
+    {
+      "latitude": 25.02,
+      "longitude": 91.87,
+      "timezone": "UTC",
+      "hourly": {
+        "time": [
+          "2026-09-17T00:00",
+          "2026-09-17T01:00"
+        ],
+        "temperature_2m": [
+          27.1,
+          26.8
+        ],
+        "precipitation": [
+          0.0,
+          3.4
+        ],
+        "wind_speed_10m": [
+          8.2,
+          11.5
+        ],
+        "relative_humidity_2m": [
+          92,
+          95
+        ],
+        "surface_pressure": [
+          1004.2,
+          1003.9
+        ],
+        "soil_moisture_0_to_1cm": [
+          0.41,
+          0.43
+        ]
+      },
+      "daily": {
+        "time": [
+          "2026-09-17"
+        ],
+        "precipitation_sum": [
+          58.6
+        ],
+        "temperature_2m_max": [
+          31.2
+        ],
+        "temperature_2m_min": [
+          25.6
+        ],
+        "wind_speed_10m_max": [
+          22.4
+        ]
+      }
+    }
+  ]
+}

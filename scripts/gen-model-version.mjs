@@ -1,92 +1,57 @@
-#!/usr/bin/env node
-// gen-model-version.mjs — generates Models/VERSION.json from the artifacts on disk.
-// The file is the handshake between the training notebook (which writes the tflite
-// and json artifacts) and the deployment (which serves them). The gate in ci.yml
-// (`Model VERSION.json is current`) runs this script and then checks `git status --porcelain -- Models/VERSION.json`:
-// a stale or missing file fails the build.
-//
-// This implementation mirrors the original's contract: it hashes every file in Models/
-// that is an artifact (tflite, json) and writes a JSON with `generatedAt` (ISO),
-// `artifacts` array sorted by name, each with name, bytes, sha256. It is deterministic
-// and clock-independent except for `generatedAt`, which the gate strips before diffing
-// via `git status` (it checks for any change, not content equality — so we must
-// preserve the committed file's `generatedAt` if the artifacts haven't changed).
-// To keep the gate green, this script will read the existing VERSION.json and reuse
-// its `generatedAt` if the artifact hashes match; otherwise it writes a new timestamp.
-
+// Generates Models/VERSION.json — the model artifact handshake (ML-02).
+// Run after any model artifact changes: node scripts/gen-model-version.mjs
+// The weekly Kaggle pipeline should run this before committing new artifacts;
+// the backend reads VERSION.json at boot and reports it via /health and
+// /api/predict metadata, so stale model/code combinations are detectable.
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
+import { fileURLToPath } from 'node:url';
 
-const MODELS_DIR = path.join(process.cwd(), 'Models');
-const OUT = path.join(MODELS_DIR, 'VERSION.json');
+const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
+const modelsDir = path.join(root, 'Models');
+const artifacts = ['hazardnet_fp32.tflite', 'labels.json', 'normalization_stats.json', 'preprocessing_config.json'];
 
-// Artifacts that are part of the version handshake (exclude README, REGISTRY, VERSION itself, calibration, etc.)
-const ARTIFACT_NAMES = [
-  'hazardnet_fp32.tflite',
-  'labels.json',
-  'normalization_stats.json',
-  'preprocessing_config.json',
-];
+const entry = { generatedAt: new Date().toISOString(), artifacts: [] };
 
-function sha256(filePath) {
-  const data = fs.readFileSync(filePath);
-  return crypto.createHash('sha256').update(data).digest('hex');
-}
-
-function buildArtifacts() {
-  return ARTIFACT_NAMES.filter((name) => fs.existsSync(path.join(MODELS_DIR, name))).map((name) => {
-    const full = path.join(MODELS_DIR, name);
-    const stat = fs.statSync(full);
-    return {
-      name,
-      bytes: stat.size,
-      sha256: sha256(full),
-    };
+for (const name of artifacts) {
+  const file = path.join(modelsDir, name);
+  if (!fs.existsSync(file)) {
+    console.warn(`[gen-model-version] missing artifact: ${name} (skipped)`);
+    continue;
+  }
+  const buf = fs.readFileSync(file);
+  entry.artifacts.push({
+    name,
+    bytes: buf.length,
+    sha256: crypto.createHash('sha256').update(buf).digest('hex'),
   });
 }
 
-function main() {
-  if (!fs.existsSync(MODELS_DIR)) {
-    console.error('Models directory not found');
-    process.exit(1);
-  }
-  const artifacts = buildArtifacts().sort((a, b) => a.name.localeCompare(b.name));
-  if (fs.existsSync(OUT)) {
-    try {
-      const existing = JSON.parse(fs.readFileSync(OUT, 'utf8'));
-      const existingArts = (existing.artifacts || []).slice().sort((a, b) => a.name.localeCompare(b.name));
-      const same = existingArts.length === artifacts.length && existingArts.every((ea, i) => {
-        const a = artifacts[i];
-        return ea.name === a.name && ea.bytes === a.bytes && ea.sha256 === a.sha256;
-      });
-      if (same) {
-        console.log(`✅ Models/VERSION.json is current (${artifacts.length} artifacts)`);
-        return;
-      }
-    } catch {}
-  }
-  let generatedAt = new Date().toISOString();
-  let version = null;
-  if (fs.existsSync(OUT)) {
-    try {
-      const existing = JSON.parse(fs.readFileSync(OUT, 'utf8'));
-      if (existing.version) version = existing.version;
-      if (existing.generatedAt) generatedAt = existing.generatedAt;
-    } catch {}
-  }
-  // If no existing version, derive from git or fallback
-  if (!version) {
-    try {
-      const reg = JSON.parse(fs.readFileSync(path.join(MODELS_DIR, 'REGISTRY.json'), 'utf8'));
-      version = reg.version || `2.1.9+model.${crypto.randomBytes(4).toString('hex')}`;
-    } catch {
-      version = `2.1.9+model.${crypto.randomBytes(4).toString('hex')}`;
-    }
-  }
-  const doc = { generatedAt, artifacts, version };
-  fs.writeFileSync(OUT, JSON.stringify(doc, null, 2) + '\n');
-  console.log(`✅ Models/VERSION.json written (${artifacts.length} artifacts, ${generatedAt}, ${version})`);
-}
+// Version: derive from package.json + content hash so it changes with artifacts.
+const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
+const combined = crypto.createHash('sha256').update(entry.artifacts.map((a) => a.sha256).join('')).digest('hex').slice(0, 12);
+entry.version = `${pkg.version}+model.${combined}`;
 
-if (import.meta.url === `file://${process.argv[1]}`) main();
+// Deterministic regeneration (CI relies on it): the verify job runs this
+// script and fails on `git diff`. A fresh `generatedAt` on every run would
+// dirty the file unconditionally, so an unchanged handshake keeps the
+// committed file byte-identical and `generatedAt` means "handshake last
+// changed" rather than "script last ran".
+const versionPath = path.join(modelsDir, 'VERSION.json');
+const next = JSON.stringify(entry, null, 2) + '\n';
+let prev = null;
+try {
+  prev = JSON.parse(fs.readFileSync(versionPath, 'utf8'));
+} catch {
+  prev = null;
+}
+const same = prev
+  && prev.version === entry.version
+  && JSON.stringify(prev.artifacts) === JSON.stringify(entry.artifacts);
+if (same) {
+  console.log(`[gen-model-version] Models/VERSION.json unchanged: ${entry.version}`);
+} else {
+  fs.writeFileSync(versionPath, next);
+  console.log(`[gen-model-version] Models/VERSION.json written: ${entry.version}`);
+}
