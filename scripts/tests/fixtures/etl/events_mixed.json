@@ -1,0 +1,12 @@
+{
+  "_comment": "FIXTURE, not the 2,931-event archive. Covers one row per ingestion decision: clean, GAUL spelling, missing severity basis, unknown district, end-before-start, out-of-range severity.",
+  "rows": [
+    {"hazard_type": "flood", "start_date": "2017-08-11", "end_date": "2017-08-18", "adm2_name": "Kurigram", "basis": "rainfall_mm=300", "source": "ffwc-archive", "source_record_id": "ffwc-2017-0811-kurigram"},
+    {"hazard_type": "flood", "start_date": "2019-07-13", "end_date": "2019-07-20", "adm2_name": "Jamalpur", "basis": "rainfall_mm=260", "source": "ffwc-archive", "source_record_id": "ffwc-2019-0713-jamalpur"},
+    {"hazard_type": "cold wave", "start_date": "2011-01-10", "end_date": "2011-01-14", "adm2_name": "Jessore", "basis": "temp_min_c=5.4", "source": "iemopendata", "source_record_id": "iem-cold-jessore-2011"},
+    {"hazard_type": "landslide", "start_date": "2019-06-18", "end_date": "2019-06-18", "adm2_name": "Rangamati", "basis": "rainfall_mm=120", "source": "news-archive", "source_record_id": "news-landslide-2019"},
+    {"hazard_type": "flood", "start_date": "2020-07-01", "end_date": "2020-07-05", "adm2_name": "Kolkata", "basis": "rainfall_mm=220", "source": "news-archive", "source_record_id": "news-flood-kolkata-2020"},
+    {"hazard_type": "tropical cyclone", "start_date": "2007-11-15", "end_date": "2007-11-13", "adm2_name": "Barguna", "basis": "wind_speed_kmh=240", "source": "emdat", "source_record_id": "2007-0291-BGD"},
+    {"hazard_type": "heat wave", "start_date": "2024-04-25", "end_date": "2024-04-30", "adm2_name": "Chuadanga", "severity": 1.4, "basis": "temp_max_c=43.2", "source": "iemopendata", "source_record_id": "iem-heat-chuadanga-2024"}
+  ]
+}

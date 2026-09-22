@@ -328,7 +328,7 @@ export const LiveVoiceAdvisor: React.FC<LiveVoiceAdvisorProps> = ({
       ctx.strokeStyle = status === 'speaking' 
         ? '#0284c7' 
         : isMuted 
-        ? '#94a3b8' 
+        ? '#959599' 
         : '#10b981';
 
       for (let x = 0; x < w; x++) {
@@ -400,9 +400,9 @@ export const LiveVoiceAdvisor: React.FC<LiveVoiceAdvisorProps> = ({
   };
 
   return (
-    <div className="flex flex-col h-full bg-white text-slate-900 select-none">
+    <div className="flex flex-col h-full bg-white text-carbon-90 select-none">
       {/* Top Bar / Status Header */}
-      <div className="px-4 py-3 border-b border-slate-200 bg-slate-50 flex items-center justify-between shrink-0">
+      <div className="px-4 py-3 border-b border-carbon-20 bg-carbon-05 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-2.5">
           <div className="relative flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-700">
             <Radio className={`w-4 h-4 ${status === 'listening' || status === 'speaking' ? 'animate-pulse' : ''}`} />
@@ -412,19 +412,19 @@ export const LiveVoiceAdvisor: React.FC<LiveVoiceAdvisorProps> = ({
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-bold tracking-tight text-slate-800">
+              <span className="text-xs font-bold tracking-tight text-carbon-80">
                 Live Voice Advisor
               </span>
               <span className="text-[10px] font-mono font-medium px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200">
                 gemini-3.8-live
               </span>
             </div>
-            <div className="flex items-center gap-1.5 text-[11px] text-slate-500">
+            <div className="flex items-center gap-1.5 text-[11px] text-carbon-50">
               <span className={`w-1.5 h-1.5 rounded-full ${
                 status === 'speaking' ? 'bg-sky-500 animate-pulse' :
                 status === 'listening' ? 'bg-emerald-500' :
                 status === 'connecting' ? 'bg-amber-400 animate-ping' :
-                'bg-slate-400'
+                'bg-carbon-40'
               }`} />
               <span className="capitalize font-medium">
                 {status === 'speaking' ? 'HazardNet Speaking...' :
@@ -443,7 +443,7 @@ export const LiveVoiceAdvisor: React.FC<LiveVoiceAdvisorProps> = ({
             <button
               id="switch-to-text-chat-btn"
               onClick={onSwitchToText}
-              className="px-2.5 py-1.5 text-xs font-medium rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-200 transition-colors flex items-center gap-1.5"
+              className="px-2.5 py-1.5 text-xs font-medium rounded-lg text-carbon-60 hover:text-carbon-90 hover:bg-carbon-20 transition-colors flex items-center gap-1.5"
               title="Switch to text chat"
             >
               <MessageSquare className="w-3.5 h-3.5" />
@@ -454,7 +454,7 @@ export const LiveVoiceAdvisor: React.FC<LiveVoiceAdvisorProps> = ({
             <button
               id="close-live-voice-btn"
               onClick={onClose}
-              className="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-slate-200 transition-colors"
+              className="p-1.5 text-carbon-40 hover:text-carbon-70 rounded-lg hover:bg-carbon-20 transition-colors"
               aria-label="Close"
             >
               ×
@@ -464,15 +464,15 @@ export const LiveVoiceAdvisor: React.FC<LiveVoiceAdvisorProps> = ({
       </div>
 
       {/* District & Hazard Context Strip */}
-      <div className="px-4 py-2 bg-slate-100/70 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2 text-xs">
-        <div className="flex items-center gap-1.5 text-slate-700 font-medium">
-          <MapPin className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+      <div className="px-4 py-2 bg-carbon-10/70 border-b border-carbon-20 flex flex-wrap items-center justify-between gap-2 text-xs">
+        <div className="flex items-center gap-1.5 text-carbon-70 font-medium">
+          <MapPin className="w-3.5 h-3.5 text-carbon-50 shrink-0" />
           <span>District:</span>
           <select
             id="live-voice-district-select"
             value={district}
             onChange={(e) => handleDistrictChange(e.target.value)}
-            className="bg-white border border-slate-300 rounded px-2 py-0.5 text-xs font-medium text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="bg-white border border-carbon-30 rounded px-2 py-0.5 text-xs font-medium text-carbon-80 focus:outline-none focus:ring-1 focus:ring-blue-500"
           >
             {BANGLADESH_DISTRICTS.map(d => (
               <option key={d} value={d}>{d}</option>
@@ -480,14 +480,14 @@ export const LiveVoiceAdvisor: React.FC<LiveVoiceAdvisorProps> = ({
           </select>
         </div>
 
-        <div className="flex items-center gap-1.5 text-slate-700 font-medium">
-          <Database className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+        <div className="flex items-center gap-1.5 text-carbon-70 font-medium">
+          <Database className="w-3.5 h-3.5 text-carbon-50 shrink-0" />
           <span>Hazard:</span>
           <select
             id="live-voice-hazard-select"
             value={hazard}
             onChange={(e) => handleHazardChange(e.target.value)}
-            className="bg-white border border-slate-300 rounded px-2 py-0.5 text-xs font-medium text-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="bg-white border border-carbon-30 rounded px-2 py-0.5 text-xs font-medium text-carbon-80 focus:outline-none focus:ring-1 focus:ring-blue-500"
           >
             <option value="Flood">Flood (BRRI Submergence)</option>
             <option value="Cyclone">Cyclone (Surge & Salinity)</option>
@@ -499,13 +499,13 @@ export const LiveVoiceAdvisor: React.FC<LiveVoiceAdvisorProps> = ({
       </div>
 
       {/* Central Visualizer & Reactive Waveform */}
-      <div className="p-4 flex flex-col items-center justify-center bg-gradient-to-b from-slate-50 to-white border-b border-slate-200 shrink-0">
+      <div className="p-4 flex flex-col items-center justify-center bg-gradient-to-b from-carbon-05 to-white border-b border-carbon-20 shrink-0">
         <div className="w-full max-w-sm flex flex-col items-center">
           <canvas
             ref={canvasRef}
             width={320}
             height={64}
-            className="w-full h-16 rounded-xl bg-slate-900 shadow-inner"
+            className="w-full h-16 rounded-xl bg-carbon-90 shadow-inner"
           />
 
           <div className="mt-2 text-center">
@@ -521,7 +521,7 @@ export const LiveVoiceAdvisor: React.FC<LiveVoiceAdvisorProps> = ({
               </motion.div>
             )}
             {!activeTool && (
-              <span className="text-[11px] text-slate-500 font-medium">
+              <span className="text-[11px] text-carbon-50 font-medium">
                 {status === 'speaking' 
                   ? 'Speaking through 24kHz audio stream' 
                   : isMuted 
@@ -536,10 +536,10 @@ export const LiveVoiceAdvisor: React.FC<LiveVoiceAdvisorProps> = ({
       {/* Live Transcript / Activity Log */}
       <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-white">
         {transcripts.length === 0 && (
-          <div className="h-full flex flex-col items-center justify-center text-center p-6 text-slate-400">
+          <div className="h-full flex flex-col items-center justify-center text-center p-6 text-carbon-40">
             <Radio className="w-10 h-10 mb-2 opacity-30 text-blue-600" />
-            <p className="text-sm font-semibold text-slate-700">Live Voice Conversation Initialized</p>
-            <p className="text-xs text-slate-500 max-w-xs mt-1">
+            <p className="text-sm font-semibold text-carbon-70">Live Voice Conversation Initialized</p>
+            <p className="text-xs text-carbon-50 max-w-xs mt-1">
               Ask anything about flood-tolerant rice varieties, livestock evacuation killas, cyclone salinity management, or DAE extension hotlines.
             </p>
             <div className="mt-4 flex flex-wrap justify-center gap-1.5 max-w-sm">
@@ -552,7 +552,7 @@ export const LiveVoiceAdvisor: React.FC<LiveVoiceAdvisorProps> = ({
                     }));
                   }
                 }}
-                className="text-[11px] px-2.5 py-1 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 transition"
+                className="text-[11px] px-2.5 py-1 rounded-full bg-carbon-10 hover:bg-carbon-20 text-carbon-70 transition"
               >
                 "Which BRRI rice survives floods in {district}?"
               </button>
@@ -565,7 +565,7 @@ export const LiveVoiceAdvisor: React.FC<LiveVoiceAdvisorProps> = ({
                     }));
                   }
                 }}
-                className="text-[11px] px-2.5 py-1 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 transition"
+                className="text-[11px] px-2.5 py-1 rounded-full bg-carbon-10 hover:bg-carbon-20 text-carbon-70 transition"
               >
                 "Livestock medical emergency hotline"
               </button>
@@ -592,13 +592,13 @@ export const LiveVoiceAdvisor: React.FC<LiveVoiceAdvisorProps> = ({
             )}
 
             {item.sender === 'model' && (
-              <div className="max-w-[85%] bg-slate-100 text-slate-900 border border-slate-200 px-3 py-2 rounded-2xl rounded-tl-none shadow-sm">
+              <div className="max-w-[85%] bg-carbon-10 text-carbon-90 border border-carbon-20 px-3 py-2 rounded-2xl rounded-tl-none shadow-sm">
                 <div className="flex items-center gap-1.5 mb-1 text-[11px] font-semibold text-blue-700">
                   <Sparkles className="w-3 h-3" />
                   <span>HazardNet Voice (gemini-3.8-live)</span>
                 </div>
                 <p className="font-sans leading-relaxed">{item.text}</p>
-                <span className="text-[10px] text-slate-400 mt-0.5 block">{item.timestamp}</span>
+                <span className="text-[10px] text-carbon-40 mt-0.5 block">{item.timestamp}</span>
               </div>
             )}
 
@@ -610,7 +610,7 @@ export const LiveVoiceAdvisor: React.FC<LiveVoiceAdvisorProps> = ({
             )}
 
             {item.sender === 'system' && (
-              <div className="my-1 px-2 py-0.5 rounded text-slate-500 text-[10px] font-mono">
+              <div className="my-1 px-2 py-0.5 rounded text-carbon-50 text-[10px] font-mono">
                 {item.text}
               </div>
             )}
@@ -642,7 +642,7 @@ export const LiveVoiceAdvisor: React.FC<LiveVoiceAdvisorProps> = ({
       </AnimatePresence>
 
       {/* Voice Controls Action Bar */}
-      <div className="p-3 border-t border-slate-200 bg-slate-50 flex items-center justify-between shrink-0">
+      <div className="p-3 border-t border-carbon-20 bg-carbon-05 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-2">
           {/* Mute / Unmute Button */}
           <button
@@ -664,7 +664,7 @@ export const LiveVoiceAdvisor: React.FC<LiveVoiceAdvisorProps> = ({
             id="live-voice-interrupt-btn"
             onClick={handleInterrupt}
             disabled={status !== 'speaking'}
-            className="px-3 py-2 min-h-[44px] rounded-lg border border-slate-300 bg-white text-slate-700 text-xs font-semibold hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5 transition"
+            className="px-3 py-2 min-h-[44px] rounded-lg border border-carbon-30 bg-white text-carbon-70 text-xs font-semibold hover:bg-carbon-10 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5 transition"
             title="Interrupt AI speaking immediately"
           >
             <VolumeX className="w-4 h-4" />
@@ -677,7 +677,7 @@ export const LiveVoiceAdvisor: React.FC<LiveVoiceAdvisorProps> = ({
           <button
             id="live-voice-reconnect-btn"
             onClick={connectWebSocket}
-            className="p-2.5 min-w-[44px] min-h-[44px] text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-200 transition"
+            className="p-2.5 min-w-[44px] min-h-[44px] text-carbon-60 hover:text-carbon-90 rounded-lg hover:bg-carbon-20 transition"
             title="Reset Voice Session"
             aria-label="Reset Voice Session"
           >

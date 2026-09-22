@@ -1,0 +1,14 @@
+{
+  "scenes": [
+    {
+      "id": "S2B_MSIL2A_20260912T044659",
+      "acquired": "2026-09-12",
+      "cloud_cover": 8.4
+    },
+    {
+      "id": "S2A_MSIL2A_20260907T044651",
+      "acquired": "2026-09-07",
+      "cloud_cover": 76.1
+    }
+  ]
+}

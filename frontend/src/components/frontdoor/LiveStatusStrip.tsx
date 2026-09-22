@@ -24,6 +24,9 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useReducedMotion } from 'framer-motion';
+import { Interactive } from '../interactive/Interactive';
+import { useWebFrame, interpolate, Easing } from '../../lib/motion-interpolate';
 
 import { AlertLevelBadge } from '../alerts/AlertLevelBadge';
 import { useI18n } from '../../hooks/useI18n';
@@ -71,6 +74,8 @@ export interface LiveStatusStripProps {
   loading: boolean;
   error: string | null;
   coverage: FreshnessCoverage | null;
+  /** Retry handler wired to alerts refresh (audit #2: error recovery). */
+  onRetry?: () => void;
 }
 
 /** Hours between an artifact timestamp and now, or null when it cannot be computed. */
@@ -90,9 +95,12 @@ export const LiveStatusStrip: React.FC<LiveStatusStripProps> = ({
   loading,
   error,
   coverage,
+  onRetry,
 }) => {
   const { t, formatNumber, isBengali } = useI18n();
   const hazardLabel = useHazardLabel();
+  const reduceMotion = useReducedMotion();
+  const frame = useWebFrame(30);
 
   const published = alerts.length;
   const ageHours = ageHoursFrom(generatedAt);
@@ -102,7 +110,28 @@ export const LiveStatusStrip: React.FC<LiveStatusStripProps> = ({
       : null;
 
   return (
-    <section
+    <Interactive.Section
+      name="Live status strip — published now"
+      style={{
+        borderWidth: 1,
+        borderStyle: 'solid',
+        borderColor: '#d1d1d1',
+        backgroundColor: '#f6f6f6',
+        opacity: reduceMotion
+          ? 1
+          : interpolate(frame, [0, 10], [0, 1], {
+              easing: Easing.bezier(0.16, 1, 0.3, 1),
+              extrapolateLeft: 'clamp',
+              extrapolateRight: 'clamp',
+            }),
+        translate: reduceMotion
+          ? '0px 0px'
+          : interpolate(frame, [0, 10], ['0px 8px', '0px 0px'], {
+              easing: Easing.spring({ damping: 200 }),
+              extrapolateLeft: 'clamp',
+              extrapolateRight: 'clamp',
+            }),
+      }}
       role="status"
       aria-live="polite"
       aria-label={t('frontdoor.strip.label')}
@@ -118,7 +147,18 @@ export const LiveStatusStrip: React.FC<LiveStatusStripProps> = ({
           {loading && <p className="text-xs text-carbon-60">{t('frontdoor.strip.reading')}</p>}
 
           {!loading && counts === null && (
-            <p className="text-xs leading-relaxed text-carbon-70">{t('frontdoor.strip.unreadable')}</p>
+            <div className="flex flex-wrap items-center gap-3">
+              <p className="text-xs leading-relaxed text-carbon-70">{t('frontdoor.strip.unreadable')}</p>
+              {onRetry && (
+                <button
+                  type="button"
+                  onClick={onRetry}
+                  className="inline-flex min-h-[32px] items-center gap-1 border border-carbon-20 bg-white px-3 py-1 text-xs font-semibold text-carbon-80 hover:bg-carbon-05"
+                >
+                  {t('common.retry')}
+                </button>
+              )}
+            </div>
           )}
 
           {!loading && counts !== null && (
@@ -230,9 +270,45 @@ export const LiveStatusStrip: React.FC<LiveStatusStripProps> = ({
       )}
 
       {!loading && error && (
-        <p className="border-t border-carbon-20 bg-white px-4 py-2 text-xs text-nasa-red-shade md:px-5">{error}</p>
+        <Interactive.Div
+          name="Status error — retry"
+          style={{
+            borderTopWidth: 1,
+            borderTopStyle: 'solid',
+            borderTopColor: '#d1d1d1',
+            backgroundColor: 'white',
+            paddingLeft: 16,
+            paddingRight: 16,
+            paddingTop: 12,
+            paddingBottom: 12,
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            gap: 12,
+            opacity: reduceMotion
+              ? 1
+              : interpolate(frame, [0, 8], [0, 1], {
+                  easing: Easing.bezier(0.16, 1, 0.3, 1),
+                  extrapolateLeft: 'clamp',
+                  extrapolateRight: 'clamp',
+                }),
+          }}
+          role="alert"
+          className="border-t border-carbon-20 bg-white px-4 py-3 md:px-5 flex flex-wrap items-center gap-3"
+        >
+          <p className="text-sm leading-[1.62] text-nasa-red-shade flex-1 min-w-[12rem]">{error}</p>
+          {onRetry && (
+            <button
+              type="button"
+              onClick={onRetry}
+              className="inline-flex min-h-[44px] items-center gap-1.5 bg-nasa-blue px-4 py-2 text-sm font-semibold text-white hover:bg-nasa-blue-shade focus-visible:outline focus-visible:outline-2 focus-visible:outline-nasa-blue focus-visible:outline-offset-2"
+            >
+              {t('common.retry')}
+            </button>
+          )}
+        </Interactive.Div>
       )}
-    </section>
+    </Interactive.Section>
   );
 };
 

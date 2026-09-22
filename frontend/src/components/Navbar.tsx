@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { Interactive } from './interactive/Interactive';
+import { useWebFrame, interpolate, Easing } from '../lib/motion-interpolate';
 import toast from 'react-hot-toast';
 import MaterialIcon from './MaterialIcon';
 import CommandPalette from './CommandPalette';
@@ -217,6 +219,7 @@ const MegaMenu: React.FC<{
   onToggle: () => void;
   onChoose: (item: NavItem) => void;
 }> = ({ menu, active, pathname, reduceMotion, isTransparent, onToggle, onChoose }) => {
+  const frame = useWebFrame(30);
   const current = menu.isCurrent(pathname);
   return (
     <div className="relative">
@@ -241,11 +244,24 @@ const MegaMenu: React.FC<{
       </button>
       <AnimatePresence>
         {active && (
-          <motion.div
-            initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
-            transition={{ duration: 0.15 }}
+          <Interactive.Div
+            name={`Mega menu — ${menu.id}`}
+            style={{
+              opacity: reduceMotion
+                ? 1
+                : interpolate(frame, [0, 6], [0, 1], {
+                    easing: Easing.bezier(0.16, 1, 0.3, 1),
+                    extrapolateLeft: 'clamp',
+                    extrapolateRight: 'clamp',
+                  }),
+              translate: reduceMotion
+                ? '0px 0px'
+                : interpolate(frame, [0, 6], ['0px 4px', '0px 0px'], {
+                    easing: Easing.spring({ damping: 200 }),
+                    extrapolateLeft: 'clamp',
+                    extrapolateRight: 'clamp',
+                  }),
+            }}
             className={`absolute top-full left-0 mt-2 ${menu.panelWidthClass} bg-white border border-carbon-20 p-1 z-[var(--z-overlay)] text-carbon-80`}
           >
             {menu.id === 'alerts' ? (
@@ -267,7 +283,7 @@ const MegaMenu: React.FC<{
                 <MegaItem key={item.id} item={item} pathname={pathname} onChoose={onChoose} />
               ))
             )}
-          </motion.div>
+          </Interactive.Div>
         )}
       </AnimatePresence>
     </div>
@@ -282,6 +298,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   const navigate = useNavigate();
   const { user, userProfile } = useAuth();
   const reduceMotion = useReducedMotion();
+  const frame = useWebFrame(30);
 
   const [isSavedModalOpen, setIsSavedModalOpen] = useState(false);
   const [isMenuDrawerOpen, setIsMenuDrawerOpen] = useState(false);
@@ -360,10 +377,17 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   return (
     <>
-      <motion.header
-        initial={reduceMotion ? false : { opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.15, ease: 'easeOut' }}
+      <Interactive.Header
+        name="Site header — HazardNet nav"
+        style={{
+          opacity: reduceMotion
+            ? 1
+            : interpolate(frame, [0, 6], [0, 1], {
+                easing: Easing.bezier(0.16, 1, 0.3, 1),
+                extrapolateLeft: 'clamp',
+                extrapolateRight: 'clamp',
+              }),
+        }}
         ref={headerRef}
         className={`sticky top-0 z-[var(--z-nav)] select-none h-14 sm:h-16 flex items-center pt-[env(safe-area-inset-top)] transition-all duration-300 ease-out ${
           isHeaderTransparent
@@ -553,7 +577,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
           </div>
         </div>
-      </motion.header>
+      </Interactive.Header>
 
       {/*
         Full-screen overlays are portaled to document.body so they escape this

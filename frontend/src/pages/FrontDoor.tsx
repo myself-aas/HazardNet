@@ -48,7 +48,9 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { Link, Navigate, useLocation, useSearchParams } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { useReducedMotion } from 'framer-motion';
+import { Interactive } from '../components/interactive/Interactive';
+import { useWebFrame, interpolate, Easing } from '../lib/motion-interpolate';
 
 import MaterialIcon from '../components/MaterialIcon';
 import { AlertLevelBadge } from '../components/alerts/AlertLevelBadge';
@@ -78,18 +80,27 @@ interface LiveFacts {
   loading: boolean;
   /** True when at least one fetch failed — the page then says so instead of showing blanks. */
   failed: boolean;
+  retry: () => void;
 }
 
 /**
  * One fetch per artifact, no retries, no polling. A front door is not a dashboard; it
  * states what the deployment currently ships and links to `/status` for the detail. A
  * failure here is rendered as a failure, because an unread artifact is a fact too.
+ * A retry is exposed so the error banner can recover without a full page reload
+ * (finding #2 — error recovery).
  */
 function useLiveFacts(): LiveFacts {
   const [freshness, setFreshness] = useState<FreshnessArtifact | null>(null);
   const [scorecard, setScorecard] = useState<ScorecardFacts>({ episodes: null, generatedAt: null });
   const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
+  const [nonce, setNonce] = useState(0);
+  const retry = () => {
+    setFailed(false);
+    setLoading(true);
+    setNonce((n) => n + 1);
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -130,9 +141,9 @@ function useLiveFacts(): LiveFacts {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [nonce]);
 
-  return { freshness, scorecard, loading, failed };
+  return { freshness, scorecard, loading, failed, retry };
 }
 
 /* ─────────────────────────────── presentation ──────────────────────────────── */
@@ -150,9 +161,15 @@ const Eyebrow: React.FC<{ children: React.ReactNode }> = ({ children }) => (
  * checkable is the run panel beside it (build time, coverage, honesty notes) and the
  * review ledger further down, which is where a reader can actually act.
  */
-const Figure: React.FC<{ value: string; label: string }> = ({ value, label }) => (
-  <div className="border-t-2 border-nasa-red bg-white p-4">
-    <p className="font-mono text-[32px] font-light leading-none text-carbon-90 tabular-nums">{value}</p>
+/**
+ * One figure in the trust strip.
+ * Capability figures (hazards/districts) use white at 32px; meta figures
+ * (horizons/episodes) use a muted tint at 28px so the strip has a scan
+ * hierarchy and does not mis-signify as four equal CTAs (audit #5).
+ */
+const Figure: React.FC<{ value: string; label: string; tone?: 'default' | 'muted' }> = ({ value, label, tone = 'default' }) => (
+  <div className={`border p-4 ${tone === 'muted' ? 'bg-carbon-05 border-carbon-20' : 'bg-white border-carbon-20'}`}>
+    <p className={`font-mono font-light leading-none tabular-nums ${tone === 'muted' ? 'text-[28px] text-carbon-80' : 'text-[32px] text-carbon-90'}`}>{value}</p>
     <p className="mt-2 text-xs font-bold leading-snug text-carbon-90">{label}</p>
   </div>
 );
@@ -271,8 +288,9 @@ interface Section {
 
 export const FrontDoor: React.FC = () => {
   const content = usePageSeo('/');
-  const { freshness, scorecard, loading, failed } = useLiveFacts();
-  const { alerts, assessed, counts, notPublished, generatedAt, loading: alertsLoading, error } = useAlertsData();
+  const { freshness, scorecard, loading, failed, retry: retryLiveFacts } = useLiveFacts();
+  const [heroPaused, setHeroPaused] = useState(false);
+  const { alerts, assessed, counts, notPublished, generatedAt, loading: alertsLoading, error, refresh: refreshAlerts } = useAlertsData();
   const hazardLabel = useHazardLabel();
   const { t, language, formatNumber } = useI18n();
   const [searchParams] = useSearchParams();
@@ -308,6 +326,9 @@ export const FrontDoor: React.FC = () => {
   const published = alertsReadable ? alerts.length : null;
   const withheld = counts?.not_published ?? notPublished ?? null;
 
+  const reduceMotion = useReducedMotion();
+  const frame = useWebFrame(30);
+
   if (!content) return null;
   if (redirectToLive) return <Navigate to={redirectToLive} replace />;
 
@@ -324,16 +345,35 @@ export const FrontDoor: React.FC = () => {
       : '—';
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.25, ease: 'easeOut' }}
+    <Interactive.Div
+      name="FrontDoor page — editorial front door"
+      style={{
+        width: '100%',
+        opacity: reduceMotion
+          ? 1
+          : interpolate(frame, [0, 8], [0, 1], {
+              easing: Easing.bezier(0.16, 1, 0.3, 1),
+              extrapolateLeft: 'clamp',
+              extrapolateRight: 'clamp',
+            }),
+      }}
       className="w-full"
     >
       {/* ── Hero: NASA-Inspired Global Observatory with Dynamic Video Background ── */}
       <header className="relative w-full overflow-hidden bg-black text-white min-h-[600px] lg:min-h-screen flex items-center -mt-14 sm:-mt-16 pt-[100px] pb-12 sm:pb-16 shadow-2xl">
         {/* Remotion-Inspired 5-Layer Cinematic Motion Background (BgMesh, Video, HUD, Grade, Grain & Vignette) */}
-        <HeroCinematicBackground />
+        <HeroCinematicBackground paused={heroPaused} />
+        {/* Pause control — keyboard-reachable, respects reduced-motion (audit #1) */}
+        <button
+          type="button"
+          onClick={() => setHeroPaused((v) => !v)}
+          aria-pressed={heroPaused}
+          aria-label={heroPaused ? t('frontdoor.hero.resumeMotion') : t('frontdoor.hero.pauseMotion')}
+          className="absolute bottom-4 right-4 z-10 inline-flex min-h-[44px] items-center gap-1.5 bg-black/60 px-3 py-2 text-xs font-semibold text-white border border-white/20 backdrop-blur-sm hover:bg-black/70 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
+        >
+          <MaterialIcon name={heroPaused ? 'play_arrow' : 'pause'} className="text-sm" />
+          <span>{heroPaused ? t('frontdoor.hero.resumeMotion') : t('frontdoor.hero.pauseMotion')}</span>
+        </button>
 
         <div className="relative z-10 w-full max-w-[1200px] mx-auto px-4 xl:px-8">
           <div className="flex flex-wrap items-start justify-between gap-3 text-white/80">
@@ -344,16 +384,22 @@ export const FrontDoor: React.FC = () => {
                 : t('frontdoor.hero.reviewedUnknown')}
             </p>
             {/* The switch lives on the front door because the front door is bilingual */}
-            <div className="bg-black/40 backdrop-blur-md p-1 border border-white/20">
+            <div className="bg-black/40 backdrop-blur-sm p-1 border border-white/20" style={{ backdropFilter: 'blur(var(--hero-glass-blur))', WebkitBackdropFilter: 'blur(var(--hero-glass-blur))' }}>
               <LanguageToggle variant="switch" tone="hds" />
             </div>
           </div>
 
           <div className="mt-6 grid grid-cols-1 items-center gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)] xl:gap-12">
-            <div className="min-w-0">
+            <div className="min-w-0 rounded-sm border border-white/15 bg-gradient-to-b from-black/55 to-black/35 p-4 backdrop-blur-sm sm:p-5" style={{ backdropFilter: 'blur(var(--hero-glass-blur))', WebkitBackdropFilter: 'blur(var(--hero-glass-blur))' }}>
               <h1 className="max-w-3xl text-balance text-[28px] font-bold leading-[1.1] tracking-tight text-white sm:text-[32px] md:text-5xl md:leading-[1.06] drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
                 {localised.h1 ?? localised.title}
               </h1>
+              {language === 'bn' && (
+                <p role="status" aria-live="polite" className="mt-3 inline-flex items-center gap-1.5 bg-amber-100 px-2 py-1 text-xs font-bold text-amber-900 border border-amber-300/80">
+                  <MaterialIcon name="translate" className="text-xs" />
+                  {t('frontdoor.bengaliDraft')}
+                </p>
+              )}
               {localised.standfirst && (
                 <p className="mt-5 max-w-2xl text-base leading-[1.62] text-white/90 md:text-lg md:leading-[1.5] drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
                   {localised.standfirst}
@@ -370,13 +416,13 @@ export const FrontDoor: React.FC = () => {
                 </Link>
                 <Link
                   to="/methodology"
-                  className="inline-flex min-h-[44px] items-center gap-2 border-2 border-white/80 px-6 py-3 text-base font-semibold text-white hover:bg-white/10 touch-manipulation backdrop-blur-xs transition-colors duration-150"
+                  className="inline-flex min-h-[44px] items-center gap-2 border-2 border-white/80 px-6 py-3 text-base font-semibold text-white hover:bg-white/10 touch-manipulation backdrop-blur-sm transition-colors duration-150"
                 >
                   {t('frontdoor.hero.ctaMethodology')}
                 </Link>
                 <Link
                   to="/model-performance"
-                  className="inline-flex min-h-[44px] items-center gap-2 border border-white/40 px-6 py-3 text-base font-semibold text-white/90 hover:border-white/80 hover:bg-white/10 touch-manipulation backdrop-blur-xs transition-colors duration-150"
+                  className="inline-flex min-h-[44px] items-center gap-2 border-2 border-white/70 px-6 py-3 text-base font-semibold text-white hover:border-white hover:bg-white/10 touch-manipulation backdrop-blur-sm transition-colors duration-150"
                 >
                   {t('frontdoor.hero.ctaScorecard')}
                 </Link>
@@ -411,6 +457,7 @@ export const FrontDoor: React.FC = () => {
         loading={alertsLoading}
         error={error}
         coverage={coverage}
+        onRetry={refreshAlerts}
       />
 
       {/* ── Trust strip: every figure carries the artifact it was read from ── */}
@@ -428,15 +475,17 @@ export const FrontDoor: React.FC = () => {
             label={t('frontdoor.covers.districts')}
           />
           <Figure
-            value="7 + 15"
+            value="7 & 15 days"
             label={t('frontdoor.covers.horizons')}
+            tone="muted"
           />
           <Figure
             value={scorecard.episodes != null ? formatNumber(scorecard.episodes) : '—'}
             label={t('frontdoor.covers.episodes')}
+            tone="muted"
           />
         </div>
-        <p className="text-xs leading-relaxed text-carbon-60">
+        <p className="text-sm leading-[1.62] text-carbon-70">
           {t('frontdoor.covers.noteLead')}{' '}
           <strong className="font-bold text-carbon-80">{loading ? '…' : coverageLine}</strong>
           {coverage?.produced_units != null
@@ -547,11 +596,40 @@ export const FrontDoor: React.FC = () => {
         </div>
 
         {failed && (
-          <p className="border-l-2 border-nasa-orange bg-white p-3 text-xs leading-relaxed text-carbon-70">
-            {t('frontdoor.run.failed')}
-          </p>
+          <div role="alert" aria-live="polite" className="border-l-2 border-nasa-orange bg-white p-4 space-y-3">
+            <p className="text-sm leading-[1.62] text-carbon-70">{t('frontdoor.run.failed')}</p>
+            <div className="flex flex-wrap gap-3">
+              <button
+                type="button"
+                onClick={retryLiveFacts}
+                className="inline-flex min-h-[44px] items-center gap-1.5 bg-nasa-blue px-4 py-2 text-sm font-semibold text-white hover:bg-nasa-blue-shade focus-visible:outline focus-visible:outline-2 focus-visible:outline-nasa-blue focus-visible:outline-offset-2"
+              >
+                <MaterialIcon name="refresh" className="text-base" />
+                {t('common.retry')}
+              </button>
+              <Link to="/status" className="inline-flex min-h-[44px] items-center gap-1.5 border border-carbon-20 bg-white px-4 py-2 text-sm font-semibold text-carbon-80 hover:bg-carbon-05">
+                {t('frontdoor.covers.statusLink')}
+              </Link>
+            </div>
+          </div>
         )}
       </section>
+
+      {/* ── On this page — anchor nav for the 7 editorial sections (audit #7: recognition/efficiency) ── */}
+      {sections.length > 1 && (
+        <nav aria-label={t('frontdoor.toc')} className="border border-carbon-20 bg-carbon-05 p-4">
+          <p className="font-mono text-xs font-bold uppercase tracking-wide text-carbon-60">{t('frontdoor.toc')}</p>
+          <ul className="mt-2 grid grid-cols-1 gap-1 sm:grid-cols-2">
+            {sections.map((section, index) => (
+              <li key={`toc-${index}`}>
+                <a href={`#section-${index}`} className="inline-flex min-h-[44px] items-center text-sm font-semibold text-nasa-blue-shade underline underline-offset-4 hover:decoration-nasa-blue-shade">
+                  {section.h2 ?? `${t('frontdoor.tocSection')} ${index + 1}`}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      )}
 
       {/* ── The editorial half, from site-routes.json ─────────────────────── */}
       {sections.map((section, index) => (
@@ -576,14 +654,15 @@ export const FrontDoor: React.FC = () => {
             {t('frontdoor.faq.h2')}
           </h2>
           {faqs.map((faq) => (
-            <details key={faq.question} className="border-b border-carbon-20 py-3 last:border-b-0">
-              <summary className="min-h-[44px] cursor-pointer list-none text-base font-bold text-carbon-90 marker:hidden">
-                <span className="inline-flex items-start gap-2">
+            <details key={faq.question} className="group border-b border-carbon-20 py-1 last:border-b-0">
+              <summary className="flex min-h-[44px] cursor-pointer list-none items-center justify-between gap-3 text-base font-bold text-carbon-90 marker:hidden focus-visible:outline focus-visible:outline-2 focus-visible:outline-nasa-blue focus-visible:outline-offset-2">
+                <span className="inline-flex items-start gap-2 py-2">
                   <MaterialIcon name="help" className="mt-0.5 text-base text-nasa-blue" />
-                  {faq.question}
+                  <span>{faq.question}</span>
                 </span>
+                <MaterialIcon name="chevron_right" className="shrink-0 text-carbon-60 transition-transform duration-150 group-open:rotate-90" aria-hidden="true" />
               </summary>
-              <p className="mt-2 pl-6 text-base leading-[1.62] text-carbon-70">{faq.answer}</p>
+              <p className="mt-1 pl-6 pr-4 pb-3 text-base leading-[1.62] text-carbon-70">{faq.answer}</p>
             </details>
           ))}
         </section>
@@ -644,7 +723,7 @@ export const FrontDoor: React.FC = () => {
         </nav>
       </section>
       </div>
-    </motion.div>
+    </Interactive.Div>
   );
 };
 

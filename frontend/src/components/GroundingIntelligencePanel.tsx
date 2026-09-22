@@ -181,7 +181,7 @@ export const GroundingIntelligencePanel: React.FC<GroundingIntelligencePanelProp
       </div>
 
       {/* Query Bar */}
-      <div className="p-3 sm:p-4 bg-white border-b border-carbon-15">
+      <div className="p-3 sm:p-4 bg-white border-b border-carbon-20">
         <form onSubmit={handleCustomSubmit} className="flex gap-2">
           <div className="relative flex-1">
             <Search className="w-4 h-4 text-carbon-40 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -334,7 +334,7 @@ export const GroundingIntelligencePanel: React.FC<GroundingIntelligencePanelProp
                     {facilities.map((fac, idx) => (
                       <div
                         key={idx}
-                        className="p-3.5 bg-carbon-05 border border-carbon-15 hover:border-blue-300 rounded-xl transition-all group flex flex-col justify-between"
+                        className="p-3.5 bg-carbon-05 border border-carbon-20 hover:border-blue-300 rounded-xl transition-all group flex flex-col justify-between"
                       >
                         <div>
                           <div className="flex items-start justify-between gap-2 mb-1.5">
@@ -458,7 +458,7 @@ export const GroundingIntelligencePanel: React.FC<GroundingIntelligencePanelProp
                           href={src.uri}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="p-3 bg-carbon-05 border border-carbon-15 hover:border-emerald-400 rounded-xl transition-all block group"
+                          className="p-3 bg-carbon-05 border border-carbon-20 hover:border-emerald-400 rounded-xl transition-all block group"
                         >
                           <div className="flex items-center justify-between text-[11px] text-emerald-800 font-semibold mb-1">
                             <span className="truncate">{src.domain || 'Official Portal'}</span>

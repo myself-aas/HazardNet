@@ -21,8 +21,13 @@
  * counted 88 of).
  */
 
-import React from 'react';
+// <figcaption id="front-door-run-visual-caption">
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useReducedMotion } from 'framer-motion';
+import MaterialIcon from '../MaterialIcon';
+import { Interactive } from '../interactive/Interactive';
+import { useWebFrame, interpolate, Easing } from '../../lib/motion-interpolate';
 
 import { useI18n } from '../../hooks/useI18n';
 import { describeAge, stateLabel, type FreshnessArtifact, type FreshnessState } from '../../lib/freshness';
@@ -50,6 +55,9 @@ const Eyebrow: React.FC<{ children: React.ReactNode }> = ({ children }) => (
 
 export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, published, withheld }) => {
   const { t, formatNumber } = useI18n();
+  const [honestyExpanded, setHonestyExpanded] = useState(false);
+  const reduceMotion = useReducedMotion();
+  const frame = useWebFrame(30);
 
   const coverage = freshness?.coverage ?? null;
   const covered = coverage?.districts_covered ?? null;
@@ -63,20 +71,56 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
        complementary landmark nested in another landmark is an accessibility violation
        (`landmark-complementary-is-top-level`), not just a style choice. The caption gives the
        figure its accessible name, so the eyebrow is read rather than skipped. */
-    <figure
-      aria-labelledby="front-door-run-visual-caption"
-      className="border border-carbon-20 bg-white p-5 sm:p-6 shadow-sm"
-      data-testid="front-door-run-visual"
-    >
-      <figcaption
-        id="front-door-run-visual-caption"
-        className="flex flex-wrap items-center justify-between gap-3 border-b border-carbon-10 pb-3.5"
-      >
+    <figure aria-labelledby="front-door-run-visual-caption" className="border border-carbon-20 bg-white p-5 sm:p-6 shadow-sm" data-testid="front-door-run-visual">
+      <figcaption id="front-door-run-visual-caption" className="flex flex-wrap items-center justify-between gap-3 border-b border-carbon-10 pb-3.5">
         <div className="flex items-center gap-2.5 min-w-0">
-          <span className="relative flex h-2.5 w-2.5 shrink-0" aria-hidden="true">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-nasa-green opacity-75" />
-            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-nasa-green" />
-          </span>
+          <Interactive.Div
+            name="Live pulse — freshness indicator"
+            style={{
+              position: 'relative',
+              display: 'flex',
+              width: 10,
+              height: 10,
+              flexShrink: 0,
+            }}
+          >
+            <Interactive.Div
+              name="Ping ring"
+              style={{
+                position: 'absolute',
+                display: 'inline-flex',
+                width: 100 + '%',
+                height: 100 + '%',
+                borderRadius: 50 + '%',
+                backgroundColor: '#16a34a',
+                opacity: reduceMotion
+                  ? 0
+                  : interpolate(frame, [0, 30, 60], [0.4, 0.75, 0.4], {
+                      easing: Easing.bezier(0.4, 0, 0.2, 1),
+                      extrapolateLeft: 'clamp',
+                      extrapolateRight: 'clamp',
+                    }),
+                scale: reduceMotion
+                  ? 1
+                  : interpolate(frame, [0, 30, 60], [0.6, 1.8, 0.6], {
+                      easing: Easing.bezier(0.4, 0, 0.2, 1),
+                      extrapolateLeft: 'clamp',
+                      extrapolateRight: 'clamp',
+                      output: 'perceptual-scale',
+                    }),
+              }}
+            />
+            <span
+              style={{
+                position: 'relative',
+                display: 'inline-flex',
+                borderRadius: 50 + '%',
+                width: 10,
+                height: 10,
+                backgroundColor: '#16a34a',
+              }}
+            />
+          </Interactive.Div>
           <Eyebrow>{t('frontdoor.runVisual.eyebrow')}</Eyebrow>
         </div>
         <div className="flex items-center gap-1.5 shrink-0" aria-hidden="true">
@@ -88,17 +132,50 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
       </figcaption>
 
       {loading && (
-        <div className="mt-4 flex items-center gap-2.5 py-6 text-sm text-carbon-60">
-          <span
-            className="h-4 w-4 animate-spin rounded-full border-2 border-carbon-30 border-t-nasa-blue shrink-0"
-            aria-hidden="true"
+        <Interactive.Div
+          name="Reading — loading state"
+          style={{
+            marginTop: 16,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
+            paddingTop: 24,
+            paddingBottom: 24,
+            opacity: interpolate(frame, [0, 8], [0, 1], {
+              easing: Easing.bezier(0.16, 1, 0.3, 1),
+              extrapolateLeft: 'clamp',
+              extrapolateRight: 'clamp',
+            }),
+          }}
+          className="mt-4 flex items-center gap-2.5 py-6 text-sm text-carbon-60"
+        >
+          <Interactive.Div
+            name="Loading spinner"
+            style={{
+              width: 16,
+              height: 16,
+              borderRadius: 50 + '%',
+              borderWidth: 2,
+              borderStyle: 'solid',
+              borderColor: '#e3e3e3',
+              borderTopColor: '#1c67e3',
+              flexShrink: 0,
+              rotate: reduceMotion
+                ? '0deg'
+                : interpolate(frame, [0, 30], ['0deg', '360deg'], {
+                    easing: Easing.bezier(0.4, 0, 0.2, 1),
+                    extrapolateLeft: 'clamp',
+                    extrapolateRight: 'clamp',
+                  }),
+            }}
+            className="h-4 w-4 shrink-0"
           />
           <p className="text-sm leading-normal text-carbon-60">{t('frontdoor.runVisual.reading')}</p>
-        </div>
+        </Interactive.Div>
       )}
 
       {!loading && !freshness && (
-        <div className="mt-4 rounded-md border border-carbon-20 bg-carbon-05 p-4">
+        <div className="mt-4 rounded-sm border border-carbon-20 bg-carbon-05 p-4">
           <p className="text-sm leading-[1.62] text-carbon-70">
             {t('frontdoor.runVisual.unreadable')}{' '}
             <Link
@@ -141,17 +218,39 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
             </div>
             {/* The bar is aria-hidden: the value beside it is the accessible text, so a
                 screen reader gets the number rather than a nameless rectangle. */}
-            <div
+            <Interactive.Div
+              name="Coverage bar track"
+              style={{
+                marginTop: 10,
+                height: 8,
+                width: 100 + '%',
+                overflow: 'hidden',
+                borderRadius: 999,
+                backgroundColor: '#e3e3e3',
+                borderWidth: 1,
+                borderStyle: 'solid',
+                borderColor: 'rgba(227,227,227,0.6)',
+                opacity: reduceMotion
+                  ? 1
+                  : interpolate(frame, [0, 12], [0, 1], {
+                      easing: Easing.bezier(0.16, 1, 0.3, 1),
+                      extrapolateLeft: 'clamp',
+                      extrapolateRight: 'clamp',
+                    }),
+              }}
               aria-hidden="true"
               className="mt-2.5 h-2 w-full overflow-hidden rounded-full bg-carbon-10 border border-carbon-10/60"
             >
               <div
-                className={`h-full transition-all duration-500 rounded-full ${
-                  coverage?.status === 'complete' ? 'bg-nasa-green' : 'bg-nasa-orange'
-                }`}
-                style={{ width: `${pct ?? 0}%` }}
+                style={{
+                  height: 100 + '%',
+                  borderRadius: 999,
+                  backgroundColor: coverage?.status === 'complete' ? '#16a34a' : '#d96a00',
+                  width: (pct ?? 0) + '%',
+                }}
+                className={`h-full rounded-full ${coverage?.status === 'complete' ? 'bg-nasa-green' : 'bg-nasa-orange'}`}
               />
-            </div>
+            </Interactive.Div>
             <p className="mt-2.5 font-mono text-xs leading-[1.62] text-carbon-60">
               {coverage?.status ? `${t('frontdoor.runVisual.coverageStatus')}: ${coverage.status}` : '—'}
               {coverage?.produced_units != null
@@ -184,7 +283,7 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
               )}
             </div>
             <div
-              className={`mt-2 rounded-md p-3 border ${
+              className={`mt-2 rounded-sm p-3 border ${
                 published == null
                   ? 'bg-carbon-05 border-carbon-20 text-carbon-70'
                   : published > 0
@@ -218,7 +317,7 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
               {freshness.sources.map((source) => (
                 <li
                   key={source.id}
-                  className="flex min-w-0 items-center justify-between gap-2.5 rounded-md border border-carbon-10 bg-carbon-05/70 px-3 py-2 text-xs transition-colors hover:bg-carbon-05"
+                  className="flex min-w-0 items-center justify-between gap-2.5 rounded-sm border border-carbon-10 bg-carbon-05/70 px-3 py-2 text-xs transition-colors hover:bg-carbon-05"
                 >
                   <div className="flex min-w-0 items-center gap-2.5">
                     <span
@@ -238,7 +337,7 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
             </ul>
           </div>
 
-          {/* ── the run's own honesty notes, verbatim ────────────────────── */}
+          {/* ── the run's own honesty notes, verbatim — expandable inline (audit #9) ── */}
           {honesty.length > 0 && (
             <div className="border-t border-carbon-10 pt-4">
               <div className="flex items-center justify-between gap-2">
@@ -249,9 +348,9 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
                   SELF-REPORTED AUDIT
                 </span>
               </div>
-              <div className="mt-2.5 rounded-md border border-carbon-20 bg-carbon-05/80 p-3">
+              <div className="mt-2.5 rounded-sm border border-carbon-20 bg-carbon-05/80 p-3">
                 <ul className="space-y-2">
-                  {honesty.slice(0, 3).map((note) => (
+                  {(honestyExpanded ? honesty : honesty.slice(0, 3)).map((note) => (
                     <li key={note} className="flex min-w-0 items-start gap-2.5 text-xs leading-[1.62] text-carbon-70">
                       <span
                         aria-hidden="true"
@@ -262,15 +361,35 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
                   ))}
                 </ul>
                 {honesty.length > 3 && (
-                  <p className="mt-2.5 border-t border-carbon-10 pt-2 font-mono text-xs leading-[1.62] text-carbon-60">
-                    {t('frontdoor.runVisual.moreHonesty', { total: formatNumber(honesty.length) })}{' '}
-                    <Link
-                      to="/status"
-                      className="font-bold text-nasa-blue-shade underline underline-offset-2 hover:text-nasa-blue"
-                    >
-                      {t('frontdoor.runVisual.statusPage')}
-                    </Link>
-                  </p>
+                  <div className="mt-2.5 border-t border-carbon-10 pt-2 space-y-2">
+                    {!honestyExpanded && (
+                      <p className="font-mono text-xs leading-[1.62] text-carbon-60">
+                        {t('frontdoor.runVisual.moreHonesty', { total: formatNumber(honesty.length) })}{' '}
+                        <Link to="/status" className="font-bold text-nasa-blue-shade underline underline-offset-2 hover:text-nasa-blue">
+                          {t('frontdoor.runVisual.statusPage')}
+                        </Link>
+                      </p>
+                    )}
+                    <div className="flex flex-wrap items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setHonestyExpanded((v) => !v)}
+                        aria-expanded={honestyExpanded}
+                        className="inline-flex min-h-[32px] items-center gap-1.5 text-xs font-bold text-nasa-blue-shade underline underline-offset-2 hover:text-nasa-blue"
+                      >
+                        <MaterialIcon name={honestyExpanded ? 'expand_less' : 'expand_more'} className="text-sm" />
+                        {honestyExpanded ? t('common.showLess') : t('frontdoor.runVisual.showMore', { remaining: formatNumber(honesty.length - 3) })}
+                      </button>
+                      {honestyExpanded && (
+                        <Link
+                          to="/status"
+                          className="font-bold text-nasa-blue-shade underline underline-offset-2 hover:text-nasa-blue text-xs"
+                        >
+                          {t('frontdoor.runVisual.statusPage')}
+                        </Link>
+                      )}
+                    </div>
+                  </div>
                 )}
               </div>
             </div>
@@ -285,9 +404,7 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
               className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-carbon-05 border border-carbon-20 text-carbon-70"
               aria-hidden="true"
             >
-              <svg className="h-3 w-3 text-nasa-green" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-              </svg>
+              <MaterialIcon name="verified" className="text-[14px] text-nasa-green" />
               <span>VERIFIED ARTIFACT</span>
             </div>
           </div>

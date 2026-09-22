@@ -31,12 +31,13 @@ export default tseslint.config(
   eslint.configs.recommended,
   ...tseslint.configs.recommended,
   {
-    // Burn-down severities apply to TS/TSX and the backend JS sources alike.
-    files: ['**/*.{ts,tsx,js}'],
+    // Burn-down severities apply to TS/TSX, backend JS and MJS alike.
+    files: ['**/*.{ts,tsx,js,mjs}'],
     rules: {
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
       'no-console': ['warn', { allow: ['warn', 'error', 'info'] }],
+      'no-empty': ['error', { allowEmptyCatch: true }],
     },
   },
   {
@@ -53,9 +54,9 @@ export default tseslint.config(
     languageOptions: { globals: { ...globals.browser, process: 'readonly' } },
   },
   {
-    // Service workers: web worker runtime (self, caches, clients).
+    // Service workers: web worker runtime (self, caches, clients) plus workbox.
     files: ['frontend/public/**/*.js', 'frontend/src/serviceWorker.ts'],
-    languageOptions: { globals: { ...globals.serviceworker } },
+    languageOptions: { globals: { ...globals.serviceworker, workbox: 'readonly', precacheAndRoute: 'readonly', importScripts: 'readonly' } },
   },
   {
     // Frontend build/prerender scripts are Node ESM (`.mjs`) — the TS/JS globals block

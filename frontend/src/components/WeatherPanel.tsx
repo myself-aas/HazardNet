@@ -280,7 +280,7 @@ export const WeatherPanel: React.FC<WeatherPanelProps> = ({
               <Navigation
                 size={12}
                 className="inline -mt-0.5 mr-1"
-                style={{ transform: `rotate(${current.wind_direction_10m}deg)` }}
+                style={{ rotate: `${current.wind_direction_10m}deg` } as React.CSSProperties}
               />
               {windDirectionLabel(current.wind_direction_10m)} · gusts {msToKmh(current.wind_gusts_10m)}
             </>

@@ -244,6 +244,13 @@ const EN = {
   'frontdoor.hero.authority':
     'HazardNet is decision support, not an official warning service. Weather warnings, cyclone signals and flood bulletins come from the Bangladesh Meteorological Department and the Flood Forecasting and Warning Centre; in an emergency call 999.',
   'frontdoor.hero.authorityMap': 'The live map carries the current outlooks.',
+  'frontdoor.hero.pauseMotion': 'Pause motion',
+  'frontdoor.hero.resumeMotion': 'Resume motion',
+  'frontdoor.toc': 'On this page',
+  'frontdoor.tocSection': 'Section',
+  'frontdoor.bengaliDraft': 'Bengali draft — awaiting native-speaker review',
+  'common.showLess': 'Show less',
+  'frontdoor.runVisual.showMore': 'Show {remaining} more notes',
 
   'frontdoor.strip.label': 'Current publication status',
   'frontdoor.strip.publishedNow': 'Published now',
@@ -584,6 +591,13 @@ const BN: Record<string, string> = {
   'frontdoor.hero.authority':
     'HazardNet সিদ্ধান্ত সহায়তা মাত্র, কোনো সরকারি সতর্কবার্তা সেবা নয়। আবহাওয়ার সতর্কবার্তা, ঘূর্ণিঝড় সংকেত ও বন্যা বুলেটিন প্রকাশ করে বাংলাদেশ আবহাওয়া অধিদপ্তর এবং প্লাবন পূর্বাভাস ও সতর্কীকরণ কেন্দ্র (FFWC); জরুরি অবস্থায় ৯৯৯ নম্বরে কল করুন।',
   'frontdoor.hero.authorityMap': 'বর্তমান পূর্বাভাস লাইভ মানচিত্রে দেখা যাবে।',
+  'frontdoor.hero.pauseMotion': 'গতি থামান',
+  'frontdoor.hero.resumeMotion': 'গতি চালু করুন',
+  'frontdoor.toc': 'এই পাতায়',
+  'frontdoor.tocSection': 'বিভাগ',
+  'frontdoor.bengaliDraft': 'বাংলা খসড়া — স্থানীয় ভাষাভাষীর পর্যালোচনা বাকি',
+  'common.showLess': 'কম দেখান',
+  'frontdoor.runVisual.showMore': 'আরও {remaining}টি নোট দেখান',
 
   'frontdoor.strip.label': 'প্রকাশনার বর্তমান অবস্থা',
   'frontdoor.strip.publishedNow': 'এই মুহূর্তে প্রকাশিত',

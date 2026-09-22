@@ -33,6 +33,7 @@ on:
   # `data/hindcast/drivers/**` and `data/hindcast/reports/**` — the two paths this workflow
   # commits — which keeps the bot's own commit from re-triggering the run.
   push:
+    branches: [main]
     paths:
       - 'scripts/hindcast/**'
       - 'data/hindcast/episodes/**'

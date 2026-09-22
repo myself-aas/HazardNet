@@ -1,0 +1,16 @@
+# Pinned Python dependencies for the Kaggle forecast pipelines
+# (forecast-pipeline.yml, weekly_forecast.yml, hourly_forecast.yml,
+# manual_forecast_ingest.yml) and the pipeline-script test job in ci.yml.
+#
+# Pinned exact (==) so every Actions run resolves the identical tree —
+# unpinned `pip install kaggle pandas numpy` broke reproducibility and the
+# `cache: pip` step needs this file as its cache-dependency-path.
+#
+# kaggle stays on the 1.8.x classic CLI line (kernels push/pull/output/status,
+# datasets download) — the 2.x package surface is unverified for automation.
+
+kaggle==1.8.4
+pandas==3.0.5
+numpy==2.4.6
+pytest==9.1.1
+pyyaml==6.0.3

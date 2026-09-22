@@ -544,7 +544,7 @@ export default function ChatBot() {
             </div>
 
             {/* Input Area */}
-            <div className="p-3 sm:p-4 bg-white border-t border-carbon-15 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+            <div className="p-3 sm:p-4 bg-white border-t border-carbon-20 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
               <div className="relative flex items-center">
                 <textarea
                   value={input}

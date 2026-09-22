@@ -393,10 +393,10 @@ export const PrintPreviewModal: React.FC<PrintPreviewModalProps> = ({
         <div className="flex-1 overflow-y-auto p-3 sm:p-6 md:p-8 flex justify-center items-start bg-carbon-black/70 custom-scrollbar">
           <div
             style={{
-              transform: `scale(${zoomLevel / 100})`,
+              scale: `${zoomLevel / 100}`,
               transformOrigin: 'top center',
-              transition: 'transform 0.15s ease-out',
-            }}
+              transition: 'scale 0.15s ease-out',
+            } as React.CSSProperties}
             className={`w-full my-2 transition-all ${
               orientation === 'landscape' ? 'max-w-[1140px]' : 'max-w-[840px]'
             }`}

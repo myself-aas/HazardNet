@@ -259,6 +259,9 @@
   --panel-radius: var(--hds-border-radius-control);  /* 2px unified border-radius for cohesive product feel */
   --panel-blur: 20px;
   --panel-shadow: 0 1px 2px rgb(23 23 27 / 0.06);    /* HDS is flat: depth comes from 1px borders, not shadows */
+  --hero-glow-blur-primary: 90px;   /* tokenized hero orbital glow — was blur-[90px] arbitrary */
+  --hero-glow-blur-secondary: 100px;/* tokenized secondary atmospheric glow — was blur-[100px] arbitrary */
+  --hero-glass-blur: 8px;          /* hero glass legibility blur — maps to Tailwind backdrop-blur-md; centralises hero blur surface */
   --control-min-size: 44px; /* minimum touch target (iOS HIG / WCAG 2.5.8) */
   --navbar-height: 3.5rem;
 
