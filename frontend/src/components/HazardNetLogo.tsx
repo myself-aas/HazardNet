@@ -24,7 +24,7 @@ export const HazardNetLogo: React.FC<HazardNetLogoProps> = ({
         src="/hazardnet-mark.svg"
         alt={showText ? '' : 'HazardNet'}
         aria-hidden={showText || undefined}
-        className={`block shrink-0 object-contain ${variant === 'dark' ? 'brightness-0 invert' : ''} ${className}`}
+        className={`block shrink-0 object-contain ${className}`}
         style={{ width: size, height: size, filter: accent ? `drop-shadow(0 0 5px ${accent})` : undefined }}
       />
       {showText && (

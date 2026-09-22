@@ -109,13 +109,23 @@
   --hn-hds-ink-soft: var(--hds-color-carbon-60);       /* 7.1:1 on white — smallest text gray that clears AA */
   --hn-hds-ink: var(--hds-color-carbon-90);            /* #17171b — body text */
 
-  /* Typography Families — Google Fonts Suite (Bengali + Modern Latin) */
-  --hn-font-sans: 'Plus Jakarta Sans', 'Public Sans Web', 'Noto Sans Bengali', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --hn-font-heading: 'Instrument Sans', 'Plus Jakarta Sans', 'Anek Bangla', 'Inter', sans-serif;
-  --hn-font-display: 'Plus Jakarta Sans', 'Baloo Da 2', sans-serif;
-  --hn-font-brand: 'Instrument Sans', 'Plus Jakarta Sans', sans-serif;
-  --hn-font-bengali: 'Noto Sans Bengali', 'Anek Bangla', sans-serif;
-  --hn-font-bengali-display: 'Baloo Da 2', 'Anek Bangla', sans-serif;
+  /* Finalized HazardNet mark palette: near-white, black, graphite edge, and signal red. */
+  --hn-brand-paper: #fefefe;
+  --hn-brand-black: #000000;
+  --hn-brand-graphite: #777777;
+  --hn-brand-red: #ff0000;
+  --hn-brand-red-dark: #b90000;
+  --hn-brand-ink: var(--hn-brand-black);
+  --hn-brand-accent: var(--hn-brand-red);
+
+  /* Typography: strict monospace product-wide, with Bengali coverage fallback. */
+  --hn-font-mono: 'DM Mono', 'JetBrains Mono', 'SFMono-Regular', 'Roboto Mono', 'Noto Sans Bengali', monospace;
+  --hn-font-sans: var(--hn-font-mono);
+  --hn-font-heading: var(--hn-font-mono);
+  --hn-font-display: var(--hn-font-mono);
+  --hn-font-brand: var(--hn-font-mono);
+  --hn-font-bengali: var(--hn-font-mono);
+  --hn-font-bengali-display: var(--hn-font-mono);
   --hn-font-bengali-serif: 'Noto Serif Bengali', serif;
 
   /* Motion */
@@ -158,7 +168,7 @@
   --border: var(--hn-hds-line);                /* carbon-20 — decorative hairlines */
   --input: var(--hn-hds-ink-muted);            /* 4.46:1 on white — control boundaries clear 1.4.11's 3:1 */
   --ring: var(--hn-hds-ink-soft);              /* HDS's default dashed-ring colour (carbon-60 on light) */
-  --radius: var(--hds-border-radius-default);  /* 0px — NASA's sharp default */
+  --radius: 5px; /* Finalized system geometry: compact 4–6px radiuses. */
 
   /* Status (text values meet 4.5:1 on white/surfaces; info is NASA blue, per HDS) */
   --success: var(--hn-emerald-700);
@@ -256,9 +266,9 @@
   /* ---- Layer 3 · Component ----------------------------------------------- */
   --panel-bg: var(--surface-card);
   --panel-border: var(--border);
-  --panel-radius: var(--hds-border-radius-control);  /* 2px unified border-radius for cohesive product feel */
-  --panel-blur: 20px;
-  --panel-shadow: 0 1px 2px rgb(23 23 27 / 0.06);    /* HDS is flat: depth comes from 1px borders, not shadows */
+  --panel-radius: 5px;
+  --panel-blur: 12px;
+  --panel-shadow: 0 1px 3px rgb(0 0 0 / 0.08);
   --hero-glow-blur-primary: 90px;   /* tokenized hero orbital glow — was blur-[90px] arbitrary */
   --hero-glow-blur-secondary: 100px;/* tokenized secondary atmospheric glow — was blur-[100px] arbitrary */
   --hero-glass-blur: 8px;          /* hero glass legibility blur — maps to Tailwind backdrop-blur-md; centralises hero blur surface */
@@ -290,7 +300,7 @@ body {
   margin: 0;
   /* Body copy is NASA HDS's body stack (Public Sans, 16px/1.62); headings take
      Inter via --font-heading. Both come from --hds-font-family-*. */
-  font-family: var(--hds-font-family-body);
+  font-family: var(--hn-font-mono);
   background-color: var(--surface-page);
   color: var(--text-body);
   font-size: var(--hds-font-size-xs); /* 16px — HDS body size and the AA/UX floor */
@@ -301,6 +311,25 @@ body {
      `clip` (unlike `hidden`) does not create a scroll container,
      so position: sticky headers keep working. */
   overflow-x: clip;
+}
+
+/* Global Mono system: controls, headings, labels, and content share one technical voice. */
+*, *::before, *::after {
+  font-family: var(--hn-font-mono);
+}
+
+/* Finalized mark palette as the shared semantic accent protocol. */
+.text-nasa-red-shade,
+.text-nasa-red-tint {
+  color: var(--hn-brand-accent) !important;
+}
+
+/* Compact card geometry and intentionally restrained depth. */
+.nasa-glass-panel,
+[class*="card"],
+[class*="Card"] {
+  border-radius: 5px;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.08);
 }
 
 /* Named transitions — never `transition: all`. */
