@@ -162,8 +162,8 @@ self.addEventListener('push', (event) => {
   let data = {
     title: 'HazardNet Emergency Telemetry Alert',
     body: 'Continuous disaster severity index spike detected.',
-    icon: '/hazardnet-logo.svg',
-    badge: '/hazardnet-logo.svg',
+    icon: '/hazardnet-mark.svg',
+    badge: '/hazardnet-mark.svg',
     data: { url: '/' },
   };
 
@@ -178,8 +178,8 @@ self.addEventListener('push', (event) => {
 
   const options = {
     body: data.body,
-    icon: data.icon || '/hazardnet-logo.svg',
-    badge: data.badge || '/hazardnet-logo.svg',
+    icon: data.icon || '/hazardnet-mark.svg',
+    badge: data.badge || '/hazardnet-mark.svg',
     vibrate: [200, 100, 200, 100, 400],
     tag: 'hazardnet-disaster-alert',
     renotify: true,

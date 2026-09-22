@@ -41,7 +41,7 @@ export const useHazardNotifications = (homeDistrictId?: string) => {
               const severityPct = Math.round(userDistrict.severity * 100);
               new Notification(`District Hazard Alert: ${userDistrict.name}`, {
                 body: `District Hazard Identified: ${userDistrict.hazardType} (${severityPct}% Severity, ${userDistrict.risk} Risk). Vulnerable Crop: ${userDistrict.mainCrop}.`,
-                icon: '/hazardnet-logo.svg',
+                icon: '/hazardnet-mark.svg',
                 tag: `district-hazard-${userDistrict.id}`
               });
             }
