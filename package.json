@@ -28,7 +28,9 @@
     "doc": "docs"
   },
   "workspaces": [
-    "frontend"
+    "frontend",
+    "packages/*",
+    "apps/*"
   ],
   "scripts": {
     "dev": "node scripts/ensure-frontend.mjs && node backend/server.js",

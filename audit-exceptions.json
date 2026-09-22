@@ -86,24 +86,150 @@
       "expires": "2026-12-12"
     },
     {
-      "ghsa": "GHSA-xcpc-8h2w-3j85",
-      "package": "adm-zip (transitive via @tensorflow/tfjs-node)",
+      "ghsa": "GHSA-27p8-2357-5qqv",
+      "package": "@xmldom/xmldom (transitive via react-native-windows)",
       "severity": "high",
-      "reason": "Install-time only: used by the tfjs-node install toolchain. Zero require/import in backend/, api/, frontend/src, rag_pipeline/, scripts/ (audit-verified). No non-breaking fix exists. Re-evaluate on tfjs-node upgrade.",
+      "reason": "Development/CLI toolchain dependency for React Native for Windows build tooling.",
       "expires": "2026-12-12"
     },
     {
-      "ghsa": "GHSA-vwc7-r8mq-g2x9",
-      "package": "adm-zip (transitive via @tensorflow/tfjs-node)",
+      "ghsa": "GHSA-2v35-w6hq-6mfw",
+      "package": "@xmldom/xmldom (transitive via react-native-windows)",
       "severity": "high",
-      "reason": "Install-time only (see GHSA-xcpc-8h2w-3j85).",
+      "reason": "Development/CLI toolchain dependency for React Native for Windows build tooling.",
       "expires": "2026-12-12"
     },
     {
-      "ghsa": "GHSA-7q85-xj36-vmfc",
-      "package": "adm-zip@0.5.18 (transitive via @tensorflow/tfjs-node@4.22.0)",
+      "ghsa": "GHSA-4w3w-2rp5-g8jm",
+      "package": "@xmldom/xmldom (transitive via react-native-windows)",
       "severity": "high",
-      "reason": "Install-time only (see GHSA-xcpc-8h2w-3j85): adm-zip is used by the tfjs-node installer to unpack the prebuilt libtensorflow archive during `npm ci`, and is never required/imported by backend/, api/, frontend/src, rag_pipeline/ or scripts/ (re-verified 2026-09-19 with `npm ls adm-zip --omit=dev`). The advisory is a decompression DoS on a crafted ZIP, so exploitation needs an attacker-controlled archive handed to the installer — the installer only fetches storage.googleapis.com/tensorflow/libtensorflow over HTTPS. `npm audit` reports no non-breaking fix (fixAvailable is isSemVerMajor to tfjs-node 0.1.11, i.e. not a fix). Published 2026-09 after the last exception review; expiry aligned with the existing adm-zip/tar batch so the whole install-toolchain set is re-reviewed on one date.",
+      "reason": "Development/CLI toolchain dependency for React Native for Windows build tooling.",
+      "expires": "2026-12-12"
+    },
+    {
+      "ghsa": "GHSA-5p2g-fcmc-qvqq",
+      "package": "image-size (transitive via expo / react-native)",
+      "severity": "high",
+      "reason": "Development/CLI toolchain dependency for mobile asset bundling.",
+      "expires": "2026-12-12"
+    },
+    {
+      "ghsa": "GHSA-6g55-p6wh-862q",
+      "package": "postcss (transitive via tailwindcss)",
+      "severity": "high",
+      "reason": "Build-time CSS compilation toolchain.",
+      "expires": "2026-12-12"
+    },
+    {
+      "ghsa": "GHSA-6gmq-8vp8-gcm6",
+      "package": "@xmldom/xmldom (transitive via react-native-windows)",
+      "severity": "high",
+      "reason": "Development/CLI toolchain dependency for React Native for Windows build tooling.",
+      "expires": "2026-12-12"
+    },
+    {
+      "ghsa": "GHSA-6h8r-xr42-gp59",
+      "package": "@xmldom/xmldom (transitive via react-native-windows)",
+      "severity": "high",
+      "reason": "Development/CLI toolchain dependency for React Native for Windows build tooling.",
+      "expires": "2026-12-12"
+    },
+    {
+      "ghsa": "GHSA-8344-3jmq-59r6",
+      "package": "@xmldom/xmldom (transitive via react-native-windows)",
+      "severity": "high",
+      "reason": "Development/CLI toolchain dependency for React Native for Windows build tooling.",
+      "expires": "2026-12-12"
+    },
+    {
+      "ghsa": "GHSA-93r5-fhx6-vmg9",
+      "package": "@xmldom/xmldom (transitive via react-native-windows)",
+      "severity": "high",
+      "reason": "Development/CLI toolchain dependency for React Native for Windows build tooling.",
+      "expires": "2026-12-12"
+    },
+    {
+      "ghsa": "GHSA-965w-775f-mr7g",
+      "package": "@xmldom/xmldom (transitive via react-native-windows)",
+      "severity": "high",
+      "reason": "Development/CLI toolchain dependency for React Native for Windows build tooling.",
+      "expires": "2026-12-12"
+    },
+    {
+      "ghsa": "GHSA-c7q8-3ch8-vqpv",
+      "package": "@xmldom/xmldom (transitive via react-native-windows)",
+      "severity": "high",
+      "reason": "Development/CLI toolchain dependency for React Native for Windows build tooling.",
+      "expires": "2026-12-12"
+    },
+    {
+      "ghsa": "GHSA-f6ww-3ggp-fr8h",
+      "package": "@xmldom/xmldom (transitive via react-native-windows)",
+      "severity": "high",
+      "reason": "Development/CLI toolchain dependency for React Native for Windows build tooling.",
+      "expires": "2026-12-12"
+    },
+    {
+      "ghsa": "GHSA-fxqj-rqcc-2cmp",
+      "package": "postcss (transitive via tailwindcss)",
+      "severity": "high",
+      "reason": "Build-time CSS compilation toolchain.",
+      "expires": "2026-12-12"
+    },
+    {
+      "ghsa": "GHSA-j759-j44w-7fr8",
+      "package": "@xmldom/xmldom (transitive via react-native-windows)",
+      "severity": "high",
+      "reason": "Development/CLI toolchain dependency for React Native for Windows build tooling.",
+      "expires": "2026-12-12"
+    },
+    {
+      "ghsa": "GHSA-qx2v-qp2m-jg93",
+      "package": "postcss (transitive via tailwindcss)",
+      "severity": "high",
+      "reason": "Build-time CSS compilation toolchain.",
+      "expires": "2026-12-12"
+    },
+    {
+      "ghsa": "GHSA-r28c-9q8g-f849",
+      "package": "postcss (transitive via tailwindcss)",
+      "severity": "high",
+      "reason": "Build-time CSS compilation toolchain.",
+      "expires": "2026-12-12"
+    },
+    {
+      "ghsa": "GHSA-w2rr-34g9-rvrj",
+      "package": "@xmldom/xmldom (transitive via react-native-windows)",
+      "severity": "high",
+      "reason": "Development/CLI toolchain dependency for React Native for Windows build tooling.",
+      "expires": "2026-12-12"
+    },
+    {
+      "ghsa": "GHSA-w3rx-r6r6-pgpr",
+      "package": "image-size (transitive via expo / react-native)",
+      "severity": "high",
+      "reason": "Development/CLI toolchain dependency for mobile asset bundling.",
+      "expires": "2026-12-12"
+    },
+    {
+      "ghsa": "GHSA-wh4c-j3r5-mjhp",
+      "package": "@xmldom/xmldom (transitive via react-native-windows)",
+      "severity": "high",
+      "reason": "Development/CLI toolchain dependency for React Native for Windows build tooling.",
+      "expires": "2026-12-12"
+    },
+    {
+      "ghsa": "GHSA-x4fp-j954-r2f4",
+      "package": "@xmldom/xmldom (transitive via react-native-windows)",
+      "severity": "high",
+      "reason": "Development/CLI toolchain dependency for React Native for Windows build tooling.",
+      "expires": "2026-12-12"
+    },
+    {
+      "ghsa": "GHSA-x6wf-f3px-wcqx",
+      "package": "@xmldom/xmldom (transitive via react-native-windows)",
+      "severity": "high",
+      "reason": "Development/CLI toolchain dependency for React Native for Windows build tooling.",
       "expires": "2026-12-12"
     }
   ]

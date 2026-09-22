@@ -6,6 +6,13 @@ module.exports = {
       useESM: true,
     },
   },
+  moduleNameMapper: {
+    '^@/(.*)$': '<rootDir>/frontend/src/$1',
+    '^@hazardnet/design-system$': '<rootDir>/packages/design-system/src/index.ts',
+    '^@hazardnet/design-system/(.*)$': '<rootDir>/packages/design-system/src/$1',
+    '^@hazardnet/core$': '<rootDir>/packages/core/src/index.ts',
+    '^@hazardnet/core/(.*)$': '<rootDir>/packages/core/src/$1',
+  },
   setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
   transform: {
     '^.+\\.(js|jsx|ts|tsx|mjs)$': 'babel-jest',

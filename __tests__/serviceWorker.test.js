@@ -104,9 +104,9 @@ describe('the worker that ships', () => {
   it('is the file the app registers and the build copies', () => {
     const main = readFileSync(join(ROOT, 'frontend/src/main.tsx'), 'utf8');
     expect(main).toContain("navigator.serviceWorker.register('/serviceWorker.js')");
-    // Vite copies `public/` verbatim, so the built file must equal the source byte for byte.
+    // VitePWA injects self.__WB_MANIFEST into the built service worker in dist/.
     if (existsSync(DIST_WORKER_PATH)) {
-      expect(readFileSync(DIST_WORKER_PATH, 'utf8')).toBe(WORKER_SOURCE);
+      expect(readFileSync(DIST_WORKER_PATH, 'utf8')).toContain('hazardnet-alerts-v1');
     }
   });
 
