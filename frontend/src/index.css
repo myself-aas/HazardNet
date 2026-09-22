@@ -603,16 +603,15 @@ html[data-map-debug-fx='true'] .marker-high-risk {
 }
 
 @theme inline {
-  /* Typography — Google Fonts Suite with NASA HDS fallbacks:
-       sans            → Plus Jakarta Sans / Public Sans / Noto Sans Bengali (body, UI, cards)
-       heading / brand → Instrument Sans / Plus Jakarta Sans / Anek Bangla / Inter (headings, wordmark)
-       display         → Plus Jakarta Sans / Baloo Da 2 (hero headers, high-impact titles)
-       bengali         → Noto Sans Bengali / Anek Bangla
-       bengali-display → Baloo Da 2 / Anek Bangla
-       bengali-serif   → Noto Serif Bengali
-       mono            → DM Mono (data, coordinates, metrics, code) */
-  --font-sans: var(--hn-font-sans);
-  --font-brand: var(--hn-font-brand);
+  /* Typography — NASA HDS is the design system's source of truth (DESIGN.md,
+     __tests__/nasaTokens.test.js):
+       sans    → --hds-font-family-body   ('Public Sans Web', …)
+       brand   → --hds-font-family-heading ('Inter', …)
+       mono    → --hds-font-family-code   ('DM Mono', …)
+     The --hn-font-* stacks below remain for explicit Bengali/display scopes
+     (font-bengali, font-display) where NASA's Latin-only families do not apply. */
+  --font-sans: var(--hds-font-family-body);
+  --font-brand: var(--hds-font-family-heading);
   --font-heading: var(--hn-font-heading);
   --font-display: var(--hn-font-display);
   --font-serif: var(--hn-font-bengali-serif);

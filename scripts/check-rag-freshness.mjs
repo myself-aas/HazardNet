@@ -1,7 +1,8 @@
 // RAG knowledge-base freshness check (ML-03).
 // Fails when rag_pipeline/agent_knowledge_base.json is OLDER than any source
-// document in references/ or the builder script — i.e., the committed index
-// has gone stale relative to the documents it claims to index.
+// document under rag_pipeline/references/ or rag_pipeline/skills/ (the two
+// trees build_agent_knowledge_base.js indexes) or the builder script itself —
+// i.e., the committed index has gone stale relative to what it claims to index.
 // Run: node scripts/check-rag-freshness.mjs
 import fs from 'node:fs';
 import path from 'node:path';
@@ -10,7 +11,13 @@ import { fileURLToPath } from 'node:url';
 const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const indexFile = path.join(root, 'rag_pipeline', 'agent_knowledge_base.json');
 const builder = path.join(root, 'rag_pipeline', 'build_agent_knowledge_base.js');
-const refsDir = path.join(root, 'references');
+// The builder reads REFERENCES_DIR and SKILLS_DIR under rag_pipeline/ — there
+// is no top-level references/ in this repository (the gate used to scandir it
+// and crash on a fresh clone).
+const sourceRoots = [
+  path.join(root, 'rag_pipeline', 'references'),
+  path.join(root, 'rag_pipeline', 'skills'),
+].filter((dir) => fs.existsSync(dir));
 
 if (!fs.existsSync(indexFile)) {
   console.error('[rag-freshness] agent_knowledge_base.json missing — run build_agent_knowledge_base.js');
@@ -29,7 +36,7 @@ const walk = (dir) => {
     }
   }
 };
-walk(refsDir);
+for (const dir of sourceRoots) walk(dir);
 
 const builderTime = fs.statSync(builder).mtimeMs;
 // Git checkouts assign all files near-identical mtimes (ms apart, arbitrary
