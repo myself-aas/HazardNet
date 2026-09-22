@@ -326,6 +326,9 @@ export const FrontDoor: React.FC = () => {
   const published = alertsReadable ? alerts.length : null;
   const withheld = counts?.not_published ?? notPublished ?? null;
 
+  const reduceMotion = useReducedMotion();
+  const frame = useWebFrame(30);
+
   if (!content) return null;
   if (redirectToLive) return <Navigate to={redirectToLive} replace />;
 
@@ -340,9 +343,6 @@ export const FrontDoor: React.FC = () => {
           expected: formatNumber(coverage.districts_expected),
         })
       : '—';
-
-  const reduceMotion = useReducedMotion();
-  const frame = useWebFrame(30);
 
   return (
     <Interactive.Div
