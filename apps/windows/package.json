@@ -6,7 +6,9 @@
   "main": "App.windows.tsx",
   "scripts": {
     "start": "react-native start",
-    "windows": "react-native run-windows"
+    "windows": "react-native run-windows",
+    "build:windows": "react-native run-windows --release --no-launch --no-deploy --no-packager",
+    "init:windows": "react-native init-windows --name HazardNet --no-telemetry"
   },
   "dependencies": {
     "@hazardnet/core": "*",
@@ -16,6 +18,7 @@
     "react-native-windows": "0.74.0"
   },
   "devDependencies": {
-    "typescript": "^5.4.5"
+    "typescript": "^5.4.5",
+    "metro-config": "^0.80.12"
   }
 }
