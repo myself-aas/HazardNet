@@ -1,0 +1,44 @@
+{
+  "schema": "hazardnet-site-probe/v1",
+  "ran_at": "2026-09-23T12:23:25Z",
+  "run_url": "https://github.com/myself-aas/HazardNet/actions/runs/35860131106",
+  "site_url": "https://hazardnet.live",
+  "outcome": "pass",
+  "checks": [
+    {
+      "id": "homepage",
+      "outcome": "success",
+      "detail": null
+    },
+    {
+      "id": "deep_links",
+      "outcome": "success",
+      "detail": null
+    },
+    {
+      "id": "security_headers",
+      "outcome": "success",
+      "detail": null
+    },
+    {
+      "id": "sitemap",
+      "outcome": "success",
+      "detail": null
+    },
+    {
+      "id": "forecast_data",
+      "outcome": "success",
+      "detail": null
+    },
+    {
+      "id": "status_page",
+      "outcome": "success",
+      "detail": null
+    },
+    {
+      "id": "content_pages",
+      "outcome": "success",
+      "detail": null
+    }
+  ]
+}

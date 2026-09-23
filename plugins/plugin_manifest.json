@@ -1,0 +1,34 @@
+{
+  "version": "1.0.0",
+  "agent_tools": [
+    {
+      "id": "bwdb_gauge",
+      "module": "01_agent_tools/bwdb_river_gauge.py",
+      "function": "get_bwdb_danger_level",
+      "schema": "BWDB_TOOL_SCHEMA",
+      "trigger_condition": "hazard == 'Flood' AND severity > 0.5"
+    },
+    {
+      "id": "sms_gateway",
+      "module": "01_agent_tools/sms_alert_gateway.py",
+      "function": "trigger_emergency_sms",
+      "trigger_condition": "severity >= 0.8"
+    }
+  ],
+  "data_ingestion": [
+    {
+      "id": "open_meteo",
+      "module": "02_data_ingestion/open_meteo_plugin.py",
+      "class": "WeatherPlugin",
+      "enabled": true
+    }
+  ],
+  "frontend_widgets": [
+    {
+      "id": "shelter_capacity",
+      "component": "03_frontend_widgets/ShelterCapacity.tsx",
+      "target_audience": "policy_maker",
+      "visible_if": "hazard == 'Tropical Cyclone'"
+    }
+  ]
+}

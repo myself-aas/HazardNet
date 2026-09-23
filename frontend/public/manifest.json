@@ -1,0 +1,25 @@
+{
+  "id": "/",
+  "name": "HazardNet Multi-Hazard AI System",
+  "short_name": "HazardNet",
+  "description": "AI-powered Geospatial Multi-Hazard Intelligence & Early Warning System for Bangladesh.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "theme_color": "#17171b",
+  "background_color": "#ffffff",
+  "icons": [
+    {
+      "src": "/hazardnet-mark.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/hazardnet-logo-primary.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}

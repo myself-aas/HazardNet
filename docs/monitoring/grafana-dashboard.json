@@ -1,0 +1,418 @@
+{
+  "dashboard": {
+    "title": "HazardNet Production Monitoring",
+    "tags": ["hazardnet", "ml", "forecasts", "production"],
+    "timezone": "utc",
+    "editable": true,
+    "graphTooltip": 1,
+    "time": {
+      "from": "now-6h",
+      "to": "now"
+    },
+    "refresh": "30s",
+    "panels": [
+      {
+        "id": 1,
+        "title": "API Availability",
+        "type": "stat",
+        "gridPos": { "x": 0, "y": 0, "w": 6, "h": 4 },
+        "targets": [
+          {
+            "expr": "sum(rate(hazardnet_api_requests_total{status=~\"2..\"}[5m])) / sum(rate(hazardnet_api_requests_total[5m])) * 100",
+            "legendFormat": "Availability %",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent",
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                { "value": 0, "color": "red" },
+                { "value": 95, "color": "yellow" },
+                { "value": 99, "color": "green" }
+              ]
+            }
+          }
+        },
+        "options": {
+          "colorMode": "background",
+          "graphMode": "area",
+          "textMode": "value_and_name"
+        }
+      },
+      {
+        "id": 2,
+        "title": "Request Rate (RPS)",
+        "type": "graph",
+        "gridPos": { "x": 6, "y": 0, "w": 6, "h": 4 },
+        "targets": [
+          {
+            "expr": "sum(rate(hazardnet_api_requests_total[1m])) by (endpoint)",
+            "legendFormat": "{{endpoint}}",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          { "label": "Requests/sec", "format": "reqps" },
+          { "show": false }
+        ]
+      },
+      {
+        "id": 3,
+        "title": "Error Rate",
+        "type": "graph",
+        "gridPos": { "x": 12, "y": 0, "w": 6, "h": 4 },
+        "targets": [
+          {
+            "expr": "sum(rate(hazardnet_api_requests_total{status=~\"4..|5..\"}[5m])) / sum(rate(hazardnet_api_requests_total[5m])) * 100",
+            "legendFormat": "Error Rate %",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent"
+          }
+        },
+        "alert": {
+          "conditions": [
+            {
+              "evaluator": { "params": [2], "type": "gt" },
+              "operator": { "type": "and" },
+              "query": { "params": ["A", "5m", "now"] },
+              "reducer": { "params": [], "type": "avg" },
+              "type": "query"
+            }
+          ],
+          "executionErrorState": "alerting",
+          "frequency": "60s",
+          "handler": 1,
+          "name": "High Error Rate",
+          "noDataState": "no_data",
+          "notifications": []
+        }
+      },
+      {
+        "id": 4,
+        "title": "P95 Latency by Endpoint",
+        "type": "graph",
+        "gridPos": { "x": 18, "y": 0, "w": 6, "h": 4 },
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(hazardnet_api_duration_ms_bucket[5m])) by (endpoint, le))",
+            "legendFormat": "{{endpoint}} p95",
+            "refId": "A"
+          },
+          {
+            "expr": "histogram_quantile(0.99, sum(rate(hazardnet_api_duration_ms_bucket[5m])) by (endpoint, le))",
+            "legendFormat": "{{endpoint}} p99",
+            "refId": "B"
+          }
+        ],
+        "yaxes": [
+          { "label": "Latency (ms)", "format": "ms" },
+          { "show": false }
+        ],
+        "alert": {
+          "conditions": [
+            {
+              "evaluator": { "params": [500], "type": "gt" },
+              "operator": { "type": "and" },
+              "query": { "params": ["A", "5m", "now"] },
+              "reducer": { "params": [], "type": "avg" },
+              "type": "query"
+            }
+          ],
+          "frequency": "60s",
+          "handler": 1,
+          "name": "High API Latency",
+          "notifications": []
+        }
+      },
+      {
+        "id": 5,
+        "title": "ML Inference Performance",
+        "type": "row",
+        "gridPos": { "x": 0, "y": 4, "w": 24, "h": 1 }
+      },
+      {
+        "id": 6,
+        "title": "Inference Latency (p50, p95, p99)",
+        "type": "graph",
+        "gridPos": { "x": 0, "y": 5, "w": 12, "h": 5 },
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.50, sum(rate(hazardnet_inference_latency_ms_bucket[5m])) by (le))",
+            "legendFormat": "p50",
+            "refId": "A"
+          },
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(hazardnet_inference_latency_ms_bucket[5m])) by (le))",
+            "legendFormat": "p95",
+            "refId": "B"
+          },
+          {
+            "expr": "histogram_quantile(0.99, sum(rate(hazardnet_inference_latency_ms_bucket[5m])) by (le))",
+            "legendFormat": "p99",
+            "refId": "C"
+          }
+        ],
+        "yaxes": [
+          { "label": "Latency (ms)", "format": "ms" },
+          { "show": false }
+        ],
+        "seriesOverrides": [
+          { "alias": "p50", "color": "#73BF69" },
+          { "alias": "p95", "color": "#F2CC0C" },
+          { "alias": "p99", "color": "#E02F44" }
+        ]
+      },
+      {
+        "id": 7,
+        "title": "Cache Hit Rate",
+        "type": "graph",
+        "gridPos": { "x": 12, "y": 5, "w": 12, "h": 5 },
+        "targets": [
+          {
+            "expr": "sum(rate(hazardnet_prediction_cache_hits_total[5m])) / sum(rate(hazardnet_predictions_total[5m])) * 100",
+            "legendFormat": "Cache Hit Rate %",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "percent"
+          }
+        },
+        "alert": {
+          "conditions": [
+            {
+              "evaluator": { "params": [40], "type": "lt" },
+              "operator": { "type": "and" },
+              "query": { "params": ["A", "10m", "now"] },
+              "reducer": { "params": [], "type": "avg" },
+              "type": "query"
+            }
+          ],
+          "frequency": "120s",
+          "handler": 1,
+          "name": "Low Cache Hit Rate",
+          "notifications": []
+        }
+      },
+      {
+        "id": 8,
+        "title": "Model Load Time",
+        "type": "stat",
+        "gridPos": { "x": 0, "y": 10, "w": 6, "h": 3 },
+        "targets": [
+          {
+            "expr": "hazardnet_model_load_time_ms",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "ms",
+            "thresholds": {
+              "steps": [
+                { "value": 0, "color": "green" },
+                { "value": 2000, "color": "yellow" },
+                { "value": 5000, "color": "red" }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "id": 9,
+        "title": "Predictions per Minute",
+        "type": "stat",
+        "gridPos": { "x": 6, "y": 10, "w": 6, "h": 3 },
+        "targets": [
+          {
+            "expr": "sum(rate(hazardnet_predictions_total[1m])) * 60",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "short"
+          }
+        }
+      },
+      {
+        "id": 10,
+        "title": "Prediction Accuracy by Class",
+        "type": "graph",
+        "gridPos": { "x": 12, "y": 10, "w": 12, "h": 5 },
+        "targets": [
+          {
+            "expr": "hazardnet_prediction_accuracy_total{class=~\".*\"}",
+            "legendFormat": "{{class}}",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          { "label": "Accuracy", "format": "percentunit" },
+          { "show": false }
+        ]
+      },
+      {
+        "id": 11,
+        "title": "Data Pipeline Health",
+        "type": "row",
+        "gridPos": { "x": 0, "y": 15, "w": 24, "h": 1 }
+      },
+      {
+        "id": 12,
+        "title": "Forecast Data Freshness",
+        "type": "stat",
+        "gridPos": { "x": 0, "y": 16, "w": 8, "h": 4 },
+        "targets": [
+          {
+            "expr": "(time() - hazardnet_forecast_last_update_timestamp) / 3600",
+            "refId": "A"
+          }
+        ],
+        "fieldConfig": {
+          "defaults": {
+            "unit": "h",
+            "thresholds": {
+              "steps": [
+                { "value": 0, "color": "green" },
+                { "value": 24, "color": "yellow" },
+                { "value": 48, "color": "red" }
+              ]
+            }
+          }
+        },
+        "options": {
+          "colorMode": "background",
+          "textMode": "value_and_name"
+        }
+      },
+      {
+        "id": 13,
+        "title": "Database Query Latency",
+        "type": "graph",
+        "gridPos": { "x": 8, "y": 16, "w": 8, "h": 4 },
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.95, sum(rate(hazardnet_db_query_duration_ms_bucket[5m])) by (database, le))",
+            "legendFormat": "{{database}} p95",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          { "label": "Latency (ms)", "format": "ms" },
+          { "show": false }
+        ]
+      },
+      {
+        "id": 14,
+        "title": "Firestore Write Operations",
+        "type": "graph",
+        "gridPos": { "x": 16, "y": 16, "w": 8, "h": 4 },
+        "targets": [
+          {
+            "expr": "sum(rate(hazardnet_firestore_writes_total[5m]))",
+            "legendFormat": "Writes/sec",
+            "refId": "A"
+          }
+        ]
+      },
+      {
+        "id": 15,
+        "title": "System Health",
+        "type": "row",
+        "gridPos": { "x": 0, "y": 20, "w": 24, "h": 1 }
+      },
+      {
+        "id": 16,
+        "title": "Memory Usage",
+        "type": "graph",
+        "gridPos": { "x": 0, "y": 21, "w": 8, "h": 4 },
+        "targets": [
+          {
+            "expr": "process_resident_memory_bytes / 1024 / 1024",
+            "legendFormat": "Memory (MB)",
+            "refId": "A"
+          }
+        ],
+        "yaxes": [
+          { "label": "Memory (MB)", "format": "decmbytes" },
+          { "show": false }
+        ]
+      },
+      {
+        "id": 17,
+        "title": "Active Connections",
+        "type": "stat",
+        "gridPos": { "x": 8, "y": 21, "w": 4, "h": 4 },
+        "targets": [
+          {
+            "expr": "hazardnet_active_connections",
+            "refId": "A"
+          }
+        ]
+      },
+      {
+        "id": 18,
+        "title": "Rate Limit Hits",
+        "type": "graph",
+        "gridPos": { "x": 12, "y": 21, "w": 12, "h": 4 },
+        "targets": [
+          {
+            "expr": "sum(rate(hazardnet_rate_limit_hits_total[5m])) by (endpoint)",
+            "legendFormat": "{{endpoint}}",
+            "refId": "A"
+          }
+        ]
+      }
+    ],
+    "templating": {
+      "list": [
+        {
+          "name": "datasource",
+          "type": "datasource",
+          "query": "prometheus",
+          "current": {
+            "text": "Prometheus",
+            "value": "Prometheus"
+          }
+        },
+        {
+          "name": "interval",
+          "type": "interval",
+          "query": "1m,5m,10m,30m,1h",
+          "current": {
+            "text": "5m",
+            "value": "5m"
+          }
+        }
+      ]
+    },
+    "annotations": {
+      "list": [
+        {
+          "datasource": "Prometheus",
+          "enable": true,
+          "expr": "ALERTS{alertname!=\"\", severity=\"critical\"}",
+          "name": "Critical Alerts",
+          "iconColor": "red"
+        },
+        {
+          "datasource": "Prometheus",
+          "enable": true,
+          "expr": "changes(hazardnet_model_version[5m]) > 0",
+          "name": "Model Deployments",
+          "iconColor": "blue"
+        }
+      ]
+    }
+  },
+  "overwrite": true
+}

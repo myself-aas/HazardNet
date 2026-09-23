@@ -1,0 +1,35 @@
+# Maestro flow: offline-with-cache state
+#
+# Scenario: kill app, enable airplane mode, cold launch → must see cached
+# data with blue "Offline" banner, not a blank screen. Tap emergency chip
+# (we don't confirm the call; just verify pressable).
+#
+# Run with a connected device that has previously loaded data:
+#   maestro test apps/mobile/.maestro/offline-cache-flow.yaml
+#
+# Airplane-mode toggling is Android-only via shell command; on iOS this
+# flow requires manual toggle before running.
+appId: com.hazardnet.app
+---
+- stopApp
+- launchApp
+- assertVisible: "Today"
+- tapOn: "Alerts"
+- assertVisible: "Alerts"
+- back
+# Simulate airplane mode (Android). On iOS, comment this out and toggle
+# manually before starting the flow.
+- runScript:
+    content: |
+      // Android: toggle airplane via adb shell
+      maestro.device.shell('settings put global airplane_mode_on 1');
+      maestro.device.shell('am broadcast -a android.intent.action.AIRPLANE_MODE --ez state true');
+- stopApp
+- launchApp
+- assertVisible: "Offline"
+- assertVisible: "999"
+# Restore connectivity
+- runScript:
+    content: |
+      maestro.device.shell('settings put global airplane_mode_on 0');
+      maestro.device.shell('am broadcast -a android.intent.action.AIRPLANE_MODE --ez state false');

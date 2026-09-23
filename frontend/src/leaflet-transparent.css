@@ -1,0 +1,32 @@
+/* Leaflet must stay interactive; chrome is opaque HDS, not glass. */
+.leaflet-container {
+    background: var(--hds-color-carbon-10, #f4f4f4) !important;
+}
+.leaflet-pane, .leaflet-tile, .leaflet-marker-icon, .leaflet-marker-shadow, .leaflet-tile-container, .leaflet-pane > svg, .leaflet-pane > canvas, .leaflet-zoom-box, .leaflet-image-layer, .leaflet-layer {
+    pointer-events: none !important;
+}
+.leaflet-interactive {
+    pointer-events: auto !important;
+}
+.leaflet-control-container .leaflet-control {
+    pointer-events: auto !important;
+}
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+    background: #ffffff;
+    color: var(--hds-color-carbon-90, #17171b);
+    border-radius: 0;
+    box-shadow: none;
+    border: 1px solid var(--hds-color-carbon-20, #d1d1d1);
+}
+.leaflet-popup-content-wrapper {
+    border-bottom: 0;
+}
+.leaflet-container a.leaflet-popup-close-button {
+    width: 44px;
+    height: 44px;
+    font-size: 16px;
+    line-height: 44px;
+    padding: 0;
+    color: var(--hds-color-carbon-70, #58585b);
+}

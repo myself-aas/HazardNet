@@ -1,0 +1,262 @@
+# Builds the HazardNet native apps and publishes their executables to GitHub
+# Releases:
+#
+#   * Android: signed release APK  (apps/mobile,  Expo / React Native)
+#   * Windows: Release x64 build — packaged .msix (and unpacked .exe)
+#              (apps/windows, React Native for Windows / WinUI)
+#
+# Triggers
+#   * push of a tag matching `v*`  -> assets are attached to that release
+#   * manual "Run workflow"        -> a (pre-)release is created automatically,
+#     named from the app versions + commit SHA
+#
+# Repository secrets (all optional but recommended):
+#   ANDROID_KEYSTORE_BASE64   base64-encoded `android/app/keystore.jks`
+#   ANDROID_KEYSTORE_PASSWORD keystore password
+#   ANDROID_KEY_ALIAS         key alias inside the keystore
+#   ANDROID_KEY_PASSWORD      key password
+# Without these secrets the Android job generates a throw-away CI keystore:
+# the APK is validly signed and installable, but the signing key is not
+# reusable (fine for field installs, not for Play Store updates).
+#
+# See docs/APP_RELEASES.md for the full operator guide.
+
+name: App Releases (Android APK / Windows MSIX)
+
+on:
+  workflow_dispatch:
+    inputs:
+      prerelease:
+        description: 'Mark the created release as pre-release'
+        type: boolean
+        default: true
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: app-releases-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  meta:
+    name: Resolve release metadata
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.meta.outputs.tag }}
+      mobile_version: ${{ steps.meta.outputs.mobile_version }}
+      windows_version: ${{ steps.meta.outputs.windows_version }}
+      prerelease: ${{ steps.meta.outputs.prerelease }}
+    steps:
+      - uses: actions/checkout@v7
+      - id: meta
+        run: |
+          set -euo pipefail
+          MOBILE_VER="$(node -p "require('./apps/mobile/app.json').expo.version")"
+          WINDOWS_VER="$(node -p "require('./apps/windows/package.json').version")"
+          if [ "${{ github.event_name }}" = "push" ]; then
+            TAG="${GITHUB_REF_NAME}"
+            PRERELEASE="false"
+          else
+            TAG="v${MOBILE_VER}-apps-${GITHUB_SHA::8}"
+            PRERELEASE="${{ inputs.prerelease }}"
+            [ -n "${PRERELEASE}" ] || PRERELEASE="true"
+          fi
+          {
+            echo "tag=${TAG}"
+            echo "mobile_version=${MOBILE_VER}"
+            echo "windows_version=${WINDOWS_VER}"
+            echo "prerelease=${PRERELEASE}"
+          } >> "${GITHUB_OUTPUT}"
+
+  android-apk:
+    name: Build Android APK
+    needs: meta
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install workspace dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Prebuild the Android project (Expo)
+        working-directory: apps/mobile
+        run: npx expo prebuild --platform android --no-install
+
+      - name: Configure release signing
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          STORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          APP_DIR="apps/mobile/android/app"
+          if [ -n "${KEYSTORE_BASE64:-}" ] && [ -n "${STORE_PASSWORD:-}" ] \
+             && [ -n "${KEY_ALIAS:-}" ] && [ -n "${KEY_PASSWORD:-}" ]; then
+            echo "Signing with the repository keystore (ANDROID_KEYSTORE_* secrets)."
+            printf '%s' "${KEYSTORE_BASE64}" | base64 -d > "${APP_DIR}/keystore.jks"
+          else
+            STORE_PASSWORD="hazardnet-ci"
+            KEY_ALIAS="hazardnet-ci"
+            KEY_PASSWORD="hazardnet-ci"
+            keytool -genkeypair \
+              -keystore "${APP_DIR}/keystore.jks" \
+              -storepass "${STORE_PASSWORD}" -keypass "${KEY_PASSWORD}" \
+              -alias "${KEY_ALIAS}" \
+              -keyalg RSA -keysize 2048 -validity 10000 \
+              -dname "CN=HazardNet CI, OU=Engineering, O=HazardNet, C=BD"
+            echo "::warning::ANDROID_KEYSTORE_* secrets are not set; using a throw-away CI keystore (APK is installable, but the key cannot be reused for updates)."
+          fi
+          {
+            echo "storeFile=keystore.jks"
+            echo "storePassword=${STORE_PASSWORD}"
+            echo "keyAlias=${KEY_ALIAS}"
+            echo "keyPassword=${KEY_PASSWORD}"
+          } > "${APP_DIR}/keystore.properties"
+          # Point the release buildType at the CI signing config (see apps/mobile/ci-signing.gradle).
+          cp apps/mobile/ci-signing.gradle "${APP_DIR%/*}/signing-release.gradle"
+          printf '\napply from: "../signing-release.gradle"\n' >> "${APP_DIR}/build.gradle"
+
+      - name: Build release APK
+        working-directory: apps/mobile/android
+        env:
+          GRADLE_OPTS: -Xmx3g
+        run: ./gradlew assembleRelease --no-daemon --stacktrace
+
+      - name: Stage artifact
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          cp "apps/mobile/android/app/build/outputs/apk/release/app-release.apk" \
+             "dist/HazardNet-mobile-v${{ needs.meta.outputs.mobile_version }}-android.apk"
+          ls -lh dist
+
+      - name: Publish to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.meta.outputs.tag }}
+          name: HazardNet Apps ${{ needs.meta.outputs.tag }}
+          body: |
+            Native app binaries for HazardNet (mobile Android + Windows desktop).
+
+            - **Android:** `HazardNet-mobile-v<version>-android.apk` — signed release APK (see workflow for signing details).
+            - **Windows:** `HazardNet-windows-v<version>-x64.msix` — packaged x64 app (double-click to install on Windows 10/11), plus the unpacked `HazardNet-windows-v<version>-x64.exe`.
+
+            Built by the `App Releases (Android APK / Windows MSIX)` workflow from `${{ github.sha }}`.
+          prerelease: ${{ needs.meta.outputs.prerelease }}
+          fail_on_unmatched_files: true
+          files: |
+            dist/*.apk
+
+  windows-build:
+    name: Build Windows x64
+    needs: meta
+    runs-on: windows-2022
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install workspace dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Ensure the native Windows project exists
+        shell: pwsh
+        run: |
+          # The `windows/` project is committed to the repo; regenerate it only if
+          # someone deleted it or bumped react-native-windows and the layout changed.
+          if (-not (Test-Path "apps/windows/windows/HazardNet.sln")) {
+            Push-Location apps/windows
+            npx react-native init-windows --name HazardNet --overwrite --no-telemetry
+            Pop-Location
+          }
+
+      - name: Sync app version into Package.appxmanifest
+        shell: pwsh
+        run: |
+          $ver = "${{ needs.meta.outputs.windows_version }}"
+          $manifest = "apps/windows/windows/HazardNet/Package.appxmanifest"
+          $content = Get-Content $manifest -Raw
+          $content = $content -replace 'Version="\d+\.\d+\.\d+\.\d+"', "Version=""$ver.0"""
+          Set-Content -Path $manifest -Value $content -NoNewline
+
+      - name: Restore NuGet packages
+        shell: pwsh
+        run: msbuild "apps/windows/windows/HazardNet.sln" /t:Restore /p:Configuration=Release /p:Platform=x64
+
+      - name: Build Release (x64, bundled + Hermes)
+        shell: pwsh
+        working-directory: apps/windows
+        run: npx react-native run-windows --release --no-launch --no-deploy --no-packager --logging
+
+      - name: Stage artifacts
+        shell: pwsh
+        run: |
+          $out = "apps/windows/windows/HazardNet/Build/Release"
+          New-Item -ItemType Directory -Force -Path "dist" | Out-Null
+          $ver = "${{ needs.meta.outputs.windows_version }}"
+          if (Test-Path "$out/HazardNet.exe") {
+            Copy-Item "$out/HazardNet.exe" "dist/HazardNet-windows-v$ver-x64.exe"
+          } else {
+            throw "HazardNet.exe not found in $out — build did not complete."
+          }
+          $appx = Get-ChildItem "$out" -Filter "*.appx" -ErrorAction SilentlyContinue | Select-Object -First 1
+          if ($appx) {
+            # An MSBuild-produced .appx is a valid MSIX container; the .msix name
+            # makes double-click installation obvious to users.
+            Copy-Item $appx.FullName "dist/HazardNet-windows-v$ver-x64.msix"
+          } else {
+            Write-Warning "No .appx package was produced; only the unpacked .exe will be published."
+          }
+          Get-ChildItem "dist" | Format-Table Name, Length
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: windows-dist
+          path: dist/
+          if-no-files-found: error
+
+  windows-release:
+    name: Publish Windows artifacts
+    needs: [meta, android-apk, windows-build]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/download-artifact@v7
+        with:
+          name: windows-dist
+          path: dist
+
+      - name: Publish to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.meta.outputs.tag }}
+          name: HazardNet Apps ${{ needs.meta.outputs.tag }}
+          body: |
+            Native app binaries for HazardNet (mobile Android + Windows desktop).
+
+            - **Android:** `HazardNet-mobile-v<version>-android.apk` — signed release APK (see workflow for signing details).
+            - **Windows:** `HazardNet-windows-v<version>-x64.msix` — packaged x64 app (double-click to install on Windows 10/11), plus the unpacked `HazardNet-windows-v<version>-x64.exe`.
+
+            Built by the `App Releases (Android APK / Windows MSIX)` workflow from `${{ github.sha }}`.
+          prerelease: ${{ needs.meta.outputs.prerelease }}
+          fail_on_unmatched_files: true
+          files: |
+            dist/*

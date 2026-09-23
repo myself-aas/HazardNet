@@ -1,0 +1,2419 @@
+/* NASA Horizon Design System tokens (nasa/hds-core, CC0-1.0) — vendored and compiled by
+   scripts/import_nasa_tokens.mjs, mapped onto this app's semantic roles below. Imported first so
+   every var(--hds-*) consumer resolves. Source and rules: data/design/nasa-hds/PROVENANCE.md */
+@import "./styles/nasa-hds.css";
+
+@import "tailwindcss";
+/* Typefaces: NASA HDS is set in Inter (headings), Public Sans (body) and DM Mono (data/code).
+   All three are self-hosted through @fontsource, so no third-party request is ever made and the
+   service worker can cache them for offline use. */
+@import "@fontsource-variable/inter";
+@import "@fontsource-variable/public-sans";
+@import "@fontsource/dm-mono/400.css";
+@import "@fontsource/dm-mono/500.css";
+@import 'leaflet/dist/leaflet.css' layer(base);
+@import 'leaflet.markercluster/dist/MarkerCluster.css' layer(base);
+@import 'leaflet.markercluster/dist/MarkerCluster.Default.css' layer(base);
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* Family-name aliases.
+   `@fontsource` registers families under package-ish names ("Inter Variable",
+   "Public Sans Variable"), while NASA's design tokens name the families the way NASA's own
+   stylesheet does: 'Inter', 'Public Sans Web', 'DM Mono'. The HDS block above resolves
+   `var(--hds-font-family-body)` to 'Public Sans Web', so that exact family has to exist here.
+   The map popups and the print stylesheet used to hard-code the previous families as literal
+   strings; they now reference var(--hds-font-family-*) or the DM Mono stack directly, so no
+   legacy alias is needed. */
+@font-face {
+  font-family: 'Public Sans Web';
+  src: url('@fontsource-variable/public-sans/files/public-sans-latin-wght-normal.woff2') format('woff2-variations');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Inter';
+  src: url('@fontsource-variable/inter/files/inter-latin-wght-normal.woff2') format('woff2-variations');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'DM Mono';
+  src: url('@fontsource/dm-mono/files/dm-mono-latin-400-normal.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'DM Mono';
+  src: url('@fontsource/dm-mono/files/dm-mono-latin-500-normal.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+
+/* ==========================================================================
+   HAZARDNET DESIGN SYSTEM — Token Architecture (three layers)
+   Layer 1 primitives (raw values) → Layer 2 semantic (purpose aliases) →
+   Layer 3 component (component-scoped decisions).
+   Components must consume Layer 2/3 tokens — never raw hex values.
+   Reference: docs/design-system/MASTER.md
+   ========================================================================== */
+:root {
+  /* ---- Layer 1 · Primitives --------------------------------------------- */
+  /* Brand ramp (amber = CTA/energy; teal = active navigation) */
+  /* Warm ramp — values are NASA HDS yellow/orange tokens (see Layer 1b), so the
+     caution/highlight family is NASA's rather than a local approximation. */
+  --hn-amber-300: var(--hds-dataviz-seq-yellow-20);     /* #ffcb47 */
+  --hn-amber-400: var(--hds-dataviz-seq-yellow-30);     /* #f5af0c */
+  --hn-amber-500: var(--hds-color-international-orange);/* #ea6f24 */
+  --hn-amber-600: var(--hds-dataviz-seq-orange-50);     /* #d96a00 */
+  --hn-amber-700: var(--hds-dataviz-seq-orange-60);     /* #b25600 — 5.5:1 on white */
+  --hn-amber-950: var(--hds-dataviz-seq-orange-90);     /* #3b1b00 */
+  --hn-teal-500: #14b8a6;
+  --hn-teal-600: #0d9488;
+  --hn-teal-700: #0f766e;
+  --hn-sky-600: #0284c7;
+  --hn-emerald-600: #16a34a;
+  --hn-emerald-700: #15803d;
+
+  /* Layer 1b · NASA Horizon Design System primitives ------------------------
+     Every value below references a compiled NASA token (--hds-*), whose source
+     is nasa/hds-core's tokens.json — vendored in data/design/nasa-hds/ and
+     compiled by scripts/import_nasa_tokens.mjs. The usage rule NASA attaches to
+     each token is repeated here on purpose: the rules are part of the system,
+     and a palette adopted without them is only a costume. */
+  --hn-hds-red: var(--hds-color-nasa-red);             /* "go somewhere": navigation CTAs, errors. Never on-page actions, decoration or dataviz. */
+  --hn-hds-red-tint: var(--hds-color-nasa-red-tint);   /* hover states, error highlights */
+  --hn-hds-red-shade: var(--hds-color-nasa-red-shade); /* button hover, error dark — 7.0:1 against white */
+  --hn-hds-blue: var(--hds-color-nasa-blue);           /* "do something here": controls, list markers, table headers, info. Never nav CTAs or dataviz. */
+  --hn-hds-blue-tint: var(--hds-color-nasa-blue-tint);
+  --hn-hds-blue-shade: var(--hds-color-nasa-blue-shade); /* 9.9:1 against white — link/info text on light surfaces */
+  --hn-hds-orange: var(--hds-color-international-orange); /* status/decorative accent. Never a primary action. */
+  --hn-hds-green: var(--hds-color-active-green);        /* active/confirmation state. Never branding, backgrounds or dataviz. */
+  --hn-hds-black: var(--hds-color-carbon-black);              /* maximum-contrast text and outlines (focus rings) */
+  --hn-hds-white: var(--hds-color-spacesuit-white);
+  --hn-hds-surface: var(--hds-color-carbon-05);        /* #f6f6f6 — page background */
+  --hn-hds-surface-sunken: var(--hds-color-carbon-10);
+  --hn-hds-line: var(--hds-color-carbon-20);           /* hairline borders, dividers */
+  --hn-hds-line-strong: var(--hds-color-carbon-30);
+  --hn-hds-ink-muted: var(--hds-color-carbon-50);      /* 4.46:1 on white — borders/icons only, just under AA for text */
+  --hn-hds-ink-soft: var(--hds-color-carbon-60);       /* 7.1:1 on white — smallest text gray that clears AA */
+  --hn-hds-ink: var(--hds-color-carbon-90);            /* #17171b — body text */
+
+  /* Finalized HazardNet mark palette: near-white, black, graphite edge, and signal red. */
+  --hn-brand-paper: #fefefe;
+  --hn-brand-black: #000000;
+  --hn-brand-graphite: #777777;
+  --hn-brand-red: #ff0000;
+  --hn-brand-red-dark: #b90000;
+  --hn-brand-ink: var(--hn-brand-black);
+  --hn-brand-accent: var(--hn-brand-red);
+
+  /* Typography: strict monospace product-wide, with Bengali coverage fallback. */
+  --hn-font-mono: 'DM Mono', 'JetBrains Mono', 'SFMono-Regular', 'Roboto Mono', 'Noto Sans Bengali', monospace;
+  --hn-font-sans: var(--hn-font-mono);
+  --hn-font-heading: var(--hn-font-mono);
+  --hn-font-display: var(--hn-font-mono);
+  --hn-font-brand: var(--hn-font-mono);
+  --hn-font-bengali: var(--hn-font-mono);
+  --hn-font-bengali-display: var(--hn-font-mono);
+  --hn-font-bengali-serif: 'Noto Serif Bengali', serif;
+
+  /* Motion */
+  --ease-emphasized: cubic-bezier(0.2, 0, 0, 1);
+  --ease-standard: cubic-bezier(0.2, 0, 0.2, 1);
+  --duration-fast: 150ms;
+  --duration-base: 300ms;
+
+  /* ---- Layer 2 · Semantic (shadcn-compatible core) -----------------------
+     Token names are unchanged; the values they resolve to are now NASA's. That
+     is the entire point of a semantic layer: fifty-one files' worth of
+     components keep saying `bg-primary`, and the answer to "what is primary"
+     changed in one place. Contrast ratios in the comments are measured, not
+     estimated — see docs/design-system/MASTER.md §Contrast. */
+  --background: var(--hn-hds-surface);         /* #f6f6f6 */
+  --foreground: var(--hn-hds-ink);             /* #17171b — 17.4:1 on --background */
+  --card: var(--hn-hds-white);
+  --card-foreground: var(--hn-hds-ink);
+  --popover: var(--hn-hds-white);
+  --popover-foreground: var(--hn-hds-ink);
+  /* Primary = NASA red: the colour of "go somewhere". Actions that navigate or
+     submit, and error/emergency states — nowhere else. */
+  --primary: var(--hn-hds-red);                /* #f64137 */
+  --primary-foreground: var(--hn-hds-white);   /* 3.1:1 — large/bold labels or icons only */
+  /* The same red one step darker: 7.0:1 against white, for filled controls whose
+     labels are small (≤16px). NASA's own white-on-red measures 3.1:1, which
+     clears AA for large text but not for a 14px bold label; rather than quietly
+     ship that regression, small-label CTAs use the shade. */
+  --primary-strong: var(--hn-hds-red-shade);   /* #b60109 */
+  --primary-strong-foreground: var(--hn-hds-white);
+  /* Accent = NASA blue: "do something here" — on-page interaction. */
+  --secondary: var(--hn-hds-surface-sunken);
+  --secondary-foreground: var(--hn-hds-ink);
+  --accent: var(--hn-hds-blue);                /* #1c67e3 */
+  --accent-foreground: var(--hn-hds-white);
+  --muted: var(--hn-hds-surface-sunken);
+  --muted-foreground: var(--hn-hds-ink-soft);  /* 7.1:1 on white (carbon-50 would be 4.46:1) */
+  --destructive: var(--hn-hds-red-shade);      /* 7.0:1 with white */
+  --destructive-foreground: var(--hn-hds-white);
+  --border: var(--hn-hds-line);                /* carbon-20 — decorative hairlines */
+  --input: var(--hn-hds-ink-muted);            /* 4.46:1 on white — control boundaries clear 1.4.11's 3:1 */
+  --ring: var(--hn-hds-ink-soft);              /* HDS's default dashed-ring colour (carbon-60 on light) */
+  --radius: 5px; /* Finalized system geometry: compact 4–6px radiuses. */
+
+  /* Status (text values meet 4.5:1 on white/surfaces; info is NASA blue, per HDS) */
+  --success: var(--hn-emerald-700);
+  --success-foreground: var(--hn-hds-white);
+  --success-surface: color-mix(in srgb, var(--hn-emerald-600) 14%, var(--hn-hds-white));
+  --warning: var(--hn-amber-700);
+  --warning-foreground: var(--hn-hds-white);
+  --warning-surface: color-mix(in srgb, var(--hn-amber-500) 20%, var(--hn-hds-white));
+  --info: var(--hn-hds-blue-shade);            /* 9.9:1 on white */
+  --info-foreground: var(--hn-hds-white);
+  --info-surface: color-mix(in srgb, var(--hn-hds-blue) 8%, var(--hn-hds-white));
+
+  /* Severity scale — text / solid fills (maps, markers, charts) / tint surfaces.
+     HazardNet's own five-step hazard semantics, not NASA's three-colour status
+     set: three states cannot express five hazard levels. Deliberately unchanged
+     by this restyle because the values are asserted by map/legend tests and
+     carry meaning the brand palette does not. --severity-moderate-solid is
+     aligned to HDS's status orange; the rest keep their measured ratios. */
+  --risk-low: #16a34a;
+  --risk-low-bg: #dcfce7;
+  --risk-moderate: #f59e0b;
+  --risk-moderate-bg: #fef3c7;
+  --risk-high: #dc2626;
+  --risk-high-bg: #fee2e2;
+  --risk-critical: #dc2626;
+  --risk-critical-bg: #fee2e2;
+
+  --progression-bar-low: #16a34a;
+  --progression-bar-moderate: #f59e0b;
+  --progression-bar-high: #dc2626;
+
+  /* Standardized Severity Level Tokens */
+  --severity-amber: #f59e0b;
+  --severity-red: #dc2626;
+  --severity-green: #16a34a;
+
+  --severity-low: var(--hn-emerald-700);
+  --severity-low-solid: #16a34a;
+  --severity-low-surface: #dcfce7;
+  --severity-moderate: var(--hn-amber-700);
+  --severity-moderate-solid: var(--hn-hds-orange); /* #ea6f24 — HDS status orange, 3.1:1 vs white */
+  --severity-moderate-surface: #fef3c7;
+  --severity-high: #dc2626;
+  --severity-high-solid: #dc2626;
+  --severity-high-surface: #fee2e2;
+  --severity-very-high: #dc2626;
+  --severity-very-high-solid: #dc2626;
+  --severity-very-high-surface: #fee2e2;
+  --severity-extreme: #991b1b;
+  --severity-extreme-solid: #dc2626;
+  --severity-extreme-surface: #fee2e2;
+
+  /* Surfaces & text roles */
+  --surface-page: var(--hn-hds-surface);
+  --surface-card: var(--hn-hds-white);
+  --surface-sunken: var(--hn-hds-surface-sunken);
+  --surface-inverse: var(--hn-hds-ink);
+  --text-body: var(--foreground);
+  --text-muted: var(--muted-foreground);
+  --text-subtle: var(--hn-hds-ink-soft);       /* 7.1:1 — smallest AA-safe caption gray */
+  --text-inverse: var(--hn-hds-surface);
+
+  /* ---- Layer 2b · Legacy aliases (deprecated — do not use in new code) --- */
+  --nasa-space-bg: var(--surface-page);
+  --nasa-card-bg: var(--surface-card);
+  --nasa-cyan: var(--hn-hds-blue-tint);
+  --nasa-blue: var(--hn-hds-blue);       /* the alias now resolves to the real NASA blue */
+  --nasa-emerald: var(--hn-emerald-600);
+  --nasa-crimson: var(--hn-hds-red-shade);
+  --nasa-amber: var(--warning);          /* was --primary; amber is status-only now */
+  --m3-sys-color-primary: var(--primary);
+  --m3-sys-color-surface: var(--surface-card);
+  --m3-sys-motion-easing-emphasized: var(--ease-emphasized);
+
+  /* Chart palette — NASA's own categorical dataviz assignment (HDS
+     `dataviz.color.cat.set.light.5-items.option-1`: Blue 70, Orange ~38, Aqua 40,
+     Lime 70, Gold ~38). NASA forbids brand red/blue in dataviz, which is why
+     these come from the dataviz group rather than from --primary/--accent. */
+  --chart-1: var(--hds-dataviz-series-a-light);
+  --chart-2: var(--hds-dataviz-series-b-light);
+  --chart-3: var(--hds-dataviz-series-c-light);
+  --chart-4: var(--hds-dataviz-series-d-light);
+  --chart-5: var(--hds-dataviz-series-e-light);
+
+  /* Sidebar slots (shadcn) */
+  --sidebar: #ffffff;
+  --sidebar-foreground: var(--hds-color-carbon-90);
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: var(--primary-foreground);
+  --sidebar-accent: var(--surface-sunken);
+  --sidebar-accent-foreground: var(--hds-color-carbon-90);
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--ring);
+
+  /* ---- Layer 3 · Component ----------------------------------------------- */
+  --panel-bg: var(--surface-card);
+  --panel-border: var(--border);
+  --panel-radius: 5px;
+  --panel-blur: 12px;
+  --panel-shadow: 0 1px 3px rgb(0 0 0 / 0.08);
+  --hero-glow-blur-primary: 90px;   /* tokenized hero orbital glow — was blur-[90px] arbitrary */
+  --hero-glow-blur-secondary: 100px;/* tokenized secondary atmospheric glow — was blur-[100px] arbitrary */
+  --hero-glass-blur: 8px;          /* hero glass legibility blur — maps to Tailwind backdrop-blur-md; centralises hero blur surface */
+  --control-min-size: 44px; /* minimum touch target (iOS HIG / WCAG 2.5.8) */
+  --navbar-height: 3.5rem;
+
+  /* Stacking scale (plan §13.7) — replace ad hoc 9999 / 10050 / 2000. */
+  --z-base: 0;
+  --z-sticky: 10;
+  --z-map: 400;
+  --z-nav: 40;
+  --z-overlay: 50;
+  --z-modal: 60;
+  --z-toast: 70;
+  --z-a11y: 80;
+}
+@media (min-width: 40rem) {
+  :root {
+    --navbar-height: 4rem;
+  }
+}
+
+html {
+  scroll-padding-top: calc(var(--navbar-height) + 8px);
+  overflow-x: clip;
+}
+
+body {
+  margin: 0;
+  /* Body copy is NASA HDS's body stack (Public Sans, 16px/1.62); headings take
+     Inter via --font-heading. Both come from --hds-font-family-*. */
+  font-family: var(--hn-font-mono);
+  background-color: var(--surface-page);
+  color: var(--text-body);
+  font-size: var(--hds-font-size-xs); /* 16px — HDS body size and the AA/UX floor */
+  line-height: var(--hds-line-height-5);
+  -webkit-tap-highlight-color: transparent;
+  scroll-behavior: smooth;
+  /* Guard against accidental horizontal scroll on small viewports.
+     `clip` (unlike `hidden`) does not create a scroll container,
+     so position: sticky headers keep working. */
+  overflow-x: clip;
+}
+
+/* Global Mono system: controls, headings, labels, and content share one technical voice. */
+*, *::before, *::after {
+  font-family: var(--hn-font-mono);
+}
+
+/* Finalized mark palette as the shared semantic accent protocol. */
+.text-nasa-red-shade,
+.text-nasa-red-tint {
+  color: var(--hn-brand-accent) !important;
+}
+
+/* Compact card geometry and intentionally restrained depth. */
+.nasa-glass-panel,
+[class*="card"],
+[class*="Card"] {
+  border-radius: 5px;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.08);
+}
+
+/* Named transitions — never `transition: all`. */
+.m3-transition {
+  transition-property: color, background-color, border-color, opacity, transform;
+  transition-duration: 300ms;
+  transition-timing-function: var(--m3-sys-motion-easing-emphasized);
+}
+
+/* Clean Light HUD Panels (Layer 3 component tokens) */
+.nasa-glass-panel {
+  background: var(--panel-bg);
+  backdrop-filter: blur(var(--panel-blur));
+  -webkit-backdrop-filter: blur(var(--panel-blur));
+  border: 1px solid var(--panel-border);
+  box-shadow: var(--panel-shadow);
+  border-radius: var(--panel-radius);
+  transition: all var(--duration-base) var(--ease-emphasized);
+}
+
+.nasa-glass-panel:hover {
+  border-color: var(--hds-color-carbon-30);
+  box-shadow: none;
+}
+
+/* Custom Leaflet Map Light Styling */
+.leaflet-container {
+  background: var(--hds-color-carbon-10) !important;
+  font-family: inherit;
+  border-radius: 0;
+}
+
+/* Map tiles enhancement for light theme */
+.leaflet-tile {
+  filter: brightness(1.02) contrast(1.02);
+  image-rendering: -webkit-optimize-contrast;
+}
+
+.map-tile-high-contrast .leaflet-tile {
+  filter: brightness(1.12) contrast(1.28) saturate(1.35) !important;
+  image-rendering: -webkit-optimize-contrast;
+}
+
+@keyframes radarPing {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.9;
+  }
+
+  100% {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+}
+
+.radar-ping-ring {
+  animation: none;
+}
+
+html[data-map-debug-fx='true'] .radar-ping-ring {
+  animation: radarPing 2s cubic-bezier(0, 0.2, 0.8, 1) infinite;
+}
+
+@keyframes clusterPulse {
+  0% {
+    transform: scale(0.9);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.35);
+    opacity: 0.15;
+  }
+  100% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+
+.cluster-pulse-ring {
+  animation: none;
+}
+
+html[data-map-debug-fx='true'] .cluster-pulse-ring {
+  animation: clusterPulse 2.4s cubic-bezier(0.2, 0, 0.4, 1) infinite;
+}
+
+.custom-hazardnet-cluster-icon {
+  background: transparent !important;
+  border: none !important;
+}
+
+.hazardnet-cluster-badge:hover {
+  transform: scale(1.12);
+}
+
+
+.custom-modern-leaflet-popup .leaflet-popup-content-wrapper,
+.leaflet-popup-content-wrapper {
+  background: #ffffff !important;
+  color: var(--hds-color-carbon-80) !important;
+  border: 1px solid var(--hds-color-carbon-20) !important;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+.custom-modern-leaflet-popup .leaflet-popup-content,
+.leaflet-popup-content {
+  margin: 0 !important;
+  line-height: 1.4 !important;
+  width: 100% !important;
+}
+
+.leaflet-popup-tip-container {
+  overflow: visible !important;
+}
+
+.leaflet-popup-tip {
+  background: #ffffff !important;
+  border: 1px solid var(--hds-color-carbon-20) !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.leaflet-container a.leaflet-popup-close-button {
+  color: var(--hds-color-carbon-50) !important;
+  padding: 8px 12px 0 0 !important;
+  font-size: 18px !important;
+  font-weight: bold !important;
+  transition: color 0.2s ease;
+}
+
+.leaflet-container a.leaflet-popup-close-button:hover {
+  color: var(--hds-color-carbon-90) !important;
+}
+
+@media (max-width: 640px) {
+  .leaflet-popup-content-wrapper {
+    max-width: 88vw !important;
+    border-radius: 0 !important;
+  }
+
+  .leaflet-container a.leaflet-popup-close-button {
+    padding: 6px 10px 0 0 !important;
+    font-size: 20px !important;
+    width: 44px !important;
+    height: 44px !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    top: 4px !important;
+    right: 4px !important;
+  }
+}
+
+/* Map 3D Perspective Container */
+.map-perspective-container {
+  perspective: 1400px;
+  transition: all 600ms var(--m3-sys-motion-easing-emphasized);
+}
+
+.map-perspective-tilted {
+  transform: rotateX(28deg) rotateZ(-1.5deg) scale(1.02);
+  transform-origin: center center;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+}
+
+/* Custom Pulsing Markers & Orbital Scanner */
+@keyframes cyberPulse {
+  0% {
+    transform: scale(0.92);
+    box-shadow: 0 0 0 0 rgba(198, 40, 40, 0.6);
+  }
+
+  70% {
+    transform: scale(1.18);
+    box-shadow: 0 0 0 16px rgba(198, 40, 40, 0);
+  }
+
+  100% {
+    transform: scale(0.92);
+    box-shadow: 0 0 0 0 rgba(198, 40, 40, 0);
+  }
+}
+
+/* Leaflet User Jurisdiction District Boundary Pulse Effect */
+@keyframes userDistrictDashPulse {
+  0% {
+    stroke-dashoffset: 0;
+    stroke-opacity: 0.80;
+    filter: drop-shadow(0 0 3px currentColor);
+  }
+
+  50% {
+    stroke-dashoffset: 32;
+    stroke-opacity: 1;
+    filter: drop-shadow(0 0 12px currentColor);
+  }
+
+  100% {
+    stroke-dashoffset: 64;
+    stroke-opacity: 0.80;
+    filter: drop-shadow(0 0 3px currentColor);
+  }
+}
+
+@keyframes userDistrictGlowPulse {
+  0% {
+    stroke-width: 8px;
+    stroke-opacity: 0.40;
+    filter: drop-shadow(0 0 4px currentColor);
+  }
+
+  50% {
+    stroke-width: 14px;
+    stroke-opacity: 0.85;
+    filter: drop-shadow(0 0 16px currentColor);
+  }
+
+  100% {
+    stroke-width: 8px;
+    stroke-opacity: 0.40;
+    filter: drop-shadow(0 0 4px currentColor);
+  }
+}
+
+.user-district-pulse-border {
+  animation: userDistrictDashPulse 3s linear infinite;
+  stroke-linecap: round !important;
+  stroke-linejoin: round !important;
+}
+
+.user-district-pulse-glow {
+  animation: userDistrictGlowPulse 2.5s ease-in-out infinite;
+  stroke-linecap: round !important;
+  stroke-linejoin: round !important;
+}
+
+@keyframes radarSweep {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.marker-high-risk {
+  animation: none;
+}
+
+html[data-map-debug-fx='true'] .marker-high-risk {
+  animation: cyberPulse 2s infinite;
+}
+
+.radar-sweep-effect {
+  animation: radarSweep 6s linear infinite;
+}
+
+/* Custom Scrollbar for Light Theme */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--hds-color-carbon-10);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--hds-color-carbon-30);
+  border-radius: 0;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--hds-color-carbon-40);
+}
+
+/* Safe Padding for Mobile Bottom Nav */
+@media (max-width: 1023px) {
+  .pb-safe-bottom {
+    padding-bottom: calc(5rem + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+/* Minimum comfortable touch target for icon-only controls (44×44 px).
+   Usage: add `.tap-target` alongside sizing/padding classes on buttons. */
+.tap-target {
+  min-width: var(--control-min-size);
+  min-height: var(--control-min-size);
+}
+
+/* Numeric data alignment: tabular figures for scores, dates, telemetry */
+.tabular-nums,
+.hn-data-readout {
+  font-variant-numeric: tabular-nums;
+}
+
+@theme inline {
+  /* Typography — NASA HDS is the design system's source of truth (DESIGN.md,
+     __tests__/nasaTokens.test.js):
+       sans    → --hds-font-family-body   ('Public Sans Web', …)
+       brand   → --hds-font-family-heading ('Inter', …)
+       mono    → --hds-font-family-code   ('DM Mono', …)
+     The --hn-font-* stacks below remain for explicit Bengali/display scopes
+     (font-bengali, font-display) where NASA's Latin-only families do not apply. */
+  --font-sans: var(--hds-font-family-body);
+  --font-brand: var(--hds-font-family-heading);
+  --font-heading: var(--hn-font-heading);
+  --font-display: var(--hn-font-display);
+  --font-serif: var(--hn-font-bengali-serif);
+  --font-bengali: var(--hn-font-bengali);
+  --font-bengali-display: var(--hn-font-bengali-display);
+  --font-bengali-serif: var(--hn-font-bengali-serif);
+  --font-montserrat: var(--hn-font-heading);
+  --font-mono: var(--hds-font-family-code);
+
+  /* Corner radius: see the radius keys at the foot of this block — HDS's two
+     values (0px default, 2px for controls) are applied there. `rounded-full` is
+     deliberately untouched: avatars, status dots and circular icon buttons must
+     stay round. */
+  --radius-control: var(--hds-border-radius-control);
+
+  /* Warm ramp — Tailwind's `amber-*` keys re-pointed at NASA's yellow and
+     international-orange sequences from the HDS dataviz ramps. This is what
+     turns 600-odd existing `bg-amber-100 / text-amber-900 / border-amber-300`
+     call sites into NASA's warm palette without touching a single component.
+     Semantics are preserved: amber still means caution/highlight, it is simply
+     now NASA's caution colour. Values are HDS tokens, not inventions —
+     yellow 10/20/30, orange 10/20/50/60/70/80/90 and international-orange. */
+  --color-amber-50: var(--hds-dataviz-seq-yellow-10);
+  --color-amber-100: var(--hds-dataviz-seq-orange-10);
+  --color-amber-200: var(--hds-dataviz-seq-orange-20);
+  --color-amber-300: var(--hds-dataviz-seq-yellow-20);
+  --color-amber-400: var(--hds-dataviz-seq-yellow-30);
+  --color-amber-500: var(--hds-color-international-orange);
+  --color-amber-600: var(--hds-dataviz-seq-orange-50);
+  --color-amber-700: var(--hds-dataviz-seq-orange-60);
+  --color-amber-800: var(--hds-dataviz-seq-orange-70);
+  --color-amber-900: var(--hds-dataviz-seq-orange-80);
+  --color-amber-950: var(--hds-dataviz-seq-orange-90);
+
+  /* NASA palette, published under the names NASA uses, so a class can name the
+     semantic directly: bg-nasa-red, text-nasa-blue-shade, border-carbon-20. */
+  --color-nasa-red: var(--hds-color-nasa-red);
+  --color-nasa-red-tint: var(--hds-color-nasa-red-tint);
+  --color-nasa-red-shade: var(--hds-color-nasa-red-shade);
+  --color-nasa-blue: var(--hds-color-nasa-blue);
+  --color-nasa-blue-tint: var(--hds-color-nasa-blue-tint);
+  --color-nasa-blue-shade: var(--hds-color-nasa-blue-shade);
+  --color-nasa-orange: var(--hds-color-international-orange);
+  --color-nasa-green: var(--hds-color-active-green);
+  --color-carbon-05: var(--hds-color-carbon-05);
+  --color-carbon-10: var(--hds-color-carbon-10);
+  --color-carbon-20: var(--hds-color-carbon-20);
+  --color-carbon-30: var(--hds-color-carbon-30);
+  --color-carbon-40: var(--hds-color-carbon-40);
+  --color-carbon-50: var(--hds-color-carbon-50);
+  --color-carbon-60: var(--hds-color-carbon-60);
+  --color-carbon-70: var(--hds-color-carbon-70);
+  --color-carbon-80: var(--hds-color-carbon-80);
+  --color-carbon-90: var(--hds-color-carbon-90);
+  --color-carbon-black: var(--hds-color-carbon-black);
+  --color-spacesuit: var(--hds-color-spacesuit-white);
+
+  /* Neutral ramp — Tailwind's five grey families re-pointed at NASA's carbon ramp, the
+     same treatment the warm ramp above gets.
+
+     As of the 2026-09-19 consolidation nothing in the source wears these names any more:
+     all 4,030 neutral utility classes were renamed onto carbon (bg-slate-50 → bg-carbon-05
+     … bg-slate-950 → bg-carbon-black) and all 252 hard-coded neutral literals — inline
+     styles, SVG fills, canvas and map layer colours, jsPDF text colours, the manifest and
+     theme-color — were moved onto the token values. What remains here is a safety net: if a
+     component reaches for a Tailwind grey again it still renders NASA's carbon rather than
+     Tailwind's slate, and the design gate (npm run check:design) reports the legacy name as
+     a new finding, because the impeccable detector reads class names rather than resolved
+     values. __tests__/paletteTokens.test.js pins the same thing from the source side.
+
+     The mapping is ordinal (50→05 … 900→90, 950→black) and was chosen on measured relative
+     luminance rather than on name similarity: carbon 40–90 sit within 0.03 of the slate step
+     they replace, so text and dark surfaces kept the contrast they had (slate-900 on white
+     measures 17.85:1, carbon-90 17.88:1). The light end is deliberately stronger, because
+     HDS draws a visible 1px rule and #d1d1d1 is NASA's border grey where #e2e8f0 was
+     Tailwind's. Two steps moved further than the ramp: slate-400 and slate-500 as muted text
+     on a light surface measure 2.56:1 and 4.76:1, so the 616 sites wearing them were
+     rewritten to carbon-60 (7.09:1) rather than aliased — the 12 that sit on a dark panel
+     kept their step, where carbon measures what slate did. Measured pair by pair in
+     docs/design-system/MASTER.md §Neutral ramp. */
+  --color-slate-50: var(--hds-color-carbon-05);
+  --color-slate-100: var(--hds-color-carbon-10);
+  --color-slate-200: var(--hds-color-carbon-20);
+  --color-slate-300: var(--hds-color-carbon-30);
+  --color-slate-400: var(--hds-color-carbon-40);
+  --color-slate-500: var(--hds-color-carbon-50);
+  --color-slate-600: var(--hds-color-carbon-60);
+  --color-slate-700: var(--hds-color-carbon-70);
+  --color-slate-800: var(--hds-color-carbon-80);
+  --color-slate-900: var(--hds-color-carbon-90);
+  --color-slate-950: var(--hds-color-carbon-black);
+
+  --color-gray-50: var(--hds-color-carbon-05);
+  --color-gray-100: var(--hds-color-carbon-10);
+  --color-gray-200: var(--hds-color-carbon-20);
+  --color-gray-300: var(--hds-color-carbon-30);
+  --color-gray-400: var(--hds-color-carbon-40);
+  --color-gray-500: var(--hds-color-carbon-50);
+  --color-gray-600: var(--hds-color-carbon-60);
+  --color-gray-700: var(--hds-color-carbon-70);
+  --color-gray-800: var(--hds-color-carbon-80);
+  --color-gray-900: var(--hds-color-carbon-90);
+  --color-gray-950: var(--hds-color-carbon-black);
+
+  --color-zinc-50: var(--hds-color-carbon-05);
+  --color-zinc-100: var(--hds-color-carbon-10);
+  --color-zinc-200: var(--hds-color-carbon-20);
+  --color-zinc-300: var(--hds-color-carbon-30);
+  --color-zinc-400: var(--hds-color-carbon-40);
+  --color-zinc-500: var(--hds-color-carbon-50);
+  --color-zinc-600: var(--hds-color-carbon-60);
+  --color-zinc-700: var(--hds-color-carbon-70);
+  --color-zinc-800: var(--hds-color-carbon-80);
+  --color-zinc-900: var(--hds-color-carbon-90);
+  --color-zinc-950: var(--hds-color-carbon-black);
+
+  --color-neutral-50: var(--hds-color-carbon-05);
+  --color-neutral-100: var(--hds-color-carbon-10);
+  --color-neutral-200: var(--hds-color-carbon-20);
+  --color-neutral-300: var(--hds-color-carbon-30);
+  --color-neutral-400: var(--hds-color-carbon-40);
+  --color-neutral-500: var(--hds-color-carbon-50);
+  --color-neutral-600: var(--hds-color-carbon-60);
+  --color-neutral-700: var(--hds-color-carbon-70);
+  --color-neutral-800: var(--hds-color-carbon-80);
+  --color-neutral-900: var(--hds-color-carbon-90);
+  --color-neutral-950: var(--hds-color-carbon-black);
+
+  --color-stone-50: var(--hds-color-carbon-05);
+  --color-stone-100: var(--hds-color-carbon-10);
+  --color-stone-200: var(--hds-color-carbon-20);
+  --color-stone-300: var(--hds-color-carbon-30);
+  --color-stone-400: var(--hds-color-carbon-40);
+  --color-stone-500: var(--hds-color-carbon-50);
+  --color-stone-600: var(--hds-color-carbon-60);
+  --color-stone-700: var(--hds-color-carbon-70);
+  --color-stone-800: var(--hds-color-carbon-80);
+  --color-stone-900: var(--hds-color-carbon-90);
+  --color-stone-950: var(--hds-color-carbon-black);
+  /* Status */
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-success-surface: var(--success-surface);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-warning-surface: var(--warning-surface);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-info-surface: var(--info-surface);
+  /* Severity scale */
+  --color-severity-amber: var(--severity-amber);
+  --color-severity-red: var(--severity-red);
+  --color-severity-green: var(--severity-green);
+  --color-severity-low: var(--severity-low);
+  --color-severity-low-solid: var(--severity-low-solid);
+  --color-severity-low-surface: var(--severity-low-surface);
+  --color-severity-moderate: var(--severity-moderate);
+  --color-severity-moderate-solid: var(--severity-moderate-solid);
+  --color-severity-moderate-surface: var(--severity-moderate-surface);
+  --color-severity-high: var(--severity-high);
+  --color-severity-high-solid: var(--severity-high-solid);
+  --color-severity-high-surface: var(--severity-high-surface);
+  --color-severity-very-high: var(--severity-very-high);
+  --color-severity-very-high-solid: var(--severity-very-high-solid);
+  --color-severity-very-high-surface: var(--severity-very-high-surface);
+  --color-severity-extreme: var(--severity-extreme);
+  --color-severity-extreme-solid: var(--severity-extreme-solid);
+  --color-severity-extreme-surface: var(--severity-extreme-surface);
+  /* Surfaces & text roles */
+  --color-surface-page: var(--surface-page);
+  --color-surface-card: var(--surface-card);
+  --color-surface-sunken: var(--surface-sunken);
+  --color-surface-inverse: var(--surface-inverse);
+  --color-body: var(--text-body);
+  --color-subtle: var(--text-subtle);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-primary-strong: var(--primary-strong);
+  --color-primary-strong-foreground: var(--primary-strong-foreground);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+  /* Corner radius — NASA HDS has exactly two radii: 0px for surfaces and 2px for
+     small interactive controls (checkbox, select, text field, tag). Mapping the
+     whole shadcn scale onto those two values is what squares off every
+     rounded-md/xl/2xl/3xl call site across the app in one edit.
+     (Upstream these were `calc(var(--radius) * N)`; --radius is 0 now, so they
+     all collapsed to 0 — correct for surfaces, but it erased HDS's 2px control
+     radius, which is why the control steps are pinned explicitly.) */
+  --radius-sm: var(--hds-border-radius-control);
+  --radius-md: var(--hds-border-radius-control);
+  --radius-lg: var(--hds-border-radius-default);
+  --radius-xl: var(--hds-border-radius-default);
+  --radius-2xl: var(--hds-border-radius-default);
+  --radius-3xl: var(--hds-border-radius-default);
+  --radius-4xl: var(--hds-border-radius-default);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/40;
+  }
+
+  body {
+    @apply bg-surface-page text-body;
+  }
+
+  html {
+    @apply font-sans;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  /* Headings use the modern editorial heading face (Instrument Sans / Anek Bangla)
+     at measured tracking; the balance/pretty wrapping avoids orphaned words on narrow viewports. */
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-heading);
+    text-wrap: balance;
+  }
+
+  h1 {
+    letter-spacing: var(--hds-letter-spacing-neg-3);
+  }
+
+  h2 {
+    letter-spacing: var(--hds-letter-spacing-neg-2);
+  }
+
+  /* Metadata / eyebrow text: uppercase, tracked out, 12px — HDS's
+     `metadata` composite, used for dates, sources and provenance labels. */
+  .hn-metadata {
+    font-family: var(--font-heading);
+    font-size: var(--hds-font-size-3xs);
+    font-weight: var(--hds-font-weight-bold);
+    line-height: var(--hds-line-height-6);
+    letter-spacing: var(--hds-letter-spacing-1);
+    text-transform: uppercase;
+  }
+
+  /* Masthead navigation link — NASA's header pattern: uppercase 12px metadata
+     type, a 2px rule that turns red for the current section. Red is correct here
+     because a nav link navigates ("go somewhere"); blue is reserved for controls
+     that act on the current page. */
+  .hn-nav-link {
+    font-family: var(--font-heading);
+    /* HDS metadata is 12px. If a 1280px masthead overflows, drop to 11px — never 10px. */
+    font-size: var(--hds-font-size-3xs);
+    font-weight: var(--hds-font-weight-bold);
+    letter-spacing: var(--hds-letter-spacing-1);
+    text-transform: uppercase;
+    color: var(--hn-hds-ink-soft);
+    border-bottom: 2px solid transparent;
+    transition: color 150ms var(--ease-standard), border-color 150ms var(--ease-standard);
+  }
+
+  .hn-nav-link:hover {
+    color: var(--hn-hds-ink);
+    border-bottom-color: var(--hn-hds-line-strong);
+  }
+
+  .hn-nav-link[aria-current='page'],
+  .hn-nav-link-active {
+    color: var(--hn-hds-red-shade);
+    border-bottom-color: var(--hn-hds-red);
+  }
+
+  @media (min-width: 1536px) {
+    .hn-nav-link {
+      font-size: var(--hds-font-size-3xs);
+      letter-spacing: var(--hds-letter-spacing-1);
+    }
+  }
+
+  /* Long identifiers — script paths, token names, model filenames — are unbreakable tokens by
+     nature. At 320px one of them (`scripts/build_freshness_artifact.mjs` on /status) pushed the
+     document 81px wider than the viewport. Inline code breaks instead of the page. */
+  code,
+  kbd,
+  samp {
+    overflow-wrap: anywhere;
+  }
+
+  /* HDS's dashed keyboard-focus ring: 1px dashed, 1px offset, palette-aware.
+     Colour is carbon-60 on light surfaces and carbon-30 on dark ones, which is
+     HDS's own default treatment. */
+  .hn-surface-dark {
+    --ring: var(--hds-color-carbon-30);
+  }
+
+  /* Visible keyboard focus everywhere — focus rings must never be removed.
+     Shape and colour follow HDS: 1px dashed, 1px offset, carbon-60 on light
+     surfaces (see `.hn-surface-dark` and the Leaflet override for the dark
+     ones). Radius-based rings were the previous treatment; dashed rectangles
+     are NASA's, and they read better on the square-cornered controls anyway. */
+  :focus-visible {
+    outline: var(--hds-focus-width) var(--hds-focus-style) var(--ring);
+    outline-offset: var(--hds-focus-offset);
+  }
+
+  /* The satellite basemap is the one genuinely dark surface in the product;
+     carbon-60 would vanish against it, so the ring steps up to carbon-30. */
+  .leaflet-container :focus-visible,
+  .hn-surface-dark :focus-visible {
+    outline-color: var(--hds-color-carbon-30);
+  }
+}
+
+/* Respect users who prefer reduced motion: collapse decorative animation
+   (radar pings, pulses, transitions) to a static snapshot. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  html {
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Low-bandwidth mode (Phase 5).
+   `useBandwidthMode` writes data-low-bandwidth on <html> when Data Saver is on, the
+   connection is 2G, the device reports <=2 GB RAM / <=4 cores, or the user asked for it.
+   The same collapse as prefers-reduced-motion applies, because on these devices the
+   animation is not decoration — it is the difference between a usable page and a hung
+   tab. Components that need to change behaviour (not just styling) read the hook. */
+html[data-low-bandwidth='true'] *,
+html[data-low-bandwidth='true'] *::before,
+html[data-low-bandwidth='true'] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html[data-low-bandwidth='true'] {
+  scroll-behavior: auto !important;
+}
+
+/* Brand Typography & Wordmark Utilities per CSV Spec
+   Roles: brand/display = Instrument Sans / Plus Jakarta Sans;
+   headings = Instrument Sans / Anek Bangla;
+   UI/body/nav/buttons/labels = Plus Jakarta Sans / Public Sans / Noto Sans Bengali;
+   data readouts = DM Mono — NASA HDS & Google Fonts suite. */
+.font-montserrat {
+  font-family: var(--font-brand);
+}
+
+.font-inter {
+  font-family: var(--font-sans);
+}
+
+.font-brand {
+  font-family: var(--font-brand);
+}
+
+.font-heading {
+  font-family: var(--font-heading);
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
+
+.font-bengali {
+  font-family: var(--font-bengali);
+}
+
+.font-bengali-display {
+  font-family: var(--font-bengali-display);
+}
+
+.font-bengali-serif {
+  font-family: var(--font-bengali-serif);
+}
+
+/* Global Mobile-First Touch & Tap Targets (WCAG AAA / React Native parity) */
+.tap-target {
+  min-height: 44px;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+button,
+[role="button"],
+input[type="button"],
+input[type="submit"],
+input[type="reset"] {
+  touch-action: manipulation;
+}
+
+/* 1. Top-bar wordmark: brand, 20–22 px, 600 (Semibold), +0.02 em; sits in 56–64 px header */
+.hn-topbar-wordmark {
+  font-family: var(--font-brand);
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  line-height: 1.3;
+}
+
+@media (min-width: 640px) {
+  .hn-topbar-wordmark {
+    font-size: 22px;
+  }
+}
+
+/* 2. Primary nav / menu items: sans, 14 px, 600 (active) / 500. Active = teal + 2 px underline */
+.hn-nav-item {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.15s ease-in-out;
+}
+
+.hn-nav-item.active,
+.hn-nav-item[data-active="true"] {
+  font-weight: 600;
+  color: var(--hn-teal-700);
+  border-bottom: 2px solid var(--hn-teal-600);
+}
+
+/* 3. Dropdown & sidebar menu: sans, 13–14 px, 400–500, line-height 1.4 */
+.hn-dropdown-item,
+.hn-sidebar-item {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+@media (min-width: 640px) {
+
+  .hn-dropdown-item,
+  .hn-sidebar-item {
+    font-size: 14px;
+    font-weight: 500;
+  }
+}
+
+/* 4. Breadcrumbs: sans, 12–13 px, 500, muted color */
+.hn-breadcrumb {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-subtle);
+}
+
+@media (min-width: 640px) {
+  .hn-breadcrumb {
+    font-size: 13px;
+  }
+}
+
+/* 5. Page title (H1): display serif, 28–32 px, 700, -0.01 em */
+.hn-h1,
+h1 {
+  font-family: var(--font-brand);
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+@media (min-width: 640px) {
+
+  .hn-h1,
+  h1 {
+    font-size: 32px;
+  }
+}
+
+/* 6. Section (H2) = display serif 22 px; card title (H3) = sans 16–18 px, 600 */
+.hn-h2,
+h2 {
+  font-family: var(--font-brand);
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.hn-h3,
+h3 {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+@media (min-width: 640px) {
+
+  .hn-h3,
+  h3 {
+    font-size: 18px;
+  }
+}
+
+/* 7. Body text: sans, 16 px, 400, line-height 1.62 */
+.hn-body,
+p {
+  font-family: var(--font-sans);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.62;
+}
+
+/* 8. Metadata / caption / helper text: sans, 12–13 px, 400, line-height 1.4 */
+.hn-caption {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.4;
+  color: var(--text-subtle);
+}
+
+@media (min-width: 640px) {
+  .hn-caption {
+    font-size: 13px;
+  }
+}
+
+/* 9. Buttons & Interactive Triggers: sans, 600 (Semibold), line-height 1.3, -0.01em tracking */
+.hn-btn,
+button,
+[role="button"],
+.hn-btn-primary,
+.hn-btn-secondary,
+.hn-btn-outline,
+.hn-btn-ghost,
+.hn-nav-link {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+}
+
+.hn-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 8px 16px;
+  background-color: var(--hn-hds-red-shade);
+  color: #ffffff;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: 0.01em;
+  border-radius: var(--hds-border-radius-control);
+  transition: background-color 150ms var(--ease-standard);
+  touch-action: manipulation;
+}
+
+.hn-btn-primary:hover {
+  background-color: var(--hn-hds-red);
+}
+
+.hn-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 8px 16px;
+  background-color: var(--hn-hds-blue);
+  color: #ffffff;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: var(--hds-border-radius-control);
+  transition: background-color 150ms var(--ease-standard);
+  touch-action: manipulation;
+}
+
+.hn-btn-secondary:hover {
+  background-color: var(--hn-hds-blue-shade);
+}
+
+.hn-btn-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 8px 16px;
+  background-color: #ffffff;
+  color: var(--hn-hds-ink);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 600;
+  border: 1px solid var(--hn-hds-line);
+  border-radius: var(--hds-border-radius-control);
+  transition: background-color 150ms var(--ease-standard), border-color 150ms var(--ease-standard);
+  touch-action: manipulation;
+}
+
+.hn-btn-outline:hover {
+  background-color: var(--hn-hds-surface);
+  border-color: var(--hn-hds-line-strong);
+}
+
+.hn-btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 8px 16px;
+  background-color: transparent;
+  color: var(--hn-hds-ink);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: var(--hds-border-radius-control);
+  transition: background-color 150ms var(--ease-standard), color 150ms var(--ease-standard);
+  touch-action: manipulation;
+}
+
+.hn-btn-ghost:hover {
+  background-color: var(--hn-hds-surface);
+}
+
+.hn-card {
+  background-color: #ffffff;
+  border: 1px solid var(--hn-hds-line);
+  border-radius: var(--hds-border-radius-control);
+  color: var(--hn-hds-ink);
+}
+
+.hn-card-elevated {
+  background-color: #ffffff;
+  border: 1px solid var(--hn-hds-line);
+  border-radius: var(--hds-border-radius-control);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  color: var(--hn-hds-ink);
+  transition: transform 150ms var(--ease-standard), box-shadow 150ms var(--ease-standard);
+}
+
+/* 10. Data readouts (severity score, confidence, dates): DM Mono, 13–16 px, 600, tabular figures */
+.hn-data-readout {
+  font-family: var(--hds-font-family-code);
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+@media (min-width: 640px) {
+  .hn-data-readout {
+    font-size: 16px;
+  }
+}
+
+/* 11. Badges (FLOOD, SEV-3, district code): DM Mono, 11 px, 600, +0.08 em, caps, colored per severity token */
+.hn-badge {
+  font-family: var(--hds-font-family-code);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* 12. Captions / footer: sans, 12 px, 400 */
+.hn-caption,
+.hn-footer-text,
+caption {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+
+
+
+/* Mobile & Touch UX Optimization Utilities */
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+.touch-scroll {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+}
+
+/* Safe Area Insets */
+.pt-safe {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.pl-safe {
+  padding-left: env(safe-area-inset-left, 0px);
+}
+
+.pr-safe {
+  padding-right: env(safe-area-inset-right, 0px);
+}
+
+/* Standardized Severity Tokens & Progress Bar Color Classes */
+.bg-severity-amber,
+.progress-severity-amber {
+  background-color: var(--severity-amber) !important;
+}
+
+.bg-severity-red,
+.progress-severity-red {
+  background-color: var(--severity-red) !important;
+}
+
+.bg-severity-green,
+.progress-severity-green {
+  background-color: var(--severity-green) !important;
+}
+
+.text-severity-amber {
+  color: var(--severity-amber) !important;
+}
+
+.text-severity-red {
+  color: var(--severity-red) !important;
+}
+
+.text-severity-green {
+  color: var(--severity-green) !important;
+}
+
+/* Prevent iOS Mobile Safari auto-zoom on input focus */
+@media (max-width: 768px) {
+
+  input[type=text],
+  input[type=email],
+  input[type=password],
+  input[type=number],
+  input[type=search],
+  input[type=tel],
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* ==========================================================================
+   OFFICIAL DISASTER MANAGEMENT & EMERGENCY HANDOUT PRINT MEDIA SYSTEM
+   Formatted specifically for physical field handouts, SOD 2019 compliance,
+   and executive emergency responder distribution.
+   ========================================================================== */
+
+/* Utility classes for Print vs Screen */
+.print-only {
+  display: none !important;
+}
+
+.screen-only {
+  display: block;
+}
+
+@media print {
+  /* 1. Page Configuration & Geometry with CSS Paged Media Page Counters */
+  @page {
+    size: A4 portrait;
+    margin: 20mm 15mm; /* Top/Bottom: 20mm, Left/Right: 15mm (A4 Standard) */
+    @bottom-left {
+      content: "HazardNet Bangladesh • Emergency Directive Handout";
+      font-family: "Times New Roman", Times, serif;
+      font-size: 8.5pt;
+      font-weight: 600;
+      color: var(--hds-color-carbon-60);
+    }
+    @bottom-center {
+      content: "SOD 2019 Disaster Management Compliance";
+      font-family: "Times New Roman", Times, serif;
+      font-size: 8pt;
+      color: var(--hds-color-carbon-40);
+    }
+    @bottom-right {
+      content: "Page " counter(page) " of " counter(pages);
+      font-family: "Times New Roman", Times, serif;
+      font-size: 9pt;
+      font-weight: 800;
+      color: var(--hds-color-carbon-90);
+    }
+  }
+
+  @page :first {
+    margin-top: 20mm;
+  }
+
+  /* 2. Color Calibration & Exact Ink Rendering */
+  *,
+  *::before,
+  *::after {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+    text-shadow: none !important;
+    box-shadow: none !important;
+  }
+
+  /* 3. Base Document Typography & Clean Contrast (Times New Roman 12pt Official Standard) */
+  html,
+  body,
+  .print-district-brief {
+    background-color: #ffffff !important;
+    background: #ffffff !important;
+    color: var(--hds-color-carbon-90) !important;
+    font-family: "Times New Roman", Times, serif !important;
+    font-size: 12pt !important;
+    line-height: 1.5 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    max-width: 100% !important;
+    counter-reset: page;
+  }
+
+  .container {
+    padding: 0 5mm !important; /* Internal padding within margins */
+  }
+
+  /* 4. HazardNet Official Emergency Handout Watermark */
+  body::before {
+    content: "HAZARDNET BANGLADESH • OFFICIAL EMERGENCY ADVISORY • OPERATIONAL DIRECTIVE";
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-32deg);
+    font-family: "Times New Roman", Times, serif;
+    font-size: 20pt;
+    font-weight: 900;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(15, 23, 42, 0.035) !important;
+    border: 2.5pt dashed rgba(15, 23, 42, 0.035);
+    padding: 20pt 30pt;
+    border-radius: 12pt;
+    pointer-events: none;
+    z-index: 9999;
+    text-align: center;
+    white-space: nowrap;
+    display: block !important;
+  }
+
+  /* 5. Non-Printable Elements Cleanup */
+  nav,
+  header:not(.print-only):not(.district-brief-header),
+  footer:not(.print-only):not(.print-page-footer),
+  aside,
+  button,
+  input,
+  select,
+  textarea,
+  [role="dialog"]:not(.print-preview-modal-root):not(#print-preview-modal-root),
+  [role="tablist"],
+  .no-print,
+  .leaflet-control-container,
+  .chat-widget,
+  .toast,
+  .toaster,
+  .floating-action-button,
+  .sticky:not(.print-keep),
+  .fixed:not(.print-keep):not(.print-page-footer):not(.print-preview-modal-root) {
+    display: none !important;
+  }
+
+  .print-only {
+    display: block !important;
+  }
+
+  /* When PrintPreviewModal is open during print, render only the preview paper */
+  body:has(.print-preview-modal-root) > *:not(#root),
+  body:has(.print-preview-modal-root) #root > *:not(:has(.print-preview-modal-root)) {
+    display: none !important;
+  }
+
+  .print-preview-modal-root {
+    position: static !important;
+    inset: auto !important;
+    z-index: auto !important;
+    background: transparent !important;
+    backdrop-filter: none !important;
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .print-preview-modal-root .screen-only,
+  .print-preview-toolbar,
+  .print-preview-footer {
+    display: none !important;
+  }
+
+  .print-preview-modal-root > div.flex-1 {
+    padding: 0 !important;
+    background: transparent !important;
+    overflow: visible !important;
+    display: block !important;
+  }
+
+  .print-preview-modal-root div[style*="transform"] {
+    transform: none !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    margin: 0 !important;
+  }
+
+  .print-preview-paper {
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    min-height: auto !important;
+    background: #ffffff !important;
+  }
+
+  /* 6. Layout Width, Margins & Container Flattening */
+  .max-w-7xl,
+  .max-w-6xl,
+  .max-w-5xl,
+  .max-w-4xl,
+  .max-w-3xl,
+  .max-w-2xl,
+  .max-w-xl,
+  .max-w-lg,
+  .container {
+    max-width: 100% !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* 7. Card & Box Flattening for Crisp Ink-friendly Handouts */
+  .bg-white,
+  .bg-carbon-05,
+  .bg-carbon-10,
+  .bg-carbon-90,
+  .bg-carbon-black,
+  .nasa-glass-panel,
+  [class*="rounded-3xl"],
+  [class*="rounded-2xl"] {
+    background-color: #ffffff !important;
+    background: #ffffff !important;
+    color: var(--hds-color-carbon-90) !important;
+    border: 1pt solid var(--hds-color-carbon-30) !important;
+    border-radius: 6pt !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  /* 8. Text Color & Contrast Overrides (H1: 18pt, H2: 16pt, H3: 14pt) */
+  h1, h2, h3, h4, h5, h6 {
+    color: var(--hds-color-carbon-90) !important;
+    font-weight: 800 !important;
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+  }
+
+  h1 { font-size: 18pt !important; font-weight: bold !important; line-height: 1.3 !important; margin: 0 0 10pt 0 !important; }
+  h2 { font-size: 16pt !important; font-weight: bold !important; line-height: 1.35 !important; margin: 15pt 0 8pt 0 !important; }
+  h3 { font-size: 14pt !important; font-weight: bold !important; line-height: 1.4 !important; margin: 12pt 0 6pt 0 !important; }
+  h4 { font-size: 12pt !important; font-weight: bold !important; line-height: 1.45 !important; margin: 8pt 0 4pt 0 !important; }
+  p, span, li, td, th {
+    font-size: 12pt !important;
+    line-height: 1.5 !important;
+    color: var(--hds-color-carbon-80) !important;
+  }
+
+  .text-white,
+  .text-carbon-10,
+  .text-carbon-20,
+  .text-carbon-30,
+  .text-carbon-40 {
+    color: var(--hds-color-carbon-70) !important;
+  }
+
+  /* 9. Hyperlink Formatting for Physical Emergency Handouts */
+  a {
+    color: var(--hds-color-carbon-90) !important;
+    text-decoration: none !important;
+  }
+
+  /* Automatically append clean destination URLs to external portals & documentation links */
+  a[href^="http://"]:after,
+  a[href^="https://"]:after {
+    content: " [" attr(href) "]";
+    font-size: 7pt !important;
+    font-family: 'DM Mono', Consolas, monospace !important;
+    font-weight: 500 !important;
+    color: var(--hds-color-carbon-60) !important;
+    word-break: break-all !important;
+  }
+
+  /* Internal route links, anchors, and scripts should NOT append URLs */
+  a[href^="/"]:after,
+  a[href^="#"]:after,
+  a[href^="javascript:"]:after,
+  .no-print-url:after,
+  .no-print-url a:after,
+  .hn-topbar-wordmark:after {
+    content: none !important;
+  }
+
+  /* Format telephone & mailto links with clear emergency callout */
+  a[href^="tel:"]:after {
+    content: " (Hotline: " attr(href) ")";
+    font-size: 7.5pt !important;
+    font-family: 'DM Mono', Consolas, monospace !important;
+    font-weight: 700 !important;
+    color: var(--hds-color-carbon-90) !important;
+  }
+
+  a[href^="mailto:"]:after {
+    content: " [" attr(href) "]";
+    font-size: 7pt !important;
+    font-family: 'DM Mono', Consolas, monospace !important;
+    color: var(--hds-color-carbon-70) !important;
+  }
+
+  a[href^="tel:"] {
+    font-weight: 800 !important;
+    font-family: 'DM Mono', Consolas, monospace !important;
+    color: var(--hds-color-carbon-90) !important;
+  }
+
+  /* 10. Emergency Contacts & Directory Cards Formatting */
+  .emergency-contact-card,
+  [class*="border-carbon-20"] > div,
+  .space-y-4 > div {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  .grid {
+    display: grid !important;
+  }
+
+  .grid-cols-1,
+  .grid-cols-2,
+  .grid-cols-3,
+  .grid-cols-4,
+  .grid-cols-6 {
+    gap: 6pt !important;
+  }
+
+  /* Responsive grid columns adjustment for physical A4 Portrait */
+  .grid-cols-4,
+  .lg\:grid-cols-4,
+  .grid-cols-5,
+  .grid-cols-6,
+  .lg\:grid-cols-6 {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  /* 11. Explicit Container Pagination Rules for Charts and Upazila Cards */
+  .chart-card {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid-page !important;
+    -webkit-column-break-inside: avoid !important;
+    transform: scale(0.9) !important;
+    transform-origin: top left !important;
+    overflow: hidden !important;
+  }
+
+  .upazila-card {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid-page !important;
+    -webkit-column-break-inside: avoid !important;
+  }
+
+  /* All Chart Elements & Containers: 90% scale transform and pagination protection */
+  .chart-card,
+  .recharts-responsive-container,
+  .recharts-wrapper,
+  .recharts-surface,
+  .recharts-cartesian-axis,
+  .recharts-xAxis,
+  .recharts-yAxis,
+  .recharts-legend-wrapper,
+  #sec-telemetry .chart-card,
+  #sec-hazard-trend .chart-card,
+  #sec-telemetry,
+  #sec-hazard-trend,
+  div[class*="chart-card"],
+  div[class*="chart"],
+  [data-chart-container],
+  .phased-step-card,
+  .sop-step,
+  .metric-card,
+  .impact-metric-pill,
+  .pagination-protected,
+  div[class*="rounded-3xl"] > div,
+  article,
+  section {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid-page !important;
+  }
+
+  /* Dedicated Chart Containers Rule: prevent page splitting, keep charts and X-axis labels intact */
+  .chart-card,
+  .recharts-responsive-container,
+  .recharts-wrapper,
+  .recharts-surface,
+  .recharts-cartesian-axis,
+  .recharts-xAxis,
+  .recharts-yAxis,
+  #sec-telemetry .chart-card,
+  #sec-hazard-trend .chart-card,
+  div[class*="chart-card"],
+  div[class*="chart"],
+  [data-chart-container] {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid-page !important;
+    overflow: hidden !important;
+  }
+
+  /* Scale down all chart elements by 90% (transform: scale(0.9)) during print to prevent rendering artifacts and data clipping */
+  .chart-card,
+  .recharts-responsive-container,
+  .recharts-wrapper,
+  .recharts-surface,
+  #sec-telemetry .chart-card,
+  #sec-hazard-trend .chart-card,
+  div[class*="chart-card"],
+  div[class*="chart"],
+  [data-chart-container] {
+    transform: scale(0.9) !important;
+    transform-origin: top left !important;
+    width: 111.11% !important;
+    margin-bottom: -8pt !important;
+  }
+
+  .chart-card .h-64 {
+    height: 145pt !important;
+    max-height: 145pt !important;
+  }
+
+  .chart-card .h-72 {
+    height: 160pt !important;
+    max-height: 160pt !important;
+  }
+
+  /* Upazila Card Grid Pagination Protection (Page 4 Fix) */
+  #sec-upazilas,
+  .upazila-matrix-section {
+    page-break-inside: auto !important;
+    break-inside: auto !important;
+  }
+
+  .upazila-card {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    break-inside: avoid-page !important;
+    -webkit-column-break-inside: avoid !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    padding: 10pt 12pt !important;
+    margin-bottom: 0 !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+    height: auto !important;
+    min-height: 0 !important;
+  }
+
+  #sec-upazilas .grid,
+  #sec-upazilas .upazila-grid,
+  #sec-upazilas [class*="grid"],
+  .upazila-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)) !important;
+    gap: 1rem !important;
+    page-break-inside: auto !important;
+    break-inside: auto !important;
+  }
+
+  /* Force page break before Appendix */
+  .print-appendix-break,
+  .appendix-section {
+    page-break-before: always !important;
+    break-before: page !important;
+    margin-top: 0 !important;
+    padding-top: 14pt !important;
+  }
+
+  /* Dedicated 'End of Brief' Page for Print/PDF (Requirement: page-break-before, font-size: 8px) */
+  .end-of-brief-page,
+  .print-end-of-brief {
+    page-break-before: always !important;
+    break-before: page !important;
+    font-size: 8px !important;
+    line-height: 1.4 !important;
+    margin-top: 0 !important;
+    padding-top: 24pt !important;
+  }
+
+  .end-of-brief-page * {
+    font-size: 8px !important;
+  }
+
+  /* Operational Trigger Threshold Box */
+  [class*="bg-amber-50"],
+  [class*="bg-rose-50"],
+  [class*="bg-emerald-50"],
+  [class*="bg-blue-50"],
+  [class*="bg-carbon-05"] {
+    background-color: var(--hds-color-carbon-05) !important;
+    border: 1pt solid var(--hds-color-carbon-40) !important;
+    border-radius: 4pt !important;
+    padding: 5pt 7pt !important;
+  }
+
+  /* Badges & Severity Chips */
+  [class*="rounded-full"],
+  [class*="rounded-lg"],
+  [class*="rounded-md"] {
+    border: 0.75pt solid var(--hds-color-carbon-50) !important;
+    background-color: var(--hds-color-carbon-10) !important;
+    color: var(--hds-color-carbon-90) !important;
+    font-weight: 700 !important;
+    border-radius: 3pt !important;
+  }
+
+  /* 12. Technical Cultivars & Long Advisory Tables with Repeated Emergency Header */
+  table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    border: 1.5pt solid var(--hds-color-carbon-90) !important;
+    font-size: 8pt !important;
+    margin-top: 6pt !important;
+    margin-bottom: 8pt !important;
+    page-break-inside: auto !important;
+    break-inside: auto !important;
+  }
+
+  /* Repeat table header at the top of every printed page */
+  thead,
+  thead.print-table-emergency-header,
+  .print-table-emergency-header,
+  table thead {
+    display: table-header-group !important; /* CRITICAL: Repeats the table header at the top of every printed page */
+  }
+
+  /* Fixed 'Emergency Protocol' repeated header row for advisories */
+  .print-table-emergency-header,
+  thead tr.print-table-emergency-header,
+  tr.print-table-emergency-header {
+    display: table-header-group !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    background-color: var(--hds-color-carbon-90) !important;
+    color: #ffffff !important;
+  }
+
+  .print-table-emergency-header th,
+  thead tr.print-table-emergency-header th,
+  th.emergency-protocol-title {
+    background-color: var(--hds-color-carbon-90) !important;
+    color: #ffffff !important;
+    font-family: 'DM Mono', Consolas, monospace !important;
+    font-size: 8pt !important;
+    font-weight: 900 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.06em !important;
+    padding: 4pt 7pt !important;
+    border: 1.5pt solid var(--hds-color-carbon-90) !important;
+    text-align: left !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  thead tr:not(.print-table-emergency-header) th {
+    background-color: var(--hds-color-carbon-20) !important;
+    color: var(--hds-color-carbon-90) !important;
+    border: 1pt solid var(--hds-color-carbon-60) !important;
+    font-weight: 800 !important;
+    font-family: 'DM Mono', Consolas, monospace !important;
+    font-size: 7.5pt !important;
+    padding: 4pt 6pt !important;
+    text-transform: uppercase;
+  }
+
+  tr {
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+  }
+
+  td {
+    border: 0.75pt solid var(--hds-color-carbon-30) !important;
+    padding: 4pt 6pt !important;
+    color: var(--hds-color-carbon-90) !important;
+    vertical-align: top !important;
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+  }
+
+  tbody tr:nth-child(even) td {
+    background-color: var(--hds-color-carbon-05) !important;
+  }
+
+  /* 13. Dynamic QR Code Print Layout */
+  .print-qr-code-box {
+    display: flex !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    background-color: #ffffff !important;
+    border: 1pt solid var(--hds-color-carbon-60) !important;
+    border-radius: 6pt !important;
+    padding: 4pt 6pt !important;
+    margin: 4pt 0 !important;
+  }
+
+  .print-qr-code-box svg {
+    display: block !important;
+  }
+
+  /* 14. 'Last Updated' Timestamp & Currency Indicators */
+  .print-last-updated {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 4pt !important;
+    background-color: var(--hds-color-carbon-05) !important;
+    border: 1pt solid var(--hds-color-carbon-50) !important;
+    border-radius: 4pt !important;
+    padding: 2.5pt 6pt !important;
+    font-family: 'DM Mono', Consolas, monospace !important;
+    font-size: 7.5pt !important;
+    font-weight: 700 !important;
+    color: var(--hds-color-carbon-90) !important;
+  }
+
+  .print-last-updated strong {
+    color: var(--hds-color-carbon-90) !important;
+    font-weight: 900 !important;
+  }
+
+  .print-currency-tag {
+    display: inline-block !important;
+    background-color: var(--hds-color-carbon-90) !important;
+    color: #ffffff !important;
+    font-family: 'DM Mono', Consolas, monospace !important;
+    font-size: 6.5pt !important;
+    font-weight: 800 !important;
+    text-transform: uppercase !important;
+    padding: 1.5pt 4pt !important;
+    border-radius: 2pt !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* 15. Fallback Page Counter for Non-Paged-Media Print Renderers */
+  .print-page-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    font-family: 'DM Mono', Consolas, monospace !important;
+    font-size: 7pt !important;
+    color: var(--hds-color-carbon-60) !important;
+    border-top: 0.75pt solid var(--hds-color-carbon-40) !important;
+    padding-top: 2pt !important;
+    background-color: #ffffff !important;
+    z-index: 999;
+  }
+
+  .print-page-number::after {
+    counter-increment: page;
+    content: "Page " counter(page);
+    font-weight: 800 !important;
+    color: var(--hds-color-carbon-90) !important;
+  }
+
+  /* 16. Structured Advisory Renderer: Uncollapse all sections */
+  .StructuredAdvisoryRenderer,
+  [class*="StructuredAdvisoryRenderer"] {
+    display: block !important;
+  }
+
+  /* Ensure collapsible vulnerability content is always fully visible in print */
+  .animate-in,
+  [class*="slide-in-from-top"] {
+    display: block !important;
+    opacity: 1 !important;
+    height: auto !important;
+    visibility: visible !important;
+  }
+
+  /* 17. Text Clamp Removal */
+  .line-clamp-1,
+  .line-clamp-2,
+  .line-clamp-3,
+  .line-clamp-4,
+  .line-clamp-5,
+  .truncate {
+    display: block !important;
+    -webkit-line-clamp: unset !important;
+    -webkit-box-orient: unset !important;
+    overflow: visible !important;
+    white-space: normal !important;
+    text-overflow: unset !important;
+  }
+
+  /* 18. Print-Only and Screen-Only Display Controls */
+  .print-only {
+    display: block !important;
+  }
+
+  .screen-only {
+    display: none !important;
+  }
+}
+
+/* ==========================================================================
+   UNIFIED PRINT PREVIEW & PDF CAPTURE STYLES (.pdf-exporting, .pdf-capture-mode, .print-preview-rendered-body)
+   Simulates authentic ink-friendly physical handout formatting inside the modal and html2canvas.
+   ========================================================================== */
+body.pdf-exporting .print-only,
+.pdf-capture-mode .print-only,
+.print-preview-rendered-body .print-only {
+  display: block !important;
+}
+
+body.pdf-exporting .screen-only,
+.pdf-capture-mode .screen-only,
+body.pdf-exporting .no-print,
+.pdf-capture-mode .no-print,
+.print-preview-rendered-body .screen-only,
+.print-preview-rendered-body .no-print {
+  display: none !important;
+}
+
+/* Base Flattening for html2canvas & Preview */
+.pdf-capture-mode *, 
+.pdf-capture-mode *::before, 
+.pdf-capture-mode *::after,
+.print-preview-rendered-body *,
+.print-preview-rendered-body *::before,
+.print-preview-rendered-body *::after {
+  text-shadow: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* Card & Box Flattening for Crisp Ink-friendly Handouts */
+.pdf-capture-mode .bg-white,
+.pdf-capture-mode .bg-carbon-05,
+.pdf-capture-mode .bg-carbon-10,
+.pdf-capture-mode .bg-carbon-90,
+.pdf-capture-mode .bg-carbon-black,
+.pdf-capture-mode .nasa-glass-panel,
+.pdf-capture-mode [class*="rounded-3xl"],
+.pdf-capture-mode [class*="rounded-2xl"],
+.print-preview-rendered-body .bg-white,
+.print-preview-rendered-body .bg-carbon-05,
+.print-preview-rendered-body .bg-carbon-10,
+.print-preview-rendered-body .bg-carbon-90,
+.print-preview-rendered-body .bg-carbon-black,
+.print-preview-rendered-body .nasa-glass-panel,
+.print-preview-rendered-body [class*="rounded-3xl"],
+.print-preview-rendered-body [class*="rounded-2xl"] {
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+  color: var(--hds-color-carbon-90) !important;
+  border: 1pt solid var(--hds-color-carbon-30) !important;
+  border-radius: 6pt !important;
+  box-shadow: none !important;
+}
+
+.pdf-capture-mode .chart-card,
+.print-preview-rendered-body .chart-card,
+.pdf-capture-mode .upazila-card,
+.print-preview-rendered-body .upazila-card,
+.pdf-capture-mode .metric-card,
+.print-preview-rendered-body .metric-card,
+.pdf-capture-mode .impact-metric-pill,
+.print-preview-rendered-body .impact-metric-pill,
+.pdf-capture-mode .pagination-protected,
+.print-preview-rendered-body .pagination-protected,
+.pdf-capture-mode #sec-telemetry .chart-card,
+.print-preview-rendered-body #sec-telemetry .chart-card {
+  page-break-inside: avoid !important;
+  break-inside: avoid !important;
+  break-inside: avoid-page !important;
+}
+
+.pdf-capture-mode .chart-card,
+.print-preview-rendered-body .chart-card {
+  overflow: hidden !important;
+}
+
+.pdf-capture-mode .print-qr-code-box,
+.print-preview-rendered-body .print-qr-code-box {
+  display: flex !important;
+  background-color: #ffffff !important;
+  border: 1pt solid var(--hds-color-carbon-60) !important;
+  border-radius: 6pt !important;
+}
+
+.pdf-capture-mode .print-last-updated,
+.print-preview-rendered-body .print-last-updated {
+  display: inline-flex !important;
+  background-color: var(--hds-color-carbon-05) !important;
+  border: 1pt solid var(--hds-color-carbon-50) !important;
+  color: var(--hds-color-carbon-90) !important;
+}
+
+.pdf-capture-mode .print-currency-tag,
+.print-preview-rendered-body .print-currency-tag {
+  display: inline-block !important;
+  background-color: var(--hds-color-carbon-90) !important;
+  color: #ffffff !important;
+}
+
+.pdf-capture-mode table,
+.print-preview-rendered-body table {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  border: 1.5pt solid var(--hds-color-carbon-90) !important;
+  font-size: 8pt !important;
+  margin-top: 6pt !important;
+  margin-bottom: 8pt !important;
+}
+
+.pdf-capture-mode thead,
+.print-preview-rendered-body thead,
+.pdf-capture-mode .print-table-emergency-header,
+.print-preview-rendered-body .print-table-emergency-header,
+.pdf-capture-mode thead tr.print-table-emergency-header,
+.print-preview-rendered-body thead tr.print-table-emergency-header {
+  display: table-header-group !important;
+}
+
+.pdf-capture-mode thead tr.print-table-emergency-header,
+.print-preview-rendered-body thead tr.print-table-emergency-header,
+.pdf-capture-mode .print-table-emergency-header,
+.print-preview-rendered-body .print-table-emergency-header {
+  background-color: var(--hds-color-carbon-90) !important;
+  color: #ffffff !important;
+}
+
+.pdf-capture-mode thead tr.print-table-emergency-header th,
+.pdf-capture-mode th.emergency-protocol-title,
+.print-preview-rendered-body thead tr.print-table-emergency-header th,
+.print-preview-rendered-body th.emergency-protocol-title {
+  background-color: var(--hds-color-carbon-90) !important;
+  color: #ffffff !important;
+  font-family: 'DM Mono', Consolas, monospace !important;
+  font-size: 8pt !important;
+  font-weight: 900 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.06em !important;
+  padding: 4pt 7pt !important;
+  border: 1.5pt solid var(--hds-color-carbon-90) !important;
+  text-align: left !important;
+}
+
+.pdf-capture-mode thead tr:not(.print-table-emergency-header) th,
+.print-preview-rendered-body thead tr:not(.print-table-emergency-header) th {
+  background-color: var(--hds-color-carbon-20) !important;
+  color: var(--hds-color-carbon-90) !important;
+  border: 1pt solid var(--hds-color-carbon-60) !important;
+  padding: 4pt 6pt !important;
+  font-weight: 800;
+  font-size: 7.5pt;
+  text-transform: uppercase;
+}
+
+.pdf-capture-mode td,
+.print-preview-rendered-body td {
+  border: 0.75pt solid var(--hds-color-carbon-30) !important;
+  padding: 4pt 6pt !important;
+  font-size: 7.5pt !important;
+  color: var(--hds-color-carbon-80) !important;
+}
+
+.pdf-capture-mode tr:nth-child(even) td,
+.print-preview-rendered-body tr:nth-child(even) td {
+  background-color: var(--hds-color-carbon-05) !important;
+}
+
+.pdf-capture-mode .text-white,
+.pdf-capture-mode .text-carbon-40,
+.pdf-capture-mode .text-carbon-30,
+.print-preview-rendered-body .text-white,
+.print-preview-rendered-body .text-carbon-40,
+.print-preview-rendered-body .text-carbon-30 {
+  color: var(--hds-color-carbon-90) !important;
+}
+
+.pdf-capture-mode h1,
+.pdf-capture-mode h2,
+.pdf-capture-mode h3,
+.print-preview-rendered-body h1,
+.print-preview-rendered-body h2,
+.print-preview-rendered-body h3 {
+  color: var(--hds-color-carbon-90) !important;
+}
+
+/* Ink-Saver High Contrast Field Print Mode */
+.ink-saver-active,
+.ink-saver-active * {
+  color: #000000 !important;
+  border-color: #000000 !important;
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+
+.ink-saver-active svg {
+  stroke: #000000 !important;
+}
+
+.ink-saver-active .print-currency-tag,
+.ink-saver-active thead tr.print-table-emergency-header th {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+
+/* ─── Blog article typography (prose-blog) ─────────────────────────────── */
+.prose-blog h1 { font-size: 1.6rem; font-weight: 900; color: var(--hds-color-carbon-90); margin: 1.4rem 0 0.6rem; letter-spacing: -0.01em; }
+.prose-blog h2 { font-size: 1.3rem; font-weight: 900; color: var(--hds-color-carbon-90); margin: 1.3rem 0 0.5rem; }
+.prose-blog h3 { font-size: 1.1rem; font-weight: 800; color: var(--hds-color-carbon-80); margin: 1.1rem 0 0.4rem; }
+.prose-blog p  { margin: 0.75rem 0; line-height: 1.75; }
+.prose-blog ul, .prose-blog ol { margin: 0.75rem 0 0.75rem 1.4rem; line-height: 1.7; }
+.prose-blog ul { list-style: disc; }
+.prose-blog ol { list-style: decimal; }
+.prose-blog li { margin: 0.3rem 0; }
+.prose-blog a  { color: #b45309; font-weight: 700; text-decoration: underline; text-underline-offset: 2px; }
+.prose-blog a:hover { color: #92400e; }
+.prose-blog blockquote { margin: 1rem 0; padding: 0.6rem 1rem; border: 1px solid var(--hds-color-carbon-20); background: #fffbeb; color: #78350f; font-style: italic; }
+.prose-blog pre { margin: 1rem 0; padding: 0.9rem 1rem; background: var(--hds-color-carbon-90); color: var(--hds-color-carbon-20); border-radius: 0.75rem; overflow-x: auto; font-size: 0.78rem; line-height: 1.6; }
+.prose-blog code { font-family: var(--hds-font-family-code); font-size: 0.82em; background: var(--hds-color-carbon-10); padding: 0.1rem 0.35rem; border-radius: 0.35rem; color: #b91c1c; }
+.prose-blog pre code { background: transparent; color: inherit; padding: 0; }
+.prose-blog img { max-width: 100%; height: auto; border-radius: 0.75rem; margin: 1rem 0; border: 1px solid var(--hds-color-carbon-20); }
+.prose-blog hr { margin: 1.5rem 0; border: none; border-top: 1px solid var(--hds-color-carbon-20); }
+.prose-blog [style*="text-align: center"], .prose-blog [style*="text-align:center"] { text-align: center; }
+.prose-blog [style*="text-align: right"], .prose-blog [style*="text-align:right"] { text-align: right; }
+
+/* Editor empty placeholder */
+[contenteditable][data-placeholder]:empty::before {
+  content: attr(data-placeholder);
+  color: var(--hds-color-carbon-40);
+  pointer-events: none;
+}
+
+@layer base {
+  button,
+  [role="button"],
+  input[type="submit"],
+  input[type="button"],
+  input[type="reset"] {
+    @apply min-h-[44px] min-w-[44px] touch-manipulation;
+    border-radius: var(--hds-border-radius-control);
+  }
+
+  /* Global 150ms Smooth Transitions for all interactive components */
+  button,
+  [role="button"],
+  a,
+  input,
+  select,
+  textarea,
+  .tap-target,
+  .hn-btn-primary,
+  .hn-btn-secondary,
+  .hn-btn-outline,
+  .hn-btn-ghost,
+  .hn-card-elevated,
+  .hn-nav-link {
+    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform;
+    transition-timing-function: var(--ease-standard);
+    transition-duration: 150ms;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  button,
+  [role="button"],
+  a,
+  input,
+  select,
+  textarea,
+  .tap-target,
+  .hn-btn-primary,
+  .hn-btn-secondary,
+  .hn-btn-outline,
+  .hn-btn-ghost,
+  .hn-card-elevated,
+  .hn-nav-link {
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Accessible Touch Target Expansion for Content Links (44px WCAG / Apple HIG) */
+.touch-target-link,
+a.touch-target-link,
+footer a {
+  position: relative;
+  touch-action: manipulation;
+}
+
+.touch-target-link::before,
+a.touch-target-link::before,
+footer a::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  min-width: 44px;
+  min-height: 44px;
+  width: 100%;
+  height: 100%;
+  pointer-events: auto;
+}
+
+/* Accessibility contrast enhancement: for captions (< 14px), carbon-70 is bumped to carbon-80 to guarantee WCAG AAA (7:1) */
+.text-xs.text-carbon-70,
+.text-\[11px\].text-carbon-70,
+.text-\[12px\].text-carbon-70,
+.text-\[10px\].text-carbon-70 {
+  color: var(--hds-color-carbon-80);
+}
+
+

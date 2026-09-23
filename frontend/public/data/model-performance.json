@@ -1,0 +1,231 @@
+{
+  "schema": "hazardnet-model-performance/v2",
+  "origin": "https://www.hazardnet.live",
+  "updated": "2026-09-24",
+  "totals": {
+    "episodes": 5,
+    "named_districts": 50,
+    "districts_with_a_scored_row": 50,
+    "flagged_any_class": 50,
+    "flagged_the_episode_class": 13,
+    "episode_class_over_threshold": 23,
+    "scored_samples": 100,
+    "alarmed_without_a_recorded_impact": 532,
+    "episodes_with_a_computable_pod": 1
+  },
+  "episodes": [
+    {
+      "id": "amphan-2020",
+      "title": "Cyclone Amphan \u2014 Bangladesh landfall, 20 May 2020",
+      "hazard_class": "Tropical Cyclone",
+      "onset_date": "2020-05-20",
+      "affected_count": 14,
+      "detection": {
+        "named_districts": 14,
+        "districts_with_a_scored_row": 14,
+        "flagged_any_class": 14,
+        "flagged_the_episode_class": 0,
+        "episode_class_over_threshold": 0,
+        "alarm_threshold": 0.5,
+        "per_horizon": {
+          "7_days": {
+            "named_districts_with_a_row": 14,
+            "flagged_any_class": 14
+          },
+          "15_days": {
+            "named_districts_with_a_row": 14,
+            "flagged_any_class": 14
+          }
+        }
+      },
+      "scores": {
+        "scored_samples": 28,
+        "predictions": 128,
+        "outcomes": 14,
+        "matched": 28,
+        "unmatched_no_outcome": 100,
+        "hits": 0,
+        "misses": 0,
+        "false_alarms": 28,
+        "observed_events": 0,
+        "forecast_events": 28,
+        "pod": null,
+        "far": 1,
+        "csi": 0
+      }
+    },
+    {
+      "id": "yaas-2021",
+      "title": "Cyclone Yaas \u2014 Bangladesh coast, 26 May 2021",
+      "hazard_class": "Tropical Cyclone",
+      "onset_date": "2021-05-26",
+      "affected_count": 9,
+      "detection": {
+        "named_districts": 9,
+        "districts_with_a_scored_row": 9,
+        "flagged_any_class": 9,
+        "flagged_the_episode_class": 0,
+        "episode_class_over_threshold": 0,
+        "alarm_threshold": 0.5,
+        "per_horizon": {
+          "7_days": {
+            "named_districts_with_a_row": 9,
+            "flagged_any_class": 9
+          },
+          "15_days": {
+            "named_districts_with_a_row": 9,
+            "flagged_any_class": 9
+          }
+        }
+      },
+      "scores": {
+        "scored_samples": 18,
+        "predictions": 128,
+        "outcomes": 9,
+        "matched": 18,
+        "unmatched_no_outcome": 110,
+        "hits": 0,
+        "misses": 0,
+        "false_alarms": 18,
+        "observed_events": 0,
+        "forecast_events": 18,
+        "pod": null,
+        "far": 1,
+        "csi": 0
+      }
+    },
+    {
+      "id": "mocha-2023",
+      "title": "Cyclone Mocha \u2014 Cox's Bazar coast and Teknaf, 14 May 2023",
+      "hazard_class": "Tropical Cyclone",
+      "onset_date": "2023-05-14",
+      "affected_count": 4,
+      "detection": {
+        "named_districts": 4,
+        "districts_with_a_scored_row": 4,
+        "flagged_any_class": 4,
+        "flagged_the_episode_class": 0,
+        "episode_class_over_threshold": 0,
+        "alarm_threshold": 0.5,
+        "per_horizon": {
+          "7_days": {
+            "named_districts_with_a_row": 4,
+            "flagged_any_class": 4
+          },
+          "15_days": {
+            "named_districts_with_a_row": 4,
+            "flagged_any_class": 4
+          }
+        }
+      },
+      "scores": {
+        "scored_samples": 8,
+        "predictions": 128,
+        "outcomes": 4,
+        "matched": 8,
+        "unmatched_no_outcome": 120,
+        "hits": 0,
+        "misses": 0,
+        "false_alarms": 8,
+        "observed_events": 0,
+        "forecast_events": 8,
+        "pod": null,
+        "far": 1,
+        "csi": 0
+      }
+    },
+    {
+      "id": "eastern-flood-2024",
+      "title": "Eastern flash floods \u2014 Feni, Cumilla, Noakhali, 20\u201330 August 2024",
+      "hazard_class": "Flash Flood",
+      "onset_date": "2024-08-24",
+      "affected_count": 13,
+      "detection": {
+        "named_districts": 13,
+        "districts_with_a_scored_row": 13,
+        "flagged_any_class": 13,
+        "flagged_the_episode_class": 13,
+        "episode_class_over_threshold": 13,
+        "alarm_threshold": 0.5,
+        "per_horizon": {
+          "7_days": {
+            "named_districts_with_a_row": 13,
+            "flagged_any_class": 13
+          },
+          "15_days": {
+            "named_districts_with_a_row": 13,
+            "flagged_any_class": 13
+          }
+        }
+      },
+      "scores": {
+        "scored_samples": 26,
+        "predictions": 128,
+        "outcomes": 13,
+        "matched": 26,
+        "unmatched_no_outcome": 102,
+        "hits": 26,
+        "misses": 0,
+        "false_alarms": 0,
+        "observed_events": 26,
+        "forecast_events": 26,
+        "pod": 1,
+        "far": null,
+        "csi": null
+      }
+    },
+    {
+      "id": "northeast-flood-2025",
+      "title": "Northeast and coastal monsoon floods \u2014 Sylhet, Sunamganj and the hill districts, 1 June 2025",
+      "hazard_class": "Flood",
+      "onset_date": "2025-06-01",
+      "affected_count": 10,
+      "detection": {
+        "named_districts": 10,
+        "districts_with_a_scored_row": 10,
+        "flagged_any_class": 10,
+        "flagged_the_episode_class": 0,
+        "episode_class_over_threshold": 10,
+        "alarm_threshold": 0.5,
+        "per_horizon": {
+          "7_days": {
+            "named_districts_with_a_row": 10,
+            "flagged_any_class": 10
+          },
+          "15_days": {
+            "named_districts_with_a_row": 10,
+            "flagged_any_class": 10
+          }
+        }
+      },
+      "scores": {
+        "scored_samples": 20,
+        "predictions": 128,
+        "outcomes": 10,
+        "matched": 20,
+        "unmatched_no_outcome": 108,
+        "hits": 0,
+        "misses": 0,
+        "false_alarms": 20,
+        "observed_events": 0,
+        "forecast_events": 20,
+        "pod": null,
+        "far": 1,
+        "csi": 0
+      }
+    }
+  ],
+  "threshold_sensitivity_note": "Threshold-sensitivity sweeps and driver diagnostics are research-private; only the headline detection counts above are published.",
+  "how_to_read": [
+    "These are detection counts against recorded historical events, not a forecast-skill estimate.",
+    "Five episodes is far too small to support a skill claim; the counts are honest but inconclusive.",
+    "The classification model was not re-run for this evaluation; only published detection outputs were scored.",
+    "No calibration accuracy is claimed."
+  ],
+  "not_published": [
+    "Model code",
+    "Dataset collection procedures",
+    "Training and benchmarking details",
+    "Severity derivation"
+  ]
+}

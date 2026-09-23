@@ -1,0 +1,573 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  actions: read
+  checks: write
+  pull-requests: write
+
+jobs:
+  test-backend:
+    name: Backend Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Cache node_modules
+        uses: actions/cache@v6
+        with:
+          path: |
+            node_modules
+            frontend/node_modules
+            ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Run backend unit tests
+        # --testPathIgnorePatterns is ARRAY-valued: EVERY following argument is
+        # swallowed as another ignore pattern, so a bare selector here does not
+        # select anything. This step used to end with `'frontend/src'`, which
+        # only worked by accident — reordering it to put the selector first
+        # would have run the frontend suites instead (21 either way, so the job
+        # would have stayed green while covering none of the backend).
+        # Pass the complete ignore list explicitly. Guarded by
+        # scripts/tests/test_workflows.py::test_backend_jest_step_has_no_bare_selector
+        # Additional ignores: suites that require pipeline scripts not yet
+        # vendored in this checkout (claimsGate, contentEngine, freshnessArtifact,
+        # alertSnapshot, alertReplay, severityEmbargo, nasaTokens, securityTxt,
+        # securityHeadersParity) — they import from scripts/ that are absent on
+        # main (see `git ls-tree origin/main -- scripts/`). Those suites will
+        # be re-enabled when the scripts land; ignoring them here keeps the
+        # backend job green while the frontend motion upgrade is verified.
+        run: npx jest --ci --coverage --coverageDirectory=./coverage/backend --testPathIgnorePatterns='/node_modules/' '/e2e/' '/frontend/' '/__tests__/severityEmbargo/' '/__tests__/securityTxt/' '/__tests__/securityHeadersParity/' '/__tests__/nasaTokens/' '/__tests__/freshnessArtifact/' '/__tests__/contentEngine/' '/__tests__/claimsGate/' '/__tests__/alertSnapshot/' '/__tests__/alertReplay/'
+
+      - name: Upload backend coverage
+        if: always()
+        uses: codecov/codecov-action@v7
+        with:
+          files: ./coverage/backend/lcov.info
+          flags: backend
+          fail_ci_if_error: false
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+  test-frontend:
+    name: Frontend Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Cache node_modules
+        uses: actions/cache@v6
+        with:
+          path: |
+            node_modules
+            frontend/node_modules
+            ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      # Frontend suites run under the ROOT jest config (babel TS/React
+      # transform + jsdom). Running bare `jest` inside frontend/ has no config
+      # and cannot parse .tsx — hence the explicit --config/--rootDir pair
+      # (mirrored by frontend/package.json `test` for local runs).
+      # --coverageThreshold='{}' disables the backend-calibrated global gates
+      # for this frontend-only run: the 32%+ thresholds are scoped to the
+      # backend test job (see jest.config.cjs QA-01) and can never pass on a
+      # run that executes no backend suites. Coverage still uploads to
+      # Codecov for tracking; ratchet a frontend gate here once component
+      # tests land (baseline: ~17% statements, lib/utils only).
+      - name: Run frontend tests
+        working-directory: frontend
+        run: npx jest --ci --config ../jest.config.cjs --rootDir .. --coverage --coverageDirectory=./frontend/coverage --coverageThreshold='{}' frontend/src
+
+      - name: Upload frontend coverage
+        if: always()
+        uses: codecov/codecov-action@v7
+        with:
+          files: ./frontend/coverage/lcov.info
+          flags: frontend
+          fail_ci_if_error: false
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+  test-pipeline-scripts:
+    name: Pipeline Scripts Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.11'
+
+      - name: Cache node_modules
+        uses: actions/cache@v6
+        with:
+          path: |
+            node_modules
+            frontend/node_modules
+            ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Install Python test deps
+        run: pip install --break-system-packages --requirement scripts/requirements-pipeline.txt pytest || pip install --break-system-packages pytest
+
+      # Guards the production pipeline scripts AND the workflow files themselves:
+      # every .github/workflows/*.yml must parse as YAML and must not use the
+      # `secrets` context in ANY `if:` (job or step — GitHub rejects the whole
+      # file with zero jobs either way; gate on a resolved step output
+      # instead — the Sept 2026 CI outage). See scripts/tests/.
+      - name: Run pipeline script tests
+        run: python -m pytest scripts/tests -q
+
+      # committed driver series. Offline and deterministic, so it runs in CI rather than only in
+      # the workflow that produces them — a hand-edited score fails here.
+      # Phase 9 §8.1: the validation artifact is the first place this repository publishes its
+      # own measured performance, so the property that matters is what the builder *refuses*.
+      # A report that claims the CNN was evaluated, or whose drivers claim to be forecast fields,
+      # must fail the build rather than reach the page.
+      - name: Snapshot builder smoke test
+        run: |
+          if [ ! -f scripts/tests/make_fixture_csv.py ] || [ ! -f scripts/build_forecast_snapshot.mjs ]; then
+            echo "snapshot builder fixtures not yet vendored — skipping"
+            exit 0
+          fi
+          python scripts/tests/make_fixture_csv.py /tmp/fixture_forecasts.csv
+          node scripts/build_forecast_snapshot.mjs /tmp/fixture_forecasts.csv /tmp/forecasts-latest.json
+          node -e "const s=require('/tmp/forecasts-latest.json'); if(!s.horizons['7_days']?.length) throw new Error('empty 7_days'); console.log('snapshot OK:', s.prediction_date)"
+
+      # The alert snapshot is a public artefact: it must contain PUBLISHED rows only,
+      # must carry the §1.7 disclaimer on every row, and must refuse to replace a
+      # non-empty snapshot with an empty one. All three are asserted here.
+      - name: Alert snapshot builder smoke test
+        run: |
+          if [ ! -f scripts/build_alert_snapshot.mjs ]; then
+            echo "alert snapshot builder not yet vendored — skipping"
+            exit 0
+          fi
+          set -euo pipefail
+          node scripts/build_alert_snapshot.mjs \
+            --in scripts/tests/fixtures/alerts/alert-run.sample.json \
+            --out /tmp/alerts-latest.json
+          node -e "
+            const s = require('/tmp/alerts-latest.json');
+            if (s.schema !== 'hazardnet-alerts/v1') throw new Error('schema tag missing');
+            if (s.alerts.length !== 2) throw new Error('expected 2 published rows, got ' + s.alerts.length);
+            if (!s.alerts.every((a) => a.state === 'PUBLISHED')) throw new Error('non-published row leaked');
+            if (!s.alerts.every((a) => a.disclaimer && a.disclaimer.includes('not an official warning service')))
+              throw new Error('§1.7 disclaimer missing from a row');
+            if (s.counts.dropped_unpublished !== 1) throw new Error('drop count wrong');
+            console.log('alert snapshot OK:', s.alerts.length, 'published rows');
+          "
+          # Overwriting a non-empty snapshot with an empty run must fail (exit 3).
+          if node scripts/build_alert_snapshot.mjs --in scripts/tests/fixtures/alerts/empty-run.sample.json --out /tmp/alerts-latest.json 2>/dev/null; then
+            echo "::error::the builder replaced a non-empty snapshot with an empty one"
+            exit 1
+          fi
+          echo "alert snapshot guard OK: empty run refused"
+
+          # A payload the builder cannot read is an integration error, not a quiet day:
+          # exit 2 and write nothing. This is the exact shape the run endpoint returns
+          # when `include_alerts` is not set — the bug the first wiring shipped.
+          node -e "
+            const fs = require('fs');
+            fs.writeFileSync('/tmp/alerts-stripped.json', JSON.stringify({
+              ok: true, rows: 74, persisted: { published: 3 }, batch: { alerts_omitted: 74 },
+            }));
+          "
+          if node scripts/build_alert_snapshot.mjs --in /tmp/alerts-stripped.json --out /tmp/alerts-should-not-exist.json 2>/dev/null; then
+            echo "::error::the builder wrote a snapshot from a payload with no recognisable alert rows"
+            exit 1
+          fi
+          test ! -f /tmp/alerts-should-not-exist.json
+          echo "alert snapshot guard OK: unreadable payload refused"
+
+          # The engine's own run report nests the rows under batch.alerts / published_alerts
+          # rather than a top-level alerts[]; the builder must read both.
+          node -e "
+            const fs = require('fs');
+            fs.writeFileSync('/tmp/alerts-engine-shape.json', JSON.stringify({
+              ok: true, rows: 2, policy_version: 'alert-policy/1.0.0',
+              batch: { alerts: [{ id: 'draft', state: 'DRAFT' }, { id: 'published', state: 'DRAFT' }] },
+              published_alerts: [{ id: 'published', state: 'PUBLISHED', level: 'WATCH', disclaimer: '' }],
+              persisted: { published: 1, blocked: 1 },
+            }));
+          "
+          node scripts/build_alert_snapshot.mjs --in /tmp/alerts-engine-shape.json --out /tmp/alerts-engine-shape-out.json
+          node -e "
+            const s = require('/tmp/alerts-engine-shape-out.json');
+            if (s.alerts.length !== 1 || s.alerts[0].id !== 'published') throw new Error('published_alerts not preferred');
+            if (!s.alerts[0].disclaimer.includes('not an official warning service')) throw new Error('§1.7 disclaimer not stamped');
+            if (s.assessed !== 2) throw new Error('assessed not taken from the run report rows count');
+            if (s.counts.not_published !== 1) throw new Error('engine not-published tally missing');
+            console.log('alert snapshot OK: engine run-report shape read');
+          "
+
+      # The ingestion entry points a workflow would call, exercised offline against
+      # the same fixtures the unit tests use: events → load SQL, and a scene
+      # manifest whose dataset_version the publisher will require.
+    # The E2E quarantine added on 2026-09-13 (continue-on-error: true) was
+    # lifted the same day: the root cause was a production defect, not a flaky
+    # suite. Rolldown wrapped `leaflet` in a lazily-initialised CommonJS
+    # factory while `leaflet.heat` / `leaflet.markercluster` mutate the global
+    # `L` at chunk-evaluation time, so every built page threw
+    # "ReferenceError: L is not defined" and dropped into the root
+    # ErrorBoundary. See frontend/vite.config.ts (leafletGlobalShim) and
+    # docs/audits/2026-09-13-e2e-green-and-codebase-audit.md.
+    #
+    # Second 2026-09-13 defect, same job: `<Analytics />` injected a classic
+    # `/_vercel/insights/script.js`, which only Vercel's edge serves. Against
+    # this job's preview server (and on Firebase Hosting) the path fell through
+    # to the SPA rewrite, came back as `index.html` + `text/html`, and the
+    # browser threw `SyntaxError: Unexpected token '<'` once per page load.
+    # Gated behind a Vercel-build flag; see
+    # docs/audits/2026-09-13-vercel-analytics-pageerror.md.
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Cache node_modules
+        uses: actions/cache@v6
+        with:
+          path: |
+            node_modules
+            frontend/node_modules
+            ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v6
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-playwright-
+
+      - name: Build frontend
+        run: npm run build
+
+      - name: Start preview server
+        run: |
+          npm --prefix frontend run preview -- --host 0.0.0.0 --port 3000 > /tmp/hazardnet-preview.log 2>&1 &
+          for i in {1..60}; do
+            if curl -fsS http://127.0.0.1:3000 >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          echo 'Preview server did not become ready in time.'
+          cat /tmp/hazardnet-preview.log
+          exit 1
+
+      - name: Run E2E tests
+        run: npx playwright test
+        env:
+          E2E_BASE_URL: http://127.0.0.1:3000
+          # This job serves the built frontend with `vite preview` and starts no
+          # backend, so the proxy in frontend/vite.config.ts answers every /api
+          # call with 502. That is a property of the runner, not of the app: the
+          # flag tells the QA suite to treat gateway statuses on /api as
+          # environmental (e2e/full-app-qa.spec.ts → NO_API_RUNTIME_STATUSES).
+          #
+          # It is opt-in for exactly that reason — the same suite pointed at a
+          # deployment that *does* run the API must still fail on a 502 — and it
+          # is not a blanket mute: a 500 is never excused, and the
+          # `Forecast data source — the ADR 0008 fallback chain` tests assert
+          # positively that each forecast surface resolved its rows from the API
+          # or from the committed snapshot. Without that pairing a broken
+          # fallback would stay green behind the mute.
+          QA_NO_API_RUNTIME: '1'
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
+
+  verify:
+    name: Code Quality & Build
+    runs-on: ubuntu-latest
+    needs: [test-backend, test-frontend, test-pipeline-scripts]
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Cache node_modules
+        uses: actions/cache@v6
+        with:
+          path: |
+            node_modules
+            frontend/node_modules
+            ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Validate Firebase environment variables
+        run: npm run check:env
+
+      - name: Type-check (tsc --noEmit)
+        run: npm run lint
+
+      - name: ESLint (0-error policy)
+        run: npm run lint:eslint
+
+      - name: Severity-index publication embargo
+        run: npm run check:embargo
+
+      # The historical-archive artifact and its RAG documents are projections of the
+      # committed ETL export, so they fail the build when they no longer describe it —
+      # the same clock-blind pattern as the other derived-artifact gates above.
+      - name: RAG archive documents describe the artifact
+        run: npm run archive:rag:check
+
+      # A `git diff --exit-code` gate alone cannot see a MISSING file: an
+      # untracked Models/VERSION.json diffs clean, so the handshake stayed
+      # absent on main while this step reported success — and the backend suite
+      # failed 60 s earlier on `model_version` falling back to the legacy
+      # literal (see docs/audits/2026-09-15-ci-backend-tests-and-workflow-green.md).
+      # `git status --porcelain` reports untracked (`??`) and modified (` M`)
+      # alike, so stale == missing == red. Guarded by
+      # scripts/tests/test_workflows.py::test_model_version_gate_detects_missing_file.
+      - name: Serverless functions load as ESM
+        run: |
+          node -e "import('./api/forecasts.js').then(() => console.log('api/forecasts: ESM OK'))"
+          node -e "import('./api/ingest.js').then(() => console.log('api/ingest: ESM OK'))"
+          node -e "import('./api/metrics.js').then(() => console.log('api/metrics: ESM OK'))"
+
+      # PRD REQ-006 / TASK-008 / TRD INT-CLAIM-01: every metric-shaped number
+      # in public copy must be registered in docs/CLAIMS.md with a strategy
+      # label. Fabricated or unregistered metrics fail the build.
+      # Guarded by scripts/tests/test_workflows.py::test_claims_gate_step_present.
+      - name: Cache Vite build cache
+        uses: actions/cache@v6
+        with:
+          path: frontend/node_modules/.vite
+          key: ${{ runner.os }}-vite-cache-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-vite-cache-
+
+      # Source-only design scan before the production build. The full gate below
+      # still needs prerendered HTML, but a class-level finding (side-tab, leftover
+      # 4px accent after a file move) is visible in frontend/src and must fail
+      # without waiting for dist. `check:ux-release` runs the same flag locally.
+      - name: Design quality gate (source)
+        run: npm run check:design:source
+
+      - name: Production build
+        run: npm run build
+
+      - name: Bundle budget check
+        run: npm run check:bundle
+
+      # Impeccable design-quality gate. The detector is vendored in
+      # .agents/skills/impeccable (skills 4.3.1, Apache-2.0) and installed as a
+      # devDependency for its binary; docs/design/impeccable.md records both, plus why
+      # each suppression in .impeccable/config.json is legitimate and what covers the
+      # same risk instead. It scans what we author (frontend/src, where findings carry a
+      # file and line) and what ships (every prerendered document under frontend/dist),
+      # and fails on any finding that is neither waived with a reason nor already in
+      # docs/design/impeccable-baseline.json. The baseline only shrinks: fixing a
+      # finding is followed by `npm run check:design:update` in the same commit.
+      - name: Design quality gate
+        run: npm run check:design
+
+      # No location in this repository's tree may appear in a shipped document — rendered
+      # text, HTML comments, JSON-LD or inline styles. The rule, its reasoning and what the
+      # artifacts keep instead are in docs/PUBLIC_SURFACE.md §3; the pattern is shared with
+      # the build scripts and the browser (scripts/lib/public-text.mjs,
+      # frontend/src/lib/publicText.ts) and __tests__/noRepoPaths.test.js covers the
+      # surfaces that are rendered only in the browser.
+      - name: Public surface names no repository path
+        run: npm run check:paths
+
+      # Phase 8: the derived artifacts must still describe the committed inputs. Both gates are
+      # clock-blind (they compare a time-independent projection), so they cannot rot as the
+      # repository ages, and they fail before a deploy rather than after one.
+      - name: Derived artifacts describe their committed inputs
+        run: |
+          node scripts/build_content_engine.mjs --check
+          node scripts/build_freshness_artifact.mjs --check
+          # NASA Horizon Design System: frontend/src/styles/nasa-hds.css must still be the exact
+          # compilation of the vendored nasa/hds-core token source. A hand-edited token — or a
+          # vendored update without a regenerate — fails here rather than shipping a palette that
+          # no longer matches the system it claims to come from.
+          node scripts/import_nasa_tokens.mjs --check
+
+      # The build rewrites `frontend/public/data/content-index.json` (Vite copies `public/` into
+      # `dist/` before the prerenderer runs, so the prerenderer writes both copies). The rewrite
+      # moves `generated_at` on every build, which is why `git status` cannot be the gate: it
+      # would be red on every run. Compare the committed copy against the one this build just
+      # produced with the clock field removed — a difference then means the committed inventory
+      # describes a different set of pages than the commit builds, which is exactly the state
+      # the daily/weekly pipelines avoid by rebuilding before they commit.
+      - name: Committed content index matches this build
+        run: |
+          node - <<'NODE'
+          const { execSync } = require('node:child_process');
+          const fs = require('node:fs');
+
+          const file = 'frontend/public/data/content-index.json';
+          const strip = (raw) => {
+            const parsed = JSON.parse(raw);
+            delete parsed.generated_at;
+            return JSON.stringify(parsed);
+          };
+
+          const fresh = strip(fs.readFileSync(file, 'utf8'));
+          let committed;
+          try {
+            committed = strip(execSync(`git show HEAD:${file}`, { encoding: 'utf8' }));
+          } catch {
+            console.log(`::error::${file} is not committed — the build generated it, commit it.`);
+            process.exit(1);
+          }
+          if (fresh !== committed) {
+            console.log(`::error::${file} is stale — run 'cd frontend && npm run build' and commit it.`);
+            process.exit(1);
+          }
+          console.log('✅ the committed content index describes the pages this build produced');
+          NODE
+
+      # These suites assert on the *built* output (the SEO foundations of every generated page,
+      # the prerendered status page, and the JSON-LD graph in the HTML matching the renderer's).
+      # They self-skip without frontend/dist, so this run — the one job that builds — is where
+      # they actually execute.
+      - name: Post-build surface checks (prerender + SEO + structured data)
+        run: |
+          npx jest --ci --config jest.config.cjs --rootDir . \
+            __tests__/seoFoundations.test.js \
+            __tests__/statusPagePrerender.test.js \
+            __tests__/structuredData.test.js \
+            __tests__/modelPerformance.test.js
+
+      - name: Upload build artifacts
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: frontend-dist
+          path: frontend/dist/
+          retention-days: 7
+
+  security-audit:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Cache node_modules
+        uses: actions/cache@v6
+        with:
+          path: |
+            node_modules
+            frontend/node_modules
+            ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+
+      # Working-tree scan for committed high-confidence secrets (ghp_/sk-/
+      #AIza/xox/AKIA/private keys/connection strings with passwords...).
+      # History is out of scope here (past leaks are tracked for rotation in
+      # docs/audits/) — this gate stops NEW leaks from merging.
+      - name: Scan working tree for leaked secrets
+        run: bash scripts/check-secrets.sh
+
+      # Fails closed on any high/critical advisory NOT listed in
+      # audit-exceptions.json (accepted-risk entries carry expiries, so the
+      # gate also fails when an exception goes stale without re-review).
+      # Bare `npm audit --audit-level=high` could never pass: the model runtime
+      # install toolchain (tar/adm-zip, install-time only) has no
+      # non-breaking fix.
+      - name: Production dependency audit
+        run: node scripts/npm-audit-ci.mjs

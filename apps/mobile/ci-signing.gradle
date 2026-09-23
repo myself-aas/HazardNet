@@ -1,0 +1,25 @@
+// Injected into `android/app/build.gradle` by `.github/workflows/app-releases.yml`.
+//
+// The Expo/React Native template signs release builds with the *debug* keystore,
+// which is fine locally but not for distribution. This script re-points the
+// `release` buildType at a signing config loaded from `keystore.properties`,
+// which the workflow writes next to `keystore.jks` (either decoded from the
+// `ANDROID_KEYSTORE_*` repository secrets or generated on the fly as a
+// throw-away CI key when no secrets are configured).
+android {
+    signingConfigs {
+        releaseCi {
+            def ciProps = new Properties()
+            file('keystore.properties').withInputStream { ciProps.load(it) }
+            storeFile file(ciProps.getProperty('storeFile'))
+            storePassword ciProps.getProperty('storePassword')
+            keyAlias ciProps.getProperty('keyAlias')
+            keyPassword ciProps.getProperty('keyPassword')
+        }
+    }
+    buildTypes {
+        release {
+            signingConfig signingConfigs.releaseCi
+        }
+    }
+}

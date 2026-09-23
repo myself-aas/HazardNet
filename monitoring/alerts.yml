@@ -1,0 +1,37 @@
+# HazardNet alert rules (backlog #5 — forecast freshness SLO).
+#
+# Threshold rationale: the canonical pipeline runs DAILY at 00:00 UTC
+# (.github/workflows/daily_forecast.yml — GitHub runner, processing + weather service +
+# model; the production workflows have been dispatch-only legacy since 2026-09-16). With date-granular
+# prediction_date values, a healthy gauge saws between ~2h (just after a run)
+# and ~25h (just before the next). 48h (2 days) = one missed run plus ~22h of
+# grace — the weekly-cadence 192h calibration applied only while the production
+# weekly pipeline was the producer.
+
+groups:
+  - name: hazardnet-forecast-freshness
+    rules:
+      - alert: HazardNetForecastStale
+        expr: hazardnet_forecast_age_hours > 48
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Forecast data is stale ({{ $value | printf \"%.0f\" }}h old)"
+          description: >-
+            The newest prediction_date in the forecast store is older than 2
+            days — the daily pipeline likely missed a run. Check the
+            latest daily_forecast.yml run and the ingest endpoint logs.
+
+      - alert: HazardNetForecastDataMissing
+        expr: absent(hazardnet_forecast_age_hours)
+        for: 30m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Forecast age gauge is absent"
+          description: >-
+            No forecast-age samples for 30m. Either nothing has ever been
+            ingested, the forecast store is unreadable (the gauge is reset on
+            lookup failure), or the /metrics target is down. Note: a Vercel
+            deployment only emits this series via /api/metrics — scrape it too.

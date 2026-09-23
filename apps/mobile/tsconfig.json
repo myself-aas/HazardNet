@@ -1,0 +1,39 @@
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    "jsx": "react-native",
+    "target": "ES2022",
+    "module": "ES2022",
+    "moduleResolution": "Bundler",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "noUncheckedIndexedAccess": false,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@hazardnet/core": ["../../packages/core/src/index.ts"],
+      "@hazardnet/core/*": ["../../packages/core/src/*"],
+      "@hazardnet/api": ["../../packages/api/src/index.ts"],
+      "@hazardnet/analytics": ["../../packages/analytics/src/index.ts"],
+      "@hazardnet/design-system": ["../../packages/design-system/src/index.ts"],
+      "@hazardnet/design-system/*": ["../../packages/design-system/src/*"]
+    },
+    "types": ["react-native", "jest"]
+  },
+  "include": [
+    "App.tsx",
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "../../packages/core/src/**/*.ts",
+    "../../packages/api/src/**/*.ts",
+    "../../packages/analytics/src/**/*.ts",
+    "../../packages/design-system/src/tokens.ts",
+    "../../packages/design-system/src/material3Expressive.ts",
+    "../../packages/design-system/src/index.ts"
+  ],
+  "exclude": ["node_modules", "dist", ".expo"]
+}
