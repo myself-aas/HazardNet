@@ -22,6 +22,7 @@ try {
     encoding: 'utf8',
     stdio: ['ignore', 'pipe', 'ignore'],
     maxBuffer: 32 * 1024 * 1024,
+    shell: process.platform === 'win32',
   });
   audit = JSON.parse(out);
 } catch (err) {

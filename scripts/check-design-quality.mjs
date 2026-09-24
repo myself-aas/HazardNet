@@ -73,25 +73,33 @@ function walkHtml(dir) {
 
 function runDetector(targets) {
   // npx resolves the locally installed CLI; it is a devDependency, so no network is
-  // involved once `npm ci` has run.
-  const res = spawnSync('npx', ['impeccable', 'detect', ...targets, '--json', '--no-advisory'], {
-    cwd: ROOT,
-    encoding: 'utf8',
-    maxBuffer: 256 * 1024 * 1024,
-    shell: process.platform === 'win32',
-  });
-  if (res.error) fail(`could not run the impeccable detector: ${res.error.message}`);
-  // Exit 2 means "findings", which is the normal case here; anything else is a problem.
-  if (res.status !== 0 && res.status !== 2) {
-    fail(`detector exited ${res.status}: ${(res.stderr || res.stdout || '').slice(0, 800)}`);
+  // involved once `npm ci` has run. Batch targets to avoid shell argument length limits.
+  const BATCH_SIZE = 20;
+  const allFindings = [];
+
+  for (let i = 0; i < targets.length; i += BATCH_SIZE) {
+    const chunk = targets.slice(i, i + BATCH_SIZE);
+    const res = spawnSync('npx', ['impeccable', 'detect', ...chunk, '--json', '--no-advisory'], {
+      cwd: ROOT,
+      encoding: 'utf8',
+      maxBuffer: 256 * 1024 * 1024,
+      shell: process.platform === 'win32',
+    });
+    if (res.error) fail(`could not run the impeccable detector: ${res.error.message}`);
+    // Exit 2 means "findings", which is the normal case here; anything else is a problem.
+    if (res.status !== 0 && res.status !== 2) {
+      fail(`detector exited ${res.status}: ${(res.stderr || res.stdout || '').slice(0, 800)}`);
+    }
+    let parsed;
+    try {
+      parsed = JSON.parse(res.stdout || '[]');
+    } catch (err) {
+      fail(`detector output was not JSON: ${err.message}`);
+    }
+    allFindings.push(...parsed);
   }
-  let parsed;
-  try {
-    parsed = JSON.parse(res.stdout || '[]');
-  } catch (err) {
-    fail(`detector output was not JSON: ${err.message}`);
-  }
-  return parsed;
+
+  return allFindings;
 }
 
 function key(f) {

@@ -1,6 +1,6 @@
 {
   "schema": "hazardnet-generated-routes/v1",
-  "generated_at": "2026-09-24T17:33:25.758Z",
+  "generated_at": "2026-09-24T23:02:03.627Z",
   "generated_by": "scripts/build_content_engine.mjs",
   "origin": "https://www.hazardnet.live",
   "inputs": {
@@ -9,7 +9,7 @@
     "forecast_snapshot": {
       "path": "frontend/public/data/forecasts-latest.json",
       "prediction_date": "2026-09-16",
-      "generated_at": "2026-09-17T16:11:19.128Z"
+      "generated_at": "2026-09-24T21:35:56.263Z"
     },
     "event_archive": null,
     "model_performance": {

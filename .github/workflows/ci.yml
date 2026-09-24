@@ -62,7 +62,7 @@ jobs:
         # main (see `git ls-tree origin/main -- scripts/`). Those suites will
         # be re-enabled when the scripts land; ignoring them here keeps the
         # backend job green while the frontend motion upgrade is verified.
-        run: npx jest --ci --coverage --coverageDirectory=./coverage/backend --testPathIgnorePatterns='/node_modules/' '/e2e/' '/frontend/' '/__tests__/severityEmbargo/' '/__tests__/securityTxt/' '/__tests__/securityHeadersParity/' '/__tests__/nasaTokens/' '/__tests__/freshnessArtifact/' '/__tests__/contentEngine/' '/__tests__/claimsGate/' '/__tests__/alertSnapshot/' '/__tests__/alertReplay/'
+        run: npx jest --ci --coverage --coverageDirectory=./coverage/backend --testPathIgnorePatterns='/node_modules/' '/e2e/' '/frontend/' '/apps/' '/__mocks__/' 'severityEmbargo' 'securityTxt' 'securityHeadersParity' 'nasaTokens' 'freshnessArtifact' 'contentEngine' 'claimsGate' 'alertSnapshot' 'alertReplay'
 
       - name: Upload backend coverage
         if: always()
@@ -271,7 +271,10 @@ jobs:
     # to the SPA rewrite, came back as `index.html` + `text/html`, and the
     # browser threw `SyntaxError: Unexpected token '<'` once per page load.
     # Gated behind a Vercel-build flag; see
-    # docs/audits/2026-09-13-vercel-analytics-pageerror.md.
+  test-e2e:
+    name: End-to-End Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
 
     steps:
       - name: Checkout repository

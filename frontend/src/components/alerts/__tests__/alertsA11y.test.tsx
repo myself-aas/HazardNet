@@ -14,7 +14,7 @@ import '@testing-library/jest-dom';
  * prevention: these rules will run on every future change to these components.
  */
 
-import { render } from '@testing-library/react';
+import { render, cleanup } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { AlertCard } from '../AlertCard';
@@ -88,6 +88,11 @@ const surfaces: Array<[string, React.ReactElement]> = [
 beforeEach(() => {
   localStorage.clear();
   resetLanguageForTests('en');
+});
+
+afterEach(async () => {
+  cleanup();
+  await new Promise((resolve) => setTimeout(resolve, 50));
 });
 
 describe.each(surfaces)('%s', (_name, element) => {

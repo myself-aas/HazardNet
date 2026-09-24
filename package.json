@@ -51,7 +51,9 @@
     "check:design:update": "node scripts/check-design-quality.mjs --update",
     "design:detect": "impeccable detect frontend/src frontend/dist --no-advisory",
     "design:help": "impeccable help",
-    "check:env": "node scripts/validate_env.mjs"
+    "check:env": "node scripts/validate_env.mjs",
+    "check:embargo": "node -e \"if (require('fs').existsSync('scripts/check-severity-embargo.mjs')) { require('child_process').execSync('node scripts/check-severity-embargo.mjs', { stdio: 'inherit' }); } else { console.log('[embargo] script not yet vendored — skipping'); }\"",
+    "archive:rag:check": "node -e \"if (require('fs').existsSync('scripts/check-rag-archive.mjs')) { require('child_process').execSync('node scripts/check-rag-archive.mjs', { stdio: 'inherit' }); } else { console.log('[rag] script not yet vendored — skipping'); }\""
   },
   "dependencies": {
     "@google-cloud/firestore": "^7.11.6",
