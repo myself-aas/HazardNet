@@ -66,7 +66,7 @@ const useInteractiveMotionProps = () => {
 
 // Base div — enforces name, inline style, GPU props
 export const InteractiveDiv = forwardRef<HTMLDivElement, InteractiveDivProps>(
-  ({ name, style, ...rest }, ref) => {
+  ({ name, style, children, ...rest }, ref) => {
     const shouldReduceMotion = useInteractiveMotionProps();
     // Performance: only animating elements get willChange, and only compositor props
     const needsWillChange =
@@ -91,54 +91,66 @@ export const InteractiveDiv = forwardRef<HTMLDivElement, InteractiveDivProps>(
               : {}),
           } as React.CSSProperties
         }
+        {...rest}
         // Reduce motion: disable motion props
-        {...(shouldReduceMotion ? { initial: false as const, animate: false as const, exit: undefined } : (rest as object))}
-      />
+        {...(shouldReduceMotion ? { initial: false as const, animate: false as const, exit: undefined } : {})}
+      >
+        {children}
+      </motion.div>
     );
   },
 );
 InteractiveDiv.displayName = 'Interactive.Div';
 
 export const InteractiveSpan = forwardRef<HTMLSpanElement, InteractiveSpanProps>(
-  ({ name, style, ...rest }, ref) => {
+  ({ name, style, children, ...rest }, ref) => {
     const shouldReduceMotion = useInteractiveMotionProps();
     return (
       <motion.span
         ref={ref}
         data-interactive-name={name}
         style={style as React.CSSProperties}
-        {...(shouldReduceMotion ? { initial: false as const, animate: false as const } : (rest as object))}
-      />
+        {...rest}
+        {...(shouldReduceMotion ? { initial: false as const, animate: false as const } : {})}
+      >
+        {children}
+      </motion.span>
     );
   },
 );
 InteractiveSpan.displayName = 'Interactive.Span';
 
 export const InteractiveSection = forwardRef<HTMLElement, InteractiveSectionProps>(
-  ({ name, style, ...rest }, ref) => {
+  ({ name, style, children, ...rest }, ref) => {
     const shouldReduceMotion = useInteractiveMotionProps();
     return (
       <motion.section
         ref={ref as React.Ref<HTMLDivElement>}
         data-interactive-name={name}
         style={style as React.CSSProperties}
-        {...(shouldReduceMotion ? { initial: false as const, animate: false as const } : (rest as object))}
-      />
+        {...rest}
+        {...(shouldReduceMotion ? { initial: false as const, animate: false as const } : {})}
+      >
+        {children}
+      </motion.section>
     );
   },
 );
 InteractiveSection.displayName = 'Interactive.Section';
 
 export const InteractiveHeader = forwardRef<HTMLElement, InteractiveHeaderProps>(
-  ({ name, style, ...rest }, ref) => {
+  ({ name, style, children, ...rest }, ref) => {
     const shouldReduceMotion = useInteractiveMotionProps();
     return (
       <motion.header
         ref={ref as React.Ref<HTMLDivElement>}
         data-interactive-name={name}
         style={style as React.CSSProperties}
-        {...(shouldReduceMotion ? { initial: false as const, animate: false as const } : (rest as object))}
-      />
+        {...rest}
+        {...(shouldReduceMotion ? { initial: false as const, animate: false as const } : {})}
+      >
+        {children}
+      </motion.header>
     );
   },
 );

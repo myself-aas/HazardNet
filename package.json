@@ -1,6 +1,6 @@
 {
   "name": "hazardnet",
-  "version": "2.1.9",
+  "version": "3.2.0",
   "private": true,
   "description": "Multi-Hazard AI Classification & Severity Quantification for Bangladesh Agricultural Disaster Risk",
   "keywords": [
