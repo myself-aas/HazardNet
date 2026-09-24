@@ -44,7 +44,7 @@ jobs:
             ${{ runner.os }}-node-
 
       - name: Install dependencies
-        run: npm ci --no-audit --no-fund
+        run: npm ci --legacy-peer-deps --no-audit --no-fund
 
       - name: Run backend unit tests
         # --testPathIgnorePatterns is ARRAY-valued: EVERY following argument is
@@ -100,7 +100,7 @@ jobs:
             ${{ runner.os }}-node-
 
       - name: Install dependencies
-        run: npm ci --no-audit --no-fund
+        run: npm ci --legacy-peer-deps --no-audit --no-fund
 
       # Frontend suites run under the ROOT jest config (babel TS/React
       # transform + jsdom). Running bare `jest` inside frontend/ has no config
@@ -157,7 +157,7 @@ jobs:
             ${{ runner.os }}-node-
 
       - name: Install dependencies
-        run: npm ci --no-audit --no-fund
+        run: npm ci --legacy-peer-deps --no-audit --no-fund
 
       - name: Install Python test deps
         run: pip install --break-system-packages --requirement scripts/requirements-pipeline.txt pytest || pip install --break-system-packages pytest
@@ -298,7 +298,7 @@ jobs:
             ${{ runner.os }}-node-
 
       - name: Install dependencies
-        run: npm ci --no-audit --no-fund
+        run: npm ci --legacy-peer-deps --no-audit --no-fund
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
@@ -382,7 +382,7 @@ jobs:
             ${{ runner.os }}-node-
 
       - name: Install dependencies
-        run: npm ci --no-audit --no-fund
+        run: npm ci --legacy-peer-deps --no-audit --no-fund
 
       - name: Validate Firebase environment variables
         run: npm run check:env
@@ -557,7 +557,7 @@ jobs:
             ${{ runner.os }}-node-
 
       - name: Install dependencies
-        run: npm ci --no-audit --no-fund
+        run: npm ci --legacy-peer-deps --no-audit --no-fund
 
       # Working-tree scan for committed high-confidence secrets (ghp_/sk-/
       #AIza/xox/AKIA/private keys/connection strings with passwords...).
