@@ -31,7 +31,7 @@ export const TREE_ROOTS = [
   'assets',
   'workflows',
   '__tests__',
-  'hindcast',
+  'validation',
   '.github',
 ] as const;
 

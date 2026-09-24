@@ -9,7 +9,7 @@ export const PREDICT_ENVELOPE_SCHEMA = 'hazardnet-predict-envelope/v1';
 
 /**
  * How `prediction.confidence` came to be. A consumer (and the UI copy) must be
- * able to tell an uncalibrated softmax from a calibrated probability; until the
+ * able to tell an uncalibrated confidence from a calibrated probability; until the
  * Phase 3 calibration work lands, the stored value is the former.
  */
 export const CONFIDENCE_KIND_SOFTMAX = 'model_softmax_top_class';
@@ -135,7 +135,7 @@ export function predictFromStore(row, options = {}) {
   const envelope = {
     prediction: {
       hazard,
-      // The stored score is the model's own softmax for its chosen class; it is
+      // The stored score is the model's own confidence for its chosen class; it is
       // not a calibrated probability and not a model/physics agreement measure.
       confidence,
       confidence_kind: isNonEmptyString(row.confidence_kind)

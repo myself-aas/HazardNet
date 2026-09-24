@@ -29,11 +29,11 @@
     "human_in_the_loop": {
       "max_auto_publish_level": "WATCH",
       "requires_named_reviewer_above": "WATCH",
-      "note": "PRODUCT_SPEC §1.6: the pipeline may publish at or below WATCH automatically; anything above it requires a named duty officer, and the reviewer identity is stored on the alert."
+      "note": "PRODUCT_SPEC \u00a71.6: the pipeline may publish at or below WATCH automatically; anything above it requires a named duty officer, and the reviewer identity is stored on the alert."
     },
     "calibration": {
       "calibrated_probability_required_for_warning": true,
-      "note": "No calibration map is fitted (docs/mlops/CALIBRATION.md), so WARNING cannot be reached from model evidence alone: rows carry confidence_kind=model_softmax_top_class. WATCH and official-bulletin SEVERE remain available."
+      "note": "No calibration accuracy is claimed, so WARNING cannot be reached from model evidence alone: rows carry an uncalibrated confidence score. WATCH and official-bulletin SEVERE remain available."
     },
     "disclaimer": "HazardNet is a research-based decision-support tool. It is not an official warning service. Always follow instructions from the Bangladesh Meteorological Department, FFWC and your local administration. In an emergency call 999 (national emergency), 1090 (disaster response), or 16123 (agriculture helpline)."
   },

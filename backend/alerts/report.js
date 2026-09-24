@@ -88,9 +88,9 @@ export function buildEvidenceCard(alert = {}) {
       lines: [
         model.confidence_published === 'calibrated_probability'
           ? 'The number published with this alert is a calibrated probability ' +
-            '(fit map present; see docs/mlops/CALIBRATION.md).'
+            '(a fit map is present; see the model card).'
           : 'The number published with this alert is an uncalibrated model score, not a ' +
-            'probability of the hazard occurring (docs/mlops/CALIBRATION.md; MODEL_CARD §6).',
+            'probability of the hazard occurring .',
         `Confidence kind: ${alert.confidence_kind || model.confidence_kind || 'not stated'}`,
       ],
     },

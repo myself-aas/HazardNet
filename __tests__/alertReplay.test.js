@@ -57,7 +57,7 @@ describe('rehearseAlertEngine over the committed snapshot', () => {
     expect(result.skipped).toEqual([]);
   });
 
-  it('produces WATCH rows only — no warning may be reached without a calibration map', () => {
+  it('produces WATCH rows only — no warning may be reached without calibration accuracy', () => {
     expect(result.counts.WARNING).toBe(0);
     expect(result.counts.SEVERE).toBe(0);
     expect(result.counts.WATCH).toBe(74);

@@ -1,7 +1,9 @@
 -- =============================================================================
 -- HazardNet · 004_blog_seo_monetization.sql
--- SEO metadata (Google Search Console), editable author bylines and
--- monetization (affiliate disclosure) fields for blog_articles.
+-- SEO metadata (Google Search Console) and editable author bylines for
+-- blog_articles. (Affiliate/monetization fields were removed in the 2026-09-24
+-- research-ethics cleanup; columns added by an earlier revision of this file
+-- are unused and may be dropped.)
 --
 -- Run in your Postgres SQL editor AFTER docs/blog-admin-setup.md created the
 -- blog_articles table. Idempotent — safe to re-run. RLS policies are unchanged
@@ -20,8 +22,6 @@ alter table public.blog_articles
   add column if not exists author_bio            text not null default '',   -- public byline bio (E-E-A-T)
   add column if not exists author_avatar_url     text not null default '',
   add column if not exists author_website        text not null default '',
-  add column if not exists contains_affiliate_links boolean not null default false,
-  add column if not exists affiliate_disclosure  text not null default '';
 
 -- Note: author_email remains the *permission identity* (RLS-checked against
 -- the superadmin allowlist). The public byline above is freely editable.

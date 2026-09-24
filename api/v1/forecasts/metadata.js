@@ -1,7 +1,7 @@
 // Vercel Serverless Function — GET /api/v1/forecasts/metadata
 //
 // Freshness endpoint for the "Peak Hazard Window" / "Incident Ingestion"
-// cards: newest ingested Kaggle prediction_date + ingestion timestamp +
+// cards: newest ingested production prediction_date + ingestion timestamp +
 // dataset provenance. Same shape as backend/routes/forecasts.js GET /metadata.
 
 import { metadataDatasets, metadataDataSource } from '../../../backend/utils/forecastServe.js';
@@ -29,7 +29,7 @@ export default async function handler(req, res) {
       prediction_date: predictionDate,
       ingestion_timestamp: ingestionTimestamp,
       data_source: metadataDataSource(),
-      notebook_source: 'ashifahmedshuvo/hazardnet-auto-forecast-pipeline',
+      notebook_source: 'hazardnet/forecast-pipeline',
       datasets: metadataDatasets(),
       generated_at: new Date().toISOString(),
     });

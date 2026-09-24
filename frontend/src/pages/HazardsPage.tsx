@@ -171,7 +171,7 @@ export const HazardsPage: React.FC = () => {
   const chartData = hazardsList.map(h => ({
     name: h.name,
     'Historical Occurrences': h.totalHistoricalEvents,
-    'Active Warning Tensors': h.activeForecastsCount,
+    'Active Warning Records': h.activeForecastsCount,
   })).sort((a, b) => b['Historical Occurrences'] - a['Historical Occurrences']);
 
   return (
@@ -195,7 +195,7 @@ export const HazardsPage: React.FC = () => {
               Climatic Hazards of Bangladesh
             </h1>
             <p className="mt-2 text-base leading-[1.62] text-carbon-70 max-w-2xl leading-relaxed">
-              Comprehensive taxonomy and real-time tensor monitoring for the 9 primary disaster perils documented in Bangladesh (2000–2026), grounded in the BGD Climatic Hazards Dataset and HazardNet forecasts.
+              Comprehensive taxonomy and real-time record monitoring for the 9 primary disaster perils documented in Bangladesh (2000–2026), grounded in the BGD Climatic Hazards Dataset and HazardNet forecasts.
             </p>
           </div>
 
@@ -244,7 +244,7 @@ export const HazardsPage: React.FC = () => {
               />
               <Legend wrapperStyle={{ paddingTop: '10px' }} />
               <Bar dataKey="Historical Occurrences" fill="#3b82f6" radius={[6, 6, 0, 0]} />
-              <Bar dataKey="Active Warning Tensors" fill="#f59e0b" radius={[6, 6, 0, 0]} />
+              <Bar dataKey="Active Warning Records" fill="#f59e0b" radius={[6, 6, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -296,7 +296,7 @@ export const HazardsPage: React.FC = () => {
                       <span className="font-medium text-carbon-70 truncate max-w-[170px]">{hazard.season}</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-carbon-60">Active Warning Tensors:</span>
+                      <span className="text-carbon-60">Active Warning Records:</span>
                       <span className="font-bold text-nasa-blue-shade">{hazard.activeForecastsCount} active</span>
                     </div>
                   </div>

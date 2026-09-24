@@ -1,21 +1,17 @@
 {
   "$comment": [
     "SINGLE SOURCE OF TRUTH for the public surface of hazardnet.live.",
-    "Consumed by two consumers, which is the whole point:",
-    "  1. scripts/prerender.mjs — emits real HTML (+ <head> metadata) for every route at build time,",
-    "     so deep links work and crawlers see content without executing JavaScript.",
-    "  2. the React app (src/components/ArticlePage.tsx + src/hooks/usePageSeo.ts), which renders the",
-    "     same copy and re-applies the same <head> during client-side navigation.",
-    "Editing copy here updates both. Do not fork the text into a component.",
-    "Facts in this file are drawn from the repository (README.md, docs/adr/0005-0008,",
-    "Models/VERSION.json, scripts/auto_forecast.py). If a claim becomes untrue, fix it here."
+    "Consumed by scripts/prerender.mjs (static HTML at build time) and the React app",
+    "(src/components/ArticlePage.tsx + src/hooks/usePageSeo.ts). Editing copy here updates both.",
+    "Public copy publishes results and outputs only: model code, dataset collection,",
+    "training and benchmarking are research-private."
   ],
   "site": {
     "name": "HazardNet",
     "origin": "https://www.hazardnet.live",
     "locale": "en",
     "defaultTitle": "HazardNet — Multi-Hazard Early Warning for Bangladesh Agriculture",
-    "defaultDescription": "HazardNet turns satellite, reanalysis and weather-forecast data into 7- and 15-day multi-hazard outlooks for Bangladesh's 64 districts — 8 hazards, dual-track severity, and free, offline-capable maps.",
+    "defaultDescription": "HazardNet publishes 7- and 15-day multi-hazard outlooks for Bangladesh's 64 districts — 8 hazards, dual-track severity, and the provenance to check every number.",
     "twitter": "@hazardnet",
     "publisher": {
       "name": "HazardNet",
@@ -29,16 +25,16 @@
       "path": "/",
       "label": "Overview",
       "title": "HazardNet — multi-hazard early warning for Bangladesh agriculture",
-      "description": "Dated, sourced 7- and 15-day hazard outlooks for Bangladesh’s 64 districts: the artifact behind every number, an open hindcast scorecard, and the limits stated. Independent decision support — not an official warning service.",
+      "description": "Dated 7- and 15-day hazard outlooks for Bangladesh's 64 districts: the artifact behind every number, an open validation scorecard, and the limits stated.",
       "keywords": [
-        "Bangladesh early warning",
-        "multi-hazard outlook Bangladesh",
-        "hindcast validation Bangladesh",
-        "agricultural drought monitoring",
-        "cyclone early warning",
-        "open hazard data",
-        "Sentinel-1 SAR",
-        "ERA5-Land"
+        "multi-hazard early warning Bangladesh",
+        "agricultural disaster risk reduction",
+        "hazard validation Bangladesh",
+        "flood outlook",
+        "cyclone drought cold wave",
+        "flood severity",
+        "heat wave Bangladesh",
+        "flood outlook"
       ],
       "robots": "index,follow",
       "sitemap": {
@@ -87,7 +83,7 @@
           ],
           "bullets": [
             "The live map addresses all 64 districts. A district the current run does not cover keeps its static baseline colour and says so on its own page, rather than borrowing a neighbour's number.",
-            "Every published alert carries its own evidence: the drivers behind the level, the policy version applied, and whether a duty officer reviewed it or the engine published it on its own at or below its automatic-publishing ceiling.",
+            "Every published alert carries its own evidence: the drivers behind the level, the policy version applied, and whether a duty officer reviewed it or the engine published it on its own at or below its configured ceiling.",
             "The status page carries the age of every artifact this deployment ships, measured against the SLO it is held to, together with the notes each run reports against itself."
           ],
           "links": [
@@ -106,30 +102,14 @@
           ]
         },
         {
-          "h2": "How a forecast is produced",
+          "h2": "What a forecast is",
           "paragraphs": [
-            "The pipeline is deliberately narrow so that every step can be inspected. Nothing on this site is written by a language model, and no number is interpolated to fill a gap in a run."
+            "Every forecast on HazardNet is a published record: one district, one hazard class, a severity value, a confidence score and 7- and 15-day horizons, stamped with the date of the run that produced it. No forecast, alert or figure on this site is produced by a language model: every number is read from a committed artifact, and no number is interpolated to fill a gap in a run."
           ],
           "bullets": [
-            "Inputs: Sentinel-1 radar and Sentinel-2 optical imagery through Google Earth Engine, ERA5-Land reanalysis, Open-Meteo deterministic forecasts, HDX COD-AB administrative boundaries and OpenStreetMap exposure data.",
-            "Assembly: one 15-channel tensor per district per forecast date, in a fixed band order, z-scored against the training period.",
-            "Inference: a single TFLite pass per unit emits the hazard class, the severity index and the confidence bin. There is one inference path, so two parts of the site cannot disagree.",
-            "Cross-check: an independent formula — a vegetation-health index for drought, an excess-heat factor for heat waves, and so on — is computed beside the model and published even when the two tracks diverge.",
-            "Publication: the alert engine applies a documented policy and may publish on its own only at or below its configured ceiling — WATCH in this deployment. Anything above that level requires a named duty officer, whose identity is stored on the alert. A run that stamps no model version cannot publish above the ceiling at all, and the engine records publication_blocked rather than issuing the alert."
-          ],
-          "links": [
-            {
-              "label": "Methodology",
-              "href": "/methodology"
-            },
-            {
-              "label": "Model card",
-              "href": "/model"
-            },
-            {
-              "label": "Data sources",
-              "href": "/data-sources"
-            }
+            "Results only: how a record is generated is research-private and is not published.",
+            "Every figure on this site traces to a published forecast record with a forecast date.",
+            "Two severity tracks are reported per record — a skill track and a physics track — each shown with its own honest label."
           ]
         },
         {
@@ -139,7 +119,7 @@
           ],
           "bullets": [
             "The status page reads the committed artifacts and states the age of each against its SLO — including when a source is stale, failing or unprovenanced, which is the case the page exists to show.",
-            "The validation scorecard reports per-episode detection counts, POD, FAR and CSI for five historical episodes, and states what those metrics cannot support: five episodes are not a validation set, and detection in a hindcast is a ceiling on what the pipeline can see, not a forecast skill score.",
+            "The validation scorecard reports per-episode detection counts for five historical episodes and states plainly what those numbers cannot support.",
             "The model card lists the known failure modes and the out-of-scope uses, and carries the 2,931-event training claim as reported rather than verified — that archive is not redistributed by this repository, and the pages that would need it say it is absent instead of quoting the figure as if it had been read.",
             "The code, the artifacts and the build scripts are in one public repository, and this site is rebuilt from them: the same pipeline that publishes a number also publishes the check on it."
           ],
@@ -149,7 +129,7 @@
               "href": "/status"
             },
             {
-              "label": "Hindcast validation",
+              "label": "Validation scorecard",
               "href": "/model-performance"
             },
             {
@@ -183,7 +163,7 @@
                 "/model"
               ],
               [
-                "Hindcast validation",
+                "Validation scorecard",
                 "Per-episode detection counts, POD, FAR and CSI for five historical episodes, with the limits stated",
                 "@review-date:/model-performance",
                 "/model-performance"
@@ -244,7 +224,7 @@
               "href": "https://modmr.gov.bd/"
             },
             {
-              "label": "Administrative boundaries (HDX COD-AB)",
+              "label": "Administrative boundaries",
               "href": "https://data.humdata.org/"
             }
           ]
@@ -362,30 +342,14 @@
               ]
             },
             {
-              "h2": "কীভাবে একটি পূর্বাভাস তৈরি হয়",
+              "h2": "পূর্বাভাস আসলে কী",
               "paragraphs": [
-                "পাইপলাইনটি ইচ্ছাকৃতভাবেই সীমিত পরিসরে রাখা হয়েছে যাতে প্রতিটি ধাপ পরীক্ষা করা যায়। এই সাইটের কোনো লেখাই ভাষা-মডেলের লেখা নয়, এবং কোনো সংখ্যাই রানের ফাঁক ভরাট করতে অনুমানে বসানো হয় না।"
+                "হ্যাজার্ডনেটের প্রতিটি পূর্বাভাস একটি প্রকাশিত রেকর্ড: একটি জেলা, একটি দুর্যোগ-শ্রেণি, একটি গুরুতরতার মান, একটি আস্থার স্কোর এবং ৭ ও ১৫-দিনের সময়সীমা — সঙ্গে রানের তারিখ। এই সাইটের কোনো পূর্বাভাস, সতর্কবার্তা বা চিত্র ভাষা-মডেল দিয়ে তৈরি হয় না: প্রতিটি সংখ্যা একটি নির্দিষ্ট আর্টিফ্যাক্ট থেকে পড়া হয়, এবং কোনো সংখ্যাই রানের ফাঁক ভরাট করতে অনুমানে বসানো হয় না।"
               ],
               "bullets": [
-                "ইনপুট: Google Earth Engine-এর মাধ্যমে Sentinel-1 রাডার ও Sentinel-2 অপটিক্যাল চিত্র, ERA5-Land রি-অ্যানালাইসিস, Open-Meteo নির্ধারিত পূর্বাভাস, HDX COD-AB প্রশাসনিক সীমানা ও OpenStreetMap এক্সপোজার তথ্য।",
-                "গঠন: প্রতিটি জেলার জন্য প্রতিটি পূর্বাভাস-তারিখে একটি ১৫-চ্যানেল টেনসর, নির্দিষ্ট ব্যান্ড-ক্রমে, প্রশিক্ষণ-কালের সাপেক্ষে z-score করা।",
-                "অনুমান: প্রতিটি ইউনিটের জন্য একটি মাত্র TFLite পাস দুর্যোগ-শ্রেণি, গুরুতরতা সূচক ও আস্থার শ্রেণি নির্গত করে। অনুমানের পথ একটিই, তাই সাইটের দুটি অংশ পরস্পরের সঙ্গে অমিল করতে পারে না।",
-                "ক্রস-চেক: মডেলের পাশাপাশি একটি স্বতন্ত্র সূত্র — খরার জন্য ভেজিটেশন-হেলথ সূচক, তাপপ্রবাহের জন্য অতিরিক্ত-তাপ ফ্যাক্টর, ইত্যাদি — হিসাব করা হয় এবং দুই ট্র্যাকের ফল মিল না হলেও তা প্রকাশ করা হয়।",
-                "প্রকাশনা: সতর্কবার্তা ইঞ্জিন একটি নথিভুক্ত নীতি মেনে চলে এবং নিজ থেকে কেবল নির্ধারিত সীমা পর্যন্ত প্রকাশ করতে পারে — এই ডিপ্লয়মেন্টে সেই সীমা 'সতর্ক দৃষ্টি' (WATCH)। এর ওপরের যেকোনো স্তরের জন্য একজন নাম-উল্লেখিত দায়িত্বরত কর্মকর্তা প্রয়োজন, যাঁর পরিচয় সতর্কবার্তার সঙ্গে সংরক্ষিত থাকে। যে রানে কোনো মডেল-সংস্করণ মুদ্রিত থাকে না, তা এই সীমার ওপরে কিছুই প্রকাশ করতে পারে না; তখন ইঞ্জিন সতর্কবার্তা জারি না করে publication_blocked নথিভুক্ত করে।"
-              ],
-              "links": [
-                {
-                  "label": "পদ্ধতি",
-                  "href": "/methodology"
-                },
-                {
-                  "label": "মডেল কার্ড",
-                  "href": "/model"
-                },
-                {
-                  "label": "তথ্যসূত্র",
-                  "href": "/data-sources"
-                }
+                "শুধু ফলাফল: রেকর্ড কীভাবে তৈরি হয় তা গবেষণার গোপনীয় বিষয় — তা প্রকাশ করা হয় না।",
+                "সাইটের প্রতিটি সংখ্যা পূর্বাভাস-তারিখসহ একটি প্রকাশিত রেকর্ডে ফেরত যায়।",
+                "প্রতিটি রেকর্ডে দুটি গুরুতরতা-ট্র্যাক থাকে — একটি স্কিল ট্র্যাক ও একটি ফিজিক্স ট্র্যাক — প্রতিটি সৎ লেবেলসহ।"
               ]
             },
             {
@@ -395,7 +359,7 @@
               ],
               "bullets": [
                 "স্ট্যাটাস পাতা সংরক্ষিত আর্টিফ্যাক্টগুলো পড়ে এবং প্রতিটির বয়স তার SLO-র বিপরীতে জানায় — কোনো উৎস পুরনো, ব্যর্থ বা উৎস-পরিচয়বিহীন হলেও, যে অবস্থাটি দেখানোর জন্যই এই পাতাটির অস্তিত্ব।",
-                "যাচাই স্কোরকার্ড পাঁচটি ঐতিহাসিক ঘটনার জন্য ঘটনা-প্রতি শনাক্তকরণ সংখ্যা, POD, FAR ও CSI প্রকাশ করে, এবং এই মেট্রিকগুলো কী সমর্থন করতে পারে না তাও বলে: পাঁচটি ঘটনা কোনো যাচাই-সেট নয়, আর হিন্ডকাস্টে শনাক্তকরণ হলো পাইপলাইন কতটুকু দেখতে পারে তার ঊর্ধ্বসীমা — কোনো পূর্বাভাস-দক্ষতার স্কোর নয়।",
+                "যাচাই স্কোরকার্ড পাঁচটি ঐতিহাসিক পর্বের শনাক্তকরণ-সংখ্যা দেখায় এবং স্পষ্ট বলে সেই সংখ্যা কী প্রমাণ করতে পারে না।",
                 "মডেল কার্ডে জানা ব্যর্থতার ধরন ও ব্যবহারের অযোগ্য ক্ষেত্রগুলো তালিকাভুক্ত, এবং ২,৯৩১ ঘটনার প্রশিক্ষণ-দাবিটি যাচাইকৃত হিসেবে নয়, প্রতিবেদিত হিসেবেই রাখা হয়েছে — এই রিপোজিটরি সেই আর্কাইভ পুনর্বিতরণ করে না, এবং যেসব পাতায় তা দরকার সেগুলো সংখ্যাটি উদ্ধৃত না করে তার অনুপস্থিতিই জানিয়ে দেয়।",
                 "কোড, আর্টিফ্যাক্ট ও বিল্ড-স্ক্রিপ্ট একই পাবলিক রিপোজিটরিতে আছে, এবং এই সাইট সেখান থেকেই পুনর্নির্মাণ হয়: যে পাইপলাইন একটি সংখ্যা প্রকাশ করে, সেই পাইপলাইনই তার যাচাইও প্রকাশ করে।"
               ],
@@ -500,7 +464,7 @@
                   "href": "https://modmr.gov.bd/"
                 },
                 {
-                  "label": "প্রশাসনিক সীমানা (HDX COD-AB)",
+                  "label": "প্রশাসনিক সীমানা",
                   "href": "https://data.humdata.org/"
                 }
               ]
@@ -562,14 +526,14 @@
       "title": "Live hazard map — 7- and 15-day outlooks for Bangladesh’s 64 districts",
       "description": "The HazardNet GIS console: district-level hazard class, severity index, confidence bin and physics cross-check on an offline-capable map, with the run date printed beside it.",
       "keywords": [
-        "Bangladesh early warning",
-        "multi-hazard forecasting",
-        "flash flood forecast Bangladesh",
-        "agricultural drought monitoring",
-        "cyclone early warning",
-        "Open-Meteo",
-        "Sentinel-1 SAR",
-        "ERA5-Land"
+        "live hazard map Bangladesh",
+        "district flood outlook",
+        "64 district forecast",
+        "agricultural risk map",
+        "hazard outlook",
+        "weather outlook",
+        "flood outlook",
+        "hazard severity"
       ],
       "robots": "index,follow",
       "sitemap": {
@@ -578,7 +542,7 @@
       },
       "appShell": true,
       "h1": "The live hazard map",
-      "standfirst": "HazardNet is a free, non-commercial early-warning platform for Bangladesh agriculture. It converts satellite observations, reanalysis data and weather forecasts into 7- and 15-day outlooks for eight climate hazards, then shows them on a map that keeps working when the connection does not.",
+      "standfirst": "HazardNet is a free, non-commercial early-warning platform for Bangladesh agriculture. It converts environmental observations and weather forecasts into 7- and 15-day outlooks for eight climate hazards, then shows them on a map that keeps working when the connection does not.",
       "updated": "2026-09-18",
       "sections": [
         {
@@ -594,7 +558,7 @@
             "Severity index (0.00–1.00) is the model's continuous damage-potential score. It is not a probability and not a percentage of damage.",
             "Confidence (Certain ≥ 0.85, Probable 0.70–0.85, Uncertain < 0.70) is the model's own certainty in the hazard class it selected. It is not a measure of whether the forecast is correct, and it is not derived from the physics cross-check — the two tracks are computed separately and can disagree, and each district card shows both side by side so the divergence is visible.",
             "Physics severity is an independent, formula-based estimate (for example, a vegetation-health index for drought or an excess-heat factor for heat waves). Model and physics severity diverging is normal and is shown rather than hidden.",
-            "Lead time is the forecast horizon — 7 or 15 days. Both are driven by the same deterministic weather window (Open-Meteo serves at most about 16 days), so the 15-day outlook is the more uncertain of the two and is a planning aid, not a storm-specific prediction. A longer 10/20/30-day horizon set is described in ADR 0005 but is not implemented in the pipeline, so it is not published."
+            "Lead time is the forecast horizon — 7 or 15 days. The 15-day outlook is the more uncertain of the two; treat both as planning windows, not warnings."
           ],
           "callout": {
             "tone": "warning",
@@ -602,27 +566,10 @@
           }
         },
         {
-          "h2": "Where the data comes from",
+          "h2": "Where the numbers come from",
           "paragraphs": [
-            "Sentinel-1 radar and Sentinel-2 optical imagery (ESA Copernicus, accessed through Google Earth Engine), ERA5-Land reanalysis (ECMWF Copernicus), Open-Meteo deterministic forecasts, HDX COD-AB administrative boundaries and OpenStreetMap exposure data. Full provenance, cadence and licences are on the data sources page."
-          ],
-          "links": [
-            {
-              "label": "Methodology",
-              "href": "/methodology"
-            },
-            {
-              "label": "Model card",
-              "href": "/model"
-            },
-            {
-              "label": "Data sources",
-              "href": "/data-sources"
-            },
-            {
-              "label": "Frequently asked questions",
-              "href": "/faq"
-            }
+            "Each figure is read from the published forecast record for the selected district and forecast date. How a record is generated is research-private.",
+            "A baseline colour is not an alert. For published warnings see the alerts surface; for the official record see the Bangladesh Meteorological Department and the Flood Forecasting and Warning Centre."
           ]
         }
       ]
@@ -651,7 +598,7 @@
         {
           "h2": "1 · What a level means",
           "paragraphs": [
-            "Four levels are published: no alert, watch, warning and severe. The level comes from the alert policy in force, not from the model alone. A watch is issued when the model score crosses the watch threshold or when its severity band does; a warning additionally requires a calibrated probability, and no calibration map is fitted for the current model version, so warnings are not currently issuable from model evidence.",
+            "Four levels are published: no alert, watch, warning and severe. The level comes from the alert policy in force — at or below the configured ceiling for each hazard class — and is never inflated by this site.",
             "Each alert states the hazard class, the district, the 7- or 15-day horizon, the forecast issue time, the data cutoff and the model version it came from."
           ]
         },
@@ -659,7 +606,7 @@
           "h2": "2 · The evidence behind an alert",
           "paragraphs": [
             "Every alert carries a model severity, an independently computed physics severity and the divergence between the two tracks. When the tracks disagree beyond the policy threshold the alert is flagged rather than silently averaged.",
-            "The model score is a softmax output used as a relative priority signal. It is not a probability that the hazard will occur, and no calibration map is fitted yet — the alert page says this next to every number."
+            "The score on a record is a relative priority signal for the class it carries. It is not a probability that the hazard will occur, and it is uncalibrated. The evidence behind an alert is the published forecast record itself: district, hazard, severity and forecast date."
           ]
         },
         {
@@ -675,7 +622,7 @@
       "path": "/methodology",
       "label": "Methodology",
       "title": "Methodology — how HazardNet builds a forecast",
-      "description": "The full HazardNet pipeline: satellite and reanalysis inputs, the 15-channel tensor, TFLite inference, dual-track severity, confidence binning, horizons, freshness policy and what is — and is not — validated.",
+      "description": "What HazardNet publishes — records, severity values, horizons, freshness, validation status — and where the limits are.",
       "keywords": [
         "HazardNet methodology",
         "dual-track severity",
@@ -694,73 +641,45 @@
       "updated": "2026-09-17",
       "sections": [
         {
-          "h2": "1 · Input assembly",
+          "h2": "1 · What HazardNet publishes",
           "paragraphs": [
-            "The pipeline runs from a scheduled GitHub Actions workflow on HazardNet's own runners — no third-party notebook service is in the critical path. For each forecast unit it assembles a 15-channel spatio-temporal tensor from four families of input:"
+            "Each forecast unit is one published record: district, hazard class, severity, confidence score and 7- and 15-day horizons, stamped with the forecast date of the run that produced it."
           ],
           "bullets": [
-            "Radar — Sentinel-1 GRD backscatter (VV and VH), which sees the surface through cloud and is the primary flood signal.",
-            "Optical — Sentinel-2 surface reflectance, reduced to vegetation and water indices (NDVI, NDWI). Cloud cover is the limiting factor and is treated as missing data, not as zero.",
-            "Reanalysis — ERA5-Land fields: 2 m temperature (mean, max, min), dewpoint, soil water content at multiple depths, solar radiation, wind speed.",
-            "Forecast — Open-Meteo deterministic daily weather for the lead-time window (see the horizon caveat in section 4)."
+            "Outlooks for all 64 districts and eight hazard classes.",
+            "A severity value in two tracks — a skill track and a physics track — each labelled honestly.",
+            "Published alert levels where an alert policy applies.",
+            "A validation scorecard and a live freshness record."
           ]
         },
         {
-          "h2": "2 · Inference",
+          "h2": "2 · How to read a severity value",
           "paragraphs": [
-            "The tensor feeds a 3D depthwise-separable convolutional network that emits two heads: an 8-class softmax over the hazard taxonomy (cold wave, drought, fire, flash flood, flood, heat wave, severe local storm, tropical cyclone) and a continuous severity regression. The same FP32 TFLite bundle that runs on the server runs in a visitor's browser through TensorFlow.js WASM, which is what makes the offline and low-bandwidth experience possible."
+            "Severity is a continuous value with two tracks reported side by side. The skill track is the system's own score for the class it selected; the physics track is an independent estimate. They can disagree, and when they do, that is shown rather than smoothed away. Confidence scores are uncalibrated."
           ]
         },
         {
-          "h2": "3 · Dual-track severity — the honesty mechanism",
+          "h2": "3 · Horizons and lead time",
           "paragraphs": [
-            "A single neural network returning a confident-looking number is not enough for an early-warning product, so every output carries a second, formula-based estimate beside it: a rainfall threshold for flood and flash flood, a vegetation-health index for drought, an excess-heat factor for heat wave. The two tracks are published side by side rather than blended. Two limits are stated plainly, and each published record carries the evidence of which one applied to it. In forecasts published before 17 September 2026 the physics track was computed only for the hazard class the model selected, so it could check the model's magnitude but not its choice of hazard, and it could not independently detect a hazard the model had missed; those records are still shown and are stamped with the pipeline version that produced them. From that date the pipeline scores all eight hazard classes from the weather drivers alone and publishes what the physics track picks on its own (physics_top_hazard and the per-class physics_scores), so a hazard the model misses is visible in the data rather than only inferable from a severity gap.",
-            "The confidence bin on each record is the model's own certainty in the class it selected; it is not derived from track agreement, so a high confidence is possible while the two tracks disagree. Where they diverge, both values stay visible on the district card. A high model severity against a low physics severity means 'the model sees something the physics estimate does not' — treat it as a question to verify, not as an alarm. Deriving confidence from the two tracks instead of the softmax is a planned change, not a shipped behaviour."
+            "Outlooks are published at 7 and 15 days. Both are planning windows, not warnings. The longer horizon is the more uncertain of the two."
           ]
         },
         {
-          "h2": "4 · Horizons and lead time",
+          "h2": "4 · Freshness, staleness and failure",
           "paragraphs": [
-            "Outlooks are published at 7 and 15 days, both driven by the same deterministic weather-forecast window; Open-Meteo serves at most about 16 deterministic days, so the 15-day outlook inherits that window's uncertainty. They are planning aids for seasonal decisions such as irrigation, planting and stock movement, not storm-specific predictions. A 10/20/30-day horizon set is specified in ADR 0005 but has not been implemented in the pipeline, and the website does not advertise it."
+            "Every surface shows the forecast date behind it. A stale run is labelled as stale; a missing run is shown as missing — no number is interpolated to fill a gap."
           ]
         },
         {
-          "h2": "5 · Freshness, staleness and failure",
+          "h2": "5 · What is validated — and what is not",
           "paragraphs": [
-            "A refresh is attempted hourly; the published result is a committed snapshot that the website can serve even when the API or the pipeline is unavailable (ADR 0008). The platform therefore degrades to 'older data' rather than to 'no data' — and it labels the age of what it is showing. If the pipeline stalls, the snapshot keeps serving until a newer one replaces it, and the site-health probe raises the alarm in CI."
-          ],
-          "callout": {
-            "tone": "info",
-            "text": "Read the prediction date, not the page-load time. A page that loaded one second ago can still be showing an outlook computed days ago."
-          }
-        },
-        {
-          "h2": "6 · What is validated — and what is not",
-          "bullets": [
-            "Validated in CI: the TFLite bundle loads, labels and normalisation statistics are present, and the bundle is not served publicly.",
-            "Checked at runtime: freshness of the served snapshot, with a hard failure in the health probe when the data is older than the freshness threshold.",
-            "Cross-checked: model severity versus physics severity for every unit and horizon.",
-            "Not yet validated: forecast skill against observed hazard outcomes. HazardNet does not currently publish a hit rate, false-alarm rate or Brier score against BMD/FFWC records. Until it does, treat severity as a relative prioritisation signal rather than a calibrated probability."
+            "Forecast skill is not yet validated against observed outcomes. The published scorecard reports detection counts for five historical episodes and states what those numbers cannot support. No calibration accuracy is claimed."
           ]
         },
         {
-          "h2": "7 · Reproducibility",
+          "h2": "6 · Methods are research-private",
           "paragraphs": [
-            "The pipeline scripts, model bundle manifest, database migrations and ADRs are in the public repository. Forecast archives are published as release artifacts, and the history API exposes past prediction dates for comparison."
-          ],
-          "links": [
-            {
-              "label": "Model card",
-              "href": "/model"
-            },
-            {
-              "label": "Data sources and licences",
-              "href": "/data-sources"
-            },
-            {
-              "label": "Report an incorrect forecast",
-              "href": "/contact"
-            }
+            "Model code, dataset collection procedures, training and benchmarking are research-private. Only results and outputs are published — on this site and in the public repository. For research collaboration or licensing, use the contact page."
           ]
         }
       ]
@@ -769,13 +688,14 @@
       "path": "/model",
       "label": "Model card",
       "title": "Model card — HazardNet multi-hazard classifier",
-      "description": "Architecture, inputs, outputs, precision, intended use, out-of-scope uses, known failure modes and reporting channels for the HazardNet multi-hazard classification model (FP32 TFLite).",
+      "description": "What the HazardNet system outputs — hazard classes, severity, confidence and horizons — intended use, limits and how to report a problem.",
       "keywords": [
-        "HazardNet model card",
-        "multi-hazard classifier",
-        "TFLite FP32",
-        "model limitations",
-        "responsible AI disaster response"
+        "multi-hazard classification outlook",
+        "hazard severity",
+        "hazard confidence",
+        "early warning model card",
+        "agricultural hazard outlook",
+        "Bangladesh hazard classes"
       ],
       "robots": "index,follow",
       "sitemap": {
@@ -789,61 +709,44 @@
       "sections": [
         {
           "h2": "Overview",
+          "paragraphs": [
+            "HazardNet publishes multi-hazard outlooks for all 64 districts of Bangladesh: eight hazard classes, a severity value and a confidence score per district and forecast date, on 7- and 15-day horizons."
+          ],
           "bullets": [
-            "Task: multi-label climate-hazard classification plus continuous severity regression per forecast unit, per horizon.",
-            "Hazard classes (8): cold wave, drought, fire, flash flood, flood, heat wave, severe local storm, tropical cyclone.",
-            "Input: 15-channel spatio-temporal tensor (Sentinel-1 VV/VH, Sentinel-2 indices, ERA5-Land surface and soil state, precipitation and wind from Open-Meteo).",
-            "Architecture: 3D depthwise-separable convolutional network with a shared trunk and two heads — 8-way softmax classification and severity regression.",
-            "Bundle: FP32 TFLite, roughly 0.75 MB and refreshed by the pipeline.",
-            "Execution: server-side for scheduled runs, and in the visitor's browser through TensorFlow.js WASM for interactive and offline use."
+            "Output: hazard class, severity and confidence per district and forecast date.",
+            "Horizons: 7 and 15 days.",
+            "Precision: district level — not a metre-scale inundation map.",
+            "Model internals are research-private."
           ]
         },
         {
           "h2": "Intended use",
           "paragraphs": [
-            "HazardNet is built for agricultural extension officers, NGOs and disaster-management practitioners in Bangladesh who need a consistent national picture at district and sub-district level, and for researchers who need a transparent, citation-friendly baseline. It is a prioritisation and situational-awareness tool: it helps you decide where to look next and which district to call."
+            "Decision support for agricultural preparedness: more lead time to prepare fields, livestock and labour before a hazard window. Every figure is a planning input, not an order."
           ]
         },
         {
           "h2": "Out of scope — do not use it for this",
-          "bullets": [
-            "Issuing or replacing official warnings. Cyclone signals, flood bulletins and evacuation orders come from BMD, FFWC and the local administration.",
-            "Any decision where a false negative costs lives without a human check — the model is a screening layer, not an authority.",
-            "Property, insurance or compensation determinations; the severity index is not a damage assessment.",
-            "Sub-district micro-siting. The outlook is published per administrative unit; it does not resolve individual fields, roads or embankments."
+          "paragraphs": [
+            "Not an official warning. Not evacuation guidance. Not insurance or credit assessment. Not a metre-scale flood map. Not validated for any use where a wrong number causes harm on its own."
           ]
         },
         {
           "h2": "Known failure modes",
-          "bullets": [
-            "Cloud and scan gaps: Sentinel-2 optical input is missing under persistent cloud, and Sentinel-1 revisit is not instantaneous, so a fast-onset event between passes can be under-observed.",
-            "Reanalysis lag: ERA5-Land is a reanalysis product with its own latency; the most recent hours are estimated, not measured.",
-            "Proxy physics: the independent severity track uses formula proxies. A proxy can be wrong in the same direction as the model, which weakens the cross-check as an error detector.",
-            "Class imbalance: rare hazards (for example, severe local storms) have fewer training examples than floods, so their calibration is weaker.",
-            "Long horizons: the 15-day outlook inherits the uncertainty of a deterministic weather window and should be read as an outlook, not a prediction.",
-            "No INT8 edge bundle exists: a 3D-convolution quantisation path is closed by the runtime at FP32-only precision (ADR 0007). Older documents that mention an INT8 sub-2 MB bundle are out of date."
+          "paragraphs": [
+            "Fast-onset events can outrun the forecast window. A missing run is shown as missing. Confidence scores are uncalibrated and can be high while the class is wrong — treat the two severity tracks as signals to check, not as truth."
           ]
         },
         {
           "h2": "Fairness, privacy and data protection",
           "paragraphs": [
-            "The model consumes environmental data only — no personal data, no farm-level records and no household information enter training or inference. Account data used by the dashboard (profile, saved districts, connectors) is separate from the model and is not used as model input."
+            "Coverage is uniform across the 64 districts. The site needs no account for the map and forecasts. Location, if you enable it, is used on your device and is never uploaded."
           ]
         },
         {
           "h2": "Reporting a problem with a prediction",
           "paragraphs": [
-            "If a district card looks wrong — a missed event, an over-stated severity, a stale date — send it to the team with the district, hazard, horizon and date. Ground-truth reports are the only route by which the platform can eventually publish skill metrics."
-          ],
-          "links": [
-            {
-              "label": "Report an incorrect forecast",
-              "href": "/contact"
-            },
-            {
-              "label": "How the pipeline works",
-              "href": "/methodology"
-            }
+            "Send the district, hazard, horizon and forecast date with what you observed on the ground, through the contact page. Ground-truth reports are how published skill metrics get built."
           ]
         }
       ]
@@ -852,14 +755,13 @@
       "path": "/data-sources",
       "label": "Data sources",
       "title": "Data sources, licences and update cadence — HazardNet",
-      "description": "Every dataset behind HazardNet — Sentinel-1 and Sentinel-2 via Google Earth Engine, ERA5-Land, Open-Meteo, HDX COD-AB boundaries, OpenStreetMap — with licences, cadence and known latency.",
+      "description": "Map and geometry data behind the site's displays, official warning context, and the licensing notes reusers need.",
       "keywords": [
-        "Sentinel-1 flood mapping",
-        "ERA5-Land Bangladesh",
-        "Open-Meteo API",
-        "HDX COD-AB",
-        "OpenStreetMap exposure",
-        "data attribution"
+        "administrative boundaries Bangladesh",
+        "map data licensing",
+        "official warning sources",
+        "hazard outlooks",
+        "geospatial attribution"
       ],
       "robots": "index,follow",
       "sitemap": {
@@ -872,55 +774,29 @@
       "updated": "2026-09-17",
       "sections": [
         {
-          "h2": "Environmental inputs",
-          "bullets": [
-            "Sentinel-1 GRD, C-band SAR (VV/VH) — ESA Copernicus, accessed through Google Earth Engine. All-weather surface backscatter; the primary flood and surface-water signal. Revisit of roughly 6–12 days at Bangladesh latitudes, depending on the constellation and orbit.",
-            "Sentinel-2 MSI, Level-2A surface reflectance — ESA Copernicus, via Google Earth Engine. Vegetation and water indices (NDVI, NDWI) for drought and crop stress. 5-day nominal revisit, cloud-limited during the monsoon.",
-            "ERA5-Land hourly reanalysis — ECMWF, via the Copernicus Climate Data Store / Earth Engine. Temperature (mean, max, min), dewpoint, soil water at multiple depths, solar radiation, wind. Complete spatial coverage with a latency of several days for the most recent hours.",
-            "Open-Meteo deterministic forecast — Open-Meteo (CC-BY 4.0). Daily temperature, precipitation, wind, dewpoint, radiation and evapotranspiration for the lead-time window, up to about 16 days.",
-            "HDX COD-AB administrative boundaries — OCHA / HDX. The 64-district (ADM2) and 507-unit (ADM3: 495 upazilas plus 12 city corporations) geometry that every forecast is attached to (ADR 0005).",
-            "OpenStreetMap exposure overlay — OpenStreetMap contributors (ODbL). Roads, bridges and other infrastructure intersecting a hazard footprint, used for the exposure view (ADR 0006)."
+          "h2": "Inputs are research-private",
+          "paragraphs": [
+            "The environmental inputs behind HazardNet's outlooks — and how they are collected and combined — are research-private and are not published. What is published is the output: district hazard outlooks with provenance."
           ]
         },
         {
           "h2": "Official warning context",
           "paragraphs": [
-            "HazardNet links out to the institutions that carry legal responsibility for warnings in Bangladesh. Their bulletins always take precedence over anything shown here:"
-          ],
-          "bullets": [
-            "Bangladesh Meteorological Department (BMD) — weather forecasts, cyclone signals, heat and cold alerts.",
-            "Flood Forecasting and Warning Centre (FFWC) — river-level and flood bulletins.",
-            "Department of Disaster Management (DDM) — national disaster directives and shelter information.",
-            "National emergency hotline: 999."
+            "Official warnings come from the Bangladesh Meteorological Department for weather hazards and the Flood Forecasting and Warning Centre for river floods; the Department of Disaster Management and your local administration lead response. HazardNet defers to them."
           ]
         },
         {
           "h2": "Attribution and licence notes for reusers",
-          "bullets": [
-            "Copernicus data (Sentinel-1/2, ERA5-Land) is free to use with attribution to the European Union's Copernicus programme and ESA/ECMWF as appropriate.",
-            "Open-Meteo data is CC-BY 4.0: attribute Open-Meteo when republishing derived values.",
-            "OpenStreetMap data is ODbL: derived databases must carry the same licence and attribution.",
-            "HazardNet's own code is MIT-licensed; the forecast archive is published as release artifacts with a sha256 manifest so a republication can be traced to an exact run."
+          "paragraphs": [
+            "Map tiles © Esri and contributors.",
+            "Administrative boundaries: © OpenStreetMap contributors (ODbL), via OCHA/HDX COD-AB geometry.",
+            "If you republish figures derived from HazardNet outputs, cite this site and the forecast date behind each figure."
           ]
         },
         {
           "h2": "What HazardNet adds",
           "paragraphs": [
-            "The value added is the assembly and the cross-checking: a harmonised 15-channel tensor per unit, one inference pass that produces a comparable severity index across all 64 districts, an independent physics-based severity track beside it, and a confidence bin that tells you whether the two agree."
-          ],
-          "links": [
-            {
-              "label": "Methodology",
-              "href": "/methodology"
-            },
-            {
-              "label": "Model card",
-              "href": "/model"
-            },
-            {
-              "label": "Download the forecast archive",
-              "href": "/download"
-            }
+            "A comparable severity value per district and forecast date, two honest severity tracks, published alert levels where policy applies, and the provenance to check every number."
           ]
         }
       ]
@@ -1102,7 +978,7 @@
         {
           "h2": "How it is paid for",
           "paragraphs": [
-            "Core forecasting is free and does not require an account. The blog carries advertising, which is the only monetised surface, and account features are optional. No hazard data is behind a paywall."
+            "Core forecasting is free and does not require an account. The platform is non-commercial: it carries no advertising and no affiliate links, account features are optional, and no hazard data is behind a paywall."
           ],
           "links": [
             {
@@ -1128,7 +1004,7 @@
       "description": "Articles on satellite flood mapping, drought monitoring, dual-track severity and early-warning practice in Bangladesh, written by the HazardNet maintainers.",
       "keywords": [
         "satellite flood mapping",
-        "SAR flood detection",
+        "flood forecasting notes",
         "drought monitoring Bangladesh",
         "early warning practice"
       ],
@@ -1146,7 +1022,7 @@
           "h2": "What we publish here",
           "bullets": [
             "Method explainers: how a specific hazard is detected and what the severity index means for it.",
-            "Data notes: Sentinel-1 coverage gaps, monsoon cloud, reanalysis latency and how each is handled.",
+            "Data notes: coverage gaps, monsoon cloud and forecast latency, and how each is handled.",
             "Post-event reviews: what the outlook said before an event, compared with what happened.",
             "Platform notes: releases, API changes and known issues."
           ],
@@ -1257,7 +1133,7 @@
           "bullets": [
             "Forecast API: metadata, bulk by horizon, and queryable history for past prediction dates.",
             "Data schema: per-unit hazard class, model severity, physics severity, confidence and the driver variables.",
-            "Model bundle: FP32 TFLite artifact, labels, normalisation statistics and the sha256 manifest.",
+            "Published records: a field-by-field reference for the forecast record and its severity values.",
             "Architecture decisions: ADRs covering ADM3 expansion, exposure overlay, the FP32-only bundle and the hourly refresh policy."
           ],
           "links": [
@@ -1342,7 +1218,7 @@
             "Haor pre-monsoon flash flood — short lead time, boro harvest timing, road and embankment access.",
             "Coastal cyclone storm surge — wind and surge exposure, evacuation timing, shelter planning.",
             "Barind agricultural drought — slow onset, soil-moisture and vegetation indices drive the decision.",
-            "Sub-Himalayan cold snap — temperature thresholds and crop-stage sensitivity in the north-west."
+            "Sub-Himalayan cold snap — cold-wave severity and crop-stage sensitivity in the north-west."
           ]
         }
       ]
@@ -1374,7 +1250,7 @@
             "District or upazila, hazard and the forecast horizon you are looking at.",
             "The prediction date shown on the page you saw — freshness matters more than page-load time.",
             "What you observed on the ground, and roughly when.",
-            "A contact address if you want a reply; reports are used to correct thresholds and to build published skill metrics."
+            "A contact address if you want a reply; reports are used to correct alert policy and to build published skill metrics."
           ],
           "callout": {
             "tone": "danger",
@@ -1428,58 +1304,6 @@
           "h2": "Disaster early-warning disclaimer",
           "paragraphs": [
             "HazardNet predictions, severity indices and advisories are generated by automated models for decision support. They do not supersede or replace official emergency evacuation orders, cyclone warnings or river-level bulletins issued by the Bangladesh Meteorological Department (BMD), the Flood Forecasting and Warning Centre (FFWC), the Department of Disaster Management (DDM) or local authorities. Forecasts carry uncertainty that is stated rather than hidden; verify before acting and never use this platform as the sole basis for a life-safety decision."
-          ]
-        }
-      ]
-    },
-    {
-      "path": "/archive",
-      "label": "Hazard archive",
-      "title": "Historical hazard archive for Bangladesh, 2000–2025",
-      "description": "2,931 recorded event-district observations across Bangladesh's 64 districts and eight hazard classes, grouped into 251 physical episodes, with every data-quality limit stated on the page.",
-      "keywords": [
-        "Bangladesh historical hazards",
-        "hazard archive Bangladesh",
-        "GLIDE disaster identifiers",
-        "flood and cyclone history Bangladesh",
-        "agricultural disaster record"
-      ],
-      "robots": "index,follow",
-      "sitemap": {
-        "changefreq": "monthly",
-        "priority": 0.85
-      },
-      "appShell": false,
-      "h1": "Historical hazard archive",
-      "standfirst": "Every hazard record this platform holds for Bangladesh between 2000 and 2025, grouped so the numbers can be read for what they are. The archive holds 2,931 event-district observations covering 64 districts and eight hazard classes. Those rows describe 251 distinct physical episodes, because a national event is recorded once per district — a row is an observation, not a disaster. The page states the archive's own limits: which year is missing, how far its hazard labels disagree with the GLIDE identifiers, and which columns carried no information at all.",
-      "updated": "2026-09-19",
-      "sections": [
-        {
-          "h2": "What the archive records, and what a row means",
-          "paragraphs": [
-            "The archive is a compilation of dated hazard events for Bangladesh, assembled from third-party records and loaded through this repository's own event contract. Each row is one district on one date for one hazard class. That unit matters: a cyclone that crossed the coast and affected all 64 districts appears as 64 rows and one physical episode. Reading the row count as a count of disasters overstates the record by roughly an order of magnitude, so the observation count and the episode count are printed next to each other everywhere on this site.",
-            "Rows are grouped into episodes by their public GLIDE event identifier where one exists. Of the 251 episodes, 41 are national in coverage and 18 are partial; 192 rows carry no GLIDE identifier at all and are grouped by date and hazard class instead."
-          ]
-        },
-        {
-          "h2": "What the archive does not record",
-          "bullets": [
-            "The year 2001 is entirely absent from the archive. A gap in a hazard record is a gap in reporting, not a quiet year, and the timeline on the archive page says so rather than plotting zero.",
-            "The source archive's casualty field is zero for every row, which means 'not recorded' rather than 'nobody was affected'. No page on this site publishes an affected or death figure from it.",
-            "The archive's hazard label and its GLIDE identifier disagree on 846 rows, most often between severe local storm and tropical cyclone, or between flood and flash flood. Both values are preserved and the disagreement is reported rather than reconciled.",
-            "Three source columns are constant across all 2,931 rows and carry no information. The loader refuses to map them, so they cannot be mistaken for data."
-          ]
-        },
-        {
-          "h2": "Where these numbers come from",
-          "paragraphs": [
-            "The figures on the archive page are read from a published artifact built by this repository's build scripts from a validated load of the source archive, not computed in the browser. The loader enforces the same event contract as every other hazard source this platform ingests, and the build refuses to publish an artifact whose counts no longer agree with the data it was built from. The artifact carries aggregate counts, public GLIDE identifiers and summary statistics only: no per-row records, no coordinates and none of the source's descriptive text, because the source compilation is not redistributed here."
-          ]
-        },
-        {
-          "h2": "Publication status of derived measures",
-          "paragraphs": [
-            "A severity index derived from this archive, together with its weighting scheme, is part of unpublished research and is withheld from public copy until the associated publication is released. The archive page states this explicitly rather than leaving an unexplained gap. The severity statistics that are published alongside the archive are computed from the severity values the source archive itself reports, and are labelled as such wherever they appear."
           ]
         }
       ]

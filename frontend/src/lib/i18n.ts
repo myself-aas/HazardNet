@@ -110,7 +110,7 @@ const EN = {
   'alerts.card.requiresReview': 'Awaiting duty-officer review',
   'alerts.confidence.uncalibrated':
     'Model score {score} — a relative priority signal, not a probability of the hazard occurring ' +
-    '(no calibration map is fitted yet).',
+    '(no calibration accuracy is claimed).',
   'alerts.confidence.calibrated': 'Calibrated probability {score}.',
   'alerts.evidence.modelSeverity': 'Model severity',
   'alerts.evidence.physicsSeverity': 'Independent physics severity',
@@ -120,7 +120,7 @@ const EN = {
   'alerts.policy.ceiling':
     'The pipeline publishes at or below {ceiling} automatically. Anything higher waits for a ' + 'named duty officer.',
   'alerts.policy.calibration':
-    'Warnings require a calibrated probability. No calibration map is fitted yet, so a warning ' +
+    'Warnings require a calibrated probability. No calibration accuracy is claimed, so a warning ' +
     'cannot currently be issued from model evidence — a watch is the highest automatic level.',
   'alerts.policy.thresholds': 'Thresholds in force',
   'alerts.policy.divergence': 'divergence above {value}',
@@ -170,8 +170,8 @@ const EN = {
   'alerts.levelLabel': 'Alert level',
   'alerts.confidence.calibratedLong': 'The calibrated probability of this outcome is {score}.',
   'alerts.confidence.uncalibratedLong':
-    'Model score {score}. This is a softmax output used as a relative priority signal — it is ' +
-    'not a probability that the hazard will occur. No calibration map is fitted for this model ' +
+    'Model score {score}. This is a relative priority signal — it is ' +
+    'not a probability that the hazard will occur. No calibration accuracy is claimed for this model ' +
     'version, so only the severity bands and the independent physics track should be used to ' +
     'rank districts.',
   'alerts.page.listTitle': 'Published alerts',
@@ -212,7 +212,8 @@ const EN = {
   'map.legend.alerts': 'Alert level',
   'map.layer.note':
     'Markers are coloured by published alert level where one exists, and by the static baseline ' +
-    'severity elsewhere. A baseline colour is not an alert.',
+    'severity elsewhere. A baseline colour is not an alert. Map lines delineate study areas and ' +
+    'do not necessarily depict accepted national boundaries.',
 
   'district.alerts': 'Alerts for {district}',
   'district.noAlert': 'No published alert for this district.',
@@ -296,7 +297,7 @@ const EN = {
   'frontdoor.covers.hazards': 'Hazard classes, from cold wave to tropical cyclone',
   'frontdoor.covers.districts': 'Districts addressed on the live map',
   'frontdoor.covers.horizons': 'Forecast horizons, in days, from one deterministic weather window',
-  'frontdoor.covers.episodes': 'Historical episodes scored in the hindcast report',
+  'frontdoor.covers.episodes': 'Historical episodes scored in the validation report',
   'frontdoor.covers.coverageValue': '{covered} of {expected} districts',
   'frontdoor.covers.noteLead':
     'Coverage is stated from the artifacts, not from the design: the last forecast snapshot covered',
@@ -573,7 +574,7 @@ const BN: Record<string, string> = {
   'map.legend.alerts': 'সতর্কতার মাত্রা',
   'map.layer.note':
     'যেখানে প্রকাশিত সতর্কবার্তা আছে সেখানে রং সেই স্তর অনুযায়ী, বাকি জেলায় স্থির ভিত্তিমান ' +
-    'অনুযায়ী। ভিত্তিমানের রং কোনো সতর্কবার্তা নয়।',
+    'অনুযায়ী। ভিত্তিমানের রং কোনো সতর্কবার্তা নয়। মানচিত্রের রেখাগুলো কেবল গবেষণা-অঞ্চল নির্দেশ করে; সেগুলো অবশ্যই স্বীকৃত জাতীয় সীমানা নয়।',
 
   'district.alerts': '{district}-এর সতর্কবার্তা',
   'district.noAlert': 'এই জেলার জন্য কোনো প্রকাশিত সতর্কবার্তা নেই।',

@@ -14,7 +14,7 @@ export interface UpazilaImpact {
  * (`bangladeshDistricts.ts`) for display; they are not model output and must not
  * be presented as such. `confidenceLevel` in particular is
  * `92 + severity * 7.2` — a display score, not a calibrated probability (Phase 3
- * MLOps: `docs/mlops/CALIBRATION.md`, and the copy guards in
+ * model ops: `docs/model-ops/CALIBRATION.md`, and the copy guards in
  * `scripts/tests/test_model_claims.py`). Replacing this panel with served
  * forecast fields is tracked for Phase 5.
  */
@@ -57,7 +57,7 @@ export interface GranularDisasterData {
   modelAssessment: {
     continuousSeverityIndex: number;
     riskCategory: 'Low' | 'Moderate' | 'High';
-    softmaxProbabilities: {
+    confidenceProbabilities: {
       hazard: string;
       probability: number;
     }[];
@@ -206,10 +206,10 @@ export function getGranularDisasterData(districtId: string): GranularDisasterDat
       break;
   }
 
-  // Softmax probability distribution
+  // confidence probability distribution
   const primaryProb = Number((0.62 + sev * 0.32).toFixed(2));
   const remain = Number((1.0 - primaryProb).toFixed(2));
-  const softmaxProbabilities = [
+  const confidenceProbabilities = [
     { hazard: district.hazardType, probability: primaryProb },
     { hazard: district.hazardType === 'Monsoon Flood' ? 'Flash Flood' : 'Monsoon Flood', probability: Number((remain * 0.55).toFixed(2)) },
     { hazard: 'Drought', probability: Number((remain * 0.25).toFixed(2)) },
@@ -224,7 +224,7 @@ export function getGranularDisasterData(districtId: string): GranularDisasterDat
     hazardSubtype: subtype,
     incidentDate: '2026-07-31 06:00 BST',
     peakImpactWindow: 'Jul 31 - Aug 05, 2026',
-    lastSatelliteUpdate: 'Sentinel-1 SAR • 2026-08-01 03:20 UTC',
+    lastSatelliteUpdate: 'Satellite-1 satellite • 2026-08-01 03:20 UTC',
     estimatedImpactAreaKm2: estimatedImpactKm2,
     totalDistrictAreaKm2: approxTotalArea,
     impactAreaPercentage: impactPct,
@@ -244,7 +244,7 @@ export function getGranularDisasterData(districtId: string): GranularDisasterDat
     modelAssessment: {
       continuousSeverityIndex: district.severity,
       riskCategory: district.risk,
-      softmaxProbabilities,
+      confidenceProbabilities,
       // Display score for the panel; see the module header. Do not describe it as
       // a calibrated confidence — nothing in this repository is calibrated.
       confidenceLevel: Number((92 + sev * 7.2).toFixed(1)),

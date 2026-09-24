@@ -52,7 +52,7 @@ const alert: AlertRecord = {
     line: ['precip_72h=91mm'],
   },
   freshness: { data_cutoff: '2026-09-18T00:00:00Z' },
-  provenance: { model_version: 'tflite-2026-09-12' },
+  provenance: { model_version: 'model-2026-09-12' },
   reasons: [{ rule: 'watch_severity_band', detail: 'severity 0.9999 ≥ 0.55', track: 'model' }],
   published: { at: '2026-09-18T06:00:00Z', mode: 'auto' },
   disclaimer: ALERT_DISCLAIMER,

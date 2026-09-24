@@ -45,7 +45,7 @@ export interface ForecastRow {
   pcode?: string;
   /**
    * `dataset_version` — the content hash over the inputs behind this prediction
-   * unit (scripts/etl/scene_manifest.py, PRODUCT_SPEC §5.8). Same inputs, same
+   * unit (the scene manifest, PRODUCT_SPEC §5.8). Same inputs, same
    * version; a new satellite scene or a revised forecast window moves it. Phase 2
    * puts it on the rows; Phase 5 surfaces it next to each forecast's methodology.
    */
@@ -74,7 +74,7 @@ export interface ForecastMetadata {
  *
  * Three-stage fallback (mirrors loadForecasts): live /metadata → live /bulk →
  * the committed snapshot. The Peak Hazard Window / Incident Ingestion
- * cards therefore keep showing the latest Kaggle prediction_date even when
+ * cards therefore keep showing the latest production_date even when
  * the API/store is unreachable, as long as the deployment bundle carries a
  * snapshot. Throws only when all three sources fail.
  */
@@ -220,7 +220,7 @@ export function parseBulkResponse(payload: unknown): ForecastRow[] {
 // ─────────────────────────────────────────────────────────────────────────
 // Static snapshot — the website's committed fallback data
 // ─────────────────────────────────────────────────────────────────────────
-// The daily GitHub workflow (daily_forecast.yml) downloads the Kaggle
+// The daily GitHub workflow (daily_forecast.yml) downloads the production
 // notebook's CSV output and regenerates this file inside the website bundle
 // (scripts/build_forecast_snapshot.mjs), so every deployment of the codebase
 // ships with forecasts at most one day behind the latest notebook run —
@@ -232,7 +232,7 @@ export const FORECAST_SNAPSHOT_URL = '/data/forecasts-latest.json';
 /**
  * Shape of `frontend/public/data/forecasts-latest.json`.
  *
- * schema v2 (2026-09-17) added `provenance` (which model/tensor/pipeline produced
+ * schema v2 (2026-09-17) added `provenance` (which model and pipeline produced
  * these rows) and `coverage` (how many of the requested district x horizon units
  * were actually produced, and which districts are missing). Both are optional so
  * a deployment still serving a v1 snapshot keeps working — but a UI that ignores

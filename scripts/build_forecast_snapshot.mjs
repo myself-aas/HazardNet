@@ -6,11 +6,10 @@
  * and then run this script to emit frontend/public/data/forecasts-latest.json:
  *
  *   1. GitHub-native (default since 2026-09-16): `.github/workflows/daily_forecast.yml`
- *      runs scripts/auto_forecast.py on the runner (GEE + Open-Meteo + TFLite)
- *      and promotes its CSV with scripts/publish_forecast_csv.py. No Kaggle.
- *   2. Kaggle (legacy, dispatch-only): forecast-pipeline/hourly/weekly download
- *      the notebook's output (`kaggle kernels output
- *      ashifahmedshuvo/hazardnet-auto-forecast-pipeline`).
+ *      runs scripts/auto_forecast.py on the runner (processing + weather service + model)
+ *      and promotes its CSV with scripts/publish_forecast_csv.py. No external download.
+ *   2. run-store (legacy, dispatch-only): scheduled jobs download
+ *      the published forecast run.
  *
  * The provenance stamped into `source`/`producer` therefore follows the
  * caller: set SNAPSHOT_SOURCE (and SNAPSHOT_KERNEL if the slug differs) so a
@@ -25,7 +24,7 @@
  *    frontend's useForecasts() hook falls back to it, see
  *    frontend/src/lib/forecasts.ts → fetchStaticForecastSnapshot()).
  *  - It is also a cache-busting input: the file is committed hourly whenever
- *    the Kaggle output changed, which triggers a fresh deployment.
+ *    the production output changed, which triggers a fresh deployment.
  *
  * Usage:
  *   node scripts/build_forecast_snapshot.mjs [csvPath] [outPath]
@@ -34,7 +33,7 @@
  *   outPath = frontend/public/data/forecasts-latest.json
  * Env:
  *   SNAPSHOT_SOURCE = provenance string written to `source`
- *                     (default: "kaggle kernels output <SNAPSHOT_KERNEL>")
+ *                     (default: "forecast run <SNAPSHOT_KERNEL>")
  *
  * Zero runtime dependencies (hand-rolled RFC4180 CSV reader) so the pipeline
  * never needs an install step just to refresh the website data.
@@ -45,19 +44,19 @@ import { dirname, resolve } from 'node:path';
 
 const CSV_PATH = resolve(process.argv[2] || 'backend/data/forecasts/hazardnet_forecasts_latest.csv');
 const OUT_PATH = resolve(process.argv[3] || 'frontend/public/data/forecasts-latest.json');
-const KERNEL = process.env.SNAPSHOT_KERNEL || 'ashifahmedshuvo/hazardnet-auto-forecast-pipeline';
-// Provenance is caller-supplied: the Kaggle workers keep the historical
-// string, the GitHub-native producer passes its own (see the header).
-// The Kaggle string is the legacy default, and it is a *claim*: a snapshot rebuilt by hand from
-// a CSV that came off the GitHub Actions pipeline was previously stamped "kaggle kernels output
-// …" because the caller did not set SNAPSHOT_SOURCE. The workflows do set it (daily_forecast.yml
-// passes the Actions string), so this branch only runs for local/manual rebuilds — where the
-// honest answer is that nobody declared a producer. `docs/ops/SEO_AND_CONTENT.md` §7 records the
-// committed snapshot that still carries the old label; its rows match the committed CSV exactly.
+const KERNEL = process.env.SNAPSHOT_KERNEL || 'hazardnet/forecast-pipeline';
+// Provenance is caller-supplied: production workers and scheduled jobs pass
+// their own producer string (see the header).
+// The default is a *claim*: a snapshot rebuilt by hand from a CSV that came
+// off CI was previously stamped with a producer string the caller never
+// declared, because SNAPSHOT_SOURCE was not set. The workflows do set it, so
+// this branch only runs for local/manual rebuilds — where the honest answer
+// is that nobody declared a producer. The committed snapshot's rows match
+// the committed CSV exactly.
 const SOURCE = process.env.SNAPSHOT_SOURCE
-  || `unspecified: built outside a workflow (no SNAPSHOT_SOURCE); the Kaggle slug would have been ${KERNEL}`;
+  || `unspecified: built outside a workflow (no SNAPSHOT_SOURCE); the declared producer would have been ${KERNEL}`;
 const REPORT_PATH = resolve(process.env.SNAPSHOT_RUN_REPORT || 'hazardnet_run_report.json');
-// Published alongside the CSV/JSON sidecar by scripts/publish_forecast_csv.py.
+// Published alongside the CSV/JSON sidecar.
 // It carries the per-unit and run-level `dataset_version` (PRODUCT_SPEC §5.8);
 // without it the snapshot can still be built, but it must say the inputs behind
 // the rows are unnamed rather than implying lineage it does not have.
@@ -136,7 +135,7 @@ const num = (v) => {
 function main() {
   if (!existsSync(CSV_PATH)) {
     console.error(`❌ Forecast CSV not found: ${CSV_PATH}`);
-    console.error('   Run scripts/fetch_kaggle_forecast.py first (or the hourly workflow).');
+    console.error('   Run scripts/fetch_production_forecast.py first (or the hourly workflow).');
     process.exit(1);
   }
 
@@ -245,7 +244,7 @@ function main() {
       if (v !== null) row[out] = v;
     }
 
-    // Meteorological (Open-Meteo) fields — the District Detail page's CSV
+    // Meteorological (weather service) fields — the District Detail page's CSV
     // table renders Temp (Min/Max) / Precip. / Wind Max from these, and until
     // 2026-09-16 the snapshot silently dropped them, so the site showed "—"
     // for every weather column whenever it ran off the committed snapshot.
@@ -283,11 +282,11 @@ function main() {
       ['adm2_pcode', 'adm2_pcode'],
       ['data_source', 'data_source'],
       // Provenance (audit 2026-09-17): every published row must know which
-      // model/tensor/pipeline produced it, so a forecast can be reproduced
+      // model/record/pipeline produced it, so a forecast can be reproduced
       // from its own record. Absent values stay absent — never defaulted.
       ['model_version', 'model_version'],
       ['confidence_kind', 'confidence_kind'],
-      ['tensor_build_id', 'tensor_build_id'],
+      ['record_build_id', 'record_build_id'],
       ['pipeline_version', 'pipeline_version'],
       ['run_id', 'run_id'],
       ['physics_top_hazard', 'physics_top_hazard'],
@@ -377,7 +376,7 @@ function main() {
 
   const provenance = {
     model_version: firstValue('model_version'),
-    tensor_build_id: firstValue('tensor_build_id'),
+    record_build_id: firstValue('record_build_id'),
     pipeline_version: firstValue('pipeline_version'),
     run_id: firstValue('run_id'),
   };
@@ -421,7 +420,7 @@ function main() {
   console.log(`   Source: ${snapshot.source}`);
   console.log(`   Coverage: ${coverage.produced_units} units, ${coverage.districts_covered} districts, status=${coverage.status}`);
   console.log(`   Lineage: dataset_version=${lineage.dataset_version ?? 'none'} (${lineage.rows_with_version}/${lineage.rows_total} rows versioned, ${lineage.status})`);
-  if (provenance.model_version) console.log(`   Model: ${provenance.model_version} (tensor ${provenance.tensor_build_id ?? 'unknown'})`);
+  if (provenance.model_version) console.log(`   Model: ${provenance.model_version} (record ${provenance.record_build_id ?? 'unknown'})`);
   if (snapshot.soil_channels_fabricated) console.log('   ⚠ soil channels fabricated (training means) — rows are stamped soil_channels_fabricated=true');
   if (invalidHazards.size > 0) {
     console.error(`❌ Unrecognised hazard labels dropped from the CSV: ${[...invalidHazards.entries()].map(([h, n]) => `${h}×${n}`).join(', ')}`);

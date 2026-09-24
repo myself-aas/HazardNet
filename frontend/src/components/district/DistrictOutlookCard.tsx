@@ -96,7 +96,7 @@ export const DistrictOutlookCard: React.FC = () => {
                 <p className="text-carbon-80 text-sm sm:text-base leading-relaxed font-medium max-w-4xl">
                   {data.hazardSubtype}. Continuous severity index calculated at{' '}
                   <strong className="text-carbon-black font-bold">{(data.modelAssessment.continuousSeverityIndex * 100).toFixed(0)}%</strong> with a model score of{' '}
-                  <strong className="text-carbon-black font-bold">{data.modelAssessment.confidenceLevel}%</strong>. That score is the classifier&rsquo;s own (uncalibrated) softmax, not a measured probability of the event — calibration and POD/FAR are tracked in the{' '}
+                  <strong className="text-carbon-black font-bold">{data.modelAssessment.confidenceLevel}%</strong>. That score is the classifier&rsquo;s own (uncalibrated) confidence, not a measured probability of the event — calibration and POD/FAR are tracked in the{' '}
                   <a href="/methodology" className="underline decoration-dotted font-semibold">methodology</a>. Primary exposure focuses across low-elevation agricultural floodplains, dense riverine settlements, and vulnerable embankment corridors.
                 </p>
 
@@ -179,7 +179,7 @@ export const DistrictOutlookCard: React.FC = () => {
                 />
               </div>
               <div className="text-xs text-carbon-60 font-medium">
-                Trained on GCM & ECMWF Ensembles
+                Trained on GCM & forecast Ensembles
               </div>
             </div>
 

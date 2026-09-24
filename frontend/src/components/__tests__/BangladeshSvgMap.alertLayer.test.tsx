@@ -6,7 +6,7 @@ import '@testing-library/jest-dom';
  * Two properties are asserted, both of which the phase's project-killer is about:
  *
  *   1. a district that has **no** published alert must not be coloured as if it had one
- *      (the layer is a whitelist, and the accessible name of each marker says whether an
+ *      (the layer is an allowlist, and the accessible name of each marker says whether an
  *      alert exists);
  *   2. low-bandwidth mode removes decoration (glow circles, ping rings, the dotted grid)
  *      without removing information — every district marker is still rendered and still
@@ -43,7 +43,7 @@ describe('BangladeshSvgMap alert layer', () => {
 
   it('does not colour a district that has no published alert', () => {
     render(<BangladeshSvgMap {...baseProps} alertLevels={{ sunamganj: 'SEVERE' }} />);
-    // The layer is a whitelist: only the district passed in is described as having an alert.
+    // The layer is an allowlist: only the district passed in is described as having an alert.
     const labels = markers().map((node) => node.getAttribute('aria-label') || '');
     const withAlerts = labels.filter((label) => label.includes('HazardNet alert:'));
     expect(withAlerts).toHaveLength(1);

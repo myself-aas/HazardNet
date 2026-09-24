@@ -19,7 +19,7 @@
     {
       "id": "open_meteo",
       "module": "02_data_ingestion/open_meteo_plugin.py",
-      "class": "OpenMeteoPlugin",
+      "class": "WeatherPlugin",
       "enabled": true
     }
   ],

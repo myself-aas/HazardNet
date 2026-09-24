@@ -68,7 +68,7 @@ export const DistrictForecastRecords: React.FC = () => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-carbon-20 pb-4">
           <div>
             <div className="text-xs font-mono font-bold text-amber-600 uppercase tracking-wider">
-              Pipeline CSV Output (GEE + Open-Meteo + TFLite) • District Telemetry Feed
+              Published Forecast Records • District Telemetry Feed
             </div>
             <h2 className="text-xl font-black text-carbon-black tracking-tight">
               7-Day & 15-Day Forecast Records ({data.districtName})

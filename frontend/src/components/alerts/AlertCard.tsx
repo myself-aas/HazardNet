@@ -8,7 +8,7 @@
  * be, because a blank reads as zero to a hurried reader.
  *
  * The confidence statement is the one piece of copy that needs care: the model score
- * is a softmax, not a probability, and no calibration map is fitted. The card renders
+ * is an uncalibrated score, not a probability, and no calibration accuracy is claimed. The card renders
  * `alerts.confidence.uncalibrated` unless the API explicitly says
  * `confidence_published === 'calibrated_probability'`. That branch is what keeps
  * project-killer #1 dead on the UI side.

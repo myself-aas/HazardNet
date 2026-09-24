@@ -3,50 +3,40 @@
  *
  * Phase 6 (SEC-11): the chat prompt bounds are enforced, not just computed.
  *
- * The route computed `sanitizedQuery` for RAG retrieval and then built the LLM prompt from
+ * The route computed `sanitizedQuery` for retrieval and then built the LLM prompt from
  * the raw request body — so the per-field limits were decorative on the one path that
  * costs money and carries prompt-injection risk. These tests capture the prompt actually
  * handed to the AI engine and assert the bounds hold end to end.
  */
 
-import express from 'express';
 import request from 'supertest';
 
-jest.mock('../../rag_pipeline/index.js', () => ({
-  searchRAG: jest.fn(() => ({
-    results: [{ id: 'doc-1', title: 'T', category: 'c', content: 'x'.repeat(400), score: 0.9 }],
-    districtBaseline: null,
-  })),
-  GOVT_OFFICE_DIRECTORY: [],
-  routeSkills: jest.fn(() => 'test routed skills'),
-  getAgentInstructions: jest.fn(() => 'test instructions'),
-}));
-
 jest.mock('../../backend/utils/ai_fallback_engine.js', () => ({
-  generateAdvisoryWithFallback: jest.fn(async () => ({ reply: 'ok', provider: 'mock', provider_source: 'mock' })),
-  generateDeterministicHeuristicAdvisory: jest.fn(() => ({ reply: 'test reply' })),
+  generateAdvisoryWithFallback: jest.fn(async () => ({ text: 'MOCK ADVICE', fallback: null })),
 }));
+const { generateAdvisoryWithFallback } = require('../../backend/utils/ai_fallback_engine.js');
 
-import { searchRAG } from '../../rag_pipeline/index.js';
-import { generateAdvisoryWithFallback } from '../../backend/utils/ai_fallback_engine.js';
-import chatRoutes from '../../backend/routes/chat.js';
+jest.mock('../../backend/services/localKnowledge.js', () => ({
+  searchRAG: jest.fn(() => ({ results: [], districtBaseline: null })),
+  routeSkills: jest.fn(() => []),
+  GOVT_OFFICE_DIRECTORY: [],
+}));
+const { searchRAG } = require('../../backend/services/localKnowledge.js');
 
-const app = express();
-app.use(express.json({ limit: '10mb' }));
-app.use('/api/chat', chatRoutes);
-
+const app = require('../../backend/server').default;
 const MAX_PROMPT_CHARS = 12_000;
-const promptOfLastCall = () => generateAdvisoryWithFallback.mock.calls.at(-1)[2];
 
-beforeEach(() => {
-  generateAdvisoryWithFallback.mockClear();
-  searchRAG.mockImplementation(() => ({
-    results: [{ id: 'doc-1', title: 'T', category: 'c', content: 'x'.repeat(400), score: 0.9 }],
-    districtBaseline: null,
-  }));
-});
+function promptOfLastCall() {
+  const call = generateAdvisoryWithFallback.mock.calls.at(-1);
+  return call[2] ?? '';
+}
 
 describe('chat prompt bounds', () => {
+  beforeEach(() => {
+    generateAdvisoryWithFallback.mockClear();
+    searchRAG.mockClear();
+  });
+
   it('keeps an oversized query out of the prompt, not just out of retrieval', async () => {
     const huge = 'A'.repeat(50_000);
     const res = await request(app).post('/api/chat/query').send({ query: huge });

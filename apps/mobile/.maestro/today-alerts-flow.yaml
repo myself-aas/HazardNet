@@ -1,0 +1,33 @@
+# Maestro E2E flow: open app → Today → tap See instructions → return → tap Alerts → filter → pull to refresh.
+# Run:
+#   maestro test apps/mobile/.maestro/today-alerts-flow.yaml
+#
+# Requires: app running in dev (expo start --dev-client or installed dev build).
+# Bundle ID / package name may differ across installs; adjust appId accordingly.
+
+appId: com.hazardnet.app
+---
+- launchApp
+- assertVisible: "Today"
+- assertVisible: # contains one of severity words
+    text: "All clear|SEVERE|Severe|WARNING|Warning|WATCH|Watch"
+# Primary CTA — the instructions button or View alert button must be reachable
+- tapOn:
+    text: "See instructions .*|View alert .*"
+    optional: true
+- back
+- tapOn: "Alerts"
+- assertVisible: "Alerts"
+- tapOn: "Severe"
+- tapOn: "All"
+# Pull-to-refresh
+- swipe:
+    start: "50%, 20%"
+    end: "50%, 70%"
+- tapOn:
+    id: "search-input"
+    optional: true
+- inputText: "Kurigram"
+- pressKey: Back
+- tapOn: "Today"
+- assertVisible: "Today"

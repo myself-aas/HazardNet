@@ -93,8 +93,8 @@ export const DESKTOP_MENUS: DesktopMenu[] = [
         extraAction: 'toggleHeatmap',
       },
       {
-        id: 'district-tensor',
-        title: 'District Tensor Details',
+        id: 'district-records',
+        title: 'District Model Details',
         path: '/forecast/district/mymensingh',
         icon: 'insights',
         description: 'Deep-dive district ML metrics',
@@ -250,8 +250,8 @@ export const DESKTOP_MENUS: DesktopMenu[] = [
         badge: 'ADMIN',
       },
       {
-        id: 'hindcast',
-        title: 'Hindcast Validation',
+        id: 'validation',
+        title: 'validation Validation',
         path: '/model-performance',
         icon: 'monitoring',
         description: 'Episodic validation against historical models',
@@ -279,8 +279,8 @@ export const DESKTOP_MENUS: DesktopMenu[] = [
         description: 'Satellite & sensor streams',
       },
       {
-        id: 'hindcast',
-        title: 'Hindcast Validation',
+        id: 'validation',
+        title: 'validation Validation',
         path: '/model-performance',
         icon: 'monitoring',
         description: 'Four historical episodes, with limits',

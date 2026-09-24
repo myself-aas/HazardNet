@@ -36,7 +36,7 @@ describe('DistrictForecastCard (HDS selected panel)', () => {
     mount()
     expect(screen.getByRole('dialog', { name: /kurigram district forecast/i })).toBeInTheDocument()
     expect(screen.getByText('Monsoon Flood')).toBeInTheDocument()
-    expect(screen.getByText('88% Severity')).toBeInTheDocument()
+    expect(screen.getByText('Severity score 0.88')).toBeInTheDocument()
     expect(screen.getByText('High Risk')).toBeInTheDocument()
     expect(screen.getByTitle(/Main crop: Aman Rice & Jute/i)).toBeInTheDocument()
     expect(screen.getByText(/28m MSL/i)).toBeInTheDocument()

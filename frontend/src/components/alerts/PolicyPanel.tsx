@@ -8,7 +8,7 @@
  * `backend/config/alert-policy.json`.
  *
  * The panel is deliberately explicit about the calibration gap: the engine requires a
- * calibrated probability before a `WARNING`, and no calibration map is fitted yet, so
+ * calibrated probability before a `WARNING`, and no calibration accuracy is claimed, so
  * a watch is currently the highest level the pipeline can reach on its own. Saying so
  * on the public page is the honest alternative to rendering a warning that could not
  * be issued (project-killer #1: uncalibrated confidence).

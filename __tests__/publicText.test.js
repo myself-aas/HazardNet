@@ -32,10 +32,10 @@ const REPO_LOCATIONS = [
   'docs/ops/HAZARD_ARCHIVE_QUALITY.md',
   'src/data/bangladeshDistricts.ts',
   'frontend/src/styles/nasa-hds.css',
-  '.github/workflows/hindcast.yml',
-  'hindcast/reports/amphan-2020.json',
+  '.github/workflows/nightly.yml',
+  'data/reports/amphan-2020.json',
   '__tests__/publicSurface.test.js',
-  'scripts/etl/adapters/bgd_climatic_hazards.py',
+  'scripts/adapters/bgd_climatic_hazards.py',
 ];
 
 /** Strings that must not be treated as repository locations. */
@@ -45,8 +45,8 @@ const NOT_REPO_LOCATIONS = [
   'https://www.hazardnet.live/data/freshness.json',
   '2,931 event-district observations',
   'the data/events pipeline', // prose about a directory, no file
-  'Sentinel-1/2 + Landsat + ERA5-Land',
-  'Open-Meteo forecast (rainfall intensity)',
+  'weather and satellite inputs',
+  'weather forecast (rainfall intensity)',
   'models of the atmosphere', // lowercase prose, not the Models/ tree
   'blog_articles',
   'VITE_ADSENSE_CLIENT',
@@ -73,18 +73,18 @@ describe('the public-text rule', () => {
   it.each(implementations)('%s deletes a parenthetical that names a file', (_name, mod) => {
     expect(
       mod.withoutRepoPaths(
-        'Severity and class come from the independent physics cross-check (scripts/physics_severity.py) run on reanalysis drivers.',
+        'Severity and class come from the independent severity cross-check (scripts/severity_crosscheck.py) run on weather drivers.',
       ),
     ).toBe(
-      'Severity and class come from the independent physics cross-check run on reanalysis drivers.',
+      'Severity and class come from the independent severity cross-check run on weather drivers.',
     );
     // The parenthetical goes with the space that separated it, and only it goes.
     expect(
-      mod.withoutRepoPaths('A parser exists (scripts/etl/bulletins.py) and is tested.'),
+      mod.withoutRepoPaths('A parser exists (scripts/parsers/bulletins.py) and is tested.'),
     ).toBe('A parser exists and is tested.');
     // A parenthetical that does not name a file survives.
-    expect(mod.withoutRepoPaths('Drivers: ERA5-Land (reanalysis), 0.1 degree.')).toBe(
-      'Drivers: ERA5-Land (reanalysis), 0.1 degree.',
+    expect(mod.withoutRepoPaths('Drivers: environmental data, 0.1 degree.')).toBe(
+      'Drivers: environmental data, 0.1 degree.',
     );
     // A path with no parentheses is left alone: deleting it would take the grammar too.
     expect(mod.withoutRepoPaths('pinned by scripts/tests/test_physics_severity.py.')).toBe(

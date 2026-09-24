@@ -39,12 +39,12 @@ export const Footer: React.FC = () => {
               <HazardNetBrand size="lg" />
             </div>
             <p className="text-carbon-60 text-xs leading-relaxed">
-              High-resolution 15-band satellite AI engine for real-time disaster early warning, physical severity quantification, and agronomic mitigation in South Asia.
+              A multi-hazard forecasting platform for 7- and 15-day multi-hazard outlooks across Bangladesh, with dual-track severity and agronomic context.
             </p>
             <div className="pt-1">
               <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-control bg-carbon-10 border border-carbon-20 font-mono text-[10px]">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                <span className="text-carbon-80 font-bold">WASM Edge Engine: Ready</span>
+                <span className="text-carbon-80 font-bold">Provenance-stamped forecast snapshots</span>
               </div>
             </div>
           </div>
@@ -162,12 +162,12 @@ export const Footer: React.FC = () => {
               </li>
               <li>
                 <Link to="/download?platform=python" className="text-[13px] font-medium text-carbon-80 hover:text-nasa-red-shade hover:underline transition-all min-h-[44px] inline-flex items-center touch-target-link">
-                  Python PyPI Package
+                  Python Library (source)
                 </Link>
               </li>
               <li>
                 <Link to="/download?platform=npm" className="text-[13px] font-medium text-carbon-80 hover:text-nasa-red-shade hover:underline transition-all min-h-[44px] inline-flex items-center touch-target-link">
-                  npm JavaScript Library
+                  JavaScript Library (source)
                 </Link>
               </li>
             </ul>

@@ -28,8 +28,8 @@
  *   * no page states a historical count unless an archive file was read;
  *   * when one is read, the count is the archive's own, the drift against 2,931 is printed
  *     with it, and the archive path is named;
- *   * `--events` points at a normalised export (`python -m etl.cli events --export-json …`),
- *     which is the same set of rows the ETL validates and loads into PostGIS.
+ *   * `--events` points at a normalised export (`python -m pipeline.cli events --export-json …`),
+ *     which is the same set of rows the pipeline validates and loads into PostGIS.
  *
  * USAGE
  *   node scripts/build_content_engine.mjs                       # write the routes file
@@ -42,14 +42,14 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-// Data-authored prose can carry a location in this repository's tree (the hindcast reports
+// Data-authored prose can carry a location in this repository's tree (the validation reports
 // name the module that produced a score). The artifacts keep those paths — they are what
 // makes a number auditable by a script — and the published page drops them, because a
 // visitor cannot open one. See scripts/lib/public-text.mjs and docs/PUBLIC_SURFACE.md §3.
 import { findRepoPaths, withoutRepoPaths } from './lib/public-text.mjs';
 
 export const GENERATED_SCHEMA = 'hazardnet-generated-routes/v1';
-export const PERFORMANCE_SCHEMA = 'hazardnet-model-performance/v1';
+export const PERFORMANCE_SCHEMA = 'hazardnet-model-performance/v2';
 export const CLAIMED_EVENT_TOTAL = 2931;
 
 const DEFAULT_PATHS = {
@@ -59,10 +59,10 @@ const DEFAULT_PATHS = {
   alerts: 'frontend/public/data/alerts-latest.json',
   freshness: 'frontend/public/data/freshness.json',
   /**
-   * Phase 9 §8.1 — the published validation numbers, projected from `data/hindcast/reports/*.json`
-   * by `scripts/build_model_performance.mjs`. It is a separate artifact from this engine for the
-   * same reason the freshness artifact is: the reports are what CI recomputes, so the page states
-   * what those reports say and nothing else.
+   * Phase 9 §8.1 — the published validation numbers, published as
+   * `frontend/public/data/model-performance.json`. It is a separate artifact from this engine for
+   * the same reason the freshness artifact is: the page states what the published scorecard says
+   * and nothing else.
    */
   performance: 'frontend/public/data/model-performance.json',
   archive: 'data/events/hazardnet-events.json',
@@ -83,7 +83,7 @@ const ORIGIN = 'https://www.hazardnet.live';
 
 /**
  * Spellings the upstream forecast artifact still uses for districts the application has since
- * renamed, or spelled differently when the tensor was exported. Keys are what the snapshot
+ * renamed, or spelled differently when the record was exported. Keys are what the snapshot
  * carries (lower-cased, punctuation stripped); values are the district **ids** in
  * `frontend/src/data/bangladeshDistricts.ts`.
  *
@@ -228,7 +228,7 @@ export function indexForecastRows(snapshot) {
 /**
  * Read a normalised event export. Accepts `[…]` or `{events: […]}`. Every event must carry the
  * fields the page renders; a malformed archive is an error rather than a silent partial read,
- * because a district profile that quietly lost rows is worse than one that says it has no
+ * because a district profile that quipipeliney lost rows is worse than one that says it has no
  * history.
  */
 export function readArchive(payload, sourcePath = null) {
@@ -351,8 +351,16 @@ function outlookBullet(unit) {
   return `${parts.join('; ')}.`;
 }
 
+const SHARED_DEFAULTS = {
+  classVocabulary: 'Every alert uses the same four-level vocabulary — NORMAL, WATCH, WARNING, EMERGENCY — across all eight classes.',
+  confidencePolicy: 'Confidence is published as an uncalibrated model score; no calibration accuracy is claimed.',
+  publicationGate: 'Advisory levels follow the published alert policy and the escalation boundaries of the responsible authorities; nothing here overrides them.',
+  groundTruth: 'Published assessments and official bulletins are the record; this site reports what they name.',
+  physicsNotation: null,
+};
+
 function hazardRoute({ hazard, outlook, now, methodology }) {
-  const shared = methodology.shared;
+  const shared = methodology.shared ?? SHARED_DEFAULTS;
   const units = outlook.units.filter((unit) => unit.hazard === hazard.class);
   const top = units
     .slice()
@@ -439,7 +447,7 @@ function hazardRoute({ hazard, outlook, now, methodology }) {
       },
       {
         question: `Why is the confidence not a probability of ${hazard.class}?`,
-        answer: `The published confidence is the model's own softmax over its eight classes, labelled uncalibrated_model_softmax in the data. It says how certain the classifier is about the class it picked, not how often that class actually materialises. No calibration map has been fitted yet, which is also why nothing above the WATCH level can be published automatically.`,
+        answer: `The published confidence is the model's own confidence over its eight classes, labelled uncalibrated_model_confidence in the data. It says how certain the classifier is about the class it picked, not how often that class actually materialises. No calibration has been fitted yet, which is also why nothing above the WATCH level can be published automatically.`,
       },
       {
         question: `Which districts does this page cover?`,
@@ -569,7 +577,7 @@ function districtRoute({ district, rows, archive, now, outlook, shared }) {
             dataset: {
               kind: 'event-archive',
               name: 'HazardNet historical hazard event archive (Bangladesh, 2000–2025)',
-              description: `Normalised historical hazard events for Bangladesh districts, compiled for the model's climatological prior and validated by the ETL.`,
+              description: `Normalised historical hazard events for Bangladesh districts, compiled for the model's climatological prior and validated by the pipeline.`,
               temporalCoverage: `${archive.date_range[0]}/${archive.date_range[1]}`,
               variableMeasured: ['hazard class', 'district', 'event window', 'severity basis', 'fatalities'],
               keywords: ['Bangladesh', 'disaster history', 'hazard events'],
@@ -592,15 +600,15 @@ function districtRoute({ district, rows, archive, now, outlook, shared }) {
         h2: 'How to read these numbers',
         bullets: [
           'Severity index (0.00–1.00) is the model\'s damage-potential score for the class it selected — not a probability and not a share of damage.',
-          'Confidence is the model\'s own certainty in that class (softmax), published as uncalibrated; it is not a measure of whether the forecast is correct.',
-          'The physics severity is an independent formula-based estimate over the same drivers. Divergence between the two tracks is normal and is shown rather than hidden.',
+          'Confidence is the model\'s own certainty in that class, published as uncalibrated; it is not a measure of whether the forecast is correct.',
+          'The severity track is an independent formula-based estimate. Divergence between the two tracks is normal and is shown rather than hidden.',
           'Horizons are 7 and 15 days. The 15-day outlook is the less certain of the two and is a planning aid, not a storm-specific prediction.',
-          shared.publicationGate,
+          shared.publicationGate ?? SHARED_DEFAULTS.publicationGate,
         ],
       },
       { h2: 'Static baseline shipped with the app', paragraphs: baselineParas },
       historySection,
-      { h2: 'Ground truth for this district', paragraphs: [shared.groundTruth] },
+      { h2: 'Ground truth for this district', paragraphs: [shared.groundTruth ?? SHARED_DEFAULTS.groundTruth] },
     ],
     faqs,
   };
@@ -617,7 +625,7 @@ function hazardsIndexHint(hazard, outlook) {
 
 /**
  * The public validation page, composed from `frontend/public/data/model-performance.json`
- * (`scripts/build_model_performance.mjs`, which projects the four committed hindcast reports).
+ * (the published validation scorecard).
  *
  * Two things are deliberate here.
  *
@@ -631,11 +639,25 @@ function hazardsIndexHint(hazard, outlook) {
  * fixed text is the framing (what the numbers are not) plus the reports' own findings, which the
  * artifact carries verbatim.
  */
+/**
+ * The public validation page, composed from `frontend/public/data/model-performance.json`.
+ *
+ * Two things are deliberate here.
+ *
+ * **No headline accuracy.** The page publishes per-episode detection and POD/FAR/CSI with
+ * their denominators attached — never a single percentage. `—` appears wherever a score could
+ * not be computed, and the sentence that explains it is on the page, because a `0.00` there
+ * would read as "the model missed everything".
+ *
+ * **Nothing is written by hand.** Every number below is read from the artifact; the copy that
+ * is fixed text is the framing (what the numbers are not) plus the artifact's own stated
+ * limitations, which it carries verbatim.
+ */
 function modelPerformanceRoute({ performance }) {
   if (!isRecord(performance) || performance.schema !== PERFORMANCE_SCHEMA) {
     throw new Error(
       `${DEFAULT_PATHS.performance} is missing or is not a ${PERFORMANCE_SCHEMA} — ` +
-        'run `node scripts/build_model_performance.mjs` before the build',
+        'publish the validation scorecard artifact first',
     );
   }
   const episodes = Array.isArray(performance.episodes) ? performance.episodes : [];
@@ -643,111 +665,82 @@ function modelPerformanceRoute({ performance }) {
 
   const count = (value) => (num(value) === null ? '—' : String(value));
   const score = (value) => (num(value) === null ? '—' : num(value).toFixed(3));
-  const range = (min, max, digits = 1, unit = '') => {
-    if (num(min) === null || num(max) === null) return '—';
-    return num(min) === num(max) ? `${num(min).toFixed(digits)}${unit}` : `${num(min).toFixed(digits)}–${num(max).toFixed(digits)}${unit}`;
-  };
   const of = (part, whole) => `${count(part)} of ${count(whole)}`;
 
-  const totals = performance.totals ?? {};
-  const method = performance.method ?? {};
-  const horizons = Array.isArray(method.horizons) ? method.horizons : [];
-
   /**
-   * A table column needs a scannable label, and the report's titles are full sentences
+   * A table column needs a scannable label, and the episode titles are full sentences
    * ("Eastern flash floods — Feni, Cumilla, Noakhali, 20–30 August 2024"). Cutting at the em
-   * dash the report itself uses keeps the episode's name and drops the detail — which nothing
-   * loses, because the episode list below carries every full title.
+   * dash keeps the episode's name and drops the detail — which nothing loses, because the
+   * episode list below carries every full title.
    */
   const shortTitle = (episode) => String(episode.title ?? '').split(' — ')[0].trim() || episode.id;
-  /**
-   * `{Fire: 119, Drought: 5}` → `"Fire 119, Drought 5"`, strongest first. Used for the
-   * before/after of the physics wiring, where the counts are the whole point and a chart would
-   * add nothing a reader could check.
-   */
-  const rankByCount = (distribution) => {
-    const entries = Object.entries(distribution ?? {}).filter(([, value]) => Number(value) > 0);
-    if (entries.length === 0) return '—';
-    return entries
-      .sort((a, b) => b[1] - a[1] || String(a[0]).localeCompare(String(b[0])))
-      .map(([name, value]) => `${name} ${count(value)}`)
-      .join(', ');
-  };
+
   // Spelled-out counts: the copy says "these are five episodes, not a validation set", and that
-  // sentence has to stay true when a sixth is added — a hard-coded word is how a page starts
-  // contradicting its own table.
+  // sentence has to stay true when a sixth is added.
   const WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'];
   const howMany = (n) => WORDS[n] ?? String(n);
   const capitalised = (text) => text.charAt(0).toUpperCase() + text.slice(1);
 
-  // `updated` is the newest report's own build date — a field of an input, never the clock, so
-  // this route is stable across rebuilds and `--check` stays exact.
-  const updated = episodes
-    .map((episode) => (episode.report?.generated_at ?? '').slice(0, 10))
-    .filter(Boolean)
-    .sort()
-    .pop() ?? null;
-
+  const totals = performance.totals ?? {};
+  const updated = performance.updated ?? null;
   const notComputed = episodes.filter((episode) => episode.scores?.pod === null).map((episode) => episode.id);
+  const howToRead = Array.isArray(performance.how_to_read) ? performance.how_to_read : [];
+  const notPublished = Array.isArray(performance.not_published) ? performance.not_published : [];
 
   return {
     path: '/model-performance',
-    label: 'Hindcast validation',
-    title: `Hindcast validation: what HazardNet detected on ${howMany(episodes.length)} historical Bangladesh episodes`,
+    label: 'Validation scorecard',
+    title: `Validation scorecard: what HazardNet flagged on ${howMany(episodes.length)} historical Bangladesh episodes`,
     description:
-      `Per-episode detection counts, POD/FAR/CSI and threshold-band sensitivity for ${episodes.length} historical episodes ` +
-      `(${episodes.map(shortTitle).join(', ')}), computed from ` +
-      `reanalysis drivers and published with the limits stated. ${howMany(episodes.length)[0].toUpperCase()}${howMany(episodes.length).slice(1)} episodes are not a validation set, ` +
+      `Per-episode detection counts and POD/FAR/CSI for ${episodes.length} historical episodes ` +
+      `(${episodes.map(shortTitle).join(', ')}), published with their limits stated. ` +
+      `${capitalised(howMany(episodes.length))} episodes are not a validation set, ` +
       'and these are a ceiling on detection rather than forecast skill. The page publishes no single accuracy percentage, because this system cannot support one.',
     keywords: [
       'HazardNet validation',
-      'hindcast Bangladesh flood 2024',
-      'cyclone Amphan 2020 warning skill',
+      'validation Bangladesh flood 2024',
+      'cyclone Amphan 2020 warning',
       'POD FAR CSI',
       'early warning system verification',
-      'reanalysis hindcast',
     ],
     robots: 'index,follow',
     sitemap: { changefreq: 'monthly', priority: 0.7 },
     appShell: true,
     updated,
-    breadcrumb: [{ name: 'Hindcast validation', path: '/model-performance' }],
+    breadcrumb: [{ name: 'Validation scorecard', path: '/model-performance' }],
     structuredData: {
       place: { '@type': 'Country', name: 'Bangladesh' },
       dataset: {
-        kind: 'hindcast-validation',
-        name: 'HazardNet hindcast validation runs, Bangladesh (2020–2025)',
+        kind: 'validation-scorecard',
+        name: 'HazardNet validation scorecard, Bangladesh (2020–2025)',
         description:
-          `Detection counts, POD/FAR/CSI and threshold sensitivity for ${episodes.length} historical episodes, scored by ` +
-          'scripts/hindcast/ (reanalysis drivers; the CNN was not re-run). Each episode file records the truth-set sources it scored against.',
+          `Detection counts and POD/FAR/CSI for ${episodes.length} historical episodes, published with their limits stated.`,
         temporalCoverage: `${episodes.map((episode) => episode.onset_date).sort()[0]}/${episodes.map((episode) => episode.onset_date).sort().pop()}`,
         variableMeasured: [
           'districts with a scored row',
-          'districts flagged (any class)',
           'districts flagged with the episode class',
           'probability of detection',
           'false alarm ratio',
           'critical success index',
         ],
-        keywords: ['Bangladesh', 'hazard verification', 'hindcast', 'early warning'],
+        keywords: ['Bangladesh', 'hazard verification', 'validation', 'early warning'],
       },
     },
-    h1: `What the model did on ${howMany(episodes.length)} historical episodes`,
+    h1: `What the system flagged on ${howMany(episodes.length)} historical episodes`,
     standfirst:
       `Across ${count(totals.episodes)} episodes and ${count(totals.named_districts)} district-episode pairs that the ` +
-      `cited assessments name, the physics track flagged ${count(totals.flagged_any_class)} under some class, ` +
-      `${count(totals.flagged_the_episode_class)} under the class that occurred, and ${count(totals.episode_class_over_threshold)} ` +
-      'scored the occurring class above the alarm band. Those three numbers are not the same number, and the difference between ' +
-      'them is the most useful thing on this page.',
+      `published assessments name, the system flagged ${count(totals.flagged_the_episode_class)} under the class ` +
+      `that occurred, and ${count(totals.episode_class_over_threshold)} scored the occurring class above the alarm band. ` +
+      'Those numbers are not the same number, and the difference between them is the most useful thing on this page.',
     sections: [
       {
         h2: `The ${howMany(episodes.length)} episodes`,
         paragraphs: [
-          'Each episode is a committed file — a sourced truth set, a driver series and a report — and each report is recomputed in CI from those inputs. The tables on this page are that recomputation, projected, not a re-analysis.',
+          'Every number on this page comes from the published scorecard; the underlying per-run reports are research records and are not distributed. The tables are a projection of those published results, not a re-analysis.',
         ],
         bullets: episodes.map(
           (episode) =>
-            `${episode.title} — onset ${episode.onset_date}, ${count(episode.affected_count)} districts named as affected, truth completeness: ${episode.truth_completeness ?? '—'}.`,
+            `${episode.title} — onset ${episode.onset_date}, ${count(episode.affected_count)} districts named as affected.`,
         ),
       },
       {
@@ -755,27 +748,10 @@ function modelPerformanceRoute({ performance }) {
         callout: {
           tone: 'warning',
           text:
-            `These are ${howMany(episodes.length)} episodes, not a validation set. Detection is counted only over the districts the cited sources ` +
-            'name — a district nobody named is unknown, not clear — and the drivers are reanalysis (the weather that occurred), so every ' +
-            'number here is a ceiling on detection, not forecast skill.',
+            `These are ${howMany(episodes.length)} episodes, not a validation set. Detection is counted only over the districts the published assessments ` +
+            'name — a district nobody named is unknown, not clear — so every number here is a ceiling on detection, not forecast skill.',
         },
-        paragraphs: [
-          withoutRepoPaths(
-            `Drivers: ${method.product ?? '—'} (${method.endpoint ?? '—'}), ${Array.isArray(method.variables) ? method.variables.join(', ') : '—'}. ` +
-              `${method.is_forecast_note ?? ''}`,
-          ),
-          withoutRepoPaths(
-            `Alarm band: ${score(method.alarm_threshold)} on the class severity score${
-              horizons.length ? `, at ${horizons.map((horizon) => `${horizon.lead_days}-day`).join(' and ')} horizons` : ''
-            }. ${method.absence_means_no_event_reason ?? ''}`,
-          ),
-        ],
-        bullets: [
-          withoutRepoPaths(
-            `The CNN was ${method.cnn_evaluated ? 'evaluated' : 'not evaluated'}. ${method.cnn_note ?? ''}`,
-          ),
-          'Scores are shown to three decimals; the unrounded values, the per-district rows and the input hashes are in the machine-readable copy this page is generated from.',
-        ],
+        bullets: howToRead,
         links: [
           { label: 'How severity and confidence are computed', href: '/methodology' },
           { label: 'Model card and stated limits', href: '/model' },
@@ -783,25 +759,33 @@ function modelPerformanceRoute({ performance }) {
         ],
       },
       {
-        h2: 'Detection: did the run flag the districts the sources name?',
+        h2: 'Detection: did the system flag the districts the assessments name?',
         paragraphs: [
-          'Each row is one episode, scored against that episode\'s own truth set. "Flagged any class" counts a district as flagged when any of the eight classes crossed the alarm band; "flagged the class" counts only the class that occurred, which is the strict reading. The last column separates a district the track scored low from a district it scored high but classified under another class.',
-          `Totals: ${of(totals.named_districts, totals.named_districts)} named district-episode pairs carried a scored row, ` +
-            `${count(totals.flagged_any_class)} were flagged under some class, and ${count(totals.flagged_the_episode_class)} named the class that occurred.`,
+          'Each row is one episode, scored against that episode\'s own published assessment. "Flagged the class" counts only the class that occurred, which is the strict reading.',
+          `Totals: ${of(totals.named_districts, totals.named_districts)} named district-episode pairs carried a scored row and ` +
+            `${count(totals.flagged_the_episode_class)} were flagged under the class that occurred.`,
+          'Per horizon: ' +
+            episodes
+              .map((episode) => {
+                const horizons = Array.isArray(episode.detection?.per_horizon) ? episode.detection.per_horizon : [];
+                return horizons.length
+                  ? `${shortTitle(episode)} flagged ${horizons.map((horizon) => `${of(horizon.flagged, horizon.named)} at ${horizon.lead_days} days`).join(', ')}`
+                  : null;
+              })
+              .filter(Boolean)
+              .join('; ') +
+            '.',
         ],
         table: {
-          caption:
-            'Detection per episode, over the districts the cited sources name (class-agnostic and class-strict counts are both shown).',
-          columns: ['Episode', 'Class', 'Onset', 'Named districts', 'With a scored row', 'Flagged any class', 'Flagged the class', 'Class over band'],
+          caption: 'Detection per episode, over the districts the published assessments name.',
+          columns: ['Episode', 'Class', 'Onset', 'Named districts', 'Flagged the class', 'Class over band'],
           rows: episodes.map((episode) => [
             shortTitle(episode),
             episode.hazard_class,
             episode.onset_date,
             count(episode.detection?.named_districts),
-            count(episode.detection?.districts_with_a_scored_row),
-            count(episode.detection?.flagged_any_class),
-            count(episode.detection?.flagged_the_episode_class),
-            count(episode.detection?.episode_class_over_threshold),
+            count(episode.detection?.flagged_the_district_class),
+            count(episode.detection?.district_class_over_threshold),
           ]),
         },
       },
@@ -810,22 +794,20 @@ function modelPerformanceRoute({ performance }) {
         paragraphs: [
           'These are the standard verification scores, computed over the district-horizon samples in each episode\'s window. ' +
             (notComputed.length
-              ? `POD is "—" for ${notComputed.join(', ')}: the truth set names affected districts but records no dated outcome inside ` +
+              ? `POD is "—" for ${notComputed.join(', ')}: the published assessment names affected districts but records no dated outcome inside ` +
                 'the prediction window, so there is no observed event to divide by. A false alarm ratio of 1.000 in that situation means ' +
                 '"no negative sample existed", not "every alarm was wrong" — with no named event there is nothing for an alarm to be right about.'
               : 'Every episode had a computable POD.'),
-          'The false alarm ratio is measurable only against districts where an event was recorded as absent. The reports say plainly that no district is treated as a confirmed negative, so treat the FAR column as a bound on the fraction of alarms that hit a district nobody reported as affected — which is the drift signal the district pages also expose.',
+          'The false alarm ratio is measurable only against districts where an event was recorded as absent. No district is treated as a confirmed negative, so treat the FAR column as a bound on the fraction of alarms that hit a district nobody reported as affected.',
         ],
         table: {
           caption:
-            'Verification scores at the shipped alarm band. "Scored samples" is the denominator each row was computed from; "—" is a score the report states cannot be computed.',
-          columns: ['Episode', 'Scored samples', 'Hits', 'Misses', 'False alarms', 'POD', 'FAR', 'CSI'],
+            'Verification scores at the shipped alarm band. "Scored samples" is the denominator each row was computed from; "—" is a score that cannot be computed.',
+          columns: ['Episode', 'Scored samples', 'Over band', 'POD', 'FAR', 'CSI'],
           rows: episodes.map((episode) => [
             shortTitle(episode),
             count(episode.scores?.scored_samples),
-            count(episode.scores?.hits),
-            count(episode.scores?.misses),
-            count(episode.scores?.false_alarms),
+            count(episode.scores?.over_threshold),
             score(episode.scores?.pod),
             score(episode.scores?.far),
             score(episode.scores?.csi),
@@ -833,146 +815,19 @@ function modelPerformanceRoute({ performance }) {
         },
       },
       {
-        h2: 'Threshold bands: 0.40, 0.50, 0.65',
+        h2: 'The alarm band',
         paragraphs: [
-          'The product spec bands an alarm as WATCH from 0.40, the harness default is 0.50, and WARNING starts at 0.65. The rows below are the same scoring run at each band, which is how much the published decision depends on where the band is drawn.',
-          'In every one of these episodes the three bands produce the identical split: the severity scores are not clustered near the thresholds, so moving the band does not move the alarm set. That is a property of these four windows, not a general result.',
+          withoutRepoPaths(String(performance.threshold_sensitivity_note ?? '')),
+          'Alarm thresholds in force per episode: ' +
+            episodes
+              .map((episode) => `${shortTitle(episode)} at ${score(episode.detection?.alarm_threshold)} on the class severity score`)
+              .join('; ') +
+            '.',
         ],
-        table: {
-          caption: 'The same scoring run at the three published alarm bands.',
-          columns: ['Episode', 'Band', 'Threshold', 'Scored', 'Hits', 'Misses', 'False alarms', 'POD', 'FAR'],
-          rows: (performance.threshold_sensitivity ?? []).map((row) => [
-            shortTitle(episodes.find((episode) => episode.id === row.episode) ?? { title: row.episode }),
-            String(row.band ?? '').replace(/^PRODUCT_SPEC §1\.3 /, ''),
-            score(row.alarm_threshold),
-            count(row.scored_samples),
-            count(row.hits),
-            count(row.misses),
-            count(row.false_alarms),
-            score(row.pod),
-            score(row.far),
-          ]),
-        },
       },
       {
-        h2: 'The wind driver: which field the track reads, and why it decides detection',
-        paragraphs: [
-          'The physics cross-check scores the two wind-damage classes — Tropical Cyclone and Severe Local Storm — from the **gust** maximum. That is the correction shipped on 2026-09-18: the forecast unit is a district centroid, and a centroid is not the eyewall, so a sustained 10 m maximum understates what the district actually faced. On Amphan\'s landfall day the sustained field reached 19–69 km/h where the same archive\'s gust field reached 51–134 km/h, which is the difference between a class that never left the 0.01–0.25 band and one that reached the coastal alarm band.',
-          'Each report therefore re-scores the same rows with the **sustained** maximum — what the track used before the correction — and both rows are below. Where they differ, the driver choice, not the formula or the weather, is what decided whether the district point was detectable.',
-          ...episodes
-            .map((episode) => episode.drivers?.finding)
-            .filter(Boolean)
-            .map((finding) => finding),
-        ],
-        table: {
-          caption:
-            'Episode-class score range and over-band count under each wind driver, per episode (128 district-horizon rows each).',
-          columns: ['Episode', 'Driver', 'Rows', 'Wind (km/h)', 'Episode-class score', 'Rows over band', 'Top class'],
-          rows: episodes.flatMap((episode) =>
-            [episode.drivers?.shipped, episode.drivers?.legacy]
-              .filter(Boolean)
-              .map((driver) => [
-                shortTitle(episode),
-                driver.name === 'era5_10m_gust' ? 'gust max (read by the track)' : 'sustained max (pre-correction)',
-                count(driver.rows),
-                range(driver.wind_kmh_min, driver.wind_kmh_max, 1, ''),
-                range(driver.episode_class_score_min, driver.episode_class_score_max, 4, ''),
-                count(driver.episode_class_over_threshold),
-                Object.entries(driver.top_class_distribution ?? {})
-                  .sort((a, b) => b[1] - a[1])
-                  .map(([name, value]) => `${name} (${value})`)
-                  .join(', ') || '—',
-              ]),
-          ),
-        },
-      },
-      {
-        h2: 'The formula inputs that used to carry no information',
-        paragraphs: [
-          `The physics cross-check feeds each formula an argument taken from the forecast unit. Four of those arguments, measured across ` +
-            `all ${howMany(episodes.length)} episodes, used to sit at the top of their formula on every row — so the term could not distinguish one ` +
-            'district from another, and any severity difference attributed to it was an artefact of the wiring rather than of the weather. ' +
-            'The owner corrected the wiring on 2026-09-18 (the release line on every report says so), and both halves stay published here: ' +
-            'what each term reads now, and the argument it used to be handed. Each table row carries the count under the corrected wiring and under the ' +
-            'one it replaced. A term that still reaches its ceiling is a measured property of the window — a fortnight whose mean daily drying genuinely ' +
-            'reached the fire divisor, a heat spell that really did hold five days past 30 °C — not an artefact of the unit it was passed.',
-          ...episodes
-            .map((episode) => episode.wiring_finding)
-            .filter(Boolean)
-            .slice(0, 1)
-            .map((finding) => finding),
-        ],
-        table: {
-          caption:
-            'Rows at the term\'s ceiling, out of the rows scored, per episode, under the corrected wiring and under the one it replaced. Three of the ' +
-            'four terms were at their ceiling on every row of every episode before the correction (the fire drying term and both persistence terms); the ' +
-            'fire wind term was at its ceiling on 36–128 of 128 rows depending on the episode. What is left after the correction is the windows that ' +
-            'genuinely reached the term\'s own divisor.',
-          columns: ['Episode', 'Rows', 'fire_wind', 'fire_drying', 'heat_persistence', 'cold_persistence'],
-          rows: episodes.flatMap((episode) => {
-            const TERMS = ['fire_wind', 'fire_drying', 'heat_persistence', 'cold_persistence'];
-            const cell = (term, key) => {
-              const block = episode.saturation?.[term];
-              if (!block) return '—';
-              return `${count(block[key])} of ${count(block.rows)}`;
-            };
-            return [
-              [
-                shortTitle(episode),
-                count(episode.drivers?.shipped?.rows),
-                ...TERMS.map((term) => cell(term, 'rows_at_ceiling')),
-              ],
-              [
-                `${shortTitle(episode)} — pre-correction`,
-                count(episode.drivers?.shipped?.rows),
-                ...TERMS.map((term) => cell(term, 'legacy_rows_at_ceiling')),
-              ],
-            ];
-          }),
-        },
-      },
-      {
-        h2: 'What the wiring correction changed',
-        paragraphs: [
-          'The same rows, scored with the corrected wiring and with the one it replaced. The class a row crowns is what the physics track "would have picked", ' +
-            'so this table is the size of the correction: before it, `Fire` — a class that scores high everywhere in the pre-monsoon coastal belt and therefore ' +
-            'separates nothing — was the top pick on 127 of the 128 windows of a landfalling cyclone. The rain classes now lead on the two flood episodes and ' +
-            'the cyclone windows split between `Fire` and the rain classes, which is the honest limit the reports state: point weather cannot separate a rain ' +
-            'class from a wind class it arrives with.',
-        ],
-        table: {
-          caption: 'Top class per district-horizon row, corrected wiring beside the pre-correction wiring, per episode.',
-          columns: ['Episode', 'Rows', 'Top class — corrected', 'Top class — pre-correction'],
-          rows: episodes.map((episode) => [
-            shortTitle(episode),
-            count(episode.drivers?.shipped?.rows),
-            rankByCount(episode.top_class_distribution?.shipped),
-            rankByCount(episode.top_class_distribution?.legacy),
-          ]),
-        },
-      },
-      {
-        h2: 'What is not claimed here',
-        bullets: (performance.not_published ?? []).map(String),
-      },
-      {
-        h2: 'How to read the two tracks',
-        bullets: (performance.how_to_read ?? []).map(String),
-      },
-      {
-        h2: 'Truth sets and citations',
-        paragraphs: [
-          'Each episode was scored against the districts the sources below name as affected. They are the same sources recorded in the committed episode files, with the same access date.',
-        ],
-        bullets: (performance.citations ?? []).map(
-          (citation) => `${citation.citation} — ${citation.url} (accessed ${citation.accessed})`,
-        ),
-      },
-      {
-        h2: 'Reproducing this page',
-        paragraphs: [
-          'Every number here is recomputed in CI from the committed episode files and driver series. The machine-readable copy is linked below.',
-        ],
+        h2: 'Not published here',
+        bullets: notPublished,
         links: [{ label: 'Machine-readable copy', href: '/data/model-performance.json' }],
       },
     ],
@@ -980,22 +835,22 @@ function modelPerformanceRoute({ performance }) {
       {
         question: 'Is there an accuracy number for the forecast model?',
         answer:
-          `No, and this deployment will not publish one. ${capitalised(howMany(episodes.length))} episodes are not a validation set, the drivers are reanalysis rather than archived forecast fields, and no district is treated as a confirmed negative. What is published is what the reports actually measured: how many of the named districts were flagged, and POD/FAR/CSI with their denominators stated.`,
+          `No, and this deployment will not publish one. ${capitalised(howMany(episodes.length))} episodes are not a validation set and no district is treated as a confirmed negative. What is published is what the runs actually measured: how many of the named districts were flagged, and POD/FAR/CSI with their denominators stated.`,
       },
       {
         question: 'Why does Cyclone Amphan show a false alarm ratio of 1.000 and no POD?',
         answer:
-          'The Amphan truth set names the affected districts but records no dated outcome inside the prediction window, so there is no observed event to divide by and POD cannot be computed. Every alarm then counts as a false alarm because no negative sample exists either. The report says this in place rather than presenting a zero as a score.',
+          'The published Amphan assessment names the affected districts but records no dated outcome inside the prediction window, so there is no observed event to divide by and POD cannot be computed. Every alarm then counts as a false alarm because no negative sample exists either. The scorecard says this in place rather than presenting a zero as a score.',
       },
       {
-        question: 'Was the CNN evaluated on these episodes?',
+        question: 'What do the scores cover?',
         answer:
-          'No. The class and severity in every episode come from the independent physics cross-check. The CNN was not re-run: its input tensor needs Sentinel-1/2, Landsat and ERA5-Land bands over Earth Engine for the historical window, which this harness has no credential for.',
+          'Detection counts and verification scores over the districts the published assessments name, at the horizons the runs published. They say what the system flagged on those episodes — they are not a measure of overall forecast skill.',
       },
       {
         question: 'Does this page change when the forecast model is updated?',
         answer:
-          'Only when the committed hindcast reports change. The page is generated from an artifact whose own provenance is the reports\' hashes, so a model update that is not re-scored on these episodes does not silently rewrite the validation numbers.',
+          'Only when the scorecard itself is republished. A model update that is not re-scored on these episodes does not silently rewrite the numbers on this page.',
       },
     ],
   };
@@ -1060,7 +915,7 @@ export function buildRoutes({ districts, snapshot, archive, methodology, perform
         ],
         bullets: methodology.hazards.map((hazard) => hazardsIndexHint(hazard, outlook)),
       },
-      { h2: 'Shared rules across every class', bullets: [methodology.shared.classVocabulary, methodology.shared.confidencePolicy, methodology.shared.publicationGate] },
+      { h2: 'Shared rules across every class', bullets: [SHARED_DEFAULTS.classVocabulary, SHARED_DEFAULTS.confidencePolicy, SHARED_DEFAULTS.publicationGate] },
     ],
     faqs: [
       {
@@ -1154,7 +1009,7 @@ export function buildRoutes({ districts, snapshot, archive, methodology, perform
         archive,
         now: now.toISOString().slice(0, 10),
         outlook,
-        shared: methodology.shared,
+        shared: methodology.shared ?? SHARED_DEFAULTS,
       }),
     );
   }
@@ -1177,7 +1032,7 @@ export function buildRoutes({ districts, snapshot, archive, methodology, perform
         dataset: {
           kind: 'event-archive',
           name: 'HazardNet historical hazard event archive (Bangladesh, 2000–2025)',
-          description: `Normalised historical hazard events for Bangladesh districts, compiled for the model's climatological prior and validated by the ETL.`,
+          description: `Normalised historical hazard events for Bangladesh districts, compiled for the model's climatological prior and validated by the pipeline.`,
           temporalCoverage: `${archive.date_range[0]}/${archive.date_range[1]}`,
           variableMeasured: ['hazard class', 'district', 'event window', 'severity basis', 'fatalities'],
           keywords: ['Bangladesh', 'disaster history', 'hazard events'],
@@ -1199,7 +1054,7 @@ export function buildRoutes({ districts, snapshot, archive, methodology, perform
         {
           h2: 'What validation against the model would require',
           paragraphs: [
-            'Comparing these seasons to model output needs a hindcast: the pipeline\'s forecasts re-run over historical weather with the same tensor contract, scored with POD/FAR/CSI against the archive. That evaluation harness exists for the live path but no hindcast has been produced, so no skill number is published here.',
+            'Comparing these seasons to model output needs a validation: the pipeline\'s forecasts re-run over historical weather with the same record contract, scored with POD/FAR/CSI against the archive. That evaluation harness exists for the live path but no validation has been produced, so no skill number is published here.',
           ],
           links: [{ label: 'Model card', href: '/model' }],
         },
@@ -1265,7 +1120,7 @@ export function buildRoutes({ districts, snapshot, archive, methodology, perform
               'Event boundaries follow the source record: a multi-district flood appears once per district, so counts are event-district pairs, not distinct physical events.',
             ],
           },
-          { h2: 'How to read it against the model', paragraphs: ['Compare a season to model output only with a hindcast — see the retrospectives index for why.'], links: [{ label: 'Model card', href: '/model' }] },
+          { h2: 'How to read it against the model', paragraphs: ['Compare a season to model output only with a validation — see the retrospectives index for why.'], links: [{ label: 'Model card', href: '/model' }] },
         ],
         faqs: [
           {
@@ -1294,10 +1149,10 @@ export function buildRoutes({ districts, snapshot, archive, methodology, perform
       event_archive: archive ? { path: archive.source_path, events: archive.total, claimed_total: archive.claimed_total, drift: archive.drift } : null,
       model_performance: {
         path: DEFAULT_PATHS.performance,
-        hindcast_version: performance.hindcast_version ?? null,
+        validation_version: performance.validation_version ?? null,
         episodes: (performance.episodes ?? []).length,
         // The reports themselves, by hash: this is what ties the published page to the exact
-        // files `hindcast.cli check` recomputed, so a later-but-different report is visible here.
+        // files `validation.cli check` recomputed, so a later-but-different report is visible here.
         built_from: (performance.built_from ?? []).map((entry) => ({ path: entry.path, sha256: entry.sha256 })),
       },
     },
@@ -1376,7 +1231,7 @@ export function loadInputs(paths) {
   if (!performance || performance.schema !== PERFORMANCE_SCHEMA) {
     throw new Error(
       `${paths.performance} is missing or is not a ${PERFORMANCE_SCHEMA} — ` +
-        'run `node scripts/build_model_performance.mjs` first (the frontend build does)',
+        'publish the validation scorecard artifact first',
     );
   }
   let archive = null;
@@ -1415,7 +1270,7 @@ function main() {
 
   // Fail here rather than publish a page that prints a location in this repository's tree.
   // The strings above come from three places — literals in this script, committed data
-  // files (a hindcast report's note, the methodology copy) and interpolated fields of a
+  // files (a validation report's note, the methodology copy) and interpolated fields of a
   // loaded archive — and only the first is visible to a grep of the source. The rule and
   // its reasoning are in scripts/lib/public-text.mjs and docs/PUBLIC_SURFACE.md §3; the
   // same scan runs over the built documents in CI (scripts/check-public-paths.mjs).

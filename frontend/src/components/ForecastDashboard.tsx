@@ -324,7 +324,7 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
               District Hazard Forecast Analytics
             </h2>
             <p className="text-carbon-60 text-xs sm:text-sm max-w-3xl leading-relaxed">
-              Real-time multi-hazard risk quantification and weather trends across Bangladesh's 64 agricultural districts powered by CNN AI model inference and Open-Meteo observations.
+              Real-time multi-hazard risk quantification and weather trends across Bangladesh's 64 agricultural districts powered by CNN AI model inference and weather service observations.
             </p>
           </div>
 

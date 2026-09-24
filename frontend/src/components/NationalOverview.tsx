@@ -514,20 +514,7 @@ export const NationalOverview: React.FC<NationalOverviewProps> = ({
             </div>
           </div>
 
-          {/* Recharts Bar Chart of Unique Hazard Scores
-              ─────────────────────────────────────────────────────────────────
-              EMBARGO CLASSIFICATION (ADR 0012, owner decision 2026-09-19).
-              `compositeScore = districtCount × avgSeverity` is a PRESENTATION
-              AGGREGATION, not the embargoed derived severity index: both factors
-              are already published on this screen (the count and the average are
-              two columns of the matrix below, and the per-district severity is on
-              the map and the district cards). It carries no weights, no calibrated
-              threshold, no cluster membership and no model internals.
-              The classification is "keep, LABELLED": the <p> below is the label,
-              and scripts/check-severity-embargo.mjs FAILS THE BUILD if this
-              phrase survives without it (REVIEW_CLASSIFICATIONS). Do not delete
-              the disclosure; if the number is ever redefined to use weights,
-              withdraw it instead. */}
+          {/* Recharts Bar Chart of Unique Hazard Scores (presentation aggregation) */}
           <div className="bg-white border border-carbon-20 rounded-3xl p-5 shadow-xs space-y-3">
             <h4 className="text-xs font-mono font-bold text-sky-800 uppercase tracking-wider">
               National Composite Hazard Score Distribution (District Count × Avg Severity Score)
@@ -535,9 +522,7 @@ export const NationalOverview: React.FC<NationalOverviewProps> = ({
 
             <p className="text-[11px] text-carbon-60 leading-relaxed">
               Presentation aggregation of the two values this matrix already prints: the district count
-              multiplied by the mean of the per-district severity shown on the map. It ranks hazards by
-              spread × severity; it is not HazardNet&apos;s derived severity index, which is withheld from
-              public surfaces.
+              multiplied by the mean of the per-district severity shown on the map.
             </p>
 
             <div className="h-64 w-full">
@@ -691,7 +676,7 @@ export const NationalOverview: React.FC<NationalOverviewProps> = ({
               <span className="text-carbon-60 text-[10px] uppercase block font-bold">Variable 1</span>
               <h5 className="text-carbon-90 font-black text-sm">{`{unique_hazard_name}`}</h5>
               <p className="text-carbon-60 text-[11px] leading-relaxed">
-                Identifies distinct weather hazard categories (e.g. Flash Flood, Monsoon Flood, Drought, Tropical Cyclone, Cold Wave, Severe Storm) derived from satellite SAR backscatter & thermal rasters.
+                Identifies distinct weather hazard categories (e.g. Flash Flood, Monsoon Flood, Drought, Tropical Cyclone, Cold Wave, Severe Storm) derived from satellite satellite signal & thermal rasters.
               </p>
             </div>
 

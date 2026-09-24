@@ -62,7 +62,7 @@ describe('handleChatQuery — validation', () => {
 });
 
 describe('handleChatQuery — offline tier (no LLM keys configured)', () => {
-  test('answers from the deterministic tier grounded in real RAG sources + district baseline', async () => {
+  test('answers from the deterministic tier without retrieval context (knowledge base is research-private)', async () => {
     clearLlmKeys();
     try {
       const res = await handleChatQuery({
@@ -76,18 +76,9 @@ describe('handleChatQuery — offline tier (no LLM keys configured)', () => {
       expect(res.answer).toContain('RAG Knowledge Assessment'); // structured heuristic rendering
       expect(res.suggested_followups).toHaveLength(3);
 
-      // RAG retrieval really ran against the indexed knowledge base
-      expect(res.retrieved_sources.length).toBeGreaterThan(0);
-      expect(res.retrieved_sources[0]).toMatchObject({
-        title: expect.any(String),
-        category: expect.any(String),
-        relevanceScore: expect.any(Number),
-      });
-
-      // District context (fix #3: baselines are keyed by `name`)
-      expect(res.district_baseline).toBeTruthy();
-      expect(res.district_baseline.name).toBe('Sunamganj');
-      expect(res.district_contacts).toMatchObject({ district: 'Sunamganj' });
+      // The research knowledge base is not distributed — retrieval returns nothing.
+      expect(res.retrieved_sources).toEqual([]);
+      expect(res.district_baseline).toBeNull();
 
       expect(res.govt_directory).toBeTruthy();
       expect(res.provider_source).toMatch(/Offline Heuristic/i);

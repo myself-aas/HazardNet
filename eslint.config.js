@@ -19,9 +19,7 @@ export default tseslint.config(
       'references/**',
       'skills/**',
       '.agents/**', // vendored agent skill packs (same class as skills/**)
-      'rag_pipeline/**',
-      'kaggle_notebooks/**',
-      'app/**',
+          'app/**',
       'docs/**',
       'Models/**',
       'audit_temp/**',

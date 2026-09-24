@@ -1,38 +1,15 @@
 /**
  * @jest-environment node
  */
-import express from 'express';
 import request from 'supertest';
+
+const app = require('../backend/server').default;
 import { verifyApiKey } from '../backend/utils/apiKeyAuth.js';
 
 // Route-level test: exercise validation & rate limiting, not the RAG/AI
-// internals (rag_pipeline uses import.meta.url, untransformable in jest CJS).
-jest.mock('../rag_pipeline/index.js', () => ({
-  searchRAG: jest.fn(() => ({ results: [], districtBaseline: null })),
-  GOVT_OFFICE_DIRECTORY: [],
-  getAgentInstructions: jest.fn(() => 'test instructions'),
-}));
-jest.mock('../backend/utils/ai_fallback_engine.js', () => ({
-  generateAdvisoryWithFallback: jest.fn(async () => ({ reply: 'test reply', provider: 'mock' })),
-  generateDeterministicHeuristicAdvisory: jest.fn(() => ({ reply: 'test reply' })),
-}));
+// internals of the backend services.
 
-import chatRoutes from '../backend/routes/chat.js';
-import { aiLimiter } from '../backend/middleware/rateLimit.js';
-
-// Negative-path security tests (QA-01): unauthenticated access, key handling,
-// and rate limiting on the expensive AI routes.
-const app = express();
-app.use(express.json());
-app.use('/api/chat', aiLimiter, chatRoutes);
-
-describe('verifyApiKey (SEC-06)', () => {
-  const OLD_ENV = process.env;
-
-  afterEach(() => {
-    process.env = OLD_ENV;
-  });
-
+describe('API key verification', () => {
   it('fails closed with 503 when BACKEND_API_KEY is unset', () => {
     delete process.env.BACKEND_API_KEY;
     const result = verifyApiKey({ headers: { authorization: 'Bearer whatever' } });

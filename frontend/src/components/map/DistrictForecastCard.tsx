@@ -90,7 +90,7 @@ export const DistrictForecastCard: React.FC<DistrictForecastCardProps> = ({
               {district.hazardType}
             </span>
             <span className={`text-sm font-semibold font-mono tabular-nums ${tone.text}`}>
-              {severityPct}% Severity
+              Severity score {(severityPct / 100).toFixed(2)}
             </span>
           </div>
           <div

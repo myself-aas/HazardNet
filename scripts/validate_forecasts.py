@@ -36,7 +36,7 @@ def main():
     parser.add_argument('--manifest', default='backend/data/forecasts/manifest.json',
                         help='Pipeline manifest carrying the coverage tally')
     parser.add_argument('--skip-coverage', action='store_true',
-                        help='Skip the coverage/run-report gate (legacy Kaggle CSVs have no report)')
+                        help='Skip the coverage/run-report gate (legacy CSVs have no report)')
     args = parser.parse_args()
 
     manifest_dir = Path(args.manifest).parent
@@ -106,7 +106,7 @@ def main():
             versioned += 1
             if not re.fullmatch(r'ds1\.[0-9a-f]{16}', value):
                 print(f"❌ Malformed dataset_version at row {i + 1}: {value!r} "
-                      "(expected ds1.<16 hex chars> from scripts/etl/scene_manifest.py)")
+                      "(expected ds1.<16 hex chars>)")
                 sys.exit(1)
         print(f"✅ dataset_version present on {versioned}/{len(rows)} rows")
 
@@ -133,7 +133,7 @@ def main():
             sys.exit(1)
 
     # ── Coverage gate (audit 2026-09-17) ────────────────────────────────────
-    # The shipped pipeline silently skipped districts whose Earth Engine fetch
+    # A producer may silently skip districts whose upstream fetch
     # failed, so a 25/64-district run looked identical to a complete one. A run
     # may now be partial, but only when its coverage is *accounted for*: the
     # manifest must carry the tally, and the tally must match the rows.

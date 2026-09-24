@@ -1,5 +1,5 @@
 {
-  "source": "github-actions: scripts/auto_forecast.py (GEE + Open-Meteo + TFLite)",
+  "source": "scheduled production run",
   "generated_at": "2026-09-16T03:14:42Z",
   "prediction_date": "2026-09-16",
   "row_count": 74,

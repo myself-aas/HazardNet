@@ -254,7 +254,7 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
             <div className="p-4 bg-carbon-05 border border-carbon-20 rounded-xl space-y-3">
               <div className="flex items-center justify-between text-xs font-mono">
                 <span className="text-carbon-80 font-bold">Continuous Severity Regression Head</span>
-                <span className="text-carbon-60" title="The classifier's own softmax for its chosen class. It is not a calibrated probability of the event.">
+                <span className="text-carbon-60" title="The classifier's own confidence for its chosen class. It is not a calibrated probability of the event.">
                   Model score: <strong className="text-carbon-90">{data.modelAssessment.confidenceLevel}%</strong> <span className="text-carbon-60">(uncalibrated)</span>
                 </span>
               </div>
@@ -287,7 +287,7 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
               </h4>
 
               <div className="space-y-2.5">
-                {data.modelAssessment.softmaxProbabilities.map((prob, idx) => (
+                {data.modelAssessment.confidenceProbabilities.map((prob, idx) => (
                   <div key={idx} className="space-y-1 text-xs">
                     <div className="flex justify-between font-mono">
                       <span className="text-carbon-70 font-medium">{prob.hazard}</span>

@@ -443,6 +443,10 @@ export const BangladeshSvgMap: React.FC<BangladeshSvgMapProps> = ({
           </div>
         </div>
 
+        <p className="mt-2 text-[10px] leading-snug text-carbon-60">
+          Map lines delineate study areas and do not necessarily depict accepted national boundaries.
+        </p>
+
       </div>
 
     </div>

@@ -142,7 +142,7 @@ export const DivisionDetailPage: React.FC = () => {
         <div className="text-center">
           <RefreshCw className="w-8 h-8 text-nasa-blue-shade animate-spin mx-auto mb-3" />
           <p className="text-sm font-medium text-carbon-70">Loading {divisionId} division climatic data...</p>
-          <p className="text-xs text-carbon-60 mt-1">Parsing historical events (2000-2026) & forecast tensors</p>
+          <p className="text-xs text-carbon-60 mt-1">Parsing historical events (2000-2026) and forecast records</p>
         </div>
       </div>
     );
@@ -244,11 +244,11 @@ export const DivisionDetailPage: React.FC = () => {
                 Active Model Forecasts Across {data.division} Districts
               </h2>
               <p className="text-xs text-carbon-60">
-                Directly from latest 7-day and 15-day AI tensor predictions (hazardnet_forecasts_latest.csv)
+                Directly from the latest 7-day and 15-day AI predictions (hazardnet_forecasts_latest.csv)
               </p>
             </div>
             <span className="text-xs font-semibold px-2.5 py-1 bg-carbon-05 text-nasa-blue-shade rounded-md">
-              {data.forecasts.length} Tensors Active
+              {data.forecasts.length} Records Active
             </span>
           </div>
 

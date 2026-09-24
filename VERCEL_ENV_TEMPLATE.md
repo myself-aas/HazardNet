@@ -23,7 +23,7 @@ Configure these environment variables in your Vercel project under **Project Set
 | `ALERT_MAX_AUTO_PUBLISH_LEVEL` | Ceiling for automatic publication. Raising it above `WATCH` weakens §1.6. | Production | `WATCH` |
 | `ALERT_WATCH_PROBABILITY` / `ALERT_WARNING_PROBABILITY` | §1.3 probability thresholds. | Production, Preview | `0.4` / `0.65` |
 | `ALERT_WATCH_SEVERITY` / `ALERT_DIVERGENCE_WATCH` | Severity band and divergence rule. | Production, Preview | `0.55` / `0.3` |
-| `ALERT_ALLOW_UNCALIBRATED_WARNING` | Allows WARNING without a fitted calibration map. A product decision, surfaced on the policy endpoint. | Production | *(unset)* |
+| `ALERT_ALLOW_UNCALIBRATED_WARNING` | Allows WARNING without a fitted calibration. A product decision, surfaced on the policy endpoint. | Production | *(unset)* |
 | `SMS_PROVIDER` | `bulksmsbd`, `greenweb` or `none`. | Production | `bulksmsbd` |
 | `SMS_SENDER_ID` | Registered sender id / mask shown to recipients. | Production | `HazardNet` |
 | `SMS_DRY_RUN` | `true` builds the request and reports it without sending — use before enabling a gateway. | Preview | `true` |
@@ -62,8 +62,4 @@ Configure these environment variables in your Vercel project under **Project Set
 | `VAPID_PUBLIC_KEY` | Web Push VAPID Public Key. | Production, Preview | `BEl4...` |
 | `VAPID_PRIVATE_KEY` | Web Push VAPID Private Key. | Production | `private_key...` |
 | `WEB_PUSH_CONTACT` | Contact URL/email for push service. | Production, Preview | `mailto:admin@hazardnet.live` |
-| `VITE_ADSENSE_CLIENT` | Google AdSense Client ID for monetization. | Production | `ca-pub-xxxxxxxxxxxxxxxx` |
-| `VITE_ADSENSE_SLOT_ARTICLE_FOOTER` | AdSense slot ID for footer ads. | Production | `1234567890` |
-| `VITE_ADSENSE_SLOT_ARTICLE_INLINE` | AdSense slot ID for inline articles. | Production | `1234567890` |
-| `VITE_ADSENSE_SLOT_BLOG_INDEX` | AdSense slot ID for blog index. | Production | `1234567890` |
 | `VERCEL_ENV` | Environment identifier (`production`, `preview`, `development`). | Production, Preview, Development | `production` |

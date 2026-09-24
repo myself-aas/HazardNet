@@ -1,7 +1,7 @@
 import { WebSocketServer } from 'ws';
 import express from 'express';
 import { GoogleGenAI, Modality } from '@google/genai';
-import { routeSkills, searchRAG, GOVT_OFFICE_DIRECTORY } from '../../rag_pipeline/index.js';
+import { routeSkills, searchRAG, GOVT_OFFICE_DIRECTORY } from '../services/localKnowledge.js';
 
 export const liveVoiceRouter = express.Router();
 

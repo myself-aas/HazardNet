@@ -26,7 +26,7 @@ import { effectiveMetaDescription, effectiveMetaTitle, seoScore } from '../../li
  * Everything is editable: content (rich text), SEO metadata (SERP title &
  * description with Google preview, focus keyword, canonical, OG image,
  * robots, FAQ rich results), the author byline (name, title, bio, avatar,
- * website) and monetization (affiliate flag + disclosure). Superadmin-only.
+ * website). Superadmin-only.
  */
 
 const CATEGORIES = ['Remote Sensing', 'Field Deployment', 'Edge AI', 'Agronomy', 'Research', 'General'];
@@ -85,9 +85,6 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
   const [authorAvatarUrl, setAuthorAvatarUrl] = useState('');
   const [authorWebsite, setAuthorWebsite] = useState('');
 
-  // Monetization
-  const [containsAffiliateLinks, setContainsAffiliateLinks] = useState(false);
-  const [affiliateDisclosure, setAffiliateDisclosure] = useState('');
 
   const [loading, setLoading] = useState(mode === 'edit');
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -138,8 +135,6 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
       setAuthorBio(article.authorBio ?? '');
       setAuthorAvatarUrl(article.authorAvatarUrl ?? '');
       setAuthorWebsite(article.authorWebsite ?? '');
-      setContainsAffiliateLinks(article.containsAffiliateLinks ?? false);
-      setAffiliateDisclosure(article.affiliateDisclosure ?? '');
       setLoading(false);
     })();
   }, [mode, id]);
@@ -162,7 +157,6 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
     title, slug, excerpt, category, tags, coverImageUrl, contentHtml, status,
     metaTitle, metaDescription, focusKeyword, canonicalUrl, ogImageUrl, robotsNoIndex, faqs,
     authorName, authorTitle, authorBio, authorAvatarUrl, authorWebsite,
-    containsAffiliateLinks, affiliateDisclosure,
   });
   useEffect(() => {
     if (loading || !dirty || !title.trim()) return;
@@ -224,8 +218,6 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
       authorBio: authorBio.trim(),
       authorAvatarUrl: authorAvatarUrl.trim(),
       authorWebsite: authorWebsite.trim(),
-      containsAffiliateLinks,
-      affiliateDisclosure: affiliateDisclosure.trim(),
     };
   };
 
@@ -292,10 +284,8 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
         authorBio,
         authorAvatarUrl: '',
         authorWebsite: '',
-        containsAffiliateLinks,
-        affiliateDisclosure,
       }),
-    [articleId, slug, title, excerpt, contentHtml, coverImageUrl, category, tags, status, authorName, metaTitle, metaDescription, focusKeyword, canonicalUrl, ogImageUrl, robotsNoIndex, faqs, authorTitle, authorBio, containsAffiliateLinks, affiliateDisclosure],
+    [articleId, slug, title, excerpt, contentHtml, coverImageUrl, category, tags, status, authorName, metaTitle, metaDescription, focusKeyword, canonicalUrl, ogImageUrl, robotsNoIndex, faqs, authorTitle, authorBio],
   );
 
   if (loading) {
@@ -387,7 +377,7 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
                 id="blog-title"
                 value={title}
                 onChange={(e) => markDirty(setTitle)(e.target.value)}
-                placeholder="e.g. Tracking Jamuna river erosion with Sentinel-2 NDWI"
+                placeholder="e.g. Tracking Jamuna river erosion with satellite-2 water index"
                 className={`${inputClass} text-sm font-bold`}
               />
             </div>
@@ -645,7 +635,7 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
                 id="blog-tags"
                 value={tags}
                 onChange={(e) => markDirty(setTags)(e.target.value)}
-                placeholder="SAR, Cyclone, Satkhira"
+                placeholder="satellite, Cyclone, Satkhira"
                 className={inputClass}
               />
             </div>
@@ -741,38 +731,6 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
             </p>
           </div>
 
-          {/* Monetization */}
-          <div className="bg-white border border-carbon-20/90 p-5 space-y-3" data-testid="monetization-panel">
-            <h3 className="text-xs font-black uppercase tracking-wider text-carbon-90 font-mono">Monetization</h3>
-            <label htmlFor="blog-affiliate" className="flex items-start gap-2.5 cursor-pointer select-none">
-              <input
-                id="blog-affiliate"
-                type="checkbox"
-                checked={containsAffiliateLinks}
-                onChange={(e) => markDirty(setContainsAffiliateLinks)(e.target.checked)}
-                className="mt-0.5 h-4 w-4 rounded border-carbon-30 accent-nasa-blue cursor-pointer"
-              />
-              <span className="text-xs font-semibold leading-relaxed text-carbon-60">
-                Contains affiliate links
-                <span className="block text-xs font-medium text-carbon-60">
-                  Shows a disclosure notice and tags outbound links rel=&quot;sponsored nofollow&quot; (Google policy).
-                </span>
-              </span>
-            </label>
-            <textarea
-              id="blog-affiliate-disclosure"
-              value={affiliateDisclosure}
-              onChange={(e) => markDirty(setAffiliateDisclosure)(e.target.value)}
-              rows={3}
-              placeholder="Affiliate disclosure shown at the top of the article…"
-              className={`${inputClass} resize-y`}
-              aria-label="Affiliate disclosure text"
-            />
-            <p className="text-xs leading-relaxed text-carbon-60">
-              AdSense runs automatically on the blog pages once{' '}
-              <span className="font-mono">VITE_ADSENSE_CLIENT</span> is configured.
-            </p>
-          </div>
         </aside>
       </div>
     </motion.div>

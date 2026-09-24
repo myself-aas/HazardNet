@@ -7,13 +7,13 @@ import { BlogArticle } from '../blogArticles'
 
 const article: BlogArticle = {
   id: 'a-1',
-  slug: 'sar-guide',
-  title: 'SAR Guide',
-  excerpt: 'SAR basics for flood mapping.',
+  slug: 'satellite-guide',
+  title: 'satellite Guide',
+  excerpt: 'satellite basics for flood mapping.',
   contentHtml: '<p>body</p>',
   coverImageUrl: 'https://cdn.example.com/cover.jpg',
   category: 'Remote Sensing',
-  tags: ['sar'],
+  tags: ['satellite'],
   status: 'published',
   authorId: null,
   authorEmail: 'shuvoasifahmed@gmail.com',
@@ -21,8 +21,8 @@ const article: BlogArticle = {
   createdAt: '2026-08-01T00:00:00Z',
   updatedAt: '2026-08-01T00:00:00Z',
   publishedAt: '2026-08-01T00:00:00Z',
-  metaTitle: 'SAR Guide',
-  metaDescription: 'SAR basics for flood mapping.',
+  metaTitle: 'satellite Guide',
+  metaDescription: 'satellite basics for flood mapping.',
   focusKeyword: '',
   canonicalUrl: '',
   ogImageUrl: '',
@@ -32,8 +32,6 @@ const article: BlogArticle = {
   authorBio: '',
   authorAvatarUrl: '',
   authorWebsite: '',
-  containsAffiliateLinks: false,
-  affiliateDisclosure: '',
 }
 
 describe('createHeadManager', () => {
@@ -46,15 +44,15 @@ describe('createHeadManager', () => {
     const manager = createHeadManager(document)
     const cleanup = manager.apply(buildSeoHead(article, { origin: 'https://hazardnet.live' }))
 
-    expect(document.title).toMatch(/^SAR Guide \| HazardNet$/)
+    expect(document.title).toMatch(/^satellite Guide \| HazardNet$/)
     expect(document.head.querySelector('meta[name="description"]')?.getAttribute('content')).toBe(
-      'SAR basics for flood mapping.',
+      'satellite basics for flood mapping.',
     )
     expect(document.head.querySelector('meta[name="robots"]')?.getAttribute('content')).toBe('index, follow')
     expect(document.head.querySelector('link[rel="canonical"]')?.getAttribute('href')).toBe(
-      'https://hazardnet.live/blogs/sar-guide',
+      'https://hazardnet.live/blogs/satellite-guide',
     )
-    expect(document.head.querySelector('meta[property="og:title"]')?.getAttribute('content')).toContain('SAR Guide')
+    expect(document.head.querySelector('meta[property="og:title"]')?.getAttribute('content')).toContain('satellite Guide')
     expect(document.head.querySelector('meta[property="og:image"]')?.getAttribute('content')).toBe(
       'https://cdn.example.com/cover.jpg',
     )

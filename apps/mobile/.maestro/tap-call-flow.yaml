@@ -1,0 +1,10 @@
+# Verify emergency-call chip is on Today screen and responds to tap.
+# NOTE: on a real device this presents the native tel: confirmation dialog;
+# tap does NOT confirm — we only verify the chip is reachable and pressable.
+appId: com.hazardnet.app
+---
+- launchApp
+- assertVisible: "Today"
+- assertVisible: "999"
+- tapOn: "999"
+- back

@@ -182,7 +182,7 @@ describe('the generated document', () => {
     const paths = built.routes.map((route) => route.path);
     expect(paths).toContain('/hazards');
     expect(paths).toContain('/districts');
-    // Phase 9 §8.1 — the validation page is generated from the hindcast reports, never hand-written.
+    // Phase 9 §8.1 — the validation page is generated from the published scorecard, never hand-written.
     expect(paths).toContain('/model-performance');
     expect(paths.filter((path) => path.startsWith('/hazards/'))).toHaveLength(methodology.hazards.length);
     expect(paths.filter((path) => path.startsWith('/districts/'))).toHaveLength(64);

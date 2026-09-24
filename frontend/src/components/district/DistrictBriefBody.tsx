@@ -496,14 +496,14 @@ export const DistrictBriefBody: React.FC = () => {
             </div>
             <div className="bg-carbon-05 p-3 border border-carbon-20/80">
               <span className="font-mono text-carbon-60 font-bold block mb-1">Confidence Interval</span>
-              <p className="text-carbon-70">No calibration map has been fitted — the model card documents what is and is not measured.</p>
+              <p className="text-carbon-70">No calibration accuracy is claimed.</p>
             </div>
           </div>
         </div>
       </section>
 
       {/* ========================================================================= */}
-      {/* SECTION 3: EXECUTIVE AI RISK OVERVIEW & SPATIAL RADAR BACKSCATTER */}
+      {/* SECTION 3: EXECUTIVE RISK OVERVIEW */}
       {/* ========================================================================= */}
       <section id="sec-ai-overview" className="scroll-mt-[calc(var(--navbar-height)+8px)] space-y-4 pt-4 pagination-protected">
         <div className="flex items-center justify-between border-b border-carbon-20 pb-3">
@@ -512,7 +512,7 @@ export const DistrictBriefBody: React.FC = () => {
               <Cpu className="w-4 h-4" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-carbon-90 tracking-tight">AI Spatial Risk Overview & Satellite Backscatter</h2>
+              <h2 className="text-lg font-bold text-carbon-90 tracking-tight">Spatial Risk Overview</h2>
               <p className="text-xs text-carbon-60">Ensemble confidence scoring, probabilistic hazard breakdown, and radar dielectric validation.</p>
             </div>
           </div>
@@ -542,7 +542,7 @@ export const DistrictBriefBody: React.FC = () => {
             </div>
 
             <div className="space-y-3 pt-1">
-              {data.modelAssessment.softmaxProbabilities.map((prob, i) => (
+              {data.modelAssessment.confidenceProbabilities.map((prob: { hazard: string; probability: number }, i: number) => (
                 <div key={i} className="space-y-1.5">
                   <div className="flex items-center justify-between text-xs font-semibold text-carbon-70">
                     <span className="flex items-center gap-2">
@@ -576,7 +576,7 @@ export const DistrictBriefBody: React.FC = () => {
               </h3>
               <div className="bg-carbon-05 border border-carbon-20/80 p-4 text-xs font-mono text-carbon-80 leading-relaxed space-y-2">
                 <p>
-                  Satellite imagery shows high water saturation across low-lying areas, and the severity index is computed from the day's Earth Engine and Open-Meteo inputs.
+                  The severity values shown here are read from the published forecast record for this run.
                 </p>
               </div>
             </div>
@@ -898,7 +898,7 @@ export const DistrictBriefBody: React.FC = () => {
           </div>
         )}
 
-        {/* Open-Meteo live weather: current conditions + 48h + 16-day forecast */}
+        {/* Live weather: current conditions + 48h + 16-day forecast */}
         <section aria-label="Live weather forecast" className="max-w-4xl mx-auto w-full">
           <div className="flex items-center gap-2 mb-3 px-1">
             <Cloud className="w-4 h-4 text-sky-500" />
@@ -906,7 +906,7 @@ export const DistrictBriefBody: React.FC = () => {
               Live Weather — {data.districtName}
             </h2>
             <span className="text-xs font-mono text-carbon-60 ml-auto">
-              {weather.loading && !weather.data ? 'Loading…' : weather.error ? 'Unavailable' : 'Open-Meteo 16-day'}
+              {weather.loading && !weather.data ? 'Loading…' : weather.error ? 'Unavailable' : '16-day outlook'}
             </span>
           </div>
           {weather.data ? (
@@ -1013,7 +1013,7 @@ export const DistrictBriefBody: React.FC = () => {
             </div>
             <div>
               <h2 className="text-lg font-bold text-carbon-90 tracking-tight">Historical Climatic Hazards Dataset & Multi-Decadal Analysis (2000–2026)</h2>
-              <p className="text-xs text-carbon-60">Verified empirical disaster records from BGD_climatic_hazards_dataset_2000_2026.csv cross-referenced with HazardNet forecast tensors.</p>
+              <p className="text-xs text-carbon-60">Verified empirical disaster records cross-referenced with published HazardNet forecast records.</p>
             </div>
           </div>
           <span className="text-xs font-mono text-blue-700 bg-blue-50 border border-blue-200 px-2.5 py-1 font-bold">SECTION VI</span>
@@ -1372,9 +1372,8 @@ export const DistrictBriefBody: React.FC = () => {
         </div>
       </section>
 
-      {/* ========================================================================= */}
-      {/* APPENDIX A: TECHNICAL METHODOLOGY & OPERATIONAL DIAGNOSTICS */}
-      {/* ========================================================================= */}
+      {/* APPENDIX A: FORECAST PROVENANCE (published results only) */}
+      {/* ================================================================ */}
       <section id="appendix-a" className="scroll-mt-[calc(var(--navbar-height)+8px)] print-appendix-break appendix-section pagination-protected space-y-4 pt-6">
         <div className="flex items-center justify-between border-b-2 border-purple-900 pb-3">
           <div className="flex items-center gap-2.5">
@@ -1383,90 +1382,55 @@ export const DistrictBriefBody: React.FC = () => {
             </div>
             <div>
               <h2 className="text-lg font-black text-carbon-black tracking-tight">
-                Appendix A: Technical Methodology & Operational Diagnostics
+                Appendix A: Forecast Provenance
               </h2>
               <p className="text-xs text-carbon-60">
-                Operational methodology, sensor telemetry calibration, and multi-spectral satellite flood boundary detection.
+                Every figure in this brief is read from a published forecast record.
               </p>
             </div>
           </div>
           <span className="text-xs font-mono font-bold text-carbon-90 bg-carbon-10 px-2.5 py-1">
-            TECHNICAL AUDIT LOG
+            PROVENANCE
           </span>
         </div>
 
-        {/* Inference Metrics Triad */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-white border border-carbon-20 p-5 space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-mono font-bold text-nasa-blue-shade uppercase">Inference Latency</span>
-              <span className="px-2 py-0.5 rounded text-xs font-mono font-bold bg-carbon-10 text-carbon-60">Not measured</span>
-            </div>
-            <div className="text-3xl font-black text-carbon-60 font-mono">—</div>
-            <p className="text-xs text-carbon-60">Latencies for the daily pipeline are not measured on this page, so none is quoted.</p>
-          </div>
-
-          <div className="bg-white border border-carbon-20 p-5 space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-mono font-bold text-blue-700 uppercase">Calibration</span>
-              <span className="px-2 py-0.5 rounded text-xs font-mono font-bold bg-amber-50 text-amber-700">Not yet fitted</span>
-            </div>
-            <div className="text-3xl font-black text-carbon-90 font-mono">—</div>
-            <p className="text-xs text-carbon-60">
-              No calibration map has been fitted: the repository has no observed-outcome
-              dataset to fit one against, so no calibration accuracy can be quoted.
-              See the <a href="/methodology" className="underline decoration-dotted font-semibold">methodology</a>.
-            </p>
-          </div>
-
-          <div className="bg-white border border-carbon-20 p-5 space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-mono font-bold text-carbon-80 uppercase">Model Score</span>
-              <span className="px-2 py-0.5 rounded text-xs font-mono font-bold bg-carbon-05 text-carbon-80">Softmax</span>
-            </div>
-            <div className="text-3xl font-black text-carbon-90 font-mono">{data.modelAssessment.confidenceLevel}%</div>
-            <p className="text-xs text-carbon-60">The classifier's own score for its chosen class — uncalibrated, and not an ensemble or ground-station agreement measure.</p>
-          </div>
-        </div>
-
-        {/* Plain-English Methodology & Calibration Diagnostics */}
         <div className="bg-white border border-carbon-20 p-6 space-y-4 text-xs font-sans">
           <h3 className="text-sm font-bold text-carbon-90 flex items-center gap-2">
             <Bot className="w-4 h-4 text-nasa-blue" />
-            Model Architecture & Operational Methodology (Plain-English Summary)
+            What this brief reports
           </h3>
 
           <div className="bg-carbon-05 border border-carbon-20 p-4 sm:p-5 space-y-3.5 text-carbon-80 leading-relaxed">
             <div>
-              <strong className="text-carbon-black font-bold block mb-1">[1] Satellite Image Analysis (ResNet-50 FPN):</strong>
+              <strong className="text-carbon-black font-bold block mb-1">[1] Published forecast record:</strong>
               <p className="text-carbon-70">
-                An advanced deep learning computer vision model (ResNet-50 Feature Pyramid Network on TensorFlow v2.16) scans high-resolution satellite imagery and digital elevation terrain maps. It identifies water depth, surface runoff accumulation, and exposed infrastructure without needing manual survey measurements.
+                Each district unit is one record: hazard class, severity, confidence score and the 7- and 15-day horizons, stamped with the forecast date of the run that produced it. Nothing on this page is recomputed in the browser.
               </p>
             </div>
             <div>
-              <strong className="text-carbon-black font-bold block mb-1">[2] Probability Scoring (Softmax — not yet calibrated):</strong>
+              <strong className="text-carbon-black font-bold block mb-1">[2] Confidence score (uncalibrated):</strong>
               <p className="text-carbon-70">
-                The model converts multi-hazard sensor readings into a 0–100% hazard score. It is the classifier&rsquo;s own softmax for the class it chose: it is <strong className="font-bold">not</strong> a calibrated probability, and the project publishes no calibration accuracy because no calibration map has been fitted — that requires observed-outcome data. Detection performance (POD / FAR / CSI) is likewise reported only once it can be measured against the event archive.
+                The 0&ndash;100% figure is the score for the chosen class in the published record. It is <strong className="font-bold">not</strong> a calibrated probability &mdash; no calibration accuracy is claimed, and detection performance is reported only once it can be measured against observed outcomes.
               </p>
             </div>
             <div>
-              <strong className="text-carbon-black font-bold block mb-1">[3] All-Weather Satellite Water Detection (Sentinel-1 SAR):</strong>
+              <strong className="text-carbon-black font-bold block mb-1">[3] What this is not:</strong>
               <p className="text-carbon-70">
-                Synthetic Aperture Radar (SAR) detects standing water by analyzing how radar pulses bounce off water surfaces compared to dry ground. Because radar passes freely through clouds, heavy rain, and nighttime darkness, flooded surfaces across {data.districtName} are mapped with 30-meter precision even during severe cyclonic storms.
+                The published product is per-district severity for {data.districtName} &mdash; it is not a metre-scale inundation map and not an official warning.
               </p>
             </div>
             <div>
-              <strong className="text-carbon-black font-bold block mb-1">[4] 24-Hour River & Weather Forecast Integration (ECMWF-IFS Ensemble):</strong>
+              <strong className="text-carbon-black font-bold block mb-1">[4] The official record:</strong>
               <p className="text-carbon-70">
-                Global atmospheric forecasting models are synchronized with real-time river gauges from the Bangladesh Meteorological Department (BMD) and Flood Forecasting and Warning Centre (FFWC) to project water crest timing and peak risk windows over the next 24 to 72 hours.
+                River-level bulletins from the Flood Forecasting and Warning Centre (FFWC) and forecasts from the Bangladesh Meteorological Department (BMD) remain the official record and outrank anything shown here.
               </p>
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 text-xs text-carbon-60 font-mono">
-            <div>Engine: <strong className="text-carbon-80">HazardNet-Vision v3.4.1</strong></div>
-            <div>Model Checkpoint: <strong className="text-carbon-80">tf-sar-ensemble-2026.08</strong></div>
-            <div>Verification: <strong className="text-carbon-80">Verified by DDMC Telemetry</strong></div>
+            <div>Unit: <strong className="text-carbon-80">{data.districtName}</strong></div>
+            <div>Horizons: <strong className="text-carbon-80">7- and 15-day</strong></div>
+            <div>Validation: <strong className="text-carbon-80">Forecast skill not yet validated</strong></div>
           </div>
         </div>
       </section>
@@ -1507,7 +1471,7 @@ export const DistrictBriefBody: React.FC = () => {
             Document Version: 1.0 • System Node: HNET-EOC-{data.districtId.toUpperCase().slice(0, 3)} • Auth Hash: 7F8E-2B4A-91C0 (PKI Verified)
           </div>
           <div>
-            Generated: {new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })} {new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })} BST • Telemetry Feeds: BMD / FFWC / BWDB / Sentinel-1 SAR Synchronized
+            Generated: {new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })} {new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })} BST • Official bulletins: BMD / FFWC
           </div>
         </div>
       </section>

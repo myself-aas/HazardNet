@@ -123,7 +123,7 @@ export const DivisionsPage: React.FC = () => {
               Bangladesh Regional Divisions
             </h1>
             <p className="mt-2 text-base leading-[1.62] text-carbon-70 max-w-2xl leading-relaxed">
-              Real-time multi-hazard exposure, 26-year historical disaster analysis (2000–2026), and active tensor forecasts across all 8 administrative divisions.
+              Real-time multi-hazard exposure, 26-year historical disaster analysis (2000–2026), and active record forecasts across all 8 administrative divisions.
             </p>
           </div>
 
@@ -153,7 +153,7 @@ export const DivisionsPage: React.FC = () => {
               Division Disaster Frequency & Alert Volume
             </h2>
             <p className="text-xs text-carbon-60">
-              Comparing all 8 divisions from historical records (2000-2026) and active forecast tensors
+              Comparing all 8 divisions from historical records (2000-2026) and active forecast records
             </p>
           </div>
           <span className="text-xs font-medium px-2.5 py-1 bg-carbon-10 text-carbon-70 rounded-md">

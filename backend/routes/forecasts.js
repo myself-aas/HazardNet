@@ -180,7 +180,7 @@ router.post('/ingest-csv', async (req, res) => {
 
 // ─────────────────────────────────────────────────────────
 // GET /api/v1/forecasts/metadata
-// Returns the newest ingested Kaggle prediction date and source.
+// Returns the newest ingested production prediction date and source.
 // ─────────────────────────────────────────────────────────
 router.get('/metadata', async (req, res) => {
     try {
@@ -192,7 +192,7 @@ router.get('/metadata', async (req, res) => {
             prediction_date: predictionDate,
             ingestion_timestamp: ingestionTimestamp,
             data_source: metadataDataSource(),
-            notebook_source: 'ashifahmedshuvo/hazardnet-auto-forecast-pipeline',
+            notebook_source: 'hazardnet/forecast-pipeline',
             datasets: metadataDatasets(),
             generated_at: now.toISOString(),
         });
@@ -254,7 +254,7 @@ router.get('/', async (req, res) => {
             metadata: {
                 horizon: forecast.horizon,
                 model_version: 'HazardNet_FP32_v1.0',
-                data_source: 'GEE + Open-Meteo Deterministic Forecast'
+                data_source: 'Published forecast feed'
             }
         });
     } catch (error) {

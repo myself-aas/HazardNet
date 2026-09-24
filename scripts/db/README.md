@@ -19,7 +19,7 @@ Files:
 6. `006_blog_articles_rls_authz.sql` — **security reference.** Documents the
    blog write policy hardening (never authorise on a client-supplied column);
    the Firestore equivalent enforcement lives in `firestore.rules`.
-7. `007_forecasts_meteorological.sql` — the eight Open-Meteo meteorological
+7. `007_forecasts_meteorological.sql` — the eight meteorological
    columns the weekly notebook emits (`temperature_mean`, `temperature_max`,
    `temperature_min`, `precipitation_mm`, `wind_max_kmh`, `dewpoint_mean`,
    `solar_radiation_mj_m2`, `evapotranspiration_mm`).
@@ -30,7 +30,7 @@ Files:
    aggregate materialized views and the `hazard_event_prior()` recency-weighted
    scoring function. **Requires PostGIS.** Independent of the numbered order;
    safe to apply any time. The tables start **empty by design** — loading is
-   `python -m etl.cli events …` (see `../etl/README.md`); no rows are invented
+   `the events ingest step` ; no rows are invented
    and nothing is seeded, because a fabricated history would silently distort a
    district's prior.
 

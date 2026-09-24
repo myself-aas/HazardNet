@@ -38,11 +38,9 @@ describe('Phase 8 rollout contracts', () => {
     expect(stored).not.toMatch(/simulateRaster|fake probabil/i);
   });
 
-  it('keeps BrandPanel 64-district and <100ms stats', () => {
+  it('keeps BrandPanel 64-district and dual-severity stats', () => {
     const brand = read('frontend/src/components/auth/BrandPanel.tsx');
     expect(brand).toMatch(/\bvalue:\s*64\b/);
-    expect(
-      /'<100ms'/.test(brand) || (/prefix:\s*'<'/.test(brand) && /suffix:\s*'ms'/.test(brand)),
-    ).toBe(true);
+    expect(brand).toMatch(/suffix:\s*' tracks'/);
   });
 });

@@ -7,7 +7,7 @@
 -- Vercel deployment, the API, or the frontend — the serving path reads the
 -- `forecasts` table only.
 --
--- Inputs (all produced by the weekly Kaggle kernel and attached to each
+-- Inputs (all produced by the weekly production kernel and attached to each
 -- GitHub Release, see ADR 0006):
 --   hazardnet_adm3_latest.geojson  → public.adm3_boundaries (+ osm_* tables
 --                                    when loading raw Geofabrik layers)

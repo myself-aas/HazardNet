@@ -94,7 +94,7 @@ describe('parseCsvForecastRow — accepted shapes', () => {
 
   it('converts the notebook native om_* columns into documented API units', () => {
     // Real Bagerhat 7-day row from hazardnet_forecasts_latest.csv (2026-09-12).
-    // The notebook accumulates several Open-Meteo terms over the whole horizon
+    // The row builder accumulates several weather terms over the whole horizon
     // and mislabels two of them, so the raw values must NOT pass through:
     //   om_et_sum_m 30.45 is MILLIMETRES over 7 days (not metres)
     //   om_solar_rad_j 146060 is kJ/m² over 7 days

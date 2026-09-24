@@ -16,7 +16,6 @@ interface UseCaseData {
   bannerColor: string;
   districtId: string;
   summary: string;
-  satelliteData: string;
   affectedCrops: string[];
   mitigationSteps: string[];
   stats: { label: string; value: string }[];
@@ -33,7 +32,6 @@ const USE_CASES: UseCaseData[] = [
     bannerColor: 'border-cyan-300 bg-cyan-50/80 text-cyan-900',
     districtId: 'sunamganj',
     summary: 'Rapid pre-monsoon water level surges in April-May overwhelm submersible embankments, threatening over 800,000 hectares of ripe Boro paddy rice right before harvest season.',
-    satelliteData: 'Sentinel-1 C-band SAR VV/VH backscatter drop below -18dB indicates open water surface expansion across Haor depressions.',
     affectedCrops: ['Boro Paddy Rice (BRRI dhan28/29)', 'Freshwater Inland Fisheries', 'Haor Cattle Forage'],
     mitigationSteps: [
       'Trigger 72-hour early harvest advisory for Boro rice at 80% grain maturity.',
@@ -56,7 +54,6 @@ const USE_CASES: UseCaseData[] = [
     bannerColor: 'border-carbon-30 bg-carbon-05 text-carbon-90',
     districtId: 'satkhira',
     summary: 'Category 1-3 cyclones originating in the Bay of Bengal generate +2m to +4m storm surges that breach polders, flooding shrimp ghers and salinizing agricultural soils.',
-    satelliteData: 'Sentinel-2 NDWI (Normalized Difference Water Index) combined with ERA5 reanalysis surface wind vectors (>120 km/h).',
     affectedCrops: ['Aman Rice Seedbeds', 'Shrimp & Crab Aquaculture', 'Betel Leaf Farms', 'Salt Pans'],
     mitigationSteps: [
       'Activate automated coastal polder sluice gate lockdown before surge peak.',
@@ -79,7 +76,6 @@ const USE_CASES: UseCaseData[] = [
     bannerColor: 'border-amber-300 bg-amber-50/80 text-amber-900',
     districtId: 'rajshahi',
     summary: 'High terrace clay soils in Barind suffer prolonged rainfall deficits during pre-monsoon and post-monsoon windows, severely stressing Aus rice transplanting and mango orchards.',
-    satelliteData: 'Landsat-8 / Sentinel-2 NDMI (Soil Moisture Index) and MODIS Land Surface Temperature (LST >38°C).',
     affectedCrops: ['Aus & Aman Rice', 'Fazli & Ashwina Mangoes', 'Maize & Winter Wheat'],
     mitigationSteps: [
       'Recommend Alternate Wetting & Drying (AWD) irrigation schedules to conserve 30% groundwater.',
@@ -102,7 +98,6 @@ const USE_CASES: UseCaseData[] = [
     bannerColor: 'border-blue-300 bg-blue-50/80 text-blue-900',
     districtId: 'panchagarh',
     summary: 'Cold air advection from the Himalayan foothills drops winter minimum temperatures below 7°C accompanied by dense fog, causing yellowing and chilling injury in Boro rice seedbeds.',
-    satelliteData: 'INSAT-3D fog boundary segmentation + ERA5-Land 2m temperature fields (<8°C for >12 hours).',
     affectedCrops: ['Boro Paddy Seedbeds', 'Potato Tubers (Late Blight)', 'Winter Vegetables & Mustard'],
     mitigationSteps: [
       'Advise farmers to cover seedling nurseries with transparent polythene sheets at night.',
@@ -157,7 +152,7 @@ export const UseCases: React.FC = () => {
           Hazard<span className="text-nasa-red-shade">Net</span> Operational Use Cases & Field Impact
         </h1>
         <p className="text-carbon-60 text-xs md:text-sm leading-relaxed max-w-3xl">
-          Discover how HazardNet's 15-band multi-task neural network mitigates disaster risks across distinct agro-ecological zones in Bangladesh, protecting food security and rural livelihoods.
+          Discover how HazardNet's multi-band multi-task neural network mitigates disaster risks across distinct agro-ecological zones in Bangladesh, protecting food security and rural livelihoods.
         </p>
       </div>
 
@@ -249,14 +244,6 @@ export const UseCases: React.FC = () => {
               </p>
             </div>
 
-            <div className="space-y-3 p-5 bg-carbon-05/80 border border-carbon-20/80 hover:border-carbon-30 transition-all">
-              <h3 className="font-bold text-xs uppercase font-mono text-carbon-90 flex items-center gap-2">
-                <span className="p-1 rounded-sm bg-cyan-100 text-cyan-900"><MaterialIcon name="satellite_alt" className="w-4 h-4" /></span> Satellite Sentinel Radar & Spectral Signature
-              </h3>
-              <p className="text-xs text-carbon-70 leading-relaxed font-mono bg-white p-3.5 border border-carbon-20">
-                {activeCase.satelliteData}
-              </p>
-            </div>
           </div>
 
           {/* Crops Affected & Mitigation Protocols */}
@@ -278,7 +265,7 @@ export const UseCases: React.FC = () => {
 
             <div className="space-y-3">
               <h3 className="font-extrabold text-sm text-carbon-90 flex items-center gap-2">
-                <MaterialIcon name="shield" className="w-4 h-4" /> Automated Agronomic 72-Hour Mitigation Steps
+                <MaterialIcon name="shield" className="w-4 h-4" /> Agronomic Mitigation Steps
               </h3>
               <ul className="space-y-2 text-xs">
                 {activeCase.mitigationSteps.map((step, i) => (
@@ -298,9 +285,9 @@ export const UseCases: React.FC = () => {
       {/* Cross-Link Quick Actions */}
       <div className="bg-amber-50/80 border border-amber-200 p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6 text-carbon-90">
         <div className="space-y-1 text-center md:text-left">
-          <h3 className="text-lg font-black text-carbon-90 tracking-tight">Ready to test these models locally on your system?</h3>
+          <h3 className="text-lg font-black text-carbon-90 tracking-tight">Ready to explore these scenarios with live data?</h3>
           <p className="text-xs text-carbon-60 font-medium">
-            Download our standalone Wasm runtime, desktop GUI, or Python PyPI library for offline satellite tensor evaluation.
+            Every scenario plays out on published forecast records — open the live outlook to see the current run for these districts.
           </p>
         </div>
 

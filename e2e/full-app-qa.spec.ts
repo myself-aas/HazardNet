@@ -99,7 +99,7 @@ const NO_API_RUNTIME = /^(1|true|yes)$/i.test(process.env.QA_NO_API_RUNTIME ?? '
 
 const ENVIRONMENTAL_URLS: Array<{ pattern: RegExp; why: string; statuses?: number[]; when?: boolean }> = [
   { pattern: /firebase|firebaseio|googleapis|googletagmanager/i, why: 'third-party hosts blocked in sandbox' },
-  { pattern: /cartocdn|arcgis(online)?\.com|tile\.openstreetmap|opentopomap/i, why: 'basemap tiles blocked; service worker serves its offline tile' },
+  { pattern: /cartocdn|arcgis(online)?\.com|tile\.map-data|opentopomap/i, why: 'basemap tiles blocked; service worker serves its offline tile' },
   { pattern: /\/api\/v1\/(weather|alerts)/i, why: 'upstream weather/alert feeds unreachable without egress' },
   { pattern: /_vercel\/insights/i, why: 'Vercel-only analytics asset' },
   {

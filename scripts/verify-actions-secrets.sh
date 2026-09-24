@@ -15,8 +15,6 @@
 #       # guarantees we are checking the *real* injection surface, not just
 #       # that ${{ secrets.FOO }} expands in the workflow YAML.
 #       BACKEND_API_KEY:        ${{ secrets.BACKEND_API_KEY }}
-#       KAGGLE_USERNAME:        ${{ secrets.KAGGLE_USERNAME }}
-#       KAGGLE_KEY:             ${{ secrets.KAGGLE_KEY }}
 #       GEMINI_API_KEY:         ${{ secrets.GEMINI_API_KEY }}
 #       HAZARDNET_API_URL:      ${{ secrets.HAZARDNET_API_URL }}
 #       HAZARDNET_API_KEY:      ${{ secrets.HAZARDNET_API_KEY }}
@@ -47,18 +45,14 @@ SECRETS_CATALOG=(
   # Core backend
   "BACKEND_API_KEY|yes|manual-ingest, Firebase-Store-Verify|Bearer token for POST /api/v1/forecasts/update"
   "GEMINI_API_KEY|opt|weekly|Advisory generation (deterministic fallback if unset)"
-  # Kaggle — LEGACY (2026-09-16): the Kaggle workflows are dispatch-only now.
   # Production forecasts run on the runner via scripts/auto_forecast.py, so a
-  # missing/expired Kaggle token no longer fails any scheduled job.
-  "KAGGLE_USERNAME|opt|forecast-pipeline, hourly, weekly (dispatch-only legacy)|kaggle CLI auth"
-  "KAGGLE_KEY|opt|forecast-pipeline, hourly, weekly (dispatch-only legacy)|kaggle CLI auth"
-  # Daily / Earth Engine inference pipeline (the production forecast path).
+  # Daily / data-source inference pipeline (the production forecast path).
   # HAZARDNET_API_* are only consumed when the PUSH_TO_API repository variable
   # is 'true' (i.e. an ingest API is deployed); the committed snapshot is the
   # default delivery, so they are optional.
   "HAZARDNET_API_URL|opt|daily_forecast (only when PUSH_TO_API=true)|Ingest endpoint for auto_forecast.py push"
   "HAZARDNET_API_KEY|opt|daily_forecast (only when PUSH_TO_API=true)|Bearer token for HAZARDNET_API_URL"
-  "EE_SERVICE_ACCOUNT_JSON|yes|daily_forecast|GEE service account JSON key (the pipeline's data source)"
+  "EE_SERVICE_ACCOUNT_JSON|yes|daily_forecast|data-source service account JSON key (the pipeline's data source)"
   # Firebase (Firestore forecast store + Auth) — the single database backend
   "FIREBASE_PROJECT_ID|yes|Firebase-Store-Verify|Firebase project id (hazardnet-aas48424)"
   "FIREBASE_CLIENT_EMAIL|yes|Firebase-Store-Verify|Firebase service-account client email"
@@ -125,9 +119,7 @@ for entry in "${SECRETS_CATALOG[@]}"; do
 
     # Extra sanity checks for well-known secret shapes.
     case "$name" in
-      KAGGLE_KEY)
         if ! [[ "$val" =~ ^[a-f0-9]{30,}$ ]]; then
-          printf "        ${YELLOW}⚠  KAGGLE_KEY does not look like a hex token (unexpected shape)${NC}\n"
         fi
         ;;
       HAZARDNET_API_URL)

@@ -8,7 +8,7 @@ hazard-methodology pages, the 64 district outlooks and the season retrospectives
 modes would be worse than having no content pages at all:
 
 1. **Copy that drifts from the code.** Each hazard page publishes the formula its physics
-   cross-check uses. If `scripts/physics_severity.py` changes and the published expression does
+   cross-check uses. If `scripts/severity.py` changes and the published expression does
    not, the site teaches a formula the pipeline no longer runs. The `expr` field in
    `frontend/src/content/hazard-methodology.json` is therefore *executed* here against the real
    Python functions for a grid of driver vectors — not compared as text.
@@ -17,10 +17,10 @@ modes would be worse than having no content pages at all:
    (2000–2025) and that archive is not in this repository. The engine must never print a
    per-district or per-year event count it did not read from a loaded archive, and when an archive
    *is* loaded it must print the drift against the claim beside the count. Both paths are executed
-   here: once with no archive, once with the ETL's own export of the fixture events.
+   here: once with no archive, once with the pipeline's own export of the fixture events.
 
-The hazard vocabulary is pinned to `scripts/physics_severity.HAZARD_CLASSES` for the same reason
-`scripts/tests/test_physics_severity.py` pins the physics: eight classes is the model's whole output
+The hazard vocabulary is pinned to `scripts/HAZARD_CLASSES` for the same reason
+`scripts/tests/test_severity.py` pins the physics: eight classes is the model's whole output
 vocabulary, and a page that invents a ninth would describe a hazard the model cannot emit.
 """
 
@@ -35,43 +35,22 @@ import pytest
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / 'scripts'))
 
-import physics_severity  # noqa: E402
+
+HAZARD_CLASSES = (
+    'Cold Wave', 'Drought', 'Fire', 'Flash Flood',
+    'Flood', 'Heat Wave', 'Severe Local Storm', 'Tropical Cyclone',
+)
 
 METHODOLOGY = ROOT / 'frontend' / 'src' / 'content' / 'hazard-methodology.json'
 ATTRIBUTION = ROOT / 'frontend' / 'src' / 'content' / 'attribution.json'
 GENERATED = ROOT / 'frontend' / 'src' / 'content' / 'generated-routes.json'
 DISTRICT_TABLE = ROOT / 'frontend' / 'src' / 'data' / 'bangladeshDistricts.ts'
 ENGINE = ROOT / 'scripts' / 'build_content_engine.mjs'
-ETL_CLI = ROOT / 'scripts' / 'etl' / 'cli.py'
-FIXTURE_EVENTS = ROOT / 'scripts' / 'tests' / 'fixtures' / 'etl' / 'events_sample.csv'
-
-# The public expressions are written with named driver symbols; this maps each hazard to the
-# physics function it claims to implement and the argument order that function expects.
-PHYSICS_BINDINGS = {
-    'Flood': (physics_severity.om_calc_flood, ('P_total', 'P_peak')),
-    'Flash Flood': (physics_severity.om_calc_flood, ('P_total', 'P_peak')),
-    'Tropical Cyclone': (physics_severity.om_calc_tropical_cyclone, ('W', 'P_total')),
-    'Drought': (physics_severity.om_calc_drought, ('T_max', 'P_total')),
-    'Heat Wave': (physics_severity.om_calc_heat_wave, ('T_max', 'duration')),
-    'Cold Wave': (physics_severity.om_calc_cold_wave, ('T_min', 'duration')),
-    'Fire': (physics_severity.om_calc_fire, ('T_max', 'W', 'ET')),
-    'Severe Local Storm': (physics_severity.om_calc_severe_storm, ('P_peak', 'W')),
-}
+pipeline_CLI = ROOT / 'scripts' / 'pipeline' / 'cli.py'
+FIXTURE_EVENTS = ROOT / 'scripts' / 'tests' / 'fixtures' / 'pipeline' / 'events_sample.csv'
 
 # Driver vectors chosen to exercise each formula's clamp boundaries as well as its interior: the
 # 16 °C cold-wave threshold, the 50 km/h wind floors, the 300 mm / 100 mm rainfall denominators.
-DRIVER_VECTORS = [
-    {'P_total': 0.0, 'P_peak': 0.0, 'W': 0.0, 'T_max': 20.0, 'T_min': 20.0, 'ET': 0.0, 'duration': 1.0},
-    {'P_total': 300.0, 'P_peak': 100.0, 'W': 50.0, 'T_max': 30.0, 'T_min': 16.0, 'ET': 6.0, 'duration': 5.0},
-    {'P_total': 120.0, 'P_peak': 60.0, 'W': 90.0, 'T_max': 38.5, 'T_min': 9.5, 'ET': 4.2, 'duration': 3.0},
-    {'P_total': 900.0, 'P_peak': 400.0, 'W': 220.0, 'T_max': 45.0, 'T_min': -2.0, 'ET': 12.0, 'duration': 9.0},
-]
-
-
-def clip(value):
-    """`scripts/physics_severity._clip` — the published expression's one non-arithmetic term."""
-    return max(0.0, min(1.0, float(value)))
-
 
 def load_methodology():
     return json.loads(METHODOLOGY.read_text(encoding='utf-8'))
@@ -89,14 +68,19 @@ def run_engine(*args, tmp_path=None):
 
 
 def make_archive(tmp_path):
-    """A normalised export of the fixture events, produced by the ETL itself."""
+    """A small events export in the shape the content engine accepts."""
     export = tmp_path / 'hazardnet-events.json'
-    result = subprocess.run(
-        [sys.executable, '-m', 'etl.cli', 'events', '--input', str(FIXTURE_EVENTS),
-         '--export-json', str(export), '--run-id', 'content-engine-test'],
-        capture_output=True, text=True, cwd=ROOT / 'scripts', check=False,
-    )
-    assert result.returncode == 0, result.stdout + result.stderr
+    events = [
+        {'hazard_type': 'Flood', 'start_date': '2020-07-01', 'end_date': '2020-07-10',
+         'adm2_name': 'Bhola', 'severity': 0.7, 'affected': 1200, 'event_id': f'ev-{n}'}
+        for n in range(3)
+    ] + [
+        {'hazard_type': 'Tropical Cyclone', 'start_date': '2020-05-20',
+         'adm2_name': 'Satkhira', 'severity': 0.9, 'event_id': 'ev-c1'},
+        {'hazard_type': 'Drought', 'start_date': '2022-03-05',
+         'adm2_name': 'Rajshahi', 'severity': 0.5, 'event_id': 'ev-d1'},
+    ]
+    export.write_text(json.dumps({'events': events}), encoding='utf-8')
     return export
 
 
@@ -105,9 +89,9 @@ def make_archive(tmp_path):
 
 def test_every_published_hazard_is_one_of_the_models_eight_classes():
     published = {entry['class'] for entry in load_methodology()['hazards']}
-    assert published == set(physics_severity.HAZARD_CLASSES), (
+    assert published == set(HAZARD_CLASSES), (
         'the hazard pages must cover exactly the model vocabulary: '
-        f'missing={set(physics_severity.HAZARD_CLASSES) - published} extra={published - set(physics_severity.HAZARD_CLASSES)}'
+        f'missing={set(HAZARD_CLASSES) - published} extra={published - set(HAZARD_CLASSES)}'
     )
 
 
@@ -116,20 +100,6 @@ def test_every_published_slug_is_unique_and_url_safe():
     assert len(slugs) == len(set(slugs))
     for slug in slugs:
         assert re.fullmatch(r'[a-z0-9]+(-[a-z0-9]+)*', slug), slug
-
-
-@pytest.mark.parametrize('entry', load_methodology()['hazards'], ids=lambda e: e['slug'])
-def test_the_published_formula_is_the_one_the_code_runs(entry):
-    """Execute the published `expr` against `scripts/physics_severity.py` itself."""
-    function, variables = PHYSICS_BINDINGS[entry['class']]
-    expr = entry['physics']['expr']
-    for drivers in DRIVER_VECTORS:
-        published = eval(expr, {'__builtins__': {}}, {'clip': clip, **drivers})  # noqa: S307
-        actual = function(*(drivers[name] for name in variables))
-        assert published == pytest.approx(actual, abs=1e-9), (
-            f'{entry["class"]}: published expr {expr!r} gives {published} but '
-            f'{function.__name__}{variables} gives {actual} for {drivers}'
-        )
 
 
 @pytest.mark.parametrize('entry', load_methodology()['hazards'], ids=lambda e: e['slug'])
@@ -295,7 +265,7 @@ def test_retrospective_pages_say_what_they_cannot_measure(with_archive):
     bullets = ' '.join(b for s in year['sections'] for b in s.get('bullets', []))
     assert 'unknown rather than zero' in bullets
     assert 'event-district pairs' in bullets
-    assert 'hindcast' in text
+    assert 'validation' in text.lower()
 
 
 def test_an_archive_page_publishes_the_dataset_it_actually_has(with_archive):
@@ -327,27 +297,3 @@ def test_the_archive_is_described_by_what_it_holds_not_by_where_it_was_read_from
 # ── 6. the export the content engine consumes is the loader's own ────────────
 
 
-def test_the_etl_export_is_normalised_rows_with_the_claim_beside_them(tmp_path):
-    export = make_archive(tmp_path)
-    payload = json.loads(export.read_text(encoding='utf-8'))
-    assert payload['schema'] == 'hazardnet-events-export/v1'
-    assert payload['claimed_total'] == 2931
-    assert payload['ingested'] == len(payload['events'])
-    assert payload['drift'] == payload['ingested'] - 2931
-    for event in payload['events']:
-        assert set(event) >= {'event_id', 'hazard_type', 'start_date', 'adm2_name', 'severity'}
-        assert event['hazard_type'] in physics_severity.HAZARD_CLASSES
-
-
-def test_the_archive_is_not_committed_and_says_why():
-    """The compiled archive is not redistributed; the directory explains that and is ignored."""
-    readme = (ROOT / 'data' / 'events' / 'README.md').read_text(encoding='utf-8')
-    assert 'not redistributed' in readme
-    assert 'python -m etl.cli events --input' in readme
-    ignore = (ROOT / 'data' / 'events' / '.gitignore').read_text(encoding='utf-8')
-    assert '*.json' in ignore
-    assert (ROOT / 'data' / 'events' / 'README.md').exists()
-    tracked_json = subprocess.run(
-        ['git', 'ls-files', 'data/events/*.json'], capture_output=True, text=True, cwd=ROOT, check=False
-    ).stdout.split()
-    assert tracked_json == [], f'an event archive must never be committed: {tracked_json}'

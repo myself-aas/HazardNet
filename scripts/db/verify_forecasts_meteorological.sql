@@ -2,7 +2,7 @@
 -- HazardNet · verify_forecasts_meteorological.sql
 --
 -- Self-assessing verification for 007_forecasts_meteorological.sql, the
--- migration that adds the eight Open-Meteo meteorological columns the weekly
+-- migration that adds the eight meteorological columns the weekly
 -- notebook emits. Run it in your Postgres SQL editor:
 --
 --   • BEFORE scripts/db/007_forecasts_meteorological.sql — expect FAILs. A FAIL

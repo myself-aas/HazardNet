@@ -8,9 +8,9 @@
  *
  *   1. **`WARNING` needs a calibrated probability.** §1.3 defines `WARNING` as
  *      "calibrated probability ≥ warning threshold AND both evidence tracks agree".
- *      No calibration map is fitted in this repository (Phase 3: the event archive
+ *      No calibration accuracy is claimed in this repository (Phase 3: the event archive
  *      is not loaded, so there is nothing to fit on), so `confidence` is still the
- *      model's softmax. `calibrated_probability_required_for_warning` defaults to
+ *      model's confidence. `calibrated_probability_required_for_warning` defaults to
  *      `true`, which means **the engine cannot issue a `WARNING` from model
  *      evidence alone** — it can reach `WATCH`, and `SEVERE` only from an official
  *      BMD/FFWC bulletin or a duty officer's explicit approval. Flipping the flag to
@@ -178,7 +178,7 @@ export function describePolicy(policy = getPolicy()) {
     calibration: {
       calibrated_probability_required_for_warning: policy.calibrated_probability_required_for_warning,
       note: policy.calibrated_probability_required_for_warning
-        ? 'No calibration map is fitted (docs/mlops/CALIBRATION.md), so WARNING cannot be ' +
+        ? 'No calibration accuracy is claimed, so WARNING cannot be ' +
           'reached from model evidence alone: rows carry confidence_kind=' +
           'model_softmax_top_class. WATCH and official-bulletin SEVERE remain available.'
         : 'This deployment has explicitly allowed WARNING without a calibrated probability ' +

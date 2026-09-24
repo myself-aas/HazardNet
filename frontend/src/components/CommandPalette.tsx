@@ -201,7 +201,7 @@ const HAZARD_PROFILE_ITEMS: SearchItem[] = [
     id: 'hazard-flashflood',
     title: 'Flash Flood Hazard Profile',
     category: 'Hazard Profile',
-    subtitle: 'Rapid pre-monsoon water surge in April-May in Haor Basin with sharp SAR backscatter drop',
+    subtitle: 'Rapid pre-monsoon water surge in April-May in Haor Basin',
     badge: 'Sylhet & Sunamganj',
     actionPath: '/analytics',
   },
@@ -209,7 +209,7 @@ const HAZARD_PROFILE_ITEMS: SearchItem[] = [
     id: 'hazard-monsoonflood',
     title: 'Monsoon Riverine Flood Profile',
     category: 'Hazard Profile',
-    subtitle: 'Broad river overflow in July-August along Jamuna/Padma floodplain with high SAR VV/VH loss',
+    subtitle: 'Broad river overflow in July-August along the Jamuna/Padma floodplain',
     badge: 'Kurigram & Sirajganj',
     actionPath: '/analytics',
   },
@@ -251,26 +251,18 @@ const HAZARD_PROFILE_ITEMS: SearchItem[] = [
 const DOCUMENTATION_ITEMS: SearchItem[] = [
   {
     id: 'doc-architecture',
-    title: 'Dual-Head Multi-Task Neural Network Architecture',
+    title: 'HazardNet Results Reference',
     category: 'Documentation',
-    subtitle: 'Combined Softmax classification head + continuous physical severity regression head',
-    badge: 'Model Core',
-    actionPath: '/docs',
-  },
-  {
-    id: 'doc-tflite',
-    title: 'FP32 TFLite WebAssembly Inference Engine',
-    category: 'Documentation',
-    subtitle: 'In-browser SIMD-accelerated execution on your device',
-    badge: 'Wasm Engine',
+    subtitle: 'Published outputs: hazard class, severity and confidence per district',
+    badge: 'Results',
     actionPath: '/docs',
   },
   {
     id: 'doc-channels',
-    title: '15 Multispectral Satellite Band Specification',
+    title: 'Published District Forecast Records',
     category: 'Documentation',
-    subtitle: 'Sentinel-1 SAR VV/VH, Sentinel-2 L2A (10-20m), ERA5-Land reanalysis tensor',
-    badge: 'Satellite Tensor',
+    subtitle: 'Inputs are research-private; results are published as district forecast records',
+    badge: 'Results',
     actionPath: '/docs',
   },
   {
@@ -293,7 +285,7 @@ const DOCUMENTATION_ITEMS: SearchItem[] = [
     id: 'doc-paper',
     title: 'HazardNet Publication & Research Data',
     category: 'Documentation',
-    subtitle: 'Peer-reviewed publication, dataset baseline comparisons, and model validation metrics',
+    subtitle: 'Published validation scorecard and model performance results',
     badge: 'Publication',
     actionPath: '/about',
   },
@@ -588,7 +580,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onSelectDistrict
                 <div className="p-10 text-center text-carbon-60 text-xs space-y-2">
                   <p className="font-bold text-carbon-90 text-base">No results found for "{query}"</p>
                   <p className="text-carbon-60 text-xs max-w-sm mx-auto">
-                    Try searching for <span className="text-carbon-80 font-semibold">"Kurigram"</span>, <span className="text-carbon-80 font-semibold">"Sylhet Report"</span>, <span className="text-carbon-80 font-semibold">"Flash Flood"</span>, or <span className="text-carbon-80 font-semibold">"TFLite"</span>.
+                    Try searching for <span className="text-carbon-80 font-semibold">"Kurigram"</span>, <span className="text-carbon-80 font-semibold">"Sylhet Report"</span>, <span className="text-carbon-80 font-semibold">"Flash Flood"</span>, or <span className="text-carbon-80 font-semibold">"Cyclone"</span>.
                   </p>
                 </div>
               ) : (

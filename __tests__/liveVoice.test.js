@@ -24,7 +24,7 @@ describe('Live Voice API — gemini-3.8-live REST & WebSocket endpoints', () => 
     expect(res.body.defaultSampleRateOutput).toBe(24000);
   });
 
-  test('POST /api/live-voice/context builds grounded context for requested district', async () => {
+  test('POST /api/live-voice/context builds context for requested district without research retrieval', async () => {
     const res = await request(app)
       .post('/api/live-voice/context')
       .send({ district: 'Sunamganj', hazard: 'Flood' });
@@ -32,8 +32,8 @@ describe('Live Voice API — gemini-3.8-live REST & WebSocket endpoints', () => 
     expect(res.status).toBe(200);
     expect(res.body.district).toBe('Sunamganj');
     expect(res.body.hazard).toBe('Flood');
-    expect(res.body.districtBaseline).toBeTruthy();
-    expect(res.body.routedSkillsLength).toBeGreaterThan(0);
+    expect(res.body.districtBaseline).toBeNull();
+    expect(res.body.routedSkillsLength).toBe(0);
     expect(res.body.protocolsSummary).toContain('BRRI');
     expect(res.body.protocolsSummary).toContain('DAE');
   });

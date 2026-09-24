@@ -108,13 +108,13 @@ function datasetNode(route, origin, attribution) {
       // would assert something the repository cannot back up.
     };
   }
-  if (hint.kind === 'hindcast-validation') {
+  if (hint.kind === 'validation-validation') {
     // The third dataset this deployment genuinely has: the four committed episode scores. It is
     // ours (MIT), so unlike the event archive it may carry a licence and a download URL.
     const pageUrl = `${trimSlash(origin)}/model-performance`;
     return {
       '@type': 'Dataset',
-      '@id': `${trimSlash(origin)}/#hindcast-validation`,
+      '@id': `${trimSlash(origin)}/#validation-validation`,
       name: hint.name,
       description: hint.description,
       url: pageUrl,
@@ -140,7 +140,7 @@ function datasetNode(route, origin, attribution) {
     '@id': `${origin}/data-sources#forecast-archive`,
     name: 'HazardNet multi-hazard forecast archive (Bangladesh)',
     description:
-      'Per-district hazard classification and severity forecasts for Bangladesh at 7- and 15-day horizons, derived from ERA5-Land, MODIS, Sentinel-1/2 and Open-Meteo, published as CSV and JSON with a provenance header on every snapshot.',
+      'Per-district hazard classification and severity forecasts for Bangladesh at 7- and 15-day horizons, derived from environmental data, satellite data, satellite data and weather data, published as CSV and JSON with a provenance header on every snapshot.',
     url: `${origin}/download`,
     spatialCoverage: { '@type': 'Place', name: 'Bangladesh' },
     variableMeasured: ['hazard class', 'severity index', 'confidence bin', 'physics cross-check severity'],

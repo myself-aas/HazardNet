@@ -1,7 +1,7 @@
 /**
  * Shared forecast-row parsing for the CSV ingest path.
  *
- * The weekly Kaggle notebook (kaggle_notebooks/hazardnet-auto-forecast-pipeline)
+ * The weekly forecast run (hazardnet/forecast-pipeline)
  * writes dual-track columns — `model_severity` and `physics_severity` — while
  * the original ingest contract used a single `severity_score` column. This
  * parser accepts both shapes so the weekly pipeline lands without a rename
@@ -9,11 +9,11 @@
  * to storage when present, preserving the README's dual-track severity story
  * for downstream consumers.
  *
- * `confidence` is the model's own softmax unless a `confidence_calibrated`
+ * `confidence` is the model's own confidence unless a `confidence_calibrated`
  * column is present, in which case the calibrated value is published as
- * `confidence` (with `confidence_raw` carrying the softmax and `confidence_kind`
+ * `confidence` (with `confidence_raw` carrying the confidence and `confidence_kind`
  * set to `calibrated_probability`). Nothing in this repository is calibrated by
- * default — see `docs/mlops/CALIBRATION.md`.
+ * default — see `docs/model-ops/CALIBRATION.md`.
  */
 
 // Tactical and strategic forecast horizons shared by the notebook, API, and UI.
@@ -63,7 +63,7 @@ export function parseCsvForecastRow(row, rowNumber) {
     return { ok: false, error: `Row ${rowNumber}: Invalid horizon "${row.horizon}"` };
   }
 
-  // Severity: accepting Kaggle notebook's dual-track (`physics_severity` and `model_severity`)
+  // Severity: accepting production notebook's dual-track (`physics_severity` and `model_severity`)
   // as well as single-track `severity_score`.
   const modelSevRaw = row.model_severity !== undefined && row.model_severity !== ''
     ? row.model_severity
@@ -90,7 +90,7 @@ export function parseCsvForecastRow(row, rowNumber) {
   }
 
   // ── calibrated confidence (Phase 3) ──────────────────────────────────────
-  // A row produced by `python -m mlops.cli apply-calibration` carries the softmax
+  // A row produced by `python -m model-ops.cli apply-calibration` carries the confidence
   // in `confidence_raw` and the fitted map's output in `confidence_calibrated`.
   // When that column is present it *becomes* `confidence` (so every existing
   // consumer reads the calibrated number) and `confidence_kind` is set to
@@ -139,13 +139,13 @@ export function parseCsvForecastRow(row, rowNumber) {
     value.confidence_kind = 'calibrated_probability';
   }
 
-  // The Kaggle notebook publishes Open-Meteo values in native units. Convert
+  // The production notebook publishes weather service values in native units. Convert
   // them at the ingest boundary so API consumers keep the documented units.
   //
   // Two of the notebook's column names are actively misleading, and the CSV
   // values only make sense once that is accounted for:
   //
-  //   * `om_temp_2m_k` holds CELSIUS despite the `_k` suffix (Open-Meteo
+  //   * `om_temp_2m_k` holds CELSIUS despite the `_k` suffix (weather service
   //     defaults to Celsius), so it passes through unconverted — converting it
   //     as Kelvin would store ~300 °C.
   //   * `om_et_sum_m` holds MILLIMETRES despite the `_m` suffix, and
@@ -223,7 +223,7 @@ export function parseCsvForecastRow(row, rowNumber) {
 
   // ── Provenance (audit 2026-09-17) ────────────────────────────────────────
   // Without these a published forecast cannot be traced back to the model and
-  // tensor that produced it (docs/PRODUCT_SPEC.md §5.8).
+  // record that produced it (docs/PRODUCT_SPEC.md §5.8).
   for (const field of ['model_version', 'tensor_build_id', 'pipeline_version', 'run_id']) {
     if (row[field] && String(row[field]).trim()) value[field] = String(row[field]).trim();
   }
@@ -231,7 +231,7 @@ export function parseCsvForecastRow(row, rowNumber) {
     const raw = String(row.soil_channels_fabricated).trim().toLowerCase();
     if (raw === 'true' || raw === 'false') value.soil_channels_fabricated = raw === 'true';
   }
-  // `confidence_kind` distinguishes the model's own (uncalibrated) softmax from a
+  // `confidence_kind` distinguishes the model's own (uncalibrated) confidence from a
   // calibrated probability, so no consumer has to guess. The case above (a
   // `confidence_calibrated` column) has already decided it; an explicit column
   // value otherwise wins, and the default is applied at the API boundary

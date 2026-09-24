@@ -36,3 +36,8 @@ if (typeof globalThis.IntersectionObserver === 'undefined') {
     value: MockIntersectionObserver,
   });
 }
+
+// React Native __DEV__ global (used by mobile App.tsx at import time).
+(globalThis as any).__DEV__ = true;
+(globalThis as any).performance = globalThis.performance ?? { now: () => Date.now() };
+

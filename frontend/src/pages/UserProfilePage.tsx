@@ -23,7 +23,7 @@ const PERSONA_LABELS: Record<UserRolePersona, { label: string; tag: string }> = 
   smallholder_farmer: { label: 'Rural Smallholder Farmer', tag: 'Micro-Farm & Local Advisory' },
   ngo_coordinator: { label: 'NGO Disaster Coordinator', tag: 'Humanitarian Relief & WASH' },
   govt_official: { label: 'DAE / Govt Extension Officer', tag: 'Regional Oversight & Policy' },
-  academic_researcher: { label: 'Academic Climate Scientist', tag: 'Satellite Tensors & Metrics' },
+  academic_researcher: { label: 'Academic Climate Scientist', tag: 'Satellite Records & Metrics' },
   commercial_agribusiness: { label: 'Commercial Agro-Business', tag: 'Supply Chain & Logistics' },
 };
 
@@ -526,13 +526,13 @@ export const UserProfilePage: React.FC = () => {
                   </div>
                 </div>
 
-                {granular?.modelAssessment?.softmaxProbabilities && (
+                {granular?.modelAssessment?.confidenceProbabilities && (
                   <div className="pt-2 border-t border-carbon-80 text-xs space-y-1.5">
                     <span className="text-xs font-mono text-carbon-60 font-extrabold uppercase tracking-wider block">
                       Multi-Hazard Risk Distribution for {currentDistrictObj.name}:
                     </span>
                     <div className="flex flex-wrap gap-2">
-                      {granular.modelAssessment.softmaxProbabilities.map((item: { hazard: string; probability: number }, idx: number) => (
+                      {granular.modelAssessment.confidenceProbabilities.map((item: { hazard: string; probability: number }, idx: number) => (
                         <div key={idx} className="px-2.5 py-1 rounded-sm bg-carbon-80 border border-carbon-70 text-xs flex items-center gap-1.5 font-mono">
                           <span className="text-carbon-30 font-bold">{item.hazard}:</span>
                           <span className="text-amber-400 font-black">{Math.round(item.probability * 100)}%</span>

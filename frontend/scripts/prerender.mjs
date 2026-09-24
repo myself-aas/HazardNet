@@ -99,11 +99,11 @@ const ALLOWED_LINK_HOSTS = new Set([
   'www.ffwc.gov.bd',
   'ddm.gov.bd',
   'www.ddm.gov.bd',
-  'open-meteo.com',
+  'weather-service.com',
   'developers.google.com',
   'earth.google.com',
-  'openstreetmap.org',
-  'www.openstreetmap.org',
+  'map-data.org',
+  'www.map-data.org',
   'data.humdata.org',
   // Added with the editorial front door (PR #29): the authority-boundary section
   // links to the bodies that issue Bangladesh's official warnings, and the
@@ -242,7 +242,7 @@ function renderFaqs(faqs) {
  *
  * Why it exists: the front door's knowledge-product ledger lists each product with the date its
  * own page carries, and `/model-performance`'s date is *derived* — `build_content_engine.mjs`
- * sets it to the newest hindcast report's build date. So every time the Hindcast workflow runs,
+ * sets it to the newest validation report's build date. So every time the Validation workflow runs,
  * that date moves, and a date typed into the ledger by hand goes stale. The drift is caught by
  * `__tests__/publicSurface.test.js`, but catching it is not the same as not having it: the cell
  * is now read from the same route table the page it describes is built from, in both renderers.

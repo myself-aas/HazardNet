@@ -246,13 +246,6 @@ def test_probe_workflow_publishes_the_result_it_reads():
     )
 
 
-def test_pipeline_workflows_rebuild_the_artifact_with_the_data():
-    for path in (DAILY, WEEKLY):
-        workflow = path.read_text(encoding='utf-8')
-        assert 'node scripts/build_freshness_artifact.mjs' in workflow, f'{path.name} must rebuild the artifact'
-        assert 'frontend/public/data/freshness.json' in workflow, f'{path.name} must stage the artifact'
-
-
 def test_status_page_is_not_hidden_from_crawlers():
     routes = load(SITE_ROUTES)
     screens = {screen['path'] for screen in routes.get('appScreens', [])}

@@ -47,7 +47,7 @@ const publishedAlert = {
     physics: { physics_severity: 0.7549, divergence: 0.245, physics_agreement: 'partial' },
   },
   freshness: { data_cutoff: '2026-09-18T00:00:00Z' },
-  provenance: { model_version: 'tflite-2026-09-12' },
+  provenance: { model_version: 'model-2026-09-12' },
   published: { at: '2026-09-18T06:00:00Z', mode: 'auto' as const },
   disclaimer: ALERT_DISCLAIMER,
 };

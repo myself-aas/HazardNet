@@ -29,7 +29,7 @@ describe('BrandPanel — dynamic value carousel', () => {
     expect(screen.queryByText('Early warning, 15 days ahead')).not.toBeInTheDocument()
     // count-up stats settle on their final values
     await waitFor(() => expect(screen.getByText('64')).toBeInTheDocument(), { timeout: 2500 })
-    await waitFor(() => expect(screen.getByText('<100ms')).toBeInTheDocument(), { timeout: 2500 })
+    await waitFor(() => expect(screen.getByText('2 tracks')).toBeInTheDocument(), { timeout: 2500 })
     expect(screen.getByText('Districts covered')).toBeInTheDocument()
     expect(screen.getByText('8')).toBeInTheDocument()
   })
@@ -79,6 +79,6 @@ describe('BrandPanel — dynamic value carousel', () => {
     expect(screen.getByText('Your district intelligence is waiting')).toBeInTheDocument()
     expect(screen.queryByText('Early warning, 15 days ahead')).not.toBeInTheDocument()
     expect(screen.getByText('64')).toBeInTheDocument()
-    expect(screen.getByText('<100ms')).toBeInTheDocument()
+    expect(screen.getByText('2 tracks')).toBeInTheDocument()
   })
 })

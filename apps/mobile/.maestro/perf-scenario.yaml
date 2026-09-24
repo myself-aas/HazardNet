@@ -1,0 +1,33 @@
+# Low-end Android performance scenario (used by Flashlight / Maestro cloud).
+# Measures cold-start time to first usable content (Today severity card) and
+# scroll FPS on Alerts with 500 rows.
+#
+# Preconditions: a build loaded with 500 mock alerts (use the perf fixture
+# switch in lib/mockAlerts.ts for lab runs — not on by default).
+#
+# Flashlight: https://docs.flashlight.dev / `flashlight measure`
+appId: com.hazardnet.app
+---
+- stopApp
+- launchApp
+# Wait for first meaningful content: severity card
+- extendedWaitUntil:
+    visible: "All clear|SEVERE|Severe|WARNING|Warning|WATCH|Watch"
+    timeout: 5000
+- tapOn: "Alerts"
+- extendedWaitUntil:
+    visible: "Alerts"
+    timeout: 3000
+# Fast fling on alerts list
+- swipe:
+    start: "50%, 80%"
+    end: "50%, 20%"
+    duration: 300
+- swipe:
+    start: "50%, 80%"
+    end: "50%, 20%"
+    duration: 300
+- swipe:
+    start: "50%, 80%"
+    end: "50%, 20%"
+    duration: 300

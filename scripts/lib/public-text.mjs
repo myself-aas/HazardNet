@@ -3,7 +3,7 @@
  *
  * A page may state where a number came from in words a reader can act on — a build time,
  * a coverage count, a link to a served artifact. It may not print a location in this
- * repository's tree, because a visitor cannot open one: `scripts/physics_severity.py` is
+ * repository's tree, because a visitor cannot open one: `scripts/severity.py` is
  * not a thing a person reading on a phone during a flood can do anything with, and every
  * character of a public surface has to earn its place.
  *
@@ -31,7 +31,7 @@ export const TREE_ROOTS = [
   'assets',
   'workflows',
   '__tests__',
-  'hindcast',
+  'validation',
   '.github',
 ];
 
@@ -61,8 +61,8 @@ export function namesRepoFile(value) {
  * separated it from the word before it.
  *
  * Deletion, not replacement: the sentence keeps the claim it made and loses the location
- * it pointed at. "…the independent physics cross-check (scripts/physics_severity.py) run
- * on reanalysis drivers" becomes "…the independent physics cross-check run on reanalysis
+ * it pointed at. "…the independent physics cross-check (scripts/severity.py) run
+ * on environmental drivers" becomes "…the independent physics cross-check run on environmental
  * drivers". A path that is not inside parentheses is left alone, because removing it
  * would take the grammar with it; those are edited at the source instead.
  */
@@ -113,7 +113,7 @@ export const MACHINE_PROVENANCE_KEYS = new Set([
  * A build script calls this on what it is about to publish and fails rather than shipping
  * a page that prints a path. It exists because the leak does not always come from a literal
  * in the script: an interpolated field (`${archive.source_path}`) or a string read out of a
- * data file (a hindcast report's `cnn_note`) is invisible to a grep of the source and only
+ * data file (a validation report's `cnn_note`) is invisible to a grep of the source and only
  * appears in the document, sometimes only once the data it depends on is present.
  */
 export function findRepoPaths(node, pointer = '$') {

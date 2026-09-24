@@ -10,23 +10,7 @@ jest.mock('../../lib/blogArticles', () => ({
   readingTimeMinutes: () => 5,
 }))
 
-// BlogAdUnit imports the AdSense env config (import.meta.env is unavailable
-// under the CJS jest transform) — stub the whole module.
-jest.mock('../../lib/adsense', () => ({
-  ADSENSE_CLIENT: '',
-  ADSENSE_SLOT_BLOG_INDEX: '',
-  ADSENSE_SLOT_ARTICLE_INLINE: '',
-  ADSENSE_SLOT_ARTICLE_FOOTER: '',
-  isAdSenseConfigured: false,
-  isAdSenseDevMode: false,
-  requestAdFill: jest.fn(),
-  injectAdSenseScript: () => null,
-}))
-jest.mock('../../components/blog/ads/BlogAdUnit', () => ({
-  AdSenseScript: () => null,
-  BlogAdUnit: () => null,
-}))
-
+// Stub auth so the studio-button gating can be exercised as any role.
 jest.mock('../../context/AuthContext', () => ({
   useAuth: jest.fn(),
 }))

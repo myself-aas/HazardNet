@@ -88,7 +88,7 @@ interface RouteSeoExtras {
   structuredData?: {
     place?: Record<string, unknown>;
     dataset?: {
-      kind: 'event-archive' | 'forecast' | 'hindcast-validation';
+      kind: 'event-archive' | 'forecast' | 'validation-validation';
       name?: string;
       temporalCoverage?: string;
     };
@@ -118,8 +118,8 @@ const ALL_ROUTES: RouteWithExtras[] = [
  * that route carries, not a date anyone typed.
  *
  * The front door's knowledge-product ledger is the case that needs it: `/model-performance`'s
- * `updated` is derived (the content engine sets it to the newest hindcast report's build date),
- * so it moves every time the Hindcast workflow runs and a hand-typed ledger cell goes stale.
+ * `updated` is derived (the content engine sets it to the newest validation report's build date),
+ * so it moves every time the Validation workflow runs and a hand-typed ledger cell goes stale.
  * `scripts/prerender.mjs` resolves the same reference for the static HTML; resolving it here too
  * is what keeps the two views of one page saying the same thing.
  */

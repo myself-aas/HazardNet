@@ -2,6 +2,7 @@
   "expo": {
     "name": "HazardNet Mobile",
     "slug": "hazardnet-mobile",
+    "scheme": "hazardnet",
     "version": "2.2.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -19,8 +20,11 @@
       "bundleIdentifier": "live.hazardnet.mobile",
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "HazardNet uses your location to display local multi-hazard agricultural disaster alerts and high-precision weather forecasts for your district.",
-        "NSCameraUsageDescription": "HazardNet uses your camera to allow agricultural officers to upload field disaster photos.",
-        "NSRemindersUsageDescription": "HazardNet uses reminders to schedule emergency crop protection directives."
+        "NSCameraUsageDescription": "HazardNet uses your camera to let you submit field photos of disaster events. Photos stay on this device until you submit them.",
+        "NSPhotoLibraryUsageDescription": "HazardNet needs access to your photo library to let you attach existing photos to field reports.",
+        "NSMicrophoneUsageDescription": "HazardNet does not record audio.",
+        "NSRemindersUsageDescription": "HazardNet uses reminders to schedule emergency crop protection directives.",
+        "UIBackgroundModes": ["fetch", "remote-notification"]
       }
     },
     "android": {
@@ -35,9 +39,44 @@
         "ACCESS_FINE_LOCATION",
         "POST_NOTIFICATIONS",
         "VIBRATE",
-        "RECEIVE_BOOT_COMPLETED"
+        "RECEIVE_BOOT_COMPLETED",
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "READ_MEDIA_IMAGES"
+      ],
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            { "scheme": "https", "host": "hazardnet.live", "pathPrefix": "/a/" },
+            { "scheme": "hazardnet" }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
       ]
     },
+    "plugins": [
+      [
+        "expo-notifications",
+        {
+          "color": "#B3261E"
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "HazardNet needs access to your photo library to attach existing photos to field reports.",
+          "cameraPermission": "HazardNet uses your camera to let you submit field photos of disaster events."
+        }
+      ],
+      [
+        "expo-screen-orientation",
+        {
+          "initialOrientation": "PORTRAIT"
+        }
+      ]
+    ],
     "web": {
       "favicon": "./assets/favicon.png"
     }

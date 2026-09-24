@@ -44,8 +44,6 @@ const baseDraft = {
   authorBio: '',
   authorAvatarUrl: '',
   authorWebsite: '',
-  containsAffiliateLinks: false,
-  affiliateDisclosure: '',
 };
 
 describe('superadmins — primary allowlist', () => {
@@ -74,7 +72,7 @@ describe('superadmins — primary allowlist', () => {
 
 describe('blogArticles — slugs and content helpers', () => {
   it('slugifies titles into URL-safe slugs', () => {
-    expect(slugify('Tracking Jamuna Erosion with Sentinel-2!')).toBe('tracking-jamuna-erosion-with-sentinel-2')
+    expect(slugify('Tracking Jamuna Erosion with Satellite-2!')).toBe('tracking-jamuna-erosion-with-satellite-2')
     expect(slugify('  Multiple   spaces &  symbols  ')).toBe('multiple-spaces-symbols')
     expect(slugify('')).toBe('article')
   })

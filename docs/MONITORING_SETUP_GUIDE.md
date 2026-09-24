@@ -35,7 +35,7 @@ curl https://hazardnet.vercel.app/api/metrics
 | `hazardnet_inference_latency_ms` | Histogram | ML prediction latency (p50, p95, p99) |
 | `hazardnet_predictions_total` | Counter | Total predictions served |
 | `hazardnet_cache_hits_total` | Counter | Cache hits for predictions |
-| `hazardnet_model_load_time_ms` | Gauge | Time to load TFLite model |
+| `hazardnet_model_load_time_ms` | Gauge | Time to load model model |
 | `hazardnet_api_requests_total` | Counter | Total API requests by endpoint/status |
 | `hazardnet_errors_total` | Counter | Total errors by type |
 | `hazardnet_forecast_last_update_timestamp` | Gauge | Unix timestamp of last forecast update |

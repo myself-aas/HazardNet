@@ -4,6 +4,11 @@ import Breadcrumbs from '../components/Breadcrumbs';
 import MaterialIcon from '../components/MaterialIcon';
 import { usePageSeo } from '../hooks/usePageSeo';
 
+/**
+ * Results reference for the published HazardNet outputs. Model code, dataset
+ * collection, training and benchmarking are research-private and documented
+ * here only as "not published".
+ */
 export const Documentation: React.FC = () => {
   // Per-route <head>: the prerenderer writes these into the static HTML, but a
   // client-side transition needs the hook to keep title/canonical/robots correct.
@@ -21,148 +26,109 @@ export const Documentation: React.FC = () => {
       <div className="bg-white border border-carbon-20 p-6 md:p-8">
         <div className="flex items-center gap-2 mb-2">
           <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold uppercase tracking-wider bg-nasa-red/10 text-nasa-red-shade border border-nasa-blue/20">
-            HazardNet Technical Specifications
+            HazardNet Results Reference
           </span>
           <span className="text-carbon-30">•</span>
           <span className="text-xs text-carbon-60 font-medium">System Documentation 2026</span>
         </div>
         <h1 className="text-2xl md:text-3xl font-brand font-black text-carbon-90 tracking-tight">
-          Hazard<span className="text-nasa-red-shade">Net</span> Model Architecture & Pipeline
+          Hazard<span className="text-nasa-red-shade">Net</span> Results Reference
         </h1>
         <p className="text-xs md:text-sm text-carbon-60 mt-2 leading-relaxed">
-          Spatio-temporal 3D Depthwise-Separable CNN with Squeeze-and-Excitation (SE) blocks for joint multi-hazard classification and continuous physical severity quantification.
+          What the system publishes, how to read every number, and where the limits are.
+          Methods are research-private: this site publishes results and outputs only.
         </p>
 
         <div className="flex flex-wrap items-center gap-3 pt-4">
           <div className="px-4 py-2 bg-carbon-10 text-carbon-60 text-xs font-bold border border-carbon-20">
-            Hosted inference keeps model weights private
+            Methods are research-private
           </div>
           <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
             <Link
-              to="/download?selectedTab=python"
+              to="/model-performance"
               className="px-4 py-2 bg-carbon-10 hover:bg-carbon-20 text-carbon-80 text-xs font-bold transition-all border border-carbon-20 flex items-center gap-1.5"
             >
-              <MaterialIcon name="code" className="w-4 h-4 inline-block mr-1" />
-              <span>Python SDK Docs</span>
+              <MaterialIcon name="insights" className="w-4 h-4 inline-block mr-1" />
+              <span>Validation Scorecard</span>
             </Link>
           </motion.div>
-          <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-            <a
-              href="https://github.com/myself-aas/HazardNet"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-4 py-2 bg-carbon-10 text-carbon-80 text-xs font-bold border border-carbon-20 hover:bg-carbon-20 transition-all flex items-center gap-1.5"
-            >
-              <span>⭐</span>
-              <span>GitHub Repository</span>
-            </a>
-          </motion.div>
         </div>
       </div>
 
-      {/* Model Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 font-mono text-xs">
-        <motion.div whileHover={{ y: -3 }} className="bg-white border border-carbon-20 p-5 space-y-1">
-          <span className="text-xs uppercase text-carbon-60 block font-bold">Input Tensor Shape</span>
-          <span className="text-lg font-bold text-carbon-90">(1, 15, 10, 64, 64)</span>
-          <p className="text-xs text-carbon-60 font-sans mt-1">NCDHW (Batch=1, Channels=15, Timesteps=10, Height=64, Width=64)</p>
-        </motion.div>
-        <motion.div whileHover={{ y: -3 }} className="bg-white border border-carbon-20 p-5 space-y-1">
-          <span className="text-xs uppercase text-carbon-60 block font-bold">Format & Precision</span>
-          <span className="text-lg font-bold text-carbon-90">FP32 TFLite</span>
-          <p className="text-xs text-carbon-60 font-sans mt-1">Bypassed INT8 quantization due to CONV_3D operator constraints</p>
-        </motion.div>
-        <motion.div whileHover={{ y: -3 }} className="bg-white border border-carbon-20 p-5 space-y-1">
-          <span className="text-xs uppercase text-carbon-60 block font-bold">Dual Output Heads</span>
-          <span className="text-lg font-bold text-carbon-90">Softmax + Sigmoid</span>
-          <p className="text-xs text-carbon-60 font-sans mt-1">8 Hazard Classes + Continuous Physical Severity Index [0.0 - 1.0]</p>
-        </motion.div>
+      {/* The published record */}
+      <div className="bg-white border border-carbon-20 p-6 md:p-8 space-y-3">
+        <h2 className="text-lg font-bold text-carbon-90">The published forecast record</h2>
+        <p className="text-xs text-carbon-70 leading-relaxed">
+          Every figure on HazardNet traces to one published record per district and forecast date:
+        </p>
+        <ul className="text-xs text-carbon-70 space-y-1.5 list-disc pl-5">
+          <li><strong>District</strong> — one of the 64 districts of Bangladesh.</li>
+          <li><strong>Hazard class</strong> — one of eight classes.</li>
+          <li><strong>Severity</strong> — a continuous value reported in two tracks (see below).</li>
+          <li><strong>Confidence score</strong> — the score for the chosen class, uncalibrated.</li>
+          <li><strong>Horizons</strong> — 7- and 15-day outlook windows.</li>
+          <li><strong>Forecast date</strong> — the run that produced the record.</li>
+        </ul>
       </div>
 
-      {/* 15 Multispectral Channels Grid */}
-      <div className="bg-white border border-carbon-20 p-6 space-y-4">
-        <h2 className="text-lg font-bold text-carbon-90 flex items-center gap-2">
-          <MaterialIcon name="radar" className="text-xl text-amber-600" />
-          <span>15-Band Multispectral & Meteorological Features</span>
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
-          {[
-            { ch: '0', name: 'SAR VV Backscatter', source: 'Sentinel-1 C-band', usage: 'Surface water inundation & soil roughness' },
-            { ch: '1', name: 'SAR VH Backscatter', source: 'Sentinel-1 C-band', usage: 'Crop canopy structure & volume scattering' },
-            { ch: '2', name: 'Blue Reflectance', source: 'Sentinel-2 MSI', usage: 'Atmospheric aerosols & clear water' },
-            { ch: '3', name: 'Red Reflectance', source: 'Sentinel-2 MSI', usage: 'Chlorophyll absorption & vegetation stress' },
-            { ch: '4', name: 'NIR Reflectance', source: 'Sentinel-2 MSI', usage: 'Cellular leaf structure & NDVI calculation' },
-            { ch: '5', name: 'SWIR Reflectance', source: 'Sentinel-2 MSI', usage: 'Leaf water content & burned residue' },
-            { ch: '6', name: '2m Surface Air Temp', source: 'ERA5-Land', usage: 'Thermal stress & ambient heat tracking' },
-            { ch: '7', name: 'Total Precipitation', source: 'ERA5-Land', usage: 'Monsoon rainfall accumulation & drought' },
-            { ch: '8', name: 'Max Daily Temperature', source: 'ERA5-Land', usage: 'Heat wave peak anomaly detection' },
-            { ch: '9', name: 'Min Daily Temperature', source: 'ERA5-Land', usage: 'Cold wave seedbed damage threshold' },
-            { ch: '10', name: 'Soil Water Vol Layer 1', source: 'ERA5-Land', usage: 'Topsoil moisture deficit (0-7cm)' },
-            { ch: '11', name: 'Soil Water Vol Layer 3', source: 'ERA5-Land', usage: 'Rootzone moisture reserve (28-100cm)' },
-            { ch: '12', name: 'Soil Temp Layer 1', source: 'ERA5-Land', usage: 'Germination temperature monitoring' },
-            { ch: '13', name: '2m Dewpoint Temp', source: 'ERA5-Land', usage: 'Humidity & storm convective potential' },
-            { ch: '14', name: 'Surface Solar Radiation', source: 'ERA5-Land', usage: 'Photosynthetic active radiation (PAR)' },
-          ].map((item) => (
-            <motion.div whileHover={{ scale: 1.01, y: -2 }} key={item.ch} className="bg-carbon-05 border border-carbon-20 p-3 space-y-1">
-              <div className="flex items-center justify-between">
-                <span className="font-mono font-bold text-carbon-90">Channel {item.ch}</span>
-                <span className="text-xs text-carbon-60 font-mono">{item.source}</span>
-              </div>
-              <div className="font-bold text-carbon-80 text-xs">{item.name}</div>
-              <p className="text-xs text-carbon-60">{item.usage}</p>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-
-      {/* Dual Loss Formulation */}
-      <div className="bg-white border border-carbon-20 p-6 space-y-3">
-        <h2 className="text-lg font-bold text-carbon-90 flex items-center gap-2">
-          <MaterialIcon name="functions" className="text-xl text-amber-600" />
-          <span>Dual-Head Loss Function Formulation</span>
-        </h2>
-        <div className="p-4 bg-carbon-90 font-mono text-xs text-amber-400 border border-carbon-80 overflow-x-auto font-bold">
-          L_total = α * L_CE(y_cls, ŷ_cls) + β * L_MSE(y_sev, ŷ_sev)
-        </div>
-        <p className="text-xs text-carbon-60 leading-relaxed">
-          Where <code className="text-carbon-90 font-bold bg-carbon-10 px-1 py-0.5 rounded">L_CE</code> is Categorical Cross-Entropy over the 8 hazard classes, and <code className="text-carbon-90 font-bold bg-carbon-10 px-1 py-0.5 rounded">L_MSE</code> is Mean Squared Error optimizing the continuous Sigmoid severity output against physical loss ratios. Weighting coefficients are set to <code className="text-carbon-80 font-bold">α = 1.0</code> and <code className="text-carbon-80 font-bold">β = 0.5</code>.
+      {/* Severity */}
+      <div className="bg-white border border-carbon-20 p-6 md:p-8 space-y-3">
+        <h2 className="text-lg font-bold text-carbon-90">Severity values</h2>
+        <p className="text-xs text-carbon-70 leading-relaxed">
+          Two tracks are reported side by side: a <strong>skill track</strong> — the system&apos;s own
+          score for the class it selected — and a <strong>physics track</strong> — an independent
+          estimate. They can disagree, and when they do, that is shown rather than smoothed away.
+          Neither is an official warning level.
         </p>
       </div>
 
-      <div className="bg-carbon-90 text-white p-6 space-y-2">
-        <h2 className="text-lg font-bold">Hosted inference architecture</h2>
-        <p className="text-xs text-carbon-30 leading-relaxed">HazardNet model weights and preprocessing parameters remain on the inference server. The browser submits authorized inputs and receives prediction results only; no model artifact is cached or shipped to clients.</p>
+      {/* Alerts */}
+      <div className="bg-white border border-carbon-20 p-6 md:p-8 space-y-3">
+        <h2 className="text-lg font-bold text-carbon-90">Alert levels</h2>
+        <p className="text-xs text-carbon-70 leading-relaxed">
+          Four levels are published: no alert, watch, warning and severe — at or below the
+          configured ceiling for each hazard class, and never inflated by this site. Official
+          warnings come from the Bangladesh Meteorological Department and the Flood Forecasting
+          and Warning Centre; HazardNet defers to them.
+        </p>
       </div>
 
-      {/* Quick Action Footer */}
-      <div className="bg-carbon-90 text-white p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6">
-        <div className="space-y-1 text-center md:text-left">
-          <h3 className="text-base md:text-lg font-bold text-white">Need API key access or custom research deployment?</h3>
-          <p className="text-xs text-carbon-30">
-            Submit an academic API request or contact our remote sensing engineers.
-          </p>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-3 shrink-0">
-          <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-            <Link
-              to="/contact?form=api"
-              className="inline-flex min-h-[44px] items-center px-4 py-2.5 bg-nasa-red text-white font-bold text-sm hover:bg-nasa-red-shade transition-all touch-manipulation tap-target"
-            >
-              🔑 Request API Key
-            </Link>
-          </motion.div>
-          <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-            <Link
-              to="/use-cases"
-              className="inline-flex min-h-[44px] items-center px-4 py-2.5 bg-carbon-80 text-white font-bold text-sm hover:bg-carbon-70 transition-all border border-carbon-70 touch-manipulation tap-target"
-            >
-              🌾 View Use Cases
-            </Link>
-          </motion.div>
-        </div>
+      {/* Freshness */}
+      <div className="bg-white border border-carbon-20 p-6 md:p-8 space-y-3">
+        <h2 className="text-lg font-bold text-carbon-90">Freshness &amp; provenance</h2>
+        <p className="text-xs text-carbon-70 leading-relaxed">
+          Every surface is stamped with the forecast date behind it. A stale run is labelled as
+          stale; a missing run is shown as missing — no number is interpolated to fill a gap.
+        </p>
       </div>
 
+      {/* Validation */}
+      <div className="bg-white border border-carbon-20 p-6 md:p-8 space-y-3">
+        <h2 className="text-lg font-bold text-carbon-90">Validation status</h2>
+        <p className="text-xs text-carbon-70 leading-relaxed">
+          Forecast skill is <strong>not yet validated</strong> against observed outcomes. The
+          published scorecard reports per-episode detection counts for five historical episodes
+          and states what those numbers cannot support. See the{' '}
+          <Link to="/model-performance" className="underline decoration-dotted font-semibold">
+            validation scorecard
+          </Link>
+          .
+        </p>
+      </div>
+
+      {/* Not published */}
+      <div className="bg-white border border-carbon-20 p-6 md:p-8 space-y-3">
+        <h2 className="text-lg font-bold text-carbon-90">What is not published</h2>
+        <p className="text-xs text-carbon-70 leading-relaxed">
+          Model code, dataset collection procedures, training and benchmarking are research-private.
+          Only results and outputs are public — on this site and in the repository. For research
+          collaboration or licensing enquiries, use the{' '}
+          <Link to="/contact" className="underline decoration-dotted font-semibold">
+            contact page
+          </Link>
+          .
+        </p>
+      </div>
     </motion.div>
   );
 };

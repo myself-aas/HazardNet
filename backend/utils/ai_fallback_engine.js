@@ -385,7 +385,7 @@ function generateDeterministicHeuristicAdvisory(params) {
   return {
     advisory_id: `ADV-${(district_name || 'DIST').toUpperCase().replace(/[^A-Z]/g, '').slice(0, 3)}-${Date.now().toString().slice(-4)}`,
     provider_source: 'DAE, BRRI, DLS, DOF & WHO Official Protocols (Offline Heuristic Tier)',
-    tensor_diagnosis: `Automated 15-band multi-spectral SAR and ERA5 assessment for ${district_name}: Detected high anomaly probability for ${hazard_type} with severity index ${severityPct}%. BMD synoptic telemetry confirms regional convergence.`,
+    tensor_diagnosis: `Automated multi-hazard assessment for ${district_name}: Detected high anomaly probability for ${hazard_type} with severity index ${severityPct}%. BMD synoptic telemetry confirms regional convergence.`,
     bmd_signal_alignment: `BMD Synoptic station telemetry confirms barometric pressure drop and wind convergence consistent with severe ${hazard_type}.`,
     urgency_tier: isEmergency ? 'EMERGENCY' : 'WARNING',
     urgency_level: isEmergency ? 'EMERGENCY' : 'WARNING',

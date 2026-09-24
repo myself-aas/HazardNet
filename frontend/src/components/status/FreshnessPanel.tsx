@@ -255,7 +255,7 @@ export const FreshnessPanel: React.FC = () => {
           </p>
           <dl className="grid grid-cols-1 gap-x-6 gap-y-1 text-sm text-carbon-60 sm:grid-cols-2">
             <div>
-              <dt className="font-bold">Tensor build</dt>
+              <dt className="font-bold">Record build</dt>
               <dd><code>{model.tensor_build_id ?? '—'}</code></dd>
             </div>
             <div>

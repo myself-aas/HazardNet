@@ -47,8 +47,8 @@ const alert = (over: Partial<AlertRecord> = {}): AlertRecord => ({
     line: ['precip_72h=91mm', 'soil_moisture=0.42'],
   },
   freshness: { data_cutoff: '2026-09-18T00:00:00Z', within_slo: true },
-  provenance: { model_version: 'tflite-2026-09-12' },
-  published: { at: '2026-09-18T06:00:00Z', mode: 'auto', model_version: 'tflite-2026-09-12' },
+  provenance: { model_version: 'model-2026-09-12' },
+  published: { at: '2026-09-18T06:00:00Z', mode: 'auto', model_version: 'model-2026-09-12' },
   disclaimer: ALERT_DISCLAIMER,
   ...over,
 });
@@ -202,7 +202,7 @@ describe('PolicyPanel', () => {
       />,
     );
     expect(screen.getByText(/publishes at or below WATCH automatically/)).toBeInTheDocument();
-    expect(screen.getByText(/No calibration map is fitted yet/)).toBeInTheDocument();
+    expect(screen.getByText(/No calibration accuracy is claimed/)).toBeInTheDocument();
     expect(screen.getByText(/≥ 40%/)).toBeInTheDocument();
   });
 

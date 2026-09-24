@@ -48,7 +48,7 @@ export const CONNECTOR_CATALOG: ConnectorDefinition[] = [
   {
     key: 'nasa_power',
     name: 'NASA POWER',
-    tagline: 'Agroclimatology reanalysis for historical rainfall and temperature.',
+    tagline: 'Agroclimatology environmental for historical rainfall and temperature.',
     category: 'Data Sources',
     icon: 'satellite_alt',
     accent: '#0f766e',
@@ -57,7 +57,7 @@ export const CONNECTOR_CATALOG: ConnectorDefinition[] = [
   {
     key: 'sentinel_hub',
     name: 'Sentinel Hub',
-    tagline: 'Sentinel-1 SAR & Sentinel-2 NDVI layers for your fields.',
+    tagline: 'Satellite-1 satellite & Satellite-2 crop index layers for your fields.',
     category: 'Data Sources',
     icon: 'satellite',
     accent: '#1d4ed8',

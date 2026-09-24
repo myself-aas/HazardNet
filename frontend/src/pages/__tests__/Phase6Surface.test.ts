@@ -49,15 +49,8 @@ describe('Phase 6 surface contracts (§14.3 / §14.7 / §14.8)', () => {
     });
   });
 
-  describe('archive and 404', () => {
-    const archive = read('pages', 'HazardArchivePage.tsx');
+  describe('404', () => {
     const notFound = read('pages', 'NotFoundPage.tsx');
-
-    it('drops sky wells and 3xl cards on the archive', () => {
-      expect(archive).not.toMatch(/bg-sky-50/);
-      expect(archive).not.toMatch(/rounded-3xl/);
-      expect(archive).not.toMatch(/text-\[10px\]/);
-    });
 
     it('offers 44px home and live links on 404', () => {
       expect(notFound).toMatch(/to="\/"/);

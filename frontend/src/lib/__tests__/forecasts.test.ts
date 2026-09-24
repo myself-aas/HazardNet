@@ -49,7 +49,7 @@ describe('parseForecastRow / parseBulkResponse', () => {
 
   it('keeps a well-formed dataset_version and drops a malformed one', () => {
     // Lineage is passed through verbatim when it is shaped like a version
-    // (scripts/etl/scene_manifest.py emits `ds1.<16 hex>`), and dropped otherwise:
+    // (`ds1.<16 hex>` stamps are recognised, and dropped otherwise:
     // a value that identifies nothing must not reach the UI as if it did.
     const good = parseForecastRow(row({ dataset_version: 'ds1.0123456789abcdef' }));
     expect(good?.dataset_version).toBe('ds1.0123456789abcdef');
@@ -265,7 +265,7 @@ describe('parseSnapshotResponse (hourly static snapshot fallback)', () => {
   const snapshot = {
     schema: 'hazardnet-forecast-snapshot/v1',
     generated_at: '2026-09-13T05:05:00.000Z',
-    source: 'kaggle kernels output ashifahmedshuvo/hazardnet-auto-forecast-pipeline',
+    source: 'production run',
     prediction_date: '2026-09-13',
     horizons: {
       '7_days': [
@@ -325,7 +325,7 @@ describe('fetchForecastMetadata — three-stage fallback (API → bulk → snaps
   const snapshotPayload = {
     schema: 'hazardnet-forecast-snapshot/v1',
     generated_at: '2026-09-13T05:05:00.000Z',
-    source: 'kaggle kernels output ashifahmedshuvo/hazardnet-auto-forecast-pipeline',
+    source: 'production run',
     prediction_date: '2026-09-13',
     horizons: { '7_days': [row({ prediction_date: '2026-09-13' })] },
   };
@@ -376,7 +376,7 @@ describe('fetchForecastMetadata — three-stage fallback (API → bulk → snaps
     await expect(fetchForecastMetadata()).resolves.toEqual({
       predictionDate: '2026-09-13',
       ingestionTimestamp: '2026-09-13T05:05:00.000Z',
-      source: 'kaggle kernels output ashifahmedshuvo/hazardnet-auto-forecast-pipeline',
+      source: 'production run',
     });
   });
 
@@ -397,7 +397,7 @@ describe('fetchForecastMetadata — three-stage fallback (API → bulk → snaps
     await expect(fetchSnapshotMetadata()).resolves.toEqual({
       predictionDate: '2026-09-11',
       ingestionTimestamp: '2026-09-13T05:05:00.000Z',
-      source: 'kaggle kernels output ashifahmedshuvo/hazardnet-auto-forecast-pipeline',
+      source: 'production run',
     });
   });
 

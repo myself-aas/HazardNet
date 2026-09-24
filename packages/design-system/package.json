@@ -8,15 +8,23 @@
   "exports": {
     ".": "./src/index.ts",
     "./tokens": "./src/tokens.ts",
-    "./material3": "./src/material3Expressive.ts"
+    "./material3": "./src/material3Expressive.ts",
+    "./use-tokens": "./src/useTokens.ts"
   },
   "scripts": {
     "build": "tsc"
   },
-  "dependencies": {
-    "react": "^18.3.1"
+  "peerDependencies": {
+    "react": "^18.0.0"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    }
   },
   "devDependencies": {
+    "@types/react": "^18.3.3",
+    "react": "^18.3.1",
     "typescript": "^5.4.5"
   }
 }

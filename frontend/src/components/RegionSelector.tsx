@@ -124,7 +124,7 @@ export const RegionSelector: React.FC<RegionSelectorProps> = ({
             </span>
           </div>
           <p className="text-xs sm:text-sm text-carbon-60">
-            Select any district or division from Bangladesh to trigger live TFLite multi-hazard evaluation
+            Select any district or division from Bangladesh to load its stored multi-hazard forecast
           </p>
         </div>
 

@@ -7,10 +7,7 @@
  *   · buildBlogIndexHead — the /blogs index metadata
  *   · seoScore          — on-page checklist (keyword coverage, lengths,
  *                         links, subheadings, FAQ rich-result opportunity)
- *   · splitContentBlocks — top-level HTML blocks, used to place in-article
- *                         ads between paragraphs
- *   · applyAffiliateRel  — rewrites external links to rel="sponsored nofollow
- *                         noopener" per Google's affiliate guidelines
+ *   · splitContentBlocks — top-level HTML blocks of an article body
  */
 
 import type { BlogArticle } from './blogArticles';
@@ -31,9 +28,6 @@ export interface SeoHead {
   /** JSON-LD @graph payload (Article + FAQPage) — stringified by the head manager. */
   jsonLd: Record<string, unknown> | null;
 }
-
-export const DEFAULT_AFFILIATE_DISCLOSURE =
-  'Disclosure: this article contains affiliate links. If you purchase through them, HazardNet may earn a small commission at no extra cost to you — it keeps our forecasting free for farmers.';
 
 const SITE_NAME = 'HazardNet';
 const SITE_ORIGIN_FALLBACK = 'https://hazardnet.live';
@@ -287,30 +281,3 @@ export function splitContentBlocks(html: string): string[] {
   }
 }
 
-// ─── Affiliate link compliance ──────────────────────────────────────────────
-
-/**
- * Mark every external link in the body as sponsored (Google affiliate
- * guideline: rel="sponsored"; nofollow keeps link equity honest; noopener for
- * safety with target=_blank). Internal links are left untouched.
- */
-export function applyAffiliateRel(html: string, internalOrigin?: string): string {
-  if (typeof window === 'undefined' || typeof DOMParser === 'undefined') return html;
-  try {
-    const doc = new DOMParser().parseFromString(`<body>${html}</body>`, 'text/html');
-    const origin = (internalOrigin || window.location.origin || '').replace(/\/$/, '');
-    doc.body.querySelectorAll('a[href]').forEach((anchor) => {
-      const href = anchor.getAttribute('href') ?? '';
-      const isInternal =
-        href.startsWith('/') ||
-        href.startsWith('#') ||
-        (origin.length > 0 && (href.startsWith(origin) || href.startsWith(`${origin}/`)));
-      if (isInternal) return;
-      anchor.setAttribute('target', '_blank');
-      anchor.setAttribute('rel', 'sponsored nofollow noopener');
-    });
-    return doc.body.innerHTML;
-  } catch {
-    return html;
-  }
-}

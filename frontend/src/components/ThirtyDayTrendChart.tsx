@@ -149,7 +149,7 @@ export const ThirtyDayTrendChart: React.FC<ThirtyDayTrendChartProps> = ({
             <MaterialIcon name="severity" className="w-4 h-4 text-rose-600" /> 30-Day Historical Hazard Severity Index
           </h3>
           <p className="text-xs sm:text-sm text-carbon-60">
-            Daily Sentinel-2 multispectral and ERA5-Land reanalysis severity quantification (Jul 2 - Jul 31)
+            Daily Satellite-2 multispectral and weather-Land environmental severity quantification (Jul 2 - Jul 31)
           </p>
         </div>
 
@@ -282,7 +282,7 @@ export const ThirtyDayTrendChart: React.FC<ThirtyDayTrendChartProps> = ({
           <span>Continuous Severity Normalization [0.0 - 1.0]</span>
         </span>
         <span className="font-mono text-carbon-70 font-bold">
-          Source: Sentinel-2 L2A & ERA5-Land Continuous Satellite Stream
+          Source: Satellite-2 L2A & weather-Land Continuous Satellite Stream
         </span>
       </div>
 

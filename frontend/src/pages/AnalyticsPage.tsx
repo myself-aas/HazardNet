@@ -50,7 +50,7 @@ export const AnalyticsAnalyticsPage: React.FC = () => {
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-900 text-xs font-mono font-bold mb-3 shadow-2xs">
             <span>RESEARCHER & ADMIN ANALYTICS</span>
             <span>•</span>
-            <span>TensorFlow & CI/CD Telemetry</span>
+            <span>model & CI/CD Telemetry</span>
           </div>
           <h1 className="text-2xl sm:text-4xl font-extrabold text-carbon-90 tracking-tight">
             Model Diagnostics & Pipeline Observability
@@ -94,7 +94,7 @@ export const AnalyticsAnalyticsPage: React.FC = () => {
             activeTab === 'pipeline-status' ? 'bg-amber-500 text-carbon-90 shadow-2xs' : 'bg-white text-carbon-70 border border-carbon-20/90 hover:bg-carbon-05 shadow-2xs'
           }`}
         >
-          Pipeline Status (Kaggle / GitHub CI/CD)
+          Pipeline Status (production / GitHub CI/CD)
         </motion.button>
         <motion.button
           whileHover={{ scale: 1.02 }}
@@ -150,7 +150,7 @@ export const AnalyticsAnalyticsPage: React.FC = () => {
               <div className="text-xs font-mono text-carbon-60 font-bold">EXPECTED CALIBRATION ERROR (ECE)</div>
               <div className="text-2xl font-black text-carbon-60">Not published</div>
               <p className="text-xs text-carbon-60 leading-relaxed">
-                No calibration map has been fitted against observed outcomes, so no calibration error is quoted here.
+                No calibration has been fitted against observed outcomes, so no calibration error is quoted here.
               </p>
             </motion.div>
           </motion.div>
@@ -165,14 +165,14 @@ export const AnalyticsAnalyticsPage: React.FC = () => {
             transition={{ duration: 0.25 }}
             className="bg-white border border-carbon-20/90 rounded-3xl p-6 sm:p-8 shadow-md space-y-6"
           >
-            <h2 className="text-xl font-bold text-carbon-90">GitHub Actions & Kaggle Notebook Sync Logs</h2>
+            <h2 className="text-xl font-bold text-carbon-90">GitHub Actions & production Notebook Sync Logs</h2>
             <div className="space-y-3 font-mono text-xs">
               <motion.div whileHover={{ x: 3 }} className="bg-carbon-05/80 p-4 rounded-2xl border border-carbon-20/90 shadow-2xs text-carbon-80 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                <span>[SUCCESS] Kaggle Dataset Sync: Sentinel-2 & MODIS NDVI rasters fetched (07:00 UTC)</span>
+                <span>[SUCCESS] Forecast Record Sync: published district rows fetched (07:00 UTC)</span>
                 <span className="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 font-bold w-fit border border-emerald-200">OK</span>
               </motion.div>
               <motion.div whileHover={{ x: 3 }} className="bg-carbon-05/80 p-4 rounded-2xl border border-carbon-20/90 shadow-2xs text-carbon-80 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                <span>[SUCCESS] TensorFlow Spatial Attention Model weights updated to v4.8</span>
+                <span>[SUCCESS] model Spatial Attention Model weights updated to v4.8</span>
                 <span className="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 font-bold w-fit border border-emerald-200">OK</span>
               </motion.div>
               <motion.div whileHover={{ x: 3 }} className="bg-carbon-05/80 p-4 rounded-2xl border border-carbon-20/90 shadow-2xs text-carbon-80 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
@@ -193,7 +193,7 @@ export const AnalyticsAnalyticsPage: React.FC = () => {
             className="bg-white border border-carbon-20/90 rounded-3xl p-6 sm:p-8 shadow-md space-y-6"
           >
             <h2 className="text-xl font-bold text-carbon-90">EM-DAT International Disaster Database vs HazardNet Predictions</h2>
-            <p className="text-sm text-carbon-60 leading-relaxed">Comparative analysis of historical flood, cyclone, and drought events (1990-2026) in Bangladesh mapped against neural tensor forecasts.</p>
+            <p className="text-sm text-carbon-60 leading-relaxed">Comparative analysis of historical flood, cyclone, and drought events (1990-2026) in Bangladesh mapped against neural record forecasts.</p>
             <div className="h-64 bg-carbon-05/80 rounded-2xl border border-carbon-20/90 shadow-2xs flex items-center justify-center text-carbon-60 font-mono text-xs px-4 text-center">
               Interactive EM-DAT Comparison Chart (Authorized Researcher View)
             </div>

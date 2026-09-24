@@ -19,7 +19,7 @@
  *   * `/data/freshness.json`   — artifact ages against their SLOs, run coverage, honesty notes
  *   * `/data/alerts-latest.json` (through `useAlertsData`) — published alerts and the
  *     assessed/held/unpublished counts from the run report
- *   * `/data/model-performance.json` — the hindcast scorecard's episode count and build
+ *   * `/data/model-performance.json` — the validation scorecard's episode count and build
  *
  * Nothing here is estimated, rounded up, or filled in when an artifact is missing: a
  * missing value renders as an em dash or as the sentence that says it is missing, never as

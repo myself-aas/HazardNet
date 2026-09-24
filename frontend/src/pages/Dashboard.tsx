@@ -392,7 +392,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-mono font-bold uppercase tracking-wider px-2 py-0.5 bg-carbon-10 text-carbon-70 border border-carbon-20 rounded">AI</span>
-                      <h3 className="font-extrabold text-lg text-carbon-90">AI Advisory & Tensor Metrics</h3>
+                      <h3 className="font-extrabold text-lg text-carbon-90">AI Advisory & Model Metrics</h3>
                     </div>
                     <p className="text-xs text-carbon-60 font-mono">
                       {selectedDistrict.name} District • {selectedDistrict.division} Division
@@ -1049,7 +1049,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
               </div>
             </div>
 
-            {/* Application & TFLite Cache Card */}
+            {/* Application Cache Card */}
             <div className="lg:col-span-5 space-y-6">
               <div className="bg-white border border-carbon-20 rounded-[28px] p-6  space-y-4">
                 <div className="flex items-center gap-3 border-b border-carbon-10 pb-3">
@@ -1174,7 +1174,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
                 </div>
                 <div className="w-px h-8 bg-carbon-20"></div>
                 <div>
-                  <span className="text-carbon-60 text-xs uppercase font-bold block">TFLite Head</span>
+                  <span className="text-carbon-60 text-xs uppercase font-bold block">Severity Head</span>
                   <span className="text-carbon-90 font-bold">Softmax + Severity</span>
                 </div>
               </div>
@@ -1260,7 +1260,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
                       <span>National Predictive AI Risk Analysis & Advisory</span>
                     </h3>
                     <p className="text-xs text-carbon-60 font-mono mt-0.5">
-                      TFLite Multi-Hazard Softmax Probability Matrix & Agricultural Emergency Directives (National Aggregate)
+                      Hazard Probability Matrix & Agricultural Emergency Directives (National Aggregate)
                     </p>
                   </div>
                   <span className="text-xs font-mono text-amber-900 bg-amber-50 px-3.5 py-1.5 rounded-full border border-amber-200 shrink-0">

@@ -64,12 +64,12 @@ interface StatItem {
   label: string;
 }
 
-// Product figures pinned by BrandPanel.test.tsx (including the '<100ms' edge-inference label).
+// Product figures pinned by BrandPanel.test.tsx (dual-severity stat included).
 const STATS: StatItem[] = [
   { value: 64, suffix: '', label: 'Districts covered' },
   { value: 8, suffix: '', label: 'Hazard classes' },
   { value: 15, suffix: '-day', label: 'Strategic horizon' },
-  { value: 100, prefix: '<', suffix: 'ms', label: 'Edge inference' },
+  { value: 2, suffix: ' tracks', label: 'Dual severity' },
 ];
 
 /** Animate a number from 0 to `target` with an ease-out curve. */

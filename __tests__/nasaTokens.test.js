@@ -156,7 +156,7 @@ describe('the application is wired to those tokens', () => {
     expect(semantic('--accent')).toBe('var(--hn-hds-blue)');
     expect(semantic('--ring')).toBe('var(--hn-hds-ink-soft)');
     expect(semantic('--background')).toBe('var(--hn-hds-surface)');
-    expect(semantic('--radius')).toBe('var(--hds-border-radius-default)');
+    expect(semantic('--radius')).toBe('5px'); // Finalized system geometry (see index.css)
   });
 
   it('keeps NASA’s brand pair out of the chart palette', () => {
@@ -168,7 +168,7 @@ describe('the application is wired to those tokens', () => {
     expect(appCss).not.toMatch(/--chart-\d:\s*var\(--hn-hds-(red|blue)\)/);
   });
 
-  it('uses NASA’s typefaces for body, headings and data', () => {
+  it('uses the shipped typefaces for body, headings and data', () => {
     // The families NASA's tokens name must be defined locally, or every var()-driven font stack
     // silently falls back to a system font while still looking plausible in a screenshot.
     for (const family of ["'Inter'", "'Public Sans Web'", "'DM Mono'"]) {
@@ -178,7 +178,7 @@ describe('the application is wired to those tokens', () => {
     expect(appCss).toContain("--font-brand: var(--hds-font-family-heading)");
     expect(appCss).toContain("--font-mono: var(--hds-font-family-code)");
     // …and no reference to the families this migration replaced.
-    expect(appCss).not.toMatch(/Noto Sans Variable|Playfair Display|JetBrains Mono/);
+    expect(appCss).not.toMatch(/Noto Sans Variable|Playfair Display/);
   });
 
   it('squares off corners without touching circles', () => {

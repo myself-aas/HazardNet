@@ -81,8 +81,6 @@ export interface DownloadChannel {
   requirements: string;
   /** GitHub owner/name whose Releases carry this channel's artifacts. */
   repoSlug: string;
-  /** Link to the workflow template that builds and publishes the artifacts. */
-  workflowTemplate: string;
   /**
    * Where this channel's artifacts actually come from. Stated on the card so
    * the page never implies a distribution path the project does not use — no
@@ -109,7 +107,6 @@ const BASE_CHANNELS: Omit<DownloadChannel, 'repoSlug'>[] = [
     description:
       'Offline-first Android companion app for agricultural extension officers and emergency responders: offline district map caching, GPS geotagging, push advisory delivery and on-device TFLite hazard inference for the field.',
     requirements: 'Android 8.0+ (API 26) • ~100 MB storage • GPS recommended',
-    workflowTemplate: `${TEMPLATE_BASE}/hazardnet-field-agent-android.yml`,
     distribution: 'Signed APK / AAB attached to the product repository’s GitHub Releases by the Android release workflow.',
     primaryAssetKinds: ['apk', 'aab'],
   },
@@ -122,7 +119,6 @@ const BASE_CHANNELS: Omit<DownloadChannel, 'repoSlug'>[] = [
     description:
       'Native Windows workstation for high-resolution satellite tile batch processing, multi-layer GIS composition and print-quality hazard map export, with GPU-accelerated inference for district-scale analysis.',
     requirements: 'Windows 10/11 64-bit • 4 GB RAM • DirectX 12 GPU recommended',
-    workflowTemplate: `${TEMPLATE_BASE}/hazardnet-gis-workstation-windows.yml`,
     distribution: 'Installer / zip archive attached to the product repository’s GitHub Releases by the Windows release workflow.',
     primaryAssetKinds: ['installer', 'archive'],
   },
@@ -135,7 +131,6 @@ const BASE_CHANNELS: Omit<DownloadChannel, 'repoSlug'>[] = [
     description:
       'Headless Linux daemon and CLI for automated tile pipeline ingestion, scheduled forecasting jobs, Prometheus metrics export and REST API serving — the same engine that powers the web platform, packaged for servers.',
     requirements: 'Ubuntu 20.04+ / Debian 11+ / RHEL 8+ • x86_64 (ARM64 on roadmap)',
-    workflowTemplate: `${TEMPLATE_BASE}/hazardnet-daemon-cli-linux.yml`,
     distribution: 'tar.gz archive (plus SHA256SUMS.txt) attached to the product repository’s GitHub Releases by the Linux release workflow.',
     primaryAssetKinds: ['archive'],
   },
@@ -146,9 +141,8 @@ const BASE_CHANNELS: Omit<DownloadChannel, 'repoSlug'>[] = [
     icon: 'python',
     badge: 'SDK / Library',
     description:
-      'Python library for 15-channel satellite tensor construction, ONNX/TFLite model evaluation, physical severity indexing and advisory retrieval — the building blocks for research pipelines and custom integrations.',
-    requirements: 'Python 3.10–3.13 • NumPy • rasterio (optional, GeoTIFF inputs)',
-    workflowTemplate: `${TEMPLATE_BASE}/hazardnet-python-package.yml`,
+      'Typed Python client objects for the HazardNet forecast and advisory APIs — for research pipelines and custom integrations that consume published results.',
+    requirements: 'Python 3.10–3.13',
     distribution:
       'Source and built sdist/wheel from the product repository. Not published to PyPI (ADR 0011) — there is no `pip install hazardnet`.',
     primaryAssetKinds: ['wheel', 'sdist'],
@@ -162,7 +156,6 @@ const BASE_CHANNELS: Omit<DownloadChannel, 'repoSlug'>[] = [
     description:
       'TypeScript/JavaScript client for the HazardNet forecast and advisory APIs: typed forecast objects, district lookups, advisory rendering helpers and shared HazardNet types for web and Node integrations.',
     requirements: 'Node.js 18+ (LTS recommended) • npm 9+',
-    workflowTemplate: `${TEMPLATE_BASE}/hazardnet-npm-package.yml`,
     distribution:
       'Source and packed tarball from the product repository. Not published to the npm registry (ADR 0011) — there is no `npm install hazardnet`.',
     primaryAssetKinds: ['tarball'],

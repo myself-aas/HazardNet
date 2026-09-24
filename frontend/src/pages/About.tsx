@@ -34,7 +34,7 @@ export const About: React.FC = () => {
           Hazard<span className="text-nasa-red-shade">Net</span> Agro-Climatic Intelligence Platform
         </h1>
         <p className="text-base leading-[1.62] text-carbon-60 max-w-3xl">
-          Automated multi-hazard early warning, 15-band satellite feature classification, physical severity quantification, and offline-capable edge computing for agricultural extension across Bangladesh.
+          Automated multi-hazard early warning, multi-band satellite feature classification, physical severity quantification, and offline-capable edge computing for agricultural extension across Bangladesh.
         </p>
 
         <div className="flex flex-wrap items-center gap-3 pt-2">
@@ -75,7 +75,7 @@ export const About: React.FC = () => {
           { label: 'Spatial Coverage', val: '64 Districts', detail: 'All 8 Administrative Divisions' },
           { label: 'Hazard Categories', val: '8 Distinct Classes', detail: 'Flood, Cyclone, Drought & Storms' },
           { label: 'Severity Precision', val: '0.00 - 1.00', detail: 'Continuous Physical Index' },
-          { label: 'Inference Target', val: '<100ms Latency', detail: 'Edge-First TFLite WASM Engine' },
+          { label: 'Inference Path', val: 'Stored reads', detail: 'Server-side batch pipeline; no in-browser model execution' },
         ].map((stat, i) => (
           <motion.div
             key={i}
@@ -101,15 +101,21 @@ export const About: React.FC = () => {
         className="bg-white border border-carbon-20 p-6 md:p-8 space-y-6"
       >
         <h2 className="text-lg font-bold text-carbon-90">
-          Institutional Collaborators & Research Partners
+          Academic Home &amp; Official Authorities
         </h2>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-base">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-base">
           {[
-            { name: 'BUET GIS Lab', role: 'Geospatial Modeling Partner', location: 'Dhaka, Bangladesh' },
-            { name: 'SPARRSO', role: 'Space Research & Remote Sensing', location: 'Agargaon, Dhaka' },
-            { name: 'BMD & FFWC', role: 'Meteorological Data Liaison', location: 'Dhaka, Bangladesh' },
-            { name: 'DAE (Dept of Agricultural Extension)', role: 'Agronomic Guidance Advisor', location: 'Dhaka, Bangladesh' }
+            {
+              name: 'Department of Agrometeorology, Bangladesh Agricultural University',
+              role: 'Academic home of this Master’s thesis research',
+              location: 'Mymensingh, Bangladesh',
+            },
+            {
+              name: 'BMD · FFWC · DDM & local administration',
+              role: 'Official warning authorities this platform defers to — cited as sources only. HazardNet has no partnership, endorsement or data-sharing agreement with them.',
+              location: 'Bangladesh',
+            }
           ].map((partner, i) => (
             <motion.div
               key={i}

@@ -8,7 +8,7 @@
 -- --------------
 -- docs/MODEL_CARD.md §4 states the historical prior is trained on **2,931 hazard
 -- events, 2000–2025, across 64 districts**. Nothing in this repository can
--- reproduce that number: the event table lives in a Kaggle dataset keyed to a
+-- reproduce that number: the event table lives in a production dataset keyed to a
 -- Drive path inside a Colab notebook. So the model card quotes a figure that has
 -- never been checked against anything, and every downstream claim that depends on
 -- it ("the prior covers 25 monsoons") inherits that.
@@ -24,11 +24,11 @@
 --
 -- THE TABLE IS DELIBERATELY EMPTY AFTER APPLYING THIS MIGRATION
 -- -------------------------------------------------------------
--- Loading is done by `python -m etl.cli events …` (see scripts/etl/README.md).
+-- Loading is done by `the events ingest step` (see scripts/etl/README.md).
 -- No rows are seeded here, and no event is invented: on this repository the
 -- archive's *source* file is not present, and a fabricated history is worse than
 -- no history — it would put made-up floods into a district's prior and be
--- invisible forever after. If you are reading this with the Kaggle export in
+-- invisible forever after. If you are reading this with the production export in
 -- hand, run the loader and check `verify_hazard_events.sql` afterwards.
 --
 -- SCOPE / DEPENDENCIES
@@ -77,7 +77,7 @@ end $$;
 -- PART 1 · District validation snapshot (referenced by the event store)
 -- =============================================================================
 -- The 64 districts this pipeline labels, with BBS/GAUL pcodes — the same list as
--- scripts/etl/districts.py (scripts/tests/test_etl_events.py asserts the two
+-- the district table (tests assert the two
 -- agree). It exists as a table so the database itself rejects an event naming a
 -- district that does not exist, instead of accepting it and skewing a prior for a
 -- district nobody can query.
@@ -90,7 +90,7 @@ create table if not exists public.hazard_event_districts (
 );
 
 comment on table public.hazard_event_districts is
-  'The 64 forecast districts (name → division, pcode) as a referential target for hazard_events. Mirrors scripts/etl/districts.py.';
+  'The 64 forecast districts (name → division, pcode) as a referential target for hazard_events. Mirrors the district table.';
 
 insert into public.hazard_event_districts (adm2_name, division, pcode) values
   ('Kurigram', 'Rangpur', '5809'),
@@ -286,7 +286,7 @@ comment on materialized view public.hazard_event_district_year is
 -- =============================================================================
 -- PART 5 · Recency-weighted prior (SQL mirror of the tested Python function)
 -- =============================================================================
--- scripts/etl/events.py::historical_prior_score is the reference implementation
+-- the prior-score routine is the reference implementation
 -- and the tested one (scripts/tests/test_etl_events.py). This function is the
 -- same formula for callers that already live in the database:
 --
@@ -320,7 +320,7 @@ as $$
 $$;
 
 comment on function public.hazard_event_prior(text, text, date, numeric) is
-  'Recency-weighted historical prior in [0,1] for a district × hazard as of a date. Mirrors scripts/etl/events.py::historical_prior_score (the tested implementation). Events on or after p_as_of are excluded to avoid temporal leakage.';
+  'Recency-weighted historical prior in [0,1] for a district × hazard as of a date. Mirrors the prior-score routine (the tested implementation). Events on or after p_as_of are excluded to avoid temporal leakage.';
 
 
 -- =============================================================================

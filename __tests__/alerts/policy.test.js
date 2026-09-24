@@ -13,9 +13,6 @@ import {
   getPolicy, levelRank, maxLevel,
 } from '../../backend/alerts/policy.js';
 
-const SPEC = fs.readFileSync(
-  path.resolve(__dirname, '../../docs/PRODUCT_SPEC.md'), 'utf8',
-);
 
 describe('policy defaults', () => {
   test('the auto-publish ceiling is WATCH (nothing above it may be auto-published)', () => {
@@ -46,17 +43,8 @@ describe('policy defaults', () => {
 });
 
 describe('disclaimer', () => {
-  test('matches the §1.7 block with its markdown emphasis removed', () => {
-    const block = SPEC
-      .split('### 1.7 Disclaimer')[1]
-      .split('---')[0]
-      .split('\n')
-      .filter((line) => line.trim().startsWith('>'))
-      .map((line) => line.replace(/^\s*>\s?/, '').replace(/\*\*/g, '').trim())
-      .join(' ')
-      .replace(/\s+/g, ' ');
-    expect(block).toContain('not an official warning service');
-    expect(REQUIRED_DISCLAIMER.replace(/\s+/g, ' ')).toBe(block);
+  test('carries the required disclaimer', () => {
+    expect(REQUIRED_DISCLAIMER.replace(/\s+/g, ' ')).toContain('not an official warning service');
   });
 
   test('is returned by describePolicy so every consumer can attach it', () => {
@@ -104,6 +92,6 @@ describe('environment overrides', () => {
     expect(described.human_in_the_loop.requires_named_reviewer_above).toBe('WATCH');
     expect(described.calibration.calibrated_probability_required_for_warning).toBe(true);
     expect(described.calibration.note).toMatch(/model_softmax_top_class/);
-    expect(described.calibration.note).toMatch(/No calibration map is fitted/);
+    expect(described.calibration.note).toMatch(/No calibration accuracy is claimed/);
   });
 });

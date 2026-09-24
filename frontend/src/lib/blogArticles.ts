@@ -61,10 +61,6 @@ export interface BlogArticle {
   authorBio: string;
   authorAvatarUrl: string;
   authorWebsite: string;
-  /* ── Monetization ───────────────────────────────────────────────────── */
-  /** Enables the affiliate disclosure + sponsored rel on outbound links. */
-  containsAffiliateLinks: boolean;
-  affiliateDisclosure: string;
 }
 
 export type BlogArticleDraft = Omit<BlogArticle, 'id' | 'createdAt' | 'updatedAt' | 'publishedAt'> & {
@@ -73,9 +69,6 @@ export type BlogArticleDraft = Omit<BlogArticle, 'id' | 'createdAt' | 'updatedAt
 
 const LOCAL_KEY = 'hazardnet.blog.articles.v1';
 const TABLE = 'blog_articles';
-
-export const DEFAULT_AFFILIATE_DISCLOSURE =
-  'Disclosure: this article contains affiliate links. If you purchase through them, HazardNet may earn a small commission at no extra cost to you — it keeps our forecasting free for farmers.';
 
 export const isLocalDemoMode = (): boolean => {
   return typeof window !== 'undefined' && (!db || !('app' in db));
@@ -291,8 +284,6 @@ const rowToArticle = (row: Record<string, unknown>): BlogArticle => ({
   authorBio: String(row.author_bio ?? ''),
   authorAvatarUrl: String(row.author_avatar_url ?? ''),
   authorWebsite: String(row.author_website ?? ''),
-  containsAffiliateLinks: row.contains_affiliate_links === true,
-  affiliateDisclosure: String(row.affiliate_disclosure ?? ''),
 });
 
 const articleToRow = (article: BlogArticleDraft | Partial<BlogArticle>) => {
@@ -323,8 +314,6 @@ const articleToRow = (article: BlogArticleDraft | Partial<BlogArticle>) => {
   assign('author_bio', article.authorBio);
   assign('author_avatar_url', article.authorAvatarUrl);
   assign('author_website', article.authorWebsite);
-  if (article.containsAffiliateLinks !== undefined) assign('contains_affiliate_links', article.containsAffiliateLinks);
-  assign('affiliate_disclosure', article.affiliateDisclosure);
   return row;
 };
 

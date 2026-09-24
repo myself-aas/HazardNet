@@ -149,10 +149,10 @@ const KnowledgeMegaMenuContent: React.FC<{
   const { isInstallable, isInstalled, install } = usePWAInstall();
 
   const resourceItems = items.filter(
-    (it) => it.badge !== 'ADMIN' && !['hindcast', 'historical'].includes(it.id)
+    (it) => it.badge !== 'ADMIN' && !['validation', 'historical'].includes(it.id)
   );
   const adminItems = items.filter(
-    (it) => it.badge === 'ADMIN' || ['hindcast', 'historical'].includes(it.id)
+    (it) => it.badge === 'ADMIN' || ['validation', 'historical'].includes(it.id)
   );
 
   return (

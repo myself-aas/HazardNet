@@ -58,11 +58,6 @@ const ArticlePage = lazy(() => import('./components/ArticlePage'));
 // The editorial front door at `/`. Its copy is the `/` entry in the same
 // site-routes.json the prerenderer reads; only the live artifact panels are React.
 const FrontDoor = lazy(() => import('./pages/FrontDoor'));
-// The historical hazard archive at `/archive`. Unlike the generated content pages this
-// one is React: the timeline, hazard-mix and severity-distribution charts are
-// interactive. Every figure comes from the committed `/data/hazard-archive.json`
-// artifact (scripts/build_hazard_archive.mjs), never from a computation at render time.
-const HazardArchivePage = lazy(() => import('./pages/HazardArchivePage'));
 
 /**
  * Generated content pages (Phase 8). The hazard methodology pages, the district outlooks and the
@@ -199,19 +194,13 @@ const AppRoutes: React.FC<{ location: ReturnType<typeof useLocation> }> = ({ loc
               <Route path="/hazards" element={<HazardsPage />} />
               <Route path="/hazards/:slug" element={<HazardDetailPage />} />
               <Route path="/districts" element={<GeneratedContentPage />} />
-              {/* Phase 9 §8.1 — composed from the committed hindcast reports by the content
+              {/* Phase 9 §8.1 — composed from the committed validation reports by the content
                   engine. The route must exist here as well as in the prerendered HTML: the
                   page a visitor reaches by clicking is served by the SPA. */}
               <Route path="/model-performance" element={<GeneratedContentPage />} />
               <Route path="/districts/:id" element={<GeneratedContentPage />} />
               <Route path="/retrospectives" element={<GeneratedContentPage />} />
               <Route path="/retrospectives/:year" element={<GeneratedContentPage />} />
-              {/* The historical archive dashboard. `/archive` is the canonical path;
-                  `/history` and `/events` are kept as deep links so an inbound link from
-                  the model card, the README or the data README keeps working. */}
-              <Route path="/archive" element={<HazardArchivePage />} />
-              <Route path="/history" element={<HazardArchivePage />} />
-              <Route path="/events" element={<HazardArchivePage />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/terms" element={<Terms />} />
               <Route path="/privacy" element={<Privacy />} />
@@ -369,7 +358,7 @@ const AppContent: React.FC = () => {
         </main>
       )}
 
-      {/* Render Footer only on subpages; homepage is a full-screen Google Earth stage */}
+      {/* Render Footer only on subpages; homepage is a full-screen environmental stage */}
       {!isHomePage && !isAuthPage && (
         <div className="pointer-events-auto mt-auto">
           <Footer />

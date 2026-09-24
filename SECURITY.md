@@ -63,11 +63,11 @@ always fine.
   clickjacking on pages with no state-changing action, and reports produced by a scanner
   without a demonstrated impact.
 - The known, documented gaps: alert thresholds are uncalibrated placeholders until the
-  Phase 9 hindcast (`docs/codebase/CONCERNS.md` §3), SMS/Telegram delivery is configured
+  Phase 9 validation (`docs/codebase/CONCERNS.md` §3), SMS/Telegram delivery is configured
   but has no live subscribers yet, and the PostGIS event store is not deployed. Those are
   project-status issues, not vulnerabilities — they are described in the repo, and a
   report repeating them adds nothing.
-- Third-party services (Vercel, Firebase, Open-Meteo, Google Earth Engine) — report those
+- Third-party services (Vercel, Firebase, weather service, processing) — report those
   upstream.
 
 The open items above are tracked with owners and reproduction steps in

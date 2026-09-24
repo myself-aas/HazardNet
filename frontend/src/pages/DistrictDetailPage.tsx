@@ -100,7 +100,7 @@ export const DistrictDetailPage: React.FC = () => {
   }, [districtId, livePredictionDate, liveSource, ingestionTimestamp, formatDate]);
   const district = useMemo(() => getDistrictById(districtId) || ALL_64_DISTRICTS[0], [districtId]);
 
-  // Live Open-Meteo weather (current + 48h hourly + 16-day daily) for this
+  // Live weather (current + 48h hourly + 16-day daily) for this
   // district's centroid. The hook handles caching + 15-min refresh.
   const weather = useWeather(district?.lat, district?.lng, {
     forecast_days: 16,
@@ -131,7 +131,7 @@ export const DistrictDetailPage: React.FC = () => {
       setDistrictForecasts7D(district7D);
       setDistrictForecasts15D(district15D);
       // The pipeline does not always emit BOTH horizons for every district
-      // (a GEE/inference hiccup can drop one), so don't open the section on
+      // (a fetch hiccup can drop one), so don't open the section on
       // an empty tab when the other horizon has records: 2026-09-16's run
       // covered Mymensingh only in the 15-day CSV, and the page opened on
       // "7-Day Forecast (0) — no forecast records found" anyway.

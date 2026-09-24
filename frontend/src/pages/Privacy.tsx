@@ -35,7 +35,7 @@ export const Privacy: React.FC = () => {
         <section className="space-y-2">
           <h2 className="text-sm font-bold text-carbon-90">1. Commitment to Open Privacy</h2>
           <p>
-            HazardNet AI is committed to protecting user privacy while delivering life-saving disaster warnings. Our edge-first WebAssembly architecture minimizes data transmission by performing neural network model inference directly inside your web browser or local device memory.
+            HazardNet AI is committed to protecting user privacy while delivering decision-support for disaster preparedness. Forecasts are computed in a scheduled server-side pipeline and served as committed snapshots: no neural-network inference runs in your browser, and no model weights are downloaded to your device.
           </p>
         </section>
 
@@ -44,9 +44,6 @@ export const Privacy: React.FC = () => {
           <ul className="list-disc pl-5 space-y-1.5 text-carbon-70">
             <li>
               <strong>Geolocation Data:</strong> If you grant location permission, your browser latitude and longitude are used exclusively in volatile memory to identify your local Bangladesh district and calculate distance to active flood or cyclone hazard zones. Location coordinates are never sold or logged to external servers.
-            </li>
-            <li>
-              <strong>Uploaded Satellite GeoTIFF Files:</strong> User-uploaded raster tiles on the Ingestion page are processed temporarily in memory for 15-channel array tensor transformation. Files are automatically erased after inference completion.
             </li>
             <li>
               <strong>Offline Caching:</strong> Map tiles may be cached locally for navigation. HazardNet model weights and preprocessing assets remain server-side and are not downloaded or stored in your browser.

@@ -67,14 +67,14 @@
         "stale_soon": false
       },
       "provenance": {
-        "model_version": "hazardnet-tflite-2026-09-12",
+        "model_version": "hazardnet-model-2026-09-12",
         "dataset_version": "scenes-2026-09-17"
       },
       "published": {
         "at": "2026-09-18T06:00:00Z",
         "level": "WATCH",
         "mode": "auto",
-        "model_version": "hazardnet-tflite-2026-09-12",
+        "model_version": "hazardnet-model-2026-09-12",
         "data_cutoff": "2026-09-18T00:00:00Z"
       },
       "disclaimer": "HazardNet is a research-based decision-support tool. It is not an official warning service. Always follow instructions from the Bangladesh Meteorological Department, FFWC and your local administration. In an emergency call 999 (national emergency), 1090 (disaster response), or 16123 (agriculture helpline)."
@@ -117,14 +117,14 @@
         "stale_soon": false
       },
       "provenance": {
-        "model_version": "hazardnet-tflite-2026-09-12",
+        "model_version": "hazardnet-model-2026-09-12",
         "dataset_version": null
       },
       "published": {
         "at": "2026-09-18T06:00:00Z",
         "level": "WATCH",
         "mode": "auto",
-        "model_version": "hazardnet-tflite-2026-09-12",
+        "model_version": "hazardnet-model-2026-09-12",
         "data_cutoff": "2026-09-18T00:00:00Z"
       }
     },

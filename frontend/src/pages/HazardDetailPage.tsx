@@ -218,7 +218,7 @@ export const HazardDetailPage: React.FC = () => {
         <div className="text-center">
           <RefreshCw className="w-8 h-8 text-nasa-blue-shade animate-spin mx-auto mb-3" />
           <p className="text-sm font-medium text-carbon-70">Loading {data?.hazard || currentSlug} hazard data...</p>
-          <p className="text-xs text-carbon-60 mt-1">Cross-referencing historical events & active warning tensors</p>
+          <p className="text-xs text-carbon-60 mt-1">Cross-referencing historical events and active warning records</p>
         </div>
       </div>
     );

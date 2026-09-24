@@ -7,15 +7,12 @@ import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 import forecastRoutes from './routes/forecasts.js';
-import advisoryRoutes from './routes/advisory.js';
 import chatRoutes from './routes/chat.js';
-import agentRoutes from './routes/agent.js';
 import predictRoutes from './routes/predict.js';
 import pushRoutes from './routes/push.js';
 import conversionRoutes from './routes/conversions.js';
 import weatherRoutes from './routes/weather.js';
 import alertRoutes from './routes/alerts.js';
-import eventsRoutes from './routes/events.js';
 import groundingRoutes from './routes/grounding.js';
 import { liveVoiceRouter, setupLiveVoiceWebSocket } from './routes/liveVoice.js';
 import metrics from './metrics.js';
@@ -23,7 +20,6 @@ import { refreshForecastAgeGauge } from './utils/forecastFreshness.js';
 import { predictLimiter, apiLimiter, alertLimiter } from './middleware/rateLimit.js';
 import { requestId } from './middleware/requestId.js';
 import { attachFirebaseAuthUser, dynamicAiLimiter } from './middleware/firebaseAuth.js';
-import { getModelInfo } from './modelInfo.js';
 import helmet from 'helmet';
 import { cspDirectivesFromString } from './security/csp.js';
 
@@ -109,12 +105,12 @@ app.use((req, res, next) => {
 
 // Health Check
 app.get('/health', (req, res) => {
-  res.json({ status: 'healthy', service: 'HazardNet Backend', timestamp: new Date(), model: getModelInfo().version });
+  res.json({ status: 'healthy', service: 'HazardNet Backend', timestamp: new Date() });
 });
 
 // Never serve model artifacts or preprocessing assets from the public server.
 // NOTE: the int8 entry is deliberately kept — no true INT8 model exists
-// (TFLite CONV_3D constraint, ADR 0007), but the external Kaggle conversion
+// (model CONV_3D constraint, ADR 0007), but the external production conversion
 // bundle still emits a misnamed optimized-FP32 file under that filename, and
 // model artifacts must never be publicly served regardless of precision.
 app.use(['/Models', '/models', '/hazardnet_fp32.tflite', '/hazardnet_int8.tflite', '/normalization_stats.json', '/labels.json'], (req, res) => {
@@ -125,10 +121,8 @@ app.use(['/Models', '/models', '/hazardnet_fp32.tflite', '/hazardnet_int8.tflite
 // plus tighter buckets on the expensive AI/inference endpoints.
 app.use('/api', apiLimiter);
 app.use('/api/v1/forecasts', forecastRoutes);
-app.use('/api/advisory', advisoryRoutes);
 app.use('/api/chat', attachFirebaseAuthUser, dynamicAiLimiter, chatRoutes);
 app.use('/api/grounding', attachFirebaseAuthUser, dynamicAiLimiter, groundingRoutes);
-app.use('/api/agent', attachFirebaseAuthUser, dynamicAiLimiter, agentRoutes);
 app.use('/api/predict', predictLimiter, predictRoutes);
 app.use('/api/push', pushRoutes);
 app.use('/api/conversions', conversionRoutes);
@@ -136,7 +130,6 @@ app.use('/api/v1/weather', weatherRoutes);
 // Alert engine + §1.6 review surface. Identity is attached but never required:
 // published alerts are public (PRODUCT_SPEC §1.3), the review queue is not.
 app.use('/api/v1/alerts', attachFirebaseAuthUser, alertLimiter, alertRoutes);
-app.use('/api/v1/events', eventsRoutes);
 app.use('/api/live-voice', liveVoiceRouter);
 
 // Prometheus metrics endpoint. The forecast-age gauge is refreshed here

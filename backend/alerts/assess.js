@@ -13,10 +13,10 @@
  * explicitly instead of pretending otherwise:
  *
  *   - **The probability is uncalibrated.** Every row ships
- *     `confidence_kind: model_softmax_top_class`; there is no fitted map (Phase 3
+ *     `confidence_kind: model_confidence_top_class`; there is no fitted map (Phase 3
  *     left that blocked on the event archive). The spec defines `WARNING` as
  *     "calibrated probability ≥ warning threshold", so by default the WARNING rule
- *     is *disabled* and reports itself as disabled. A saturated softmax must not
+ *     is *disabled* and reports itself as disabled. A saturated confidence must not
  *     become a warning.
  *   - **`SEVERE` is reachable without a model.** §1.3: "SEVERE: WARNING-level
  *     evidence plus duty-officer review, **or** official BMD/FFWC bulletin". An
@@ -91,7 +91,7 @@ function parseDate(value) {
  * Read the §1.3 inputs out of a forecast row, staying honest about what is absent.
  *
  * `confidence` is the value the serving layer produced (`backend/utils/forecastRow.js`):
- * a softmax top-class score today, a calibrated probability once a map is fitted.
+ * a confidence top-class score today, a calibrated probability once a map is fitted.
  * `confidence_kind` is what tells the two apart, and it is the *only* thing that
  * unlocks the WARNING rule — not the presence of a number.
  */
@@ -318,7 +318,7 @@ export function assessRow(row = {}, { policy = getPolicy(), now = new Date() } =
         detail:
           `score ${round(evidence.confidence)} ≥ warning threshold ${policy.warning_probability} ` +
           'but confidence_kind is ' + (evidence.confidence_kind || 'absent') +
-          ' and no calibration map is fitted (docs/mlops/CALIBRATION.md)',
+          ' and no calibration accuracy is claimed',
         track: 'model',
       });
     } else if (evidence.agreement === 'high') {

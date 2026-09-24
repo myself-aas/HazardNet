@@ -1,0 +1,14 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "<TEAM_ID>.live.hazardnet.mobile",
+        "paths": ["/a/*"]
+      }
+    ]
+  },
+  "activitycontinuation": {
+    "apps": ["<TEAM_ID>.live.hazardnet.mobile"]
+  }
+}

@@ -85,7 +85,7 @@ where schemaname = 'public' and indexname = 'idx_hazard_events_geom'
 
 
 -- The district validation snapshot must hold exactly the 64 districts; anything
--- else means the referential target drifted from scripts/etl/districts.py.
+-- else means the referential target drifted from the district table.
 select
   'schema/64_districts_seeded' as check_name,
   case when count(*) = 64 then 'PASS' else 'FAIL' end as result,
@@ -173,7 +173,7 @@ select
 
 -- The recency-weighted prior must be computable and inside [0,1]. A NULL here
 -- means the function is missing; a value outside the range means the formula
--- drifted from scripts/etl/events.py::historical_prior_score.
+-- drifted from the prior-score routine.
 select
   'data/prior_function_usable' as check_name,
   case

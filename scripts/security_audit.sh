@@ -184,7 +184,7 @@ echo ""
 # ==========================================
 echo "✔️ Checking input validation..."
 
-if grep -q "validateTensor\|validator\|joi\|yup" backend/routes/*.js backend/middleware/*.js 2>/dev/null; then
+if grep -q "validatePayload\|validator\|joi\|yup" backend/routes/*.js backend/middleware/*.js 2>/dev/null; then
   echo "  ✅ Input validation middleware found"
 else
   echo "  ⚠️ Input validation not detected (manual review required)"

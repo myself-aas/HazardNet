@@ -123,19 +123,19 @@ describe('historyRowsToCsv', () => {
 });
 
 describe('metadata helpers', () => {
-  test('metadataDatasets pins the Kaggle dataset + notebook provenance', () => {
+  test('metadataDatasets pins the published dataset + run provenance', () => {
     const datasets = metadataDatasets();
     expect(datasets).toHaveLength(2);
-    expect(datasets[0].url).toContain('kaggle.com/datasets/');
-    expect(datasets[1].url).toContain('kaggle.com/code/');
+    expect(datasets[0].url).toContain('hazardnet.live/data/forecasts-latest.json');
+    expect(datasets[1].url).toContain('github.com/myself-aas/HazardNet');
   });
 
-  test('metadataDataSource honors KAGGLE_DATASET with a documented default', () => {
-    const saved = process.env.KAGGLE_DATASET;
-    process.env.KAGGLE_DATASET = 'someone/elsewhere';
+  test('metadataDataSource honors FORECAST_DATASET with a documented default', () => {
+    const saved = process.env.FORECAST_DATASET;
+    process.env.FORECAST_DATASET = 'someone/elsewhere';
     expect(metadataDataSource()).toBe('someone/elsewhere');
-    delete process.env.KAGGLE_DATASET;
-    expect(metadataDataSource()).toBe('ashifahmedshuvo/hazardnet-weekly-forecasts');
-    if (saved !== undefined) process.env.KAGGLE_DATASET = saved;
+    delete process.env.FORECAST_DATASET;
+    expect(metadataDataSource()).toBe('hazardnet/weekly-forecasts');
+    if (saved !== undefined) process.env.FORECAST_DATASET = saved;
   });
 });

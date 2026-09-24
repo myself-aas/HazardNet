@@ -1,6 +1,5 @@
 import { BlogArticle } from '../blogArticles'
 import {
-  applyAffiliateRel,
   buildBlogIndexHead,
   buildSeoHead,
   effectiveMetaDescription,
@@ -13,11 +12,11 @@ const article = (overrides: Partial<BlogArticle> = {}): BlogArticle => ({
   id: 'a-1',
   slug: 'satellite-flood-forecasting',
   title: 'Satellite Flood Forecasting in Bangladesh',
-  excerpt: 'How Sentinel-1 SAR powers 7-day flood outlooks for the Jamuna basin.',
+  excerpt: 'How satellite powers 7-day flood outlooks for the Jamuna basin.',
   contentHtml:
     '<p>Satellite flood forecasting saves crops. ' +
     'word '.repeat(650) +
-    '</p><h2>Methods</h2><p>More detail <a href="/blogs/other">internal</a> <a href="https://sentinel.copernicus.eu">external</a>.</p><h3>Validation</h3><img src="x.jpg" alt="chart">',
+    '</p><h2>Methods</h2><p>More detail <a href="/blogs/other">internal</a> <a href="https://example.org">external</a>.</p><h3>Validation</h3><img src="x.jpg" alt="chart">',
   coverImageUrl: 'https://cdn.example.com/cover.jpg',
   category: 'Remote Sensing',
   tags: ['flood', 'sar'],
@@ -28,9 +27,9 @@ const article = (overrides: Partial<BlogArticle> = {}): BlogArticle => ({
   createdAt: '2026-08-01T00:00:00Z',
   updatedAt: '2026-08-02T00:00:00Z',
   publishedAt: '2026-08-01T00:00:00Z',
-  metaTitle: 'Satellite Flood Forecasting in Bangladesh — SAR Guide',
+  metaTitle: 'Satellite Flood Forecasting in Bangladesh — satellite Guide',
   metaDescription:
-    'How Sentinel-1 SAR backscatter powers 7-day flood outlooks for the Jamuna basin, with severity thresholds and field validation across Gaibandha districts.',
+    'How satellite signal powers 7-day flood outlooks for the Jamuna basin, with severity thresholds and field validation across Gaibandha districts.',
   focusKeyword: 'flood forecasting',
   canonicalUrl: '',
   ogImageUrl: '',
@@ -40,8 +39,6 @@ const article = (overrides: Partial<BlogArticle> = {}): BlogArticle => ({
   authorBio: 'Leads HazardNet field validation.',
   authorAvatarUrl: 'https://cdn.example.com/author.jpg',
   authorWebsite: 'https://linkedin.com/in/example',
-  containsAffiliateLinks: false,
-  affiliateDisclosure: '',
   ...overrides,
 })
 
@@ -139,15 +136,3 @@ describe('splitContentBlocks', () => {
   })
 })
 
-describe('applyAffiliateRel', () => {
-  it('tags external links as sponsored nofollow and leaves internal links alone', () => {
-    const html =
-      '<p><a href="https://amazon.example/dp/1">Buy</a> <a href="/blogs/local">Local</a> <a href="https://hazardnet.live/blogs/x">Same site</a></p>'
-    const out = applyAffiliateRel(html, 'https://hazardnet.live')
-    expect(out).toContain('rel="sponsored nofollow noopener"')
-    expect(out).toContain('target="_blank"')
-    // internal + same-origin links untouched
-    expect((out.match(/sponsored nofollow/g) ?? []).length).toBe(1)
-    expect(out).toContain('href="/blogs/local"')
-  })
-})

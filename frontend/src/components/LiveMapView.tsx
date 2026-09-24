@@ -1112,7 +1112,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
       title: "Sync Live Telemetry Sensor Feeds",
       onClick: async () => {
         setIsSyncing(true);
-        setSyncToastMessage("Syncing 64 Districts Telemetry from Sentinel-2 & NASA GPM...");
+        setSyncToastMessage("Syncing 64 Districts Telemetry from Satellite-2 & NASA GPM...");
         await new Promise(r => setTimeout(r, 1500));
         setIsSyncing(false);
         setSyncToastMessage("Successfully synchronized 64 districts telemetry with real-time sensor feeds.");

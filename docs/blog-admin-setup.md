@@ -27,8 +27,7 @@ holding the published web config could write to the collection directly.
   `authorEmail`, `authorName`, `createdAt`/`updatedAt`/`publishedAt`, the SEO
   set (`metaTitle`, `metaDescription`, `focusKeyword`, `canonicalUrl`,
   `ogImageUrl`, `robotsNoIndex`, `faqs`), the editable byline (`authorTitle`,
-  `authorBio`, `authorAvatarUrl`, `authorWebsite`) and monetization flags
-  (`containsAffiliateLinks`, `affiliateDisclosure`).
+  `authorBio`, `authorAvatarUrl`, `authorWebsite`).
 
   Writes are allowed only when the signed-in Firebase Auth user's email is on
   the primary-superadmin allowlist, checked both client-side
@@ -95,7 +94,7 @@ Article HTML is sanitized on save **and** on render (`sanitizeBlogHtml`):
 `script`/`iframe`/`object`/`embed`/`style`/`form` nodes, inline `on*` event
 handlers and `javascript:` URLs are stripped.
 
-### SEO & monetization panels (editor)
+### SEO & author panels (editor)
 
 The editor has three extra panels:
 
@@ -110,10 +109,3 @@ The editor has three extra panels:
   any of them: identity resolves from Firebase Auth via `firestore.rules`, and
   `authorEmail` is stamped from the authenticated account so it cannot be
   spoofed. The editable byline is display-only.
-- **Monetization** — "contains affiliate links" toggle + editable disclosure.
-  When enabled, the article shows a disclosure notice and every outbound link
-  is rewritten to `rel="sponsored nofollow noopener"` on render. The editor
-  toolbar also has a dedicated "Insert affiliate link" button.
-
-See [blog-monetization.md](blog-monetization.md) for AdSense setup and the
-affiliate/passive-income playbook.

@@ -186,7 +186,7 @@ export const ConnectorsSection: React.FC = () => {
       >
         <p className="text-xs leading-relaxed text-carbon-60">
           Connectors store only non-secret identifiers (webhook URLs, phone numbers) on your profile. Secrets for
-          production pipelines live server-side. The built-in connectors — Open-Meteo and Email Digest — work out of
+          production pipelines live server-side. The built-in connectors — weather and email digest — work out of
           the box.
         </p>
       </Card>

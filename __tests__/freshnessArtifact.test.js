@@ -34,7 +34,7 @@ const snapshot = (over = {}) => ({
   schema: 'hazardnet-forecast-snapshot/v2',
   generated_at: hoursAgo(2),
   prediction_date: daysAgo(1),
-  source: 'kaggle kernels output',
+  source: 'production run',
   provenance: {
     model_version: null,
     tensor_build_id: null,

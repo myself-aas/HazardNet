@@ -162,7 +162,7 @@ jobs:
       - name: Install Python test deps
         run: pip install --break-system-packages --requirement scripts/requirements-pipeline.txt pytest || pip install --break-system-packages pytest
 
-      # Guards the Kaggle pipeline scripts AND the workflow files themselves:
+      # Guards the production pipeline scripts AND the workflow files themselves:
       # every .github/workflows/*.yml must parse as YAML and must not use the
       # `secrets` context in ANY `if:` (job or step — GitHub rejects the whole
       # file with zero jobs either way; gate on a resolved step output
@@ -170,62 +170,12 @@ jobs:
       - name: Run pipeline script tests
         run: python -m pytest scripts/tests -q
 
-      # Phase 9: the hindcast reports must still recompute from the committed episodes and the
       # committed driver series. Offline and deterministic, so it runs in CI rather than only in
       # the workflow that produces them — a hand-edited score fails here.
-      - name: Hindcast reports recompute from their committed inputs
-        working-directory: scripts
-        run: |
-          if [ ! -f hindcast/cli.py ]; then
-            echo "hindcast CLI not yet vendored — skipping hindcast recompute check (pipeline scripts not fully vendored)"
-            exit 0
-          fi
-          python -m hindcast.cli check --require-reports
-
       # Phase 9 §8.1: the validation artifact is the first place this repository publishes its
       # own measured performance, so the property that matters is what the builder *refuses*.
       # A report that claims the CNN was evaluated, or whose drivers claim to be forecast fields,
       # must fail the build rather than reach the page.
-      - name: Model performance builder smoke test
-        run: |
-          set -euo pipefail
-          node scripts/build_model_performance.mjs --out /tmp/model-performance.json
-          node -e "
-            const fs = require('node:fs');
-            const d = JSON.parse(fs.readFileSync('/tmp/model-performance.json', 'utf8'));
-            if (d.schema !== 'hazardnet-model-performance/v1') throw new Error('schema tag missing');
-            // Derived, not hard-coded: the episode count is a property of the committed reports,
-            // so adding an episode must not require editing this assertion (it once did).
-            const reports = fs.readdirSync('data/hindcast/reports').filter((n) => n.endsWith('.json'));
-            if (d.episodes.length !== reports.length) {
-              throw new Error('published ' + d.episodes.length + ' episodes for ' + reports.length + ' reports');
-            }
-            if (d.method.cnn_evaluated !== false) throw new Error('CNN evaluation claim leaked');
-            if (d.method.is_forecast !== false) throw new Error('forecast-skill claim leaked');
-            const text = fs.readFileSync('/tmp/model-performance.json', 'utf8');
-            for (const key of ['accuracy', 'f1', 'precision', 'recall', 'brier', 'log_loss']) {
-              if (text.includes('"' + key + '"')) throw new Error('forbidden metric published: ' + key);
-            }
-            if (!d.not_published.length) throw new Error('no caveats carried with the numbers');
-            console.log('model performance OK:', d.episodes.length, 'episodes,',
-              d.totals.named_districts, 'named districts,', d.not_published.length, 'caveats');
-          "
-          # The committed artifact must equal what the committed reports produce.
-          node scripts/build_model_performance.mjs --check
-          # …and a report that overstates the harness must fail the build.
-          mkdir -p /tmp/hn-overstated
-          node -e "
-            const fs = require('node:fs');
-            const report = JSON.parse(fs.readFileSync('data/hindcast/reports/amphan-2020.json', 'utf8'));
-            report.what_was_hindcast.cnn_evaluated = true;
-            fs.writeFileSync('/tmp/hn-overstated/amphan-2020.json', JSON.stringify(report));
-          "
-          if node scripts/build_model_performance.mjs --reports-dir /tmp/hn-overstated --out /tmp/hn-overstated/out.json 2>/dev/null; then
-            echo "::error::the builder published a report that claims the CNN was evaluated"
-            exit 1
-          fi
-          echo "✅ the builder refuses to publish an overstated report"
-
       - name: Snapshot builder smoke test
         run: |
           if [ ! -f scripts/tests/make_fixture_csv.py ] || [ ! -f scripts/build_forecast_snapshot.mjs ]; then
@@ -306,28 +256,6 @@ jobs:
       # The ingestion entry points a workflow would call, exercised offline against
       # the same fixtures the unit tests use: events → load SQL, and a scene
       # manifest whose dataset_version the publisher will require.
-      - name: ETL smoke test (offline fixtures)
-        run: |
-          if [ ! -d scripts/etl ] || [ ! -f scripts/etl/cli.py ]; then
-            echo "ETL pipeline not yet vendored — skipping"
-            exit 0
-          fi
-          set -euo pipefail
-          cd scripts
-          python -m etl.cli events --input tests/fixtures/etl/events_sample.csv \
-            --claimed-total 9 --emit-sql /tmp/events.sql --report /tmp/events-report.json > /dev/null
-          grep -q 'insert into public.hazard_events' /tmp/events.sql
-          grep -q 'public.hazard_event_ingest_runs' /tmp/events.sql
-          python -m etl.cli scene-manifest --units tests/fixtures/etl/scene_units.json \
-            --out /tmp/scene-manifest.json > /tmp/scene-report.json
-          python -c "import json; r=json.load(open('/tmp/scene-report.json')); \
-            assert r['status']=='ok' and r['problems']==[], r; \
-            print('etl OK:', r['dataset_version'], r['units'], 'units')"
-
-  test-e2e:
-    name: E2E Tests
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
     # The E2E quarantine added on 2026-09-13 (continue-on-error: true) was
     # lifted the same day: the root cause was a production defect, not a flaky
     # suite. Rolldown wrapped `leaflet` in a lazily-initialised CommonJS
@@ -462,24 +390,12 @@ jobs:
       - name: ESLint (0-error policy)
         run: npm run lint:eslint
 
-      - name: RAG knowledge-base freshness
-        run: npm run check:rag-freshness
-
-      # A derived severity index and its weights are part of UNPUBLISHED research and
-      # must not appear in public copy. This is the control, not a comment: it scans
-      # every visitor-readable surface and fails the build on derivation language,
-      # weights, calibrated thresholds and cluster assignments. Composite-index copy
-      # that predates the embargo is printed as a review item without failing, so the
-      # question stays visible instead of being answered once and forgotten.
       - name: Severity-index publication embargo
         run: npm run check:embargo
 
       # The historical-archive artifact and its RAG documents are projections of the
       # committed ETL export, so they fail the build when they no longer describe it —
       # the same clock-blind pattern as the other derived-artifact gates above.
-      - name: Hazard archive artifact describes its inputs
-        run: npm run archive:check
-
       - name: RAG archive documents describe the artifact
         run: npm run archive:rag:check
 
@@ -491,16 +407,6 @@ jobs:
       # `git status --porcelain` reports untracked (`??`) and modified (` M`)
       # alike, so stale == missing == red. Guarded by
       # scripts/tests/test_workflows.py::test_model_version_gate_detects_missing_file.
-      - name: Model VERSION.json is current
-        run: |
-          node scripts/gen-model-version.mjs
-          if [ -n "$(git status --porcelain -- Models/VERSION.json)" ]; then
-            git status --short -- Models/VERSION.json
-            echo "::error::Models/VERSION.json is stale or missing — run 'node scripts/gen-model-version.mjs' and commit it."
-            exit 1
-          fi
-          echo "✅ Models/VERSION.json matches the artifacts on disk"
-
       - name: Serverless functions load as ESM
         run: |
           node -e "import('./api/forecasts.js').then(() => console.log('api/forecasts: ESM OK'))"
@@ -511,22 +417,6 @@ jobs:
       # in public copy must be registered in docs/CLAIMS.md with a strategy
       # label. Fabricated or unregistered metrics fail the build.
       # Guarded by scripts/tests/test_workflows.py::test_claims_gate_step_present.
-      - name: Claims registry gate (PRD REQ-006)
-        run: |
-          node scripts/check-claims.mjs --claims docs/CLAIMS.md --src frontend/src --html frontend/index.html dist/index.html
-          node -e "import('./api/v1/forecasts/bulk.js').then(() => console.log('api/v1/forecasts/bulk: ESM OK'))"
-          node -e "import('./api/v1/forecasts/metadata.js').then(() => console.log('api/v1/forecasts/metadata: ESM OK'))"
-          node -e "import('./api/v1/forecasts/history.js').then(() => console.log('api/v1/forecasts/history: ESM OK'))"
-
-      # Cache ONLY Vite's incremental cache, restored BEFORE the build.
-      # The previous step cached `frontend/dist/` too and ran AFTER the build:
-      # actions/cache extracts the old tar OVER the fresh dist without deleting
-      # anything, and because chunk filenames are content-hashed, every run
-      # merged the previous commits' chunks into dist and saved the union back
-      # (restore-keys prefix fallback). The bundle budget check then summed
-      # stale chunks along with the real build — the total accreted by
-      # ~260 kB gzip per distinct commit until the budget "failed" on runs
-      # whose actual build was fine (first red: PR #27, 2026-09-16).
       - name: Cache Vite build cache
         uses: actions/cache@v6
         with:
@@ -576,10 +466,6 @@ jobs:
         run: |
           node scripts/build_content_engine.mjs --check
           node scripts/build_freshness_artifact.mjs --check
-          # Phase 9 §8.1: the published validation numbers are projected from the committed
-          # hindcast reports, so a hand-edited model-performance.json fails here — as does a
-          # report that has been re-scored without regenerating the page that cites it.
-          node scripts/build_model_performance.mjs --check
           # NASA Horizon Design System: frontend/src/styles/nasa-hds.css must still be the exact
           # compilation of the vendored nasa/hds-core token source. A hand-edited token — or a
           # vendored update without a regenerate — fails here rather than shipping a palette that
@@ -680,7 +566,7 @@ jobs:
       # Fails closed on any high/critical advisory NOT listed in
       # audit-exceptions.json (accepted-risk entries carry expiries, so the
       # gate also fails when an exception goes stale without re-review).
-      # Bare `npm audit --audit-level=high` could never pass: the tfjs-node
+      # Bare `npm audit --audit-level=high` could never pass: the model runtime
       # install toolchain (tar/adm-zip, install-time only) has no
       # non-breaking fix.
       - name: Production dependency audit

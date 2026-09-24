@@ -21,26 +21,26 @@ export const CSV_COLUMNS = [
   'physics_severity', 'division', 'pcode', 'admin_level', 'adm2_name', 'adm2_pcode',
 ];
 
-/** Kaggle provenance block served by GET /metadata (both runtimes). */
+/** production provenance block served by GET /metadata (both runtimes). */
 export function metadataDatasets() {
   return [
     {
       id: '7b9ed0ca41d930114260efabb71a7fbf616cb68456d30823ecfc2ac45732fe3c',
       name: 'hazardnet-weekly-forecasts',
-      url: 'https://www.kaggle.com/datasets/ashifahmedshuvo/hazardnet-weekly-forecasts/',
+      url: 'https://hazardnet.live/data/forecasts-latest.json',
       update_frequency: 'daily',
     },
     {
-      id: 'auto-forecast-pipeline',
-      name: 'hazardnet-auto-forecast-pipeline',
-      url: 'https://www.kaggle.com/code/ashifahmedshuvo/hazardnet-auto-forecast-pipeline/',
-      type: 'notebook',
+      id: 'forecast-pipeline',
+      name: 'hazardnet/forecast-pipeline',
+      url: 'https://github.com/myself-aas/HazardNet',
+      type: 'repository',
     },
   ];
 }
 
 export function metadataDataSource() {
-  return process.env.KAGGLE_DATASET || 'ashifahmedshuvo/hazardnet-weekly-forecasts';
+  return process.env.FORECAST_DATASET || 'hazardnet/weekly-forecasts';
 }
 
 /**

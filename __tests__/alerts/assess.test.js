@@ -89,7 +89,7 @@ describe('level mapping', () => {
     }), { policy, now: NOW });
     expect(alert.level).toBe('WATCH');
     expect(alert.blockers.map((b) => b.rule)).toContain('warning_requires_calibration');
-    expect(alert.blockers[0].detail).toMatch(/no calibration map is fitted/);
+    expect(alert.blockers[0].detail).toMatch(/no calibration accuracy is claimed/);
   });
 
   test('WARNING needs both a calibrated probability and agreeing tracks', () => {

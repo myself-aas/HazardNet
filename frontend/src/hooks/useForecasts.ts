@@ -1,11 +1,10 @@
 /**
  * Forecast data hooks — TanStack Query wrappers around
- * `GET /api/v1/forecasts/bulk` (the Kaggle pipeline's serving path).
+ * `GET /api/v1/forecasts/bulk` (the production's serving path).
  *
- * Data cadence: the Kaggle notebooks run daily on Kaggle's own schedule, and
- * `daily_forecast.yml` pulls the forecast notebook's output
- * (`kaggle kernels output ashifahmedshuvo/hazardnet-auto-forecast-pipeline`)
- * into the forecast store and into the committed static snapshot at 00:00 UTC.
+ * Data cadence: forecasts are produced on a daily schedule, and the forecast
+ * run is pulled into the forecast store and into the committed static
+ * snapshot at 00:00 UTC.
  * The client still polls, so an open map picks up a re-run or a dispatched pull
  * without a page reload. When the API is unreachable, the hook falls back to the
  * committed snapshot (/data/forecasts-latest.json); when that is also
@@ -54,7 +53,7 @@ export function useForecasts(horizon: ForecastHorizon = '7_days') {
   return useQuery({
     queryKey: ['forecasts', 'bulk', horizon],
     queryFn: () => loadForecasts(horizon),
-    // The dataset is refreshed daily by the Kaggle pull (and whenever that
+    // The dataset is refreshed daily by the production (and whenever that
     // workflow is dispatched by hand). Poll in the background so an open map
     // receives a new ingestion without requiring a page reload.
     staleTime: 5 * 60 * 1000,

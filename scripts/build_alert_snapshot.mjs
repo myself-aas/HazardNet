@@ -108,7 +108,7 @@ export function extractAlertRows(payload) {
 
 /**
  * The engine's count of rows it assessed but could not publish: blocked by §1.6 or by a
- * missing calibration map, queued for a duty officer, or held by policy. `null` when the
+ * missing calibration, queued for a duty officer, or held by policy. `null` when the
  * payload is not a run report (a plain alert list cannot know this).
  */
 export function countNotPublished(payload) {

@@ -12,7 +12,7 @@
  * split backend/utils/forecastServe.js already uses for the forecast API.
  */
 
-import { searchRAG, routeSkills, GOVT_OFFICE_DIRECTORY } from '../../rag_pipeline/index.js';
+import { searchRAG, routeSkills, GOVT_OFFICE_DIRECTORY } from '../services/localKnowledge.js';
 import { generateAdvisoryWithFallback } from './ai_fallback_engine.js';
 import { detectGroundingIntent, executeMapsGrounding, executeSearchGrounding } from './gemini_grounding.js';
 

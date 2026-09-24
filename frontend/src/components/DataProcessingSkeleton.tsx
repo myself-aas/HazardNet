@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
  * HONESTY NOTE (audit UI-02 / UI-14 / UX-12, 2026-09-17)
  * -----------------------------------------------------
  * This component previously showed fixed telemetry that looked like measured
- * output — `SYSTEM ACTIVE`, `LATENCY: 18ms`, `Softmax Probability Tensor
+ * output — `SYSTEM ACTIVE`, `LATENCY: 18ms`, `Confidence Probability Record
  * 98.4%`, `Severity Index Regression 0.74 RMS`, `GIS Tile Pyramid Ingestion
  * 246 / 256`, `Raster Cache: OPTIMIZED (HTTP/2)` — plus a randomised progress
  * bar that looped back on itself. The first thing a visitor saw on

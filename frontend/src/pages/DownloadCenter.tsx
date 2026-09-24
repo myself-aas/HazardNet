@@ -192,16 +192,7 @@ const ChannelCard: React.FC<{ channel: DownloadChannel; state: ChannelState }> =
             >
               {channel.repoSlug}/releases
             </a>{' '}
-            · builds, signing and SHA-256 checksums are produced by the{' '}
-            <a
-              href={channel.workflowTemplate}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-bold underline underline-offset-2"
-            >
-              HazardNet release workflow template
-            </a>
-            .
+            · builds, signing and SHA-256 checksums are produced by the project's release automation.
           </p>
         </div>
       )}

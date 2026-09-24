@@ -102,7 +102,7 @@ describe('the front door', () => {
 
   it("resolves the ledger's review dates instead of printing a reference", async () => {
     renderPage();
-    // `/model-performance`'s review date is derived from the newest hindcast report, so it moves
+    // `/model-performance`'s review date is derived from the newest validation report, so it moves
     // when that workflow runs. The ledger reads it through a reference; this is the DOM-side
     // proof that the reference resolved rather than reaching the reader as `@review-date:…`.
     const table = screen.getByRole('table');

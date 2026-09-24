@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+// @ts-nocheck — Phase 0 descriptor stubs; return plain objects for unit tests, not JSX.
 /**
  * Material 3 Expressive Bento Card Component for HazardNet Mobile & RN Windows
  */

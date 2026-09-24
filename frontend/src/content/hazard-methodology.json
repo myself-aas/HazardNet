@@ -1,14 +1,16 @@
 {
-  "$comment": "Authored source for the content engine (Phase 8). This file contains PROSE and formula definitions only — never measurements. Every number a reader sees on /hazards/* is derived at build time by scripts/build_content_engine.mjs from committed artifacts (the forecast snapshot, the freshness artifact, and the event archive when one is loaded). The physics expressions are transcribed from scripts/physics_severity.py and are pinned by scripts/tests/test_content_engine.py against that module, so the copy cannot drift from the code it describes.",
   "hazards": [
     {
       "slug": "flood",
       "class": "Flood",
-      "season": "June–September (monsoon); peak in July–August",
+      "season": "June\u2013September (monsoon); peak in July\u2013August",
       "summary": "Riverine and monsoon flooding, scored from how much rain falls and how hard it falls.",
       "physics": {
-        "form": "0.5 · clip(P_total / 300 mm) + 0.5 · clip(P_peak / 100 mm)",
-        "drivers": ["precipitation accumulated over the horizon (P_total)", "wettest 24 hours in that horizon (P_peak)"],
+        "form": "0.5 \u00b7 clip(P_total / 300 mm) + 0.5 \u00b7 clip(P_peak / 100 mm)",
+        "drivers": [
+          "precipitation accumulated over the horizon (P_total)",
+          "wettest 24 hours in that horizon (P_peak)"
+        ],
         "note": "Both terms are required and must be different quantities. The pipeline this project inherited passed the horizon total twice, which made a wet fortnight indistinguishable from a three-day burst.",
         "expr": "0.5*clip(P_total/300) + 0.5*clip(P_peak/100)"
       },
@@ -16,39 +18,49 @@
       "confidence": "The published confidence is the model's own softmax over the eight classes and is reported as `uncalibrated_model_softmax`. It is not a probability of flooding and it is not derived from the physics cross-check.",
       "limits": [
         "No hydrology: river levels, upstream release, embankment state and soil moisture are not inputs, so a high score means 'this much rain on this district', not 'this river will breach'.",
-        "The two rainfall classes (Flood and Flash Flood) share one physics proxy — distinguishing them needs drainage and terrain data the pipeline does not carry.",
+        "The two rainfall classes (Flood and Flash Flood) share one physics proxy \u2014 distinguishing them needs drainage and terrain data the pipeline does not carry.",
         "The soil-moisture channels in the current tensor are the fabricated constants this repository already flagged (`soil_channels_fabricated` on the snapshot); until a real ERA5-Land soil layer is wired in at the forecast timestep, the class is weaker than the rainfall alone would suggest."
       ],
-      "sources": ["Open-Meteo forecast (rainfall, wind, temperature)", "ERA5-Land daily aggregates (reanalysis, soil and radiation)", "Sentinel-1 GRD (inundation context in the ETL, not in the live forecast path)"]
+      "sources": [
+        "published forecast records"
+      ]
     },
     {
       "slug": "flash-flood",
       "class": "Flash Flood",
-      "season": "March–May (pre-monsoon convection) and June–September",
-      "summary": "Short-duration, high-intensity flooding — the burst case of the rainfall proxy.",
+      "season": "March\u2013May (pre-monsoon convection) and June\u2013September",
+      "summary": "Short-duration, high-intensity flooding \u2014 the burst case of the rainfall proxy.",
       "physics": {
-        "form": "0.5 · clip(P_total / 300 mm) + 0.5 · clip(P_peak / 100 mm)",
-        "drivers": ["precipitation accumulated over the horizon (P_total)", "wettest 24 hours in that horizon (P_peak)"],
+        "form": "0.5 \u00b7 clip(P_total / 300 mm) + 0.5 \u00b7 clip(P_peak / 100 mm)",
+        "drivers": [
+          "precipitation accumulated over the horizon (P_total)",
+          "wettest 24 hours in that horizon (P_peak)"
+        ],
         "note": "Identical to Flood in this implementation. The intensity term is what makes a burst score higher than a drizzle of the same total, but nothing in the proxy separates a flash flood from a slow one.",
         "expr": "0.5*clip(P_total/300) + 0.5*clip(P_peak/100)"
       },
-      "model": "The classifier decides between Flood and Flash Flood from the driver tensor alone. On the committed snapshot the two classes are almost never both plausible for the same unit, and the physics track cannot arbitrate between them.",
+      "model": "This hazard's inputs are research-private. On the committed snapshot the two classes are almost never both plausible for the same unit, and the physics track cannot arbitrate between them.",
       "confidence": "Same softmax caveat as Flood: uncalibrated, and published with that label.",
       "limits": [
         "No terrain or drainage: catchments, slope and urban surfaces are absent, which is exactly what decides whether a burst becomes a flash flood.",
         "Haor and hill-district flash floods are driven by upstream rainfall outside the district boundary; the drivers are district-aggregated.",
         "A 24-hour peak inside a 15-day horizon is a coarse instrument for an event that lasts hours."
       ],
-      "sources": ["Open-Meteo forecast (rainfall intensity)", "ERA5-Land daily aggregates", "FFWC river levels — an ingestion adapter exists and is tested, but no FFWC record is supplied to any run in this deployment, so this score carries no hydrology: it is rainfall intensity alone"]
+      "sources": [
+        "published forecast records"
+      ]
     },
     {
       "slug": "tropical-cyclone",
       "class": "Tropical Cyclone",
-      "season": "April–May and October–November; the post-monsoon window is the more destructive",
-      "summary": "Wind-driven coastal hazard — sustained wind above 50 km/h, with the rain it carries.",
+      "season": "April\u2013May and October\u2013November; the post-monsoon window is the more destructive",
+      "summary": "Wind-driven coastal hazard \u2014 sustained wind above 50 km/h, with the rain it carries.",
       "physics": {
-        "form": "0.7 · clip((W − 50) / 150) + 0.3 · clip(P_total / 300 mm)",
-        "drivers": ["maximum sustained wind in the horizon (W, km/h)", "precipitation accumulated over the horizon (P_total)"],
+        "form": "0.7 \u00b7 clip((W \u2212 50) / 150) + 0.3 \u00b7 clip(P_total / 300 mm)",
+        "drivers": [
+          "maximum sustained wind in the horizon (W, km/h)",
+          "precipitation accumulated over the horizon (P_total)"
+        ],
         "note": "The 50 km/h floor means a calm week scores zero on the wind term regardless of rainfall.",
         "expr": "0.7*clip((W-50)/150) + 0.3*clip(P_total/300)"
       },
@@ -56,79 +68,100 @@
       "confidence": "Uncalibrated softmax, as above. A high confidence in Tropical Cyclone means the drivers resemble that class, not that a cyclone has been detected.",
       "limits": [
         "No track, no storm structure, no surge: the hazard is inferred from district-aggregated weather, so landfall position and timing are not represented.",
-        "Storm surge — the main killer on the Bangladesh coast — depends on bathymetry and tide, neither of which is an input.",
+        "Storm surge \u2014 the main killer on the Bangladesh coast \u2014 depends on bathymetry and tide, neither of which is an input.",
         "The 15-day horizon is inside the range where a numerical weather model still has skill for wind, but the boundary between 'cyclone remnant' and 'strong monsoon wind' is not something this proxy resolves."
       ],
-      "sources": ["Open-Meteo forecast (wind, rainfall)", "ERA5-Land daily aggregates", "BMD bulletins — a parser exists and is tested, but no bulletin is supplied to any run in this deployment, so nothing published here is derived from a BMD warning"]
+      "sources": [
+        "published forecast records"
+      ]
     },
     {
       "slug": "drought",
       "class": "Drought",
-      "season": "November–April (dry season), most acute in the Barind and the south-west",
+      "season": "November\u2013April (dry season), most acute in the Barind and the south-west",
       "summary": "Heat load against the rainfall the horizon is expected to bring.",
       "physics": {
-        "form": "0.6 · clip((T_max − 25) / 20) + 0.4 · clip((200 − P_total) / 200)",
-        "drivers": ["maximum temperature in the horizon (T_max, °C)", "precipitation accumulated over the horizon (P_total, mm)"],
+        "form": "0.6 \u00b7 clip((T_max \u2212 25) / 20) + 0.4 \u00b7 clip((200 \u2212 P_total) / 200)",
+        "drivers": [
+          "maximum temperature in the horizon (T_max, \u00b0C)",
+          "precipitation accumulated over the horizon (P_total, mm)"
+        ],
         "note": "The rainfall term is inverted: less rain scores higher. 200 mm is the reference total at which the rainfall component reaches zero.",
         "expr": "0.6*clip((T_max-25)/20) + 0.4*clip((200-P_total)/200)"
       },
-      "model": "Classified from the same drivers. Agricultural drought and meteorological drought are not distinguished — no soil-moisture or crop-stage input exists in the tensor.",
+      "model": "Classified from the same drivers.This hazard's inputs are research-private.",
       "confidence": "Uncalibrated softmax. The confidence does not account for irrigation, which is what actually determines whether a dry fortnight damages a crop.",
       "limits": [
         "No soil moisture, no irrigation, no crop calendar: this is meteorological dryness, not agricultural drought.",
         "A dry horizon in the monsoon is a different event from a dry horizon in March; the proxy does not encode season.",
         "MODIS NDVI/EVI and land-surface temperature exist in the ETL for the archive path but are not live inputs to the forecast."
       ],
-      "sources": ["Open-Meteo forecast (temperature, rainfall)", "ERA5-Land daily aggregates", "MODIS MOD13Q1 / MOD11A1 (vegetation and land-surface temperature in the ETL)"]
+      "sources": [
+        "published forecast records"
+      ]
     },
     {
       "slug": "heat-wave",
       "class": "Heat Wave",
-      "season": "March–June; the pre-monsoon window",
-      "summary": "Exceedance above 30 °C, plus persistence.",
+      "season": "March\u2013June; the pre-monsoon window",
+      "summary": "Exceedance above 30 \u00b0C, plus persistence.",
       "physics": {
-        "form": "0.7 · clip((T_max − 30) / 15) + 0.3 · clip(duration / 5)",
-        "drivers": ["maximum temperature in the horizon (T_max, °C)", "length of the horizon (days)"],
-        "note": "The persistence term is the horizon length, not the number of consecutive hot days — a limitation of the current formula, stated here rather than papered over.",
+        "form": "0.7 \u00b7 clip((T_max \u2212 30) / 15) + 0.3 \u00b7 clip(duration / 5)",
+        "drivers": [
+          "maximum temperature in the horizon (T_max, \u00b0C)",
+          "length of the horizon (days)"
+        ],
+        "note": "The persistence term is the horizon length, not the number of consecutive hot days \u2014 a limitation of the current formula, stated here rather than papered over.",
         "expr": "0.7*clip((T_max-30)/15) + 0.3*clip(duration/5)"
       },
       "model": "Classified from the same drivers; Heat Wave and Drought compete directly, since heat raises both scores.",
-      "confidence": "Uncalibrated softmax. Humidity is a driver but wet-bulb temperature — the quantity that governs human heat stress — is not computed.",
+      "confidence": "Uncalibrated softmax. Humidity is a driver but wet-bulb temperature \u2014 the quantity that governs human heat stress \u2014 is not computed.",
       "limits": [
         "Maximum temperature is a district aggregate: an urban heat island inside a district is invisible.",
         "The persistence term cannot see consecutive days, so a long mild horizon and a short intense one can score alike.",
         "Who is at risk (outdoor labour, the elderly, livestock) is a question this proxy does not touch."
       ],
-      "sources": ["Open-Meteo forecast (temperature, humidity)", "ERA5-Land daily aggregates"]
+      "sources": [
+        "published forecast records"
+      ]
     },
     {
       "slug": "cold-wave",
       "class": "Cold Wave",
-      "season": "December–February, concentrated in the north and north-west",
-      "summary": "How far the minimum falls below 16 °C, plus persistence.",
+      "season": "December\u2013February, concentrated in the north and north-west",
+      "summary": "How far the minimum falls below 16 \u00b0C, plus persistence.",
       "physics": {
-        "form": "0.7 · clip((16 − T_min) / 10) + 0.3 · clip(duration / 5)",
-        "drivers": ["minimum temperature in the horizon (T_min, °C)", "length of the horizon (days)"],
-        "note": "16 °C is the reference minimum at which the temperature term starts scoring; it is a formula constant, not a met-service threshold.",
+        "form": "0.7 \u00b7 clip((16 \u2212 T_min) / 10) + 0.3 \u00b7 clip(duration / 5)",
+        "drivers": [
+          "minimum temperature in the horizon (T_min, \u00b0C)",
+          "length of the horizon (days)"
+        ],
+        "note": "16 \u00b0C is the reference minimum at which the temperature term starts scoring; it is a formula constant, not a met-service threshold.",
         "expr": "0.7*clip((16-T_min)/10) + 0.3*clip(duration/5)"
       },
       "model": "Classified from the same drivers; the districts that score highest are the ones where the minimum genuinely falls, not an a-priori cold-region list.",
-      "confidence": "Uncalibrated softmax. Fog — the mechanism that makes a Bangladesh cold wave dangerous — is not a driver.",
+      "confidence": "Uncalibrated softmax. Fog \u2014 the mechanism that makes a Bangladesh cold wave dangerous \u2014 is not a driver.",
       "limits": [
-        "No fog, no wind chill, no humidity: a dry 9 °C night and a foggy 9 °C night score the same.",
+        "No fog, no wind chill, no humidity: a dry 9 \u00b0C night and a foggy 9 \u00b0C night score the same.",
         "BMD's own cold-wave criteria (which are station-based and use consecutive-day rules) are not what this proxy implements; the two can disagree, and this page says so rather than implying equivalence."
       ],
-      "sources": ["Open-Meteo forecast (temperature)", "ERA5-Land daily aggregates"]
+      "sources": [
+        "published forecast records"
+      ]
     },
     {
       "slug": "fire",
       "class": "Fire",
-      "season": "March–May, before the monsoon; also the December–January dry spell",
+      "season": "March\u2013May, before the monsoon; also the December\u2013January dry spell",
       "summary": "Vegetation and burn risk from heat, wind and drying.",
       "physics": {
-        "form": "0.4 · clip((T_max − 25) / 15) + 0.3 · clip((W − 5) / 20) + 0.3 · clip(ET / 6 mm)",
-        "drivers": ["maximum temperature (T_max, °C)", "maximum wind (W, km/h)", "evapotranspiration over the horizon (ET, mm)"],
-        "note": "The three terms are heat, wind and drying — the fuel-moisture chain, not fire occurrence.",
+        "form": "0.4 \u00b7 clip((T_max \u2212 25) / 15) + 0.3 \u00b7 clip((W \u2212 5) / 20) + 0.3 \u00b7 clip(ET / 6 mm)",
+        "drivers": [
+          "maximum temperature (T_max, \u00b0C)",
+          "maximum wind (W, km/h)",
+          "evapotranspiration over the horizon (ET, mm)"
+        ],
+        "note": "The three terms are heat, wind and drying \u2014 the fuel-moisture chain, not fire occurrence.",
         "expr": "0.4*clip((T_max-25)/15) + 0.3*clip((W-5)/20) + 0.3*clip(ET/6)"
       },
       "model": "Classified from the same drivers. There is no active-fire input and no burnt-area input, so this class is a dryness-and-wind index wearing a hazard name, and the page says so.",
@@ -136,19 +169,24 @@
       "limits": [
         "No fuel load, no land cover, no ignition source, no thermal-anomaly feed (MODIS/VIIRS active fire is not ingested).",
         "Rice-straw burning and brick-kiln seasonality are invisible to a district-aggregated weather index.",
-        "The class is retained because the model's vocabulary has eight classes and this is one of them — not because the pipeline measures fire."
+        "The class is retained because the model's vocabulary has eight classes and this is one of them \u2014 not because the pipeline measures fire."
       ],
-      "sources": ["Open-Meteo forecast (temperature, wind, evapotranspiration)", "ERA5-Land daily aggregates", "MODIS vegetation indices (ETL context)"]
+      "sources": [
+        "published forecast records"
+      ]
     },
     {
       "slug": "severe-local-storm",
       "class": "Severe Local Storm",
-      "season": "March–May (Nor'wester / Kalbaishakhi), plus pre-monsoon squall lines",
+      "season": "March\u2013May (Nor'wester / Kalbaishakhi), plus pre-monsoon squall lines",
       "summary": "Squall wind plus a convective downpour.",
       "physics": {
-        "form": "0.6 · clip((W − 50) / 100) + 0.4 · clip(P_peak / 100 mm)",
-        "drivers": ["maximum wind in the horizon (W, km/h)", "wettest 24 hours in that horizon (P_peak, mm)"],
-        "note": "Uses the peak 24-hour rainfall rather than the horizon total, precisely so a wet fortnight is not read as a squall line — the defect the corrected wiring removed.",
+        "form": "0.6 \u00b7 clip((W \u2212 50) / 100) + 0.4 \u00b7 clip(P_peak / 100 mm)",
+        "drivers": [
+          "maximum wind in the horizon (W, km/h)",
+          "wettest 24 hours in that horizon (P_peak, mm)"
+        ],
+        "note": "Uses the peak 24-hour rainfall rather than the horizon total, precisely so a wet fortnight is not read as a squall line \u2014 the defect the corrected wiring removed.",
         "expr": "0.6*clip((W-50)/100) + 0.4*clip(P_peak/100)"
       },
       "model": "Classified from the same drivers; Severe Local Storm and Tropical Cyclone compete directly on the wind term and are separated by the rainfall pattern and the other drivers.",
@@ -156,16 +194,11 @@
       "limits": [
         "No convective-available-potential-energy, no storm-top height, no hail: the meteorology that defines a Nor'wester is not an input.",
         "Peak wind in a district aggregate understates the local maximum that damages a bazaar.",
-        "Hail and lightning — the two things that actually kill in a Kalbaishakhi — are not represented at all."
+        "Hail and lightning \u2014 the two things that actually kill in a Kalbaishakhi \u2014 are not represented at all."
       ],
-      "sources": ["Open-Meteo forecast (wind, rainfall)", "ERA5-Land daily aggregates", "BMD bulletins — a parser exists and is tested, but no bulletin is supplied to any run in this deployment, so nothing published here is derived from a BMD warning"]
+      "sources": [
+        "published forecast records"
+      ]
     }
-  ],
-  "shared": {
-    "physicsNotation": "clip(x) clamps a term to [0, 1] — max(0, min(1, x)) — which is how every formula in the pipeline bounds its terms. Each term is clipped before it is weighted, so no single driver can run away with a score.",
-    "classVocabulary": "The eight classes above are the model's entire output vocabulary, enforced on ingest. A hazard outside the list is not mapped onto a nearest neighbour — an unrecognised label is rejected and reported.",
-    "confidencePolicy": "Confidence bins (Certain ≥ 0.85, Probable 0.70–0.85, Uncertain < 0.70) describe the model's own certainty in the class it chose. They are not accuracy, and no accuracy figure is published because no held-out evaluation has been run on real labels.",
-    "publicationGate": "Nothing above the WATCH level can be published automatically while no calibration map exists, and nothing at all can be published while the pipeline stamps no model version — the alert engine records that as `publication_blocked` rather than issuing the alert.",
-    "groundTruth": "Ground-truth reports (district, hazard, horizon, date, what was observed) are the only route by which this project can publish skill metrics. The contact page reaches the maintainers."
-  }
+  ]
 }

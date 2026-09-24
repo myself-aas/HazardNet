@@ -9,37 +9,37 @@ export const MAP_LAYERS = {
   esriSatellite: {
     name: 'Esri World Imagery (HD Satellite)',
     url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-    attribution: 'Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics',
+    attribution: 'Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics · map lines delineate study areas and do not necessarily depict accepted national boundaries',
     maxZoom: 19,
   },
   esriClarity: {
     name: 'Esri Clarity (Ultra HD Vivid Satellite)',
     url: 'https://clarity.maptiles.arcgis.com/arcgis/rest/services/World_Imagery/WMTS/1.0.0/default/default/GoogleMapsCompatible/{z}/{y}/{x}',
-    attribution: 'Tiles &copy; Esri Clarity',
+    attribution: 'Tiles &copy; Esri Clarity · map lines delineate study areas and do not necessarily depict accepted national boundaries',
     maxZoom: 19,
   },
   cartoDark: {
     name: 'High Contrast Dark GIS',
     url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-    attribution: '&copy; CARTO &copy; OpenStreetMap',
+    attribution: '&copy; CARTO &copy; OpenStreetMap · map lines delineate study areas and do not necessarily depict accepted national boundaries',
     maxZoom: 19,
   },
   osmStandard: {
     name: 'OpenStreetMap (Street & Topo)',
     url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-    attribution: '&copy; OpenStreetMap contributors',
+    attribution: '&copy; OpenStreetMap contributors · map lines delineate study areas and do not necessarily depict accepted national boundaries',
     maxZoom: 19,
   },
   esriShadedRelief: {
     name: 'Esri 3D Terrain Relief',
     url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}',
-    attribution: 'Tiles &copy; Esri',
+    attribution: 'Tiles &copy; Esri · map lines delineate study areas and do not necessarily depict accepted national boundaries',
     maxZoom: 17,
   },
   topoMap: {
     name: 'OpenTopoMap (Contours & Elevation)',
     url: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
-    attribution: 'Map data: &copy; OpenStreetMap contributors, SRTM',
+    attribution: 'Map data: &copy; OpenStreetMap contributors, SRTM · map lines delineate study areas and do not necessarily depict accepted national boundaries',
     maxZoom: 17,
   },
 };

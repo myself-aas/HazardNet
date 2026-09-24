@@ -181,7 +181,7 @@ def test_short_notebook_csv_still_warns_about_row_count(tmp_path):
 # ---------------------------------------------------------------------------
 # Coverage gate (audit 2026-09-17)
 #
-# The shipped pipeline skipped a district whenever its Earth Engine fetch came
+# A producer may skip a district whenever its upstream fetch came
 # back empty (`if not historical_steps: continue`) and printed nothing, so a
 # 25-of-64-district run looked identical to a complete one on the website. A
 # partial run may still be published — but only with its coverage tally
@@ -204,7 +204,7 @@ def test_manifest_without_a_coverage_tally_fails(tmp_path):
     columns, rows = notebook_rows(today())
     csv_path, json_path = write_csv_json(tmp_path, columns, rows)
     manifest = tmp_path / 'manifest.json'
-    manifest.write_text(json.dumps({'row_count': 128, 'source': 'kaggle'}), encoding='utf-8')
+    manifest.write_text(json.dumps({'row_count': 128, 'source': 'production'}), encoding='utf-8')
     proc = run_validate(csv_path, json_path, '--skip-freshness', coverage=True, manifest=manifest)
     assert proc.returncode == 1
     assert 'no coverage tally' in proc.stdout
@@ -262,7 +262,7 @@ def test_fabricated_soil_channels_are_disclosed_not_hidden(tmp_path):
 # Scene lineage (PRODUCT_SPEC §5.8)
 #
 # A forecast that cannot name the inputs behind it is not reproducible: the
-# scene manifest carries a content hash over the decadal windows, the tensor
+# scene manifest carries a content hash over the decadal windows, the record
 # digests and the Open-Meteo request/response fingerprint. These tests pin the
 # three ways the chain breaks: a malformed version, a manifest block pointing at
 # a file that is not there, and a row count that no longer matches.
@@ -362,4 +362,4 @@ def test_csv_and_sidecar_resolve_beside_the_manifest(tmp_path):
     )
     assert proc.returncode == 0, proc.stdout + proc.stderr
     # 20 rows read, not the 74 of the committed CSV: the file beside the manifest won.
-    assert 'Expected ~20 rows' in proc.stdout or '20 rows' in proc.stdout
+    assert 'got 20' in proc.stdout
