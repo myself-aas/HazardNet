@@ -1,23 +1,23 @@
 {
   "schema": "hazardnet-site-probe/v1",
-  "ran_at": "2026-09-24T20:35:20Z",
-  "run_url": "https://github.com/myself-aas/HazardNet/actions/runs/36055859647",
+  "ran_at": "2026-09-24T23:37:34Z",
+  "run_url": "https://github.com/myself-aas/HazardNet/actions/runs/36073646498",
   "site_url": "https://hazardnet.live",
   "outcome": "fail",
   "checks": [
     {
       "id": "homepage",
-      "outcome": "failure",
+      "outcome": "success",
       "detail": null
     },
     {
       "id": "deep_links",
-      "outcome": "skipped",
+      "outcome": "success",
       "detail": null
     },
     {
       "id": "security_headers",
-      "outcome": "skipped",
+      "outcome": "failure",
       "detail": null
     },
     {
