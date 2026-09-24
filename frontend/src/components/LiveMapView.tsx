@@ -1304,7 +1304,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                static elements) — without it Leaflet's internal panes
                (z-index 200–1000) escape to the root stacking context and
                would paint over the sticky header (z-40). */
-            className="relative w-full h-full z-10 bg-transparent pointer-events-auto"
+            className="relative w-full h-full min-h-[360px] z-10 bg-transparent pointer-events-auto"
           />
         </div>
 
