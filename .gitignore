@@ -88,3 +88,6 @@ yarn-error.log
 apps/mobile/android/
 apps/mobile/ios/
 apps/mobile/.expo/
+
+# Firebase local CLI cache
+.firebase/
