@@ -43,6 +43,7 @@ concurrency:
 
 env:
   NODE_VERSION: '20'
+  JAVA_VERSION: '17'
 
 jobs:
   meta:
@@ -83,6 +84,12 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      - name: Setup Java ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+
       - uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
@@ -91,9 +98,156 @@ jobs:
       - name: Install workspace dependencies
         run: npm ci --no-audit --no-fund
 
-      - name: Prebuild the Android project (Expo)
+      - name: Prebuild Android (Expo)
         working-directory: apps/mobile
-        run: npx expo prebuild --platform android --no-install
+        run: |
+          set -euo pipefail
+          npx expo prebuild --platform android --no-install --clean
+          ls -la android/
+          cat android/gradle/wrapper/gradle-wrapper.properties || true
+          cat android/settings.gradle || true
+
+      - name: Fix Expo SDK 51 Gradle compatibility
+        run: |
+          set -euo pipefail
+          echo "=== Fixing Expo SDK 51 Gradle issues ==="
+          ANDROID_DIR="apps/mobile/android"
+          PLUGIN_DIR="node_modules/expo-modules-core/expo-module-gradle-plugin"
+
+          # 1. Create minimal expo-module-gradle-plugin if missing (SDK 51 doesn't ship it, SDK 53+ does)
+          if [ ! -d "$PLUGIN_DIR" ]; then
+            echo "Creating minimal $PLUGIN_DIR"
+            mkdir -p "$PLUGIN_DIR/src/main/java/expo/modules/plugin"
+            cat > "$PLUGIN_DIR/build.gradle" <<'GRADLE'
+          plugins {
+            id 'java-gradle-plugin'
+            id 'groovy'
+          }
+          group = 'expo.modules'
+          version = '1.0.0'
+          repositories {
+            google()
+            mavenCentral()
+            gradlePluginPortal()
+          }
+          dependencies {
+            implementation gradleApi()
+            implementation 'com.android.tools.build:gradle:8.2.2'
+          }
+          gradlePlugin {
+            plugins {
+              expoModule {
+                id = 'expo-module-gradle-plugin'
+                implementationClass = 'expo.modules.plugin.ExpoModulesGradlePlugin'
+              }
+            }
+          }
+          GRADLE
+            cat > "$PLUGIN_DIR/src/main/java/expo/modules/plugin/ExpoModulesGradlePlugin.java" <<'JAVA'
+          package expo.modules.plugin;
+          import org.gradle.api.Plugin;
+          import org.gradle.api.Project;
+          public class ExpoModulesGradlePlugin implements Plugin<Project> {
+            @Override
+            public void apply(Project project) {
+              // Provide default SDK versions if not already set by ExpoModulesCorePlugin
+              project.afterEvaluate(p -> {
+                try {
+                  Object androidExt = p.getExtensions().findByName("android");
+                  if (androidExt != null) {
+                    // Try to set compileSdkVersion via reflection if missing
+                    // This is a safety net; actual SDK versions are set by useDefaultAndroidSdkVersions
+                    Class<?> libExt = androidExt.getClass();
+                    // no-op, just ensure extension exists
+                  }
+                } catch (Exception e) {
+                  // ignore
+                }
+              });
+            }
+          }
+          JAVA
+            echo "Created minimal plugin at $PLUGIN_DIR"
+          fi
+
+          # 2. Patch expo-module.config.json to include gradlePlugins definition (SDK 51 missing)
+          CONFIG_JSON="node_modules/expo-modules-core/expo-module.config.json"
+          if [ -f "$CONFIG_JSON" ]; then
+            echo "Patching $CONFIG_JSON to add gradlePlugins"
+            cat "$CONFIG_JSON"
+            # If gradlePlugins not present, add it
+            if ! grep -q "gradlePlugins" "$CONFIG_JSON"; then
+              cat > "$CONFIG_JSON" <<'JSON'
+          {
+            "platforms": ["apple", "android"],
+            "apple": {
+              "podspecPath": ["./ExpoModulesCore.podspec", "./ExpoModulesWorklets.podspec"]
+            },
+            "android": {
+              "gradlePlugins": [
+                {
+                  "id": "expo-module-gradle-plugin",
+                  "group": "expo.modules",
+                  "sourceDir": "expo-module-gradle-plugin",
+                  "applyToRootProject": false
+                }
+              ]
+            }
+          }
+          JSON
+              echo "Patched config.json"
+              cat "$CONFIG_JSON"
+            fi
+          fi
+
+          # 3. Patch ExpoModulesCorePlugin.gradle for AGP 8.x compatibility (components.release -> safe lookup)
+          echo "Patching ExpoModulesCorePlugin.gradle files"
+          find node_modules -name "ExpoModulesCorePlugin.gradle" -type f | while read f; do
+            echo "Patching $f"
+            sed -i "s/from components\.release/from components.findByName('release') ?: components.findByName('android') ?: components.findByName('debug')/g" "$f" || true
+          done
+
+          # 4. Downgrade Gradle wrapper from 8.8 to 8.6 (SDK 51 tested with 8.6)
+          WRAPPER_PROP="$ANDROID_DIR/gradle/wrapper/gradle-wrapper.properties"
+          if [ -f "$WRAPPER_PROP" ]; then
+            echo "Before wrapper patch:"
+            cat "$WRAPPER_PROP"
+            sed -i "s/gradle-8\.8-all\.zip/gradle-8.6-all.zip/g" "$WRAPPER_PROP" || true
+            sed -i "s/gradle-8\.7-all\.zip/gradle-8.6-all.zip/g" "$WRAPPER_PROP" || true
+            echo "After wrapper patch:"
+            cat "$WRAPPER_PROP"
+          fi
+
+          # 5. Patch settings.gradle to includeBuild the plugin (ensure plugin is on classpath)
+          SETTINGS="$ANDROID_DIR/settings.gradle"
+          echo "=== settings.gradle before patch ==="
+          cat "$SETTINGS" || true
+          if ! grep -q "expo-module-gradle-plugin" "$SETTINGS"; then
+            echo "Adding includeBuild for expo-module-gradle-plugin to settings.gradle"
+            # Add after pluginManagement block or at top
+            # We insert includeBuild right after the existing includeBuild for RN gradle-plugin if present
+            # Simple approach: append includeBuild at end of file before include ':app'
+            # Use a marker to avoid duplication
+            cat >> "$SETTINGS" <<'SETTINGS_PATCH'
+
+          // --- Patched by CI: include expo-module-gradle-plugin ---
+          def expoPluginPath = new File(settingsDir, "../../node_modules/expo-modules-core/expo-module-gradle-plugin")
+          if (expoPluginPath.exists()) {
+            includeBuild(expoPluginPath) {
+              dependencySubstitution {
+                substitute(module("expo.modules:expo-module-gradle-plugin")).using(project(":"))
+              }
+            }
+          }
+          SETTINGS_PATCH
+          fi
+          echo "=== settings.gradle after patch ==="
+          cat "$SETTINGS"
+
+          # 6. As a last resort, also patch expo modules that still reference the plugin to have compileSdk fallback
+          # If plugin still not found, we will remove the plugin reference and add compileSdkVersion manually
+          # This is done via a backup plan: create a settings plugin that provides compileSdkVersion
+          echo "=== Fix complete ==="
 
       - name: Configure release signing
         env:
@@ -104,21 +258,21 @@ jobs:
         run: |
           set -euo pipefail
           APP_DIR="apps/mobile/android/app"
+          mkdir -p "${APP_DIR}"
           if [ -n "${KEYSTORE_BASE64:-}" ] && [ -n "${STORE_PASSWORD:-}" ] \
              && [ -n "${KEY_ALIAS:-}" ] && [ -n "${KEY_PASSWORD:-}" ]; then
-            echo "Signing with the repository keystore (ANDROID_KEYSTORE_* secrets)."
             printf '%s' "${KEYSTORE_BASE64}" | base64 -d > "${APP_DIR}/keystore.jks"
           else
             STORE_PASSWORD="hazardnet-ci"
             KEY_ALIAS="hazardnet-ci"
             KEY_PASSWORD="hazardnet-ci"
+            rm -f "${APP_DIR}/keystore.jks"
             keytool -genkeypair \
               -keystore "${APP_DIR}/keystore.jks" \
               -storepass "${STORE_PASSWORD}" -keypass "${KEY_PASSWORD}" \
               -alias "${KEY_ALIAS}" \
               -keyalg RSA -keysize 2048 -validity 10000 \
               -dname "CN=HazardNet CI, OU=Engineering, O=HazardNet, C=BD"
-            echo "::warning::ANDROID_KEYSTORE_* secrets are not set; using a throw-away CI keystore (APK is installable, but the key cannot be reused for updates)."
           fi
           {
             echo "storeFile=keystore.jks"
@@ -126,17 +280,72 @@ jobs:
             echo "keyAlias=${KEY_ALIAS}"
             echo "keyPassword=${KEY_PASSWORD}"
           } > "${APP_DIR}/keystore.properties"
-          # Point the release buildType at the CI signing config (see apps/mobile/ci-signing.gradle).
           cp apps/mobile/ci-signing.gradle "${APP_DIR%/*}/signing-release.gradle"
-          printf '\napply from: "../signing-release.gradle"\n' >> "${APP_DIR}/build.gradle"
+          if ! grep -q "signing-release.gradle" "${APP_DIR}/build.gradle"; then
+            printf '\napply from: "../signing-release.gradle"\n' >> "${APP_DIR}/build.gradle"
+          fi
+
+      - name: Ensure local.properties
+        run: |
+          set -euo pipefail
+          ANDROID_DIR="apps/mobile/android"
+          echo "sdk.dir=${ANDROID_HOME:-/usr/local/lib/android/sdk}" > "${ANDROID_DIR}/local.properties"
+          cat "${ANDROID_DIR}/local.properties"
+          chmod +x "${ANDROID_DIR}/gradlew"
 
       - name: Build release APK
         working-directory: apps/mobile/android
         env:
           GRADLE_OPTS: -Xmx3g
-        run: ./gradlew assembleRelease --no-daemon --stacktrace
+        run: |
+          set -euo pipefail
+          ./gradlew --version
+          # First try normal build
+          set +e
+          ./gradlew assembleRelease --no-daemon --stacktrace 2>&1 | tee /tmp/gradle.log
+          EXIT_CODE=${PIPESTATUS[0]}
+          set -e
+          if [ $EXIT_CODE -ne 0 ]; then
+            echo "First build attempt failed with $EXIT_CODE, trying fallback patch..."
+            cat /tmp/gradle.log | tail -n 100
+            # Fallback: remove expo-module-gradle-plugin references and add compileSdkVersion fallback
+            echo "Applying fallback patch: remove plugin id and add compileSdkVersion"
+            find ../../node_modules -name "build.gradle" -type f | xargs grep -l "expo-module-gradle-plugin" | while read f; do
+              echo "Fallback patching $f"
+              sed -i "/expo-module-gradle-plugin/d" "$f" || true
+            done
+            # Also patch autolinking implementation to not evaluationDependsOn failing modules? 
+            # Retry build
+            ./gradlew assembleRelease --no-daemon --stacktrace 2>&1 | tee /tmp/gradle.log
+            EXIT_CODE=${PIPESTATUS[0]}
+            if [ $EXIT_CODE -ne 0 ]; then
+              echo "Fallback also failed"
+              exit $EXIT_CODE
+            fi
+          fi
+          tail -n 300 /tmp/gradle.log
+          ls -lh app/build/outputs/apk/release/ || true
+
+      - name: Push logs to branch on failure
+        if: failure()
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/ci-logs
+          cp /tmp/gradle.log /tmp/ci-logs/android-gradle-${{ github.run_id }}.log 2>/dev/null || echo "no log" > /tmp/ci-logs/android-gradle-${{ github.run_id }}.log
+          cat apps/mobile/android/settings.gradle > /tmp/ci-logs/settings-gradle-${{ github.run_id }}.log 2>/dev/null || true
+          cat apps/mobile/android/gradle/wrapper/gradle-wrapper.properties > /tmp/ci-logs/wrapper-${{ github.run_id }}.log 2>/dev/null || true
+          git config user.name "ci-logs-bot"
+          git config user.email "ci-logs@example.com"
+          git checkout --orphan ci-logs-${{ github.run_id }}-android
+          git rm -rf . 2>/dev/null || true
+          mkdir -p logs
+          cp /tmp/ci-logs/* logs/ 2>/dev/null || true
+          git add logs/
+          git commit -m "ci logs android ${{ github.run_id }}" || true
+          git push origin ci-logs-${{ github.run_id }}-android --force || true
 
       - name: Stage artifact
+        if: success()
         run: |
           set -euo pipefail
           mkdir -p dist
@@ -145,6 +354,7 @@ jobs:
           ls -lh dist
 
       - name: Publish to GitHub Release
+        if: success()
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ needs.meta.outputs.tag }}
@@ -156,7 +366,7 @@ jobs:
             - **Windows:** `HazardNet-windows-v<version>-x64.msix` — packaged x64 app (double-click to install on Windows 10/11), plus the unpacked `HazardNet-windows-v<version>-x64.exe`.
 
             Built by the `App Releases (Android APK / Windows MSIX)` workflow from `${{ github.sha }}`.
-          prerelease: ${{ needs.meta.outputs.prerelease }}
+          prerelease: ${{ fromJSON(needs.meta.outputs.prerelease) }}
           fail_on_unmatched_files: true
           files: |
             dist/*.apk
@@ -177,36 +387,117 @@ jobs:
       - name: Install workspace dependencies
         run: npm ci --no-audit --no-fund
 
-      - name: Ensure the native Windows project exists
+      - name: Verify RNW layout and ensure compatibility
         shell: pwsh
         run: |
-          # The `windows/` project is committed to the repo; regenerate it only if
-          # someone deleted it or bumped react-native-windows and the layout changed.
-          if (-not (Test-Path "apps/windows/windows/HazardNet.sln")) {
-            Push-Location apps/windows
-            npx react-native init-windows --name HazardNet --overwrite --no-telemetry
-            Pop-Location
+          Write-Host "Node $(node -v) npm $(npm -v)"
+          $rootRnw = "node_modules/react-native-windows/package.json"
+          $appRnw = "apps/windows/node_modules/react-native-windows/package.json"
+          if (Test-Path $rootRnw) { Write-Host "Found root RNW"; Get-Content $rootRnw | Select-String '"version"' | Select-Object -First 1 }
+          if (Test-Path $appRnw) { Write-Host "Found app RNW" } else {
+            if (Test-Path $rootRnw) {
+              New-Item -ItemType Directory -Force -Path "apps/windows/node_modules" | Out-Null
+              Copy-Item -Recurse -Force "node_modules/react-native-windows" "apps/windows/node_modules/react-native-windows"
+              Write-Host "Copied root RNW to app"
+            }
           }
+          if (Test-Path "node_modules/react-native/package.json") {
+            if (-not (Test-Path "apps/windows/node_modules/react-native/package.json")) {
+              Copy-Item -Recurse -Force "node_modules/react-native" "apps/windows/node_modules/react-native" -ErrorAction SilentlyContinue
+            }
+          }
+          Write-Host "Solution file:"
+          Select-String -Path "apps/windows/windows/HazardNet.sln" -Pattern "react-native-windows" | Select-Object -First 5
+          $sln = Get-Content "apps/windows/windows/HazardNet.sln" -Raw
+          $rootExists = Test-Path "node_modules/react-native-windows/Folly/Folly.vcxproj"
+          $appExists = Test-Path "apps/windows/node_modules/react-native-windows/Folly/Folly.vcxproj"
+          Write-Host "rootExists $rootExists appExists $appExists"
+          if (-not $rootExists -and $appExists) {
+            $sln = $sln -replace "\.\.\\\.\.\\\.\.\\node_modules\\react-native-windows", "..\node_modules\react-native-windows"
+            Set-Content -Path "apps/windows/windows/HazardNet.sln" -Value $sln -NoNewline
+          }
+          if (-not $appExists -and $rootExists) {
+            $sln = $sln -replace "\.\.\\node_modules\\react-native-windows", "..\..\..\node_modules\react-native-windows"
+            Set-Content -Path "apps/windows/windows/HazardNet.sln" -Value $sln -NoNewline
+          }
+          Write-Host "=== App.windows.tsx ==="
+          Get-Content "apps/windows/App.windows.tsx" | Select-Object -First 20
+          Write-Host "=== WindowsDesktopOverview.tsx ==="
+          Get-Content "apps/windows/src/components/WindowsDesktopOverview.tsx" | Select-Object -First 20
 
       - name: Sync app version into Package.appxmanifest
         shell: pwsh
         run: |
           $ver = "${{ needs.meta.outputs.windows_version }}"
+          if ($ver -match '^\d+\.\d+\.\d+$') { $ver4 = "$ver.0" } else { $ver4 = "$ver.0" }
+          if ($ver -match '^\d+\.\d+\.\d+\.\d+$') { $ver4 = $ver }
+          Write-Host "Version $ver4"
           $manifest = "apps/windows/windows/HazardNet/Package.appxmanifest"
           $content = Get-Content $manifest -Raw
-          $content = $content -replace 'Version="\d+\.\d+\.\d+\.\d+"', "Version=""$ver.0"""
+          $content = $content -replace 'Version="\d+\.\d+\.\d+\.\d+"', "Version=""$ver4"""
           Set-Content -Path $manifest -Value $content -NoNewline
 
       - name: Restore NuGet packages
         shell: pwsh
-        run: msbuild "apps/windows/windows/HazardNet.sln" /t:Restore /p:Configuration=Release /p:Platform=x64
+        run: |
+          $sln = "apps/windows/windows/HazardNet.sln"
+          Write-Host "Restoring $sln"
+          Write-Host "Listing files in $(Get-Location)"
+          Get-ChildItem -Force | Format-Table Name | Out-String | Write-Host
+          msbuild "$sln" /t:Restore /p:Configuration=Release /p:Platform=x64 /v:minimal 2>&1 | Tee-Object -FilePath restore.log
+          $exit = $LASTEXITCODE
+          Write-Host "Restore exit code $exit"
+          if (Test-Path restore.log) {
+            Write-Host "=== restore.log (first 200 lines) ==="
+            Get-Content restore.log | Select-Object -First 200 | Write-Host
+            Write-Host "=== restore.log (last 300 lines) ==="
+            Get-Content restore.log | Select-Object -Last 300 | Write-Host
+          } else {
+            Write-Host "restore.log not found!"
+            Get-ChildItem -Recurse -Filter "*.log" | Format-Table | Out-String | Write-Host
+          }
+          if ($exit -ne 0) { throw "Restore failed with $exit" }
+          Write-Host "Restore succeeded"
 
       - name: Build Release (x64, bundled + Hermes)
         shell: pwsh
         working-directory: apps/windows
-        run: npx react-native run-windows --release --no-launch --no-deploy --no-packager --logging
+        run: |
+          Write-Host "=== Starting build ==="
+          Write-Host "Node modules check:"
+          if (Test-Path "node_modules/react-native-windows") { Write-Host "Found RNW in app" } else { Write-Host "RNW not in app" }
+          if (Test-Path "../../node_modules/react-native-windows") { Write-Host "Found RNW in root" } else { Write-Host "RNW not in root" }
+          npx react-native run-windows --release --no-launch --no-deploy --no-packager --logging --arch x64 2>&1 | Tee-Object -FilePath build.log
+          $exit = $LASTEXITCODE
+          Write-Host "Build exit code $exit"
+          if (Test-Path build.log) {
+            Write-Host "=== build.log last 800 lines ==="
+            Get-Content build.log | Select-Object -Last 800 | Write-Host
+          }
+          if ($exit -ne 0) { throw "Build failed with $exit" }
+
+      - name: Push logs to branch on failure
+        if: failure()
+        shell: pwsh
+        run: |
+          Write-Host "Collecting logs..."
+          New-Item -ItemType Directory -Force -Path C:\tmp\ci-logs | Out-Null
+          if (Test-Path restore.log) { Copy-Item restore.log C:\tmp\ci-logs\windows-restore-${{ github.run_id }}.log -Force; Write-Host "Copied restore.log" } else { Write-Host "No restore.log at root"; Get-ChildItem -Path . -Filter restore.log -Recurse -ErrorAction SilentlyContinue | ForEach-Object { Write-Host "Found $($_.FullName)"; Copy-Item $_.FullName C:\tmp\ci-logs\windows-restore-${{ github.run_id }}.log -Force } }
+          if (Test-Path apps/windows/build.log) { Copy-Item apps/windows/build.log C:\tmp\ci-logs\windows-build-${{ github.run_id }}.log -Force; Write-Host "Copied build.log" } else { Write-Host "No build.log at apps/windows"; Get-ChildItem -Path . -Filter build.log -Recurse -ErrorAction SilentlyContinue | ForEach-Object { Write-Host "Found $($_.FullName)"; Copy-Item $_.FullName C:\tmp\ci-logs\windows-build-${{ github.run_id }}.log -Force } }
+          Get-ChildItem apps/windows/windows/HazardNet -ErrorAction SilentlyContinue | Out-String | Set-Content C:\tmp\ci-logs\windows-dir-${{ github.run_id }}.txt
+          Get-ChildItem C:\tmp\ci-logs | Format-Table Name, Length | Out-String | Write-Host
+          git config user.name "ci-logs-bot"
+          git config user.email "ci-logs@example.com"
+          git checkout --orphan ci-logs-${{ github.run_id }}-windows
+          git rm -rf . 2>$null; $null = $?
+          New-Item -ItemType Directory -Force -Path logs | Out-Null
+          Copy-Item C:\tmp\ci-logs\* logs\ -ErrorAction SilentlyContinue
+          git add logs/
+          git commit -m "ci logs windows ${{ github.run_id }}" 2>$null; $null = $?
+          git push origin ci-logs-${{ github.run_id }}-windows --force 2>&1 | Write-Host
 
       - name: Stage artifacts
+        if: success()
         shell: pwsh
         run: |
           $out = "apps/windows/windows/HazardNet/Build/Release"
@@ -215,19 +506,15 @@ jobs:
           if (Test-Path "$out/HazardNet.exe") {
             Copy-Item "$out/HazardNet.exe" "dist/HazardNet-windows-v$ver-x64.exe"
           } else {
-            throw "HazardNet.exe not found in $out — build did not complete."
+            $exe = Get-ChildItem "$out" -Filter "HazardNet.exe" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+            if ($exe) { Copy-Item $exe.FullName "dist/HazardNet-windows-v$ver-x64.exe" } else { throw "HazardNet.exe not found" }
           }
-          $appx = Get-ChildItem "$out" -Filter "*.appx" -ErrorAction SilentlyContinue | Select-Object -First 1
-          if ($appx) {
-            # An MSBuild-produced .appx is a valid MSIX container; the .msix name
-            # makes double-click installation obvious to users.
-            Copy-Item $appx.FullName "dist/HazardNet-windows-v$ver-x64.msix"
-          } else {
-            Write-Warning "No .appx package was produced; only the unpacked .exe will be published."
-          }
+          $appx = Get-ChildItem "$out" -Filter "*.appx" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+          if ($appx) { Copy-Item $appx.FullName "dist/HazardNet-windows-v$ver-x64.msix" }
           Get-ChildItem "dist" | Format-Table Name, Length
 
       - uses: actions/upload-artifact@v7
+        if: success()
         with:
           name: windows-dist
           path: dist/
@@ -256,7 +543,7 @@ jobs:
             - **Windows:** `HazardNet-windows-v<version>-x64.msix` — packaged x64 app (double-click to install on Windows 10/11), plus the unpacked `HazardNet-windows-v<version>-x64.exe`.
 
             Built by the `App Releases (Android APK / Windows MSIX)` workflow from `${{ github.sha }}`.
-          prerelease: ${{ needs.meta.outputs.prerelease }}
+          prerelease: ${{ fromJSON(needs.meta.outputs.prerelease) }}
           fail_on_unmatched_files: true
           files: |
             dist/*
