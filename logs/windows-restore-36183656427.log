@@ -1,0 +1,12 @@
+MSBuild version 17.14.60+43b635718 for .NET Framework
+
+  Determining projects to restore...
+  Restored D:\a\HazardNet\HazardNet\node_modules\react-native-windows\ReactCommon\ReactCommon.vcxproj (in 1.51 min).
+  Restored D:\a\HazardNet\HazardNet\node_modules\react-native-windows\Common\Common.vcxproj (in 1.51 min).
+  Restored D:\a\HazardNet\HazardNet\node_modules\react-native-windows\Microsoft.ReactNative\Microsoft.ReactNative.vcxproj (in 1.51 min).
+  Restored D:\a\HazardNet\HazardNet\node_modules\react-native-windows\Folly\Folly.vcxproj (in 1.51 min).
+  Restored D:\a\HazardNet\HazardNet\apps\windows\node_modules\react-native-windows\Folly\Folly.vcxproj (in 1.24 sec).
+  Restored D:\a\HazardNet\HazardNet\apps\windows\node_modules\react-native-windows\Common\Common.vcxproj (in 1.24 sec).
+  Restored D:\a\HazardNet\HazardNet\apps\windows\node_modules\react-native-windows\ReactCommon\ReactCommon.vcxproj (in 1.24 sec).
+  Restored D:\a\HazardNet\HazardNet\apps\windows\windows\HazardNet\HazardNet.vcxproj (in 1.41 sec).
+  Restored D:\a\HazardNet\HazardNet\apps\windows\node_modules\react-native-windows\Microsoft.ReactNative\Microsoft.ReactNative.vcxproj (in 676 ms).

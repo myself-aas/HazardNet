@@ -1,0 +1,32 @@
+
+    Directory: D:\a\HazardNet\HazardNet\apps\windows\windows\HazardNet
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d----           9/25/2026  8:06 PM                Assets
+d----           9/25/2026  8:31 PM                Bundle
+d----           9/25/2026  8:09 PM                obj
+-a---           9/25/2026  8:06 PM              9 .gitignore
+-a---           9/25/2026  8:06 PM           3238 App.cpp
+-a---           9/25/2026  8:06 PM            740 App.h
+-a---           9/25/2026  8:06 PM             27 App.idl
+-a---           9/25/2026  8:06 PM            433 App.xaml
+-a---           9/25/2026  8:06 PM            447 AutolinkedNativeModules.g.cpp
+-a---           9/25/2026  8:06 PM            348 AutolinkedNativeModules.g.h
+-a---           9/25/2026  8:06 PM            260 AutolinkedNativeModules.g.props
+-a---           9/25/2026  8:06 PM            254 AutolinkedNativeModules.g.targets
+-a---           9/25/2026  8:06 PM           8342 HazardNet.vcxproj
+-a---           9/25/2026  8:06 PM           2004 HazardNet.vcxproj.filters
+-a---           9/25/2026  8:06 PM            418 MainPage.cpp
+-a---           9/25/2026  8:06 PM            361 MainPage.h
+-a---           9/25/2026  8:06 PM            179 MainPage.idl
+-a---           9/25/2026  8:06 PM            693 MainPage.xaml
+-a---           9/25/2026  8:07 PM           1614 Package.appxmanifest
+-a---           9/25/2026  8:09 PM           4172 packages.lock.json
+-a---           9/25/2026  8:06 PM             21 pch.cpp
+-a---           9/25/2026  8:06 PM            731 pch.h
+-a---           9/25/2026  8:06 PM            620 PropertySheet.props
+-a---           9/25/2026  8:06 PM            383 ReactPackageProvider.cpp
+-a---           9/25/2026  8:06 PM            453 ReactPackageProvider.h
+
+
