@@ -597,31 +597,53 @@ jobs:
           Write-Host "Restoring $sln"
           New-Item -ItemType Directory -Force -Path "C:\tmp\ci-logs" | Out-Null
           Write-Host "MSBuild version:"
-          msbuild -version 2>&1 | Write-Host
+          try { msbuild -version 2>&1 | Write-Host } catch { Write-Host "msbuild -version failed: $_" }
           Write-Host "dotnet info:"
-          dotnet --info 2>&1 | Select-Object -First 30 | Write-Host
+          try { dotnet --info 2>&1 | Select-Object -First 30 | Write-Host } catch { Write-Host "dotnet --info failed" }
           Write-Host "Solution exists: $(Test-Path $sln)"
           Get-ChildItem "apps/windows/windows/HazardNet" | Format-Table Name, Length | Out-String | Write-Host
           Write-Host "Running msbuild restore..."
-          # Use Out-File instead of Tee-Object for reliability
-          msbuild "$sln" /t:Restore /p:Configuration=Release /p:Platform=x64 /v:minimal > C:\tmp\restore.log 2>&1
-          $exit = $LASTEXITCODE
-          Write-Host "Restore exit $exit"
-          if (Test-Path "C:\tmp\restore.log") {
-            Write-Host "=== C:\tmp\restore.log full ==="
-            Get-Content "C:\tmp\restore.log" | Write-Host
-            Copy-Item "C:\tmp\restore.log" "C:\tmp\ci-logs\windows-restore-${{ github.run_id }}.log" -Force
-          } else {
-            Write-Host "No C:\tmp\restore.log created!"
+          $restoreLog = "C:\tmp\restore.log"
+          if (Test-Path $restoreLog) { Remove-Item $restoreLog -Force }
+          try {
+            # Use cmd to ensure redirection works
+            cmd /c "msbuild `"$sln`" /t:Restore /p:Configuration=Release /p:Platform=x64 /v:minimal > `"$restoreLog`" 2>&1"
+            $exit = $LASTEXITCODE
+            Write-Host "cmd msbuild exit $exit"
+          } catch {
+            Write-Host "Exception running msbuild: $_"
+            $_ | Out-File $restoreLog -Append
+            $exit = 1
           }
-          # Also try detailed log
+          if (Test-Path $restoreLog) {
+            Write-Host "=== $restoreLog ==="
+            Get-Content $restoreLog | Write-Host
+            Copy-Item $restoreLog "C:\tmp\ci-logs\windows-restore-${{ github.run_id }}.log" -Force
+          } else {
+            Write-Host "No $restoreLog created!"
+            # Try direct msbuild
+            try {
+              msbuild "$sln" /t:Restore /p:Configuration=Release /p:Platform=x64 /v:minimal 2>&1 | Out-File $restoreLog
+              $exit = $LASTEXITCODE
+              Write-Host "Direct msbuild exit $exit"
+              Get-Content $restoreLog | Write-Host
+              Copy-Item $restoreLog "C:\tmp\ci-logs\windows-restore-${{ github.run_id }}.log" -Force
+            } catch {
+              Write-Host "Direct msbuild also failed: $_"
+              "Direct msbuild failed $_" | Out-File "C:\tmp\ci-logs\windows-restore-${{ github.run_id }}.log"
+              $exit = 1
+            }
+          }
           if ($exit -ne 0) {
             Write-Host "Retrying with detailed verbosity..."
-            msbuild "$sln" /t:Restore /p:Configuration=Release /p:Platform=x64 /v:detailed > C:\tmp\restore-detailed.log 2>&1
-            Get-Content "C:\tmp\restore-detailed.log" | Select-Object -Last 1000 | Write-Host
-            Copy-Item "C:\tmp\restore-detailed.log" "C:\tmp\ci-logs\windows-restore-${{ github.run_id }}-detailed.log" -Force -ErrorAction SilentlyContinue
+            $detailedLog = "C:\tmp\restore-detailed.log"
+            cmd /c "msbuild `"$sln`" /t:Restore /p:Configuration=Release /p:Platform=x64 /v:detailed > `"$detailedLog`" 2>&1"
+            if (Test-Path $detailedLog) {
+              Get-Content $detailedLog | Select-Object -Last 1000 | Write-Host
+              Copy-Item $detailedLog "C:\tmp\ci-logs\windows-restore-${{ github.run_id }}-detailed.log" -Force -ErrorAction SilentlyContinue
+            }
+            throw "Restore failed $exit"
           }
-          if ($exit -ne 0) { throw "Restore failed $exit" }
 
       - name: Build Release (x64)
         shell: pwsh
