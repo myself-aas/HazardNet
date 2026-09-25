@@ -466,10 +466,14 @@ jobs:
             Set-Content -Path "apps/windows/windows/HazardNet.sln" -Value $sln -NoNewline
             Write-Host "Patched sln to use root node_modules"
           }
-          Write-Host "=== Running autolink-windows ==="
-          npx react-native autolink-windows --logging --sln apps/windows/windows/HazardNet.sln 2>&1 | Tee-Object -FilePath autolink.log
-          Write-Host "=== autolink.log tail ==="
-          Get-Content autolink.log | Select-Object -Last 200 | Write-Host
+          Write-Host "=== Running react-native config (instead of autolink-windows which is not available in this RNW version) ==="
+          npx react-native config 2>&1 | Select-Object -First 100 | Write-Host
+          Write-Host "=== Checking if autolink-windows command exists ==="
+          npx react-native --help 2>&1 | Select-String "windows" | Write-Host
+          # Try alternative autolink command for RNW 0.74
+          Write-Host "Trying npx react-native-windows-init --help"
+          npx react-native-windows-init --help 2>&1 | Select-Object -First 20 | Write-Host
+          "autolink check done" | Set-Content autolink.log
           Write-Host "=== App.windows.tsx ==="
           Get-Content "apps/windows/App.windows.tsx" | Select-Object -First 30 | Write-Host
           Write-Host "=== vcxproj ==="
