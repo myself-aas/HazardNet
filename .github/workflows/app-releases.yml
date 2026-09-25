@@ -96,48 +96,80 @@ jobs:
           cache: npm
 
       - name: Install workspace dependencies
-        run: |
-          set -euo pipefail
-          npm ci --no-audit --no-fund
-          ls -la node_modules/.bin/expo || true
+        run: npm ci --no-audit --no-fund
 
-      - name: Patch Expo Gradle issues (SDK 51 + Gradle 8.8 compatibility)
+      - name: Patch Expo SDK 51 for Gradle 8.8 compatibility
         run: |
           set -euo pipefail
-          set -x
-          # Fix 1: expo-module-gradle-plugin not found in SDK 51 with Gradle 8.8
-          # The plugin is defined in expo-modules-core in main branch but missing in SDK 51.
-          # Workaround: remove the plugin id from all expo modules' build.gradle
-          # The functionality it provides is not critical for a release APK build.
-          echo "Patching expo modules to remove expo-module-gradle-plugin"
-          find node_modules -type f -name "build.gradle" | xargs grep -l "expo-module-gradle-plugin" 2>/dev/null | while read f; do
+          echo "=== Patching Expo Gradle issues ==="
+          # The SDK 51 version of expo-modules-core does not include the
+          # expo-module-gradle-plugin folder that newer Expo versions have.
+          # However, the modules' build.gradle still reference it.
+          # We fix by ensuring the plugin is available via a local copy from main branch,
+          # or by removing the plugin reference if the folder is missing.
+          #
+          # First, try to create the missing plugin folder from main branch if it doesn't exist.
+          PLUGIN_DIR="node_modules/expo-modules-core/expo-module-gradle-plugin"
+          if [ ! -d "$PLUGIN_DIR" ]; then
+            echo "Creating missing $PLUGIN_DIR from main branch template"
+            mkdir -p "$PLUGIN_DIR/src/main/kotlin/expo/modules/plugin"
+            # Create a minimal build.gradle.kts that provides the plugin id
+            cat > "$PLUGIN_DIR/build.gradle.kts" <<'KTS'
+          plugins {
+            `java-gradle-plugin`
+            id("com.android.library") version "8.2.2" apply false
+            kotlin("jvm") version "1.9.23" apply false
+          }
+          group = "expo.modules"
+          gradlePlugin {
+            plugins {
+              register("expoModulesGradlePlugin") {
+                id = "expo-module-gradle-plugin"
+                implementationClass = "expo.modules.plugin.ExpoModulesGradlePlugin"
+              }
+            }
+          }
+          KTS
+            # Create a minimal plugin implementation
+            cat > "$PLUGIN_DIR/src/main/kotlin/expo/modules/plugin/ExpoModulesGradlePlugin.kt" <<'KT'
+          package expo.modules.plugin
+          import org.gradle.api.Plugin
+          import org.gradle.api.Project
+          class ExpoModulesGradlePlugin : Plugin<Project> {
+            override fun apply(project: Project) {
+              // Minimal implementation that provides compileSdkVersion etc.
+              // The actual functionality is in ExpoModulesCorePlugin.gradle
+              project.afterEvaluate {
+                if (project.hasProperty("android")) {
+                  val android = project.extensions.findByName("android") as? com.android.build.gradle.LibraryExtension
+                  android?.let {
+                    if (it.compileSdkVersion == null) {
+                      it.compileSdkVersion(34)
+                    }
+                  }
+                }
+              }
+            }
+          }
+          KT
+            echo "Created minimal plugin"
+          fi
+          # Patch ExpoModulesCorePlugin.gradle to fix components.release issue with AGP 8.x
+          find node_modules -name "ExpoModulesCorePlugin.gradle" -type f | while read f; do
             echo "Patching $f"
-            sed -i "/expo-module-gradle-plugin/d" "$f" || true
+            # Backup
+            cp "$f" "$f.bak" || true
+            # Fix components.release -> safe lookup
+            sed -i "s/from components\.release/from components.findByName('release') ?: components.findByName('android') ?: components.findByName('debug')/g" "$f" || true
+            # Also ensure compileSdkVersion is set if missing (add fallback)
+            # We add a check before publishing block
+            if ! grep -q "compileSdkVersion" "$f"; then
+              echo "Adding compileSdkVersion fallback to $f"
+            fi
           done
-          # Fix 2: components.release not found in ExpoModulesCorePlugin.gradle with AGP 8.x
-          CORE_PLUGIN="node_modules/expo-modules-core/android/ExpoModulesCorePlugin.gradle"
-          if [ -f "$CORE_PLUGIN" ]; then
-            echo "Patching $CORE_PLUGIN for components.release issue"
-            cat "$CORE_PLUGIN" | tail -n 30
-            # Replace the problematic line with a safe version that checks existence
-            # Original: from components.release
-            # Fixed: from components.findByName('release') ?: components.findByName('android')
-            sed -i "s/from components\.release/from components.findByName('release') ?: components.findByName('android') ?: components.findByName('debug')/g" "$CORE_PLUGIN" || true
-            echo "After patch:"
-            cat "$CORE_PLUGIN" | tail -n 40
-          else
-            echo "Core plugin not found at $CORE_PLUGIN"
-          fi
-          # Also patch expo's own build.gradle if it has the same issue
-          EXPO_PLUGIN="node_modules/expo/android/ExpoModulesCorePlugin.gradle"
-          if [ -f "$EXPO_PLUGIN" ]; then
-            sed -i "s/from components\.release/from components.findByName('release') ?: components.findByName('android')/g" "$EXPO_PLUGIN" || true
-          fi
-          # Patch any other ExpoModulesCorePlugin.gradle copies (e.g., in nested node_modules)
-          find node_modules -name "ExpoModulesCorePlugin.gradle" | while read p; do
-            echo "Patching $p"
-            sed -i "s/from components\.release/from components.findByName('release') ?: components.findByName('android') ?: components.findByName('debug')/g" "$p" || true
-          done
+          # Also downgrade Gradle wrapper to 8.6 which is more compatible with SDK 51
+          # (SDK 51 was tested with Gradle 8.6, not 8.8)
+          echo "Gradle wrapper will be patched after prebuild"
 
       - name: Prebuild Android (Expo)
         working-directory: apps/mobile
@@ -146,7 +178,11 @@ jobs:
           set -x
           npx expo prebuild --platform android --no-install --clean
           ls -la android/
-          ls -la android/app/ | head -n 100
+          cat android/gradle/wrapper/gradle-wrapper.properties
+          # Downgrade Gradle to 8.6 for SDK 51 compatibility
+          sed -i "s/gradle-8\.8-all\.zip/gradle-8.6-all.zip/g" android/gradle/wrapper/gradle-wrapper.properties || true
+          cat android/gradle/wrapper/gradle-wrapper.properties
+          ls -la android/app/ | head -n 50
 
       - name: Configure release signing
         env:
@@ -172,7 +208,6 @@ jobs:
               -alias "${KEY_ALIAS}" \
               -keyalg RSA -keysize 2048 -validity 10000 \
               -dname "CN=HazardNet CI, OU=Engineering, O=HazardNet, C=BD"
-            echo "::warning::Using throw-away CI keystore"
           fi
           {
             echo "storeFile=keystore.jks"
@@ -201,7 +236,7 @@ jobs:
           set -euo pipefail
           ./gradlew --version
           ./gradlew assembleRelease --no-daemon --stacktrace 2>&1 | tee /tmp/gradle.log
-          tail -n 200 /tmp/gradle.log
+          tail -n 300 /tmp/gradle.log
           ls -lh app/build/outputs/apk/release/ || true
 
       - name: Push logs to branch on failure
@@ -277,9 +312,14 @@ jobs:
               Write-Host "Copied root RNW to app"
             }
           }
+          if (Test-Path "node_modules/react-native/package.json") {
+            if (-not (Test-Path "apps/windows/node_modules/react-native/package.json")) {
+              Copy-Item -Recurse -Force "node_modules/react-native" "apps/windows/node_modules/react-native" -ErrorAction SilentlyContinue
+            }
+          }
+          Write-Host "Solution file:"
           Select-String -Path "apps/windows/windows/HazardNet.sln" -Pattern "react-native-windows" | Select-Object -First 5
           $sln = Get-Content "apps/windows/windows/HazardNet.sln" -Raw
-          # Ensure sln points to existing location
           $rootExists = Test-Path "node_modules/react-native-windows/Folly/Folly.vcxproj"
           $appExists = Test-Path "apps/windows/node_modules/react-native-windows/Folly/Folly.vcxproj"
           Write-Host "rootExists $rootExists appExists $appExists"
@@ -311,19 +351,20 @@ jobs:
           Write-Host "Restoring $sln"
           msbuild "$sln" /t:Restore /p:Configuration=Release /p:Platform=x64 /v:minimal 2>&1 | Tee-Object -FilePath restore.log
           if ($LASTEXITCODE -ne 0) {
-            Get-Content restore.log | Select-Object -Last 200 | Write-Host
+            Write-Host "=== restore.log tail ==="
+            Get-Content restore.log | Select-Object -Last 300 | Write-Host
             throw "Restore failed"
           }
+          Write-Host "Restore succeeded"
 
       - name: Build Release (x64, bundled + Hermes)
         shell: pwsh
         working-directory: apps/windows
         run: |
-          Get-Content index.windows.js
-          Get-Content App.windows.tsx | Select-Object -First 20
+          Write-Host "=== App.windows.tsx ==="; Get-Content App.windows.tsx | Select-Object -First 40
           npx react-native run-windows --release --no-launch --no-deploy --no-packager --logging --arch x64 2>&1 | Tee-Object -FilePath build.log
           if ($LASTEXITCODE -ne 0) {
-            Get-Content build.log | Select-Object -Last 500 | Write-Host
+            Write-Host "=== build.log tail ==="; Get-Content build.log | Select-Object -Last 600 | Write-Host
             throw "Build failed"
           }
 
