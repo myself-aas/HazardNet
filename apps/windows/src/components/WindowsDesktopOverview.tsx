@@ -192,7 +192,7 @@ const styles = StyleSheet.create({
     backgroundColor: HDS_TOKENS.colors.surfaceWhite,
     borderRadius: HDS_TOKENS.radii.card,
     padding: 16,
-    // @ts-ignore
+    // @ts-expect-error - shadow props are web-compatible but RNW uses elevation
     shadowColor: '#000',
     shadowOpacity: 0.04,
     shadowRadius: 8,
@@ -203,7 +203,7 @@ const styles = StyleSheet.create({
     backgroundColor: HDS_TOKENS.colors.surfaceWhite,
     borderRadius: HDS_TOKENS.radii.card,
     padding: 20,
-    // @ts-ignore
+    // @ts-expect-error - shadow props are web-compatible but RNW uses elevation
     shadowColor: '#000',
     shadowOpacity: 0.04,
     shadowRadius: 8,

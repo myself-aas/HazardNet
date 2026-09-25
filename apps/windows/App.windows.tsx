@@ -61,7 +61,7 @@ const styles = StyleSheet.create({
     padding: 16,
     backgroundColor: HDS_TOKENS.colors.surfaceWhite,
     borderRadius: HDS_TOKENS.radii.card,
-    // @ts-ignore - shadow props are web-compatible but RNW uses elevation
+    // @ts-expect-error - shadow props are web-compatible but RNW uses elevation
     shadowColor: '#000',
     shadowOpacity: 0.05,
     shadowRadius: 12,
