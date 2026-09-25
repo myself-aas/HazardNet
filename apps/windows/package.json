@@ -14,8 +14,8 @@
     "@hazardnet/core": "*",
     "@hazardnet/design-system": "*",
     "react": "18.2.0",
-    "react-native": "0.74.0-rc.9",
-    "react-native-windows": "0.74.0"
+    "react-native": "0.74.5",
+    "react-native-windows": "0.74.17"
   },
   "devDependencies": {
     "typescript": "^5.4.5",

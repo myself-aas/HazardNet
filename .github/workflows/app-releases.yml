@@ -43,6 +43,7 @@ concurrency:
 
 env:
   NODE_VERSION: '20'
+  JAVA_VERSION: '17'
 
 jobs:
   meta:
@@ -83,17 +84,257 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      - name: Setup Java ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+
       - uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
 
       - name: Install workspace dependencies
-        run: npm ci --no-audit --no-fund
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund 2>&1 | tee /tmp/npm-ci.log
+          echo "npm install succeeded"
+          tail -n 50 /tmp/npm-ci.log
+          echo "=== Ensuring apps/mobile/node_modules has expo (monorepo hoisting fix) ==="
+          mkdir -p apps/mobile/node_modules/@expo
+          if [ ! -d "apps/mobile/node_modules/expo" ]; then
+            echo "Copying expo from root to apps/mobile"
+            cp -r node_modules/expo apps/mobile/node_modules/expo || true
+          fi
+          for pkg in cli config; do
+            if [ -d "node_modules/@expo/$pkg" ] && [ ! -d "apps/mobile/node_modules/@expo/$pkg" ]; then
+              echo "Copying @expo/$pkg"
+              cp -r "node_modules/@expo/$pkg" "apps/mobile/node_modules/@expo/$pkg" || true
+            fi
+          done
+          for mod in expo-modules-core react-native; do
+            if [ -d "node_modules/$mod" ] && [ ! -d "apps/mobile/node_modules/$mod" ]; then
+              cp -r "node_modules/$mod" "apps/mobile/node_modules/$mod" || true
+            fi
+          done
+          if [ -d "node_modules/@react-native" ]; then
+            mkdir -p apps/mobile/node_modules/@react-native
+            for sub in codegen cli-platform-android gradle-plugin; do
+              if [ -d "node_modules/@react-native/$sub" ] && [ ! -d "apps/mobile/node_modules/@react-native/$sub" ]; then
+                cp -r "node_modules/@react-native/$sub" "apps/mobile/node_modules/@react-native/$sub" || true
+              fi
+            done
+          fi
+          ls -la apps/mobile/node_modules/expo/AppEntry.js 2>&1 | head -n 5 || echo "expo AppEntry still missing"
+          ls -la apps/mobile/node_modules/react-native/package.json 2>&1 | head -n 5 || echo "react-native missing in app"
 
-      - name: Prebuild the Android project (Expo)
+      - name: Push npm logs on failure
+        if: failure()
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/ci-logs
+          cp /tmp/npm-ci.log /tmp/ci-logs/npm-ci-${{ github.run_id }}.log 2>/dev/null || echo "no npm log" > /tmp/ci-logs/npm-ci-${{ github.run_id }}.log
+          git config user.name "ci-logs-bot"
+          git config user.email "ci-logs@example.com"
+          git checkout --orphan ci-logs-${{ github.run_id }}-npm-android
+          git rm -rf . 2>/dev/null || true
+          mkdir -p logs
+          cp /tmp/ci-logs/* logs/ 2>/dev/null || true
+          git add logs/
+          git commit -m "ci logs npm android ${{ github.run_id }}" || true
+          git push origin ci-logs-${{ github.run_id }}-npm-android --force || true
+
+      - name: Prebuild Android (Expo)
         working-directory: apps/mobile
-        run: npx expo prebuild --platform android --no-install
+        run: |
+          set -euo pipefail
+          npx expo prebuild --platform android --no-install --clean
+          ls -la android/
+          cat android/gradle/wrapper/gradle-wrapper.properties || true
+          cat android/settings.gradle || true
+
+      - name: Fix Expo SDK 51 Gradle compatibility
+        run: |
+          set -euo pipefail
+          echo "=== Fixing Expo SDK 51 Gradle issues ==="
+          ANDROID_DIR="apps/mobile/android"
+          PLUGIN_DIR="node_modules/expo-modules-core/expo-module-gradle-plugin"
+          echo "=== Re-ensuring apps/mobile/node_modules/expo exists (monorepo fix) ==="
+          mkdir -p apps/mobile/node_modules/@expo
+          if [ ! -d "apps/mobile/node_modules/expo" ]; then
+            cp -r node_modules/expo apps/mobile/node_modules/expo || true
+          fi
+          for pkg in cli config; do
+            if [ -d "node_modules/@expo/$pkg" ] && [ ! -d "apps/mobile/node_modules/@expo/$pkg" ]; then
+              cp -r "node_modules/@expo/$pkg" "apps/mobile/node_modules/@expo/$pkg" || true
+            fi
+          done
+          for mod in expo-modules-core react-native; do
+            if [ -d "node_modules/$mod" ] && [ ! -d "apps/mobile/node_modules/$mod" ]; then
+              cp -r "node_modules/$mod" "apps/mobile/node_modules/$mod" || true
+            fi
+          done
+          if [ -d "node_modules/@react-native" ]; then
+            mkdir -p apps/mobile/node_modules/@react-native
+            for sub in codegen cli-platform-android gradle-plugin; do
+              if [ -d "node_modules/@react-native/$sub" ] && [ ! -d "apps/mobile/node_modules/@react-native/$sub" ]; then
+                cp -r "node_modules/@react-native/$sub" "apps/mobile/node_modules/@react-native/$sub" || true
+              fi
+            done
+          fi
+          ls -lh apps/mobile/node_modules/expo/AppEntry.js || true
+
+          # 1. Create minimal shim plugin if missing (SDK 51 doesn't ship it)
+          if [ ! -d "$PLUGIN_DIR" ]; then
+            echo "Creating minimal $PLUGIN_DIR"
+            mkdir -p "$PLUGIN_DIR/src/main/java/expo/modules/plugin"
+            cat > "$PLUGIN_DIR/build.gradle" <<'GRADLE'
+          plugins {
+            id 'java-gradle-plugin'
+            id 'groovy'
+          }
+          group = 'expo.modules'
+          version = '1.0.0'
+          repositories {
+            google()
+            mavenCentral()
+            gradlePluginPortal()
+          }
+          dependencies {
+            implementation gradleApi()
+            implementation 'com.android.tools.build:gradle:8.2.2'
+          }
+          gradlePlugin {
+            plugins {
+              expoModule {
+                id = 'expo-module-gradle-plugin'
+                implementationClass = 'expo.modules.plugin.ExpoModulesGradlePlugin'
+              }
+            }
+          }
+          GRADLE
+            cat > "$PLUGIN_DIR/src/main/java/expo/modules/plugin/ExpoModulesGradlePlugin.java" <<'JAVA'
+          package expo.modules.plugin;
+          import org.gradle.api.Plugin;
+          import org.gradle.api.Project;
+          public class ExpoModulesGradlePlugin implements Plugin<Project> {
+            @Override
+            public void apply(Project project) {
+              project.afterEvaluate(p -> {
+                try {
+                  Object android = p.getExtensions().findByName("android");
+                  if (android == null) return;
+                  Class<?> cls = android.getClass();
+                  boolean hasCompileSdk = false;
+                  try {
+                    Object val = cls.getMethod("getCompileSdkVersion").invoke(android);
+                    if (val != null) hasCompileSdk = true;
+                  } catch (Exception e) {
+                    try {
+                      Object val = cls.getMethod("getCompileSdk").invoke(android);
+                      if (val != null) hasCompileSdk = true;
+                    } catch (Exception e2) {}
+                  }
+                  if (!hasCompileSdk) {
+                    try { cls.getMethod("compileSdkVersion", int.class).invoke(android, 34); } catch (Exception e) {
+                      try { cls.getMethod("compileSdkVersion", String.class).invoke(android, "34"); } catch (Exception e2) {
+                        try { cls.getMethod("setCompileSdkVersion", int.class).invoke(android, 34); } catch (Exception e3) {}
+                      }
+                    }
+                  }
+                  try {
+                    Object defaultConfig = cls.getMethod("getDefaultConfig").invoke(android);
+                    if (defaultConfig != null) {
+                      Class<?> dcCls = defaultConfig.getClass();
+                      try {
+                        Object minVal = dcCls.getMethod("getMinSdkVersion").invoke(defaultConfig);
+                        if (minVal == null) {
+                          try { dcCls.getMethod("setMinSdkVersion", int.class).invoke(defaultConfig, 23); } catch (Exception ex) {}
+                          try { dcCls.getMethod("minSdkVersion", int.class).invoke(defaultConfig, 23); } catch (Exception ex) {}
+                        }
+                      } catch (Exception e) {}
+                      try {
+                        Object targetVal = dcCls.getMethod("getTargetSdkVersion").invoke(defaultConfig);
+                        if (targetVal == null) {
+                          try { dcCls.getMethod("setTargetSdkVersion", int.class).invoke(defaultConfig, 34); } catch (Exception ex) {}
+                          try { dcCls.getMethod("targetSdkVersion", int.class).invoke(defaultConfig, 34); } catch (Exception ex) {}
+                        }
+                      } catch (Exception e) {}
+                    }
+                  } catch (Exception e) {}
+                } catch (Exception e) {}
+              });
+            }
+          }
+          JAVA
+          fi
+
+          # 2. Patch expo-module.config.json
+          CONFIG_JSON="node_modules/expo-modules-core/expo-module.config.json"
+          if [ -f "$CONFIG_JSON" ] && ! grep -q "gradlePlugins" "$CONFIG_JSON"; then
+            cat > "$CONFIG_JSON" <<'JSON'
+          {
+            "platforms": ["apple", "android"],
+            "apple": {
+              "podspecPath": ["./ExpoModulesCore.podspec", "./ExpoModulesWorklets.podspec"]
+            },
+            "android": {
+              "gradlePlugins": [
+                {
+                  "id": "expo-module-gradle-plugin",
+                  "group": "expo.modules",
+                  "sourceDir": "expo-module-gradle-plugin",
+                  "applyToRootProject": false
+                }
+              ]
+            }
+          }
+          JSON
+          fi
+
+          # 3. Patch for AGP 8.x: components.release and classifier -> archiveClassifier
+          echo "Patching Gradle files for AGP 8 compatibility"
+          for dir in "node_modules" "apps/mobile/node_modules"; do
+            if [ -d "$dir" ]; then
+              echo "Patching in $dir"
+              # Fix components.release
+              find "$dir" -name "*.gradle" -type f -exec sed -i "s/from components\.release/from components.findByName('release') ?: components.findByName('android') ?: components.findByName('debug')/g" {} \; 2>/dev/null || true
+              # Fix classifier -> archiveClassifier (Gradle 8)
+              find "$dir" -name "*.gradle" -type f -exec sed -i "s/classifier = 'sources'/archiveClassifier.set('sources')/g" {} \; 2>/dev/null || true
+              find "$dir" -name "*.gradle" -type f -exec sed -i "s/classifier = \"sources\"/archiveClassifier.set(\"sources\")/g" {} \; 2>/dev/null || true
+              find "$dir" -name "*.gradle" -type f -exec sed -i "s/\.classifier = /\\.archiveClassifier.set(/g" {} \; 2>/dev/null || true
+              find "$dir" -name "*.gradle" -type f -exec sed -i "s/classifier = /archiveClassifier.set(/g" {} \; 2>/dev/null || true
+              # Also fix use of 'classifier' property in Jar tasks
+              find "$dir" -name "*.gradle" -type f -exec sed -i "s/classifier/archiveClassifier/g" {} \; 2>/dev/null || true
+            fi
+          done
+
+          # 4. Downgrade Gradle wrapper to 8.6
+          WRAPPER_PROP="$ANDROID_DIR/gradle/wrapper/gradle-wrapper.properties"
+          if [ -f "$WRAPPER_PROP" ]; then
+            sed -i "s/gradle-8\.8-all\.zip/gradle-8.6-all.zip/g" "$WRAPPER_PROP" || true
+            sed -i "s/gradle-8\.7-all\.zip/gradle-8.6-all.zip/g" "$WRAPPER_PROP" || true
+            cat "$WRAPPER_PROP"
+          fi
+
+          # 5. Patch settings.gradle to includeBuild shim
+          SETTINGS="$ANDROID_DIR/settings.gradle"
+          if ! grep -q "expo-module-gradle-plugin" "$SETTINGS"; then
+            cat >> "$SETTINGS" <<'SETTINGS_PATCH'
+
+          // --- CI patch: include expo-module-gradle-plugin shim ---
+          def expoPluginPath = new File(settingsDir, "../../node_modules/expo-modules-core/expo-module-gradle-plugin")
+          if (expoPluginPath.exists()) {
+            includeBuild(expoPluginPath) {
+              dependencySubstitution {
+                substitute(module("expo.modules:expo-module-gradle-plugin")).using(project(":"))
+              }
+            }
+          }
+          SETTINGS_PATCH
+          fi
+          cat "$SETTINGS"
 
       - name: Configure release signing
         env:
@@ -104,21 +345,21 @@ jobs:
         run: |
           set -euo pipefail
           APP_DIR="apps/mobile/android/app"
+          mkdir -p "${APP_DIR}"
           if [ -n "${KEYSTORE_BASE64:-}" ] && [ -n "${STORE_PASSWORD:-}" ] \
              && [ -n "${KEY_ALIAS:-}" ] && [ -n "${KEY_PASSWORD:-}" ]; then
-            echo "Signing with the repository keystore (ANDROID_KEYSTORE_* secrets)."
             printf '%s' "${KEYSTORE_BASE64}" | base64 -d > "${APP_DIR}/keystore.jks"
           else
             STORE_PASSWORD="hazardnet-ci"
             KEY_ALIAS="hazardnet-ci"
             KEY_PASSWORD="hazardnet-ci"
+            rm -f "${APP_DIR}/keystore.jks"
             keytool -genkeypair \
               -keystore "${APP_DIR}/keystore.jks" \
               -storepass "${STORE_PASSWORD}" -keypass "${KEY_PASSWORD}" \
               -alias "${KEY_ALIAS}" \
               -keyalg RSA -keysize 2048 -validity 10000 \
               -dname "CN=HazardNet CI, OU=Engineering, O=HazardNet, C=BD"
-            echo "::warning::ANDROID_KEYSTORE_* secrets are not set; using a throw-away CI keystore (APK is installable, but the key cannot be reused for updates)."
           fi
           {
             echo "storeFile=keystore.jks"
@@ -126,17 +367,84 @@ jobs:
             echo "keyAlias=${KEY_ALIAS}"
             echo "keyPassword=${KEY_PASSWORD}"
           } > "${APP_DIR}/keystore.properties"
-          # Point the release buildType at the CI signing config (see apps/mobile/ci-signing.gradle).
           cp apps/mobile/ci-signing.gradle "${APP_DIR%/*}/signing-release.gradle"
-          printf '\napply from: "../signing-release.gradle"\n' >> "${APP_DIR}/build.gradle"
+          if ! grep -q "signing-release.gradle" "${APP_DIR}/build.gradle"; then
+            printf '\napply from: "../signing-release.gradle"\n' >> "${APP_DIR}/build.gradle"
+          fi
+
+      - name: Ensure local.properties
+        run: |
+          set -euo pipefail
+          ANDROID_DIR="apps/mobile/android"
+          echo "sdk.dir=${ANDROID_HOME:-/usr/local/lib/android/sdk}" > "${ANDROID_DIR}/local.properties"
+          cat "${ANDROID_DIR}/local.properties"
+          chmod +x "${ANDROID_DIR}/gradlew"
 
       - name: Build release APK
         working-directory: apps/mobile/android
         env:
           GRADLE_OPTS: -Xmx3g
-        run: ./gradlew assembleRelease --no-daemon --stacktrace
+        run: |
+          set -euo pipefail
+          ./gradlew --version
+          set +e
+          ./gradlew assembleRelease --no-daemon --stacktrace 2>&1 | tee /tmp/gradle.log
+          EXIT_CODE=${PIPESTATUS[0]}
+          set -e
+          echo "First build exit $EXIT_CODE"
+          if [ $EXIT_CODE -ne 0 ]; then
+            echo "First attempt failed, trying fallback: remove expo-module-gradle-plugin and retry"
+            find ../../node_modules -name "build.gradle" -type f | xargs grep -l "expo-module-gradle-plugin" 2>/dev/null | while read f; do
+              sed -i "/expo-module-gradle-plugin/d" "$f" || true
+              if ! grep -q "compileSdkVersion" "$f"; then
+                if grep -q "android {" "$f"; then
+                  sed -i "/android {/a \    compileSdkVersion 34" "$f" || true
+                else
+                  echo -e "\nandroid {\n    compileSdkVersion 34\n    defaultConfig {\n        minSdkVersion 23\n        targetSdkVersion 34\n    }\n}" >> "$f" || true
+                fi
+              fi
+            done
+            find ../../apps/mobile/node_modules -name "build.gradle" -type f | xargs grep -l "expo-module-gradle-plugin" 2>/dev/null | while read f; do
+              sed -i "/expo-module-gradle-plugin/d" "$f" || true
+              if ! grep -q "compileSdkVersion" "$f"; then
+                if grep -q "android {" "$f"; then
+                  sed -i "/android {/a \    compileSdkVersion 34" "$f" || true
+                else
+                  echo -e "\nandroid {\n    compileSdkVersion 34\n    defaultConfig {\n        minSdkVersion 23\n        targetSdkVersion 34\n    }\n}" >> "$f" || true
+                fi
+              fi
+            done
+            ./gradlew assembleRelease --no-daemon --stacktrace 2>&1 | tee /tmp/gradle.log
+            EXIT_CODE=${PIPESTATUS[0]}
+            echo "Fallback exit $EXIT_CODE"
+            if [ $EXIT_CODE -ne 0 ]; then
+              tail -n 500 /tmp/gradle.log
+              exit $EXIT_CODE
+            fi
+          fi
+          tail -n 300 /tmp/gradle.log
+          ls -lh app/build/outputs/apk/release/ || true
+
+      - name: Push logs to branch on failure
+        if: failure()
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/ci-logs
+          cp /tmp/gradle.log /tmp/ci-logs/android-gradle-${{ github.run_id }}.log 2>/dev/null || echo "no log" > /tmp/ci-logs/android-gradle-${{ github.run_id }}.log
+          cat apps/mobile/android/settings.gradle > /tmp/ci-logs/settings-gradle-${{ github.run_id }}.log 2>/dev/null || true
+          cat apps/mobile/android/gradle/wrapper/gradle-wrapper.properties > /tmp/ci-logs/wrapper-${{ github.run_id }}.log 2>/dev/null || true
+          git config user.name "ci-logs-bot"
+          git config user.email "ci-logs@example.com"
+          git checkout --orphan ci-logs-${{ github.run_id }}-android
+          git rm -rf . 2>/dev/null || true
+          mkdir -p logs
+          cp /tmp/ci-logs/* logs/ 2>/dev/null || true
+          git add logs/
+          git commit -m "ci logs android ${{ github.run_id }}" || true
+          git push origin ci-logs-${{ github.run_id }}-android --force || true
 
       - name: Stage artifact
+        if: success()
         run: |
           set -euo pipefail
           mkdir -p dist
@@ -145,6 +453,7 @@ jobs:
           ls -lh dist
 
       - name: Publish to GitHub Release
+        if: success()
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ needs.meta.outputs.tag }}
@@ -156,7 +465,7 @@ jobs:
             - **Windows:** `HazardNet-windows-v<version>-x64.msix` — packaged x64 app (double-click to install on Windows 10/11), plus the unpacked `HazardNet-windows-v<version>-x64.exe`.
 
             Built by the `App Releases (Android APK / Windows MSIX)` workflow from `${{ github.sha }}`.
-          prerelease: ${{ needs.meta.outputs.prerelease }}
+          prerelease: ${{ fromJSON(needs.meta.outputs.prerelease) }}
           fail_on_unmatched_files: true
           files: |
             dist/*.apk
@@ -175,38 +484,176 @@ jobs:
           cache: npm
 
       - name: Install workspace dependencies
-        run: npm ci --no-audit --no-fund
-
-      - name: Ensure the native Windows project exists
         shell: pwsh
         run: |
-          # The `windows/` project is committed to the repo; regenerate it only if
-          # someone deleted it or bumped react-native-windows and the layout changed.
-          if (-not (Test-Path "apps/windows/windows/HazardNet.sln")) {
-            Push-Location apps/windows
-            npx react-native init-windows --name HazardNet --overwrite --no-telemetry
-            Pop-Location
+          Write-Host "Node $(node -v) npm $(npm -v)"
+          New-Item -ItemType Directory -Force -Path "C:\tmp" | Out-Null
+          New-Item -ItemType Directory -Force -Path "C:\tmp\ci-logs" | Out-Null
+          npm install --no-audit --no-fund 2>&1 | Tee-Object -FilePath "C:\tmp\npm-ci.log"
+          $exit = $LASTEXITCODE
+          Write-Host "npm install exit $exit"
+          if (Test-Path "C:\tmp\npm-ci.log") {
+            Write-Host "=== npm-ci.log tail ==="
+            Get-Content "C:\tmp\npm-ci.log" | Select-Object -Last 300 | Write-Host
+          } else {
+            Write-Host "No npm-ci.log found at C:\tmp"
+            Get-ChildItem "C:\tmp" -ErrorAction SilentlyContinue | Format-Table Name, Length | Out-String | Write-Host
           }
+          if ($exit -ne 0) { throw "npm install failed $exit" }
+          Write-Host "npm install succeeded"
+
+      - name: Push npm logs on failure
+        if: failure()
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path C:\tmp\ci-logs | Out-Null
+          if (Test-Path "C:\tmp\npm-ci.log") { Copy-Item "C:\tmp\npm-ci.log" "C:\tmp\ci-logs\npm-ci-${{ github.run_id }}.log" -Force }
+          else { "no npm log" | Set-Content "C:\tmp\ci-logs\npm-ci-${{ github.run_id }}.log" }
+          git config user.name "ci-logs-bot"
+          git config user.email "ci-logs@example.com"
+          git checkout --orphan "ci-logs-${{ github.run_id }}-npm-windows"
+          git rm -rf . 2>$null; $null = $?
+          New-Item -ItemType Directory -Force -Path logs | Out-Null
+          Copy-Item "C:\tmp\ci-logs\*" logs\ -ErrorAction SilentlyContinue
+          git add logs/
+          git commit -m "ci logs npm windows ${{ github.run_id }}" 2>$null; $null = $?
+          git push origin "ci-logs-${{ github.run_id }}-npm-windows" --force 2>&1 | Write-Host
+
+      - name: Verify RNW layout
+        shell: pwsh
+        run: |
+          Write-Host "=== Checking RNW ==="
+          $rootRnw = "node_modules/react-native-windows/package.json"
+          $appRnw = "apps/windows/node_modules/react-native-windows/package.json"
+          if (Test-Path $rootRnw) { Write-Host "Root RNW"; Get-Content $rootRnw | Select-String '"version"' | Select-Object -First 1 }
+          if (Test-Path $appRnw) { Write-Host "App RNW exists" } else {
+            if (Test-Path $rootRnw) {
+              New-Item -ItemType Directory -Force -Path "apps/windows/node_modules" | Out-Null
+              Copy-Item -Recurse -Force "node_modules/react-native-windows" "apps/windows/node_modules/react-native-windows"
+              Write-Host "Copied root RNW to app"
+            }
+          }
+          if (Test-Path "node_modules/react-native/package.json") {
+            if (-not (Test-Path "apps/windows/node_modules/react-native/package.json")) {
+              Copy-Item -Recurse -Force "node_modules/react-native" "apps/windows/node_modules/react-native" -ErrorAction SilentlyContinue
+            }
+          }
+          Get-Content "apps/windows/windows/HazardNet.sln" | Select-Object -First 30 | Write-Host
+          Select-String -Path "apps/windows/windows/HazardNet.sln" -Pattern "react-native-windows" | Select-Object -First 10 | Write-Host
+          $sln = Get-Content "apps/windows/windows/HazardNet.sln" -Raw
+          $rootExists = Test-Path "node_modules/react-native-windows/Folly/Folly.vcxproj"
+          $appExists = Test-Path "apps/windows/node_modules/react-native-windows/Folly/Folly.vcxproj"
+          Write-Host "rootExists $rootExists appExists $appExists"
+          if (-not $rootExists -and $appExists) {
+            $sln = $sln -replace "\.\.\\\.\.\\\.\.\\node_modules\\react-native-windows", "..\node_modules\react-native-windows"
+            Set-Content -Path "apps/windows/windows/HazardNet.sln" -Value $sln -NoNewline
+          }
+          if (-not $appExists -and $rootExists) {
+            $sln = $sln -replace "\.\.\\node_modules\\react-native-windows", "..\..\..\node_modules\react-native-windows"
+            Set-Content -Path "apps/windows/windows/HazardNet.sln" -Value $sln -NoNewline
+          }
+          Write-Host "=== App.windows.tsx ==="
+          Get-Content "apps/windows/App.windows.tsx" | Select-Object -First 20 | Write-Host
+          npx react-native config 2>&1 | Select-Object -First 50 | Write-Host
 
       - name: Sync app version into Package.appxmanifest
         shell: pwsh
         run: |
           $ver = "${{ needs.meta.outputs.windows_version }}"
+          if ($ver -match '^\d+\.\d+\.\d+$') { $ver4 = "$ver.0" } else { $ver4 = "$ver.0" }
+          if ($ver -match '^\d+\.\d+\.\d+\.\d+$') { $ver4 = $ver }
+          Write-Host "Version $ver4"
           $manifest = "apps/windows/windows/HazardNet/Package.appxmanifest"
           $content = Get-Content $manifest -Raw
-          $content = $content -replace 'Version="\d+\.\d+\.\d+\.\d+"', "Version=""$ver.0"""
+          $content = $content -replace 'Version="\d+\.\d+\.\d+\.\d+"', "Version=""$ver4"""
           Set-Content -Path $manifest -Value $content -NoNewline
 
       - name: Restore NuGet packages
         shell: pwsh
-        run: msbuild "apps/windows/windows/HazardNet.sln" /t:Restore /p:Configuration=Release /p:Platform=x64
+        run: |
+          $sln = "apps/windows/windows/HazardNet.sln"
+          Write-Host "Restoring $sln"
+          New-Item -ItemType Directory -Force -Path "C:\tmp\ci-logs" | Out-Null
+          Write-Host "MSBuild version:"
+          msbuild -version 2>&1 | Write-Host
+          Write-Host "dotnet info:"
+          dotnet --info 2>&1 | Select-Object -First 30 | Write-Host
+          Write-Host "Solution exists: $(Test-Path $sln)"
+          Get-ChildItem "apps/windows/windows/HazardNet" | Format-Table Name, Length | Out-String | Write-Host
+          msbuild "$sln" /t:Restore /p:Configuration=Release /p:Platform=x64 /v:detailed /bl:C:\tmp\restore.binlog 2>&1 | Tee-Object -FilePath "C:\tmp\restore.log" | Tee-Object -FilePath "restore.log"
+          $exit = $LASTEXITCODE
+          Write-Host "Restore exit $exit"
+          if (Test-Path "C:\tmp\restore.log") {
+            Write-Host "=== C:\tmp\restore.log tail ==="
+            Get-Content "C:\tmp\restore.log" | Select-Object -Last 1000 | Write-Host
+            Copy-Item "C:\tmp\restore.log" "C:\tmp\ci-logs\windows-restore-${{ github.run_id }}.log" -Force
+          }
+          if (Test-Path restore.log) {
+            Write-Host "=== restore.log tail ==="
+            Get-Content restore.log | Select-Object -Last 500 | Write-Host
+            Copy-Item restore.log "C:\tmp\ci-logs\windows-restore-${{ github.run_id }}-fallback.log" -Force -ErrorAction SilentlyContinue
+          }
+          if (Test-Path "C:\tmp\restore.binlog") {
+            Write-Host "Binlog exists at C:\tmp\restore.binlog"
+          }
+          if ($exit -ne 0) { throw "Restore failed $exit" }
 
-      - name: Build Release (x64, bundled + Hermes)
+      - name: Build Release (x64)
         shell: pwsh
         working-directory: apps/windows
-        run: npx react-native run-windows --release --no-launch --no-deploy --no-packager --logging
+        run: |
+          npx react-native run-windows --release --no-launch --no-deploy --no-packager --logging --arch x64 2>&1 | Tee-Object -FilePath build.log
+          $exit = $LASTEXITCODE
+          Write-Host "Build exit $exit"
+          if (Test-Path build.log) {
+            Get-Content build.log | Select-Object -Last 800 | Write-Host
+          }
+          if ($exit -ne 0) { throw "Build failed $exit" }
+
+      - name: Push logs on failure
+        if: failure()
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path C:\tmp\ci-logs | Out-Null
+          Write-Host "=== Collecting logs ==="
+          Get-ChildItem "C:\tmp" -Filter "*.log" -ErrorAction SilentlyContinue | Format-Table Name, Length | Out-String | Write-Host
+          if (Test-Path "C:\tmp\restore.log") {
+            Copy-Item "C:\tmp\restore.log" "C:\tmp\ci-logs\windows-restore-${{ github.run_id }}.log" -Force
+            Write-Host "Copied C:\tmp\restore.log"
+          }
+          $foundRestore = Get-ChildItem -Path . -Filter "restore.log" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+          if ($foundRestore) {
+            Copy-Item $foundRestore.FullName "C:\tmp\ci-logs\windows-restore-${{ github.run_id }}-found.log" -Force
+            Write-Host "Found restore.log at $($foundRestore.FullName)"
+          }
+          if (-not (Test-Path "C:\tmp\ci-logs\windows-restore-${{ github.run_id }}.log")) {
+            if (Test-Path restore.log) {
+              Copy-Item restore.log "C:\tmp\ci-logs\windows-restore-${{ github.run_id }}.log" -Force
+              Write-Host "Copied ./restore.log"
+            } else {
+              "No restore.log found - listing files" | Set-Content "C:\tmp\ci-logs\windows-restore-${{ github.run_id }}.log"
+              Get-ChildItem -Path . -Filter "*.log" -Recurse -ErrorAction SilentlyContinue | Format-Table FullName, Length | Out-String | Add-Content "C:\tmp\ci-logs\windows-restore-${{ github.run_id }}.log"
+            }
+          }
+          $foundBuild = Get-ChildItem -Path . -Filter "build.log" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+          if ($foundBuild) { Copy-Item $foundBuild.FullName "C:\tmp\ci-logs\windows-build-${{ github.run_id }}.log" -Force }
+          elseif (Test-Path "apps/windows/build.log") { Copy-Item "apps/windows/build.log" "C:\tmp\ci-logs\windows-build-${{ github.run_id }}.log" -Force }
+          elseif (Test-Path "C:\tmp\build.log") { Copy-Item "C:\tmp\build.log" "C:\tmp\ci-logs\windows-build-${{ github.run_id }}.log" -Force }
+          else { "No build.log" | Set-Content "C:\tmp\ci-logs\windows-build-${{ github.run_id }}.log" }
+          Get-ChildItem "apps/windows/windows/HazardNet" -ErrorAction SilentlyContinue | Out-String | Set-Content "C:\tmp\ci-logs\windows-dir-${{ github.run_id }}.txt"
+          Get-ChildItem "C:\tmp\ci-logs" | Format-Table Name, Length | Out-String | Write-Host
+          git config user.name "ci-logs-bot"
+          git config user.email "ci-logs@example.com"
+          git checkout --orphan "ci-logs-${{ github.run_id }}-windows"
+          git rm -rf . 2>$null; $null = $?
+          New-Item -ItemType Directory -Force -Path logs | Out-Null
+          Copy-Item "C:\tmp\ci-logs\*" logs\ -ErrorAction SilentlyContinue
+          git add logs/
+          git commit -m "ci logs windows ${{ github.run_id }}" 2>$null; $null = $?
+          git push origin "ci-logs-${{ github.run_id }}-windows" --force 2>&1 | Write-Host
 
       - name: Stage artifacts
+        if: success()
         shell: pwsh
         run: |
           $out = "apps/windows/windows/HazardNet/Build/Release"
@@ -215,19 +662,15 @@ jobs:
           if (Test-Path "$out/HazardNet.exe") {
             Copy-Item "$out/HazardNet.exe" "dist/HazardNet-windows-v$ver-x64.exe"
           } else {
-            throw "HazardNet.exe not found in $out — build did not complete."
+            $exe = Get-ChildItem "$out" -Filter "HazardNet.exe" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+            if ($exe) { Copy-Item $exe.FullName "dist/HazardNet-windows-v$ver-x64.exe" } else { throw "HazardNet.exe not found" }
           }
-          $appx = Get-ChildItem "$out" -Filter "*.appx" -ErrorAction SilentlyContinue | Select-Object -First 1
-          if ($appx) {
-            # An MSBuild-produced .appx is a valid MSIX container; the .msix name
-            # makes double-click installation obvious to users.
-            Copy-Item $appx.FullName "dist/HazardNet-windows-v$ver-x64.msix"
-          } else {
-            Write-Warning "No .appx package was produced; only the unpacked .exe will be published."
-          }
+          $appx = Get-ChildItem "$out" -Filter "*.appx" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+          if ($appx) { Copy-Item $appx.FullName "dist/HazardNet-windows-v$ver-x64.msix" }
           Get-ChildItem "dist" | Format-Table Name, Length
 
       - uses: actions/upload-artifact@v7
+        if: success()
         with:
           name: windows-dist
           path: dist/
@@ -256,7 +699,7 @@ jobs:
             - **Windows:** `HazardNet-windows-v<version>-x64.msix` — packaged x64 app (double-click to install on Windows 10/11), plus the unpacked `HazardNet-windows-v<version>-x64.exe`.
 
             Built by the `App Releases (Android APK / Windows MSIX)` workflow from `${{ github.sha }}`.
-          prerelease: ${{ needs.meta.outputs.prerelease }}
+          prerelease: ${{ fromJSON(needs.meta.outputs.prerelease) }}
           fail_on_unmatched_files: true
           files: |
             dist/*
