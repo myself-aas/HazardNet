@@ -184,6 +184,28 @@ jobs:
             done
           fi
           ls -lh apps/mobile/node_modules/expo/AppEntry.js || true
+          echo "=== Fixing ws/WebSocketServer compatibility for @expo/cli ==="
+          # Ensure ws 8.12.1 in apps/mobile (expo cli expects WebSocketServer)
+          if [ -d "node_modules/ws" ]; then
+            mkdir -p apps/mobile/node_modules/ws
+            cp -r node_modules/ws/* apps/mobile/node_modules/ws/ 2>/dev/null || true
+            # Force ws to have WebSocketServer alias if missing
+            if [ -f "apps/mobile/node_modules/ws/lib/websocket-server.js" ]; then
+              echo "ws has websocket-server.js"
+            fi
+          fi
+          # Patch @expo/cli DevToolsPluginWebsocketEndpoint to use Server if WebSocketServer missing
+          for f in $(find apps/mobile/node_modules/@expo/cli -type f -name "*.js" 2>/dev/null | head -n 20); do
+            if grep -q "WebSocketServer" "$f" 2>/dev/null; then
+              sed -i "s/WebSocketServer/Server/g" "$f" || true
+            fi
+          done
+          for f in $(find apps/mobile/node_modules/@expo/cli -type f -name "*.ts" 2>/dev/null | head -n 20); do
+            if grep -q "WebSocketServer" "$f" 2>/dev/null; then
+              sed -i "s/WebSocketServer/Server/g" "$f" || true
+            fi
+          done
+          echo "Patched @expo/cli ws usage"
 
           # 1. Create minimal shim plugin if missing (SDK 51 doesn't ship it)
           if [ ! -d "$PLUGIN_DIR" ]; then
@@ -580,21 +602,24 @@ jobs:
           dotnet --info 2>&1 | Select-Object -First 30 | Write-Host
           Write-Host "Solution exists: $(Test-Path $sln)"
           Get-ChildItem "apps/windows/windows/HazardNet" | Format-Table Name, Length | Out-String | Write-Host
-          msbuild "$sln" /t:Restore /p:Configuration=Release /p:Platform=x64 /v:detailed /bl:C:\tmp\restore.binlog 2>&1 | Tee-Object -FilePath "C:\tmp\restore.log" | Tee-Object -FilePath "restore.log"
+          Write-Host "Running msbuild restore..."
+          # Use Out-File instead of Tee-Object for reliability
+          msbuild "$sln" /t:Restore /p:Configuration=Release /p:Platform=x64 /v:minimal > C:\tmp\restore.log 2>&1
           $exit = $LASTEXITCODE
           Write-Host "Restore exit $exit"
           if (Test-Path "C:\tmp\restore.log") {
-            Write-Host "=== C:\tmp\restore.log tail ==="
-            Get-Content "C:\tmp\restore.log" | Select-Object -Last 1000 | Write-Host
+            Write-Host "=== C:\tmp\restore.log full ==="
+            Get-Content "C:\tmp\restore.log" | Write-Host
             Copy-Item "C:\tmp\restore.log" "C:\tmp\ci-logs\windows-restore-${{ github.run_id }}.log" -Force
+          } else {
+            Write-Host "No C:\tmp\restore.log created!"
           }
-          if (Test-Path restore.log) {
-            Write-Host "=== restore.log tail ==="
-            Get-Content restore.log | Select-Object -Last 500 | Write-Host
-            Copy-Item restore.log "C:\tmp\ci-logs\windows-restore-${{ github.run_id }}-fallback.log" -Force -ErrorAction SilentlyContinue
-          }
-          if (Test-Path "C:\tmp\restore.binlog") {
-            Write-Host "Binlog exists at C:\tmp\restore.binlog"
+          # Also try detailed log
+          if ($exit -ne 0) {
+            Write-Host "Retrying with detailed verbosity..."
+            msbuild "$sln" /t:Restore /p:Configuration=Release /p:Platform=x64 /v:detailed > C:\tmp\restore-detailed.log 2>&1
+            Get-Content "C:\tmp\restore-detailed.log" | Select-Object -Last 1000 | Write-Host
+            Copy-Item "C:\tmp\restore-detailed.log" "C:\tmp\ci-logs\windows-restore-${{ github.run_id }}-detailed.log" -Force -ErrorAction SilentlyContinue
           }
           if ($exit -ne 0) { throw "Restore failed $exit" }
 
