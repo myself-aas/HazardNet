@@ -84,7 +84,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - name: Setup Java ${{ env.JAVA_VERSION }} (for Gradle + keytool)
+      - name: Setup Java ${{ env.JAVA_VERSION }}
         uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -95,29 +95,23 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-
       - name: Install workspace dependencies
-        run: npm ci --no-audit --no-fund
-
-      - name: Accept Android licenses and install NDK
         run: |
           set -euo pipefail
-          yes | sdkmanager --licenses || true
-          sdkmanager --install "ndk;26.1.10909125" || echo "NDK install failed, continuing"
-          sdkmanager --install "platforms;android-34" "build-tools;34.0.0" || true
-          echo "ANDROID_HOME=${ANDROID_HOME}"
-          ls -la "${ANDROID_HOME}/ndk" || true
+          npm ci --no-audit --no-fund
+          ls -la node_modules/.bin/expo || true
+          ls -la apps/mobile/node_modules 2>&1 | head -n 20 || true
+          ls -la node_modules/react-native 2>&1 | head -n 5 || true
 
-      - name: Prebuild the Android project (Expo)
+      - name: Prebuild Android (Expo)
         working-directory: apps/mobile
         run: |
           set -euo pipefail
+          set -x
           npx expo prebuild --platform android --no-install --clean
           ls -la android/
           ls -la android/app/ | head -n 100
-          cat android/gradle.properties | head -n 50
+          cat android/gradle.properties | head -n 80
 
       - name: Configure release signing
         env:
@@ -127,11 +121,12 @@ jobs:
           KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
           set -euo pipefail
+          set -x
           APP_DIR="apps/mobile/android/app"
           mkdir -p "${APP_DIR}"
           if [ -n "${KEYSTORE_BASE64:-}" ] && [ -n "${STORE_PASSWORD:-}" ] \
              && [ -n "${KEY_ALIAS:-}" ] && [ -n "${KEY_PASSWORD:-}" ]; then
-            echo "Signing with the repository keystore (ANDROID_KEYSTORE_* secrets)."
+            echo "Using repository keystore"
             printf '%s' "${KEYSTORE_BASE64}" | base64 -d > "${APP_DIR}/keystore.jks"
           else
             STORE_PASSWORD="hazardnet-ci"
@@ -144,7 +139,7 @@ jobs:
               -alias "${KEY_ALIAS}" \
               -keyalg RSA -keysize 2048 -validity 10000 \
               -dname "CN=HazardNet CI, OU=Engineering, O=HazardNet, C=BD"
-            echo "::warning::ANDROID_KEYSTORE_* secrets are not set; using a throw-away CI keystore (APK is installable, but the key cannot be reused for updates)."
+            echo "::warning::Using throw-away CI keystore"
           fi
           ls -lh "${APP_DIR}/keystore.jks"
           {
@@ -158,43 +153,54 @@ jobs:
           if ! grep -q "signing-release.gradle" "${APP_DIR}/build.gradle"; then
             printf '\napply from: "../signing-release.gradle"\n' >> "${APP_DIR}/build.gradle"
           fi
-          echo "--- tail of build.gradle ---"
           tail -n 30 "${APP_DIR}/build.gradle"
 
-      - name: Ensure local.properties (SDK location)
+      - name: Ensure local.properties
         run: |
           set -euo pipefail
           ANDROID_DIR="apps/mobile/android"
+          echo "ANDROID_HOME=${ANDROID_HOME:-}"
           if [ -z "${ANDROID_HOME:-}" ]; then
             export ANDROID_HOME="/usr/local/lib/android/sdk"
           fi
           echo "sdk.dir=${ANDROID_HOME}" > "${ANDROID_DIR}/local.properties"
           cat "${ANDROID_DIR}/local.properties"
-          chmod +x "${ANDROID_DIR}/gradlew" || true
+          chmod +x "${ANDROID_DIR}/gradlew"
           ls -lh "${ANDROID_DIR}/gradlew"
 
       - name: Build release APK
         working-directory: apps/mobile/android
         env:
-          GRADLE_OPTS: -Xmx3g -Dorg.gradle.jvmargs="-Xmx3g"
+          GRADLE_OPTS: -Xmx3g
         run: |
           set -euo pipefail
+          set -x
           ./gradlew --version
-          # Capture full log to file for diagnostics
           ./gradlew assembleRelease --no-daemon --stacktrace 2>&1 | tee /tmp/gradle.log
-          echo "--- last 200 lines of gradle log ---"
-          tail -n 200 /tmp/gradle.log
+          echo "=== Gradle log tail ==="
+          tail -n 300 /tmp/gradle.log
           ls -lh app/build/outputs/apk/release/ || true
 
-      - name: Upload Gradle log on failure
+      - name: Push logs to branch on failure
         if: failure()
-        uses: actions/upload-artifact@v7
-        with:
-          name: android-gradle-log
-          path: /tmp/gradle.log
-          if-no-files-found: warn
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/ci-logs
+          cp /tmp/gradle.log /tmp/ci-logs/android-gradle-${{ github.run_id }}.log 2>/dev/null || echo "no gradle log" > /tmp/ci-logs/android-gradle-${{ github.run_id }}.log
+          ls -la apps/mobile/android/ 2>/dev/null | head -n 100 > /tmp/ci-logs/android-dir-${{ github.run_id }}.txt || true
+          cat apps/mobile/android/app/build.gradle 2>/dev/null | tail -n 100 > /tmp/ci-logs/build-gradle-tail-${{ github.run_id }}.txt || true
+          git config user.name "ci-logs-bot"
+          git config user.email "ci-logs@example.com"
+          git checkout --orphan ci-logs-${{ github.run_id }}
+          git rm -rf . 2>/dev/null || true
+          mkdir -p logs
+          cp /tmp/ci-logs/* logs/ 2>/dev/null || true
+          git add logs/
+          git commit -m "ci logs for run ${{ github.run_id }} android" || echo "no commit"
+          git push origin ci-logs-${{ github.run_id }} --force || echo "push failed"
 
       - name: Stage artifact
+        if: success()
         run: |
           set -euo pipefail
           mkdir -p dist
@@ -203,6 +209,7 @@ jobs:
           ls -lh dist
 
       - name: Publish to GitHub Release
+        if: success()
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ needs.meta.outputs.tag }}
@@ -235,190 +242,125 @@ jobs:
       - name: Install workspace dependencies
         run: npm ci --no-audit --no-fund
 
-      - name: Verify and fix React Native Windows layout
+      - name: Verify RNW layout and ensure compatibility
         shell: pwsh
         run: |
-          Write-Host "=== Node version ==="
-          node -v
-          npm -v
-          Write-Host "=== Checking for react-native-windows ==="
+          Write-Host "Node $(node -v) npm $(npm -v)"
           $rootRnw = "node_modules/react-native-windows/package.json"
           $appRnw = "apps/windows/node_modules/react-native-windows/package.json"
-          if (Test-Path $rootRnw) { Write-Host "Found $rootRnw"; Get-Content $rootRnw | Select-String '"version"' | Select-Object -First 1 }
-          if (Test-Path $appRnw) { Write-Host "Found $appRnw"; Get-Content $appRnw | Select-String '"version"' | Select-Object -First 1 }
-          # Ensure both locations exist via copy for compatibility with sln that may reference either
+          if (Test-Path $rootRnw) { Write-Host "Found root RNW"; Get-Content $rootRnw | Select-String '"version"' | Select-Object -First 1 }
+          else { Write-Host "Root RNW NOT found" }
+          if (Test-Path $appRnw) { Write-Host "Found app RNW"; Get-Content $appRnw | Select-String '"version"' | Select-Object -First 1 }
+          else { Write-Host "App RNW NOT found, will copy from root if exists" }
           if ((Test-Path $rootRnw) -and -not (Test-Path $appRnw)) {
-            Write-Host "Copying root RNW to apps/windows/node_modules for sln compatibility"
             New-Item -ItemType Directory -Force -Path "apps/windows/node_modules" | Out-Null
             Copy-Item -Recurse -Force "node_modules/react-native-windows" "apps/windows/node_modules/react-native-windows"
+            Write-Host "Copied root RNW to app location"
           }
-          if ((Test-Path $appRnw) -and -not (Test-Path $rootRnw)) {
-            Write-Host "Copying app RNW to root for hoisted resolution"
-            Copy-Item -Recurse -Force "apps/windows/node_modules/react-native-windows" "node_modules/react-native-windows" -ErrorAction SilentlyContinue
-          }
-          # Also ensure react-native exists in both
-          if ((Test-Path "node_modules/react-native/package.json") -and -not (Test-Path "apps/windows/node_modules/react-native")) {
+          if ((Test-Path "node_modules/react-native/package.json") -and -not (Test-Path "apps/windows/node_modules/react-native/package.json")) {
             Copy-Item -Recurse -Force "node_modules/react-native" "apps/windows/node_modules/react-native" -ErrorAction SilentlyContinue
           }
-          Write-Host "=== Solution file references ==="
-          Select-String -Path "apps/windows/windows/HazardNet.sln" -Pattern "react-native-windows" | Select-Object -First 20
-          Write-Host "=== Checking for required vcxproj files ==="
-          $slnDir = "apps/windows/windows"
-          $expected = @(
-            "$slnDir/../../..//node_modules/react-native-windows/Folly/Folly.vcxproj",
-            "$slnDir/../node_modules/react-native-windows/Folly/Folly.vcxproj"
-          )
-          foreach ($p in $expected) {
-            $exists = Test-Path $p
-            Write-Host "$p exists: $exists"
+          Write-Host "Solution refs:"
+          Select-String -Path "apps/windows/windows/HazardNet.sln" -Pattern "react-native-windows" | Select-Object -First 5
+          # Ensure sln points to a valid location; if it points to root but root doesn't have file, fix to app
+          $slnContent = Get-Content "apps/windows/windows/HazardNet.sln" -Raw
+          if ($slnContent -match "\.\.\\\.\.\\\.\.\\node_modules\\react-native-windows" -and -not (Test-Path "node_modules/react-native-windows/Folly/Folly.vcxproj")) {
+            Write-Host "Sln points to root but root file missing, fixing to app path"
+            $slnContent = $slnContent -replace "\.\.\\\.\.\\\.\.\\node_modules\\react-native-windows", "..\node_modules\react-native-windows"
+            Set-Content -Path "apps/windows/windows/HazardNet.sln" -Value $slnContent -NoNewline
           }
-          # List actual files
-          Get-ChildItem "node_modules/react-native-windows/Folly" -ErrorAction SilentlyContinue | Select-Object -First 5
-          Get-ChildItem "apps/windows/node_modules/react-native-windows/Folly" -ErrorAction SilentlyContinue | Select-Object -First 5
-
-      - name: Regenerate Windows project if needed (ensures compatibility with current RNW)
-        shell: pwsh
-        working-directory: apps/windows
-        run: |
-          # If the windows folder was created with an older RNW, regenerate to match current version
-          # We run init-windows --overwrite to update sln and props, but keep our custom App.windows.tsx
-          Write-Host "Running init-windows --overwrite to sync with current react-native-windows version"
-          # Backup our fixed files
-          Copy-Item "App.windows.tsx" "App.windows.tsx.bak" -Force
-          Copy-Item "src/components/WindowsDesktopOverview.tsx" "src/components/WindowsDesktopOverview.tsx.bak" -Force
-          npx react-native init-windows --name HazardNet --overwrite --no-telemetry
-          # Restore our fixed files
-          Move-Item "App.windows.tsx.bak" "App.windows.tsx" -Force
-          Move-Item "src/components/WindowsDesktopOverview.tsx.bak" "src/components/WindowsDesktopOverview.tsx" -Force
-          Write-Host "After regeneration, sln references:"
-          Select-String -Path "windows/HazardNet.sln" -Pattern "react-native-windows" | Select-Object -First 10
-          # Ensure sln points to root for monorepo hoisting (GetDirectoryNameOfFileAbove will find it, but sln refs need to be valid)
-          # The init-windows generates sln with ..\node_modules references (apps/windows/node_modules)
-          # Our earlier fix changed it to ..\..\..\node_modules; after regeneration we need to ensure it works
-          # We'll ensure apps/windows/node_modules/react-native-windows exists (we copied earlier)
-          # So we keep the generated sln as is if that path exists, otherwise fix it to root
-          if (-not (Test-Path "node_modules/react-native-windows/Folly/Folly.vcxproj") -and (Test-Path "../node_modules/react-native-windows/Folly/Folly.vcxproj")) {
-            Write-Host "Root RNW not found but app RNW found, keeping generated sln"
-          } elseif ((Test-Path "../../..//node_modules/react-native-windows/Folly/Folly.vcxproj") -and -not (Test-Path "node_modules/react-native-windows/Folly/Folly.vcxproj")) {
-            Write-Host "Fixing sln to point to root node_modules"
-            (Get-Content "windows/HazardNet.sln") -replace '\.\.\\node_modules\\react-native-windows', '..\\..\\..\\node_modules\\react-native-windows' | Set-Content "windows/HazardNet.sln"
+          if ($slnContent -match "\.\.\\node_modules\\react-native-windows" -and -not (Test-Path "apps/windows/node_modules/react-native-windows/Folly/Folly.vcxproj") -and (Test-Path "node_modules/react-native-windows/Folly/Folly.vcxproj")) {
+            Write-Host "Sln points to app but app file missing, fixing to root path"
+            $slnContent = $slnContent -replace "\.\.\\node_modules\\react-native-windows", "..\..\..\node_modules\react-native-windows"
+            Set-Content -Path "apps/windows/windows/HazardNet.sln" -Value $slnContent -NoNewline
           }
-          Get-Content "windows/HazardNet.sln" | Select-String "react-native-windows" | Select-Object -First 5
-
-      - name: Autolink Windows (regenerate native modules)
-        shell: pwsh
-        working-directory: apps/windows
-        run: |
-          npx react-native autolink-windows --logging
-          Get-ChildItem "windows/HazardNet" -Filter "AutolinkedNativeModules*" | Format-Table Name, Length
-          Get-Content "windows/HazardNet/AutolinkedNativeModules.g.props"
+          Select-String -Path "apps/windows/windows/HazardNet.sln" -Pattern "react-native-windows" | Select-Object -First 5
 
       - name: Sync app version into Package.appxmanifest
         shell: pwsh
         run: |
           $ver = "${{ needs.meta.outputs.windows_version }}"
-          if ($ver -match '^\d+\.\d+\.\d+$') { $ver4 = "$ver.0" } elseif ($ver -match '^\d+\.\d+\.\d+\.\d+$') { $ver4 = $ver } else { $ver4 = "$ver.0" }
-          Write-Host "Using version $ver4 (from $ver)"
+          if ($ver -match '^\d+\.\d+\.\d+$') { $ver4 = "$ver.0" } else { $ver4 = "$ver.0" }
+          if ($ver -match '^\d+\.\d+\.\d+\.\d+$') { $ver4 = $ver }
+          Write-Host "Version $ver4 from $ver"
           $manifest = "apps/windows/windows/HazardNet/Package.appxmanifest"
           $content = Get-Content $manifest -Raw
           $content = $content -replace 'Version="\d+\.\d+\.\d+\.\d+"', "Version=""$ver4"""
           Set-Content -Path $manifest -Value $content -NoNewline
-          Get-Content $manifest | Select-String -Pattern 'Version=' | Select-Object -First 5
+          Get-Content $manifest | Select-String "Version=" | Select-Object -First 3
 
-      - name: Restore NuGet packages (verbose, with fallback)
+      - name: Restore NuGet packages
         shell: pwsh
         run: |
           $sln = "apps/windows/windows/HazardNet.sln"
-          Write-Host "Attempting msbuild restore for $sln with binary logger"
-          msbuild "$sln" /t:Restore /p:Configuration=Release /p:Platform=x64 /v:minimal /bl:restore.binlog /fl /flp:logfile=restore.log`;verbosity=detailed
-          $exit = $LASTEXITCODE
-          Write-Host "First restore exit code: $exit"
-          Get-Content "restore.log" -ErrorAction SilentlyContinue | Select-Object -Last 100 | Write-Host
-          if ($exit -ne 0) {
-            Write-Warning "msbuild /t:Restore failed, trying fallbacks"
-            if (Get-Command nuget -ErrorAction SilentlyContinue) {
-              nuget restore "$sln" -Verbosity detailed 2>&1 | Tee-Object -FilePath nuget-restore.log
-            }
-            if (Get-Command dotnet -ErrorAction SilentlyContinue) {
-              dotnet restore "$sln" /p:Configuration=Release /p:Platform=x64 2>&1 | Tee-Object -FilePath dotnet-restore.log
-            }
-            msbuild "$sln" /t:Restore /p:Configuration=Release /p:Platform=x64 /v:minimal /bl:restore2.binlog /fl /flp:logfile=restore2.log`;verbosity=detailed
-            if ($LASTEXITCODE -ne 0) {
-              Write-Host "=== restore.log ==="; Get-Content "restore.log" -ErrorAction SilentlyContinue | Select-Object -Last 200 | Write-Host
-              Write-Host "=== restore2.log ==="; Get-Content "restore2.log" -ErrorAction SilentlyContinue | Select-Object -Last 200 | Write-Host
-              Write-Host "=== Listing solution dir ==="; Get-ChildItem "apps/windows/windows" | Format-Table Name, Length
-              throw "NuGet restore failed after fallbacks"
-            }
+          Write-Host "Restoring $sln"
+          msbuild "$sln" /t:Restore /p:Configuration=Release /p:Platform=x64 /v:minimal 2>&1 | Tee-Object -FilePath restore.log
+          if ($LASTEXITCODE -ne 0) {
+            Write-Host "=== restore.log ==="
+            Get-Content restore.log | Select-Object -Last 200 | Write-Host
+            throw "Restore failed with exit $LASTEXITCODE"
           }
-
-      - name: Upload restore logs on failure
-        if: failure()
-        uses: actions/upload-artifact@v7
-        with:
-          name: windows-restore-logs
-          path: |
-            restore.log
-            restore2.log
-            restore.binlog
-            restore2.binlog
-            nuget-restore.log
-            dotnet-restore.log
-            apps/windows/windows/HazardNet.sln
-          if-no-files-found: warn
+          Write-Host "Restore succeeded"
+          Get-Content restore.log | Select-Object -Last 50 | Write-Host
 
       - name: Build Release (x64, bundled + Hermes)
         shell: pwsh
         working-directory: apps/windows
         run: |
-          Get-Content "index.windows.js"
-          Get-Content "metro.config.js" | Select-Object -First 60
-          # Build with binary log for diagnostics
-          npx react-native run-windows --release --no-launch --no-deploy --no-packager --logging --arch x64 --bl build.binlog --fl --flp:logfile=build.log`;verbosity=minimal 2>&1 | Tee-Object -FilePath build-output.log
+          Write-Host "=== index.windows.js ==="; Get-Content index.windows.js
+          Write-Host "=== App.windows.tsx head ==="; Get-Content App.windows.tsx | Select-Object -First 30
+          Write-Host "=== metro.config.js ==="; Get-Content metro.config.js | Select-Object -First 50
+          npx react-native run-windows --release --no-launch --no-deploy --no-packager --logging --arch x64 2>&1 | Tee-Object -FilePath build.log
           if ($LASTEXITCODE -ne 0) {
-            Write-Host "=== build.log tail ==="
-            Get-Content "build.log" -ErrorAction SilentlyContinue | Select-Object -Last 300 | Write-Host
-            Write-Host "=== build-output.log tail ==="
-            Get-Content "build-output.log" -ErrorAction SilentlyContinue | Select-Object -Last 300 | Write-Host
-            throw "Windows Release build failed"
+            Write-Host "=== build.log tail ==="; Get-Content build.log | Select-Object -Last 500 | Write-Host
+            throw "Build failed"
           }
+          Write-Host "Build succeeded"
+          Get-Content build.log | Select-Object -Last 100 | Write-Host
 
-      - name: Upload build logs on failure
+      - name: Push logs to branch on failure
         if: failure()
-        uses: actions/upload-artifact@v7
-        with:
-          name: windows-build-logs
-          path: |
-            apps/windows/build.log
-            apps/windows/build-output.log
-            apps/windows/build.binlog
-            apps/windows/windows/HazardNet/Build/Release/**/*.log
-          if-no-files-found: warn
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path C:\tmp\ci-logs | Out-Null
+          Copy-Item restore.log C:\tmp\ci-logs\windows-restore-${{ github.run_id }}.log -ErrorAction SilentlyContinue
+          Copy-Item apps/windows/build.log C:\tmp\ci-logs\windows-build-${{ github.run_id }}.log -ErrorAction SilentlyContinue
+          Get-ChildItem apps/windows/windows/HazardNet -ErrorAction SilentlyContinue | Out-String | Set-Content C:\tmp\ci-logs\windows-dir-${{ github.run_id }}.txt
+          git config user.name "ci-logs-bot"
+          git config user.email "ci-logs@example.com"
+          git checkout --orphan ci-logs-${{ github.run_id }}
+          git rm -rf . 2>$null; $null = $?
+          New-Item -ItemType Directory -Force -Path logs | Out-Null
+          Copy-Item C:\tmp\ci-logs\* logs\ -ErrorAction SilentlyContinue
+          git add logs/
+          git commit -m "ci logs for run ${{ github.run_id }} windows" 2>$null; $null = $?
+          git push origin ci-logs-${{ github.run_id }} --force 2>&1 | Write-Host
 
       - name: Stage artifacts
+        if: success()
         shell: pwsh
         run: |
           $out = "apps/windows/windows/HazardNet/Build/Release"
           New-Item -ItemType Directory -Force -Path "dist" | Out-Null
           $ver = "${{ needs.meta.outputs.windows_version }}"
-          Write-Host "Looking for build output in $out"
-          Get-ChildItem "$out" -Recurse -ErrorAction SilentlyContinue | Select-Object FullName, Length | Format-Table -AutoSize | Out-String -Width 800 | Write-Host
+          Write-Host "Searching $out"
+          Get-ChildItem "$out" -Recurse -ErrorAction SilentlyContinue | Select-Object FullName | Select-Object -First 20 | Write-Host
           if (Test-Path "$out/HazardNet.exe") {
             Copy-Item "$out/HazardNet.exe" "dist/HazardNet-windows-v$ver-x64.exe"
           } else {
             $exe = Get-ChildItem "$out" -Filter "HazardNet.exe" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
-            if ($exe) { Copy-Item $exe.FullName "dist/HazardNet-windows-v$ver-x64.exe" } else { throw "HazardNet.exe not found in $out" }
+            if ($exe) { Copy-Item $exe.FullName "dist/HazardNet-windows-v$ver-x64.exe" } else { throw "HazardNet.exe not found" }
           }
           $appx = Get-ChildItem "$out" -Filter "*.appx" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
-          if ($appx) {
-            Copy-Item $appx.FullName "dist/HazardNet-windows-v$ver-x64.msix"
-          } else {
-            Write-Warning "No .appx package was produced; only the unpacked .exe will be published."
+          if ($appx) { Copy-Item $appx.FullName "dist/HazardNet-windows-v$ver-x64.msix" }
+          else {
             $msix = Get-ChildItem "$out" -Filter "*.msix" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
             if ($msix) { Copy-Item $msix.FullName "dist/HazardNet-windows-v$ver-x64.msix" }
           }
           Get-ChildItem "dist" | Format-Table Name, Length
 
       - uses: actions/upload-artifact@v7
+        if: success()
         with:
           name: windows-dist
           path: dist/
