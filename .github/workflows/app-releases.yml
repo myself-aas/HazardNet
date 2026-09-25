@@ -101,6 +101,37 @@ jobs:
           npm install --no-audit --no-fund 2>&1 | tee /tmp/npm-ci.log
           echo "npm install succeeded"
           tail -n 50 /tmp/npm-ci.log
+          echo "=== Ensuring apps/mobile/node_modules has expo (monorepo hoisting fix) ==="
+          mkdir -p apps/mobile/node_modules/@expo
+          if [ ! -d "apps/mobile/node_modules/expo" ]; then
+            echo "Copying expo from root to apps/mobile"
+            cp -r node_modules/expo apps/mobile/node_modules/expo || true
+          fi
+          # Also ensure @expo/cli and @expo/config are available in app node_modules for Gradle bundling
+          for pkg in cli config; do
+            if [ -d "node_modules/@expo/$pkg" ] && [ ! -d "apps/mobile/node_modules/@expo/$pkg" ]; then
+              echo "Copying @expo/$pkg"
+              cp -r "node_modules/@expo/$pkg" "apps/mobile/node_modules/@expo/$pkg" || true
+            fi
+          done
+          # Ensure expo-modules-core and react-native are also in app node_modules if hoisted
+          for mod in expo-modules-core react-native @react-native/codegen; do
+            # handle scoped packages
+            if echo "$mod" | grep -q "/"; then
+              base=$(dirname "$mod")
+              name=$(basename "$mod")
+              if [ -d "node_modules/$base/$name" ] && [ ! -d "apps/mobile/node_modules/$base/$name" ]; then
+                mkdir -p "apps/mobile/node_modules/$base"
+                cp -r "node_modules/$base/$name" "apps/mobile/node_modules/$base/$name" || true
+              fi
+            else
+              if [ -d "node_modules/$mod" ] && [ ! -d "apps/mobile/node_modules/$mod" ]; then
+                cp -r "node_modules/$mod" "apps/mobile/node_modules/$mod" || true
+              fi
+            fi
+          done
+          ls -la apps/mobile/node_modules/expo/AppEntry.js 2>&1 | head -n 5 || echo "expo AppEntry still missing"
+          ls -la apps/mobile/node_modules/react-native/package.json 2>&1 | head -n 5 || echo "react-native missing in app"
 
       - name: Push npm logs on failure
         if: failure()
@@ -133,6 +164,31 @@ jobs:
           echo "=== Fixing Expo SDK 51 Gradle issues ==="
           ANDROID_DIR="apps/mobile/android"
           PLUGIN_DIR="node_modules/expo-modules-core/expo-module-gradle-plugin"
+
+          echo "=== Re-ensuring apps/mobile/node_modules/expo exists (monorepo fix) ==="
+          mkdir -p apps/mobile/node_modules/@expo
+          if [ ! -d "apps/mobile/node_modules/expo" ]; then
+            cp -r node_modules/expo apps/mobile/node_modules/expo || true
+          fi
+          for pkg in cli config; do
+            if [ -d "node_modules/@expo/$pkg" ] && [ ! -d "apps/mobile/node_modules/@expo/$pkg" ]; then
+              cp -r "node_modules/@expo/$pkg" "apps/mobile/node_modules/@expo/$pkg" || true
+            fi
+          done
+          for mod in expo-modules-core react-native; do
+            if [ -d "node_modules/$mod" ] && [ ! -d "apps/mobile/node_modules/$mod" ]; then
+              cp -r "node_modules/$mod" "apps/mobile/node_modules/$mod" || true
+            fi
+          done
+          if [ -d "node_modules/@react-native" ]; then
+            mkdir -p apps/mobile/node_modules/@react-native
+            for sub in codegen cli-platform-android gradle-plugin; do
+              if [ -d "node_modules/@react-native/$sub" ] && [ ! -d "apps/mobile/node_modules/@react-native/$sub" ]; then
+                cp -r "node_modules/@react-native/$sub" "apps/mobile/node_modules/@react-native/$sub" || true
+              fi
+            done
+          fi
+          ls -lh apps/mobile/node_modules/expo/AppEntry.js || true
 
           # 1. Create minimal shim plugin if missing (SDK 51 doesn't ship it)
           if [ ! -d "$PLUGIN_DIR" ]; then
@@ -272,18 +328,41 @@ jobs:
           if ! grep -q "expo-module-gradle-plugin" "$SETTINGS"; then
             cat >> "$SETTINGS" <<'SETTINGS_PATCH'
 
-          // --- CI patch: include expo-module-gradle-plugin shim ---
-          def expoPluginPath = new File(settingsDir, "../../node_modules/expo-modules-core/expo-module-gradle-plugin")
-          if (expoPluginPath.exists()) {
-            includeBuild(expoPluginPath) {
-              dependencySubstitution {
-                substitute(module("expo.modules:expo-module-gradle-plugin")).using(project(":"))
-              }
-            }
-          }
-          SETTINGS_PATCH
+// --- CI patch: include expo-module-gradle-plugin shim ---
+def expoPluginPath = new File(settingsDir, "../../node_modules/expo-modules-core/expo-module-gradle-plugin")
+if (expoPluginPath.exists()) {
+  includeBuild(expoPluginPath) {
+    dependencySubstitution {
+      substitute(module("expo.modules:expo-module-gradle-plugin")).using(project(":"))
+    }
+  }
+}
+SETTINGS_PATCH
           fi
           cat "$SETTINGS"
+
+          # 6. Patch app/build.gradle to ensure monorepo projectRoot and entryFile work
+          APP_BUILD="$ANDROID_DIR/app/build.gradle"
+          if [ -f "$APP_BUILD" ]; then
+            echo "=== Patching app/build.gradle for monorepo ==="
+            # Ensure projectRoot is apps/mobile (parent of android)
+            # The template already sets projectRoot = rootDir.parent, which is correct
+            # But ensure root is set and entryFile uses apps/mobile/node_modules
+            # Add explicit root if missing
+            if ! grep -q "root = file" "$APP_BUILD"; then
+              # Insert root definition after projectRoot line
+              sed -i "/def projectRoot/a \/\/ CI patch: explicit root for monorepo\ndef projectRootFile = file(projectRoot)" "$APP_BUILD" || true
+            fi
+            # Log the react block
+            grep -n "react {" -A 15 "$APP_BUILD" | head -n 30 || true
+            # Ensure bundleCommand uses expo export:embed and cliFile is from apps/mobile
+            cat "$APP_BUILD" | head -n 100 || true
+          fi
+
+          # 7. Create metro.config.js patch to ensure watchFolders includes root
+          echo "=== Checking metro config ==="
+          cat apps/mobile/metro.config.js 2>/dev/null || echo "no metro.config.js in apps/mobile, checking template"
+          ls apps/mobile/ | grep -E "metro|babel" || true
 
       - name: Configure release signing
         env:
@@ -522,11 +601,29 @@ jobs:
         run: |
           $sln = "apps/windows/windows/HazardNet.sln"
           Write-Host "Restoring $sln"
-          msbuild "$sln" /t:Restore /p:Configuration=Release /p:Platform=x64 /v:minimal 2>&1 | Tee-Object -FilePath restore.log
+          New-Item -ItemType Directory -Force -Path "C:\\tmp\\ci-logs" | Out-Null
+          Write-Host "MSBuild version:"
+          msbuild -version 2>&1 | Write-Host
+          Write-Host "dotnet info:"
+          dotnet --info 2>&1 | Select-Object -First 30 | Write-Host
+          Write-Host "Solution exists: $(Test-Path $sln)"
+          Get-ChildItem "apps/windows/windows/HazardNet" | Format-Table Name, Length | Out-String | Write-Host
+          # Try restore with detailed logging
+          msbuild "$sln" /t:Restore /p:Configuration=Release /p:Platform=x64 /v:detailed /bl:C:\tmp\restore.binlog 2>&1 | Tee-Object -FilePath "C:\tmp\restore.log" | Tee-Object -FilePath "restore.log"
           $exit = $LASTEXITCODE
           Write-Host "Restore exit $exit"
+          if (Test-Path "C:\tmp\restore.log") {
+            Write-Host "=== C:\tmp\restore.log tail ==="
+            Get-Content "C:\tmp\restore.log" | Select-Object -Last 1000 | Write-Host
+            Copy-Item "C:\tmp\restore.log" "C:\tmp\ci-logs\windows-restore-${{ github.run_id }}.log" -Force
+          }
           if (Test-Path restore.log) {
+            Write-Host "=== restore.log tail ==="
             Get-Content restore.log | Select-Object -Last 500 | Write-Host
+            Copy-Item restore.log "C:\tmp\ci-logs\windows-restore-${{ github.run_id }}-fallback.log" -Force -ErrorAction SilentlyContinue
+          }
+          if (Test-Path "C:\tmp\restore.binlog") {
+            Write-Host "Binlog exists at C:\tmp\restore.binlog"
           }
           if ($exit -ne 0) { throw "Restore failed $exit" }
 
@@ -547,13 +644,30 @@ jobs:
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force -Path C:\tmp\ci-logs | Out-Null
+          Write-Host "=== Collecting logs ==="
+          Get-ChildItem "C:\tmp" -Filter "*.log" -ErrorAction SilentlyContinue | Format-Table Name, Length | Out-String | Write-Host
+          if (Test-Path "C:\tmp\restore.log") {
+            Copy-Item "C:\tmp\restore.log" "C:\tmp\ci-logs\windows-restore-${{ github.run_id }}.log" -Force
+            Write-Host "Copied C:\tmp\restore.log"
+          }
           $foundRestore = Get-ChildItem -Path . -Filter "restore.log" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
-          if ($foundRestore) { Copy-Item $foundRestore.FullName "C:\tmp\ci-logs\windows-restore-${{ github.run_id }}.log" -Force }
-          elseif (Test-Path restore.log) { Copy-Item restore.log "C:\tmp\ci-logs\windows-restore-${{ github.run_id }}.log" -Force }
-          else { "No restore.log" | Set-Content "C:\tmp\ci-logs\windows-restore-${{ github.run_id }}.log" }
+          if ($foundRestore) {
+            Copy-Item $foundRestore.FullName "C:\tmp\ci-logs\windows-restore-${{ github.run_id }}-found.log" -Force
+            Write-Host "Found restore.log at $($foundRestore.FullName)"
+          }
+          if (-not (Test-Path "C:\tmp\ci-logs\windows-restore-${{ github.run_id }}.log")) {
+            if (Test-Path restore.log) {
+              Copy-Item restore.log "C:\tmp\ci-logs\windows-restore-${{ github.run_id }}.log" -Force
+              Write-Host "Copied ./restore.log"
+            } else {
+              "No restore.log found - listing files" | Set-Content "C:\tmp\ci-logs\windows-restore-${{ github.run_id }}.log"
+              Get-ChildItem -Path . -Filter "*.log" -Recurse -ErrorAction SilentlyContinue | Format-Table FullName, Length | Out-String | Add-Content "C:\tmp\ci-logs\windows-restore-${{ github.run_id }}.log"
+            }
+          }
           $foundBuild = Get-ChildItem -Path . -Filter "build.log" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
           if ($foundBuild) { Copy-Item $foundBuild.FullName "C:\tmp\ci-logs\windows-build-${{ github.run_id }}.log" -Force }
           elseif (Test-Path "apps/windows/build.log") { Copy-Item "apps/windows/build.log" "C:\tmp\ci-logs\windows-build-${{ github.run_id }}.log" -Force }
+          elseif (Test-Path "C:\tmp\build.log") { Copy-Item "C:\tmp\build.log" "C:\tmp\ci-logs\windows-build-${{ github.run_id }}.log" -Force }
           else { "No build.log" | Set-Content "C:\tmp\ci-logs\windows-build-${{ github.run_id }}.log" }
           Get-ChildItem "apps/windows/windows/HazardNet" -ErrorAction SilentlyContinue | Out-String | Set-Content "C:\tmp\ci-logs\windows-dir-${{ github.run_id }}.txt"
           Get-ChildItem "C:\tmp\ci-logs" | Format-Table Name, Length | Out-String | Write-Host
