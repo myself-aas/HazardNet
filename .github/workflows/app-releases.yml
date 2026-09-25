@@ -43,6 +43,7 @@ concurrency:
 
 env:
   NODE_VERSION: '20'
+  JAVA_VERSION: '17'
 
 jobs:
   meta:
@@ -83,6 +84,12 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      - name: Setup Java ${{ env.JAVA_VERSION }} (for Gradle + keytool)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+
       - uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
@@ -91,9 +98,23 @@ jobs:
       - name: Install workspace dependencies
         run: npm ci --no-audit --no-fund
 
+      - name: Verify Android SDK
+        run: |
+          set -euo pipefail
+          echo "ANDROID_HOME=${ANDROID_HOME:-}"
+          echo "ANDROID_SDK_ROOT=${ANDROID_SDK_ROOT:-}"
+          ls -la "${ANDROID_HOME:-/usr/local/lib/android/sdk}" || true
+          # Ensure sdkmanager is available
+          which sdkmanager || echo "sdkmanager not in PATH, checking ANDROID_HOME/cmdline-tools"
+          ls "${ANDROID_HOME}/cmdline-tools" 2>/dev/null || true
+
       - name: Prebuild the Android project (Expo)
         working-directory: apps/mobile
-        run: npx expo prebuild --platform android --no-install
+        run: |
+          set -euo pipefail
+          npx expo prebuild --platform android --no-install --clean
+          ls -la android/
+          ls -la android/app/ | head -n 100
 
       - name: Configure release signing
         env:
@@ -104,6 +125,7 @@ jobs:
         run: |
           set -euo pipefail
           APP_DIR="apps/mobile/android/app"
+          mkdir -p "${APP_DIR}"
           if [ -n "${KEYSTORE_BASE64:-}" ] && [ -n "${STORE_PASSWORD:-}" ] \
              && [ -n "${KEY_ALIAS:-}" ] && [ -n "${KEY_PASSWORD:-}" ]; then
             echo "Signing with the repository keystore (ANDROID_KEYSTORE_* secrets)."
@@ -112,6 +134,7 @@ jobs:
             STORE_PASSWORD="hazardnet-ci"
             KEY_ALIAS="hazardnet-ci"
             KEY_PASSWORD="hazardnet-ci"
+            rm -f "${APP_DIR}/keystore.jks"
             keytool -genkeypair \
               -keystore "${APP_DIR}/keystore.jks" \
               -storepass "${STORE_PASSWORD}" -keypass "${KEY_PASSWORD}" \
@@ -120,21 +143,47 @@ jobs:
               -dname "CN=HazardNet CI, OU=Engineering, O=HazardNet, C=BD"
             echo "::warning::ANDROID_KEYSTORE_* secrets are not set; using a throw-away CI keystore (APK is installable, but the key cannot be reused for updates)."
           fi
+          ls -lh "${APP_DIR}/keystore.jks"
           {
             echo "storeFile=keystore.jks"
             echo "storePassword=${STORE_PASSWORD}"
             echo "keyAlias=${KEY_ALIAS}"
             echo "keyPassword=${KEY_PASSWORD}"
           } > "${APP_DIR}/keystore.properties"
+          cat "${APP_DIR}/keystore.properties"
           # Point the release buildType at the CI signing config (see apps/mobile/ci-signing.gradle).
           cp apps/mobile/ci-signing.gradle "${APP_DIR%/*}/signing-release.gradle"
-          printf '\napply from: "../signing-release.gradle"\n' >> "${APP_DIR}/build.gradle"
+          # Ensure we don't append the apply line multiple times on re-runs
+          if ! grep -q "signing-release.gradle" "${APP_DIR}/build.gradle"; then
+            printf '\napply from: "../signing-release.gradle"\n' >> "${APP_DIR}/build.gradle"
+          fi
+          echo "--- tail of build.gradle ---"
+          tail -n 30 "${APP_DIR}/build.gradle"
+          echo "--- signing-release.gradle ---"
+          cat "${APP_DIR%/*}/signing-release.gradle"
+
+      - name: Ensure local.properties (SDK location)
+        run: |
+          set -euo pipefail
+          ANDROID_DIR="apps/mobile/android"
+          if [ -z "${ANDROID_HOME:-}" ]; then
+            export ANDROID_HOME="/usr/local/lib/android/sdk"
+          fi
+          echo "sdk.dir=${ANDROID_HOME}" > "${ANDROID_DIR}/local.properties"
+          cat "${ANDROID_DIR}/local.properties"
+          chmod +x "${ANDROID_DIR}/gradlew" || true
 
       - name: Build release APK
         working-directory: apps/mobile/android
         env:
-          GRADLE_OPTS: -Xmx3g
-        run: ./gradlew assembleRelease --no-daemon --stacktrace
+          GRADLE_OPTS: -Xmx3g -Dorg.gradle.jvmargs="-Xmx3g"
+          ANDROID_HOME: ${{ env.ANDROID_HOME }}
+        run: |
+          set -euo pipefail
+          ./gradlew --version
+          ./gradlew assembleRelease --no-daemon --stacktrace --info 2>&1 | tail -n 500
+          # If the above fails, the exit code will propagate; we still want to see outputs
+          ls -lh app/build/outputs/apk/release/ || true
 
       - name: Stage artifact
         run: |
@@ -156,7 +205,7 @@ jobs:
             - **Windows:** `HazardNet-windows-v<version>-x64.msix` — packaged x64 app (double-click to install on Windows 10/11), plus the unpacked `HazardNet-windows-v<version>-x64.exe`.
 
             Built by the `App Releases (Android APK / Windows MSIX)` workflow from `${{ github.sha }}`.
-          prerelease: ${{ needs.meta.outputs.prerelease }}
+          prerelease: ${{ fromJSON(needs.meta.outputs.prerelease) }}
           fail_on_unmatched_files: true
           files: |
             dist/*.apk
@@ -177,6 +226,35 @@ jobs:
       - name: Install workspace dependencies
         run: npm ci --no-audit --no-fund
 
+      - name: Verify React Native Windows layout
+        shell: pwsh
+        run: |
+          Write-Host "Listing apps/windows/node_modules"
+          Get-ChildItem "apps/windows/node_modules" -ErrorAction SilentlyContinue | Select-Object Name | Format-Table
+          if (Test-Path "apps/windows/node_modules/react-native-windows") {
+            Write-Host "Found apps/windows/node_modules/react-native-windows"
+            Get-ChildItem "apps/windows/node_modules/react-native-windows" | Select-Object -First 20 | Format-Table Name
+          } else {
+            Write-Host "apps/windows/node_modules/react-native-windows NOT found, checking root"
+            Get-ChildItem "node_modules/react-native-windows" -ErrorAction SilentlyContinue | Select-Object -First 5
+            if (Test-Path "node_modules/react-native-windows") {
+              Write-Host "Found root node_modules/react-native-windows, creating symlink/junction for compatibility"
+              New-Item -ItemType Directory -Force -Path "apps/windows/node_modules" | Out-Null
+              if (-not (Test-Path "apps/windows/node_modules/react-native-windows")) {
+                cmd /c mklink /D "apps\windows\node_modules\react-native-windows" "..\..\..\node_modules\react-native-windows"
+              }
+            }
+          }
+          Write-Host "Checking solution file references"
+          Select-String -Path "apps/windows/windows/HazardNet.sln" -Pattern "react-native-windows" | Select-Object -First 20
+
+      - name: Autolink Windows (regenerate native modules)
+        shell: pwsh
+        working-directory: apps/windows
+        run: |
+          npx react-native autolink-windows --logging
+          Get-ChildItem "windows/HazardNet" -Filter "AutolinkedNativeModules*" | Format-Table Name, Length
+
       - name: Ensure the native Windows project exists
         shell: pwsh
         run: |
@@ -186,25 +264,62 @@ jobs:
             Push-Location apps/windows
             npx react-native init-windows --name HazardNet --overwrite --no-telemetry
             Pop-Location
+          } else {
+            Write-Host "Solution exists, skipping init-windows"
           }
 
       - name: Sync app version into Package.appxmanifest
         shell: pwsh
         run: |
           $ver = "${{ needs.meta.outputs.windows_version }}"
+          # Ensure 4-part version: 2.2.0 -> 2.2.0.0
+          if ($ver -match '^\d+\.\d+\.\d+$') { $ver4 = "$ver.0" } elseif ($ver -match '^\d+\.\d+\.\d+\.\d+$') { $ver4 = $ver } else { $ver4 = "$ver.0" }
+          Write-Host "Using version $ver4 (from $ver)"
           $manifest = "apps/windows/windows/HazardNet/Package.appxmanifest"
           $content = Get-Content $manifest -Raw
-          $content = $content -replace 'Version="\d+\.\d+\.\d+\.\d+"', "Version=""$ver.0"""
+          Write-Host "Original manifest Identity line:"
+          Select-String -InputObject $content -Pattern 'Version="[^"]+"' | Select-Object -First 1
+          $content = $content -replace 'Version="\d+\.\d+\.\d+\.\d+"', "Version=""$ver4"""
           Set-Content -Path $manifest -Value $content -NoNewline
+          Write-Host "Updated manifest:"
+          Get-Content $manifest | Select-String -Pattern 'Version=' | Select-Object -First 5
 
-      - name: Restore NuGet packages
+      - name: Restore NuGet packages (verbose, with fallback)
         shell: pwsh
-        run: msbuild "apps/windows/windows/HazardNet.sln" /t:Restore /p:Configuration=Release /p:Platform=x64
+        run: |
+          $sln = "apps/windows/windows/HazardNet.sln"
+          Write-Host "Attempting msbuild restore for $sln"
+          # First try msbuild /t:Restore with detailed verbosity
+          msbuild "$sln" /t:Restore /p:Configuration=Release /p:Platform=x64 /v:minimal
+          if ($LASTEXITCODE -ne 0) {
+            Write-Warning "msbuild /t:Restore failed with exit $LASTEXITCODE, trying nuget restore and dotnet restore fallbacks"
+            # Try nuget restore if available
+            if (Get-Command nuget -ErrorAction SilentlyContinue) {
+              nuget restore "$sln"
+            }
+            # Try dotnet restore
+            if (Get-Command dotnet -ErrorAction SilentlyContinue) {
+              dotnet restore "$sln" /p:Configuration=Release /p:Platform=x64
+            }
+            # Re-attempt msbuild restore
+            msbuild "$sln" /t:Restore /p:Configuration=Release /p:Platform=x64 /v:minimal
+            if ($LASTEXITCODE -ne 0) {
+              Write-Host "Listing solution directory for diagnostics"
+              Get-ChildItem "apps/windows/windows" | Format-Table Name, Length
+              Get-ChildItem "apps/windows/windows/HazardNet" | Format-Table Name, Length
+              throw "NuGet restore failed after fallbacks"
+            }
+          }
 
       - name: Build Release (x64, bundled + Hermes)
         shell: pwsh
         working-directory: apps/windows
-        run: npx react-native run-windows --release --no-launch --no-deploy --no-packager --logging
+        run: |
+          # The JS bundle is produced by MSBuild target MakeBundle from index.windows.js
+          # Ensure metro config is valid and entry file exists
+          Get-Content "index.windows.js"
+          Get-Content "metro.config.js" | Select-Object -First 40
+          npx react-native run-windows --release --no-launch --no-deploy --no-packager --logging --arch x64
 
       - name: Stage artifacts
         shell: pwsh
@@ -212,18 +327,29 @@ jobs:
           $out = "apps/windows/windows/HazardNet/Build/Release"
           New-Item -ItemType Directory -Force -Path "dist" | Out-Null
           $ver = "${{ needs.meta.outputs.windows_version }}"
+          Write-Host "Looking for build output in $out"
+          Get-ChildItem "$out" -Recurse -ErrorAction SilentlyContinue | Select-Object FullName, Length | Format-Table -AutoSize | Out-String -Width 500 | Write-Host
           if (Test-Path "$out/HazardNet.exe") {
             Copy-Item "$out/HazardNet.exe" "dist/HazardNet-windows-v$ver-x64.exe"
           } else {
-            throw "HazardNet.exe not found in $out — build did not complete."
+            # Fallback search
+            $exe = Get-ChildItem "$out" -Filter "HazardNet.exe" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+            if ($exe) {
+              Copy-Item $exe.FullName "dist/HazardNet-windows-v$ver-x64.exe"
+            } else {
+              throw "HazardNet.exe not found in $out — build did not complete."
+            }
           }
-          $appx = Get-ChildItem "$out" -Filter "*.appx" -ErrorAction SilentlyContinue | Select-Object -First 1
+          $appx = Get-ChildItem "$out" -Filter "*.appx" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
           if ($appx) {
             # An MSBuild-produced .appx is a valid MSIX container; the .msix name
             # makes double-click installation obvious to users.
             Copy-Item $appx.FullName "dist/HazardNet-windows-v$ver-x64.msix"
           } else {
             Write-Warning "No .appx package was produced; only the unpacked .exe will be published."
+            # Also look for .msix directly
+            $msix = Get-ChildItem "$out" -Filter "*.msix" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+            if ($msix) { Copy-Item $msix.FullName "dist/HazardNet-windows-v$ver-x64.msix" }
           }
           Get-ChildItem "dist" | Format-Table Name, Length
 
@@ -256,7 +382,7 @@ jobs:
             - **Windows:** `HazardNet-windows-v<version>-x64.msix` — packaged x64 app (double-click to install on Windows 10/11), plus the unpacked `HazardNet-windows-v<version>-x64.exe`.
 
             Built by the `App Releases (Android APK / Windows MSIX)` workflow from `${{ github.sha }}`.
-          prerelease: ${{ needs.meta.outputs.prerelease }}
+          prerelease: ${{ fromJSON(needs.meta.outputs.prerelease) }}
           fail_on_unmatched_files: true
           files: |
             dist/*
