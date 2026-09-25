@@ -263,9 +263,16 @@ jobs:
 
           # 3. Patch ExpoModulesCorePlugin.gradle for AGP 8.x
           find node_modules -name "ExpoModulesCorePlugin.gradle" -type f | while read f; do
-            echo "Patching $f for components.release"
+            echo "Patching $f for components.release and classifier"
             sed -i "s/from components\.release/from components.findByName('release') ?: components.findByName('android') ?: components.findByName('debug')/g" "$f" || true
+            # Fix classifier -> archiveClassifier for Gradle 8 compatibility
+            sed -i "s/\.classifier = /\\.archiveClassifier.set(/g" "$f" || true
+            sed -i "s/\.classifier /\\.archiveClassifier.set(/g" "$f" || true
+            sed -i "s/classifier = /archiveClassifier.set(/g" "$f" || true
           done
+          # Also patch any other gradle files that use classifier
+          find node_modules -name "*.gradle" -type f | xargs sed -i "s/\.classifier = /\\.archiveClassifier.set(/g" 2>/dev/null || true
+          find node_modules -name "*.gradle" -type f | xargs sed -i "s/classifier = /archiveClassifier.set(/g" 2>/dev/null || true
 
           # 4. Downgrade Gradle wrapper to 8.6
           WRAPPER_PROP="$ANDROID_DIR/gradle/wrapper/gradle-wrapper.properties"
@@ -449,8 +456,18 @@ jobs:
           cache: npm
 
       - name: Install workspace dependencies
+        shell: pwsh
         run: |
-          npm install --no-audit --no-fund 2>&1 | Tee-Object -FilePath C:\tmp\npm-ci.log
+          Write-Host "Node $(node -v) npm $(npm -v)"
+          # Try npm install with log capture
+          npm install --no-audit --no-fund 2>&1 | Tee-Object -FilePath "C:\tmp\npm-ci.log"
+          $exit = $LASTEXITCODE
+          Write-Host "npm install exit code $exit"
+          if (Test-Path "C:\tmp\npm-ci.log") {
+            Write-Host "=== npm-ci.log tail ==="
+            Get-Content "C:\tmp\npm-ci.log" | Select-Object -Last 200 | Write-Host
+          }
+          if ($exit -ne 0) { throw "npm install failed with $exit" }
           Write-Host "npm install succeeded"
 
       - name: Push npm ci logs on failure
