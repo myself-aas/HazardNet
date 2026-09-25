@@ -1,6 +1,6 @@
 {
   "$comment": "Design-quality baseline for scripts/check-design-quality.mjs. `waivers` are accepted on purpose and each names the check that covers the same risk. `outstanding` is the work left to do; it may only shrink without a commit that explains why it grew.",
-  "generatedAt": "2026-09-24T23:06:49.934Z",
+  "generatedAt": "2026-09-25T00:09:10.413Z",
   "impeccable": {},
   "targets": [
     "frontend/src",
@@ -15,10 +15,10 @@
   ],
   "counts": {
     "waived": 1,
-    "outstanding": 3421,
+    "outstanding": 3439,
     "byRule": {
-      "low-contrast": 3163,
-      "overused-font": 195,
+      "low-contrast": 3179,
+      "overused-font": 197,
       "tight-leading": 41,
       "oversized-h1": 22
     }
@@ -336,6 +336,86 @@
     },
     {
       "rule": "low-contrast",
+      "file": "frontend/dist/archive.html",
+      "snippet": "1.0:1 (need 3:1) — text #17171b on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/archive.html",
+      "snippet": "1.3:1 (need 3:1) — text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/archive.html",
+      "snippet": "1.0:1 (need 3:1) — text #17171b on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/archive.html",
+      "snippet": "1.3:1 (need 3:1) — text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/archive.html",
+      "snippet": "1.3:1 (need 3:1) — text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/archive.html",
+      "snippet": "1.3:1 (need 3:1) — text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/archive.html",
+      "snippet": "1.3:1 (need 3:1) — text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/archive.html",
+      "snippet": "1.3:1 (need 3:1) — text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/archive/index.html",
+      "snippet": "1.0:1 (need 3:1) — text #17171b on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/archive/index.html",
+      "snippet": "1.3:1 (need 3:1) — text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/archive/index.html",
+      "snippet": "1.0:1 (need 3:1) — text #17171b on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/archive/index.html",
+      "snippet": "1.3:1 (need 3:1) — text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/archive/index.html",
+      "snippet": "1.3:1 (need 3:1) — text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/archive/index.html",
+      "snippet": "1.3:1 (need 3:1) — text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/archive/index.html",
+      "snippet": "1.3:1 (need 3:1) — text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/archive/index.html",
+      "snippet": "1.3:1 (need 3:1) — text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "low-contrast",
       "file": "frontend/dist/blogs.html",
       "snippet": "1.0:1 (need 3:1) — text #17171b on #17171b"
     },
@@ -15987,6 +16067,16 @@
     {
       "rule": "overused-font",
       "file": "frontend/dist/analytics/index.html",
+      "snippet": "Primary font: inter"
+    },
+    {
+      "rule": "overused-font",
+      "file": "frontend/dist/archive.html",
+      "snippet": "Primary font: inter"
+    },
+    {
+      "rule": "overused-font",
+      "file": "frontend/dist/archive/index.html",
       "snippet": "Primary font: inter"
     },
     {
@@ -17443,6 +17533,86 @@
     },
     {
       "rule": "low-contrast",
+      "file": "frontend/dist/archive.html",
+      "snippet": "1.0:1 (need 3:1) — text #17171b on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/archive.html",
+      "snippet": "1.3:1 (need 3:1) — text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/archive.html",
+      "snippet": "1.0:1 (need 3:1) — text #17171b on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/archive.html",
+      "snippet": "1.3:1 (need 3:1) — text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/archive.html",
+      "snippet": "1.3:1 (need 3:1) — text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/archive.html",
+      "snippet": "1.3:1 (need 3:1) — text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/archive.html",
+      "snippet": "1.3:1 (need 3:1) — text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/archive.html",
+      "snippet": "1.3:1 (need 3:1) — text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/archive/index.html",
+      "snippet": "1.0:1 (need 3:1) — text #17171b on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/archive/index.html",
+      "snippet": "1.3:1 (need 3:1) — text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/archive/index.html",
+      "snippet": "1.0:1 (need 3:1) — text #17171b on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/archive/index.html",
+      "snippet": "1.3:1 (need 3:1) — text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/archive/index.html",
+      "snippet": "1.3:1 (need 3:1) — text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/archive/index.html",
+      "snippet": "1.3:1 (need 3:1) — text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/archive/index.html",
+      "snippet": "1.3:1 (need 3:1) — text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/archive/index.html",
+      "snippet": "1.3:1 (need 3:1) — text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "low-contrast",
       "file": "frontend/dist/blogs.html",
       "snippet": "1.0:1 (need 3:1) — text #17171b on #17171b"
     },
@@ -33094,6 +33264,16 @@
     {
       "rule": "overused-font",
       "file": "frontend/dist/analytics/index.html",
+      "snippet": "Primary font: inter"
+    },
+    {
+      "rule": "overused-font",
+      "file": "frontend/dist/archive.html",
+      "snippet": "Primary font: inter"
+    },
+    {
+      "rule": "overused-font",
+      "file": "frontend/dist/archive/index.html",
       "snippet": "Primary font: inter"
     },
     {
