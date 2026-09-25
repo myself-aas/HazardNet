@@ -7,6 +7,9 @@ module.exports = {
     },
   },
   moduleNameMapper: {
+    '^react$': '<rootDir>/node_modules/react',
+    '^react-dom$': '<rootDir>/node_modules/react-dom',
+    '^react-dom/test-utils$': '<rootDir>/node_modules/react-dom/test-utils.js',
     '^@/(.*)$': '<rootDir>/frontend/src/$1',
     '^@hazardnet/design-system$': '<rootDir>/packages/design-system/src/index.ts',
     '^@hazardnet/design-system/(.*)$': '<rootDir>/packages/design-system/src/$1',
@@ -43,6 +46,7 @@ module.exports = {
     '\\.md$': '<rootDir>/__tests__/__mocks__/empty-string.js',
   },
   setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
+  moduleDirectories: ['node_modules', 'frontend/node_modules'],
   transform: {
     '^.+\\.(js|jsx|ts|tsx|mjs)$': 'babel-jest',
   },
