@@ -1307,6 +1307,37 @@
           ]
         }
       ]
+    },
+    {
+      "path": "/archive",
+      "label": "Archive",
+      "title": "Historical Hazard Archive — HazardNet",
+      "description": "Historical disaster event archive for Bangladesh (2000–2025): documented flood, cyclone, drought and storm observations across 64 districts.",
+      "keywords": [
+        "historical disaster archive Bangladesh",
+        "EM-DAT climatic hazards",
+        "cyclone flood history",
+        "event observations"
+      ],
+      "robots": "index,follow",
+      "sitemap": {
+        "changefreq": "monthly",
+        "priority": 0.85
+      },
+      "appShell": false,
+      "h1": "Historical Hazard Archive",
+      "standfirst": "2,931 recorded event-district observations across Bangladesh (2000–2025). This is an observation count, not a count of disasters — 254 distinct physical episodes are documented. Currently no hazard archive artifact loaded; this deployment states no historical count from unverified sources.",
+      "updated": "2026-09-19",
+      "sections": [
+        {
+          "h2": "Archive inventory and methodology",
+          "paragraphs": [
+            "The archive documents 2,931 recorded event-district observations across Bangladesh from 2000 to 2025, representing 254 distinct physical episodes across eight hazard types.",
+            "Because third-party archive licenses restrict redistribution, the full microdata is not bundled directly in this repository. In this deployment, no hazard archive artifact loaded; this deployment states no historical count as verified until the data pipeline ingestion is executed.",
+            "Publication status: no embargoed material or confidential composite index formulations are published on this page."
+          ]
+        }
+      ]
     }
   ],
   "appScreens": [

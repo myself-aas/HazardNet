@@ -143,7 +143,7 @@ export const HazardsPage: React.FC = () => {
           setLoading(false);
         }
       } catch (err) {
-        console.error('Failed to load hazards summary:', err);
+        console.warn('Could not load dynamic hazards summary:', err);
         setLoading(false);
       }
     }
