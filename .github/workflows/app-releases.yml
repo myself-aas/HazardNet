@@ -344,7 +344,6 @@ jobs:
           SETTINGS="$ANDROID_DIR/settings.gradle"
           if ! grep -q "expo-module-gradle-plugin" "$SETTINGS"; then
             cat >> "$SETTINGS" <<'SETTINGS_PATCH'
-
           // --- CI patch: include expo-module-gradle-plugin shim ---
           def expoPluginPath = new File(settingsDir, "../../node_modules/expo-modules-core/expo-module-gradle-plugin")
           if (expoPluginPath.exists()) {
@@ -357,6 +356,21 @@ jobs:
           SETTINGS_PATCH
           fi
           cat "$SETTINGS"
+
+          # 6. Ensure metro.config.cjs exists with md support
+          if [ ! -f "apps/mobile/metro.config.cjs" ] && [ ! -f "apps/mobile/metro.config.js" ]; then
+            echo "Creating metro.config.cjs with md asset support"
+            cat > apps/mobile/metro.config.cjs <<'METRO'
+          const { getDefaultConfig } = require('expo/metro-config');
+          const config = getDefaultConfig(__dirname);
+          if (!config.resolver.assetExts.includes('md')) {
+            config.resolver.assetExts.push('md');
+          }
+          module.exports = config;
+          METRO
+          fi
+          cat apps/mobile/metro.config.cjs 2>/dev/null || cat apps/mobile/metro.config.js 2>/dev/null || echo "no metro config"
+          ls apps/mobile/ | grep -E "metro|babel" || true
 
       - name: Configure release signing
         env:
@@ -605,39 +619,21 @@ jobs:
           Write-Host "Running msbuild restore..."
           $restoreLog = "C:\tmp\restore.log"
           if (Test-Path $restoreLog) { Remove-Item $restoreLog -Force }
-          try {
-            # Use cmd to ensure redirection works
-            cmd /c "msbuild `"$sln`" /t:Restore /p:Configuration=Release /p:Platform=x64 /v:minimal > `"$restoreLog`" 2>&1"
-            $exit = $LASTEXITCODE
-            Write-Host "cmd msbuild exit $exit"
-          } catch {
-            Write-Host "Exception running msbuild: $_"
-            $_ | Out-File $restoreLog -Append
-            $exit = 1
-          }
+          # Use PowerShell redirection with Out-File for reliability
+          msbuild "$sln" /t:Restore /p:Configuration=Release /p:Platform=x64 /v:minimal 2>&1 | Out-File -FilePath $restoreLog -Encoding utf8
+          $exit = $LASTEXITCODE
+          Write-Host "msbuild exit $exit"
           if (Test-Path $restoreLog) {
             Write-Host "=== $restoreLog ==="
             Get-Content $restoreLog | Write-Host
             Copy-Item $restoreLog "C:\tmp\ci-logs\windows-restore-${{ github.run_id }}.log" -Force
           } else {
             Write-Host "No $restoreLog created!"
-            # Try direct msbuild
-            try {
-              msbuild "$sln" /t:Restore /p:Configuration=Release /p:Platform=x64 /v:minimal 2>&1 | Out-File $restoreLog
-              $exit = $LASTEXITCODE
-              Write-Host "Direct msbuild exit $exit"
-              Get-Content $restoreLog | Write-Host
-              Copy-Item $restoreLog "C:\tmp\ci-logs\windows-restore-${{ github.run_id }}.log" -Force
-            } catch {
-              Write-Host "Direct msbuild also failed: $_"
-              "Direct msbuild failed $_" | Out-File "C:\tmp\ci-logs\windows-restore-${{ github.run_id }}.log"
-              $exit = 1
-            }
           }
           if ($exit -ne 0) {
             Write-Host "Retrying with detailed verbosity..."
             $detailedLog = "C:\tmp\restore-detailed.log"
-            cmd /c "msbuild `"$sln`" /t:Restore /p:Configuration=Release /p:Platform=x64 /v:detailed > `"$detailedLog`" 2>&1"
+            msbuild "$sln" /t:Restore /p:Configuration=Release /p:Platform=x64 /v:detailed 2>&1 | Out-File -FilePath $detailedLog -Encoding utf8
             if (Test-Path $detailedLog) {
               Get-Content $detailedLog | Select-Object -Last 1000 | Write-Host
               Copy-Item $detailedLog "C:\tmp\ci-logs\windows-restore-${{ github.run_id }}-detailed.log" -Force -ErrorAction SilentlyContinue
