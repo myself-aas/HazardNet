@@ -96,7 +96,27 @@ jobs:
           cache: npm
 
       - name: Install workspace dependencies
-        run: npm ci --no-audit --no-fund
+        run: |
+          set -euo pipefail
+          npm ci --no-audit --no-fund 2>&1 | tee /tmp/npm-ci.log
+          echo "npm ci succeeded, log tail:"
+          tail -n 50 /tmp/npm-ci.log
+
+      - name: Push npm ci logs on failure
+        if: failure()
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/ci-logs
+          cp /tmp/npm-ci.log /tmp/ci-logs/npm-ci-${{ github.run_id }}.log 2>/dev/null || echo "no npm log" > /tmp/ci-logs/npm-ci-${{ github.run_id }}.log
+          git config user.name "ci-logs-bot"
+          git config user.email "ci-logs@example.com"
+          git checkout --orphan ci-logs-${{ github.run_id }}-npm-android
+          git rm -rf . 2>/dev/null || true
+          mkdir -p logs
+          cp /tmp/ci-logs/* logs/ 2>/dev/null || true
+          git add logs/
+          git commit -m "ci logs npm android ${{ github.run_id }}" || true
+          git push origin ci-logs-${{ github.run_id }}-npm-android --force || true
 
       - name: Prebuild Android (Expo)
         working-directory: apps/mobile
@@ -427,7 +447,26 @@ jobs:
           cache: npm
 
       - name: Install workspace dependencies
-        run: npm ci --no-audit --no-fund
+        run: |
+          npm ci --no-audit --no-fund 2>&1 | Tee-Object -FilePath C:\tmp\npm-ci.log
+          Write-Host "npm ci succeeded"
+
+      - name: Push npm ci logs on failure
+        if: failure()
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path C:\tmp\ci-logs | Out-Null
+          if (Test-Path C:\tmp\npm-ci.log) { Copy-Item C:\tmp\npm-ci.log C:\tmp\ci-logs\npm-ci-${{ github.run_id }}.log -Force }
+          else { "no npm log" | Set-Content C:\tmp\ci-logs\npm-ci-${{ github.run_id }}.log }
+          git config user.name "ci-logs-bot"
+          git config user.email "ci-logs@example.com"
+          git checkout --orphan ci-logs-${{ github.run_id }}-npm-windows
+          git rm -rf . 2>$null; $null = $?
+          New-Item -ItemType Directory -Force -Path logs | Out-Null
+          Copy-Item C:\tmp\ci-logs\* logs\ -ErrorAction SilentlyContinue
+          git add logs/
+          git commit -m "ci logs npm windows ${{ github.run_id }}" 2>$null; $null = $?
+          git push origin ci-logs-${{ github.run_id }}-npm-windows --force 2>&1 | Write-Host
 
       - name: Autolink Windows and verify layout
         shell: pwsh
