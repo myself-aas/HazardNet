@@ -357,8 +357,9 @@ jobs:
           fi
           cat "$SETTINGS"
 
-          # 6. Ensure metro.config.cjs exists with md support
-          if [ ! -f "apps/mobile/metro.config.cjs" ] && [ ! -f "apps/mobile/metro.config.js" ]; then
+          # 6. Ensure metro.config.cjs exists with md support and remove ESM-incompatible metro.config.js
+          rm -f apps/mobile/metro.config.js
+          if [ ! -f "apps/mobile/metro.config.cjs" ]; then
             echo "Creating metro.config.cjs with md asset support"
             cat > apps/mobile/metro.config.cjs <<'METRO'
           const { getDefaultConfig } = require('expo/metro-config');
@@ -369,7 +370,7 @@ jobs:
           module.exports = config;
           METRO
           fi
-          cat apps/mobile/metro.config.cjs 2>/dev/null || cat apps/mobile/metro.config.js 2>/dev/null || echo "no metro config"
+          cat apps/mobile/metro.config.cjs 2>/dev/null || echo "no metro cjs"
           ls apps/mobile/ | grep -E "metro|babel" || true
 
       - name: Configure release signing
@@ -610,8 +611,19 @@ jobs:
           $sln = "apps/windows/windows/HazardNet.sln"
           Write-Host "Restoring $sln"
           New-Item -ItemType Directory -Force -Path "C:\tmp\ci-logs" | Out-Null
+          # Find MSBuild via vswhere
+          $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+          $msbuildPath = $null
+          if (Test-Path $vswhere) {
+            $msbuildPath = & $vswhere -latest -products * -requires Microsoft.Component.MSBuild -find MSBuild\**\Bin\MSBuild.exe | Select-Object -First 1
+            Write-Host "vswhere msbuild: $msbuildPath"
+          }
+          if (-not $msbuildPath -or -not (Test-Path $msbuildPath)) {
+            $msbuildPath = "msbuild"
+          }
+          Write-Host "Using msbuild: $msbuildPath"
           Write-Host "MSBuild version:"
-          try { msbuild -version 2>&1 | Write-Host } catch { Write-Host "msbuild -version failed: $_" }
+          try { & $msbuildPath -version 2>&1 | Write-Host } catch { Write-Host "msbuild -version failed: $_" }
           Write-Host "dotnet info:"
           try { dotnet --info 2>&1 | Select-Object -First 30 | Write-Host } catch { Write-Host "dotnet --info failed" }
           Write-Host "Solution exists: $(Test-Path $sln)"
@@ -619,9 +631,14 @@ jobs:
           Write-Host "Running msbuild restore..."
           $restoreLog = "C:\tmp\restore.log"
           if (Test-Path $restoreLog) { Remove-Item $restoreLog -Force }
-          # Use PowerShell redirection with Out-File for reliability
-          msbuild "$sln" /t:Restore /p:Configuration=Release /p:Platform=x64 /v:minimal 2>&1 | Out-File -FilePath $restoreLog -Encoding utf8
-          $exit = $LASTEXITCODE
+          try {
+            & $msbuildPath "$sln" /t:Restore /p:Configuration=Release /p:Platform=x64 /v:minimal 2>&1 | Out-File -FilePath $restoreLog -Encoding utf8
+            $exit = $LASTEXITCODE
+          } catch {
+            Write-Host "Exception running msbuild: $_"
+            $_ | Out-File $restoreLog -Append
+            $exit = 1
+          }
           Write-Host "msbuild exit $exit"
           if (Test-Path $restoreLog) {
             Write-Host "=== $restoreLog ==="
@@ -629,14 +646,19 @@ jobs:
             Copy-Item $restoreLog "C:\tmp\ci-logs\windows-restore-${{ github.run_id }}.log" -Force
           } else {
             Write-Host "No $restoreLog created!"
+            "No log created" | Out-File "C:\tmp\ci-logs\windows-restore-${{ github.run_id }}.log"
           }
           if ($exit -ne 0) {
             Write-Host "Retrying with detailed verbosity..."
             $detailedLog = "C:\tmp\restore-detailed.log"
-            msbuild "$sln" /t:Restore /p:Configuration=Release /p:Platform=x64 /v:detailed 2>&1 | Out-File -FilePath $detailedLog -Encoding utf8
-            if (Test-Path $detailedLog) {
-              Get-Content $detailedLog | Select-Object -Last 1000 | Write-Host
-              Copy-Item $detailedLog "C:\tmp\ci-logs\windows-restore-${{ github.run_id }}-detailed.log" -Force -ErrorAction SilentlyContinue
+            try {
+              & $msbuildPath "$sln" /t:Restore /p:Configuration=Release /p:Platform=x64 /v:detailed 2>&1 | Out-File -FilePath $detailedLog -Encoding utf8
+              if (Test-Path $detailedLog) {
+                Get-Content $detailedLog | Select-Object -Last 1000 | Write-Host
+                Copy-Item $detailedLog "C:\tmp\ci-logs\windows-restore-${{ github.run_id }}-detailed.log" -Force -ErrorAction SilentlyContinue
+              }
+            } catch {
+              Write-Host "Detailed restore also failed: $_"
             }
             throw "Restore failed $exit"
           }
