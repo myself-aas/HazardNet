@@ -1,0 +1,543 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.6/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+> Task :gradle-plugin:settings-plugin:checkKotlinGradlePluginConfigurationErrors
+> Task :gradle-plugin:settings-plugin:pluginDescriptors
+> Task :gradle-plugin:settings-plugin:processResources
+> Task :gradle-plugin:settings-plugin:compileKotlin
+> Task :gradle-plugin:settings-plugin:compileJava NO-SOURCE
+> Task :gradle-plugin:settings-plugin:classes
+> Task :gradle-plugin:settings-plugin:jar
+> Task :gradle-plugin:react-native-gradle-plugin:checkKotlinGradlePluginConfigurationErrors
+> Task :gradle-plugin:react-native-gradle-plugin:pluginDescriptors
+> Task :gradle-plugin:react-native-gradle-plugin:processResources
+> Task :gradle-plugin:react-native-gradle-plugin:compileKotlin
+> Task :gradle-plugin:react-native-gradle-plugin:compileJava NO-SOURCE
+> Task :gradle-plugin:react-native-gradle-plugin:classes
+> Task :gradle-plugin:react-native-gradle-plugin:jar
+> Task :expo-module-gradle-plugin:compileJava
+> Task :expo-module-gradle-plugin:compileGroovy NO-SOURCE
+> Task :expo-module-gradle-plugin:pluginDescriptors
+> Task :expo-module-gradle-plugin:processResources
+> Task :expo-module-gradle-plugin:classes
+> Task :expo-module-gradle-plugin:jar
+
+> Configure project :app
+ ℹ️  [33mApplying gradle plugin[0m '[32mexpo-module-gradle-plugin[0m' (expo-modules-core@1.12.26)
+
+> Configure project :expo-modules-core
+Checking the license for package NDK (Side by side) 26.1.10909125 in /usr/local/lib/android/sdk/licenses
+License for package NDK (Side by side) 26.1.10909125 accepted.
+Preparing "Install NDK (Side by side) 26.1.10909125 v.26.1.10909125".
+"Install NDK (Side by side) 26.1.10909125 v.26.1.10909125" ready.
+Installing NDK (Side by side) 26.1.10909125 in /usr/local/lib/android/sdk/ndk/26.1.10909125
+"Install NDK (Side by side) 26.1.10909125 v.26.1.10909125" complete.
+"Install NDK (Side by side) 26.1.10909125 v.26.1.10909125" finished.
+
+> Configure project :expo
+
+Using expo modules
+  - [32mexpo-application[0m (5.9.1)
+  - [32mexpo-asset[0m (10.0.10)
+  - [32mexpo-constants[0m (16.0.2)
+  - [32mexpo-device[0m (6.0.2)
+  - [32mexpo-file-system[0m (17.0.1)
+  - [32mexpo-font[0m (12.0.10)
+  - [32mexpo-haptics[0m (12.0.1)
+  - [32mexpo-image-loader[0m (4.7.0)
+  - [32mexpo-image-picker[0m (15.0.7)
+  - [32mexpo-keep-awake[0m (13.0.2)
+  - [32mexpo-location[0m (17.0.1)
+  - [32mexpo-modules-core[0m (1.12.26)
+  - [32mexpo-modules-core$expo-module-gradle-plugin[0m (1.12.26)
+  - [32mexpo-notifications[0m (0.28.19)
+  - [32mexpo-screen-orientation[0m (7.0.5)
+  - [32mexpo-system-ui[0m (3.0.7)
+
+
+> Configure project :react-native-reanimated
+Android gradle plugin: 8.2.2
+Gradle: 8.6
+WARNING: [Processor] Library '/home/runner/.gradle/caches/modules-2/files-2.1/com.android.tools.build/gradle/8.2.2/d5251ce31f2502b1ae5109ccab1b244f60b22368/gradle-8.2.2.jar' contains references to both AndroidX and old support library. This seems like the library is partially migrated. Jetifier will try to rewrite the library anyway.
+ Example of androidX reference: 'androidx/databinding/BindingBuildInfo'
+ Example of support library reference: 'android/databinding/BindingBuildInfo'
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.arch.navigation' in 'versions-offline/android/arch/navigation/group-index.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.arch.navigation' in 'versions-offline/android/arch/navigation/group-index.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.arch.paging' in 'versions-offline/android/arch/paging/group-index.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.arch.paging' in 'versions-offline/android/arch/paging/group-index.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.arch.persistence' in 'versions-offline/android/arch/persistence/group-index.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.arch.persistence' in 'versions-offline/android/arch/persistence/group-index.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.arch.work' in 'versions-offline/android/arch/work/group-index.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.arch.work' in 'versions-offline/android/arch/work/group-index.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.arch.navigation' in 'versions-offline/master-index.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.arch.paging' in 'versions-offline/master-index.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.arch.persistence' in 'versions-offline/master-index.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.arch.work' in 'versions-offline/master-index.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.support.v7.recyclerview.extensions' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.support.app.recommendation' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.support.text.emoji.widget' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.support.v4.view.animation' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.support.v7.widget.helper' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.support.v8.renderscript' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.support.v7.widget.util' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.support.v7.preference.internal' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.support.v17.leanback.animation' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.support.v17.leanback.app' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.support.v17.leanback.database' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.support.v17.leanback.graphics' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.support.v17.leanback.media' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.support.v17.leanback.system' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.support.v17.leanback.transition' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.support.v17.leanback.util' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.support.v17.leanback.widget.picker' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.support.v17.leanback.widget' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.support.annotation' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.support.constraint' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.support.animation' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.support.v7.media' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.support.v4.media.app' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.support.v4.media.app' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.support.v4.media.session' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.support.v4.media.session' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.support.v4.media' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.support.v4.media' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.support.v4.print' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.arch.persistence' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.support.v7.util' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.support.wear.ambient' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.support.wear.internal.widget.drawer' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.support.wear.internal.widget' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.support.wear.utils' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.support.wear.widget.drawer' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.support.wear.widget' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.support.test' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.support.v13.app' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.support.v13.view.inputmethod' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.support.v13.view' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.databinding' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.arch.paging' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.support.v7.app' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.support.v7.content.res' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.support.v7.graphics.drawable' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.support.v7.graphics' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.support.v7.internal.widget' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.support.v7.internal' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.support.v7.text' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.support.v7.view.menu' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.support.v7.view' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.support.v7.widget' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.support.v7' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.support.v4.accessibilityservice' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.support.v4.app' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.support.v4.content.pm' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.support.v4.content.res' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.support.v4.content' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.support.v4.database' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.support.v4.graphics.drawable' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.support.v4.graphics' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.support.v4.hardware.display' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.support.v4.hardware.fingerprint' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.support.v4.internal.view' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.support.v4.internal' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.support.v4.math' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.support.v4.net' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.support.v4.os' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.support.v4.provider' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.support.v4.text.util' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.support.v4.text' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.support.v4.util' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.support.v4.view.accessibility' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.support.v4.view' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.support.v4.widget' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.arch.work' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.arch.work' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.arch.work' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.arch.work' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.arch.navigation' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.arch.navigation' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.arch.navigation' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.arch.navigation' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.arch.navigation' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.arch.navigation' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.arch.navigation' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.arch.navigation' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.arch.navigation' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.arch.navigation' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.arch.paging' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.arch.paging' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.arch.paging' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.arch.persistence' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+WARNING: [XmlResourcesTransformer] No mapping for package 'android.arch.persistence' in 'com/android/support/migrateToAndroidx/migration.xml', keeping identity
+
+> Task :app:buildKotlinToolingMetadata
+> Task :expo-modules-core$expo-module-gradle-plugin:compileJava
+> Task :expo-modules-core$expo-module-gradle-plugin:compileGroovy NO-SOURCE
+> Task :expo-modules-core$expo-module-gradle-plugin:pluginDescriptors
+> Task :expo-modules-core$expo-module-gradle-plugin:processResources
+> Task :expo-modules-core$expo-module-gradle-plugin:classes
+> Task :expo-modules-core$expo-module-gradle-plugin:jar
+> Task :app:checkKotlinGradlePluginConfigurationErrors
+> Task :app:generateCodegenSchemaFromJavaScript SKIPPED
+> Task :app:generateCodegenArtifactsFromSchema SKIPPED
+> Task :app:generatePackageList
+> Task :app:preBuild
+> Task :app:preReleaseBuild
+> Task :app:generateReleaseBuildConfig
+> Task :expo:generateExpoModulesPackageListTask
+> Task :expo:preBuild
+> Task :expo:preReleaseBuild
+> Task :expo-application:preBuild UP-TO-DATE
+> Task :expo-application:preReleaseBuild UP-TO-DATE
+> Task :expo-asset:preBuild UP-TO-DATE
+> Task :expo-asset:preReleaseBuild UP-TO-DATE
+> Task :expo-asset:writeReleaseAarMetadata
+> Task :expo:writeReleaseAarMetadata
+> Task :expo-application:writeReleaseAarMetadata
+
+> Task :expo-constants:createExpoConfig
+The NODE_ENV environment variable is required but was not specified. Ensure the project is bundled with Expo CLI or NODE_ENV is set.
+Proceeding without mode-specific .env
+
+> Task :expo-constants:preBuild
+> Task :expo-constants:preReleaseBuild
+> Task :expo-device:preBuild UP-TO-DATE
+> Task :expo-device:preReleaseBuild UP-TO-DATE
+> Task :expo-constants:writeReleaseAarMetadata
+> Task :expo-file-system:preBuild UP-TO-DATE
+> Task :expo-file-system:preReleaseBuild UP-TO-DATE
+> Task :expo-device:writeReleaseAarMetadata
+> Task :expo-font:preBuild UP-TO-DATE
+> Task :expo-file-system:writeReleaseAarMetadata
+> Task :expo-font:preReleaseBuild UP-TO-DATE
+> Task :expo-haptics:preBuild UP-TO-DATE
+> Task :expo-haptics:preReleaseBuild UP-TO-DATE
+> Task :expo-font:writeReleaseAarMetadata
+> Task :expo-image-loader:preBuild UP-TO-DATE
+> Task :expo-image-loader:preReleaseBuild UP-TO-DATE
+> Task :expo-haptics:writeReleaseAarMetadata
+> Task :expo-image-picker:preBuild UP-TO-DATE
+> Task :expo-image-picker:preReleaseBuild UP-TO-DATE
+> Task :expo-image-loader:writeReleaseAarMetadata
+> Task :expo-keep-awake:preBuild UP-TO-DATE
+> Task :expo-keep-awake:preReleaseBuild UP-TO-DATE
+> Task :expo-image-picker:writeReleaseAarMetadata
+> Task :expo-location:preBuild UP-TO-DATE
+> Task :expo-location:preReleaseBuild UP-TO-DATE
+> Task :expo-keep-awake:writeReleaseAarMetadata
+> Task :expo-modules-core:preBuild UP-TO-DATE
+> Task :expo-modules-core:preReleaseBuild UP-TO-DATE
+> Task :expo-location:writeReleaseAarMetadata
+> Task :expo-modules-core:writeReleaseAarMetadata
+> Task :expo-notifications:preBuild UP-TO-DATE
+> Task :expo-notifications:preReleaseBuild UP-TO-DATE
+> Task :expo-screen-orientation:preBuild UP-TO-DATE
+> Task :expo-notifications:writeReleaseAarMetadata
+> Task :expo-screen-orientation:preReleaseBuild UP-TO-DATE
+> Task :expo-system-ui:preBuild UP-TO-DATE
+> Task :expo-system-ui:preReleaseBuild UP-TO-DATE
+> Task :expo-screen-orientation:writeReleaseAarMetadata
+> Task :react-native-async-storage_async-storage:preBuild UP-TO-DATE
+> Task :react-native-async-storage_async-storage:preReleaseBuild UP-TO-DATE
+> Task :expo-system-ui:writeReleaseAarMetadata
+> Task :react-native-community_netinfo:preBuild UP-TO-DATE
+> Task :react-native-community_netinfo:preReleaseBuild UP-TO-DATE
+> Task :react-native-async-storage_async-storage:writeReleaseAarMetadata
+> Task :react-native-gesture-handler:preBuild UP-TO-DATE
+> Task :react-native-gesture-handler:preReleaseBuild UP-TO-DATE
+> Task :react-native-community_netinfo:writeReleaseAarMetadata
+> Task :react-native-reanimated:assertLatestReactNativeWithNewArchitectureTask SKIPPED
+> Task :react-native-gesture-handler:writeReleaseAarMetadata
+> Task :react-native-reanimated:assertMinimalReactNativeVersionTask SKIPPED
+> Task :react-native-reanimated:prepareHeadersForPrefab
+> Task :react-native-reanimated:preBuild
+> Task :react-native-reanimated:preReleaseBuild
+> Task :react-native-safe-area-context:preBuild UP-TO-DATE
+> Task :react-native-safe-area-context:preReleaseBuild UP-TO-DATE
+> Task :react-native-reanimated:writeReleaseAarMetadata
+> Task :react-native-screens:preBuild UP-TO-DATE
+> Task :react-native-screens:preReleaseBuild UP-TO-DATE
+> Task :react-native-safe-area-context:writeReleaseAarMetadata
+> Task :react-native-svg:preBuild UP-TO-DATE
+> Task :react-native-svg:preReleaseBuild UP-TO-DATE
+> Task :react-native-screens:writeReleaseAarMetadata
+> Task :shopify_flash-list:preBuild UP-TO-DATE
+> Task :shopify_flash-list:preReleaseBuild UP-TO-DATE
+> Task :react-native-svg:writeReleaseAarMetadata
+> Task :shopify_flash-list:writeReleaseAarMetadata
+
+> Task :app:createBundleReleaseJsAndAssets
+Starting Metro Bundler
+warning: Bundler cache is empty, rebuilding (this may take a minute)
+Error: Unable to resolve module ../../App from /home/runner/work/HazardNet/HazardNet/node_modules/expo/AppEntry.js: 
+
+None of these files exist:
+  * ../../App(.android.ts|.native.ts|.ts|.android.tsx|.native.tsx|.tsx|.android.mjs|.native.mjs|.mjs|.android.js|.native.js|.js|.android.jsx|.native.jsx|.jsx|.android.json|.native.json|.json|.android.cjs|.native.cjs|.cjs|.android.scss|.native.scss|.scss|.android.sass|.native.sass|.sass|.android.css|.native.css|.css)
+  * ../../App
+[0m [90m 1 |[39m [36mimport[39m registerRootComponent [36mfrom[39m [32m'expo/build/launch/registerRootComponent'[39m[33m;[39m
+ [90m 2 |[39m
+[31m[1m>[22m[39m[90m 3 |[39m [36mimport[39m [33mApp[39m [36mfrom[39m [32m'../../App'[39m[33m;[39m
+ [90m   |[39m                  [31m[1m^[22m[39m
+ [90m 4 |[39m
+ [90m 5 |[39m registerRootComponent([33mApp[39m)[33m;[39m
+ [90m 6 |[39m[0m
+Error: Unable to resolve module ../../App from /home/runner/work/HazardNet/HazardNet/node_modules/expo/AppEntry.js: 
+
+None of these files exist:
+  * ../../App(.android.ts|.native.ts|.ts|.android.tsx|.native.tsx|.tsx|.android.mjs|.native.mjs|.mjs|.android.js|.native.js|.js|.android.jsx|.native.jsx|.jsx|.android.json|.native.json|.json|.android.cjs|.native.cjs|.cjs|.android.scss|.native.scss|.scss|.android.sass|.native.sass|.sass|.android.css|.native.css|.css)
+  * ../../App
+[0m [90m 1 |[39m [36mimport[39m registerRootComponent [36mfrom[39m [32m'expo/build/launch/registerRootComponent'[39m[33m;[39m
+ [90m 2 |[39m
+[31m[1m>[22m[39m[90m 3 |[39m [36mimport[39m [33mApp[39m [36mfrom[39m [32m'../../App'[39m[33m;[39m
+ [90m   |[39m                  [31m[1m^[22m[39m
+ [90m 4 |[39m
+ [90m 5 |[39m registerRootComponent([33mApp[39m)[33m;[39m
+ [90m 6 |[39m[0m
+    at ModuleResolver.resolveDependency (/home/runner/work/HazardNet/HazardNet/node_modules/metro/src/node-haste/DependencyGraph/ModuleResolution.js:112:15)
+    at DependencyGraph.resolveDependency (/home/runner/work/HazardNet/HazardNet/node_modules/metro/src/node-haste/DependencyGraph.js:232:43)
+    at /home/runner/work/HazardNet/HazardNet/node_modules/metro/src/lib/transformHelpers.js:156:21
+    at resolveDependencies (/home/runner/work/HazardNet/HazardNet/node_modules/metro/src/DeltaBundler/buildSubgraph.js:42:25)
+    at visit (/home/runner/work/HazardNet/HazardNet/node_modules/metro/src/DeltaBundler/buildSubgraph.js:83:30)
+    at processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async Promise.all (index 0)
+    at buildSubgraph (/home/runner/work/HazardNet/HazardNet/node_modules/metro/src/DeltaBundler/buildSubgraph.js:103:3)
+    at Graph._buildDelta (/home/runner/work/HazardNet/HazardNet/node_modules/metro/src/DeltaBundler/Graph.js:157:22)
+    at Graph.initialTraverseDependencies (/home/runner/work/HazardNet/HazardNet/node_modules/metro/src/DeltaBundler/Graph.js:140:19)
+
+> Task :app:createBundleReleaseJsAndAssets FAILED
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':app:createBundleReleaseJsAndAssets'.
+> Process 'command 'node'' finished with non-zero exit value 1
+
+* Try:
+> Run with --info or --debug option to get more log output.
+> Run with --scan to get full insights.
+> Get more help at https://help.gradle.org.
+
+* Exception is:
+org.gradle.api.tasks.TaskExecutionException: Execution failed for task ':app:createBundleReleaseJsAndAssets'.
+	at org.gradle.api.internal.tasks.execution.ExecuteActionsTaskExecuter.lambda$executeIfValid$1(ExecuteActionsTaskExecuter.java:148)
+	at org.gradle.internal.Try$Failure.ifSuccessfulOrElse(Try.java:282)
+	at org.gradle.api.internal.tasks.execution.ExecuteActionsTaskExecuter.executeIfValid(ExecuteActionsTaskExecuter.java:146)
+	at org.gradle.api.internal.tasks.execution.ExecuteActionsTaskExecuter.execute(ExecuteActionsTaskExecuter.java:134)
+	at org.gradle.api.internal.tasks.execution.FinalizePropertiesTaskExecuter.execute(FinalizePropertiesTaskExecuter.java:46)
+	at org.gradle.api.internal.tasks.execution.ResolveTaskExecutionModeExecuter.execute(ResolveTaskExecutionModeExecuter.java:51)
+	at org.gradle.api.internal.tasks.execution.SkipTaskWithNoActionsExecuter.execute(SkipTaskWithNoActionsExecuter.java:57)
+	at org.gradle.api.internal.tasks.execution.SkipOnlyIfTaskExecuter.execute(SkipOnlyIfTaskExecuter.java:74)
+	at org.gradle.api.internal.tasks.execution.CatchExceptionTaskExecuter.execute(CatchExceptionTaskExecuter.java:36)
+	at org.gradle.api.internal.tasks.execution.EventFiringTaskExecuter$1.executeTask(EventFiringTaskExecuter.java:77)
+	at org.gradle.api.internal.tasks.execution.EventFiringTaskExecuter$1.call(EventFiringTaskExecuter.java:55)
+	at org.gradle.api.internal.tasks.execution.EventFiringTaskExecuter$1.call(EventFiringTaskExecuter.java:52)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:204)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:199)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:66)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:157)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.call(DefaultBuildOperationRunner.java:53)
+	at org.gradle.internal.operations.DefaultBuildOperationExecutor.call(DefaultBuildOperationExecutor.java:73)
+	at org.gradle.api.internal.tasks.execution.EventFiringTaskExecuter.execute(EventFiringTaskExecuter.java:52)
+	at org.gradle.execution.plan.LocalTaskNodeExecutor.execute(LocalTaskNodeExecutor.java:42)
+	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$InvokeNodeExecutorsAction.execute(DefaultTaskExecutionGraph.java:331)
+	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$InvokeNodeExecutorsAction.execute(DefaultTaskExecutionGraph.java:318)
+	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$BuildOperationAwareExecutionAction.lambda$execute$0(DefaultTaskExecutionGraph.java:314)
+	at org.gradle.internal.operations.CurrentBuildOperationRef.with(CurrentBuildOperationRef.java:80)
+	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$BuildOperationAwareExecutionAction.execute(DefaultTaskExecutionGraph.java:314)
+	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$BuildOperationAwareExecutionAction.execute(DefaultTaskExecutionGraph.java:303)
+	at org.gradle.execution.plan.DefaultPlanExecutor$ExecutorWorker.execute(DefaultPlanExecutor.java:463)
+	at org.gradle.execution.plan.DefaultPlanExecutor$ExecutorWorker.run(DefaultPlanExecutor.java:380)
+	at org.gradle.execution.plan.DefaultPlanExecutor.process(DefaultPlanExecutor.java:116)
+	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph.executeWithServices(DefaultTaskExecutionGraph.java:138)
+	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph.execute(DefaultTaskExecutionGraph.java:123)
+	at org.gradle.execution.SelectedTaskExecutionAction.execute(SelectedTaskExecutionAction.java:35)
+	at org.gradle.execution.DryRunBuildExecutionAction.execute(DryRunBuildExecutionAction.java:51)
+	at org.gradle.execution.BuildOperationFiringBuildWorkerExecutor$ExecuteTasks.call(BuildOperationFiringBuildWorkerExecutor.java:54)
+	at org.gradle.execution.BuildOperationFiringBuildWorkerExecutor$ExecuteTasks.call(BuildOperationFiringBuildWorkerExecutor.java:43)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:204)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:199)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:66)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:157)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.call(DefaultBuildOperationRunner.java:53)
+	at org.gradle.internal.operations.DefaultBuildOperationExecutor.call(DefaultBuildOperationExecutor.java:73)
+	at org.gradle.execution.BuildOperationFiringBuildWorkerExecutor.execute(BuildOperationFiringBuildWorkerExecutor.java:40)
+	at org.gradle.internal.build.DefaultBuildLifecycleController.lambda$executeTasks$10(DefaultBuildLifecycleController.java:313)
+	at org.gradle.internal.model.StateTransitionController.doTransition(StateTransitionController.java:266)
+	at org.gradle.internal.model.StateTransitionController.lambda$tryTransition$8(StateTransitionController.java:177)
+	at org.gradle.internal.work.DefaultSynchronizer.withLock(DefaultSynchronizer.java:44)
+	at org.gradle.internal.model.StateTransitionController.tryTransition(StateTransitionController.java:177)
+	at org.gradle.internal.build.DefaultBuildLifecycleController.executeTasks(DefaultBuildLifecycleController.java:304)
+	at org.gradle.internal.build.DefaultBuildWorkGraphController$DefaultBuildWorkGraph.runWork(DefaultBuildWorkGraphController.java:220)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.withLocks(DefaultWorkerLeaseService.java:264)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.runAsWorkerThread(DefaultWorkerLeaseService.java:128)
+	at org.gradle.composite.internal.DefaultBuildController.doRun(DefaultBuildController.java:181)
+	at org.gradle.composite.internal.DefaultBuildController.access$000(DefaultBuildController.java:50)
+	at org.gradle.composite.internal.DefaultBuildController$BuildOpRunnable.lambda$run$0(DefaultBuildController.java:198)
+	at org.gradle.internal.operations.CurrentBuildOperationRef.with(CurrentBuildOperationRef.java:80)
+	at org.gradle.composite.internal.DefaultBuildController$BuildOpRunnable.run(DefaultBuildController.java:198)
+	at org.gradle.internal.concurrent.ExecutorPolicy$CatchAndRecordFailures.onExecute(ExecutorPolicy.java:64)
+	at org.gradle.internal.concurrent.AbstractManagedExecutor$1.run(AbstractManagedExecutor.java:47)
+Caused by: org.gradle.process.internal.ExecException: Process 'command 'node'' finished with non-zero exit value 1
+	at org.gradle.process.internal.DefaultExecHandle$ExecResultImpl.assertNormalExitValue(DefaultExecHandle.java:431)
+	at org.gradle.process.internal.DefaultExecAction.execute(DefaultExecAction.java:38)
+	at org.gradle.process.internal.DefaultExecActionFactory.exec(DefaultExecActionFactory.java:202)
+	at org.gradle.api.internal.project.DefaultProject.exec(DefaultProject.java:1233)
+	at com.facebook.react.tasks.BundleHermesCTask.runCommand(BundleHermesCTask.kt:130)
+	at com.facebook.react.tasks.BundleHermesCTask.run(BundleHermesCTask.kt:90)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at org.gradle.internal.reflect.JavaMethod.invoke(JavaMethod.java:125)
+	at org.gradle.api.internal.project.taskfactory.StandardTaskAction.doExecute(StandardTaskAction.java:58)
+	at org.gradle.api.internal.project.taskfactory.StandardTaskAction.execute(StandardTaskAction.java:51)
+	at org.gradle.api.internal.project.taskfactory.StandardTaskAction.execute(StandardTaskAction.java:29)
+	at org.gradle.api.internal.tasks.execution.TaskExecution$3.run(TaskExecution.java:247)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$1.execute(DefaultBuildOperationRunner.java:29)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$1.execute(DefaultBuildOperationRunner.java:26)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:66)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:157)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.run(DefaultBuildOperationRunner.java:47)
+	at org.gradle.internal.operations.DefaultBuildOperationExecutor.run(DefaultBuildOperationExecutor.java:68)
+	at org.gradle.api.internal.tasks.execution.TaskExecution.executeAction(TaskExecution.java:232)
+	at org.gradle.api.internal.tasks.execution.TaskExecution.executeActions(TaskExecution.java:215)
+	at org.gradle.api.internal.tasks.execution.TaskExecution.executeWithPreviousOutputFiles(TaskExecution.java:198)
+	at org.gradle.api.internal.tasks.execution.TaskExecution.execute(TaskExecution.java:165)
+	at org.gradle.internal.execution.steps.ExecuteStep.executeInternal(ExecuteStep.java:105)
+	at org.gradle.internal.execution.steps.ExecuteStep.access$000(ExecuteStep.java:44)
+	at org.gradle.internal.execution.steps.ExecuteStep$1.call(ExecuteStep.java:59)
+	at org.gradle.internal.execution.steps.ExecuteStep$1.call(ExecuteStep.java:56)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:204)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:199)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:66)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:157)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.call(DefaultBuildOperationRunner.java:53)
+	at org.gradle.internal.operations.DefaultBuildOperationExecutor.call(DefaultBuildOperationExecutor.java:73)
+	at org.gradle.internal.execution.steps.ExecuteStep.execute(ExecuteStep.java:56)
+	at org.gradle.internal.execution.steps.ExecuteStep.execute(ExecuteStep.java:44)
+	at org.gradle.internal.execution.steps.CancelExecutionStep.execute(CancelExecutionStep.java:41)
+	at org.gradle.internal.execution.steps.TimeoutStep.executeWithoutTimeout(TimeoutStep.java:74)
+	at org.gradle.internal.execution.steps.TimeoutStep.execute(TimeoutStep.java:55)
+	at org.gradle.internal.execution.steps.PreCreateOutputParentsStep.execute(PreCreateOutputParentsStep.java:50)
+	at org.gradle.internal.execution.steps.PreCreateOutputParentsStep.execute(PreCreateOutputParentsStep.java:28)
+	at org.gradle.internal.execution.steps.RemovePreviousOutputsStep.execute(RemovePreviousOutputsStep.java:67)
+	at org.gradle.internal.execution.steps.RemovePreviousOutputsStep.execute(RemovePreviousOutputsStep.java:37)
+	at org.gradle.internal.execution.steps.BroadcastChangingOutputsStep.execute(BroadcastChangingOutputsStep.java:61)
+	at org.gradle.internal.execution.steps.BroadcastChangingOutputsStep.execute(BroadcastChangingOutputsStep.java:26)
+	at org.gradle.internal.execution.steps.CaptureOutputsAfterExecutionStep.execute(CaptureOutputsAfterExecutionStep.java:64)
+	at org.gradle.internal.execution.steps.CaptureOutputsAfterExecutionStep.execute(CaptureOutputsAfterExecutionStep.java:42)
+	at org.gradle.internal.execution.steps.ResolveInputChangesStep.execute(ResolveInputChangesStep.java:40)
+	at org.gradle.internal.execution.steps.ResolveInputChangesStep.execute(ResolveInputChangesStep.java:29)
+	at org.gradle.internal.execution.steps.BuildCacheStep.executeWithoutCache(BuildCacheStep.java:189)
+	at org.gradle.internal.execution.steps.BuildCacheStep.lambda$execute$1(BuildCacheStep.java:75)
+	at org.gradle.internal.Either$Right.fold(Either.java:175)
+	at org.gradle.internal.execution.caching.CachingState.fold(CachingState.java:59)
+	at org.gradle.internal.execution.steps.BuildCacheStep.execute(BuildCacheStep.java:73)
+	at org.gradle.internal.execution.steps.BuildCacheStep.execute(BuildCacheStep.java:48)
+	at org.gradle.internal.execution.steps.StoreExecutionStateStep.execute(StoreExecutionStateStep.java:44)
+	at org.gradle.internal.execution.steps.StoreExecutionStateStep.execute(StoreExecutionStateStep.java:33)
+	at org.gradle.internal.execution.steps.SkipUpToDateStep.executeBecause(SkipUpToDateStep.java:76)
+	at org.gradle.internal.execution.steps.SkipUpToDateStep.lambda$execute$2(SkipUpToDateStep.java:54)
+	at org.gradle.internal.execution.steps.SkipUpToDateStep.execute(SkipUpToDateStep.java:54)
+	at org.gradle.internal.execution.steps.SkipUpToDateStep.execute(SkipUpToDateStep.java:36)
+	at org.gradle.internal.execution.steps.ResolveChangesStep.execute(ResolveChangesStep.java:65)
+	at org.gradle.internal.execution.steps.ResolveChangesStep.execute(ResolveChangesStep.java:36)
+	at org.gradle.internal.execution.steps.legacy.MarkSnapshottingInputsFinishedStep.execute(MarkSnapshottingInputsFinishedStep.java:37)
+	at org.gradle.internal.execution.steps.legacy.MarkSnapshottingInputsFinishedStep.execute(MarkSnapshottingInputsFinishedStep.java:27)
+	at org.gradle.internal.execution.steps.ResolveCachingStateStep.execute(ResolveCachingStateStep.java:76)
+	at org.gradle.internal.execution.steps.ResolveCachingStateStep.execute(ResolveCachingStateStep.java:37)
+	at org.gradle.internal.execution.steps.ValidateStep.execute(ValidateStep.java:106)
+	at org.gradle.internal.execution.steps.ValidateStep.execute(ValidateStep.java:55)
+	at org.gradle.internal.execution.steps.AbstractCaptureStateBeforeExecutionStep.execute(AbstractCaptureStateBeforeExecutionStep.java:64)
+	at org.gradle.internal.execution.steps.AbstractCaptureStateBeforeExecutionStep.execute(AbstractCaptureStateBeforeExecutionStep.java:43)
+	at org.gradle.internal.execution.steps.AbstractSkipEmptyWorkStep.executeWithNonEmptySources(AbstractSkipEmptyWorkStep.java:125)
+	at org.gradle.internal.execution.steps.AbstractSkipEmptyWorkStep.execute(AbstractSkipEmptyWorkStep.java:56)
+	at org.gradle.internal.execution.steps.AbstractSkipEmptyWorkStep.execute(AbstractSkipEmptyWorkStep.java:36)
+	at org.gradle.internal.execution.steps.legacy.MarkSnapshottingInputsStartedStep.execute(MarkSnapshottingInputsStartedStep.java:38)
+	at org.gradle.internal.execution.steps.LoadPreviousExecutionStateStep.execute(LoadPreviousExecutionStateStep.java:36)
+	at org.gradle.internal.execution.steps.LoadPreviousExecutionStateStep.execute(LoadPreviousExecutionStateStep.java:23)
+	at org.gradle.internal.execution.steps.HandleStaleOutputsStep.execute(HandleStaleOutputsStep.java:75)
+	at org.gradle.internal.execution.steps.HandleStaleOutputsStep.execute(HandleStaleOutputsStep.java:41)
+	at org.gradle.internal.execution.steps.AssignMutableWorkspaceStep.lambda$execute$0(AssignMutableWorkspaceStep.java:35)
+	at org.gradle.api.internal.tasks.execution.TaskExecution$4.withWorkspace(TaskExecution.java:292)
+	at org.gradle.internal.execution.steps.AssignMutableWorkspaceStep.execute(AssignMutableWorkspaceStep.java:31)
+	at org.gradle.internal.execution.steps.AssignMutableWorkspaceStep.execute(AssignMutableWorkspaceStep.java:22)
+	at org.gradle.internal.execution.steps.ChoosePipelineStep.execute(ChoosePipelineStep.java:40)
+	at org.gradle.internal.execution.steps.ChoosePipelineStep.execute(ChoosePipelineStep.java:23)
+	at org.gradle.internal.execution.steps.ExecuteWorkBuildOperationFiringStep.lambda$execute$2(ExecuteWorkBuildOperationFiringStep.java:66)
+	at org.gradle.internal.execution.steps.ExecuteWorkBuildOperationFiringStep.execute(ExecuteWorkBuildOperationFiringStep.java:66)
+	at org.gradle.internal.execution.steps.ExecuteWorkBuildOperationFiringStep.execute(ExecuteWorkBuildOperationFiringStep.java:38)
+	at org.gradle.internal.execution.steps.IdentityCacheStep.execute(IdentityCacheStep.java:36)
+	at org.gradle.internal.execution.steps.IdentityCacheStep.execute(IdentityCacheStep.java:26)
+	at org.gradle.internal.execution.steps.IdentifyStep.execute(IdentifyStep.java:47)
+	at org.gradle.internal.execution.steps.IdentifyStep.execute(IdentifyStep.java:34)
+	at org.gradle.internal.execution.impl.DefaultExecutionEngine$1.execute(DefaultExecutionEngine.java:61)
+	at org.gradle.api.internal.tasks.execution.ExecuteActionsTaskExecuter.executeIfValid(ExecuteActionsTaskExecuter.java:145)
+	at org.gradle.api.internal.tasks.execution.ExecuteActionsTaskExecuter.execute(ExecuteActionsTaskExecuter.java:134)
+	at org.gradle.api.internal.tasks.execution.FinalizePropertiesTaskExecuter.execute(FinalizePropertiesTaskExecuter.java:46)
+	at org.gradle.api.internal.tasks.execution.ResolveTaskExecutionModeExecuter.execute(ResolveTaskExecutionModeExecuter.java:51)
+	at org.gradle.api.internal.tasks.execution.SkipTaskWithNoActionsExecuter.execute(SkipTaskWithNoActionsExecuter.java:57)
+	at org.gradle.api.internal.tasks.execution.SkipOnlyIfTaskExecuter.execute(SkipOnlyIfTaskExecuter.java:74)
+	at org.gradle.api.internal.tasks.execution.CatchExceptionTaskExecuter.execute(CatchExceptionTaskExecuter.java:36)
+	at org.gradle.api.internal.tasks.execution.EventFiringTaskExecuter$1.executeTask(EventFiringTaskExecuter.java:77)
+	at org.gradle.api.internal.tasks.execution.EventFiringTaskExecuter$1.call(EventFiringTaskExecuter.java:55)
+	at org.gradle.api.internal.tasks.execution.EventFiringTaskExecuter$1.call(EventFiringTaskExecuter.java:52)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:204)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:199)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:66)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:157)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.call(DefaultBuildOperationRunner.java:53)
+	at org.gradle.internal.operations.DefaultBuildOperationExecutor.call(DefaultBuildOperationExecutor.java:73)
+	at org.gradle.api.internal.tasks.execution.EventFiringTaskExecuter.execute(EventFiringTaskExecuter.java:52)
+	at org.gradle.execution.plan.LocalTaskNodeExecutor.execute(LocalTaskNodeExecutor.java:42)
+	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$InvokeNodeExecutorsAction.execute(DefaultTaskExecutionGraph.java:331)
+	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$InvokeNodeExecutorsAction.execute(DefaultTaskExecutionGraph.java:318)
+	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$BuildOperationAwareExecutionAction.lambda$execute$0(DefaultTaskExecutionGraph.java:314)
+	at org.gradle.internal.operations.CurrentBuildOperationRef.with(CurrentBuildOperationRef.java:80)
+	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$BuildOperationAwareExecutionAction.execute(DefaultTaskExecutionGraph.java:314)
+	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$BuildOperationAwareExecutionAction.execute(DefaultTaskExecutionGraph.java:303)
+	at org.gradle.execution.plan.DefaultPlanExecutor$ExecutorWorker.execute(DefaultPlanExecutor.java:463)
+	at org.gradle.execution.plan.DefaultPlanExecutor$ExecutorWorker.run(DefaultPlanExecutor.java:380)
+	at org.gradle.execution.plan.DefaultPlanExecutor.process(DefaultPlanExecutor.java:116)
+	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph.executeWithServices(DefaultTaskExecutionGraph.java:138)
+	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph.execute(DefaultTaskExecutionGraph.java:123)
+	at org.gradle.execution.SelectedTaskExecutionAction.execute(SelectedTaskExecutionAction.java:35)
+	at org.gradle.execution.DryRunBuildExecutionAction.execute(DryRunBuildExecutionAction.java:51)
+	at org.gradle.execution.BuildOperationFiringBuildWorkerExecutor$ExecuteTasks.call(BuildOperationFiringBuildWorkerExecutor.java:54)
+	at org.gradle.execution.BuildOperationFiringBuildWorkerExecutor$ExecuteTasks.call(BuildOperationFiringBuildWorkerExecutor.java:43)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:204)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:199)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:66)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:157)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.call(DefaultBuildOperationRunner.java:53)
+	at org.gradle.internal.operations.DefaultBuildOperationExecutor.call(DefaultBuildOperationExecutor.java:73)
+	at org.gradle.execution.BuildOperationFiringBuildWorkerExecutor.execute(BuildOperationFiringBuildWorkerExecutor.java:40)
+	at org.gradle.internal.build.DefaultBuildLifecycleController.lambda$executeTasks$10(DefaultBuildLifecycleController.java:313)
+	at org.gradle.internal.model.StateTransitionController.doTransition(StateTransitionController.java:266)
+	at org.gradle.internal.model.StateTransitionController.lambda$tryTransition$8(StateTransitionController.java:177)
+	at org.gradle.internal.work.DefaultSynchronizer.withLock(DefaultSynchronizer.java:44)
+	at org.gradle.internal.model.StateTransitionController.tryTransition(StateTransitionController.java:177)
+	at org.gradle.internal.build.DefaultBuildLifecycleController.executeTasks(DefaultBuildLifecycleController.java:304)
+	at org.gradle.internal.build.DefaultBuildWorkGraphController$DefaultBuildWorkGraph.runWork(DefaultBuildWorkGraphController.java:220)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.withLocks(DefaultWorkerLeaseService.java:264)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.runAsWorkerThread(DefaultWorkerLeaseService.java:128)
+	at org.gradle.composite.internal.DefaultBuildController.doRun(DefaultBuildController.java:181)
+	at org.gradle.composite.internal.DefaultBuildController.access$000(DefaultBuildController.java:50)
+	at org.gradle.composite.internal.DefaultBuildController$BuildOpRunnable.lambda$run$0(DefaultBuildController.java:198)
+	at org.gradle.internal.operations.CurrentBuildOperationRef.with(CurrentBuildOperationRef.java:80)
+	at org.gradle.composite.internal.DefaultBuildController$BuildOpRunnable.run(DefaultBuildController.java:198)
+	at org.gradle.internal.concurrent.ExecutorPolicy$CatchAndRecordFailures.onExecute(ExecutorPolicy.java:64)
+	at org.gradle.internal.concurrent.AbstractManagedExecutor$1.run(AbstractManagedExecutor.java:47)
+
+
+BUILD FAILED in 3m 18s
+50 actionable tasks: 50 executed
