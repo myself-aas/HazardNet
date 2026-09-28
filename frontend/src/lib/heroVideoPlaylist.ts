@@ -224,7 +224,23 @@ export function shuffleHeroSources<T>(items: readonly T[], random: () => number 
  *
  * Position 0 is what the hero plays; the rest are tried in order if it fails.
  * Called once per mount, so a refresh draws a different first clip.
+ *
+ * Within that, clips whose stream was actually confirmed reachable are drawn ahead of
+ * the ones that were not. The `not-probed` entries are Pexels URLs taken from each asset
+ * page's canonical `file-url` — correct as far as I can tell, but never observed serving
+ * bytes. Putting an unverified clip at position 0 risks the one thing a hero background
+ * cannot afford: the user staring at the poster while a load timeout decides the clip is
+ * dead. Verified-first keeps every draw random while making a blank first frame unlikely.
  */
 export function buildHeroVideoOrder(random: () => number = Math.random): HeroVideoSource[] {
-  return shuffleHeroSources(PLAYABLE_HERO_VIDEO_SOURCES, random);
+  const playable = PLAYABLE_HERO_VIDEO_SOURCES;
+  const verified = shuffleHeroSources(
+    playable.filter((source) => source.probe === 'http-200'),
+    random,
+  );
+  const unverified = shuffleHeroSources(
+    playable.filter((source) => source.probe !== 'http-200'),
+    random,
+  );
+  return [...verified, ...unverified];
 }

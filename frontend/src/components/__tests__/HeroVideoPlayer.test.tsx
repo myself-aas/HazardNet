@@ -44,6 +44,11 @@ describe('<HeroVideoPlayer />', () => {
     expect(video).toHaveAttribute('data-hero-video-candidates', '3');
     // Decorative background: it must never enter the accessibility tree.
     expect(video).toHaveAttribute('aria-hidden', 'true');
+    // Passed through a spread to get around the @types/react omission — assert it
+    // survives, because a type workaround that stops working drops it silently.
+    expect(video.getAttribute('referrerpolicy')).toBe('no-referrer');
+    // React sets `muted` as a property, not an attribute; the effect sets it too.
+    expect(video.muted).toBe(true);
   });
 
   it('draws from the real catalogue when no list is supplied', () => {

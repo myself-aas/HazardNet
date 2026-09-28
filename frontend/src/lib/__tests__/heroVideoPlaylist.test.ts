@@ -124,6 +124,23 @@ describe('buildHeroVideoOrder', () => {
     const b = buildHeroVideoOrder(seeded(7)).map((source) => source.id);
     expect(a).toEqual(b);
   });
+
+  it('draws the confirmed-reachable clips ahead of the unprobed ones', () => {
+    const order = buildHeroVideoOrder(seeded(5));
+    const verifiedCount = PLAYABLE_HERO_VIDEO_SOURCES.filter((source) => source.probe === 'http-200').length;
+
+    // A hero background cannot afford to open on a clip nobody has seen serve bytes:
+    // the user would sit on the poster for the whole load timeout.
+    expect(verifiedCount).toBeGreaterThan(0);
+    expect(order.slice(0, verifiedCount).every((source) => source.probe === 'http-200')).toBe(true);
+    expect(order.slice(verifiedCount).every((source) => source.probe !== 'http-200')).toBe(true);
+  });
+
+  it('varies the opening clip between draws', () => {
+    // The property the request actually asked for: a different video each refresh.
+    const openingClips = new Set(Array.from({ length: 20 }, (_, i) => buildHeroVideoOrder(seeded(i + 100))[0].id));
+    expect(openingClips.size).toBeGreaterThan(1);
+  });
 });
 
 describe('shuffleHeroSources', () => {

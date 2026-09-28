@@ -19,12 +19,18 @@ import { shuffleHeroSources, PLAYABLE_HERO_VIDEO_SOURCES, type HeroVideoSource }
 /**
  * How long a candidate may sit unplayed before it is treated as failed.
  *
- * These are multi-megabyte CDN clips, so this is a "the network is not going to
- * answer" ceiling rather than a latency budget — it must stay well above a slow
- * 4G first-byte, otherwise a healthy clip on a poor connection gets abandoned
- * and the user pays for the bytes twice.
+ * These are multi-megabyte CDN clips, so this is a "the network is not going to answer"
+ * ceiling rather than a latency budget. It sits against a real tension: too high and the
+ * user stares at the poster while a dead clip times out — and on a hero background that
+ * is the visible failure the whole failover chain exists to prevent — while too low
+ * abandons a healthy clip on a slow connection and pays for its bytes twice.
+ *
+ * 8s is the compromise. It is only ever reached by a clip that produces no `error` and no
+ * `canplay`, because a healthy clip cancels the timer as soon as it has enough data to
+ * start (see `onSourcePlayable`), and `buildHeroVideoOrder` puts the clips that were
+ * actually confirmed reachable at the front of the order.
  */
-export const HERO_VIDEO_LOAD_TIMEOUT_MS = 12000;
+export const HERO_VIDEO_LOAD_TIMEOUT_MS = 8000;
 
 export type HeroVideoStatus = 'loading' | 'playing' | 'exhausted';
 

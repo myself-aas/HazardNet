@@ -15,7 +15,7 @@
  * usually silently stalls.
  */
 
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 
 import { EARTH_HERO_POSTER } from '../lib/heroMedia';
 import type { HeroVideoSource } from '../lib/heroVideoPlaylist';
@@ -56,6 +56,35 @@ export const HeroVideoPlayer: React.FC<HeroVideoPlayerProps> = ({
     ...style,
   };
 
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+
+  /*
+   * Drive mutedness and play() explicitly rather than trusting the `autoPlay` attribute.
+   *
+   * React applies `muted` as a DOM *property*, not an attribute — rendering the hero and
+   * inspecting it shows `autoplay` present and no `muted` attribute. The autoplay gate
+   * reads mutedness at the moment playback would begin, so prop ordering alone is a coin
+   * flip across browsers. Calling play() ourselves also makes a refusal *observable*, and
+   * the two failure modes must not share a path: a clip the autoplay policy rejects will
+   * never load, so failing over would burn the entire order and end on the poster anyway.
+   * Only a real load error advances the cursor.
+   */
+  useEffect(() => {
+    const el = videoRef.current;
+    if (!el) return;
+    el.muted = true;
+    try {
+      const started = el.play();
+      if (started && typeof started.catch === 'function') {
+        // Refused autoplay (data saver, battery saver, a user preference) is not a dead
+        // clip: the poster is already showing, so leave the cursor where it is.
+        started.catch(() => undefined);
+      }
+    } catch {
+      // No media stack at all (jsdom, an exotic engine). Nothing to recover from.
+    }
+  }, [source?.id]);
+
   // Every candidate failed (or the browser is offline): hold the poster rather
   // than leaving a black rectangle behind the hero copy.
   if (status === 'exhausted' || !source) {
@@ -81,6 +110,7 @@ export const HeroVideoPlayer: React.FC<HeroVideoPlayerProps> = ({
       // Keyed on the clip id: failing over mounts a fresh element, which is
       // what actually makes the browser fetch the next URL.
       key={source.id}
+      ref={videoRef}
       autoPlay
       loop
       muted
@@ -92,6 +122,16 @@ export const HeroVideoPlayer: React.FC<HeroVideoPlayerProps> = ({
       tabIndex={-1}
       poster={EARTH_HERO_POSTER}
       src={source.src}
+      // The catalogue's reachability was verified with plain GETs that carried no
+      // Referer; a browser sends one. If a CDN enforces a referer allowlist it would
+      // reject the browser request while the verified probe still returned 200, so make
+      // the two requests the same shape. These clips need no referrer for attribution —
+      // the credit and page URL ride on the data attributes below.
+      //
+      // Goes in through a spread because @types/react omits `referrerPolicy` from
+      // VideoHTMLAttributes even though react-dom renders it as `referrerpolicy`; a
+      // direct prop fails typecheck and the behaviour would silently be dropped.
+      {...{ referrerPolicy: 'no-referrer' }}
       data-testid="hero-video"
       data-hero-video-id={source.id}
       data-hero-video-provider={source.provider}
@@ -105,6 +145,7 @@ export const HeroVideoPlayer: React.FC<HeroVideoPlayerProps> = ({
       // covered by the hook's load timeout.
       onError={onSourceFailed}
       onCanPlay={onSourcePlayable}
+      onLoadedData={onSourcePlayable}
       onPlaying={onSourcePlayable}
       style={sharedStyle}
     />
