@@ -17,7 +17,7 @@
 
 import React, { useEffect, useRef } from 'react';
 
-import { EARTH_HERO_POSTER } from '../lib/heroMedia';
+import { EARTH_HERO_POSTER, EARTH_HERO_POSTER_CSS } from '../lib/heroMedia';
 import type { HeroVideoSource } from '../lib/heroVideoPlaylist';
 import { useHeroVideoSource } from '../hooks/useHeroVideoSource';
 
@@ -97,7 +97,9 @@ export const HeroVideoPlayer: React.FC<HeroVideoPlayerProps> = ({
         role="presentation"
         style={{
           ...sharedStyle,
-          backgroundImage: `url("${EARTH_HERO_POSTER}")`,
+          // CSS-safe encoding: the attribute form's quotes and newlines make the
+          // browser reject the whole declaration, painting nothing at all.
+          backgroundImage: `url("${EARTH_HERO_POSTER_CSS}")`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
         }}

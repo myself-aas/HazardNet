@@ -15,7 +15,7 @@
 
 import React from 'react';
 import { useReducedMotion } from 'framer-motion';
-import { EARTH_HERO_POSTER } from '../lib/heroMedia';
+import { EARTH_HERO_POSTER_CSS } from '../lib/heroMedia';
 import HeroVideoPlayer from './HeroVideoPlayer';
 import { Interactive } from './interactive/Interactive';
 import { useWebFrame, useWebVideoConfig, interpolate, Easing } from '../lib/motion-interpolate';
@@ -156,7 +156,7 @@ export const HeroCinematicBackground: React.FC<{ paused?: boolean }> = ({ paused
             inset: 0,
             width: '100%',
             height: '100%',
-            backgroundImage: `url("${EARTH_HERO_POSTER}")`,
+            backgroundImage: `url("${EARTH_HERO_POSTER_CSS}")`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
           }}

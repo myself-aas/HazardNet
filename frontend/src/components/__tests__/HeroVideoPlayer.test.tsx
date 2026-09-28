@@ -90,6 +90,12 @@ describe('<HeroVideoPlayer />', () => {
     expect(poster).toHaveAttribute('data-hero-video-status', 'exhausted');
     expect(poster).toHaveAttribute('data-hero-video-attempts', '3');
     expect(poster).toHaveAttribute('data-hero-video-candidates', '3');
+    // The entire point of falling back is that something is painted. The attribute
+    // form of this data URI carries 236 quotes and 56 newlines, which make the CSS
+    // parser reject the declaration outright and leave the container's near-black
+    // background showing — the failure this assertion exists to catch.
+    expect(poster.style.backgroundImage).not.toBe('');
+    expect(poster.style.backgroundImage).toContain('data:image/svg+xml');
   });
 
   it('marks the clip playing once it can play', () => {
