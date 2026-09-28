@@ -3,9 +3,9 @@
  *
  * Owns the inline SVG poster for the NASA-inspired Global Observatory hero.
  *
- * The hero's moving image is drawn rather than loaded: `../components/HeroSpaceCanvas`
- * renders the Earth-from-space scene on a canvas, so nothing in this file is fetched at
- * runtime and no `media-src` allowance is needed for the hero.
+ * The hero's backdrop is a cross-fading carousel of self-hosted frames in
+ * `../components/HeroImageCarousel` (manifest in `./heroCarouselImages`), so nothing in
+ * this file is fetched at runtime and no `media-src` allowance is needed for the hero.
  *
  * The poster is still worth keeping, as a static fallback painted *behind* that canvas. A
  * 2D context is not guaranteed — an old engine, a disabled GPU, a privacy mode that

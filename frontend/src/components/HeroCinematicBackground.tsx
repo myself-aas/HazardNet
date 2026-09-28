@@ -16,7 +16,7 @@
 import React from 'react';
 import { useReducedMotion } from 'framer-motion';
 import { EARTH_HERO_POSTER_CSS } from '../lib/heroMedia';
-import HeroSpaceCanvas from './HeroSpaceCanvas';
+import HeroImageCarousel from './HeroImageCarousel';
 import { Interactive } from './interactive/Interactive';
 import { useWebFrame, useWebVideoConfig, interpolate, Easing } from '../lib/motion-interpolate';
 
@@ -120,27 +120,24 @@ export const HeroCinematicBackground: React.FC<{ paused?: boolean }> = ({ paused
         />
       </Interactive.Div>
 
-      {/* ── Layer 2: Procedural Earth-from-space, drawn on canvas ────────
-             Replaces the stock-video layer. Nothing here makes a request, so there is
-             no CDN to rate-limit, no `media-src` to widen, and no way for the hero to
-             fail over into a blank frame. See HeroSpaceCanvas for the full reasoning.
+      {/* ── Layer 2: Contextual image carousel, cross-fading local frames ──
+             Replaces the stock-video playlist and the procedural canvas. The slides are
+             self-hosted files, so the hero makes zero remote requests — the gate that
+             killed both previous backdrops. See lib/heroCarouselImages.ts for the
+             reasoning and the note on licensing.
 
-             The canvas draws a single still frame when motion is reduced, so the old
-             animated/poster ternary collapses into one component — and the poster
-             fallback, which carried its own malformed-CSS bug, goes away with it. ── */}
+             Under reduced motion the carousel collapses to a single static frame. ── */}
       <Interactive.Div
-        name="Hero space canvas — idle breathing"
+        name="Hero image carousel — idle breathing"
         style={{
           position: 'absolute',
           inset: 0,
           width: '100%',
           height: '100%',
           overflow: 'hidden',
-          // Painted *behind* the canvas. A 2D context is not guaranteed — an old engine,
-          // a disabled GPU, a privacy mode that refuses canvas — and without this the
-          // hero would fall back to the container's near-black fill, which is precisely
-          // the silent-blank failure this layer used to have. The canvas simply covers
-          // it whenever drawing works.
+          // Painted *behind* the carousel. If every image were missing, this keeps the
+          // hero on the Earth scene rather than the container's near-black fill — the
+          // silent-blank failure this layer has had twice before.
           //
           // Must be the CSS-encoded form: the attribute form of this data URI contains
           // quotes and newlines, which make the browser reject the declaration outright.
@@ -158,7 +155,7 @@ export const HeroCinematicBackground: React.FC<{ paused?: boolean }> = ({ paused
           willChange: shouldAnimate ? 'transform' : undefined,
         }}
       >
-        <HeroSpaceCanvas paused={paused} reducedMotion={!!reduceMotion || isTest} />
+        <HeroImageCarousel paused={paused} reducedMotion={!!reduceMotion || isTest} />
       </Interactive.Div>
 
       {/* ── Layer 3: Observatory Telemetry HUD (Graphics / Type) ────── */}
