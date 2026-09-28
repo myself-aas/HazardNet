@@ -4,13 +4,6 @@
 @import "./styles/nasa-hds.css";
 
 @import "tailwindcss";
-/* Typefaces: NASA HDS is set in Inter (headings), Public Sans (body) and DM Mono (data/code).
-   All three are self-hosted through @fontsource, so no third-party request is ever made and the
-   service worker can cache them for offline use. */
-@import "@fontsource-variable/inter";
-@import "@fontsource-variable/public-sans";
-@import "@fontsource/dm-mono/400.css";
-@import "@fontsource/dm-mono/500.css";
 @import 'leaflet/dist/leaflet.css' layer(base);
 @import 'leaflet.markercluster/dist/MarkerCluster.css' layer(base);
 @import 'leaflet.markercluster/dist/MarkerCluster.Default.css' layer(base);
@@ -19,47 +12,38 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* Family-name aliases.
-   `@fontsource` registers families under package-ish names ("Inter Variable",
-   "Public Sans Variable"), while NASA's design tokens name the families the way NASA's own
-   stylesheet does: 'Inter', 'Public Sans Web', 'DM Mono'. The HDS block above resolves
-   `var(--hds-font-family-body)` to 'Public Sans Web', so that exact family has to exist here.
-   The map popups and the print stylesheet used to hard-code the previous families as literal
-   strings; they now reference var(--hds-font-family-*) or the DM Mono stack directly, so no
-   legacy alias is needed. */
-@font-face {
-  font-family: 'Public Sans Web';
-  src: url('@fontsource-variable/public-sans/files/public-sans-latin-wght-normal.woff2') format('woff2-variations');
-  font-weight: 100 900;
-  font-style: normal;
-  font-display: swap;
+/* HazardNet edge-first typography contract. No remote font URL is permitted. */
+:root {
+  --font-sans-en: 'Inter', 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-sans-bn: 'Hind Siliguri', 'Noto Sans Bengali', 'Baloo Da 2', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
 }
 
-@font-face {
-  font-family: 'Inter';
-  src: url('@fontsource-variable/inter/files/inter-latin-wght-normal.woff2') format('woff2-variations');
-  font-weight: 100 900;
-  font-style: normal;
-  font-display: swap;
+html, body, button, input, select, textarea {
+  font-family: var(--font-sans-en);
+  font-feature-settings: "tnum" 1, "lnum" 1, "cv11" 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-@font-face {
-  font-family: 'DM Mono';
-  src: url('@fontsource/dm-mono/files/dm-mono-latin-400-normal.woff2') format('woff2');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
+.lang-bn, .farmer-advisory, .tts-fallback-text, [lang="bn"] {
+  font-family: var(--font-sans-bn) !important;
+  line-height: 1.65;
+  letter-spacing: 0.01em;
 }
 
-@font-face {
-  font-family: 'DM Mono';
-  src: url('@fontsource/dm-mono/files/dm-mono-latin-500-normal.woff2') format('woff2');
-  font-weight: 500;
-  font-style: normal;
-  font-display: swap;
+.metric-value, .confidence-badge, .tensor-log, code, pre {
+  font-family: var(--font-mono) !important;
+  font-variant-numeric: tabular-nums;
 }
-
-
+/* Edge-first typography fallback.
+ *
+ * The checked-in artifact is intentionally empty until the font subsetting job has
+ * produced valid WOFF2 files below the 50 KB budget. Keeping the declarations
+ * system-local in the meantime is safer than shipping an unsubsetted font or
+ * making a runtime CDN request. The stacks are metric-aware and render text
+ * immediately while optional local faces are unavailable.
+ */
 /* ==========================================================================
    HAZARDNET DESIGN SYSTEM — Token Architecture (three layers)
    Layer 1 primitives (raw values) → Layer 2 semantic (purpose aliases) →
@@ -2417,3 +2401,10 @@ footer a::before {
 }
 
 
+
+/* Final cascade guard: legacy component tokens cannot reintroduce old families. */
+body, body * { font-family: var(--font-sans-en); }
+.lang-bn, .farmer-advisory, .tts-fallback-text, [lang="bn"],
+.lang-bn *, .farmer-advisory *, .tts-fallback-text *, [lang="bn"] * { font-family: var(--font-sans-bn) !important; }
+.metric-value, .confidence-badge, .tensor-log, code, pre,
+.metric-value *, .confidence-badge *, .tensor-log *, code *, pre * { font-family: var(--font-mono) !important; }

@@ -23,11 +23,9 @@ function getCspConfig(enforce = false) {
     styleSrc: [
       "'self'",
       "'unsafe-inline'", // Required for styled-components and Tailwind
-      'https://fonts.googleapis.com',
     ],
     fontSrc: [
       "'self'",
-      'https://fonts.gstatic.com',
       'data:',
     ],
     imgSrc: [
