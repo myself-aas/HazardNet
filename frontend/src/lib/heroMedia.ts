@@ -1,42 +1,50 @@
 /**
  * Hero Media Configuration
  *
- * Provides media assets for the NASA-inspired Global Observatory Hero section.
- * Renders the Planet Earth and Moon animation from local assets
- * (frontend/assets/hero-section/ and frontend/public/hero-section/)
- * with resolution-adaptive sources, online CDN fallback, and inline SVG poster fallback.
+ * Owns the inline SVG poster for the NASA-inspired Global Observatory hero.
+ *
+ * The hero's backdrop is a cross-fading carousel of self-hosted frames in
+ * `../components/HeroImageCarousel` (manifest in `./heroCarouselImages`), so nothing in
+ * this file is fetched at runtime and no `media-src` allowance is needed for the hero.
+ *
+ * The poster is still worth keeping, as a static fallback painted *behind* that canvas. A
+ * 2D context is not guaranteed — an old engine, a disabled GPU, a privacy mode that
+ * refuses canvas — and with nothing underneath, the hero would fall back to its
+ * container's near-black fill. That is a silent blank, which is exactly how the previous
+ * video implementation failed.
+ *
+ * The local `EARTH_HERO_VIDEO_*` constants below are retained but unreferenced —
+ * the files still ship in `frontend/assets/hero-section/` and
+ * `frontend/public/hero-section/`, so they remain available if a deployment ever needs a
+ * real video element instead.
  */
 
 /**
  * Local 1080p (Full HD) Earth and Moon animation loop.
  * Fast, offline-capable, and immune to third-party CSP/network blocking.
+ * Retired from the hero — see the note at the top of this file.
  */
-export const EARTH_HERO_VIDEO_1080P =
-  '/hero-section/Hero_Section_hd_1920_1080_30fps.mp4';
+export const EARTH_HERO_VIDEO_1080P = '/hero-section/Hero_Section_hd_1920_1080_30fps.mp4';
 
 /**
  * Local 720p version for tablet devices.
  */
-export const EARTH_HERO_VIDEO_720P =
-  '/hero-section/Hero_Section_hd_1280_720_30fps.mp4';
+export const EARTH_HERO_VIDEO_720P = '/hero-section/Hero_Section_hd_1280_720_30fps.mp4';
 
 /**
  * Local 4K (UHD 2160p) version for ultra-high-DPI displays.
  */
-export const EARTH_HERO_VIDEO_4K =
-  '/hero-section/Hero_Section_hd_3840_2160_30fps.mp4';
+export const EARTH_HERO_VIDEO_4K = '/hero-section/Hero_Section_hd_3840_2160_30fps.mp4';
 
 /**
  * Local 2K (1440p) version.
  */
-export const EARTH_HERO_VIDEO_1440P =
-  '/hero-section/Hero_Section_hd_2560_1440_30fps.mp4';
+export const EARTH_HERO_VIDEO_1440P = '/hero-section/Hero_Section_hd_2560_1440_30fps.mp4';
 
 /**
  * Local SD (540p) version for mobile devices and low-bandwidth connections.
  */
-export const EARTH_HERO_VIDEO_540P =
-  '/hero-section/Hero_Section_sd_960_540_30fps.mp4';
+export const EARTH_HERO_VIDEO_540P = '/hero-section/Hero_Section_sd_960_540_30fps.mp4';
 
 /**
  * Primary default video source for the Hero section.
@@ -44,32 +52,26 @@ export const EARTH_HERO_VIDEO_540P =
 export const EARTH_HERO_VIDEO_MP4 = EARTH_HERO_VIDEO_1080P;
 
 /**
- * High-definition online CDN fallback (Pexels 10915129 direct video stream).
- */
-export const EARTH_HERO_VIDEO_BACKUP_MP4 =
-  'https://videos.pexels.com/video-files/10915129/10915129-hd_1920_1080_30fps.mp4';
-
-/**
  * High-resolution inline SVG poster depicting the Earth glowing in deep space against stars.
  * Ensures the hero background renders immediately even before video playback initiates.
  */
-export const EARTH_HERO_POSTER = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080">
+const HERO_POSTER_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080">
   <defs>
     <radialGradient id="spaceGrad" cx="50%" cy="50%" r="75%">
-      <stop offset="0%" stop-color="%230b1426" />
-      <stop offset="50%" stop-color="%23040814" />
-      <stop offset="100%" stop-color="%23000000" />
+      <stop offset="0%" stop-color="#0b1426" />
+      <stop offset="50%" stop-color="#040814" />
+      <stop offset="100%" stop-color="#000000" />
     </radialGradient>
     <radialGradient id="earthGrad" cx="35%" cy="35%" r="65%">
-      <stop offset="0%" stop-color="%234facfe" />
-      <stop offset="40%" stop-color="%23005bea" />
-      <stop offset="75%" stop-color="%23082567" />
-      <stop offset="100%" stop-color="%23020b1e" />
+      <stop offset="0%" stop-color="#4facfe" />
+      <stop offset="40%" stop-color="#005bea" />
+      <stop offset="75%" stop-color="#082567" />
+      <stop offset="100%" stop-color="#020b1e" />
     </radialGradient>
     <radialGradient id="earthAtmosphere" cx="50%" cy="50%" r="50%">
-      <stop offset="85%" stop-color="%2338bdf8" stop-opacity="0" />
-      <stop offset="98%" stop-color="%2338bdf8" stop-opacity="0.45" />
-      <stop offset="100%" stop-color="%237dd3fc" stop-opacity="0.8" />
+      <stop offset="85%" stop-color="#38bdf8" stop-opacity="0" />
+      <stop offset="98%" stop-color="#38bdf8" stop-opacity="0.45" />
+      <stop offset="100%" stop-color="#7dd3fc" stop-opacity="0.8" />
     </radialGradient>
     <filter id="glow">
       <feGaussianBlur stdDeviation="15" result="coloredBlur"/>
@@ -81,10 +83,10 @@ export const EARTH_HERO_POSTER = `data:image/svg+xml;utf8,<svg xmlns="http://www
   </defs>
 
   <!-- Deep Space Backdrop -->
-  <rect width="100%" height="100%" fill="url(%23spaceGrad)" />
+  <rect width="100%" height="100%" fill="url(#spaceGrad)" />
 
   <!-- Distant Stars -->
-  <g fill="%23ffffff" opacity="0.65">
+  <g fill="#ffffff" opacity="0.65">
     <circle cx="120" cy="180" r="1.5" />
     <circle cx="280" cy="90" r="1" opacity="0.4" />
     <circle cx="450" cy="220" r="1.2" />
@@ -104,9 +106,45 @@ export const EARTH_HERO_POSTER = `data:image/svg+xml;utf8,<svg xmlns="http://www
   </g>
 
   <!-- Glowing Earth Sphere -->
-  <circle cx="960" cy="540" r="380" fill="url(%23earthGrad)" filter="url(%23glow)" />
-  <circle cx="960" cy="540" r="380" fill="url(%23earthAtmosphere)" />
+  <circle cx="960" cy="540" r="380" fill="url(#earthGrad)" filter="url(#glow)" />
+  <circle cx="960" cy="540" r="380" fill="url(#earthAtmosphere)" />
 
   <!-- Atmospheric Glow Ring -->
-  <circle cx="960" cy="540" r="382" stroke="%2338bdf8" stroke-width="3" fill="none" opacity="0.6" />
+  <circle cx="960" cy="540" r="382" stroke="#38bdf8" stroke-width="3" fill="none" opacity="0.6" />
 </svg>`;
+
+/**
+ * The poster as a data URI, for HTML attributes — `<video poster>`, `<img src>`.
+ *
+ * Byte-identical to the value this file always exported: `#` must be escaped as `%23`
+ * inside a data URI or the browser reads it as the start of a fragment and truncates the
+ * SVG at the first colour value.
+ */
+export const EARTH_HERO_POSTER = `data:image/svg+xml;utf8,${HERO_POSTER_SVG.replace(/#/g, '%23')}`;
+
+/**
+ * The same poster, encoded for use inside a CSS `url()`.
+ *
+ * This one exists because of a bug that rendered the hero's every poster fallback as
+ * pure black. The SVG source contains 236 double quotes and 56 newlines; both are illegal
+ * inside a quoted `url()` token, so the browser rejects the whole `background-image`
+ * declaration and paints nothing — leaving the container's `#05070E` showing through.
+ * A rejected CSS declaration raises no error, which is why this was invisible: the video
+ * layer failed over through all fifteen clips, landed on the poster, and the poster
+ * silently did not exist. Verified by assigning the declaration in jsdom and reading back
+ * an empty `style.backgroundImage`.
+ *
+ * Use this for `backgroundImage`. Use `EARTH_HERO_POSTER` for attributes — the attribute
+ * form is fine there, and `encodeURIComponent` would double-escape its `%23`.
+ */
+/**
+ * `encodeURIComponent` leaves `!'()*` untouched, and this SVG is full of `(` and `)` —
+ * every gradient reference is written `fill="url(#spaceGrad)"`. Those parentheses are
+ * legal inside a quoted CSS `url()` string per the spec, but not every parser agrees, so
+ * percent-encode them as well and leave the payload containing nothing but unreserved
+ * characters and `%XX` escapes. That is accepted by strict and lenient parsers alike.
+ */
+const encodeForCssDataUri = (value: string): string =>
+  encodeURIComponent(value).replace(/[!'()*]/g, (char) => `%${char.charCodeAt(0).toString(16).toUpperCase()}`);
+
+export const EARTH_HERO_POSTER_CSS = `data:image/svg+xml,${encodeForCssDataUri(HERO_POSTER_SVG)}`;

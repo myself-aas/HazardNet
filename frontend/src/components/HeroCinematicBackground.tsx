@@ -15,13 +15,8 @@
 
 import React from 'react';
 import { useReducedMotion } from 'framer-motion';
-import {
-  EARTH_HERO_VIDEO_1080P,
-  EARTH_HERO_VIDEO_720P,
-  EARTH_HERO_VIDEO_540P,
-  EARTH_HERO_VIDEO_BACKUP_MP4,
-  EARTH_HERO_POSTER,
-} from '../lib/heroMedia';
+import { EARTH_HERO_POSTER_CSS } from '../lib/heroMedia';
+import HeroImageCarousel from './HeroImageCarousel';
 import { Interactive } from './interactive/Interactive';
 import { useWebFrame, useWebVideoConfig, interpolate, Easing } from '../lib/motion-interpolate';
 
@@ -31,9 +26,6 @@ export const HeroCinematicBackground: React.FC<{ paused?: boolean }> = ({ paused
   const shouldAnimate = !reduceMotion && !paused && !isTest;
   const frame = useWebFrame(30);
   const { fps } = useWebVideoConfig();
-
-  // shouldPlayVideo is hardcoded — no computed effects array
-  const shouldPlayVideo = shouldAnimate;
 
   return (
     <Interactive.Div
@@ -128,60 +120,43 @@ export const HeroCinematicBackground: React.FC<{ paused?: boolean }> = ({ paused
         />
       </Interactive.Div>
 
-      {/* ── Layer 2: Video Asset (HeroVideoAsset with Idle Breathing) ── */}
-      {shouldPlayVideo ? (
-        <Interactive.Div
-          name="Hero video asset — idle breathing"
-          style={{
-            position: 'absolute',
-            inset: 0,
-            width: '100%',
-            height: '100%',
-            overflow: 'hidden',
-            scale: shouldAnimate
-              ? interpolate(frame, [0, fps * 7, fps * 14], [1.02, 1.04, 1.02], {
-                  easing: Easing.bezier(0.4, 0, 0.2, 1),
-                  extrapolateLeft: 'clamp',
-                  extrapolateRight: 'clamp',
-                  output: 'perceptual-scale',
-                })
-              : 1.02,
-            willChange: shouldAnimate ? 'transform' : undefined,
-          }}
-        >
-          <video
-            autoPlay
-            loop
-            muted
-            playsInline
-            poster={EARTH_HERO_POSTER}
-            style={{
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover',
-              display: 'block',
-            }}
-          >
-            <source src={EARTH_HERO_VIDEO_1080P} type="video/mp4" media="(min-width: 1024px)" />
-            <source src={EARTH_HERO_VIDEO_720P} type="video/mp4" media="(min-width: 640px)" />
-            <source src={EARTH_HERO_VIDEO_540P} type="video/mp4" />
-            <source src={EARTH_HERO_VIDEO_BACKUP_MP4} type="video/mp4" />
-          </video>
-        </Interactive.Div>
-      ) : (
-        <Interactive.Div
-          name="Poster fallback — reduced-motion"
-          style={{
-            position: 'absolute',
-            inset: 0,
-            width: '100%',
-            height: '100%',
-            backgroundImage: `url("${EARTH_HERO_POSTER}")`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-          }}
-        />
-      )}
+      {/* ── Layer 2: Contextual image carousel, cross-fading local frames ──
+             Replaces the stock-video playlist and the procedural canvas. The slides are
+             self-hosted files, so the hero makes zero remote requests — the gate that
+             killed both previous backdrops. See lib/heroCarouselImages.ts for the
+             reasoning and the note on licensing.
+
+             Under reduced motion the carousel collapses to a single static frame. ── */}
+      <Interactive.Div
+        name="Hero image carousel — idle breathing"
+        style={{
+          position: 'absolute',
+          inset: 0,
+          width: '100%',
+          height: '100%',
+          overflow: 'hidden',
+          // Painted *behind* the carousel. If every image were missing, this keeps the
+          // hero on the Earth scene rather than the container's near-black fill — the
+          // silent-blank failure this layer has had twice before.
+          //
+          // Must be the CSS-encoded form: the attribute form of this data URI contains
+          // quotes and newlines, which make the browser reject the declaration outright.
+          backgroundImage: `url("${EARTH_HERO_POSTER_CSS}")`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          scale: shouldAnimate
+            ? interpolate(frame, [0, fps * 7, fps * 14], [1.02, 1.04, 1.02], {
+                easing: Easing.bezier(0.4, 0, 0.2, 1),
+                extrapolateLeft: 'clamp',
+                extrapolateRight: 'clamp',
+                output: 'perceptual-scale',
+              })
+            : 1.02,
+          willChange: shouldAnimate ? 'transform' : undefined,
+        }}
+      >
+        <HeroImageCarousel paused={paused} reducedMotion={!!reduceMotion || isTest} />
+      </Interactive.Div>
 
       {/* ── Layer 3: Observatory Telemetry HUD (Graphics / Type) ────── */}
       <Interactive.Div
