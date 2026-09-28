@@ -34,7 +34,7 @@ describe('<HeroImageCarousel />', () => {
     cleanup();
   });
 
-  it('paints every slide as a CSS background, never as an <img>', () => {
+  it('paints every slide as a CSS background, never as an image element', () => {
     const { container } = render(<HeroImageCarousel reducedMotion />);
     expect(slides(container).length).toBe(HERO_CAROUSEL_IMAGES.length);
     // The whole point of using backgrounds: no <img> enters the front door.
