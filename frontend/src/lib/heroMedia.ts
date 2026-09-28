@@ -3,15 +3,20 @@
  *
  * Owns the inline SVG poster for the NASA-inspired Global Observatory hero.
  *
- * The hero's moving image is no longer configured here: as of 2026-09-28 it is
- * drawn at random from the 15-clip catalogue in `./heroVideoPlaylist` and played
- * by `../components/HeroVideoPlayer`, which fails over clip-by-clip and lands on
- * `EARTH_HERO_POSTER` when none of them play.
+ * The hero's moving image is drawn rather than loaded: `../components/HeroSpaceCanvas`
+ * renders the Earth-from-space scene on a canvas, so nothing in this file is fetched at
+ * runtime and no `media-src` allowance is needed for the hero.
+ *
+ * The poster is still worth keeping, as a static fallback painted *behind* that canvas. A
+ * 2D context is not guaranteed — an old engine, a disabled GPU, a privacy mode that
+ * refuses canvas — and with nothing underneath, the hero would fall back to its
+ * container's near-black fill. That is a silent blank, which is exactly how the previous
+ * video implementation failed.
  *
  * The local `EARTH_HERO_VIDEO_*` constants below are retained but unreferenced —
  * the files still ship in `frontend/assets/hero-section/` and
- * `frontend/public/hero-section/`, so they remain available as an offline or
- * CSP-locked-down source if a deployment ever needs to opt out of the CDNs.
+ * `frontend/public/hero-section/`, so they remain available if a deployment ever needs a
+ * real video element instead.
  */
 
 /**
@@ -45,17 +50,6 @@ export const EARTH_HERO_VIDEO_540P = '/hero-section/Hero_Section_sd_960_540_30fp
  * Primary default video source for the Hero section.
  */
 export const EARTH_HERO_VIDEO_MP4 = EARTH_HERO_VIDEO_1080P;
-
-/**
- * High-definition online CDN fallback (Pexels 10915129 direct video stream).
- *
- * Note: the Pexels asset page now advertises `10915129-hd_2560_1440_30fps.mp4`
- * as this clip's canonical stream, and that is the URL the hero playlist uses.
- * The 1920x1080 rendition below is the one this repo has shipped historically;
- * it is left untouched because nothing verified either file from a real browser.
- */
-export const EARTH_HERO_VIDEO_BACKUP_MP4 =
-  'https://videos.pexels.com/video-files/10915129/10915129-hd_1920_1080_30fps.mp4';
 
 /**
  * High-resolution inline SVG poster depicting the Earth glowing in deep space against stars.

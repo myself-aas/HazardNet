@@ -16,7 +16,7 @@
 import React from 'react';
 import { useReducedMotion } from 'framer-motion';
 import { EARTH_HERO_POSTER_CSS } from '../lib/heroMedia';
-import HeroVideoPlayer from './HeroVideoPlayer';
+import HeroSpaceCanvas from './HeroSpaceCanvas';
 import { Interactive } from './interactive/Interactive';
 import { useWebFrame, useWebVideoConfig, interpolate, Easing } from '../lib/motion-interpolate';
 
@@ -26,9 +26,6 @@ export const HeroCinematicBackground: React.FC<{ paused?: boolean }> = ({ paused
   const shouldAnimate = !reduceMotion && !paused && !isTest;
   const frame = useWebFrame(30);
   const { fps } = useWebVideoConfig();
-
-  // shouldPlayVideo is hardcoded — no computed effects array
-  const shouldPlayVideo = shouldAnimate;
 
   return (
     <Interactive.Div
@@ -123,45 +120,46 @@ export const HeroCinematicBackground: React.FC<{ paused?: boolean }> = ({ paused
         />
       </Interactive.Div>
 
-      {/* ── Layer 2: Video Asset — a randomly drawn clip from the 15-clip
-             hero playlist, with per-clip failover (see HeroVideoPlayer).
-             The idle-breathing scale below is this layer's own animation. ── */}
-      {shouldPlayVideo ? (
-        <Interactive.Div
-          name="Hero video asset — idle breathing"
-          style={{
-            position: 'absolute',
-            inset: 0,
-            width: '100%',
-            height: '100%',
-            overflow: 'hidden',
-            scale: shouldAnimate
-              ? interpolate(frame, [0, fps * 7, fps * 14], [1.02, 1.04, 1.02], {
-                  easing: Easing.bezier(0.4, 0, 0.2, 1),
-                  extrapolateLeft: 'clamp',
-                  extrapolateRight: 'clamp',
-                  output: 'perceptual-scale',
-                })
-              : 1.02,
-            willChange: shouldAnimate ? 'transform' : undefined,
-          }}
-        >
-          <HeroVideoPlayer />
-        </Interactive.Div>
-      ) : (
-        <Interactive.Div
-          name="Poster fallback — reduced-motion"
-          style={{
-            position: 'absolute',
-            inset: 0,
-            width: '100%',
-            height: '100%',
-            backgroundImage: `url("${EARTH_HERO_POSTER_CSS}")`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-          }}
-        />
-      )}
+      {/* ── Layer 2: Procedural Earth-from-space, drawn on canvas ────────
+             Replaces the stock-video layer. Nothing here makes a request, so there is
+             no CDN to rate-limit, no `media-src` to widen, and no way for the hero to
+             fail over into a blank frame. See HeroSpaceCanvas for the full reasoning.
+
+             The canvas draws a single still frame when motion is reduced, so the old
+             animated/poster ternary collapses into one component — and the poster
+             fallback, which carried its own malformed-CSS bug, goes away with it. ── */}
+      <Interactive.Div
+        name="Hero space canvas — idle breathing"
+        style={{
+          position: 'absolute',
+          inset: 0,
+          width: '100%',
+          height: '100%',
+          overflow: 'hidden',
+          // Painted *behind* the canvas. A 2D context is not guaranteed — an old engine,
+          // a disabled GPU, a privacy mode that refuses canvas — and without this the
+          // hero would fall back to the container's near-black fill, which is precisely
+          // the silent-blank failure this layer used to have. The canvas simply covers
+          // it whenever drawing works.
+          //
+          // Must be the CSS-encoded form: the attribute form of this data URI contains
+          // quotes and newlines, which make the browser reject the declaration outright.
+          backgroundImage: `url("${EARTH_HERO_POSTER_CSS}")`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          scale: shouldAnimate
+            ? interpolate(frame, [0, fps * 7, fps * 14], [1.02, 1.04, 1.02], {
+                easing: Easing.bezier(0.4, 0, 0.2, 1),
+                extrapolateLeft: 'clamp',
+                extrapolateRight: 'clamp',
+                output: 'perceptual-scale',
+              })
+            : 1.02,
+          willChange: shouldAnimate ? 'transform' : undefined,
+        }}
+      >
+        <HeroSpaceCanvas paused={paused} reducedMotion={!!reduceMotion || isTest} />
+      </Interactive.Div>
 
       {/* ── Layer 3: Observatory Telemetry HUD (Graphics / Type) ────── */}
       <Interactive.Div

@@ -67,25 +67,6 @@ export const AUTH_FORM_ACTION_ORIGINS = Object.freeze([
   'https://*.github.com',
 ]);
 
-/**
- * CDN origins serving the FrontDoor hero's background clips.
- *
- * `media-src 'self' blob:` was correct while the hero played the bundled
- * `public/hero-section/*.mp4` loops, and it silently became wrong the moment the hero
- * started drawing from the remote catalogue in `frontend/src/lib/heroVideoPlaylist.ts`:
- * every candidate was blocked by policy, the player walked its whole failover order, and
- * the hero fell back to the poster. Nothing surfaced it — the blocked requests look
- * exactly like a dead CDN, which is the one thing the failover chain is built to absorb.
- *
- * These are the only two CDN hosts the playable catalogue uses. Mixkit is absent on
- * purpose: its entry is excluded from rotation (hotlink-denied, personal-use-only
- * licence), and an allowlist entry for a source we never load is just surface area.
- *
- * `__tests__/heroVideoCspParity.test.js` asserts this list covers every playable source's
- * origin, so adding a clip from a new host fails in CI instead of in the hero.
- */
-export const HERO_MEDIA_ORIGINS = Object.freeze(['https://cdn.pixabay.com', 'https://videos.pexels.com']);
-
 export const CSP = [
   "default-src 'self'",
   `script-src 'self' ${[...AUTH_SCRIPT_ORIGINS, ...AD_SCRIPT_ORIGINS].join(' ')}`,
@@ -95,7 +76,7 @@ export const CSP = [
   `connect-src 'self' https: wss: ${AUTH_CONNECT_ORIGINS.join(' ')}`,
   `frame-src 'self' https: ${AUTH_FRAME_ORIGINS.join(' ')}`,
   "worker-src 'self' blob:",
-  `media-src 'self' blob: ${HERO_MEDIA_ORIGINS.join(' ')}`,
+  "media-src 'self' blob:",
   "manifest-src 'self'",
   "object-src 'none'",
   "frame-ancestors 'none'",
