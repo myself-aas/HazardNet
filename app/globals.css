@@ -43,9 +43,11 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
-  --font-sans: 'Geist Mono', 'Geist Mono Fallback';
-  --font-mono: 'Geist Mono', 'Geist Mono Fallback';
-  --font-serif: 'Geist Mono', 'Geist Mono Fallback';
+  --font-sans-en: 'Inter', 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-sans-bn: 'Hind Siliguri', 'Noto Sans Bengali', 'Baloo Da 2', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+  --font-sans: var(--font-sans-en);
+  --font-serif: var(--font-sans-bn);
   /* computed shadow variables below - do not modify */
   --shadow-2xs: var(--shadow-x) var(--shadow-y) color-mix(in srgb, var(--shadow-color) calc(var(--shadow-opacity) * 100%), transparent);
   --shadow-xs: var(--shadow-x) var(--shadow-y) var(--shadow-blur) var(--shadow-spread) color-mix(in srgb, var(--shadow-color) calc(var(--shadow-opacity) * 100%), transparent);
@@ -193,4 +195,22 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+
+/* Edge-safe global typography; custom faces are opt-in only after the 50 KB audit. */
+html, body, button, input, select, textarea {
+  font-family: var(--font-sans-en);
+  font-feature-settings: "tnum" 1, "lnum" 1, "cv11" 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+.lang-bn, .farmer-advisory, .tts-fallback-text, [lang="bn"] {
+  font-family: var(--font-sans-bn) !important;
+  line-height: 1.65;
+  letter-spacing: 0.01em;
+}
+.metric-value, .confidence-badge, .tensor-log, code, pre {
+  font-family: var(--font-mono) !important;
+  font-variant-numeric: tabular-nums;
 }

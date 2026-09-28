@@ -70,9 +70,9 @@ export const AUTH_FORM_ACTION_ORIGINS = Object.freeze([
 export const CSP = [
   "default-src 'self'",
   `script-src 'self' ${[...AUTH_SCRIPT_ORIGINS, ...AD_SCRIPT_ORIGINS].join(' ')}`,
-  "style-src 'self' 'unsafe-inline' https://www.gstatic.com https://fonts.googleapis.com",
+  "style-src 'self' 'unsafe-inline' https://www.gstatic.com",
   "img-src 'self' data: blob: https:",
-  "font-src 'self' data: https://fonts.gstatic.com",
+  "font-src 'self' data:",
   `connect-src 'self' https: wss: ${AUTH_CONNECT_ORIGINS.join(' ')}`,
   `frame-src 'self' https: ${AUTH_FRAME_ORIGINS.join(' ')}`,
   "worker-src 'self' blob:",
