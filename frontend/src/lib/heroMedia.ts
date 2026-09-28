@@ -1,15 +1,23 @@
 /**
  * Hero Media Configuration
  *
- * Provides media assets for the NASA-inspired Global Observatory Hero section.
- * Renders the Planet Earth and Moon animation from local assets
- * (frontend/assets/hero-section/ and frontend/public/hero-section/)
- * with resolution-adaptive sources, online CDN fallback, and inline SVG poster fallback.
+ * Owns the inline SVG poster for the NASA-inspired Global Observatory hero.
+ *
+ * The hero's moving image is no longer configured here: as of 2026-09-28 it is
+ * drawn at random from the 15-clip catalogue in `./heroVideoPlaylist` and played
+ * by `../components/HeroVideoPlayer`, which fails over clip-by-clip and lands on
+ * `EARTH_HERO_POSTER` when none of them play.
+ *
+ * The local `EARTH_HERO_VIDEO_*` constants below are retained but unreferenced —
+ * the files still ship in `frontend/assets/hero-section/` and
+ * `frontend/public/hero-section/`, so they remain available as an offline or
+ * CSP-locked-down source if a deployment ever needs to opt out of the CDNs.
  */
 
 /**
  * Local 1080p (Full HD) Earth and Moon animation loop.
  * Fast, offline-capable, and immune to third-party CSP/network blocking.
+ * Retired from the hero — see the note at the top of this file.
  */
 export const EARTH_HERO_VIDEO_1080P =
   '/hero-section/Hero_Section_hd_1920_1080_30fps.mp4';
@@ -45,6 +53,11 @@ export const EARTH_HERO_VIDEO_MP4 = EARTH_HERO_VIDEO_1080P;
 
 /**
  * High-definition online CDN fallback (Pexels 10915129 direct video stream).
+ *
+ * Note: the Pexels asset page now advertises `10915129-hd_2560_1440_30fps.mp4`
+ * as this clip's canonical stream, and that is the URL the hero playlist uses.
+ * The 1920x1080 rendition below is the one this repo has shipped historically;
+ * it is left untouched because nothing verified either file from a real browser.
  */
 export const EARTH_HERO_VIDEO_BACKUP_MP4 =
   'https://videos.pexels.com/video-files/10915129/10915129-hd_1920_1080_30fps.mp4';

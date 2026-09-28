@@ -15,13 +15,8 @@
 
 import React from 'react';
 import { useReducedMotion } from 'framer-motion';
-import {
-  EARTH_HERO_VIDEO_1080P,
-  EARTH_HERO_VIDEO_720P,
-  EARTH_HERO_VIDEO_540P,
-  EARTH_HERO_VIDEO_BACKUP_MP4,
-  EARTH_HERO_POSTER,
-} from '../lib/heroMedia';
+import { EARTH_HERO_POSTER } from '../lib/heroMedia';
+import HeroVideoPlayer from './HeroVideoPlayer';
 import { Interactive } from './interactive/Interactive';
 import { useWebFrame, useWebVideoConfig, interpolate, Easing } from '../lib/motion-interpolate';
 
@@ -128,7 +123,9 @@ export const HeroCinematicBackground: React.FC<{ paused?: boolean }> = ({ paused
         />
       </Interactive.Div>
 
-      {/* ── Layer 2: Video Asset (HeroVideoAsset with Idle Breathing) ── */}
+      {/* ── Layer 2: Video Asset — a randomly drawn clip from the 15-clip
+             hero playlist, with per-clip failover (see HeroVideoPlayer).
+             The idle-breathing scale below is this layer's own animation. ── */}
       {shouldPlayVideo ? (
         <Interactive.Div
           name="Hero video asset — idle breathing"
@@ -149,24 +146,7 @@ export const HeroCinematicBackground: React.FC<{ paused?: boolean }> = ({ paused
             willChange: shouldAnimate ? 'transform' : undefined,
           }}
         >
-          <video
-            autoPlay
-            loop
-            muted
-            playsInline
-            poster={EARTH_HERO_POSTER}
-            style={{
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover',
-              display: 'block',
-            }}
-          >
-            <source src={EARTH_HERO_VIDEO_1080P} type="video/mp4" media="(min-width: 1024px)" />
-            <source src={EARTH_HERO_VIDEO_720P} type="video/mp4" media="(min-width: 640px)" />
-            <source src={EARTH_HERO_VIDEO_540P} type="video/mp4" />
-            <source src={EARTH_HERO_VIDEO_BACKUP_MP4} type="video/mp4" />
-          </video>
+          <HeroVideoPlayer />
         </Interactive.Div>
       ) : (
         <Interactive.Div
