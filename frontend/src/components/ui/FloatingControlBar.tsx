@@ -38,7 +38,7 @@ export const FloatingControlBar: React.FC<FloatingControlBarProps> = ({
       {typeof onSearchChange === 'function' && (
         <div className="flex items-center gap-2 px-2 py-1 bg-surface-page/50 dark:bg-carbon-90/50 rounded-xl border border-carbon-20/40">
           <svg
-            className="w-5 h-5 text-carbon-40 shrink-0"
+            className="w-5 h-5 text-carbon-60 shrink-0"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"

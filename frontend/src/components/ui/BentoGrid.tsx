@@ -104,7 +104,7 @@ export const BentoCard: React.FC<BentoCardProps> = ({
           {value}
         </span>
         {unit && (
-          <span className="font-sans font-medium text-sm text-carbon-50 dark:text-carbon-40">
+          <span className="font-sans font-medium text-sm text-carbon-60 dark:text-carbon-40">
             {unit}
           </span>
         )}

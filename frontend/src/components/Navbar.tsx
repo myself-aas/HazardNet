@@ -157,7 +157,7 @@ const KnowledgeMegaMenuContent: React.FC<{
 
   return (
     <>
-      <div className="px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-carbon-50">
+      <div className="px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-carbon-60">
         Resources & Insights
       </div>
       {resourceItems.map((item) => (
@@ -167,7 +167,7 @@ const KnowledgeMegaMenuContent: React.FC<{
       {adminItems.length > 0 && (
         <>
           <div className="my-1 border-t border-carbon-10" />
-          <div className="px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-carbon-50 flex items-center justify-between">
+          <div className="px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-carbon-60 flex items-center justify-between">
             <span>Analytics & Intelligence</span>
             <span className="hn-badge px-1 py-0.2 bg-amber-100 text-amber-800 border border-amber-300/80 text-[9px] font-bold">
               ADMIN

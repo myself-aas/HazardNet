@@ -464,7 +464,7 @@ export default function ChatBot() {
 
                     {/* Provenance Footer */}
                     {msg.providerSource && (
-                      <div className="text-[11px] text-carbon-50 px-1 flex items-center justify-between">
+                      <div className="text-[11px] text-carbon-60 px-1 flex items-center justify-between">
                         <span>Engine: {msg.providerSource}</span>
                       </div>
                     )}
@@ -583,7 +583,7 @@ export default function ChatBot() {
                   </motion.button>
                 </div>
               </div>
-              <div className="flex items-center justify-between text-[11px] text-carbon-50 mt-1.5 px-0.5">
+              <div className="flex items-center justify-between text-[11px] text-carbon-60 mt-1.5 px-0.5">
                 <span>Grounded with gemini-3.5-flash & Live API</span>
                 {userLocation ? (
                   <span className="text-blue-700 flex items-center gap-0.5">

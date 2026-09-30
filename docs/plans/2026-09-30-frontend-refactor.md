@@ -43,6 +43,89 @@ Remediate the frontend against the four-lens re-audit (`docs/audits/2026-09-30-f
 
 ## Open Questions
 
-- Should crimson stay reserved for the single primary action on each surface (2.5), or may status badges keep it? This decides how much of the 156 `bg-nasa-red` uses convert to `bg-primary` in Session 3.
-- Is a 12px label floor acceptable when 303 sub-11px uses sit mostly in dense data tables, where the audit's own density target for dashboards is "high"?
-- Who owns the Session 5 product decision — move the diagnostics to `/status`, or keep them behind a Dashboard disclosure?
+**All three answered 2026-09-30:**
+
+1. **Crimson stays reserved for the single primary action on each surface (2.5).**
+   Consequence for Session 3: only primary-action instances of the 156 `bg-nasa-red`
+   uses convert to `bg-primary`; the status-badge instances move off crimson in
+   Session 5.
+2. **The 303 sub-11px uses are retained** — they sit mostly in dense data tables,
+   where the audit's own density target for dashboards is "high". Session 4 drops
+   the 12px-floor task; audit finding 3.9 is closed as accepted risk.
+3. **Diagnostics move to `/status`** — not a Dashboard disclosure. Session 5's
+   Dashboard work is therefore a removal, not a reorganisation.
+
+---
+
+## Session log
+
+### Session 0 — recovery (complete)
+
+The sandbox reset rewound the branch ref to `674c03c` twice during planning.
+Recovered both times via `git fetch origin` → `git reset --hard
+origin/arena/01a0f140-hazardnet` after confirming the working tree was
+byte-identical to the remote commit. **Do not rebuild from scratch.**
+
+### Session 1 — contrast (complete, commit on `arena/01a0f140-hazardnet`)
+
+**Baseline (all green, identical to the recorded values):** jest 130 suites /
+1321 tests · `tsc --noEmit` exit 0 · eslint 0 errors / 684 warnings ·
+`check:design` 3439 outstanding / 1 waived / 0 new · `check:paths` 0 offenders ·
+`check:bundle` 1424.6 kB gzip PASS · pytest 119 passed.
+
+**Delivered** — 25 files, 63 insertions / 63 deletions, pure token swaps with no
+line-count change:
+
+- **1a — primary action labels (13 sites).** `text-carbon-black` → `text-white`
+  on every crimson ground: `ErrorBoundary.tsx:64`, `PrintPreviewModal.tsx:374`
+  and its icon at `:377`, `blog/RequireSuperAdmin.tsx:33`,
+  `AdvisoriesPage.tsx:476`, `Dashboard.tsx:618,640,774,855,950,1035`,
+  `DownloadCenter.tsx:45,309`. Takes the label from **2.14:1 to 9.06:1**.
+  `Dashboard.tsx:530` was already correct and served as the in-file reference.
+- **1b — forbidden text greys (33 sites).** `text-carbon-40`/`text-carbon-50` →
+  `text-carbon-60` on verified light grounds only, plus two `carbon-40` icons
+  that failed the 3:1 non-text threshold. Two sites whose ground flips dark in
+  dark mode (`WeatherBadge.tsx:38`, `ui/BottomSheet.tsx:92`) gained a paired
+  `dark:text-carbon-40` so dark mode does not regress.
+- **1b — off-system hex (19 sites).** `text-[#ad6d04]` → `text-amber-700`
+  (documented 5.5:1 on white, vs 4.23:1 raw) · `hover:bg-[#ad6d04]` →
+  `hover:bg-nasa-red-shade` (aligns with every other crimson button) ·
+  `text-[#ea6f24]` → `text-amber-500` and `border-l-[#ea6f24]` →
+  `border-l-amber-500` (both already aliased to
+  `--hds-color-international-orange`, so zero visual change) · `#ff0000` →
+  `nasa-red` (4.00:1 → 9.06:1, and the correct post-v2 brand red).
+
+**Validation added:** `__tests__/primaryActionContrast.test.js` — 6 tests
+covering the crimson-ground pairing, the `--primary-foreground` resolution, the
+carbon-50/60 token-semantics arithmetic, the light-on-dark greys that must *not*
+be darkened, and the retired hexes. Negative-controlled: a deliberately
+reintroduced `bg-nasa-red … text-carbon-black` fails the suite.
+
+**Corrections to the audit found while executing (recorded, not hidden):**
+
+- **Finding 3.2 is a false positive.** `Dashboard.tsx:628`'s `text-carbon-30`
+  prose sits inside a `bg-carbon-90 … text-white` panel, so it is **9.12:1**,
+  not 1.96:1. Same for `:960`, `:621`, `:953`. The audit computed carbon-30
+  against white without checking the ground. **No carbon-30 text was changed** —
+  a blanket `carbon-30 → carbon-60` would have broken ~18 dark surfaces.
+- **The grey-token count was overstated.** Of 150 `text-carbon-40`/`50` uses,
+  37 were `dark:text-carbon-*` variants already correct in light mode, and 12 sat
+  on genuinely dark grounds where carbon-40/50 is the right choice (carbon-60 on
+  carbon-90 is 2.52:1 — darkening them is a *regression*). 33 sites were real
+  light-ground failures.
+- **`line-clamp-2` at `Dashboard.tsx:628` deferred to Session 4.** It is a layout
+  change, not a contrast one, and the contrast premise above no longer applies.
+- The remaining `#ea6f24` uses are decorative data-viz swatches and gauge fills
+  (3.09:1, clearing the 3:1 non-text threshold) plus the token definitions in
+  `design-system/tokens.ts` — left alone deliberately.
+
+**Gate results after the change:** jest **133 suites / 1327 tests** (the +1 suite
+/ +6 tests is the new file) · `tsc --noEmit` exit 0 · eslint 0 errors / 684
+warnings (unchanged) · `check:design` 3439 / 1 / **0 new** ·
+`check:paths` 0 · `check:bundle` 1424.6 kB PASS (no bundle impact) · pytest 119.
+`check:design`'s low-contrast counter did not move: it scores markdown prose, not
+Tailwind class tokens, so it is not a Session 1 signal.
+
+**Not done in Session 1 (deliberately):** no browser exists in this sandbox, so
+the visual result of these swaps is unverified. The contrast is computed from
+token hexes, not sampled from a render.

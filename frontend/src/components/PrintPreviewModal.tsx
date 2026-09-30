@@ -371,10 +371,10 @@ export const PrintPreviewModal: React.FC<PrintPreviewModalProps> = ({
             {/* Trigger Native Print (Primary Action) */}
             <button
               onClick={handleNativePrint}
-              className="inline-flex items-center gap-2 px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-xl bg-nasa-red hover:bg-nasa-red-tint text-carbon-black text-xs font-black transition-all shadow-md cursor-pointer hover:scale-102 active:scale-98"
+              className="inline-flex items-center gap-2 px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-xl bg-nasa-red hover:bg-nasa-red-tint text-white text-xs font-black transition-all shadow-md cursor-pointer hover:scale-102 active:scale-98"
               title="Trigger Browser Print Dialog (Ctrl+P)"
             >
-              <Printer className="w-4 h-4 text-carbon-black shrink-0" />
+              <Printer className="w-4 h-4 text-white shrink-0" />
               <span>Print Report</span>
             </button>
 
