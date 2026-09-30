@@ -1255,7 +1255,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
           ? 'w-full h-full min-h-[360px] lg:min-h-[560px] h-dvh bg-carbon-05 overflow-hidden text-carbon-90 relative flex flex-col'
           : className
           ? className
-          : `w-full ${customHeight || 'h-full min-h-[360px] lg:min-h-[560px]'} bg-carbon-10 overflow-hidden text-carbon-90 relative flex flex-col border border-carbon-20`
+          : `w-full ${customHeight || 'h-full min-h-[360px] lg:min-h-[560px]'} bg-carbon-10 overflow-hidden text-carbon-90 relative flex flex-col border border-carbon-20 rounded-2xl shadow-md`
       }
     >
       {!isFullScreen && (
@@ -2389,10 +2389,10 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                     mapInstanceRef.current.flyTo([23.8103, 90.4125], 7, { duration: 1.2 });
                   }
                 }}
-                className="min-h-[44px] px-4 py-2 bg-carbon-90 text-white font-semibold text-sm flex items-center gap-2 touch-manipulation"
+                className="min-h-[44px] px-4 py-2 glass-pill text-carbon-90 font-semibold text-sm flex items-center gap-2 touch-manipulation hover:bg-white transition-colors"
               >
                 <span className="flex items-center gap-1.5">
-                  <span className="w-4 h-4 rounded-full bg-carbon-70 text-carbon-20 flex items-center justify-center text-xs"><MaterialIcon name="close" className="w-4 h-4" /></span>
+                  <span className="w-4 h-4 rounded-full bg-carbon-90 text-white flex items-center justify-center text-xs"><MaterialIcon name="close" className="w-4 h-4" /></span>
                   <span>Clear Active Overlays & Filter</span>
                 </span>
               </button>
@@ -2406,20 +2406,20 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
           </div>
 
           {/* Coordinates Readout, Performance Clustering & IndexedDB Tile Cache Indicator */}
-          <div className="absolute bottom-2 left-2 z-[var(--z-sticky)] bg-white border border-carbon-20 px-2 py-1 text-xs text-carbon-70 pointer-events-auto max-w-[calc(100%-8rem)]">
+          <div className="absolute bottom-2 left-2 z-[var(--z-sticky)] glass-pill px-3 py-1.5 text-xs text-carbon-70 pointer-events-auto max-w-[calc(100%-8rem)]">
             <p className="leading-snug">
               {MAP_LAYERS[activeLayer]?.attribution?.replace(/&copy;/g, '©').replace(/&mdash;/g, '—') || 'Map data © OpenStreetMap contributors'}
             </p>
           </div>
 
-          <div className="absolute bottom-2 right-16 z-[var(--z-sticky)] bg-white px-3 py-2 border border-carbon-20 text-xs font-mono font-semibold text-carbon-70 pointer-events-auto hidden lg:flex items-center gap-3 tabular-nums">
+          <div className="absolute bottom-2 right-16 z-[var(--z-sticky)] glass-pill px-4 py-2 text-xs font-mono font-semibold text-carbon-70 pointer-events-auto hidden lg:flex items-center gap-3 tabular-nums">
             <span>Lat {currentCoords.lat.toFixed(4)}° N</span>
             <span>Lng {currentCoords.lng.toFixed(4)}° E</span>
             <span>Zoom {currentCoords.zoom}</span>
             <button
               type="button"
               onClick={() => setIsClusteringActive(!isClusteringActive)}
-              className="min-h-[44px] px-3 border border-carbon-20 bg-white text-carbon-70 text-xs font-semibold"
+              className="min-h-[44px] px-3.5 rounded-full border border-carbon-20 bg-white/70 hover:bg-white text-carbon-70 hover:text-carbon-90 text-xs font-semibold transition-colors"
               title="Toggle district marker clustering"
             >
               {isClusteringActive ? 'Clustered' : '64 pins'}
@@ -2427,7 +2427,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
             <button
               type="button"
               onClick={() => setIsLayerModalOpen(true)}
-              className="min-h-[44px] px-3 border border-carbon-20 bg-white text-carbon-70 text-xs font-semibold"
+              className="min-h-[44px] px-3.5 rounded-full border border-carbon-20 bg-white/70 hover:bg-white text-carbon-70 hover:text-carbon-90 text-xs font-semibold transition-colors"
               title="Offline tile cache"
             >
               Cache {cacheStats.totalTiles}
@@ -2444,7 +2444,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 20 }}
           transition={{ duration: 0.3 }}
-          className="p-4 bg-carbon-05 border-t border-carbon-20 flex flex-wrap items-center justify-between gap-3 text-xs"
+          className="p-4 bg-carbon-05 border-t border-carbon-20 rounded-b-2xl flex flex-wrap items-center justify-between gap-3 text-xs"
         >
           <div className="flex items-center gap-2">
             
@@ -2468,7 +2468,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                     const target = liveDistricts.find((d) => d.id === preset.id);
                     if (target) handleSelectDistrict(target);
                   }}
-                  className={`min-h-[44px] px-3 border text-xs font-semibold touch-manipulation ${
+                  className={`min-h-[44px] px-3.5 rounded-full border text-xs font-semibold touch-manipulation transition-colors ${
  isAct
  ? 'bg-primary border-nasa-blue text-white '
  : 'bg-white border-carbon-20 text-carbon-70 hover:text-carbon-90 hover:bg-carbon-10'

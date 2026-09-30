@@ -156,7 +156,9 @@ describe('the application is wired to those tokens', () => {
     expect(semantic('--accent')).toBe('var(--hn-hds-blue)');
     expect(semantic('--ring')).toBe('var(--hn-hds-ink-soft)');
     expect(semantic('--background')).toBe('var(--hn-hds-surface)');
-    expect(semantic('--radius')).toBe('5px'); // Finalized system geometry (see index.css)
+    // 2026-10-01: the shadcn alias now points at HazardNet's geometry token
+    // (Layer 2 of index.css) rather than a literal; see the corner-radius test below.
+    expect(semantic('--radius')).toBe('var(--hn-radius-control)');
   });
 
   it('keeps NASA’s brand pair out of the chart palette', () => {
@@ -181,13 +183,23 @@ describe('the application is wired to those tokens', () => {
     expect(appCss).not.toMatch(/Noto Sans Variable|Playfair Display/);
   });
 
-  it('squares off corners without touching circles', () => {
-    // HDS has exactly two radii; the shadcn scale is mapped onto them.
-    expect(appCss).toMatch(/--radius-sm: var\(--hds-border-radius-control\)/);
-    expect(appCss).toMatch(/--radius-2xl: var\(--hds-border-radius-default\)/);
+  it('softens corners onto the HazardNet geometry tokens without touching circles', () => {
+    // 2026-10-01: the web app re-based its corner geometry on the cross-platform
+    // design-system tokens (radii.control/card/sheet/pill in
+    // packages/design-system/src/tokens.ts). NASA HDS remains the source of
+    // colour and typography; see the Layer 2 comment in frontend/src/index.css.
+    expect(appCss).toMatch(/--hn-radius-control: 8px/);
+    expect(appCss).toMatch(/--hn-radius-card: 16px/);
+    expect(appCss).toMatch(/--hn-radius-sheet: 28px/);
+    expect(appCss).toMatch(/--radius-sm: var\(--hn-radius-control\)/);
+    expect(appCss).toMatch(/--radius-2xl: var\(--hn-radius-card\)/);
+    expect(appCss).toMatch(/--radius-4xl: var\(--hn-radius-sheet\)/);
     expect(appCss).not.toMatch(/--radius-\w+: calc\(var\(--radius\)/);
     // `rounded-full` is intentionally left alone for avatars and status dots.
     expect(appCss).not.toMatch(/--radius-full:\s*0/);
+    // NASA's own compiled values are untouched (asserted above, where the `value`
+    // helper is in scope) — they are simply no longer the geometry the
+    // application consumes.
   });
 
   it('renders HDS’s dashed focus ring, palette-aware', () => {

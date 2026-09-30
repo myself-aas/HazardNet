@@ -16,8 +16,10 @@ const LAYER_LABELS: Record<MapLayerKey, string> = {
 };
 
 const chip = (active: boolean) =>
-  `min-h-[44px] px-3 py-2 rounded-control border text-xs font-semibold whitespace-nowrap touch-manipulation ${
-    active ? 'bg-nasa-blue text-white border-nasa-blue' : 'bg-white text-carbon-70 border-carbon-20'
+  `min-h-[44px] px-3.5 py-2 rounded-full border text-xs font-semibold whitespace-nowrap touch-manipulation transition-colors ${
+    active
+      ? 'bg-nasa-blue text-white border-nasa-blue shadow-sm'
+      : 'bg-white text-carbon-70 border-carbon-20 hover:bg-carbon-05 hover:text-carbon-90'
   }`;
 
 export interface MapToolbarProps {
@@ -109,7 +111,7 @@ export const MapToolbar: React.FC<MapToolbarProps> = ({
 
   if (collapsed) {
     return (
-      <div className="p-2 lg:px-4 bg-white flex items-center justify-between gap-2 flex-wrap">
+      <div className="p-2 lg:px-4 bg-white flex items-center justify-between gap-2 flex-wrap rounded-2xl shadow-sm">
         <div className="flex items-center gap-2 min-w-0">
           <span className="text-sm font-semibold text-carbon-90">
             {viewMode === 'table' ? 'District table' : 'Map'}
@@ -134,7 +136,7 @@ export const MapToolbar: React.FC<MapToolbarProps> = ({
           <button
             type="button"
             onClick={() => onCollapsedChange(false)}
-            className="min-h-[44px] px-3 py-2 bg-carbon-90 text-white text-xs font-semibold touch-manipulation"
+            className="min-h-[44px] px-4 py-2 bg-carbon-90 hover:bg-carbon-80 text-white text-xs font-semibold touch-manipulation rounded-full transition-colors"
             title="Expand map controls and filters"
           >
             Controls
@@ -146,9 +148,9 @@ export const MapToolbar: React.FC<MapToolbarProps> = ({
 
   return (
     <>
-      <div className="p-2 lg:px-4 lg:py-2 bg-white flex flex-col lg:flex-row lg:items-center justify-between gap-2">
+      <div className="p-2 lg:px-4 lg:py-2 bg-white flex flex-col lg:flex-row lg:items-center justify-between gap-2 rounded-2xl shadow-sm">
         <div className="flex items-center gap-2 min-w-0">
-          <div className="px-3 min-h-[44px] bg-nasa-blue text-white flex items-center justify-center font-semibold text-xs shrink-0 uppercase tracking-wide">
+          <div className="px-3.5 min-h-[44px] bg-nasa-blue text-white flex items-center justify-center font-semibold text-xs shrink-0 uppercase tracking-wide rounded-full">
             GIS
           </div>
           <div className="min-w-0">
@@ -191,7 +193,7 @@ export const MapToolbar: React.FC<MapToolbarProps> = ({
             type="button"
             onClick={onExport}
             disabled={exporting}
-            className="min-h-[44px] px-3 py-2 bg-nasa-blue text-white text-xs font-semibold flex items-center gap-2 touch-manipulation disabled:opacity-50"
+            className="min-h-[44px] px-4 py-2 bg-nasa-blue hover:bg-nasa-blue-shade text-white text-xs font-semibold flex items-center gap-2 touch-manipulation disabled:opacity-50 rounded-full transition-colors"
             title="Export visible map as an image"
           >
             <MaterialIcon name="photo_camera" className="w-4 h-4" />
@@ -201,7 +203,7 @@ export const MapToolbar: React.FC<MapToolbarProps> = ({
           <button
             type="button"
             onClick={() => onCollapsedChange(true)}
-            className="min-h-[44px] px-3 py-2 bg-carbon-90 text-white text-xs font-semibold touch-manipulation"
+            className="min-h-[44px] px-4 py-2 bg-carbon-90 hover:bg-carbon-80 text-white text-xs font-semibold touch-manipulation rounded-full transition-colors"
             title="Collapse map controls"
           >
             Collapse
@@ -214,13 +216,17 @@ export const MapToolbar: React.FC<MapToolbarProps> = ({
           <label htmlFor="map-district-search" className="sr-only">
             Search districts
           </label>
+          <MaterialIcon
+            name="search"
+            className="w-5 h-5 text-carbon-50 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none"
+          />
           <input
             id="map-district-search"
             type="search"
             placeholder="Search districts, hazards, or divisions"
             value={searchQuery}
             onChange={(e) => onSearchQueryChange(e.target.value)}
-            className="w-full h-12 lg:h-11 px-4 bg-white border border-carbon-20 rounded-control text-carbon-80 placeholder-carbon-60 text-base focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-1"
+            className="w-full h-12 lg:h-11 pl-12 pr-4 bg-carbon-05 border border-carbon-20 rounded-full text-carbon-80 placeholder-carbon-60 text-base focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-1 focus-visible:bg-white transition-colors"
           />
         </div>
 
@@ -237,7 +243,7 @@ export const MapToolbar: React.FC<MapToolbarProps> = ({
             </button>
           ))}
           <span
-            className="px-2 min-h-[24px] inline-flex items-center rounded-control text-xs font-semibold whitespace-nowrap border border-carbon-20 bg-carbon-05 text-carbon-70"
+            className="px-2.5 min-h-[24px] inline-flex items-center rounded-full text-xs font-semibold whitespace-nowrap border border-carbon-20 bg-carbon-05 text-carbon-70"
             title={
               isLive
                 ? `Stored pipeline forecast — ${liveCount}/64 districts matched, prediction date ${predictionDate}`
@@ -252,10 +258,10 @@ export const MapToolbar: React.FC<MapToolbarProps> = ({
           <button
             type="button"
             onClick={() => (allHazardsOn ? onClearHazards() : onSelectAllHazards())}
-            className={`min-h-[44px] px-3 py-2 rounded-control border text-xs font-semibold whitespace-nowrap touch-manipulation ${
+            className={`min-h-[44px] px-3.5 py-2 rounded-full border text-xs font-semibold whitespace-nowrap touch-manipulation transition-colors ${
               allHazardsOn
                 ? 'bg-carbon-90 text-white border-carbon-90'
-                : 'bg-white text-carbon-70 border-carbon-20'
+                : 'bg-white text-carbon-70 border-carbon-20 hover:bg-carbon-05 hover:text-carbon-90'
             }`}
           >
             All hazards ({selectedHazards.length}/{hazardLayers.length})

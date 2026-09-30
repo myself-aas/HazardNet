@@ -293,14 +293,14 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
 
         {/* Reference-inspired operational header: compact, legible, and always available above the map. */}
         <header className="pointer-events-none absolute inset-x-0 top-0 z-[var(--z-sticky)] flex items-start justify-between gap-3 p-3 sm:p-5">
-          <div className="pointer-events-auto flex min-w-0 items-center gap-2 rounded-[6px] border border-white/70 bg-[#f8f9f7]/95 px-3 py-2 shadow-[0_1px_3px_rgb(0_0_0/0.12)] backdrop-blur-md">
+          <div className="pointer-events-auto flex min-w-0 items-center gap-2 glass-panel px-3.5 py-2">
             <span className="h-2 w-2 shrink-0 animate-pulse rounded-full bg-nasa-red" aria-hidden="true" />
             <div className="min-w-0">
-              <p className="truncate text-[10px] font-bold uppercase tracking-[0.14em] text-[#5d6668]">HazardNet / live</p>
+              <p className="truncate text-xs font-bold uppercase tracking-[0.14em] text-[#5d6668]">HazardNet / live</p>
               <p className="truncate text-xs font-bold text-[#101416]">National situational map</p>
             </div>
           </div>
-          <div className="pointer-events-auto hidden items-center gap-2 rounded-[6px] border border-white/70 bg-[#f8f9f7]/95 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.12em] text-[#5d6668] shadow-[0_1px_3px_rgb(0_0_0/0.12)] backdrop-blur-md sm:flex">
+          <div className="pointer-events-auto hidden items-center gap-2 glass-panel px-3.5 py-2 text-xs font-bold uppercase tracking-[0.12em] text-[#5d6668] sm:flex">
             <span className="inline-block h-2 w-2 rounded-full bg-[#36a66d]" aria-hidden="true" />
             {predictionSource === 'live' ? 'Forecast synced' : 'Baseline coverage'}
           </div>
@@ -344,7 +344,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 50 }}
                 transition={{ type: 'spring', stiffness: 350, damping: 28 }}
-                className="absolute top-16 right-4 left-4 lg:left-auto bottom-4 lg:w-[360px] z-[var(--z-modal)] bg-white border border-carbon-20 p-4 overflow-y-auto flex flex-col gap-4 text-carbon-90 custom-scrollbar"
+                className="absolute top-16 right-4 left-4 lg:left-auto bottom-4 lg:w-[360px] z-[var(--z-modal)] bg-white border border-carbon-20 rounded-2xl shadow-lg p-4 overflow-y-auto flex flex-col gap-4 text-carbon-90 custom-scrollbar"
               >
 
                 {/* Drawer Header */}

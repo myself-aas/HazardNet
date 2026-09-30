@@ -161,7 +161,33 @@ html, body, button, input, select, textarea {
   --border: var(--hn-hds-line);                /* carbon-20 — decorative hairlines */
   --input: var(--hn-hds-ink-muted);            /* 4.46:1 on white — control boundaries clear 1.4.11's 3:1 */
   --ring: var(--hn-hds-ink-soft);              /* HDS's default dashed-ring colour (carbon-60 on light) */
-  --radius: 5px; /* Finalized system geometry: compact 4–6px radiuses. */
+
+  /* ---- Layer 2 - Geometry, elevation, glass ------------------------------
+     HazardNet's own web geometry, mapped from the cross-platform design-system
+     tokens (packages/design-system/src/tokens.ts - radii.control/card/sheet/pill,
+     shadows.card/elevated/fab, described there as the "Mobile Bento Grid" and
+     "Glassmorphic drag sheet"). The vendored NASA HDS sheet
+     (src/styles/nasa-hds.css) is generated and still carries NASA's 0px/2px
+     values; it is never edited. This block is the mapping the application
+     consumes.
+     Decision 2026-10-01: the web app adopts the soft bento surface language so
+     it matches the mobile shells, and NASA HDS remains the source of colour and
+     typography rather than of corner geometry. Circles (rounded-full) are
+     untouched - avatars, status dots and icon buttons stay round. */
+  --hn-radius-control: 8px;    /* inputs, chips, small controls */
+  --hn-radius-card: 16px;      /* panels, cards, tiles, popovers */
+  --hn-radius-sheet: 28px;     /* bottom sheets, modals, drawers */
+  --hn-radius-pill: 9999px;    /* buttons, badges, search fields */
+  --hn-shadow-card: 0 4px 12px rgba(0, 0, 0, 0.05);
+  --hn-shadow-elevated: 0 12px 24px -4px rgba(0, 0, 0, 0.12);
+  --hn-shadow-fab: 0 12px 20px -5px rgba(0, 0, 0, 0.3), 0 6px 12px rgba(28, 103, 227, 0.25);
+  /* Frosted overlay surfaces: map chrome, bottom sheets, floating controls. */
+  --hn-glass-bg: rgb(255 255 255 / 0.82);
+  --hn-glass-bg-strong: rgb(255 255 255 / 0.94);
+  --hn-glass-border: rgb(255 255 255 / 0.6);
+  --hn-glass-blur: 14px;
+  --radius: var(--hn-radius-control); /* legacy shadcn consumer; see @theme mapping below */
+
 
   /* Status (text values meet 4.5:1 on white/surfaces; info is NASA blue, per HDS) */
   --success: var(--hn-emerald-700);
@@ -271,9 +297,9 @@ html, body, button, input, select, textarea {
   /* ---- Layer 3 · Component ----------------------------------------------- */
   --panel-bg: var(--surface-card);
   --panel-border: var(--border);
-  --panel-radius: 5px;
-  --panel-blur: 12px;
-  --panel-shadow: 0 1px 3px rgb(0 0 0 / 0.08);
+  --panel-radius: var(--hn-radius-card);
+  --panel-blur: var(--hn-glass-blur);
+  --panel-shadow: var(--hn-shadow-card);
   --hero-glow-blur-primary: 90px;   /* tokenized hero orbital glow — was blur-[90px] arbitrary */
   --hero-glow-blur-secondary: 100px;/* tokenized secondary atmospheric glow — was blur-[100px] arbitrary */
   --hero-glass-blur: 8px;          /* hero glass legibility blur — maps to Tailwind backdrop-blur-md; centralises hero blur surface */
@@ -386,17 +412,169 @@ html {
   box-shadow: none;
 }
 
+/* ── Map chrome: glass utilities ────────────────────────────────────────────
+   The floating surfaces that sit *over* the map (pills, rails, readouts) use the
+   frosted recipe tokenised in Layer 2 (`--glass-*`). Panels that carry content a
+   user reads and acts on stay opaque white — legibility first, and the
+   DistrictForecastCard/MapToolbar contracts assert that. These utilities are the
+   only place the blur value is written, so the whole HUD can be retuned from the
+   tokens. */
+.glass-panel {
+  background: var(--glass-surface);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.35);
+  backdrop-filter: blur(var(--glass-blur)) saturate(1.35);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--hn-radius-card);
+  box-shadow: var(--hn-shadow-card);
+}
+
+.glass-pill {
+  background: var(--glass-surface-strong);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.35);
+  backdrop-filter: blur(var(--glass-blur)) saturate(1.35);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--hn-radius-pill);
+  box-shadow: var(--hn-shadow-card);
+}
+
+/* Circular floating control (right-hand map rail, FAB, map buttons). */
+.glass-rail-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* Size is the caller's (the map rail uses 44px, the FAB 48px on desktop);
+     this class owns the frosted recipe and the circular shape only. */
+  border-radius: var(--hn-radius-pill);
+  background: var(--glass-surface-strong);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.35);
+  backdrop-filter: blur(var(--glass-blur)) saturate(1.35);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--hn-shadow-card);
+  color: var(--hn-hds-ink);
+  transition: background-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+
+.glass-rail-button:hover {
+  background: #ffffff;
+  box-shadow: var(--hn-shadow-elevated);
+}
+
+.glass-rail-button:active {
+  transform: scale(0.96);
+}
+
+/* Bottom-sheet surface: sheets and drawers owned by the mobile shell. */
+.map-sheet {
+  border-top-left-radius: var(--hn-radius-sheet);
+  border-top-right-radius: var(--hn-radius-sheet);
+  box-shadow: var(--hn-shadow-elevated);
+}
+
+/* Drag affordance — decorative, so it is aria-hidden at the call site. */
+.map-sheet-handle {
+  width: 44px;
+  height: 4px;
+  border-radius: var(--hn-radius-pill);
+  background: var(--hds-color-carbon-30);
+  margin: 4px auto 0;
+}
+
+@media print {
+  .glass-panel,
+  .glass-pill,
+  .glass-rail-button {
+    background: #ffffff !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+    box-shadow: none !important;
+  }
+}
+
 /* Custom Leaflet Map Light Styling */
 .leaflet-container {
   background: var(--hds-color-carbon-10) !important;
   font-family: inherit;
-  border-radius: 0;
+  /* Radius follows the surface it is mounted in (bottom sheet, card, full-bleed
+     stage) instead of being forced square. */
+  border-radius: inherit;
 }
 
 /* Map tiles enhancement for light theme */
 .leaflet-tile {
   filter: brightness(1.02) contrast(1.02);
   image-rendering: -webkit-optimize-contrast;
+}
+
+/* Leaflet zoom control: two 44px glass circles with the map's floating chrome
+   instead of the stock square stack. Uses the same --glass-* recipe as
+   .glass-rail-button so the map controls and the app's rail look like one
+   system. */
+.leaflet-control-zoom {
+  border: 0 !important;
+  box-shadow: none !important;
+  margin: 0 16px 16px 0 !important;
+}
+
+.leaflet-control-zoom a,
+.leaflet-touch .leaflet-control-zoom a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  /* Not 1: the typography gate (__tests__/designTypography.test.js) holds every
+     authored body-scale style to >= 1.3 leading. The flex centering means the
+     value has no visual effect on the glyph. */
+  line-height: 1.35;
+  margin-bottom: 8px;
+  font-size: 18px;
+  color: var(--hn-hds-ink);
+  background: var(--glass-surface-strong);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.35);
+  backdrop-filter: blur(var(--glass-blur)) saturate(1.35);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--hn-radius-pill) !important;
+  box-shadow: var(--hn-shadow-card);
+}
+
+.leaflet-control-zoom a:hover,
+.leaflet-touch .leaflet-control-zoom a:hover {
+  background: #ffffff;
+  color: var(--hn-hds-blue-shade);
+  box-shadow: var(--hn-shadow-elevated);
+}
+
+.leaflet-control-zoom a.leaflet-disabled {
+  opacity: 0.45;
+  background: var(--glass-surface);
+}
+
+/* Attribution: a small glass pill in the corner rather than a square strip. */
+.leaflet-control-attribution {
+  margin: 0 8px 8px 0 !important;
+  padding: 3px 10px !important;
+  font-size: 12px !important;
+  color: var(--hn-hds-ink-muted) !important;
+  background: var(--glass-surface) !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.35);
+  backdrop-filter: blur(var(--glass-blur)) saturate(1.35);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--hn-radius-pill) !important;
+  box-shadow: var(--hn-shadow-card);
+}
+
+.leaflet-control-attribution a {
+  color: var(--hn-hds-blue-shade) !important;
+}
+
+/* Leaflet's own popups follow the card language. */
+.leaflet-popup-content-wrapper {
+  border-radius: var(--hn-radius-card) !important;
+  box-shadow: var(--hn-shadow-elevated) !important;
+}
+
+.leaflet-popup-tip {
+  box-shadow: var(--hn-shadow-card) !important;
 }
 
 .map-tile-high-contrast .leaflet-tile {
@@ -635,7 +813,7 @@ html[data-map-debug-fx='true'] .marker-high-risk {
 
 ::-webkit-scrollbar-thumb {
   background: var(--hds-color-carbon-30);
-  border-radius: 0;
+  border-radius: var(--hn-radius-pill);
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -685,7 +863,7 @@ html[data-map-debug-fx='true'] .marker-high-risk {
      values (0px default, 2px for controls) are applied there. `rounded-full` is
      deliberately untouched: avatars, status dots and circular icon buttons must
      stay round. */
-  --radius-control: var(--hds-border-radius-control);
+  --radius-control: var(--hn-radius-control);
 
   /* Warm ramp — Tailwind's `amber-*` keys re-pointed at NASA's yellow and
      international-orange sequences from the HDS dataviz ramps. This is what
@@ -978,20 +1156,36 @@ html[data-map-debug-fx='true'] .marker-high-risk {
   --color-card: var(--card);
   --color-foreground: var(--foreground);
   --color-background: var(--background);
-  /* Corner radius — NASA HDS has exactly two radii: 0px for surfaces and 2px for
-     small interactive controls (checkbox, select, text field, tag). Mapping the
-     whole shadcn scale onto those two values is what squares off every
-     rounded-md/xl/2xl/3xl call site across the app in one edit.
-     (Upstream these were `calc(var(--radius) * N)`; --radius is 0 now, so they
-     all collapsed to 0 — correct for surfaces, but it erased HDS's 2px control
-     radius, which is why the control steps are pinned explicitly.) */
-  --radius-sm: var(--hds-border-radius-control);
-  --radius-md: var(--hds-border-radius-control);
-  --radius-lg: var(--hds-border-radius-default);
-  --radius-xl: var(--hds-border-radius-default);
-  --radius-2xl: var(--hds-border-radius-default);
-  --radius-3xl: var(--hds-border-radius-default);
-  --radius-4xl: var(--hds-border-radius-default);
+  /* Corner radius - the whole shadcn/Tailwind scale lands on the three HazardNet
+     geometry tokens, which is what softens every rounded-md/lg/xl/2xl/3xl call
+     site across the app in one edit. Values live in Layer 2 above; the reasoning
+     (and why NASA HDS is no longer the geometry source) is in that block's
+     comment and docs/codebase/CONVENTIONS.md section 7. rounded-full stays round. */
+  --radius-sm: var(--hn-radius-control);
+  --radius-md: var(--hn-radius-control);
+  --radius-lg: var(--hn-radius-card);
+  --radius-xl: var(--hn-radius-card);
+  --radius-2xl: var(--hn-radius-card);
+  --radius-3xl: var(--hn-radius-sheet);
+  --radius-4xl: var(--hn-radius-sheet);
+
+  /* Elevation - the design-system shadow set (shadows.card/elevated/fab in
+     packages/design-system/src/tokens.ts). Mapping Tailwind's shadow-* keys here
+     gives every shadow-sm/md/lg/xl/2xl call site the same soft, low-opacity
+     stack instead of Tailwind's stock ramp. */
+  --shadow-sm: var(--hn-shadow-card);
+  --shadow-md: var(--hn-shadow-card);
+  --shadow-lg: var(--hn-shadow-elevated);
+  --shadow-xl: var(--hn-shadow-elevated);
+  --shadow-2xl: var(--hn-shadow-elevated);
+  --shadow-fab: var(--hn-shadow-fab);
+
+  /* Frosted overlay surface - one place to change the glass recipe used by the
+     map chrome, bottom sheets and floating controls. */
+  --glass-surface: var(--hn-glass-bg);
+  --glass-surface-strong: var(--hn-glass-bg-strong);
+  --glass-border: var(--hn-glass-border);
+  --glass-blur: var(--hn-glass-blur);
 }
 
 @layer base {
