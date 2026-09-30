@@ -2406,7 +2406,10 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
           </div>
 
           {/* Coordinates Readout, Performance Clustering & IndexedDB Tile Cache Indicator */}
-          <div className="absolute bottom-2 left-2 z-[var(--z-sticky)] glass-pill px-3 py-1.5 text-xs text-carbon-70 pointer-events-auto max-w-[calc(100%-8rem)]">
+          {/* A card, not a pill: the attribution string is long and wraps — the pill
+              radius turned it into a rounded blob on phones. Every character stays
+              visible (map attribution is not collapsible). */}
+          <div className="absolute bottom-2 left-2 z-[var(--z-sticky)] glass-panel px-3 py-1.5 text-xs leading-snug text-carbon-70 pointer-events-auto max-w-[calc(100%-7rem)]">
             <p className="leading-snug">
               {MAP_LAYERS[activeLayer]?.attribution?.replace(/&copy;/g, '©').replace(/&mdash;/g, '—') || 'Map data © OpenStreetMap contributors'}
             </p>

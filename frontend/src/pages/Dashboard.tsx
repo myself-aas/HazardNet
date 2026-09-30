@@ -291,8 +291,11 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
       <div className="relative isolate flex h-full min-h-0 w-full flex-col overflow-hidden bg-[#eef1f1] font-mono text-[#101416]">
         <h1 className="sr-only">Live map — multi-hazard situational awareness</h1>
 
-        {/* Reference-inspired operational header: compact, legible, and always available above the map. */}
-        <header className="pointer-events-none absolute inset-x-0 top-0 z-[var(--z-sticky)] flex items-start justify-between gap-3 p-3 sm:p-5">
+        {/* Reference-inspired operational header: compact, legible, and always available above the map.
+            `pt-16` on phones keeps it clear of the fixed app navbar (3.5rem + breathing
+            room); from `sm` up the navbar only overlays the top of the stage on the
+            home console, so the padding returns to the tighter value. */}
+        <header className="pointer-events-none absolute inset-x-0 top-0 z-[var(--z-sticky)] flex items-start justify-between gap-3 p-3 pt-16 sm:p-5">
           <div className="pointer-events-auto flex min-w-0 items-center gap-2 glass-panel px-3.5 py-2">
             <span className="h-2 w-2 shrink-0 animate-pulse rounded-full bg-nasa-red" aria-hidden="true" />
             <div className="min-w-0">
