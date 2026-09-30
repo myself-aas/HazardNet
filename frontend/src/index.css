@@ -75,9 +75,9 @@ html, body, button, input, select, textarea {
      compiled by scripts/import_nasa_tokens.mjs. The usage rule NASA attaches to
      each token is repeated here on purpose: the rules are part of the system,
      and a palette adopted without them is only a costume. */
-  --hn-hds-red: var(--hds-color-nasa-red);             /* "go somewhere": navigation CTAs, errors. Never on-page actions, decoration or dataviz. */
-  --hn-hds-red-tint: var(--hds-color-nasa-red-tint);   /* hover states, error highlights */
-  --hn-hds-red-shade: var(--hds-color-nasa-red-shade); /* button hover, error dark — 7.0:1 against white */
+  --hn-hds-red: var(--hn-brand-red);                   /* the mark's crimson #970002 — navigation CTAs, errors. Never on-page actions, decoration or dataviz. */
+  --hn-hds-red-tint: var(--hds-color-nasa-red-tint);   /* hover states, error highlights — stays light on purpose: dark grounds need 6.9:1, and a tint of #970002 would only reach 3.6:1 */
+  --hn-hds-red-shade: var(--hn-brand-red-dark);        /* the mark's dark crimson #7B1D21 — button hover, error dark, 10.3:1 against white */
   --hn-hds-blue: var(--hds-color-nasa-blue);           /* "do something here": controls, list markers, table headers, info. Never nav CTAs or dataviz. */
   --hn-hds-blue-tint: var(--hds-color-nasa-blue-tint);
   --hn-hds-blue-shade: var(--hds-color-nasa-blue-shade); /* 9.9:1 against white — link/info text on light surfaces */
@@ -91,15 +91,23 @@ html, body, button, input, select, textarea {
   --hn-hds-line-strong: var(--hds-color-carbon-30);
   --hn-hds-ink-muted: var(--hds-color-carbon-50);      /* 4.46:1 on white — borders/icons only, just under AA for text */
   --hn-hds-ink-soft: var(--hds-color-carbon-60);       /* 7.1:1 on white — smallest text gray that clears AA */
-  --hn-hds-ink: var(--hds-color-carbon-90);            /* #17171b — body text */
+  --hn-hds-ink: var(--hn-brand-ink);                  /* #0D0D0D — the mark's near-black, 19.4:1 on white. Body text. */
 
-  /* Finalized HazardNet mark palette: near-white, black, graphite edge, and signal red. */
+  /* Finalized HazardNet mark palette: near-white, ink, graphite edge, and signal red.
+     `--hn-brand-red` and `--hn-brand-ink` are not decorative picks — they are the two
+     colours the brand mark is actually painted in (crimson bars #970002, near-black
+     arrow #0D0D0D / #262626), so the mark and the product share one palette. Red is
+     primary, ink is secondary; that is the whole point of swapping the traced
+     artwork's black bars and red arrow.
+     Contrast is measured, not estimated: #970002 is 9.1:1 on white and 8.4:1 on
+     carbon-05, so it clears AA for normal text — unlike the #ff0000 it replaces,
+     which was never contrast-checked. #0D0D0D is 19.4:1 on white. */
   --hn-brand-paper: #fefefe;
   --hn-brand-black: #000000;
   --hn-brand-graphite: #777777;
-  --hn-brand-red: #ff0000;
-  --hn-brand-red-dark: #b90000;
-  --hn-brand-ink: var(--hn-brand-black);
+  --hn-brand-red: #970002;
+  --hn-brand-red-dark: #7B1D21;
+  --hn-brand-ink: #0D0D0D;
   --hn-brand-accent: var(--hn-brand-red);
 
   /* Typography: strict monospace product-wide, with Bengali coverage fallback. */
@@ -130,15 +138,16 @@ html, body, button, input, select, textarea {
   --card-foreground: var(--hn-hds-ink);
   --popover: var(--hn-hds-white);
   --popover-foreground: var(--hn-hds-ink);
-  /* Primary = NASA red: the colour of "go somewhere". Actions that navigate or
-     submit, and error/emergency states — nowhere else. */
-  --primary: var(--hn-hds-red);                /* #f64137 */
-  --primary-foreground: var(--hn-hds-white);   /* 3.1:1 — large/bold labels or icons only */
-  /* The same red one step darker: 7.0:1 against white, for filled controls whose
-     labels are small (≤16px). NASA's own white-on-red measures 3.1:1, which
-     clears AA for large text but not for a 14px bold label; rather than quietly
-     ship that regression, small-label CTAs use the shade. */
-  --primary-strong: var(--hn-hds-red-shade);   /* #b60109 */
+  /* Primary = the brand crimson: the colour of "go somewhere". Actions that navigate or
+     submit, and error/emergency states — nowhere else.
+     White on #970002 measures 9.1:1, so it clears AA for normal text as well as large.
+     It used to be NASA's own #f64137 at 3.1:1, which is why --primary-strong existed at
+     all; the shade is kept for hover and error-dark, not to rescue small labels. */
+  --primary: var(--hn-hds-red);                /* #970002 */
+  --primary-foreground: var(--hn-hds-white);   /* 9.1:1 — clears AA at any size */
+  /* The same crimson one step darker: 10.3:1 against white, for hover and filled
+     controls that read as "stronger" rather than merely "on". */
+  --primary-strong: var(--hn-hds-red-shade);   /* #7B1D21 */
   --primary-strong-foreground: var(--hn-hds-white);
   /* Accent = NASA blue: "do something here" — on-page interaction. */
   --secondary: var(--hn-hds-surface-sunken);
@@ -147,7 +156,7 @@ html, body, button, input, select, textarea {
   --accent-foreground: var(--hn-hds-white);
   --muted: var(--hn-hds-surface-sunken);
   --muted-foreground: var(--hn-hds-ink-soft);  /* 7.1:1 on white (carbon-50 would be 4.46:1) */
-  --destructive: var(--hn-hds-red-shade);      /* 7.0:1 with white */
+  --destructive: var(--hn-hds-red-shade);      /* 10.3:1 with white */
   --destructive-foreground: var(--hn-hds-white);
   --border: var(--hn-hds-line);                /* carbon-20 — decorative hairlines */
   --input: var(--hn-hds-ink-muted);            /* 4.46:1 on white — control boundaries clear 1.4.11's 3:1 */
@@ -686,10 +695,14 @@ html[data-map-debug-fx='true'] .marker-high-risk {
   --color-amber-950: var(--hds-dataviz-seq-orange-90);
 
   /* NASA palette, published under the names NASA uses, so a class can name the
-     semantic directly: bg-nasa-red, text-nasa-blue-shade, border-carbon-20. */
-  --color-nasa-red: var(--hds-color-nasa-red);
+     semantic directly: bg-nasa-red, text-nasa-blue-shade, border-carbon-20.
+     The reds are the exception: they route through --hn-brand-red / --hn-brand-red-dark
+     rather than NASA's own values, because the brand mark is painted in that crimson
+     and the product has to match the mark. The tint still comes from NASA — see the
+     note on --hn-hds-red-tint for why it must stay light. */
+  --color-nasa-red: var(--hn-brand-red);
   --color-nasa-red-tint: var(--hds-color-nasa-red-tint);
-  --color-nasa-red-shade: var(--hds-color-nasa-red-shade);
+  --color-nasa-red-shade: var(--hn-brand-red-dark);
   --color-nasa-blue: var(--hds-color-nasa-blue);
   --color-nasa-blue-tint: var(--hds-color-nasa-blue-tint);
   --color-nasa-blue-shade: var(--hds-color-nasa-blue-shade);

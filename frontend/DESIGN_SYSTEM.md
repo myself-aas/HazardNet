@@ -20,18 +20,24 @@
 The design system is structured in three clear layers within [`frontend/src/index.css`](file:///g:/HazardNet/WebApp/Github/HazardNet/frontend/src/index.css):
 
 ### Layer 1: Primitives (`:root`)
-- **NASA HDS Palette**:
-  - `--hn-hds-red`: `#f64137` (Navigation CTAs, critical alerts)
-  - `--hn-hds-red-shade`: `#b60109` (High-contrast CTA fills — `7.0:1` against white)
+- **Brand palette** (the two colours the mark is painted in — red is primary, ink is secondary):
+  - `--hn-brand-red`: `#970002` (brand crimson — the mark's bars. Navigation CTAs, critical alerts)
+  - `--hn-brand-red-dark`: `#7B1D21` (the mark's dark crimson. High-contrast CTA fills — `10.3:1` against white)
+  - `--hn-brand-ink`: `#0D0D0D` (the mark's near-black — `19.4:1` on white)
+- **NASA HDS Palette** (the rest, at NASA's published values):
+  - `--hn-hds-red`: `#970002` — routed through `--hn-brand-red`, so the product matches the mark
+  - `--hn-hds-red-tint`: `#ff5c52` (deliberately still NASA's: dark grounds need `6.9:1`, and a tint of `#970002` would only reach `3.6:1`)
+  - `--hn-hds-red-shade`: `#7B1D21` — routed through `--hn-brand-red-dark`
   - `--hn-hds-blue`: `#1c67e3` (On-page controls, information, interactive triggers)
   - `--hn-hds-blue-shade`: `#0b3b95` (`9.9:1` against white — accessible links)
   - `--hn-hds-surface`: `#f6f6f6` (Application canvas background)
   - `--hn-hds-line`: `var(--hds-color-carbon-20)` (Hairline dividers, card borders)
-  - `--hn-hds-ink`: `#17171b` (Primary body text — `17.4:1` on surface)
+  - `--hn-hds-ink`: `#0D0D0D` — routed through `--hn-brand-ink` (Primary body text — `19.4:1` on surface)
   - `--hn-hds-ink-soft`: `var(--hds-color-carbon-60)` (`7.1:1` on white — accessible secondary text)
 
 ### Layer 2: Semantic Tokens
-- `--primary`: Action / Navigation (`--hn-hds-red-shade`)
+- `--primary`: Action / Navigation (`--hn-hds-red`, i.e. the brand crimson `#970002`)
+- `--primary-strong`: Filled controls that must read as "stronger" (`--hn-hds-red-shade`)
 - `--secondary`: Surface sunken controls
 - `--accent`: On-page interaction (`--hn-hds-blue`)
 - `--destructive`: Danger / Emergency (`--hn-hds-red-shade`)
