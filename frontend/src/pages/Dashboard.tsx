@@ -450,48 +450,48 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
   }
 
   return (
-    <div className={isFullScreen ? "w-full h-full h-dvh overflow-y-auto px-4 sm:px-6 lg:px-8 pt-24 custom-scrollbar bg-carbon-05 relative z-10" : "w-full"}>
+    <div className={isFullScreen ? "w-full h-full min-h-dvh overflow-y-auto px-3 sm:px-6 lg:px-8 pt-20 sm:pt-24 custom-scrollbar bg-carbon-05 relative z-10" : "w-full"}>
       <div id="dashboard-content" className="max-w-[1600px] mx-auto space-y-8 sm:space-y-10 md:space-y-12 pb-12">
 
-      {/* Top Header Card */}
+      {/* Top Header Card — Modernized Mobile-First Design */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: '-40px' }}
         transition={{ duration: 0.45 }}
-        className="bg-transparent border-0 rounded-[28px] sm:rounded-[36px] p-6 sm:p-8 md:p-10 shadow-none flex flex-col lg:flex-row lg:items-center justify-between gap-6"
+        className="bg-transparent border-0 rounded-lg sm:rounded-[28px] md:rounded-[36px] p-4 sm:p-6 md:p-8 lg:p-10 shadow-none flex flex-col lg:flex-row lg:items-center justify-between gap-4 sm:gap-6 md:gap-8"
       >
-        <div className="space-y-3">
-          <div className="flex flex-wrap items-center gap-3">
-            <span className="px-3.5 py-1 rounded-full text-xs font-mono font-bold uppercase tracking-wider bg-nasa-red/10 text-nasa-red-shade border border-nasa-blue/20  flex items-center gap-1.5">
+        <div className="space-y-2.5 sm:space-y-3 md:space-y-4 flex-1 min-w-0">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+            <span className="px-2.5 sm:px-3.5 py-1 rounded-full text-xs font-mono font-bold uppercase tracking-wider bg-nasa-red/10 text-nasa-red-shade border border-nasa-blue/20 flex items-center gap-1.5 shrink-0">
               <span className="w-1.5 h-1.5 rounded-full bg-nasa-red animate-pulse"></span>
-              Live GIS Satellite Telemetry
+              <span className="hidden xs:inline">Live GIS</span><span className="xs:hidden">GIS</span>
             </span>
-            <span className="text-carbon-30 hidden sm:inline">•</span>
-            <span className="text-xs sm:text-sm font-mono text-carbon-60">
-              Stored Forecast Product: <code className="text-carbon-90 font-bold bg-carbon-10 px-2 py-0.5  border border-carbon-20">HazardNet_FP32</code>
+            <span className="text-carbon-30 hidden sm:inline shrink-0">•</span>
+            <span className="text-xs sm:text-sm font-mono text-carbon-60 line-clamp-1">
+              <code className="text-carbon-90 font-bold bg-carbon-10 px-1.5 sm:px-2 py-0.5 border border-carbon-20 rounded">FP32</code>
             </span>
           </div>
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-carbon-90 tracking-tight leading-tight">
-            Multi-Hazard AI Classification & Severity Index
+          <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-black text-carbon-90 tracking-tight leading-tight">
+            Multi-Hazard AI Classification
           </h1>
-          <p className="text-sm sm:text-base text-carbon-60 max-w-4xl leading-relaxed">
-            Published district forecasts for agricultural decision support across Bangladesh. This page reads stored results; it does not run a model.
+          <p className="text-xs sm:text-sm md:text-base text-carbon-60 max-w-4xl leading-relaxed line-clamp-2 sm:line-clamp-none">
+            Published district forecasts for agricultural decision support across Bangladesh.
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 sm:gap-3 shrink-0 pt-4 lg:pt-0 border-t lg:border-t-0 border-carbon-20">
+        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 md:gap-3 shrink-0 pt-3 sm:pt-4 lg:pt-0 border-t lg:border-t-0 border-carbon-20 w-full lg:w-auto justify-start sm:justify-end">
           <OfflineBadge />
           <button
             onClick={() => setActiveView('settings')}
-            className={`px-3 sm:px-4 py-2 sm:py-3 rounded-full border text-xs font-extrabold transition-all duration-200 flex items-center gap-2 min-h-[44px] sm:min-h-[48px] cursor-pointer ${
+            className={`px-2 sm:px-3 md:px-4 py-2 sm:py-2.5 md:py-3 rounded-md sm:rounded-lg border text-xs font-extrabold transition-all duration-200 flex items-center gap-1.5 sm:gap-2 min-h-[40px] sm:min-h-[44px] md:min-h-[48px] cursor-pointer ${
  activeView === 'settings'
  ? 'bg-carbon-90 text-white border-carbon-90 ring-2 ring-carbon-90/30'
  : 'bg-carbon-10 hover:bg-carbon-20 text-carbon-80 border-carbon-20 hover:scale-[1.02]'
  }`}
-            title="Manage Offline Tile Cache & Storage Settings"
+            title="Settings"
           >
-            <MaterialIcon name="settings" className="w-4 h-4 inline-block sm:mr-1" /><span className="hidden sm:inline">Settings</span>
+            <MaterialIcon name="settings" className="w-4 h-4 shrink-0" /><span className="hidden sm:inline">Settings</span>
           </button>
 
           <PdfExportButton
@@ -512,22 +512,22 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
               docType: 'AI_Intelligence_Report',
               documentType: 'Multi-Hazard AI Intelligence Report',
             }}
-            className="h-[44px] sm:h-[48px] items-stretch rounded-full overflow-hidden"
+            className="h-[40px] sm:h-[44px] md:h-[48px] items-stretch rounded-md sm:rounded-lg overflow-hidden"
           />
 
           <button
             onClick={downloadReport}
-            className="px-3 sm:px-5 py-2 sm:py-3 bg-carbon-10 hover:bg-carbon-20 border border-carbon-20 text-carbon-80 font-bold text-xs sm:text-sm rounded-full  transition-all duration-200 flex items-center gap-2 active:scale-98 hover:scale-[1.02] min-h-[44px] sm:min-h-[48px] cursor-pointer"
-            title="Download CSV Report"
+            className="px-2 sm:px-3.5 md:px-5 py-2 sm:py-2.5 md:py-3 bg-carbon-10 hover:bg-carbon-20 border border-carbon-20 text-carbon-80 font-bold text-xs sm:text-sm rounded-md sm:rounded-lg transition-all duration-200 flex items-center gap-1.5 active:scale-98 hover:scale-[1.02] min-h-[40px] sm:min-h-[44px] md:min-h-[48px] cursor-pointer"
+            title="Download CSV"
           >
-            <MaterialIcon name="download" className="w-4 h-4 inline-block sm:hidden" />
-            <span className="hidden sm:inline">Export CSV</span>
+            <MaterialIcon name="download" className="w-4 h-4 shrink-0" />
+            <span className="hidden sm:inline">CSV</span>
           </button>
 
           <button
             onClick={() => { if (selectedDistrict) runPrediction(selectedDistrict); }}
             disabled={loading}
-            className="px-4 sm:px-6 py-2 sm:py-3 bg-nasa-red hover:bg-nasa-red-shade text-white font-black text-xs sm:text-sm rounded-full transition-all duration-200 flex items-center gap-2 sm:gap-2.5 disabled:opacity-50 active:scale-98 hover:scale-[1.02] min-h-[44px] sm:min-h-[48px] cursor-pointer touch-manipulation tap-target"
+            className="px-3 sm:px-5 md:px-6 py-2 sm:py-2.5 md:py-3 bg-nasa-red hover:bg-nasa-red-shade text-white font-black text-xs sm:text-sm rounded-md sm:rounded-lg transition-all duration-200 flex items-center gap-1.5 sm:gap-2 disabled:opacity-50 active:scale-98 hover:scale-[1.02] min-h-[40px] sm:min-h-[44px] md:min-h-[48px] cursor-pointer touch-manipulation tap-target shrink-0"
           >
             {loading ? (
               <>
@@ -548,13 +548,13 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
         </div>
       </motion.div>
 
-      {/* Control Switcher */}
+      {/* Control Switcher — Modernized Tab Navigation */}
       <motion.div
         initial={{ opacity: 0, y: 15 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: '-40px' }}
         transition={{ duration: 0.4, delay: 0.05 }}
-        className="bg-white border-b border-carbon-20 flex gap-1 overflow-x-auto scrollbar-none touch-scroll"
+        className="bg-white border-b border-carbon-10 flex gap-0.5 sm:gap-1 overflow-x-auto scrollbar-none touch-scroll px-2 sm:px-4 py-0"
         role="tablist"
         aria-label="Console views"
       >
@@ -571,14 +571,14 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
             role="tab"
             aria-selected={activeView === tab.id}
             onClick={() => setActiveView(tab.id)}
-            className={`h-11 px-4 text-base font-semibold flex items-center justify-center gap-2 touch-manipulation border-b-2 whitespace-nowrap ${
+            className={`min-h-12 sm:h-13 px-3 sm:px-5 text-xs sm:text-sm md:text-base font-bold flex items-center justify-center gap-1.5 sm:gap-2 touch-manipulation border-b-2 whitespace-nowrap transition-all duration-200 rounded-t-md relative ${
  activeView === tab.id
- ? 'border-nasa-blue text-nasa-blue'
- : 'border-transparent text-carbon-70'
+ ? 'border-nasa-blue text-nasa-blue bg-gradient-to-b from-nasa-blue/5 to-transparent'
+ : 'border-transparent text-carbon-60 hover:text-carbon-80 hover:bg-carbon-05'
  }`}
           >
-            <MaterialIcon name={tab.icon} className="w-4 h-4" />
-            <span>{tab.label}</span>
+            <MaterialIcon name={tab.icon} className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
+            <span className="font-semibold tracking-tight">{tab.label}</span>
           </button>
         ))}
       </motion.div>
@@ -600,27 +600,27 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
 
       {/* VIEW 2: SAVED DISTRICTS PAGE WITH FULL-SCALE LIVEMAPVIEW PREVIEW */}
       {activeView === 'saved' && (
-        <div className="space-y-6">
-          {/* Saved Districts Page Banner Header */}
-          <div className="bg-carbon-90 rounded-[28px] p-6 sm:p-8 text-white  border border-carbon-80 flex flex-col md:flex-row md:items-center justify-between gap-6 relative overflow-hidden">
-            <div className="space-y-2 relative z-10 max-w-2xl">
-              <div className="flex items-center gap-2.5">
-                <span className="px-3 py-1 rounded-full text-xs font-mono font-black uppercase tracking-wider bg-nasa-red text-carbon-black">
-                  Cloud Synchronized Stage
+        <div className="space-y-4 sm:space-y-6">
+          {/* Saved Districts Page Banner Header — Modernized */}
+          <div className="bg-carbon-90 rounded-lg sm:rounded-[20px] md:rounded-[28px] p-4 sm:p-6 md:p-8 text-white border border-carbon-80 flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6 relative overflow-hidden">
+            <div className="space-y-2 sm:space-y-3 relative z-10 flex-1 min-w-0">
+              <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
+                <span className="px-2.5 sm:px-3 py-1 rounded-md sm:rounded-full text-xs font-mono font-black uppercase tracking-wider bg-nasa-red text-carbon-black whitespace-nowrap">
+                  Cloud Sync
                 </span>
                 <span className="text-xs font-mono text-carbon-30">
-                  {savedDistricts.length} Pinned Districts Active
+                  {savedDistricts.length} Pinned
                 </span>
               </div>
-              <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-                Saved Districts & Interactive LiveMapView Stage
+              <h2 className="text-lg sm:text-2xl md:text-3xl font-black text-white tracking-tight leading-tight">
+                Saved Districts & Map
               </h2>
-              <p className="text-xs sm:text-sm text-carbon-30 leading-relaxed font-normal">
-                Full-scale uncropped GIS map stage pre-focused on your saved agricultural districts. Select any location from your list to center map tiles, inspect multi-hazard boundaries, and review live AI telemetry.
+              <p className="text-xs sm:text-sm text-carbon-30 leading-relaxed font-normal line-clamp-2">
+                GIS map focused on your saved agricultural districts. Select locations to inspect multi-hazard boundaries.
               </p>
             </div>
 
-            <div className="flex flex-wrap items-center gap-3 relative z-10">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3 relative z-10 w-full md:w-auto justify-start md:justify-end">
               {selectedDistrict && (
                 <button
                   onClick={() => toggleSaveDistrict(selectedDistrict)}
@@ -640,49 +640,49 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
           </div>
 
           {/* Grid Layout: Left Column = Saved Drawer, Right Column = Full Scale Interactive LiveMapView Stage */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-start">
             {/* Left Column: Saved Districts Drawer List */}
-            <div className="lg:col-span-4 space-y-4">
-              <div className="bg-white border border-carbon-20 rounded-[28px] p-5  space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-base font-black text-carbon-90 flex items-center gap-2">
-                    <MaterialIcon name="push_pin" className="w-4 h-4 inline-block mr-1" /><span>Saved Locations ({savedDistricts.length})</span>
+            <div className="lg:col-span-4 space-y-3 sm:space-y-4">
+              <div className="bg-white border border-carbon-10 rounded-lg sm:rounded-[20px] md:rounded-[28px] p-4 sm:p-5 space-y-3.5 sm:space-y-4">
+                <div className="flex items-center justify-between gap-3">
+                  <h3 className="text-sm sm:text-base font-black text-carbon-90 flex items-center gap-1.5 sm:gap-2">
+                    <MaterialIcon name="push_pin" className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" /><span>Saved ({savedDistricts.length})</span>
                   </h3>
                   <button
                     onClick={() => setActiveView('gis')}
-                    className="text-xs font-extrabold text-[#ad6d04] hover:underline cursor-pointer"
+                    className="text-xs font-extrabold text-[#ad6d04] hover:underline cursor-pointer whitespace-nowrap"
                   >
-                    + Add More
+                    + Add
                   </button>
                 </div>
 
-                <div className="space-y-2.5 max-h-[640px] overflow-y-auto pr-1 custom-scrollbar">
+                <div className="space-y-2 sm:space-y-2.5 max-h-[420px] sm:max-h-[640px] overflow-y-auto pr-1 custom-scrollbar">
                   {savedDistricts.map((dist) => {
                     const isSelected = selectedDistrict?.id === dist.id;
                     return (
                       <div
                         key={dist.id}
                         onClick={() => setSelectedDistrict(dist)}
-                        className={`p-4 border transition-all cursor-pointer flex flex-col gap-2 relative ${
+                        className={`p-3 sm:p-4 border rounded-lg transition-all cursor-pointer flex flex-col gap-2 relative ${
  isSelected
  ? 'bg-amber-50/80 border-nasa-blue ring-2 ring-nasa-blue/30'
- : 'bg-carbon-05/60 border-carbon-20 hover:bg-carbon-10/80 hover:border-carbon-30'
+ : 'bg-carbon-05/60 border-carbon-10 hover:bg-carbon-10/80 hover:border-carbon-20'
  }`}
                       >
                         <div className="flex items-center justify-between gap-2">
-                          <div>
-                            <h4 className="text-sm font-black text-carbon-90 flex items-center gap-2">
-                              <span>{dist.name} District</span>
+                          <div className="min-w-0 flex-1">
+                            <h4 className="text-xs sm:text-sm font-black text-carbon-90 flex items-center gap-1.5 truncate">
+                              <span className="truncate">{dist.name}</span>
                               {isSelected && (
-                                <span className="w-2 h-2 rounded-full bg-nasa-red animate-ping"></span>
+                                <span className="w-2 h-2 rounded-full bg-nasa-red animate-ping shrink-0"></span>
                               )}
                             </h4>
-                            <p className="text-xs text-carbon-60 font-medium">
-                              Division: <span className="font-bold text-carbon-70">{dist.division}</span>
+                            <p className="text-xs text-carbon-60 font-medium mt-0.5">
+                              <span className="font-bold text-carbon-70">{dist.division}</span>
                             </p>
                           </div>
                           <span
-                            className={`px-3 py-1 rounded-full text-xs font-black border ${
+                            className={`px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs font-bold border whitespace-nowrap shrink-0 ${
  dist.risk === 'High'
  ? 'bg-carbon-10 text-nasa-red-shade border-carbon-20'
  : dist.risk === 'Moderate'
@@ -690,14 +690,14 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
  : 'bg-carbon-10 text-carbon-80 border-carbon-20'
  }`}
                           >
-                            {dist.risk} Risk
+                            {dist.risk}
                           </span>
                         </div>
 
-                        <div className="flex items-center justify-between text-xs font-mono text-carbon-60 pt-1 border-t border-carbon-20/60">
-                          <span>Crop: {dist.mainCrop}</span>
-                          <span className="font-bold text-[#ad6d04] flex items-center gap-1">
-                            {isSelected ? <><MaterialIcon name="my_location" className="w-4 h-4 inline-block mr-1" /> Map Centered</> : 'Click to Focus →'}
+                        <div className="flex items-center justify-between text-xs font-mono text-carbon-60 pt-1.5 sm:pt-2 border-t border-carbon-20/60 gap-2">
+                          <span className="truncate">{dist.mainCrop}</span>
+                          <span className={`font-bold flex items-center gap-1 whitespace-nowrap ${isSelected ? 'text-[#ad6d04]' : 'text-carbon-60'}`}>
+                            {isSelected ? <><MaterialIcon name="my_location" className="w-3.5 h-3.5 shrink-0" /> Centered</> : '→'}
                           </span>
                         </div>
                       </div>
@@ -708,19 +708,19 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
             </div>
 
             {/* Right Column: Full Scale Interactive LiveMapView Stage */}
-            <div className="lg:col-span-8 space-y-4">
-              <div className="bg-white border border-carbon-20/80 rounded-[28px] p-3  space-y-3">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-3 pt-1 text-xs">
-                  <div className="flex items-center gap-2 font-extrabold text-carbon-80">
-                    <span className="w-2.5 h-2.5 rounded-full bg-nasa-red animate-pulse"></span>
-                    <span>Interactive GIS LiveMapView Stage</span>
-                    <span className="text-xs font-mono text-carbon-60 bg-carbon-10 px-2 py-0.5  hidden xl:inline">
-                      {selectedDistrict ? `${selectedDistrict.name} Focused (${selectedDistrict.lat}°N, ${selectedDistrict.lng}°E)` : 'Active Leaflet Engine'}
+            <div className="lg:col-span-8 space-y-3 sm:space-y-4">
+              <div className="bg-white border border-carbon-10 rounded-lg sm:rounded-[20px] md:rounded-[28px] p-3 sm:p-4 space-y-3 sm:space-y-4">
+                <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-2 px-1 sm:px-3 text-xs">
+                  <div className="flex items-center gap-1.5 sm:gap-2 font-extrabold text-carbon-80 min-w-0">
+                    <span className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-nasa-red animate-pulse shrink-0"></span>
+                    <span className="truncate">GIS Map</span>
+                    <span className="text-xs font-mono text-carbon-60 bg-carbon-10 px-1.5 sm:px-2 py-0.5 rounded hidden lg:inline truncate">
+                      {selectedDistrict ? `${selectedDistrict.name}` : 'Active'}
                     </span>
                   </div>
 
                   {/* Dynamic Height Control Selector */}
-                  <div className="flex items-center gap-1 bg-carbon-10 p-1  border border-carbon-20">
+                  <div className="flex items-center gap-0.5 sm:gap-1 bg-carbon-10 p-1 border border-carbon-20 rounded-md shrink-0 overflow-x-auto">
                     <span className="text-xs font-mono font-bold text-carbon-60 px-1.5 hidden md:inline">
                       HEIGHT:
                     </span>
