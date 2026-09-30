@@ -23,7 +23,7 @@
   "rewrites": [
     {
       "source": "/((?!$|api/|assets/|_vercel/|data/|.*\\.[a-zA-Z0-9]+$).*)",
-      "destination": "/index.html"
+      "destination": "/404.html"
     }
   ],
   "headers": [

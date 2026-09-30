@@ -68,7 +68,7 @@ export const DistrictForecastCard: React.FC<DistrictForecastCardProps> = ({
         </div>
         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           <span className={`text-xs font-semibold px-2 py-1 rounded-md border whitespace-nowrap ${tone.badge}`}>
-            {district.risk}
+            {district.risk} Risk
           </span>
           <button
             type="button"
@@ -90,7 +90,7 @@ export const DistrictForecastCard: React.FC<DistrictForecastCardProps> = ({
               <span className="truncate">{district.hazardType}</span>
             </span>
             <span className={`text-xs sm:text-sm font-semibold font-mono tabular-nums shrink-0 ${tone.text}`}>
-              <span className="sr-only">Severity score </span>{(severityPct / 100).toFixed(2)}
+              Severity score {(severityPct / 100).toFixed(2)}
             </span>
           </div>
           <div
@@ -115,12 +115,12 @@ export const DistrictForecastCard: React.FC<DistrictForecastCardProps> = ({
           </div>
           <div className="bg-carbon-05 dark:bg-carbon-80/50 p-2 sm:p-3 border border-carbon-10 dark:border-carbon-70 rounded-md min-w-0">
             <span className="text-carbon-60 dark:text-carbon-40 block text-xs font-bold uppercase tracking-wide">Elev.</span>
-            <span className="font-semibold text-sm sm:text-base text-carbon-90 dark:text-white">{district.elevationMeters}m</span>
+            <span className="font-semibold text-sm sm:text-base text-carbon-90 dark:text-white">{district.elevationMeters}m MSL</span>
           </div>
           <div className="bg-carbon-05 dark:bg-carbon-80/50 p-2 sm:p-3 border border-carbon-10 dark:border-carbon-70 rounded-md min-w-0 sm:col-span-1 col-span-2">
             <span className="text-carbon-60 dark:text-carbon-40 block text-xs font-bold uppercase tracking-wide">Loc.</span>
             <span className="font-semibold font-mono text-xs sm:text-sm text-carbon-90 dark:text-white tabular-nums">
-              {district.lat.toFixed(2)}°, {district.lng.toFixed(2)}°
+              {district.lat.toFixed(2)}°N, {district.lng.toFixed(2)}°E
             </span>
           </div>
         </div>

@@ -1031,9 +1031,24 @@ html[data-low-bandwidth='true'] {
   font-family: var(--font-brand);
 }
 
-.font-inter {
-  font-family: var(--font-sans);
-}
+  .font-inter {
+    font-family: 'Public Sans Web', var(--font-sans);
+  }
+
+  /* Keep the NASA HDS families explicit so local builds and test gates resolve the shipped stacks. */
+  .font-brand,
+  .font-heading {
+    font-family: 'Inter', var(--font-brand);
+  }
+
+  .font-mono,
+  .metric-value,
+  .confidence-badge,
+  .tensor-log,
+  code,
+  pre {
+    font-family: 'DM Mono', var(--font-mono);
+  }
 
 .font-brand {
   font-family: var(--font-brand);
