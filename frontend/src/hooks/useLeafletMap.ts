@@ -330,7 +330,14 @@ export function useLeafletMap(
       detectExactPinpointLocation()
         .then((result) => {
           setIsLocatingUser(false);
-          if (result && isValidLatLng(result.lat, result.lng)) {
+          // `method: 'fallback'` is not a location fix. The service returns a
+          // hard-coded central-Bangladesh (Dhaka) placeholder when neither GPS
+          // nor IP geolocation answered, and treating it as one published a
+          // fake "Active Real-time GPS Position" and auto-selected Dhaka —
+          // silently overriding any district the user picked (or that arrived
+          // through `?district=<id>`) while the lookup was still running.
+          if (!result || result.method === 'fallback') return;
+          if (isValidLatLng(result.lat, result.lng)) {
             setUserGpsPos({ lat: result.lat, lng: result.lng, accuracy: result.accuracyMeters });
             if (result.nearestDistrict && onAutoLocateDistrictRef.current) {
               onAutoLocateDistrictRef.current(result.nearestDistrict);

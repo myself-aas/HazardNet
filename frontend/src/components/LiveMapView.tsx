@@ -63,6 +63,8 @@ interface LiveMapViewProps {
   selectedDivision?: string;
   onSelectDivision?: (divisionName: string) => void;
   onOpenDisasterModal?: (districtId: string) => void;
+  /** Opens the full-screen console's AI advisory drawer, if there is one. */
+  onOpenAdvisory?: () => void;
   pinpointLat?: number;
   pinpointLng?: number;
   isFullScreen?: boolean;
@@ -78,6 +80,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
   onSelectDistrict,
   selectedDistrictId,
   onOpenDisasterModal,
+  onOpenAdvisory,
   pinpointLat,
   pinpointLng,
   isFullScreen = false,
@@ -196,6 +199,11 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
       }
     },
     onAutoLocateDistrict: (district) => {
+      // The first-launch auto-locate (up to ~13.5 s: 10 s GPS + 3.5 s IP) must
+      // never override an explicit selection — a deep link, a palette pick or a
+      // map click that landed while the lookup was running. Without this guard
+      // the late GPS/IP result replaced the district the user had just chosen.
+      if (selectedDistrictId) return;
       if (onSelectDistrict) {
         onSelectDistrict({
           id: district.id,
@@ -1340,7 +1348,11 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
         {currentSelected && !inspectedPoint && (
           <div
             data-testid="district-forecast-slot"
-            className="lg:absolute lg:top-4 lg:right-4 lg:z-[var(--z-sticky)] lg:w-[320px] lg:max-w-[calc(100%-2rem)] shrink-0 w-full border-t lg:border-t-0 border-carbon-20 bg-white"
+            /* `relative z-20` keeps the in-flow mobile card above the overlay HUD
+               (its attribution bar and hazard-action cluster are absolute
+               `z-[var(--z-sticky)]` = 10 children of the `inset-0` stage overlay and
+               used to swallow the card's primary action at phone widths). */
+            className="relative z-20 lg:absolute lg:top-4 lg:right-4 lg:w-[320px] lg:max-w-[calc(100%-2rem)] shrink-0 w-full border-t lg:border-t-0 border-carbon-20 bg-white"
           >
             <DistrictForecastCard
               district={currentSelected}
@@ -1348,6 +1360,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                 onSelectDistrict?.(null as any);
               }}
               onOpenAnalytics={(districtId) => navigate(`/forecast/district/${districtId}`)}
+              onOpenAdvisory={onOpenAdvisory}
             />
           </div>
         )}

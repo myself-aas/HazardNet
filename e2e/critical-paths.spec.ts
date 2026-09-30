@@ -75,7 +75,15 @@ test.describe('District Selection & Forecast Display', () => {
     // the forecast card for it. The older `/?district=<id>` form still resolves:
     // the front door forwards it to `/live` (covered below).
     await expect(page).toHaveURL(/\/live\?district=kurigram/);
-    await expect(page.getByText('DISTRICT FORECAST')).toBeVisible({ timeout: 15_000 });
+
+    // The GIS stage pins a `district-forecast-card` for the focused district.
+    // Assert the card *and its district*: this is what catches the regression the
+    // old `DISTRICT FORECAST` copy check missed — the card is labelled for the
+    // district the user picked, not for whichever district the first-launch
+    // auto-locate happened to resolve last.
+    const card = page.getByTestId('district-forecast-card');
+    await expect(card).toBeVisible({ timeout: 15_000 });
+    await expect(card).toContainText(/kurigram/i);
   });
 
   test('forecast shows required information', async ({ page }) => {
@@ -100,7 +108,13 @@ test.describe('District Selection & Forecast Display', () => {
   test('district forecast card opens the full district brief', async ({ page }) => {
     // The GIS stage is the console at `/live` (PR #29); the card it pins is part
     // of that stage, not of the editorial front door.
-    await page.goto(`${BASE}/live`);
+    //
+    // The card is pinned for the *focused* district, and a fresh visitor has
+    // none: the national view is the default, and first-launch auto-locate only
+    // focuses a district when GPS/IP actually resolves (the Dhaka placeholder
+    // fallback no longer selects anything). Focus one through the documented
+    // deep link instead of relying on a location lookup side effect.
+    await page.goto(`${BASE}/live?district=dhaka`);
     await waitForAppShell(page);
 
     // The GIS stage pins a forecast card for the focused district; its primary

@@ -167,7 +167,7 @@ export default function ChatBot() {
       {/* Floating Action Button - Unified Icon-Only 60x60px Circular FAB */}
       <AnimatePresence>
         {!isOpen && (
-          <div className="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-[var(--z-sticky)] flex items-center">
+          <div className="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-[var(--z-overlay)] flex items-center">
             <motion.button
               key="ai-advisor-fab"
               id="launch-ai-advisor-fab"
@@ -181,8 +181,8 @@ export default function ChatBot() {
               whileHover={{ scale: 1.08 }}
               whileTap={{ scale: 0.92 }}
               className="w-[60px] h-[60px] rounded-full bg-nasa-blue hover:bg-nasa-blue-shade text-white shadow-[0_12px_20px_-5px_rgba(0,0,0,0.3),0_6px_12px_rgba(28,103,227,0.3)] border border-white/20 flex items-center justify-center cursor-pointer touch-manipulation tap-target focus:outline-none focus:ring-2 focus:ring-nasa-blue focus:ring-offset-2 transition-transform duration-150"
-              aria-label="Open AI Advisor"
-              title="Open AI Advisor"
+              aria-label="Open AI Advisor chat"
+              title="Open AI Advisor chat"
             >
               <svg 
                 viewBox="0 0 24 24" 
@@ -210,7 +210,7 @@ export default function ChatBot() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.88, y: 30 }}
             transition={{ type: 'spring', stiffness: 350, damping: 26 }}
-            className="fixed inset-x-0 bottom-0 top-0 sm:top-auto sm:bottom-6 sm:right-6 sm:left-auto z-[var(--z-sticky)] w-full sm:w-[480px] h-auto sm:h-[640px] sm:max-h-[calc(100dvh-3rem)] max-h-dvh bg-white flex flex-col border border-carbon-20 shadow-2xl pb-[env(safe-area-inset-bottom)] sm:pb-0 sm:rounded-2xl overflow-hidden"
+            className="fixed inset-x-0 bottom-0 top-0 sm:top-auto sm:bottom-6 sm:right-6 sm:left-auto z-[var(--z-overlay)] w-full sm:w-[480px] h-auto sm:h-[640px] sm:max-h-[calc(100dvh-3rem)] max-h-dvh bg-white flex flex-col border border-carbon-20 shadow-2xl pb-[env(safe-area-inset-bottom)] sm:pb-0 sm:rounded-2xl overflow-hidden"
             role="dialog"
             aria-modal="true"
             aria-label="HazardNet AI Advisor chat"

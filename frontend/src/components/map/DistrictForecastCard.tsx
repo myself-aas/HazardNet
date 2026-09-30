@@ -16,6 +16,12 @@ export interface DistrictForecastCardProps {
   district: DistrictWithRisk;
   onClose: () => void;
   onOpenAnalytics: (districtId: string) => void;
+  /**
+   * Opens the in-map AI advisory / model-metrics drawer. Optional because the
+   * drawer only exists on the full-screen GIS stage; the card is also rendered
+   * by the embedded consoles, which have no drawer to open.
+   */
+  onOpenAdvisory?: () => void;
 }
 
 const riskTone = (severity: number) =>
@@ -41,6 +47,7 @@ export const DistrictForecastCard: React.FC<DistrictForecastCardProps> = ({
   district,
   onClose,
   onOpenAnalytics,
+  onOpenAdvisory,
 }) => {
   const [showLocationMap, setShowLocationMap] = useState(false);
   const tone = riskTone(district.severity);
@@ -156,7 +163,17 @@ export const DistrictForecastCard: React.FC<DistrictForecastCardProps> = ({
         )}
       </div>
 
-      <div className="px-4 pb-4 shrink-0">
+      <div className="px-4 pb-4 shrink-0 space-y-2">
+        {onOpenAdvisory && (
+          <button
+            type="button"
+            onClick={onOpenAdvisory}
+            className="w-full min-h-[44px] py-2.5 bg-carbon-90 hover:bg-carbon-80 text-white font-semibold text-sm flex items-center justify-center gap-2 touch-manipulation"
+          >
+            <MaterialIcon name="insights" className="w-4 h-4 text-nasa-red" />
+            Open district intelligence
+          </button>
+        )}
         <button
           type="button"
           onClick={() => onOpenAnalytics(district.id)}
