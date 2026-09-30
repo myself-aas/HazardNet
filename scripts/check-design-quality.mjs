@@ -155,7 +155,12 @@ const outstanding = new Set(((baseline && baseline.outstanding) || []).map((o) =
 const waived = findings.filter((f) => isWaived(f, waivers));
 const live = findings.filter((f) => !isWaived(f, waivers));
 const fresh = live.filter((f) => !outstanding.has(key(f)));
-const fixed = [...outstanding].filter((k) => !live.some((f) => key(f) === k));
+// `fixed` answers "what may I ratchet away?", so it must only count baseline entries in
+// what was actually scanned. A `--source-only` run never looks at frontend/dist; counting
+// those entries as fixed misreports the baseline (hundreds of entries) and would invite
+// `--update` to drop findings nothing re-checked.
+const scanned = (k) => !wantsSourceOnly || k.split('|')[1].startsWith(`${SOURCE_TARGET}/`);
+const fixed = [...outstanding].filter((k) => scanned(k) && !live.some((f) => key(f) === k));
 
 const byRule = (list) => {
   const m = new Map();
