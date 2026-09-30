@@ -1,12 +1,11 @@
-import { test, describe } from 'node:test';
+import * as nodeTest from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const rootDir = path.resolve(__dirname, '..');
+const describe = globalThis.describe ?? nodeTest.describe;
+const test = globalThis.test ?? nodeTest.test;
+const rootDir = process.cwd();
 
 describe('TASK-004: Type Definitions & Backward Compatibility', () => {
   test('packages/core/src/forecasts.ts exports ADVISORY_TIERS and HAZARD_CLASSES', async () => {

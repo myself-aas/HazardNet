@@ -25,12 +25,7 @@ function loadData() {
   return cache;
 }
 
-export default async function handler(req, res) {
-  if (req.method !== 'GET') {
-    return res.status(405).json({ error: 'Method Not Allowed' });
-  }
-  if (guardRequest(req, res, { bucket: 'read' })) return;
-
+export function serveHistorical(req, res) {
   const data = loadData();
   const query = req.query || (req.url && req.url.includes('?') ? Object.fromEntries(new URL(req.url, 'http://localhost').searchParams) : {});
   const { district, division, hazard_type, year, glide, page = 1, limit = 20, id } = query;
@@ -55,7 +50,7 @@ export default async function handler(req, res) {
     });
   }
 
-  if (resource === 'vulnerability') {
+  if (targetResource === 'vulnerability') {
     return res.status(200).json({
       ok: true,
       count: data.vulnerability.length,
@@ -63,7 +58,7 @@ export default async function handler(req, res) {
     });
   }
 
-  if (resource === 'trends') {
+  if (targetResource === 'trends') {
     return res.status(200).json({
       ok: true,
       temporal_trends: data.trends,
@@ -71,7 +66,7 @@ export default async function handler(req, res) {
     });
   }
 
-  if (resource === 'events' || id) {
+  if (targetResource === 'events' || id) {
     const queryId = String(id || req.query.event_id || '').trim();
     const event = data.masterEvents.find(
       (e) => String(e.event_id) === queryId || String(e.glide).toLowerCase() === queryId.toLowerCase()
@@ -139,4 +134,12 @@ export default async function handler(req, res) {
     pages,
     records: paginated,
   });
+}
+
+export default async function handler(req, res) {
+  if (req.method !== 'GET') {
+    return res.status(405).json({ error: 'Method Not Allowed' });
+  }
+  if (guardRequest(req, res, { bucket: 'read' })) return;
+  return serveHistorical(req, res);
 }

@@ -355,7 +355,7 @@ export async function setAlertRunState(patch, { store = getAlertStore(), now = n
 export async function runAlertEngine({
   forecastStore = getForecastStore(), store = getAlertStore(), policy = getPolicy(),
   now = new Date(), env = process.env, horizons = HORIZONS, rows = null,
-  subscribers, fetchImpl = fetch, notify = null,
+  subscribers, fetchImpl = globalThis.fetch, notify = null,
 } = {}) {
   const collected = rows || await collectForecastRows({ forecastStore, horizons });
   const batch = assessBatch(collected, { policy, now });
@@ -465,7 +465,7 @@ export { assessBatch, assessRow, isAutoPublishable };
 export async function reviewAlert({
   id, action, user, reason = null, store = getAlertStore(), policy = getPolicy(),
   now = new Date(), env = process.env, authVia = 'firebase', notify = null,
-  subscribers, fetchImpl = fetch, expectedVersion = undefined,
+  subscribers, fetchImpl = globalThis.fetch, expectedVersion = undefined,
 } = {}) {
   if (!id) return { ok: false, code: 400, error: 'alert id is required' };
   const raw = await store.getDocument(id);

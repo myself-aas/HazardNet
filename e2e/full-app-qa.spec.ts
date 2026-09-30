@@ -357,7 +357,7 @@ test.describe('Historical archive surface', () => {
     expect(
       labelled,
       `the first figure must be labelled with what it counts:\n${labelled}`,
-    ).toMatch(/event-district observations? i/i);
+    ).toMatch(/event-district observations?/i);
   });
 
   test('renders the archive counts and marks absent values as absent', async ({ page }) => {
@@ -439,7 +439,7 @@ test.describe('Historical archive surface', () => {
       bodies.push(await page.locator('h1').first().innerText());
     }
     expect(new Set(bodies).size, `aliases diverge: ${bodies.join(' | ')}`).toBe(1);
-    expect(bodies[0]).toMatch(/historical hazard archive/i);
+    expect(bodies[0]).toMatch(/historical hazards? archive/i);
   });
 });
 

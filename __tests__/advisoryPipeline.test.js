@@ -9,7 +9,10 @@
  */
 
 import assert from 'node:assert';
-import { test, describe } from 'node:test';
+import * as nodeTest from 'node:test';
+
+const describe = globalThis.describe ?? nodeTest.describe;
+const test = globalThis.test ?? nodeTest.test;
 import {
   ADVISORY_CSV_COLUMNS,
   DISTRICT_REGISTRY,

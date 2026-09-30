@@ -8,10 +8,13 @@
  * - TASK-014: Operational Monitoring & Slack Alerts (TRD §8.3, §11)
  */
 
-import { describe, test } from 'node:test';
+import * as nodeTest from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
+
+const describe = globalThis.describe ?? nodeTest.describe;
+const test = globalThis.test ?? nodeTest.test;
 
 import { CSP, cspDirectivesFromString } from '../backend/security/csp.js';
 import { apiLimiter, predictLimiter, alertLimiter } from '../backend/middleware/rateLimit.js';

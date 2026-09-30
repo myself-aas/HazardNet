@@ -1,4 +1,6 @@
 /**
+ * @jest-environment node
+ *
  * __tests__/phaseCBackend.test.js — Phase C (Backend & API) Integration Test Suite
  *
  * Validates:
@@ -7,10 +9,10 @@
  * - TASK-010: Claims registry verification and limitation audits (TRD §10)
  */
 
-import { describe, test, before, beforeEach } from 'node:test';
+import * as nodeTest from 'node:test';
 import assert from 'node:assert/strict';
 import { parseCsvForecastRow } from '../backend/utils/forecastRow.js';
-import { getForecastStore, ensureAdvisoryFields } from '../backend/forecastStore.js';
+import { getForecastStore, ensureAdvisoryFields, resetForecastStore } from '../backend/forecastStore.js';
 import {
   ALERT_STATES,
   evaluateTransition,
@@ -30,9 +32,24 @@ import {
 } from '../scripts/verify_claims.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
-process.env.NODE_ENV = 'test';
-process.env.FORECAST_STORE_MEMORY = 'true';
-process.env.ALERT_STORE_MEMORY = 'true';
+
+const describe = globalThis.describe ?? nodeTest.describe;
+const test = globalThis.test ?? nodeTest.test;
+const before = globalThis.beforeAll ?? nodeTest.before;
+const after = globalThis.afterAll ?? nodeTest.after;
+const beforeEach = globalThis.beforeEach ?? nodeTest.beforeEach;
+
+before(() => {
+  process.env.NODE_ENV = 'test';
+  process.env.FORECAST_STORE_MEMORY = 'true';
+  process.env.ALERT_STORE_MEMORY = 'true';
+  resetForecastStore();
+});
+
+after(() => {
+  delete process.env.FORECAST_STORE_MEMORY;
+  resetForecastStore();
+});
 
 describe('TASK-008: Forecast API — Serving New Advisory Fields & Metadata', () => {
   test('parseCsvForecastRow parses and preserves all new advisory and geospatial fields', () => {
