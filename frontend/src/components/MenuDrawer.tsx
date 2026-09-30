@@ -115,7 +115,11 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
       >
             <div className="px-4 flex items-center justify-between shrink-0 pt-[max(1rem,env(safe-area-inset-top))] pb-4">
               <div className="flex items-center gap-2">
-                <HazardNetBrand size="sm" variant="dark" />
+                {/* `light`, not `dark`: the drawer panel is `bg-white`, so the
+                    dark mark and the dark wordmark are the legible pair. This
+                    used to ask for the dark-ground variant, which painted
+                    "Hazard" in white on the white panel. */}
+                <HazardNetBrand size="sm" variant="light" />
               </div>
               <div className="flex items-center gap-2">
                 <NotificationToggle variant="icon" />

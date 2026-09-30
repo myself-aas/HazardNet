@@ -1,5 +1,26 @@
 import { getSeverityColor } from '../services/geolocationService';
 
+/**
+ * The brand mark.
+ *
+ * Two files, one artwork. `hazardnet-mark.svg` is the mark as traced: near-black
+ * bars (#0D0D0D) with light echoes (#D7D7D7) and the brand-red arrow (#970002) on
+ * a *transparent* ground, so it composites onto whatever surface it lands on.
+ *
+ * `variant="dark"` means "this sits on a dark ground" — the transparent header
+ * over the front door's cinematic hero (`bg-black/25 backdrop-blur-md`), and the
+ * auth side panel (`bg-carbon-black`). On those grounds the traced palette is
+ * invisible, so the mark is swapped for `hazardnet-mark-inverse.svg`, which
+ * reverts the neutrals (bars to white, echoes to a mid carbon that still reads
+ * as depth) and lifts the arrow to `--hds-color-nasa-red-tint`. The red is
+ * lightened, never inverted: inverting #970002 would turn the mark cyan.
+ *
+ * The wordmark beside the mark is unchanged and still carries the site name, so
+ * the image itself stays decorative (`alt=""` when text is shown).
+ */
+const MARK_SRC = '/hazardnet-mark.svg';
+const MARK_SRC_ON_DARK = '/hazardnet-mark-inverse.svg';
+
 export interface HazardNetLogoProps {
   className?: string;
   size?: number | string;
@@ -21,7 +42,7 @@ export const HazardNetLogo: React.FC<HazardNetLogoProps> = ({
   return (
     <span className="inline-flex items-center justify-center shrink-0 leading-none">
       <img
-        src="/hazardnet-mark.svg"
+        src={variant === 'dark' ? MARK_SRC_ON_DARK : MARK_SRC}
         alt={showText ? '' : 'HazardNet'}
         aria-hidden={showText || undefined}
         className={`block shrink-0 object-contain ${className}`}
