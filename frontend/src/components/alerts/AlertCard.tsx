@@ -98,7 +98,7 @@ export const AlertCard: React.FC<AlertCardProps> = ({ alert, onOpen, className =
           <dt className="font-semibold text-carbon-60 dark:text-carbon-40 text-xs uppercase tracking-wide">Lead</dt>
           <dd className="text-xs sm:text-sm">
             {typeof alert.lead_time_days === 'number'
-              ? `${formatNumber(alert.lead_time_days, { maximumFractionDigits: 0 })}d`
+              ? `${formatNumber(alert.lead_time_days, { maximumFractionDigits: 0 })} days`
               : '—'}
           </dd>
         </div>

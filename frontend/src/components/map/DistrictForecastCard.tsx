@@ -51,7 +51,7 @@ export const DistrictForecastCard: React.FC<DistrictForecastCardProps> = ({
       role="dialog"
       aria-label={`${district.name} district forecast`}
       data-testid="district-forecast-card"
-      className="flex flex-col min-h-0 w-full bg-white dark:bg-carbon-90 border border-carbon-10 dark:border-carbon-80 text-carbon-80 dark:text-carbon-10 rounded-lg sm:rounded-lg"
+      className="flex flex-col min-h-0 w-full bg-white dark:bg-carbon-90 border border-carbon-20 dark:border-carbon-80 text-carbon-80 dark:text-carbon-10 rounded-lg sm:rounded-lg"
     >
       <div className="flex items-start justify-between gap-2 sm:gap-3 border-b border-carbon-10 dark:border-carbon-80 p-3 sm:p-4 shrink-0">
         <div className="min-w-0 flex-1">
@@ -74,8 +74,8 @@ export const DistrictForecastCard: React.FC<DistrictForecastCardProps> = ({
             type="button"
             onClick={onClose}
             className="tap-target w-9 sm:w-10 h-9 sm:h-10 rounded-md bg-carbon-05 dark:bg-carbon-80 hover:bg-carbon-10 dark:hover:bg-carbon-70 text-carbon-70 dark:text-carbon-30 flex items-center justify-center touch-manipulation transition-colors"
-            title="Close forecast"
-            aria-label="Close forecast"
+            title="Close district forecast"
+            aria-label="Close district forecast"
           >
             <MaterialIcon name="close" className="w-4 sm:w-5 h-4 sm:h-5" />
           </button>
@@ -90,7 +90,7 @@ export const DistrictForecastCard: React.FC<DistrictForecastCardProps> = ({
               <span className="truncate">{district.hazardType}</span>
             </span>
             <span className={`text-xs sm:text-sm font-semibold font-mono tabular-nums shrink-0 ${tone.text}`}>
-              {(severityPct / 100).toFixed(2)}
+              <span className="sr-only">Severity score </span>{(severityPct / 100).toFixed(2)}
             </span>
           </div>
           <div
@@ -133,7 +133,7 @@ export const DistrictForecastCard: React.FC<DistrictForecastCardProps> = ({
         >
           <span className="flex items-center gap-1.5 sm:gap-2 min-w-0">
             <MaterialIcon name="map" className="w-4 h-4 text-nasa-blue shrink-0" />
-            <span className="truncate">Map</span>
+            <span className="truncate">Location Map</span>
           </span>
           <span className={`transition-transform shrink-0 ${showLocationMap ? 'rotate-180' : ''}`} aria-hidden="true">
             ▾

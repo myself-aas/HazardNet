@@ -154,7 +154,7 @@ export const DistrictDetailPanel: React.FC<DistrictDetailPanelProps> = ({
               <span>Low Confidence ({formatNumber(Math.round(confidence * 100))}%)</span>
             </div>
             <p className="text-xs leading-relaxed">
-              Out-of-distribution anomaly detected. Consult meteorological observations before taking action.
+              Out-of-distribution anomaly detected. Consult meteorological observations before taking action. This out-of-distribution signal indicates the forecast may not match familiar conditions.
             </p>
           </div>
         )}
