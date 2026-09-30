@@ -3,7 +3,7 @@
  *
  * The GIS console moved to `/live` (see `App.tsx`), and the root became the page a
  * journalist, an agronomist or a reviewer lands on first: what this platform is for, what
- * the last run actually produced, and where every number can be checked. `docs/PUBLIC_SURFACE.md`
+ * the last run actually produced, and where every number can be checked. `scripts/lib/public-text.mjs`
  * records the split and the reasoning; the short version is that a map answers "where?"
  * while a front door has to answer "who is telling me this, dated when, and how would I
  * know if it stopped working?".
@@ -28,7 +28,7 @@
  * **The 2026-09-19 landing-page review.** A design review benchmarked this page against the
  * front doors of GFDRR, UNDRR and the Red Cross and asked for a photograph-led hero, a
  * district map and a live status strip. Two of those three are built here, one is refused,
- * and the reasoning is recorded in `docs/PUBLIC_SURFACE.md` §3 rather than left as a
+ * and the reasoning is recorded in `scripts/lib/public-text.mjs` rather than left as a
  * reviewer's disappointment:
  *
  *   · The strip is built (`components/frontdoor/LiveStatusStrip.tsx`) from the alert

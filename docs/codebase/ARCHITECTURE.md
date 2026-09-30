@@ -10,6 +10,7 @@
   1. **Publication policy** — the repository ships results only; model code, datasets and severity derivation are research-private (`docs/PUBLICATION_POLICY.md`, `README.md`). This is why `Models/` exists but is 404'd and why every public number is gated by `CLAIMS.md`.
   2. **Free-tier hosting** — Vercel Hobby's 12-serverless-function cap shaped the entire `api/`/`serverless/` split (`serverless/dispatch.js` header, `scripts/check-vercel-functions.mjs`).
   3. **Zero-human-intervention daily publishing with human review above WATCH** — the alert state machine is the enforcement point (`backend/alerts/lifecycle.js`).
+- **Deployment targets:** two, both supported (confirmed 2026-09-30) — Vercel (static `frontend/dist` + the 6 serverless functions) and the self-host Express backend (`backend/server.js`, port 3000) which serves the same API plus the static build. The CSP has one source (`backend/security/csp.js`) consumed by both, so the two targets cannot drift.
 
 ### 2) System Flow
 
@@ -85,3 +86,4 @@ Traced end-to-end for one forecast read:
 - `scripts/process_advisory_ingest.mjs`, `scripts/validate_advisory_csv.mjs` (ingestion)
 - `.github/workflows/daily_advisory_ingest.yml` (pipeline orchestration)
 - `docs/TRD.md` §2 (pipeline architecture and CSV contract), `docs/PUBLICATION_POLICY.md`
+- `backend/security/csp.js`, `Models/VERSION.json` (cross-deployment CSP parity; model-version handshake)

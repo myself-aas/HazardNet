@@ -58,7 +58,7 @@ maybe('the built /status page', () => {
       // Every source is present by its label, its state and its reason. It used to be
       // identified by its artifact path as well; that is a location in this repository,
       // which a reader of the page cannot open, so the page no longer prints it — the
-      // artifact keeps the field for anything that can (docs/PUBLIC_SURFACE.md §3).
+      // artifact keeps the field for anything that can (scripts/lib/public-text.mjs).
       expect(html).toContain(source.label);
       expect(html).not.toContain(source.artifact);
     }

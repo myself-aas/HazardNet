@@ -234,7 +234,7 @@ acknowledged **with their knowledge**.
 
 | Gate | Result |
 |---|---|
-| `node scripts/check-severity-embargo.mjs` | PASS |
+| `node scripts/check-severity-embargo.mjs` | PASS *(gate retired 2026-09-30 — see `e2e/full-app-qa.spec.ts`, which now enforces the archive rule at runtime)* |
 | `node scripts/check-claims.mjs` | PASS (92 sources, 20 registered values) |
 | `python3 -m pytest scripts/tests/test_model_claims.py` | 11 passed |
 | `python3 -m pytest scripts/tests/` (alert surface, status surface, security disclosure, mlops artifacts) | 8+15+10+19 passed |

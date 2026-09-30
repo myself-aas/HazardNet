@@ -45,7 +45,7 @@ import { fileURLToPath } from 'node:url';
 // Data-authored prose can carry a location in this repository's tree (the validation reports
 // name the module that produced a score). The artifacts keep those paths — they are what
 // makes a number auditable by a script — and the published page drops them, because a
-// visitor cannot open one. See scripts/lib/public-text.mjs and docs/PUBLIC_SURFACE.md §3.
+// visitor cannot open one. See scripts/lib/public-text.mjs and scripts/lib/public-text.mjs.
 import { findRepoPaths, withoutRepoPaths } from './lib/public-text.mjs';
 
 export const GENERATED_SCHEMA = 'hazardnet-generated-routes/v1';
@@ -422,7 +422,7 @@ function hazardRoute({ hazard, outlook, now, methodology }) {
           // The second half of this pair used to name the module the expression is executed
           // against and the test that runs it. Both halves are still true and still checked
           // in CI; only the naming went, because a visitor cannot open either file from a
-          // browser (docs/PUBLIC_SURFACE.md §3). What the page must keep is the assurance —
+          // browser (scripts/lib/public-text.mjs). What the page must keep is the assurance —
           // that the formula shown here is executed against the implementation, so this
           // copy cannot drift from what the pipeline runs.
           'That expression is executed against the pipeline’s own implementation by the content tests in CI — this page cannot silently describe a formula the pipeline no longer runs.',
@@ -1272,7 +1272,7 @@ function main() {
   // The strings above come from three places — literals in this script, committed data
   // files (a validation report's note, the methodology copy) and interpolated fields of a
   // loaded archive — and only the first is visible to a grep of the source. The rule and
-  // its reasoning are in scripts/lib/public-text.mjs and docs/PUBLIC_SURFACE.md §3; the
+  // its reasoning are in scripts/lib/public-text.mjs and scripts/lib/public-text.mjs; the
   // same scan runs over the built documents in CI (scripts/check-public-paths.mjs).
   const leaks = findRepoPaths(document);
   if (leaks.length > 0) {

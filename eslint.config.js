@@ -19,7 +19,6 @@ export default tseslint.config(
       'references/**',
       'skills/**',
       '.agents/**', // vendored agent skill packs (same class as skills/**)
-          'app/**',
       'docs/**',
       'Models/**',
       'audit_temp/**',

@@ -199,7 +199,7 @@ describe('the hero run visual', () => {
     // The build time stays because a reader can act on it; the module name went because no
     // reader on this surface can open it, and the artifact fetched to render this card
     // still carries `generated_by` for anything that can
-    // (docs/PUBLIC_SURFACE.md §3, __tests__/noRepoPaths.test.js).
+    // (scripts/lib/public-text.mjs, __tests__/noRepoPaths.test.js).
     expect(namesRepoFile(card.textContent ?? '')).toBe(false);
     // …while the served URLs the card tells the reader it is reading stay: they resolve on
     // the deployed origin, which is the difference the rule turns on.

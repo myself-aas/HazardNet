@@ -112,10 +112,20 @@ describe('security header parity', () => {
     }
   });
 
-  it('keeps the ad-network allowlist explicit and minimal', () => {
+  it('allows no ad-network script origins', () => {
+    // The site carries no advertising (2026-09-30). An allowlist that outlives the
+    // thing it allowed is how these three configs drifted apart the first time, so
+    // the absence is asserted rather than assumed.
     const scriptSrc = /script-src([^;]*)/.exec(rootHeaders['Content-Security-Policy'])[1];
-    for (const origin of ['https://pagead2.googlesyndication.com', 'https://adservice.google.com']) {
-      expect(scriptSrc).toContain(origin);
+    for (const origin of [
+      'https://pagead2.googlesyndication.com',
+      'https://partner.googleadservices.com',
+      'https://tpc.googlesyndication.com',
+      'https://www.googletagservices.com',
+      'https://adservice.google.com',
+      'googlesyndication.com',
+    ]) {
+      expect(scriptSrc).not.toContain(origin);
     }
     // Every allowlisted script origin that contains a dot should be https or a keyword
     for (const token of scriptSrc.split(/\s+/).filter((t) => t.includes('.'))) {
@@ -147,13 +157,13 @@ describe('security header parity', () => {
   });
 
   it('is the same string in the shared module, both configs and helmet', async () => {
-    const { CSP, cspDirectivesFromString, AD_SCRIPT_ORIGINS, AUTH_SCRIPT_ORIGINS } = await import('../backend/security/csp.js');
+    const { CSP, cspDirectivesFromString, AUTH_SCRIPT_ORIGINS } = await import('../backend/security/csp.js');
 
     // One source of truth: the two Vercel configs carry exactly the canonical string.
     expect(rootHeaders['Content-Security-Policy']).toBe(CSP);
     expect(frontendHeaders['Content-Security-Policy']).toBe(CSP);
 
-    // helmet runs the parsed canonical policy, so the Docker deployment cannot drift.
+    // helmet runs the parsed canonical policy, so the self-hosted deployment cannot drift.
     const directives = cspDirectivesFromString();
     expect(directives.objectSrc).toEqual(["'none'"]);
     expect(directives.frameAncestors).toEqual(["'none'"]);
@@ -162,11 +172,11 @@ describe('security header parity', () => {
     expect(directives.formAction).toEqual(expect.arrayContaining(["'self'"]));
     expect(directives.formAction.join(' ')).toContain('firebaseapp.com');
     expect(directives.upgradeInsecureRequests).toEqual([]);
-    expect(directives.scriptSrc).toEqual(expect.arrayContaining(AD_SCRIPT_ORIGINS));
-    expect(directives.scriptSrc).toEqual(expect.arrayContaining(AUTH_SCRIPT_ORIGINS));
+    // script-src is exactly 'self' plus the auth origins — nothing else.
+    expect(directives.scriptSrc).toEqual(["'self'", ...AUTH_SCRIPT_ORIGINS]);
     expect(server).toContain("from './security/csp.js'");
     expect(server).toContain('cspDirectivesFromString()');
-    // The ad allowlist must not be re-typed inline in server.js.
-    expect(server).not.toContain('pagead2.googlesyndication.com');
+    // No third-party script origin may be re-typed inline in server.js.
+    expect(server).not.toContain('googlesyndication.com');
   });
 });

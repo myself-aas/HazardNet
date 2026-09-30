@@ -77,7 +77,7 @@
 | `prettier` `^3.6.2` | Formatting (printWidth 120, single quotes) | `.prettierrc` |
 | `typescript` `^5.4.5` | Type-check only (`npm run lint` = `tsc --noEmit`) | `package.json`, `frontend/tsconfig.json` |
 | `vite` `^8.3.0` | Frontend dev server + bundler | `frontend/package.json`, `frontend/vite.config.ts` |
-| `impeccable` `^4.1.0` | Design-quality detector used by `check:design` | `package.json` (`scripts.design:detect`), `.github/workflows/ci.yml` |
+| `impeccable` `^4.1.0` | Design-quality detector used by `check:design`; waivers recorded in the committed baseline | `package.json` (`scripts.design:detect`), `docs/design/impeccable-baseline.json`, `scripts/check-design-quality.mjs` |
 | `jest-expo`, `@testing-library/react-native` | Mobile component tests | `apps/mobile/package.json`, `apps/mobile/jest.config.cjs` |
 | `@testing-library/react`, `jest-axe`, `supertest`, `node-mocks-http` | Component/a11y/API testing | `package.json`, `__tests__/api/*.test.js` |
 | Repo QA scripts (`scripts/qa/*.mjs`) | Browser-driven layout/a11y/overflow review harnesses | `scripts/qa/`, `.github/workflows/ci.yml` |
@@ -124,13 +124,15 @@ npm run alerts:rehearse / npm run alerts:snapshot
 ### 5) Environment and Config
 
 - **Config sources:** `package.json`, `frontend/package.json`, `apps/mobile/package.json`, `packages/*/package.json`, `frontend/vite.config.ts`, `frontend/tsconfig.json`, `eslint.config.js`, `.prettierrc`, `jest.config.cjs`, `jest.setup.ts`, `babel.config.cjs`, `apps/mobile/{babel.config.cjs,metro.config.cjs,jest.config.cjs,app.json,eas.json}`, `playwright.config.ts`, `playwright.qa.config.ts`, `vercel.json`, `frontend/vercel.json`, `firebase.json`, `firestore.rules`, `.firebaserc`, `firebase-applet-config.json`, `monitoring/prometheus.yml`, `monitoring/alerts.yml`.
-- **Required env vars:** `FIREBASE_SERVICE_ACCOUNT_JSON` (server boot), `BACKEND_API_KEY` (ingest/broadcast), `FRONTEND_ORIGIN` (CORS allowlist; production fails closed without it), `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` (push), `GEMINI_API_KEY` (AI routes; deterministic fallback when unset). Frontend build: `VITE_FIREBASE_API_KEY`, `VITE_FIREBASE_AUTH_DOMAIN`, `VITE_FIREBASE_PROJECT_ID`, `VITE_FIREBASE_APP_ID` (+ optional `VITE_FIREBASE_DATABASE_URL`, `VITE_FIREBASE_STORAGE_BUCKET`, `VITE_FIREBASE_MESSAGING_SENDER_ID`, `VITE_FIREBASE_MEASUREMENT_ID`, `VITE_FIREBASE_FIRESTORE_DATABASE_ID`). **No `.env.example` / `.env.template` exists** — the authoritative list is `docs/ENVIRONMENT_SECRETS.md` §2. Optional/tuning: `GEMINI_API_KEY_BACKUP`, `GROQ_API_KEY`, `OPENROUTER_API_KEY`, `HUGGINGFACE_API_KEY`, `WEB_PUSH_CONTACT`, `CSP_ENFORCE`, `FIREBASE_VERIFY_TIMEOUT_MS`, `CONVERSION_PERSIST_TIMEOUT_MS`, `FORECAST_STORE`, `FORECAST_DATASET`, `ALERT_AUTO_PUBLISH`, `ALERT_AUTO_PUBLISH_MINUTES`, `ALERT_DUTY_OFFICERS`, `SLACK_WEBHOOK_URL`, `QA_CHROMIUM_PATH` / `PLAYWRIGHT_CHROMIUM_PATH`.
+- **Required env vars:** `FIREBASE_SERVICE_ACCOUNT_JSON` (server boot), `BACKEND_API_KEY` (ingest/broadcast), `FRONTEND_ORIGIN` (CORS allowlist; production fails closed without it), `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` (push), `GEMINI_API_KEY` (AI routes; deterministic fallback when unset). Frontend build: `VITE_FIREBASE_API_KEY`, `VITE_FIREBASE_AUTH_DOMAIN`, `VITE_FIREBASE_PROJECT_ID`, `VITE_FIREBASE_APP_ID` (+ optional `VITE_FIREBASE_DATABASE_URL`, `VITE_FIREBASE_STORAGE_BUCKET`, `VITE_FIREBASE_MESSAGING_SENDER_ID`, `VITE_FIREBASE_MEASUREMENT_ID`, `VITE_FIREBASE_FIRESTORE_DATABASE_ID`). A placeholder-only **`.env.example`** is committed and `docs/ENVIRONMENT_SECRETS.md` §2 is the authoritative reference. Optional/tuning: `GEMINI_API_KEY_BACKUP`, `GROQ_API_KEY`, `OPENROUTER_API_KEY`, `HUGGINGFACE_API_KEY`, `WEB_PUSH_CONTACT`, `CSP_ENFORCE`, `FIREBASE_VERIFY_TIMEOUT_MS`, `CONVERSION_PERSIST_TIMEOUT_MS`, `FORECAST_STORE`, `FORECAST_DATASET`, `ALERT_AUTO_PUBLISH`, `ALERT_AUTO_PUBLISH_MINUTES`, `ALERT_DUTY_OFFICERS`, `SLACK_WEBHOOK_URL`, `QA_CHROMIUM_PATH` / `PLAYWRIGHT_CHROMIUM_PATH`.
 - **Deployment/runtime constraints:**
   - Vercel **Hobby** plan allows at most **12 Serverless Functions** per deployment; every file under `api/` is one function and **6 are used**. The one-entry-point-per-URL-family dispatcher design exists purely for this budget (`api/[endpoint].js`, `serverless/dispatch.js`, `scripts/check-vercel-functions.mjs`, `docs/codebase/VERCEL_FUNCTIONS.md`).
   - Node `>=20`; CI uses Node `20.x` and Python `3.11`.
   - Firestore: named applet database `ai-studio-hazardnet-55b49dbf-625b-492b-9cff-feabd729e843` is the default when no env override is set (`backend/db.js`).
   - The self-host backend hardcodes port `3000` and binds `0.0.0.0` (`backend/server.js`).
-  - Model artifacts under `Models/` are deliberately never served (explicit 404 routes in `backend/server.js`).
+  - Model artifacts under `Models/` are deliberately never served (explicit 404 routes in `backend/server.js`); the model-version handshake in `Models/VERSION.json` must stay committed and clean, enforced by a CI gate in the `verify` job.
+  - **Two supported deployment targets** (confirmed 2026-09-30): Vercel (static + serverless) and the self-host Express backend on port 3000. The Express target is live, not legacy — its in-memory rate limiting and in-memory store fallbacks are real concerns if it is ever run with more than one instance.
+  - The CSP allows no ad-network script origin; `style-src` still permits `'unsafe-inline'` (see `backend/security/csp.js` for the recorded reason).
 
 ### 6) Evidence
 
@@ -143,4 +145,5 @@ npm run alerts:rehearse / npm run alerts:snapshot
 - `vercel.json`, `firebase.json`, `.firebaserc`
 - `backend/server.js` (runtime bootstrap and port)
 - `.github/workflows/ci.yml` (Node/Python versions, gate commands)
-- `docs/ENVIRONMENT_SECRETS.md` (environment-variable reference)
+- `docs/ENVIRONMENT_SECRETS.md` (environment-variable reference), `.env.example` (committed template)
+- `docs/design/impeccable-baseline.json`, `backend/security/csp.js` (design gate baseline; CSP source)

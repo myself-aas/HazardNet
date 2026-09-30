@@ -21,7 +21,7 @@
 | SMS gateway / Telegram Bot | Alert fan-out | Subscriber notifications for published alerts | Configured per channel in `backend/alerts/channels/` | medium | `backend/alerts/channels/sms.js`, `backend/alerts/channels/telegram.js` |
 | ArcGIS / Mapbox tile + event services | Map tiles | Basemap tiles and map event stream for the district map | Public endpoints | low | `frontend/src/components/DistrictRiskMap.tsx`, `frontend/src/components/LiveMapView.tsx` |
 | ReliefWeb / FAO GIEWS / WHO / ADRC GLIDE / IFRC GO | Reference links | Outbound multilateral provenance links generated from GLIDE identifiers | None (public URLs) | low | `backend/utils/glideResolver.js`, `frontend/src/lib/glide.ts`, `frontend/src/components/GlideResourcePopover.tsx` |
-| Google (gstatic / accounts / tag manager / ads) | Frontend services | Firebase SDK host, OAuth popup, analytics, ad scripts allowed by CSP | None | low | `vercel.json` CSP, `backend/security/csp.js` |
+| Google (gstatic / accounts / tag manager) | Frontend services | Firebase SDK host, Google OAuth popup, Tag Manager | None | low | `vercel.json` CSP, `backend/security/csp.js` |
 
 ### 2) Data Stores
 
@@ -36,9 +36,10 @@
 ### 3) Secrets and Credentials Handling
 
 - **Credential sources:** Vercel project environment variables (serverless + build), GitHub Actions secrets/variables (workflows), and a local `.env` loaded by `dotenv` in `backend/server.js`. The three-surface model is documented in `docs/ENVIRONMENT_SECRETS.md` §0.
-- **Hardcoding checks:** `scripts/check-secrets.sh` scans the working tree for high-confidence secret patterns (GitHub PATs, `sk-`, `AIza`, Slack tokens, AWS keys, private keys, connection strings with passwords) and runs in CI (`security-audit` job). History is explicitly out of scope for that gate.
+- **Hardcoding checks:** `scripts/check-secrets.sh` scans the working tree for high-confidence secret patterns (GitHub PATs, `sk-`, `AIza`, Slack tokens, AWS keys, private keys, connection strings with passwords) and runs in CI (`security-audit` job). History is explicitly out of scope for that gate. The committed `.env.example` is placeholder-only and is itself validated by `scripts/tests/test_secret_scan.py::test_the_shipped_env_example_is_clean`.
   - **Exception to note:** `frontend/src/lib/config.ts` commits Firebase **public-by-design** web identifiers as fallback defaults (API key, project id, app id, measurement id, database URL) so the app boots without a local `.env`. These are public identifiers per Firebase convention, but they are credential-shaped strings in source and should be confirmed as intended (see `[ASK USER]`).
   - `backend/db.js` similarly hardcodes the Firestore applet database id as a fallback default.
+  - **The CSP no longer allowlists any ad-network script origin** (removed 2026-09-30). `script-src` is `'self'` plus the four Google origins Firebase Auth needs; `backend/security/csp.js` is the single source and both Vercel configs carry the identical string, asserted by `__tests__/securityHeadersParity.test.js`.
 - **Rotation / lifecycle notes:** `docs/ENVIRONMENT_SECRETS.md` §7 instructs rotating anything ever pasted into a chat, screenshot, or old commit. `scripts/verify-actions-secrets.sh` (dispatchable `verify-secrets.yml`) maps every `secrets.*` reference in every workflow to an explicitly verified name. `scripts/npm-audit-ci.mjs` fails closed on any high/critical advisory not listed in `audit-exceptions.json`, and exceptions carry expiries so a stale accepted-risk entry fails the gate.
 
 ### 4) Reliability and Failure Behavior
@@ -66,6 +67,8 @@
 - `backend/utils/glideResolver.js`, `frontend/src/lib/glide.ts` (multilateral links)
 - `.github/workflows/daily_advisory_ingest.yml`, `.github/workflows/site-health.yml`, `.github/workflows/verify-secrets.yml` (pipeline + probe + secrets)
 - `scripts/check-secrets.sh`, `scripts/verify-actions-secrets.sh`, `scripts/npm-audit-ci.mjs`, `audit-exceptions.json` (secret/audit gates)
+- `.env.example` (committed placeholder-only template), `scripts/tests/test_secret_scan.py`
 - `docs/ENVIRONMENT_SECRETS.md` (credential surfaces and full variable reference)
 - `monitoring/prometheus.yml`, `monitoring/alerts.yml`, `monitoring/grafana-dashboard.json`, `backend/metrics.js`
+- `backend/security/csp.js`, `__tests__/securityHeadersParity.test.js` (CSP single source + parity)
 - `firebase.json`, `firestore.rules`, `.firebaserc`, `vercel.json`

@@ -2,7 +2,7 @@
  * The hero visual — a picture made of the deployment's own artifacts.
  *
  * The 2026-09-19 landing-page review asked for a full-width photograph in the hero.
- * `docs/PUBLIC_SURFACE.md` §3 rule 5 refuses invented imagery, and the reason still
+ * `scripts/lib/public-text.mjs` refuses invented imagery, and the reason still
  * holds: no licence-clean field or satellite photograph ships in this repository, and an
  * AI-generated illustration sitting next to provenance claims would undercut the one
  * thing the page is for. The owner's choice was the third option — replace the photograph

@@ -20,7 +20,7 @@ import { useI18n } from '../../hooks/useI18n';
  * Colour tokens per surface.
  *
  * The alerts/map surfaces were built on the slate palette and keep it; the editorial front
- * door uses the NASA HDS tokens (`carbon-*`, `nasa-*`) that `docs/PUBLIC_SURFACE.md` and the
+ * door uses the NASA HDS tokens (`carbon-*`, `nasa-*`) that `scripts/lib/public-text.mjs` and the
  * rest of `/` are written in. Rather than fork a second toggle — two implementations of the
  * same `aria-pressed` logic is exactly how a control drifts out of one of them — the palette
  * is a prop, and the *behaviour* stays in one place.

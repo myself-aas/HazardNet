@@ -13,11 +13,10 @@
 npm test
 npx jest --ci --coverage --coverageDirectory=./coverage/backend
 
-# Unit / backend suites only (mirrors the CI backend job)
+# Unit / backend suites only (mirrors the CI backend job — directory scopes only,
+# so no suite is excluded by name)
 npx jest --ci --coverage --coverageDirectory=./coverage/backend \
-  --testPathIgnorePatterns='/node_modules/' '/e2e/' '/frontend/' '/apps/' '/__mocks__/' \
-  'severityEmbargo' 'securityTxt' 'securityHeadersParity' 'nasaTokens' \
-  'freshnessArtifact' 'contentEngine' 'claimsGate' 'alertSnapshot' 'alertReplay'
+  --testPathIgnorePatterns='/node_modules/' '/e2e/' '/frontend/' '/apps/' '/__mocks__/'
 
 # Frontend suites (root config, frontend rootDir)
 cd frontend && npx jest --ci --config ../jest.config.cjs --rootDir .. frontend/src
@@ -28,12 +27,12 @@ npx jest --config apps/mobile/jest.config.cjs
 # Phase gate tests (Node built-in runner)
 npm run test:phases
 
-# E2E / QA
-npx playwright test                                  # default testMatch subset
+# E2E / QA (default testMatch discovers ALL six specs in e2e/)
+npx playwright test                                  # every spec in e2e/
 npx playwright test -c playwright.qa.config.ts        # QA sweep (single worker, sandbox Chromium)
 
-# Pipeline script tests (Python)
-python -m pytest scripts/tests -q
+# Pipeline script tests (Python) — includes the workflow guards
+python -m pytest scripts/tests -q                    # 119 tests
 ```
 
 ### 2) Test Layout
@@ -54,7 +53,7 @@ python -m pytest scripts/tests -q
 | Component | **yes** | `frontend/src/components/**`, `frontend/src/pages/**`, `apps/mobile/src/**` | jsdom + Testing Library; mobile uses `jest-expo` preset |
 | Integration | **yes** | Express app via `supertest` (`__tests__/api/*.test.js`), serverless routing/guard, Firestore rules shape, CORS, auth | `__tests__/api/serverlessRouting.test.js`, `__tests__/firestoreRules.test.js`, `__tests__/cors.test.js` |
 | Pipeline | **yes** | Advisory CSV validation, column mapping, staleness guard, manifest integrity, snapshot builders | `__tests__/advisoryPipeline.test.js`, `scripts/tests/*.py`, plus builder smoke tests in CI |
-| E2E | **partial** | `e2e/full-app-qa.spec.ts`, `e2e/forecast-ux.spec.ts`, `e2e/navigation-a11y.spec.ts` | Default `testMatch` only discovers these three; `critical-paths.spec.ts`, `smoke.spec.ts` and `mobile-responsive.spec.ts` exist but are **not** run by `playwright.config.ts` |
+| E2E | **yes** | All six specs in `e2e/`: `full-app-qa`, `forecast-ux`, `navigation-a11y`, `smoke`, `critical-paths`, `mobile-responsive` | The default `testMatch` in `playwright.config.ts` discovers every spec. `smoke`, `critical-paths` and `mobile-responsive` used to sit outside it and never ran anywhere; they were added on 2026-09-30 |
 | Accessibility | **yes** | `jest-axe` in component suites; `e2e/navigation-a11y.spec.ts`; `scripts/qa/a11y-detail.mjs` | PRD target ≥ 95 Lighthouse a11y |
 | Performance | **partial** | `npm run check:bundle` budget, `check-font-payload.mjs`, `.maestro/perf-scenario.yaml` on mobile | No k6/locust/JMeter config in-tree |
 
@@ -67,15 +66,14 @@ python -m pytest scripts/tests -q
 
 ### 5) Coverage and Quality Signals
 
-- **Coverage tool + threshold:** Jest `--coverage` with `coverageThreshold.global` = statements `32`, branches `35`, functions `30`, lines `31` (`jest.config.cjs`, labelled "QA-01"). The floor was set from a measured 2026-08-28 baseline (~32% statements) minus a margin, intended to ratchet upward.
+- **Coverage tool + threshold:** Jest `--coverage` with `coverageThreshold.global` = statements `32`, branches `35`, functions `30`, lines `31` (`jest.config.cjs`, labelled "QA-01"). The floor was set from a measured 2026-08-28 baseline (~32% statements) minus a margin, intended to ratchet upward. Note that the 7 suites re-enabled on 2026-09-30 (`securityHeadersParity`, `securityTxt`, `nasaTokens`, `freshnessArtifact`, `contentEngine`, `alertSnapshot`, `alertReplay`) now contribute to this number, so the measured baseline will move.
 - **Scope of the gate:** `collectCoverageFrom` in `jest.config.cjs` = `backend/**/*.js`, `api/**/*.js`, `frontend/src/utils/**/*.ts`, plus the `packages/core/src/`, `packages/api/src/` and `packages/analytics/src/` trees. The frontend CI job disables the threshold (`--coverageThreshold='{}'`) because it executes no backend suites; baseline noted as ~17% statements for lib/utils only.
 - **Current reported coverage:** `[TODO]` — not measurable in this checkout (`node_modules` is not installed). Coverage is uploaded to Codecov in CI (`codecov/codecov-action`, flags `backend` / `frontend`, `fail_ci_if_error: false`).
 - **Known gaps / flaky areas:**
-  - Three Playwright specs (`critical-paths`, `smoke`, `mobile-responsive`) are not matched by the default `testMatch`, so they never run in CI.
-  - `__tests__/modelPerformance.test.js` is invoked by the CI "Post-build surface checks" step but the file does not exist in this checkout. (The `/model-performance` page and its `frontend/public/data/model-performance.json` artifact do exist and are partly covered by `__tests__/contentEngine.test.js`; the missing file is the dedicated suite.)
-  - The CI backend job's `--testPathIgnorePatterns` list still names suites whose scripts "are absent on main" (`alertSnapshot`, `alertReplay`, `freshnessArtifact`, `nasaTokens`, `securityTxt`, `securityHeadersParity`, `contentEngine`) although those suites are present — so they are silently excluded from the backend run.
-  - `scripts/tests/test_workflows.py` is cited by several CI comments as the guard for workflow-file properties (bare Jest selectors, missing-file gates, claims-gate presence) but the file is not present.
+  - **All closed on 2026-09-30** — see `docs/codebase/CONCERNS.md` §6: the three unrun Playwright specs are now in the default `testMatch`; the CI post-build step no longer names the deleted `__tests__/modelPerformance.test.js`; the backend `--testPathIgnorePatterns` list is directory scopes only; and `scripts/tests/test_workflows.py` exists (7 tests, mutation-verified).
+  - The 7 re-enabled backend suites could not be executed where the change was made (`node_modules` is not installed); they should be confirmed green on the first CI run.
   - Firestore rule verification requires the Firestore emulator (Java) or a live project; neither runs in CI — the rule shape is pinned only by `__tests__/firestoreRules.test.js`.
+  - Playwright browsers must be installed (`npx playwright install chromium`); the QA config exists because a sandbox cannot reach `cdn.playwright.dev` (`playwright.qa.config.ts`).
 
 ### 6) Evidence
 
@@ -83,7 +81,9 @@ python -m pytest scripts/tests -q
 - `jest.setup.ts` (polyfills and matchers)
 - `apps/mobile/jest.config.cjs`, `apps/mobile/jest.setup.cjs` (React Native config)
 - `playwright.config.ts`, `playwright.qa.config.ts` (E2E configs and testMatch)
-- `.github/workflows/ci.yml` (`test-backend`, `test-frontend`, `test-pipeline-scripts`, post-build surface checks)
+- `.github/workflows/ci.yml` (`test-backend`, `test-frontend`, `test-pipeline-scripts`, `test-e2e`, `verify`, `security-audit`)
 - `__tests__/` (69 suites), `__tests__/__mocks__/`, `packages/core/__tests__/`
 - `e2e/` (6 specs), `scripts/tests/` (Python + one `.mjs` suite)
 - `docs/TRD.md` §3–§7 (four-tier test strategy), `docs/TRD.md` §10 (CI/CD test gates)
+- `scripts/tests/test_workflows.py` (workflow guards: bare selector, missing-file gate, claims gate)
+- `.env.example` (validated by `scripts/tests/test_secret_scan.py`)

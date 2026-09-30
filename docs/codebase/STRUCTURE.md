@@ -22,7 +22,9 @@
 | `store/` | App-store listing metadata and privacy labels | `store/play-store-data-safety.md`, `store/app-store-metadata.md` |
 | `plugins/` | Optional frontend widget plugins with a manifest | `plugins/plugin_manifest.json`, `plugins/03_frontend_widgets/ShelterCapacity.tsx` |
 | `skills/` | In-repo domain knowledge packs (hazard protocols, institutions, agronomy…) | `skills/01_tensor_interpretation/`, `skills/03_hazard_protocols/` |
-| `assets/`, `app/`, `utils/`, `store/` | `assets/` docs+icons; `app/` an unused v0/Next.js scaffold; `utils/logger.js` the serverless logger | `app/layout.tsx`, `utils/logger.js` |
+| `assets/` | Bundled docs (`MODEL_CARD.md`) and icon metadata | `assets/docs/MODEL_CARD.md`, `assets/icons/hazard_profiles.json` |
+| `utils/` | Single file: the minimal serverless logger | `utils/logger.js` |
+| `.env.example` | Placeholder-only environment template for all three injection surfaces (Vercel, GitHub Actions, local `.env`) | `.env.example`, `docs/ENVIRONMENT_SECRETS.md` §0/§2 |
 | `.github/` | CI workflows + release workflow templates + Dependabot | `.github/workflows/ci.yml`, `.github/workflow-templates/` |
 | `.vs/` | Visual Studio solution state for the Windows app (editor artefact, not source) | `.vs/HazardNet.slnx` |
 
@@ -79,3 +81,4 @@
 - `packages/core/src/index.ts` (barrel + platform-agnostic constraint)
 - `frontend/scripts/prerender.mjs`, `frontend/package.json` (`build`)
 - `docs/codebase/VERCEL_FUNCTIONS.md` (function-budget arithmetic)
+- `.env.example` (committed env template), `backend/security/csp.js` (cross-deployment CSP source)

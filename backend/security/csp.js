@@ -13,9 +13,10 @@
  *     self-hosted Docker deployment cannot disagree with the deployed one.
  *
  * Design decisions worth keeping:
- *   - `script-src` lists the ad-network origins explicitly and allows no wildcard,
- *     no `data:` and no `'unsafe-eval'`. Ads are the one third-party script surface on
- *     the site (blog units); everything else is same-origin.
+ *   - `script-src` is same-origin plus the four Google origins Firebase Auth and Google
+ *     sign-in need. There is no ad-network allowlist: the site carries no advertising
+ *     (2026-09-30), and an allowlist that outlives the thing it allowed is how the three
+ *     editions drifted in the first place. No wildcard, no `data:`, no `'unsafe-eval'`.
  *   - `object-src 'none'`, `frame-ancestors 'none'`, `base-uri 'self'`,
  *     `form-action 'self'`: the four directives that contain the classic injection
  *     escalations (plugin payloads, clickjacking, `<base>` rewriting, exfiltration by
@@ -23,16 +24,9 @@
  *   - `style-src` keeps `'unsafe-inline'`: Tailwind ships a stylesheet, but the map and
  *     chart layers set inline styles for geometry, and a nonce would need a server render
  *     pass this static build does not have. Recorded here rather than left as folklore.
+ *     (162 `style={{…}}` and 69 `style="…"` sites in frontend/src depend on it — removing
+ *     it is a separate piece of work, not a one-line tightening.)
  */
-
-/** Ad-network script origins — the only third-party scripts the app loads. */
-export const AD_SCRIPT_ORIGINS = Object.freeze([
-  'https://pagead2.googlesyndication.com',
-  'https://partner.googleadservices.com',
-  'https://tpc.googlesyndication.com',
-  'https://www.googletagservices.com',
-  'https://adservice.google.com',
-]);
 
 /** Firebase / Google Auth origins required for sign-in with Google/GitHub. */
 export const AUTH_SCRIPT_ORIGINS = Object.freeze([
@@ -69,7 +63,7 @@ export const AUTH_FORM_ACTION_ORIGINS = Object.freeze([
 
 export const CSP = [
   "default-src 'self'",
-  `script-src 'self' ${[...AUTH_SCRIPT_ORIGINS, ...AD_SCRIPT_ORIGINS].join(' ')}`,
+  `script-src 'self' ${AUTH_SCRIPT_ORIGINS.join(' ')}`,
   "style-src 'self' 'unsafe-inline' https://www.gstatic.com",
   "img-src 'self' data: blob: https:",
   "font-src 'self' data:",
