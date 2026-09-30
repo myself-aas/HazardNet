@@ -93,17 +93,26 @@ jobs:
           FETCH_SUCCESS=0
           for attempt in 1 2; do
             echo "[fetch] Attempt $attempt: kaggle kernels output..."
-            if kaggle kernels output --path /tmp/advisory-ingest/ "$KAGGLE_USERNAME/8-hazardnet-advisory" || \
-               kaggle kernels output --path /tmp/advisory-ingest/ "myself-aas/8-hazardnet-advisory"; then
+            if OUTPUT=$(kaggle kernels output --path /tmp/advisory-ingest/ "$KAGGLE_USERNAME/8-hazardnet-advisory" 2>&1) || \
+               OUTPUT=$(kaggle kernels output --path /tmp/advisory-ingest/ "myself-aas/8-hazardnet-advisory" 2>&1); then
               FETCH_SUCCESS=1
               break
             fi
-            echo "[fetch] Attempt $attempt failed. Waiting 10s before retry..."
+            # Surface the CLI's own error. Without this the log said only
+            # "Attempt failed" and the run reddened every day with no way to tell
+            # an expired KAGGLE_KEY from a renamed/never-run kernel.
+            echo "[fetch] Attempt $attempt failed:"
+            echo "$OUTPUT"
+            echo "[fetch] Waiting 10s before retry..."
             sleep 10
           done
 
           if [ "$FETCH_SUCCESS" -ne 1 ]; then
             echo "::error::Failed to retrieve Kaggle notebook output after 2 attempts."
+            echo "[fetch] kaggle CLI: $(kaggle --version 2>&1 | head -1 || echo unknown)"
+            echo "[fetch] Kernels visible to $KAGGLE_USERNAME (check the slug still exists and has a completed run):"
+            kaggle kernels list --user "$KAGGLE_USERNAME" --page-size 20 2>&1 | head -30 || true
+            echo "[fetch] Owner action: refresh the KAGGLE_USERNAME/KAGGLE_KEY secrets, or point this step at the current kernel slug."
             exit 1
           fi
 
