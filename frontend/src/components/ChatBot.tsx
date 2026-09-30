@@ -1,5 +1,6 @@
 import MaterialIcon from "./MaterialIcon";
 import { useState, useEffect, useRef } from 'react';
+import { useDialogBehavior } from '../hooks/useDialogBehavior';
 import ReactMarkdown from 'react-markdown';
 import { motion, AnimatePresence } from 'framer-motion';
 import { HazardNetBrand } from './HazardNetLogo';
@@ -44,6 +45,15 @@ interface ChatResponse {
 
 export default function ChatBot() {
   const [isOpen, setIsOpen] = useState(false);
+  const chatPanelRef = useRef<HTMLDivElement>(null);
+  // The chat window declares `aria-modal="true"` but had no Escape handler and
+  // no focus containment: Tab walked out of the conversation into the page
+  // behind it. This supplies all three (Escape, save/restore, Tab cycle).
+  useDialogBehavior({
+    isOpen,
+    onClose: () => setIsOpen(false),
+    containerRef: chatPanelRef,
+  });
   const [chatMode, setChatMode] = useState<'text' | 'voice'>('text');
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
@@ -194,6 +204,8 @@ export default function ChatBot() {
         {isOpen && (
           <motion.div
             key="chat-window"
+            ref={chatPanelRef}
+            tabIndex={-1}
             initial={{ opacity: 0, scale: 0.88, y: 30, transformOrigin: 'bottom right' }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.88, y: 30 }}

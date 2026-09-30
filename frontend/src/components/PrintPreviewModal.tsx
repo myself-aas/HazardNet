@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useDialogBehavior } from '../hooks/useDialogBehavior';
 import {
   Printer,
   FileDown,
@@ -69,6 +70,10 @@ export const PrintPreviewModal: React.FC<PrintPreviewModalProps> = ({
   const [isConfigOpen, setIsConfigOpen] = useState<boolean>(false);
   
   const previewPaperRef = useRef<HTMLDivElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  // Escape, focus save/restore, scroll lock and the Tab cycle. The preview
+  // closed on Escape already but let Tab walk out of it.
+  useDialogBehavior({ isOpen, onClose, containerRef: dialogRef });
   const dispatchRef = useRef<string>(`HN-BD-${new Date().getFullYear()}-${Date.now().toString(36).slice(-5).toUpperCase()}`);
 
   const resolvedRegion = regionName || districtName || filenameContext.region || filenameContext.district || 'National';
@@ -236,6 +241,8 @@ export const PrintPreviewModal: React.FC<PrintPreviewModalProps> = ({
   return (
     <>
       <div
+        ref={dialogRef}
+        tabIndex={-1}
         role="dialog"
         aria-modal="true"
         aria-labelledby="print-preview-modal-title"

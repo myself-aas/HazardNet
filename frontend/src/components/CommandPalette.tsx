@@ -1,4 +1,5 @@
 import { createPortal } from 'react-dom';
+import { useDialogBehavior } from '../hooks/useDialogBehavior';
 import { useState, useEffect, useRef, useCallback, useDeferredValue, useTransition, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -319,27 +320,29 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onSelectDistrict
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
+  // Escape, focus save/restore, scroll lock and the Tab cycle. The palette
+  // already closed on Escape but let Tab walk out of it into the page behind.
+  useDialogBehavior({ isOpen, onClose: () => setIsOpen(false), containerRef, initialFocusRef: inputRef });
 
   // Close dropdown on route change
   useEffect(() => {
     setIsOpen(false);
   }, [location.pathname]);
 
-  // Global Keyboard listener (Cmd+K / Ctrl+K or /)
+  // Global Keyboard listener (Cmd+K / Ctrl+K or /). Escape is handled by
+  // useDialogBehavior below, which also traps Tab inside the palette.
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
         setIsOpen(true);
         setTimeout(() => inputRef.current?.focus(), 50);
-      } else if (e.key === 'Escape' && isOpen) {
-        setIsOpen(false);
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen]);
+  }, []);
 
   // Click outside listener to dismiss search popover
   useEffect(() => {

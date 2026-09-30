@@ -129,3 +129,87 @@ Tailwind class tokens, so it is not a Session 1 signal.
 **Not done in Session 1 (deliberately):** no browser exists in this sandbox, so
 the visual result of these swaps is unverified. The contrast is computed from
 token hexes, not sampled from a render.
+
+### Session 2 — dialog correctness (complete)
+
+**Approach.** Rather than copy `MenuDrawer`'s implementation into `BottomSheet`
+and then again into seven more places, the behaviour was extracted into one
+shared hook, `frontend/src/hooks/useDialogBehavior.ts`, and every dialog now
+calls it. `MenuDrawer` — the one dialog that already had it right — was
+refactored onto the hook, which both removed 26 lines of duplication and proved
+the hook against a known-good implementation.
+
+**The hook delivers:** Escape closes · focus is saved on open and restored on
+close (only if focus is still inside the dialog, so it never steals focus the
+user has deliberately moved) · body scroll locks and restores the *previous*
+value rather than hardcoding `''`, so nested dialogs cannot leave the body
+locked · Tab and Shift+Tab cycle inside the dialog. Keydown is bound on
+`document` in the capture phase so a handler inside the dialog cannot swallow
+the key first, and the Tab cycle only acts while focus is inside the dialog.
+
+**Wired into all nine `role="dialog"` surfaces plus the two that had none:**
+
+| Component | Before | After |
+|---|---|---|
+| `ui/BottomSheet.tsx` | no Escape, no containment | full hook |
+| `MenuDrawer.tsx` | had Escape + focus, no Tab cycle | hook (26 lines removed) |
+| `PdfExportConfigModal.tsx` | **no Escape at all** | full hook |
+| `ChatBot.tsx` | no Escape, no containment | full hook |
+| `CommandPalette.tsx` | Escape but let Tab escape | hook (duplicate Escape removed) |
+| `EventReportModal.tsx` | Escape, no containment | full hook |
+| `GlideResourcePopover.tsx` | Escape, no containment | full hook |
+| `PrintPreviewModal.tsx` | Escape, no containment | full hook |
+| `DisasterDetailModalUI.tsx` | **no role/aria-modal/name** | semantics + hook |
+| `SavedAssessmentsModalUI.tsx` | **no role/aria-modal/name** | semantics + hook |
+
+`DisasterDetailModalUI` mounts both a desktop dialog and a mobile sheet with one
+always `display:none`, so the hook's container resolves at read time to
+whichever branch is visible.
+
+**Corrections to the audit found while executing:**
+
+- **`map/DistrictForecastCard.tsx` was left unchanged, correctly.** It carries
+  `role="dialog"` with **no** `aria-modal`, because it is an in-flow card inside
+  the map, not a covering dialog — its own test asserts it is "not a glass
+  overlay covering the map". Adding `aria-modal="true"` would have been wrong.
+  Its `aria-label` is also pinned by that test, so the `aria-labelledby` sweep
+  does not apply to it either.
+- **The `aria-labelledby` sweep was already largely satisfied.** Seven of the
+  nine sites already carried either `aria-labelledby` (2) or a correct
+  `aria-label` (5). The real naming gap was the two `*ModalUI` components, now
+  fixed with `aria-labelledby` pointing at their visible headings.
+- **`inert` on the background was NOT applied, and this is a residual gap.** The
+  plan asked for it. These dialogs are not portalled to `document.body`, so a
+  dialog and the page it covers share a React ancestor — marking that ancestor
+  inert would inert the dialog too. The Tab cycle covers the keyboard path the
+  audit actually measured, and `aria-modal` already tells assistive tech to
+  treat the background as inert, but a pointer or a screen reader's virtual
+  cursor can still reach the page behind. **Portalling the dialogs is the
+  prerequisite for a complete fix** and is not in this plan.
+
+**Two bugs found and fixed by the tests, both worth knowing about:**
+
+- **`offsetParent` was the wrong visibility check.** It is `null` for any element
+   that is itself `position: fixed` — which is most of these dialogs — so the
+   focusable filter would have returned an empty list in a real browser and the
+   Tab cycle would have done nothing. Replaced with
+   `el.checkVisibility({visibilityProperty, opacityProperty})` plus a
+   computed-style fallback for engines (and jsdom) that lack it.
+- **The first version of the Tab test passed vacuously.** jsdom dispatches
+   `keydown` but never moves focus, so with the trap removed focus simply stayed
+   put and "never lets Tab reach the background" still passed. The test now
+   installs a handler that emulates real browser Tab semantics — moving focus to
+   the next focusable element in the document, including outside the dialog —
+   while respecting `defaultPrevented`. Negative-controlled: neutering the trap
+   in the hook now fails two tests.
+
+**Validation:** `frontend/src/hooks/__tests__/useDialogBehavior.test.tsx` — 8
+tests covering Escape, scroll lock with a pre-existing value, focus
+save/restore, Tab wrap in both directions, full-cycle containment, non-modal
+opt-out, and the "focus is outside" guard.
+
+**Gate results:** jest **132 suites / 1312 tests** (+1 suite / +8 tests is the
+new file) · `tsc --noEmit` exit 0 · eslint 0 errors / 685 warnings, **0
+contributed by the new files** · `check:design` 3439 / 1 / **0 new** ·
+`check:paths` 0 · `check:bundle` **1425.5 kB** (+0.9 kB for the shared hook,
+within budget) · pytest 119 passed.

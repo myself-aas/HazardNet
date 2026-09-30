@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useDialogBehavior } from '../hooks/useDialogBehavior';
 import {
   FileDown,
   X,
@@ -107,6 +108,12 @@ export const PdfExportConfigModal: React.FC<PdfExportConfigModalProps> = ({
   const [selectedPresetId, setSelectedPresetId] = useState<string | null>(null);
 
   const inputRef = useRef<HTMLInputElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  // Escape, focus save/restore, scroll lock and the Tab cycle. This modal
+  // declared `aria-modal="true"` with no Escape handler and no containment, so
+  // a keyboard user could tab out of it into the page behind.
+  useDialogBehavior({ isOpen, onClose, containerRef: panelRef, initialFocusRef: inputRef });
 
   // Synchronize when modal opens
   useEffect(() => {
@@ -280,7 +287,11 @@ export const PdfExportConfigModal: React.FC<PdfExportConfigModalProps> = ({
       className="fixed inset-0 z-[10000] flex items-center justify-center p-3 sm:p-4 bg-carbon-black/80 backdrop-blur-sm animate-in fade-in duration-150"
     >
       {/* Modal Container */}
-      <div className="relative w-full max-w-xl bg-white border border-carbon-20 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
+      <div
+        ref={panelRef}
+        tabIndex={-1}
+        className="relative w-full max-w-xl bg-white border border-carbon-20 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]"
+      >
         {/* Modal Header */}
         <div className="flex items-center justify-between px-5 py-4 bg-carbon-90 text-white border-b border-carbon-80 shrink-0">
           <div className="flex items-center gap-3">

@@ -8,6 +8,7 @@ import { NotificationToggle } from './NotificationToggle';
 import { HazardNetBrand } from './HazardNetLogo';
 import { FirebaseRealtimeStatus } from './FirebaseRealtimeStatus';
 import { DRAWER_SECTIONS, isPathCurrent } from '../lib/navigation';
+import { useDialogBehavior } from '../hooks/useDialogBehavior';
 
 interface MenuDrawerProps {
   isOpen: boolean;
@@ -33,7 +34,11 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
   const reduceMotion = useReducedMotion();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
-  const lastFocusRef = useRef<HTMLElement | null>(null);
+  const drawerPanelRef = useRef<HTMLDivElement>(null);
+  // This drawer was the one dialog in the app that already trapped focus
+  // correctly; its implementation now lives in useDialogBehavior so the other
+  // dialogs can use it too. The hook adds the Tab cycle this drawer lacked.
+  useDialogBehavior({ isOpen, onClose, containerRef: drawerPanelRef, initialFocusRef: closeButtonRef });
 
   const handleDrawerSignOut = async () => {
     setIsLoggingOut(true);
@@ -60,29 +65,6 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
     }));
   };
 
-  useEffect(() => {
-    if (!isOpen) return;
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose();
-    };
-    document.addEventListener('keydown', onKeyDown);
-    return () => document.removeEventListener('keydown', onKeyDown);
-  }, [isOpen, onClose]);
-
-  useEffect(() => {
-    if (isOpen) {
-      lastFocusRef.current = document.activeElement as HTMLElement;
-      const previousOverflow = document.body.style.overflow;
-      document.body.style.overflow = 'hidden';
-      closeButtonRef.current?.focus();
-      return () => {
-        document.body.style.overflow = previousOverflow;
-        lastFocusRef.current?.focus?.();
-      };
-    }
-    return undefined;
-  }, [isOpen]);
-
   const handleNavigate = (path: string) => {
     navigate(path);
     onClose();
@@ -104,6 +86,8 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
 
       <motion.div
         key="drawer-panel"
+        ref={drawerPanelRef}
+        tabIndex={-1}
         role="dialog"
         aria-modal="true"
         aria-label="Navigation menu"

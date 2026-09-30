@@ -1,8 +1,10 @@
 import MaterialIcon from "./MaterialIcon";
 import { motion, AnimatePresence } from 'framer-motion';
+import { useMemo, useRef } from 'react';
 import { GranularDisasterData } from '../data/disasterDetails';
 import { PdfExportButton } from './PdfExportButton';
 import { PrintQrCode } from './PrintQrCode';
+import { useDialogBehavior } from '../hooks/useDialogBehavior';
 
 export interface DisasterDetailModalUIProps {
   data: GranularDisasterData;
@@ -37,6 +39,25 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
   onSetSheetMode,
   getRiskBadgeColor
 }) => {
+  // Both the desktop dialog and the mobile sheet are mounted; exactly one is
+  // ever on screen (the other carries `hidden` / `sm:hidden`). The dialog hook
+  // takes a single container, so resolve it at read time to whichever branch is
+  // visible rather than guessing at mount time.
+  const desktopPanelRef = useRef<HTMLDivElement>(null);
+  const mobileSheetRef = useRef<HTMLDivElement>(null);
+  const panelRef = useMemo(
+    () =>
+      ({
+        get current() {
+          const desktop = desktopPanelRef.current;
+          if (desktop && desktop.offsetParent !== null) return desktop;
+          return mobileSheetRef.current;
+        },
+      }) as React.RefObject<HTMLDivElement | null>,
+    [],
+  );
+  useDialogBehavior({ isOpen, onClose, containerRef: panelRef });
+
   const renderReportBody = () => (
     <>
       {/* PRINT-ONLY OFFICIAL DIRECTIVE BANNER */}
@@ -481,6 +502,11 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
           >
             <motion.div
               key="desktop-modal-content"
+              ref={desktopPanelRef}
+              tabIndex={-1}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="disaster-detail-modal-title"
               initial={{ opacity: 0, scale: 0.92, y: 15 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.92, y: 15 }}
@@ -492,7 +518,7 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
           <div className="p-4 sm:p-5 bg-carbon-05 border-b border-carbon-20 flex items-start justify-between gap-4">
             <div>
               <div className="flex flex-wrap items-center gap-2">
-                <h2 className="text-lg sm:text-xl font-extrabold text-carbon-90 tracking-tight">
+                <h2 id="disaster-detail-modal-title" className="text-lg sm:text-xl font-extrabold text-carbon-90 tracking-tight">
                   {data.districtName} District
                 </h2>
                 <span className="text-carbon-60 font-medium text-xs sm:text-sm">
@@ -587,6 +613,11 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
 
         {/* Collapsible Sheet Container */}
         <div
+          ref={mobileSheetRef}
+          tabIndex={-1}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="disaster-detail-modal-title-mobile"
           className={`w-full bg-white border-t border-carbon-20 rounded-t-[28px] shadow-2xl flex flex-col pointer-events-auto transition-all duration-300 relative z-10 text-carbon-80 overflow-hidden ${
             sheetMode === 'peek'
               ? 'max-h-[160px]'
@@ -606,7 +637,7 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
             <div className="w-full flex items-center justify-between">
               <div className="flex items-center gap-2 min-w-0">
                 <span className="w-2.5 h-2.5 rounded-full bg-nasa-red animate-pulse shrink-0"></span>
-                <h3 className="text-base font-black text-carbon-90 tracking-tight leading-none truncate">
+                <h3 id="disaster-detail-modal-title-mobile" className="text-base font-black text-carbon-90 tracking-tight leading-none truncate">
                   {data.districtName} Hazard Report
                 </h3>
                 <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-extrabold border shrink-0 ${getRiskBadgeColor(data.modelAssessment.riskCategory)}`}>

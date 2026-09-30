@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { isValidGlide } from '../lib/glide';
+import { useDialogBehavior } from '../hooks/useDialogBehavior';
 
 export interface DisasterMasterEvent {
   event_id?: number | string;
@@ -34,6 +35,9 @@ export const EventReportModal: React.FC<EventReportModalProps> = ({
   className = '',
 }) => {
   const modalRef = useRef<HTMLDivElement>(null);
+  // Escape, focus save/restore, scroll lock and the Tab cycle. The modal closed
+  // on Escape already but let Tab walk out into the map behind it.
+  useDialogBehavior({ isOpen, onClose, containerRef: modalRef });
 
   useEffect(() => {
     if (!isOpen) return;
