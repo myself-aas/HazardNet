@@ -4,64 +4,84 @@
 
 ### 1) Architectural Style
 
-- Primary style: Layered Monorepo with Dual-Track Deployment (Vercel Serverless + Self-Hosted Express) and Offline-First Fallbacks.
-- Why this classification:
-  - The repository maintains clear separation between presentation (`frontend/`), serverless edge endpoints (`api/`), stateful self-hosted backend (`backend/`), and shared cross-platform packages (`packages/core`, `packages/design-system`, `packages/api`).
-  - Read traffic operates on a dual-track strategy: live requests query Firestore via API routes, with graceful degradation to committed static JSON snapshots if the backend or Firestore is unavailable.
-- Primary constraints:
-  1. Publication Boundary Policy (`docs/PUBLICATION_POLICY.md`): Research models, internal dataset builders, and raw neural weights remain research-private. Only forecast outputs, advisory classifications, confidence metrics, and verification scorecards may be published on public surfaces.
-  2. Human-In-The-Loop (HITL) Alerting (`docs/PRD.md §3.1 REQ-002`, `docs/SECURITY.md §4.4`): Daily batch forecasts generate automated advisory tiers, but official public alert records require manual human review and state machine authorization (`DRAFT → PENDING_REVIEW → PUBLISHED`).
-  3. Graceful Offline Degradation (ADR 0008, `TRD.md §2`, `ci.yml:343`): Public frontends must continue to render historical and forecast outlooks from bundled static snapshots (`forecasts-latest.json`) even if API connectivity is severed.
+- **Primary style:** **Layered, multi-surface monorepo** — three independently deployable surfaces (Vite SPA, Express backend, Vercel serverless functions) that share domain logic through workspace packages, with a batch ingestion pipeline feeding a single Firestore store.
+- **Why this classification:** the directory structure shows explicit layers in `backend/` (`routes` → `middleware` → `services`/`alerts` → `utils` → stores) and a shared-library boundary in `packages/` consumed by both `frontend/` and `apps/mobile/`; `api/` + `serverless/` re-implement only the HTTP edge, delegating to the same `backend/` modules (`serverless/v1/alerts/index.js` imports `backend/alerts/*`).
+- **Primary constraints:**
+  1. **Publication policy** — the repository ships results only; model code, datasets and severity derivation are research-private (`docs/PUBLICATION_POLICY.md`, `README.md`). This is why `Models/` exists but is 404'd and why every public number is gated by `CLAIMS.md`.
+  2. **Free-tier hosting** — Vercel Hobby's 12-serverless-function cap shaped the entire `api/`/`serverless/` split (`serverless/dispatch.js` header, `scripts/check-vercel-functions.mjs`).
+  3. **Zero-human-intervention daily publishing with human review above WATCH** — the alert state machine is the enforcement point (`backend/alerts/lifecycle.js`).
 
 ### 2) System Flow
 
 ```text
-[Daily Kaggle Output / External Weather] 
-  -> [Schema Validation & Column Mapping] 
-  -> [Atomic Firestore Ingestion & Snapshot Generation] 
-  -> [Express / Vercel API Read Layer with Rate Limiting] 
-  -> [React Frontend Hydration & Leaflet Map / Alert Rendering]
+Kaggle notebook (8-hazardnet-advisory)
+  → GitHub Actions daily_advisory_ingest.yml (fetch, retry once, validate, staleness-guard)
+  → scripts/validate_advisory_csv.mjs + scripts/process_advisory_ingest.mjs (column map → ForecastRow)
+  → stores: backend/data/forecasts/*.json|csv + manifest.json  AND  Firestore (forecast store)
+  → static snapshot frontend/public/data/forecasts-latest.json
+  → API edge: Vercel api/* (createDispatcher → serverless/*)  OR  Express backend/server.js
+  → frontend React Query hooks (useForecasts) → components → Leaflet/Recharts
+  → degradation: API unreachable → committed snapshot → static ALL_64_DISTRICTS baseline
 ```
 
-Step-by-step description with file-backed evidence:
-1. Pipeline Trigger & Data Fetch: Scheduled Kaggle notebook `8-hazardnet-advisory` outputs `hazardnet_advisories_latest.csv` (128 records: 64 districts × 2 forecast horizons). GitHub Actions fetches the output (`docs/PRD.md §4.1`, `.github/workflows/daily_advisory_ingest.yml`).
-2. Schema & Staleness Verification: Ingestion script validates that exactly 22 columns are present, row count equals 128, and data timestamp is within 36 hours (`scripts/validate_advisory_csv.mjs`, `docs/TRD.md §4.1`).
-3. Mapping & Persistence: Advisory CSV columns are mapped to the backend `ForecastRow` schema (`backend/utils/advisoryMapper.js`). The records are written atomically to Google Cloud Firestore (`backend/forecastStore.js`) and compiled into a static JSON artifact (`scripts/build_forecast_snapshot.mjs` -> `frontend/public/data/forecasts-latest.json`).
-4. API Layer & Security Controls: Backend (`backend/routes/forecasts.js`) and serverless edge functions (entry points under `api/`, handlers in `serverless/v1/forecasts/`) serve forecast data with strict CSP, CORS fail-closed checks, and IP rate limiters (`backend/middleware/rateLimit.js`, `backend/security/csp.js`).
-5. Client Hydration & Display: React frontend fetches forecasts via TanStack Query (`frontend/src/services/forecastApi.ts`). If the API request times out or returns an error, the client falls back to the committed snapshot. The data is rendered through the interactive Leaflet choropleth map (`frontend/src/components/LiveMapView.tsx`) and district cards (`frontend/src/components/DistrictDetailPanel.tsx`).
+Traced end-to-end for one forecast read:
+
+1. `frontend/src/hooks/useForecasts.ts` issues `GET /api/v1/forecasts/bulk?horizon=…&fresh=<ts>` with `cache: 'no-store'`, polled every 5 minutes by TanStack Query.
+2. On Vercel the URL matches `api/v1/forecasts/[action].js`, which calls `createDispatcher({ param: 'action', … })` from `serverless/dispatch.js`; the dispatcher resolves the segment from the path, strips the routing artefact, lazy-imports `serverless/v1/forecasts/bulk.js`, and runs `guardRequest` first.
+3. The handler reads the forecast store via `backend/forecastStore.js` → `getForecastStore()` (singleton) → Firestore through `backend/db.js`, with an automatic in-memory/committed-snapshot fallback when Firestore is unprovisioned, offline, or returns 0 records.
+4. `backend/utils/forecastServe.js` normalises query params/paging and `backend/forecastStore.js` `ensureAdvisoryFields()` back-fills advisory fields for older snapshots.
+5. If the API is unreachable the hook falls back to `fetchStaticForecastSnapshot()`, which fetches the URL `/data/forecasts-latest.json` (`FORECAST_SNAPSHOT_URL` in `frontend/src/lib/forecasts.ts`) — i.e. the committed file `frontend/public/data/forecasts-latest.json`. If that is also unavailable, callers degrade to the static `ALL_64_DISTRICTS` baseline (`frontend/src/data/bangladeshDistricts.ts`).
+6. Alert publication follows a separate flow: `backend/alerts/assess.js` → `backend/alerts/lifecycle.js` (pure transition evaluation) → `backend/alerts/service.js` → `backend/alerts/notify.js` fan-out through `channels/sms.js` and `channels/telegram.js`.
 
 ### 3) Layer/Module Responsibilities
 
 | Layer or module | Owns | Must not own | Evidence |
 |-----------------|------|--------------|----------|
-| `frontend/src/` | Client-side routing, user interaction, Leaflet geospatial visualization, Recharts graphs, and theme state. | Direct database operations, server environment secrets, or arbitrary alert state modifications. | `frontend/src/App.tsx`, `frontend/src/components/LiveMapView.tsx` |
-| `backend/routes/` | HTTP request handling, input sanitization, rate-limit assignment, and calling persistence stores. | Direct UI rendering or exposing internal filesystem paths. | `backend/routes/forecasts.js`, `backend/routes/alerts.js` |
-| `backend/forecastStore.js` | Reading/writing forecast records to Firestore, cache invalidation, and freshness gauge calculation. | Business advisory policy rules or HTTP response status formatting. | `backend/forecastStore.js:1-200` |
-| `packages/core/` | Zod schemas, data contracts (`ForecastRow`, `AlertRecord`), error definitions, and validation helpers. | React hooks, DOM manipulation, or Node.js filesystem I/O. | `packages/core/src/forecasts.ts` |
-| `scripts/` | Build-time prerendering, static snapshot generation, secret scanning, and pipeline validation. | Serving runtime client traffic. | `scripts/build_forecast_snapshot.mjs`, `scripts/build_content_engine.mjs` |
+| `frontend/src/pages`, `components` | Rendering, user interaction, client routing | Server-side secrets, business rules that must be identical on mobile | `frontend/src/App.tsx`, `frontend/src/components/` |
+| `frontend/src/hooks`, `lib` | Data fetching, fallback chain, view models, i18n | Direct Firestore writes for shared domain state | `frontend/src/hooks/useForecasts.ts`, `frontend/src/lib/forecasts.ts` |
+| `packages/core` | Contracts (Zod), forecast mapping, alert policy/levels, freshness, geo, dedupe, notification matching | React/DOM/React-Native imports | `packages/core/src/index.ts`, `packages/core/src/contracts.ts`, `packages/core/src/alertPolicy.ts` |
+| `packages/api` | Typed client, endpoint wrappers, retry, error types | UI concerns | `packages/api/src/client.ts`, `packages/api/src/endpoints.ts` |
+| `backend/routes` | HTTP parsing, auth checks, status codes | Domain rules | `backend/routes/forecasts.js`, `backend/routes/alerts.js` |
+| `backend/alerts` | Alert lifecycle, policy, assessment, digest, fan-out, reporting | Forecast storage | `backend/alerts/lifecycle.js`, `backend/alerts/policy.js`, `backend/alerts/notify.js` |
+| `backend/services` | Advisory generation, alert engine orchestration, local knowledge | HTTP concerns | `backend/services/advisoryAgent.js`, `backend/services/alertEngine.js` |
+| `backend/utils` | Reusable helpers: CSV, freshness, glide resolver, client-safe errors, open-meteo, prediction lookup | Route registration | `backend/utils/clientError.js`, `backend/utils/glideResolver.js` |
+| `backend/forecastStore.js`, `backend/forecastPersistence.js` | Forecast persistence + the single read/write access layer | Presentation | `backend/forecastStore.js` |
+| `api/` + `serverless/` | Vercel edge routing and per-endpoint handlers | Duplicate domain logic (they delegate to `backend/`) | `serverless/dispatch.js`, `serverless/v1/forecasts/bulk.js` |
+| `scripts/` | Ingestion, snapshot building, QA harnesses, CI gates | Runtime request handling | `scripts/process_advisory_ingest.mjs`, `scripts/check-vercel-functions.mjs` |
 
 ### 4) Reused Patterns
 
 | Pattern | Where found | Why it exists |
 |---------|-------------|---------------|
-| Static Snapshot Fallback (ADR 0008) | `frontend/src/services/forecastApi.ts`, `frontend/src/hooks/useForecastData.ts` | Guarantees public availability and offline capability if Firestore or API is down or degraded. |
-| Multi-Tier Rate Limiting | `backend/middleware/rateLimit.js`, `backend/server.js:120-132` | Prevents denial-of-service on public endpoints while applying stricter limits on compute-heavy AI/inference routes. |
-| Correlated Request Logging | `backend/middleware/requestId.js` | Attaches a unique UUID `X-Request-Id` to every inbound request for traceability across middleware and route handlers. |
-| Strict Security Header Enforcement | `backend/security/csp.js`, `backend/middleware/securityHeaders.js` | Prevents cross-site scripting (XSS) and clickjacking by disallowing inline scripts and frame embeddings. |
-| Code-Splitting with Lazy Boundaries | `frontend/src/App.tsx:26-61` | Minimizes initial bundle load time for mobile and low-bandwidth users by deferring heavy visual modules. |
+| **Singleton store with reset hook** | `backend/forecastStore.js` (`getForecastStore` / `resetForecastStore`), `backend/alerts/store.js` (`resetAlertStore`) | One access layer per aggregate; the reset hook keeps suites isolated |
+| **Pure state machine returning a result object** | `backend/alerts/lifecycle.js` (`evaluateTransition` → `{ok, code, status, body}`) | Keeps HTTP layer "boring" and the transition rules unit-testable |
+| **Dispatcher factory with lazy handler table** | `serverless/dispatch.js` `createDispatcher(...)`; used by all 6 `api/*` entry points | Fault isolation between endpoints + smaller cold-start import graph, under the 12-function cap |
+| **Barrel exports** | `packages/core/src/index.ts`, `packages/design-system/src/index.ts`, `frontend/src/design-system/index.ts` | Stable public surface per package |
+| **Graceful-degradation fallback chain** | `frontend/src/hooks/useForecasts.ts`, `backend/forecastStore.js` | Site must never blank when Firestore quota/outage or the API is unreachable |
+| **Defensive enrichment / back-fill** | `backend/forecastStore.js` `ensureAdvisoryFields()` | Older snapshots and un-enriched records still render with correct tiers and coordinates |
+| **Client-safe error boundary** | `backend/utils/clientError.js` (4xx pass through, 5xx generic + server-side log) | Information-disclosure fix (SEC-13) recorded in the file header |
+| **Single source of truth for a cross-cutting policy** | `backend/security/csp.js` consumed by `backend/server.js` | Prevents the self-host and Vercel CSP definitions drifting apart |
+| **Schema-first validation with Zod `.passthrough()`** | `packages/api/src/endpoints.ts`, `packages/core/src/contracts.ts` | Tolerates server fields the client does not yet know without rejecting real responses |
+| **Config assertions at boot, non-fatal in dev** | `backend/server.js` `assertEnvironment()` | Loud early misconfiguration signals instead of silent runtime failures |
+| **Conditional port binding** | `backend/server.js` `invokedAsScript` check | Lets supertest import the app without `EADDRINUSE` |
 
 ### 5) Known Architectural Risks
 
-- Split API Architectures (Drift Risk): API endpoints exist both as serverless handlers in `api/` and as Express routes in `backend/routes/`. A change to business logic or schema in one may not automatically reflect in the other unless covered by shared tests.
-- High Git Churn on Machine-Generated Files: Automated workflows commit probe results (`data/site-health/latest.json`) and data snapshots directly to the repository branch, creating high commit churn (`docs/codebase/.codebase-scan.txt:421-424`).
-- Memory Constraints on Model Directories: The inclusion of heavy binary assets (e.g. `master_tensors.h5` ~2.4GB in `manuscript/`) poses cloning and storage overhead if not kept separate from core web production pipelines.
+- **Two API implementations must stay in lockstep.** The Express app and the Vercel dispatcher both serve the same URLs; nothing structurally prevents drift between them beyond tests (`__tests__/api/serverlessRouting.test.js`, `__tests__/cors.test.js`, `__tests__/api/serverlessGuard.test.js`).
+- **The 12-function Vercel budget is a hard platform limit** that fails at *deploy* time, not build time. Adding a 7th file under `api/` without the dispatcher pattern would be rejected by Vercel; the gate `scripts/check-vercel-functions.mjs` is the only guard.
+- **Fallback chain can mask total data loss.** API → snapshot → static baseline means a stale or empty Firestore can still render a plausible-looking site; the freshness badge and the 36-hour staleness guard are the compensating controls.
+- **Model artifacts live in the repository** while the publication policy declares them out of scope for the published surface. Correctness depends on the explicit 404 routes in `backend/server.js` and on `firebase.json`/`vercel.json` never exposing `Models/`.
+- **`app/` is dead scaffold** importing `next` types that are not a dependency — it is excluded from lint and from the Vite build, so it can only mislead, not break.
+- **The daily pipeline's research-private stage is external** (Kaggle notebook). The repository can validate and publish, but cannot reproduce the numbers it publishes — an intentional constraint that also means ingestion is only as correct as the external CSV contract in `docs/TRD.md` §2.1.
 
 ### 6) Evidence
 
-- `backend/server.js` (Express application architecture and routing)
-- `backend/forecastStore.js` (Firestore data store adapter)
-- `backend/security/csp.js` (Centralized CSP policy)
-- `frontend/src/services/forecastApi.ts` (Client-side API and fallback strategy)
-- `frontend/src/App.tsx` (Lazy-loaded client architecture)
-- `docs/PRD.md §4` (Daily pipeline architectural specification)
-- `docs/TRD.md §2` (Technical ingestion and data schema contracts)
+- `backend/server.js` (Express composition, middleware order, port binding, model-artifact guards)
+- `frontend/src/hooks/useForecasts.ts`, `frontend/src/lib/forecasts.ts` (client fetch + fallback chain)
+- `backend/forecastStore.js`, `backend/db.js`, `backend/forecastPersistence.js` (store layer)
+- `backend/alerts/lifecycle.js`, `backend/alerts/service.js`, `backend/alerts/notify.js` (alert flow)
+- `serverless/dispatch.js`, `api/[endpoint].js`, `serverless/v1/forecasts/bulk.js` (serverless edge)
+- `packages/core/src/index.ts`, `packages/api/src/endpoints.ts` (shared domain + client)
+- `scripts/process_advisory_ingest.mjs`, `scripts/validate_advisory_csv.mjs` (ingestion)
+- `.github/workflows/daily_advisory_ingest.yml` (pipeline orchestration)
+- `docs/TRD.md` §2 (pipeline architecture and CSV contract), `docs/PUBLICATION_POLICY.md`

@@ -4,77 +4,78 @@
 
 ### 1) Top-Level Map
 
-List only meaningful top-level directories and files.
-
 | Path | Purpose | Evidence |
 |------|---------|----------|
-| `frontend/` | Web application client built with Vite, React 18, React Router, Tailwind CSS, Leaflet, and Recharts. Includes prerendered static editorial pages and interactive dashboards. | `frontend/package.json`, `frontend/src/App.tsx` |
-| `backend/` | Self-hosted Node.js Express server providing REST endpoints for forecasts, alerts, chat, push notifications, and live Prometheus metrics. | `backend/server.js`, `backend/routes/` |
-| `api/` | Vercel entry points — one file per URL family (`/api/forecasts`, `/api/chat/*`, `/api/v1/*`), each a dispatcher or a re-export. The Hobby plan allows 12 functions per deployment, so the per-endpoint handlers live in `serverless/`. | `api/[endpoint].js`, `api/v1/forecasts/[action].js` |
-| `serverless/` | The Vercel handlers themselves, imported by the `api/` entry points (Vercel only scans `api/`, so these do not count against the 12-function budget). | `serverless/forecasts.js`, `serverless/dispatch.js` |
-| `packages/core/` | Shared domain contracts, Zod data validation schemas, forecast row definitions, alert state machines, and i18n utilities. | `packages/core/package.json`, `packages/core/src/index.ts` |
-| `packages/design-system/` | Shared UI tokens, Material 3 Expressive theming, and React custom styling hooks. | `packages/design-system/package.json`, `packages/design-system/src/tokens.ts` |
-| `packages/api/` | Typed API client wrapper with standardized error handling and retry policies. | `packages/api/package.json`, `packages/api/src/client.ts` |
-| `packages/analytics/` | Cross-platform event tracking and telemetry interfaces. | `packages/analytics/package.json`, `packages/analytics/src/index.ts` |
-| `apps/mobile/` | Expo SDK 51 and React Native cross-platform mobile client for Android and iOS. | `apps/mobile/package.json`, `apps/mobile/App.tsx` |
-| `apps/windows/` | React Native for Windows desktop application shell. | `apps/windows/package.json`, `apps/windows/App.windows.tsx` |
-| `data/` | Site health probe history (`data/site-health/latest.json`) and design quality token baseline datasets. | `data/site-health/latest.json`, `data/design/` |
-| `docs/` | System specifications, architecture documentation (`PRD.md`, `TRD.md`, `TASKS.md`, `SECURITY.md`, `PUBLICATION_POLICY.md`). | `docs/PRD.md`, `docs/SECURITY.md` |
-| `scripts/` | Tooling for forecast snapshot generation, content engine building, secret auditing, and CI pipeline checks. | `scripts/build_forecast_snapshot.mjs`, `scripts/check-secrets.sh` |
-| `Models/` | Research model binaries (strictly private; protected from HTTP serving via backend route guards). | `backend/server.js:116`, `docs/PUBLICATION_POLICY.md` |
-| `manuscript/` | Master's thesis manuscript materials, LaTeX sources, and Kaggle research notebooks (1 through 8). | `manuscript/`, `README.md:64-67` |
-| `__tests__/` | Root test suite covering backend controllers, security headers, Firestore security rules, and alert lifecycle. | `jest.config.cjs:79-85`, `__tests__/` |
-| `e2e/` | Playwright end-to-end browser test suites testing live UI flows and fallback chains. | `playwright.config.ts`, `e2e/` |
-| `.github/` | GitHub Actions workflow definitions (`ci.yml`, `site-health.yml`, `app-releases.yml`) and Dependabot configurations. | `.github/workflows/ci.yml` |
+| `frontend/` | Public web application (Vite + React SPA, PWA, prerendered pages) | `frontend/package.json`, `frontend/vite.config.ts`, `frontend/scripts/prerender.mjs` |
+| `backend/` | Self-host Express API — the same result-serving surfaces as the serverless tier | `backend/server.js`, `README.md` |
+| `api/` | Vercel Serverless Function entry points (6 files = 6 functions; Hobby budget 12) | `api/[endpoint].js`, `scripts/check-vercel-functions.mjs` |
+| `serverless/` | Per-endpoint Vercel handlers (not scanned for functions by Vercel) | `serverless/dispatch.js`, `serverless/v1/` |
+| `packages/` | Shared workspace libraries (`core`, `api`, `analytics`, `design-system`) | `packages/*/package.json` |
+| `apps/` | Native clients: `apps/mobile` (Expo/React Native), `apps/windows` (React Native for Windows + C++ shell) | `apps/mobile/package.json`, `apps/windows/package.json` |
+| `Models/` | Trained model artifacts + registry/version handshake — unadvertised, never served | `Models/REGISTRY.json`, `Models/VERSION.json`, `backend/server.js` |
+| `scripts/` | Pipeline, snapshot-building, QA and gate tooling (`.mjs` + `db/`, `lib/`, `qa/`, `tests/`) | `scripts/`, `.github/workflows/ci.yml` |
+| `__tests__/` | Root Jest suites (69 `*.test.js` files) + `__mocks__/` for React Native modules | `__tests__/`, `jest.config.cjs` |
+| `e2e/` | Playwright specs | `e2e/*.spec.ts`, `playwright.config.ts` |
+| `docs/` | PRD, TRD, publication policy, ops runbooks, secrets guide, audits, `codebase/` | `docs/PRD.md`, `docs/TRD.md` |
+| `monitoring/` | Prometheus scrape config, alert rules, Grafana dashboard | `monitoring/prometheus.yml`, `monitoring/alerts.yml`, `monitoring/grafana-dashboard.json` |
+| `data/` | Generated/committed runtime data: `site-health/latest.json`, NASA HDS tokens | `data/site-health/latest.json`, `data/design/nasa-hds/tokens.json` |
+| `store/` | App-store listing metadata and privacy labels | `store/play-store-data-safety.md`, `store/app-store-metadata.md` |
+| `plugins/` | Optional frontend widget plugins with a manifest | `plugins/plugin_manifest.json`, `plugins/03_frontend_widgets/ShelterCapacity.tsx` |
+| `skills/` | In-repo domain knowledge packs (hazard protocols, institutions, agronomy…) | `skills/01_tensor_interpretation/`, `skills/03_hazard_protocols/` |
+| `assets/`, `app/`, `utils/`, `store/` | `assets/` docs+icons; `app/` an unused v0/Next.js scaffold; `utils/logger.js` the serverless logger | `app/layout.tsx`, `utils/logger.js` |
+| `.github/` | CI workflows + release workflow templates + Dependabot | `.github/workflows/ci.yml`, `.github/workflow-templates/` |
+| `.vs/` | Visual Studio solution state for the Windows app (editor artefact, not source) | `.vs/HazardNet.slnx` |
 
 ### 2) Entry Points
 
-- Main runtime entry:
-  - Frontend SPA: `frontend/index.html` mounts `frontend/src/main.tsx`, which renders `frontend/src/App.tsx`.
-  - Self-hosted Backend API: `backend/server.js` (`node backend/server.js`).
-  - Serverless API: `api/**/*.js` entry points (URL families, under the Hobby 12-function budget) dispatching to the handlers in `serverless/**/*.js` — see `docs/codebase/VERCEL_FUNCTIONS.md`.
-- Secondary entry points (worker/cli/jobs):
-  - Mobile App: `apps/mobile/App.tsx` loaded via `expo/AppEntry.js`.
-  - Windows Desktop App: `apps/windows/App.windows.tsx` loaded via `apps/windows/index.windows.js`.
-  - Content Engine Builder CLI: `scripts/build_content_engine.mjs`.
-  - Forecast Snapshot Generator CLI: `scripts/build_forecast_snapshot.mjs`.
-  - Alert Engine Rehearsal CLI: `scripts/rehearse_alert_engine.mjs`.
-- How entry is selected (script/config):
-  - Root `package.json` scripts define `npm run dev` to start both the static check and Express server (`node scripts/ensure-frontend.mjs && node backend/server.js`).
-  - Frontend `package.json` defines `npm run dev` running `vite` and `npm run build` executing `vite build && node scripts/prerender.mjs`.
+- **Main runtime entry (self-host):** `backend/server.js` — builds the Express app, exports it as default, and binds port `3000` only when invoked directly (`npm start` / `npm run dev`). Importing it does not bind a port, so supertest suites can load the app (`backend/server.js`).
+- **Web client entry:** `frontend/src/main.tsx` — referenced by `frontend/index.html` (`<script type="module" src="./src/main.tsx">`), mounting `App.tsx` (`frontend/src/App.tsx`).
+- **Serverless entries (Vercel):** the 6 files under `api/` — `api/[endpoint].js`, `api/chat/[action].js`, `api/v1/[resource].js`, `api/v1/alerts/[action].js`, `api/v1/forecasts/[action].js`, `api/v1/weather/batch.js`. Each is a `createDispatcher(...)` table over lazy-imported handlers in `serverless/`.
+- **Mobile entry:** `apps/mobile/App.tsx` (Expo entry `expo/AppEntry.js`), plus `apps/windows/index.windows.js` for the Windows target.
+- **Build-time entry:** `frontend/scripts/prerender.mjs` — run by `frontend` `build` after `vite build` to emit one HTML document per route.
+- **How entry is selected:** by deploy target — Vercel routes URLs to `api/*` functions and serves `frontend/dist`; the self-host path uses `backend/server.js` for both API and static assets; native builds use the Expo/RN Windows entry points.
 
 ### 3) Module Boundaries
 
 | Boundary | What belongs here | What must not be here |
 |----------|-------------------|------------------------|
-| `frontend/src/` | UI components, pages, routing, hooks, presentation state, and client-side formatting. | Raw database driver connections, secret keys, or research model training code. |
-| `backend/` | Express routing, Firestore database read/write queries, rate limiting, security headers, and WebSocket connections. | Direct frontend DOM manipulation, client styling, or public access to `Models/`. |
-| `packages/core/` | Canonical Zod schemas (`ForecastRow`, `AlertRecord`), domain constants, shared enums, and pure business validation logic. | Framework-specific UI code (DOM/React) or server-specific network drivers. |
-| `packages/design-system/` | Design tokens, color ramps, typography constants, and theme providers. | Business validation logic, API endpoints, or database queries. |
-| `api/` | Stateless Vercel serverless request handlers that read from Firestore or static cached JSON fallbacks. | Long-running background processes, persistent in-memory singletons, or WebSockets. |
-| `Models/` & `manuscript/` | Academic research files, trained neural weights, thesis writing, and Kaggle experiment notebooks. | Publicly downloadable routes, production runtime dependencies, or hardcoded API keys. |
+| `frontend/src` | Presentation: pages, components, hooks, view-models, i18n, browser-only integrations | Server secrets, Node-only APIs, direct model-inference logic |
+| `packages/core`, `packages/api`, `packages/analytics`, `packages/design-system` | Platform-agnostic pure TypeScript shared by web + mobile (no React Native/DOM imports in `core`) | React/React-Native/DOM imports (`packages/core/src/index.ts` states this explicitly) |
+| `backend/routes` | HTTP surface: parse, authorise, delegate, respond | Business rules that belong in `backend/alerts`, `backend/services`, `backend/utils` |
+| `backend/alerts` | Alert state machine, policy, assessment, fan-out, reports | Forecast storage concerns |
+| `backend/utils` | Reusable pure/shared helpers (CSV, freshness, glide resolver, client-safe errors) | Route wiring / middleware registration |
+| `backend/middleware` | Cross-cutting request concerns (CORS, rate limit, auth, request id, serverless guard, security headers) | Domain logic |
+| `backend/security/csp.js` | The single CSP policy definition shared by the self-host deployment | Duplicated CSP literals (the file comment records the drift this fixed) |
+| `api/` + `serverless/` | Vercel entry points and their handlers; handlers must stay import-safe (no module-level credential reads) | Anything that must be counted against the 12-function budget but is not a URL family |
+| `scripts/` | Pipeline ingestion, snapshot builders, QA harnesses, CI gates | Application runtime code |
+| `Models/` | Trained artifacts and the version/registry handshake | Anything served to the public (`backend/server.js` 404s these paths) |
+| `__tests__/` | Jest suites and React Native module mocks | Production code |
 
 ### 4) Naming and Organization Rules
 
-- File naming pattern:
-  - React Components: PascalCase (e.g., `DistrictDetailPanel.tsx`, `HeroVideoPlayer.tsx`, `StatusStrip.tsx`).
-  - Route handlers & services: camelCase (e.g., `forecastStore.js`, `advisoryMapper.js`, `alertEngine.js`).
-  - Scripts: kebab-case or snake_case with `.mjs` or `.py` (e.g., `build_forecast_snapshot.mjs`, `check-secrets.sh`, `validate_forecasts.py`).
-  - Unit tests: `*.test.js` or `*.test.tsx` located in `__tests__/` or adjacent `__tests__/` directories.
-- Directory organization pattern:
-  - `frontend/src/` is organized by role/layer: `components/`, `pages/`, `hooks/`, `context/`, `services/`, `utils/`, `types/`, `styles/`.
-  - `backend/` is organized by responsibility: `routes/`, `middleware/`, `services/`, `security/`, `utils/`, `data/`.
-  - Monorepo packages follow the workspace pattern: `packages/<package-name>/src/` and `apps/<app-name>/src/`.
-- Import aliasing or path conventions:
-  - `@/*` maps to `<rootDir>/frontend/src/*` (configured in `frontend/tsconfig.json` and `jest.config.cjs`).
-  - Workspace package aliases `@hazardnet/core`, `@hazardnet/design-system`, `@hazardnet/api`, `@hazardnet/analytics` map directly to internal packages without publishing to npm.
+- **File naming (mixed but consistent per area):**
+  - `frontend/src/components/**` — `PascalCase.tsx` (`ForecastDashboard.tsx`, `DistrictRiskMap.tsx`)
+  - `frontend/src/pages/**` — `PascalCase.tsx` (`AlertsPage.tsx`, `DistrictDetailPage.tsx`)
+  - `frontend/src/hooks/**` — `useCamelCase.ts` (`useForecasts.ts`, `useI18n.ts`)
+  - `frontend/src/lib/**` — `camelCase.ts` (`forecasts.ts`, `glide.ts`, `publicText.ts`)
+  - `backend/**`, `api/**`, `serverless/**`, `utils/**` — `camelCase.js` (`forecastStore.js`, `clientError.js`, `dispatch.js`)
+  - `scripts/**` — two coexisting conventions: `snake_case.mjs` for the older pipeline scripts (`validate_env.mjs`, `ingest_forecast_csv.mjs`, `build_alert_snapshot.mjs`) and `kebab-case.mjs` for newer gate/QA scripts (`check-bundle.mjs`, `copy-dist.mjs`, `check-vercel-functions.mjs`)
+  - Tests — `*.test.js` / `*.test.tsx` / `*.test.ts`; E2E — `*.spec.ts`; Python — `test_*.py`
+- **Directory organization:** hybrid. `frontend/src` is feature-first (`components/alerts`, `components/map`, `pages/dashboard`, `components/user/dashboard`); `backend` is layer-first (`routes`, `middleware`, `services`, `alerts`, `utils`, `security`); `packages/*` are per-domain libraries with a barrel `src/index.ts`.
+- **Import aliasing / path conventions:**
+  - TypeScript aliases (`frontend/tsconfig.json`): `@/*` → `frontend/src/*`, `@hazardnet/core` → `packages/core/src/index.ts`, `@hazardnet/core/*`, `@hazardnet/design-system`, `@hazardnet/design-system/*`
+  - Mirrored in Jest (`jest.config.cjs` `moduleNameMapper`) and in the mobile Jest config (`apps/mobile/jest.config.cjs`), which maps the same packages to `../../packages/*/src`
+  - Backend/serverless ESM imports always carry the explicit `.js` extension (`./routes/forecasts.js`) — required by Node ESM resolution
+  - Relative imports dominate in `frontend/src`; aliases are used for cross-package boundaries
 
 ### 5) Evidence
 
-- `package.json` (workspaces definition)
-- `frontend/src/App.tsx` (client route layout)
-- `backend/server.js` (server route tree and module mounts)
-- `packages/core/src/index.ts` (shared domain interface)
-- `packages/design-system/src/index.ts` (design system tokens)
-- `frontend/tsconfig.json` (TypeScript path mappings)
-- `jest.config.cjs` (Jest module mappings)
+- `package.json` (`workspaces`), `README.md` (repository-layout table)
+- `backend/server.js` (self-host entry + static/SPA serving)
+- `frontend/index.html`, `frontend/src/main.tsx`, `frontend/src/App.tsx` (web entry)
+- `api/[endpoint].js`, `api/v1/[resource].js`, `serverless/dispatch.js` (serverless entries + dispatcher contract)
+- `apps/mobile/App.tsx`, `apps/mobile/package.json` (`main`), `apps/windows/index.windows.js`
+- `frontend/tsconfig.json` (`paths`), `jest.config.cjs` (`moduleNameMapper`), `apps/mobile/jest.config.cjs`
+- `packages/core/src/index.ts` (barrel + platform-agnostic constraint)
+- `frontend/scripts/prerender.mjs`, `frontend/package.json` (`build`)
+- `docs/codebase/VERCEL_FUNCTIONS.md` (function-budget arithmetic)

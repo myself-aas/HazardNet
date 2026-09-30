@@ -6,110 +6,141 @@
 
 | Area | Value | Evidence |
 |------|-------|----------|
-| Primary language | TypeScript / JavaScript (ESM) + Python | `package.json:314`, `frontend/package.json:6`, `scripts/validate_forecasts.py:1` |
-| Runtime + version | Node.js `>=20` (CI uses Node 20.x, Python 3.11) | `package.json:279`, `.github/workflows/ci.yml:32,146` |
-| Package manager | npm (lockfileVersion 3, npm workspaces) | `package.json:319-323`, `package-lock.json:210,217-221` |
-| Module/build system | Vite 8.3.0 (frontend SPA), Node ESM native (`"type": "module"`) | `package.json:314`, `frontend/package.json:6,64`, `frontend/vite.config.ts` |
+| Primary language | TypeScript (frontend, `packages/*`, `apps/mobile`) and JavaScript ESM (`backend/`, `api/`, `serverless/`, `scripts/`); Python 3.11 (pipeline test scripts); C++/C (React Native Windows shell) | `frontend/package.json`, `backend/server.js`, `scripts/tests/*.py`, `apps/windows/windows/HazardNet/App.cpp` |
+| Runtime + version | Node.js `>=20` (CI pins `20.x`); Python `3.11` in CI | `package.json` (`engines.node`), `.github/workflows/ci.yml` |
+| Package manager | npm — `lockfileVersion: 3`, npm workspaces (`frontend`, `packages/*`, `apps/*`) | `package.json` (`workspaces`), `package-lock.json` |
+| Module/build system | Node ESM (`"type": "module"` at root, `frontend/`, `packages/*`, `apps/mobile`); Vite 8.3.0 builds the frontend SPA; CJS config files use the `.cjs` extension | `package.json`, `frontend/package.json`, `frontend/vite.config.ts`, `jest.config.cjs`, `babel.config.cjs` |
 
 ### 2) Production Frameworks and Dependencies
 
-List only high-impact production dependencies (frameworks, data, transport, auth).
+**Root / backend + serverless (runtime `dependencies`)** — `package.json`:
 
 | Dependency | Version | Role in system | Evidence |
 |------------|---------|----------------|----------|
-| `express` | `^4.18.2` | Core HTTP web server framework for self-hosted backend API | `package.json:230`, `backend/server.js:2` |
-| `react` / `react-dom` | `18.3.1` | UI library for web application client | `frontend/package.json:37-38`, `frontend/src/main.tsx:1-2` |
-| `react-router-dom` | `^6.24.0` | Client-side routing and page management | `frontend/package.json:41`, `frontend/src/App.tsx:3` |
-| `@tanstack/react-query` | `^5.0.0` | Server state management, data caching and synchronization | `frontend/package.json:23`, `frontend/src/App.tsx:2` |
-| `leaflet` / `leaflet.markercluster` | `^1.9.4` / `^1.5.3` | Geospatial choropleth and cluster map rendering | `frontend/package.json:32,34`, `frontend/src/components/LiveMapView.tsx` |
-| `recharts` | `^2.9.0` | Data visualization charts for trends and risk distributions | `frontend/package.json:42`, `frontend/src/components/HistoricalTemporalChart.tsx` |
-| `framer-motion` | `^13.0.0` | Declarative UI animations and transitions | `frontend/package.json:28`, `frontend/src/App.tsx:4` |
-| `@google-cloud/firestore` | `^7.11.6` | Google Cloud Firestore database driver for forecast persistence | `package.json:223`, `backend/forecastStore.js:1` |
-| `firebase` / `firebase-admin` | `^12.17.0` / `^13.10.0` | Firebase client SDK and Admin SDK (auth, listeners, store verification) | `package.json:232-233`, `backend/db.js:1` |
-| `@google/genai` | `^2.15.0` | Google Gemini generative AI client for natural language advisories | `package.json:224`, `backend/routes/chat.js:1` |
-| `helmet` | `^8.1.0` | HTTP security headers, CSP and frameguard protection | `package.json:234`, `backend/server.js:23,79-87` |
-| `cors` | `^2.8.5` | Cross-Origin Resource Sharing middleware | `package.json:226`, `backend/middleware/cors.js:1` |
-| `express-rate-limit` | `^7.5.0` | IP-based request throttling and abuse mitigation | `package.json:231`, `backend/middleware/rateLimit.js:1` |
-| `prom-client` | `^15.1.3` | Prometheus metrics instrumentation for Node.js API | `package.json:237`, `backend/metrics.js:1` |
-| `web-push` | `^3.6.7` | Web push notification protocol implementation (RFC 8292 / VAPID) | `package.json:238`, `backend/routes/push.js:1` |
-| `ws` | `^8.21.3` | WebSocket server for real-time live voice and telemetry | `package.json:239`, `backend/routes/liveVoice.js:1` |
-| `zod` | `^3.23.0` | Runtime schema validation and TypeScript type inference | `package.json:240`, `packages/core/src/forecasts.ts:1` |
-| `react-native` / `expo` | `0.74.5` / `~51.0.28` | Mobile cross-platform application framework | `apps/mobile/package.json:29,42` |
-| `react-native-windows` | `0.74.17` | Windows desktop application shell | `apps/windows/package.json:18` |
+| `express` | `^4.18.2` | Self-host HTTP API server (all `/api` and `/v1` routes) | `package.json`, `backend/server.js` |
+| `firebase` / `firebase-admin` | `^12.17.0` / `^13.10.0` | Firestore client SDK, auth token verification | `package.json`, `backend/db.js`, `backend/middleware/firebaseAuth.js` |
+| `@google-cloud/firestore` | `^7.11.6` | Firestore driver used by the forecast store | `package.json`, `backend/forecastStore.js` |
+| `@google/genai` | `^2.15.0` | Gemini generative-AI client (advisories, chat, live voice) | `package.json`, `backend/services/advisoryAgent.js`, `backend/routes/chat.js` |
+| `helmet` | `^8.1.0` | Security headers / CSP / frameguard on the Express app | `package.json`, `backend/server.js`, `backend/security/csp.js` |
+| `cors` | `^2.8.5` | CORS allowlist (fails closed in production) | `package.json`, `backend/middleware/cors.js` |
+| `jsonwebtoken` | `^9.0.0` | JWT verification for authenticated endpoints | `package.json`, `backend/middleware/firebaseAuth.js` |
+| `express-rate-limit` | `^7.5.0` | Layered rate limiting (`/api` baseline + AI/alert buckets) | `package.json`, `backend/middleware/rateLimit.js` |
+| `multer` | `^2.2.0` | Multipart CSV upload for forecast ingestion | `package.json`, `backend/routes/forecasts.js` |
+| `busboy` | `^1.6.0` | Streaming multipart parsing in the serverless ingest path | `package.json`, `serverless/ingest.js` |
+| `csv-parser` | `^3.2.1` | Streaming CSV row parsing | `package.json`, `backend/routes/forecasts.js` |
+| `zod` | `^3.23.0` | Response/request schema validation (also in `packages/*`) | `package.json`, `packages/core/src/contracts.ts`, `packages/api/src/endpoints.ts` |
+| `dompurify` | `^3.4.15` | HTML sanitisation before rendering untrusted content | `package.json` |
+| `web-push` | `^3.6.7` | Web push notifications (VAPID) | `package.json`, `backend/utils/vapid.js`, `backend/routes/push.js` |
+| `ws` | `^8.21.3` | WebSocket server for the Gemini live-voice channel | `package.json`, `backend/routes/liveVoice.js` |
+| `prom-client` | `^15.1.3` | Prometheus metrics registry (`/metrics`) | `package.json`, `backend/metrics.js`, `backend/server.js` |
+| `dotenv` | `^17.4.2` | `.env` loading for local/dev runs | `package.json`, `backend/server.js` |
+
+**Frontend (production `dependencies`)** — `frontend/package.json`:
+
+| Dependency | Version | Role in system | Evidence |
+|------------|---------|----------------|----------|
+| `react` / `react-dom` | `18.3.1` | UI library | `frontend/package.json`, `frontend/src/main.tsx` |
+| `react-router-dom` | `^6.24.0` | Client-side routing (30+ pages) | `frontend/package.json`, `frontend/src/App.tsx` |
+| `@tanstack/react-query` | `^5.0.0` | Server-state fetching/caching/polling | `frontend/package.json`, `frontend/src/hooks/useForecasts.ts` |
+| `tailwindcss` + `@tailwindcss/vite` | `^4.3.3` | Utility-first CSS engine (Vite plugin, no PostCSS config) | `frontend/package.json`, `frontend/vite.config.ts` |
+| `@mui/material` + `@emotion/*` | `^6.0.0` / `^11.11.0` | Material UI component layer | `frontend/package.json` |
+| `leaflet`, `leaflet.heat`, `leaflet.markercluster` | `^1.9.4` / `^0.2.0` / `^1.5.3` | District choropleth, heat and cluster maps | `frontend/package.json`, `frontend/src/components/DistrictRiskMap.tsx` |
+| `recharts` | `^2.9.0` | Trend / distribution charts | `frontend/package.json`, `frontend/src/components/TemporalTrendChart.tsx` |
+| `framer-motion` | `^13.0.0` | Animation | `frontend/package.json` |
+| `three`, `@react-three/fiber`, `@react-three/drei` | `^0.180.0` / `^8.18.0` / `^9.122.0` | 3D hero scene | `frontend/package.json`, `frontend/src/components/HeroCinematicBackground.tsx` |
+| `firebase` | `^12.17.0` | Auth + Firestore realtime listeners in the browser | `frontend/package.json`, `frontend/src/lib/firebase.ts` |
+| `@vercel/analytics` | `^2.0.1` | Web analytics loader (env-gated) | `frontend/package.json`, `frontend/src/lib/vercelAnalytics.ts` |
+| `vite-plugin-pwa` + `workbox-*` | `^1.3.0` / `^7.4.1` | Service worker / offline shell (devDependency) | `frontend/package.json`, `frontend/src/serviceWorker.ts` |
+| `remotion` | `^4.0.527` | Programmatic video hero | `frontend/package.json` |
+| `jspdf`, `html2canvas-pro`, `qrcode.react`, `react-markdown`, `lucide-react`, `react-hot-toast`, `@base-ui/react`, `shadcn`, `clsx`, `tailwind-merge`, `class-variance-authority`, `tw-animate-css` | see manifest | PDF export, QR, markdown articles, icons, toasts, primitives | `frontend/package.json` |
+
+**Mobile (`apps/mobile`)** — `apps/mobile/package.json`: `expo ~51.0.28`, `react-native 0.74.5`, `react` `18.2.0`, `@react-navigation/*` `~6.x`, `@tanstack/react-query` `^5.103.2`, `zustand` `^4.5.7`, `@shopify/flash-list`, `react-native-reanimated`, `react-native-gesture-handler`, `react-native-svg`, `@react-native-async-storage/async-storage`, `@react-native-community/netinfo`, `expo-notifications`, `expo-location`, `expo-file-system`, `expo-haptics`, `expo-image-picker`, `expo-linking`, `expo-screen-orientation`, `expo-system-ui`, `expo-constants`, `expo-device`, `expo-status-bar`.
+
+**Shared workspace packages** — `packages/*/package.json`:
+
+| Package | Depends on | Role |
+|---------|-----------|------|
+| `@hazardnet/core` | `zod` | Platform-agnostic domain logic: contracts, forecast mapping, alert policy, freshness, geo, dedupe, query keys, notifications |
+| `@hazardnet/api` | `@hazardnet/core`, `zod` | Typed API client + endpoint wrappers + retry |
+| `@hazardnet/analytics` | `@hazardnet/core` | Analytics event helpers |
+| `@hazardnet/design-system` | peer `react` | Design tokens, Material 3 expressive descriptors, `useTokens` |
 
 ### 3) Development Toolchain
 
 | Tool | Purpose | Evidence |
 |------|---------|----------|
-| `typescript` | Static type checking (`tsc`) across workspaces | `package.json:274`, `frontend/tsconfig.json`, `packages/core/tsconfig.json` |
-| `eslint` / `typescript-eslint` | Linter enforcing correctness rules, React Hooks, and global safety | `package.json:259,275`, `eslint.config.js:1-105` |
-| `prettier` | Opinionated code formatting (120 print width, single quotes) | `package.json:267`, `.prettierrc:1-10` |
-| `jest` / `ts-jest` / `babel-jest` | Unit and integration test runner for backend, shared packages, and utilities | `package.json:263,273`, `jest.config.cjs:1-86` |
-| `@playwright/test` | End-to-end browser testing against built frontend | `package.json:248`, `playwright.config.ts:1-45`, `e2e/` |
-| `impeccable` | Automated visual design quality and design token verification | `package.json:262`, `scripts/check-design-quality.mjs:1` |
-| `pytest` | Python test runner validating CI workflows and pipeline scripts | `.github/workflows/ci.yml:171`, `scripts/tests/` |
+| `jest` `^29.7.0` + `babel-jest` `^30.4.1` + `ts-jest` | Unit/component test runner (root config, jsdom) | `package.json`, `jest.config.cjs` |
+| `@playwright/test` `^1.62.1` | E2E / QA browser suite | `package.json`, `playwright.config.ts`, `e2e/` |
+| `pytest` (Python, installed in CI) | Pipeline-script tests | `.github/workflows/ci.yml`, `scripts/tests/*.py` |
+| `node --test` | Phase gate tests (`npm run test:phases`) | `package.json` (`scripts.test:phases`) |
+| `eslint` `^9.39.0` (flat config) + `typescript-eslint` `^8.46.0` + `eslint-plugin-react-hooks` | Lint — type-aware correctness rules, no stylistic rules | `eslint.config.js` |
+| `prettier` `^3.6.2` | Formatting (printWidth 120, single quotes) | `.prettierrc` |
+| `typescript` `^5.4.5` | Type-check only (`npm run lint` = `tsc --noEmit`) | `package.json`, `frontend/tsconfig.json` |
+| `vite` `^8.3.0` | Frontend dev server + bundler | `frontend/package.json`, `frontend/vite.config.ts` |
+| `impeccable` `^4.1.0` | Design-quality detector used by `check:design` | `package.json` (`scripts.design:detect`), `.github/workflows/ci.yml` |
+| `jest-expo`, `@testing-library/react-native` | Mobile component tests | `apps/mobile/package.json`, `apps/mobile/jest.config.cjs` |
+| `@testing-library/react`, `jest-axe`, `supertest`, `node-mocks-http` | Component/a11y/API testing | `package.json`, `__tests__/api/*.test.js` |
+| Repo QA scripts (`scripts/qa/*.mjs`) | Browser-driven layout/a11y/overflow review harnesses | `scripts/qa/`, `.github/workflows/ci.yml` |
 
 ### 4) Key Commands
 
 ```bash
-# Install dependencies across all workspaces
+# Install (npm workspaces, hoisted to root)
 npm ci --legacy-peer-deps --no-audit --no-fund
 
-# Run full development environment (frontend asset check + backend server on :3000)
+# Develop (Express backend on :3000, serves frontend/dist when built)
 npm run dev
+npm start
 
-# Run frontend alone in development mode (Vite dev server)
-cd frontend && npm run dev
-
-# Build production bundle (Vite build + prerender + copy dist)
+# Build (frontend Vite build + prerender, then copy dist)
 npm run build
+npm run build:frontend
 
-# Run unit and integration tests with Jest
-npm test
+# Test
+npm test                                   # jest --passWithNoTests (root config)
+npx jest --config jest.config.cjs          # explicit root config
+npx jest --config apps/mobile/jest.config.cjs   # React Native component suites
+npm run test:phases                        # node --test phase gates
+npx playwright test                        # e2e (default testMatch subset)
+npx playwright test -c playwright.qa.config.ts  # QA sweep, single worker
+python -m pytest scripts/tests -q          # pipeline script tests
 
-# Run Playwright E2E tests against preview server
-npx playwright test
+# Lint / format
+npm run lint                               # tsc -p frontend/tsconfig.json --noEmit
+npm run lint:eslint                        # eslint .
+npm run format                             # prettier --write (frontend/src, backend, api)
 
-# Type-check TypeScript sources
-npm run lint
-
-# Lint all codebases with ESLint (zero-error policy)
-npm run lint:eslint
-
-# Format code with Prettier
-npm run format
-
-# Run security and secret verification
-npm run check:env
-bash scripts/check-secrets.sh
-node scripts/npm-audit-ci.mjs
+# Repo gates (all wired into .github/workflows/ci.yml)
+npm run check:functions   # Vercel Hobby 12-function budget
+npm run check:claims      # CLAIMS.md registry verification
+npm run check:bundle      # bundle budget
+npm run check:design      # impeccable design-quality gate
+npm run check:paths       # no repository path in any shipped document
+npm run check:env         # validate_env.mjs
+npm run check:fonts       # font payload budget
+npm run alerts:rehearse / npm run alerts:snapshot
 ```
 
 ### 5) Environment and Config
 
-- Config sources: `.env`, `docs/ENVIRONMENT_SECRETS.md`, `.firebaserc`, `firebase.json`, `firestore.rules`, `vercel.json`.
-- Required env vars:
-  - `BACKEND_API_KEY`: Required for privileged endpoints (CSV ingestion, push notification broadcasts). Fails with 503 if missing (`backend/server.js:38-40`).
-  - `FIREBASE_PROJECT_ID`, `FIREBASE_CLIENT_EMAIL`, `FIREBASE_PRIVATE_KEY` (or `GOOGLE_APPLICATION_CREDENTIALS`): Firestore connection credentials (`backend/db.js`, `backend/forecastStore.js`).
-  - `FRONTEND_ORIGIN`: Allowed browser origin for CORS. Fails closed in production if unset (`backend/server.js:47-54`).
-  - `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`: Web push notification dispatch (`backend/server.js:44-46`).
-  - `GEMINI_API_KEY`: API key for Gemini chat assistant (falls back to deterministic agrometeorological engine if unset; `backend/server.js:41-43`).
-  - `CSP_ENFORCE`: Boolean flag to enforce CSP (default true in production, false in development; `backend/server.js:74-76`).
-  - `PORT`: Server bind port (defaults to 3000; `backend/server.js:178`).
-- Deployment/runtime constraints:
-  - Production deployments run on Node.js 20+ runtime.
-  - Model weights and internal experiment assets in `Models/` or `manuscript/` must NEVER be served or exposed over HTTP (`backend/server.js:116-118,154`).
+- **Config sources:** `package.json`, `frontend/package.json`, `apps/mobile/package.json`, `packages/*/package.json`, `frontend/vite.config.ts`, `frontend/tsconfig.json`, `eslint.config.js`, `.prettierrc`, `jest.config.cjs`, `jest.setup.ts`, `babel.config.cjs`, `apps/mobile/{babel.config.cjs,metro.config.cjs,jest.config.cjs,app.json,eas.json}`, `playwright.config.ts`, `playwright.qa.config.ts`, `vercel.json`, `frontend/vercel.json`, `firebase.json`, `firestore.rules`, `.firebaserc`, `firebase-applet-config.json`, `monitoring/prometheus.yml`, `monitoring/alerts.yml`.
+- **Required env vars:** `FIREBASE_SERVICE_ACCOUNT_JSON` (server boot), `BACKEND_API_KEY` (ingest/broadcast), `FRONTEND_ORIGIN` (CORS allowlist; production fails closed without it), `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` (push), `GEMINI_API_KEY` (AI routes; deterministic fallback when unset). Frontend build: `VITE_FIREBASE_API_KEY`, `VITE_FIREBASE_AUTH_DOMAIN`, `VITE_FIREBASE_PROJECT_ID`, `VITE_FIREBASE_APP_ID` (+ optional `VITE_FIREBASE_DATABASE_URL`, `VITE_FIREBASE_STORAGE_BUCKET`, `VITE_FIREBASE_MESSAGING_SENDER_ID`, `VITE_FIREBASE_MEASUREMENT_ID`, `VITE_FIREBASE_FIRESTORE_DATABASE_ID`). **No `.env.example` / `.env.template` exists** — the authoritative list is `docs/ENVIRONMENT_SECRETS.md` §2. Optional/tuning: `GEMINI_API_KEY_BACKUP`, `GROQ_API_KEY`, `OPENROUTER_API_KEY`, `HUGGINGFACE_API_KEY`, `WEB_PUSH_CONTACT`, `CSP_ENFORCE`, `FIREBASE_VERIFY_TIMEOUT_MS`, `CONVERSION_PERSIST_TIMEOUT_MS`, `FORECAST_STORE`, `FORECAST_DATASET`, `ALERT_AUTO_PUBLISH`, `ALERT_AUTO_PUBLISH_MINUTES`, `ALERT_DUTY_OFFICERS`, `SLACK_WEBHOOK_URL`, `QA_CHROMIUM_PATH` / `PLAYWRIGHT_CHROMIUM_PATH`.
+- **Deployment/runtime constraints:**
+  - Vercel **Hobby** plan allows at most **12 Serverless Functions** per deployment; every file under `api/` is one function and **6 are used**. The one-entry-point-per-URL-family dispatcher design exists purely for this budget (`api/[endpoint].js`, `serverless/dispatch.js`, `scripts/check-vercel-functions.mjs`, `docs/codebase/VERCEL_FUNCTIONS.md`).
+  - Node `>=20`; CI uses Node `20.x` and Python `3.11`.
+  - Firestore: named applet database `ai-studio-hazardnet-55b49dbf-625b-492b-9cff-feabd729e843` is the default when no env override is set (`backend/db.js`).
+  - The self-host backend hardcodes port `3000` and binds `0.0.0.0` (`backend/server.js`).
+  - Model artifacts under `Models/` are deliberately never served (explicit 404 routes in `backend/server.js`).
 
 ### 6) Evidence
 
-- `package.json`
-- `package-lock.json`
-- `frontend/package.json`
-- `apps/mobile/package.json`
-- `apps/windows/package.json`
-- `packages/core/package.json`
-- `backend/server.js`
-- `eslint.config.js`
-- `.prettierrc`
-- `jest.config.cjs`
-- `.github/workflows/ci.yml`
+- `package.json` (root manifest: engines, workspaces, scripts, dependencies)
+- `frontend/package.json` (frontend production/dev dependencies)
+- `apps/mobile/package.json` (Expo/React Native dependency set)
+- `packages/core/package.json`, `packages/api/package.json`, `packages/analytics/package.json`, `packages/design-system/package.json`
+- `frontend/vite.config.ts`, `frontend/tsconfig.json` (build + TS strictness + path aliases)
+- `eslint.config.js`, `.prettierrc`, `jest.config.cjs`, `babel.config.cjs`, `playwright.config.ts`
+- `vercel.json`, `firebase.json`, `.firebaserc`
+- `backend/server.js` (runtime bootstrap and port)
+- `.github/workflows/ci.yml` (Node/Python versions, gate commands)
+- `docs/ENVIRONMENT_SECRETS.md` (environment-variable reference)

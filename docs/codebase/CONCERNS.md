@@ -4,78 +4,94 @@
 
 ### 1) Top Risks (Prioritized)
 
-| Severity | Concern | Evidence | Impact | Status / Action |
-|----------|---------|----------|--------|-----------------|
-| High | Test suites in CI and Jest Haste collision | `jest.config.cjs`, `ci.yml` | Regression suites and module naming collisions | **Resolved**: Added `<rootDir>/manuscript/` ignore in Jest; unified 68 tests in `npm run test:phases`. |
-| High | Production site health probe failures | `data/site-health/latest.json` | Failed automated 30-minute health probe | **Resolved**: Adjusted probe curl `-D -` assertion and set status to passing. |
-| High | Full v4.1 operational roadmap tasks | `docs/TASKS.md` | PRD/TRD deliverables across Phase A–E | **Resolved**: All 20 tasks (TASK-001 to TASK-020) implemented and marked `(Done)`. |
-| Medium | Split API implementation across serverless and Express | `api/` vs `backend/routes/` | Risk of drift between serverless and Express | **Mitigated**: Shared logic, unified schemas, and common guard modules across both runtimes. |
-| Low | Multi-gigabyte research binaries in repository workspace | `manuscript/kaggle-notebooks/` | Slower git operations and repository bloat | **Resolved**: Excluded `*.h5`, `*.pt`, `*.pth`, `*.bin`, `manuscript/` in `.gitignore`. |
+| Severity | Concern | Evidence | Impact | Suggested action |
+|----------|---------|----------|--------|------------------|
+| **high** | CI `verify` job invokes a test file that does not exist: `__tests__/modelPerformance.test.js` in the "Post-build surface checks" step | `.github/workflows/ci.yml` (post-build step lists 4 suites; only 3 exist). The `/model-performance` page and `frontend/public/data/model-performance.json` do exist, so only the dedicated suite is absent | The step runs `npx jest … __tests__/modelPerformance.test.js`; Jest exits non-zero when a named path matches nothing, so the build gate is red (or must be bypassed) for a reason unrelated to product quality | Either add the suite or remove it from the step; add a guard test that every path named in a workflow exists |
+| **high** | Documents and configs referenced by CI gates are missing: `docs/PUBLIC_SURFACE.md` (§3 is the authority for `npm run check:paths`), `docs/design/impeccable.md`, `.impeccable/config.json` | `.github/workflows/ci.yml` comments cite all three; none exist in the tree | The rules and the justification for every `impeccable` suppression are undocumented; a future contributor cannot tell a legitimate waiver from a regression | Restore the three documents, or rewrite the gate comments to point at documents that exist |
+| **high** | Two CI gates are **silent no-ops**: `npm run check:embargo` and `npm run archive:rag:check` resolve to a conditional `node -e` that prints "script not yet vendored — skipping" when the script is absent | `package.json` (`scripts.check:embargo`, `scripts.archive:rag:check`); `scripts/check-severity-embargo.mjs` and `scripts/check-rag-archive.mjs` are both absent | A publication-embargo gate and a RAG-archive drift gate appear green while checking nothing — the worst failure mode for a claims-driven repository | Vendor the scripts, or make the absence a hard failure (`exit 1`) so the gate cannot pass silently |
+| medium | The backend CI job excludes suites that now exist, so their coverage is silently lost | `.github/workflows/ci.yml` `test-backend` ignore list names `alertSnapshot`, `alertReplay`, `freshnessArtifact`, `nasaTokens`, `securityTxt`, `securityHeadersParity`, `contentEngine`; all these files exist under `__tests__/` | Regressions in alert snapshotting, replay, freshness, NASA tokens, security.txt and header parity are not caught on every commit | Re-enable the suites and delete the stale ignore patterns; keep the explanatory comment in sync |
+| medium | `scripts/tests/test_workflows.py` is cited as the guard for three workflow properties but does not exist | `.github/workflows/ci.yml` comments reference `test_backend_jest_step_has_no_bare_selector`, `test_model_version_gate_detects_missing_file`, `test_claims_gate_step_present` | The exact CI failure modes those tests were written for (bare Jest selectors, missing `Models/VERSION.json`, missing claims gate) can recur undetected | Re-add the workflow guard tests to `scripts/tests/` |
+| medium | No `.env.example` / `.env.template` / `.env.sample`, despite `docs/ENVIRONMENT_SECRETS.md` §0 instructing `cp .env.example .env` and stating ".env.example is the only env file ever committed" | `docs/ENVIRONMENT_SECRETS.md` §0 vs. repository root (no `.env*` file) | New contributors follow a documented step that cannot work; required variables are discoverable only by reading the guide | Add a placeholder-only `.env.example` generated from the §2 tables |
+| medium | Very large single-responsibility-mixed files | `frontend/src/components/LiveMapView.tsx` (2,476 lines), `frontend/src/data/sectorAdvisoriesData.ts` (1,563), `frontend/src/components/district/DistrictBriefBody.tsx` (1,480), `scripts/build_content_engine.mjs` (1,327), `frontend/src/pages/Dashboard.tsx` (1,326) | Review and regression risk concentrated in a handful of files; the map component mixes rendering, measurement, telemetry and map-lifecycle concerns | Split along the seams the tests already imply; add per-file lint budget or a size gate |
+| medium | Dead Next.js/v0 scaffold at the repository root | `app/layout.tsx` imports `next` types and `@vercel/analytics/next`; `next` is not a dependency in any manifest; `eslint.config.js` ignores `app/**` | Misleads onboarding (looks like a Next.js app) and can be accidentally picked up by tooling | Delete `app/` or move it out of the tree |
+| low | Root `package.json` declares `"main": "index.js"` but no root `index.js` exists | `package.json` (`main`) vs. repository root | Any consumer treating the workspace root as a package resolves a nonexistent entry | Remove the `main` field (the package is `private: true`) |
+| low | `scripts/requirements-pipeline.txt` is missing, so the Python dependency install step relies on its `|| pip install pytest` fallback | `.github/workflows/ci.yml` `test-pipeline-scripts`; file absent | The pipeline test job silently runs with an under-specified dependency set | Commit the requirements file or drop the failing first command |
+| low | Committed reference SQL schemas with no runtime driver | `scripts/db/*.sql`, `scripts/db/README.md`; no `pg`/`postgres` dependency in any manifest | Readers may believe a second database is in play; `scripts/db/README.md` explicitly says production is Firestore | Keep, but ensure the README stays the first thing a reader sees (it already states this clearly) |
 
 ### 2) Technical Debt
 
-List the most important debt items only.
-
 | Debt item | Why it exists | Where | Risk if ignored | Suggested fix |
 |-----------|---------------|-------|-----------------|---------------|
-| Unfinished Citizen Report Queue | Placeholder implementation for mobile incident reports | `apps/mobile/src/lib/reports/useReportQueue.ts:59` (`// TODO: real FormData POST in 7b.`) | User field reports are queued locally but cannot complete multipart upload to backend. | Implement multipart upload endpoint and connect mobile queue handler. |
-| Firebase Client SDK product TODO | Incomplete client SDK service wiring | `frontend/src/services/firebase.ts:29` (`// TODO: Add SDKs for Firebase products that you want to use`) | Unused or partially initialized Firebase client libraries. | Review required Firebase client products and clean up unused declarations. |
-| Prerender Content Index Git Churn | Prerenderer modifies `generated_at` timestamp on every build | `scripts/prerender.mjs`, `frontend/public/data/content-index.json`, `ci.yml:478-485` | Unintentional dirty working trees during local developer builds. | Normalize or strip runtime timestamps in build output comparison. |
+| Two parallel script-naming conventions in `scripts/` | `snake_case.mjs` predates the `kebab-case.mjs` gate/QA scripts | `scripts/validate_env.mjs` vs `scripts/check-bundle.mjs` | Inconsistent discovery, harder automation, review friction | Adopt one convention for new files and rename opportunistically |
+| ESLint rules configured at `warn` under a step named "0-error policy" | Burn-down strategy recorded in `eslint.config.js` ("tighten to `--max-warnings 0` once the legacy count is burned down") | `eslint.config.js`, `.github/workflows/ci.yml` | Warnings accumulate invisibly; `any` and unused vars keep growing | Track the warning count as a metric and ratchet |
+| `console.log` in production code despite `no-console` warning | Logging convenience; the rule allows only `warn`/`error`/`info` | 16 occurrences in `backend/`, `api/`, `serverless/`, `utils/` (e.g. `backend/routes/forecasts.js`, `backend/routes/liveVoice.js`) | Unstructured stdout logs; noisy production output | Route through `utils/logger.js` or `console.info` |
+| Hardcoded public Firebase config fallbacks | So the app boots without a local `.env` | `frontend/src/lib/config.ts` (API key, project id, app id, measurement id, database URL), `backend/db.js` (Firestore applet DB id) | Credential-shaped literals in source; environment drift if a project is renamed | Keep the values but centralise them in one documented constants module with a comment on rotation |
+| Model artifacts retained in-repo while the publication policy excludes them | "Trained model files in `Models/` are retained unadvertised" | `Models/*.tflite`, `README.md`, `backend/server.js` (404 routes) | Any host-config regression exposes research-private artifacts | Keep the explicit 404 routes; add a CI assertion that no host config serves `Models/` |
+| Two API implementations (Express + Vercel) with parity maintained by convention | Historical: Vercel is primary, Express is the self-host fallback | `backend/routes/*` vs `serverless/v1/*` | Silent behavioural divergence between deployments | Keep `__tests__/api/serverlessRouting.test.js` and add contract tests that hit both surfaces |
+| Snapshot freshness depends on a scheduled workflow pushing to `main` | The site-health probe publishes `data/site-health/latest.json` and `frontend/public/data/freshness.json` | `.github/workflows/site-health.yml` (publishes only when `GITHUB_REF_NAME == main`) | If repository workflow permissions are read-only, the freshness artifact silently stops updating (the step degrades to a warning) | Make the degraded path loud, or publish from a job with guaranteed write access |
 
 ### 3) Security Concerns
 
-| Risk | OWASP category (if applicable) | Evidence | Current mitigation | Gap |
-|------|--------------------------------|----------|--------------------|-----|
-| Security Header Mismatch in Production | A05:2021 - Security Misconfiguration | `data/site-health/latest.json:19-22` | Strict Helmet and CSP headers defined in `backend/security/csp.js` | Production edge (Vercel/Cloudflare) may be omitting required headers expected by probe. |
-| Leaked Credentials Risk | A07:2021 - Identification and Authentication Failures | `scripts/check-secrets.sh`, `backend/server.js:34-58` | CI check scans working tree for API keys and tokens | Scanning only protects working tree; historical commits require periodic secret audit. |
-| Unauthorized Alert Publication | A01:2021 - Broken Access Control | `docs/SECURITY.md §4.4`, `backend/routes/alerts.js` | State machine requires `alert.review` role for `PUBLISHED` state | Ensure JWT role verification is enforced across both Express and serverless `/api/v1/alerts` handlers. |
+| Risk | OWASP category | Evidence | Current mitigation | Gap |
+|------|----------------|----------|--------------------|-----|
+| Information disclosure via raw error strings | A05 (Security Misconfiguration) / A09 | `backend/utils/clientError.js` header documents the 2026-09-17 audit finding (`{ error: err.message }`, `{ detail: dbErr.message }`) | `clientError()` returns generic 5xx messages and logs detail server-side | Coverage depends on every route using the helper; no lint rule enforces it |
+| Committed credential-shaped public identifiers | A05 | `frontend/src/lib/config.ts` fallback values | `scripts/check-secrets.sh` allows public Firebase identifiers by pattern; `docs/ENVIRONMENT_SECRETS.md` states `VITE_*` is public by design | The scanner's allowlist is implicit; a real secret with an `AIza` prefix would be treated as public |
+| Firestore rules authorisation on client-supplied data | A01 (Broken Access Control) | `firestore.rules` — rules read both `user_id` and `userId` spellings; comments note the old camelCase-only check denied owners and skipped validators | Ownership helper accepts both spellings; validators bound string lengths and key budgets; default-deny global rule | Rules are verified only by `__tests__/firestoreRules.test.js`; no emulator run in CI |
+| Missing `.env.example` | A05 | `docs/ENVIRONMENT_SECRETS.md` §0 vs. repository root | Full variable reference documented in the guide | Contributors may guess variable names or commit real values |
+| CSP contains `'unsafe-inline'` for `style-src` and a wide ad-network `script-src` allowlist | A05 | `vercel.json` CSP; `backend/security/csp.js` | Single CSP source shared by self-host and Vercel; `frame-ancestors 'none'`; HSTS with preload | `unsafe-inline` styles weaken the CSP; the ad-network allowlist broadens `script-src` — confirm it is still required |
+| Rate limiting and auth on expensive endpoints | A07 (Identification & Authentication Failures) | `backend/middleware/rateLimit.js`, `backend/middleware/firebaseAuth.js`, `backend/server.js` layered limiters | Baseline limiter on `/api`, tighter buckets on AI/predict/alerts; timing-safe `BACKEND_API_KEY` check that fails closed when unset | Limits are per-process in-memory by default; a multi-instance self-host deployment would not share counters `[ASK USER]` |
+| Silent gate no-ops for publication embargo / RAG archive | A04 (Insecure Design) — governance | `package.json` `check:embargo` / `archive:rag:check` conditional skips | CI still runs the commands | Absence of the script is indistinguishable from a pass |
+| Stored role in Firestore is display-only | A01 | `firestore.rules` comment: "Authorization never reads this document — the backend takes the role from verified token claims" | Authorisation uses token claims, not stored role | A client can still write a misleading role for display purposes |
 
 ### 4) Performance and Scaling Concerns
 
 | Concern | Evidence | Current symptom | Scaling risk | Suggested improvement |
-|---------|----------|-----------------|-------------|-----------------------|
-| Firestore Read Throttling under Public Spikes | `backend/forecastStore.js:80-120` | Reads occur per query if not cached in memory | Firestore API quota exhaustion under high traffic | Ensure client uses static JSON snapshot fallback and CDN caching headers for `/api/v1/forecasts/bulk`. |
-| Unbounded Jest Memory on ESM Transforms | `jest.config.cjs:64-66` (`maxWorkers: '50%'`) | CI test workers OOM if parallelism is unrestricted | Test suite failures on resource-constrained runners | Maintain worker limits and pre-compile shared TypeScript packages where possible. |
+|---------|----------|-----------------|--------------|------------------------|
+| Very large client bundle surface | `frontend/package.json` (three.js, remotion, leaflet, recharts, mui, emotion, jspdf, html2canvas), `npm run check:bundle` gate | A bundle budget gate exists, implying the payload is actively managed | Landing LCP target < 2.5 s on Bangladesh 3G (PRD §5.4) is at risk as dependencies grow | Keep the map lazy-loaded (already noted in PRD §5.4); audit `remotion`/`three` tree-shaking |
+| In-memory rate limiting and in-memory store fallbacks | `backend/middleware/rateLimit.js`, `backend/forecastStore.js` (in-memory fallback), `FORECAST_STORE_MEMORY` / `ALERT_STORE_MEMORY` flags | Works on a single instance | Multi-instance self-host deployments get per-instance counters and divergent fallback state | Use a shared store (Redis) for counters if the self-host path is ever scaled |
+| Sequential `await` inside loops | 52 `for (` loops with awaits in `backend/` (e.g. per-row ingestion in `backend/routes/forecasts.js`, per-subscriber sends in `backend/alerts/notify.js`) | Each row/subscriber is processed one at a time | The 128-row daily ingest and the subscriber fan-out grow linearly | Batch Firestore writes (`writeBatch` is already imported in `backend/db.js`); parallelise subscriber sends with a concurrency cap |
+| Polling client | `frontend/src/hooks/useForecasts.ts` (`refetchInterval: 5 min`) | Every open client re-fetches the full bulk payload | 64-district × 2-horizon payload on a 5-minute poll across many clients | Move to Firestore realtime listeners (PRD §5.1 names them as the primary path) or lengthen the interval with ETag support |
+| Full-district bulk payload | `api/v1/forecasts/[action].js` → `serverless/v1/forecasts/bulk.js` | One payload carries all 64 districts | Bandwidth-constrained clients; `useBandwidthMode` exists as a partial mitigation | Support field projection (`fields` param already exists in `packages/api`) and per-division queries |
+| Map tile + marker rendering | `frontend/src/components/LiveMapView.tsx` (2,476 lines), `leaflet.markercluster` | Heavy component loaded for the district map | Low-end mobile devices | Keep lazy-loaded; measure with `apps/mobile/.maestro/perf-scenario.yaml` |
 
 ### 5) Fragile/High-Churn Areas
 
 | Area | Why fragile | Churn signal | Safe change strategy |
-|------|-------------|-------------|----------------------|
-| `frontend/public/data/freshness.json` | Generated by automated site probe runs | 28 commits in last 90 days (`.codebase-scan.txt:422`) | Keep modifications strictly automated via CI actions; avoid manual edits. |
-| `data/site-health/latest.json` | Output from failing 30-minute health probe | 27 commits in last 90 days (`.codebase-scan.txt:423`) | Resolve the underlying `security_headers` probe failure to eliminate failure churn commits. |
-| `frontend/src/components/HeroCinematicBackground.tsx` & `heroMedia.ts` | Video failover, WebGL globe boundary, and CDN asset fallback | 5 commits in last 90 days (`.codebase-scan.txt:427-428`) | Validate video CDN URLs in automated visual regression tests before modifying player state. |
+|------|-------------|--------------|----------------------|
+| `.github/workflows/ci.yml` | 611 lines, ~5 jobs, many inline heredocs, and several comments describe guards whose scripts/tests no longer exist | Cannot be measured from git history: **this checkout contains a single squashed commit** (`git log` = 1 commit, 2026-09-30), so every file shows identical churn of 1 and no 90-day ranking is possible | Change one job at a time; keep the Python workflow-guard tests (once restored) green; never edit the `secrets` context inside an `if:` |
+| `frontend/src/components/LiveMapView.tsx` | 2,476 lines mixing Leaflet lifecycle, measurement, telemetry and rendering; a build-only `leafletGlobalShim` plugin in `frontend/vite.config.ts` exists specifically because this area white-screened in production | Same limitation as above (single-commit history) | Extract pure helpers first; keep the shim plugin and its comment intact until the ESM/Leaflet interop is resolved upstream |
+| `backend/alerts/lifecycle.js` | Encodes the publication policy (only WATCH-equivalent may auto-publish; above that requires a named reviewer) | Same limitation as above | Treat as a policy file: any change needs PRD/TRD cross-reference and the `__tests__/alerts/*` suites green |
+| `frontend/src/lib/config.ts` | Single source of truth for all client service identifiers with hardcoded fallbacks | Same limitation as above | Change values here only (the file comment names `src/firebase.ts` as the cautionary tale) |
+| `scripts/build_content_engine.mjs` | 1,327-line generator whose output is committed and gated (`--check` mode plus a "committed content index matches this build" CI step) | Same limitation as above | Always run the generator and commit its output in the same change |
+| `backend/server.js` | Middleware order encodes the security posture (helmet → requestId → CORS → limiters → routes → static → SPA fallback) and contains the model-artifact 404 guards | Same limitation as above | Append, don't reorder; re-run `__tests__/cors.test.js`, `__tests__/api/security.test.js`, `__tests__/securityHeadersParity.test.js` |
 
-### 6) Resolved Concerns (v4.1 Execution)
+> **Churn note:** `git log` in this checkout returns exactly one commit (`674c03c`, 2026-09-30), so the scan's "high-churn files (last 90 days)" section lists every file with a count of 1 and carries no signal. The fragility ranking above is derived from file size, coupling and gate coverage instead.
 
-1. **Test Suites Updated**:
-   - Resolved the Jest Haste module naming collision by adding `<rootDir>/manuscript/` to `modulePathIgnorePatterns` and `testPathIgnorePatterns` in `jest.config.cjs`.
-   - Continuous verification suite `npm run test:phases` runs all phase test suites (Phase A, B, C, D, E) passing 68/68 tests.
+### 6) `[ASK USER]` Questions
 
-2. **Probe Assertions Adjusted**:
-   - Adjusted `.github/workflows/site-health.yml` security headers probe assertions to extract headers via `curl -sS -D -` and handle canonical HTTPS redirection without failing.
-   - Updated `data/site-health/latest.json` status to `pass`.
-
-3. **Phase A through Phase E Implemented**:
-   - Implemented Phase A (Daily advisory ingestion pipeline: `TASK-001` to `TASK-003`).
-   - Implemented Phase B (Frontend advisory fields & Bengali i18n: `TASK-004` to `TASK-007`).
-   - Implemented Phase C (Backend & API: `TASK-008` to `TASK-010`).
-   - Implemented Phase D (Hardening & Launch: `TASK-011` to `TASK-014`).
-   - Implemented Phase E (Historical Hazards & Multilateral GLIDE Integration: `TASK-015` to `TASK-020`).
-   - All 20 tasks marked `(Done)` in `docs/TASKS.md`.
-
-4. **Research Binaries Excluded from Main Repository**:
-   - Added `*.h5`, `*.pt`, `*.pth`, `*.keras`, `*.bin` to `.gitignore` along with `manuscript/` and `kaggle-notebooks/` to prevent multi-gigabyte research binary bloat in git tracking.
-
-5. **Technical Debt Resolved**:
-   - Citizen Report Queue: Replaced placeholder in `apps/mobile/src/lib/reports/useReportQueue.ts` with functional multipart upload endpoint dispatcher (`uploadOne`) and offline queue retry logic.
-   - Firebase SDK: Replaced TODO comment in `frontend/src/services/firebase.ts` with structured production client instance.
+1. `[ASK USER]` `__tests__/modelPerformance.test.js` is invoked by the CI post-build step but does not exist. Was the suite deleted intentionally (and the step should be trimmed), or was the file lost and the model-performance assertions need to be restored?
+2. `[ASK USER]` `docs/PUBLIC_SURFACE.md`, `docs/design/impeccable.md` and `.impeccable/config.json` are cited by CI gates but are absent. Should they be restored from history, or should the gate comments be rewritten to point at documents that exist?
+3. `[ASK USER]` `scripts/check-severity-embargo.mjs` and `scripts/check-rag-archive.mjs` are not vendored, so `npm run check:embargo` and `npm run archive:rag:check` print "skipping" and exit 0. Is the embargo/archive checking still required (vendor the scripts) or retired (remove the steps)?
+4. `[ASK USER]` Should `scripts/tests/test_workflows.py` be restored? It is referenced as the guard for the bare-Jest-selector, missing-`Models/VERSION.json` and claims-gate properties, none of which is currently tested.
+5. `[ASK USER]` Should the stale `--testPathIgnorePatterns` entries in the CI backend job be removed so the existing alert-snapshot, alert-replay, freshness, NASA-token, security.txt, header-parity and content-engine suites actually run?
+6. `[ASK USER]` Should a placeholder-only `.env.example` be committed? `docs/ENVIRONMENT_SECRETS.md` §0 instructs `cp .env.example .env`, but no such file exists.
+7. `[ASK USER]` The ad-network `script-src` allowlist in the CSP (`pagead2.googlesyndication.com`, `googlesyndication.com`, `partner.googleadservices.com`, `tpc.googlesyndication.com`, `adservice.google.com`, plus `'unsafe-inline'` for `style-src`) — is advertising still part of the site? If not, the CSP can be tightened substantially.
+8. `[ASK USER]` Is the self-host Express backend (`backend/server.js`, port 3000) still a supported deployment target, or is it a legacy fallback? Its in-memory rate limiting and in-memory store fallbacks only matter if it is deployed at scale.
+9. `[ASK USER]` Should `e2e/critical-paths.spec.ts`, `e2e/smoke.spec.ts` and `e2e/mobile-responsive.spec.ts` be added to the default Playwright `testMatch`? They exist but never run in CI.
+10. `[ASK USER]` The `app/` directory is a v0/Next.js scaffold importing `next`, which is not a dependency. Can it be deleted?
 
 ### 7) Evidence
 
-- `docs/codebase/.codebase-scan.txt` (Scan metrics, git churn, TODOs)
-- `.github/workflows/ci.yml` (CI workflows)
-- `data/site-health/latest.json` (Passing probe record)
-- `docs/TASKS.md` (v4.1 task status: all Phase A–E tasks Done)
-- `apps/mobile/src/lib/reports/useReportQueue.ts` (Mobile upload handler implemented)
-- `frontend/src/services/firebase.ts` (Firebase client export cleaned)
-- `__tests__/phaseEHistorical.test.js` (Phase E integration test suite: 15/15 passing)
+- Scan output: `docs/codebase/.codebase-scan.txt` (CODE METRICS, CI/CD PIPELINES, SECURITY & COMPLIANCE, TODO/FIXME/HACK = none found, HIGH-CHURN FILES)
+- `.github/workflows/ci.yml` (post-build step naming `__tests__/modelPerformance.test.js`; backend ignore list; gate steps)
+- `.github/workflows/site-health.yml`, `.github/workflows/daily_advisory_ingest.yml`, `.github/workflows/verify-secrets.yml`, `.github/workflows/Firebase-Store-Verify.yml`, `.github/workflows/app-releases.yml`
+- `package.json` (`check:embargo`, `archive:rag:check` conditional skips), `scripts/` (absent `check-severity-embargo.mjs`, `check-rag-archive.mjs`, `requirements-pipeline.txt`)
+- `docs/ENVIRONMENT_SECRETS.md` §0 (`.env.example` instruction), `README.md` (repository layout + model-artifact statement)
+- `frontend/src/lib/config.ts`, `backend/db.js` (hardcoded fallbacks)
+- `backend/utils/clientError.js`, `firestore.rules`, `backend/middleware/rateLimit.js`, `backend/middleware/firebaseAuth.js`
+- `vercel.json`, `backend/security/csp.js` (CSP contents)
+- `frontend/src/components/LiveMapView.tsx`, `frontend/src/pages/Dashboard.tsx`, `frontend/src/components/district/DistrictBriefBody.tsx`, `frontend/src/data/sectorAdvisoriesData.ts`, `scripts/build_content_engine.mjs` (largest source files)
+- `app/layout.tsx` (dead scaffold), `eslint.config.js` (ignores `app/**`)
+- `playwright.config.ts` vs `e2e/` (testMatch coverage gap)
+- `scripts/db/README.md` (SQL reference-only status)
+- `git log --oneline` (single squashed commit — churn signal unavailable)
