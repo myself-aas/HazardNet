@@ -79,6 +79,8 @@ def make_archive(tmp_path):
          'adm2_name': 'Satkhira', 'severity': 0.9, 'event_id': 'ev-c1'},
         {'hazard_type': 'Drought', 'start_date': '2022-03-05',
          'adm2_name': 'Rajshahi', 'severity': 0.5, 'event_id': 'ev-d1'},
+        {'hazard_type': 'Flash Flood', 'start_date': '2022-06-15',
+         'adm2_name': 'Sylhet', 'severity': 0.85, 'affected': 45000, 'event_id': 'ev-s1'},
     ]
     export.write_text(json.dumps({'events': events}), encoding='utf-8')
     return export

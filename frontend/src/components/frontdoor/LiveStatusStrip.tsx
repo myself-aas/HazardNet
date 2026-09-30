@@ -171,6 +171,7 @@ export const LiveStatusStrip: React.FC<LiveStatusStripProps> = ({
                     description={t(`alerts.level.${level}.desc`)}
                     size="sm"
                     srPrefix={t('alerts.levelLabel')}
+                    role=""
                   />
                   <span className="font-mono text-sm font-bold text-carbon-90">
                     {formatNumber(Number(counts[level]))}

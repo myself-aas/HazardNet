@@ -61,11 +61,11 @@ export const GlideResourcePopover: React.FC<GlideResourcePopoverProps> = ({
     >
       <div
         ref={popoverRef}
-        className={`w-full max-w-md bg-slate-900 border border-slate-700 rounded-2xl p-5 shadow-2xl text-slate-100 relative ${className}`}
+        className={`w-full max-w-md bg-carbon-90 border border-carbon-70 rounded-2xl p-5 shadow-2xl text-carbon-10 relative ${className}`}
         data-testid="glide-resource-popover"
       >
         {/* Header */}
-        <div className="flex items-start justify-between gap-3 border-b border-slate-800 pb-3 mb-3">
+        <div className="flex items-start justify-between gap-3 border-b border-carbon-80 pb-3 mb-3">
           <div>
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-blue-500 animate-pulse" />
@@ -80,7 +80,7 @@ export const GlideResourcePopover: React.FC<GlideResourcePopoverProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition-colors"
+            className="text-carbon-40 hover:text-white p-1 rounded-lg hover:bg-carbon-80 transition-colors"
             aria-label="Close GLIDE resources popover"
           >
             ✕
@@ -90,7 +90,7 @@ export const GlideResourcePopover: React.FC<GlideResourcePopoverProps> = ({
         {/* Links listing */}
         {valid && links ? (
           <div className="space-y-2">
-            <p className="text-[11px] text-slate-400 mb-2">
+            <p className="text-[11px] text-carbon-40 mb-2">
               Official multilateral agencies tracking this disaster event. All links open securely in a new window.
             </p>
 
@@ -98,89 +98,89 @@ export const GlideResourcePopover: React.FC<GlideResourcePopoverProps> = ({
               href={links.reliefweb}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-between p-2.5 rounded-xl bg-slate-950/60 border border-slate-800 hover:border-blue-600 hover:bg-slate-800/60 transition-all text-xs group"
+              className="flex items-center justify-between p-2.5 rounded-xl bg-carbon-black/60 border border-carbon-80 hover:border-blue-600 hover:bg-carbon-80/60 transition-all text-xs group"
             >
               <div className="flex flex-col">
-                <span className="font-semibold text-slate-200 group-hover:text-blue-400">
+                <span className="font-semibold text-carbon-20 group-hover:text-blue-400">
                   ReliefWeb Disaster Registry (UN OCHA)
                 </span>
-                <span className="text-[10px] text-slate-400">
+                <span className="text-[10px] text-carbon-40">
                   Situation reports, sitreps, humanitarian maps, and appeals
                 </span>
               </div>
-              <span className="text-slate-500 group-hover:text-blue-400 text-xs">↗</span>
+              <span className="text-carbon-50 group-hover:text-blue-400 text-xs">↗</span>
             </a>
 
             <a
               href={links.fao_giews}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-between p-2.5 rounded-xl bg-slate-950/60 border border-slate-800 hover:border-blue-600 hover:bg-slate-800/60 transition-all text-xs group"
+              className="flex items-center justify-between p-2.5 rounded-xl bg-carbon-black/60 border border-carbon-80 hover:border-blue-600 hover:bg-carbon-80/60 transition-all text-xs group"
             >
               <div className="flex flex-col">
-                <span className="font-semibold text-slate-200 group-hover:text-blue-400">
+                <span className="font-semibold text-carbon-20 group-hover:text-blue-400">
                   FAO GIEWS Country Brief (Bangladesh)
                 </span>
-                <span className="text-[10px] text-slate-400">
+                <span className="text-[10px] text-carbon-40">
                   Crop prospects, agricultural damage, food security assessment
                 </span>
               </div>
-              <span className="text-slate-500 group-hover:text-blue-400 text-xs">↗</span>
+              <span className="text-carbon-50 group-hover:text-blue-400 text-xs">↗</span>
             </a>
 
             <a
               href={links.who_emergencies}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-between p-2.5 rounded-xl bg-slate-950/60 border border-slate-800 hover:border-blue-600 hover:bg-slate-800/60 transition-all text-xs group"
+              className="flex items-center justify-between p-2.5 rounded-xl bg-carbon-black/60 border border-carbon-80 hover:border-blue-600 hover:bg-carbon-80/60 transition-all text-xs group"
             >
               <div className="flex flex-col">
-                <span className="font-semibold text-slate-200 group-hover:text-blue-400">
+                <span className="font-semibold text-carbon-20 group-hover:text-blue-400">
                   WHO Public Health Emergencies
                 </span>
-                <span className="text-[10px] text-slate-400">
+                <span className="text-[10px] text-carbon-40">
                   Disease surveillance, epidemiological alerts, health cluster
                 </span>
               </div>
-              <span className="text-slate-500 group-hover:text-blue-400 text-xs">↗</span>
+              <span className="text-carbon-50 group-hover:text-blue-400 text-xs">↗</span>
             </a>
 
             <a
               href={links.adrc_registry}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-between p-2.5 rounded-xl bg-slate-950/60 border border-slate-800 hover:border-blue-600 hover:bg-slate-800/60 transition-all text-xs group"
+              className="flex items-center justify-between p-2.5 rounded-xl bg-carbon-black/60 border border-carbon-80 hover:border-blue-600 hover:bg-carbon-80/60 transition-all text-xs group"
             >
               <div className="flex flex-col">
-                <span className="font-semibold text-slate-200 group-hover:text-blue-400">
+                <span className="font-semibold text-carbon-20 group-hover:text-blue-400">
                   Asian Disaster Reduction Center (ADRC)
                 </span>
-                <span className="text-[10px] text-slate-400">
+                <span className="text-[10px] text-carbon-40">
                   Multilateral GLIDE register and regional catastrophe database
                 </span>
               </div>
-              <span className="text-slate-500 group-hover:text-blue-400 text-xs">↗</span>
+              <span className="text-carbon-50 group-hover:text-blue-400 text-xs">↗</span>
             </a>
 
             <a
               href={links.ifrc_go}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-between p-2.5 rounded-xl bg-slate-950/60 border border-slate-800 hover:border-blue-600 hover:bg-slate-800/60 transition-all text-xs group"
+              className="flex items-center justify-between p-2.5 rounded-xl bg-carbon-black/60 border border-carbon-80 hover:border-blue-600 hover:bg-carbon-80/60 transition-all text-xs group"
             >
               <div className="flex flex-col">
-                <span className="font-semibold text-slate-200 group-hover:text-blue-400">
+                <span className="font-semibold text-carbon-20 group-hover:text-blue-400">
                   IFRC GO Emergency Platform
                 </span>
-                <span className="text-[10px] text-slate-400">
+                <span className="text-[10px] text-carbon-40">
                   Red Cross / Red Crescent field operations and DREF emergency appeals
                 </span>
               </div>
-              <span className="text-slate-500 group-hover:text-blue-400 text-xs">↗</span>
+              <span className="text-carbon-50 group-hover:text-blue-400 text-xs">↗</span>
             </a>
           </div>
         ) : (
-          <div className="py-6 text-center text-xs text-slate-400">
+          <div className="py-6 text-center text-xs text-carbon-40">
             <p className="font-medium text-amber-400 mb-1">Domestic Record</p>
             <p>
               This disaster record is cataloged domestically. No multilateral GLIDE identifier was registered for this local event.
@@ -188,11 +188,11 @@ export const GlideResourcePopover: React.FC<GlideResourcePopoverProps> = ({
           </div>
         )}
 
-        <div className="mt-4 pt-3 border-t border-slate-800 flex justify-end">
+        <div className="mt-4 pt-3 border-t border-carbon-80 flex justify-end">
           <button
             type="button"
             onClick={onClose}
-            className="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors"
+            className="px-3 py-1.5 rounded-lg text-xs font-medium bg-carbon-80 hover:bg-carbon-70 text-carbon-30 transition-colors"
           >
             Close
           </button>

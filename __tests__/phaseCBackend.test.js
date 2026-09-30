@@ -234,7 +234,7 @@ describe('TASK-009: Alert State Machine, RBAC Enforcement & Optimistic Locking',
 
     assert.equal(res.ok, false);
     assert.equal(res.code, 403, 'Must return 403 for non-reviewer');
-    assert.equal(res.error, 'REVIEW_ROLE_REQUIRED');
+    assert.match(res.error, /REVIEW_ROLE_REQUIRED/);
   });
 
   test('RBAC: Reviewer role successfully approves alert and updates state', async () => {

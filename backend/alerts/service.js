@@ -505,7 +505,7 @@ export async function reviewAlert({
       return {
         ok: false,
         code: 403,
-        error: 'REVIEW_ROLE_REQUIRED',
+        error: `REVIEW_ROLE_REQUIRED: only a duty officer may ${action} an alert (§1.6)`,
         message: `only users with the reviewer role may ${action} an alert (§1.6, §7.4)`,
       };
     }

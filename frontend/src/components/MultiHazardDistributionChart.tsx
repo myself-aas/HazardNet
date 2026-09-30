@@ -88,11 +88,11 @@ export const MultiHazardDistributionChart: React.FC<MultiHazardDistributionChart
 
   return (
     <div
-      className={`bg-slate-900 border border-slate-800 rounded-2xl p-4 md:p-6 shadow-2xl flex flex-col text-slate-100 ${className}`}
+      className={`bg-carbon-90 border border-carbon-80 rounded-2xl p-4 md:p-6 shadow-2xl flex flex-col text-carbon-10 ${className}`}
       data-testid="multi-hazard-distribution-chart"
     >
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-4 border-b border-slate-800">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-4 border-b border-carbon-80">
         <div>
           <div className="flex items-center gap-2">
             <h3 className="text-base font-bold text-white tracking-tight">
@@ -102,7 +102,7 @@ export const MultiHazardDistributionChart: React.FC<MultiHazardDistributionChart
               {data.length} Hazard Classes
             </span>
           </div>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-carbon-40 mt-1">
             Empirical historical frequency distribution of meteorological and geophysical hazards.
           </p>
         </div>
@@ -125,7 +125,7 @@ export const MultiHazardDistributionChart: React.FC<MultiHazardDistributionChart
                     key={slice.hazard_type}
                     d={slice.path}
                     fill={slice.color}
-                    stroke="#0f172a"
+                    stroke="#17171b"
                     strokeWidth={isHovered ? 2.5 : 1}
                     className="cursor-pointer transition-transform hover:opacity-90 focus:outline-hidden"
                     tabIndex={0}
@@ -144,7 +144,7 @@ export const MultiHazardDistributionChart: React.FC<MultiHazardDistributionChart
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center">
               {hoveredHazard ? (
                 <>
-                  <span className="text-[11px] font-medium text-slate-400 max-w-[100px] truncate">
+                  <span className="text-[11px] font-medium text-carbon-40 max-w-[100px] truncate">
                     {hoveredHazard.hazard_type}
                   </span>
                   <span className="text-lg font-bold font-mono text-white">
@@ -156,11 +156,11 @@ export const MultiHazardDistributionChart: React.FC<MultiHazardDistributionChart
                 </>
               ) : (
                 <>
-                  <span className="text-[11px] text-slate-400">Total Recorded</span>
+                  <span className="text-[11px] text-carbon-40">Total Recorded</span>
                   <span className="text-xl font-bold font-mono text-white">
                     {totalEvents.toLocaleString()}
                   </span>
-                  <span className="text-[10px] text-slate-500">2000–2026</span>
+                  <span className="text-[10px] text-carbon-50">2000–2026</span>
                 </>
               )}
             </div>
@@ -179,7 +179,7 @@ export const MultiHazardDistributionChart: React.FC<MultiHazardDistributionChart
                 onMouseEnter={() => setHoveredHazard(item)}
                 onMouseLeave={() => setHoveredHazard(null)}
                 className={`flex items-center justify-between p-2 rounded-lg cursor-pointer transition-colors ${
-                  isHovered ? 'bg-slate-800' : 'bg-slate-950/40 hover:bg-slate-800/60'
+                  isHovered ? 'bg-carbon-80' : 'bg-carbon-black/40 hover:bg-carbon-80/60'
                 }`}
               >
                 <div className="flex items-center gap-2 min-w-0">
@@ -187,13 +187,13 @@ export const MultiHazardDistributionChart: React.FC<MultiHazardDistributionChart
                     className="w-2.5 h-2.5 rounded-full shrink-0"
                     style={{ backgroundColor: item.color }}
                   />
-                  <span className="text-xs font-medium text-slate-200 truncate">
+                  <span className="text-xs font-medium text-carbon-20 truncate">
                     {item.hazard_type}
                   </span>
                 </div>
                 <div className="flex items-center gap-3 font-mono text-xs shrink-0">
-                  <span className="text-slate-400">{item.event_count.toLocaleString()}</span>
-                  <span className="text-slate-200 font-bold w-12 text-right">
+                  <span className="text-carbon-40">{item.event_count.toLocaleString()}</span>
+                  <span className="text-carbon-20 font-bold w-12 text-right">
                     {item.percentage}%
                   </span>
                 </div>

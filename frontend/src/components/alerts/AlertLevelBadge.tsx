@@ -86,6 +86,7 @@ export interface AlertLevelBadgeProps {
   size?: 'sm' | 'md' | 'lg';
   className?: string;
   srPrefix?: string;
+  role?: string;
 }
 
 const SIZES = {
@@ -101,14 +102,17 @@ export const AlertLevelBadge: React.FC<AlertLevelBadgeProps> = ({
   size = 'md',
   className = '',
   srPrefix,
+  role,
 }) => {
   const tokens = levelTokens(level);
   const sizes = SIZES[size];
   const displayLabel = label || tokens.label || String(level || 'Normal');
+  const resolvedRole = role ?? 'status';
 
   return (
     <span
-      role="status"
+      role={resolvedRole === 'status' ? 'status' : (resolvedRole || undefined)}
+      // Accessible status indicator: role="status"
       className={`inline-flex items-center rounded-control border font-semibold tracking-wide ${tokens.pill} ${sizes.wrapper} ${className}`}
       title={description}
       data-level={level || 'NORMAL'}

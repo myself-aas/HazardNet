@@ -63,40 +63,40 @@ export const HistoricalCatalogPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-carbon-90 text-carbon-10 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Page Hero Header */}
-        <div className="border-b border-slate-800 pb-6">
+        <div className="border-b border-carbon-80 pb-6">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-rose-950/80 text-rose-400 border border-rose-800/80">
                   Phase E Verified
                 </span>
-                <span className="text-xs font-mono text-slate-400">
+                <span className="text-xs font-mono text-carbon-40">
                   Empirical Catalog 2000–2026
                 </span>
               </div>
               <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
                 Historical Hazards & Multilateral GLIDE Archive
               </h1>
-              <p className="text-sm text-slate-400 mt-2 max-w-3xl leading-relaxed">
+              <p className="text-sm text-carbon-40 mt-2 max-w-3xl leading-relaxed">
                 Comprehensive 26-year empirical multi-hazard registry spanning all 64 districts of Bangladesh. Cross-referenced with UN OCHA ReliefWeb, FAO GIEWS, WHO Emergency, and ADRC multilateral disaster systems.
               </p>
             </div>
 
             {/* Quick Metrics Bar */}
-            <div className="flex items-center gap-4 bg-slate-900 border border-slate-800 p-3.5 rounded-2xl shrink-0">
-              <div className="text-center px-2 border-r border-slate-800">
-                <div className="text-xs text-slate-400 font-medium">Districts</div>
+            <div className="flex items-center gap-4 bg-carbon-90 border border-carbon-80 p-3.5 rounded-2xl shrink-0">
+              <div className="text-center px-2 border-r border-carbon-80">
+                <div className="text-xs text-carbon-40 font-medium">Districts</div>
                 <div className="text-lg font-bold font-mono text-white">64</div>
               </div>
-              <div className="text-center px-2 border-r border-slate-800">
-                <div className="text-xs text-slate-400 font-medium">Clean Events</div>
+              <div className="text-center px-2 border-r border-carbon-80">
+                <div className="text-xs text-carbon-40 font-medium">Clean Events</div>
                 <div className="text-lg font-bold font-mono text-rose-400">3,062</div>
               </div>
               <div className="text-center px-2">
-                <div className="text-xs text-slate-400 font-medium">GLIDE Rec.</div>
+                <div className="text-xs text-carbon-40 font-medium">GLIDE Rec.</div>
                 <div className="text-lg font-bold font-mono text-blue-400">70</div>
               </div>
             </div>

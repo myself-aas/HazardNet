@@ -157,11 +157,11 @@ export const HistoricalHazardCatalog: React.FC<HistoricalHazardCatalogProps> = (
 
   return (
     <div
-      className={`bg-slate-900 border border-slate-800 rounded-2xl p-4 md:p-6 shadow-2xl flex flex-col text-slate-100 ${className}`}
+      className={`bg-carbon-90 border border-carbon-80 rounded-2xl p-4 md:p-6 shadow-2xl flex flex-col text-carbon-10 ${className}`}
       data-testid="historical-hazard-catalog"
     >
       {/* Header and Summary */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-4 pb-4 border-b border-slate-800">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-4 pb-4 border-b border-carbon-80">
         <div>
           <div className="flex items-center gap-2">
             <h3 className="text-base font-bold text-white tracking-tight">
@@ -171,7 +171,7 @@ export const HistoricalHazardCatalog: React.FC<HistoricalHazardCatalogProps> = (
               {filteredRecords.length.toLocaleString()} of {records.length.toLocaleString()} Events
             </span>
           </div>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-carbon-40 mt-1">
             Empirical multi-hazard event registry spanning 2000–2026 with verified multilateral GLIDE cross-references.
           </p>
         </div>
@@ -181,7 +181,7 @@ export const HistoricalHazardCatalog: React.FC<HistoricalHazardCatalogProps> = (
           <button
             type="button"
             onClick={exportAsCsv}
-            className="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-colors flex items-center gap-1.5"
+            className="px-3 py-1.5 rounded-lg text-xs font-medium bg-carbon-80 hover:bg-carbon-70 text-carbon-20 border border-carbon-70 transition-colors flex items-center gap-1.5"
             aria-label="Export filtered records as CSV"
           >
             <span>📥 Export CSV</span>
@@ -189,7 +189,7 @@ export const HistoricalHazardCatalog: React.FC<HistoricalHazardCatalogProps> = (
           <button
             type="button"
             onClick={exportAsJson}
-            className="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-colors flex items-center gap-1.5"
+            className="px-3 py-1.5 rounded-lg text-xs font-medium bg-carbon-80 hover:bg-carbon-70 text-carbon-20 border border-carbon-70 transition-colors flex items-center gap-1.5"
             aria-label="Export filtered records as JSON"
           >
             <span>📦 Export JSON</span>
@@ -201,7 +201,7 @@ export const HistoricalHazardCatalog: React.FC<HistoricalHazardCatalogProps> = (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
         {/* Search Input */}
         <div>
-          <label className="block text-[11px] font-medium text-slate-400 mb-1">Search Keywords</label>
+          <label className="block text-[11px] font-medium text-carbon-40 mb-1">Search Keywords</label>
           <input
             type="text"
             placeholder="Search district, hazard, GLIDE..."
@@ -210,20 +210,20 @@ export const HistoricalHazardCatalog: React.FC<HistoricalHazardCatalogProps> = (
               setSearchTerm(e.target.value);
               setCurrentPage(1);
             }}
-            className="w-full bg-slate-950/80 border border-slate-700/80 rounded-lg px-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-hidden focus:border-rose-500"
+            className="w-full bg-carbon-black/80 border border-carbon-70/80 rounded-lg px-3 py-1.5 text-xs text-carbon-20 placeholder-carbon-50 focus:outline-hidden focus:border-rose-500"
           />
         </div>
 
         {/* Hazard Class Selector */}
         <div>
-          <label className="block text-[11px] font-medium text-slate-400 mb-1">Hazard Class</label>
+          <label className="block text-[11px] font-medium text-carbon-40 mb-1">Hazard Class</label>
           <select
             value={selectedHazard}
             onChange={(e) => {
               setSelectedHazard(e.target.value);
               setCurrentPage(1);
             }}
-            className="w-full bg-slate-950/80 border border-slate-700/80 rounded-lg px-3 py-1.5 text-xs text-slate-200 focus:outline-hidden focus:border-rose-500"
+            className="w-full bg-carbon-black/80 border border-carbon-70/80 rounded-lg px-3 py-1.5 text-xs text-carbon-20 focus:outline-hidden focus:border-rose-500"
           >
             {HAZARD_CLASSES.map((h) => (
               <option key={h} value={h}>
@@ -235,14 +235,14 @@ export const HistoricalHazardCatalog: React.FC<HistoricalHazardCatalogProps> = (
 
         {/* District Selector */}
         <div>
-          <label className="block text-[11px] font-medium text-slate-400 mb-1">District</label>
+          <label className="block text-[11px] font-medium text-carbon-40 mb-1">District</label>
           <select
             value={selectedDistrict}
             onChange={(e) => {
               setSelectedDistrict(e.target.value);
               setCurrentPage(1);
             }}
-            className="w-full bg-slate-950/80 border border-slate-700/80 rounded-lg px-3 py-1.5 text-xs text-slate-200 focus:outline-hidden focus:border-rose-500"
+            className="w-full bg-carbon-black/80 border border-carbon-70/80 rounded-lg px-3 py-1.5 text-xs text-carbon-20 focus:outline-hidden focus:border-rose-500"
           >
             {allDistrictsList.map((d) => (
               <option key={d} value={d}>
@@ -254,9 +254,9 @@ export const HistoricalHazardCatalog: React.FC<HistoricalHazardCatalogProps> = (
 
         {/* Year Range Controls */}
         <div>
-          <div className="flex justify-between text-[11px] font-medium text-slate-400 mb-1">
+          <div className="flex justify-between text-[11px] font-medium text-carbon-40 mb-1">
             <span>Year Range:</span>
-            <span className="font-mono text-slate-200">{minYear} – {maxYear}</span>
+            <span className="font-mono text-carbon-20">{minYear} – {maxYear}</span>
           </div>
           <div className="flex items-center gap-2">
             <input
@@ -269,7 +269,7 @@ export const HistoricalHazardCatalog: React.FC<HistoricalHazardCatalogProps> = (
                 setMinYear(Math.min(val, maxYear));
                 setCurrentPage(1);
               }}
-              className="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-rose-500"
+              className="w-full h-1.5 bg-carbon-70 rounded-lg appearance-none cursor-pointer accent-rose-500"
               aria-label="Minimum year"
             />
             <input
@@ -282,7 +282,7 @@ export const HistoricalHazardCatalog: React.FC<HistoricalHazardCatalogProps> = (
                 setMaxYear(Math.max(val, minYear));
                 setCurrentPage(1);
               }}
-              className="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-rose-500"
+              className="w-full h-1.5 bg-carbon-70 rounded-lg appearance-none cursor-pointer accent-rose-500"
               aria-label="Maximum year"
             />
           </div>
@@ -290,9 +290,9 @@ export const HistoricalHazardCatalog: React.FC<HistoricalHazardCatalogProps> = (
       </div>
 
       {/* Catalog Table */}
-      <div className="overflow-x-auto border border-slate-800 rounded-xl bg-slate-950/40">
-        <table className="w-full text-left text-xs text-slate-300" role="table">
-          <thead className="bg-slate-950/90 text-slate-400 text-[11px] uppercase tracking-wider font-semibold border-b border-slate-800">
+      <div className="overflow-x-auto border border-carbon-80 rounded-xl bg-carbon-black/40">
+        <table className="w-full text-left text-xs text-carbon-30" role="table">
+          <thead className="bg-carbon-black/90 text-carbon-40 text-[11px] uppercase tracking-wider font-semibold border-b border-carbon-80">
             <tr>
               <th scope="col" className="px-3 py-2.5">Date</th>
               <th scope="col" className="px-3 py-2.5">District</th>
@@ -303,10 +303,10 @@ export const HistoricalHazardCatalog: React.FC<HistoricalHazardCatalogProps> = (
               <th scope="col" className="px-3 py-2.5 text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-800/80">
+          <tbody className="divide-y divide-carbon-80/80">
             {paginatedRecords.length === 0 ? (
               <tr>
-                <td colSpan={7} className="text-center py-8 text-slate-500">
+                <td colSpan={7} className="text-center py-8 text-carbon-50">
                   No historical records match the filter criteria.
                 </td>
               </tr>
@@ -316,22 +316,22 @@ export const HistoricalHazardCatalog: React.FC<HistoricalHazardCatalogProps> = (
                 return (
                   <tr
                     key={r.id}
-                    className="hover:bg-slate-800/50 transition-colors"
+                    className="hover:bg-carbon-80/50 transition-colors"
                   >
-                    <td className="px-3 py-2.5 font-mono text-slate-300">
+                    <td className="px-3 py-2.5 font-mono text-carbon-30">
                       {r.date}
                     </td>
                     <td className="px-3 py-2.5 font-semibold text-white">
                       {r.district}
                     </td>
                     <td className="px-3 py-2.5">
-                      <span className="px-2 py-0.5 rounded text-[11px] font-medium bg-slate-800 text-slate-200 border border-slate-700">
+                      <span className="px-2 py-0.5 rounded text-[11px] font-medium bg-carbon-80 text-carbon-20 border border-carbon-70">
                         {r.hazard_type}
                       </span>
                     </td>
                     <td className="px-3 py-2.5 font-mono">
                       <span className="text-rose-400 font-bold">{r.severity_score}</span>
-                      <span className="text-[10px] text-slate-500 ml-1">({r.severity_index_name})</span>
+                      <span className="text-[10px] text-carbon-50 ml-1">({r.severity_index_name})</span>
                     </td>
                     <td className="px-3 py-2.5 font-mono">
                       {hasValidGlide ? (
@@ -355,10 +355,10 @@ export const HistoricalHazardCatalog: React.FC<HistoricalHazardCatalogProps> = (
                           <span className="text-[10px]">↗</span>
                         </button>
                       ) : (
-                        <span className="text-slate-600 text-[11px]">{r.glide || 'Domestic Rec.'}</span>
+                        <span className="text-carbon-60 text-[11px]">{r.glide || 'Domestic Rec.'}</span>
                       )}
                     </td>
-                    <td className="px-3 py-2.5 text-right font-mono text-slate-300">
+                    <td className="px-3 py-2.5 text-right font-mono text-carbon-30">
                       {Number(r.validated_affected || 0).toLocaleString()}
                     </td>
                     <td className="px-3 py-2.5 text-right">
@@ -366,7 +366,7 @@ export const HistoricalHazardCatalog: React.FC<HistoricalHazardCatalogProps> = (
                         <button
                           type="button"
                           onClick={() => onSelectEvent(r)}
-                          className="px-2.5 py-1 rounded text-[11px] font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 transition-colors"
+                          className="px-2.5 py-1 rounded text-[11px] font-medium bg-carbon-80 hover:bg-carbon-70 text-carbon-20 transition-colors"
                         >
                           View Report
                         </button>
@@ -381,7 +381,7 @@ export const HistoricalHazardCatalog: React.FC<HistoricalHazardCatalogProps> = (
       </div>
 
       {/* Pagination Footer */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-4 pt-3 border-t border-slate-800 text-xs text-slate-400">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-4 pt-3 border-t border-carbon-80 text-xs text-carbon-40">
         <div className="flex items-center gap-2">
           <span>Rows per page:</span>
           <select
@@ -390,14 +390,14 @@ export const HistoricalHazardCatalog: React.FC<HistoricalHazardCatalogProps> = (
               setPageSize(Number(e.target.value));
               setCurrentPage(1);
             }}
-            className="bg-slate-950 border border-slate-800 rounded px-2 py-1 text-slate-200 focus:outline-hidden"
+            className="bg-carbon-black border border-carbon-80 rounded px-2 py-1 text-carbon-20 focus:outline-hidden"
           >
             <option value={10}>10</option>
             <option value={15}>15</option>
             <option value={25}>25</option>
             <option value={50}>50</option>
           </select>
-          <span className="text-slate-500">
+          <span className="text-carbon-50">
             Page {safeCurrentPage} of {totalPages}
           </span>
         </div>
@@ -407,18 +407,18 @@ export const HistoricalHazardCatalog: React.FC<HistoricalHazardCatalogProps> = (
             type="button"
             disabled={safeCurrentPage <= 1}
             onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-            className="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 disabled:opacity-40 disabled:cursor-not-allowed"
+            className="px-2.5 py-1 rounded bg-carbon-80 hover:bg-carbon-70 text-carbon-20 disabled:opacity-40 disabled:cursor-not-allowed"
           >
             Previous
           </button>
-          <span className="px-2 font-mono text-slate-300">
+          <span className="px-2 font-mono text-carbon-30">
             {safeCurrentPage} / {totalPages}
           </span>
           <button
             type="button"
             disabled={safeCurrentPage >= totalPages}
             onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-            className="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 disabled:opacity-40 disabled:cursor-not-allowed"
+            className="px-2.5 py-1 rounded bg-carbon-80 hover:bg-carbon-70 text-carbon-20 disabled:opacity-40 disabled:cursor-not-allowed"
           >
             Next
           </button>

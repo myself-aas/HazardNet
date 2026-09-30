@@ -88,11 +88,11 @@ export const TemporalTrendChart: React.FC<TemporalTrendChartProps> = ({
 
   return (
     <div
-      className={`bg-slate-900 border border-slate-800 rounded-2xl p-4 md:p-6 shadow-2xl flex flex-col text-slate-100 ${className}`}
+      className={`bg-carbon-90 border border-carbon-80 rounded-2xl p-4 md:p-6 shadow-2xl flex flex-col text-carbon-10 ${className}`}
       data-testid="temporal-trend-chart"
     >
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-4 border-b border-slate-800">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-4 border-b border-carbon-80">
         <div>
           <div className="flex items-center gap-2">
             <h3 className="text-base font-bold text-white tracking-tight">
@@ -102,7 +102,7 @@ export const TemporalTrendChart: React.FC<TemporalTrendChartProps> = ({
               26-Year Empirical Record
             </span>
           </div>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-carbon-40 mt-1">
             Annual event frequency across all 64 districts with historical milestone disaster annotations.
           </p>
         </div>
@@ -115,7 +115,7 @@ export const TemporalTrendChart: React.FC<TemporalTrendChartProps> = ({
                 className="w-2.5 h-2.5 rounded-full"
                 style={{ backgroundColor: m.color }}
               />
-              <span className="text-slate-300 font-medium">
+              <span className="text-carbon-30 font-medium">
                 {m.year} {m.label}
               </span>
             </div>
@@ -124,11 +124,11 @@ export const TemporalTrendChart: React.FC<TemporalTrendChartProps> = ({
       </div>
 
       {/* Interactive Chart Container */}
-      <div className="relative w-full h-[280px] sm:h-[340px] bg-slate-950/60 rounded-xl border border-slate-800/80 p-2 overflow-hidden flex items-center justify-center">
+      <div className="relative w-full h-[280px] sm:h-[340px] bg-carbon-black/60 rounded-xl border border-carbon-80/80 p-2 overflow-hidden flex items-center justify-center">
         {/* Tooltip Overlay */}
         {hoveredPoint && (
           <div
-            className="absolute top-3 left-16 z-20 bg-slate-900/95 backdrop-blur-md border border-slate-700 px-3 py-2 rounded-lg shadow-xl text-xs space-y-1 pointer-events-none"
+            className="absolute top-3 left-16 z-20 bg-carbon-90/95 backdrop-blur-md border border-carbon-70 px-3 py-2 rounded-lg shadow-xl text-xs space-y-1 pointer-events-none"
             role="tooltip"
           >
             <div className="flex items-center justify-between gap-4 font-mono font-bold text-white">
@@ -168,7 +168,7 @@ export const TemporalTrendChart: React.FC<TemporalTrendChartProps> = ({
                   y1={y}
                   x2={width - padding.right}
                   y2={y}
-                  stroke="#334155"
+                  stroke="#444447"
                   strokeWidth={0.5}
                   strokeDasharray="3, 3"
                 />
@@ -176,7 +176,7 @@ export const TemporalTrendChart: React.FC<TemporalTrendChartProps> = ({
                   x={padding.left - 8}
                   y={y + 3}
                   textAnchor="end"
-                  className="text-[11px] font-mono fill-slate-500"
+                  className="text-[11px] font-mono fill-carbon-50"
                 >
                   {tick}
                 </text>
@@ -249,7 +249,7 @@ export const TemporalTrendChart: React.FC<TemporalTrendChartProps> = ({
                   cy={p.y}
                   r={isHovered ? 5.5 : 3}
                   fill={isHovered ? '#ffffff' : '#f43f5e'}
-                  stroke="#0f172a"
+                  stroke="#17171b"
                   strokeWidth={1.5}
                   className="transition-all"
                 />
@@ -259,7 +259,7 @@ export const TemporalTrendChart: React.FC<TemporalTrendChartProps> = ({
                     x={p.x}
                     y={padding.top + innerHeight + 18}
                     textAnchor="middle"
-                    className="text-[10px] font-mono fill-slate-400"
+                    className="text-[10px] font-mono fill-carbon-40"
                   >
                     {p.record.year}
                   </text>

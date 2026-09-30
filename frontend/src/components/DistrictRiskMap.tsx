@@ -86,11 +86,11 @@ export const DistrictRiskMap: React.FC<DistrictRiskMapProps> = ({
 
   return (
     <div
-      className={`relative w-full bg-slate-900 border border-slate-800 rounded-2xl p-4 md:p-6 shadow-2xl flex flex-col text-slate-100 ${className}`}
+      className={`relative w-full bg-carbon-90 border border-carbon-80 rounded-2xl p-4 md:p-6 shadow-2xl flex flex-col text-carbon-10 ${className}`}
       data-testid="district-risk-map"
     >
       {/* Header controls & Division Quick Jump */}
-      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 mb-4 pb-4 border-b border-slate-800">
+      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 mb-4 pb-4 border-b border-carbon-80">
         <div>
           <div className="flex items-center gap-2">
             <span
@@ -101,11 +101,11 @@ export const DistrictRiskMap: React.FC<DistrictRiskMapProps> = ({
             <h3 className="text-base font-bold text-white tracking-tight">
               Historical District Vulnerability Choropleth
             </h3>
-            <span className="px-2 py-0.5 rounded-full text-xs font-mono font-medium bg-slate-800 text-rose-300 border border-slate-700">
+            <span className="px-2 py-0.5 rounded-full text-xs font-mono font-medium bg-carbon-80 text-rose-300 border border-carbon-70">
               64 Districts Analyzed (2000–2026)
             </span>
           </div>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-carbon-40 mt-1">
             Continuous empirical vulnerability ramp based on multi-hazard recurrence, frequency, and impacts.
           </p>
         </div>
@@ -122,7 +122,7 @@ export const DistrictRiskMap: React.FC<DistrictRiskMapProps> = ({
                 className={`px-2.5 py-1 text-xs rounded-lg font-medium whitespace-nowrap transition-colors ${
                   isSelected
                     ? 'bg-rose-600 text-white font-semibold shadow-sm'
-                    : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white'
+                    : 'bg-carbon-80 text-carbon-30 hover:bg-carbon-70 hover:text-white'
                 }`}
                 aria-pressed={isSelected}
               >
@@ -134,14 +134,14 @@ export const DistrictRiskMap: React.FC<DistrictRiskMapProps> = ({
       </div>
 
       {/* SVG Map Canvas Area */}
-      <div className="relative w-full h-[420px] sm:h-[480px] bg-slate-950/60 rounded-xl border border-slate-800/80 overflow-hidden flex items-center justify-center p-2">
+      <div className="relative w-full h-[420px] sm:h-[480px] bg-carbon-black/60 rounded-xl border border-carbon-80/80 overflow-hidden flex items-center justify-center p-2">
         {/* Tooltip Overlay */}
         {hoveredDistrict && (
           <div
-            className="absolute top-4 right-4 z-30 bg-slate-900/95 backdrop-blur-md border border-slate-700 p-3.5 rounded-xl shadow-2xl text-xs space-y-1.5 min-w-[210px] pointer-events-none text-slate-200"
+            className="absolute top-4 right-4 z-30 bg-carbon-90/95 backdrop-blur-md border border-carbon-70 p-3.5 rounded-xl shadow-2xl text-xs space-y-1.5 min-w-[210px] pointer-events-none text-carbon-20"
             role="tooltip"
           >
-            <div className="flex items-center justify-between border-b border-slate-800 pb-1.5">
+            <div className="flex items-center justify-between border-b border-carbon-80 pb-1.5">
               <span className="font-bold text-white text-sm">
                 {hoveredDistrict.name}
               </span>
@@ -156,20 +156,20 @@ export const DistrictRiskMap: React.FC<DistrictRiskMapProps> = ({
                 Rank #{hoveredDistrict.rank || 'N/A'}
               </span>
             </div>
-            <div className="text-slate-400">
+            <div className="text-carbon-40">
               Division:{' '}
-              <strong className="text-slate-200">{hoveredDistrict.division}</strong>
+              <strong className="text-carbon-20">{hoveredDistrict.division}</strong>
             </div>
-            <div className="text-slate-400">
+            <div className="text-carbon-40">
               Primary Hazard:{' '}
-              <strong className="text-slate-200">{hoveredDistrict.hazardType}</strong>
+              <strong className="text-carbon-20">{hoveredDistrict.hazardType}</strong>
             </div>
-            <div className="text-slate-400">
+            <div className="text-carbon-40">
               Historical Events:{' '}
-              <strong className="text-slate-200">{hoveredDistrict.events}</strong>
+              <strong className="text-carbon-20">{hoveredDistrict.events}</strong>
             </div>
-            <div className="flex items-center justify-between pt-1 border-t border-slate-800 font-mono">
-              <span className="text-slate-400">Vulnerability Index:</span>
+            <div className="flex items-center justify-between pt-1 border-t border-carbon-80 font-mono">
+              <span className="text-carbon-40">Vulnerability Index:</span>
               <span
                 className="font-bold text-sm"
                 style={{ color: getVulnerabilityColor(hoveredDistrict.score) }}
@@ -193,8 +193,8 @@ export const DistrictRiskMap: React.FC<DistrictRiskMapProps> = ({
               <path
                 key={div.id}
                 d={div.path}
-                fill={div.fill || '#1e293b'}
-                stroke={div.stroke || '#475569'}
+                fill={div.fill || '#17171b'}
+                stroke={div.stroke || '#444447'}
                 strokeWidth={0.35}
                 strokeDasharray="1, 1"
               />
@@ -276,7 +276,7 @@ export const DistrictRiskMap: React.FC<DistrictRiskMapProps> = ({
                     cy={d.cy}
                     r={radius}
                     fill={fill}
-                    stroke={isSelected ? '#ffffff' : '#0f172a'}
+                    stroke={isSelected ? '#ffffff' : '#17171b'}
                     strokeWidth={isSelected ? 0.6 : 0.3}
                   />
 
@@ -286,7 +286,7 @@ export const DistrictRiskMap: React.FC<DistrictRiskMapProps> = ({
                       x={d.cx}
                       y={d.cy - radius - 0.8}
                       textAnchor="middle"
-                      className="text-[2.2px] font-sans font-bold fill-slate-100 pointer-events-none drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]"
+                      className="text-[2.2px] font-sans font-bold fill-carbon-10 pointer-events-none drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]"
                     >
                       {d.name}
                     </text>
@@ -299,28 +299,28 @@ export const DistrictRiskMap: React.FC<DistrictRiskMapProps> = ({
       </div>
 
       {/* Vulnerability Color Ramp Legend */}
-      <div className="mt-4 pt-3 border-t border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+      <div className="mt-4 pt-3 border-t border-carbon-80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
         <div className="flex items-center gap-2">
-          <span className="text-slate-400 font-medium">Vulnerability Index:</span>
+          <span className="text-carbon-40 font-medium">Vulnerability Index:</span>
           <div className="flex items-center gap-1.5">
             <span className="w-3 h-3 rounded-full bg-[#16a34a]" />
-            <span className="text-slate-400 text-[11px]">Low (&lt;0.40)</span>
+            <span className="text-carbon-40 text-[11px]">Low (&lt;0.40)</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="w-3 h-3 rounded-full bg-[#ea580c]" />
-            <span className="text-slate-400 text-[11px]">Moderate (0.40–0.65)</span>
+            <span className="text-carbon-40 text-[11px]">Moderate (0.40–0.65)</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="w-3 h-3 rounded-full bg-[#dc2626]" />
-            <span className="text-slate-400 text-[11px]">High (0.65–0.85)</span>
+            <span className="text-carbon-40 text-[11px]">High (0.65–0.85)</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="w-3 h-3 rounded-full bg-[#7f1d1d]" />
-            <span className="text-slate-400 text-[11px]">Critical (&ge;0.85)</span>
+            <span className="text-carbon-40 text-[11px]">Critical (&ge;0.85)</span>
           </div>
         </div>
 
-        <div className="text-slate-500 text-[11px]">
+        <div className="text-carbon-50 text-[11px]">
           Click or press Enter on any district node to inspect historical hazard details.
         </div>
       </div>
