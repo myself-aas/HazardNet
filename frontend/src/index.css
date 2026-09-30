@@ -280,22 +280,48 @@ html {
   overflow-x: clip;
 }
 
-body {
-  margin: 0;
-  /* Body copy is NASA HDS's body stack (Public Sans, 16px/1.62); headings take
-     Inter via --font-heading. Both come from --hds-font-family-*. */
-  font-family: var(--hn-font-mono);
-  background-color: var(--surface-page);
-  color: var(--text-body);
-  font-size: var(--hds-font-size-xs); /* 16px — HDS body size and the AA/UX floor */
-  line-height: var(--hds-line-height-5);
-  -webkit-tap-highlight-color: transparent;
-  scroll-behavior: smooth;
-  /* Guard against accidental horizontal scroll on small viewports.
-     `clip` (unlike `hidden`) does not create a scroll container,
-     so position: sticky headers keep working. */
-  overflow-x: clip;
-}
+  body {
+    margin: 0;
+    /* Body copy is NASA HDS's body stack (Public Sans, 16px/1.62); headings take
+       the editorial face. */
+    font-family: var(--hn-font-sans);
+    font-size: 16px;
+    line-height: 1.62;
+    color: var(--text-body);
+    background: var(--surface-page);
+    overflow-x: clip;
+    min-width: 0;
+  }
+
+  /* Keep media and flex/grid children from creating a wider-than-viewport page
+     on narrow devices. Components can opt into intentional scrolling for tables
+     and tab bars with their existing overflow containers. */
+  img,
+  svg,
+  video,
+  canvas {
+    max-width: 100%;
+  }
+
+  button,
+  a,
+  input,
+  select,
+  textarea {
+    touch-action: manipulation;
+  }
+
+  @media (max-width: 639px) {
+    main,
+    [role='main'] {
+      min-width: 0;
+    }
+
+    .safe-area-bottom {
+      padding-bottom: max(1rem, env(safe-area-inset-bottom));
+    }
+  }
+
 
 /* Global Mono system: controls, headings, labels, and content share one technical voice. */
 *, *::before, *::after {

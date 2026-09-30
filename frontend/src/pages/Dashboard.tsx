@@ -450,7 +450,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
   }
 
   return (
-    <div className={isFullScreen ? "w-full h-full h-dvh overflow-y-auto px-4 sm:px-6 lg:px-8 pt-24 custom-scrollbar bg-carbon-05 relative z-10" : "w-full"}>
+    <div className={isFullScreen ? "w-full h-full min-h-dvh overflow-y-auto px-3 sm:px-6 lg:px-8 pt-20 sm:pt-24 custom-scrollbar bg-carbon-05 relative z-10" : "w-full"}>
       <div id="dashboard-content" className="max-w-[1600px] mx-auto space-y-8 sm:space-y-10 md:space-y-12 pb-12">
 
       {/* Top Header Card */}

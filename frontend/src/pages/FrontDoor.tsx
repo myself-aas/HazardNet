@@ -409,20 +409,20 @@ export const FrontDoor: React.FC = () => {
               <div className="mt-7 flex flex-wrap items-center gap-2 sm:gap-3">
                 <Link
                   to="/live"
-                  className="inline-flex min-h-[44px] items-center gap-2 bg-nasa-red-shade px-6 py-3 text-base font-semibold text-white hover:bg-nasa-red tracking-[0.01em] touch-manipulation shadow-lg transition-transform duration-150 active:scale-95"
+                  className="inline-flex min-h-[48px] w-full items-center justify-center gap-2 bg-nasa-red-shade px-5 py-3 text-base font-semibold text-white hover:bg-nasa-red tracking-[0.01em] touch-manipulation shadow-lg transition-transform duration-150 active:scale-95 sm:w-auto sm:px-6"
                 >
                   <MaterialIcon name="public" className="text-base" />
                   {t('frontdoor.hero.ctaMap')}
                 </Link>
                 <Link
                   to="/methodology"
-                  className="inline-flex min-h-[44px] items-center gap-2 border-2 border-white/80 px-6 py-3 text-base font-semibold text-white hover:bg-white/10 touch-manipulation backdrop-blur-sm transition-colors duration-150"
+                  className="inline-flex min-h-[48px] w-full items-center justify-center gap-2 border-2 border-white/80 px-5 py-3 text-base font-semibold text-white hover:bg-white/10 touch-manipulation backdrop-blur-sm transition-colors duration-150 sm:w-auto sm:px-6"
                 >
                   {t('frontdoor.hero.ctaMethodology')}
                 </Link>
                 <Link
                   to="/model-performance"
-                  className="inline-flex min-h-[44px] items-center gap-2 border-2 border-white/70 px-6 py-3 text-base font-semibold text-white hover:border-white hover:bg-white/10 touch-manipulation backdrop-blur-sm transition-colors duration-150"
+                  className="inline-flex min-h-[48px] w-full items-center justify-center gap-2 border-2 border-white/70 px-5 py-3 text-base font-semibold text-white hover:border-white hover:bg-white/10 touch-manipulation backdrop-blur-sm transition-colors duration-150 sm:w-auto sm:px-6"
                 >
                   {t('frontdoor.hero.ctaScorecard')}
                 </Link>
