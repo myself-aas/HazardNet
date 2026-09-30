@@ -1,5 +1,5 @@
-// Vercel Serverless Function
-// Handles CSV uploads, generates advisories via Gemini, and writes through the forecast store (ADR 0002)
+// POST /api/forecasts — CSV uploads, advisories via Gemini, forecast store (ADR 0002).
+// Deployed by the Vercel entry point api/[endpoint].js.
 // ESM: the root package.json declares "type": "module" — CJS `require` fails here.
 
 import csv from 'csv-parser';

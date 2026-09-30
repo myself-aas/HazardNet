@@ -1,7 +1,7 @@
 /**
  * Shared forecast-serving helpers — the single implementation behind BOTH the
  * Express routes (backend/routes/forecasts.js, self-hosted/Docker) and the
- * Vercel serverless handlers (api/v1/forecasts/*.js). Keeping query parsing,
+ * Vercel serverless handlers (serverless/v1/forecasts/*.js). Keeping query parsing,
  * history windowing, and CSV export here guarantees byte-identical API
  * behavior across runtimes (the API-parity gap that left production without
  * GET /bulk is closed by construction).

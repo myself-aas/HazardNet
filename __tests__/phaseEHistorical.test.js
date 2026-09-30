@@ -166,13 +166,23 @@ describe('TASK-016: Multilateral GLIDE Link Resolver & REST API', () => {
     assert.ok(serverCode.includes('/api/v1/historical'), 'server.js must mount at /api/v1/historical');
   });
 
-  test('Serverless api/v1/historical.js handler exists and responds with CORS and security headers', async () => {
-    const serverlessPath = path.resolve(process.cwd(), 'api', 'v1', 'historical.js');
-    assert.ok(fs.existsSync(serverlessPath), 'api/v1/historical.js must exist');
+  test('The Vercel entry point for /api/v1/historical exists and serves it with security headers', async () => {
+    // The handler lives in serverless/ — a directory Vercel does not scan for functions —
+    // and is deployed by the URL-family entry point (docs/codebase/VERCEL_FUNCTIONS.md).
+    const handlerPath = path.resolve(process.cwd(), 'serverless', 'v1', 'historical.js');
+    assert.ok(fs.existsSync(handlerPath), 'serverless/v1/historical.js must exist');
+    const entryPath = path.resolve(process.cwd(), 'api', 'v1', '[resource].js');
+    assert.ok(fs.existsSync(entryPath), 'api/v1/[resource].js must exist');
 
-    const module = await import('../api/v1/historical.js');
+    // Drive the entry point, not the handler: this is the file Vercel deploys, and the
+    // assertion below fails if it stops routing `historical` to this handler.
+    const module = await import('../api/v1/[resource].js');
     const handler = typeof module.default === 'function' ? module.default : module.default?.default;
     assert.equal(typeof handler, 'function', 'Serverless handler must be default export');
+    assert.ok(
+      [...(handler.routes || [])].includes('historical'),
+      'api/v1/[resource].js must route historical',
+    );
 
     // Simulate mock request to /summary
     let statusCode = 0;

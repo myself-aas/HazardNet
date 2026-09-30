@@ -1,15 +1,15 @@
-// Vercel Serverless Function — POST /api/v1/weather/batch
+// POST /api/v1/weather/batch — deployed by the Vercel entry point
+// api/v1/weather/batch.js, which also carries the `config.bodyParser` limit.
 // Body: { "points": [{ "id": "kurigram", "lat": ..., "lng": ... }, ...] }
 //
 // Returns current-weather conditions for many points in a single upstream call.
 
-import { fetchCurrentWeatherBatch } from '../../../../backend/utils/openMeteo.js';
+// Three levels up from serverless/v1/weather/ is the repo root (this specifier had four
+// before the move, i.e. it resolved outside the repository and the deployed function threw
+// ERR_MODULE_NOT_FOUND at import time).
+import { fetchCurrentWeatherBatch } from '../../../backend/utils/openMeteo.js';
 import { clientError } from '../../../backend/utils/clientError.js';
 import { guardRequest } from '../../../backend/middleware/serverlessGuard.js';
-
-export const config = {
-  api: { bodyParser: { sizeLimit: '256kb' } },
-};
 
 export default async function handler(req, res) {
   if (req.method === 'POST') {

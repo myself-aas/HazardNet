@@ -1,4 +1,4 @@
-// Vercel Serverless Function — POST /api/chat/query
+// POST /api/chat/query — deployed by the Vercel entry point api/chat/[action].js.
 //
 // API-parity fix (2026-09-17): the AI Advisor widget calls /api/chat/query,
 // but that route only existed on the Express backend — which is not what

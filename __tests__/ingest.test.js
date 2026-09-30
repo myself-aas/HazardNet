@@ -4,7 +4,9 @@
 import { persistForecasts } from '../backend/forecastPersistence.js';
 jest.mock('../backend/forecastPersistence.js', () => ({ persistForecasts: jest.fn(async (rows) => ({ written: rows.length })) }));
 import { createMocks } from 'node-mocks-http';
-import handler from '../api/ingest.js';
+// Deployed as POST /api/ingest through api/[endpoint].js (docs/codebase/VERCEL_FUNCTIONS.md);
+// the handler itself lives in serverless/ so this test follows the implementation.
+import handler from '../serverless/ingest.js';
 
 
 jest.mock('../backend/db.js', () => ({

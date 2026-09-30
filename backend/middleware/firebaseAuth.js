@@ -44,7 +44,7 @@ export function bearerToken(headers = {}) {
 
 /**
  * Verify a Firebase ID token independently of Express, so serverless handlers
- * (api/v1/alerts/*) can authenticate the same way the middleware does.
+ * (serverless/v1/alerts/*) can authenticate the same way the middleware does.
  *
  * Role comes from the token's claims, which only the Admin SDK can set — a client
  * cannot promote itself by editing its profile document. Absent a claim the role

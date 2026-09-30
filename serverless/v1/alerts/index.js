@@ -1,4 +1,4 @@
-// Vercel Serverless Function — GET /api/v1/alerts
+// GET /api/v1/alerts — deployed by the Vercel entry point api/v1/[resource].js.
 //
 // Public read of published alerts (PRODUCT_SPEC §1.3); the review queue requires
 // duty-officer standing or the pipeline API key. Same access rules as the Express

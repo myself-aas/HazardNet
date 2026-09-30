@@ -1,4 +1,5 @@
-// Vercel Serverless Function — GET /api/v1/forecasts/bulk?horizon=7_days
+// GET /api/v1/forecasts/bulk?horizon=7_days — deployed by the Vercel entry point
+// api/v1/forecasts/[action].js.
 //
 // Closes the API-parity gap: the Express backend always served /bulk, but the
 // Vercel deployment had no GET handler for it, so production fell back to the

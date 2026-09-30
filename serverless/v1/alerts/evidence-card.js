@@ -1,4 +1,5 @@
-// Vercel Serverless Function — GET /api/v1/alerts/evidence-card?id=<alert-id>
+// GET /api/v1/alerts/evidence-card?id=<alert-id> — deployed by the Vercel entry
+// point api/v1/alerts/[action].js.
 //
 // The artefact a duty officer reviews before approving (§1.6). Published alerts
 // are public; unpublished cards need the pipeline key or a duty-officer token.

@@ -1,4 +1,5 @@
-// Vercel Serverless Function — GET /api/v1/alerts/policy
+// GET /api/v1/alerts/policy — deployed by the Vercel entry point
+// api/v1/alerts/[action].js.
 //
 // The thresholds in force, the human-in-the-loop ceiling and the calibration
 // caveat, as served by the Express route. No credentials, no auth: this is the

@@ -1,4 +1,5 @@
-// Vercel Serverless Function — POST /api/v1/alerts/run
+// POST /api/v1/alerts/run — deployed by the Vercel entry point
+// api/v1/alerts/[action].js.
 //
 // The scheduled engine pass, for a Vercel cron or an external scheduler
 // (the GitHub workflow calls the Express route; this exists so a

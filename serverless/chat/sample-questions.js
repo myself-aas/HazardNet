@@ -1,6 +1,7 @@
-// Vercel Serverless Function — GET /api/chat/sample-questions
+// GET /api/chat/sample-questions — deployed by the Vercel entry point
+// api/chat/[action].js.
 //
-// Companion to api/chat/query.js (API-parity fix, 2026-09-17): the AI Advisor
+// Companion to query.js in this directory (API-parity fix, 2026-09-17): the AI Advisor
 // widget fetches these quick-start chips when it opens. Thin wrapper over
 // backend/utils/chatService.js so production and the Express backend serve
 // identical categories. No middleware → minimal cold start.

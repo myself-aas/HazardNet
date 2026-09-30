@@ -10,7 +10,8 @@ List only meaningful top-level directories and files.
 |------|---------|----------|
 | `frontend/` | Web application client built with Vite, React 18, React Router, Tailwind CSS, Leaflet, and Recharts. Includes prerendered static editorial pages and interactive dashboards. | `frontend/package.json`, `frontend/src/App.tsx` |
 | `backend/` | Self-hosted Node.js Express server providing REST endpoints for forecasts, alerts, chat, push notifications, and live Prometheus metrics. | `backend/server.js`, `backend/routes/` |
-| `api/` | Serverless API functions designed for Vercel edge deployment (`/api/forecasts`, `/api/ingest`, `/api/metrics`, `/api/v1/*`). | `api/forecasts.js`, `api/v1/forecasts/bulk.js` |
+| `api/` | Vercel entry points — one file per URL family (`/api/forecasts`, `/api/chat/*`, `/api/v1/*`), each a dispatcher or a re-export. The Hobby plan allows 12 functions per deployment, so the per-endpoint handlers live in `serverless/`. | `api/[endpoint].js`, `api/v1/forecasts/[action].js` |
+| `serverless/` | The Vercel handlers themselves, imported by the `api/` entry points (Vercel only scans `api/`, so these do not count against the 12-function budget). | `serverless/forecasts.js`, `serverless/dispatch.js` |
 | `packages/core/` | Shared domain contracts, Zod data validation schemas, forecast row definitions, alert state machines, and i18n utilities. | `packages/core/package.json`, `packages/core/src/index.ts` |
 | `packages/design-system/` | Shared UI tokens, Material 3 Expressive theming, and React custom styling hooks. | `packages/design-system/package.json`, `packages/design-system/src/tokens.ts` |
 | `packages/api/` | Typed API client wrapper with standardized error handling and retry policies. | `packages/api/package.json`, `packages/api/src/client.ts` |
@@ -31,7 +32,7 @@ List only meaningful top-level directories and files.
 - Main runtime entry:
   - Frontend SPA: `frontend/index.html` mounts `frontend/src/main.tsx`, which renders `frontend/src/App.tsx`.
   - Self-hosted Backend API: `backend/server.js` (`node backend/server.js`).
-  - Serverless API: Exported handler functions in `api/forecasts.js`, `api/ingest.js`, and `api/v1/**/*.js`.
+  - Serverless API: `api/**/*.js` entry points (URL families, under the Hobby 12-function budget) dispatching to the handlers in `serverless/**/*.js` — see `docs/codebase/VERCEL_FUNCTIONS.md`.
 - Secondary entry points (worker/cli/jobs):
   - Mobile App: `apps/mobile/App.tsx` loaded via `expo/AppEntry.js`.
   - Windows Desktop App: `apps/windows/App.windows.tsx` loaded via `apps/windows/index.windows.js`.

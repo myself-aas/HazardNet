@@ -1,3 +1,5 @@
+// GET /api/historical — legacy alias of /api/v1/historical.
+// Deployed by the Vercel entry point api/[endpoint].js.
 import { serveHistorical } from './v1/historical.js';
 import { guardRequest } from '../backend/middleware/serverlessGuard.js';
 

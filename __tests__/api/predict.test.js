@@ -3,7 +3,9 @@ import express from 'express';
 import request from 'supertest';
 import { createMocks } from 'node-mocks-http';
 import routes from '../../backend/routes/predict.js';
-import handler from '../../api/predict.js';
+// The deployed Vercel entry point, not the handler module: this is the file whose
+// dispatch decides whether /api/predict reaches the stored-prediction handler.
+import handler from '../../api/[endpoint].js';
 import { getForecastStore } from '../../backend/forecastStore.js';
 
 jest.mock('../../backend/forecastStore.js', () => ({ getForecastStore: jest.fn() }));
@@ -27,7 +29,9 @@ beforeEach(() => {
   process.env.HAZARDNET_DISABLE_SERVERLESS_RATELIMIT = '1';
 });
 const vercel = async (body, method = 'POST') => {
-  const { req, res } = createMocks({ method, body });
+  // `endpoint` is the segment Vercel appends for `/api/predict`; the entry point routes on
+  // it and removes it again before the handler runs.
+  const { req, res } = createMocks({ method, body, query: { endpoint: 'predict' } });
   await handler(req, res);
   return { status: res.statusCode, body: res._getJSONData(), headers: res._getHeaders() };
 };
