@@ -1,5 +1,9 @@
 # Technology Stack
 
+> **Mapping pass:** 2026-09-30 (second pass, commit `deff0d9`). Claims in this document
+> were verified against the working tree; the commands used are listed in the Evidence
+> section, and the full run list is summarised in `CONCERNS.md`.
+
 ## Core Sections (Required)
 
 ### 1) Runtime Summary
@@ -19,14 +23,14 @@
 |------------|---------|----------------|----------|
 | `express` | `^4.18.2` | Self-host HTTP API server (all `/api` and `/v1` routes) | `package.json`, `backend/server.js` |
 | `firebase` / `firebase-admin` | `^12.17.0` / `^13.10.0` | Firestore client SDK, auth token verification | `package.json`, `backend/db.js`, `backend/middleware/firebaseAuth.js` |
-| `@google-cloud/firestore` | `^7.11.6` | Firestore driver used by the forecast store | `package.json`, `backend/forecastStore.js` |
+| `@google-cloud/firestore` | `^7.11.6` | Firestore driver the Admin SDK needs for durable forecast writes. Declared explicitly (and pinned by `__tests__/runtimeDependencies.test.js`) because firebase-admin lists it as an *optional* peer — no source file imports it directly | `package.json`, `backend/forecastPersistence.js`, `__tests__/runtimeDependencies.test.js` |
 | `@google/genai` | `^2.15.0` | Gemini generative-AI client (advisories, chat, live voice) | `package.json`, `backend/services/advisoryAgent.js`, `backend/routes/chat.js` |
 | `helmet` | `^8.1.0` | Security headers / CSP / frameguard on the Express app | `package.json`, `backend/server.js`, `backend/security/csp.js` |
 | `cors` | `^2.8.5` | CORS allowlist (fails closed in production) | `package.json`, `backend/middleware/cors.js` |
-| `jsonwebtoken` | `^9.0.0` | JWT verification for authenticated endpoints | `package.json`, `backend/middleware/firebaseAuth.js` |
+| `jsonwebtoken` | `^9.0.0` | **Declared but unused (verified with `grep -rn jsonwebtoken` over the tree — no source or test import).** ID-token verification actually runs through `firebase-admin` (`admin.auth().verifyIdToken`), so this is a dead production dependency | `package.json`; absence of imports in `backend/middleware/firebaseAuth.js`; see `CONCERNS.md` §2 |
 | `express-rate-limit` | `^7.5.0` | Layered rate limiting (`/api` baseline + AI/alert buckets) | `package.json`, `backend/middleware/rateLimit.js` |
 | `multer` | `^2.2.0` | Multipart CSV upload for forecast ingestion | `package.json`, `backend/routes/forecasts.js` |
-| `busboy` | `^1.6.0` | Streaming multipart parsing in the serverless ingest path | `package.json`, `serverless/ingest.js` |
+| `busboy` | `^1.6.0` | Streaming multipart parsing in the serverless forecast-upload path | `package.json`, `serverless/forecasts.js` |
 | `csv-parser` | `^3.2.1` | Streaming CSV row parsing | `package.json`, `backend/routes/forecasts.js` |
 | `zod` | `^3.23.0` | Response/request schema validation (also in `packages/*`) | `package.json`, `packages/core/src/contracts.ts`, `packages/api/src/endpoints.ts` |
 | `dompurify` | `^3.4.15` | HTML sanitisation before rendering untrusted content | `package.json` |
@@ -124,10 +128,11 @@ npm run alerts:rehearse / npm run alerts:snapshot
 ### 5) Environment and Config
 
 - **Config sources:** `package.json`, `frontend/package.json`, `apps/mobile/package.json`, `packages/*/package.json`, `frontend/vite.config.ts`, `frontend/tsconfig.json`, `eslint.config.js`, `.prettierrc`, `jest.config.cjs`, `jest.setup.ts`, `babel.config.cjs`, `apps/mobile/{babel.config.cjs,metro.config.cjs,jest.config.cjs,app.json,eas.json}`, `playwright.config.ts`, `playwright.qa.config.ts`, `vercel.json`, `frontend/vercel.json`, `firebase.json`, `firestore.rules`, `.firebaserc`, `firebase-applet-config.json`, `monitoring/prometheus.yml`, `monitoring/alerts.yml`.
-- **Required env vars:** `FIREBASE_SERVICE_ACCOUNT_JSON` (server boot), `BACKEND_API_KEY` (ingest/broadcast), `FRONTEND_ORIGIN` (CORS allowlist; production fails closed without it), `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` (push), `GEMINI_API_KEY` (AI routes; deterministic fallback when unset). Frontend build: `VITE_FIREBASE_API_KEY`, `VITE_FIREBASE_AUTH_DOMAIN`, `VITE_FIREBASE_PROJECT_ID`, `VITE_FIREBASE_APP_ID` (+ optional `VITE_FIREBASE_DATABASE_URL`, `VITE_FIREBASE_STORAGE_BUCKET`, `VITE_FIREBASE_MESSAGING_SENDER_ID`, `VITE_FIREBASE_MEASUREMENT_ID`, `VITE_FIREBASE_FIRESTORE_DATABASE_ID`). A placeholder-only **`.env.example`** is committed and `docs/ENVIRONMENT_SECRETS.md` §2 is the authoritative reference. Optional/tuning: `GEMINI_API_KEY_BACKUP`, `GROQ_API_KEY`, `OPENROUTER_API_KEY`, `HUGGINGFACE_API_KEY`, `WEB_PUSH_CONTACT`, `CSP_ENFORCE`, `FIREBASE_VERIFY_TIMEOUT_MS`, `CONVERSION_PERSIST_TIMEOUT_MS`, `FORECAST_STORE`, `FORECAST_DATASET`, `ALERT_AUTO_PUBLISH`, `ALERT_AUTO_PUBLISH_MINUTES`, `ALERT_DUTY_OFFICERS`, `SLACK_WEBHOOK_URL`, `QA_CHROMIUM_PATH` / `PLAYWRIGHT_CHROMIUM_PATH`.
+- **Required env vars:** `FIREBASE_SERVICE_ACCOUNT_JSON` (server boot), `BACKEND_API_KEY` (ingest/broadcast), `FRONTEND_ORIGIN` (CORS allowlist; production fails closed without it), `VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY` (push), `GEMINI_API_KEY` (AI routes; deterministic fallback when unset). Frontend build: `VITE_FIREBASE_API_KEY`, `VITE_FIREBASE_AUTH_DOMAIN`, `VITE_FIREBASE_PROJECT_ID`, `VITE_FIREBASE_APP_ID` (+ optional `VITE_FIREBASE_DATABASE_URL`, `VITE_FIREBASE_STORAGE_BUCKET`, `VITE_FIREBASE_MESSAGING_SENDER_ID`, `VITE_FIREBASE_MEASUREMENT_ID`, `VITE_FIREBASE_FIRESTORE_DATABASE_ID`). `docs/ENVIRONMENT_SECRETS.md` §2 is the authoritative reference. Optional/tuning: `GEMINI_API_KEY_BACKUP`, `GROQ_API_KEY`, `OPENROUTER_API_KEY`, `HUGGINGFACE_API_KEY`, `WEB_PUSH_CONTACT`, `CSP_ENFORCE`, `FIREBASE_VERIFY_TIMEOUT_MS`, `CONVERSION_PERSIST_TIMEOUT_MS`, `FORECAST_STORE`, `FORECAST_DATASET`, `ALERT_AUTO_PUBLISH`, `ALERT_AUTO_PUBLISH_MINUTES`, `ALERT_DUTY_OFFICERS`, `SLACK_WEBHOOK_URL`, `QA_CHROMIUM_PATH` / `PLAYWRIGHT_CHROMIUM_PATH`.
+- **No committed env template (verified 2026-09-30).** `docs/ENVIRONMENT_SECRETS.md` §0 and §C instruct `cp .env.example .env`, and `.gitignore` line 2 carries a `!.env.example` negation — but the file is not in the working tree and not in `HEAD` (`git cat-file -e HEAD:.env.example` fails). `.gitignore` line 47 (`.env.*`) matches `.env.example` and, being *later*, wins over the line-2 negation (`git check-ignore -v .env.example` prints `.gitignore:47:.env.*`). `scripts/validate_env.mjs` only checks the template when it exists, and `scripts/tests/test_secret_scan.py::test_the_shipped_env_example_is_clean` explicitly treats it as optional — so no gate fails. Contributors following §0 hit a missing file; see `CONCERNS.md` §1.
 - **Deployment/runtime constraints:**
   - Vercel **Hobby** plan allows at most **12 Serverless Functions** per deployment; every file under `api/` is one function and **6 are used**. The one-entry-point-per-URL-family dispatcher design exists purely for this budget (`api/[endpoint].js`, `serverless/dispatch.js`, `scripts/check-vercel-functions.mjs`, `docs/codebase/VERCEL_FUNCTIONS.md`).
-  - Node `>=20`; CI uses Node `20.x` and Python `3.11`.
+  - Node `>=20`; CI uses Node `20.x` and Python `3.11`. This checkout was mapped with Node `v22.22.3` and Python `3.11.2` (`node --version`, `python3 --version`).
   - Firestore: named applet database `ai-studio-hazardnet-55b49dbf-625b-492b-9cff-feabd729e843` is the default when no env override is set (`backend/db.js`).
   - The self-host backend hardcodes port `3000` and binds `0.0.0.0` (`backend/server.js`).
   - Model artifacts under `Models/` are deliberately never served (explicit 404 routes in `backend/server.js`); the model-version handshake in `Models/VERSION.json` must stay committed and clean, enforced by a CI gate in the `verify` job.
@@ -145,5 +150,6 @@ npm run alerts:rehearse / npm run alerts:snapshot
 - `vercel.json`, `firebase.json`, `.firebaserc`
 - `backend/server.js` (runtime bootstrap and port)
 - `.github/workflows/ci.yml` (Node/Python versions, gate commands)
-- `docs/ENVIRONMENT_SECRETS.md` (environment-variable reference), `.env.example` (committed template)
+- `docs/ENVIRONMENT_SECRETS.md` (environment-variable reference; no `.env.example` exists — see §5)
 - `docs/design/impeccable-baseline.json`, `backend/security/csp.js` (design gate baseline; CSP source)
+- Terminal evidence (2026-09-30): `npm ci --legacy-peer-deps --no-audit --no-fund` → "added 2513 packages in 50s"; `node scripts/check-vercel-functions.mjs` → "6/12 Serverless Functions deployed from api/"; `node --version` → `v22.22.3`; `python3 -m pytest scripts/tests -q` → `119 passed`

@@ -1,5 +1,9 @@
 # Coding Conventions
 
+> **Mapping pass:** 2026-09-30 (second pass, commit `deff0d9`). Claims in this document
+> were verified against the working tree; the commands used are listed in the Evidence
+> section, and the full run list is summarised in `CONCERNS.md`.
+
 ## Core Sections (Required)
 
 ### 1) Naming Rules
@@ -29,7 +33,7 @@
   - `no-empty`: `error` (with `allowEmptyCatch: true`)
   - `react-hooks` recommended rules for `frontend/src/**/*.{ts,tsx}`
   - Per-area `languageOptions.globals` blocks: browser for `frontend/src`, serviceworker for `frontend/public/**` + `frontend/src/serviceWorker.ts`, node for `*.mjs` / `backend` / `api` / `serverless` / `utils` / `scripts` / `*.config.js`, jest globals for test files
-  - Ignored: `dist/**`, `node_modules/**`, `**/*.cjs`, `references/**`, `skills/**`, `.agents/**`, `app/**`, `docs/**`, `Models/**`, `audit_temp/**`, `load-tests/**`
+  - Ignored: `dist/**`, `frontend/dist/**`, `node_modules/**`, `frontend/node_modules/**`, `**/*.cjs`, `references/**`, `skills/**`, `.agents/**`, `docs/**`, `Models/**`, `audit_temp/**`, `load-tests/**` (verified in `eslint.config.js`; the former `app/**` entry is gone along with the deleted `app/` directory)
 - **Run commands:** `npm run lint` (`tsc -p frontend/tsconfig.json --noEmit`), `npm run lint:eslint` (`eslint .`), `npm run format` (Prettier over `frontend/src/**/*.{ts,tsx}`, `backend/**/*.js`, `api/**/*.js`).
 - **TypeScript strictness:** `strict: true` in `frontend/tsconfig.json`, plus `useDefineForClassFields`, `moduleResolution: "bundler"`, `jsx: "react-jsx"`, `esModuleInterop`, `resolveJsonModule`, `forceConsistentCasingInFileNames`, `skipLibCheck`. The CI step is named "ESLint (0-error policy)" while most rules are configured at `warn` — the file header states the intent is to tighten to `--max-warnings 0` once the legacy count is burned down.
 
@@ -39,6 +43,7 @@
 - **Import grouping/order:** no enforced grouping rule in the linter; observed convention is Node built-ins → external packages → relative imports (e.g. `backend/server.js`, `serverless/dispatch.js`).
 - **Alias vs relative:** relative imports inside a package; path aliases only at package boundaries — `@/*` → `frontend/src/*`, `@hazardnet/core`, `@hazardnet/core/*`, `@hazardnet/design-system`, `@hazardnet/design-system/*` (declared in `frontend/tsconfig.json` `paths`, mirrored in `jest.config.cjs` `moduleNameMapper` and `apps/mobile/jest.config.cjs`).
 - **Public exports/barrel policy:** each workspace package exports through `src/index.ts` and additionally declares explicit `exports` subpaths (`packages/core/package.json`: `.`, `./forecasts`, `./alerts`, `./i18n`, `./bandwidth`; `packages/api/package.json`: `./client`, `./endpoints`, `./errors`, `./retry`).
+  - **Known violation (verified 2026-09-30):** three of those `@hazardnet/core` subpaths do not resolve — `./alerts`, `./i18n` and `./bandwidth` point at `src/alertLayer.ts`, `src/i18n.ts` and `src/bandwidth.ts`, none of which exists in `packages/core/src/` (the same-named files live in `frontend/src/lib/`). Conversely `@hazardnet/core/notificationMatcher` is imported without being declared. The rule to keep: **every declared subpath must resolve, and every subpath import must be declared** — the aliases in `frontend/tsconfig.json`, `frontend/vite.config.ts`, `jest.config.cjs` and `apps/mobile/jest.config.cjs` currently hide the mismatch.
 - **Platform boundary rule:** `packages/core` must contain **no** React, React Native, or DOM imports — stated in `packages/core/src/index.ts`.
 - **Lazy imports for fault isolation:** serverless entry points use literal specifiers inside the route table (`() => import('../../../serverless/v1/forecasts/bulk.js')`) so the bundler can trace them and each request only pays for its own import graph.
 
@@ -61,8 +66,9 @@
 ### 6) Evidence
 
 - `.prettierrc` (formatter settings)
-- `eslint.config.js` (flat config, rule severities, per-area globals, ignore list)
-- `frontend/tsconfig.json` (`strict`, `paths`)
+- `eslint.config.js` (flat config, rule severities, per-area globals, ignore list — verified by direct read: `no-console` warn allowing `warn|error|info`, `no-console: 'off'` for the backend/api/serverless/utils/scripts/config/e2e block; `grep -rc 'console\.log' backend api serverless utils` → 16)
+- `frontend/tsconfig.json` (`strict: true`, `paths`, `moduleResolution: "bundler"`)
+- `packages/core/package.json` (`exports` map) vs `packages/core/src/` (`ls`) — the unresolved subpath violation
 - `backend/utils/clientError.js` (error policy), `backend/alerts/lifecycle.js` (pure result objects)
 - `utils/logger.js`, `backend/middleware/requestId.js` (logging)
 - `backend/alerts/notify.js` (destination masking)

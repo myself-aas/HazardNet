@@ -1,5 +1,9 @@
 # Architecture
 
+> **Mapping pass:** 2026-09-30 (second pass, commit `deff0d9`). Claims in this document
+> were verified against the working tree; the commands used are listed in the Evidence
+> section, and the full run list is summarised in `CONCERNS.md`.
+
 ## Core Sections (Required)
 
 ### 1) Architectural Style
@@ -72,7 +76,8 @@ Traced end-to-end for one forecast read:
 - **The 12-function Vercel budget is a hard platform limit** that fails at *deploy* time, not build time. Adding a 7th file under `api/` without the dispatcher pattern would be rejected by Vercel; the gate `scripts/check-vercel-functions.mjs` is the only guard.
 - **Fallback chain can mask total data loss.** API → snapshot → static baseline means a stale or empty Firestore can still render a plausible-looking site; the freshness badge and the 36-hour staleness guard are the compensating controls.
 - **Model artifacts live in the repository** while the publication policy declares them out of scope for the published surface. Correctness depends on the explicit 404 routes in `backend/server.js` and on `firebase.json`/`vercel.json` never exposing `Models/`.
-- **`app/` is dead scaffold** importing `next` types that are not a dependency — it is excluded from lint and from the Vite build, so it can only mislead, not break.
+- **`packages/core/package.json` declares export subpaths that do not exist.** The package `exports` map advertises `./alerts` → `./src/alertLayer.ts`, `./i18n` → `./src/i18n.ts` and `./bandwidth` → `./src/bandwidth.ts`; none of those three files exists in `packages/core/src/` (the same-named modules live in `frontend/src/lib/`). Conversely, `apps/mobile/src/lib/notifications/notifyAlert.ts` imports `@hazardnet/core/notificationMatcher`, which the export map does not declare. Today nothing breaks only because every consumer resolves the package through a bundler/Jest/TS alias that points at `packages/core/src/*` and bypasses Node's `exports` resolution (`frontend/tsconfig.json`, `frontend/vite.config.ts`, `jest.config.cjs`, `apps/mobile/jest.config.cjs`); a strict ESM consumer (Node, Metro with exports enabled) would fail to resolve these specifiers.
+- **Two documents the workflow depends on are stale or missing.** `docs/ENVIRONMENT_SECRETS.md` §0 tells the reader to `cp .env.example .env`, but no `.env.example` is tracked or present, and `.gitignore` line 47 (`.env.*`) still matches it while the line-2 `!.env.example` negation does not — so a restored file would be silently un-addable. Also, the ESLint ignore list no longer carries `app/**` (the `app/` directory itself is gone — verified absent from the working tree), yet older prose in this file previously described it as a live scaffold.
 - **The daily pipeline's research-private stage is external** (Kaggle notebook). The repository can validate and publish, but cannot reproduce the numbers it publishes — an intentional constraint that also means ingestion is only as correct as the external CSV contract in `docs/TRD.md` §2.1.
 
 ### 6) Evidence
@@ -87,3 +92,4 @@ Traced end-to-end for one forecast read:
 - `.github/workflows/daily_advisory_ingest.yml` (pipeline orchestration)
 - `docs/TRD.md` §2 (pipeline architecture and CSV contract), `docs/PUBLICATION_POLICY.md`
 - `backend/security/csp.js`, `Models/VERSION.json` (cross-deployment CSP parity; model-version handshake)
+- `packages/core/package.json` (`exports` map) vs `packages/core/src/` (files) — the three unresolved subpaths; `apps/mobile/src/lib/notifications/notifyAlert.ts` (undeclared subpath import)
