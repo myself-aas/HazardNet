@@ -24,6 +24,9 @@ import toast from 'react-hot-toast';
 import { BentoGrid, BentoCard } from './ui/BentoGrid';
 import { BottomSheet } from './ui/BottomSheet';
 import { FloatingControlBar } from './ui/FloatingControlBar';
+import AlertLevelBadge from './alerts/AlertLevelBadge';
+import StatusStrip from './StatusStrip';
+import DistrictDetailPanel from './DistrictDetailPanel';
 
 interface ForecastDashboardProps {
   initialDistrictId?: string;
@@ -574,11 +577,12 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
 
       {/* District Forecast Records Table */}
       <div className="bg-white border border-carbon-20/90 rounded-3xl p-6 shadow-md space-y-4">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <h3 className="text-base font-bold text-carbon-90 flex items-center gap-2">
             <MaterialIcon name="table_chart" className="w-4 h-4 text-carbon-60" />
             <span>Detailed District Forecast Records ({filteredForecasts.length})</span>
           </h3>
+          <StatusStrip forecasts={forecasts} horizon={selectedHorizon} />
         </div>
 
         <div className="overflow-x-auto rounded-2xl border border-carbon-20/90">
@@ -586,6 +590,7 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
             <thead>
               <tr className="bg-carbon-05 border-b border-carbon-20 text-[11px] font-mono uppercase text-carbon-60 font-bold">
                 <th className="p-3">District</th>
+                <th className="p-3">Advisory Tier</th>
                 <th className="p-3">Hazard Type</th>
                 <th className="p-3">Severity Score</th>
                 <th className="p-3">Confidence</th>
@@ -596,7 +601,7 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
             <tbody className="divide-y divide-carbon-10 text-xs">
               {filteredForecasts.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="p-8 text-center text-carbon-60">
+                  <td colSpan={7} className="p-8 text-center text-carbon-60">
                     No forecast records match the selected filters.
                   </td>
                 </tr>
@@ -605,6 +610,7 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
                   const physScore = item.physics_severity !== undefined ? item.physics_severity : (item.severity_score ?? 0);
                   const isHigh = physScore >= RISK_THRESHOLDS.HIGH;
                   const isMod = physScore >= RISK_THRESHOLDS.MODERATE && physScore < RISK_THRESHOLDS.HIGH;
+                  const tier = item.advisory_tier || (isHigh ? 'SEVERE' : isMod ? 'WARNING' : 'NORMAL');
 
                   return (
                     <tr
@@ -615,6 +621,9 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
                       <td className="p-3 font-bold text-carbon-90">
                         {item.district_name}
                         {item.division && <span className="text-[10px] text-carbon-60 font-normal block">{item.division}</span>}
+                      </td>
+                      <td className="p-3">
+                        <AlertLevelBadge level={tier} size="sm" />
                       </td>
                       <td className="p-3">
                         <span className="inline-flex items-center gap-1.5 font-medium text-carbon-80">
@@ -691,40 +700,11 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
         }
       >
         {activeSheetItem && (
-          <div className="space-y-4 text-carbon-90 dark:text-carbon-05">
-            <div className="p-4 rounded-2xl bg-carbon-05 dark:bg-carbon-80 border border-carbon-20/60 flex items-center justify-between">
-              <div>
-                <span className="text-xs font-mono text-carbon-60 uppercase">Primary Climate Hazard</span>
-                <p className="text-lg font-heading font-bold text-carbon-90 dark:text-carbon-05 mt-0.5">
-                  {activeSheetItem.hazard_type}
-                </p>
-              </div>
-              <span className="px-3 py-1 rounded-full text-xs font-mono font-bold bg-nasa-red/10 text-nasa-red border border-nasa-red/20">
-                Score: {Math.round((activeSheetItem.severity_score ?? 0) * 100)}/100
-              </span>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div className="p-3 rounded-xl bg-white dark:bg-carbon-90 border border-carbon-20/60">
-                <span className="text-[11px] font-mono text-carbon-60 uppercase">AI Model Confidence</span>
-                <p className="text-xl font-mono font-bold text-emerald-600 mt-1">
-                  {Math.round((activeSheetItem.confidence ?? 0) * 100)}%
-                </p>
-              </div>
-              <div className="p-3 rounded-xl bg-white dark:bg-carbon-90 border border-carbon-20/60">
-                <span className="text-[11px] font-mono text-carbon-60 uppercase">Forecast Horizon</span>
-                <p className="text-xl font-mono font-bold text-carbon-90 dark:text-carbon-05 mt-1">
-                  {activeSheetItem.horizon || selectedHorizon}
-                </p>
-              </div>
-            </div>
-
-            <div className="p-4 rounded-2xl bg-surface-page dark:bg-carbon-80 border border-carbon-20/60 space-y-2">
-              <h4 className="font-heading font-semibold text-sm">Agricultural Advisory Note</h4>
-              <p className="text-xs text-carbon-70 dark:text-carbon-30 leading-relaxed">
-                Elevated multi-hazard risk detected for {activeSheetItem.district_name}. High salinity and rainfall forecast indicates immediate field drainage and crop protection measures recommended.
-              </p>
-            </div>
+          <div className="space-y-4">
+            <DistrictDetailPanel
+              forecast={activeSheetItem}
+              onClose={() => setActiveSheetItem(null)}
+            />
           </div>
         )}
       </BottomSheet>

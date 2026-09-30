@@ -2,6 +2,21 @@
  * Forecast API client library — platform agnostic core module
  */
 
+export const ADVISORY_TIERS = ['SEVERE', 'WARNING', 'WATCH', 'NORMAL'] as const;
+export type AdvisoryTier = (typeof ADVISORY_TIERS)[number];
+
+export const HAZARD_CLASSES = [
+  'Cold Wave',
+  'Drought',
+  'Fire',
+  'Flash Flood',
+  'Flood',
+  'Heat Wave',
+  'Severe Local Storm',
+  'Tropical Cyclone',
+] as const;
+export type HazardClass = (typeof HAZARD_CLASSES)[number];
+
 export interface ForecastRow {
   district_id: number | string;
   district_name: string;
@@ -28,6 +43,16 @@ export interface ForecastRow {
   admin_level?: number;
   adm2_name?: string;
   adm2_pcode?: string;
+  // Phase B extensions (TRD §2.2, §2.3)
+  advisory_tier?: AdvisoryTier | string;
+  physics_override?: boolean;
+  latitude?: number;
+  longitude?: number;
+  model_severity_raw?: number;
+  final_severity?: number;
+  prob_top1?: number;
+  prob_top2?: number;
+  prob_top3?: number;
 }
 
 export interface BulkForecastsResponse {

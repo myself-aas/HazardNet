@@ -32,7 +32,16 @@
 
 import { ALERT_LEVELS, levelRank, maxLevel } from './policy.js';
 
-export const ALERT_STATES = Object.freeze(['DRAFT', 'PENDING_REVIEW', 'PUBLISHED', 'REJECTED', 'SUPERSEDED']);
+export const ALERT_STATES = Object.freeze([
+  'DRAFT',
+  'PENDING_REVIEW',
+  'PUBLISHED',
+  'UPDATED',
+  'EXPIRED',
+  'ALL_CLEAR',
+  'REJECTED',
+  'SUPERSEDED',
+]);
 
 /** States from which no further transition is possible. */
 export const TERMINAL_STATES = Object.freeze(['SUPERSEDED']);
@@ -51,9 +60,9 @@ export function canAutoPublish(assessment, policy) {
 }
 
 /**
- * Is a reviewer allowed to approve *this* alert?
+ * Is a reviewer allowed to approve, update, or resolve *this* alert?
  *
- * Admins and duty officers may. Anyone else needs an explicit entry in
+ * Admins, duty officers, and explicit reviewer roles may. Anyone else needs an explicit entry in
  * `ALERT_DUTY_OFFICERS` (comma-separated uids or emails, checked case-
  * insensitively) — a named list is the point of §1.6, so there is no "any
  * authenticated user may approve" fallback.
@@ -61,7 +70,10 @@ export function canAutoPublish(assessment, policy) {
 export function isDutyOfficer(user, env = process.env) {
   if (!user) return false;
   const role = String(user.role || '').toLowerCase();
-  if (role === 'admin' || role === 'duty_officer' || role === 'duty-officer') return true;
+  const roles = Array.isArray(user.roles) ? user.roles.map((r) => String(r).toLowerCase()) : [];
+  const allowedRoles = ['admin', 'duty_officer', 'duty-officer', 'reviewer', 'alert.review'];
+  if (allowedRoles.includes(role) || roles.some((r) => allowedRoles.includes(r))) return true;
+
   const allow = String(env.ALERT_DUTY_OFFICERS || '')
     .split(',')
     .map((entry) => entry.trim().toLowerCase())
@@ -173,11 +185,45 @@ const TRANSITIONS = [
     },
   },
   {
+    id: 'update',
+    // REQ-002: alert updated while published → versioned update, public timeline preserved.
+    from: ['PUBLISHED', 'UPDATED'],
+    to: 'UPDATED',
+    label: 'update published alert',
+    guard: ({ actor, reason }) => {
+      if (!actor) return 'a named reviewer is required to update an alert';
+      if (!reason || String(reason).trim().length < 4) {
+        return 'an update reason is required to preserve the public timeline (REQ-002)';
+      }
+      return null;
+    },
+  },
+  {
+    id: 'expire',
+    // REQ-002: validity window elapsed.
+    from: ['PUBLISHED', 'UPDATED'],
+    to: 'EXPIRED',
+    label: 'expire alert',
+    guard: ({ actor }) => (actor ? null : 'an actor is required to expire an alert'),
+  },
+  {
+    id: 'all-clear',
+    // REQ-002: hazard condition resolved; all-clear broadcast.
+    from: ['PUBLISHED', 'UPDATED'],
+    to: 'ALL_CLEAR',
+    label: 'issue all-clear notice',
+    guard: ({ actor, reason }) => {
+      if (!actor) return 'a named reviewer is required to issue an all-clear notice';
+      if (!reason || String(reason).trim().length < 4) {
+        return 'an all-clear resolution reason is required';
+      }
+      return null;
+    },
+  },
+  {
     id: 'escalate',
     // Same issue, worse assessment: the level moved above the auto-publish ceiling.
-    // Critically, this pulls a *published* WATCH back for review — an automatic
-    // publication that later turns out to be a WARNING may not stay live on its own.
-    from: ['DRAFT', 'PENDING_REVIEW', 'PUBLISHED'],
+    from: ['DRAFT', 'PENDING_REVIEW', 'PUBLISHED', 'UPDATED'],
     to: 'PENDING_REVIEW',
     automatic: true,
     label: 'escalate for review',
@@ -192,7 +238,7 @@ const TRANSITIONS = [
   },
   {
     id: 'supersede',
-    from: ['DRAFT', 'PENDING_REVIEW', 'PUBLISHED', 'REJECTED'],
+    from: ['DRAFT', 'PENDING_REVIEW', 'PUBLISHED', 'UPDATED', 'EXPIRED', 'ALL_CLEAR', 'REJECTED'],
     to: 'SUPERSEDED',
     automatic: true,
     label: 'supersede',
@@ -255,23 +301,37 @@ export function evaluateTransition(intent = {}) {
 
 /** Append a transition event to a document's log (pure — returns a new document). */
 export function applyTransition(document, { transition, actor, at, reason, rejection_reason: rejectionReason, level, extra = {} }) {
+  const nextVersion = (document.version || 1) + 1;
+  const eventTime = at || new Date().toISOString();
   const event = {
     type: 'transition',
     action: transition.id,
-    at: at || new Date().toISOString(),
+    at: eventTime,
     actor: actor || (transition.automatic ? PIPELINE_ACTOR : null),
     from: document.state,
     to: transition.to,
     level: level || document.level,
     reason: reason || null,
+    version: nextVersion,
     ...(rejectionReason ? { rejection_reason: rejectionReason } : {}),
     ...extra,
   };
   const next = {
     ...document,
+    version: nextVersion,
     state: transition.to,
     events: [...(document.events || []), event],
   };
+  if (transition.to === 'UPDATED') {
+    next.updated_at = eventTime;
+    next.amended_at = eventTime;
+  }
+  if (transition.to === 'EXPIRED') {
+    next.expired_at = eventTime;
+  }
+  if (transition.to === 'ALL_CLEAR') {
+    next.all_clear_at = eventTime;
+  }
   if (transition.id === 'reject') {
     next.rejections = [...(document.rejections || []), {
       at: event.at,

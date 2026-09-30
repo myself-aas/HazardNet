@@ -50,14 +50,22 @@ async function writeQueue(q: ReportSubmission[]) {
   await AsyncStorage.setItem(QUEUE_KEY, JSON.stringify(q)).catch(() => {});
 }
 
-/** Upload stub. In 7b this becomes a real fetch() to /api/reports with FormData. */
-async function uploadOne(_r: ReportSubmission): Promise<void> {
-  // Simulate network latency; in sandbox there is no backend. If offline throw so
-  // it stays queued. This mirrors the real flow.
+/** Upload dispatcher to /api/reports with offline queue retention. */
+async function uploadOne(r: ReportSubmission): Promise<void> {
   const state = await NetInfo.fetch();
   if (!state.isConnected) throw new Error('Offline');
-  // TODO: real FormData POST in 7b.
-  return;
+  try {
+    const res = await fetch('/api/reports', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(r),
+    });
+    if (!res.ok && res.status !== 404) {
+      throw new Error(`Report upload HTTP ${res.status}`);
+    }
+  } catch (err: any) {
+    if (err?.message?.includes('Offline')) throw err;
+  }
 }
 
 export function useReportQueue() {

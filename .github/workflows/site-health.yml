@@ -144,7 +144,16 @@ jobs:
         shell: bash
         run: |
           set -uo pipefail
-          HEADERS=$(curl -sSI -L --max-redirs 5 --max-time 30 "$SITE_URL/" | tr -d '\r')
+          TARGET_URL="${SITE_URL%/}"
+          # If apex domain is used, probe the canonical host www.hazardnet.live to evaluate post-redirect headers
+          if [[ "$TARGET_URL" == "https://hazardnet.live" ]]; then
+            TARGET_URL="https://www.hazardnet.live"
+          fi
+          # Use curl with -D - (dump headers) over standard GET to ensure edge CDN headers are returned
+          HEADERS=$(curl -sSL -D - -o /dev/null --max-redirs 5 --max-time 30 "$TARGET_URL/" | tr -d '\r')
+          if [ -z "$HEADERS" ]; then
+            HEADERS=$(curl -sSI -L --max-redirs 5 --max-time 30 "$SITE_URL/" | tr -d '\r')
+          fi
           FAILED=0
           require () {
             local name="$1" needle="${2:-}"

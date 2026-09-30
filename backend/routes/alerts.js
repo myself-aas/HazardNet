@@ -33,7 +33,7 @@ import { buildEvidenceCard, alertsToCsv, buildReportMarkdown } from '../alerts/r
 import { notifyAlert } from '../alerts/notify.js';
 import { describeSmsTransport, getSmsConfig } from '../alerts/channels/sms.js';
 import { getTelegramConfig } from '../alerts/channels/telegram.js';
-import { ALERT_STATES } from '../alerts/lifecycle.js';
+import { ALERT_STATES, isDutyOfficer } from '../alerts/lifecycle.js';
 
 const router = express.Router();
 
@@ -283,7 +283,8 @@ router.get('/:id', alertLimiter, async (req, res) => {
     const document = await getAlertStore().getDocument(String(req.params.id));
     if (!document) return res.status(404).json({ error: `alert ${req.params.id} not found` });
     const alert = alertFromDocument(document);
-    if (!privileged && alert.state !== 'PUBLISHED') {
+    const publicStates = ['PUBLISHED', 'UPDATED', 'EXPIRED', 'ALL_CLEAR'];
+    if (!privileged && !publicStates.includes(alert.state)) {
       return res.status(403).json({
         error: `alert ${req.params.id} is ${alert.state}; only published alerts are public (§1.6)`,
       });
@@ -310,7 +311,8 @@ router.get('/:id/evidence-card', alertLimiter, async (req, res) => {
     const document = await getAlertStore().getDocument(String(req.params.id));
     if (!document) return res.status(404).json({ error: `alert ${req.params.id} not found` });
     const alert = alertFromDocument(document);
-    if (!privileged && alert.state !== 'PUBLISHED') {
+    const publicStates = ['PUBLISHED', 'UPDATED', 'EXPIRED', 'ALL_CLEAR'];
+    if (!privileged && !publicStates.includes(alert.state)) {
       return res.status(403).json({
         error: `evidence cards for ${alert.state} alerts are visible to duty officers only`,
       });
@@ -335,37 +337,76 @@ router.get('/:id/evidence-card', alertLimiter, async (req, res) => {
 });
 
 // ─────────────────────────────────────────────────────────────────────────
-// POST /api/v1/alerts/:id/review — approve / reject / submit / supersede.
+// POST /api/v1/alerts/:id/review — approve / reject / submit / update / expire / all-clear / supersede.
 // ─────────────────────────────────────────────────────────────────────────
 router.post('/:id/review', alertReviewLimiter, async (req, res) => {
   const body = req.body || {};
   const action = String(body.action || '').toLowerCase();
-  // Method first, then identity: a nonsense action is a 400 for everyone, which
-  // keeps the auth branch from turning a client bug into a misleading 422.
-  if (!['approve', 'reject', 'submit-for-review', 'supersede'].includes(action)) {
+  const validActions = ['approve', 'reject', 'submit-for-review', 'update', 'expire', 'all-clear', 'supersede'];
+  if (!validActions.includes(action)) {
     return res.status(400).json({
-      error: `unknown action "${body.action}"; expected approve, reject, submit-for-review or supersede`,
+      error: `unknown action "${body.action}"; expected ${validActions.join(', ')}`,
     });
   }
+
   const actor = await resolveReviewer(req);
   if (!actor.ok) return res.status(actor.code).json({ error: actor.error });
+
+  // TRD §7.4 & TASK-009: Mutating review actions strictly require the reviewer role
+  const mutatingActions = ['approve', 'reject', 'update', 'expire', 'all-clear'];
+  if (mutatingActions.includes(action) && !isDutyOfficer(actor.actor, process.env)) {
+    const store = getAlertStore();
+    try {
+      const raw = await store.getDocument(String(req.params.id));
+      if (raw) {
+        raw.events = [...(raw.events || []), {
+          type: 'audit',
+          action: 'unauthorized_review_attempt',
+          at: new Date().toISOString(),
+          actor: actor.actor?.id || actor.actor?.uid || actor.actor?.email,
+          role: actor.actor?.role,
+          attempted_action: action,
+          error: 'REVIEW_ROLE_REQUIRED',
+        }];
+        await store.putDocument(raw);
+      }
+    } catch (e) {
+      console.warn('Could not record unauthorized review audit event:', e.message);
+    }
+    return res.status(403).json({
+      error: 'REVIEW_ROLE_REQUIRED',
+      message: 'Only users with the reviewer role may perform alert reviews (§7.4)',
+    });
+  }
+
   try {
+    const expectedVersion = body.version !== undefined ? body.version : req.headers['if-match'];
     const result = await reviewAlert({
       id: String(req.params.id),
       action,
       user: actor.actor,
       authVia: actor.via,
       reason: body.reason ? String(body.reason).slice(0, 2000) : null,
+      expectedVersion,
       // A publication is a publication: the fan-out runs whether a duty officer
       // clicked approve or the pipeline attested one (§1.6).
       notify: notifyAlert,
     });
-    if (!result.ok) return res.status(result.code).json({ error: result.error, state: result.state });
+    if (!result.ok) {
+      return res.status(result.code).json({
+        error: result.error,
+        message: result.message,
+        current_version: result.current_version,
+        expected_version: result.expected_version,
+        state: result.state,
+      });
+    }
     res.json({
       ok: true,
       action: result.action,
       state: result.state,
       level: result.level,
+      version: result.alert ? result.alert.version : undefined,
       reviewer: result.actor,
       published: result.published,
       notification: result.notification || null,

@@ -39,6 +39,7 @@ import {
 import type { WeatherResponse, HourlyWeather, DailyWeather } from '../lib/weather';
 import { windDirectionLabel } from '../lib/weather';
 import { wmoCodeInfo } from '../lib/wmoWeatherCodes';
+import type { ForecastRow } from '../lib/forecasts';
 
 interface WeatherPanelProps {
   data: WeatherResponse;
@@ -48,6 +49,8 @@ interface WeatherPanelProps {
   loading?: boolean;
   onRefresh?: () => void;
   error?: string | null;
+  /** Daily advisory forecast containing model forecasted weather parameters (TASK-006) */
+  forecast?: ForecastRow;
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -192,7 +195,7 @@ const Section: React.FC<{ title: string; icon?: React.ReactNode; children: React
 // ── Main component ─────────────────────────────────────────────────────────
 
 export const WeatherPanel: React.FC<WeatherPanelProps> = ({
-  data, locationLabel, loading, onRefresh, error,
+  data, locationLabel, loading, onRefresh, error, forecast,
 }) => {
   const current = data.current;
   const info = wmoCodeInfo(current.weather_code);
@@ -263,6 +266,47 @@ export const WeatherPanel: React.FC<WeatherPanelProps> = ({
           </div>
         )}
       </div>
+
+      {/* ── Forecasted Agrometeorological Parameters (TASK-006) ── */}
+      {forecast && (
+        <div className="rounded-xl border border-carbon-20 dark:border-carbon-70 bg-carbon-05 dark:bg-carbon-80 p-3.5 space-y-2">
+          <div className="flex items-center justify-between text-xs font-heading font-bold text-carbon-80 dark:text-carbon-20">
+            <span className="flex items-center gap-1.5">
+              <Calendar size={14} className="text-sky-600" />
+              <span>Pipeline Agrometeorological Forecast ({forecast.horizon || 'Daily Advisory'})</span>
+            </span>
+            {forecast.target_date && (
+              <span className="font-mono text-[11px] text-carbon-50">Target: {forecast.target_date}</span>
+            )}
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 text-xs font-mono">
+            <div className="p-2 rounded bg-white dark:bg-carbon-90 border border-carbon-20 dark:border-carbon-70">
+              <span className="text-[10px] text-carbon-50 uppercase block">Max Temp</span>
+              <span className="font-bold text-rose-600 dark:text-rose-400">
+                {forecast.temperature_max !== undefined ? `${forecast.temperature_max}°C` : '—'}
+              </span>
+            </div>
+            <div className="p-2 rounded bg-white dark:bg-carbon-90 border border-carbon-20 dark:border-carbon-70">
+              <span className="text-[10px] text-carbon-50 uppercase block">Min Temp</span>
+              <span className="font-bold text-sky-600 dark:text-sky-400">
+                {forecast.temperature_min !== undefined ? `${forecast.temperature_min}°C` : '—'}
+              </span>
+            </div>
+            <div className="p-2 rounded bg-white dark:bg-carbon-90 border border-carbon-20 dark:border-carbon-70">
+              <span className="text-[10px] text-carbon-50 uppercase block">Precipitation</span>
+              <span className="font-bold text-blue-600 dark:text-blue-400">
+                {forecast.precipitation_mm !== undefined ? `${forecast.precipitation_mm} mm` : '—'}
+              </span>
+            </div>
+            <div className="p-2 rounded bg-white dark:bg-carbon-90 border border-carbon-20 dark:border-carbon-70">
+              <span className="text-[10px] text-carbon-50 uppercase block">Wind Speed</span>
+              <span className="font-bold text-teal-600 dark:text-teal-400">
+                {forecast.wind_max_kmh !== undefined ? `${forecast.wind_max_kmh} km/h` : '—'}
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Quick stat grid ─────────────────────────────────────── */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
@@ -503,7 +547,7 @@ export const WeatherPanel: React.FC<WeatherPanelProps> = ({
 
       {/* ── Footer / source ─────────────────────────────────────── */}
       <div className="text-center text-[11px] text-carbon-60 dark:text-carbon-50 pt-2 pb-1">
-        Data from <a href="https://open-meteo.com/" target="_blank" rel="noreferrer" className="underline hover:text-sky-500">Open-Meteo</a>
+        Data from <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer" className="underline hover:text-sky-500">Open-Meteo</a>
         {' · '}
         {data._meta.license}
         {' · '}

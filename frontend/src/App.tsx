@@ -58,6 +58,7 @@ const ArticlePage = lazy(() => import('./components/ArticlePage'));
 // The editorial front door at `/`. Its copy is the `/` entry in the same
 // site-routes.json the prerenderer reads; only the live artifact panels are React.
 const FrontDoor = lazy(() => import('./pages/FrontDoor'));
+const HistoricalCatalogPage = lazy(() => import('./pages/HistoricalCatalogPage').then((m) => ({ default: m.HistoricalCatalogPage })));
 
 /**
  * Generated content pages (Phase 8). The hazard methodology pages, the district outlooks and the
@@ -203,9 +204,10 @@ const AppRoutes: React.FC<{ location: ReturnType<typeof useLocation> }> = ({ loc
               <Route path="/retrospectives/:year" element={<GeneratedContentPage />} />
               <Route path="/analytics" element={<AnalyticsAnalyticsPage />} />
               <Route path="/analytics/:subCategory" element={<AnalyticsAnalyticsPage />} />
-              <Route path="/archive" element={<ArticlePage path="/archive" />} />
-              <Route path="/history" element={<ArticlePage path="/archive" />} />
-              <Route path="/events" element={<ArticlePage path="/archive" />} />
+              <Route path="/archive" element={<HistoricalCatalogPage />} />
+              <Route path="/history" element={<HistoricalCatalogPage />} />
+              <Route path="/historical" element={<HistoricalCatalogPage />} />
+              <Route path="/events" element={<HistoricalCatalogPage />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/terms" element={<Terms />} />
               <Route path="/privacy" element={<Privacy />} />

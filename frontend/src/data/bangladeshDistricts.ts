@@ -23,6 +23,13 @@ export interface DistrictData {
   elevationMeters: number;
   cx: number; // SVG relative X percent (0 - 100)
   cy: number; // SVG relative Y percent (0 - 100)
+  advisoryTier?: string;
+  physicsOverride?: boolean;
+  modelSeverityRaw?: number;
+  finalSeverity?: number;
+  probTop1?: number;
+  probTop2?: number;
+  probTop3?: number;
 }
 
 export interface DivisionData {

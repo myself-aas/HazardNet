@@ -420,6 +420,9 @@ jobs:
       # in public copy must be registered in docs/CLAIMS.md with a strategy
       # label. Fabricated or unregistered metrics fail the build.
       # Guarded by scripts/tests/test_workflows.py::test_claims_gate_step_present.
+      - name: Claims registry verification
+        run: node scripts/verify_claims.mjs
+
       - name: Cache Vite build cache
         uses: actions/cache@v6
         with:

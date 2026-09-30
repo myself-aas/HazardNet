@@ -340,11 +340,23 @@ export const MaterialIcon: React.FC<MaterialIconProps> = ({
       case 'alerts':
       case 'emergency':
       case 'warning':
-      case 'shield_alert':
+      case 'alert_triangle':
+      case 'triangle_alert':
         return (
           <>
             <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
             <line x1="12" x2="12" y1="9" y2="13" />
+            <line x1="12" x2="12.01" y1="17" y2="17" />
+          </>
+        );
+
+      case 'shield_alert':
+      case 'warning_shield':
+      case 'shield_warning':
+        return (
+          <>
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            <line x1="12" x2="12" y1="8" y2="13" />
             <line x1="12" x2="12.01" y1="17" y2="17" />
           </>
         );

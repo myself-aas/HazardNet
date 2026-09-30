@@ -1,0 +1,198 @@
+name: Daily Advisory Ingestion
+
+on:
+  schedule:
+    # 05:30 UTC ≈ 11:30 BDT (runs daily after Kaggle notebook completes)
+    - cron: '30 5 * * *'
+  workflow_dispatch:
+    inputs:
+      advisory_csv_path:
+        description: 'Optional path or URL to hazardnet_advisories_latest.csv override'
+        required: false
+        default: ''
+      allow_stale:
+        description: 'Bypass staleness guard (>36h) for manual rehearsal'
+        required: false
+        type: boolean
+        default: false
+
+concurrency:
+  group: advisory-ingest-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  ingest:
+    name: Advisory Fetch & Ingestion Pipeline
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '20'
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.11'
+
+      - name: Install Kaggle CLI
+        run: pip install --no-cache-dir kaggle
+
+      - name: Create working directory
+        run: mkdir -p /tmp/advisory-ingest
+
+      - name: Fetch advisory output from Kaggle
+        id: fetch-advisory
+        env:
+          KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
+          KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
+          OVERRIDE_PATH: ${{ inputs.advisory_csv_path }}
+        run: |
+          set -euo pipefail
+
+          if [ -n "$OVERRIDE_PATH" ]; then
+            echo "[fetch] Using provided advisory CSV override: $OVERRIDE_PATH"
+            if [[ "$OVERRIDE_PATH" =~ ^https?:// ]]; then
+              curl -fsSL "$OVERRIDE_PATH" -o /tmp/advisory-ingest/hazardnet_advisories_latest.csv
+            else
+              cp "$OVERRIDE_PATH" /tmp/advisory-ingest/hazardnet_advisories_latest.csv
+            fi
+            echo "fetched=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [ -z "${KAGGLE_USERNAME:-}" ] || [ -z "${KAGGLE_KEY:-}" ]; then
+            echo "::warning::KAGGLE_USERNAME or KAGGLE_KEY secret unset. Checking for existing local advisory data..."
+            if [ -f "backend/data/forecasts/hazardnet_forecasts_latest.csv" ]; then
+              echo "[fetch] Falling back to existing committed forecast data."
+              echo "fetched=false" >> "$GITHUB_OUTPUT"
+              exit 0
+            else
+              echo "::error::No Kaggle credentials and no local forecast file available."
+              exit 1
+            fi
+          fi
+
+          echo "[fetch] Fetching notebook output for 8-hazardnet-advisory..."
+          mkdir -p ~/.kaggle
+          echo "{\"username\":\"$KAGGLE_USERNAME\",\"key\":\"$KAGGLE_KEY\"}" > ~/.kaggle/kaggle.json
+          chmod 600 ~/.kaggle/kaggle.json
+
+          # Retry once on transient network/Kaggle failure per PRD §4.1 / TRD §4.7
+          FETCH_SUCCESS=0
+          for attempt in 1 2; do
+            echo "[fetch] Attempt $attempt: kaggle kernels output..."
+            if kaggle kernels output --path /tmp/advisory-ingest/ "$KAGGLE_USERNAME/8-hazardnet-advisory" || \
+               kaggle kernels output --path /tmp/advisory-ingest/ "myself-aas/8-hazardnet-advisory"; then
+              FETCH_SUCCESS=1
+              break
+            fi
+            echo "[fetch] Attempt $attempt failed. Waiting 10s before retry..."
+            sleep 10
+          done
+
+          if [ "$FETCH_SUCCESS" -ne 1 ]; then
+            echo "::error::Failed to retrieve Kaggle notebook output after 2 attempts."
+            exit 1
+          fi
+
+          if [ ! -f /tmp/advisory-ingest/hazardnet_advisories_latest.csv ]; then
+            echo "::error::hazardnet_advisories_latest.csv not found in Kaggle output directory."
+            ls -la /tmp/advisory-ingest/
+            exit 1
+          fi
+
+          echo "fetched=true" >> "$GITHUB_OUTPUT"
+
+      - name: Validate Advisory CSV & Execute Ingestion
+        id: run-ingest
+        env:
+          ALLOW_STALE: ${{ inputs.allow_stale }}
+          FETCHED: ${{ steps.fetch-advisory.outputs.fetched }}
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
+        run: |
+          set -euo pipefail
+
+          if [ "$FETCHED" != "true" ]; then
+            echo "[ingest] Skipping fresh advisory mapping (no new Kaggle fetch)."
+            exit 0
+          fi
+
+          STALE_FLAG=""
+          if [ "$ALLOW_STALE" = "true" ]; then
+            STALE_FLAG="--allow-stale"
+          fi
+
+          INGEST_FIRESTORE_FLAG=""
+          if [ -n "${FIREBASE_SERVICE_ACCOUNT:-}" ] || [ -n "${FIREBASE_PROJECT_ID:-}" ]; then
+            INGEST_FIRESTORE_FLAG="--ingest-firestore"
+          fi
+
+          echo "[ingest] Executing process_advisory_ingest.mjs..."
+          node scripts/process_advisory_ingest.mjs \
+            /tmp/advisory-ingest/hazardnet_advisories_latest.csv \
+            $STALE_FLAG \
+            $INGEST_FIRESTORE_FLAG
+
+      - name: Run Pipeline Validation Tests (Tier 0 & Tier 1)
+        run: |
+          echo "[test] Running advisory pipeline test suite..."
+          node --test __tests__/advisoryPipeline.test.js
+
+      - name: Commit updated forecast artifacts
+        id: commit-artifacts
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add backend/data/forecasts/ \
+                  frontend/public/data/forecasts-latest.json
+
+          if git diff --staged --quiet; then
+            echo "[git] No changes in forecast artifacts. Working tree is clean."
+            echo "committed=false" >> "$GITHUB_OUTPUT"
+          else
+            PREDICTION_DATE=$(node -e "const m = require('./backend/data/forecasts/manifest.json'); console.log(m.prediction_date);")
+            git commit -m "chore(advisory): ingest daily forecast run for $PREDICTION_DATE [skip ci]"
+            git push origin HEAD:${{ github.ref_name }}
+            echo "[git] Pushed updated forecast data for $PREDICTION_DATE."
+            echo "committed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Trigger Vercel Production Deployment
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          if [ -z "${VERCEL_TOKEN:-}" ]; then
+            echo "[deploy] VERCEL_TOKEN unset — relying on GitHub push trigger for deployment."
+            exit 0
+          fi
+
+          echo "[deploy] Triggering Vercel deployment..."
+          npx --yes vercel deploy --prod --token="$VERCEL_TOKEN"
+
+      - name: Dispatch Operational Monitoring & Slack Alert
+        if: always()
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          node scripts/notify_ops.mjs \
+            --status="${{ job.status }}" \
+            --channel="#hazardnet-ops" \
+            --manifest="backend/data/forecasts/manifest.json" \
+            --snapshot="frontend/public/data/forecasts-latest.json" \
+            --run-url="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"

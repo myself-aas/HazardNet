@@ -52,9 +52,8 @@ export {
   MAP_LAYERS,
 };
 
-// River data, hazard layer registry & marker icon builder moved to
-// ./map/mapPrimitives (see P2 decomposition plan in docs/audits/).
-import { BANGLADESH_RIVERS, HAZARD_LAYERS, createCustomIcon, hazardMarkerLabel } from './map/mapPrimitives';
+import { BANGLADESH_RIVERS, HAZARD_LAYERS, createCustomIcon, hazardMarkerLabel, getAdvisoryColor } from './map/mapPrimitives';
+import StatusStrip, { computeTierCounts } from './StatusStrip';
 import DistrictForecastCard from './map/DistrictForecastCard';
 import type { HazardLayerDef } from './map/mapPrimitives';
 
@@ -538,6 +537,24 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
     return counts;
   }, [liveDistricts]);
 
+  const statusStripCounts = useMemo(() => {
+    const counts = { SEVERE: 0, WARNING: 0, WATCH: 0, NORMAL: 0 };
+    for (const d of liveDistricts) {
+      const tier = (d.advisoryTier || '').toUpperCase();
+      if (tier === 'SEVERE') counts.SEVERE += 1;
+      else if (tier === 'WARNING') counts.WARNING += 1;
+      else if (tier === 'WATCH') counts.WATCH += 1;
+      else if (tier === 'NORMAL') counts.NORMAL += 1;
+      else {
+        if (d.severity >= 0.75) counts.SEVERE += 1;
+        else if (d.severity >= 0.50) counts.WARNING += 1;
+        else if (d.severity >= 0.30) counts.WATCH += 1;
+        else counts.NORMAL += 1;
+      }
+    }
+    return counts;
+  }, [liveDistricts]);
+
   // 3. Render Markers & Outlined District Boundaries
   useEffect(() => {
     if (!markersGroupRef.current) return;
@@ -556,7 +573,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
 
       const isSel = dist.id === selectedDistrictId;
       const isUserDist = Boolean(activeUserDistrict && dist.id === activeUserDistrict.id);
-      const severityColor = getSeverityColor(dist.severity);
+      const severityColor = getAdvisoryColor(dist.advisoryTier, dist.severity);
       const color = severityColor;
 
       const isDivSel = selectedDivision !== 'All' && dist.division.toLowerCase() === selectedDivision.toLowerCase();
@@ -570,7 +587,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
           : getDistrictBoundaryCoordinates(dist);
         if (boundaryCoords.length >= 3) {
           try {
-            // Dynamic Severity Outlined Boundary Polygon (Green 0% -> Red 100%)
+            // Dynamic Severity Outlined Boundary Polygon (reflecting advisory tier)
             const boundaryPolygon = L.polygon(boundaryCoords, {
               color: severityColor,
               weight: isSel || isUserDist ? 4 : 2,
@@ -594,9 +611,10 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
             }
 
             const severityPercent = Math.round(dist.severity * 100);
+            const tierBadge = dist.advisoryTier ? `[${dist.advisoryTier}] ` : '';
             const tooltipText = isUserDist
-              ? `<div style="font-family: var(--hds-font-family-heading); font-size: 11px; font-weight: 900; color: #ffffff; text-shadow: 0 2px 4px rgba(0,0,0,0.8); display: flex; align-items: center; gap: 6px;"><MaterialIcon name="location_on" className="w-4 h-4 inline-block align-middle" /><span>${dist.name} District Boundary (Your Location)</span><span style="background: ${severityColor}; color: #ffffff; padding: 2px 6px; border-radius: 9999px; font-size: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.4);">${severityPercent}% Severity</span></div>`
-              : `<div style="font-family: var(--hds-font-family-heading); font-size: 11px; font-weight: 900; color: #ffffff; text-shadow: 0 2px 4px rgba(0,0,0,0.8); display: flex; align-items: center; gap: 6px;"><span>${dist.name} District ${isDivSel ? `(${dist.division} Division)` : 'Boundary'}</span><span style="background: ${severityColor}; color: #ffffff; padding: 2px 6px; border-radius: 9999px; font-size: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.4);">${severityPercent}% Severity</span></div>`;
+              ? `<div style="font-family: var(--hds-font-family-heading); font-size: 11px; font-weight: 900; color: #ffffff; text-shadow: 0 2px 4px rgba(0,0,0,0.8); display: flex; align-items: center; gap: 6px;"><MaterialIcon name="location_on" className="w-4 h-4 inline-block align-middle" /><span>${dist.name} District Boundary (Your Location)</span><span style="background: ${severityColor}; color: #ffffff; padding: 2px 6px; border-radius: 9999px; font-size: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.4);">${tierBadge}${severityPercent}% Severity</span></div>`
+              : `<div style="font-family: var(--hds-font-family-heading); font-size: 11px; font-weight: 900; color: #ffffff; text-shadow: 0 2px 4px rgba(0,0,0,0.8); display: flex; align-items: center; gap: 6px;"><span>${dist.name} District ${isDivSel ? `(${dist.division} Division)` : 'Boundary'}</span><span style="background: ${severityColor}; color: #ffffff; padding: 2px 6px; border-radius: 9999px; font-size: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.4);">${tierBadge}${severityPercent}% Severity</span></div>`;
 
             boundaryPolygon.bindTooltip(tooltipText, {
               permanent: isUserDist && !isSel,
@@ -621,8 +639,8 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
           dashArray: isSel ? '4,4' : undefined,
         });
 
-        // Pin Marker with DivIcon
-        const icon = createCustomIcon(dist.severity, isSel, dist.hazardType, dist.name);
+        // Pin Marker with DivIcon reflecting active advisory tier
+        const icon = createCustomIcon(dist.severity, isSel, dist.hazardType, dist.name, dist.advisoryTier);
         const marker = L.marker([dist.lat, dist.lng], { icon });
         const severityPct = (dist.severity * 100).toFixed(0);
 
@@ -642,7 +660,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
         circle.on('click', triggerClick);
 
         // Single source of truth for the marker's accessible name (see mapPrimitives).
-        const districtAriaLabel = hazardMarkerLabel(dist.severity, dist.hazardType, dist.name, dist.risk);
+        const districtAriaLabel = hazardMarkerLabel(dist.severity, dist.hazardType, dist.name, dist.risk, dist.advisoryTier);
 
         const attachMarkerA11y = () => {
           const el = marker.getElement();
@@ -1341,6 +1359,10 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
             viewMode === 'table' ? 'hidden' : ''
           } ${isHudVisible ? 'opacity-100' : 'opacity-0'}`}
         >
+          {/* Active Advisory Tier Status Strip (TASK-005) */}
+          <div className="absolute top-4 left-4 z-[var(--z-sticky)] pointer-events-auto hidden md:block">
+            <StatusStrip counts={statusStripCounts} horizon={forecastHorizon} />
+          </div>
 
           {/* Point Telemetry Click Inspection HUD */}
           <AnimatePresence>

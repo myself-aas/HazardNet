@@ -76,36 +76,50 @@ export const BANGLADESH_RIVERS = [
   },
 ];
 
+export const ADVISORY_TIER_COLORS: Record<string, string> = {
+  SEVERE: '#DC2626',
+  WARNING: '#D97706',
+  WATCH: '#CA8A04',
+  NORMAL: '#16A34A',
+};
+
+export const getAdvisoryColor = (tier?: string, fallbackSeverity: number = 0): string => {
+  if (tier) {
+    const key = tier.toUpperCase();
+    if (ADVISORY_TIER_COLORS[key]) return ADVISORY_TIER_COLORS[key];
+  }
+  return getSeverityColor(fallbackSeverity);
+};
+
 /**
  * Accessible name for a district hazard marker.
- *
- * Exported because the *element* that carries it is Leaflet's own wrapper
- * (`.leaflet-marker-icon`, which has `role="button"` + `tabindex="0"` and its own
- * Enter/Space handling), not the icon's inner HTML. `LiveMapView.attachMarkerA11y`
- * applies it there. Keeping the wording here — next to the marker it describes, and
- * shared with nothing else — stops the label and the icon drifting apart.
  */
 export const hazardMarkerLabel = (
   severity: number,
   hazardType: string,
   districtName: string,
   riskLevel?: string,
+  advisoryTier?: string,
 ) => {
   const hazardDef = HAZARD_LAYERS.find((h) => h.id === hazardType) || { name: hazardType };
   const effectiveRisk = riskLevel || (severity >= 0.7 ? 'High' : severity >= 0.4 ? 'Moderate' : 'Low');
-  return `${districtName} District, Risk: ${effectiveRisk}, Hazard: ${hazardDef.name}, Severity: ${(severity * 100).toFixed(0)}%`;
+  const tierPart = advisoryTier ? `, Tier: ${advisoryTier.toUpperCase()}` : '';
+  return `${districtName} District${tierPart}, Risk: ${effectiveRisk}, Hazard: ${hazardDef.name}, Severity: ${(severity * 100).toFixed(0)}%`;
 };
 
-// Custom High-Contrast Marker Generator for Leaflet
-export const createCustomIcon = (severity: number, isSelected: boolean, hazardType: string, districtName: string) => {
+// Custom High-Contrast Marker Generator for Leaflet reflecting advisory tiers (TASK-005)
+export const createCustomIcon = (
+  severity: number,
+  isSelected: boolean,
+  hazardType: string,
+  districtName: string,
+  advisoryTier?: string
+) => {
   const hazardDef = HAZARD_LAYERS.find((h) => h.id === hazardType) || { name: hazardType };
-  const color = getSeverityColor(severity);
+  const color = getAdvisoryColor(advisoryTier, severity);
   const glowColor = color;
-  // The accessible name is NOT set here any more. Leaflet's own wrapper
-  // (`.leaflet-marker-icon`) already carries `role="button"` + `tabindex="0"` and handles
-  // Enter/Space; `LiveMapView` sets the name on that wrapper in `attachMarkerA11y`. Putting
-  // the same role/tabindex on this inner div created a second interactive element inside
-  // the first — the `nested-interactive` violation that fired on 53 markers per map route.
+  const tierLabel = advisoryTier ? advisoryTier.toUpperCase() : null;
+
   const html = isSelected ? `
     <div
       style="
@@ -115,7 +129,7 @@ export const createCustomIcon = (severity: number, isSelected: boolean, hazardTy
       padding: 6px 14px;
       border-radius: 9999px;
       background: rgba(255, 255, 255, 0.98);
-      border: 3px solid #f64137;
+      border: 3px solid ${color};
       box-shadow: 0 6px 24px rgba(0,0,0,0.25), 0 0 20px ${glowColor};
       color: #17171b;
       font-family: var(--hds-font-family-heading);
@@ -129,6 +143,19 @@ export const createCustomIcon = (severity: number, isSelected: boolean, hazardTy
       outline: none;
     ">
       <span style="color: #17171b; letter-spacing: -0.2px;">${districtName}: <span style="color: #0284c7;">${hazardDef.name}</span></span>
+      ${tierLabel ? `
+      <span style="
+        background: ${color};
+        color: #ffffff;
+        font-weight: 900;
+        font-size: 9px;
+        padding: 2px 6px;
+        border-radius: 6px;
+        letter-spacing: 0.5px;
+      ">
+        ${tierLabel}
+      </span>
+      ` : ''}
       <span style="
         background: ${color};
         color: #ffffff;
@@ -162,7 +189,7 @@ export const createCustomIcon = (severity: number, isSelected: boolean, hazardTy
       user-select: none;
       transition: transform 0.2s ease;
       outline: none;
-    " title="${districtName} (${(severity * 100).toFixed(0)}% ${hazardDef.name})">
+    " title="${districtName} (${tierLabel ? `${tierLabel} · ` : ''}${(severity * 100).toFixed(0)}% ${hazardDef.name})">
       ${districtName.substring(0, 2).toUpperCase()}
     </div>
   `;
@@ -170,8 +197,8 @@ export const createCustomIcon = (severity: number, isSelected: boolean, hazardTy
   return L.divIcon({
     html,
     className: isSelected ? 'custom-leaflet-marker-pill' : 'custom-leaflet-marker-node',
-    iconSize: isSelected ? [220, 36] : [30, 30],
-    iconAnchor: isSelected ? [110, 18] : [15, 15],
+    iconSize: isSelected ? [240, 36] : [30, 30],
+    iconAnchor: isSelected ? [120, 18] : [15, 15],
   });
 };
 

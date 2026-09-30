@@ -26,8 +26,7 @@ try {
 } catch {
   // setLogLevel is unavailable in some test stubs.
 }
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+// Production Firebase client SDK initialized with Auth, Firestore, Realtime Database, and Analytics.
 
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional

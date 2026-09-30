@@ -237,7 +237,14 @@ function main() {
     };
     for (const [out, src] of [
       ['model_severity', 'model_severity'],
+      ['model_severity_raw', 'model_severity_raw'],
       ['physics_severity', 'physics_severity'],
+      ['final_severity', 'final_severity'],
+      ['latitude', 'latitude'],
+      ['longitude', 'longitude'],
+      ['prob_top1', 'prob_top1'],
+      ['prob_top2', 'prob_top2'],
+      ['prob_top3', 'prob_top3'],
       ['admin_level', 'admin_level'],
     ]) {
       const v = num(get(cells, src));
@@ -276,6 +283,7 @@ function main() {
       if (value !== null && Number.isFinite(value)) row[field] = round4(value);
     }
     for (const [out, src] of [
+      ['advisory_tier', 'advisory_tier'],
       ['division', 'division'],
       ['pcode', 'pcode'],
       ['adm2_name', 'adm2_name'],
@@ -317,6 +325,12 @@ function main() {
     if (topSeverity !== null) row.physics_top_severity = topSeverity;
     const soilFabricated = get(cells, 'soil_channels_fabricated');
     if (soilFabricated === 'True' || soilFabricated === 'true') row.soil_channels_fabricated = true;
+    const physicsOverride = get(cells, 'physics_override');
+    if (physicsOverride === 'True' || physicsOverride === 'true' || physicsOverride === '1') {
+      row.physics_override = true;
+    } else if (physicsOverride === 'False' || physicsOverride === 'false' || physicsOverride === '0') {
+      row.physics_override = false;
+    }
     // Content hash over the inputs behind this prediction unit. Passed through
     // verbatim (the site never recomputes it), and dropped when it does not look
     // like a version — a bad value must not be published as if it were lineage.

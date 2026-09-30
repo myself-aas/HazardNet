@@ -24,11 +24,13 @@ export default async function handler(req, res) {
     const store = getForecastStore();
     const predictionDate = await store.getLatestPredictionDate();
     const ingestionTimestamp = await store.getLatestIngestionTimestamp();
+    const rowCount = await store.getLatestRowCount();
     res.setHeader('Cache-Control', 'no-store, max-age=0');
     res.status(200).json({
       prediction_date: predictionDate,
       ingestion_timestamp: ingestionTimestamp,
       data_source: metadataDataSource(),
+      row_count: rowCount,
       notebook_source: 'hazardnet/forecast-pipeline',
       datasets: metadataDatasets(),
       generated_at: new Date().toISOString(),

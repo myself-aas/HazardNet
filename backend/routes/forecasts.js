@@ -180,18 +180,21 @@ router.post('/ingest-csv', async (req, res) => {
 
 // ─────────────────────────────────────────────────────────
 // GET /api/v1/forecasts/metadata
-// Returns the newest ingested production prediction date and source.
+// Returns the newest ingested production prediction date, source, and row_count.
 // ─────────────────────────────────────────────────────────
 router.get('/metadata', async (req, res) => {
     try {
-        const predictionDate = await getForecastStore().getLatestPredictionDate();
-        const ingestionTimestamp = await getForecastStore().getLatestIngestionTimestamp();
+        const store = getForecastStore();
+        const predictionDate = await store.getLatestPredictionDate();
+        const ingestionTimestamp = await store.getLatestIngestionTimestamp();
+        const rowCount = await store.getLatestRowCount();
         const now = new Date();
         res.setHeader('Cache-Control', 'no-store, max-age=0');
         res.json({
             prediction_date: predictionDate,
             ingestion_timestamp: ingestionTimestamp,
             data_source: metadataDataSource(),
+            row_count: rowCount,
             notebook_source: 'hazardnet/forecast-pipeline',
             datasets: metadataDatasets(),
             generated_at: now.toISOString(),

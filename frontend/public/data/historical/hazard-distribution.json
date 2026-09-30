@@ -1,0 +1,92 @@
+[
+  {
+    "hazard_type": "Flood",
+    "event_count": 890,
+    "percentage": 26.8,
+    "mean_severity": 1,
+    "std_severity": 0,
+    "max_severity": 1,
+    "total_affected": 0
+  },
+  {
+    "hazard_type": "Tropical Cyclone",
+    "event_count": 709,
+    "percentage": 21.3,
+    "mean_severity": 1,
+    "std_severity": 0,
+    "max_severity": 1,
+    "total_affected": 0
+  },
+  {
+    "hazard_type": "Severe Local Storm",
+    "event_count": 514,
+    "percentage": 15.5,
+    "mean_severity": 1,
+    "std_severity": 0,
+    "max_severity": 1,
+    "total_affected": 0
+  },
+  {
+    "hazard_type": "Flash Flood",
+    "event_count": 334,
+    "percentage": 10,
+    "mean_severity": 1,
+    "std_severity": 0,
+    "max_severity": 1,
+    "total_affected": 0
+  },
+  {
+    "hazard_type": "Cold Wave",
+    "event_count": 322,
+    "percentage": 9.7,
+    "mean_severity": 1,
+    "std_severity": 0,
+    "max_severity": 1,
+    "total_affected": 0
+  },
+  {
+    "hazard_type": "Epidemic",
+    "event_count": 262,
+    "percentage": 7.9,
+    "mean_severity": 1,
+    "std_severity": 0,
+    "max_severity": 1,
+    "total_affected": 0
+  },
+  {
+    "hazard_type": "Earthquake",
+    "event_count": 128,
+    "percentage": 3.9,
+    "mean_severity": 1,
+    "std_severity": 0,
+    "max_severity": 1,
+    "total_affected": 0
+  },
+  {
+    "hazard_type": "Fire",
+    "event_count": 65,
+    "percentage": 2,
+    "mean_severity": 1,
+    "std_severity": 0,
+    "max_severity": 1,
+    "total_affected": 0
+  },
+  {
+    "hazard_type": "Drought",
+    "event_count": 64,
+    "percentage": 1.9,
+    "mean_severity": 1,
+    "std_severity": 0,
+    "max_severity": 1,
+    "total_affected": 0
+  },
+  {
+    "hazard_type": "Heat Wave",
+    "event_count": 36,
+    "percentage": 1.1,
+    "mean_severity": 1,
+    "std_severity": 0,
+    "max_severity": 1,
+    "total_affected": 0
+  }
+]

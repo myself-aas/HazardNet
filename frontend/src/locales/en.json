@@ -1,0 +1,80 @@
+{
+  "common": {
+    "language": "Language",
+    "english": "English",
+    "bengali": "বাংলা",
+    "loading": "Loading…",
+    "retry": "Try again",
+    "close": "Close",
+    "print": "Print",
+    "download": "Download",
+    "updated": "Updated",
+    "dataCutoff": "Data cutoff",
+    "predictionDate": "Forecast issued",
+    "targetDate": "Valid for",
+    "leadTime": "Lead time",
+    "days": "days",
+    "disclaimer": "Disclaimer",
+    "none": "None",
+    "all": "All",
+    "viewAll": "View all",
+    "back": "Back"
+  },
+  "nav": {
+    "alerts": "Alerts",
+    "map": "Map",
+    "methodology": "Methodology",
+    "forecast": "Forecast",
+    "analytics": "Risk Analytics"
+  },
+  "advisory_tiers": {
+    "SEVERE": "Severe",
+    "WARNING": "Warning",
+    "WATCH": "Watch",
+    "NORMAL": "Normal"
+  },
+  "alerts": {
+    "title": "Hazard alerts",
+    "standfirst": "Alerts issued by the HazardNet pipeline for the districts it has a forecast for.",
+    "level": {
+      "SEVERE": "Severe",
+      "WARNING": "Warning",
+      "WATCH": "Watch",
+      "NORMAL": "Normal",
+      "NO_ALERT": "Normal",
+      "SEVERE_desc": "Act: an event is imminent or likely.",
+      "WARNING_desc": "Prepare: a damaging event is plausible.",
+      "WATCH_desc": "Monitor: conditions are favourable for a hazard.",
+      "NORMAL_desc": "Normal seasonal conditions.",
+      "NO_ALERT_desc": "Nothing unusual for the season."
+    },
+    "filter": {
+      "level": "Alert level",
+      "hazard": "Hazard",
+      "division": "Division",
+      "search": "Search district",
+      "clear": "Clear filters"
+    }
+  },
+  "hazards": {
+    "Cold Wave": "Cold Wave",
+    "Drought": "Drought",
+    "Fire": "Fire",
+    "Flash Flood": "Flash Flood",
+    "Flood": "Flood",
+    "Heat Wave": "Heat Wave",
+    "Severe Local Storm": "Severe Local Storm",
+    "Tropical Cyclone": "Tropical Cyclone"
+  },
+  "metrics": {
+    "max_temp": "Max Temperature (°C)",
+    "min_temp": "Min Temperature (°C)",
+    "precipitation": "Precipitation (mm)",
+    "wind_speed": "Wind Speed (km/h)",
+    "model_severity": "Model Severity (Calibrated)",
+    "physics_severity": "Physics Track Severity",
+    "final_severity": "Final Fused Severity",
+    "confidence": "Prediction Confidence",
+    "physics_override": "Physics-grounded"
+  }
+}

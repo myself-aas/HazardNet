@@ -465,17 +465,34 @@ export { assessBatch, assessRow, isAutoPublishable };
 export async function reviewAlert({
   id, action, user, reason = null, store = getAlertStore(), policy = getPolicy(),
   now = new Date(), env = process.env, authVia = 'firebase', notify = null,
-  subscribers, fetchImpl = fetch,
+  subscribers, fetchImpl = fetch, expectedVersion = undefined,
 } = {}) {
   if (!id) return { ok: false, code: 400, error: 'alert id is required' };
   const raw = await store.getDocument(id);
   if (!raw) return { ok: false, code: 404, error: `alert ${id} not found` };
   const alert = alertFromDocument(raw);
 
+  // Optimistic locking (TASK-009 / REQ-002)
+  if (expectedVersion !== undefined && expectedVersion !== null) {
+    const currentVersion = Number(raw.version || 1);
+    if (Number(expectedVersion) !== currentVersion) {
+      return {
+        ok: false,
+        code: 409,
+        error: 'CONCURRENCY_CONFLICT',
+        message: 'Alert has been modified by another reviewer. Please reload the latest alert state.',
+        current_version: currentVersion,
+        expected_version: Number(expectedVersion),
+        state: alert.state,
+      };
+    }
+  }
+
   const actorIdentity = user ? reviewerIdentity(user, { via: authVia }) : null;
   const actor = actorIdentity ? (actorIdentity.id || actorIdentity.email) : null;
 
-  if (action === 'approve' || action === 'reject') {
+  const reviewerActions = ['approve', 'reject', 'update', 'expire', 'all-clear'];
+  if (reviewerActions.includes(action)) {
     if (!actor) {
       return {
         ok: false,
@@ -483,15 +500,13 @@ export async function reviewAlert({
         error: `a named reviewer is required to ${action} an alert (§1.6)`,
       };
     }
-    // A rejection is also a decision about the public record — it may not be taken
-    // by a passer-by with an account, only by a duty officer (or the pipeline key
-    // acting for one).
+    // Strict RBAC: only users with the reviewer role (or admin/duty_officer) may mutate public alerts
     if (!isDutyOfficer(user, env)) {
       return {
         ok: false,
         code: 403,
-        error: `only a duty officer may ${action} an alert (§1.6): set ALERT_DUTY_OFFICERS ` +
-          'or give the reviewer an admin/duty_officer role or claim',
+        error: 'REVIEW_ROLE_REQUIRED',
+        message: `only users with the reviewer role may ${action} an alert (§1.6, §7.4)`,
       };
     }
   }
@@ -540,6 +555,8 @@ export async function reviewAlert({
   next.updated_at = now.toISOString();
   if (action === 'reject') next.rejected_at = now.toISOString();
   if (action === 'approve') next.published_at = now.toISOString();
+  if (action === 'expire') next.expired_at = now.toISOString();
+  if (action === 'all-clear') next.all_clear_at = now.toISOString();
   await store.putDocument(next);
 
   const updated = alertFromDocument(next);

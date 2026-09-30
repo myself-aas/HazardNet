@@ -13,6 +13,7 @@ import pushRoutes from './routes/push.js';
 import conversionRoutes from './routes/conversions.js';
 import weatherRoutes from './routes/weather.js';
 import alertRoutes from './routes/alerts.js';
+import historicalRoutes from './routes/historical.js';
 import groundingRoutes from './routes/grounding.js';
 import { liveVoiceRouter, setupLiveVoiceWebSocket } from './routes/liveVoice.js';
 import metrics from './metrics.js';
@@ -79,6 +80,11 @@ app.use(
   helmet({
     // No framing use-case exists; DENY matches CSP frame-ancestors 'none'.
     frameguard: { action: 'deny' },
+    hsts: {
+      maxAge: 63072000,
+      includeSubDomains: true,
+      preload: true,
+    },
     contentSecurityPolicy: {
       reportOnly: !cspEnforce,
       directives: cspDirectivesFromString(),
@@ -100,7 +106,24 @@ app.use((req, res, next) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('X-XSS-Protection', '1; mode=block');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload');
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=(self), payment=(), usb=()');
   next();
+});
+
+// RFC 9116 security.txt endpoint
+app.get(['/.well-known/security.txt', '/security.txt'], (req, res) => {
+  const candidates = [
+    path.resolve(process.cwd(), 'frontend', 'dist', '.well-known', 'security.txt'),
+    path.resolve(process.cwd(), 'frontend', 'public', '.well-known', 'security.txt'),
+  ];
+  for (const c of candidates) {
+    if (fs.existsSync(c)) {
+      res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+      return res.sendFile(c);
+    }
+  }
+  res.status(404).send('Not found');
 });
 
 // Health Check
@@ -121,6 +144,7 @@ app.use(['/Models', '/models', '/hazardnet_fp32.tflite', '/hazardnet_int8.tflite
 // plus tighter buckets on the expensive AI/inference endpoints.
 app.use('/api', apiLimiter);
 app.use('/api/v1/forecasts', forecastRoutes);
+app.use('/v1/forecasts', apiLimiter, forecastRoutes);
 app.use('/api/chat', attachFirebaseAuthUser, dynamicAiLimiter, chatRoutes);
 app.use('/api/grounding', attachFirebaseAuthUser, dynamicAiLimiter, groundingRoutes);
 app.use('/api/predict', predictLimiter, predictRoutes);
@@ -130,6 +154,9 @@ app.use('/api/v1/weather', weatherRoutes);
 // Alert engine + §1.6 review surface. Identity is attached but never required:
 // published alerts are public (PRODUCT_SPEC §1.3), the review queue is not.
 app.use('/api/v1/alerts', attachFirebaseAuthUser, alertLimiter, alertRoutes);
+app.use('/v1/alerts', attachFirebaseAuthUser, alertLimiter, alertRoutes);
+app.use('/api/v1/historical', apiLimiter, historicalRoutes);
+app.use('/v1/historical', apiLimiter, historicalRoutes);
 app.use('/api/live-voice', liveVoiceRouter);
 
 // Prometheus metrics endpoint. The forecast-age gauge is refreshed here

@@ -91,3 +91,15 @@ apps/mobile/.expo/
 
 # Firebase local CLI cache
 .firebase/
+
+# Research and development scratch space for model training and evaluation. This is
+# a temporary workspace for experiments and should not be committed to the repo.
+kaggle-notebooks/
+manuscript/
+
+# Large research binaries and model checkpoints (CONCERNS.md resolution)
+*.h5
+*.pt
+*.pth
+*.keras
+*.bin

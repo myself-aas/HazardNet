@@ -260,5 +260,74 @@ export function parseCsvForecastRow(row, rowNumber) {
     value.adm2_pcode = String(row.adm2_pcode).trim();
   }
 
+  // ── Advisory Tier & Physical Override (Phase A/C TASK-008) ───────────────
+  if (row.advisory_tier !== undefined && row.advisory_tier !== '') {
+    const tier = String(row.advisory_tier).trim().toUpperCase();
+    if (!['SEVERE', 'WARNING', 'WATCH', 'NORMAL'].includes(tier)) {
+      return { ok: false, error: `Row ${rowNumber}: Invalid advisory_tier "${row.advisory_tier}"` };
+    }
+    value.advisory_tier = tier;
+  }
+
+  if (row.physics_override !== undefined && row.physics_override !== '') {
+    const rawOverride = String(row.physics_override).trim().toLowerCase();
+    value.physics_override = rawOverride === 'true' || rawOverride === '1';
+  }
+
+  // Centroid Geospatial Coordinates (TRD §2.1, TASK-008)
+  if (row.latitude !== undefined && row.latitude !== '') {
+    const lat = parseFloat(row.latitude);
+    if (Number.isFinite(lat)) value.latitude = lat;
+  }
+  if (row.longitude !== undefined && row.longitude !== '') {
+    const lon = parseFloat(row.longitude);
+    if (Number.isFinite(lon)) value.longitude = lon;
+  }
+
+  // Fused Final Severity & Raw Model Severity (TRD §2.1, TASK-008)
+  if (row.final_severity !== undefined && row.final_severity !== '') {
+    const finalSev = parseFloat(row.final_severity);
+    if (Number.isFinite(finalSev) && finalSev >= 0 && finalSev <= 1) {
+      value.final_severity = finalSev;
+      value.severity_score = finalSev;
+    }
+  } else if (value.severity_score !== undefined) {
+    value.final_severity = value.severity_score;
+  }
+
+  if (row.cnn_severity_raw !== undefined && row.cnn_severity_raw !== '') {
+    const raw = parseFloat(row.cnn_severity_raw);
+    if (Number.isFinite(raw)) {
+      value.cnn_severity_raw = raw;
+      value.model_severity_raw = raw;
+    }
+  } else if (row.model_severity_raw !== undefined && row.model_severity_raw !== '') {
+    const raw = parseFloat(row.model_severity_raw);
+    if (Number.isFinite(raw)) {
+      value.cnn_severity_raw = raw;
+      value.model_severity_raw = raw;
+    }
+  }
+
+  // Top-3 Hazard Probabilities (TRD §2.1, TASK-008)
+  for (const probField of ['prob_top1', 'prob_top2', 'prob_top3']) {
+    if (row[probField] !== undefined && row[probField] !== '') {
+      const p = parseFloat(row[probField]);
+      if (Number.isFinite(p) && p >= 0 && p <= 1) {
+        value[probField] = p;
+      }
+    }
+  }
+
+  for (const hazardField of ['prob_top1_hazard', 'prob_top2_hazard', 'prob_top3_hazard']) {
+    if (row[hazardField] && String(row[hazardField]).trim()) {
+      value[hazardField] = String(row[hazardField]).trim();
+    }
+  }
+
+  if (row.data_source && String(row.data_source).trim()) {
+    value.data_source = String(row.data_source).trim();
+  }
+
   return { ok: true, value };
 }

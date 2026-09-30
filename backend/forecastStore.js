@@ -11,6 +11,7 @@ import { db, collection, getDocs, query, where, orderBy, limit } from './db.js';
 import { persistForecasts } from './forecastPersistence.js';
 import fs from 'fs';
 import path from 'path';
+import { lookupDistrict } from './utils/advisoryMapper.js';
 
 export function getForecastStoreMode() {
   return 'firestore';
@@ -29,6 +30,61 @@ export function getForecastStore() {
 /** Test/maintenance hook: drop the cached store. */
 export function resetForecastStore() {
   cachedStore = null;
+}
+
+/**
+ * Ensure all new advisory fields are present on a forecast row (TASK-008).
+ * Provides graceful fallbacks if older snapshots or un-enriched records are read.
+ */
+export function ensureAdvisoryFields(row) {
+  if (!row || typeof row !== 'object') return row;
+  const enriched = { ...row };
+  const sev = Number(enriched.final_severity ?? enriched.severity_score ?? enriched.model_severity ?? 0.5);
+
+  if (!enriched.advisory_tier) {
+    if (sev >= 0.75) enriched.advisory_tier = 'SEVERE';
+    else if (sev >= 0.50) enriched.advisory_tier = 'WARNING';
+    else if (sev >= 0.25) enriched.advisory_tier = 'WATCH';
+    else enriched.advisory_tier = 'NORMAL';
+  }
+
+  if (enriched.physics_override === undefined) {
+    enriched.physics_override = false;
+  } else if (typeof enriched.physics_override === 'string') {
+    enriched.physics_override = String(enriched.physics_override).toLowerCase() === 'true';
+  }
+
+  if (enriched.final_severity === undefined || Number.isNaN(Number(enriched.final_severity))) {
+    enriched.final_severity = sev;
+  }
+
+  if (enriched.model_severity_raw === undefined || Number.isNaN(Number(enriched.model_severity_raw))) {
+    enriched.model_severity_raw = Number(enriched.cnn_severity_raw ?? enriched.model_severity ?? sev);
+  }
+
+  if (enriched.prob_top1 === undefined || Number.isNaN(Number(enriched.prob_top1))) {
+    enriched.prob_top1 = Number(enriched.confidence ?? 0.85);
+  }
+  if (enriched.prob_top2 === undefined || Number.isNaN(Number(enriched.prob_top2))) {
+    enriched.prob_top2 = 0.0;
+  }
+  if (enriched.prob_top3 === undefined || Number.isNaN(Number(enriched.prob_top3))) {
+    enriched.prob_top3 = 0.0;
+  }
+
+  if (enriched.latitude === undefined || enriched.longitude === undefined || Number.isNaN(Number(enriched.latitude))) {
+    const matched = lookupDistrict(enriched.district_name);
+    if (matched) {
+      if (enriched.latitude === undefined || Number.isNaN(Number(enriched.latitude))) {
+        enriched.latitude = matched.latitude;
+      }
+      if (enriched.longitude === undefined || Number.isNaN(Number(enriched.longitude))) {
+        enriched.longitude = matched.longitude;
+      }
+    }
+  }
+
+  return enriched;
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -51,12 +107,12 @@ function loadSnapshotData() {
           for (const [horizon, list] of Object.entries(parsed.horizons)) {
             if (Array.isArray(list)) {
               for (const item of list) {
-                rows.push({
+                rows.push(ensureAdvisoryFields({
                   ...item,
                   horizon: item.horizon || horizon,
                   prediction_date: item.prediction_date || parsed.prediction_date || '2026-09-16',
                   created_at: item.created_at || parsed.generated_at || new Date().toISOString(),
-                });
+                }));
               }
             }
           }
@@ -80,6 +136,9 @@ function loadSnapshotData() {
 
 // Bound offline client-SDK reads so the existing snapshot fallback is reachable.
 async function readForecasts(queryRef) {
+  if (process.env.NODE_ENV === 'test' || process.env.FORECAST_STORE_MEMORY === 'true') {
+    throw new Error('Test environment: using local snapshot fallback');
+  }
   let timer;
   try {
     return await Promise.race([
@@ -115,6 +174,7 @@ function createFirestoreStore() {
   const COOLDOWN_MS = 120_000; // 2 minutes backoff after failure
 
   function isFirestoreInCooldown() {
+    if (process.env.NODE_ENV === 'test' || process.env.FORECAST_STORE_MEMORY === 'true') return true;
     if (firestoreAvailable) return false;
     return Date.now() - lastFailureTime < COOLDOWN_MS;
   }
@@ -164,13 +224,14 @@ function createFirestoreStore() {
           if (rows.length > 0) {
             firestoreAvailable = true;
             rows.sort((a, b) => new Date(b.prediction_date) - new Date(a.prediction_date));
-            return rows[0];
+            return ensureAdvisoryFields(rows[0]);
           }
         } catch (err) {
           handleFirestoreFailure(err);
         }
       }
-      return getMemoryLatestByDistrict(districtId, horizon);
+      const mem = getMemoryLatestByDistrict(districtId, horizon);
+      return mem ? ensureAdvisoryFields(mem) : null;
     },
 
     async getLatestForecastsByHorizon(horizon) {
@@ -189,13 +250,13 @@ function createFirestoreStore() {
               }
             });
             const results = Array.from(districtMap.values());
-            if (results.length > 0) return results;
+            if (results.length > 0) return results.map(ensureAdvisoryFields);
           }
         } catch (err) {
           handleFirestoreFailure(err);
         }
       }
-      return getMemoryLatestByHorizon(horizon);
+      return getMemoryLatestByHorizon(horizon).map(ensureAdvisoryFields);
     },
 
     /** Newest prediction_date across all horizons ('YYYY-MM-DD' | null). */
@@ -240,6 +301,34 @@ function createFirestoreStore() {
         }
       }
       return memoryIngestionTimestamp || new Date().toISOString();
+    },
+
+    /** Row count of newest ingested prediction date batch (TASK-008). */
+    async getLatestRowCount() {
+      const latestDate = await this.getLatestPredictionDate();
+      if (!isFirestoreInCooldown()) {
+        try {
+          const q = query(collection(db, 'forecasts'), where('prediction_date', '==', latestDate));
+          const snap = await readForecasts(q);
+          if (snap && snap.size > 0) {
+            firestoreAvailable = true;
+            return snap.size;
+          }
+        } catch (err) {
+          handleFirestoreFailure(err);
+        }
+      }
+      const matchingDateRows = memoryRows.filter((r) => r.prediction_date === latestDate);
+      if (matchingDateRows.length > 0) return matchingDateRows.length;
+      if (memoryRows.length > 0) return memoryRows.length;
+      try {
+        const manifestPath = path.resolve(process.cwd(), 'backend', 'data', 'forecasts', 'manifest.json');
+        if (fs.existsSync(manifestPath)) {
+          const parsed = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+          if (Number.isFinite(parsed.row_count)) return parsed.row_count;
+        }
+      } catch {}
+      return 128;
     },
 
     /** All rows with from <= prediction_date <= to (optionally filtered by

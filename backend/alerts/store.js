@@ -128,6 +128,13 @@ export function alertFromDocument(docData = {}) {
         evidence_snapshot: event.evidence_snapshot ?? null,
       };
     }
+    if (to === 'UPDATED' && published) {
+      published = {
+        ...published,
+        updated_at: event.at || null,
+        update_reason: event.reason || null,
+      };
+    }
     if (to === 'SUPERSEDED') supersededBy = event.reason || null;
   }
 
@@ -139,6 +146,7 @@ export function alertFromDocument(docData = {}) {
     id: docData.id || null,
     alert_key: docData.alert_key || null,
     doc_version: docData.doc_version || ALERT_DOC_VERSION,
+    version: Number(docData.version || 1),
     state,
     level,
     level_rank: Number.isFinite(docData.level_rank) ? docData.level_rank : null,
@@ -177,18 +185,66 @@ export function alertFromDocument(docData = {}) {
 }
 
 function createFirestoreAlertStore() {
+  const memoryDocs = new Map();
+  let firestoreAvailable = true;
+  let lastFailureTime = 0;
+  const COOLDOWN_MS = 120_000;
+
+  function isFirestoreInCooldown() {
+    if (process.env.NODE_ENV === 'test' || process.env.ALERT_STORE_MEMORY === 'true') return true;
+    if (firestoreAvailable) return false;
+    return Date.now() - lastFailureTime < COOLDOWN_MS;
+  }
+
+  function handleFirestoreFailure(err) {
+    firestoreAvailable = false;
+    lastFailureTime = Date.now();
+  }
+
+  async function withTimeout(promise, ms = 500) {
+    let timer;
+    try {
+      return await Promise.race([
+        promise,
+        new Promise((_, reject) => {
+          timer = setTimeout(() => reject(new Error('Alert store deadline exceeded')), ms);
+        }),
+      ]);
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
   return {
     mode: 'firestore',
 
     /** Create-or-append. `docData` is the merged document; never a partial. */
     async putDocument(docData) {
-      await setDoc(doc(db, ALERT_COLLECTION, docData.id), docData);
+      memoryDocs.set(docData.id, docData);
+      if (!isFirestoreInCooldown()) {
+        try {
+          await withTimeout(setDoc(doc(db, ALERT_COLLECTION, docData.id), docData), 500);
+          firestoreAvailable = true;
+        } catch (err) {
+          handleFirestoreFailure(err);
+        }
+      }
       return docData;
     },
 
     async getDocument(id) {
-      const snap = await getDoc(doc(db, ALERT_COLLECTION, id));
-      return snap.exists() ? { id, ...snap.data() } : null;
+      if (!isFirestoreInCooldown()) {
+        try {
+          const snap = await withTimeout(getDoc(doc(db, ALERT_COLLECTION, id)), 500);
+          if (snap && snap.exists && snap.exists()) {
+            firestoreAvailable = true;
+            return { id, ...snap.data() };
+          }
+        } catch (err) {
+          handleFirestoreFailure(err);
+        }
+      }
+      return memoryDocs.get(id) || null;
     },
 
     /**
@@ -196,31 +252,64 @@ function createFirestoreAlertStore() {
      * mark the previous issue SUPERSEDED when a newer forecast arrives.
      */
     async getLatestDocumentForAlertKey(alertKey) {
-      const q = query(collection(db, ALERT_COLLECTION), where('alert_key', '==', alertKey));
-      const snap = await getDocs(q);
-      const docs = [];
-      snap.forEach((d) => docs.push({ id: d.id, ...d.data() }));
-      const live = docs
-        .filter((document) => document.state !== 'SUPERSEDED')
+      if (!isFirestoreInCooldown()) {
+        try {
+          const q = query(collection(db, ALERT_COLLECTION), where('alert_key', '==', alertKey));
+          const snap = await withTimeout(getDocs(q), 500);
+          const docs = [];
+          snap.forEach((d) => docs.push({ id: d.id, ...d.data() }));
+          const live = docs
+            .filter((document) => document.state !== 'SUPERSEDED')
+            .sort((a, b) => String(b.prediction_date || '').localeCompare(String(a.prediction_date || '')));
+          if (live.length > 0) {
+            firestoreAvailable = true;
+            return live[0];
+          }
+        } catch (err) {
+          handleFirestoreFailure(err);
+        }
+      }
+      const memDocs = Array.from(memoryDocs.values())
+        .filter((d) => d.alert_key === alertKey && d.state !== 'SUPERSEDED')
         .sort((a, b) => String(b.prediction_date || '').localeCompare(String(a.prediction_date || '')));
-      return live[0] || null;
+      return memDocs[0] || null;
     },
 
     async listDocuments({ state, level, horizon, districtId, max = 200 } = {}) {
-      const clauses = [];
-      if (state) clauses.push(where('state', '==', state));
-      if (level) clauses.push(where('level', '==', level));
-      if (horizon) clauses.push(where('horizon', '==', horizon));
-      if (districtId !== undefined && districtId !== null) {
-        clauses.push(where('district_id', '==', Number(districtId)));
+      if (!isFirestoreInCooldown()) {
+        try {
+          const clauses = [];
+          if (state) clauses.push(where('state', '==', state));
+          if (level) clauses.push(where('level', '==', level));
+          if (horizon) clauses.push(where('horizon', '==', horizon));
+          if (districtId !== undefined && districtId !== null) {
+            clauses.push(where('district_id', '==', Number(districtId)));
+          }
+          const q = clauses.length
+            ? query(collection(db, ALERT_COLLECTION), ...clauses, limit(max))
+            : query(collection(db, ALERT_COLLECTION), orderBy('generated_at', 'desc'), limit(max));
+          const snap = await withTimeout(getDocs(q), 500);
+          const docs = [];
+          snap.forEach((d) => docs.push({ id: d.id, ...d.data() }));
+          if (docs.length > 0) {
+            firestoreAvailable = true;
+            return docs;
+          }
+        } catch (err) {
+          handleFirestoreFailure(err);
+        }
       }
-      const q = clauses.length
-        ? query(collection(db, ALERT_COLLECTION), ...clauses, limit(max))
-        : query(collection(db, ALERT_COLLECTION), orderBy('generated_at', 'desc'), limit(max));
-      const snap = await getDocs(q);
-      const docs = [];
-      snap.forEach((d) => docs.push({ id: d.id, ...d.data() }));
-      return docs;
+      return Array.from(memoryDocs.values())
+        .filter((d) => {
+          if (state && d.state !== state) return false;
+          if (level && d.level !== level) return false;
+          if (horizon && d.horizon !== horizon) return false;
+          if (districtId !== undefined && districtId !== null && Number(d.district_id) !== Number(districtId)) {
+            return false;
+          }
+          return true;
+        })
+        .slice(0, max);
     },
   };
 }

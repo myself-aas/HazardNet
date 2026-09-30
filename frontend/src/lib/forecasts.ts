@@ -19,6 +19,21 @@ import type { DistrictData } from '../data/bangladeshDistricts';
 // Firestore doc shape written by POST /update / api/ingest.js)
 // ─────────────────────────────────────────────────────────────────────────
 
+export const ADVISORY_TIERS = ['SEVERE', 'WARNING', 'WATCH', 'NORMAL'] as const;
+export type AdvisoryTier = (typeof ADVISORY_TIERS)[number];
+
+export const HAZARD_CLASSES = [
+  'Cold Wave',
+  'Drought',
+  'Fire',
+  'Flash Flood',
+  'Flood',
+  'Heat Wave',
+  'Severe Local Storm',
+  'Tropical Cyclone',
+] as const;
+export type HazardClass = (typeof HAZARD_CLASSES)[number];
+
 export interface ForecastRow {
   district_id: number | string;
   district_name: string;
@@ -54,6 +69,16 @@ export interface ForecastRow {
   admin_level?: number;
   adm2_name?: string;
   adm2_pcode?: string;
+  // Phase B extensions (TRD §2.2, §2.3)
+  advisory_tier?: AdvisoryTier | string;
+  physics_override?: boolean;
+  latitude?: number;
+  longitude?: number;
+  model_severity_raw?: number;
+  final_severity?: number;
+  prob_top1?: number;
+  prob_top2?: number;
+  prob_top3?: number;
 }
 
 export interface BulkForecastsResponse {
@@ -503,6 +528,15 @@ export function applyForecastsToDistricts(
       severity: row.severity_score,
       risk: severityBin(row.severity_score),
       hazardType: row.hazard_type as DistrictData['hazardType'],
+      advisoryTier: row.advisory_tier,
+      physicsOverride: row.physics_override,
+      modelSeverityRaw: row.model_severity_raw,
+      finalSeverity: row.final_severity,
+      probTop1: row.prob_top1,
+      probTop2: row.prob_top2,
+      probTop3: row.prob_top3,
+      lat: typeof row.latitude === 'number' && !isNaN(row.latitude) ? row.latitude : district.lat,
+      lng: typeof row.longitude === 'number' && !isNaN(row.longitude) ? row.longitude : district.lng,
     };
   });
 
