@@ -24,7 +24,7 @@ export default async function handler(req, res) {
     const store = getForecastStore();
     const predictionDate = await store.getLatestPredictionDate();
     const ingestionTimestamp = await store.getLatestIngestionTimestamp();
-    const rowCount = await store.getLatestRowCount();
+    const rowCount = typeof store.getLatestRowCount === 'function' ? await store.getLatestRowCount() : 0;
     res.setHeader('Cache-Control', 'no-store, max-age=0');
     res.status(200).json({
       prediction_date: predictionDate,

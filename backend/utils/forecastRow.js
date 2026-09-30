@@ -291,8 +291,6 @@ export function parseCsvForecastRow(row, rowNumber) {
       value.final_severity = finalSev;
       value.severity_score = finalSev;
     }
-  } else if (value.severity_score !== undefined) {
-    value.final_severity = value.severity_score;
   }
 
   if (row.cnn_severity_raw !== undefined && row.cnn_severity_raw !== '') {

@@ -136,7 +136,7 @@ function loadSnapshotData() {
 
 // Bound offline client-SDK reads so the existing snapshot fallback is reachable.
 async function readForecasts(queryRef) {
-  if (process.env.NODE_ENV === 'test' || process.env.FORECAST_STORE_MEMORY === 'true') {
+  if (process.env.FORECAST_STORE_MEMORY === 'true') {
     throw new Error('Test environment: using local snapshot fallback');
   }
   let timer;
@@ -174,7 +174,7 @@ function createFirestoreStore() {
   const COOLDOWN_MS = 120_000; // 2 minutes backoff after failure
 
   function isFirestoreInCooldown() {
-    if (process.env.NODE_ENV === 'test' || process.env.FORECAST_STORE_MEMORY === 'true') return true;
+    if (process.env.FORECAST_STORE_MEMORY === 'true') return true;
     if (firestoreAvailable) return false;
     return Date.now() - lastFailureTime < COOLDOWN_MS;
   }

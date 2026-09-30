@@ -187,7 +187,7 @@ router.get('/metadata', async (req, res) => {
         const store = getForecastStore();
         const predictionDate = await store.getLatestPredictionDate();
         const ingestionTimestamp = await store.getLatestIngestionTimestamp();
-        const rowCount = await store.getLatestRowCount();
+        const rowCount = typeof store.getLatestRowCount === 'function' ? await store.getLatestRowCount() : 0;
         const now = new Date();
         res.setHeader('Cache-Control', 'no-store, max-age=0');
         res.json({

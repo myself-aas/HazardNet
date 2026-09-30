@@ -10,10 +10,13 @@
  * - TASK-020: Multilateral GLIDE Resource Resolver & Security Attributes (TRD §5.2, §9.2)
  */
 
-import { describe, test } from 'node:test';
+import * as nodeTest from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
+
+const describe = globalThis.describe ?? nodeTest.describe;
+const test = globalThis.test ?? nodeTest.test;
 
 import { generateGlideLinks, GLIDE_REGEX } from '../backend/utils/glideResolver.js';
 import historicalRouter from '../backend/routes/historical.js';
@@ -168,7 +171,8 @@ describe('TASK-016: Multilateral GLIDE Link Resolver & REST API', () => {
     assert.ok(fs.existsSync(serverlessPath), 'api/v1/historical.js must exist');
 
     const module = await import('../api/v1/historical.js');
-    assert.equal(typeof module.default, 'function', 'Serverless handler must be default export');
+    const handler = typeof module.default === 'function' ? module.default : module.default?.default;
+    assert.equal(typeof handler, 'function', 'Serverless handler must be default export');
 
     // Simulate mock request to /summary
     let statusCode = 0;
@@ -199,7 +203,7 @@ describe('TASK-016: Multilateral GLIDE Link Resolver & REST API', () => {
       },
     };
 
-    await module.default(req, res);
+    await handler(req, res);
     assert.equal(statusCode, 200, 'Handler must return 200');
     assert.equal(responseBody.success, true);
     assert.equal(responseBody.total_events, 3062);
@@ -211,7 +215,8 @@ describe('TASK-016: Multilateral GLIDE Link Resolver & REST API', () => {
 describe('TASK-017 & TASK-018: Frontend Components, Color Ramp & Export Logics', () => {
   test('geo.ts getVulnerabilityColor applies continuous ramp across thresholds', async () => {
     const geoModule = await import('../frontend/src/lib/geo.ts');
-    const { getVulnerabilityColor, getVulnerabilityTier, formatVulnerabilityScore } = geoModule;
+    const resolvedGeo = geoModule.getVulnerabilityColor ? geoModule : (geoModule.default?.getVulnerabilityColor ? geoModule.default : geoModule.default?.default);
+    const { getVulnerabilityColor, getVulnerabilityTier, formatVulnerabilityScore } = resolvedGeo;
 
     // Green for low
     assert.equal(getVulnerabilityColor(0.1), '#16a34a');

@@ -46,13 +46,16 @@ const draft = (level = 'WATCH') => ({
 
 describe('the state machine', () => {
   test('states are the five §1.6 needs', () => {
-    expect(ALERT_STATES).toEqual(['DRAFT', 'PENDING_REVIEW', 'PUBLISHED', 'REJECTED', 'SUPERSEDED']);
+    expect(ALERT_STATES).toEqual([
+      'DRAFT', 'PENDING_REVIEW', 'PUBLISHED', 'UPDATED', 'EXPIRED', 'ALL_CLEAR', 'REJECTED', 'SUPERSEDED',
+    ]);
   });
 
   test('describes every transition with its allowed source states', () => {
     const transitions = describeTransitions();
     expect(transitions.map((t) => t.id)).toEqual([
-      'create', 'auto-publish', 'submit-for-review', 'approve', 'reject', 'escalate', 'supersede',
+      'create', 'auto-publish', 'submit-for-review', 'approve', 'reject',
+      'update', 'expire', 'all-clear', 'escalate', 'supersede',
     ]);
     expect(transitions.find((t) => t.id === 'approve').from).toEqual(['PENDING_REVIEW']);
     expect(transitions.find((t) => t.id === 'reject').from).toEqual(['DRAFT', 'PENDING_REVIEW']);

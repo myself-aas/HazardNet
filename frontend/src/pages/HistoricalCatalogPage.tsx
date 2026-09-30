@@ -6,6 +6,7 @@ import { TemporalTrendChart } from '../components/TemporalTrendChart';
 import { MultiHazardDistributionChart } from '../components/MultiHazardDistributionChart';
 import { GlideResourcePopover } from '../components/GlideResourcePopover';
 import { EventReportModal, DisasterMasterEvent } from '../components/EventReportModal';
+import { usePageSeo } from '../hooks/usePageSeo';
 
 import masterEventsData from '../../public/data/historical/events-master.json';
 import vulnerabilityData from '../../public/data/historical/districts-vulnerability.json';
@@ -14,6 +15,7 @@ import distributionData from '../../public/data/historical/hazard-distribution.j
 import catalogData from '../../public/data/historical/hazard-catalog-index.json';
 
 export const HistoricalCatalogPage: React.FC = () => {
+  usePageSeo('/archive');
   const [selectedDistrict, setSelectedDistrict] = useState<string | null>(null);
   const [activeGlide, setActiveGlide] = useState<string | null>(null);
   const [isGlideOpen, setIsGlideOpen] = useState(false);
@@ -66,7 +68,7 @@ export const HistoricalCatalogPage: React.FC = () => {
     <div className="min-h-screen bg-carbon-90 text-carbon-10 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Page Hero Header */}
-        <div className="border-b border-carbon-80 pb-6">
+        <header className="border-b border-carbon-80 pb-6">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
               <div className="flex items-center gap-2 mb-2">
@@ -78,10 +80,10 @@ export const HistoricalCatalogPage: React.FC = () => {
                 </span>
               </div>
               <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-                Historical Hazards & Multilateral GLIDE Archive
+                Historical Hazard Archive
               </h1>
               <p className="text-sm text-carbon-40 mt-2 max-w-3xl leading-relaxed">
-                Comprehensive 26-year empirical multi-hazard registry spanning all 64 districts of Bangladesh. Cross-referenced with UN OCHA ReliefWeb, FAO GIEWS, WHO Emergency, and ADRC multilateral disaster systems.
+                3,062 recorded event-district observations in the 26-year empirical multi-hazard registry spanning all 64 districts of Bangladesh. This is an observation count, not a count of disasters — 70 distinct physical episodes are cross-referenced with UN OCHA ReliefWeb, FAO GIEWS, WHO Emergency, and ADRC multilateral GLIDE disaster systems.
               </p>
             </div>
 
@@ -101,7 +103,7 @@ export const HistoricalCatalogPage: React.FC = () => {
               </div>
             </div>
           </div>
-        </div>
+        </header>
 
         {/* Spatial & Vulnerability Section (TASK-017 & TASK-018) */}
         <section className="grid grid-cols-1 lg:grid-cols-12 gap-8">

@@ -88,33 +88,31 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
     onClose();
   };
 
-  return (
-    <AnimatePresence>
-      {isOpen && (
-        <>
-          <motion.div
-            key="drawer-backdrop"
-            initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
-            transition={{ duration: 0.15 }}
-            className="fixed inset-0 h-dvh bg-carbon-90/40 z-[var(--z-overlay)]"
-            onClick={onClose}
-            {...({ inert: true } as Record<string, unknown>)}
-          />
+  if (!isOpen) return null;
 
-          <motion.div
-            key="drawer-panel"
-            role="dialog"
-            aria-modal="true"
-            aria-label="Navigation menu"
-            data-testid="menu-drawer"
-            initial={reduceMotion ? { x: 0 } : { x: '-100%' }}
-            animate={{ x: 0 }}
-            exit={reduceMotion ? { x: 0, opacity: 0 } : { x: '-100%' }}
-            transition={{ duration: 0.15, ease: 'easeOut' }}
-            className="fixed inset-y-0 left-0 z-[var(--z-overlay)] w-full max-w-[320px] bg-white border-r border-carbon-20 flex flex-col font-sans select-none text-carbon-80 overflow-hidden menu-container"
-          >
+  return (
+    <>
+      <motion.div
+        key="drawer-backdrop"
+        initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.15 }}
+        className="fixed inset-0 h-dvh bg-carbon-90/40 z-[var(--z-overlay)]"
+        onClick={onClose}
+        {...({ inert: true } as Record<string, unknown>)}
+      />
+
+      <motion.div
+        key="drawer-panel"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Navigation menu"
+        data-testid="menu-drawer"
+        initial={reduceMotion ? { x: 0 } : { x: '-100%' }}
+        animate={{ x: 0 }}
+        transition={{ duration: 0.15, ease: 'easeOut' }}
+        className="fixed inset-y-0 left-0 z-[var(--z-overlay)] w-full max-w-[320px] bg-white border-r border-carbon-20 flex flex-col font-sans select-none text-carbon-80 overflow-hidden menu-container"
+      >
             <div className="px-4 flex items-center justify-between shrink-0 pt-[max(1rem,env(safe-area-inset-top))] pb-4">
               <div className="flex items-center gap-2">
                 <HazardNetBrand size="sm" variant="dark" />
@@ -268,9 +266,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
               </div>
             </div>
           </motion.div>
-        </>
-      )}
-    </AnimatePresence>
+    </>
   );
 };
 

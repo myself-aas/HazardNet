@@ -334,6 +334,7 @@ export const Navbar: React.FC<NavbarProps> = ({
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         setActiveMenu(null);
+        setIsMenuDrawerOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
