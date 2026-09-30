@@ -138,6 +138,8 @@ npm run alerts:rehearse / npm run alerts:snapshot
   - Model artifacts under `Models/` are deliberately never served (explicit 404 routes in `backend/server.js`); the model-version handshake in `Models/VERSION.json` must stay committed and clean, enforced by a CI gate in the `verify` job.
   - **Two supported deployment targets** (confirmed 2026-09-30): Vercel (static + serverless) and the self-host Express backend on port 3000. The Express target is live, not legacy — its in-memory rate limiting and in-memory store fallbacks are real concerns if it is ever run with more than one instance.
   - The CSP allows no ad-network script origin; `style-src` still permits `'unsafe-inline'` (see `backend/security/csp.js` for the recorded reason).
+  - **No containerisation:** no `Dockerfile`, `docker-compose.*` or Kubernetes manifest anywhere in the tree (verified with `find`); deployment is Vercel/Firebase-hosting plus the plain Node process.
+  - **No message broker / queue:** nothing imports Kafka, RabbitMQ, SQS or Pub/Sub clients — the only asynchronous surface is the Gemini live-voice WebSocket (`ws`) and the GitHub-Actions-driven batch pipeline.
 
 ### 6) Evidence
 
