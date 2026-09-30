@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useDialogBehavior } from '../hooks/useDialogBehavior';
 import {
   Printer,
   FileDown,
@@ -69,6 +70,10 @@ export const PrintPreviewModal: React.FC<PrintPreviewModalProps> = ({
   const [isConfigOpen, setIsConfigOpen] = useState<boolean>(false);
   
   const previewPaperRef = useRef<HTMLDivElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  // Escape, focus save/restore, scroll lock and the Tab cycle. The preview
+  // closed on Escape already but let Tab walk out of it.
+  useDialogBehavior({ isOpen, onClose, containerRef: dialogRef });
   const dispatchRef = useRef<string>(`HN-BD-${new Date().getFullYear()}-${Date.now().toString(36).slice(-5).toUpperCase()}`);
 
   const resolvedRegion = regionName || districtName || filenameContext.region || filenameContext.district || 'National';
@@ -236,6 +241,8 @@ export const PrintPreviewModal: React.FC<PrintPreviewModalProps> = ({
   return (
     <>
       <div
+        ref={dialogRef}
+        tabIndex={-1}
         role="dialog"
         aria-modal="true"
         aria-labelledby="print-preview-modal-title"
@@ -371,10 +378,10 @@ export const PrintPreviewModal: React.FC<PrintPreviewModalProps> = ({
             {/* Trigger Native Print (Primary Action) */}
             <button
               onClick={handleNativePrint}
-              className="inline-flex items-center gap-2 px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-xl bg-nasa-red hover:bg-nasa-red-tint text-carbon-black text-xs font-black transition-all shadow-md cursor-pointer hover:scale-102 active:scale-98"
+              className="inline-flex items-center gap-2 px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-xl bg-primary hover:bg-nasa-red-tint text-white text-xs font-black transition-all shadow-md cursor-pointer hover:scale-102 active:scale-98"
               title="Trigger Browser Print Dialog (Ctrl+P)"
             >
-              <Printer className="w-4 h-4 text-carbon-black shrink-0" />
+              <Printer className="w-4 h-4 text-white shrink-0" />
               <span>Print Report</span>
             </button>
 

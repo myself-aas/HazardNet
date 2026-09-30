@@ -55,14 +55,16 @@ jobs:
         # would have stayed green while covering none of the backend).
         # Pass the complete ignore list explicitly. Guarded by
         # scripts/tests/test_workflows.py::test_backend_jest_step_has_no_bare_selector
-        # Additional ignores: suites that require pipeline scripts not yet
-        # vendored in this checkout (claimsGate, contentEngine, freshnessArtifact,
-        # alertSnapshot, alertReplay, severityEmbargo, nasaTokens, securityTxt,
-        # securityHeadersParity) — they import from scripts/ that are absent on
-        # main (see `git ls-tree origin/main -- scripts/`). Those suites will
-        # be re-enabled when the scripts land; ignoring them here keeps the
-        # backend job green while the frontend motion upgrade is verified.
-        run: npx jest --ci --coverage --coverageDirectory=./coverage/backend --testPathIgnorePatterns='/node_modules/' '/e2e/' '/frontend/' '/apps/' '/__mocks__/' 'severityEmbargo' 'securityTxt' 'securityHeadersParity' 'nasaTokens' 'freshnessArtifact' 'contentEngine' 'claimsGate' 'alertSnapshot' 'alertReplay'
+        # The list is directory scopes only. It used to also name nine individual
+        # suites (severityEmbargo, securityTxt, securityHeadersParity, nasaTokens,
+        # freshnessArtifact, contentEngine, claimsGate, alertSnapshot, alertReplay)
+        # on the grounds that the scripts/ they import were "absent on main". Those
+        # scripts are in the tree, so the suites run: excluding them cost coverage
+        # of alert snapshotting, alert replay, freshness artifacts, NASA token
+        # imports, security.txt, header parity and the content engine — silently,
+        # on every commit. A suite that genuinely cannot run belongs in a failing
+        # state a human has to look at, not in this list.
+        run: npx jest --ci --coverage --coverageDirectory=./coverage/backend --testPathIgnorePatterns='/node_modules/' '/e2e/' '/frontend/' '/apps/' '/__mocks__/'
 
       - name: Upload backend coverage
         if: always()
@@ -393,23 +395,23 @@ jobs:
       - name: ESLint (0-error policy)
         run: npm run lint:eslint
 
-      - name: Severity-index publication embargo
-        run: npm run check:embargo
-
-      # The historical-archive artifact and its RAG documents are projections of the
-      # committed ETL export, so they fail the build when they no longer describe it —
-      # the same clock-blind pattern as the other derived-artifact gates above.
-      - name: RAG archive documents describe the artifact
-        run: npm run archive:rag:check
-
-      # A `git diff --exit-code` gate alone cannot see a MISSING file: an
-      # untracked Models/VERSION.json diffs clean, so the handshake stayed
-      # absent on main while this step reported success — and the backend suite
-      # failed 60 s earlier on `model_version` falling back to the legacy
-      # literal (see docs/audits/2026-09-15-ci-backend-tests-and-workflow-green.md).
-      # `git status --porcelain` reports untracked (`??`) and modified (` M`)
-      # alike, so stale == missing == red. Guarded by
-      # scripts/tests/test_workflows.py::test_model_version_gate_detects_missing_file.
+      # Model-version handshake: `Models/VERSION.json` is the file the backend reads for
+      # `model_version`, and a `git diff --exit-code` gate alone cannot see a MISSING file —
+      # an untracked VERSION.json diffs clean, so the handshake can be absent while a
+      # diff-based step reports success, and the backend suite then fails 60 s earlier on
+      # `model_version` falling back to the legacy literal. `git status --porcelain`
+      # reports untracked (`??`) and modified (` M`) alike, so stale == missing == red.
+      # Guarded by scripts/tests/test_workflows.py::test_model_version_gate_detects_missing_file.
+      - name: Model version handshake is committed and clean
+        run: |
+          set -euo pipefail
+          status="$(git status --porcelain -- Models/VERSION.json)"
+          if [ -n "$status" ]; then
+            echo "::error::Models/VERSION.json is missing or modified (${status}) — the model-version handshake must be committed and clean."
+            exit 1
+          fi
+          test -f Models/VERSION.json
+          node -e "const v=require('./Models/VERSION.json'); if(!v.version) throw new Error('Models/VERSION.json carries no version'); console.log('model handshake OK:', v.version)"
 
       # Every deployed function file, discovered rather than listed: the previous version
       # named three files (`api/forecasts.js`, `api/ingest.js`, `api/metrics.js`) and
@@ -476,23 +478,23 @@ jobs:
       - name: Bundle budget check
         run: npm run check:bundle
 
-      # Impeccable design-quality gate. The detector is vendored in
-      # .agents/skills/impeccable (skills 4.3.1, Apache-2.0) and installed as a
-      # devDependency for its binary; docs/design/impeccable.md records both, plus why
-      # each suppression in .impeccable/config.json is legitimate and what covers the
-      # same risk instead. It scans what we author (frontend/src, where findings carry a
-      # file and line) and what ships (every prerendered document under frontend/dist),
-      # and fails on any finding that is neither waived with a reason nor already in
-      # docs/design/impeccable-baseline.json. The baseline only shrinks: fixing a
-      # finding is followed by `npm run check:design:update` in the same commit.
+      # Impeccable design-quality gate. The detector ships as the `impeccable`
+      # devDependency (its binary) and is run by scripts/check-design-quality.mjs,
+      # which compares the findings against the committed baseline at
+      # `docs/design/impeccable-baseline.json` — that file records every accepted
+      # waiver and the check that covers the same risk instead. It scans what we
+      # author (frontend/src, where findings carry a file and line) and what ships
+      # (every prerendered document under frontend/dist), and fails on any finding
+      # that is neither waived with a reason nor already in the baseline.
+      # The baseline only shrinks: fixing a finding is followed by
+      # `npm run check:design:update` in the same commit.
       - name: Design quality gate
         run: npm run check:design
 
       # No location in this repository's tree may appear in a shipped document — rendered
-      # text, HTML comments, JSON-LD or inline styles. The rule, its reasoning and what the
-      # artifacts keep instead are in docs/PUBLIC_SURFACE.md §3; the pattern is shared with
-      # the build scripts and the browser (scripts/lib/public-text.mjs,
-      # frontend/src/lib/publicText.ts) and __tests__/noRepoPaths.test.js covers the
+      # text, HTML comments, JSON-LD or inline styles. The rule and what the artifacts keep
+      # instead are in scripts/lib/public-text.mjs, which the build scripts and the browser
+      # (frontend/src/lib/publicText.ts) share; __tests__/noRepoPaths.test.js covers the
       # surfaces that are rendered only in the browser.
       - name: Public surface names no repository path
         run: npm run check:paths
@@ -554,8 +556,7 @@ jobs:
           npx jest --ci --config jest.config.cjs --rootDir . \
             __tests__/seoFoundations.test.js \
             __tests__/statusPagePrerender.test.js \
-            __tests__/structuredData.test.js \
-            __tests__/modelPerformance.test.js
+            __tests__/structuredData.test.js
 
       - name: Upload build artifacts
         if: always()

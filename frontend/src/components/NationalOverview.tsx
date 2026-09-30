@@ -249,7 +249,7 @@ export const NationalOverview: React.FC<NationalOverviewProps> = ({
             onClick={() => setActiveTab('top3')}
             className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center gap-2 ${
               activeTab === 'top3'
-                ? 'bg-nasa-red text-carbon-90 shadow-xs scale-[1.02]'
+                ? 'bg-primary text-carbon-90 shadow-xs scale-[1.02]'
                 : 'text-carbon-60 hover:text-carbon-90 hover:bg-carbon-10'
             }`}
           >
@@ -260,7 +260,7 @@ export const NationalOverview: React.FC<NationalOverviewProps> = ({
             onClick={() => setActiveTab('divisions')}
             className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center gap-2 ${
               activeTab === 'divisions'
-                ? 'bg-nasa-red text-carbon-90 shadow-xs scale-[1.02]'
+                ? 'bg-primary text-carbon-90 shadow-xs scale-[1.02]'
                 : 'text-carbon-60 hover:text-carbon-90 hover:bg-carbon-10'
             }`}
           >
@@ -271,7 +271,7 @@ export const NationalOverview: React.FC<NationalOverviewProps> = ({
             onClick={() => setActiveTab('all_hazards')}
             className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center gap-2 ${
               activeTab === 'all_hazards'
-                ? 'bg-nasa-red text-carbon-90 shadow-xs scale-[1.02]'
+                ? 'bg-primary text-carbon-90 shadow-xs scale-[1.02]'
                 : 'text-carbon-60 hover:text-carbon-90 hover:bg-carbon-10'
             }`}
           >
@@ -282,7 +282,7 @@ export const NationalOverview: React.FC<NationalOverviewProps> = ({
             onClick={() => setActiveTab('formula')}
             className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center gap-2 ${
               activeTab === 'formula'
-                ? 'bg-nasa-red text-carbon-90 shadow-xs scale-[1.02]'
+                ? 'bg-primary text-carbon-90 shadow-xs scale-[1.02]'
                 : 'text-carbon-60 hover:text-carbon-90 hover:bg-carbon-10'
             }`}
           >

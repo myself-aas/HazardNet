@@ -419,7 +419,7 @@ export const LiveVoiceAdvisor: React.FC<LiveVoiceAdvisorProps> = ({
                 gemini-3.8-live
               </span>
             </div>
-            <div className="flex items-center gap-1.5 text-[11px] text-carbon-50">
+            <div className="flex items-center gap-1.5 text-[11px] text-carbon-60">
               <span className={`w-1.5 h-1.5 rounded-full ${
                 status === 'speaking' ? 'bg-sky-500 animate-pulse' :
                 status === 'listening' ? 'bg-emerald-500' :
@@ -454,7 +454,7 @@ export const LiveVoiceAdvisor: React.FC<LiveVoiceAdvisorProps> = ({
             <button
               id="close-live-voice-btn"
               onClick={onClose}
-              className="p-1.5 text-carbon-40 hover:text-carbon-70 rounded-lg hover:bg-carbon-20 transition-colors"
+              className="p-1.5 text-carbon-60 hover:text-carbon-70 rounded-lg hover:bg-carbon-20 transition-colors"
               aria-label="Close"
             >
               ×
@@ -536,10 +536,10 @@ export const LiveVoiceAdvisor: React.FC<LiveVoiceAdvisorProps> = ({
       {/* Live Transcript / Activity Log */}
       <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-white">
         {transcripts.length === 0 && (
-          <div className="h-full flex flex-col items-center justify-center text-center p-6 text-carbon-40">
+          <div className="h-full flex flex-col items-center justify-center text-center p-6 text-carbon-60">
             <Radio className="w-10 h-10 mb-2 opacity-30 text-blue-600" />
             <p className="text-sm font-semibold text-carbon-70">Live Voice Conversation Initialized</p>
-            <p className="text-xs text-carbon-50 max-w-xs mt-1">
+            <p className="text-xs text-carbon-60 max-w-xs mt-1">
               Ask anything about flood-tolerant rice varieties, livestock evacuation killas, cyclone salinity management, or DAE extension hotlines.
             </p>
             <div className="mt-4 flex flex-wrap justify-center gap-1.5 max-w-sm">
@@ -598,7 +598,7 @@ export const LiveVoiceAdvisor: React.FC<LiveVoiceAdvisorProps> = ({
                   <span>HazardNet Voice (gemini-3.8-live)</span>
                 </div>
                 <p className="font-sans leading-relaxed">{item.text}</p>
-                <span className="text-[10px] text-carbon-40 mt-0.5 block">{item.timestamp}</span>
+                <span className="text-[10px] text-carbon-60 mt-0.5 block">{item.timestamp}</span>
               </div>
             )}
 
@@ -610,7 +610,7 @@ export const LiveVoiceAdvisor: React.FC<LiveVoiceAdvisorProps> = ({
             )}
 
             {item.sender === 'system' && (
-              <div className="my-1 px-2 py-0.5 rounded text-carbon-50 text-[10px] font-mono">
+              <div className="my-1 px-2 py-0.5 rounded text-carbon-60 text-[10px] font-mono">
                 {item.text}
               </div>
             )}

@@ -184,7 +184,7 @@ export const GroundingIntelligencePanel: React.FC<GroundingIntelligencePanelProp
       <div className="p-3 sm:p-4 bg-white border-b border-carbon-20">
         <form onSubmit={handleCustomSubmit} className="flex gap-2">
           <div className="relative flex-1">
-            <Search className="w-4 h-4 text-carbon-40 absolute left-3 top-1/2 -translate-y-1/2" />
+            <Search className="w-4 h-4 text-carbon-60 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               value={customQuery}
@@ -212,7 +212,7 @@ export const GroundingIntelligencePanel: React.FC<GroundingIntelligencePanelProp
 
         {/* Quick Grounded Prompts */}
         <div className="flex flex-wrap gap-1.5 mt-2.5">
-          <span className="text-[11px] text-carbon-50 self-center mr-1">Quick prompts:</span>
+          <span className="text-[11px] text-carbon-60 self-center mr-1">Quick prompts:</span>
           {activeTab === 'maps' ? (
             <>
               <button
@@ -299,7 +299,7 @@ export const GroundingIntelligencePanel: React.FC<GroundingIntelligencePanelProp
                     <h4 className="text-sm font-bold text-carbon-90">
                       Grounded Emergency & Agronomic Facilities
                     </h4>
-                    <p className="text-[11px] text-carbon-50">
+                    <p className="text-[11px] text-carbon-60">
                       Institutional points of contact grounded via Google Maps spatial data
                     </p>
                   </div>
@@ -374,7 +374,7 @@ export const GroundingIntelligencePanel: React.FC<GroundingIntelligencePanelProp
                         <span>Spatial Guidance Summary:</span>
                       </div>
                       <p className="whitespace-pre-line">{mapsAnswer.slice(0, 450)}...</p>
-                      <div className="mt-2 text-[10px] text-carbon-50">
+                      <div className="mt-2 text-[10px] text-carbon-60">
                         Provenance: {mapsProvider}
                       </div>
                     </div>
@@ -401,7 +401,7 @@ export const GroundingIntelligencePanel: React.FC<GroundingIntelligencePanelProp
                     <h4 className="text-sm font-bold text-carbon-90">
                       Real-Time Meteorological & Hazard Bulletins
                     </h4>
-                    <p className="text-[11px] text-carbon-50">
+                    <p className="text-[11px] text-carbon-60">
                       Verified real-time information grounded via Google Search engine
                     </p>
                   </div>
@@ -439,7 +439,7 @@ export const GroundingIntelligencePanel: React.FC<GroundingIntelligencePanelProp
                         <span>Live Grounded Intelligence:</span>
                       </div>
                       <p className="whitespace-pre-line">{searchAnswer}</p>
-                      <div className="mt-2 text-[10px] text-carbon-50">
+                      <div className="mt-2 text-[10px] text-carbon-60">
                         Provenance: {searchProvider}
                       </div>
                     </div>

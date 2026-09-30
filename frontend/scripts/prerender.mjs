@@ -272,6 +272,21 @@ function resolveReviewDates(sections) {
   });
 }
 
+/**
+ * The notice that closes every static document: what a visitor reads between the
+ * server's first paint and the SPA taking over. The animated brand mark above it
+ * is `/hazardnet-loader.svg` — the header logo, animated — referenced rather than
+ * inlined, because inlining it would repeat ~17KB of path data in every one of the
+ * prerendered documents. It is decorative (`alt=""`, `aria-hidden`): the paragraph
+ * below carries the message, and the wrapper is the live region.
+ */
+const LOADING_NOTICE = [
+  '<div class="hn-loader" role="status">',
+  '<img class="hn-loader-mark" src="/hazardnet-loader.svg" alt="" aria-hidden="true" width="72" height="72" decoding="async" />',
+  '<p class="hn-loading">Loading the interactive HazardNet application…</p>',
+  '</div>',
+].join('');
+
 function renderBody(route) {
   const parts = [
     `<!--HN_STATIC_START-->`,
@@ -287,7 +302,7 @@ function renderBody(route) {
     route.updated
       ? `<p class="hn-meta">Content reviewed ${escapeHtml(route.updated)}. HazardNet is decision support, not an official warning service — see the <a href="/methodology">methodology</a> for scope and limitations.</p>`
       : '',
-    `<p class="hn-loading" role="status">Loading the interactive HazardNet application…</p>`,
+    LOADING_NOTICE,
     `</div>`,
     `<!--HN_STATIC_END-->`,
   ];
@@ -402,6 +417,13 @@ const STATIC_STYLES = `<style>
   .hn-static .hn-reason{display:block;font-weight:400;font-size:.8rem;color:#58585b}
   .hn-static .hn-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
   .hn-static .hn-loading{font-size:.8rem;color:#58585b}
+  /* The brand mark that loads in place of the notice below. The artwork itself is
+     /hazardnet-loader.svg — the header logo, animated — so a slow connection
+     spends its wait looking at the product's own mark instead of a spinner.
+     The width/height are set here as well as on the element: without them the
+     image has no intrinsic box until the SVG decodes and the notice jumps. */
+  .hn-static .hn-loader{display:flex;flex-direction:column;align-items:center;gap:1.1rem;margin:2.75rem 0 .5rem}
+  .hn-static .hn-loader-mark{display:block;width:72px;height:72px}
   .hn-static details{border-bottom:1px solid #e3e3e3;padding:.55rem 0}
   .hn-static summary{font-weight:600;cursor:pointer}
   /* Dark scheme. Every rule restates its own background next to its text colour so the
@@ -416,6 +438,11 @@ const STATIC_STYLES = `<style>
     .hn-static .hn-callout{background:#2e2e32;border-left-color:#ea6f24;color:#fce3ca}
     .hn-static .hn-meta{background:#17171b;border-top-color:#444447;color:#b9b9bb}
     .hn-static .hn-meta-line,.hn-static caption,.hn-static .hn-reason,.hn-static .hn-loading{color:#b9b9bb}
+    /* The mark's own palette is near-black on transparent, so on this scheme it
+       is reverted the same way the header's is: invert the neutrals (bars to
+       white, echoes to a dark carbon) and rotate the hue back so the brand red
+       survives the inversion instead of arriving as cyan. */
+    .hn-static .hn-loader-mark{filter:invert(1) hue-rotate(180deg)}
     .hn-static th,.hn-static td{border-bottom-color:#444447}
     .hn-static details{border-bottom-color:#444447}
     .hn-static .hn-state{background:#2e2e32;border-color:#58585b;color:#e3e3e3}
@@ -497,7 +524,7 @@ function renderArticleBody(article) {
     // Article bodies are sanitized rich-text HTML produced by the blog editor
     // (DOMPurify) and reviewed by a superadmin before publishing.
     `<article>${article.contentHtml ?? ''}</article>`,
-    '<p class="hn-loading" role="status">Loading the interactive HazardNet application…</p>',
+    LOADING_NOTICE,
     '</div>',
   ]
     .filter(Boolean)

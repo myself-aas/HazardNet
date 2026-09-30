@@ -16,10 +16,16 @@ import { defineConfig, devices } from '@playwright/test';
  * Phase 7 (UX-09): default `testMatch` must discover the forecast UX and
  * navigation a11y specs as well as the whole-app QA sweep. CI invokes
  * `npx playwright test` with no `-c`.
+ *
+ * Every spec in `e2e/` is in the default `testMatch`. The three that used to sit
+ * outside it (`smoke`, `critical-paths`, `mobile-responsive`) were real suites
+ * that never ran anywhere — the worst state a test can be in, because a reader
+ * assumes coverage that does not exist. If a spec must be excluded, exclude it
+ * with a reason in the file's header comment, not by omission from this regex.
  */
 export default defineConfig({
   testDir: './e2e',
-  testMatch: /(?:full-app-qa|forecast-ux|navigation-a11y)\.spec\.ts/,
+  testMatch: /(?:full-app-qa|forecast-ux|navigation-a11y|smoke|critical-paths|mobile-responsive)\.spec\.ts/,
   timeout: 60_000,
   fullyParallel: true,
   workers: 4,

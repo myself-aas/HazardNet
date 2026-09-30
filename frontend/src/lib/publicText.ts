@@ -5,7 +5,7 @@
  * A page may state where a number came from in words a reader can act on — a build time, a
  * coverage count, a link to a served artifact. It may not print a location in this
  * repository's tree, because a visitor cannot open one. The committed artifacts keep their
- * paths; the surface drops them. `docs/PUBLIC_SURFACE.md` §3 records the decision.
+ * paths; the surface drops them. `scripts/lib/public-text.mjs` records the decision.
  *
  * The build-side twin of this module is `scripts/lib/public-text.mjs`, which applies the
  * same rule where the prerendered pages are assembled. `__tests__/publicText.test.js`

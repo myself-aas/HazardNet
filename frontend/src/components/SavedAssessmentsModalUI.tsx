@@ -1,6 +1,8 @@
 import MaterialIcon from "./MaterialIcon";
 import { motion, AnimatePresence } from 'framer-motion';
+import { useRef } from 'react';
 import { UserAssessment } from '../context/AuthContext';
+import { useDialogBehavior } from '../hooks/useDialogBehavior';
 
 export interface SavedAssessmentsModalUIProps {
   isOpen: boolean;
@@ -19,6 +21,12 @@ export const SavedAssessmentsModalUI: React.FC<SavedAssessmentsModalUIProps> = (
   onSelectDistrict,
   onDelete,
 }) => {
+  const panelRef = useRef<HTMLDivElement>(null);
+  // This modal shipped with no dialog semantics at all — no role, no
+  // aria-modal, no accessible name, no Escape, no focus containment. The
+  // heading below is the accessible name, referenced by id.
+  useDialogBehavior({ isOpen, onClose, containerRef: panelRef });
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -35,6 +43,11 @@ export const SavedAssessmentsModalUI: React.FC<SavedAssessmentsModalUIProps> = (
         >
           <motion.div
             key="saved-assessments-modal"
+            ref={panelRef}
+            tabIndex={-1}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="saved-assessments-modal-title"
             initial={{ opacity: 0, scale: 0.9, y: 15 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 15 }}
@@ -44,7 +57,7 @@ export const SavedAssessmentsModalUI: React.FC<SavedAssessmentsModalUIProps> = (
             {/* Header */}
             <div className="flex items-center justify-between pb-4 border-b border-carbon-20">
               <div>
-                <h2 className="text-lg font-extrabold text-carbon-90">Saved Cloud Assessments</h2>
+                <h2 id="saved-assessments-modal-title" className="text-lg font-extrabold text-carbon-90">Saved Cloud Assessments</h2>
                 <p className="text-xs text-carbon-60 font-medium">
                   Persistent predictions stored in Firebase Firestore
                 </p>
@@ -119,7 +132,7 @@ export const SavedAssessmentsModalUI: React.FC<SavedAssessmentsModalUIProps> = (
                               onSelectDistrict(item.districtId);
                               onClose();
                             }}
-                            className="px-3 py-1.5 bg-nasa-red hover:bg-nasa-red-shade text-carbon-90 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer"
+                            className="px-3 py-1.5 bg-primary hover:bg-primary-strong text-carbon-90 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer"
                           >
                             View Map
                           </motion.button>

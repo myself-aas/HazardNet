@@ -74,7 +74,17 @@ const GeneratedContentPage: React.FC = () => {
   return <ArticlePage path={pathname} />;
 };
 
-/** Full-height fallback shown while a lazy route chunk streams in. */
+/**
+ * Full-height fallback shown while a lazy route chunk streams in.
+ *
+ * The loading state is the brand mark itself rather than a generic ring:
+ * `/hazardnet-loader.svg` is the same traced artwork as the header logo, with
+ * the two bars breathing out of phase and the arrow surging between them, so a
+ * wait on a slow connection is time spent looking at the product's own mark. The
+ * animation is declarative CSS *inside* that SVG — no script, no JS bundle cost,
+ * and it stops outright under `prefers-reduced-motion: reduce` — so the wrapper
+ * here only fades in and announces itself.
+ */
 const RouteFallback = () => {
   const reduceMotion = useReducedMotion();
   const frame = useWebFrame(30);
@@ -85,32 +95,28 @@ const RouteFallback = () => {
         width: '100%',
         minHeight: '50vh',
         display: 'flex',
+        flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
+        gap: 18,
+        opacity: reduceMotion ? 1 : interpolate(frame, [0, 6], [0, 1], {
+          easing: Easing.bezier(0.16, 1, 0.3, 1),
+          extrapolateLeft: 'clamp',
+          extrapolateRight: 'clamp',
+        }),
       }}
       role="status"
       aria-label="Loading page"
-      className="w-full min-h-[50vh] flex items-center justify-center"
+      className="w-full min-h-[50vh] flex flex-col items-center justify-center gap-4.5"
     >
-      <Interactive.Div
-        name="Loading spinner"
-        style={{
-          width: 32,
-          height: 32,
-          borderWidth: 2,
-          borderStyle: 'solid',
-          borderColor: '#d1d1d1',
-          borderTopColor: '#1c67e3',
-          borderRadius: '50%',
-          rotate: reduceMotion
-            ? '0deg'
-            : interpolate(frame, [0, 30], ['0deg', '360deg'], {
-                easing: Easing.bezier(0.4, 0, 0.2, 1),
-                extrapolateLeft: 'clamp',
-                extrapolateRight: 'clamp',
-              }),
-        }}
-        className="w-8 h-8 border-2 border-carbon-30 border-t-nasa-blue"
+      <img
+        src="/hazardnet-loader.svg"
+        alt=""
+        aria-hidden="true"
+        width={72}
+        height={72}
+        decoding="async"
+        className="block h-18 w-18 sm:h-20 sm:w-20 object-contain"
       />
       <span className="sr-only">Loading page…</span>
     </Interactive.Div>

@@ -136,19 +136,19 @@ export const StatusStrip: React.FC<StatusStripProps> = ({
             label={`${formatNumber(counts.SEVERE)} ${labels.SEVERE}`}
             size="sm"
           />
-          <span className="text-carbon-40" aria-hidden="true">·</span>
+          <span className="text-carbon-60" aria-hidden="true">·</span>
           <AlertLevelBadge
             level="WARNING"
             label={`${formatNumber(counts.WARNING)} ${labels.WARNING}`}
             size="sm"
           />
-          <span className="text-carbon-40" aria-hidden="true">·</span>
+          <span className="text-carbon-60" aria-hidden="true">·</span>
           <AlertLevelBadge
             level="WATCH"
             label={`${formatNumber(counts.WATCH)} ${labels.WATCH}`}
             size="sm"
           />
-          <span className="text-carbon-40" aria-hidden="true">·</span>
+          <span className="text-carbon-60" aria-hidden="true">·</span>
           <AlertLevelBadge
             level="NORMAL"
             label={`${formatNumber(counts.NORMAL)} ${labels.NORMAL}`}

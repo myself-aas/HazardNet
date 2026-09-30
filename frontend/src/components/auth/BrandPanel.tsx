@@ -205,7 +205,7 @@ export const BrandPanel: React.FC<BrandPanelProps> = ({ mode, intervalMs = 5200 
                 aria-label={`Highlight ${dot + 1} of ${messages.length}`}
                 onClick={() => setIndex(dot)}
                 className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
-                  dot === index ? 'w-7 bg-nasa-red' : 'w-2.5 bg-carbon-70 hover:bg-carbon-50'
+                  dot === index ? 'w-7 bg-primary' : 'w-2.5 bg-carbon-70 hover:bg-carbon-50'
                 }`}
               />
             ))}

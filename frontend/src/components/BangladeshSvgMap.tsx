@@ -111,7 +111,7 @@ export const BangladeshSvgMap: React.FC<BangladeshSvgMapProps> = ({
               onClick={() => setViewMode('districts')}
               className={`px-2.5 py-1 rounded-lg font-bold transition-all ${
                 viewMode === 'districts'
-                  ? 'bg-nasa-red text-white shadow-xs'
+                  ? 'bg-primary text-white shadow-xs'
                   : 'text-carbon-60 hover:text-carbon-90'
               }`}
             >
@@ -121,7 +121,7 @@ export const BangladeshSvgMap: React.FC<BangladeshSvgMapProps> = ({
               onClick={() => setViewMode('divisions')}
               className={`px-2.5 py-1 rounded-lg font-bold transition-all ${
                 viewMode === 'divisions'
-                  ? 'bg-nasa-red text-white shadow-xs'
+                  ? 'bg-primary text-white shadow-xs'
                   : 'text-carbon-60 hover:text-carbon-90'
               }`}
             >

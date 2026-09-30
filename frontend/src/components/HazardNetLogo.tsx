@@ -1,5 +1,29 @@
 import { getSeverityColor } from '../services/geolocationService';
 
+/**
+ * The brand mark.
+ *
+ * One file, one artwork. `hazardnet-mark.svg` is the traced mark on the
+ * *swapped* palette that is now the primary branding: crimson bars
+ * (#970002) with a near-black arrow (#0D0D0D / #262626), reversing the
+ * supplied artwork's black bars and red arrow so red carries the brand. The
+ * #D7D7D7 offset echoes are neutral and unchanged.
+ *
+ * The arrow carries a light #F4F4F5 keyline drawn beneath its fill. That is
+ * what keeps the black arrow legible on the front door's near-black hero
+ * (#05070E under the header's bg-black/25) and on the auth side panel's
+ * carbon-black; on light grounds the keyline is invisible against white. So
+ * this single file composites onto every surface the brand lands on, and there
+ * is no longer a separate inverse variant to keep in step.
+ *
+ * `variant` no longer changes the image — it only chooses the wordmark colour
+ * beside it, which still has to follow the ground.
+ *
+ * The wordmark itself still carries the site name, so the image stays
+ * decorative (`alt=""` when text is shown).
+ */
+const MARK_SRC = '/hazardnet-mark.svg';
+
 export interface HazardNetLogoProps {
   className?: string;
   size?: number | string;
@@ -21,7 +45,7 @@ export const HazardNetLogo: React.FC<HazardNetLogoProps> = ({
   return (
     <span className="inline-flex items-center justify-center shrink-0 leading-none">
       <img
-        src="/hazardnet-mark.svg"
+        src={MARK_SRC}
         alt={showText ? '' : 'HazardNet'}
         aria-hidden={showText || undefined}
         className={`block shrink-0 object-contain ${className}`}

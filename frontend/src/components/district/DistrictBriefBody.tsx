@@ -1347,7 +1347,7 @@ export const DistrictBriefBody: React.FC = () => {
               <button
                 onClick={handleTriggerDispatch}
                 disabled={dispatchStatus === 'broadcasting'}
-                className="w-full py-3 px-4 bg-nasa-red-shade hover:bg-nasa-red active:bg-nasa-red-shade text-white font-extrabold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                className="w-full py-3 px-4 bg-primary-strong hover:bg-primary active:bg-primary-strong text-white font-extrabold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
               >
                 <Radio className={`w-4 h-4 ${dispatchStatus === 'broadcasting' ? 'animate-spin' : ''}`} />
                 <span>

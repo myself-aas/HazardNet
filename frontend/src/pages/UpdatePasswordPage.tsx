@@ -93,7 +93,7 @@ export default function UpdatePasswordPage() {
           <button
             type="submit"
             disabled={saving || !ready}
-            className="min-h-[44px] w-full cursor-pointer bg-nasa-red-shade py-3 text-base font-semibold text-white hover:bg-nasa-red disabled:opacity-50 touch-manipulation"
+            className="min-h-[44px] w-full cursor-pointer bg-primary-strong py-3 text-base font-semibold text-white hover:bg-primary disabled:opacity-50 touch-manipulation"
           >
             {saving ? 'Updating password…' : 'Update password'}
           </button>

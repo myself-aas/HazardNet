@@ -1,205 +1,205 @@
 
 === DIRECTORY TREE (max depth 3, source files only) ===
+.env.example
 .firebaserc
 .github
-.github\dependabot.yml
-.github\workflow-templates
-.github\workflow-templates\hazardnet-daemon-cli-linux.yml
-.github\workflow-templates\hazardnet-field-agent-android.yml
-.github\workflow-templates\hazardnet-gis-workstation-windows.yml
-.github\workflow-templates\hazardnet-npm-package.yml
-.github\workflow-templates\hazardnet-python-package.yml
-.github\workflow-templates\README.md
-.github\workflows
-.github\workflows\app-releases.yml
-.github\workflows\ci.yml
-.github\workflows\Firebase-Store-Verify.yml
-.github\workflows\site-health.yml
-.github\workflows\verify-secrets.yml
+.github/dependabot.yml
+.github/workflow-templates
+.github/workflow-templates/README.md
+.github/workflow-templates/hazardnet-daemon-cli-linux.yml
+.github/workflow-templates/hazardnet-field-agent-android.yml
+.github/workflow-templates/hazardnet-gis-workstation-windows.yml
+.github/workflow-templates/hazardnet-npm-package.yml
+.github/workflow-templates/hazardnet-python-package.yml
+.github/workflows
+.github/workflows/Firebase-Store-Verify.yml
+.github/workflows/app-releases.yml
+.github/workflows/ci.yml
+.github/workflows/daily_advisory_ingest.yml
+.github/workflows/site-health.yml
+.github/workflows/verify-secrets.yml
 .gitignore
 .npmrc
 .prettierrc
+.pytest_cache
+.pytest_cache/.gitignore
+.pytest_cache/CACHEDIR.TAG
+.pytest_cache/README.md
+.pytest_cache/v
+.pytest_cache/v/cache
+.pytest_cache/v/cache/lastfailed
+.pytest_cache/v/cache/nodeids
 .vs
-.vs\HazardNet
-.vs\HazardNet\CopilotIndices
-.vs\HazardNet\CopilotIndices\18.10.1201.59691
-.vs\HazardNet\v18
-.vs\HazardNet\v18\workspaceFileList.bin
-.vs\HazardNet.slnx
-.vs\HazardNet.slnx\config
-.vs\HazardNet.slnx\config\applicationhost.config
-.vs\HazardNet.slnx\FileContentIndex
-.vs\HazardNet.slnx\FileContentIndex\2b95b664-848c-4a9f-8a2f-43f1338e1a7e.vsidx
-.vs\HazardNet.slnx\FileContentIndex\d73c9f81-ef32-4442-92d8-725b151bb1a1.vsidx
-.vs\HazardNet.slnx\v18
-.vs\HazardNet.slnx\v18\.wsuo
-.vs\HazardNet.slnx\v18\Browse.VC.db
-.vs\HazardNet.slnx\v18\DocumentLayout.backup.json
-.vs\HazardNet.slnx\v18\DocumentLayout.json
-.vs\ProjectSettings.json
-.vs\slnx.sqlite
-.vs\VSWorkspaceState.json
-.vscode
-.vscode\settings.json
+.vs/HazardNet
+.vs/HazardNet/CopilotIndices
+.vs/HazardNet/CopilotIndices/18.10.1201.59691
+.vs/HazardNet.slnx
+.vs/HazardNet.slnx/FileContentIndex
+.vs/HazardNet.slnx/FileContentIndex/2b95b664-848c-4a9f-8a2f-43f1338e1a7e.vsidx
+.vs/HazardNet.slnx/FileContentIndex/d73c9f81-ef32-4442-92d8-725b151bb1a1.vsidx
+.vs/HazardNet.slnx/config
+.vs/HazardNet.slnx/config/applicationhost.config
+.vs/HazardNet.slnx/v18
+.vs/HazardNet.slnx/v18/.wsuo
+.vs/HazardNet.slnx/v18/Browse.VC.db
+.vs/HazardNet.slnx/v18/DocumentLayout.backup.json
+.vs/HazardNet.slnx/v18/DocumentLayout.json
+.vs/ProjectSettings.json
+.vs/VSWorkspaceState.json
+.vs/slnx.sqlite
+CITATION.cff
+CLAIMS.md
+CppProperties.json
+LICENSE
+MONITORING_SETUP_GUIDE.md
+Models
+Models/README.md
+Models/REGISTRY.json
+Models/VERSION.json
+Models/calibration
+Models/calibration/confidence_map.template.json
+Models/hazardnet_fp32.tflite
+Models/hazardnet_int8.tflite
+Models/inference_example.py
+Models/labels.json
+Models/normalization_stats.json
+Models/preprocessing_config.json
+README.md
+SECURITY.md
 __tests__
-__tests__\__mocks__
-__tests__\__mocks__\async-storage.js
-__tests__\__mocks__\empty-string.js
-__tests__\__mocks__\expo-location.js
-__tests__\__mocks__\expo-modules.js
-__tests__\__mocks__\expo-notifications.js
-__tests__\__mocks__\netinfo.js
-__tests__\__mocks__\react-native-gesture-handler.js
-__tests__\__mocks__\react-native-reanimated.js
-__tests__\__mocks__\react-native-safe-area-context.js
-__tests__\__mocks__\react-native-screens.js
-__tests__\__mocks__\react-native-svg.js
-__tests__\__mocks__\react-native.js
-__tests__\__mocks__\react-navigation.js
-__tests__\__mocks__\tanstack-react-query.js
-__tests__\alertReplay.test.js
-__tests__\alerts
-__tests__\alerts\assess.test.js
-__tests__\alerts\channels.test.js
-__tests__\alerts\digest.test.js
-__tests__\alerts\lifecycle.test.js
-__tests__\alerts\notify.test.js
-__tests__\alerts\policy.test.js
-__tests__\alerts\report.test.js
-__tests__\alerts\service.test.js
-__tests__\alertSnapshot.test.js
-__tests__\api
-__tests__\api\alerts.test.js
-__tests__\api\chatPromptBounds.test.js
-__tests__\api\forecasts.test.js
-__tests__\api\predict.test.js
-__tests__\api\security.test.js
-__tests__\api\serverlessGuard.test.js
-__tests__\chatService.test.js
-__tests__\contentEngine.test.js
-__tests__\conversions.test.js
-__tests__\cors.test.js
-__tests__\csvSafety.test.js
-__tests__\designTokensParity.test.js
-__tests__\designTypography.test.js
-__tests__\firebaseAuth.test.js
-__tests__\firestoreRules.test.js
-__tests__\forecastFreshness.test.js
-__tests__\forecastPersistence.test.js
-__tests__\forecastRow.test.js
-__tests__\forecastServe.test.js
-__tests__\forecastsHistory.test.js
-__tests__\forecastStore.test.js
-__tests__\forecastsUpdate.test.js
-__tests__\freshnessArtifact.test.js
-__tests__\grounding.test.js
-__tests__\ingest.test.js
-__tests__\liveVoice.test.js
-__tests__\metricsApi.test.js
-__tests__\mobile
-__tests__\mobile\alertsStates.test.js
-__tests__\mobile\noScrollViewCollections.test.js
-__tests__\mobile\offlineState.test.js
-__tests__\nasaTokens.test.js
-__tests__\noRepoPaths.test.js
-__tests__\paletteTokens.test.js
-__tests__\phase1Packages.test.js
-__tests__\phase2MobileShell.test.js
-__tests__\phase2MotionComponents.test.js
-__tests__\phase3RemotionHero.test.js
-__tests__\phase3WindowsApp.test.js
-__tests__\phase4PageSurfaceRedesign.test.js
-__tests__\predict.test.js
-__tests__\predictFromStore.test.js
-__tests__\publicText.test.js
-__tests__\push.test.js
-__tests__\runtimeDependencies.test.js
-__tests__\security.test.js
-__tests__\securityHeadersParity.test.js
-__tests__\securityTxt.test.js
-__tests__\seoFoundations.test.js
-__tests__\serviceWorker.test.js
-__tests__\staticShellContrast.test.js
-__tests__\statusPagePrerender.test.js
-__tests__\structuredData.test.js
-__tests__\vercelForecasts.test.js
+__tests__/__mocks__
+__tests__/__mocks__/async-storage.js
+__tests__/__mocks__/empty-string.js
+__tests__/__mocks__/expo-location.js
+__tests__/__mocks__/expo-modules.js
+__tests__/__mocks__/expo-notifications.js
+__tests__/__mocks__/netinfo.js
+__tests__/__mocks__/react-native-gesture-handler.js
+__tests__/__mocks__/react-native-reanimated.js
+__tests__/__mocks__/react-native-safe-area-context.js
+__tests__/__mocks__/react-native-screens.js
+__tests__/__mocks__/react-native-svg.js
+__tests__/__mocks__/react-native.js
+__tests__/__mocks__/react-navigation.js
+__tests__/__mocks__/tanstack-react-query.js
+__tests__/advisoryPipeline.test.js
+__tests__/alertReplay.test.js
+__tests__/alertSnapshot.test.js
+__tests__/alerts
+__tests__/alerts/assess.test.js
+__tests__/alerts/channels.test.js
+__tests__/alerts/digest.test.js
+__tests__/alerts/lifecycle.test.js
+__tests__/alerts/notify.test.js
+__tests__/alerts/policy.test.js
+__tests__/alerts/report.test.js
+__tests__/alerts/service.test.js
+__tests__/api
+__tests__/api/alerts.test.js
+__tests__/api/chatPromptBounds.test.js
+__tests__/api/forecasts.test.js
+__tests__/api/predict.test.js
+__tests__/api/security.test.js
+__tests__/api/serverlessGuard.test.js
+__tests__/api/serverlessRouting.test.js
+__tests__/chatService.test.js
+__tests__/contentEngine.test.js
+__tests__/conversions.test.js
+__tests__/cors.test.js
+__tests__/csvSafety.test.js
+__tests__/designTokensParity.test.js
+__tests__/designTypography.test.js
+__tests__/firebaseAuth.test.js
+__tests__/firestoreRules.test.js
+__tests__/forecastFreshness.test.js
+__tests__/forecastPersistence.test.js
+__tests__/forecastRow.test.js
+__tests__/forecastServe.test.js
+__tests__/forecastStore.test.js
+__tests__/forecastsHistory.test.js
+__tests__/forecastsUpdate.test.js
+__tests__/freshnessArtifact.test.js
+__tests__/grounding.test.js
+__tests__/ingest.test.js
+__tests__/liveVoice.test.js
+__tests__/metricsApi.test.js
+__tests__/mobile
+__tests__/mobile/alertsStates.test.js
+__tests__/mobile/noScrollViewCollections.test.js
+__tests__/mobile/offlineState.test.js
+__tests__/nasaTokens.test.js
+__tests__/noRepoPaths.test.js
+__tests__/paletteTokens.test.js
+__tests__/phase1Packages.test.js
+__tests__/phase2MobileShell.test.js
+__tests__/phase2MotionComponents.test.js
+__tests__/phase3RemotionHero.test.js
+__tests__/phase3WindowsApp.test.js
+__tests__/phase4PageSurfaceRedesign.test.js
+__tests__/phaseBFrontend.test.js
+__tests__/phaseCBackend.test.js
+__tests__/phaseDHardening.test.js
+__tests__/phaseEHistorical.test.js
+__tests__/predict.test.js
+__tests__/predictFromStore.test.js
+__tests__/publicText.test.js
+__tests__/push.test.js
+__tests__/runtimeDependencies.test.js
+__tests__/security.test.js
+__tests__/securityHeadersParity.test.js
+__tests__/securityTxt.test.js
+__tests__/seoFoundations.test.js
+__tests__/serviceWorker.test.js
+__tests__/staticShellContrast.test.js
+__tests__/statusPagePrerender.test.js
+__tests__/structuredData.test.js
+__tests__/vercelForecasts.test.js
 api
-api\chat
-api\chat\query.js
-api\chat\sample-questions.js
-api\forecasts.js
-api\ingest.js
-api\metrics.js
-api\predict.js
-api\v1
-api\v1\alerts
-api\v1\alerts\evidence-card.js
-api\v1\alerts\index.js
-api\v1\alerts\policy.js
-api\v1\alerts\review.js
-api\v1\alerts\run.js
-api\v1\forecasts
-api\v1\forecasts\bulk.js
-api\v1\forecasts\history.js
-api\v1\forecasts\metadata.js
-api\v1\weather
-api\v1\weather\batch.js
-api\v1\weather.js
-app
-app\globals.css
-app\layout.tsx
+api/[endpoint].js
+api/chat
+api/chat/[action].js
+api/v1
+api/v1/[resource].js
+api/v1/alerts
+api/v1/alerts/[action].js
+api/v1/forecasts
+api/v1/forecasts/[action].js
+api/v1/weather
+api/v1/weather/batch.js
 apps
-apps\mobile
-apps\mobile\.maestro
-apps\mobile\.maestro\offline-cache-flow.yaml
-apps\mobile\.maestro\perf-scenario.yaml
-apps\mobile\.maestro\tap-call-flow.yaml
-apps\mobile\.maestro\today-alerts-flow.yaml
-apps\mobile\__tests__
-apps\mobile\__tests__\alertDetailStates.test.tsx
-apps\mobile\__tests__\alertsScreenStates.test.tsx
-apps\mobile\__tests__\noScrollViewCollections.test.js
-apps\mobile\__tests__\phase5MapAndSaved.test.tsx
-apps\mobile\__tests__\phase6Notifications.test.tsx
-apps\mobile\__tests__\phase7SecondaryFeatures.test.tsx
-apps\mobile\__tests__\phase8A11yPerf.test.tsx
-apps\mobile\__tests__\phase9Beta.test.tsx
-apps\mobile\__tests__\todayStates.test.tsx
-apps\mobile\app.json
-apps\mobile\App.tsx
-apps\mobile\assets
-apps\mobile\assets\.well-known
-apps\mobile\assets\adaptive-icon.png
-apps\mobile\assets\favicon.png
-apps\mobile\assets\icon.png
-apps\mobile\assets\snapshot
-apps\mobile\assets\splash.png
-apps\mobile\babel.config.cjs
-apps\mobile\ci-signing.gradle
-apps\mobile\eas.json
-apps\mobile\jest.config.cjs
-apps\mobile\jest.fileTransform.cjs
-apps\mobile\jest.setup.cjs
-apps\mobile\metro.config.cjs
-apps\mobile\package.json
-apps\mobile\PHASE0_STATUS.md
-apps\mobile\src
-apps\mobile\src\assets
-apps\mobile\src\components
-apps\mobile\src\design-system
-apps\mobile\src\hooks
-apps\mobile\src\lib
-apps\mobile\src\navigation
-apps\mobile\src\screens
-apps\mobile\src\state
-apps\mobile\src\test
-apps\mobile\src\theme
-apps\mobile\tsconfig.json
-apps\windows
-apps\windows\App.windows.tsx
-apps\windows\index.windows.js
-apps\windows\metro.config.js
-apps\windows\package.json
+apps/mobile
+apps/mobile/.maestro
+apps/mobile/.maestro/offline-cache-flow.yaml
+apps/mobile/.maestro/perf-scenario.yaml
+apps/mobile/.maestro/tap-call-flow.yaml
+apps/mobile/.maestro/today-alerts-flow.yaml
+apps/mobile/App.tsx
+apps/mobile/PHASE0_STATUS.md
+apps/mobile/__tests__
+apps/mobile/__tests__/alertDetailStates.test.tsx
+apps/mobile/__tests__/alertsScreenStates.test.tsx
+apps/mobile/__tests__/noScrollViewCollections.test.js
+apps/mobile/__tests__/phase5MapAndSaved.test.tsx
+apps/mobile/__tests__/phase6Notifications.test.tsx
+apps/mobile/__tests__/phase7SecondaryFeatures.test.tsx
+apps/mobile/__tests__/phase8A11yPerf.test.tsx
+apps/mobile/__tests__/phase9Beta.test.tsx
+apps/mobile/__tests__/todayStates.test.tsx
+apps/mobile/app.json
+apps/mobile/assets
+apps/mobile/assets/.well-known
+apps/mobile/assets/adaptive-icon.png
+apps/mobile/assets/favicon.png
+apps/mobile/assets/icon.png
+apps/mobile/assets/snapshot
+apps/mobile/assets/splash.png
+apps/mobile/babel.config.cjs
+apps/mobile/ci-signing.gradle
+apps/mobile/eas.json
+apps/mobile/jest.config.cjs
+apps/mobile/jest.fileTransform.cjs
+apps/mobile/jest.setup.cjs
+apps/mobile/metro.config.cjs
 
 === STACK DETECTION (manifest files) ===
 
@@ -334,6 +334,7 @@ apps\windows\package.json
     "alerts:rehearse": "node scripts/rehearse_alert_engine.mjs --out /tmp/alert-run.json",
     "alerts:snapshot": "node scripts/rehearse_alert_engine.mjs --out /tmp/alert-run.json --quiet && node scripts/build_alert_snapshot.mjs --in /tmp/alert-run.json",
     "check:bundle": "node scripts/check-bundle.mjs",
+    "check:functions": "node scripts/check-vercel-functions.mjs",
     "check:design": "node scripts/check-design-quality.mjs",
     "check:design:source": "node scripts/check-design-quality.mjs --source-only",
     "check:paths": "node scripts/check-public-paths.mjs",
@@ -341,8 +342,8 @@ apps\windows\package.json
     "design:detect": "impeccable detect frontend/src frontend/dist --no-advisory",
     "design:help": "impeccable help",
     "check:env": "node scripts/validate_env.mjs",
-    "check:embargo": "node -e \"if (require('fs').existsSync('scripts/check-severity-embargo.mjs')) { require('child_process').execSync('node scripts/check-severity-embargo.mjs', { stdio: 'inherit' }); } else { console.log('[embargo] script not yet vendored — skipping'); }\"",
-    "archive:rag:check": "node -e \"if (require('fs').existsSync('scripts/check-rag-archive.mjs')) { require('child_process').execSync('node scripts/check-rag-archive.mjs', { stdio: 'inherit' }); } else { console.log('[rag] script not yet vendored — skipping'); }\"",
+    "check:claims": "node scripts/verify_claims.mjs",
+    "test:phases": "node --test __tests__/advisoryPipeline.test.js __tests__/phaseBFrontend.test.js __tests__/phaseCBackend.test.js __tests__/phaseDHardening.test.js __tests__/phaseEHistorical.test.js",
     "check:fonts": "node scripts/check-font-payload.mjs"
   },
   "dependencies": {
@@ -366,9 +367,8 @@ apps\windows\package.json
     "zod": "^3.23.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.22.11",
 
-[TRUNCATED] Showing first 80 of 118 lines.
+[TRUNCATED] Showing first 80 of 119 lines.
 
 === ENTRY POINTS ===
 No common entry points found. Check 'main' or 'scripts.start' in manifest files above.
@@ -378,67 +378,118 @@ Found: eslint.config.js
 Found: .prettierrc
 
 === ENVIRONMENT VARIABLE TEMPLATES ===
-No .env.example or .env.template found. Identify required environment variables by searching the code and config for environment variable reads.
+--- .env.example ---
+# HazardNet — environment template (placeholder values only).
+#
+# Copy to `.env` and fill in real values:  cp .env.example .env
+# `.env` is git-ignored and must never be committed. This file is the only env
+# file in the repository and holds placeholders only — `scripts/check-secrets.sh`
+# (run locally and in CI) fails the build if a credential-shaped value lands here.
+#
+# The authoritative reference, with how to obtain each value on free tiers, is
+# docs/ENVIRONMENT_SECRETS.md §2. Golden rule: anything prefixed `VITE_` is
+# compiled into the public JS bundle and is therefore PUBLIC BY DESIGN — only ever
+# put public identifiers there, never a private key.
+#
+# Three injection surfaces (see docs/ENVIRONMENT_SECRETS.md §0):
+#   A. Vercel project environment  -> the serverless functions + the Vite build
+#   B. GitHub Actions secrets/vars -> .github/workflows/*
+#   C. this local .env             -> local dev servers and snapshot rebuilds
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Server / serverless runtime
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Firestore access for the server. REQUIRED — the backend will not serve without it.
+# The entire service-account JSON, minified onto one line.
+FIREBASE_SERVICE_ACCOUNT_JSON=REPLACE_WITH_MINIFIED_SERVICE_ACCOUNT_JSON
+
+# Bearer token for the mutating ingest/broadcast endpoints
+# (POST /api/v1/forecasts/update, push broadcast). Generate: openssl rand -hex 32
+# Authenticated endpoints return 503 when this is unset.
+BACKEND_API_KEY=REPLACE_WITH_64_HEX_CHARS
+
+# CORS allowlist, comma-separated. Production FAILS CLOSED without it.
+# e.g. https://www.hazardnet.live,https://hazardnet.live
+FRONTEND_ORIGIN=REPLACE_WITH_FRONTEND_ORIGIN
+
+# AI advisory generation. Optional: with it unset the routes fall back to the
+# deterministic heuristic engine.
+GEMINI_API_KEY=REPLACE_WITH_GOOGLE_AI_STUDIO_KEY
+GEMINI_API_KEY_BACKUP=REPLACE_WITH_SECOND_GEMINI_KEY
+GROQ_API_KEY=REPLACE_WITH_GROQ_KEY
+OPENROUTER_API_KEY=REPLACE_WITH_OPENROUTER_KEY
+HUGGINGFACE_API_KEY=REPLACE_WITH_HUGGINGFACE_TOKEN
+
+# Web push (VAPID). Generate a pair with `npx web-push generate-vapid-keys`.
+# The public half is also shipped to the browser as VITE_VAPID_PUBLIC_KEY.
+VAPID_PUBLIC_KEY=REPLACE_WITH_VAPID_PUBLIC_KEY
+VAPID_PRIVATE_KEY=REPLACE_WITH_VAPID_PRIVATE_KEY
+WEB_PUSH_CONTACT=mailto:REPLACE_WITH_CONTACT_EMAIL
+
+# Optional tuning
+CSP_ENFORCE=
+FIREBASE_VERIFY_TIMEOUT_MS=
+CONVERSION_PERSIST_TIMEOUT_MS=
+FORECAST_STORE=
+FORECAST_DATASET=hazardnet/weekly-forecasts
+SNAPSHOT_SOURCE=
+SNAPSHOT_RUN_REPORT=
+SNAPSHOT_KERNEL=
+SCENE_MANIFEST=
+
+# Alert desk
+ALERT_AUTO_PUBLISH=false
+ALERT_AUTO_PUBLISH_MINUTES=
+ALERT_DUTY_OFFICERS=
+
+# Ops notifications
+SLACK_WEBHOOK_URL=
+
+# Platform-provided — never set these by hand.
+# NODE_ENV=
+# VERCEL_ENV=
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Frontend build (VITE_* — PUBLIC BY DESIGN, compiled into the bundle)
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Firebase web config. Public identifiers; see docs/ENVIRONMENT_SECRETS.md §1.2.
+# The app has canonical defaults in frontend/src/lib/config.ts so it boots without
+# a local .env; set real values per environment in production.
+VITE_FIREBASE_API_KEY=REPLACE_WITH_FIREBASE_WEB_API_KEY
+VITE_FIREBASE_AUTH_DOMAIN=REPLACE_WITH_PROJECT.firebaseapp.com
+
+[TRUNCATED] Showing first 80 of 120 lines.
 
 === TODO / FIXME / HACK (production code only, test dirs excluded) ===
-apps\mobile\src\lib\reports\useReportQueue.ts:59: // TODO: real FormData POST in 7b.
-frontend\src\services\firebase.ts:29: // TODO: Add SDKs for Firebase products that you want to use
-manuscript\.agents\skills\academic-research-suite\ars\scripts\test_check_instruction_data_boundary.py:152: lambda t: t.replace(_first_block_body(t), "\nTODO: write this later.\n"))
-manuscript\.agents\skills\academic-research-suite\ars\scripts\test_check_instruction_data_boundary.py:259: _edit(root, rel, lambda t: t.replace(_first_block_body(t), "\nTODO\n"))
-manuscript\.agents\skills\academic-research-suite\ars\scripts\_next_verified_at_ms.py:114: TODO(Phase 6.3): scripts/check_audit_artifact_consistency.py should
-manuscript\.claude\skills\academic-research-suite\ars\scripts\test_check_instruction_data_boundary.py:152: lambda t: t.replace(_first_block_body(t), "\nTODO: write this later.\n"))
-manuscript\.claude\skills\academic-research-suite\ars\scripts\test_check_instruction_data_boundary.py:259: _edit(root, rel, lambda t: t.replace(_first_block_body(t), "\nTODO\n"))
-manuscript\.claude\skills\academic-research-suite\ars\scripts\_next_verified_at_ms.py:114: TODO(Phase 6.3): scripts/check_audit_artifact_consistency.py should
-manuscript\.codex\skills\academic-research-suite\ars\scripts\test_check_instruction_data_boundary.py:152: lambda t: t.replace(_first_block_body(t), "\nTODO: write this later.\n"))
-manuscript\.codex\skills\academic-research-suite\ars\scripts\test_check_instruction_data_boundary.py:259: _edit(root, rel, lambda t: t.replace(_first_block_body(t), "\nTODO\n"))
-manuscript\.codex\skills\academic-research-suite\ars\scripts\_next_verified_at_ms.py:114: TODO(Phase 6.3): scripts/check_audit_artifact_consistency.py should
-manuscript\scripts\test_check_instruction_data_boundary.py:152: lambda t: t.replace(_first_block_body(t), "\nTODO: write this later.\n"))
-manuscript\scripts\test_check_instruction_data_boundary.py:259: _edit(root, rel, lambda t: t.replace(_first_block_body(t), "\nTODO\n"))
-manuscript\scripts\_next_verified_at_ms.py:114: TODO(Phase 6.3): scripts/check_audit_artifact_consistency.py should
+None found.
 
 === GIT RECENT COMMITS (last 20) ===
-bc19b4e chore(ops): site-health probe fail 2026-09-29T06:22Z
-c716495 chore(ops): site-health probe fail 2026-09-29T00:42Z
-c0da40d Merge pull request #57 from myself-aas/arena/01a0e93e-hazardnet
-74a843a fix(design): avoid a literal <img> token the design-quality gate parses
-1aa502b feat(hero): replace the canvas backdrop with a self-hosted image carousel
-d2bc1c2 chore(ops): site-health probe fail 2026-09-28T20:38Z
-f09e361 feat(ui): add the 3D globe component behind a lazy WebGL boundary
-ce5facf feat(hero): draw the Earth-from-space background instead of streaming it
-72c8309 fix(hero): the poster fallback painted nothing, so a failed hero was black
-9139ca9 fix(hero): allow the hero CDN origins in media-src, and open on a verified clip
-53f2a5e feat(hero): random stock-video background with clip-by-clip failover
-80603ff Merge pull request #56 from myself-aas/arena/01a0e8d7-hazardnet
-1611b43 perf: enforce edge-safe typography fallback
-8d5565e chore(ops): site-health probe fail 2026-09-28T14:15Z
-93387a9 chore(ops): site-health probe fail 2026-09-28T06:14Z
-04c1feb chore(ops): site-health probe fail 2026-09-28T00:57Z
-958a6f5 chore(ops): site-health probe fail 2026-09-27T22:23Z
-61416b6 chore(ops): site-health probe fail 2026-09-27T19:22Z
-f85936e chore(ops): site-health probe fail 2026-09-27T15:42Z
-d669fe4 chore(ops): site-health probe fail 2026-09-27T11:06Z
+c2e6085 docs(codebase): map the repository with the acquire-codebase-knowledge skill
+674c03c chore(ops): site-health probe fail 2026-09-30T07:38Z
 
 === HIGH-CHURN FILES (last 90 days, top 20) ===
-  28 frontend/public/data/freshness.json
-  27 data/site-health/latest.json
-   6 package-lock.json
-   6 vercel.json
-   6 .github/workflows/app-releases.yml
-   5 frontend/src/components/HeroCinematicBackground.tsx
-   5 frontend/src/lib/heroMedia.ts
-   5 frontend/package.json
-   5 package.json
-   4 backend/security/csp.js
-   4 frontend/src/components/HeroVideoPlayer.tsx
-   4 frontend/src/components/__tests__/HeroVideoPlayer.test.tsx
-   4 frontend/vercel.json
-   4 apps/windows/src/components/WindowsDesktopOverview.tsx
-   3 frontend/src/hooks/useHeroVideoSource.ts
-   3 frontend/src/lib/__tests__/heroVideoPlaylist.test.ts
-   3 frontend/src/lib/heroVideoPlaylist.ts
-   3 apps/windows/App.windows.tsx
-   3 frontend/public/data/content-index.json
-   3 .github/workflows/ci.yml
+   2 docs/codebase/.codebase-scan.txt
+   2 docs/codebase/ARCHITECTURE.md
+   2 docs/codebase/CONCERNS.md
+   2 docs/codebase/CONVENTIONS.md
+   2 docs/codebase/INTEGRATIONS.md
+   2 docs/codebase/STACK.md
+   2 docs/codebase/STRUCTURE.md
+   2 docs/codebase/TESTING.md
+   1 .firebaserc
+   1 .github/dependabot.yml
+   1 .github/workflow-templates/README.md
+   1 .github/workflow-templates/hazardnet-daemon-cli-linux.yml
+   1 .github/workflow-templates/hazardnet-field-agent-android.yml
+   1 .github/workflow-templates/hazardnet-gis-workstation-windows.yml
+   1 .github/workflow-templates/hazardnet-npm-package.yml
+   1 .github/workflow-templates/hazardnet-python-package.yml
+   1 .github/workflows/Firebase-Store-Verify.yml
+   1 .github/workflows/app-releases.yml
+   1 .github/workflows/ci.yml
+   1 .github/workflows/daily_advisory_ingest.yml
 
 === MONOREPO SIGNALS ===
 Sub-package directory found: packages/
@@ -446,29 +497,29 @@ Sub-package directory found: apps/
 package.json has 'workspaces' field (npm/yarn workspaces monorepo)
 
 === CODE METRICS ===
-Total files scanned: 12993
-Total lines of code: 1563996
+Total files scanned: 884
+Total lines of code: 156964
 
 Files by language:
-  Other: 10566
-  Python: 1865
-  TypeScript/React: 219
-  TypeScript: 180
-  JavaScript: 153
+  Other: 282
+  TypeScript/React: 230
+  TypeScript: 182
+  JavaScript: 169
+  Python: 11
   C++: 5
   C Header: 5
 
 Top 10 largest files:
-manuscript\kaggle-notebooks\3-HazardNet-Dataset-Builder\3-HazardNet-Dataset-Builder\tensors_output\HazardNet_Event_Based_Datasets\master_tensors.h5: 2421957.8KB
-manuscript\kaggle-notebooks\7-hazardnet-baselines\7-b-hazardnet-baselines\7-b-hazardnet-baselines\HazardNet_Heavyweight_Baselines\timesformer\timesformer_fold_0_best.pt: 483422.9KB
-manuscript\kaggle-notebooks\7-hazardnet-baselines\7-b-hazardnet-baselines\7-b-hazardnet-baselines\HazardNet_Heavyweight_Baselines\timesformer\timesformer_fold_1_best.pt: 483422.9KB
-manuscript\kaggle-notebooks\7-hazardnet-baselines\7-b-hazardnet-baselines\7-b-hazardnet-baselines\HazardNet_Heavyweight_Baselines\timesformer\timesformer_fold_2_best.pt: 483422.9KB
-manuscript\kaggle-notebooks\7-hazardnet-baselines\7-b-hazardnet-baselines\7-b-hazardnet-baselines\HazardNet_Heavyweight_Baselines\timesformer\timesformer_fold_3_best.pt: 483422.9KB
-manuscript\kaggle-notebooks\7-hazardnet-baselines\7-b-hazardnet-baselines\7-b-hazardnet-baselines\HazardNet_Heavyweight_Baselines\timesformer\timesformer_fold_4_best.pt: 483422.9KB
-manuscript\kaggle-notebooks\7-hazardnet-baselines\7-b-hazardnet-baselines\7-b-hazardnet-baselines\HazardNet_Heavyweight_Baselines\resnet3d\resnet3d_fold_0_best.pt: 130374.3KB
-manuscript\kaggle-notebooks\7-hazardnet-baselines\7-b-hazardnet-baselines\7-b-hazardnet-baselines\HazardNet_Heavyweight_Baselines\resnet3d\resnet3d_fold_1_best.pt: 130374.3KB
-manuscript\kaggle-notebooks\7-hazardnet-baselines\7-b-hazardnet-baselines\7-b-hazardnet-baselines\HazardNet_Heavyweight_Baselines\resnet3d\resnet3d_fold_2_best.pt: 130374.3KB
-manuscript\kaggle-notebooks\7-hazardnet-baselines\7-b-hazardnet-baselines\7-b-hazardnet-baselines\HazardNet_Heavyweight_Baselines\resnet3d\resnet3d_fold_3_best.pt: 130374.3KB
+.vs/HazardNet.slnx/v18/Browse.VC.db: 61568.0KB
+frontend/assets/hero-section/Hero_Section_hd_3840_2160_30fps.mp4: 58577.1KB
+frontend/public/hero-section/Hero_Section_hd_3840_2160_30fps.mp4: 58577.1KB
+frontend/assets/hero-section/Hero_Section_hd_2560_1440_30fps.mp4: 25880.7KB
+frontend/public/hero-section/Hero_Section_hd_2560_1440_30fps.mp4: 25880.7KB
+frontend/assets/hero-section/Hero_Section_hd_1920_1080_30fps.mp4: 16161.9KB
+frontend/public/hero-section/Hero_Section_hd_1920_1080_30fps.mp4: 16161.9KB
+frontend/assets/hero-section/Hero_Section_hd_1280_720_30fps.mp4: 8780.1KB
+frontend/public/hero-section/Hero_Section_hd_1280_720_30fps.mp4: 8780.1KB
+frontend/assets/hero-section/Hero_Section_sd_960_540_30fps.mp4: 5371.7KB
 
 === CI/CD PIPELINES ===
 CI/CD: GitHub Actions
@@ -477,7 +528,7 @@ CI/CD: GitHub Actions
 No containerization configs detected.
 
 === SECURITY & COMPLIANCE ===
-No security configs detected.
+Security: SECURITY.md
 
 === PERFORMANCE & TESTING ===
 No performance testing configs detected.

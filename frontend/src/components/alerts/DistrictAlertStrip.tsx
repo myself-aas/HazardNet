@@ -74,7 +74,7 @@ export const DistrictAlertStrip: React.FC<DistrictAlertStripProps> = ({
 
   return (
     <div
-      className={`border border-carbon-20 border-l-[2px] border-l-[#ea6f24] bg-white p-4 ${className}`}
+      className={`border border-carbon-20 border-l-[2px] border-l-amber-500 bg-white p-4 ${className}`}
       data-alert-id={alert.id}
     >
       <div className="flex flex-wrap items-center justify-between gap-2">

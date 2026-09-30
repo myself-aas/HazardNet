@@ -20,22 +20,64 @@
 The design system is structured in three clear layers within [`frontend/src/index.css`](file:///g:/HazardNet/WebApp/Github/HazardNet/frontend/src/index.css):
 
 ### Layer 1: Primitives (`:root`)
-- **NASA HDS Palette**:
-  - `--hn-hds-red`: `#f64137` (Navigation CTAs, critical alerts)
-  - `--hn-hds-red-shade`: `#b60109` (High-contrast CTA fills — `7.0:1` against white)
+- **Brand palette** (the two colours the mark is painted in — red is primary, ink is secondary):
+  - `--hn-brand-red`: `#970002` (brand crimson — the mark's bars. Navigation CTAs, critical alerts)
+  - `--hn-brand-red-dark`: `#7B1D21` (the mark's dark crimson. High-contrast CTA fills — `10.3:1` against white)
+  - `--hn-brand-ink`: `#0D0D0D` (the mark's near-black — `19.4:1` on white)
+- **NASA HDS Palette** (the rest, at NASA's published values):
+  - `--hn-hds-red`: `#970002` — routed through `--hn-brand-red`, so the product matches the mark
+  - `--hn-hds-red-tint`: `#ff5c52` (deliberately still NASA's: dark grounds need `6.9:1`, and a tint of `#970002` would only reach `3.6:1`)
+  - `--hn-hds-red-shade`: `#7B1D21` — routed through `--hn-brand-red-dark`
   - `--hn-hds-blue`: `#1c67e3` (On-page controls, information, interactive triggers)
   - `--hn-hds-blue-shade`: `#0b3b95` (`9.9:1` against white — accessible links)
   - `--hn-hds-surface`: `#f6f6f6` (Application canvas background)
   - `--hn-hds-line`: `var(--hds-color-carbon-20)` (Hairline dividers, card borders)
-  - `--hn-hds-ink`: `#17171b` (Primary body text — `17.4:1` on surface)
+  - `--hn-hds-ink`: `#0D0D0D` — routed through `--hn-brand-ink` (Primary body text — `19.4:1` on surface)
   - `--hn-hds-ink-soft`: `var(--hds-color-carbon-60)` (`7.1:1` on white — accessible secondary text)
 
 ### Layer 2: Semantic Tokens
-- `--primary`: Action / Navigation (`--hn-hds-red-shade`)
+- `--primary`: Action / Navigation (`--hn-hds-red`, i.e. the brand crimson `#970002`)
+- `--primary-strong`: Filled controls that must read as "stronger" (`--hn-hds-red-shade`)
 - `--secondary`: Surface sunken controls
 - `--accent`: On-page interaction (`--hn-hds-blue`)
 - `--destructive`: Danger / Emergency (`--hn-hds-red-shade`)
 - `--border`: Semantic hairline (`--hn-hds-line`)
+
+### Layer 2b: Palette Families (`@theme inline`)
+
+Every Tailwind palette family the app uses is declared in `@theme inline` so it
+resolves to a HazardNet token instead of Tailwind's stock palette. Declared:
+`carbon`, `amber`, `gray`, `neutral`, `slate`, `stone`, `zinc`, `chart`, plus
+`rose`, `red`, `emerald`, `teal`, `blue`, `sky`, `cyan`, `yellow`, `orange`.
+
+Shades are aliased by **role, not hue** — 50–200 surfaces, 300–400 borders,
+500–600 solid fills, 700–950 text — following the `--success` / `--warning` /
+`--info` precedent:
+
+| Family | Surface | Border | Solid | Text |
+|---|---|---|---|---|
+| `rose`, `red` | `--destructive-surface` | `--destructive-border` | `--destructive` | `--destructive` |
+| `emerald` | `--success-surface` | `--success-border` | `--hn-emerald-600` | `--success` |
+| `teal` | — | `--hn-teal-500` | `--hn-teal-600` | `--hn-teal-700` |
+| `blue`, `sky`, `cyan` | `--info-surface` | `--accent-border` | `--accent` | `--info` |
+| `yellow`, `orange` | `--warning-surface` | `--warning-border` | `--hn-amber-500` | `--warning` |
+
+**`indigo` and `purple` are deliberately not declared.** Their uses are data
+encodings — weather-phenomenon colours (`NationalOverview.tsx:54-56`) and chart
+series indices (`DisasterDetailModalUI.tsx:320`) — not status semantics. No HDS
+hue ramp exists for them, and aliasing them onto `--accent` would render two
+chart series the same colour. They remain Tailwind stock by choice, not by
+oversight.
+
+**Primary action surfaces** use `bg-primary` / `bg-primary-strong`. `bg-nasa-red`
+and `bg-nasa-red-shade` resolve to the identical values (`--hn-brand-red` /
+`--hn-brand-red-dark`) and survive only on non-action surfaces — status badges,
+decorative rules, skeletons and carousel dots — which Session 5 converts to
+severity tokens.
+
+Verify with `npm run check:tokens` (gate ≥90%; currently 99.8%) and
+`__tests__/tokenCompliance.test.js`, which fails if a declared shade is ever
+pointed back at a raw hex.
 
 ### Layer 3: Typography Stacks (`@theme inline`)
 ```css

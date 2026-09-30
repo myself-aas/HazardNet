@@ -11,7 +11,7 @@
  * the case that most needs careful wording, because silence on a hazard platform is
  * read as safety.
  *
- * Rules it holds, all of them from `docs/PUBLIC_SURFACE.md` §3:
+ * Rules it holds, all of them from `scripts/lib/public-text.mjs`:
  *   · every number is read from an artifact; a figure with no artifact behind it does
  *     not appear;
  *   · a missing value is never rendered as a zero — an unreadable artifact produces the

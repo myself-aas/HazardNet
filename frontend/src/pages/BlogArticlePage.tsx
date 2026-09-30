@@ -107,7 +107,7 @@ export const BlogArticlePage: React.FC = () => {
             : 'This URL does not match a published HazardNet article. It may be a draft, renamed, or removed.'}
         </p>
         <div className="flex items-center gap-2">
-          <Link to="/blogs" className="bg-nasa-red px-4 py-2.5 text-xs font-black text-white hover:bg-nasa-red-shade">
+          <Link to="/blogs" className="bg-primary px-4 py-2.5 text-xs font-black text-white hover:bg-primary-strong">
             Browse all articles
           </Link>
           {isPrimarySuperAdmin(user?.email) && (

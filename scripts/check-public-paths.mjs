@@ -6,7 +6,7 @@
  * rendered text, HTML comments, JSON-LD, inline styles. A comment is not rendered, but it
  * is delivered, and "the frontend does not name the tree" is a simpler rule to hold than
  * "the frontend does not name the tree except in the parts a visitor has to view source to
- * see". The rule and its reasoning are in docs/PUBLIC_SURFACE.md §3; the pattern lives in
+ * see". The rule and its reasoning are in scripts/lib/public-text.mjs; the pattern lives in
  * scripts/lib/public-text.mjs, which the build scripts and the browser-side twin
  * (frontend/src/lib/publicText.ts) also use.
  *
@@ -108,7 +108,7 @@ if (hits.length > 0) {
       '\nDelete the path from the copy that renders it. Do not replace it with a reworded\n' +
         'pointer: the surface states where a number came from in terms a reader can act on\n' +
         '(a build time, a coverage count, a link to a served artifact), or it does not state\n' +
-        'it. docs/PUBLIC_SURFACE.md §3 records the rule.',
+        'it. scripts/lib/public-text.mjs records the rule.',
     );
   }
   process.exit(1);

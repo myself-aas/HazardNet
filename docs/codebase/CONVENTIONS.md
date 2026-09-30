@@ -6,81 +6,66 @@
 
 | Item | Rule | Example | Evidence |
 |------|------|---------|----------|
-| Files (Components) | PascalCase with `.tsx` extension | `DistrictDetailPanel.tsx`, `HeroVideoPlayer.tsx` | `frontend/src/components/DistrictDetailPanel.tsx` |
-| Files (Utilities / Modules) | camelCase with `.js` or `.ts` extension | `forecastStore.js`, `advisoryMapper.js`, `forecastFreshness.js` | `backend/forecastStore.js`, `backend/utils/forecastFreshness.js` |
-| Files (Scripts) | kebab-case or snake_case with `.mjs` or `.py` | `build_forecast_snapshot.mjs`, `check-bundle.mjs` | `scripts/build_forecast_snapshot.mjs`, `scripts/check-bundle.mjs` |
-| Functions / methods | camelCase describing action | `refreshForecastAgeGauge()`, `getLatestForecasts()` | `backend/forecastStore.js:85`, `backend/utils/forecastFreshness.js:15` |
-| Types / interfaces | PascalCase without `I` prefix | `ForecastRow`, `AdvisoryTier`, `AlertRecord` | `packages/core/src/forecasts.ts:10`, `frontend/src/types/index.ts` |
-| Constants / Env Vars | UPPER_SNAKE_CASE | `BACKEND_API_KEY`, `FRONTEND_ORIGIN`, `DEFAULT_HORIZON` | `backend/server.js:38-47`, `backend/forecastStore.js:12` |
+| Files — React components/pages | `PascalCase.tsx` | `frontend/src/components/ForecastDashboard.tsx`, `frontend/src/pages/AlertsPage.tsx` | `frontend/src/components/`, `frontend/src/pages/` |
+| Files — hooks | `useCamelCase.ts` | `frontend/src/hooks/useForecasts.ts`, `frontend/src/hooks/useI18n.ts` | `frontend/src/hooks/` |
+| Files — libs/utils (TS) | `camelCase.ts` | `frontend/src/lib/forecasts.ts`, `frontend/src/lib/glide.ts` | `frontend/src/lib/` |
+| Files — backend/serverless (JS) | `camelCase.js`, ESM with explicit `.js` extension in imports | `backend/forecastStore.js`, `serverless/dispatch.js` | `backend/`, `serverless/` |
+| Files — pipeline scripts | `snake_case.mjs` (older) and `kebab-case.mjs` (newer) — both in active use | `scripts/validate_env.mjs`, `scripts/check-bundle.mjs` | `scripts/` |
+| Files — tests | `*.test.js` / `*.test.tsx` / `*.test.ts`; E2E `*.spec.ts`; Python `test_*.py` | `__tests__/forecastStore.test.js`, `e2e/forecast-ux.spec.ts`, `scripts/tests/test_csv_ingestion.mjs` | `__tests__/`, `e2e/`, `scripts/tests/` |
+| Functions/methods | `camelCase`; async handlers named `handler` in serverless modules | `parseBulkQuery`, `getForecastStore`, `evaluateTransition` | `backend/utils/forecastServe.js`, `backend/alerts/lifecycle.js` |
+| Types/interfaces | `PascalCase`; Zod schemas suffixed `Schema` with a matching inferred `type` | `ForecastRowSchema` / `ForecastRow`, `BulkForecastsResponseSchema` | `packages/core/src/contracts.ts`, `packages/api/src/endpoints.ts` |
+| Constants / frozen enumerations | `UPPER_SNAKE_CASE`, often `Object.freeze([...])` | `ALERT_STATES`, `TERMINAL_STATES`, `ALERT_LEVELS`, `ALL_64_DISTRICTS`, `ADVISORY_TIERS` | `backend/alerts/lifecycle.js`, `backend/alerts/policy.js`, `frontend/src/data/bangladeshDistricts.ts` |
+| Env vars | `UPPER_SNAKE_CASE`; `VITE_` prefix = public-by-design client config | `FIREBASE_SERVICE_ACCOUNT_JSON`, `VITE_FIREBASE_API_KEY` | `docs/ENVIRONMENT_SECRETS.md` §2 |
+| Private/test hooks | `reset*` prefix for store teardown helpers | `resetForecastStore`, `resetAlertStore` | `backend/forecastStore.js`, `backend/alerts/store.js` |
 
 ### 2) Formatting and Linting
 
-- Formatter: Prettier 3.6.2 configured in `.prettierrc`:
-  - `printWidth`: 120
-  - `singleQuote`: true
-  - `trailingComma`: "all"
-  - `semi`: true
-  - `tabWidth`: 2
-  - `arrowParens`: "always"
-  - `endOfLine`: "lf"
-- Linter: ESLint 9 Flat Config configured in `eslint.config.js`:
-  - Enforces `@eslint/js` recommended, `typescript-eslint` recommended, and `react-hooks/recommended`.
-- Most relevant enforced rules:
-  - `@typescript-eslint/no-unused-vars`: `['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }]` (`eslint.config.js:36`)
-  - `@typescript-eslint/no-explicit-any`: `'warn'` (`eslint.config.js:35`)
-  - `no-console`: `['warn', { allow: ['warn', 'error', 'info'] }]` for client code, relaxed for CLI scripts (`eslint.config.js:37,66,100`)
-  - `no-empty`: `['error', { allowEmptyCatch: true }]` (`eslint.config.js:38`)
-  - Zero-error enforcement policy in CI (`.github/workflows/ci.yml:394`)
-- Run commands:
-  ```bash
-  npm run lint           # Runs tsc -p frontend/tsconfig.json --noEmit
-  npm run lint:eslint    # Runs eslint .
-  npm run format         # Runs prettier --write on TS/TSX/JS sources
-  ```
+- **Formatter:** Prettier — `.prettierrc`: `printWidth: 120`, `singleQuote: true`, `trailingComma: "all"`, `semi: true`, `tabWidth: 2`, `arrowParens: "always"`, `endOfLine: "lf"`.
+- **Linter:** ESLint 9 flat config — `eslint.config.js`. Baseline is `eslint.configs.recommended` + `tseslint.configs.recommended`; **no stylistic rules** ("Formatting is Prettier's job").
+- **Most relevant enforced rules:**
+  - `@typescript-eslint/no-explicit-any`: `warn`
+  - `@typescript-eslint/no-unused-vars`: `warn` with `argsIgnorePattern`/`varsIgnorePattern` `^_`
+  - `no-console`: `warn`, allowing only `warn`/`error`/`info` (so `console.log` in production code is a lint warning; 16 occurrences exist in `backend/`, `api/`, `serverless/`, `utils/`)
+  - `no-empty`: `error` (with `allowEmptyCatch: true`)
+  - `react-hooks` recommended rules for `frontend/src/**/*.{ts,tsx}`
+  - Per-area `languageOptions.globals` blocks: browser for `frontend/src`, serviceworker for `frontend/public/**` + `frontend/src/serviceWorker.ts`, node for `*.mjs` / `backend` / `api` / `serverless` / `utils` / `scripts` / `*.config.js`, jest globals for test files
+  - Ignored: `dist/**`, `node_modules/**`, `**/*.cjs`, `references/**`, `skills/**`, `.agents/**`, `app/**`, `docs/**`, `Models/**`, `audit_temp/**`, `load-tests/**`
+- **Run commands:** `npm run lint` (`tsc -p frontend/tsconfig.json --noEmit`), `npm run lint:eslint` (`eslint .`), `npm run format` (Prettier over `frontend/src/**/*.{ts,tsx}`, `backend/**/*.js`, `api/**/*.js`).
+- **TypeScript strictness:** `strict: true` in `frontend/tsconfig.json`, plus `useDefineForClassFields`, `moduleResolution: "bundler"`, `jsx: "react-jsx"`, `esModuleInterop`, `resolveJsonModule`, `forceConsistentCasingInFileNames`, `skipLibCheck`. The CI step is named "ESLint (0-error policy)" while most rules are configured at `warn` — the file header states the intent is to tighten to `--max-warnings 0` once the legacy count is burned down.
 
 ### 3) Import and Module Conventions
 
-- Import grouping/order: External vendor libraries first, followed by monorepo packages (`@hazardnet/*`), internal aliased modules (`@/*`), and finally relative imports (`./`).
-- Alias vs relative import policy:
-  - Frontend code uses `@/*` for cross-directory imports inside `frontend/src/` (e.g. `import { useAuth } from '@/context/AuthContext'`).
-  - Monorepo packages use explicit workspace package names: `@hazardnet/core`, `@hazardnet/design-system`, `@hazardnet/api`, `@hazardnet/analytics`.
-  - Same-directory files use relative imports (`./foo`).
-- Public exports/barrel policy:
-  - Shared packages in `packages/*` define explicit root barrels (`src/index.ts`) and subpath exports in `package.json` (e.g. `@hazardnet/core/forecasts`, `@hazardnet/design-system/tokens`).
+- **Module system:** ESM everywhere (`"type": "module"` at the root, `frontend/`, `packages/*`, `apps/mobile`). Backend and serverless imports **always include the `.js` extension** (`import { db } from './db.js'`) because Node ESM resolution requires it.
+- **Import grouping/order:** no enforced grouping rule in the linter; observed convention is Node built-ins → external packages → relative imports (e.g. `backend/server.js`, `serverless/dispatch.js`).
+- **Alias vs relative:** relative imports inside a package; path aliases only at package boundaries — `@/*` → `frontend/src/*`, `@hazardnet/core`, `@hazardnet/core/*`, `@hazardnet/design-system`, `@hazardnet/design-system/*` (declared in `frontend/tsconfig.json` `paths`, mirrored in `jest.config.cjs` `moduleNameMapper` and `apps/mobile/jest.config.cjs`).
+- **Public exports/barrel policy:** each workspace package exports through `src/index.ts` and additionally declares explicit `exports` subpaths (`packages/core/package.json`: `.`, `./forecasts`, `./alerts`, `./i18n`, `./bandwidth`; `packages/api/package.json`: `./client`, `./endpoints`, `./errors`, `./retry`).
+- **Platform boundary rule:** `packages/core` must contain **no** React, React Native, or DOM imports — stated in `packages/core/src/index.ts`.
+- **Lazy imports for fault isolation:** serverless entry points use literal specifiers inside the route table (`() => import('../../../serverless/v1/forecasts/bulk.js')`) so the bundler can trace them and each request only pays for its own import graph.
 
 ### 4) Error and Logging Conventions
 
-- Error strategy by layer:
-  - Backend API: Handlers wrap asynchronous logic in `try/catch` and return standardized JSON error objects: `{ error: 'Human readable message', code?: 'OPTIONAL_CODE' }` with appropriate HTTP status codes (400 for validation errors, 401/403 for authorization, 404 for missing resources, 500/503 for internal failures).
-  - Schema Validation: Ingestion tools and API endpoints parse incoming payloads with Zod schemas (`safeParse`); on failure, they exit immediately with explicit field-level error messages.
-  - Frontend Client: Network failures in TanStack Query trigger UI error boundaries or fallback to cached snapshot records (`forecasts-latest.json`).
-- Logging style and required context fields:
-  - Express server uses `requestId` middleware (`backend/middleware/requestId.js`) generating an `X-Request-Id` UUID header.
-  - Error logs include the correlated `req.id` alongside timestamp, HTTP method, and path.
-- Sensitive-data redaction rules:
-  - Build checks enforce that repository filesystem paths (e.g. `/home/...`, `C:\...`, `node_modules/...`) never leak into rendered public HTML, JSON-LD, or client bundles (`scripts/check-public-paths.mjs`, `__tests__/noRepoPaths.test.js`).
-  - Secrets scanning (`scripts/check-secrets.sh`) prevents accidental commit of API keys or credentials.
+- **Error strategy by layer:**
+  - **Serverless/Express boundary:** `clientError(res, err, { scope, fallback })` from `backend/utils/clientError.js` — 4xx messages pass through (they were written for the caller), 5xx always return a generic message while the full error is logged server-side with a `[scope]` tag. This is a documented SEC-13 information-disclosure fix.
+  - **Domain logic:** pure result objects instead of throws — `backend/alerts/lifecycle.js` `evaluateTransition` returns `{ ok, code, status, body }` and the route decides the HTTP mapping; the module header states this keeps the state machine testable and the HTTP layer boring.
+  - **Validation:** Zod schemas in `packages/core` / `packages/api` with `.passthrough()` so unknown server fields do not reject a real response.
+  - **Fail-closed on config:** `backend/server.js` `assertEnvironment()` reports problems (missing `BACKEND_API_KEY`, missing `FRONTEND_ORIGIN` in production) and warnings (missing Gemini/VAPID keys) at boot; CORS fails closed in production when `FRONTEND_ORIGIN` is unset.
+- **Logging style and required context:** minimal structured-ish logger in `utils/logger.js` with `[info]` / `[warn]` / `[error]` / `[debug]` prefixes (debug gated on `process.env.DEBUG`); server-side errors are logged with a bracketed scope tag (`[${scope}] ${detail}`). Express requests carry a correlated request id via `backend/middleware/requestId.js`.
+- **Sensitive-data redaction rules:** destinations are masked before logging/reporting in the alert fan-out (`maskNumber`, `maskDestination` in `backend/alerts/notify.js`); push subscription endpoints are truncated when logged (`backend/routes/push.js`); `scripts/check-secrets.sh` blocks new high-confidence secret patterns from being committed.
 
 ### 5) Testing Conventions
 
-- Test file naming/location rule:
-  - Backend and system tests: `__tests__/**/*.test.js` or `__tests__/**/*.test.ts`.
-  - Frontend component tests: `frontend/src/**/__tests__/**/*.test.tsx`.
-  - Mobile tests: `apps/mobile/__tests__/**/*.test.tsx`.
-  - Playwright E2E specs: `e2e/**/*.spec.ts`.
-  - Workflow & pipeline Python tests: `scripts/tests/test_*.py`.
-- Mocking strategy norm:
-  - Heavy native modules and mobile runtime libraries are stubbed via pure-JS mocks in `__tests__/__mocks__/` (e.g., `async-storage.js`, `netinfo.js`, `react-native.js`).
-  - External network calls in unit tests are mocked using `jest.fn()` or `node-mocks-http` (`__tests__/api/forecasts.test.js`).
-- Coverage expectation:
-  - Global threshold defined in `jest.config.cjs:70-76`: statements 32%, branches 35%, functions 30%, lines 31%.
-  - Scope: `backend/**/*.js`, `api/**/*.js`, `serverless/**/*.js`, `frontend/src/utils/**/*.ts`, and all `packages/*/src/**/*.ts`.
+- **Test file naming/location rule:** co-located `__tests__/` directories (`__tests__/`, `frontend/src/components/__tests__/`, `frontend/src/hooks/__tests__/`, `packages/*/__tests__/`, `apps/mobile/__tests__/`) plus root-level suites in `__tests__/` for backend/api; E2E specs in `e2e/`; Python tests in `scripts/tests/`.
+- **Mocking strategy norm:** module-level mocks under `__tests__/__mocks__/` for React Native / Expo / native modules that cannot load under jsdom, wired through `jest.config.cjs` `moduleNameMapper` (e.g. `react-native`, `expo-location`, `@react-navigation/*`, `async-storage`, `netinfo`); environment polyfills in `jest.setup.ts` (TextEncoder/TextDecoder, ReadableStream, IntersectionObserver, `__DEV__`); Firestore-dependent behaviour is exercised through store reset hooks (`resetForecastStore`).
+- **Coverage expectation:** global thresholds enforced in `jest.config.cjs` — statements `32`, branches `35`, functions `30`, lines `31` — scoped by `collectCoverageFrom` to `backend/**/*.js`, `api/**/*.js`, `frontend/src/utils/**/*.ts` and the `packages/core/src/`, `packages/api/src/`, `packages/analytics/src/` trees. The frontend CI job runs with `--coverageThreshold='{}'` because the backend-calibrated gates cannot pass on a frontend-only run.
 
 ### 6) Evidence
 
-- `eslint.config.js` (linting configuration)
-- `.prettierrc` (formatting configuration)
-- `jest.config.cjs` (test setup, module mappings, coverage thresholds)
-- `scripts/check-public-paths.mjs` (path leakage guard)
-- `backend/middleware/requestId.js` (request correlation logging)
-- `packages/core/package.json` (subpath exports configuration)
+- `.prettierrc` (formatter settings)
+- `eslint.config.js` (flat config, rule severities, per-area globals, ignore list)
+- `frontend/tsconfig.json` (`strict`, `paths`)
+- `backend/utils/clientError.js` (error policy), `backend/alerts/lifecycle.js` (pure result objects)
+- `utils/logger.js`, `backend/middleware/requestId.js` (logging)
+- `backend/alerts/notify.js` (destination masking)
+- `packages/core/src/index.ts` (platform-agnostic constraint + barrel)
+- `jest.config.cjs`, `jest.setup.ts`, `__tests__/__mocks__/` (test conventions)
+- `backend/server.js` (boot assertions, port binding)

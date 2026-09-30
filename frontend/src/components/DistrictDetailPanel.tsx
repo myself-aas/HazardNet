@@ -182,7 +182,7 @@ export const DistrictDetailPanel: React.FC<DistrictDetailPanelProps> = ({
                   {formatNumber(Math.round(modelCalibrated * 100))}%
                 </span>
                 {modelRaw !== undefined && (
-                  <span className="text-[10px] font-mono text-carbon-50">
+                  <span className="text-[10px] font-mono text-carbon-60">
                     Raw: {formatNumber(Math.round(modelRaw * 100))}%
                   </span>
                 )}

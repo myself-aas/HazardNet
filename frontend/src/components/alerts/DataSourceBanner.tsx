@@ -49,7 +49,7 @@ export const DataSourceBanner: React.FC<DataSourceBannerProps> = ({
 
   const stale = withinSlo === false || source === 'cache';
   const tone = source === 'none' || stale
-    ? 'border-carbon-20 border-l-[2px] border-l-[#ea6f24] bg-white text-carbon-90'
+    ? 'border-carbon-20 border-l-[2px] border-l-amber-500 bg-white text-carbon-90'
     : 'border-carbon-20 bg-white text-carbon-70';
 
   const ageText = typeof ageHours === 'number' && Number.isFinite(ageHours)

@@ -2,7 +2,7 @@
  * The hero visual — a picture made of the deployment's own artifacts.
  *
  * The 2026-09-19 landing-page review asked for a full-width photograph in the hero.
- * `docs/PUBLIC_SURFACE.md` §3 rule 5 refuses invented imagery, and the reason still
+ * `scripts/lib/public-text.mjs` refuses invented imagery, and the reason still
  * holds: no licence-clean field or satellite photograph ships in this repository, and an
  * AI-generated illustration sitting next to provenance claims would undercut the one
  * thing the page is for. The owner's choice was the third option — replace the photograph
@@ -203,7 +203,7 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
               <span className="text-xs font-bold uppercase tracking-wider text-carbon-80">
                 {t('frontdoor.runVisual.coverage')}
               </span>
-              <span className="font-mono text-xs text-carbon-50 uppercase" aria-hidden="true">
+              <span className="font-mono text-xs text-carbon-60 uppercase" aria-hidden="true">
                 {coverage?.status === 'complete' ? 'NOMINAL' : 'PARTIAL DETECTED'}
               </span>
             </div>
@@ -334,7 +334,7 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
               <span className="text-xs font-bold uppercase tracking-wider text-carbon-80">
                 {t('frontdoor.runVisual.artifacts')}
               </span>
-              <span className="font-mono text-xs text-carbon-50" aria-hidden="true">
+              <span className="font-mono text-xs text-carbon-60" aria-hidden="true">
                 {freshness.sources.length} sources tracked
               </span>
             </div>
@@ -351,7 +351,7 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
                     />
                     <span className="min-w-0 break-words text-carbon-70 leading-[1.4]">
                       <strong className="font-bold text-carbon-90">{source.label}</strong>
-                      <span className="mx-1 text-carbon-40">—</span>
+                      <span className="mx-1 text-carbon-60">—</span>
                       <span className="font-medium text-carbon-90">{stateLabel(source.state)}</span>
                       {source.age_hours != null ? `, ${describeAge(source.age_hours)} old` : ''}
                       {source.prediction_date ? `, run dated ${source.prediction_date}` : ''}
@@ -378,7 +378,7 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
                 <span className="text-xs font-bold uppercase tracking-wider text-carbon-80">
                   {t('frontdoor.runVisual.honesty')}
                 </span>
-                <span className="font-mono text-xs text-carbon-50" aria-hidden="true">
+                <span className="font-mono text-xs text-carbon-60" aria-hidden="true">
                   SELF-REPORTED AUDIT
                 </span>
               </div>

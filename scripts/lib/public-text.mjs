@@ -9,7 +9,7 @@
  *
  * The rule is applied where prose is assembled, not where data is stored. Committed
  * artifacts keep the paths — they are what makes a number auditable by a script — and the
- * surface drops them. That is deliberate: `docs/PUBLIC_SURFACE.md` §3 records the
+ * surface drops them. That is deliberate: `scripts/lib/public-text.mjs` records the
  * decision, and the machine-readable copy of every page still carries its provenance.
  *
  * The browser-side twin of this module is `frontend/src/lib/publicText.ts`, which the

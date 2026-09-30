@@ -161,7 +161,7 @@ export const ThirtyDayTrendChart: React.FC<ThirtyDayTrendChartProps> = ({
               onClick={() => setSelectedHazard(h)}
               className={`px-3.5 py-2 rounded-full text-xs font-bold transition-all duration-200 min-h-[38px] cursor-pointer ${
                 selectedHazard === h
-                  ? 'bg-nasa-red text-carbon-90 shadow-2xs scale-[1.02]'
+                  ? 'bg-primary text-carbon-90 shadow-2xs scale-[1.02]'
                   : 'bg-carbon-05 text-carbon-60 hover:text-carbon-90 border border-carbon-20 hover:bg-carbon-10'
               }`}
             >

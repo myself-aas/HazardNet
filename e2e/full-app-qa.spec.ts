@@ -409,15 +409,18 @@ test.describe('Historical archive surface', () => {
     await waitForRoute(page);
     const body = await page.locator('body').innerText();
 
-    // Runtime witness to the build-time gate (scripts/check-severity-embargo.mjs).
+    // Runtime witness for the archive's severity-index rule. The build-time gate
+    // that used to pair with this (`scripts/check-severity-embargo.mjs`) was retired
+    // on 2026-09-30, so this spec is now the only place the rule is enforced — which
+    // is why it is in the default Playwright `testMatch` rather than outside it.
     //
     // Two different rules, and the difference matters: the composite-index phrases
     // are NOT blocked repository-wide. ADR 0012 classified them as presentation
     // aggregations (district count × the mean of the already-published per-district
     // severity) that stay on the national-overview dashboard surface *labelled as
-    // such*, and the gate fails the build if that label goes missing. What the
-    // archive surface may carry is narrower still: only the archive's own reported
-    // Severity_Index field. So this asserts the archive page publishes no composite
+    // such*, and the label must not go missing. What the archive surface may carry is
+    // narrower still: only the archive's own reported Severity_Index field. So this
+    // asserts the archive page publishes no composite
     // of any kind — the block-tier rules (weights, calibrated thresholds, cluster
     // membership) are covered by the same gate at build time.
     for (const forbidden of [/composite hazard score/i, /composite risk index/i, /\bweights?\b\s*[:=]/i, /cluster (centroid|assignment)/i]) {

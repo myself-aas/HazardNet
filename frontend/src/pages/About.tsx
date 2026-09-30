@@ -41,7 +41,7 @@ export const About: React.FC = () => {
           <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
             <Link
               to="/use-cases"
-              className="inline-flex min-h-[44px] items-center px-6 py-2 bg-nasa-red-shade hover:bg-nasa-red text-white text-base font-semibold touch-manipulation"
+              className="inline-flex min-h-[44px] items-center px-6 py-2 bg-primary-strong hover:bg-primary text-white text-base font-semibold touch-manipulation"
             >
               Explore Regional Use Cases
             </Link>

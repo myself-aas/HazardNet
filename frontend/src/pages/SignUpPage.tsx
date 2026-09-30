@@ -224,7 +224,7 @@ const SignUpPage: React.FC = () => {
           data-testid="signup-submit-btn"
           type="submit"
           disabled={loading}
-          className="flex min-h-[44px] w-full cursor-pointer items-center justify-center gap-2 bg-nasa-red-shade px-6 py-3 text-base font-semibold text-white hover:bg-nasa-red disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nasa-blue/60 focus-visible:ring-offset-2 touch-manipulation"
+          className="flex min-h-[44px] w-full cursor-pointer items-center justify-center gap-2 bg-primary-strong px-6 py-3 text-base font-semibold text-white hover:bg-primary disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nasa-blue/60 focus-visible:ring-offset-2 touch-manipulation"
         >
           {loading ? (
             <>

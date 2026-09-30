@@ -1,13 +1,13 @@
 /**
  * Contrast gate for the prerendered static shell.
  *
- * Why this exists: the vendored impeccable detector resolves colours without cascading
+ * Why this exists: the impeccable detector resolves colours without cascading
  * `@media (prefers-color-scheme)`, so on a built page it pairs light-scheme text with
  * dark-scheme backgrounds and reports a failure on every document. That pairing is
- * suppressed for `frontend/dist/**\/*.html` in .impeccable/config.json, and this file is
- * the check that covers the same risk properly: it reads the generated shell CSS out of
- * frontend/scripts/prerender.mjs, resolves each scheme on its own terms, and computes
- * WCAG 2.1 contrast ratios.
+ * waived for `frontend/dist/**\/*.html` in docs/design/impeccable-baseline.json, and
+ * this file is the check that covers the same risk properly: it reads the generated
+ * shell CSS out of frontend/scripts/prerender.mjs, resolves each scheme on its own
+ * terms, and computes WCAG 2.1 contrast ratios.
  *
  * It also covers the case the detector cannot see at all: a colour that is declared once
  * in light mode and left alone in dark mode, which is how the shell shipped a callout

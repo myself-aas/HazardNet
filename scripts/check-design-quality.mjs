@@ -2,7 +2,7 @@
 /**
  * Design-quality gate.
  *
- * Runs the vendored impeccable detector (see docs/design/impeccable.md) over the two
+ * Runs the impeccable detector (the `impeccable` devDependency's binary) over the two
  * things worth measuring, and compares what it finds with the committed baseline:
  *
  *   1. frontend/src             — what we author: components, pages, stylesheets.

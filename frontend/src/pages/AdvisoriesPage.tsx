@@ -473,7 +473,7 @@ export const AdvisoriesPage: React.FC = () => {
                   <button
                     onClick={handleGenerateAiAdvisory}
                     disabled={aiLoading}
-                    className="w-full py-2.5 px-4 rounded-xl bg-nasa-red hover:bg-nasa-red-tint text-carbon-black font-black text-xs flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50"
+                    className="w-full py-2.5 px-4 rounded-xl bg-primary hover:bg-nasa-red-tint text-white font-black text-xs flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50"
                   >
                     {aiLoading ? (
                       <>

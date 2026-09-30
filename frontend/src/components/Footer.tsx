@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { HazardNetBrand } from './HazardNetLogo';
+import MaterialIcon from './MaterialIcon';
 
 export const Footer: React.FC = () => {
   const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
@@ -52,7 +53,7 @@ export const Footer: React.FC = () => {
           <div className="flex flex-wrap items-center gap-3">
             <Link
               to="/download"
-              className="min-h-[44px] px-4 py-2.5 rounded-control bg-nasa-red hover:bg-nasa-red-shade text-white font-semibold shadow-sm transition-all flex items-center gap-2 tap-target"
+              className="min-h-[44px] px-4 py-2.5 rounded-control bg-primary hover:bg-primary-strong text-white font-semibold shadow-sm transition-all flex items-center gap-2 tap-target"
             >
               <span>Download Software & Apps</span>
             </Link>
@@ -321,7 +322,7 @@ export const Footer: React.FC = () => {
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 bg-nasa-red text-white font-extrabold rounded-xl hover:bg-nasa-red-shade transition-colors shadow-sm"
+                    className="px-4 py-2 bg-primary text-white font-extrabold rounded-xl hover:bg-primary-strong transition-colors shadow-sm"
                   >
                     Submit Report
                   </button>
@@ -340,9 +341,7 @@ export const Footer: React.FC = () => {
           title="Back to Top"
           aria-label="Scroll to top"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="m18 15-6-6-6 6"/>
-          </svg>
+          <MaterialIcon name="expand_less" size={20} />
         </button>
       )}
 

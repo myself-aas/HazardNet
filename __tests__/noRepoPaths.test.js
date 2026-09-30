@@ -13,7 +13,7 @@
  * Why the artifacts keep their paths: a published number has to be auditable by something,
  * and that something is a script reading the artifact. What changed is that the page no
  * longer prints the artifact's location as though a visitor could open it. See
- * docs/PUBLIC_SURFACE.md §3.
+ * scripts/lib/public-text.mjs.
  */
 
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';

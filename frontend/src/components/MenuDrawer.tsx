@@ -8,6 +8,7 @@ import { NotificationToggle } from './NotificationToggle';
 import { HazardNetBrand } from './HazardNetLogo';
 import { FirebaseRealtimeStatus } from './FirebaseRealtimeStatus';
 import { DRAWER_SECTIONS, isPathCurrent } from '../lib/navigation';
+import { useDialogBehavior } from '../hooks/useDialogBehavior';
 
 interface MenuDrawerProps {
   isOpen: boolean;
@@ -33,7 +34,11 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
   const reduceMotion = useReducedMotion();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
-  const lastFocusRef = useRef<HTMLElement | null>(null);
+  const drawerPanelRef = useRef<HTMLDivElement>(null);
+  // This drawer was the one dialog in the app that already trapped focus
+  // correctly; its implementation now lives in useDialogBehavior so the other
+  // dialogs can use it too. The hook adds the Tab cycle this drawer lacked.
+  useDialogBehavior({ isOpen, onClose, containerRef: drawerPanelRef, initialFocusRef: closeButtonRef });
 
   const handleDrawerSignOut = async () => {
     setIsLoggingOut(true);
@@ -60,29 +65,6 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
     }));
   };
 
-  useEffect(() => {
-    if (!isOpen) return;
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose();
-    };
-    document.addEventListener('keydown', onKeyDown);
-    return () => document.removeEventListener('keydown', onKeyDown);
-  }, [isOpen, onClose]);
-
-  useEffect(() => {
-    if (isOpen) {
-      lastFocusRef.current = document.activeElement as HTMLElement;
-      const previousOverflow = document.body.style.overflow;
-      document.body.style.overflow = 'hidden';
-      closeButtonRef.current?.focus();
-      return () => {
-        document.body.style.overflow = previousOverflow;
-        lastFocusRef.current?.focus?.();
-      };
-    }
-    return undefined;
-  }, [isOpen]);
-
   const handleNavigate = (path: string) => {
     navigate(path);
     onClose();
@@ -104,6 +86,8 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
 
       <motion.div
         key="drawer-panel"
+        ref={drawerPanelRef}
+        tabIndex={-1}
         role="dialog"
         aria-modal="true"
         aria-label="Navigation menu"
@@ -115,7 +99,11 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
       >
             <div className="px-4 flex items-center justify-between shrink-0 pt-[max(1rem,env(safe-area-inset-top))] pb-4">
               <div className="flex items-center gap-2">
-                <HazardNetBrand size="sm" variant="dark" />
+                {/* `light`, not `dark`: the drawer panel is `bg-white`, so the
+                    dark mark and the dark wordmark are the legible pair. This
+                    used to ask for the dark-ground variant, which painted
+                    "Hazard" in white on the white panel. */}
+                <HazardNetBrand size="sm" variant="light" />
               </div>
               <div className="flex items-center gap-2">
                 <NotificationToggle variant="icon" />
@@ -233,7 +221,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                     to="/signup"
                     data-testid="drawer-signup-link"
                     onClick={onClose}
-                    className="w-full min-h-[44px] py-3 bg-nasa-red-shade hover:bg-nasa-red text-white text-base font-semibold text-center touch-manipulation inline-flex items-center justify-center"
+                    className="w-full min-h-[44px] py-3 bg-primary-strong hover:bg-primary text-white text-base font-semibold text-center touch-manipulation inline-flex items-center justify-center"
                   >
                     Sign up free
                   </Link>

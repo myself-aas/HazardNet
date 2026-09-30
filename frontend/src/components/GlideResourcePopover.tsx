@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { generateGlideLinks, isValidGlide, MultilateralGlideLinks } from '../lib/glide';
+import { useDialogBehavior } from '../hooks/useDialogBehavior';
 
 export interface GlideResourcePopoverProps {
   glideId: string;
@@ -16,6 +17,8 @@ export const GlideResourcePopover: React.FC<GlideResourcePopoverProps> = ({
   className = '',
 }) => {
   const popoverRef = useRef<HTMLDivElement>(null);
+  // Escape, focus save/restore, scroll lock and the Tab cycle.
+  useDialogBehavior({ isOpen, onClose, containerRef: popoverRef });
 
   useEffect(() => {
     if (!isOpen) return;

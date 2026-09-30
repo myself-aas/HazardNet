@@ -4,63 +4,71 @@
 
 ### 1) Integration Inventory
 
-| System | Type (API/DB/Queue/etc) | Purpose | Auth model | Criticality | Evidence |
-|--------|---------------------------|---------|------------|-------------|----------|
-| Google Cloud Firestore | NoSQL Database | Primary persistence store for forecast records, alert review records, user profiles, and operational freshness | Service Account JWT / Firebase Admin SDK credentials | High | `backend/forecastStore.js:1-25`, `backend/db.js:1` |
-| Google Gemini AI | LLM / Generative AI API | Agrometeorological advisory synthesis and chat query assistance | API Key (`GEMINI_API_KEY`) | Medium (Graceful fallback to deterministic rule engine) | `backend/routes/chat.js`, `backend/server.js:41-43` |
-| Kaggle API | Scheduled Notebook Runner | Daily forecast generation (`8-hazardnet-advisory`) and historical hazard data extraction | Kaggle Credentials (`KAGGLE_USERNAME`, `KAGGLE_KEY`) | High | `docs/PRD.md §4.1`, `docs/TRD.md §2.1`, `scripts/validate_forecasts.py` |
-| Open-Meteo API | Weather Forecast API | Current meteorological conditions and 7/15-day weather parameters (temperature, precipitation, wind speed) | Public / Unauthenticated HTTP API | Medium | `backend/routes/weather.js:1-50`, `serverless/v1/weather.js` |
-| Web Push / VAPID | Notification Protocol | Push alerts to subscribed browser clients for critical hazard warnings | VAPID key pair (`VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`) | Medium | `backend/routes/push.js:1-40`, `package.json:238` |
-| Multilateral Disaster Registries (ReliefWeb, FAO, WHO, ADRC, IFRC) | External Outbound Links | Outbound provenance linking for 2000–2026 historical disasters with validated GLIDE numbers | Public sanitized URLs | Low | `docs/TRD.md §2.5`, `docs/SECURITY.md §4.3` |
-| Prometheus | Monitoring / Metrics | Scraping runtime server metrics, request distributions, and forecast age gauges | Unauthenticated `/metrics` endpoint (internal network/proxy) | Medium | `backend/metrics.js:1-80`, `backend/server.js:137-145` |
+| System | Type | Purpose | Auth model | Criticality | Evidence |
+|--------|------|---------|------------|-------------|----------|
+| Firebase Firestore | Database | Forecast store, alerts, alert subscriptions, profiles, assessments, connectors, blog articles | `FIREBASE_SERVICE_ACCOUNT_JSON` (server) + Firebase web SDK public config (client) | **high** | `backend/db.js`, `backend/forecastStore.js`, `firebase.json`, `firestore.rules` |
+| Firebase Authentication | Auth | Email/password + Google + OAuth providers; token verification server-side | Firebase ID token (JWT) verified with `jsonwebtoken` / firebase-admin | **high** | `backend/middleware/firebaseAuth.js`, `frontend/src/context/AuthContext.tsx`, `frontend/src/lib/oauthProviders.ts` |
+| Firebase Cloud Messaging (web push) | Push | Browser push notifications | VAPID key pair (`VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY`, `WEB_PUSH_CONTACT`) | medium | `backend/routes/push.js`, `backend/utils/vapid.js`, `package.json` (`web-push`) |
+| Google Gemini (`@google/genai`) | AI API | Advisory generation, chat assistant, live-voice WebSocket session | `GEMINI_API_KEY` (+ `GEMINI_API_KEY_BACKUP`); optional Firebase-attached dynamic limiter | high | `backend/services/advisoryAgent.js`, `backend/routes/chat.js`, `backend/routes/liveVoice.js`, `backend/utils/ai_fallback_engine.js` |
+| Groq / OpenRouter / HuggingFace | AI API (fallback) | Advisory fallback providers when Gemini is rate-limited/unset | `GROQ_API_KEY`, `OPENROUTER_API_KEY`, `HUGGINGFACE_API_KEY` | low | `docs/ENVIRONMENT_SECRETS.md` §2.1, `backend/utils/ai_fallback_engine.js` |
+| Kaggle | Batch data source | Daily notebook `8-hazardnet-advisory` produces the advisory CSV ingested by CI | `KAGGLE_USERNAME` / `KAGGLE_KEY` (GitHub Actions secrets) | **high** | `.github/workflows/daily_advisory_ingest.yml` |
+| Open-Meteo | Weather API | Forecast meteorological conditions for the weather widget / advisory context | Public API (no key) | medium | `backend/utils/openMeteo.js`, `backend/routes/weather.js`, `api/v1/weather/batch.js` |
+| GitHub API / Releases | Content + distribution | Release assets, repository metadata, download links | Public API; `GITHUB_REPOSITORY` / `GITHUB_SERVER_URL` env in CI | low | `frontend/src/lib/downloadChannels.ts`, `frontend/src/lib/blogArticles.ts`, `.github/workflows/app-releases.yml` |
+| Vercel | Hosting + serverless + analytics | Static hosting, 12-function serverless API, CDN, Web Analytics | `VERCEL_TOKEN` (CI), `VITE_VERCEL_ANALYTICS` gate | **high** | `vercel.json`, `frontend/vercel.json`, `frontend/src/lib/vercelAnalytics.ts` |
+| Firebase Hosting (alternate) | Hosting | Alternate static host for `frontend/dist` | `FIREBASE_PROJECT_ID` / service account | low | `firebase.json`, `.firebaserc` |
+| Prometheus / Grafana | Observability | Scrape `/metrics`; dashboards and alert rules | None (internal network) | medium | `backend/metrics.js`, `monitoring/prometheus.yml`, `monitoring/alerts.yml`, `monitoring/grafana-dashboard.json` |
+| Slack (incoming webhook) | Alerting | Ops notification for pipeline/publish failures | `SLACK_WEBHOOK_URL` | low | `scripts/notify_ops.mjs`, `docs/ENVIRONMENT_SECRETS.md` |
+| SMS gateway / Telegram Bot | Alert fan-out | Subscriber notifications for published alerts | Configured per channel in `backend/alerts/channels/` | medium | `backend/alerts/channels/sms.js`, `backend/alerts/channels/telegram.js` |
+| ArcGIS / Mapbox tile + event services | Map tiles | Basemap tiles and map event stream for the district map | Public endpoints | low | `frontend/src/components/DistrictRiskMap.tsx`, `frontend/src/components/LiveMapView.tsx` |
+| ReliefWeb / FAO GIEWS / WHO / ADRC GLIDE / IFRC GO | Reference links | Outbound multilateral provenance links generated from GLIDE identifiers | None (public URLs) | low | `backend/utils/glideResolver.js`, `frontend/src/lib/glide.ts`, `frontend/src/components/GlideResourcePopover.tsx` |
+| Google (gstatic / accounts / tag manager) | Frontend services | Firebase SDK host, Google OAuth popup, Tag Manager | None | low | `vercel.json` CSP, `backend/security/csp.js` |
 
 ### 2) Data Stores
 
 | Store | Role | Access layer | Key risk | Evidence |
 |-------|------|--------------|----------|----------|
-| Google Cloud Firestore | Primary forecast store & user identity | `@google-cloud/firestore` in backend, Firebase JS SDK in frontend | Quota limits, concurrent write contention on bulk ingest, credential misconfiguration | `backend/forecastStore.js`, `firestore.rules` |
-| Local In-Memory Cache | Request rate limiting & forecast age probe cache | `express-rate-limit` memory store, 60s freshness probe cache | Cache loss on server restart or container scale-out | `backend/middleware/rateLimit.js`, `backend/utils/forecastFreshness.js` |
-| Static JSON Snapshots | Offline & degraded runtime fallback store | Static files in `frontend/public/data/` (`forecasts-latest.json`, `freshness.json`) | Snapshot desynchronization with live database if daily build fails | `frontend/public/data/forecasts-latest.json`, `frontend/src/services/forecastApi.ts` |
+| Firestore (named applet DB `ai-studio-hazardnet-55b49dbf-…`) | Primary store: forecasts, alerts, subscriptions, profiles, assessments, connectors, blog articles | `backend/db.js` → `backend/forecastStore.js` (singleton), `backend/alerts/store.js` | Free-tier quota exhaustion; store falls back to snapshots so an outage is invisible to users | `backend/db.js`, `backend/forecastStore.js` |
+| Committed static snapshots (`backend/data/forecasts/*.json`, `frontend/public/data/forecasts-latest.json`, `data/site-health/latest.json`) | Degraded-mode serving + provenance record | Filesystem reads in `backend/forecastStore.js`, `frontend/src/lib/forecasts.ts` | Stale data served as if live — mitigated by the freshness badge and 36-hour staleness guard | `backend/data/forecasts/manifest.json`, `frontend/src/hooks/useForecasts.ts` |
+| Firestore Security Rules | Server-side authorisation for client writes | `firestore.rules` | Rules were written against camelCase while the client writes snake_case — fixed by `ownerOf()` accepting both spellings; verification requires the Firestore emulator (owner action) | `firestore.rules`, `__tests__/firestoreRules.test.js` |
+| `scripts/db/*.sql` (Postgres/PostGIS) | Reference schemas for self-host spatial/analytics modules — **not** wired into the running app (no Postgres driver in any manifest) | None at runtime | Dead schema artefacts can be mistaken for the production store | `scripts/db/README.md`, `scripts/db/008_hazard_events_postgis.sql` |
+| `Models/` artifacts (`*.tflite`, `labels.json`, `normalization_stats.json`) | Retained trained artifacts + version handshake | Never served — explicit 404 routes | Publication-policy exposure if a route/host config regresses | `Models/REGISTRY.json`, `Models/VERSION.json`, `backend/server.js` |
 
 ### 3) Secrets and Credentials Handling
 
-- Credential sources:
-  - Injected via environment variables at runtime (`process.env`).
-  - Production secrets (`FIREBASE_SERVICE_ACCOUNT`, `BACKEND_API_KEY`, `VAPID_*`, `GEMINI_API_KEY`, `KAGGLE_*`) are managed in GitHub Actions repository secrets and Vercel environment settings.
-- Hardcoding checks:
-  - Enforced in CI via `bash scripts/check-secrets.sh` (`.github/workflows/ci.yml:567`), which scans all staged and committed files for API keys, private certificates, and bearer tokens.
-- Rotation or lifecycle notes:
-  - Documented in `docs/ENVIRONMENT_SECRETS.md`. Startup assertions in `backend/server.js:34-58` validate secret presence and issue warnings or fail-closed errors on boot.
+- **Credential sources:** Vercel project environment variables (serverless + build), GitHub Actions secrets/variables (workflows), and a local `.env` loaded by `dotenv` in `backend/server.js`. The three-surface model is documented in `docs/ENVIRONMENT_SECRETS.md` §0.
+- **Hardcoding checks:** `scripts/check-secrets.sh` scans the working tree for high-confidence secret patterns (GitHub PATs, `sk-`, `AIza`, Slack tokens, AWS keys, private keys, connection strings with passwords) and runs in CI (`security-audit` job). History is explicitly out of scope for that gate. The committed `.env.example` is placeholder-only and is itself validated by `scripts/tests/test_secret_scan.py::test_the_shipped_env_example_is_clean`.
+  - **Exception to note:** `frontend/src/lib/config.ts` commits Firebase **public-by-design** web identifiers as fallback defaults (API key, project id, app id, measurement id, database URL) so the app boots without a local `.env`. These are public identifiers per Firebase convention, but they are credential-shaped strings in source and should be confirmed as intended (see `[ASK USER]`).
+  - `backend/db.js` similarly hardcodes the Firestore applet database id as a fallback default.
+  - **The CSP no longer allowlists any ad-network script origin** (removed 2026-09-30). `script-src` is `'self'` plus the four Google origins Firebase Auth needs; `backend/security/csp.js` is the single source and both Vercel configs carry the identical string, asserted by `__tests__/securityHeadersParity.test.js`.
+- **Rotation / lifecycle notes:** `docs/ENVIRONMENT_SECRETS.md` §7 instructs rotating anything ever pasted into a chat, screenshot, or old commit. `scripts/verify-actions-secrets.sh` (dispatchable `verify-secrets.yml`) maps every `secrets.*` reference in every workflow to an explicitly verified name. `scripts/npm-audit-ci.mjs` fails closed on any high/critical advisory not listed in `audit-exceptions.json`, and exceptions carry expiries so a stale accepted-risk entry fails the gate.
 
 ### 4) Reliability and Failure Behavior
 
-- Retry/backoff behavior:
-  - Client-side queries managed by TanStack Query (`@tanstack/react-query`) with automatic 3x exponential backoff retry.
-  - Dedicated typed API client in `packages/api/src/retry.ts` implements jittered retry policies for transient network errors.
-- Timeout policy:
-  - Inbound HTTP server requests guarded by Express timeout and edge gateway limits (10s on Vercel serverless functions).
-  - External weather calls to Open-Meteo timeout after 5 seconds before falling back to cached readings.
-- Circuit-breaker or fallback behavior:
-  - Dual-Source Architecture (ADR 0008): When live API or Firestore fails, frontend immediately renders the bundled static snapshot `forecasts-latest.json`.
-  - Gemini AI failure fallback: When `GEMINI_API_KEY` is missing or the external API returns an error, the advisory generator transparently falls back to the deterministic agrometeorological rule engine (`backend/server.js:42-43`).
+- **Retry/backoff:** implemented for the Kaggle fetch only — two attempts with a 10-second sleep between them, then a hard error (`.github/workflows/daily_advisory_ingest.yml`, per PRD §4.1 / TRD §4.7). No retry/backoff wrapper exists for Gemini, Open-Meteo, or Firestore calls.
+- **Timeout policy:** request-level timeouts are configured for a few paths — `FIREBASE_VERIFY_TIMEOUT_MS` (auth token verification), `CONVERSION_PERSIST_TIMEOUT_MS` (persistence step). The serverless guard and site-health probes use their own request timeouts (`curl --max-time` in `.github/workflows/site-health.yml`). No global outbound HTTP timeout policy is defined.
+- **Circuit-breaker / fallback behaviour:** no circuit breaker. Compensation is by fallback chain instead: Gemini → deterministic heuristic engine (`backend/utils/ai_fallback_engine.js`) → optional Groq/OpenRouter/HuggingFace; forecast API → committed snapshot → static 64-district baseline; SMS/Telegram fan-out catches each send individually and counts `over_budget` rather than aborting the run (`backend/alerts/notify.js`).
+- **Ingestion guards:** schema validation fails fast, a staleness guard halts ingestion when the CSV is older than 36 hours (preserving the previous day's data), and the alert-snapshot builder refuses to replace a non-empty snapshot with an empty run (`.github/workflows/ci.yml`, `scripts/build_alert_snapshot.mjs`).
 
 ### 5) Observability for Integrations
 
-- Logging around external calls:
-  - Correlated request ID logging via `backend/middleware/requestId.js`. External call failures log status codes and error messages to standard error.
-- Metrics/tracing coverage:
-  - Prometheus metrics (`backend/metrics.js`) track HTTP request rates, response durations, and forecast age gauges (`hazardnet_forecast_age_seconds`).
-  - Automated external probe workflow (`.github/workflows/site-health.yml`) checks site rendering, deep links, security headers, and forecast data freshness every 30 minutes.
-- Missing visibility gaps:
-  - The site health probe currently reports failure on the production `security_headers` check (`data/site-health/latest.json:19-22`).
-  - No distributed tracing (e.g. OpenTelemetry) currently instrumented between client, Vercel edge, and self-hosted backend.
+- **Logging around external calls:** yes — `[scope]`-tagged server-side logging for errors (`backend/utils/clientError.js`), a request-id middleware for correlation (`backend/middleware/requestId.js`), masked destinations in alert fan-out (`backend/alerts/notify.js`), and the minimal `[info]/[warn]/[error]/[debug]` logger in `utils/logger.js` for serverless handlers.
+- **Metrics / tracing coverage:** Prometheus metrics via `prom-client` exposed at `GET /metrics` on the Express backend and `GET /api/metrics` through the serverless tier (`backend/metrics.js`, `serverless/metrics.js`); the forecast-age gauge is refreshed on scrape with a 60-second-cached store probe (`backend/utils/forecastFreshness.js`). Scrape config, alert rules and a Grafana dashboard ship in `monitoring/`. **No distributed tracing** is present.
+- **Missing visibility gaps:**
+  - No APM/tracing across the Vercel serverless tier (only the Express backend exposes `/metrics`).
+  - The external black-box probe is a GitHub Actions workflow (`site-health.yml`, every 30 min) publishing `data/site-health/latest.json`; it is not a real uptime monitor with paging.
+  - Ops alerting for pipeline failure is described in the PRD as Slack + email; only a webhook helper (`scripts/notify_ops.mjs`) exists in-tree, and no email transport is implemented.
 
 ### 6) Evidence
 
-- `backend/forecastStore.js` (Firestore integration)
-- `backend/routes/chat.js` (Google Gemini AI integration)
-- `backend/routes/weather.js` (Open-Meteo API integration)
-- `backend/routes/push.js` (Web Push integration)
-- `packages/api/src/retry.ts` (API retry and fault tolerance)
-- `data/site-health/latest.json` (Production probe status)
-- `docs/ENVIRONMENT_SECRETS.md` (Credential inventory)
+- `backend/db.js`, `backend/forecastStore.js`, `backend/alerts/store.js` (data access)
+- `backend/middleware/firebaseAuth.js`, `backend/utils/apiKeyAuth.js`, `backend/utils/vapid.js` (auth/push)
+- `backend/services/advisoryAgent.js`, `backend/utils/ai_fallback_engine.js`, `backend/routes/chat.js`, `backend/routes/liveVoice.js` (AI)
+- `backend/utils/openMeteo.js`, `backend/routes/weather.js` (weather)
+- `backend/utils/glideResolver.js`, `frontend/src/lib/glide.ts` (multilateral links)
+- `.github/workflows/daily_advisory_ingest.yml`, `.github/workflows/site-health.yml`, `.github/workflows/verify-secrets.yml` (pipeline + probe + secrets)
+- `scripts/check-secrets.sh`, `scripts/verify-actions-secrets.sh`, `scripts/npm-audit-ci.mjs`, `audit-exceptions.json` (secret/audit gates)
+- `.env.example` (committed placeholder-only template), `scripts/tests/test_secret_scan.py`
+- `docs/ENVIRONMENT_SECRETS.md` (credential surfaces and full variable reference)
+- `monitoring/prometheus.yml`, `monitoring/alerts.yml`, `monitoring/grafana-dashboard.json`, `backend/metrics.js`
+- `backend/security/csp.js`, `__tests__/securityHeadersParity.test.js` (CSP single source + parity)
+- `firebase.json`, `firestore.rules`, `.firebaserc`, `vercel.json`

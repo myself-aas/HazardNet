@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
 import { HDS_TOKENS } from '../../design-system/tokens';
+import { useDialogBehavior } from '../../hooks/useDialogBehavior';
 
 export interface BottomSheetProps {
   isOpen: boolean;
@@ -26,6 +27,13 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
   const y = useMotionValue(0);
   const backdropOpacity = useTransform(y, [0, snapPoints[1]], [0.5, 0]);
 
+  // `aria-modal="true"` below promises containment; this is what delivers it.
+  // Escape closes, focus is saved and restored, body scroll locks, and Tab
+  // cycles inside the sheet instead of walking out into the page behind it.
+  const sheetRef = React.useRef<HTMLDivElement>(null);
+  const closeButtonRef = React.useRef<HTMLButtonElement>(null);
+  useDialogBehavior({ isOpen, onClose, containerRef: sheetRef, initialFocusRef: closeButtonRef });
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -47,6 +55,8 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
 
           {/* Interactive Drag Sheet */}
           <motion.div
+            ref={sheetRef}
+            tabIndex={-1}
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
@@ -87,9 +97,10 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
                     )}
                   </div>
                   <button
+                    ref={closeButtonRef}
                     onClick={onClose}
                     aria-label="Close sheet"
-                    className="tap-target p-2 text-carbon-50 hover:text-carbon-90 dark:hover:text-white rounded-full hover:bg-carbon-10 dark:hover:bg-carbon-80 transition-colors"
+                    className="tap-target p-2 text-carbon-60 hover:text-carbon-90 dark:hover:text-white rounded-full hover:bg-carbon-10 dark:hover:bg-carbon-80 transition-colors dark:text-carbon-40"
                   >
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

@@ -276,30 +276,30 @@ export const WeatherPanel: React.FC<WeatherPanelProps> = ({
               <span>Pipeline Agrometeorological Forecast ({forecast.horizon || 'Daily Advisory'})</span>
             </span>
             {forecast.target_date && (
-              <span className="font-mono text-[11px] text-carbon-50">Target: {forecast.target_date}</span>
+              <span className="font-mono text-[11px] text-carbon-60">Target: {forecast.target_date}</span>
             )}
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 text-xs font-mono">
             <div className="p-2 rounded bg-white dark:bg-carbon-90 border border-carbon-20 dark:border-carbon-70">
-              <span className="text-[10px] text-carbon-50 uppercase block">Max Temp</span>
+              <span className="text-[10px] text-carbon-60 uppercase block">Max Temp</span>
               <span className="font-bold text-rose-600 dark:text-rose-400">
                 {forecast.temperature_max !== undefined ? `${forecast.temperature_max}°C` : '—'}
               </span>
             </div>
             <div className="p-2 rounded bg-white dark:bg-carbon-90 border border-carbon-20 dark:border-carbon-70">
-              <span className="text-[10px] text-carbon-50 uppercase block">Min Temp</span>
+              <span className="text-[10px] text-carbon-60 uppercase block">Min Temp</span>
               <span className="font-bold text-sky-600 dark:text-sky-400">
                 {forecast.temperature_min !== undefined ? `${forecast.temperature_min}°C` : '—'}
               </span>
             </div>
             <div className="p-2 rounded bg-white dark:bg-carbon-90 border border-carbon-20 dark:border-carbon-70">
-              <span className="text-[10px] text-carbon-50 uppercase block">Precipitation</span>
+              <span className="text-[10px] text-carbon-60 uppercase block">Precipitation</span>
               <span className="font-bold text-blue-600 dark:text-blue-400">
                 {forecast.precipitation_mm !== undefined ? `${forecast.precipitation_mm} mm` : '—'}
               </span>
             </div>
             <div className="p-2 rounded bg-white dark:bg-carbon-90 border border-carbon-20 dark:border-carbon-70">
-              <span className="text-[10px] text-carbon-50 uppercase block">Wind Speed</span>
+              <span className="text-[10px] text-carbon-60 uppercase block">Wind Speed</span>
               <span className="font-bold text-teal-600 dark:text-teal-400">
                 {forecast.wind_max_kmh !== undefined ? `${forecast.wind_max_kmh} km/h` : '—'}
               </span>
