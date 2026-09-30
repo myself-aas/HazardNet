@@ -71,7 +71,8 @@ python -m pytest scripts/tests -q                    # 119 tests
 - **Current reported coverage:** `[TODO]` — not measurable in this checkout (`node_modules` is not installed). Coverage is uploaded to Codecov in CI (`codecov/codecov-action`, flags `backend` / `frontend`, `fail_ci_if_error: false`).
 - **Known gaps / flaky areas:**
   - **All closed on 2026-09-30** — see `docs/codebase/CONCERNS.md` §6: the three unrun Playwright specs are now in the default `testMatch`; the CI post-build step no longer names the deleted `__tests__/modelPerformance.test.js`; the backend `--testPathIgnorePatterns` list is directory scopes only; and `scripts/tests/test_workflows.py` exists (7 tests, mutation-verified).
-  - The 7 re-enabled backend suites could not be executed where the change was made (`node_modules` is not installed); they should be confirmed green on the first CI run.
+  - **Verified, not assumed:** with `node_modules` installed (`npm ci --legacy-peer-deps --no-audit --no-fund`, 2513 packages) the CI backend command ran verbatim → **77 suites passed / 2 skipped, 808 tests passed / 23 skipped**. The 7 re-enabled suites alone: **7 suites, 105 tests, 0 failures**. The coverage thresholds in `jest.config.cjs` were also satisfied on this run.
+  - **Ordering trap worth knowing:** passing test paths *after* `--testPathIgnorePatterns` silently excludes them, because the flag is array-valued and swallows every following argument. Selecting the 7 suites that way ran 70 suites instead of 77. Put selectors first, or pass them before the flag.
   - Firestore rule verification requires the Firestore emulator (Java) or a live project; neither runs in CI — the rule shape is pinned only by `__tests__/firestoreRules.test.js`.
   - Playwright browsers must be installed (`npx playwright install chromium`); the QA config exists because a sandbox cannot reach `cdn.playwright.dev` (`playwright.qa.config.ts`).
 

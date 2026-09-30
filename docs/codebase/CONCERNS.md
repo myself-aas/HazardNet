@@ -93,10 +93,49 @@ not otherwise visible in the tree.
 
 **Still open (new, raised by doing the work above):**
 
-11. `[ASK USER]` `style-src` still allows `'unsafe-inline'`. Removing it needs a nonce or hash strategy that this static build (Vite + prerender, no server render pass) does not currently have. Is a CSP-tightening pass for inline styles in scope, or is the documented reason acceptable for now?
-12. `[ASK USER]` The 7 re-enabled backend suites (`securityHeadersParity`, `securityTxt`, `nasaTokens`, `freshnessArtifact`, `contentEngine`, `alertSnapshot`, `alertReplay`) could not be executed in the environment that made this change — `node_modules` is not installed here. They should be confirmed green on the first CI run; if any fails, it fails *visibly*, which is the intended behaviour.
+11. ~~`[ASK USER]`~~ **`style-src` still allows `'unsafe-inline'` — is the documented reason acceptable?** → *Yes, acceptable.* The reason is recorded in `backend/security/csp.js` (Tailwind ships a stylesheet, but the map and chart layers set inline styles for geometry, and a nonce needs a server render pass this static build does not have). No further CSP work planned.
+12. ~~`[ASK USER]`~~ **Do the 7 re-enabled backend suites fail?** → *No.* `node_modules` was installed (`npm ci --legacy-peer-deps --no-audit --no-fund`, 2513 packages) and the CI backend command was run verbatim: **77 suites passed / 2 skipped, 808 tests passed / 23 skipped**. The 7 named suites on their own: **7 suites, 105 tests, 0 failures**. Nothing needed fixing.
 
-### 7) Evidence
+    A side observation from running it: passing the 7 paths *after* `--testPathIgnorePatterns` silently excluded them (70 suites ran instead of 77) — the exact bug `test_backend_jest_step_has_no_bare_selector` guards against. The selector must come first.
+
+**Still open (new, from running a live instance — see §8):**
+
+13. `[ASK USER]` The forecast store serves **74 of the 128 rows** the PRD claims (60 of 64 districts, only 14 with both horizons) and the data is 343.6 h old against a 192 h SLO. Is the daily Kaggle ingest pipeline still running, and should the public 128-row claim (CLM-005) be qualified until coverage is restored?
+14. `[ASK USER]` `model_version` is `null` in the ingest output, which blocks all alert auto-publication above WATCH (§1.6). Is stamping a model version on the ingest path in scope? The model-version handshake gate restored in this change is the natural place to enforce it.
+
+| low | **The documented dev workflow cannot work as written.** `frontend/vite.config.ts` proxies `/api`, `/metrics` and `/health` to `http://127.0.0.1:3001`, and `monitoring/prometheus.yml` + `docs/ENVIRONMENT_SECRETS.md` both describe the backend on 3001 — but `backend/server.js` hardcodes `const PORT = 3000` with a "do NOT change or override" comment. Running `npm run dev` (backend only, :3000) collides with Vite, which also claims :3000 with `strictPort: true`. In the Vite workflow the API therefore always 502s and the app silently runs on the static-snapshot fallback | `backend/server.js:205`, `frontend/vite.config.ts:107-131`, `monitoring/prometheus.yml:25` | A developer following the documented setup sees a working-looking app that never touches the API, and never learns why | Decide one port. Either let the backend read `PORT` (defaulting to 3001 for dev) or repoint the Vite proxy — but the "do NOT change" comment means this is an owner decision |
+
+### 7) Live Deployment State (observed 2026-09-30 from a running instance)
+
+These are not code defects — the code serves the store faithfully. They are the state of
+the *data and the deployed surface*, measured by starting the app locally (Vite dev on
+:3000 proxying to the Express backend on :3001) and reading the repository's own
+published freshness artifacts.
+
+| Observation | Measured value | Evidence |
+|-------------|----------------|----------|
+| Forecast rows served | **74** (25 × `7_days`, 49 × `15_days`) against the **128** claimed by PRD REQ-001 / CLAIMS.md CLM-005 — 58% | `GET /api/v1/forecasts/bulk` on a running instance; `frontend/public/data/freshness.json` |
+| District coverage | **60 of 64** districts have a row for at least one horizon; only **14** have both | Same as above; the run's own honesty note: *"coverage status \"partial\": 60 of 64 districts"* |
+| Forecast age | **343.6 h** old (`prediction_date` 2026-09-16) against a **192 h** SLO | `frontend/public/data/freshness.json` (`forecast_ingest.age_hours`, `reason`) |
+| Alert snapshot age | **298.5 h** old against a **48 h** SLO | Same (`alert_engine.age_hours`) |
+| Published alerts | **0** — and `model_version` is `null`, so §1.6 blocks all auto-publication above WATCH | `GET /api/v1/alerts` (0 alerts, disclaimer present); `freshness.json` honesty note 1 |
+| Site-health probe | **failing**: 2 passed, 5 failed/skipped (`security_headers`, `sitemap`, `forecast_data`, `status_page`, `content_pages`) | `data/site-health/latest.json`, `frontend/public/data/freshness.json` (`site_probe`) |
+| Overall published state | `failing` — `fresh: 0, stale: 3, failing: 1, missing: 0` | `frontend/public/data/freshness.json` (`overall`) |
+
+**What this does and does not mean.** The provenance-first design is working: the site
+publishes its own degraded state rather than hiding it, reporting absent data as absent
+and naming the SLO it missed. The gaps are upstream of this repository — the daily Kaggle
+ingest that produces the 128-row CSV is not landing complete, current data. Two
+consequences worth acting on:
+
+- The **128-row / 64-district** claim is public copy (CLM-005) and is currently not met by
+  the live store. Either the ingest is restored, or the claim is qualified.
+- `model_version` being `null` is the same class of problem the restored model-version
+  handshake gate addresses, one stage later: the gate proves `Models/VERSION.json` is
+  committed and clean, while the ingest pipeline is what has to *stamp* that version onto
+  its output. The gate will not catch a null stamp.
+
+### 8) Evidence
 
 - Scan output: `docs/codebase/.codebase-scan.txt` (CODE METRICS, CI/CD PIPELINES, SECURITY & COMPLIANCE, TODO/FIXME/HACK = none found, HIGH-CHURN FILES)
 - `.github/workflows/ci.yml` (backend ignore list; model-version handshake step; post-build surface checks; design/public-surface gate comments)
@@ -111,4 +150,6 @@ not otherwise visible in the tree.
 - `frontend/src/components/LiveMapView.tsx`, `frontend/src/pages/Dashboard.tsx`, `frontend/src/components/district/DistrictBriefBody.tsx`, `frontend/src/data/sectorAdvisoriesData.ts`, `scripts/build_content_engine.mjs` (largest source files)
 - `playwright.config.ts` vs `e2e/` (all 6 specs now in the default `testMatch`)
 - `scripts/db/README.md` (SQL reference-only status)
+- `frontend/public/data/freshness.json`, `data/site-health/latest.json` (the repository's own published freshness/probe artifacts)
+- `GET /api/v1/forecasts/bulk`, `GET /api/v1/forecasts/metadata`, `GET /api/v1/alerts` measured against a locally running instance
 - `git log --oneline` (single squashed commit — churn signal unavailable)
