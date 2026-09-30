@@ -392,8 +392,10 @@ cp .env.example .env                  # NEVER commit .env (gitignore already blo
 # 3. easiest accurate fill — pull the exact production values Vercel already has:
 vercel link && vercel env pull .env.local
 
-# 4. run the stack locally and confirm health
+# 4. run the stack locally and confirm health. The Vite dev server owns :3000 and
+#    proxies /api, /metrics and /health to :3001, so the API is started there:
 npm run build --prefix frontend       # or: vercel dev
+PORT=3001 npm run dev:api &           # backend/server.js honours PORT (default 3000)
 curl -s localhost:3001/api/v1/forecasts/metadata | head
 ```
 

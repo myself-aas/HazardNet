@@ -1,6 +1,4 @@
 
-!.env.example
-# ...but keep the documented examples committable
 # .github/
 # Backend
 # Build output
@@ -47,6 +45,10 @@ bun.lock
 .env.*
 .env.*.local
 .env.local
+!.env.example
+# NOTE: the negation must stay AFTER `.env.*` — the last matching pattern wins, so a
+# top-of-file `!.env.example` never applied and `git add .env.example` was refused
+# (docs/codebase/CONCERNS.md §1).
 .idea/
 .pytest_cache/
 .venv/

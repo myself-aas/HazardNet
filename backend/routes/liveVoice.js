@@ -111,7 +111,7 @@ export function setupLiveVoiceWebSocket(server) {
   });
 
   wss.on('connection', async (clientWs, req) => {
-    console.log('[Live Voice WS] Client connected:', req.url);
+    console.info('[Live Voice WS] Client connected:', req.url);
 
     let activeDistrict = 'Sunamganj';
     let activeHazard = 'Flood';
@@ -298,7 +298,7 @@ export function setupLiveVoiceWebSocket(server) {
             },
             onclose: (e) => {
               if (isClosed) return;
-              console.log('[Live Voice WS] Gemini Live session closed');
+              console.info('[Live Voice WS] Gemini Live session closed');
               clientWs.send(JSON.stringify({ type: 'session_closed' }));
             }
           }

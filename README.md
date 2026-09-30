@@ -47,11 +47,15 @@ published surface, and nothing in this repository offers them for download.
 ## Running the site locally
 
 ```bash
-# 1. Install and run the frontend
+# 1. Install and run the frontend (Vite dev server on :3000)
 cd frontend && npm install && npm run dev
 
-# 2. (Optional) the self-host backend
-cd .. && npm install && npm run dev
+# 2. (Optional) the self-host API beside it. The Vite dev server proxies
+#    /api, /metrics and /health to :3001, so the API must listen there.
+cd .. && npm install && npm run dev:api
+
+# One process, one port instead: `npm run build` then `npm start` — the backend
+# serves the built frontend and the API together on :3000.
 ```
 
 Build for production: `npm run build` at the repository root (or `cd frontend && npm run build`).

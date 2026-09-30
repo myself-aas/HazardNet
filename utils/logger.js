@@ -8,7 +8,7 @@ function formatArgs(args) {
 }
 
 export const logger = {
-  info: (...args) => console.log('[info]', formatArgs(args)),
+  info: (...args) => console.info('[info]', formatArgs(args)),
   warn: (...args) => console.warn('[warn]', formatArgs(args)),
   error: (...args) => console.error('[error]', formatArgs(args)),
   debug: (...args) => {

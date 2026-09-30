@@ -115,7 +115,7 @@ router.post('/update', upload.single('file'), (req, res, next) => {
         // Cleanup uploaded file
         fs.unlinkSync(req.file.path);
 
-        console.log(`✅ Forecast update: ${results.length} records ingested (${predictionDate})`);
+        console.info(`✅ Forecast update: ${results.length} records ingested (${predictionDate})`);
         if (errors.length > 0) {
             console.warn(`⚠️ ${errors.length} rows skipped due to validation`);
         }

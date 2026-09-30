@@ -23,7 +23,6 @@
   "license": "MIT",
   "author": "Ashif Ahmed Shuvo",
   "type": "module",
-  "main": "index.js",
   "directories": {
     "doc": "docs"
   },
@@ -34,13 +33,14 @@
   ],
   "scripts": {
     "dev": "node scripts/ensure-frontend.mjs && node backend/server.js",
+  "dev:api": "PORT=3001 node backend/server.js",
     "start": "node backend/server.js",
     "build": "npm run build:frontend && node scripts/copy-dist.mjs",
     "build:frontend": "npm --prefix frontend run build",
     "build:frontend:copy": "npm run build",
     "lint": "tsc -p frontend/tsconfig.json --noEmit",
     "test": "jest --passWithNoTests",
-    "lint:eslint": "eslint .",
+    "lint:eslint": "eslint . --max-warnings 685",
     "format": "prettier --write \"frontend/src/**/*.{ts,tsx}\" \"backend/**/*.js\" \"api/**/*.js\"",
     "alerts:rehearse": "node scripts/rehearse_alert_engine.mjs --out /tmp/alert-run.json",
     "alerts:snapshot": "node scripts/rehearse_alert_engine.mjs --out /tmp/alert-run.json --quiet && node scripts/build_alert_snapshot.mjs --in /tmp/alert-run.json",
@@ -71,7 +71,6 @@
     "firebase": "^12.17.0",
     "firebase-admin": "^13.10.0",
     "helmet": "^8.1.0",
-    "jsonwebtoken": "^9.0.0",
     "multer": "^2.2.0",
     "prom-client": "^15.1.3",
     "web-push": "^3.6.7",

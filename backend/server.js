@@ -201,8 +201,13 @@ const invokedAsScript = process.argv[1] !== undefined
   && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
 
 if (invokedAsScript) {
-  // Bind to port 3000 for AI Studio container routing (do NOT change or override)
-  const PORT = 3000;
+  // Default to port 3000 for AI Studio container routing; deployments that set no
+  // PORT are unaffected by the override below. Local development needs it: the Vite
+  // dev server owns :3000 with `strictPort` and proxies /api, /metrics and /health to
+  // :3001 (frontend/vite.config.ts), so the API is started beside it as
+  // `PORT=3001 npm run dev:api`. Before this, the proxy target was a port nothing
+  // could listen on and every /api call in dev 502'd into the static fallback.
+  const PORT = Number.parseInt(process.env.PORT ?? '', 10) || 3000;
 
   const freePort = (targetPort) => {
     try {
@@ -245,13 +250,13 @@ if (invokedAsScript) {
     });
 
     server.listen(port, '0.0.0.0', () => {
-      console.log(`HazardNet Backend running on port ${port}`);
+      console.info(`HazardNet Backend running on port ${port}`);
     });
 
     const shutdown = (signal) => {
-      console.log(`[server] Received ${signal}, closing server...`);
+      console.info(`[server] Received ${signal}, closing server...`);
       server.close(() => {
-        console.log('[server] HTTP server closed gracefully.');
+        console.info('[server] HTTP server closed gracefully.');
         process.exit(0);
       });
       setTimeout(() => {

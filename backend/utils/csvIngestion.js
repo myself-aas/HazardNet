@@ -10,7 +10,7 @@ import csvParser from 'csv-parser';
 import { parseCsvForecastRow } from './forecastRow.js';
 import { getForecastStore, getForecastStoreMode } from '../forecastStore.js';
 const logger = {
-  info: (...args) => console.log('[csvIngestion]', ...args),
+  info: (...args) => console.info('[csvIngestion]', ...args),
   warn: (...args) => console.warn('[csvIngestion]', ...args),
   error: (...args) => console.error('[csvIngestion]', ...args),
 };
