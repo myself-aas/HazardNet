@@ -55,25 +55,25 @@ export const AlertCard: React.FC<AlertCardProps> = ({ alert, onOpen, className =
 
   return (
     <article
-      className={`border border-carbon-20 bg-white p-4 ${className}`}
+      className={`border border-carbon-10 dark:border-carbon-80 bg-white dark:bg-carbon-90 text-carbon-90 dark:text-carbon-10 p-3 sm:p-4 rounded-lg sm:rounded-lg ${className}`}
       aria-labelledby={headingId}
       data-alert-id={alert.id}
       data-level={level}
     >
-      <div className="flex flex-wrap items-start justify-between gap-2">
-        <div className="min-w-0">
+      <div className="flex flex-wrap items-start justify-between gap-2 sm:gap-3">
+        <div className="min-w-0 flex-1">
           <AlertLevelBadge
             level={level}
             label={t(`alerts.level.${level}`)}
             description={t(`alerts.level.${level}.desc`)}
-            size="md"
+            size="sm"
           />
-          <h3 id={headingId} className="mt-2 flex items-center gap-1.5 text-base font-bold text-carbon-90">
-            <MaterialIcon name={hazardIcon(alert.hazard_type)} className="text-base text-carbon-70" aria-hidden="true" />
+          <h3 id={headingId} className="mt-1.5 sm:mt-2 flex items-start sm:items-center gap-1.5 text-sm sm:text-base font-bold text-carbon-90 dark:text-white">
+            <MaterialIcon name={hazardIcon(alert.hazard_type)} className="text-base text-carbon-70 dark:text-carbon-40 shrink-0 mt-0.5 sm:mt-0" aria-hidden="true" />
             <span className="truncate">{alert.district_name || alert.district_id || '—'}</span>
-            {alert.division ? <span className="font-medium text-carbon-60"> · {alert.division}</span> : null}
+            {alert.division ? <span className="font-medium text-carbon-60 dark:text-carbon-40 whitespace-nowrap"> · {alert.division}</span> : null}
           </h3>
-          <p className="text-xs font-semibold text-carbon-70">
+          <p className="text-xs font-semibold text-carbon-70 dark:text-carbon-40 mt-1">
             {hazardLabel(alert.hazard_type)} · {alert.horizon?.replace('_', ' ') || '—'}
           </p>
         </div>
