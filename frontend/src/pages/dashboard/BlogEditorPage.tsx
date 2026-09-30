@@ -354,7 +354,7 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
               type="button"
               onClick={() => handleSave('published')}
               disabled={saving}
-              className="px-4 py-2 bg-nasa-red text-xs font-black text-white hover:bg-nasa-red-shade disabled:opacity-50 cursor-pointer"
+              className="px-4 py-2 bg-primary text-xs font-black text-white hover:bg-primary-strong disabled:opacity-50 cursor-pointer"
             >
               {saving ? 'Publishing…' : status === 'published' ? 'Update & keep live' : 'Publish'}
             </button>

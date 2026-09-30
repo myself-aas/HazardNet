@@ -492,7 +492,7 @@ export const Contact: React.FC = () => {
 
             <button
               type="submit"
-              className="min-h-[44px] px-6 py-3 bg-nasa-red text-white font-bold transition-all inline-flex items-center gap-2 text-sm hover:bg-nasa-red-shade cursor-pointer touch-manipulation tap-target"
+              className="min-h-[44px] px-6 py-3 bg-primary text-white font-bold transition-all inline-flex items-center gap-2 text-sm hover:bg-primary-strong cursor-pointer touch-manipulation tap-target"
             >
               <SendIcon size={18} duration={0.15} isState={false} />
               <span>Prepare report</span>

@@ -119,7 +119,7 @@ const AlertsMegaMenuContent: React.FC<{
             className={`w-full py-1.5 px-3 rounded-control text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
               isSubscribed
                 ? 'bg-white border border-carbon-30 text-carbon-70 hover:bg-carbon-10'
-                : 'bg-nasa-red hover:bg-nasa-red-shade text-white shadow-xs'
+                : 'bg-primary hover:bg-primary-strong text-white shadow-xs'
             }`}
           >
             {loading ? (

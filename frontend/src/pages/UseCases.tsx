@@ -295,7 +295,7 @@ export const UseCases: React.FC = () => {
           <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
             <Link
               to="/download"
-              className="px-5 py-2.5 bg-nasa-red hover:bg-nasa-red-shade text-white font-black text-xs transition-all hover:inline-block cursor-pointer"
+              className="px-5 py-2.5 bg-primary hover:bg-primary-strong text-white font-black text-xs transition-all hover:inline-block cursor-pointer"
             >
               <MaterialIcon name="download" className="w-4 h-4" /> Download Software
             </Link>

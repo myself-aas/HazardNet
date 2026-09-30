@@ -527,7 +527,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
           <button
             onClick={() => { if (selectedDistrict) runPrediction(selectedDistrict); }}
             disabled={loading}
-            className="px-3 sm:px-5 md:px-6 py-2 sm:py-2.5 md:py-3 bg-nasa-red hover:bg-nasa-red-shade text-white font-black text-xs sm:text-sm rounded-md sm:rounded-lg transition-all duration-200 flex items-center gap-1.5 sm:gap-2 disabled:opacity-50 active:scale-98 hover:scale-[1.02] min-h-[40px] sm:min-h-[44px] md:min-h-[48px] cursor-pointer touch-manipulation tap-target shrink-0"
+            className="px-3 sm:px-5 md:px-6 py-2 sm:py-2.5 md:py-3 bg-primary hover:bg-primary-strong text-white font-black text-xs sm:text-sm rounded-md sm:rounded-lg transition-all duration-200 flex items-center gap-1.5 sm:gap-2 disabled:opacity-50 active:scale-98 hover:scale-[1.02] min-h-[40px] sm:min-h-[44px] md:min-h-[48px] cursor-pointer touch-manipulation tap-target shrink-0"
           >
             {loading ? (
               <>
@@ -637,7 +637,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
                   className={`px-5 py-3 text-xs font-black transition-all flex items-center gap-2 cursor-pointer ${
  savedDistricts.some((d) => d.id === selectedDistrict.id)
  ? 'bg-rose-600 hover:bg-rose-700 text-white'
- : 'bg-nasa-red hover:bg-nasa-red-shade text-white'
+ : 'bg-primary hover:bg-primary-strong text-white'
  }`}
                 >
                   <span className="flex items-center gap-1">
@@ -771,7 +771,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
                       onClick={() => setSavedMapHeight('dynamic')}
                       className={`px-2.5 py-1 text-xs font-black transition-all cursor-pointer ${
  savedMapHeight === 'dynamic'
- ? 'bg-nasa-red text-white '
+ ? 'bg-primary text-white '
  : 'text-carbon-60 hover:text-carbon-90 hover:bg-white/60'
  }`}
                       title="Auto Dynamic Screen Fit Height"
@@ -852,7 +852,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
 
                     <button
                       onClick={() => selectedDistrict?.id && handleOpenDisasterModal(selectedDistrict.id)}
-                      className="px-5 py-2.5 bg-nasa-red hover:bg-nasa-red-shade text-white font-black text-xs   transition-all cursor-pointer flex items-center justify-center gap-2"
+                      className="px-5 py-2.5 bg-primary hover:bg-primary-strong text-white font-black text-xs   transition-all cursor-pointer flex items-center justify-center gap-2"
                     >
                       <span>Granular Report & Directives</span>
                     </button>
@@ -1032,7 +1032,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
                 <button
                   onClick={handleClearTileCache}
                   disabled={isClearingTileCache || tileCacheStats.count === 0}
-                  className="px-6 py-3.5 bg-nasa-red hover:bg-nasa-red-shade text-white font-black text-sm   transition-all duration-200 flex items-center gap-2.5 disabled:opacity-50 active:scale-98 cursor-pointer"
+                  className="px-6 py-3.5 bg-primary hover:bg-primary-strong text-white font-black text-sm   transition-all duration-200 flex items-center gap-2.5 disabled:opacity-50 active:scale-98 cursor-pointer"
                 >
                   {isClearingTileCache ? (
                     <>
@@ -1191,7 +1191,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
 
               <button
                 onClick={() => selectedDistrict?.id && handleOpenDisasterModal(selectedDistrict.id)}
-                className="px-5 py-3 bg-nasa-red hover:bg-nasa-red-shade text-carbon-90 font-extrabold text-sm rounded-full  transition-all duration-200 flex items-center gap-2 active:scale-98 hover:scale-[1.02] min-h-[48px] cursor-pointer"
+                className="px-5 py-3 bg-primary hover:bg-primary-strong text-carbon-90 font-extrabold text-sm rounded-full  transition-all duration-200 flex items-center gap-2 active:scale-98 hover:scale-[1.02] min-h-[48px] cursor-pointer"
               >
                 <span>Granular Data Report</span>
               </button>

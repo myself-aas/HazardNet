@@ -209,7 +209,7 @@ const UserDashboardPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => navigate('/forecast/overview')}
-                className="inline-flex min-h-[44px] items-center bg-nasa-red-shade px-4 py-2 text-base font-semibold text-white hover:bg-nasa-red cursor-pointer touch-manipulation"
+                className="inline-flex min-h-[44px] items-center bg-primary-strong px-4 py-2 text-base font-semibold text-white hover:bg-primary cursor-pointer touch-manipulation"
               >
                 Open forecasts
               </button>

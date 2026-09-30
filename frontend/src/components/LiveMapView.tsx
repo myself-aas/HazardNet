@@ -1573,7 +1573,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                       setIsMeasuring(false);
                       setMeasurePoints([]);
                     }}
-                    className="min-h-[44px] px-3 py-1.5 bg-nasa-red-shade hover:bg-nasa-red text-white font-semibold text-xs"
+                    className="min-h-[44px] px-3 py-1.5 bg-primary-strong hover:bg-primary text-white font-semibold text-xs"
                   >
                     Exit Ruler
                   </button>
@@ -1768,7 +1768,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                         onClick={() => setSelectedDivision('All')}
                         className={`py-2 px-3 font-bold text-xs transition-all border ${
  selectedDivision === 'All'
- ? 'bg-nasa-red text-white border-nasa-blue'
+ ? 'bg-primary text-white border-nasa-blue'
  : 'bg-carbon-05 text-carbon-70 border-carbon-20 hover:bg-carbon-10'
  }`}
                       >
@@ -1782,7 +1782,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                             onClick={() => setSelectedDivision(divName)}
                             className={`py-2 px-3 font-bold text-xs transition-all border truncate ${
  selectedDivision.toLowerCase() === divName.toLowerCase()
- ? 'bg-nasa-red text-white border-nasa-blue'
+ ? 'bg-primary text-white border-nasa-blue'
  : 'bg-carbon-05 text-carbon-70 border-carbon-20 hover:bg-carbon-10'
  }`}
                           >
@@ -1889,7 +1889,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                             onClick={() => setActiveLayer(key)}
                             className={`py-2.5 px-3 font-bold text-xs border text-left transition-all ${
  isAct
- ? 'bg-nasa-red text-white border-nasa-blue '
+ ? 'bg-primary text-white border-nasa-blue '
  : 'bg-carbon-05 text-carbon-70 border-carbon-20 hover:bg-carbon-10'
  }`}
                           >
@@ -1920,7 +1920,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                       <button
                         onClick={() => setIsHeatmapActive(!isHeatmapActive)}
                         className={`min-h-[44px] px-3 font-semibold text-xs touch-manipulation ${
- isHeatmapActive ? 'bg-nasa-red text-white' : 'bg-carbon-20 text-carbon-60'
+ isHeatmapActive ? 'bg-primary text-white' : 'bg-carbon-20 text-carbon-60'
  }`}
                       >
                         {isHeatmapActive ? 'Enabled' : 'Disabled'}
@@ -2038,7 +2038,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                         <button
                           onClick={() => downloadEmergencyBangladeshPack(activeLayer)}
                           disabled={isPreCaching || !isOnline}
-                          className="px-3 py-2 bg-nasa-red-shade hover:bg-nasa-red disabled:opacity-50 text-white text-xs font-black   transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                          className="px-3 py-2 bg-primary-strong hover:bg-primary disabled:opacity-50 text-white text-xs font-black   transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
                           title="Pre-cache tactical zoom 6–9 covering all 64 districts in Bangladesh"
                         >
                           <CloudDownload className="w-3.5 h-3.5" />
@@ -2178,7 +2178,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                           <p className="font-bold text-sm">No Preview Captured</p>
                           <button
                             onClick={() => generateMapSnapshot()}
-                            className="mt-2 px-3 py-1.5 bg-nasa-red text-white font-bold text-xs "
+                            className="mt-2 px-3 py-1.5 bg-primary text-white font-bold text-xs "
                           >
                             Generate Map Image
                           </button>
@@ -2219,7 +2219,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                             }}
                             className={`py-2 px-2.5 font-black text-xs border transition-all text-center ${
  exportScale === 3
- ? 'bg-nasa-red text-white border-nasa-blue '
+ ? 'bg-primary text-white border-nasa-blue '
  : 'bg-carbon-05 text-carbon-70 border-carbon-20 hover:bg-carbon-10'
  }`}
                           >
@@ -2232,7 +2232,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                             }}
                             className={`py-2 px-2.5 font-black text-xs border transition-all text-center ${
  exportScale === 2
- ? 'bg-nasa-red text-white border-nasa-blue '
+ ? 'bg-primary text-white border-nasa-blue '
  : 'bg-carbon-05 text-carbon-70 border-carbon-20 hover:bg-carbon-10'
  }`}
                           >
@@ -2245,7 +2245,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                             }}
                             className={`py-2 px-2.5 font-black text-xs border transition-all text-center ${
  exportScale === 1.5
- ? 'bg-nasa-red text-white border-nasa-blue '
+ ? 'bg-primary text-white border-nasa-blue '
  : 'bg-carbon-05 text-carbon-70 border-carbon-20 hover:bg-carbon-10'
  }`}
                           >
@@ -2314,7 +2314,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                       <button
                         onClick={() => handleDownloadImage()}
                         disabled={isGeneratingSnapshot || !capturedPreviewUrl}
-                        className="w-full min-h-[44px] py-3 bg-nasa-red-shade hover:bg-nasa-red-shade disabled:opacity-50 text-white font-black  text-xs  transition-all flex items-center justify-center gap-2 active:scale-95"
+                        className="w-full min-h-[44px] py-3 bg-primary-strong hover:bg-primary-strong disabled:opacity-50 text-white font-black  text-xs  transition-all flex items-center justify-center gap-2 active:scale-95"
                       >
                         <Download className="w-4 h-4" /> Download High-Resolution Map Report
                       </button>
@@ -2457,7 +2457,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                   }}
                   className={`min-h-[44px] px-3 border text-xs font-semibold touch-manipulation ${
  isAct
- ? 'bg-nasa-red border-nasa-blue text-white '
+ ? 'bg-primary border-nasa-blue text-white '
  : 'bg-white border-carbon-20 text-carbon-70 hover:text-carbon-90 hover:bg-carbon-10'
  }`}
                 >

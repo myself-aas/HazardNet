@@ -16,8 +16,11 @@ describe('Phase 6 surface contracts (§14.3 / §14.7 / §14.8)', () => {
       }
     });
 
-    it('uses nasa-red-shade on the primary /live CTA and 44px targets', () => {
-      expect(front).toMatch(/bg-nasa-red-shade/);
+    it('uses the crimson shade on the primary /live CTA and 44px targets', () => {
+      // --color-primary-strong and --color-nasa-red-shade are the same value
+      // (#7B1D21). Session 3 renamed the class to the semantic token, so accept
+      // either — what matters is that the CTA uses the shade, not the base red.
+      expect(front).toMatch(/bg-(?:primary-strong|nasa-red-shade)/);
       expect(front).toMatch(/min-h-\[44px\]/);
     });
 
@@ -38,10 +41,13 @@ describe('Phase 6 surface contracts (§14.3 / §14.7 / §14.8)', () => {
       expect(layout).toMatch(/text-\[28px\]/);
     });
 
-    it('uses nasa-red-shade + white on submit, not carbon-black on nasa-red', () => {
-      expect(login).toMatch(/bg-nasa-red-shade/);
+    it('uses the crimson shade + white on submit, not carbon-black on nasa-red', () => {
+      // Same rename as above: --color-primary-strong === --color-nasa-red-shade.
+      // The contrast contract (shade + white, never carbon-black on red) is what
+      // is being pinned, not the class spelling.
+      expect(login).toMatch(/bg-(?:primary-strong|nasa-red-shade)/);
       expect(login).not.toMatch(/text-carbon-black/);
-      expect(signup).toMatch(/bg-nasa-red-shade/);
+      expect(signup).toMatch(/bg-(?:primary-strong|nasa-red-shade)/);
     });
 
     it('skips autoFocus unless the pointer is fine', () => {

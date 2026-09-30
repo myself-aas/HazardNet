@@ -43,7 +43,7 @@ export const NotificationToggleUI: React.FC<NotificationToggleUIProps> = ({
           onClick={onToggleOpen}
           className={`min-h-[44px] px-2.5 py-1.5 rounded-lg border transition-all flex items-center gap-1.5 text-xs font-semibold touch-manipulation ${
             isSubscribed
-              ? 'bg-nasa-red text-white border-nasa-blue hover:bg-nasa-red-shade shadow-xs'
+              ? 'bg-primary text-white border-nasa-blue hover:bg-primary-strong shadow-xs'
               : 'bg-white/40 text-carbon-80 border-carbon-20/60 hover:bg-white/70 backdrop-blur-md'
           }`}
           title="Web Push Certificate & Emergency Alerts"
@@ -92,7 +92,7 @@ export const NotificationToggleUI: React.FC<NotificationToggleUIProps> = ({
                 className={`w-full py-2 px-3 rounded-lg font-bold text-xs flex items-center justify-center gap-2 transition-all ${
                   isSubscribed
                     ? 'bg-carbon-10 text-carbon-70 border border-carbon-30 hover:bg-carbon-20'
-                    : 'bg-nasa-red text-white hover:bg-nasa-red-shade shadow-sm'
+                    : 'bg-primary text-white hover:bg-primary-strong shadow-sm'
                 }`}
               >
                 <NotificationIcon size={18} duration={0} isState={!isSubscribed} />

@@ -29,9 +29,9 @@ Remediate the frontend against the four-lens re-audit (`docs/audits/2026-09-30-f
 
 - [ ] **Session 1 validation**: add a computed-contrast unit test asserting the primary-action pairing and `--hn-hds-ink-soft` on white (7.09:1), modelled on the existing `__tests__/staticShellContrast.test.js`. Then re-run jest, `tsc --noEmit`, eslint and `check:design`, confirming **0 new** `check:design` offenders. Gate: no contrast failure remains on any text node.
 
-- [ ] **Session 2 — dialog correctness (one primitive)**: lift the `MenuDrawer.tsx:66-80` pattern (Escape, focus save/restore, body overflow lock) into the shared `components/ui/BottomSheet.tsx:34` and add a Tab-cycle interceptor plus `inert` on the shell so `aria-modal="true"` stops promising containment the code does not deliver. Add the sibling modals' `useEffect` keydown listener to `PdfExportConfigModal.tsx:277`. Add `role="dialog"`, `aria-modal` and `aria-labelledby` to `DisasterDetailModal.tsx` and `SavedAssessmentsModal.tsx`. Sweep `aria-labelledby` across the remaining 7 `role="dialog"` sites (`ChatBot.tsx:202`, `CommandPalette.tsx:499`, `EventReportModal.tsx:81`, `GlideResourcePopover.tsx:58`, `MenuDrawer.tsx:107`, `PrintPreviewModal.tsx:239`, `map/DistrictForecastCard.tsx:51`). Gate: keyboard-only walk through all 9 dialogs never reaches the background.
+- [x] **Session 2 — dialog correctness (one primitive)**: lift the `MenuDrawer.tsx:66-80` pattern (Escape, focus save/restore, body overflow lock) into the shared `components/ui/BottomSheet.tsx:34` and add a Tab-cycle interceptor plus `inert` on the shell so `aria-modal="true"` stops promising containment the code does not deliver. Add the sibling modals' `useEffect` keydown listener to `PdfExportConfigModal.tsx:277`. Add `role="dialog"`, `aria-modal` and `aria-labelledby` to `DisasterDetailModal.tsx` and `SavedAssessmentsModal.tsx`. Sweep `aria-labelledby` across the remaining 7 `role="dialog"` sites (`ChatBot.tsx:202`, `CommandPalette.tsx:499`, `EventReportModal.tsx:81`, `GlideResourcePopover.tsx:58`, `MenuDrawer.tsx:107`, `PrintPreviewModal.tsx:239`, `map/DistrictForecastCard.tsx:51`). Gate: keyboard-only walk through all 9 dialogs never reaches the background.
 
-- [ ] **Session 3 — token compliance (88.0% → ≥90%)**: declare semantic aliases in `frontend/src/index.css` `@theme inline` (~line 690) for the families that carry meaning — `rose`→`destructive`, `emerald`→`success`, `blue`→`accent`/info — then either tokenise or delete the rest, clearing the 740 uses across `emerald`×222, `rose`×219, `blue`×177, `sky`×58, `cyan`×18, `red`×15, `indigo`×8, `yellow`×8, `teal`×6, `orange`×5, `purple`×4. Convert `bg-nasa-red` (156 uses) → `bg-primary` **only** where it means "primary action"; leave badge instances for Session 5 finding 2.5. Route the 30 inline `<svg>` through `MaterialIcon` (225 uses / 59 files is the established family). Update `frontend/DESIGN_SYSTEM.md` in the same commit. Gate: compliance ≥90%, verified by re-running the scan.
+- [x] **Session 3 — token compliance (88.0% → ≥90%)**: declare semantic aliases in `frontend/src/index.css` `@theme inline` (~line 690) for the families that carry meaning — `rose`→`destructive`, `emerald`→`success`, `blue`→`accent`/info — then either tokenise or delete the rest, clearing the 740 uses across `emerald`×222, `rose`×219, `blue`×177, `sky`×58, `cyan`×18, `red`×15, `indigo`×8, `yellow`×8, `teal`×6, `orange`×5, `purple`×4. Convert `bg-nasa-red` (156 uses) → `bg-primary` **only** where it means "primary action"; leave badge instances for Session 5 finding 2.5. Route the 30 inline `<svg>` through `MaterialIcon` (225 uses / 59 files is the established family). Update `frontend/DESIGN_SYSTEM.md` in the same commit. Gate: compliance ≥90%, verified by re-running the scan.
 
 - [ ] **Session 4 — typography and density**: `text-[10px]` ×146 and `text-[11px]` ×157 → `text-xs`; `text-[9px]` ×9 and `text-[8px]` ×4 → 12px floor or delete (they are all in dense data tables, so raise the size rather than dropping the label). Demote weight on non-numeric text — 1326 heavy vs 262 light weights, `font-black`/`font-bold` → `font-medium`/`font-semibold`. Replace `transition-all` ×236 with explicit property lists. Collapse the 9 distinct `rounded-*` values onto the scale, worst case `Dashboard.tsx:660` (`rounded-lg sm:rounded-[20px] md:rounded-[28px]`). Convert `space-x/y` ×500 → `gap-*` (1182 `gap-*` uses already exist as the convention). Expect a wide diff — review per-component, not per-line.
 
@@ -129,6 +129,66 @@ Tailwind class tokens, so it is not a Session 1 signal.
 **Not done in Session 1 (deliberately):** no browser exists in this sandbox, so
 the visual result of these swaps is unverified. The contrast is computed from
 token hexes, not sampled from a render.
+
+### Session 3 — token compliance (complete)
+
+**Baseline correction.** The audit reported 740 off-system uses at 88.0%. A
+reproducible scan (`scripts/check-token-compliance.mjs`, wired as
+`npm run check:tokens`) measured **769 uses at 87.9%**. The gap is a
+methodology difference: the audit counted `--hds-dataviz-seq-orange-10`-style
+*token definitions* as uses. Those are the token layer, not uses of it, and
+counting them inflates the denominator. The script drops CSS custom-property
+declaration lines before scanning. 132 conversions were needed for the 90% gate.
+
+**The blocker, and how it was resolved.** NASA HDS ships full ramps only for
+carbon, `seq-orange` and `seq-yellow`. There is no HDS ramp for red, green, blue,
+sky, cyan, teal, indigo or purple, so the plan's "declare semantic aliases" could
+not be done as a hue-preserving family mapping. Sampling the actual uses also
+showed the families are **not** all status colours: 706 uses are status semantics
+(destructive / success / accent / info / warning) but 63 are **data encodings** —
+weather-phenomenon colours (`NationalOverview.tsx:54-56`) and chart series
+indices (`DisasterDetailModalUI.tsx:320`).
+
+Resolved by mapping shades by **role, not hue** (50–200 surface, 300–400 border,
+500–600 solid, 700–950 text) onto the existing semantic tokens, which required
+five new tints (`--destructive-surface`, `--destructive-border`,
+`--success-border`, `--accent-border`, `--warning-border`) built on the same
+`color-mix` pattern `--info-surface` already uses. `indigo` and `purple` (15
+uses) were **left undeclared on purpose** — aliasing them onto `--accent` would
+render two chart series the same colour. Result: **99.8%**, 15 of 6368 uses
+remaining, all documented exceptions.
+
+**`bg-nasa-red` → `bg-primary`.** `--color-nasa-red` is `var(--hn-brand-red)`
+and `--primary` is `var(--hn-hds-red)` → `var(--hn-brand-red)`, so the two
+utilities are the *same colour*: this is a pure semantic rename with zero visual
+change. 102 sites across 36 files were converted where the owning element is a
+`<button>`, `<Link>`, `motion.button` or `motion.a`. 40 were left — 19 `<span>`
+and 17 `<div>` (status badges, decorative rules, skeletons, carousel dots), plus
+`FreshnessState`. Deferred to Session 5 finding 2.5 as planned.
+
+**Inline `<svg>`.** The plan's "30 inline `<svg>`" is a raw count of `<svg`
+occurrences; only **3** have a `MaterialIcon` equivalent. Converted
+`Footer.tsx:343` (chevron → `expand_less`, geometry identical) and
+`PWAInstallButton.tsx:20` (download arrow → `download`). The other 32 stay inline
+for stated reasons: `animated-state-icons.tsx` (11) is the icon library itself,
+`MaterialIcon.tsx:900` is its wrapper, `BangladeshSvgMap` / `DistrictRiskMap` /
+`LiveMapView` are maps and markers, two are charts, two are spinners, three are
+test fixtures, `ChatBot.tsx:187` is a custom mascot illustration, and
+`ProviderGlyph.tsx:18` is the Google brand mark — official multi-colour art with
+no icon-system equivalent. `ProviderGlyph.tsx:27` (GitHub) has a byte-identical
+`MaterialIcon` path but was **not** converted: `MaterialIcon` sets width/height
+by inline style, which would override the glyph's `h-full w-full` and shrink it
+to `1em` on a critical auth surface. Any future conversion there needs
+`size="100%"`.
+
+**Self-correction during execution.** A two-pass text rewrite that shared one
+output offset between the `bg-nasa-red` and `bg-nasa-red-shade` passes silently
+corrupted 38 files (6558 insertions where ~100 were expected) by re-slicing from
+a stale offset. Detected via `git diff --stat`, reverted with
+`git checkout origin/arena/01a0f140-hazardnet -- <files>` (from the **remote**,
+not `HEAD`, which a sandbox reset had rewound to `674c03c` and would have lost
+Sessions 1–2), and redone as a single-pass rewrite guarded by a length-invariant
+assertion. The same reset also wiped `node_modules` mid-session.
 
 ### Session 2 — dialog correctness (complete)
 

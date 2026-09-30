@@ -565,7 +565,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onSelectDistrict
                   }}
                   className={`px-3 py-1 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
                     selectedCategory === cat
-                      ? 'bg-nasa-red text-white shadow-sm'
+                      ? 'bg-primary text-white shadow-sm'
                       : 'text-carbon-60 hover:text-carbon-90 hover:bg-carbon-10'
                   }`}
                 >

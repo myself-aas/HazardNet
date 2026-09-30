@@ -409,7 +409,7 @@ export const FrontDoor: React.FC = () => {
               <div className="mt-7 flex flex-wrap items-center gap-2 sm:gap-3">
                 <Link
                   to="/live"
-                  className="inline-flex min-h-[48px] w-full items-center justify-center gap-2 bg-nasa-red-shade px-5 py-3 text-base font-semibold text-white hover:bg-nasa-red tracking-[0.01em] touch-manipulation shadow-lg transition-transform duration-150 active:scale-95 sm:w-auto sm:px-6"
+                  className="inline-flex min-h-[48px] w-full items-center justify-center gap-2 bg-primary-strong px-5 py-3 text-base font-semibold text-white hover:bg-primary tracking-[0.01em] touch-manipulation shadow-lg transition-transform duration-150 active:scale-95 sm:w-auto sm:px-6"
                 >
                   <MaterialIcon name="public" className="text-base" />
                   {t('frontdoor.hero.ctaMap')}

@@ -107,7 +107,7 @@ export const BlogStudioPage: React.FC = () => {
           </div>
           <Link
             to="/dashboard/blog/new"
-            className="shrink-0 inline-flex items-center gap-2 bg-nasa-red px-4 py-2.5 text-xs font-black text-white transition-colors hover:bg-nasa-red-shade cursor-pointer"
+            className="shrink-0 inline-flex items-center gap-2 bg-primary px-4 py-2.5 text-xs font-black text-white transition-colors hover:bg-primary-strong cursor-pointer"
           >
             <MaterialIcon name="doc" className="w-4 h-4" /> New article
           </Link>
@@ -152,7 +152,7 @@ export const BlogStudioPage: React.FC = () => {
             <p className="text-xs text-carbon-60">Write the first HazardNet field report or research deep-dive.</p>
             <Link
               to="/dashboard/blog/new"
-              className="inline-block bg-nasa-red px-4 py-2.5 text-xs font-black text-white hover:bg-nasa-red-shade"
+              className="inline-block bg-primary px-4 py-2.5 text-xs font-black text-white hover:bg-primary-strong"
             >
               Start writing
             </Link>

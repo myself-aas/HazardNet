@@ -688,7 +688,7 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
               <div className="flex items-center gap-2 pt-1">
                 <button
                   onClick={() => onSetSheetMode('half')}
-                  className="flex-1 py-2.5 bg-nasa-red active:bg-nasa-red-shade text-carbon-90 font-extrabold text-xs rounded-xl shadow-xs transition-all flex items-center justify-center gap-1.5 min-h-[44px]"
+                  className="flex-1 py-2.5 bg-primary active:bg-primary-strong text-carbon-90 font-extrabold text-xs rounded-xl shadow-xs transition-all flex items-center justify-center gap-1.5 min-h-[44px]"
                 >
                   <span>View Detailed Analytics & Action Plan ▲</span>
                 </button>

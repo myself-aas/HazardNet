@@ -43,6 +43,42 @@ The design system is structured in three clear layers within [`frontend/src/inde
 - `--destructive`: Danger / Emergency (`--hn-hds-red-shade`)
 - `--border`: Semantic hairline (`--hn-hds-line`)
 
+### Layer 2b: Palette Families (`@theme inline`)
+
+Every Tailwind palette family the app uses is declared in `@theme inline` so it
+resolves to a HazardNet token instead of Tailwind's stock palette. Declared:
+`carbon`, `amber`, `gray`, `neutral`, `slate`, `stone`, `zinc`, `chart`, plus
+`rose`, `red`, `emerald`, `teal`, `blue`, `sky`, `cyan`, `yellow`, `orange`.
+
+Shades are aliased by **role, not hue** — 50–200 surfaces, 300–400 borders,
+500–600 solid fills, 700–950 text — following the `--success` / `--warning` /
+`--info` precedent:
+
+| Family | Surface | Border | Solid | Text |
+|---|---|---|---|---|
+| `rose`, `red` | `--destructive-surface` | `--destructive-border` | `--destructive` | `--destructive` |
+| `emerald` | `--success-surface` | `--success-border` | `--hn-emerald-600` | `--success` |
+| `teal` | — | `--hn-teal-500` | `--hn-teal-600` | `--hn-teal-700` |
+| `blue`, `sky`, `cyan` | `--info-surface` | `--accent-border` | `--accent` | `--info` |
+| `yellow`, `orange` | `--warning-surface` | `--warning-border` | `--hn-amber-500` | `--warning` |
+
+**`indigo` and `purple` are deliberately not declared.** Their uses are data
+encodings — weather-phenomenon colours (`NationalOverview.tsx:54-56`) and chart
+series indices (`DisasterDetailModalUI.tsx:320`) — not status semantics. No HDS
+hue ramp exists for them, and aliasing them onto `--accent` would render two
+chart series the same colour. They remain Tailwind stock by choice, not by
+oversight.
+
+**Primary action surfaces** use `bg-primary` / `bg-primary-strong`. `bg-nasa-red`
+and `bg-nasa-red-shade` resolve to the identical values (`--hn-brand-red` /
+`--hn-brand-red-dark`) and survive only on non-action surfaces — status badges,
+decorative rules, skeletons and carousel dots — which Session 5 converts to
+severity tokens.
+
+Verify with `npm run check:tokens` (gate ≥90%; currently 99.8%) and
+`__tests__/tokenCompliance.test.js`, which fails if a declared shade is ever
+pointed back at a raw hex.
+
 ### Layer 3: Typography Stacks (`@theme inline`)
 ```css
 --font-sans: 'Plus Jakarta Sans', 'Public Sans Web', 'Noto Sans Bengali', sans-serif;
