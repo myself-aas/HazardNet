@@ -57,46 +57,46 @@ export const DistrictDetailPanel: React.FC<DistrictDetailPanelProps> = ({
     <div
       role={isModal ? 'dialog' : 'region'}
       aria-label={`Advisory details for ${forecast.district_name}`}
-      className={`bg-white dark:bg-carbon-90 text-carbon-90 dark:text-carbon-10 rounded-2xl border border-carbon-20 dark:border-carbon-80 shadow-lg overflow-hidden flex flex-col ${className}`}
+      className={`bg-white dark:bg-carbon-90 text-carbon-90 dark:text-carbon-10 rounded-lg sm:rounded-xl md:rounded-2xl border border-carbon-10 dark:border-carbon-80 shadow-sm dark:shadow-lg overflow-hidden flex flex-col ${className}`}
       data-testid="district-detail-panel"
     >
       {/* ── 1. Header: District, Division, Dates, Close ── */}
-      <div className="p-5 border-b border-carbon-20 dark:border-carbon-80 bg-carbon-05/50 dark:bg-carbon-80/50">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-xl font-heading font-black tracking-tight text-carbon-90 dark:text-white">
+      <div className="p-3 sm:p-4 md:p-5 border-b border-carbon-10 dark:border-carbon-80 bg-carbon-05/50 dark:bg-carbon-80/50">
+        <div className="flex items-start justify-between gap-2 sm:gap-3 md:gap-4">
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+              <h2 className="text-base sm:text-lg md:text-xl font-heading font-black tracking-tight text-carbon-90 dark:text-white truncate">
                 {forecast.district_name}
               </h2>
               {forecast.division && (
-                <span className="px-2 py-0.5 rounded-md bg-carbon-20 dark:bg-carbon-70 text-xs font-semibold text-carbon-70 dark:text-carbon-20">
-                  {forecast.division} Division
+                <span className="px-1.5 sm:px-2 py-0.5 rounded-md bg-carbon-10 dark:bg-carbon-70 text-xs font-semibold text-carbon-70 dark:text-carbon-20 whitespace-nowrap">
+                  {forecast.division}
                 </span>
               )}
             </div>
-            <div className="flex flex-wrap items-center gap-3 mt-1.5 text-xs text-carbon-60 dark:text-carbon-40 font-mono">
+            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 md:gap-3 mt-1 sm:mt-1.5 text-xs text-carbon-60 dark:text-carbon-40 font-mono">
               {forecast.target_date && (
-                <span>
-                  <strong>Valid for:</strong> {formatDate(forecast.target_date)}
+                <span className="truncate">
+                  <strong>Valid:</strong> {formatDate(forecast.target_date)}
                 </span>
               )}
               {forecast.prediction_date && (
-                <span>
+                <span className="hidden sm:inline truncate">
                   <strong>Issued:</strong> {formatDate(forecast.prediction_date)}
                 </span>
               )}
               {forecast.horizon && (
-                <span className="px-1.5 py-0.5 rounded bg-carbon-10 dark:bg-carbon-70 text-[11px]">
+                <span className="px-1.5 py-0.5 rounded bg-carbon-10 dark:bg-carbon-70 text-[11px] whitespace-nowrap">
                   {forecast.horizon}
                 </span>
               )}
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             <AlertLevelBadge
               level={forecast.advisory_tier || 'NORMAL'}
-              size="md"
+              size="sm"
             />
             {onClose && (
               <button
@@ -112,16 +112,16 @@ export const DistrictDetailPanel: React.FC<DistrictDetailPanelProps> = ({
         </div>
 
         {/* Primary Hazard & Physics Override Badge */}
-        <div className="flex flex-wrap items-center justify-between gap-3 mt-4 pt-3 border-t border-carbon-20/60 dark:border-carbon-80/60">
-          <div className="flex items-center gap-2.5">
+        <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3 mt-2 sm:mt-4 pt-2 sm:pt-3 border-t border-carbon-10/60 dark:border-carbon-80/60">
+          <div className="flex items-center gap-1.5 sm:gap-2.5 min-w-0">
             <span
-              className="w-3.5 h-3.5 rounded-full shrink-0"
+              className="w-2.5 sm:w-3.5 h-2.5 sm:h-3.5 rounded-full shrink-0"
               style={{ backgroundColor: hazardColor }}
               aria-hidden="true"
             />
-            <span className="font-heading font-bold text-sm text-carbon-90 dark:text-carbon-05">
+            <span className="font-heading font-bold text-xs sm:text-sm text-carbon-90 dark:text-carbon-05 truncate">
               {isUncertain ? (
-                <span className="text-amber-600 dark:text-amber-400">Uncertain Multi-Hazard State</span>
+                <span className="text-amber-600 dark:text-amber-400">Uncertain</span>
               ) : (
                 forecast.hazard_type
               )}
@@ -131,47 +131,47 @@ export const DistrictDetailPanel: React.FC<DistrictDetailPanelProps> = ({
           {/* 3. Physics Override Transparency Badge (TASK-006) */}
           {isPhysicsOverridden && (
             <div
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-cyan-50 dark:bg-cyan-950/60 border border-cyan-300 dark:border-cyan-800 text-cyan-800 dark:text-cyan-300 text-xs font-semibold shadow-xs"
-              title="Physical atmospheric and hydrological constraints overrode unconstrained neural network predictions."
+              className="inline-flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full bg-cyan-50 dark:bg-cyan-950/60 border border-cyan-300 dark:border-cyan-800 text-cyan-800 dark:text-cyan-300 text-xs font-semibold shadow-xs whitespace-nowrap"
+              title="Physical constraints overrode neural predictions."
               data-testid="physics-override-badge"
             >
-              <MaterialIcon name="shield" className="w-3.5 h-3.5 text-cyan-600 dark:text-cyan-400" />
-              <span>Physics-grounded</span>
+              <MaterialIcon name="shield" className="w-3 sm:w-3.5 h-3 sm:h-3.5 text-cyan-600 dark:text-cyan-400 shrink-0" />
+              <span className="hidden sm:inline">Physics-grounded</span><span className="sm:hidden">Physics</span>
             </div>
           )}
         </div>
       </div>
 
-      <div className="p-5 space-y-5 overflow-y-auto">
+      <div className="p-3 sm:p-4 md:p-5 space-y-3 sm:space-y-4 md:space-y-5 overflow-y-auto">
         {/* ── 6. Low Confidence Uncertainty Advisory Notice ── */}
         {isUncertain && (
           <div
-            className="p-4 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800 text-amber-900 dark:text-amber-200 text-xs leading-relaxed space-y-1.5"
+            className="p-3 sm:p-4 rounded-lg sm:rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-200 text-xs leading-relaxed space-y-1 sm:space-y-1.5"
             data-testid="uncertainty-advisory-notice"
           >
-            <div className="flex items-center gap-2 font-bold text-sm text-amber-800 dark:text-amber-300">
-              <MaterialIcon name="warning" className="w-4 h-4 text-amber-600 shrink-0" />
-              <span>Low Model Confidence ({formatNumber(Math.round(confidence * 100))}%) — Out of Distribution Notice</span>
+            <div className="flex items-start gap-2 font-bold text-xs sm:text-sm text-amber-800 dark:text-amber-300">
+              <MaterialIcon name="warning" className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+              <span>Low Confidence ({formatNumber(Math.round(confidence * 100))}%)</span>
             </div>
-            <p>
-              The predictive ensemble detects significant out-of-distribution anomaly patterns. This district cannot be categorized with certainty; ground meteorological observation and local disaster response teams must be consulted before enacting high-consequence interventions. Do not treat any single hazard classification as fact.
+            <p className="text-xs leading-relaxed">
+              Out-of-distribution anomaly detected. Consult meteorological observations before taking action.
             </p>
           </div>
         )}
 
         {/* ── 2. Dual-Track Severity Display ── */}
-        <div className="p-4 rounded-xl bg-carbon-05 dark:bg-carbon-80/60 border border-carbon-20 dark:border-carbon-80 space-y-3">
-          <div className="flex items-center justify-between">
+        <div className="p-3 sm:p-4 rounded-lg sm:rounded-xl bg-carbon-05 dark:bg-carbon-80/60 border border-carbon-10 dark:border-carbon-80 space-y-2.5 sm:space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 sm:gap-2">
             <h3 className="font-heading font-bold text-xs uppercase tracking-wider text-carbon-70 dark:text-carbon-30 flex items-center gap-1.5">
-              <MaterialIcon name="speedometer" className="w-4 h-4 text-carbon-50" />
-              <span>Dual-Track Severity Quantification</span>
+              <MaterialIcon name="speedometer" className="w-3.5 sm:w-4 h-3.5 sm:h-4 text-carbon-50 shrink-0" />
+              <span>Severity</span>
             </h3>
-            <span className="font-mono text-xs font-bold text-carbon-60">
+            <span className="font-mono text-xs font-bold text-carbon-60 self-start sm:self-auto">
               Fused: {formatNumber(Math.round(finalSeverity * 100))}%
             </span>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3">
             {/* Calibrated Model Severity */}
             <div className="p-3 rounded-lg bg-white dark:bg-carbon-90 border border-carbon-20 dark:border-carbon-70/60">
               <span className="text-[11px] font-mono text-carbon-60 dark:text-carbon-40 uppercase block">
