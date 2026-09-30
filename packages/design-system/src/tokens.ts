@@ -334,7 +334,7 @@ export type HDSNasaTokenType = typeof HDS_NASA_TOKENS;
 
 // ---------------------------------------------------------------------------
 // Alert levels — canonical 4-step policy taxonomy
-// Matches api/v1/alerts/policy.js, frontend/src/lib/alerts.ts and the web UI.
+// Matches serverless/v1/alerts/policy.js, frontend/src/lib/alerts.ts and the web UI.
 // DO NOT confuse with the 5-step expressive/bento severity scale.
 // ---------------------------------------------------------------------------
 
@@ -447,7 +447,7 @@ export const ALERT_LEVEL_ORDER: AlertLevel[] = ['NO_ALERT', 'WATCH', 'WARNING', 
  *
  * Note: the policy also requires (a) model_version stamping for auto-publish above WATCH
  * and (b) duty-officer review for WARNING/SEVERE. That gating is a server-side concern
- * (see api/v1/alerts/policy.js). This function only maps numeric severity to the four
+ * (see serverless/v1/alerts/policy.js). This function only maps numeric severity to the four
  * display buckets; callers should NOT promote a client-computed score to WARNING/SEVERE
  * unless the server has actually published such an alert.
  */

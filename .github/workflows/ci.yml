@@ -410,11 +410,43 @@ jobs:
       # `git status --porcelain` reports untracked (`??`) and modified (` M`)
       # alike, so stale == missing == red. Guarded by
       # scripts/tests/test_workflows.py::test_model_version_gate_detects_missing_file.
+
+      # Every deployed function file, discovered rather than listed: the previous version
+      # named three files (`api/forecasts.js`, `api/ingest.js`, `api/metrics.js`) and
+      # therefore never loaded the other fifteen, which is how `api/v1/weather.js` reached
+      # production importing `../../../backend/...` from a depth that needs `../../` — an
+      # ERR_MODULE_NOT_FOUND on the first request, not at build time.
       - name: Serverless functions load as ESM
         run: |
-          node -e "import('./api/forecasts.js').then(() => console.log('api/forecasts: ESM OK'))"
-          node -e "import('./api/ingest.js').then(() => console.log('api/ingest: ESM OK'))"
-          node -e "import('./api/metrics.js').then(() => console.log('api/metrics: ESM OK'))"
+          node - <<'NODE'
+          const { readdirSync, statSync } = require('node:fs');
+          const { join } = require('node:path');
+
+          const walk = (dir) => readdirSync(dir).flatMap((entry) => {
+            const full = join(dir, entry);
+            return statSync(full).isDirectory() ? walk(full) : full.endsWith('.js') ? [full] : [];
+          });
+
+          (async () => {
+            for (const file of [...walk('api'), ...walk('serverless')]) {
+              try {
+                await import(`./${file}`);
+              } catch (error) {
+                console.log(`::error::${file} does not load: ${error.message}`);
+                process.exitCode = 1;
+                continue;
+              }
+              console.log(`${file}: ESM OK`);
+            }
+          })();
+          NODE
+
+      # Vercel rejects a Hobby deployment that carries more than 12 Serverless Functions,
+      # and every file under api/ is one function. The build succeeds and only the deploy
+      # step fails, so this belongs in the source checks, before the build — not after.
+      # See docs/codebase/VERCEL_FUNCTIONS.md.
+      - name: "Vercel function budget (Hobby: 12)"
+        run: npm run check:functions
 
       # PRD REQ-006 / TASK-008 / TRD INT-CLAIM-01: every metric-shaped number
       # in public copy must be registered in docs/CLAIMS.md with a strategy

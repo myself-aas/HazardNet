@@ -1,4 +1,5 @@
-// Vercel Serverless Function — GET /api/v1/forecasts/metadata
+// GET /api/v1/forecasts/metadata — deployed by the Vercel entry point
+// api/v1/forecasts/[action].js.
 //
 // Freshness endpoint for the "Peak Hazard Window" / "Incident Ingestion"
 // cards: newest ingested production prediction_date + ingestion timestamp +

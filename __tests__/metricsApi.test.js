@@ -1,12 +1,13 @@
 /**
  * @jest-environment node
  *
- * Vercel /api/metrics handler (backlog #5 — replaced the placeholder).
+ * Vercel /api/metrics handler (backlog #5 — replaced the placeholder), deployed through
+ * api/[endpoint].js and implemented in serverless/metrics.js.
  * Stateless endpoint exposing the forecast freshness SLO computed live from
  * the (mocked) forecast store.
  */
 import { createMocks } from 'node-mocks-http';
-import handler from '../api/metrics.js';
+import handler from '../serverless/metrics.js';
 import { getForecastStore as _getForecastStore } from '../backend/forecastStore.js';
 import { _resetForecastFreshnessCacheForTests } from '../backend/utils/forecastFreshness.js';
 

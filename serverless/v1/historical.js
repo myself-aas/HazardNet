@@ -1,4 +1,4 @@
-// Vercel Serverless Function — GET /api/v1/historical
+// GET /api/v1/historical — deployed by the Vercel entry point api/v1/[resource].js.
 import fs from 'node:fs';
 import path from 'node:path';
 import { generateGlideLinks } from '../../backend/utils/glideResolver.js';

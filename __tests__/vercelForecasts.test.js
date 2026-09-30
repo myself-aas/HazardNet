@@ -2,7 +2,8 @@
  * @jest-environment node
  */
 /**
- * Vercel serverless handler tests — api/v1/forecasts/{bulk,history,metadata}.js.
+ * Vercel serverless handler tests — serverless/v1/forecasts/{bulk,history,metadata}.js,
+ * deployed together as api/v1/forecasts/[action].js (docs/codebase/VERCEL_FUNCTIONS.md).
  *
  * These handlers are thin wrappers over the shared serving logic
  * (backend/utils/forecastServe.js) + the forecast store; the tests pin the
@@ -12,9 +13,9 @@
  * covered by __tests__/forecastServe.test.js and Express parity by
  * __tests__/api/forecasts.test.js.
  */
-const bulkHandler = require('../api/v1/forecasts/bulk.js').default;
-const historyHandler = require('../api/v1/forecasts/history.js').default;
-const metadataHandler = require('../api/v1/forecasts/metadata.js').default;
+const bulkHandler = require('../serverless/v1/forecasts/bulk.js').default;
+const historyHandler = require('../serverless/v1/forecasts/history.js').default;
+const metadataHandler = require('../serverless/v1/forecasts/metadata.js').default;
 
 const memory = [];
 const storeDouble = {

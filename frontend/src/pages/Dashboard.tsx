@@ -571,14 +571,24 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
             role="tab"
             aria-selected={activeView === tab.id}
             onClick={() => setActiveView(tab.id)}
-            className={`min-h-12 sm:h-13 px-3 sm:px-5 text-xs sm:text-sm md:text-base font-bold flex items-center justify-center gap-1.5 sm:gap-2 touch-manipulation border-b-2 whitespace-nowrap transition-all duration-200 rounded-t-md relative ${
+            className={`min-h-12 sm:h-13 px-3 sm:px-5 text-xs sm:text-sm md:text-base font-bold flex items-center justify-center gap-1.5 sm:gap-2 touch-manipulation whitespace-nowrap transition-all duration-200 rounded-t-md relative ${
  activeView === tab.id
- ? 'border-nasa-blue text-nasa-blue bg-gradient-to-b from-nasa-blue/5 to-transparent'
- : 'border-transparent text-carbon-60 hover:text-carbon-80 hover:bg-carbon-05'
+ ? 'text-nasa-blue bg-gradient-to-b from-nasa-blue/5 to-transparent'
+ : 'text-carbon-60 hover:text-carbon-80 hover:bg-carbon-05'
  }`}
           >
             <MaterialIcon name={tab.icon} className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" />
             <span className="font-semibold tracking-tight">{tab.label}</span>
+            {/* Active-tab marker: a 2px bar drawn inside the button rather than a
+                thick bottom border paired with a corner radius. The border variant
+                is the border-accent-on-rounded anti-pattern (an accent border
+                clashing with the radius); the bar keeps the same 2px weight. */}
+            {activeView === tab.id && (
+              <span
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-x-0 bottom-0 h-0.5 rounded-full bg-nasa-blue"
+              />
+            )}
           </button>
         ))}
       </motion.div>

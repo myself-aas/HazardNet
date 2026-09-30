@@ -10,7 +10,7 @@
 -- The whole ingest chain carries these fields:
 --   * the notebook writes om_* columns for every row;
 --   * backend/utils/forecastRow.js parses them and converts to human units;
---   * api/ingest.js Zod-validates all eight;
+--   * serverless/ingest.js Zod-validates all eight;
 --   * backend/forecastStore.js toApiRow() reads them back off a DB row;
 --   * frontend/src/lib/forecasts.ts types them in ForecastRow and whitelists
 --     them in the response parser.

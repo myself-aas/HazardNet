@@ -11,7 +11,7 @@ const router = express.Router();
  * POST /api/chat/query
  * Execute RAG Retrieval + Multi-Tier AI Generation.
  * Implementation lives in backend/utils/chatService.js so the Vercel
- * serverless twin (api/chat/query.js) behaves identically.
+ * serverless twin (serverless/chat/query.js) behaves identically.
  */
 router.post('/query', async (req, res) => {
   try {

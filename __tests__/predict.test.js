@@ -7,5 +7,7 @@ test('the handwritten inference and tensor request runtime is retired', () => {
     expect(existsSync(path.resolve(file))).toBe(false);
   }
   expect(readFileSync('backend/routes/predict.js', 'utf8')).toContain('serveStoredPrediction');
-  expect(readFileSync('api/predict.js', 'utf8')).toContain('serveStoredPrediction');
+  expect(readFileSync('serverless/predict.js', 'utf8')).toContain('serveStoredPrediction');
+  // …and the deployed entry point still routes /api/predict to it.
+  expect(readFileSync('api/[endpoint].js', 'utf8')).toContain("predict: () => import('../serverless/predict.js')");
 });

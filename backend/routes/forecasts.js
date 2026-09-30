@@ -270,7 +270,7 @@ router.get('/', async (req, res) => {
 // Returns forecasts for ALL 64 districts (for Mapbox heatmap)
 // ──────────────────────────────��──────────────────────────
 router.get('/bulk', async (req, res) => {
-    // Shared with the Vercel handler (api/v1/forecasts/bulk.js) — identical
+    // Shared with the Vercel handler (serverless/v1/forecasts/bulk.js) — identical
     // validation and response shape on both runtimes.
     const parsed = parseBulkQuery(req.query);
     if (parsed.error) {
@@ -308,7 +308,7 @@ router.get('/bulk', async (req, res) => {
 // can be re-exported as an archive artifact.
 // ─────────────────────────────────────────────────────────
 router.get('/history', async (req, res) => {
-    // Shared with the Vercel handler (api/v1/forecasts/history.js) —
+    // Shared with the Vercel handler (serverless/v1/forecasts/history.js) —
     // identical windowing, validation, and CSV export on both runtimes.
     const parsed = parseHistoryQuery(req.query);
     if (parsed.error) {

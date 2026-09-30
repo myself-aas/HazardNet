@@ -1,3 +1,5 @@
+// POST /api/predict — stored prediction lookup.
+// Deployed by the Vercel entry point api/[endpoint].js.
 import { serveStoredPrediction } from '../backend/utils/storedPrediction.js';
 import { guardRequest } from '../backend/middleware/serverlessGuard.js';
 

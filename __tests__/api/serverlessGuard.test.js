@@ -5,8 +5,10 @@
  *
  * Production runs on Vercel functions, where the Express rate limiters never execute —
  * so this suite tests the limiter that actually deploys, plus the invariant that keeps it
- * that way: a static scan asserts every handler under `api/**` applies the guard. A new
- * endpoint added without it fails here rather than in production.
+ * that way: a static scan asserts every deployed handler applies the guard. The handlers
+ * live in `serverless/**` (the files under `api/` are the entry points that dispatch to
+ * them — see docs/codebase/VERCEL_FUNCTIONS.md), so a new endpoint added without the guard
+ * fails here rather than in production.
  */
 
 import { readFileSync, readdirSync } from 'node:fs';
@@ -173,19 +175,25 @@ describe('guardRequest', () => {
 });
 
 describe('the deployed handler actually enforces it', () => {
-  it('rate-limits /api/v1/alerts/policy through the real handler', async () => {
-    const { default: handler } = await import('../../api/v1/alerts/policy.js');
-    const req = { method: 'GET', headers: { 'x-forwarded-for': '203.0.113.42' }, query: {} };
+  it('rate-limits /api/v1/alerts/policy through the real deployed entry point', async () => {
+    const { default: handler } = await import('../../api/v1/alerts/[action].js');
+    // One request object per call, as Vercel gives each invocation: the entry point routes
+    // on the segment it finds, then removes it so the handler sees a clean query.
+    const request = () => ({
+      method: 'GET',
+      headers: { 'x-forwarded-for': '203.0.113.42' },
+      query: { action: 'policy' },
+    });
 
     for (let i = 0; i < BUCKETS.alerts.limit; i += 1) {
       const res = makeRes();
-      await handler(req, res);
+      await handler(request(), res);
       expect(res.statusCode).toBe(200);
       expect(res.body.levels).toBeDefined();
     }
 
     const blocked = makeRes();
-    await handler(req, blocked);
+    await handler(request(), blocked);
     expect(blocked.statusCode).toBe(429);
     expect(blocked.body.retry_after_seconds).toBeGreaterThan(0);
   }, 30_000);
@@ -198,9 +206,10 @@ describe('every serverless handler applies the guard', () => {
     return entry.name.endsWith('.js') ? [full] : [];
   });
 
-  it('finds no unguarded handler under api/', () => {
-    const files = walk(join(process.cwd(), 'api'));
-    expect(files.length).toBeGreaterThanOrEqual(13);
+  it('finds no unguarded handler under serverless/', () => {
+    const files = walk(join(process.cwd(), 'serverless'));
+    // 18 routed handlers + the dispatcher, which guards the paths that reach no handler.
+    expect(files.length).toBeGreaterThanOrEqual(18);
     const unguarded = files.filter((file) => !readFileSync(file, 'utf8').includes('guardRequest('));
     expect(unguarded).toEqual([]);
   });

@@ -7,8 +7,8 @@
  * the Vercel deployment — so every message in production hit a 404 (HTML) and
  * the widget replied "There was an error communicating with the AI" for every
  * message. This module holds the implementation ONCE so the Express route and
- * the Vercel serverless functions (api/chat/query.js,
- * api/chat/sample-questions.js) behave identically by construction — the same
+ * the Vercel serverless functions (serverless/chat/query.js,
+ * serverless/chat/sample-questions.js) behave identically by construction — the same
  * split backend/utils/forecastServe.js already uses for the forecast API.
  */
 

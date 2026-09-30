@@ -1,4 +1,5 @@
-// Vercel Serverless Function — POST /api/v1/alerts/review
+// POST /api/v1/alerts/review — deployed by the Vercel entry point
+// api/v1/alerts/[action].js.
 //
 // The §1.6 human-in-the-loop decision: {"id": "...", "action": "approve"|"reject"|
 // "submit-for-review"|"supersede", "reason": "..."} plus, when the pipeline API key

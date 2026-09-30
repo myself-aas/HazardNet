@@ -1,4 +1,5 @@
-// Vercel Serverless Function — GET /api/v1/forecasts/history
+// GET /api/v1/forecasts/history — deployed by the Vercel entry point
+// api/v1/forecasts/[action].js.
 // (see backend/routes/forecasts.js for the query contract:
 // ?from=YYYY-MM-DD&to=YYYY-MM-DD&horizon=7_days|15_days&district_id=N&format=json|csv)
 

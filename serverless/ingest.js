@@ -1,4 +1,5 @@
-// Vercel serverless function to ingest forecast chunks
+// POST /api/ingest — ingest forecast chunks: { chunk: Array<{...}> }.
+// Deployed by the Vercel entry point api/[endpoint].js.
 // Expected payload: { chunk: Array<{...}> }
 
 import { getForecastStore } from '../backend/forecastStore.js';

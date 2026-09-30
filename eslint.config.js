@@ -94,7 +94,10 @@ export default tseslint.config(
     // are Node CJS too and must not lint as ESM modules (12 errors on a clean
     // checkout, 2026-09-22 — the ESLint step of ci.yml `verify` was red on the
     // app-releases branch merge).
-    files: ['backend/**/*.js', 'api/**/*.js', 'utils/**/*.js', 'scripts/**/*.js', 'scripts/**/*.mjs', '**/*.config.js', '*.config.ts', 'e2e/**/*.ts'],
+    // `serverless/**/*.js` is listed because the Vercel handlers moved out of `api/`
+    // (Hobby 12-function budget, docs/codebase/VERCEL_FUNCTIONS.md); without it
+    // `console`/`process`/`URL` are no-undef and the 0-error policy goes red.
+    files: ['backend/**/*.js', 'api/**/*.js', 'serverless/**/*.js', 'utils/**/*.js', 'scripts/**/*.js', 'scripts/**/*.mjs', '**/*.config.js', '*.config.ts', 'e2e/**/*.ts'],
     languageOptions: { globals: { ...globals.node } },
     rules: {
       'no-console': 'off',

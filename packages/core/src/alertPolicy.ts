@@ -1,7 +1,7 @@
 /**
  * Alert policy constants and helpers.
  *
- * Canonical values match `api/v1/alerts/policy.js` and the public /alerts page
+ * Canonical values match `serverless/v1/alerts/policy.js` and the public /alerts page
  * documentation (alert-policy/1.0.0). These numbers are shared between web and
  * mobile so both platforms draw severity bands consistently.
  *

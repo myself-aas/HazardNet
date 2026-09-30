@@ -1,6 +1,7 @@
 /**
- * Vercel serverless Prometheus metrics endpoint (backlog #5 — replaced the
- * former placeholder). Stateless by design: per-instance counters would lie
+ * Prometheus metrics endpoint for GET /api/metrics (backlog #5 — replaced the
+ * former placeholder). Deployed by the Vercel entry point api/[endpoint].js.
+ * Stateless by design: per-instance counters would lie
  * about a fleet of lambdas, so this exposes the one metric that is honestly
  * computable per invocation — the forecast freshness SLO
  * (`hazardnet_forecast_age_hours`), computed live from the forecast store

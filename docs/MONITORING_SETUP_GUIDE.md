@@ -62,7 +62,7 @@ it is deliberately not a metrics stack:
 The metric that stays on the Prometheus path is forecast age
 (`hazardnet_forecast_age_hours`, see §1.2 and `monitoring/alerts.yml`); everything else the
 status page states is derived from committed files, because a per-invocation serverless
-counter would lie about a fleet (see `api/metrics.js`).
+counter would lie about a fleet (see `serverless/metrics.js`).
 
 ## 2. Grafana Dashboard Setup
 

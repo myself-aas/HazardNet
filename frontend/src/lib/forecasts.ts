@@ -16,7 +16,7 @@ import type { DistrictData } from '../data/bangladeshDistricts';
 
 // ─────────────────────────────────────────────────────────────────────────
 // Types (mirror backend/routes/forecasts.js GET /bulk response + the stored
-// Firestore doc shape written by POST /update / api/ingest.js)
+// Firestore doc shape written by POST /update / serverless/ingest.js)
 // ─────────────────────────────────────────────────────────────────────────
 
 export const ADVISORY_TIERS = ['SEVERE', 'WARNING', 'WATCH', 'NORMAL'] as const;

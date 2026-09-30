@@ -74,7 +74,7 @@
   - External network calls in unit tests are mocked using `jest.fn()` or `node-mocks-http` (`__tests__/api/forecasts.test.js`).
 - Coverage expectation:
   - Global threshold defined in `jest.config.cjs:70-76`: statements 32%, branches 35%, functions 30%, lines 31%.
-  - Scope: `backend/**/*.js`, `api/**/*.js`, `frontend/src/utils/**/*.ts`, and all `packages/*/src/**/*.ts`.
+  - Scope: `backend/**/*.js`, `api/**/*.js`, `serverless/**/*.js`, `frontend/src/utils/**/*.ts`, and all `packages/*/src/**/*.ts`.
 
 ### 6) Evidence
 

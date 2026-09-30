@@ -5,7 +5,7 @@ import crypto from 'node:crypto';
  *
  * - Comparison is constant-time (timingSafeEqual) to avoid timing side channels.
  * - Fail-closed: when BACKEND_API_KEY is not configured the endpoint returns
- *   503 instead of silently allowing unauthenticated writes. api/ingest.js
+ *   503 instead of silently allowing unauthenticated writes. serverless/ingest.js
  *   already behaved this way, so production must set the key regardless.
  */
 export function verifyApiKey(req) {
