@@ -153,101 +153,101 @@ export const RiskAnalytics: React.FC<RiskAnalyticsProps> = ({ onSelectDistrict }
   return (
     <div className="space-y-6">
 
-      {/* Top Banner KPI Header */}
-      <div className="bg-white border border-carbon-20/90 rounded-3xl p-6 md:p-8 shadow-md relative overflow-hidden">
+      {/* Top Banner KPI Header — Modernized Mobile-First */}
+      <div className="bg-white border border-carbon-10 rounded-lg sm:rounded-[20px] md:rounded-[28px] lg:rounded-3xl p-4 sm:p-6 md:p-8 shadow-sm relative overflow-hidden">
         
         {/* Subtle Ambient Glow */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-carbon-10/50 rounded-full blur-3xl pointer-events-none"></div>
+        <div className="absolute top-0 right-0 w-64 sm:w-96 h-64 sm:h-96 bg-carbon-10/30 rounded-full blur-3xl pointer-events-none"></div>
 
-        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-          <div>
-            <div className="flex items-center gap-2 mb-1.5">
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider bg-rose-50 text-rose-700 border border-rose-200/80">
-                Multi-Regional Trend Intelligence
+        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-3 sm:gap-4 md:gap-6">
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
+              <span className="px-2 sm:px-2.5 py-0.5 rounded-md sm:rounded-full text-[9px] sm:text-[10px] font-mono font-bold uppercase tracking-wider bg-rose-50 text-rose-700 border border-rose-200/80 whitespace-nowrap">
+                Regional Trends
               </span>
-              <span className="text-carbon-30">•</span>
-              <span className="text-xs font-mono text-carbon-60 font-semibold">
-                Recharts Powered Time-Series
+              <span className="text-carbon-30 hidden sm:inline">•</span>
+              <span className="text-xs font-mono text-carbon-60 font-semibold hidden sm:inline">
+                Time-Series Analytics
               </span>
             </div>
-            <h2 className="text-2xl md:text-3xl font-extrabold text-carbon-90 tracking-tight flex items-center gap-2">
-              Regional Risk Analytics & Climate Trends
+            <h2 className="text-lg sm:text-2xl md:text-3xl font-extrabold text-carbon-90 tracking-tight flex items-center gap-2 leading-tight">
+              Risk Analytics
             </h2>
-            <p className="text-xs md:text-sm text-carbon-60 mt-1 max-w-3xl">
-              Multi-year historical and neural model projected trend analysis for agricultural disaster hazards in Bangladesh divisions (2018-2026).
+            <p className="text-xs md:text-sm text-carbon-60 mt-1.5 sm:mt-2 line-clamp-2 sm:line-clamp-none">
+              Multi-year hazard analysis across Bangladesh divisions (2018-2026).
             </p>
           </div>
 
           {/* Metric Mode Toggle */}
-          <div className="flex items-center bg-carbon-10/80 p-1.5 rounded-2xl border border-carbon-20/90 self-start lg:self-center shadow-2xs">
+          <div className="flex items-center bg-carbon-10/80 p-1 sm:p-1.5 rounded-lg sm:rounded-2xl border border-carbon-20 self-start lg:self-center shadow-sm shrink-0">
             <button
               onClick={() => setMetricMode('severity')}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold font-mono transition-all flex items-center gap-1.5 cursor-pointer ${
+              className={`px-2 sm:px-3.5 py-1 sm:py-1.5 rounded-md sm:rounded-xl text-xs font-bold font-mono transition-all flex items-center gap-1 cursor-pointer whitespace-nowrap ${
                 metricMode === 'severity'
                   ? 'bg-white text-carbon-90 shadow-sm'
                   : 'text-carbon-60 hover:text-carbon-90'
               }`}
             >
-              <span>Severity Index (%)</span>
+              <span className="hidden sm:inline">Severity</span><span className="sm:hidden">Sev</span>
             </button>
             <button
               onClick={() => setMetricMode('frequency')}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold font-mono transition-all flex items-center gap-1.5 cursor-pointer ${
+              className={`px-2 sm:px-3.5 py-1 sm:py-1.5 rounded-md sm:rounded-xl text-xs font-bold font-mono transition-all flex items-center gap-1 cursor-pointer whitespace-nowrap ${
                 metricMode === 'frequency'
                   ? 'bg-white text-carbon-90 shadow-sm'
                   : 'text-carbon-60 hover:text-carbon-90'
               }`}
             >
-              <span>Occurrence Count (Events/yr)</span>
+              <span className="hidden sm:inline">Frequency</span><span className="sm:hidden">Freq</span>
             </button>
           </div>
         </div>
 
-        {/* 4 KPI Stat Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-6 pt-5 border-t border-carbon-20/90">
+        {/* 4 KPI Stat Cards — Responsive Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3 md:gap-4 mt-4 sm:mt-6 pt-3 sm:pt-5 border-t border-carbon-20/90">
           
-          <div className="bg-carbon-05/80 border border-carbon-20/90 p-4 rounded-2xl space-y-1 shadow-2xs hover:shadow-md transition-all">
-            <span className="text-[10px] font-mono text-carbon-60 uppercase tracking-wider block font-bold">
-              Highest Risk Region
+          <div className="bg-carbon-05/80 border border-carbon-10 p-3 sm:p-4 rounded-lg sm:rounded-2xl space-y-1 shadow-sm hover:shadow-md transition-all">
+            <span className="text-[8px] sm:text-[10px] font-mono text-carbon-60 uppercase tracking-wider block font-bold">
+              Highest Risk
             </span>
-            <div className="flex items-baseline justify-between">
-              <span className="text-base font-extrabold text-carbon-90">Sylhet Haor Basin</span>
+            <div className="flex flex-col gap-0.5">
+              <span className="text-sm sm:text-base font-extrabold text-carbon-90 truncate">Sylhet Haor</span>
               <span className="text-xs font-bold text-rose-600 font-mono">Flash Flood</span>
             </div>
-            <p className="text-[11px] text-carbon-60">Pre-monsoon flash flood vulnerability</p>
+            <p className="text-[10px] sm:text-[11px] text-carbon-60 line-clamp-1 sm:line-clamp-2">Pre-monsoon vulnerability</p>
           </div>
 
-          <div className="bg-carbon-05/80 border border-carbon-20/90 p-4 rounded-2xl space-y-1 shadow-2xs hover:shadow-md transition-all">
-            <span className="text-[10px] font-mono text-carbon-60 uppercase tracking-wider block font-bold">
-              Fastest Severity Spike
+          <div className="bg-carbon-05/80 border border-carbon-10 p-3 sm:p-4 rounded-lg sm:rounded-2xl space-y-1 shadow-sm hover:shadow-md transition-all">
+            <span className="text-[8px] sm:text-[10px] font-mono text-carbon-60 uppercase tracking-wider block font-bold">
+              Fastest Spike
             </span>
-            <div className="flex items-baseline justify-between">
-              <span className="text-base font-extrabold text-amber-700">Barind Tract (Rajshahi)</span>
-              <span className="text-xs font-bold text-amber-700 font-mono">Rising trend</span>
+            <div className="flex flex-col gap-0.5">
+              <span className="text-sm sm:text-base font-extrabold text-amber-700 truncate">Rajshahi</span>
+              <span className="text-xs font-bold text-amber-700 font-mono">Rising</span>
             </div>
-            <p className="text-[11px] text-carbon-60">Intensified seasonal drought & heat stress</p>
+            <p className="text-[10px] sm:text-[11px] text-carbon-60 line-clamp-1 sm:line-clamp-2">Drought & heat</p>
           </div>
 
-          <div className="bg-carbon-05/80 border border-carbon-20/90 p-4 rounded-2xl space-y-1 shadow-2xs hover:shadow-md transition-all">
-            <span className="text-[10px] font-mono text-carbon-60 uppercase tracking-wider block font-bold">
-              Coastal Cyclone Hotspot
+          <div className="bg-carbon-05/80 border border-carbon-10 p-3 sm:p-4 rounded-lg sm:rounded-2xl space-y-1 shadow-sm hover:shadow-md transition-all">
+            <span className="text-[8px] sm:text-[10px] font-mono text-carbon-60 uppercase tracking-wider block font-bold">
+              Cyclone Zone
             </span>
-            <div className="flex items-baseline justify-between">
-              <span className="text-base font-extrabold text-rose-700">Satkhira & Cox's Bazar</span>
-              <span className="text-xs font-bold text-rose-600 font-mono">Storm surge</span>
+            <div className="flex flex-col gap-0.5">
+              <span className="text-sm sm:text-base font-extrabold text-rose-700 truncate">Coastal</span>
+              <span className="text-xs font-bold text-rose-600 font-mono">Storm</span>
             </div>
-            <p className="text-[11px] text-carbon-60">Tropical storm surge peak in Oct-Nov</p>
+            <p className="text-[10px] sm:text-[11px] text-carbon-60 line-clamp-1 sm:line-clamp-2">Oct-Nov peak</p>
           </div>
 
-          <div className="bg-carbon-05/80 border border-carbon-20/90 p-4 rounded-2xl space-y-1 shadow-2xs hover:shadow-md transition-all">
-            <span className="text-[10px] font-mono text-carbon-60 uppercase tracking-wider block font-bold">
-              Protected Crop Acreage
+          <div className="bg-carbon-05/80 border border-carbon-10 p-3 sm:p-4 rounded-lg sm:rounded-2xl space-y-1 shadow-sm hover:shadow-md transition-all">
+            <span className="text-[8px] sm:text-[10px] font-mono text-carbon-60 uppercase tracking-wider block font-bold">
+              Protected Area
             </span>
-            <div className="flex items-baseline justify-between">
-              <span className="text-base font-extrabold text-emerald-700">Coastal & Haor Belts</span>
-              <span className="text-xs font-bold text-emerald-600 font-mono">Advisory active</span>
+            <div className="flex flex-col gap-0.5">
+              <span className="text-sm sm:text-base font-extrabold text-emerald-700 truncate">Belt Zones</span>
+              <span className="text-xs font-bold text-emerald-600 font-mono">Advisory</span>
             </div>
-            <p className="text-[11px] text-carbon-60">Early harvest advisories for pre-monsoon windows</p>
+            <p className="text-[10px] sm:text-[11px] text-carbon-60 line-clamp-1 sm:line-clamp-2">Early harvest</p>
           </div>
 
         </div>
@@ -255,21 +255,21 @@ export const RiskAnalytics: React.FC<RiskAnalyticsProps> = ({ onSelectDistrict }
       </div>
 
       {/* Main Chart 1: Multi-Year Regional Trend Lines */}
-      <div className="bg-white border border-carbon-20/90 rounded-3xl p-6 sm:p-8 shadow-md space-y-4">
+      <div className="bg-white border border-carbon-10 rounded-lg sm:rounded-[20px] md:rounded-[28px] lg:rounded-3xl p-4 sm:p-6 md:p-8 shadow-sm space-y-3 sm:space-y-4">
         
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-carbon-20 pb-3">
-          <div>
-            <h3 className="text-base font-bold text-carbon-90 flex items-center gap-2">
-              Regional Multi-Year Hazard Occurrence Trends (2018-2026)
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-3 border-b border-carbon-20 pb-2.5 sm:pb-3">
+          <div className="min-w-0 flex-1">
+            <h3 className="text-sm sm:text-base font-bold text-carbon-90 flex items-center gap-1.5 sm:gap-2">
+              Hazard Occurrence Trends
             </h3>
-            <p className="text-xs text-carbon-60">
-              Interactive Recharts line trajectories showing regional escalation curves for Bangladesh
+            <p className="text-xs text-carbon-60 mt-0.5 line-clamp-2">
+              Regional escalation curves 2018-2026
             </p>
           </div>
 
           {/* Region Filter Buttons */}
-          <div className="flex flex-wrap items-center gap-1.5">
-            <span className="text-[11px] text-carbon-60 font-mono mr-1">Filter Region:</span>
+          <div className="flex flex-wrap items-center gap-1 overflow-x-auto">
+            <span className="text-[10px] sm:text-[11px] text-carbon-60 font-mono mr-0.5 sm:mr-1 whitespace-nowrap">Filter:</span>
             {['All', 'Sylhet', 'Rangpur', 'Rajshahi', 'Khulna', 'Chattogram', 'Dhaka'].map((reg) => (
               <button
                 key={reg}
