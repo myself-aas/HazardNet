@@ -24,7 +24,7 @@
 // <figcaption id="front-door-run-visual-caption">
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useReducedMotion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import MaterialIcon from '../MaterialIcon';
 import { Interactive } from '../interactive/Interactive';
 import { useWebFrame, interpolate, Easing } from '../../lib/motion-interpolate';
@@ -189,8 +189,15 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
       )}
 
       {freshness && (
-        <div className="mt-4 space-y-4 lg:space-y-5">
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:gap-4">
           {/* ── coverage of the last run ─────────────────────────────────── */}
+          <motion.div
+            initial={reduceMotion ? false : { opacity: 0, y: 14 }}
+            whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.2 }}
+            transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+            className="group rounded-xl border border-carbon-20 bg-gradient-to-br from-white to-carbon-05 p-4 shadow-[0_8px_30px_rgba(20,30,50,0.06)] transition-shadow hover:shadow-[0_12px_34px_rgba(20,30,50,0.12)] sm:p-5"
+          >
           <div>
             <div className="flex flex-wrap items-center justify-between gap-2">
               <span className="text-xs font-bold uppercase tracking-wider text-carbon-80">
@@ -263,8 +270,17 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
             </p>
           </div>
 
+          </motion.div>
+
           {/* ── what the run published ───────────────────────────────────── */}
-          <div className="border-t border-carbon-10 pt-4">
+          <motion.div
+            initial={reduceMotion ? false : { opacity: 0, y: 14 }}
+            whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.2 }}
+            transition={{ duration: 0.45, delay: 0.08, ease: [0.16, 1, 0.3, 1] }}
+            className="group rounded-xl border border-carbon-20 bg-gradient-to-br from-white to-carbon-05 p-4 shadow-[0_8px_30px_rgba(20,30,50,0.06)] transition-shadow hover:shadow-[0_12px_34px_rgba(20,30,50,0.12)] sm:p-5"
+          >
+          <div>
             <div className="flex items-center justify-between gap-2">
               <span className="text-xs font-bold uppercase tracking-wider text-carbon-80">
                 {t('frontdoor.runVisual.outcome')}
@@ -303,8 +319,17 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
             </div>
           </div>
 
+          </motion.div>
+
           {/* ── the artifacts this deployment ships, and how old they are ─── */}
-          <div className="border-t border-carbon-10 pt-4">
+          <motion.div
+            initial={reduceMotion ? false : { opacity: 0, y: 14 }}
+            whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.2 }}
+            transition={{ duration: 0.45, delay: 0.16, ease: [0.16, 1, 0.3, 1] }}
+            className="group rounded-xl border border-carbon-20 bg-gradient-to-br from-white to-carbon-05 p-4 shadow-[0_8px_30px_rgba(20,30,50,0.06)] transition-shadow hover:shadow-[0_12px_34px_rgba(20,30,50,0.12)] sm:p-5 sm:col-span-2"
+          >
+          <div>
             <div className="flex items-center justify-between gap-2">
               <span className="text-xs font-bold uppercase tracking-wider text-carbon-80">
                 {t('frontdoor.runVisual.artifacts')}
@@ -337,9 +362,18 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
             </ul>
           </div>
 
+          </motion.div>
+
           {/* ── the run's own honesty notes, verbatim — expandable inline (audit #9) ── */}
           {honesty.length > 0 && (
-            <div className="border-t border-carbon-10 pt-4">
+            <motion.div
+              initial={reduceMotion ? false : { opacity: 0, y: 14 }}
+              whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.2 }}
+              transition={{ duration: 0.45, delay: 0.24, ease: [0.16, 1, 0.3, 1] }}
+              className="group rounded-xl border border-carbon-20 bg-gradient-to-br from-white to-carbon-05 p-4 shadow-[0_8px_30px_rgba(20,30,50,0.06)] transition-shadow hover:shadow-[0_12px_34px_rgba(20,30,50,0.12)] sm:col-span-2 sm:p-5"
+            >
+            <div>
               <div className="flex items-center justify-between gap-2">
                 <span className="text-xs font-bold uppercase tracking-wider text-carbon-80">
                   {t('frontdoor.runVisual.honesty')}
@@ -393,6 +427,7 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
                 )}
               </div>
             </div>
+            </motion.div>
           )}
 
           {/* ── provenance line ────────────────────────────────────────── */}
