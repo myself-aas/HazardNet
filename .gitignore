@@ -52,6 +52,8 @@ bun.lock
 .venv/
 .vercel
 .vscode/
+.vs/
+*.vsidx
 /blob-report
 /dist
 /playwright-report
