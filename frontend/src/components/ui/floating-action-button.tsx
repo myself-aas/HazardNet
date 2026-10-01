@@ -43,7 +43,7 @@ export function AnimatedSocialIcons({
           <motion.button
             className={cn(
               buttonSize,
-              "rounded-full flex items-center justify-center shadow-xl",
+              "rounded-full flex items-center justify-center shadow-fab",
               "bg-primary hover:bg-primary/90 transition-colors"
             )}
             onClick={() => setActive(!active)}
@@ -77,8 +77,7 @@ export function AnimatedSocialIcons({
               key={index}
               className={cn(
                 buttonSize,
-                "absolute right-0 bottom-0 rounded-full flex items-center justify-center",
-                "bg-background shadow-lg hover:shadow-xl",
+                "absolute right-0 bottom-0 glass-rail-button",
                 // The border lives on the control (not here): a `border-box` wrapper of
                 // 44 px with a 1 px border leaves the button inside it 42 px, which is
                 // 2 px short of the 44 px target the audit measures.
@@ -119,11 +118,11 @@ export function AnimatedSocialIcons({
                   aria-hidden={!active}
                   tabIndex={active ? 0 : -1}
                   onClick={onClick}
-                  className="flex items-center justify-center w-full h-full cursor-pointer rounded-full border border-border focus-visible:ring-2 focus-visible:ring-nasa-blue/60 focus-visible:ring-offset-2 focus-visible:outline-none"
+                  className="flex items-center justify-center w-full h-full cursor-pointer rounded-full focus-visible:ring-2 focus-visible:ring-nasa-blue/60 focus-visible:ring-offset-2 focus-visible:outline-none"
                 >
                   <Icon
                     size={iconSize}
-                    className="text-muted-foreground transition-all hover:text-foreground hover:scale-110"
+                    className="text-carbon-70 transition-all hover:text-carbon-90 hover:scale-110"
                   />
                 </a>
               ) : (
@@ -134,11 +133,11 @@ export function AnimatedSocialIcons({
                   aria-hidden={!active}
                   tabIndex={active ? 0 : -1}
                   onClick={onClick}
-                  className="flex items-center justify-center w-full h-full cursor-pointer rounded-full border border-border focus-visible:ring-2 focus-visible:ring-nasa-blue/60 focus-visible:ring-offset-2 focus-visible:outline-none"
+                  className="flex items-center justify-center w-full h-full cursor-pointer rounded-full focus-visible:ring-2 focus-visible:ring-nasa-blue/60 focus-visible:ring-offset-2 focus-visible:outline-none"
                 >
                   <Icon
                     size={iconSize}
-                    className="text-muted-foreground transition-all hover:text-foreground hover:scale-110"
+                    className="text-carbon-70 transition-all hover:text-carbon-90 hover:scale-110"
                   />
                 </button>
               )}

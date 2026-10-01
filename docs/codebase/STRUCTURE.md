@@ -1,5 +1,9 @@
 # Codebase Structure
 
+> **Mapping pass:** 2026-09-30 (second pass, commit `deff0d9`). Claims in this document
+> were verified against the working tree; the commands used are listed in the Evidence
+> section, and the full run list is summarised in `CONCERNS.md`.
+
 ## Core Sections (Required)
 
 ### 1) Top-Level Map
@@ -14,8 +18,8 @@
 | `apps/` | Native clients: `apps/mobile` (Expo/React Native), `apps/windows` (React Native for Windows + C++ shell) | `apps/mobile/package.json`, `apps/windows/package.json` |
 | `Models/` | Trained model artifacts + registry/version handshake — unadvertised, never served | `Models/REGISTRY.json`, `Models/VERSION.json`, `backend/server.js` |
 | `scripts/` | Pipeline, snapshot-building, QA and gate tooling (`.mjs` + `db/`, `lib/`, `qa/`, `tests/`) | `scripts/`, `.github/workflows/ci.yml` |
-| `__tests__/` | Root Jest suites (69 `*.test.js` files) + `__mocks__/` for React Native modules | `__tests__/`, `jest.config.cjs` |
-| `e2e/` | Playwright specs | `e2e/*.spec.ts`, `playwright.config.ts` |
+| `__tests__/` | Root Jest suites (71 test files — 53 top-level `*.test.js` plus suites in `api/`, `alerts/` and `mobile/`) + `__mocks__/` for React Native modules | `__tests__/`, `jest.config.cjs`, `npx jest --listTests` |
+| `e2e/` | Playwright specs (6 `*.spec.ts` + `helpers.ts`) | `e2e/*.spec.ts`, `playwright.config.ts` |
 | `docs/` | PRD, TRD, publication policy, ops runbooks, secrets guide, audits, `codebase/` | `docs/PRD.md`, `docs/TRD.md` |
 | `monitoring/` | Prometheus scrape config, alert rules, Grafana dashboard | `monitoring/prometheus.yml`, `monitoring/alerts.yml`, `monitoring/grafana-dashboard.json` |
 | `data/` | Generated/committed runtime data: `site-health/latest.json`, NASA HDS tokens | `data/site-health/latest.json`, `data/design/nasa-hds/tokens.json` |
@@ -24,7 +28,7 @@
 | `skills/` | In-repo domain knowledge packs (hazard protocols, institutions, agronomy…) | `skills/01_tensor_interpretation/`, `skills/03_hazard_protocols/` |
 | `assets/` | Bundled docs (`MODEL_CARD.md`) and icon metadata | `assets/docs/MODEL_CARD.md`, `assets/icons/hazard_profiles.json` |
 | `utils/` | Single file: the minimal serverless logger | `utils/logger.js` |
-| `.env.example` | Placeholder-only environment template for all three injection surfaces (Vercel, GitHub Actions, local `.env`) | `.env.example`, `docs/ENVIRONMENT_SECRETS.md` §0/§2 |
+| `.env` (untracked) | Local environment file — the only env file the workflow expects, and there is **no committed template**: `.env.example` is absent and is also matched by `.gitignore` line 47 (`.env.*`), so the line-2 `!.env.example` negation never takes effect | `docs/ENVIRONMENT_SECRETS.md` §0, `.gitignore`, `git check-ignore -v .env.example` |
 | `.github/` | CI workflows + release workflow templates + Dependabot | `.github/workflows/ci.yml`, `.github/workflow-templates/` |
 | `.vs/` | Visual Studio solution state for the Windows app (editor artefact, not source) | `.vs/HazardNet.slnx` |
 
@@ -80,5 +84,5 @@
 - `frontend/tsconfig.json` (`paths`), `jest.config.cjs` (`moduleNameMapper`), `apps/mobile/jest.config.cjs`
 - `packages/core/src/index.ts` (barrel + platform-agnostic constraint)
 - `frontend/scripts/prerender.mjs`, `frontend/package.json` (`build`)
-- `docs/codebase/VERCEL_FUNCTIONS.md` (function-budget arithmetic)
-- `.env.example` (committed env template), `backend/security/csp.js` (cross-deployment CSP source)
+- `docs/codebase/VERCEL_FUNCTIONS.md` (function-budget arithmetic); `frontend/vercel.json` (second Vercel config, mirrored CSP/redirects)
+- `backend/security/csp.js` (cross-deployment CSP source); terminal evidence `git check-ignore -v .env.example` → `.gitignore:47:.env.*` (no committed env template)

@@ -144,15 +144,28 @@ jobs:
         shell: bash
         run: |
           set -uo pipefail
-          TARGET_URL="${SITE_URL%/}"
-          # If apex domain is used, probe the canonical host www.hazardnet.live to evaluate post-redirect headers
-          if [[ "$TARGET_URL" == "https://hazardnet.live" ]]; then
-            TARGET_URL="https://www.hazardnet.live"
+          # Probe whatever host actually answers, by following the redirect chain
+          # from $SITE_URL and reading %{url_effective}. The step used to rewrite
+          # the apex to a hard-coded www. canonical host first, on the assumption
+          # that the apex 308s there. When www.hazardnet.live stopped resolving
+          # (NXDOMAIN) curl exited 6 on the first hop and — because GitHub's
+          # default bash runs with `-e` — the step died before its own fallback
+          # could run, so every scheduled probe reported a site outage while the
+          # homepage and deep-link probes were green. A redirect that leaves the
+          # production domain is still caught by the homepage probe above.
+          FINAL_URL=$(curl -sSL -o /dev/null -w '%{url_effective}' --max-redirs 5 --max-time 30 "$SITE_URL/" 2>/dev/null || true)
+          if [ -z "$FINAL_URL" ]; then
+            FINAL_URL="${SITE_URL%/}/"
           fi
+          echo "[headers] probing $FINAL_URL (redirect target of $SITE_URL/)"
           # Use curl with -D - (dump headers) over standard GET to ensure edge CDN headers are returned
-          HEADERS=$(curl -sSL -D - -o /dev/null --max-redirs 5 --max-time 30 "$TARGET_URL/" | tr -d '\r')
+          HEADERS=$(curl -sSL -D - -o /dev/null --max-redirs 5 --max-time 30 "$FINAL_URL" 2>/dev/null | tr -d '\r' || true)
           if [ -z "$HEADERS" ]; then
-            HEADERS=$(curl -sSI -L --max-redirs 5 --max-time 30 "$SITE_URL/" | tr -d '\r')
+            HEADERS=$(curl -sSI -L --max-redirs 5 --max-time 30 "$FINAL_URL" 2>/dev/null | tr -d '\r' || true)
+          fi
+          if [ -z "$HEADERS" ]; then
+            echo "::error::no HTTP response headers from $FINAL_URL — the site did not answer the header probe"
+            exit 1
           fi
           FAILED=0
           require () {

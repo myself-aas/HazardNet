@@ -63,6 +63,8 @@ interface LiveMapViewProps {
   selectedDivision?: string;
   onSelectDivision?: (divisionName: string) => void;
   onOpenDisasterModal?: (districtId: string) => void;
+  /** Opens the full-screen console's AI advisory drawer, if there is one. */
+  onOpenAdvisory?: () => void;
   pinpointLat?: number;
   pinpointLng?: number;
   isFullScreen?: boolean;
@@ -78,6 +80,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
   onSelectDistrict,
   selectedDistrictId,
   onOpenDisasterModal,
+  onOpenAdvisory,
   pinpointLat,
   pinpointLng,
   isFullScreen = false,
@@ -196,6 +199,11 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
       }
     },
     onAutoLocateDistrict: (district) => {
+      // The first-launch auto-locate (up to ~13.5 s: 10 s GPS + 3.5 s IP) must
+      // never override an explicit selection — a deep link, a palette pick or a
+      // map click that landed while the lookup was running. Without this guard
+      // the late GPS/IP result replaced the district the user had just chosen.
+      if (selectedDistrictId) return;
       if (onSelectDistrict) {
         onSelectDistrict({
           id: district.id,
@@ -1247,7 +1255,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
           ? 'w-full h-full min-h-[360px] lg:min-h-[560px] h-dvh bg-carbon-05 overflow-hidden text-carbon-90 relative flex flex-col'
           : className
           ? className
-          : `w-full ${customHeight || 'h-full min-h-[360px] lg:min-h-[560px]'} bg-carbon-10 overflow-hidden text-carbon-90 relative flex flex-col border border-carbon-20`
+          : `w-full ${customHeight || 'h-full min-h-[360px] lg:min-h-[560px]'} bg-carbon-10 overflow-hidden text-carbon-90 relative flex flex-col border border-carbon-20 rounded-2xl shadow-md`
       }
     >
       {!isFullScreen && (
@@ -1340,7 +1348,11 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
         {currentSelected && !inspectedPoint && (
           <div
             data-testid="district-forecast-slot"
-            className="lg:absolute lg:top-4 lg:right-4 lg:z-[var(--z-sticky)] lg:w-[320px] lg:max-w-[calc(100%-2rem)] shrink-0 w-full border-t lg:border-t-0 border-carbon-20 bg-white"
+            /* `relative z-20` keeps the in-flow mobile card above the overlay HUD
+               (its attribution bar and hazard-action cluster are absolute
+               `z-[var(--z-sticky)]` = 10 children of the `inset-0` stage overlay and
+               used to swallow the card's primary action at phone widths). */
+            className="relative z-20 lg:absolute lg:top-4 lg:right-4 lg:w-[320px] lg:max-w-[calc(100%-2rem)] shrink-0 w-full border-t lg:border-t-0 border-carbon-20 bg-white"
           >
             <DistrictForecastCard
               district={currentSelected}
@@ -1348,6 +1360,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                 onSelectDistrict?.(null as any);
               }}
               onOpenAnalytics={(districtId) => navigate(`/forecast/district/${districtId}`)}
+              onOpenAdvisory={onOpenAdvisory}
             />
           </div>
         )}
@@ -2376,10 +2389,10 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                     mapInstanceRef.current.flyTo([23.8103, 90.4125], 7, { duration: 1.2 });
                   }
                 }}
-                className="min-h-[44px] px-4 py-2 bg-carbon-90 text-white font-semibold text-sm flex items-center gap-2 touch-manipulation"
+                className="min-h-[44px] px-4 py-2 glass-pill text-carbon-90 font-semibold text-sm flex items-center gap-2 touch-manipulation hover:bg-white transition-colors"
               >
                 <span className="flex items-center gap-1.5">
-                  <span className="w-4 h-4 rounded-full bg-carbon-70 text-carbon-20 flex items-center justify-center text-xs"><MaterialIcon name="close" className="w-4 h-4" /></span>
+                  <span className="w-4 h-4 rounded-full bg-carbon-90 text-white flex items-center justify-center text-xs"><MaterialIcon name="close" className="w-4 h-4" /></span>
                   <span>Clear Active Overlays & Filter</span>
                 </span>
               </button>
@@ -2393,20 +2406,23 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
           </div>
 
           {/* Coordinates Readout, Performance Clustering & IndexedDB Tile Cache Indicator */}
-          <div className="absolute bottom-2 left-2 z-[var(--z-sticky)] bg-white border border-carbon-20 px-2 py-1 text-xs text-carbon-70 pointer-events-auto max-w-[calc(100%-8rem)]">
+          {/* A card, not a pill: the attribution string is long and wraps — the pill
+              radius turned it into a rounded blob on phones. Every character stays
+              visible (map attribution is not collapsible). */}
+          <div className="absolute bottom-2 left-2 z-[var(--z-sticky)] glass-panel px-3 py-1.5 text-xs leading-snug text-carbon-70 pointer-events-auto max-w-[calc(100%-7rem)]">
             <p className="leading-snug">
               {MAP_LAYERS[activeLayer]?.attribution?.replace(/&copy;/g, '©').replace(/&mdash;/g, '—') || 'Map data © OpenStreetMap contributors'}
             </p>
           </div>
 
-          <div className="absolute bottom-2 right-16 z-[var(--z-sticky)] bg-white px-3 py-2 border border-carbon-20 text-xs font-mono font-semibold text-carbon-70 pointer-events-auto hidden lg:flex items-center gap-3 tabular-nums">
+          <div className="absolute bottom-2 right-16 z-[var(--z-sticky)] glass-pill px-4 py-2 text-xs font-mono font-semibold text-carbon-70 pointer-events-auto hidden lg:flex items-center gap-3 tabular-nums">
             <span>Lat {currentCoords.lat.toFixed(4)}° N</span>
             <span>Lng {currentCoords.lng.toFixed(4)}° E</span>
             <span>Zoom {currentCoords.zoom}</span>
             <button
               type="button"
               onClick={() => setIsClusteringActive(!isClusteringActive)}
-              className="min-h-[44px] px-3 border border-carbon-20 bg-white text-carbon-70 text-xs font-semibold"
+              className="min-h-[44px] px-3.5 rounded-full border border-carbon-20 bg-white/70 hover:bg-white text-carbon-70 hover:text-carbon-90 text-xs font-semibold transition-colors"
               title="Toggle district marker clustering"
             >
               {isClusteringActive ? 'Clustered' : '64 pins'}
@@ -2414,7 +2430,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
             <button
               type="button"
               onClick={() => setIsLayerModalOpen(true)}
-              className="min-h-[44px] px-3 border border-carbon-20 bg-white text-carbon-70 text-xs font-semibold"
+              className="min-h-[44px] px-3.5 rounded-full border border-carbon-20 bg-white/70 hover:bg-white text-carbon-70 hover:text-carbon-90 text-xs font-semibold transition-colors"
               title="Offline tile cache"
             >
               Cache {cacheStats.totalTiles}
@@ -2431,7 +2447,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 20 }}
           transition={{ duration: 0.3 }}
-          className="p-4 bg-carbon-05 border-t border-carbon-20 flex flex-wrap items-center justify-between gap-3 text-xs"
+          className="p-4 bg-carbon-05 border-t border-carbon-20 rounded-b-2xl flex flex-wrap items-center justify-between gap-3 text-xs"
         >
           <div className="flex items-center gap-2">
             
@@ -2455,7 +2471,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                     const target = liveDistricts.find((d) => d.id === preset.id);
                     if (target) handleSelectDistrict(target);
                   }}
-                  className={`min-h-[44px] px-3 border text-xs font-semibold touch-manipulation ${
+                  className={`min-h-[44px] px-3.5 rounded-full border text-xs font-semibold touch-manipulation transition-colors ${
  isAct
  ? 'bg-primary border-nasa-blue text-white '
  : 'bg-white border-carbon-20 text-carbon-70 hover:text-carbon-90 hover:bg-carbon-10'

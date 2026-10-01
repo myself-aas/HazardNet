@@ -1,0 +1,12 @@
+# Python dependencies for the pipeline-script suite (scripts/tests/).
+#
+# Consumed by .github/workflows/ci.yml → test-pipeline-scripts:
+#     pip install --break-system-packages --requirement scripts/requirements-pipeline.txt pytest
+#
+# The `|| pip install pytest` fallback in that step only exists for the case where
+# this file cannot be read; it deliberately installs less (see the CONCERNS entry
+# that tracked the file's absence). Keep both lines in sync with what the tests
+# import: scripts/tests/test_workflows.py needs PyYAML to parse
+# .github/workflows/*.yml, and the whole suite runs under pytest.
+pytest>=8,<9
+PyYAML>=6,<7

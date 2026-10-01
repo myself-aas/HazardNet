@@ -35,6 +35,9 @@ export const NotificationToggleUI: React.FC<NotificationToggleUIProps> = ({
           onClick={onToggleOpen}
           className="tap-target w-11 h-11 rounded-full bg-black/5 hover:bg-black/10 flex items-center justify-center transition-colors"
           title="Push Alerts"
+          /* Icon-only control: without an explicit label its accessible name fell
+             back to `title` only. Kept in sync with that title. */
+          aria-label="Push Alerts"
         >
           <NotificationIcon size={20} className={isSubscribed ? "text-amber-600" : "text-carbon-80"} duration={0} isState={isSubscribed} />
         </button>

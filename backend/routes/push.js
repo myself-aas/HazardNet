@@ -56,7 +56,7 @@ router.post('/subscribe', (req, res) => {
     subscribedAt: new Date().toISOString(),
   });
 
-  console.log(`[Push] New web push subscription registered: ${subscription.endpoint.slice(0, 40)}...`);
+  console.info(`[Push] New web push subscription registered: ${subscription.endpoint.slice(0, 40)}...`);
 
   res.status(201).json({
     success: true,

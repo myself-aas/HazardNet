@@ -52,6 +52,16 @@ async function waitForRoute(page: Page): Promise<void> {
 const ENVIRONMENTAL: Array<{ pattern: RegExp; why: string }> = [
   { pattern: /firebase|firebaseio|firebaseinstallations|googleapis|googletagmanager/i, why: 'third-party hosts blocked in sandbox' },
   { pattern: /Tile Unavailable Offline|tile.*50[0-9]/i, why: 'basemap CDN blocked; service worker serves its offline tile' },
+  {
+    // `frontend/src/services/geolocationService.ts` falls back to ipapi.co when the
+    // browser denies a GPS fix — which is every headless run. The free tier rate-limits
+    // shared CI egress and answers the over-quota request without CORS headers, so the
+    // browser reports the blocked response as a console error. The service catches it
+    // and falls back to Dhaka by design; the host is a third-party dependency, not an
+    // application defect. (Tracked as debt in docs/codebase/CONCERNS.md §2.)
+    pattern: /ipapi\.co/i,
+    why: 'IP-geolocation fallback host rate-limits shared CI egress and omits CORS headers',
+  },
   { pattern: /net::ERR_(CONNECTION_CLOSED|FAILED|ABORTED|NAME_NOT_RESOLVED)/i, why: 'network egress restricted' },
   { pattern: /_vercel\/insights/i, why: 'Vercel-only analytics asset' },
 ];
@@ -100,6 +110,7 @@ const NO_API_RUNTIME = /^(1|true|yes)$/i.test(process.env.QA_NO_API_RUNTIME ?? '
 const ENVIRONMENTAL_URLS: Array<{ pattern: RegExp; why: string; statuses?: number[]; when?: boolean }> = [
   { pattern: /firebase|firebaseio|googleapis|googletagmanager/i, why: 'third-party hosts blocked in sandbox' },
   { pattern: /cartocdn|arcgis(online)?\.com|tile\.map-data|opentopomap/i, why: 'basemap tiles blocked; service worker serves its offline tile' },
+  { pattern: /ipapi\.co/i, why: 'IP-geolocation fallback host rate-limits shared CI egress', statuses: [403, 429] },
   { pattern: /\/api\/v1\/(weather|alerts)/i, why: 'upstream weather/alert feeds unreachable without egress' },
   { pattern: /_vercel\/insights/i, why: 'Vercel-only analytics asset' },
   {

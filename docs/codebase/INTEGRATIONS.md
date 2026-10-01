@@ -1,5 +1,9 @@
 # External Integrations
 
+> **Mapping pass:** 2026-09-30 (second pass, commit `deff0d9`). Claims in this document
+> were verified against the working tree; the commands used are listed in the Evidence
+> section, and the full run list is summarised in `CONCERNS.md`.
+
 ## Core Sections (Required)
 
 ### 1) Integration Inventory
@@ -7,7 +11,7 @@
 | System | Type | Purpose | Auth model | Criticality | Evidence |
 |--------|------|---------|------------|-------------|----------|
 | Firebase Firestore | Database | Forecast store, alerts, alert subscriptions, profiles, assessments, connectors, blog articles | `FIREBASE_SERVICE_ACCOUNT_JSON` (server) + Firebase web SDK public config (client) | **high** | `backend/db.js`, `backend/forecastStore.js`, `firebase.json`, `firestore.rules` |
-| Firebase Authentication | Auth | Email/password + Google + OAuth providers; token verification server-side | Firebase ID token (JWT) verified with `jsonwebtoken` / firebase-admin | **high** | `backend/middleware/firebaseAuth.js`, `frontend/src/context/AuthContext.tsx`, `frontend/src/lib/oauthProviders.ts` |
+| Firebase Authentication | Auth | Email/password + Google + OAuth providers; token verification server-side | Firebase ID token (JWT) verified with `firebase-admin` (`admin.auth().verifyIdToken`); the `jsonwebtoken` dependency is unused | **high** | `backend/middleware/firebaseAuth.js`, `backend/routes/alerts.js`, `frontend/src/context/AuthContext.tsx`, `frontend/src/lib/oauthProviders.ts` |
 | Firebase Cloud Messaging (web push) | Push | Browser push notifications | VAPID key pair (`VAPID_PUBLIC_KEY` / `VAPID_PRIVATE_KEY`, `WEB_PUSH_CONTACT`) | medium | `backend/routes/push.js`, `backend/utils/vapid.js`, `package.json` (`web-push`) |
 | Google Gemini (`@google/genai`) | AI API | Advisory generation, chat assistant, live-voice WebSocket session | `GEMINI_API_KEY` (+ `GEMINI_API_KEY_BACKUP`); optional Firebase-attached dynamic limiter | high | `backend/services/advisoryAgent.js`, `backend/routes/chat.js`, `backend/routes/liveVoice.js`, `backend/utils/ai_fallback_engine.js` |
 | Groq / OpenRouter / HuggingFace | AI API (fallback) | Advisory fallback providers when Gemini is rate-limited/unset | `GROQ_API_KEY`, `OPENROUTER_API_KEY`, `HUGGINGFACE_API_KEY` | low | `docs/ENVIRONMENT_SECRETS.md` §2.1, `backend/utils/ai_fallback_engine.js` |
@@ -19,7 +23,7 @@
 | Prometheus / Grafana | Observability | Scrape `/metrics`; dashboards and alert rules | None (internal network) | medium | `backend/metrics.js`, `monitoring/prometheus.yml`, `monitoring/alerts.yml`, `monitoring/grafana-dashboard.json` |
 | Slack (incoming webhook) | Alerting | Ops notification for pipeline/publish failures | `SLACK_WEBHOOK_URL` | low | `scripts/notify_ops.mjs`, `docs/ENVIRONMENT_SECRETS.md` |
 | SMS gateway / Telegram Bot | Alert fan-out | Subscriber notifications for published alerts | Configured per channel in `backend/alerts/channels/` | medium | `backend/alerts/channels/sms.js`, `backend/alerts/channels/telegram.js` |
-| ArcGIS / Mapbox tile + event services | Map tiles | Basemap tiles and map event stream for the district map | Public endpoints | low | `frontend/src/components/DistrictRiskMap.tsx`, `frontend/src/components/LiveMapView.tsx` |
+| Esri ArcGIS / CARTO / OpenStreetMap / OpenTopoMap basemap tiles | Map tiles | Basemap layers for the district map (satellite, dark GIS, street, terrain, topo) served from `MAP_LAYERS` and cached in IndexedDB by `tileCacheService` | Public tile endpoints, no key (attribution rendered in each layer definition) | low | `frontend/src/hooks/useLeafletMap.ts` (`MAP_LAYERS`), `frontend/src/services/tileCacheService.ts`, `frontend/src/serviceWorker.ts` (tile-host allowlist), `frontend/src/components/ui/expand-map.tsx` |
 | ReliefWeb / FAO GIEWS / WHO / ADRC GLIDE / IFRC GO | Reference links | Outbound multilateral provenance links generated from GLIDE identifiers | None (public URLs) | low | `backend/utils/glideResolver.js`, `frontend/src/lib/glide.ts`, `frontend/src/components/GlideResourcePopover.tsx` |
 | Google (gstatic / accounts / tag manager) | Frontend services | Firebase SDK host, Google OAuth popup, Tag Manager | None | low | `vercel.json` CSP, `backend/security/csp.js` |
 
@@ -36,7 +40,7 @@
 ### 3) Secrets and Credentials Handling
 
 - **Credential sources:** Vercel project environment variables (serverless + build), GitHub Actions secrets/variables (workflows), and a local `.env` loaded by `dotenv` in `backend/server.js`. The three-surface model is documented in `docs/ENVIRONMENT_SECRETS.md` §0.
-- **Hardcoding checks:** `scripts/check-secrets.sh` scans the working tree for high-confidence secret patterns (GitHub PATs, `sk-`, `AIza`, Slack tokens, AWS keys, private keys, connection strings with passwords) and runs in CI (`security-audit` job). History is explicitly out of scope for that gate. The committed `.env.example` is placeholder-only and is itself validated by `scripts/tests/test_secret_scan.py::test_the_shipped_env_example_is_clean`.
+- **Hardcoding checks:** `scripts/check-secrets.sh` scans the working tree for high-confidence secret patterns (GitHub PATs, `sk-`, `AIza`, Slack tokens, AWS keys, private keys, connection strings with passwords) and runs in CI (`security-audit` job); it was re-run for this mapping and passed (903 tracked files, 17 patterns). History is explicitly out of scope for that gate. `scripts/tests/test_secret_scan.py::test_the_shipped_env_example_is_clean` also runs the scanner over the real tree, but its `.env.example` content assertions are conditional — **and the file is currently absent** (see `CONCERNS.md` §1), so that half of the test is a no-op today.
   - **Exception to note:** `frontend/src/lib/config.ts` commits Firebase **public-by-design** web identifiers as fallback defaults (API key, project id, app id, measurement id, database URL) so the app boots without a local `.env`. These are public identifiers per Firebase convention, but they are credential-shaped strings in source and should be confirmed as intended (see `[ASK USER]`).
   - `backend/db.js` similarly hardcodes the Firestore applet database id as a fallback default.
   - **The CSP no longer allowlists any ad-network script origin** (removed 2026-09-30). `script-src` is `'self'` plus the four Google origins Firebase Auth needs; `backend/security/csp.js` is the single source and both Vercel configs carry the identical string, asserted by `__tests__/securityHeadersParity.test.js`.
@@ -67,7 +71,7 @@
 - `backend/utils/glideResolver.js`, `frontend/src/lib/glide.ts` (multilateral links)
 - `.github/workflows/daily_advisory_ingest.yml`, `.github/workflows/site-health.yml`, `.github/workflows/verify-secrets.yml` (pipeline + probe + secrets)
 - `scripts/check-secrets.sh`, `scripts/verify-actions-secrets.sh`, `scripts/npm-audit-ci.mjs`, `audit-exceptions.json` (secret/audit gates)
-- `.env.example` (committed placeholder-only template), `scripts/tests/test_secret_scan.py`
+- `scripts/tests/test_secret_scan.py` (secret-scan regression suite; the `.env.example` half of `test_the_shipped_env_example_is_clean` is conditional because the file is absent), `scripts/check-secrets.sh` (run: "✅ Secret scan passed (903 tracked files, 17 patterns)")
 - `docs/ENVIRONMENT_SECRETS.md` (credential surfaces and full variable reference)
 - `monitoring/prometheus.yml`, `monitoring/alerts.yml`, `monitoring/grafana-dashboard.json`, `backend/metrics.js`
 - `backend/security/csp.js`, `__tests__/securityHeadersParity.test.js` (CSP single source + parity)

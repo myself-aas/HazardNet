@@ -8,9 +8,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./forecasts": "./src/forecasts.ts",
-    "./alerts": "./src/alertLayer.ts",
-    "./i18n": "./src/i18n.ts",
-    "./bandwidth": "./src/bandwidth.ts"
+    "./notificationMatcher": "./src/notificationMatcher.ts"
   },
   "dependencies": {
     "zod": "^3.23.0"

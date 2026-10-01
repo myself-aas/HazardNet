@@ -17,6 +17,8 @@ interface MapProps {
   onSelectDistrict?: (district: District) => void;
   selectedDistrictId?: string;
   onOpenDisasterModal?: (districtId: string) => void;
+  /** Passed through to the Leaflet stage's AI advisory drawer trigger, when present. */
+  onOpenAdvisory?: () => void;
   pinpointLat?: number;
   pinpointLng?: number;
   isFullScreen?: boolean;
@@ -29,6 +31,7 @@ const Map: React.FC<MapProps> = ({
   onSelectDistrict,
   selectedDistrictId,
   onOpenDisasterModal,
+  onOpenAdvisory,
   pinpointLat,
   pinpointLng,
   isFullScreen = false,
@@ -82,6 +85,7 @@ const Map: React.FC<MapProps> = ({
           selectedDistrictId={selectedDistrictId}
           onSelectDistrict={onSelectDistrict}
           onOpenDisasterModal={onOpenDisasterModal}
+          onOpenAdvisory={onOpenAdvisory}
           pinpointLat={pinpointLat}
           pinpointLng={pinpointLng}
           isFullScreen={isFullScreen}

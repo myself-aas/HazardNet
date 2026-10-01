@@ -11,6 +11,7 @@ import { useAuth } from '../context/AuthContext';
 import { SavedAssessmentsModal } from './SavedAssessmentsModal';
 import { FirebaseRealtimeStatus } from './FirebaseRealtimeStatus';
 import { MenuDrawer } from './MenuDrawer';
+import { NotificationToggle } from './NotificationToggle';
 import { HazardNetBrand } from './HazardNetLogo';
 import { detectExactPinpointLocation } from '../services/geolocationService';
 import { usePushNotifications } from '../hooks/usePushNotifications';
@@ -519,6 +520,15 @@ export const Navbar: React.FC<NavbarProps> = ({
 
               <CommandPalette onSelectDistrict={onSelectDistrict} isTransparent={isHeaderTransparent} />
 
+              {/*
+                Push alerts used to be reachable at desktop widths only through the
+                Alerts mega menu, whose button calls the subscribe handler directly and
+                never shows the Web Push certificate panel — and the drawer that does
+                hold this toggle is `xl:hidden`, so at ≥1280 px it was unreachable.
+                The same control the drawer uses now sits in the desktop bar.
+              */}
+              <NotificationToggle variant="icon" />
+
               <div
                 onClick={() => {
                   if (user) {
@@ -572,6 +582,22 @@ export const Navbar: React.FC<NavbarProps> = ({
                     }`}
                   >
                     Login
+                  </Link>
+                  {/*
+                    The drawer carries `drawer-signup-link` below xl; the desktop bar
+                    only had Login, so at ≥1280 px `/signup` had no header entry point
+                    (and `e2e/helpers.ts::clickAuthLink` looks for exactly this testid).
+                  */}
+                  <Link
+                    to="/signup"
+                    data-testid="navbar-signup-link"
+                    className={`min-h-[44px] px-4 py-2 rounded-control font-semibold text-sm border inline-flex items-center justify-center transition-colors duration-200 touch-manipulation ${
+                      isHeaderTransparent
+                        ? 'border-white/60 text-white hover:bg-white/15 backdrop-blur-sm drop-shadow-sm'
+                        : 'border-carbon-30 text-carbon-80 hover:bg-carbon-05'
+                    }`}
+                  >
+                    Sign up
                   </Link>
                 </div>
               )}

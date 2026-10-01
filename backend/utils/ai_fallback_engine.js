@@ -71,7 +71,7 @@ function isProviderHealthy(providerKey) {
     if (Date.now() - breaker.trippedAt > TRIP_COOLDOWN_MS) {
       // Cooldown expired, transition to HALF-OPEN
       breaker.state = 'HALF_OPEN';
-      console.log(`[AI Fallback Engine] Circuit breaker for '${providerKey}' HALF-OPEN. Retrying provider...`);
+      console.info(`[AI Fallback Engine] Circuit breaker for '${providerKey}' HALF-OPEN. Retrying provider...`);
       return true;
     }
     return false;
@@ -459,7 +459,7 @@ async function generateAdvisoryWithFallback(params, systemInstruction, prompt) {
   const cachedEntry = advisoryCache.get(cacheKey);
   if (cachedEntry && (Date.now() - cachedEntry.timestamp < CACHE_TTL_MS)) {
     engineStats.cacheHits += 1;
-    console.log(`[AI Fallback Engine] Serving cached advisory for key: ${cacheKey}`);
+    console.info(`[AI Fallback Engine] Serving cached advisory for key: ${cacheKey}`);
     return { ...cachedEntry.data, cached: true };
   }
 
@@ -478,7 +478,7 @@ async function generateAdvisoryWithFallback(params, systemInstruction, prompt) {
     }
 
     try {
-      console.log(`[AI Fallback Engine] Attempting advisory generation via provider '${provider.key}'...`);
+      console.info(`[AI Fallback Engine] Attempting advisory generation via provider '${provider.key}'...`);
       const result = await provider.fn();
 
       // Stamp which free-tier LLM actually answered (the deterministic tier
@@ -495,17 +495,17 @@ async function generateAdvisoryWithFallback(params, systemInstruction, prompt) {
       recordProviderFailure(provider.key, err);
 
       if (msg.includes('not configured') || msg.includes('missing')) {
-        console.log(`[AI Fallback Engine] Provider '${provider.key}' skipped (${msg}).`);
+        console.info(`[AI Fallback Engine] Provider '${provider.key}' skipped (${msg}).`);
       } else if (msg.includes('429') || msg.includes('Quota Exceeded') || msg.includes('RESOURCE_EXHAUSTED')) {
-        console.log(`[AI Fallback Engine] Provider '${provider.key}' quota/rate-limited (429). Tripping circuit breaker & initiating next fallback tier.`);
+        console.info(`[AI Fallback Engine] Provider '${provider.key}' quota/rate-limited (429). Tripping circuit breaker & initiating next fallback tier.`);
       } else {
-        console.log(`[AI Fallback Engine] Provider '${provider.key}' unavailable (${msg.slice(0, 120)}). Activating fallback...`);
+        console.info(`[AI Fallback Engine] Provider '${provider.key}' unavailable (${msg.slice(0, 120)}). Activating fallback...`);
       }
     }
   }
 
   // Final Tier: Offline Deterministic Heuristic Engine
-  console.log('[AI Fallback Engine] All cloud AI providers unavailable or rate limited. Invoking Tier 6 Offline Neural Heuristic Engine.');
+  console.info('[AI Fallback Engine] All cloud AI providers unavailable or rate limited. Invoking Tier 6 Offline Neural Heuristic Engine.');
   const heuristicResult = generateDeterministicHeuristicAdvisory(params);
   advisoryCache.set(cacheKey, { timestamp: Date.now(), data: heuristicResult });
   return heuristicResult;

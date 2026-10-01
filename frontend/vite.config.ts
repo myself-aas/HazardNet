@@ -112,11 +112,12 @@ export default defineConfig(({ mode }) => {
     // Allow the sandbox preview host (e2b.app) in addition to localhost
     allowedHosts: ['.e2b.app'],
     proxy: {
-      // Backend (backend/server.js) runs on 3001 — see the 2026-08-28 audit:
-      // both sides used to claim 3000, so this proxy looped /api straight
-      // back into Vite itself and every /api/chat/* call in dev died on
-      // Vite's SPA-fallback index.html ("There was an error communicating
-      // with the AI").
+      // Backend (backend/server.js) must run on 3001 in dev — start it with
+      // `PORT=3001 npm run dev:api` (see the 2026-08-28 audit: both sides used
+      // to claim 3000, so this proxy looped /api straight back into Vite itself
+      // and every /api/chat/* call in dev died on Vite's SPA-fallback
+      // index.html ("There was an error communicating with the AI"). The
+      // server now honours PORT and keeps 3000 as its deployment default.
       '/api': {
         target: 'http://127.0.0.1:3001',
         changeOrigin: true,
