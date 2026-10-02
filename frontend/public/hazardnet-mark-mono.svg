@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-60 -30 120 60" width="240" height="120" fill="none" aria-hidden="true" focusable="false">
+<defs><mask id="hn-cut" maskUnits="userSpaceOnUse" x="-60" y="-30" width="120" height="60"><rect x="-60" y="-30" width="120" height="60" fill="#fff"/><rect x="-12" y="-8" width="24" height="16" fill="#000" transform="rotate(44.427)"/></mask></defs>
+<g fill="none" stroke="currentColor" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"><path d="M15.3 14.997A21 21 0 1 0 15.3 -14.997L-15.3 14.997A21 21 0 1 1 -15.3 -14.997" mask="url(#hn-cut)"/><path d="M-15.3 -14.997L15.3 14.997"/></g>
+</svg>
