@@ -267,7 +267,7 @@ test.describe('Mobile Navigation', () => {
     });
 
     await expectNoHorizontalOverflow(page, '/forecast/district/dhaka @375px');
-    await expect(page.getByText(/forecast|hazard/i).first()).toBeVisible();
+    await expect(page.locator('main').getByText(/forecast|hazard/i).first()).toBeVisible();
   });
 });
 

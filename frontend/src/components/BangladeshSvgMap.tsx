@@ -108,10 +108,8 @@ export const BangladeshSvgMap: React.FC<BangladeshSvgMapProps> = ({
           {/* Districts vs Divisions Toggle */}
           <div className="flex items-center bg-carbon-10 p-1 rounded-xl border border-carbon-20 text-xs">
             <button
-              type="button"
               onClick={() => setViewMode('districts')}
-              aria-pressed={viewMode === 'districts'}
-              className={`min-h-[44px] px-2.5 py-1 rounded-lg font-bold transition-colors ${
+              className={`px-2.5 py-1 rounded-lg font-bold transition-all ${
                 viewMode === 'districts'
                   ? 'bg-primary text-white shadow-xs'
                   : 'text-carbon-60 hover:text-carbon-90'
@@ -120,10 +118,8 @@ export const BangladeshSvgMap: React.FC<BangladeshSvgMapProps> = ({
               64 Districts
             </button>
             <button
-              type="button"
               onClick={() => setViewMode('divisions')}
-              aria-pressed={viewMode === 'divisions'}
-              className={`min-h-[44px] px-2.5 py-1 rounded-lg font-bold transition-colors ${
+              className={`px-2.5 py-1 rounded-lg font-bold transition-all ${
                 viewMode === 'divisions'
                   ? 'bg-primary text-white shadow-xs'
                   : 'text-carbon-60 hover:text-carbon-90'
@@ -144,10 +140,8 @@ export const BangladeshSvgMap: React.FC<BangladeshSvgMapProps> = ({
                 return (
                   <button
                     key={f}
-                    type="button"
                     onClick={() => setHazardFilter(f)}
-                    aria-pressed={isAct}
-                    className={`min-h-[44px] px-2.5 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors ${
+                    className={`px-2 py-1 rounded-lg text-[10px] font-semibold whitespace-nowrap transition-all ${
                       isAct
                         ? 'bg-carbon-90 text-white font-bold border border-carbon-90'
                         : 'text-carbon-60 bg-carbon-05 hover:bg-carbon-10 border border-carbon-20'
@@ -253,7 +247,7 @@ export const BangladeshSvgMap: React.FC<BangladeshSvgMapProps> = ({
                   onMouseEnter={() => setHoveredDivision(div)}
                   onMouseLeave={() => setHoveredDivision(null)}
                   onClick={() => onSelectDivision && onSelectDivision(div)}
-                  className="transition-colors duration-300 hover:fill-amber-100 group-focus/div:stroke-amber-600 group-focus/div:stroke-[1.5]"
+                  className="transition-all duration-300 hover:fill-amber-100 group-focus/div:stroke-amber-600 group-focus/div:stroke-[1.5]"
                 />
 
                 {/* Render Division Centroid Labels in Division Mode */}

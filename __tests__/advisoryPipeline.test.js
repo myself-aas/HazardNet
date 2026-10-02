@@ -17,14 +17,12 @@ import {
   ADVISORY_CSV_COLUMNS,
   DISTRICT_REGISTRY,
   lookupDistrict,
+  normalizeDistrictKey,
   mapAdvisoryRow,
   mapAdvisoryRows,
   forecastRowsToCsv,
 } from '../backend/utils/advisoryMapper.js';
 import { validateAdvisoryCsv } from '../scripts/validate_advisory_csv.mjs';
-import { resolveCanonicalModelVersion } from '../scripts/process_advisory_ingest.mjs';
-import { buildFreshnessArtifact } from '../scripts/build_freshness_artifact.mjs';
-import { rehearseAlertEngine } from '../scripts/rehearse_alert_engine.mjs';
 
 /**
  * Generate a synthetic 128-row valid CSV for testing.
@@ -265,7 +263,7 @@ describe('Phase A End-to-End Pipeline & Snapshot Integration (TRD §4.4, §4.5)'
     const manifestJsonPath = path.join(tempDir, 'manifest.json');
 
     try {
-      const generatedAt = new Date(Date.now() - 2 * 3600 * 1000).toISOString();
+      const generatedAt = '2026-09-30T04:00:00Z';
       // 1. Generate & Validate sample advisory CSV
       const rawCsv = makeValidSampleAdvisoryCsv({ generated_at: generatedAt, physics_override: 'true', advisory_tier: 'SEVERE' });
       fs.writeFileSync(advisoryCsvPath, rawCsv, 'utf8');
@@ -320,107 +318,6 @@ describe('Phase A End-to-End Pipeline & Snapshot Integration (TRD §4.4, §4.5)'
           assert.ok(row.final_severity !== undefined, 'final_severity must be present in snapshot');
         }
       }
-    } finally {
-      fs.rmSync(tempDir, { recursive: true, force: true });
-    }
-  });
-
-  test('Phase 2: stamps Models/VERSION.json provenance across CSV -> Snapshot -> Alert Rehearsal -> Freshness Artifact', async () => {
-    const fs = await import('node:fs');
-    const path = await import('node:path');
-    const os = await import('node:os');
-    const crypto = await import('node:crypto');
-    const { execSync } = await import('node:child_process');
-    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'hazardnet-phase2-provenance-'));
-    try {
-      const versionDoc = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'Models', 'VERSION.json'), 'utf8'));
-      const expectedVersion = resolveCanonicalModelVersion(process.cwd());
-      assert.strictEqual(expectedVersion, versionDoc.version);
-      assert.strictEqual(expectedVersion, '2.1.9+model.0bb5bdaf1789');
-
-      const generatedAt = new Date(Date.now() - 1 * 3600 * 1000).toISOString();
-      const inputCsvPath = path.join(tempDir, 'input_advisories.csv');
-      const mappedCsvPath = path.join(tempDir, 'hazardnet_forecasts_latest.csv');
-      const manifestJsonPath = path.join(tempDir, 'manifest.json');
-      const snapshotJsonPath = path.join(tempDir, 'forecasts-latest.json');
-      const alertRunJsonPath = path.join(tempDir, 'alert-run.json');
-      const alertSnapshotJsonPath = path.join(tempDir, 'alerts-latest.json');
-
-      const sampleCsv = makeValidSampleAdvisoryCsv({
-        advisory_tier: 'SEVERE',
-        physics_override: 'true',
-        generated_at: generatedAt,
-      });
-      fs.writeFileSync(inputCsvPath, sampleCsv, 'utf8');
-
-      const validation = validateAdvisoryCsv(sampleCsv);
-      assert.strictEqual(validation.valid, true);
-
-      const lines = sampleCsv.split('\n');
-      const headers = lines[0].split(',');
-      const rawRows = lines.slice(1).map((line) => {
-        const parts = line.split(',');
-        return Object.fromEntries(headers.map((h, i) => [h, parts[i]]));
-      });
-
-      const mapped = mapAdvisoryRows(rawRows, { modelVersion: expectedVersion });
-      assert.strictEqual(mapped[0].model_version, expectedVersion, 'mapAdvisoryRows must stamp model_version');
-
-      const mappedCsv = forecastRowsToCsv(mapped);
-      assert.ok(mappedCsv.split('\n')[0].includes('model_version'), 'forecastRowsToCsv header must include model_version');
-      fs.writeFileSync(mappedCsvPath, mappedCsv, 'utf8');
-
-      const csvSha256 = crypto.createHash('sha256').update(mappedCsv).digest('hex');
-      const manifest = {
-        prediction_date: mapped[0].prediction_date,
-        row_count: mapped.length,
-        csv_sha256: csvSha256,
-        data_source: 'Kaggle_Daily_Advisory',
-        model_version: expectedVersion,
-        generated_at: generatedAt,
-      };
-      fs.writeFileSync(manifestJsonPath, JSON.stringify(manifest, null, 2), 'utf8');
-
-      execSync(`node scripts/build_forecast_snapshot.mjs "${mappedCsvPath}" "${snapshotJsonPath}"`, {
-        cwd: process.cwd(),
-        stdio: 'pipe',
-      });
-
-      const snapshot = JSON.parse(fs.readFileSync(snapshotJsonPath, 'utf8'));
-      assert.strictEqual(snapshot.provenance.model_version, expectedVersion, 'Snapshot provenance.model_version must match Models/VERSION.json');
-      assert.strictEqual(snapshot.coverage.status, 'complete');
-      assert.strictEqual(snapshot.coverage.produced_units, 128);
-      assert.strictEqual(snapshot.coverage.districts_covered, 64);
-
-      const rehearsal = await rehearseAlertEngine({
-        snapshot,
-        snapshotPath: snapshotJsonPath,
-        now: new Date(generatedAt),
-      });
-      assert.strictEqual(rehearsal.rows_total, 128);
-      assert.strictEqual(rehearsal.persisted.blocked, 0, 'Stamped rows must not be publication_blocked for missing model_version');
-      assert.strictEqual(rehearsal.persisted.published, 128);
-      fs.writeFileSync(alertRunJsonPath, JSON.stringify(rehearsal, null, 2), 'utf8');
-
-      execSync(`node scripts/build_alert_snapshot.mjs --in "${alertRunJsonPath}" --out "${alertSnapshotJsonPath}" --allow-empty`, {
-        cwd: process.cwd(),
-        stdio: 'pipe',
-      });
-      const alertSnapshot = JSON.parse(fs.readFileSync(alertSnapshotJsonPath, 'utf8'));
-      assert.strictEqual(alertSnapshot.alerts.length, 128);
-      assert.strictEqual(alertSnapshot.assessed, 128);
-      assert.strictEqual(alertSnapshot.counts.dropped_unpublished, 0);
-
-      const freshness = buildFreshnessArtifact({
-        now: new Date(),
-        snapshot,
-        manifest,
-        alerts: alertSnapshot,
-      });
-      assert.strictEqual(freshness.model.stamped, true);
-      assert.strictEqual(freshness.model.model_version, expectedVersion);
-      assert.strictEqual(freshness.coverage.status, 'complete');
-      assert.strictEqual(freshness.coverage.produced_units, 128);
     } finally {
       fs.rmSync(tempDir, { recursive: true, force: true });
     }

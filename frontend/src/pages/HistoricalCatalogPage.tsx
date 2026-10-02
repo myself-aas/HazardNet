@@ -1,19 +1,19 @@
 import React, { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { DistrictRiskMap, DistrictVulnerabilityRecord } from '../components/DistrictRiskMap';
+import { DistrictRiskMap } from '../components/DistrictRiskMap';
 import { DistrictVulnerabilityTable } from '../components/DistrictVulnerabilityTable';
 import { HistoricalHazardCatalog, HistoricalHazardRecord } from '../components/HistoricalHazardCatalog';
-import { TemporalTrendChart, TemporalTrendRecord } from '../components/TemporalTrendChart';
-import { MultiHazardDistributionChart, HazardDistributionRecord } from '../components/MultiHazardDistributionChart';
+import { TemporalTrendChart } from '../components/TemporalTrendChart';
+import { MultiHazardDistributionChart } from '../components/MultiHazardDistributionChart';
 import { GlideResourcePopover } from '../components/GlideResourcePopover';
 import { EventReportModal, DisasterMasterEvent } from '../components/EventReportModal';
 import { usePageSeo } from '../hooks/usePageSeo';
 
 type HistoricalData = {
   masterEvents: DisasterMasterEvent[];
-  vulnerability: DistrictVulnerabilityRecord[];
-  trends: TemporalTrendRecord[];
-  distribution: HazardDistributionRecord[];
+  vulnerability: unknown[];
+  trends: unknown;
+  distribution: unknown;
   catalog: HistoricalHazardRecord[];
 };
 
@@ -35,9 +35,9 @@ async function fetchHistoricalData(): Promise<HistoricalData> {
 
   return {
     masterEvents: responses[0] as DisasterMasterEvent[],
-    vulnerability: responses[1] as DistrictVulnerabilityRecord[],
-    trends: responses[2] as TemporalTrendRecord[],
-    distribution: responses[3] as HazardDistributionRecord[],
+    vulnerability: responses[1] as unknown[],
+    trends: responses[2],
+    distribution: responses[3],
     catalog: responses[4] as HistoricalHazardRecord[],
   };
 }
@@ -64,7 +64,7 @@ export const HistoricalCatalogPage: React.FC = () => {
       }
     }
     return map;
-  }, [data?.masterEvents]);
+  }, []);
 
   if (isLoading) {
     return <div className="min-h-screen bg-carbon-90 text-carbon-10 p-8" role="status">Loading historical archive…</div>;

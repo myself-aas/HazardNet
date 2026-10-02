@@ -30,11 +30,6 @@ export const HDS_TOKENS = {
     surfaceDark: '#0e0e11',
     surfaceDarkCard: '#17171b',
 
-    // Cartographic-Editorial Brutalism HUD Surfaces (Phase 4)
-    hudObsidian: '#0b0f17',
-    hudSlate: '#111827',
-    hudHairline: 'rgba(255, 255, 255, 0.12)',
-
     // Glassmorphism Surfaces (Web + Mobile Backdrop)
     glassLight: 'rgba(255, 255, 255, 0.88)',
     glassDark: 'rgba(14, 14, 17, 0.88)',

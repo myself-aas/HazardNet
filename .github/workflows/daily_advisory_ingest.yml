@@ -155,16 +155,6 @@ jobs:
             $STALE_FLAG \
             $INGEST_FIRESTORE_FLAG
 
-          echo "[ingest] Rehearsing alert engine & refreshing alerts-latest.json and freshness.json..."
-          node scripts/rehearse_alert_engine.mjs \
-            --snapshot frontend/public/data/forecasts-latest.json \
-            --out /tmp/advisory-ingest/alert-run.json
-          node scripts/build_alert_snapshot.mjs \
-            --in /tmp/advisory-ingest/alert-run.json \
-            --out frontend/public/data/alerts-latest.json \
-            --allow-empty
-          node scripts/build_freshness_artifact.mjs
-
       - name: Run Pipeline Validation Tests (Tier 0 & Tier 1)
         run: |
           echo "[test] Running advisory pipeline test suite..."
@@ -177,9 +167,7 @@ jobs:
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
           git add backend/data/forecasts/ \
-                  frontend/public/data/forecasts-latest.json \
-                  frontend/public/data/alerts-latest.json \
-                  frontend/public/data/freshness.json
+                  frontend/public/data/forecasts-latest.json
 
           if git diff --staged --quiet; then
             echo "[git] No changes in forecast artifacts. Working tree is clean."

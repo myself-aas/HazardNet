@@ -213,9 +213,7 @@ function main() {
 
     // Severity: legacy single-track column or the notebook's dual-track one.
     const severity = num(get(cells, 'severity_score')) ?? num(get(cells, 'model_severity'));
-    const rawConfidence = num(get(cells, 'confidence_raw')) ?? num(get(cells, 'confidence'));
-    const calibratedConfidence = num(get(cells, 'confidence_calibrated'));
-    const confidence = calibratedConfidence !== null ? calibratedConfidence : rawConfidence;
+    const confidence = num(get(cells, 'confidence'));
     if (severity === null || confidence === null) { dropped += 1; continue; }
 
     const districtId = num(get(cells, 'district_id')) ?? num(get(cells, 'location_id'));
@@ -237,11 +235,6 @@ function main() {
       target_date: targetDate,
       prediction_date: predictionDate,
     };
-    if (calibratedConfidence !== null) {
-      if (rawConfidence !== null) row.confidence_raw = rawConfidence;
-      row.confidence_calibrated = calibratedConfidence;
-      row.confidence_kind = 'calibrated_probability';
-    }
     for (const [out, src] of [
       ['model_severity', 'model_severity'],
       ['model_severity_raw', 'model_severity_raw'],

@@ -24,29 +24,6 @@ export const MapDistrictTable: React.FC<MapDistrictTableProps> = ({
   selectedDistrictId,
   onSelectDistrict,
 }) => {
-  const rowButtonRefs = React.useRef<Array<HTMLButtonElement | null>>([]);
-
-  const handleRowKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>, index: number) => {
-    const total = districts.length;
-    if (total === 0) return;
-
-    let nextIndex: number | null = null;
-    if (event.key === 'ArrowDown') {
-      nextIndex = Math.min(total - 1, index + 1);
-    } else if (event.key === 'ArrowUp') {
-      nextIndex = Math.max(0, index - 1);
-    } else if (event.key === 'Home') {
-      nextIndex = 0;
-    } else if (event.key === 'End') {
-      nextIndex = total - 1;
-    }
-
-    if (nextIndex !== null) {
-      event.preventDefault();
-      rowButtonRefs.current[nextIndex]?.focus();
-    }
-  };
-
   return (
     <div
       data-testid="map-district-table"
@@ -83,22 +60,16 @@ export const MapDistrictTable: React.FC<MapDistrictTableProps> = ({
               </td>
             </tr>
           ) : (
-            districts.map((district, index) => {
+            districts.map((district) => {
               const selected = district.id === selectedDistrictId;
               const severityPct = Math.round(district.severity * 100);
-              const summaryId = `map-district-row-${district.id}-summary`;
               return (
                 <tr key={district.id} className={selected ? 'bg-carbon-05' : undefined}>
                   <th scope="row" className="p-0 font-semibold text-carbon-90">
                     <button
-                      ref={(el) => {
-                        rowButtonRefs.current[index] = el;
-                      }}
                       type="button"
                       onClick={() => onSelectDistrict(district)}
-                      onKeyDown={(e) => handleRowKeyDown(e, index)}
                       aria-current={selected ? 'true' : undefined}
-                      aria-describedby={summaryId}
                       className="min-h-[44px] w-full px-3 text-left text-base font-semibold touch-manipulation"
                     >
                       {district.name}
@@ -107,7 +78,7 @@ export const MapDistrictTable: React.FC<MapDistrictTableProps> = ({
                   <td className="p-3 text-carbon-70">{district.division}</td>
                   <td className="p-3 text-carbon-80">{district.hazardType}</td>
                   <td className="p-3 font-mono tabular-nums text-carbon-80">{severityPct}%</td>
-                  <td id={summaryId} className="p-3 text-carbon-80">{district.risk}</td>
+                  <td className="p-3 text-carbon-80">{district.risk}</td>
                 </tr>
               );
             })

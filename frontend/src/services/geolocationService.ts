@@ -243,12 +243,43 @@ export async function detectExactPinpointLocation(): Promise<LocationDetectionRe
         };
       }
     } catch (err) {
-      console.warn('GPS Geolocation unavailable or permission denied; using strictly on-device Dhaka fallback:', err);
+      console.warn('GPS Geolocation unavailable or permission denied, falling back to IP Geolocation:', err);
     }
   }
 
-  // 2. Strictly On-Device Fallback to Central Bangladesh (Dhaka)
-  // Third-party IP lookup (ipapi.co) was removed to enforce strict on-device location privacy.
+  // 2. IP Geolocation Fallback
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 3500);
+
+    const res = await fetch('https://ipapi.co/json/', { signal: controller.signal });
+    clearTimeout(timeoutId);
+
+    if (res.ok) {
+      const data = await res.json();
+      if (isValidLatLng(data.latitude, data.longitude)) {
+        const lat = data.latitude;
+        const lng = data.longitude;
+        const { district, distanceKm } = findNearestDistrict(lat, lng);
+
+        return {
+          lat,
+          lng,
+          method: 'ip',
+          city: data.city || data.region,
+          country: data.country_name,
+          isp: data.org || data.asn,
+          rawIp: data.ip,
+          nearestDistrict: district,
+          distanceKm,
+        };
+      }
+    }
+  } catch (ipErr) {
+    console.warn('IP Geolocation service timeout or blocked:', ipErr);
+  }
+
+  // 3. Fallback to Central Bangladesh (Dhaka)
   const defaultDistrict = ALL_64_DISTRICTS.find((d) => d.id === 'dhaka') || ALL_64_DISTRICTS[0];
 
   return {

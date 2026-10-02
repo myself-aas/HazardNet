@@ -20,7 +20,7 @@
 | **Phase 3** | **Calibration & Lead-Time Backtest Unlock for Automated SEVERE/WARNING Alerts** | Implement `hazardnet-calibration/v1` isotonic PAVA calibration & lead-time backtest engine (`backend/alerts/calibration.js`, `scripts/calibrate_confidence.mjs`), fix `policy.agreement_epsilon` enforcement in `backend/alerts/assess.js`, and wire `confidence_calibrated` through `advisoryMapper.js` & `build_forecast_snapshot.mjs` | Phase 2 | **Complete** |
 | **Phase 4** | **Frontend Design System Overhaul: Cartographic-Editorial Brutalism (`frontend-design`)** | Terminate unbounded `useWebFrame` rAF loops (`PERF-02`), strip 148.6 MB dead hero `.mp4` from `dist/` (`PERF-01`), unify dark atmospheric HUD tokens (`#0B0F17`) & `useMeridianTheme` (`THE-01`), enforce 44×44 px touch targets (`RES-01`), WCAG AAA contrast (`A11Y-01`), bilingual `:lang(bn)` typography, and GPU-safe transitions | Phase 3 | **Complete** |
 | **Phase 5** | **GIS Choropleth, Progressive Disclosure & Mobile Viewport Ergonomics** | 3-stage progressive disclosure (`peek`/`half`/`expanded`) on `DistrictForecastCard` & `BottomSheet`, zero horizontal scroll at `375px`/`768px` (`ChatBot`, `LiveMapView`, `DistrictRiskMap`, `BangladeshSvgMap`), and keyboard-navigable `MapDistrictTable` parity | Phase 4 | **Complete** |
-| **Phase 6** | **Final Production Readiness Gate, Full E2E & Reproduction Verification** | Full CI/CD reproduction (`check:claims`, `check:paths`, `check:bundle`, `check:tokens`, `check:design`, Jest, Pytest, Playwright) | Phase 5 | Pending |
+| **Phase 6** | **Final Production Readiness Gate, Full E2E & Reproduction Verification** | Full CI/CD reproduction (`check:claims`, `check:paths`, `check:bundle`, `check:tokens`, `check:design`, Jest, Pytest, Playwright E2E, and PR #69 GitHub Actions green verification) | Phase 5 | **Complete** |
 
 ---
 
@@ -139,3 +139,30 @@
   2. Create `__tests__/phase5GisMobileErgonomics.test.js` verifying Tasks 5.1, 5.2, and 5.3 in unit and DOM behavioral tests.
 - **Verification**:
   - `npx jest --ci __tests__/phase5GisMobileErgonomics.test.js frontend/src/components/map/__tests__/DistrictForecastCard.test.tsx frontend/src/components/map/__tests__/MapDistrictTable.test.tsx frontend/src/components/map/__tests__/MapToolbar.test.tsx frontend/src/components/map/__tests__/MapLegend.test.tsx frontend/src/components/__tests__/BangladeshSvgMap.alertLayer.test.tsx frontend/src/pages/__tests__/DistrictDetailPage.phase5.test.ts __tests__/phase2MobileShell.test.js __tests__/phase2MotionComponents.test.js` → **PASS** (`9 passed` suites, `46 passed` tests).
+
+---
+
+## 6. Phase 6 — Final Production Readiness Gate, Full E2E & Reproduction Verification
+
+### Task 6.1: Stabilize Playwright E2E Mobile Navigation & Right-Hand Drawer Slide-In Assertions (`e2e/critical-paths.spec.ts` & `e2e/smoke.spec.ts`)
+- **Problem Statement**:
+  1. In `e2e/critical-paths.spec.ts:270` (`Mobile Navigation › forecast view is usable on mobile`), `page.getByText(/forecast|hazard/i).first()` matched the first DOM node containing `Forecasts` — which at `375px` is the `hidden` desktop `<a href="/forecast/overview">Forecasts</a>` inside `<header>`, causing `toBeVisible()` to fail.
+  2. In `e2e/smoke.spec.ts:57` (`HazardNet smoke › mobile drawer navigation works at 375px`), the poll condition `expect.poll(async () => (await drawer.boundingBox())?.x).toBeGreaterThanOrEqual(0)` was written when the drawer slid in from the left (`x: -375 -> 0`). After the drawer moved to the right (`initial={{ x: '100%' }}` → `animate={{ x: 0 }}`), `box.x` starts at `+375` (`>= 0` on frame 0 before the slide-in completes), causing `box.x + box.width` to read `750` or `376.49` mid-animation.
+- **Implementation Steps**:
+  1. Scope `e2e/critical-paths.spec.ts:270` to `page.locator('main').getByText(/forecast|hazard/i).first()` so it asserts visible forecast/hazard content inside `<main>`.
+  2. Update `e2e/smoke.spec.ts:57` to poll until `b.x >= 0 && b.x + b.width <= 375` so the right-hand slide-in animation settles completely before asserting viewport containment.
+
+### Task 6.2: End-to-End Production Readiness Contract Suite (`__tests__/phase6FinalReadinessGate.test.js`) & Full CI/CD Gate Reproduction
+- **Implementation Steps**:
+  1. Create `__tests__/phase6FinalReadinessGate.test.js` verifying:
+     - Edge model resource budget (`Models/hazardnet_int8.tflite` and `Models/hazardnet_fp32.tflite` `<= 100 MB`, `Models/VERSION.json` SHA-256 cryptographic match).
+     - Strict on-device location privacy (`0` external IP geolocation URLs in `frontend/src/services/geolocationService.ts`).
+     - Calibration (`hazardnet-calibration/v1`), `policy.agreement_epsilon`, and `daily_advisory_ingest.yml` + `site-health.yml` workflow invariants.
+     - Phase 4 & 5 frontend design/GIS contracts and E2E selector stability (`e2e/critical-paths.spec.ts`, `e2e/smoke.spec.ts`).
+  2. Execute the complete production readiness verification matrix (`check:env`, `lint`, `lint:eslint`, `check:functions`, `check:claims`, `check:tokens`, `check:design:source`, `build`, `check:bundle`, `check:design`, `check:paths`, `build_content_engine.mjs --check`, `build_freshness_artifact.mjs --check`, `import_nasa_tokens.mjs --check`, `check-secrets.sh`, `npm-audit-ci.mjs`, backend Jest, frontend Jest, Python `pytest`, and GitHub Actions workflow checks on PR #69).
+- **Phase 6 Verification Output**:
+  - `npm test -- --ci --runInBand` → **PASS** (`147 passed` suites, `1,540 passed` tests, including `__tests__/phase6FinalReadinessGate.test.js`).
+  - `python3 -m pytest scripts/tests -q` → **PASS** (`112 passed, 1 skipped`).
+  - `npm run lint` (`tsc -p frontend/tsconfig.json --noEmit`) → **PASS** (`0` errors).
+  - `npm run lint:eslint` → **PASS** (`0` errors, within `--max-warnings 685`).
+  - `npm run build` + `npm run check:bundle` (`1,319.2 kB` gzipped) + `npm run check:design` (`0` new) + `npm run check:paths` (`0` leaked) + `npm run check:claims` (`16/16`) + `npm run check:tokens` (`99.8%`) + `bash scripts/check-secrets.sh --all` + `node scripts/npm-audit-ci.mjs` → **PASS**.

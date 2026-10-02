@@ -43,54 +43,27 @@ const riskTone = (severity: number) =>
           bar: 'bg-severity-low-solid',
         };
 
-export type DisclosureStage = 'peek' | 'half' | 'expanded';
-
-const NEXT_STAGE: Record<DisclosureStage, DisclosureStage> = {
-  peek: 'half',
-  half: 'expanded',
-  expanded: 'peek',
-};
-
 export const DistrictForecastCard: React.FC<DistrictForecastCardProps> = ({
   district,
   onClose,
   onOpenAnalytics,
   onOpenAdvisory,
 }) => {
-  const [disclosureStage, setDisclosureStage] = useState<DisclosureStage>('half');
   const [showLocationMap, setShowLocationMap] = useState(false);
   const tone = riskTone(district.severity);
   const severityPct = Math.round(district.severity * 100);
-
-  const cycleDisclosureStage = () => {
-    setDisclosureStage((prev) => {
-      const next = NEXT_STAGE[prev];
-      setShowLocationMap(next === 'expanded');
-      return next;
-    });
-  };
 
   return (
     <div
       role="dialog"
       aria-label={`${district.name} district forecast`}
       data-testid="district-forecast-card"
-      data-disclosure-stage={disclosureStage}
       className="flex flex-col min-h-0 w-full bg-white dark:bg-carbon-90 border border-carbon-20 dark:border-carbon-80 text-carbon-80 dark:text-carbon-10 rounded-t-3xl sm:rounded-2xl shadow-md"
     >
-      {/* 3-stage progressive disclosure handle (peek / half / expanded) */}
-      <button
-        type="button"
-        onClick={cycleDisclosureStage}
-        data-testid="disclosure-stage-toggle"
-        aria-label={`Cycle forecast disclosure stage (current: ${disclosureStage})`}
-        className="w-full min-h-[44px] flex flex-col items-center justify-center gap-1 pt-2 pb-1 px-4 text-xs font-mono text-carbon-60 dark:text-carbon-40 hover:bg-carbon-05 dark:hover:bg-carbon-80/50 touch-manipulation transition-colors border-b border-carbon-10 dark:border-carbon-80"
-      >
-        <span className="w-10 h-1.5 rounded-full bg-carbon-30 dark:bg-carbon-60" aria-hidden="true" />
-        <span className="sr-only">
-          Stage: {disclosureStage}
-        </span>
-      </button>
+      {/* Drag affordance for the mobile bottom-sheet presentation. Decorative:
+          the sheet is in flow, there is nothing to drag, but the handle is the
+          visual cue that this panel belongs to the sheet family. */}
+      <div className="map-sheet-handle sm:hidden" aria-hidden="true" />
 
       <div className="flex items-start justify-between gap-2 sm:gap-3 border-b border-carbon-10 dark:border-carbon-80 p-3 sm:p-4 shrink-0">
         <div className="min-w-0 flex-1">
@@ -114,7 +87,7 @@ export const DistrictForecastCard: React.FC<DistrictForecastCardProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="tap-target min-w-[44px] min-h-[44px] w-11 h-11 rounded-full bg-carbon-05 dark:bg-carbon-80 hover:bg-carbon-10 dark:hover:bg-carbon-70 text-carbon-70 dark:text-carbon-30 flex items-center justify-center touch-manipulation transition-colors"
+            className="tap-target w-9 sm:w-10 h-9 sm:h-10 rounded-full bg-carbon-05 dark:bg-carbon-80 hover:bg-carbon-10 dark:hover:bg-carbon-70 text-carbon-70 dark:text-carbon-30 flex items-center justify-center touch-manipulation transition-colors"
             title="Close district forecast"
             aria-label="Close district forecast"
           >
@@ -142,77 +115,67 @@ export const DistrictForecastCard: React.FC<DistrictForecastCardProps> = ({
             aria-valuemax={100}
             aria-label={`${district.name} hazard severity`}
           >
-            <div className={`h-full rounded-full transition-[width] duration-300 ${tone.bar}`} style={{ width: `${severityPct}%` }} />
+            <div className={`h-full rounded-full transition-all ${tone.bar}`} style={{ width: `${severityPct}%` }} />
           </div>
         </div>
 
-        {disclosureStage !== 'peek' && (
-          <>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-2.5 text-xs">
-              <div
-                className="bg-carbon-05 dark:bg-carbon-80/50 p-2 sm:p-3 border border-carbon-10 dark:border-carbon-70 rounded-2xl min-w-0"
-                title={`Main crop: ${district.mainCrop}`}
-              >
-                <span className="text-carbon-60 dark:text-carbon-40 flex items-center gap-1 text-xs font-bold uppercase tracking-wide">
-                  <MaterialIcon name="agriculture" className="w-3.5 h-3.5 text-nasa-green shrink-0" />
-                  Crop
-                </span>
-                <span className="font-semibold text-sm sm:text-base text-carbon-90 dark:text-white truncate block">{district.mainCrop}</span>
-              </div>
-              <div className="bg-carbon-05 dark:bg-carbon-80/50 p-2 sm:p-3 border border-carbon-10 dark:border-carbon-70 rounded-2xl min-w-0">
-                <span className="text-carbon-60 dark:text-carbon-40 flex items-center gap-1 text-xs font-bold uppercase tracking-wide">
-                  <MaterialIcon name="terrain" className="w-3.5 h-3.5 text-amber-600 shrink-0" />
-                  Elev.
-                </span>
-                <span className="font-semibold text-sm sm:text-base text-carbon-90 dark:text-white">{district.elevationMeters}m MSL</span>
-              </div>
-              <div className="bg-carbon-05 dark:bg-carbon-80/50 p-2 sm:p-3 border border-carbon-10 dark:border-carbon-70 rounded-2xl min-w-0 sm:col-span-1 col-span-2">
-                <span className="text-carbon-60 dark:text-carbon-40 flex items-center gap-1 text-xs font-bold uppercase tracking-wide">
-                  <MaterialIcon name="my_location" className="w-3.5 h-3.5 text-nasa-blue shrink-0" />
-                  Loc.
-                </span>
-                <span className="font-semibold font-mono text-xs sm:text-sm text-carbon-90 dark:text-white tabular-nums">
-                  {district.lat.toFixed(2)}°N, {district.lng.toFixed(2)}°E
-                </span>
-              </div>
-            </div>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-2.5 text-xs">
+          <div
+            className="bg-carbon-05 dark:bg-carbon-80/50 p-2 sm:p-3 border border-carbon-10 dark:border-carbon-70 rounded-2xl min-w-0"
+            title={`Main crop: ${district.mainCrop}`}
+          >
+            <span className="text-carbon-60 dark:text-carbon-40 flex items-center gap-1 text-xs font-bold uppercase tracking-wide">
+              <MaterialIcon name="agriculture" className="w-3.5 h-3.5 text-nasa-green shrink-0" />
+              Crop
+            </span>
+            <span className="font-semibold text-sm sm:text-base text-carbon-90 dark:text-white truncate block">{district.mainCrop}</span>
+          </div>
+          <div className="bg-carbon-05 dark:bg-carbon-80/50 p-2 sm:p-3 border border-carbon-10 dark:border-carbon-70 rounded-2xl min-w-0">
+            <span className="text-carbon-60 dark:text-carbon-40 flex items-center gap-1 text-xs font-bold uppercase tracking-wide">
+              <MaterialIcon name="terrain" className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+              Elev.
+            </span>
+            <span className="font-semibold text-sm sm:text-base text-carbon-90 dark:text-white">{district.elevationMeters}m MSL</span>
+          </div>
+          <div className="bg-carbon-05 dark:bg-carbon-80/50 p-2 sm:p-3 border border-carbon-10 dark:border-carbon-70 rounded-2xl min-w-0 sm:col-span-1 col-span-2">
+            <span className="text-carbon-60 dark:text-carbon-40 flex items-center gap-1 text-xs font-bold uppercase tracking-wide">
+              <MaterialIcon name="my_location" className="w-3.5 h-3.5 text-nasa-blue shrink-0" />
+              Loc.
+            </span>
+            <span className="font-semibold font-mono text-xs sm:text-sm text-carbon-90 dark:text-white tabular-nums">
+              {district.lat.toFixed(2)}°N, {district.lng.toFixed(2)}°E
+            </span>
+          </div>
+        </div>
 
-            <button
-              type="button"
-              onClick={() => {
-                setShowLocationMap((value) => {
-                  const next = !value;
-                  setDisclosureStage(next ? 'expanded' : 'half');
-                  return next;
-                });
-              }}
-              aria-expanded={showLocationMap}
-              className="flex items-center justify-between gap-2 min-h-[44px] border border-carbon-10 dark:border-carbon-80 bg-white dark:bg-carbon-80/50 px-3 sm:px-3.5 py-2 text-xs sm:text-sm font-semibold text-carbon-70 dark:text-carbon-30 hover:bg-carbon-05 dark:hover:bg-carbon-70 touch-manipulation transition-colors rounded-full"
-            >
-              <span className="flex items-center gap-1.5 sm:gap-2 min-w-0">
-                <MaterialIcon name="map" className="w-4 h-4 text-nasa-blue shrink-0" />
-                <span className="truncate">Location Map</span>
-              </span>
-              <span className={`transition-transform shrink-0 ${showLocationMap ? 'rotate-180' : ''}`} aria-hidden="true">
-                ▾
-              </span>
-            </button>
-            {showLocationMap && (
-              <div className="overflow-hidden rounded-2xl border border-carbon-20">
-                <LocationMap
-                  location={`${district.name} District, ${district.division}`}
-                  coordinates={`${district.lat.toFixed(4)}° N, ${district.lng.toFixed(4)}° E`}
-                  lat={district.lat}
-                  lng={district.lng}
-                  hazardType={district.hazardType}
-                  severity={district.severity}
-                  risk={district.risk}
-                  division={district.division}
-                  elevation={district.elevationMeters}
-                />
-              </div>
-            )}
-          </>
+        <button
+          type="button"
+          onClick={() => setShowLocationMap((value) => !value)}
+          aria-expanded={showLocationMap}
+          className="flex items-center justify-between gap-2 min-h-10 sm:min-h-11 border border-carbon-10 dark:border-carbon-80 bg-white dark:bg-carbon-80/50 px-3 sm:px-3.5 py-2 text-xs sm:text-sm font-semibold text-carbon-70 dark:text-carbon-30 hover:bg-carbon-05 dark:hover:bg-carbon-70 touch-manipulation transition-colors rounded-full"
+        >
+          <span className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+            <MaterialIcon name="map" className="w-4 h-4 text-nasa-blue shrink-0" />
+            <span className="truncate">Location Map</span>
+          </span>
+          <span className={`transition-transform shrink-0 ${showLocationMap ? 'rotate-180' : ''}`} aria-hidden="true">
+            ▾
+          </span>
+        </button>
+        {showLocationMap && (
+          <div className="overflow-hidden rounded-2xl border border-carbon-20">
+            <LocationMap
+              location={`${district.name} District, ${district.division}`}
+              coordinates={`${district.lat.toFixed(4)}° N, ${district.lng.toFixed(4)}° E`}
+              lat={district.lat}
+              lng={district.lng}
+              hazardType={district.hazardType}
+              severity={district.severity}
+              risk={district.risk}
+              division={district.division}
+              elevation={district.elevationMeters}
+            />
+          </div>
         )}
       </div>
 

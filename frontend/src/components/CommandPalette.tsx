@@ -377,7 +377,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
              overflowed the viewport at exactly 1280 (e2e/smoke.spec.ts). The
              desktop bar is cursor-driven, so it keeps the natural icon width.
              Utilities (not .tap-target) so the xl: variant reliably overrides. */
-          className={`relative min-w-[44px] min-h-[44px] xl:min-w-0 p-2 flex items-center justify-center group shrink-0 transition-colors duration-200 cursor-pointer ${
+          className={`relative min-w-[44px] min-h-[44px] xl:min-w-0 p-2 flex items-center justify-center group shrink-0 transition-all duration-200 cursor-pointer ${
             isTransparent
               ? 'bg-transparent border-0 text-white hover:bg-white/15 drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]'
               : 'bg-white border border-carbon-20 text-carbon-80 hover:bg-carbon-05'
@@ -489,7 +489,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                           setSelectedIndex(0);
                         });
                       }}
-                      className={`px-3 py-1 rounded-xl text-xs font-bold whitespace-nowrap transition-colors ${
+                      className={`px-3 py-1 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
                         selectedCategory === cat
                           ? 'bg-primary text-white shadow-sm'
                           : 'text-carbon-60 hover:text-carbon-90 hover:bg-carbon-10'
@@ -529,7 +529,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                           key={item.id}
                           onClick={() => handleSelectItem(item)}
                           onMouseEnter={() => setSelectedIndex(index)}
-                          className={`p-3 min-h-[44px] cursor-pointer transition-colors flex items-center justify-between gap-3 border ${
+                          className={`p-3 min-h-[44px] cursor-pointer transition-all flex items-center justify-between gap-3 border ${
                             isSelected
                               ? 'bg-amber-50 border-amber-300 text-carbon-90 shadow-sm'
                               : 'bg-white border-carbon-10 hover:bg-carbon-05 text-carbon-70'

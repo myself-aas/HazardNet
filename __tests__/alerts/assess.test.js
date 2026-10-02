@@ -103,26 +103,6 @@ describe('level mapping', () => {
     expect(agreeing.auto_publishable).toBe(false);
   });
 
-  test('WARNING honors policy.agreement_epsilon when model and physics tracks agree within epsilon', () => {
-    // Gap is |0.72 - 0.66| = 0.06 <= policy.agreement_epsilon (0.10)
-    const withinEpsilon = assessRow(row({
-      confidence: 0.72, confidence_kind: 'calibrated_probability',
-      model_severity: 0.72, physics_severity: 0.66,
-    }), { policy, now: NOW });
-    expect(withinEpsilon.evidence.physics.physics_agreement).toBe('high');
-    expect(withinEpsilon.level).toBe('WARNING');
-
-    // Tightening ALERT_AGREEMENT_EPSILON to 0.02 makes the same 0.06 gap disagree
-    const strictPolicy = getPolicy({ ALERT_AGREEMENT_EPSILON: '0.02' });
-    const outsideStrictEpsilon = assessRow(row({
-      confidence: 0.72, confidence_kind: 'calibrated_probability',
-      model_severity: 0.72, physics_severity: 0.66,
-    }), { policy: strictPolicy, now: NOW });
-    expect(outsideStrictEpsilon.evidence.physics.physics_agreement).toBe('low');
-    expect(outsideStrictEpsilon.level).toBe('WATCH');
-    expect(outsideStrictEpsilon.blockers.map((b) => b.rule)).toContain('warning_agreement');
-  });
-
   test('a calibrated probability without agreement is blocked, not warned', () => {
     const disagreeing = assessRow(row({
       confidence: 0.71, confidence_kind: 'calibrated_probability',

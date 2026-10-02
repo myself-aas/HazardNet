@@ -39,7 +39,7 @@
  * `WATCH` that "should" be a `WARNING` says so in its own payload.
  */
 
-import { getPolicy, maxLevel, levelRank, ALERT_LEVELS, REQUIRED_DISCLAIMER, POLICY_DEFAULTS } from './policy.js';
+import { getPolicy, maxLevel, levelRank, ALERT_LEVELS, REQUIRED_DISCLAIMER } from './policy.js';
 import { VALID_HAZARDS } from '../utils/forecastRow.js';
 
 /** Fraction of the freshness SLO above which an assessment warns about staleness. */
@@ -95,7 +95,7 @@ function parseDate(value) {
  * `confidence_kind` is what tells the two apart, and it is the *only* thing that
  * unlocks the WARNING rule — not the presence of a number.
  */
-export function readEvidence(row = {}, { agreementEpsilon = POLICY_DEFAULTS.agreement_epsilon } = {}) {
+export function readEvidence(row = {}) {
   const severity = row.severity_score ?? row.severity ?? null;
   const modelSeverity = row.model_severity ?? null;
   const physicsSeverity = row.physics_severity ?? null;
@@ -119,15 +119,14 @@ export function readEvidence(row = {}, { agreementEpsilon = POLICY_DEFAULTS.agre
     divergence = Math.abs(divergence);
   }
 
-  // Agreement, in the §1.3 sense of "both tracks agree": absolute agreement within
-  // policy.agreement_epsilon (default 0.10) is the only definition that survives a
-  // missing physics track, because `physics_agreement` is computed against the *top*
-  // hazard and reads `false` whenever physics scores a different class most highly.
-  const tolerance = isNum(agreementEpsilon) && agreementEpsilon >= 0
-    ? agreementEpsilon
-    : POLICY_DEFAULTS.agreement_epsilon;
+  // Agreement, in the §1.3 sense of "both tracks agree": absolute agreement is
+  // the only definition that survives a missing physics track, because
+  // `physics_agreement` is computed against the *top* hazard and reads `false`
+  // whenever physics scores a different class most highly — which on a degenerate
+  // model is nearly always, and says nothing about "both tracks agree on danger".
+  const tolerance = 1e-9;
   const agreement = isNum(modelSeverity) && isNum(physicsSeverity)
-    ? Math.abs(modelSeverity - physicsSeverity) <= tolerance + 1e-9
+    ? Math.abs(modelSeverity - physicsSeverity) <= tolerance
       ? 'high'
       : 'low'
     : 'unknown';
@@ -193,7 +192,7 @@ function resolveCutoff(row, evidence, now) {
  * level, reasons, blockers, evidence, freshness, and the policy version used.
  */
 export function assessRow(row = {}, { policy = getPolicy(), now = new Date() } = {}) {
-  const evidence = readEvidence(row, { agreementEpsilon: policy?.agreement_epsilon });
+  const evidence = readEvidence(row);
   const cutoff = resolveCutoff(row, evidence, now);
   const fresh = isNum(cutoff.age_hours) ? cutoff.age_hours <= policy.max_prediction_age_hours : null;
 

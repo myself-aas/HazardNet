@@ -71,7 +71,6 @@ jobs:
       # redirect that leaves the production domain still fails the job.
       - name: Probe homepage
         id: homepage
-        continue-on-error: true
         shell: bash
         run: |
           RESPONSE=$(curl -sSL --max-redirs 5 -o /tmp/home.html -w "%{http_code} %{url_effective}" --max-time 30 "$SITE_URL/")
@@ -105,7 +104,6 @@ jobs:
       # frontend/vercel.json carries the rewrite, so this must stay green.
       - name: Probe deep links resolve with prerendered content
         id: deep_links
-        continue-on-error: true
         shell: bash
         run: |
           set -uo pipefail
@@ -143,7 +141,6 @@ jobs:
       # they disappear silently, which is exactly what happened before.
       - name: Probe security headers
         id: security_headers
-        continue-on-error: true
         shell: bash
         run: |
           set -uo pipefail
@@ -197,7 +194,6 @@ jobs:
       # /documentation and /about, both of which 404'd.
       - name: Verify every sitemap URL resolves
         id: sitemap
-        continue-on-error: true
         shell: bash
         run: |
           set -uo pipefail
@@ -233,7 +229,6 @@ jobs:
 
       - name: Probe forecast data (API, falling back to the committed snapshot)
         id: forecast_data
-        continue-on-error: true
         shell: bash
         run: |
           # Same -L rationale as the homepage probe above: the API rides the
@@ -300,7 +295,6 @@ jobs:
       # failure this check exists to make visible.
       - name: Probe the status page and its freshness artifact
         id: status_page
-        continue-on-error: true
         shell: bash
         run: |
           set -uo pipefail
@@ -348,7 +342,6 @@ jobs:
       # is online when the season it describes arrives.
       - name: Probe the generated content pages
         id: content_pages
-        continue-on-error: true
         shell: bash
         run: |
           set -uo pipefail
@@ -519,15 +512,3 @@ jobs:
               jq -r '"- prediction_date: " + (.prediction_date // "none") + "\n- source: " + (.data_source // .source // "none")' /tmp/metadata.json
             fi
           } >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Enforce aggregate site-health probe outcome
-        if: always()
-        shell: bash
-        run: |
-          set -euo pipefail
-          OUTCOME=$(jq -r '.outcome // "fail"' data/site-health/latest.json)
-          if [ "$OUTCOME" != "pass" ]; then
-            echo "::error::One or more site-health probes failed (outcome=$OUTCOME). See data/site-health/latest.json."
-            exit 1
-          fi
-          echo "✅ All 7 site-health probes passed."

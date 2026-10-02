@@ -13,7 +13,6 @@
 
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
 import { execSync } from 'node:child_process';
 import {
@@ -26,26 +25,6 @@ import { validateAdvisoryCsv, parseCsv } from './validate_advisory_csv.mjs';
 const DEFAULT_CSV_PATH = 'backend/data/forecasts/hazardnet_forecasts_latest.csv';
 const DEFAULT_MANIFEST_PATH = 'backend/data/forecasts/manifest.json';
 const DEFAULT_SNAPSHOT_PATH = 'frontend/public/data/forecasts-latest.json';
-
-/**
- * Resolve the canonical model version from Models/VERSION.json if present.
- * Returns null if missing or invalid.
- *
- * @param {string} [rootDir=process.cwd()]
- * @returns {string|null}
- */
-export function resolveCanonicalModelVersion(rootDir = process.cwd()) {
-  const versionPath = resolve(rootDir, 'Models', 'VERSION.json');
-  if (!existsSync(versionPath)) return null;
-  try {
-    const parsed = JSON.parse(readFileSync(versionPath, 'utf8'));
-    return typeof parsed?.version === 'string' && parsed.version.trim()
-      ? parsed.version.trim()
-      : null;
-  } catch {
-    return null;
-  }
-}
 
 async function main() {
   const args = process.argv.slice(2);
@@ -82,15 +61,14 @@ async function main() {
   console.log(`✅ Schema validation passed: ${validationResult.summary.totalRows} rows from 64 districts.`);
 
   // 2. Parse & Map to ForecastRow schema
-  const canonicalModelVersion = resolveCanonicalModelVersion(process.cwd());
   const parsedRecords = parseCsv(rawCsvContent);
   const [headers, ...rows] = parsedRecords;
   const rawRowObjects = rows.map((cells) => {
     return Object.fromEntries(headers.map((h, i) => [h.trim(), cells[i]?.trim()]));
   });
 
-  const mappedForecastRows = mapAdvisoryRows(rawRowObjects, { modelVersion: canonicalModelVersion });
-  console.log(`✅ Mapped ${mappedForecastRows.length} forecast records (model_version=${canonicalModelVersion ?? 'null'}).`);
+  const mappedForecastRows = mapAdvisoryRows(rawRowObjects);
+  console.log(`✅ Mapped ${mappedForecastRows.length} forecast records.`);
 
   // 3. Serialize to CSV
   const outputCsv = forecastRowsToCsv(mappedForecastRows);
@@ -109,7 +87,6 @@ async function main() {
     prediction_date: predictionDate,
     row_count: mappedForecastRows.length,
     csv_sha256: csvSha256,
-    model_version: canonicalModelVersion,
     csv_path: DEFAULT_CSV_PATH,
     json_path: 'backend/data/forecasts/hazardnet_forecasts_latest.json',
   };
@@ -154,10 +131,7 @@ async function main() {
   console.log(`🎉 Daily advisory ingest complete!`);
 }
 
-const isMain = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url);
-if (isMain) {
-  main().catch((err) => {
-    console.error(`Fatal error in advisory ingest: ${err.message}`);
-    process.exit(1);
-  });
-}
+main().catch((err) => {
+  console.error(`Fatal error in advisory ingest: ${err.message}`);
+  process.exit(1);
+});

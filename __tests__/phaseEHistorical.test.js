@@ -19,6 +19,7 @@ const describe = globalThis.describe ?? nodeTest.describe;
 const test = globalThis.test ?? nodeTest.test;
 
 import { generateGlideLinks, GLIDE_REGEX } from '../backend/utils/glideResolver.js';
+import historicalRouter from '../backend/routes/historical.js';
 
 describe('TASK-015: Analytical Datasets & Bundling Pipeline Integrity', () => {
   const dataDir = path.resolve(process.cwd(), 'frontend', 'public', 'data', 'historical');

@@ -19,7 +19,6 @@ import { useHazardNotifications } from './hooks/useHazardNotifications';
 import { initializeAttributionCapture } from './services/conversionTracking';
 import { RequireSuperAdmin } from './components/blog/RequireSuperAdmin';
 import { InfinityLoader } from './components/brand';
-import { useMeridianTheme } from './components/meridian/motion';
 import { Toaster } from 'react-hot-toast';
 
 // Route-level code splitting (FE-01): every page is a lazy chunk so the
@@ -87,7 +86,7 @@ const GeneratedContentPage: React.FC = () => {
  */
 const RouteFallback = () => {
   const reduceMotion = useReducedMotion();
-  const frame = useWebFrame(30, 6);
+  const frame = useWebFrame(30);
   return (
     <Interactive.Div
       name="Route fallback — loading"
@@ -223,10 +222,9 @@ const AppRoutes: React.FC<{ location: ReturnType<typeof useLocation> }> = ({ loc
 const AppContent: React.FC = () => {
   const { userProfile } = useAuth();
   useHazardNotifications(userProfile?.homeDistrictId);
-  useMeridianTheme();
   const location = useLocation();
   const reduceMotion = useReducedMotion();
-  const frame = useWebFrame(30, 6);
+  const frame = useWebFrame(30);
 
   useEffect(() => {
     initializeAttributionCapture();
@@ -260,7 +258,7 @@ const AppContent: React.FC = () => {
       className={
         isHomePage
           ? 'h-dvh w-full overflow-hidden bg-transparent text-carbon-90 flex flex-col font-sans relative pointer-events-none'
-          : 'min-h-screen bg-carbon-05 text-carbon-90 flex flex-col font-sans selection:bg-amber-100 selection:text-amber-900'
+          : 'min-h-screen bg-carbon-05 text-carbon-90 flex flex-col font-sans selection:bg-amber-100 selection:text-amber-900 pointer-events-none'
       }
     >
       <Toaster
@@ -272,10 +270,10 @@ const AppContent: React.FC = () => {
         }}
         toastOptions={{
           style: {
-            background: 'var(--mrd-surface, #ffffff)',
-            color: 'var(--hds-color-carbon-90, #17171b)',
-            border: '1px solid var(--hds-color-carbon-20, #d1d1d1)',
-            borderRadius: 'var(--mrd-radius-sm, 8px)',
+            background: '#ffffff',
+            color: '#17171b',
+            border: '1px solid #d1d1d1',
+            borderRadius: 0,
             boxShadow: 'none',
             fontSize: '16px',
           },

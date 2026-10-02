@@ -104,7 +104,7 @@ const AdvisoryPanel: React.FC<AdvisoryPanelProps> = ({
   if (!advisory) return null;
 
   return (
-    <div id="advisory-panel-container" className="w-full bg-white dark:bg-carbon-90 rounded-lg sm:rounded-xl border border-carbon-10 dark:border-carbon-80 shadow-sm sm:shadow-md p-3 sm:p-6 space-y-4 sm:space-y-6 transition-shadow duration-300 hover:shadow-sm sm:hover:shadow-lg text-carbon-90 dark:text-carbon-10">
+    <div id="advisory-panel-container" className="w-full bg-white dark:bg-carbon-90 rounded-lg sm:rounded-xl border border-carbon-10 dark:border-carbon-80 shadow-sm sm:shadow-md p-3 sm:p-6 space-y-4 sm:space-y-6 transition-all duration-300 hover:shadow-sm sm:hover:shadow-lg text-carbon-90 dark:text-carbon-10">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 pb-3 sm:pb-4 border-b border-carbon-10 dark:border-carbon-80">
         <div className="space-y-1.5 sm:space-y-2 flex-1 min-w-0">
           <h3 className="text-base sm:text-lg font-bold text-carbon-90 dark:text-white tracking-tight flex items-center gap-2">

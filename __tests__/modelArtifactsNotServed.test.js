@@ -52,18 +52,6 @@ describe('Vercel configurations never route to model artifacts', () => {
       expect(output).not.toMatch(ARTIFACT);
     });
   }
-
-  test('root and frontend vercel.json carry identical security headers, SPA fallback, and build-to-dist parity', () => {
-    const rootConfig = readJson('vercel.json');
-    const frontendConfig = readJson('frontend/vercel.json');
-    const rootPkg = readJson('package.json');
-
-    expect(rootConfig.headers).toEqual(frontendConfig.headers);
-    expect(rootConfig.rewrites).toEqual(frontendConfig.rewrites);
-    expect(rootConfig.outputDirectory).toBe('dist');
-    expect(frontendConfig.outputDirectory).toBe('dist');
-    expect(rootPkg.scripts.build).toContain('scripts/copy-dist.mjs');
-  });
 });
 
 describe('Firebase Hosting never serves model artifacts', () => {

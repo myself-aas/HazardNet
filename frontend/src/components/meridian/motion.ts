@@ -176,27 +176,19 @@ function systemTheme(): 'light' | 'dark' {
 export function useMeridianTheme() {
   const [theme, setTheme] = useState<MeridianThemeName>(() => {
     if (typeof window === 'undefined') return 'system';
-    try {
-      const stored = window.localStorage.getItem(STORAGE_KEY);
-      return stored === 'light' || stored === 'dark' || stored === 'system' ? stored : 'system';
-    } catch {
-      return 'system';
-    }
+    const stored = window.localStorage.getItem(STORAGE_KEY);
+    return stored === 'light' || stored === 'dark' || stored === 'system' ? stored : 'system';
   });
 
   useEffect(() => {
     const root = document.documentElement;
     const apply = (name: MeridianThemeName) => {
-      const resolvedTheme = name === 'system' ? systemTheme() : name;
-      root.setAttribute('data-mrd-theme', resolvedTheme);
-      root.classList.toggle('dark', resolvedTheme === 'dark');
-      root.style.colorScheme = resolvedTheme;
+      root.setAttribute('data-mrd-theme', name === 'system' ? systemTheme() : name);
     };
 
     apply(theme);
 
     if (theme !== 'system') return;
-    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;
     const query = window.matchMedia('(prefers-color-scheme: dark)');
     const onChange = () => apply('system');
     query.addEventListener('change', onChange);
@@ -213,6 +205,5 @@ export function useMeridianTheme() {
     }
   }, []);
 
-  const resolved: 'light' | 'dark' = theme === 'system' ? systemTheme() : theme;
-  return { theme, setTheme: select, resolved } as const;
+  return { theme, setTheme: select, resolved: systemTheme() } as const;
 }

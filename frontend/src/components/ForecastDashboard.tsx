@@ -303,7 +303,7 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
   return (
     <div className="w-full space-y-6">
       {/* Header Banner & Status */}
-      <div className="bg-white border border-carbon-20/90 rounded-3xl p-6 sm:p-8 shadow-md relative overflow-hidden transition-shadow duration-300 hover:shadow-lg">
+      <div className="bg-white border border-carbon-20/90 rounded-3xl p-6 sm:p-8 shadow-md relative overflow-hidden transition-all duration-300 hover:shadow-lg">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
           <div className="space-y-2">
             <div className="flex flex-wrap items-center gap-2">
@@ -336,7 +336,7 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={handleExportCsv}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-carbon-90 text-white text-xs font-extrabold shadow-sm hover:bg-carbon-80 transition-colors cursor-pointer min-h-[44px]"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-carbon-90 text-white text-xs font-extrabold shadow-sm hover:bg-carbon-80 transition-all cursor-pointer min-h-[44px]"
             >
               <MaterialIcon name="download" className="w-4 h-4 text-amber-400" />
               <span>Export CSV Data</span>
@@ -405,7 +405,7 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
           <div className="inline-flex rounded-xl p-1 bg-carbon-10 border border-carbon-20 shrink-0">
             <button
               onClick={() => setSelectedHorizon('7_days')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors min-h-[44px] ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all min-h-[44px] ${
                 selectedHorizon === '7_days' ? 'bg-white text-carbon-90 shadow-2xs font-extrabold' : 'text-carbon-60 hover:text-carbon-90'
               }`}
             >
@@ -413,7 +413,7 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
             </button>
             <button
               onClick={() => setSelectedHorizon('15_days')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors min-h-[44px] ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all min-h-[44px] ${
                 selectedHorizon === '15_days' ? 'bg-white text-carbon-90 shadow-2xs font-extrabold' : 'text-carbon-60 hover:text-carbon-90'
               }`}
             >
@@ -471,7 +471,7 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
           <div className="flex items-center gap-2">
             <button
               onClick={() => setActiveChartTab('trends')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-colors min-h-[44px] ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all min-h-[44px] ${
                 activeChartTab === 'trends' ? 'bg-amber-500 text-carbon-90 shadow-2xs font-extrabold' : 'bg-carbon-10 text-carbon-60 hover:bg-carbon-20'
               }`}
             >
@@ -479,7 +479,7 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
             </button>
             <button
               onClick={() => setActiveChartTab('comparison')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-colors min-h-[44px] ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all min-h-[44px] ${
                 activeChartTab === 'comparison' ? 'bg-amber-500 text-carbon-90 shadow-2xs font-extrabold' : 'bg-carbon-10 text-carbon-60 hover:bg-carbon-20'
               }`}
             >
@@ -487,7 +487,7 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
             </button>
             <button
               onClick={() => setActiveChartTab('dualTrack')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-colors min-h-[44px] ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all min-h-[44px] ${
                 activeChartTab === 'dualTrack' ? 'bg-amber-500 text-carbon-90 shadow-2xs font-extrabold' : 'bg-carbon-10 text-carbon-60 hover:bg-carbon-20'
               }`}
             >
