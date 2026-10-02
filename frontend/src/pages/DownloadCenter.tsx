@@ -254,9 +254,9 @@ export const DownloadCenter: React.FC = () => {
   }, [platformParam]);
 
   const tabs: { id: TabId; icon: string; label: string }[] = [
-    { id: 'software', icon: 'download', label: 'Apps & Binaries' },
+    { id: 'software', icon: 'download', label: 'Apps' },
     { id: 'python', icon: 'python', label: 'Python SDK' },
-    { id: 'npm', icon: 'code', label: 'JS / TS Library' },
+    { id: 'npm', icon: 'code', label: 'JavaScript' },
   ];
 
   const channelsForTab = (tab: TabId) =>

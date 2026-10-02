@@ -11,6 +11,7 @@ import {
   listArticles,
   updateArticle,
 } from '../../lib/blogArticles';
+import { InfinityLoader } from '../../components/brand';
 
 /**
  * Blog Studio — superadmin article management (dedicated dashboard pages,
@@ -143,7 +144,7 @@ export const BlogStudioPage: React.FC = () => {
       <div className="bg-white border border-carbon-20/90 overflow-hidden">
         {loading ? (
           <div className="p-10 flex justify-center" role="status">
-            <span className="w-7 h-7 border-[3px] border-carbon-20 border-t-amber-500 rounded-full animate-spin" />
+            <InfinityLoader size={88} label="Loading" announce={false} />
           </div>
         ) : articles.length === 0 ? (
           <div className="p-10 text-center space-y-3">

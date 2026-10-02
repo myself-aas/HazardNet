@@ -32,9 +32,9 @@ import {
   ChevronDown,
   ChevronUp,
   CheckCircle2,
-  RefreshCw,
-} from 'lucide-react';
+  } from 'lucide-react';
 import { fetchDivisionEvents, DivisionEventsResponse, ClimaticEvent, ForecastRecord } from '../lib/eventsClient';
+import { InfinityLoader } from '../components/brand';
 
 const ALL_DIVISIONS = [
   { id: 'dhaka', name: 'Dhaka' },
@@ -140,7 +140,7 @@ export const DivisionDetailPage: React.FC = () => {
     return (
       <div className="min-h-screen bg-carbon-05 flex items-center justify-center p-6">
         <div className="text-center">
-          <RefreshCw className="w-8 h-8 text-nasa-blue-shade animate-spin mx-auto mb-3" />
+          <InfinityLoader size={96} label="Loading" className="mx-auto mb-3 block" />
           <p className="text-sm font-medium text-carbon-70">Loading {divisionId} division climatic data...</p>
           <p className="text-xs text-carbon-60 mt-1">Parsing historical events (2000-2026) and forecast records</p>
         </div>

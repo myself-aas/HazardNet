@@ -18,6 +18,7 @@ import {
   updateArticle,
 } from '../../lib/blogArticles';
 import { effectiveMetaDescription, effectiveMetaTitle, seoScore } from '../../lib/blogSeo';
+import { InfinityLoader } from '../../components/brand';
 
 /**
  * Full-page blog article editor (dedicated dashboard route, not a popup or
@@ -291,7 +292,7 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
   if (loading) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center" role="status">
-        <span className="w-8 h-8 border-[3px] border-carbon-20 border-t-amber-500 rounded-full animate-spin" />
+        <InfinityLoader size={88} label="Loading" announce={false} />
       </div>
     );
   }

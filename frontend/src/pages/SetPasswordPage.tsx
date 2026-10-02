@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext'
 import MaterialIcon from '../components/MaterialIcon'
 import { PASSWORD_REQUIREMENTS, passwordStrength } from '../lib/passwordStrength'
 import { auth } from '../services/firebase';
+import { InfinityLoader } from '../components/brand';
 const isAuthConfigured = true;
 
 /**
@@ -113,7 +114,7 @@ export default function SetPasswordPage() {
     >
       {phase === 'waiting' && !user ? (
         <div className="flex flex-col items-center gap-3 py-6" role="status" data-testid="set-password-waiting">
-          <span className="h-8 w-8 animate-spin rounded-full border-[3px] border-carbon-20 border-t-nasa-red" />
+          <InfinityLoader size={88} label="Loading" announce={false} />
           <p className="text-xs text-carbon-60">Verifying your email link…</p>
         </div>
       ) : (

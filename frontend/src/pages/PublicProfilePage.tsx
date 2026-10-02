@@ -8,6 +8,7 @@ import { HazardNetBrand } from '../components/HazardNetLogo';
 import MaterialIcon from '../components/MaterialIcon';
 import { sanitizeUsernameInput } from '../lib/username';
 import { useI18n } from '../hooks/useI18n';
+import { InfinityLoader } from '../components/brand';
 
 /**
  * Public profile page — unique URL: /u/<username>
@@ -153,7 +154,7 @@ const PublicProfilePage: React.FC = () => {
 
       {state === 'loading' && (
         <div className="flex min-h-[40vh] items-center justify-center" role="status" aria-label="Loading profile">
-          <span className="h-9 w-9 animate-spin rounded-full border-[3px] border-carbon-20 border-t-amber-500" />
+          <InfinityLoader size={88} label="Loading" announce={false} />
         </div>
       )}
 

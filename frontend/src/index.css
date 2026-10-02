@@ -4,6 +4,7 @@
 @import "./styles/nasa-hds.css";
 
 @import "tailwindcss";
+@import "./styles/brand.css" layer(components);
 @import 'leaflet/dist/leaflet.css' layer(base);
 @import 'leaflet.markercluster/dist/MarkerCluster.css' layer(base);
 @import 'leaflet.markercluster/dist/MarkerCluster.Default.css' layer(base);

@@ -20,109 +20,10 @@ export interface SearchItem {
   isAutoLocate?: boolean;
 }
 
-// 1. Hazard Reports Database
-const HAZARD_REPORT_ITEMS: SearchItem[] = [
-  {
-    id: 'report-sylhet',
-    title: 'Sylhet Flash Flood Emergency Alert & Impact Report',
-    category: 'Hazard Report',
-    subtitle: 'Pre-monsoon Haor surge +2.1m over danger level • 142k households affected • Early harvest advisory active',
-    badge: 'Flash Flood • High Risk',
-    actionPath: '/?district=sylhet&report=true',
-    districtId: 'sylhet',
-    openReport: true,
-  },
-  {
-    id: 'report-sunamganj',
-    title: 'Sunamganj Haor Basin Inundation & Crop Loss Report',
-    category: 'Hazard Report',
-    subtitle: 'Critically inundated low-lying Boro paddy fields • Submersible embankment monitoring',
-    badge: 'Flash Flood • Critical',
-    actionPath: '/?district=sunamganj&report=true',
-    districtId: 'sunamganj',
-    openReport: true,
-  },
-  {
-    id: 'report-kurigram',
-    title: 'Kurigram Jamuna Riverine Flood & Evacuation Alert',
-    category: 'Hazard Report',
-    subtitle: 'Monsoon river stage peak • 85,000 m³/s discharge rate • Active shelter deployment in Sadar & Nageshwari',
-    badge: 'Monsoon Flood • High Risk',
-    actionPath: '/?district=kurigram&report=true',
-    districtId: 'kurigram',
-    openReport: true,
-  },
-  {
-    id: 'report-satkhira',
-    title: 'Satkhira Coastal Category 3 Cyclone & Surge Impact Report',
-    category: 'Hazard Report',
-    subtitle: 'Coastal polder overtopping • 145 km/h wind gusts • Shrimp gher & salt bed protection emergency mode',
-    badge: 'Tropical Cyclone • Severe',
-    actionPath: '/?district=satkhira&report=true',
-    districtId: 'satkhira',
-    openReport: true,
-  },
-  {
-    id: 'report-coxsbazar',
-    title: 'Cox\'s Bazar Coastal Storm Surge & High Wave Warning',
-    category: 'Hazard Report',
-    subtitle: 'Bay of Bengal tropical depression • +3.2m surge crest • Maritime vessel suspension & shelter readiness',
-    badge: 'Tropical Cyclone • High Risk',
-    actionPath: '/?district=coxsbazar&report=true',
-    districtId: 'coxsbazar',
-    openReport: true,
-  },
-  {
-    id: 'report-rajshahi',
-    title: 'Rajshahi Barind Agricultural Drought Severity Assessment',
-    category: 'Hazard Report',
-    subtitle: 'Extreme drought conditions in the Barind Tract • Alternate wetting & drying irrigation active',
-    badge: 'Drought • Severe',
-    actionPath: '/?district=rajshahi&report=true',
-    districtId: 'rajshahi',
-    openReport: true,
-  },
-  {
-    id: 'report-panchagarh',
-    title: 'Panchagarh Sub-Himalayan Cold Snap & Crop Freeze Report',
-    category: 'Hazard Report',
-    subtitle: 'Night minimum temp 6.2°C • 18 hrs/day dense fog • Boro seedbed polythene cover advisory',
-    badge: 'Cold Wave • High Risk',
-    actionPath: '/?district=panchagarh&report=true',
-    districtId: 'panchagarh',
-    openReport: true,
-  },
-  {
-    id: 'report-netrokona',
-    title: 'Netrokona Haor Basin Submergence & Relief Dispatch Report',
-    category: 'Hazard Report',
-    subtitle: 'Dhanu river overflow • 32,000 hectares Boro crop at risk • Mobile water purification deployed',
-    badge: 'Flash Flood • High Risk',
-    actionPath: '/?district=netrokona&report=true',
-    districtId: 'netrokona',
-    openReport: true,
-  },
-  {
-    id: 'report-sirajganj',
-    title: 'Sirajganj Jamuna Bank Erosion & Embankment Warning',
-    category: 'Hazard Report',
-    subtitle: 'High river flow velocity • Char community evacuation • Emergency sandbag reinforcement',
-    badge: 'Monsoon Flood • High Risk',
-    actionPath: '/?district=sirajganj&report=true',
-    districtId: 'sirajganj',
-    openReport: true,
-  },
-  {
-    id: 'report-bogra',
-    title: 'Bogra Kalbaishakhi Pre-Monsoon Squall Damage Assessment',
-    category: 'Hazard Report',
-    subtitle: 'Peak gust speed 98 km/h • Crop lodging & fruit shedding • Electrical distribution grid inspection',
-    badge: 'Severe Storm • Moderate',
-    actionPath: '/?district=bogra&report=true',
-    districtId: 'bogra',
-    openReport: true,
-  },
-];
+// Search index. It deliberately contains NO incident reports: an earlier version shipped ten hand-written
+// "Hazard Report" entries ("142k households affected", "85,000 m³/s discharge", "+3.2m surge crest" …) that no
+// published artifact backs. On an early-warning site a search result that reads like a live emergency is a trust
+// failure, so the index is limited to places, hazard profiles and documentation.
 
 // 2. Locations Database (64 Districts, 8 Divisions, Geographical Belts)
 const AUTO_LOCATE_ITEM: SearchItem = {
@@ -180,7 +81,7 @@ const REGION_BELT_ITEMS: SearchItem[] = [
     id: 'loc-coastal',
     title: 'Southern Coastal Belt & Polder Enclosures',
     category: 'Location',
-    subtitle: 'Satkhira, Khulna, Bagerhat, Barguna, Cox\'s Bazar • Saline water intrusion & cyclone surge belt',
+    subtitle: "Satkhira, Khulna, Bagerhat, Barguna, Cox's Bazar • Saline water intrusion & cyclone surge belt",
     badge: 'Coastal Zone',
     actionPath: '/?district=satkhira',
     districtId: 'satkhira',
@@ -219,7 +120,7 @@ const HAZARD_PROFILE_ITEMS: SearchItem[] = [
     title: 'Tropical Cyclone & Saline Storm Surge Profile',
     category: 'Hazard Profile',
     subtitle: 'Category 1-3 coastal storm systems in May & Oct-Nov with wind shear & wave inundation',
-    badge: 'Satkhira & Cox\'s Bazar',
+    badge: "Satkhira & Cox's Bazar",
     actionPath: '/analytics',
   },
   {
@@ -294,7 +195,6 @@ const DOCUMENTATION_ITEMS: SearchItem[] = [
 
 const SEARCH_DATABASE: SearchItem[] = [
   ...SPECIFIC_LANDMARK_ITEMS,
-  ...HAZARD_REPORT_ITEMS,
   ...DISTRICT_SEARCH_ITEMS,
   ...DIVISION_SEARCH_ITEMS,
   ...REGION_BELT_ITEMS,
@@ -305,12 +205,33 @@ const SEARCH_DATABASE: SearchItem[] = [
 interface CommandPaletteProps {
   onSelectDistrict?: (districtId: string) => void;
   isTransparent?: boolean;
+  /** Controlled open state. Omit for the self-managed palette (own trigger + Ctrl/Cmd+K). */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  /** The header no longer carries a search icon: the menu drawer opens the palette instead. */
+  hideTrigger?: boolean;
 }
 
-export const CommandPalette: React.FC<CommandPaletteProps> = ({ onSelectDistrict, isTransparent = false }) => {
-  const [isOpen, setIsOpen] = useState(false);
+export const CommandPalette: React.FC<CommandPaletteProps> = ({
+  onSelectDistrict,
+  isTransparent = false,
+  open,
+  onOpenChange,
+  hideTrigger = false,
+}) => {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isOpen = open ?? internalOpen;
+  const setIsOpen = useCallback(
+    (value: boolean) => {
+      setInternalOpen(value);
+      onOpenChange?.(value);
+    },
+    [onOpenChange],
+  );
   const [query, setQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<'All' | 'Hazard Report' | 'Location' | 'Hazard Profile' | 'Documentation'>('All');
+  const [selectedCategory, setSelectedCategory] = useState<'All' | 'Location' | 'Hazard Profile' | 'Documentation'>(
+    'All',
+  );
   const [selectedIndex, setSelectedIndex] = useState(0);
   const deferredQuery = useDeferredValue(query);
   const [isPending, startTransition] = useTransition();
@@ -360,52 +281,55 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onSelectDistrict
     return SEARCH_DATABASE.filter((item) => {
       const matchesCategory = selectedCategory === 'All' || item.category === selectedCategory;
       const q = deferredQuery.toLowerCase().trim();
-    if (!q) return matchesCategory;
+      if (!q) return matchesCategory;
 
-    const matchesQuery =
-      item.title.toLowerCase().includes(q) ||
-      item.subtitle.toLowerCase().includes(q) ||
-      (item.badge && item.badge.toLowerCase().includes(q)) ||
-      item.category.toLowerCase().includes(q) ||
-      (item.districtId && item.districtId.toLowerCase().includes(q));
+      const matchesQuery =
+        item.title.toLowerCase().includes(q) ||
+        item.subtitle.toLowerCase().includes(q) ||
+        (item.badge && item.badge.toLowerCase().includes(q)) ||
+        item.category.toLowerCase().includes(q) ||
+        (item.districtId && item.districtId.toLowerCase().includes(q));
 
-    return matchesCategory && matchesQuery;
+      return matchesCategory && matchesQuery;
     });
   }, [deferredQuery, selectedCategory]);
 
   // Handle item execution
-  const handleSelectItem = useCallback(async (item: SearchItem) => {
-    setIsOpen(false);
-    setQuery('');
+  const handleSelectItem = useCallback(
+    async (item: SearchItem) => {
+      setIsOpen(false);
+      setQuery('');
 
-    if (item.isAutoLocate) {
-      toast.loading('Detecting location & mapping district...', { id: 'locate-toast' });
-      try {
-        const result = await detectExactPinpointLocation();
-        toast.dismiss('locate-toast');
-        if (result.nearestDistrict) {
-          if (onSelectDistrict) {
-            onSelectDistrict(result.nearestDistrict.id);
+      if (item.isAutoLocate) {
+        toast.loading('Detecting location & mapping district...', { id: 'locate-toast' });
+        try {
+          const result = await detectExactPinpointLocation();
+          toast.dismiss('locate-toast');
+          if (result.nearestDistrict) {
+            if (onSelectDistrict) {
+              onSelectDistrict(result.nearestDistrict.id);
+            }
+            toast.success(
+              `Mapped to ${result.nearestDistrict.name} District (${result.nearestDistrict.division} Division)!`,
+              { icon: <MaterialIcon name="my_location" className="w-4 h-4 inline-block mr-1" />, duration: 4000 },
+            );
+            navigate(`/?district=${result.nearestDistrict.id}`);
           }
-          toast.success(
-            `Mapped to ${result.nearestDistrict.name} District (${result.nearestDistrict.division} Division)!`,
-            { icon: <MaterialIcon name="my_location" className="w-4 h-4 inline-block mr-1" />, duration: 4000 }
-          );
-          navigate(`/?district=${result.nearestDistrict.id}`);
+        } catch (err) {
+          toast.dismiss('locate-toast');
+          toast.error('Location detection failed.');
         }
-      } catch (err) {
-        toast.dismiss('locate-toast');
-        toast.error('Location detection failed.');
+        return;
       }
-      return;
-    }
 
-    if (item.districtId && onSelectDistrict) {
-      onSelectDistrict(item.districtId);
-    }
+      if (item.districtId && onSelectDistrict) {
+        onSelectDistrict(item.districtId);
+      }
 
-    navigate(item.actionPath);
-  }, [navigate, onSelectDistrict]);
+      navigate(item.actionPath);
+    },
+    [navigate, onSelectDistrict],
+  );
 
   // Keyboard navigation within search input
   const handleInputKeyDown = (e: React.KeyboardEvent) => {
@@ -440,40 +364,42 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onSelectDistrict
 
   return (
     <>
-      {/* Dynamic Search Icon Button in Top Menu Bar */}
-      <button
-        onClick={() => {
-          setIsOpen(true);
-          setTimeout(() => inputRef.current?.focus(), 50);
-        }}
-        /* 44×44 touch target on the compact (touch) bar. At ≥xl the trigger
-           lives in the full desktop bar, which measured ~1180px before this
-           target existed — a 44px min-width there pushed it to 1287px and
-           overflowed the viewport at exactly 1280 (e2e/smoke.spec.ts). The
-           desktop bar is cursor-driven, so it keeps the natural icon width.
-           Utilities (not .tap-target) so the xl: variant reliably overrides. */
-        className={`relative min-w-[44px] min-h-[44px] xl:min-w-0 p-2 flex items-center justify-center group shrink-0 transition-all duration-200 cursor-pointer ${
-          isTransparent
-            ? 'bg-transparent border-0 text-white hover:bg-white/15 drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]'
-            : 'bg-white border border-carbon-20 text-carbon-80 hover:bg-carbon-05'
-        }`}
-        title="Search HazardNet (Ctrl+K)"
-        aria-label="Search HazardNet"
-        data-testid="district-search-trigger"
-      >
-        <MaterialIcon
-          name="map_search"
-          className={`text-lg transition-transform duration-200 group-hover:scale-110 group-hover:rotate-6 ${
-            isTransparent ? 'text-white' : 'text-carbon-80 group-hover:text-carbon-black'
+      {/* The search trigger. The header no longer shows it (the menu drawer opens the palette); `hideTrigger` removes it. */}
+      {!hideTrigger && (
+        <button
+          onClick={() => {
+            setIsOpen(true);
+            setTimeout(() => inputRef.current?.focus(), 50);
+          }}
+          /* 44×44 touch target on the compact (touch) bar. At ≥xl the trigger
+             lives in the full desktop bar, which measured ~1180px before this
+             target existed — a 44px min-width there pushed it to 1287px and
+             overflowed the viewport at exactly 1280 (e2e/smoke.spec.ts). The
+             desktop bar is cursor-driven, so it keeps the natural icon width.
+             Utilities (not .tap-target) so the xl: variant reliably overrides. */
+          className={`relative min-w-[44px] min-h-[44px] xl:min-w-0 p-2 flex items-center justify-center group shrink-0 transition-all duration-200 cursor-pointer ${
+            isTransparent
+              ? 'bg-transparent border-0 text-white hover:bg-white/15 drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]'
+              : 'bg-white border border-carbon-20 text-carbon-80 hover:bg-carbon-05'
           }`}
-        />
+          title="Search HazardNet (Ctrl+K)"
+          aria-label="Search HazardNet"
+          data-testid="district-search-trigger"
+        >
+          <MaterialIcon
+            name="map_search"
+            className={`text-lg transition-transform duration-200 group-hover:scale-110 group-hover:rotate-6 ${
+              isTransparent ? 'text-white' : 'text-carbon-80 group-hover:text-carbon-black'
+            }`}
+          />
 
-        {/* Dynamic Active Pulse Indicator */}
-        <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-nasa-red opacity-75"></span>
-          <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-nasa-red border border-white"></span>
-        </span>
-      </button>
+          {/* Dynamic Active Pulse Indicator */}
+          <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-nasa-red opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-nasa-red border border-white"></span>
+          </span>
+        </button>
+      )}
 
       {/* Global Command Palette Search Modal.
           Portaled to document.body so the overlay escapes the sticky header
@@ -483,163 +409,188 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ onSelectDistrict
           `hidden xl:flex` / `xl:hidden` container so exactly one is visible
           per breakpoint (e2e strict-mode locators rely on that). */}
       {createPortal(
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            key="command-palette-backdrop"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.15 }}
-            className="fixed inset-0 z-[var(--z-overlay)] bg-carbon-90/40 flex items-start justify-center pt-12 sm:pt-20 px-4"
-            onClick={(e) => {
-              if (e.target === e.currentTarget) setIsOpen(false);
-            }}
-          >
+        <AnimatePresence>
+          {isOpen && (
             <motion.div
-              key="command-palette-modal"
-              ref={containerRef}
-              role="dialog"
-              aria-modal="true"
-              aria-label="Search HazardNet"
-              data-testid="district-search-modal"
-              initial={{ opacity: 0, scale: 0.94, y: -12 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.94, y: -12 }}
-              transition={{ type: 'spring', stiffness: 350, damping: 25 }}
-              className="max-w-2xl w-full bg-white border border-carbon-20 rounded-3xl shadow-2xl overflow-hidden text-carbon-80 flex flex-col max-h-[85vh]"
+              key="command-palette-backdrop"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
+              className="fixed inset-0 z-[var(--z-overlay)] bg-carbon-90/40 flex items-start justify-center pt-12 sm:pt-20 px-4"
+              onClick={(e) => {
+                if (e.target === e.currentTarget) setIsOpen(false);
+              }}
             >
-              {/* Header / Search Input */}
-            <div className="relative flex items-center px-4 py-3 border-b border-carbon-20 bg-carbon-05">
-              <MaterialIcon name="search" className="text-xl text-nasa-red-shade ml-1 shrink-0" />
+              <motion.div
+                key="command-palette-modal"
+                ref={containerRef}
+                role="dialog"
+                aria-modal="true"
+                aria-label="Search HazardNet"
+                data-testid="district-search-modal"
+                initial={{ opacity: 0, scale: 0.94, y: -12 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.94, y: -12 }}
+                transition={{ type: 'spring', stiffness: 350, damping: 25 }}
+                className="max-w-2xl w-full bg-white border border-carbon-20 rounded-3xl shadow-2xl overflow-hidden text-carbon-80 flex flex-col max-h-[85vh]"
+              >
+                {/* Header / Search Input */}
+                <div className="relative flex items-center px-4 py-3 border-b border-carbon-20 bg-carbon-05">
+                  <MaterialIcon name="search" className="text-xl text-nasa-red-shade ml-1 shrink-0" />
 
-              <input
-                ref={inputRef}
-                type="text"
-                value={query}
-                onChange={(e) => {
-                  setQuery(e.target.value);
-                  setSelectedIndex(0);
-                }}
-                onKeyDown={handleInputKeyDown}
-                data-testid="district-search-input"
-                aria-label="Search districts, hazards and documents"
-                placeholder="Search 64 districts, hazard reports, profiles, or docs..."
-                className="w-full pl-3 pr-10 py-1.5 bg-transparent text-carbon-90 placeholder-carbon-40 text-sm font-medium focus:outline-none"
-                autoFocus
-              />
-
-              {query ? (
-                <button
-                  onClick={() => {
-                    setQuery('');
-                    setSelectedIndex(0);
-                    inputRef.current?.focus();
-                  }}
-                  className="p-1 rounded-md text-carbon-60 hover:text-carbon-80 hover:bg-carbon-20 transition-colors text-xs font-mono font-bold"
-                  title="Clear search"
-                >
-                  <MaterialIcon name="close" className="text-sm" />
-                </button>
-              ) : (
-                <button
-                  onClick={() => setIsOpen(false)}
-                  className="min-h-[44px] px-2 py-1 bg-white border border-carbon-20 text-xs font-mono text-carbon-60 hover:text-carbon-90 transition-colors"
-                >
-                  ESC
-                </button>
-              )}
-            </div>
-
-            {/* Category Filter Tabs */}
-            <div className="px-4 py-2.5 bg-white border-b border-carbon-20 flex items-center gap-1.5 overflow-x-auto text-xs scrollbar-none shrink-0">
-              <span className="text-carbon-60 font-mono text-xs uppercase font-bold mr-1">Filter:</span>
-              {(['All', 'Hazard Report', 'Location', 'Hazard Profile', 'Documentation'] as const).map((cat) => (
-                <button
-                  key={cat}
-                  onClick={() => {
-                    startTransition(() => {
-                      setSelectedCategory(cat);
+                  <input
+                    ref={inputRef}
+                    type="text"
+                    value={query}
+                    onChange={(e) => {
+                      setQuery(e.target.value);
                       setSelectedIndex(0);
-                    });
-                  }}
-                  className={`px-3 py-1 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
-                    selectedCategory === cat
-                      ? 'bg-primary text-white shadow-sm'
-                      : 'text-carbon-60 hover:text-carbon-90 hover:bg-carbon-10'
-                  }`}
-                >
-                  {cat === 'Hazard Report' ? 'Reports' : cat === 'Location' ? 'Locations' : cat === 'Hazard Profile' ? 'Hazards' : cat === 'Documentation' ? 'Docs' : 'All'}
-                </button>
-              ))}
-              <span className="ml-auto text-xs font-mono text-carbon-60 hidden sm:inline-block">
-                {filteredItems.length} match{filteredItems.length === 1 ? '' : 'es'}
-              </span>
-            </div>
+                    }}
+                    onKeyDown={handleInputKeyDown}
+                    data-testid="district-search-input"
+                    aria-label="Search districts, hazards and documents"
+                    placeholder="Search districts, hazards or docs"
+                    className="w-full pl-3 pr-10 py-1.5 bg-transparent text-carbon-90 placeholder-carbon-40 text-sm font-medium focus:outline-none"
+                    autoFocus
+                  />
 
-            {/* Search Results List */}
-            <div ref={listRef} className="overflow-y-auto p-3 space-y-1.5 flex-1 max-h-[50vh]">
-              {filteredItems.length === 0 ? (
-                <div className="p-10 text-center text-carbon-60 text-xs space-y-2">
-                  <p className="font-bold text-carbon-90 text-base">No results found for "{query}"</p>
-                  <p className="text-carbon-60 text-xs max-w-sm mx-auto">
-                    Try searching for <span className="text-carbon-80 font-semibold">"Kurigram"</span>, <span className="text-carbon-80 font-semibold">"Sylhet Report"</span>, <span className="text-carbon-80 font-semibold">"Flash Flood"</span>, or <span className="text-carbon-80 font-semibold">"Cyclone"</span>.
-                  </p>
+                  {query ? (
+                    <button
+                      onClick={() => {
+                        setQuery('');
+                        setSelectedIndex(0);
+                        inputRef.current?.focus();
+                      }}
+                      className="p-1 rounded-md text-carbon-60 hover:text-carbon-80 hover:bg-carbon-20 transition-colors text-xs font-mono font-bold"
+                      title="Clear search"
+                    >
+                      <MaterialIcon name="close" className="text-sm" />
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => setIsOpen(false)}
+                      className="min-h-[44px] px-2 py-1 bg-white border border-carbon-20 text-xs font-mono text-carbon-60 hover:text-carbon-90 transition-colors"
+                    >
+                      ESC
+                    </button>
+                  )}
                 </div>
-              ) : (
-                filteredItems.map((item, index) => {
-                  const isSelected = index === selectedIndex;
-                  return (
-                    <div
-                      key={item.id}
-                      onClick={() => handleSelectItem(item)}
-                      onMouseEnter={() => setSelectedIndex(index)}
-                      className={`p-3 min-h-[44px] cursor-pointer transition-all flex items-center justify-between gap-3 border ${
-                        isSelected
-                          ? 'bg-amber-50 border-amber-300 text-carbon-90 shadow-sm'
-                          : 'bg-white border-carbon-10 hover:bg-carbon-05 text-carbon-70'
+
+                {/* Category Filter Tabs */}
+                <div className="px-4 py-2.5 bg-white border-b border-carbon-20 flex items-center gap-1.5 overflow-x-auto text-xs scrollbar-none shrink-0">
+                  <span className="text-carbon-60 font-mono text-xs uppercase font-bold mr-1">Filter:</span>
+                  {(['All', 'Location', 'Hazard Profile', 'Documentation'] as const).map((cat) => (
+                    <button
+                      key={cat}
+                      onClick={() => {
+                        startTransition(() => {
+                          setSelectedCategory(cat);
+                          setSelectedIndex(0);
+                        });
+                      }}
+                      className={`px-3 py-1 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
+                        selectedCategory === cat
+                          ? 'bg-primary text-white shadow-sm'
+                          : 'text-carbon-60 hover:text-carbon-90 hover:bg-carbon-10'
                       }`}
                     >
-                      <div className="flex items-center gap-3 min-w-0">
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="font-bold text-xs sm:text-sm text-carbon-90 truncate">{item.title}</span>
-                            {item.badge && (
-                              <span className="px-2 py-0.5 text-xs font-mono font-bold bg-carbon-10 text-carbon-70 border border-carbon-20 shrink-0">
-                                {item.badge}
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-xs text-carbon-60 mt-0.5 truncate">{item.subtitle}</p>
-                        </div>
-                      </div>
+                      {cat === 'Location'
+                        ? 'Places'
+                        : cat === 'Hazard Profile'
+                          ? 'Hazards'
+                          : cat === 'Documentation'
+                            ? 'Docs'
+                            : 'All'}
+                    </button>
+                  ))}
+                  <span className="ml-auto text-xs font-mono text-carbon-60 hidden sm:inline-block">
+                    {filteredItems.length} match{filteredItems.length === 1 ? '' : 'es'}
+                  </span>
+                </div>
 
-                      <div className="flex items-center gap-2 shrink-0">
-                        <span className="hidden sm:inline-block px-2 py-0.5 rounded-full text-[9px] font-mono font-semibold bg-carbon-10 border border-carbon-20 text-carbon-60">
-                          {item.category}
-                        </span>
-                        <span className="text-nasa-red-shade text-xs font-mono font-bold">SELECT</span>
-                      </div>
+                {/* Search Results List */}
+                <div ref={listRef} className="overflow-y-auto p-3 space-y-1.5 flex-1 max-h-[50vh]">
+                  {filteredItems.length === 0 ? (
+                    <div className="p-10 text-center text-carbon-60 text-xs space-y-2">
+                      <p className="font-bold text-carbon-90 text-base">No results found for "{query}"</p>
+                      <p className="text-carbon-60 text-xs max-w-sm mx-auto">
+                        Try searching for <span className="text-carbon-80 font-semibold">"Kurigram"</span>,{' '}
+                        <span className="text-carbon-80 font-semibold">"Sylhet"</span>,{' '}
+                        <span className="text-carbon-80 font-semibold">"Flash Flood"</span>, or{' '}
+                        <span className="text-carbon-80 font-semibold">"Cyclone"</span>.
+                      </p>
                     </div>
-                  );
-                })
-              )}
-            </div>
+                  ) : (
+                    filteredItems.map((item, index) => {
+                      const isSelected = index === selectedIndex;
+                      return (
+                        <div
+                          key={item.id}
+                          onClick={() => handleSelectItem(item)}
+                          onMouseEnter={() => setSelectedIndex(index)}
+                          className={`p-3 min-h-[44px] cursor-pointer transition-all flex items-center justify-between gap-3 border ${
+                            isSelected
+                              ? 'bg-amber-50 border-amber-300 text-carbon-90 shadow-sm'
+                              : 'bg-white border-carbon-10 hover:bg-carbon-05 text-carbon-70'
+                          }`}
+                        >
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="font-bold text-xs sm:text-sm text-carbon-90 truncate">
+                                  {item.title}
+                                </span>
+                                {item.badge && (
+                                  <span className="px-2 py-0.5 text-xs font-mono font-bold bg-carbon-10 text-carbon-70 border border-carbon-20 shrink-0">
+                                    {item.badge}
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-xs text-carbon-60 mt-0.5 truncate">{item.subtitle}</p>
+                            </div>
+                          </div>
 
-            {/* Footer Keyboard Hints */}
-            <div className="px-4 py-2.5 bg-carbon-05 border-t border-carbon-20 flex items-center justify-between text-xs font-mono text-carbon-60 gap-2 shrink-0">
-              <div className="flex items-center gap-3">
-                <span><kbd className="px-1.5 py-0.5 bg-white rounded border border-carbon-20 text-carbon-80">UP/DOWN</kbd> Navigate</span>
-                <span><kbd className="px-1.5 py-0.5 bg-white rounded border border-carbon-20 text-carbon-80">ENTER</kbd> Select</span>
-                <span><kbd className="px-1.5 py-0.5 bg-white rounded border border-carbon-20 text-carbon-80">ESC</kbd> Close</span>
-              </div>
-              <span className="font-brand font-black text-carbon-90 hidden sm:inline">Hazard<span className="text-nasa-red-shade">Net</span> Search</span>
-            </div>
-          </motion.div>
-        </motion.div>
+                          <div className="flex items-center gap-2 shrink-0">
+                            <span className="hidden sm:inline-block px-2 py-0.5 rounded-full text-[9px] font-mono font-semibold bg-carbon-10 border border-carbon-20 text-carbon-60">
+                              {item.category}
+                            </span>
+                            <span className="text-nasa-red-shade text-xs font-mono font-bold">SELECT</span>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+
+                {/* Footer Keyboard Hints */}
+                <div className="px-4 py-2.5 bg-carbon-05 border-t border-carbon-20 flex items-center justify-between text-xs font-mono text-carbon-60 gap-2 shrink-0">
+                  <div className="flex items-center gap-3">
+                    <span>
+                      <kbd className="px-1.5 py-0.5 bg-white rounded border border-carbon-20 text-carbon-80">
+                        UP/DOWN
+                      </kbd>{' '}
+                      Navigate
+                    </span>
+                    <span>
+                      <kbd className="px-1.5 py-0.5 bg-white rounded border border-carbon-20 text-carbon-80">ENTER</kbd>{' '}
+                      Select
+                    </span>
+                    <span>
+                      <kbd className="px-1.5 py-0.5 bg-white rounded border border-carbon-20 text-carbon-80">ESC</kbd>{' '}
+                      Close
+                    </span>
+                  </div>
+                  <span className="font-brand font-black text-carbon-90 hidden sm:inline">
+                    Hazard<span className="text-nasa-red-shade">Net</span> Search
+                  </span>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>,
+        document.body,
       )}
-      </AnimatePresence>
-      , document.body)}
     </>
   );
 };

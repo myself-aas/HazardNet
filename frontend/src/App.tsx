@@ -18,6 +18,7 @@ import { vercelAnalyticsEnabled } from './lib/vercelAnalytics';
 import { useHazardNotifications } from './hooks/useHazardNotifications';
 import { initializeAttributionCapture } from './services/conversionTracking';
 import { RequireSuperAdmin } from './components/blog/RequireSuperAdmin';
+import { InfinityLoader } from './components/brand';
 import { Toaster } from 'react-hot-toast';
 
 // Route-level code splitting (FE-01): every page is a lazy chunk so the
@@ -77,13 +78,11 @@ const GeneratedContentPage: React.FC = () => {
 /**
  * Full-height fallback shown while a lazy route chunk streams in.
  *
- * The loading state is the brand mark itself rather than a generic ring:
- * `/hazardnet-loader.svg` is the same traced artwork as the header logo, with
- * the two bars breathing out of phase and the arrow surging between them, so a
- * wait on a slow connection is time spent looking at the product's own mark. The
- * animation is declarative CSS *inside* that SVG — no script, no JS bundle cost,
- * and it stops outright under `prefers-reduced-motion: reduce` — so the wrapper
- * here only fades in and announces itself.
+ * The loading state is the brand itself rather than a generic ring: the HazardNet infinity loop with a comet circling
+ * it (`components/brand/InfinityLoader.tsx`, drawn from the same generated geometry as `/hazardnet-loader.svg`, which
+ * the prerendered shell uses). While you wait you can hover it (the comets speed up), move across it (it tilts toward
+ * you) or tap it (rings leave the nodes). It is a polite `role="status"` whose only text is the visually hidden label;
+ * under `prefers-reduced-motion` and in Low-bandwidth mode it holds still.
  */
 const RouteFallback = () => {
   const reduceMotion = useReducedMotion();
@@ -105,20 +104,9 @@ const RouteFallback = () => {
           extrapolateRight: 'clamp',
         }),
       }}
-      role="status"
-      aria-label="Loading page"
       className="w-full min-h-[50vh] flex flex-col items-center justify-center gap-4.5"
     >
-      <img
-        src="/hazardnet-loader.svg"
-        alt=""
-        aria-hidden="true"
-        width={72}
-        height={72}
-        decoding="async"
-        className="block h-18 w-18 sm:h-20 sm:w-20 object-contain"
-      />
-      <span className="sr-only">Loading page…</span>
+      <InfinityLoader size={150} label="Loading page" />
     </Interactive.Div>
   );
 };

@@ -1,14 +1,36 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import React, { useRef, useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { motion, useReducedMotion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { useAuth } from '../context/AuthContext';
 import MaterialIcon from './MaterialIcon';
-import { NotificationToggle } from './NotificationToggle';
 import { HazardNetBrand } from './HazardNetLogo';
-import { FirebaseRealtimeStatus } from './FirebaseRealtimeStatus';
-import { DRAWER_SECTIONS, isPathCurrent } from '../lib/navigation';
+import { MenuToggleIcon } from './brand';
+import { LanguageToggle } from './alerts/LanguageToggle';
+import { DRAWER_SECTIONS, isPathCurrent, type NavItem } from '../lib/navigation';
 import { useDialogBehavior } from '../hooks/useDialogBehavior';
+import { usePushNotifications } from '../hooks/usePushNotifications';
+import { usePWAInstall } from '../hooks/usePWAInstall';
+
+/**
+ * The menu drawer — the one place everything else went.
+ *
+ * It used to be a header of four icon buttons (brand, bell, person, close) over four collapsed accordions, each
+ * with a count badge, over a status badge and a "HazardNet" footer line: dense, and the person icon and the bell
+ * competed with the close button for the same corner. Now, top to bottom:
+ *
+ *   brand · close
+ *   Search                          one wide row (opens the command palette)
+ *   Locate · Alerts · Install       three plain tiles: icon over ONE word
+ *   English | বাংলা
+ *   Explore / Advice / Data / Learn two-column grids of one-or-two-word links, icon beside word, nothing hidden
+ *   Sign in · Sign up               (or: your name · Sign out)
+ *
+ * Every link is a real <Link>, so middle-click, long-press and screen-reader link lists all work. The panel slides in
+ * from the right, where the menu button is. Contract kept for the tests: role="dialog", `data-testid="menu-drawer"`,
+ * `menu-drawer-close`, `drawer-signin-link`, `drawer-signup-link`, portaled by the Navbar onto `--z-overlay`, with the
+ * backdrop as its previous sibling.
+ */
 
 interface MenuDrawerProps {
   isOpen: boolean;
@@ -17,30 +39,42 @@ interface MenuDrawerProps {
   onOpenProfile?: () => void;
   onOpenAuth?: () => void;
   onSelectDistrict?: (districtId: string) => void;
+  /** @deprecated Links navigate themselves now; kept so existing callers still type-check. */
   onSelectPage?: (page: string) => void;
   activePage?: string;
+  /** Open the command palette (the header no longer has a search icon). */
+  onOpenSearch?: () => void;
+  onLocate?: () => void;
+  isLocating?: boolean;
+  /** Side-effects that ride on a navigation (the saved-districts heatmap). */
+  onNavigateItem?: (item: NavItem) => void;
 }
+
+const tileClass =
+  'flex min-h-[72px] flex-col items-center justify-center gap-1.5 rounded-2xl border border-carbon-20 bg-white px-2 py-2.5 text-[13px] font-semibold text-carbon-90 transition-colors duration-150 hover:bg-carbon-05 disabled:opacity-60 touch-manipulation cursor-pointer';
 
 export const MenuDrawer: React.FC<MenuDrawerProps> = ({
   isOpen,
   onClose,
   user,
   onOpenProfile,
-  onOpenAuth,
+  onOpenSearch,
+  onLocate,
+  isLocating = false,
+  onNavigateItem,
 }) => {
-  const navigate = useNavigate();
   const location = useLocation();
   const { signOut: authSignOut } = useAuth();
   const reduceMotion = useReducedMotion();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const drawerPanelRef = useRef<HTMLDivElement>(null);
-  // This drawer was the one dialog in the app that already trapped focus
-  // correctly; its implementation now lives in useDialogBehavior so the other
-  // dialogs can use it too. The hook adds the Tab cycle this drawer lacked.
+  const { isSubscribed, isSupported, loading: pushLoading, statusMessage, handleTogglePush } = usePushNotifications();
+  const { isInstallable, isInstalled, install } = usePWAInstall();
+  // Focus is trapped and Escape closes (shared with the other dialogs).
   useDialogBehavior({ isOpen, onClose, containerRef: drawerPanelRef, initialFocusRef: closeButtonRef });
 
-  const handleDrawerSignOut = async () => {
+  const handleSignOut = async () => {
     setIsLoggingOut(true);
     try {
       await authSignOut();
@@ -54,23 +88,10 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
     }
   };
 
-  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
-    maps: true,
-  });
-
-  const toggleSection = (sectionId: string) => {
-    setExpandedSections((prev) => ({
-      ...prev,
-      [sectionId]: !prev[sectionId],
-    }));
-  };
-
-  const handleNavigate = (path: string) => {
-    navigate(path);
-    onClose();
-  };
-
   if (!isOpen) return null;
+
+  const initial = (user?.displayName || user?.email || 'U')[0].toUpperCase();
+  const showInstall = isInstallable && !isInstalled;
 
   return (
     <>
@@ -86,174 +107,191 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
 
       <motion.div
         key="drawer-panel"
+        id="menu-drawer"
         ref={drawerPanelRef}
         tabIndex={-1}
         role="dialog"
         aria-modal="true"
         aria-label="Navigation menu"
         data-testid="menu-drawer"
-        initial={reduceMotion ? { x: 0 } : { x: '-100%' }}
+        initial={reduceMotion ? { x: 0 } : { x: '100%' }}
         animate={{ x: 0 }}
-        transition={{ duration: 0.15, ease: 'easeOut' }}
-        className="fixed inset-y-0 left-0 z-[var(--z-overlay)] w-full max-w-[320px] bg-white border-r border-carbon-20 flex flex-col font-sans select-none text-carbon-80 overflow-hidden menu-container"
+        transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
+        className="fixed inset-y-0 right-0 z-[var(--z-overlay)] flex w-full max-w-[380px] select-none flex-col overflow-hidden border-l border-carbon-20 bg-white font-sans text-carbon-80"
       >
-            <div className="px-4 flex items-center justify-between shrink-0 pt-[max(1rem,env(safe-area-inset-top))] pb-4">
-              <div className="flex items-center gap-2">
-                {/* `light`, not `dark`: the drawer panel is `bg-white`, so the
-                    dark mark and the dark wordmark are the legible pair. This
-                    used to ask for the dark-ground variant, which painted
-                    "Hazard" in white on the white panel. */}
-                <HazardNetBrand size="sm" variant="light" />
-              </div>
-              <div className="flex items-center gap-2">
-                <NotificationToggle variant="icon" />
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (user) {
-                      if (onOpenProfile) onOpenProfile();
-                    } else {
-                      if (onOpenAuth) onOpenAuth();
-                    }
-                    onClose();
-                  }}
-                  className="tap-target w-11 h-11 rounded-control bg-carbon-05 hover:bg-carbon-10 flex items-center justify-center transition-colors touch-manipulation"
-                  title={user ? 'Profile' : 'Sign In'}
-                >
-                  {user ? (
-                    <span className="font-bold text-sm text-carbon-80">
-                      {(user.displayName || user.email || 'U')[0].toUpperCase()}
-                    </span>
-                  ) : (
-                    <MaterialIcon name="person" className="text-[24px] text-carbon-80" />
-                  )}
-                </button>
-                <button
-                  ref={closeButtonRef}
-                  type="button"
-                  onClick={onClose}
-                  data-testid="menu-drawer-close"
-                  aria-label="Close navigation menu"
-                  title="Close menu"
-                  className="tap-target w-11 h-11 rounded-control bg-carbon-05 hover:bg-carbon-10 flex items-center justify-center transition-colors touch-manipulation"
-                >
-                  <MaterialIcon name="close" className="text-[24px] text-carbon-80" />
-                </button>
-              </div>
-            </div>
+        {/* brand · close — the only two things in the header row */}
+        <div className="flex shrink-0 items-center justify-between px-4 pb-3 pt-[max(1rem,env(safe-area-inset-top))]">
+          <HazardNetBrand size="sm" variant="light" />
+          <button
+            ref={closeButtonRef}
+            type="button"
+            onClick={onClose}
+            data-testid="menu-drawer-close"
+            aria-label="Close navigation menu"
+            title="Close menu"
+            className="tap-target -mr-2 flex cursor-pointer items-center justify-center rounded-full text-carbon-90 transition-colors duration-150 hover:bg-carbon-10 touch-manipulation"
+          >
+            <MenuToggleIcon open size={26} />
+          </button>
+        </div>
 
-            <div className="flex-1 overflow-y-auto px-4 py-2 space-y-2">
-              {DRAWER_SECTIONS.map((section) => {
-                const isExpanded = expandedSections[section.id] ?? false;
+        <div className="flex-1 space-y-5 overflow-y-auto px-4 pb-4">
+          {/* Search — one wide row */}
+          <button
+            type="button"
+            onClick={() => onOpenSearch?.()}
+            data-testid="district-search-trigger"
+            className="flex min-h-[52px] w-full cursor-pointer items-center gap-3 rounded-2xl border border-carbon-30 bg-carbon-05 px-4 text-left text-[15px] font-semibold text-carbon-70 transition-colors duration-150 hover:bg-carbon-10 touch-manipulation"
+          >
+            <MaterialIcon name="map_search" className="h-5 w-5 shrink-0 text-carbon-90" />
+            <span className="flex-1">Search</span>
+            <kbd className="hidden rounded-md border border-carbon-30 bg-white px-1.5 py-0.5 font-sans text-[11px] font-semibold text-carbon-60 sm:inline">
+              Ctrl K
+            </kbd>
+          </button>
 
-                return (
-                  <div key={section.id} className="space-y-1">
-                    <button
-                      type="button"
-                      onClick={() => toggleSection(section.id)}
-                      className={`w-full min-h-[44px] flex items-center justify-between px-4 py-2 transition-colors touch-manipulation ${
-                        isExpanded ? 'bg-carbon-05' : 'hover:bg-carbon-05'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2">
-                        <MaterialIcon name={section.icon} className="text-[12px] text-carbon-80" />
-                        <span className="text-base font-semibold text-carbon-90 leading-[1.35]">
-                          {section.category}
-                        </span>
-                      </div>
-                      <div className="hn-badge bg-carbon-90 text-white px-2 py-0.5 min-w-[24px] text-center">
-                        {section.items.length}
-                      </div>
-                    </button>
+          {/* Three plain tiles: icon over one word */}
+          <div className="grid grid-cols-3 gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                onLocate?.();
+              }}
+              disabled={isLocating}
+              aria-busy={isLocating || undefined}
+              className={tileClass}
+            >
+              <MaterialIcon name="location_on" className="h-6 w-6 text-nasa-blue" />
+              <span>Locate</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleTogglePush}
+              disabled={!isSupported || pushLoading}
+              aria-pressed={isSubscribed}
+              aria-busy={pushLoading || undefined}
+              title={!isSupported ? 'Not supported in this browser' : undefined}
+              className={tileClass}
+            >
+              <MaterialIcon
+                name={isSubscribed ? 'notifications_active' : 'notifications'}
+                className={`h-6 w-6 ${isSubscribed ? 'text-nasa-blue' : 'text-carbon-90'}`}
+              />
+              <span>Alerts</span>
+              <span
+                aria-hidden="true"
+                className={`-mt-1 text-[11px] font-medium ${isSubscribed ? 'text-nasa-blue-shade' : 'text-carbon-60'}`}
+              >
+                {isSubscribed ? 'On' : 'Off'}
+              </span>
+            </button>
+            {showInstall ? (
+              <button type="button" onClick={install} className={tileClass}>
+                <MaterialIcon name="install_mobile" className="h-6 w-6 text-nasa-blue" />
+                <span>Install</span>
+              </button>
+            ) : (
+              <Link to="/download" onClick={onClose} className={`${tileClass} no-underline`}>
+                <MaterialIcon name="download" className="h-6 w-6 text-carbon-90" />
+                <span>Apps</span>
+              </Link>
+            )}
+          </div>
+          {statusMessage && <p className="-mt-3 text-center text-xs text-carbon-60">{statusMessage}</p>}
 
-                    <AnimatePresence>
-                      {isExpanded && (
-                        <motion.div
-                          initial={reduceMotion ? { opacity: 1 } : { height: 0, opacity: 0 }}
-                          animate={reduceMotion ? { opacity: 1 } : { height: 'auto', opacity: 1 }}
-                          exit={reduceMotion ? { opacity: 0 } : { height: 0, opacity: 0 }}
-                          className="overflow-hidden"
-                        >
-                          <div className="ml-4 pl-4 py-1 border-l border-carbon-20 space-y-1 my-1">
-                            {section.items.map((item) => {
-                              const isActive = isPathCurrent(location.pathname, item.path);
+          <LanguageToggle variant="switch" tone="slate" className="w-full [&>button]:flex-1" />
 
-                              return (
-                                <button
-                                  key={item.id}
-                                  type="button"
-                                  onClick={() => handleNavigate(item.path)}
-                                  aria-current={isActive ? 'page' : undefined}
-                                  className={`w-full min-h-[44px] flex items-center justify-between py-2 px-2 transition-colors touch-manipulation ${
-                                    isActive
-                                      ? 'bg-carbon-05 font-semibold text-carbon-90'
-                                      : 'hover:bg-carbon-05 font-medium text-carbon-80'
-                                  }`}
-                                >
-                                  <div className="flex items-center gap-2">
-                                    <MaterialIcon
-                                      name={item.icon}
-                                      className={`text-[13px] ${isActive ? 'text-carbon-90' : 'text-carbon-80'}`}
-                                    />
-                                    <span className="text-base leading-[1.35]">{item.title}</span>
-                                  </div>
-                                  {item.badge && (
-                                    <span className="hn-badge bg-carbon-10 text-carbon-90 px-1.5 py-0.5 font-bold">
-                                      {item.badge}
-                                    </span>
-                                  )}
-                                </button>
-                              );
-                            })}
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                );
-              })}
-            </div>
+          {/* Everything else: four groups, two columns, nothing collapsed */}
+          {DRAWER_SECTIONS.map((section) => (
+            <section key={section.id} aria-labelledby={`drawer-${section.id}`}>
+              <h2
+                id={`drawer-${section.id}`}
+                className="mb-1.5 px-1 text-[11px] font-bold uppercase tracking-[0.08em] text-carbon-60"
+              >
+                {section.category}
+              </h2>
+              <ul className="grid grid-cols-2 gap-1.5">
+                {section.items.map((item) => {
+                  const isActive = isPathCurrent(location.pathname, item.path);
+                  return (
+                    <li key={item.id}>
+                      <Link
+                        to={item.path}
+                        onClick={() => {
+                          onNavigateItem?.(item);
+                          onClose();
+                        }}
+                        aria-current={isActive ? 'page' : undefined}
+                        className={`flex min-h-[48px] items-center gap-2.5 rounded-xl px-3 text-[15px] no-underline transition-colors duration-150 touch-manipulation ${
+                          isActive
+                            ? 'bg-nasa-blue-tint/15 font-bold text-nasa-blue-shade'
+                            : 'font-semibold text-carbon-80 hover:bg-carbon-05'
+                        }`}
+                      >
+                        <MaterialIcon
+                          name={item.icon}
+                          className={`h-[18px] w-[18px] shrink-0 ${isActive ? 'text-nasa-blue' : 'text-carbon-60'}`}
+                        />
+                        <span className="truncate">{item.title}</span>
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            </section>
+          ))}
+        </div>
 
-            <div className="p-4 flex flex-col gap-4 shrink-0 mt-auto pb-[max(1rem,env(safe-area-inset-bottom))]">
-              {!user && (
-                <div className="flex flex-col gap-2">
-                  <Link
-                    to="/signup"
-                    data-testid="drawer-signup-link"
-                    onClick={onClose}
-                    className="w-full min-h-[44px] py-3 bg-primary-strong hover:bg-primary text-white text-base font-semibold text-center touch-manipulation inline-flex items-center justify-center"
-                  >
-                    Sign up free
-                  </Link>
-                  <Link
-                    to="/login"
-                    data-testid="drawer-signin-link"
-                    onClick={onClose}
-                    className="w-full min-h-[44px] py-3 border border-carbon-20 hover:bg-carbon-05 text-carbon-80 text-base font-semibold text-center touch-manipulation inline-flex items-center justify-center"
-                  >
-                    Sign in
-                  </Link>
-                </div>
-              )}
-              <FirebaseRealtimeStatus variant="compact" />
-              <div className="flex items-center justify-between text-xs font-mono text-carbon-80">
-                <span className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-nasa-green" />
-                  <strong className="text-carbon-90">HazardNet</strong>
+        {/* Account */}
+        <div className="shrink-0 border-t border-carbon-20 bg-white p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+          {user ? (
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  onOpenProfile?.();
+                  onClose();
+                }}
+                className="flex min-h-[48px] min-w-0 flex-1 cursor-pointer items-center gap-3 rounded-xl px-2 text-left transition-colors duration-150 hover:bg-carbon-05 touch-manipulation"
+                title="Profile"
+              >
+                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-nasa-blue text-sm font-bold text-white">
+                  {initial}
                 </span>
-                {user && (
-                  <button
-                    type="button"
-                    onClick={handleDrawerSignOut}
-                    disabled={isLoggingOut}
-                    className="min-h-[44px] text-nasa-red-shade hover:text-nasa-red font-bold transition-colors disabled:opacity-50 touch-manipulation"
-                  >
-                    Sign Out
-                  </button>
-                )}
-              </div>
+                <span className="truncate text-[15px] font-semibold text-carbon-90">Profile</span>
+              </button>
+              <button
+                type="button"
+                onClick={handleSignOut}
+                disabled={isLoggingOut}
+                className="min-h-[48px] cursor-pointer rounded-xl px-4 text-[15px] font-semibold text-carbon-70 transition-colors duration-150 hover:bg-carbon-05 disabled:opacity-50 touch-manipulation"
+              >
+                Sign out
+              </button>
             </div>
-          </motion.div>
+          ) : (
+            <div className="grid grid-cols-2 gap-2">
+              <Link
+                to="/login"
+                data-testid="drawer-signin-link"
+                onClick={onClose}
+                className="inline-flex min-h-[48px] items-center justify-center rounded-xl bg-nasa-blue text-[15px] font-semibold text-white no-underline transition-colors duration-150 hover:bg-nasa-blue-shade touch-manipulation"
+              >
+                Sign in
+              </Link>
+              <Link
+                to="/signup"
+                data-testid="drawer-signup-link"
+                onClick={onClose}
+                className="inline-flex min-h-[48px] items-center justify-center rounded-xl border border-carbon-30 text-[15px] font-semibold text-carbon-90 no-underline transition-colors duration-150 hover:bg-carbon-05 touch-manipulation"
+              >
+                Sign up
+              </Link>
+            </div>
+          )}
+        </div>
+      </motion.div>
     </>
   );
 };

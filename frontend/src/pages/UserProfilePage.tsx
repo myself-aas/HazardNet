@@ -11,6 +11,7 @@ import { FirebaseRealtimeStatus } from '../components/FirebaseRealtimeStatus';
 import IdentityConnections from '../components/IdentityConnections';
 import Breadcrumbs from '../components/Breadcrumbs';
 import { profilePath } from '../lib/username';
+import { InfinityLoader } from '../components/brand';
 
 /**
  * Signed-in user profile — unique URL: /profile
@@ -209,7 +210,7 @@ export const UserProfilePage: React.FC = () => {
   if (loading) {
     return (
       <div className="min-h-[50vh] flex items-center justify-center" role="status" aria-label="Loading profile">
-        <span className="w-8 h-8 border-[3px] border-carbon-20 border-t-amber-500 rounded-full animate-spin" />
+        <InfinityLoader size={88} label="Loading" announce={false} />
       </div>
     );
   }
