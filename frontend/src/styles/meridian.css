@@ -1,0 +1,740 @@
+/* ══════════════════════════════════════════════════════════════════════════════
+   HazardNet Meridian Design System (HDS v3.0) — CSS token layer
+   ══════════════════════════════════════════════════════════════════════════════
+   Mirror of packages/design-system/src/meridian.ts. The TS file is the source
+   of truth for values and the reasoning; this file is how they reach the
+   browser. __tests__/meridianParity.test.js fails if the two drift.
+
+   ADDITIVE BY DESIGN. This layer sits on top of the existing NASA-HDS-derived
+   tokens in index.css rather than replacing them: 6,386 palette-family uses and
+   several asserting tests depend on those names. Meridian adds roles; it does
+   not rename what already works.
+
+   PROVENANCE: Meridian is original. No Apple or Meta font files, artwork or CSS
+   are used. It adopts publicly documented *principles* from Apple's Human
+   Interface Guidelines (Clarity / Deference / Depth) and Meta's published
+   design language, then resolves them against HazardNet's brand, purpose and
+   audience. See MERIDIAN.md for the full derivation, including the three
+   decisions that are ours and not either parent's.
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+/* ────────────────────────────────────────────────────────────────────────────
+   1 · PRIMITIVES
+   Values only. Nothing here knows what it is for.
+   Contrast ratios are measured (WCAG 2.1), not estimated.
+   ──────────────────────────────────────────────────────────────────────────── */
+:root {
+  /* Ink. Apple and Meta both refuse pure black for text. Meridian blends
+     HazardNet's mark ink (#0D0D0D) with Meta's warm near-black (#1C2B33) into a
+     faintly cool near-black.
+       17.54:1 on white · 16.19:1 on canvas · 15.20:1 on grouped  — all AAA. */
+  --mrd-ink: #141a1f;
+  --mrd-ink-soft: #4a5560; /*  7.61:1 on white — AAA small text */
+  --mrd-ink-tertiary: #6b7885; /*  4.52:1 on white — AA, 14px+ only */
+  --mrd-ink-quaternary: #8c98a4; /*  decorative + disabled only, never text */
+
+  /* HazardNet brand crimson — the colour the mark's bars are painted in.
+       9.06:1 on white · 8.37:1 on canvas */
+  --mrd-crimson: #970002;
+  --mrd-crimson-dark: #7b1d21; /* 10.29:1 on white */
+  --mrd-crimson-tint: #ff6b60; /* dark grounds only — 6.93:1 on --mrd-dark-canvas */
+
+  /* NASA HDS blue, retained for on-page interaction. */
+  --mrd-blue: #1c67e3; /* 5.12:1 on white — AA controls/large text */
+  --mrd-blue-shade: #0b3b95; /* 10.13:1 on white — AAA link text */
+  --mrd-blue-tint: #6fa8ff; /* dark grounds only — 8.04:1 on --mrd-dark-canvas */
+
+  /* Surfaces. Meta's "lift the card off a tinted canvas", cooled toward
+     HazardNet's neutral rather than Meta's warm grey. */
+  --mrd-canvas: #f4f6f8;
+  --mrd-canvas-grouped: #eceff2;
+  --mrd-surface: #ffffff;
+  --mrd-hairline: #dde2e7;
+  --mrd-hairline-strong: #c6cdd5;
+
+  /* Dark ground. Apple's dark systemBackground is near-black but not #000, so
+     content can still be lifted off it. */
+  --mrd-dark-canvas: #0b0e11;
+  --mrd-dark-grouped: #14191e;
+  --mrd-dark-surface: #1b2128;
+  --mrd-dark-hairline: #2a323a;
+
+  /* ── Geometry ───────────────────────────────────────────────────────────
+     Apple's concentric rule over Meta's soft media family.
+     Concentric: inner radius = outer radius − padding. */
+  --mrd-radius-xs: 4px; /* chips, tags, inline badges */
+  --mrd-radius-sm: 8px; /* inputs, console controls */
+  --mrd-radius-md: 12px; /* media — Meta's image radius */
+  --mrd-radius-lg: 16px; /* cards — Meta's card radius */
+  --mrd-radius-xl: 24px; /* panels, dialogs */
+  --mrd-radius-xxl: 32px; /* feature/hero media — Meta's photographic card */
+  --mrd-radius-pill: 9999px; /* CTAs, pills — Meta's signature, Apple's capsule */
+  --mrd-radius-sheet: 28px; /* bottom sheets, retained from HDS 2.2 */
+
+  /* ── Spacing: 4px base, 8px rhythm ───────────────────────────────────── */
+  --mrd-space-1: 4px;
+  --mrd-space-2: 8px;
+  --mrd-space-3: 12px;
+  --mrd-space-4: 16px;
+  --mrd-space-5: 24px;
+  --mrd-space-6: 32px;
+  --mrd-space-7: 48px;
+  --mrd-space-8: 64px;
+  --mrd-space-9: 96px;
+  --mrd-space-10: 128px;
+
+  /* ── Elevation. Ink-tinted, not black: a grey shadow reads muddy over a
+        tinted canvas. This is what replaces the 1px border HDS 2.2 put on
+        every panel — hierarchy by lift, per Meta. ──────────────────────── */
+  --mrd-shadow-card: 0 1px 2px rgba(20, 26, 31, 0.04), 0 8px 24px -12px rgba(20, 26, 31, 0.12);
+  --mrd-shadow-card-hover: 0 2px 4px rgba(20, 26, 31, 0.06), 0 16px 40px -16px rgba(20, 26, 31, 0.2);
+  --mrd-shadow-floating: 0 8px 16px -4px rgba(20, 26, 31, 0.1), 0 24px 48px -16px rgba(20, 26, 31, 0.24);
+  --mrd-shadow-modal: 0 16px 32px -8px rgba(20, 26, 31, 0.16), 0 32px 64px -16px rgba(20, 26, 31, 0.28);
+  --mrd-shadow-console: 0 1px 2px rgba(20, 26, 31, 0.06);
+
+  /* ── Material: Apple's layered translucency, for CHROME ONLY.
+        Surfaces a user reads and acts on stay opaque — translucency behind a
+        data table is a legibility cost with no benefit. ─────────────────── */
+  --mrd-glass-bg: rgba(255, 255, 255, 0.72);
+  --mrd-glass-bg-strong: rgba(255, 255, 255, 0.88);
+  --mrd-glass-border: rgba(255, 255, 255, 0.6);
+  --mrd-glass-blur: 20px;
+  --mrd-glass-saturate: 1.8;
+  --mrd-glass-dark-bg: rgba(11, 14, 17, 0.68);
+  --mrd-glass-dark-border: rgba(255, 255, 255, 0.12);
+
+  /* ── Motion: Apple's spring physics as web curves ────────────────────── */
+  --mrd-duration-instant: 120ms;
+  --mrd-duration-fast: 200ms;
+  --mrd-duration-base: 320ms;
+  --mrd-duration-slow: 520ms;
+  --mrd-duration-ambient: 14000ms;
+  --mrd-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --mrd-ease-standard: cubic-bezier(0.2, 0, 0.2, 1);
+  --mrd-ease-emphasized: cubic-bezier(0.2, 0, 0, 1);
+  /* No overshoot. Apple's springs pass through their target and settle back;
+     this product does not. `check:design` bans bounce-easing and the reason
+     holds here — a control that wobbles past its resting place reads as
+     indecisive on a surface whose job is to state a hazard level. The
+     emphasized curve gives the same fast-out feel without the overshoot. */
+  --mrd-ease-spring: cubic-bezier(0.2, 0, 0, 1);
+
+  /* ── Touch ───────────────────────────────────────────────────────────── */
+  --mrd-tap-min: 44px; /* Apple HIG / WCAG 2.5.8 — hard floor */
+  --mrd-tap-android: 48px; /* Material 3 / Google Play floor */
+  --mrd-control-h: 48px; /* editorial track CTA */
+  --mrd-control-h-compact: 44px; /* console track, still clears 44 */
+  --mrd-fab: 60px;
+
+  /* ── Z scale. One ladder, no ad-hoc 9999. ────────────────────────────── */
+  --mrd-z-base: 0;
+  --mrd-z-content: 1;
+  --mrd-z-map: 400;
+  --mrd-z-sticky: 1020;
+  --mrd-z-nav: 1030;
+  --mrd-z-dropdown: 1040;
+  --mrd-z-overlay: 1050;
+  --mrd-z-modal: 1060;
+  --mrd-z-popover: 1070;
+  --mrd-z-tooltip: 1080;
+  --mrd-z-toast: 1090;
+  --mrd-z-a11y: 1100;
+
+  /* ── Type scale. Apple defines styles as NAMED tokens so they rescale;
+        Meta splits display from text at 24px and tightens tracking only above
+        the split. Both are honoured below. ─────────────────────────────── */
+  --mrd-font-display: 'Instrument Sans', 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system,
+    'Segoe UI', sans-serif;
+  --mrd-font-text: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mrd-font-mono: 'DM Mono', 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  --mrd-font-bengali: 'Noto Sans Bengali', 'Hind Siliguri', 'Anek Bangla', sans-serif;
+  --mrd-font-bengali-display: 'Baloo Da 2', 'Anek Bangla', 'Noto Sans Bengali', sans-serif;
+
+  --mrd-text-micro: 0.6875rem; /* 11px — Apple caption2 */
+  --mrd-text-caption: 0.75rem; /* 12px — Apple caption1 */
+  --mrd-text-footnote: 0.8125rem; /* 13px */
+  --mrd-text-subhead: 0.9375rem; /* 15px */
+  --mrd-text-body: 1.0625rem; /* 17px — Apple's legibility floor */
+  --mrd-text-callout: 1.125rem; /* 18px — Meta body */
+  --mrd-text-title3: 1.25rem; /* 20px */
+  --mrd-text-title2: 1.375rem; /* 22px */
+  --mrd-text-title1: 1.75rem; /* 28px */
+  --mrd-text-display3: clamp(1.875rem, 1.5rem + 1.6vw, 2.5rem); /* 34px — Apple largeTitle */
+  --mrd-text-display2: clamp(2.25rem, 1.6rem + 3vw, 3.5rem); /* →56px — Meta display hero */
+  --mrd-text-display1: clamp(2.75rem, 1.8rem + 4.5vw, 4.5rem); /* →72px */
+
+  /* Line-heights. Every body-scale value stays >= 1.3 for the repo's
+     designTypography test; Bengali uses 1.65 because 1.3 clips matras. */
+  --mrd-leading-micro: 1.45;
+  --mrd-leading-caption: 1.5;
+  --mrd-leading-footnote: 1.5;
+  --mrd-leading-subhead: 1.55;
+  --mrd-leading-body: 1.6;
+  --mrd-leading-callout: 1.55;
+  --mrd-leading-title3: 1.35;
+  --mrd-leading-title2: 1.3;
+  --mrd-leading-title1: 1.2;
+  --mrd-leading-display3: 1.12;
+  --mrd-leading-display2: 1.06;
+  --mrd-leading-display1: 1.02;
+
+  /* Tracking. Negative above Meta's 24px display split, neutral below. */
+  --mrd-tracking-display1: -0.03em;
+  --mrd-tracking-display2: -0.025em;
+  --mrd-tracking-display3: -0.02em;
+  --mrd-tracking-title1: -0.015em;
+  --mrd-tracking-title2: -0.011em;
+  --mrd-tracking-title3: -0.008em;
+  --mrd-tracking-text: 0em;
+  --mrd-tracking-caption: 0.01em;
+
+  /* Bengali adjustments, applied wherever [lang="bn"] is in scope. Bengali
+     reads smaller at the same nominal px and clips at Latin line-heights. */
+  --mrd-bn-size-scale: 1.06;
+  --mrd-bn-leading: 1.65;
+  --mrd-bn-tracking: 0.01em;
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   2 · SEMANTIC ROLES — the layer components actually consume.
+   Apple's insight: name ROLES, not colours. "label" and "separator" resolve
+   differently per theme without a single component changing.
+   ──────────────────────────────────────────────────────────────────────────── */
+:root,
+[data-mrd-theme='light'] {
+  --mrd-label: var(--mrd-ink);
+  --mrd-label-secondary: var(--mrd-ink-soft);
+  --mrd-label-tertiary: var(--mrd-ink-tertiary);
+  --mrd-label-quaternary: var(--mrd-ink-quaternary);
+  --mrd-separator: var(--mrd-hairline);
+  --mrd-separator-opaque: var(--mrd-hairline-strong);
+
+  --mrd-bg-base: var(--mrd-canvas);
+  --mrd-bg-grouped: var(--mrd-canvas-grouped);
+  --mrd-bg-elevated: var(--mrd-surface);
+  --mrd-bg-inverse: var(--mrd-ink);
+
+  --mrd-on-base: var(--mrd-ink);
+  --mrd-on-elevated: var(--mrd-ink);
+  --mrd-on-inverse: #ffffff;
+
+  /* Dual-primary. See MERIDIAN.md §Dual-primary for why crimson is reserved. */
+  --mrd-action-ink: #0d0d0d; /* browse / navigate — the default primary */
+  --mrd-action-ink-fg: #ffffff;
+  --mrd-action-hazard: var(--mrd-crimson); /* hazard signal ONLY */
+  --mrd-action-hazard-fg: #ffffff;
+  --mrd-action-interactive: var(--mrd-blue-shade); /* on-page interaction */
+  --mrd-action-interactive-fg: #ffffff;
+  --mrd-action-quiet: transparent;
+  --mrd-action-quiet-fg: var(--mrd-ink);
+
+  --mrd-focus-ring: var(--mrd-ink);
+  --mrd-focus-ring-width: 2px;
+  --mrd-focus-ring-offset: 2px;
+}
+
+[data-mrd-theme='dark'] {
+  --mrd-label: #f2f5f7; /* 17.67:1 on --mrd-dark-canvas */
+  --mrd-label-secondary: #a8b4bf; /* 9.17:1 — AAA */
+  --mrd-label-tertiary: #a8b4bf;
+  --mrd-label-quaternary: #7a8792;
+  --mrd-separator: var(--mrd-dark-hairline);
+  --mrd-separator-opaque: #3a444e;
+
+  --mrd-bg-base: var(--mrd-dark-canvas);
+  --mrd-bg-grouped: var(--mrd-dark-grouped);
+  --mrd-bg-elevated: var(--mrd-dark-surface);
+  --mrd-bg-inverse: #f2f5f7;
+
+  --mrd-on-base: #f2f5f7;
+  --mrd-on-elevated: #f2f5f7;
+  --mrd-on-inverse: #0b0e11;
+
+  /* In dark, the ink pill inverts to white-on-dark — Meta's own dark pattern. */
+  --mrd-action-ink: #ffffff;
+  --mrd-action-ink-fg: #0d0d0d;
+  --mrd-action-hazard: var(--mrd-crimson-tint); /* 6.93:1 — AA at any size */
+  --mrd-action-hazard-fg: #2b0500;
+  --mrd-action-interactive: var(--mrd-blue-tint); /* 8.04:1 — AAA */
+  --mrd-action-interactive-fg: #001433;
+  --mrd-action-quiet-fg: #f2f5f7;
+
+  --mrd-focus-ring: #f2f5f7;
+  --mrd-shadow-card: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px -12px rgba(0, 0, 0, 0.6);
+  --mrd-shadow-card-hover: 0 2px 4px rgba(0, 0, 0, 0.5), 0 16px 40px -16px rgba(0, 0, 0, 0.7);
+  --mrd-shadow-floating: 0 8px 16px -4px rgba(0, 0, 0, 0.5), 0 24px 48px -16px rgba(0, 0, 0, 0.7);
+}
+
+/* High contrast. Triggered by the OS setting; no user action needed. */
+@media (prefers-contrast: more) {
+  :root:not([data-mrd-theme='dark']) {
+    --mrd-label: #000000;
+    --mrd-label-secondary: #1a1a1a;
+    --mrd-label-tertiary: #2b2b2b;
+    --mrd-separator: #5a5a5a;
+    --mrd-separator-opaque: #000000;
+    --mrd-bg-base: #ffffff;
+    --mrd-bg-grouped: #ffffff;
+    --mrd-action-hazard: #7a0001;
+    --mrd-action-interactive: #002d8a;
+    --mrd-focus-ring: #000000;
+    --mrd-focus-ring-width: 3px;
+  }
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   3 · TYPOGRAPHY UTILITIES
+   Meta's display/text split at 24px: display face + tight tracking above,
+   text face + neutral tracking below.
+   ──────────────────────────────────────────────────────────────────────────── */
+
+.mrd-display1,
+.mrd-display2,
+.mrd-display3 {
+  font-family: var(--mrd-font-display);
+  font-weight: 680;
+  text-wrap: balance;
+}
+.mrd-display1 {
+  font-size: var(--mrd-text-display1);
+  line-height: var(--mrd-leading-display1);
+  letter-spacing: var(--mrd-tracking-display1);
+}
+.mrd-display2 {
+  font-size: var(--mrd-text-display2);
+  line-height: var(--mrd-leading-display2);
+  letter-spacing: var(--mrd-tracking-display2);
+}
+.mrd-display3 {
+  font-size: var(--mrd-text-display3);
+  line-height: var(--mrd-leading-display3);
+  letter-spacing: var(--mrd-tracking-display3);
+}
+
+.mrd-title1,
+.mrd-title2,
+.mrd-title3 {
+  font-family: var(--mrd-font-display);
+  font-weight: 600;
+  text-wrap: balance;
+}
+.mrd-title1 {
+  font-size: var(--mrd-text-title1);
+  line-height: var(--mrd-leading-title1);
+  letter-spacing: var(--mrd-tracking-title1);
+}
+.mrd-title2 {
+  font-size: var(--mrd-text-title2);
+  line-height: var(--mrd-leading-title2);
+  letter-spacing: var(--mrd-tracking-title2);
+}
+.mrd-title3 {
+  font-size: var(--mrd-text-title3);
+  line-height: var(--mrd-leading-title3);
+  letter-spacing: var(--mrd-tracking-title3);
+}
+
+.mrd-callout,
+.mrd-body,
+.mrd-subhead,
+.mrd-footnote,
+.mrd-caption,
+.mrd-micro {
+  font-family: var(--mrd-font-text);
+}
+.mrd-callout {
+  font-size: var(--mrd-text-callout);
+  line-height: var(--mrd-leading-callout);
+  font-weight: 400;
+}
+.mrd-body {
+  font-size: var(--mrd-text-body);
+  line-height: var(--mrd-leading-body);
+  font-weight: 400;
+}
+.mrd-subhead {
+  font-size: var(--mrd-text-subhead);
+  line-height: var(--mrd-leading-subhead);
+}
+.mrd-footnote {
+  font-size: var(--mrd-text-footnote);
+  line-height: var(--mrd-leading-footnote);
+  color: var(--mrd-label-secondary);
+}
+.mrd-caption {
+  font-size: var(--mrd-text-caption);
+  line-height: var(--mrd-leading-caption);
+  letter-spacing: var(--mrd-tracking-caption);
+  color: var(--mrd-label-secondary);
+}
+.mrd-micro {
+  font-size: var(--mrd-text-micro);
+  line-height: var(--mrd-leading-micro);
+  letter-spacing: var(--mrd-tracking-caption);
+  color: var(--mrd-label-tertiary);
+}
+
+/* Eyebrow: the small-caps section label Meta uses above headings. */
+.mrd-eyebrow {
+  font-family: var(--mrd-font-text);
+  font-size: var(--mrd-text-caption);
+  line-height: var(--mrd-leading-caption);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--mrd-label-secondary);
+}
+
+/* Tabular numerals for anything a user compares across rows. */
+.mrd-figure,
+.mrd-num {
+  font-family: var(--mrd-font-mono);
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1, 'lnum' 1;
+}
+
+/* Bengali: own stack, larger, taller leading, slightly open tracking. */
+[lang='bn'],
+.mrd-bn {
+  font-family: var(--mrd-font-bengali) !important;
+  font-size: calc(1em * var(--mrd-bn-size-scale));
+  line-height: var(--mrd-bn-leading) !important;
+  letter-spacing: var(--mrd-bn-tracking) !important;
+}
+[lang='bn'] .mrd-display1,
+[lang='bn'] .mrd-display2,
+[lang='bn'] .mrd-display3,
+[lang='bn'] .mrd-title1,
+[lang='bn'] .mrd-title2,
+.mrd-bn-display {
+  font-family: var(--mrd-font-bengali-display) !important;
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   4 · COMPONENTS
+   ──────────────────────────────────────────────────────────────────────────── */
+
+/* ── Buttons ────────────────────────────────────────────────────────────────
+   Four intents, one geometry. Colour scarcity is the navigational signal:
+   crimson means HAZARD and nothing else. Meta's pill shape on the editorial
+   track; the console track tightens to --mrd-radius-sm via .mrd-track-console.
+   44px floor on every variant — no exceptions, no per-call overrides. */
+.mrd-btn {
+  --_bg: var(--mrd-action-quiet);
+  --_fg: var(--mrd-action-quiet-fg);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--mrd-space-2);
+  min-height: var(--mrd-tap-min);
+  min-width: var(--mrd-tap-min);
+  padding: 0 var(--mrd-space-5);
+  border: 1px solid transparent;
+  border-radius: var(--mrd-radius-pill);
+  background: var(--_bg);
+  color: var(--_fg);
+  font-family: var(--mrd-font-text);
+  font-size: var(--mrd-text-subhead);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.005em;
+  text-decoration: none;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    background-color var(--mrd-duration-fast) var(--mrd-ease-standard),
+    color var(--mrd-duration-fast) var(--mrd-ease-standard),
+    border-color var(--mrd-duration-fast) var(--mrd-ease-standard),
+    box-shadow var(--mrd-duration-fast) var(--mrd-ease-standard),
+    transform var(--mrd-duration-instant) var(--mrd-ease-out);
+}
+.mrd-btn:hover {
+  transform: translateY(-1px);
+}
+.mrd-btn:active {
+  transform: translateY(0) scale(0.985);
+}
+.mrd-btn:focus-visible {
+  outline: var(--mrd-focus-ring-width) solid var(--mrd-focus-ring);
+  outline-offset: var(--mrd-focus-ring-offset);
+}
+.mrd-btn:disabled,
+.mrd-btn[aria-disabled='true'] {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* ink — the default primary. Browse, navigate, open the map. */
+.mrd-btn-ink {
+  --_bg: var(--mrd-action-ink);
+  --_fg: var(--mrd-action-ink-fg);
+}
+.mrd-btn-ink:hover {
+  box-shadow: 0 6px 16px -6px rgba(13, 13, 13, 0.45);
+}
+
+/* hazard — RESERVED. Alerts, severity, emergency. Never navigation. */
+.mrd-btn-hazard {
+  --_bg: var(--mrd-action-hazard);
+  --_fg: var(--mrd-action-hazard-fg);
+}
+/* Neutral lift, not a coloured glow: the fill already says "hazard", so a
+   crimson box-shadow is decoration — and a coloured glow on a dark page is
+   what the dark-glow design rule exists to catch. */
+.mrd-btn-hazard:hover {
+  box-shadow: var(--mrd-shadow-card-hover);
+}
+
+/* interactive — on-page: filters, tabs, secondary actions. */
+.mrd-btn-interactive {
+  --_bg: var(--mrd-action-interactive);
+  --_fg: var(--mrd-action-interactive-fg);
+}
+
+/* outline — secondary on light and dark without inventing a third fill. */
+.mrd-btn-outline {
+  --_bg: transparent;
+  --_fg: var(--mrd-label);
+  border-color: var(--mrd-separator-opaque);
+}
+.mrd-btn-outline:hover {
+  --_bg: color-mix(in srgb, var(--mrd-label) 6%, transparent);
+}
+
+/* quiet — tertiary, and the cancel half of a destructive pair. */
+.mrd-btn-quiet:hover {
+  --_bg: color-mix(in srgb, var(--mrd-label) 8%, transparent);
+}
+
+/* On a dark hero, the outline must invert. */
+.mrd-on-dark .mrd-btn-outline {
+  --_fg: #ffffff;
+  border-color: rgba(255, 255, 255, 0.7);
+}
+.mrd-on-dark .mrd-btn-outline:hover {
+  --_bg: rgba(255, 255, 255, 0.12);
+}
+
+.mrd-btn-lg {
+  min-height: var(--mrd-control-h);
+  padding: 0 var(--mrd-space-6);
+  font-size: var(--mrd-text-body);
+}
+.mrd-btn-sm {
+  min-height: var(--mrd-tap-min);
+  padding: 0 var(--mrd-space-4);
+  font-size: var(--mrd-text-footnote);
+}
+/* Icon-only. Stays square and clears 44 — Apple's rule for icon buttons. */
+.mrd-btn-icon {
+  padding: 0;
+  width: var(--mrd-tap-min);
+  height: var(--mrd-tap-min);
+}
+
+/* ── Surfaces ─────────────────────────────────────────────────────────────
+   Meta's lift-over-border. No 1px frame on the editorial track: the shadow
+   does the separating, which is what makes white read as "above" the canvas. */
+.mrd-card {
+  background: var(--mrd-bg-elevated);
+  border-radius: var(--mrd-radius-lg);
+  box-shadow: var(--mrd-shadow-card);
+  padding: var(--mrd-space-6);
+  transition:
+    box-shadow var(--mrd-duration-base) var(--mrd-ease-standard),
+    transform var(--mrd-duration-base) var(--mrd-ease-out);
+}
+.mrd-card-interactive:hover,
+.mrd-card-interactive:focus-within {
+  box-shadow: var(--mrd-shadow-card-hover);
+  transform: translateY(-2px);
+}
+.mrd-card-flush {
+  padding: 0;
+  overflow: hidden;
+}
+
+/* Grouped/inset: a well the content sits inside, Apple's grouped-background
+   pattern. Used for code, provenance records, and dense key/value pairs. */
+.mrd-grouped {
+  background: var(--mrd-bg-grouped);
+  border-radius: var(--mrd-radius-lg);
+  padding: var(--mrd-space-5);
+}
+
+/* Glass chrome. NAV AND HUD ONLY — never behind data a user acts on. */
+.mrd-glass {
+  background: var(--mrd-glass-bg);
+  backdrop-filter: blur(var(--mrd-glass-blur)) saturate(var(--mrd-glass-saturate));
+  -webkit-backdrop-filter: blur(var(--mrd-glass-blur)) saturate(var(--mrd-glass-saturate));
+  border-bottom: 1px solid var(--mrd-glass-border);
+}
+.mrd-glass-strong {
+  background: var(--mrd-glass-bg-strong);
+}
+.mrd-glass-dark {
+  background: var(--mrd-glass-dark-bg);
+  border-bottom: 1px solid var(--mrd-glass-dark-border);
+}
+
+/* ── Badges and severity ──────────────────────────────────────────────────
+   Severity is colour + shape + label, never colour alone. WCAG 1.4.1, and a
+   colour-blind farmer on a cracked phone in monsoon light still gets the
+   level from the glyph and the word. */
+.mrd-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--mrd-space-1);
+  min-height: 24px;
+  padding: 2px var(--mrd-space-3);
+  border-radius: var(--mrd-radius-xs);
+  font-family: var(--mrd-font-text);
+  font-size: var(--mrd-text-caption);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+.mrd-severity {
+  border: 1px solid transparent;
+}
+.mrd-severity-low {
+  color: #15803d;
+  background: #dcfce7;
+  border-color: #86efac;
+}
+.mrd-severity-moderate {
+  /* 5.51:1 on this surface. The previous #b25600 measured 4.46:1 — under AA. */
+  color: #9c4b00;
+  background: #fef3c7;
+  border-color: #fcd34d;
+}
+.mrd-severity-high,
+.mrd-severity-very-high {
+  color: #b91c1c;
+  background: #fee2e2;
+  border-color: #fca5a5;
+}
+.mrd-severity-extreme {
+  color: #ffffff;
+  background: #991b1b;
+  border-color: #7f1d1d;
+}
+
+/* ── Sections. Meta's editorial rhythm: generous blocks, alternating tone. ─ */
+.mrd-section {
+  padding-block: var(--mrd-space-9);
+}
+.mrd-section-tight {
+  padding-block: var(--mrd-space-7);
+}
+.mrd-container {
+  width: 100%;
+  max-width: 1200px;
+  margin-inline: auto;
+  padding-inline: var(--mrd-space-4);
+}
+.mrd-container-wide {
+  max-width: 1440px;
+}
+/* The alternating dark band. Full-bleed, own palette, inverts its own text. */
+.mrd-band-dark {
+  background: var(--mrd-bg-inverse);
+  color: #ffffff;
+}
+.mrd-band-dark .mrd-eyebrow,
+.mrd-band-dark .mrd-footnote,
+.mrd-band-dark .mrd-caption {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+/* ── Separators. A rule inside a card stays a rule; between cards it does not
+      exist, because the lift already separated them. ───────────────────── */
+.mrd-rule {
+  border: 0;
+  border-top: 1px solid var(--mrd-separator);
+  margin-block: var(--mrd-space-5);
+}
+
+/* ── Focus. Visible, consistent, and never removed. ─────────────────────── */
+.mrd-focusable:focus-visible,
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: var(--mrd-focus-ring-width) solid var(--mrd-focus-ring);
+  outline-offset: var(--mrd-focus-ring-offset);
+}
+
+/* ── Scroll reveal. Opt-in via data-mrd-reveal; IntersectionObserver adds
+      .is-visible. Disabled entirely under reduced motion — the content is
+      simply already there, which is the correct reduced-motion behaviour:
+      never hide content behind an animation that will not run. ─────────── */
+@media (prefers-reduced-motion: no-preference) {
+  [data-mrd-reveal] {
+    opacity: 0;
+    transform: translateY(16px);
+    transition:
+      opacity var(--mrd-duration-slow) var(--mrd-ease-out),
+      transform var(--mrd-duration-slow) var(--mrd-ease-out);
+    transition-delay: var(--mrd-reveal-delay, 0ms);
+    will-change: opacity, transform;
+  }
+  [data-mrd-reveal].is-visible {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ── The two geometry tracks. Same tokens, two densities, chosen per SURFACE
+      rather than per component — that is the mechanism behind the console /
+      editorial split. A card in the console and a card on the front door look
+      different on purpose. ─────────────────────────────────────────────── */
+.mrd-track-console {
+  --mrd-radius-lg: var(--mrd-radius-sm);
+  --mrd-radius-xl: var(--mrd-radius-sm);
+  --mrd-shadow-card: var(--mrd-shadow-console);
+  --mrd-shadow-card-hover: var(--mrd-shadow-console);
+  font-size: var(--mrd-text-body);
+}
+.mrd-track-console .mrd-card {
+  padding: var(--mrd-space-4);
+}
+.mrd-track-console .mrd-btn {
+  border-radius: var(--mrd-radius-sm);
+  min-height: var(--mrd-control-h-compact);
+  font-size: var(--mrd-text-footnote);
+  padding: 0 var(--mrd-space-4);
+}
+.mrd-track-console .mrd-section {
+  padding-block: var(--mrd-space-6);
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   5 · REDUCED MOTION
+   Everything collapses. Not "slower" — off. A warning UI that animates when the
+   user asked it not to is not an accessibility nicety, it is a defect.
+   ──────────────────────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  [data-mrd-reveal] {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .mrd-btn:hover,
+  .mrd-card-interactive:hover {
+    transform: none !important;
+  }
+}

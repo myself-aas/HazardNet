@@ -1,0 +1,118 @@
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+  <!--
+    HazardNet hazard glyph set — Meridian iconography.
+
+    ORIGINAL ARTWORK, drawn for this repository. No third-party icon set is
+    used, embedded or derived from.
+
+    System rules, so the eight read as one family:
+      · 24×24 viewBox, 1.5 stroke, no fills except where noted
+      · round caps and joins — sharp terminals read as "error" at 16px
+      · every glyph sits inside a 20×20 optical box centred in the 24 grid, so
+        they align with 16px text on a shared baseline
+      · currentColor throughout: the glyph takes its colour from the severity
+        token beside it, never from a hard-coded stroke
+      · legible at 16px, which is the size it actually ships at in tables
+  -->
+
+  <symbol id="hn-hz-flood" viewBox="0 0 24 24">
+    <title>Flood</title>
+    <g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <!-- Rising water: three stacked wave lines, the top one broken to imply rise -->
+      <path d="M3 9.5c1.6-1.3 3.1-1.3 4.7 0s3.1 1.3 4.7 0 3.1-1.3 4.6 0" />
+      <path d="M3 14c1.6-1.3 3.1-1.3 4.7 0s3.1 1.3 4.7 0 3.1-1.3 4.6 0" />
+      <path d="M3 18.5c1.6-1.3 3.1-1.3 4.7 0s3.1 1.3 4.7 0 3.1-1.3 4.6 0" />
+      <!-- Rain above the waterline -->
+      <path d="M8 3.5v2.2M12 3v2.6M16 3.5v2.2" opacity="0.75" />
+    </g>
+  </symbol>
+
+  <symbol id="hn-hz-flash-flood" viewBox="0 0 24 24">
+    <title>Flash flood</title>
+    <g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <!-- A bolt breaking the waterline: flash floods arrive faster than flood -->
+      <path d="M13.2 2.8 8.4 12.6h3.3l-.9 8.6 5.4-10.4h-3.4z" />
+      <path d="M2.6 17.4c1.5-1.2 2.9-1.2 4.4 0" opacity="0.8" />
+      <path d="M17 17.4c1.5-1.2 2.9-1.2 4.4 0" opacity="0.8" />
+      <path d="M2.6 21c1.5-1.2 2.9-1.2 4.4 0s2.9 1.2 4.4 0 2.9-1.2 4.4 0 2.9 1.2 4.4 0" opacity="0.55" />
+    </g>
+  </symbol>
+
+  <symbol id="hn-hz-tropical-cyclone" viewBox="0 0 24 24">
+    <title>Tropical cyclone</title>
+    <g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <!-- Spiral, two arms around a clear eye — reads as rotation at any size -->
+      <circle cx="12" cy="12" r="2.1" />
+      <path d="M12 9.9c0-4 3.1-6.6 6.4-5.6 2.4.7 3 3.1 1.7 4.9-1.6 2.2-4.6 2.2-6.1.2" />
+      <path d="M12 14.1c0 4-3.1 6.6-6.4 5.6-2.4-.7-3-3.1-1.7-4.9 1.6-2.2 4.6-2.2 6.1-.2" />
+    </g>
+  </symbol>
+
+  <symbol id="hn-hz-drought" viewBox="0 0 24 24">
+    <title>Drought</title>
+    <g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <!-- Cracked ground: a horizon with a branching fissure below it -->
+      <path d="M2.5 10.5h19" />
+      <path d="M12 10.5v4.2" />
+      <path d="M12 14.7 8.4 17.6M12 14.7l3.9 2.7M8.4 17.6l-2 3.4M15.9 17.4l1.7 3.6" />
+      <!-- A withheld sun: arc only, no rays, so it reads as absence of rain -->
+      <path d="M6.2 7.6a6.4 6.4 0 0 1 11.6 0" opacity="0.75" />
+    </g>
+  </symbol>
+
+  <symbol id="hn-hz-heat-wave" viewBox="0 0 24 24">
+    <title>Heat wave</title>
+    <g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="9.4" r="3.6" />
+      <!-- Rays on the upper arc only; the lower half stays clear for the shimmers -->
+      <path d="M12 2.6v1.9M5.6 5.6l1.3 1.3M18.4 5.6l-1.3 1.3M2.9 11.4h1.9M19.2 11.4h1.9" opacity="0.8" />
+      <!-- Heat shimmer: the distinguishing mark against the plain sun -->
+      <path d="M4 16.6c1.4-1.1 2.7-1.1 4.1 0s2.7 1.1 4.1 0 2.7-1.1 4.1 0 2.7 1.1 4.1 0" />
+      <path d="M4 20.4c1.4-1.1 2.7-1.1 4.1 0s2.7 1.1 4.1 0 2.7-1.1 4.1 0 2.7 1.1 4.1 0" opacity="0.6" />
+    </g>
+  </symbol>
+
+  <symbol id="hn-hz-cold-wave" viewBox="0 0 24 24">
+    <title>Cold wave</title>
+    <g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <!-- Six-arm crystal, arms short enough to stay distinct at 16px -->
+      <path d="M12 3v18M4.2 7.5l15.6 9M19.8 7.5l-15.6 9" />
+      <path d="M12 6.6 9.9 4.9M12 6.6l2.1-1.7M12 17.4l-2.1 1.7M12 17.4l2.1 1.7" opacity="0.8" />
+      <path d="M7.1 9.4 4.5 9.1M7.1 14.6l-2.6.3M16.9 9.4l2.6-.3M16.9 14.6l2.6.3" opacity="0.8" />
+    </g>
+  </symbol>
+
+  <symbol id="hn-hz-fire" viewBox="0 0 24 24">
+    <title>Fire</title>
+    <g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <!-- Flame silhouette with an inner core, so it does not collapse to a blob
+           when filled at severity=extreme -->
+      <path d="M12 21c-3.6 0-6.1-2.3-6.1-5.5 0-3.9 3.3-5.4 3.9-9.6.1-.8 1.1-1.1 1.6-.4 1.5 2.1.9 3.6 2.2 4.6.9.7 2.2.2 2.2-1 0-.7-.3-1.4-.8-2 .5.6 3.1 2.7 3.1 8.4 0 3.2-2.5 5.5-6.1 5.5z" />
+      <path d="M12 21c-1.7 0-2.9-1.2-2.9-2.8 0-1.9 1.7-2.6 2-4.6.8 1 1.6 1.9 2.4 2.6.9.8 1.4 1.3 1.4 2 0 1.6-1.2 2.8-2.9 2.8z" opacity="0.7" />
+    </g>
+  </symbol>
+
+  <symbol id="hn-hz-severe-local-storm" viewBox="0 0 24 24">
+    <title>Severe local storm</title>
+    <g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <!-- Cumulus with a bolt and driven rain: the three marks that separate a
+           local storm from a flood or a cyclone -->
+      <path d="M6.9 13.4a3.4 3.4 0 0 1 .5-6.8 4.6 4.6 0 0 1 8.7-.6 3.2 3.2 0 0 1 .8 6.3" />
+      <path d="M13 13.2 9.9 18.1h2.6l-.7 3.4 3.4-4.9h-2.4z" />
+      <path d="M5.4 16.4 4.4 19.2M19.4 15.6l-1 2.8" opacity="0.75" />
+    </g>
+  </symbol>
+
+  <!--
+    Severity glyphs. Deliberately NOT the same shapes as the hazard glyphs: a
+    reader must be able to tell "what" from "how bad" without reading either.
+  -->
+  <symbol id="hn-sev-bar1" viewBox="0 0 12 12"><rect x="0" y="8.8" width="2" height="2.2" rx="0.5" fill="currentColor"/><rect x="3" y="6.6" width="2" height="4.4" rx="0.5" fill="currentColor" opacity="0.22"/><rect x="6" y="4.4" width="2" height="6.6" rx="0.5" fill="currentColor" opacity="0.22"/><rect x="9" y="2.2" width="2" height="8.8" rx="0.5" fill="currentColor" opacity="0.22"/></symbol>
+  <symbol id="hn-sev-bar2" viewBox="0 0 12 12"><rect x="0" y="8.8" width="2" height="2.2" rx="0.5" fill="currentColor"/><rect x="3" y="6.6" width="2" height="4.4" rx="0.5" fill="currentColor"/><rect x="6" y="4.4" width="2" height="6.6" rx="0.5" fill="currentColor" opacity="0.22"/><rect x="9" y="2.2" width="2" height="8.8" rx="0.5" fill="currentColor" opacity="0.22"/></symbol>
+  <symbol id="hn-sev-bar3" viewBox="0 0 12 12"><rect x="0" y="8.8" width="2" height="2.2" rx="0.5" fill="currentColor"/><rect x="3" y="6.6" width="2" height="4.4" rx="0.5" fill="currentColor"/><rect x="6" y="4.4" width="2" height="6.6" rx="0.5" fill="currentColor"/><rect x="9" y="2.2" width="2" height="8.8" rx="0.5" fill="currentColor" opacity="0.22"/></symbol>
+  <symbol id="hn-sev-bar4" viewBox="0 0 12 12"><rect x="0" y="8.8" width="2" height="2.2" rx="0.5" fill="currentColor"/><rect x="3" y="6.6" width="2" height="4.4" rx="0.5" fill="currentColor"/><rect x="6" y="4.4" width="2" height="6.6" rx="0.5" fill="currentColor"/><rect x="9" y="2.2" width="2" height="8.8" rx="0.5" fill="currentColor"/></symbol>
+  <!-- Extreme breaks the bar pattern entirely: a filled diamond is
+       distinguishable by SILHOUETTE, so it survives greyscale print and
+       monochrome e-ink, where four bars of increasing height do not. -->
+  <symbol id="hn-sev-diamond" viewBox="0 0 12 12"><path d="M6 0.5 11.5 6 6 11.5 0.5 6Z" fill="currentColor"/></symbol>
+</svg>
