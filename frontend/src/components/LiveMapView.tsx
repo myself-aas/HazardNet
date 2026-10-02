@@ -1352,7 +1352,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                (its attribution bar and hazard-action cluster are absolute
                `z-[var(--z-sticky)]` = 10 children of the `inset-0` stage overlay and
                used to swallow the card's primary action at phone widths). */
-            className="relative z-20 lg:absolute lg:top-4 lg:right-4 lg:w-[320px] lg:max-w-[calc(100%-2rem)] shrink-0 w-full border-t lg:border-t-0 border-carbon-20 bg-white"
+            className="relative z-20 lg:absolute lg:top-4 lg:right-4 lg:w-[clamp(280px,28vw,340px)] lg:max-w-[calc(100%-2rem)] max-w-full shrink-0 w-full border-t lg:border-t-0 border-carbon-20 bg-white"
           >
             <DistrictForecastCard
               district={currentSelected}
@@ -1385,7 +1385,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.2 }}
-              className="absolute bottom-16 lg:bottom-auto lg:top-4 left-0 right-0 lg:left-auto lg:right-4 z-[var(--z-sticky)] pointer-events-auto lg:w-[320px] lg:max-w-[calc(100%-2rem)] w-full"
+              className="absolute bottom-16 lg:bottom-auto lg:top-4 left-0 right-0 lg:left-auto lg:right-4 z-[var(--z-sticky)] pointer-events-auto lg:w-[clamp(280px,28vw,340px)] lg:max-w-[calc(100%-2rem)] max-w-full w-full"
             >
               <div className="bg-white border border-carbon-20 p-4 text-carbon-80 flex flex-col gap-2">
                 <div className="flex items-start justify-between gap-2 border-b border-carbon-20 pb-2">

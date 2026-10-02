@@ -27,12 +27,12 @@ export { remotionInterpolate as interpolate, Easing };
 import { useEffect, useState } from 'react';
 import { useReducedMotion } from 'framer-motion';
 
-export const useWebFrame = (fps = 30): number => {
+export const useWebFrame = (fps = 30, maxFrames = 420): number => {
   const shouldReduceMotion = useReducedMotion();
   const [frame, setFrame] = useState(0);
 
   useEffect(() => {
-    if (shouldReduceMotion) {
+    if (shouldReduceMotion || maxFrames <= 0) {
       setFrame(0);
       return;
     }
@@ -41,12 +41,15 @@ export const useWebFrame = (fps = 30): number => {
     const tick = (now: number) => {
       if (start === null) start = now;
       const elapsed = (now - start) / 1000;
-      setFrame(Math.floor(elapsed * fps));
-      raf = requestAnimationFrame(tick);
+      const nextFrame = Math.min(maxFrames, Math.floor(elapsed * fps));
+      setFrame((prev) => (prev === nextFrame ? prev : nextFrame));
+      if (nextFrame < maxFrames) {
+        raf = requestAnimationFrame(tick);
+      }
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [fps, shouldReduceMotion]);
+  }, [fps, maxFrames, shouldReduceMotion]);
 
   return shouldReduceMotion ? 0 : frame;
 };

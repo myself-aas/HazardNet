@@ -346,7 +346,7 @@ export const FrontDoor: React.FC = () => {
   const withheld = counts?.not_published ?? notPublished ?? null;
 
   const reduceMotion = useReducedMotion();
-  const frame = useWebFrame(30);
+  const frame = useWebFrame(30, 8);
 
   if (!content) return null;
   if (redirectToLive) return <Navigate to={redirectToLive} replace />;

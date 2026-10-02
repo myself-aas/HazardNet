@@ -100,7 +100,7 @@ export const LiveStatusStrip: React.FC<LiveStatusStripProps> = ({
   const { t, formatNumber, isBengali } = useI18n();
   const hazardLabel = useHazardLabel();
   const reduceMotion = useReducedMotion();
-  const frame = useWebFrame(30);
+  const frame = useWebFrame(30, 10);
 
   const published = alerts.length;
   const ageHours = ageHoursFrom(generatedAt);

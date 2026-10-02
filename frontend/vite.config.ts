@@ -1,8 +1,29 @@
+import { rmSync } from 'node:fs';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { defineConfig, loadEnv, type PluginOption } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { VitePWA } from 'vite-plugin-pwa';
+
+/**
+ * Strips unreferenced stock hero `.mp4` videos (`public/hero-section/*.mp4`, 148.6 MB)
+ * from the production `dist/` output after Vite copies `public/` (`[P0] PERF-01`),
+ * keeping the production bundle lean without deleting tracked working-tree binaries.
+ */
+function excludeUnreferencedHeroVideos(): PluginOption {
+  let outDir = 'dist';
+  return {
+    name: 'hazardnet:exclude-unreferenced-hero-videos',
+    apply: 'build',
+    configResolved(config) {
+      outDir = join(config.root, config.build.outDir);
+    },
+    closeBundle() {
+      rmSync(join(outDir, 'hero-section'), { recursive: true, force: true });
+    },
+  };
+}
 
 /**
  * Rolldown interop shim for the pre-ESM Leaflet plugins (production
@@ -83,6 +104,7 @@ export default defineConfig(({ mode }) => {
   return {
   plugins: [
     leafletGlobalShim(),
+    excludeUnreferencedHeroVideos(),
     react(),
     tailwindcss(),
     VitePWA({
@@ -91,6 +113,7 @@ export default defineConfig(({ mode }) => {
       filename: 'serviceWorker.js',
       injectManifest: {
         injectionPoint: 'self.__WB_MANIFEST',
+        globIgnores: ['**/hero-section/*.mp4'],
       },
     }),
   ],

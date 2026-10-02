@@ -210,7 +210,7 @@ export default function ChatBot() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.88, y: 30 }}
             transition={{ type: 'spring', stiffness: 350, damping: 26 }}
-            className="fixed inset-x-0 bottom-0 top-0 sm:top-auto sm:bottom-6 sm:right-6 sm:left-auto z-[var(--z-overlay)] w-full sm:w-[480px] h-auto sm:h-[640px] sm:max-h-[calc(100dvh-3rem)] max-h-dvh bg-white flex flex-col border border-carbon-20 shadow-2xl pb-[env(safe-area-inset-bottom)] sm:pb-0 sm:rounded-2xl overflow-hidden"
+            className="fixed inset-x-0 bottom-0 top-0 sm:top-auto sm:bottom-6 sm:right-6 sm:left-auto z-[var(--z-overlay)] w-full sm:w-[min(480px,calc(100vw-3rem))] max-w-full h-auto sm:h-[640px] sm:max-h-[calc(100dvh-3rem)] max-h-dvh bg-white flex flex-col border border-carbon-20 shadow-2xl pb-[env(safe-area-inset-bottom)] sm:pb-0 sm:rounded-2xl overflow-hidden"
             role="dialog"
             aria-modal="true"
             aria-label="HazardNet AI Advisor chat"
@@ -224,7 +224,7 @@ export default function ChatBot() {
                     id="tab-text-mode-btn"
                     type="button"
                     onClick={() => setChatMode('text')}
-                    className={`px-2.5 py-1 text-xs font-semibold rounded-md flex items-center gap-1.5 transition cursor-pointer ${
+                    className={`min-h-[44px] px-2.5 py-1 text-xs font-semibold rounded-md flex items-center gap-1.5 transition cursor-pointer ${
                       chatMode === 'text' 
                         ? 'bg-white text-carbon-90 shadow-2xs border border-carbon-20' 
                         : 'text-carbon-60 hover:text-carbon-90'
@@ -237,7 +237,7 @@ export default function ChatBot() {
                     id="tab-voice-mode-btn"
                     type="button"
                     onClick={() => setChatMode('voice')}
-                    className={`px-2.5 py-1 text-xs font-semibold rounded-md flex items-center gap-1.5 transition cursor-pointer ${
+                    className={`min-h-[44px] px-2.5 py-1 text-xs font-semibold rounded-md flex items-center gap-1.5 transition cursor-pointer ${
                       chatMode === 'voice' 
                         ? 'bg-blue-600 text-white shadow-2xs' 
                         : 'text-blue-700 hover:text-blue-900'
@@ -253,7 +253,7 @@ export default function ChatBot() {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => setIsOpen(false)}
-                  className="min-h-[36px] px-2.5 hover:bg-carbon-20 text-carbon-70 hover:text-carbon-90 text-sm font-semibold cursor-pointer flex items-center gap-1 border border-carbon-20 rounded touch-manipulation"
+                  className="min-h-[44px] px-2.5 hover:bg-carbon-20 text-carbon-70 hover:text-carbon-90 text-sm font-semibold cursor-pointer flex items-center gap-1 border border-carbon-20 rounded touch-manipulation"
                   title="Close Assistant"
                   aria-label="Close Assistant"
                 >

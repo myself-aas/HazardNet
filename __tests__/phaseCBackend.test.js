@@ -17,13 +17,11 @@ import {
   ALERT_STATES,
   evaluateTransition,
   applyTransition,
-  isDutyOfficer,
 } from '../backend/alerts/lifecycle.js';
 import {
   reviewAlert,
   getAlertStore,
   resetAlertStore,
-  alertFromDocument,
 } from '../backend/alerts/service.js';
 import {
   parseClaimsRegistry,

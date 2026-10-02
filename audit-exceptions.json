@@ -231,6 +231,13 @@
       "severity": "critical",
       "reason": "Install-time dependency for tfjs-node model tooling; no non-breaking fix available.",
       "expires": "2026-12-12"
+    },
+    {
+      "ghsa": "GHSA-86w9-cpqp-85rv",
+      "package": "node-forge (transitive via @expo/cli -> @expo/pkcs12)",
+      "severity": "high",
+      "reason": "Development/CLI toolchain dependency for Expo mobile build tooling; never shipped to web or runtime.",
+      "expires": "2026-12-31"
     }
   ]
 }
