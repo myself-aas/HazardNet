@@ -11,3 +11,4 @@
 
 export * from './tokens';
 export * from './material3Expressive';
+export * from './meridian';

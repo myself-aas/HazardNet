@@ -1,6 +1,6 @@
 {
   "name": "@hazardnet/design-system",
-  "version": "2.2.0",
+  "version": "3.0.0",
   "private": true,
   "type": "module",
   "main": "./src/index.ts",
@@ -9,7 +9,8 @@
     ".": "./src/index.ts",
     "./tokens": "./src/tokens.ts",
     "./material3": "./src/material3Expressive.ts",
-    "./use-tokens": "./src/useTokens.ts"
+    "./use-tokens": "./src/useTokens.ts",
+    "./meridian": "./src/meridian.ts"
   },
   "scripts": {
     "build": "tsc"

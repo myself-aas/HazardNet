@@ -53,6 +53,8 @@ import { Interactive } from '../components/interactive/Interactive';
 import { useWebFrame, interpolate, Easing } from '../lib/motion-interpolate';
 
 import MaterialIcon from '../components/MaterialIcon';
+import { ButtonLink, Card, PillTabs, ProvenanceNote, SectionHeading, SeverityBadge } from '../components/meridian/primitives';
+import { useReveal } from '../components/meridian/motion';
 import { AlertLevelBadge } from '../components/alerts/AlertLevelBadge';
 import { LanguageToggle } from '../components/alerts/LanguageToggle';
 import LiveStatusStrip from '../components/frontdoor/LiveStatusStrip';
@@ -148,8 +150,9 @@ function useLiveFacts(): LiveFacts {
 
 /* ─────────────────────────────── presentation ──────────────────────────────── */
 
+/** Meridian eyebrow: uppercase caption, weight over size, secondary label colour. */
 const Eyebrow: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <p className="font-mono text-xs font-bold uppercase tracking-[0.025em] text-carbon-60">{children}</p>
+  <p className="mrd-eyebrow">{children}</p>
 );
 
 /**
@@ -168,9 +171,25 @@ const Eyebrow: React.FC<{ children: React.ReactNode }> = ({ children }) => (
  * hierarchy and does not mis-signify as four equal CTAs (audit #5).
  */
 const Figure: React.FC<{ value: string; label: string; tone?: 'default' | 'muted' }> = ({ value, label, tone = 'default' }) => (
-  <div className={`border p-4 ${tone === 'muted' ? 'bg-carbon-05 border-carbon-20' : 'bg-white border-carbon-20'}`}>
-    <p className={`font-mono font-light leading-none tabular-nums ${tone === 'muted' ? 'text-[28px] text-carbon-80' : 'text-[32px] text-carbon-90'}`}>{value}</p>
-    <p className="mt-2 text-xs font-bold leading-snug text-carbon-90">{label}</p>
+  <div
+    className={`flex flex-col gap-2 p-5 transition-shadow duration-[var(--mrd-duration-base)] ${
+      tone === 'muted'
+        ? 'bg-[color:var(--mrd-bg-grouped)]'
+        : 'bg-[color:var(--mrd-bg-elevated)] shadow-[var(--mrd-shadow-card)]'
+    }`}
+  >
+    {/* leading-[1.1], not leading-none: values like "7 & 15 days" wrap on narrow
+        screens, and zero leading would collide the wrapped lines. */}
+    <p
+      className={`mrd-figure font-semibold leading-[1.1] ${
+        tone === 'muted'
+          ? 'text-[length:var(--mrd-text-display3)] text-[color:var(--mrd-label-secondary)]'
+          : 'text-[length:var(--mrd-text-display2)] text-[color:var(--mrd-label)]'
+      }`}
+    >
+      {value}
+    </p>
+    <p className="mrd-caption text-[color:var(--mrd-label)]">{label}</p>
   </div>
 );
 
@@ -360,7 +379,10 @@ export const FrontDoor: React.FC = () => {
       className="w-full"
     >
       {/* ── Hero: NASA-Inspired Global Observatory with Dynamic Video Background ── */}
-      <header className="relative w-full overflow-hidden bg-black text-white min-h-[600px] lg:min-h-screen flex items-center -mt-14 sm:-mt-16 pt-[100px] pb-12 sm:pb-16 shadow-2xl">
+      {/* `mrd-on-dark` scopes the outline button's inversion to this hero, so the
+          same primitive renders white-on-dark here and ink-on-light everywhere
+          else without a second variant existing. */}
+      <header className="mrd-on-dark relative w-full overflow-hidden bg-black text-white min-h-[600px] lg:min-h-screen flex items-center -mt-14 sm:-mt-16 pt-[100px] pb-12 sm:pb-16 shadow-2xl">
         {/* Remotion-Inspired 5-Layer Cinematic Motion Background (BgMesh, Video, HUD, Grade, Grain & Vignette) */}
         <HeroCinematicBackground paused={heroPaused} />
         {/* Pause control — keyboard-reachable, respects reduced-motion (audit #1) */}
@@ -391,7 +413,7 @@ export const FrontDoor: React.FC = () => {
 
           <div className="mt-6 grid grid-cols-1 items-center gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)] xl:gap-12">
             <div className="min-w-0 rounded-sm border border-white/15 bg-gradient-to-b from-black/55 to-black/35 p-4 backdrop-blur-sm sm:p-5" style={{ backdropFilter: 'blur(var(--hero-glass-blur))', WebkitBackdropFilter: 'blur(var(--hero-glass-blur))' }}>
-              <h1 className="max-w-3xl text-balance text-[28px] font-bold leading-[1.1] tracking-tight text-white sm:text-[32px] md:text-5xl md:leading-[1.06] drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+              <h1 className="mrd-display2 max-w-3xl text-balance text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
                 {localised.h1 ?? localised.title}
               </h1>
               {language === 'bn' && (
@@ -406,26 +428,40 @@ export const FrontDoor: React.FC = () => {
                 </p>
               )}
 
+              {/* Meridian dual-primary, applied. "Open the map" is a NAVIGATION
+                  action, so it takes the ink pill — not crimson. Under HDS 2.2
+                  this button was `bg-primary-strong` (crimson), which spent the
+                  hazard colour on a browse action and trained the reader that
+                  crimson means "clickable". On a warning service that is a
+                  safety bug, not a style preference: the crimson has to still
+                  mean something when the district under it is under warning.
+                  The two secondary links stay outlined. */}
               <div className="mt-7 flex flex-wrap items-center gap-2 sm:gap-3">
-                <Link
-                  to="/live"
-                  className="inline-flex min-h-[48px] w-full items-center justify-center gap-2 bg-primary-strong px-5 py-3 text-base font-semibold text-white hover:bg-primary tracking-[0.01em] touch-manipulation shadow-lg transition-transform duration-150 active:scale-95 sm:w-auto sm:px-6"
+                <ButtonLink
+                  href="/live"
+                  intent="ink"
+                  size="lg"
+                  className="w-full sm:w-auto"
                 >
                   <MaterialIcon name="public" className="text-base" />
                   {t('frontdoor.hero.ctaMap')}
-                </Link>
-                <Link
-                  to="/methodology"
-                  className="inline-flex min-h-[48px] w-full items-center justify-center gap-2 border-2 border-white/80 px-5 py-3 text-base font-semibold text-white hover:bg-white/10 touch-manipulation backdrop-blur-sm transition-colors duration-150 sm:w-auto sm:px-6"
+                </ButtonLink>
+                <ButtonLink
+                  href="/methodology"
+                  intent="outline"
+                  size="lg"
+                  className="w-full sm:w-auto"
                 >
                   {t('frontdoor.hero.ctaMethodology')}
-                </Link>
-                <Link
-                  to="/model-performance"
-                  className="inline-flex min-h-[48px] w-full items-center justify-center gap-2 border-2 border-white/70 px-5 py-3 text-base font-semibold text-white hover:border-white hover:bg-white/10 touch-manipulation backdrop-blur-sm transition-colors duration-150 sm:w-auto sm:px-6"
+                </ButtonLink>
+                <ButtonLink
+                  href="/model-performance"
+                  intent="outline"
+                  size="lg"
+                  className="w-full sm:w-auto"
                 >
                   {t('frontdoor.hero.ctaScorecard')}
-                </Link>
+                </ButtonLink>
               </div>
 
               <p className="mt-6 max-w-2xl border-t border-white/20 pt-4 text-xs leading-[1.62] text-white/75">
