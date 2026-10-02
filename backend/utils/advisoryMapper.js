@@ -7,6 +7,8 @@
  * or API serving.
  */
 
+import { applyCalibrationToRow } from '../alerts/calibration.js';
+
 export const ADVISORY_CSV_COLUMNS = [
   'district',
   'division',
@@ -218,9 +220,10 @@ function parseFloatSafe(val, fallback = null) {
  *
  * @param {Record<string, any>} rawRow - Raw row object from CSV parser
  * @param {number} [rowNumber=1] - 1-indexed row number for diagnostics
+ * @param {{ modelVersion?: string | null }} [options={}] - Provenance stamping options
  * @returns {object} Formatted ForecastRow matching TRD §2.2
  */
-export function mapAdvisoryRow(rawRow, rowNumber = 1) {
+export function mapAdvisoryRow(rawRow, rowNumber = 1, options = {}) {
   if (!rawRow || typeof rawRow !== 'object') {
     throw new Error(`Row ${rowNumber}: Empty or invalid advisory row object`);
   }
@@ -322,6 +325,29 @@ export function mapAdvisoryRow(rawRow, rowNumber = 1) {
     data_source: DATA_SOURCE_CONSTANT,
   };
 
+  const modelVersion = rawRow.model_version
+    ? String(rawRow.model_version).trim()
+    : options?.modelVersion
+      ? String(options.modelVersion).trim()
+      : '';
+  if (modelVersion) {
+    mapped.model_version = modelVersion;
+  }
+
+  if (options?.calibrationMap) {
+    return applyCalibrationToRow(mapped, options.calibrationMap);
+  }
+
+  const calibratedCol = parseFloatSafe(rawRow.confidence_calibrated);
+  if (calibratedCol !== null && calibratedCol >= 0 && calibratedCol <= 1) {
+    mapped.confidence_raw = confidence;
+    mapped.confidence = calibratedCol;
+    mapped.confidence_calibrated = calibratedCol;
+    mapped.confidence_kind = 'calibrated_probability';
+  } else if (rawRow.confidence_kind && String(rawRow.confidence_kind).trim()) {
+    mapped.confidence_kind = String(rawRow.confidence_kind).trim();
+  }
+
   return mapped;
 }
 
@@ -330,16 +356,17 @@ export function mapAdvisoryRow(rawRow, rowNumber = 1) {
  * when 128 rows are supplied.
  *
  * @param {Array<Record<string, any>>} rawRows
+ * @param {{ modelVersion?: string | null }} [options={}]
  * @returns {Array<object>}
  */
-export function mapAdvisoryRows(rawRows) {
+export function mapAdvisoryRows(rawRows, options = {}) {
   if (!Array.isArray(rawRows) || rawRows.length === 0) {
     throw new Error('No advisory rows to map');
   }
 
   const mappedRows = [];
   for (let i = 0; i < rawRows.length; i++) {
-    mappedRows.push(mapAdvisoryRow(rawRows[i], i + 1));
+    mappedRows.push(mapAdvisoryRow(rawRows[i], i + 1, options));
   }
 
   return mappedRows;
@@ -383,6 +410,10 @@ export function forecastRowsToCsv(forecastRows) {
     'prob_top2',
     'prob_top3',
     'data_source',
+    'model_version',
+    'confidence_raw',
+    'confidence_calibrated',
+    'confidence_kind',
   ];
 
   const lines = [headers.join(',')];

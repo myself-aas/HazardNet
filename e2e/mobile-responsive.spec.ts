@@ -121,7 +121,10 @@ test.describe('Mobile responsiveness @375px', () => {
     await page.goto(`${BASE}/advisories`);
     await waitForAppShell(page);
 
-    await page.getByTestId('district-search-trigger').first().click();
+    await page.getByRole('button', { name: /open navigation menu/i }).click();
+    const drawer = page.getByTestId('menu-drawer');
+    await expect(drawer).toBeVisible({ timeout: 10_000 });
+    await drawer.getByTestId('district-search-trigger').first().click();
     const palette = page.getByTestId('district-search-modal');
     await expect(palette).toBeVisible({ timeout: 10_000 });
 
@@ -144,11 +147,13 @@ test.describe('Mobile responsiveness @375px', () => {
     await page.goto(`${BASE}/advisories`);
     await waitForAppShell(page);
 
-    const size = await page
-      .getByTestId('district-search-trigger')
-      .first()
-      .evaluate((el) => ({ w: el.getBoundingClientRect().width, h: el.getBoundingClientRect().height }));
-    expect(size.w, 'search trigger width').toBeGreaterThanOrEqual(44);
-    expect(size.h, 'search trigger height').toBeGreaterThanOrEqual(44);
+    const menuBtn = page.getByRole('button', { name: /open navigation menu/i });
+    await expect(menuBtn).toBeVisible({ timeout: 10_000 });
+    const size = await menuBtn.evaluate((el) => ({
+      w: el.getBoundingClientRect().width,
+      h: el.getBoundingClientRect().height,
+    }));
+    expect(size.w, 'menu trigger width').toBeGreaterThanOrEqual(44);
+    expect(size.h, 'menu trigger height').toBeGreaterThanOrEqual(44);
   });
 });

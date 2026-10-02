@@ -52,11 +52,17 @@ test.describe('HazardNet smoke', () => {
     const drawer = page.getByTestId('menu-drawer');
     await expect(drawer).toBeVisible();
 
-    // The panel slides in on a spring, so measure only once it has settled —
-    // reading the box mid-animation reports a negative x.
+    // The panel slides in from the right (`initial={{ x: '100%' }}` -> `animate={{ x: 0 }}`),
+    // so poll until both edges (`x >= 0` and `x + width <= 375`) have settled inside the viewport.
     await expect
-      .poll(async () => (await drawer.boundingBox())?.x, { timeout: 10_000 })
-      .toBeGreaterThanOrEqual(0);
+      .poll(
+        async () => {
+          const b = await drawer.boundingBox();
+          return b ? b.x >= 0 && b.x + b.width <= 375 : false;
+        },
+        { timeout: 10_000 },
+      )
+      .toBe(true);
 
     // Drawer must stay inside the viewport — no sideways page scroll.
     const box = await drawer.boundingBox();

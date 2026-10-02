@@ -1,6 +1,5 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { isValidGlide } from '../lib/glide';
-import defaultCatalog from '../../public/data/historical/hazard-catalog-index.json';
 import { ALL_64_DISTRICTS } from '../data/bangladeshDistricts';
 
 export interface HistoricalHazardRecord {
@@ -42,7 +41,7 @@ export const HAZARD_CLASSES = [
 ];
 
 export const HistoricalHazardCatalog: React.FC<HistoricalHazardCatalogProps> = ({
-  records = defaultCatalog as HistoricalHazardRecord[],
+  records = [],
   onSelectEvent,
   onOpenGlide,
   className = '',

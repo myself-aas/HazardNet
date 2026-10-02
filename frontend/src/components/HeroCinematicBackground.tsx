@@ -24,7 +24,7 @@ export const HeroCinematicBackground: React.FC<{ paused?: boolean }> = ({ paused
   const isTest = typeof process !== 'undefined' && process.env.NODE_ENV === 'test';
   const reduceMotion = useReducedMotion();
   const shouldAnimate = !reduceMotion && !paused && !isTest;
-  const frame = useWebFrame(30);
+  const frame = useWebFrame(30, 420);
   const { fps } = useWebVideoConfig();
 
   return (

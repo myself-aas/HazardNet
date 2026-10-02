@@ -57,7 +57,7 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
   const { t, formatNumber } = useI18n();
   const [honestyExpanded, setHonestyExpanded] = useState(false);
   const reduceMotion = useReducedMotion();
-  const frame = useWebFrame(30);
+  const frame = useWebFrame(30, 60);
 
   const coverage = freshness?.coverage ?? null;
   const covered = coverage?.districts_covered ?? null;
