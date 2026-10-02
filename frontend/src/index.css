@@ -10,6 +10,14 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+/* HazardNet Meridian Design System (HDS v3.0). Imported last so its semantic
+   roles sit above the NASA-HDS-derived layer and can override it, while every
+   existing --hn-* / --hds-* name keeps resolving. Additive by design: 6,386
+   palette-family uses and several asserting tests depend on the layer below.
+   Source of truth for values and reasoning:
+   packages/design-system/src/meridian.ts · docs/design-system/MERIDIAN.md */
+@import "./styles/meridian.css";
+
 @custom-variant dark (&:is(.dark *));
 
 /* HazardNet edge-first typography contract. No remote font URL is permitted. */

@@ -391,10 +391,16 @@ export const Navbar: React.FC<NavbarProps> = ({
               }),
         }}
         ref={headerRef}
-        className={`sticky top-0 z-[var(--z-nav)] select-none h-14 sm:h-16 flex items-center pt-[env(safe-area-inset-top)] transition-all duration-300 ease-out ${
+        /* Meridian glass chrome. The nav is exactly the surface Apple's
+           "Materials" guidance is for — it floats above content, so it takes
+           the translucent recipe with blur + saturation. Blur and saturate come
+           from the tokens rather than from Tailwind's fixed steps, so the whole
+           HUD retunes from one place. The scrolled state goes opaque because a
+           nav with a long page behind it stops being legible at 72% alpha. */
+        className={`sticky top-0 z-[var(--mrd-z-nav)] select-none h-14 sm:h-16 flex items-center pt-[env(safe-area-inset-top)] transition-all duration-[var(--mrd-duration-base)] ease-[var(--mrd-ease-standard)] ${
           isHeaderTransparent
-            ? 'bg-black/25 backdrop-blur-md border-b border-white/10 text-white'
-            : 'bg-white/95 backdrop-blur-md border-b border-carbon-20 text-carbon-80 shadow-xs'
+            ? 'mrd-glass-dark text-white'
+            : 'mrd-glass mrd-glass-strong border-b border-[color:var(--mrd-separator)] text-[color:var(--mrd-label)] shadow-[var(--mrd-shadow-console)]'
         }`}
       >
         <div className="px-4 xl:px-8 w-full relative flex items-center justify-between">
