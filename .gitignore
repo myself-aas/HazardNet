@@ -38,6 +38,9 @@ bun.lock
 *.swp
 *.tar
 *.tmp
+.vs/
+frontend/public/hero-section/*.mp4
+frontend/assets/hero-section/*.mp4
 *.zip
 .DS_Store
 .dockerignore

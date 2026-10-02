@@ -8,7 +8,6 @@
  */
 import { loadSubscribers, normalizeSubscriber, notifyAlert, subscriberMatches }
   from '../../backend/alerts/notify.js';
-import { REQUIRED_DISCLAIMER } from '../../backend/alerts/policy.js';
 import { getSmsConfig } from '../../backend/alerts/channels/sms.js';
 import { getTelegramConfig } from '../../backend/alerts/channels/telegram.js';
 

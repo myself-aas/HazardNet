@@ -6,8 +6,6 @@
  * the auto-publish ceiling is WATCH, and WARNING cannot be reached without a
  * calibrated probability unless a deployment explicitly overrides it.
  */
-import fs from 'fs';
-import path from 'path';
 import {
   ALERT_LEVELS, POLICY_DEFAULTS, POLICY_VERSION, REQUIRED_DISCLAIMER, describePolicy,
   getPolicy, levelRank, maxLevel,

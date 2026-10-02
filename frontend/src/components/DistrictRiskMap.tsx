@@ -138,7 +138,7 @@ export const DistrictRiskMap: React.FC<DistrictRiskMapProps> = ({
         {/* Tooltip Overlay */}
         {hoveredDistrict && (
           <div
-            className="absolute top-4 right-4 z-30 bg-carbon-90/95 backdrop-blur-md border border-carbon-70 p-3.5 rounded-xl shadow-2xl text-xs space-y-1.5 min-w-[210px] pointer-events-none text-carbon-20"
+            className="absolute top-4 right-4 z-30 bg-carbon-90/95 backdrop-blur-md border border-carbon-70 p-3.5 rounded-xl shadow-2xl text-xs space-y-1.5 w-[min(220px,calc(100%-1.5rem))] pointer-events-none text-carbon-20"
             role="tooltip"
           >
             <div className="flex items-center justify-between border-b border-carbon-80 pb-1.5">

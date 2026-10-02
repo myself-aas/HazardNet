@@ -21,13 +21,17 @@
    packages/design-system/src/meridian.ts · docs/design-system/MERIDIAN.md */
 @import "./styles/meridian.css";
 
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark (&:is(.dark *, [data-mrd-theme="dark"] *));
 
-/* HazardNet edge-first typography contract. No remote font URL is permitted. */
+/* HazardNet edge-first typography & Cartographic-Editorial Brutalism HUD contract.
+   No remote font URL is permitted. */
 :root {
   --font-sans-en: 'Inter', 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-sans-bn: 'Hind Siliguri', 'Noto Sans Bengali', 'Baloo Da 2', sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+  --hn-hud-obsidian: #0b0f17;
+  --hn-hud-slate: #111827;
+  --hn-hud-border: rgba(255, 255, 255, 0.12);
 }
 
 html, body, button, input, select, textarea {
@@ -37,15 +41,26 @@ html, body, button, input, select, textarea {
   -moz-osx-font-smoothing: grayscale;
 }
 
-.lang-bn, .farmer-advisory, .tts-fallback-text, [lang="bn"] {
+html, body {
+  max-width: 100vw;
+  overflow-x: clip;
+}
+
+.lang-bn, .farmer-advisory, .tts-fallback-text, [lang="bn"], :lang(bn) {
   font-family: var(--font-sans-bn) !important;
   line-height: 1.65;
   letter-spacing: 0.01em;
 }
 
-.metric-value, .confidence-badge, .tensor-log, code, pre {
+.metric-value, .confidence-badge, .tensor-log, .hn-tabular-nums, code, pre {
   font-family: var(--font-mono) !important;
   font-variant-numeric: tabular-nums;
+}
+
+.hn-hud-surface {
+  background-color: var(--hn-hud-obsidian);
+  border-color: var(--hn-hud-border);
+  color: var(--hds-color-carbon-10);
 }
 /* Edge-first typography fallback.
  *
@@ -1329,6 +1344,13 @@ html[data-map-debug-fx='true'] .marker-high-risk {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+
+  [role="progressbar"],
+  [data-keep-reduced-motion],
+  .hn-spinner {
+    animation-iteration-count: infinite !important;
+    animation-duration: 1s !important;
   }
 
   html {
@@ -2775,11 +2797,34 @@ footer a::before {
   color: var(--hds-color-carbon-80);
 }
 
+/* Phase 4 WCAG AA/AAA light-mode contrast guard ([P0] A11Y-01):
+   Promote low-contrast carbon-40 (2.98:1) and carbon-50 (4.46:1) text on light surfaces
+   to carbon-60 (#58585b, 7.09:1 AAA) unless inside an explicit dark container. */
+:root:not(.dark):not([data-mrd-theme="dark"]) :not(.bg-carbon-90):not(.bg-carbon-80):not(.hn-surface-dark) > .text-carbon-40,
+:root:not(.dark):not([data-mrd-theme="dark"]) :not(.bg-carbon-90):not(.bg-carbon-80):not(.hn-surface-dark) > .text-carbon-50 {
+  color: var(--hds-color-carbon-60);
+}
 
+/* Phase 4 Touch Target Floor ([P1] RES-01):
+   Enforce >= 44x44px minimum interactive hit area outside @layer base so utility
+   heights (h-8, h-9, h-10) cannot shrink interactive buttons below WCAG 2.5.8 / Apple HIG. */
+button:not([data-compact-target="true"]),
+[role="button"]:not([data-compact-target="true"]) {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Phase 4 GPU/paint-scoped transition guard:
+   Prevent legacy .transition-all from animating layout geometry (width, height, top, left, margin, padding). */
+.transition-all {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
+  transition-timing-function: var(--ease-standard, cubic-bezier(0.22, 1, 0.36, 1));
+  transition-duration: 150ms;
+}
 
 /* Final cascade guard: legacy component tokens cannot reintroduce old families. */
 body, body * { font-family: var(--font-sans-en); }
-.lang-bn, .farmer-advisory, .tts-fallback-text, [lang="bn"],
-.lang-bn *, .farmer-advisory *, .tts-fallback-text *, [lang="bn"] * { font-family: var(--font-sans-bn) !important; }
-.metric-value, .confidence-badge, .tensor-log, code, pre,
-.metric-value *, .confidence-badge *, .tensor-log *, code *, pre * { font-family: var(--font-mono) !important; }
+.lang-bn, .farmer-advisory, .tts-fallback-text, [lang="bn"], :lang(bn),
+.lang-bn *, .farmer-advisory *, .tts-fallback-text *, [lang="bn"] *, :lang(bn) * { font-family: var(--font-sans-bn) !important; }
+.metric-value, .confidence-badge, .tensor-log, .hn-tabular-nums, code, pre,
+.metric-value *, .confidence-badge *, .tensor-log *, .hn-tabular-nums *, code *, pre * { font-family: var(--font-mono) !important; }
