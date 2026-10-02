@@ -119,14 +119,14 @@ html, body, button, input, select, textarea {
   --hn-brand-ink: #0D0D0D;
   --hn-brand-accent: var(--hn-brand-red);
 
-  /* Typography: strict monospace product-wide, with Bengali coverage fallback. */
-  --hn-font-mono: 'DM Mono', 'JetBrains Mono', 'SFMono-Regular', 'Roboto Mono', 'Noto Sans Bengali', monospace;
-  --hn-font-sans: var(--hn-font-mono);
-  --hn-font-heading: var(--hn-font-mono);
-  --hn-font-display: var(--hn-font-mono);
-  --hn-font-brand: var(--hn-font-mono);
-  --hn-font-bengali: var(--hn-font-mono);
-  --hn-font-bengali-display: var(--hn-font-mono);
+  /* Typography: readable sans-first UI with a dedicated numeric/log face. */
+  --hn-font-mono: 'DM Mono', 'JetBrains Mono', 'SFMono-Regular', 'Roboto Mono', monospace;
+  --hn-font-sans: var(--font-sans-en);
+  --hn-font-heading: 'Inter', 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --hn-font-display: var(--hn-font-heading);
+  --hn-font-brand: var(--hn-font-heading);
+  --hn-font-bengali: var(--font-sans-bn);
+  --hn-font-bengali-display: var(--font-sans-bn);
   --hn-font-bengali-serif: 'Noto Serif Bengali', serif;
 
   /* Motion */
@@ -591,6 +591,16 @@ html {
   image-rendering: -webkit-optimize-contrast;
 }
 
+/* Keep decorative telemetry out of the mobile reading flow. It is intentionally
+   hidden below 640px so the editorial eyebrow and language controls never compete
+   with the hero copy or sit beneath the sticky header. */
+@media (max-width: 639px) {
+  [aria-label="Telemetry HUD container"],
+  [data-interactive-name="Telemetry HUD container"] {
+    display: none !important;
+  }
+}
+
 @keyframes radarPing {
   0% {
     transform: scale(0.6);
@@ -646,13 +656,13 @@ html[data-map-debug-fx='true'] .cluster-pulse-ring {
 
 .custom-modern-leaflet-popup .leaflet-popup-content-wrapper,
 .leaflet-popup-content-wrapper {
-  background: #ffffff !important;
-  color: var(--hds-color-carbon-80) !important;
-  border: 1px solid var(--hds-color-carbon-20) !important;
+  background: var(--card) !important;
+  color: var(--foreground) !important;
+  border: 1px solid var(--border) !important;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
-  border-radius: 0 !important;
-  box-shadow: none !important;
+  border-radius: var(--hn-radius-card) !important;
+  box-shadow: var(--hn-shadow-elevated) !important;
   padding: 0 !important;
   overflow: hidden !important;
 }
