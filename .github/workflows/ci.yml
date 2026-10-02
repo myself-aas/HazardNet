@@ -532,6 +532,12 @@ jobs:
       - name: Design quality gate
         run: npm run check:design
 
+      # Route pages use the finalized HazardNet/Meridian color roles only: no stock
+      # Tailwind hues or un-tokenized hex literals. The scanner can report all components
+      # locally; this gate protects the page surfaces being redesigned here.
+      - name: Brand palette gate (pages)
+        run: npm run check:brand
+
       # No location in this repository's tree may appear in a shipped document — rendered
       # text, HTML comments, JSON-LD or inline styles. The rule and what the artifacts keep
       # instead are in scripts/lib/public-text.mjs, which the build scripts and the browser

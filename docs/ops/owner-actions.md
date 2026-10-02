@@ -128,12 +128,10 @@ the run summary and the uploaded artifact, but the committed file goes stale. |
 
 | | |
 |---|---|
-| **Status** | Open — added 2026-10-02 |
-| **Why** | The published Kaggle dataset (`hazardnet_advisories_latest.csv`) was 68.5 h old when checked, past the 36 h `--max-age-hours` guard in `scripts/validate_advisory_csv.mjs`. The validator rejects it (correctly) and the ingest would reject it too. |
-| **Do** | Either make `daily_advisory_ingest.yml` publish to Kaggle in the same run that regenerates
-the CSV, or relax the guard for the public mirror and record the expected lag in
-`docs/PUBLICATION_POLICY.md`. |
-| **Verify** | `node scripts/validate_advisory_csv.mjs <csv>` passes without `--allow-stale` on a normal day. |
+| **Status** | Open — the GitHub download/ingest path is wired on 2026-10-03; the public file itself still needs an on-time daily publication verified |
+| **Why** | The public Kaggle artifact (`ashifahmedshuvo/hazardnet-weekly-forecasts`, `hazardnet_advisories_latest.csv`) last reported `generated_at=2026-09-29 23:29:31` when checked on 2026-10-03. The 36 h freshness guard in `scripts/validate_advisory_csv.mjs` correctly rejects older runs. The owner has confirmed the Kaggle notebook is scheduled daily; the public copy must reflect that run. |
+| **Do** | The GitHub side now runs daily at `05:30 UTC`: `.github/workflows/daily_advisory_ingest.yml` downloads the CSV from the exact public dataset URL (raw CSV or ZIP), retries while a run is finishing, skips an unchanged file, and calls `scripts/process_advisory_ingest.mjs` only for a newer source. Verify the Kaggle notebook publishes the completed daily run back into that dataset/file. Optional `KAGGLE_USERNAME` / `KAGGLE_KEY` secrets enable CLI/kernel fallback; the public HTTP download itself requires no credentials. |
+| **Verify** | A scheduled Actions run shows a new `generated_at`, passes `node scripts/validate_advisory_csv.mjs /tmp/advisory-ingest/hazardnet_advisories_latest.csv` without `--allow-stale`, commits updated forecast snapshots, and triggers Vercel only when artifacts changed. If the file is unchanged on a scheduled run, the workflow fails loudly and attaches the fetch report. |
 | **Closed by** | — |
 
 ## Action 12 · Decide where analytics events are stored

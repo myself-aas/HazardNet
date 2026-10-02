@@ -72,7 +72,9 @@ browser (React)
 **B. Producing and publishing data (the pipeline)**
 
 ```text
-GitHub Actions (daily_advisory_ingest.yml, 05:30 UTC)
+Kaggle notebook (daily) -> public dataset `ashifahmedshuvo/hazardnet-weekly-forecasts`
+  -> GitHub Actions (daily_advisory_ingest.yml, 05:30 UTC)
+  -> scripts/fetch_kaggle_advisory.mjs (public HTTP raw-CSV/ZIP fetch; optional CLI/kernel fallback; freshness check)
   -> scripts/validate_advisory_csv.mjs / scripts/process_advisory_ingest.mjs / scripts/ingest_forecast_csv.mjs
   -> backend/utils/csvIngestion.js + backend/utils/forecastRow.js (row contract, 128 rows = 64 districts x 2 horizons)
   -> backend/forecastPersistence.js (Firestore transaction, privileged writer, 500-op limit)

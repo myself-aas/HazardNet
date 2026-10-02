@@ -159,9 +159,12 @@ Two findings surfaced while actioning the answers that were not part of any ques
 
 - **`frontend/src/locales/{en,bn}.json` are dead.** Nothing imports them; the live dictionary is
   inline in `frontend/src/lib/i18n.ts`. Two dictionaries, one of which no developer can affect.
-- **The public Kaggle dataset is currently 68.5 h old**, past the 36 h freshness guard in
-  `scripts/validate_advisory_csv.mjs`, so a pipeline run against it fails as `STALE_DATA`
-  unless `--allow-stale` is passed (Action 11).
+- **The public Kaggle dataset still reports `generated_at=2026-09-29 23:29:31` when fetched
+  on 2026-10-03**, past the 36 h freshness guard in `scripts/validate_advisory_csv.mjs`, so
+  an ingest against that copy fails as `STALE_DATA` unless `--allow-stale` is passed. The
+  daily GitHub download path is now wired and will fail a scheduled run loudly if the CSV is
+  unchanged; the notebook-to-dataset publication itself is the remaining owner verification
+  (Action 11; details in `docs/audits/2026-10-02-kaggle-advisory-dataset.md`).
 
 ### 7) Evidence
 

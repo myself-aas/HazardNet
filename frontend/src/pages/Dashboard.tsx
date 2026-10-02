@@ -288,7 +288,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
   // Dedicated Full-Page Google Earth View Mode
   if (isFullScreen && activeView === 'gis') {
     return (
-      <div className="relative isolate flex h-full min-h-0 w-full flex-col overflow-hidden bg-[#eef1f1] font-mono text-[#101416]">
+      <div className="relative isolate flex h-full min-h-0 w-full flex-col overflow-hidden bg-carbon-05 font-mono text-carbon-90">
         <h1 className="sr-only">Live map — multi-hazard situational awareness</h1>
 
         {/* Reference-inspired operational header: compact, legible, and always available above the map.
@@ -299,12 +299,12 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
           <div className="pointer-events-auto flex min-w-0 items-center gap-2 glass-panel px-3.5 py-2">
             <span className="h-2 w-2 shrink-0 animate-pulse rounded-full bg-nasa-red" aria-hidden="true" />
             <div className="min-w-0">
-              <p className="truncate text-xs font-bold uppercase tracking-[0.14em] text-[#5d6668]">HazardNet / live</p>
-              <p className="truncate text-xs font-bold text-[#101416]">National situational map</p>
+              <p className="truncate text-xs font-bold uppercase tracking-[0.14em] text-carbon-60">HazardNet / live</p>
+              <p className="truncate text-xs font-bold text-carbon-90">National situational map</p>
             </div>
           </div>
-          <div className="pointer-events-auto hidden items-center gap-2 glass-panel px-3.5 py-2 text-xs font-bold uppercase tracking-[0.12em] text-[#5d6668] sm:flex">
-            <span className="inline-block h-2 w-2 rounded-full bg-[#36a66d]" aria-hidden="true" />
+          <div className="pointer-events-auto hidden items-center gap-2 glass-panel px-3.5 py-2 text-xs font-bold uppercase tracking-[0.12em] text-carbon-60 sm:flex">
+            <span className="inline-block h-2 w-2 rounded-full bg-emerald-600" aria-hidden="true" />
             {predictionSource === 'live' ? 'Forecast synced' : 'Baseline coverage'}
           </div>
         </header>

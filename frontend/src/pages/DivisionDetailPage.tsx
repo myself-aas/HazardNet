@@ -35,6 +35,7 @@ import {
   } from 'lucide-react';
 import { fetchDivisionEvents, DivisionEventsResponse, ClimaticEvent, ForecastRecord } from '../lib/eventsClient';
 import { InfinityLoader } from '../components/brand';
+import { getHazardBorder, getHazardColor, getHazardSurface } from '../lib/hazardPalette';
 
 const ALL_DIVISIONS = [
   { id: 'dhaka', name: 'Dhaka' },
@@ -47,17 +48,6 @@ const ALL_DIVISIONS = [
   { id: 'mymensingh', name: 'Mymensingh' },
 ];
 
-const HAZARD_COLORS: Record<string, string> = {
-  'Tropical Cyclone': '#ef4444',
-  'Flood': '#3b82f6',
-  'Flash Flood': '#06b6d4',
-  'Severe Local Storm': '#f59e0b',
-  'Cold Wave': '#6366f1',
-  'Drought': '#d97706',
-  'Heat Wave': '#ea580c',
-  'Earthquake': '#8b5cf6',
-  'Fire': '#dc2626',
-};
 
 export const DivisionDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -260,15 +250,15 @@ export const DivisionDetailPage: React.FC = () => {
             <div className="h-64 sm:h-72 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={forecastChartData} margin={{ top: 10, right: 20, left: -10, bottom: 20 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e3e3e3" vertical={false} />
-                  <XAxis dataKey="district" tick={{ fontSize: 11, fill: '#58585b' }} />
-                  <YAxis tick={{ fontSize: 11, fill: '#58585b' }} domain={[0, 4]} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--mrd-hairline)" vertical={false} />
+                  <XAxis dataKey="district" tick={{ fontSize: 12, fill: 'var(--mrd-ink-soft)' }} />
+                  <YAxis tick={{ fontSize: 12, fill: 'var(--mrd-ink-soft)' }} domain={[0, 4]} />
                   <Tooltip
-                    contentStyle={{ backgroundColor: '#ffffff', borderColor: '#d1d1d1', borderRadius: '0.75rem', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                    contentStyle={{ backgroundColor: 'var(--mrd-surface)', borderColor: 'var(--mrd-hairline-strong)', borderRadius: 'var(--mrd-radius-md)', boxShadow: 'var(--mrd-shadow-card)' }}
                   />
                   <Legend wrapperStyle={{ paddingTop: '8px' }} />
-                  <Bar dataKey="7-Day Severity" fill="#3b82f6" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="15-Day Severity" fill="#f59e0b" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="7-Day Severity" fill="var(--chart-1)" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="15-Day Severity" fill="var(--chart-2)" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -369,17 +359,17 @@ export const DivisionDetailPage: React.FC = () => {
               <AreaChart data={data.yearlyTrend} margin={{ top: 10, right: 10, left: -15, bottom: 10 }}>
                 <defs>
                   <linearGradient id="divAreaGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#2563eb" stopOpacity={0.4} />
-                    <stop offset="95%" stopColor="#2563eb" stopOpacity={0.0} />
+                    <stop offset="5%" stopColor="var(--chart-1)" stopOpacity={0.4} />
+                    <stop offset="95%" stopColor="var(--chart-1)" stopOpacity={0.0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e3e3e3" vertical={false} />
-                <XAxis dataKey="year" tick={{ fontSize: 11, fill: '#58585b' }} />
-                <YAxis tick={{ fontSize: 11, fill: '#58585b' }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--mrd-hairline)" vertical={false} />
+                <XAxis dataKey="year" tick={{ fontSize: 12, fill: 'var(--mrd-ink-soft)' }} />
+                <YAxis tick={{ fontSize: 12, fill: 'var(--mrd-ink-soft)' }} />
                 <Tooltip
-                  contentStyle={{ backgroundColor: '#ffffff', borderColor: '#d1d1d1', borderRadius: '0.75rem', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                  contentStyle={{ backgroundColor: 'var(--mrd-surface)', borderColor: 'var(--mrd-hairline-strong)', borderRadius: 'var(--mrd-radius-md)', boxShadow: 'var(--mrd-shadow-card)' }}
                 />
-                <Area type="monotone" dataKey="total" name="Disaster Events" stroke="#2563eb" strokeWidth={2} fillOpacity={1} fill="url(#divAreaGrad)" />
+                <Area type="monotone" dataKey="total" name="Disaster Events" stroke="var(--chart-1)" strokeWidth={2} fillOpacity={1} fill="url(#divAreaGrad)" />
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -399,13 +389,13 @@ export const DivisionDetailPage: React.FC = () => {
           <div className="h-64 w-full pt-4">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={data.districtRankings} layout="vertical" margin={{ top: 10, right: 20, left: 20, bottom: 10 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e3e3e3" horizontal={false} />
-                <XAxis type="number" tick={{ fontSize: 11, fill: '#58585b' }} />
-                <YAxis dataKey="district" type="category" tick={{ fontSize: 11, fill: '#58585b' }} width={80} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--mrd-hairline)" horizontal={false} />
+                <XAxis type="number" tick={{ fontSize: 12, fill: 'var(--mrd-ink-soft)' }} />
+                <YAxis dataKey="district" type="category" tick={{ fontSize: 12, fill: 'var(--mrd-ink-soft)' }} width={80} />
                 <Tooltip
-                  contentStyle={{ backgroundColor: '#ffffff', borderColor: '#d1d1d1', borderRadius: '0.75rem', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                  contentStyle={{ backgroundColor: 'var(--mrd-surface)', borderColor: 'var(--mrd-hairline-strong)', borderRadius: 'var(--mrd-radius-md)', boxShadow: 'var(--mrd-shadow-card)' }}
                 />
-                <Bar dataKey="eventCount" name="Total Events (2000-2026)" fill="#3b82f6" radius={[0, 4, 4, 0]} />
+                <Bar dataKey="eventCount" name="Total Events (2000-2026)" fill="var(--chart-1)" radius={[0, 4, 4, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -425,13 +415,13 @@ export const DivisionDetailPage: React.FC = () => {
           <div className="h-64 w-full pt-4">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={data.seasonalPattern} margin={{ top: 10, right: 10, left: -15, bottom: 10 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e3e3e3" vertical={false} />
-                <XAxis dataKey="monthName" tick={{ fontSize: 11, fill: '#58585b' }} />
-                <YAxis tick={{ fontSize: 11, fill: '#58585b' }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--mrd-hairline)" vertical={false} />
+                <XAxis dataKey="monthName" tick={{ fontSize: 12, fill: 'var(--mrd-ink-soft)' }} />
+                <YAxis tick={{ fontSize: 12, fill: 'var(--mrd-ink-soft)' }} />
                 <Tooltip
-                  contentStyle={{ backgroundColor: '#ffffff', borderColor: '#d1d1d1', borderRadius: '0.75rem', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                  contentStyle={{ backgroundColor: 'var(--mrd-surface)', borderColor: 'var(--mrd-hairline-strong)', borderRadius: 'var(--mrd-radius-md)', boxShadow: 'var(--mrd-shadow-card)' }}
                 />
-                <Line type="monotone" dataKey="count" name="Monthly Events" stroke="#f59e0b" strokeWidth={2.5} dot={{ r: 4, fill: '#f59e0b' }} />
+                <Line type="monotone" dataKey="count" name="Monthly Events" stroke="var(--chart-2)" strokeWidth={2.5} dot={{ r: 4, fill: 'var(--chart-2)' }} />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -463,11 +453,11 @@ export const DivisionDetailPage: React.FC = () => {
                     paddingAngle={2}
                   >
                     {data.hazardBreakdown.map((entry) => (
-                      <Cell key={entry.hazard} fill={HAZARD_COLORS[entry.hazard] || '#77777a'} />
+                      <Cell key={entry.hazard} fill={getHazardColor(entry.hazard)} />
                     ))}
                   </Pie>
                   <Tooltip
-                    contentStyle={{ backgroundColor: '#ffffff', borderColor: '#d1d1d1', borderRadius: '0.75rem', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                    contentStyle={{ backgroundColor: 'var(--mrd-surface)', borderColor: 'var(--mrd-hairline-strong)', borderRadius: 'var(--mrd-radius-md)', boxShadow: 'var(--mrd-shadow-card)' }}
                   />
                 </PieChart>
               </ResponsiveContainer>
@@ -476,7 +466,7 @@ export const DivisionDetailPage: React.FC = () => {
               {data.hazardBreakdown.map((h) => (
                 <div key={h.hazard} className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5" style={{ backgroundColor: HAZARD_COLORS[h.hazard] || '#77777a' }} />
+                    <span className="w-2.5 h-2.5" style={{ backgroundColor: getHazardColor(h.hazard) }} />
                     <span className="font-medium text-carbon-70 truncate max-w-[130px]">{h.hazard}</span>
                   </div>
                   <span className="text-carbon-60 font-semibold">{h.count} ({h.percentage}%)</span>
@@ -554,7 +544,6 @@ export const DivisionDetailPage: React.FC = () => {
             <tbody className="divide-y divide-carbon-10">
               {filteredEvents.slice(0, 40).map((event) => {
                 const isExpanded = expandedEventId === event.id;
-                const hazardColor = HAZARD_COLORS[event.hazard] || '#77777a';
                 const districtSlug = event.district.toLowerCase().replace(/[^a-z0-9]/g, '');
 
                 return (
@@ -570,9 +559,11 @@ export const DivisionDetailPage: React.FC = () => {
                         <span
                           className="px-2 py-0.5 rounded text-xs font-semibold"
                           style={{
-                            backgroundColor: `${hazardColor}15`,
-                            color: hazardColor,
-                            border: `1px solid ${hazardColor}30`,
+                            backgroundColor: getHazardSurface(event.hazard),
+                            color: 'var(--mrd-ink)',
+                            borderColor: getHazardBorder(event.hazard),
+                            borderWidth: 1,
+                            borderStyle: 'solid',
                           }}
                         >
                           {event.hazard}

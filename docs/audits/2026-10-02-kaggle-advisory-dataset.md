@@ -89,3 +89,28 @@ for a reader to tell which they were looking at.
    names (min/mean/max identical to four decimal places). The UI can show the top-1 probability
    without a second column, but the two must not drift: if the pipeline ever changes one, the
    tracker's `confidence` and the card's `Rank 1` will disagree.
+
+
+## 2026-10-03 addendum — daily delivery path
+
+The owner confirmed the Kaggle notebook is configured to run daily and refresh this CSV. The
+public dataset endpoint was fetched again on 2026-10-03; it serves the CSV body directly (not a
+ZIP in this response) and still reports `generated_at=2026-09-29 23:29:31`. The downloader now
+handles **both** the raw CSV response and a ZIP response, uses the exact public slug
+`ashifahmedshuvo/hazardnet-weekly-forecasts`, and distinguishes a new run from an unchanged or
+older publication.
+
+The daily Actions workflow now does the delivery half:
+
+```
+Kaggle notebook (daily) -> public dataset API -> daily_advisory_ingest.yml (05:30 UTC)
+  -> fetch_kaggle_advisory.mjs -> validate_advisory_csv.mjs -> process_advisory_ingest.mjs
+  -> forecast / alert / freshness snapshots -> commit -> Vercel deploy when artifacts changed
+```
+
+The public HTTP download needs no Kaggle credential; repository `KAGGLE_USERNAME` and
+`KAGGLE_KEY` are optional fallback credentials for the Kaggle CLI/kernel path. If the notebook
+has not published a new CSV by the Actions run, the workflow attaches `fetch-report.json` and
+fails the **scheduled** run rather than showing green while serving yesterday's forecast. A
+manual dispatch against an unchanged dataset is a successful no-op. The next scheduled run will
+verify the notebook-to-dataset half; no manual Kaggle execution was used to fabricate freshness.

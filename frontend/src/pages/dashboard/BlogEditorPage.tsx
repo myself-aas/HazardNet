@@ -446,9 +446,9 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
             {/* Google SERP preview */}
             <div className="border border-carbon-20 bg-carbon-05 p-4" data-testid="serp-preview">
               <p className="mb-2 text-xs font-black uppercase tracking-[0.18em] text-carbon-60">Google result preview</p>
-              <p className="truncate text-xs text-[#4d5156] leading-none mb-1">{serpUrl}</p>
-              <p className="text-[15px] leading-snug text-[#1a0dab] font-medium truncate">{serpTitle || 'Your SEO title appears here'}</p>
-              <p className="mt-1 text-xs leading-relaxed text-[#4d5156] line-clamp-2">
+              <p className="truncate text-xs text-carbon-70 leading-none mb-1">{serpUrl}</p>
+              <p className="text-[15px] leading-snug text-blue-800 font-medium truncate">{serpTitle || 'Your SEO title appears here'}</p>
+              <p className="mt-1 text-xs leading-relaxed text-carbon-70 line-clamp-2">
                 {serpDescription || 'Your meta description appears here — write 120–160 characters that make searchers click.'}
               </p>
             </div>

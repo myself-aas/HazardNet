@@ -279,7 +279,7 @@ export const AdvisoriesPage: React.FC = () => {
                 </div>
                 <span className="text-xs font-extrabold leading-tight">{sec.name}</span>
                 <span
-                  className={`text-[10.5px] mt-1 line-clamp-1 font-medium ${
+                  className={`text-xs mt-1 line-clamp-1 font-medium ${
                     isActive ? 'text-carbon-30' : 'text-carbon-60'
                   }`}
                 >
@@ -627,7 +627,7 @@ export const AdvisoriesPage: React.FC = () => {
                     <Activity className="w-3.5 h-3.5" />
                   </div>
                   <div>
-                    <span className="font-mono font-black text-carbon-90 uppercase tracking-wider block text-[10.5px]">
+                    <span className="font-mono font-black text-carbon-90 uppercase tracking-wider block text-xs">
                       Operational Trigger Threshold:
                     </span>
                     <p className="text-carbon-70 mt-0.5">{step.triggerThreshold}</p>
@@ -735,7 +735,7 @@ export const AdvisoriesPage: React.FC = () => {
                     {item.name}
                   </td>
                   <td className="py-3.5 px-4">
-                    <span className="px-2 py-0.5 rounded-md bg-carbon-10 text-carbon-70 font-mono text-[10.5px] font-bold">
+                    <span className="px-2 py-0.5 rounded-md bg-carbon-10 text-carbon-70 font-mono text-xs font-bold">
                       {item.category}
                     </span>
                   </td>
@@ -787,7 +787,7 @@ export const AdvisoriesPage: React.FC = () => {
             >
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="px-2.5 py-0.5 rounded-md text-[10.5px] font-mono font-bold bg-blue-100 text-blue-950 border border-blue-200">
+                  <span className="px-2.5 py-0.5 rounded-md text-xs font-mono font-bold bg-blue-100 text-blue-950 border border-blue-200">
                     {doc.docType}
                   </span>
                   <ExternalLink className="w-4 h-4 text-carbon-60 group-hover:text-blue-600 transition-colors" />
@@ -849,10 +849,10 @@ export const AdvisoriesPage: React.FC = () => {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <span
-                    className={`text-[10.5px] font-mono font-bold px-2 py-0.5 rounded-md ${
+                    className={`text-xs font-mono font-bold px-2 py-0.5 rounded-md ${
                       contact.scope === 'Government of Bangladesh'
                         ? 'bg-emerald-100 text-emerald-950 border border-emerald-200'
-                        : 'bg-indigo-100 text-indigo-950 border border-indigo-200'
+                        : 'bg-blue-50 text-blue-900 border border-blue-200'
                     }`}
                   >
                     {contact.scope}
