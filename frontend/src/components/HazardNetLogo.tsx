@@ -1,61 +1,62 @@
 import { getSeverityColor } from '../services/geolocationService';
 
 /**
- * The brand mark.
+ * The brand, as React.
  *
- * One file, one artwork. `hazardnet-mark.svg` is the traced mark on the
- * *swapped* palette that is now the primary branding: crimson bars
- * (#970002) with a near-black arrow (#0D0D0D / #262626), reversing the
- * supplied artwork's black bars and red arrow so red carries the brand. The
- * #D7D7D7 offset echoes are neutral and unchanged.
+ * Two artworks, both generated from one geometry (`scripts/lib/infinity-geometry.mjs` → `scripts/build-brand-assets.mjs`):
  *
- * The arrow carries a light #F4F4F5 keyline drawn beneath its fill. That is
- * what keeps the black arrow legible on the front door's near-black hero
- * (#05070E under the header's bg-black/25) and on the auth side panel's
- * carbon-black; on light grounds the keyline is invisible against white. So
- * this single file composites onto every surface the brand lands on, and there
- * is no longer a separate inverse variant to keep in step.
+ *   `/hazardnet-mark.svg`        the infinity loop alone — a woven crossing, one gradient from the product's blues.
+ *                                 Its gradient holds ≥ 3:1 on white AND on the dark hero, so ONE file serves every
+ *                                 surface (there is no inverse variant to keep in step).
+ *   `/hazardnet-logo.svg`        the lockup: mark + the "HazardNet" wordmark, for light surfaces.
+ *   `/hazardnet-logo-light.svg`  the same lockup with a white wordmark, for dark surfaces.
  *
- * `variant` no longer changes the image — it only chooses the wordmark colour
- * beside it, which still has to follow the ground.
+ * The wordmark is OUTLINED in those files (Figtree 700, SIL OFL 1.1), so the lockup is identical in a header, an
+ * e-mail or a PDF and never waits for a font. That is why `HazardNetBrand` is a single <img> with the site name as its
+ * alt text, rather than an icon and two spans of live text side by side as it used to be.
  *
- * The wordmark itself still carries the site name, so the image stays
- * decorative (`alt=""` when text is shown).
+ * The earlier mark — crimson bars and a near-black arrow — is retired. Crimson survives in the UI as an accent
+ * (`nasa-red-*`), but it is no longer the logo, so it can no longer be mistaken for a "severe" status colour there.
  */
 const MARK_SRC = '/hazardnet-mark.svg';
+const LOCKUP_SRC = { light: '/hazardnet-logo.svg', dark: '/hazardnet-logo-light.svg' } as const;
 
 export interface HazardNetLogoProps {
   className?: string;
   size?: number | string;
   severity?: number;
+  /** Render the full lockup (mark + wordmark) instead of the mark alone. */
   showText?: boolean;
+  /** @deprecated The wordmark is part of the lockup artwork now; kept so existing callers still type-check. */
   textSizeClass?: string;
+  /** `dark` = for dark surfaces. `auto` behaves as `light`. */
   variant?: 'light' | 'dark' | 'auto';
 }
 
+/** The mark alone. 2:1 — it is as wide as it is tall twice over, so size it by height (`h-6 w-auto`). */
 export const HazardNetLogo: React.FC<HazardNetLogoProps> = ({
-  className = 'w-7 h-7',
+  className = 'h-6 w-auto',
   size,
   severity,
   showText = false,
-  textSizeClass = 'text-sm font-black tracking-tight',
   variant = 'auto',
 }) => {
   const accent = typeof severity === 'number' ? getSeverityColor(severity) : undefined;
+  if (showText) return <HazardNetBrand variant={variant === 'dark' ? 'dark' : 'light'} className={className} />;
   return (
-    <span className="inline-flex items-center justify-center shrink-0 leading-none">
+    <span className="inline-flex shrink-0 items-center justify-center leading-none">
       <img
         src={MARK_SRC}
-        alt={showText ? '' : 'HazardNet'}
-        aria-hidden={showText || undefined}
+        alt="HazardNet"
+        width={120}
+        height={60}
         className={`block shrink-0 object-contain ${className}`}
-        style={{ width: size, height: size, filter: accent ? `drop-shadow(0 0 5px ${accent})` : undefined }}
+        style={{
+          height: size,
+          width: size ? 'auto' : undefined,
+          filter: accent ? `drop-shadow(0 0 5px ${accent})` : undefined,
+        }}
       />
-      {showText && (
-        <span className={`${textSizeClass} ${variant === 'dark' ? 'text-white' : 'text-carbon-90'}`}>
-          Hazard<span className="text-nasa-red-shade dark:text-nasa-red-tint">Net</span>
-        </span>
-      )}
     </span>
   );
 };
@@ -66,25 +67,26 @@ export interface HazardNetBrandProps {
   className?: string;
 }
 
-export const HazardNetBrand: React.FC<HazardNetBrandProps> = ({ size = 'md', variant = 'light', className = '' }) => {
-  const sizeMap = {
-    xs: { text: 'text-[14px] sm:text-[16px]', logo: 'w-6 h-6 sm:w-7 sm:h-7', gap: 'gap-2' },
-    sm: { text: 'text-[16px] sm:text-[18px]', logo: 'w-8 h-8 sm:w-[34px] sm:h-[34px]', gap: 'gap-2.5' },
-    md: { text: 'text-[20px] sm:text-[22px]', logo: 'w-9 h-9 sm:w-10 sm:h-10', gap: 'gap-3' },
-    lg: { text: 'text-[24px] sm:text-[28px]', logo: 'w-11 h-11 sm:w-12 sm:h-12', gap: 'gap-3.5' },
-    xl: { text: 'text-[32px] sm:text-[40px]', logo: 'w-14 h-14 sm:w-16 sm:h-16', gap: 'gap-4' },
-  }[size];
-  const isDark = variant === 'dark';
+/** Height of the lockup per size; width follows (330:60). Responsive: a step up from `sm` breakpoint. */
+const LOCKUP_HEIGHT = {
+  xs: 'h-5',
+  sm: 'h-[22px] sm:h-6',
+  md: 'h-6 sm:h-7',
+  lg: 'h-8 sm:h-9',
+  xl: 'h-10 sm:h-12',
+} as const;
 
-  return (
-    <span className={`inline-flex items-center ${sizeMap.gap} select-none ${className}`}>
-      <HazardNetLogo className={sizeMap.logo} variant={variant} />
-      <span className={`font-brand font-semibold tracking-[0.02em] leading-none inline-flex items-center ${sizeMap.text}`}>
-        <span className={isDark ? 'text-white' : 'text-carbon-90'}>Hazard</span>
-        <span className="text-nasa-red-shade dark:text-nasa-red-tint">Net</span>
-      </span>
-    </span>
-  );
-};
+/** The full lockup: mark + wordmark, one image, `alt="HazardNet"`. */
+export const HazardNetBrand: React.FC<HazardNetBrandProps> = ({ size = 'md', variant = 'light', className = '' }) => (
+  <img
+    src={LOCKUP_SRC[variant]}
+    alt="HazardNet"
+    width={330}
+    height={60}
+    decoding="async"
+    className={`block w-auto max-w-none select-none ${LOCKUP_HEIGHT[size]} ${className}`}
+    draggable={false}
+  />
+);
 
 export default HazardNetLogo;

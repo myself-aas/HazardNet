@@ -14,4 +14,8 @@ export const INFINITY = {
   apex: { left: [-51, 0], right: [51, 0] },
   gradient: [[0,"#0064E0"],[0.55,"#1A7BF5"],[1,"#3D93FA"]],
   lap: 2.6,
+  /** Comet layers, longest first: their HEADS line up (see layerDelay in the loader SVG). */
+  layers: [{"name":"tail","len":24,"opacity":0.3,"color":"#0064E0","width":10},{"name":"mid","len":14,"opacity":0.65,"color":"#1A7BF5","width":10},{"name":"head","len":6,"opacity":1,"color":"#3D93FA","width":10},{"name":"core","len":2.4,"opacity":0.95,"color":"#FFFFFF","width":4}],
+  /** Where the apex nodes sit on the closed path, as a percentage of its length. */
+  fraction: {"rightApex":32.576,"leftApex":82.576},
 } as const;

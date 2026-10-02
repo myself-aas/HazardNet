@@ -155,6 +155,10 @@ export const INFINITY = {
   apex: { left: [${G.apex.left.join(', ')}], right: [${G.apex.right.join(', ')}] },
   gradient: ${JSON.stringify(GRADIENT)},
   lap: ${LOOP.LAP},
+  /** Comet layers, longest first: their HEADS line up (see layerDelay in the loader SVG). */
+  layers: ${JSON.stringify(LOOP.LAYERS)},
+  /** Where the apex nodes sit on the closed path, as a percentage of its length. */
+  fraction: ${JSON.stringify(G.fraction)},
 } as const;
 `;
 }
