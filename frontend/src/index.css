@@ -2,6 +2,8 @@
    scripts/import_nasa_tokens.mjs, mapped onto this app's semantic roles below. Imported first so
    every var(--hds-*) consumer resolves. Source and rules: data/design/nasa-hds/PROVENANCE.md */
 @import "./styles/nasa-hds.css";
+@import "@fontsource/noto-sans-bengali/400.css";
+@import "@fontsource/noto-sans-bengali/700.css";
 
 @import "tailwindcss";
 @import "./styles/brand.css" layer(components);
