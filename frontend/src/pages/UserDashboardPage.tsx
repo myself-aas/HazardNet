@@ -12,6 +12,7 @@ import { HazardNetBrand } from '../components/HazardNetLogo';
 import { profilePath, sanitizeUsernameInput } from '../lib/username';
 import { Card } from '../components/user/dashboard/ui';
 import { useI18n } from '../hooks/useI18n';
+import { InfinityLoader } from '../components/brand';
 
 /**
  * The dedicated per-user dashboard — unique URL: /dashboard (auth required).
@@ -25,10 +26,10 @@ type Tab = 'overview' | 'profile' | 'account' | 'connectors' | 'public';
 
 const TABS: Array<{ id: Tab; label: string; icon: string; hint: string }> = [
   { id: 'overview', label: 'Overview', icon: 'grid_view', hint: 'Stats, completion & quick actions' },
-  { id: 'profile', label: 'Edit Profile', icon: 'person', hint: 'Identity, farm, social & preferences' },
-  { id: 'account', label: 'Account & Security', icon: 'shield', hint: 'Email, password, linked accounts' },
+  { id: 'profile', label: 'Profile', icon: 'person', hint: 'Identity, farm, social & preferences' },
+  { id: 'account', label: 'Account', icon: 'shield', hint: 'Email, password, linked accounts' },
   { id: 'connectors', label: 'Connectors', icon: 'hub', hint: 'Weather, alerts & productivity integrations' },
-  { id: 'public', label: 'Public Profile', icon: 'visibility', hint: 'What the world sees at /u/username' },
+  { id: 'public', label: 'Public page', icon: 'visibility', hint: 'What the world sees at /u/username' },
 ];
 
 const PublicProfilePreview: React.FC = () => {
@@ -158,7 +159,7 @@ const UserDashboardPage: React.FC = () => {
   if (loading && !user) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center" role="status" aria-label="Loading dashboard">
-        <span className="h-9 w-9 animate-spin rounded-full border-[3px] border-carbon-20 border-t-amber-500" />
+        <InfinityLoader size={88} label="Loading" announce={false} />
       </div>
     );
   }
@@ -248,6 +249,7 @@ const UserDashboardPage: React.FC = () => {
                   type="button"
                   onClick={() => setActiveTab(tab.id)}
                   aria-current={active ? 'page' : undefined}
+                  title={tab.hint}
                   className={`flex min-h-[44px] shrink-0 items-center gap-2.5 px-4 py-3 text-left text-base font-semibold cursor-pointer touch-manipulation lg:w-full ${
                     active
                       ? 'bg-carbon-90 text-white'
@@ -255,12 +257,7 @@ const UserDashboardPage: React.FC = () => {
                   }`}
                 >
                   <MaterialIcon name={tab.icon} size={16} className={active ? 'text-amber-400' : 'text-carbon-60'} />
-                  <span className="flex-1">
-                    {tab.label}
-                    <span className={`hidden text-xs font-semibold ${active ? 'text-carbon-30' : 'text-carbon-60'} lg:block`}>
-                      {tab.hint}
-                    </span>
-                  </span>
+                  <span className="flex-1">{tab.label}</span>
                 </button>
               );
             })}

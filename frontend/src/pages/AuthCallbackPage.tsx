@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { auth } from '../services/firebase';
 import { getRedirectResult, onAuthStateChanged } from 'firebase/auth';
+import { InfinityLoader } from '../components/brand';
 import {
   describeOAuthError,
   parseOAuthCallbackParams,
@@ -120,7 +121,7 @@ export default function AuthCallbackPage() {
   if (phase === 'exchanging') {
     return (
       <Shell>
-        <span className="h-9 w-9 animate-spin rounded-full border-[3px] border-carbon-20 border-t-nasa-red" />
+        <InfinityLoader size={88} label="Loading" />
         <p className="text-base font-bold text-carbon-80">Completing secure sign-in…</p>
         <p className="text-base text-carbon-60">Restoring your HazardNet session.</p>
       </Shell>

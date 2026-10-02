@@ -548,10 +548,10 @@ export const AdvisoriesPage: React.FC = () => {
           {/* Phase Filter Tabs */}
           <div className="flex items-center gap-1.5 bg-carbon-10 p-1.5 rounded-2xl border border-carbon-20 shrink min-w-0 self-start sm:self-auto max-w-full overflow-x-auto">
             {[
-              { id: 'all', label: 'All Phases' },
-              { id: 'pre-disaster', label: '1. Pre-Disaster (T-72h)' },
-              { id: 'during-event', label: '2. During Event (T-0)' },
-              { id: 'post-disaster', label: '3. Post Recovery (T+3d)' },
+              { id: 'all', label: 'All' },
+              { id: 'pre-disaster', label: 'Before' },
+              { id: 'during-event', label: 'During' },
+              { id: 'post-disaster', label: 'After' },
             ].map((tab) => (
               <button
                 key={tab.id}

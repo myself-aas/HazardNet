@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { isPrimarySuperAdmin, primarySuperAdminEmails } from '../../lib/superadmins';
+import { InfinityLoader } from '../brand';
 
 /**
  * Route guard for the superadmin blog studio. Renders full pages (never a
@@ -15,7 +16,7 @@ export const RequireSuperAdmin: React.FC<{ children: React.ReactNode }> = ({ chi
   if (loading) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center" role="status" aria-label="Checking permissions">
-        <span className="w-8 h-8 border-[3px] border-carbon-20 border-t-amber-500 rounded-full animate-spin" />
+        <InfinityLoader size={88} label="Loading" announce={false} />
       </div>
     );
   }

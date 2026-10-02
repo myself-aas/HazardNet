@@ -36,10 +36,10 @@ import {
   Filter,
   ChevronDown,
   ChevronUp,
-  RefreshCw,
   ShieldAlert,
 } from 'lucide-react';
 import { fetchHazardEvents, HazardEventsResponse, ClimaticEvent, ForecastRecord } from '../lib/eventsClient';
+import { InfinityLoader } from '../components/brand';
 
 const ALL_HAZARD_PILLS = [
   { slug: 'cyclone', name: 'Tropical Cyclone', icon: Wind },
@@ -216,7 +216,7 @@ export const HazardDetailPage: React.FC = () => {
     return (
       <div className="min-h-screen bg-carbon-05 flex items-center justify-center p-6">
         <div className="text-center">
-          <RefreshCw className="w-8 h-8 text-nasa-blue-shade animate-spin mx-auto mb-3" />
+          <InfinityLoader size={96} label="Loading" className="mx-auto mb-3 block" />
           <p className="text-sm font-medium text-carbon-70">Loading {data?.hazard || currentSlug} hazard data...</p>
           <p className="text-xs text-carbon-60 mt-1">Cross-referencing historical events and active warning records</p>
         </div>

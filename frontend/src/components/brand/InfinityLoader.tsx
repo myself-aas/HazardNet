@@ -26,6 +26,8 @@ export interface InfinityLoaderProps {
   label?: string;
   /** Hover speed-up, pointer tilt and tap burst. Off → a plain loader. */
   interactive?: boolean;
+  /** Announce `label` politely (role="status"). Turn off inside a wrapper that is already a status region. */
+  announce?: boolean;
   className?: string;
 }
 
@@ -37,6 +39,7 @@ export const InfinityLoader: React.FC<InfinityLoaderProps> = ({
   size = 112,
   label = 'Loading',
   interactive = true,
+  announce = true,
   className = '',
 }) => {
   const uid = useId().replace(/:/g, '');
@@ -127,14 +130,14 @@ export const InfinityLoader: React.FC<InfinityLoaderProps> = ({
   return (
     <span
       ref={rootRef}
-      role="status"
-      aria-live="polite"
+      role={announce ? 'status' : undefined}
+      aria-live={announce ? 'polite' : undefined}
       className={`hn-loop ${className}`.trim()}
       data-interactive={interactive && !reduceMotion ? 'true' : 'false'}
       data-hot="false"
       style={{ width: size }}
     >
-      <span className="sr-only">{label}</span>
+      {announce && <span className="sr-only">{label}</span>}
       <svg
         ref={svgRef}
         className="hn-loop__svg"
