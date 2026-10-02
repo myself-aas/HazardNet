@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { DistrictRiskMap } from '../components/DistrictRiskMap';
 import { DistrictVulnerabilityTable } from '../components/DistrictVulnerabilityTable';
 import { HistoricalHazardCatalog, HistoricalHazardRecord } from '../components/HistoricalHazardCatalog';
@@ -8,11 +9,38 @@ import { GlideResourcePopover } from '../components/GlideResourcePopover';
 import { EventReportModal, DisasterMasterEvent } from '../components/EventReportModal';
 import { usePageSeo } from '../hooks/usePageSeo';
 
-import masterEventsData from '../../public/data/historical/events-master.json';
-import vulnerabilityData from '../../public/data/historical/districts-vulnerability.json';
-import trendData from '../../public/data/historical/temporal-trends.json';
-import distributionData from '../../public/data/historical/hazard-distribution.json';
-import catalogData from '../../public/data/historical/hazard-catalog-index.json';
+type HistoricalData = {
+  masterEvents: DisasterMasterEvent[];
+  vulnerability: unknown[];
+  trends: unknown;
+  distribution: unknown;
+  catalog: HistoricalHazardRecord[];
+};
+
+async function fetchHistoricalData(): Promise<HistoricalData> {
+  const paths = [
+    'events-master',
+    'districts-vulnerability',
+    'temporal-trends',
+    'hazard-distribution',
+    'hazard-catalog-index',
+  ];
+  const responses = await Promise.all(
+    paths.map(async (name) => {
+      const response = await fetch(`/data/historical/${name}.json`);
+      if (!response.ok) throw new Error(`Unable to load ${name} (${response.status})`);
+      return response.json();
+    }),
+  );
+
+  return {
+    masterEvents: responses[0] as DisasterMasterEvent[],
+    vulnerability: responses[1] as unknown[],
+    trends: responses[2],
+    distribution: responses[3],
+    catalog: responses[4] as HistoricalHazardRecord[],
+  };
+}
 
 export const HistoricalCatalogPage: React.FC = () => {
   usePageSeo('/archive');
@@ -21,17 +49,30 @@ export const HistoricalCatalogPage: React.FC = () => {
   const [isGlideOpen, setIsGlideOpen] = useState(false);
   const [activeEvent, setActiveEvent] = useState<DisasterMasterEvent | null>(null);
   const [isEventModalOpen, setIsEventModalOpen] = useState(false);
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ['historical-catalog'],
+    queryFn: fetchHistoricalData,
+    staleTime: 1000 * 60 * 60,
+  });
 
   // Map GLIDE to master event lookup
   const masterByGlide = useMemo(() => {
     const map = new Map<string, DisasterMasterEvent>();
-    for (const evt of (masterEventsData as DisasterMasterEvent[])) {
+    for (const evt of data?.masterEvents ?? []) {
       if (evt.glide) {
         map.set(evt.glide.trim().toUpperCase(), evt);
       }
     }
     return map;
   }, []);
+
+  if (isLoading) {
+    return <div className="min-h-screen bg-carbon-90 text-carbon-10 p-8" role="status">Loading historical archive…</div>;
+  }
+
+  if (isError || !data) {
+    return <div className="min-h-screen bg-carbon-90 text-carbon-10 p-8" role="alert">Historical archive data is temporarily unavailable.</div>;
+  }
 
   const handleOpenGlide = (glideId: string) => {
     setActiveGlide(glideId);
@@ -109,14 +150,14 @@ export const HistoricalCatalogPage: React.FC = () => {
         <section className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           <div className="lg:col-span-6">
             <DistrictRiskMap
-              districts={vulnerabilityData}
+              districts={data.vulnerability}
               selectedDistrict={selectedDistrict}
               onSelectDistrict={(d) => setSelectedDistrict(d)}
             />
           </div>
           <div className="lg:col-span-6">
             <DistrictVulnerabilityTable
-              districts={vulnerabilityData}
+              districts={data.vulnerability}
               selectedDistrict={selectedDistrict}
               onSelectDistrict={(d) => setSelectedDistrict(d)}
             />
@@ -126,17 +167,17 @@ export const HistoricalCatalogPage: React.FC = () => {
         {/* Temporal & Classification Analytics (TASK-019) */}
         <section className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           <div className="lg:col-span-7">
-            <TemporalTrendChart data={trendData} />
+            <TemporalTrendChart data={data.trends} />
           </div>
           <div className="lg:col-span-5">
-            <MultiHazardDistributionChart data={distributionData} />
+            <MultiHazardDistributionChart data={data.distribution} />
           </div>
         </section>
 
         {/* Full Historical Catalog (TASK-018 & TASK-020) */}
         <section>
           <HistoricalHazardCatalog
-            records={catalogData as HistoricalHazardRecord[]}
+            records={data.catalog}
             onSelectEvent={handleSelectEvent}
             onOpenGlide={handleOpenGlide}
           />

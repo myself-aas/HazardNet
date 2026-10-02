@@ -122,7 +122,6 @@ export const Navbar: React.FC<NavbarProps> = ({ onSelectDistrict, onToggleHeatma
 
   return (
     <>
-<<<<<<< HEAD
       <header
         className={`animate-in fade-in sticky top-0 z-[var(--z-nav)] flex h-14 select-none items-center pt-[env(safe-area-inset-top)] duration-300 sm:h-16 ${
           overHero
@@ -130,31 +129,6 @@ export const Navbar: React.FC<NavbarProps> = ({ onSelectDistrict, onToggleHeatma
             : 'border-b border-carbon-20 bg-white/95 text-carbon-80 shadow-xs backdrop-blur-md'
         } transition-colors ease-out`}
         data-testid="site-header"
-=======
-      <Interactive.Header
-        name="Site header — HazardNet nav"
-        style={{
-          opacity: reduceMotion
-            ? 1
-            : interpolate(frame, [0, 6], [0, 1], {
-                easing: Easing.bezier(0.16, 1, 0.3, 1),
-                extrapolateLeft: 'clamp',
-                extrapolateRight: 'clamp',
-              }),
-        }}
-        ref={headerRef}
-        /* Meridian glass chrome. The nav is exactly the surface Apple's
-           "Materials" guidance is for — it floats above content, so it takes
-           the translucent recipe with blur + saturation. Blur and saturate come
-           from the tokens rather than from Tailwind's fixed steps, so the whole
-           HUD retunes from one place. The scrolled state goes opaque because a
-           nav with a long page behind it stops being legible at 72% alpha. */
-        className={`sticky top-0 z-[var(--mrd-z-nav)] select-none h-14 sm:h-16 flex items-center pt-[env(safe-area-inset-top)] transition-all duration-[var(--mrd-duration-base)] ease-[var(--mrd-ease-standard)] ${
-          isHeaderTransparent
-            ? 'mrd-glass-dark text-white'
-            : 'mrd-glass mrd-glass-strong border-b border-[color:var(--mrd-separator)] text-[color:var(--mrd-label)] shadow-[var(--mrd-shadow-console)]'
-        }`}
->>>>>>> origin/main
       >
         <div className="mx-auto flex h-full w-full max-w-[1280px] items-center gap-2 px-4 xl:px-8">
           <Link

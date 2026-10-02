@@ -196,8 +196,6 @@ const AppRoutes: React.FC<{ location: ReturnType<typeof useLocation> }> = ({ loc
               <Route path="/districts/:id" element={<GeneratedContentPage />} />
               <Route path="/retrospectives" element={<GeneratedContentPage />} />
               <Route path="/retrospectives/:year" element={<GeneratedContentPage />} />
-              <Route path="/analytics" element={<AnalyticsAnalyticsPage />} />
-              <Route path="/analytics/:subCategory" element={<AnalyticsAnalyticsPage />} />
               <Route path="/archive" element={<HistoricalCatalogPage />} />
               <Route path="/history" element={<HistoricalCatalogPage />} />
               <Route path="/historical" element={<HistoricalCatalogPage />} />
