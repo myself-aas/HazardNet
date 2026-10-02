@@ -30,6 +30,23 @@ export const ForecastRowSchema = z.object({
   admin_level: z.number().optional(),
   adm2_name: z.string().optional(),
   adm2_pcode: z.string().optional(),
+  // Phase B advisory fields: the daily CSV publishes all of these, and the shared contract
+  // used to model none of them, so anything validated through it stripped them silently.
+  // Optional throughout — a row that predates them still validates.
+  advisory_tier: z.string().optional(),
+  physics_override: z.boolean().optional(),
+  latitude: z.number().optional(),
+  longitude: z.number().optional(),
+  model_severity_raw: z.number().min(0).max(1).optional(),
+  final_severity: z.number().min(0).max(1).optional(),
+  prob_top1: z.number().min(0).max(1).optional(),
+  prob_top2: z.number().min(0).max(1).optional(),
+  prob_top3: z.number().min(0).max(1).optional(),
+  data_source: z.string().optional(),
+  model_version: z.string().optional(),
+  confidence_raw: z.number().min(0).max(1).optional(),
+  confidence_calibrated: z.number().min(0).max(1).optional(),
+  confidence_kind: z.string().optional(),
 });
 
 export const AlertLevelSchema = z.enum(['NO_ALERT', 'WATCH', 'WARNING', 'SEVERE']);

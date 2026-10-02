@@ -12,7 +12,7 @@
  *
  * This gate counts `api/` on every CI run, before a deploy ever sees it. The routing
  * design that keeps the count low (one entry point per URL *family*, the handlers in
- * `serverless/`) is documented in docs/codebase/VERCEL_FUNCTIONS.md and exercised by
+ * `serverless/`) is documented in docs/codebase/ARCHITECTURE.md#vercel-serverless-surface-the-12-function-budget and exercised by
  * __tests__/api/serverlessRouting.test.js.
  *
  * Counting rule: every file under `api/`, whatever its extension. Vercel ignores
@@ -94,7 +94,7 @@ function main() {
         'Vercel would reject the whole deployment.\n' +
         'Fold the new URL into the entry point for its family (api/[endpoint].js,\n' +
         'api/v1/[resource].js, …) and put the handler in serverless/ — see\n' +
-        'docs/codebase/VERCEL_FUNCTIONS.md.',
+        'docs/codebase/ARCHITECTURE.md#vercel-serverless-surface-the-12-function-budget.',
     );
     process.exitCode = 1;
     return;

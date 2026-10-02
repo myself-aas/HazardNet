@@ -9,7 +9,7 @@
  * per function file. It is still one function, not two.
  *
  * The handler lives in `serverless/v1/weather/batch.js` (not scanned for functions) —
- * docs/codebase/VERCEL_FUNCTIONS.md.
+ * docs/codebase/ARCHITECTURE.md#vercel-serverless-surface-the-12-function-budget.
  */
 
 export { default } from '../../../serverless/v1/weather/batch.js';

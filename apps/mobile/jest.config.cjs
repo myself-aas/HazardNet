@@ -31,7 +31,13 @@ module.exports = {
     '^@hazardnet/design-system/(.*)$': '<rootDir>/../../packages/design-system/src/$1',
   },
   transform: {
-    '^.+\\.(js|jsx|ts|tsx)$': ['babel-jest', { configFile: './babel.config.cjs' }],
+    // `configFile` is resolved against the *current working directory*, not `rootDir`, so
+    // the documented invocation from the repo root (`npx jest --config
+    // apps/mobile/jest.config.cjs`) picked up the root Babel config and died inside
+    // `@react-native/js-polyfills/error-guard.js` with "Missing semicolon" — the RN preset
+    // never applied. An absolute path makes the run cwd-independent, which is what a CI
+    // job needs.
+    '^.+\\.(js|jsx|ts|tsx)$': ['babel-jest', { configFile: path.resolve(__dirname, 'babel.config.cjs') }],
     '\\.md$': '<rootDir>/jest.fileTransform.cjs',
   },
 };

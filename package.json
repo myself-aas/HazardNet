@@ -46,6 +46,7 @@
     "alerts:snapshot": "node scripts/rehearse_alert_engine.mjs --out /tmp/alert-run.json --quiet && node scripts/build_alert_snapshot.mjs --in /tmp/alert-run.json",
     "check:bundle": "node scripts/check-bundle.mjs",
     "check:functions": "node scripts/check-vercel-functions.mjs",
+    "check:rotation": "node scripts/check-secret-rotation.mjs",
     "check:design": "node scripts/check-design-quality.mjs",
     "check:tokens": "node scripts/check-token-compliance.mjs",
     "check:design:source": "node scripts/check-design-quality.mjs --source-only",

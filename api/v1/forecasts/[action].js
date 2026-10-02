@@ -7,7 +7,7 @@
  *
  * The handlers live in `serverless/v1/forecasts/` (not scanned for functions), so the
  * three URLs share one function against the 12-function Hobby budget —
- * docs/codebase/VERCEL_FUNCTIONS.md. Literal loaders keep the bundler able to trace them;
+ * docs/codebase/ARCHITECTURE.md#vercel-serverless-surface-the-12-function-budget. Literal loaders keep the bundler able to trace them;
  * per-request loaders keep each URL's import graph out of its siblings'.
  */
 

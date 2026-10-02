@@ -120,8 +120,10 @@ describe('firestore.rules shape', () => {
   });
 
   it('exposes public reads only where they are documented', () => {
-    // Public by design: the forecast feed (the website's live layer), public profiles, and
-    // published blog articles. Any *new* `if true` read must be a deliberate decision.
+    // Public by design: the forecast feed (the website's live layer) and published blog
+    // articles. `profiles` is NOT here any more — it was `if true`, which made every field
+    // of every account readable by an anonymous client. Any *new* `if true` read must be a
+    // deliberate decision.
     const publicReads = matchBlocks().flatMap(({ name, body }) => allowStatements(body)
       .filter((statement) => /if true;/.test(statement))
       .map((statement) => `${name}: ${statement}`));
@@ -129,8 +131,36 @@ describe('firestore.rules shape', () => {
     expect(publicReads.sort()).toEqual([
       'blog_articles/{articleId}: allow get, list: if true;',
       'forecasts/{forecastId}: allow get, list: if true;',
-      'profiles/{userId}: allow get, list: if true;',
     ]);
+  });
+
+  it('keeps profiles out of anonymous reach unless the owner published them', () => {
+    // SEC-14: the whole point of the change. A profile carries email, phone_number,
+    // whatsapp_number, address and pinpoint coordinates, so neither read method may be
+    // unconditional, and `list` (the /u/<username> and username-availability lookups) must
+    // be capped at a single row — rules cannot see which field a query filters on, so the
+    // limit is the only thing standing between this collection and a bulk dump.
+    const reads = block('profiles').filter((statement) => /allow (get|list|read)/.test(statement));
+    expect(reads.length).toBeGreaterThan(0);
+    for (const read of reads) {
+      expect(read).not.toMatch(/:\s*if\s+true\s*;/);
+      expect(read).toMatch(/isOwner\(userId\)|isPublicProfile\(existing\(\)\)/);
+    }
+    const listReads = reads.filter((statement) => /allow .*\blist\b/.test(statement));
+    expect(listReads.length).toBeGreaterThan(0);
+    for (const read of listReads) expect(read).toMatch(/request\.query\.limit\s*<=\s*1/);
+    // Opt-in, not opt-out: a row with no visibility field is private.
+    expect(RULES).toMatch(/function isPublicProfile\([\s\S]*?'profile_visibility' in data/);
+  });
+
+  it('lets the client clear a field it is allowed to write', () => {
+    // Regression: `lib/avatar.ts` removes an avatar by writing `photo_url: null` /
+    // `avatar_path: null`, and `AuthContext` stores `email_verified_at: null`. A
+    // string-bound field rejects null, so the write — and therefore avatar deletion —
+    // failed with a permission error rather than a validation error.
+    for (const field of ['photo_url', 'avatar_path', 'email_verified_at']) {
+      expect(RULES).toMatch(new RegExp(`nullableString\\(data, '${field}'`));
+    }
   });
 
   it('gates every client-writable collection on the caller’s own identity', () => {

@@ -3,7 +3,7 @@
  *
  * One function file covers every one-segment endpoint, because the Hobby plan allows at
  * most 12 Serverless Functions per deployment and this repository serves more URLs than
- * that (see docs/codebase/VERCEL_FUNCTIONS.md; the budget is enforced by
+ * that (see docs/codebase/ARCHITECTURE.md#vercel-serverless-surface-the-12-function-budget; the budget is enforced by
  * scripts/check-vercel-functions.mjs). The handlers themselves live in `serverless/`,
  * which Vercel does not scan for functions.
  *

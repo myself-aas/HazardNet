@@ -6,7 +6,7 @@
  *
  * Both handlers live in `serverless/chat/`, which Vercel does not scan for functions —
  * one entry file, two URLs, under the 12-function Hobby budget
- * (docs/codebase/VERCEL_FUNCTIONS.md). The loaders are literal so the bundler can trace
+ * (docs/codebase/ARCHITECTURE.md#vercel-serverless-surface-the-12-function-budget). The loaders are literal so the bundler can trace
  * them, and per request so the (Express-based) query handler's graph never loads for a
  * sample-questions request.
  */

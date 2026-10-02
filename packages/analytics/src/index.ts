@@ -7,12 +7,27 @@
  * Analytics on web, Firebase/Expo Analytics on mobile).
  *
  * Usage:
- *   import { createNoopTracker, ANALYTICS_EVENTS } from '@hazardnet/analytics';
+ *   import { createNoopTracker, createStreamingTracker, ANALYTICS_EVENTS } from '@hazardnet/analytics';
  *   const tracker = createNoopTracker();
  *   tracker.track(ANALYTICS_EVENTS.APP_OPENED, { platform: 'ios' });
+ *
+ * `createNoopTracker()` is for SSR, tests and "consent not given". A deployment that
+ * actually wants events uses `createStreamingTracker({ endpoint })` — see `./streaming.ts`,
+ * which batches, retries once, caps its own queue and strips PII-shaped property keys.
  */
 
 export { ANALYTICS_EVENTS } from '@hazardnet/core';
+export {
+  createStreamingTracker,
+  DEFAULT_REDACT_KEYS,
+} from './streaming';
+export type {
+  QueuedEvent,
+  SendBatch,
+  StreamingStats,
+  StreamingTracker,
+  StreamingTrackerOptions,
+} from './streaming';
 export type {
   AnalyticsEventName,
   CommonEventProperties,
@@ -26,8 +41,13 @@ export interface TrackOptions {
 /** A tracker is a function that receives an event name and properties. */
 export interface Tracker {
   track(event: string, properties?: Record<string, unknown>, options?: TrackOptions): void;
-  /** Flush any queued events (e.g., on app background). */
-  flush?(): Promise<void>;
+  /**
+   * Flush any queued events (e.g., on app background).
+   *
+   * `{ flush: true }` asks for the send to survive the page/app going away, which on the web
+   * means `navigator.sendBeacon` instead of `fetch`.
+   */
+  flush?(options?: TrackOptions): Promise<void>;
   /** Reset state (e.g., on sign-out). */
   reset?(): void;
 }

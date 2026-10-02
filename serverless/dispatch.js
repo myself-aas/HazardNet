@@ -8,7 +8,7 @@
  * each entry point dispatches to the per-endpoint handlers that live here, in
  * `serverless/`, a directory Vercel never scans for functions (only `api/` is).
  * The arithmetic, and the CI gate that keeps it true, are in
- * `docs/codebase/VERCEL_FUNCTIONS.md` and `scripts/check-vercel-functions.mjs`.
+ * `docs/codebase/ARCHITECTURE.md#vercel-serverless-surface-the-12-function-budget` and `scripts/check-vercel-functions.mjs`.
  *
  * Routing contract (verified against the Vercel CLI's local build/dev emulation):
  *
@@ -131,7 +131,7 @@ export function createDispatcher({ param, routes, entry }) {
       res.status(404).json({
         error:
           `no endpoint "${String(segment).slice(0, 60)}" at ${entry}; ` +
-          'see docs/codebase/VERCEL_FUNCTIONS.md for the served surface',
+          'see docs/codebase/ARCHITECTURE.md#vercel-serverless-surface-the-12-function-budget for the served surface',
       });
       return;
     }

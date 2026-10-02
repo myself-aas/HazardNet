@@ -779,7 +779,7 @@ Every tracked file as of commit `e4fc8eb`, grouped by directory. Paths are repos
 - `docs/audits/2026-10-01-frontend-design-system-audit.md`
 - `docs/audits/2026-10-02-frontend-design-system-audit-apple-meta.md`
 
-#### `docs/codebase/`  (9 files)
+#### `docs/codebase/`  (8 files)
 
 - `docs/codebase/.codebase-scan.txt`
 - `docs/codebase/ARCHITECTURE.md`
@@ -789,7 +789,10 @@ Every tracked file as of commit `e4fc8eb`, grouped by directory. Paths are repos
 - `docs/codebase/STACK.md`
 - `docs/codebase/STRUCTURE.md`
 - `docs/codebase/TESTING.md`
-- `docs/codebase/VERCEL_FUNCTIONS.md`
+
+(`docs/codebase/VERCEL_FUNCTIONS.md` used to be an eighth file here; it is now the
+"Vercel serverless surface (the 12-function budget)" section of `ARCHITECTURE.md`, and the 17
+source/test/workflow references now point at that section.)
 
 #### `docs/design/`  (1 file)
 

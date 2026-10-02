@@ -79,6 +79,70 @@ export interface ForecastRow {
   prob_top1?: number;
   prob_top2?: number;
   prob_top3?: number;
+  /**
+   * Advisory provenance and calibration. The daily advisory CSV
+   * (`backend/utils/advisoryMapper.js` → `ADVISORY_CSV_COLUMNS`) carries every field
+   * above, and the Kaggle mirror of it
+   * (https://www.kaggle.com/datasets/ashifahmedshuvo/hazardnet-weekly-forecasts) is the
+   * public reference for what the pipeline publishes. Until 2026-10-02 `parseForecastRow`
+   * dropped all of them, so the UI re-derived a tier from `severity_score` while the
+   * published one sat unused in the payload.
+   */
+  data_source?: string;
+  model_version?: string;
+  confidence_raw?: number;
+  confidence_calibrated?: number;
+  confidence_kind?: string;
+}
+
+/**
+ * The tier the advisory published, when it published one.
+ *
+ * Falls back to the client-side severity bin only when the field is absent — never when it
+ * is present but unrecognised, because silently re-labelling a published tier is worse than
+ * showing none. Every tier word in the CSV (`SEVERE`/`WARNING`/`WATCH`/`NORMAL`) is in
+ * `ADVISORY_TIERS`.
+ */
+export function advisoryTierOf(row: Pick<ForecastRow, 'advisory_tier' | 'severity_score'>): AdvisoryTier | null {
+  const published = typeof row.advisory_tier === 'string'
+    ? row.advisory_tier.trim().toUpperCase()
+    : '';
+  if ((ADVISORY_TIERS as readonly string[]).includes(published)) return published as AdvisoryTier;
+  if (!Number.isFinite(row.severity_score)) return null;
+  return row.severity_score >= 0.67 ? 'SEVERE' : row.severity_score >= 0.34 ? 'WARNING' : 'NORMAL';
+}
+
+/**
+ * The three severity tracks the pipeline publishes, in the order they are computed:
+ * the raw model output, the calibrated model score, the physics prior, and the blended
+ * `final_severity` the advisory tier is cut from. `null` where the row predates them.
+ */
+export interface AdvisorySignal {
+  raw: number | null;
+  calibrated: number | null;
+  physics: number | null;
+  final: number | null;
+  override: boolean;
+  probabilities: Array<{ label: string; value: number }>;
+}
+
+export function advisorySignalOf(row: ForecastRow): AdvisorySignal {
+  const unit = (value: unknown): number | null =>
+    typeof value === 'number' && Number.isFinite(value) && value >= 0 && value <= 1 ? value : null;
+  const probabilities = ([row.prob_top1, row.prob_top2, row.prob_top3]
+    .map(unit)
+    .filter((value): value is number => value !== null)).map((value, index) => ({
+      label: `Top-${index + 1}`,
+      value,
+    }));
+  return {
+    raw: unit(row.model_severity_raw),
+    calibrated: unit(row.model_severity),
+    physics: unit(row.physics_severity),
+    final: unit(row.final_severity) ?? unit(row.severity_score),
+    override: row.physics_override === true,
+    probabilities,
+  };
 }
 
 export interface BulkForecastsResponse {
@@ -178,6 +242,13 @@ export const isForecastHorizon = (v: unknown): v is ForecastHorizon =>
 const isFiniteNumber = (v: unknown): v is number =>
   typeof v === 'number' && Number.isFinite(v);
 
+/**
+ * Bounding box for the 64 districts the registry covers, plus margin. Row coordinates are
+ * checked against it because a transposed lat/lon pair is itself a valid coordinate — it
+ * would land a marker in Somalia while looking like data.
+ */
+const BANGLADESH_BBOX = { minLat: 20.0, maxLat: 27.0, minLon: 87.5, maxLon: 93.0 } as const;
+
 /** Parse one raw API row into a ForecastRow, or null when malformed. */
 export function parseForecastRow(raw: unknown): ForecastRow | null {
   if (!raw || typeof raw !== 'object') return null;
@@ -216,6 +287,60 @@ export function parseForecastRow(raw: unknown): ForecastRow | null {
 
   if (isFiniteNumber(r.model_severity)) row.model_severity = r.model_severity;
   if (isFiniteNumber(r.physics_severity)) row.physics_severity = r.physics_severity;
+
+  // ── Advisory fields published by the daily CSV ────────────────────────────────────
+  // These are the columns the pipeline emits (ADVISORY_CSV_COLUMNS) that used to be
+  // dropped here: rows carried them from the API and the snapshot, and the UI re-derived
+  // a tier from `severity_score` instead of showing the published one. All are optional —
+  // a row that predates them keeps parsing exactly as it did.
+  //
+  // Out-of-range values are dropped rather than clamped, so "absent" and "nonsense" look
+  // the same to the UI: every one of these is a float in [0,1] in the CSV, and a 1.7
+  // severity or a 12.0 probability means the payload is wrong, not that it is extreme.
+  const unitFloat = (value: unknown): number | undefined =>
+    (isFiniteNumber(value) && value >= 0 && value <= 1 ? value : undefined);
+
+  const finalSeverity = unitFloat(r.final_severity);
+  if (finalSeverity !== undefined) row.final_severity = finalSeverity;
+  const modelRaw = unitFloat(r.model_severity_raw);
+  if (modelRaw !== undefined) row.model_severity_raw = modelRaw;
+  const probTop1 = unitFloat(r.prob_top1);
+  if (probTop1 !== undefined) row.prob_top1 = probTop1;
+  const probTop2 = unitFloat(r.prob_top2);
+  if (probTop2 !== undefined) row.prob_top2 = probTop2;
+  const probTop3 = unitFloat(r.prob_top3);
+  if (probTop3 !== undefined) row.prob_top3 = probTop3;
+  const confidenceRaw = unitFloat(r.confidence_raw);
+  if (confidenceRaw !== undefined) row.confidence_raw = confidenceRaw;
+  const confidenceCalibrated = unitFloat(r.confidence_calibrated);
+  if (confidenceCalibrated !== undefined) row.confidence_calibrated = confidenceCalibrated;
+
+  // The advisory tier is a closed vocabulary in the CSV; an unrecognised word is dropped
+  // rather than rendered, because a tier badge that says "severe " or "CAT-1" reads as a
+  // published decision when it is really a payload we do not understand.
+  if (typeof r.advisory_tier === 'string'
+      && (ADVISORY_TIERS as readonly string[]).includes(r.advisory_tier.trim().toUpperCase())) {
+    row.advisory_tier = r.advisory_tier.trim().toUpperCase() as AdvisoryTier;
+  }
+  if (typeof r.physics_override === 'boolean') row.physics_override = r.physics_override;
+
+  // Coordinates come from the district registry, so they are validated against the
+  // country's bounding box: a swapped or unset pair would otherwise move a marker to the
+  // wrong place with no visible error. Rows outside the box keep their other fields.
+  const latitude = isFiniteNumber(r.latitude) ? r.latitude : Number.NaN;
+  const longitude = isFiniteNumber(r.longitude) ? r.longitude : Number.NaN;
+  if (latitude >= BANGLADESH_BBOX.minLat && latitude <= BANGLADESH_BBOX.maxLat) row.latitude = latitude;
+  if (longitude >= BANGLADESH_BBOX.minLon && longitude <= BANGLADESH_BBOX.maxLon) row.longitude = longitude;
+
+  const provenance = (value: unknown, max: number): string | undefined =>
+    (typeof value === 'string' && value.trim() && value.trim().length <= max ? value.trim() : undefined);
+  const dataSource = provenance(r.data_source, 120);
+  if (dataSource) row.data_source = dataSource;
+  const modelVersion = provenance(r.model_version, 80);
+  if (modelVersion) row.model_version = modelVersion;
+  const confidenceKind = provenance(r.confidence_kind, 40);
+  if (confidenceKind) row.confidence_kind = confidenceKind;
+
   if (typeof r.division === 'string' && r.division) row.division = r.division;
   if (typeof r.pcode === 'string' && r.pcode) row.pcode = r.pcode;
   if (isFiniteNumber(r.admin_level)) row.admin_level = r.admin_level;

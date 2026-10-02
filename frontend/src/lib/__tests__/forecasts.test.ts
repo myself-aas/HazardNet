@@ -6,6 +6,8 @@
  * and GAUL spellings), the static-baseline merge, and display helpers.
  */
 import {
+  advisorySignalOf,
+  advisoryTierOf,
   applyForecastsToDistricts,
   buildForecastIndex,
   confidenceBin,
@@ -414,5 +416,161 @@ describe('fetchForecastMetadata — three-stage fallback (API → bulk → snaps
       ingestionTimestamp: null,
       source: null,
     });
+  });
+});
+
+// ─────────────────────────────────────────────────────────────────────────
+// Advisory fields — the columns the daily advisory CSV publishes
+// (backend/utils/advisoryMapper.js ADVISORY_CSV_COLUMNS, mirrored publicly by
+// https://www.kaggle.com/datasets/ashifahmedshuvo/hazardnet-weekly-forecasts).
+//
+// Before 2026-10-02 `parseForecastRow` kept none of them: the rows arrived with a
+// published tier, a blended final severity and a top-3 distribution, and the UI
+// re-derived a tier from `severity_score` instead. These tests pin the pass-through
+// and, just as importantly, the refusal to invent a value.
+// ─────────────────────────────────────────────────────────────────────────
+
+/** A 7-day advisory row for Bagerhat, exactly as the pipeline emits it. */
+const advisoryRow = {
+  district_id: 40,
+  district_name: 'Bagerhat',
+  division: 'Khulna',
+  pcode: '5795',
+  latitude: 22.3744,
+  longitude: 89.739,
+  horizon: '7_days',
+  hazard_type: 'Flash Flood',
+  severity_score: 0.7638,
+  confidence: 0.9829,
+  model_severity: 0.7701,
+  model_severity_raw: 0.9934,
+  physics_severity: 0.4,
+  final_severity: 0.7638,
+  physics_override: false,
+  advisory_tier: 'SEVERE',
+  target_date: '2026-10-06',
+  prediction_date: '2026-09-29',
+  created_at: '2026-09-29 23:29:31',
+  temperature_max: 32.8,
+  temperature_min: 24.1,
+  precipitation_mm: 7.3,
+  wind_max_kmh: 12.8,
+  prob_top1: 0.9829,
+  prob_top2: 0.0081,
+  prob_top3: 0.004,
+  data_source: 'Kaggle_Daily_Advisory',
+};
+
+describe('parseForecastRow advisory fields', () => {
+  it('carries every field the advisory CSV publishes', () => {
+    const parsed = parseForecastRow(advisoryRow);
+    expect(parsed).toMatchObject({
+      advisory_tier: 'SEVERE',
+      final_severity: 0.7638,
+      model_severity_raw: 0.9934,
+      physics_override: false,
+      latitude: 22.3744,
+      longitude: 89.739,
+      prob_top1: 0.9829,
+      prob_top2: 0.0081,
+      prob_top3: 0.004,
+      data_source: 'Kaggle_Daily_Advisory',
+    });
+  });
+
+  it('normalises the tier vocabulary instead of echoing the payload', () => {
+    expect(parseForecastRow({ ...advisoryRow, advisory_tier: ' severe ' })?.advisory_tier).toBe('SEVERE');
+    // An unrecognised tier is dropped rather than rendered: a badge the pipeline never
+    // published must not appear as if it had.
+    expect(parseForecastRow({ ...advisoryRow, advisory_tier: 'CATASTROPHIC' })?.advisory_tier).toBeUndefined();
+  });
+
+  it('drops out-of-range probabilities and severities rather than clamping them', () => {
+    // Every one of these is a float in [0,1]. A 1.7 means the payload is wrong, not that
+    // the hazard is extreme — and clamping would hide that from the reader.
+    const parsed = parseForecastRow({
+      ...advisoryRow,
+      final_severity: 1.7,
+      model_severity_raw: -0.2,
+      prob_top1: 12,
+      prob_top2: NaN,
+      prob_top3: 'high',
+      confidence_calibrated: 3,
+    });
+    expect(parsed?.final_severity).toBeUndefined();
+    expect(parsed?.model_severity_raw).toBeUndefined();
+    expect(parsed?.prob_top1).toBeUndefined();
+    expect(parsed?.prob_top2).toBeUndefined();
+    expect(parsed?.prob_top3).toBeUndefined();
+    expect(parsed?.confidence_calibrated).toBeUndefined();
+    // The row itself is still usable — a bad advisory field is not a bad forecast.
+    expect(parsed?.district_name).toBe('Bagerhat');
+  });
+
+  it('rejects coordinates outside the country it forecasts', () => {
+    // A swapped lat/lon is a valid coordinate that lands in the wrong country; the parser
+    // keeps the rest of the row and drops the pair.
+    const swapped = parseForecastRow({ ...advisoryRow, latitude: 89.739, longitude: 22.3744 });
+    expect(swapped?.latitude).toBeUndefined();
+    expect(swapped?.longitude).toBeUndefined();
+    expect(swapped?.advisory_tier).toBe('SEVERE');
+
+    const inRange = parseForecastRow({ ...advisoryRow, latitude: 26.2858, longitude: 88.2687 });
+    expect(inRange?.latitude).toBe(26.2858);
+    expect(inRange?.longitude).toBe(88.2687);
+  });
+
+  it('leaves a row that predates the advisory fields exactly as it was', () => {
+    // Backwards compatibility: rows from the older pipeline have none of these columns and
+    // must keep parsing (and keep rendering from the derived tier) unchanged.
+    const parsed = parseForecastRow(row());
+    for (const field of [
+      'advisory_tier', 'final_severity', 'model_severity_raw', 'physics_override',
+      'latitude', 'longitude', 'prob_top1', 'prob_top2', 'prob_top3', 'data_source',
+    ]) {
+      expect(parsed?.[field as keyof ForecastRow]).toBeUndefined();
+    }
+  });
+});
+
+describe('advisoryTierOf', () => {
+  it('prefers the published tier over the client-side bin', () => {
+    // The pipeline published WATCH on a 0.47 severity — a client re-derivation would have
+    // called that WARNING. The published decision wins.
+    expect(advisoryTierOf({ advisory_tier: 'WATCH', severity_score: 0.47 })).toBe('WATCH');
+    expect(advisoryTierOf({ advisory_tier: 'SEVERE', severity_score: 0.1 })).toBe('SEVERE');
+  });
+
+  it('falls back to the severity bin only when nothing was published', () => {
+    expect(advisoryTierOf({ severity_score: 0.9 })).toBe('SEVERE');
+    expect(advisoryTierOf({ severity_score: 0.5 })).toBe('WARNING');
+    expect(advisoryTierOf({ severity_score: 0.1 })).toBe('NORMAL');
+  });
+});
+
+describe('advisorySignalOf', () => {
+  it('lays out the three severity tracks and the top-3 distribution', () => {
+    const signal = advisorySignalOf(parseForecastRow(advisoryRow) as ForecastRow);
+    expect(signal).toEqual({
+      raw: 0.9934,
+      calibrated: 0.7701,
+      physics: 0.4,
+      final: 0.7638,
+      override: false,
+      probabilities: [
+        { label: 'Top-1', value: 0.9829 },
+        { label: 'Top-2', value: 0.0081 },
+        { label: 'Top-3', value: 0.004 },
+      ],
+    });
+  });
+
+  it('reports an empty signal for a row that predates the advisory columns', () => {
+    const signal = advisorySignalOf(parseForecastRow(row()) as ForecastRow);
+    expect(signal.probabilities).toEqual([]);
+    expect(signal.raw).toBeNull();
+    expect(signal.override).toBe(false);
+    // `final` falls back to the row's own severity so the UI has one number to show.
+    expect(signal.final).toBe(0.5);
   });
 });

@@ -167,7 +167,7 @@ describe('TASK-016: Multilateral GLIDE Link Resolver & REST API', () => {
 
   test('The Vercel entry point for /api/v1/historical exists and serves it with security headers', async () => {
     // The handler lives in serverless/ — a directory Vercel does not scan for functions —
-    // and is deployed by the URL-family entry point (docs/codebase/VERCEL_FUNCTIONS.md).
+    // and is deployed by the URL-family entry point (docs/codebase/ARCHITECTURE.md#vercel-serverless-surface-the-12-function-budget).
     const handlerPath = path.resolve(process.cwd(), 'serverless', 'v1', 'historical.js');
     assert.ok(fs.existsSync(handlerPath), 'serverless/v1/historical.js must exist');
     const entryPath = path.resolve(process.cwd(), 'api', 'v1', '[resource].js');
