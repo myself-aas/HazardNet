@@ -158,8 +158,9 @@
         "evidence": "Article not found"
       },
       "error": {
-        "kind": "absent",
-        "reason": "a read failure and a missing slug share the not-found branch, which appends the loader's error text; there is no separate retry and no retry is possible for a URL that does not resolve"
+        "kind": "notice",
+        "evidence": "This article could not be loaded",
+        "retry": true
       },
       "success": {
         "kind": "page",

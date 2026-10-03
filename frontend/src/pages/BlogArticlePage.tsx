@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Compass } from 'lucide-react';
+import { DataStateError } from '../components/ui/DataState';
 import toast from 'react-hot-toast';
 import MaterialIcon from '../components/MaterialIcon';
 import Breadcrumbs from '../components/Breadcrumbs';
@@ -54,6 +55,7 @@ export const BlogArticlePage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [reloadNonce, setReloadNonce] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -82,7 +84,7 @@ export const BlogArticlePage: React.FC = () => {
     return () => {
       cancelled = true;
     };
-  }, [slug]);
+  }, [slug, reloadNonce]);
 
   const seoHead = useMemo(() => {
     if (!article) return null;
@@ -98,15 +100,27 @@ export const BlogArticlePage: React.FC = () => {
     );
   }
 
+  // A read that failed is not an article that does not exist: the first one is worth retrying and
+  // the second one is not (audit P2-3 - the same distinction AlertDetailPage had to make).
+  if (error && !article && !notFound) {
+    return (
+      <div className="mx-auto flex min-h-[55vh] max-w-3xl items-center px-4">
+        <DataStateError
+          title="This article could not be loaded"
+          detail={error}
+          onRetry={() => setReloadNonce((n) => n + 1)}
+        />
+      </div>
+    );
+  }
+
   if (notFound || !article) {
     return (
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-3xl mx-auto min-h-[55vh] flex flex-col items-center justify-center gap-4 text-center px-4">
         <Compass className="h-10 w-10 text-carbon-40" aria-hidden="true" />
         <h1 className="text-xl font-black text-carbon-90">Article not found</h1>
         <p className="text-sm text-carbon-60 max-w-md leading-relaxed">
-          {error
-            ? `The article could not be loaded: ${error}`
-            : 'This URL does not match a published HazardNet article. It may be a draft, renamed, or removed.'}
+          This URL does not match a published HazardNet article. It may be a draft, renamed, or removed.
         </p>
         <div className="flex items-center gap-2">
           <Link to="/blogs" className="bg-primary px-4 py-2.5 text-xs font-black text-white hover:bg-primary-strong">

@@ -134,12 +134,12 @@ describe('four-state checklist', () => {
     expect({ byData, pages: Object.keys(ledger.entries).length, absent }).toEqual({
       byData: { fetch: 21, mutation: 7, static: 7 },
       pages: 35,
-      absent: 6,
+      absent: 5,
     });
-    // The six absent states are the open items this checklist leaves behind; each is named here so
+    // The five absent states are the open items this checklist leaves behind; each is named here so
     // the number cannot drift while a page quietly loses a state (the evidence test above catches
     // the flip from present to absent, this one catches an entry being rewritten as absent).
-    expect(byKind.absent).toBe(6);
+    expect(byKind.absent).toBe(5);
   });
 
   it('names the pages still missing a state instead of calling the checklist complete', () => {
@@ -151,7 +151,7 @@ describe('four-state checklist', () => {
     // The three pages with no error state and the three with no empty state are the open items.
     expect({ empty: missing('empty'), error: missing('error'), loading: missing('loading') }).toEqual({
       empty: ['pages/Dashboard.tsx', 'pages/HistoricalCatalogPage.tsx', 'pages/UserDashboardPage.tsx'],
-      error: ['pages/BlogArticlePage.tsx', 'pages/Dashboard.tsx', 'pages/UserDashboardPage.tsx'],
+      error: ['pages/Dashboard.tsx', 'pages/UserDashboardPage.tsx'],
       loading: [],
     });
 
