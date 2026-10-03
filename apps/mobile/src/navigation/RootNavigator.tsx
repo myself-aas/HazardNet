@@ -23,6 +23,8 @@ import { SavedScreen } from '../screens/saved/SavedScreen';
 import { SavedPlaceDetailScreen } from '../screens/saved/SavedPlaceDetailScreen';
 import { MoreScreen } from '../screens/more/MoreScreen';
 import { DataStatusScreen } from '../screens/more/DataStatusScreen';
+import { AdvisoriesScreen } from '../screens/advisories/AdvisoriesScreen';
+import { AdvisoryDetailScreen } from '../screens/advisories/AdvisoryDetailScreen';
 import { NotificationPreferencesScreen } from '../screens/settings/NotificationPreferencesScreen';
 import { AccessibilitySettingsScreen } from '../screens/settings/AccessibilitySettingsScreen';
 import { SubmitReportScreen } from '../screens/report/SubmitReportScreen';
@@ -35,6 +37,7 @@ export type RootStackParamList = {
   AlertDetail: { id: string };
   PlaceDetail: { placeId: string };
   SavedPlaceDetail: { id: string };
+  AdvisoryDetail: { id: string };
 };
 
 export type TabParamList = {
@@ -86,6 +89,8 @@ function MoreStackScreen() {
     <MoreStack.Navigator screenOptions={{ headerLargeTitle: Platform.OS === 'ios', headerShadowVisible: false }}>
       <MoreStack.Screen name="MoreHome" component={MoreScreen} options={{ title: 'More', headerLargeTitle: true }} />
       <MoreStack.Screen name="DataStatus" component={DataStatusScreen} options={{ title: 'Data status' }} />
+      <MoreStack.Screen name="Advisories" component={AdvisoriesScreen} options={{ title: 'Advisories', headerLargeTitle: true }} />
+      <MoreStack.Screen name="AdvisoryDetail" component={AdvisoryDetailScreen} options={{ title: 'Advisory' }} />
       <MoreStack.Screen name="NotificationPreferences" component={NotificationPreferencesScreen} options={{ title: 'Notifications' }} />
       <MoreStack.Screen name="Accessibility" component={AccessibilitySettingsScreen} options={{ title: 'Accessibility' }} />
       <MoreStack.Screen name="SubmitReport" component={SubmitReportScreen} options={{ title: 'Submit report' }} />

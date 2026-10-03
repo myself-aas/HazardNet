@@ -62,6 +62,8 @@ export function MoreScreen() {
             <Box px={16}>
               <Row label="Submit field report" subtitle="Photo + caption + location; queues offline" icon="Camera" onPress={() => nav.navigate('SubmitReport')} />
               <Divider />
+              <Row label="Advisories" subtitle="Sector protocols, phased steps, who to call" icon="FileText" onPress={() => nav.navigate('Advisories')} />
+              <Divider />
               <Row label="Data status" subtitle="Cache age, source availability" icon="Database" onPress={() => nav.navigate('DataStatus')} />
               <Divider />
               <Row label="Notification settings" subtitle="Critical alerts, quiet hours, channels" icon="Bell" onPress={() => nav.navigate('NotificationPreferences')} />
