@@ -364,7 +364,7 @@ export const FrontDoor: React.FC = () => {
       {/* `pt-[calc(var(--navbar-height)+44px)]` instead of a hard 100px: the bar is 3.5rem plus
           `env(safe-area-inset-top)`, so a fixed number collided with it on notched phones. The
           variable now carries the inset, which makes this clearance correct on both. */}
-      <header className="mrd-on-dark relative w-full overflow-hidden bg-carbon-90 text-white min-h-[600px] lg:min-h-[100dvh] flex items-center -mt-14 sm:-mt-16 pt-[calc(var(--navbar-height)+44px)] pb-12 sm:pb-16 shadow-2xl">
+      <header className="mrd-on-dark relative w-full overflow-hidden bg-carbon-90 text-white min-h-[680px] lg:min-h-[calc(100dvh-44px)] flex items-center -mt-11 pt-[calc(var(--navbar-height)+28px)] pb-12 sm:pb-16 shadow-2xl">
         {/* Remotion-Inspired 5-Layer Cinematic Motion Background (BgMesh, Video, HUD, Grade, Grain & Vignette) */}
         <HeroCinematicBackground paused={heroPaused} />
         {/* Pause control — keyboard-reachable, respects reduced-motion (audit #1) */}
@@ -379,24 +379,24 @@ export const FrontDoor: React.FC = () => {
           <span>{heroPaused ? t('frontdoor.hero.resumeMotion') : t('frontdoor.hero.pauseMotion')}</span>
         </button>
 
-        <div className="relative z-10 w-full max-w-[1200px] mx-auto px-4 xl:px-8">
+        <div className="relative z-10 mx-auto flex w-full max-w-[980px] flex-col items-center px-5 text-center sm:px-8">
           {/* The masthead strip ("Overview · HazardNet · reviewed <date>") used to sit here. It
               was a middot row of the kind the design skill bans: a version-style eyebrow, half of
               it repeating the wordmark directly above a wordmark, and the only reader-facing fact
               in it - the review date - is already stated in the artifact it describes, where it
               carries its own provenance. The language switch, which is the one control that has to
               be on the front door, stays and right-aligns on its own. */}
-          <div className="flex justify-end">
+          <div className="flex w-full justify-end">
             <div className="bg-carbon-90/40 p-1 border border-white/20" style={{ backdropFilter: 'blur(var(--hero-glass-blur))', WebkitBackdropFilter: 'blur(var(--hero-glass-blur))' }}>
               <LanguageToggle variant="switch" tone="hds" />
             </div>
           </div>
 
-          <div className="mt-6 grid grid-cols-1 items-center gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)] xl:gap-12">
+          <div className="mt-8 flex w-full flex-col items-center gap-8">
             {/* Scrim, not a tint: the authority paragraph sits at the bottom of this card, and at
                 `to-black/35` its 12px `text-white/75` measured 2.45:1 over a light frame. At
                 `to-black/60` the same pixel measures 6.40:1. */}
-            <div className="min-w-0 rounded-sm border border-white/15 bg-gradient-to-b from-black/70 to-black/60 p-4 sm:p-5" style={{ backdropFilter: 'blur(var(--hero-glass-blur))', WebkitBackdropFilter: 'blur(var(--hero-glass-blur))' }}>
+            <div className="min-w-0 max-w-[760px] bg-black/35 px-4 py-5 sm:px-8 sm:py-7" style={{ backdropFilter: 'blur(var(--hero-glass-blur))', WebkitBackdropFilter: 'blur(var(--hero-glass-blur))' }}>
               <h1 className="mrd-display2 max-w-3xl text-balance text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
                 {localised.h1 ?? localised.title}
               </h1>
@@ -474,7 +474,7 @@ export const FrontDoor: React.FC = () => {
             </div>
 
             {/* The hero visual card. Solid White background with Carbon-90 text for clean paper-like readability */}
-            <div className="relative z-10 w-full text-carbon-90 bg-white shadow-2xl overflow-hidden rounded-sm">
+            <div className="relative z-10 w-full max-w-[680px] overflow-hidden rounded-sm bg-white/95 text-carbon-90 shadow-2xl">
               <RunVisual freshness={freshness} loading={loading} published={published} withheld={withheld} />
             </div>
           </div>

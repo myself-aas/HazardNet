@@ -122,14 +122,14 @@ export const Navbar: React.FC<NavbarProps> = ({ onSelectDistrict, onToggleHeatma
   return (
     <>
       <header
-        className={`animate-in fade-in sticky top-0 z-[var(--z-nav)] flex h-14 select-none items-center pt-[env(safe-area-inset-top)] duration-300 sm:h-16 ${
+        className={`animate-in fade-in sticky top-0 z-[var(--z-nav)] flex h-11 select-none items-center pt-[env(safe-area-inset-top)] duration-300 ${
           overHero
             ? 'border-b border-white/10 bg-black/25 text-white backdrop-blur-md'
             : 'border-b border-carbon-20 bg-white/95 text-carbon-80 shadow-xs backdrop-blur-md'
         } transition-colors ease-out`}
         data-testid="site-header"
       >
-        <div className="mx-auto flex h-full w-full max-w-[1280px] items-center gap-2 px-4 xl:px-8">
+        <div className="mx-auto flex h-full w-full max-w-[1024px] items-center gap-2 px-4">
           <Link
             to="/"
             className="flex min-h-[44px] shrink-0 items-center no-underline"
