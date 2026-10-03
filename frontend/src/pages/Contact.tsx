@@ -163,7 +163,7 @@ export const Contact: React.FC = () => {
     }
     setPrepared({
       kind: activeForm,
-      subject: `${SUBJECTS[activeForm]} — ${activeForm === 'report' ? form.district : form.institution || form.fullName}`,
+      subject: `${SUBJECTS[activeForm]}: ${activeForm === 'report' ? form.district : form.institution || form.fullName}`,
       body: buildBody(activeForm, form),
     });
   };
@@ -245,7 +245,7 @@ export const Contact: React.FC = () => {
 
           {prepared && (
             <div role="status" className="border border-carbon-20 bg-carbon-05 p-4 text-xs text-carbon-80 space-y-2">
-              <p className="font-bold">Your report is prepared — choose how to send it:</p>
+              <p className="font-bold">Your report is prepared. Choose how to send it:</p>
               <p className="leading-relaxed">
                 Nothing has been submitted yet. HazardNet has no server-side inbox for these forms, so pick a channel
                 below: the GitHub issue is public and trackable, the email opens in your mail client. Both are prefilled
@@ -483,7 +483,7 @@ export const Contact: React.FC = () => {
                     rows={4}
                     value={form.message}
                     onChange={(e) => set('message', e.target.value)}
-                    placeholder="Dataset licensing, reproducing paper results, partnership questions — anything."
+                    placeholder="Dataset licensing, reproducing paper results, partnership questions. Anything."
                     className={inputClass}
                   />
                 </div>
@@ -533,7 +533,7 @@ export const Contact: React.FC = () => {
             <p className="leading-relaxed">
               HazardNet is an independent project without a staffed office. Reports are filed on the public issue
               tracker or emailed to the maintainers, and corrections to thresholds are recorded in the same repository
-              as the code — so changes can be traced.
+              as the code: so changes can be traced.
             </p>
             <ul className="space-y-1.5">
               <li>

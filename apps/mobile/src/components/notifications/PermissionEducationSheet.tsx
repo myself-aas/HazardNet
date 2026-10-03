@@ -42,7 +42,7 @@ export function PermissionEducationSheet({ visible, onAccept, onDismiss }: Props
         <BodyBold>Get notified when SEVERE weather affects your saved places.</BodyBold>
         <Body color="textSecondary">
           • Sound + vibration for severe cyclones, floods, and cold waves.{`\n`}
-          • Quiet hours overnight — SEVERE alerts bypass quiet hours.{`\n`}
+          • Quiet hours overnight. SEVERE alerts bypass quiet hours.{`\n`}
           • Tap a notification to jump straight to the alert.
         </Body>
         <HStack space={8}>

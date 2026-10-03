@@ -61,7 +61,8 @@
     "test:phases": "node --test __tests__/advisoryPipeline.test.js __tests__/phaseBFrontend.test.js __tests__/phaseCBackend.test.js __tests__/phaseDHardening.test.js __tests__/phaseEHistorical.test.js",
     "check:fonts": "node scripts/check-font-payload.mjs",
     "icons:build": "node scripts/generate-icon-glyphs.mjs",
-    "icons:check": "node scripts/generate-icon-glyphs.mjs --check"
+    "icons:check": "node scripts/generate-icon-glyphs.mjs --check",
+    "check:prose": "node scripts/check-prose-dashes.mjs"
   },
   "dependencies": {
     "@google-cloud/firestore": "^7.11.6",

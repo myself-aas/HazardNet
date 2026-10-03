@@ -58,7 +58,7 @@ export const AnalyticsAnalyticsPage: React.FC = () => {
           <p className="text-carbon-60 mt-2 max-w-3xl text-xs sm:text-sm leading-relaxed">
             What this deployment can actually show: the freshness and provenance of the last forecast snapshot, the
             raw forecast store, and the pipeline that produced it. Accuracy metrics (latency, MAE, ECE) appear here
-            only after a benchmark has been run and recorded — until then this page says so instead of quoting
+            only after a benchmark has been run and recorded. Until then this page says so instead of quoting
             numbers.
           </p>
         </div>

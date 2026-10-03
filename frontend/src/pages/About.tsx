@@ -113,7 +113,7 @@ export const About: React.FC = () => {
             },
             {
               name: 'BMD · FFWC · DDM & local administration',
-              role: 'Official warning authorities this platform defers to — cited as sources only. HazardNet has no partnership, endorsement or data-sharing agreement with them.',
+              role: 'Official warning authorities this platform defers to. Cited as sources only. HazardNet has no partnership, endorsement or data-sharing agreement with them.',
               location: 'Bangladesh',
             }
           ].map((partner, i) => (

@@ -20,15 +20,15 @@ export function parseAuthError(err: unknown): AuthErrorInfo {
   let userMessage = rawMessage || 'Authentication failed. Please try again.';
 
   if (lower.includes('email-already-in-use') || lower.includes('email already in use')) {
-    userMessage = 'An account already exists with this email. Sign in instead — or reset your password if you forgot it.';
+    userMessage = 'An account already exists with this email. Sign in instead: or reset your password if you forgot it.';
   } else if (lower.includes('invalid-credential') || lower.includes('invalid login credentials') || lower.includes('user-not-found') || lower.includes('wrong-password')) {
     userMessage = 'That email and password combination doesn’t match. Check for typos or reset your password.';
   } else if (lower.includes('weak-password') || lower.includes('password should be at least')) {
-    userMessage = 'That password is too weak — use at least 6 characters (8+ with upper, lower, number and symbol recommended).';
+    userMessage = 'That password is too weak. Use at least 6 characters (8+ with upper, lower, number and symbol recommended).';
   } else if (lower.includes('invalid-email')) {
     userMessage = 'Enter a valid email address.';
   } else if (lower.includes('too many requests') || lower.includes('rate limit') || lower.includes('too-many-requests')) {
-    userMessage = 'Too many attempts — wait a minute and try again, or reset your password.';
+    userMessage = 'Too many attempts. Wait a minute and try again, or reset your password.';
   } else if (lower.includes('network') || lower.includes('failed to fetch') || lower.includes('network-request-failed')) {
     userMessage = 'Network problem while contacting auth server. Check your connection and retry.';
   } else if (lower.includes('operation-not-allowed')) {

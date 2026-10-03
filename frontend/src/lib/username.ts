@@ -82,7 +82,7 @@ export function validateUsername(raw: string): UsernameValidation {
     must_start_letter: 'Usernames must start with a letter.',
     double_underscore: 'Avoid consecutive underscores.',
     trailing_underscore: 'Usernames can’t end with an underscore.',
-    reserved: 'That username is reserved — try another.',
+    reserved: 'That username is reserved. Try another.',
   };
 
   return {

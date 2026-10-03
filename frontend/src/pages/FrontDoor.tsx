@@ -380,14 +380,13 @@ export const FrontDoor: React.FC = () => {
         </button>
 
         <div className="relative z-10 w-full max-w-[1200px] mx-auto px-4 xl:px-8">
-          <div className="flex flex-wrap items-start justify-between gap-3 text-white/80">
-            <p className="font-mono text-xs font-bold uppercase tracking-[0.025em] text-white/80">
-              {localised.label ?? 'Overview'} · HazardNet ·{' '}
-              {content.updated
-                ? t('frontdoor.hero.reviewed', { date: content.updated })
-                : t('frontdoor.hero.reviewedUnknown')}
-            </p>
-            {/* The switch lives on the front door because the front door is bilingual */}
+          {/* The masthead strip ("Overview · HazardNet · reviewed <date>") used to sit here. It
+              was a middot row of the kind the design skill bans: a version-style eyebrow, half of
+              it repeating the wordmark directly above a wordmark, and the only reader-facing fact
+              in it - the review date - is already stated in the artifact it describes, where it
+              carries its own provenance. The language switch, which is the one control that has to
+              be on the front door, stays and right-aligns on its own. */}
+          <div className="flex justify-end">
             <div className="bg-carbon-90/40 p-1 border border-white/20" style={{ backdropFilter: 'blur(var(--hero-glass-blur))', WebkitBackdropFilter: 'blur(var(--hero-glass-blur))' }}>
               <LanguageToggle variant="switch" tone="hds" />
             </div>

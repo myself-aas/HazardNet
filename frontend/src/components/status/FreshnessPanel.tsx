@@ -115,7 +115,7 @@ export const FreshnessPanel: React.FC = () => {
         <p className="mt-2 text-base leading-[1.62] text-amber-950" role="status">
           The freshness artifact could not be loaded ({error ?? 'unknown error'}), so this page
           cannot state the age of the data this deployment serves. That is not a statement that
-          the data is fresh, and it is not a statement that it is stale — it is unknown. The
+          the data is fresh, and it is not a statement that it is stale. It is unknown. The
           scheduled <em>Site Health Probe</em> workflow reports the live surface.
         </p>
         <button
@@ -233,7 +233,7 @@ export const FreshnessPanel: React.FC = () => {
           <p className="text-base leading-[1.62] text-carbon-60">
             {coverage.districts_covered ?? 'unknown'} of {coverage.districts_expected ?? 'unknown'} districts
             have a row for at least one horizon, from {coverage.produced_units ?? 'unknown'} produced
-            district/horizon units — coverage status <strong>{coverage.status ?? 'unreported'}</strong>.
+            district/horizon units: coverage status <strong>{coverage.status ?? 'unreported'}</strong>.
           </p>
           {coverage.horizons && coverage.units_per_horizon && (
             <div className="overflow-x-auto">
@@ -298,7 +298,7 @@ export const FreshnessPanel: React.FC = () => {
                 {model.soil_channels_fabricated === null
                   ? '—'
                   : model.soil_channels_fabricated
-                    ? 'yes — flagged on the snapshot'
+                    ? 'yes: flagged on the snapshot'
                     : 'no'}
               </dd>
             </div>
@@ -337,7 +337,7 @@ export const FreshnessPanel: React.FC = () => {
         ) : (
           <p className="text-base leading-[1.62] text-carbon-60">
             No probe result has been published to this checkout, so the live-surface checks are{' '}
-            <strong>unknown here</strong> — not passing. The probe runs every 30 minutes on the
+            <strong>unknown here</strong>, not passing. The probe runs every 30 minutes on the
             default branch and commits its result; until that commit lands, this page cannot state
             whether the production surface satisfies its own checks.
           </p>

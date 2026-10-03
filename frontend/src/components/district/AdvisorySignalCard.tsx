@@ -69,7 +69,7 @@ export const AdvisorySignalCard: React.FC<AdvisorySignalCardProps> = ({ rows, ho
             <span>{horizon === '15_days' ? '15-Day' : '7-Day'} horizon</span>
           </div>
           <p className="mt-1 text-sm text-carbon-60">
-            {districtName ? `${districtName} — ` : ''}
+            {districtName ? `${districtName}: ` : ''}
             {t('advisory.signal.hint')}
           </p>
         </div>

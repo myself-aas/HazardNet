@@ -121,8 +121,8 @@ export default function SetPasswordPage() {
         <form onSubmit={submit} className="space-y-4" data-testid="set-password-form">
           {!user && phase === 'ready' && (
             <p role="alert" className="border-l-2 border-nasa-orange bg-white p-4 text-sm font-medium text-carbon-80">
-              We couldn’t detect your verification session. Open the newest link we emailed you — it must be
-              opened on this browser — or{' '}
+              We couldn’t detect your verification session. Open the newest link we emailed you; it must be
+              opened on this browser. Or{' '}
               <Link to="/signup" className="font-extrabold underline underline-offset-2">
                 request a fresh link
               </Link>

@@ -108,7 +108,7 @@ export function AuthSocialButtons({
       ))}
 
       <p className="text-center text-xs text-carbon-60">
-        One-tap sign-in through Google or GitHub — no additional password needed. If popup is blocked, we will redirect.
+        One-tap sign-in through Google or GitHub. No additional password needed. If popup is blocked, we will redirect.
       </p>
 
       <AnimatePresence>

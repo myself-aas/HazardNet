@@ -294,7 +294,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
   if (isFullScreen && activeView === 'gis') {
     return (
       <div className="relative isolate flex h-full min-h-0 w-full flex-col overflow-hidden bg-carbon-05 font-mono text-carbon-90">
-        <h1 className="sr-only">Live map — multi-hazard situational awareness</h1>
+        <h1 className="sr-only">Live map: multi-hazard situational awareness</h1>
 
         {/* Reference-inspired operational header: compact, legible, and always available above the map.
             The clearance is `--navbar-height`, which carries the safe-area inset the navbar itself
@@ -812,7 +812,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
                         ) : (
                           <>
                             Static baseline band:{' '}
-                            <strong className="text-carbon-80">{selectedDistrict.risk}</strong> — stored forecast
+                            <strong className="text-carbon-80">{selectedDistrict.risk}</strong>: stored forecast
                             unavailable, showing the district's climatological prior (not a model output)
                           </>
                         )}

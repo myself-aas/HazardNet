@@ -77,8 +77,13 @@ const COLUMNS: { title: string; links: FooterLink[] }[] = [
   },
 ];
 
+// The 44px box is the anchor itself, not an overlay. The old `.touch-target-link::before`
+// centred a 44x44 pseudo-element on every footer link, and in this wrapped multi-column
+// layout adjacent overlays overlapped: tapping "Privacy" could land on "Terms". A real box
+// cannot overlap its neighbour, so the floor is met by geometry rather than by an invisible
+// layer on top of other targets.
 const linkClass =
-  'touch-target-link inline-flex min-h-[44px] items-center text-[14px] font-medium text-carbon-80 no-underline transition-colors hover:text-nasa-blue-shade hover:underline';
+  'inline-flex min-h-[44px] min-w-[44px] items-center text-[14px] font-medium text-carbon-80 no-underline transition-colors hover:text-nasa-blue-shade hover:underline';
 
 export const Footer: React.FC = () => {
   const [showScrollTop, setShowScrollTop] = useState(false);

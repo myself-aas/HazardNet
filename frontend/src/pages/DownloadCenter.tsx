@@ -180,7 +180,7 @@ const ChannelCard: React.FC<{ channel: DownloadChannel; state: ChannelState }> =
         <div className="p-4 rounded-2xl bg-amber-50/70 border border-dashed border-amber-300 text-xs text-amber-950 font-medium space-y-2">
           <p className="flex items-center gap-2 font-extrabold">
             <MaterialIcon name="history" className="w-4 h-4" />
-            Release pipeline prepared — no version published yet
+            Release pipeline prepared: no version published yet
           </p>
           <p className="leading-relaxed">
             {state.note}{' '}
@@ -287,7 +287,7 @@ export const DownloadCenter: React.FC = () => {
         </h1>
         <p className="text-carbon-60 text-xs md:text-sm leading-relaxed max-w-3xl">
           Every artifact below is produced automatically by the HazardNet product repositories&apos; release
-          pipelines — native Android and Windows apps, the Linux daemon/CLI, and the Python &amp; JavaScript libraries.
+          pipelines: native Android and Windows apps, the Linux daemon/CLI, and the Python &amp; JavaScript libraries.
           Files are served straight from GitHub Releases with SHA-256 checksums attached to every release; nothing is
           hosted or proxied by this website. <strong className="text-carbon-80">HazardNet packages are not published
           to npm or PyPI</strong>, so no install command is offered and this page queries no package registry. Each
@@ -348,7 +348,7 @@ export const DownloadCenter: React.FC = () => {
             >
               workflow templates
             </a>
-            ) and attached to GitHub Releases — never built on this website.
+            ) and attached to GitHub Releases. Never built on this website.
           </li>
           <li>
             Each release ships a <span className="font-mono font-bold">SHA256SUMS.txt</span>; verify downloads against

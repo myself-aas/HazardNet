@@ -77,7 +77,7 @@ export const Disclaimer: React.FC<DisclaimerProps> = ({
                     className="underline decoration-dotted underline-offset-2 hover:text-amber-800"
                   >
                     <span className="font-bold">{entry.number}</span>
-                    {variant === 'banner' ? ` — ${entry.label}` : ''}
+                    {variant === 'banner' ? `: ${entry.label}` : ''}
                   </a>
                 </li>
               ))}

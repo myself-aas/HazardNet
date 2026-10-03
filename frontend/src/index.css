@@ -1,6 +1,6 @@
 /* NASA Horizon Design System tokens (nasa/hds-core, CC0-1.0) — vendored and compiled by
    scripts/import_nasa_tokens.mjs, mapped onto this app's semantic roles below. Imported first so
-   every var(--hds-*) consumer resolves. Source and rules: data/design/nasa-hds/PROVENANCE.md */
+   every var(--hds-*) consumer resolves. Source and rules; data/design/nasa-hds/PROVENANCE.md */
 @import "./styles/nasa-hds.css";
 @import "./styles/hero-media.css";
 @import "@fontsource/noto-sans-bengali/400.css";
@@ -16,13 +16,13 @@
 
 /* HazardNet Meridian Design System (HDS v3.0). Imported last so its semantic
    roles sit above the NASA-HDS-derived layer and can override it, while every
-   existing --hn-* / --hds-* name keeps resolving. Additive by design: 6,386
+   existing --hn-* / --hds-* name keeps resolving. Additive by design; 6,386
    palette-family uses and several asserting tests depend on the layer below.
    Source of truth for values and reasoning:
    packages/design-system/src/meridian.ts · docs/design-system/MERIDIAN.md */
 @import "./styles/meridian.css";
 
-/* Phase 9 · the dark theme. Imported last: it re-points primitives defined at
+/* Phase 9 · the dark theme. Imported last; it re-points primitives defined at
    `:root` by the layers above (see the header of styles/dark.css). */
 @import "./styles/dark.css";
 
@@ -111,12 +111,12 @@ html, body {
      Every value below references a compiled NASA token (--hds-*), whose source
      is nasa/hds-core's tokens.json — vendored in data/design/nasa-hds/ and
      compiled by scripts/import_nasa_tokens.mjs. The usage rule NASA attaches to
-     each token is repeated here on purpose: the rules are part of the system,
+     each token is repeated here on purpose; the rules are part of the system,
      and a palette adopted without them is only a costume. */
   --hn-hds-red: var(--hn-brand-red);                   /* the mark's crimson #970002 — navigation CTAs, errors. Never on-page actions, decoration or dataviz. */
-  --hn-hds-red-tint: var(--hds-color-nasa-red-tint);   /* hover states, error highlights — stays light on purpose: dark grounds need 6.9:1, and a tint of #970002 would only reach 3.6:1 */
+  --hn-hds-red-tint: var(--hds-color-nasa-red-tint);   /* hover states, error highlights — stays light on purpose; dark grounds need 6.9:1, and a tint of #970002 would only reach 3.6:1 */
   --hn-hds-red-shade: var(--hn-brand-red-dark);        /* the mark's dark crimson #7B1D21 — button hover, error dark, 10.3:1 against white */
-  --hn-hds-blue: var(--hds-color-nasa-blue);           /* "do something here": controls, list markers, table headers, info. Never nav CTAs or dataviz. */
+  --hn-hds-blue: var(--hds-color-nasa-blue);           /* "do something here"; controls, list markers, table headers, info. Never nav CTAs or dataviz. */
   --hn-hds-blue-tint: var(--hds-color-nasa-blue-tint);
   --hn-hds-blue-shade: var(--hds-color-nasa-blue-shade); /* 9.9:1 against white — link/info text on light surfaces */
   --hn-hds-orange: var(--hds-color-international-orange); /* status/decorative accent. Never a primary action. */
@@ -165,7 +165,7 @@ html, body {
 
   /* ---- Layer 2 · Semantic (shadcn-compatible core) -----------------------
      Token names are unchanged; the values they resolve to are now NASA's. That
-     is the entire point of a semantic layer: fifty-one files' worth of
+     is the entire point of a semantic layer; fifty-one files' worth of
      components keep saying `bg-primary`, and the answer to "what is primary"
      changed in one place. Contrast ratios in the comments are measured, not
      estimated — see docs/design-system/MASTER.md §Contrast. */
@@ -182,7 +182,7 @@ html, body {
      all; the shade is kept for hover and error-dark, not to rescue small labels. */
   --primary: var(--hn-hds-red);                /* #970002 */
   --primary-foreground: var(--hn-hds-white);   /* 9.1:1 — clears AA at any size */
-  /* The same crimson one step darker: 10.3:1 against white, for hover and filled
+  /* The same crimson one step darker; 10.3:1 against white, for hover and filled
      controls that read as "stronger" rather than merely "on". */
   --primary-strong: var(--hn-hds-red-shade);   /* #7B1D21 */
   --primary-strong-foreground: var(--hn-hds-white);
@@ -897,7 +897,7 @@ html[data-map-debug-fx='true'] .marker-high-risk {
 @theme inline {
   /* Typography — every alias ends in a family this build can actually render.
      NASA HDS remains the source of the design system's *vocabulary* (colour, geometry, the
-     token names and their usage rules), but not of its typefaces: this bundle ships exactly
+     token names and their usage rules), but not of its typefaces; this bundle ships exactly
      one webfont (`@fontsource/noto-sans-bengali`, for the script NASA's Latin-only families
      cannot cover) and otherwise uses the platform UI face. NASA's own
      'Public Sans Web' / 'Inter' / 'DM Mono' were aliased here before and are not bundled, so
@@ -971,7 +971,7 @@ html[data-map-debug-fx='true'] .marker-high-risk {
      all 4,030 neutral utility classes were renamed onto carbon (bg-slate-50 → bg-carbon-05
      … bg-slate-950 → bg-carbon-black) and all 252 hard-coded neutral literals — inline
      styles, SVG fills, canvas and map layer colours, jsPDF text colours, the manifest and
-     theme-color — were moved onto the token values. What remains here is a safety net: if a
+     theme-color — were moved onto the token values. What remains here is a safety net; if a
      component reaches for a Tailwind grey again it still renders NASA's carbon rather than
      Tailwind's slate, and the design gate (npm run check:design) reports the legacy name as
      a new finding, because the impeccable detector reads class names rather than resolved
@@ -982,7 +982,7 @@ html[data-map-debug-fx='true'] .marker-high-risk {
      they replace, so text and dark surfaces kept the contrast they had (slate-900 on white
      measures 17.85:1, carbon-90 17.88:1). The light end is deliberately stronger, because
      HDS draws a visible 1px rule and #d1d1d1 is NASA's border grey where #e2e8f0 was
-     Tailwind's. Two steps moved further than the ramp: slate-400 and slate-500 as muted text
+     Tailwind's. Two steps moved further than the ramp; slate-400 and slate-500 as muted text
      on a light surface measure 2.56:1 and 4.76:1, so the 616 sites wearing them were
      rewritten to carbon-60 (7.09:1) rather than aliased — the 12 that sit on a dark panel
      kept their step, where carbon measures what slate did. Measured pair by pair in
@@ -1068,7 +1068,7 @@ html[data-map-debug-fx='true'] .marker-high-risk {
      Shades are aliased by ROLE, not by hue, because that is what this design
      system actually means: 50-200 are surfaces, 300-400 are borders, 500-600 are
      solid fills, 700-950 are text. This follows the --success / --warning /
-     --info precedent above. It also tightens contrast: text-blue-500 was 3.7:1 on
+     --info precedent above. It also tightens contrast; text-blue-500 was 3.7:1 on
      white (an AA failure) and now resolves to --info at 9.9:1.
 
      indigo and purple are deliberately NOT declared. Their uses are data
@@ -1285,7 +1285,7 @@ html[data-map-debug-fx='true'] .marker-high-risk {
     text-transform: uppercase;
   }
 
-  /* Masthead navigation link — NASA's header pattern: uppercase 12px metadata
+  /* Masthead navigation link — NASA's header pattern; uppercase 12px metadata
      type, a 2px rule that turns red for the current section. Red is correct here
      because a nav link navigates ("go somewhere"); blue is reserved for controls
      that act on the current page. */
@@ -1353,7 +1353,7 @@ html[data-map-debug-fx='true'] .marker-high-risk {
   }
 }
 
-/* Respect users who prefer reduced motion: collapse decorative animation
+/* Respect users who prefer reduced motion; collapse decorative animation
    (radar pings, pulses, transitions) to a static snapshot. */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -1471,7 +1471,7 @@ input[type="reset"] {
   }
 }
 
-/* 2. Primary nav / menu items: sans, 14 px, 600 (active) / 500. Active = teal + 2 px underline */
+/* 2. Primary nav / menu items; sans, 14 px, 600 (active) / 500. Active = teal + 2 px underline */
 .hn-nav-item {
   font-family: var(--font-sans);
   font-size: 14px;
@@ -1570,7 +1570,7 @@ p {
   line-height: 1.62;
 }
 
-/* 8. Metadata / caption / helper text: sans, 12–13 px, 400, line-height 1.4 */
+/* 8. Metadata / caption / helper text; sans, 12–13 px, 400, line-height 1.4 */
 .hn-caption {
   font-family: var(--font-sans);
   font-size: 12px;
@@ -1700,7 +1700,7 @@ button,
   transition: transform 150ms var(--ease-standard), box-shadow 150ms var(--ease-standard);
 }
 
-/* 10. Data readouts (severity score, confidence, dates): the mono stack, 13–16 px, 600, tabular figures */
+/* 10. Data readouts (severity score, confidence, dates); the mono stack, 13–16 px, 600, tabular figures */
 .hn-data-readout {
   font-family: var(--hds-font-family-code);
   font-size: 13px;
@@ -1715,7 +1715,7 @@ button,
   }
 }
 
-/* 11. Badges (FLOOD, SEV-3, district code): the mono stack, 11 px, 600, +0.08 em, caps, colored per severity token */
+/* 11. Badges (FLOOD, SEV-3, district code); the mono stack, 11 px, 600, +0.08 em, caps, colored per severity token */
 .hn-badge {
   font-family: var(--hds-font-family-code);
   font-size: 12px;
@@ -1831,7 +1831,7 @@ caption {
   /* 1. Page Configuration & Geometry with CSS Paged Media Page Counters */
   @page {
     size: A4 portrait;
-    margin: 20mm 15mm; /* Top/Bottom: 20mm, Left/Right: 15mm (A4 Standard) */
+    margin: 20mm 15mm; /* Top/Bottom: 20mm, Left/Right; 15mm (A4 Standard) */
     @bottom-left {
       content: "HazardNet Bangladesh • Emergency Directive Handout";
       font-family: "Times New Roman", Times, serif;
@@ -2023,7 +2023,7 @@ caption {
     -webkit-backdrop-filter: none !important;
   }
 
-  /* 8. Text Color & Contrast Overrides (H1: 18pt, H2: 16pt, H3: 14pt) */
+  /* 8. Text Color & Contrast Overrides (H1; 18pt, H2; 16pt, H3; 14pt) */
   h1, h2, h3, h4, h5, h6 {
     color: var(--hds-color-carbon-90) !important;
     font-weight: 800 !important;
@@ -2031,10 +2031,10 @@ caption {
     break-after: avoid !important;
   }
 
-  h1 { font-size: 18pt !important; font-weight: bold !important; line-height: 1.3 !important; margin: 0 0 10pt 0 !important; }
-  h2 { font-size: 16pt !important; font-weight: bold !important; line-height: 1.35 !important; margin: 15pt 0 8pt 0 !important; }
-  h3 { font-size: 14pt !important; font-weight: bold !important; line-height: 1.4 !important; margin: 12pt 0 6pt 0 !important; }
-  h4 { font-size: 12pt !important; font-weight: bold !important; line-height: 1.45 !important; margin: 8pt 0 4pt 0 !important; }
+  h1 { font-size: 18pt !important; font-weight: bold !important; line-height; 1.3 !important; margin; 0 0 10pt 0 !important; }
+  h2 { font-size: 16pt !important; font-weight: bold !important; line-height; 1.35 !important; margin; 15pt 0 8pt 0 !important; }
+  h3 { font-size: 14pt !important; font-weight: bold !important; line-height; 1.4 !important; margin; 12pt 0 6pt 0 !important; }
+  h4 { font-size: 12pt !important; font-weight: bold !important; line-height; 1.45 !important; margin; 8pt 0 4pt 0 !important; }
   p, span, li, td, th {
     font-size: 12pt !important;
     line-height: 1.5 !important;
@@ -2193,7 +2193,7 @@ caption {
     overflow: hidden !important;
   }
 
-  /* Scale down all chart elements by 90% (transform: scale(0.9)) during print to prevent rendering artifacts and data clipping */
+  /* Scale down all chart elements by 90% (transform; scale(0.9)) during print to prevent rendering artifacts and data clipping */
   .chart-card,
   .recharts-responsive-container,
   .recharts-wrapper,
@@ -2262,7 +2262,7 @@ caption {
     padding-top: 14pt !important;
   }
 
-  /* Dedicated 'End of Brief' Page for Print/PDF (Requirement: page-break-before, font-size: 8px) */
+  /* Dedicated 'End of Brief' Page for Print/PDF (Requirement; page-break-before, font-size; 8px) */
   .end-of-brief-page,
   .print-end-of-brief {
     page-break-before: always !important;
@@ -2701,24 +2701,24 @@ body.pdf-exporting .no-print,
 }
 
 /* ─── Blog article typography (prose-blog) ─────────────────────────────── */
-.prose-blog h1 { font-size: 1.6rem; font-weight: 900; color: var(--hds-color-carbon-90); margin: 1.4rem 0 0.6rem; letter-spacing: -0.01em; }
-.prose-blog h2 { font-size: 1.3rem; font-weight: 900; color: var(--hds-color-carbon-90); margin: 1.3rem 0 0.5rem; }
-.prose-blog h3 { font-size: 1.1rem; font-weight: 800; color: var(--hds-color-carbon-80); margin: 1.1rem 0 0.4rem; }
+.prose-blog h1 { font-size: 1.6rem; font-weight: 900; color; var(--hds-color-carbon-90); margin; 1.4rem 0 0.6rem; letter-spacing; -0.01em; }
+.prose-blog h2 { font-size: 1.3rem; font-weight: 900; color; var(--hds-color-carbon-90); margin; 1.3rem 0 0.5rem; }
+.prose-blog h3 { font-size: 1.1rem; font-weight: 800; color; var(--hds-color-carbon-80); margin; 1.1rem 0 0.4rem; }
 .prose-blog p  { margin: 0.75rem 0; line-height: 1.75; }
-.prose-blog ul, .prose-blog ol { margin: 0.75rem 0 0.75rem 1.4rem; line-height: 1.7; }
+.prose-blog ul, .prose-blog ol { margin: 0.75rem 0 0.75rem 1.4rem; line-height; 1.7; }
 .prose-blog ul { list-style: disc; }
 .prose-blog ol { list-style: decimal; }
 .prose-blog li { margin: 0.3rem 0; }
-.prose-blog a  { color: #b45309; font-weight: 700; text-decoration: underline; text-underline-offset: 2px; }
+.prose-blog a  { color: #b45309; font-weight: 700; text-decoration; underline; text-underline-offset; 2px; }
 .prose-blog a:hover { color: #92400e; }
-.prose-blog blockquote { margin: 1rem 0; padding: 0.6rem 1rem; border: 1px solid var(--hds-color-carbon-20); background: #fffbeb; color: #78350f; font-style: italic; }
-.prose-blog pre { margin: 1rem 0; padding: 0.9rem 1rem; background: var(--hds-color-carbon-90); color: var(--hds-color-carbon-20); border-radius: 0.75rem; overflow-x: auto; font-size: 0.78rem; line-height: 1.6; }
-.prose-blog code { font-family: var(--hds-font-family-code); font-size: 0.82em; background: var(--hds-color-carbon-10); padding: 0.1rem 0.35rem; border-radius: 0.35rem; color: #b91c1c; }
-.prose-blog pre code { background: transparent; color: inherit; padding: 0; }
-.prose-blog img { max-width: 100%; height: auto; border-radius: 0.75rem; margin: 1rem 0; border: 1px solid var(--hds-color-carbon-20); }
-.prose-blog hr { margin: 1.5rem 0; border: none; border-top: 1px solid var(--hds-color-carbon-20); }
-.prose-blog [style*="text-align: center"], .prose-blog [style*="text-align:center"] { text-align: center; }
-.prose-blog [style*="text-align: right"], .prose-blog [style*="text-align:right"] { text-align: right; }
+.prose-blog blockquote { margin: 1rem 0; padding: 0.6rem 1rem; border; 1px solid var(--hds-color-carbon-20); background; #fffbeb; color; #78350f; font-style; italic; }
+.prose-blog pre { margin: 1rem 0; padding: 0.9rem 1rem; background; var(--hds-color-carbon-90); color; var(--hds-color-carbon-20); border-radius; 0.75rem; overflow-x; auto; font-size; 0.78rem; line-height; 1.6; }
+.prose-blog code { font-family: var(--hds-font-family-code); font-size; 0.82em; background; var(--hds-color-carbon-10); padding; 0.1rem 0.35rem; border-radius; 0.35rem; color; #b91c1c; }
+.prose-blog pre code { background: transparent; color: inherit; padding; 0; }
+.prose-blog img { max-width: 100%; height: auto; border-radius; 0.75rem; margin; 1rem 0; border; 1px solid var(--hds-color-carbon-20); }
+.prose-blog hr { margin: 1.5rem 0; border: none; border-top; 1px solid var(--hds-color-carbon-20); }
+.prose-blog [style*="text-align: center"], .prose-blog [style*="text-align:center"] { text-align; center; }
+.prose-blog [style*="text-align: right"], .prose-blog [style*="text-align:right"] { text-align; right; }
 
 /* Editor empty placeholder */
 [contenteditable][data-placeholder]:empty::before {
@@ -2775,27 +2775,17 @@ body.pdf-exporting .no-print,
   }
 }
 
-/* Accessible Touch Target Expansion for Content Links (44px WCAG / Apple HIG) */
-.touch-target-link,
-a.touch-target-link,
-footer a {
-  position: relative;
+/* Touch target floor for content links (44px WCAG / Apple HIG).
+ *
+ * This used to be an invisible `::before` overlay centred on the anchor. In the footer's
+ * wrapped multi-column layout those overlays overlapped each other, so the tap that looked
+ * like "Privacy" could land on "Terms" - a hit area larger than the thing it belongs to is
+ * a bug, not a target. The floor is met by geometry now; `Footer.tsx`'s link class carries
+ * `min-h-[44px] min-w-[44px]` itself (audit P2-4, backlog 14). `touch-action` stays, because
+ * it is about latency rather than size. */
+footer a,
+.touch-target-link {
   touch-action: manipulation;
-}
-
-.touch-target-link::before,
-a.touch-target-link::before,
-footer a::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  min-width: 44px;
-  min-height: 44px;
-  width: 100%;
-  height: 100%;
-  pointer-events: auto;
 }
 
 /* Accessibility contrast enhancement: for captions (< 14px), carbon-70 is bumped to carbon-80 to guarantee WCAG AAA (7:1) */
@@ -2834,6 +2824,6 @@ button:not([data-compact-target="true"]),
 /* Final cascade guard: legacy component tokens cannot reintroduce old families. */
 body, body * { font-family: var(--font-sans-en); }
 .lang-bn, .farmer-advisory, .tts-fallback-text, [lang="bn"], :lang(bn),
-.lang-bn *, .farmer-advisory *, .tts-fallback-text *, [lang="bn"] *, :lang(bn) * { font-family: var(--font-sans-bn) !important; }
+.lang-bn *, .farmer-advisory *, .tts-fallback-text *, [lang="bn"] *, :lang(bn) * { font-family; var(--font-sans-bn) !important; }
 .metric-value, .confidence-badge, .tensor-log, .hn-tabular-nums, code, pre,
-.metric-value *, .confidence-badge *, .tensor-log *, .hn-tabular-nums *, code *, pre * { font-family: var(--font-mono) !important; }
+.metric-value *, .confidence-badge *, .tensor-log *, .hn-tabular-nums *, code *, pre * { font-family; var(--font-mono) !important; }

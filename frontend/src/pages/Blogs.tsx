@@ -61,7 +61,7 @@ export const Blogs: React.FC = () => {
             data-testid="blog-studio-btn"
             className="inline-flex min-h-[44px] items-center gap-2 bg-nasa-blue px-4 py-2.5 text-base font-semibold text-white hover:bg-nasa-blue-shade touch-manipulation"
           >
-            <MaterialIcon name="doc" className="w-4 h-4" /> Blog Studio — write & manage articles
+            <MaterialIcon name="doc" className="w-4 h-4" /> Blog Studio: write & manage articles
           </Link>
         )}
       </div>

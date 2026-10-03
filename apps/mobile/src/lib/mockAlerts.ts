@@ -94,7 +94,7 @@ export const MOCK_ALERT_EXTRAS: Record<string, AlertExtras> = {
     sources: [
       { name: 'FFWC', url: 'https://ffwc.gov.bd' },
       { name: 'BMD', url: 'https://bmd.gov.bd' },
-      { name: 'Emergency — 999', phone: '999' },
+      { name: 'Emergency: 999', phone: '999' },
     ],
     affectedUpazilas: ['Ulipur', 'Chilmari', 'Rajarhat', 'Kurigram Sadar'],
     dutyOfficer: 'Reviewed by F. Ahmed (duty hydrologist)',
@@ -111,7 +111,7 @@ export const MOCK_ALERT_EXTRAS: Record<string, AlertExtras> = {
     ],
     sources: [
       { name: 'BMD', url: 'https://bmd.gov.bd' },
-      { name: 'Emergency — 999', phone: '999' },
+      { name: 'Emergency: 999', phone: '999' },
     ],
     affectedUpazilas: ['Teknaf', 'Ukhiya', 'Maheshkhali'],
     dutyOfficer: null,

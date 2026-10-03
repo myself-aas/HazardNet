@@ -742,7 +742,7 @@ export const NationalOverview: React.FC<NationalOverviewProps> = ({
               <span className="font-bold text-carbon-90 block">Predicted Top 3 Hazards Formula:</span>
               <span>Composite Risk Index = Hazard District Count × Average Severity Score</span>
               <span className="block mt-1.5 text-xs font-sans text-sky-900/80 leading-relaxed">
-                Presentation aggregation — a district count multiplied by the mean of the per-district
+                Presentation aggregation: a district count multiplied by the mean of the per-district
                 severity published on this page. It is not HazardNet&apos;s derived severity index, which is
                 withheld from public surfaces.
               </span>

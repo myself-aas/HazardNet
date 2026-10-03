@@ -124,7 +124,7 @@ export const HistoricalCatalogPage: React.FC = () => {
                 Historical Hazard Archive
               </h1>
               <p className="text-sm text-carbon-40 mt-2 max-w-3xl leading-relaxed">
-                3,062 recorded event-district observations in the 26-year empirical multi-hazard registry spanning all 64 districts of Bangladesh. This is an observation count, not a count of disasters — 70 distinct physical episodes are cross-referenced with UN OCHA ReliefWeb, FAO GIEWS, WHO Emergency, and ADRC multilateral GLIDE disaster systems.
+                3,062 recorded event-district observations in the 26-year empirical multi-hazard registry spanning all 64 districts of Bangladesh. This is an observation count, not a count of disasters: 70 distinct physical episodes are cross-referenced with UN OCHA ReliefWeb, FAO GIEWS, WHO Emergency, and ADRC multilateral GLIDE disaster systems.
               </p>
             </div>
 

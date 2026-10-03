@@ -46,7 +46,7 @@ export const IdentityConnections: React.FC = () => {
       toast.success(`Connected ${getProvider(provider).label}.`)
     } catch (reason) {
       const explanation = describeOAuthError(reason)
-      toast.error(`${getProvider(provider).label}: ${explanation.title} — ${explanation.hint}`, { duration: 5200 })
+      toast.error(`${getProvider(provider).label}: ${explanation.title}. ${explanation.hint}`, { duration: 5200 })
     } finally {
       setLinking(null)
     }
@@ -87,7 +87,7 @@ export const IdentityConnections: React.FC = () => {
 
       <p className="text-xs text-carbon-60 leading-relaxed">
         Link Google or GitHub to sign into this same HazardNet account with any of them.
-        Disconnecting removes only the sign-in method — your advisories and saved assessments stay.
+        Disconnecting removes only the sign-in method. Your advisories and saved assessments stay.
       </p>
 
       {loadError && (
@@ -118,7 +118,7 @@ export const IdentityConnections: React.FC = () => {
                     <p className="truncate text-xs font-bold text-carbon-80">{label}</p>
                     <p className="truncate text-xs text-carbon-60">
                       {identity.email ?? 'Identity linked'}
-                      {isLastIdentity && ' — last sign-in method'}
+                      {isLastIdentity && ' (last sign-in method)'}
                     </p>
                   </div>
                 </div>

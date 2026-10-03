@@ -77,7 +77,7 @@ export function NotificationPreferencesScreen() {
                 <HStack justify="space-between" align="center">
                   <VStack space={2} flex={1}>
                     <BodyBold>Enable alerts</BodyBold>
-                    <Caption color="textMuted">Master switch — when off, no notifications are sent.</Caption>
+                    <Caption color="textMuted">Master switch: when off, no notifications are sent.</Caption>
                   </VStack>
                   <Switch value={settings.enabled} onValueChange={(v) => updateSettings({ enabled: v })} disabled={permission !== 'granted'} />
                 </HStack>

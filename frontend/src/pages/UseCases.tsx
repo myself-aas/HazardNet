@@ -287,7 +287,7 @@ export const UseCases: React.FC = () => {
         <div className="space-y-1 text-center md:text-left">
           <h3 className="text-lg font-black text-carbon-90 tracking-tight">Ready to explore these scenarios with live data?</h3>
           <p className="text-xs text-carbon-60 font-medium">
-            Every scenario plays out on published forecast records — open the live outlook to see the current run for these districts.
+            Every scenario plays out on published forecast records. Open the live outlook to see the current run for these districts.
           </p>
         </div>
 

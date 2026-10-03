@@ -214,7 +214,7 @@ export const DistrictForecastRecords: React.FC = () => {
                     <td colSpan={12} className="p-8 text-center text-carbon-60 font-sans text-sm">
                       The latest pipeline run did not emit a {activeTableHorizon === '7_days' ? '7-day' : '15-day'} record for {data.districtName}.
                       {(activeTableHorizon === '7_days' ? districtForecasts15D : districtForecasts7D).length > 0
-                        ? ` The ${activeTableHorizon === '7_days' ? '15-day' : '7-day'} horizon has records — switch tabs above.`
+                        ? ` The ${activeTableHorizon === '7_days' ? '15-day' : '7-day'} horizon has records. Switch tabs above.`
                         : ' Check back after the next scheduled forecast refresh.'}
                     </td>
                   </tr>

@@ -681,7 +681,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       try {
         const methods = await fetchSignInMethodsForEmail(auth, email);
         if (methods.length > 0) {
-          throw Object.assign(new Error('Email already registered — sign in instead, or reset your password.'), {
+          throw Object.assign(new Error('Email already registered. Sign in instead, or reset your password.'), {
             code: 'auth/email-already-in-use',
           });
         }

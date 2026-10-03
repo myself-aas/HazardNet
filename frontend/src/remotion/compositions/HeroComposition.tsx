@@ -18,7 +18,7 @@ import { Interactive } from 'remotion';
 export const HeroComposition: React.FC<{
   title?: string;
   accent?: string;
-}> = ({ title = 'HazardNet — NASA-Inspired Global Observatory', accent = '#1c67e3' }) => {
+}> = ({ title = 'HazardNet. NASA-Inspired Global Observatory', accent = '#1c67e3' }) => {
   const frame = useCurrentFrame();
   const { fps, durationInFrames } = useVideoConfig();
 
@@ -186,7 +186,7 @@ export const HeroComposition: React.FC<{
             }),
           }}
         >
-          Bangladesh — 64 districts · 7 &amp; 15 days · Verified artifacts
+          Bangladesh: 64 districts · 7 &amp; 15 days · Verified artifacts
         </div>
       </Interactive.Div>
 

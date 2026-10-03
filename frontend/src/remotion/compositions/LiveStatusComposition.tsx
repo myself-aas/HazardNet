@@ -55,7 +55,7 @@ export const LiveStatusComposition: React.FC<{
             }),
           }}
         >
-          Published now — {published} alerts
+          Published now: {published} alerts
         </Interactive.Div>
         <Interactive.Div
           name="Assessed value"

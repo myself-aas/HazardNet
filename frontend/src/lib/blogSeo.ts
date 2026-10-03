@@ -117,7 +117,7 @@ export function buildSeoHead(
 export function buildBlogIndexHead(options: { origin?: string } = {}): SeoHead {
   const origin = (options.origin || SITE_ORIGIN_FALLBACK).replace(/\/$/, '');
   return {
-    title: `HazardNet Blog — Agri-Climate Research & Field Reports | ${SITE_NAME}`,
+    title: `HazardNet Blog. Agri-Climate Research & Field Reports | ${SITE_NAME}`,
     description:
       'Deep-dives on satellite-based hazard forecasting, SAR remote sensing, edge AI deployment and agronomy field studies across Bangladesh’s 64 agricultural districts.',
     keywords: ['HazardNet blog', 'agri-climate research', 'remote sensing', 'Bangladesh agriculture', 'early warning'],
@@ -201,7 +201,7 @@ export function seoScore(article: BlogArticle): SeoScoreResult {
       label: 'Meta description between 120–160 characters',
       passed:
         effectiveMetaDescription(article).length >= 120 && effectiveMetaDescription(article).length <= 160,
-      advice: 'Write a compelling 120–160 character summary — Google often shows it verbatim.',
+      advice: 'Write a compelling 120–160 character summary. Google often shows it verbatim.',
     },
     {
       id: 'excerpt',
@@ -219,7 +219,7 @@ export function seoScore(article: BlogArticle): SeoScoreResult {
       id: 'content-length',
       label: 'At least 600 words of content',
       passed: words >= 600,
-      advice: `Currently ${words} words — comprehensive guides rank better.`,
+      advice: `Currently ${words} words. Comprehensive guides rank better.`,
     },
     {
       id: 'keyword-early',
@@ -231,7 +231,7 @@ export function seoScore(article: BlogArticle): SeoScoreResult {
       id: 'subheadings',
       label: 'Two or more H2/H3 subheadings',
       passed: subheadings >= 2,
-      advice: 'Structure long content with subheadings — they win featured snippets.',
+      advice: 'Structure long content with subheadings. They win featured snippets.',
     },
     {
       id: 'internal-links',
@@ -255,7 +255,7 @@ export function seoScore(article: BlogArticle): SeoScoreResult {
       id: 'faq',
       label: 'FAQ section added (rich-result opportunity)',
       passed: (article.faqs?.length ?? 0) >= 1,
-      advice: 'FAQs emit FAQPage structured data — prime real estate on Google.',
+      advice: 'FAQs emit FAQPage structured data. Prime real estate on Google.',
     },
   ];
 

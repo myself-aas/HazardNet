@@ -86,14 +86,14 @@ const EN = {
   'alerts.empty.title': 'No alerts are published right now',
   'alerts.empty.body':
     'Every district HazardNet can forecast is currently below the watch threshold. This is a ' +
-    'quiet period, not a coverage gap — the number of districts assessed is shown above.',
+    'quiet period, not a coverage gap. The number of districts assessed is shown above.',
   'alerts.empty.unavailable':
     'Alert data could not be loaded, from either the live API or the offline snapshot. ' +
     'The map and the district pages still carry the last forecast the device has.',
   'alerts.empty.blocked':
     '{assessed} district rows were assessed in this run and none could be published: §1.6 ' +
     'requires a model version on every published alert, and this run does not carry one. The ' +
-    'assessments are held, not hidden — they become publishable as soon as the pipeline stamps ' +
+    'assessments are held, not hidden. They become publishable as soon as the pipeline stamps ' +
     'their provenance.',
   'alerts.count.one': '{count} published alert',
   'alerts.count.other': '{count} published alerts',
@@ -114,7 +114,7 @@ const EN = {
   'alerts.card.evidenceCard': 'Evidence card',
   'alerts.card.requiresReview': 'Awaiting duty-officer review',
   'alerts.confidence.uncalibrated':
-    'Model score {score} — a relative priority signal, not a probability of the hazard occurring ' +
+    'Model score {score}: a relative priority signal, not a probability of the hazard occurring ' +
     '(no calibration accuracy is claimed).',
   'alerts.confidence.calibrated': 'Calibrated probability {score}.',
   'alerts.evidence.modelSeverity': 'Model severity',
@@ -126,7 +126,7 @@ const EN = {
     'The pipeline publishes at or below {ceiling} automatically. Anything higher waits for a ' + 'named duty officer.',
   'alerts.policy.calibration':
     'Warnings require a calibrated probability. No calibration accuracy is claimed, so a warning ' +
-    'cannot currently be issued from model evidence — a watch is the highest automatic level.',
+    'cannot currently be issued from model evidence. A watch is the highest automatic level.',
   'alerts.policy.thresholds': 'Thresholds in force',
   'alerts.policy.divergence': 'divergence above {value}',
   'alerts.policy.readFull': 'Read the full alert policy',
@@ -141,7 +141,7 @@ const EN = {
   'source.cache': 'Offline copy',
   'source.cacheNote':
     'This device cached the alert payload it last downloaded while online ({when}). It may be ' +
-    'older than the live service — reconnect to refresh.',
+    'older than the live service. Reconnect to refresh.',
   'source.none': 'Unavailable',
   'source.snapshotNote': 'Showing the snapshot committed with this deployment, generated {when}.',
   'source.staleNote': 'This data is {hours} hours old.',
@@ -175,7 +175,7 @@ const EN = {
   'alerts.levelLabel': 'Alert level',
   'alerts.confidence.calibratedLong': 'The calibrated probability of this outcome is {score}.',
   'alerts.confidence.uncalibratedLong':
-    'Model score {score}. This is a relative priority signal — it is ' +
+    'Model score {score}. This is a relative priority signal; it is ' +
     'not a probability that the hazard will occur. No calibration accuracy is claimed for this model ' +
     'version, so only the severity bands and the independent physics track should be used to ' +
     'rank districts.',
@@ -256,7 +256,7 @@ const EN = {
   'frontdoor.hero.readLess': 'Show less',
   'frontdoor.toc': 'On this page',
   'frontdoor.tocSection': 'Section',
-  'frontdoor.bengaliDraft': 'Bengali draft — awaiting native-speaker review',
+  'frontdoor.bengaliDraft': 'Bengali draft. Awaiting native-speaker review',
   'common.showLess': 'Show less',
   'frontdoor.runVisual.showMore': 'Show {remaining} more notes',
 
@@ -264,7 +264,7 @@ const EN = {
   'frontdoor.strip.publishedNow': 'Published now',
   'frontdoor.strip.reading': 'Reading the alerts artifact …',
   'frontdoor.strip.unreadable':
-    'The alerts artifact could not be read on this load, so no count is shown here — an unread file is never reported as zero.',
+    'The alerts artifact could not be read on this load, so no count is shown here. An unread file is never reported as zero.',
   'frontdoor.strip.districts': 'Districts covered',
   'frontdoor.strip.assessed': 'Assessed rows',
   'frontdoor.strip.updated': 'Updated',
@@ -274,7 +274,7 @@ const EN = {
   'frontdoor.strip.districtUnnamed': 'District not named',
   'frontdoor.strip.nonePublished': 'No alert is published at the moment of this read.',
   'frontdoor.strip.withheld':
-    'The run assessed {assessed} district forecasts and withheld {withheld} of them from publication — a statement about the publisher, not about the weather.',
+    'The run assessed {assessed} district forecasts and withheld {withheld} of them from publication. A statement about the publisher, not about the weather.',
   'frontdoor.strip.withheldUnknown':
     'The run reported no assessed or withheld counts, so the reason cannot be stated from this artifact.',
   'frontdoor.strip.whyHeld': 'Why a run may be held',
@@ -345,7 +345,7 @@ const EN = {
   'frontdoor.attribution.eyebrow': 'Attribution',
   'frontdoor.attribution.h2': 'Who built this, and under whose supervision',
   'frontdoor.attribution.body':
-    '{author} ({role}) — {work}. {type}, {department}, {university}, supervised by {supervisor} ({supervisorRole}){coSupervision}.',
+    '{author} ({role}): {work}. {type}, {department}, {university}, supervised by {supervisor} ({supervisorRole}){coSupervision}.',
   'frontdoor.attribution.orcid': 'ORCID {id}',
   // A fragment, not a sentence: the co-supervisor in this repository's attribution data
   // carries a role and a profile URL but no name, so the sentence can only acknowledge one.
@@ -414,7 +414,7 @@ const EN = {
   'advisory.track.final': 'Final (fused)',
   'advisory.physicsOverride': 'Physics-grounded',
   'advisory.noSignal':
-    'This row predates the dual-track severity columns — only the fused score is available.',
+    'This row predates the dual-track severity columns. Only the fused score is available.',
   'advisory.distribution': 'Ranked hazard distribution',
   'advisory.rank': 'Rank',
   'advisory.source': 'Source',
@@ -474,14 +474,14 @@ const BN: Record<string, string> = {
   'alerts.empty.title': 'এই মুহূর্তে কোনো সতর্কবার্তা প্রকাশিত নেই',
   'alerts.empty.body':
     'HazardNet যে জেলাগুলোর পূর্বাভাস দিতে পারে, তার সবগুলোই বর্তমানে সতর্ক দৃষ্টির সীমার নিচে। ' +
-    'এটি শান্ত সময়, তথ্যের ঘাটতি নয় — উপরে কতটি জেলা মূল্যায়ন করা হয়েছে তা দেখা যাচ্ছে।',
+    'এটি শান্ত সময়, তথ্যের ঘাটতি নয়. উপরে কতটি জেলা মূল্যায়ন করা হয়েছে তা দেখা যাচ্ছে।',
   'alerts.empty.unavailable':
-    'লাইভ API বা অফলাইন স্ন্যাপশট — কোনোটিই থেকে সতর্কবার্তার তথ্য আনা যায়নি। ' +
+    'লাইভ API বা অফলাইন স্ন্যাপশট. কোনোটিই থেকে সতর্কবার্তার তথ্য আনা যায়নি। ' +
     'মানচিত্র ও জেলার পাতায় যন্ত্রে সংরক্ষিত সর্বশেষ পূর্বাভাস আগের মতোই আছে।',
   'alerts.empty.blocked':
     'এই রানে {assessed}টি জেলার সারি পর্যালোচনা করা হয়েছে, কিন্তু একটিও প্রকাশ করা যায়নি: ' +
     '§1.6 অনুযায়ী প্রতিটি প্রকাশিত সতর্কবার্তায় মডেল সংস্করণ থাকতে হয়, আর এই রানে তা নেই। ' +
-    'পর্যালোচনাগুলো আটকে রাখা হয়েছে, লুকানো হয়নি — উৎস নথিভুক্ত হলেই সেগুলো প্রকাশযোগ্য হবে।',
+    'পর্যালোচনাগুলো আটকে রাখা হয়েছে, লুকানো হয়নি. উৎস নথিভুক্ত হলেই সেগুলো প্রকাশযোগ্য হবে।',
   'alerts.count.one': '{count}টি প্রকাশিত সতর্কবার্তা',
   'alerts.count.other': '{count}টি প্রকাশিত সতর্কবার্তা',
   'alerts.count.assessed': '{count}টি জেলার পূর্বাভাস মূল্যায়ন করা হয়েছে',
@@ -501,7 +501,7 @@ const BN: Record<string, string> = {
   'alerts.card.evidenceCard': 'প্রমাণপত্র',
   'alerts.card.requiresReview': 'কর্মকর্তার পর্যালোচনার অপেক্ষায়',
   'alerts.confidence.uncalibrated':
-    'মডেল স্কোর {score} — এটি আপেক্ষিক অগ্রাধিকার নির্দেশক, দুর্যোগ ঘটার সম্ভাবনা নয় ' +
+    'মডেল স্কোর {score}. এটি আপেক্ষিক অগ্রাধিকার নির্দেশক, দুর্যোগ ঘটার সম্ভাবনা নয় ' +
     '(ক্রমাঙ্কন মানচিত্র এখনো তৈরি হয়নি)।',
   'alerts.confidence.calibrated': 'ক্রমাঙ্কিত সম্ভাবনা {score}।',
   'alerts.evidence.modelSeverity': 'মডেল তীব্রতা',
@@ -514,7 +514,7 @@ const BN: Record<string, string> = {
     'নামধারী দায়িত্বপ্রাপ্ত কর্মকর্তার অনুমোদন লাগে।',
   'alerts.policy.calibration':
     'সতর্কতার জন্য ক্রমাঙ্কিত সম্ভাবনা দরকার। এখনো কোনো ক্রমাঙ্কন মানচিত্র তৈরি হয়নি, তাই মডেলের ' +
-    'প্রমাণ থেকে সতর্কতা দেওয়া যাচ্ছে না — স্বয়ংক্রিয়ভাবে প্রকাশযোগ্য সর্বোচ্চ স্তর সতর্ক দৃষ্টি।',
+    'প্রমাণ থেকে সতর্কতা দেওয়া যাচ্ছে না. স্বয়ংক্রিয়ভাবে প্রকাশযোগ্য সর্বোচ্চ স্তর সতর্ক দৃষ্টি।',
   'alerts.policy.thresholds': 'বর্তমান সীমা',
   'alerts.policy.divergence': 'পার্থক্য {value}-এর বেশি',
   'alerts.policy.readFull': 'সম্পূর্ণ নীতি পড়ুন',
@@ -529,7 +529,7 @@ const BN: Record<string, string> = {
   'source.cache': 'অফলাইন কপি',
   'source.cacheNote':
     'এই যন্ত্রে সর্বশেষ অনলাইনে নামানো সতর্কবার্তার কপি সংরক্ষিত আছে ({when})। এটি লাইভ সেবার চেয়ে ' +
-    'পুরোনো হতে পারে — হালনাগাদের জন্য আবার ইন্টারনেটে যুক্ত হন।',
+    'পুরোনো হতে পারে. হালনাগাদের জন্য আবার ইন্টারনেটে যুক্ত হন।',
   'source.none': 'পাওয়া যায়নি',
   'source.snapshotNote': 'এই ডিপ্লয়মেন্টের সঙ্গে সংরক্ষিত স্ন্যাপশট দেখানো হচ্ছে, তৈরি {when}।',
   'source.staleNote': 'এই তথ্য {hours} ঘণ্টা আগের।',
@@ -543,7 +543,7 @@ const BN: Record<string, string> = {
   'map.title': 'জেলার মানচিত্র',
   'map.listAlternative': 'জেলার তালিকা (মানচিত্রের পাঠ্য বিকল্প)',
   'map.listAlternativeHint':
-    'মানচিত্রে যা দেখা যায়, সেই জেলা ও স্তরগুলোর ছক — স্ক্রিন রিডার বা ধীর ইন্টারনেটে পড়ার জন্য।',
+    'মানচিত্রে যা দেখা যায়, সেই জেলা ও স্তরগুলোর ছক. স্ক্রিন রিডার বা ধীর ইন্টারনেটে পড়ার জন্য।',
   'map.column.district': 'জেলা',
   'map.column.division': 'বিভাগ',
   'map.column.level': 'স্তর',
@@ -563,7 +563,7 @@ const BN: Record<string, string> = {
   'alerts.levelLabel': 'সতর্কতার মাত্রা',
   'alerts.confidence.calibratedLong': 'এই ফলাফলের ক্রমাঙ্কিত সম্ভাবনা {score}।',
   'alerts.confidence.uncalibratedLong':
-    'মডেল স্কোর {score}। এটি একটি সফটম্যাক্স মান, যা আপেক্ষিক অগ্রাধিকার বোঝাতে ব্যবহৃত হয় — ' +
+    'মডেল স্কোর {score}। এটি একটি সফটম্যাক্স মান, যা আপেক্ষিক অগ্রাধিকার বোঝাতে ব্যবহৃত হয়: ' +
     'দুর্যোগ ঘটার সম্ভাবনা নয়। এই মডেল সংস্করণের জন্য কোনো ক্রমাঙ্কন মানচিত্র তৈরি হয়নি, তাই ' +
     'জেলা সাজানোর জন্য কেবল গুরুতরতার স্তর ও স্বতন্ত্র ভৌত-নিয়ম ট্র্যাক ব্যবহার করা উচিত।',
   'alerts.page.listTitle': 'প্রকাশিত সতর্কবার্তা',
@@ -626,7 +626,7 @@ const BN: Record<string, string> = {
   'frontdoor.hero.readLess': 'সংক্ষেপে দেখান',
   'frontdoor.toc': 'এই পাতায়',
   'frontdoor.tocSection': 'বিভাগ',
-  'frontdoor.bengaliDraft': 'বাংলা খসড়া — স্থানীয় ভাষাভাষীর পর্যালোচনা বাকি',
+  'frontdoor.bengaliDraft': 'বাংলা খসড়া. স্থানীয় ভাষাভাষীর পর্যালোচনা বাকি',
   'common.showLess': 'কম দেখান',
   'frontdoor.runVisual.showMore': 'আরও {remaining}টি নোট দেখান',
 
@@ -634,7 +634,7 @@ const BN: Record<string, string> = {
   'frontdoor.strip.publishedNow': 'এই মুহূর্তে প্রকাশিত',
   'frontdoor.strip.reading': 'সতর্কবার্তার আর্টিফ্যাক্ট পড়া হচ্ছে…',
   'frontdoor.strip.unreadable':
-    'এইবার আর্টিফ্যাক্টটি পড়া যায়নি, তাই এখানে কোনো সংখ্যা দেখানো হচ্ছে না — ফাইল পড়া না গেলে তা শূন্য হিসেবে দেখানো হয় না।',
+    'এইবার আর্টিফ্যাক্টটি পড়া যায়নি, তাই এখানে কোনো সংখ্যা দেখানো হচ্ছে না. ফাইল পড়া না গেলে তা শূন্য হিসেবে দেখানো হয় না।',
   'frontdoor.strip.districts': 'আওতাভুক্ত জেলা',
   'frontdoor.strip.assessed': 'মূল্যায়িত সারি',
   'frontdoor.strip.updated': 'হালনাগাদ',
@@ -644,7 +644,7 @@ const BN: Record<string, string> = {
   'frontdoor.strip.districtUnnamed': 'জেলার নাম দেওয়া নেই',
   'frontdoor.strip.nonePublished': 'এই মুহূর্তে কোনো সতর্কবার্তা প্রকাশিত নেই।',
   'frontdoor.strip.withheld':
-    'এই রানে {assessed}টি জেলা-পূর্বাভাস মূল্যায়ন করা হয়েছে এবং {withheld}টি প্রকাশ থেকে বিরত রাখা হয়েছে — এটি প্রকাশকের অবস্থা, আবহাওয়ার নয়।',
+    'এই রানে {assessed}টি জেলা-পূর্বাভাস মূল্যায়ন করা হয়েছে এবং {withheld}টি প্রকাশ থেকে বিরত রাখা হয়েছে. এটি প্রকাশকের অবস্থা, আবহাওয়ার নয়।',
   'frontdoor.strip.withheldUnknown':
     'এই রানে মূল্যায়ন বা বিরত রাখার সংখ্যা জানানো হয়নি, তাই এই আর্টিফ্যাক্ট থেকে কারণ বলা যাচ্ছে না।',
   'frontdoor.strip.whyHeld': 'কেন একটি রান আটকে থাকতে পারে',
@@ -715,7 +715,7 @@ const BN: Record<string, string> = {
   'frontdoor.attribution.eyebrow': 'স্বীকৃতি',
   'frontdoor.attribution.h2': 'কে তৈরি করেছেন এবং কার তত্ত্বাবধানে',
   'frontdoor.attribution.body':
-    '{author} ({role}) — {work}. {type}, {department}, {university}; তত্ত্বাবধানে {supervisor} ({supervisorRole}){coSupervision}।',
+    '{author} ({role}): {work}. {type}, {department}, {university}; তত্ত্বাবধানে {supervisor} ({supervisorRole}){coSupervision}।',
   'frontdoor.attribution.orcid': 'ওআরসিআইডি {id}',
   'frontdoor.attribution.coSupervised': ', সহ-তত্ত্বাবধায়কসহ',
   'frontdoor.attribution.citationLabel': 'উদ্ধৃতি',
@@ -783,7 +783,7 @@ const BN: Record<string, string> = {
   'advisory.track.final': 'চূড়ান্ত (সমন্বিত)',
   'advisory.physicsOverride': 'পদার্থবিদ্যা-ভিত্তিক',
   'advisory.noSignal':
-    'এই সারি দ্বৈত-ট্র্যাক তীব্রতা কলামের আগের — শুধুমাত্র সমন্বিত স্কোর পাওয়া যাচ্ছে।',
+    'এই সারি দ্বৈত-ট্র্যাক তীব্রতা কলামের আগের. শুধুমাত্র সমন্বিত স্কোর পাওয়া যাচ্ছে।',
   'advisory.distribution': 'ক্রমান্বিত ঝুঁকি বন্টন',
   'advisory.rank': 'ক্রম',
   'advisory.source': 'উৎস',

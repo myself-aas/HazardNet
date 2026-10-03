@@ -3,7 +3,7 @@
 HazardNet Bangladesh is a free, open-source multi-hazard early-warning service built for agricultural communities across all 64 districts.
 
 ## Mission
-Deliver verifiable, actionable, low-bandwidth alerts for floods, tropical cyclones, cold waves, heat waves, severe local storms (nor'westers), drought, and fire — in both English and Bangla, on feature phones, smartphones, and the web.
+Deliver verifiable, actionable, low-bandwidth alerts for floods, tropical cyclones, cold waves, heat waves, severe local storms (nor'westers), drought, and fire. In both English and Bangla, on feature phones, smartphones, and the web.
 
 ## Principles
 - **Offline-first.** No one should miss an alert because of poor connectivity.

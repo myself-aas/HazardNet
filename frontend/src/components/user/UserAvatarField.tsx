@@ -41,7 +41,7 @@ export const UserAvatarField: React.FC<{ size?: number; editable?: boolean }> = 
       setStage('Compressed to ' + formatBytes(resized.blob.size));
       if (!user) {
         // Design preview without an authenticated user: show the local result only.
-        toast('Design preview — sign in to store your photo.', { icon: 'ℹ️' });
+        toast('Design preview: sign in to store your photo.', { icon: 'ℹ️' });
         setStage(null);
         return;
       }
@@ -62,7 +62,7 @@ export const UserAvatarField: React.FC<{ size?: number; editable?: boolean }> = 
       });
       await updateUserProfile({ photoURL: result.publicUrl, avatarPath: result.storagePath });
       await refreshProfile();
-      toast.success(`Profile picture updated — ${formatBytes(result.bytes)} (max ${AVATAR_MAX_DIMENSION}px, old photo removed).`);
+      toast.success(`Profile picture updated: ${formatBytes(result.bytes)} (max ${AVATAR_MAX_DIMENSION}px, old photo removed).`);
       setStage(null);
     } catch (error) {
       console.error(error);
@@ -140,7 +140,7 @@ export const UserAvatarField: React.FC<{ size?: number; editable?: boolean }> = 
           </div>
           <p className="mt-1.5 text-base leading-[1.62] text-carbon-60" aria-live="polite">
             {stage ??
-              `JPG, PNG or WebP — auto-resized to ${AVATAR_MAX_DIMENSION}×${AVATAR_MAX_DIMENSION}px & compressed, old copy replaced.`}
+              `JPG, PNG or WebP. Auto-resized to ${AVATAR_MAX_DIMENSION}×${AVATAR_MAX_DIMENSION}px & compressed, old copy replaced.`}
           </p>
         </div>
       )}

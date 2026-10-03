@@ -127,7 +127,7 @@ export function MapScreen() {
             size="sm"
             label={locating ? '…' : (permission === 'denied' ? '⍉' : '◎')}
             onPress={handleRecenter}
-            accessibilityLabel={permission === 'denied' ? 'Location permission denied — open settings' : 'Recenter on my location'}
+            accessibilityLabel={permission === 'denied' ? 'Location permission denied. Open settings' : 'Recenter on my location'}
           />
           <Button
             variant={showLayers ? 'primary' : 'secondary'}

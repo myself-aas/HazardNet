@@ -362,7 +362,7 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
           </div>
         </div>
         <p className="text-xs font-mono text-carbon-60">
-          {dirty ? 'Unsaved changes — autosaving locally…' : lastAutosavedAt ? `Local autosave ${lastAutosavedAt}` : 'Changes autosave locally as you write.'}
+          {dirty ? 'Unsaved changes: autosaving locally…' : lastAutosavedAt ? `Local autosave ${lastAutosavedAt}` : 'Changes autosave locally as you write.'}
           {isLocalDemoMode() && ' · Local demo mode (browser storage only)'}
         </p>
       </div>
@@ -449,7 +449,7 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
               <p className="truncate text-xs text-carbon-70 leading-none mb-1">{serpUrl}</p>
               <p className="text-[15px] leading-snug text-blue-800 font-medium truncate">{serpTitle || 'Your SEO title appears here'}</p>
               <p className="mt-1 text-xs leading-relaxed text-carbon-70 line-clamp-2">
-                {serpDescription || 'Your meta description appears here — write 120–160 characters that make searchers click.'}
+                {serpDescription || 'Your meta description appears here. Write 120–160 characters that make searchers click.'}
               </p>
             </div>
 
@@ -488,7 +488,7 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
                 onChange={(e) => markDirty(setMetaDescription)(e.target.value)}
                 rows={2}
                 maxLength={180}
-                placeholder="Defaults to the excerpt — the snippet Google shows under your title."
+                placeholder="Defaults to the excerpt. The snippet Google shows under your title."
                 className={`${inputClass} resize-y`}
               />
             </div>
@@ -552,7 +552,7 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
                     <input
                       value={faq.question}
                       onChange={(e) => markDirty(setFaqs)(faqs.map((f, i) => (i === index ? { ...f, question: e.target.value } : f)))}
-                      placeholder={`Question ${index + 1} — e.g. How accurate is satellite flood forecasting?`}
+                      placeholder={`Question ${index + 1}: e.g. How accurate is satellite flood forecasting?`}
                       className={inputClass}
                       aria-label={`FAQ question ${index + 1}`}
                     />
@@ -727,7 +727,7 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
               />
             </div>
             <p className="bg-carbon-05 p-2.5 text-xs leading-relaxed text-carbon-60">
-              Publisher account (permissions): <span className="font-mono font-bold text-carbon-60">{signedInAuthor.email || 'signed-out'}</span> — only
+              Publisher account (permissions): <span className="font-mono font-bold text-carbon-60">{signedInAuthor.email || 'signed-out'}</span>, and only
               primary superadmins can save; the public byline above is fully editable.
             </p>
           </div>

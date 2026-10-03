@@ -32,12 +32,12 @@ const SLIDES: Slide[] = [
   {
     emoji: '⚠️',
     headline: 'Multi-hazard alerts for Bangladesh',
-    body: 'HazardNet delivers warnings for floods, cyclones, cold waves, heat waves, nor\'westers, drought, and fire — across all 64 districts. Data loads offline so you are never without alerts.',
+    body: 'HazardNet delivers warnings for floods, cyclones, cold waves, heat waves, nor\'westers, drought, and fire. Across all 64 districts. Data loads offline so you are never without alerts.',
   },
   {
     emoji: 'ℹ️',
     headline: 'Not an official warning service',
-    body: 'HazardNet supplements — not replaces — official bulletins from BMD, FFWC, DAE and local authorities. During emergencies follow official instructions and call 999.',
+    body: 'HazardNet supplements (never replaces) official bulletins from BMD, FFWC, DAE and local authorities. During emergencies follow official instructions and call 999.',
   },
   {
     emoji: '🔔',

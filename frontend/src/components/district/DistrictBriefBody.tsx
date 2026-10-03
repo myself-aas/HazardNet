@@ -258,7 +258,7 @@ export const DistrictBriefBody: React.FC = () => {
               Geospatial Distribution Matrix
             </div>
             <h3 className="text-xl font-black text-carbon-black tracking-tight">
-              Hazard Severity Heatmap — {data.districtName} District Sub-Regions
+              Hazard Severity Heatmap: {data.districtName} District Sub-Regions
             </h3>
           </div>
           <div className="flex flex-wrap items-center gap-3 text-xs font-mono min-w-0">
@@ -435,7 +435,7 @@ export const DistrictBriefBody: React.FC = () => {
                 Longitudinal AI Telemetry (7-Day Window)
               </span>
               <h3 className="text-base font-extrabold text-carbon-90 mt-2">
-                {data.districtName} — stored {data.hazardType} outlook
+                {data.districtName}: stored {data.hazardType} outlook
               </h3>
               <p className="text-xs text-carbon-60 mt-0.5">
                 Evaluated against historical multi-year EM-DAT disaster recurrence models and satellite radar observations.
@@ -904,7 +904,7 @@ export const DistrictBriefBody: React.FC = () => {
           <div className="flex items-center gap-2 mb-3 px-1">
             <Cloud className="w-4 h-4 text-sky-500" />
             <h2 className="text-base font-bold text-carbon-80 dark:text-carbon-10">
-              Live Weather — {data.districtName}
+              Live Weather: {data.districtName}
             </h2>
             <span className="text-xs font-mono text-carbon-60 ml-auto">
               {weather.loading && !weather.data ? 'Loading…' : weather.error ? 'Unavailable' : '16-day outlook'}

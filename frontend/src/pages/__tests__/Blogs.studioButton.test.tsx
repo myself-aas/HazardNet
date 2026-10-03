@@ -58,7 +58,7 @@ describe('Blogs page — Blog Studio button visibility', () => {
         loading: false,
       })
       const { unmount } = mountBlogs()
-      expect(screen.getByTestId('blog-studio-btn')).toHaveTextContent(/blog studio — write & manage articles/i)
+      expect(screen.getByTestId('blog-studio-btn')).toHaveTextContent(/blog studio: write & manage articles/i)
       unmount()
     }
   })

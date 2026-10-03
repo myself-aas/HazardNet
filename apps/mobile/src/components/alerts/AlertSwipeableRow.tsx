@@ -41,7 +41,7 @@ export const AlertSwipeableRow: React.FC<AlertSwipeableRowProps> = ({
   const handleShare = useCallback(async () => {
     trigger('selection');
     try {
-      await Share.share({ message: `${alert.level}: ${alert.hazard_type} — ${alert.district_name}` });
+      await Share.share({ message: `${alert.level}: ${alert.hazard_type}, ${alert.district_name}` });
     } catch {
       // share failed; ignore
     }
