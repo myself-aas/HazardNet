@@ -364,7 +364,7 @@ export const FrontDoor: React.FC = () => {
       {/* `pt-[calc(var(--navbar-height)+44px)]` instead of a hard 100px: the bar is 3.5rem plus
           `env(safe-area-inset-top)`, so a fixed number collided with it on notched phones. The
           variable now carries the inset, which makes this clearance correct on both. */}
-      <header className="mrd-on-dark relative w-full overflow-hidden bg-carbon-90 text-white min-h-[680px] lg:min-h-[calc(100dvh-44px)] flex items-center -mt-11 pt-[calc(var(--navbar-height)+28px)] pb-12 sm:pb-16 shadow-2xl">
+      <header className="mrd-on-dark relative w-full overflow-hidden bg-carbon-90 text-white min-h-[680px] lg:min-h-[calc(100dvh-44px)] flex items-center -mt-11 pt-[calc(var(--navbar-height)+28px)] pb-12 sm:pb-20 lg:pb-24 shadow-2xl">
         {/* Remotion-Inspired 5-Layer Cinematic Motion Background (BgMesh, Video, HUD, Grade, Grain & Vignette) */}
         <HeroCinematicBackground paused={heroPaused} />
         {/* Pause control — keyboard-reachable, respects reduced-motion (audit #1) */}
@@ -373,110 +373,86 @@ export const FrontDoor: React.FC = () => {
           onClick={() => setHeroPaused((v) => !v)}
           aria-pressed={heroPaused}
           aria-label={heroPaused ? t('frontdoor.hero.resumeMotion') : t('frontdoor.hero.pauseMotion')}
-          className="absolute bottom-4 right-4 z-10 inline-flex min-h-[44px] items-center gap-1.5 bg-carbon-90/60 px-3 py-2 text-xs font-semibold text-white border border-white/20 backdrop-blur-sm hover:bg-carbon-90/70 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
+          className="absolute bottom-6 right-6 z-10 inline-flex min-h-[44px] items-center gap-1.5 bg-carbon-90/60 px-3 py-2 text-xs font-semibold text-white border border-white/20 backdrop-blur-sm hover:bg-carbon-90/70 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
         >
           <MaterialIcon name={heroPaused ? 'play_arrow' : 'pause'} className="text-sm" />
           <span>{heroPaused ? t('frontdoor.hero.resumeMotion') : t('frontdoor.hero.pauseMotion')}</span>
         </button>
 
         <div className="relative z-10 mx-auto flex w-full max-w-[980px] flex-col items-center px-5 text-center sm:px-8">
-          {/* The masthead strip ("Overview · HazardNet · reviewed <date>") used to sit here. It
-              was a middot row of the kind the design skill bans: a version-style eyebrow, half of
-              it repeating the wordmark directly above a wordmark, and the only reader-facing fact
-              in it - the review date - is already stated in the artifact it describes, where it
-              carries its own provenance. The language switch, which is the one control that has to
-              be on the front door, stays and right-aligns on its own. */}
-          <div className="flex w-full justify-end">
-            <div className="bg-carbon-90/40 p-1 border border-white/20" style={{ backdropFilter: 'blur(var(--hero-glass-blur))', WebkitBackdropFilter: 'blur(var(--hero-glass-blur))' }}>
+          {/* Language toggle: moved to top-right, minimal styling for Apple-like simplicity */}
+          <div className="flex w-full justify-end mb-8 sm:mb-12">
+            <div className="bg-carbon-90/40 px-2 py-1 border border-white/20 rounded" style={{ backdropFilter: 'blur(var(--hero-glass-blur))', WebkitBackdropFilter: 'blur(var(--hero-glass-blur))' }}>
               <LanguageToggle variant="switch" tone="hds" />
             </div>
           </div>
 
-          <div className="mt-8 flex w-full flex-col items-center gap-8">
-            {/* Scrim, not a tint: the authority paragraph sits at the bottom of this card, and at
-                `to-black/35` its 12px `text-white/75` measured 2.45:1 over a light frame. At
-                `to-black/60` the same pixel measures 6.40:1. */}
-            <div className="min-w-0 max-w-[760px] bg-black/35 px-4 py-5 sm:px-8 sm:py-7" style={{ backdropFilter: 'blur(var(--hero-glass-blur))', WebkitBackdropFilter: 'blur(var(--hero-glass-blur))' }}>
+          <div className="flex w-full flex-col items-center gap-6 sm:gap-8">
+            {/* Apple-style centered hero content: clean, minimal, focused */}
+            <div className="min-w-0 max-w-[840px]">
               <h1 className="mrd-display2 max-w-3xl text-balance text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
                 {localised.h1 ?? localised.title}
               </h1>
               {language === 'bn' && (
-                <p role="status" aria-live="polite" className="mt-3 inline-flex items-center gap-1.5 bg-warning-surface px-2 py-1 text-xs font-bold text-carbon-90 border border-warning-border">
+                <p role="status" aria-live="polite" className="mt-4 inline-flex items-center gap-1.5 bg-warning-surface px-2 py-1 text-xs font-bold text-carbon-90 border border-warning-border">
                   <MaterialIcon name="translate" className="text-xs" />
                   {t('frontdoor.bengaliDraft')}
                 </p>
               )}
-              {localised.standfirst && (
-                <>
-                  {/* The standfirst is 70 words - about eleven lines at this size on a 390px
-                      phone, which was most of the viewport before the reader reached a button.
-                      It is clamped below `sm` and expanded in place; the same argument is made
-                      in full by the seven sections under this hero, so nothing is hidden that
-                      the page does not say again. */}
-                  <p
-                    id="front-door-standfirst"
-                    className={`mt-5 max-w-2xl text-base leading-[1.62] text-white/90 md:text-lg md:leading-[1.5] drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] ${
-                      standfirstOpen ? '' : 'line-clamp-3 sm:line-clamp-none'
-                    }`}
-                  >
-                    {localised.standfirst}
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => setStandfirstOpen((v) => !v)}
-                    aria-expanded={standfirstOpen}
-                    aria-controls="front-door-standfirst"
-                    className="mt-1 inline-flex min-h-[44px] items-center text-xs font-bold text-white underline underline-offset-4 sm:hidden"
-                  >
-                    {standfirstOpen ? t('frontdoor.hero.readLess') : t('frontdoor.hero.readMore')}
-                  </button>
-                </>
-              )}
+            </div>
 
-              {/* Meridian dual-primary, applied. "Open the map" is a NAVIGATION
-                  action, so it takes the ink pill — not crimson. Under HDS 2.2
-                  this button was `bg-primary-strong` (crimson), which spent the
-                  hazard colour on a browse action and trained the reader that
-                  crimson means "clickable". On a warning service that is a
-                  safety bug, not a style preference: the crimson has to still
-                  mean something when the district under it is under warning.
-                  The two secondary links stay outlined. */}
-              {/* One primary action. Three equal full-width buttons on a phone is three
-                  primaries, which reads as none; the other two destinations are still here as
-                  text links, and the scorecard has a whole section below that argues for it. */}
-              <div className="mt-7">
-                <ButtonLink href="/live" intent="ink" size="lg" className="w-full sm:w-auto">
-                  <MaterialIcon name="public" className="text-base" />
-                  {t('frontdoor.hero.ctaMap')}
-                </ButtonLink>
-                <div className="mt-2 flex flex-wrap gap-x-6">
-                  <Link
-                    to="/methodology"
-                    className="inline-flex min-h-[44px] items-center text-sm font-bold text-white underline decoration-white/40 underline-offset-4 hover:decoration-white"
-                  >
-                    {t('frontdoor.hero.ctaMethodology')}
-                  </Link>
-                  <Link
-                    to="/model-performance"
-                    className="inline-flex min-h-[44px] items-center text-sm font-bold text-white underline decoration-white/40 underline-offset-4 hover:decoration-white"
-                  >
-                    {t('frontdoor.hero.ctaScorecard')}
-                  </Link>
-                </div>
+            {/* Standfirst paragraph: simplified for Apple-like readability */}
+            {localised.standfirst && (
+              <div className="min-w-0 max-w-2xl">
+                <p
+                  id="front-door-standfirst"
+                  className={`text-base leading-[1.62] text-white/85 md:text-lg md:leading-[1.7] drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)] ${
+                    standfirstOpen ? '' : 'line-clamp-3 sm:line-clamp-none'
+                  }`}
+                >
+                  {localised.standfirst}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setStandfirstOpen((v) => !v)}
+                  aria-expanded={standfirstOpen}
+                  aria-controls="front-door-standfirst"
+                  className="mt-2 inline-flex min-h-[44px] items-center text-xs font-semibold text-white/75 hover:text-white underline underline-offset-4 sm:hidden"
+                >
+                  {standfirstOpen ? t('frontdoor.hero.readLess') : t('frontdoor.hero.readMore')}
+                </button>
               </div>
+            )}
 
-              <p className="mt-6 max-w-2xl border-t border-white/20 pt-4 text-xs leading-[1.62] text-white/75">
-                {t('frontdoor.hero.authority')}{' '}
-                <Link to="/live" className="font-bold text-white underline underline-offset-2 hover:text-white/90">
-                  {t('frontdoor.hero.authorityMap')}
-                </Link>
-              </p>
+            {/* Apple-style dual CTAs: clean, high-contrast buttons with clear hierarchy */}
+            <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 mt-6 sm:mt-8">
+              <ButtonLink href="/live" intent="ink" size="lg" className="px-6 sm:px-8 rounded-full">
+                <MaterialIcon name="public" className="text-base" />
+                {t('frontdoor.hero.ctaMap')}
+              </ButtonLink>
+              <Link
+                to="/methodology"
+                className="inline-flex min-h-[44px] items-center px-5 sm:px-6 text-sm font-semibold text-white/90 border border-white/25 rounded-full hover:border-white/50 hover:bg-white/5 transition-all duration-200"
+              >
+                {t('frontdoor.hero.ctaMethodology')}
+              </Link>
             </div>
 
-            {/* The hero visual card. Solid White background with Carbon-90 text for clean paper-like readability */}
-            <div className="relative z-10 w-full max-w-[680px] overflow-hidden rounded-sm bg-white/95 text-carbon-90 shadow-2xl">
-              <RunVisual freshness={freshness} loading={loading} published={published} withheld={withheld} />
-            </div>
+            {/* Secondary link: scorecard */}
+            <Link
+              to="/model-performance"
+              className="inline-flex min-h-[44px] items-center text-sm font-semibold text-white/80 hover:text-white underline decoration-white/30 underline-offset-4 hover:decoration-white/70 transition-colors"
+            >
+              {t('frontdoor.hero.ctaScorecard')}
+            </Link>
+
+            {/* Authority disclaimer: simplified and moved below CTAs */}
+            <p className="mt-6 max-w-2xl text-xs leading-[1.6] text-white/70">
+              {t('frontdoor.hero.authority')}{' '}
+              <Link to="/live" className="font-semibold text-white underline underline-offset-2 hover:text-white/90">
+                {t('frontdoor.hero.authorityMap')}
+              </Link>
+            </p>
           </div>
         </div>
       </header>
