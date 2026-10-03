@@ -62,7 +62,9 @@
     "check:fonts": "node scripts/check-font-payload.mjs",
     "icons:build": "node scripts/generate-icon-glyphs.mjs",
     "icons:check": "node scripts/generate-icon-glyphs.mjs --check",
-    "check:prose": "node scripts/check-prose-dashes.mjs"
+    "check:prose": "node scripts/check-prose-dashes.mjs",
+    "check:important": "node scripts/check-css-important.mjs",
+    "check:important:report": "node scripts/check-css-important.mjs --report"
   },
   "dependencies": {
     "@google-cloud/firestore": "^7.11.6",
