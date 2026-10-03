@@ -136,7 +136,7 @@ export const TemporalTrendChart: React.FC<TemporalTrendChartProps> = ({
               <span className="text-rose-400">{hoveredPoint.event_frequency} Events</span>
             </div>
             {MILESTONES.find((m) => m.year === hoveredPoint.year) && (
-              <div className="text-[11px] text-amber-300 font-semibold pt-0.5">
+              <div className="text-xs text-amber-300 font-semibold pt-0.5">
                 ★ {MILESTONES.find((m) => m.year === hoveredPoint.year)?.label}:{' '}
                 {MILESTONES.find((m) => m.year === hoveredPoint.year)?.sublabel}
               </div>
@@ -176,7 +176,7 @@ export const TemporalTrendChart: React.FC<TemporalTrendChartProps> = ({
                   x={padding.left - 8}
                   y={y + 3}
                   textAnchor="end"
-                  className="text-[11px] font-mono fill-carbon-50"
+                  className="text-xs font-mono fill-carbon-50"
                 >
                   {tick}
                 </text>
@@ -220,7 +220,7 @@ export const TemporalTrendChart: React.FC<TemporalTrendChartProps> = ({
                   x={x}
                   y={yTop + 2}
                   textAnchor="middle"
-                  className="text-[10px] font-mono font-bold"
+                  className="text-xs font-mono font-bold"
                   fill={m.color}
                 >
                   {m.year}
@@ -259,7 +259,7 @@ export const TemporalTrendChart: React.FC<TemporalTrendChartProps> = ({
                     x={p.x}
                     y={padding.top + innerHeight + 18}
                     textAnchor="middle"
-                    className="text-[10px] font-mono fill-carbon-40"
+                    className="text-xs font-mono fill-carbon-40"
                   >
                     {p.record.year}
                   </text>

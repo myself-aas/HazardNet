@@ -110,7 +110,7 @@ export const EventReportModal: React.FC<EventReportModalProps> = ({
                   className="px-2 py-0.5 rounded text-xs font-mono font-medium bg-blue-950/70 text-blue-300 border border-blue-800/80 hover:bg-blue-900 transition-colors inline-flex items-center gap-1"
                 >
                   <span>{event.glide}</span>
-                  <span className="text-[10px]">↗</span>
+                  <span className="text-xs">↗</span>
                 </button>
               ) : (
                 <span className="text-xs font-mono text-carbon-40">
@@ -161,7 +161,7 @@ export const EventReportModal: React.FC<EventReportModalProps> = ({
           {/* Metadata Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div className="bg-carbon-black/60 border border-carbon-80 rounded-xl p-3">
-              <span className="text-[11px] text-carbon-40 font-medium">Impacted Districts</span>
+              <span className="text-xs text-carbon-40 font-medium">Impacted Districts</span>
               <p className="text-sm font-semibold text-white mt-0.5">
                 {event.location_districts && event.location_districts.length > 0
                   ? event.location_districts.join(', ')
@@ -170,7 +170,7 @@ export const EventReportModal: React.FC<EventReportModalProps> = ({
             </div>
 
             <div className="bg-carbon-black/60 border border-carbon-80 rounded-xl p-3">
-              <span className="text-[11px] text-carbon-40 font-medium">Affected Population</span>
+              <span className="text-xs text-carbon-40 font-medium">Affected Population</span>
               <p className="text-sm font-mono font-bold text-rose-400 mt-0.5">
                 {event.validated_affected && event.validated_affected > 0
                   ? event.validated_affected.toLocaleString()
@@ -179,7 +179,7 @@ export const EventReportModal: React.FC<EventReportModalProps> = ({
             </div>
 
             <div className="bg-carbon-black/60 border border-carbon-80 rounded-xl p-3">
-              <span className="text-[11px] text-carbon-40 font-medium">GEE Observation Window</span>
+              <span className="text-xs text-carbon-40 font-medium">GEE Observation Window</span>
               <p className="text-xs font-mono text-carbon-30 mt-1">
                 {event.gee_start && event.gee_end
                   ? `${event.gee_start} → ${event.gee_end}`

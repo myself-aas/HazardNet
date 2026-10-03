@@ -211,10 +211,17 @@ html, body {
      it matches the mobile shells, and NASA HDS remains the source of colour and
      typography rather than of corner geometry. Circles (rounded-full) are
      untouched - avatars, status dots and icon buttons stay round. */
-  --hn-radius-control: 8px;    /* inputs, chips, small controls */
-  --hn-radius-card: 16px;      /* panels, cards, tiles, popovers */
-  --hn-radius-sheet: 28px;     /* bottom sheets, modals, drawers */
-  --hn-radius-pill: 9999px;    /* buttons, badges, search fields */
+  /* Radius: the Meridian scale, never a literal. These four are the only radius
+     names a component may use (plus `rounded-full`, which is `--radius-full` and is
+     reserved for avatars and status dots). The legacy Tailwind names below are
+     aliases onto these roles, so `rounded-xl` and `rounded-2xl` cannot drift apart.
+     See MERIDIAN_RADIUS_ROLES in packages/design-system/src/meridian.ts for the
+     role table and __tests__/meridianParity.test.js for the gate. */
+  --hn-radius-chip: var(--mrd-radius-xs);
+  --hn-radius-control: var(--mrd-radius-sm);   /* inputs, buttons, small controls */
+  --hn-radius-card: var(--mrd-radius-lg);      /* panels, cards, tiles, popovers */
+  --hn-radius-sheet: var(--mrd-radius-sheet);  /* bottom sheets, modals, drawers */
+  --hn-radius-pill: var(--mrd-radius-pill);    /* buttons, badges, search fields */
   --hn-shadow-card: 0 4px 12px rgba(0, 0, 0, 0.05);
   --hn-shadow-elevated: 0 12px 24px -4px rgba(0, 0, 0, 0.12);
   --hn-shadow-fab: 0 12px 20px -5px rgba(0, 0, 0, 0.3), 0 6px 12px rgba(28, 103, 227, 0.25);
@@ -1711,7 +1718,7 @@ button,
 /* 11. Badges (FLOOD, SEV-3, district code): the mono stack, 11 px, 600, +0.08 em, caps, colored per severity token */
 .hn-badge {
   font-family: var(--hds-font-family-code);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;

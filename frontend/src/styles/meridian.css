@@ -738,3 +738,16 @@ textarea:focus-visible,
     transform: none !important;
   }
 }
+
+/* ---------------------------------------------------------------------------
+ * Icon contract
+ *
+ * One family, one stroke. `lucide-react` marks every glyph it renders with the
+ * `lucide` class, so the weight is set once here rather than at 500 call sites;
+ * the native shell passes the same value (`ICON_STROKE`) to the svg props. The
+ * number must equal `ICON_STROKE` in packages/design-system/src/icons.ts, which
+ * __tests__/iconFamily.test.js asserts by reading both files.
+ * ------------------------------------------------------------------------- */
+svg.lucide {
+  stroke-width: 1.75;
+}

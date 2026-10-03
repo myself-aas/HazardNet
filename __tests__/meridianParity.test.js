@@ -180,6 +180,25 @@ describe('Meridian — fonts stay open-source', () => {
     expect(CSS).not.toMatch(/@font-face\s*\{[^}]*url\(\s*['"]?https?:/is);
   });
 
+  test('the web radius roles derive from the Meridian scale, never from literals', () => {
+    // Backlog item 4: `--hn-radius-*` used to be four numbers written into index.css, which is
+    // how the web and the phone drifted to 8/16/28/9999 against 2/2/2. They are now references
+    // into this file's scale, so the corner is defined once.
+    const indexCss = readFileSync(join(ROOT, 'frontend/src/index.css'), 'utf8');
+    const appVar = (name) =>
+      new RegExp(`--${name}\\s*:\\s*([^;]+);`).exec(indexCss)?.[1]?.trim() ?? null;
+    for (const [role, step, value] of [
+      ['chip', 'xs', MERIDIAN_RADII.xs],
+      ['control', 'sm', MERIDIAN_RADII.sm],
+      ['card', 'lg', MERIDIAN_RADII.lg],
+      ['sheet', 'sheet', MERIDIAN_RADII.sheet],
+      ['pill', 'pill', MERIDIAN_RADII.pill],
+    ]) {
+      expect(appVar(`hn-radius-${role}`)).toBe(`var(--mrd-radius-${step})`);
+      expect(cssVar(`mrd-radius-${step}`)).toBe(`${value}px`);
+    }
+  });
+
   test('the CSS font stacks match the token file', () => {
     expect((cssVar('mrd-font-display') ?? '').replace(/\s+/g, ' ')).toBe(
       MERIDIAN_FONTS.display.replace(/\s+/g, ' '),

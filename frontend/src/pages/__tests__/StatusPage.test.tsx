@@ -11,7 +11,7 @@ import '@testing-library/jest-dom';
  *     because "could not read" is not "fine".
  */
 
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { axe, toHaveNoViolations } from 'jest-axe';
 import { StatusPage } from '../StatusPage';
@@ -21,9 +21,13 @@ expect.extend(toHaveNoViolations);
 
 const statusContent = siteRoutes.routes.find((route) => route.path === '/status');
 
-/** The panel shows a loading heading, so wait for a figure only the artifact can produce. */
+/**
+ * The panel shows a loading heading, so wait for a figure only the artifact can produce.
+ * `findAllByText`: since the card-stack conversion the panel renders each source twice - once
+ * as a phone card, once as a table row - and only one of the two is visible at a given width.
+ */
 const waitForArtifact = async () => {
-  await screen.findByText('45.7 h');
+  await screen.findAllByText('45.7 h');
 };
 
 const artifact = (over: Record<string, unknown> = {}) => ({
@@ -113,16 +117,24 @@ describe('/status', () => {
     expect(screen.getByRole('heading', { level: 1, name: statusContent?.h1 })).toBeInTheDocument();
     await waitForArtifact();
 
-    // The artifact's own numbers, not rounded for comfort.
-    expect(screen.getByText('45.7 h')).toBeInTheDocument();
-    expect(screen.getByText('192 h')).toBeInTheDocument();
-    expect(screen.getByText('2026-09-16')).toBeInTheDocument();
+    // The artifact's own numbers, not rounded for comfort. Scoped to the table because the
+    // source figures render twice since the card-stack conversion - once as a phone card,
+    // once as a table row - and this assertion is about the table's arithmetic.
+    const sourcesTable = screen.getByRole('table', {
+      name: /Each data source this deployment ships/i,
+    });
+    expect(within(sourcesTable).getByText('45.7 h')).toBeInTheDocument();
+    expect(within(sourcesTable).getByText('192 h')).toBeInTheDocument();
+    expect(within(sourcesTable).getByText('2026-09-16')).toBeInTheDocument();
     expect(screen.getByText(/60 of 64 districts/)).toBeInTheDocument();
 
     // The probe row carries the failing state and the reason, not just a colour.
+    // `getAllByText` for the reasons: since the card-stack conversion every source renders
+    // twice, once as a phone card and once as a table row, and the assertion is about the
+    // reason being printed at all.
     expect(screen.getAllByText('Checks failing').length).toBeGreaterThan(0);
-    expect(screen.getByText(/deep_links, security_headers/)).toBeInTheDocument();
-    expect(screen.getByText(/HTTP 404 on \/about/)).toBeInTheDocument();
+    expect(screen.getAllByText(/deep_links, security_headers/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/HTTP 404 on \/about/).length).toBeGreaterThan(0);
 
     // The honesty notes are rendered verbatim.
     expect(screen.getByText(/model_version is null/)).toBeInTheDocument();

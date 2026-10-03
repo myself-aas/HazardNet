@@ -278,7 +278,7 @@ export const RegionSelector: React.FC<RegionSelectorProps> = ({
               Location detected via <strong className="uppercase font-mono">{detectedLocation.method}</strong>: Mapped to <strong className="font-bold text-carbon-black">{detectedLocation.nearestDistrict.name} District</strong> ({detectedLocation.nearestDistrict.division} Division)
             </span>
           </div>
-          <div className="flex items-center gap-2 self-start sm:self-auto shrink-0 font-mono text-[11px] text-carbon-60">
+          <div className="flex items-center gap-2 self-start sm:self-auto shrink-0 font-mono text-xs text-carbon-60">
             <span>{detectedLocation.distanceKm < 1 ? 'Inside district center' : `~${detectedLocation.distanceKm.toFixed(1)} km away`}</span>
             <span className="px-2 py-0.5 rounded-md bg-white border border-amber-200 text-amber-900 font-bold">
               {detectedLocation.lat.toFixed(2)}°N, {detectedLocation.lng.toFixed(2)}°E
@@ -297,14 +297,14 @@ export const RegionSelector: React.FC<RegionSelectorProps> = ({
           <span className="text-carbon-60 font-semibold">{currentDistrict.division} Division</span>
 
           {currentHomeDistrictId === currentDistrict.id ? (
-            <span className="px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-amber-200 text-amber-950 border border-amber-300 flex items-center gap-1 shadow-2xs">
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-amber-200 text-amber-950 border border-amber-300 flex items-center gap-1 shadow-2xs">
               <MaterialIcon name="home" className="w-4 h-4 inline-block mr-1" />
               <span>Home District</span>
             </span>
           ) : (
             <button
               onClick={() => handleSetCurrentAsHome(currentDistrict)}
-              className="px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 transition-colors flex items-center gap-1 cursor-pointer"
+              className="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 transition-colors flex items-center gap-1 cursor-pointer"
               title="Set as my default home district for future visits"
             >
               <MaterialIcon name="home" className="w-4 h-4 inline-block mr-1" /><span>Set as Home</span>

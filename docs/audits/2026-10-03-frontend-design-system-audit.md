@@ -392,6 +392,8 @@ Doing these on the web first makes the native port a translation instead of a re
 - Stopgap now: `useMeridianTheme` defaults to `'light'`, or gate the system-follow behind an explicit user setting.
 - Real fix: Phase 9 of `MIGRATION_PLAN.md`, with a **machine gate** - fail CI when a file with more than N colour utilities has zero `dark:` twins, or better, move to semantic CSS variables (`--surface`, `--surface-elevated`, `--text-primary`) so dark mode is automatic and `dark:` variants stop being needed at all. Given 6,798 colour utilities, variable-swapping is far cheaper than adding 6,500 `dark:` classes. The native app already works this way (`theme.colors.background` etc.) - so **variables also close the web/native gap**.
 
+- **Resolved (pass 2).** Executed as the variable route: `frontend/src/styles/dark.css` re-points the carbon ramp and the semantic roles, and the machine gate exists in the form this finding asked for - a coverage test that fails when a colour family is neither theme-aware nor a declared data encoding (`__tests__/darkTheme.test.js`). See the ledger's P0-1 row.
+
 ### 5.3 Screen mapping decisions
 
 | Native screen | Source | Action |
@@ -498,48 +500,56 @@ grep -n "nasaRed" apps/mobile/src/theme/theme.ts         # severity colour = #f6
 ## 9. Resolution ledger (implementation pass, 2026-10-03)
 
 Every finding, backlog row and §5.5 acceptance criterion, with its disposition. "Fixed" means code
-plus a gate; "deferred" carries the reason and the unblocking condition. Commits: `2793cd6` plus the
-follow-up covering this ledger. Gates after the pass: 1,626 jest tests green (2 suites skipped),
-`tsc` clean, `check:tokens` 99.8% **and** the new hex ratchet, `check:design:source` 0 outstanding,
-`check:brand` fully tokenised, `check:fonts` within budget, `check:claims` 16/16, `check:env` pass,
-eslint 0 errors (683 of a 685-warning budget). Four unused UI dependencies were also removed.
+plus a gate; "deferred" carries the reason and the unblocking condition.
+
+Two passes. **Pass 1** (`2793cd6`, `c5ca219`, `43fe078`): the findings that were code-plus-gate on
+the audited surfaces, plus the two audit documents themselves. **Pass 2** (this ledger, `89a92b1`
+and the resolution commit): the five items pass 1 deferred by name - dark-mode Phase 9, the radius
+freeze, the sub-12px type cap, the card-stack tables and the icon-family decision - each executed
+against its own unblocking condition rather than re-analysed.
+
+Gates after pass 2: 159 jest suites / 1,681 tests green (2 suites skipped), `tsc` clean on web and
+clean inside `apps/mobile`, `check:tokens` 99.8% with the hex ratchet at 492 literals in 51 files
+(unchanged - the new code introduced none), `check:design:source` 0 outstanding, `check:brand`
+fully tokenised. Three new gates were added by pass 2: `darkTheme` (30 tests), `tableStack` (8) and
+`iconFamily` (11).
 
 ### Findings
 
 | Finding | Status | Where / why |
 |---|---|---|
-| P0-1 dark mode half-applied and auto-activating | **Fixed (stopgap); rollout deferred** | `useMeridianTheme` defaults to `'light'`, so no iOS user opening the app in the evening gets the light page with a dark panel inside it. An explicit stored `'light'`/`'dark'`/`'system'` is still honoured, and `'system'` still follows the OS live for anyone who chooses it. The real fix stays Phase 9 / §5.2 — deferred because it is a migration of 6,798 colour utilities onto semantic variables, and doing it half-way is what this finding is about. |
-| P0-2 web and native disagree about semantic colours | **Fixed (one source, divergences declared)** | `frontend/src/design-system/tokens.ts` is a re-export shim, so there is one `HDS_TOKENS`; `nasaBlueShade` is `#0b3d91` in the package and in the generated CSS; `__tests__/designTokensParity.test.js` asserts identity, then walks ten real roles across web CSS and the native theme. Four divergences are *declared* with a written reason each (crimson `#970002` vs NASA red `#f64137` on two different grounds; their dark twins; Meridian radii vs the HDS 2px control/sheet pins) and the test fails if a declared exception stops diverging, so none of them can rot. Reconciling the two reds and the radius scale is a design decision, tracked below as backlog 4. |
+| P0-1 dark mode half-applied and auto-activating | **Fixed (Phase 9 shipped)** | `useMeridianTheme` is back to `'system'` and the app is dark-complete underneath it: `frontend/src/styles/dark.css` (imported last from `index.css`) re-points the carbon ramp by role, pins the fills that must stay dark (`bg-carbon-90/80/70`, `bg-white`), re-mixes every status ground over the elevated surface, re-points Leaflet chrome and tiles, and pins print paper white via `hn-paper`. `__tests__/darkTheme.test.js` (30 tests) checks the ramp is complete, that every ink × surface pair clears WCAG, that the print sheet and map controls are pinned, and - the gate that matters for rot - that every colour-utility family used in `frontend/src` is either theme-aware or an explicitly declared data encoding. Completing it as a *layer* rather than by rewriting 6,798 utilities is what made it shippable; that trade is recorded in §5.1 of the theme layer's own header. |
+| P0-2 web and native disagree about semantic colours | **Fixed (one source, divergences declared)** | `frontend/src/design-system/tokens.ts` is a re-export shim, so there is one `HDS_TOKENS`; `nasaBlueShade` is `#0b3d91` in the package and in the generated CSS; `__tests__/designTokensParity.test.js` asserts identity, then walks ten real roles across web CSS and the native theme. Four divergences are *declared* with a written reason each (crimson `#970002` vs NASA red `#f64137` on two different grounds; their dark twins; Meridian radii vs the HDS 2px control/sheet pins) and the test fails if a declared exception stops diverging, so none of them can rot. The radius half is now closed (backlog 4: one scale, exceptions removed); reconciling the two reds stays a declared, tested divergence, because they sit on different grounds (crimson ink vs NASA hazard fill). |
 | P0-3 documented typography is not shipped typography | **Fixed** | `HDS_TOKENS.families`, `MERIDIAN_FONTS`, `--mrd-font-*`, `--font-*`/`--hn-font-*` and the prerendered shell now resolve to platform faces plus the one bundled webfont (`Noto Sans Bengali`); no stack leads with a family the bundle does not ship. `DESIGN_SYSTEM.md` §2-3 and `MERIDIAN.md` §4.2/§9 were describing the fictional pairing and now describe what ships. `__tests__/nasaTokens.test.js` used to assert the family *names* were present and now asserts they are absent and that each role resolves. |
 | P1-1 four design systems in one component tree | **Partially fixed; remainder deferred** | The two contradictions this finding produced were removed (two token files, two type stories). Collapsing the four layers themselves (Meridian, NASA HDS, the Tailwind theme, component CSS) is §5.1's migration and touches the 6,343 palette-family uses that currently resolve through them; doing it in the same pass as a colour reconciliation would put the two changes in each other's blast radius. |
-| P1-2 radius consistency | **Declared; deferred** | The web/native split is now explicit and tested (`radius.control` 8 vs 2, `radius.sheet` 28 vs 2, with a reason attached) instead of invisible. Freezing one scale is backlog 4, which is a design decision with a visual diff on both platforms. |
+| P1-2 radius consistency | **Fixed (one scale, both platforms)** | `MERIDIAN_RADIUS_ROLES` in the package is the single source: `chip`/`xs` 4 · `control`/`sm` 8 · `media`/`md` 12 · `card`/`lg` 16 · `sheet`/`sheet` 28 · `feature`/`xxl` 32 · `pill`/`pill` 9999. The web role tokens in `index.css` are `var()` references to those steps and `NATIVE_RADIUS` spreads the same object, so nothing retypes a number; the eight native literals and the two `PARITY_EXCEPTIONS` entries for radius are gone. `meridianParity` derives each role token from the CSS value, `designTokensParity` freezes the scale (a new step fails), and `nasaTokens` asserts the reference chain. |
 | P1-3 token gate blind to hex literals | **Fixed** | `scripts/check-token-compliance.mjs` now measures raw hex literals too, against `data/design/hex-baseline.json` (492 in 51 files): a file may not gain one. `mapPalette.ts` is the documented pattern for a legitimate home for a data colour. |
 | P1-4 landing surfaces break the mobile viewport rules | **Partially fixed** | `min-h-screen` → `min-h-dvh` in seven files (iOS toolbars live inside `100vh`), the hero's `100vh`-derived floor is now `lg:min-h-[100dvh]` behind a 600px phone floor, and the standalone `100vh` in the console's map height is `100dvh`. The remaining items (the masthead strip and the multi-blur hero) are grouped with backlog 5. |
-| P1-5 157 uppercase-tracking micro-labels | **Deferred** | No mechanical rule separates a section eyebrow from a dense-console field label, and this repository's console chrome is explicitly outside the skill's remit (§13). A blanket sweep would trade one generic signature for illegible data chrome; the honest fix is per-surface and belongs with the same pass as backlog 12. |
+| P1-5 157 uppercase-tracking micro-labels | **Deferred** | No mechanical rule separates a section eyebrow from a dense-console field label, and this repository's console chrome is explicitly outside the skill's remit (§13). A blanket sweep would trade one generic signature for illegible data chrome; the honest fix is per-surface and belongs with backlog 13/16, not with a mechanical sweep. |
 | P1-6 hover doing work touch cannot | **Fixed on the audited surfaces; wider sweep deferred** | The map's HUD already re-arms on `onTouchStart`, and the one control whose only affordance was `group-hover:opacity-100` (`View Full Resolution`) is now `opacity-100 md:opacity-0 md:group-hover:opacity-100 focus-visible:opacity-100`. The remaining 35-page sweep is backlog 8's second half. |
-| P1-7 tables and forms on mobile | **Deferred** | Backlog 9 — card-stack fallbacks for the district/division/alert tables — is a week across the public-surface pages. The console already ships the mitigations this finding asks for (Map/Table parity at 44px, a captioned table, `role="meter"` severity). |
-| P1-8 two icon families | **Deferred** | `lucide-react` is imported by 26 files; choosing between it and the hand-authored `MaterialIcon` set (or replacing both when the native icon story lands) is backlog 10, and doing it page-by-page mid-pass would leave two visual weights in one tree. The half that cannot survive a port — emoji as icons — is fixed. |
+| P1-7 tables and forms on mobile | **Fixed (12 tables + 2 editorial renderers)** | `frontend/src/components/ui/CardStackTable.tsx` renders a table's rows twice from one source: the table at `md`+, one card per row below it, with the first cell promoted to the card heading and the rest as a `<dl>` of label/value pairs, so a screen reader hears the column name with each value. It is used by the landing page and every article page (`CardStackTable`) and by 10 console/page files (`CardStackRows`) - 12 tables plus the two editorial renderers, all of which carried content below md. Six tables stay tables, each ledgered with its reason (the map's table view, two print sheets, an upazila toggle whose default view is already the card grid, and two two-column metadata tables that do not scroll at 320px); the alert table already paired its table with a card list, so only the wider-screen branch remains. `data/design/table-stack-baseline.json` ledgers every `<table>` in `frontend/src` with its status and reason, and `__tests__/tableStack.test.js` fails if a new table appears unledgered, a table count drifts, or a conversion is removed. |
+| P1-8 two icon families | **Fixed (one family, both platforms)** | The decision is Lucide, and it is executable rather than aspirational: it is the only icon package `frontend/package.json` declares, and it ships plain SVG path data. `data/design/icon-registry.json` holds the decision (family, one stroke, the size scale, the 102 names in use); `scripts/generate-icon-glyphs.mjs` emits `packages/design-system/src/icons.ts` - name → path data, React-free - which web consumes through `lucide-react` and the native shell through `react-native-svg` in `apps/mobile/src/components/Icon.tsx`. The stroke is set once (`svg.lucide { stroke-width: 1.75 }` on web, `ICON_STROKE` on native), never per call site. Emoji and text glyphs are gone from the native shell: the More tab rows, the swipe actions, the data-state banners and the four empty states now draw registry glyphs. `MaterialIcon.tsx` (923 lines, hand-authored) is frozen legacy with an importer ratchet that may only shrink. `__tests__/iconFamily.test.js` (11 tests) enforces all six halves, including that the generated paths still match the installed version. |
 | P2-1 web-only capability inventory | **Accepted as port input** | It describes what the native shell must re-decide; no web change is implied. §5.4 stays as written. |
 | P2-2 IA parity (~30 of 52 routes have no native counterpart) | **Deferred** | A product decision, not a web defect; it is what `docs/MOBILE_AUDIT_AND_REDESIGN.md` exists to schedule. |
 | P2-3 state coverage partial | **Deferred, one instance fixed** | The four-state checklist and the `usePageSeo` route wrapper are backlog 13. Found and fixed during this pass: `RunVisual`'s loading row interpolated `opacity` from `frame` with no motion gate, so under `prefers-reduced-motion` the "still reading the artifact" state rendered invisible — the exact state a hazard page must not lose. |
-| P2-4 micro-issues visible on a phone | **Partially fixed** | Fixed in this pass: emoji, the hover-only control, `dvh`, the notification-bar colour, pure black in the hero. The rest are itemised in backlog 12/16 and deferred there. |
+| P2-4 micro-issues visible on a phone | **Partially fixed** | Fixed in this pass: emoji, the hover-only control, `dvh`, the notification-bar colour, pure black in the hero. The rest are itemised in backlog 16 (backlog 12's type floor is now closed). |
 
 ### Backlog
 
 | # | Status | Note |
 |---|---|---|
-| 1 | **Fixed** | `useMeridianTheme` defaults to `'light'`; Phase 9 remains scheduled. |
+| 1 | **Fixed** | Phase 9 shipped as `frontend/src/styles/dark.css` + a 30-test gate; `useMeridianTheme` defaults to `'system'` again and the app is dark-complete underneath it. |
 | 2 | **Fixed** | One source of hex; the parity test rejects duplicate roles and forbids stale exceptions. |
 | 3 | **Fixed** | `.font-inter`/`.font-montserrat` were already gone; the stacks and both documents now tell the truth. |
-| 4 | **Deferred** | Freeze one radius scale: needs the same decision for the native `NATIVE_RADIUS` pins; the divergence is declared and tested meanwhile. |
+| 4 | **Fixed** | One radius scale: `MERIDIAN_RADIUS_ROLES` is the source, web tokens are `var()` references to its steps, `NATIVE_RADIUS` spreads it, and the two radius parity exceptions were removed. Freeze test added. |
 | 5 | **Partially fixed** | `dvh` sweep and the hero's CTA/blur work are done; the masthead strip and any chart/blur duplicates remain. |
 | 6 | **Partially fixed** | The hex half is now gated (which was the substance: "makes the 99.8% true"). The 405 `!important` declarations and the `.text-xs.text-carbon-70` contrast hack are load-bearing until the type-scale pass, because deleting them drops live contrast below AA; deliberately left. |
 | 7 | **Fixed** | `@mui/material`, `@emotion/react`, `@emotion/styled` and `@base-ui/react` had zero imports anywhere in the repository outside `package-lock.json`; they are removed from `frontend/package.json` and `package-lock.json` was regenerated with `npm install --package-lock-only --offline`. The lockfile diff is exactly those four packages and their exclusive transitive tree (594 lines removed, no unrelated churn) — verified with the full jest battery green afterwards. |
 | 8 | **Closed for the web half** | Re-measured control by control: every icon-only control carries an `aria-label`; `title=` attributes are extras on text-labelled controls, so there is nothing to replace. The native half (a bottom-sheet toolbar of labelled rows below `sm`) is port work. |
-| 9 | **Deferred** | Card-stack tables: a week of layout work on the public-surface pages, and the console's table already has its fallback. |
-| 10 | **Deferred** | One icon family, retire Lucide: 26 files, and it should be decided together with the native glyph set. |
+| 9 | **Fixed** | 12 tables across 10 files plus the landing page and the article block render one card per row below `md` through `components/ui/CardStackTable.tsx`; `data/design/table-stack-baseline.json` + `__tests__/tableStack.test.js` keep the ledger honest. The console's Map/Table toggle stays the console's own parity mechanism. |
+| 10 | **Fixed** | One family = Lucide, with a shared registry (`data/design/icon-registry.json` → `packages/design-system/src/icons.ts`) so the same glyph serves web and native; `MaterialIcon` frozen with a shrinking-importer ratchet; every native emoji/text glyph replaced. |
 | 11 | **Deferred** | Advisories screen in the native app: product work in `apps/mobile`, outside this pass. |
-| 12 | **Deferred** | `text-[10px]`/`text-[11px]` cap: needs a type-scale pass; a mechanical bump breaks the dense console layout this repository deliberately keeps. |
+| 12 | **Fixed** | 369 authored sub-12px occurrences across 46 files → 0, in all five forms (`text-[Npx]`, `font-size: Npx`, `fontSize: N`, `fontSize={N}`, `fontSize: 'Npx'`); native `metadata` is 12/16 and the tab label is 12. One exception, documented in place: the `DistrictRiskMap` SVG label is 3.4 user units in a `0 0 100 100` viewBox (≈12px at render size), guarded by an `svg-user-units:` marker the gate honours. Four assertions in `designTypography` hold the floor. |
 | 13 | **Deferred** | Four-state checklist across 35 pages: the wrapper and checklist are a week; one genuine state defect found in the audited surfaces was fixed (P2-3). |
 | 14 | **Deferred with measurement** | `footer a::before` is the 44px tap-target extender (`min-width/min-height: 44px; pointer-events: auto`). Shrinking it trades mis-taps for links that no longer meet the touch floor; the real fix is to give footer links a 44px box themselves, which belongs with the same per-page pass as 12/13. |
 | 15 | **Deferred** | An em-dash lint rule needs an AST-aware check plus a policy for the `—` empty-value glyph; no lint infrastructure was added this pass. |
@@ -549,27 +559,38 @@ eslint 0 errors (683 of a 685-warning budget). Four unused UI dependencies were 
 
 ### §5.5 acceptance criteria
 
-1. **No table as primary content below 768px** — deferred with backlog 9. The console is the one
-   surface with a table as a *mode*, and it ships the Map/Table toggle plus a captioned fallback.
+1. **No table as primary content below 768px** — **met**. The landing page and every article page
+   render through `CardStackTable`; 12 further tables across 10 files render one card per row below `md`.
+   The console's Map/Table toggle stays the console's own parity mechanism (the map *is* the phone
+   view); the print sheets are print-only; the upazila table is a toggle whose default view is the
+   card grid; the two tables left on `/status` are two-column metadata that does not scroll at
+   320px. Each of the six is named in the ledger with its reason. `__tests__/tableStack.test.js` holds the
+   ledger; `data/design/table-stack-baseline.json` names every remaining `<table>` and its reason.
 2. **No interactive element relies on `hover` or `title`** — **met**: zero icon-only controls are
    unnamed; the one hover-only affordance found is visible on touch; `title` remains only as an
    extra hint on labelled controls.
 3. **Loading, empty, error+retry on every screen** — deferred with backlog 13; one defective state
    (invisible reduced-motion loading row) fixed.
-4. **Light and dark complete at 100% token parity** — deferred (Phase 9 + backlog 4). The parity
-   *contract* is in place and tested; the dark *surface* is not, which is why the stopgap in
-   P0-1 ships instead of a half-applied dark theme. Criterion not claimed as met.
-5. **Every text role survives the font-scale cap** — deferred with backlog 12.
-6. **One icon vocabulary, no emoji, one radius scale, one type scale, one source of hex** — four of
-   five are met and gated: no emoji (tests), one type scale (one stack per role, asserted across
-   the package, the CSS and the prerendered shell), one source of hex (`designTokensParity` +
-   the hex ratchet), one radius scale *declared* rather than unified (backlog 4). One icon
-   vocabulary is deferred with backlog 10.
+4. **Light and dark complete at 100% token parity** — **met by the theme layer**. `dark.css`
+   re-points the carbon ramp by role, pins the fills that must stay dark, re-mixes the status
+   grounds over the elevated surface, and re-points Leaflet and the native controls; the radius
+   scale is one object; every semantic role on both platforms resolves through them. The gate is
+   the coverage test, not a promise: any palette family used in `frontend/src` that is neither
+   theme-aware nor a declared data encoding fails `darkTheme`.
+5. **Every text role survives the font-scale cap** — **met**: the floor is 12px, measured at 0
+   authored occurrences below it, with the one documented SVG user-unit exception.
+6. **One icon vocabulary, no emoji, one radius scale, one type scale, one source of hex** — **all
+   six met and gated**: one icon vocabulary with a shared web/native registry (`iconFamily`), no
+   emoji anywhere including native (`iconFamily`), one radius scale (`meridianParity` +
+   `designTokensParity` freeze), one type scale (`nasaTokens` across the package, the CSS and the
+   prerendered shell), one source of hex (`designTokensParity` + the hex ratchet), one type-size
+   floor (`designTypography`).
 
 ### Not done in this pass, and why it is not hidden
 
 Everything above marked "deferred" is a scheduling decision with a reason, not a claim of
-completion. The three items with the largest user-visible return are dark mode (Phase 9), the
-card-stack tables (backlog 9) and the icon-family decision (backlog 10); all three are multi-day
-changes to surfaces this pass deliberately did not restructure. Four unused dependencies were
+completion, and it stays deferred until someone un-defers it by name: backlog 5/6/8/11/13/14/15/16
+and the landing audit's own §8 rows. Pass 2 took the five the fourth request named - dark mode
+(Phase 9), the radius freeze, the type cap, the card-stack tables and the icon family - and closed
+each one against the unblocking condition its ledger row had written. Four unused dependencies were
 removed (backlog 7) once it turned out the lockfile could be regenerated offline.

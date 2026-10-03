@@ -284,7 +284,7 @@ export function useLeafletMap(
               <div style="font-size: 13px; font-weight: 900; line-height: 1; letter-spacing: -0.5px;">
                 ${count}
               </div>
-              <div style="font-size: 8px; font-weight: 800; opacity: 0.95; line-height: 1; margin-top: 1px; background: rgba(0,0,0,0.3); padding: 1px 4px; border-radius: 4px;">
+              <div style="font-size: 12px; font-weight: 800; opacity: 0.95; line-height: 1; margin-top: 1px; background: rgba(0,0,0,0.3); padding: 1px 4px; border-radius: 4px;">
                 ${maxSevPct}%
               </div>
             </div>

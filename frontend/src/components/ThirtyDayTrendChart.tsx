@@ -89,13 +89,13 @@ const CustomTooltip = ({ active, payload, label }: any) => {
       <div className="bg-white border border-carbon-20 p-3.5 rounded-xl shadow-lg text-xs font-sans space-y-2 z-50 text-carbon-80">
         <div className="flex items-center justify-between gap-4 border-b border-carbon-20 pb-1.5">
           <span className="font-extrabold text-carbon-90 text-sm">{label}, 2026</span>
-          <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-carbon-10 text-carbon-70 border border-carbon-20 font-bold">
+          <span className="text-xs font-mono px-2 py-0.5 rounded bg-carbon-10 text-carbon-70 border border-carbon-20 font-bold">
             30-Day GIS History
           </span>
         </div>
         <div className="space-y-1 pt-1">
           {payload.map((entry: any, index: number) => (
-            <div key={`item-${index}`} className="flex items-center justify-between gap-6 font-mono text-[11px]">
+            <div key={`item-${index}`} className="flex items-center justify-between gap-6 font-mono text-xs">
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: entry.color || entry.fill }}></span>
                 <span className="text-carbon-60 font-sans">{entry.name}:</span>
@@ -174,19 +174,19 @@ export const ThirtyDayTrendChart: React.FC<ThirtyDayTrendChartProps> = ({
       {/* KPI Stats Bar */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 bg-carbon-05/80 p-5 rounded-2xl border border-carbon-20/90 shadow-2xs">
         <div className="space-y-1">
-          <span className="text-[10px] sm:text-xs font-mono uppercase text-carbon-60 font-bold block">30-Day Peak Severity</span>
+          <span className="text-xs sm:text-xs font-mono uppercase text-carbon-60 font-bold block">30-Day Peak Severity</span>
           <span className="text-xl sm:text-2xl font-extrabold text-rose-600 font-mono">{stats.max}%</span>
         </div>
         <div className="space-y-1">
-          <span className="text-[10px] sm:text-xs font-mono uppercase text-carbon-60 font-bold block">30-Day Mean Index</span>
+          <span className="text-xs sm:text-xs font-mono uppercase text-carbon-60 font-bold block">30-Day Mean Index</span>
           <span className="text-xl sm:text-2xl font-extrabold text-amber-600 font-mono">{stats.avg}%</span>
         </div>
         <div className="space-y-1">
-          <span className="text-[10px] sm:text-xs font-mono uppercase text-carbon-60 font-bold block">Latest Telemetry (Today)</span>
+          <span className="text-xs sm:text-xs font-mono uppercase text-carbon-60 font-bold block">Latest Telemetry (Today)</span>
           <span className="text-xl sm:text-2xl font-extrabold text-carbon-90 font-mono">{stats.latest}%</span>
         </div>
         <div className="space-y-1">
-          <span className="text-[10px] sm:text-xs font-mono uppercase text-carbon-60 font-bold block">24h Severity Trend</span>
+          <span className="text-xs sm:text-xs font-mono uppercase text-carbon-60 font-bold block">24h Severity Trend</span>
           <span className={`text-xl sm:text-2xl font-extrabold font-mono ${stats.diff > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
             {stats.diff > 0 ? `+${stats.diff}%` : `${stats.diff}%`}
           </span>
@@ -217,12 +217,12 @@ export const ThirtyDayTrendChart: React.FC<ThirtyDayTrendChartProps> = ({
             </defs>
 
             <CartesianGrid strokeDasharray="3 3" stroke="#d1d1d1" vertical={false} />
-            <XAxis dataKey="date" stroke="#77777a" fontSize={11} tickLine={false} />
-            <YAxis stroke="#77777a" fontSize={11} tickLine={false} unit="%" domain={[0, 100]} />
+            <XAxis dataKey="date" stroke="#77777a" fontSize={12} tickLine={false} />
+            <YAxis stroke="#77777a" fontSize={12} tickLine={false} unit="%" domain={[0, 100]} />
             <Tooltip content={<CustomTooltip />} />
-            <Legend wrapperStyle={{ fontSize: '11px', color: '#58585b', paddingTop: '8px' }} />
+            <Legend wrapperStyle={{ fontSize: '12px', color: '#58585b', paddingTop: '8px' }} />
 
-            <ReferenceLine y={75} stroke="#f43f5e" strokeDasharray="3 3" label={{ value: 'Catastrophic Threshold (75%)', fill: '#f43f5e', fontSize: 10, position: 'insideTopRight' }} />
+            <ReferenceLine y={75} stroke="#f43f5e" strokeDasharray="3 3" label={{ value: 'Catastrophic Threshold (75%)', fill: '#f43f5e', fontSize: 12, position: 'insideTopRight' }} />
 
             {(selectedHazard === 'All' || selectedHazard === 'Monsoon Flood') && (
               <Area
@@ -276,7 +276,7 @@ export const ThirtyDayTrendChart: React.FC<ThirtyDayTrendChartProps> = ({
       </div>
 
       {/* Footer Info */}
-      <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-carbon-20 text-[11px] text-carbon-60">
+      <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-carbon-20 text-xs text-carbon-60">
         <span className="flex items-center gap-1.5 font-mono">
           
           <span>Continuous Severity Normalization [0.0 - 1.0]</span>

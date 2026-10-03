@@ -90,13 +90,13 @@ export const FirebaseRealtimeStatus: React.FC<FirebaseRealtimeStatusProps> = ({
           </span>
           <div>
             <span className="font-bold text-carbon-90">Firebase Realtime DB</span>
-            <span className="ml-1.5 text-[11px] text-carbon-60">
+            <span className="ml-1.5 text-xs text-carbon-60">
               {status === 'connected' ? 'Connected' : status === 'connecting' ? 'Connecting...' : 'Offline'}
             </span>
           </div>
         </div>
         {latency !== null && status === 'connected' && (
-          <span className="text-[10px] font-mono font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full border border-emerald-200">
+          <span className="text-xs font-mono font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full border border-emerald-200">
             {latency} ms
           </span>
         )}
@@ -122,7 +122,7 @@ export const FirebaseRealtimeStatus: React.FC<FirebaseRealtimeStatusProps> = ({
           <div>
             <div className="flex items-center gap-2">
               <h4 className="text-xs font-extrabold text-carbon-90">Firebase Realtime Database Status</h4>
-              <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold tracking-wide uppercase border ${
+              <span className={`px-2 py-0.5 rounded-full text-xs font-extrabold tracking-wide uppercase border ${
                 status === 'connected'
                   ? 'bg-emerald-100 text-emerald-900 border-emerald-300'
                   : status === 'connecting'
@@ -132,7 +132,7 @@ export const FirebaseRealtimeStatus: React.FC<FirebaseRealtimeStatusProps> = ({
                 {status === 'connected' ? 'CONNECTED' : status === 'connecting' ? 'CONNECTING' : 'DISCONNECTED'}
               </span>
             </div>
-            <p className="text-[11px] text-carbon-60 mt-0.5">
+            <p className="text-xs text-carbon-60 mt-0.5">
               Live WebSocket synchronization telemetry for Realtime Database
             </p>
           </div>
@@ -144,7 +144,7 @@ export const FirebaseRealtimeStatus: React.FC<FirebaseRealtimeStatusProps> = ({
             type="button"
             onClick={() => ping()}
             disabled={isPinging}
-            className="px-2.5 py-1 text-[11px] font-bold text-carbon-70 hover:text-carbon-90 bg-white hover:bg-carbon-10 border border-carbon-20 rounded-lg transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-1"
+            className="px-2.5 py-1 text-xs font-bold text-carbon-70 hover:text-carbon-90 bg-white hover:bg-carbon-10 border border-carbon-20 rounded-lg transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-1"
             title="Check round-trip latency to Firebase RTDB"
           >
             <span className={isPinging ? 'animate-spin' : ''}><MaterialIcon name="refresh" className="w-4 h-4 inline-block mr-1" /></span>
@@ -164,7 +164,7 @@ export const FirebaseRealtimeStatus: React.FC<FirebaseRealtimeStatusProps> = ({
       {/* Metrics Row */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
         <div className="bg-white border border-carbon-20/80 rounded-lg p-2 flex flex-col justify-between">
-          <span className="text-[10px] font-bold text-carbon-60 uppercase tracking-wider">Live Connection</span>
+          <span className="text-xs font-bold text-carbon-60 uppercase tracking-wider">Live Connection</span>
           <div className="flex items-center gap-1.5 mt-1">
             <span className="relative flex h-2 w-2">
               {status === 'connected' && (
@@ -181,14 +181,14 @@ export const FirebaseRealtimeStatus: React.FC<FirebaseRealtimeStatusProps> = ({
         </div>
 
         <div className="bg-white border border-carbon-20/80 rounded-lg p-2 flex flex-col justify-between">
-          <span className="text-[10px] font-bold text-carbon-60 uppercase tracking-wider">Latency Ping</span>
+          <span className="text-xs font-bold text-carbon-60 uppercase tracking-wider">Latency Ping</span>
           <div className="font-mono font-black text-carbon-90 text-xs mt-1">
             {latency !== null ? `${latency} ms` : '—'}
           </div>
         </div>
 
         <div className="bg-white border border-carbon-20/80 rounded-lg p-2 flex flex-col justify-between col-span-2 sm:col-span-1">
-          <span className="text-[10px] font-bold text-carbon-60 uppercase tracking-wider">Last Check</span>
+          <span className="text-xs font-bold text-carbon-60 uppercase tracking-wider">Last Check</span>
           <div className="font-mono text-xs font-semibold text-carbon-70 mt-1 truncate">
             {lastChecked || 'Initial loading'}
           </div>
@@ -205,13 +205,13 @@ export const FirebaseRealtimeStatus: React.FC<FirebaseRealtimeStatusProps> = ({
             transition={{ duration: 0.2 }}
             className="overflow-hidden pt-1"
           >
-            <div className="bg-white border border-carbon-20 rounded-lg p-3 space-y-2 text-[11px]">
+            <div className="bg-white border border-carbon-20 rounded-lg p-3 space-y-2 text-xs">
               <div className="font-bold text-carbon-90 pb-1 border-b border-carbon-10 flex items-center justify-between">
                 <span>Firebase RTDB Endpoint Specifications</span>
                 <button
                   type="button"
                   onClick={handleReconnect}
-                  className="text-[10px] font-extrabold text-teal-700 hover:text-teal-900 hover:underline cursor-pointer"
+                  className="text-xs font-extrabold text-teal-700 hover:text-teal-900 hover:underline cursor-pointer"
                 >
                   Force Reconnect
                 </button>
@@ -241,7 +241,7 @@ export const FirebaseRealtimeStatus: React.FC<FirebaseRealtimeStatusProps> = ({
               </div>
 
               {errorMessage && (
-                <div className="p-2 bg-rose-50 border border-rose-200 rounded text-rose-800 font-semibold mt-2 text-[10px]">
+                <div className="p-2 bg-rose-50 border border-rose-200 rounded text-rose-800 font-semibold mt-2 text-xs">
                   <MaterialIcon name="warning" className="w-4 h-4 inline-block mr-1" /> Error: {errorMessage}
                 </div>
               )}

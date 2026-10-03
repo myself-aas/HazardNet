@@ -144,23 +144,23 @@ export const MultiHazardDistributionChart: React.FC<MultiHazardDistributionChart
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center">
               {hoveredHazard ? (
                 <>
-                  <span className="text-[11px] font-medium text-carbon-40 max-w-[100px] truncate">
+                  <span className="text-xs font-medium text-carbon-40 max-w-[100px] truncate">
                     {hoveredHazard.hazard_type}
                   </span>
                   <span className="text-lg font-bold font-mono text-white">
                     {hoveredHazard.event_count}
                   </span>
-                  <span className="text-[11px] font-mono text-rose-400 font-bold">
+                  <span className="text-xs font-mono text-rose-400 font-bold">
                     {hoveredHazard.percentage}%
                   </span>
                 </>
               ) : (
                 <>
-                  <span className="text-[11px] text-carbon-40">Total Recorded</span>
+                  <span className="text-xs text-carbon-40">Total Recorded</span>
                   <span className="text-xl font-bold font-mono text-white">
                     {totalEvents.toLocaleString()}
                   </span>
-                  <span className="text-[10px] text-carbon-50">2000–2026</span>
+                  <span className="text-xs text-carbon-50">2000–2026</span>
                 </>
               )}
             </div>

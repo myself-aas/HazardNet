@@ -417,7 +417,7 @@ export default function ChatBot() {
                           <span className="flex items-center gap-1.5">
                             <span>📍</span> Verified Google Maps Locations ({msg.facilities.length})
                           </span>
-                          <span className="text-[10px] text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded">Google Maps Data</span>
+                          <span className="text-xs text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded">Google Maps Data</span>
                         </div>
                         <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
                           {msg.facilities.map((fac, fIdx) => (
@@ -428,7 +428,7 @@ export default function ChatBot() {
                                   href={fac.uri}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="text-nasa-blue hover:text-nasa-blue-shade font-semibold whitespace-nowrap flex items-center gap-0.5 text-[11px] underline underline-offset-2"
+                                  className="text-nasa-blue hover:text-nasa-blue-shade font-semibold whitespace-nowrap flex items-center gap-0.5 text-xs underline underline-offset-2"
                                   title="Open in Google Maps"
                                 >
                                   <span>View on Maps</span>
@@ -436,7 +436,7 @@ export default function ChatBot() {
                                 </a>
                               </div>
                               {fac.snippet && (
-                                <p className="text-carbon-60 text-[11px] mt-1 line-clamp-2">
+                                <p className="text-carbon-60 text-xs mt-1 line-clamp-2">
                                   {fac.snippet}
                                 </p>
                               )}
@@ -453,7 +453,7 @@ export default function ChatBot() {
                           <span className="flex items-center gap-1.5">
                             <span>🌐</span> Verified Search Citations ({msg.groundingSources.length})
                           </span>
-                          <span className="text-[10px] text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded">Google Search Data</span>
+                          <span className="text-xs text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded">Google Search Data</span>
                         </div>
                         <div className="space-y-1.5 max-h-40 overflow-y-auto pr-1">
                           {msg.groundingSources.map((src, sIdx) => (
@@ -466,7 +466,7 @@ export default function ChatBot() {
                             >
                               <div className="font-medium text-emerald-950 group-hover:text-emerald-700 flex items-center justify-between">
                                 <span className="line-clamp-1">{src.title}</span>
-                                <span className="text-[10px] font-mono text-emerald-700 ml-2 shrink-0">{src.domain || 'source'} ↗</span>
+                                <span className="text-xs font-mono text-emerald-700 ml-2 shrink-0">{src.domain || 'source'} ↗</span>
                               </div>
                             </a>
                           ))}
@@ -476,7 +476,7 @@ export default function ChatBot() {
 
                     {/* Provenance Footer */}
                     {msg.providerSource && (
-                      <div className="text-[11px] text-carbon-60 px-1 flex items-center justify-between">
+                      <div className="text-xs text-carbon-60 px-1 flex items-center justify-between">
                         <span>Engine: {msg.providerSource}</span>
                       </div>
                     )}
@@ -512,7 +512,7 @@ export default function ChatBot() {
 
             {/* Grounding Mode Selector Toolbar */}
             <div className="px-3 pt-2.5 pb-1 bg-white border-t border-carbon-20 flex items-center justify-between text-xs gap-1.5 overflow-x-auto">
-              <span className="text-[11px] font-semibold text-carbon-60 uppercase shrink-0">Grounding:</span>
+              <span className="text-xs font-semibold text-carbon-60 uppercase shrink-0">Grounding:</span>
               <div className="flex items-center gap-1">
                 <button
                   type="button"
@@ -595,7 +595,7 @@ export default function ChatBot() {
                   </motion.button>
                 </div>
               </div>
-              <div className="flex items-center justify-between text-[11px] text-carbon-60 mt-1.5 px-0.5">
+              <div className="flex items-center justify-between text-xs text-carbon-60 mt-1.5 px-0.5">
                 <span>Grounded with gemini-3.5-flash & Live API</span>
                 {userLocation ? (
                   <span className="text-blue-700 flex items-center gap-0.5">

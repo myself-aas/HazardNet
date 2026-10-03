@@ -36,6 +36,7 @@ import {
 import { fetchDivisionEvents, DivisionEventsResponse, ClimaticEvent, ForecastRecord } from '../lib/eventsClient';
 import { InfinityLoader } from '../components/brand';
 import { getHazardBorder, getHazardColor, getHazardSurface } from '../lib/hazardPalette';
+import { CardStackRows } from '../components/ui/CardStackTable';
 
 const ALL_DIVISIONS = [
   { id: 'dhaka', name: 'Dhaka' },
@@ -264,8 +265,37 @@ export const DivisionDetailPage: React.FC = () => {
             </div>
           </div>
 
-          {/* District Forecast Table */}
-          <div className="overflow-x-auto mt-4 pt-4 border-t border-carbon-10">
+          {/* District Forecast Table. Below md the same rows render as cards: eight numeric
+              columns at 390px was a sideways scroll, and the card names each figure. */}
+          <CardStackRows
+            className="mt-4 pt-4 border-t border-carbon-10"
+            rows={data.districtRankings.map((dr) => {
+              const f7 = data.forecasts.find(f => f.districtName.toLowerCase() === dr.district.toLowerCase() && f.horizon === '7_days');
+              const targetDistrictSlug = dr.district.toLowerCase().replace(/[^a-z0-9]/g, '');
+              return {
+                key: dr.district,
+                heading: dr.district,
+                fields: [
+                  { label: '7-Day Threat', value: dr.forecast7DHazard || 'No threat' },
+                  { label: '7-Day Severity', value: dr.forecast7DSeverity !== null ? dr.forecast7DSeverity.toFixed(2) : 'N/A' },
+                  { label: '15-Day Threat', value: dr.forecast15DHazard || 'No threat' },
+                  { label: '15-Day Severity', value: dr.forecast15DSeverity !== null ? dr.forecast15DSeverity.toFixed(2) : 'N/A' },
+                  { label: 'Precipitation', value: f7 ? `${f7.precipitationMm.toFixed(1)} mm` : '-' },
+                  { label: 'Max Wind', value: f7 ? `${f7.windMaxKmh.toFixed(1)} km/h` : '-' },
+                ],
+                footer: (
+                  <Link
+                    to={`/forecast/district/${targetDistrictSlug}`}
+                    className="inline-flex min-h-[44px] items-center gap-1 font-semibold text-nasa-blue-shade hover:text-nasa-blue-shade"
+                  >
+                    <span>District Page</span>
+                    <ArrowRight className="w-3 h-3" />
+                  </Link>
+                ),
+              };
+            })}
+          />
+          <div className="mt-4 hidden overflow-x-auto md:block">
             <table className="w-full text-left text-xs">
               <thead className="bg-carbon-05 text-carbon-60 font-semibold border-b border-carbon-20">
                 <tr>
@@ -528,7 +558,39 @@ export const DivisionDetailPage: React.FC = () => {
         </div>
 
         {/* Table */}
-        <div className="overflow-x-auto mt-4">
+        <CardStackRows
+          className="mt-4"
+          rows={filteredEvents.slice(0, 40).map((event) => ({
+            key: event.id,
+            heading: event.date,
+            fields: [
+              { label: 'District', value: (
+                <Link
+                  to={`/forecast/district/${event.district.toLowerCase().replace(/[^a-z0-9]/g, '')}`}
+                  className="font-semibold text-nasa-blue-shade"
+                >
+                  {event.district}
+                </Link>
+              ) },
+              { label: 'Hazard Type', value: event.hazard },
+              { label: 'GLIDE', value: event.glide || '-' },
+              { label: 'Severity', value: event.severity ? event.severity.toFixed(2) : '1.00' },
+              { label: 'Description', value: event.desc || 'No descriptive summary logged' },
+              { label: 'Event ID', value: event.id },
+              { label: 'Coordinates', value: `${event.lat.toFixed(4)}, ${event.lng.toFixed(4)}` },
+            ],
+            footer: (
+              <Link
+                to={`/forecast/district/${event.district.toLowerCase().replace(/[^a-z0-9]/g, '')}`}
+                className="inline-flex min-h-[44px] items-center gap-1 font-semibold text-nasa-blue-shade"
+              >
+                <span>Go to {event.district} District Dashboard</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            ),
+          }))}
+        />
+        <div className="mt-4 hidden overflow-x-auto md:block">
           <table className="w-full text-left text-xs">
             <thead className="bg-carbon-05 text-carbon-60 font-semibold border-b border-carbon-20">
               <tr>

@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { isValidGlide } from '../lib/glide';
 import { ALL_64_DISTRICTS } from '../data/bangladeshDistricts';
+import { CardStackRows } from './ui/CardStackTable';
 
 export interface HistoricalHazardRecord {
   id: string;
@@ -200,7 +201,7 @@ export const HistoricalHazardCatalog: React.FC<HistoricalHazardCatalogProps> = (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
         {/* Search Input */}
         <div>
-          <label className="block text-[11px] font-medium text-carbon-40 mb-1">Search Keywords</label>
+          <label className="block text-xs font-medium text-carbon-40 mb-1">Search Keywords</label>
           <input
             type="text"
             placeholder="Search district, hazard, GLIDE..."
@@ -215,7 +216,7 @@ export const HistoricalHazardCatalog: React.FC<HistoricalHazardCatalogProps> = (
 
         {/* Hazard Class Selector */}
         <div>
-          <label className="block text-[11px] font-medium text-carbon-40 mb-1">Hazard Class</label>
+          <label className="block text-xs font-medium text-carbon-40 mb-1">Hazard Class</label>
           <select
             value={selectedHazard}
             onChange={(e) => {
@@ -234,7 +235,7 @@ export const HistoricalHazardCatalog: React.FC<HistoricalHazardCatalogProps> = (
 
         {/* District Selector */}
         <div>
-          <label className="block text-[11px] font-medium text-carbon-40 mb-1">District</label>
+          <label className="block text-xs font-medium text-carbon-40 mb-1">District</label>
           <select
             value={selectedDistrict}
             onChange={(e) => {
@@ -253,7 +254,7 @@ export const HistoricalHazardCatalog: React.FC<HistoricalHazardCatalogProps> = (
 
         {/* Year Range Controls */}
         <div>
-          <div className="flex justify-between text-[11px] font-medium text-carbon-40 mb-1">
+          <div className="flex justify-between text-xs font-medium text-carbon-40 mb-1">
             <span>Year Range:</span>
             <span className="font-mono text-carbon-20">{minYear} – {maxYear}</span>
           </div>
@@ -288,10 +289,44 @@ export const HistoricalHazardCatalog: React.FC<HistoricalHazardCatalogProps> = (
         </div>
       </div>
 
-      {/* Catalog Table */}
-      <div className="overflow-x-auto border border-carbon-80 rounded-xl bg-carbon-black/40">
+      {/* Phone: one card per record. The table's seven columns are a two-screen sideways scroll
+          at 390px, and the darkness of this console panel hides that it exists. */}
+      {paginatedRecords.length === 0 ? (
+        <p className="rounded-xl border border-carbon-80 bg-carbon-black/40 p-6 text-center text-xs text-carbon-50 md:hidden">
+          No historical records match the filter criteria.
+        </p>
+      ) : (
+        <CardStackRows
+          className="rounded-xl bg-carbon-black/40"
+          tone="onDark"
+          rows={paginatedRecords.map((r) => {
+            const hasValidGlide = isValidGlide(r.glide);
+            return {
+              key: r.id,
+              heading: `${r.date} · ${r.district}`,
+              fields: [
+                { label: 'Hazard Type', value: r.hazard_type },
+                { label: 'Severity', value: `${r.severity_score} (${r.severity_index_name})` },
+                { label: 'GLIDE Number', value: hasValidGlide ? r.glide : (r.glide || 'Domestic Rec.') },
+                { label: 'Affected', value: Number(r.validated_affected || 0).toLocaleString() },
+              ],
+              ...(onSelectEvent ? { footer: (
+                <button
+                  type="button"
+                  onClick={() => onSelectEvent(r)}
+                  className="min-h-[44px] rounded bg-carbon-80 px-2.5 py-1 font-medium text-carbon-20 transition-colors hover:bg-carbon-70"
+                >
+                  View Report
+                </button>
+              ) } : {}),
+            };
+          })}
+        />
+      )}
+      {/* Catalog Table (md and up) */}
+      <div className="hidden overflow-x-auto border border-carbon-80 rounded-xl bg-carbon-black/40 md:block">
         <table className="w-full text-left text-xs text-carbon-30" role="table">
-          <thead className="bg-carbon-black/90 text-carbon-40 text-[11px] uppercase tracking-wider font-semibold border-b border-carbon-80">
+          <thead className="bg-carbon-black/90 text-carbon-40 text-xs uppercase tracking-wider font-semibold border-b border-carbon-80">
             <tr>
               <th scope="col" className="px-3 py-2.5">Date</th>
               <th scope="col" className="px-3 py-2.5">District</th>
@@ -324,13 +359,13 @@ export const HistoricalHazardCatalog: React.FC<HistoricalHazardCatalogProps> = (
                       {r.district}
                     </td>
                     <td className="px-3 py-2.5">
-                      <span className="px-2 py-0.5 rounded text-[11px] font-medium bg-carbon-80 text-carbon-20 border border-carbon-70">
+                      <span className="px-2 py-0.5 rounded text-xs font-medium bg-carbon-80 text-carbon-20 border border-carbon-70">
                         {r.hazard_type}
                       </span>
                     </td>
                     <td className="px-3 py-2.5 font-mono">
                       <span className="text-rose-400 font-bold">{r.severity_score}</span>
-                      <span className="text-[10px] text-carbon-50 ml-1">({r.severity_index_name})</span>
+                      <span className="text-xs text-carbon-50 ml-1">({r.severity_index_name})</span>
                     </td>
                     <td className="px-3 py-2.5 font-mono">
                       {hasValidGlide ? (
@@ -347,14 +382,14 @@ export const HistoricalHazardCatalog: React.FC<HistoricalHazardCatalogProps> = (
                               );
                             }
                           }}
-                          className="px-2 py-0.5 rounded text-[11px] font-mono font-medium bg-blue-950/70 text-blue-300 border border-blue-800/70 hover:bg-blue-900 transition-colors inline-flex items-center gap-1"
+                          className="px-2 py-0.5 rounded text-xs font-mono font-medium bg-blue-950/70 text-blue-300 border border-blue-800/70 hover:bg-blue-900 transition-colors inline-flex items-center gap-1"
                           title="Open Multilateral GLIDE links"
                         >
                           <span>{r.glide}</span>
-                          <span className="text-[10px]">↗</span>
+                          <span className="text-xs">↗</span>
                         </button>
                       ) : (
-                        <span className="text-carbon-60 text-[11px]">{r.glide || 'Domestic Rec.'}</span>
+                        <span className="text-carbon-60 text-xs">{r.glide || 'Domestic Rec.'}</span>
                       )}
                     </td>
                     <td className="px-3 py-2.5 text-right font-mono text-carbon-30">
@@ -365,7 +400,7 @@ export const HistoricalHazardCatalog: React.FC<HistoricalHazardCatalogProps> = (
                         <button
                           type="button"
                           onClick={() => onSelectEvent(r)}
-                          className="px-2.5 py-1 rounded text-[11px] font-medium bg-carbon-80 hover:bg-carbon-70 text-carbon-20 transition-colors"
+                          className="px-2.5 py-1 rounded text-xs font-medium bg-carbon-80 hover:bg-carbon-70 text-carbon-20 transition-colors"
                         >
                           View Report
                         </button>

@@ -40,6 +40,7 @@ import type { WeatherResponse, HourlyWeather, DailyWeather } from '../lib/weathe
 import { windDirectionLabel } from '../lib/weather';
 import { wmoCodeInfo } from '../lib/wmoWeatherCodes';
 import type { ForecastRow } from '../lib/forecasts';
+import { CardStackRows } from './ui/CardStackTable';
 
 interface WeatherPanelProps {
   data: WeatherResponse;
@@ -151,7 +152,7 @@ const Stat: React.FC<{
   <div className="flex items-start gap-3 rounded-lg bg-carbon-05 dark:bg-carbon-80/60 p-3">
     <div className="mt-0.5 text-carbon-60 dark:text-carbon-40">{icon}</div>
     <div className="min-w-0">
-      <div className="text-[11px] uppercase tracking-wide text-carbon-60 dark:text-carbon-40">{label}</div>
+      <div className="text-xs uppercase tracking-wide text-carbon-60 dark:text-carbon-40">{label}</div>
       <div className="text-sm font-semibold text-carbon-80 dark:text-carbon-10 leading-tight">{value}</div>
       {sub && <div className="text-xs text-carbon-60 dark:text-carbon-40 mt-0.5">{sub}</div>}
     </div>
@@ -276,30 +277,30 @@ export const WeatherPanel: React.FC<WeatherPanelProps> = ({
               <span>Pipeline Agrometeorological Forecast ({forecast.horizon || 'Daily Advisory'})</span>
             </span>
             {forecast.target_date && (
-              <span className="font-mono text-[11px] text-carbon-60">Target: {forecast.target_date}</span>
+              <span className="font-mono text-xs text-carbon-60">Target: {forecast.target_date}</span>
             )}
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 text-xs font-mono">
             <div className="p-2 rounded bg-white dark:bg-carbon-90 border border-carbon-20 dark:border-carbon-70">
-              <span className="text-[10px] text-carbon-60 uppercase block">Max Temp</span>
+              <span className="text-xs text-carbon-60 uppercase block">Max Temp</span>
               <span className="font-bold text-rose-600 dark:text-rose-400">
                 {forecast.temperature_max !== undefined ? `${forecast.temperature_max}°C` : '—'}
               </span>
             </div>
             <div className="p-2 rounded bg-white dark:bg-carbon-90 border border-carbon-20 dark:border-carbon-70">
-              <span className="text-[10px] text-carbon-60 uppercase block">Min Temp</span>
+              <span className="text-xs text-carbon-60 uppercase block">Min Temp</span>
               <span className="font-bold text-sky-600 dark:text-sky-400">
                 {forecast.temperature_min !== undefined ? `${forecast.temperature_min}°C` : '—'}
               </span>
             </div>
             <div className="p-2 rounded bg-white dark:bg-carbon-90 border border-carbon-20 dark:border-carbon-70">
-              <span className="text-[10px] text-carbon-60 uppercase block">Precipitation</span>
+              <span className="text-xs text-carbon-60 uppercase block">Precipitation</span>
               <span className="font-bold text-blue-600 dark:text-blue-400">
                 {forecast.precipitation_mm !== undefined ? `${forecast.precipitation_mm} mm` : '—'}
               </span>
             </div>
             <div className="p-2 rounded bg-white dark:bg-carbon-90 border border-carbon-20 dark:border-carbon-70">
-              <span className="text-[10px] text-carbon-60 uppercase block">Wind Speed</span>
+              <span className="text-xs text-carbon-60 uppercase block">Wind Speed</span>
               <span className="font-bold text-teal-600 dark:text-teal-400">
                 {forecast.wind_max_kmh !== undefined ? `${forecast.wind_max_kmh} km/h` : '—'}
               </span>
@@ -391,14 +392,14 @@ export const WeatherPanel: React.FC<WeatherPanelProps> = ({
               <CartesianGrid strokeDasharray="3 3" stroke="#d1d1d1" className="dark:opacity-20" />
               <XAxis
                 dataKey="time"
-                tick={{ fontSize: 11 }}
+                tick={{ fontSize: 12 }}
                 interval="preserveStartEnd"
                 minTickGap={30}
                 stroke="#959599"
               />
               <YAxis
                 yAxisId="temp"
-                tick={{ fontSize: 11 }}
+                tick={{ fontSize: 12 }}
                 stroke="#f59e0b"
                 unit="°"
                 domain={['dataMin - 3', 'dataMax + 3']}
@@ -406,7 +407,7 @@ export const WeatherPanel: React.FC<WeatherPanelProps> = ({
               <YAxis
                 yAxisId="precip"
                 orientation="right"
-                tick={{ fontSize: 11 }}
+                tick={{ fontSize: 12 }}
                 stroke="#3b82f6"
                 unit="mm"
               />
@@ -449,11 +450,11 @@ export const WeatherPanel: React.FC<WeatherPanelProps> = ({
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={hours48} margin={{ top: 8, right: 8, left: -18, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#d1d1d1" className="dark:opacity-20" />
-              <XAxis dataKey="time" tick={{ fontSize: 11 }} interval="preserveStartEnd" minTickGap={30} stroke="#959599" />
-              <YAxis yAxisId="wind" tick={{ fontSize: 11 }} stroke="#10b981" unit="" />
-              <YAxis yAxisId="hum" orientation="right" tick={{ fontSize: 11 }} stroke="#06b6d4" unit="%" />
+              <XAxis dataKey="time" tick={{ fontSize: 12 }} interval="preserveStartEnd" minTickGap={30} stroke="#959599" />
+              <YAxis yAxisId="wind" tick={{ fontSize: 12 }} stroke="#10b981" unit="" />
+              <YAxis yAxisId="hum" orientation="right" tick={{ fontSize: 12 }} stroke="#06b6d4" unit="%" />
               <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8 }} />
-              <Legend wrapperStyle={{ fontSize: 11 }} />
+              <Legend wrapperStyle={{ fontSize: 12 }} />
               <Line yAxisId="wind" type="monotone" dataKey="wind_speed_10m" stroke="#10b981" strokeWidth={1.5} dot={false} name="Wind m/s" />
               <Line yAxisId="wind" type="monotone" dataKey="wind_gusts_10m" stroke="#059669" strokeDasharray="2 2" dot={false} name="Gust m/s" />
               <Line yAxisId="hum" type="monotone" dataKey="relative_humidity_2m" stroke="#06b6d4" strokeWidth={1.5} dot={false} name="Humidity %" />
@@ -464,7 +465,31 @@ export const WeatherPanel: React.FC<WeatherPanelProps> = ({
 
       {/* ── 16-day forecast table ──────────────────────────────── */}
       <Section title={`${daily.length}-day forecast`} icon={<Calendar size={16} />}>
-        <div className="mt-2 overflow-x-auto">
+        {/* Below md the same nine columns become one card per day; the table above 768px keeps
+            the aligned numeric columns the forecast is read for. */}
+        <CardStackRows
+          className="mt-2"
+          rows={daily.map((d) => {
+            const w = wmoCodeInfo(d.weather_code as number);
+            return {
+              key: String(d.iso),
+              heading: String(d.date),
+              fields: [
+                { label: 'Cond.', value: w.label },
+                { label: 'Hi / Lo', value: `${c(d.temperature_2m_max)} / ${c(d.temperature_2m_min)}` },
+                { label: 'Precip', value: typeof d.precipitation_probability_max === 'number'
+                    ? `${mm(d.precipitation_sum)} (${Math.round(d.precipitation_probability_max)}%)`
+                    : mm(d.precipitation_sum) },
+                { label: 'Rain', value: mm(d.rain_sum) },
+                { label: 'Snow', value: mm(d.snowfall_sum) },
+                { label: 'Wind max', value: msToKmh(d.wind_speed_10m_max) },
+                { label: 'UV max', value: typeof d.uv_index_max === 'number' ? Math.round(d.uv_index_max) : '-' },
+                { label: 'Sun', value: typeof d.sunshine_duration === 'number' ? `${(d.sunshine_duration / 3600).toFixed(1)} h` : '-' },
+              ],
+            };
+          })}
+        />
+        <div className="mt-2 hidden overflow-x-auto md:block">
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left text-xs uppercase tracking-wide text-carbon-60 dark:text-carbon-40 border-b border-carbon-20 dark:border-carbon-70">
@@ -546,7 +571,7 @@ export const WeatherPanel: React.FC<WeatherPanelProps> = ({
       </Section>
 
       {/* ── Footer / source ─────────────────────────────────────── */}
-      <div className="text-center text-[11px] text-carbon-60 dark:text-carbon-50 pt-2 pb-1">
+      <div className="text-center text-xs text-carbon-60 dark:text-carbon-50 pt-2 pb-1">
         Data from <a href="https://open-meteo.com/" target="_blank" rel="noopener noreferrer" className="underline hover:text-sky-500">Open-Meteo</a>
         {' · '}
         {data._meta.license}

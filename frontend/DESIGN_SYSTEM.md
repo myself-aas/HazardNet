@@ -141,22 +141,22 @@ Defined in `frontend/src/index.css` for instant reusability across any page:
 
 ### Buttons
 - **Primary CTA (`.hn-btn-primary`)**:
-  - High-contrast red shade (`#b60109`), hover transition, 44px min-height, unified 2px radius (`var(--hds-border-radius-control)`), semibold 600 weight, `-0.01em` tracking.
+  - High-contrast red shade (`#b60109`), hover transition, 44px min-height, the `control` radius (`var(--mrd-radius-sm)`, 8px), semibold 600 weight, `-0.01em` tracking.
 - **Secondary Action (`.hn-btn-secondary`)**:
-  - NASA blue (`#1c67e3`), hover transition to blue shade, 44px min-height, unified 2px radius, semibold 600 weight, `-0.01em` tracking.
+  - NASA blue (`#1c67e3`), hover transition to blue shade, 44px min-height, `control` radius, semibold 600 weight, `-0.01em` tracking.
 - **Outline Button (`.hn-btn-outline`)**:
-  - Crisp border on carbon line, white background, hover fill, unified 2px radius, semibold 600 weight, `-0.01em` tracking.
+  - Crisp border on carbon line, white background, hover fill, `control` radius, semibold 600 weight, `-0.01em` tracking.
 - **Ghost Button (`.hn-btn-ghost`)**:
-  - Transparent background, hover tint, 44px hit-box, unified 2px radius, semibold 600 weight, `-0.01em` tracking.
+  - Transparent background, hover tint, 44px hit-box, `control` radius, semibold 600 weight, `-0.01em` tracking.
 
 ### Button Typography & Font Weight Standardization:
 - All buttons and interactive triggers (`button`, `[role="button"]`, `.hn-btn-*`, `.hn-nav-link`) standardize strictly to `font-weight: 600` (Semibold) with subtle `letter-spacing: -0.01em`. This eliminates inconsistent mixes of 600 and 700, making buttons and navigation controls crisp, authoritative, and visually unified.
 
 ### Surface & Cards
 - **Base Card (`.hn-card`)**:
-  - Pure white background, `1px solid var(--hn-hds-line)`, unified slightly rounded 2px radius (`var(--hds-border-radius-control)`).
+  - Pure white background, `1px solid var(--hn-hds-line)`, `control` radius (`var(--mrd-radius-sm)`).
 - **Elevated Card (`.hn-card-elevated`)**:
-  - Subtle 4px soft shadow, hover transition for interactive cards, unified slightly rounded 2px radius (`var(--hds-border-radius-control)`).
+  - Subtle 4px soft shadow, hover transition for interactive cards, `card` radius (`var(--mrd-radius-lg)`).
 
 ### Footer Architecture & Typography Standardization:
 - **Link Color & Weight**: All footer navigation links standardize strictly to Carbon-80 (`#2e2e32`, `text-carbon-80`) with Medium 500 weight (`font-medium`). This prevents inconsistent mixes of carbon-60, carbon-80, and white.
@@ -204,6 +204,40 @@ This reduces upfront bundle size while enabling smooth 60fps animations for draw
 - **Cinematic Gradient Overlay**: Vertical gradient (`from-black/35 via-black/55 to-black/85`) darkens the bottom to ground the typography while preserving the celestial vista at the top.
 - **Dynamic Header Transition**: The sticky navigation header remains transparent over the hero (`bg-black/25 backdrop-blur-md text-white border-b border-white/10`) with floating borderless icons (`menu_open`, `location_on`, `map_search`). As soon as the user scrolls past 80px, it smoothly transitions (0.3s ease) into a solid white header (`bg-white/95 backdrop-blur-md border-b border-carbon-20 text-carbon-80 shadow-xs`).
 - **Sidebar Paper Card Contrast**: The `RunVisual` card maintains a clean Solid White (`#FFFFFF`) background with dark neutral `Carbon-90` text and `#D1D1D1` border to avoid white-on-white text conflicts and maximize informational readability.
+
+---
+
+## 6b. Tables and Icons (2026-10-03)
+
+Two primitives carry the mobile-port decisions this document used to leave to each page. Both are
+enforced by test, and both exist so a screen has nothing to re-decide when it is ported.
+
+### Tables
+
+`frontend/src/components/ui/CardStackTable.tsx` renders a table's rows twice from one source: the
+`<table>` at `md` and up, and below `md` one card per row - first cell as the card's heading, the
+rest as a `<dl>` of label/value pairs, so a screen reader hears the column name with each value.
+`CardStackTable` takes `columns`/`rows` (the shape `content/site-routes.json` publishes);
+`CardStackRows` is the same phone branch for console tables whose cells are JSX. The phone branch is
+never inside a horizontal scroll container. Console panels that are dark in either theme pass
+`tone="onDark"`, so a card never inherits near-black ink on a near-black surface.
+
+The two exceptions are deliberate and ledgered: the map's table view (the map *is* the phone view,
+reached through the 44px Map/Table toggle), the advisories protocol sheet (print-only), and the
+two-column metadata tables on `/status` (they do not scroll at 320px).
+`data/design/table-stack-baseline.json` lists every `<table>` in `frontend/src`; a new one, or a
+missing conversion, fails `__tests__/tableStack.test.js`.
+
+### Icons
+
+One family. `data/design/icon-registry.json` holds the decision (family, one stroke, the size
+scale, the names in use); `scripts/generate-icon-glyphs.mjs` turns it plus the installed
+`lucide-react` into `packages/design-system/src/icons.ts` - name to SVG path data, React-free, so
+the native shell renders the same glyphs with `react-native-svg`. Stroke is 1.75, set once per
+platform (`svg.lucide { stroke-width }` on web, `ICON_STROKE` natively), never at a call site.
+No emoji is used as an icon on either platform. `components/MaterialIcon.tsx` is the frozen
+hand-authored legacy set: its importers may only shrink. `__tests__/iconFamily.test.js` holds all
+of it. See `docs/design-system/MERIDIAN.md` §4.8-4.9 for the full contract.
 
 ---
 

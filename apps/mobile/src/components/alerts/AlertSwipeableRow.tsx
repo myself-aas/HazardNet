@@ -12,6 +12,8 @@ import { Share, Text, View, Pressable } from 'react-native';
 import { Swipeable } from 'react-native-gesture-handler';
 import { AlertRow, AlertRowProps } from './AlertRow';
 import { useHaptics } from '../../hooks/useHaptics';
+import { Icon } from '../Icon';
+import type { IconName } from '@hazardnet/design-system';
 
 export interface AlertSwipeableRowProps extends AlertRowProps {
   onSave?: (id: string) => void;
@@ -47,11 +49,11 @@ export const AlertSwipeableRow: React.FC<AlertSwipeableRowProps> = ({
   }, [alert, trigger]);
 
   const renderRightActions = useCallback(() => (
-    <SwipeAction label={saved ? 'Saved' : 'Save'} icon="★" bg={saved ? '#2e7d32' : '#1565c0'} onPress={handleSave} width={SWIPE_WIDTH} />
+    <SwipeAction label={saved ? 'Saved' : 'Save'} icon={saved ? 'BookmarkCheck' : 'Bookmark'} bg={saved ? '#2e7d32' : '#1565c0'} onPress={handleSave} width={SWIPE_WIDTH} />
   ), [handleSave, saved]);
 
   const renderLeftActions = useCallback(() => (
-    <SwipeAction label="Share" icon="↗" bg="#546e7a" onPress={handleShare} width={SWIPE_WIDTH} />
+    <SwipeAction label="Share" icon="Share2" bg="#546e7a" onPress={handleShare} width={SWIPE_WIDTH} />
   ), [handleShare]);
 
   return (
@@ -70,7 +72,7 @@ export const AlertSwipeableRow: React.FC<AlertSwipeableRowProps> = ({
   );
 };
 
-function SwipeAction({ label, icon, bg, onPress, width }: { label: string; icon: string; bg: string; onPress: () => void; width: number }) {
+function SwipeAction({ label, icon, bg, onPress, width }: { label: string; icon: IconName; bg: string; onPress: () => void; width: number }) {
   return (
     <Pressable
       onPress={onPress}
@@ -78,7 +80,7 @@ function SwipeAction({ label, icon, bg, onPress, width }: { label: string; icon:
       accessibilityLabel={label}
       style={{ width, backgroundColor: bg, justifyContent: 'center', alignItems: 'center' }}
     >
-      <Text style={{ color: '#fff', fontSize: 20, marginBottom: 4 }}>{icon}</Text>
+      <Icon name={icon} size={24} color="#fff" />
       <Text style={{ color: '#fff', fontSize: 12, fontWeight: '600' }}>{label}</Text>
     </Pressable>
   );

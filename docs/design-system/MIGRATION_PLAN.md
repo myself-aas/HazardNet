@@ -329,6 +329,24 @@ worse than no dark mode.
 the theme layer.
 **Effort:** 3 days. **Risk:** medium — highest chance of a surface missed.
 
+**Status: shipped (2026-10-03).** Steps 1, 3, 4 and 5 are done as written. Step 2 was executed as
+the variable route the audit recommended instead of a per-file sweep: `frontend/src/styles/dark.css`
+(imported last from `index.css`) re-points the carbon ramp by role, pins the fills that must stay
+dark, re-mixes the status grounds, and re-points Leaflet, the popups and the native controls;
+`PrintPreviewModal` marks its paper `hn-paper` so it stays white in either theme. The gate is
+`__tests__/darkTheme.test.js` (30 tests), whose coverage test fails on any colour family used in
+`frontend/src` that is neither theme-aware nor a declared data encoding - the machine gate §5.2 of
+the audit asked for. `useMeridianTheme` is back to `'system'`.
+
+Two decisions worth carrying forward from it:
+
+- **Fills and inks are separate roles.** `text-carbon-90` (615 uses) must go light in a dark theme;
+  `bg-carbon-90` chrome (a dark console panel) must stay dark. They cannot share one ramp position,
+  which is why the theme layer pins the fills rather than re-pointing every step twice.
+- **Status grounds are a role, not a shade.** Rose/red/emerald/blue/sky/yellow/orange are
+  role-aliased, so one `color-mix(… over --mrd-bg-elevated)` per role covers every 50-200 step;
+  per-shade dark rules would be 7 x 8 dead-end rules.
+
 ### Phase 10 — Retire the old layer
 **Scope:** `--nasa-*` aliases, legacy `--hn-*` names, the HDS 2.2 doc.
 **Steps:**
@@ -340,6 +358,22 @@ the theme layer.
 
 **Gate:** full suite · `check:tokens` · build + prerender.
 **Effort:** 1 day. **Risk:** medium — deleting tokens breaks things at runtime, not compile time.
+
+### Phase 9.1 — one icon vocabulary and the phone table (`done`, 2026-10-03)
+
+Two cross-platform decisions the audit deferred (backlog 10 and 9) and this pass closed:
+
+- **Icons.** One family: `lucide-react` on web, `react-native-svg` on native, and a *generated*
+  shared registry between them (`data/design/icon-registry.json` →
+  `packages/design-system/src/icons.ts`, built by `scripts/generate-icon-glyphs.mjs`; native
+  component `apps/mobile/src/components/Icon.tsx`). One stroke (1.75), one size scale, no emoji on
+  either platform. `components/MaterialIcon.tsx` is frozen with a shrinking-importer ratchet.
+- **Tables.** `components/ui/CardStackTable.tsx` gives every content table a card stack below
+  `md`; `data/design/table-stack-baseline.json` ledgers the tables that remain, with reasons.
+  This is also the cheapest possible answer to the RN port: the phone card *is* the native list
+  row, so a ported screen has nothing to translate.
+- The type floor is 12px on both platforms, and `MERIDIAN_RADIUS_ROLES` is one object both
+  platforms spread. Gates: `iconFamily`, `tableStack`, `designTypography`.
 
 ### Phase 11 (parallel) — React Native and Windows shells
 **Scope:** `apps/mobile`, `apps/windows` — 54 `.tsx`.

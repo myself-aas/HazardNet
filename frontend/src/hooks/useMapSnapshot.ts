@@ -147,17 +147,17 @@ export function useMapSnapshot(
                       </div>
                       <div>
                         <div style="display: flex; align-items: center; gap: 8px;">
-                          <span style="background: #f64137; color: #17171b; font-weight: 900; font-size: 10px; padding: 2px 9px; border-radius: 9999px; text-transform: uppercase; letter-spacing: 0.05em;">
+                          <span style="background: #f64137; color: #17171b; font-weight: 900; font-size: 12px; padding: 2px 9px; border-radius: 9999px; text-transform: uppercase; letter-spacing: 0.05em;">
                             HAZARDNET AI GEOSPATIAL REPORT
                           </span>
-                          <span style="font-size: 11px; color: #959599; font-family: monospace;">
+                          <span style="font-size: 12px; color: #959599; font-family: monospace;">
                             VERIFIED SNAPSHOT
                           </span>
                         </div>
                         <h2 style="font-size: 18px; font-weight: 900; color: #ffffff; margin: 4px 0 0 0; letter-spacing: -0.02em;">
                           ${escapedTitle}
                         </h2>
-                        <div style="display: flex; align-items: center; gap: 12px; margin-top: 4px; font-size: 11px; color: #b9b9bb;">
+                        <div style="display: flex; align-items: center; gap: 12px; margin-top: 4px; font-size: 12px; color: #b9b9bb;">
                           <span>📍 <strong>Location Focus:</strong> ${escapedLocation}</span>
                           <span>•</span>
                           <span>🛰️ <strong>Tile Engine:</strong> ${escapedBaseMap}</span>
@@ -165,11 +165,11 @@ export function useMapSnapshot(
                       </div>
                     </div>
 
-                    <div style="text-align: right; border-left: 1px solid #444447; padding-left: 16px; font-size: 11px; color: #959599;">
+                    <div style="text-align: right; border-left: 1px solid #444447; padding-left: 16px; font-size: 12px; color: #959599;">
                       <div style="font-family: monospace; font-size: 12px; color: #38bdf8; font-weight: 700;">
                         ⏱️ ${escapedTimestamp}
                       </div>
-                      <div style="margin-top: 4px; font-size: 10px; color: #b9b9bb; max-width: 240px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                      <div style="margin-top: 4px; font-size: 12px; color: #b9b9bb; max-width: 240px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                         Active Layers: ${escapedOverlays}
                       </div>
                     </div>
@@ -193,7 +193,7 @@ export function useMapSnapshot(
                     padding: 12px 16px;
                     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
                     box-shadow: 0 20px 25px -5px rgba(0,0,0,0.6);
-                    font-size: 11px;
+                    font-size: 12px;
                     display: flex;
                     flex-direction: column;
                     gap: 8px;
@@ -201,8 +201,8 @@ export function useMapSnapshot(
 
                   legendDiv.innerHTML = `
                     <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #444447; padding-bottom: 6px;">
-                      <strong style="color: #f64137; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em;">Multi-Hazard Severity Key</strong>
-                      <span style="color: #959599; font-size: 10px; font-family: monospace;">HazardNet v2.4</span>
+                      <strong style="color: #f64137; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em;">Multi-Hazard Severity Key</strong>
+                      <span style="color: #959599; font-size: 12px; font-family: monospace;">HazardNet v2.4</span>
                     </div>
                     <div style="display: flex; align-items: center; gap: 12px;">
                       <div style="display: flex; align-items: center; gap: 6px;">

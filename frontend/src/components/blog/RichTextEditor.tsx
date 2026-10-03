@@ -171,7 +171,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
           onChange={(e) => applyBlock(e.target.value)}
           disabled={disabled}
           aria-label="Block format"
-          className="h-8 rounded-lg border border-carbon-20 bg-white px-2 text-[11px] font-bold text-carbon-70 cursor-pointer disabled:opacity-40"
+          className="h-8 rounded-lg border border-carbon-20 bg-white px-2 text-xs font-bold text-carbon-70 cursor-pointer disabled:opacity-40"
         >
           {BLOCK_OPTIONS.map((option) => (
             <option key={option.value} value={option.value}>
@@ -215,7 +215,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
           type="button"
           onClick={() => setSourceView((v) => !v)}
           disabled={disabled}
-          className={`h-8 px-2.5 rounded-lg text-[10px] font-black transition-colors cursor-pointer disabled:opacity-40 ${
+          className={`h-8 px-2.5 rounded-lg text-xs font-black transition-colors cursor-pointer disabled:opacity-40 ${
             sourceView ? 'bg-carbon-90 text-white' : 'text-carbon-60 hover:bg-carbon-10'
           }`}
           title="Toggle HTML source view"
@@ -249,7 +249,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
       )}
 
       {/* Status bar */}
-      <div className="flex items-center justify-between gap-3 px-3.5 py-2 border-t border-carbon-20 bg-carbon-05/80 text-[10px] font-bold text-carbon-60">
+      <div className="flex items-center justify-between gap-3 px-3.5 py-2 border-t border-carbon-20 bg-carbon-05/80 text-xs font-bold text-carbon-60">
         <span className="font-mono">{words} words · ~{readingTimeMinutes(value)} min read</span>
         <span className="font-mono">{sourceView ? 'SOURCE VIEW' : 'VISUAL EDITOR'}</span>
       </div>

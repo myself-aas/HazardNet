@@ -58,6 +58,7 @@ import { useReveal } from '../components/meridian/motion';
 import { AlertLevelBadge } from '../components/alerts/AlertLevelBadge';
 import { LanguageToggle } from '../components/alerts/LanguageToggle';
 import LiveStatusStrip from '../components/frontdoor/LiveStatusStrip';
+import CardStackTable from '../components/ui/CardStackTable';
 import RunVisual from '../components/frontdoor/RunVisual';
 import HeroCinematicBackground from '../components/HeroCinematicBackground';
 import { localiseRoute, usePageSeo } from '../hooks/usePageSeo';
@@ -213,42 +214,12 @@ const SectionBody: React.FC<{ section: Section }> = ({ section }) => {
         </ul>
       )}
       {section.table && (
-        <div className="w-full min-w-0 overflow-x-auto border border-carbon-20">
-          <table className="w-full border-collapse text-left text-xs">
-            {section.table.caption && (
-              <caption className="bg-carbon-05 px-3 py-2 text-left text-xs text-carbon-60">
-                {section.table.caption}
-              </caption>
-            )}
-            <thead>
-              <tr className="border-b border-carbon-20 bg-carbon-05">
-                {section.table.columns.map((column) => (
-                  <th
-                    key={column}
-                    scope="col"
-                    className="px-3 py-2 text-xs font-bold uppercase tracking-wide text-carbon-60"
-                  >
-                    {column}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {section.table.rows.map((row) => (
-                <tr key={row.join('|')} className="border-b border-carbon-10 last:border-b-0">
-                  {row.map((cell, index) => (
-                    <td
-                      key={index}
-                      className={`px-3 py-2 align-top ${index === 0 ? 'font-bold text-carbon-90' : 'text-carbon-70'}`}
-                    >
-                      {cell}
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <CardStackTable
+          columns={section.table.columns}
+          rows={section.table.rows}
+          caption={section.table.caption}
+          className="border border-carbon-20 md:border-0"
+        />
       )}
       {section.callout?.text && (
         <p

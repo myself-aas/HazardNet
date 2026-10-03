@@ -115,7 +115,7 @@ function Tabs() {
           paddingBottom: Platform.OS === 'ios' ? 0 : 10,
         },
         tabBarLabelStyle: {
-          fontSize: 11,
+          fontSize: 12, // the type floor; see the assertion in __tests__/designTypography.test.js
           fontWeight: '600',
           fontFamily: Platform.select({ ios: 'SF Pro Text', android: 'Roboto' }),
         },

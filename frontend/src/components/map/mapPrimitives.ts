@@ -133,7 +133,7 @@ export const createCustomIcon = (
       box-shadow: 0 6px 24px rgba(0,0,0,0.25), 0 0 20px ${glowColor};
       color: #17171b;
       font-family: var(--hds-font-family-heading);
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 900;
       white-space: nowrap;
       cursor: pointer;
@@ -148,7 +148,7 @@ export const createCustomIcon = (
         background: ${color};
         color: #ffffff;
         font-weight: 900;
-        font-size: 9px;
+        font-size: 12px;
         padding: 2px 6px;
         border-radius: 6px;
         letter-spacing: 0.5px;
@@ -160,7 +160,7 @@ export const createCustomIcon = (
         background: ${color};
         color: #ffffff;
         font-weight: 900;
-        font-size: 10px;
+        font-size: 12px;
         padding: 2px 7px;
         border-radius: 6px;
         margin-left: 2px;
@@ -180,7 +180,7 @@ export const createCustomIcon = (
       box-shadow: 0 4px 14px rgba(0,0,0,0.2), 0 0 12px ${glowColor};
       color: #17171b;
       font-family: var(--hds-font-family-heading);
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 900;
       display: flex;
       align-items: center;

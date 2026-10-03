@@ -87,11 +87,11 @@ export const BangladeshSvgMap: React.FC<BangladeshSvgMapProps> = ({
             <h3 className="text-sm font-extrabold text-carbon-90 tracking-tight flex items-center gap-2">
               <span>Vector Spatial Heatmap</span>
             </h3>
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-carbon-10 text-carbon-70 border border-carbon-20">
+            <span className="px-2 py-0.5 rounded-full text-xs font-mono font-bold bg-carbon-10 text-carbon-70 border border-carbon-20">
               {viewMode === 'districts' ? 'All 64 Districts' : 'All 8 Divisions'}
             </span>
           </div>
-          <p className="text-[11px] text-carbon-60 mt-0.5">
+          <p className="text-xs text-carbon-60 mt-0.5">
             Vector spatial map with live multi-hazard severity indices
           </p>
         </div>
@@ -171,7 +171,7 @@ export const BangladeshSvgMap: React.FC<BangladeshSvgMapProps> = ({
           <div className="absolute top-3 right-3 z-30 bg-white/95 backdrop-blur-md border border-carbon-20 p-3.5 rounded-xl shadow-xl text-xs space-y-1.5 max-w-[230px] pointer-events-none text-carbon-80">
             <div className="flex items-center justify-between gap-2 border-b border-carbon-20 pb-1">
               <span className="font-extrabold text-carbon-90 text-sm">{hoveredDistrict.name}</span>
-              <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold ${
+              <span className={`px-2 py-0.5 rounded text-xs font-mono font-bold ${
                 hoveredDistrict.risk === 'High' ? 'bg-rose-100 text-rose-800 border border-rose-200' : 'bg-amber-100 text-amber-800 border border-amber-200'
               }`}>
                 {hoveredDistrict.risk} Risk
@@ -180,7 +180,7 @@ export const BangladeshSvgMap: React.FC<BangladeshSvgMapProps> = ({
             <div className="text-carbon-60">Division: <strong className="text-carbon-90">{hoveredDistrict.division}</strong></div>
             <div className="text-carbon-60">Hazard: <strong className="text-carbon-90">{hoveredDistrict.hazardType}</strong></div>
             <div className="text-carbon-60">Main Crop: <strong className="text-carbon-80">{hoveredDistrict.mainCrop}</strong></div>
-            <div className="flex items-center justify-between pt-1 border-t border-carbon-20 font-mono text-[11px]">
+            <div className="flex items-center justify-between pt-1 border-t border-carbon-20 font-mono text-xs">
               <span className="text-carbon-60">Model Output:</span>
               <span className="font-bold text-rose-600">{(hoveredDistrict.severity * 100).toFixed(0)}% Severity</span>
             </div>
@@ -192,13 +192,13 @@ export const BangladeshSvgMap: React.FC<BangladeshSvgMapProps> = ({
           <div className="absolute top-3 right-3 z-30 bg-white/95 backdrop-blur-md border border-carbon-20 p-3.5 rounded-xl shadow-xl text-xs space-y-1.5 max-w-[240px] pointer-events-none text-carbon-80">
             <div className="flex items-center justify-between gap-2 border-b border-carbon-20 pb-1">
               <span className="font-extrabold text-carbon-90 text-sm">{hoveredDivision.name}</span>
-              <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-carbon-10 text-carbon-80 border border-carbon-20">
+              <span className="px-2 py-0.5 rounded text-xs font-mono font-bold bg-carbon-10 text-carbon-80 border border-carbon-20">
                 {hoveredDivision.districtCount} Districts
               </span>
             </div>
             <div className="text-carbon-60">Division Capital: <strong className="text-carbon-90">{hoveredDivision.capital}</strong></div>
             <div className="text-carbon-60">Primary Hazard: <strong className="text-carbon-90">{hoveredDivision.primaryHazard}</strong></div>
-            <div className="flex items-center justify-between pt-1 border-t border-carbon-20 font-mono text-[11px]">
+            <div className="flex items-center justify-between pt-1 border-t border-carbon-20 font-mono text-xs">
               <span className="text-carbon-60">Avg Regional Severity:</span>
               <span className="font-bold text-rose-600">{(hoveredDivision.avgSeverity * 100).toFixed(0)}%</span>
             </div>
@@ -422,15 +422,15 @@ export const BangladeshSvgMap: React.FC<BangladeshSvgMapProps> = ({
         {legendSlot ? legendSlot : (
         <div className="flex items-center gap-3">
           <span className="font-bold text-carbon-70">Severity Scale:</span>
-          <div className="flex items-center gap-1.5 font-mono text-[11px]">
+          <div className="flex items-center gap-1.5 font-mono text-xs">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
             <span>Low (&lt;0.50)</span>
           </div>
-          <div className="flex items-center gap-1.5 font-mono text-[11px]">
+          <div className="flex items-center gap-1.5 font-mono text-xs">
             <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
             <span>Moderate</span>
           </div>
-          <div className="flex items-center gap-1.5 font-mono text-[11px]">
+          <div className="flex items-center gap-1.5 font-mono text-xs">
             <span className="w-2.5 h-2.5 rounded-full bg-rose-500"></span>
             <span>High (&gt;0.75)</span>
           </div>
@@ -440,16 +440,16 @@ export const BangladeshSvgMap: React.FC<BangladeshSvgMapProps> = ({
         {/* Selected Zone Display */}
         <div className="flex flex-wrap items-center gap-2">
           {alertLevels && (
-            <span className="font-mono text-[11px] text-carbon-80 bg-amber-50 px-3 py-1 rounded-lg border border-amber-300">
+            <span className="font-mono text-xs text-carbon-80 bg-amber-50 px-3 py-1 rounded-lg border border-amber-300">
               Alert layer: <strong>{Object.keys(alertLevels).length} districts</strong>
             </span>
           )}
-          <div className="font-mono text-[11px] text-carbon-80 bg-carbon-10 px-3 py-1 rounded-lg border border-carbon-20">
+          <div className="font-mono text-xs text-carbon-80 bg-carbon-10 px-3 py-1 rounded-lg border border-carbon-20">
             Showing: <strong>{viewMode === 'districts' ? `${filteredDistricts.length} / 64 Districts` : 'All 8 Divisions'}</strong>
           </div>
         </div>
 
-        <p className="mt-2 text-[10px] leading-snug text-carbon-60">
+        <p className="mt-2 text-xs leading-snug text-carbon-60">
           Map lines delineate study areas and do not necessarily depict accepted national boundaries.
         </p>
 

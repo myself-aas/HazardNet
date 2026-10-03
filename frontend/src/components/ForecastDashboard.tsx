@@ -27,6 +27,7 @@ import { FloatingControlBar } from './ui/FloatingControlBar';
 import AlertLevelBadge from './alerts/AlertLevelBadge';
 import StatusStrip from './StatusStrip';
 import DistrictDetailPanel from './DistrictDetailPanel';
+import { CardStackRows } from './ui/CardStackTable';
 
 interface ForecastDashboardProps {
   initialDistrictId?: string;
@@ -510,10 +511,10 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
                 <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={trendChartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#e3e3e3" />
-                    <XAxis dataKey="date" stroke="#77777a" fontSize={11} tickLine={false} />
-                    <YAxis domain={[0, 100]} stroke="#77777a" fontSize={11} tickFormatter={(val) => `${val}%`} />
+                    <XAxis dataKey="date" stroke="#77777a" fontSize={12} tickLine={false} />
+                    <YAxis domain={[0, 100]} stroke="#77777a" fontSize={12} tickFormatter={(val) => `${val}%`} />
                     <Tooltip />
-                    <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
+                    <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
                     <ReferenceLine y={67} stroke="#ef4444" strokeDasharray="4 4" />
                     <ReferenceLine y={34} stroke="#f59e0b" strokeDasharray="4 4" />
 
@@ -539,8 +540,8 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={districtComparisonData} margin={{ top: 10, right: 30, left: 10, bottom: 40 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#e3e3e3" />
-                    <XAxis dataKey="name" stroke="#77777a" fontSize={11} angle={-35} textAnchor="end" interval={0} />
-                    <YAxis domain={[0, 100]} stroke="#77777a" fontSize={11} tickFormatter={(val) => `${val}%`} />
+                    <XAxis dataKey="name" stroke="#77777a" fontSize={12} angle={-35} textAnchor="end" interval={0} />
+                    <YAxis domain={[0, 100]} stroke="#77777a" fontSize={12} tickFormatter={(val) => `${val}%`} />
                     <Tooltip />
                     <ReferenceLine y={67} stroke="#ef4444" strokeDasharray="4 4" />
                     <Bar dataKey="maxSeverity" name="Severity Score %" radius={[6, 6, 0, 0]}>
@@ -561,10 +562,10 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
                 <ResponsiveContainer width="100%" height="100%">
                   <ComposedChart data={trendChartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#e3e3e3" />
-                    <XAxis dataKey="date" stroke="#77777a" fontSize={11} />
-                    <YAxis domain={[0, 100]} stroke="#77777a" fontSize={11} tickFormatter={(val) => `${val}%`} />
+                    <XAxis dataKey="date" stroke="#77777a" fontSize={12} />
+                    <YAxis domain={[0, 100]} stroke="#77777a" fontSize={12} tickFormatter={(val) => `${val}%`} />
                     <Tooltip />
-                    <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
+                    <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
                     <Line type="monotone" dataKey="modelSeverity" name="CNN Neural Net %" stroke="#8b5cf6" strokeWidth={3} />
                     <Line type="monotone" dataKey="physicsSeverity" name="Physics Proxy %" stroke="#06b6d4" strokeWidth={2} strokeDasharray="4 4" />
                   </ComposedChart>
@@ -585,10 +586,45 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
           <StatusStrip forecasts={forecasts} horizon={selectedHorizon} />
         </div>
 
-        <div className="overflow-x-auto rounded-2xl border border-carbon-20/90">
+        {/* Phone: one card per forecast row; the table at md+ keeps the sortable columns. */}
+        {filteredForecasts.length === 0 ? (
+          <p className="rounded-2xl border border-carbon-20/90 p-6 text-center text-xs text-carbon-60 md:hidden">
+            No forecast records match the selected filters.
+          </p>
+        ) : (
+          <CardStackRows
+            className="rounded-2xl"
+            rows={filteredForecasts.slice(0, 30).map((item, idx) => {
+              const physScore = item.physics_severity !== undefined ? item.physics_severity : (item.severity_score ?? 0);
+              const isHigh = physScore >= RISK_THRESHOLDS.HIGH;
+              const isMod = physScore >= RISK_THRESHOLDS.MODERATE && physScore < RISK_THRESHOLDS.HIGH;
+              const tier = item.advisory_tier || (isHigh ? 'SEVERE' : isMod ? 'WARNING' : 'NORMAL');
+              return {
+                key: idx,
+                heading: item.division ? `${item.district_name} (${item.division})` : item.district_name,
+                fields: [
+                  { label: 'Advisory Tier', value: tier },
+                  { label: 'Hazard Type', value: item.hazard_type },
+                  { label: 'Severity Score', value: `${Math.round(physScore * 100)}% (${isHigh ? 'High' : isMod ? 'Moderate' : 'Low'})` },
+                  { label: 'Confidence', value: `${Math.round((item.confidence ?? 0) * 100)}%` },
+                  { label: 'Target Date', value: item.target_date || item.prediction_date },
+                ],
+                footer: (
+                  <button
+                    onClick={() => setActiveSheetItem(item)}
+                    className="min-h-[44px] font-extrabold text-nasa-blue"
+                  >
+                    Inspect Sheet
+                  </button>
+                ),
+              };
+            })}
+          />
+        )}
+        <div className="hidden overflow-x-auto rounded-2xl border border-carbon-20/90 md:block">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-carbon-05 border-b border-carbon-20 text-[11px] font-mono uppercase text-carbon-60 font-bold">
+              <tr className="bg-carbon-05 border-b border-carbon-20 text-xs font-mono uppercase text-carbon-60 font-bold">
                 <th className="p-3">District</th>
                 <th className="p-3">Advisory Tier</th>
                 <th className="p-3">Hazard Type</th>
@@ -620,7 +656,7 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
                     >
                       <td className="p-3 font-bold text-carbon-90">
                         {item.district_name}
-                        {item.division && <span className="text-[10px] text-carbon-60 font-normal block">{item.division}</span>}
+                        {item.division && <span className="text-xs text-carbon-60 font-normal block">{item.division}</span>}
                       </td>
                       <td className="p-3">
                         <AlertLevelBadge level={tier} size="sm" />
@@ -636,7 +672,7 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
                       </td>
                       <td className="p-3">
                         <span
-                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-mono font-bold ${
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-mono font-bold ${
                             isHigh
                               ? 'bg-rose-100 text-rose-800 border border-rose-200'
                               : isMod

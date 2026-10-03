@@ -628,8 +628,8 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
             const severityPercent = Math.round(dist.severity * 100);
             const tierBadge = dist.advisoryTier ? `[${dist.advisoryTier}] ` : '';
             const tooltipText = isUserDist
-              ? `<div style="font-family: var(--hds-font-family-heading); font-size: 11px; font-weight: 900; color: ${MAP_CHROME.surface}; text-shadow: 0 2px 4px rgba(0,0,0,0.8); display: flex; align-items: center; gap: 6px;"><MaterialIcon name="location_on" className="w-4 h-4 inline-block align-middle" /><span>${dist.name} District Boundary (Your Location)</span><span style="background: ${severityColor}; color: ${MAP_CHROME.surface}; padding: 2px 6px; border-radius: 9999px; font-size: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.4);">${tierBadge}${severityPercent}% Severity</span></div>`
-              : `<div style="font-family: var(--hds-font-family-heading); font-size: 11px; font-weight: 900; color: ${MAP_CHROME.surface}; text-shadow: 0 2px 4px rgba(0,0,0,0.8); display: flex; align-items: center; gap: 6px;"><span>${dist.name} District ${isDivSel ? `(${dist.division} Division)` : 'Boundary'}</span><span style="background: ${severityColor}; color: ${MAP_CHROME.surface}; padding: 2px 6px; border-radius: 9999px; font-size: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.4);">${tierBadge}${severityPercent}% Severity</span></div>`;
+              ? `<div style="font-family: var(--hds-font-family-heading); font-size: 12px; font-weight: 900; color: ${MAP_CHROME.surface}; text-shadow: 0 2px 4px rgba(0,0,0,0.8); display: flex; align-items: center; gap: 6px;"><MaterialIcon name="location_on" className="w-4 h-4 inline-block align-middle" /><span>${dist.name} District Boundary (Your Location)</span><span style="background: ${severityColor}; color: ${MAP_CHROME.surface}; padding: 2px 6px; border-radius: 9999px; font-size: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.4);">${tierBadge}${severityPercent}% Severity</span></div>`
+              : `<div style="font-family: var(--hds-font-family-heading); font-size: 12px; font-weight: 900; color: ${MAP_CHROME.surface}; text-shadow: 0 2px 4px rgba(0,0,0,0.8); display: flex; align-items: center; gap: 6px;"><span>${dist.name} District ${isDivSel ? `(${dist.division} Division)` : 'Boundary'}</span><span style="background: ${severityColor}; color: ${MAP_CHROME.surface}; padding: 2px 6px; border-radius: 9999px; font-size: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.4);">${tierBadge}${severityPercent}% Severity</span></div>`;
 
             boundaryPolygon.bindTooltip(tooltipText, {
               permanent: isUserDist && !isSel,
@@ -757,10 +757,10 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="display:block;"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="12" cy="12" r="3" fill="currentColor"/><line x1="12" y1="2" x2="12" y2="6" stroke="currentColor" stroke-width="2"/><line x1="12" y1="18" x2="12" y2="22" stroke="currentColor" stroke-width="2"/><line x1="2" y1="12" x2="6" y2="12" stroke="currentColor" stroke-width="2"/><line x1="18" y1="12" x2="22" y2="12" stroke="currentColor" stroke-width="2"/></svg>
                 <strong style="font-size: 13px; color: ${MAP_CHROME.inkStrong}; font-weight: 800;">Stored Location Pin</strong>
               </div>
-              <span style="font-size: 10px; font-weight: 900; padding: 2px 7px; border-radius: 6px; background: rgba(56, 189, 248, 0.15); color: ${MAP_INTERACTIVE.blue}; border: 1px solid rgba(56, 189, 248, 0.3);">Synced GPS</span>
+              <span style="font-size: 12px; font-weight: 900; padding: 2px 7px; border-radius: 6px; background: rgba(56, 189, 248, 0.15); color: ${MAP_INTERACTIVE.blue}; border: 1px solid rgba(56, 189, 248, 0.3);">Synced GPS</span>
             </div>
 
-            <div style="font-size: 11px; color: ${MAP_CHROME.inkSoft}; line-height: 1.6;">
+            <div style="font-size: 12px; color: ${MAP_CHROME.inkSoft}; line-height: 1.6;">
               <div style="display: flex; justify-content: space-between; font-family: monospace; background: ${MAP_CHROME.rail}; padding: 4px 8px; border-radius: 6px;">
                 <span>Lat: <strong>${pinpointLat.toFixed(4)}°N</strong></span>
                 <span>Lng: <strong>${pinpointLng.toFixed(4)}°E</strong></span>
@@ -768,27 +768,27 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
 
               ${pinDist ? `
                 <div style="margin-top: 8px; padding: 8px 10px; background: ${MAP_CHROME.surfaceSunken}; border-radius: 8px; border: 1px solid ${MAP_CHROME.hairline};">
-                  <div style="font-size: 9px; font-weight: 800; color: ${MAP_CHROME.muted}; text-transform: uppercase;">Identified District</div>
+                  <div style="font-size: 12px; font-weight: 800; color: ${MAP_CHROME.muted}; text-transform: uppercase;">Identified District</div>
                   <div style="font-size: 13px; font-weight: 900; color: ${MAP_CHROME.inkStrong}; margin-top: 1px;">
-                    ${pinDist.name} <span style="font-size: 10px; font-weight: 600; color: ${MAP_CHROME.muted};">(${pinDist.division})</span>
+                    ${pinDist.name} <span style="font-size: 12px; font-weight: 600; color: ${MAP_CHROME.muted};">(${pinDist.division})</span>
                   </div>
 
                   <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 8px; padding-top: 6px; border-top: 1px dashed ${MAP_CHROME.neutral};">
                     <div>
-                      <div style="font-size: 9px; color: ${MAP_CHROME.muted}; font-weight: 700; text-transform: uppercase;">Hazard Type</div>
-                      <div style="font-size: 11px; font-weight: 800; color: ${MAP_CHROME.inkStrong}; margin-top: 1px;"><MaterialIcon name="warning" className="w-4 h-4 inline-block align-middle" /> ${pinDist.hazardType}</div>
+                      <div style="font-size: 12px; color: ${MAP_CHROME.muted}; font-weight: 700; text-transform: uppercase;">Hazard Type</div>
+                      <div style="font-size: 12px; font-weight: 800; color: ${MAP_CHROME.inkStrong}; margin-top: 1px;"><MaterialIcon name="warning" className="w-4 h-4 inline-block align-middle" /> ${pinDist.hazardType}</div>
                     </div>
                     <div style="text-align: right;">
-                      <div style="font-size: 9px; color: ${MAP_CHROME.muted}; font-weight: 700; text-transform: uppercase;">Severity Score</div>
-                      <span style="font-size: 10px; font-weight: 900; padding: 2px 6px; border-radius: 4px; background: ${pinRiskBg}; color: ${pinRiskColor}; display: inline-block; margin-top: 1px;">
+                      <div style="font-size: 12px; color: ${MAP_CHROME.muted}; font-weight: 700; text-transform: uppercase;">Severity Score</div>
+                      <span style="font-size: 12px; font-weight: 900; padding: 2px 6px; border-radius: 4px; background: ${pinRiskBg}; color: ${pinRiskColor}; display: inline-block; margin-top: 1px;">
                         ${pinSevPct}% (${pinDist.risk})
                       </span>
                     </div>
                   </div>
-                  <div style="margin-top: 6px; font-size: 10px; color: ${MAP_CHROME.inkSoft};">
+                  <div style="margin-top: 6px; font-size: 12px; color: ${MAP_CHROME.inkSoft};">
                     Vulnerable crop: <strong style="color: ${MAP_RISK_RAMP.crop};">${pinDist.mainCrop}</strong>
                   </div>
-                  <button onclick="window.selectHazardDistrict('${pinDist.id}')" style="margin-top: 8px; width: 100%; padding: 6px 10px; background: ${MAP_INTERACTIVE.blue}; color: ${MAP_CHROME.surface}; font-size: 11px; font-weight: 800; border: none; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px; box-shadow: 0 2px 6px rgba(2, 132, 199, 0.3);">
+                  <button onclick="window.selectHazardDistrict('${pinDist.id}')" style="margin-top: 8px; width: 100%; padding: 6px 10px; background: ${MAP_INTERACTIVE.blue}; color: ${MAP_CHROME.surface}; font-size: 12px; font-weight: 800; border: none; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px; box-shadow: 0 2px 6px rgba(2, 132, 199, 0.3);">
                     Focus ${pinDist.name} district boundary
                   </button>
                 </div>
@@ -863,15 +863,15 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="display:block;"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="12" cy="12" r="3" fill="currentColor"/><line x1="12" y1="2" x2="12" y2="6" stroke="currentColor" stroke-width="2"/><line x1="12" y1="18" x2="12" y2="22" stroke="currentColor" stroke-width="2"/><line x1="2" y1="12" x2="6" y2="12" stroke="currentColor" stroke-width="2"/><line x1="18" y1="12" x2="22" y2="12" stroke="currentColor" stroke-width="2"/></svg>
                 <strong style="font-size: 13px; color: ${MAP_CHROME.inkStrong}; font-weight: 800;">GPS Device Position</strong>
               </div>
-              <span style="font-size: 10px; font-weight: 900; padding: 2px 7px; border-radius: 6px; background: rgba(56, 189, 248, 0.15); color: ${MAP_INTERACTIVE.blue}; border: 1px solid rgba(56, 189, 248, 0.3);">Active GPS</span>
+              <span style="font-size: 12px; font-weight: 900; padding: 2px 7px; border-radius: 6px; background: rgba(56, 189, 248, 0.15); color: ${MAP_INTERACTIVE.blue}; border: 1px solid rgba(56, 189, 248, 0.3);">Active GPS</span>
             </div>
 
-            <div style="font-size: 11px; color: ${MAP_CHROME.ink}; line-height: 1.5;">
+            <div style="font-size: 12px; color: ${MAP_CHROME.ink}; line-height: 1.5;">
               <div style="display: flex; justify-content: space-between; font-family: monospace; background: ${MAP_CHROME.rail}; padding: 6px 8px; border-radius: 6px; border: 1px solid ${MAP_CHROME.hairline};">
                 <div>Latitude: <strong>${userGpsPos.lat.toFixed(4)}°N</strong></div>
                 <div>Longitude: <strong>${userGpsPos.lng.toFixed(4)}°E</strong></div>
               </div>
-              <div style="margin-top: 4px; font-size: 10px; color: ${MAP_CHROME.muted}; font-family: monospace; text-align: right;">
+              <div style="margin-top: 4px; font-size: 12px; color: ${MAP_CHROME.muted}; font-family: monospace; text-align: right;">
                 GPS Accuracy: <strong>~${userGpsPos.accuracy || 10}m</strong>
               </div>
 
@@ -879,36 +879,36 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                 <div style="margin-top: 8px; padding: 10px; background: ${MAP_CHROME.surfaceSunken}; border-radius: 10px; border: 1px solid ${MAP_CHROME.hairline};">
                   <div style="display: flex; align-items: center; justify-content: space-between;">
                     <div>
-                      <div style="font-size: 9px; font-weight: 800; color: ${MAP_CHROME.muted}; text-transform: uppercase; letter-spacing: 0.5px;">Identified District</div>
+                      <div style="font-size: 12px; font-weight: 800; color: ${MAP_CHROME.muted}; text-transform: uppercase; letter-spacing: 0.5px;">Identified District</div>
                       <div style="font-size: 14px; font-weight: 900; color: ${MAP_CHROME.inkStrong}; margin-top: 1px;">
-                        ${dist.name} <span style="font-size: 11px; font-weight: 600; color: ${MAP_CHROME.muted};">(${dist.division})</span>
+                        ${dist.name} <span style="font-size: 12px; font-weight: 600; color: ${MAP_CHROME.muted};">(${dist.division})</span>
                       </div>
                     </div>
-                    <span style="font-size: 10px; font-weight: 700; color: ${MAP_INTERACTIVE.blue}; background: ${MAP_INTERACTIVE.blueTint}; padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(2, 132, 199, 0.2);">
+                    <span style="font-size: 12px; font-weight: 700; color: ${MAP_INTERACTIVE.blue}; background: ${MAP_INTERACTIVE.blueTint}; padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(2, 132, 199, 0.2);">
                       ${distanceKm} km
                     </span>
                   </div>
 
                   <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 8px; padding-top: 8px; border-top: 1px dashed ${MAP_CHROME.neutral};">
                     <div>
-                      <div style="font-size: 9px; color: ${MAP_CHROME.muted}; font-weight: 700; text-transform: uppercase;">Identified Hazard</div>
+                      <div style="font-size: 12px; color: ${MAP_CHROME.muted}; font-weight: 700; text-transform: uppercase;">Identified Hazard</div>
                       <div style="font-size: 12px; font-weight: 800; color: ${MAP_CHROME.inkStrong}; margin-top: 1px;"><MaterialIcon name="warning" className="w-4 h-4 inline-block align-middle" /> ${dist.hazardType}</div>
                     </div>
                     <div style="text-align: right;">
-                      <div style="font-size: 9px; color: ${MAP_CHROME.muted}; font-weight: 700; text-transform: uppercase;">Severity Score</div>
+                      <div style="font-size: 12px; color: ${MAP_CHROME.muted}; font-weight: 700; text-transform: uppercase;">Severity Score</div>
                       <div style="margin-top: 2px;">
-                        <span style="font-size: 11px; font-weight: 900; padding: 2px 7px; border-radius: 5px; background: ${riskBg}; color: ${riskColor}; border: 1px solid ${riskBorder}; display: inline-block;">
+                        <span style="font-size: 12px; font-weight: 900; padding: 2px 7px; border-radius: 5px; background: ${riskBg}; color: ${riskColor}; border: 1px solid ${riskBorder}; display: inline-block;">
                           ${sevPct}% (${dist.risk})
                         </span>
                       </div>
                     </div>
                   </div>
 
-                  <div style="margin-top: 8px; padding-top: 6px; border-top: 1px solid ${MAP_CHROME.rail}; font-size: 10px; color: ${MAP_CHROME.inkSoft}; display: flex; align-items: center; gap: 4px;">
+                  <div style="margin-top: 8px; padding-top: 6px; border-top: 1px solid ${MAP_CHROME.rail}; font-size: 12px; color: ${MAP_CHROME.inkSoft}; display: flex; align-items: center; gap: 4px;">
                     <span>Vulnerable crop:</span>
                     <strong style="color: ${MAP_RISK_RAMP.crop}; font-weight: 800;">${dist.mainCrop}</strong>
                   </div>
-                  <button onclick="window.selectHazardDistrict('${dist.id}')" style="margin-top: 8px; width: 100%; padding: 6px 10px; background: ${MAP_INTERACTIVE.blue}; color: ${MAP_CHROME.surface}; font-size: 11px; font-weight: 800; border: none; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px; box-shadow: 0 2px 6px rgba(2, 132, 199, 0.3);">
+                  <button onclick="window.selectHazardDistrict('${dist.id}')" style="margin-top: 8px; width: 100%; padding: 6px 10px; background: ${MAP_INTERACTIVE.blue}; color: ${MAP_CHROME.surface}; font-size: 12px; font-weight: 800; border: none; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px; box-shadow: 0 2px 6px rgba(2, 132, 199, 0.3);">
                     Focus ${dist.name} district boundary
                   </button>
                 </div>
@@ -954,7 +954,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
           });
           markersGroupRef.current?.addLayer(outerGlow);
           boundaryPolygon.bindTooltip(
-            `<div style="font-family: var(--hds-font-family-heading); font-size: 11px; font-weight: 900; color: ${MAP_CHROME.surface}; text-shadow: 0 2px 4px rgba(0,0,0,0.8); display: flex; align-items: center; gap: 6px;"><MaterialIcon name="location_on" className="w-4 h-4 inline-block align-middle" /><span>${activeUserDistrict.name} District Boundary (Your Location)</span><span style="background: ${severityColor}; color: ${MAP_CHROME.surface}; padding: 2px 6px; border-radius: 9999px; font-size: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.4);">${severityPercent}% Severity</span></div>`,
+            `<div style="font-family: var(--hds-font-family-heading); font-size: 12px; font-weight: 900; color: ${MAP_CHROME.surface}; text-shadow: 0 2px 4px rgba(0,0,0,0.8); display: flex; align-items: center; gap: 6px;"><MaterialIcon name="location_on" className="w-4 h-4 inline-block align-middle" /><span>${activeUserDistrict.name} District Boundary (Your Location)</span><span style="background: ${severityColor}; color: ${MAP_CHROME.surface}; padding: 2px 6px; border-radius: 9999px; font-size: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.4);">${severityPercent}% Severity</span></div>`,
             { permanent: true, direction: 'top' }
           );
           markersGroupRef.current?.addLayer(boundaryPolygon);
@@ -1024,9 +1024,9 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
           });
 
           riverPolyline.bindTooltip(
-            `<div style="font-family: var(--hds-font-family-heading); font-size: 11px; font-weight: 900; color: ${MAP_INTERACTIVE.blue};">
+            `<div style="font-family: var(--hds-font-family-heading); font-size: 12px; font-weight: 900; color: ${MAP_INTERACTIVE.blue};">
               <MaterialIcon name="water" className="w-4 h-4 inline-block align-middle" /> ${river.name}<br/>
-              <span style="font-size: 10px; color: ${MAP_CHROME.muted}; font-weight: normal;">${river.status}</span>
+              <span style="font-size: 12px; color: ${MAP_CHROME.muted}; font-weight: normal;">${river.status}</span>
             </div>`,
             { permanent: false, direction: 'top' }
           );
@@ -1079,7 +1079,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
           fillColor: cell.color,
           fillOpacity: 0.28,
         });
-        storm.bindTooltip(`<div style="font-weight: 900; font-size: 11px;"><MaterialIcon name="bolt" className="w-4 h-4 inline-block align-middle" /> Doppler Radar: ${cell.name}</div>`);
+        storm.bindTooltip(`<div style="font-weight: 900; font-size: 12px;"><MaterialIcon name="bolt" className="w-4 h-4 inline-block align-middle" /> Doppler Radar: ${cell.name}</div>`);
         radarGroupRef.current?.addLayer(storm);
       });
     }

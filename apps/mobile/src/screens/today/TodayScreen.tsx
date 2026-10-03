@@ -210,7 +210,7 @@ export function TodayScreen() {
           ) : (
             <Card>
               <ListEmptyState
-                icon={'\u2713'}
+                icon="Check"
                 headline="No active alerts"
                 body="No alerts are published above the WATCH threshold at this time. Pull down to refresh."
                 primaryAction={{ label: 'Refresh', onPress: onRefresh }}

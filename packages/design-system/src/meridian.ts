@@ -226,6 +226,37 @@ export const MERIDIAN_RADII = {
 } as const;
 
 /**
+ * The radius roles, frozen (P1-2 / backlog 4 of the 2026-10-03 design-system audit).
+ *
+ * Before this, radius was "mostly accidental": ten different utilities were in live use, the web
+ * role tokens were literals in `index.css`, and `NATIVE_RADIUS` pinned the phone to 2px while the
+ * web had grown to 12-16px — two products, not two clients. The rule now is one scale
+ * (`MERIDIAN_RADII`) plus these roles, which both platforms read by name:
+
+ *   chip      tags, badges, inline tokens            (thin — a chip is not a button)
+ *   control   inputs, buttons, segmented controls
+ *   media     images and video inside a card
+ *   card      cards, tiles, panels, popovers
+ *   sheet     bottom sheets, modals, drawers
+ *   feature   hero and feature media
+ *   pill      CTAs, search fields, status pills      (capsules, both platforms)
+ *
+ * The web side is generated from these numbers at the CSS layer: `--hn-radius-*` in
+ * `frontend/src/index.css` are `var(--mrd-radius-*)` references, never literals, and
+ * `__tests__/meridianParity.test.js` fails if the two drift. The native side spreads this object
+ * into `NATIVE_RADIUS`, so a phone and a browser cannot disagree about a corner again.
+ */
+export const MERIDIAN_RADIUS_ROLES = {
+  chip: 4,
+  control: 8,
+  media: 12,
+  card: 16,
+  sheet: 28,
+  feature: 32,
+  pill: 9999,
+} as const satisfies Record<string, number>;
+
+/**
  * Apple's concentric rule: a nested surface's radius should be the outer radius
  * minus the padding between them, or the corners read as mismatched.
  *

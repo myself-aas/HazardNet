@@ -12,6 +12,7 @@ import React, { useCallback, useState } from 'react';
 import { Dimensions, Pressable } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Screen } from '../../components/Screen';
+import { NATIVE_RADIUS } from '../../theme/nativeTokens';
 import { Box, VStack, HStack } from '../../design-system/primitives';
 import { Title1, DisplayLarge, Body, Caption } from '../../design-system/Text';
 import { Button } from '../../design-system/Button';
@@ -88,7 +89,7 @@ export function OnboardingScreen({ onDone }: { onDone: () => void }) {
               <Box
                 key={i}
                 style={{
-                  width: 8, height: 8, borderRadius: 4,
+                  width: 8, height: 8, borderRadius: NATIVE_RADIUS.chip,
                   backgroundColor: i === idx ? theme.colors.primaryAction as string : theme.colors.hairline as string,
                 }}
               />

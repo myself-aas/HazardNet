@@ -266,7 +266,7 @@ export const AdvisoriesPage: React.FC = () => {
               >
                 <div className="flex items-center justify-between w-full mb-2">
                   <span
-                    className={`text-[10px] font-mono font-black px-2 py-0.5 rounded-md ${
+                    className={`text-xs font-mono font-black px-2 py-0.5 rounded-md ${
                       isActive ? 'bg-amber-400 text-carbon-black' : 'bg-carbon-20/80 text-carbon-70'
                     }`}
                   >
@@ -316,7 +316,7 @@ export const AdvisoriesPage: React.FC = () => {
             </p>
 
             <div className="p-4 rounded-2xl bg-amber-50/70 border border-amber-200/80 text-xs text-amber-950 space-y-1">
-              <span className="font-mono font-black uppercase tracking-wider text-[11px] block text-amber-900">
+              <span className="font-mono font-black uppercase tracking-wider text-xs block text-amber-900">
                 Statutory Reference & Mandate:
               </span>
               <p className="font-semibold text-carbon-80">{sector.sodReference}</p>
@@ -329,7 +329,7 @@ export const AdvisoriesPage: React.FC = () => {
               <ShieldAlert className="w-5 h-5" />
               <span className="text-xs font-mono font-black tracking-wider uppercase">Emergency Action Desk</span>
             </div>
-            <p className="text-[11.5px] text-carbon-30 leading-snug">
+            <p className="text-xs text-carbon-30 leading-snug">
               Official coordination desk for immediate seed, vaccine, water purification, and evacuation logistics requisition.
             </p>
             <div className="space-y-2 pt-1 screen-only">
@@ -403,7 +403,7 @@ export const AdvisoriesPage: React.FC = () => {
                   <div>
                     <h3 className="text-base sm:text-lg font-black text-white flex items-center gap-2">
                       <span>Gemini 2.5 Dynamic Sector AI Synthesizer</span>
-                      <span className="px-2 py-0.5 rounded-md bg-amber-400 text-carbon-black text-[10px] font-mono font-black">LIVE</span>
+                      <span className="px-2 py-0.5 rounded-md bg-amber-400 text-carbon-black text-xs font-mono font-black">LIVE</span>
                     </h3>
                     <p className="text-xs text-carbon-60">
                       Real-time generative intelligence correlating district AEZ soil profiles, river stage thresholds, and sector protocols.
@@ -421,7 +421,7 @@ export const AdvisoriesPage: React.FC = () => {
               {/* Simulation Controls */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-[11px] font-mono font-bold text-carbon-30">TARGET DISTRICT (64):</label>
+                  <label className="text-xs font-mono font-bold text-carbon-30">TARGET DISTRICT (64):</label>
                   <select
                     value={aiDistrict}
                     onChange={(e) => setAiDistrict(e.target.value)}
@@ -436,7 +436,7 @@ export const AdvisoriesPage: React.FC = () => {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-[11px] font-mono font-bold text-carbon-30">HAZARD PROFILE:</label>
+                  <label className="text-xs font-mono font-bold text-carbon-30">HAZARD PROFILE:</label>
                   <select
                     value={aiHazard}
                     onChange={(e) => setAiHazard(e.target.value)}
@@ -452,7 +452,7 @@ export const AdvisoriesPage: React.FC = () => {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-[11px] font-mono font-bold text-carbon-30">SEVERITY INDEX ({aiSeverity}):</label>
+                  <label className="text-xs font-mono font-bold text-carbon-30">SEVERITY INDEX ({aiSeverity}):</label>
                   <input
                     type="range"
                     min="0.1"
@@ -462,7 +462,7 @@ export const AdvisoriesPage: React.FC = () => {
                     onChange={(e) => setAiSeverity(parseFloat(e.target.value))}
                     className="w-full accent-amber-400 cursor-pointer"
                   />
-                  <div className="flex justify-between text-[10px] text-carbon-60 font-mono">
+                  <div className="flex justify-between text-xs text-carbon-60 font-mono">
                     <span>Watch (0.1)</span>
                     <span>Warning (0.5)</span>
                     <span className="text-rose-400 font-bold">Emergency (1.0)</span>
@@ -604,11 +604,11 @@ export const AdvisoriesPage: React.FC = () => {
                         {step.title}
                       </h4>
                       <div className="flex flex-wrap items-center gap-2 mt-0.5">
-                        <span className="text-[11px] font-semibold text-carbon-60">
+                        <span className="text-xs font-semibold text-carbon-60">
                           Lead: {step.leadAgency}
                         </span>
                         <span className="text-carbon-30">•</span>
-                        <span className="text-[11px] font-mono text-carbon-60 flex items-center gap-1">
+                        <span className="text-xs font-mono text-carbon-60 flex items-center gap-1">
                           <Clock className="w-3 h-3 text-carbon-60" />
                           {step.timeline}
                         </span>
@@ -616,7 +616,7 @@ export const AdvisoriesPage: React.FC = () => {
                     </div>
                   </div>
 
-                  <span className={`text-[11px] font-mono font-black px-3 py-1 rounded-full border self-start sm:self-auto ${phaseBadgeColor}`}>
+                  <span className={`text-xs font-mono font-black px-3 py-1 rounded-full border self-start sm:self-auto ${phaseBadgeColor}`}>
                     {phaseLabel}
                   </span>
                 </div>
@@ -643,7 +643,7 @@ export const AdvisoriesPage: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
                   {/* Technical Specifications */}
                   <div className="space-y-1.5">
-                    <span className="text-[11px] font-mono font-black text-carbon-90 uppercase tracking-wider block">
+                    <span className="text-xs font-mono font-black text-carbon-90 uppercase tracking-wider block">
                       Quantitative Technical Parameters:
                     </span>
                     <ul className="space-y-1 text-xs text-carbon-60">
@@ -658,7 +658,7 @@ export const AdvisoriesPage: React.FC = () => {
 
                   {/* Equipment & Logistics */}
                   <div className="space-y-1.5">
-                    <span className="text-[11px] font-mono font-black text-carbon-90 uppercase tracking-wider block">
+                    <span className="text-xs font-mono font-black text-carbon-90 uppercase tracking-wider block">
                       Required Equipment & Logistics:
                     </span>
                     <div className="flex flex-wrap gap-1.5">
@@ -706,7 +706,7 @@ export const AdvisoriesPage: React.FC = () => {
               </p>
             </div>
           </div>
-          <span className="text-[11px] font-mono text-carbon-60 bg-carbon-10 px-2.5 py-1 rounded-lg">
+          <span className="text-xs font-mono text-carbon-60 bg-carbon-10 px-2.5 py-1 rounded-lg">
             SPEC-MATRIX
           </span>
         </div>
@@ -720,7 +720,7 @@ export const AdvisoriesPage: React.FC = () => {
                   🚨 EMERGENCY PROTOCOL & TECHNICAL SPECIFICATION MATRIX (SOD 2019) • {sector.name.toUpperCase()} SECTOR
                 </th>
               </tr>
-              <tr className="border-b border-carbon-20 text-carbon-60 font-mono text-[11px]">
+              <tr className="border-b border-carbon-20 text-carbon-60 font-mono text-xs">
                 <th className="py-3 px-4 font-bold">NAME / CULTIVAR</th>
                 <th className="py-3 px-4 font-bold">CATEGORY</th>
                 <th className="py-3 px-4 font-bold">TOLERANCE CAPACITY</th>
@@ -771,7 +771,7 @@ export const AdvisoriesPage: React.FC = () => {
               </p>
             </div>
           </div>
-          <span className="text-[11px] font-mono text-carbon-60 bg-carbon-10 px-2.5 py-1 rounded-lg">
+          <span className="text-xs font-mono text-carbon-60 bg-carbon-10 px-2.5 py-1 rounded-lg">
             HYPERLINKED REPOSITORY
           </span>
         </div>
@@ -801,10 +801,10 @@ export const AdvisoriesPage: React.FC = () => {
               </div>
 
               <div className="pt-2 border-t border-carbon-20/60 flex items-center justify-between text-xs">
-                <span className="text-[11px] text-carbon-60 font-medium truncate max-w-[180px]">
+                <span className="text-xs text-carbon-60 font-medium truncate max-w-[180px]">
                   {doc.issuingBody}
                 </span>
-                <span className="text-[11px] font-bold text-blue-700 flex items-center gap-1 group-hover:underline">
+                <span className="text-xs font-bold text-blue-700 flex items-center gap-1 group-hover:underline">
                   <span>Visit Portal</span>
                   <ChevronRight className="w-3 h-3" />
                 </span>
@@ -864,7 +864,7 @@ export const AdvisoriesPage: React.FC = () => {
                 <p className="text-xs font-semibold text-carbon-60">
                   {contact.departmentOrCell}
                 </p>
-                <p className="text-[11px] text-carbon-60">
+                <p className="text-xs text-carbon-60">
                   Role: {contact.roleOrDesignation}
                 </p>
               </div>
@@ -890,13 +890,13 @@ export const AdvisoriesPage: React.FC = () => {
                   </span>
                   <a
                     href={`mailto:${contact.officialEmail}`}
-                    className="font-mono text-blue-700 hover:underline font-bold text-[11px]"
+                    className="font-mono text-blue-700 hover:underline font-bold text-xs"
                   >
                     {contact.officialEmail}
                   </a>
                 </div>
 
-                <div className="pt-1 text-[11px] text-carbon-60 flex items-start gap-1">
+                <div className="pt-1 text-xs text-carbon-60 flex items-start gap-1">
                   <MapPin className="w-3.5 h-3.5 text-carbon-60 shrink-0 mt-0.5" />
                   <span className="line-clamp-2">{contact.address}</span>
                 </div>

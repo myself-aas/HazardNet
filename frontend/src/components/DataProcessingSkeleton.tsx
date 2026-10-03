@@ -84,10 +84,10 @@ export const DataProcessingSkeleton: React.FC<DataProcessingSkeletonProps> = ({
 
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-[10px] font-mono font-extrabold uppercase tracking-widest text-nasa-red-shade bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+              <span className="text-xs font-mono font-extrabold uppercase tracking-widest text-nasa-red-shade bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
                 Loading
               </span>
-              <span className="text-[10px] font-mono text-carbon-60">Forecasts · map layers</span>
+              <span className="text-xs font-mono text-carbon-60">Forecasts · map layers</span>
             </div>
             <h3 className="text-sm font-extrabold text-carbon-90 tracking-wide font-mono mt-0.5 flex items-center gap-2">
               {title}
@@ -98,7 +98,7 @@ export const DataProcessingSkeleton: React.FC<DataProcessingSkeletonProps> = ({
         <div className="flex items-center gap-3">
           {/* Elapsed time is measured, not invented — the previous "LATENCY: 18ms"
               was a hardcoded constant unrelated to anything the app was doing. */}
-          <div className="hidden sm:flex items-center gap-1.5 font-mono text-[11px] text-carbon-70 bg-carbon-10 px-3 py-1 rounded-lg border border-carbon-20">
+          <div className="hidden sm:flex items-center gap-1.5 font-mono text-xs text-carbon-70 bg-carbon-10 px-3 py-1 rounded-lg border border-carbon-20">
             <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" aria-hidden="true" />
             <span className="font-bold">Elapsed {elapsedSeconds}s</span>
           </div>
@@ -129,7 +129,7 @@ export const DataProcessingSkeleton: React.FC<DataProcessingSkeletonProps> = ({
               <div className="space-y-2.5">
                 {['Forecast snapshot', 'Map tiles', 'District layers'].map((label) => (
                   <div key={label}>
-                    <div className="flex justify-between text-[11px] font-mono text-carbon-60 mb-1 font-semibold">
+                    <div className="flex justify-between text-xs font-mono text-carbon-60 mb-1 font-semibold">
                       <span>{label}</span>
                       <span className="text-carbon-60">—</span>
                     </div>
@@ -171,7 +171,7 @@ export const DataProcessingSkeleton: React.FC<DataProcessingSkeletonProps> = ({
                 <div className="w-2.5 h-2.5 rounded-full bg-nasa-red" />
               </div>
 
-              <div className="mt-3 font-mono text-[10px] text-carbon-60 font-bold tracking-widest text-center">
+              <div className="mt-3 font-mono text-xs text-carbon-60 font-bold tracking-widest text-center">
                 BANGLADESH · 64 DISTRICTS
               </div>
             </div>
@@ -189,7 +189,7 @@ export const DataProcessingSkeleton: React.FC<DataProcessingSkeletonProps> = ({
                     key={i}
                     className="h-12 rounded-lg bg-white border border-carbon-20 p-1.5 flex flex-col justify-between relative overflow-hidden cyber-skeleton-shimmer"
                   >
-                    <div className="flex justify-between items-center text-[9px] font-mono text-carbon-60">
+                    <div className="flex justify-between items-center text-xs font-mono text-carbon-60">
                       <span>Z7</span>
                       <span className="text-carbon-60 font-bold">#0{i + 1}</span>
                     </div>
@@ -199,7 +199,7 @@ export const DataProcessingSkeleton: React.FC<DataProcessingSkeletonProps> = ({
                 ))}
               </div>
 
-              <div className="text-[11px] font-mono text-carbon-60 bg-white p-2 rounded-lg border border-carbon-20 flex items-center justify-between font-semibold">
+              <div className="text-xs font-mono text-carbon-60 bg-white p-2 rounded-lg border border-carbon-20 flex items-center justify-between font-semibold">
                 <span>Tiles</span>
                 <span className="text-carbon-60 font-bold">Cached as you browse</span>
               </div>
@@ -216,14 +216,14 @@ export const DataProcessingSkeleton: React.FC<DataProcessingSkeletonProps> = ({
 
             <div className="text-center font-mono space-y-1">
               <div className="text-xs text-carbon-90 font-bold">{title}</div>
-              <div className="text-[11px] text-carbon-60 font-semibold">{subtitle}</div>
+              <div className="text-xs text-carbon-60 font-semibold">{subtitle}</div>
             </div>
           </div>
         )}
       </div>
 
       {/* Footer: truthful status stream + indeterminate progress (no fake %) */}
-      <div className="relative z-20 pt-3 border-t border-carbon-20 flex flex-col sm:flex-row sm:items-center justify-between gap-2 font-mono text-[11px]">
+      <div className="relative z-20 pt-3 border-t border-carbon-20 flex flex-col sm:flex-row sm:items-center justify-between gap-2 font-mono text-xs">
         <div className="flex items-center gap-2 text-carbon-60 truncate max-w-xl">
           <span className="text-amber-700 font-bold font-mono">[LOADING]</span>
           <span className="text-carbon-80 font-semibold truncate">{statusText}</span>

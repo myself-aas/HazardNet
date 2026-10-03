@@ -146,7 +146,7 @@ export const DistrictRiskMap: React.FC<DistrictRiskMapProps> = ({
                 {hoveredDistrict.name}
               </span>
               <span
-                className="px-2 py-0.5 rounded text-[10px] font-mono font-bold"
+                className="px-2 py-0.5 rounded text-xs font-mono font-bold"
                 style={{
                   backgroundColor: `${getVulnerabilityColor(hoveredDistrict.score)}22`,
                   color: getVulnerabilityColor(hoveredDistrict.score),
@@ -286,7 +286,11 @@ export const DistrictRiskMap: React.FC<DistrictRiskMapProps> = ({
                       x={d.cx}
                       y={d.cy - radius - 0.8}
                       textAnchor="middle"
-                      className="text-[2.2px] font-sans font-bold fill-carbon-10 pointer-events-none drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]"
+                      /* svg-user-units: 3.4 == 12px at the narrowest rendered width (the viewBox
+                         is 0 0 100 100 and the map is never narrower than ~353px), 20px at 600px.
+                         A CSS px value here would be a user unit, not a font size - see the
+                         legibility floor in __tests__/designTypography.test.js. */
+                      className="text-xs font-sans font-bold fill-carbon-10 pointer-events-none drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]"
                     >
                       {d.name}
                     </text>
@@ -304,23 +308,23 @@ export const DistrictRiskMap: React.FC<DistrictRiskMapProps> = ({
           <span className="text-carbon-40 font-medium">Vulnerability Index:</span>
           <div className="flex items-center gap-1.5">
             <span className="w-3 h-3 rounded-full bg-[#16a34a]" />
-            <span className="text-carbon-40 text-[11px]">Low (&lt;0.40)</span>
+            <span className="text-carbon-40 text-xs">Low (&lt;0.40)</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="w-3 h-3 rounded-full bg-[#ea580c]" />
-            <span className="text-carbon-40 text-[11px]">Moderate (0.40–0.65)</span>
+            <span className="text-carbon-40 text-xs">Moderate (0.40–0.65)</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="w-3 h-3 rounded-full bg-[#dc2626]" />
-            <span className="text-carbon-40 text-[11px]">High (0.65–0.85)</span>
+            <span className="text-carbon-40 text-xs">High (0.65–0.85)</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="w-3 h-3 rounded-full bg-[#7f1d1d]" />
-            <span className="text-carbon-40 text-[11px]">Critical (&ge;0.85)</span>
+            <span className="text-carbon-40 text-xs">Critical (&ge;0.85)</span>
           </div>
         </div>
 
-        <div className="text-carbon-50 text-[11px]">
+        <div className="text-carbon-50 text-xs">
           Click or press Enter on any district node to inspect historical hazard details.
         </div>
       </div>

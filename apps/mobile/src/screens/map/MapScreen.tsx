@@ -18,6 +18,7 @@ import React, { useCallback, useMemo, useState } from 'react';
 import { Dimensions, LayoutChangeEvent, Pressable } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Screen } from '../../components/Screen';
+import { NATIVE_RADIUS } from '../../theme/nativeTokens';
 import { Box, VStack, HStack } from '../../design-system/primitives';
 import { Title3, Body, Caption, Metadata } from '../../design-system/Text';
 import { Button } from '../../design-system/Button';
@@ -109,7 +110,7 @@ export function MapScreen() {
         />
 
         {/* Legend */}
-        <Box px={16} py={8} style={{ position: 'absolute', left: 12, bottom: 12, backgroundColor: theme.colors.surface as string, borderRadius: 8, padding: 8 }}>
+        <Box px={16} py={8} style={{ position: 'absolute', left: 12, bottom: 12, backgroundColor: theme.colors.surface as string, borderRadius: NATIVE_RADIUS.control, padding: 8 }}>
           <VStack space={4}>
             <Metadata color="textMuted">SEVERITY</Metadata>
             <HStack space={8} align="center"><Box w={10} h={10} bg={theme.colors.severe as string} /><Caption>Severe</Caption></HStack>

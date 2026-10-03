@@ -30,7 +30,7 @@ export const WeatherBadge: React.FC<WeatherBadgeProps> = ({
 
   const isSm = size === 'sm';
   const base = `inline-flex items-center gap-1.5 rounded-full font-medium tabular-nums ${
-    isSm ? 'text-[11px] px-2 py-0.5' : 'text-xs px-2.5 py-1'
+    isSm ? 'text-xs px-2 py-0.5' : 'text-xs px-2.5 py-1'
   } ${onClick ? 'cursor-pointer hover:bg-sky-50 dark:hover:bg-sky-900/30' : ''} ${className}`;
 
   if (loading && !data) {

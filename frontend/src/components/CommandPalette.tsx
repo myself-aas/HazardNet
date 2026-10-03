@@ -552,7 +552,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                           </div>
 
                           <div className="flex items-center gap-2 shrink-0">
-                            <span className="hidden sm:inline-block px-2 py-0.5 rounded-full text-[9px] font-mono font-semibold bg-carbon-10 border border-carbon-20 text-carbon-60">
+                            <span className="hidden sm:inline-block px-2 py-0.5 rounded-full text-xs font-mono font-semibold bg-carbon-10 border border-carbon-20 text-carbon-60">
                               {item.category}
                             </span>
                             <span className="text-nasa-red-shade text-xs font-mono font-bold">SELECT</span>

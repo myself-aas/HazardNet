@@ -43,7 +43,7 @@ const AssetButton: React.FC<{
     className={
       primary
         ? 'px-5 py-2.5 rounded-xl bg-primary hover:bg-primary-strong text-white text-xs font-black transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 shrink-0 cursor-pointer'
-        : 'px-3.5 py-2 rounded-lg bg-carbon-10 hover:bg-carbon-20 border border-carbon-20 text-carbon-80 text-[11px] font-bold font-mono transition-all flex items-center gap-1.5 shrink-0 cursor-pointer'
+        : 'px-3.5 py-2 rounded-lg bg-carbon-10 hover:bg-carbon-20 border border-carbon-20 text-carbon-80 text-xs font-bold font-mono transition-all flex items-center gap-1.5 shrink-0 cursor-pointer'
     }
     title={`Download ${asset.name}`}
   >
@@ -54,7 +54,7 @@ const AssetButton: React.FC<{
     )}
     <span>{primary ? `Download ${ASSET_LABELS[asset.kind]}` : asset.name}</span>
     {primary && asset.sizeBytes > 0 && (
-      <span className="text-[10px] font-mono font-bold opacity-70">({formatBytes(asset.sizeBytes)})</span>
+      <span className="text-xs font-mono font-bold opacity-70">({formatBytes(asset.sizeBytes)})</span>
     )}
   </motion.a>
 );
@@ -64,14 +64,14 @@ const StatusChip: React.FC<{ state: ChannelState }> = ({ state }) => {
   if (state.status === 'ready') {
     const label = state.release?.tagName ?? '';
     return (
-      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-extrabold bg-emerald-50 border border-emerald-200 text-emerald-900">
+      <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-extrabold bg-emerald-50 border border-emerald-200 text-emerald-900">
         {label || 'Latest'}
       </span>
     );
   }
   if (state.status === 'loading') {
     return (
-      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-extrabold bg-carbon-10 border border-carbon-20 text-carbon-60 flex items-center gap-1.5">
+      <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-extrabold bg-carbon-10 border border-carbon-20 text-carbon-60 flex items-center gap-1.5">
         <span className="w-2 h-2 border-2 border-carbon-40 border-t-transparent rounded-full animate-spin" />
         Checking releases…
       </span>
@@ -79,13 +79,13 @@ const StatusChip: React.FC<{ state: ChannelState }> = ({ state }) => {
   }
   if (state.status === 'unavailable') {
     return (
-      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-extrabold bg-rose-50 border border-rose-200 text-rose-900">
+      <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-extrabold bg-rose-50 border border-rose-200 text-rose-900">
         Temporarily unavailable
       </span>
     );
   }
   return (
-    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-extrabold bg-amber-50 border border-amber-200 text-amber-900">
+    <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-extrabold bg-amber-50 border border-amber-200 text-amber-900">
       Awaiting first release
     </span>
   );
@@ -121,7 +121,7 @@ const ChannelCard: React.FC<{ channel: DownloadChannel; state: ChannelState }> =
           <div>
             <div className="flex items-center gap-2 flex-wrap">
               <h3 className="font-black text-carbon-90 text-base">{channel.title}</h3>
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-extrabold bg-carbon-10 border border-carbon-20 text-carbon-80">
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-extrabold bg-carbon-10 border border-carbon-20 text-carbon-80">
                 {channel.badge}
               </span>
               <StatusChip state={state} />
@@ -147,7 +147,7 @@ const ChannelCard: React.FC<{ channel: DownloadChannel; state: ChannelState }> =
           <MaterialIcon name="inventory_2" className="w-3.5 h-3.5 text-carbon-60" />
           How this is distributed:
         </span>
-        <p className="p-3.5 bg-carbon-05 border border-carbon-20/80 text-carbon-70 text-[11px] font-medium rounded-2xl leading-relaxed">
+        <p className="p-3.5 bg-carbon-05 border border-carbon-20/80 text-carbon-70 text-xs font-medium rounded-2xl leading-relaxed">
           {channel.distribution}
         </p>
       </div>
@@ -155,7 +155,7 @@ const ChannelCard: React.FC<{ channel: DownloadChannel; state: ChannelState }> =
       {/* Live release assets */}
       {state.release && downloadAssets.length > 0 && (
         <div className="flex flex-wrap items-center gap-2.5">
-          {primary && <span className="text-[10px] font-mono font-extrabold text-carbon-60 uppercase tracking-wider">Release files:</span>}
+          {primary && <span className="text-xs font-mono font-extrabold text-carbon-60 uppercase tracking-wider">Release files:</span>}
           {rest.map((asset) => (
             <AssetButton key={asset.url} asset={asset} onDownload={onDownload} />
           ))}
@@ -165,7 +165,7 @@ const ChannelCard: React.FC<{ channel: DownloadChannel; state: ChannelState }> =
               download
               rel="noopener noreferrer"
               onClick={() => onDownload(checksum)}
-              className="px-3.5 py-2 rounded-lg bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-900 text-[11px] font-bold font-mono transition-all flex items-center gap-1.5 shrink-0 cursor-pointer"
+              className="px-3.5 py-2 rounded-lg bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-900 text-xs font-bold font-mono transition-all flex items-center gap-1.5 shrink-0 cursor-pointer"
               title="SHA-256 checksums for all release files"
             >
               <MaterialIcon name="verified_user" className="w-3.5 h-3.5" />
@@ -177,7 +177,7 @@ const ChannelCard: React.FC<{ channel: DownloadChannel; state: ChannelState }> =
 
       {/* Pending first release (or release lookups switched off for this deployment) */}
       {state.status === 'pending' && (
-        <div className="p-4 rounded-2xl bg-amber-50/70 border border-dashed border-amber-300 text-[11px] text-amber-950 font-medium space-y-2">
+        <div className="p-4 rounded-2xl bg-amber-50/70 border border-dashed border-amber-300 text-xs text-amber-950 font-medium space-y-2">
           <p className="flex items-center gap-2 font-extrabold">
             <MaterialIcon name="history" className="w-4 h-4" />
             Release pipeline prepared — no version published yet
@@ -199,7 +199,7 @@ const ChannelCard: React.FC<{ channel: DownloadChannel; state: ChannelState }> =
 
       {/* API/rate-limit/network failure */}
       {state.status === 'unavailable' && (
-        <div className="p-4 rounded-2xl bg-rose-50/70 border border-rose-200 text-[11px] text-rose-950 font-medium space-y-1.5">
+        <div className="p-4 rounded-2xl bg-rose-50/70 border border-rose-200 text-xs text-rose-950 font-medium space-y-1.5">
           <p className="flex items-center gap-2 font-extrabold">
             <MaterialIcon name="warning" className="w-4 h-4" />
             Live release data unavailable
@@ -275,7 +275,7 @@ export const DownloadCenter: React.FC = () => {
       <div className="bg-white border border-carbon-20/90 rounded-3xl p-6 md:p-8 shadow-md relative overflow-hidden space-y-3">
         <div className="absolute top-0 left-0 w-full h-1 bg-nasa-red"></div>
         <div className="flex items-center gap-2">
-          <span className="px-3 py-1 rounded-full text-[10px] font-mono font-extrabold bg-amber-50 text-amber-900 border border-amber-300 uppercase tracking-wider shadow-2xs">
+          <span className="px-3 py-1 rounded-full text-xs font-mono font-extrabold bg-amber-50 text-amber-900 border border-amber-300 uppercase tracking-wider shadow-2xs">
             Open Software Center
           </span>
           <span className="text-carbon-30">•</span>

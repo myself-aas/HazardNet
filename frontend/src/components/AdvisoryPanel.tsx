@@ -111,16 +111,16 @@ const AdvisoryPanel: React.FC<AdvisoryPanelProps> = ({
             <span className="truncate">AI Advisory</span>
           </h3>
           <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-            <span className="px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-mono font-semibold bg-amber-50 dark:bg-amber-950/30 text-amber-950 dark:text-amber-100 border border-amber-200 dark:border-amber-800/50">
+            <span className="px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs sm:text-xs font-mono font-semibold bg-amber-50 dark:bg-amber-950/30 text-amber-950 dark:text-amber-100 border border-amber-200 dark:border-amber-800/50">
               HA Engine
             </span>
             {advisory.cached && (
-              <span className="px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-mono font-semibold bg-emerald-50 dark:bg-emerald-950/30 text-emerald-950 dark:text-emerald-100 border border-emerald-200 dark:border-emerald-800/50">
+              <span className="px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs sm:text-xs font-mono font-semibold bg-emerald-50 dark:bg-emerald-950/30 text-emerald-950 dark:text-emerald-100 border border-emerald-200 dark:border-emerald-800/50">
                 Cached
               </span>
             )}
             {advisory.provider_source && (
-              <span className="px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-mono font-semibold bg-carbon-10 dark:bg-carbon-80 text-carbon-80 dark:text-carbon-20 border border-carbon-20 dark:border-carbon-70 truncate">
+              <span className="px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs sm:text-xs font-mono font-semibold bg-carbon-10 dark:bg-carbon-80 text-carbon-80 dark:text-carbon-20 border border-carbon-20 dark:border-carbon-70 truncate">
                 {advisory.provider_source}
               </span>
             )}

@@ -86,7 +86,7 @@ export const DistrictDetailPanel: React.FC<DistrictDetailPanelProps> = ({
                 </span>
               )}
               {forecast.horizon && (
-                <span className="px-1.5 py-0.5 rounded bg-carbon-10 dark:bg-carbon-70 text-[11px] whitespace-nowrap">
+                <span className="px-1.5 py-0.5 rounded bg-carbon-10 dark:bg-carbon-70 text-xs whitespace-nowrap">
                   {forecast.horizon}
                 </span>
               )}
@@ -174,7 +174,7 @@ export const DistrictDetailPanel: React.FC<DistrictDetailPanelProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3">
             {/* Calibrated Model Severity */}
             <div className="p-3 rounded-lg bg-white dark:bg-carbon-90 border border-carbon-20 dark:border-carbon-70/60">
-              <span className="text-[11px] font-mono text-carbon-60 dark:text-carbon-40 uppercase block">
+              <span className="text-xs font-mono text-carbon-60 dark:text-carbon-40 uppercase block">
                 Model Track (Calibrated)
               </span>
               <div className="flex items-baseline justify-between mt-1">
@@ -182,7 +182,7 @@ export const DistrictDetailPanel: React.FC<DistrictDetailPanelProps> = ({
                   {formatNumber(Math.round(modelCalibrated * 100))}%
                 </span>
                 {modelRaw !== undefined && (
-                  <span className="text-[10px] font-mono text-carbon-60">
+                  <span className="text-xs font-mono text-carbon-60">
                     Raw: {formatNumber(Math.round(modelRaw * 100))}%
                   </span>
                 )}
@@ -197,7 +197,7 @@ export const DistrictDetailPanel: React.FC<DistrictDetailPanelProps> = ({
 
             {/* Physics Track Severity */}
             <div className="p-3 rounded-lg bg-white dark:bg-carbon-90 border border-carbon-20 dark:border-carbon-70/60">
-              <span className="text-[11px] font-mono text-carbon-60 dark:text-carbon-40 uppercase block">
+              <span className="text-xs font-mono text-carbon-60 dark:text-carbon-40 uppercase block">
                 Physics Track
               </span>
               <div className="flex items-baseline justify-between mt-1">
@@ -205,7 +205,7 @@ export const DistrictDetailPanel: React.FC<DistrictDetailPanelProps> = ({
                   {formatNumber(Math.round(physicsSeverity * 100))}%
                 </span>
                 {isPhysicsOverridden && (
-                  <span className="text-[10px] font-bold text-cyan-600 uppercase">
+                  <span className="text-xs font-bold text-cyan-600 uppercase">
                     Override
                   </span>
                 )}
@@ -220,14 +220,14 @@ export const DistrictDetailPanel: React.FC<DistrictDetailPanelProps> = ({
 
             {/* Final Fused Severity */}
             <div className="p-3 rounded-lg bg-white dark:bg-carbon-90 border border-carbon-20 dark:border-carbon-70/60 ring-1 ring-carbon-30 dark:ring-carbon-60">
-              <span className="text-[11px] font-mono text-carbon-60 dark:text-carbon-40 uppercase block">
+              <span className="text-xs font-mono text-carbon-60 dark:text-carbon-40 uppercase block">
                 Final Fused Score
               </span>
               <div className="flex items-baseline justify-between mt-1">
                 <span className="text-lg font-mono font-bold text-carbon-90 dark:text-white">
                   {formatNumber(Math.round(finalSeverity * 100))}%
                 </span>
-                <span className="text-[10px] font-bold uppercase text-carbon-60">
+                <span className="text-xs font-bold uppercase text-carbon-60">
                   {finalSeverity >= 0.67 ? 'High' : finalSeverity >= 0.34 ? 'Moderate' : 'Low'}
                 </span>
               </div>
@@ -257,7 +257,7 @@ export const DistrictDetailPanel: React.FC<DistrictDetailPanelProps> = ({
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
             {/* Max Temp */}
             <div className="p-3 rounded-xl bg-carbon-05 dark:bg-carbon-80 border border-carbon-20 dark:border-carbon-70 flex flex-col">
-              <span className="text-[10px] font-mono text-carbon-60 dark:text-carbon-40 uppercase">Max Temp</span>
+              <span className="text-xs font-mono text-carbon-60 dark:text-carbon-40 uppercase">Max Temp</span>
               <span className="text-base font-mono font-bold text-rose-600 dark:text-rose-400 mt-1">
                 {forecast.temperature_max !== undefined ? `${formatNumber(forecast.temperature_max)}°C` : '—'}
               </span>
@@ -265,7 +265,7 @@ export const DistrictDetailPanel: React.FC<DistrictDetailPanelProps> = ({
 
             {/* Min Temp */}
             <div className="p-3 rounded-xl bg-carbon-05 dark:bg-carbon-80 border border-carbon-20 dark:border-carbon-70 flex flex-col">
-              <span className="text-[10px] font-mono text-carbon-60 dark:text-carbon-40 uppercase">Min Temp</span>
+              <span className="text-xs font-mono text-carbon-60 dark:text-carbon-40 uppercase">Min Temp</span>
               <span className="text-base font-mono font-bold text-sky-600 dark:text-sky-400 mt-1">
                 {forecast.temperature_min !== undefined ? `${formatNumber(forecast.temperature_min)}°C` : '—'}
               </span>
@@ -273,7 +273,7 @@ export const DistrictDetailPanel: React.FC<DistrictDetailPanelProps> = ({
 
             {/* Precipitation */}
             <div className="p-3 rounded-xl bg-carbon-05 dark:bg-carbon-80 border border-carbon-20 dark:border-carbon-70 flex flex-col">
-              <span className="text-[10px] font-mono text-carbon-60 dark:text-carbon-40 uppercase">Precipitation</span>
+              <span className="text-xs font-mono text-carbon-60 dark:text-carbon-40 uppercase">Precipitation</span>
               <span className="text-base font-mono font-bold text-blue-600 dark:text-blue-400 mt-1">
                 {forecast.precipitation_mm !== undefined ? `${formatNumber(forecast.precipitation_mm)} mm` : '—'}
               </span>
@@ -281,7 +281,7 @@ export const DistrictDetailPanel: React.FC<DistrictDetailPanelProps> = ({
 
             {/* Wind Speed */}
             <div className="p-3 rounded-xl bg-carbon-05 dark:bg-carbon-80 border border-carbon-20 dark:border-carbon-70 flex flex-col">
-              <span className="text-[10px] font-mono text-carbon-60 dark:text-carbon-40 uppercase">Wind Speed</span>
+              <span className="text-xs font-mono text-carbon-60 dark:text-carbon-40 uppercase">Wind Speed</span>
               <span className="text-base font-mono font-bold text-teal-600 dark:text-teal-400 mt-1">
                 {forecast.wind_max_kmh !== undefined ? `${formatNumber(forecast.wind_max_kmh)} km/h` : '—'}
               </span>
@@ -304,7 +304,7 @@ export const DistrictDetailPanel: React.FC<DistrictDetailPanelProps> = ({
           <div className="space-y-2 text-xs">
             {/* Top 1 */}
             <div>
-              <div className="flex justify-between font-mono text-[11px] mb-1">
+              <div className="flex justify-between font-mono text-xs mb-1">
                 <span className="font-semibold text-carbon-80 dark:text-carbon-20">
                   1. {forecast.hazard_type} (Primary)
                 </span>
@@ -330,7 +330,7 @@ export const DistrictDetailPanel: React.FC<DistrictDetailPanelProps> = ({
             {/* Top 2 */}
             {forecast.prob_top2 !== undefined && (
               <div>
-                <div className="flex justify-between font-mono text-[11px] mb-1">
+                <div className="flex justify-between font-mono text-xs mb-1">
                   <span className="text-carbon-60 dark:text-carbon-40">2. Competing Hazard Alternative</span>
                   <span className="font-bold text-carbon-70 dark:text-carbon-30">
                     {formatNumber(Math.round(forecast.prob_top2 * 100))}%
@@ -348,7 +348,7 @@ export const DistrictDetailPanel: React.FC<DistrictDetailPanelProps> = ({
             {/* Top 3 */}
             {forecast.prob_top3 !== undefined && (
               <div>
-                <div className="flex justify-between font-mono text-[11px] mb-1">
+                <div className="flex justify-between font-mono text-xs mb-1">
                   <span className="text-carbon-60 dark:text-carbon-40">3. Background Hazard Residual</span>
                   <span className="font-bold text-carbon-70 dark:text-carbon-30">
                     {formatNumber(Math.round(forecast.prob_top3 * 100))}%

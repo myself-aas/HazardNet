@@ -23,7 +23,13 @@ import { readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { HDS_TOKENS, HDS_NASA_TOKENS, getSeverityTokenScore } from '@hazardnet/design-system';
+import {
+  HDS_TOKENS,
+  HDS_NASA_TOKENS,
+  MERIDIAN_RADII,
+  MERIDIAN_RADIUS_ROLES,
+  getSeverityTokenScore,
+} from '@hazardnet/design-system';
 import * as webTokens from '../frontend/src/design-system/tokens';
 import { NATIVE_RADIUS, TOUCH_MIN } from '../apps/mobile/src/theme/nativeTokens';
 
@@ -33,9 +39,19 @@ const WEB_CSS = ['index.css', 'styles/nasa-hds.css', 'styles/meridian.css']
   .map((file) => readFileSync(join(FRONTEND_SRC, file), 'utf8'))
   .join('\n');
 
+/**
+ * Reads a custom property, following `var(--other)` references — the web role tokens are
+ * *references* into the Meridian scale (`--hn-radius-control: var(--mrd-radius-sm)`), so a
+ * comparison against a number has to resolve them rather than read the reference.
+ */
 const cssVar = (name) => {
-  const match = new RegExp(`--${name}\\s*:\\s*([^;]+);`).exec(WEB_CSS);
-  return match ? match[1].trim() : null;
+  let value = new RegExp(`--${name}\\s*:\\s*([^;]+);`).exec(WEB_CSS)?.[1]?.trim() ?? null;
+  for (let hop = 0; hop < 4 && value; hop += 1) {
+    const reference = /^var\((--[a-z0-9-]+)\)$/.exec(value);
+    if (!reference) break;
+    value = new RegExp(`--${reference[1].slice(2)}\\s*:\\s*([^;]+);`).exec(WEB_CSS)?.[1]?.trim() ?? null;
+  }
+  return value;
 };
 
 const normalise = (value, numeric) => {
@@ -58,8 +74,10 @@ const ROLES = [
   { id: 'blue.shade', web: 'hds-color-nasa-blue-shade', native: () => HDS_NASA_TOKENS.colors.nasaBlueShade },
   { id: 'danger.brand', web: 'hn-brand-red', native: () => HDS_NASA_TOKENS.colors.nasaRed },
   { id: 'danger.brandDark', web: 'hn-brand-red-dark', native: () => HDS_NASA_TOKENS.colors.nasaRedShade },
+  { id: 'radius.chip', web: 'hn-radius-chip', native: () => NATIVE_RADIUS.chip, numeric: true },
   { id: 'radius.control', web: 'hn-radius-control', native: () => NATIVE_RADIUS.control, numeric: true },
-  { id: 'radius.sheet', web: 'hn-radius-sheet', native: () => NATIVE_RADIUS.sheetIndicator, numeric: true },
+  { id: 'radius.card', web: 'hn-radius-card', native: () => NATIVE_RADIUS.card, numeric: true },
+  { id: 'radius.sheet', web: 'hn-radius-sheet', native: () => NATIVE_RADIUS.sheet, numeric: true },
 ];
 
 /**
@@ -77,16 +95,6 @@ const PARITY_EXCEPTIONS = {
     web: '#7B1D21',
     native: '#b60109',
     why: 'Same split as danger.brand, one step darker: the web shade is the mark crimson darkened for hover/pressed on light; the native shade is NASA red darkened for error text on white.',
-  },
-  'radius.control': {
-    web: '8px',
-    native: 2,
-    why: 'Meridian control radius (8px) versus the HDS 2px control shape the native theme pins. Deliberate for now - the phone follows HDS geometry - but it is the visible reason the two products do not look like one product. Owner action: freeze one scale (audit backlog item 4).',
-  },
-  'radius.sheet': {
-    web: '28px',
-    native: 2,
-    why: 'Meridian sheet radius (28px) versus the native sheetIndicator pin (2px). Same decision as radius.control, same backlog item.',
   },
 };
 
@@ -154,6 +162,26 @@ describe('HazardNet token parity contract', () => {
     expect(TOUCH_MIN).toBe(48);
     expect(HDS_TOKENS.touch.fabSize).toBe(60);
     expect(HDS_TOKENS.touch.fabIconSize).toBe(32);
+  });
+
+  test('radius is frozen on the Meridian scale, on both platforms', () => {
+    // Backlog item 4: the web role tokens derive from `MERIDIAN_RADII`, the phone spreads
+    // `MERIDIAN_RADIUS_ROLES`, and nothing re-types a number. This is the assertion that used to
+    // be an exception row: the phone pinned `control`/`chip` to 2px while the web used 8-28px.
+    expect(NATIVE_RADIUS.chip).toBe(MERIDIAN_RADIUS_ROLES.chip);
+    expect(NATIVE_RADIUS.control).toBe(MERIDIAN_RADIUS_ROLES.control);
+    expect(NATIVE_RADIUS.card).toBe(MERIDIAN_RADIUS_ROLES.card);
+    expect(NATIVE_RADIUS.sheet).toBe(MERIDIAN_RADIUS_ROLES.sheet);
+    expect(NATIVE_RADIUS.sheetIndicator).toBe(MERIDIAN_RADIUS_ROLES.pill);
+    expect(MERIDIAN_RADIUS_ROLES).toEqual({
+      chip: MERIDIAN_RADII.xs,
+      control: MERIDIAN_RADII.sm,
+      media: MERIDIAN_RADII.md,
+      card: MERIDIAN_RADII.lg,
+      sheet: MERIDIAN_RADII.sheet,
+      feature: MERIDIAN_RADII.xxl,
+      pill: MERIDIAN_RADII.pill,
+    });
   });
 
   test('Multi-hazard severity scale contains all 5 agricultural levels', () => {

@@ -80,18 +80,18 @@ export const IdentityConnections: React.FC = () => {
             Connected Accounts & Social Sign-In
           </h4>
         </div>
-        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-carbon-10 text-carbon-70 border border-carbon-20">
+        <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-carbon-10 text-carbon-70 border border-carbon-20">
           {linked.length} linked
         </span>
       </div>
 
-      <p className="text-[11px] text-carbon-60 leading-relaxed">
+      <p className="text-xs text-carbon-60 leading-relaxed">
         Link Google or GitHub to sign into this same HazardNet account with any of them.
         Disconnecting removes only the sign-in method — your advisories and saved assessments stay.
       </p>
 
       {loadError && (
-        <p role="alert" className="text-[11px] font-semibold text-rose-700">
+        <p role="alert" className="text-xs font-semibold text-rose-700">
           {loadError}
         </p>
       )}
@@ -108,7 +108,7 @@ export const IdentityConnections: React.FC = () => {
               >
                 <div className="flex min-w-0 items-center gap-2.5">
                   {identity.provider === 'email' ? (
-                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-carbon-20 text-[10px] font-black text-carbon-60">
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-carbon-20 text-xs font-black text-carbon-60">
                       @
                     </span>
                   ) : (
@@ -116,7 +116,7 @@ export const IdentityConnections: React.FC = () => {
                   )}
                   <div className="min-w-0">
                     <p className="truncate text-xs font-bold text-carbon-80">{label}</p>
-                    <p className="truncate text-[10px] text-carbon-60">
+                    <p className="truncate text-xs text-carbon-60">
                       {identity.email ?? 'Identity linked'}
                       {isLastIdentity && ' — last sign-in method'}
                     </p>
@@ -132,7 +132,7 @@ export const IdentityConnections: React.FC = () => {
                         ? 'Add another sign-in method before removing the last one'
                         : `Disconnect ${label}`
                     }
-                    className="shrink-0 rounded-lg border border-rose-200 bg-rose-50 px-2.5 py-1.5 text-[10px] font-bold text-rose-700 transition-colors hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="shrink-0 rounded-lg border border-rose-200 bg-rose-50 px-2.5 py-1.5 text-xs font-bold text-rose-700 transition-colors hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {unlinking === identity.provider ? 'Removing…' : 'Disconnect'}
                   </button>
@@ -145,7 +145,7 @@ export const IdentityConnections: React.FC = () => {
 
       {available.length > 0 && (
         <div className="space-y-1.5">
-          <p className="text-[10px] font-extrabold uppercase tracking-wider text-carbon-60">Connect another provider</p>
+          <p className="text-xs font-extrabold uppercase tracking-wider text-carbon-60">Connect another provider</p>
           <div className="flex flex-wrap gap-1.5" data-testid="linkable-providers">
             {available.map((provider) => {
               const config = getProvider(provider)
@@ -156,7 +156,7 @@ export const IdentityConnections: React.FC = () => {
                   whileTap={{ scale: 0.96 }}
                   onClick={() => handleLink(provider)}
                   disabled={linking !== null}
-                  className="flex items-center gap-1.5 rounded-lg border border-carbon-20 bg-white px-2.5 py-1.5 text-[10px] font-bold text-carbon-70 transition-colors hover:border-carbon-30 hover:bg-carbon-05 disabled:cursor-wait disabled:opacity-60"
+                  className="flex items-center gap-1.5 rounded-lg border border-carbon-20 bg-white px-2.5 py-1.5 text-xs font-bold text-carbon-70 transition-colors hover:border-carbon-30 hover:bg-carbon-05 disabled:cursor-wait disabled:opacity-60"
                 >
                   {linking === provider ? (
                     <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-carbon-30 border-t-carbon-60" />

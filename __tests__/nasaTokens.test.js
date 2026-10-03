@@ -195,9 +195,10 @@ describe('the application is wired to those tokens', () => {
     // design-system tokens (radii.control/card/sheet/pill in
     // packages/design-system/src/tokens.ts). NASA HDS remains the source of
     // colour and typography; see the Layer 2 comment in frontend/src/index.css.
-    expect(appCss).toMatch(/--hn-radius-control: 8px/);
-    expect(appCss).toMatch(/--hn-radius-card: 16px/);
-    expect(appCss).toMatch(/--hn-radius-sheet: 28px/);
+    // Backlog item 4: the role tokens are references into the Meridian scale, not numbers.
+    expect(appCss).toMatch(/--hn-radius-control: var\(--mrd-radius-sm\)/);
+    expect(appCss).toMatch(/--hn-radius-card: var\(--mrd-radius-lg\)/);
+    expect(appCss).toMatch(/--hn-radius-sheet: var\(--mrd-radius-sheet\)/);
     expect(appCss).toMatch(/--radius-sm: var\(--hn-radius-control\)/);
     expect(appCss).toMatch(/--radius-2xl: var\(--hn-radius-card\)/);
     expect(appCss).toMatch(/--radius-4xl: var\(--hn-radius-sheet\)/);

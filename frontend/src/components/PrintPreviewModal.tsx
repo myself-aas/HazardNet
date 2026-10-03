@@ -260,15 +260,15 @@ export const PrintPreviewModal: React.FC<PrintPreviewModalProps> = ({
                 <h2 id="print-preview-modal-title" className="text-sm sm:text-base font-black text-white tracking-tight truncate max-w-sm sm:max-w-md">
                   {title}
                 </h2>
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[10px] font-mono font-bold">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-mono font-bold">
                   <CheckCircle2 className="w-3 h-3" />
                   SOD 2019 VERIFIED
                 </span>
-                <span className="hidden lg:inline-flex px-2 py-0.5 rounded-md bg-carbon-80 border border-carbon-70 text-carbon-30 text-[10px] font-mono">
+                <span className="hidden lg:inline-flex px-2 py-0.5 rounded-md bg-carbon-80 border border-carbon-70 text-carbon-30 text-xs font-mono">
                   REF: {dispatchRef.current}
                 </span>
               </div>
-              <p className="text-[11px] text-carbon-60 font-mono truncate">
+              <p className="text-xs text-carbon-60 font-mono truncate">
                 {orientation === 'portrait' ? 'A4 Portrait (210×297mm)' : 'A4 Landscape (297×210mm)'} • Real-time QR Mobile Telemetry • High-Contrast Field Standard
               </p>
             </div>
@@ -347,7 +347,7 @@ export const PrintPreviewModal: React.FC<PrintPreviewModalProps> = ({
               </button>
               <button
                 onClick={() => setZoomLevel(100)}
-                className="p-1 rounded-lg text-carbon-30 hover:text-white hover:bg-carbon-70 transition-colors text-[10px] font-mono font-bold px-1.5"
+                className="p-1 rounded-lg text-carbon-30 hover:text-white hover:bg-carbon-70 transition-colors text-xs font-mono font-bold px-1.5"
                 title="Reset Zoom to 100% (0)"
               >
                 100%
@@ -501,11 +501,11 @@ export const PrintPreviewModal: React.FC<PrintPreviewModalProps> = ({
         <div className="print-preview-footer screen-only px-4 sm:px-6 py-2 bg-carbon-90 border-t border-carbon-80 text-carbon-40 text-xs flex flex-wrap items-center justify-between gap-2 shrink-0">
           <div className="flex items-center gap-2">
             <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-            <span className="text-[11px] sm:text-xs">
+            <span className="text-xs sm:text-xs">
               Print layout verified: High-contrast ink optimization active, dark backdrops sanitized, vector QR tags attached.
             </span>
           </div>
-          <div className="text-[11px] font-mono text-carbon-60 hidden sm:block">
+          <div className="text-xs font-mono text-carbon-60 hidden sm:block">
             Shortcuts: <kbd className="px-1.5 py-0.5 bg-carbon-80 border border-carbon-70 rounded text-carbon-30">Ctrl + P</kbd> Print • <kbd className="px-1.5 py-0.5 bg-carbon-80 border border-carbon-70 rounded text-carbon-30">+</kbd> / <kbd className="px-1.5 py-0.5 bg-carbon-80 border border-carbon-70 rounded text-carbon-30">-</kbd> Zoom • <kbd className="px-1.5 py-0.5 bg-carbon-80 border border-carbon-70 rounded text-carbon-30">Esc</kbd> Exit
           </div>
         </div>

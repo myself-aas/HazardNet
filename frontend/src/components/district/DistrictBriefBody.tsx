@@ -15,6 +15,7 @@ import { WeatherPanel } from '../WeatherPanel';
 import { getHazardIcon } from './districtBriefUtils';
 
 import { useDistrictBrief } from './DistrictBriefContext';
+import { CardStackRows } from '../ui/CardStackTable';
 
 
 /** Evidence, guidance, history, ops, appendix. */
@@ -461,13 +462,13 @@ export const DistrictBriefBody: React.FC = () => {
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={hazardTrendData} margin={{ top: 15, right: 20, left: -15, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e3e3e3" vertical={false} />
-                <XAxis dataKey="day" stroke="#959599" fontSize={11} tickLine={false} />
-                <YAxis stroke="#959599" fontSize={11} domain={[0, 100]} tickLine={false} />
+                <XAxis dataKey="day" stroke="#959599" fontSize={12} tickLine={false} />
+                <YAxis stroke="#959599" fontSize={12} domain={[0, 100]} tickLine={false} />
                 <Tooltip
                   contentStyle={{ backgroundColor: '#ffffff', borderRadius: '12px', border: '1px solid #d1d1d1', fontSize: '12px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}
                   formatter={(value: any, name: string) => [`${value}% Risk Index`, name]}
                 />
-                <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '8px' }} />
+                <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '8px' }} />
                 
                 {(trendViewMode === 'all' || trendViewMode === 'primary') && (
                   <Line
@@ -701,7 +702,7 @@ export const DistrictBriefBody: React.FC = () => {
                         </span>
                       </h3>
                       <div className="flex items-center gap-2 mt-1">
-                        <span className={`px-2.5 py-0.5 rounded-sm text-[10.5px] font-mono font-black ${
+                        <span className={`px-2.5 py-0.5 rounded-sm text-xs font-mono font-black ${
                           up.status === 'Critically Inundated' ? 'bg-rose-100 text-rose-800 border border-carbon-20' :
                           up.status === 'High Risk' ? 'bg-carbon-05 text-rose-900 border border-carbon-20' :
                           up.status === 'Moderate Impact' ? 'bg-amber-100 text-amber-900 border border-amber-200' :
@@ -1107,10 +1108,10 @@ export const DistrictBriefBody: React.FC = () => {
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={climaticEventsData.yearlyTrend} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#e3e3e3" vertical={false} />
-                      <XAxis dataKey="year" tick={{ fontSize: 10, fill: '#77777a' }} />
-                      <YAxis tick={{ fontSize: 10, fill: '#77777a' }} />
+                      <XAxis dataKey="year" tick={{ fontSize: 12, fill: '#77777a' }} />
+                      <YAxis tick={{ fontSize: 12, fill: '#77777a' }} />
                       <Tooltip
-                        contentStyle={{ backgroundColor: '#ffffff', borderColor: '#d1d1d1', borderRadius: '0.5rem', fontSize: '11px' }}
+                        contentStyle={{ backgroundColor: '#ffffff', borderColor: '#d1d1d1', borderRadius: '0.5rem', fontSize: '12px' }}
                       />
                       <Bar dataKey="count" name="Disaster Events" fill="#3b82f6" radius={[4, 4, 0, 0]} />
                     </BarChart>
@@ -1139,10 +1140,10 @@ export const DistrictBriefBody: React.FC = () => {
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" stroke="#e3e3e3" vertical={false} />
-                      <XAxis dataKey="monthName" tick={{ fontSize: 10, fill: '#77777a' }} />
-                      <YAxis tick={{ fontSize: 10, fill: '#77777a' }} />
+                      <XAxis dataKey="monthName" tick={{ fontSize: 12, fill: '#77777a' }} />
+                      <YAxis tick={{ fontSize: 12, fill: '#77777a' }} />
                       <Tooltip
-                        contentStyle={{ backgroundColor: '#ffffff', borderColor: '#d1d1d1', borderRadius: '0.5rem', fontSize: '11px' }}
+                        contentStyle={{ backgroundColor: '#ffffff', borderColor: '#d1d1d1', borderRadius: '0.5rem', fontSize: '12px' }}
                       />
                       <Area type="monotone" dataKey="count" name="Historical Events" stroke="#d97706" strokeWidth={2} fill="url(#districtSeasonGrad)" />
                     </AreaChart>
@@ -1182,7 +1183,26 @@ export const DistrictBriefBody: React.FC = () => {
                 </div>
               </div>
 
-              <div className="overflow-x-auto">
+              {/* Phone: one card per event, with the details the table hides behind its expand
+                  row shown inline. The table at md+ keeps the expand/collapse affordance. */}
+              <CardStackRows
+                rows={climaticEventsData.allEvents
+                  .filter(e => eventHazardFilter === 'all' || e.hazard === eventHazardFilter)
+                  .slice(0, 20)
+                  .map((event) => ({
+                    key: event.id,
+                    heading: event.date,
+                    fields: [
+                      { label: 'Hazard Type', value: event.hazard },
+                      { label: 'GLIDE ID', value: event.glide || '-' },
+                      { label: 'Severity', value: event.severity ? event.severity.toFixed(2) : '1.00' },
+                      { label: 'Description', value: event.desc || 'Disaster event logged' },
+                      { label: 'Event ID', value: event.id },
+                      { label: 'Coordinates', value: `${event.lat.toFixed(4)}, ${event.lng.toFixed(4)}` },
+                    ],
+                  }))}
+              />
+              <div className="hidden overflow-x-auto md:block">
                 <table className="w-full text-left text-xs">
                   <thead className="bg-carbon-05 text-carbon-70 font-semibold border-b border-carbon-20">
                     <tr>

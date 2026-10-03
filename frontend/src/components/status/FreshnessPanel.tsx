@@ -28,6 +28,7 @@ import {
 } from '../../lib/freshness';
 
 import { publishableEntries } from '../../lib/publicText';
+import { CardStackRows } from '../ui/CardStackTable';
 
 interface Loaded {
   artifact: FreshnessArtifact | null;
@@ -159,7 +160,32 @@ export const FreshnessPanel: React.FC = () => {
         </p>
       </div>
 
-      <div className="overflow-x-auto">
+      {/* Phone: one card per source. The table's `min-w-[36rem]` is a sideways scroll at 390px,
+          and the SLO arithmetic is the page's primary content. */}
+      <CardStackRows
+        labelledBy="freshness-sources-caption"
+        rows={sources.map((source) => ({
+          key: source.id,
+          heading: source.label,
+          fields: [
+            ...(source.reason ? [{ label: 'Note', value: source.reason }] : []),
+            { label: 'State', value: <StateBadge state={source.state} /> },
+            { label: 'Age', value: <span className="tabular-nums">{describeAge(source.age_hours)}</span> },
+            { label: 'SLO', value: <span className="tabular-nums">{describeSlo(source.slo_hours)}</span> },
+            { label: 'Latest data', value: (
+              <time dateTime={source.prediction_date ?? source.generated_at ?? undefined}>
+                {source.prediction_date ?? describeStamp(source.generated_at)}
+              </time>
+            ) },
+          ],
+        }))}
+      />
+      <p id="freshness-sources-caption" className="sr-only">
+        Each data source this deployment ships, its state, its age and the SLO it is measured
+        against.
+      </p>
+
+      <div className="hidden overflow-x-auto md:block">
         <table className="w-full min-w-[36rem] border-collapse text-left text-xs md:text-sm">
           <caption className="sr-only">
             Each data source this deployment ships, its state, its age and the SLO it is measured

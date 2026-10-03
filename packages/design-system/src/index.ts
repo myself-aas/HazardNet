@@ -13,3 +13,4 @@ export * from './tokens';
 export * from './mapPalette';
 export * from './material3Expressive';
 export * from './meridian';
+export * from './icons';
