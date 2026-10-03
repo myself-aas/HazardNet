@@ -1,5 +1,10 @@
 # Environment Variables & Secrets — Complete Setup Guide
 
+> **Rotation:** every credential below has a rotation cadence and a register entry in
+> `data/security/secret-rotation.json`; the procedure is in `docs/ops/secret-rotation.md` and
+> `npm run check:rotation` reports what is due. Setting a secret up is step one — recording
+> when it was last replaced is what keeps it from silently living forever.
+
 **Audience:** the repository owner (or any contributor) deploying HazardNet — the web
 app at hazardnet.live, its serverless API, and its CI — using **only free tiers that
 require no credit card anywhere**.

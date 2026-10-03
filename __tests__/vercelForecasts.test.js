@@ -3,7 +3,7 @@
  */
 /**
  * Vercel serverless handler tests — serverless/v1/forecasts/{bulk,history,metadata}.js,
- * deployed together as api/v1/forecasts/[action].js (docs/codebase/VERCEL_FUNCTIONS.md).
+ * deployed together as api/v1/forecasts/[action].js (docs/codebase/ARCHITECTURE.md#vercel-serverless-surface-the-12-function-budget).
  *
  * These handlers are thin wrappers over the shared serving logic
  * (backend/utils/forecastServe.js) + the forecast store; the tests pin the

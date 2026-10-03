@@ -75,6 +75,10 @@ The open items above are tracked with owners and reproduction steps in
 probe's publish permission). Please read that file before reporting a known gap: it is the
 project's own list of what is not finished.
 
+Credential rotation has its own runbook — `docs/ops/secret-rotation.md` — with a cadence per
+credential, a register of the last rotation date (`data/security/secret-rotation.json`), and a
+monthly scheduled check (`.github/workflows/secret-rotation-audit.yml`).
+
 ## How the project protects the deployment
 
 Recorded here so a reporter can check whether a control is deliberate before testing it:

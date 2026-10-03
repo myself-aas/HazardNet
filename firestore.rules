@@ -20,6 +20,28 @@ service cloud.firestore {
       return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
     }
 
+    // ---------------------------------------------------------------------------
+    // Public profile visibility (SEC-14)
+    //
+    // `profiles` used to allow `get, list: if true`, i.e. every field of every account —
+    // email, phone_number, whatsapp_number, address, pinpoint_lat/lng, avatar_path — was
+    // readable by an anonymous client, and `list` made the whole collection enumerable.
+    // That was not intentional.
+    //
+    // Firestore cannot filter *fields* out of a read: a read either returns the document or
+    // it does not. So the two levers available here are (1) make publicity opt-in per row
+    // and (2) stop mass enumeration. Anything a profile still carries ships with a public
+    // read, which is why the long-term fix is a `publicProfiles` mirror holding only the
+    // display fields — see docs/ops/owner-actions.md.
+    //
+    // Default-deny: a row with no `profile_visibility` field is private. `AuthContext`
+    // writes 'public' by default, so a saved profile stays public until the user changes
+    // it; rows created outside the app (seed scripts, the SQL mirror) start hidden.
+    // ---------------------------------------------------------------------------
+    function isPublicProfile(data) {
+      return 'profile_visibility' in data && data.profile_visibility == 'public';
+    }
+
     function incoming() {
       return request.resource.data;
     }
@@ -67,6 +89,14 @@ service cloud.firestore {
       return (!(field in data) || data[field] is number);
     }
 
+    /** Bounded when present, but an explicit null is allowed: the client nulls a field to
+        clear it (avatar removal writes `photo_url: null`, `email_verified_at` starts null),
+        and `boundedString` used to reject exactly that write. */
+    function nullableString(data, field, max) {
+      return (!(field in data) || data[field] == null
+        || (data[field] is string && data[field].size() <= max));
+    }
+
     /** A document that keeps growing is storage abuse the rules can see. */
     function withinKeyBudget(data, max) {
       return data.keys().size() <= max;
@@ -87,8 +117,9 @@ service cloud.firestore {
         && boundedString(data, 'display_name', 150)
         && boundedString(data, 'displayName', 150)
         && boundedString(data, 'username', 80)
-        && boundedString(data, 'photo_url', 1500)
-        && boundedString(data, 'photoURL', 1500)
+        // Nullable: `lib/avatar.ts` clears the avatar by writing null to both fields.
+        && nullableString(data, 'photo_url', 1500)
+        && nullableString(data, 'photoURL', 1500)
         && boundedString(data, 'organization', 250)
         && boundedString(data, 'target_crops', 500)
         && boundedString(data, 'targetCrops', 500)
@@ -110,7 +141,30 @@ service cloud.firestore {
         && boundedNumber(data, 'farm_size_hectares')
         && boundedNumber(data, 'farmSizeHectares')
         && boundedNumber(data, 'pinpoint_lat')
-        && boundedNumber(data, 'pinpoint_lng');
+        && boundedNumber(data, 'pinpoint_lng')
+        // The rest of the document the client actually writes (see writeProfile and
+        // AuthContext.updateUserProfile). Left unbounded, any of them could carry an
+        // arbitrarily large payload; `withinKeyBudget` alone does not cap field size.
+        && (!('profile_visibility' in data)
+            || (data.profile_visibility == 'public' || data.profile_visibility == 'private'))
+        && nullableString(data, 'avatar_path', 500)
+        && nullableString(data, 'email_verified_at', 40)
+        && nullableString(data, 'created_at', 40)
+        && nullableString(data, 'updated_at', 40)
+        && nullableString(data, 'country', 100)
+        && nullableString(data, 'district', 100)
+        && nullableString(data, 'irrigation_type', 100)
+        && nullableString(data, 'soil_type', 100)
+        && nullableString(data, 'livestock', 300)
+        && nullableString(data, 'social_facebook', 300)
+        && nullableString(data, 'social_x', 300)
+        && nullableString(data, 'social_linkedin', 300)
+        && nullableString(data, 'social_github', 300)
+        && nullableString(data, 'social_youtube', 300)
+        && nullableString(data, 'social_instagram', 300)
+        && boundedNumber(data, 'farming_experience_years')
+        && boundedNumber(data, 'annual_income_bdt')
+        && (!('auto_detect_location_enabled' in data) || data.auto_detect_location_enabled is bool);
     }
 
     // Validation helper for Assessment (client writes `user_id` + snake_case fields;
@@ -169,7 +223,16 @@ service cloud.firestore {
 
     // Matching Collections
     match /profiles/{userId} {
-      allow get, list: if true;
+      // Owner: full read. Everyone else: only a row the owner published.
+      allow get: if isOwner(userId) || isPublicProfile(existing());
+      // `list` exists for two single-row lookups — the /u/<username> profile page and the
+      // username-availability check — so both now send `.limit(1)`. Rules can see the
+      // limit of a query but not the field being filtered, so the limit is the anti-
+      // scraping control: an unlimited query (i.e. a collection dump) has no `limit` to
+      // compare and is denied. Per-document, the row must still be the caller's own or
+      // explicitly public.
+      allow list: if request.query.limit <= 1
+                  && (isOwner(userId) || isPublicProfile(existing()));
       // The validator was defined but never applied until Phase 6 — it existed while
       // profile writes were gated on ownership alone (any field, any size).
       allow create: if isOwner(userId) && isValidId(userId) && isValidUserProfile(incoming());

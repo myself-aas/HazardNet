@@ -29,6 +29,7 @@ import {
   doc,
   getDoc,
   getDocs,
+  limit,
   orderBy,
   query,
   setDoc,
@@ -707,10 +708,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (!trimmed) return false;
       // Quick reserved check
       if (RESERVED_USERNAMES.has(trimmed)) return false;
-      const q = query(collection(db, 'profiles'), where('username', '==', trimmed));
+      // limit(1) is required, not cosmetic: the rules deny an uncapped `list` on profiles.
+      const q = query(collection(db, 'profiles'), where('username', '==', trimmed), limit(1));
       const snap = await getDocs(q);
       return snap.empty;
     } catch (e) {
+      // A row that exists but is private denies this read instead of returning it, so a
+      // permission error means the username IS taken. Reporting it as available here would
+      // let a second user claim a name someone already holds.
+      if ((e as { code?: string })?.code === 'permission-denied') return false;
       console.warn('Username availability check failed, assuming available to avoid blocking:', e);
       // Return true to avoid blocking sign-up when offline, but log warning
       return true;

@@ -127,6 +127,49 @@ jobs:
           fail_ci_if_error: false
           token: ${{ secrets.CODECOV_TOKEN }}
 
+  test-mobile:
+    name: Mobile Tests (React Native)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Cache node_modules
+        uses: actions/cache@v6
+        with:
+          path: |
+            node_modules
+            apps/mobile/node_modules
+            ~/.npm
+          key: ${{ runner.os }}-node-mobile-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps --no-audit --no-fund
+
+      # The React Native suites never ran in CI: the job simply did not exist, and the
+      # config could not be invoked from anywhere but apps/mobile because babel-jest
+      # resolved its `configFile` against the working directory (fixed 2026-10-02 — see
+      # apps/mobile/jest.config.cjs). 9 suites / 62 tests, ~15 s.
+      #
+      # Run in-band: this suite shares a hosted runner with other CPU-heavy jobs, so
+      # parallel worker startup only adds contention and makes render-oriented tests noisy.
+      # `--forceExit` is not decoration: the run leaves open handles (timers started by
+      # app hooks and never cleared) and jest otherwise hangs after the last assertion,
+      # which burns the job until the timeout instead of failing. Clearing those handles
+      # is tracked in docs/audits/2026-10-02-mobile-windows-support-audit.md.
+      - name: Run React Native tests
+        run: npx jest --config apps/mobile/jest.config.cjs --ci --runInBand --forceExit
+
   test-pipeline-scripts:
     name: Pipeline Scripts Tests
     runs-on: ubuntu-latest
@@ -446,7 +489,7 @@ jobs:
       # Vercel rejects a Hobby deployment that carries more than 12 Serverless Functions,
       # and every file under api/ is one function. The build succeeds and only the deploy
       # step fails, so this belongs in the source checks, before the build — not after.
-      # See docs/codebase/VERCEL_FUNCTIONS.md.
+      # See docs/codebase/ARCHITECTURE.md#vercel-serverless-surface-the-12-function-budget.
       - name: "Vercel function budget (Hobby: 12)"
         run: npm run check:functions
 
@@ -490,6 +533,12 @@ jobs:
       # `npm run check:design:update` in the same commit.
       - name: Design quality gate
         run: npm run check:design
+
+      # Route pages use the finalized HazardNet/Meridian color roles only: no stock
+      # Tailwind hues or un-tokenized hex literals. The scanner can report all components
+      # locally; this gate protects the page surfaces being redesigned here.
+      - name: Brand palette gate (pages)
+        run: npm run check:brand
 
       # No location in this repository's tree may appear in a shipped document — rendered
       # text, HTML comments, JSON-LD or inline styles. The rule and what the artifacts keep

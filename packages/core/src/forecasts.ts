@@ -53,6 +53,13 @@ export interface ForecastRow {
   prob_top1?: number;
   prob_top2?: number;
   prob_top3?: number;
+  // Advisory provenance and calibration (the daily advisory CSV's own columns; see
+  // ADVISORY_CSV_COLUMNS in backend/utils/advisoryMapper.js).
+  data_source?: string;
+  model_version?: string;
+  confidence_raw?: number;
+  confidence_calibrated?: number;
+  confidence_kind?: string;
 }
 
 export interface BulkForecastsResponse {

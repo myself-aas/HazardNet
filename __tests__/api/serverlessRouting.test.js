@@ -5,7 +5,7 @@
  *
  * The deployment may carry at most 12 Serverless Functions (Hobby plan) and every file
  * under `api/` is one function, so the entry points are URL *families* that dispatch to
- * the per-endpoint handlers in `serverless/` (see docs/codebase/VERCEL_FUNCTIONS.md).
+ * the per-endpoint handlers in `serverless/` (see docs/codebase/ARCHITECTURE.md#vercel-serverless-surface-the-12-function-budget).
  * That consolidation must not change the public surface: a route that quietly stops being
  * served is worse than the deployment failing outright, because nothing reports it.
  *
@@ -39,7 +39,7 @@ import { resetGuardsForTests } from '../../backend/middleware/serverlessGuard.js
 const PUBLIC_SURFACE = {
   'api/[endpoint].js': ['forecasts', 'historical', 'ingest', 'metrics', 'predict'],
   'api/chat/[action].js': ['query', 'sample-questions'],
-  'api/v1/[resource].js': ['alerts', 'historical', 'weather'],
+  'api/v1/[resource].js': ['alerts', 'historical', 'telemetry', 'weather'],
   'api/v1/alerts/[action].js': ['evidence-card', 'policy', 'review', 'run'],
   'api/v1/forecasts/[action].js': ['bulk', 'history', 'metadata'],
   'api/v1/weather/batch.js': [],

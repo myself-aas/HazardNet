@@ -101,6 +101,9 @@ async function main() {
 
   // 4. Update manifest.json
   const csvSha256 = createHash('sha256').update(outputCsv).digest('hex');
+  // Keep the source hash separately: fetch_kaggle_advisory.mjs uses it to distinguish a
+  // changed Kaggle publication with the same generated_at from the already-mapped output.
+  const sourceCsvSha256 = createHash('sha256').update(rawCsvContent).digest('hex');
   const predictionDate = mappedForecastRows[0]?.prediction_date || new Date().toISOString().slice(0, 10);
   const manifest = {
     source: 'Kaggle_Daily_Advisory (8-hazardnet-advisory)',
@@ -109,6 +112,7 @@ async function main() {
     prediction_date: predictionDate,
     row_count: mappedForecastRows.length,
     csv_sha256: csvSha256,
+    source_csv_sha256: sourceCsvSha256,
     model_version: canonicalModelVersion,
     csv_path: DEFAULT_CSV_PATH,
     json_path: 'backend/data/forecasts/hazardnet_forecasts_latest.json',

@@ -11,8 +11,7 @@
     "web": "expo start --web",
     "prebuild": "expo prebuild",
     "test:rn": "jest --config jest.config.cjs",
-    "test:maestro": "maestro test .maestro/today-alerts-flow.yaml",
-    "prebuild:snapshot": "node scripts/buildSnapshot.cjs"
+    "test:maestro": "maestro test .maestro/today-alerts-flow.yaml"
   },
   "dependencies": {
     "@hazardnet/core": "*",

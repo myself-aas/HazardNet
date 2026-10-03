@@ -24,6 +24,7 @@ import {
   ShieldAlert,
 } from 'lucide-react';
 import { fetchEventsSummary, fetchAllForecastRecords, EventsSummary, ForecastRecord } from '../lib/eventsClient';
+import { getHazardColor, getHazardSurface } from '../lib/hazardPalette';
 
 interface HazardCardData {
   id: string;
@@ -44,7 +45,6 @@ const HAZARDS_CATALOG = [
     id: 'cyclone',
     slug: 'cyclone',
     name: 'Tropical Cyclone',
-    color: '#ef4444',
     icon: Wind,
     season: 'May, Oct - Nov (Pre & Post-Monsoon)',
     description: 'Catastrophic marine vortexes accompanied by storm surges penetrating coastal embankments in the Bay of Bengal.',
@@ -53,7 +53,6 @@ const HAZARDS_CATALOG = [
     id: 'flood',
     slug: 'flood',
     name: 'Flood',
-    color: '#3b82f6',
     icon: Droplets,
     season: 'Jun - Sep (Monsoon Inundation)',
     description: 'Major transboundary river swells across the Brahmaputra, Ganges, and Meghna basins affecting millions.',
@@ -62,7 +61,6 @@ const HAZARDS_CATALOG = [
     id: 'flash-flood',
     slug: 'flash-flood',
     name: 'Flash Flood',
-    color: '#06b6d4',
     icon: Waves,
     season: 'Apr - Jun (Pre-Monsoon Haor Basins)',
     description: 'Sudden, high-velocity hill torrents rushing from Meghalaya and Tripura hills drowning standing Boro paddy.',
@@ -71,7 +69,6 @@ const HAZARDS_CATALOG = [
     id: 'severe-local-storm',
     slug: 'severe-local-storm',
     name: 'Severe Local Storm',
-    color: '#f59e0b',
     icon: CloudLightning,
     season: 'Mar - May (Norwesters / Kalbaishakhi)',
     description: 'Violent squalls, tornado cells, lightning strikes, and hailstorms causing localized structural and crop ruin.',
@@ -80,7 +77,6 @@ const HAZARDS_CATALOG = [
     id: 'cold-wave',
     slug: 'cold-wave',
     name: 'Cold Wave',
-    color: '#6366f1',
     icon: Snowflake,
     season: 'Dec - Jan (Winter)',
     description: 'Severe temperature drops and persistent dense fog in the northern/north-western divisions harming health and crops.',
@@ -89,7 +85,6 @@ const HAZARDS_CATALOG = [
     id: 'drought',
     slug: 'drought',
     name: 'Drought',
-    color: '#d97706',
     icon: Sun,
     season: 'Feb - May (Rabi & Pre-Kharif)',
     description: 'Soil moisture depletion and depleted aquifers in the Barind tract delaying aman and rabi sowing.',
@@ -98,7 +93,6 @@ const HAZARDS_CATALOG = [
     id: 'heat-wave',
     slug: 'heat-wave',
     name: 'Heat Wave',
-    color: '#ea580c',
     icon: Sun,
     season: 'Apr - Jun (Pre-Monsoon)',
     description: 'Extreme thermal stress with ambient temperatures exceeding 40°C triggering power grid strain and livestock mortality.',
@@ -107,7 +101,6 @@ const HAZARDS_CATALOG = [
     id: 'earthquake',
     slug: 'earthquake',
     name: 'Earthquake',
-    color: '#8b5cf6',
     icon: Activity,
     season: 'Seismic faults (Dauki, Chittagong-Tripura)',
     description: 'Tectonic vulnerability along the Dauki Fault and Indo-Burma subduction zones threatening dense urban centers.',
@@ -116,7 +109,6 @@ const HAZARDS_CATALOG = [
     id: 'fire',
     slug: 'fire',
     name: 'Fire',
-    color: '#dc2626',
     icon: Flame,
     season: 'Mar - May (Dry Season)',
     description: 'Dry season structural and agricultural fires exacerbated by low humidity and strong southerly breezes.',
@@ -161,6 +153,7 @@ export const HazardsPage: React.FC = () => {
 
     return {
       ...h,
+      color: getHazardColor(h.slug),
       totalHistoricalEvents: histEvents,
       percentage: pct,
       activeForecastsCount: activeFc.length,
@@ -236,15 +229,15 @@ export const HazardsPage: React.FC = () => {
         <div className="h-72 sm:h-80 w-full pt-4">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={chartData} margin={{ top: 10, right: 20, left: -10, bottom: 20 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e3e3e3" vertical={false} />
-              <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#58585b' }} />
-              <YAxis tick={{ fontSize: 11, fill: '#58585b' }} />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--mrd-hairline)" vertical={false} />
+              <XAxis dataKey="name" tick={{ fontSize: 12, fill: 'var(--mrd-ink-soft)' }} />
+              <YAxis tick={{ fontSize: 12, fill: 'var(--mrd-ink-soft)' }} />
               <Tooltip
-                contentStyle={{ backgroundColor: '#ffffff', borderColor: '#d1d1d1', borderRadius: '0.75rem', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                contentStyle={{ backgroundColor: 'var(--mrd-surface)', borderColor: 'var(--mrd-hairline-strong)', borderRadius: 'var(--mrd-radius-md)', boxShadow: 'var(--mrd-shadow-card)' }}
               />
               <Legend wrapperStyle={{ paddingTop: '10px' }} />
-              <Bar dataKey="Historical Occurrences" fill="#3b82f6" radius={[6, 6, 0, 0]} />
-              <Bar dataKey="Active Warning Records" fill="#f59e0b" radius={[6, 6, 0, 0]} />
+              <Bar dataKey="Historical Occurrences" fill="var(--chart-1)" radius={[6, 6, 0, 0]} />
+              <Bar dataKey="Active Warning Records" fill="var(--chart-2)" radius={[6, 6, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -270,7 +263,7 @@ export const HazardsPage: React.FC = () => {
                   <div className="flex items-center justify-between mb-3">
                     <div
                       className="p-2.5 transition-colors"
-                      style={{ backgroundColor: `${hazard.color}15`, color: hazard.color }}
+                      style={{ backgroundColor: getHazardSurface(hazard.slug), color: hazard.color }}
                     >
                       <Icon className="w-5 h-5" />
                     </div>

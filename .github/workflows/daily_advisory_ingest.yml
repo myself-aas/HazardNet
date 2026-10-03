@@ -57,78 +57,103 @@ jobs:
         env:
           KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
           KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
+          # Prefer the notebook's published dataset (the stable public CSV) and use kernel
+          # output as a fallback for transient dataset API failures.
+          KAGGLE_DATASET: ${{ vars.ADVISORY_DATASET || 'ashifahmedshuvo/hazardnet-weekly-forecasts' }}
+          KAGGLE_KERNEL: ${{ vars.ADVISORY_KERNEL || 'myself-aas/8-hazardnet-advisory' }}
+          ADVISORY_CSV_NAME: hazardnet_advisories_latest.csv
           OVERRIDE_PATH: ${{ inputs.advisory_csv_path }}
         run: |
-          set -euo pipefail
+          # NOTE: no `set -e` here. The fetcher's exit code IS the signal this step
+          # branches on (0 fresh / 2 unchanged / 1 failed), and `set -e` would kill the
+          # step before the branch could read it.
+          set -uo pipefail
+          OUT=/tmp/advisory-ingest
+          mkdir -p "$OUT"
 
-          if [ -n "$OVERRIDE_PATH" ]; then
+          # A manual override (URL or workspace path) short-circuits Kaggle entirely.
+          if [ -n "${OVERRIDE_PATH:-}" ]; then
             echo "[fetch] Using provided advisory CSV override: $OVERRIDE_PATH"
             if [[ "$OVERRIDE_PATH" =~ ^https?:// ]]; then
-              curl -fsSL "$OVERRIDE_PATH" -o /tmp/advisory-ingest/hazardnet_advisories_latest.csv
+              curl -fsSL "$OVERRIDE_PATH" -o "$OUT/hazardnet_advisories_latest.csv"
             else
-              cp "$OVERRIDE_PATH" /tmp/advisory-ingest/hazardnet_advisories_latest.csv
+              cp "$OVERRIDE_PATH" "$OUT/hazardnet_advisories_latest.csv"
             fi
-            echo "fetched=true" >> "$GITHUB_OUTPUT"
+            echo "fetched=true"  >> "$GITHUB_OUTPUT"
+            echo "fresh=true"    >> "$GITHUB_OUTPUT"
+            echo "via=override"  >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
-          if [ -z "${KAGGLE_USERNAME:-}" ] || [ -z "${KAGGLE_KEY:-}" ]; then
-            echo "::warning::KAGGLE_USERNAME or KAGGLE_KEY secret unset. Checking for existing local advisory data..."
-            if [ -f "backend/data/forecasts/hazardnet_forecasts_latest.csv" ]; then
-              echo "[fetch] Falling back to existing committed forecast data."
-              echo "fetched=false" >> "$GITHUB_OUTPUT"
-              exit 0
-            else
-              echo "::error::No Kaggle credentials and no local forecast file available."
-              exit 1
-            fi
+          # The dataset is public, so the HTTP download is unauthenticated by default.
+          # Optional Kaggle credentials unlock the CLI/kernel fallback if the API endpoint
+          # is unavailable. Do not make a private secret mandatory for a public CSV.
+          if [ -n "${KAGGLE_USERNAME:-}" ] && [ -n "${KAGGLE_KEY:-}" ]; then
+            mkdir -p ~/.kaggle
+            jq -n --arg username "$KAGGLE_USERNAME" --arg key "$KAGGLE_KEY" \
+              '{username:$username,key:$key}' > ~/.kaggle/kaggle.json
+            chmod 600 ~/.kaggle/kaggle.json
+          else
+            echo "[fetch] Kaggle credentials unset; using the public dataset API."
           fi
 
-          echo "[fetch] Fetching notebook output for 8-hazardnet-advisory..."
-          mkdir -p ~/.kaggle
-          echo "{\"username\":\"$KAGGLE_USERNAME\",\"key\":\"$KAGGLE_KEY\"}" > ~/.kaggle/kaggle.json
-          chmod 600 ~/.kaggle/kaggle.json
-
-          # Retry once on transient network/Kaggle failure per PRD §4.1 / TRD §4.7
-          FETCH_SUCCESS=0
-          for attempt in 1 2; do
-            echo "[fetch] Attempt $attempt: kaggle kernels output..."
-            if OUTPUT=$(kaggle kernels output --path /tmp/advisory-ingest/ "$KAGGLE_USERNAME/8-hazardnet-advisory" 2>&1) || \
-               OUTPUT=$(kaggle kernels output --path /tmp/advisory-ingest/ "myself-aas/8-hazardnet-advisory" 2>&1); then
-              FETCH_SUCCESS=1
-              break
-            fi
-            # Surface the CLI's own error. Without this the log said only
-            # "Attempt failed" and the run reddened every day with no way to tell
-            # an expired KAGGLE_KEY from a renamed/never-run kernel.
-            echo "[fetch] Attempt $attempt failed:"
-            echo "$OUTPUT"
-            echo "[fetch] Waiting 10s before retry..."
-            sleep 10
-          done
-
-          if [ "$FETCH_SUCCESS" -ne 1 ]; then
-            echo "::error::Failed to retrieve Kaggle notebook output after 2 attempts."
-            echo "[fetch] kaggle CLI: $(kaggle --version 2>&1 | head -1 || echo unknown)"
-            echo "[fetch] Kernels visible to $KAGGLE_USERNAME (check the slug still exists and has a completed run):"
-            kaggle kernels list --user "$KAGGLE_USERNAME" --page-size 20 2>&1 | head -30 || true
-            echo "[fetch] Owner action: refresh the KAGGLE_USERNAME/KAGGLE_KEY secrets, or point this step at the current kernel slug."
-            exit 1
+          # --wait-minutes: a scheduled Kaggle notebook is allowed to be tardy. Poll rather
+          # than fail, but stay well inside the job's timeout-minutes. Wrap in an `if`: GitHub
+          # invokes bash with `-e`, and a bare exit code 2 would terminate the step before the
+          # branch below can distinguish unchanged from failed.
+          if node scripts/fetch_kaggle_advisory.mjs --out "$OUT" --wait-minutes 12; then
+            code=0
+          else
+            code=$?
           fi
 
-          if [ ! -f /tmp/advisory-ingest/hazardnet_advisories_latest.csv ]; then
-            echo "::error::hazardnet_advisories_latest.csv not found in Kaggle output directory."
-            ls -la /tmp/advisory-ingest/
-            exit 1
-          fi
-
-          echo "fetched=true" >> "$GITHUB_OUTPUT"
+          case "$code" in
+            0)
+              echo "fetched=true" >> "$GITHUB_OUTPUT"
+              echo "fresh=true"   >> "$GITHUB_OUTPUT"
+              ;;
+            2)
+              # Fetched fine, but the file is not newer than what is already committed —
+              # i.e. the Kaggle schedule did not produce a new run. This is a real
+              # finding, not a no-op: it is annotated, summarised and reported to Slack.
+              echo "fetched=true"  >> "$GITHUB_OUTPUT"
+              echo "fresh=false"   >> "$GITHUB_OUTPUT"
+              echo "::warning::Advisory CSV fetched but unchanged since the last ingest — the Kaggle schedule did not produce a new run today."
+              {
+                echo "### ⏭️ No new advisory run"
+                echo
+                echo "The fetch succeeded, but the CSV is identical to the one already ingested."
+                echo
+                echo "Check the notebook's last successful run on Kaggle (schedule: daily)."
+              } >> "$GITHUB_STEP_SUMMARY"
+              if [ -f "$OUT/fetch-report.json" ]; then
+                {
+                  echo
+                  echo '```json'
+                  cat "$OUT/fetch-report.json"
+                  echo '```'
+                } >> "$GITHUB_STEP_SUMMARY"
+              fi
+              # A scheduled no-update is a real feed failure; fail it so the always()-run
+              # operational notification is red. A manual rehearsal can legitimately be
+              # unchanged and remains a successful no-op.
+              if [ "${{ github.event_name }}" = "schedule" ]; then
+                echo "::error::Scheduled Kaggle advisory publication is unchanged."
+                exit 1
+              fi
+              ;;
+            *)
+              echo "::error::Advisory fetch failed (exit $code). See the step log for the method-by-method diagnosis."
+              exit "$code"
+              ;;
+          esac
 
       - name: Validate Advisory CSV & Execute Ingestion
         id: run-ingest
         env:
           ALLOW_STALE: ${{ inputs.allow_stale }}
           FETCHED: ${{ steps.fetch-advisory.outputs.fetched }}
+          FRESH: ${{ steps.fetch-advisory.outputs.fresh }}
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
           FIREBASE_PROJECT_ID: ${{ secrets.FIREBASE_PROJECT_ID }}
         run: |
@@ -136,6 +161,12 @@ jobs:
 
           if [ "$FETCHED" != "true" ]; then
             echo "[ingest] Skipping fresh advisory mapping (no new Kaggle fetch)."
+            exit 0
+          fi
+
+          if [ "$FRESH" != "true" ]; then
+            echo "[ingest] Advisory CSV is unchanged since the last ingest — nothing new to map."
+            echo "[ingest] The fetch step has already annotated this as a missed Kaggle run."
             exit 0
           fi
 
@@ -193,6 +224,7 @@ jobs:
           fi
 
       - name: Trigger Vercel Production Deployment
+        if: steps.commit-artifacts.outputs.committed == 'true'
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}

@@ -8,7 +8,7 @@
  *
  * All four handlers live in `serverless/v1/alerts/` (not scanned for functions), so the
  * alert family costs one function instead of four — Vercel's Hobby plan allows 12 per
- * deployment (docs/codebase/VERCEL_FUNCTIONS.md), and the count is enforced by
+ * deployment (docs/codebase/ARCHITECTURE.md#vercel-serverless-surface-the-12-function-budget), and the count is enforced by
  * scripts/check-vercel-functions.mjs.
  *
  * `policy` is intentionally first in the load order of the family's docs: it is the

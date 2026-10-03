@@ -164,16 +164,16 @@ export const DivisionsPage: React.FC = () => {
         <div className="h-72 sm:h-80 w-full pt-4">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={chartData} margin={{ top: 10, right: 20, left: -10, bottom: 20 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e3e3e3" vertical={false} />
-              <XAxis dataKey="name" tick={{ fontSize: 12, fill: '#58585b' }} />
-              <YAxis tick={{ fontSize: 12, fill: '#58585b' }} />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--mrd-hairline)" vertical={false} />
+              <XAxis dataKey="name" tick={{ fontSize: 12, fill: 'var(--mrd-ink-soft)' }} />
+              <YAxis tick={{ fontSize: 12, fill: 'var(--mrd-ink-soft)' }} />
               <Tooltip
-                contentStyle={{ backgroundColor: '#ffffff', borderColor: '#d1d1d1', borderRadius: '0.75rem', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                cursor={{ fill: '#f6f6f6' }}
+                contentStyle={{ backgroundColor: 'var(--mrd-surface)', borderColor: 'var(--mrd-hairline-strong)', borderRadius: 'var(--mrd-radius-md)', boxShadow: 'var(--mrd-shadow-card)' }}
+                cursor={{ fill: 'var(--mrd-canvas)' }}
               />
               <Legend wrapperStyle={{ paddingTop: '10px' }} />
-              <Bar dataKey="Historical Events (2000-2026)" fill="#2563eb" radius={[6, 6, 0, 0]} />
-              <Bar dataKey="Active Forecast Records" fill="#06b6d4" radius={[6, 6, 0, 0]} />
+              <Bar dataKey="Historical Events (2000-2026)" fill="var(--chart-1)" radius={[6, 6, 0, 0]} />
+              <Bar dataKey="Active Forecast Records" fill="var(--chart-2)" radius={[6, 6, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>

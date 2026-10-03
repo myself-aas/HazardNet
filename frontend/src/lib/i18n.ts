@@ -402,6 +402,22 @@ const EN = {
     'No inference was run for this request. Per-class probabilities, top-three classes and satellite drivers are not recorded for this row.',
   'lookup.disclaimer': 'Decision support only. Follow official BMD, FFWC and DDM instructions.',
 
+  'advisory.signal.title': 'Advisory signal',
+  'advisory.signal.hint': 'the severity tracks the advisory publishes, and the tier cut from them',
+  'advisory.tier.published': 'Published tier',
+  'advisory.tier.derived': 'Derived locally',
+  'advisory.track.modelRaw': 'Model (raw)',
+  'advisory.track.modelCalibrated': 'Model (calibrated)',
+  'advisory.track.physics': 'Physics track',
+  'advisory.track.final': 'Final (fused)',
+  'advisory.physicsOverride': 'Physics-grounded',
+  'advisory.noSignal':
+    'This row predates the dual-track severity columns — only the fused score is available.',
+  'advisory.distribution': 'Ranked hazard distribution',
+  'advisory.rank': 'Rank',
+  'advisory.source': 'Source',
+  'advisory.modelVersion': 'Model',
+
   'a11y.skipToList': 'Skip to the district list',
   'a11y.mapRegion': 'Interactive map of Bangladesh',
 } as const;
@@ -752,6 +768,22 @@ const BN: Record<string, string> = {
     'এই অনুরোধে কোনো ইনফারেন্স চালানো হয়নি। শ্রেণিভিত্তিক সম্ভাবনা, শীর্ষ তিন শ্রেণি ও উপগ্রহ চালক এই সারিতে নথিভুক্ত নেই।',
   'lookup.disclaimer':
     'কেবল সিদ্ধান্ত সহায়তা। সরকারি নির্দেশনার জন্য বিএমডি, এফএফডব্লিউসি ও ডিডিএম অনুসরণ করুন।',
+
+  'advisory.signal.title': 'সতর্কতা সংকেত',
+  'advisory.signal.hint': 'পাইপলাইন যে তীব্রতা প্রকাশ করে এবং সেগুলি থেকে নির্ধারিত স্তর',
+  'advisory.tier.published': 'প্রকাশিত স্তর',
+  'advisory.tier.derived': 'স্থানীয়ভাবে নির্ণীত',
+  'advisory.track.modelRaw': 'মডেল (কাঁচা)',
+  'advisory.track.modelCalibrated': 'মডেল (ক্রমাঙ্কিত)',
+  'advisory.track.physics': 'পদার্থবিদ্যা ট্র্যাক',
+  'advisory.track.final': 'চূড়ান্ত (সমন্বিত)',
+  'advisory.physicsOverride': 'পদার্থবিদ্যা-ভিত্তিক',
+  'advisory.noSignal':
+    'এই সারি দ্বৈত-ট্র্যাক তীব্রতা কলামের আগের — শুধুমাত্র সমন্বিত স্কোর পাওয়া যাচ্ছে।',
+  'advisory.distribution': 'ক্রমান্বিত ঝুঁকি বন্টন',
+  'advisory.rank': 'ক্রম',
+  'advisory.source': 'উৎস',
+  'advisory.modelVersion': 'মডেল',
 
   'a11y.skipToList': 'জেলার তালিকায় যান',
   'a11y.mapRegion': 'বাংলাদেশের ইন্টারঅ্যাকটিভ মানচিত্র',

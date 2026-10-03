@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { db } from '../services/firebase';
-import { collection, query, getDocs, where, getDoc, doc } from 'firebase/firestore';
+import { collection, query, getDocs, where, getDoc, doc, limit } from 'firebase/firestore';
 const isProfileStoreConfigured = true;
 import { HazardNetBrand } from '../components/HazardNetLogo';
 import MaterialIcon from '../components/MaterialIcon';
@@ -82,12 +82,22 @@ const PublicProfilePage: React.FC = () => {
       try {
         let data: any = null; let error = null;
         try {
-          const q = query(collection(db, 'profiles'), where('username', '==', username));
+          // limit(1) is mandatory: firestore.rules denies an uncapped `list` on profiles,
+          // which is what stops the collection being read as a directory of every account.
+          const q = query(collection(db, 'profiles'), where('username', '==', username), limit(1));
           const snap = await getDocs(q);
           if(!snap.empty) data = { id: snap.docs[0].id, ...snap.docs[0].data() };
         } catch(e) { error = e; }
         if (cancelled) return;
-        if (error) throw error;
+        if (error) {
+          // Private rows deny this read rather than returning nothing, so a denied query is
+          // a username that exists but is not shared — not a 404.
+          if ((error as { code?: string })?.code === 'permission-denied') {
+            setState('private');
+            return;
+          }
+          throw error;
+        }
         if (!data) {
           setState('missing');
           return;

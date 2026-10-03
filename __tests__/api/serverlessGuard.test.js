@@ -7,7 +7,7 @@
  * so this suite tests the limiter that actually deploys, plus the invariant that keeps it
  * that way: a static scan asserts every deployed handler applies the guard. The handlers
  * live in `serverless/**` (the files under `api/` are the entry points that dispatch to
- * them — see docs/codebase/VERCEL_FUNCTIONS.md), so a new endpoint added without the guard
+ * them — see docs/codebase/ARCHITECTURE.md#vercel-serverless-surface-the-12-function-budget), so a new endpoint added without the guard
  * fails here rather than in production.
  */
 
