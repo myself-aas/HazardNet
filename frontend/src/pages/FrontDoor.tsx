@@ -59,7 +59,6 @@ import { AlertLevelBadge } from '../components/alerts/AlertLevelBadge';
 import { LanguageToggle } from '../components/alerts/LanguageToggle';
 import LiveStatusStrip from '../components/frontdoor/LiveStatusStrip';
 import CardStackTable from '../components/ui/CardStackTable';
-import RunVisual from '../components/frontdoor/RunVisual';
 import HeroCinematicBackground from '../components/HeroCinematicBackground';
 import { localiseRoute, usePageSeo } from '../hooks/usePageSeo';
 import { useAlertsData } from '../hooks/useAlertsData';
