@@ -344,7 +344,7 @@ function outlookBullet(unit) {
   if (num(unit.physics) !== null) {
     parts.push(
       `physics cross-check ${fixed(unit.physics)}, divergence ${fixed(d)}${
-        d !== null && d >= 0.3 ? ' — the two tracks disagree here, which is expected and shown rather than smoothed over' : ''
+        d !== null && d >= 0.3 ? ': the two tracks disagree here, which is expected and shown rather than smoothed over' : ''
       }`,
     );
   }
@@ -352,7 +352,7 @@ function outlookBullet(unit) {
 }
 
 const SHARED_DEFAULTS = {
-  classVocabulary: 'Every alert uses the same four-level vocabulary — NORMAL, WATCH, WARNING, EMERGENCY — across all eight classes.',
+  classVocabulary: 'Every alert uses the same four-level vocabulary, NORMAL, WATCH, WARNING, EMERGENCY, across all eight classes.',
   confidencePolicy: 'Confidence is published as an uncalibrated model score; no calibration accuracy is claimed.',
   publicationGate: 'Advisory levels follow the published alert policy and the escalation boundaries of the responsible authorities; nothing here overrides them.',
   groundTruth: 'Published assessments and official bulletins are the record; this site reports what they name.',
@@ -425,7 +425,7 @@ function hazardRoute({ hazard, outlook, now, methodology }) {
           // browser (scripts/lib/public-text.mjs). What the page must keep is the assurance —
           // that the formula shown here is executed against the implementation, so this
           // copy cannot drift from what the pipeline runs.
-          'That expression is executed against the pipeline’s own implementation by the content tests in CI — this page cannot silently describe a formula the pipeline no longer runs.',
+          'That expression is executed against the pipeline’s own implementation by the content tests in CI: this page cannot silently describe a formula the pipeline no longer runs.',
         ],
       },
       {
@@ -451,7 +451,7 @@ function hazardRoute({ hazard, outlook, now, methodology }) {
       },
       {
         question: `Which districts does this page cover?`,
-        answer: `The district pages cover all 64 districts. This page summarises the districts the current run covers — a run can be partial, and the coverage stamp on the snapshot says exactly how partial, which the status page reports.`,
+        answer: `The district pages cover all 64 districts. This page summarises the districts the current run covers: a run can be partial, and the coverage stamp on the snapshot says exactly how partial, which the status page reports.`,
       },
     ],
   };
@@ -504,7 +504,7 @@ function districtRoute({ district, rows, archive, now, outlook, shared }) {
                   .sort((a, b) => b[1] - a[1])
                   .map(([hazard, count]) => `${hazard}: ${count}`),
               )}.`
-            : `The archive this deployment loaded records no event for ${district.name}, out of ${plural(archive.total, 'event')} nationally. An unrecorded event is not the same as an absent event — reporting coverage differs by district and decade.`,
+            : `The archive this deployment loaded records no event for ${district.name}, out of ${plural(archive.total, 'event')} nationally. An unrecorded event is not the same as an absent event: reporting coverage differs by district and decade.`,
           `The archive reports ${plural(archive.total, 'event')} against the ${claimedText} the model card quotes (drift ${archive.drift >= 0 ? '+' : ''}${archive.drift}); the measured number is what this page uses.`,
         ],
         bullets: [
@@ -514,7 +514,7 @@ function districtRoute({ district, rows, archive, now, outlook, shared }) {
             .reverse()
             .map(
               (event) =>
-                `${event.start_date} — ${event.hazard_type}${event.severity !== null ? ` (severity ${event.severity})` : ''}${event.source ? ` · source: ${event.source}` : ''}`,
+                `${event.start_date}: ${event.hazard_type}${event.severity !== null ? ` (severity ${event.severity})` : ''}${event.source ? ` · source: ${event.source}` : ''}`,
             ),
         ],
         links: [
@@ -525,14 +525,14 @@ function districtRoute({ district, rows, archive, now, outlook, shared }) {
     : {
         h2: 'Recorded hazard history',
         paragraphs: [
-          `This deployment has no event archive loaded, so this page states no historical count for ${district.name}. The HazardNet model card quotes 2,931 historical events (2000–2025) for the training prior, and that figure is reported rather than verified in this repository — the loader reports the drift against it instead of asserting it. Until the archive is loaded, this section stays empty rather than filling itself with an approximation.`,
+          `This deployment has no event archive loaded, so this page states no historical count for ${district.name}. The HazardNet model card quotes 2,931 historical events (2000–2025) for the training prior, and that figure is reported rather than verified in this repository: the loader reports the drift against it instead of asserting it. Until the archive is loaded, this section stays empty rather than filling itself with an approximation.`,
         ],
         links: [{ label: 'Data sources and scope', href: '/data-sources' }],
       };
 
   const baselineParas = [
     `${district.name} is in ${district.division} division. The application's district table carries a static baseline for it: risk ${district.risk}, baseline severity ${fixed(district.baselineSeverity)}, baseline hazard ${district.baselineHazard}, elevation ${district.elevationMeters ?? '—'} m, main crops ${district.mainCrop}.`,
-    'The baseline is a static entry shipped with the app — it is what the map colours a district with when the current run does not cover it, and it is not a model output. The outlook section above is the model output, and it exists only for the districts and horizons the current run covers.',
+    'The baseline is a static entry shipped with the app: it is what the map colours a district with when the current run does not cover it, and it is not a model output. The outlook section above is the model output, and it exists only for the districts and horizons the current run covers.',
   ];
 
   const faqs = [
@@ -555,7 +555,7 @@ function districtRoute({ district, rows, archive, now, outlook, shared }) {
   return {
     path: `/districts/${district.id}`,
     label: 'District outlook',
-    title: `${district.name} district hazard outlook — HazardNet`,
+    title: `${district.name} district hazard outlook: HazardNet`,
     description: `The current HazardNet outlook for ${district.name} (${district.division} division): hazard class, severity, confidence and the independent physics cross-check per horizon, the district's static baseline, and what the model cannot tell you.`,
     robots: covered ? 'index,follow' : 'noindex,follow',
     sitemap: covered ? { changefreq: 'daily', priority: 0.6 } : null,
@@ -585,7 +585,7 @@ function districtRoute({ district, rows, archive, now, outlook, shared }) {
           }
         : {}),
     },
-    h1: `${district.name} — current hazard outlook`,
+    h1: `${district.name}: current hazard outlook`,
     standfirst: covered
       ? `What the model this deployment ships currently says about ${district.name}, horizon by horizon, with the independent physics cross-check beside it.`
       : `This deployment's current run carries no row for ${district.name}. This page states that plainly, shows the district's static baseline, and explains what a partial run means.`,
@@ -599,7 +599,7 @@ function districtRoute({ district, rows, archive, now, outlook, shared }) {
       {
         h2: 'How to read these numbers',
         bullets: [
-          'Severity index (0.00–1.00) is the model\'s damage-potential score for the class it selected — not a probability and not a share of damage.',
+          'Severity index (0.00–1.00) is the model\'s damage-potential score for the class it selected: not a probability and not a share of damage.',
           'Confidence is the model\'s own certainty in that class, published as uncalibrated; it is not a measure of whether the forecast is correct.',
           'The severity track is an independent formula-based estimate. Divergence between the two tracks is normal and is shown rather than hidden.',
           'Horizons are 7 and 15 days. The 15-day outlook is the less certain of the two and is a planning aid, not a storm-specific prediction.',
@@ -656,7 +656,7 @@ function hazardsIndexHint(hazard, outlook) {
 function modelPerformanceRoute({ performance }) {
   if (!isRecord(performance) || performance.schema !== PERFORMANCE_SCHEMA) {
     throw new Error(
-      `${DEFAULT_PATHS.performance} is missing or is not a ${PERFORMANCE_SCHEMA} — ` +
+      `${DEFAULT_PATHS.performance} is missing or is not a ${PERFORMANCE_SCHEMA}: ` +
         'publish the validation scorecard artifact first',
     );
   }
@@ -740,7 +740,7 @@ function modelPerformanceRoute({ performance }) {
         ],
         bullets: episodes.map(
           (episode) =>
-            `${episode.title} — onset ${episode.onset_date}, ${count(episode.affected_count)} districts named as affected.`,
+            `${episode.title}: onset ${episode.onset_date}, ${count(episode.affected_count)} districts named as affected.`,
         ),
       },
       {
@@ -749,7 +749,7 @@ function modelPerformanceRoute({ performance }) {
           tone: 'warning',
           text:
             `These are ${howMany(episodes.length)} episodes, not a validation set. Detection is counted only over the districts the published assessments ` +
-            'name — a district nobody named is unknown, not clear — so every number here is a ceiling on detection, not forecast skill.',
+            'name: a district nobody named is unknown, not clear, so every number here is a ceiling on detection, not forecast skill.',
         },
         bullets: howToRead,
         links: [
@@ -790,13 +790,13 @@ function modelPerformanceRoute({ performance }) {
         },
       },
       {
-        h2: 'Scores: POD, FAR and CSI — and the rows where they do not exist',
+        h2: 'Scores: POD, FAR and CSI, and the rows where they do not exist',
         paragraphs: [
           'These are the standard verification scores, computed over the district-horizon samples in each episode\'s window. ' +
             (notComputed.length
               ? `POD is "—" for ${notComputed.join(', ')}: the published assessment names affected districts but records no dated outcome inside ` +
                 'the prediction window, so there is no observed event to divide by. A false alarm ratio of 1.000 in that situation means ' +
-                '"no negative sample existed", not "every alarm was wrong" — with no named event there is nothing for an alarm to be right about.'
+                '"no negative sample existed", not "every alarm was wrong": with no named event there is nothing for an alarm to be right about.'
               : 'Every episode had a computable POD.'),
           'The false alarm ratio is measurable only against districts where an event was recorded as absent. No district is treated as a confirmed negative, so treat the FAR column as a bound on the fraction of alarms that hit a district nobody reported as affected.',
         ],
@@ -845,7 +845,7 @@ function modelPerformanceRoute({ performance }) {
       {
         question: 'What do the scores cover?',
         answer:
-          'Detection counts and verification scores over the districts the published assessments name, at the horizons the runs published. They say what the system flagged on those episodes — they are not a measure of overall forecast skill.',
+          'Detection counts and verification scores over the districts the published assessments name, at the horizons the runs published. They say what the system flagged on those episodes: they are not a measure of overall forecast skill.',
       },
       {
         question: 'Does this page change when the forecast model is updated?',
@@ -892,7 +892,7 @@ export function buildRoutes({ districts, snapshot, archive, methodology, perform
     label: 'Hazard reference',
     title: 'Hazard classes in Bangladesh: methodology behind each HazardNet forecast',
     description:
-      'One page per hazard class the model can output — Flood, Flash Flood, Tropical Cyclone, Drought, Heat Wave, Cold Wave, Fire and Severe Local Storm — with the physics formula, the drivers, the confidence semantics, the limits, and what the current run says.',
+      'One page per hazard class the model can output, Flood, Flash Flood, Tropical Cyclone, Drought, Heat Wave, Cold Wave, Fire and Severe Local Storm, with the physics formula, the drivers, the confidence semantics, the limits, and what the current run says.',
     robots: 'index,follow',
     sitemap: { changefreq: 'weekly', priority: 0.8 },
     appShell: true,
@@ -925,7 +925,7 @@ export function buildRoutes({ districts, snapshot, archive, methodology, perform
       },
       {
         question: 'Which class is most likely in the current run?',
-        answer: 'The current-run counts are listed above, and each hazard page repeats them. What the counts do not tell you is which is likely — they describe one model run, not a climatology.',
+        answer: 'The current-run counts are listed above, and each hazard page repeats them. What the counts do not tell you is which is likely: they describe one model run, not a climatology.',
       },
     ],
   });
@@ -944,7 +944,7 @@ export function buildRoutes({ districts, snapshot, archive, methodology, perform
   routes.push({
     path: '/districts',
     label: 'District outlooks',
-    title: 'District hazard outlooks for all 64 districts of Bangladesh — HazardNet',
+    title: 'District hazard outlooks for all 64 districts of Bangladesh: HazardNet',
     description: `One page per district with the current model outlook (hazard, severity, confidence, physics cross-check), the district's static baseline and the model's stated limits. ${coveredDistricts.length} of 64 districts carry a model row in the run this deployment ships.`,
     robots: 'index,follow',
     sitemap: { changefreq: 'daily', priority: 0.8 },
@@ -1046,7 +1046,7 @@ export function buildRoutes({ districts, snapshot, archive, methodology, perform
         {
           h2: 'What these pages are',
           paragraphs: [
-            `Assembled from the archive this deployment loaded — ${plural(archive.total, 'event')} spanning ${archive.date_range[0]} to ${archive.date_range[1]}. The archive reports ${plural(archive.total, 'event')} against the ${claimedText} the model card quotes (drift ${archive.drift >= 0 ? '+' : ''}${archive.drift}); the measured number is used here.`,
+            `Assembled from the archive this deployment loaded: ${plural(archive.total, 'event')} spanning ${archive.date_range[0]} to ${archive.date_range[1]}. The archive reports ${plural(archive.total, 'event')} against the ${claimedText} the model card quotes (drift ${archive.drift >= 0 ? '+' : ''}${archive.drift}); the measured number is used here.`,
             'A retrospective counts what was recorded. Reporting coverage varies by decade, district and hazard class, so a rise in a year\'s count can be a rise in reporting rather than in hazard. The pages say which sources each year draws on.',
           ],
           links: years.map((year) => ({ label: `${year}`, href: `/retrospectives/${year}` })),
@@ -1081,7 +1081,7 @@ export function buildRoutes({ districts, snapshot, archive, methodology, perform
       routes.push({
         path: `/retrospectives/${year}`,
         label: 'Season retrospective',
-        title: `${year} Bangladesh hazard season retrospective — recorded events`,
+        title: `${year} Bangladesh hazard season retrospective: recorded events`,
         description: `${inYear.length} recorded hazard events in Bangladesh in ${year}: counts by class and district from the archive this deployment loaded, with the reporting gaps stated.`,
         robots: 'index,follow',
         sitemap: { changefreq: 'yearly', priority: 0.6 },
@@ -1095,7 +1095,7 @@ export function buildRoutes({ districts, snapshot, archive, methodology, perform
           place: { '@type': 'Country', name: 'Bangladesh' },
           dataset: {
             kind: 'event-archive',
-            name: `HazardNet historical hazard event archive — ${year} subset (Bangladesh)`,
+            name: `HazardNet historical hazard event archive: ${year} subset (Bangladesh)`,
             description: `The ${year} subset of the normalised historical hazard event archive this deployment loaded; ${inYear.length} recorded events.`,
             temporalCoverage: `${year}-01-01/${year}-12-31`,
             variableMeasured: ['hazard class', 'district', 'event window', 'severity basis', 'fatalities'],
@@ -1120,7 +1120,7 @@ export function buildRoutes({ districts, snapshot, archive, methodology, perform
               'Event boundaries follow the source record: a multi-district flood appears once per district, so counts are event-district pairs, not distinct physical events.',
             ],
           },
-          { h2: 'How to read it against the model', paragraphs: ['Compare a season to model output only with a validation — see the retrospectives index for why.'], links: [{ label: 'Model card', href: '/model' }] },
+          { h2: 'How to read it against the model', paragraphs: ['Compare a season to model output only with a validation: see the retrospectives index for why.'], links: [{ label: 'Model card', href: '/model' }] },
         ],
         faqs: [
           {
@@ -1230,7 +1230,7 @@ export function loadInputs(paths) {
   const performance = readJsonSafe(paths.performance);
   if (!performance || performance.schema !== PERFORMANCE_SCHEMA) {
     throw new Error(
-      `${paths.performance} is missing or is not a ${PERFORMANCE_SCHEMA} — ` +
+      `${paths.performance} is missing or is not a ${PERFORMANCE_SCHEMA}: ` +
         'publish the validation scorecard artifact first',
     );
   }
@@ -1258,7 +1258,7 @@ function main() {
   if (!paths.archive) {
     console.log('[content] no event archive requested (--no-events): generating the archive-free surface');
   } else if (!inputs.archive) {
-    console.log(`[content] no archive at ${DEFAULT_PATHS.archive} — district pages will state that no history is loaded`);
+    console.log(`[content] no archive at ${DEFAULT_PATHS.archive}: district pages will state that no history is loaded`);
   } else {
     console.log(
       `[content] archive: ${inputs.archive.total} events (claimed ${inputs.archive.claimed_total}, drift ${inputs.archive.drift >= 0 ? '+' : ''}${inputs.archive.drift})`,
@@ -1316,7 +1316,7 @@ function main() {
   mkdirSync(path.dirname(paths.out), { recursive: true });
   writeFileSync(paths.out, `${JSON.stringify(document, null, 2)}\n`);
   console.log(
-    `[content] wrote ${path.relative(repoRoot, paths.out)} — ${routes.length} routes ` +
+    `[content] wrote ${path.relative(repoRoot, paths.out)}: ${routes.length} routes ` +
       `(${summary.counts.hazards} hazards, ${summary.counts.districts} districts, ` +
       `${summary.counts.retrospectives} retrospectives, archive=${inputs.archive ? 'loaded' : 'absent'})`,
   );

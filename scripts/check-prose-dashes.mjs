@@ -25,10 +25,24 @@ import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const SCAN = [join(ROOT, 'frontend/src'), join(ROOT, 'apps/mobile/src')];
-const EXTS = /\.(tsx|ts|md)$/;
+const SCAN = [
+  join(ROOT, 'frontend/src'),
+  join(ROOT, 'apps/mobile/src'),
+  // Committed data is copy too: the model-performance titles and the hazard methodology both
+  // render on published pages, and both were escaping their dashes as \u2014 where a scan of the
+  // raw file could not see them.
+  join(ROOT, 'frontend/public'),
+];
+const EXTS = /\.(tsx|ts|md|json)$/;
+/** Generated, vendored or test source: not copy a reader sees. `frontend/src/content` is scanned
+ *  (its JSON is authored copy - page titles, descriptions, long-form paragraphs and their Bengali
+ *  counterparts), while the content engine's output is not: `generated-routes.json` and
+ *  `public/data/content-index.json` are rewritten by `scripts/build_content_engine.mjs` and
+ *  `frontend/scripts/prerender.mjs`, so a dash has to be fixed in the generator and regenerated,
+ *  not patched in the artifact. Both are ledgered as open in the audit's backlog 15. */
+
 /** Generated, vendored or test source: not copy a reader sees. */
-const SKIP = /(node_modules|\/__tests__\/|\.test\.|generated)/;
+const SKIP = /(node_modules|\/__tests__\/|\.test\.|generated|\/public\/)/;
 
 const EM = '\u2014';
 const EN = '\u2013';
@@ -97,7 +111,23 @@ function judge(line, index) {
   return 'prose';
 }
 
+/**
+ * Files deliberately outside the scan, each with the reason. They are listed here rather than left
+ * unmentioned so the exclusion is a decision someone can disagree with: the historical export
+ * quotes UN OCHA / WHO / FAO situation reports, and rewriting a quotation to suit a house style is
+ * misquoting an agency, which is worse than the inconsistency the rule exists to prevent.
+ */
+const NOT_SCANNED = new Map([
+  [
+    'frontend/public/data/historical/events-master.json',
+    'excerpts from UN OCHA / WHO / FAO situation reports and GLIDE records; the dashes are in the source text',
+  ],
+  ['frontend/public/robots.txt', 'crawler directives, not reader-facing prose'],
+  ['frontend/public/.well-known/security.txt', 'security contact file, not reader-facing prose'],
+]);
+
 const findings = [];
+const skipped = [];
 for (const dir of SCAN) {
   const files = [];
   const walk = (d) => {
@@ -118,7 +148,10 @@ for (const dir of SCAN) {
   for (const file of files) {
     const rel = relative(ROOT, file).split('\\').join('/');
     if (SKIP.test(rel)) continue;
-    const code = blankOutComments(readFileSync(file, 'utf8'));
+
+    let code = blankOutComments(readFileSync(file, 'utf8'));
+    // JSON may carry a dash as an escape; a reader sees the dash, so the scan has to as well.
+    if (file.endsWith('.json')) code = code.replace(/\\u2014/gi, EM).replace(/\\u2013/gi, EN);
     code.split('\n').forEach((raw, index) => {
       if (!raw.includes(EM) && !raw.includes(EN)) return;
       // A documented exception: the dash is data or a transformation, not authored copy.
@@ -147,6 +180,7 @@ if (process.argv.includes('--json')) {
 
 if (findings.length === 0) {
   console.log('[prose-dashes] no em-dash or en-dash in reader-facing copy.');
+  for (const [file, reason] of NOT_SCANNED) console.log(`[prose-dashes] not scanned: ${file} (${reason})`);
 } else {
   console.log(`[prose-dashes] ${findings.length} dash(es) in copy. The empty-value glyph '—' and en-dash ranges are allowed; these are not.`);
   for (const f of findings) console.log(`  ${f.file}:${f.line} [${f.kind}] ${f.text}`);
