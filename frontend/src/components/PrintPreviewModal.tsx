@@ -411,7 +411,7 @@ export const PrintPreviewModal: React.FC<PrintPreviewModalProps> = ({
             {/* SIMULATED A4 PRINTED PAPER SHEET */}
             <div
               ref={previewPaperRef}
-              className={`print-preview-paper relative bg-white text-carbon-90 rounded-sm shadow-2xl p-6 sm:p-10 md:p-12 border border-carbon-30 min-h-[1160px] overflow-hidden ${
+              className={`print-preview-paper hn-paper relative bg-white text-carbon-90 rounded-sm shadow-2xl p-6 sm:p-10 md:p-12 border border-carbon-30 min-h-[1160px] overflow-hidden ${
                 inkSaverMode ? 'ink-saver-active' : ''
               }`}
             >

@@ -22,6 +22,10 @@
    packages/design-system/src/meridian.ts · docs/design-system/MERIDIAN.md */
 @import "./styles/meridian.css";
 
+/* Phase 9 · the dark theme. Imported last: it re-points primitives defined at
+   `:root` by the layers above (see the header of styles/dark.css). */
+@import "./styles/dark.css";
+
 @custom-variant dark (&:is(.dark *, [data-mrd-theme="dark"] *));
 
 /* HazardNet edge-first typography & Cartographic-Editorial Brutalism HUD contract.

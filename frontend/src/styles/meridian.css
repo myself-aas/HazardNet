@@ -57,6 +57,7 @@
   --mrd-dark-canvas: #0b0e11;
   --mrd-dark-grouped: #14191e;
   --mrd-dark-surface: #1b2128;
+  --mrd-dark-surface-raised: #232b33; /* one step above elevated: ink-filled chrome */
   --mrd-dark-hairline: #2a323a;
 
   /* ── Geometry ───────────────────────────────────────────────────────────

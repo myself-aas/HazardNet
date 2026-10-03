@@ -208,6 +208,9 @@ export function useLeafletMap(
       maxZoom: config.maxZoom,
       opacity: 1.0,
       crossOrigin: true,
+      // Names the layer in the DOM (`hn-tile-osmStandard`) so the dark theme can
+      // invert the light vector basemaps and leave satellite imagery alone.
+      className: `hn-tile-${baseLayerKey}`,
     }).addTo(map);
 
     const markersGroup = L.layerGroup().addTo(map);
@@ -418,6 +421,7 @@ export function useLeafletMap(
       maxZoom: config.maxZoom,
       opacity: 1.0,
       crossOrigin: true,
+      className: `hn-tile-${baseLayerKey}`,
     }).addTo(mapInstanceRef.current);
 
     if ((newTileLayer as any).bringToBack) {
