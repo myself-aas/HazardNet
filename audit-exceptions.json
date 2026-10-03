@@ -238,6 +238,13 @@
       "severity": "high",
       "reason": "Development/CLI toolchain dependency for Expo mobile build tooling; never shipped to web or runtime.",
       "expires": "2026-12-31"
+    },
+    {
+      "ghsa": "GHSA-vfj7-8cjw-p6xm",
+      "package": "braces (transitive via micromatch / fast-glob in Expo and React Native tooling)",
+      "severity": "high",
+      "reason": "The npm registry currently has no braces release beyond affected 3.0.3; npm's suggested Expo 57 fix is a breaking major upgrade from Expo 51. This is a build/CLI dependency path, not the web/API runtime. Re-review after upstream publishes a patched release.",
+      "expires": "2026-10-17"
     }
   ]
 }

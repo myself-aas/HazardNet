@@ -161,12 +161,14 @@ jobs:
       # resolved its `configFile` against the working directory (fixed 2026-10-02 — see
       # apps/mobile/jest.config.cjs). 9 suites / 62 tests, ~15 s.
       #
+      # Run in-band: this suite shares a hosted runner with other CPU-heavy jobs, so
+      # parallel worker startup only adds contention and makes render-oriented tests noisy.
       # `--forceExit` is not decoration: the run leaves open handles (timers started by
       # app hooks and never cleared) and jest otherwise hangs after the last assertion,
       # which burns the job until the timeout instead of failing. Clearing those handles
       # is tracked in docs/audits/2026-10-02-mobile-windows-support-audit.md.
       - name: Run React Native tests
-        run: npx jest --config apps/mobile/jest.config.cjs --ci --forceExit
+        run: npx jest --config apps/mobile/jest.config.cjs --ci --runInBand --forceExit
 
   test-pipeline-scripts:
     name: Pipeline Scripts Tests

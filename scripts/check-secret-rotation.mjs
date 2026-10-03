@@ -15,7 +15,7 @@
  * the workflow to once the real dates are recorded.
  *
  * Usage:
- *   node scripts/check-secret-rotation.mjs [--manifest <path>] [--strict] [--json]
+ *   node scripts/check-secret-rotation.mjs [--manifest <path>] [--strict] [--json] [--now <ISO-8601>]
  *
  * Exit codes: 0 = nothing overdue · 1 = overdue (or, with --strict, unknown) · 2 = the
  * register itself is unreadable or malformed.
@@ -40,6 +40,18 @@ function parseDate(value) {
   if (typeof value !== 'string') return null;
   const stamp = Date.parse(`${value}T00:00:00Z`);
   return Number.isNaN(stamp) ? null : stamp;
+}
+
+/** Parse an optional as-of instant; normal runs default to the current clock. */
+function parseNow(value) {
+  if (typeof value !== 'string' || !value.trim()) {
+    throw new Error('--now must be an ISO-8601 timestamp');
+  }
+  const stamp = Date.parse(value);
+  if (Number.isNaN(stamp)) {
+    throw new Error(`invalid --now timestamp ${JSON.stringify(value)}; expected ISO-8601`);
+  }
+  return stamp;
 }
 
 /** One credential's standing: `ok` | `due-soon` | `overdue` | `unknown` | `not-scheduled`. */
@@ -104,7 +116,9 @@ function main() {
 
   let report;
   try {
-    report = audit(loadManifest(manifestPath), { strict });
+    const nowArg = argv('--now');
+    const now = nowArg === null ? Date.now() : parseNow(nowArg);
+    report = audit(loadManifest(manifestPath), { strict, now });
   } catch (error) {
     process.stderr.write(`❌ ${error.message}\n`);
     process.exitCode = 2;

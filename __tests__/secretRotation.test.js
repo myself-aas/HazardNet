@@ -21,7 +21,10 @@ const NOW = Date.parse('2026-10-02T00:00:00Z');
 
 const run = (args = []) => {
   try {
-    return { code: 0, out: execFileSync(process.execPath, [SCRIPT, ...args], { encoding: 'utf8' }) };
+    return {
+      code: 0,
+      out: execFileSync(process.execPath, [SCRIPT, '--now', new Date(NOW).toISOString(), ...args], { encoding: 'utf8' }),
+    };
   } catch (error) {
     return { code: error.status, out: `${error.stdout ?? ''}${error.stderr ?? ''}` };
   }
