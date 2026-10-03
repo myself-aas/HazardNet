@@ -458,7 +458,7 @@ export const FrontDoor: React.FC = () => {
       </header>
 
       {/* ── Main Content Container: Live status strip, Outlook, and Methodology ── */}
-      <div className="mx-auto w-full max-w-[1200px] px-4 xl:px-8 space-y-8 lg:space-y-12 mt-8 lg:mt-12">
+      <div className="mx-auto w-full max-w-[1200px] px-4 xl:px-8 space-y-12 lg:space-y-16 mt-12 lg:mt-16">
 
       {/* ── The live strip: what is published at the moment of this read ──────────────── */}
       <LiveStatusStrip
@@ -474,8 +474,8 @@ export const FrontDoor: React.FC = () => {
       />
 
       {/* ── Trust strip: every figure carries the artifact it was read from ── */}
-      <section aria-labelledby="trust-heading" className="space-y-3">
-          <h2 id="trust-heading" className="text-[22px] font-bold tracking-tight text-carbon-90">
+      <section aria-labelledby="trust-heading" className="space-y-6">
+        <h2 id="trust-heading" className="text-[28px] font-bold tracking-tight text-carbon-90">
           {t('frontdoor.covers.h2')}
         </h2>
         <div className="grid grid-cols-1 gap-px bg-carbon-20 sm:grid-cols-2 lg:grid-cols-4">
@@ -498,14 +498,14 @@ export const FrontDoor: React.FC = () => {
             tone="muted"
           />
         </div>
-        <p className="text-sm leading-[1.62] text-carbon-70">
+        <p className="text-base leading-[1.7] text-carbon-70">
           {t('frontdoor.covers.noteLead')}{' '}
-          <strong className="font-bold text-carbon-80">{loading ? '…' : coverageLine}</strong>
+          <strong className="font-semibold text-carbon-85">{loading ? '…' : coverageLine}</strong>
           {coverage?.produced_units != null
             ? ` ${t('frontdoor.covers.noteUnits', { units: formatNumber(coverage.produced_units) })}`
             : ''}
           .{' '}
-          <Link to="/status" className="font-bold text-nasa-blue-shade underline underline-offset-2">
+          <Link to="/status" className="font-semibold text-nasa-blue-shade underline underline-offset-2 hover:text-nasa-blue-shade/80">
             {t('frontdoor.covers.statusLink')}
           </Link>{' '}
           {t('frontdoor.covers.noteTail')}
@@ -513,15 +513,15 @@ export const FrontDoor: React.FC = () => {
       </section>
 
       {/* ── The published alerts in full: the strip is the glance, this is the record ── */}
-      <section aria-labelledby="run-heading" className="space-y-3">
-        <div className="flex flex-wrap items-end justify-between gap-2">
-          <h2 id="run-heading" className="text-lg font-bold text-carbon-90">
+      <section aria-labelledby="run-heading" className="space-y-6">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <h2 id="run-heading" className="text-[28px] font-bold text-carbon-90">
             {t('frontdoor.run.h2')}
           </h2>
           <p className="font-mono text-xs uppercase tracking-wider text-carbon-60">{t('frontdoor.run.aside')}</p>
         </div>
 
-        <div className="border border-carbon-20 bg-white p-5">
+        <div className="border border-carbon-20 bg-white p-6 sm:p-8">
           <Eyebrow>{t('frontdoor.run.publishedEyebrow')}</Eyebrow>
           {alertsLoading && <p className="mt-3 text-sm text-carbon-60">{t('frontdoor.run.reading')}</p>}
 
@@ -639,12 +639,12 @@ export const FrontDoor: React.FC = () => {
 
       {/* ── On this page — anchor nav for the 7 editorial sections (audit #7: recognition/efficiency) ── */}
       {sections.length > 1 && (
-        <nav aria-label={t('frontdoor.toc')} className="border border-carbon-20 bg-carbon-05 p-4">
+        <nav aria-label={t('frontdoor.toc')} className="border border-carbon-20 bg-carbon-05 p-6 sm:p-8">
           <p className="font-mono text-xs font-bold uppercase tracking-wide text-carbon-60">{t('frontdoor.toc')}</p>
-          <ul className="mt-2 grid grid-cols-1 gap-1 sm:grid-cols-2">
+          <ul className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
             {sections.map((section, index) => (
               <li key={`toc-${index}`}>
-                <a href={`#section-${index}`} className="inline-flex min-h-[44px] items-center text-sm font-semibold text-nasa-blue-shade underline underline-offset-4 hover:decoration-nasa-blue-shade">
+                <a href={`#section-${index}`} className="inline-flex min-h-[44px] items-center text-sm font-semibold text-nasa-blue-shade underline underline-offset-4 hover:text-nasa-blue hover:decoration-nasa-blue transition-colors">
                   {section.h2 ?? `${t('frontdoor.tocSection')} ${index + 1}`}
                 </a>
               </li>
@@ -658,10 +658,10 @@ export const FrontDoor: React.FC = () => {
         <section
           key={section.h2 ?? index}
           aria-labelledby={section.h2 ? `section-${index}` : undefined}
-          className="space-y-4 border-t border-carbon-20 pt-6"
+          className="space-y-5 border-t border-carbon-20 pt-8 lg:pt-10"
         >
           {section.h2 && (
-            <h2 id={`section-${index}`} className="text-[22px] font-bold tracking-tight text-carbon-90 lg:text-2xl">
+            <h2 id={`section-${index}`} className="text-[28px] font-bold tracking-tight text-carbon-90">
               {section.h2}
             </h2>
           )}
@@ -671,29 +671,29 @@ export const FrontDoor: React.FC = () => {
 
       {/* ── Questions the front door should answer ────────────────────────── */}
       {faqs.length > 0 && (
-        <section aria-labelledby="faq-heading" className="space-y-3 border-t border-carbon-20 pt-6">
-          <h2 id="faq-heading" className="text-[22px] font-bold tracking-tight text-carbon-90 lg:text-2xl">
+        <section aria-labelledby="faq-heading" className="space-y-5 border-t border-carbon-20 pt-8 lg:pt-10">
+          <h2 id="faq-heading" className="text-[28px] font-bold tracking-tight text-carbon-90">
             {t('frontdoor.faq.h2')}
           </h2>
           {faqs.map((faq) => (
-            <details key={faq.question} className="group border-b border-carbon-20 py-1 last:border-b-0">
-              <summary className="flex min-h-[44px] cursor-pointer list-none items-center justify-between gap-3 text-base font-bold text-carbon-90 marker:hidden focus-visible:outline focus-visible:outline-2 focus-visible:outline-nasa-blue focus-visible:outline-offset-2">
+            <details key={faq.question} className="group border-b border-carbon-20 py-2 last:border-b-0">
+              <summary className="flex min-h-[48px] cursor-pointer list-none items-center justify-between gap-3 text-base font-semibold text-carbon-90 marker:hidden focus-visible:outline focus-visible:outline-2 focus-visible:outline-nasa-blue focus-visible:outline-offset-2 hover:text-carbon-95 transition-colors">
                 <span className="inline-flex items-start gap-2 py-2">
-                  <MaterialIcon name="help" className="mt-0.5 text-base text-nasa-blue" />
+                  <MaterialIcon name="help" className="mt-0.5 text-base text-nasa-blue shrink-0" />
                   <span>{faq.question}</span>
                 </span>
-                <MaterialIcon name="chevron_right" className="shrink-0 text-carbon-60 transition-transform duration-150 group-open:rotate-90" aria-hidden="true" />
+                <MaterialIcon name="chevron_right" className="shrink-0 text-carbon-60 transition-transform duration-200 group-open:rotate-90" aria-hidden="true" />
               </summary>
-              <p className="mt-1 pl-6 pr-4 pb-3 text-base leading-[1.62] text-carbon-70">{faq.answer}</p>
+              <p className="mt-3 pl-7 pr-4 pb-4 text-base leading-[1.7] text-carbon-70">{faq.answer}</p>
             </details>
           ))}
         </section>
       )}
 
       {/* ── Attribution: the exact block, from the committed data ─────────── */}
-      <section aria-labelledby="attribution-heading" className="border border-carbon-20 bg-white p-6 lg:p-8">
+      <section aria-labelledby="attribution-heading" className="border border-carbon-20 bg-white p-6 sm:p-8 lg:p-10">
         <Eyebrow>{t('frontdoor.attribution.eyebrow')}</Eyebrow>
-        <h2 id="attribution-heading" className="mt-3 text-[22px] font-bold tracking-tight text-carbon-90">
+        <h2 id="attribution-heading" className="mt-4 text-[28px] font-bold tracking-tight text-carbon-90">
           {t('frontdoor.attribution.h2')}
         </h2>
         <p className="mt-3 max-w-3xl text-base leading-[1.62] text-carbon-70">

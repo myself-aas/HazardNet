@@ -109,14 +109,14 @@ export const Navbar: React.FC<NavbarProps> = ({ onSelectDistrict, onToggleHeatma
   };
 
   const linkClass = (current: boolean) =>
-    `inline-flex min-h-[44px] items-center rounded-control px-3 text-[15px] font-semibold no-underline transition-colors duration-150 ${
+    `inline-flex min-h-[44px] items-center rounded-md px-3 text-[15px] font-medium no-underline transition-all duration-150 ${
       overHero
         ? current
           ? 'bg-white/15 text-white'
-          : 'text-white/85 hover:bg-white/10 hover:text-white'
+          : 'text-white/80 hover:bg-white/10 hover:text-white'
         : current
           ? 'bg-carbon-10 text-carbon-90'
-          : 'text-carbon-70 hover:bg-carbon-05 hover:text-carbon-90'
+          : 'text-carbon-65 hover:bg-carbon-05 hover:text-carbon-90'
     }`;
 
   return (
