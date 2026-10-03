@@ -298,7 +298,7 @@ const AppContent: React.FC = () => {
             isHomePage ? 'absolute top-0 left-0 right-0' : 'sticky top-0'
           }`}
         >
-          <Navbar isTransparent={isHomePage} />
+          <Navbar />
         </div>
       )}
 

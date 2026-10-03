@@ -60,11 +60,21 @@ describe('Phase 3 Remotion Hazard Video & Atmospheric Hero', () => {
   });
 
   describe('<HeroCinematicBackground />', () => {
-    test('renders atmospheric hero container with telemetry labels', () => {
-      render(<HeroCinematicBackground paused={true} />);
+    test('keeps its decorative HUD hidden and prints no telemetry it cannot support', () => {
+      const { container } = render(<HeroCinematicBackground paused={true} />);
 
-      expect(screen.getByText(/GEO-SYNC/i)).toBeInTheDocument();
-      expect(screen.getByText(/OPTICAL SENSOR STREAM/i)).toBeInTheDocument();
+      const hud = container.querySelector('[data-testid="hero-hud"]');
+      expect(hud).not.toBeNull();
+      expect(hud).toHaveAttribute('aria-hidden', 'true');
+
+      // This layer used to render "GEO-SYNC · 23°42'N 90°22'E · APEX 35,786 KM" and an
+      // "OPTICAL SENSOR STREAM · 30 FPS · RES-ADAPTIVE" readout. Nothing in the repository
+      // produces either value, and this test used to assert them - it pinned the defect. The
+      // strings are gone rather than restyled, so a screen reader meets the headline first.
+      expect(screen.queryByText(/GEO-SYNC/i)).toBeNull();
+      expect(screen.queryByText(/OPTICAL SENSOR STREAM/i)).toBeNull();
+      expect(screen.queryByText(/APEX/i)).toBeNull();
+      expect(screen.queryByText(/RES-ADAPTIVE/i)).toBeNull();
     });
   });
 });

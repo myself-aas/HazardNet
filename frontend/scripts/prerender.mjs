@@ -375,6 +375,18 @@ function renderHead(route) {
     `<meta name="twitter:image" content="${escapeHtml(site.site.publisher.logo)}" />`,
     `<script type="application/ld+json">${JSON.stringify(jsonLdFor(route))}</script>`,
   ];
+  // Hero slides are CSS backgrounds painted by React, so nothing in the document tells the
+  // preload scanner they exist: without this the first hero frame is discovered only after the
+  // bundle has parsed and hydrated. A route declares its own preloads (see the `/` entry in
+  // `src/content/site-routes.json`); the media-scoped pair means a phone and a desktop each
+  // start exactly the crop they will actually paint.
+  for (const preload of route.preload ?? []) {
+    tags.splice(
+      1,
+      0,
+      `<link rel="preload" as="${escapeHtml(preload.as ?? 'image')}" href="${escapeHtml(preload.href)}"${preload.media ? ` media="${escapeHtml(preload.media)}"` : ''} />`,
+    );
+  }
   if (Array.isArray(route.keywords) && route.keywords.length > 0) {
     tags.splice(2, 0, `<meta name="keywords" content="${escapeHtml(route.keywords.join(', '))}" />`);
   }
@@ -387,12 +399,14 @@ function renderHead(route) {
  */
 const STATIC_STYLES = `<style>
   /* Static fallback shell. Colours, type and shape are NASA Horizon Design System
-     tokens: carbon neutrals for text, Public Sans Web for body, Inter for headings,
-     1px rules, square corners, 2px on small controls. Values are literals here because
-     this CSS ships before the app's stylesheet does, and this document must not name
-     the tree it was built from. */
-  .hn-static{max-width:60rem;margin:0 auto;padding:5.5rem 1.25rem 3rem;background:#ffffff;font-family:"Public Sans Web","Segoe UI",Roboto,Helvetica,Arial,sans-serif;font-size:1rem;color:#17171b;line-height:1.62}
-  .hn-static h1,.hn-static h2,.hn-static h3,.hn-static summary,.hn-static th{font-family:"Inter","Helvetica Neue",Helvetica,Arial,sans-serif}
+     tokens: carbon neutrals, 1px rules, square corners, 2px on small controls. The type is
+     the platform UI face, never a webfont: the shell paints before the app's stylesheet
+     does, and it used to ask for Inter and Public Sans Web - neither of which this build
+     ships, so the first paint on a slow connection was the one paint guaranteed to render
+     in fallback metrics. Values are literals here because this document must not name the
+     tree it was built from. */
+  .hn-static{max-width:60rem;margin:0 auto;padding:5.5rem 1.25rem 3rem;background:#ffffff;font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans Bengali",sans-serif;font-size:1rem;color:#17171b;line-height:1.62}
+  .hn-static h1,.hn-static h2,.hn-static h3,.hn-static summary,.hn-static th{font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans Bengali",sans-serif}
   .hn-static h1{font-size:1.9rem;line-height:1.15;letter-spacing:-.02em;margin:0 0 .75rem;font-weight:700}
   .hn-static h2{font-size:1.15rem;line-height:1.35;letter-spacing:-.02em;margin:2rem 0 .5rem;font-weight:700}
   .hn-static p{margin:.6rem 0;color:#444447;overflow-wrap:anywhere}

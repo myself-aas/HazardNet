@@ -258,18 +258,24 @@ const SectionBody: React.FC<{ section: Section }> = ({ section }) => {
           {section.callout.text}
         </p>
       )}
-      {/* The nav's accessible name is unique per section: six navs all named "Related pages" is a
-          `landmark-unique` violation, and the landmark list is how a screen-reader user jumps
-          between the sections of a long page. */}
+      {/* A list, not a `<nav>`. These rows used to be five separate navigation landmarks (one
+          per section that has links), each with a unique accessible name to satisfy
+          `landmark-unique` - which fixes the axe rule and not the reading experience: VoiceOver's
+          rotor listed nine navigation regions on one page, and TalkBack does not expose
+          navigation regions at all, so the names were inert there. The links stay; the landmark
+          count drops to the one that is genuinely a navigational aid, the table of contents. */}
       {(section.links ?? []).length > 0 && (
-        <nav
+        <ul
+          role="list"
           aria-label={section.h2 ? `${t('frontdoor.relatedPages')}: ${section.h2}` : t('frontdoor.relatedPages')}
           className="flex flex-wrap gap-x-5 gap-y-2 pt-1"
         >
           {(section.links ?? []).map((link) => (
-            <ExternalOrInternalLink key={link.href} href={link.href} label={link.label} />
+            <li key={link.href}>
+              <ExternalOrInternalLink href={link.href} label={link.label} />
+            </li>
           ))}
-        </nav>
+        </ul>
       )}
     </>
   );
@@ -309,6 +315,8 @@ export const FrontDoor: React.FC = () => {
   const content = usePageSeo('/');
   const { freshness, scorecard, loading, failed, retry: retryLiveFacts } = useLiveFacts();
   const [heroPaused, setHeroPaused] = useState(false);
+  // The full standfirst is 70 words; below `sm` it is clamped to three lines with this control.
+  const [standfirstOpen, setStandfirstOpen] = useState(false);
   const { alerts, assessed, counts, notPublished, generatedAt, loading: alertsLoading, error, refresh: refreshAlerts } = useAlertsData();
   const hazardLabel = useHazardLabel();
   const { t, language, formatNumber } = useI18n();
@@ -382,7 +390,10 @@ export const FrontDoor: React.FC = () => {
       {/* `mrd-on-dark` scopes the outline button's inversion to this hero, so the
           same primitive renders white-on-dark here and ink-on-light everywhere
           else without a second variant existing. */}
-      <header className="mrd-on-dark relative w-full overflow-hidden bg-black text-white min-h-[600px] lg:min-h-screen flex items-center -mt-14 sm:-mt-16 pt-[100px] pb-12 sm:pb-16 shadow-2xl">
+      {/* `pt-[calc(var(--navbar-height)+44px)]` instead of a hard 100px: the bar is 3.5rem plus
+          `env(safe-area-inset-top)`, so a fixed number collided with it on notched phones. The
+          variable now carries the inset, which makes this clearance correct on both. */}
+      <header className="mrd-on-dark relative w-full overflow-hidden bg-carbon-90 text-white min-h-[600px] lg:min-h-[100dvh] flex items-center -mt-14 sm:-mt-16 pt-[calc(var(--navbar-height)+44px)] pb-12 sm:pb-16 shadow-2xl">
         {/* Remotion-Inspired 5-Layer Cinematic Motion Background (BgMesh, Video, HUD, Grade, Grain & Vignette) */}
         <HeroCinematicBackground paused={heroPaused} />
         {/* Pause control — keyboard-reachable, respects reduced-motion (audit #1) */}
@@ -406,26 +417,50 @@ export const FrontDoor: React.FC = () => {
                 : t('frontdoor.hero.reviewedUnknown')}
             </p>
             {/* The switch lives on the front door because the front door is bilingual */}
-            <div className="bg-black/40 backdrop-blur-sm p-1 border border-white/20" style={{ backdropFilter: 'blur(var(--hero-glass-blur))', WebkitBackdropFilter: 'blur(var(--hero-glass-blur))' }}>
+            <div className="bg-black/40 p-1 border border-white/20" style={{ backdropFilter: 'blur(var(--hero-glass-blur))', WebkitBackdropFilter: 'blur(var(--hero-glass-blur))' }}>
               <LanguageToggle variant="switch" tone="hds" />
             </div>
           </div>
 
           <div className="mt-6 grid grid-cols-1 items-center gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)] xl:gap-12">
-            <div className="min-w-0 rounded-sm border border-white/15 bg-gradient-to-b from-black/55 to-black/35 p-4 backdrop-blur-sm sm:p-5" style={{ backdropFilter: 'blur(var(--hero-glass-blur))', WebkitBackdropFilter: 'blur(var(--hero-glass-blur))' }}>
+            {/* Scrim, not a tint: the authority paragraph sits at the bottom of this card, and at
+                `to-black/35` its 12px `text-white/75` measured 2.45:1 over a light frame. At
+                `to-black/60` the same pixel measures 6.40:1. */}
+            <div className="min-w-0 rounded-sm border border-white/15 bg-gradient-to-b from-black/70 to-black/60 p-4 sm:p-5" style={{ backdropFilter: 'blur(var(--hero-glass-blur))', WebkitBackdropFilter: 'blur(var(--hero-glass-blur))' }}>
               <h1 className="mrd-display2 max-w-3xl text-balance text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
                 {localised.h1 ?? localised.title}
               </h1>
               {language === 'bn' && (
-                <p role="status" aria-live="polite" className="mt-3 inline-flex items-center gap-1.5 bg-amber-100 px-2 py-1 text-xs font-bold text-amber-900 border border-amber-300/80">
+                <p role="status" aria-live="polite" className="mt-3 inline-flex items-center gap-1.5 bg-warning-surface px-2 py-1 text-xs font-bold text-carbon-90 border border-warning-border">
                   <MaterialIcon name="translate" className="text-xs" />
                   {t('frontdoor.bengaliDraft')}
                 </p>
               )}
               {localised.standfirst && (
-                <p className="mt-5 max-w-2xl text-base leading-[1.62] text-white/90 md:text-lg md:leading-[1.5] drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
-                  {localised.standfirst}
-                </p>
+                <>
+                  {/* The standfirst is 70 words - about eleven lines at this size on a 390px
+                      phone, which was most of the viewport before the reader reached a button.
+                      It is clamped below `sm` and expanded in place; the same argument is made
+                      in full by the seven sections under this hero, so nothing is hidden that
+                      the page does not say again. */}
+                  <p
+                    id="front-door-standfirst"
+                    className={`mt-5 max-w-2xl text-base leading-[1.62] text-white/90 md:text-lg md:leading-[1.5] drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] ${
+                      standfirstOpen ? '' : 'line-clamp-3 sm:line-clamp-none'
+                    }`}
+                  >
+                    {localised.standfirst}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setStandfirstOpen((v) => !v)}
+                    aria-expanded={standfirstOpen}
+                    aria-controls="front-door-standfirst"
+                    className="mt-1 inline-flex min-h-[44px] items-center text-xs font-bold text-white underline underline-offset-4 sm:hidden"
+                  >
+                    {standfirstOpen ? t('frontdoor.hero.readLess') : t('frontdoor.hero.readMore')}
+                  </button>
+                </>
               )}
 
               {/* Meridian dual-primary, applied. "Open the map" is a NAVIGATION
@@ -436,32 +471,28 @@ export const FrontDoor: React.FC = () => {
                   safety bug, not a style preference: the crimson has to still
                   mean something when the district under it is under warning.
                   The two secondary links stay outlined. */}
-              <div className="mt-7 flex flex-wrap items-center gap-2 sm:gap-3">
-                <ButtonLink
-                  href="/live"
-                  intent="ink"
-                  size="lg"
-                  className="w-full sm:w-auto"
-                >
+              {/* One primary action. Three equal full-width buttons on a phone is three
+                  primaries, which reads as none; the other two destinations are still here as
+                  text links, and the scorecard has a whole section below that argues for it. */}
+              <div className="mt-7">
+                <ButtonLink href="/live" intent="ink" size="lg" className="w-full sm:w-auto">
                   <MaterialIcon name="public" className="text-base" />
                   {t('frontdoor.hero.ctaMap')}
                 </ButtonLink>
-                <ButtonLink
-                  href="/methodology"
-                  intent="outline"
-                  size="lg"
-                  className="w-full sm:w-auto"
-                >
-                  {t('frontdoor.hero.ctaMethodology')}
-                </ButtonLink>
-                <ButtonLink
-                  href="/model-performance"
-                  intent="outline"
-                  size="lg"
-                  className="w-full sm:w-auto"
-                >
-                  {t('frontdoor.hero.ctaScorecard')}
-                </ButtonLink>
+                <div className="mt-2 flex flex-wrap gap-x-6">
+                  <Link
+                    to="/methodology"
+                    className="inline-flex min-h-[44px] items-center text-sm font-bold text-white underline decoration-white/40 underline-offset-4 hover:decoration-white"
+                  >
+                    {t('frontdoor.hero.ctaMethodology')}
+                  </Link>
+                  <Link
+                    to="/model-performance"
+                    className="inline-flex min-h-[44px] items-center text-sm font-bold text-white underline decoration-white/40 underline-offset-4 hover:decoration-white"
+                  >
+                    {t('frontdoor.hero.ctaScorecard')}
+                  </Link>
+                </div>
               </div>
 
               <p className="mt-6 max-w-2xl border-t border-white/20 pt-4 text-xs leading-[1.62] text-white/75">

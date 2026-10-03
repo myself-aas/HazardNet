@@ -35,18 +35,34 @@ interface HeroImageCarouselProps {
   reducedMotion?: boolean;
   /** How long each slide holds before the cross-fade. */
   intervalMs?: number;
+  /**
+   * Low-bandwidth mode: keep slide one and do not fetch the rest. The four frames are 667 KB
+   * together and all four are requested at mount, so on a metered 2G connection this is the
+   * difference between decorating the hero and paying for three images nobody sees.
+   * One usable slide is also below the two-slide floor the timer needs, so no timer is armed.
+   */
+  lowBandwidth?: boolean;
   style?: React.CSSProperties;
 }
 
 const SLIDE_FADE_MS = 1600;
 
+/**
+ * The portrait-crop custom property for a slide, e.g. `/hero-carousel/hero-flood-delta.jpg` ->
+ * `--hero-slide-hero-flood-delta`. Defined only inside the narrow-viewport media block in
+ * `styles/hero-media.css`, so the var is undefined on desktop and the inline landscape URL wins.
+ */
+const portraitVar = (src: string): string =>
+  `--hero-slide-${(src.split('/').pop() ?? '').replace(/\.[a-z0-9]+$/i, '')}`;
+
 export const HeroImageCarousel: React.FC<HeroImageCarouselProps> = ({
   paused = false,
   reducedMotion = false,
   intervalMs = 8000,
+  lowBandwidth = false,
   style,
 }) => {
-  const images = HERO_CAROUSEL_IMAGES;
+  const images = lowBandwidth ? HERO_CAROUSEL_IMAGES.slice(0, 1) : HERO_CAROUSEL_IMAGES;
   const [index, setIndex] = useState(0);
   const [failed, setFailed] = useState<ReadonlySet<string>>(new Set());
 
@@ -85,7 +101,19 @@ export const HeroImageCarousel: React.FC<HeroImageCarouselProps> = ({
       data-testid="hero-image-carousel"
       aria-hidden="true"
       role="presentation"
-      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'hidden', ...style }}
+      style={{
+        position: 'absolute',
+        inset: 0,
+        width: '100%',
+        height: '100%',
+        overflow: 'hidden',
+        // The slides are four absolutely-positioned layers with their own scaling transforms.
+        // `contain: paint` keeps their rasterisation inside this box, so the carousel cannot
+        // invalidate layout or paint for the copy column beside it (cheap, and it matters most
+        // on the 2 GB devices this page is built for).
+        contain: 'paint',
+        ...style,
+      }}
     >
       {images.map(({ src }, i) => {
         if (failed.has(src)) return null;
@@ -98,7 +126,10 @@ export const HeroImageCarousel: React.FC<HeroImageCarouselProps> = ({
             style={{
               position: 'absolute',
               inset: 0,
-              backgroundImage: `url(${src})`,
+              // Portrait crops for phones, landscape as the desktop fallback: see
+              // `styles/hero-media.css` for how the two are selected without an `image-set()`
+              // density guess and without ever fetching both.
+              backgroundImage: `var(${portraitVar(src)}, url(${src}))`,
               backgroundSize: 'cover',
               backgroundPosition: 'center',
               opacity: active ? 1 : 0,

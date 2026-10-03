@@ -31,7 +31,8 @@ export const HDS_TOKENS = {
     primaryRed: '#f64137',
     primaryRedShade: '#b60109', // 7.0:1 AAA contrast against white
     nasaBlue: '#1c67e3',
-    nasaBlueShade: '#0b3b95', // 9.9:1 AAA contrast against white
+    nasaBlueShade: '#0b3d91', // 9.9:1 AAA contrast against white (was #0b3b95, which disagreed
+                              // with HDS_NASA_TOKENS below, with nasa-hds.css and with native)
     nasaOrange: '#ea6f24',
     nasaGreen: '#16a34a',
 
@@ -41,6 +42,12 @@ export const HDS_TOKENS = {
     surfaceSunken: '#e5e5e5',
     surfaceDark: '#0e0e11',
     surfaceDarkCard: '#17171b',
+
+    // Cartographic-Editorial HUD surfaces (moved here when the web's duplicate token file
+    // became a re-export: one source of hex, including these three).
+    hudObsidian: '#0b0f17',
+    hudSlate: '#111827',
+    hudHairline: 'rgba(255, 255, 255, 0.12)',
 
     // Glassmorphism Surfaces (Web + Mobile Backdrop)
     glassLight: 'rgba(255, 255, 255, 0.88)',
@@ -132,11 +139,14 @@ export const HDS_TOKENS = {
       bengali: 1.35, // Mandatory safety floor for Bengali script rendering
     },
     families: {
-      sans: "'Plus Jakarta Sans', 'Public Sans Web', 'Noto Sans Bengali', sans-serif",
-      heading: "'Instrument Sans', 'Plus Jakarta Sans', 'Anek Bangla', 'Inter', sans-serif",
-      display: "'Plus Jakarta Sans', 'Baloo Da 2', sans-serif",
-      bengali: "'Noto Sans Bengali', 'Anek Bangla', sans-serif",
-      mono: "'DM Mono', monospace",
+      // Latin has no shipped webfont: these are the platform faces, declared rather than
+      // pretending to a family that never loads. The Bengali stack is the one family in the
+      // product that is actually bundled (@fontsource/noto-sans-bengali, imported by index.css).
+      sans: "system-ui, -apple-system, 'Segoe UI', Roboto, 'Noto Sans Bengali', sans-serif",
+      heading: "system-ui, -apple-system, 'Segoe UI', Roboto, 'Noto Sans Bengali', sans-serif",
+      display: "system-ui, -apple-system, 'Segoe UI', Roboto, 'Noto Sans Bengali', sans-serif",
+      bengali: "'Noto Sans Bengali', 'Hind Siliguri', sans-serif",
+      mono: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
     },
   },
 

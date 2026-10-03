@@ -106,7 +106,7 @@ export const FirebaseRealtimeStatus: React.FC<FirebaseRealtimeStatusProps> = ({
 
   // Full Card Variant for User Profile Menu
   return (
-    <div className={`bg-carbon-05/90 border border-carbon-20 rounded-xl p-4 space-y-3 font-inter text-carbon-80 shadow-2xs ${className}`}>
+    <div className={`bg-carbon-05/90 border border-carbon-20 rounded-xl p-4 space-y-3 text-carbon-80 shadow-2xs ${className}`}>
       {/* Header Row */}
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2.5">

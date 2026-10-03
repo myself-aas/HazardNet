@@ -37,7 +37,6 @@ interface NavbarProps {
   onClearSearch?: () => void;
   onOpenAIDrawer?: () => void;
   onExportReport?: () => void;
-  isTransparent?: boolean;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ onSelectDistrict, onToggleHeatmap }) => {

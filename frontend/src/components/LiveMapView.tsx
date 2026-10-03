@@ -779,10 +779,10 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                     </div>
                   </div>
                   <div style="margin-top: 6px; font-size: 10px; color: #58585b;">
-                    🌱 Vulnerable Crop: <strong style="color: #059669;">${pinDist.mainCrop}</strong>
+                    Vulnerable crop: <strong style="color: #059669;">${pinDist.mainCrop}</strong>
                   </div>
                   <button onclick="window.selectHazardDistrict('${pinDist.id}')" style="margin-top: 8px; width: 100%; padding: 6px 10px; background: #0284c7; color: #ffffff; font-size: 11px; font-weight: 800; border: none; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px; box-shadow: 0 2px 6px rgba(2, 132, 199, 0.3);">
-                    📍 Focus ${pinDist.name} District Boundary
+                    Focus ${pinDist.name} district boundary
                   </button>
                 </div>
               ` : `
@@ -898,11 +898,11 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                   </div>
 
                   <div style="margin-top: 8px; padding-top: 6px; border-top: 1px solid #e3e3e3; font-size: 10px; color: #58585b; display: flex; align-items: center; gap: 4px;">
-                    <span>🌱 Vulnerable Crop:</span>
+                    <span>Vulnerable crop:</span>
                     <strong style="color: #059669; font-weight: 800;">${dist.mainCrop}</strong>
                   </div>
                   <button onclick="window.selectHazardDistrict('${dist.id}')" style="margin-top: 8px; width: 100%; padding: 6px 10px; background: #0284c7; color: #ffffff; font-size: 11px; font-weight: 800; border: none; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px; box-shadow: 0 2px 6px rgba(2, 132, 199, 0.3);">
-                    📍 Focus ${dist.name} District Boundary
+                    Focus ${dist.name} district boundary
                   </button>
                 </div>
               ` : `
@@ -1527,7 +1527,9 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                       <div className="flex items-center justify-between text-xs">
                         <span className="text-carbon-60">Path Span:</span>
                         <span className="font-bold text-carbon-20">
-                          {pathAnalysis.startDistrict?.name} ➔ {pathAnalysis.endDistrict?.name}
+                          {pathAnalysis.startDistrict?.name}{' '}
+                          <MaterialIcon name="arrow_forward" className="w-3 h-3 inline-block align-middle" />{' '}
+                          {pathAnalysis.endDistrict?.name}
                         </span>
                       </div>
 
@@ -1829,7 +1831,14 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
  }`}
                           >
                             <span>{h.name}</span>
-                            <span>{isAct ? '✓' : '○'}</span>
+                            {isAct ? (
+                              <MaterialIcon name="check_circle" className="w-3.5 h-3.5 shrink-0" />
+                            ) : (
+                              <span
+                                aria-hidden="true"
+                                className="inline-block w-3.5 h-3.5 shrink-0 rounded-full border border-current opacity-40"
+                              />
+                            )}
                           </button>
                         );
                       })}
@@ -2055,7 +2064,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                           title="Pre-cache tactical zoom 6–9 covering all 64 districts in Bangladesh"
                         >
                           <CloudDownload className="w-3.5 h-3.5" />
-                          <span>⚡ Pre-cache Bangladesh Core</span>
+                          <span>Pre-cache Bangladesh Core</span>
                         </button>
 
                         <button
@@ -2071,7 +2080,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                           title="Download high-resolution satellite/topo tiles for active district"
                         >
                           <Layers className="w-3.5 h-3.5" />
-                          <span>📍 Pre-cache {currentSelected ? currentSelected.name : 'Selected'} HD</span>
+                          <span>Pre-cache {currentSelected ? currentSelected.name : 'Selected'} HD</span>
                         </button>
                       </div>
 
@@ -2156,7 +2165,8 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                       </span>
                       {capturedPreviewUrl && (
                         <span className="text-xs font-mono text-carbon-70 font-bold bg-carbon-05 px-2 py-0.5  border border-carbon-20">
-                          ✓ High-Res Image Ready
+                          <MaterialIcon name="check_circle" className="w-3.5 h-3.5 inline-block align-middle mr-0.5" />{' '}
+                          High-Res Image Ready
                         </span>
                       )}
                     </div>

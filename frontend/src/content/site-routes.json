@@ -37,6 +37,10 @@
         "flood outlook"
       ],
       "robots": "index,follow",
+      "preload": [
+        { "href": "/hero-carousel/hero-flood-delta.jpg", "as": "image", "media": "(min-width: 640px)" },
+        { "href": "/hero-carousel/hero-flood-delta-portrait.jpg", "as": "image", "media": "(max-width: 639px)" }
+      ],
       "sitemap": {
         "changefreq": "daily",
         "priority": 1.0

@@ -174,14 +174,17 @@ export const MERIDIAN_DISPLAY_SPLIT = 24;
  */
 export const MERIDIAN_FONTS = {
   /** Display: ≥24px headlines. Tight, high-contrast, optical display weighting. */
-  display: "'Instrument Sans', 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif",
+  // Latin is the platform face: no Latin webfont is bundled (P0-3 in the 2026-10-03 audit).
+  // A stack may only lead with a shipped family or a platform face, so a machine that happens to
+  // have Instrument Sans installed no longer renders a different product from everyone else.
+  display: "system-ui, -apple-system, 'Segoe UI', Roboto, 'Noto Sans Bengali', sans-serif",
   /** Text: body and UI. Larger x-height, looser tracking, better at small sizes. */
-  text: "'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif",
+  text: "system-ui, -apple-system, 'Segoe UI', Roboto, 'Noto Sans Bengali', sans-serif",
   /** Tabular data: coordinates, timestamps, severity scores, artifact ages. */
-  mono: "'DM Mono', 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace",
+  mono: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
   /** Bengali needs its own stack: different metrics, matras, and headline bar. */
-  bengali: "'Noto Sans Bengali', 'Hind Siliguri', 'Anek Bangla', sans-serif",
-  bengaliDisplay: "'Baloo Da 2', 'Anek Bangla', 'Noto Sans Bengali', sans-serif",
+  bengali: "'Noto Sans Bengali', 'Hind Siliguri', sans-serif",
+  bengaliDisplay: "'Noto Sans Bengali', 'Hind Siliguri', sans-serif",
 } as const;
 
 /**

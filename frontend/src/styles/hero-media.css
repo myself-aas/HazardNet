@@ -1,0 +1,36 @@
+/*
+ * Hero media: portrait crops for narrow viewports.
+ *
+ * The four shipped hero frames are landscape video stills (1408x768 / 1376x768). On a 390x844
+ * phone the hero is portrait, so `background-size: cover` scales the frame to 1547x844 and shows
+ * the middle 25% of its width: ~123 KB of a 165 KB slide is downloaded and cropped away, and the
+ * phone is left with 0.91 device pixels per CSS pixel at DPR 1 (0.45 at DPR 2).
+ *
+ * These crops are ImageMagick centre crops of the same shipped frames at 354x768 - the largest
+ * portrait region the source contains. That is the same 0.91 px/CSS px the cover-cropped frame
+ * already delivered, with zero waste and 31-55 KB per slide instead of 124-213 KB:
+ *
+ *   convert hero-<name>.jpg -gravity center -crop 354x768+0+0 +repage \
+ *           -strip -interlace Plane -quality 82 hero-<name>-portrait.jpg
+ *
+ * Selection is a media query rather than `image-set()`: `image-set()` picks by device pixel ratio,
+ * and this is art direction (a different aspect for a different shape of viewport), not a density
+ * variant. Putting the portrait URLs only inside the media block also means a desktop browser
+ * never requests a portrait file and a phone never requests a landscape one - exactly one asset
+ * per slide per device, and the landscape URL stays the inline fallback.
+ *
+ * Wired from `HeroImageCarousel`: each slide paints `var(--hero-slide-<slug>, url(<landscape>))`.
+ * Custom properties inherit, which is why the override targets :root.
+ *
+ * Re-shooting the art at ~900x1600 would be better still and is a content task, not a code one:
+ * no source in this repository has more than 768 vertical pixels, so anything taller would be an
+ * upscale that costs bytes and adds none.
+ */
+@media (max-width: 639px) {
+  :root {
+    --hero-slide-hero-flood-delta: url('/hero-carousel/hero-flood-delta-portrait.jpg');
+    --hero-slide-hero-monsoon-storm: url('/hero-carousel/hero-monsoon-storm-portrait.jpg');
+    --hero-slide-hero-cyclone-orbit: url('/hero-carousel/hero-cyclone-orbit-portrait.jpg');
+    --hero-slide-hero-flooded-fields: url('/hero-carousel/hero-flooded-fields-portrait.jpg');
+  }
+}

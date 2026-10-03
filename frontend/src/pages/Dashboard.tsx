@@ -114,7 +114,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
         const keys = await caches.keys();
         await Promise.all(keys.map((k) => caches.delete(k)));
         toast.success('All offline caches & pre-loaded assets cleared!', {
-          icon: '🧹',
+          icon: <MaterialIcon name="delete" className="w-4 h-4" />,
         });
       }
       await updateCacheStats();
@@ -292,10 +292,11 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
         <h1 className="sr-only">Live map — multi-hazard situational awareness</h1>
 
         {/* Reference-inspired operational header: compact, legible, and always available above the map.
-            `pt-16` on phones keeps it clear of the fixed app navbar (3.5rem + breathing
-            room); from `sm` up the navbar only overlays the top of the stage on the
-            home console, so the padding returns to the tighter value. */}
-        <header className="pointer-events-none absolute inset-x-0 top-0 z-[var(--z-sticky)] flex items-start justify-between gap-3 p-3 pt-16 sm:p-5">
+            The clearance is `--navbar-height`, which carries the safe-area inset the navbar itself
+            applies - the hard-coded `pt-16` (64px) was 39px short on a notched phone, so this
+            header's status pill sat under the bar. From `sm` up the navbar only overlays the top
+            of the stage on the home console, so the padding returns to the tighter value. */}
+        <header className="pointer-events-none absolute inset-x-0 top-0 z-[var(--z-sticky)] flex items-start justify-between gap-3 p-3 pt-[calc(var(--navbar-height)+8px)] sm:p-5">
           <div className="pointer-events-auto flex min-w-0 items-center gap-2 glass-panel px-3.5 py-2">
             <span className="h-2 w-2 shrink-0 animate-pulse rounded-full bg-nasa-red" aria-hidden="true" />
             <div className="min-w-0">
@@ -347,7 +348,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 50 }}
                 transition={{ type: 'spring', stiffness: 350, damping: 28 }}
-                className="absolute top-16 right-4 left-4 lg:left-auto bottom-4 lg:w-[360px] z-[var(--z-modal)] bg-white border border-carbon-20 rounded-2xl shadow-lg p-4 overflow-y-auto flex flex-col gap-4 text-carbon-90 custom-scrollbar"
+                className="absolute top-[calc(var(--navbar-height)+8px)] right-4 left-4 lg:left-auto bottom-4 lg:w-[360px] z-[var(--z-modal)] bg-white border border-carbon-20 rounded-2xl shadow-lg p-4 overflow-y-auto flex flex-col gap-4 text-carbon-90 custom-scrollbar"
               >
 
                 {/* Drawer Header */}
@@ -717,7 +718,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
  }`}
                       title="Set map stage height to Standard (680px)"
                     >
-                      🖥️ 680px
+                      <MaterialIcon name="desktop_windows" className="w-4 h-4 inline-block mr-1" /> 680px
                     </button>
                     <button
                       onClick={() => setSavedMapHeight('tall')}
@@ -728,7 +729,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
  }`}
                       title="Set map stage height to Ultra Tall (850px)"
                     >
-                      📐 850px
+                      <MaterialIcon name="straighten" className="w-4 h-4 inline-block mr-1" /> 850px
                     </button>
                     <button
                       onClick={() => setSavedMapHeight('dynamic')}

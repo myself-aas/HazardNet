@@ -2,6 +2,7 @@
    scripts/import_nasa_tokens.mjs, mapped onto this app's semantic roles below. Imported first so
    every var(--hds-*) consumer resolves. Source and rules: data/design/nasa-hds/PROVENANCE.md */
 @import "./styles/nasa-hds.css";
+@import "./styles/hero-media.css";
 @import "@fontsource/noto-sans-bengali/400.css";
 @import "@fontsource/noto-sans-bengali/700.css";
 
@@ -26,9 +27,14 @@
 /* HazardNet edge-first typography & Cartographic-Editorial Brutalism HUD contract.
    No remote font URL is permitted. */
 :root {
-  --font-sans-en: 'Inter', 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --font-sans-bn: 'Hind Siliguri', 'Noto Sans Bengali', 'Baloo Da 2', sans-serif;
-  --font-mono: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+  /* Every family named in a stack is either bundled or a platform face. The previous stacks led
+     with 'Inter' / 'Plus Jakarta Sans' / 'Instrument Sans' / 'Anek Bangla' / 'Baloo Da 2' - none of
+     which ship - so the only effect was that machines with one of them installed rendered a
+     different product from everyone else, and the design docs described a system the bundle does
+     not contain. See P0-3 in docs/audits/2026-10-03-frontend-design-system-audit.md. */
+  --font-sans-en: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-sans-bn: 'Noto Sans Bengali', 'Hind Siliguri', sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
   --hn-hud-obsidian: #0b0f17;
   --hn-hud-slate: #111827;
   --hn-hud-border: rgba(255, 255, 255, 0.12);
@@ -49,7 +55,9 @@ html, body {
 .lang-bn, .farmer-advisory, .tts-fallback-text, [lang="bn"], :lang(bn) {
   font-family: var(--font-sans-bn) !important;
   line-height: 1.65;
-  letter-spacing: 0.01em;
+  /* No tracking: letter-spacing pulls Bengali conjuncts and matras apart, and the 1.65 line
+     height is already the metric compensation this script needs. */
+  letter-spacing: normal;
 }
 
 .metric-value, .confidence-badge, .tensor-log, .hn-tabular-nums, code, pre {
@@ -137,14 +145,13 @@ html, body {
   --hn-brand-accent: var(--hn-brand-red);
 
   /* Typography: readable sans-first UI with a dedicated numeric/log face. */
-  --hn-font-mono: 'DM Mono', 'JetBrains Mono', 'SFMono-Regular', 'Roboto Mono', monospace;
+  --hn-font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
   --hn-font-sans: var(--font-sans-en);
-  --hn-font-heading: 'Inter', 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --hn-font-heading: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --hn-font-display: var(--hn-font-heading);
   --hn-font-brand: var(--hn-font-heading);
   --hn-font-bengali: var(--font-sans-bn);
   --hn-font-bengali-display: var(--font-sans-bn);
-  --hn-font-bengali-serif: 'Noto Serif Bengali', serif;
 
   /* Motion */
   --ease-emphasized: cubic-bezier(0.2, 0, 0, 1);
@@ -330,7 +337,7 @@ html, body {
   --hero-glow-blur-secondary: 100px;/* tokenized secondary atmospheric glow — was blur-[100px] arbitrary */
   --hero-glass-blur: 8px;          /* hero glass legibility blur — maps to Tailwind backdrop-blur-md; centralises hero blur surface */
   --control-min-size: 44px; /* minimum touch target (iOS HIG / WCAG 2.5.8) */
-  --navbar-height: 3.5rem;
+  --navbar-height: calc(3.5rem + env(safe-area-inset-top, 0px));
 
   /* Stacking scale (plan §13.7) — replace ad hoc 9999 / 10050 / 2000. */
   --z-base: 0;
@@ -344,7 +351,7 @@ html, body {
 }
 @media (min-width: 40rem) {
   :root {
-    --navbar-height: 4rem;
+    --navbar-height: calc(4rem + env(safe-area-inset-top, 0px));
   }
 }
 
@@ -355,8 +362,8 @@ html {
 
   body {
     margin: 0;
-    /* Body copy is NASA HDS's body stack (Public Sans, 16px/1.62); headings take
-       the editorial face. */
+    /* Body copy is the platform UI face at 16px/1.62; no webfont is fetched for Latin
+       (see the typography note in the @theme block). */
     font-family: var(--hn-font-sans);
     font-size: 16px;
     line-height: 1.62;
@@ -877,23 +884,22 @@ html[data-map-debug-fx='true'] .marker-high-risk {
 }
 
 @theme inline {
-  /* Typography — NASA HDS is the design system's source of truth (DESIGN.md,
-     __tests__/nasaTokens.test.js):
-       sans    → --hds-font-family-body   ('Public Sans Web', …)
-       brand   → --hds-font-family-heading ('Inter', …)
-       mono    → --hds-font-family-code   ('DM Mono', …)
-     The --hn-font-* stacks below remain for explicit Bengali/display scopes
-     (font-bengali, font-display) where NASA's Latin-only families do not apply. */
-  --font-sans: var(--hds-font-family-body);
-  --font-brand: var(--hds-font-family-heading);
+  /* Typography — every alias ends in a family this build can actually render.
+     NASA HDS remains the source of the design system's *vocabulary* (colour, geometry, the
+     token names and their usage rules), but not of its typefaces: this bundle ships exactly
+     one webfont (`@fontsource/noto-sans-bengali`, for the script NASA's Latin-only families
+     cannot cover) and otherwise uses the platform UI face. NASA's own
+     'Public Sans Web' / 'Inter' / 'DM Mono' were aliased here before and are not bundled, so
+     the only thing the alias achieved was that a machine with one of them installed rendered
+     a different product from everyone else. See P0-3 in
+     docs/audits/2026-10-03-frontend-design-system-audit.md. */
+  --font-sans: var(--font-sans-en);
+  --font-brand: var(--hn-font-heading);
   --font-heading: var(--hn-font-heading);
   --font-display: var(--hn-font-display);
-  --font-serif: var(--hn-font-bengali-serif);
   --font-bengali: var(--hn-font-bengali);
   --font-bengali-display: var(--hn-font-bengali-display);
-  --font-bengali-serif: var(--hn-font-bengali-serif);
-  --font-montserrat: var(--hn-font-heading);
-  --font-mono: var(--hds-font-family-code);
+  --font-mono: var(--hn-font-mono);
 
   /* Corner radius: see the radius keys at the foot of this block — HDS's two
      values (0px default, 2px for controls) are applied there. `rounded-full` is
@@ -1036,6 +1042,7 @@ html[data-map-debug-fx='true'] .marker-high-risk {
   --color-warning: var(--warning);
   --color-warning-foreground: var(--warning-foreground);
   --color-warning-surface: var(--warning-surface);
+  --color-warning-border: var(--warning-border);
   --color-info: var(--info);
   --color-info-foreground: var(--info-foreground);
   --color-info-surface: var(--info-surface);
@@ -1378,23 +1385,14 @@ html[data-low-bandwidth='true'] {
   scroll-behavior: auto !important;
 }
 
-/* Brand Typography & Wordmark Utilities per CSV Spec
-   Roles: brand/display = Instrument Sans / Plus Jakarta Sans;
-   headings = Instrument Sans / Anek Bangla;
-   UI/body/nav/buttons/labels = Plus Jakarta Sans / Public Sans / Noto Sans Bengali;
-   data readouts = DM Mono — NASA HDS & Google Fonts suite. */
-.font-montserrat {
-  font-family: var(--font-brand);
-}
-
-  .font-inter {
-    font-family: 'Public Sans Web', var(--font-sans);
-  }
-
-  /* Keep the NASA HDS families explicit so local builds and test gates resolve the shipped stacks. */
+/* Brand Typography & Wordmark Utilities.
+   Roles: brand/display/heading/UI = the platform sans (declared at :root as --font-sans-en);
+   data readouts = the platform mono. The two utilities that used to live here - `.font-inter`
+   and `.font-montserrat` - were named after fonts the bundle does not contain and are gone;
+   `font-inter` had exactly one caller (FirebaseRealtimeStatus) and `font-montserrat` none. */
   .font-brand,
   .font-heading {
-    font-family: 'Inter', var(--font-brand);
+    font-family: var(--font-brand);
   }
 
   .font-mono,
@@ -1403,7 +1401,7 @@ html[data-low-bandwidth='true'] {
   .tensor-log,
   code,
   pre {
-    font-family: 'DM Mono', var(--font-mono);
+    font-family: var(--font-mono);
   }
 
 .font-brand {
@@ -1691,7 +1689,7 @@ button,
   transition: transform 150ms var(--ease-standard), box-shadow 150ms var(--ease-standard);
 }
 
-/* 10. Data readouts (severity score, confidence, dates): DM Mono, 13–16 px, 600, tabular figures */
+/* 10. Data readouts (severity score, confidence, dates): the mono stack, 13–16 px, 600, tabular figures */
 .hn-data-readout {
   font-family: var(--hds-font-family-code);
   font-size: 13px;
@@ -1706,7 +1704,7 @@ button,
   }
 }
 
-/* 11. Badges (FLOOD, SEV-3, district code): DM Mono, 11 px, 600, +0.08 em, caps, colored per severity token */
+/* 11. Badges (FLOOD, SEV-3, district code): the mono stack, 11 px, 600, +0.08 em, caps, colored per severity token */
 .hn-badge {
   font-family: var(--hds-font-family-code);
   font-size: 11px;
@@ -2051,7 +2049,7 @@ caption {
   a[href^="https://"]:after {
     content: " [" attr(href) "]";
     font-size: 7pt !important;
-    font-family: 'DM Mono', Consolas, monospace !important;
+    font-family: var(--font-mono) !important;
     font-weight: 500 !important;
     color: var(--hds-color-carbon-60) !important;
     word-break: break-all !important;
@@ -2071,7 +2069,7 @@ caption {
   a[href^="tel:"]:after {
     content: " (Hotline: " attr(href) ")";
     font-size: 7.5pt !important;
-    font-family: 'DM Mono', Consolas, monospace !important;
+    font-family: var(--font-mono) !important;
     font-weight: 700 !important;
     color: var(--hds-color-carbon-90) !important;
   }
@@ -2079,13 +2077,13 @@ caption {
   a[href^="mailto:"]:after {
     content: " [" attr(href) "]";
     font-size: 7pt !important;
-    font-family: 'DM Mono', Consolas, monospace !important;
+    font-family: var(--font-mono) !important;
     color: var(--hds-color-carbon-70) !important;
   }
 
   a[href^="tel:"] {
     font-weight: 800 !important;
-    font-family: 'DM Mono', Consolas, monospace !important;
+    font-family: var(--font-mono) !important;
     color: var(--hds-color-carbon-90) !important;
   }
 
@@ -2327,7 +2325,7 @@ caption {
   th.emergency-protocol-title {
     background-color: var(--hds-color-carbon-90) !important;
     color: #ffffff !important;
-    font-family: 'DM Mono', Consolas, monospace !important;
+    font-family: var(--font-mono) !important;
     font-size: 8pt !important;
     font-weight: 900 !important;
     text-transform: uppercase !important;
@@ -2344,7 +2342,7 @@ caption {
     color: var(--hds-color-carbon-90) !important;
     border: 1pt solid var(--hds-color-carbon-60) !important;
     font-weight: 800 !important;
-    font-family: 'DM Mono', Consolas, monospace !important;
+    font-family: var(--font-mono) !important;
     font-size: 7.5pt !important;
     padding: 4pt 6pt !important;
     text-transform: uppercase;
@@ -2393,7 +2391,7 @@ caption {
     border: 1pt solid var(--hds-color-carbon-50) !important;
     border-radius: 4pt !important;
     padding: 2.5pt 6pt !important;
-    font-family: 'DM Mono', Consolas, monospace !important;
+    font-family: var(--font-mono) !important;
     font-size: 7.5pt !important;
     font-weight: 700 !important;
     color: var(--hds-color-carbon-90) !important;
@@ -2408,7 +2406,7 @@ caption {
     display: inline-block !important;
     background-color: var(--hds-color-carbon-90) !important;
     color: #ffffff !important;
-    font-family: 'DM Mono', Consolas, monospace !important;
+    font-family: var(--font-mono) !important;
     font-size: 6.5pt !important;
     font-weight: 800 !important;
     text-transform: uppercase !important;
@@ -2427,7 +2425,7 @@ caption {
     display: flex !important;
     justify-content: space-between !important;
     align-items: center !important;
-    font-family: 'DM Mono', Consolas, monospace !important;
+    font-family: var(--font-mono) !important;
     font-size: 7pt !important;
     color: var(--hds-color-carbon-60) !important;
     border-top: 0.75pt solid var(--hds-color-carbon-40) !important;
@@ -2618,7 +2616,7 @@ body.pdf-exporting .no-print,
 .print-preview-rendered-body th.emergency-protocol-title {
   background-color: var(--hds-color-carbon-90) !important;
   color: #ffffff !important;
-  font-family: 'DM Mono', Consolas, monospace !important;
+  font-family: var(--font-mono) !important;
   font-size: 8pt !important;
   font-weight: 900 !important;
   text-transform: uppercase !important;

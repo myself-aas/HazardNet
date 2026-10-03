@@ -19,11 +19,22 @@ import { EARTH_HERO_POSTER_CSS } from '../lib/heroMedia';
 import HeroImageCarousel from './HeroImageCarousel';
 import { Interactive } from './interactive/Interactive';
 import { useWebFrame, useWebVideoConfig, interpolate, Easing } from '../lib/motion-interpolate';
+import { readLowBandwidth } from '../lib/bandwidth';
 
 export const HeroCinematicBackground: React.FC<{ paused?: boolean }> = ({ paused = false }) => {
   const isTest = typeof process !== 'undefined' && process.env.NODE_ENV === 'test';
   const reduceMotion = useReducedMotion();
-  const shouldAnimate = !reduceMotion && !paused && !isTest;
+  /*
+   * Low-bandwidth mode is a document-level decision (`html[data-low-bandwidth='true']`, written
+   * by `main.tsx` before first paint and kept in sync by `useBandwidthMode`). The CSS side of it
+   * already zeroes durations and drops every `backdrop-filter`, but the frame loop and the
+   * carousel timer are JavaScript and CSS cannot stop them - this read is what stops them.
+   * Reading the attribute at render keeps this component free of a hook dependency, and
+   * mount-time is enough: the only writer on this route is boot, and arriving from `/live`
+   * remounts this component.
+   */
+  const lowBandwidth = readLowBandwidth();
+  const shouldAnimate = !reduceMotion && !paused && !isTest && !lowBandwidth;
   const frame = useWebFrame(30, 420);
   const { fps } = useWebVideoConfig();
 
@@ -37,7 +48,7 @@ export const HeroCinematicBackground: React.FC<{ paused?: boolean }> = ({ paused
         overflow: 'hidden',
         pointerEvents: 'none',
         userSelect: 'none',
-        backgroundColor: '#05070E',
+        backgroundColor: 'var(--color-carbon-90)',
       }}
     >
       {/* ── Layer 1: Background Mesh (BgMesh) ────────────────────────── */}
@@ -155,111 +166,28 @@ export const HeroCinematicBackground: React.FC<{ paused?: boolean }> = ({ paused
           willChange: shouldAnimate ? 'transform' : undefined,
         }}
       >
-        <HeroImageCarousel paused={paused} reducedMotion={!!reduceMotion || isTest} />
+        <HeroImageCarousel paused={paused} reducedMotion={!!reduceMotion || isTest} lowBandwidth={lowBandwidth} />
       </Interactive.Div>
 
-      {/* ── Layer 3: Observatory Telemetry HUD (Graphics / Type) ────── */}
+      {/* ── Layer 3: Observatory Telemetry HUD (Graphics / Type) ──────
+             Pure decoration: four corner reticles and a horizon rule. This layer used to
+             print satellite telemetry - "GEO-SYNC · 23°42'N 90°22'E · APEX 35,786 KM" and
+             "OPTICAL SENSOR STREAM · 30 FPS · RES-ADAPTIVE" - none of which this repository
+             produces, on a page whose whole argument is that every number traces to a
+             published artifact. The strings are gone rather than restyled, and what is left
+             is `aria-hidden` so a screen reader meets the headline, not a coordinate. ── */}
       <Interactive.Div
         name="Telemetry HUD container"
+        aria-hidden="true"
+        data-testid="hero-hud"
         style={{
           position: 'absolute',
           inset: 0,
           zIndex: 2,
-          fontFamily: 'DM Mono, monospace',
-          fontSize: 10,
-          letterSpacing: '0.08em',
-          color: 'rgba(255,255,255,0.3)',
           userSelect: 'none',
           display: shouldAnimate || !isTest ? 'block' : 'none',
         }}
       >
-        {/* Top-left GEO-SYNC */}
-        <Interactive.Div
-          name="HUD GEO-SYNC label"
-          style={{
-            position: 'absolute',
-            top: 80,
-            left: 24,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 8,
-            opacity: shouldAnimate
-              ? interpolate(frame, [fps * 0.3, fps * 0.9], [0, 1], {
-                  easing: Easing.bezier(0.16, 1, 0.3, 1),
-                  extrapolateLeft: 'clamp',
-                  extrapolateRight: 'clamp',
-                })
-              : 1,
-            translate: shouldAnimate
-              ? interpolate(frame, [fps * 0.3, fps * 0.9], ['0px 6px', '0px 0px'], {
-                  easing: Easing.spring({ damping: 200 }),
-                  extrapolateLeft: 'clamp',
-                  extrapolateRight: 'clamp',
-                })
-              : '0px 0px',
-          }}
-        >
-          <span
-            style={{
-              display: 'inline-block',
-              width: 6,
-              height: 6,
-              borderRadius: '50%',
-              backgroundColor: '#38BDF8',
-              opacity: shouldAnimate
-                ? interpolate(frame, [0, fps * 0.6, fps * 1.2], [0.7, 1, 0.7], {
-                    easing: Easing.bezier(0.4, 0, 0.2, 1),
-                    extrapolateLeft: 'clamp',
-                    extrapolateRight: 'clamp',
-                  })
-                : 1,
-              scale: shouldAnimate
-                ? interpolate(frame, [0, fps * 0.6, fps * 1.2], [0.9, 1.3, 0.9], {
-                    easing: Easing.bezier(0.4, 0, 0.2, 1),
-                    extrapolateLeft: 'clamp',
-                    extrapolateRight: 'clamp',
-                    output: 'perceptual-scale',
-                  })
-                : 1,
-            }}
-          />
-          <span
-            style={{
-              color: 'rgba(255,255,255,0.5)',
-            }}
-          >
-            GEO-SYNC · 23°42&#39;N 90°22&#39;E · APEX 35,786 KM
-          </span>
-        </Interactive.Div>
-
-        {/* Top-right stream */}
-        <Interactive.Div
-          name="HUD optical stream status"
-          style={{
-            position: 'absolute',
-            top: 80,
-            right: 32,
-            textAlign: 'right',
-            color: 'rgba(255,255,255,0.5)',
-            opacity: shouldAnimate
-              ? interpolate(frame, [fps * 0.5, fps * 1.1], [0, 1], {
-                  easing: Easing.bezier(0.16, 1, 0.3, 1),
-                  extrapolateLeft: 'clamp',
-                  extrapolateRight: 'clamp',
-                })
-              : 1,
-            translate: shouldAnimate
-              ? interpolate(frame, [fps * 0.5, fps * 1.1], ['0px 6px', '0px 0px'], {
-                  easing: Easing.spring({ damping: 200 }),
-                  extrapolateLeft: 'clamp',
-                  extrapolateRight: 'clamp',
-                })
-              : '0px 0px',
-          }}
-        >
-          OPTICAL SENSOR STREAM · 30 FPS · RES-ADAPTIVE
-        </Interactive.Div>
-
         {/* Reticles — four corners, scale in */}
         <Interactive.Div
           name="Reticle top-left"

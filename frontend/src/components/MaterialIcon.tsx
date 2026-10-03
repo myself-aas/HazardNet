@@ -883,6 +883,25 @@ export const MaterialIcon: React.FC<MaterialIconProps> = ({
           </>
         );
 
+      // Size-comparison glyphs for the saved-map height presets (Desktop / Ruler). Authored as
+      // stroked outlines to match the rest of this set, replacing the 🖥️ and 📐 emoji.
+      case 'desktop_windows':
+      case 'desktop':
+        return (
+          <>
+            <rect x="3" y="4" width="18" height="12" rx="1" />
+            <path d="M8 20h8M12 16v4" />
+          </>
+        );
+
+      case 'straighten':
+        return (
+          <>
+            <rect x="3" y="9" width="18" height="6" rx="1" />
+            <path d="M7 9v3M11 9v3M15 9v3M19 9v3" />
+          </>
+        );
+
       // Default clean fallback (Never renders text ligatures)
       default:
         return (
