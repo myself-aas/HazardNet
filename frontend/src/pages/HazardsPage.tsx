@@ -23,8 +23,9 @@ import {
   TrendingUp,
   ShieldAlert,
 } from 'lucide-react';
-import { fetchEventsSummary, fetchAllForecastRecords, EventsSummary, ForecastRecord } from '../lib/eventsClient';
+import { fetchEventsSummary, fetchForecastFeed, EventsSummary, ForecastRecord, ForecastFeed } from '../lib/eventsClient';
 import { getHazardColor, getHazardSurface } from '../lib/hazardPalette';
+import { DataStateEmpty, DataStateError, DataStateLoading } from '../components/ui/DataState';
 
 interface HazardCardData {
   id: string;
@@ -35,7 +36,8 @@ interface HazardCardData {
   season: string;
   description: string;
   totalHistoricalEvents: number;
-  percentage: number;
+  /** null when no archive is loaded, so there is no denominator to compute a share from. */
+  percentage: number | null;
   activeForecastsCount: number;
   topDivisions: string[];
 }
@@ -118,37 +120,49 @@ const HAZARDS_CATALOG = [
 export const HazardsPage: React.FC = () => {
   const [summary, setSummary] = useState<EventsSummary | null>(null);
   const [forecasts, setForecasts] = useState<ForecastRecord[]>([]);
+  const [feed, setFeed] = useState<ForecastFeed['source']>('none');
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [reloadNonce, setReloadNonce] = useState(0);
 
   useEffect(() => {
     let mounted = true;
     async function loadData() {
       try {
         setLoading(true);
-        const [sumData, fcData] = await Promise.all([
+        setError(null);
+        const [sumData, fcFeed] = await Promise.all([
           fetchEventsSummary(),
-          fetchAllForecastRecords(),
+          fetchForecastFeed(),
         ]);
         if (mounted) {
           setSummary(sumData);
-          setForecasts(fcData);
+          setForecasts(fcFeed.records);
+          setFeed(fcFeed.source);
           setLoading(false);
         }
       } catch (err) {
-        console.warn('Could not load dynamic hazards summary:', err);
-        setLoading(false);
+        if (mounted) {
+          setError(err instanceof Error ? err.message : 'The hazard archive could not be read.');
+          setLoading(false);
+        }
       }
     }
     loadData();
     return () => { mounted = false; };
-  }, []);
+  }, [reloadNonce]);
+
+  // `fetchEventsSummary` answers with a built-in default when neither the API nor the committed
+  // artifact responds; `source: 'fallback'` is this deployment saying "no archive is loaded", which
+  // is a state to show, not numbers to print (audit P2-3: every page owes an empty state).
+  const archiveLoaded = summary !== null && summary.source !== 'fallback';
 
   const hazardsList: HazardCardData[] = HAZARDS_CATALOG.map(h => {
     const histEvents = summary?.hazardBreakdown?.find(hb => hb.hazard.toLowerCase() === h.name.toLowerCase() || hb.hazard.toLowerCase().includes(h.slug) || h.name.toLowerCase().includes(hb.hazard.toLowerCase()))?.count
       || summary?.byHazard?.[h.name]
       || 0;
-    const totalEvents = summary?.totalEvents || 3062;
-    const pct = Math.round((histEvents / totalEvents) * 1000) / 10;
+    const totalEvents = archiveLoaded ? summary!.totalEvents : 0;
+    const pct = totalEvents > 0 ? Math.round((histEvents / totalEvents) * 1000) / 10 : null;
     const activeFc = forecasts.filter(f => f.hazardType.toLowerCase().includes(h.slug) || h.name.toLowerCase().includes(f.hazardType.toLowerCase()));
 
     return {
@@ -198,11 +212,15 @@ export const HazardsPage: React.FC = () => {
               <div className="text-xs text-carbon-60 font-medium">Hazard Types</div>
             </div>
             <div className="bg-carbon-05 border border-carbon-20/80 p-3 text-center">
-              <div className="text-xl sm:text-2xl font-bold text-nasa-blue-shade">{summary?.totalEvents ?? '3,062'}</div>
+              <div className="text-xl sm:text-2xl font-bold text-nasa-blue-shade">
+                {archiveLoaded ? summary!.totalEvents.toLocaleString() : '—'}
+              </div>
               <div className="text-xs text-carbon-60 font-medium">Historical Records</div>
             </div>
             <div className="bg-carbon-05 border border-carbon-20/80 p-3 text-center col-span-2 sm:col-span-1">
-              <div className="text-xl sm:text-2xl font-bold text-amber-700">{forecasts.length}</div>
+              <div className="text-xl sm:text-2xl font-bold text-amber-700">
+                {feed === 'none' ? '—' : forecasts.length}
+              </div>
               <div className="text-xs text-carbon-60 font-medium">Active Forecasts</div>
             </div>
           </div>
@@ -222,11 +240,37 @@ export const HazardsPage: React.FC = () => {
             </p>
           </div>
           <span className="text-xs font-medium px-2.5 py-1 bg-carbon-10 text-carbon-70 rounded-md">
-            Source: BGD Climatic Hazards Dataset (3,062 events)
+            {archiveLoaded
+              ? `Source: BGD Climatic Hazards Dataset (${summary!.totalEvents.toLocaleString()} events)`
+              : 'Source: no hazard archive is loaded in this deployment'}
           </span>
         </div>
 
-        <div className="h-72 sm:h-80 w-full pt-4">
+        {loading && (
+          <DataStateLoading
+            label="Loading the hazard archive"
+            detail="Cross-referencing historical records with the current forecast run."
+          />
+        )}
+
+        {!loading && error && (
+          <DataStateError
+            title="The hazard archive could not be loaded"
+            detail={error}
+            onRetry={() => setReloadNonce((n) => n + 1)}
+            className="mt-4"
+          />
+        )}
+
+        {!loading && !error && !archiveLoaded && (
+          <DataStateEmpty
+            className="mt-4"
+            title="No hazard archive is loaded in this deployment"
+            body="The hazard profiles below are the classification framework this deployment ships. The occurrence counts they usually carry come from the historical archive, which is not present here; nothing is interpolated to replace it."
+          />
+        )}
+
+        <div className={`h-72 sm:h-80 w-full pt-4 ${!loading && !error && archiveLoaded ? '' : 'hidden'}`}>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={chartData} margin={{ top: 10, right: 20, left: -10, bottom: 20 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--mrd-hairline)" vertical={false} />
@@ -268,7 +312,7 @@ export const HazardsPage: React.FC = () => {
                       <Icon className="w-5 h-5" />
                     </div>
                     <span className="text-xs font-semibold px-2 py-0.5 bg-carbon-10 text-carbon-70">
-                      {hazard.percentage}% of all events
+                      {hazard.percentage === null ? 'Share of events not available' : `${hazard.percentage}% of all events`}
                     </span>
                   </div>
 
@@ -282,7 +326,9 @@ export const HazardsPage: React.FC = () => {
                   <div className="mt-4 pt-3 border-t border-carbon-10 space-y-2 text-xs">
                     <div className="flex justify-between items-center">
                       <span className="text-carbon-60">2000–2026 Archive:</span>
-                      <span className="font-bold text-carbon-90">{hazard.totalHistoricalEvents.toLocaleString()} events</span>
+                      <span className="font-bold text-carbon-90">
+                        {archiveLoaded ? `${hazard.totalHistoricalEvents.toLocaleString()} events` : 'Not loaded'}
+                      </span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-carbon-60">Peak Season:</span>
@@ -290,7 +336,9 @@ export const HazardsPage: React.FC = () => {
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-carbon-60">Active Warning Records:</span>
-                      <span className="font-bold text-nasa-blue-shade">{hazard.activeForecastsCount} active</span>
+                      <span className="font-bold text-nasa-blue-shade">
+                        {feed === 'none' ? 'Not loaded' : `${hazard.activeForecastsCount} active`}
+                      </span>
                     </div>
                   </div>
                 </div>

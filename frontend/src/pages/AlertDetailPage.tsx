@@ -15,6 +15,7 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import { DataStateError } from '../components/ui/DataState';
 import MaterialIcon from '../components/MaterialIcon';
 import { AlertCard } from '../components/alerts/AlertCard';
 import { DataSourceBanner } from '../components/alerts/DataSourceBanner';
@@ -24,19 +25,18 @@ import { LanguageToggle } from '../components/alerts/LanguageToggle';
 import { AlertLevelBadge } from '../components/alerts/AlertLevelBadge';
 import { useBandwidthMode } from '../hooks/useBandwidthMode';
 import { useI18n } from '../hooks/useI18n';
-import { usePageSeo } from '../hooks/usePageSeo';
 import {
   type AlertRecord, type AlertsResult, freshnessOf, loadAlerts,
 } from '../lib/alerts';
 
 export const AlertDetailPage: React.FC = () => {
-  usePageSeo('/alerts');
   const { id } = useParams<{ id: string }>();
   const { t } = useI18n();
   const { lowBandwidth } = useBandwidthMode();
 
   const [result, setResult] = useState<AlertsResult | null>(null);
   const [loading, setLoading] = useState(true);
+  const [reloadNonce, setReloadNonce] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
@@ -53,7 +53,7 @@ export const AlertDetailPage: React.FC = () => {
     };
     void run();
     return () => { cancelled = true; };
-  }, []);
+  }, [reloadNonce]);
 
   const alert: AlertRecord | null = useMemo(() => {
     if (!result || !id) return null;
@@ -67,6 +67,20 @@ export const AlertDetailPage: React.FC = () => {
     return (
       <div className="mx-auto w-full max-w-[900px] px-4 py-10 text-sm text-carbon-60" role="status">
         {t('common.loading')}
+      </div>
+    );
+  }
+
+  // `loadAlerts` never throws: it reports an unreadable deployment as `source: 'none'`. Without
+  // this branch that failure renders as "not found", which blames the URL for a failed read.
+  if (result && result.source === 'none') {
+    return (
+      <div className="mx-auto w-full max-w-[900px] px-4 py-10">
+        <DataStateError
+          title={t('alerts.empty.unavailable')}
+          detail={result.error}
+          onRetry={() => setReloadNonce((n) => n + 1)}
+        />
       </div>
     );
   }

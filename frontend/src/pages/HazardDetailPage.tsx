@@ -19,6 +19,7 @@ import {
 } from 'recharts';
 import {
   AlertTriangle,
+  RefreshCw,
   Wind,
   Droplets,
   Waves,
@@ -144,6 +145,7 @@ export const HazardDetailPage: React.FC = () => {
   const [data, setData] = useState<HazardEventsResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [reloadNonce, setReloadNonce] = useState(0);
 
   // Filters for historical table
   const [searchQuery, setSearchQuery] = useState('');
@@ -171,7 +173,7 @@ export const HazardDetailPage: React.FC = () => {
     }
     loadHazard();
     return () => { mounted = false; };
-  }, [currentSlug]);
+  }, [currentSlug, reloadNonce]);
 
   // Unique divisions and districts for filters
   const availableDivisions = useMemo(() => {
@@ -230,15 +232,25 @@ export const HazardDetailPage: React.FC = () => {
     return (
       <div className="min-h-dvh bg-carbon-05 flex items-center justify-center p-6">
         <div className="bg-white border border-carbon-20 p-8 max-w-md text-center">
-          <AlertTriangle className="w-10 h-10 text-red-500 mx-auto mb-3" />
+          <AlertTriangle className="w-10 h-10 text-nasa-red mx-auto mb-3" aria-hidden="true" />
           <h2 className="text-lg font-bold text-carbon-90">Failed to Load Hazard Data</h2>
           <p className="text-xs text-carbon-60 mt-2">{error || 'Hazard data not found.'}</p>
-          <Link
-            to="/hazards"
-            className="mt-5 inline-flex min-h-[44px] items-center px-4 bg-nasa-blue text-white text-sm font-semibold hover:bg-nasa-blue-shade"
-          >
-            Back to Hazards
-          </Link>
+          <div className="mt-5 flex flex-col items-stretch gap-2 sm:flex-row sm:justify-center">
+            <button
+              type="button"
+              onClick={() => setReloadNonce((n) => n + 1)}
+              className="inline-flex min-h-[44px] items-center justify-center gap-2 border border-carbon-20 bg-carbon-05 px-4 text-sm font-semibold text-carbon-90 hover:bg-carbon-10 touch-manipulation"
+            >
+              <RefreshCw className="h-4 w-4" aria-hidden="true" />
+              Try again
+            </button>
+            <Link
+              to="/hazards"
+              className="inline-flex min-h-[44px] items-center justify-center px-4 bg-nasa-blue text-white text-sm font-semibold hover:bg-nasa-blue-shade"
+            >
+              Back to Hazards
+            </Link>
+          </div>
         </div>
       </div>
     );

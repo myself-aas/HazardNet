@@ -1,0 +1,735 @@
+{
+  "why": [
+    "Backlog row 13 of docs/audits/2026-10-03-frontend-design-system-audit.md:",
+    "  \"every one of the 35 pages gets four states (loading / empty / error+retry / success) as a checklist item\".",
+    "One entry per file in frontend/src/pages, four states each, with the evidence the scanner can see:",
+    "  kind \"notice\"  - a rendered block that states the state (the shared components/ui/DataState set, or the page's own);",
+    "  kind \"inline\"  - the state is rendered inside the page's normal flow (a banner, a chip, a row);",
+    "  kind \"text\"    - a single line of copy;",
+    "  kind \"page\"    - the success state, evidenced by the page's own heading or test id;",
+    "  kind \"absent\"  - the state is not implemented; the reason says what the reader sees instead;",
+    "  kind \"not-applicable\" - the state cannot exist for this page shape, and the reason says why.",
+    "\"data\" records the page shape: \"fetch\" reads something over the network, \"mutation\" submits a form,",
+    "\"static\" renders committed copy or a build-time import.",
+    "__tests__/fourState.test.js holds this against a live scan: every page file is ledgered and every ledgered",
+    "file exists, every evidence string is still in the file, a \"fetch\" page may not declare loading or error",
+    "not-applicable, a state that is not retryable has to say why, and the count of \"absent\" states may not grow."
+  ],
+  "states": [
+    "loading",
+    "empty",
+    "error",
+    "success"
+  ],
+  "entries": {
+    "pages/About.tsx": {
+      "data": "static",
+      "loading": {
+        "kind": "not-applicable",
+        "reason": "editorial page: nothing is read, so there is no wait to announce"
+      },
+      "empty": {
+        "kind": "not-applicable",
+        "reason": "no list and no query on this page"
+      },
+      "error": {
+        "kind": "not-applicable",
+        "reason": "no read path exists that could fail"
+      },
+      "success": {
+        "kind": "page",
+        "evidence": "Haor Basin & Pre-Monsoon Flash Floods"
+      }
+    },
+    "pages/AdvisoriesPage.tsx": {
+      "data": "fetch",
+      "loading": {
+        "kind": "inline",
+        "evidence": "aiLoading",
+        "retry": null
+      },
+      "empty": {
+        "kind": "not-applicable",
+        "reason": "the sector protocols are a build-time import; the synthesizer's empty answer falls back to those protocols rather than rendering a blank panel"
+      },
+      "error": {
+        "kind": "inline",
+        "evidence": "Failed to synthesize advisory.",
+        "retry": true,
+        "retry_via": "the synthesize button re-enables"
+      },
+      "success": {
+        "kind": "page",
+        "evidence": "EMERGENCY OPERATIONAL DIRECTIVE"
+      },
+      "note": "the page body is a static import; the four states apply to the advisory-synthesizer block, which is the only thing that reads the network"
+    },
+    "pages/AlertDetailPage.tsx": {
+      "data": "fetch",
+      "loading": {
+        "kind": "text",
+        "evidence": "common.loading"
+      },
+      "empty": {
+        "kind": "text",
+        "evidence": "alerts.detail.notFound",
+        "note": "an id that matches no published alert"
+      },
+      "error": {
+        "kind": "notice",
+        "evidence": "alerts.empty.unavailable",
+        "retry": true
+      },
+      "success": {
+        "kind": "page",
+        "evidence": "alerts.detail.title"
+      }
+    },
+    "pages/AlertsPage.tsx": {
+      "data": "fetch",
+      "loading": {
+        "kind": "text",
+        "evidence": "common.loading"
+      },
+      "empty": {
+        "kind": "notice",
+        "evidence": "alerts.empty.title"
+      },
+      "error": {
+        "kind": "notice",
+        "evidence": "alerts.empty.unavailable",
+        "retry": true
+      },
+      "success": {
+        "kind": "page",
+        "evidence": "alerts.title"
+      }
+    },
+    "pages/AnalyticsPage.tsx": {
+      "data": "fetch",
+      "loading": {
+        "kind": "notice",
+        "evidence": "Reading the forecast snapshot"
+      },
+      "empty": {
+        "kind": "notice",
+        "evidence": "The snapshot does not state its provenance"
+      },
+      "error": {
+        "kind": "notice",
+        "evidence": "The forecast snapshot could not be read",
+        "retry": true
+      },
+      "success": {
+        "kind": "page",
+        "evidence": "Model Diagnostics & Pipeline Observability"
+      },
+      "note": "the pipeline-status tab used to print three invented run-log lines; it now prints the snapshot's own fields, and the three states are that read's states"
+    },
+    "pages/AuthCallbackPage.tsx": {
+      "data": "fetch",
+      "loading": {
+        "kind": "notice",
+        "evidence": "Completing secure sign-in"
+      },
+      "empty": {
+        "kind": "not-applicable",
+        "reason": "an OAuth callback has no list to be empty"
+      },
+      "error": {
+        "kind": "notice",
+        "evidence": "Sign-in could not complete",
+        "retry": true,
+        "retry_via": "Back to sign in"
+      },
+      "success": {
+        "kind": "notice",
+        "evidence": "Signed in successfully"
+      }
+    },
+    "pages/BlogArticlePage.tsx": {
+      "data": "fetch",
+      "loading": {
+        "kind": "notice",
+        "evidence": "InfinityLoader size={88}"
+      },
+      "empty": {
+        "kind": "notice",
+        "evidence": "Article not found"
+      },
+      "error": {
+        "kind": "absent",
+        "reason": "a read failure and a missing slug share the not-found branch, which appends the loader's error text; there is no separate retry and no retry is possible for a URL that does not resolve"
+      },
+      "success": {
+        "kind": "page",
+        "evidence": "data-testid=\"article-body\""
+      }
+    },
+    "pages/Blogs.tsx": {
+      "data": "fetch",
+      "loading": {
+        "kind": "notice",
+        "evidence": "Loading published articles"
+      },
+      "empty": {
+        "kind": "notice",
+        "evidence": "No articles are published yet"
+      },
+      "error": {
+        "kind": "notice",
+        "evidence": "The article list could not be loaded",
+        "retry": true
+      },
+      "success": {
+        "kind": "page",
+        "evidence": "HazardNet AI Blog & Field Deployment Studies"
+      }
+    },
+    "pages/Contact.tsx": {
+      "data": "mutation",
+      "loading": {
+        "kind": "not-applicable",
+        "reason": "the page reads nothing; the form reports its own submit state on the button"
+      },
+      "empty": {
+        "kind": "not-applicable",
+        "reason": "no list and no query on this page"
+      },
+      "error": {
+        "kind": "inline",
+        "evidence": "errors.length > 0",
+        "retry": true,
+        "retry_via": "the submit button"
+      },
+      "success": {
+        "kind": "inline",
+        "evidence": "role=\"status\""
+      }
+    },
+    "pages/Dashboard.tsx": {
+      "data": "fetch",
+      "loading": {
+        "kind": "inline",
+        "evidence": "Processing..."
+      },
+      "empty": {
+        "kind": "absent",
+        "reason": "the console renders the map and the district list from committed artifacts; an empty run shows a zero-count strip rather than an empty state"
+      },
+      "error": {
+        "kind": "absent",
+        "reason": "a failed prediction read surfaces as a toast, not as a page state"
+      },
+      "success": {
+        "kind": "page",
+        "evidence": "Live map: multi-hazard situational awareness"
+      },
+      "note": "console surface: the audit's P1-5/P2-3 reading is that dense console chrome is per-surface work (skill section 13); the two absent states are recorded, not waved through"
+    },
+    "pages/DistrictDetailPage.tsx": {
+      "data": "fetch",
+      "loading": {
+        "kind": "inline",
+        "evidence": "loadingForecastTable"
+      },
+      "empty": {
+        "kind": "inline",
+        "evidence": "Awaiting forecast pipeline ingestion"
+      },
+      "error": {
+        "kind": "inline",
+        "evidence": "Failed to load district historical events:"
+      },
+      "success": {
+        "kind": "page",
+        "evidence": "loadingForecastTable"
+      },
+      "note": "success token is the loaded-state flag: the page renders its tables only when that flag is false"
+    },
+    "pages/DivisionDetailPage.tsx": {
+      "data": "fetch",
+      "loading": {
+        "kind": "notice",
+        "evidence": "if (loading)"
+      },
+      "empty": {
+        "kind": "inline",
+        "evidence": "No descriptive summary logged"
+      },
+      "error": {
+        "kind": "notice",
+        "evidence": "Failed to load division events data",
+        "retry": false,
+        "reason": "the error state offers the divisions index link; no retry control exists on this page"
+      },
+      "success": {
+        "kind": "page",
+        "evidence": "{data.division} Division"
+      }
+    },
+    "pages/DivisionsPage.tsx": {
+      "data": "fetch",
+      "loading": {
+        "kind": "notice",
+        "evidence": "Loading the division archive"
+      },
+      "empty": {
+        "kind": "notice",
+        "evidence": "No hazard archive is loaded in this deployment"
+      },
+      "error": {
+        "kind": "notice",
+        "evidence": "The division archive could not be loaded",
+        "retry": true
+      },
+      "success": {
+        "kind": "page",
+        "evidence": "Bangladesh Regional Divisions"
+      }
+    },
+    "pages/Documentation.tsx": {
+      "data": "static",
+      "loading": {
+        "kind": "not-applicable",
+        "reason": "editorial page: nothing is read"
+      },
+      "empty": {
+        "kind": "not-applicable",
+        "reason": "no list and no query on this page"
+      },
+      "error": {
+        "kind": "not-applicable",
+        "reason": "no read path exists that could fail"
+      },
+      "success": {
+        "kind": "page",
+        "evidence": "The published forecast record"
+      }
+    },
+    "pages/DownloadCenter.tsx": {
+      "data": "fetch",
+      "loading": {
+        "kind": "inline",
+        "evidence": "Checking releases"
+      },
+      "empty": {
+        "kind": "inline",
+        "evidence": "Awaiting first release"
+      },
+      "error": {
+        "kind": "inline",
+        "evidence": "Temporarily unavailable",
+        "retry": false,
+        "reason": "the chip states the channel is unavailable; the page has no per-channel retry control"
+      },
+      "success": {
+        "kind": "page",
+        "evidence": "Download "
+      }
+    },
+    "pages/ForgotPasswordPage.tsx": {
+      "data": "mutation",
+      "loading": {
+        "kind": "inline",
+        "evidence": "loading ? ("
+      },
+      "empty": {
+        "kind": "not-applicable",
+        "reason": "a reset form has no list"
+      },
+      "error": {
+        "kind": "inline",
+        "evidence": "No registered account was found with this email.",
+        "retry": true,
+        "retry_via": "the submit button"
+      },
+      "success": {
+        "kind": "page",
+        "evidence": "Reset your password"
+      }
+    },
+    "pages/FrontDoor.tsx": {
+      "data": "fetch",
+      "loading": {
+        "kind": "notice",
+        "evidence": "frontdoor.run.reading"
+      },
+      "empty": {
+        "kind": "notice",
+        "evidence": "frontdoor.run.noneTitle"
+      },
+      "error": {
+        "kind": "notice",
+        "evidence": "frontdoor.run.failed",
+        "retry": true
+      },
+      "success": {
+        "kind": "page",
+        "evidence": "frontdoor.run.h2"
+      }
+    },
+    "pages/HazardDetailPage.tsx": {
+      "data": "fetch",
+      "loading": {
+        "kind": "notice",
+        "evidence": "Cross-referencing historical events and active warning records"
+      },
+      "empty": {
+        "kind": "inline",
+        "evidence": "filteredEvents.length === 0"
+      },
+      "error": {
+        "kind": "notice",
+        "evidence": "Failed to Load Hazard Data",
+        "retry": true
+      },
+      "success": {
+        "kind": "page",
+        "evidence": "{data.hazard}"
+      }
+    },
+    "pages/HazardsPage.tsx": {
+      "data": "fetch",
+      "loading": {
+        "kind": "notice",
+        "evidence": "Loading the hazard archive"
+      },
+      "empty": {
+        "kind": "notice",
+        "evidence": "No hazard archive is loaded in this deployment"
+      },
+      "error": {
+        "kind": "notice",
+        "evidence": "The hazard archive could not be loaded",
+        "retry": true
+      },
+      "success": {
+        "kind": "page",
+        "evidence": "Climatic Hazards of Bangladesh"
+      }
+    },
+    "pages/HistoricalCatalogPage.tsx": {
+      "data": "fetch",
+      "loading": {
+        "kind": "notice",
+        "evidence": "Loading the historical archive"
+      },
+      "empty": {
+        "kind": "absent",
+        "reason": "the five artifacts load together; a district with no recorded event is stated inside the catalog rather than by an empty page, and the page-level empty case (a loaded but eventless archive) is not distinguished"
+      },
+      "error": {
+        "kind": "notice",
+        "evidence": "The historical archive is temporarily unavailable",
+        "retry": true
+      },
+      "success": {
+        "kind": "page",
+        "evidence": "Historical Hazard Archive"
+      }
+    },
+    "pages/LoginPage.tsx": {
+      "data": "mutation",
+      "loading": {
+        "kind": "inline",
+        "evidence": "loading ? ("
+      },
+      "empty": {
+        "kind": "not-applicable",
+        "reason": "a sign-in form has no list"
+      },
+      "error": {
+        "kind": "inline",
+        "evidence": "{error && (",
+        "retry": true,
+        "retry_via": "the submit button"
+      },
+      "success": {
+        "kind": "page",
+        "evidence": "Sign in to HazardNet"
+      }
+    },
+    "pages/NotFoundPage.tsx": {
+      "data": "static",
+      "loading": {
+        "kind": "not-applicable",
+        "reason": "the 404 surface renders immediately"
+      },
+      "empty": {
+        "kind": "not-applicable",
+        "reason": "this page is the miss state"
+      },
+      "error": {
+        "kind": "not-applicable",
+        "reason": "this page is the error state"
+      },
+      "success": {
+        "kind": "page",
+        "evidence": "Page not found"
+      }
+    },
+    "pages/Privacy.tsx": {
+      "data": "static",
+      "loading": {
+        "kind": "not-applicable",
+        "reason": "editorial page: nothing is read"
+      },
+      "empty": {
+        "kind": "not-applicable",
+        "reason": "no list and no query on this page"
+      },
+      "error": {
+        "kind": "not-applicable",
+        "reason": "no read path exists that could fail"
+      },
+      "success": {
+        "kind": "page",
+        "evidence": "HazardNet AI Telemetry & Data Privacy Policy"
+      }
+    },
+    "pages/PublicProfilePage.tsx": {
+      "data": "fetch",
+      "loading": {
+        "kind": "notice",
+        "evidence": "'loading'"
+      },
+      "empty": {
+        "kind": "notice",
+        "evidence": "isn’t on HazardNet"
+      },
+      "error": {
+        "kind": "notice",
+        "evidence": "Public profile fetch failed:",
+        "retry": false,
+        "reason": "the offline copy is the fallback; the page has no retry control"
+      },
+      "success": {
+        "kind": "page",
+        "evidence": "HazardNet member"
+      }
+    },
+    "pages/SetPasswordPage.tsx": {
+      "data": "mutation",
+      "loading": {
+        "kind": "notice",
+        "evidence": "Password saved"
+      },
+      "empty": {
+        "kind": "not-applicable",
+        "reason": "a password form has no list"
+      },
+      "error": {
+        "kind": "notice",
+        "evidence": "Your verification link expired."
+      },
+      "success": {
+        "kind": "page",
+        "evidence": "Password saved"
+      }
+    },
+    "pages/SignUpPage.tsx": {
+      "data": "mutation",
+      "loading": {
+        "kind": "inline",
+        "evidence": "{loading ? ("
+      },
+      "empty": {
+        "kind": "not-applicable",
+        "reason": "a sign-up form has no list"
+      },
+      "error": {
+        "kind": "notice",
+        "evidence": "We couldn’t create your account.",
+        "retry": true,
+        "retry_via": "the submit button"
+      },
+      "success": {
+        "kind": "page",
+        "evidence": "Create your HazardNet account"
+      }
+    },
+    "pages/StatusPage.tsx": {
+      "data": "static",
+      "loading": {
+        "kind": "not-applicable",
+        "reason": "the shell renders the committed explanation; the live half is FreshnessPanel, which owns its own states"
+      },
+      "empty": {
+        "kind": "not-applicable",
+        "reason": "the page body is the site-routes.json copy for /status"
+      },
+      "error": {
+        "kind": "not-applicable",
+        "reason": "nothing is read at the page level"
+      },
+      "success": {
+        "kind": "page",
+        "evidence": "FreshnessPanel"
+      }
+    },
+    "pages/Terms.tsx": {
+      "data": "static",
+      "loading": {
+        "kind": "not-applicable",
+        "reason": "editorial page: nothing is read"
+      },
+      "empty": {
+        "kind": "not-applicable",
+        "reason": "no list and no query on this page"
+      },
+      "error": {
+        "kind": "not-applicable",
+        "reason": "no read path exists that could fail"
+      },
+      "success": {
+        "kind": "page",
+        "evidence": "HazardNet AI Terms of Service & Data License"
+      }
+    },
+    "pages/UpdatePasswordPage.tsx": {
+      "data": "mutation",
+      "loading": {
+        "kind": "notice",
+        "evidence": "Preparing secure password recovery"
+      },
+      "empty": {
+        "kind": "not-applicable",
+        "reason": "a password form has no list"
+      },
+      "error": {
+        "kind": "notice",
+        "evidence": "{error && ("
+      },
+      "success": {
+        "kind": "page",
+        "evidence": "Choose a new password"
+      }
+    },
+    "pages/UploadPage.tsx": {
+      "data": "mutation",
+      "loading": {
+        "kind": "inline",
+        "evidence": "lookup.submitting",
+        "note": "the button's own label; the panel renders view.kind === 'loading'"
+      },
+      "empty": {
+        "kind": "notice",
+        "evidence": "<StoredForecastPanel",
+        "note": "components/StoredForecastPanel owns the idle and uncovered views; the page passes it the state and the retry"
+      },
+      "error": {
+        "kind": "notice",
+        "evidence": "onRetry={submitted",
+        "retry": true,
+        "note": "rendered by components/StoredForecastPanel; onRetry re-runs the lookup"
+      },
+      "success": {
+        "kind": "page",
+        "evidence": "lookup.title"
+      }
+    },
+    "pages/UseCases.tsx": {
+      "data": "static",
+      "loading": {
+        "kind": "not-applicable",
+        "reason": "editorial page: nothing is read"
+      },
+      "empty": {
+        "kind": "not-applicable",
+        "reason": "no list and no query on this page"
+      },
+      "error": {
+        "kind": "not-applicable",
+        "reason": "no read path exists that could fail"
+      },
+      "success": {
+        "kind": "page",
+        "evidence": "Northeastern Haor Basin Flash Flood Protection"
+      }
+    },
+    "pages/UserDashboardPage.tsx": {
+      "data": "fetch",
+      "loading": {
+        "kind": "notice",
+        "evidence": "loading && !user"
+      },
+      "empty": {
+        "kind": "absent",
+        "reason": "the account dashboard renders the profile it read; the no-profile case is not a distinct state"
+      },
+      "error": {
+        "kind": "absent",
+        "reason": "an unreadable profile degrades to the auth user's own fields without stating the failure"
+      },
+      "success": {
+        "kind": "page",
+        "evidence": "Welcome"
+      }
+    },
+    "pages/UserProfilePage.tsx": {
+      "data": "fetch",
+      "loading": {
+        "kind": "notice",
+        "evidence": "if (loading)"
+      },
+      "empty": {
+        "kind": "inline",
+        "evidence": "No email associated with this account."
+      },
+      "error": {
+        "kind": "inline",
+        "evidence": "Failed to save profile changes.",
+        "retry": true,
+        "retry_via": "the save button"
+      },
+      "success": {
+        "kind": "page",
+        "evidence": "User Profile"
+      }
+    },
+    "pages/dashboard/BlogStudioPage.tsx": {
+      "data": "fetch",
+      "loading": {
+        "kind": "inline",
+        "evidence": "{loading ? ("
+      },
+      "empty": {
+        "kind": "inline",
+        "evidence": "No articles yet"
+      },
+      "error": {
+        "kind": "inline",
+        "evidence": "{error && (",
+        "retry": false,
+        "reason": "the alert names the missing table; the reader re-runs the studio by continuing to use it, there is no retry control"
+      },
+      "success": {
+        "kind": "page",
+        "evidence": "Blog Studio"
+      },
+      "note": "studio surface: create/publish also report through toasts; the four states here are the article list's"
+    },
+    "pages/dashboard/BlogEditorPage.tsx": {
+      "data": "fetch",
+      "loading": {
+        "kind": "notice",
+        "evidence": "InfinityLoader size={88}"
+      },
+      "empty": {
+        "kind": "not-applicable",
+        "reason": "an editor has no list; a slug that matches no article is the load error, and a new article is the empty draft"
+      },
+      "error": {
+        "kind": "notice",
+        "evidence": "Article unavailable",
+        "retry": false,
+        "reason": "the state offers the way back to the studio; re-opening the article is the retry"
+      },
+      "success": {
+        "kind": "page",
+        "evidence": "Write a new article"
+      }
+    }
+  }
+}

@@ -36,14 +36,12 @@ import { BangladeshSvgMap } from '../components/BangladeshSvgMap';
 import { useAlertsData } from '../hooks/useAlertsData';
 import { useBandwidthMode } from '../hooks/useBandwidthMode';
 import { useI18n } from '../hooks/useI18n';
-import { usePageSeo } from '../hooks/usePageSeo';
 import { ALERT_LEVELS, sortAlerts } from '../lib/alerts';
 import { DISTRICT_ALERT_LAYER_ID, buildAlertLevelLayer } from '../lib/alertLayer';
 import { downloadAlertsCsv } from '../lib/alertsCsv';
 import { EMERGENCY_NUMBERS } from '../lib/legal';
 
 export const AlertsPage: React.FC = () => {
-  usePageSeo('/alerts');
   const { t, formatDate, formatNumber } = useI18n();
   const navigate = useNavigate();
   const { lowBandwidth, setLowBandwidth, override } = useBandwidthMode();
@@ -245,6 +243,16 @@ export const AlertsPage: React.FC = () => {
               <p className="mt-1 font-mono text-xs text-carbon-60">
                 {data.error}
               </p>
+            )}
+            {data.source === 'none' && (
+              <button
+                type="button"
+                onClick={data.refresh}
+                className="mt-3 inline-flex min-h-[44px] items-center gap-2 border border-carbon-20 bg-carbon-05 px-4 text-sm font-semibold text-carbon-90 hover:bg-carbon-10 touch-manipulation"
+              >
+                <MaterialIcon name="refresh" className="text-base" aria-hidden="true" />
+                {t('alerts.page.retry')}
+              </button>
             )}
             <p className="mt-1 text-xs text-carbon-60">
               {suppressed > 0

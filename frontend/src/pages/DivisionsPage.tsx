@@ -16,7 +16,8 @@ import {
   TrendingUp,
   Layers,
 } from 'lucide-react';
-import { fetchEventsSummary, fetchAllForecastRecords, EventsSummary, ForecastRecord } from '../lib/eventsClient';
+import { fetchEventsSummary, fetchForecastFeed, EventsSummary, ForecastRecord, ForecastFeed } from '../lib/eventsClient';
+import { DataStateEmpty, DataStateError, DataStateLoading } from '../components/ui/DataState';
 
 interface DivisionCardData {
   id: string;
@@ -44,33 +45,40 @@ const DIVISION_META = [
 export const DivisionsPage: React.FC = () => {
   const [summary, setSummary] = useState<EventsSummary | null>(null);
   const [forecasts, setForecasts] = useState<ForecastRecord[]>([]);
+  const [feed, setFeed] = useState<ForecastFeed['source']>('none');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [reloadNonce, setReloadNonce] = useState(0);
 
   useEffect(() => {
     let mounted = true;
     async function loadData() {
       try {
         setLoading(true);
-        const [sumData, fcData] = await Promise.all([
+        setError(null);
+        const [sumData, fcFeed] = await Promise.all([
           fetchEventsSummary(),
-          fetchAllForecastRecords(),
+          fetchForecastFeed(),
         ]);
         if (mounted) {
           setSummary(sumData);
-          setForecasts(fcData);
+          setForecasts(fcFeed.records);
+          setFeed(fcFeed.source);
           setLoading(false);
         }
-      } catch (err: any) {
+      } catch (err) {
         if (mounted) {
-          setError(err.message || 'Failed to load divisions data');
+          setError(err instanceof Error ? err.message : 'Failed to load divisions data');
           setLoading(false);
         }
       }
     }
     loadData();
     return () => { mounted = false; };
-  }, []);
+  }, [reloadNonce]);
+
+  /** A summary tagged `fallback` is the client's built-in default, not this deployment's archive. */
+  const archiveLoaded = summary !== null && summary.source !== 'fallback';
 
   const divisionsList: DivisionCardData[] = DIVISION_META.map(div => {
     const histEvents = summary?.divisionBreakdown?.find(d => d.division.toLowerCase() === div.name.toLowerCase() || (div.name === 'Chattogram' && d.division.toLowerCase() === 'chittagong'))?.count
@@ -137,7 +145,9 @@ export const DivisionsPage: React.FC = () => {
               <div className="text-xs text-carbon-60 font-medium">Districts</div>
             </div>
             <div className="bg-carbon-05 border border-carbon-20/80 p-3 text-center col-span-2 sm:col-span-1">
-              <div className="text-xl sm:text-2xl font-bold text-nasa-blue-shade">{summary?.totalEvents ?? '3,062'}</div>
+              <div className="text-xl sm:text-2xl font-bold text-nasa-blue-shade">
+                {archiveLoaded ? summary!.totalEvents.toLocaleString() : '—'}
+              </div>
               <div className="text-xs text-carbon-60 font-medium">Recorded Events</div>
             </div>
           </div>
@@ -157,11 +167,37 @@ export const DivisionsPage: React.FC = () => {
             </p>
           </div>
           <span className="text-xs font-medium px-2.5 py-1 bg-carbon-10 text-carbon-70 rounded-md">
-            Source: BGD Climatic Hazards Dataset & HazardNet Forecasts
+            {archiveLoaded
+              ? 'Source: BGD Climatic Hazards Dataset & HazardNet Forecasts'
+              : 'Source: no hazard archive is loaded in this deployment'}
           </span>
         </div>
 
-        <div className="h-72 sm:h-80 w-full pt-4">
+        {loading && (
+          <DataStateLoading
+            label="Loading the division archive"
+            detail="Reading historical records and the current forecast run."
+          />
+        )}
+
+        {!loading && error && (
+          <DataStateError
+            title="The division archive could not be loaded"
+            detail={error}
+            onRetry={() => setReloadNonce((n) => n + 1)}
+            className="mt-4"
+          />
+        )}
+
+        {!loading && !error && !archiveLoaded && (
+          <DataStateEmpty
+            className="mt-4"
+            title="No hazard archive is loaded in this deployment"
+            body="The division profiles below are the administrative framework this deployment ships. Event counts and forecast volumes come from the historical archive and the forecast feed, neither of which is present here."
+          />
+        )}
+
+        <div className={`h-72 sm:h-80 w-full pt-4 ${!loading && !error && archiveLoaded ? '' : 'hidden'}`}>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={chartData} margin={{ top: 10, right: 20, left: -10, bottom: 20 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--mrd-hairline)" vertical={false} />
@@ -211,11 +247,15 @@ export const DivisionsPage: React.FC = () => {
                 <div className="mt-4 pt-3 border-t border-carbon-10 space-y-2 text-xs">
                   <div className="flex justify-between items-center">
                     <span className="text-carbon-60">2000–2026 Events:</span>
-                    <span className="font-semibold text-carbon-80">{division.totalHistoricalEvents.toLocaleString()}</span>
+                    <span className="font-semibold text-carbon-80">
+                      {archiveLoaded ? division.totalHistoricalEvents.toLocaleString() : 'Not loaded'}
+                    </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-carbon-60">Active Forecasts:</span>
-                    <span className="font-semibold text-nasa-blue-shade">{division.activeForecastsCount} records</span>
+                    <span className="font-semibold text-nasa-blue-shade">
+                      {feed === 'none' ? 'Not loaded' : `${division.activeForecastsCount} records`}
+                    </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-carbon-60">Primary Hazard:</span>

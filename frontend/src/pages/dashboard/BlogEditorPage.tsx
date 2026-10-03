@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { FileText } from 'lucide-react';
 import toast from 'react-hot-toast';
 import MaterialIcon from '../../components/MaterialIcon';
 import Breadcrumbs from '../../components/Breadcrumbs';
@@ -300,7 +301,7 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
   if (loadError) {
     return (
       <div className="max-w-3xl mx-auto min-h-[50vh] flex flex-col items-center justify-center gap-4 text-center">
-        <span className="text-3xl">📄</span>
+        <FileText className="h-8 w-8 text-carbon-40" aria-hidden="true" />
         <h1 className="text-lg font-black text-carbon-90">Article unavailable</h1>
         <p className="text-sm text-carbon-60">{loadError}</p>
         <Link to="/dashboard/blog" className="bg-carbon-90 px-4 py-2.5 text-xs font-black text-white hover:bg-carbon-70">

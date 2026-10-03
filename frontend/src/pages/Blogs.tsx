@@ -8,20 +8,31 @@ import { buildBlogIndexHead } from '../lib/blogSeo';
 import { useSeoHead } from '../lib/seoHead';
 import { useAuth } from '../context/AuthContext';
 import { isPrimarySuperAdmin } from '../lib/superadmins';
+import { DataStateEmpty, DataStateError, DataStateLoading } from '../components/ui/DataState';
 
 export const Blogs: React.FC = () => {
   const { user, loading } = useAuth();
   const [liveArticles, setLiveArticles] = useState<BlogArticle[]>([]);
+  const [articlesLoading, setArticlesLoading] = useState(true);
+  const [articlesError, setArticlesError] = useState<string | null>(null);
+  const [reloadNonce, setReloadNonce] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
+    setArticlesLoading(true);
+    setArticlesError(null);
     void listPublishedArticles().then((result) => {
-      if (!cancelled && !result.error) setLiveArticles(result.data);
+      if (cancelled) return;
+      setLiveArticles(result.data ?? []);
+      // An empty list and a list that could not be read are different pages: `data: []` with an
+      // error means "say it failed", not "there is nothing to show" (audit P2-3).
+      setArticlesError(result.error ? String(result.error) : null);
+      setArticlesLoading(false);
     });
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [reloadNonce]);
 
   const indexHead = useMemo(() => buildBlogIndexHead({ origin: window.location.origin }), []);
   useSeoHead(indexHead);
@@ -65,6 +76,23 @@ export const Blogs: React.FC = () => {
           </Link>
         )}
       </div>
+
+      {articlesLoading && <DataStateLoading label="Loading published articles" loader={false} />}
+
+      {!articlesLoading && articlesError && (
+        <DataStateError
+          title="The article list could not be loaded"
+          detail={articlesError}
+          onRetry={() => setReloadNonce((n) => n + 1)}
+        />
+      )}
+
+      {!articlesLoading && !articlesError && liveArticles.length === 0 && (
+        <DataStateEmpty
+          title="No articles are published yet"
+          body="When the research team publishes one, it appears here with its own page and URL."
+        />
+      )}
 
       {liveArticles.length > 0 && (
         <section className="space-y-3" data-testid="live-articles">

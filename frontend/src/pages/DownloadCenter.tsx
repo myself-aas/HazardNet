@@ -15,7 +15,6 @@ import {
   resolveChannels,
 } from '../lib/downloadChannels';
 import { ChannelState, orderAssets, useReleaseChannels } from '../hooks/useReleaseChannels';
-import { usePageSeo } from '../hooks/usePageSeo';
 
 type TabId = 'software' | 'python' | 'npm';
 
@@ -223,8 +222,6 @@ const ChannelCard: React.FC<{ channel: DownloadChannel; state: ChannelState }> =
 };
 
 export const DownloadCenter: React.FC = () => {
-  // Per-route <head>: see the note in frontend/src/hooks/usePageSeo.ts.
-  usePageSeo('/download');
   const [searchParams] = useSearchParams();
   const platformParam = searchParams.get('platform');
   const [selectedTab, setSelectedTab] = useState<TabId>(

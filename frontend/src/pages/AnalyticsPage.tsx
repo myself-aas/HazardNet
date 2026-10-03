@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import ForecastDashboard from '../components/ForecastDashboard';
+import { DataStateEmpty, DataStateError, DataStateLoading } from '../components/ui/DataState';
 
 /** Shape of `public/data/forecasts-latest.json` (hazardnet-forecast-snapshot/v2). */
 interface ForecastSnapshot {
@@ -11,6 +12,14 @@ interface ForecastSnapshot {
   source?: string;
   kernel?: string;
   horizons?: Record<string, unknown[]>;
+  coverage?: Record<string, unknown>;
+  lineage?: Record<string, unknown>;
+}
+
+/** One line of the snapshot's own provenance, or null when the field is absent. */
+function field(label: string, value: unknown): { label: string; value: string } | null {
+  if (value === null || value === undefined || value === '') return null;
+  return { label, value: String(value) };
 }
 
 export const AnalyticsAnalyticsPage: React.FC = () => {
@@ -22,21 +31,41 @@ export const AnalyticsAnalyticsPage: React.FC = () => {
   // (cache-busted), never from invented "log lines" (UI-01).
   const [snapshot, setSnapshot] = useState<ForecastSnapshot | null>(null);
   const [snapshotError, setSnapshotError] = useState<string | null>(null);
+  const [snapshotLoading, setSnapshotLoading] = useState(true);
+  const [reloadNonce, setReloadNonce] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
+    setSnapshotLoading(true);
+    setSnapshotError(null);
     fetch('/data/forecasts-latest.json', { cache: 'no-store' })
       .then((res) => (res.ok ? res.json() : Promise.reject(new Error(`HTTP ${res.status}`))))
       .then((data: ForecastSnapshot) => {
-        if (!cancelled) setSnapshot(data);
+        if (!cancelled) {
+          setSnapshot(data);
+          setSnapshotLoading(false);
+        }
       })
       .catch((err: unknown) => {
-        if (!cancelled) setSnapshotError(err instanceof Error ? err.message : 'unavailable');
+        if (!cancelled) {
+          setSnapshot(null);
+          setSnapshotError(err instanceof Error ? err.message : 'unavailable');
+          setSnapshotLoading(false);
+        }
       });
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [reloadNonce]);
+
+  const provenance = [
+    field('Schema', snapshot?.schema),
+    field('Generated at', snapshot?.generated_at),
+    field('Prediction date', snapshot?.prediction_date),
+    field('Kernel', snapshot?.kernel),
+    field('Source', snapshot?.source),
+    field('Horizons', snapshot?.horizons ? Object.entries(snapshot.horizons).map(([h, rows]) => `${h}: ${Array.isArray(rows) ? rows.length : '?'} rows`).join(' · ') : null),
+  ].filter((row): row is { label: string; value: string } => row !== null);
 
   return (
     <motion.div
@@ -165,21 +194,40 @@ export const AnalyticsAnalyticsPage: React.FC = () => {
             transition={{ duration: 0.25 }}
             className="bg-white border border-carbon-20/90 rounded-3xl p-6 sm:p-8 shadow-md space-y-6"
           >
-            <h2 className="text-xl font-bold text-carbon-90">GitHub Actions & production Notebook Sync Logs</h2>
-            <div className="space-y-3 font-mono text-xs">
-              <motion.div whileHover={{ x: 3 }} className="bg-carbon-05/80 p-4 rounded-2xl border border-carbon-20/90 shadow-2xs text-carbon-80 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                <span>[SUCCESS] Forecast Record Sync: published district rows fetched (07:00 UTC)</span>
-                <span className="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 font-bold w-fit border border-emerald-200">OK</span>
-              </motion.div>
-              <motion.div whileHover={{ x: 3 }} className="bg-carbon-05/80 p-4 rounded-2xl border border-carbon-20/90 shadow-2xs text-carbon-80 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                <span>[SUCCESS] model Spatial Attention Model weights updated to v4.8</span>
-                <span className="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 font-bold w-fit border border-emerald-200">OK</span>
-              </motion.div>
-              <motion.div whileHover={{ x: 3 }} className="bg-carbon-05/80 p-4 rounded-2xl border border-carbon-20/90 shadow-2xs text-carbon-80 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                <span>[RUNNING] Firebase Firestore real-time sync worker active</span>
-                <span className="px-2.5 py-1 rounded-full bg-amber-100 text-amber-900 font-bold w-fit border border-amber-200">LIVE</span>
-              </motion.div>
-            </div>
+            <h2 className="text-xl font-bold text-carbon-90">Pipeline status, as the snapshot reports it</h2>
+            <p className="text-xs text-carbon-60 leading-relaxed">
+              Read from the committed forecast snapshot on every load. This page does not quote run logs it did not
+              read: the three log lines that used to sit here were literals, and a pipeline status a reader cannot
+              verify is worse than no status at all.
+            </p>
+
+            {snapshotLoading && <DataStateLoading label="Reading the forecast snapshot" loader={false} />}
+
+            {!snapshotLoading && snapshotError && (
+              <DataStateError
+                title="The forecast snapshot could not be read"
+                detail={snapshotError}
+                onRetry={() => setReloadNonce((n) => n + 1)}
+              />
+            )}
+
+            {!snapshotLoading && !snapshotError && provenance.length === 0 && (
+              <DataStateEmpty
+                title="The snapshot does not state its provenance"
+                body="The file loaded, but carries none of the fields that say when it was produced and by what."
+              />
+            )}
+
+            {!snapshotLoading && !snapshotError && provenance.length > 0 && (
+              <dl className="divide-y divide-carbon-10 border border-carbon-20 bg-white">
+                {provenance.map((row) => (
+                  <div key={row.label} className="flex flex-col gap-1 p-4 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6">
+                    <dt className="text-xs font-semibold text-carbon-60">{row.label}</dt>
+                    <dd className="break-words font-mono text-xs text-carbon-90 sm:text-right">{row.value}</dd>
+                  </div>
+                ))}
+              </dl>
+            )}
           </motion.div>
         )}
 

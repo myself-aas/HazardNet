@@ -46,7 +46,17 @@ export interface ForecastRecord {
   evapotranspirationMm: number;
 }
 
+/**
+ * Where a summary came from. The client falls back to a built-in default when neither the API nor
+ * the committed artifact answers, and a page that renders that default as data is quoting numbers
+ * nobody measured (audit finding X-P0-1's class). `'fallback'` means: show the empty state, not the
+ * numbers.
+ */
+export type EventsSummarySource = 'api' | 'artifact' | 'fallback';
+
 export interface EventsSummary {
+  /** Which of the three paths in `fetchEventsSummary` produced this object. */
+  source?: EventsSummarySource;
   totalEvents: number;
   yearRange: [number, number];
   totalDistricts: number;
@@ -155,19 +165,29 @@ export async function fetchAllCompactEvents(): Promise<ClimaticEvent[]> {
   return [];
 }
 
-export async function fetchAllForecastRecords(): Promise<ForecastRecord[]> {
-  if (cachedForecasts) return cachedForecasts;
+export interface ForecastFeed {
+  records: ForecastRecord[];
+  /** `'none'` means the artifact did not answer - not that the run published no records. */
+  source: 'artifact' | 'none';
+}
+
+export async function fetchForecastFeed(): Promise<ForecastFeed> {
+  if (cachedForecasts) return { records: cachedForecasts, source: 'artifact' };
   try {
     const res = await fetch('/data/hazardnet_forecasts_latest.json');
     const ct = res.headers.get('content-type') || '';
     if (res.ok && !ct.includes('text/html')) {
       cachedForecasts = await res.json();
-      return cachedForecasts!;
+      return { records: cachedForecasts!, source: 'artifact' };
     }
   } catch (err) {
     console.warn('Failed to load forecast records JSON', err);
   }
-  return [];
+  return { records: [], source: 'none' };
+}
+
+export async function fetchAllForecastRecords(): Promise<ForecastRecord[]> {
+  return (await fetchForecastFeed()).records;
 }
 
 export async function fetchEventsSummary(): Promise<EventsSummary> {
@@ -180,7 +200,7 @@ export async function fetchEventsSummary(): Promise<EventsSummary> {
     if (res.ok && !ct.includes('text/html')) {
       const json = await res.json();
       if (json.data) {
-        cachedSummary = json.data;
+        cachedSummary = { ...json.data, source: 'api' };
         return cachedSummary!;
       }
     }
@@ -193,7 +213,7 @@ export async function fetchEventsSummary(): Promise<EventsSummary> {
     const res = await fetch('/data/climatic_hazards_summary.json');
     const ct = res.headers.get('content-type') || '';
     if (res.ok && !ct.includes('text/html')) {
-      cachedSummary = await res.json();
+      cachedSummary = { ...(await res.json()), source: 'artifact' };
       return cachedSummary!;
     }
   } catch {
@@ -202,6 +222,7 @@ export async function fetchEventsSummary(): Promise<EventsSummary> {
 
   // 3. Fallback default summary if no static archive is loaded
   cachedSummary = {
+    source: 'fallback',
     totalEvents: 3062,
     yearRange: [2000, 2026],
     totalDistricts: 64,

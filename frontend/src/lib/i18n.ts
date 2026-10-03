@@ -190,6 +190,7 @@ const EN = {
   'alerts.page.official': 'Confirm with the official source before you act:',
   'alerts.page.csv': 'Download all alerts (CSV)',
   'alerts.page.assessed': '{count} districts assessed in this run',
+  'alerts.page.retry': 'Try again',
   'alerts.page.noneAssessed': 'This run did not report how many districts it assessed.',
   'alerts.page.policyNote':
     'Levels, thresholds and the human-review rule come from the policy document below, not from ' + 'this page.',
@@ -577,6 +578,7 @@ const BN: Record<string, string> = {
   'alerts.page.official': 'ব্যবস্থা নেওয়ার আগে সরকারি সূত্রে যাচাই করুন:',
   'alerts.page.csv': 'সব সতর্কবার্তা ডাউনলোড (CSV)',
   'alerts.page.assessed': 'এই রানে {count}টি জেলা পর্যালোচনা করা হয়েছে',
+  'alerts.page.retry': 'আবার চেষ্টা করুন',
   'alerts.page.noneAssessed': 'এই রান কতটি জেলা পর্যালোচনা করেছে তা জানায়নি।',
   'alerts.page.policyNote': 'স্তর, থ্রেশহোল্ড ও মানব-পর্যালোচনার নিয়ম এই পাতার নয়, নিচের নীতি-দলিল থেকে আসে।',
   'alerts.legend.title': 'সতর্কতার মাত্রা',

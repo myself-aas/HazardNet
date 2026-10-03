@@ -20,6 +20,7 @@ import { initializeAttributionCapture } from './services/conversionTracking';
 import { RequireSuperAdmin } from './components/blog/RequireSuperAdmin';
 import { InfinityLoader } from './components/brand';
 import { useMeridianTheme } from './components/meridian/motion';
+import { useRouteSeo } from './hooks/useRouteSeo';
 import { Toaster } from 'react-hot-toast';
 
 // Route-level code splitting (FE-01): every page is a lazy chunk so the
@@ -61,6 +62,20 @@ const ArticlePage = lazy(() => import('./components/ArticlePage'));
 // site-routes.json the prerenderer reads; only the live artifact panels are React.
 const FrontDoor = lazy(() => import('./pages/FrontDoor'));
 const HistoricalCatalogPage = lazy(() => import('./pages/HistoricalCatalogPage').then((m) => ({ default: m.HistoricalCatalogPage })));
+
+/**
+ * Route-level `<head>` metadata (backlog 13).
+ *
+ * `usePageSeo` used to be called by twelve pages, one import at a time - a rule you can forget the
+ * moment a route is added. This wrapper sits above `<Routes>` and resolves the route from the
+ * location, so every route in the table below - including the 404 and the generated content pages -
+ * gets its title, description, canonical and robots directive without opting in. A page that needs
+ * the hook's return value (`ArticlePage`) still calls it and wins, because its effect runs later.
+ */
+const RouteMetadata: React.FC<{ pathname: string }> = ({ pathname }) => {
+  useRouteSeo(pathname);
+  return null;
+};
 
 /**
  * Generated content pages (Phase 8). The hazard methodology pages, the district outlooks and the
@@ -115,7 +130,9 @@ const RouteFallback = () => {
 const queryClient = new QueryClient();
 
 const AppRoutes: React.FC<{ location: ReturnType<typeof useLocation> }> = ({ location }) => (
-  <Routes location={location}>
+  <>
+    <RouteMetadata pathname={location.pathname} />
+    <Routes location={location}>
               {/* `/` is the editorial front door; the console lives at `/live`. The
                   `/home*` and `/forecast/overview` paths are kept as console deep links
                   because they were published for the whole life of the project. */}
@@ -217,7 +234,8 @@ const AppRoutes: React.FC<{ location: ReturnType<typeof useLocation> }> = ({ loc
               <Route path="/profile" element={<UserProfilePage />} />
               <Route path="/u/:username" element={<PublicProfilePage />} />
               <Route path="*" element={<NotFoundPage />} />
-  </Routes>
+    </Routes>
+  </>
 );
 
 const AppContent: React.FC = () => {

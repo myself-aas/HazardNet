@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { Compass } from 'lucide-react';
 import toast from 'react-hot-toast';
 import MaterialIcon from '../components/MaterialIcon';
 import Breadcrumbs from '../components/Breadcrumbs';
@@ -100,7 +101,7 @@ export const BlogArticlePage: React.FC = () => {
   if (notFound || !article) {
     return (
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="max-w-3xl mx-auto min-h-[55vh] flex flex-col items-center justify-center gap-4 text-center px-4">
-        <span className="text-4xl">🧭</span>
+        <Compass className="h-10 w-10 text-carbon-40" aria-hidden="true" />
         <h1 className="text-xl font-black text-carbon-90">Article not found</h1>
         <p className="text-sm text-carbon-60 max-w-md leading-relaxed">
           {error
