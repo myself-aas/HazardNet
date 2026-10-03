@@ -340,7 +340,7 @@ export const HeroCinematicBackground: React.FC<{ paused?: boolean }> = ({ paused
           zIndex: 4,
           pointerEvents: 'none',
           background:
-            'linear-gradient(180deg, rgba(0,0,0,0.32) 0%, rgba(5,7,14,0.18) 32%, rgba(5,7,14,0.68) 72%, rgba(5,7,14,0.92) 100%)',
+            'linear-gradient(180deg, rgba(5,12,24,0.12) 0%, rgba(5,12,24,0.08) 32%, rgba(5,12,24,0.42) 72%, rgba(5,12,24,0.62) 100%)',
         }}
       />
 

@@ -173,23 +173,18 @@ function systemTheme(): 'light' | 'dark' {
  * Apple's system colours adapt automatically; on the web that adaptation is this hook.
  * 'system' follows the OS and follows it live if the OS changes.
  *
- * The default is 'system' - the same answer Phase 9 of MIGRATION_PLAN.md always wanted, and the
- * one P0-1 of the 2026-10-03 audit said could not be shipped until dark was complete. It was
- * held at 'light' while dark was 3.7% applied (an iOS user opening the app in the evening got a
- * light page with a dark panel nested inside it). It is now a theme layer:
- * `frontend/src/styles/dark.css` re-points the palette the utilities already resolve through, so
- * a page does not need `dark:` twins to be dark. `__tests__/darkTheme.test.js` is the gate - it
- * fails if a colour step is un-mapped, if a documented pair drops under AA, or if a colour family
- * appears in the source that the theme layer neither remaps nor allow-lists as a data encoding.
+ * The default is intentionally 'light'. HazardNet's public front door follows Apple's light
+ * editorial presentation: white canvas, dark ink, and a dark hero only where the hero needs
+ * cinematic contrast. Visitors can still choose dark or system from the theme control.
  */
 export function useMeridianTheme() {
   const [theme, setTheme] = useState<MeridianThemeName>(() => {
-    if (typeof window === 'undefined') return 'system';
+    if (typeof window === 'undefined') return 'light';
     try {
       const stored = window.localStorage.getItem(STORAGE_KEY);
-      return stored === 'light' || stored === 'dark' || stored === 'system' ? stored : 'system';
+      return stored === 'light' || stored === 'dark' || stored === 'system' ? stored : 'light';
     } catch {
-      return 'system';
+      return 'light';
     }
   });
 
