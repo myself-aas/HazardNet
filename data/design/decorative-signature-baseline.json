@@ -1,0 +1,127 @@
+{
+  "why": [
+    "Ledger for backlog 16 of docs/audits/2026-10-03-frontend-design-system-audit.md:",
+    "\"delete the 19 decorative status dots; de-duplicate the 15 md:grid-cols-3 marketing rows\".",
+    "The audit's own rule is the test: keep the dots that encode severity or state, delete the ones that",
+    "decorate a label that already says the same thing; equal three-card rows are acceptable for reference",
+    "indexes and banned for feature/marketing rows.",
+    "statusDots        - what survives the sweep, with the reason each one is data rather than ornament.",
+    "                    A dot is counted as `rounded-full` + a small square size + a `bg-<token>` colour.",
+    "equalThreeCardRows- every three-column row on the page surface, with what kind of content it holds.",
+    "                    `kind: \"cards\"` is a feature/card row: its signature must be unique across pages,",
+    "                    so the same three-across shape cannot be pasted onto a second marketing page.",
+    "Every entry is asserted against a live scan of frontend/src by __tests__/designSignature.test.js,",
+    "so a new decorative dot or a pasted card row fails the suite instead of shipping quietly."
+  ],
+  "statusDots": {
+    "kept": {
+      "components/BangladeshSvgMap.tsx": {
+        "count": 4,
+        "reason": "one live-alert marker on the map plus the three severity swatches of the map legend: the colour is the datum, and the legend is what makes the map readable."
+      },
+      "components/DistrictRiskMap.tsx": {
+        "count": 1,
+        "reason": "the risk marker itself, coloured by the model's category - the same role the legend swatches play."
+      },
+      "components/LiveMapView.tsx": {
+        "count": 1,
+        "reason": "a circular close *control* (44px, holds an icon), matched by the size rule but not a status dot; kept so the detector rule stays simple."
+      },
+      "components/frontdoor/RunVisual.tsx": {
+        "count": 2,
+        "reason": "nodes in the run timeline diagram, positioned by that diagram's geometry rather than used as bullet decoration."
+      }
+    },
+    "deleted": {
+      "count": 23,
+      "note": "23 decorations across 17 files: pulse/ping dots beside labels that already stated the state (\"Offline Edge Mode Active\", \"Connected\", \"Latest articles\", section headings, the command palette's pulse badge, the voice advisor's status dot, the HUD and skeleton pips), plus the two list bullets in AdvisoriesPage that a real `<ul>` marker now covers. Severity encoders were kept; see `kept`."
+    }
+  },
+  "equalThreeCardRows": {
+    "rows": {
+      "pages/AdvisoriesPage.tsx": {
+        "grid-cols-1 lg:grid-cols-3 md:grid-cols-2": {
+          "kind": "index",
+          "reason": "the sector index and the documentation index - reference lists whose length is data, not a marketing row.",
+          "count": 2
+        },
+        "grid-cols-2 lg:grid-cols-6 sm:grid-cols-3": {
+          "kind": "index",
+          "reason": "the contact strip inside one advisory: short key/value tiles, six across on a desktop."
+        }
+      },
+      "pages/Blogs.tsx": {
+        "grid-cols-1 lg:grid-cols-3 md:grid-cols-2": {
+          "kind": "index",
+          "reason": "the article index; the count comes from the content feed."
+        }
+      },
+      "pages/Contact.tsx": {
+        "grid-cols-1 lg:grid-cols-3": {
+          "kind": "index",
+          "reason": "contact channels, one column each; the third is the response-time note."
+        }
+      },
+      "pages/Dashboard.tsx": {
+        "grid-cols-1 md:grid-cols-3": {
+          "kind": "console",
+          "reason": "the live console's three stacked panels - dense product UI, which the skill's §13 puts out of scope for this rule."
+        },
+        "grid-cols-2 sm:grid-cols-3": {
+          "kind": "stats",
+          "reason": "national stat tiles, generated from the snapshot."
+        }
+      },
+      "pages/DivisionsPage.tsx": {
+        "grid-cols-2 sm:grid-cols-3": {
+          "kind": "stats",
+          "reason": "coverages tiles in the division header."
+        },
+        "grid-cols-1 min-[1200px]:grid-cols-3 min-[880px]:grid-cols-2": {
+          "kind": "index",
+          "reason": "the division index grid, one card per division."
+        }
+      },
+      "pages/HazardDetailPage.tsx": {
+        "grid-cols-2 sm:grid-cols-3": {
+          "kind": "stats",
+          "reason": "the three figures that frame the hazard."
+        }
+      },
+      "pages/HazardsPage.tsx": {
+        "grid-cols-2 sm:grid-cols-3": {
+          "kind": "stats",
+          "reason": "coverages tiles in the hazard header."
+        },
+        "grid-cols-1 min-[1200px]:grid-cols-3 min-[880px]:grid-cols-2": {
+          "kind": "index",
+          "reason": "the hazard index grid, one card per hazard."
+        }
+      },
+      "pages/UseCases.tsx": {
+        "grid-cols-1 sm:grid-cols-3": {
+          "kind": "stats",
+          "reason": "the active case study's own figures; the labels and values come from the case data."
+        }
+      },
+      "pages/UserDashboardPage.tsx": {
+        "grid-cols-2 sm:grid-cols-3": {
+          "kind": "stats",
+          "reason": "a definition list of account figures, not cards."
+        }
+      },
+      "pages/dashboard/BlogEditorPage.tsx": {
+        "grid-cols-1 xl:grid-cols-3": {
+          "kind": "console",
+          "reason": "the editor's three panes; dense product UI, mobile conversion is out of scope for the rule."
+        }
+      },
+      "pages/dashboard/BlogStudioPage.tsx": {
+        "grid-cols-3": {
+          "kind": "console",
+          "reason": "the studio's tool tray; dense product UI."
+        }
+      }
+    }
+  }
+}

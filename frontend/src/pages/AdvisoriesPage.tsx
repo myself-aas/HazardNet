@@ -646,12 +646,9 @@ export const AdvisoriesPage: React.FC = () => {
                     <span className="text-xs font-mono font-black text-carbon-90 uppercase tracking-wider block">
                       Quantitative Technical Parameters:
                     </span>
-                    <ul className="space-y-1 text-xs text-carbon-60">
+                    <ul className="list-disc list-outside space-y-1 pl-4 text-xs text-carbon-60">
                       {step.technicalSpecs.map((spec, sIdx) => (
-                        <li key={sIdx} className="flex items-start gap-2">
-                          <span className="w-1.5 h-1.5 rounded-full bg-carbon-40 shrink-0 mt-1.5"></span>
-                          <span>{spec}</span>
-                        </li>
+                        <li key={sIdx}>{spec}</li>
                       ))}
                     </ul>
                   </div>

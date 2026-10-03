@@ -141,7 +141,8 @@ html, body {
      carbon-05, so it clears AA for normal text — unlike the #ff0000 it replaces,
      which was never contrast-checked. #0D0D0D is 19.4:1 on white. */
   --hn-brand-paper: #fefefe;
-  --hn-brand-black: #000000;
+  /* `--hn-brand-black: #000000` was declared here and never referenced; pure black is banned as a
+     surface, so the token is gone rather than repointed. Brand ink is `--hn-brand-ink` below. */
   --hn-brand-graphite: #777777;
   --hn-brand-red: #970002;
   --hn-brand-red-dark: #7B1D21;

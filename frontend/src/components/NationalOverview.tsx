@@ -759,7 +759,6 @@ export const NationalOverview: React.FC<NationalOverviewProps> = ({
         <div className="bg-white border border-sky-200 rounded-3xl p-6 space-y-4 shadow-sm">
           <div className="flex items-center justify-between">
             <h4 className="text-sm font-black text-carbon-90 flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-sky-500 animate-ping"></span>
               <span>Matching Districts ({filteredDistricts.length} Found)</span>
               {selectedHazardFilter && (
                 <span className="px-2 py-0.5 bg-rose-100 text-rose-800 rounded text-xs font-mono">

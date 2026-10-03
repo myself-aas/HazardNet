@@ -71,7 +71,6 @@ export const GlideResourcePopover: React.FC<GlideResourcePopoverProps> = ({
         <div className="flex items-start justify-between gap-3 border-b border-carbon-80 pb-3 mb-3">
           <div>
             <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-blue-500 animate-pulse" />
               <h4 className="text-sm font-bold text-white tracking-tight">
                 Multilateral GLIDE Registry
               </h4>

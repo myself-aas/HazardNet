@@ -406,9 +406,6 @@ export const LiveVoiceAdvisor: React.FC<LiveVoiceAdvisorProps> = ({
         <div className="flex items-center gap-2.5">
           <div className="relative flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-700">
             <Radio className={`w-4 h-4 ${status === 'listening' || status === 'speaking' ? 'animate-pulse' : ''}`} />
-            {status === 'speaking' && (
-              <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-sky-500 rounded-full animate-ping" />
-            )}
           </div>
           <div>
             <div className="flex items-center gap-2">
@@ -420,12 +417,6 @@ export const LiveVoiceAdvisor: React.FC<LiveVoiceAdvisorProps> = ({
               </span>
             </div>
             <div className="flex items-center gap-1.5 text-xs text-carbon-60">
-              <span className={`w-1.5 h-1.5 rounded-full ${
-                status === 'speaking' ? 'bg-sky-500 animate-pulse' :
-                status === 'listening' ? 'bg-emerald-500' :
-                status === 'connecting' ? 'bg-amber-400 animate-ping' :
-                'bg-carbon-40'
-              }`} />
               <span className="capitalize font-medium">
                 {status === 'speaking' ? 'HazardNet Speaking...' :
                  status === 'listening' ? (isMuted ? 'Mic Muted' : 'Listening for your voice...') :

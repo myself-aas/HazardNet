@@ -495,7 +495,6 @@ export default function ChatBot() {
                     AI
                   </div>
                   <div className="bg-white border border-carbon-20 px-4 py-3 rounded-xl flex items-center gap-2.5 shadow-2xs">
-                    <span className="w-2 h-2 rounded-full bg-nasa-blue animate-ping" />
                     <span className="text-xs text-carbon-70 font-medium">
                       {groundingMode === 'maps' 
                         ? 'Grounding with Google Maps data (gemini-3.5-flash)...' 

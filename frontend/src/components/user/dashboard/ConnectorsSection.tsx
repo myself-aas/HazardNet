@@ -55,7 +55,7 @@ const ConnectorCard: React.FC<{
         </span>
         {connected && (
           <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-extrabold uppercase tracking-wider text-carbon-80">
-            <span className="h-1.5 w-1.5 rounded-full bg-nasa-green" /> Connected
+            Connected
           </span>
         )}
       </div>

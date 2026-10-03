@@ -69,7 +69,6 @@ export const Blogs: React.FC = () => {
       {liveArticles.length > 0 && (
         <section className="space-y-3" data-testid="live-articles">
           <h2 className="text-sm font-black text-carbon-90 uppercase tracking-wider font-mono flex items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-nasa-green animate-pulse" />
             Latest articles
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

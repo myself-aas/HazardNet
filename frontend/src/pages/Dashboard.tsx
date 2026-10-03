@@ -303,14 +303,12 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
             of the stage on the home console, so the padding returns to the tighter value. */}
         <header className="pointer-events-none absolute inset-x-0 top-0 z-[var(--z-sticky)] flex items-start justify-between gap-3 p-3 pt-[calc(var(--navbar-height)+8px)] sm:p-5">
           <div className="pointer-events-auto flex min-w-0 items-center gap-2 glass-panel px-3.5 py-2">
-            <span className="h-2 w-2 shrink-0 animate-pulse rounded-full bg-nasa-red" aria-hidden="true" />
             <div className="min-w-0">
               <p className="truncate text-xs font-bold uppercase tracking-[0.14em] text-carbon-60">HazardNet / live</p>
               <p className="truncate text-xs font-bold text-carbon-90">National situational map</p>
             </div>
           </div>
           <div className="pointer-events-auto hidden items-center gap-2 glass-panel px-3.5 py-2 text-xs font-bold uppercase tracking-[0.12em] text-carbon-60 sm:flex">
-            <span className="inline-block h-2 w-2 rounded-full bg-emerald-600" aria-hidden="true" />
             {predictionSource === 'live' ? 'Forecast synced' : 'Baseline coverage'}
           </div>
         </header>
@@ -433,7 +431,6 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
         <div className="space-y-2.5 sm:space-y-3 md:space-y-4 flex-1 min-w-0">
           <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             <span className="px-2.5 sm:px-3.5 py-1 rounded-full text-xs font-mono font-bold uppercase tracking-wider bg-nasa-red/10 text-nasa-red-shade border border-nasa-blue/20 flex items-center gap-1.5 shrink-0">
-              <span className="w-1.5 h-1.5 rounded-full bg-nasa-red animate-pulse"></span>
               <span className="hidden xs:inline">Live GIS</span><span className="xs:hidden">GIS</span>
             </span>
             <span className="text-carbon-30 hidden sm:inline shrink-0">•</span>
@@ -652,9 +649,6 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
                           <div className="min-w-0 flex-1">
                             <h4 className="text-xs sm:text-sm font-black text-carbon-90 flex items-center gap-1.5 truncate">
                               <span className="truncate">{dist.name}</span>
-                              {isSelected && (
-                                <span className="w-2 h-2 rounded-full bg-nasa-red animate-ping shrink-0"></span>
-                              )}
                             </h4>
                             <p className="text-xs text-carbon-60 font-medium mt-0.5">
                               <span className="font-bold text-carbon-70">{dist.division}</span>
@@ -691,7 +685,6 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
               <div className="bg-white border border-carbon-10 rounded-lg sm:rounded-[20px] md:rounded-[28px] p-3 sm:p-4 space-y-3 sm:space-y-4">
                 <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-2 px-1 sm:px-3 text-xs">
                   <div className="flex items-center gap-1.5 sm:gap-2 font-extrabold text-carbon-80 min-w-0">
-                    <span className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-nasa-red animate-pulse shrink-0"></span>
                     <span className="truncate">GIS Map</span>
                     <span className="text-xs font-mono text-carbon-60 bg-carbon-10 px-1.5 sm:px-2 py-0.5 rounded hidden lg:inline truncate">
                       {selectedDistrict ? `${selectedDistrict.name}` : 'Active'}
@@ -1235,7 +1228,6 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-2">
                   <div>
                     <h3 className="text-xl sm:text-2xl font-black text-carbon-90 flex items-center gap-2.5">
-                      <span className="w-3 h-3 rounded-full bg-nasa-red animate-pulse"></span>
                       <span>National Predictive AI Risk Analysis & Advisory</span>
                     </h3>
                     <p className="text-xs text-carbon-60 font-mono mt-0.5">

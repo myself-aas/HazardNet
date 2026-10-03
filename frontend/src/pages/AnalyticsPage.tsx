@@ -128,9 +128,9 @@ export const AnalyticsAnalyticsPage: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.25 }}
-            className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6"
+            className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6"
           >
-            <motion.div whileHover={{ y: -4, scale: 1.01 }} whileTap={{ scale: 0.98 }} className="bg-white border border-carbon-20/90 rounded-3xl p-6 shadow-md hover:shadow-lg transition-all space-y-3 cursor-pointer">
+            <motion.div whileHover={{ y: -4, scale: 1.01 }} whileTap={{ scale: 0.98 }} className="bg-white border border-carbon-20/90 rounded-3xl p-6 shadow-md hover:shadow-lg transition-all space-y-3 cursor-pointer md:col-span-2">
               <div className="text-xs font-mono text-carbon-60 font-bold">INFERENCE LATENCY</div>
               <div className="text-2xl font-black text-carbon-60">Not published</div>
               <p className="text-xs text-carbon-60 leading-relaxed">

@@ -142,7 +142,9 @@ export const About: React.FC = () => {
           Agro-Ecological Vulnerability Context in Bangladesh
         </h2>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-base text-carbon-70">
+        {/* Editorial split rather than a third three-across card row: the lead case reads full
+            width at md+, the remaining three pair off below it. */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-base text-carbon-70">
           {[
             {
               title: 'Haor Basin & Pre-Monsoon Flash Floods',
@@ -172,7 +174,7 @@ export const About: React.FC = () => {
             <motion.div
               key={idx}
               whileHover={{ scale: 1.01 }}
-              className="bg-carbon-05 border border-carbon-20 p-4 space-y-2 transition-all"
+              className={`bg-carbon-05 border border-carbon-20 p-4 space-y-2 transition-all ${idx === 0 ? 'md:col-span-2' : ''}`}
             >
               <h3 className="font-bold text-carbon-90">
                 {item.title}

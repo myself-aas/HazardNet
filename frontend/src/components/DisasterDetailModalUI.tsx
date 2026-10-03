@@ -636,7 +636,6 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
             <div className="w-12 h-1.5 bg-carbon-30 rounded-full mb-2" />
             <div className="w-full flex items-center justify-between">
               <div className="flex items-center gap-2 min-w-0">
-                <span className="w-2.5 h-2.5 rounded-full bg-nasa-red animate-pulse shrink-0"></span>
                 <h3 id="disaster-detail-modal-title-mobile" className="text-base font-black text-carbon-90 tracking-tight leading-none truncate">
                   {data.districtName} Hazard Report
                 </h3>

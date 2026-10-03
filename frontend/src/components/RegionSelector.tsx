@@ -115,7 +115,6 @@ export const RegionSelector: React.FC<RegionSelectorProps> = ({
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-carbon-20 pb-5">
         <div className="space-y-1">
           <div className="flex items-center gap-2.5">
-            <span className="w-3 h-3 rounded-full bg-nasa-red animate-pulse shadow-xs"></span>
             <h3 className="text-lg sm:text-xl font-extrabold text-carbon-90 tracking-tight">
               Spatial Region & Hazard Selector
             </h3>
@@ -290,7 +289,6 @@ export const RegionSelector: React.FC<RegionSelectorProps> = ({
       {/* Active Selected District / Division Info Summary Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-carbon-05 rounded-2xl border border-carbon-20 text-xs sm:text-sm font-mono shadow-xs">
         <div className="flex flex-wrap items-center gap-2.5">
-          <span className="w-2.5 h-2.5 rounded-full bg-nasa-red shrink-0"></span>
           <span className="text-carbon-60 font-medium">Active Location:</span>
           <strong className="text-carbon-90 font-extrabold text-sm">{currentDistrict.name} District</strong>
           <span className="text-carbon-30 hidden sm:inline">•</span>

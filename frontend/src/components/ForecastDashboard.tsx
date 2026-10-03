@@ -319,7 +319,6 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
                     : 'bg-carbon-10 border-carbon-20 text-carbon-70'
                 }`}
               >
-                <span className={`w-2 h-2 rounded-full ${dbSource === 'firestore' ? 'bg-emerald-500 animate-pulse' : 'bg-carbon-40'}`} />
                 <span>{dbSource === 'firestore' ? 'Firestore Live Sync' : 'Local Forecast Baseline'}</span>
               </span>
             </div>

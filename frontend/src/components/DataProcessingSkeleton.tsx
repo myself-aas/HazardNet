@@ -79,7 +79,6 @@ export const DataProcessingSkeleton: React.FC<DataProcessingSkeletonProps> = ({
       <div className="relative z-20 flex items-center justify-between border-b border-carbon-20 pb-3 mb-4">
         <div className="flex items-center gap-3">
           <div className="relative flex items-center justify-center w-8 h-8 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 shadow-xs" aria-hidden="true">
-            <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-nasa-red animate-ping" />
           </div>
 
           <div>
@@ -99,7 +98,6 @@ export const DataProcessingSkeleton: React.FC<DataProcessingSkeletonProps> = ({
           {/* Elapsed time is measured, not invented — the previous "LATENCY: 18ms"
               was a hardcoded constant unrelated to anything the app was doing. */}
           <div className="hidden sm:flex items-center gap-1.5 font-mono text-xs text-carbon-70 bg-carbon-10 px-3 py-1 rounded-lg border border-carbon-20">
-            <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" aria-hidden="true" />
             <span className="font-bold">Elapsed {elapsedSeconds}s</span>
           </div>
 
@@ -168,7 +166,6 @@ export const DataProcessingSkeleton: React.FC<DataProcessingSkeletonProps> = ({
                   <div className="w-1/2 h-1/2 bg-amber-400/20 origin-bottom-right rounded-tl-full border-r border-amber-500/60" />
                 </div>
 
-                <div className="w-2.5 h-2.5 rounded-full bg-nasa-red" />
               </div>
 
               <div className="mt-3 font-mono text-xs text-carbon-60 font-bold tracking-widest text-center">

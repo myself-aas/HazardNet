@@ -17,7 +17,6 @@ export const OfflineBadge: React.FC = () => {
 
   return (
     <div className="flex items-center gap-1.5 px-2.5 py-1 bg-amber-950/80 border border-amber-500/50 rounded-md text-amber-300 text-xs font-mono font-semibold">
-      <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
       <span>Offline Edge Mode Active</span>
     </div>
   );
