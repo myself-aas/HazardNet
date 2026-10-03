@@ -276,9 +276,11 @@ Two reasons this matters more for the port than for the web: an emoji is the onl
 
 `.glass-panel` (`index.css:448-456`) uses `blur(14px) saturate(1.35)` and is applied to fixed/sticky HUD chips (`Dashboard.tsx` attribution pill, GIS status pill, coords pill). That is the *correct* placement - blur on fixed chrome, never on a scrolling container - and the measurement confirms it: zero `backdrop-blur` utilities in `Dashboard.tsx` and `LiveMapView.tsx`. But in React Native this exact pattern is the one to drop: a `BlurView` layered over a native map view forces an offscreen render pass per frame on Android and is a documented jank source. **Keep the translucency and the hairline ring; drop the blur** in the native map screen, and let the map's own compositing handle it.
 
-#### V-P2-5 - Tooltips are the only label on most icon-only controls
+#### V-P2-5 - Tooltips on icon-only controls
 
-Measured across the six files that make up the route: **85 `<button>` elements, 25 `aria-label` attributes, 26 `title=` attributes.** The icon-only clusters are the problem: `LiveMapView` 47 / 12 / 6, `MapToolbar` 11 / 3 / 5. `title` is invisible to touch and does not exist in React Native at all, so `MapToolbar` is the worst case at 11 controls with 3 labels; it is also the control cluster most used one-handed, outdoors, in a hurry. Fix for the web is one label each; fix for the port is a bottom-sheet toolbar of labelled rows below `sm`, which is also the Material 3 pattern.
+Measured across the files that make up the route: **85 `<button>` elements, 25 `aria-label` attributes, 26 `title=` attributes** — `LiveMapView` 47 / 12 / 6, `MapToolbar` 11 / 3 / 5, Dashboard 18 / 2 / 10, `DistrictForecastCard` 5 / 4 / 2, `MapLegend` 1 / 1 / 1, `Map` 2 / 1 / 0, `Navbar` 1 / 2 / 2.
+
+**Correction (2026-10-03, resolution pass).** The original finding above read these numbers as "tooltips are the only label on most icon-only controls". A direct audit of every `<button>` element in those files — text content, `aria-label`, `aria-labelledby`, then `title` — finds **zero controls that are both icon-only and unnamed**: each icon-only button carries an `aria-label`, and the `title=` attributes sit on buttons that already have visible text (they are extra hints, not the label). The remaining true statement is the port half: `title` does not exist in React Native, so any hint that only lives in a tooltip has to be re-expressed in the native shell. On the web there is nothing to fix here, and the accessibility work this finding asks for is already done.
 
 #### V-P2-6 - Two full-bleed surfaces, two opposite navbar treatments
 
@@ -400,3 +402,59 @@ console.log(r.h1.split(/\s+/).length,'word H1;',r.standfirst.split(/\s+/).length
 - `design-taste-frontend` - §0 design read and dials (per surface), the hero viewport budget, the eyebrow/label budgets, the emoji and glyph bans, the `window`-scroll ban (already clean), the mobile cheap-mode requirement.
 - `redesign-existing-projects` - the scan/diagnose/fix protocol, the "keep the stack, small reviewable diffs" constraint, the fix-priority order (typography -> colour -> states -> layout -> components), the requirement to verify a dependency exists before proposing it (`tailwindcss ^4.3.3`, `framer-motion ^13`, `lucide-react ^1.28.0` are all present; no new dependency is proposed anywhere in this document).
 - `high-end-visual-design` - mobile collapse below 768px for asymmetric layouts, no `h-screen`, backdrop-blur only on fixed/sticky, no arbitrary z-index, the Ethereal Glass archetype applied to the hero and rejected for the console.
+
+---
+
+## 8. Resolution ledger (implementation pass, 2026-10-03)
+
+Status of every finding and backlog row, so nothing in this document is left ambiguous. "Fixed"
+means the fix is in the tree with a test or gate behind it; "deferred" carries the reason and the
+condition that would unblock it. The pass was committed as `2793cd6` plus a second commit covering
+this ledger; gates at the end of the pass: 1,626 jest tests green (2 suites skipped), `tsc` clean,
+`check:tokens` 99.8% with the new hex ratchet, `check:design:source` 0 outstanding, `check:brand`
+fully tokenised.
+
+### Findings
+
+| Finding | Status | Where the fix lives |
+|---|---|---|
+| H-P0-1 invented HUD telemetry | **Fixed** | The four literals (`GEO-SYNC`, coordinates, apex, sensor stream) are deleted; the HUD layer is decoration with `aria-hidden="true"` and no text styles. `__tests__/phase3RemotionHero.test.js` used to assert the strings and now asserts their absence, so restoring them fails the suite. |
+| H-P1-2 hero never enters cheap mode | **Fixed** | `applyBandwidthAttribute()` runs from `main.tsx` before first render; the hero's `shouldAnimate` includes `!lowBandwidth`; `useWebFrame` no longer starts a rAF in this mode and pins the end frame, so all four intro loops stop (not just the hero's) without blanking un-gated interpolations; the carousel drops to one slide. |
+| H-P1-3 hero is 2.2 phone screens | **Fixed for the prescribed remedy, residual deferred** | On `<sm` the standfirst clamps to three lines behind a `readMore`/`readLess` disclosure and the hero carries one primary CTA with two text links, so the primary action lands around y≈500. Residual: the proof card is still the first thing below the fold. Moving it above the CTA inverts the page's own hierarchy (claim before evidence) and hiding it removes the page's best content, so that reordering is deferred as a design decision, not a code task. |
+| H-P1-4 authority sentence at 2.45:1 | **Fixed** | Card scrim is `from-black/70 to-black/60`; worst case over `#e0e0e0` measured 6.40:1. |
+| H-P2-5 hero micro-issues | **Fixed** | Dead `backdrop-blur-sm` utilities gone (the pause control's real blur stays); `isTransparent` deleted; the carousel wrapper carries `contain: paint`; four resident raster layers become one under low bandwidth. |
+| L-P1-1 three equal CTAs | **Fixed** | One `intent="ink"` primary; methodology and scorecard are underlined text links, and the scorecard keeps its own section below. |
+| L-P1-2 nine navigation landmarks | **Fixed** | The five per-section rows, the empty-run alert row, the attribution row and the strip's link row are labelled lists; the page has exactly one `<nav>` (the on-this-page TOC). `FrontDoorLivePanels.test.tsx` now queries the counts list by hook rather than "any `<ul>`". |
+| L-P2-3 amber chip off-system | **Fixed** | The Bengali-draft notice is `bg-warning-surface` / `border-warning-border` with `text-carbon-90` — no stock amber remains on `/`. |
+| L-P2-4 667 KB of landscape JPEG | **Fixed** | Phones get 354×768 centre crops (`hero-<name>-portrait.jpg`, 31–55 KB) selected by a media query in `styles/hero-media.css` through `var(--hero-slide-<slug>, url(<landscape>))` — one asset per slide per device, zero cover-crop waste, density unchanged at 0.91 px/CSS px; the prerendered head preloads slide 1's two crops with `media` (the landscape URL cannot come from an inline React style and be seen by the preload scanner); low bandwidth keeps one slide. Deliberate deviation: selection is a media query, not `image-set()`, because this is art direction (aspect) rather than density, and `image-set()` cannot guarantee exactly one fetch. A ~900×1600 asset needs a re-render upstream — no source here has more than 768 vertical pixels — so that remains an asset task. |
+| V-P1-1 79 hex literals in the map stage | **Fixed** | `packages/design-system/src/mapPalette.ts`: `MAP_CHROME` references `HDS_NASA_TOKENS` values (not copies), `MAP_INTERACTIVE` / `MAP_RISK_RAMP` / `MAP_SENSOR_SITES` / `MAP_RADAR_BANDS` keep their shipped values as documented data encodings. Deviation from this audit's `components/map/mapPalette.ts` suggestion: the palette lives in the design-system package so the native map screen can import the same object, which is the point of the finding. `__tests__/mapPalette.test.js` fails on any hex literal in `LiveMapView.tsx`, on a chrome value that drifts from its token, or on an unused key. |
+| V-P1-2 `--navbar-height` omits the inset | **Fixed** | `index.css:333,347` are `calc(3.5rem + env(safe-area-inset-top, 0px))` / `calc(4rem + …)`; the GIS tab header and the floating panels use `calc(var(--navbar-height)+8px)`; the hero uses `calc(var(--navbar-height)+44px)`. Verification is arithmetic plus jsdom, not a notched device — flagged for a hardware pass. |
+| V-P1-3 nine emoji / bare glyphs | **Fixed** | All nine are `MaterialIcon` calls (`desktop_windows` and `straighten` were authored for the size presets); the disclosure caret is `expand_more` rather than `▾`. Nothing in the shipped UI is an emoji. |
+| V-P2-4 glass over a native map | **Fixed as a constraint, not as web code** | The web placement was already correct (blur only on fixed/sticky chrome; zero `backdrop-blur` utilities in the console). `apps/mobile` contains no `BlurView`/`expo-blur` import, so the native screens already follow the "translucency and hairline, no blur over the map" rule this finding asks for; it is recorded here so the port does not reintroduce it. |
+| V-P2-5 tooltips are the only label | **Not reproducible — corrected in place** | Direct audit of every button in the seven route files: zero controls are both icon-only and unnamed; every icon-only button has an `aria-label` and the `title=` attributes sit on text-labelled controls. The finding text above now records the corrected measurement. The native half stands: anything that lives only in a tooltip must be re-expressed in the port. |
+| V-P2-6 two opposite navbar treatments | **Fixed** | `isTransparent` is deleted, so there is one implementation and one rule: the bar is translucent over imagery (`/`) and solid over data (`/live`), decided in `Navbar.tsx` from the route. The native shell inherits that single rule. |
+
+### Backlog rows
+
+| # | Status | Note |
+|---|---|---|
+| 1 | **Fixed** | HUD is `aria-hidden` and its invented values are deleted. |
+| 2 | **Fixed** | Scrim `from-black/70 to-black/60`. |
+| 3 | **Fixed** | `data-low-bandwidth` at boot + `shouldAnimate` + `useWebFrame` off-switch. |
+| 4 | **Fixed** | `--navbar-height` carries the inset; both hard-coded duplicates are gone. |
+| 5 | **Fixed** | One primary CTA + clamp/disclosure on `<sm`. |
+| 6 | **Fixed (different location)** | `packages/design-system/src/mapPalette.ts`, so web and native share it. |
+| 7 | **Fixed** | Nine sites replaced; two glyphs authored. |
+| 8 | **Fixed** | Five per-section navs became lists; the TOC nav is the only one. |
+| 9 | **Closed — no fix required** | 85 buttons / 25 `aria-label` / 26 `title=` re-measured control by control: no unlabelled icon-only control exists (see V-P2-5). |
+| 10 | **Fixed** | Portrait crops + media-query selection + slide-1 preload + low-bandwidth single slide. |
+| 11 | **Fixed** | Chip is on the `hazard-warning` tokens; `isTransparent` deleted (one navbar rule, documented). |
+
+### What this pass did not do on these three surfaces
+
+- **The proof card above the fold on a phone** (H-P1-3 residual): a hierarchy decision, not a
+  mechanical one.
+- **A ~900×1600 hero asset**: no source pixels exist above 768 vertical; needs a re-render upstream.
+- **Hardware verification of the safe-area arithmetic** (V-P1-2): no notched device in this
+  environment; the values are derived from `env(safe-area-inset-top)` and asserted only as
+  arithmetic.

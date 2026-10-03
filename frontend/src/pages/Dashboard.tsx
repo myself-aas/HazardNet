@@ -129,7 +129,12 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
   const [savedMapHeight, setSavedMapHeight] = useState<'compact' | 'standard' | 'tall' | 'dynamic'>('standard');
   const [savedDistricts, setSavedDistricts] = useState<District[]>(() => {
     try {
-      const local = localStorage.getItem('shonchay_saved_districts');
+      // `shonchay_saved_districts` is the pre-rename brand key. Read it once so nobody loses the
+      // districts they saved, then stop writing it: a legacy product name must not travel into
+      // the native app, whose storage layer mirrors these keys (audit backlog item 18).
+      const local =
+        localStorage.getItem('hazardnet.savedDistricts') ??
+        localStorage.getItem('shonchay_saved_districts');
       if (local) return JSON.parse(local);
     } catch {
       // location lookup is optional — silently skip on failure
@@ -154,7 +159,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
         updated = [dist, ...prev];
       }
       try {
-        localStorage.setItem('shonchay_saved_districts', JSON.stringify(updated));
+        localStorage.setItem('hazardnet.savedDistricts', JSON.stringify(updated));
       } catch {
       // storage write is best-effort — skip on quota/private mode
     }
@@ -754,7 +759,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
  ? 'h-[680px]'
  : savedMapHeight === 'tall'
  ? 'h-[850px]'
- : 'h-[calc(100vh-220px)] min-h-[550px] max-h-[900px]'
+ : 'h-[calc(100dvh-220px)] min-h-[550px] max-h-[900px]'
  }`}
                 >
                   <Map
@@ -767,7 +772,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
                         ? 'h-[680px]'
                         : savedMapHeight === 'tall'
                         ? 'h-[850px]'
-                        : 'h-[calc(100vh-220px)] min-h-[550px] max-h-[900px]'
+                        : 'h-[calc(100dvh-220px)] min-h-[550px] max-h-[900px]'
                     }
                     onOpenDisasterModal={handleOpenDisasterModal}
                     pinpointLat={userProfile?.pinpointLat}

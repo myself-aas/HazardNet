@@ -170,17 +170,26 @@ function systemTheme(): 'light' | 'dark' {
 /**
  * Resolves and applies the Meridian theme to <html data-mrd-theme>.
  *
- * Apple's system colours adapt automatically; on the web that adaptation is
- * this hook. 'system' follows the OS and follows it live if the OS changes.
+ * Apple's system colours adapt automatically; on the web that adaptation is this hook.
+ * 'system' follows the OS and follows it live if the OS changes.
+ *
+ * The default is deliberately 'light', not 'system' (P0-1 in
+ * docs/audits/2026-10-03-frontend-design-system-audit.md). Dark mode is applied to 3.7% of the
+ * colour utilities - 15 of 35 pages have no `dark:` twin at all - so following the OS produced
+ * exactly the failure mode the audit records: an iOS user opening the app in the evening got a
+ * light page with a dark district panel nested inside it, and light-on-light text wherever a
+ * `dark:text-*` twin existed without a matching `dark:bg-*`. Following the OS is only honest once
+ * Phase 9 of MIGRATION_PLAN.md has made both themes complete; until then a reader who wants dark
+ * opts in, and the app is consistently light for everyone who has not chosen.
  */
 export function useMeridianTheme() {
   const [theme, setTheme] = useState<MeridianThemeName>(() => {
-    if (typeof window === 'undefined') return 'system';
+    if (typeof window === 'undefined') return 'light';
     try {
       const stored = window.localStorage.getItem(STORAGE_KEY);
-      return stored === 'light' || stored === 'dark' || stored === 'system' ? stored : 'system';
+      return stored === 'light' || stored === 'dark' || stored === 'system' ? stored : 'light';
     } catch {
-      return 'system';
+      return 'light';
     }
   });
 

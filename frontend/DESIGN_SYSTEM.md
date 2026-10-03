@@ -10,7 +10,7 @@
 1. **Mobile-First Ergonomics**: Every surface, control, and layout is built from mobile viewports up, directly preparing the web codebase for transition to native mobile (React Native / Expo).
 2. **Strict Tap Targets**: All interactive elements (buttons, form inputs, navigation links, icons) must satisfy a minimum tap target of `44px × 44px` with `touch-action: manipulation` enabled to eliminate mobile tap latency.
 3. **Zero Mobile Bottom Navigation**: HazardNet strictly uses a high-performance, swipe-capable header navigation + full drawer architecture (`MenuDrawer.tsx`) rather than a fixed bottom tab bar.
-4. **Bilingual Typography Harmony**: Engineered typography pairing combining high-impact geometric Latin typefaces (`Instrument Sans`, `Plus Jakarta Sans`, `Inter`) with graceful, high-readability Bengali typefaces (`Noto Sans Bengali`, `Anek Bangla`, `Baloo Da 2`, `Noto Serif Bengali`).
+4. **Bilingual Typography Harmony**: one platform UI face for Latin, and `Noto Sans Bengali` — the single webfont this bundle ships (`@fontsource/noto-sans-bengali`, 400 + 700) — for Bengali, which Latin system faces cannot render. The earlier pairing (`Instrument Sans`, `Plus Jakarta Sans`, `Inter`, `Anek Bangla`, `Baloo Da 2`) was never bundled, so the stacks only rendered differently on machines that happened to have one installed; see P0-3 in `docs/audits/2026-10-03-frontend-design-system-audit.md`.
 5. **Rigorous Color & Contrast Semantics**: Powered by NASA HDS tokens. All foreground-on-background combinations meet or exceed WCAG AA (`4.5:1` normal text) and WCAG AAA (`7.0:1` small text/icons).
 
 ---
@@ -81,14 +81,15 @@ pointed back at a raw hex.
 
 ### Layer 3: Typography Stacks (`@theme inline`)
 ```css
---font-sans: 'Plus Jakarta Sans', 'Public Sans Web', 'Noto Sans Bengali', sans-serif;
---font-heading: 'Instrument Sans', 'Plus Jakarta Sans', 'Anek Bangla', 'Inter', sans-serif;
---font-display: 'Plus Jakarta Sans', 'Baloo Da 2', sans-serif;
---font-brand: 'Instrument Sans', 'Plus Jakarta Sans', sans-serif;
---font-bengali: 'Noto Sans Bengali', 'Anek Bangla', sans-serif;
---font-bengali-display: 'Baloo Da 2', 'Anek Bangla', sans-serif;
---font-bengali-serif: 'Noto Serif Bengali', serif;
---font-mono: 'DM Mono', monospace;
+/* Every family below is either bundled or a platform face. NASA's own 'Public Sans Web' /
+   'Inter' / 'DM Mono' are not bundled by this build and are deliberately not aliased here. */
+--font-sans: var(--font-sans-en);        /* system-ui, -apple-system, 'Segoe UI', Roboto, … */
+--font-heading: var(--hn-font-heading);  /* system-ui, … */
+--font-display: var(--hn-font-display);
+--font-brand: var(--hn-font-heading);
+--font-bengali: var(--hn-font-bengali);  /* 'Noto Sans Bengali', 'Hind Siliguri', sans-serif */
+--font-bengali-display: var(--hn-font-bengali-display);
+--font-mono: var(--hn-font-mono);        /* ui-monospace, SFMono-Regular, Menlo, … */
 ```
 
 ---
@@ -97,13 +98,13 @@ pointed back at a raw hex.
 
 | Role | Font Family | Tailwind Class | Recommended Usage |
 | :--- | :--- | :--- | :--- |
-| **Headings (h1–h6)** | Instrument Sans / Anek Bangla | `.font-heading` or native `h1–h6` | Page titles, section headers, dialog titles |
-| **Hero / Display** | Plus Jakarta Sans / Baloo Da 2 | `.font-display` | Big metrics, landing page hero statements |
-| **Brand Wordmark** | Instrument Sans / Plus Jakarta | `.font-brand` | HazardNet logo, primary identity marks |
-| **Body & UI** | Plus Jakarta Sans / Noto Sans | `.font-sans` | Paragraphs, tables, input fields, badges |
-| **Bengali Primary** | Noto Sans Bengali / Anek Bangla| `.font-bengali` | Bengali locale text, localized hazard alerts |
-| **Bengali Display** | Baloo Da 2 / Anek Bangla | `.font-bengali-display` | Bengali hero titles, campaign banners |
-| **Data / Numbers** | DM Mono | `.font-mono` / `.hn-data-readout` | Coordinates, timestamps, severity scores |
+| **Headings (h1–h6)** | Platform UI face | `.font-heading` or native `h1–h6` | Page titles, section headers, dialog titles |
+| **Hero / Display** | Platform UI face | `.font-display` | Big metrics, landing page hero statements |
+| **Brand Wordmark** | Platform UI face | `.font-brand` | HazardNet logo, primary identity marks |
+| **Body & UI** | Platform UI face / Noto Sans Bengali | `.font-sans` | Paragraphs, tables, input fields, badges |
+| **Bengali Primary** | Noto Sans Bengali / Hind Siliguri | `.font-bengali` | Bengali locale text, localized hazard alerts |
+| **Bengali Display** | Noto Sans Bengali / Hind Siliguri | `.font-bengali-display` | Bengali hero titles, campaign banners |
+| **Data / Numbers** | Platform mono stack | `.font-mono` / `.hn-data-readout` | Coordinates, timestamps, severity scores |
 
 *Note: All body-scale typography strictly maintains `line-height >= 1.3` in accordance with `__tests__/designTypography.test.js`.*
 

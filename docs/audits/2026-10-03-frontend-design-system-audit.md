@@ -492,3 +492,82 @@ grep -n "nasaRed" apps/mobile/src/theme/theme.ts         # severity colour = #f6
 - `design-taste-frontend` - §0 brief inference and design read, §1 dials, §2 design-system selection and the one-system rule, §4.4 shape consistency, §4.5 interactive states, §4.7 layout discipline, §6.B reduced motion, §6.E DOM cost, §9 tells, §11 redesign protocol (mode: **redesign - preserve**), §13 out-of-scope declaration, §14 pre-flight matrix.
 - `redesign-existing-projects` - scan / diagnose / fix sequence, typography and colour and layout and interactivity and content and component and iconography and code-quality audit lists, fix priority order (fonts, then palette, then states, then layout, then components, then states coverage, then polish).
 - `high-end-visual-design` - §2 absolute-zero anti-patterns, §3 mobile-collapse overrides, §5 motion choreography (custom cubic-beziers, no `linear`), §6 performance guardrails (blur only on fixed/sticky, grain only on fixed `pointer-events-none`, z-index discipline), §8 pre-output checklist.
+
+---
+
+## 9. Resolution ledger (implementation pass, 2026-10-03)
+
+Every finding, backlog row and §5.5 acceptance criterion, with its disposition. "Fixed" means code
+plus a gate; "deferred" carries the reason and the unblocking condition. Commits: `2793cd6` plus the
+follow-up covering this ledger. Gates after the pass: 1,626 jest tests green (2 suites skipped),
+`tsc` clean, `check:tokens` 99.8% **and** the new hex ratchet, `check:design:source` 0 outstanding,
+`check:brand` fully tokenised, `check:fonts` within budget.
+
+### Findings
+
+| Finding | Status | Where / why |
+|---|---|---|
+| P0-1 dark mode half-applied and auto-activating | **Fixed (stopgap); rollout deferred** | `useMeridianTheme` defaults to `'light'`, so no iOS user opening the app in the evening gets the light page with a dark panel inside it. An explicit stored `'light'`/`'dark'`/`'system'` is still honoured, and `'system'` still follows the OS live for anyone who chooses it. The real fix stays Phase 9 / §5.2 — deferred because it is a migration of 6,798 colour utilities onto semantic variables, and doing it half-way is what this finding is about. |
+| P0-2 web and native disagree about semantic colours | **Fixed (one source, divergences declared)** | `frontend/src/design-system/tokens.ts` is a re-export shim, so there is one `HDS_TOKENS`; `nasaBlueShade` is `#0b3d91` in the package and in the generated CSS; `__tests__/designTokensParity.test.js` asserts identity, then walks ten real roles across web CSS and the native theme. Four divergences are *declared* with a written reason each (crimson `#970002` vs NASA red `#f64137` on two different grounds; their dark twins; Meridian radii vs the HDS 2px control/sheet pins) and the test fails if a declared exception stops diverging, so none of them can rot. Reconciling the two reds and the radius scale is a design decision, tracked below as backlog 4. |
+| P0-3 documented typography is not shipped typography | **Fixed** | `HDS_TOKENS.families`, `MERIDIAN_FONTS`, `--mrd-font-*`, `--font-*`/`--hn-font-*` and the prerendered shell now resolve to platform faces plus the one bundled webfont (`Noto Sans Bengali`); no stack leads with a family the bundle does not ship. `DESIGN_SYSTEM.md` §2-3 and `MERIDIAN.md` §4.2/§9 were describing the fictional pairing and now describe what ships. `__tests__/nasaTokens.test.js` used to assert the family *names* were present and now asserts they are absent and that each role resolves. |
+| P1-1 four design systems in one component tree | **Partially fixed; remainder deferred** | The two contradictions this finding produced were removed (two token files, two type stories). Collapsing the four layers themselves (Meridian, NASA HDS, the Tailwind theme, component CSS) is §5.1's migration and touches the 6,343 palette-family uses that currently resolve through them; doing it in the same pass as a colour reconciliation would put the two changes in each other's blast radius. |
+| P1-2 radius consistency | **Declared; deferred** | The web/native split is now explicit and tested (`radius.control` 8 vs 2, `radius.sheet` 28 vs 2, with a reason attached) instead of invisible. Freezing one scale is backlog 4, which is a design decision with a visual diff on both platforms. |
+| P1-3 token gate blind to hex literals | **Fixed** | `scripts/check-token-compliance.mjs` now measures raw hex literals too, against `data/design/hex-baseline.json` (492 in 51 files): a file may not gain one. `mapPalette.ts` is the documented pattern for a legitimate home for a data colour. |
+| P1-4 landing surfaces break the mobile viewport rules | **Partially fixed** | `min-h-screen` → `min-h-dvh` in seven files (iOS toolbars live inside `100vh`), the hero's `100vh`-derived floor is now `lg:min-h-[100dvh]` behind a 600px phone floor, and the standalone `100vh` in the console's map height is `100dvh`. The remaining items (the masthead strip and the multi-blur hero) are grouped with backlog 5. |
+| P1-5 157 uppercase-tracking micro-labels | **Deferred** | No mechanical rule separates a section eyebrow from a dense-console field label, and this repository's console chrome is explicitly outside the skill's remit (§13). A blanket sweep would trade one generic signature for illegible data chrome; the honest fix is per-surface and belongs with the same pass as backlog 12. |
+| P1-6 hover doing work touch cannot | **Fixed on the audited surfaces; wider sweep deferred** | The map's HUD already re-arms on `onTouchStart`, and the one control whose only affordance was `group-hover:opacity-100` (`View Full Resolution`) is now `opacity-100 md:opacity-0 md:group-hover:opacity-100 focus-visible:opacity-100`. The remaining 35-page sweep is backlog 8's second half. |
+| P1-7 tables and forms on mobile | **Deferred** | Backlog 9 — card-stack fallbacks for the district/division/alert tables — is a week across the public-surface pages. The console already ships the mitigations this finding asks for (Map/Table parity at 44px, a captioned table, `role="meter"` severity). |
+| P1-8 two icon families | **Deferred** | `lucide-react` is imported by 26 files; choosing between it and the hand-authored `MaterialIcon` set (or replacing both when the native icon story lands) is backlog 10, and doing it page-by-page mid-pass would leave two visual weights in one tree. The half that cannot survive a port — emoji as icons — is fixed. |
+| P2-1 web-only capability inventory | **Accepted as port input** | It describes what the native shell must re-decide; no web change is implied. §5.4 stays as written. |
+| P2-2 IA parity (~30 of 52 routes have no native counterpart) | **Deferred** | A product decision, not a web defect; it is what `docs/MOBILE_AUDIT_AND_REDESIGN.md` exists to schedule. |
+| P2-3 state coverage partial | **Deferred, one instance fixed** | The four-state checklist and the `usePageSeo` route wrapper are backlog 13. Found and fixed during this pass: `RunVisual`'s loading row interpolated `opacity` from `frame` with no motion gate, so under `prefers-reduced-motion` the "still reading the artifact" state rendered invisible — the exact state a hazard page must not lose. |
+| P2-4 micro-issues visible on a phone | **Partially fixed** | Fixed in this pass: emoji, the hover-only control, `dvh`, the notification-bar colour, pure black in the hero. The rest are itemised in backlog 12/16 and deferred there. |
+
+### Backlog
+
+| # | Status | Note |
+|---|---|---|
+| 1 | **Fixed** | `useMeridianTheme` defaults to `'light'`; Phase 9 remains scheduled. |
+| 2 | **Fixed** | One source of hex; the parity test rejects duplicate roles and forbids stale exceptions. |
+| 3 | **Fixed** | `.font-inter`/`.font-montserrat` were already gone; the stacks and both documents now tell the truth. |
+| 4 | **Deferred** | Freeze one radius scale: needs the same decision for the native `NATIVE_RADIUS` pins; the divergence is declared and tested meanwhile. |
+| 5 | **Partially fixed** | `dvh` sweep and the hero's CTA/blur work are done; the masthead strip and any chart/blur duplicates remain. |
+| 6 | **Partially fixed** | The hex half is now gated (which was the substance: "makes the 99.8% true"). The 405 `!important` declarations and the `.text-xs.text-carbon-70` contrast hack are load-bearing until the type-scale pass, because deleting them drops live contrast below AA; deliberately left. |
+| 7 | **Deferred (verified unused)** | `@mui/material`, `@emotion/*` and `@base-ui/react` have zero imports in `frontend/src`. Removing them from `package.json` requires regenerating `package-lock.json` (CI runs `npm ci`), and this environment has no network egress — so the removal is a one-liner in an environment that can run `npm install`. |
+| 8 | **Closed for the web half** | Re-measured control by control: every icon-only control carries an `aria-label`; `title=` attributes are extras on text-labelled controls, so there is nothing to replace. The native half (a bottom-sheet toolbar of labelled rows below `sm`) is port work. |
+| 9 | **Deferred** | Card-stack tables: a week of layout work on the public-surface pages, and the console's table already has its fallback. |
+| 10 | **Deferred** | One icon family, retire Lucide: 26 files, and it should be decided together with the native glyph set. |
+| 11 | **Deferred** | Advisories screen in the native app: product work in `apps/mobile`, outside this pass. |
+| 12 | **Deferred** | `text-[10px]`/`text-[11px]` cap: needs a type-scale pass; a mechanical bump breaks the dense console layout this repository deliberately keeps. |
+| 13 | **Deferred** | Four-state checklist across 35 pages: the wrapper and checklist are a week; one genuine state defect found in the audited surfaces was fixed (P2-3). |
+| 14 | **Deferred with measurement** | `footer a::before` is the 44px tap-target extender (`min-width/min-height: 44px; pointer-events: auto`). Shrinking it trades mis-taps for links that no longer meet the touch floor; the real fix is to give footer links a 44px box themselves, which belongs with the same per-page pass as 12/13. |
+| 15 | **Deferred** | An em-dash lint rule needs an AST-aware check plus a policy for the `—` empty-value glyph; no lint infrastructure was added this pass. |
+| 16 | **Deferred** | 19 status dots and 15 `md:grid-cols-3` rows need per-instance judgement about what is decoration and what is data. |
+| 17 | **Fixed** | `theme-color` is `#17171b` (carbon-90 — the audit's `#0b0e11` is not a repo token, and this is the colour the surfaces under it actually use); hero `bg-black/40`/`bg-black/60` are `bg-carbon-90/40`/`bg-carbon-90/60`. |
+| 18 | **Fixed** | `hazardnet.savedDistricts` is the written key; `shonchay_saved_districts` is read once so no saved district is lost, and never written again. |
+
+### §5.5 acceptance criteria
+
+1. **No table as primary content below 768px** — deferred with backlog 9. The console is the one
+   surface with a table as a *mode*, and it ships the Map/Table toggle plus a captioned fallback.
+2. **No interactive element relies on `hover` or `title`** — **met**: zero icon-only controls are
+   unnamed; the one hover-only affordance found is visible on touch; `title` remains only as an
+   extra hint on labelled controls.
+3. **Loading, empty, error+retry on every screen** — deferred with backlog 13; one defective state
+   (invisible reduced-motion loading row) fixed.
+4. **Light and dark complete at 100% token parity** — deferred (Phase 9 + backlog 4). The parity
+   *contract* is in place and tested; the dark *surface* is not, which is why the stopgap in
+   P0-1 ships instead of a half-applied dark theme. Criterion not claimed as met.
+5. **Every text role survives the font-scale cap** — deferred with backlog 12.
+6. **One icon vocabulary, no emoji, one radius scale, one type scale, one source of hex** — four of
+   five are met and gated: no emoji (tests), one type scale (one stack per role, asserted across
+   the package, the CSS and the prerendered shell), one source of hex (`designTokensParity` +
+   the hex ratchet), one radius scale *declared* rather than unified (backlog 4). One icon
+   vocabulary is deferred with backlog 10.
+
+### Not done in this pass, and why it is not hidden
+
+Everything above marked "deferred" is a scheduling decision with a reason, not a claim of
+completion. The three items with the largest user-visible return are dark mode (Phase 9), the
+card-stack tables (backlog 9) and the icon-family decision (backlog 10); all three are multi-day
+changes to surfaces this pass deliberately did not restructure.

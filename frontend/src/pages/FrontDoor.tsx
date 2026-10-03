@@ -402,7 +402,7 @@ export const FrontDoor: React.FC = () => {
           onClick={() => setHeroPaused((v) => !v)}
           aria-pressed={heroPaused}
           aria-label={heroPaused ? t('frontdoor.hero.resumeMotion') : t('frontdoor.hero.pauseMotion')}
-          className="absolute bottom-4 right-4 z-10 inline-flex min-h-[44px] items-center gap-1.5 bg-black/60 px-3 py-2 text-xs font-semibold text-white border border-white/20 backdrop-blur-sm hover:bg-black/70 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
+          className="absolute bottom-4 right-4 z-10 inline-flex min-h-[44px] items-center gap-1.5 bg-carbon-90/60 px-3 py-2 text-xs font-semibold text-white border border-white/20 backdrop-blur-sm hover:bg-carbon-90/70 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
         >
           <MaterialIcon name={heroPaused ? 'play_arrow' : 'pause'} className="text-sm" />
           <span>{heroPaused ? t('frontdoor.hero.resumeMotion') : t('frontdoor.hero.pauseMotion')}</span>
@@ -417,7 +417,7 @@ export const FrontDoor: React.FC = () => {
                 : t('frontdoor.hero.reviewedUnknown')}
             </p>
             {/* The switch lives on the front door because the front door is bilingual */}
-            <div className="bg-black/40 p-1 border border-white/20" style={{ backdropFilter: 'blur(var(--hero-glass-blur))', WebkitBackdropFilter: 'blur(var(--hero-glass-blur))' }}>
+            <div className="bg-carbon-90/40 p-1 border border-white/20" style={{ backdropFilter: 'blur(var(--hero-glass-blur))', WebkitBackdropFilter: 'blur(var(--hero-glass-blur))' }}>
               <LanguageToggle variant="switch" tone="hds" />
             </div>
           </div>
@@ -649,17 +649,26 @@ export const FrontDoor: React.FC = () => {
             </div>
           )}
 
-          <nav
+          {/* A list, not a `<nav>`: this page already carries its one navigation landmark (the
+              "On this page" table of contents). Extra named navigation regions do not help a
+              reader - VoiceOver's rotor fills with near-identical "Navigation" entries and
+              TalkBack does not expose the role at all, so the aria-label is inert there - and
+              the links are just as reachable as a labelled list. */}
+          <ul
             aria-label={t('frontdoor.run.alertNav')}
             className="mt-4 flex flex-wrap gap-x-5 gap-y-2 border-t border-carbon-10 pt-3"
           >
-            <Link to="/alerts" className="text-xs font-bold text-nasa-blue-shade underline underline-offset-2">
-              {t('frontdoor.strip.allAlerts')}
-            </Link>
-            <Link to="/status" className="text-xs font-bold text-nasa-blue-shade underline underline-offset-2">
-              {t('frontdoor.strip.whyHeld')}
-            </Link>
-          </nav>
+            <li>
+              <Link to="/alerts" className="text-xs font-bold text-nasa-blue-shade underline underline-offset-2">
+                {t('frontdoor.strip.allAlerts')}
+              </Link>
+            </li>
+            <li>
+              <Link to="/status" className="text-xs font-bold text-nasa-blue-shade underline underline-offset-2">
+                {t('frontdoor.strip.whyHeld')}
+              </Link>
+            </li>
+          </ul>
         </div>
 
         {failed && (
@@ -776,7 +785,8 @@ export const FrontDoor: React.FC = () => {
         >
           {attribution.work.citationText}
         </p>
-        <nav aria-label={t('frontdoor.attribution.links')} className="mt-4 flex flex-wrap gap-x-5 gap-y-2">
+        {/* Same rule as the alert row above: a labelled list, not a fourth navigation landmark. */}
+        <ul aria-label={t('frontdoor.attribution.links')} className="mt-4 flex flex-wrap gap-x-5 gap-y-2">
           {[
             { label: t('frontdoor.attribution.repository'), href: attribution.work.repository },
             { label: t('frontdoor.attribution.institution'), href: attribution.department.url },
@@ -785,9 +795,11 @@ export const FrontDoor: React.FC = () => {
               ? [{ label: t('frontdoor.attribution.coSupervisor'), href: attribution.coSupervisor.url }]
               : []),
           ].map((link) => (
-            <ExternalOrInternalLink key={link.href} href={link.href} label={link.label} />
+            <li key={link.href}>
+              <ExternalOrInternalLink href={link.href} label={link.label} />
+            </li>
           ))}
-        </nav>
+        </ul>
       </section>
       </div>
     </Interactive.Div>

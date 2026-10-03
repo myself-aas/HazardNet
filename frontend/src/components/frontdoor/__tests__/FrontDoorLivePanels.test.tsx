@@ -130,8 +130,10 @@ describe('the live status strip', () => {
   it('never turns an unreadable artifact into a zero', () => {
     strip({ counts: null, assessed: null, withheld: null });
     expect(screen.getByText(/could not be read on this load/i)).toBeInTheDocument();
-    // no count list at all: a missing file produces no chips, not four zeroed ones
-    expect(screen.getByRole('status').querySelector('ul')).toBeNull();
+    // no count list at all: a missing file produces no chips, not four zeroed ones.
+    // (Query the counts list itself, by hook: the strip also carries a list of its own links,
+    // which is not evidence about the artifact either way.)
+    expect(screen.getByRole('status').querySelector('[data-testid="strip-counts"]')).toBeNull();
     expect(screen.queryByText(/withheld/i)).not.toBeInTheDocument();
   });
 

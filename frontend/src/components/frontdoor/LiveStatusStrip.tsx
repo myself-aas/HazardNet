@@ -162,7 +162,7 @@ export const LiveStatusStrip: React.FC<LiveStatusStripProps> = ({
           )}
 
           {!loading && counts !== null && (
-            <ul className="flex flex-wrap items-center gap-2">
+            <ul data-testid="strip-counts" className="flex flex-wrap items-center gap-2">
               {LEVEL_ORDER.filter((level) => counts[level] != null).map((level) => (
                 <li key={level} className="flex items-center gap-1.5">
                   <AlertLevelBadge
@@ -210,14 +210,20 @@ export const LiveStatusStrip: React.FC<LiveStatusStripProps> = ({
           </div>
         </dl>
 
-        <nav aria-label={t('frontdoor.strip.navLabel')} className="ml-auto flex flex-wrap gap-x-4 gap-y-1">
-          <Link to="/alerts" className="inline-flex min-h-[44px] items-center text-base font-bold text-nasa-blue-shade underline underline-offset-4">
-            {t('frontdoor.strip.allAlerts')}
-          </Link>
-          <Link to="/live" className="inline-flex min-h-[44px] items-center text-base font-bold text-nasa-blue-shade underline underline-offset-4">
-            {t('frontdoor.strip.liveMap')}
-          </Link>
-        </nav>
+        {/* A labelled list, not a navigation landmark - the front door keeps exactly one
+            `<nav>` (its table of contents). See the same decision in `pages/FrontDoor.tsx`. */}
+        <ul aria-label={t('frontdoor.strip.navLabel')} className="ml-auto flex flex-wrap gap-x-4 gap-y-1">
+          <li>
+            <Link to="/alerts" className="inline-flex min-h-[44px] items-center text-base font-bold text-nasa-blue-shade underline underline-offset-4">
+              {t('frontdoor.strip.allAlerts')}
+            </Link>
+          </li>
+          <li>
+            <Link to="/live" className="inline-flex min-h-[44px] items-center text-base font-bold text-nasa-blue-shade underline underline-offset-4">
+              {t('frontdoor.strip.liveMap')}
+            </Link>
+          </li>
+        </ul>
       </div>
 
       {/* ── the top published alert, or the honest zero ─────────────────────── */}

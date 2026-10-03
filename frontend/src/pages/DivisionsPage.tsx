@@ -103,7 +103,7 @@ export const DivisionsPage: React.FC = () => {
   })).sort((a, b) => b['Historical Events (2000-2026)'] - a['Historical Events (2000-2026)']);
 
   return (
-    <div className="min-h-screen bg-carbon-05 text-carbon-80 pb-8 pt-6 px-4 sm:px-6 lg:px-8 max-w-[1200px] mx-auto">
+    <div className="min-h-dvh bg-carbon-05 text-carbon-80 pb-8 pt-6 px-4 sm:px-6 lg:px-8 max-w-[1200px] mx-auto">
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-xs text-carbon-60 mb-4">
         <Link to="/" className="hover:text-nasa-blue-shade transition-colors">Home</Link>

@@ -260,7 +260,7 @@ const AppContent: React.FC = () => {
       className={
         isHomePage
           ? 'h-dvh w-full overflow-hidden bg-transparent text-carbon-90 flex flex-col font-sans relative pointer-events-none'
-          : 'min-h-screen bg-carbon-05 text-carbon-90 flex flex-col font-sans selection:bg-amber-100 selection:text-amber-900'
+          : 'min-h-dvh bg-carbon-05 text-carbon-90 flex flex-col font-sans selection:bg-amber-100 selection:text-amber-900'
       }
     >
       <Toaster

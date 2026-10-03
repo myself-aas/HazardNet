@@ -67,11 +67,11 @@ export const HistoricalCatalogPage: React.FC = () => {
   }, [data?.masterEvents]);
 
   if (isLoading) {
-    return <div className="min-h-screen bg-carbon-90 text-carbon-10 p-8" role="status">Loading historical archive…</div>;
+    return <div className="min-h-dvh bg-carbon-90 text-carbon-10 p-8" role="status">Loading historical archive…</div>;
   }
 
   if (isError || !data) {
-    return <div className="min-h-screen bg-carbon-90 text-carbon-10 p-8" role="alert">Historical archive data is temporarily unavailable.</div>;
+    return <div className="min-h-dvh bg-carbon-90 text-carbon-10 p-8" role="alert">Historical archive data is temporarily unavailable.</div>;
   }
 
   const handleOpenGlide = (glideId: string) => {
@@ -106,7 +106,7 @@ export const HistoricalCatalogPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-carbon-90 text-carbon-10 py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-dvh bg-carbon-90 text-carbon-10 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Page Hero Header */}
         <header className="border-b border-carbon-80 pb-6">

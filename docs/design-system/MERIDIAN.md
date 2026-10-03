@@ -233,10 +233,14 @@ daylight is the difference between a readable advisory and a squint.
 Display sizes are `clamp()` so the scale is fluid from a 360px phone to a 1440px
 monitor with no breakpoint edits.
 
-**Font stacks are open source only**, in this order of preference, ending in
-system fallbacks: display → Instrument Sans / Plus Jakarta Sans / Inter; text →
-Plus Jakarta Sans / Inter; mono → DM Mono / JetBrains Mono; Bengali → Noto Sans
-Bengali / Hind Siliguri / Anek Bangla, with Baloo Da 2 for Bengali display.
+**Font stacks are open source only, and every family in them is either bundled or a platform
+face.** Latin is the platform UI face (`system-ui, -apple-system, 'Segoe UI', Roboto`), data is the
+platform mono stack, and Bengali is `'Noto Sans Bengali', 'Hind Siliguri'` — the one webfont this
+bundle ships (`@fontsource/noto-sans-bengali`, 400 + 700; `families.bengali` and
+`MERIDIAN_FONTS.bengali` both carry it). The instrument/Plus Jakarta/Anek Bangla/Baloo Da 2 names
+are gone from the code: none of them was ever bundled, so their only effect was that a machine with
+one installed rendered a different product. `frontend/src/styles/meridian.css` mirrors
+`MERIDIAN_FONTS` verbatim and `__tests__/meridianParity.test.js` fails if the two drift.
 
 ### 4.3 Geometry
 
@@ -410,7 +414,7 @@ import { HazardGlyph } from './components/meridian/HazardGlyph';
 |---|---|---|
 | `--mrd-tap-min: 44px` | `minHeight: 44, minWidth: 44` / `hitSlop` | 48 on Android |
 | `.mrd-btn-ink` | `<Button intent="ink">` on `Pressable` | keep the dual-primary rule |
-| `--mrd-font-text` | `expo-font` preload of Plus Jakarta Sans | bundle the Bengali faces too |
+| `--mrd-font-text` | the platform UI face - nothing to preload | the Bengali face is the only one that ships |
 | `--mrd-font-bengali` | `NotoSansBengali-Regular` | line-height 1.65 floor |
 | `.mrd-glass` | `@react-native-community/blur` | chrome only, never behind data |
 | `useReveal` | `react-native-reanimated` + `IntersectionObserver` equivalent | fail open under reduce |

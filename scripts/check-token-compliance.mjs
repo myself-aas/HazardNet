@@ -24,10 +24,17 @@
  * mapping `blue-500` onto a token removes the collision only if the token is the
  * colour the design system actually means. The script measures the token layer's
  * coverage, not the semantics.
+ *
+ * It also counts raw hex literals, which the palette-family score cannot see: `bg-white` counts,
+ * `#ffffff` does not, and that blind spot is how the live map carried 79 hex literals through a
+ * green gate (P1-3 in docs/audits/2026-10-03-frontend-design-system-audit.md). The hex count
+ * ratchets: it is recorded in `data/design/hex-baseline.json` and any file that *gains* a literal
+ * fails the gate. Lower the numbers as files are fixed; never raise one - add the colour to the
+ * design system (see `MAP_*` in packages/design-system/src/mapPalette.ts).
  */
 
-import { readFileSync, readdirSync, statSync } from 'node:fs';
-import { join, dirname, resolve, extname } from 'node:path';
+import { readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
+import { join, dirname, resolve, extname, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -149,6 +156,75 @@ if (compliance < GATE) {
     `[token-compliance] FAIL: ${compliance.toFixed(1)}% is below the ${GATE}% gate. ` +
       `Convert or declare at least ${need} more uses.`,
   );
+  process.exit(1);
+}
+
+
+/* ---------------------------------------------------------------------------
+ * Raw hex literals: the second half of the measurement.
+ *
+ * Comments are stripped first, because a hex value in prose is documentation, not
+ * a colour. CSS is excluded: `index.css`, `meridian.css` and the generated
+ * `nasa-hds.css` *are* the token layer, so their literals are the source the rest
+ * of the app is supposed to resolve through. The design-system package is outside
+ * `frontend/src` for the same reason - `mapPalette.ts` is where a map colour is
+ * allowed to be written down.
+ * ------------------------------------------------------------------------- */
+const HEX_LITERAL = /#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})\b/g;
+const HEX_BASELINE = join(ROOT, 'data/design/hex-baseline.json');
+
+const stripComments = (text) =>
+  text
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/^\s*\/\/.*$/gm, '')
+    .replace(/\s\/\/\s.*$/gm, '');
+
+const countHexLiterals = () => {
+  const counts = new Map();
+  for (const file of files) {
+    const ext = extname(file);
+    if (ext !== '.ts' && ext !== '.tsx') continue;
+    const found = stripComments(readFileSync(file, 'utf8')).match(HEX_LITERAL);
+    if (found?.length) counts.set(relative(ROOT, file), found.length);
+  }
+  return counts;
+};
+
+const hexNow = countHexLiterals();
+const hexTotal = [...hexNow.values()].reduce((a, b) => a + b, 0);
+
+if (process.argv.includes('--write-hex-baseline')) {
+  const baseline = JSON.parse(readFileSync(HEX_BASELINE, 'utf8'));
+  baseline.total = hexTotal;
+  baseline.files = Object.fromEntries([...hexNow.entries()].sort((a, b) => b[1] - a[1]));
+  writeFileSync(HEX_BASELINE, `${JSON.stringify(baseline, null, 2)}\n`);
+  console.log(`[token-compliance] wrote hex baseline: ${hexTotal} literals in ${hexNow.size} files.`);
+  process.exit(0);
+}
+
+const hexBaseline = JSON.parse(readFileSync(HEX_BASELINE, 'utf8')).files;
+const regressions = [];
+for (const [file, count] of hexNow) {
+  const allowed = hexBaseline[file] ?? 0;
+  if (count > allowed) regressions.push(`${file}: ${allowed} -> ${count}`);
+}
+const fixed = Object.entries(hexBaseline).filter(([file, allowed]) => (hexNow.get(file) ?? 0) < allowed);
+
+console.log(
+  `[token-compliance] hex literals: ${hexTotal} in ${hexNow.size} files ` +
+    `(baseline ${Object.values(hexBaseline).reduce((a, b) => a + b, 0)} in ${Object.keys(hexBaseline).length}).`,
+);
+if (fixed.length > 0) {
+  console.log(
+    '[token-compliance] note: ' +
+      fixed.map(([file, allowed]) => `${file} ${allowed} -> ${hexNow.get(file) ?? 0}`).join(', ') +
+      ' - lower the baseline when you next touch data/design/hex-baseline.json.',
+  );
+}
+if (regressions.length > 0) {
+  console.error('[token-compliance] FAIL: new raw hex literals were introduced:');
+  for (const line of regressions) console.error(`  ${line}`);
+  console.error('  Add the colour to the design system (see packages/design-system/src/mapPalette.ts).');
   process.exit(1);
 }
 

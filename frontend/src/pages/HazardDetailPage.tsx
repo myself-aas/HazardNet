@@ -215,7 +215,7 @@ export const HazardDetailPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-carbon-05 flex items-center justify-center p-6">
+      <div className="min-h-dvh bg-carbon-05 flex items-center justify-center p-6">
         <div className="text-center">
           <InfinityLoader size={96} label="Loading" className="mx-auto mb-3 block" />
           <p className="text-sm font-medium text-carbon-70">Loading {data?.hazard || currentSlug} hazard data...</p>
@@ -227,7 +227,7 @@ export const HazardDetailPage: React.FC = () => {
 
   if (error || !data) {
     return (
-      <div className="min-h-screen bg-carbon-05 flex items-center justify-center p-6">
+      <div className="min-h-dvh bg-carbon-05 flex items-center justify-center p-6">
         <div className="bg-white border border-carbon-20 p-8 max-w-md text-center">
           <AlertTriangle className="w-10 h-10 text-red-500 mx-auto mb-3" />
           <h2 className="text-lg font-bold text-carbon-90">Failed to Load Hazard Data</h2>
@@ -244,7 +244,7 @@ export const HazardDetailPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-carbon-05 text-carbon-80 pb-8 pt-6 px-4 sm:px-6 lg:px-8 max-w-[1200px] mx-auto">
+    <div className="min-h-dvh bg-carbon-05 text-carbon-80 pb-8 pt-6 px-4 sm:px-6 lg:px-8 max-w-[1200px] mx-auto">
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-xs text-carbon-60 mb-4">
         <Link to="/" className="hover:text-nasa-blue-shade transition-colors">Home</Link>

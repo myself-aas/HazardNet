@@ -56,6 +56,13 @@ import { BANGLADESH_RIVERS, HAZARD_LAYERS, createCustomIcon, hazardMarkerLabel, 
 import StatusStrip, { computeTierCounts } from './StatusStrip';
 import DistrictForecastCard from './map/DistrictForecastCard';
 import type { HazardLayerDef } from './map/mapPrimitives';
+import {
+  MAP_CHROME,
+  MAP_INTERACTIVE,
+  MAP_RADAR_BANDS,
+  MAP_RISK_RAMP,
+  MAP_SENSOR_SITES,
+} from '@hazardnet/design-system';
 
 interface LiveMapViewProps {
   onSelectDistrict?: (district: { id: string; name: string; division: string; lat: number; lng: number; risk: 'Low' | 'Moderate' | 'High'; mainCrop: string }) => void;
@@ -621,8 +628,8 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
             const severityPercent = Math.round(dist.severity * 100);
             const tierBadge = dist.advisoryTier ? `[${dist.advisoryTier}] ` : '';
             const tooltipText = isUserDist
-              ? `<div style="font-family: var(--hds-font-family-heading); font-size: 11px; font-weight: 900; color: #ffffff; text-shadow: 0 2px 4px rgba(0,0,0,0.8); display: flex; align-items: center; gap: 6px;"><MaterialIcon name="location_on" className="w-4 h-4 inline-block align-middle" /><span>${dist.name} District Boundary (Your Location)</span><span style="background: ${severityColor}; color: #ffffff; padding: 2px 6px; border-radius: 9999px; font-size: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.4);">${tierBadge}${severityPercent}% Severity</span></div>`
-              : `<div style="font-family: var(--hds-font-family-heading); font-size: 11px; font-weight: 900; color: #ffffff; text-shadow: 0 2px 4px rgba(0,0,0,0.8); display: flex; align-items: center; gap: 6px;"><span>${dist.name} District ${isDivSel ? `(${dist.division} Division)` : 'Boundary'}</span><span style="background: ${severityColor}; color: #ffffff; padding: 2px 6px; border-radius: 9999px; font-size: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.4);">${tierBadge}${severityPercent}% Severity</span></div>`;
+              ? `<div style="font-family: var(--hds-font-family-heading); font-size: 11px; font-weight: 900; color: ${MAP_CHROME.surface}; text-shadow: 0 2px 4px rgba(0,0,0,0.8); display: flex; align-items: center; gap: 6px;"><MaterialIcon name="location_on" className="w-4 h-4 inline-block align-middle" /><span>${dist.name} District Boundary (Your Location)</span><span style="background: ${severityColor}; color: ${MAP_CHROME.surface}; padding: 2px 6px; border-radius: 9999px; font-size: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.4);">${tierBadge}${severityPercent}% Severity</span></div>`
+              : `<div style="font-family: var(--hds-font-family-heading); font-size: 11px; font-weight: 900; color: ${MAP_CHROME.surface}; text-shadow: 0 2px 4px rgba(0,0,0,0.8); display: flex; align-items: center; gap: 6px;"><span>${dist.name} District ${isDivSel ? `(${dist.division} Division)` : 'Boundary'}</span><span style="background: ${severityColor}; color: ${MAP_CHROME.surface}; padding: 2px 6px; border-radius: 9999px; font-size: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.4);">${tierBadge}${severityPercent}% Severity</span></div>`;
 
             boundaryPolygon.bindTooltip(tooltipText, {
               permanent: isUserDist && !isSel,
@@ -640,7 +647,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
         // Circle Marker Heatmap Halo
         const circle = L.circleMarker([dist.lat, dist.lng], {
           radius: isSel ? 42 : Math.max(18, dist.severity * 34),
-          color: isSel ? '#ffffff' : color,
+          color: isSel ? MAP_CHROME.surface : color,
           fillColor: color,
           fillOpacity: isSel ? 0.5 : 0.28,
           weight: isSel ? 3.5 : 2,
@@ -709,7 +716,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
           html: `
             <div style="position: relative; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; outline: none; cursor: pointer;">
               <div style="position: absolute; inset: -8px; border-radius: 50%; background: rgba(2, 132, 199, 0.4); filter: blur(4px);" class="radar-ping-ring"></div>
-              <div style="position: relative; width: 32px; height: 32px; border-radius: 50%; background: #0284c7; border: 2.5px solid #ffffff; display: flex; align-items: center; justify-content: center; color: #ffffff; box-shadow: 0 4px 16px rgba(2, 132, 199, 0.6);">
+              <div style="position: relative; width: 32px; height: 32px; border-radius: 50%; background: ${MAP_INTERACTIVE.blue}; border: 2.5px solid ${MAP_CHROME.surface}; display: flex; align-items: center; justify-content: center; color: ${MAP_CHROME.surface}; box-shadow: 0 4px 16px rgba(2, 132, 199, 0.6);">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="display:block;"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="12" cy="12" r="3" fill="currentColor"/><line x1="12" y1="2" x2="12" y2="6" stroke="currentColor" stroke-width="2"/><line x1="12" y1="18" x2="12" y2="22" stroke="currentColor" stroke-width="2"/><line x1="2" y1="12" x2="6" y2="12" stroke="currentColor" stroke-width="2"/><line x1="18" y1="12" x2="22" y2="12" stroke="currentColor" stroke-width="2"/></svg>
               </div>
             </div>
@@ -729,7 +736,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
           : null;
         const pinDist = pinNearest?.district || currentSelected;
         const pinSevPct = pinDist ? Math.round(pinDist.severity * 100) : 0;
-        const pinRiskColor = pinDist?.risk === 'High' ? '#e11d48' : pinDist?.risk === 'Moderate' ? '#d97706' : '#16a34a';
+        const pinRiskColor = pinDist?.risk === 'High' ? MAP_RISK_RAMP.high : pinDist?.risk === 'Moderate' ? MAP_RISK_RAMP.moderate : MAP_RISK_RAMP.low;
         const pinRiskBg = pinDist?.risk === 'High' ? 'rgba(225, 29, 72, 0.12)' : pinDist?.risk === 'Moderate' ? 'rgba(217, 119, 6, 0.12)' : 'rgba(22, 163, 74, 0.12)';
 
         const attachPinA11y = () => {
@@ -744,49 +751,49 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
         setTimeout(attachPinA11y, 50);
 
         userPinMarker.bindPopup(`
-          <div style="padding: 12px; font-family: var(--hds-font-family-heading); color: #023246; min-width: 240px; max-width: 280px;">
-            <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #d1d1d1; padding-bottom: 8px; margin-bottom: 10px;">
+          <div style="padding: 12px; font-family: var(--hds-font-family-heading); color: ${MAP_CHROME.panelInk}; min-width: 240px; max-width: 280px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid ${MAP_CHROME.hairline}; padding-bottom: 8px; margin-bottom: 10px;">
               <div style="display: flex; align-items: center; gap: 4px;">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="display:block;"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="12" cy="12" r="3" fill="currentColor"/><line x1="12" y1="2" x2="12" y2="6" stroke="currentColor" stroke-width="2"/><line x1="12" y1="18" x2="12" y2="22" stroke="currentColor" stroke-width="2"/><line x1="2" y1="12" x2="6" y2="12" stroke="currentColor" stroke-width="2"/><line x1="18" y1="12" x2="22" y2="12" stroke="currentColor" stroke-width="2"/></svg>
-                <strong style="font-size: 13px; color: #17171b; font-weight: 800;">Stored Location Pin</strong>
+                <strong style="font-size: 13px; color: ${MAP_CHROME.inkStrong}; font-weight: 800;">Stored Location Pin</strong>
               </div>
-              <span style="font-size: 10px; font-weight: 900; padding: 2px 7px; border-radius: 6px; background: rgba(56, 189, 248, 0.15); color: #0284c7; border: 1px solid rgba(56, 189, 248, 0.3);">Synced GPS</span>
+              <span style="font-size: 10px; font-weight: 900; padding: 2px 7px; border-radius: 6px; background: rgba(56, 189, 248, 0.15); color: ${MAP_INTERACTIVE.blue}; border: 1px solid rgba(56, 189, 248, 0.3);">Synced GPS</span>
             </div>
 
-            <div style="font-size: 11px; color: #58585b; line-height: 1.6;">
-              <div style="display: flex; justify-content: space-between; font-family: monospace; background: #e3e3e3; padding: 4px 8px; border-radius: 6px;">
+            <div style="font-size: 11px; color: ${MAP_CHROME.inkSoft}; line-height: 1.6;">
+              <div style="display: flex; justify-content: space-between; font-family: monospace; background: ${MAP_CHROME.rail}; padding: 4px 8px; border-radius: 6px;">
                 <span>Lat: <strong>${pinpointLat.toFixed(4)}°N</strong></span>
                 <span>Lng: <strong>${pinpointLng.toFixed(4)}°E</strong></span>
               </div>
 
               ${pinDist ? `
-                <div style="margin-top: 8px; padding: 8px 10px; background: #f6f6f6; border-radius: 8px; border: 1px solid #d1d1d1;">
-                  <div style="font-size: 9px; font-weight: 800; color: #77777a; text-transform: uppercase;">Identified District</div>
-                  <div style="font-size: 13px; font-weight: 900; color: #17171b; margin-top: 1px;">
-                    ${pinDist.name} <span style="font-size: 10px; font-weight: 600; color: #77777a;">(${pinDist.division})</span>
+                <div style="margin-top: 8px; padding: 8px 10px; background: ${MAP_CHROME.surfaceSunken}; border-radius: 8px; border: 1px solid ${MAP_CHROME.hairline};">
+                  <div style="font-size: 9px; font-weight: 800; color: ${MAP_CHROME.muted}; text-transform: uppercase;">Identified District</div>
+                  <div style="font-size: 13px; font-weight: 900; color: ${MAP_CHROME.inkStrong}; margin-top: 1px;">
+                    ${pinDist.name} <span style="font-size: 10px; font-weight: 600; color: ${MAP_CHROME.muted};">(${pinDist.division})</span>
                   </div>
 
-                  <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 8px; padding-top: 6px; border-top: 1px dashed #b9b9bb;">
+                  <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 8px; padding-top: 6px; border-top: 1px dashed ${MAP_CHROME.neutral};">
                     <div>
-                      <div style="font-size: 9px; color: #77777a; font-weight: 700; text-transform: uppercase;">Hazard Type</div>
-                      <div style="font-size: 11px; font-weight: 800; color: #17171b; margin-top: 1px;"><MaterialIcon name="warning" className="w-4 h-4 inline-block align-middle" /> ${pinDist.hazardType}</div>
+                      <div style="font-size: 9px; color: ${MAP_CHROME.muted}; font-weight: 700; text-transform: uppercase;">Hazard Type</div>
+                      <div style="font-size: 11px; font-weight: 800; color: ${MAP_CHROME.inkStrong}; margin-top: 1px;"><MaterialIcon name="warning" className="w-4 h-4 inline-block align-middle" /> ${pinDist.hazardType}</div>
                     </div>
                     <div style="text-align: right;">
-                      <div style="font-size: 9px; color: #77777a; font-weight: 700; text-transform: uppercase;">Severity Score</div>
+                      <div style="font-size: 9px; color: ${MAP_CHROME.muted}; font-weight: 700; text-transform: uppercase;">Severity Score</div>
                       <span style="font-size: 10px; font-weight: 900; padding: 2px 6px; border-radius: 4px; background: ${pinRiskBg}; color: ${pinRiskColor}; display: inline-block; margin-top: 1px;">
                         ${pinSevPct}% (${pinDist.risk})
                       </span>
                     </div>
                   </div>
-                  <div style="margin-top: 6px; font-size: 10px; color: #58585b;">
-                    Vulnerable crop: <strong style="color: #059669;">${pinDist.mainCrop}</strong>
+                  <div style="margin-top: 6px; font-size: 10px; color: ${MAP_CHROME.inkSoft};">
+                    Vulnerable crop: <strong style="color: ${MAP_RISK_RAMP.crop};">${pinDist.mainCrop}</strong>
                   </div>
-                  <button onclick="window.selectHazardDistrict('${pinDist.id}')" style="margin-top: 8px; width: 100%; padding: 6px 10px; background: #0284c7; color: #ffffff; font-size: 11px; font-weight: 800; border: none; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px; box-shadow: 0 2px 6px rgba(2, 132, 199, 0.3);">
+                  <button onclick="window.selectHazardDistrict('${pinDist.id}')" style="margin-top: 8px; width: 100%; padding: 6px 10px; background: ${MAP_INTERACTIVE.blue}; color: ${MAP_CHROME.surface}; font-size: 11px; font-weight: 800; border: none; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px; box-shadow: 0 2px 6px rgba(2, 132, 199, 0.3);">
                     Focus ${pinDist.name} district boundary
                   </button>
                 </div>
               ` : `
-                <div style="margin-top: 6px; color: #0284c7; font-weight: 800;">Nearest District: ${(pinDist as DistrictGeo | undefined)?.name || 'Detected'}</div>
+                <div style="margin-top: 6px; color: ${MAP_INTERACTIVE.blue}; font-weight: 800;">Nearest District: ${(pinDist as DistrictGeo | undefined)?.name || 'Detected'}</div>
               `}
             </div>
           </div>
@@ -803,8 +810,8 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
       try {
         const accuracyCircle = L.circle([userGpsPos.lat, userGpsPos.lng], {
           radius: userGpsPos.accuracy || 800,
-          color: '#0284c7',
-          fillColor: '#38bdf8',
+          color: MAP_INTERACTIVE.blue,
+          fillColor: MAP_INTERACTIVE.blueBright,
           fillOpacity: 0.15,
           weight: 1.5,
           dashArray: '4, 4',
@@ -815,7 +822,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
           html: `
             <div style="position: relative; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; outline: none; cursor: pointer;">
               <div style="position: absolute; inset: -10px; border-radius: 50%; background: rgba(2, 132, 199, 0.45); filter: blur(6px);" class="radar-ping-ring"></div>
-              <div style="position: relative; width: 36px; height: 36px; border-radius: 50%; background: #0284c7; border: 2.5px solid #ffffff; display: flex; align-items: center; justify-content: center; color: #ffffff; box-shadow: 0 4px 20px rgba(2, 132, 199, 0.7);">
+              <div style="position: relative; width: 36px; height: 36px; border-radius: 50%; background: ${MAP_INTERACTIVE.blue}; border: 2.5px solid ${MAP_CHROME.surface}; display: flex; align-items: center; justify-content: center; color: ${MAP_CHROME.surface}; box-shadow: 0 4px 20px rgba(2, 132, 199, 0.7);">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="display:block;"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="12" cy="12" r="3" fill="currentColor"/><line x1="12" y1="2" x2="12" y2="6" stroke="currentColor" stroke-width="2"/><line x1="12" y1="18" x2="12" y2="22" stroke="currentColor" stroke-width="2"/><line x1="2" y1="12" x2="6" y2="12" stroke="currentColor" stroke-width="2"/><line x1="18" y1="12" x2="22" y2="12" stroke="currentColor" stroke-width="2"/></svg>
               </div>
             </div>
@@ -845,50 +852,50 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
         const dist = nearest?.district;
         const distanceKm = nearest?.distanceKm ? nearest.distanceKm.toFixed(1) : '0.0';
         const sevPct = dist ? Math.round(dist.severity * 100) : 0;
-        const riskColor = dist?.risk === 'High' ? '#e11d48' : dist?.risk === 'Moderate' ? '#d97706' : '#16a34a';
+        const riskColor = dist?.risk === 'High' ? MAP_RISK_RAMP.high : dist?.risk === 'Moderate' ? MAP_RISK_RAMP.moderate : MAP_RISK_RAMP.low;
         const riskBg = dist?.risk === 'High' ? 'rgba(225, 29, 72, 0.12)' : dist?.risk === 'Moderate' ? 'rgba(217, 119, 6, 0.12)' : 'rgba(22, 163, 74, 0.12)';
         const riskBorder = dist?.risk === 'High' ? 'rgba(225, 29, 72, 0.3)' : dist?.risk === 'Moderate' ? 'rgba(217, 119, 6, 0.3)' : 'rgba(22, 163, 74, 0.3)';
 
         gpsMarker.bindPopup(`
-          <div style="padding: 12px; font-family: var(--hds-font-family-heading); color: #023246; min-width: 250px; max-width: 290px;">
-            <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #d1d1d1; padding-bottom: 8px; margin-bottom: 10px;">
+          <div style="padding: 12px; font-family: var(--hds-font-family-heading); color: ${MAP_CHROME.panelInk}; min-width: 250px; max-width: 290px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid ${MAP_CHROME.hairline}; padding-bottom: 8px; margin-bottom: 10px;">
               <div style="display: flex; align-items: center; gap: 4px;">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="display:block;"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/><circle cx="12" cy="12" r="3" fill="currentColor"/><line x1="12" y1="2" x2="12" y2="6" stroke="currentColor" stroke-width="2"/><line x1="12" y1="18" x2="12" y2="22" stroke="currentColor" stroke-width="2"/><line x1="2" y1="12" x2="6" y2="12" stroke="currentColor" stroke-width="2"/><line x1="18" y1="12" x2="22" y2="12" stroke="currentColor" stroke-width="2"/></svg>
-                <strong style="font-size: 13px; color: #17171b; font-weight: 800;">GPS Device Position</strong>
+                <strong style="font-size: 13px; color: ${MAP_CHROME.inkStrong}; font-weight: 800;">GPS Device Position</strong>
               </div>
-              <span style="font-size: 10px; font-weight: 900; padding: 2px 7px; border-radius: 6px; background: rgba(56, 189, 248, 0.15); color: #0284c7; border: 1px solid rgba(56, 189, 248, 0.3);">Active GPS</span>
+              <span style="font-size: 10px; font-weight: 900; padding: 2px 7px; border-radius: 6px; background: rgba(56, 189, 248, 0.15); color: ${MAP_INTERACTIVE.blue}; border: 1px solid rgba(56, 189, 248, 0.3);">Active GPS</span>
             </div>
 
-            <div style="font-size: 11px; color: #444447; line-height: 1.5;">
-              <div style="display: flex; justify-content: space-between; font-family: monospace; background: #e3e3e3; padding: 6px 8px; border-radius: 6px; border: 1px solid #d1d1d1;">
+            <div style="font-size: 11px; color: ${MAP_CHROME.ink}; line-height: 1.5;">
+              <div style="display: flex; justify-content: space-between; font-family: monospace; background: ${MAP_CHROME.rail}; padding: 6px 8px; border-radius: 6px; border: 1px solid ${MAP_CHROME.hairline};">
                 <div>Latitude: <strong>${userGpsPos.lat.toFixed(4)}°N</strong></div>
                 <div>Longitude: <strong>${userGpsPos.lng.toFixed(4)}°E</strong></div>
               </div>
-              <div style="margin-top: 4px; font-size: 10px; color: #77777a; font-family: monospace; text-align: right;">
+              <div style="margin-top: 4px; font-size: 10px; color: ${MAP_CHROME.muted}; font-family: monospace; text-align: right;">
                 GPS Accuracy: <strong>~${userGpsPos.accuracy || 10}m</strong>
               </div>
 
               ${dist ? `
-                <div style="margin-top: 8px; padding: 10px; background: #f6f6f6; border-radius: 10px; border: 1px solid #d1d1d1;">
+                <div style="margin-top: 8px; padding: 10px; background: ${MAP_CHROME.surfaceSunken}; border-radius: 10px; border: 1px solid ${MAP_CHROME.hairline};">
                   <div style="display: flex; align-items: center; justify-content: space-between;">
                     <div>
-                      <div style="font-size: 9px; font-weight: 800; color: #77777a; text-transform: uppercase; letter-spacing: 0.5px;">Identified District</div>
-                      <div style="font-size: 14px; font-weight: 900; color: #17171b; margin-top: 1px;">
-                        ${dist.name} <span style="font-size: 11px; font-weight: 600; color: #77777a;">(${dist.division})</span>
+                      <div style="font-size: 9px; font-weight: 800; color: ${MAP_CHROME.muted}; text-transform: uppercase; letter-spacing: 0.5px;">Identified District</div>
+                      <div style="font-size: 14px; font-weight: 900; color: ${MAP_CHROME.inkStrong}; margin-top: 1px;">
+                        ${dist.name} <span style="font-size: 11px; font-weight: 600; color: ${MAP_CHROME.muted};">(${dist.division})</span>
                       </div>
                     </div>
-                    <span style="font-size: 10px; font-weight: 700; color: #0284c7; background: #e0f2fe; padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(2, 132, 199, 0.2);">
+                    <span style="font-size: 10px; font-weight: 700; color: ${MAP_INTERACTIVE.blue}; background: ${MAP_INTERACTIVE.blueTint}; padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(2, 132, 199, 0.2);">
                       ${distanceKm} km
                     </span>
                   </div>
 
-                  <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 8px; padding-top: 8px; border-top: 1px dashed #b9b9bb;">
+                  <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 8px; padding-top: 8px; border-top: 1px dashed ${MAP_CHROME.neutral};">
                     <div>
-                      <div style="font-size: 9px; color: #77777a; font-weight: 700; text-transform: uppercase;">Identified Hazard</div>
-                      <div style="font-size: 12px; font-weight: 800; color: #17171b; margin-top: 1px;"><MaterialIcon name="warning" className="w-4 h-4 inline-block align-middle" /> ${dist.hazardType}</div>
+                      <div style="font-size: 9px; color: ${MAP_CHROME.muted}; font-weight: 700; text-transform: uppercase;">Identified Hazard</div>
+                      <div style="font-size: 12px; font-weight: 800; color: ${MAP_CHROME.inkStrong}; margin-top: 1px;"><MaterialIcon name="warning" className="w-4 h-4 inline-block align-middle" /> ${dist.hazardType}</div>
                     </div>
                     <div style="text-align: right;">
-                      <div style="font-size: 9px; color: #77777a; font-weight: 700; text-transform: uppercase;">Severity Score</div>
+                      <div style="font-size: 9px; color: ${MAP_CHROME.muted}; font-weight: 700; text-transform: uppercase;">Severity Score</div>
                       <div style="margin-top: 2px;">
                         <span style="font-size: 11px; font-weight: 900; padding: 2px 7px; border-radius: 5px; background: ${riskBg}; color: ${riskColor}; border: 1px solid ${riskBorder}; display: inline-block;">
                           ${sevPct}% (${dist.risk})
@@ -897,16 +904,16 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                     </div>
                   </div>
 
-                  <div style="margin-top: 8px; padding-top: 6px; border-top: 1px solid #e3e3e3; font-size: 10px; color: #58585b; display: flex; align-items: center; gap: 4px;">
+                  <div style="margin-top: 8px; padding-top: 6px; border-top: 1px solid ${MAP_CHROME.rail}; font-size: 10px; color: ${MAP_CHROME.inkSoft}; display: flex; align-items: center; gap: 4px;">
                     <span>Vulnerable crop:</span>
-                    <strong style="color: #059669; font-weight: 800;">${dist.mainCrop}</strong>
+                    <strong style="color: ${MAP_RISK_RAMP.crop}; font-weight: 800;">${dist.mainCrop}</strong>
                   </div>
-                  <button onclick="window.selectHazardDistrict('${dist.id}')" style="margin-top: 8px; width: 100%; padding: 6px 10px; background: #0284c7; color: #ffffff; font-size: 11px; font-weight: 800; border: none; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px; box-shadow: 0 2px 6px rgba(2, 132, 199, 0.3);">
+                  <button onclick="window.selectHazardDistrict('${dist.id}')" style="margin-top: 8px; width: 100%; padding: 6px 10px; background: ${MAP_INTERACTIVE.blue}; color: ${MAP_CHROME.surface}; font-size: 11px; font-weight: 800; border: none; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 4px; box-shadow: 0 2px 6px rgba(2, 132, 199, 0.3);">
                     Focus ${dist.name} district boundary
                   </button>
                 </div>
               ` : `
-                <div style="margin-top: 6px; color: #0284c7; font-weight: 900;">Nearest District: Detected (${distanceKm} km)</div>
+                <div style="margin-top: 6px; color: ${MAP_INTERACTIVE.blue}; font-weight: 900;">Nearest District: Detected (${distanceKm} km)</div>
               `}
             </div>
           </div>
@@ -947,7 +954,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
           });
           markersGroupRef.current?.addLayer(outerGlow);
           boundaryPolygon.bindTooltip(
-            `<div style="font-family: var(--hds-font-family-heading); font-size: 11px; font-weight: 900; color: #ffffff; text-shadow: 0 2px 4px rgba(0,0,0,0.8); display: flex; align-items: center; gap: 6px;"><MaterialIcon name="location_on" className="w-4 h-4 inline-block align-middle" /><span>${activeUserDistrict.name} District Boundary (Your Location)</span><span style="background: ${severityColor}; color: #ffffff; padding: 2px 6px; border-radius: 9999px; font-size: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.4);">${severityPercent}% Severity</span></div>`,
+            `<div style="font-family: var(--hds-font-family-heading); font-size: 11px; font-weight: 900; color: ${MAP_CHROME.surface}; text-shadow: 0 2px 4px rgba(0,0,0,0.8); display: flex; align-items: center; gap: 6px;"><MaterialIcon name="location_on" className="w-4 h-4 inline-block align-middle" /><span>${activeUserDistrict.name} District Boundary (Your Location)</span><span style="background: ${severityColor}; color: ${MAP_CHROME.surface}; padding: 2px 6px; border-radius: 9999px; font-size: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.4);">${severityPercent}% Severity</span></div>`,
             { permanent: true, direction: 'top' }
           );
           markersGroupRef.current?.addLayer(boundaryPolygon);
@@ -968,7 +975,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
         html: `
           <div style="position: relative; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; outline: none; cursor: pointer;">
             <div style="position: absolute; inset: -12px; border-radius: 50%; background: rgba(249, 168, 37, 0.45); filter: blur(6px);" class="radar-ping-ring"></div>
-            <div style="position: relative; width: 30px; height: 30px; border-radius: 50%; background: #ffffff; border: 3px solid #f64137; display: flex; align-items: center; justify-content: center; color: #17171b; font-size: 14px; font-weight: 900; box-shadow: 0 4px 16px rgba(249, 168, 37, 0.5);">
+            <div style="position: relative; width: 30px; height: 30px; border-radius: 50%; background: ${MAP_CHROME.surface}; border: 3px solid ${MAP_RISK_RAMP.severe}; display: flex; align-items: center; justify-content: center; color: ${MAP_CHROME.inkStrong}; font-size: 14px; font-weight: 900; box-shadow: 0 4px 16px rgba(249, 168, 37, 0.5);">
               <MaterialIcon name="search" className="w-4 h-4 inline-block align-middle" />
             </div>
           </div>
@@ -1003,7 +1010,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
       BANGLADESH_RIVERS.forEach((river) => {
         try {
           const outerGlow = L.polyline(river.coords, {
-            color: '#38bdf8',
+            color: MAP_INTERACTIVE.blueBright,
             weight: 7,
             opacity: 0.35,
             interactive: false,
@@ -1017,9 +1024,9 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
           });
 
           riverPolyline.bindTooltip(
-            `<div style="font-family: var(--hds-font-family-heading); font-size: 11px; font-weight: 900; color: #0284c7;">
+            `<div style="font-family: var(--hds-font-family-heading); font-size: 11px; font-weight: 900; color: ${MAP_INTERACTIVE.blue};">
               <MaterialIcon name="water" className="w-4 h-4 inline-block align-middle" /> ${river.name}<br/>
-              <span style="font-size: 10px; color: #77777a; font-weight: normal;">${river.status}</span>
+              <span style="font-size: 10px; color: ${MAP_CHROME.muted}; font-weight: normal;">${river.status}</span>
             </div>`,
             { permanent: false, direction: 'top' }
           );
@@ -1046,7 +1053,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
       radarRings.forEach((radiusMeters, idx) => {
         const ring = L.circle([centerLat, centerLng], {
           radius: radiusMeters,
-          color: '#0284c7',
+          color: MAP_INTERACTIVE.blue,
           weight: 1.5,
           opacity: 0.5 - idx * 0.1,
           fillColor: idx % 2 === 0 ? 'rgba(56, 189, 248, 0.08)' : 'transparent',
@@ -1059,9 +1066,9 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
 
       // Add radar storm reflectivity pulse cells
       const stormCells = [
-        { lat: 25.0658, lng: 91.3950, radius: 28000, color: '#dc2626', name: 'Sylhet Severe Cells (52 dBZ)' },
-        { lat: 25.8058, lng: 89.6361, radius: 24000, color: '#ea580c', name: 'Teesta Surge Cells (45 dBZ)' },
-        { lat: 22.7185, lng: 89.0705, radius: 32000, color: '#7c3aed', name: 'Bay of Bengal Cyclone Outer Bands (48 dBZ)' },
+        { lat: 25.0658, lng: 91.3950, radius: 28000, color: MAP_SENSOR_SITES.sylhet, name: 'Sylhet Severe Cells (52 dBZ)' },
+        { lat: 25.8058, lng: 89.6361, radius: 24000, color: MAP_SENSOR_SITES.teesta, name: 'Teesta Surge Cells (45 dBZ)' },
+        { lat: 22.7185, lng: 89.0705, radius: 32000, color: MAP_SENSOR_SITES.bayOfBengal, name: 'Bay of Bengal Cyclone Outer Bands (48 dBZ)' },
       ];
 
       stormCells.forEach((cell) => {
@@ -1101,9 +1108,9 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
               maxZoom: 10,
               max: 1.0,
               gradient: {
-                0.2: '#0284c7',
-                0.5: '#f59e0b',
-                0.8: '#ef4444',
+                0.2: MAP_RADAR_BANDS.calm,
+                0.5: MAP_RADAR_BANDS.moderate,
+                0.8: MAP_RADAR_BANDS.heavy,
               },
             })
             .addTo(mapInstanceRef.current);
@@ -2191,7 +2198,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                             href={capturedPreviewUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="absolute bottom-3 right-3 px-3 py-1.5 bg-carbon-90/80 hover:bg-carbon-90 text-white  text-xs font-bold  border border-carbon-70 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                            className="absolute bottom-3 right-3 px-3 py-1.5 bg-carbon-90/80 hover:bg-carbon-90 text-white  text-xs font-bold  border border-carbon-70 flex items-center gap-1.5 opacity-100 md:opacity-0 md:group-hover:opacity-100 focus-visible:opacity-100 transition-opacity"
                           >
                             <MaterialIcon name="search" className="w-4 h-4 inline-block align-middle" /><span>View Full Resolution</span>
                           </a>
