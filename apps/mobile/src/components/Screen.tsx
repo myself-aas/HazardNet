@@ -18,6 +18,7 @@ import { useTheme } from '../theme/ThemeProvider';
 import { useAppStateStore } from '../state/appStateStore';
 import { useDataState } from '../hooks/useDataState';
 import { type DataState } from '@hazardnet/core';
+import type { IconName } from '@hazardnet/design-system';
 
 /** Map core DataState → Banner tone. */
 function stateToTone(s: DataState): BannerTone | null {
@@ -39,16 +40,18 @@ function stateToTone(s: DataState): BannerTone | null {
   }
 }
 
-const ICON_FOR_STATE: Partial<Record<DataState, string>> = {
-  offlineCached: '◐',
-  offlineNoCache: '!',
-  stale: '◔',
-  delayed: '!',
-  serviceUnavailable: '!',
-  partial: '◐',
-  sourceFailure: '!',
-  permissionDenied: '◉',
-  appError: '!',
+// Registry names, not text glyphs: the banner previously drew '◐', '◔', '◉' and '!', which
+// cannot take the tone colour and are read aloud as punctuation.
+const ICON_FOR_STATE: Partial<Record<DataState, IconName>> = {
+  offlineCached: 'HardDrive',
+  offlineNoCache: 'WifiOff',
+  stale: 'History',
+  delayed: 'Clock',
+  serviceUnavailable: 'AlertTriangle',
+  partial: 'Layers',
+  sourceFailure: 'AlertTriangle',
+  permissionDenied: 'ShieldAlert',
+  appError: 'AlertTriangle',
 };
 
 export interface ScreenProps {
@@ -120,7 +123,7 @@ export const Screen: React.FC<ScreenProps> = ({
           headline={resolvedBanner.headline}
           body={resolvedBanner.body}
           onPress={handleBannerPress}
-          icon={ICON_FOR_STATE[ds.state] ?? '!'}
+          icon={ICON_FOR_STATE[ds.state] ?? 'AlertTriangle'}
         />
       ) : null}
       <Box flex={1} bg={bg ?? 'background'}>

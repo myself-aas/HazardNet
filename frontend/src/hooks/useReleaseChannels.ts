@@ -44,7 +44,7 @@ const FETCH_TIMEOUT_MS = 7000;
 
 /** Note shown on every card while release lookups are switched off. */
 export const LOOKUPS_DISABLED_NOTE =
-  'Release files are not fetched on this deployment — open the repository’s Releases page to see whether artifacts have been published.';
+  'Release files are not fetched on this deployment. Open the repository’s Releases page to see whether artifacts have been published.';
 
 export type ChannelStatus = 'loading' | 'ready' | 'pending' | 'unavailable';
 
@@ -122,7 +122,7 @@ async function fetchGithubRelease(
       return { note: 'No release published yet' };
     }
     if (status === 403 || status === 429) {
-      return { note: 'GitHub API rate limit reached — open the releases page directly' };
+      return { note: 'GitHub API rate limit reached. Open the releases page directly' };
     }
     if (status !== 200 || !body) {
       return { note: 'Release information unavailable' };

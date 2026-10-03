@@ -145,7 +145,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
           >
             <MaterialIcon name="map_search" className="h-5 w-5 shrink-0 text-carbon-90" />
             <span className="flex-1">Search</span>
-            <kbd className="hidden rounded-md border border-carbon-30 bg-white px-1.5 py-0.5 font-sans text-[11px] font-semibold text-carbon-60 sm:inline">
+            <kbd className="hidden rounded-md border border-carbon-30 bg-white px-1.5 py-0.5 font-sans text-xs font-semibold text-carbon-60 sm:inline">
               Ctrl K
             </kbd>
           </button>
@@ -181,7 +181,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
               <span>Alerts</span>
               <span
                 aria-hidden="true"
-                className={`-mt-1 text-[11px] font-medium ${isSubscribed ? 'text-nasa-blue-shade' : 'text-carbon-60'}`}
+                className={`-mt-1 text-xs font-medium ${isSubscribed ? 'text-nasa-blue-shade' : 'text-carbon-60'}`}
               >
                 {isSubscribed ? 'On' : 'Off'}
               </span>
@@ -207,7 +207,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
             <section key={section.id} aria-labelledby={`drawer-${section.id}`}>
               <h2
                 id={`drawer-${section.id}`}
-                className="mb-1.5 px-1 text-[11px] font-bold uppercase tracking-[0.08em] text-carbon-60"
+                className="mb-1.5 px-1 text-xs font-bold uppercase tracking-[0.08em] text-carbon-60"
               >
                 {section.category}
               </h2>

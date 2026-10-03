@@ -1,7 +1,8 @@
 /* NASA Horizon Design System tokens (nasa/hds-core, CC0-1.0) — vendored and compiled by
    scripts/import_nasa_tokens.mjs, mapped onto this app's semantic roles below. Imported first so
-   every var(--hds-*) consumer resolves. Source and rules: data/design/nasa-hds/PROVENANCE.md */
+   every var(--hds-*) consumer resolves. Source and rules; data/design/nasa-hds/PROVENANCE.md */
 @import "./styles/nasa-hds.css";
+@import "./styles/hero-media.css";
 @import "@fontsource/noto-sans-bengali/400.css";
 @import "@fontsource/noto-sans-bengali/700.css";
 
@@ -15,20 +16,29 @@
 
 /* HazardNet Meridian Design System (HDS v3.0). Imported last so its semantic
    roles sit above the NASA-HDS-derived layer and can override it, while every
-   existing --hn-* / --hds-* name keeps resolving. Additive by design: 6,386
+   existing --hn-* / --hds-* name keeps resolving. Additive by design; 6,386
    palette-family uses and several asserting tests depend on the layer below.
    Source of truth for values and reasoning:
    packages/design-system/src/meridian.ts · docs/design-system/MERIDIAN.md */
 @import "./styles/meridian.css";
+
+/* Phase 9 · the dark theme. Imported last; it re-points primitives defined at
+   `:root` by the layers above (see the header of styles/dark.css). */
+@import "./styles/dark.css";
 
 @custom-variant dark (&:is(.dark *, [data-mrd-theme="dark"] *));
 
 /* HazardNet edge-first typography & Cartographic-Editorial Brutalism HUD contract.
    No remote font URL is permitted. */
 :root {
-  --font-sans-en: 'Inter', 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --font-sans-bn: 'Hind Siliguri', 'Noto Sans Bengali', 'Baloo Da 2', sans-serif;
-  --font-mono: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+  /* Every family named in a stack is either bundled or a platform face. The previous stacks led
+     with 'Inter' / 'Plus Jakarta Sans' / 'Instrument Sans' / 'Anek Bangla' / 'Baloo Da 2' - none of
+     which ship - so the only effect was that machines with one of them installed rendered a
+     different product from everyone else, and the design docs described a system the bundle does
+     not contain. See P0-3 in docs/audits/2026-10-03-frontend-design-system-audit.md. */
+  --font-sans-en: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-sans-bn: 'Noto Sans Bengali', 'Hind Siliguri', sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
   --hn-hud-obsidian: #0b0f17;
   --hn-hud-slate: #111827;
   --hn-hud-border: rgba(255, 255, 255, 0.12);
@@ -49,7 +59,9 @@ html, body {
 .lang-bn, .farmer-advisory, .tts-fallback-text, [lang="bn"], :lang(bn) {
   font-family: var(--font-sans-bn) !important;
   line-height: 1.65;
-  letter-spacing: 0.01em;
+  /* No tracking: letter-spacing pulls Bengali conjuncts and matras apart, and the 1.65 line
+     height is already the metric compensation this script needs. */
+  letter-spacing: normal;
 }
 
 .metric-value, .confidence-badge, .tensor-log, .hn-tabular-nums, code, pre {
@@ -99,12 +111,12 @@ html, body {
      Every value below references a compiled NASA token (--hds-*), whose source
      is nasa/hds-core's tokens.json — vendored in data/design/nasa-hds/ and
      compiled by scripts/import_nasa_tokens.mjs. The usage rule NASA attaches to
-     each token is repeated here on purpose: the rules are part of the system,
+     each token is repeated here on purpose; the rules are part of the system,
      and a palette adopted without them is only a costume. */
   --hn-hds-red: var(--hn-brand-red);                   /* the mark's crimson #970002 — navigation CTAs, errors. Never on-page actions, decoration or dataviz. */
-  --hn-hds-red-tint: var(--hds-color-nasa-red-tint);   /* hover states, error highlights — stays light on purpose: dark grounds need 6.9:1, and a tint of #970002 would only reach 3.6:1 */
+  --hn-hds-red-tint: var(--hds-color-nasa-red-tint);   /* hover states, error highlights — stays light on purpose; dark grounds need 6.9:1, and a tint of #970002 would only reach 3.6:1 */
   --hn-hds-red-shade: var(--hn-brand-red-dark);        /* the mark's dark crimson #7B1D21 — button hover, error dark, 10.3:1 against white */
-  --hn-hds-blue: var(--hds-color-nasa-blue);           /* "do something here": controls, list markers, table headers, info. Never nav CTAs or dataviz. */
+  --hn-hds-blue: var(--hds-color-nasa-blue);           /* "do something here"; controls, list markers, table headers, info. Never nav CTAs or dataviz. */
   --hn-hds-blue-tint: var(--hds-color-nasa-blue-tint);
   --hn-hds-blue-shade: var(--hds-color-nasa-blue-shade); /* 9.9:1 against white — link/info text on light surfaces */
   --hn-hds-orange: var(--hds-color-international-orange); /* status/decorative accent. Never a primary action. */
@@ -129,7 +141,8 @@ html, body {
      carbon-05, so it clears AA for normal text — unlike the #ff0000 it replaces,
      which was never contrast-checked. #0D0D0D is 19.4:1 on white. */
   --hn-brand-paper: #fefefe;
-  --hn-brand-black: #000000;
+  /* `--hn-brand-black: #000000` was declared here and never referenced; pure black is banned as a
+     surface, so the token is gone rather than repointed. Brand ink is `--hn-brand-ink` below. */
   --hn-brand-graphite: #777777;
   --hn-brand-red: #970002;
   --hn-brand-red-dark: #7B1D21;
@@ -137,14 +150,13 @@ html, body {
   --hn-brand-accent: var(--hn-brand-red);
 
   /* Typography: readable sans-first UI with a dedicated numeric/log face. */
-  --hn-font-mono: 'DM Mono', 'JetBrains Mono', 'SFMono-Regular', 'Roboto Mono', monospace;
+  --hn-font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
   --hn-font-sans: var(--font-sans-en);
-  --hn-font-heading: 'Inter', 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --hn-font-heading: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --hn-font-display: var(--hn-font-heading);
   --hn-font-brand: var(--hn-font-heading);
   --hn-font-bengali: var(--font-sans-bn);
   --hn-font-bengali-display: var(--font-sans-bn);
-  --hn-font-bengali-serif: 'Noto Serif Bengali', serif;
 
   /* Motion */
   --ease-emphasized: cubic-bezier(0.2, 0, 0, 1);
@@ -154,7 +166,7 @@ html, body {
 
   /* ---- Layer 2 · Semantic (shadcn-compatible core) -----------------------
      Token names are unchanged; the values they resolve to are now NASA's. That
-     is the entire point of a semantic layer: fifty-one files' worth of
+     is the entire point of a semantic layer; fifty-one files' worth of
      components keep saying `bg-primary`, and the answer to "what is primary"
      changed in one place. Contrast ratios in the comments are measured, not
      estimated — see docs/design-system/MASTER.md §Contrast. */
@@ -171,7 +183,7 @@ html, body {
      all; the shade is kept for hover and error-dark, not to rescue small labels. */
   --primary: var(--hn-hds-red);                /* #970002 */
   --primary-foreground: var(--hn-hds-white);   /* 9.1:1 — clears AA at any size */
-  /* The same crimson one step darker: 10.3:1 against white, for hover and filled
+  /* The same crimson one step darker; 10.3:1 against white, for hover and filled
      controls that read as "stronger" rather than merely "on". */
   --primary-strong: var(--hn-hds-red-shade);   /* #7B1D21 */
   --primary-strong-foreground: var(--hn-hds-white);
@@ -200,10 +212,17 @@ html, body {
      it matches the mobile shells, and NASA HDS remains the source of colour and
      typography rather than of corner geometry. Circles (rounded-full) are
      untouched - avatars, status dots and icon buttons stay round. */
-  --hn-radius-control: 8px;    /* inputs, chips, small controls */
-  --hn-radius-card: 16px;      /* panels, cards, tiles, popovers */
-  --hn-radius-sheet: 28px;     /* bottom sheets, modals, drawers */
-  --hn-radius-pill: 9999px;    /* buttons, badges, search fields */
+  /* Radius: the Meridian scale, never a literal. These four are the only radius
+     names a component may use (plus `rounded-full`, which is `--radius-full` and is
+     reserved for avatars and status dots). The legacy Tailwind names below are
+     aliases onto these roles, so `rounded-xl` and `rounded-2xl` cannot drift apart.
+     See MERIDIAN_RADIUS_ROLES in packages/design-system/src/meridian.ts for the
+     role table and __tests__/meridianParity.test.js for the gate. */
+  --hn-radius-chip: var(--mrd-radius-xs);
+  --hn-radius-control: var(--mrd-radius-sm);   /* inputs, buttons, small controls */
+  --hn-radius-card: var(--mrd-radius-lg);      /* panels, cards, tiles, popovers */
+  --hn-radius-sheet: var(--mrd-radius-sheet);  /* bottom sheets, modals, drawers */
+  --hn-radius-pill: var(--mrd-radius-pill);    /* buttons, badges, search fields */
   --hn-shadow-card: 0 4px 12px rgba(0, 0, 0, 0.05);
   --hn-shadow-elevated: 0 12px 24px -4px rgba(0, 0, 0, 0.12);
   --hn-shadow-fab: 0 12px 20px -5px rgba(0, 0, 0, 0.3), 0 6px 12px rgba(28, 103, 227, 0.25);
@@ -330,7 +349,7 @@ html, body {
   --hero-glow-blur-secondary: 100px;/* tokenized secondary atmospheric glow — was blur-[100px] arbitrary */
   --hero-glass-blur: 8px;          /* hero glass legibility blur — maps to Tailwind backdrop-blur-md; centralises hero blur surface */
   --control-min-size: 44px; /* minimum touch target (iOS HIG / WCAG 2.5.8) */
-  --navbar-height: 3.5rem;
+  --navbar-height: calc(3.5rem + env(safe-area-inset-top, 0px));
 
   /* Stacking scale (plan §13.7) — replace ad hoc 9999 / 10050 / 2000. */
   --z-base: 0;
@@ -344,7 +363,7 @@ html, body {
 }
 @media (min-width: 40rem) {
   :root {
-    --navbar-height: 4rem;
+    --navbar-height: calc(4rem + env(safe-area-inset-top, 0px));
   }
 }
 
@@ -355,8 +374,8 @@ html {
 
   body {
     margin: 0;
-    /* Body copy is NASA HDS's body stack (Public Sans, 16px/1.62); headings take
-       the editorial face. */
+    /* Body copy is the platform UI face at 16px/1.62; no webfont is fetched for Latin
+       (see the typography note in the @theme block). */
     font-family: var(--hn-font-sans);
     font-size: 16px;
     line-height: 1.62;
@@ -534,11 +553,14 @@ html {
 /* Leaflet zoom control: two 44px glass circles with the map's floating chrome
    instead of the stock square stack. Uses the same --glass-* recipe as
    .glass-rail-button so the map controls and the app's rail look like one
-   system. */
+   system.
+
+   No `!important`: leaflet.css is imported into `layer(base)` and these rules are unlayered, so
+   they win on layer order alone (backlog 6). */
 .leaflet-control-zoom {
-  border: 0 !important;
-  box-shadow: none !important;
-  margin: 0 16px 16px 0 !important;
+  border: 0;
+  box-shadow: none;
+  margin: 0 16px 16px 0;
 }
 
 .leaflet-control-zoom a,
@@ -593,14 +615,15 @@ html {
   color: var(--hn-hds-blue-shade) !important;
 }
 
-/* Leaflet's own popups follow the card language. */
+/* Leaflet's own popups follow the card language. No `!important` for the same reason as the zoom
+   control above: the vendor sheet is layered, these rules are not. */
 .leaflet-popup-content-wrapper {
-  border-radius: var(--hn-radius-card) !important;
-  box-shadow: var(--hn-shadow-elevated) !important;
+  border-radius: var(--hn-radius-card);
+  box-shadow: var(--hn-shadow-elevated);
 }
 
 .leaflet-popup-tip {
-  box-shadow: var(--hn-shadow-card) !important;
+  box-shadow: var(--hn-shadow-card);
 }
 
 .map-tile-high-contrast .leaflet-tile {
@@ -679,7 +702,7 @@ html[data-map-debug-fx='true'] .cluster-pulse-ring {
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   border-radius: var(--hn-radius-card) !important;
-  box-shadow: var(--hn-shadow-elevated) !important;
+  box-shadow: var(--hn-shadow-elevated);
   padding: 0 !important;
   overflow: hidden !important;
 }
@@ -687,7 +710,7 @@ html[data-map-debug-fx='true'] .cluster-pulse-ring {
 .custom-modern-leaflet-popup .leaflet-popup-content,
 .leaflet-popup-content {
   margin: 0 !important;
-  line-height: 1.4 !important;
+  line-height: 1.4;
   width: 100% !important;
 }
 
@@ -727,8 +750,8 @@ html[data-map-debug-fx='true'] .cluster-pulse-ring {
     display: flex !important;
     align-items: center;
     justify-content: center;
-    top: 4px !important;
-    right: 4px !important;
+    top: 4px;
+    right: 4px;
   }
 }
 
@@ -805,14 +828,16 @@ html[data-map-debug-fx='true'] .cluster-pulse-ring {
 
 .user-district-pulse-border {
   animation: userDistrictDashPulse 3s linear infinite;
-  stroke-linecap: round !important;
-  stroke-linejoin: round !important;
+  /* Leaflet writes stroke-linecap/linejoin as SVG presentation attributes, and any author rule
+     beats an attribute - no `!important` needed (backlog 6). */
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .user-district-pulse-glow {
   animation: userDistrictGlowPulse 2.5s ease-in-out infinite;
-  stroke-linecap: round !important;
-  stroke-linejoin: round !important;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 @keyframes radarSweep {
@@ -877,23 +902,22 @@ html[data-map-debug-fx='true'] .marker-high-risk {
 }
 
 @theme inline {
-  /* Typography — NASA HDS is the design system's source of truth (DESIGN.md,
-     __tests__/nasaTokens.test.js):
-       sans    → --hds-font-family-body   ('Public Sans Web', …)
-       brand   → --hds-font-family-heading ('Inter', …)
-       mono    → --hds-font-family-code   ('DM Mono', …)
-     The --hn-font-* stacks below remain for explicit Bengali/display scopes
-     (font-bengali, font-display) where NASA's Latin-only families do not apply. */
-  --font-sans: var(--hds-font-family-body);
-  --font-brand: var(--hds-font-family-heading);
+  /* Typography — every alias ends in a family this build can actually render.
+     NASA HDS remains the source of the design system's *vocabulary* (colour, geometry, the
+     token names and their usage rules), but not of its typefaces; this bundle ships exactly
+     one webfont (`@fontsource/noto-sans-bengali`, for the script NASA's Latin-only families
+     cannot cover) and otherwise uses the platform UI face. NASA's own
+     'Public Sans Web' / 'Inter' / 'DM Mono' were aliased here before and are not bundled, so
+     the only thing the alias achieved was that a machine with one of them installed rendered
+     a different product from everyone else. See P0-3 in
+     docs/audits/2026-10-03-frontend-design-system-audit.md. */
+  --font-sans: var(--font-sans-en);
+  --font-brand: var(--hn-font-heading);
   --font-heading: var(--hn-font-heading);
   --font-display: var(--hn-font-display);
-  --font-serif: var(--hn-font-bengali-serif);
   --font-bengali: var(--hn-font-bengali);
   --font-bengali-display: var(--hn-font-bengali-display);
-  --font-bengali-serif: var(--hn-font-bengali-serif);
-  --font-montserrat: var(--hn-font-heading);
-  --font-mono: var(--hds-font-family-code);
+  --font-mono: var(--hn-font-mono);
 
   /* Corner radius: see the radius keys at the foot of this block — HDS's two
      values (0px default, 2px for controls) are applied there. `rounded-full` is
@@ -954,7 +978,7 @@ html[data-map-debug-fx='true'] .marker-high-risk {
      all 4,030 neutral utility classes were renamed onto carbon (bg-slate-50 → bg-carbon-05
      … bg-slate-950 → bg-carbon-black) and all 252 hard-coded neutral literals — inline
      styles, SVG fills, canvas and map layer colours, jsPDF text colours, the manifest and
-     theme-color — were moved onto the token values. What remains here is a safety net: if a
+     theme-color — were moved onto the token values. What remains here is a safety net; if a
      component reaches for a Tailwind grey again it still renders NASA's carbon rather than
      Tailwind's slate, and the design gate (npm run check:design) reports the legacy name as
      a new finding, because the impeccable detector reads class names rather than resolved
@@ -965,7 +989,7 @@ html[data-map-debug-fx='true'] .marker-high-risk {
      they replace, so text and dark surfaces kept the contrast they had (slate-900 on white
      measures 17.85:1, carbon-90 17.88:1). The light end is deliberately stronger, because
      HDS draws a visible 1px rule and #d1d1d1 is NASA's border grey where #e2e8f0 was
-     Tailwind's. Two steps moved further than the ramp: slate-400 and slate-500 as muted text
+     Tailwind's. Two steps moved further than the ramp; slate-400 and slate-500 as muted text
      on a light surface measure 2.56:1 and 4.76:1, so the 616 sites wearing them were
      rewritten to carbon-60 (7.09:1) rather than aliased — the 12 that sit on a dark panel
      kept their step, where carbon measures what slate did. Measured pair by pair in
@@ -1036,6 +1060,7 @@ html[data-map-debug-fx='true'] .marker-high-risk {
   --color-warning: var(--warning);
   --color-warning-foreground: var(--warning-foreground);
   --color-warning-surface: var(--warning-surface);
+  --color-warning-border: var(--warning-border);
   --color-info: var(--info);
   --color-info-foreground: var(--info-foreground);
   --color-info-surface: var(--info-surface);
@@ -1050,7 +1075,7 @@ html[data-map-debug-fx='true'] .marker-high-risk {
      Shades are aliased by ROLE, not by hue, because that is what this design
      system actually means: 50-200 are surfaces, 300-400 are borders, 500-600 are
      solid fills, 700-950 are text. This follows the --success / --warning /
-     --info precedent above. It also tightens contrast: text-blue-500 was 3.7:1 on
+     --info precedent above. It also tightens contrast; text-blue-500 was 3.7:1 on
      white (an AA failure) and now resolves to --info at 9.9:1.
 
      indigo and purple are deliberately NOT declared. Their uses are data
@@ -1267,7 +1292,7 @@ html[data-map-debug-fx='true'] .marker-high-risk {
     text-transform: uppercase;
   }
 
-  /* Masthead navigation link — NASA's header pattern: uppercase 12px metadata
+  /* Masthead navigation link — NASA's header pattern; uppercase 12px metadata
      type, a 2px rule that turns red for the current section. Red is correct here
      because a nav link navigates ("go somewhere"); blue is reserved for controls
      that act on the current page. */
@@ -1335,7 +1360,7 @@ html[data-map-debug-fx='true'] .marker-high-risk {
   }
 }
 
-/* Respect users who prefer reduced motion: collapse decorative animation
+/* Respect users who prefer reduced motion; collapse decorative animation
    (radar pings, pulses, transitions) to a static snapshot. */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -1378,23 +1403,14 @@ html[data-low-bandwidth='true'] {
   scroll-behavior: auto !important;
 }
 
-/* Brand Typography & Wordmark Utilities per CSV Spec
-   Roles: brand/display = Instrument Sans / Plus Jakarta Sans;
-   headings = Instrument Sans / Anek Bangla;
-   UI/body/nav/buttons/labels = Plus Jakarta Sans / Public Sans / Noto Sans Bengali;
-   data readouts = DM Mono — NASA HDS & Google Fonts suite. */
-.font-montserrat {
-  font-family: var(--font-brand);
-}
-
-  .font-inter {
-    font-family: 'Public Sans Web', var(--font-sans);
-  }
-
-  /* Keep the NASA HDS families explicit so local builds and test gates resolve the shipped stacks. */
+/* Brand Typography & Wordmark Utilities.
+   Roles: brand/display/heading/UI = the platform sans (declared at :root as --font-sans-en);
+   data readouts = the platform mono. The two utilities that used to live here - `.font-inter`
+   and `.font-montserrat` - were named after fonts the bundle does not contain and are gone;
+   `font-inter` had exactly one caller (FirebaseRealtimeStatus) and `font-montserrat` none. */
   .font-brand,
   .font-heading {
-    font-family: 'Inter', var(--font-brand);
+    font-family: var(--font-brand);
   }
 
   .font-mono,
@@ -1403,7 +1419,7 @@ html[data-low-bandwidth='true'] {
   .tensor-log,
   code,
   pre {
-    font-family: 'DM Mono', var(--font-mono);
+    font-family: var(--font-mono);
   }
 
 .font-brand {
@@ -1462,7 +1478,7 @@ input[type="reset"] {
   }
 }
 
-/* 2. Primary nav / menu items: sans, 14 px, 600 (active) / 500. Active = teal + 2 px underline */
+/* 2. Primary nav / menu items; sans, 14 px, 600 (active) / 500. Active = teal + 2 px underline */
 .hn-nav-item {
   font-family: var(--font-sans);
   font-size: 14px;
@@ -1561,7 +1577,7 @@ p {
   line-height: 1.62;
 }
 
-/* 8. Metadata / caption / helper text: sans, 12–13 px, 400, line-height 1.4 */
+/* 8. Metadata / caption / helper text; sans, 12–13 px, 400, line-height 1.4 */
 .hn-caption {
   font-family: var(--font-sans);
   font-size: 12px;
@@ -1691,7 +1707,7 @@ button,
   transition: transform 150ms var(--ease-standard), box-shadow 150ms var(--ease-standard);
 }
 
-/* 10. Data readouts (severity score, confidence, dates): DM Mono, 13–16 px, 600, tabular figures */
+/* 10. Data readouts (severity score, confidence, dates); the mono stack, 13–16 px, 600, tabular figures */
 .hn-data-readout {
   font-family: var(--hds-font-family-code);
   font-size: 13px;
@@ -1706,10 +1722,10 @@ button,
   }
 }
 
-/* 11. Badges (FLOOD, SEV-3, district code): DM Mono, 11 px, 600, +0.08 em, caps, colored per severity token */
+/* 11. Badges (FLOOD, SEV-3, district code); the mono stack, 11 px, 600, +0.08 em, caps, colored per severity token */
 .hn-badge {
   font-family: var(--hds-font-family-code);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -1822,7 +1838,7 @@ caption {
   /* 1. Page Configuration & Geometry with CSS Paged Media Page Counters */
   @page {
     size: A4 portrait;
-    margin: 20mm 15mm; /* Top/Bottom: 20mm, Left/Right: 15mm (A4 Standard) */
+    margin: 20mm 15mm; /* Top/Bottom: 20mm, Left/Right; 15mm (A4 Standard) */
     @bottom-left {
       content: "HazardNet Bangladesh • Emergency Directive Handout";
       font-family: "Times New Roman", Times, serif;
@@ -2014,7 +2030,7 @@ caption {
     -webkit-backdrop-filter: none !important;
   }
 
-  /* 8. Text Color & Contrast Overrides (H1: 18pt, H2: 16pt, H3: 14pt) */
+  /* 8. Text Color & Contrast Overrides (H1; 18pt, H2; 16pt, H3; 14pt) */
   h1, h2, h3, h4, h5, h6 {
     color: var(--hds-color-carbon-90) !important;
     font-weight: 800 !important;
@@ -2051,7 +2067,7 @@ caption {
   a[href^="https://"]:after {
     content: " [" attr(href) "]";
     font-size: 7pt !important;
-    font-family: 'DM Mono', Consolas, monospace !important;
+    font-family: var(--font-mono) !important;
     font-weight: 500 !important;
     color: var(--hds-color-carbon-60) !important;
     word-break: break-all !important;
@@ -2071,7 +2087,7 @@ caption {
   a[href^="tel:"]:after {
     content: " (Hotline: " attr(href) ")";
     font-size: 7.5pt !important;
-    font-family: 'DM Mono', Consolas, monospace !important;
+    font-family: var(--font-mono) !important;
     font-weight: 700 !important;
     color: var(--hds-color-carbon-90) !important;
   }
@@ -2079,13 +2095,13 @@ caption {
   a[href^="mailto:"]:after {
     content: " [" attr(href) "]";
     font-size: 7pt !important;
-    font-family: 'DM Mono', Consolas, monospace !important;
+    font-family: var(--font-mono) !important;
     color: var(--hds-color-carbon-70) !important;
   }
 
   a[href^="tel:"] {
     font-weight: 800 !important;
-    font-family: 'DM Mono', Consolas, monospace !important;
+    font-family: var(--font-mono) !important;
     color: var(--hds-color-carbon-90) !important;
   }
 
@@ -2184,7 +2200,7 @@ caption {
     overflow: hidden !important;
   }
 
-  /* Scale down all chart elements by 90% (transform: scale(0.9)) during print to prevent rendering artifacts and data clipping */
+  /* Scale down all chart elements by 90% (transform; scale(0.9)) during print to prevent rendering artifacts and data clipping */
   .chart-card,
   .recharts-responsive-container,
   .recharts-wrapper,
@@ -2253,7 +2269,7 @@ caption {
     padding-top: 14pt !important;
   }
 
-  /* Dedicated 'End of Brief' Page for Print/PDF (Requirement: page-break-before, font-size: 8px) */
+  /* Dedicated 'End of Brief' Page for Print/PDF (Requirement; page-break-before, font-size; 8px) */
   .end-of-brief-page,
   .print-end-of-brief {
     page-break-before: always !important;
@@ -2327,7 +2343,7 @@ caption {
   th.emergency-protocol-title {
     background-color: var(--hds-color-carbon-90) !important;
     color: #ffffff !important;
-    font-family: 'DM Mono', Consolas, monospace !important;
+    font-family: var(--font-mono) !important;
     font-size: 8pt !important;
     font-weight: 900 !important;
     text-transform: uppercase !important;
@@ -2344,7 +2360,7 @@ caption {
     color: var(--hds-color-carbon-90) !important;
     border: 1pt solid var(--hds-color-carbon-60) !important;
     font-weight: 800 !important;
-    font-family: 'DM Mono', Consolas, monospace !important;
+    font-family: var(--font-mono) !important;
     font-size: 7.5pt !important;
     padding: 4pt 6pt !important;
     text-transform: uppercase;
@@ -2393,7 +2409,7 @@ caption {
     border: 1pt solid var(--hds-color-carbon-50) !important;
     border-radius: 4pt !important;
     padding: 2.5pt 6pt !important;
-    font-family: 'DM Mono', Consolas, monospace !important;
+    font-family: var(--font-mono) !important;
     font-size: 7.5pt !important;
     font-weight: 700 !important;
     color: var(--hds-color-carbon-90) !important;
@@ -2408,7 +2424,7 @@ caption {
     display: inline-block !important;
     background-color: var(--hds-color-carbon-90) !important;
     color: #ffffff !important;
-    font-family: 'DM Mono', Consolas, monospace !important;
+    font-family: var(--font-mono) !important;
     font-size: 6.5pt !important;
     font-weight: 800 !important;
     text-transform: uppercase !important;
@@ -2427,7 +2443,7 @@ caption {
     display: flex !important;
     justify-content: space-between !important;
     align-items: center !important;
-    font-family: 'DM Mono', Consolas, monospace !important;
+    font-family: var(--font-mono) !important;
     font-size: 7pt !important;
     color: var(--hds-color-carbon-60) !important;
     border-top: 0.75pt solid var(--hds-color-carbon-40) !important;
@@ -2618,7 +2634,7 @@ body.pdf-exporting .no-print,
 .print-preview-rendered-body th.emergency-protocol-title {
   background-color: var(--hds-color-carbon-90) !important;
   color: #ffffff !important;
-  font-family: 'DM Mono', Consolas, monospace !important;
+  font-family: var(--font-mono) !important;
   font-size: 8pt !important;
   font-weight: 900 !important;
   text-transform: uppercase !important;
@@ -2766,36 +2782,25 @@ body.pdf-exporting .no-print,
   }
 }
 
-/* Accessible Touch Target Expansion for Content Links (44px WCAG / Apple HIG) */
-.touch-target-link,
-a.touch-target-link,
-footer a {
-  position: relative;
+/* Touch target floor for content links (44px WCAG / Apple HIG).
+ *
+ * This used to be an invisible `::before` overlay centred on the anchor. In the footer's
+ * wrapped multi-column layout those overlays overlapped each other, so the tap that looked
+ * like "Privacy" could land on "Terms" - a hit area larger than the thing it belongs to is
+ * a bug, not a target. The floor is met by geometry now; `Footer.tsx`'s link class carries
+ * `min-h-[44px] min-w-[44px]` itself (audit P2-4, backlog 14). `touch-action` stays, because
+ * it is about latency rather than size. */
+footer a,
+.touch-target-link {
   touch-action: manipulation;
 }
 
-.touch-target-link::before,
-a.touch-target-link::before,
-footer a::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  min-width: 44px;
-  min-height: 44px;
-  width: 100%;
-  height: 100%;
-  pointer-events: auto;
-}
-
-/* Accessibility contrast enhancement: for captions (< 14px), carbon-70 is bumped to carbon-80 to guarantee WCAG AAA (7:1) */
-.text-xs.text-carbon-70,
-.text-\[11px\].text-carbon-70,
-.text-\[12px\].text-carbon-70,
-.text-\[10px\].text-carbon-70 {
-  color: var(--hds-color-carbon-80);
-}
+/* The `.text-xs.text-carbon-70` contrast hack used to live here: it promoted carbon-70 to
+   carbon-80 whenever the text was under 14px. Measured, it was unnecessary - carbon-70 is
+   #444447, which is 9.71:1 on white, 8.90:1 on carbon-05 and 9.36:1 on amber-50, i.e. AAA at any
+   size, and 12.19:1 on the dark canvas. A compound-class override that changes nothing is one
+   more thing to keep in sync with the type scale, so it is gone; the low-contrast guard below
+   (carbon-40 at 2.98:1) is the one that was load-bearing and stays. */
 
 /* Phase 4 WCAG AA/AAA light-mode contrast guard ([P0] A11Y-01):
    Promote low-contrast carbon-40 (2.98:1) and carbon-50 (4.46:1) text on light surfaces

@@ -141,11 +141,17 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
             gap: 10,
             paddingTop: 24,
             paddingBottom: 24,
-            opacity: interpolate(frame, [0, 8], [0, 1], {
-              easing: Easing.bezier(0.16, 1, 0.3, 1),
-              extrapolateLeft: 'clamp',
-              extrapolateRight: 'clamp',
-            }),
+            // Gated like every other frame-driven value in this file: `useWebFrame` returns 0
+            // under reduced motion, so an ungated interpolation left the loading row at opacity
+            // 0 - the state that is supposed to say "the artifact is still being read" was
+            // invisible to exactly the readers who asked for less motion.
+            opacity: reduceMotion
+              ? 1
+              : interpolate(frame, [0, 8], [0, 1], {
+                  easing: Easing.bezier(0.16, 1, 0.3, 1),
+                  extrapolateLeft: 'clamp',
+                  extrapolateRight: 'clamp',
+                }),
           }}
           className="mt-4 flex items-center gap-2.5 py-6 text-sm text-carbon-60"
         >

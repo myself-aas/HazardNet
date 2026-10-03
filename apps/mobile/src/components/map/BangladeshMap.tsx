@@ -39,6 +39,10 @@ export interface BangladeshMapProps {
   userLocation?: { lat: number; lng: number } | null;
   onDivisionPress?: (division: Division) => void;
   onAlertPress?: (alertId: string) => void;
+  /** Division fills: the eight divisions coloured by their highest active alert. */
+  showDivisions?: boolean;
+  /** Alert markers: a dot per alerted district, drawn above the fills. */
+  showAlertMarkers?: boolean;
 }
 
 /** Division fill for un-alerted areas — neutral surface-tint from tokens. */
@@ -73,6 +77,7 @@ function alertByDivision(alerts: AlertItemType[]): Map<string, AlertItemType> {
 
 export const BangladeshMap: React.FC<BangladeshMapProps> = ({
   width, height, alerts = [], userLocation = null, onDivisionPress, onAlertPress,
+  showDivisions = true, showAlertMarkers = true,
 }) => {
   const { theme } = useTheme();
   const projector: Projector = useMemo(
@@ -80,7 +85,10 @@ export const BangladeshMap: React.FC<BangladeshMapProps> = ({
     [width, height]
   );
 
-  const divAlerts = useMemo(() => alertByDivision(alerts), [alerts]);
+  const divAlerts = useMemo(
+    () => (showDivisions ? alertByDivision(alerts) : new Map<string, AlertItemType>()),
+    [alerts, showDivisions],
+  );
 
   return (
     <View style={{ width, height }}>
@@ -93,9 +101,9 @@ export const BangladeshMap: React.FC<BangladeshMapProps> = ({
               <G key={d.id}>
                 <Path
                   d={rectPath(projector, d.bbox)}
-                  fill={colorFor(a, theme)}
-                  stroke={a ? theme.colors.textPrimary : NEUTRAL_STROKE}
-                  strokeWidth={a ? 1.5 : 1}
+                  fill={showDivisions ? colorFor(a, theme) : 'none'}
+                  stroke={showDivisions ? (a ? theme.colors.textPrimary : NEUTRAL_STROKE) : theme.colors.hairline}
+                  strokeWidth={showDivisions ? (a ? 1.5 : 1) : 1}
                   opacity={a ? 0.85 : 1}
                 />
                 <SvgText
@@ -124,7 +132,7 @@ export const BangladeshMap: React.FC<BangladeshMapProps> = ({
           );
         })() : null}
         {/* Alert markers (centroid of alerted district's division) */}
-        {alerts.slice(0, 12).map((a) => {
+        {showAlertMarkers && alerts.slice(0, 12).map((a) => {
           const div = divisionForDistrict(a.district_name);
           if (!div) return null;
           const [x, y] = projector.project(div.center[0], div.center[1]);

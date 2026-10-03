@@ -17,7 +17,7 @@ import { Pressable, PressableProps, StyleSheet, ViewStyle, View } from 'react-na
 import { Box } from './primitives';
 import { Text } from './Text';
 import { useTheme } from '../theme/ThemeProvider';
-import { HIT_SLOP, TOUCH_MIN } from '../theme/nativeTokens';
+import { HIT_SLOP, NATIVE_RADIUS, TOUCH_MIN } from '../theme/nativeTokens';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'severity';
 export type ButtonSize = 'sm' | 'md' | 'lg';
@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
     minWidth: TOUCH_MIN,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 0, // NASA HDS — square
+    borderRadius: NATIVE_RADIUS.control, // the frozen control role; see MERIDIAN_RADIUS_ROLES
   },
   row: {
     flexDirection: 'row',

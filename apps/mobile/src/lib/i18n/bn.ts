@@ -42,7 +42,7 @@ export const bn: Partial<Record<string, string>> = {
   'map.watch': 'নজরদারি',
   'map.noAlerts': 'কোনো সতর্কতা নেই',
   'map.recenter': 'আমার অবস্থানে ফিরে যান',
-  'map.recenterDenied': 'অবস্থানের অনুমতি নেই — সেটিংস খুলুন',
+  'map.recenterDenied': 'অবস্থানের অনুমতি নেই। সেটিংস খুলুন',
   'map.layers': 'লেয়ার',
   'map.close': 'বন্ধ করুন',
 

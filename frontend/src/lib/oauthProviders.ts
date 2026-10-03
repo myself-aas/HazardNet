@@ -187,7 +187,7 @@ export function describeOAuthError(rawError: unknown): OAuthErrorExplanation {
   if (text.includes('too many requests') || text.includes('rate limit') || text.includes('quota') || text.includes('auth/too-many-requests')) {
     return {
       title: 'Too many attempts',
-      hint: 'Too many sign-in attempts — Firebase has temporarily throttled this. Wait a minute and try again, or reset your password.',
+      hint: 'Too many sign-in attempts. Firebase has temporarily throttled this. Wait a minute and try again, or reset your password.',
     };
   }
   if (text.includes('network') || text.includes('failed to fetch') || text.includes('network-request-failed')) {

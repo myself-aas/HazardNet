@@ -12,6 +12,7 @@ import React, { useCallback, useState } from 'react';
 import { Dimensions, Pressable } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Screen } from '../../components/Screen';
+import { NATIVE_RADIUS } from '../../theme/nativeTokens';
 import { Box, VStack, HStack } from '../../design-system/primitives';
 import { Title1, DisplayLarge, Body, Caption } from '../../design-system/Text';
 import { Button } from '../../design-system/Button';
@@ -31,12 +32,12 @@ const SLIDES: Slide[] = [
   {
     emoji: '⚠️',
     headline: 'Multi-hazard alerts for Bangladesh',
-    body: 'HazardNet delivers warnings for floods, cyclones, cold waves, heat waves, nor\'westers, drought, and fire — across all 64 districts. Data loads offline so you are never without alerts.',
+    body: 'HazardNet delivers warnings for floods, cyclones, cold waves, heat waves, nor\'westers, drought, and fire. Across all 64 districts. Data loads offline so you are never without alerts.',
   },
   {
     emoji: 'ℹ️',
     headline: 'Not an official warning service',
-    body: 'HazardNet supplements — not replaces — official bulletins from BMD, FFWC, DAE and local authorities. During emergencies follow official instructions and call 999.',
+    body: 'HazardNet supplements (never replaces) official bulletins from BMD, FFWC, DAE and local authorities. During emergencies follow official instructions and call 999.',
   },
   {
     emoji: '🔔',
@@ -88,7 +89,7 @@ export function OnboardingScreen({ onDone }: { onDone: () => void }) {
               <Box
                 key={i}
                 style={{
-                  width: 8, height: 8, borderRadius: 4,
+                  width: 8, height: 8, borderRadius: NATIVE_RADIUS.chip,
                   backgroundColor: i === idx ? theme.colors.primaryAction as string : theme.colors.hairline as string,
                 }}
               />

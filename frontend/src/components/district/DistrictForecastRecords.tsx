@@ -6,6 +6,7 @@ import { Download, TrendingUp } from 'lucide-react';
 
 import { useDistrictBrief } from './DistrictBriefContext';
 import { AdvisorySignalCard } from './AdvisorySignalCard';
+import { CardStackRows } from '../ui/CardStackTable';
 
 
 /** Stored 7/15-day forecast table (text equivalent of the outlook chart). */
@@ -61,6 +62,10 @@ export const DistrictForecastRecords: React.FC = () => {
     expandedHistoricalEventId,
     setExpandedHistoricalEventId,
   } = useDistrictBrief();
+
+  // One binding for both branches: the phone cards and the table must never read
+  // different horizons.
+  const activeRows = activeTableHorizon === '7_days' ? districtForecasts7D : districtForecasts15D;
 
   return (
     <>
@@ -134,8 +139,8 @@ export const DistrictForecastRecords: React.FC = () => {
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={chartData} margin={{ top: 10, right: 20, left: -20, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#d1d1d1" />
-                  <XAxis dataKey="date" stroke="#77777a" fontSize={11} tickLine={false} />
-                  <YAxis stroke="#77777a" fontSize={11} domain={[0, 100]} tickLine={false} unit="%" />
+                  <XAxis dataKey="date" stroke="#77777a" fontSize={12} tickLine={false} />
+                  <YAxis stroke="#77777a" fontSize={12} domain={[0, 100]} tickLine={false} unit="%" />
                   <Tooltip
                     contentStyle={{ backgroundColor: '#17171b', borderColor: '#444447', borderRadius: '12px', color: '#fff', fontSize: '12px' }}
                     formatter={(value: any, name: any) => [`${value}%`, name === 'physicsSeverity' ? 'Physics Severity' : name === 'modelSeverity' ? 'Model Severity' : 'Confidence']}
@@ -153,7 +158,39 @@ export const DistrictForecastRecords: React.FC = () => {
             Loading pipeline CSV forecast logs for {data.districtName}...
           </div>
         ) : (
-          <div className="overflow-x-auto border border-carbon-20/90">
+          <>
+            {/* Phone: one card per forecast row. The table below carries twelve columns, which
+                at 390px was a horizontal scroll of two screens; the card names every figure. */}
+            {activeRows.length === 0 ? (
+              <p className="border border-carbon-20/90 p-6 text-sm text-carbon-60 md:hidden">
+                The latest pipeline run did not emit a {activeTableHorizon === '7_days' ? '7-day' : '15-day'} record for {data.districtName}.
+              </p>
+            ) : (
+              <CardStackRows
+                rows={activeRows.map((row, idx) => ({
+                  key: idx,
+                  heading: row.target_date,
+                  fields: [
+                    { label: 'Prediction', value: row.prediction_date },
+                    { label: 'Hazard Type', value: row.hazard_type },
+                    { label: 'Tier', value: row.advisory_tier || '-' },
+                    { label: 'Physics Sev.', value: `${Math.round((row.physics_severity ?? row.severity_score) * 100)}%` },
+                    { label: 'CNN Sev.', value: row.model_severity !== undefined ? `${Math.round(row.model_severity * 100)}%` : `${Math.round(row.severity_score * 100)}%` },
+                    { label: 'Final Sev.', value: row.final_severity !== undefined ? `${Math.round(row.final_severity * 100)}%` : '-' },
+                    { label: 'Confidence', value: `${Math.round(row.confidence * 100)}%` },
+                    { label: 'Temp (Min/Max)', value: row.temperature_min !== undefined && row.temperature_max !== undefined
+                        ? `${row.temperature_min}°C / ${row.temperature_max}°C`
+                        : row.temperature_mean !== undefined ? `${row.temperature_mean}°C` : '-' },
+                    { label: 'Precip.', value: row.precipitation_mm !== undefined ? `${row.precipitation_mm} mm` : '-' },
+                    { label: 'Wind Max', value: row.wind_max_kmh !== undefined ? `${row.wind_max_kmh} km/h` : '-' },
+                    { label: 'Top-3 %', value: [row.prob_top1, row.prob_top2, row.prob_top3]
+                        .map((p) => (p === undefined ? '-' : `${Math.round(p * 100)}`))
+                        .join(' / ') },
+                  ],
+                }))}
+              />
+            )}
+          <div className="hidden overflow-x-auto border border-carbon-20/90 md:block">
             <table className="w-full text-left border-collapse text-xs font-sans">
               <thead>
                 <tr className="bg-carbon-90 text-white font-bold text-xs uppercase tracking-wider font-mono">
@@ -172,17 +209,17 @@ export const DistrictForecastRecords: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-carbon-10">
-                {(activeTableHorizon === '7_days' ? districtForecasts7D : districtForecasts15D).length === 0 ? (
+                {activeRows.length === 0 ? (
                   <tr>
                     <td colSpan={12} className="p-8 text-center text-carbon-60 font-sans text-sm">
                       The latest pipeline run did not emit a {activeTableHorizon === '7_days' ? '7-day' : '15-day'} record for {data.districtName}.
                       {(activeTableHorizon === '7_days' ? districtForecasts15D : districtForecasts7D).length > 0
-                        ? ` The ${activeTableHorizon === '7_days' ? '15-day' : '7-day'} horizon has records — switch tabs above.`
+                        ? ` The ${activeTableHorizon === '7_days' ? '15-day' : '7-day'} horizon has records. Switch tabs above.`
                         : ' Check back after the next scheduled forecast refresh.'}
                     </td>
                   </tr>
                 ) : (
-                  (activeTableHorizon === '7_days' ? districtForecasts7D : districtForecasts15D).map((row, idx) => (
+                  activeRows.map((row, idx) => (
                     <tr key={idx} className={`transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-carbon-05/80'} hover:bg-amber-50/40`}>
                       <td className="px-3.5 py-3 font-mono font-bold text-carbon-90 whitespace-nowrap">{row.target_date}</td>
                       <td className="px-3.5 py-3 font-mono text-carbon-60 whitespace-nowrap">{row.prediction_date}</td>
@@ -249,6 +286,7 @@ export const DistrictForecastRecords: React.FC = () => {
               </tbody>
             </table>
           </div>
+          </>
         )}
       </section>
     </>

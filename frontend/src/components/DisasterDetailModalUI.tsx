@@ -102,19 +102,19 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
       {/* Key Disaster Metrics Summary Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <div className="bg-carbon-05 border border-carbon-20 p-3.5 rounded-xl space-y-1">
-          <div className="text-[10px] uppercase font-mono tracking-wider text-carbon-60 flex items-center justify-between">
+          <div className="text-xs uppercase font-mono tracking-wider text-carbon-60 flex items-center justify-between">
             <span>Incident Date</span>
           </div>
           <div className="text-xs sm:text-sm font-bold text-carbon-90 font-mono">
             {data.incidentDate}
           </div>
-          <div className="text-[11px] text-carbon-60 font-medium">
+          <div className="text-xs text-carbon-60 font-medium">
             Peak: {data.peakImpactWindow}
           </div>
         </div>
 
         <div className="bg-carbon-05 border border-carbon-20 p-3.5 rounded-xl space-y-1">
-          <div className="text-[10px] uppercase font-mono tracking-wider text-carbon-60 flex items-center justify-between">
+          <div className="text-xs uppercase font-mono tracking-wider text-carbon-60 flex items-center justify-between">
             <span>Estimated Impact Area</span>
           </div>
           <div className="text-sm sm:text-base font-extrabold text-rose-600 font-mono">
@@ -126,31 +126,31 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
               style={{ width: `${data.impactAreaPercentage}%` }}
             ></div>
           </div>
-          <div className="text-[10px] text-carbon-60 font-mono text-right mt-0.5">
+          <div className="text-xs text-carbon-60 font-mono text-right mt-0.5">
             {data.impactAreaPercentage}% of District Area
           </div>
         </div>
 
         <div className="bg-carbon-05 border border-carbon-20 p-3.5 rounded-xl space-y-1">
-          <div className="text-[10px] uppercase font-mono tracking-wider text-carbon-60 flex items-center justify-between">
+          <div className="text-xs uppercase font-mono tracking-wider text-carbon-60 flex items-center justify-between">
             <span>Impacted Population</span>
           </div>
           <div className="text-sm sm:text-base font-extrabold text-amber-600 font-mono">
             {data.affectedPopulation.toLocaleString()} <span className="text-xs font-normal text-carbon-60">people</span>
           </div>
-          <div className="text-[11px] text-carbon-60">
+          <div className="text-xs text-carbon-60">
             ~{data.affectedHouseholds.toLocaleString()} Households
           </div>
         </div>
 
         <div className="bg-carbon-05 border border-carbon-20 p-3.5 rounded-xl space-y-1">
-          <div className="text-[10px] uppercase font-mono tracking-wider text-carbon-60 flex items-center justify-between">
+          <div className="text-xs uppercase font-mono tracking-wider text-carbon-60 flex items-center justify-between">
             <span>Crop Land Vulnerability</span>
           </div>
           <div className="text-sm sm:text-base font-extrabold text-emerald-600 font-mono">
             {data.affectedCropLandHectares.toLocaleString()} <span className="text-xs font-normal text-carbon-60">Ha</span>
           </div>
-          <div className="text-[11px] text-carbon-60 truncate">
+          <div className="text-xs text-carbon-60 truncate">
             Crops: {data.primaryCropsAtRisk.join(', ')}
           </div>
         </div>
@@ -171,11 +171,11 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
 
         <div className="grid grid-cols-2 gap-4 w-full md:w-auto font-mono text-xs">
           <div className="bg-white px-3.5 py-2 rounded-lg border border-carbon-20 shadow-xs">
-            <span className="text-carbon-60 block text-[10px]">{data.physicalSensorMetrics.primaryMetricName}</span>
+            <span className="text-carbon-60 block text-xs">{data.physicalSensorMetrics.primaryMetricName}</span>
             <strong className="text-rose-600 text-sm font-extrabold">{data.physicalSensorMetrics.primaryMetricValue}</strong>
           </div>
           <div className="bg-white px-3.5 py-2 rounded-lg border border-carbon-20 shadow-xs">
-            <span className="text-carbon-60 block text-[10px]">{data.physicalSensorMetrics.secondaryMetricName}</span>
+            <span className="text-carbon-60 block text-xs">{data.physicalSensorMetrics.secondaryMetricName}</span>
             <strong className="text-carbon-80 text-sm font-extrabold">{data.physicalSensorMetrics.secondaryMetricValue}</strong>
           </div>
         </div>
@@ -245,13 +245,13 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
                 >
                   <div>
                     <div className="font-bold text-carbon-90 text-sm">{up.name}</div>
-                    <div className="text-[11px] text-carbon-60 mt-0.5">
+                    <div className="text-xs text-carbon-60 mt-0.5">
                       Households Affected: <span className="text-amber-600 font-mono font-bold">{up.householdsAffected.toLocaleString()}</span>
                     </div>
                   </div>
 
                   <div className="text-right space-y-1">
-                    <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold block ${
+                    <span className={`px-2 py-0.5 rounded text-xs font-mono font-bold block ${
                       up.status === 'Critically Inundated'
                         ? 'bg-rose-100 text-rose-800 border border-rose-200'
                         : up.status === 'High Risk'
@@ -260,7 +260,7 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
                     }`}>
                       {up.status}
                     </span>
-                    <span className="font-mono text-[11px] font-bold text-carbon-90 block">
+                    <span className="font-mono text-xs font-bold text-carbon-90 block">
                       {(up.severityScore * 100).toFixed(0)}% Sev
                     </span>
                   </div>
@@ -333,19 +333,19 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
           <div className="space-y-4">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs font-mono">
               <div className="p-3 bg-carbon-05 border border-carbon-20 rounded-xl">
-                <span className="text-carbon-60 text-[10px] block">Active Shelters</span>
+                <span className="text-carbon-60 text-xs block">Active Shelters</span>
                 <strong className="text-carbon-90 text-base font-bold">{data.emergencyResponse.activeShelters}</strong>
               </div>
               <div className="p-3 bg-carbon-05 border border-carbon-20 rounded-xl">
-                <span className="text-carbon-60 text-[10px] block">Capacity Used</span>
+                <span className="text-carbon-60 text-xs block">Capacity Used</span>
                 <strong className="text-amber-600 text-base font-bold">{data.emergencyResponse.shelterCapacityUsedPercent}%</strong>
               </div>
               <div className="p-3 bg-carbon-05 border border-carbon-20 rounded-xl">
-                <span className="text-carbon-60 text-[10px] block">Relief Dispatched</span>
+                <span className="text-carbon-60 text-xs block">Relief Dispatched</span>
                 <strong className="text-emerald-600 text-base font-bold">{data.emergencyResponse.reliefDistributedTons} Tons</strong>
               </div>
               <div className="p-3 bg-carbon-05 border border-carbon-20 rounded-xl">
-                <span className="text-carbon-60 text-[10px] block">Medical Teams</span>
+                <span className="text-carbon-60 text-xs block">Medical Teams</span>
                 <strong className="text-carbon-80 text-base font-bold">{data.emergencyResponse.medicalTeamsDeployed} Units</strong>
               </div>
             </div>
@@ -375,7 +375,7 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
               {data.historicalComparison}
             </p>
 
-            <div className="text-[11px] text-carbon-60 font-mono space-y-1">
+            <div className="text-xs text-carbon-60 font-mono space-y-1">
               <div>• Elevation Profile: <strong className="text-carbon-90">{data.elevationMeters} meters MSL</strong></div>
               <div>• Agro-Zone: <strong className="text-carbon-90">{data.division} Belt</strong></div>
               <div>• Return Period: <strong className="text-carbon-80">1-in-10 Year Hazard Event</strong></div>
@@ -532,7 +532,7 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
               <p className="text-xs text-carbon-60 font-semibold mt-1 flex items-center gap-2">
                 <span>{data.hazardSubtype}</span>
                 <span className="text-carbon-30">•</span>
-                <span className="text-carbon-60 font-mono text-[11px]">{data.lastSatelliteUpdate}</span>
+                <span className="text-carbon-60 font-mono text-xs">{data.lastSatelliteUpdate}</span>
               </p>
             </div>
 
@@ -636,11 +636,10 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
             <div className="w-12 h-1.5 bg-carbon-30 rounded-full mb-2" />
             <div className="w-full flex items-center justify-between">
               <div className="flex items-center gap-2 min-w-0">
-                <span className="w-2.5 h-2.5 rounded-full bg-nasa-red animate-pulse shrink-0"></span>
                 <h3 id="disaster-detail-modal-title-mobile" className="text-base font-black text-carbon-90 tracking-tight leading-none truncate">
                   {data.districtName} Hazard Report
                 </h3>
-                <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-extrabold border shrink-0 ${getRiskBadgeColor(data.modelAssessment.riskCategory)}`}>
+                <span className={`px-2 py-0.5 rounded-full text-xs font-mono font-extrabold border shrink-0 ${getRiskBadgeColor(data.modelAssessment.riskCategory)}`}>
                   {data.modelAssessment.riskCategory}
                 </span>
               </div>

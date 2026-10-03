@@ -37,7 +37,6 @@ interface NavbarProps {
   onClearSearch?: () => void;
   onOpenAIDrawer?: () => void;
   onExportReport?: () => void;
-  isTransparent?: boolean;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ onSelectDistrict, onToggleHeatmap }) => {
@@ -134,7 +133,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onSelectDistrict, onToggleHeatma
           <Link
             to="/"
             className="flex min-h-[44px] shrink-0 items-center no-underline"
-            title="HazardNet — multi-hazard early warning for Bangladesh agriculture"
+            title="HazardNet: multi-hazard early warning for Bangladesh agriculture"
           >
             <HazardNetBrand size="md" variant={overHero ? 'dark' : 'light'} />
           </Link>

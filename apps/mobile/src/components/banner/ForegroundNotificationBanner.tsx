@@ -9,6 +9,7 @@ import { Animated, Pressable } from 'react-native';
 import { VStack, HStack, Box } from '../../design-system/primitives';
 import { BodyBold, Caption, Metadata } from '../../design-system/Text';
 import { useTheme } from '../../theme/ThemeProvider';
+import { NATIVE_RADIUS } from '../../theme/nativeTokens';
 import type { ForegroundBanner } from '../../state/foregroundBannerStore';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useEffect, useRef } from 'react';
@@ -57,7 +58,7 @@ export function ForegroundNotificationBanner({ banner, onDismiss }: Props) {
           py={12}
           style={{
             backgroundColor: theme.colors.surface as string,
-            borderRadius: 12,
+            borderRadius: NATIVE_RADIUS.media,
             borderLeftWidth: 4,
             borderLeftColor: color as string,
             shadowColor: '#000',
@@ -70,7 +71,7 @@ export function ForegroundNotificationBanner({ banner, onDismiss }: Props) {
           <HStack space={10} align="flex-start" justify="space-between">
             <VStack space={2} flex={1}>
               <HStack space={6} align="center">
-                <Box w={8} h={8} bg={color as string} style={{ borderRadius: 4 }} />
+                <Box w={8} h={8} bg={color as string} style={{ borderRadius: NATIVE_RADIUS.chip }} />
                 <Metadata color="textMuted" style={{ textTransform: 'uppercase' as const }}>{banner.channel}</Metadata>
               </HStack>
               <BodyBold>{banner.title}</BodyBold>

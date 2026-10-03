@@ -72,12 +72,12 @@ export const NotificationToggleUI: React.FC<NotificationToggleUIProps> = ({
             Receive real-time disaster alerts, cyclone surges, and agricultural severity warnings via encrypted Web Push.
           </p>
 
-          <div className="bg-carbon-05 p-2.5 rounded-lg border border-carbon-20 mb-3 text-[11px]">
+          <div className="bg-carbon-05 p-2.5 rounded-lg border border-carbon-20 mb-3 text-xs">
             <div className="flex justify-between items-center mb-1">
               <span className="text-carbon-60 font-medium">VAPID Key Status:</span>
-              <span className="font-mono text-emerald-600 font-semibold text-[10px]">VERIFIED</span>
+              <span className="font-mono text-emerald-600 font-semibold text-xs">VERIFIED</span>
             </div>
-            <div className="font-mono text-[9px] text-carbon-60 truncate bg-white p-1 rounded border border-carbon-20">
+            <div className="font-mono text-xs text-carbon-60 truncate bg-white p-1 rounded border border-carbon-20">
               {vapidKey}
             </div>
           </div>
@@ -116,7 +116,7 @@ export const NotificationToggleUI: React.FC<NotificationToggleUIProps> = ({
           )}
 
           {statusMessage && (
-            <div className="mt-3 p-2 bg-carbon-05 border border-carbon-20 rounded text-[11px] text-carbon-70 flex items-start gap-1.5">
+            <div className="mt-3 p-2 bg-carbon-05 border border-carbon-20 rounded text-xs text-carbon-70 flex items-start gap-1.5">
               <MaterialIcon name="check_circle" className="text-emerald-600 text-sm shrink-0 mt-0.5" />
               <span className="leading-snug">{statusMessage}</span>
             </div>

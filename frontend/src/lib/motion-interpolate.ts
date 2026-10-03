@@ -26,14 +26,30 @@ export { remotionInterpolate as interpolate, Easing };
  */
 import { useEffect, useState } from 'react';
 import { useReducedMotion } from 'framer-motion';
+import { readLowBandwidth } from './bandwidth';
 
+/**
+ * A Remotion-like `frame` for the intro animations.
+ *
+ * Three disciplines, in order:
+ *   - `prefers-reduced-motion` pins the frame at 0 and never starts a loop. Components gate on
+ *     the same flag, so 0 is the static *first* state they already render for that preference.
+ *   - Low-bandwidth mode never starts a loop either, but pins the frame at `maxFrames`: the
+ *     static *end* state. It cannot use 0 - the CSS collapse in `index.css` zeroes durations,
+ *     it cannot stop requestAnimationFrame, and a few layers (RunVisual's loading row,
+ *     App's route transitions) interpolate straight from `frame` with no motion flag, so 0
+ *     would leave them invisible rather than still. This is what actually stops the 14-second
+ *     hero loop on the 2 GB / 2G devices the mode exists for.
+ *   - Otherwise, a bounded loop that stops itself at `maxFrames`.
+ */
 export const useWebFrame = (fps = 30, maxFrames = 420): number => {
   const shouldReduceMotion = useReducedMotion();
+  const lowBandwidth = readLowBandwidth();
   const [frame, setFrame] = useState(0);
 
   useEffect(() => {
-    if (shouldReduceMotion || maxFrames <= 0) {
-      setFrame(0);
+    if (shouldReduceMotion || lowBandwidth || maxFrames <= 0) {
+      setFrame(shouldReduceMotion ? 0 : maxFrames);
       return;
     }
     let raf = 0;
@@ -49,7 +65,7 @@ export const useWebFrame = (fps = 30, maxFrames = 420): number => {
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [fps, maxFrames, shouldReduceMotion]);
+  }, [fps, maxFrames, shouldReduceMotion, lowBandwidth]);
 
   return shouldReduceMotion ? 0 : frame;
 };

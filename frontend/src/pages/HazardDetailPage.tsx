@@ -19,6 +19,7 @@ import {
 } from 'recharts';
 import {
   AlertTriangle,
+  RefreshCw,
   Wind,
   Droplets,
   Waves,
@@ -41,6 +42,7 @@ import {
 import { fetchHazardEvents, HazardEventsResponse, ClimaticEvent, ForecastRecord } from '../lib/eventsClient';
 import { InfinityLoader } from '../components/brand';
 import { getHazardBorder, getHazardColor, getHazardSurface } from '../lib/hazardPalette';
+import { CardStackRows } from '../components/ui/CardStackTable';
 
 const ALL_HAZARD_PILLS = [
   { slug: 'cyclone', name: 'Tropical Cyclone', icon: Wind },
@@ -143,6 +145,7 @@ export const HazardDetailPage: React.FC = () => {
   const [data, setData] = useState<HazardEventsResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [reloadNonce, setReloadNonce] = useState(0);
 
   // Filters for historical table
   const [searchQuery, setSearchQuery] = useState('');
@@ -170,7 +173,7 @@ export const HazardDetailPage: React.FC = () => {
     }
     loadHazard();
     return () => { mounted = false; };
-  }, [currentSlug]);
+  }, [currentSlug, reloadNonce]);
 
   // Unique divisions and districts for filters
   const availableDivisions = useMemo(() => {
@@ -215,7 +218,7 @@ export const HazardDetailPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-carbon-05 flex items-center justify-center p-6">
+      <div className="min-h-dvh bg-carbon-05 flex items-center justify-center p-6">
         <div className="text-center">
           <InfinityLoader size={96} label="Loading" className="mx-auto mb-3 block" />
           <p className="text-sm font-medium text-carbon-70">Loading {data?.hazard || currentSlug} hazard data...</p>
@@ -227,24 +230,34 @@ export const HazardDetailPage: React.FC = () => {
 
   if (error || !data) {
     return (
-      <div className="min-h-screen bg-carbon-05 flex items-center justify-center p-6">
+      <div className="min-h-dvh bg-carbon-05 flex items-center justify-center p-6">
         <div className="bg-white border border-carbon-20 p-8 max-w-md text-center">
-          <AlertTriangle className="w-10 h-10 text-red-500 mx-auto mb-3" />
+          <AlertTriangle className="w-10 h-10 text-nasa-red mx-auto mb-3" aria-hidden="true" />
           <h2 className="text-lg font-bold text-carbon-90">Failed to Load Hazard Data</h2>
           <p className="text-xs text-carbon-60 mt-2">{error || 'Hazard data not found.'}</p>
-          <Link
-            to="/hazards"
-            className="mt-5 inline-flex min-h-[44px] items-center px-4 bg-nasa-blue text-white text-sm font-semibold hover:bg-nasa-blue-shade"
-          >
-            Back to Hazards
-          </Link>
+          <div className="mt-5 flex flex-col items-stretch gap-2 sm:flex-row sm:justify-center">
+            <button
+              type="button"
+              onClick={() => setReloadNonce((n) => n + 1)}
+              className="inline-flex min-h-[44px] items-center justify-center gap-2 border border-carbon-20 bg-carbon-05 px-4 text-sm font-semibold text-carbon-90 hover:bg-carbon-10 touch-manipulation"
+            >
+              <RefreshCw className="h-4 w-4" aria-hidden="true" />
+              Try again
+            </button>
+            <Link
+              to="/hazards"
+              className="inline-flex min-h-[44px] items-center justify-center px-4 bg-nasa-blue text-white text-sm font-semibold hover:bg-nasa-blue-shade"
+            >
+              Back to Hazards
+            </Link>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-carbon-05 text-carbon-80 pb-8 pt-6 px-4 sm:px-6 lg:px-8 max-w-[1200px] mx-auto">
+    <div className="min-h-dvh bg-carbon-05 text-carbon-80 pb-8 pt-6 px-4 sm:px-6 lg:px-8 max-w-[1200px] mx-auto">
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-xs text-carbon-60 mb-4">
         <Link to="/" className="hover:text-nasa-blue-shade transition-colors">Home</Link>
@@ -337,7 +350,38 @@ export const HazardDetailPage: React.FC = () => {
             </span>
           </div>
 
-          <div className="overflow-x-auto mt-4">
+          {/* Forecast grid. Below md the same ten columns become one card per district:
+              model and physics severity, confidence and the driver values in one column. */}
+          <CardStackRows
+            className="mt-4"
+            rows={data.forecasts.map((fc, idx) => ({
+              key: `${fc.districtName}-${fc.horizon}-${idx}`,
+              heading: `${fc.districtName} (${fc.horizon === '7_days' ? '7-Day' : '15-Day'})`,
+              fields: [
+                { label: 'Division', value: (
+                  <Link to={`/divisions/${fc.division.toLowerCase()}`} className="text-nasa-blue-shade">
+                    {fc.division}
+                  </Link>
+                ) },
+                { label: 'Target Date', value: fc.targetDate },
+                { label: 'Model Severity', value: fc.modelSeverity.toFixed(2) },
+                { label: 'Physics Severity', value: fc.physicsSeverity.toFixed(2) },
+                { label: 'Confidence', value: `${Math.round(fc.confidence * 100)}%` },
+                { label: 'Precipitation', value: `${fc.precipitationMm.toFixed(1)} mm` },
+                { label: 'Wind Speed', value: `${fc.windMaxKmh.toFixed(1)} km/h` },
+              ],
+              footer: (
+                <Link
+                  to={`/forecast/district/${fc.districtName.toLowerCase().replace(/[^a-z0-9]/g, '')}`}
+                  className="inline-flex min-h-[44px] items-center gap-1 font-semibold text-nasa-blue-shade"
+                >
+                  <span>District Page</span>
+                  <ArrowRight className="w-3 h-3" />
+                </Link>
+              ),
+            }))}
+          />
+          <div className="mt-4 hidden overflow-x-auto md:block">
             <table className="w-full text-left text-xs">
               <thead className="bg-carbon-05 text-carbon-60 font-semibold border-b border-carbon-20">
                 <tr>
@@ -560,7 +604,39 @@ export const HazardDetailPage: React.FC = () => {
         </div>
 
         {/* Table */}
-        <div className="overflow-x-auto mt-4">
+        <CardStackRows
+          className="mt-4"
+          rows={filteredEvents.slice(0, 40).map((event) => {
+            const districtSlug = event.district.toLowerCase().replace(/[^a-z0-9]/g, '');
+            return {
+              key: event.id,
+              heading: event.date,
+              fields: [
+                { label: 'District', value: (
+                  <Link to={`/forecast/district/${districtSlug}`} className="font-semibold text-nasa-blue-shade">
+                    {event.district}
+                  </Link>
+                ) },
+                { label: 'Division', value: event.division },
+                { label: 'GLIDE', value: event.glide || '-' },
+                { label: 'Severity', value: event.severity ? event.severity.toFixed(2) : '1.00' },
+                { label: 'Summary', value: event.desc || 'No descriptive summary logged' },
+                { label: 'Event ID', value: event.id },
+                { label: 'Coordinates', value: `${event.lat.toFixed(4)}, ${event.lng.toFixed(4)}` },
+              ],
+              footer: (
+                <Link
+                  to={`/forecast/district/${districtSlug}`}
+                  className="inline-flex min-h-[44px] items-center gap-1 font-semibold text-nasa-blue-shade"
+                >
+                  <span>Go to {event.district} District Dashboard</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              ),
+            };
+          })}
+        />
+        <div className="mt-4 hidden overflow-x-auto md:block">
           <table className="w-full text-left text-xs">
             <thead className="bg-carbon-05 text-carbon-60 font-semibold border-b border-carbon-20">
               <tr>

@@ -178,7 +178,7 @@ export function SavedScreen() {
   const emptyContent = (
     <Box px={SCREEN_H_PADDING} py={24} flex={1} justify="center">
       <ListEmptyState
-        icon="★"
+        icon="Bookmark"
         headline="Saved places"
         body="Save home, work, and family locations to get alerts specific to those places. Data stays on this device."
         primaryAction={{ label: 'Add your first place', onPress: () => { seedDefaults(); openSheet(); } }}

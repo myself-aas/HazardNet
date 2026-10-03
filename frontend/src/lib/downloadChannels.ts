@@ -129,7 +129,7 @@ const BASE_CHANNELS: Omit<DownloadChannel, 'repoSlug'>[] = [
     icon: 'linux',
     badge: 'Server / Headless',
     description:
-      'Headless Linux daemon and CLI for automated tile pipeline ingestion, scheduled forecasting jobs, Prometheus metrics export and REST API serving — the same engine that powers the web platform, packaged for servers.',
+      'Headless Linux daemon and CLI for automated tile pipeline ingestion, scheduled forecasting jobs, Prometheus metrics export and REST API serving. The same engine that powers the web platform, packaged for servers.',
     requirements: 'Ubuntu 20.04+ / Debian 11+ / RHEL 8+ • x86_64 (ARM64 on roadmap)',
     distribution: 'tar.gz archive (plus SHA256SUMS.txt) attached to the product repository’s GitHub Releases by the Linux release workflow.',
     primaryAssetKinds: ['archive'],
@@ -141,10 +141,10 @@ const BASE_CHANNELS: Omit<DownloadChannel, 'repoSlug'>[] = [
     icon: 'python',
     badge: 'SDK / Library',
     description:
-      'Typed Python client objects for the HazardNet forecast and advisory APIs — for research pipelines and custom integrations that consume published results.',
+      'Typed Python client objects for the HazardNet forecast and advisory APIs. For research pipelines and custom integrations that consume published results.',
     requirements: 'Python 3.10–3.13',
     distribution:
-      'Source and built sdist/wheel from the product repository. Not published to PyPI (ADR 0011) — there is no `pip install hazardnet`.',
+      'Source and built sdist/wheel from the product repository. Not published to PyPI (ADR 0011), so there is no `pip install hazardnet`.',
     primaryAssetKinds: ['wheel', 'sdist'],
   },
   {
@@ -157,7 +157,7 @@ const BASE_CHANNELS: Omit<DownloadChannel, 'repoSlug'>[] = [
       'TypeScript/JavaScript client for the HazardNet forecast and advisory APIs: typed forecast objects, district lookups, advisory rendering helpers and shared HazardNet types for web and Node integrations.',
     requirements: 'Node.js 18+ (LTS recommended) • npm 9+',
     distribution:
-      'Source and packed tarball from the product repository. Not published to the npm registry (ADR 0011) — there is no `npm install hazardnet`.',
+      'Source and packed tarball from the product repository. Not published to the npm registry (ADR 0011), so there is no `npm install hazardnet`.',
     primaryAssetKinds: ['tarball'],
   },
 ];

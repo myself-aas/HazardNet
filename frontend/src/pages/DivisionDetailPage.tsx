@@ -36,6 +36,7 @@ import {
 import { fetchDivisionEvents, DivisionEventsResponse, ClimaticEvent, ForecastRecord } from '../lib/eventsClient';
 import { InfinityLoader } from '../components/brand';
 import { getHazardBorder, getHazardColor, getHazardSurface } from '../lib/hazardPalette';
+import { CardStackRows } from '../components/ui/CardStackTable';
 
 const ALL_DIVISIONS = [
   { id: 'dhaka', name: 'Dhaka' },
@@ -128,7 +129,7 @@ export const DivisionDetailPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-carbon-05 flex items-center justify-center p-6">
+      <div className="min-h-dvh bg-carbon-05 flex items-center justify-center p-6">
         <div className="text-center">
           <InfinityLoader size={96} label="Loading" className="mx-auto mb-3 block" />
           <p className="text-sm font-medium text-carbon-70">Loading {divisionId} division climatic data...</p>
@@ -140,7 +141,7 @@ export const DivisionDetailPage: React.FC = () => {
 
   if (error || !data) {
     return (
-      <div className="min-h-screen bg-carbon-05 flex items-center justify-center p-6">
+      <div className="min-h-dvh bg-carbon-05 flex items-center justify-center p-6">
         <div className="bg-white border border-carbon-20 p-8 max-w-md text-center">
           <AlertTriangle className="w-10 h-10 text-red-500 mx-auto mb-3" />
           <h2 className="text-lg font-bold text-carbon-90">Failed to Load Division Data</h2>
@@ -157,7 +158,7 @@ export const DivisionDetailPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-carbon-05 text-carbon-80 pb-8 pt-6 px-4 sm:px-6 lg:px-8 max-w-[1200px] mx-auto">
+    <div className="min-h-dvh bg-carbon-05 text-carbon-80 pb-8 pt-6 px-4 sm:px-6 lg:px-8 max-w-[1200px] mx-auto">
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-xs text-carbon-60 mb-4">
         <Link to="/" className="hover:text-nasa-blue-shade transition-colors">Home</Link>
@@ -264,8 +265,37 @@ export const DivisionDetailPage: React.FC = () => {
             </div>
           </div>
 
-          {/* District Forecast Table */}
-          <div className="overflow-x-auto mt-4 pt-4 border-t border-carbon-10">
+          {/* District Forecast Table. Below md the same rows render as cards: eight numeric
+              columns at 390px was a sideways scroll, and the card names each figure. */}
+          <CardStackRows
+            className="mt-4 pt-4 border-t border-carbon-10"
+            rows={data.districtRankings.map((dr) => {
+              const f7 = data.forecasts.find(f => f.districtName.toLowerCase() === dr.district.toLowerCase() && f.horizon === '7_days');
+              const targetDistrictSlug = dr.district.toLowerCase().replace(/[^a-z0-9]/g, '');
+              return {
+                key: dr.district,
+                heading: dr.district,
+                fields: [
+                  { label: '7-Day Threat', value: dr.forecast7DHazard || 'No threat' },
+                  { label: '7-Day Severity', value: dr.forecast7DSeverity !== null ? dr.forecast7DSeverity.toFixed(2) : 'N/A' },
+                  { label: '15-Day Threat', value: dr.forecast15DHazard || 'No threat' },
+                  { label: '15-Day Severity', value: dr.forecast15DSeverity !== null ? dr.forecast15DSeverity.toFixed(2) : 'N/A' },
+                  { label: 'Precipitation', value: f7 ? `${f7.precipitationMm.toFixed(1)} mm` : '-' },
+                  { label: 'Max Wind', value: f7 ? `${f7.windMaxKmh.toFixed(1)} km/h` : '-' },
+                ],
+                footer: (
+                  <Link
+                    to={`/forecast/district/${targetDistrictSlug}`}
+                    className="inline-flex min-h-[44px] items-center gap-1 font-semibold text-nasa-blue-shade hover:text-nasa-blue-shade"
+                  >
+                    <span>District Page</span>
+                    <ArrowRight className="w-3 h-3" />
+                  </Link>
+                ),
+              };
+            })}
+          />
+          <div className="mt-4 hidden overflow-x-auto md:block">
             <table className="w-full text-left text-xs">
               <thead className="bg-carbon-05 text-carbon-60 font-semibold border-b border-carbon-20">
                 <tr>
@@ -528,7 +558,39 @@ export const DivisionDetailPage: React.FC = () => {
         </div>
 
         {/* Table */}
-        <div className="overflow-x-auto mt-4">
+        <CardStackRows
+          className="mt-4"
+          rows={filteredEvents.slice(0, 40).map((event) => ({
+            key: event.id,
+            heading: event.date,
+            fields: [
+              { label: 'District', value: (
+                <Link
+                  to={`/forecast/district/${event.district.toLowerCase().replace(/[^a-z0-9]/g, '')}`}
+                  className="font-semibold text-nasa-blue-shade"
+                >
+                  {event.district}
+                </Link>
+              ) },
+              { label: 'Hazard Type', value: event.hazard },
+              { label: 'GLIDE', value: event.glide || '-' },
+              { label: 'Severity', value: event.severity ? event.severity.toFixed(2) : '1.00' },
+              { label: 'Description', value: event.desc || 'No descriptive summary logged' },
+              { label: 'Event ID', value: event.id },
+              { label: 'Coordinates', value: `${event.lat.toFixed(4)}, ${event.lng.toFixed(4)}` },
+            ],
+            footer: (
+              <Link
+                to={`/forecast/district/${event.district.toLowerCase().replace(/[^a-z0-9]/g, '')}`}
+                className="inline-flex min-h-[44px] items-center gap-1 font-semibold text-nasa-blue-shade"
+              >
+                <span>Go to {event.district} District Dashboard</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            ),
+          }))}
+        />
+        <div className="mt-4 hidden overflow-x-auto md:block">
           <table className="w-full text-left text-xs">
             <thead className="bg-carbon-05 text-carbon-60 font-semibold border-b border-carbon-20">
               <tr>

@@ -71,7 +71,6 @@ export const GlideResourcePopover: React.FC<GlideResourcePopoverProps> = ({
         <div className="flex items-start justify-between gap-3 border-b border-carbon-80 pb-3 mb-3">
           <div>
             <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-blue-500 animate-pulse" />
               <h4 className="text-sm font-bold text-white tracking-tight">
                 Multilateral GLIDE Registry
               </h4>
@@ -93,7 +92,7 @@ export const GlideResourcePopover: React.FC<GlideResourcePopoverProps> = ({
         {/* Links listing */}
         {valid && links ? (
           <div className="space-y-2">
-            <p className="text-[11px] text-carbon-40 mb-2">
+            <p className="text-xs text-carbon-40 mb-2">
               Official multilateral agencies tracking this disaster event. All links open securely in a new window.
             </p>
 
@@ -107,7 +106,7 @@ export const GlideResourcePopover: React.FC<GlideResourcePopoverProps> = ({
                 <span className="font-semibold text-carbon-20 group-hover:text-blue-400">
                   ReliefWeb Disaster Registry (UN OCHA)
                 </span>
-                <span className="text-[10px] text-carbon-40">
+                <span className="text-xs text-carbon-40">
                   Situation reports, sitreps, humanitarian maps, and appeals
                 </span>
               </div>
@@ -124,7 +123,7 @@ export const GlideResourcePopover: React.FC<GlideResourcePopoverProps> = ({
                 <span className="font-semibold text-carbon-20 group-hover:text-blue-400">
                   FAO GIEWS Country Brief (Bangladesh)
                 </span>
-                <span className="text-[10px] text-carbon-40">
+                <span className="text-xs text-carbon-40">
                   Crop prospects, agricultural damage, food security assessment
                 </span>
               </div>
@@ -141,7 +140,7 @@ export const GlideResourcePopover: React.FC<GlideResourcePopoverProps> = ({
                 <span className="font-semibold text-carbon-20 group-hover:text-blue-400">
                   WHO Public Health Emergencies
                 </span>
-                <span className="text-[10px] text-carbon-40">
+                <span className="text-xs text-carbon-40">
                   Disease surveillance, epidemiological alerts, health cluster
                 </span>
               </div>
@@ -158,7 +157,7 @@ export const GlideResourcePopover: React.FC<GlideResourcePopoverProps> = ({
                 <span className="font-semibold text-carbon-20 group-hover:text-blue-400">
                   Asian Disaster Reduction Center (ADRC)
                 </span>
-                <span className="text-[10px] text-carbon-40">
+                <span className="text-xs text-carbon-40">
                   Multilateral GLIDE register and regional catastrophe database
                 </span>
               </div>
@@ -175,7 +174,7 @@ export const GlideResourcePopover: React.FC<GlideResourcePopoverProps> = ({
                 <span className="font-semibold text-carbon-20 group-hover:text-blue-400">
                   IFRC GO Emergency Platform
                 </span>
-                <span className="text-[10px] text-carbon-40">
+                <span className="text-xs text-carbon-40">
                   Red Cross / Red Crescent field operations and DREF emergency appeals
                 </span>
               </div>

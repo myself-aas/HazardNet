@@ -120,7 +120,7 @@ const CustomDarkTooltip = ({ active, payload, label }: any) => {
       <div className="bg-white/95 border border-carbon-20 p-3 rounded-xl shadow-lg backdrop-blur-md text-xs font-sans space-y-1.5 z-50">
         <p className="font-extrabold text-carbon-90 border-b border-carbon-20 pb-1 flex items-center justify-between gap-4">
           <span>{label}</span>
-          <span className="text-[10px] font-mono text-carbon-60 font-normal">HazardNet Analytics</span>
+          <span className="text-xs font-mono text-carbon-60 font-normal">HazardNet Analytics</span>
         </p>
         <div className="space-y-1 pt-1">
           {payload.map((entry: any, index: number) => (
@@ -162,7 +162,7 @@ export const RiskAnalytics: React.FC<RiskAnalyticsProps> = ({ onSelectDistrict }
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-3 sm:gap-4 md:gap-6">
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-1.5 sm:mb-2">
-              <span className="px-2 sm:px-2.5 py-0.5 rounded-md sm:rounded-full text-[9px] sm:text-[10px] font-mono font-bold uppercase tracking-wider bg-rose-50 text-rose-700 border border-rose-200/80 whitespace-nowrap">
+              <span className="px-2 sm:px-2.5 py-0.5 rounded-md sm:rounded-full text-xs sm:text-xs font-mono font-bold uppercase tracking-wider bg-rose-50 text-rose-700 border border-rose-200/80 whitespace-nowrap">
                 Regional Trends
               </span>
               <span className="text-carbon-30 hidden sm:inline">•</span>
@@ -207,47 +207,47 @@ export const RiskAnalytics: React.FC<RiskAnalyticsProps> = ({ onSelectDistrict }
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3 md:gap-4 mt-4 sm:mt-6 pt-3 sm:pt-5 border-t border-carbon-20/90">
           
           <div className="bg-carbon-05/80 border border-carbon-10 p-3 sm:p-4 rounded-lg sm:rounded-2xl space-y-1 shadow-sm hover:shadow-md transition-all">
-            <span className="text-[8px] sm:text-[10px] font-mono text-carbon-60 uppercase tracking-wider block font-bold">
+            <span className="text-xs sm:text-xs font-mono text-carbon-60 uppercase tracking-wider block font-bold">
               Highest Risk
             </span>
             <div className="flex flex-col gap-0.5">
               <span className="text-sm sm:text-base font-extrabold text-carbon-90 truncate">Sylhet Haor</span>
               <span className="text-xs font-bold text-rose-600 font-mono">Flash Flood</span>
             </div>
-            <p className="text-[10px] sm:text-[11px] text-carbon-60 line-clamp-1 sm:line-clamp-2">Pre-monsoon vulnerability</p>
+            <p className="text-xs sm:text-xs text-carbon-60 line-clamp-1 sm:line-clamp-2">Pre-monsoon vulnerability</p>
           </div>
 
           <div className="bg-carbon-05/80 border border-carbon-10 p-3 sm:p-4 rounded-lg sm:rounded-2xl space-y-1 shadow-sm hover:shadow-md transition-all">
-            <span className="text-[8px] sm:text-[10px] font-mono text-carbon-60 uppercase tracking-wider block font-bold">
+            <span className="text-xs sm:text-xs font-mono text-carbon-60 uppercase tracking-wider block font-bold">
               Fastest Spike
             </span>
             <div className="flex flex-col gap-0.5">
               <span className="text-sm sm:text-base font-extrabold text-amber-700 truncate">Rajshahi</span>
               <span className="text-xs font-bold text-amber-700 font-mono">Rising</span>
             </div>
-            <p className="text-[10px] sm:text-[11px] text-carbon-60 line-clamp-1 sm:line-clamp-2">Drought & heat</p>
+            <p className="text-xs sm:text-xs text-carbon-60 line-clamp-1 sm:line-clamp-2">Drought & heat</p>
           </div>
 
           <div className="bg-carbon-05/80 border border-carbon-10 p-3 sm:p-4 rounded-lg sm:rounded-2xl space-y-1 shadow-sm hover:shadow-md transition-all">
-            <span className="text-[8px] sm:text-[10px] font-mono text-carbon-60 uppercase tracking-wider block font-bold">
+            <span className="text-xs sm:text-xs font-mono text-carbon-60 uppercase tracking-wider block font-bold">
               Cyclone Zone
             </span>
             <div className="flex flex-col gap-0.5">
               <span className="text-sm sm:text-base font-extrabold text-rose-700 truncate">Coastal</span>
               <span className="text-xs font-bold text-rose-600 font-mono">Storm</span>
             </div>
-            <p className="text-[10px] sm:text-[11px] text-carbon-60 line-clamp-1 sm:line-clamp-2">Oct-Nov peak</p>
+            <p className="text-xs sm:text-xs text-carbon-60 line-clamp-1 sm:line-clamp-2">Oct-Nov peak</p>
           </div>
 
           <div className="bg-carbon-05/80 border border-carbon-10 p-3 sm:p-4 rounded-lg sm:rounded-2xl space-y-1 shadow-sm hover:shadow-md transition-all">
-            <span className="text-[8px] sm:text-[10px] font-mono text-carbon-60 uppercase tracking-wider block font-bold">
+            <span className="text-xs sm:text-xs font-mono text-carbon-60 uppercase tracking-wider block font-bold">
               Protected Area
             </span>
             <div className="flex flex-col gap-0.5">
               <span className="text-sm sm:text-base font-extrabold text-emerald-700 truncate">Belt Zones</span>
               <span className="text-xs font-bold text-emerald-600 font-mono">Advisory</span>
             </div>
-            <p className="text-[10px] sm:text-[11px] text-carbon-60 line-clamp-1 sm:line-clamp-2">Early harvest</p>
+            <p className="text-xs sm:text-xs text-carbon-60 line-clamp-1 sm:line-clamp-2">Early harvest</p>
           </div>
 
         </div>
@@ -269,12 +269,12 @@ export const RiskAnalytics: React.FC<RiskAnalyticsProps> = ({ onSelectDistrict }
 
           {/* Region Filter Buttons */}
           <div className="flex flex-wrap items-center gap-1 overflow-x-auto">
-            <span className="text-[10px] sm:text-[11px] text-carbon-60 font-mono mr-0.5 sm:mr-1 whitespace-nowrap">Filter:</span>
+            <span className="text-xs sm:text-xs text-carbon-60 font-mono mr-0.5 sm:mr-1 whitespace-nowrap">Filter:</span>
             {['All', 'Sylhet', 'Rangpur', 'Rajshahi', 'Khulna', 'Chattogram', 'Dhaka'].map((reg) => (
               <button
                 key={reg}
                 onClick={() => setSelectedRegionFilter(reg)}
-                className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all ${
+                className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
                   selectedRegionFilter === reg
                     ? 'bg-carbon-90 text-white shadow-xs'
                     : 'bg-carbon-10 text-carbon-70 hover:text-carbon-90 border border-carbon-20'
@@ -332,7 +332,7 @@ export const RiskAnalytics: React.FC<RiskAnalyticsProps> = ({ onSelectDistrict }
 
         {/* Regional Quick Jump Trigger */}
         <div className="pt-2 border-t border-carbon-20 flex flex-wrap items-center justify-between gap-2 text-xs">
-          <span className="text-carbon-60 font-mono text-[11px]">
+          <span className="text-carbon-60 font-mono text-xs">
             <MaterialIcon name="bolt" className="w-4 h-4 inline-block mr-1" /> Click region hotspot to inspect GIS location:
           </span>
           <div className="flex flex-wrap gap-2">
@@ -342,7 +342,7 @@ export const RiskAnalytics: React.FC<RiskAnalyticsProps> = ({ onSelectDistrict }
                 <button
                   key={reg}
                   onClick={() => onSelectDistrict && onSelectDistrict(d)}
-                  className="px-2.5 py-1 bg-carbon-05 hover:bg-carbon-10 border border-carbon-20 rounded-lg text-carbon-80 font-medium text-[11px] transition-all flex items-center gap-1.5"
+                  className="px-2.5 py-1 bg-carbon-05 hover:bg-carbon-10 border border-carbon-20 rounded-lg text-carbon-80 font-medium text-xs transition-all flex items-center gap-1.5"
                 >
                   <span className="w-2 h-2 rounded-full" style={{ backgroundColor: REGION_COLORS[reg as keyof typeof REGION_COLORS] }}></span>
                   <span>{d.name}</span>
@@ -370,7 +370,7 @@ export const RiskAnalytics: React.FC<RiskAnalyticsProps> = ({ onSelectDistrict }
                   Month-by-month probability curve across Bangladesh's agricultural harvest calendar
                 </p>
               </div>
-              <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-carbon-10 text-carbon-60 border border-carbon-20">
+              <span className="px-2 py-0.5 rounded text-xs font-mono font-bold bg-carbon-10 text-carbon-60 border border-carbon-20">
                 12-Month Area Overlay
               </span>
             </div>
@@ -401,10 +401,10 @@ export const RiskAnalytics: React.FC<RiskAnalyticsProps> = ({ onSelectDistrict }
                   </defs>
 
                   <CartesianGrid strokeDasharray="3 3" stroke="#d1d1d1" vertical={false} />
-                  <XAxis dataKey="month" stroke="#77777a" fontSize={11} tickLine={false} />
-                  <YAxis stroke="#77777a" fontSize={11} tickLine={false} unit="%" domain={[0, 100]} />
+                  <XAxis dataKey="month" stroke="#77777a" fontSize={12} tickLine={false} />
+                  <YAxis stroke="#77777a" fontSize={12} tickLine={false} unit="%" domain={[0, 100]} />
                   <Tooltip content={<CustomDarkTooltip />} />
-                  <Legend wrapperStyle={{ fontSize: '11px', color: '#023246' }} />
+                  <Legend wrapperStyle={{ fontSize: '12px', color: '#023246' }} />
 
                   <Area
                     type="monotone"
@@ -447,7 +447,7 @@ export const RiskAnalytics: React.FC<RiskAnalyticsProps> = ({ onSelectDistrict }
             </div>
           </div>
 
-          <div className="bg-carbon-05 p-3 rounded-xl border border-carbon-20 text-[11px] text-carbon-60 flex items-center gap-3">
+          <div className="bg-carbon-05 p-3 rounded-xl border border-carbon-20 text-xs text-carbon-60 flex items-center gap-3">
             <span className="text-lg"><MaterialIcon name="lightbulb" className="w-4 h-4 inline-block mr-1" /></span>
             <p>
               <strong className="text-carbon-90">Agricultural Insight:</strong> Pre-monsoon flash flood peaks in April-May coincide with physiological maturity of Boro Rice in Sylhet, whereas monsoon river floods peak in July-August across Rangpur/Sirajganj.
@@ -479,10 +479,10 @@ export const RiskAnalytics: React.FC<RiskAnalyticsProps> = ({ onSelectDistrict }
                   margin={{ top: 10, right: 10, left: 20, bottom: 0 }}
                 >
                   <CartesianGrid strokeDasharray="3 3" stroke="#d1d1d1" horizontal={false} />
-                  <XAxis type="number" stroke="#77777a" fontSize={11} unit="%" domain={[0, 100]} />
-                  <YAxis dataKey="region" type="category" stroke="#77777a" fontSize={10} width={90} tickLine={false} />
+                  <XAxis type="number" stroke="#77777a" fontSize={12} unit="%" domain={[0, 100]} />
+                  <YAxis dataKey="region" type="category" stroke="#77777a" fontSize={12} width={90} tickLine={false} />
                   <Tooltip content={<CustomDarkTooltip />} />
-                  <Legend wrapperStyle={{ fontSize: '10px', color: '#023246' }} />
+                  <Legend wrapperStyle={{ fontSize: '12px', color: '#023246' }} />
 
                   <Bar dataKey="FlashFlood" name="Flash Flood" stackId="a" fill={HAZARD_COLORS.FlashFlood} />
                   <Bar dataKey="MonsoonFlood" name="Monsoon Flood" stackId="a" fill={HAZARD_COLORS.MonsoonFlood} />
@@ -494,7 +494,7 @@ export const RiskAnalytics: React.FC<RiskAnalyticsProps> = ({ onSelectDistrict }
             </div>
           </div>
 
-          <div className="bg-carbon-05 p-3 rounded-xl border border-carbon-20 text-[11px] text-carbon-60 flex items-center justify-between">
+          <div className="bg-carbon-05 p-3 rounded-xl border border-carbon-20 text-xs text-carbon-60 flex items-center justify-between">
             <span className="font-mono text-carbon-60 font-bold">Model Resolution: 250m Spatial Tile</span>
             <span className="font-bold text-carbon-90">6 Divisions Analyzed</span>
           </div>

@@ -6,21 +6,27 @@
 
 import React from 'react';
 import { HStack, VStack, Box } from './primitives';
-import { Text, Title2, Body } from './Text';
+import { Title2, Body } from './Text';
 import { Button } from './Button';
+import { Icon } from '../components/Icon';
+import { useTheme } from '../theme/ThemeProvider';
+import type { IconName } from '@hazardnet/design-system';
 
 export interface EmptyStateProps {
-  icon?: string;
+  /** A name from the shared icon registry - never an emoji or a text character. */
+  icon?: IconName;
   headline: string;
   body?: string;
   primaryAction?: { label: string; onPress: () => void };
   secondaryAction?: { label: string; onPress: () => void };
 }
 
-export const ListEmptyState: React.FC<EmptyStateProps> = ({ icon = '○', headline, body, primaryAction, secondaryAction }) => (
+export const ListEmptyState: React.FC<EmptyStateProps> = ({ icon = 'Info', headline, body, primaryAction, secondaryAction }) => {
+  const { theme } = useTheme();
+  return (
   <Box px={24} py={48} align="center" justify="center" flex={1}>
     <VStack space={12} align="center">
-      <Text role="displaySmall" style={{ fontSize: 48, opacity: 0.5 }}>{icon}</Text>
+      <Icon name={icon} size={48} color={theme.colors.textMuted} />
       <Title2 align="center">{headline}</Title2>
       {body ? <Body align="center" color="textSecondary">{body}</Body> : null}
       {(primaryAction || secondaryAction) ? (
@@ -31,4 +37,5 @@ export const ListEmptyState: React.FC<EmptyStateProps> = ({ icon = '○', headli
       ) : null}
     </VStack>
   </Box>
-);
+  );
+};

@@ -55,7 +55,7 @@ const ConnectorCard: React.FC<{
         </span>
         {connected && (
           <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-extrabold uppercase tracking-wider text-carbon-80">
-            <span className="h-1.5 w-1.5 rounded-full bg-nasa-green" /> Connected
+            Connected
           </span>
         )}
       </div>
@@ -176,7 +176,7 @@ export const ConnectorsSection: React.FC = () => {
     <div className="space-y-5">
       <Card
         title="Your integrations"
-        subtitle="Wire HazardNet into the tools you already use — forecasts in, alerts out."
+        subtitle="Wire HazardNet into the tools you already use. Forecasts in, alerts out."
         icon={<MaterialIcon name="hub" size={18} />}
         actions={
           <span className="rounded-full bg-carbon-10 px-3 py-1 text-xs font-extrabold text-carbon-70">
@@ -186,7 +186,7 @@ export const ConnectorsSection: React.FC = () => {
       >
         <p className="text-xs leading-relaxed text-carbon-60">
           Connectors store only non-secret identifiers (webhook URLs, phone numbers) on your profile. Secrets for
-          production pipelines live server-side. The built-in connectors — weather and email digest — work out of
+          production pipelines live server-side. The built-in connectors (weather and email digest) work out of
           the box.
         </p>
       </Card>

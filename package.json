@@ -33,7 +33,7 @@
   ],
   "scripts": {
     "dev": "node scripts/ensure-frontend.mjs && node backend/server.js",
-  "dev:api": "PORT=3001 node backend/server.js",
+    "dev:api": "PORT=3001 node backend/server.js",
     "start": "node backend/server.js",
     "build": "npm run build:frontend && node scripts/copy-dist.mjs",
     "build:frontend": "npm --prefix frontend run build",
@@ -59,7 +59,12 @@
     "check:env": "node scripts/validate_env.mjs",
     "check:claims": "node scripts/verify_claims.mjs",
     "test:phases": "node --test __tests__/advisoryPipeline.test.js __tests__/phaseBFrontend.test.js __tests__/phaseCBackend.test.js __tests__/phaseDHardening.test.js __tests__/phaseEHistorical.test.js",
-    "check:fonts": "node scripts/check-font-payload.mjs"
+    "check:fonts": "node scripts/check-font-payload.mjs",
+    "icons:build": "node scripts/generate-icon-glyphs.mjs",
+    "icons:check": "node scripts/generate-icon-glyphs.mjs --check",
+    "check:prose": "node scripts/check-prose-dashes.mjs",
+    "check:important": "node scripts/check-css-important.mjs",
+    "check:important:report": "node scripts/check-css-important.mjs --report"
   },
   "dependencies": {
     "@google-cloud/firestore": "^7.11.6",

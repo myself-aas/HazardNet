@@ -54,7 +54,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
               reload the app to continue monitoring hazards.
             </p>
             {this.state.error && (
-              <pre className="text-left text-[11px] font-mono bg-carbon-10 border border-carbon-20 rounded-xl p-3 overflow-x-auto text-carbon-60">
+              <pre className="text-left text-xs font-mono bg-carbon-10 border border-carbon-20 rounded-xl p-3 overflow-x-auto text-carbon-60">
                 {this.state.error.message}
               </pre>
             )}

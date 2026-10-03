@@ -1,4 +1,5 @@
 import React from 'react';
+import CardStackTable from './ui/CardStackTable';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import Breadcrumbs from './Breadcrumbs';
@@ -69,31 +70,7 @@ const InlineLink: React.FC<{ link: SectionLink }> = ({ link }) => {
 };
 
 const SectionTableBlock: React.FC<{ table: SectionTable }> = ({ table }) => (
-  <div className="w-full min-w-0 overflow-x-auto border border-carbon-20">
-    <table className="w-full border-collapse text-left text-xs">
-      {table.caption && <caption className="bg-carbon-05 px-3 py-2 text-left text-xs text-carbon-60">{table.caption}</caption>}
-      <thead>
-        <tr className="bg-carbon-10/80">
-          {table.columns.map((column) => (
-            <th key={column} scope="col" className="whitespace-nowrap px-3 py-2 font-semibold text-carbon-70">
-              {column}
-            </th>
-          ))}
-        </tr>
-      </thead>
-      <tbody>
-        {table.rows.map((row, rowIndex) => (
-          <tr key={rowIndex} className="border-t border-carbon-20 align-top">
-            {row.map((cell, cellIndex) => (
-              <td key={cellIndex} className={`px-3 py-2 ${cellIndex === 0 ? 'font-medium text-carbon-80' : 'text-carbon-60'}`}>
-                {cell}
-              </td>
-            ))}
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  </div>
+  <CardStackTable columns={table.columns} rows={table.rows} caption={table.caption} />
 );
 
 /**

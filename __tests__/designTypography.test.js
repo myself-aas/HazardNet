@@ -235,3 +235,101 @@ describe('leading on type we author', () => {
     expect(offenders).toEqual([]);
   });
 });
+
+/**
+ * The legibility floor (backlog item 12 of the 2026-10-03 design-system audit).
+ *
+ * 293 utilities and 68 inline styles shipped between 9px and 11px: uppercase meta labels, popup
+ * captions, badge text and chart annotations. Below 12px, the browser's own minimum-font-size
+ * settings start overriding the design, and a phone at arm's length in daylight - the actual
+ * reading condition for a hazard advisory - loses the text entirely. 12px is the floor this
+ * system chose (it is also where iOS Dynamic Type's smallest supported step lands after scaling).
+ *
+ * The check is deliberately blunt: no authored type below the floor, anywhere, in any form -
+ * Tailwind arbitrary values, inline style objects, or CSS declarations. Print stylesheets are out
+ * of scope (they are measured in points and printed on paper).
+ */
+describe('typography floor', () => {
+  const TYPE_FLOOR_PX = 12;
+  const EXCLUDED_DIRS = new Set(['__tests__', 'node_modules']);
+
+  const walk = (dir) => {
+    const out = [];
+    for (const entry of readdirSync(dir)) {
+      if (EXCLUDED_DIRS.has(entry)) continue;
+      const full = join(dir, entry);
+      if (statSync(full).isDirectory()) out.push(...walk(full));
+      else if (/\.(tsx?|css)$/.test(full)) out.push(full);
+    }
+    return out;
+  };
+
+  const stripPrintBlocks = (css) => css.replace(/@media\s+print\s*\{[\s\S]*?\n\}/g, '');
+
+  test('no arbitrary Tailwind type below the floor', () => {
+    const offenders = [];
+    for (const file of walk(SRC)) {
+      if (!/\.tsx?$/.test(file)) continue;
+      const lines = readFileSync(file, 'utf8').split('\n');
+      // `svg-user-units:` marks a size measured in an SVG viewBox rather than in screen pixels.
+      // The marker states the conversion and protects the element it documents (the className
+      // sits on the declaration's last line, so the marker covers a small block).
+      let documentedUntil = -1;
+      for (const [index, line] of lines.entries()) {
+        if (line.includes('svg-user-units:')) documentedUntil = index + 4;
+        if (index <= documentedUntil) continue;
+        for (const match of line.matchAll(/text-\[(\d+(?:\.\d+)?)px\]/g)) {
+          if (Number(match[1]) < TYPE_FLOOR_PX) {
+            offenders.push(`${relative(ROOT, file)}:${index + 1}: text-[${match[1]}px]`);
+          }
+        }
+      }
+    }
+    expect(offenders).toEqual([]);
+  });
+
+  test('no inline fontSize below the floor, in any of its forms', () => {
+    const offenders = [];
+    const forms = [
+      /fontSize:\s*['"]?(\d+(?:\.\d+)?)/g, // fontSize: 11 / '11px'
+      /fontSize=\{(\d+(?:\.\d+)?)\}/g, // JSX: <XAxis fontSize={11} />
+      /font-size:\s*(\d+(?:\.\d+)?)px/g, // popup HTML built as a string
+    ];
+    for (const file of walk(SRC)) {
+      if (!/\.tsx?$/.test(file)) continue;
+      const source = readFileSync(file, 'utf8');
+      for (const form of forms) {
+        for (const match of source.matchAll(form)) {
+          if (Number(match[1]) < TYPE_FLOOR_PX) {
+            offenders.push(`${relative(ROOT, file)}: ${match[0].trim()}`);
+          }
+        }
+      }
+    }
+    expect(offenders).toEqual([]);
+  });
+
+  test('no CSS declaration below the floor, outside print styles', () => {
+    const offenders = [];
+    for (const file of walk(SRC)) {
+      if (!file.endsWith('.css')) continue;
+      if (file === GENERATED_CSS) continue; // NASA's compiled values are upstream's
+      const css = stripPrintBlocks(readFileSync(file, 'utf8'));
+      for (const match of css.matchAll(/font-size:\s*(\d+(?:\.\d+)?)px/g)) {
+        if (Number(match[1]) < TYPE_FLOOR_PX) offenders.push(`${relative(ROOT, file)}: font-size ${match[1]}px`);
+      }
+    }
+    expect(offenders).toEqual([]);
+  });
+
+  test('the native type scale and the tab bar respect the same floor', () => {
+    const nativeTokens = readFileSync(join(ROOT, 'apps/mobile/src/theme/nativeTokens.ts'), 'utf8');
+    for (const match of nativeTokens.matchAll(/size:\s*(\d+(?:\.\d+)?)/g)) {
+      expect(Number(match[1])).toBeGreaterThanOrEqual(TYPE_FLOOR_PX);
+    }
+    const navigator = readFileSync(join(ROOT, 'apps/mobile/src/navigation/RootNavigator.tsx'), 'utf8');
+    for (const match of navigator.matchAll(/fontSize:\s*(\d+(?:\.\d+)?)/g)) {
+      expect(Number(match[1])).toBeGreaterThanOrEqual(TYPE_FLOOR_PX);
+    }
+  });
+});

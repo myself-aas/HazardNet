@@ -18,9 +18,11 @@ import React, { useCallback, useMemo, useState } from 'react';
 import { Dimensions, LayoutChangeEvent, Pressable } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Screen } from '../../components/Screen';
+import { NATIVE_RADIUS } from '../../theme/nativeTokens';
 import { Box, VStack, HStack } from '../../design-system/primitives';
 import { Title3, Body, Caption, Metadata } from '../../design-system/Text';
 import { Button } from '../../design-system/Button';
+import { Icon } from '../../components/Icon';
 import { Card } from '../../design-system/Card';
 import { Chip } from '../../design-system/Chip';
 import { BangladeshMap } from '../../components/map/BangladeshMap';
@@ -32,6 +34,7 @@ import { AlertRow } from '../../components/alerts/AlertRow';
 import { useHaptics } from '../../hooks/useHaptics';
 import { EmergencyCTARow } from '../../components/alerts/EmergencyCTA';
 import { LocationPermissionEducationSheet, hasSeenLocationEducation, markLocationEducationSeen } from '../../components/map/LocationPermissionEducationSheet';
+import { MapToolsSheet } from '../../components/map/MapToolsSheet';
 import { useOrientationLock } from '../../hooks/useOrientationLock';
 
 const { width: SCREEN_W } = Dimensions.get('window');
@@ -45,7 +48,9 @@ export function MapScreen() {
   const { trigger } = useHaptics();
   const [size, setSize] = useState({ w: SCREEN_W, h: Math.round(SCREEN_W * 1.3) });
   const [selectedDiv, setSelectedDiv] = useState<Division | null>(null);
-  const [showLayers, setShowLayers] = useState(false);
+  const [showTools, setShowTools] = useState(false);
+  const [showDivisions, setShowDivisions] = useState(true);
+  const [showAlerts, setShowAlerts] = useState(true);
   const [showLocEdu, setShowLocEdu] = useState(false);
   const alertsForDiv = useMemo(() => {
     if (!selectedDiv) return [];
@@ -106,10 +111,12 @@ export function MapScreen() {
           alerts={alerts}
           userLocation={locationDot}
           onDivisionPress={handleDivisionPress}
+          showDivisions={showDivisions}
+          showAlertMarkers={showAlerts}
         />
 
         {/* Legend */}
-        <Box px={16} py={8} style={{ position: 'absolute', left: 12, bottom: 12, backgroundColor: theme.colors.surface as string, borderRadius: 8, padding: 8 }}>
+        <Box px={16} py={8} style={{ position: 'absolute', left: 12, bottom: 12, backgroundColor: theme.colors.surface as string, borderRadius: NATIVE_RADIUS.control, padding: 8 }}>
           <VStack space={4}>
             <Metadata color="textMuted">SEVERITY</Metadata>
             <HStack space={8} align="center"><Box w={10} h={10} bg={theme.colors.severe as string} /><Caption>Severe</Caption></HStack>
@@ -119,23 +126,17 @@ export function MapScreen() {
           </VStack>
         </Box>
 
-        {/* Top-right controls */}
-        <VStack space={8} style={{ position: 'absolute', top: 16, right: 16 }}>
+        {/* One labelled control instead of two glyph buttons: `◎` and `⌾` were only named in an
+            accessibility label, so a sighted user had to guess what they did (backlog 8). */}
+        <Box style={{ position: 'absolute', top: 16, right: 16 }}>
           <Button
-            variant={coords ? 'primary' : 'secondary'}
+            variant={showTools || coords ? 'primary' : 'secondary'}
             size="sm"
-            label={locating ? '…' : (permission === 'denied' ? '⍉' : '◎')}
-            onPress={handleRecenter}
-            accessibilityLabel={permission === 'denied' ? 'Location permission denied — open settings' : 'Recenter on my location'}
+            label="Map layers"
+            leadingIcon={<Icon name="Layers" size="meta" color={theme.colors.textPrimary} />}
+            onPress={() => { trigger('selection'); setShowTools((v) => !v); }}
           />
-          <Button
-            variant={showLayers ? 'primary' : 'secondary'}
-            size="sm"
-            label="⌾"
-            onPress={() => { trigger('selection'); setShowLayers((v) => !v); }}
-            accessibilityLabel="Layer controls"
-          />
-        </VStack>
+        </Box>
 
         {showLocEdu ? (
           <Box style={{ position: 'absolute', left: 12, right: 60, top: 12 }}>
@@ -143,16 +144,20 @@ export function MapScreen() {
           </Box>
         ) : null}
 
-        {showLayers ? (
-          <Card style={{ position: 'absolute', top: 120, right: 16, width: 200 }}>
-            <VStack space={8}>
-              <Title3>Layers</Title3>
-              <Chip label="Divisions" severity="severe" selected />
-              <Chip label="Alerts" severity="warning" selected />
-              <Caption color="textMuted">Detailed district polygons and satellite tiles land in 5b (MapLibre + offline tile pack).</Caption>
-            </VStack>
-          </Card>
-        ) : null}
+        <MapToolsSheet
+          visible={showTools}
+          onClose={() => setShowTools(false)}
+          locationState={
+            permission === 'denied' ? 'denied'
+              : locating ? 'locating'
+                : coords ? 'following' : 'idle'
+          }
+          onRecenter={handleRecenter}
+          showDivisions={showDivisions}
+          onToggleDivisions={setShowDivisions}
+          showAlerts={showAlerts}
+          onToggleAlerts={setShowAlerts}
+        />
 
         {/* Bottom sheet: division's alerts */}
         {selectedDiv ? (

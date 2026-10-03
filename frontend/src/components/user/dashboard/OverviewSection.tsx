@@ -94,9 +94,9 @@ export const OverviewSection: React.FC<{ onNavigate: (tab: 'profile' | 'connecto
     setResendBusy(true);
     try {
       await sendVerificationEmail(userProfile.email, { nextTo: '/dashboard' });
-      toast.success('Verification link sent — check your inbox.');
+      toast.success('Verification link sent. Check your inbox.');
     } catch {
-      toast.error('Could not resend right now — email links are rate-limited. Try again in a minute.');
+      toast.error('Could not resend right now. Email links are rate-limited. Try again in a minute.');
     } finally {
       setResendBusy(false);
     }
@@ -127,7 +127,7 @@ export const OverviewSection: React.FC<{ onNavigate: (tab: 'profile' | 'connecto
       {/* Profile URL card */}
       <Card
         title="Your unique profile URL"
-        subtitle="Share this link — anyone can view your public profile card."
+        subtitle="Share this link. Anyone can view your public profile card."
         icon={<MaterialIcon name="link" size={18} />}
       >
         {username ? (
@@ -153,7 +153,7 @@ export const OverviewSection: React.FC<{ onNavigate: (tab: 'profile' | 'connecto
           </div>
         ) : (
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="text-base leading-[1.62] text-carbon-60">You haven’t claimed your username yet — it becomes hazardnet.live/u/&lt;username&gt;.</p>
+            <p className="text-base leading-[1.62] text-carbon-60">You haven’t claimed your username yet. It becomes hazardnet.live/u/&lt;username&gt;.</p>
             <button
               type="button"
               onClick={() => onNavigate('profile')}
@@ -204,7 +204,7 @@ export const OverviewSection: React.FC<{ onNavigate: (tab: 'profile' | 'connecto
               </div>
             </>
           ) : (
-            <p className="text-xs font-bold text-carbon-80">Everything’s filled in — beautiful! 🎉</p>
+            <p className="text-xs font-bold text-carbon-80">Everything’s filled in. Beautiful! 🎉</p>
           )}
           <button
             type="button"

@@ -15,6 +15,7 @@ import {
   PieChart,
   Pie
 } from 'recharts';
+import { CardStackRows } from './ui/CardStackTable';
 
 interface NationalOverviewProps {
   onSelectDistrict?: (district: DistrictData) => void;
@@ -223,21 +224,21 @@ export const NationalOverview: React.FC<NationalOverviewProps> = ({
         {/* Executive KPI Chips */}
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 shrink-0">
           <div className="bg-carbon-05/80 border border-carbon-20/90 p-3.5 rounded-2xl flex flex-col justify-center shadow-2xs">
-            <span className="text-[10px] font-mono text-carbon-60 uppercase font-bold">Analyzed Districts</span>
+            <span className="text-xs font-mono text-carbon-60 uppercase font-bold">Analyzed Districts</span>
             <span className="text-xl font-black text-carbon-90">{totalDistricts} / 64</span>
-            <span className="text-[10px] text-emerald-600 font-mono">Full national coverage</span>
+            <span className="text-xs text-emerald-600 font-mono">Full national coverage</span>
           </div>
 
           <div className="bg-carbon-05/80 border border-carbon-20/90 p-3.5 rounded-2xl flex flex-col justify-center shadow-2xs">
-            <span className="text-[10px] font-mono text-carbon-60 uppercase font-bold">National Severity</span>
+            <span className="text-xs font-mono text-carbon-60 uppercase font-bold">National Severity</span>
             <span className="text-xl font-black text-amber-600">{(nationalAvgSeverity * 100).toFixed(1)}%</span>
-            <span className="text-[10px] text-carbon-60 font-mono">Index {nationalAvgSeverity.toFixed(2)}</span>
+            <span className="text-xs text-carbon-60 font-mono">Index {nationalAvgSeverity.toFixed(2)}</span>
           </div>
 
           <div className="bg-carbon-05/80 border border-carbon-20/90 p-3.5 rounded-2xl col-span-2 sm:col-span-1 flex flex-col justify-center shadow-2xs">
-            <span className="text-[10px] font-mono text-carbon-60 uppercase font-bold">#1 Predicted Hazard</span>
+            <span className="text-xs font-mono text-carbon-60 uppercase font-bold">#1 Predicted Hazard</span>
             <span className="text-sm font-black text-rose-600 truncate">{top3Hazards[0]?.hazardName || 'Monsoon Flood'}</span>
-            <span className="text-[10px] text-carbon-60 font-mono">{top3Hazards[0]?.districtCount} Districts</span>
+            <span className="text-xs text-carbon-60 font-mono">{top3Hazards[0]?.districtCount} Districts</span>
           </div>
         </div>
       </div>
@@ -378,7 +379,7 @@ export const NationalOverview: React.FC<NationalOverviewProps> = ({
                       ></div>
                     </div>
 
-                    <div className="pt-1.5 border-t border-carbon-20 flex items-center justify-between text-[11px]">
+                    <div className="pt-1.5 border-t border-carbon-20 flex items-center justify-between text-xs">
                       <span className="text-carbon-60">High Risk Proportion:</span>
                       <span className="text-rose-600 font-bold">
                         {hazard.highRiskCount} High / {hazard.districtCount}
@@ -389,10 +390,10 @@ export const NationalOverview: React.FC<NationalOverviewProps> = ({
                   {/* Impacted Crops & Divisions */}
                   <div className="space-y-2 text-xs">
                     <div>
-                      <span className="text-carbon-60 text-[10px] uppercase font-mono block">Primary Crops Impacted</span>
+                      <span className="text-carbon-60 text-xs uppercase font-mono block">Primary Crops Impacted</span>
                       <div className="flex flex-wrap gap-1.5 mt-1">
                         {hazard.impactedCrops.map((crop, i) => (
-                          <span key={i} className="px-2 py-0.5 bg-carbon-10 border border-carbon-20 rounded-md text-carbon-70 text-[11px]">
+                          <span key={i} className="px-2 py-0.5 bg-carbon-10 border border-carbon-20 rounded-md text-carbon-70 text-xs">
                             {crop}
                           </span>
                         ))}
@@ -401,7 +402,7 @@ export const NationalOverview: React.FC<NationalOverviewProps> = ({
 
                     <div className="pt-2 border-t border-carbon-20 flex items-center justify-between text-carbon-60">
                       <span>Divisions: {hazard.affectedDivisions.slice(0, 3).join(', ')}</span>
-                      <span className="text-sky-700 text-[11px] font-bold underline">
+                      <span className="text-sky-700 text-xs font-bold underline">
                         {isSelected ? 'Filtered' : 'Click to Filter'}
                       </span>
                     </div>
@@ -463,7 +464,7 @@ export const NationalOverview: React.FC<NationalOverviewProps> = ({
 
                   {/* Severity & High Risk District Progress */}
                   <div className="space-y-1.5 font-mono text-xs bg-carbon-05 p-2.5 rounded-xl border border-carbon-20">
-                    <div className="flex justify-between items-center text-[11px]">
+                    <div className="flex justify-between items-center text-xs">
                       <span className="text-carbon-60">Avg District Severity:</span>
                       <span className="text-carbon-90 font-bold">{severityPct}%</span>
                     </div>
@@ -477,14 +478,14 @@ export const NationalOverview: React.FC<NationalOverviewProps> = ({
                       ></div>
                     </div>
 
-                    <div className="flex justify-between items-center text-[11px] pt-1 border-t border-carbon-20">
+                    <div className="flex justify-between items-center text-xs pt-1 border-t border-carbon-20">
                       <span className="text-carbon-60">High Risk Districts:</span>
                       <span className="text-rose-600 font-bold">{item.highRiskDistrictCount} / {item.districtCount}</span>
                     </div>
                   </div>
 
                   {/* Action Link */}
-                  <div className="flex items-center justify-between text-[11px] font-mono text-carbon-60 pt-1">
+                  <div className="flex items-center justify-between text-xs font-mono text-carbon-60 pt-1">
                     <span>{item.districtCount} Total Districts</span>
                     <span className="text-sky-700 font-bold underline">
                       {isSelected ? 'Selected' : 'Filter Region'}
@@ -520,7 +521,7 @@ export const NationalOverview: React.FC<NationalOverviewProps> = ({
               National Composite Hazard Score Distribution (District Count × Avg Severity Score)
             </h4>
 
-            <p className="text-[11px] text-carbon-60 leading-relaxed">
+            <p className="text-xs text-carbon-60 leading-relaxed">
               Presentation aggregation of the two values this matrix already prints: the district count
               multiplied by the mean of the per-district severity shown on the map.
             </p>
@@ -532,13 +533,13 @@ export const NationalOverview: React.FC<NationalOverviewProps> = ({
                   <XAxis
                     dataKey="hazardName"
                     stroke="#77777a"
-                    fontSize={11}
+                    fontSize={12}
                     tick={{ fill: '#444447' }}
                     interval={0}
                     angle={-15}
                     textAnchor="end"
                   />
-                  <YAxis stroke="#77777a" fontSize={11} tick={{ fill: '#444447' }} />
+                  <YAxis stroke="#77777a" fontSize={12} tick={{ fill: '#444447' }} />
                   <Tooltip
                     content={({ active, payload }) => {
                       if (active && payload && payload.length) {
@@ -568,10 +569,42 @@ export const NationalOverview: React.FC<NationalOverviewProps> = ({
             </div>
           </div>
 
-          {/* Detailed Table Grid */}
-          <div className="overflow-x-auto rounded-2xl border border-carbon-20 bg-white">
+          {/* Detailed Table Grid. Below md the eight columns become one card per hazard;
+              the print-only protocol header row stays with the table. */}
+          <CardStackRows
+            className="rounded-2xl bg-white"
+            rows={hazardSummaries.map((hazard, i) => {
+              const pctNation = ((hazard.districtCount / totalDistricts) * 100).toFixed(1);
+              const isSelected = selectedHazardFilter === hazard.hazardName;
+              return {
+                key: hazard.hazardName,
+                heading: `${i + 1}. ${hazard.hazardName}`,
+                fields: [
+                  { label: 'District Count', value: `${hazard.districtCount} Districts` },
+                  { label: '% of Bangladesh', value: `${pctNation}%` },
+                  { label: 'Avg Severity', value: `${(hazard.avgSeverity * 100).toFixed(1)}%` },
+                  { label: 'Composite Score', value: hazard.compositeScore.toFixed(2) },
+                  { label: 'High Risk Districts', value: `${hazard.highRiskCount} High Risk` },
+                  { label: 'Main Crops', value: hazard.impactedCrops.join(', ') },
+                ],
+                footer: (
+                  <button
+                    onClick={() => setSelectedHazardFilter(isSelected ? null : hazard.hazardName)}
+                    className={`min-h-[44px] rounded-xl border px-3 py-1.5 font-mono text-xs font-bold transition-all ${
+                      isSelected
+                        ? 'border-rose-500 bg-rose-600 text-white'
+                        : 'border-carbon-20 bg-carbon-05 text-sky-800 hover:bg-carbon-10'
+                    }`}
+                  >
+                    {isSelected ? 'Remove Filter' : 'Filter Districts'}
+                  </button>
+                ),
+              };
+            })}
+          />
+          <div className="hidden overflow-x-auto rounded-2xl border border-carbon-20 bg-white md:block">
             <table className="w-full text-left font-sans text-xs">
-              <thead className="bg-carbon-05 text-carbon-60 font-mono uppercase text-[10px] tracking-wider border-b border-carbon-20">
+              <thead className="bg-carbon-05 text-carbon-60 font-mono uppercase text-xs tracking-wider border-b border-carbon-20">
                 {/* Repeated Emergency Protocol Header Row on Every Printed Page */}
                 <tr className="print-table-emergency-header">
                   <th colSpan={8} className="emergency-protocol-title">
@@ -602,7 +635,7 @@ export const NationalOverview: React.FC<NationalOverviewProps> = ({
                       }`}
                     >
                       <td className="p-3.5 flex items-center gap-2.5 font-bold text-carbon-90">
-                        <span className="w-6 h-6 rounded-lg bg-carbon-10 border border-carbon-20 font-mono text-[11px] flex items-center justify-center text-carbon-70 shrink-0">
+                        <span className="w-6 h-6 rounded-lg bg-carbon-10 border border-carbon-20 font-mono text-xs flex items-center justify-center text-carbon-70 shrink-0">
                           #{i + 1}
                         </span>
                         <MaterialIcon name="{hazard.icon}" className="w-4 h-4 inline-block mr-1" />
@@ -646,7 +679,7 @@ export const NationalOverview: React.FC<NationalOverviewProps> = ({
                       <td className="p-3.5 text-right">
                         <button
                           onClick={() => setSelectedHazardFilter(isSelected ? null : hazard.hazardName)}
-                          className={`px-3 py-1.5 rounded-xl font-mono text-[11px] font-bold border transition-all ${
+                          className={`px-3 py-1.5 rounded-xl font-mono text-xs font-bold border transition-all ${
                             isSelected
                               ? 'bg-rose-600 text-white border-rose-500'
                               : 'bg-carbon-05 text-sky-800 border-carbon-20 hover:bg-carbon-10'
@@ -673,25 +706,25 @@ export const NationalOverview: React.FC<NationalOverviewProps> = ({
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 font-mono text-xs">
             <div className="bg-white p-4 rounded-2xl border border-carbon-20 space-y-2 shadow-xs">
-              <span className="text-carbon-60 text-[10px] uppercase block font-bold">Variable 1</span>
+              <span className="text-carbon-60 text-xs uppercase block font-bold">Variable 1</span>
               <h5 className="text-carbon-90 font-black text-sm">{`{unique_hazard_name}`}</h5>
-              <p className="text-carbon-60 text-[11px] leading-relaxed">
+              <p className="text-carbon-60 text-xs leading-relaxed">
                 Identifies distinct weather hazard categories (e.g. Flash Flood, Monsoon Flood, Drought, Tropical Cyclone, Cold Wave, Severe Storm) derived from satellite satellite signal & thermal rasters.
               </p>
             </div>
 
             <div className="bg-white p-4 rounded-2xl border border-carbon-20 space-y-2 shadow-xs">
-              <span className="text-carbon-60 text-[10px] uppercase block font-bold">Variable 2</span>
+              <span className="text-carbon-60 text-xs uppercase block font-bold">Variable 2</span>
               <h5 className="text-carbon-90 font-black text-sm">{`{district_counts_for_each_unique_hazard}`}</h5>
-              <p className="text-carbon-60 text-[11px] leading-relaxed">
+              <p className="text-carbon-60 text-xs leading-relaxed">
                 Quantifies national spatial spread by counting the number of administrative districts prone to or actively affected by each specific hazard type out of 64 districts.
               </p>
             </div>
 
             <div className="bg-white p-4 rounded-2xl border border-carbon-20 space-y-2 shadow-xs">
-              <span className="text-carbon-60 text-[10px] uppercase block font-bold">Variable 3</span>
+              <span className="text-carbon-60 text-xs uppercase block font-bold">Variable 3</span>
               <h5 className="text-carbon-90 font-black text-sm">{`{districts_average_severity_score}`}</h5>
-              <p className="text-carbon-60 text-[11px] leading-relaxed">
+              <p className="text-carbon-60 text-xs leading-relaxed">
                 Computes the mathematical mean of continuous multi-spectral severity indices (range 0-1) across all districts belonging to each unique hazard class.
               </p>
             </div>
@@ -708,8 +741,8 @@ export const NationalOverview: React.FC<NationalOverviewProps> = ({
             <div>
               <span className="font-bold text-carbon-90 block">Predicted Top 3 Hazards Formula:</span>
               <span>Composite Risk Index = Hazard District Count × Average Severity Score</span>
-              <span className="block mt-1.5 text-[11px] font-sans text-sky-900/80 leading-relaxed">
-                Presentation aggregation — a district count multiplied by the mean of the per-district
+              <span className="block mt-1.5 text-xs font-sans text-sky-900/80 leading-relaxed">
+                Presentation aggregation: a district count multiplied by the mean of the per-district
                 severity published on this page. It is not HazardNet&apos;s derived severity index, which is
                 withheld from public surfaces.
               </span>
@@ -726,7 +759,6 @@ export const NationalOverview: React.FC<NationalOverviewProps> = ({
         <div className="bg-white border border-sky-200 rounded-3xl p-6 space-y-4 shadow-sm">
           <div className="flex items-center justify-between">
             <h4 className="text-sm font-black text-carbon-90 flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-sky-500 animate-ping"></span>
               <span>Matching Districts ({filteredDistricts.length} Found)</span>
               {selectedHazardFilter && (
                 <span className="px-2 py-0.5 bg-rose-100 text-rose-800 rounded text-xs font-mono">
@@ -760,7 +792,7 @@ export const NationalOverview: React.FC<NationalOverviewProps> = ({
               >
                 <div className="flex items-center justify-between">
                   <h5 className="font-extrabold text-carbon-90 text-sm">{d.name}</h5>
-                  <span className={`px-2 py-0.5 text-[10px] font-mono font-bold rounded ${
+                  <span className={`px-2 py-0.5 text-xs font-mono font-bold rounded ${
                     d.risk === 'High' ? 'bg-rose-100 text-rose-800 border border-rose-200' :
                     d.risk === 'Moderate' ? 'bg-amber-100 text-amber-800 border border-amber-200' :
                     'bg-emerald-100 text-emerald-800 border border-emerald-200'
@@ -769,13 +801,13 @@ export const NationalOverview: React.FC<NationalOverviewProps> = ({
                   </span>
                 </div>
 
-                <div className="font-mono text-[11px] text-carbon-60 space-y-0.5">
+                <div className="font-mono text-xs text-carbon-60 space-y-0.5">
                   <p>Division: <strong className="text-carbon-80">{d.division}</strong></p>
                   <p>Hazard: <strong className="text-amber-600">{d.hazardType}</strong></p>
                   <p>Severity: <strong className="text-rose-600">{((d.severity || 0.5) * 100).toFixed(0)}%</strong></p>
                 </div>
 
-                <div className="pt-2 border-t border-carbon-20 flex items-center justify-between text-[10px] font-mono text-sky-700">
+                <div className="pt-2 border-t border-carbon-20 flex items-center justify-between text-xs font-mono text-sky-700">
                   <span>Crop: {d.mainCrop}</span>
                   <span className="font-bold underline">Select District →</span>
                 </div>

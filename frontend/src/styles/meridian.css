@@ -57,6 +57,7 @@
   --mrd-dark-canvas: #0b0e11;
   --mrd-dark-grouped: #14191e;
   --mrd-dark-surface: #1b2128;
+  --mrd-dark-surface-raised: #232b33; /* one step above elevated: ink-filled chrome */
   --mrd-dark-hairline: #2a323a;
 
   /* ── Geometry ───────────────────────────────────────────────────────────
@@ -143,12 +144,11 @@
   /* ── Type scale. Apple defines styles as NAMED tokens so they rescale;
         Meta splits display from text at 24px and tightens tracking only above
         the split. Both are honoured below. ─────────────────────────────── */
-  --mrd-font-display: 'Instrument Sans', 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system,
-    'Segoe UI', sans-serif;
-  --mrd-font-text: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --mrd-font-mono: 'DM Mono', 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
-  --mrd-font-bengali: 'Noto Sans Bengali', 'Hind Siliguri', 'Anek Bangla', sans-serif;
-  --mrd-font-bengali-display: 'Baloo Da 2', 'Anek Bangla', 'Noto Sans Bengali', sans-serif;
+  --mrd-font-display: system-ui, -apple-system, 'Segoe UI', Roboto, 'Noto Sans Bengali', sans-serif;
+  --mrd-font-text: system-ui, -apple-system, 'Segoe UI', Roboto, 'Noto Sans Bengali', sans-serif;
+  --mrd-font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+  --mrd-font-bengali: 'Noto Sans Bengali', 'Hind Siliguri', sans-serif;
+  --mrd-font-bengali-display: 'Noto Sans Bengali', 'Hind Siliguri', sans-serif;
 
   --mrd-text-micro: 0.6875rem; /* 11px — Apple caption2 */
   --mrd-text-caption: 0.75rem; /* 12px — Apple caption1 */
@@ -737,4 +737,17 @@ textarea:focus-visible,
   .mrd-card-interactive:hover {
     transform: none !important;
   }
+}
+
+/* ---------------------------------------------------------------------------
+ * Icon contract
+ *
+ * One family, one stroke. `lucide-react` marks every glyph it renders with the
+ * `lucide` class, so the weight is set once here rather than at 500 call sites;
+ * the native shell passes the same value (`ICON_STROKE`) to the svg props. The
+ * number must equal `ICON_STROKE` in packages/design-system/src/icons.ts, which
+ * __tests__/iconFamily.test.js asserts by reading both files.
+ * ------------------------------------------------------------------------- */
+svg.lucide {
+  stroke-width: 1.75;
 }

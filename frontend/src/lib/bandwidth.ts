@@ -141,6 +141,55 @@ export function readDeviceSignals(
   };
 }
 
+/**
+ * Write the decision onto `<html>` before React mounts.
+ *
+ * The CSS collapse in `index.css` (`html[data-low-bandwidth='true'] *`) is the point of this
+ * mode, and it has to be true at first paint or the blurs, the grain and the frame loops have
+ * already run. `useBandwidthMode` owns the attribute for the surfaces that render it, but that
+ * hook is mounted by the map and alert pages only - on `/` nothing ever wrote it, which is how
+ * the landing page kept a 14-second rAF loop and two 100px blurs on the exact 2 GB / 2G devices
+ * this module exists for. `main.tsx` calls this once, before the first render.
+ */
+/**
+ * The document-level answer, for code that must not animate in this mode.
+ *
+ * `useWebFrame` and the hero read this instead of re-deriving the decision: the attribute is
+ * written once at boot and kept in sync by `useBandwidthMode`, so it is the one place the
+ * answer exists. Cheap and side-effect free, which matters because two of the callers run
+ * inside animation loops.
+ */
+export function readLowBandwidth(): boolean {
+  return typeof document !== 'undefined' && document.documentElement.dataset.lowBandwidth === 'true';
+}
+
+export function applyBandwidthAttribute(): BandwidthDecision | null {
+  if (typeof document === 'undefined' || typeof navigator === 'undefined') return null;
+  let override: boolean | null = null;
+  try {
+    if (typeof localStorage !== 'undefined') {
+      const stored = localStorage.getItem(BANDWIDTH_STORAGE_KEY);
+      if (stored === 'true') override = true;
+      else if (stored === 'false') override = false;
+    }
+  } catch {
+    /* private mode / storage disabled - the signals still decide */
+  }
+  const prefersReducedMotion =
+    typeof window !== 'undefined' && typeof window.matchMedia === 'function'
+      ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      : null;
+  const decision = decideBandwidthMode(
+    readDeviceSignals(
+      navigator as Navigator & { connection?: { saveData?: boolean; effectiveType?: string } },
+      { prefersReducedMotion },
+    ),
+    override,
+  );
+  document.documentElement.dataset.lowBandwidth = String(decision.lowBandwidth);
+  return decision;
+}
+
 /** Bengali copy for the reasons above, so the banner is translated like everything else. */
 export const BANDWIDTH_REASON_BN: Record<BandwidthReason, string> = {
   'user-enabled': 'কম-ব্যান্ডউইথ মোড হাতে চালু করা হয়েছে।',

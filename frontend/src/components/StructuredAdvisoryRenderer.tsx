@@ -80,7 +80,7 @@ const PriorityRankedListItem = ({ node, children, ...props }: any) => {
       </div>
       {/* 2. Enhance the markdown template engine to automatically append source attribution labels */}
       {sourceAttribution && (
-        <span className="shrink-0 ml-2 px-2 py-0.5 bg-white/60 border border-black/10 rounded text-[10px] font-mono font-extrabold text-carbon-60 self-start mt-0.5">
+        <span className="shrink-0 ml-2 px-2 py-0.5 bg-white/60 border border-black/10 rounded text-xs font-mono font-extrabold text-carbon-60 self-start mt-0.5">
           Source: {sourceAttribution}
         </span>
       )}
@@ -213,7 +213,7 @@ export const StructuredAdvisoryRenderer: React.FC<StructuredAdvisoryRendererProp
 
       {/* MAIN SOURCE ATTRIBUTION */}
       <div className="flex justify-end pt-2 border-t border-carbon-10">
-        <span className="px-3 py-1 rounded-full text-[10px] font-mono font-extrabold bg-carbon-10 text-carbon-60 border border-carbon-20 shadow-sm">
+        <span className="px-3 py-1 rounded-full text-xs font-mono font-extrabold bg-carbon-10 text-carbon-60 border border-carbon-20 shadow-sm">
           Report Source: {providerSource}
         </span>
       </div>

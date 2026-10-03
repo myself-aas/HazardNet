@@ -10,7 +10,7 @@
 1. **Mobile-First Ergonomics**: Every surface, control, and layout is built from mobile viewports up, directly preparing the web codebase for transition to native mobile (React Native / Expo).
 2. **Strict Tap Targets**: All interactive elements (buttons, form inputs, navigation links, icons) must satisfy a minimum tap target of `44px × 44px` with `touch-action: manipulation` enabled to eliminate mobile tap latency.
 3. **Zero Mobile Bottom Navigation**: HazardNet strictly uses a high-performance, swipe-capable header navigation + full drawer architecture (`MenuDrawer.tsx`) rather than a fixed bottom tab bar.
-4. **Bilingual Typography Harmony**: Engineered typography pairing combining high-impact geometric Latin typefaces (`Instrument Sans`, `Plus Jakarta Sans`, `Inter`) with graceful, high-readability Bengali typefaces (`Noto Sans Bengali`, `Anek Bangla`, `Baloo Da 2`, `Noto Serif Bengali`).
+4. **Bilingual Typography Harmony**: one platform UI face for Latin, and `Noto Sans Bengali` — the single webfont this bundle ships (`@fontsource/noto-sans-bengali`, 400 + 700) — for Bengali, which Latin system faces cannot render. The earlier pairing (`Instrument Sans`, `Plus Jakarta Sans`, `Inter`, `Anek Bangla`, `Baloo Da 2`) was never bundled, so the stacks only rendered differently on machines that happened to have one installed; see P0-3 in `docs/audits/2026-10-03-frontend-design-system-audit.md`.
 5. **Rigorous Color & Contrast Semantics**: Powered by NASA HDS tokens. All foreground-on-background combinations meet or exceed WCAG AA (`4.5:1` normal text) and WCAG AAA (`7.0:1` small text/icons).
 
 ---
@@ -81,14 +81,15 @@ pointed back at a raw hex.
 
 ### Layer 3: Typography Stacks (`@theme inline`)
 ```css
---font-sans: 'Plus Jakarta Sans', 'Public Sans Web', 'Noto Sans Bengali', sans-serif;
---font-heading: 'Instrument Sans', 'Plus Jakarta Sans', 'Anek Bangla', 'Inter', sans-serif;
---font-display: 'Plus Jakarta Sans', 'Baloo Da 2', sans-serif;
---font-brand: 'Instrument Sans', 'Plus Jakarta Sans', sans-serif;
---font-bengali: 'Noto Sans Bengali', 'Anek Bangla', sans-serif;
---font-bengali-display: 'Baloo Da 2', 'Anek Bangla', sans-serif;
---font-bengali-serif: 'Noto Serif Bengali', serif;
---font-mono: 'DM Mono', monospace;
+/* Every family below is either bundled or a platform face. NASA's own 'Public Sans Web' /
+   'Inter' / 'DM Mono' are not bundled by this build and are deliberately not aliased here. */
+--font-sans: var(--font-sans-en);        /* system-ui, -apple-system, 'Segoe UI', Roboto, … */
+--font-heading: var(--hn-font-heading);  /* system-ui, … */
+--font-display: var(--hn-font-display);
+--font-brand: var(--hn-font-heading);
+--font-bengali: var(--hn-font-bengali);  /* 'Noto Sans Bengali', 'Hind Siliguri', sans-serif */
+--font-bengali-display: var(--hn-font-bengali-display);
+--font-mono: var(--hn-font-mono);        /* ui-monospace, SFMono-Regular, Menlo, … */
 ```
 
 ---
@@ -97,13 +98,13 @@ pointed back at a raw hex.
 
 | Role | Font Family | Tailwind Class | Recommended Usage |
 | :--- | :--- | :--- | :--- |
-| **Headings (h1–h6)** | Instrument Sans / Anek Bangla | `.font-heading` or native `h1–h6` | Page titles, section headers, dialog titles |
-| **Hero / Display** | Plus Jakarta Sans / Baloo Da 2 | `.font-display` | Big metrics, landing page hero statements |
-| **Brand Wordmark** | Instrument Sans / Plus Jakarta | `.font-brand` | HazardNet logo, primary identity marks |
-| **Body & UI** | Plus Jakarta Sans / Noto Sans | `.font-sans` | Paragraphs, tables, input fields, badges |
-| **Bengali Primary** | Noto Sans Bengali / Anek Bangla| `.font-bengali` | Bengali locale text, localized hazard alerts |
-| **Bengali Display** | Baloo Da 2 / Anek Bangla | `.font-bengali-display` | Bengali hero titles, campaign banners |
-| **Data / Numbers** | DM Mono | `.font-mono` / `.hn-data-readout` | Coordinates, timestamps, severity scores |
+| **Headings (h1–h6)** | Platform UI face | `.font-heading` or native `h1–h6` | Page titles, section headers, dialog titles |
+| **Hero / Display** | Platform UI face | `.font-display` | Big metrics, landing page hero statements |
+| **Brand Wordmark** | Platform UI face | `.font-brand` | HazardNet logo, primary identity marks |
+| **Body & UI** | Platform UI face / Noto Sans Bengali | `.font-sans` | Paragraphs, tables, input fields, badges |
+| **Bengali Primary** | Noto Sans Bengali / Hind Siliguri | `.font-bengali` | Bengali locale text, localized hazard alerts |
+| **Bengali Display** | Noto Sans Bengali / Hind Siliguri | `.font-bengali-display` | Bengali hero titles, campaign banners |
+| **Data / Numbers** | Platform mono stack | `.font-mono` / `.hn-data-readout` | Coordinates, timestamps, severity scores |
 
 *Note: All body-scale typography strictly maintains `line-height >= 1.3` in accordance with `__tests__/designTypography.test.js`.*
 
@@ -140,22 +141,22 @@ Defined in `frontend/src/index.css` for instant reusability across any page:
 
 ### Buttons
 - **Primary CTA (`.hn-btn-primary`)**:
-  - High-contrast red shade (`#b60109`), hover transition, 44px min-height, unified 2px radius (`var(--hds-border-radius-control)`), semibold 600 weight, `-0.01em` tracking.
+  - High-contrast red shade (`#b60109`), hover transition, 44px min-height, the `control` radius (`var(--mrd-radius-sm)`, 8px), semibold 600 weight, `-0.01em` tracking.
 - **Secondary Action (`.hn-btn-secondary`)**:
-  - NASA blue (`#1c67e3`), hover transition to blue shade, 44px min-height, unified 2px radius, semibold 600 weight, `-0.01em` tracking.
+  - NASA blue (`#1c67e3`), hover transition to blue shade, 44px min-height, `control` radius, semibold 600 weight, `-0.01em` tracking.
 - **Outline Button (`.hn-btn-outline`)**:
-  - Crisp border on carbon line, white background, hover fill, unified 2px radius, semibold 600 weight, `-0.01em` tracking.
+  - Crisp border on carbon line, white background, hover fill, `control` radius, semibold 600 weight, `-0.01em` tracking.
 - **Ghost Button (`.hn-btn-ghost`)**:
-  - Transparent background, hover tint, 44px hit-box, unified 2px radius, semibold 600 weight, `-0.01em` tracking.
+  - Transparent background, hover tint, 44px hit-box, `control` radius, semibold 600 weight, `-0.01em` tracking.
 
 ### Button Typography & Font Weight Standardization:
 - All buttons and interactive triggers (`button`, `[role="button"]`, `.hn-btn-*`, `.hn-nav-link`) standardize strictly to `font-weight: 600` (Semibold) with subtle `letter-spacing: -0.01em`. This eliminates inconsistent mixes of 600 and 700, making buttons and navigation controls crisp, authoritative, and visually unified.
 
 ### Surface & Cards
 - **Base Card (`.hn-card`)**:
-  - Pure white background, `1px solid var(--hn-hds-line)`, unified slightly rounded 2px radius (`var(--hds-border-radius-control)`).
+  - Pure white background, `1px solid var(--hn-hds-line)`, `control` radius (`var(--mrd-radius-sm)`).
 - **Elevated Card (`.hn-card-elevated`)**:
-  - Subtle 4px soft shadow, hover transition for interactive cards, unified slightly rounded 2px radius (`var(--hds-border-radius-control)`).
+  - Subtle 4px soft shadow, hover transition for interactive cards, `card` radius (`var(--mrd-radius-lg)`).
 
 ### Footer Architecture & Typography Standardization:
 - **Link Color & Weight**: All footer navigation links standardize strictly to Carbon-80 (`#2e2e32`, `text-carbon-80`) with Medium 500 weight (`font-medium`). This prevents inconsistent mixes of carbon-60, carbon-80, and white.
@@ -203,6 +204,40 @@ This reduces upfront bundle size while enabling smooth 60fps animations for draw
 - **Cinematic Gradient Overlay**: Vertical gradient (`from-black/35 via-black/55 to-black/85`) darkens the bottom to ground the typography while preserving the celestial vista at the top.
 - **Dynamic Header Transition**: The sticky navigation header remains transparent over the hero (`bg-black/25 backdrop-blur-md text-white border-b border-white/10`) with floating borderless icons (`menu_open`, `location_on`, `map_search`). As soon as the user scrolls past 80px, it smoothly transitions (0.3s ease) into a solid white header (`bg-white/95 backdrop-blur-md border-b border-carbon-20 text-carbon-80 shadow-xs`).
 - **Sidebar Paper Card Contrast**: The `RunVisual` card maintains a clean Solid White (`#FFFFFF`) background with dark neutral `Carbon-90` text and `#D1D1D1` border to avoid white-on-white text conflicts and maximize informational readability.
+
+---
+
+## 6b. Tables and Icons (2026-10-03)
+
+Two primitives carry the mobile-port decisions this document used to leave to each page. Both are
+enforced by test, and both exist so a screen has nothing to re-decide when it is ported.
+
+### Tables
+
+`frontend/src/components/ui/CardStackTable.tsx` renders a table's rows twice from one source: the
+`<table>` at `md` and up, and below `md` one card per row - first cell as the card's heading, the
+rest as a `<dl>` of label/value pairs, so a screen reader hears the column name with each value.
+`CardStackTable` takes `columns`/`rows` (the shape `content/site-routes.json` publishes);
+`CardStackRows` is the same phone branch for console tables whose cells are JSX. The phone branch is
+never inside a horizontal scroll container. Console panels that are dark in either theme pass
+`tone="onDark"`, so a card never inherits near-black ink on a near-black surface.
+
+The two exceptions are deliberate and ledgered: the map's table view (the map *is* the phone view,
+reached through the 44px Map/Table toggle), the advisories protocol sheet (print-only), and the
+two-column metadata tables on `/status` (they do not scroll at 320px).
+`data/design/table-stack-baseline.json` lists every `<table>` in `frontend/src`; a new one, or a
+missing conversion, fails `__tests__/tableStack.test.js`.
+
+### Icons
+
+One family. `data/design/icon-registry.json` holds the decision (family, one stroke, the size
+scale, the names in use); `scripts/generate-icon-glyphs.mjs` turns it plus the installed
+`lucide-react` into `packages/design-system/src/icons.ts` - name to SVG path data, React-free, so
+the native shell renders the same glyphs with `react-native-svg`. Stroke is 1.75, set once per
+platform (`svg.lucide { stroke-width }` on web, `ICON_STROKE` natively), never at a call site.
+No emoji is used as an icon on either platform. `components/MaterialIcon.tsx` is the frozen
+hand-authored legacy set: its importers may only shrink. `__tests__/iconFamily.test.js` holds all
+of it. See `docs/design-system/MERIDIAN.md` §4.8-4.9 for the full contract.
 
 ---
 

@@ -6,9 +6,9 @@
  * native type scale mapped to SF Pro / Roboto roles, safe-area-aware spacing.
  */
 
-import { HDS_NASA_TOKENS } from '@hazardnet/design-system';
+import { HDS_NASA_TOKENS, MERIDIAN_RADIUS_ROLES } from '@hazardnet/design-system';
 
-const { colors, spacing, radius } = HDS_NASA_TOKENS;
+const { colors, spacing } = HDS_NASA_TOKENS;
 
 /** Minimum touch-target size per platform HIG. */
 export const TOUCH_MIN = 48; // dp/pt — Android requires 48dp; iOS 44pt, but we use 48 to be safe on both.
@@ -33,11 +33,27 @@ export const MOTION = {
   easing: [0.2, 0, 0, 1] as [number, number, number, number],
 } as const;
 
+/**
+ * Radius roles, frozen to the web's scale (P1-2 / backlog 4 of the 2026-10-03 audit).
+ *
+ * This used to pin `control` and `chip` to 2px while the web role tokens were 8-28px, which is
+ * the visible reason the phone and the browser looked like two different products. The roles now
+ * come from `MERIDIAN_RADIUS_ROLES`, so a corner is the same corner on both platforms, and
+ * `__tests__/designTokensParity.test.js` compares the two sides per role.
+ *
+ * `sheetIndicator` is the grab handle, not a surface: it stays a capsule (the same shape 2px
+ * produced on the 4px bar it is drawn as).
+ */
 export const NATIVE_RADIUS = {
-  ...radius,
-  chip: 2,
-  control: 2,
-  sheetIndicator: 2,
+  none: 0,
+  chip: MERIDIAN_RADIUS_ROLES.chip,
+  control: MERIDIAN_RADIUS_ROLES.control,
+  media: MERIDIAN_RADIUS_ROLES.media,
+  card: MERIDIAN_RADIUS_ROLES.card,
+  sheet: MERIDIAN_RADIUS_ROLES.sheet,
+  feature: MERIDIAN_RADIUS_ROLES.feature,
+  pill: MERIDIAN_RADIUS_ROLES.pill,
+  sheetIndicator: MERIDIAN_RADIUS_ROLES.pill,
 } as const;
 
 export { colors, spacing };
@@ -60,7 +76,7 @@ export const TYPE_ROLES = {
   callout: { size: 15, weight: '400' as const, lineHeight: 21, letterSpacing: 0 },
   subhead: { size: 14, weight: '500' as const, lineHeight: 19, letterSpacing: 0 },
   caption: { size: 12, weight: '400' as const, lineHeight: 16, letterSpacing: 0 },
-  metadata: { size: 11, weight: '500' as const, lineHeight: 14, letterSpacing: 0.5 },
+  metadata: { size: 12, weight: '500' as const, lineHeight: 16, letterSpacing: 0.5 },
   mono: { size: 13, weight: '400' as const, lineHeight: 18, letterSpacing: 0 },
 } as const;
 

@@ -129,13 +129,13 @@ export const BlogStudioPage: React.FC = () => {
 
         {localDemo && (
           <p className="border border-amber-200 bg-amber-50 p-3 text-xs font-semibold text-amber-900">
-            Local demo mode — Firestore is not configured, so articles persist in this browser only. Configure Firestore
+            Local demo mode. Firestore is not configured, so articles persist in this browser only. Configure Firestore
             for production storage.
           </p>
         )}
         {error && (
           <p role="alert" className="border border-nasa-red bg-white p-3 text-xs font-semibold text-nasa-red-shade">
-            {error} — verify the blog_articles table exists.
+            {error}: verify the blog_articles table exists.
           </p>
         )}
       </div>

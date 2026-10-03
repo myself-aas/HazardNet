@@ -58,6 +58,7 @@ import { useReveal } from '../components/meridian/motion';
 import { AlertLevelBadge } from '../components/alerts/AlertLevelBadge';
 import { LanguageToggle } from '../components/alerts/LanguageToggle';
 import LiveStatusStrip from '../components/frontdoor/LiveStatusStrip';
+import CardStackTable from '../components/ui/CardStackTable';
 import RunVisual from '../components/frontdoor/RunVisual';
 import HeroCinematicBackground from '../components/HeroCinematicBackground';
 import { localiseRoute, usePageSeo } from '../hooks/usePageSeo';
@@ -213,42 +214,12 @@ const SectionBody: React.FC<{ section: Section }> = ({ section }) => {
         </ul>
       )}
       {section.table && (
-        <div className="w-full min-w-0 overflow-x-auto border border-carbon-20">
-          <table className="w-full border-collapse text-left text-xs">
-            {section.table.caption && (
-              <caption className="bg-carbon-05 px-3 py-2 text-left text-xs text-carbon-60">
-                {section.table.caption}
-              </caption>
-            )}
-            <thead>
-              <tr className="border-b border-carbon-20 bg-carbon-05">
-                {section.table.columns.map((column) => (
-                  <th
-                    key={column}
-                    scope="col"
-                    className="px-3 py-2 text-xs font-bold uppercase tracking-wide text-carbon-60"
-                  >
-                    {column}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {section.table.rows.map((row) => (
-                <tr key={row.join('|')} className="border-b border-carbon-10 last:border-b-0">
-                  {row.map((cell, index) => (
-                    <td
-                      key={index}
-                      className={`px-3 py-2 align-top ${index === 0 ? 'font-bold text-carbon-90' : 'text-carbon-70'}`}
-                    >
-                      {cell}
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <CardStackTable
+          columns={section.table.columns}
+          rows={section.table.rows}
+          caption={section.table.caption}
+          className="border border-carbon-20 md:border-0"
+        />
       )}
       {section.callout?.text && (
         <p
@@ -258,18 +229,24 @@ const SectionBody: React.FC<{ section: Section }> = ({ section }) => {
           {section.callout.text}
         </p>
       )}
-      {/* The nav's accessible name is unique per section: six navs all named "Related pages" is a
-          `landmark-unique` violation, and the landmark list is how a screen-reader user jumps
-          between the sections of a long page. */}
+      {/* A list, not a `<nav>`. These rows used to be five separate navigation landmarks (one
+          per section that has links), each with a unique accessible name to satisfy
+          `landmark-unique` - which fixes the axe rule and not the reading experience: VoiceOver's
+          rotor listed nine navigation regions on one page, and TalkBack does not expose
+          navigation regions at all, so the names were inert there. The links stay; the landmark
+          count drops to the one that is genuinely a navigational aid, the table of contents. */}
       {(section.links ?? []).length > 0 && (
-        <nav
+        <ul
+          role="list"
           aria-label={section.h2 ? `${t('frontdoor.relatedPages')}: ${section.h2}` : t('frontdoor.relatedPages')}
           className="flex flex-wrap gap-x-5 gap-y-2 pt-1"
         >
           {(section.links ?? []).map((link) => (
-            <ExternalOrInternalLink key={link.href} href={link.href} label={link.label} />
+            <li key={link.href}>
+              <ExternalOrInternalLink href={link.href} label={link.label} />
+            </li>
           ))}
-        </nav>
+        </ul>
       )}
     </>
   );
@@ -309,6 +286,8 @@ export const FrontDoor: React.FC = () => {
   const content = usePageSeo('/');
   const { freshness, scorecard, loading, failed, retry: retryLiveFacts } = useLiveFacts();
   const [heroPaused, setHeroPaused] = useState(false);
+  // The full standfirst is 70 words; below `sm` it is clamped to three lines with this control.
+  const [standfirstOpen, setStandfirstOpen] = useState(false);
   const { alerts, assessed, counts, notPublished, generatedAt, loading: alertsLoading, error, refresh: refreshAlerts } = useAlertsData();
   const hazardLabel = useHazardLabel();
   const { t, language, formatNumber } = useI18n();
@@ -382,7 +361,10 @@ export const FrontDoor: React.FC = () => {
       {/* `mrd-on-dark` scopes the outline button's inversion to this hero, so the
           same primitive renders white-on-dark here and ink-on-light everywhere
           else without a second variant existing. */}
-      <header className="mrd-on-dark relative w-full overflow-hidden bg-black text-white min-h-[600px] lg:min-h-screen flex items-center -mt-14 sm:-mt-16 pt-[100px] pb-12 sm:pb-16 shadow-2xl">
+      {/* `pt-[calc(var(--navbar-height)+44px)]` instead of a hard 100px: the bar is 3.5rem plus
+          `env(safe-area-inset-top)`, so a fixed number collided with it on notched phones. The
+          variable now carries the inset, which makes this clearance correct on both. */}
+      <header className="mrd-on-dark relative w-full overflow-hidden bg-carbon-90 text-white min-h-[600px] lg:min-h-[100dvh] flex items-center -mt-14 sm:-mt-16 pt-[calc(var(--navbar-height)+44px)] pb-12 sm:pb-16 shadow-2xl">
         {/* Remotion-Inspired 5-Layer Cinematic Motion Background (BgMesh, Video, HUD, Grade, Grain & Vignette) */}
         <HeroCinematicBackground paused={heroPaused} />
         {/* Pause control — keyboard-reachable, respects reduced-motion (audit #1) */}
@@ -391,41 +373,64 @@ export const FrontDoor: React.FC = () => {
           onClick={() => setHeroPaused((v) => !v)}
           aria-pressed={heroPaused}
           aria-label={heroPaused ? t('frontdoor.hero.resumeMotion') : t('frontdoor.hero.pauseMotion')}
-          className="absolute bottom-4 right-4 z-10 inline-flex min-h-[44px] items-center gap-1.5 bg-black/60 px-3 py-2 text-xs font-semibold text-white border border-white/20 backdrop-blur-sm hover:bg-black/70 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
+          className="absolute bottom-4 right-4 z-10 inline-flex min-h-[44px] items-center gap-1.5 bg-carbon-90/60 px-3 py-2 text-xs font-semibold text-white border border-white/20 backdrop-blur-sm hover:bg-carbon-90/70 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
         >
           <MaterialIcon name={heroPaused ? 'play_arrow' : 'pause'} className="text-sm" />
           <span>{heroPaused ? t('frontdoor.hero.resumeMotion') : t('frontdoor.hero.pauseMotion')}</span>
         </button>
 
         <div className="relative z-10 w-full max-w-[1200px] mx-auto px-4 xl:px-8">
-          <div className="flex flex-wrap items-start justify-between gap-3 text-white/80">
-            <p className="font-mono text-xs font-bold uppercase tracking-[0.025em] text-white/80">
-              {localised.label ?? 'Overview'} · HazardNet ·{' '}
-              {content.updated
-                ? t('frontdoor.hero.reviewed', { date: content.updated })
-                : t('frontdoor.hero.reviewedUnknown')}
-            </p>
-            {/* The switch lives on the front door because the front door is bilingual */}
-            <div className="bg-black/40 backdrop-blur-sm p-1 border border-white/20" style={{ backdropFilter: 'blur(var(--hero-glass-blur))', WebkitBackdropFilter: 'blur(var(--hero-glass-blur))' }}>
+          {/* The masthead strip ("Overview · HazardNet · reviewed <date>") used to sit here. It
+              was a middot row of the kind the design skill bans: a version-style eyebrow, half of
+              it repeating the wordmark directly above a wordmark, and the only reader-facing fact
+              in it - the review date - is already stated in the artifact it describes, where it
+              carries its own provenance. The language switch, which is the one control that has to
+              be on the front door, stays and right-aligns on its own. */}
+          <div className="flex justify-end">
+            <div className="bg-carbon-90/40 p-1 border border-white/20" style={{ backdropFilter: 'blur(var(--hero-glass-blur))', WebkitBackdropFilter: 'blur(var(--hero-glass-blur))' }}>
               <LanguageToggle variant="switch" tone="hds" />
             </div>
           </div>
 
           <div className="mt-6 grid grid-cols-1 items-center gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)] xl:gap-12">
-            <div className="min-w-0 rounded-sm border border-white/15 bg-gradient-to-b from-black/55 to-black/35 p-4 backdrop-blur-sm sm:p-5" style={{ backdropFilter: 'blur(var(--hero-glass-blur))', WebkitBackdropFilter: 'blur(var(--hero-glass-blur))' }}>
+            {/* Scrim, not a tint: the authority paragraph sits at the bottom of this card, and at
+                `to-black/35` its 12px `text-white/75` measured 2.45:1 over a light frame. At
+                `to-black/60` the same pixel measures 6.40:1. */}
+            <div className="min-w-0 rounded-sm border border-white/15 bg-gradient-to-b from-black/70 to-black/60 p-4 sm:p-5" style={{ backdropFilter: 'blur(var(--hero-glass-blur))', WebkitBackdropFilter: 'blur(var(--hero-glass-blur))' }}>
               <h1 className="mrd-display2 max-w-3xl text-balance text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
                 {localised.h1 ?? localised.title}
               </h1>
               {language === 'bn' && (
-                <p role="status" aria-live="polite" className="mt-3 inline-flex items-center gap-1.5 bg-amber-100 px-2 py-1 text-xs font-bold text-amber-900 border border-amber-300/80">
+                <p role="status" aria-live="polite" className="mt-3 inline-flex items-center gap-1.5 bg-warning-surface px-2 py-1 text-xs font-bold text-carbon-90 border border-warning-border">
                   <MaterialIcon name="translate" className="text-xs" />
                   {t('frontdoor.bengaliDraft')}
                 </p>
               )}
               {localised.standfirst && (
-                <p className="mt-5 max-w-2xl text-base leading-[1.62] text-white/90 md:text-lg md:leading-[1.5] drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
-                  {localised.standfirst}
-                </p>
+                <>
+                  {/* The standfirst is 70 words - about eleven lines at this size on a 390px
+                      phone, which was most of the viewport before the reader reached a button.
+                      It is clamped below `sm` and expanded in place; the same argument is made
+                      in full by the seven sections under this hero, so nothing is hidden that
+                      the page does not say again. */}
+                  <p
+                    id="front-door-standfirst"
+                    className={`mt-5 max-w-2xl text-base leading-[1.62] text-white/90 md:text-lg md:leading-[1.5] drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] ${
+                      standfirstOpen ? '' : 'line-clamp-3 sm:line-clamp-none'
+                    }`}
+                  >
+                    {localised.standfirst}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setStandfirstOpen((v) => !v)}
+                    aria-expanded={standfirstOpen}
+                    aria-controls="front-door-standfirst"
+                    className="mt-1 inline-flex min-h-[44px] items-center text-xs font-bold text-white underline underline-offset-4 sm:hidden"
+                  >
+                    {standfirstOpen ? t('frontdoor.hero.readLess') : t('frontdoor.hero.readMore')}
+                  </button>
+                </>
               )}
 
               {/* Meridian dual-primary, applied. "Open the map" is a NAVIGATION
@@ -436,32 +441,28 @@ export const FrontDoor: React.FC = () => {
                   safety bug, not a style preference: the crimson has to still
                   mean something when the district under it is under warning.
                   The two secondary links stay outlined. */}
-              <div className="mt-7 flex flex-wrap items-center gap-2 sm:gap-3">
-                <ButtonLink
-                  href="/live"
-                  intent="ink"
-                  size="lg"
-                  className="w-full sm:w-auto"
-                >
+              {/* One primary action. Three equal full-width buttons on a phone is three
+                  primaries, which reads as none; the other two destinations are still here as
+                  text links, and the scorecard has a whole section below that argues for it. */}
+              <div className="mt-7">
+                <ButtonLink href="/live" intent="ink" size="lg" className="w-full sm:w-auto">
                   <MaterialIcon name="public" className="text-base" />
                   {t('frontdoor.hero.ctaMap')}
                 </ButtonLink>
-                <ButtonLink
-                  href="/methodology"
-                  intent="outline"
-                  size="lg"
-                  className="w-full sm:w-auto"
-                >
-                  {t('frontdoor.hero.ctaMethodology')}
-                </ButtonLink>
-                <ButtonLink
-                  href="/model-performance"
-                  intent="outline"
-                  size="lg"
-                  className="w-full sm:w-auto"
-                >
-                  {t('frontdoor.hero.ctaScorecard')}
-                </ButtonLink>
+                <div className="mt-2 flex flex-wrap gap-x-6">
+                  <Link
+                    to="/methodology"
+                    className="inline-flex min-h-[44px] items-center text-sm font-bold text-white underline decoration-white/40 underline-offset-4 hover:decoration-white"
+                  >
+                    {t('frontdoor.hero.ctaMethodology')}
+                  </Link>
+                  <Link
+                    to="/model-performance"
+                    className="inline-flex min-h-[44px] items-center text-sm font-bold text-white underline decoration-white/40 underline-offset-4 hover:decoration-white"
+                  >
+                    {t('frontdoor.hero.ctaScorecard')}
+                  </Link>
+                </div>
               </div>
 
               <p className="mt-6 max-w-2xl border-t border-white/20 pt-4 text-xs leading-[1.62] text-white/75">
@@ -618,17 +619,26 @@ export const FrontDoor: React.FC = () => {
             </div>
           )}
 
-          <nav
+          {/* A list, not a `<nav>`: this page already carries its one navigation landmark (the
+              "On this page" table of contents). Extra named navigation regions do not help a
+              reader - VoiceOver's rotor fills with near-identical "Navigation" entries and
+              TalkBack does not expose the role at all, so the aria-label is inert there - and
+              the links are just as reachable as a labelled list. */}
+          <ul
             aria-label={t('frontdoor.run.alertNav')}
             className="mt-4 flex flex-wrap gap-x-5 gap-y-2 border-t border-carbon-10 pt-3"
           >
-            <Link to="/alerts" className="text-xs font-bold text-nasa-blue-shade underline underline-offset-2">
-              {t('frontdoor.strip.allAlerts')}
-            </Link>
-            <Link to="/status" className="text-xs font-bold text-nasa-blue-shade underline underline-offset-2">
-              {t('frontdoor.strip.whyHeld')}
-            </Link>
-          </nav>
+            <li>
+              <Link to="/alerts" className="text-xs font-bold text-nasa-blue-shade underline underline-offset-2">
+                {t('frontdoor.strip.allAlerts')}
+              </Link>
+            </li>
+            <li>
+              <Link to="/status" className="text-xs font-bold text-nasa-blue-shade underline underline-offset-2">
+                {t('frontdoor.strip.whyHeld')}
+              </Link>
+            </li>
+          </ul>
         </div>
 
         {failed && (
@@ -745,7 +755,8 @@ export const FrontDoor: React.FC = () => {
         >
           {attribution.work.citationText}
         </p>
-        <nav aria-label={t('frontdoor.attribution.links')} className="mt-4 flex flex-wrap gap-x-5 gap-y-2">
+        {/* Same rule as the alert row above: a labelled list, not a fourth navigation landmark. */}
+        <ul aria-label={t('frontdoor.attribution.links')} className="mt-4 flex flex-wrap gap-x-5 gap-y-2">
           {[
             { label: t('frontdoor.attribution.repository'), href: attribution.work.repository },
             { label: t('frontdoor.attribution.institution'), href: attribution.department.url },
@@ -754,9 +765,11 @@ export const FrontDoor: React.FC = () => {
               ? [{ label: t('frontdoor.attribution.coSupervisor'), href: attribution.coSupervisor.url }]
               : []),
           ].map((link) => (
-            <ExternalOrInternalLink key={link.href} href={link.href} label={link.label} />
+            <li key={link.href}>
+              <ExternalOrInternalLink href={link.href} label={link.label} />
+            </li>
           ))}
-        </nav>
+        </ul>
       </section>
       </div>
     </Interactive.Div>

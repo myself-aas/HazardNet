@@ -16,7 +16,7 @@
   "episodes": [
     {
       "id": "amphan-2020",
-      "title": "Cyclone Amphan \u2014 Bangladesh landfall, 20 May 2020",
+      "title": "Cyclone Amphan: Bangladesh landfall, 20 May 2020",
       "hazard_class": "Tropical Cyclone",
       "onset_date": "2020-05-20",
       "affected_count": 14,
@@ -56,7 +56,7 @@
     },
     {
       "id": "yaas-2021",
-      "title": "Cyclone Yaas \u2014 Bangladesh coast, 26 May 2021",
+      "title": "Cyclone Yaas: Bangladesh coast, 26 May 2021",
       "hazard_class": "Tropical Cyclone",
       "onset_date": "2021-05-26",
       "affected_count": 9,
@@ -96,7 +96,7 @@
     },
     {
       "id": "mocha-2023",
-      "title": "Cyclone Mocha \u2014 Cox's Bazar coast and Teknaf, 14 May 2023",
+      "title": "Cyclone Mocha: Cox's Bazar coast and Teknaf, 14 May 2023",
       "hazard_class": "Tropical Cyclone",
       "onset_date": "2023-05-14",
       "affected_count": 4,
@@ -136,7 +136,7 @@
     },
     {
       "id": "eastern-flood-2024",
-      "title": "Eastern flash floods \u2014 Feni, Cumilla, Noakhali, 20\u201330 August 2024",
+      "title": "Eastern flash floods: Feni, Cumilla, Noakhali, 20\u201330 August 2024",
       "hazard_class": "Flash Flood",
       "onset_date": "2024-08-24",
       "affected_count": 13,
@@ -176,7 +176,7 @@
     },
     {
       "id": "northeast-flood-2025",
-      "title": "Northeast and coastal monsoon floods \u2014 Sylhet, Sunamganj and the hill districts, 1 June 2025",
+      "title": "Northeast and coastal monsoon floods: Sylhet, Sunamganj and the hill districts, 1 June 2025",
       "hazard_class": "Flood",
       "onset_date": "2025-06-01",
       "affected_count": 10,

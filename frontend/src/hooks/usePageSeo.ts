@@ -237,7 +237,7 @@ export function usePageSeo(pathname: string): RouteContent | undefined {
     const head = route
       ? buildSeoHead(route)
       : {
-          title: 'Page not found — HazardNet',
+          title: 'Page not found. HazardNet',
           description: 'This page does not exist on HazardNet.',
           keywords: [],
           canonical: canonicalFor(pathname),

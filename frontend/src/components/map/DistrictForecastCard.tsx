@@ -193,9 +193,11 @@ export const DistrictForecastCard: React.FC<DistrictForecastCardProps> = ({
                 <MaterialIcon name="map" className="w-4 h-4 text-nasa-blue shrink-0" />
                 <span className="truncate">Location Map</span>
               </span>
-              <span className={`transition-transform shrink-0 ${showLocationMap ? 'rotate-180' : ''}`} aria-hidden="true">
-                ▾
-              </span>
+              <MaterialIcon
+                name="expand_more"
+                aria-hidden="true"
+                className={`w-4 h-4 shrink-0 transition-transform ${showLocationMap ? 'rotate-180' : ''}`}
+              />
             </button>
             {showLocationMap && (
               <div className="overflow-hidden rounded-2xl border border-carbon-20">

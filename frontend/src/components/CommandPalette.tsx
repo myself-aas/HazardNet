@@ -393,11 +393,6 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
             }`}
           />
 
-          {/* Dynamic Active Pulse Indicator */}
-          <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-nasa-red opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-nasa-red border border-white"></span>
-          </span>
         </button>
       )}
 
@@ -552,7 +547,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                           </div>
 
                           <div className="flex items-center gap-2 shrink-0">
-                            <span className="hidden sm:inline-block px-2 py-0.5 rounded-full text-[9px] font-mono font-semibold bg-carbon-10 border border-carbon-20 text-carbon-60">
+                            <span className="hidden sm:inline-block px-2 py-0.5 rounded-full text-xs font-mono font-semibold bg-carbon-10 border border-carbon-20 text-carbon-60">
                               {item.category}
                             </span>
                             <span className="text-nasa-red-shade text-xs font-mono font-bold">SELECT</span>

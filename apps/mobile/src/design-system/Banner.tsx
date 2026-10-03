@@ -11,6 +11,8 @@ import { Box, HStack } from './primitives';
 import { Text } from './Text';
 import { useTheme } from '../theme/ThemeProvider';
 import { BANNER_HEIGHT } from '../theme/nativeTokens';
+import { Icon } from '../components/Icon';
+import type { IconName } from '@hazardnet/design-system';
 
 export type BannerTone = 'info' | 'warning' | 'error' | 'success';
 
@@ -19,7 +21,8 @@ export interface BannerProps {
   headline: string;
   body?: string;
   onPress?: () => void;
-  icon?: string; // glyph
+  /** A name from the shared icon registry - never an emoji or a text character. */
+  icon?: IconName;
 }
 
 const TONE_TO_BG: Record<BannerTone, keyof ReturnType<typeof useTheme>['theme']['colors']> = {
@@ -36,7 +39,7 @@ const TONE_TO_TEXT: Record<BannerTone, keyof ReturnType<typeof useTheme>['theme'
   success: 'textPrimary',
 };
 
-export const Banner: React.FC<BannerProps> = ({ tone, headline, body, onPress, icon = '!' }) => {
+export const Banner: React.FC<BannerProps> = ({ tone, headline, body, onPress, icon = 'Info' }) => {
   const { theme } = useTheme();
   return (
     <Pressable
@@ -54,7 +57,7 @@ export const Banner: React.FC<BannerProps> = ({ tone, headline, body, onPress, i
       }}
     >
       <HStack space={10} align="flex-start" justify="flex-start">
-        <Text role="title3" weight="700" color={TONE_TO_TEXT[tone] as string}>{icon}</Text>
+        <Icon name={icon} size="nav" color={TONE_TO_TEXT[tone] as string} />
         <Box flex={1}>
           <Text role="callout" weight="600" color={TONE_TO_TEXT[tone] as string}>{headline}</Text>
           {body ? <Text role="caption" color={TONE_TO_TEXT[tone] as string}>{body}</Text> : null}

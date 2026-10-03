@@ -153,7 +153,7 @@ export function LocationMap({
           <div style="position: relative; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center;">
             <div style="position: absolute; inset: -8px; border-radius: 50%; background: ${riskColor}; opacity: 0.4;" class="radar-ping-ring"></div>
             <div style="position: absolute; inset: -2px; border-radius: 50%; background: ${riskColor}; opacity: 0.75;" class="radar-ping-ring"></div>
-            <div style="position: relative; width: 22px; height: 22px; border-radius: 50%; background: #ffffff; border: 3px solid ${riskColor}; box-shadow: 0 2px 10px rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; color: ${riskColor}; font-size: 11px; font-weight: 900;">
+            <div style="position: relative; width: 22px; height: 22px; border-radius: 50%; background: #ffffff; border: 3px solid ${riskColor}; box-shadow: 0 2px 10px rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; color: ${riskColor}; font-size: 12px; font-weight: 900;">
               ●
             </div>
           </div>
@@ -339,7 +339,7 @@ export function LocationMap({
               className="w-2 h-2 rounded-full animate-pulse"
               style={{ backgroundColor: riskColor }}
             />
-            <span className="text-[10px] font-mono font-bold tracking-tight text-carbon-20">
+            <span className="text-xs font-mono font-bold tracking-tight text-carbon-20">
               {MINI_MAP_LAYERS[activeLayerKey].label}
             </span>
 
@@ -353,7 +353,7 @@ export function LocationMap({
                     e.stopPropagation();
                     setActiveLayerKey(key);
                   }}
-                  className={`px-1.5 py-0.5 rounded text-[9px] font-bold transition-all cursor-pointer ${
+                  className={`px-1.5 py-0.5 rounded text-xs font-bold transition-all cursor-pointer ${
                     activeLayerKey === key
                       ? "bg-amber-400 text-carbon-black shadow-xs"
                       : "text-carbon-60 hover:text-white"
@@ -435,7 +435,7 @@ export function LocationMap({
             <MapPin className="w-3.5 h-3.5 text-amber-400 shrink-0" />
             <span className="text-xs font-bold text-carbon-10 truncate">{location}</span>
           </div>
-          <div className="flex items-center gap-2 text-[10px] text-carbon-60 font-mono mt-0.5">
+          <div className="flex items-center gap-2 text-xs text-carbon-60 font-mono mt-0.5">
             <span>{displayCoordinates}</span>
             {typeof elevation === "number" && (
               <span className="text-carbon-60">• {elevation}m MSL</span>
@@ -448,7 +448,7 @@ export function LocationMap({
           <button
             type="button"
             onClick={handleCopyCoordinates}
-            className="px-2 py-1 rounded-lg bg-carbon-80 hover:bg-carbon-70 active:bg-carbon-60 text-carbon-20 text-[10px] font-bold flex items-center gap-1 border border-carbon-70 transition-colors cursor-pointer"
+            className="px-2 py-1 rounded-lg bg-carbon-80 hover:bg-carbon-70 active:bg-carbon-60 text-carbon-20 text-xs font-bold flex items-center gap-1 border border-carbon-70 transition-colors cursor-pointer"
             title="Copy Coordinates to Clipboard"
             aria-label="Copy Coordinates"
           >

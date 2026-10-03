@@ -264,7 +264,7 @@ export const PdfExportButton: React.FC<PdfExportButtonProps> = ({
           <>
             <div className="fixed inset-0 z-[9994]" onClick={() => setIsOpenMenu(false)} />
             <div className="absolute right-0 top-full mt-1.5 w-72 max-w-[calc(100vw-2rem)] bg-white border border-carbon-20 rounded-xl shadow-xl z-[9994] p-1.5 text-xs animate-in fade-in slide-in-from-top-1 duration-150">
-              <div className="px-2.5 py-1.5 text-[10px] font-mono font-bold text-carbon-60 uppercase tracking-wider border-b border-carbon-10 flex items-center justify-between">
+              <div className="px-2.5 py-1.5 text-xs font-mono font-bold text-carbon-60 uppercase tracking-wider border-b border-carbon-10 flex items-center justify-between">
                 <span>Official PDF & Print</span>
                 <span className="text-amber-600 font-bold">SOD 2019</span>
               </div>
@@ -278,9 +278,9 @@ export const PdfExportButton: React.FC<PdfExportButtonProps> = ({
                 <div>
                   <div className="font-bold text-carbon-90 flex items-center gap-1.5">
                     <span>Configure Filename & Export</span>
-                    <span className="px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 text-[9px] font-mono">Custom</span>
+                    <span className="px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 text-xs font-mono">Custom</span>
                   </div>
-                  <div className="text-[10px] text-carbon-60">Add {`{date}`}, {`{region}`} or {`{hazard}`} tags</div>
+                  <div className="text-xs text-carbon-60">Add {`{date}`}, {`{region}`} or {`{hazard}`} tags</div>
                 </div>
               </button>
 
@@ -292,7 +292,7 @@ export const PdfExportButton: React.FC<PdfExportButtonProps> = ({
                 <Eye className="w-4 h-4 text-blue-500 shrink-0" />
                 <div>
                   <div className="font-bold text-carbon-90">Print Preview & Sheet Layout</div>
-                  <div className="text-[10px] text-carbon-60">Inspect multi-page A4 & QR tags</div>
+                  <div className="text-xs text-carbon-60">Inspect multi-page A4 & QR tags</div>
                 </div>
               </button>
 
@@ -305,7 +305,7 @@ export const PdfExportButton: React.FC<PdfExportButtonProps> = ({
                 <FileDown className="w-4 h-4 text-emerald-600 shrink-0" />
                 <div>
                   <div className="font-bold text-carbon-90">Quick Download PDF</div>
-                  <div className="text-[10px] text-carbon-60">Save immediately with default template</div>
+                  <div className="text-xs text-carbon-60">Save immediately with default template</div>
                 </div>
               </button>
 
@@ -317,7 +317,7 @@ export const PdfExportButton: React.FC<PdfExportButtonProps> = ({
                 <Printer className="w-4 h-4 text-carbon-70 shrink-0" />
                 <div>
                   <div className="font-bold text-carbon-90">Browser Print / Physical Sheet</div>
-                  <div className="text-[10px] text-carbon-60">Native browser print dialog</div>
+                  <div className="text-xs text-carbon-60">Native browser print dialog</div>
                 </div>
               </button>
             </div>

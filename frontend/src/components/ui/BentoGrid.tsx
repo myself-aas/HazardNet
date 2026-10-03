@@ -90,7 +90,7 @@ export const BentoCard: React.FC<BentoCardProps> = ({
         </div>
         {statusBadge && (
           <span
-            className="px-2 py-0.5 rounded-full text-[11px] font-mono font-semibold tracking-wide"
+            className="px-2 py-0.5 rounded-full text-xs font-mono font-semibold tracking-wide"
             style={{ backgroundColor: `${statusBadge.color}15`, color: statusBadge.color }}
           >
             {statusBadge.label}

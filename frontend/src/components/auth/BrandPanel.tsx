@@ -20,7 +20,7 @@ const CAROUSELS: Record<AuthMode, RotatingMessage[]> = {
   login: [
     {
       headline: 'Your district intelligence is waiting',
-      body: 'Live 8-hazard forecasts for all 64 districts, saved assessments and your advisory feed — exactly where you left them.',
+      body: 'Live 8-hazard forecasts for all 64 districts, saved assessments and your advisory feed. Exactly where you left them.',
     },
     {
       headline: 'Early warning, 15 days ahead',
@@ -38,11 +38,11 @@ const CAROUSELS: Record<AuthMode, RotatingMessage[]> = {
     },
     {
       headline: 'Eight hazards, one picture',
-      body: 'Flood, cyclone, drought, cold wave, fire, flash flood, heat wave and storms — classified and quantified daily.',
+      body: 'Flood, cyclone, drought, cold wave, fire, flash flood, heat wave and storms. Classified and quantified daily.',
     },
     {
       headline: 'Open, transparent science',
-      body: 'Physical severity indexing and open models you can verify — no black boxes in the advisory chain.',
+      body: 'Physical severity indexing and open models you can verify. No black boxes in the advisory chain.',
     },
   ],
   recovery: [
@@ -52,7 +52,7 @@ const CAROUSELS: Record<AuthMode, RotatingMessage[]> = {
     },
     {
       headline: 'Secure by design',
-      body: 'Password resets are delivered over encrypted email links that expire — we never store your password.',
+      body: 'Password resets are delivered over encrypted email links that expire. We never store your password.',
     },
   ],
 };

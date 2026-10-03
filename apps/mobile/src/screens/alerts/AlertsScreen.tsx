@@ -116,7 +116,7 @@ export function AlertsScreen() {
       <Screen>
         <Box px={SCREEN_H_PADDING} pt={32}>
           <ListEmptyState
-            icon="!"
+            icon="AlertTriangle"
             headline="Could not reach HazardNet"
             body="Check your connection and try again."
             primaryAction={{ label: 'Retry', onPress: onRefresh }}
@@ -137,7 +137,7 @@ export function AlertsScreen() {
         ListEmptyComponent={
           <Box pt={24}>
             <ListEmptyState
-              icon={query ? '○' : '✓'}
+              icon={query ? 'Search' : 'Check'}
               headline={query ? 'No matching alerts' : 'No active alerts'}
               body={query ? `No alerts match "${query}". Try a different term.` : 'No alerts are published above the WATCH threshold right now.'}
               primaryAction={query ? { label: 'Clear search', onPress: () => setQuery('') } : { label: 'Refresh', onPress: onRefresh }}

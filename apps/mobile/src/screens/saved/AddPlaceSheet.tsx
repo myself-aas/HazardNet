@@ -7,6 +7,7 @@ import React from 'react';
 import { TextInput } from 'react-native';
 import { VStack, HStack, Box } from '../../design-system/primitives';
 import { Title3, Caption } from '../../design-system/Text';
+import { NATIVE_RADIUS } from '../../theme/nativeTokens';
 import { Button } from '../../design-system/Button';
 import { Chip } from '../../design-system/Chip';
 import { Card } from '../../design-system/Card';
@@ -56,7 +57,7 @@ export const AddPlaceSheet: React.FC<AddPlaceSheetProps> = ({
               style={{
                 borderWidth: 1,
                 borderColor: theme.colors.hairline as string,
-                borderRadius: 8,
+                borderRadius: NATIVE_RADIUS.control,
                 backgroundColor: theme.colors.surface as string,
               }}
             >

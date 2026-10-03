@@ -20,14 +20,23 @@ import { Chip } from '../../design-system/Chip';
 import { useTheme } from '../../theme/ThemeProvider';
 import { ARTICLE_INDEX } from '../../components/articles/ArticleReader';
 import { EMERGENCY_CONTACTS } from '@hazardnet/core';
+import { Icon } from '../../components/Icon';
+import type { IconName } from '@hazardnet/design-system';
 
-interface RowProps { label: string; subtitle?: string; icon?: string; onPress?: () => void; }
-const Row: React.FC<RowProps> = ({ label, subtitle, icon = '›', onPress }) => {
+// `icon` is an IconName, never an emoji: emoji cannot take the theme colour, differ per OEM, and
+// are silent to screen readers (audit P1-8). The names come from the shared registry, so the same
+// glyph is used on web.
+interface RowProps { label: string; subtitle?: string; icon?: IconName; onPress?: () => void; }
+const Row: React.FC<RowProps> = ({ label, subtitle, icon, onPress }) => {
   const { theme } = useTheme();
   return (
     <Pressable onPress={onPress} accessibilityRole="button" style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}>
       <HStack space={12} align="center" py={14}>
-        <Body>{icon}</Body>
+        {icon ? (
+          <Icon name={icon} size="nav" color={theme.colors.textMuted} />
+        ) : (
+          <Body color="textMuted">›</Body>
+        )}
         <Box flex={1}>
           <Body>{label}</Body>
           {subtitle ? <Caption color="textMuted">{subtitle}</Caption> : null}
@@ -51,13 +60,15 @@ export function MoreScreen() {
 
           <Card padded={false}>
             <Box px={16}>
-              <Row label="Submit field report" subtitle="Photo + caption + location; queues offline" icon="📷" onPress={() => nav.navigate('SubmitReport')} />
+              <Row label="Submit field report" subtitle="Photo + caption + location; queues offline" icon="Camera" onPress={() => nav.navigate('SubmitReport')} />
               <Divider />
-              <Row label="Data status" subtitle="Cache age, source availability" icon="◐" onPress={() => nav.navigate('DataStatus')} />
+              <Row label="Advisories" subtitle="Sector protocols, phased steps, who to call" icon="FileText" onPress={() => nav.navigate('Advisories')} />
               <Divider />
-              <Row label="Notification settings" subtitle="Critical alerts, quiet hours, channels" icon="🔔" onPress={() => nav.navigate('NotificationPreferences')} />
+              <Row label="Data status" subtitle="Cache age, source availability" icon="Database" onPress={() => nav.navigate('DataStatus')} />
               <Divider />
-              <Row label="Accessibility" subtitle="Theme, large text, reduced motion, haptics" icon="◉" onPress={() => nav.navigate('Accessibility')} />
+              <Row label="Notification settings" subtitle="Critical alerts, quiet hours, channels" icon="Bell" onPress={() => nav.navigate('NotificationPreferences')} />
+              <Divider />
+              <Row label="Accessibility" subtitle="Theme, large text, reduced motion, haptics" icon="Contrast" onPress={() => nav.navigate('Accessibility')} />
             </Box>
           </Card>
 
@@ -66,7 +77,7 @@ export function MoreScreen() {
               {ARTICLE_INDEX.map((a, i) => (
                 <React.Fragment key={a.id}>
                   {i > 0 ? <Divider /> : null}
-                  <Row label={a.title} icon="ⓘ" onPress={() => nav.navigate('Article', { id: a.id })} />
+                  <Row label={a.title} icon="Info" onPress={() => nav.navigate('Article', { id: a.id })} />
                 </React.Fragment>
               ))}
             </Box>
@@ -79,13 +90,13 @@ export function MoreScreen() {
                   {i > 0 ? <Divider /> : null}
                   <Row
                     label={`${c.label}: ${c.number}`}
-                    icon="☎"
+                    icon="PhoneCall"
                     onPress={() => { safeOpenUrl('tel:' + c.number, 'emergency').catch(() => {}); }}
                   />
                 </React.Fragment>
               ))}
               <Divider />
-              <Row label="Open hazardnet.live in browser" icon="↗" onPress={() => { safeOpenUrl('https://hazardnet.live', 'web').catch(() => {}); }} />
+              <Row label="Open hazardnet.live in browser" icon="ExternalLink" onPress={() => { safeOpenUrl('https://hazardnet.live', 'web').catch(() => {}); }} />
             </Box>
           </Card>
 

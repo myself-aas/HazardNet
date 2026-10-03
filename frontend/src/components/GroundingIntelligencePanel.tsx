@@ -142,7 +142,7 @@ export const GroundingIntelligencePanel: React.FC<GroundingIntelligencePanelProp
             <h3 className="text-base sm:text-lg font-bold text-carbon-90">
               Grounding Intelligence Engine
             </h3>
-            <span className="text-[10px] bg-nasa-blue text-white font-mono uppercase px-2 py-0.5 rounded tracking-wide font-semibold">
+            <span className="text-xs bg-nasa-blue text-white font-mono uppercase px-2 py-0.5 rounded tracking-wide font-semibold">
               gemini-3.5-flash
             </span>
           </div>
@@ -212,7 +212,7 @@ export const GroundingIntelligencePanel: React.FC<GroundingIntelligencePanelProp
 
         {/* Quick Grounded Prompts */}
         <div className="flex flex-wrap gap-1.5 mt-2.5">
-          <span className="text-[11px] text-carbon-60 self-center mr-1">Quick prompts:</span>
+          <span className="text-xs text-carbon-60 self-center mr-1">Quick prompts:</span>
           {activeTab === 'maps' ? (
             <>
               <button
@@ -220,7 +220,7 @@ export const GroundingIntelligencePanel: React.FC<GroundingIntelligencePanelProp
                 onClick={() => {
                   setCustomQuery(`Find nearest Upazila Agriculture Office (DAE) in ${districtName}`);
                 }}
-                className="text-[11px] bg-blue-50 text-blue-800 border border-blue-200/80 px-2 py-0.5 rounded-md hover:bg-blue-100 transition-colors"
+                className="text-xs bg-blue-50 text-blue-800 border border-blue-200/80 px-2 py-0.5 rounded-md hover:bg-blue-100 transition-colors"
               >
                 📍 Upazila Agriculture Office
               </button>
@@ -229,7 +229,7 @@ export const GroundingIntelligencePanel: React.FC<GroundingIntelligencePanelProp
                 onClick={() => {
                   setCustomQuery(`Locate flood and cyclone shelters in ${districtName}`);
                 }}
-                className="text-[11px] bg-blue-50 text-blue-800 border border-blue-200/80 px-2 py-0.5 rounded-md hover:bg-blue-100 transition-colors"
+                className="text-xs bg-blue-50 text-blue-800 border border-blue-200/80 px-2 py-0.5 rounded-md hover:bg-blue-100 transition-colors"
               >
                 📍 Flood & Cyclone Shelters
               </button>
@@ -238,7 +238,7 @@ export const GroundingIntelligencePanel: React.FC<GroundingIntelligencePanelProp
                 onClick={() => {
                   setCustomQuery(`Veterinary hospital & livestock clinic in ${districtName}`);
                 }}
-                className="text-[11px] bg-blue-50 text-blue-800 border border-blue-200/80 px-2 py-0.5 rounded-md hover:bg-blue-100 transition-colors"
+                className="text-xs bg-blue-50 text-blue-800 border border-blue-200/80 px-2 py-0.5 rounded-md hover:bg-blue-100 transition-colors"
               >
                 📍 Veterinary Clinic
               </button>
@@ -250,7 +250,7 @@ export const GroundingIntelligencePanel: React.FC<GroundingIntelligencePanelProp
                 onClick={() => {
                   setCustomQuery(`Latest BMD rainfall and cyclone warning for ${districtName}`);
                 }}
-                className="text-[11px] bg-emerald-50 text-emerald-800 border border-emerald-200/80 px-2 py-0.5 rounded-md hover:bg-emerald-100 transition-colors"
+                className="text-xs bg-emerald-50 text-emerald-800 border border-emerald-200/80 px-2 py-0.5 rounded-md hover:bg-emerald-100 transition-colors"
               >
                 🌐 BMD Weather Warning
               </button>
@@ -259,7 +259,7 @@ export const GroundingIntelligencePanel: React.FC<GroundingIntelligencePanelProp
                 onClick={() => {
                   setCustomQuery(`Current FFWC river danger levels in ${districtName}`);
                 }}
-                className="text-[11px] bg-emerald-50 text-emerald-800 border border-emerald-200/80 px-2 py-0.5 rounded-md hover:bg-emerald-100 transition-colors"
+                className="text-xs bg-emerald-50 text-emerald-800 border border-emerald-200/80 px-2 py-0.5 rounded-md hover:bg-emerald-100 transition-colors"
               >
                 🌐 River Danger Levels (FFWC)
               </button>
@@ -268,7 +268,7 @@ export const GroundingIntelligencePanel: React.FC<GroundingIntelligencePanelProp
                 onClick={() => {
                   setCustomQuery(`Agricultural directives and crop damage relief for ${districtName}`);
                 }}
-                className="text-[11px] bg-emerald-50 text-emerald-800 border border-emerald-200/80 px-2 py-0.5 rounded-md hover:bg-emerald-100 transition-colors"
+                className="text-xs bg-emerald-50 text-emerald-800 border border-emerald-200/80 px-2 py-0.5 rounded-md hover:bg-emerald-100 transition-colors"
               >
                 🌐 DAE Crop Relief News
               </button>
@@ -299,7 +299,7 @@ export const GroundingIntelligencePanel: React.FC<GroundingIntelligencePanelProp
                     <h4 className="text-sm font-bold text-carbon-90">
                       Grounded Emergency & Agronomic Facilities
                     </h4>
-                    <p className="text-[11px] text-carbon-60">
+                    <p className="text-xs text-carbon-60">
                       Institutional points of contact grounded via Google Maps spatial data
                     </p>
                   </div>
@@ -341,7 +341,7 @@ export const GroundingIntelligencePanel: React.FC<GroundingIntelligencePanelProp
                             <span className="font-semibold text-xs sm:text-sm text-carbon-90 group-hover:text-blue-900 transition-colors">
                               {fac.title}
                             </span>
-                            <span className="text-[10px] font-mono uppercase bg-white border border-carbon-20 px-1.5 py-0.5 rounded text-carbon-60 shrink-0">
+                            <span className="text-xs font-mono uppercase bg-white border border-carbon-20 px-1.5 py-0.5 rounded text-carbon-60 shrink-0">
                               {fac.type || 'Facility'}
                             </span>
                           </div>
@@ -374,7 +374,7 @@ export const GroundingIntelligencePanel: React.FC<GroundingIntelligencePanelProp
                         <span>Spatial Guidance Summary:</span>
                       </div>
                       <p className="whitespace-pre-line">{mapsAnswer.slice(0, 450)}...</p>
-                      <div className="mt-2 text-[10px] text-carbon-60">
+                      <div className="mt-2 text-xs text-carbon-60">
                         Provenance: {mapsProvider}
                       </div>
                     </div>
@@ -401,7 +401,7 @@ export const GroundingIntelligencePanel: React.FC<GroundingIntelligencePanelProp
                     <h4 className="text-sm font-bold text-carbon-90">
                       Real-Time Meteorological & Hazard Bulletins
                     </h4>
-                    <p className="text-[11px] text-carbon-60">
+                    <p className="text-xs text-carbon-60">
                       Verified real-time information grounded via Google Search engine
                     </p>
                   </div>
@@ -439,7 +439,7 @@ export const GroundingIntelligencePanel: React.FC<GroundingIntelligencePanelProp
                         <span>Live Grounded Intelligence:</span>
                       </div>
                       <p className="whitespace-pre-line">{searchAnswer}</p>
-                      <div className="mt-2 text-[10px] text-carbon-60">
+                      <div className="mt-2 text-xs text-carbon-60">
                         Provenance: {searchProvider}
                       </div>
                     </div>
@@ -460,7 +460,7 @@ export const GroundingIntelligencePanel: React.FC<GroundingIntelligencePanelProp
                           rel="noopener noreferrer"
                           className="p-3 bg-carbon-05 border border-carbon-20 hover:border-emerald-400 rounded-xl transition-all block group"
                         >
-                          <div className="flex items-center justify-between text-[11px] text-emerald-800 font-semibold mb-1">
+                          <div className="flex items-center justify-between text-xs text-emerald-800 font-semibold mb-1">
                             <span className="truncate">{src.domain || 'Official Portal'}</span>
                             <ExternalLink className="w-3 h-3 shrink-0 ml-1 opacity-70 group-hover:opacity-100" />
                           </div>

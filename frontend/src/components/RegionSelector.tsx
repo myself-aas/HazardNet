@@ -115,7 +115,6 @@ export const RegionSelector: React.FC<RegionSelectorProps> = ({
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-carbon-20 pb-5">
         <div className="space-y-1">
           <div className="flex items-center gap-2.5">
-            <span className="w-3 h-3 rounded-full bg-nasa-red animate-pulse shadow-xs"></span>
             <h3 className="text-lg sm:text-xl font-extrabold text-carbon-90 tracking-tight">
               Spatial Region & Hazard Selector
             </h3>
@@ -278,7 +277,7 @@ export const RegionSelector: React.FC<RegionSelectorProps> = ({
               Location detected via <strong className="uppercase font-mono">{detectedLocation.method}</strong>: Mapped to <strong className="font-bold text-carbon-black">{detectedLocation.nearestDistrict.name} District</strong> ({detectedLocation.nearestDistrict.division} Division)
             </span>
           </div>
-          <div className="flex items-center gap-2 self-start sm:self-auto shrink-0 font-mono text-[11px] text-carbon-60">
+          <div className="flex items-center gap-2 self-start sm:self-auto shrink-0 font-mono text-xs text-carbon-60">
             <span>{detectedLocation.distanceKm < 1 ? 'Inside district center' : `~${detectedLocation.distanceKm.toFixed(1)} km away`}</span>
             <span className="px-2 py-0.5 rounded-md bg-white border border-amber-200 text-amber-900 font-bold">
               {detectedLocation.lat.toFixed(2)}°N, {detectedLocation.lng.toFixed(2)}°E
@@ -290,21 +289,20 @@ export const RegionSelector: React.FC<RegionSelectorProps> = ({
       {/* Active Selected District / Division Info Summary Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-carbon-05 rounded-2xl border border-carbon-20 text-xs sm:text-sm font-mono shadow-xs">
         <div className="flex flex-wrap items-center gap-2.5">
-          <span className="w-2.5 h-2.5 rounded-full bg-nasa-red shrink-0"></span>
           <span className="text-carbon-60 font-medium">Active Location:</span>
           <strong className="text-carbon-90 font-extrabold text-sm">{currentDistrict.name} District</strong>
           <span className="text-carbon-30 hidden sm:inline">•</span>
           <span className="text-carbon-60 font-semibold">{currentDistrict.division} Division</span>
 
           {currentHomeDistrictId === currentDistrict.id ? (
-            <span className="px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-amber-200 text-amber-950 border border-amber-300 flex items-center gap-1 shadow-2xs">
+            <span className="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-amber-200 text-amber-950 border border-amber-300 flex items-center gap-1 shadow-2xs">
               <MaterialIcon name="home" className="w-4 h-4 inline-block mr-1" />
               <span>Home District</span>
             </span>
           ) : (
             <button
               onClick={() => handleSetCurrentAsHome(currentDistrict)}
-              className="px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 transition-colors flex items-center gap-1 cursor-pointer"
+              className="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 transition-colors flex items-center gap-1 cursor-pointer"
               title="Set as my default home district for future visits"
             >
               <MaterialIcon name="home" className="w-4 h-4 inline-block mr-1" /><span>Set as Home</span>

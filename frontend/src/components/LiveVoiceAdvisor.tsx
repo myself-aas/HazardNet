@@ -406,26 +406,17 @@ export const LiveVoiceAdvisor: React.FC<LiveVoiceAdvisorProps> = ({
         <div className="flex items-center gap-2.5">
           <div className="relative flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-700">
             <Radio className={`w-4 h-4 ${status === 'listening' || status === 'speaking' ? 'animate-pulse' : ''}`} />
-            {status === 'speaking' && (
-              <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-sky-500 rounded-full animate-ping" />
-            )}
           </div>
           <div>
             <div className="flex items-center gap-2">
               <span className="text-xs font-bold tracking-tight text-carbon-80">
                 Live Voice Advisor
               </span>
-              <span className="text-[10px] font-mono font-medium px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200">
+              <span className="text-xs font-mono font-medium px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200">
                 gemini-3.8-live
               </span>
             </div>
-            <div className="flex items-center gap-1.5 text-[11px] text-carbon-60">
-              <span className={`w-1.5 h-1.5 rounded-full ${
-                status === 'speaking' ? 'bg-sky-500 animate-pulse' :
-                status === 'listening' ? 'bg-emerald-500' :
-                status === 'connecting' ? 'bg-amber-400 animate-ping' :
-                'bg-carbon-40'
-              }`} />
+            <div className="flex items-center gap-1.5 text-xs text-carbon-60">
               <span className="capitalize font-medium">
                 {status === 'speaking' ? 'HazardNet Speaking...' :
                  status === 'listening' ? (isMuted ? 'Mic Muted' : 'Listening for your voice...') :
@@ -514,14 +505,14 @@ export const LiveVoiceAdvisor: React.FC<LiveVoiceAdvisorProps> = ({
                 initial={{ opacity: 0, y: -4 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
-                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200 text-[11px] font-medium"
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200 text-xs font-medium"
               >
                 <Sparkles className="w-3 h-3 text-amber-600 animate-spin" />
                 <span>RAG Protocol: Executing {activeTool}...</span>
               </motion.div>
             )}
             {!activeTool && (
-              <span className="text-[11px] text-carbon-50 font-medium">
+              <span className="text-xs text-carbon-50 font-medium">
                 {status === 'speaking' 
                   ? 'Speaking through 24kHz audio stream' 
                   : isMuted 
@@ -552,7 +543,7 @@ export const LiveVoiceAdvisor: React.FC<LiveVoiceAdvisorProps> = ({
                     }));
                   }
                 }}
-                className="text-[11px] px-2.5 py-1 rounded-full bg-carbon-10 hover:bg-carbon-20 text-carbon-70 transition"
+                className="text-xs px-2.5 py-1 rounded-full bg-carbon-10 hover:bg-carbon-20 text-carbon-70 transition"
               >
                 "Which BRRI rice survives floods in {district}?"
               </button>
@@ -565,7 +556,7 @@ export const LiveVoiceAdvisor: React.FC<LiveVoiceAdvisorProps> = ({
                     }));
                   }
                 }}
-                className="text-[11px] px-2.5 py-1 rounded-full bg-carbon-10 hover:bg-carbon-20 text-carbon-70 transition"
+                className="text-xs px-2.5 py-1 rounded-full bg-carbon-10 hover:bg-carbon-20 text-carbon-70 transition"
               >
                 "Livestock medical emergency hotline"
               </button>
@@ -587,30 +578,30 @@ export const LiveVoiceAdvisor: React.FC<LiveVoiceAdvisorProps> = ({
             {item.sender === 'user' && (
               <div className="max-w-[85%] bg-blue-600 text-white px-3 py-2 rounded-2xl rounded-tr-none shadow-sm">
                 <p className="font-sans leading-relaxed">{item.text}</p>
-                <span className="text-[10px] text-blue-200 mt-0.5 block text-right">{item.timestamp}</span>
+                <span className="text-xs text-blue-200 mt-0.5 block text-right">{item.timestamp}</span>
               </div>
             )}
 
             {item.sender === 'model' && (
               <div className="max-w-[85%] bg-carbon-10 text-carbon-90 border border-carbon-20 px-3 py-2 rounded-2xl rounded-tl-none shadow-sm">
-                <div className="flex items-center gap-1.5 mb-1 text-[11px] font-semibold text-blue-700">
+                <div className="flex items-center gap-1.5 mb-1 text-xs font-semibold text-blue-700">
                   <Sparkles className="w-3 h-3" />
                   <span>HazardNet Voice (gemini-3.8-live)</span>
                 </div>
                 <p className="font-sans leading-relaxed">{item.text}</p>
-                <span className="text-[10px] text-carbon-60 mt-0.5 block">{item.timestamp}</span>
+                <span className="text-xs text-carbon-60 mt-0.5 block">{item.timestamp}</span>
               </div>
             )}
 
             {item.sender === 'tool' && (
-              <div className="my-1 px-2.5 py-1 rounded bg-amber-50 border border-amber-200 text-amber-800 text-[11px] flex items-center gap-1.5 max-w-sm">
+              <div className="my-1 px-2.5 py-1 rounded bg-amber-50 border border-amber-200 text-amber-800 text-xs flex items-center gap-1.5 max-w-sm">
                 <Database className="w-3 h-3 text-amber-600 shrink-0" />
                 <span>{item.text}</span>
               </div>
             )}
 
             {item.sender === 'system' && (
-              <div className="my-1 px-2 py-0.5 rounded text-carbon-60 text-[10px] font-mono">
+              <div className="my-1 px-2 py-0.5 rounded text-carbon-60 text-xs font-mono">
                 {item.text}
               </div>
             )}
@@ -633,7 +624,7 @@ export const LiveVoiceAdvisor: React.FC<LiveVoiceAdvisorProps> = ({
             </div>
             <button
               onClick={connectWebSocket}
-              className="px-2 py-1 bg-rose-600 text-white rounded text-[11px] font-medium hover:bg-rose-700 transition"
+              className="px-2 py-1 bg-rose-600 text-white rounded text-xs font-medium hover:bg-rose-700 transition"
             >
               Retry
             </button>

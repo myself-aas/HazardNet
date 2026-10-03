@@ -91,7 +91,7 @@ export const UsernameField: React.FC<UsernameFieldProps> = ({
         if (sequenceRef.current !== sequence) return; // stale response
         if (available) {
           setStatus('available');
-          setStatusMessage(`@${trimmed} is available — profile at hazardnet.live${profilePath(trimmed)}`);
+          setStatusMessage(`@${trimmed} is available. Profile at hazardnet.live${profilePath(trimmed)}`);
         } else {
           setStatus('taken');
           setStatusMessage(`@${trimmed} is already taken.`);

@@ -45,7 +45,7 @@ export function LocationPermissionEducationSheet({ visible, onAccept, onDismiss 
         <BodyBold>We only use your location to match alerts to where you are right now.</BodyBold>
         <Body color="textSecondary">
           • Low-accuracy GPS is used to pick your nearest division/district.{`\n`}
-          • Your location never leaves this device — matching happens on-device.{`\n`}
+          • Your location never leaves this device. Matching happens on-device.{`\n`}
           • You can deny permission and still use HazardNet in national mode.
         </Body>
         <HStack space={8}>

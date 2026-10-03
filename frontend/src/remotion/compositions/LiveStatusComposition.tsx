@@ -43,7 +43,7 @@ export const LiveStatusComposition: React.FC<{
           name="Published label"
           style={{
             fontFamily: 'DM Mono, monospace',
-            fontSize: 11,
+            fontSize: 12,
             fontWeight: 700,
             letterSpacing: '0.05em',
             textTransform: 'uppercase',
@@ -55,7 +55,7 @@ export const LiveStatusComposition: React.FC<{
             }),
           }}
         >
-          Published now — {published} alerts
+          Published now: {published} alerts
         </Interactive.Div>
         <Interactive.Div
           name="Assessed value"

@@ -114,7 +114,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
         const keys = await caches.keys();
         await Promise.all(keys.map((k) => caches.delete(k)));
         toast.success('All offline caches & pre-loaded assets cleared!', {
-          icon: '🧹',
+          icon: <MaterialIcon name="delete" className="w-4 h-4" />,
         });
       }
       await updateCacheStats();
@@ -129,7 +129,12 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
   const [savedMapHeight, setSavedMapHeight] = useState<'compact' | 'standard' | 'tall' | 'dynamic'>('standard');
   const [savedDistricts, setSavedDistricts] = useState<District[]>(() => {
     try {
-      const local = localStorage.getItem('shonchay_saved_districts');
+      // `shonchay_saved_districts` is the pre-rename brand key. Read it once so nobody loses the
+      // districts they saved, then stop writing it: a legacy product name must not travel into
+      // the native app, whose storage layer mirrors these keys (audit backlog item 18).
+      const local =
+        localStorage.getItem('hazardnet.savedDistricts') ??
+        localStorage.getItem('shonchay_saved_districts');
       if (local) return JSON.parse(local);
     } catch {
       // location lookup is optional — silently skip on failure
@@ -154,7 +159,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
         updated = [dist, ...prev];
       }
       try {
-        localStorage.setItem('shonchay_saved_districts', JSON.stringify(updated));
+        localStorage.setItem('hazardnet.savedDistricts', JSON.stringify(updated));
       } catch {
       // storage write is best-effort — skip on quota/private mode
     }
@@ -289,22 +294,21 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
   if (isFullScreen && activeView === 'gis') {
     return (
       <div className="relative isolate flex h-full min-h-0 w-full flex-col overflow-hidden bg-carbon-05 font-mono text-carbon-90">
-        <h1 className="sr-only">Live map — multi-hazard situational awareness</h1>
+        <h1 className="sr-only">Live map: multi-hazard situational awareness</h1>
 
         {/* Reference-inspired operational header: compact, legible, and always available above the map.
-            `pt-16` on phones keeps it clear of the fixed app navbar (3.5rem + breathing
-            room); from `sm` up the navbar only overlays the top of the stage on the
-            home console, so the padding returns to the tighter value. */}
-        <header className="pointer-events-none absolute inset-x-0 top-0 z-[var(--z-sticky)] flex items-start justify-between gap-3 p-3 pt-16 sm:p-5">
+            The clearance is `--navbar-height`, which carries the safe-area inset the navbar itself
+            applies - the hard-coded `pt-16` (64px) was 39px short on a notched phone, so this
+            header's status pill sat under the bar. From `sm` up the navbar only overlays the top
+            of the stage on the home console, so the padding returns to the tighter value. */}
+        <header className="pointer-events-none absolute inset-x-0 top-0 z-[var(--z-sticky)] flex items-start justify-between gap-3 p-3 pt-[calc(var(--navbar-height)+8px)] sm:p-5">
           <div className="pointer-events-auto flex min-w-0 items-center gap-2 glass-panel px-3.5 py-2">
-            <span className="h-2 w-2 shrink-0 animate-pulse rounded-full bg-nasa-red" aria-hidden="true" />
             <div className="min-w-0">
               <p className="truncate text-xs font-bold uppercase tracking-[0.14em] text-carbon-60">HazardNet / live</p>
               <p className="truncate text-xs font-bold text-carbon-90">National situational map</p>
             </div>
           </div>
           <div className="pointer-events-auto hidden items-center gap-2 glass-panel px-3.5 py-2 text-xs font-bold uppercase tracking-[0.12em] text-carbon-60 sm:flex">
-            <span className="inline-block h-2 w-2 rounded-full bg-emerald-600" aria-hidden="true" />
             {predictionSource === 'live' ? 'Forecast synced' : 'Baseline coverage'}
           </div>
         </header>
@@ -347,7 +351,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 50 }}
                 transition={{ type: 'spring', stiffness: 350, damping: 28 }}
-                className="absolute top-16 right-4 left-4 lg:left-auto bottom-4 lg:w-[360px] z-[var(--z-modal)] bg-white border border-carbon-20 rounded-2xl shadow-lg p-4 overflow-y-auto flex flex-col gap-4 text-carbon-90 custom-scrollbar"
+                className="absolute top-[calc(var(--navbar-height)+8px)] right-4 left-4 lg:left-auto bottom-4 lg:w-[360px] z-[var(--z-modal)] bg-white border border-carbon-20 rounded-2xl shadow-lg p-4 overflow-y-auto flex flex-col gap-4 text-carbon-90 custom-scrollbar"
               >
 
                 {/* Drawer Header */}
@@ -427,7 +431,6 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
         <div className="space-y-2.5 sm:space-y-3 md:space-y-4 flex-1 min-w-0">
           <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             <span className="px-2.5 sm:px-3.5 py-1 rounded-full text-xs font-mono font-bold uppercase tracking-wider bg-nasa-red/10 text-nasa-red-shade border border-nasa-blue/20 flex items-center gap-1.5 shrink-0">
-              <span className="w-1.5 h-1.5 rounded-full bg-nasa-red animate-pulse"></span>
               <span className="hidden xs:inline">Live GIS</span><span className="xs:hidden">GIS</span>
             </span>
             <span className="text-carbon-30 hidden sm:inline shrink-0">•</span>
@@ -646,9 +649,6 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
                           <div className="min-w-0 flex-1">
                             <h4 className="text-xs sm:text-sm font-black text-carbon-90 flex items-center gap-1.5 truncate">
                               <span className="truncate">{dist.name}</span>
-                              {isSelected && (
-                                <span className="w-2 h-2 rounded-full bg-nasa-red animate-ping shrink-0"></span>
-                              )}
                             </h4>
                             <p className="text-xs text-carbon-60 font-medium mt-0.5">
                               <span className="font-bold text-carbon-70">{dist.division}</span>
@@ -685,7 +685,6 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
               <div className="bg-white border border-carbon-10 rounded-lg sm:rounded-[20px] md:rounded-[28px] p-3 sm:p-4 space-y-3 sm:space-y-4">
                 <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-2 px-1 sm:px-3 text-xs">
                   <div className="flex items-center gap-1.5 sm:gap-2 font-extrabold text-carbon-80 min-w-0">
-                    <span className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-nasa-red animate-pulse shrink-0"></span>
                     <span className="truncate">GIS Map</span>
                     <span className="text-xs font-mono text-carbon-60 bg-carbon-10 px-1.5 sm:px-2 py-0.5 rounded hidden lg:inline truncate">
                       {selectedDistrict ? `${selectedDistrict.name}` : 'Active'}
@@ -717,7 +716,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
  }`}
                       title="Set map stage height to Standard (680px)"
                     >
-                      🖥️ 680px
+                      <MaterialIcon name="desktop_windows" className="w-4 h-4 inline-block mr-1" /> 680px
                     </button>
                     <button
                       onClick={() => setSavedMapHeight('tall')}
@@ -728,7 +727,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
  }`}
                       title="Set map stage height to Ultra Tall (850px)"
                     >
-                      📐 850px
+                      <MaterialIcon name="straighten" className="w-4 h-4 inline-block mr-1" /> 850px
                     </button>
                     <button
                       onClick={() => setSavedMapHeight('dynamic')}
@@ -753,7 +752,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
  ? 'h-[680px]'
  : savedMapHeight === 'tall'
  ? 'h-[850px]'
- : 'h-[calc(100vh-220px)] min-h-[550px] max-h-[900px]'
+ : 'h-[calc(100dvh-220px)] min-h-[550px] max-h-[900px]'
  }`}
                 >
                   <Map
@@ -766,7 +765,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
                         ? 'h-[680px]'
                         : savedMapHeight === 'tall'
                         ? 'h-[850px]'
-                        : 'h-[calc(100vh-220px)] min-h-[550px] max-h-[900px]'
+                        : 'h-[calc(100dvh-220px)] min-h-[550px] max-h-[900px]'
                     }
                     onOpenDisasterModal={handleOpenDisasterModal}
                     pinpointLat={userProfile?.pinpointLat}
@@ -806,7 +805,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
                         ) : (
                           <>
                             Static baseline band:{' '}
-                            <strong className="text-carbon-80">{selectedDistrict.risk}</strong> — stored forecast
+                            <strong className="text-carbon-80">{selectedDistrict.risk}</strong>: stored forecast
                             unavailable, showing the district's climatological prior (not a model output)
                           </>
                         )}
@@ -1229,7 +1228,6 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-2">
                   <div>
                     <h3 className="text-xl sm:text-2xl font-black text-carbon-90 flex items-center gap-2.5">
-                      <span className="w-3 h-3 rounded-full bg-nasa-red animate-pulse"></span>
                       <span>National Predictive AI Risk Analysis & Advisory</span>
                     </h3>
                     <p className="text-xs text-carbon-60 font-mono mt-0.5">

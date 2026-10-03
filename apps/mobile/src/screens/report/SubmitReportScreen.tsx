@@ -11,6 +11,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Alert as RNAlert, Image, ScrollView, TextInput } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Screen } from '../../components/Screen';
+import { NATIVE_RADIUS } from '../../theme/nativeTokens';
 import { Box, VStack, HStack } from '../../design-system/primitives';
 import { Title1, Title3, Body, BodyBold, Caption } from '../../design-system/Text';
 import { Card } from '../../design-system/Card';
@@ -112,7 +113,7 @@ export function SubmitReportScreen() {
               <VStack space={10}>
                 <Title3>Photo</Title3>
                 {imageUri ? (
-                  <Box style={{ borderRadius: 8, overflow: 'hidden' }}>
+                  <Box style={{ borderRadius: NATIVE_RADIUS.control, overflow: 'hidden' }}>
                     <Image source={{ uri: imageUri }} style={{ width: '100%', height: 220 }} resizeMode="cover" />
                     <HStack space={8} pt={8}>
                       <Button variant="secondary" size="sm" label="Remove" onPress={() => setImageUri(null)} />
@@ -133,7 +134,7 @@ export function SubmitReportScreen() {
             <Card>
               <VStack space={10}>
                 <Title3>Details</Title3>
-                <Box px={12} py={10} style={{ borderWidth: 1, borderColor: theme.colors.hairline as string, borderRadius: 8, backgroundColor: theme.colors.surface as string }}>
+                <Box px={12} py={10} style={{ borderWidth: 1, borderColor: theme.colors.hairline as string, borderRadius: NATIVE_RADIUS.control, backgroundColor: theme.colors.surface as string }}>
                   <TextInput
                     value={caption}
                     onChangeText={setCaption}

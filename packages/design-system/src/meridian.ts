@@ -174,14 +174,17 @@ export const MERIDIAN_DISPLAY_SPLIT = 24;
  */
 export const MERIDIAN_FONTS = {
   /** Display: ≥24px headlines. Tight, high-contrast, optical display weighting. */
-  display: "'Instrument Sans', 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif",
+  // Latin is the platform face: no Latin webfont is bundled (P0-3 in the 2026-10-03 audit).
+  // A stack may only lead with a shipped family or a platform face, so a machine that happens to
+  // have Instrument Sans installed no longer renders a different product from everyone else.
+  display: "system-ui, -apple-system, 'Segoe UI', Roboto, 'Noto Sans Bengali', sans-serif",
   /** Text: body and UI. Larger x-height, looser tracking, better at small sizes. */
-  text: "'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif",
+  text: "system-ui, -apple-system, 'Segoe UI', Roboto, 'Noto Sans Bengali', sans-serif",
   /** Tabular data: coordinates, timestamps, severity scores, artifact ages. */
-  mono: "'DM Mono', 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace",
+  mono: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
   /** Bengali needs its own stack: different metrics, matras, and headline bar. */
-  bengali: "'Noto Sans Bengali', 'Hind Siliguri', 'Anek Bangla', sans-serif",
-  bengaliDisplay: "'Baloo Da 2', 'Anek Bangla', 'Noto Sans Bengali', sans-serif",
+  bengali: "'Noto Sans Bengali', 'Hind Siliguri', sans-serif",
+  bengaliDisplay: "'Noto Sans Bengali', 'Hind Siliguri', sans-serif",
 } as const;
 
 /**
@@ -221,6 +224,37 @@ export const MERIDIAN_RADII = {
   /** Bottom sheets. Retained from HDS v2.2. */
   sheet: 28,
 } as const;
+
+/**
+ * The radius roles, frozen (P1-2 / backlog 4 of the 2026-10-03 design-system audit).
+ *
+ * Before this, radius was "mostly accidental": ten different utilities were in live use, the web
+ * role tokens were literals in `index.css`, and `NATIVE_RADIUS` pinned the phone to 2px while the
+ * web had grown to 12-16px — two products, not two clients. The rule now is one scale
+ * (`MERIDIAN_RADII`) plus these roles, which both platforms read by name:
+
+ *   chip      tags, badges, inline tokens            (thin — a chip is not a button)
+ *   control   inputs, buttons, segmented controls
+ *   media     images and video inside a card
+ *   card      cards, tiles, panels, popovers
+ *   sheet     bottom sheets, modals, drawers
+ *   feature   hero and feature media
+ *   pill      CTAs, search fields, status pills      (capsules, both platforms)
+ *
+ * The web side is generated from these numbers at the CSS layer: `--hn-radius-*` in
+ * `frontend/src/index.css` are `var(--mrd-radius-*)` references, never literals, and
+ * `__tests__/meridianParity.test.js` fails if the two drift. The native side spreads this object
+ * into `NATIVE_RADIUS`, so a phone and a browser cannot disagree about a corner again.
+ */
+export const MERIDIAN_RADIUS_ROLES = {
+  chip: 4,
+  control: 8,
+  media: 12,
+  card: 16,
+  sheet: 28,
+  feature: 32,
+  pill: 9999,
+} as const satisfies Record<string, number>;
 
 /**
  * Apple's concentric rule: a nested surface's radius should be the outer radius

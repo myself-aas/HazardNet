@@ -82,7 +82,7 @@ export const ProfileSection: React.FC = () => {
 
   const save = async () => {
     if (!user) {
-      toast('Design preview — sign in to persist profile changes.', { icon: 'ℹ️' });
+      toast('Design preview: sign in to persist profile changes.', { icon: 'ℹ️' });
       return;
     }
     const changed: Record<string, unknown> = {};
@@ -122,7 +122,7 @@ export const ProfileSection: React.FC = () => {
       }));
       toast.success(`Location pinned near ${nearest?.name ?? 'your area'}`);
     } catch {
-      toast.error('Location permission denied — pick your district manually.');
+      toast.error('Location permission denied. Pick your district manually.');
     } finally {
       setLocating(false);
     }
@@ -140,7 +140,7 @@ export const ProfileSection: React.FC = () => {
   return (
     <div className="space-y-5">
       {/* Identity */}
-      <Card title="Identity" subtitle="How you appear across HazardNet — your name and unique @username become your profile URL." icon={<MaterialIcon name="badge_fallback" size={18} />}>
+      <Card title="Identity" subtitle="How you appear across HazardNet. Your name and unique @username become your profile URL." icon={<MaterialIcon name="badge_fallback" size={18} />}>
         <div className="space-y-4">
           <UserAvatarField />
           <div className="grid gap-4 sm:grid-cols-2">
@@ -257,7 +257,7 @@ export const ProfileSection: React.FC = () => {
           <TextField id="postal-code" label="Postal code" value={pickText(draft.postalCode)} onChange={set('postalCode')} placeholder="5700" />
           <TextField id="address" label="Street address" value={pickText(draft.address)} onChange={set('address')} placeholder="House / road details" className="sm:col-span-2" />
           <div className="sm:col-span-2 grid gap-4 sm:grid-cols-2">
-            <Field label="Pinpoint latitude" htmlFor="pin-lat" hint={hasPin ? 'Set — used for hyper-local forecasts.' : 'Use “Detect my location” or fill manually.'}>
+            <Field label="Pinpoint latitude" htmlFor="pin-lat" hint={hasPin ? 'Set. Used for hyper-local forecasts.' : 'Use “Detect my location” or fill manually.'}>
               <input
                 id="pin-lat"
                 type="number"

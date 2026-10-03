@@ -45,7 +45,7 @@ export function AlertDetailScreen() {
     try {
       await Share.share({
         message:
-          `${alert.level}: ${alert.hazard_type} — ${alert.district_name}\n` +
+          `${alert.level}: ${alert.hazard_type}, ${alert.district_name}\n` +
           `${(getExtrasFor(alert.id) as AlertExtras | null)?.headline ?? ''}\n\n` +
           `From HazardNet. ${OFFICIAL_DISCLAIMER}`,
       });

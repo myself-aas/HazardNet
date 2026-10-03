@@ -34,7 +34,7 @@ export const AccountSection: React.FC = () => {
     setEmailBusy(true);
     try {
       await changeEmail(newEmail.trim());
-      toast.success('Verification email sent to your new address — confirm it to finish the change.');
+      toast.success('Verification email sent to your new address. Confirm it to finish the change.');
       setNewEmail('');
     } catch (error) {
       console.error(error);
@@ -49,7 +49,7 @@ export const AccountSection: React.FC = () => {
     setResetBusy(true);
     try {
       await sendPasswordResetEmail(userProfile.email);
-      toast.success('Password reset link sent — check your inbox.');
+      toast.success('Password reset link sent. Check your inbox.');
     } catch (error) {
       console.error(error);
       toast.error(error instanceof Error ? error.message : 'Could not send the reset link.');
@@ -64,7 +64,7 @@ export const AccountSection: React.FC = () => {
       await signOut();
       navigate('/login');
     } catch {
-      toast.error('Sign-out failed — try again.');
+      toast.error('Sign-out failed. Try again.');
     } finally {
       setSignOutBusy(false);
     }
@@ -117,7 +117,7 @@ export const AccountSection: React.FC = () => {
         title="Password"
         subtitle={
           passwordProvider === 'social'
-            ? 'Your account currently uses social sign-in only — set a password to also sign in with email.'
+            ? 'Your account currently uses social sign-in only. Set a password to also sign in with email.'
             : 'Use a strong, unique password. You can change it as often as you like.'
         }
         icon={<MaterialIcon name="key" size={18} />}

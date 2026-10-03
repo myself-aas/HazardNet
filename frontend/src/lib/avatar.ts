@@ -38,7 +38,7 @@ export function assertValidAvatarFile(file: File): void {
     throw new AvatarError('Please choose an image file (JPG, PNG or WebP).');
   }
   if (file.size > 15 * 1024 * 1024) {
-    throw new AvatarError('That image is over 15 MB — pick something smaller.');
+    throw new AvatarError('That image is over 15 MB. Pick something smaller.');
   }
 }
 
@@ -52,7 +52,7 @@ function loadImage(file: File): Promise<HTMLImageElement> {
     };
     image.onerror = () => {
       URL.revokeObjectURL(url);
-      reject(new AvatarError('Could not read that image — try a different file.'));
+      reject(new AvatarError('Could not read that image. Try a different file.'));
     };
     image.src = url;
   });
@@ -96,7 +96,7 @@ export async function resizeAvatarFile(file: File): Promise<ResizedAvatar> {
       return { blob, width: dimension, height: dimension, extension, contentType: type };
     }
   }
-  throw new AvatarError('Image compression failed — try a different file.');
+  throw new AvatarError('Image compression failed. Try a different file.');
 }
 
 export interface UploadAvatarArgs {

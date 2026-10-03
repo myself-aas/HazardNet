@@ -1,12 +1,10 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import Breadcrumbs from '../components/Breadcrumbs';
-import { usePageSeo } from '../hooks/usePageSeo';
 
 export const About: React.FC = () => {
   // Per-route <head>: the prerenderer writes these into the static HTML, but a
   // client-side transition needs the hook to keep title/canonical/robots correct.
-  usePageSeo('/about');
   return (
     <motion.div
       initial={{ opacity: 0, y: 15 }}
@@ -113,7 +111,7 @@ export const About: React.FC = () => {
             },
             {
               name: 'BMD · FFWC · DDM & local administration',
-              role: 'Official warning authorities this platform defers to — cited as sources only. HazardNet has no partnership, endorsement or data-sharing agreement with them.',
+              role: 'Official warning authorities this platform defers to. Cited as sources only. HazardNet has no partnership, endorsement or data-sharing agreement with them.',
               location: 'Bangladesh',
             }
           ].map((partner, i) => (
@@ -142,7 +140,9 @@ export const About: React.FC = () => {
           Agro-Ecological Vulnerability Context in Bangladesh
         </h2>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-base text-carbon-70">
+        {/* Editorial split rather than a third three-across card row: the lead case reads full
+            width at md+, the remaining three pair off below it. */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-base text-carbon-70">
           {[
             {
               title: 'Haor Basin & Pre-Monsoon Flash Floods',
@@ -172,7 +172,7 @@ export const About: React.FC = () => {
             <motion.div
               key={idx}
               whileHover={{ scale: 1.01 }}
-              className="bg-carbon-05 border border-carbon-20 p-4 space-y-2 transition-all"
+              className={`bg-carbon-05 border border-carbon-20 p-4 space-y-2 transition-all ${idx === 0 ? 'md:col-span-2' : ''}`}
             >
               <h3 className="font-bold text-carbon-90">
                 {item.title}

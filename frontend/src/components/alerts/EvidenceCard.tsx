@@ -239,7 +239,7 @@ export const EvidenceCardExportButton: React.FC<EvidenceCardExportButtonProps> =
     try {
       await exportElementToPdf({
         elementId: EVIDENCE_CARD_ID,
-        title: `${alert.hazard_type} — ${alert.district_name || alert.district_id || ''}`,
+        title: `${alert.hazard_type}: ${alert.district_name || alert.district_id || ''}`,
         documentType: 'HazardNet Evidence Card',
         orientation: 'portrait',
         filenameTemplate: 'HazardNet_Evidence_{district}_{date}',

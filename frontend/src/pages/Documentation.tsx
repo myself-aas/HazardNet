@@ -2,7 +2,6 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import Breadcrumbs from '../components/Breadcrumbs';
 import MaterialIcon from '../components/MaterialIcon';
-import { usePageSeo } from '../hooks/usePageSeo';
 
 /**
  * Results reference for the published HazardNet outputs. Model code, dataset
@@ -12,7 +11,6 @@ import { usePageSeo } from '../hooks/usePageSeo';
 export const Documentation: React.FC = () => {
   // Per-route <head>: the prerenderer writes these into the static HTML, but a
   // client-side transition needs the hook to keep title/canonical/robots correct.
-  usePageSeo('/docs');
   return (
     <motion.div
       initial={{ opacity: 0, y: 15 }}
@@ -62,12 +60,12 @@ export const Documentation: React.FC = () => {
           Every figure on HazardNet traces to one published record per district and forecast date:
         </p>
         <ul className="text-xs text-carbon-70 space-y-1.5 list-disc pl-5">
-          <li><strong>District</strong> — one of the 64 districts of Bangladesh.</li>
-          <li><strong>Hazard class</strong> — one of eight classes.</li>
-          <li><strong>Severity</strong> — a continuous value reported in two tracks (see below).</li>
-          <li><strong>Confidence score</strong> — the score for the chosen class, uncalibrated.</li>
-          <li><strong>Horizons</strong> — 7- and 15-day outlook windows.</li>
-          <li><strong>Forecast date</strong> — the run that produced the record.</li>
+          <li><strong>District</strong>: one of the 64 districts of Bangladesh.</li>
+          <li><strong>Hazard class</strong>: one of eight classes.</li>
+          <li><strong>Severity</strong>: a continuous value reported in two tracks (see below).</li>
+          <li><strong>Confidence score</strong>: the score for the chosen class, uncalibrated.</li>
+          <li><strong>Horizons</strong>: 7- and 15-day outlook windows.</li>
+          <li><strong>Forecast date</strong>: the run that produced the record.</li>
         </ul>
       </div>
 
@@ -75,8 +73,8 @@ export const Documentation: React.FC = () => {
       <div className="bg-white border border-carbon-20 p-6 md:p-8 space-y-3">
         <h2 className="text-lg font-bold text-carbon-90">Severity values</h2>
         <p className="text-xs text-carbon-70 leading-relaxed">
-          Two tracks are reported side by side: a <strong>skill track</strong> — the system&apos;s own
-          score for the class it selected — and a <strong>physics track</strong> — an independent
+          Two tracks are reported side by side: a <strong>skill track</strong> (the system&apos;s own
+          score for the class it selected) and a <strong>physics track</strong> (an independent
           estimate. They can disagree, and when they do, that is shown rather than smoothed away.
           Neither is an official warning level.
         </p>
@@ -86,7 +84,7 @@ export const Documentation: React.FC = () => {
       <div className="bg-white border border-carbon-20 p-6 md:p-8 space-y-3">
         <h2 className="text-lg font-bold text-carbon-90">Alert levels</h2>
         <p className="text-xs text-carbon-70 leading-relaxed">
-          Four levels are published: no alert, watch, warning and severe — at or below the
+          Four levels are published: no alert, watch, warning and severe. At or below the
           configured ceiling for each hazard class, and never inflated by this site. Official
           warnings come from the Bangladesh Meteorological Department and the Flood Forecasting
           and Warning Centre; HazardNet defers to them.
@@ -98,7 +96,7 @@ export const Documentation: React.FC = () => {
         <h2 className="text-lg font-bold text-carbon-90">Freshness &amp; provenance</h2>
         <p className="text-xs text-carbon-70 leading-relaxed">
           Every surface is stamped with the forecast date behind it. A stale run is labelled as
-          stale; a missing run is shown as missing — no number is interpolated to fill a gap.
+          stale; a missing run is shown as missing. No number is interpolated to fill a gap.
         </p>
       </div>
 
@@ -121,7 +119,7 @@ export const Documentation: React.FC = () => {
         <h2 className="text-lg font-bold text-carbon-90">What is not published</h2>
         <p className="text-xs text-carbon-70 leading-relaxed">
           Model code, dataset collection procedures, training and benchmarking are research-private.
-          Only results and outputs are public — on this site and in the repository. For research
+          Only results and outputs are public. On this site and in the repository. For research
           collaboration or licensing enquiries, use the{' '}
           <Link to="/contact" className="underline decoration-dotted font-semibold">
             contact page

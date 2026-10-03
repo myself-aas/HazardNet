@@ -246,8 +246,8 @@ export const MapToolbar: React.FC<MapToolbarProps> = ({
             className="px-2.5 min-h-[24px] inline-flex items-center rounded-full text-xs font-semibold whitespace-nowrap border border-carbon-20 bg-carbon-05 text-carbon-70"
             title={
               isLive
-                ? `Stored pipeline forecast — ${liveCount}/64 districts matched, prediction date ${predictionDate}`
-                : 'Static baseline data — the forecast API is offline or has no rows yet'
+                ? `Stored pipeline forecast: ${liveCount}/64 districts matched, prediction date ${predictionDate}`
+                : 'Static baseline data: the forecast API is offline or has no rows yet'
             }
           >
             {isLive ? `Stored ${liveCount}/64` : 'Baseline'}

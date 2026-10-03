@@ -301,7 +301,7 @@ export const PdfExportConfigModal: React.FC<PdfExportConfigModalProps> = ({
             <div>
               <h3 id="pdf-config-modal-title" className="text-base font-bold text-white tracking-tight flex items-center gap-2">
                 <span>PDF Export Configuration</span>
-                <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-carbon-80 text-amber-300 border border-carbon-70">
+                <span className="px-2 py-0.5 rounded text-xs font-mono bg-carbon-80 text-amber-300 border border-carbon-70">
                   SOD 2019
                 </span>
               </h3>
@@ -334,7 +334,7 @@ export const PdfExportConfigModal: React.FC<PdfExportConfigModalProps> = ({
               <button
                 type="button"
                 onClick={handleResetToDefault}
-                className="text-[11px] text-carbon-60 hover:text-carbon-90 font-mono underline transition-colors cursor-pointer"
+                className="text-xs text-carbon-60 hover:text-carbon-90 font-mono underline transition-colors cursor-pointer"
                 title="Reset template to default pattern"
               >
                 Reset Default
@@ -362,7 +362,7 @@ export const PdfExportConfigModal: React.FC<PdfExportConfigModalProps> = ({
                 <Sparkles className="w-3.5 h-3.5 text-amber-500" />
                 <span>Available Placeholders</span>
               </span>
-              <span className="text-[10px] text-carbon-60">Click a tag to insert into template</span>
+              <span className="text-xs text-carbon-60">Click a tag to insert into template</span>
             </div>
 
             <div className="flex flex-wrap gap-1.5">
@@ -379,7 +379,7 @@ export const PdfExportConfigModal: React.FC<PdfExportConfigModalProps> = ({
                   >
                     {getPlaceholderIcon(ph.category)}
                     <strong className="font-bold text-carbon-90 group-hover:text-amber-900">{ph.tag}</strong>
-                    <span className="text-[10px] text-carbon-60 font-sans">({previewVal})</span>
+                    <span className="text-xs text-carbon-60 font-sans">({previewVal})</span>
                   </button>
                 );
               })}
@@ -388,7 +388,7 @@ export const PdfExportConfigModal: React.FC<PdfExportConfigModalProps> = ({
 
           {/* Section 3: Live Output Filename Preview */}
           <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl space-y-1">
-            <div className="flex items-center justify-between text-[11px] font-bold text-emerald-900">
+            <div className="flex items-center justify-between text-xs font-bold text-emerald-900">
               <span className="flex items-center gap-1.5">
                 <Check className="w-3.5 h-3.5 text-emerald-600" />
                 <span>Live Evaluated Filename</span>
@@ -396,7 +396,7 @@ export const PdfExportConfigModal: React.FC<PdfExportConfigModalProps> = ({
               <button
                 type="button"
                 onClick={handleCopyEvaluatedFilename}
-                className="inline-flex items-center gap-1 text-[10px] text-emerald-700 hover:text-emerald-900 font-mono cursor-pointer"
+                className="inline-flex items-center gap-1 text-xs text-emerald-700 hover:text-emerald-900 font-mono cursor-pointer"
                 title="Copy evaluated filename"
               >
                 <Copy className="w-3 h-3" />
@@ -431,7 +431,7 @@ export const PdfExportConfigModal: React.FC<PdfExportConfigModalProps> = ({
                     }`}
                   >
                     <div className="font-bold">{preset.name}</div>
-                    <div className={`font-mono text-[10px] truncate mt-0.5 ${isSelected ? 'text-amber-300' : 'text-carbon-60'}`}>
+                    <div className={`font-mono text-xs truncate mt-0.5 ${isSelected ? 'text-amber-300' : 'text-carbon-60'}`}>
                       {preset.template}
                     </div>
                   </button>
@@ -487,7 +487,7 @@ export const PdfExportConfigModal: React.FC<PdfExportConfigModalProps> = ({
                   <SunMedium className="w-3.5 h-3.5 text-amber-500" />
                   <span>Ink-Saver Mode</span>
                 </span>
-                <span className={`text-[10px] font-mono font-bold px-1.5 py-0.5 rounded ${
+                <span className={`text-xs font-mono font-bold px-1.5 py-0.5 rounded ${
                   inkSaver ? 'bg-amber-200 text-amber-900' : 'bg-carbon-20 text-carbon-60'
                 }`}>
                   {inkSaver ? 'ON' : 'OFF'}

@@ -170,16 +170,23 @@ describe('the application is wired to those tokens', () => {
     expect(appCss).not.toMatch(/--chart-\d:\s*var\(--hn-hds-(red|blue)\)/);
   });
 
-  it('uses the shipped typefaces for body, headings and data', () => {
-    // The families NASA's tokens name must be defined locally, or every var()-driven font stack
-    // silently falls back to a system font while still looking plausible in a screenshot.
+  it('resolves every type role to a family the bundle can render', () => {
+    // This used to assert the opposite: that `font-family: 'Inter'` / `'Public Sans Web'` /
+    // `'DM Mono'` appear in the app CSS, on the theory that naming a family makes it real. None
+    // of the three ships - `frontend/package.json` carries exactly one fontsource package
+    // (`noto-sans-bengali`) and `frontend/public/fonts/` is budgeted and empty - so what the old
+    // assertion really pinned was that a machine with one of them installed rendered a different
+    // product. See P0-3 in docs/audits/2026-10-03-frontend-design-system-audit.md.
     for (const family of ["'Inter'", "'Public Sans Web'", "'DM Mono'"]) {
-      expect(appCss).toContain(`font-family: ${family}`);
+      expect(appCss).not.toContain(`font-family: ${family}`);
     }
-    expect(appCss).toContain("--font-sans: var(--hds-font-family-body)");
-    expect(appCss).toContain("--font-brand: var(--hds-font-family-heading)");
-    expect(appCss).toContain("--font-mono: var(--hds-font-family-code)");
-    // …and no reference to the families this migration replaced.
+    // Every role still comes from the token layer, which is now the platform stack.
+    expect(appCss).toContain('--font-sans: var(--font-sans-en)');
+    expect(appCss).toContain('--font-brand: var(--hn-font-heading)');
+    expect(appCss).toContain('--font-mono: var(--hn-font-mono)');
+    expect(appCss).toContain('--hn-font-heading: system-ui');
+    // …the Bengali script is the one bundled webfont, and nothing replaced the old families.
+    expect(appCss).toContain("--font-sans-bn: 'Noto Sans Bengali', 'Hind Siliguri', sans-serif");
     expect(appCss).not.toMatch(/Noto Sans Variable|Playfair Display/);
   });
 
@@ -188,9 +195,10 @@ describe('the application is wired to those tokens', () => {
     // design-system tokens (radii.control/card/sheet/pill in
     // packages/design-system/src/tokens.ts). NASA HDS remains the source of
     // colour and typography; see the Layer 2 comment in frontend/src/index.css.
-    expect(appCss).toMatch(/--hn-radius-control: 8px/);
-    expect(appCss).toMatch(/--hn-radius-card: 16px/);
-    expect(appCss).toMatch(/--hn-radius-sheet: 28px/);
+    // Backlog item 4: the role tokens are references into the Meridian scale, not numbers.
+    expect(appCss).toMatch(/--hn-radius-control: var\(--mrd-radius-sm\)/);
+    expect(appCss).toMatch(/--hn-radius-card: var\(--mrd-radius-lg\)/);
+    expect(appCss).toMatch(/--hn-radius-sheet: var\(--mrd-radius-sheet\)/);
     expect(appCss).toMatch(/--radius-sm: var\(--hn-radius-control\)/);
     expect(appCss).toMatch(/--radius-2xl: var\(--hn-radius-card\)/);
     expect(appCss).toMatch(/--radius-4xl: var\(--hn-radius-sheet\)/);
