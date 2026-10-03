@@ -501,7 +501,8 @@ Every finding, backlog row and §5.5 acceptance criterion, with its disposition.
 plus a gate; "deferred" carries the reason and the unblocking condition. Commits: `2793cd6` plus the
 follow-up covering this ledger. Gates after the pass: 1,626 jest tests green (2 suites skipped),
 `tsc` clean, `check:tokens` 99.8% **and** the new hex ratchet, `check:design:source` 0 outstanding,
-`check:brand` fully tokenised, `check:fonts` within budget.
+`check:brand` fully tokenised, `check:fonts` within budget, `check:claims` 16/16, `check:env` pass,
+eslint 0 errors (683 of a 685-warning budget). Four unused UI dependencies were also removed.
 
 ### Findings
 
@@ -533,7 +534,7 @@ follow-up covering this ledger. Gates after the pass: 1,626 jest tests green (2 
 | 4 | **Deferred** | Freeze one radius scale: needs the same decision for the native `NATIVE_RADIUS` pins; the divergence is declared and tested meanwhile. |
 | 5 | **Partially fixed** | `dvh` sweep and the hero's CTA/blur work are done; the masthead strip and any chart/blur duplicates remain. |
 | 6 | **Partially fixed** | The hex half is now gated (which was the substance: "makes the 99.8% true"). The 405 `!important` declarations and the `.text-xs.text-carbon-70` contrast hack are load-bearing until the type-scale pass, because deleting them drops live contrast below AA; deliberately left. |
-| 7 | **Deferred (verified unused)** | `@mui/material`, `@emotion/*` and `@base-ui/react` have zero imports in `frontend/src`. Removing them from `package.json` requires regenerating `package-lock.json` (CI runs `npm ci`), and this environment has no network egress — so the removal is a one-liner in an environment that can run `npm install`. |
+| 7 | **Fixed** | `@mui/material`, `@emotion/react`, `@emotion/styled` and `@base-ui/react` had zero imports anywhere in the repository outside `package-lock.json`; they are removed from `frontend/package.json` and `package-lock.json` was regenerated with `npm install --package-lock-only --offline`. The lockfile diff is exactly those four packages and their exclusive transitive tree (594 lines removed, no unrelated churn) — verified with the full jest battery green afterwards. |
 | 8 | **Closed for the web half** | Re-measured control by control: every icon-only control carries an `aria-label`; `title=` attributes are extras on text-labelled controls, so there is nothing to replace. The native half (a bottom-sheet toolbar of labelled rows below `sm`) is port work. |
 | 9 | **Deferred** | Card-stack tables: a week of layout work on the public-surface pages, and the console's table already has its fallback. |
 | 10 | **Deferred** | One icon family, retire Lucide: 26 files, and it should be decided together with the native glyph set. |
@@ -570,4 +571,5 @@ follow-up covering this ledger. Gates after the pass: 1,626 jest tests green (2 
 Everything above marked "deferred" is a scheduling decision with a reason, not a claim of
 completion. The three items with the largest user-visible return are dark mode (Phase 9), the
 card-stack tables (backlog 9) and the icon-family decision (backlog 10); all three are multi-day
-changes to surfaces this pass deliberately did not restructure.
+changes to surfaces this pass deliberately did not restructure. Four unused dependencies were
+removed (backlog 7) once it turned out the lockfile could be regenerated offline.
