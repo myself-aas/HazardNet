@@ -1,7 +1,10 @@
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import Breadcrumbs from '../components/Breadcrumbs';
 import MaterialIcon from '../components/MaterialIcon';
+import RunVisual from '../components/frontdoor/RunVisual';
+import { FRESHNESS_URL, parseFreshness, type FreshnessArtifact } from '../lib/freshness';
 
 /**
  * Results reference for the published HazardNet outputs. Model code, dataset
@@ -11,6 +14,25 @@ import MaterialIcon from '../components/MaterialIcon';
 export const Documentation: React.FC = () => {
   // Per-route <head>: the prerenderer writes these into the static HTML, but a
   // client-side transition needs the hook to keep title/canonical/robots correct.
+  const [freshness, setFreshness] = useState<FreshnessArtifact | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchFreshness = async () => {
+      try {
+        const response = await fetch(FRESHNESS_URL);
+        if (!response.ok) throw new Error('Failed to fetch freshness data');
+        const data = await response.json();
+        setFreshness(parseFreshness(data));
+      } catch (err) {
+        console.error('[v0] Error fetching freshness:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchFreshness();
+  }, []);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 15 }}
@@ -52,6 +74,29 @@ export const Documentation: React.FC = () => {
           </motion.div>
         </div>
       </div>
+
+      {/* Live Run Visual — the last run's monitoring dashboard */}
+      <motion.div
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35, ease: 'easeOut', delay: 0.1 }}
+        className="space-y-4"
+      >
+        <div>
+          <h2 className="text-lg font-bold text-carbon-90 mb-3">Live System Status</h2>
+          <p className="text-xs text-carbon-70 leading-relaxed mb-4">
+            The monitoring dashboard below shows the status of the last forecast run, including coverage, 
+            published alerts, artifact freshness, and system health checks. Every value is read directly 
+            from committed artifacts and refreshes automatically.
+          </p>
+        </div>
+        <RunVisual 
+          freshness={freshness} 
+          loading={loading} 
+          published={null}
+          withheld={null}
+        />
+      </motion.div>
 
       {/* The published record */}
       <div className="bg-white border border-carbon-20 p-6 md:p-8 space-y-3">
