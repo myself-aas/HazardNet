@@ -149,6 +149,30 @@ describe('the front door', () => {
     }
   });
 
+  it('keeps the hero simple: one scrim, one primary action, no second frame', async () => {
+    renderPage();
+    await screen.findByTestId('front-door-run-visual');
+    const hero = document.querySelector('header.mrd-on-dark') as HTMLElement;
+    expect(hero).not.toBeNull();
+
+    // One flat scrim over the photograph. It was a `from-black/70 to-black/60` gradient, which
+    // put the authority sentence at the weak end of its own surface (2.45:1 over a bright frame
+    // at the old `to-black/35`); a single `bg-carbon-black/65` clears that everywhere on the card.
+    const card = hero.querySelector('h1')!.closest('div') as HTMLElement;
+    expect(card.className).toContain('bg-carbon-black/65');
+    expect(card.className).not.toMatch(/from-black\//);
+
+    // One primary action in the hero, and it is the navigation one. The other two destinations
+    // are text links (the 2026-10-03 audit's L-P1-1: three equal-weight buttons read as none).
+    // `mrd-btn` is the primitive's own marker; the hero renders exactly one of them.
+    const buttons = Array.from(hero.querySelectorAll('a.mrd-btn'));
+    expect(buttons.map((link) => link.getAttribute('href'))).toEqual(['/live']);
+
+    // The language switch carries its own chip; the glass frame that used to wrap it was a box
+    // inside a box. Nothing else in the hero draws a translucent surface.
+    expect(hero.querySelectorAll('.bg-carbon-90\\/40').length).toBe(0);
+  });
+
   it('renders the Bengali editorial copy, and writes the language on the document', async () => {
     renderPage();
 

@@ -361,7 +361,11 @@ export const FrontDoor: React.FC = () => {
       }}
       className="w-full"
     >
-      {/* ── Hero: NASA-Inspired Global Observatory with Dynamic Video Background ── */}
+      {/* ── Hero: one photograph, one claim, one action ──
+          The backdrop was a five-layer motion build with a decorative telemetry HUD and a film
+          grain; it is four layers now (see HeroCinematicBackground). Keeping the composition
+          honest rather than busy is the whole job of this block: a claim (h1), the sentence that
+          qualifies it, one primary action, and the artifact card that checks it. */}
       {/* `mrd-on-dark` scopes the outline button's inversion to this hero, so the
           same primitive renders white-on-dark here and ink-on-light everywhere
           else without a second variant existing. */}
@@ -369,7 +373,7 @@ export const FrontDoor: React.FC = () => {
           `env(safe-area-inset-top)`, so a fixed number collided with it on notched phones. The
           variable now carries the inset, which makes this clearance correct on both. */}
       <header className="mrd-on-dark relative w-full overflow-hidden bg-carbon-90 text-white min-h-[600px] lg:min-h-[100dvh] flex items-center -mt-14 sm:-mt-16 pt-[calc(var(--navbar-height)+20px)] sm:pt-[calc(var(--navbar-height)+44px)] pb-8 sm:pb-16 shadow-2xl">
-        {/* Remotion-Inspired 5-Layer Cinematic Motion Background (BgMesh, Video, HUD, Grade, Grain & Vignette) */}
+        {/* Mesh → photograph → grade → vignette. */}
         <HeroCinematicBackground paused={heroPaused} />
         {/* Pause control — keyboard-reachable, respects reduced-motion (audit #1) */}
         <button
@@ -391,16 +395,19 @@ export const FrontDoor: React.FC = () => {
               carries its own provenance. The language switch, which is the one control that has to
               be on the front door, stays and right-aligns on its own. */}
           <div className="flex justify-end">
-            <div className="bg-carbon-90/40 p-1 border border-white/20" style={{ backdropFilter: 'blur(var(--hero-glass-blur))', WebkitBackdropFilter: 'blur(var(--hero-glass-blur))' }}>
-              <LanguageToggle variant="switch" tone="hds" />
-            </div>
+            {/* The switch carries its own surface (`tone="hds"` draws a bordered white chip), so
+                the second glass frame that used to sit around it was a box inside a box. */}
+            <LanguageToggle variant="switch" tone="hds" />
           </div>
 
           <div className="mt-4 grid grid-cols-1 items-center gap-6 sm:mt-6 sm:gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)] xl:gap-12">
-            {/* Scrim, not a tint: the authority paragraph sits at the bottom of this card, and at
-                `to-black/35` its 12px `text-white/75` measured 2.45:1 over a light frame. At
-                `to-black/60` the same pixel measures 6.40:1. */}
-            <div className="min-w-0 rounded-sm border border-white/15 bg-gradient-to-b from-black/70 to-black/60 p-4 sm:p-5" style={{ backdropFilter: 'blur(var(--hero-glass-blur))', WebkitBackdropFilter: 'blur(var(--hero-glass-blur))' }}>
+            {/* One flat scrim, not a two-stop gradient. The gradient existed to keep the
+                authority paragraph (12px `text-white/75`) off the weak end of its own surface:
+                at the old `to-black/35` the same pixel measured 2.45:1 over a light frame, at
+                `to-black/60` 6.40:1. A single `bg-carbon-black/65` clears that everywhere on the
+                card instead of only at the bottom of it, and `carbon-black` is pinned dark in
+                both themes (it is a scrim, see dark.css §1) so this holds in dark mode too. */}
+            <div className="min-w-0 rounded-sm border border-white/15 bg-carbon-black/65 p-4 sm:p-5" style={{ backdropFilter: 'blur(var(--hero-glass-blur))', WebkitBackdropFilter: 'blur(var(--hero-glass-blur))' }}>
               <h1 className="mrd-display2 max-w-3xl text-balance text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
                 {localised.h1 ?? localised.title}
               </h1>

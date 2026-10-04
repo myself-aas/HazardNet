@@ -1,5 +1,26 @@
 /**
- * HeroCinematicBackground — 5-layer motion graphics (Remotion interactivity best practices)
+ * HeroCinematicBackground — the hero's backdrop, four layers, one loop.
+ *
+ *   1. the mesh         one brand-blue orbital glow, breathing on a slow sine
+ *   2. the photograph   the self-hosted carousel, cross-fading (see HeroImageCarousel)
+ *   3. the grade        soft-light wash + exposure curve, which is what makes white type readable
+ *   4. the vignette     an ellipse that pulls the eye to the middle
+ *
+ * **Simplified 2026-10-05.** This was a five-layer build with nine nodes. Three of them are gone:
+ *
+ *   · the telemetry HUD (four corner reticles and a horizon rule) — pure decoration that the
+ *     landing-page audit listed as "delete before the port" (`docs/audits/2026-10-03-landing-live-hero-audit.md`
+ *     §4). It was `aria-hidden` and printed no invented numbers any more, which is why it survived
+ *     this long; deleting it costs nothing and removes 150 lines of positioning that had to be
+ *     re-checked on every viewport.
+ *   · the procedural film grain (an SVG `feTurbulence` data URI at 0.04 opacity) — a full-bleed
+ *     filter layer for a texture nobody can see, on devices the page is explicitly built for
+ *     (2 GB Android, §2 of the same audit).
+ *   · the second mesh blob (a cyan 900x900 at 100px blur) — two blurred blobs for one brand hue
+ *     was a second thing to keep in step; the blue glow carries the identity on its own.
+ *
+ * What is left is four layers and six nodes, and the composition reads the same: a blue-lit
+ * photograph, graded down, vignetted, with a photograph and copy on top.
  *
  * Strictly follows https://github.com/remotion-dev/remotion/blob/main/packages/docs/docs/studio/interactivity-best-practices.mdx
  * - Interactive elements have descriptive name
@@ -40,7 +61,7 @@ export const HeroCinematicBackground: React.FC<{ paused?: boolean }> = ({ paused
 
   return (
     <Interactive.Div
-      name="Hero cinematic background — 5-layer"
+      name="Hero cinematic background — 4-layer"
       style={{
         position: 'absolute',
         inset: 0,
@@ -60,7 +81,7 @@ export const HeroCinematicBackground: React.FC<{ paused?: boolean }> = ({ paused
           overflow: 'hidden',
         }}
       >
-        {/* Primary NASA Blue orbital glow — breathing scale + translate drift */}
+        {/* Brand blue orbital glow — breathing scale + translate drift */}
         <Interactive.Div
           name="Primary orbital glow"
           style={{
@@ -97,49 +118,21 @@ export const HeroCinematicBackground: React.FC<{ paused?: boolean }> = ({ paused
             willChange: shouldAnimate ? 'transform, opacity' : undefined,
           }}
         />
-
-        {/* Secondary atmospheric cyan — slower drift */}
-        <Interactive.Div
-          name="Secondary cyan reflection"
-          style={{
-            position: 'absolute',
-            bottom: '-20%',
-            right: '-10%',
-            width: 900,
-            height: 900,
-            borderRadius: '50%',
-            background: 'radial-gradient(circle, #22D3EE44 0%, transparent 68%)',
-            opacity: 0.3,
-            filter: 'blur(var(--hero-glow-blur-secondary))',
-            scale: shouldAnimate
-              ? interpolate(frame, [0, fps * 8], [0.96, 1.02], {
-                  easing: Easing.bezier(0.4, 0, 0.2, 1),
-                  extrapolateLeft: 'clamp',
-                  extrapolateRight: 'clamp',
-                  output: 'perceptual-scale',
-                })
-              : 1,
-            translate: shouldAnimate
-              ? interpolate(frame, [0, fps * 10], ['0px 0px', '0px 8px'], {
-                  easing: Easing.bezier(0.65, 0, 0.35, 1),
-                  extrapolateLeft: 'clamp',
-                  extrapolateRight: 'clamp',
-                })
-              : '0px 0px',
-            willChange: shouldAnimate ? 'transform' : undefined,
-          }}
-        />
       </Interactive.Div>
 
-      {/* ── Layer 2: Contextual image carousel, cross-fading local frames ──
-             Replaces the stock-video playlist and the procedural canvas. The slides are
-             self-hosted files, so the hero makes zero remote requests — the gate that
-             killed both previous backdrops. See lib/heroCarouselImages.ts for the
-             reasoning and the note on licensing.
+      {/* ── Layer 2: the photograph ────────────────────────────────────
+             Contextual image carousel, cross-fading local frames. Replaces the stock-video
+             playlist and the procedural canvas. The slides are self-hosted files, so the hero
+             makes zero remote requests — the gate that killed both previous backdrops. See
+             lib/heroCarouselImages.ts for the reasoning and the note on licensing.
+
+             The wrapper used to carry its own breathing `scale` on top of the carousel's
+             per-slide zoom: two transforms animating the same pixels at two rates. Gone; the
+             carousel's own slow push-in is the motion.
 
              Under reduced motion the carousel collapses to a single static frame. ── */}
       <Interactive.Div
-        name="Hero image carousel — idle breathing"
+        name="Hero photograph"
         style={{
           position: 'absolute',
           inset: 0,
@@ -155,171 +148,12 @@ export const HeroCinematicBackground: React.FC<{ paused?: boolean }> = ({ paused
           backgroundImage: `url("${EARTH_HERO_POSTER_CSS}")`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          scale: shouldAnimate
-            ? interpolate(frame, [0, fps * 7, fps * 14], [1.02, 1.04, 1.02], {
-                easing: Easing.bezier(0.4, 0, 0.2, 1),
-                extrapolateLeft: 'clamp',
-                extrapolateRight: 'clamp',
-                output: 'perceptual-scale',
-              })
-            : 1.02,
-          willChange: shouldAnimate ? 'transform' : undefined,
         }}
       >
         <HeroImageCarousel paused={paused} reducedMotion={!!reduceMotion || isTest} lowBandwidth={lowBandwidth} />
       </Interactive.Div>
 
-      {/* ── Layer 3: Observatory Telemetry HUD (Graphics / Type) ──────
-             Pure decoration: four corner reticles and a horizon rule. This layer used to
-             print satellite telemetry - "GEO-SYNC · 23°42'N 90°22'E · APEX 35,786 KM" and
-             "OPTICAL SENSOR STREAM · 30 FPS · RES-ADAPTIVE" - none of which this repository
-             produces, on a page whose whole argument is that every number traces to a
-             published artifact. The strings are gone rather than restyled, and what is left
-             is `aria-hidden` so a screen reader meets the headline, not a coordinate. ── */}
-      <Interactive.Div
-        name="Telemetry HUD container"
-        aria-hidden="true"
-        data-testid="hero-hud"
-        style={{
-          position: 'absolute',
-          inset: 0,
-          zIndex: 2,
-          userSelect: 'none',
-          display: shouldAnimate || !isTest ? 'block' : 'none',
-        }}
-      >
-        {/* Reticles — four corners, scale in */}
-        <Interactive.Div
-          name="Reticle top-left"
-          style={{
-            position: 'absolute',
-            top: 96,
-            left: 24,
-            color: 'rgba(255,255,255,0.2)',
-            fontSize: 12,
-            opacity: shouldAnimate
-              ? interpolate(frame, [fps * 0.8, fps * 1.2], [0, 1], {
-                  easing: Easing.bezier(0.16, 1, 0.3, 1),
-                  extrapolateLeft: 'clamp',
-                  extrapolateRight: 'clamp',
-                })
-              : 1,
-            scale: shouldAnimate
-              ? interpolate(frame, [fps * 0.8, fps * 1.2], [0.8, 1], {
-                  easing: Easing.spring({ damping: 200 }),
-                  extrapolateLeft: 'clamp',
-                  extrapolateRight: 'clamp',
-                  output: 'perceptual-scale',
-                })
-              : 1,
-          }}
-        >
-          +
-        </Interactive.Div>
-        <Interactive.Div
-          name="Reticle top-right"
-          style={{
-            position: 'absolute',
-            top: 96,
-            right: 32,
-            color: 'rgba(255,255,255,0.2)',
-            fontSize: 12,
-            opacity: shouldAnimate
-              ? interpolate(frame, [fps * 0.8, fps * 1.2], [0, 1], {
-                  easing: Easing.bezier(0.16, 1, 0.3, 1),
-                  extrapolateLeft: 'clamp',
-                  extrapolateRight: 'clamp',
-                })
-              : 1,
-            scale: shouldAnimate
-              ? interpolate(frame, [fps * 0.8, fps * 1.2], [0.8, 1], {
-                  easing: Easing.spring({ damping: 200 }),
-                  extrapolateLeft: 'clamp',
-                  extrapolateRight: 'clamp',
-                  output: 'perceptual-scale',
-                })
-              : 1,
-          }}
-        >
-          +
-        </Interactive.Div>
-        <Interactive.Div
-          name="Reticle bottom-left"
-          style={{
-            position: 'absolute',
-            bottom: 64,
-            left: 24,
-            color: 'rgba(255,255,255,0.2)',
-            fontSize: 12,
-            opacity: shouldAnimate
-              ? interpolate(frame, [fps * 0.9, fps * 1.3], [0, 1], {
-                  easing: Easing.bezier(0.16, 1, 0.3, 1),
-                  extrapolateLeft: 'clamp',
-                  extrapolateRight: 'clamp',
-                })
-              : 1,
-            scale: shouldAnimate
-              ? interpolate(frame, [fps * 0.9, fps * 1.3], [0.8, 1], {
-                  easing: Easing.spring({ damping: 200 }),
-                  extrapolateLeft: 'clamp',
-                  extrapolateRight: 'clamp',
-                  output: 'perceptual-scale',
-                })
-              : 1,
-          }}
-        >
-          +
-        </Interactive.Div>
-        <Interactive.Div
-          name="Reticle bottom-right"
-          style={{
-            position: 'absolute',
-            bottom: 64,
-            right: 32,
-            color: 'rgba(255,255,255,0.2)',
-            fontSize: 12,
-            opacity: shouldAnimate
-              ? interpolate(frame, [fps * 0.9, fps * 1.3], [0, 1], {
-                  easing: Easing.bezier(0.16, 1, 0.3, 1),
-                  extrapolateLeft: 'clamp',
-                  extrapolateRight: 'clamp',
-                })
-              : 1,
-            scale: shouldAnimate
-              ? interpolate(frame, [fps * 0.9, fps * 1.3], [0.8, 1], {
-                  easing: Easing.spring({ damping: 200 }),
-                  extrapolateLeft: 'clamp',
-                  extrapolateRight: 'clamp',
-                  output: 'perceptual-scale',
-                })
-              : 1,
-          }}
-        >
-          +
-        </Interactive.Div>
-
-        {/* Horizon reference line — opacity in */}
-        <Interactive.Div
-          name="Horizon reference line"
-          style={{
-            position: 'absolute',
-            top: '50%',
-            left: 0,
-            width: '100%',
-            height: 1,
-            background: 'linear-gradient(to right, transparent, rgba(255,255,255,0.07), transparent)',
-            opacity: shouldAnimate
-              ? interpolate(frame, [fps * 1, fps * 1.6], [0, 1], {
-                  easing: Easing.bezier(0.16, 1, 0.3, 1),
-                  extrapolateLeft: 'clamp',
-                  extrapolateRight: 'clamp',
-                })
-              : 1,
-          }}
-        />
-      </Interactive.Div>
-
-      {/* ── Layer 4: Cinematic Color Grade Overlay (Grade) ──────────── */}
+      {/* ── Layer 3: Cinematic Color Grade Overlay (Grade) ──────────── */}
       <Interactive.Div
         name="Soft-light grade"
         style={{
@@ -344,21 +178,7 @@ export const HeroCinematicBackground: React.FC<{ paused?: boolean }> = ({ paused
         }}
       />
 
-      {/* ── Layer 5: Procedural Film Grain & Vignette ────────────────── */}
-      <Interactive.Div
-        name="Film grain — SVG fractal noise"
-        style={{
-          position: 'absolute',
-          inset: 0,
-          zIndex: 5,
-          pointerEvents: 'none',
-          opacity: 0.04,
-          mixBlendMode: 'overlay',
-          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)' opacity='0.45'/%3E%3C/svg%3E")`,
-          backgroundSize: '220px 220px',
-        }}
-      />
-
+      {/* ── Layer 4: Vignette ────────────────────────────────────────── */}
       <Interactive.Div
         name="Vignette — dual-zone elliptical"
         style={{
