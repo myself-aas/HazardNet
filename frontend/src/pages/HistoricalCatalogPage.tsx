@@ -7,7 +7,7 @@ import { TemporalTrendChart, TemporalTrendRecord } from '../components/TemporalT
 import { MultiHazardDistributionChart, HazardDistributionRecord } from '../components/MultiHazardDistributionChart';
 import { GlideResourcePopover } from '../components/GlideResourcePopover';
 import { EventReportModal, DisasterMasterEvent } from '../components/EventReportModal';
-import { DataStateError, DataStateLoading } from '../components/ui/DataState';
+import { DataStateEmpty, DataStateError, DataStateLoading } from '../components/ui/DataState';
 
 type HistoricalData = {
   masterEvents: DisasterMasterEvent[];
@@ -87,6 +87,12 @@ export const HistoricalCatalogPage: React.FC = () => {
     );
   }
 
+  /**
+   * The five artifacts loaded, but with no rows. That is the archive's empty state: the page still
+   * renders its shell, and says which reads came back empty instead of drawing zeroes as data.
+   */
+  const archiveIsEmpty = data.catalog.length === 0 && data.masterEvents.length === 0;
+
   const handleOpenGlide = (glideId: string) => {
     setActiveGlide(glideId);
     setIsGlideOpen(true);
@@ -158,6 +164,13 @@ export const HistoricalCatalogPage: React.FC = () => {
             </div>
           </div>
         </header>
+
+        {archiveIsEmpty && (
+          <DataStateEmpty
+            title="This deployment's historical archive is empty"
+            body="The master-event, catalog, vulnerability, trend and distribution artifacts all loaded with no records, so the map ranking, the charts and the catalog below have nothing to read."
+          />
+        )}
 
         {/* Spatial & Vulnerability Section (TASK-017 & TASK-018) */}
         <section className="grid grid-cols-1 lg:grid-cols-12 gap-8">

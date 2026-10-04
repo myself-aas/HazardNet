@@ -550,7 +550,7 @@ fully tokenised. Three new gates were added by pass 2: `darkTheme` (30 tests), `
 | 10 | **Fixed (web + native gates)** | One family = Lucide, with a shared registry (`data/design/icon-registry.json` → `packages/design-system/src/icons.ts`) so the same glyph serves web and native; `MaterialIcon` frozen with a shrinking-importer ratchet; native emoji/text glyphs replaced; web runtime literals are AST-gated against emoji and text-glyph substitutes. The icon set has 114 registered names. |
 | 11 | **Fixed** | The native Advisories screen landed (`ca834b5`): `/advisories` reads the same `@hazardnet/core` protocol dataset the web page does, so the app shows the farmer-facing output rather than a link to the site. |
 | 12 | **Fixed** | 369 authored sub-12px occurrences across 46 files → 0, in all five forms (`text-[Npx]`, `font-size: Npx`, `fontSize: N`, `fontSize={N}`, `fontSize: 'Npx'`); native `metadata` is 12/16 and the tab label is 12. One exception, documented in place: the `DistrictRiskMap` SVG label is 3.4 user units in a `0 0 100 100` viewBox (≈12px at render size), guarded by an `svg-user-units:` marker the gate honours. Four assertions in `designTypography` hold the floor. |
-| 13 | **Fixed** | `usePageSeo` moved into a route wrapper (`useRouteSeo` + `<RouteMetadata>` above `<Routes>`, so every route — including generated pages and the 404 — gets a head and unknown slugs stay `noindex`). `data/design/four-state-baseline.json` ledgers all 35 pages against loading / empty / error / success with a per-state evidence string, and `__tests__/fourState.test.js` (7 tests) fails if a page is unledgered, a state's block disappears, a page that reads over the network waives its error state, or a non-retryable state loses its reason. Five cells are recorded as `absent` with what the reader sees instead. Defects fixed while filling it in: `HazardsPage`, `DivisionsPage` and `AnalyticsPage` held loading/error state no branch rendered (and `/hazards` + `/divisions` printed the client's built-in 3,062-event default as data — both now state "no archive is loaded"); `AlertDetailPage` and `BlogArticlePage` rendered an unreadable deployment (or a failed slug read) as "not found"; `AlertsPage`, `Blogs`, `BlogArticlePage`, `HazardDetailPage` and `HistoricalCatalogPage` now carry retries; the two remaining emoji inside state blocks are registry glyphs. `HistoricalCatalogPage`'s loading and error states are no longer dark on a light page. |
+| 13 | **Fixed** | `usePageSeo` moved into a route wrapper (`useRouteSeo` + `<RouteMetadata>` above `<Routes>`, so every route — including generated pages and the 404 — gets a head and unknown slugs stay `noindex`). `data/design/four-state-baseline.json` ledgers all 35 pages against loading / empty / error / success with a per-state evidence string, and `__tests__/fourState.test.js` (7 tests) fails if a page is unledgered, a state's block disappears, a page that reads over the network waives its error state, or a non-retryable state loses its reason. Five cells are recorded as `absent` with what the reader sees instead. Defects fixed while filling it in: `HazardsPage`, `DivisionsPage` and `AnalyticsPage` held loading/error state no branch rendered (and `/hazards` + `/divisions` printed the client's built-in 3,062-event default as data — both now state "no archive is loaded"); `AlertDetailPage` and `BlogArticlePage` rendered an unreadable deployment (or a failed slug read) as "not found"; `AlertsPage`, `Blogs`, `BlogArticlePage`, `HazardDetailPage` and `HistoricalCatalogPage` now carry retries; the two remaining emoji inside state blocks are registry glyphs. `HistoricalCatalogPage`'s loading and error states are no longer dark on a light page. The five cells this row recorded as `absent` were rendered in the 2026-10-04 follow-up (see §12) and the ledger now pins `absent: 0`. |
 | 14 | **Fixed** | The overlay `::before` is gone (`c1e94fe`): footer links carry the 44px box themselves, so the tap target and the link are the same rectangle and adjacent links no longer overlap. |
 | 15 | **Fixed, with a gate** | `scripts/check-prose-dashes.mjs` (`npm run check:prose`) is the lint rule, and it states the policy it enforces: `'—'` survives only as the empty-value glyph, an en-dash range is allowed, everything else in copy is a finding. It scans `frontend/src`, `apps/mobile/src` and committed data under `frontend/public`, decodes `\u2014`-style escapes so a dash cannot hide in JSON, and names the three files it deliberately does not scan (the quoted situation reports, `robots.txt`, `security.txt`). The generator copy and both content files are fixed and regenerated; `generated-routes.json` is down from 424 em-dashes to 21 placeholder glyphs + ranges, and `content-index.json` regenerates clean. |
 | 16 | **Fixed** | `64be867`: 23 decorative dots across 17 files deleted, the severity encoders kept, and the two named three-card rows recomposed. `data/design/decorative-signature-baseline.json` + `__tests__/designSignature.test.js` hold both judgements. |
@@ -559,10 +559,13 @@ fully tokenised. Three new gates were added by pass 2: `darkTheme` (30 tests), `
 
 ### Residuals after this pass
 
+> **Status note (2026-10-04):** the first three bullets below are closed and the fourth is
+> superseded. See §12 for what closed them and §11 for the iconography closeout.
+
 - **Web iconography residual — closed (2026-10-04).** A refreshed TypeScript-AST scan of runtime `.ts`/`.tsx` under `frontend/src` finds **0 emoji/text-glyph candidates in 0 files** (comments and test sources are excluded; legal marks such as ©, ® and ™ remain valid copy). This covers the full frontend, not only the 35 page components: directional and status glyphs were replaced with registered Lucide icons, WMO weather codes now carry typed registry names, and Leaflet/map-export HTML serializes the generated shared path data through `iconMarkup`. The 20/79 figures above this section were historical pre-chatbot measurements and are superseded. `__tests__/iconFamily.test.js` now performs the AST scan and includes 13 passing icon-family checks.
-- **Five four-state cells are absent** and named in the ledger: no empty or error state on `/dashboard` or the account dashboard, and no empty state on `/archive` or `/blogs/:slug`. Each reason says what the reader sees instead.
-- **`frontend/public/data/climatic_hazards_summary.json` has no producer in this repository**, so `fetchEventsSummary` always fell through to its built-in default and `/hazards` + `/divisions` printed 3,062 events as if read from the archive. The client now reports `source: 'fallback'` and both pages state that no archive is loaded. Deriving a real summary from `events-master.json` (or generating the artifact in the pipeline) is a data task, not a page task.
-- **The landing audit's three residuals stand** (`docs/audits/2026-10-03-landing-live-hero-audit.md` §8): the proof card above the fold is a hierarchy decision, the ~900×1600 hero needs a re-render upstream, and the safe-area arithmetic has no notched device here to confirm it on.
+- ~~Five four-state cells are absent~~ **Closed (2026-10-04).** The five cells are rendered states now: the console's district read separates "no stored coverage" (empty) from a retryable read failure (error) through `forecastViewState`; the account dashboard's `profileStatus` separates "no profile document" (empty, with the create action) from a failed read (error, with retry); `/archive` states that the loaded artifacts hold no rows; and a published post with no body copy says so instead of rendering a blank column. `data/design/four-state-baseline.json` records all five with evidence and `__tests__/fourState.test.js` pins `absent: 0`.
+- ~~`frontend/public/data/climatic_hazards_summary.json` has no producer in this repository~~ **Closed (2026-10-04).** `scripts/build_climatic_hazards_summary.mjs` derives the artifact from `hazard-catalog-index.json` (the exact 3,062 cleaned rows the archive page reads) plus `hazardnet_forecasts_latest.json`, mapping districts to divisions through the canonical `DISTRICT_REGISTRY`; it runs as the first step of `npm run build:frontend`, `npm run build:events-summary` regenerates it, and `npm run check:events-summary` fails when it drifts. `__tests__/climaticHazardsSummary.test.js` (3 tests) checks the breakdowns sum to the catalog total and that the committed file equals a fresh build. The 3,062 fallback constants in `eventsClient.ts` are gone: an unavailable archive is now an explicit zero/empty sentinel, so a page that shows nothing can no longer be quoting invented numbers.
+- ~~The landing audit's three residuals stand~~ **Closed (2026-10-04),** with the one part that genuinely needs hardware moved into a script: the phone hero now carries an evidence pointer inside the first viewport, four 768×1376 portrait renders replace the 354×768 crops, the safe-area arithmetic was verified by driving `--navbar-height` to `calc(3.5rem + 47px)` and measuring the four surfaces move with it, and the notched-device rows live in `docs/audits/2026-10-04-device-verification-script.md`. See §12.
 
 ### §5.5 acceptance criteria
 
@@ -576,8 +579,9 @@ fully tokenised. Three new gates were added by pass 2: `darkTheme` (30 tests), `
 2. **No interactive element relies on `hover` or `title`** — **met**: zero icon-only controls are
    unnamed; the one hover-only affordance found is visible on touch; `title` remains only as an
    extra hint on labelled controls.
-3. **Loading, empty, error+retry on every screen** — deferred with backlog 13; one defective state
-   (invisible reduced-motion loading row) fixed.
+3. **Loading, empty, error+retry on every screen** — **met (2026-10-04)**. Backlog 13 shipped the
+   checklist and the defects it surfaced; the five cells it still recorded as `absent` are rendered
+   states as of §12, and `__tests__/fourState.test.js` pins `absent: 0` so the claim cannot rot.
 4. **Light and dark complete at 100% token parity** — **met by the theme layer**. `dark.css`
    re-points the carbon ramp by role, pins the fills that must stay dark, re-mixes the status
    grounds over the elevated surface, and re-points Leaflet and the native controls; the radius
@@ -589,6 +593,10 @@ fully tokenised. Three new gates were added by pass 2: `darkTheme` (30 tests), `
 6. **One icon vocabulary, no emoji/glyph substitutes, one radius scale, one type scale, one source of hex** — **all six met and gated**: one icon vocabulary with a shared web/native registry (`iconFamily`); an AST gate against pictographic emoji and UI arrows/checks/shapes in web runtime literals plus registry-name checks for native icons; one radius scale (`meridianParity` + `designTokensParity` freeze); one type scale (`nasaTokens` across the package, the CSS and the prerendered shell); one source of hex (`designTokensParity` + the hex ratchet); and one type-size floor (`designTypography`).
 
 ### Not done in this pass, and why it is not hidden
+
+> **Superseded 2026-10-04:** every item this paragraph left open (backlog 5/6/8/11/13/14/15/16 and
+> the landing audit's §8 rows) was executed in the follow-up recorded in §12, against the reason its
+> row had written. The paragraph is kept because it states the rule the follow-up followed.
 
 Everything above marked "deferred" is a scheduling decision with a reason, not a claim of
 completion, and it stays deferred until someone un-defers it by name: backlog 5/6/8/11/13/14/15/16
@@ -635,7 +643,27 @@ not represented as official HIG certification.
 - `npm run check:design`: **0 new findings** across source and 198 prerendered documents; the existing baseline still contains **3,236 outstanding** findings (0 waived), with 203 entries now fixed. This is a passing ratchet, not a claim that the detector has no findings.
 - `npm run check:tokens`: **99.8%** token resolution, hex count unchanged at 492; `npm run check:fonts`: one Bengali WOFF2 face at **43.31 KiB / 50 KiB**; bundle, brand palette, icon registry, prose and `!important` checks passed.
 
-**Still requires device verification:** VoiceOver/TalkBack traversal, extreme Dynamic Type and Bold Text layouts, Bengali shaping/fallback on representative iOS and Android devices, safe areas/navigation modes, and map/compositing performance on lower-end hardware. The app remains a distinct product surface and is not evidence that the full web route inventory has been ported.
+**Updated 2026-10-04 — what is now automated, and what still needs a device.** Four of those five
+were converted where a machine can hold them. `apps/mobile/__tests__/deviceConditions.test.ts` (4
+tests) now fails the build when safe-area handling moves out of the shell primitives, when
+`allowFontScaling={false}` appears, when text stops going through the shared `Text`, when Reduce
+Motion stops being read from the one hook, or when the tab labels and the More-row hint lose either
+locale. Native contrast, type roles, the 48dp floor and the Large/Bold preferences were already
+pinned by `nativeMeridianParity`. The web side of the same class of check is emulated and measured in
+`docs/audits/2026-10-04-device-verification-script.md` §1 (safe-area propagation through
+`--navbar-height`, the first viewport on three phone sizes, text scaling at 125% and 150%).
+
+What a machine here genuinely cannot answer is a short, named list, and it is now a script with
+expected results rather than a sentence: VoiceOver and TalkBack traversal order, Bengali glyph
+shaping under the platform fallback font, notched / gesture-navigation / foldable safe areas, and map
+compositing on a 2 GB Android. `docs/audits/2026-10-04-device-verification-script.md` §2 is that
+script, with the device matrix to fill in. The app remains a distinct product surface and is not
+evidence that the full web route inventory has been ported.
+
+**Mobile localisation is partial and measured, not vague:** 109 of the 191 English keys have Bengali
+copy. The navigation chrome (tab labels, screen titles, the generic More-row accessibility hint) is
+complete; the remainder is the settings/sheets/report surface listed by key prefix in
+`bn.ts`. `deviceConditions.test.ts` pins the translated count so it can only grow.
 
 ## 11. Web iconography residual closeout (2026-10-04)
 
@@ -657,4 +685,124 @@ The residual count in §5 was measured before the chatbot simplification and is 
 - `npm test -- --runInBand --forceExit`: **164 suites / 1,729 tests passed**.
 - `npm --prefix apps/mobile run test:rn -- --runInBand --forceExit`: **11 suites / 82 tests passed**.
 
-This closes only the iconography residual. The five four-state ledger cells, the unproduced climatic-hazards summary artifact and the landing audit's three device/upstream residuals remain as recorded above; mobile device verification is still separate.
+This closed the iconography residual. The items it left standing were closed on the same day in the
+follow-up recorded in §12.
+
+---
+
+## 12. Residual closeout (2026-10-04)
+
+The three items §9 still carried - five four-state cells, the missing summary artifact, the landing
+audit's three residuals - plus the native device-verification note in §10, are closed in this pass.
+Each was closed against the reason its own row had written; nothing was re-analysed or waived.
+
+### 12.1 The summary artifact now has a producer
+
+`scripts/build_climatic_hazards_summary.mjs` derives
+`frontend/public/data/climatic_hazards_summary.json` from the exact artifacts the archive pages
+read:
+
+- `frontend/public/data/historical/hazard-catalog-index.json` - the 3,062 cleaned event rows - is the
+  numerator of every count, so the summary and `/archive` cannot disagree;
+- divisions are resolved through `backend/utils/advisoryMapper.js`'s `DISTRICT_REGISTRY` (the
+  canonical 64-district table), not a second hand-copied map;
+- `frontend/public/data/hazardnet_forecasts_latest.json` supplies the coverage counts, so
+  `activeForecastsCount` / `forecastDistrictsCount` mean "rows the published run contains" rather
+  than the closed 7- and 15-day unit total the API reports;
+- the build fails loudly on an unmapped district, a missing date or an empty catalog, so a bad
+  artifact cannot be committed quietly.
+
+Current output: **3,062 events · 2000-2026 · 64 districts · 8 divisions · 9 hazards**, hazard and
+division breakdowns each summing to 3,062, `topDistricts` in descending order with the district's
+division named, a 27-year `yearlyTrend` and a twelve-month `monthlyDistribution`.
+
+Gates and wiring:
+
+- `npm run build:events-summary` regenerates it; `npm run check:events-summary` fails on drift; the
+  frontend build runs the generator first, so every deploy ships an artifact matching its own data.
+- `__tests__/climaticHazardsSummary.test.js` (3 tests) checks the derived shape on a synthetic
+  catalog, checks alias/error handling, and asserts the committed file equals a fresh build of the
+  committed catalog.
+- The 3,062-event fallback constants in `frontend/src/lib/eventsClient.ts` are deleted. An
+  unavailable archive now returns an explicit zero/empty sentinel tagged `source: 'fallback'`, and
+  `/hazards` + `/divisions` render their empty state instead of headline numbers nobody measured.
+  `__tests__/eventsClient` coverage and the four-state ledger both describe that state.
+
+### 12.2 The five four-state cells are rendered states
+
+| Cell | Was | Is |
+|---|---|---|
+| `Dashboard` empty | absent - "a zero-count strip" | `uncovered`: the console asked for a district and horizon the published forecast archive has no row for. The district read goes through `fetchStoredPrediction`'s typed reason (`404 → uncovered`), and the panel says which district has no stored coverage while the map and the static baseline stay on screen. |
+| `Dashboard` error | absent - "a toast" | `error` with retry: any other failure (offline, rate-limited, server, malformed payload) renders the page's retry control, which re-runs the same district read. |
+| account dashboard empty | absent - "no distinct state" | `profileStatus === 'missing'`: signed in with no `profiles/<uid>` row. The page says so and offers "Create my profile", which writes the same seed document a first sign-in would (`ensureProfile`). |
+| account dashboard error | absent - "degrades silently" | `profileStatus === 'error'`: the read failed, the page says so and offers retry via `refreshProfile`, and stops rendering a half-filled dashboard as if it were the profile. |
+| `/archive` empty | absent | The five artifacts loaded with zero rows: the page states that its archive is empty above the (empty) ranking, charts and catalog. |
+| `/blogs/:slug` empty | absent | A published post with no body copy keeps its title, excerpt and byline and states that the body is empty, instead of rendering a blank column. |
+
+`data/design/four-state-baseline.json` carries all six as ledgered states with the evidence string
+each one renders, and `__tests__/fourState.test.js` pins `absent: 0` for both the shape counts and
+the per-state "who is still missing one" check, so the checklist cannot silently return to "deferred".
+
+### 12.3 The landing audit's three residuals
+
+Detailed in `docs/audits/2026-10-03-landing-live-hero-audit.md` §8 (updated in place). Summary:
+
+- **Proof card above the fold (H-P1-3).** The card stays where it is - after the action, which is
+  the page's own hierarchy - and the phone hero now carries one evidence pointer directly under the
+  primary CTA that quotes the card's own text, links to it, and is only rendered below `sm`. Measured
+  on emulated 390×844 DPR 3: H1 169px, CTA 427px, pointer 583px, proof card 917px - so claim, action
+  and one checkable fact all sit in the first viewport. The same measurement at 360×740 and 430×932
+  lands inside the fold as well. The phone hero's vertical budget was tightened to pay for it
+  (padding 44 → 20px, grid gap 8 → 6, standfirst clamp 3 → 2 lines, CTA gap 28 → 20px); the wide
+  layout is untouched.
+- **Hero art (L-P2-4).** Four 768×1376 portrait renders of the same scenes ship alongside the
+  landscape frames, selected by `@media (max-width: 639px) and (min-resolution: 2dppx)` with the
+  original 354×768 crops as the DPR 1 fallback - 1.97 px/CSS px at the 390×844 hero instead of 0.45,
+  112-221 KB per slide instead of 124-213 KB for a frame that was 75% cropped away. The prerendered
+  head preloads the file the phone paints, and `HeroImageCarousel`'s preload probe now asks which URL
+  the viewport will actually paint (`paintedUrl`, resolved through the media-scoped custom property)
+  instead of probing the landscape `src` and downloading both. A network trace at 390×844 DPR 3
+  requests the four portrait files and no landscape frame.
+- **Notched-device arithmetic (V-P1-2).** Verified by propagation rather than by a device: driving
+  `--navbar-height` to `calc(3.5rem + 47px)` on an emulated phone moved the hero's top padding
+  76 → 123px and the console header's 64 → 111px - exactly the inset, on both surfaces - with no
+  horizontal overflow. The rows that genuinely need hardware (notch, gesture navigation, foldable)
+  are steps 1 and 9 of `docs/audits/2026-10-04-device-verification-script.md`.
+
+### 12.4 Native device verification, converted where a machine can hold it
+
+`apps/mobile/__tests__/deviceConditions.test.ts` (4 tests) and the script above replace the
+open-ended sentence with checks and steps. Automated: safe-area handling confined to the shell
+primitives (and the provider at the app root), no `allowFontScaling={false}` anywhere, all text
+through the shared `Text` component, Reduce Motion reached from one hook, tab labels and the More-row
+hint present in both locales, and the Bengali key count pinned (109 of 191, may only grow). Scripted:
+VoiceOver/TalkBack traversal, Bengali shaping on device, safe areas across navigation modes and
+foldables, low-end map compositing, and the web safe-area/scaling rows.
+
+### 12.5 Validation after the closeout
+
+- `npm test -- --runInBand --forceExit`: **165 suites / 1,732 tests passed** (includes the new
+  `climaticHazardsSummary` suite and the updated four-state gate).
+- `npm --prefix apps/mobile run test:rn -- --runInBand --forceExit`: **12 suites / 86 tests passed**
+  (includes the new `deviceConditions` suite).
+- `npm run lint` and `npx tsc --noEmit -p apps/mobile/tsconfig.json`: both clean.
+- `npm run build:frontend`: **99 routes** prerendered; the generated summary artifact is copied into
+  `dist/data/`; the phone preload points at the portrait render.
+- `npm run check:device` (tokens 99.8% with the hex ratchet unchanged at 492 in 51 files, prose
+  dashes clean, `icons:check`, `check:events-summary`, `check:important`): all pass.
+- `npm run check:design`: **0 new findings** across 198 documents plus `frontend/src`; the existing
+  baseline remains 3,236 outstanding with 203 entries now fixed.
+- `npm run check:bundle` PASS (1,354.7 kB gzip), `npm run check:paths` 198 documents clean,
+  `npm run check:brand` fully tokenised, `npm run check:fonts` 43.31 KiB / 50 KiB.
+- Emulated-device measurements (Chromium, 360×740 / 390×844 / 430×932 DPR 3, `/` and `/live`):
+  recorded in `docs/audits/2026-10-04-device-verification-script.md` §1.
+
+### 12.6 What is still open
+
+Nothing in this audit's ledger. Two things are out of its scope and are recorded rather than claimed:
+
+- the mobile translation backlog (82 English keys with no Bengali copy, all outside the navigation
+  chrome) and the mobile IA gaps are product/content work scheduled in
+  `docs/MOBILE_AUDIT_AND_REDESIGN.md`;
+- the hardware rows in the device-verification script are unverified until someone with the listed
+  devices fills in its table.

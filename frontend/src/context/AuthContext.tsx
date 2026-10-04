@@ -144,10 +144,19 @@ export interface LinkedIdentityView {
   email: string | null;
 }
 
+/**
+ * How the `profiles/<uid>` read went, so a surface can tell "still reading", "no row for this
+ * account" and "the read failed" apart. `loading` only covers the auth handshake itself; without
+ * this, a failed profile read left a dashboard rendering the auth user's own fields with no way to
+ * say the profile was missing (audit 2026-10-03 §9, the two `absent` account-dashboard states).
+ */
+export type ProfileLoadStatus = 'idle' | 'loading' | 'ready' | 'missing' | 'error';
+
 export interface AuthContextType {
   user: AppUser | null;
   userProfile: UserProfileData | null;
   loading: boolean;
+  profileStatus: ProfileLoadStatus;
   signInWithGoogle: () => Promise<void>;
   signInWithOAuth: (provider: OAuthProvider, options?: { nextTo?: string }) => Promise<void>;
   linkIdentity: (provider: OAuthProvider) => Promise<void>;
@@ -170,6 +179,8 @@ export interface AuthContextType {
   changeEmail: (email: string) => Promise<void>;
   /** Re-fetch the profiles document from Firestore. */
   refreshProfile: () => Promise<void>;
+  /** Create the profiles document when it is missing, then load it (empty-state recovery). */
+  ensureProfile: () => Promise<void>;
   signInWithEmailAndPassword: (email: string, pass: string) => Promise<EmailCredential>;
   signInWithEmail: (email: string, pass: string) => Promise<EmailCredential>;
   signOut: () => Promise<void>;
@@ -322,15 +333,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<AppUser | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfileData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [profileStatus, setProfileStatus] = useState<ProfileLoadStatus>('idle');
 
   const loadProfile = async (authUser: FirebaseAuthUser) => {
+    setProfileStatus('loading');
     try {
       const docSnap = await getDoc(doc(db, 'profiles', authUser.uid));
       const data = docSnap.exists() ? { id: docSnap.id, ...docSnap.data() } : null;
-      if (data) setUserProfile(toProfile(data as Record<string, unknown>, authUser.uid));
+      if (data) {
+        setUserProfile(toProfile(data as Record<string, unknown>, authUser.uid));
+        setProfileStatus('ready');
+      } else {
+        setProfileStatus('missing');
+      }
       return data;
     } catch (e) {
       console.warn('Profile load exception:', e);
+      setProfileStatus('error');
       return null;
     }
   };
@@ -380,7 +399,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             if (!profile) return bootstrapProfile(next);
             return undefined;
           });
-        } else setUserProfile(null);
+        } else {
+          setUserProfile(null);
+          setProfileStatus('idle');
+        }
         setLoading(false);
       });
     } catch (err) {
@@ -742,6 +764,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } finally {
       setUser(null);
       setUserProfile(null);
+      setProfileStatus('idle');
       try {
         sessionStorage.removeItem(AUTH_RETURN_TO_KEY);
       } catch {
@@ -818,12 +841,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (current) await loadProfile(current);
   };
 
+  /**
+   * Empty-state recovery for a signed-in account whose `profiles/<uid>` row does not exist: write
+   * the seed document, then read it back through `loadProfile` so the status becomes `ready`.
+   */
+  const ensureProfile = async () => {
+    const current = auth.currentUser;
+    if (!current) throw new Error('Not authenticated.');
+    await bootstrapProfile(current);
+  };
+
   return (
     <AuthContext.Provider
       value={{
         user,
         userProfile,
         loading,
+        profileStatus,
         signInWithGoogle,
         signInWithOAuth,
         linkIdentity,
@@ -834,6 +868,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         checkUsernameAvailability,
         changeEmail,
         refreshProfile,
+        ensureProfile,
         signInWithEmailAndPassword: signIn,
         signInWithEmail: signIn,
         signOut,

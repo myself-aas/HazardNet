@@ -55,6 +55,24 @@ const SLIDE_FADE_MS = 1600;
 const portraitVar = (src: string): string =>
   `--hero-slide-${(src.split('/').pop() ?? '').replace(/\.[a-z0-9]+$/i, '')}`;
 
+/**
+ * The URL this viewport will actually paint for a slide: the media-scoped custom property when the
+ * current viewport matches it (phones), otherwise the landscape `src`.
+ *
+ * The preload probe has to ask the same question the paint does, or it fetches the wrong file:
+ * probing `src` on a phone downloaded the 124-213 KB landscape frame *and* the portrait render of
+ * every slide. `getComputedStyle` resolves media-dependent custom properties against the live
+ * viewport, so this answers "which URL is in effect here" without duplicating the breakpoints.
+ * Re-evaluated per mount; a device that changes viewport shape remounts this page on the next
+ * navigation, and one extra probe on a resize is not worth a resize listener here.
+ */
+const paintedUrl = (src: string): string => {
+  if (typeof window === 'undefined' || typeof window.getComputedStyle !== 'function') return src;
+  const raw = window.getComputedStyle(document.documentElement).getPropertyValue(portraitVar(src)).trim();
+  const match = /^url\(["']?(.*?)["']?\)$/.exec(raw);
+  return match && match[1] ? match[1] : src;
+};
+
 export const HeroImageCarousel: React.FC<HeroImageCarouselProps> = ({
   paused = false,
   reducedMotion = false,
@@ -76,7 +94,9 @@ export const HeroImageCarousel: React.FC<HeroImageCarouselProps> = ({
     for (const { src } of images) {
       const probe = new Image();
       probe.onerror = () => setFailed((prev) => (prev.has(src) ? prev : new Set(prev).add(src)));
-      probe.src = src;
+      // Probe the file this viewport paints, so a phone does not fetch the landscape frame it
+      // will never show (see `paintedUrl`).
+      probe.src = paintedUrl(src);
     }
   }, [images]);
 
@@ -126,7 +146,7 @@ export const HeroImageCarousel: React.FC<HeroImageCarouselProps> = ({
             style={{
               position: 'absolute',
               inset: 0,
-              // Portrait crops for phones, landscape as the desktop fallback: see
+              // Portrait art for phones, landscape as the desktop fallback: see
               // `styles/hero-media.css` for how the two are selected without an `image-set()`
               // density guess and without ever fetching both.
               backgroundImage: `var(${portraitVar(src)}, url(${src}))`,

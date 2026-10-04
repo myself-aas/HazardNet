@@ -71,7 +71,7 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
        complementary landmark nested in another landmark is an accessibility violation
        (`landmark-complementary-is-top-level`), not just a style choice. The caption gives the
        figure its accessible name, so the eyebrow is read rather than skipped. */
-    <figure aria-labelledby="front-door-run-visual-caption" className="border border-carbon-20 bg-white p-5 sm:p-6 shadow-sm" data-testid="front-door-run-visual">
+    <figure id="front-door-run-visual" aria-labelledby="front-door-run-visual-caption" className="border border-carbon-20 bg-white p-5 sm:p-6 shadow-sm" data-testid="front-door-run-visual">
       <figcaption id="front-door-run-visual-caption" className="flex flex-wrap items-center justify-between gap-3 border-b border-carbon-10 pb-3.5">
         <div className="flex items-center gap-2.5 min-w-0">
           <Interactive.Div

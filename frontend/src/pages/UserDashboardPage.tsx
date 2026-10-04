@@ -3,6 +3,7 @@ import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ExternalLink } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { DataStateEmpty, DataStateError } from '../components/ui/DataState';
 import { UserAvatarField } from '../components/user/UserAvatarField';
 import { OverviewSection } from '../components/user/dashboard/OverviewSection';
 import { ProfileSection } from '../components/user/dashboard/ProfileSection';
@@ -132,7 +133,7 @@ const PublicProfilePreview: React.FC = () => {
 };
 
 const UserDashboardPage: React.FC = () => {
-  const { user, userProfile, loading } = useAuth();
+  const { user, userProfile, loading, profileStatus, ensureProfile, refreshProfile } = useAuth();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const tabParam = searchParams.get('tab') as Tab | null;
@@ -163,6 +164,41 @@ const UserDashboardPage: React.FC = () => {
     return (
       <div className="flex min-h-[60vh] items-center justify-center" role="status" aria-label="Loading dashboard">
         <InfinityLoader size={88} label="Loading" announce={false} />
+      </div>
+    );
+  }
+
+  // Two shapes the page used to render as a half-filled dashboard with no explanation:
+  // an unreadable profiles row (`error`) and an account that has no row at all (`missing`).
+  if (user && profileStatus === 'error') {
+    return (
+      <div className="mx-auto w-full max-w-[720px] py-10">
+        <DataStateError
+          title="Your profile could not be read"
+          detail="The dashboard is not showing partial profile data. Your account and its settings are untouched."
+          onRetry={() => { void refreshProfile(); }}
+          retryLabel="Try reading the profile again"
+        />
+      </div>
+    );
+  }
+
+  if (user && profileStatus === 'missing') {
+    return (
+      <div className="mx-auto w-full max-w-[720px] py-10">
+        <DataStateEmpty
+          title="No profile is stored for this account yet"
+          body="You are signed in, but this account has no profile document. Creating it seeds the same fields a first sign-in would, and nothing is overwritten."
+        />
+        <div className="mt-4 flex justify-center">
+          <button
+            type="button"
+            onClick={() => { void ensureProfile(); }}
+            className="inline-flex min-h-[44px] items-center bg-primary-strong px-4 py-2 text-base font-semibold text-white hover:bg-primary cursor-pointer touch-manipulation"
+          >
+            Create my profile
+          </button>
+        </div>
       </div>
     );
   }

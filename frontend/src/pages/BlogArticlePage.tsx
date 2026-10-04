@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, ArrowRight, Compass, ExternalLink } from 'lucide-react';
-import { DataStateError } from '../components/ui/DataState';
+import { DataStateEmpty, DataStateError } from '../components/ui/DataState';
 import toast from 'react-hot-toast';
 import MaterialIcon from '../components/MaterialIcon';
 import Breadcrumbs from '../components/Breadcrumbs';
@@ -153,6 +153,9 @@ export const BlogArticlePage: React.FC = () => {
   };
 
   const bodyHtml = sanitizeBlogHtml(article.contentHtml);
+  // A published post with no body text is this page's empty state: the reader gets the title,
+  // excerpt and byline, and is told the record is empty rather than shown a blank column.
+  const bodyHasText = bodyHtml.replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g, ' ').trim().length > 0;
 
   return (
     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }} className="max-w-3xl mx-auto space-y-6 pb-10">
@@ -198,11 +201,18 @@ export const BlogArticlePage: React.FC = () => {
           </div>
 
           {/* Sanitized rich-text body */}
-          <div className="prose-blog text-carbon-70" data-testid="article-body">
-            {/* Content authored exclusively by allowlisted superadmins and
-                sanitized on save + render (scripts/handlers/js-URLs stripped). */}
-            <div dangerouslySetInnerHTML={{ __html: bodyHtml }} />
-          </div>
+          {!bodyHasText ? (
+            <DataStateEmpty
+              title="This article has no body text yet"
+              body="The post is published with its title, excerpt and byline only. The editorial record is not missing; it was saved without body copy."
+            />
+          ) : (
+            <div className="prose-blog text-carbon-70" data-testid="article-body">
+              {/* Content authored exclusively by allowlisted superadmins and
+                  sanitized on save + render (scripts/handlers/js-URLs stripped). */}
+              <div dangerouslySetInnerHTML={{ __html: bodyHtml }} />
+            </div>
+          )}
 
           {article.tags.length > 0 && (
             <div className="flex flex-wrap gap-1.5 pt-2 border-t border-carbon-10">

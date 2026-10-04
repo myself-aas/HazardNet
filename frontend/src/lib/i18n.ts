@@ -255,6 +255,10 @@ const EN = {
   'frontdoor.hero.resumeMotion': 'Resume motion',
   'frontdoor.hero.readMore': 'Read the full overview',
   'frontdoor.hero.readLess': 'Show less',
+  'frontdoor.hero.evidencePointer':
+    'This run: {covered} of {expected} districts covered, {published}. Read the proof.',
+  'frontdoor.hero.evidencePointerAlerts': '{count} alerts published',
+  'frontdoor.hero.evidencePointerNoAlerts': 'no alerts published',
   'frontdoor.toc': 'On this page',
   'frontdoor.tocSection': 'Section',
   'frontdoor.bengaliDraft': 'Bengali draft. Awaiting native-speaker review',
@@ -626,6 +630,10 @@ const BN: Record<string, string> = {
   'frontdoor.hero.resumeMotion': 'গতি চালু করুন',
   'frontdoor.hero.readMore': 'সম্পূর্ণ সারসংক্ষেপ পড়ুন',
   'frontdoor.hero.readLess': 'সংক্ষেপে দেখান',
+  'frontdoor.hero.evidencePointer':
+    'এই রানে {expected} জেলার মধ্যে {covered} জেলার তথ্য আছে, {published}। প্রমাণ দেখুন।',
+  'frontdoor.hero.evidencePointerAlerts': '{count} সতর্কতা প্রকাশিত',
+  'frontdoor.hero.evidencePointerNoAlerts': 'কোনো সতর্কতা প্রকাশিত হয়নি',
   'frontdoor.toc': 'এই পাতায়',
   'frontdoor.tocSection': 'বিভাগ',
   'frontdoor.bengaliDraft': 'বাংলা খসড়া. স্থানীয় ভাষাভাষীর পর্যালোচনা বাকি',

@@ -77,7 +77,7 @@ export const DivisionsPage: React.FC = () => {
     return () => { mounted = false; };
   }, [reloadNonce]);
 
-  /** A summary tagged `fallback` is the client's built-in default, not this deployment's archive. */
+  /** A summary tagged `fallback` is an unavailable sentinel, not this deployment's archive. */
   const archiveLoaded = summary !== null && summary.source !== 'fallback';
 
   const divisionsList: DivisionCardData[] = DIVISION_META.map(div => {

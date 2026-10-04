@@ -134,24 +134,24 @@ describe('four-state checklist', () => {
     expect({ byData, pages: Object.keys(ledger.entries).length, absent }).toEqual({
       byData: { fetch: 21, mutation: 7, static: 7 },
       pages: 35,
-      absent: 5,
+      absent: 0,
     });
-    // The five absent states are the open items this checklist leaves behind; each is named here so
-    // the number cannot drift while a page quietly loses a state (the evidence test above catches
-    // the flip from present to absent, this one catches an entry being rewritten as absent).
-    expect(byKind.absent).toBe(5);
+    // No page is allowed to fall back to `absent`: the five cells that used to be open (Dashboard
+    // empty + error, the account dashboard empty + error, /archive empty, /blogs/:slug empty) are
+    // now rendered states with the evidence above. The pin stays so a future page cannot quietly
+    // introduce one, and the evidence test catches a present state whose block is deleted.
+    expect(byKind.absent ?? 0).toBe(0);
   });
 
-  it('names the pages still missing a state instead of calling the checklist complete', () => {
+  it('keeps every page four states implemented rather than deferred', () => {
     const missing = (state) =>
       Object.entries(ledger.entries)
         .filter(([, entry]) => entry[state].kind === 'absent')
         .map(([page]) => page);
 
-    // The three pages with no error state and the three with no empty state are the open items.
     expect({ empty: missing('empty'), error: missing('error'), loading: missing('loading') }).toEqual({
-      empty: ['pages/Dashboard.tsx', 'pages/HistoricalCatalogPage.tsx', 'pages/UserDashboardPage.tsx'],
-      error: ['pages/Dashboard.tsx', 'pages/UserDashboardPage.tsx'],
+      empty: [],
+      error: [],
       loading: [],
     });
 

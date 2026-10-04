@@ -6,7 +6,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 import Map from '../components/Map';
 import StoredForecastPanel from '../components/StoredForecastPanel';
+import { DataStateEmpty, DataStateError } from '../components/ui/DataState';
 import { fetchStoredPrediction, type StoredPrediction } from '../lib/storedPrediction';
+import { reasonFromError, type ForecastViewState } from '../lib/forecastView';
 import AdvisoryPanel from '../components/AdvisoryPanel';
 import OfflineBadge from '../components/OfflineBadge';
 import RiskAnalytics from '../components/RiskAnalytics';
@@ -36,6 +38,48 @@ interface DashboardProps {
   isFullScreen?: boolean;
 }
 
+/**
+ * The console's own loading / empty / error / ready states for one district's stored forecast.
+ *
+ * `StoredForecastPanel` still owns loading and ready, but the two failure shapes are the page's,
+ * because only the page knows the district it asked about and can offer the retry:
+ *
+ *   - empty  - the read answered "this district and horizon have no stored coverage" (HTTP 404,
+ *              `StoredPredictionError.reason === 'uncovered'`). The console keeps the map and the
+ *              district's static baseline on screen and says so, instead of showing a generic error;
+ *   - error  - the read failed for a reason retrying can fix (offline / rate-limited / server /
+ *              malformed payload). The retry control re-runs the same request.
+ *
+ * Before this, both shapes fell through `forecastViewStateFromLegacy`, which can only produce a
+ * generic `server` error - the console could not tell "no coverage" from "the service is down"
+ * (audit 2026-10-03 §9, the two `absent` Dashboard states).
+ */
+const DistrictForecastPanel: React.FC<{
+  district: District;
+  view: ForecastViewState;
+  onRetry: () => void;
+}> = ({ district, view, onRetry }) => {
+  if (view.kind === 'uncovered') {
+    return (
+      <DataStateEmpty
+        title={`No stored forecast for ${district.name} yet`}
+        body="This district is in the console's coverage list but the published forecast archive holds no record for the requested horizon. The map, the district's static baseline and the advisory history remain available."
+      />
+    );
+  }
+  if (view.kind === 'error') {
+    return (
+      <DataStateError
+        title={`The stored forecast for ${district.name} could not be read`}
+        detail={view.reason}
+        onRetry={onRetry}
+        retryLabel="Try the forecast again"
+      />
+    );
+  }
+  return <StoredForecastPanel state={view} onRetry={onRetry} />;
+};
+
 const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen = false }) => {
   const [searchParams] = useSearchParams();
   const { user, userProfile } = useAuth();
@@ -45,6 +89,8 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
   const [selectedDistrict, setSelectedDistrict] = useState<District | null>(null);
   const [loading, setLoading] = useState(false);
   const [storedForecast, setStoredForecast] = useState<StoredPrediction | null>(null);
+  // The district-scoped read state the page renders (see `DistrictForecastPanel`).
+  const [forecastView, setForecastView] = useState<ForecastViewState>({ kind: 'idle' });
   const requestSequence = useRef(0);
   const [severity, setSeverity] = useState<number>(0.78);
 
@@ -234,10 +280,12 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
 
   const runPrediction = useCallback(async (dist: District) => {
     const sequence = ++requestSequence.current;
+    const selection = { districtId: dist.id, horizon: '7_days' as const };
     setLoading(true);
     setStoredForecast(null);
     setLiveSummary(null);
     setPredictionSource('baseline');
+    setForecastView({ kind: 'loading', selection });
     try {
       const data = await fetchStoredPrediction(dist.id);
       if (sequence !== requestSequence.current) return;
@@ -245,10 +293,18 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
       setSeverity(data.prediction.severity_score);
       setLiveSummary({ hazard: data.prediction.hazard, confidence: data.prediction.confidence });
       setPredictionSource('live');
+      setForecastView({ kind: 'ready', selection, data, refreshing: false });
     } catch (error) {
       if (sequence !== requestSequence.current) return;
       console.warn('[HazardNet] stored forecast unavailable', error);
       setSeverity(dist.severity);
+      const reason = reasonFromError(error);
+      // A district with no stored coverage is an empty state; everything else is retryable.
+      setForecastView(
+        reason === 'uncovered'
+          ? { kind: 'uncovered', selection }
+          : { kind: 'error', selection, reason },
+      );
     } finally {
       if (sequence === requestSequence.current) setLoading(false);
     }
@@ -379,11 +435,10 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
                 </div>
 
                 {/* Prediction Panel */}
-                <StoredForecastPanel
-                  forecast={storedForecast}
-                  loading={loading}
-                  requested={Boolean(selectedDistrict)}
-                  onRetry={() => selectedDistrict && runPrediction(selectedDistrict)}
+                <DistrictForecastPanel
+                  district={selectedDistrict}
+                  view={forecastView}
+                  onRetry={() => runPrediction(selectedDistrict)}
                 />
 
                 {/* Advisory Panel */}
@@ -1079,11 +1134,10 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
                 onSelectDistrict={(dist) => setSelectedDistrict(dist)}
               />
               {selectedDistrict && (
-                <StoredForecastPanel
-                  forecast={storedForecast}
-                  loading={loading}
-                  requested={Boolean(selectedDistrict)}
-                  onRetry={() => selectedDistrict && runPrediction(selectedDistrict)}
+                <DistrictForecastPanel
+                  district={selectedDistrict}
+                  view={forecastView}
+                  onRetry={() => runPrediction(selectedDistrict)}
                 />
               )}
             </div>

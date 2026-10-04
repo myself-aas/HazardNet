@@ -289,6 +289,9 @@ export const FrontDoor: React.FC = () => {
   const [heroPaused, setHeroPaused] = useState(false);
   // The full standfirst is 70 words; below `sm` it is clamped to three lines with this control.
   const [standfirstOpen, setStandfirstOpen] = useState(false);
+  // The phone-only evidence pointer under the CTA reads the same artifact the proof card does, so
+  // the first viewport on a phone is claim -> action -> one fact from the run (see the hero comment).
+  const coverageArtifact = freshness?.coverage ?? null;
   const { alerts, assessed, counts, notPublished, generatedAt, loading: alertsLoading, error, refresh: refreshAlerts } = useAlertsData();
   const hazardLabel = useHazardLabel();
   const { t, language, formatNumber } = useI18n();
@@ -365,7 +368,7 @@ export const FrontDoor: React.FC = () => {
       {/* `pt-[calc(var(--navbar-height)+44px)]` instead of a hard 100px: the bar is 3.5rem plus
           `env(safe-area-inset-top)`, so a fixed number collided with it on notched phones. The
           variable now carries the inset, which makes this clearance correct on both. */}
-      <header className="mrd-on-dark relative w-full overflow-hidden bg-carbon-90 text-white min-h-[600px] lg:min-h-[100dvh] flex items-center -mt-14 sm:-mt-16 pt-[calc(var(--navbar-height)+44px)] pb-12 sm:pb-16 shadow-2xl">
+      <header className="mrd-on-dark relative w-full overflow-hidden bg-carbon-90 text-white min-h-[600px] lg:min-h-[100dvh] flex items-center -mt-14 sm:-mt-16 pt-[calc(var(--navbar-height)+20px)] sm:pt-[calc(var(--navbar-height)+44px)] pb-8 sm:pb-16 shadow-2xl">
         {/* Remotion-Inspired 5-Layer Cinematic Motion Background (BgMesh, Video, HUD, Grade, Grain & Vignette) */}
         <HeroCinematicBackground paused={heroPaused} />
         {/* Pause control — keyboard-reachable, respects reduced-motion (audit #1) */}
@@ -393,7 +396,7 @@ export const FrontDoor: React.FC = () => {
             </div>
           </div>
 
-          <div className="mt-6 grid grid-cols-1 items-center gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)] xl:gap-12">
+          <div className="mt-4 grid grid-cols-1 items-center gap-6 sm:mt-6 sm:gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)] xl:gap-12">
             {/* Scrim, not a tint: the authority paragraph sits at the bottom of this card, and at
                 `to-black/35` its 12px `text-white/75` measured 2.45:1 over a light frame. At
                 `to-black/60` the same pixel measures 6.40:1. */}
@@ -413,11 +416,13 @@ export const FrontDoor: React.FC = () => {
                       phone, which was most of the viewport before the reader reached a button.
                       It is clamped below `sm` and expanded in place; the same argument is made
                       in full by the seven sections under this hero, so nothing is hidden that
-                      the page does not say again. */}
+                      the page does not say again. Two lines, not three: the third line cost 26px
+                      of the first viewport, and the phone budget belongs to the action and the
+                      evidence pointer (docs/audits/2026-10-03-landing-live-hero-audit.md, H-P1-3). */}
                   <p
                     id="front-door-standfirst"
                     className={`mt-5 max-w-2xl text-base leading-[1.62] text-white/90 md:text-lg md:leading-[1.5] drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] ${
-                      standfirstOpen ? '' : 'line-clamp-3 sm:line-clamp-none'
+                      standfirstOpen ? '' : 'line-clamp-2 sm:line-clamp-none'
                     }`}
                   >
                     {localised.standfirst}
@@ -445,7 +450,7 @@ export const FrontDoor: React.FC = () => {
               {/* One primary action. Three equal full-width buttons on a phone is three
                   primaries, which reads as none; the other two destinations are still here as
                   text links, and the scorecard has a whole section below that argues for it. */}
-              <div className="mt-7">
+              <div className="mt-5 sm:mt-7">
                 <ButtonLink href="/live" intent="ink" size="lg" className="w-full sm:w-auto">
                   <MaterialIcon name="public" className="text-base" />
                   {t('frontdoor.hero.ctaMap')}
@@ -453,18 +458,41 @@ export const FrontDoor: React.FC = () => {
                 <div className="mt-2 flex flex-wrap gap-x-6">
                   <Link
                     to="/methodology"
-                    className="inline-flex min-h-[44px] items-center text-sm font-bold text-white underline decoration-white/40 underline-offset-4 hover:decoration-white"
+                    className="inline-flex min-h-[44px] min-w-[44px] items-center text-sm font-bold text-white underline decoration-white/40 underline-offset-4 hover:decoration-white"
                   >
                     {t('frontdoor.hero.ctaMethodology')}
                   </Link>
                   <Link
                     to="/model-performance"
-                    className="inline-flex min-h-[44px] items-center text-sm font-bold text-white underline decoration-white/40 underline-offset-4 hover:decoration-white"
+                    className="inline-flex min-h-[44px] min-w-[44px] items-center text-sm font-bold text-white underline decoration-white/40 underline-offset-4 hover:decoration-white"
                   >
                     {t('frontdoor.hero.ctaScorecard')}
                   </Link>
                 </div>
               </div>
+
+              {/* The one evidence pointer is deliberately the last hero element on a phone, where
+                  the proof card it names begins around y=944 - below an 844-tall viewport. It
+                  borrows the card's own text (it is not a second copy) and links to it, so the
+                  hierarchy stands - claim, action, then the card that checks the claim - while the
+                  checkable fact and its destination stay inside the first viewport. On the wide
+                  layout the card is already beside the copy and this line does not render.
+                  docs/audits/2026-10-03-landing-live-hero-audit.md, H-P1-3. */}
+              {coverageArtifact?.districts_covered != null && coverageArtifact?.districts_expected ? (
+                <a
+                  href="#front-door-run-visual"
+                  className="mt-3 inline-flex min-h-[44px] min-w-[44px] items-center text-xs font-bold text-white underline decoration-white/40 underline-offset-4 hover:decoration-white sm:hidden"
+                >
+                  {t('frontdoor.hero.evidencePointer', {
+                    covered: formatNumber(coverageArtifact.districts_covered),
+                    expected: formatNumber(coverageArtifact.districts_expected),
+                    published:
+                      published != null
+                        ? t('frontdoor.hero.evidencePointerAlerts', { count: formatNumber(published) })
+                        : t('frontdoor.hero.evidencePointerNoAlerts'),
+                  })}
+                </a>
+              ) : null}
 
               <p className="mt-6 max-w-2xl border-t border-white/20 pt-4 text-xs leading-[1.62] text-white/75">
                 {t('frontdoor.hero.authority')}{' '}
@@ -472,6 +500,7 @@ export const FrontDoor: React.FC = () => {
                   {t('frontdoor.hero.authorityMap')}
                 </Link>
               </p>
+
             </div>
 
             {/* The hero visual card. Solid White background with Carbon-90 text for clean paper-like readability */}
