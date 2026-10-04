@@ -254,6 +254,7 @@ const EN = {
   'frontdoor.hero.ctaMap': 'Open the live map',
   'frontdoor.hero.ctaMethodology': 'How a forecast is produced',
   'frontdoor.hero.ctaScorecard': 'Read the validation scorecard',
+  'frontdoor.hero.viewLastRun': 'View the last run, from the committed artifacts',
   'frontdoor.hero.authority':
     'HazardNet is decision support, not an official warning service. Weather warnings, cyclone signals and flood bulletins come from the Bangladesh Meteorological Department and the Flood Forecasting and Warning Centre; in an emergency call 999.',
   'frontdoor.hero.authorityMap': 'The live map carries the current outlooks.',
@@ -636,6 +637,7 @@ const BN: Record<string, string> = {
   'frontdoor.hero.ctaMap': 'লাইভ মানচিত্র খুলুন',
   'frontdoor.hero.ctaMethodology': 'কীভাবে পূর্বাভাস তৈরি হয়',
   'frontdoor.hero.ctaScorecard': 'যাচাই স্কোরকার্ড পড়ুন',
+  'frontdoor.hero.viewLastRun': 'সংরক্ষিত আর্টিফ্যাক্ট অনুযায়ী শেষ রানটি দেখুন',
   'frontdoor.hero.authority':
     'HazardNet সিদ্ধান্ত সহায়তা মাত্র, কোনো সরকারি সতর্কবার্তা সেবা নয়। আবহাওয়ার সতর্কবার্তা, ঘূর্ণিঝড় সংকেত ও বন্যা বুলেটিন প্রকাশ করে বাংলাদেশ আবহাওয়া অধিদপ্তর এবং প্লাবন পূর্বাভাস ও সতর্কীকরণ কেন্দ্র (FFWC); জরুরি অবস্থায় ৯৯৯ নম্বরে কল করুন।',
   'frontdoor.hero.authorityMap': 'বর্তমান পূর্বাভাস লাইভ মানচিত্রে দেখা যাবে।',

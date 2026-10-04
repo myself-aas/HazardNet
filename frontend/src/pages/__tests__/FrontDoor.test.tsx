@@ -90,14 +90,18 @@ describe('the front door', () => {
   it('reads the committed artifacts for its live panels', async () => {
     renderPage();
 
-    const card = await screen.findByTestId('front-door-run-visual');
-    await waitFor(() => expect(within(card).getByText(/60 \/ 64/)).toBeInTheDocument());
-    expect(within(card).getByText(/coverage status: partial/)).toBeInTheDocument();
-
-    const strip = screen.getByTestId('front-door-status-strip');
-    // The alert artifact this deployment ships publishes nothing and says why.
-    expect(within(strip).getByText(/No alert is published at the moment of this read/)).toBeInTheDocument();
+    const strip = await screen.findByTestId('front-door-status-strip');
+    // The alert artifact this deployment ships publishes nothing and says why. Awaited,
+    // because the strip reads the snapshot over fetch and renders its reading state first.
+    expect(await within(strip).findByText(/No alert is published at the moment of this read/)).toBeInTheDocument();
     expect(within(strip).getByText(/withheld 74 of them from publication/)).toBeInTheDocument();
+
+    // The run card moved to /last-run on 2026-10-05: the hero reaches it as a hyperlink,
+    // and the card itself is no longer part of this page.
+    expect(document.querySelector('[data-testid="last-run-visual"]')).toBeNull();
+    const hero = document.querySelector('header.mrd-on-dark') as HTMLElement;
+    expect(hero).not.toBeNull();
+    expect(Array.from(hero.querySelectorAll('a[href="/last-run"]')).length).toBeGreaterThanOrEqual(1);
   });
 
   it("resolves the ledger's review dates instead of printing a reference", async () => {
@@ -151,9 +155,14 @@ describe('the front door', () => {
 
   it('keeps the hero simple: one scrim, one primary action, no second frame', async () => {
     renderPage();
-    await screen.findByTestId('front-door-run-visual');
+    await screen.findByTestId('front-door-status-strip');
     const hero = document.querySelector('header.mrd-on-dark') as HTMLElement;
     expect(hero).not.toBeNull();
+
+    // The run card left the hero for /last-run on 2026-10-05: it is not rendered here,
+    // and the hero reaches it only as a hyperlink.
+    expect(hero.querySelector('[data-testid="last-run-visual"]')).toBeNull();
+    expect(Array.from(hero.querySelectorAll('a[href="/last-run"]')).length).toBeGreaterThanOrEqual(1);
 
     // One flat scrim over the photograph. It was a `from-black/70 to-black/60` gradient, which
     // put the authority sentence at the weak end of its own surface (2.45:1 over a bright frame
@@ -201,8 +210,10 @@ describe('the front door', () => {
 
   it('has no accessibility violations in either language', async () => {
     const english = renderPage();
-    await screen.findByTestId('front-door-run-visual');
-    await waitFor(() => expect(english.container.textContent).toMatch(/60 \/ 64/));
+    await screen.findByTestId('front-door-status-strip');
+    // Awaited on the trust strip's coverage figure: the run card that used to carry it
+    // moved to /last-run, and this asserts the page's own live data has landed.
+    await waitFor(() => expect(english.container.textContent).toMatch(/60 of 64 districts/));
     expect(await axe(english.container)).toHaveNoViolations();
 
     // Unmounted before the second render: two mounted front doors would share every id and
@@ -215,7 +226,7 @@ describe('the front door', () => {
         <FrontDoor />
       </MemoryRouter>,
     );
-    await waitFor(() => expect(bengali.container.textContent).toMatch(/৬০ \/ ৬৪/));
+    await waitFor(() => expect(bengali.container.textContent).toMatch(/৬৪টির মধ্যে ৬০টি জেলা/));
     expect(await axe(bengali.container)).toHaveNoViolations();
   });
 });

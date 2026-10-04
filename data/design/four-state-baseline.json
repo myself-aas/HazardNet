@@ -744,6 +744,27 @@
         "kind": "page",
         "evidence": "Write a new article"
       }
+    },
+    "pages/LastRunPage.tsx": {
+      "data": "fetch",
+      "loading": {
+        "kind": "inline",
+        "evidence": "loading={loading}"
+      },
+      "empty": {
+        "kind": "notice",
+        "evidence": "unreadable stays null"
+      },
+      "error": {
+        "kind": "notice",
+        "evidence": "unreadable stays null",
+        "retry": false,
+        "reason": "a failed read is reported as the card's own sentence, which links the status page; this page keeps the front door's no-retry fetch discipline"
+      },
+      "success": {
+        "kind": "page",
+        "evidence": "path=\"/last-run\""
+      }
     }
   }
 }

@@ -965,6 +965,42 @@
       ]
     },
     {
+      "path": "/last-run",
+      "label": "The last run",
+      "title": "HazardNet: the last forecast run, read from the committed artifacts",
+      "description": "The run card the front door links to from its hero: the last forecast run's district coverage, the rows it produced per horizon, what it published or withheld, the age of every artifact this deployment ships, and the run's own honesty notes verbatim. Every figure is read from an artifact committed at this deploy; a missing value is an em dash, never a zero.",
+      "robots": "index,follow",
+      "sitemap": {
+        "changefreq": "daily",
+        "priority": 0.7
+      },
+      "appShell": true,
+      "updated": "2026-10-05",
+      "h1": "The last run, from the committed artifacts",
+      "standfirst": "This page is the front door's run card, given a page of its own. It reads the freshness artifact this deployment ships and states what the last forecast run covered, what it published, how old each tracked source is against the SLO it is measured against, and what the run reported against itself. Nothing here is a live probe: when a value cannot be read, the page says so instead of showing a number.",
+      "keywords": [
+        "HazardNet last run",
+        "forecast run coverage",
+        "artifact freshness",
+        "self-reported audit"
+      ],
+      "sections": [
+        {
+          "h2": "What the card reads",
+          "paragraphs": [
+            "The card above renders one committed artifact, the freshness record written from the files this deployment ships: the coverage of the last forecast run (districts covered out of the districts expected, and the rows produced per horizon), what the alert engine published or withheld from that run, the age of every tracked source against the SLO it is measured against, and the run's own honesty notes, verbatim.",
+            "A missing value is rendered as an em dash or as a sentence that says the artifact could not be read, never as a zero. Zero is a number the files can say; an unread file is a different fact, and this page keeps them apart."
+          ]
+        },
+        {
+          "h2": "How it relates to the status page",
+          "paragraphs": [
+            "The status page carries the same artifact and adds the surrounding record: the ingest manifest, the model provenance stamp and the last site-health probe. This page is the narrower reading, the last run itself, and the front door links here from the hero so the claim on the landing page stays one sentence while its evidence keeps a page of its own."
+          ]
+        }
+      ]
+    },
+    {
       "path": "/about",
       "label": "About",
       "title": "About HazardNet: mission, scope and who runs it",

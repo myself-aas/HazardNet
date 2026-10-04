@@ -180,7 +180,7 @@ describe('the hero run visual', () => {
 
   it('draws the last run from the freshness artifact', () => {
     visual();
-    const card = screen.getByTestId('front-door-run-visual');
+    const card = screen.getByTestId('last-run-visual');
     expect(within(card).getByText(/60 \/ 64/)).toBeInTheDocument();
     expect(within(card).getByText(/94%/)).toBeInTheDocument(); // 60/64, from the artifact
     expect(within(card).getByText(/coverage status: partial/)).toBeInTheDocument();
@@ -191,7 +191,7 @@ describe('the hero run visual', () => {
 
   it('carries the run’s own honesty notes and when it was built', () => {
     visual();
-    const card = screen.getByTestId('front-door-run-visual');
+    const card = screen.getByTestId('last-run-visual');
     expect(within(card).getByText(/model_version is null/)).toBeInTheDocument();
     // four notes, three shown, and the fourth is reachable rather than dropped silently
     expect(within(card).queryByText(/74 assessed district\/horizon rows/)).not.toBeInTheDocument();
@@ -210,7 +210,7 @@ describe('the hero run visual', () => {
 
   it('says nothing about ages when the artifact could not be read', () => {
     visual({ freshness: null });
-    const card = screen.getByTestId('front-door-run-visual');
+    const card = screen.getByTestId('last-run-visual');
     expect(within(card).getByText(/could not be read/i)).toBeInTheDocument();
     expect(within(card).queryByText(/60 \/ 64/)).not.toBeInTheDocument();
     expect(within(card).queryByText(/%/)).not.toBeInTheDocument();
@@ -218,21 +218,21 @@ describe('the hero run visual', () => {
 
   it('reports an unreadable alert artifact as unknown, not as zero published', () => {
     visual({ published: null });
-    const card = screen.getByTestId('front-door-run-visual');
+    const card = screen.getByTestId('last-run-visual');
     expect(within(card).getByText(/does not state an outcome/)).toBeInTheDocument();
     expect(within(card).queryByText(/No alert is published from this run/)).not.toBeInTheDocument();
   });
 
   it('names the withheld rows when nothing was published', () => {
     visual();
-    const card = screen.getByTestId('front-door-run-visual');
+    const card = screen.getByTestId('last-run-visual');
     expect(within(card).getByText(/No alert is published from this run/)).toBeInTheDocument();
     expect(within(card).getByText(/74 assessed rows were withheld by the review gate/)).toBeInTheDocument();
   });
 
   it('names each artifact’s state in words beside the dot', () => {
     visual();
-    const card = screen.getByTestId('front-door-run-visual');
+    const card = screen.getByTestId('last-run-visual');
     expect(within(card).getByText(/Forecast ingest/)).toBeInTheDocument();
     expect(within(card).getByText(/Within SLO/)).toBeInTheDocument();
     expect(within(card).getByText(/Unknown/)).toBeInTheDocument();

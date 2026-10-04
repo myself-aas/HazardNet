@@ -1,5 +1,9 @@
 /**
- * The hero visual — a picture made of the deployment's own artifacts.
+ * The run card — a picture made of the deployment's own artifacts.
+ *
+ * Rendered at `/last-run` (`pages/LastRunPage.tsx`), where the front door's hero links to it.
+ * It stood inside that hero as its second column until 2026-10-05; the card did not change
+ * when it moved, only its address did.
  *
  * The 2026-09-19 landing-page review asked for a full-width photograph in the hero.
  * `scripts/lib/public-text.mjs` refuses invented imagery, and the reason still
@@ -21,7 +25,7 @@
  * counted 88 of).
  */
 
-// <figcaption id="front-door-run-visual-caption">
+// <figcaption id="last-run-visual-caption">
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, useReducedMotion } from 'framer-motion';
@@ -71,8 +75,8 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
        complementary landmark nested in another landmark is an accessibility violation
        (`landmark-complementary-is-top-level`), not just a style choice. The caption gives the
        figure its accessible name, so the eyebrow is read rather than skipped. */
-    <figure id="front-door-run-visual" aria-labelledby="front-door-run-visual-caption" className="border border-carbon-20 bg-white p-5 sm:p-6 shadow-sm" data-testid="front-door-run-visual">
-      <figcaption id="front-door-run-visual-caption" className="flex flex-wrap items-center justify-between gap-3 border-b border-carbon-10 pb-3.5">
+    <figure id="last-run-visual" aria-labelledby="last-run-visual-caption" className="border border-carbon-20 bg-white p-5 sm:p-6 shadow-sm" data-testid="last-run-visual">
+      <figcaption id="last-run-visual-caption" className="flex flex-wrap items-center justify-between gap-3 border-b border-carbon-10 pb-3.5">
         <div className="flex items-center gap-2.5 min-w-0">
           <Interactive.Div
             name="Live pulse — freshness indicator"

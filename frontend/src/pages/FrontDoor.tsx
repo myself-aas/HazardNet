@@ -37,7 +37,9 @@
  *   · The hero visual is built (`components/frontdoor/RunVisual.tsx`) as the last run's own
  *     coverage, outcome and artifact ages. There is still no photograph: none ships in this
  *     repository under a licence the project can stand behind, and a stock image of a flood
- *     would date the page to a disaster it is not describing.
+ *     would date the page to a disaster it is not describing. On 2026-10-05 the card moved out
+ *     of the hero to a page of its own (`/last-run`, `pages/LastRunPage.tsx`); the hero keeps
+ *     the claim, the action and a hyperlink to the card that checks the claim.
  *   · The map stays at `/live`. The split was re-affirmed on 2026-09-19: `/` answers "who is
  *     telling me this, and how would I know if it stopped working", `/live` answers "where".
  *     A second map surface is a second thing to keep honest, for no reader who was lost.
@@ -60,7 +62,6 @@ import { AlertLevelBadge } from '../components/alerts/AlertLevelBadge';
 import { LanguageToggle } from '../components/alerts/LanguageToggle';
 import LiveStatusStrip from '../components/frontdoor/LiveStatusStrip';
 import CardStackTable from '../components/ui/CardStackTable';
-import RunVisual from '../components/frontdoor/RunVisual';
 import HeroCinematicBackground from '../components/HeroCinematicBackground';
 import { localiseRoute, usePageSeo } from '../hooks/usePageSeo';
 import { useAlertsData } from '../hooks/useAlertsData';
@@ -365,7 +366,8 @@ export const FrontDoor: React.FC = () => {
           The backdrop was a five-layer motion build with a decorative telemetry HUD and a film
           grain; it is four layers now (see HeroCinematicBackground). Keeping the composition
           honest rather than busy is the whole job of this block: a claim (h1), the sentence that
-          qualifies it, one primary action, and the artifact card that checks it. */}
+          qualifies it, one primary action, and a hyperlink to the page that carries the artifact
+          card checking the claim (/last-run — the card itself moved there from this hero). */}
       {/* `mrd-on-dark` scopes the outline button's inversion to this hero, so the
           same primitive renders white-on-dark here and ink-on-light everywhere
           else without a second variant existing. */}
@@ -400,7 +402,7 @@ export const FrontDoor: React.FC = () => {
             <LanguageToggle variant="switch" tone="hds" />
           </div>
 
-          <div className="mt-4 grid grid-cols-1 items-center gap-6 sm:mt-6 sm:gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)] xl:gap-12">
+          <div className="mt-4 grid grid-cols-1 items-center gap-6 sm:mt-6 sm:gap-8">
             {/* One flat scrim, not a two-stop gradient. The gradient existed to keep the
                 authority paragraph (12px `text-white/75`) off the weak end of its own surface:
                 at the old `to-black/35` the same pixel measured 2.45:1 over a light frame, at
@@ -455,8 +457,10 @@ export const FrontDoor: React.FC = () => {
                   mean something when the district under it is under warning.
                   The two secondary links stay outlined. */}
               {/* One primary action. Three equal full-width buttons on a phone is three
-                  primaries, which reads as none; the other two destinations are still here as
-                  text links, and the scorecard has a whole section below that argues for it. */}
+                  primaries, which reads as none; the other destinations stay here as text
+                  links, and the scorecard has a whole section below that argues for it. The
+                  run card used to sit beside this copy as the hero's second column; since
+                  2026-10-05 it has a page of its own, and the hero reaches it as a link. */}
               <div className="mt-5 sm:mt-7">
                 <ButtonLink href="/live" intent="ink" size="lg" className="w-full sm:w-auto">
                   <MaterialIcon name="public" className="text-base" />
@@ -475,19 +479,25 @@ export const FrontDoor: React.FC = () => {
                   >
                     {t('frontdoor.hero.ctaScorecard')}
                   </Link>
+                  <Link
+                    to="/last-run"
+                    className="inline-flex min-h-[44px] min-w-[44px] items-center text-sm font-bold text-white underline decoration-white/40 underline-offset-4 hover:decoration-white"
+                  >
+                    {t('frontdoor.hero.viewLastRun')}
+                  </Link>
                 </div>
               </div>
 
-              {/* The one evidence pointer is deliberately the last hero element on a phone, where
-                  the proof card it names begins around y=944 - below an 844-tall viewport. It
-                  borrows the card's own text (it is not a second copy) and links to it, so the
-                  hierarchy stands - claim, action, then the card that checks the claim - while the
-                  checkable fact and its destination stay inside the first viewport. On the wide
-                  layout the card is already beside the copy and this line does not render.
+              {/* The one evidence pointer is deliberately the last hero element on a phone. It
+                  borrows the run card's own text (it is not a second copy) and links to the card's
+                  page, so the hierarchy stands - claim, action, then the card that checks the
+                  claim. The card moved to `/last-run` on 2026-10-05, so this anchor is now a
+                  route link rather than an in-page fragment; on the wide layout the text link above
+                  already reaches it and this line does not render.
                   docs/audits/2026-10-03-landing-live-hero-audit.md, H-P1-3. */}
               {coverageArtifact?.districts_covered != null && coverageArtifact?.districts_expected ? (
-                <a
-                  href="#front-door-run-visual"
+                <Link
+                  to="/last-run"
                   className="mt-3 inline-flex min-h-[44px] min-w-[44px] items-center text-xs font-bold text-white underline decoration-white/40 underline-offset-4 hover:decoration-white sm:hidden"
                 >
                   {t('frontdoor.hero.evidencePointer', {
@@ -498,7 +508,7 @@ export const FrontDoor: React.FC = () => {
                         ? t('frontdoor.hero.evidencePointerAlerts', { count: formatNumber(published) })
                         : t('frontdoor.hero.evidencePointerNoAlerts'),
                   })}
-                </a>
+                </Link>
               ) : null}
 
               <p className="mt-6 max-w-2xl border-t border-white/20 pt-4 text-xs leading-[1.62] text-white/75">
@@ -508,11 +518,6 @@ export const FrontDoor: React.FC = () => {
                 </Link>
               </p>
 
-            </div>
-
-            {/* The hero visual card. Solid White background with Carbon-90 text for clean paper-like readability */}
-            <div className="relative z-10 w-full text-carbon-90 bg-white shadow-2xl overflow-hidden rounded-sm">
-              <RunVisual freshness={freshness} loading={loading} published={published} withheld={withheld} />
             </div>
           </div>
         </div>

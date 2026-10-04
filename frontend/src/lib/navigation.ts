@@ -78,6 +78,7 @@ export const PRIMARY_LINKS: PrimaryLink[] = [
         '/data-sources',
         '/faq',
         '/status',
+        '/last-run',
         '/contact',
         '/use-cases',
         '/upload',

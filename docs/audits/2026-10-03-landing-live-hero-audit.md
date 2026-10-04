@@ -449,6 +449,12 @@ assistive tech is still a layer the reader's phone has to composite.
 | Backlog rows 1 and 2 | **Closed by deletion / superseded** as above. The remaining rows (3, 4, 5, 6, 7, 8, 10, 11) are untouched and still describe the shipped code. |
 | §4 "delete before the port" list | **Done for the web hero on 2026-10-05**, and for the Remotion export on the same date: `HeroComposition` printed the same two unsupportable readouts plus the reticles and the second glow, and now paints the web hero's four layers (mesh, title, grade, vignette). Its default headline is the front door's own `h1` from `content/site-routes.json` instead of a slogan, and its sub-line states the provenance rule rather than claiming verification. `__tests__/phase3RemotionHero.test.js` pins both. |
 
+Later the same day the run card left the hero entirely: `RunVisual` renders on a page of its own
+at `/last-run`, and the hero reaches it as a hyperlink (a text link beside the CTA row, and the
+phone-only evidence pointer, which navigates there instead of scrolling to an in-page fragment).
+The card's text, its four panels and its honesty notes are unchanged by the move; the hero keeps
+one claim, one action and its links, and the four-state ledger gained the new fetch page.
+
 ### Backlog rows
 
 | # | Status | Note |

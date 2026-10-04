@@ -50,6 +50,7 @@ const HazardDetailPage = lazy(() => import('./pages/HazardDetailPage'));
 const AlertsPage = lazy(() => import('./pages/AlertsPage').then((m) => ({ default: m.AlertsPage })));
 const AlertDetailPage = lazy(() => import('./pages/AlertDetailPage').then((m) => ({ default: m.AlertDetailPage })));
 const StatusPage = lazy(() => import('./pages/StatusPage').then((m) => ({ default: m.StatusPage })));
+const LastRunPage = lazy(() => import('./pages/LastRunPage').then((m) => ({ default: m.LastRunPage })));
 const UserDashboardPage = lazy(() => import('./pages/UserDashboardPage'));
 const UserProfilePage = lazy(() => import('./pages/UserProfilePage'));
 const PublicProfilePage = lazy(() => import('./pages/PublicProfilePage'));
@@ -198,6 +199,9 @@ const AppRoutes: React.FC<{ location: ReturnType<typeof useLocation> }> = ({ loc
               {/* Phase 7 observability: what the deployment's own committed artifacts say
                   about the freshness of the data it ships (frontend/public/data/freshness.json). */}
               <Route path="/status" element={<StatusPage />} />
+              {/* The run card the front door's hero links to: the last forecast run read from
+                  the committed artifacts, relocated here from the hero on 2026-10-05. */}
+              <Route path="/last-run" element={<LastRunPage />} />
               {/* Phase 8 content engine: hazard-by-hazard methodology, a page per district built
                   from the run this deployment serves, and (when an event archive is loaded)
                   annual retrospectives. All three are prerendered statically at build time. */}
