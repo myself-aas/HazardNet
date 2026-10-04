@@ -806,3 +806,28 @@ Nothing in this audit's ledger. Two things are out of its scope and are recorded
   `docs/MOBILE_AUDIT_AND_REDESIGN.md`;
 - the hardware rows in the device-verification script are unverified until someone with the listed
   devices fills in its table.
+
+### 12.7 Live-map simplification (2026-10-05)
+
+Not a ledger row of this audit, recorded here because the change removes surfaces the audit's
+disciplines exist to police. The live console (`/live`) carried a "+" hazard-actions menu that
+opened seventeen options at once and a basemap switcher offering six tile providers; the choice
+changed nothing a reader needed and spent their attention on it. Both are gone:
+
+- the map ships a single OpenStreetMap ground (`useLeafletMap.MAP_LAYERS` holds one entry; the
+  Esri/CARTO/OpenTopoMap providers, the toolbar chips, the layer-modal provider grid and the
+  mini-map switcher in `ui/expand-map.tsx` were deleted with it);
+- zoom is Leaflet's native control, already styled at 44px in `index.css`, which had never been
+  switched on because zoom lived inside the "+" menu;
+- three separate buttons replace the menu — My location, Filters, Overlays — one job each,
+  opaque white, 44px targets, the HUD's standing rules;
+- deleted with the menu: the "sync live telemetry" action that simulated a satellite handshake,
+  the 3D tilt, compass reset, fullscreen toggle and overview reset, and the field-report form
+  that said "logged" while persisting nothing — a claim without an artifact, the one thing this
+  repository's rules exist to forbid;
+- what stays is what HazardNet is for: district polygons and forecasts, hazard layers, horizon
+  and search, the table view, the offline tile store (now pre-caching OSM), and the OSM
+  attribution the map's licence requires.
+
+`MapToolbar.test.tsx` pins the absence of a basemap switcher; 1755 tests, the token/prose/
+claims/paths/design gates and the build are green.

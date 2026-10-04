@@ -8,15 +8,11 @@ import L from 'leaflet';
 import 'leaflet.heat';
 import toast from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  AlertTriangle, Filter, Layers, RefreshCw, 
-  ZoomIn, ZoomOut, Navigation, Maximize, 
-  Camera, RotateCcw, Flame, Ruler, Waves, Radio, 
-  Contrast, Compass, Box, Share2, Download, Copy,
+import {
+  Layers, RefreshCw, Share2, Download, Copy,
   Image as ImageIcon,
   HardDrive, Wifi, WifiOff, Trash2, CloudDownload
 } from 'lucide-react';
-import { AnimatedSocialIcons } from './ui/floating-action-button';
 import { LocationMap } from './ui/expand-map';
 import { ALL_64_DISTRICTS, ALL_8_DIVISIONS } from '../data/bangladeshDistricts';
 import { 
@@ -112,7 +108,9 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
   }, [compactHeader]);
 
   // Layer & Visual Controls
-  const [activeLayer, setActiveLayer] = useState<keyof typeof MAP_LAYERS>('esriSatellite');
+  // One basemap, no picker: OpenStreetMap is the ground every HazardNet layer draws on
+  // (see MAP_LAYERS in hooks/useLeafletMap). It was a six-provider choice until 2026-10-05.
+  const activeLayer: MapLayerKey = 'osmStandard';
   const [isHighContrastBoost, setIsHighContrastBoost] = useState<boolean>(true);
   const [isHeatmapActive, setIsHeatmapActive] = useState<boolean>(false);
   const [isRiverLayerActive, setIsRiverLayerActive] = useState<boolean>(true);
@@ -132,12 +130,8 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
     'Cold Wave',
     'Severe Storm',
   ]);
-  const [is3DTilted, setIs3DTilted] = useState<boolean>(false);
   const [isHudVisible, setIsHudVisible] = useState<boolean>(true);
   const hudTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  // New features: Fullscreen, Legend Panel
-  const [isBrowserFullscreen, setIsBrowserFullscreen] = useState<boolean>(false);
 
   // High-Resolution Export Modal & Sharing State
   const [isExportModalOpen, setIsExportModalOpen] = useState<boolean>(false);
@@ -147,18 +141,12 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
   const [includeOverlayLegend, setIncludeOverlayLegend] = useState<boolean>(true);
   const [customReportTitle, setCustomReportTitle] = useState<string>('Bangladesh Multi-Hazard Geospatial Intelligence Report');
 
-  // Floating Action Button feature states (Report Hazard, Filter, Layers, Sync)
-  const [isReportModalOpen, setIsReportModalOpen] = useState<boolean>(false);
-  const [reportHazardType, setReportHazardType] = useState<string>('Flash Flood');
-  const [reportSeverity, setReportSeverity] = useState<number>(0.75);
-  const [reportDistrictId, setReportDistrictId] = useState<string>(liveDistrictsData[0]?.id || 'dhaka');
-  const [reportNotes, setReportNotes] = useState<string>('');
-  const [reportSuccessMsg, setReportSuccessMsg] = useState<string | null>(null);
-
+  // The old "+" hazard-actions menu opened twelve options at once; on 2026-10-05 it was
+  // deleted in favour of one button per job (locate, filters, layers) plus Leaflet's own
+  // zoom control. The fake "sync live telemetry" action and the field-report form that
+  // persisted nothing went with it.
   const [isFilterModalOpen, setIsFilterModalOpen] = useState<boolean>(false);
   const [isLayerModalOpen, setIsLayerModalOpen] = useState<boolean>(false);
-  const [isSyncing, setIsSyncing] = useState<boolean>(false);
-  const [syncToastMessage, setSyncToastMessage] = useState<string | null>(null);
 
   // Measure mode ref for Leaflet click callback
   const isMeasuringRef = useRef(isMeasuring);
@@ -262,7 +250,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
   });
 
   // Extracted Hook 3: useMapSnapshot (Manages html2canvas-pro image capture, watermarks & exports)
-  const baseMapName = MAP_LAYERS[activeLayer]?.name || 'Satellite HD';
+  const baseMapName = MAP_LAYERS[activeLayer]?.name || 'OpenStreetMap';
   const selectedInfo = currentSelected
     ? `${currentSelected.name} District (${(currentSelected.severity * 100).toFixed(0)}% Risk)`
     : 'Bangladesh National Overview';
@@ -304,50 +292,8 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
     handleOpenExportModal();
   };
 
-  // Sync browser fullscreen change events
-  useEffect(() => {
-    const handleFullscreenChange = () => {
-      const isFS = !!(document.fullscreenElement || (document as any).webkitFullscreenElement);
-      setIsBrowserFullscreen(isFS);
-      if (mapInstanceRef.current) {
-        setTimeout(() => {
-          mapInstanceRef.current?.invalidateSize();
-        }, 200);
-      }
-    };
 
-    document.addEventListener('fullscreenchange', handleFullscreenChange);
-    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
-    return () => {
-      document.removeEventListener('fullscreenchange', handleFullscreenChange);
-      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
-    };
-  }, []);
 
-  // Handler for true browser-level fullscreen toggle
-  const handleToggleFullscreen = async () => {
-    try {
-      const isFS = !!(document.fullscreenElement || (document as any).webkitFullscreenElement);
-      if (!isFS) {
-        const targetEl = mainWrapperRef.current;
-        if (targetEl) {
-          if (targetEl.requestFullscreen) {
-            await targetEl.requestFullscreen();
-          } else if ((targetEl as any).webkitRequestFullscreen) {
-            await (targetEl as any).webkitRequestFullscreen();
-          }
-        }
-      } else {
-        if (document.exitFullscreen) {
-          await document.exitFullscreen();
-        } else if ((document as any).webkitExitFullscreen) {
-          await (document as any).webkitExitFullscreen();
-        }
-      }
-    } catch (err) {
-      console.warn('Browser fullscreen toggle failed:', err);
-    }
-  };
 
   // Handler to locate user geographic position and map to corresponding district
   const handleCenterOnUserLocation = () => {
@@ -1124,131 +1070,6 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
   // Nearest district details for current inspection point
   const nearestDistrictData = inspectedPoint ? findNearestDistrict(inspectedPoint.lat, inspectedPoint.lng) : null;
 
-  const hazardActions = [
-    { 
-      Icon: AlertTriangle,
-      title: "Report Field Hazard Incident",
-      onClick: () => setIsReportModalOpen(true)
-    },
-    {
-      Icon: Filter,
-      title: "Advanced District & Hazard Filter",
-      onClick: () => setIsFilterModalOpen(true)
-    },
-    {
-      Icon: Layers,
-      title: "GIS & Map Layers Control",
-      onClick: () => setIsLayerModalOpen(true)
-    },
-    {
-      Icon: RefreshCw,
-      title: "Sync Live Telemetry Sensor Feeds",
-      onClick: async () => {
-        setIsSyncing(true);
-        setSyncToastMessage("Syncing 64 Districts Telemetry from Satellite-2 & NASA GPM...");
-        await new Promise(r => setTimeout(r, 1500));
-        setIsSyncing(false);
-        setSyncToastMessage("Successfully synchronized 64 districts telemetry with real-time sensor feeds.");
-        setTimeout(() => setSyncToastMessage(null), 5000);
-      },
-      className: isSyncing ? "text-amber-500 animate-spin" : ""
-    },
-    {
-      Icon: Camera,
-      title: "Export Visible Map Area as High-Res PNG Image",
-      onClick: handleExportMapImage,
-      className: isExportingMap ? "text-amber-500 animate-spin" : ""
-    },
-    {
-      Icon: Compass,
-      title: "Reset Compass North",
-      onClick: () => {
-        if (mapInstanceRef.current) {
-          mapInstanceRef.current.flyTo([23.8103, 90.4125], 7, { duration: 1.0 });
-        }
-      }
-    },
-    {
-      Icon: Box,
-      title: "Toggle 3D Perspective Tilt Mode",
-      onClick: () => {
-        setIs3DTilted(!is3DTilted);
-        if (mapInstanceRef.current) {
-          setTimeout(() => mapInstanceRef.current?.invalidateSize(), 300);
-        }
-      },
-      className: is3DTilted ? "bg-nasa-red/20 text-nasa-red-shade" : ""
-    },
-    {
-      Icon: ZoomIn,
-      title: "Zoom In (+)",
-      onClick: () => mapInstanceRef.current?.zoomIn()
-    },
-    {
-      Icon: ZoomOut,
-      title: "Zoom Out (-)",
-      onClick: () => mapInstanceRef.current?.zoomOut()
-    },
-    {
-      Icon: Navigation,
-      title: "Locate & Center Map on My GPS Position",
-      onClick: handleCenterOnUserLocation,
-      className: userGpsPos ? "bg-nasa-blue/20 text-nasa-blue-shade animate-pulse" : (isLocatingUser ? "animate-spin text-amber-500" : "")
-    },
-    {
-      Icon: Maximize,
-      title: isBrowserFullscreen ? "Exit Browser Fullscreen (Esc)" : "Enter Browser Fullscreen",
-      onClick: handleToggleFullscreen,
-      className: isBrowserFullscreen ? "bg-emerald-600/20 text-carbon-70" : ""
-    },
-    {
-      Icon: RotateCcw,
-      title: "Reset Map to Full Overview",
-      onClick: () => {
-        setSelectedDivision('All');
-        setSearchQuery('');
-        setIsolateSelected(false);
-        setInspectedPoint(null);
-        if (mapInstanceRef.current) {
-          mapInstanceRef.current.flyTo([23.8103, 90.4125], 7, { duration: 1.2 });
-        }
-      }
-    },
-    {
-      Icon: Flame,
-      title: isHeatmapActive ? "Disable Hazard Heatmap" : "Enable Hazard Heatmap",
-      onClick: () => setIsHeatmapActive(!isHeatmapActive),
-      className: isHeatmapActive ? "bg-nasa-red/20 text-nasa-red-shade" : ""
-    },
-    {
-      Icon: Ruler,
-      title: "Toggle Geodesic Distance Measurement Tool",
-      onClick: () => {
-        const nextState = !isMeasuring;
-        setIsMeasuring(nextState);
-        if (!nextState) setMeasurePoints([]);
-      },
-      className: isMeasuring ? "bg-amber-500/20 text-amber-500" : ""
-    },
-    {
-      Icon: Waves,
-      title: "Toggle Major River Basins Layer",
-      onClick: () => setIsRiverLayerActive(!isRiverLayerActive),
-      className: isRiverLayerActive ? "bg-nasa-blue/20 text-nasa-blue-shade" : ""
-    },
-    {
-      Icon: Radio,
-      title: "Toggle Live Doppler Weather Radar Simulation",
-      onClick: () => setIsRadarActive(!isRadarActive),
-      className: isRadarActive ? "bg-nasa-blue/20 text-nasa-blue-shade" : ""
-    },
-    {
-      Icon: Contrast,
-      title: "Toggle Tile High Contrast Visual Filter Boost",
-      onClick: () => setIsHighContrastBoost(!isHighContrastBoost),
-      className: isHighContrastBoost ? "bg-carbon-90/20 text-carbon-90" : ""
-    }
-  ];
 
   return (
     <motion.div
@@ -1258,7 +1079,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
       transition={{ duration: 0.5, ease: 'easeOut' }}
       ref={mainWrapperRef}
       className={
-        isFullScreen || isBrowserFullscreen
+        isFullScreen
           ? 'w-full h-full min-h-[360px] lg:min-h-[560px] h-dvh bg-carbon-05 overflow-hidden text-carbon-90 relative flex flex-col'
           : className
           ? className
@@ -1272,8 +1093,6 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
             onCollapsedChange={setIsHeaderCollapsed}
             viewMode={viewMode}
             onViewModeChange={setViewMode}
-            activeLayer={activeLayer}
-            onLayerChange={setActiveLayer}
             highContrast={isHighContrastBoost}
             onHighContrastChange={setIsHighContrastBoost}
             exporting={isExportingMap}
@@ -1327,7 +1146,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
         <div
           className={`w-full flex-1 min-h-[360px] bg-carbon-10 map-perspective-container ${
             viewMode === 'table' ? 'hidden' : ''
-          } ${is3DTilted ? 'map-perspective-tilted' : ''} ${isHighContrastBoost ? 'map-tile-high-contrast' : ''}`}
+          } ${isHighContrastBoost ? 'map-tile-high-contrast' : ''}`}
         >
           <div
             ref={mapContainerRef}
@@ -1605,22 +1424,20 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
           )}
           </AnimatePresence>
 
-          {(exportSuccessMsg || userLocationError || syncToastMessage || reportSuccessMsg) && (
+          {(exportSuccessMsg || userLocationError) && (
             <div
               role="status"
               className="absolute bottom-16 left-4 right-4 lg:right-auto lg:max-w-[320px] z-[var(--z-sticky)] pointer-events-auto bg-white border border-carbon-20 p-4 text-base text-carbon-90"
             >
               <div className="flex items-start gap-2">
                 <p className="flex-1 min-w-0">
-                  {userLocationError || exportSuccessMsg || syncToastMessage || reportSuccessMsg}
+                  {userLocationError || exportSuccessMsg}
                 </p>
                 <button
                   type="button"
                   onClick={() => {
                     setExportSuccessMsg(null);
                     setUserLocationError(null);
-                    setSyncToastMessage(null);
-                    setReportSuccessMsg(null);
                   }}
                   className="tap-target w-11 h-11 rounded-control bg-carbon-05 text-carbon-70 flex items-center justify-center shrink-0 touch-manipulation"
                   aria-label="Dismiss status"
@@ -1630,127 +1447,6 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
               </div>
             </div>
           )}
-
-          {/* Report Field Hazard Modal */}
-          <AnimatePresence>
-          {isReportModalOpen && (
-            <div className="fixed inset-0 z-[var(--z-modal)] bg-carbon-90/40 flex items-center justify-center p-4 pointer-events-auto">
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="bg-white p-6 max-w-md w-full border border-carbon-20 text-carbon-90 flex flex-col gap-4"
-              >
-                <div className="flex items-center justify-between border-b border-carbon-20 pb-3">
-                  <div className="flex items-center gap-2">
-                    <div className="w-11 h-11 bg-carbon-05 text-nasa-blue flex items-center justify-center">
-                      <MaterialIcon name="warning" className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-bold tracking-tight">Report field hazard</h3>
-                      <p className="text-xs text-carbon-60">Log a ground observation. This does not publish an official warning.</p>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setIsReportModalOpen(false)}
-                    className="tap-target w-11 h-11 rounded-control bg-carbon-05 text-carbon-70 flex items-center justify-center"
-                    aria-label="Close report dialog"
-                  >
-                    <MaterialIcon name="close" className="w-5 h-5" />
-                  </button>
-                </div>
-
-                <div className="space-y-3 text-xs">
-                  <div>
-                    <label className="block font-bold text-carbon-70 mb-1">Target District</label>
-                    <select
-                      value={reportDistrictId}
-                      onChange={(e) => setReportDistrictId(e.target.value)}
-                      className="w-full px-3 py-2 bg-carbon-05 border border-carbon-20  font-semibold text-carbon-80 focus:outline-none focus:border-nasa-blue"
-                    >
-                      {liveDistricts.map((d) => (
-                        <option key={d.id} value={d.id}>
-                          {d.name} ({d.division} Division)
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block font-bold text-carbon-70 mb-1">Hazard Category</label>
-                    <select
-                      value={reportHazardType}
-                      onChange={(e) => setReportHazardType(e.target.value)}
-                      className="w-full px-3 py-2 bg-carbon-05 border border-carbon-20  font-semibold text-carbon-80 focus:outline-none focus:border-nasa-blue"
-                    >
-                      {HAZARD_LAYERS.map((h) => (
-                        <option key={h.id} value={h.id}>
-                          {h.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <div className="flex justify-between font-bold text-carbon-70 mb-1">
-                      <span>Severity Level</span>
-                      <span className="text-nasa-red-shade font-mono">{(reportSeverity * 100).toFixed(0)}%</span>
-                    </div>
-                    <input
-                      type="range"
-                      min="0.1"
-                      max="1.0"
-                      step="0.05"
-                      value={reportSeverity}
-                      onChange={(e) => setReportSeverity(parseFloat(e.target.value))}
-                      className="w-full accent-rose-600 cursor-pointer"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block font-bold text-carbon-70 mb-1">Field Observation Notes</label>
-                    <textarea
-                      rows={3}
-                      placeholder="Describe water level, crop damage, wind speed, or local impacts..."
-                      value={reportNotes}
-                      onChange={(e) => setReportNotes(e.target.value)}
-                      className="w-full px-3 py-2 bg-carbon-05 border border-carbon-20  font-medium text-carbon-80 focus:outline-none focus:border-nasa-blue"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2 pt-2 border-t border-carbon-10">
-                  <button
-                    onClick={() => setIsReportModalOpen(false)}
-                    className="flex-1 min-h-[44px] py-2.5 bg-carbon-10 hover:bg-carbon-20 text-carbon-70 font-bold  text-xs transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={() => {
-                      const targetDist = liveDistricts.find(d => d.id === reportDistrictId);
-                      if (targetDist) {
-                        targetDist.severity = reportSeverity;
-                        targetDist.hazardType = reportHazardType as any;
-                        if (reportSeverity >= 0.8) targetDist.risk = 'High';
-                        else if (reportSeverity >= 0.5) targetDist.risk = 'Moderate';
-                        else targetDist.risk = 'Low';
-                        handleSelectDistrict(targetDist);
-                      }
-                      setIsReportModalOpen(false);
-                      setReportSuccessMsg(`Successfully logged field hazard report for ${targetDist?.name || 'District'}.`);
-                      setTimeout(() => setReportSuccessMsg(null), 5000);
-                    }}
-                    className="flex-1 min-h-[44px] py-2.5 bg-nasa-red-shade hover:bg-nasa-red-shade text-white font-black  text-xs  transition-all"
-                  >
-                    Submit Incident Report
-                  </button>
-                </div>
-              </motion.div>
-            </div>
-          )}
-          </AnimatePresence>
 
           {/* Advanced Filter Modal */}
           <AnimatePresence>
@@ -1907,26 +1603,13 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                 </div>
 
                 <div className="space-y-4 text-xs">
-                  <div>
-                    <label className="block font-bold text-carbon-70 mb-1.5">Base Raster Tile Provider</label>
-                    <div className="grid grid-cols-2 gap-2">
-                      {(Object.keys(MAP_LAYERS) as Array<keyof typeof MAP_LAYERS>).map((key) => {
-                        const isAct = activeLayer === key;
-                        return (
-                          <button
-                            key={key}
-                            onClick={() => setActiveLayer(key)}
-                            className={`py-2.5 px-3 font-bold text-xs border text-left transition-all ${
- isAct
- ? 'bg-primary text-white border-nasa-blue '
- : 'bg-carbon-05 text-carbon-70 border-carbon-20 hover:bg-carbon-10'
- }`}
-                          >
-                            {MAP_LAYERS[key].name.split('(')[0].trim()}
-                          </button>
-                        );
-                      })}
-                    </div>
+                  {/* No basemap switcher: the ground is a single OpenStreetMap layer. The
+                      picker that offered six tile providers was deleted on 2026-10-05 — a
+                      choice that changed nothing the reader needed, and confused the ones
+                      who had one. The attribution below the map still credits OSM. */}
+                  <div className="flex items-center justify-between p-2.5 bg-carbon-05 border border-carbon-20">
+                    <span className="font-bold text-carbon-80">Base map</span>
+                    <span className="font-semibold text-carbon-70">OpenStreetMap</span>
                   </div>
 
                   <div className="space-y-2 pt-2 border-t border-carbon-10">
@@ -2417,9 +2100,45 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
           )}
           </AnimatePresence>
 
-          {/* Bottom-Right Hazard Actions Menu */}
+          {/* Bottom-right map controls — one button per job. The "+" hazard-actions menu
+              that used to sit here opened seventeen options at once; on 2026-10-05 it was
+              replaced by these three separate controls plus Leaflet's native zoom. Opaque
+              white, 44px targets, no glass — the same rules as the HUD toolbar. */}
           <div className="absolute bottom-20 sm:bottom-12 right-3 sm:right-6 z-[var(--z-sticky)] pointer-events-auto flex flex-col items-end gap-2">
-            <AnimatedSocialIcons icons={hazardActions} iconSize={18} />
+            <button
+              type="button"
+              onClick={() => setIsFilterModalOpen(true)}
+              className="min-h-[44px] min-w-[44px] px-3.5 bg-white hover:bg-carbon-05 border border-carbon-20 text-carbon-80 text-xs font-bold flex items-center gap-2 rounded-full shadow-md transition-colors"
+              title="District and hazard filters"
+              aria-label="Open district and hazard filters"
+            >
+              <MaterialIcon name="filter_alt" className="w-4 h-4" />
+              <span className="hidden sm:inline">Filters</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsLayerModalOpen(true)}
+              className="min-h-[44px] min-w-[44px] px-3.5 bg-white hover:bg-carbon-05 border border-carbon-20 text-carbon-80 text-xs font-bold flex items-center gap-2 rounded-full shadow-md transition-colors"
+              title="Map overlays and offline tiles"
+              aria-label="Open map overlays and offline tiles"
+            >
+              <MaterialIcon name="layers" className="w-4 h-4" />
+              <span className="hidden sm:inline">Overlays</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleCenterOnUserLocation}
+              className={`min-h-[44px] min-w-[44px] px-3.5 border text-xs font-bold flex items-center gap-2 rounded-full shadow-md transition-colors ${
+                userGpsPos
+                  ? 'bg-nasa-blue text-white border-nasa-blue hover:bg-nasa-blue-shade'
+                  : 'bg-white hover:bg-carbon-05 border-carbon-20 text-carbon-80'
+              }`}
+              title="Center the map on my location"
+              aria-label="Center the map on my location"
+            >
+              <MaterialIcon name={isLocatingUser ? 'gps_fixed' : 'my_location'} className={`w-4 h-4 ${isLocatingUser ? 'animate-pulse' : ''}`} />
+              <span className="hidden sm:inline">My location</span>
+            </button>
           </div>
 
           {/* Coordinates Readout, Performance Clustering & IndexedDB Tile Cache Indicator */}

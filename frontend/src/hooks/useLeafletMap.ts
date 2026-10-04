@@ -5,70 +5,34 @@ import { isValidLatLng, detectExactPinpointLocation, getDistrictBoundaryCoordina
 import { DistrictData } from '../data/bangladeshDistricts';
 import { tileCacheService } from '../services/tileCacheService';
 
+/**
+ * One basemap, deliberately. The console used to offer six tile providers behind a
+ * picker (and a "+" menu), and the choice changed nothing the reader needed: every
+ * HazardNet layer draws on top of whichever ground is underneath. Since 2026-10-05 the
+ * map ships OpenStreetMap only — the provider the offline tile store pre-caches, the
+ * one the low-bandwidth fallback already chose, and the only one whose attribution the
+ * page prints. A single basemap has no picker.
+ */
 export const MAP_LAYERS = {
-  esriSatellite: {
-    name: 'Esri World Imagery (HD Satellite)',
-    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-    attribution: 'Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics · map lines delineate study areas and do not necessarily depict accepted national boundaries',
-    maxZoom: 19,
-  },
-  esriClarity: {
-    name: 'Esri Clarity (Ultra HD Vivid Satellite)',
-    url: 'https://clarity.maptiles.arcgis.com/arcgis/rest/services/World_Imagery/WMTS/1.0.0/default/default/GoogleMapsCompatible/{z}/{y}/{x}',
-    attribution: 'Tiles &copy; Esri Clarity · map lines delineate study areas and do not necessarily depict accepted national boundaries',
-    maxZoom: 19,
-  },
-  cartoDark: {
-    name: 'High Contrast Dark GIS',
-    url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-    attribution: '&copy; CARTO &copy; OpenStreetMap · map lines delineate study areas and do not necessarily depict accepted national boundaries',
-    maxZoom: 19,
-  },
   osmStandard: {
     name: 'OpenStreetMap (Street & Topo)',
     url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
     attribution: '&copy; OpenStreetMap contributors · map lines delineate study areas and do not necessarily depict accepted national boundaries',
     maxZoom: 19,
   },
-  esriShadedRelief: {
-    name: 'Esri 3D Terrain Relief',
-    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}',
-    attribution: 'Tiles &copy; Esri · map lines delineate study areas and do not necessarily depict accepted national boundaries',
-    maxZoom: 17,
-  },
-  topoMap: {
-    name: 'OpenTopoMap (Contours & Elevation)',
-    url: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
-    attribution: 'Map data: &copy; OpenStreetMap contributors, SRTM · map lines delineate study areas and do not necessarily depict accepted national boundaries',
-    maxZoom: 17,
-  },
 };
 
 export type MapLayerKey = keyof typeof MAP_LAYERS;
 
-/** Layers that require a decent connection: they are imagery, not vector geometry. */
-const RASTER_IMAGERY_LAYERS: MapLayerKey[] = ['esriSatellite', 'esriClarity', 'esriShadedRelief'];
-
 /**
  * Layer actually used for a request (Phase 5: low-bandwidth mode).
  *
- * The dashboard's default basemap is Esri World Imagery — a raster tile per 256 px
- * per zoom level, which on a 2G connection is the single heaviest thing the page
- * loads and the thing most likely to leave a user staring at a grey grid. When
- * low-bandwidth mode is on (`useBandwidthMode` sets `data-low-bandwidth` on `<html>`,
- * plus `save-data`/`effectiveType` signals), an imagery layer falls back to the
- * vector-ish street basemap: same geographic information, a fraction of the bytes.
- *
- * A non-imagery choice by the user is always respected; only the expensive defaults
- * are substituted.
+ * With a single basemap there is nothing to substitute — the function stays because
+ * callers read the map through it, and so the day a second provider is ever argued
+ * for, the low-bandwidth rule is already wired where it belongs.
  */
-export function effectiveMapLayer(requested: MapLayerKey, lowBandwidth?: boolean | null): MapLayerKey {
-  const low = lowBandwidth ?? (
-    typeof document !== 'undefined' && document.documentElement.dataset.lowBandwidth === 'true'
-  );
-  if (!low) return requested;
-  if (!RASTER_IMAGERY_LAYERS.includes(requested)) return requested;
-  return 'osmStandard';
+export function effectiveMapLayer(requested: MapLayerKey, _lowBandwidth?: boolean | null): MapLayerKey {
+  return requested;
 }
 
 // Custom Leaflet TileLayer subclass that checks IndexedDB first, caches network tiles on fetch, and handles offline mode gracefully
@@ -148,13 +112,14 @@ export interface UseLeafletMapOptions {
   onMapClick?: (lat: number, lng: number) => void;
   onAutoLocateDistrict?: (district: DistrictData) => void;
   autoLocateEnabled?: boolean;
-  /** When true, imagery rasters fall back to OSM (see `effectiveMapLayer`). */
+  /** Low-bandwidth mode (Phase 5). With the single OSM basemap there is no heavier
+      provider to fall back from; the flag stays in the contract for the overlays. */
   lowBandwidth?: boolean;
 }
 
 export function useLeafletMap(
   mapContainerRef: React.RefObject<HTMLDivElement | null>,
-  activeLayer: MapLayerKey = 'esriSatellite',
+  activeLayer: MapLayerKey = 'osmStandard',
   options: UseLeafletMapOptions = {}
 ) {
   const { onMapClick, onAutoLocateDistrict, autoLocateEnabled = true, lowBandwidth = false } = options;
@@ -198,7 +163,10 @@ export function useLeafletMap(
     const map = L.map(mapContainerRef.current, {
       center: [23.8103, 90.4125],
       zoom: 7,
-      zoomControl: false,
+      // Native zoom stays: the "+" hazard-actions menu that carried zoom in/out was
+      // deleted on 2026-10-05 (one control per job). Leaflet's control is keyboard-
+      // reachable and its targets are widened to 44px in index.css.
+      zoomControl: true,
       attributionControl: false,
     });
 

@@ -1,19 +1,9 @@
 import React from 'react';
 import MaterialIcon from '../MaterialIcon';
-import { MAP_LAYERS, type MapLayerKey } from '../../hooks/useLeafletMap';
 import { FORECAST_HORIZONS, formatHorizonLabel, type ForecastHorizon } from '../../lib/forecasts';
 import type { HazardLayerDef } from './mapPrimitives';
 
 export type MapViewMode = 'map' | 'table';
-
-const LAYER_LABELS: Record<MapLayerKey, string> = {
-  esriSatellite: 'Satellite',
-  esriClarity: 'Clarity',
-  cartoDark: 'Dark GIS',
-  osmStandard: 'Street Map',
-  esriShadedRelief: 'Relief',
-  topoMap: 'Topo',
-};
 
 const chip = (active: boolean) =>
   `min-h-[44px] px-3.5 py-2 rounded-full border text-xs font-semibold whitespace-nowrap touch-manipulation transition-colors ${
@@ -27,8 +17,6 @@ export interface MapToolbarProps {
   onCollapsedChange: (collapsed: boolean) => void;
   viewMode: MapViewMode;
   onViewModeChange: (mode: MapViewMode) => void;
-  activeLayer: MapLayerKey;
-  onLayerChange: (layer: MapLayerKey) => void;
   highContrast: boolean;
   onHighContrastChange: (value: boolean) => void;
   exporting: boolean;
@@ -76,16 +64,18 @@ const ViewModeToggle: React.FC<{
 );
 
 /**
- * Live-map HUD toolbar: layers, horizon, hazards, and map/table parity.
+ * Live-map HUD toolbar: horizon, hazards, and map/table parity.
  * 44px controls, 12px labels, opaque white, no glass.
+ *
+ * There is deliberately no basemap switcher here: the live map ships a single
+ * OpenStreetMap ground (see `useLeafletMap.MAP_LAYERS`), so the only map controls
+ * that remain are the ones that change what the data says, not what it sits on.
  */
 export const MapToolbar: React.FC<MapToolbarProps> = ({
   collapsed,
   onCollapsedChange,
   viewMode,
   onViewModeChange,
-  activeLayer,
-  onLayerChange,
   highContrast,
   onHighContrastChange,
   exporting,
@@ -122,17 +112,6 @@ export const MapToolbar: React.FC<MapToolbarProps> = ({
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           <ViewModeToggle viewMode={viewMode} onViewModeChange={onViewModeChange} />
-          {(Object.keys(MAP_LAYERS) as MapLayerKey[]).slice(0, 3).map((key) => (
-            <button
-              key={key}
-              type="button"
-              onClick={() => onLayerChange(key)}
-              aria-pressed={activeLayer === key}
-              className={chip(activeLayer === key)}
-            >
-              {LAYER_LABELS[key]}
-            </button>
-          ))}
           <button
             type="button"
             onClick={() => onCollapsedChange(false)}
@@ -157,26 +136,13 @@ export const MapToolbar: React.FC<MapToolbarProps> = ({
             <h3 className="text-base font-bold text-carbon-90 tracking-tight">Hazard map</h3>
             <p className="text-xs text-carbon-60">
               {filteredCount} / {totalCount} districts
-              {lowBandwidth ? ' · data saver (street map)' : ''}
+              {lowBandwidth ? ' · data saver' : ''}
             </p>
           </div>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
           <ViewModeToggle viewMode={viewMode} onViewModeChange={onViewModeChange} />
-          <div className="flex items-center gap-2 overflow-x-auto max-w-full" role="group" aria-label="Base map layer">
-            {(Object.keys(MAP_LAYERS) as MapLayerKey[]).map((key) => (
-              <button
-                key={key}
-                type="button"
-                onClick={() => onLayerChange(key)}
-                aria-pressed={activeLayer === key}
-                className={chip(activeLayer === key)}
-              >
-                {LAYER_LABELS[key]}
-              </button>
-            ))}
-          </div>
 
           <button
             type="button"

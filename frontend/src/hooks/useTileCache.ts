@@ -81,7 +81,7 @@ export function useTileCache(): UseTileCacheReturn {
 
   // Pre-cache all strategic quadrants of Bangladesh
   const downloadEmergencyBangladeshPack = useCallback(
-    async (layerKey: MapLayerKey = 'esriSatellite') => {
+    async (layerKey: MapLayerKey = 'osmStandard') => {
       if (!navigator.onLine) {
         toast.error('Internet connection required to download offline emergency tiles.');
         return;
@@ -92,7 +92,7 @@ export function useTileCache(): UseTileCacheReturn {
       setPreCacheStatus('Downloading Bangladesh Strategic Map Pack (Zoom 6–9)...');
 
       abortControllerRef.current = new AbortController();
-      const config = MAP_LAYERS[layerKey] || MAP_LAYERS.esriSatellite;
+      const config = MAP_LAYERS[layerKey] || MAP_LAYERS.osmStandard;
 
       try {
         const { successCount, failCount } = await tileCacheService.preCacheBangladeshEmergencyPack(
@@ -133,7 +133,7 @@ export function useTileCache(): UseTileCacheReturn {
       districtLat: number,
       districtLng: number,
       districtName: string,
-      layerKey: MapLayerKey = 'esriSatellite'
+      layerKey: MapLayerKey = 'osmStandard'
     ) => {
       if (!navigator.onLine) {
         toast.error('Internet connection required to download offline emergency tiles.');
@@ -145,7 +145,7 @@ export function useTileCache(): UseTileCacheReturn {
       setPreCacheStatus(`Downloading HD Tiles for ${districtName} (Zoom 7–11)...`);
 
       abortControllerRef.current = new AbortController();
-      const config = MAP_LAYERS[layerKey] || MAP_LAYERS.esriSatellite;
+      const config = MAP_LAYERS[layerKey] || MAP_LAYERS.osmStandard;
 
       try {
         const { successCount } = await tileCacheService.preCacheDistrictEmergencyPack(

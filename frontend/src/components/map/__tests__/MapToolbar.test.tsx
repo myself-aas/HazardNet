@@ -13,8 +13,6 @@ const base: MapToolbarProps = {
   onCollapsedChange: jest.fn(),
   viewMode: 'map',
   onViewModeChange: jest.fn(),
-  activeLayer: 'esriSatellite',
-  onLayerChange: jest.fn(),
   highContrast: true,
   onHighContrastChange: jest.fn(),
   exporting: false,
@@ -57,5 +55,17 @@ describe('MapToolbar', () => {
   it('shows stored-forecast count, not a live-inference claim', () => {
     render(<MapToolbar {...base} />);
     expect(screen.getByText('Stored 64/64')).toBeInTheDocument();
+  });
+
+  it('offers no basemap switcher — the map ships one OpenStreetMap ground', () => {
+    // The toolbar used to render a chip per tile provider (Satellite, Clarity, Dark GIS,
+    // Street Map, Relief, Topo). A choice that changes nothing the reader needs is only
+    // a decision to make once, so the picker was deleted with the providers it listed.
+    const { container } = render(<MapToolbar {...base} />);
+    expect(screen.queryByRole('group', { name: 'Base map layer' })).toBeNull();
+    for (const label of ['Satellite', 'Clarity', 'Dark GIS', 'Relief', 'Topo']) {
+      expect(screen.queryByRole('button', { name: label })).toBeNull();
+    }
+    expect(container.innerHTML).not.toContain('Base map layer');
   });
 });
