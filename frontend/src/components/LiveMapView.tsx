@@ -1357,7 +1357,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                         <button type="button" onClick={clearAllHazards} className="text-nasa-red-shade hover:underline min-h-[32px]">None</button>
                       </div>
                     </div>
-                    <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 gap-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                       {HAZARD_LAYERS.map((h) => {
                         const isAct = selectedHazards.includes(h.id);
                         return (
