@@ -8,17 +8,33 @@
  * - Effects array inline, hardcoded
  * - Composition metadata inline in Root.tsx
  *
- * Layers: BgMesh → Video → HUD → Grade → Grain+Vignette (5-layer stack)
+ * Layers: BgMesh → Title → Grade → Vignette (4 layers, matching the web hero)
+ *
+ * **Simplified 2026-10-05, to match `components/HeroCinematicBackground.tsx`.** This composition
+ * is the 16:9 export of the web hero (Root.tsx calls it "web hero preview"), so when the web hero
+ * dropped its decorative HUD and its second glow, this file kept painting a hero that no longer
+ * exists — including two readouts the repository cannot support
+ * ("GEO-SYNC · 23°42'N 90°22'E · APEX 35,786 KM" and "OPTICAL SENSOR STREAM · 30 FPS ·
+ * RES-ADAPTIVE"; docs/audits/2026-10-03-landing-live-hero-audit.md H-P0-1). An exported MP4
+ * leaves the building, so the same rule applies here as on the page: no number that traces to
+ * nothing. The two HUD lines and the corner reticles are gone, the secondary cyan glow is gone
+ * (one brand hue, one glow), and the vignette the web hero has is now here too.
  */
 
 import React from 'react';
 import { AbsoluteFill, Easing, interpolate, useCurrentFrame, useVideoConfig } from 'remotion';
 import { Interactive } from 'remotion';
 
+/**
+ * Defaults are the front door's own words, not a slogan: the h1 and the coverage facts are the
+ * strings `/` renders from `content/site-routes.json` and `data/bangladeshDistricts`. A preview
+ * video that invents its own headline is one more place for the product to describe itself
+ * differently from the product.
+ */
 export const HeroComposition: React.FC<{
   title?: string;
   accent?: string;
-}> = ({ title = 'HazardNet. NASA-Inspired Global Observatory', accent = '#1c67e3' }) => {
+}> = ({ title = 'A forecast you can check, not just read', accent = '#1c67e3' }) => {
   const frame = useCurrentFrame();
   const { fps, durationInFrames } = useVideoConfig();
 
@@ -58,85 +74,6 @@ export const HeroComposition: React.FC<{
           }),
         }}
       />
-
-      {/* Layer 1b: secondary cyan glow — translate drift */}
-      <Interactive.Div
-        name="Secondary cyan reflection"
-        style={{
-          position: 'absolute',
-          bottom: '-20%',
-          right: '-10%',
-          width: 900,
-          height: 900,
-          borderRadius: '50%',
-          backgroundColor: '#22D3EE',
-          opacity: interpolate(frame, [0, fps], [0, 0.3], {
-            easing: Easing.bezier(0.16, 1, 0.3, 1),
-            extrapolateLeft: 'clamp',
-            extrapolateRight: 'clamp',
-          }),
-          scale: interpolate(frame, [0, fps * 5], [0.96, 1.04], {
-            easing: Easing.bezier(0.4, 0, 0.2, 1),
-            extrapolateLeft: 'clamp',
-            extrapolateRight: 'clamp',
-            output: 'perceptual-scale',
-          }),
-        }}
-      />
-
-      {/* Layer 3: HUD — staggered opacity + translate */}
-      <Interactive.Div
-        name="HUD telemetry GEO-SYNC"
-        style={{
-          position: 'absolute',
-          top: 80,
-          left: 24,
-          display: 'flex',
-          alignItems: 'center',
-          gap: 8,
-          fontFamily: 'DM Mono, monospace',
-          fontSize: 12,
-          letterSpacing: '0.08em',
-          color: 'rgba(255,255,255,0.5)',
-          opacity: interpolate(frame, [fps * 0.5, fps], [0, 1], {
-            easing: Easing.bezier(0.16, 1, 0.3, 1),
-            extrapolateLeft: 'clamp',
-            extrapolateRight: 'clamp',
-          }),
-          translate: interpolate(frame, [fps * 0.5, fps], ['0px 8px', '0px 0px'], {
-            easing: Easing.spring({ damping: 200 }),
-            extrapolateLeft: 'clamp',
-            extrapolateRight: 'clamp',
-          }),
-        }}
-      >
-        GEO-SYNC · 23°42&#39;N 90°22&#39;E · APEX 35,786 KM
-      </Interactive.Div>
-
-      <Interactive.Div
-        name="HUD optical stream"
-        style={{
-          position: 'absolute',
-          top: 80,
-          right: 32,
-          fontFamily: 'DM Mono, monospace',
-          fontSize: 12,
-          letterSpacing: '0.08em',
-          color: 'rgba(255,255,255,0.5)',
-          opacity: interpolate(frame, [fps * 0.7, fps * 1.2], [0, 1], {
-            easing: Easing.bezier(0.16, 1, 0.3, 1),
-            extrapolateLeft: 'clamp',
-            extrapolateRight: 'clamp',
-          }),
-          translate: interpolate(frame, [fps * 0.7, fps * 1.2], ['0px 8px', '0px 0px'], {
-            easing: Easing.spring({ damping: 200 }),
-            extrapolateLeft: 'clamp',
-            extrapolateRight: 'clamp',
-          }),
-        }}
-      >
-        OPTICAL SENSOR STREAM · 30 FPS · RES-ADAPTIVE
-      </Interactive.Div>
 
       {/* Layer: Title — spring scale + translate */}
       <Interactive.Div
@@ -186,7 +123,7 @@ export const HeroComposition: React.FC<{
             }),
           }}
         >
-          Bangladesh: 64 districts · 7 &amp; 15 days · Verified artifacts
+          Bangladesh: 64 districts · 7 &amp; 15 days · Every number traces to a file
         </div>
       </Interactive.Div>
 
@@ -211,53 +148,17 @@ export const HeroComposition: React.FC<{
         }}
       />
 
-      {/* Reticles — scale in */}
+      {/* Layer 4: Vignette — the ellipse the web hero paints, same stops */}
       <Interactive.Div
-        name="Reticle TL"
+        name="Vignette — dual-zone elliptical"
         style={{
           position: 'absolute',
-          top: 96,
-          left: 24,
-          color: 'rgba(255,255,255,0.2)',
-          fontSize: 12,
-          opacity: interpolate(frame, [fps * 1.2, fps * 1.6], [0, 1], {
-            easing: Easing.bezier(0.16, 1, 0.3, 1),
-            extrapolateLeft: 'clamp',
-            extrapolateRight: 'clamp',
-          }),
-          scale: interpolate(frame, [fps * 1.2, fps * 1.6], [0.8, 1], {
-            easing: Easing.spring({ damping: 200 }),
-            extrapolateLeft: 'clamp',
-            extrapolateRight: 'clamp',
-            output: 'perceptual-scale',
-          }),
+          inset: 0,
+          background:
+            'radial-gradient(ellipse at center, transparent 38%, rgba(5,7,14,0.55) 75%, rgba(5,7,14,0.95) 100%)',
         }}
-      >
-        +
-      </Interactive.Div>
-      <Interactive.Div
-        name="Reticle TR"
-        style={{
-          position: 'absolute',
-          top: 96,
-          right: 32,
-          color: 'rgba(255,255,255,0.2)',
-          fontSize: 12,
-          opacity: interpolate(frame, [fps * 1.2, fps * 1.6], [0, 1], {
-            easing: Easing.bezier(0.16, 1, 0.3, 1),
-            extrapolateLeft: 'clamp',
-            extrapolateRight: 'clamp',
-          }),
-          scale: interpolate(frame, [fps * 1.2, fps * 1.6], [0.8, 1], {
-            easing: Easing.spring({ damping: 200 }),
-            extrapolateLeft: 'clamp',
-            extrapolateRight: 'clamp',
-            output: 'perceptual-scale',
-          }),
-        }}
-      >
-        +
-      </Interactive.Div>
+      />
+
     </AbsoluteFill>
   );
 };

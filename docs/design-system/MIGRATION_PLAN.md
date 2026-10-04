@@ -292,6 +292,15 @@ compositions.
    one.
 5. Remotion compositions (`HeroComposition`, `LiveStatusComposition`, `RunVisualComposition`)
    take Meridian tokens via `remotionTheme.ts` so exported video matches the app.
+   **Note (2026-10-05):** not implemented, and the two halves are in conflict — this step wants
+   extracted token constants, while the composition contract the files follow is "all CSS inline,
+   plain object, no spreading, no constants". `frontend/src/lib/remotionTheme.ts` is therefore
+   imported by nothing (its 9 hex literals are still ratcheted in `data/design/hex-baseline.json`).
+   The parity it was written for is now held by shared values instead: the export compositions are
+   asserted against the web hero by `__tests__/phase3RemotionHero.test.js`, which fails if the
+   Remotion hero paints a layer (or a claim) the web hero dropped. Decide this step's fate — wire
+   it, or delete the module and this line — rather than leaving a plan row that cannot be done as
+   written.
 
 **Gate:** `phase2MotionComponents`, `phase3RemotionHero` green · Lighthouse perf ≥ baseline ·
 manual reduced-motion pass with the OS setting on.

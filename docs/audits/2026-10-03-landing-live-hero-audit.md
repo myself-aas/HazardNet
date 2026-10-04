@@ -434,6 +434,21 @@ fully tokenised.
 | V-P2-5 tooltips are the only label | **Not reproducible — corrected in place** | Direct audit of every button in the seven route files: zero controls are both icon-only and unnamed; every icon-only button has an `aria-label` and the `title=` attributes sit on text-labelled controls. The finding text above now records the corrected measurement. The native half stands: anything that lives only in a tooltip must be re-expressed in the port. |
 | V-P2-6 two opposite navbar treatments | **Fixed** | `isTransparent` is deleted, so there is one implementation and one rule: the bar is translucent over imagery (`/`) and solid over data (`/live`), decided in `Navbar.tsx` from the route. The native shell inherits that single rule. |
 
+### Simplification pass (2026-10-05)
+
+The rows above record what the 2026-10-03/04 passes fixed. This pass removed the decoration those
+passes had kept, on the same reasoning §4 already gives for the port ("delete before the port, not
+after") — applied to the web hero itself, because a layer that prints nothing and hides from
+assistive tech is still a layer the reader's phone has to composite.
+
+| Earlier row | Where it stands now |
+|---|---|
+| H-P0-1 invented HUD telemetry | **Superseded — the HUD is gone.** The previous pass deleted the four literals and kept the cluster as `aria-hidden` decoration. The cluster itself (four corner reticles, the horizon rule, `data-testid="hero-hud"`) is now deleted, with the `@media (max-width: 639px)` rule in `index.css` that existed only to hide it on phones, and that rule's entry in `data/design/important-baseline.json`. `__tests__/phase3RemotionHero.test.js` asserts the layer does not exist at all. |
+| H-P1-4 authority sentence at 2.45:1 | **Re-fixed as a flat scrim.** `from-black/70 to-black/60` became `bg-carbon-black/65`: the gradient protected the paragraph at the bottom of the card only, and a flat scrim clears the same threshold (6.40:1 was the measured worst case at `/60`) everywhere on the card. |
+| H-P2-5 hero micro-issues | **Extended.** Beyond the dead `backdrop-blur-sm`, the procedural film grain (an SVG `feTurbulence` layer at 0.04) and the secondary cyan glow with its `--hero-glow-blur-secondary` token are deleted, and the photograph wrapper's breathing `scale` is gone — it animated the same pixels as the carousel's own push-in at a different rate. The `sm`-and-up language switch lost the glass frame it sat inside (its `tone="hds"` chip is the surface). |
+| Backlog rows 1 and 2 | **Closed by deletion / superseded** as above. The remaining rows (3, 4, 5, 6, 7, 8, 10, 11) are untouched and still describe the shipped code. |
+| §4 "delete before the port" list | **Done for the web hero on 2026-10-05**, and for the Remotion export on the same date: `HeroComposition` printed the same two unsupportable readouts plus the reticles and the second glow, and now paints the web hero's four layers (mesh, title, grade, vignette). Its default headline is the front door's own `h1` from `content/site-routes.json` instead of a slogan, and its sub-line states the provenance rule rather than claiming verification. `__tests__/phase3RemotionHero.test.js` pins both. |
+
 ### Backlog rows
 
 | # | Status | Note |

@@ -43,7 +43,7 @@ export const RemotionRoot: React.FC = () => {
         width={1920}
         height={1080}
         defaultProps={{
-          title: 'HazardNet. NASA-Inspired Global Observatory',
+          title: 'A forecast you can check, not just read',
           accent: '#1c67e3',
         }}
       />
