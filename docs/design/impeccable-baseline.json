@@ -15,12 +15,12 @@
   ],
   "counts": {
     "waived": 1,
-    "outstanding": 3439,
+    "outstanding": 3461,
     "byRule": {
-      "low-contrast": 3179,
+      "low-contrast": 3197,
       "overused-font": 197,
-      "tight-leading": 41,
-      "oversized-h1": 22
+      "tight-leading": 43,
+      "oversized-h1": 24
     }
   },
   "outstandingFindings": [
@@ -17218,6 +17218,116 @@
       "rule": "tight-leading",
       "file": "frontend/dist/status/index.html",
       "snippet": "line-height 0.13x (need >=1.3)"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/last-run.html",
+      "snippet": "1.0:1 (need 3:1) — text #17171b on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/last-run.html",
+      "snippet": "1.3:1 (need 3:1) — text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/last-run.html",
+      "snippet": "1.0:1 (need 3:1) — text #17171b on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/last-run.html",
+      "snippet": "1.3:1 (need 3:1) — text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/last-run.html",
+      "snippet": "1.3:1 (need 3:1) — text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/last-run.html",
+      "snippet": "1.0:1 (need 3:1) — text #17171b on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/last-run.html",
+      "snippet": "1.3:1 (need 3:1) — text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/last-run.html",
+      "snippet": "1.3:1 (need 3:1) — text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/last-run.html",
+      "snippet": "1.3:1 (need 3:1) — text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "tight-leading",
+      "file": "frontend/dist/last-run.html",
+      "snippet": "line-height 0.13x (need >=1.3)"
+    },
+    {
+      "rule": "oversized-h1",
+      "file": "frontend/dist/last-run.html",
+      "snippet": "288px h1, 42 chars \"The last run, from the committed artifacts\""
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/last-run/index.html",
+      "snippet": "1.0:1 (need 3:1) — text #17171b on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/last-run/index.html",
+      "snippet": "1.3:1 (need 3:1) — text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/last-run/index.html",
+      "snippet": "1.0:1 (need 3:1) — text #17171b on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/last-run/index.html",
+      "snippet": "1.3:1 (need 3:1) — text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/last-run/index.html",
+      "snippet": "1.3:1 (need 3:1) — text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/last-run/index.html",
+      "snippet": "1.0:1 (need 3:1) — text #17171b on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/last-run/index.html",
+      "snippet": "1.3:1 (need 3:1) — text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/last-run/index.html",
+      "snippet": "1.3:1 (need 3:1) — text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/last-run/index.html",
+      "snippet": "1.3:1 (need 3:1) — text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "tight-leading",
+      "file": "frontend/dist/last-run/index.html",
+      "snippet": "line-height 0.13x (need >=1.3)"
+    },
+    {
+      "rule": "oversized-h1",
+      "file": "frontend/dist/last-run/index.html",
+      "snippet": "288px h1, 42 chars \"The last run, from the committed artifacts\""
     }
   ],
   "outstanding": [
@@ -34415,6 +34525,116 @@
       "rule": "tight-leading",
       "file": "frontend/dist/status/index.html",
       "snippet": "line-height 0.13x (need >=1.3)"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/last-run.html",
+      "snippet": "1.0:1 (need 3:1) — text #17171b on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/last-run.html",
+      "snippet": "1.3:1 (need 3:1) — text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/last-run.html",
+      "snippet": "1.0:1 (need 3:1) — text #17171b on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/last-run.html",
+      "snippet": "1.3:1 (need 3:1) — text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/last-run.html",
+      "snippet": "1.3:1 (need 3:1) — text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/last-run.html",
+      "snippet": "1.0:1 (need 3:1) — text #17171b on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/last-run.html",
+      "snippet": "1.3:1 (need 3:1) — text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/last-run.html",
+      "snippet": "1.3:1 (need 3:1) — text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/last-run.html",
+      "snippet": "1.3:1 (need 3:1) — text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "tight-leading",
+      "file": "frontend/dist/last-run.html",
+      "snippet": "line-height 0.13x (need >=1.3)"
+    },
+    {
+      "rule": "oversized-h1",
+      "file": "frontend/dist/last-run.html",
+      "snippet": "288px h1, 42 chars \"The last run, from the committed artifacts\""
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/last-run/index.html",
+      "snippet": "1.0:1 (need 3:1) — text #17171b on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/last-run/index.html",
+      "snippet": "1.3:1 (need 3:1) — text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/last-run/index.html",
+      "snippet": "1.0:1 (need 3:1) — text #17171b on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/last-run/index.html",
+      "snippet": "1.3:1 (need 3:1) — text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/last-run/index.html",
+      "snippet": "1.3:1 (need 3:1) — text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/last-run/index.html",
+      "snippet": "1.0:1 (need 3:1) — text #17171b on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/last-run/index.html",
+      "snippet": "1.3:1 (need 3:1) — text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/last-run/index.html",
+      "snippet": "1.3:1 (need 3:1) — text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/last-run/index.html",
+      "snippet": "1.3:1 (need 3:1) — text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "tight-leading",
+      "file": "frontend/dist/last-run/index.html",
+      "snippet": "line-height 0.13x (need >=1.3)"
+    },
+    {
+      "rule": "oversized-h1",
+      "file": "frontend/dist/last-run/index.html",
+      "snippet": "288px h1, 42 chars \"The last run, from the committed artifacts\""
     }
   ]
 }
