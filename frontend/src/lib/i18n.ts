@@ -45,6 +45,12 @@ const EN = {
   'common.language': 'Language',
   'common.english': 'English',
   'common.bengali': 'বাংলা',
+  // Appearance control (`components/ThemeToggle.tsx`). 'System' means "follow the OS setting",
+  // which is the default the theme hook ships with.
+  'common.appearance': 'Appearance',
+  'common.themeSystem': 'System',
+  'common.themeLight': 'Light',
+  'common.themeDark': 'Dark',
   'common.loading': 'Loading…',
   'common.retry': 'Try again',
   'common.close': 'Close',
@@ -438,6 +444,13 @@ const BN: Record<string, string> = {
   'common.language': 'ভাষা',
   'common.english': 'English',
   'common.bengali': 'বাংলা',
+  // Transliterated, like the operating systems' own Bengali theme settings. The review this
+  // needs is tracked as Action 6d in docs/ops/owner-actions.md (6c closed for the 2026-09-19
+  // surface and asks for a new ID for anything added later).
+  'common.appearance': 'অ্যাপিয়ারেন্স',
+  'common.themeSystem': 'সিস্টেম',
+  'common.themeLight': 'লাইট',
+  'common.themeDark': 'ডার্ক',
   'common.loading': 'লোড হচ্ছে…',
   'common.retry': 'আবার চেষ্টা করুন',
   'common.close': 'বন্ধ করুন',

@@ -241,7 +241,11 @@ const AppRoutes: React.FC<{ location: ReturnType<typeof useLocation> }> = ({ loc
 const AppContent: React.FC = () => {
   const { userProfile } = useAuth();
   useHazardNotifications(userProfile?.homeDistrictId);
-  useMeridianTheme();
+  // The theme hook's return value used to be thrown away here, which left `prefers-color-scheme`
+  // as the only way in or out of dark: a visitor whose OS is dark had no way back to light, and
+  // that is what "why is everything black?" turned out to mean (2026-10-04). The preference now
+  // travels with the menu drawer, next to the language switch.
+  const { theme, setTheme } = useMeridianTheme();
   const location = useLocation();
   const reduceMotion = useReducedMotion();
   const frame = useWebFrame(30, 6);
@@ -316,7 +320,7 @@ const AppContent: React.FC = () => {
             isHomePage ? 'absolute top-0 left-0 right-0' : 'sticky top-0'
           }`}
         >
-          <Navbar />
+          <Navbar theme={theme} onThemeChange={setTheme} />
         </div>
       )}
 

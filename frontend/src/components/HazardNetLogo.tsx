@@ -1,4 +1,5 @@
 import { getSeverityColor } from '../services/geolocationService';
+import { useResolvedTheme } from './meridian/motion';
 
 /**
  * The brand, as React.
@@ -15,6 +16,14 @@ import { getSeverityColor } from '../services/geolocationService';
  * e-mail or a PDF and never waits for a font. That is why `HazardNetBrand` is a single <img> with the site name as its
  * alt text, rather than an icon and two spans of live text side by side as it used to be.
  *
+ * `variant` defaults to `auto`: the wordmark follows the theme, because a surface that the theme
+ * layer re-points (the footer canvas, the menu drawer, a page that turns dark) cannot be matched
+ * by one fixed artwork. It was reported from the live site on 2026-10-04: the dark footer with
+ * `variant="light"` on it was a dark wordmark on a dark canvas. `auto` swaps the `src` off the
+ * resolved theme — one <img>, so the alt text is announced exactly once — while `light`/`dark`
+ * stay available for surfaces that are deliberately one or the other in both themes (the hero
+ * scrim, the auth brand panel, printed paper).
+ *
  * The earlier mark — crimson bars and a near-black arrow — is retired. Crimson survives in the UI as an accent
  * (`nasa-red-*`), but it is no longer the logo, so it can no longer be mistaken for a "severe" status colour there.
  */
@@ -29,7 +38,7 @@ export interface HazardNetLogoProps {
   showText?: boolean;
   /** @deprecated The wordmark is part of the lockup artwork now; kept so existing callers still type-check. */
   textSizeClass?: string;
-  /** `dark` = for dark surfaces. `auto` behaves as `light`. */
+  /** `dark` = for dark surfaces, `light` = for light ones, `auto` (default) = follow the theme. */
   variant?: 'light' | 'dark' | 'auto';
 }
 
@@ -42,7 +51,7 @@ export const HazardNetLogo: React.FC<HazardNetLogoProps> = ({
   variant = 'auto',
 }) => {
   const accent = typeof severity === 'number' ? getSeverityColor(severity) : undefined;
-  if (showText) return <HazardNetBrand variant={variant === 'dark' ? 'dark' : 'light'} className={className} />;
+  if (showText) return <HazardNetBrand variant={variant} className={className} />;
   return (
     <span className="inline-flex shrink-0 items-center justify-center leading-none">
       <img
@@ -63,7 +72,8 @@ export const HazardNetLogo: React.FC<HazardNetLogoProps> = ({
 
 export interface HazardNetBrandProps {
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
-  variant?: 'light' | 'dark';
+  /** `auto` (default) follows the theme; `light`/`dark` pin one artwork for a fixed surface. */
+  variant?: 'light' | 'dark' | 'auto';
   className?: string;
 }
 
@@ -77,16 +87,20 @@ const LOCKUP_HEIGHT = {
 } as const;
 
 /** The full lockup: mark + wordmark, one image, `alt="HazardNet"`. */
-export const HazardNetBrand: React.FC<HazardNetBrandProps> = ({ size = 'md', variant = 'light', className = '' }) => (
-  <img
-    src={LOCKUP_SRC[variant]}
-    alt="HazardNet"
-    width={330}
-    height={60}
-    decoding="async"
-    className={`block w-auto max-w-none select-none ${LOCKUP_HEIGHT[size]} ${className}`}
-    draggable={false}
-  />
-);
+export const HazardNetBrand: React.FC<HazardNetBrandProps> = ({ size = 'md', variant = 'auto', className = '' }) => {
+  const resolved = useResolvedTheme();
+  const artwork = variant === 'auto' ? resolved : variant;
+  return (
+    <img
+      src={LOCKUP_SRC[artwork]}
+      alt="HazardNet"
+      width={330}
+      height={60}
+      decoding="async"
+      className={`block w-auto max-w-none select-none ${LOCKUP_HEIGHT[size]} ${className}`}
+      draggable={false}
+    />
+  );
+};
 
 export default HazardNetLogo;

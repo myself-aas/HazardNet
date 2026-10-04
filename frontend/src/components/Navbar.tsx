@@ -11,6 +11,7 @@ import { HazardNetBrand } from './HazardNetLogo';
 import { MenuToggleIcon } from './brand';
 import { detectExactPinpointLocation } from '../services/geolocationService';
 import { PRIMARY_LINKS, type NavItem } from '../lib/navigation';
+import type { MeridianThemeName } from './meridian/motion';
 
 /**
  * The site header — as little as it can be.
@@ -28,6 +29,12 @@ import { PRIMARY_LINKS, type NavItem } from '../lib/navigation';
  * Behaviour that is kept: over the front-door hero the bar is transparent with white type until the page scrolls;
  * Escape and every route change close the drawer; overlays are portaled to <body> above the bar (--z-overlay over
  * --z-nav). The command palette is mounted exactly once (it used to be mounted twice, once per layout).
+ *
+ * The scrolled bar is `bg-white/95` + `text-carbon-80`, and the menu icon paints in `currentColor`. In dark mode the
+ * theme layer re-points both halves (`dark.css` §4), which is what fixed the 2026-10-04 report of a hamburger that
+ * vanished while scrolling: the bar stayed white while its ink went near-white. The brand lockup follows the theme
+ * (`variant="auto"`), except over the hero, where the artwork stays the white wordmark because the hero image is
+ * dark in both themes.
  */
 
 interface NavbarProps {
@@ -37,9 +44,18 @@ interface NavbarProps {
   onClearSearch?: () => void;
   onOpenAIDrawer?: () => void;
   onExportReport?: () => void;
+  /**
+   * Appearance preference and its setter, straight from `useMeridianTheme` in App. Optional:
+   * without them the bar still renders (tests, storybook), it just has no theme control to hand
+   * to the drawer. The bar itself deliberately carries no switch — "one button" is the contract
+   * (see the class docstring and NavbarSimplicity.test.tsx) — so the control lives in the drawer
+   * with the other preference (language).
+   */
+  theme?: MeridianThemeName;
+  onThemeChange?: (theme: MeridianThemeName) => void;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ onSelectDistrict, onToggleHeatmap }) => {
+export const Navbar: React.FC<NavbarProps> = ({ onSelectDistrict, onToggleHeatmap, theme, onThemeChange }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -135,7 +151,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onSelectDistrict, onToggleHeatma
             className="flex min-h-[44px] shrink-0 items-center no-underline"
             title="HazardNet: multi-hazard early warning for Bangladesh agriculture"
           >
-            <HazardNetBrand size="md" variant={overHero ? 'dark' : 'light'} />
+            <HazardNetBrand size="md" variant={overHero ? 'dark' : 'auto'} />
           </Link>
 
           <nav className="ml-6 hidden items-center gap-1 lg:flex" aria-label="Main Navigation">
@@ -207,6 +223,8 @@ export const Navbar: React.FC<NavbarProps> = ({ onSelectDistrict, onToggleHeatma
           onLocate={handleLocate}
           isLocating={isLocating}
           onNavigateItem={handleNavigateItem}
+          theme={theme}
+          onThemeChange={onThemeChange}
         />,
         document.body,
       )}

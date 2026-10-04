@@ -219,6 +219,40 @@ describe('dark theme — coverage gate', () => {
     }
   });
 
+  test('every translucent white surface that sits over the app is re-pointed for dark', () => {
+    // The 2026-10-04 report ("while I'm scrolling I can't see the hamburger… it's white and the
+    // background is also white") was one step of this family: `bg-white/95` — the scrolled
+    // header — was the only /95 in the codebase and the only step dark.css had not been told
+    // about, so the bar stayed white while `text-carbon-90` inside it became near-white ink.
+    // The gate walks the steps actually used in the source, so the next one cannot slip through.
+    const OVER_IMAGERY = new Set(['10', '15', '20']); // chips on imagery / saturated fills, pinned by intent
+    const selector = (token) => `.${token.replace(/:/g, '\\:').replace(/\//g, '\\/')}`;
+    const used = new Map();
+    for (const file of walk(SRC)) {
+      const source = readFileSync(file, 'utf8');
+      for (const [, hover, step] of source.matchAll(/\b(hover:)?bg-white\/(\d+)\b/g)) {
+        const token = `${hover ?? ''}bg-white/${step}`;
+        if (!used.has(token)) used.set(token, new Set());
+        used.get(token).add(relative(ROOT, file));
+      }
+    }
+    expect(used.size).toBeGreaterThan(0);
+    const unmapped = [...used.entries()]
+      .filter(([token]) => {
+        const step = token.slice(token.indexOf('/') + 1);
+        if (OVER_IMAGERY.has(step)) return false;
+        // Each token is checked as written, hover included: `/60` was mapped and
+        // `hover:bg-white/60` was not, which is the same bug at one remove.
+        return !darkCss.includes(`[data-mrd-theme='dark'] ${selector(token)}`);
+      })
+      .map(([token, files]) => `${token} (${[...files].slice(0, 2).join(', ')})`);
+    expect(unmapped).toEqual([]);
+    // And the list is complete: the three imagery steps are the only exemptions.
+    for (const step of OVER_IMAGERY) {
+      expect([...used.keys()].some((token) => token.endsWith(`/${step}`))).toBe(true);
+    }
+  });
+
   test('Leaflet gets its dark treatment, including a per-layer tile class', () => {
     expect(darkCss).toContain('.leaflet-popup-content-wrapper');
     expect(darkCss).toContain('.hn-tile-osmStandard');
@@ -239,5 +273,67 @@ describe('dark theme — the switch', () => {
   test('both the attribute and the class are honoured, because the dark: variant uses both', () => {
     expect(indexCss).toMatch(/@custom-variant dark \(&:is\(\.dark \*, \[data-mrd-theme="dark"\] \*\)\)/);
     expect(darkCss).toMatch(/\[data-mrd-theme='dark'\],\n\.dark \{/);
+  });
+
+  test('the switch reaches the UI — the hook returned it, App used to drop it', () => {
+    // Reported 2026-10-04: "why is everything black?" — the answer was that the hook follows
+    // `prefers-color-scheme` and the only call site (`App.tsx`) discarded `setTheme`, so a
+    // dark-mode OS was a one-way door. These assertions are the plumbing, end to end.
+    const app = readFileSync(join(SRC, 'App.tsx'), 'utf8');
+    expect(app).toContain('const { theme, setTheme } = useMeridianTheme();');
+    expect(app).toContain('<Navbar theme={theme} onThemeChange={setTheme} />');
+
+    const navbar = readFileSync(join(SRC, 'components/Navbar.tsx'), 'utf8');
+    expect(navbar).toContain('onThemeChange?: (theme: MeridianThemeName) => void;');
+    expect(navbar).toContain('theme={theme}');
+    expect(navbar).toContain('onThemeChange={onThemeChange}');
+
+    // It belongs in the drawer, with the other preference: the bar's contract is ONE button.
+    const drawer = readFileSync(join(SRC, 'components/MenuDrawer.tsx'), 'utf8');
+    expect(drawer).toContain("import { ThemeToggle } from './ThemeToggle';");
+    expect(drawer).toContain('<ThemeToggle theme={theme} onChange={onThemeChange}');
+
+    // Three states, not two: dropping 'system' would strand the visitors who want the OS to
+    // keep switching for them, which is the behaviour Phase 9 shipped.
+    const toggle = readFileSync(join(SRC, 'components/ThemeToggle.tsx'), 'utf8');
+    for (const value of ["{ value: 'system'", "{ value: 'light'", "{ value: 'dark'"]) {
+      expect(toggle).toContain(value);
+    }
+    expect(toggle).toContain('aria-pressed');
+    expect(toggle).toContain("t('common.appearance')");
+  });
+
+  test('the artwork — which CSS cannot re-point — follows the resolved theme', () => {
+    // A colour can be re-mapped for dark; an <img src> cannot. The lockup is the one asset with
+    // two artworks, and the two reported dark-on-dark spots (footer, drawer) both pinned the
+    // light one by default.
+    const logo = readFileSync(join(SRC, 'components/HazardNetLogo.tsx'), 'utf8');
+    expect(logo).toContain("const LOCKUP_SRC = { light: '/hazardnet-logo.svg', dark: '/hazardnet-logo-light.svg' } as const;");
+    expect(logo).toContain('const resolved = useResolvedTheme();');
+    expect(logo).toContain("const artwork = variant === 'auto' ? resolved : variant;");
+    expect(logo).toContain("variant = 'auto'");
+
+    for (const file of ['components/Footer.tsx', 'components/MenuDrawer.tsx', 'components/auth/AuthLayout.tsx']) {
+      const source = readFileSync(join(SRC, file), 'utf8');
+      expect(source).toMatch(/<HazardNetBrand/);
+      expect(source).not.toMatch(/<HazardNetBrand[^>]*variant="light"/);
+    }
+    // The one deliberately dark surface keeps its explicit white-wordmark artwork: the auth brand
+    // panel is `bg-carbon-black` in both themes.
+    const panel = readFileSync(join(SRC, 'components/auth/BrandPanel.tsx'), 'utf8');
+    expect(panel).toContain('bg-carbon-black');
+    expect(panel).toContain('<HazardNetBrand size="md" variant="dark" />');
+    // Over the front-door hero the bar is a black scrim at all times, so the artwork stays white.
+    const navbar = readFileSync(join(SRC, 'components/Navbar.tsx'), 'utf8');
+    expect(navbar).toContain("variant={overHero ? 'dark' : 'auto'}");
+  });
+
+  test('the resolved theme is observable, so an OS flip reaches the artwork', () => {
+    const motion = readFileSync(join(SRC, 'components/meridian/motion.ts'), 'utf8');
+    expect(motion).toContain('export function readAppliedTheme(): ResolvedTheme');
+    expect(motion).toContain('const themeListeners = new Set<(theme: ResolvedTheme) => void>();');
+    expect(motion).toContain('export function useResolvedTheme(): ResolvedTheme');
+    // `apply()` is still the single place that writes the DOM *and* the one place that announces.
+    expect(motion).toMatch(/announceTheme\(resolvedTheme\);/);
   });
 });

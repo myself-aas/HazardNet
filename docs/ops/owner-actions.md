@@ -87,6 +87,14 @@ No citation in the tree identifies this action. If you have the original file, r
 
 Reopen this action (as a new ID) for any Bangla surface added after that date.
 
+## Action 6d · Bangla copy review for the appearance control
+
+| | |
+|---|---|
+| **Status** | **Open** — three new Bangla strings ship with `frontend/src/components/ThemeToggle.tsx` (`common.appearance`, `common.themeSystem`, `common.themeLight`, `common.themeDark` in `frontend/src/lib/i18n.ts`) |
+| **Why** | Action 6c closed on 2026-09-19 for the then-current surface and instructs a new ID for anything added later. This is that addition (2026-10-04), so it ships as transliterations (`অ্যাপিয়ারেন্স`, `সিস্টেম`, `লাইট`, `ডার্ক`) matching how the operating systems name the same settings, pending review. |
+| **Verify** | A native speaker confirms or replaces the four strings in `frontend/src/lib/i18n.ts`; `__tests__/phaseBFrontend.test.js` keeps EN/BN parity either way. |
+
 ## Action 7 · *not reconstructed*
 
 No citation in the tree identifies this action.
@@ -212,3 +220,4 @@ since, and `site-health.yml`'s forecast probe is red because
 |---|---|
 | 2026-10-02 | File created from the 12 in-tree citations; Actions 10, 11 (later 12–15) added; Action 6c recorded as closed. Owner still unassigned. |
 | 2026-10-04 | Action 11 updated with the measured Kaggle publication gap (last update 2026-09-29, version 10); Actions 16 (canonical host) and 17 (deploy path) added after triaging the red site-health and advisory-ingest runs. Owner decisions recorded the same day: `www` stays the canonical host and is to be restored rather than replaced in code; deploys stay with Vercel and stay owner-run. |
+| 2026-10-04 | Action 6d opened: the appearance control (`System / Light / Dark`) adds four Bangla strings to `frontend/src/lib/i18n.ts`, which Action 6c's closure note says must be reviewed under a new ID. |

@@ -7,7 +7,9 @@ import MaterialIcon from './MaterialIcon';
 import { HazardNetBrand } from './HazardNetLogo';
 import { MenuToggleIcon } from './brand';
 import { LanguageToggle } from './alerts/LanguageToggle';
+import { ThemeToggle } from './ThemeToggle';
 import { DRAWER_SECTIONS, isPathCurrent, type NavItem } from '../lib/navigation';
+import type { MeridianThemeName } from './meridian/motion';
 import { useDialogBehavior } from '../hooks/useDialogBehavior';
 import { usePushNotifications } from '../hooks/usePushNotifications';
 import { usePWAInstall } from '../hooks/usePWAInstall';
@@ -23,6 +25,8 @@ import { usePWAInstall } from '../hooks/usePWAInstall';
  *   Search                          one wide row (opens the command palette)
  *   Locate · Alerts · Install       three plain tiles: icon over ONE word
  *   English | বাংলা
+ *   System | Light | Dark          appearance — the theme follows the OS by default, so the
+ *                                  control that overrides it lives with the other preference
  *   Explore / Advice / Data / Learn two-column grids of one-or-two-word links, icon beside word, nothing hidden
  *   Sign in · Sign up               (or: your name · Sign out)
  *
@@ -48,6 +52,9 @@ interface MenuDrawerProps {
   isLocating?: boolean;
   /** Side-effects that ride on a navigation (the saved-districts heatmap). */
   onNavigateItem?: (item: NavItem) => void;
+  /** Current appearance preference (`system` follows the OS). Omit to hide the control. */
+  theme?: MeridianThemeName;
+  onThemeChange?: (theme: MeridianThemeName) => void;
 }
 
 const tileClass =
@@ -62,6 +69,8 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
   onLocate,
   isLocating = false,
   onNavigateItem,
+  theme,
+  onThemeChange,
 }) => {
   const location = useLocation();
   const { signOut: authSignOut } = useAuth();
@@ -121,7 +130,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
       >
         {/* brand · close — the only two things in the header row */}
         <div className="flex shrink-0 items-center justify-between px-4 pb-3 pt-[max(1rem,env(safe-area-inset-top))]">
-          <HazardNetBrand size="sm" variant="light" />
+          <HazardNetBrand size="sm" />
           <button
             ref={closeButtonRef}
             type="button"
@@ -201,6 +210,14 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
           {statusMessage && <p className="-mt-3 text-center text-xs text-carbon-60">{statusMessage}</p>}
 
           <LanguageToggle variant="switch" tone="slate" className="w-full [&>button]:flex-1" />
+
+          {/* Appearance. Rendered only when the shell wires it up (App → Navbar → here), so a
+              drawer rendered bare in a test does not grow a control that does nothing. The
+              options are self-describing, like the language pair above, and the group carries an
+              accessible name of its own. */}
+          {theme && onThemeChange && (
+            <ThemeToggle theme={theme} onChange={onThemeChange} className="w-full [&>button]:flex-1" />
+          )}
 
           {/* Everything else: four groups, two columns, nothing collapsed */}
           {DRAWER_SECTIONS.map((section) => (
