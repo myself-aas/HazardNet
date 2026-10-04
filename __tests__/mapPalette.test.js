@@ -18,11 +18,11 @@ import { fileURLToPath } from 'node:url';
 import { HDS_NASA_TOKENS } from '@hazardnet/design-system';
 import {
   MAP_CHROME,
+  MAP_HEAT_RAMP,
   MAP_INTERACTIVE,
-  MAP_RADAR_BANDS,
   MAP_RISK_RAMP,
-  MAP_SENSOR_SITES,
 } from '@hazardnet/design-system';
+import * as designSystem from '@hazardnet/design-system';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const liveMap = readFileSync(join(ROOT, 'frontend/src/components/LiveMapView.tsx'), 'utf8');
@@ -32,39 +32,33 @@ const colors = HDS_NASA_TOKENS.colors;
 describe('live-map palette', () => {
   test('chrome and text are the tokens, not copies of them', () => {
     expect(MAP_CHROME.surface).toBe(colors.spacesuitWhite);
-    expect(MAP_CHROME.surfaceSunken).toBe(colors.carbon05);
-    expect(MAP_CHROME.rail).toBe(colors.carbon10);
-    expect(MAP_CHROME.hairline).toBe(colors.carbon20);
-    expect(MAP_CHROME.neutral).toBe(colors.carbon30);
     expect(MAP_CHROME.muted).toBe(colors.carbon50);
     expect(MAP_CHROME.inkSoft).toBe(colors.carbon60);
     expect(MAP_CHROME.ink).toBe(colors.carbon70);
     expect(MAP_CHROME.inkStrong).toBe(colors.carbon90);
   });
 
-  test('the risk ramp starts from NASA red and keeps its shipped steps', () => {
+  test('the risk ramp keeps its shipped worst-case step', () => {
     expect(MAP_RISK_RAMP.severe).toBe(colors.nasaRed);
-    expect(MAP_RISK_RAMP).toEqual({
-      severe: '#f64137',
-      high: '#e11d48',
-      moderate: '#d97706',
-      low: '#16a34a',
-      crop: '#059669',
-    });
+    expect(MAP_RISK_RAMP).toEqual({ severe: '#f64137' });
   });
 
   test('the data encodings are pinned by value', () => {
-    expect(MAP_INTERACTIVE).toEqual({ blue: '#0284c7', blueBright: '#38bdf8', blueTint: '#e0f2fe' });
-    expect(MAP_SENSOR_SITES).toEqual({
-      sylhet: '#dc2626',
-      teesta: '#ea580c',
-      bayOfBengal: '#7c3aed',
-    });
-    expect(MAP_RADAR_BANDS).toEqual({
+    expect(MAP_INTERACTIVE).toEqual({ blue: '#0284c7', blueBright: '#38bdf8' });
+    // The heat gradient kept the exact colours it shipped under the old
+    // MAP_RADAR_BANDS name; the fake radar that name implied was deleted.
+    expect(MAP_HEAT_RAMP).toEqual({
       calm: MAP_INTERACTIVE.blue,
       moderate: '#f59e0b',
       heavy: '#ef4444',
     });
+  });
+
+  test('the fake-radar palette groups are gone', () => {
+    // MAP_SENSOR_SITES existed only for the invented "Doppler" storm cells and
+    // must not come back: a data palette must not grow colours nothing draws.
+    expect(designSystem.MAP_SENSOR_SITES).toBeUndefined();
+    expect(designSystem.MAP_RADAR_BANDS).toBeUndefined();
   });
 
   test('the map component carries no hex literal of its own', () => {
@@ -76,7 +70,7 @@ describe('live-map palette', () => {
   test('and every palette entry is actually used by the map', () => {
     // No two roles inside a group may share a value by accident (across groups a shared value is
     // meaningful: the calm radar band really is the map's interactive blue).
-    for (const group of [MAP_CHROME, MAP_INTERACTIVE, MAP_RISK_RAMP, MAP_SENSOR_SITES, MAP_RADAR_BANDS]) {
+    for (const group of [MAP_CHROME, MAP_INTERACTIVE, MAP_RISK_RAMP, MAP_HEAT_RAMP]) {
       const values = Object.values(group);
       expect(new Set(values).size).toBe(values.length);
     }
@@ -86,8 +80,7 @@ describe('live-map palette', () => {
       MAP_CHROME,
       MAP_INTERACTIVE,
       MAP_RISK_RAMP,
-      MAP_SENSOR_SITES,
-      MAP_RADAR_BANDS,
+      MAP_HEAT_RAMP,
     })) {
       for (const key of Object.keys(keys)) {
         expect(liveMap).toContain(`${group}.${key}`);

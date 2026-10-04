@@ -155,7 +155,7 @@ Coverage hotspots and gaps (from the measured backend-scope run):
 - `scripts/tests/test_*.py`, `scripts/requirements-pipeline.txt`
 - `.github/workflows/ci.yml` (jobs `test-backend`, `test-frontend`, `test-pipeline-scripts`,
   E2E job, `verify`, `security-audit`)
-- `__tests__/__mocks__/`, `frontend/src/components/map/__tests__/MapLegend.test.tsx`,
+- `__tests__/__mocks__/`, `frontend/src/components/map/__tests__/MapToolbar.test.tsx`,
   `apps/mobile/__tests__/todayStates.test.tsx`
 - `docs/codebase/.codebase-scan.txt` §PERFORMANCE & TESTING (no load-test configs detected)
 

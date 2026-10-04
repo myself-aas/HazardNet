@@ -3,7 +3,6 @@ import L from 'leaflet';
 import 'leaflet.markercluster';
 import { isValidLatLng, detectExactPinpointLocation, getDistrictBoundaryCoordinates } from '../services/geolocationService';
 import { DistrictData } from '../data/bangladeshDistricts';
-import { tileCacheService } from '../services/tileCacheService';
 
 /**
  * One basemap, deliberately. The console used to offer six tile providers behind a
@@ -35,78 +34,13 @@ export function effectiveMapLayer(requested: MapLayerKey, _lowBandwidth?: boolea
   return requested;
 }
 
-// Custom Leaflet TileLayer subclass that checks IndexedDB first, caches network tiles on fetch, and handles offline mode gracefully
-export function createCachedTileLayer(url: string, layerId: string, options: L.TileLayerOptions = {}): L.TileLayer {
-  const CachedLayer = (L.TileLayer as any).extend({
-    createTile(coords: any, done: (error?: any, tile?: HTMLElement) => void) {
-      const tile = document.createElement('img');
-      L.DomEvent.on(tile, 'load', L.Util.bind((this as any)._tileOnLoad, this, done, tile));
-      L.DomEvent.on(tile, 'error', L.Util.bind((this as any)._tileOnError, this, done, tile));
-
-      if (this.options.crossOrigin || this.options.crossOrigin === '') {
-        tile.crossOrigin = this.options.crossOrigin === true ? '' : this.options.crossOrigin;
-      }
-      tile.alt = '';
-      tile.setAttribute('role', 'presentation');
-
-      const tileUrl = this.getTileUrl(coords);
-      const tileKey = tileCacheService.getTileKey(layerId, coords.z, coords.x, coords.y);
-
-      // 1. Check IndexedDB store first
-      tileCacheService
-        .getTileBlob(tileKey)
-        .then((blob) => {
-          if (blob) {
-            const objectUrl = URL.createObjectURL(blob);
-            tile.src = objectUrl;
-            const cleanUp = () => {
-              URL.revokeObjectURL(objectUrl);
-              tile.removeEventListener('load', cleanUp);
-              tile.removeEventListener('error', cleanUp);
-            };
-            tile.addEventListener('load', cleanUp);
-            tile.addEventListener('error', cleanUp);
-          } else {
-            // 2. Fetch from network & cache in IndexedDB in background
-            fetch(tileUrl, {
-              mode: 'cors',
-              headers: { Accept: 'image/webp,image/png,image/jpeg,image/*;q=0.8' },
-            })
-              .then((response) => {
-                if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                return response.blob();
-              })
-              .then((newBlob) => {
-                tileCacheService.saveTileBlob(tileKey, tileUrl, layerId, coords.z, coords.x, coords.y, newBlob);
-                const objectUrl = URL.createObjectURL(newBlob);
-                tile.src = objectUrl;
-                const cleanUp = () => {
-                  URL.revokeObjectURL(objectUrl);
-                  tile.removeEventListener('load', cleanUp);
-                  tile.removeEventListener('error', cleanUp);
-                };
-                tile.addEventListener('load', cleanUp);
-                tile.addEventListener('error', cleanUp);
-              })
-              .catch(() => {
-                // Fallback directly to regular tile URL in case CORS fetch fails or offline
-                tile.src = tileUrl;
-              });
-          }
-        })
-        .catch(() => {
-          tile.src = tileUrl;
-        });
-
-      return tile;
-    },
-  });
-
-  return new CachedLayer(url, {
-    ...options,
-    crossOrigin: true,
-  });
-}
+/* Tiles are requested by Leaflet's stock L.tileLayer and nothing else. The IndexedDB
+   tile store was deleted on 2026-10-05: it fetched every tile twice (once to persist,
+   once to display) and backed a bulk pre-cache of all of Bangladesh, which is exactly
+   what the OpenStreetMap tile usage policy forbids for volunteer-run servers
+   (osm.wiki/blocked). The browser's own HTTP cache is the only cache now, attribution
+   stays visible under the map, and heavy or offline use belongs to a dedicated tile
+   provider rather than to this service. */
 
 export interface UseLeafletMapOptions {
   onMapClick?: (lat: number, lng: number) => void;
@@ -131,7 +65,6 @@ export function useLeafletMap(
   const heatLayerRef = useRef<L.HeatLayer | null>(null);
   const measureGroupRef = useRef<L.LayerGroup | null>(null);
   const riverGroupRef = useRef<L.LayerGroup | null>(null);
-  const radarGroupRef = useRef<L.LayerGroup | null>(null);
   const inspectGroupRef = useRef<L.LayerGroup | null>(null);
 
   const [currentCoords, setCurrentCoords] = useState<{ lat: number; lng: number; zoom: number }>({
@@ -172,12 +105,15 @@ export function useLeafletMap(
 
     const baseLayerKey = effectiveMapLayer(activeLayer, lowBandwidth);
     const config = MAP_LAYERS[baseLayerKey] || MAP_LAYERS.osmStandard;
-    const tileLayer = createCachedTileLayer(config.url, baseLayerKey, {
+    // Plain L.tileLayer: Leaflet requests each tile once and the browser's HTTP cache
+    // does the rest. No IndexedDB persistence, no pre-cache — that is what keeps this
+    // page inside the OpenStreetMap tile usage policy.
+    const tileLayer = L.tileLayer(config.url, {
       maxZoom: config.maxZoom,
       opacity: 1.0,
       crossOrigin: true,
       // Names the layer in the DOM (`hn-tile-osmStandard`) so the dark theme can
-      // invert the light vector basemaps and leave satellite imagery alone.
+      // regrade the basemap without touching the tiles themselves.
       className: `hn-tile-${baseLayerKey}`,
     }).addTo(map);
 
@@ -266,7 +202,6 @@ export function useLeafletMap(
 
     const measureGroup = L.layerGroup().addTo(map);
     const riverGroup = L.layerGroup().addTo(map);
-    const radarGroup = L.layerGroup().addTo(map);
     const inspectGroup = L.layerGroup().addTo(map);
 
     const updateCoords = () => {
@@ -291,7 +226,6 @@ export function useLeafletMap(
     clusterGroupRef.current = clusterGroup;
     measureGroupRef.current = measureGroup;
     riverGroupRef.current = riverGroup;
-    radarGroupRef.current = radarGroup;
     inspectGroupRef.current = inspectGroup;
 
     // Automatic location request on first launch
@@ -369,7 +303,6 @@ export function useLeafletMap(
       clusterGroupRef.current = null;
       measureGroupRef.current = null;
       riverGroupRef.current = null;
-      radarGroupRef.current = null;
       inspectGroupRef.current = null;
     };
   }, [mapContainerRef, autoLocateEnabled]);
@@ -385,7 +318,7 @@ export function useLeafletMap(
       mapInstanceRef.current.removeLayer(tileLayerRef.current);
     }
 
-    const newTileLayer = createCachedTileLayer(config.url, baseLayerKey, {
+    const newTileLayer = L.tileLayer(config.url, {
       maxZoom: config.maxZoom,
       opacity: 1.0,
       crossOrigin: true,
@@ -455,7 +388,6 @@ export function useLeafletMap(
     heatLayerRef,
     measureGroupRef,
     riverGroupRef,
-    radarGroupRef,
     inspectGroupRef,
     currentCoords,
     setCurrentCoords,

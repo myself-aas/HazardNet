@@ -101,58 +101,11 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
   const [liveSummary, setLiveSummary] = useState<{ hazard: string; confidence: number } | null>(null);
 
 
-  // Offline Cache & Storage Management State
-  const [tileCacheStats, setTileCacheStats] = useState<{ count: number; estimatedSizeMb: number; loading: boolean }>({
-    count: 0,
-    estimatedSizeMb: 0,
-    loading: true,
-  });
-  const [isClearingTileCache, setIsClearingTileCache] = useState(false);
+  // Offline storage management. Map tiles are deliberately NOT stored on device:
+  // persisting OpenStreetMap tiles is exactly what the volunteer-run tile servers'
+  // usage policy prohibits (osm.wiki/Tile_usage_policy). Only app-shell assets and
+  // forecast responses may be cached; this panel lets users purge them.
   const [isClearingAllCache, setIsClearingAllCache] = useState(false);
-
-  const updateCacheStats = useCallback(async () => {
-    if (!('caches' in window)) {
-      setTileCacheStats({ count: 0, estimatedSizeMb: 0, loading: false });
-      return;
-    }
-    try {
-      const tileCache = await caches.open('hazardnet-tiles-v1');
-      const keys = await tileCache.keys();
-      const count = keys.length;
-      // Estimate tile size (~28 KB per tile)
-      const estimatedSizeMb = Number(((count * 28) / 1024).toFixed(2));
-      setTileCacheStats({ count, estimatedSizeMb, loading: false });
-    } catch (err) {
-      setTileCacheStats({ count: 0, estimatedSizeMb: 0, loading: false });
-    }
-  }, []);
-
-  useEffect(() => {
-    updateCacheStats();
-  }, [updateCacheStats]);
-
-  const handleClearTileCache = async () => {
-    setIsClearingTileCache(true);
-    try {
-      if ('caches' in window) {
-        const deleted = await caches.delete('hazardnet-tiles-v1');
-        if (deleted) {
-          toast.success('Offline map tile cache cleared! Storage freed.', {
-            icon: <MaterialIcon name="delete" className="w-4 h-4" />,
-          });
-        } else {
-          toast.success('Tile cache was already empty.');
-        }
-      } else {
-        toast.error('Browser Caches API unavailable.');
-      }
-      await updateCacheStats();
-    } catch (err) {
-      toast.error('Failed to clear tile cache.');
-    } finally {
-      setIsClearingTileCache(false);
-    }
-  };
 
   const handleClearAllCaches = async () => {
     setIsClearingAllCache(true);
@@ -164,7 +117,6 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
           icon: <MaterialIcon name="delete" className="w-4 h-4" />,
         });
       }
-      await updateCacheStats();
     } catch (err) {
       toast.error('Failed to purge caches.');
     } finally {
@@ -979,100 +931,63 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
                 </span>
               </div>
               <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
-                Offline Map Tile Cache & Storage Settings
+                Offline Storage Settings
               </h2>
               <p className="text-xs sm:text-sm text-carbon-30 leading-relaxed font-normal">
-                Manage locally cached satellite GIS map tiles, published forecast snapshots, and offline storage. Manually clear tile caches to free up browser disk space without losing saved districts or system settings.
+                HazardNet keeps map tiles in the normal browser cache only and never writes them to offline storage: the volunteer-run OpenStreetMap tile servers ask us not to bulk-download or persist their tiles. Forecast snapshots and app assets can still be purged here at any time.
               </p>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-3 relative z-10 shrink-0">
-              <button
-                onClick={updateCacheStats}
-                className="px-4 py-2.5 bg-carbon-80 hover:bg-carbon-70 text-carbon-20 border border-carbon-70 text-xs font-bold  transition-all cursor-pointer flex items-center gap-2"
-                title="Refresh Cache Stats"
-              >
-                <MaterialIcon name="refresh" className="w-4 h-4 inline-block mr-1" /><span>Refresh Storage Stats</span>
-              </button>
             </div>
           </div>
 
           {/* Cards Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-            {/* Tile Cache Card */}
+            {/* Tile policy card */}
             <div className="lg:col-span-7 bg-white border border-carbon-20 rounded-[28px] p-6 sm:p-8  space-y-6">
               <div className="flex items-center justify-between border-b border-carbon-10 pb-4">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12  bg-nasa-red/15 border border-nasa-blue/30 text-amber-700 flex items-center justify-center font-bold text-xl">
-                    <MaterialIcon name="gis" className="w-6 h-6" />
+                    <MaterialIcon name="public" className="w-6 h-6" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-black text-carbon-90">GIS Satellite Map Tile Cache</h3>
-                    <p className="text-xs text-carbon-60 font-mono">
-                      Cache ID: <code className="bg-carbon-10 px-1.5 py-0.5 rounded text-carbon-70">hazardnet-tiles-v1</code>
-                    </p>
+                    <h3 className="text-lg font-black text-carbon-90">Map Tiles</h3>
+                    <p className="text-xs text-carbon-60 font-mono">OpenStreetMap standard basemap</p>
                   </div>
                 </div>
                 <span className="px-3 py-1 rounded-full text-xs font-extrabold bg-carbon-05 text-carbon-80 border border-carbon-20">
-                  Active (Offline Enabled)
+                  Not stored offline
                 </span>
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-xs font-mono">
                 <div className="p-4  bg-carbon-05 border border-carbon-20">
-                  <span className="text-xs text-carbon-60 font-bold uppercase block">Cached Tiles</span>
-                  <strong className="text-xl font-black text-carbon-90">
-                    {tileCacheStats.loading ? '...' : tileCacheStats.count.toLocaleString()}
-                  </strong>
-                  <span className="text-xs text-carbon-60 block mt-0.5">map images</span>
+                  <span className="text-xs text-carbon-60 font-bold uppercase block">Persisted Tiles</span>
+                  <strong className="text-xl font-black text-carbon-90">0</strong>
+                  <span className="text-xs text-carbon-60 block mt-0.5">by design</span>
                 </div>
 
                 <div className="p-4  bg-carbon-05 border border-carbon-20">
-                  <span className="text-xs text-carbon-60 font-bold uppercase block">Estimated Space</span>
-                  <strong className="text-xl font-black text-amber-700">
-                    {tileCacheStats.loading ? '...' : `~${tileCacheStats.estimatedSizeMb} MB`}
-                  </strong>
-                  <span className="text-xs text-carbon-60 block mt-0.5">local disk usage</span>
+                  <span className="text-xs text-carbon-60 font-bold uppercase block">Tile Source</span>
+                  <strong className="text-sm font-black text-carbon-90">tile.openstreetmap.org</strong>
+                  <span className="text-xs text-carbon-60 block mt-0.5">volunteer-run servers</span>
                 </div>
 
                 <div className="p-4  bg-carbon-05 border border-carbon-20 col-span-2 sm:col-span-1">
-                  <span className="text-xs text-carbon-60 font-bold uppercase block">Max Tile Threshold</span>
-                  <strong className="text-xl font-black text-carbon-90">1,200</strong>
-                  <span className="text-xs text-carbon-60 block mt-0.5">auto eviction limit</span>
+                  <span className="text-xs text-carbon-60 font-bold uppercase block">Caching</span>
+                  <strong className="text-sm font-black text-carbon-90">Browser HTTP cache</strong>
+                  <span className="text-xs text-carbon-60 block mt-0.5">honours server headers</span>
                 </div>
               </div>
 
               <div className="p-4  bg-carbon-05 border border-amber-200 text-xs text-amber-900 space-y-2">
                 <div className="flex items-center gap-2 font-bold">
-                  <MaterialIcon name="lightbulb" className="w-4 h-4 inline-block mr-1" /><span>Offline Tile Cache Management</span>
+                  <MaterialIcon name="lightbulb" className="w-4 h-4 inline-block mr-1" /><span>Why tiles are not downloadable for offline use</span>
                 </div>
                 <p className="leading-relaxed">
-                  Map tiles from satellite imagery, topographic maps, and OpenStreetMap are cached locally in your browser when you zoom and pan across Bangladesh. If you need to free up storage space, you can clear this cache anytime. New tiles will be re-downloaded when online.
+                  OpenStreetMap's tile usage policy prohibits bulk downloading and permanent local storage of tiles. HazardNet follows that policy so the shared tile servers stay fast for everyone: tiles load on demand and live only in your browser's ordinary HTTP cache.
                 </p>
               </div>
 
-              {/* Action Buttons */}
               <div className="pt-2 flex flex-wrap items-center gap-3">
-                <button
-                  onClick={handleClearTileCache}
-                  disabled={isClearingTileCache || tileCacheStats.count === 0}
-                  className="px-6 py-3.5 bg-primary hover:bg-primary-strong text-white font-black text-sm   transition-all duration-200 flex items-center gap-2.5 disabled:opacity-50 active:scale-98 cursor-pointer"
-                >
-                  {isClearingTileCache ? (
-                    <>
-                      <svg className="animate-spin h-5 w-5 text-carbon-black" viewBox="0 0 24 24" fill="none">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
-                      </svg>
-                      <span>Clearing Tile Cache...</span>
-                    </>
-                  ) : (
-                    <>
-                      <MaterialIcon name="delete" className="w-4 h-4 inline-block mr-1" /><span>Clear Tile Cache ({tileCacheStats.count} items)</span>
-                    </>
-                  )}
-                </button>
-
                 <button
                   onClick={handleClearAllCaches}
                   disabled={isClearingAllCache}
@@ -1116,7 +1031,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
 
                 <div className="pt-2 text-xs text-carbon-60 space-y-1">
                   <p><strong>Service Worker Status:</strong> Active & Registered</p>
-                  <p>The Service Worker caches map tiles only. Model weights and preprocessing assets are never sent to or stored in the browser.</p>
+                  <p>The Service Worker caches app assets only; map tiles are never persisted. Model weights and preprocessing assets are never sent to or stored in the browser.</p>
                 </div>
               </div>
             </div>

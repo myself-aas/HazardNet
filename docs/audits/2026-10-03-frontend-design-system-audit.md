@@ -826,8 +826,39 @@ changed nothing a reader needed and spent their attention on it. Both are gone:
   that said "logged" while persisting nothing — a claim without an artifact, the one thing this
   repository's rules exist to forbid;
 - what stays is what HazardNet is for: district polygons and forecasts, hazard layers, horizon
-  and search, the table view, the offline tile store (now pre-caching OSM), and the OSM
-  attribution the map's licence requires.
+  and search, the table view, and the OSM attribution the map's licence requires. (The offline
+  tile store named here at first was itself removed in §12.8 the same day.)
 
 `MapToolbar.test.tsx` pins the absence of a basemap switcher; 1755 tests, the token/prose/
 claims/paths/design gates and the build are green.
+
+### 12.8 OSM tile-policy compliance and the second live-map simplification (2026-10-05)
+
+The map started showing OpenStreetMap's "Access blocked" interstitial (osm.wiki/blocked). The
+cause was the app, not the servers: `createCachedTileLayer` double-fetched every tile into an
+IndexedDB store, and the "Offline Emergency Tile Store" bulk-downloaded all of Bangladesh
+(zooms 6-9) plus district packs (zooms 7-11). Both are exactly what the volunteer-run tile
+servers' usage policy prohibits. The fix is structural, not a header tweak:
+
+- `frontend/src/services/tileCacheService.ts`, `frontend/src/hooks/useTileCache.ts` and every
+  pre-cache entry point were deleted; the map now uses a plain `L.tileLayer` and relies on the
+  browser's ordinary HTTP cache, which honours the tile servers' own cache headers;
+- the service worker (`frontend/public/serviceWorker.js`) no longer intercepts cross-origin
+  tile requests at all and deletes the legacy `hazardnet-tiles-v1` cache on activation, so
+  devices that stored tiles shed them on the next visit; `__tests__/serviceWorker.test.js`
+  pins both behaviours;
+- the Dashboard settings view no longer advertises an offline tile cache; it states the policy
+  plainly and keeps only the purge action for app-shell caches.
+
+Two invented-data surfaces died with it, under the same honesty rule as §12.7: the "Doppler
+radar" overlay (three hard-coded storm cells labelled 45-52 dBZ that measured nothing) and its
+legend, and the popup `onclick` hooks that called a global `window.selectHazardDistrict` no
+component registered. The GPS and stored-pin popups were rebuilt to title, coordinates,
+accuracy and district, because the previous multi-panel HTML was unreadable at phone widths;
+the filter modal is now a bottom sheet with 44px targets; the capture-and-share export modal
+became a one-click PNG download; the three control buttons are fixed 48px circles raised above
+the bottom pill so they never collide at narrow viewports.
+
+The map palette shrank to what the map draws: `MAP_SENSOR_SITES` is gone, and the heat
+gradient kept its shipped colours under the honest name `MAP_HEAT_RAMP`
+(`__tests__/mapPalette.test.js` pins the values and the absence of the old groups).
