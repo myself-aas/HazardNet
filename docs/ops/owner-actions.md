@@ -128,11 +128,21 @@ the run summary and the uploaded artifact, but the committed file goes stale. |
 
 | | |
 |---|---|
-| **Status** | Open — the GitHub download/ingest path is wired on 2026-10-03; the public file itself still needs an on-time daily publication verified |
-| **Why** | The public Kaggle artifact (`ashifahmedshuvo/hazardnet-weekly-forecasts`, `hazardnet_advisories_latest.csv`) last reported `generated_at=2026-09-29 23:29:31` when checked on 2026-10-03. The 36 h freshness guard in `scripts/validate_advisory_csv.mjs` correctly rejects older runs. The owner has confirmed the Kaggle notebook is scheduled daily; the public copy must reflect that run. |
+| **Status** | Open — the GitHub download/ingest path is wired on 2026-10-03; the public file itself still needs an on-time daily publication verified. **The notebook has not published since 2026-09-29.** |
+| **Why** | The public Kaggle artifact (`ashifahmedshuvo/hazardnet-weekly-forecasts`, `hazardnet_advisories_latest.csv`) last reported `generated_at=2026-09-29 23:29:31` when checked on 2026-10-03, and Kaggle's own dataset metadata (checked 2026-10-04T14:49Z) still says `lastUpdated: 2026-09-29T23:49:50Z`, version 10, "Expected update frequency: daily". The 36 h freshness guard in `scripts/validate_advisory_csv.mjs` correctly rejects older runs. The owner has confirmed the Kaggle notebook is scheduled daily; the public copy must reflect that run. |
 | **Do** | The GitHub side now runs daily at `05:30 UTC`: `.github/workflows/daily_advisory_ingest.yml` downloads the CSV from the exact public dataset URL (raw CSV or ZIP), retries while a run is finishing, skips an unchanged file, and calls `scripts/process_advisory_ingest.mjs` only for a newer source. Verify the Kaggle notebook publishes the completed daily run back into that dataset/file. Optional `KAGGLE_USERNAME` / `KAGGLE_KEY` secrets enable CLI/kernel fallback; the public HTTP download itself requires no credentials. |
-| **Verify** | A scheduled Actions run shows a new `generated_at`, passes `node scripts/validate_advisory_csv.mjs /tmp/advisory-ingest/hazardnet_advisories_latest.csv` without `--allow-stale`, commits updated forecast snapshots, and triggers Vercel only when artifacts changed. If the file is unchanged on a scheduled run, the workflow fails loudly and attaches the fetch report. |
+| **Verify** | A scheduled Actions run shows a new `generated_at`, passes `node scripts/validate_advisory_csv.mjs /tmp/advisory-ingest/hazardnet_advisories_latest.csv` without `--allow-stale`, commits updated forecast snapshots, and triggers Vercel only when artifacts changed. If the file is unchanged — or newer than the last ingest yet past the 36 h gate — the fetch step reports it (`age_hours`, `stale` in `fetch-report.json`), the run goes red with `::error::Scheduled Kaggle advisory publication is unchanged or past the 36 h ingest gate`, and the fetch report is attached. |
 | **Closed by** | — |
+
+**Measured 2026-10-04** (the day this file was last touched): the 05:30 UTC runs on
+2026-10-02, 2026-10-03 and 2026-10-04 all failed. Until this change the failure landed in
+*"Validate Advisory CSV & Execute Ingestion"* with `STALE_DATA` while the fetch step above it
+reported success, so the four downstream steps — pipeline tests, the artifact commit and the
+deploy trigger — were skipped and the red looked like an ingest bug. The fetch now applies the
+same 36 h gate and fails at its own step with the publication age. Nothing downstream of that
+step can go green until the notebook publishes: the site has been serving the 2026-09-24 build
+since, and `site-health.yml`'s forecast probe is red because
+`frontend/public/data/forecasts-latest.json` still carries `prediction_date: 2026-09-16`.
 
 ## Action 12 · Decide where analytics events are stored
 
@@ -174,6 +184,26 @@ the run summary and the uploaded artifact, but the committed file goes stale. |
 | **Verify** | `npx jest __tests__/pluginManifest.test.js` passes with every surviving entry implemented. |
 | **Closed by** | — |
 
+## Action 16 · The canonical host `www.hazardnet.live` does not resolve
+
+| | |
+|---|---|
+| **Status** | Open — added 2026-10-04; needs a decision, not a patch |
+| **Why** | 41 tracked files treat `https://www.hazardnet.live` as the canonical origin: the `<link rel="canonical">` tags and structured data (`frontend/src/SEOHead.tsx`), the sitemap and `robots.txt`, `security.txt`'s `Canonical:`, the content engine (`scripts/build_content_engine.mjs`), and a build guard in `frontend/scripts/prerender.mjs` that **fails the build** if the origin is anything else. Meanwhile `www.hazardnet.live` is NXDOMAIN and `hazardnet.live` answers 200 directly from Firebase Hosting (199.36.158.100, `x-fh-requested-host`). So every URL in the deployed sitemap is unreachable, `site-health.yml`'s "Verify every sitemap URL resolves" probe fails on all 85 of them, and Google is being pointed at a host that does not exist. |
+| **Do** | Pick one and make the other side match: **(a)** re-add `www.hazardnet.live` as a Firebase Hosting custom domain and point its DNS at it (keeps today's design, no code change), or **(b)** switch the canonical origin to the apex in the files listed above and invert the redirect/guard. Option (b) is the only one that matches how the domain behaves today, but it is an SEO-identity change, so it is the owner's call. |
+| **Verify** | `getent hosts www.hazardnet.live` resolves (a), or the deployed `sitemap.xml` lists apex URLs and every one returns 200 (b) — the site-health sitemap probe flips green either way. |
+| **Closed by** | — |
+
+## Action 17 · Nothing in the repository deploys the frontend
+
+| | |
+|---|---|
+| **Status** | Open — added 2026-10-04 |
+| **Why** | `hazardnet.live` is served by **Firebase Hosting** (`firebase.json` → `frontend/dist`; the live host answers with `x-fh-requested-host` and `x-served-by: cache-dub…`), but no workflow runs `firebase deploy`: the only deploy step in the repository is `daily_advisory_ingest.yml`'s *"Trigger Vercel Production Deployment"* (`npx vercel deploy --prod`), which is skipped whenever the ingest fails and points at a different platform anyway. The live build's `Last-Modified` was **2026-09-24T21:56Z** on 2026-10-04 while `main` had moved on, and `/data/freshness.json` is whatever that build shipped. |
+| **Do** | Add a `firebase deploy --only hosting` job (service-account or `FIREBASE_TOKEN` secret) on pushes to `main` that touch `frontend/`, or make the existing deploy step target Firebase instead of Vercel. The `firebase.json` headers added on 2026-10-04 (`Content-Security-Policy`, `Permissions-Policy`, `Strict-Transport-Security`) and any Action 16 change only reach production once something deploys. |
+| **Verify** | After a push to `main`, `curl -sSI https://hazardnet.live/ \| grep -i last-modified` advances, `/data/freshness.json` quotes the new build, and the site-health security-header probe passes. |
+| **Closed by** | — |
+
 ---
 
 ## Change log
@@ -181,3 +211,4 @@ the run summary and the uploaded artifact, but the committed file goes stale. |
 | Date | Change |
 |---|---|
 | 2026-10-02 | File created from the 12 in-tree citations; Actions 10, 11 (later 12–15) added; Action 6c recorded as closed. Owner still unassigned. |
+| 2026-10-04 | Action 11 updated with the measured Kaggle publication gap (last update 2026-09-29, version 10); Actions 16 (canonical host) and 17 (no deploy path) added after triaging the red site-health and advisory-ingest runs. |

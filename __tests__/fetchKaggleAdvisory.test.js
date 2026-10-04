@@ -12,11 +12,13 @@
  */
 
 import {
+  DEFAULT_MAX_AGE_HOURS,
   datasetDownloadUrl,
   inspectCsv,
   isNewerThan,
   parseArgs,
   parseGeneratedAt,
+  publicationAge,
 } from '../scripts/fetch_kaggle_advisory.mjs';
 
 const CSV_HEADER = 'district,division,latitude,longitude,horizon,hazard,confidence,advisory_tier,generated_at\n';
@@ -108,6 +110,64 @@ describe('isNewerThan', () => {
     // A corrupted manifest must not silently authorise a re-ingest of the same rows.
     const broken = { generated_at: 'unknown', row_count: 128, source_csv_sha256: 'abc' };
     expect(isNewerThan({ generatedAt: null, rows: 128, sha256: 'abc' }, broken)).toBe(false);
+  });
+});
+
+describe('publicationAge', () => {
+  const NOW = Date.parse('2026-10-04T14:30:00Z');
+
+  it('measures against the notebook clock, not the download time', () => {
+    // The real 2026-10-04 file: generated 2026-09-29 23:29:31Z, checked 4 d 15 h later.
+    expect(publicationAge('2026-09-29 23:29:31', NOW)).toBeCloseTo(111.01, 1);
+    expect(publicationAge('2026-10-04T10:30:00Z', NOW)).toBeCloseTo(4, 5);
+  });
+
+  it('returns null for a missing or unparseable stamp rather than guessing', () => {
+    // An unknown age must not be reported as fresh *or* stale; the ingest decides for itself.
+    expect(publicationAge(null, NOW)).toBeNull();
+    expect(publicationAge('', NOW)).toBeNull();
+    expect(publicationAge('not a date', NOW)).toBeNull();
+  });
+
+  it('decides staleness exactly where the ingest does', async () => {
+    // The fetch called the real 2026-09-29 publication "fresh" (it was newer than the committed
+    // 2026-09-16 run) while the ingest rejected it as STALE_DATA, because the two compared
+    // different things. The defaults are pinned to each other here, and the boundary is checked
+    // on the same fixture the ingest's own suite uses, so the two cannot drift apart again.
+    expect(DEFAULT_MAX_AGE_HOURS).toBe(36);
+    const { ADVISORY_CSV_COLUMNS, DISTRICT_REGISTRY } = await import('../backend/utils/advisoryMapper.js');
+    const { validateAdvisoryCsv } = await import('../scripts/validate_advisory_csv.mjs');
+
+    const csvAt = (hoursOld) => {
+      const stamp = new Date(NOW - hoursOld * 3_600_000).toISOString();
+      const lines = [ADVISORY_CSV_COLUMNS.join(',')];
+      for (const district of DISTRICT_REGISTRY) {
+        for (const horizon of ['7_days', '15_days']) {
+          lines.push([
+            district.district_name, district.division, district.latitude, district.longitude,
+            horizon, 'Flood', 0.88, 0.72, 0.75, 0.7, 0.74, 'false', 'WARNING',
+            '2026-10-05', stamp, 32.5, 24.1, 45.2, 18.5, 0.88, 0.08, 0.04,
+          ].join(','));
+        }
+      }
+      return lines.join('\n');
+    };
+
+    const freshCsv = csvAt(4);
+    const staleCsv = csvAt(DEFAULT_MAX_AGE_HOURS + 4);
+    const generatedAt = (csvText) => inspectCsv(csvText).generatedAt;
+
+    expect(publicationAge(generatedAt(freshCsv), NOW)).toBeLessThanOrEqual(DEFAULT_MAX_AGE_HOURS);
+    expect(publicationAge(generatedAt(staleCsv), NOW)).toBeGreaterThan(DEFAULT_MAX_AGE_HOURS);
+
+    const fresh = validateAdvisoryCsv(freshCsv, { currentTime: new Date(NOW) });
+    expect(fresh.valid).toBe(true);
+    expect(fresh.summary.ageHours).toBeLessThanOrEqual(DEFAULT_MAX_AGE_HOURS);
+
+    const stale = validateAdvisoryCsv(staleCsv, { currentTime: new Date(NOW) });
+    expect(stale.valid).toBe(false);
+    expect(stale.errors.join('\n')).toContain('STALE_DATA');
+    expect(stale.summary.ageHours).toBeGreaterThan(DEFAULT_MAX_AGE_HOURS);
   });
 });
 
