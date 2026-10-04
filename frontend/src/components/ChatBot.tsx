@@ -230,11 +230,14 @@ export default function ChatBot() {
                     <Mic className="h-4 w-4" aria-hidden="true" />
                     <span>Voice</span>
                   </button>
+                  {/* The accessible name is pinned by the mobile contract
+                      (e2e/mobile-responsive.spec.ts: /close assistant/i); the panel is
+                      labelled "AI Advisor" and this control keeps the name that shipped. */}
                   <button
                     type="button"
                     onClick={() => setIsOpen(false)}
                     className="flex h-11 w-11 items-center justify-center rounded-lg text-carbon-60 transition-colors hover:bg-carbon-05 hover:text-carbon-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nasa-blue"
-                    aria-label="Close AI Advisor"
+                    aria-label="Close Assistant"
                   >
                     <X className="h-5 w-5" aria-hidden="true" />
                   </button>

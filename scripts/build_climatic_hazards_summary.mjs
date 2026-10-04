@@ -5,8 +5,6 @@ import { fileURLToPath } from 'node:url';
 import { DISTRICT_REGISTRY, lookupDistrict } from '../backend/utils/advisoryMapper.js';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const EVENT_SOURCE = resolve(ROOT, 'frontend/public/data/historical/hazard-catalog-index.json');
-const FORECAST_SOURCE = resolve(ROOT, 'frontend/public/data/hazardnet_forecasts_latest.json');
 const OUTPUT = resolve(ROOT, 'frontend/public/data/climatic_hazards_summary.json');
 const MONTH_NAMES = [
   'January', 'February', 'March', 'April', 'May', 'June',

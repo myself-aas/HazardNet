@@ -222,7 +222,7 @@ describe('the native shell draws the same glyphs', () => {
     const start = navigation.indexOf('const TAB_ICONS');
     const end = navigation.indexOf('\n};', start);
     const block = navigation.slice(start, end);
-    const assignments = [...block.matchAll(/(Today|Alerts|Map|Saved|More): ['\"]([A-Za-z0-9]+)['\"]/g)];
+    const assignments = [...block.matchAll(/(Today|Alerts|Map|Saved|More): ['"]([A-Za-z0-9]+)['"]/g)];
     expect(assignments.map((match) => match[1])).toEqual(['Today', 'Alerts', 'Map', 'Saved', 'More']);
     const unregistered = assignments.map((match) => match[2]).filter((name) => !names.has(name));
     expect(unregistered).toEqual([]);
