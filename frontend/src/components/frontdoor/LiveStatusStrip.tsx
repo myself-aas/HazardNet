@@ -113,10 +113,14 @@ export const LiveStatusStrip: React.FC<LiveStatusStripProps> = ({
     <Interactive.Section
       name="Live status strip — published now"
       style={{
+        /* No colour in this style object. The surfaces used to be pinned here as inline
+           `#f6f6f6` / `#d1d1d1`, which is invisible in light mode and a hole in dark mode:
+           an inline declaration beats every class, so the theme layer (styles/dark.css)
+           could never re-point the strip's ground, and the dark ramp's near-white inks
+           landed on a light panel at under 2:1. The classes below are the only surface
+           now, and they resolve through the carbon ramp in both themes. */
         borderWidth: 1,
         borderStyle: 'solid',
-        borderColor: '#d1d1d1',
-        backgroundColor: '#f6f6f6',
         opacity: reduceMotion
           ? 1
           : interpolate(frame, [0, 10], [0, 1], {
@@ -280,10 +284,10 @@ export const LiveStatusStrip: React.FC<LiveStatusStripProps> = ({
         <Interactive.Div
           name="Status error — retry"
           style={{
+            /* Surfaces follow the theme (see the strip's own comment): the panel classes
+               below carry the ground and the hairline, not inline literals. */
             borderTopWidth: 1,
             borderTopStyle: 'solid',
-            borderTopColor: '#d1d1d1',
-            backgroundColor: 'white',
             paddingLeft: 16,
             paddingRight: 16,
             paddingTop: 12,
