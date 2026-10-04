@@ -12,12 +12,15 @@ import { Text } from '../../design-system/Text';
 import { Button } from '../../design-system/Button';
 import { EMERGENCY_CONTACTS, OFFICIAL_DISCLAIMER } from '@hazardnet/core';
 import { safeOpenUrl } from '../../lib/security/openUrl';
+import { Icon } from '../Icon';
+import { useTheme } from '../../theme/ThemeProvider';
 
 function openLink(url: string) { safeOpenUrl(url).catch(() => {}); }
 
 export interface EmergencyCTAProps { compact?: boolean; }
 
 export const EmergencyCTARow: React.FC<EmergencyCTAProps> = ({ compact = false }) => {
+  const { theme } = useTheme();
   const contacts = compact ? EMERGENCY_CONTACTS.slice(0, 2) : EMERGENCY_CONTACTS;
   return (
     <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingRight: 16 }}>
@@ -27,7 +30,8 @@ export const EmergencyCTARow: React.FC<EmergencyCTAProps> = ({ compact = false }
             key={c.number}
             variant={c.number === '999' ? 'danger' : 'secondary'}
             size="md"
-            label={`☎  ${c.number}`}
+            label={c.number}
+            leadingIcon={<Icon name="PhoneCall" size="meta" color={c.number === '999' ? theme.colors.dangerActionText : theme.colors.textPrimary} />}
             onPress={() => openLink(`tel:${c.number}`)}
             accessibilityLabel={`Call ${c.label} at ${c.number}`}
           />

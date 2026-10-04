@@ -1,8 +1,7 @@
 /**
- * Card primitive — square corners, hairline border, optional severity edge.
+ * Card primitive — shared Meridian card radius, hairline border, optional severity edge.
  *
- * NASA HDS: no rounded corners on cards; 2px accent edge on the left for
- * severity signaling (paired with icon + text — never color alone).
+ * Severity is paired with icon + text and never relies on color alone.
  */
 
 import React from 'react';
@@ -10,7 +9,7 @@ import { View, ViewStyle, StyleProp, StyleSheet } from 'react-native';
 import { Box, VStack } from './primitives';
 import { Text } from './Text';
 import { useTheme } from '../theme/ThemeProvider';
-import { CARD_PADDING, SEVERITY_EDGE_WIDTH } from '../theme/nativeTokens';
+import { CARD_PADDING, NATIVE_RADIUS, SEVERITY_EDGE_WIDTH } from '../theme/nativeTokens';
 
 export type CardSeverityEdge = null | 'severe' | 'warning' | 'watch' | 'allClear' | 'info';
 
@@ -34,11 +33,11 @@ export const Card: React.FC<CardProps> = ({
   accessibleLabel,
 }) => {
   const { theme } = useTheme();
-  const edgeColor = edge === 'severe' ? theme.colors.severe
-    : edge === 'warning' ? theme.colors.warning
-    : edge === 'watch' ? theme.colors.watch
-    : edge === 'allClear' ? theme.colors.allClear
-    : edge === 'info' ? theme.colors.primaryAction
+  const edgeColor = edge === 'severe' ? theme.colors.severeSolid
+    : edge === 'warning' ? theme.colors.warningSolid
+    : edge === 'watch' ? theme.colors.watchSolid
+    : edge === 'allClear' ? theme.colors.allClearSolid
+    : edge === 'info' ? theme.colors.interactive
     : 'transparent';
   const hairline = StyleSheet.hairlineWidth;
   return (
@@ -48,6 +47,7 @@ export const Card: React.FC<CardProps> = ({
       style={[
         {
           backgroundColor: raised ? theme.colors.surfaceRaised : theme.colors.surface,
+          borderRadius: NATIVE_RADIUS.card,
           borderWidth: dashed ? 1 : hairline,
           borderColor: dashed ? edgeColor ?? theme.colors.hairline : theme.colors.hairline,
           borderStyle: dashed ? 'dashed' : 'solid',

@@ -1,4 +1,5 @@
 import React, { useRef, useState } from 'react';
+import { Info } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
 import MaterialIcon from '../MaterialIcon';
@@ -41,7 +42,7 @@ export const UserAvatarField: React.FC<{ size?: number; editable?: boolean }> = 
       setStage('Compressed to ' + formatBytes(resized.blob.size));
       if (!user) {
         // Design preview without an authenticated user: show the local result only.
-        toast('Design preview: sign in to store your photo.', { icon: 'ℹ️' });
+        toast('Design preview: sign in to store your photo.', { icon: <Info className="h-4 w-4" aria-hidden="true" /> });
         setStage(null);
         return;
       }

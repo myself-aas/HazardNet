@@ -9,12 +9,17 @@
  */
 
 import React, { useRef } from 'react';
-import { Platform, Text, StyleSheet } from 'react-native';
+import { Platform, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Icon } from '../components/Icon';
+import type { IconName } from '@hazardnet/design-system';
+import { useSettingsStore } from '../state/settingsStore';
 import { NavigationContainer, DefaultTheme, DarkTheme, NavigationState } from '@react-navigation/native';
 import { track } from '../lib/telemetry';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useTheme } from '../theme/ThemeProvider';
+import { useLocale } from '../hooks/useLocale';
 import { TodayScreen } from '../screens/today/TodayScreen';
 import { AlertsScreen } from '../screens/alerts/AlertsScreen';
 import { AlertDetailScreen } from '../screens/alerts/AlertDetailScreen';
@@ -48,6 +53,14 @@ export type TabParamList = {
   More: undefined;
 };
 
+const TAB_ICONS: Record<keyof TabParamList, IconName> = {
+  Today: 'Sun',
+  Alerts: 'Bell',
+  Map: 'MapPin',
+  Saved: 'Bookmark',
+  More: 'SlidersHorizontal',
+};
+
 // Individual tab stacks so AlertDetail can be pushed from both Today and Alerts
 // while preserving the tab bar at the bottom (mobile-navigation.md rule).
 const Tab = createBottomTabNavigator<TabParamList>();
@@ -58,42 +71,46 @@ const MoreStack = createNativeStackNavigator<any>();
 const SavedStack = createNativeStackNavigator<any>();
 
 function TodayStackScreen() {
+  const { t } = useLocale();
   return (
     <TodayStack.Navigator screenOptions={{ headerLargeTitle: Platform.OS === 'ios', headerShadowVisible: false }}>
-      <TodayStack.Screen name="TodayHome" component={TodayScreen} options={{ title: 'Today', headerLargeTitle: true }} />
+      <TodayStack.Screen name="TodayHome" component={TodayScreen} options={{ title: t('tab.today'), headerLargeTitle: true }} />
       <TodayStack.Screen name="AlertDetail" component={AlertDetailScreen} options={{ title: 'Alert' }} />
     </TodayStack.Navigator>
   );
 }
 
 function AlertsStackScreen() {
+  const { t } = useLocale();
   return (
     <AlertsStack.Navigator screenOptions={{ headerLargeTitle: Platform.OS === 'ios', headerShadowVisible: false }}>
-      <AlertsStack.Screen name="AlertsHome" component={AlertsScreen} options={{ title: 'Alerts', headerLargeTitle: true, headerSearchBarOptions: undefined }} />
+      <AlertsStack.Screen name="AlertsHome" component={AlertsScreen} options={{ title: t('alerts.title'), headerLargeTitle: true, headerSearchBarOptions: undefined }} />
       <AlertsStack.Screen name="AlertDetail" component={AlertDetailScreen} options={{ title: 'Alert' }} />
     </AlertsStack.Navigator>
   );
 }
 
 function SavedStackScreen() {
+  const { t } = useLocale();
   return (
     <SavedStack.Navigator screenOptions={{ headerLargeTitle: Platform.OS === 'ios', headerShadowVisible: false }}>
-      <SavedStack.Screen name="SavedHome" component={SavedScreen} options={{ title: 'Saved', headerLargeTitle: true }} />
+      <SavedStack.Screen name="SavedHome" component={SavedScreen} options={{ title: t('saved.title'), headerLargeTitle: true }} />
       <SavedStack.Screen name="SavedPlaceDetail" component={SavedPlaceDetailScreen} options={{ title: 'Place' }} />
     </SavedStack.Navigator>
   );
 }
 
 function MoreStackScreen() {
+  const { t } = useLocale();
   return (
     <MoreStack.Navigator screenOptions={{ headerLargeTitle: Platform.OS === 'ios', headerShadowVisible: false }}>
-      <MoreStack.Screen name="MoreHome" component={MoreScreen} options={{ title: 'More', headerLargeTitle: true }} />
-      <MoreStack.Screen name="DataStatus" component={DataStatusScreen} options={{ title: 'Data status' }} />
+      <MoreStack.Screen name="MoreHome" component={MoreScreen} options={{ title: t('tab.more'), headerLargeTitle: true }} />
+      <MoreStack.Screen name="DataStatus" component={DataStatusScreen} options={{ title: t('data.title') }} />
       <MoreStack.Screen name="Advisories" component={AdvisoriesScreen} options={{ title: 'Advisories', headerLargeTitle: true }} />
       <MoreStack.Screen name="AdvisoryDetail" component={AdvisoryDetailScreen} options={{ title: 'Advisory' }} />
-      <MoreStack.Screen name="NotificationPreferences" component={NotificationPreferencesScreen} options={{ title: 'Notifications' }} />
-      <MoreStack.Screen name="Accessibility" component={AccessibilitySettingsScreen} options={{ title: 'Accessibility' }} />
-      <MoreStack.Screen name="SubmitReport" component={SubmitReportScreen} options={{ title: 'Submit report' }} />
+      <MoreStack.Screen name="NotificationPreferences" component={NotificationPreferencesScreen} options={{ title: t('notif.title') }} />
+      <MoreStack.Screen name="Accessibility" component={AccessibilitySettingsScreen} options={{ title: t('a11y.title') }} />
+      <MoreStack.Screen name="SubmitReport" component={SubmitReportScreen} options={{ title: t('report.title') }} />
       <MoreStack.Screen name="Article" component={ArticleScreen} options={{ title: 'Article' }} />
     </MoreStack.Navigator>
   );
@@ -101,14 +118,21 @@ function MoreStackScreen() {
 
 function Tabs() {
   const { theme } = useTheme();
-  const tabBarHeight = Platform.OS === 'ios' ? TAB_BAR_HEIGHT_IOS : TAB_BAR_HEIGHT_ANDROID;
+  const { t } = useLocale();
+  const largeText = useSettingsStore((state) => state.largeText);
+  const boldText = useSettingsStore((state) => state.boldText);
+  const insets = useSafeAreaInsets();
+  const tabBarHeight = Platform.OS === 'ios'
+    ? TAB_BAR_HEIGHT_IOS + insets.bottom
+    : TAB_BAR_HEIGHT_ANDROID + Math.max(0, insets.bottom - 10);
+  const tabBarBottomPadding = Platform.OS === 'ios' ? insets.bottom : Math.max(10, insets.bottom);
   return (
     <Tab.Navigator
       initialRouteName="Today"
       screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarActiveTintColor: theme.colors.primaryAction as string,
-        tabBarInactiveTintColor: theme.colors.textMuted as string,
+        tabBarActiveTintColor: theme.colors.interactive,
+        tabBarInactiveTintColor: theme.colors.textMuted,
         tabBarActiveBackgroundColor: theme.colors.background as string,
         tabBarInactiveBackgroundColor: theme.colors.background as string,
         tabBarStyle: {
@@ -117,24 +141,25 @@ function Tabs() {
           borderTopWidth: StyleSheetHairline(),
           height: tabBarHeight,
           paddingTop: 6,
-          paddingBottom: Platform.OS === 'ios' ? 0 : 10,
+          paddingBottom: tabBarBottomPadding,
         },
+        tabBarItemStyle: { minHeight: 44 },
         tabBarLabelStyle: {
-          fontSize: 12, // the type floor; see the assertion in __tests__/designTypography.test.js
-          fontWeight: '600',
-          fontFamily: Platform.select({ ios: 'SF Pro Text', android: 'Roboto' }),
+          fontSize: theme.type.caption.size * (largeText ? 1.2 : 1),
+          fontWeight: boldText ? '700' : '600',
+          fontFamily: Platform.select({ ios: 'System', android: 'sans-serif' }),
         },
-        tabBarIcon: ({ color, size, focused }) => (
-          <TabBarIcon routeName={route.name} color={color} size={size} focused={focused} />
+        tabBarIcon: ({ color, size }) => (
+          <TabBarIcon routeName={route.name} color={color} size={size} />
         ),
         tabBarLabelPosition: 'below-icon',
       })}
     >
-      <Tab.Screen name="Today" component={TodayStackScreen} options={{ tabBarLabel: 'Today', tabBarAccessibilityLabel: 'Today tab' }} />
-      <Tab.Screen name="Alerts" component={AlertsStackScreen} options={{ tabBarLabel: 'Alerts', tabBarAccessibilityLabel: 'Alerts tab' }} />
-      <Tab.Screen name="Map" component={MapScreen} options={{ tabBarLabel: 'Map', tabBarAccessibilityLabel: 'Map tab' }} />
-      <Tab.Screen name="Saved" component={SavedStackScreen} options={{ tabBarLabel: 'Saved', tabBarAccessibilityLabel: 'Saved places tab' }} />
-      <Tab.Screen name="More" component={MoreStackScreen} options={{ tabBarLabel: 'More', tabBarAccessibilityLabel: 'More tab' }} />
+      <Tab.Screen name="Today" component={TodayStackScreen} options={{ tabBarLabel: t('tab.today'), tabBarAccessibilityLabel: t('tab.today') }} />
+      <Tab.Screen name="Alerts" component={AlertsStackScreen} options={{ tabBarLabel: t('tab.alerts'), tabBarAccessibilityLabel: t('tab.alerts') }} />
+      <Tab.Screen name="Map" component={MapScreen} options={{ tabBarLabel: t('tab.map'), tabBarAccessibilityLabel: t('tab.map') }} />
+      <Tab.Screen name="Saved" component={SavedStackScreen} options={{ tabBarLabel: t('tab.saved'), tabBarAccessibilityLabel: t('tab.saved') }} />
+      <Tab.Screen name="More" component={MoreStackScreen} options={{ tabBarLabel: t('tab.more'), tabBarAccessibilityLabel: t('tab.more') }} />
     </Tab.Navigator>
   );
 }
@@ -143,15 +168,9 @@ function StyleSheetHairline() {
   return StyleSheet.hairlineWidth;
 }
 
-/** Minimal glyph-based tab bar icon. Phase 3+ replaces with SF/Material Symbols. */
-function TabBarIcon({ routeName, color, size, focused }: { routeName: keyof TabParamList; color: string; size: number; focused: boolean }) {
-  const glyph =
-    routeName === 'Today' ? '◉'
-    : routeName === 'Alerts' ? '!'
-    : routeName === 'Map' ? '◎'
-    : routeName === 'Saved' ? '★'
-    : '≡';
-  return <Text style={{ color, fontSize: size, fontWeight: focused ? '700' : '400', lineHeight: size + 2 }}>{glyph}</Text>;
+/** Tab bar icons use the same generated Lucide paths as the web shell. */
+function TabBarIcon({ routeName, color, size }: { routeName: keyof TabParamList; color: string; size: number }) {
+  return <Icon name={TAB_ICONS[routeName]} color={color} size={size} />;
 }
 
 function getActiveRouteName(state: NavigationState | undefined): string | undefined {
@@ -172,8 +191,8 @@ export function RootNavigator() {
       card: theme.colors.background as string,
       text: theme.colors.textPrimary as string,
       border: theme.colors.hairline as string,
-      primary: theme.colors.primaryAction as string,
-      notification: theme.colors.severe as string,
+      primary: theme.colors.interactive,
+      notification: theme.colors.severe,
     },
   };
 

@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import html2canvas from 'html2canvas-pro';
 import toast from 'react-hot-toast';
 import L from 'leaflet';
+import { iconMarkup } from '../lib/iconMarkup';
 
 export interface UseMapSnapshotOptions {
   exportScale?: number;
@@ -143,7 +144,7 @@ export function useMapSnapshot(
                   headerDiv.innerHTML = `
                     <div style="display: flex; align-items: center; gap: 14px;">
                       <div style="width: 48px; height: 48px; border-radius: 14px; background: #f64137; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 24px; color: #17171b; border: 2px solid #ffffff; flex-shrink: 0;">
-                        🛡️
+                        ${iconMarkup('Shield', { size: 24 })}
                       </div>
                       <div>
                         <div style="display: flex; align-items: center; gap: 8px;">
@@ -158,16 +159,16 @@ export function useMapSnapshot(
                           ${escapedTitle}
                         </h2>
                         <div style="display: flex; align-items: center; gap: 12px; margin-top: 4px; font-size: 12px; color: #b9b9bb;">
-                          <span>📍 <strong>Location Focus:</strong> ${escapedLocation}</span>
+                          <span style="display: inline-flex; align-items: center; gap: 4px;">${iconMarkup('MapPin', { size: 14 })}<strong>Location Focus:</strong> ${escapedLocation}</span>
                           <span>•</span>
-                          <span>🛰️ <strong>Tile Engine:</strong> ${escapedBaseMap}</span>
+                          <span style="display: inline-flex; align-items: center; gap: 4px;">${iconMarkup('Radio', { size: 14 })}<strong>Tile Engine:</strong> ${escapedBaseMap}</span>
                         </div>
                       </div>
                     </div>
 
                     <div style="text-align: right; border-left: 1px solid #444447; padding-left: 16px; font-size: 12px; color: #959599;">
-                      <div style="font-family: monospace; font-size: 12px; color: #38bdf8; font-weight: 700;">
-                        ⏱️ ${escapedTimestamp}
+                      <div style="display: flex; align-items: center; justify-content: flex-end; gap: 5px; font-family: monospace; font-size: 12px; color: #38bdf8; font-weight: 700;">
+                        ${iconMarkup('Clock', { size: 14 })}${escapedTimestamp}
                       </div>
                       <div style="margin-top: 4px; font-size: 12px; color: #b9b9bb; max-width: 240px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                         Active Layers: ${escapedOverlays}

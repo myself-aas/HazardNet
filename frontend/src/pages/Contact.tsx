@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Breadcrumbs from '../components/Breadcrumbs';
 import MaterialIcon from '../components/MaterialIcon';
 import { SendIcon } from '../components/ui/animated-state-icons';
+import { PhoneCall } from 'lucide-react';
 
 /**
  * Contact, incident reporting and API access.
@@ -510,15 +511,21 @@ export const Contact: React.FC = () => {
             <div className="space-y-3 text-xs">
               <div className="p-3 bg-white border border-nasa-red space-y-1">
                 <span className="font-bold text-nasa-red-shade block">National emergency service</span>
-                <p className="font-mono text-sm font-bold text-nasa-red-shade">📞 999</p>
+                <p className="font-mono text-sm font-bold text-nasa-red-shade">
+                  <PhoneCall className="mr-1 inline h-4 w-4" aria-hidden="true" />999
+                </p>
               </div>
               <div className="p-3 bg-amber-50 border border-amber-200 space-y-1">
                 <span className="font-bold text-amber-900 block">Department of Agricultural Extension (DAE)</span>
-                <p className="font-mono text-sm font-bold text-amber-800">📞 16123</p>
+                <p className="font-mono text-sm font-bold text-amber-800">
+                  <PhoneCall className="mr-1 inline h-4 w-4" aria-hidden="true" />16123
+                </p>
               </div>
               <div className="p-3 bg-amber-50 border border-amber-200 space-y-1">
                 <span className="font-bold text-amber-900 block">Disaster management helpline</span>
-                <p className="font-mono text-sm font-bold text-amber-800">📞 1090</p>
+                <p className="font-mono text-sm font-bold text-amber-800">
+                  <PhoneCall className="mr-1 inline h-4 w-4" aria-hidden="true" />1090
+                </p>
               </div>
             </div>
           </div>

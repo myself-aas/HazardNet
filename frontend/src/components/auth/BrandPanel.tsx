@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { HazardNetBrand } from '../HazardNetLogo';
@@ -152,7 +153,7 @@ export const BrandPanel: React.FC<BrandPanelProps> = ({ mode, intervalMs = 5200 
           to="/"
           className="inline-flex min-h-[44px] items-center border border-carbon-70 px-3.5 py-2 text-sm font-semibold text-carbon-30 transition-colors hover:border-carbon-50 hover:text-white"
         >
-          ← Back to site
+          <ArrowLeft className="mr-1 h-4 w-4" aria-hidden="true" /> Back to site
         </Link>
       </div>
 

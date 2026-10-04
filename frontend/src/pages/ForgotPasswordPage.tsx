@@ -1,4 +1,5 @@
 import MaterialIcon from "../components/MaterialIcon";
+import { CheckCircle2 } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -127,8 +128,8 @@ const ForgotPasswordPage: React.FC = () => {
           </form>
         ) : (
           <div className="space-y-4 text-center py-2">
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full border border-carbon-20 bg-carbon-05 text-xl text-carbon-80">
-              ✓
+            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full border border-carbon-20 bg-carbon-05 text-carbon-80">
+              <CheckCircle2 className="h-6 w-6" aria-hidden="true" />
             </div>
             <div>
               <h4 className="text-sm font-extrabold text-carbon-90">Check Your Inbox</h4>

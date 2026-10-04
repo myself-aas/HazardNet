@@ -244,7 +244,7 @@ export const PdfExportConfigModal: React.FC<PdfExportConfigModalProps> = ({
           toast.success(`PDF exported successfully as "${evaluatedFilename}"!`, {
             id: toastId,
             duration: 4500,
-            icon: '📄',
+            icon: <FileText className="h-4 w-4" aria-hidden="true" />,
           });
           onClose();
         },

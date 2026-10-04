@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { Sparkles } from 'lucide-react';
 import defaultTrends from '../../public/data/historical/temporal-trends.json';
 
 export interface TemporalTrendRecord {
@@ -137,7 +138,8 @@ export const TemporalTrendChart: React.FC<TemporalTrendChartProps> = ({
             </div>
             {MILESTONES.find((m) => m.year === hoveredPoint.year) && (
               <div className="text-xs text-amber-300 font-semibold pt-0.5">
-                ★ {MILESTONES.find((m) => m.year === hoveredPoint.year)?.label}:{' '}
+                <Sparkles className="mr-1 inline h-3.5 w-3.5" aria-hidden="true" />
+                {MILESTONES.find((m) => m.year === hoveredPoint.year)?.label}:{' '}
                 {MILESTONES.find((m) => m.year === hoveredPoint.year)?.sublabel}
               </div>
             )}

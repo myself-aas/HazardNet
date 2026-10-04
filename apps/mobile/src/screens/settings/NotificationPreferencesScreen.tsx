@@ -79,7 +79,7 @@ export function NotificationPreferencesScreen() {
                     <BodyBold>Enable alerts</BodyBold>
                     <Caption color="textMuted">Master switch: when off, no notifications are sent.</Caption>
                   </VStack>
-                  <Switch value={settings.enabled} onValueChange={(v) => updateSettings({ enabled: v })} disabled={permission !== 'granted'} />
+                  <Switch value={settings.enabled} onValueChange={(v) => updateSettings({ enabled: v })} disabled={permission !== 'granted'} accessibilityLabel="Enable alerts" />
                 </HStack>
               </VStack>
             </Card>
@@ -89,18 +89,18 @@ export function NotificationPreferencesScreen() {
                 <Title3>Delivery</Title3>
                 <HStack justify="space-between" align="center">
                   <VStack space={2} flex={1}><BodyBold>Sound</BodyBold></VStack>
-                  <Switch value={settings.soundEnabled} onValueChange={(v) => updateSettings({ soundEnabled: v })} />
+                  <Switch value={settings.soundEnabled} onValueChange={(v) => updateSettings({ soundEnabled: v })} accessibilityLabel="Notification sound" />
                 </HStack>
                 <HStack justify="space-between" align="center">
                   <VStack space={2} flex={1}><BodyBold>Haptics</BodyBold></VStack>
-                  <Switch value={settings.hapticsEnabled} onValueChange={(v) => updateSettings({ hapticsEnabled: v })} />
+                  <Switch value={settings.hapticsEnabled} onValueChange={(v) => updateSettings({ hapticsEnabled: v })} accessibilityLabel="Notification haptics" />
                 </HStack>
                 <HStack justify="space-between" align="center">
                   <VStack space={2} flex={1}>
                     <BodyBold>SEVERE bypasses quiet hours</BodyBold>
                     <Caption color="textMuted">Life-threatening alerts sound even during Do-Not-Disturb / quiet hours.</Caption>
                   </VStack>
-                  <Switch value={settings.criticalAlertsEnabled} onValueChange={(v) => updateSettings({ criticalAlertsEnabled: v })} />
+                  <Switch value={settings.criticalAlertsEnabled} onValueChange={(v) => updateSettings({ criticalAlertsEnabled: v })} accessibilityLabel="Allow severe alerts during quiet hours" />
                 </HStack>
               </VStack>
             </Card>
@@ -116,6 +116,7 @@ export function NotificationPreferencesScreen() {
                   <Switch
                     value={settings.globalQuietHours.enabled}
                     onValueChange={(v) => updateSettings({ globalQuietHours: { ...settings.globalQuietHours, enabled: v } })}
+                    accessibilityLabel="Suppress non-severe alerts overnight"
                   />
                 </HStack>
                 {settings.globalQuietHours.enabled ? (
@@ -148,6 +149,7 @@ export function NotificationPreferencesScreen() {
                   <Switch
                     value={settings.showDetailsOnLockScreen === false}
                     onValueChange={(v) => updateSettings({ showDetailsOnLockScreen: !v })}
+                    accessibilityLabel="Hide notification details on the lock screen"
                   />
                 </HStack>
               </VStack>

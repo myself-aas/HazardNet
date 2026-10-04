@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
+import { CheckCircle2, X } from 'lucide-react';
 import { auth } from '../services/firebase';
 import { getRedirectResult, onAuthStateChanged } from 'firebase/auth';
 import { InfinityLoader } from '../components/brand';
@@ -134,9 +135,9 @@ export default function AuthCallbackPage() {
         <motion.span
           initial={{ scale: 0.6, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          className="flex h-11 w-11 items-center justify-center rounded-full bg-emerald-100 text-xl text-emerald-700"
+          className="flex h-11 w-11 items-center justify-center rounded-full bg-emerald-100 text-emerald-700"
         >
-          ✓
+          <CheckCircle2 className="h-6 w-6" aria-hidden="true" />
         </motion.span>
         <p className="text-base font-bold text-carbon-80">Signed in successfully</p>
         <p className="text-base text-carbon-60">
@@ -155,8 +156,8 @@ export default function AuthCallbackPage() {
   const resolved = explanation ?? describeOAuthError(params.errorDescription ?? params.error)
   return (
     <Shell>
-      <span className="flex h-11 w-11 items-center justify-center rounded-full bg-carbon-05 text-xl text-nasa-red-shade">
-        ✕
+      <span className="flex h-11 w-11 items-center justify-center rounded-full bg-carbon-05 text-nasa-red-shade">
+        <X className="h-6 w-6" aria-hidden="true" />
       </span>
       <p className="text-sm font-bold text-carbon-80">Sign-in could not complete</p>
       <div className="max-w-md border border-nasa-red bg-white p-3 text-left">

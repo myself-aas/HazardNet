@@ -41,8 +41,11 @@ export const ICON_NAMES = [
   "Activity",
   "AlertCircle",
   "AlertTriangle",
+  "ArrowDown",
+  "ArrowDownUp",
   "ArrowLeft",
   "ArrowRight",
+  "ArrowUp",
   "BarChart3",
   "Bell",
   "BookOpen",
@@ -59,11 +62,18 @@ export const ICON_NAMES = [
   "ChevronDown",
   "ChevronRight",
   "ChevronUp",
+  "Circle",
   "Clock",
   "Cloud",
   "CloudDownload",
+  "CloudDrizzle",
+  "CloudFog",
+  "CloudHail",
   "CloudLightning",
   "CloudRain",
+  "CloudRainWind",
+  "CloudSnow",
+  "CloudSun",
   "Compass",
   "Contrast",
   "Copy",
@@ -89,6 +99,7 @@ export const ICON_NAMES = [
   "Info",
   "Layers",
   "Loader2",
+  "LogOut",
   "Mail",
   "MapPin",
   "Maximize",
@@ -166,6 +177,16 @@ export const ICON_PATHS: Readonly<Record<IconName, IconNode>> = {
     ["path", {"d":"M12 9v4"}],
     ["path", {"d":"M12 17h.01"}],
   ],
+  "ArrowDown": [
+    ["path", {"d":"M12 5v14"}],
+    ["path", {"d":"m19 12-7 7-7-7"}],
+  ],
+  "ArrowDownUp": [
+    ["path", {"d":"m3 16 4 4 4-4"}],
+    ["path", {"d":"M7 20V4"}],
+    ["path", {"d":"m21 8-4-4-4 4"}],
+    ["path", {"d":"M17 4v16"}],
+  ],
   "ArrowLeft": [
     ["path", {"d":"m12 19-7-7 7-7"}],
     ["path", {"d":"M19 12H5"}],
@@ -173,6 +194,10 @@ export const ICON_PATHS: Readonly<Record<IconName, IconNode>> = {
   "ArrowRight": [
     ["path", {"d":"M5 12h14"}],
     ["path", {"d":"m12 5 7 7-7 7"}],
+  ],
+  "ArrowUp": [
+    ["path", {"d":"m5 12 7-7 7 7"}],
+    ["path", {"d":"M12 19V5"}],
   ],
   "BarChart3": [
     ["path", {"d":"M3 3v16a2 2 0 0 0 2 2h16"}],
@@ -254,6 +279,9 @@ export const ICON_PATHS: Readonly<Record<IconName, IconNode>> = {
   "ChevronUp": [
     ["path", {"d":"m18 15-6-6-6 6"}],
   ],
+  "Circle": [
+    ["circle", {"cx":"12","cy":"12","r":"10"}],
+  ],
   "Clock": [
     ["circle", {"cx":"12","cy":"12","r":"10"}],
     ["path", {"d":"M12 6v6l4 2"}],
@@ -266,6 +294,29 @@ export const ICON_PATHS: Readonly<Record<IconName, IconNode>> = {
     ["path", {"d":"m12 21 4-4"}],
     ["path", {"d":"M4.393 15.269A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.436 8.284"}],
   ],
+  "CloudDrizzle": [
+    ["path", {"d":"M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"}],
+    ["path", {"d":"M8 19v1"}],
+    ["path", {"d":"M8 14v1"}],
+    ["path", {"d":"M16 19v1"}],
+    ["path", {"d":"M16 14v1"}],
+    ["path", {"d":"M12 21v1"}],
+    ["path", {"d":"M12 16v1"}],
+  ],
+  "CloudFog": [
+    ["path", {"d":"M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"}],
+    ["path", {"d":"M16 17H7"}],
+    ["path", {"d":"M17 21H9"}],
+  ],
+  "CloudHail": [
+    ["path", {"d":"M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"}],
+    ["path", {"d":"M16 14v2"}],
+    ["path", {"d":"M8 14v2"}],
+    ["path", {"d":"M16 20h.01"}],
+    ["path", {"d":"M8 20h.01"}],
+    ["path", {"d":"M12 16v2"}],
+    ["path", {"d":"M12 22h.01"}],
+  ],
   "CloudLightning": [
     ["path", {"d":"M6 16.326A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 .5 8.973"}],
     ["path", {"d":"m13 12-3 5h4l-3 5"}],
@@ -275,6 +326,29 @@ export const ICON_PATHS: Readonly<Record<IconName, IconNode>> = {
     ["path", {"d":"M16 14v6"}],
     ["path", {"d":"M8 14v6"}],
     ["path", {"d":"M12 16v6"}],
+  ],
+  "CloudRainWind": [
+    ["path", {"d":"M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"}],
+    ["path", {"d":"m9.2 22 3-7"}],
+    ["path", {"d":"m9 13-3 7"}],
+    ["path", {"d":"m17 13-3 7"}],
+  ],
+  "CloudSnow": [
+    ["path", {"d":"M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"}],
+    ["path", {"d":"M8 15h.01"}],
+    ["path", {"d":"M8 19h.01"}],
+    ["path", {"d":"M12 17h.01"}],
+    ["path", {"d":"M12 21h.01"}],
+    ["path", {"d":"M16 15h.01"}],
+    ["path", {"d":"M16 19h.01"}],
+  ],
+  "CloudSun": [
+    ["path", {"d":"M12 2v2"}],
+    ["path", {"d":"m4.93 4.93 1.41 1.41"}],
+    ["path", {"d":"M20 12h2"}],
+    ["path", {"d":"m19.07 4.93-1.41 1.41"}],
+    ["path", {"d":"M15.947 12.65a4 4 0 0 0-5.925-4.128"}],
+    ["path", {"d":"M13 22H7a5 5 0 1 1 4.9-6H13a3 3 0 0 1 0 6Z"}],
   ],
   "Compass": [
     ["circle", {"cx":"12","cy":"12","r":"10"}],
@@ -407,6 +481,11 @@ export const ICON_PATHS: Readonly<Record<IconName, IconNode>> = {
   ],
   "Loader2": [
     ["path", {"d":"M21 12a9 9 0 1 1-6.219-8.56"}],
+  ],
+  "LogOut": [
+    ["path", {"d":"m16 17 5-5-5-5"}],
+    ["path", {"d":"M21 12H9"}],
+    ["path", {"d":"M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"}],
   ],
   "Mail": [
     ["path", {"d":"m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"}],

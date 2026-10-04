@@ -16,6 +16,7 @@
  */
 
 import React, { useCallback, useEffect, useState } from 'react';
+import { AlertCircle, CheckCircle2 } from 'lucide-react';
 import MaterialIcon from '../MaterialIcon';
 import {
   type FreshnessArtifact,
@@ -326,7 +327,11 @@ export const FreshnessPanel: React.FC = () => {
                 <tr key={check.id} className="border-b border-carbon-10">
                   <th scope="row" className="py-1.5 pr-3 font-semibold text-carbon-80">{check.id}</th>
                   <td className="py-1.5 pr-3">
-                    {check.outcome === 'success' ? '✅ pass' : `❌ ${check.outcome}`}
+                    {check.outcome === 'success' ? (
+                      <span className="inline-flex items-center gap-1"><CheckCircle2 className="h-3.5 w-3.5 text-emerald-700" aria-hidden="true" />pass</span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1"><AlertCircle className="h-3.5 w-3.5 text-amber-700" aria-hidden="true" />{check.outcome}</span>
+                    )}
                   </td>
                   <td className="py-1.5 text-carbon-60">{check.detail ?? '—'}</td>
                 </tr>

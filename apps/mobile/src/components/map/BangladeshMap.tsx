@@ -45,18 +45,15 @@ export interface BangladeshMapProps {
   showAlertMarkers?: boolean;
 }
 
-/** Division fill for un-alerted areas — neutral surface-tint from tokens. */
-const NEUTRAL_FILL = '#e4e4e4';
-const NEUTRAL_STROKE = '#bdbdbd';
-
+/** Severity fill for an alerted division, or a theme surface when no alert exists. */
 function colorFor(alert: AlertItemType | undefined, theme: ReturnType<typeof useTheme>['theme']): string {
-  if (!alert) return NEUTRAL_FILL;
+  if (!alert) return theme.colors.surfaceTint;
   const edge = severityForAlert(alert);
-  return edge === 'severe' ? (theme.colors.severe as string)
-    : edge === 'warning' ? (theme.colors.warning as string)
-    : edge === 'watch' ? (theme.colors.watch as string)
-    : edge === 'allClear' ? (theme.colors.allClear as string)
-    : (theme.colors.surfaceTint as string);
+  return edge === 'severe' ? theme.colors.severeSolid
+    : edge === 'warning' ? theme.colors.warningSolid
+    : edge === 'watch' ? theme.colors.watchSolid
+    : edge === 'allClear' ? theme.colors.allClearSolid
+    : theme.colors.surfaceTint;
 }
 
 /**
@@ -102,7 +99,7 @@ export const BangladeshMap: React.FC<BangladeshMapProps> = ({
                 <Path
                   d={rectPath(projector, d.bbox)}
                   fill={showDivisions ? colorFor(a, theme) : 'none'}
-                  stroke={showDivisions ? (a ? theme.colors.textPrimary : NEUTRAL_STROKE) : theme.colors.hairline}
+                  stroke={showDivisions && a ? theme.colors.textPrimary : theme.colors.hairline}
                   strokeWidth={showDivisions ? (a ? 1.5 : 1) : 1}
                   opacity={a ? 0.85 : 1}
                 />
@@ -126,8 +123,8 @@ export const BangladeshMap: React.FC<BangladeshMapProps> = ({
           const [x, y] = projector.project(userLocation.lng, userLocation.lat);
           return (
             <G>
-              <Circle cx={x} cy={y} r={10} fill={theme.colors.primaryAction as string} opacity={0.25} />
-              <Circle cx={x} cy={y} r={5} fill={theme.colors.primaryAction as string} stroke="#fff" strokeWidth={2} />
+              <Circle cx={x} cy={y} r={10} fill={theme.colors.interactive} opacity={0.25} />
+              <Circle cx={x} cy={y} r={5} fill={theme.colors.interactive} stroke={theme.colors.surface} strokeWidth={2} />
             </G>
           );
         })() : null}
@@ -143,7 +140,7 @@ export const BangladeshMap: React.FC<BangladeshMapProps> = ({
               cy={y - 14}
               r={4}
               fill={colorFor(a, theme)}
-              stroke="#fff"
+              stroke={theme.colors.surface}
               strokeWidth={1.5}
             />
           );

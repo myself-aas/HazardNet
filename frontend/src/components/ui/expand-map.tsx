@@ -17,6 +17,7 @@ import {
   Compass,
 } from "lucide-react";
 import L from "leaflet";
+import { iconMarkup } from "../../lib/iconMarkup";
 
 export interface LocationMapProps {
   location?: string;
@@ -154,7 +155,7 @@ export function LocationMap({
             <div style="position: absolute; inset: -8px; border-radius: 50%; background: ${riskColor}; opacity: 0.4;" class="radar-ping-ring"></div>
             <div style="position: absolute; inset: -2px; border-radius: 50%; background: ${riskColor}; opacity: 0.75;" class="radar-ping-ring"></div>
             <div style="position: relative; width: 22px; height: 22px; border-radius: 50%; background: #ffffff; border: 3px solid ${riskColor}; box-shadow: 0 2px 10px rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; color: ${riskColor}; font-size: 12px; font-weight: 900;">
-              ●
+              ${iconMarkup('Circle', { size: 12, color: riskColor })}
             </div>
           </div>
         `,

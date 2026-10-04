@@ -714,7 +714,8 @@ export const AdvisoriesPage: React.FC = () => {
               {/* Repeated Emergency Protocol Header Row on Every Printed Page */}
               <tr className="print-table-emergency-header">
                 <th colSpan={5} className="emergency-protocol-title">
-                  🚨 EMERGENCY PROTOCOL & TECHNICAL SPECIFICATION MATRIX (SOD 2019) • {sector.name.toUpperCase()} SECTOR
+                  <AlertTriangle className="mr-2 inline h-4 w-4 align-[-2px]" aria-hidden="true" />
+                  EMERGENCY PROTOCOL & TECHNICAL SPECIFICATION MATRIX (SOD 2019) • {sector.name.toUpperCase()} SECTOR
                 </th>
               </tr>
               <tr className="border-b border-carbon-20 text-carbon-60 font-mono text-xs">

@@ -97,7 +97,7 @@ export function SavedPlaceDetailScreen() {
                     <BodyBold>Alerts for this place</BodyBold>
                     <Caption color="textMuted">Push notifications when alerts are issued for this location.</Caption>
                   </VStack>
-                  <Switch value={enabled} onValueChange={setEnabled} />
+                  <Switch value={enabled} onValueChange={setEnabled} accessibilityLabel={`Alerts for ${place.label}`} />
                 </HStack>
               </VStack>
             </Card>
@@ -114,7 +114,7 @@ export function SavedPlaceDetailScreen() {
                         key={h}
                         label={h.replace(/_/g, ' ')}
                         selected={on}
-                        severity={on ? 'warning' : null}
+                        severity={on ? 'info' : null}
                         onPress={() => toggleHazard(h)}
                       />
                     );
@@ -130,7 +130,7 @@ export function SavedPlaceDetailScreen() {
                     <BodyBold>Quiet hours</BodyBold>
                     <Caption color="textMuted">Suppress non-critical alerts overnight.</Caption>
                   </VStack>
-                  <Switch value={quietHoursOn} onValueChange={setQuietHoursOn} />
+                  <Switch value={quietHoursOn} onValueChange={setQuietHoursOn} accessibilityLabel={`Quiet hours for ${place.label}`} />
                 </HStack>
                 {quietHoursOn ? (
                   <HStack space={8}>

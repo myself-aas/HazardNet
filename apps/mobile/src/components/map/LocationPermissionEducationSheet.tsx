@@ -14,6 +14,8 @@ import { Title3, Body, BodyBold, Caption, Metadata } from '../../design-system/T
 import { Card } from '../../design-system/Card';
 import { Button } from '../../design-system/Button';
 import { Chip } from '../../design-system/Chip';
+import { Icon } from '../Icon';
+import { useTheme } from '../../theme/ThemeProvider';
 
 const KEY = 'hazardnet:location-edu:v1';
 
@@ -32,6 +34,7 @@ interface Props {
 }
 
 export function LocationPermissionEducationSheet({ visible, onAccept, onDismiss }: Props) {
+  const { theme } = useTheme();
   const [ready, setReady] = useState(false);
   useEffect(() => { setReady(true); }, []);
   if (!visible || !ready) return null;
@@ -39,7 +42,7 @@ export function LocationPermissionEducationSheet({ visible, onAccept, onDismiss 
     <Card>
       <VStack space={10}>
         <HStack align="center" space={8}>
-          <Chip label="📍" severity="info" />
+          <Chip label="Location" severity="info" leadingIcon={<Icon name="MapPin" size="meta" color={theme.colors.interactive} />} />
           <Title3>Why we ask for location</Title3>
         </HStack>
         <BodyBold>We only use your location to match alerts to where you are right now.</BodyBold>

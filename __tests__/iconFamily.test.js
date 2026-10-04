@@ -12,13 +12,14 @@
  *   3. the generated path data matches the registry and the installed lucide version;
  *   4. web and native share one stroke and one size scale;
  *   5. the legacy hand-authored set is frozen - importers may only be removed;
- *   6. no emoji is used as an icon on the native shell.
+ *   6. no emoji/text-glyph stand-ins remain in web literals, and native icons stay registry names.
  */
 
 import { readFileSync, readdirSync, statSync, existsSync } from 'node:fs';
 import { join, dirname, resolve, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
+import ts from 'typescript';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const SRC = join(ROOT, 'frontend/src');
@@ -26,6 +27,7 @@ const MOBILE = join(ROOT, 'apps/mobile/src');
 const REGISTRY = join(ROOT, 'data/design/icon-registry.json');
 const GENERATED = join(ROOT, 'packages/design-system/src/icons.ts');
 const NATIVE_ICON = join(MOBILE, 'components/Icon.tsx');
+const NATIVE_NAVIGATION = join(MOBILE, 'navigation/RootNavigator.tsx');
 
 /**
  * Packages that would make this a two-family tree again. The check is by name, so a
@@ -69,8 +71,8 @@ function lucideImports(text) {
   const named = /import\s*\{([^}]*)\}\s*from\s*'lucide-react'/g;
   for (const match of text.matchAll(named)) {
     for (const part of match[1].split(',')) {
-      const clean = part.trim().replace(/^type\s+/, '');
-      if (!clean) continue;
+      const clean = part.trim();
+      if (!clean || /^type\s+/.test(clean)) continue;
       found.push(clean.split(' as ')[0].trim());
     }
   }
@@ -113,6 +115,49 @@ describe('one icon family', () => {
       }
     }
     expect([...unregistered]).toEqual([]);
+  });
+
+  it('keeps emoji and text-glyph stand-ins out of web runtime literals', () => {
+    // Parse rather than grep: punctuation in comments is not rendered, but JSX text,
+    // string literals and template segments are. ©, bullets, dates and measurement
+    // units remain valid prose/data; emoji and directional/check/status glyphs do not.
+    const forbidden = /[\p{Extended_Pictographic}\uFE0F←-⇿✓✔☑☒✗✘✕✖★☆●○◉◎◆◇■□◀▶▲▼⤢▸▾]/gu;
+    const offenders = [];
+
+    for (const file of walk(SRC)) {
+      if (file.includes('/__tests__/') || /\.test\.(?:tsx?|jsx?)$/.test(file)) continue;
+      const text = readFileSync(file, 'utf8');
+      const source = ts.createSourceFile(
+        file,
+        text,
+        ts.ScriptTarget.Latest,
+        true,
+        file.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS,
+      );
+
+      const visit = (node) => {
+        let value;
+        if (ts.isJsxText(node)) value = node.text;
+        else if (
+          ts.isStringLiteral(node) ||
+          ts.isNoSubstitutionTemplateLiteral(node) ||
+          ts.isTemplateLiteralToken(node)
+        ) value = node.text;
+
+        if (value) {
+          const matches = [...value.matchAll(forbidden)].filter(([glyph]) => !['©', '®', '™'].includes(glyph));
+          if (matches.length) {
+            const { line } = source.getLineAndCharacterOfPosition(node.getStart(source));
+            offenders.push(`${relative(ROOT, file)}:${line + 1} contains ${[...new Set(matches.map(([glyph]) => glyph))].join('')}`);
+          }
+        }
+        ts.forEachChild(node, visit);
+      };
+
+      visit(source);
+    }
+
+    expect(offenders).toEqual([]);
   });
 
   it('keeps the generated path data in sync with the registry and the installed package', () => {
@@ -170,6 +215,19 @@ describe('the native shell draws the same glyphs', () => {
     expect(icon).toMatch(/ICON_SIZES/);
     expect(icon).toMatch(/from 'react-native-svg'/);
     expect(icon).toMatch(/viewBox=\{ICON_VIEW_BOX\}/);
+  });
+
+  it('uses registered Lucide icons for every native bottom tab', () => {
+    const navigation = readFileSync(NATIVE_NAVIGATION, 'utf8');
+    const start = navigation.indexOf('const TAB_ICONS');
+    const end = navigation.indexOf('\n};', start);
+    const block = navigation.slice(start, end);
+    const assignments = [...block.matchAll(/(Today|Alerts|Map|Saved|More): ['\"]([A-Za-z0-9]+)['\"]/g)];
+    expect(assignments.map((match) => match[1])).toEqual(['Today', 'Alerts', 'Map', 'Saved', 'More']);
+    const unregistered = assignments.map((match) => match[2]).filter((name) => !names.has(name));
+    expect(unregistered).toEqual([]);
+    expect(navigation).toContain('<Icon name={TAB_ICONS[routeName]} color={color} size={size} />');
+    expect(navigation).not.toMatch(/const glyph|[◉◎★≡]/);
   });
 
   it('has a native renderer for every tag the family uses', () => {

@@ -9,7 +9,9 @@ import { Animated, Pressable } from 'react-native';
 import { VStack, HStack, Box } from '../../design-system/primitives';
 import { BodyBold, Caption, Metadata } from '../../design-system/Text';
 import { useTheme } from '../../theme/ThemeProvider';
+import { useReducedMotionPreference } from '../../hooks/useReducedMotionPreference';
 import { NATIVE_RADIUS } from '../../theme/nativeTokens';
+import { Icon } from '../Icon';
 import type { ForegroundBanner } from '../../state/foregroundBannerStore';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useEffect, useRef } from 'react';
@@ -21,23 +23,32 @@ interface Props {
 
 export function ForegroundNotificationBanner({ banner, onDismiss }: Props) {
   const { theme } = useTheme();
+  const reduceMotion = useReducedMotionPreference();
   const insets = useSafeAreaInsets();
   const translateY = useRef(new Animated.Value(-200)).current;
 
   useEffect(() => {
-    if (banner) {
-      Animated.spring(translateY, { toValue: 0, useNativeDriver: true, friction: 8 }).start();
-    } else {
-      Animated.spring(translateY, { toValue: -200, useNativeDriver: true, friction: 8 }).start();
+    if (reduceMotion) {
+      translateY.stopAnimation();
+      translateY.setValue(banner ? 0 : -200);
+      return;
     }
-  }, [banner, translateY]);
+
+    const animation = Animated.spring(translateY, {
+      toValue: banner ? 0 : -200,
+      useNativeDriver: true,
+      friction: 8,
+    });
+    animation.start();
+    return () => animation.stop();
+  }, [banner, reduceMotion, translateY]);
 
   if (!banner) return null;
 
-  const color = banner.channel === 'critical' ? theme.colors.severe
-    : banner.channel === 'warning' ? theme.colors.warning
-    : banner.channel === 'watch' ? theme.colors.watch
-    : theme.colors.primaryAction;
+  const color = banner.channel === 'critical' ? theme.colors.severeSolid
+    : banner.channel === 'warning' ? theme.colors.warningSolid
+    : banner.channel === 'watch' ? theme.colors.watchSolid
+    : theme.colors.interactive;
 
   return (
     <Animated.View
@@ -52,24 +63,29 @@ export function ForegroundNotificationBanner({ banner, onDismiss }: Props) {
       accessibilityRole="alert"
       accessibilityLiveRegion="assertive"
     >
-      <Pressable onPress={banner.onPress ?? onDismiss}>
-        <Box
-          px={14}
-          py={12}
-          style={{
-            backgroundColor: theme.colors.surface as string,
-            borderRadius: NATIVE_RADIUS.media,
-            borderLeftWidth: 4,
-            borderLeftColor: color as string,
-            shadowColor: '#000',
-            shadowOpacity: 0.15,
-            shadowRadius: 8,
-            shadowOffset: { width: 0, height: 4 },
-            elevation: 6,
-          }}
-        >
-          <HStack space={10} align="flex-start" justify="space-between">
-            <VStack space={2} flex={1}>
+      <Box
+        px={14}
+        py={12}
+        style={{
+          backgroundColor: theme.colors.surface as string,
+          borderRadius: NATIVE_RADIUS.media,
+          borderLeftWidth: 4,
+          borderLeftColor: color as string,
+          shadowColor: '#000',
+          shadowOpacity: 0.15,
+          shadowRadius: 8,
+          shadowOffset: { width: 0, height: 4 },
+          elevation: 6,
+        }}
+      >
+        <HStack space={10} align="flex-start" justify="space-between">
+          <Pressable
+            onPress={banner.onPress ?? onDismiss}
+            accessibilityRole="button"
+            accessibilityLabel={`${banner.title}. ${banner.body}`}
+            style={{ flex: 1 }}
+          >
+            <VStack space={2}>
               <HStack space={6} align="center">
                 <Box w={8} h={8} bg={color as string} style={{ borderRadius: NATIVE_RADIUS.chip }} />
                 <Metadata color="textMuted" style={{ textTransform: 'uppercase' as const }}>{banner.channel}</Metadata>
@@ -77,12 +93,12 @@ export function ForegroundNotificationBanner({ banner, onDismiss }: Props) {
               <BodyBold>{banner.title}</BodyBold>
               <Caption color="textSecondary">{banner.body}</Caption>
             </VStack>
-            <Pressable accessibilityRole="button" accessibilityLabel="Dismiss" onPress={onDismiss} hitSlop={12}>
-              <Metadata color="textMuted">✕</Metadata>
-            </Pressable>
-          </HStack>
-        </Box>
-      </Pressable>
+          </Pressable>
+          <Pressable accessibilityRole="button" accessibilityLabel="Dismiss notification" onPress={onDismiss} hitSlop={12}>
+            <Icon name="X" size="meta" color={theme.colors.textMuted} />
+          </Pressable>
+        </HStack>
+      </Box>
     </Animated.View>
   );
 }

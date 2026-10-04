@@ -28,12 +28,15 @@ import { useSeverityVisual, formatAge, formatTargetDate, confidenceLabel } from 
 import { getExtrasFor, type AlertExtras } from '../../lib/mockAlerts';
 import { OFFICIAL_DISCLAIMER } from '@hazardnet/core';
 import { Button } from '../../design-system/Button';
+import { Icon } from '../../components/Icon';
+import { useTheme } from '../../theme/ThemeProvider';
 import { useHaptics } from '../../hooks/useHaptics';
 import { SEVERITY_EDGE_WIDTH } from '../../theme/nativeTokens';
 
 type RouteParams = { id: string };
 
 export function AlertDetailScreen() {
+  const { theme } = useTheme();
   const route = useRoute();
   const nav = useNavigation();
   const { id } = route.params as RouteParams;
@@ -201,13 +204,20 @@ function InfoRow({ k, v }: { k: string; v: string }) {
 }
 
 function SourceRow({ name, url, phone }: { name: string; url?: string; phone?: string }) {
+  const { theme } = useTheme();
   return (
     <HStack space={8} align="center" justify="space-between">
       <Body>{name}</Body>
       {phone ? (
         <Button variant="danger" size="sm" label={`Call ${phone}`} onPress={() => { safeOpenUrl(`tel:${phone}`, 'alert-call').catch(() => {}); }} />
       ) : url ? (
-        <Button variant="ghost" size="sm" label="Open →" onPress={() => { safeOpenUrl(url, 'alert-source').catch(() => RNAlert.alert('Cannot open', url)); }} />
+        <Button
+          variant="ghost"
+          size="sm"
+          label="Open"
+          trailingIcon={<Icon name="ArrowRight" size="meta" color={theme.colors.interactive} />}
+          onPress={() => { safeOpenUrl(url, 'alert-source').catch(() => RNAlert.alert('Cannot open', url)); }}
+        />
       ) : null}
     </HStack>
   );

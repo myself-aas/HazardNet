@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Compass } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Compass, ExternalLink } from 'lucide-react';
 import { DataStateError } from '../components/ui/DataState';
 import toast from 'react-hot-toast';
 import MaterialIcon from '../components/MaterialIcon';
@@ -237,7 +237,10 @@ export const BlogArticlePage: React.FC = () => {
                     rel="noopener nofollow"
                     className="mt-1 inline-block text-xs font-black text-amber-700 hover:underline"
                   >
-                    {article.authorWebsite.replace(/^https?:\/\//, '').replace(/\/$/, '')} ↗
+                    <span className="inline-flex items-center gap-1">
+                      {article.authorWebsite.replace(/^https?:\/\//, '').replace(/\/$/, '')}
+                      <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
+                    </span>
                   </a>
                 )}
               </div>
@@ -248,10 +251,14 @@ export const BlogArticlePage: React.FC = () => {
       </article>
 
       <div className="flex items-center justify-between gap-3">
-        <Link to="/blogs" className="text-xs font-black text-amber-800 hover:underline">← All articles</Link>
+        <Link to="/blogs" className="inline-flex items-center gap-1.5 text-xs font-black text-amber-800 hover:underline">
+          <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" /> All articles
+        </Link>
         {isPrimarySuperAdmin(user?.email) && (
           <Link to={`/dashboard/blog`} className="text-xs font-black text-carbon-60 hover:text-carbon-90 hover:underline">
-            Manage in Blog Studio →
+            <span className="inline-flex items-center gap-1.5">
+              Manage in Blog Studio <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+            </span>
           </Link>
         )}
       </div>

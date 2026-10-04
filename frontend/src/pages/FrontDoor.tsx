@@ -49,6 +49,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, Navigate, useLocation, useSearchParams } from 'react-router-dom';
 import { useReducedMotion } from 'framer-motion';
+import { ExternalLink } from 'lucide-react';
 import { Interactive } from '../components/interactive/Interactive';
 import { useWebFrame, interpolate, Easing } from '../lib/motion-interpolate';
 
@@ -260,7 +261,7 @@ const ExternalOrInternalLink: React.FC<{ href: string; label: string }> = ({ hre
     return (
       <a href={href} target="_blank" rel="noopener noreferrer" className={className}>
         {label}
-        <span aria-hidden="true">↗</span>
+        <ExternalLink className="h-4 w-4" aria-hidden="true" />
       </a>
     );
   }

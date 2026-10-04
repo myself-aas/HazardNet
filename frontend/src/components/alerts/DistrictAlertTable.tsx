@@ -19,6 +19,7 @@
  */
 
 import React, { useMemo, useState } from 'react';
+import { ArrowDown, ArrowDownUp, ArrowUp } from 'lucide-react';
 import { LEVEL_COLOURS } from './AlertLevelBadge';
 import type { AlertLevel, AlertRecord } from '../../lib/alerts';
 import { useI18n } from '../../hooks/useI18n';
@@ -92,7 +93,11 @@ export const DistrictAlertTable: React.FC<DistrictAlertTableProps> = ({
     >
       {label}
       <span aria-hidden="true" className={sort === key ? 'text-carbon-90' : 'text-carbon-60'}>
-        {sort === key ? (ascending ? '↑' : '↓') : '↕'}
+        {sort === key ? (
+          ascending ? <ArrowUp className="h-3.5 w-3.5" /> : <ArrowDown className="h-3.5 w-3.5" />
+        ) : (
+          <ArrowDownUp className="h-3.5 w-3.5" />
+        )}
       </span>
     </button>
   );

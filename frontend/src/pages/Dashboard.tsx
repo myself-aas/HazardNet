@@ -1,4 +1,5 @@
 import MaterialIcon from "../components/MaterialIcon";
+import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -670,7 +671,11 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
                         <div className="flex items-center justify-between text-xs font-mono text-carbon-60 pt-1.5 sm:pt-2 border-t border-carbon-20/60 gap-2">
                           <span className="truncate">{dist.mainCrop}</span>
                           <span className={`font-bold flex items-center gap-1 whitespace-nowrap ${isSelected ? 'text-amber-700' : 'text-carbon-60'}`}>
-                            {isSelected ? <><MaterialIcon name="my_location" className="w-3.5 h-3.5 shrink-0" /> Centered</> : '→'}
+                            {isSelected ? (
+                              <><MaterialIcon name="my_location" className="w-3.5 h-3.5 shrink-0" /> Centered</>
+                            ) : (
+                              <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+                            )}
                           </span>
                         </div>
                       </div>
@@ -892,7 +897,9 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
                     }}
                     className="w-full py-2.5 bg-carbon-90 hover:bg-carbon-80 text-white font-black text-xs  transition-all cursor-pointer"
                   >
-                    Focus GIS Map Stage →
+                    <span className="inline-flex items-center justify-center gap-2">
+                      Focus GIS Map Stage <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                    </span>
                   </button>
                 </div>
               ))}
@@ -1136,7 +1143,9 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
                 className="px-4 py-3 bg-carbon-90 hover:bg-carbon-80 text-white border border-carbon-80 text-xs font-mono font-bold rounded-full transition-all flex items-center gap-2 active:scale-95 min-h-[48px] cursor-pointer"
                 title="Return to National Overview Mode"
               >
-                <span>← National Overview</span>
+                <span className="inline-flex items-center gap-2">
+                  <ArrowLeft className="h-4 w-4" aria-hidden="true" /> National Overview
+                </span>
               </button>
 
               <div className="flex items-center gap-4 text-xs sm:text-sm font-mono bg-transparent px-4 py-3  border-0">

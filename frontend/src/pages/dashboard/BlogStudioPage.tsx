@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { FileText } from 'lucide-react';
 import toast from 'react-hot-toast';
 import MaterialIcon from '../../components/MaterialIcon';
 import Breadcrumbs from '../../components/Breadcrumbs';
@@ -148,7 +149,7 @@ export const BlogStudioPage: React.FC = () => {
           </div>
         ) : articles.length === 0 ? (
           <div className="p-10 text-center space-y-3">
-            <span className="text-3xl">📝</span>
+            <FileText className="mx-auto h-8 w-8 text-carbon-40" aria-hidden="true" />
             <p className="text-sm font-bold text-carbon-80">No articles yet</p>
             <p className="text-xs text-carbon-60">Write the first HazardNet field report or research deep-dive.</p>
             <Link

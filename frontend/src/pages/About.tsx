@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Breadcrumbs from '../components/Breadcrumbs';
 
@@ -148,25 +149,25 @@ export const About: React.FC = () => {
               title: 'Haor Basin & Pre-Monsoon Flash Floods',
               desc: 'Districts like Sunamganj and Habiganj face rapid upstream water surges in April/May, threatening 800,000+ hectares of ripe Boro paddy rice right before harvest.',
               link: '/use-cases?case=haor',
-              linkText: 'Read Haor Case Study →'
+              linkText: 'Read Haor Case Study'
             },
             {
               title: 'Northern Cold Waves & Drought',
               desc: 'Kurigram, Rangpur, and Rajshahi experience severe seedling stunting during winter cold snaps and soil moisture deficits during summer Aus/Aman seasons.',
               link: '/use-cases?case=coldwave',
-              linkText: 'Read Cold Wave Case Study →'
+              linkText: 'Read Cold Wave Case Study'
             },
             {
               title: 'Coastal Cyclones & Salinity Intrusion',
               desc: 'Satkhira, Barguna, and Cox\'s Bazar suffer storm surges from Bay of Bengal cyclones (Remal, Amphan), causing long-term soil salinity elevation.',
               link: '/use-cases?case=cyclone',
-              linkText: 'Read Coastal Surge Case Study →'
+              linkText: 'Read Coastal Surge Case Study'
             },
             {
               title: 'Nor\'wester Convective Storms',
               desc: 'Severe local storms bring high velocity winds and hail damage across central agricultural districts during spring planting windows.',
               link: '/docs',
-              linkText: 'Read Model Architecture →'
+              linkText: 'Read Model Architecture'
             }
           ].map((item, idx) => (
             <motion.div
@@ -181,7 +182,10 @@ export const About: React.FC = () => {
                 {item.desc}
               </p>
               <Link to={item.link} className="text-nasa-blue-shade font-bold underline inline-block pt-1 hover:text-amber-900">
-                {item.linkText}
+                <span className="inline-flex items-center gap-1.5">
+                  {item.linkText}
+                  <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                </span>
               </Link>
             </motion.div>
           ))}

@@ -18,6 +18,7 @@ import { Title1, Body, Caption, Metadata } from '../../design-system/Text';
 import { Card } from '../../design-system/Card';
 import { Chip } from '../../design-system/Chip';
 import { useTheme } from '../../theme/ThemeProvider';
+import { useLocale } from '../../hooks/useLocale';
 import { ARTICLE_INDEX } from '../../components/articles/ArticleReader';
 import { EMERGENCY_CONTACTS } from '@hazardnet/core';
 import { Icon } from '../../components/Icon';
@@ -29,8 +30,15 @@ import type { IconName } from '@hazardnet/design-system';
 interface RowProps { label: string; subtitle?: string; icon?: IconName; onPress?: () => void; }
 const Row: React.FC<RowProps> = ({ label, subtitle, icon, onPress }) => {
   const { theme } = useTheme();
+  const { t } = useLocale();
   return (
-    <Pressable onPress={onPress} accessibilityRole="button" style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}>
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={subtitle ? `${label}. ${subtitle}` : label}
+      accessibilityHint={t('more.openHint')}
+      style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}
+    >
       <HStack space={12} align="center" py={14}>
         {icon ? (
           <Icon name={icon} size="nav" color={theme.colors.textMuted} />
@@ -47,28 +55,36 @@ const Row: React.FC<RowProps> = ({ label, subtitle, icon, onPress }) => {
   );
 };
 
+const ARTICLE_TITLE_KEYS: Record<string, 'article.about' | 'article.methodology' | 'article.privacy' | 'article.contact'> = {
+  about: 'article.about',
+  methodology: 'article.methodology',
+  privacy: 'article.privacy',
+  contact: 'article.contact',
+};
+
 export function MoreScreen() {
   const nav = useNavigation<any>();
+  const { t } = useLocale();
   return (
     <Screen>
       <Box px={16} py={12}>
         <VStack space={16}>
           <HStack align="center" space={10}>
-            <Title1>More</Title1>
+            <Title1>{t('more.more')}</Title1>
             <Chip label="Phase 7" severity="info" />
           </HStack>
 
           <Card padded={false}>
             <Box px={16}>
-              <Row label="Submit field report" subtitle="Photo + caption + location; queues offline" icon="Camera" onPress={() => nav.navigate('SubmitReport')} />
+              <Row label={t('more.submit')} subtitle={t('more.submitSub')} icon="Camera" onPress={() => nav.navigate('SubmitReport')} />
               <Divider />
-              <Row label="Advisories" subtitle="Sector protocols, phased steps, who to call" icon="FileText" onPress={() => nav.navigate('Advisories')} />
+              <Row label={t('more.advisories')} subtitle={t('more.advisoriesSub')} icon="FileText" onPress={() => nav.navigate('Advisories')} />
               <Divider />
-              <Row label="Data status" subtitle="Cache age, source availability" icon="Database" onPress={() => nav.navigate('DataStatus')} />
+              <Row label={t('more.dataStatus')} subtitle={t('more.dataStatusSub')} icon="Database" onPress={() => nav.navigate('DataStatus')} />
               <Divider />
-              <Row label="Notification settings" subtitle="Critical alerts, quiet hours, channels" icon="Bell" onPress={() => nav.navigate('NotificationPreferences')} />
+              <Row label={t('more.notifications')} subtitle={t('more.notificationsSub')} icon="Bell" onPress={() => nav.navigate('NotificationPreferences')} />
               <Divider />
-              <Row label="Accessibility" subtitle="Theme, large text, reduced motion, haptics" icon="Contrast" onPress={() => nav.navigate('Accessibility')} />
+              <Row label={t('more.accessibility')} subtitle={t('more.accessibilitySub')} icon="Contrast" onPress={() => nav.navigate('Accessibility')} />
             </Box>
           </Card>
 
@@ -77,7 +93,7 @@ export function MoreScreen() {
               {ARTICLE_INDEX.map((a, i) => (
                 <React.Fragment key={a.id}>
                   {i > 0 ? <Divider /> : null}
-                  <Row label={a.title} icon="Info" onPress={() => nav.navigate('Article', { id: a.id })} />
+                  <Row label={t(ARTICLE_TITLE_KEYS[a.id])} icon="Info" onPress={() => nav.navigate('Article', { id: a.id })} />
                 </React.Fragment>
               ))}
             </Box>
@@ -89,19 +105,19 @@ export function MoreScreen() {
                 <React.Fragment key={c.number}>
                   {i > 0 ? <Divider /> : null}
                   <Row
-                    label={`${c.label}: ${c.number}`}
+                    label={`${t('more.emergency')}: ${c.number}`}
                     icon="PhoneCall"
                     onPress={() => { safeOpenUrl('tel:' + c.number, 'emergency').catch(() => {}); }}
                   />
                 </React.Fragment>
               ))}
               <Divider />
-              <Row label="Open hazardnet.live in browser" icon="ExternalLink" onPress={() => { safeOpenUrl('https://hazardnet.live', 'web').catch(() => {}); }} />
+              <Row label={t('more.website')} icon="ExternalLink" onPress={() => { safeOpenUrl('https://hazardnet.live', 'web').catch(() => {}); }} />
             </Box>
           </Card>
 
           <Caption align="center" color="textMuted">
-            HazardNet Mobile v2.2.0 · Offline-first · On-device privacy
+            {t('more.version')}
           </Caption>
         </VStack>
       </Box>

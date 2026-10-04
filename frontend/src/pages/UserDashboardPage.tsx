@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link, Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { ExternalLink } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { UserAvatarField } from '../components/user/UserAvatarField';
 import { OverviewSection } from '../components/user/dashboard/OverviewSection';
@@ -117,7 +118,9 @@ const PublicProfilePreview: React.FC = () => {
                   rel="noopener noreferrer"
                   className="border border-carbon-20 px-3 py-1.5 text-xs font-bold text-carbon-70 transition-colors hover:bg-carbon-05"
                 >
-                  {label} ↗
+                  <span className="inline-flex items-center gap-1.5">
+                    {label} <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
+                  </span>
                 </a>
               ))}
             </div>

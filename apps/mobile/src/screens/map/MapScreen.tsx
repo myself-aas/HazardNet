@@ -119,10 +119,10 @@ export function MapScreen() {
         <Box px={16} py={8} style={{ position: 'absolute', left: 12, bottom: 12, backgroundColor: theme.colors.surface as string, borderRadius: NATIVE_RADIUS.control, padding: 8 }}>
           <VStack space={4}>
             <Metadata color="textMuted">SEVERITY</Metadata>
-            <HStack space={8} align="center"><Box w={10} h={10} bg={theme.colors.severe as string} /><Caption>Severe</Caption></HStack>
-            <HStack space={8} align="center"><Box w={10} h={10} bg={theme.colors.warning as string} /><Caption>Warning</Caption></HStack>
-            <HStack space={8} align="center"><Box w={10} h={10} bg={theme.colors.watch as string} /><Caption>Watch</Caption></HStack>
-            <HStack space={8} align="center"><Box w={10} h={10} bg={theme.colors.allClear as string} /><Caption>No alerts</Caption></HStack>
+            <HStack space={8} align="center"><Box w={10} h={10} bg={theme.colors.severeSolid} /><Caption>Severe</Caption></HStack>
+            <HStack space={8} align="center"><Box w={10} h={10} bg={theme.colors.warningSolid} /><Caption>Warning</Caption></HStack>
+            <HStack space={8} align="center"><Box w={10} h={10} bg={theme.colors.watchSolid} /><Caption>Watch</Caption></HStack>
+            <HStack space={8} align="center"><Box w={10} h={10} bg={theme.colors.allClearSolid} /><Caption>No alerts</Caption></HStack>
           </VStack>
         </Box>
 
@@ -173,8 +173,8 @@ export function MapScreen() {
             <VStack space={10}>
               <HStack space={12} justify="space-between" align="center">
                 <Title3>{selectedDiv.name}</Title3>
-                <Pressable accessibilityRole="button" accessibilityLabel="Close" onPress={() => setSelectedDiv(null)}>
-                  <Metadata color="textMuted">✕</Metadata>
+                <Pressable accessibilityRole="button" accessibilityLabel="Close division details" onPress={() => setSelectedDiv(null)} hitSlop={10}>
+                  <Icon name="X" size="control" color={theme.colors.textMuted} />
                 </Pressable>
               </HStack>
               {alertsForDiv.length > 0 ? (

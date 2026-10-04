@@ -11,7 +11,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Alert as RNAlert, Image, ScrollView, TextInput } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Screen } from '../../components/Screen';
-import { NATIVE_RADIUS } from '../../theme/nativeTokens';
+import { NATIVE_FONT_SCALE_MAX, NATIVE_RADIUS } from '../../theme/nativeTokens';
 import { Box, VStack, HStack } from '../../design-system/primitives';
 import { Title1, Title3, Body, BodyBold, Caption } from '../../design-system/Text';
 import { Card } from '../../design-system/Card';
@@ -23,6 +23,7 @@ import { useNavigation } from '@react-navigation/native';
 import { SCREEN_H_PADDING } from '../../theme/nativeTokens';
 import { useTheme } from '../../theme/ThemeProvider';
 import { HAZARD_TYPES } from '@hazardnet/core';
+import { useSettingsStore } from '../../state/settingsStore';
 
 let ImagePickerAny: typeof ImagePicker | null = null;
 try {
@@ -33,7 +34,8 @@ try {
 }
 
 export function SubmitReportScreen() {
-  const { theme } = useTheme();
+  const { theme, bodyFont } = useTheme();
+  const largeText = useSettingsStore((state) => state.largeText);
   const nav = useNavigation<any>();
   const { enqueue, queue } = useReportQueue();
   const { permission: locPerm, requestPermission: requestLoc, getCurrentLocation } = useLocation();
@@ -140,8 +142,9 @@ export function SubmitReportScreen() {
                     onChangeText={setCaption}
                     placeholder="Short description (e.g. 'Water 2ft above road in Kurigram sadar')"
                     placeholderTextColor={theme.colors.textMuted as string}
+                    maxFontSizeMultiplier={NATIVE_FONT_SCALE_MAX}
                     multiline
-                    style={{ color: theme.colors.textPrimary as string, fontSize: 16, minHeight: 80, textAlignVertical: 'top' }}
+                    style={{ color: theme.colors.textPrimary, fontFamily: bodyFont, fontSize: theme.type.body.size * (largeText ? 1.2 : 1), minHeight: 80, textAlignVertical: 'top' }}
                     accessibilityLabel="Report caption"
                   />
                 </Box>
@@ -153,7 +156,7 @@ export function SubmitReportScreen() {
                         key={h}
                         label={h.replace(/_/g, ' ')}
                         selected={tag === h}
-                        severity={tag === h ? 'warning' : null}
+                        severity={tag === h ? 'info' : null}
                         onPress={() => setTag(h)}
                       />
                     ))}

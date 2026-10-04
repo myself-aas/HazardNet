@@ -1,4 +1,5 @@
 import MaterialIcon from "../components/MaterialIcon";
+import { ArrowRight } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -116,7 +117,9 @@ export const Blogs: React.FC = () => {
                 </div>
                 <div className="text-xs font-mono text-carbon-60 flex items-center justify-between">
                   <span>{article.authorName}</span>
-                  <span className="font-black text-carbon-90 group-hover:text-nasa-blue-shade">Read → /blogs/{article.slug}</span>
+                  <span className="inline-flex items-center gap-1.5 font-black text-carbon-90 group-hover:text-nasa-blue-shade">
+                    Read /blogs/{article.slug} <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+                  </span>
                 </div>
               </Link>
             ))}

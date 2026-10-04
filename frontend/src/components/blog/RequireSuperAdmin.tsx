@@ -1,4 +1,5 @@
 import React from 'react';
+import { Shield, ShieldAlert } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { isPrimarySuperAdmin, primarySuperAdminEmails } from '../../lib/superadmins';
@@ -24,7 +25,7 @@ export const RequireSuperAdmin: React.FC<{ children: React.ReactNode }> = ({ chi
   if (!user) {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4 text-center px-4">
-        <span className="text-3xl">🔐</span>
+        <Shield className="h-8 w-8 text-amber-700" aria-hidden="true" />
         <h1 className="text-xl font-black text-carbon-90">Sign in required</h1>
         <p className="text-sm text-carbon-60 max-w-md">
           The Blog Studio is restricted to HazardNet primary superadmins. Sign in with a superadmin account to continue.
@@ -42,7 +43,7 @@ export const RequireSuperAdmin: React.FC<{ children: React.ReactNode }> = ({ chi
   if (!isPrimarySuperAdmin(user.email)) {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4 text-center px-4" role="alert">
-        <span className="text-3xl">⛔</span>
+        <ShieldAlert className="h-8 w-8 text-nasa-red-shade" aria-hidden="true" />
         <h1 className="text-xl font-black text-carbon-90">Superadmins only</h1>
         <p className="text-sm text-carbon-60 max-w-md leading-relaxed">
           Blog publishing is restricted to HazardNet&apos;s primary superadmins. You are signed in as{' '}

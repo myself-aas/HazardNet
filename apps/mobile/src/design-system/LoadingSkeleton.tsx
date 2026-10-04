@@ -8,6 +8,7 @@ import React, { useEffect, useRef } from 'react';
 import { Animated, Easing, StyleProp, ViewStyle } from 'react-native';
 import { Box } from './primitives';
 import { useTheme } from '../theme/ThemeProvider';
+import { useReducedMotionPreference } from '../hooks/useReducedMotionPreference';
 
 export interface SkeletonProps {
   w?: number | string;
@@ -19,7 +20,12 @@ export interface SkeletonProps {
 export const Skeleton: React.FC<SkeletonProps> = ({ w = '100%', h = 16, radius = 2, style }) => {
   const { theme } = useTheme();
   const opacity = useRef(new Animated.Value(0.35)).current;
+  const reduceMotion = useReducedMotionPreference();
   useEffect(() => {
+    if (reduceMotion) {
+      opacity.setValue(0.5);
+      return;
+    }
     const anim = Animated.loop(
       Animated.sequence([
         Animated.timing(opacity, { toValue: 0.7, duration: 700, easing: Easing.inOut(Easing.quad), useNativeDriver: true }),
@@ -28,7 +34,7 @@ export const Skeleton: React.FC<SkeletonProps> = ({ w = '100%', h = 16, radius =
     );
     anim.start();
     return () => anim.stop();
-  }, [opacity]);
+  }, [opacity, reduceMotion]);
 
   return (
     <Animated.View

@@ -1,4 +1,5 @@
 import React from 'react';
+import { ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion, useReducedMotion } from 'framer-motion';
 import { HazardNetBrand } from '../HazardNetLogo';
@@ -27,7 +28,7 @@ const BackToHome: React.FC<{ className?: string }> = ({ className = '' }) => (
     to="/"
     className={`inline-flex min-h-[44px] items-center gap-1.5 px-3 py-2 text-sm font-semibold text-nasa-blue-shade touch-manipulation ${className}`}
   >
-    <span aria-hidden="true">←</span> Back to HazardNet
+    <ArrowLeft className="h-4 w-4" aria-hidden="true" /> Back to HazardNet
   </Link>
 );
 

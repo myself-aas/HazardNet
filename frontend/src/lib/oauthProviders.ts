@@ -157,7 +157,7 @@ export function describeOAuthError(rawError: unknown): OAuthErrorExplanation {
   if (text.includes('operation-not-allowed') || text.includes('operation not allowed')) {
     return {
       title: 'Provider not enabled',
-      hint: 'This sign-in provider is not enabled in the Firebase console. Enable Google and GitHub under Authentication → Sign-in method, and configure their OAuth client IDs.',
+      hint: 'This sign-in provider is not enabled in the Firebase console. Enable Google and GitHub under Authentication, open the Sign-in method section, and configure their OAuth client IDs.',
     };
   }
   if (text.includes('invalid-credential') && (text.includes('provider') || text.includes('idp') || text.includes('github') || text.includes('google'))) {
@@ -181,7 +181,7 @@ export function describeOAuthError(rawError: unknown): OAuthErrorExplanation {
   if (text.includes('unauthorized-domain') || text.includes('unauthorized domain')) {
     return {
       title: 'Domain not authorized',
-      hint: 'Add this site’s domain (hazardnet.live, www.hazardnet.live, localhost) to Authentication → Settings → Authorized domains in the Firebase console.',
+      hint: 'Add this site’s domain (hazardnet.live, www.hazardnet.live, localhost) to the Authorized domains list in Firebase console under Authentication settings.',
     };
   }
   if (text.includes('too many requests') || text.includes('rate limit') || text.includes('quota') || text.includes('auth/too-many-requests')) {

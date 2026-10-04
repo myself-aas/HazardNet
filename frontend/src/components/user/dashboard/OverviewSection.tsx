@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { ArrowRight, CheckCircle2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../../context/AuthContext';
@@ -204,7 +205,10 @@ export const OverviewSection: React.FC<{ onNavigate: (tab: 'profile' | 'connecto
               </div>
             </>
           ) : (
-            <p className="text-xs font-bold text-carbon-80">Everything’s filled in. Beautiful! 🎉</p>
+            <p className="inline-flex items-center gap-1.5 text-xs font-bold text-carbon-80">
+              <CheckCircle2 className="h-4 w-4 text-emerald-700" aria-hidden="true" />
+              Everything’s filled in. Beautiful!
+            </p>
           )}
           <button
             type="button"
@@ -224,7 +228,7 @@ export const OverviewSection: React.FC<{ onNavigate: (tab: 'profile' | 'connecto
               <span className="flex items-center gap-2">
                 <MaterialIcon name="public" size={15} className="text-nasa-blue" /> Open district forecasts
               </span>
-              <span aria-hidden="true">→</span>
+              <ArrowRight className="h-4 w-4 shrink-0" aria-hidden="true" />
             </Link>
             <button
               type="button"
@@ -237,7 +241,7 @@ export const OverviewSection: React.FC<{ onNavigate: (tab: 'profile' | 'connecto
                   {CONNECTOR_CATALOG.length} available
                 </span>
               </span>
-              <span aria-hidden="true">→</span>
+              <ArrowRight className="h-4 w-4 shrink-0" aria-hidden="true" />
             </button>
             <button
               type="button"
@@ -247,7 +251,7 @@ export const OverviewSection: React.FC<{ onNavigate: (tab: 'profile' | 'connecto
               <span className="flex items-center gap-2">
                 <MaterialIcon name="shield" size={15} className="text-carbon-60" /> Email, password & security
               </span>
-              <span aria-hidden="true">→</span>
+              <ArrowRight className="h-4 w-4 shrink-0" aria-hidden="true" />
             </button>
           </div>
         </Card>

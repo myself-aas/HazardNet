@@ -81,8 +81,14 @@ function renderInline(text: string, theme: any, keyPrefix: string): React.ReactN
         const idx = p.indexOf(urlMatch[0]);
         if (idx > 0) out.push(<Body key={`${keyPrefix}-${i}-a`} color="textSecondary">{p.slice(0, idx)}</Body>);
         out.push(
-          <Pressable key={`${keyPrefix}-${i}-b`} onPress={() => { safeOpenUrl(urlMatch[0], 'article').catch(() => {}); }}>
-            <Body color="primaryAction" style={{ textDecorationLine: 'underline' as const }}>{urlMatch[0]}</Body>
+          <Pressable
+            key={`${keyPrefix}-${i}-b`}
+            onPress={() => { safeOpenUrl(urlMatch[0], 'article').catch(() => {}); }}
+            accessibilityRole="link"
+            accessibilityLabel={urlMatch[0]}
+            hitSlop={10}
+          >
+            <Body color="interactive" style={{ textDecorationLine: 'underline' as const }}>{urlMatch[0]}</Body>
           </Pressable>
         );
         if (idx + urlMatch[0].length < p.length) {

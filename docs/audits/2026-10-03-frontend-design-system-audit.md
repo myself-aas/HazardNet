@@ -528,7 +528,7 @@ fully tokenised. Three new gates were added by pass 2: `darkTheme` (30 tests), `
 | P1-5 157 uppercase-tracking micro-labels | **Deferred** | No mechanical rule separates a section eyebrow from a dense-console field label, and this repository's console chrome is explicitly outside the skill's remit (§13). A blanket sweep would trade one generic signature for illegible data chrome; the honest fix is per-surface and belongs with backlog 13/16, not with a mechanical sweep. |
 | P1-6 hover doing work touch cannot | **Fixed on the audited surfaces; wider sweep deferred** | The map's HUD already re-arms on `onTouchStart`, and the one control whose only affordance was `group-hover:opacity-100` (`View Full Resolution`) is now `opacity-100 md:opacity-0 md:group-hover:opacity-100 focus-visible:opacity-100`. The remaining 35-page sweep is backlog 8's second half. |
 | P1-7 tables and forms on mobile | **Fixed (12 tables + 2 editorial renderers)** | `frontend/src/components/ui/CardStackTable.tsx` renders a table's rows twice from one source: the table at `md`+, one card per row below it, with the first cell promoted to the card heading and the rest as a `<dl>` of label/value pairs, so a screen reader hears the column name with each value. It is used by the landing page and every article page (`CardStackTable`) and by 10 console/page files (`CardStackRows`) - 12 tables plus the two editorial renderers, all of which carried content below md. Six tables stay tables, each ledgered with its reason (the map's table view, two print sheets, an upazila toggle whose default view is already the card grid, and two two-column metadata tables that do not scroll at 320px); the alert table already paired its table with a card list, so only the wider-screen branch remains. `data/design/table-stack-baseline.json` ledgers every `<table>` in `frontend/src` with its status and reason, and `__tests__/tableStack.test.js` fails if a new table appears unledgered, a table count drifts, or a conversion is removed. |
-| P1-8 two icon families | **Fixed (one family, both platforms)** | The decision is Lucide, and it is executable rather than aspirational: it is the only icon package `frontend/package.json` declares, and it ships plain SVG path data. `data/design/icon-registry.json` holds the decision (family, one stroke, the size scale, the 102 names in use); `scripts/generate-icon-glyphs.mjs` emits `packages/design-system/src/icons.ts` - name → path data, React-free - which web consumes through `lucide-react` and the native shell through `react-native-svg` in `apps/mobile/src/components/Icon.tsx`. The stroke is set once (`svg.lucide { stroke-width: 1.75 }` on web, `ICON_STROKE` on native), never per call site. Emoji and text glyphs are gone from the native shell: the More tab rows, the swipe actions, the data-state banners and the four empty states now draw registry glyphs. `MaterialIcon.tsx` (923 lines, hand-authored) is frozen legacy with an importer ratchet that may only shrink. `__tests__/iconFamily.test.js` (11 tests) enforces all six halves, including that the generated paths still match the installed version. |
+| P1-8 two icon families | **Fixed (one family, both platforms)** | The decision is Lucide, and it is executable rather than aspirational: it is the only icon package `frontend/package.json` declares, and it ships plain SVG path data. `data/design/icon-registry.json` holds the decision (family, one stroke, the size scale, 114 names); `scripts/generate-icon-glyphs.mjs` emits `packages/design-system/src/icons.ts` - name → path data, React-free - which web consumes through `lucide-react` and the native shell through `react-native-svg` in `apps/mobile/src/components/Icon.tsx`. The stroke is set once (`svg.lucide { stroke-width: 1.75 }` on web, `ICON_STROKE` on native), never per call site. The former web emoji/arrow/tick substitutes now use registry icons, including generated Leaflet and snapshot HTML through `iconMarkup`; the WMO weather mapping is typed against registered names. `__tests__/iconFamily.test.js` (13 tests) now AST-scans web runtime literals and also checks imports, generated paths, shared renderer parity and native icon props. `MaterialIcon.tsx` (923 lines, hand-authored) remains frozen legacy with an importer ratchet that may only shrink. |
 | P2-1 web-only capability inventory | **Accepted as port input** | It describes what the native shell must re-decide; no web change is implied. §5.4 stays as written. |
 | P2-2 IA parity (~30 of 52 routes have no native counterpart) | **Deferred** | A product decision, not a web defect; it is what `docs/MOBILE_AUDIT_AND_REDESIGN.md` exists to schedule. |
 | P2-3 state coverage partial | **Fixed** | Backlog 13 shipped: the route wrapper and the four-state checklist for all 35 pages, with the defects it turned up fixed (see row 13). The `RunVisual` motion-gate defect found during the first pass is still covered by `frontend/src/components/**/__tests__`. |
@@ -547,7 +547,7 @@ fully tokenised. Three new gates were added by pass 2: `darkTheme` (30 tests), `
 | 7 | **Fixed** | `@mui/material`, `@emotion/react`, `@emotion/styled` and `@base-ui/react` had zero imports anywhere in the repository outside `package-lock.json`; they are removed from `frontend/package.json` and `package-lock.json` was regenerated with `npm install --package-lock-only --offline`. The lockfile diff is exactly those four packages and their exclusive transitive tree (594 lines removed, no unrelated churn) — verified with the full jest battery green afterwards. |
 | 8 | **Fixed (both halves)** | Web: re-measured control by control, every icon-only control carries an `aria-label`; `title=` attributes are extras on text-labelled controls. Native (`73e9e10`): the map's glyph-only controls became one labelled "Map tools" control that opens `MapToolsSheet`, a bottom sheet of labelled rows — recenter (with the state spelled out) and two switches for divisions and alert markers — so nothing on the native map depends on a glyph's meaning. |
 | 9 | **Fixed** | 12 tables across 10 files plus the landing page and the article block render one card per row below `md` through `components/ui/CardStackTable.tsx`; `data/design/table-stack-baseline.json` + `__tests__/tableStack.test.js` keep the ledger honest. The console's Map/Table toggle stays the console's own parity mechanism. |
-| 10 | **Fixed** | One family = Lucide, with a shared registry (`data/design/icon-registry.json` → `packages/design-system/src/icons.ts`) so the same glyph serves web and native; `MaterialIcon` frozen with a shrinking-importer ratchet; every native emoji/text glyph replaced. |
+| 10 | **Fixed (web + native gates)** | One family = Lucide, with a shared registry (`data/design/icon-registry.json` → `packages/design-system/src/icons.ts`) so the same glyph serves web and native; `MaterialIcon` frozen with a shrinking-importer ratchet; native emoji/text glyphs replaced; web runtime literals are AST-gated against emoji and text-glyph substitutes. The icon set has 114 registered names. |
 | 11 | **Fixed** | The native Advisories screen landed (`ca834b5`): `/advisories` reads the same `@hazardnet/core` protocol dataset the web page does, so the app shows the farmer-facing output rather than a link to the site. |
 | 12 | **Fixed** | 369 authored sub-12px occurrences across 46 files → 0, in all five forms (`text-[Npx]`, `font-size: Npx`, `fontSize: N`, `fontSize={N}`, `fontSize: 'Npx'`); native `metadata` is 12/16 and the tab label is 12. One exception, documented in place: the `DistrictRiskMap` SVG label is 3.4 user units in a `0 0 100 100` viewBox (≈12px at render size), guarded by an `svg-user-units:` marker the gate honours. Four assertions in `designTypography` hold the floor. |
 | 13 | **Fixed** | `usePageSeo` moved into a route wrapper (`useRouteSeo` + `<RouteMetadata>` above `<Routes>`, so every route — including generated pages and the 404 — gets a head and unknown slugs stay `noindex`). `data/design/four-state-baseline.json` ledgers all 35 pages against loading / empty / error / success with a per-state evidence string, and `__tests__/fourState.test.js` (7 tests) fails if a page is unledgered, a state's block disappears, a page that reads over the network waives its error state, or a non-retryable state loses its reason. Five cells are recorded as `absent` with what the reader sees instead. Defects fixed while filling it in: `HazardsPage`, `DivisionsPage` and `AnalyticsPage` held loading/error state no branch rendered (and `/hazards` + `/divisions` printed the client's built-in 3,062-event default as data — both now state "no archive is loaded"); `AlertDetailPage` and `BlogArticlePage` rendered an unreadable deployment (or a failed slug read) as "not found"; `AlertsPage`, `Blogs`, `BlogArticlePage`, `HazardDetailPage` and `HistoricalCatalogPage` now carry retries; the two remaining emoji inside state blocks are registry glyphs. `HistoricalCatalogPage`'s loading and error states are no longer dark on a light page. |
@@ -559,7 +559,7 @@ fully tokenised. Three new gates were added by pass 2: `darkTheme` (30 tests), `
 
 ### Residuals after this pass
 
-- **20 glyph sites remain on the page surface** (13 files; measured across `frontend/src/pages`, including `dashboard/`): nine true emoji (`Contact` ×3 📞, `AdvisoriesPage` 🚨, `PublicProfilePage` 🌾 💧, `UserProfilePage` 🚪, `BlogStudioPage` 📝) and eleven typographic arrows/ticks. Across all of `frontend/src` (`.tsx`) the figure is 79 sites in 35 files, `ChatBot` alone accounting for fifteen. The ban has only ever been enforced on the native shell (`__tests__/iconFamily.test.js` walks `apps/mobile/src`), so this is a web-surface gap rather than a regression from this pass; the two that sat inside a state block are fixed. A page-surface sweep is one mechanical change plus a gate extension, not a judgement call.
+- **Web iconography residual — closed (2026-10-04).** A refreshed TypeScript-AST scan of runtime `.ts`/`.tsx` under `frontend/src` finds **0 emoji/text-glyph candidates in 0 files** (comments and test sources are excluded; legal marks such as ©, ® and ™ remain valid copy). This covers the full frontend, not only the 35 page components: directional and status glyphs were replaced with registered Lucide icons, WMO weather codes now carry typed registry names, and Leaflet/map-export HTML serializes the generated shared path data through `iconMarkup`. The 20/79 figures above this section were historical pre-chatbot measurements and are superseded. `__tests__/iconFamily.test.js` now performs the AST scan and includes 13 passing icon-family checks.
 - **Five four-state cells are absent** and named in the ledger: no empty or error state on `/dashboard` or the account dashboard, and no empty state on `/archive` or `/blogs/:slug`. Each reason says what the reader sees instead.
 - **`frontend/public/data/climatic_hazards_summary.json` has no producer in this repository**, so `fetchEventsSummary` always fell through to its built-in default and `/hazards` + `/divisions` printed 3,062 events as if read from the archive. The client now reports `source: 'fallback'` and both pages state that no archive is loaded. Deriving a real summary from `events-master.json` (or generating the artifact in the pipeline) is a data task, not a page task.
 - **The landing audit's three residuals stand** (`docs/audits/2026-10-03-landing-live-hero-audit.md` §8): the proof card above the fold is a hierarchy decision, the ~900×1600 hero needs a re-render upstream, and the safe-area arithmetic has no notched device here to confirm it on.
@@ -586,12 +586,7 @@ fully tokenised. Three new gates were added by pass 2: `darkTheme` (30 tests), `
    theme-aware nor a declared data encoding fails `darkTheme`.
 5. **Every text role survives the font-scale cap** — **met**: the floor is 12px, measured at 0
    authored occurrences below it, with the one documented SVG user-unit exception.
-6. **One icon vocabulary, no emoji, one radius scale, one type scale, one source of hex** — **all
-   six met and gated**: one icon vocabulary with a shared web/native registry (`iconFamily`), no
-   emoji anywhere including native (`iconFamily`), one radius scale (`meridianParity` +
-   `designTokensParity` freeze), one type scale (`nasaTokens` across the package, the CSS and the
-   prerendered shell), one source of hex (`designTokensParity` + the hex ratchet), one type-size
-   floor (`designTypography`).
+6. **One icon vocabulary, no emoji/glyph substitutes, one radius scale, one type scale, one source of hex** — **all six met and gated**: one icon vocabulary with a shared web/native registry (`iconFamily`); an AST gate against pictographic emoji and UI arrows/checks/shapes in web runtime literals plus registry-name checks for native icons; one radius scale (`meridianParity` + `designTokensParity` freeze); one type scale (`nasaTokens` across the package, the CSS and the prerendered shell); one source of hex (`designTokensParity` + the hex ratchet); and one type-size floor (`designTypography`).
 
 ### Not done in this pass, and why it is not hidden
 
@@ -601,3 +596,65 @@ and the landing audit's own §8 rows. Pass 2 took the five the fourth request na
 (Phase 9), the radius freeze, the type cap, the card-stack tables and the icon family - and closed
 each one against the unblocking condition its ledger row had written. Four unused dependencies were
 removed (backlog 7) once it turned out the lockfile could be regenerated offline.
+
+---
+
+## 10. Native design-system follow-up (2026-10-04)
+
+This follow-up adds the Expo product app as a first-class renderer in the audit; it does not
+retroactively change the 2026-10-03 web measurements or claim that every web route has a native
+counterpart. Native layout, typography and interaction are evaluated as React Native behavior, not
+as CSS-pixel parity. The linked Apple design reference is applied as a visual/accessibility lens,
+not represented as official HIG certification.
+
+**Implemented in `apps/mobile`:**
+
+- Native light/dark semantic roles now resolve to Meridian; OLED and increased-contrast modes are
+  explicit, and warning/information/severe states keep distinct semantic treatment. Native text and
+  on-fill status contrast, the shared type roles, and the 48dp control floor are covered by
+  `nativeMeridianParity.test.tsx`.
+- Large Text and Bold Text preferences affect shared text roles without capping OS text scaling;
+  Reduce Motion is read from both the OS and the in-app preference. Safe-area tab geometry and
+  labelled controls remain native adaptations, not web layouts ported verbatim.
+- Screen-reader names and touch affordances were tightened across map tools, saved-place actions,
+  onboarding, alert swipe actions, article links and the foreground notification banner. The banner
+  content and its dismiss action are separate targets; external article links expose link semantics.
+- Navigation tab labels, More rows and More article titles use locale strings. The generic More-row
+  accessibility hint is now translated in English and Bengali (`more.openHint`); hard-coded English
+  was removed from that hint. This does not imply that every mobile string or article body is fully
+  localized.
+- Existing product behavior and destinations were retained; the pass changes semantics and native
+  presentation rather than converting the app into a marketing-page template.
+
+**Validation after the follow-up:**
+
+- `npm test -- --runInBand --forceExit`: **164 suites / 1,728 tests passed**.
+- `npm --prefix apps/mobile run test:rn -- --runInBand --forceExit`: **11 suites / 82 tests passed** (including the English/Bengali More-row hint regression).
+- `npm run lint` and `npx tsc --noEmit -p apps/mobile/tsconfig.json`: both passed.
+- `npm run build:frontend`: passed; **99 routes** prerendered. `npm run check:paths`: **198 documents**, no repository-local paths.
+- `npm run check:design`: **0 new findings** across source and 198 prerendered documents; the existing baseline still contains **3,236 outstanding** findings (0 waived), with 203 entries now fixed. This is a passing ratchet, not a claim that the detector has no findings.
+- `npm run check:tokens`: **99.8%** token resolution, hex count unchanged at 492; `npm run check:fonts`: one Bengali WOFF2 face at **43.31 KiB / 50 KiB**; bundle, brand palette, icon registry, prose and `!important` checks passed.
+
+**Still requires device verification:** VoiceOver/TalkBack traversal, extreme Dynamic Type and Bold Text layouts, Bengali shaping/fallback on representative iOS and Android devices, safe areas/navigation modes, and map/compositing performance on lower-end hardware. The app remains a distinct product surface and is not evidence that the full web route inventory has been ported.
+
+## 11. Web iconography residual closeout (2026-10-04)
+
+The residual count in §5 was measured before the chatbot simplification and is retained only as historical context. This follow-up re-scanned the current working tree with the TypeScript parser rather than relying on raw Unicode grep, so comments and test descriptions are not mistaken for visible UI. The refreshed scan covers all runtime `.ts`/`.tsx` under `frontend/src` and reports **zero emoji/text-glyph candidates in zero files**; ©, ® and ™ remain legal copy, not icon substitutes.
+
+- Visible page and component affordances now use the registered Lucide family: status checks, sort direction, navigation/external links, contact details, profile attributes, map/export labels, report actions, weather conditions and empty/error states.
+- `wmoWeatherCodes` no longer stores emoji; its icon values are a typed subset of the registry. Both compact and detailed weather surfaces render a shared `WeatherIcon` component.
+- Leaflet strings and map snapshot markup use `iconMarkup`, which serializes only generated `ICON_PATHS` data. It adds no second package and defines no hand-authored paths.
+- The shared registry now contains **114** names. The existing generator produced the paths, and the existing native icon renderer supports the emitted SVG tags.
+- `__tests__/iconFamily.test.js` now AST-scans web JSX text, string literals and template segments for emoji/pictographic, directional, check and shape glyphs; it ignores comments/tests and allows legal marks. This sits alongside the existing registered-import, generated-path, stroke/size and native-icon checks.
+
+**Validation after this closeout:**
+
+- `npm run lint` and `npx tsc --noEmit -p apps/mobile/tsconfig.json`: passed.
+- `npm run build:frontend`: passed; **99 routes** prerendered. The existing Vite `inlineDynamicImports` deprecation warning remains non-blocking.
+- `npm run icons:check`: generated `icons.ts` matches the registry and installed `lucide-react`.
+- `npm run check:tokens`: **99.8%** token resolution; raw hex literals remain at the 492-file baseline (**492 literals / 51 files**).
+- `npm run check:design`: **0 new findings** across 198 documents plus `frontend/src`; the existing baseline remains 3,236 outstanding (0 waived).
+- `npm test -- --runInBand --forceExit`: **164 suites / 1,729 tests passed**.
+- `npm --prefix apps/mobile run test:rn -- --runInBand --forceExit`: **11 suites / 82 tests passed**.
+
+This closes only the iconography residual. The five four-state ledger cells, the unproduced climatic-hazards summary artifact and the landing audit's three device/upstream residuals remain as recorded above; mobile device verification is still separate.

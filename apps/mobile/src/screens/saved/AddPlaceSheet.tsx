@@ -7,11 +7,12 @@ import React from 'react';
 import { TextInput } from 'react-native';
 import { VStack, HStack, Box } from '../../design-system/primitives';
 import { Title3, Caption } from '../../design-system/Text';
-import { NATIVE_RADIUS } from '../../theme/nativeTokens';
+import { NATIVE_FONT_SCALE_MAX, NATIVE_RADIUS } from '../../theme/nativeTokens';
 import { Button } from '../../design-system/Button';
 import { Chip } from '../../design-system/Chip';
 import { Card } from '../../design-system/Card';
 import { useTheme } from '../../theme/ThemeProvider';
+import { useSettingsStore } from '../../state/settingsStore';
 
 export type AddMode = 'current' | 'manual';
 
@@ -28,15 +29,16 @@ export interface AddPlaceSheetProps {
 export const AddPlaceSheet: React.FC<AddPlaceSheetProps> = ({
   mode, onModeChange, manualName, onManualNameChange, onUseCurrent, onSaveManual, permission,
 }) => {
-  const { theme } = useTheme();
+  const { theme, bodyFont } = useTheme();
+  const largeText = useSettingsStore((state) => state.largeText);
   return (
     <Card>
       <VStack space={10}>
         <Title3>Add a place</Title3>
         <HStack space={8}>
-          <Chip label="Use my location" selected={mode === 'current'} severity={mode === 'current' ? 'severe' : null}
+          <Chip label="Use my location" selected={mode === 'current'} severity={mode === 'current' ? 'info' : null}
             onPress={() => onModeChange('current')} />
-          <Chip label="Enter manually" selected={mode === 'manual'} severity={mode === 'manual' ? 'warning' : null}
+          <Chip label="Enter manually" selected={mode === 'manual'} severity={mode === 'manual' ? 'info' : null}
             onPress={() => onModeChange('manual')} />
         </HStack>
         {mode === 'current' ? (
@@ -66,7 +68,8 @@ export const AddPlaceSheet: React.FC<AddPlaceSheetProps> = ({
                 onChangeText={onManualNameChange}
                 placeholder="e.g. Home, Parents in Kurigram"
                 placeholderTextColor={theme.colors.textMuted as string}
-                style={{ color: theme.colors.textPrimary as string, fontSize: 16, padding: 0, margin: 0 }}
+                maxFontSizeMultiplier={NATIVE_FONT_SCALE_MAX}
+                style={{ color: theme.colors.textPrimary, fontFamily: bodyFont, fontSize: theme.type.body.size * (largeText ? 1.2 : 1), padding: 0, margin: 0 }}
                 accessibilityLabel="Place name"
               />
             </Box>

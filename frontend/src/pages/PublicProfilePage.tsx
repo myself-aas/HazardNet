@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { ArrowRight, Droplets, ExternalLink, Globe, Wheat } from 'lucide-react';
 import { db } from '../services/firebase';
 import { collection, query, getDocs, where, getDoc, doc, limit } from 'firebase/firestore';
 const isProfileStoreConfigured = true;
@@ -158,7 +159,9 @@ const PublicProfilePage: React.FC = () => {
       <div className="mb-6 flex items-center justify-between">
         <HazardNetBrand size="sm" />
         <Link to="/" className="inline-flex min-h-[44px] items-center border border-carbon-20 bg-white px-4 py-2 text-base font-semibold text-carbon-70 hover:bg-carbon-05 touch-manipulation">
-          Explore forecasts →
+          <span className="inline-flex items-center gap-1.5">
+            Explore forecasts <ArrowRight className="h-4 w-4" aria-hidden="true" />
+          </span>
         </Link>
       </div>
 
@@ -253,7 +256,8 @@ const PublicProfilePage: React.FC = () => {
               )}
               {profile.targetCrops && (
                 <span className="rounded-sm bg-carbon-05 px-3 py-1.5 text-xs font-bold text-carbon-80">
-                  🌾 {profile.targetCrops}
+                  <Wheat className="mr-1 inline h-3.5 w-3.5" aria-hidden="true" />
+                  {profile.targetCrops}
                 </span>
               )}
               {profile.farmSizeHectares != null && profile.farmSizeHectares > 0 && (
@@ -263,7 +267,8 @@ const PublicProfilePage: React.FC = () => {
               )}
               {profile.irrigationType && (
                 <span className="rounded-sm bg-carbon-05 px-3 py-1.5 text-xs font-bold text-nasa-blue-shade">
-                  💧 {profile.irrigationType}
+                  <Droplets className="mr-1 inline h-3.5 w-3.5" aria-hidden="true" />
+                  {profile.irrigationType}
                 </span>
               )}
               {profile.soilType && (
@@ -287,7 +292,7 @@ const PublicProfilePage: React.FC = () => {
                     rel="noopener noreferrer"
                     className="bg-carbon-90 px-3.5 py-2 text-xs font-bold text-white transition-colors hover:bg-carbon-80"
                   >
-                    🌐 Website
+                    <Globe className="mr-1 inline h-3.5 w-3.5" aria-hidden="true" />Website
                   </a>
                 )}
                 {SOCIALS.filter(([key]) => profile[key]).map(([key, label]) => {
@@ -300,7 +305,9 @@ const PublicProfilePage: React.FC = () => {
                       rel="noopener noreferrer"
                       className="border border-carbon-20 px-3.5 py-2 text-xs font-bold text-carbon-70 transition-colors hover:bg-carbon-05"
                     >
-                      {label} ↗
+                      <span className="inline-flex items-center gap-1.5">
+                        {label} <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
+                      </span>
                     </a>
                   );
                 })}
@@ -314,7 +321,9 @@ const PublicProfilePage: React.FC = () => {
         Every HazardNet member gets a profile like this at{' '}
         <span className="font-bold text-carbon-60">hazardnet.live/u/username</span>.{' '}
         <Link to="/signup" className="font-bold text-nasa-blue-shade hover:underline">
-          Claim yours →
+          <span className="inline-flex items-center gap-1.5">
+            Claim yours <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+          </span>
         </Link>
       </p>
     </div>
