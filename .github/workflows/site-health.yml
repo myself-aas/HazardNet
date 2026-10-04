@@ -143,11 +143,13 @@ jobs:
       # in backend/server.js for the self-hosted deployment; if the one that
       # applies to production is not among the copies you updated, the headers
       # disappear silently. That is what this probe caught on 2026-10-04: the
-      # domain is served by Firebase Hosting, and firebase.json carried only
-      # Referrer-Policy / X-Content-Type-Options / X-Frame-Options, so there was
-      # no CSP, no Permissions-Policy and an HSTS value without includeSubDomains
-      # in production while both Vercel configs were complete. The Firebase copy
-      # is now covered by __tests__/securityHeadersParity.test.js too.
+      # domain is answered by Firebase Hosting (deploys themselves stay
+      # owner-run on Vercel — docs/ops/owner-actions.md Action 17), and
+      # firebase.json carried only Referrer-Policy / X-Content-Type-Options /
+      # X-Frame-Options, so there was no CSP, no Permissions-Policy and an HSTS
+      # value without includeSubDomains in production while both Vercel configs
+      # were complete. The Firebase copy is now covered by
+      # __tests__/securityHeadersParity.test.js too.
       - name: Probe security headers
         id: security_headers
         continue-on-error: true

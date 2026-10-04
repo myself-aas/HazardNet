@@ -188,20 +188,20 @@ since, and `site-health.yml`'s forecast probe is red because
 
 | | |
 |---|---|
-| **Status** | Open — added 2026-10-04; needs a decision, not a patch |
+| **Status** | Open — **decision made 2026-10-04: `www` stays canonical; the domain is to be restored.** The code is not to be changed to the apex. |
 | **Why** | 41 tracked files treat `https://www.hazardnet.live` as the canonical origin: the `<link rel="canonical">` tags and structured data (`frontend/src/SEOHead.tsx`), the sitemap and `robots.txt`, `security.txt`'s `Canonical:`, the content engine (`scripts/build_content_engine.mjs`), and a build guard in `frontend/scripts/prerender.mjs` that **fails the build** if the origin is anything else. Meanwhile `www.hazardnet.live` is NXDOMAIN and `hazardnet.live` answers 200 directly from Firebase Hosting (199.36.158.100, `x-fh-requested-host`). So every URL in the deployed sitemap is unreachable, `site-health.yml`'s "Verify every sitemap URL resolves" probe fails on all 85 of them, and Google is being pointed at a host that does not exist. |
-| **Do** | Pick one and make the other side match: **(a)** re-add `www.hazardnet.live` as a Firebase Hosting custom domain and point its DNS at it (keeps today's design, no code change), or **(b)** switch the canonical origin to the apex in the files listed above and invert the redirect/guard. Option (b) is the only one that matches how the domain behaves today, but it is an SEO-identity change, so it is the owner's call. |
-| **Verify** | `getent hosts www.hazardnet.live` resolves (a), or the deployed `sitemap.xml` lists apex URLs and every one returns 200 (b) — the site-health sitemap probe flips green either way. |
+| **Do** | Restore the host the code already declares: add `www.hazardnet.live` as a custom domain on the project that serves the site (Firebase console → Hosting → Add custom domain, or the equivalent on whichever platform owns the domain), add the DNS record it prints, and let the certificate issue. Note this is independent of *where* the build is deployed from — see Action 17 for the deploy path. |
+| **Verify** | `getent hosts www.hazardnet.live` resolves, `curl -sSI https://www.hazardnet.live/` answers 200, `https://www.hazardnet.live/sitemap.xml` is reachable, and the site-health sitemap probe flips green on the next scheduled run. |
 | **Closed by** | — |
 
 ## Action 17 · Nothing in the repository deploys the frontend
 
 | | |
 |---|---|
-| **Status** | Open — added 2026-10-04 |
-| **Why** | `hazardnet.live` is served by **Firebase Hosting** (`firebase.json` → `frontend/dist`; the live host answers with `x-fh-requested-host` and `x-served-by: cache-dub…`), but no workflow runs `firebase deploy`: the only deploy step in the repository is `daily_advisory_ingest.yml`'s *"Trigger Vercel Production Deployment"* (`npx vercel deploy --prod`), which is skipped whenever the ingest fails and points at a different platform anyway. The live build's `Last-Modified` was **2026-09-24T21:56Z** on 2026-10-04 while `main` had moved on, and `/data/freshness.json` is whatever that build shipped. |
-| **Do** | Add a `firebase deploy --only hosting` job (service-account or `FIREBASE_TOKEN` secret) on pushes to `main` that touch `frontend/`, or make the existing deploy step target Firebase instead of Vercel. The `firebase.json` headers added on 2026-10-04 (`Content-Security-Policy`, `Permissions-Policy`, `Strict-Transport-Security`) and any Action 16 change only reach production once something deploys. |
-| **Verify** | After a push to `main`, `curl -sSI https://hazardnet.live/ \| grep -i last-modified` advances, `/data/freshness.json` quotes the new build, and the site-health security-header probe passes. |
+| **Status** | Open — **decision made 2026-10-04: deploys stay with Vercel and stay owner-run.** No CI deploy job is to be added. |
+| **Why** | Nothing in the repository ships the frontend automatically: the only deploy step anywhere is `daily_advisory_ingest.yml`'s *"Trigger Vercel Production Deployment"* (`npx vercel deploy --prod`, gated on `committed == 'true'`, so it has not run since the ingest started failing). Meanwhile **the host answering `hazardnet.live` today is Firebase Hosting** (`x-fh-requested-host`, `x-served-by: cache-dub…`, 199.36.158.100) with a build whose `Last-Modified` was **2026-09-24T21:56Z** on 2026-10-04. So a Vercel deploy alone will not change what the domain serves until the domain points at the Vercel project — and the site-health security-header probe reads whatever that host answers. |
+| **Do** | Deploy from the owner's Vercel project (`vercel --prod`, or the workflow step with `VERCEL_TOKEN` / `VERCEL_ORG_ID` / `VERCEL_PROJECT_ID`), then confirm the domain resolves to that deployment. The `firebase.json` headers added on 2026-10-04 keep the Firebase path correct for whoever deploys it next; they are inert on Vercel. |
+| **Verify** | `curl -sSI https://hazardnet.live/` shows the new build (`last-modified` advances, or `x-vercel-id` appears alongside/instead of `x-fh-requested-host`), `/data/freshness.json` quotes the new build, and the site-health security-header probe passes. |
 | **Closed by** | — |
 
 ---
@@ -211,4 +211,4 @@ since, and `site-health.yml`'s forecast probe is red because
 | Date | Change |
 |---|---|
 | 2026-10-02 | File created from the 12 in-tree citations; Actions 10, 11 (later 12–15) added; Action 6c recorded as closed. Owner still unassigned. |
-| 2026-10-04 | Action 11 updated with the measured Kaggle publication gap (last update 2026-09-29, version 10); Actions 16 (canonical host) and 17 (no deploy path) added after triaging the red site-health and advisory-ingest runs. |
+| 2026-10-04 | Action 11 updated with the measured Kaggle publication gap (last update 2026-09-29, version 10); Actions 16 (canonical host) and 17 (deploy path) added after triaging the red site-health and advisory-ingest runs. Owner decisions recorded the same day: `www` stays the canonical host and is to be restored rather than replaced in code; deploys stay with Vercel and stay owner-run. |
