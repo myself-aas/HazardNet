@@ -27,8 +27,8 @@
     "districts_without_outlook": 4,
     "retrospectives": 0,
     "model_performance_episodes": 5,
-    "prerendered_html_files": 100,
-    "sitemap_urls": 91
+    "prerendered_html_files": 108,
+    "sitemap_urls": 99
   },
   "unmatched_snapshot_districts": [],
   "routes": [
