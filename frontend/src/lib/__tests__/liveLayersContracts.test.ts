@@ -76,6 +76,32 @@ describe('live-map layer table', () => {
     expect(activeCredits(['gibs'])).toHaveLength(1);
   });
 
+  it('declares the wind row with both ladder credits and a forecast caption', () => {
+    const row = LIVE_LAYERS.find((l) => l.id === 'overlay-wind');
+    expect(row).toBeDefined();
+    expect(row?.section).toBe('overlays');
+    expect(row?.kind).toBe('toggle');
+    expect(row?.icon).toBe('air');
+    expect(row?.freshness?.cadence).toMatch(/6 h/);
+    // Credits follow the ladder: whichever model answers registers its credit.
+    expect(row?.creditIds).toEqual(['windGfs', 'windEcmwf']);
+    expect(row?.lowBandwidthDefaultOff).toBe(true);
+    // A forecast is labelled a forecast.
+    expect(row?.caption).toMatch(/forecast/i);
+  });
+
+  it('registers both wind ladder credits with their licences', () => {
+    const gfs = DATA_CREDITS.windGfs;
+    const ecmwf = DATA_CREDITS.windEcmwf;
+    expect(gfs).toBeDefined();
+    expect(gfs.label).toContain('NOAA');
+    expect(gfs.label).toContain('Global Forecast System');
+    expect(ecmwf).toBeDefined();
+    expect(ecmwf.label).toContain('ECMWF');
+    expect(ecmwf.licence).toContain('CC BY 4.0');
+    expect(activeCredits(['windGfs', 'windEcmwf'])).toHaveLength(2);
+  });
+
   it('declares the IMERG rain-rate row with the NRT chip and an honest caption', () => {
     const row = LIVE_LAYERS.find((l) => l.id === 'overlay-rain');
     expect(row).toBeDefined();

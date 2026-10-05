@@ -50,6 +50,19 @@ export const DATA_CREDITS: Record<string, DataCredit> = {
     href: 'https://gibs.earthdata.nasa.gov',
     licence: 'NASA GIBS / EOSDIS terms (imagery is NASA, free to use)',
   },
+  windGfs: {
+    id: 'windGfs',
+    label: 'Wind field: NOAA Global Forecast System (GFS) 0.25 degree run, courtesy of NOAA',
+    href: 'https://registry.opendata.aws/noaa-gfs-bdp-pds/',
+    licence: 'US public domain (NOAA)',
+  },
+  windEcmwf: {
+    id: 'windEcmwf',
+    label:
+      'Wind field: based on ECMWF data/products (open data), resampled by HazardNet. ECMWF data is provided without warranty of any kind',
+    href: 'https://creativecommons.org/licenses/by/4.0/',
+    licence: 'CC BY 4.0 + ECMWF open data terms',
+  },
 } as const;
 
 /** Resolve ids to credits, dropping unknown ids rather than rendering blanks. */

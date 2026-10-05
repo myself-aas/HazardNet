@@ -51,6 +51,17 @@ import {
 } from '../lib/gibs';
 import { GibsTileLayer } from './map/gibsTileLayer';
 import { mapFreshnessLabel } from '../lib/mapFreshness';
+import {
+  WIND_ARTIFACT_URL,
+  parseWindArtifact,
+  windChipLabel,
+  windFeedState,
+  type WindArtifact,
+} from '../lib/wind';
+
+/** Structural handle: the overlay module is lazy-loaded, so the component only
+ *  depends on the two calls it makes. */
+type WindOverlayHandle = { destroy: () => void };
 
 export type { DistrictGeo, PathAnalysisResult, MapLayerKey };
 export const liveDistrictsData: DistrictGeo[] = ALL_64_DISTRICTS;
@@ -317,10 +328,24 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
   const rainLayerRef = useRef<GibsTileLayer | null>(null);
   const rainFrameIso = rainFrames[rainFrameIndex] ?? null;
 
+  // Wind field (Phase E). A committed artifact (frontend/public/data/live/
+  // wind.json), rebuilt every six hours by the Live Wind Update workflow from
+  // GFS or ECMWF open data. A forecast is labelled a forecast: the chip carries
+  // the model and its cycle time, and the expansion spells out issue and valid
+  // times. Amber stays reserved for observed data; this is model output.
+  const [isWindActive, setIsWindActive] = useState<boolean>(false);
+  const [windStatus, setWindStatus] = useState<'idle' | 'loading' | 'ready' | 'unavailable'>('idle');
+  const [windArtifact, setWindArtifact] = useState<WindArtifact | null>(null);
+  const [isWindExpanded, setIsWindExpanded] = useState<boolean>(false);
+  const windOverlayRef = useRef<WindOverlayHandle | null>(null);
+  const windFeed = windFeedState(windArtifact);
+
   // What the attribution lightbox lists: exactly the credits of what is on
   // screen. The basemap credit follows the ground; the forecast credit appears
   // only while an overlay that draws the forecast product is switched on; the
-  // GIBS credit only while a GIBS overlay is actually rendering.
+  // GIBS credit only while a GIBS overlay is actually rendering; the wind
+  // credit follows whichever model the artifact carries (credits follow the
+  // ladder).
   const attributionCreditIds: string[] =
     activeLayer === 'esriSatellite' ? ['esri'] : ['osm', 'opentopomap'];
   if (isRiverLayerActive || isHeatmapActive || isClusteringActive) {
@@ -328,6 +353,9 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
   }
   if ((isTrueColorActive && trueColorStatus === 'ready') || (isRainActive && rainStatus === 'ready')) {
     attributionCreditIds.push('gibs');
+  }
+  if (isWindActive && windStatus === 'ready' && windArtifact) {
+    attributionCreditIds.push(windArtifact.model === 'ecmwf' ? 'windEcmwf' : 'windGfs');
   }
   const attributionList = activeCredits(attributionCreditIds);
 
@@ -540,6 +568,77 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
     const { gibsLayer, tileMatrixSet } = GIBS_IMERG_RAIN;
     layer.setUrl(gibsSubDailyTileUrl(gibsLayer, rainFrameIso, tileMatrixSet));
   }, [rainFrameIso]);
+
+  // Wind artifact fetch: schema-strict parse, honest states only. A stale
+  // artifact still renders (chip says STALE as of ...); a missing or unknown
+  // one is UNAVAILABLE, never an invented breeze.
+  useEffect(() => {
+    if (!isWindActive) {
+      setWindStatus('idle');
+      setWindArtifact(null);
+      setIsWindExpanded(false);
+      return;
+    }
+    let cancelled = false;
+    setWindStatus('loading');
+    fetch(WIND_ARTIFACT_URL)
+      .then((res) => (res.ok ? res.json() : null))
+      .catch(() => null)
+      .then((raw) => {
+        if (cancelled) return;
+        const artifact = parseWindArtifact(raw);
+        if (!artifact) {
+          setWindArtifact(null);
+          setWindStatus('unavailable');
+          setIsWindExpanded(true);
+          return;
+        }
+        setWindArtifact(artifact);
+        setWindStatus('ready');
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [isWindActive]);
+
+  // The renderer, lazy-loaded: the particle machinery only ships to users who
+  // switch the row on (bundle-gate acceptance). Coarse pointers get 600
+  // particles, fine ones 1,800; reduced motion and low bandwidth collapse to
+  // the static quiver plot.
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    const artifact = windArtifact;
+    if (!map || !isWindActive || windStatus !== 'ready' || !artifact) {
+      if (windOverlayRef.current) {
+        windOverlayRef.current.destroy();
+        windOverlayRef.current = null;
+      }
+      return;
+    }
+    let cancelled = false;
+    import('./map/windOverlay')
+      .then((mod) => {
+        if (cancelled || !mapInstanceRef.current) return;
+        if (windOverlayRef.current) windOverlayRef.current.destroy();
+        windOverlayRef.current = mod.createWindOverlay(mapInstanceRef.current, artifact, {
+          particleCount: mod.windParticleBudget(),
+          quiver: lowBandwidth || mod.windPrefersStatic(),
+        });
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setWindStatus('unavailable');
+          setIsWindExpanded(true);
+        }
+      });
+    return () => {
+      cancelled = true;
+      if (windOverlayRef.current) {
+        windOverlayRef.current.destroy();
+        windOverlayRef.current = null;
+      }
+    };
+  }, [isWindActive, windStatus, windArtifact, lowBandwidth]);
 
   const {
     generateMapSnapshot,
@@ -1784,6 +1883,107 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                   </p>
                   <ul className="flex flex-col" role="group" aria-labelledby="map-layers-title">
                     {LIVE_LAYERS.filter((l) => l.section === 'overlays').map((def) => {
+                      if (def.id === 'overlay-wind') {
+                        // Wind row (Phase E): model chip with the cycle time,
+                        // issue/valid times in the expansion, honest states only.
+                        const isActive = isWindActive;
+                        const isUnavailable = windStatus === 'unavailable';
+                        const isLoading = windStatus === 'loading';
+                        const chipLabel = !isActive
+                          ? 'Off'
+                          : isLoading
+                            ? 'Loading'
+                            : isUnavailable
+                              ? 'UNAVAILABLE'
+                              : windChipLabel(windFeed);
+                        const chipActive = isActive && !isUnavailable && !isLoading && windFeed.kind === 'live';
+                        return (
+                          <li key={def.id} className="py-2.5">
+                            <div className="flex items-center justify-between gap-3 min-h-[52px]">
+                              <span className="flex items-center gap-3">
+                                <MaterialIcon name={def.icon} className="w-5 h-5 text-carbon-50 dark:text-carbon-40 shrink-0" />
+                                <span className="flex flex-col">
+                                  <span className="text-[15px] font-semibold text-carbon-80 dark:text-carbon-10">{def.name}</span>
+                                  {def.caption ? (
+                                    <span className="text-xs text-carbon-40 dark:text-carbon-50">{def.caption}</span>
+                                  ) : null}
+                                </span>
+                              </span>
+                              <span className="flex items-center gap-1.5">
+                                {isActive || isUnavailable ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => setIsWindExpanded(!isWindExpanded)}
+                                    aria-expanded={isWindExpanded}
+                                    aria-label={isWindExpanded ? 'Hide wind details' : 'Show wind details'}
+                                    className="tap-target w-11 h-11 rounded-full text-carbon-50 dark:text-carbon-40 hover:bg-carbon-10 dark:hover:bg-carbon-80 flex items-center justify-center transition-colors"
+                                  >
+                                    <MaterialIcon name={isWindExpanded ? 'expand_less' : 'expand_more'} className="w-5 h-5" />
+                                  </button>
+                                ) : null}
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setIsWindActive(!isActive);
+                                    if (isActive) setIsWindExpanded(false);
+                                  }}
+                                  aria-pressed={isActive}
+                                  title={
+                                    isUnavailable
+                                      ? 'The wind pipeline has no artifact to show right now.'
+                                      : isActive
+                                        ? 'Turn the wind field off'
+                                        : 'Animate the latest modelled wind field'
+                                  }
+                                  className={`min-h-[40px] px-4 rounded-full text-xs font-bold uppercase tracking-wide transition-colors ${
+                                    chipActive
+                                      ? 'bg-carbon-90 text-white dark:bg-white dark:text-carbon-90'
+                                      : 'bg-carbon-10 text-carbon-50 dark:bg-carbon-80 dark:text-carbon-40'
+                                  }`}
+                                >
+                                  {chipLabel}
+                                </button>
+                              </span>
+                            </div>
+
+                            {isUnavailable ? (
+                              <p className="text-xs leading-[1.62] text-carbon-50 dark:text-carbon-40 pl-8 pt-1">
+                                No wind field is available right now. The pipeline publishes a new one every six hours
+                                from GFS, falling back to ECMWF open data; if this message stays, the latest run could
+                                not reach either model.
+                              </p>
+                            ) : null}
+
+                            {isActive && isWindExpanded && windStatus === 'ready' && windArtifact ? (
+                              <div className="mt-2 pl-8 flex flex-col gap-2">
+                                <p className="text-sm font-semibold text-carbon-90 dark:text-white">
+                                  {windArtifact.model_name}
+                                </p>
+                                <p className="text-xs leading-[1.62] text-carbon-50 dark:text-carbon-40">
+                                  {windArtifact.kind === 'forecast'
+                                    ? `${windArtifact.step_hours}-hour forecast.`
+                                    : 'Analysis (zero-hour) field.'}{' '}
+                                  Issued {windArtifact.issue_time.slice(11, 16)} UTC · valid{' '}
+                                  {windArtifact.valid_time.slice(11, 16)} UTC
+                                  {windFeed.kind === 'stale' ? ' · older than the six-hourly schedule; last good field kept' : ''}.
+                                </p>
+                                <p className="text-xs leading-[1.62] text-carbon-40 dark:text-carbon-50">
+                                  What this is: air flowing through one model field over Bangladesh and the Bay of Bengal,
+                                  resampled to 1 degree. What it is not: an observation, or a movie of the forecast
+                                  advancing. The animation does not advance forecast time.
+                                </p>
+                              </div>
+                            ) : null}
+
+                            {isActive && isWindExpanded && isLoading ? (
+                              <p className="text-xs leading-[1.62] text-carbon-50 dark:text-carbon-40 pl-8 pt-2">
+                                Fetching the latest wind artifact.
+                              </p>
+                            ) : null}
+                          </li>
+                        );
+                      }
+
                       if (def.id === 'overlay-rain') {
                         // GPM IMERG rain-rate row (Phase D): amber NRT chip,
                         // six-frame replay, mm/h legend, honest unavailable state.
