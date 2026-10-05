@@ -302,6 +302,76 @@
   color: var(--mrd-label-quaternary);
 }
 
+/* ── 5b · the `dark:` twins of the pinned roles --------------------------------
+   Components written with explicit `dark:` utilities compile to their own class
+   names (`.dark\:bg-carbon-90`, not `.bg-carbon-90`), so the pins above never
+   match them and the ramp hands back the *ink* value instead: near-white fills
+   where a dark chrome panel was meant, near-black text on a dark surface. This
+   is the hole behind the 2026-10-05 layer-panel report — `text-carbon-80
+   dark:text-carbon-10` rows went dark-on-dark because the §5 pin only matches
+   the bare `.text-carbon-10` class. Same roles as §4-§5, same pins: fills stay
+   chrome, text stays ink, hairlines stay hairlines. */
+[data-mrd-theme='dark'] .dark\:bg-carbon-90,
+[data-mrd-theme='dark'] .dark\:bg-carbon-80 {
+  background-color: var(--mrd-dark-surface-raised);
+}
+[data-mrd-theme='dark'] .dark\:bg-carbon-70 {
+  background-color: var(--mrd-dark-surface);
+}
+[data-mrd-theme='dark'] .dark\:hover\:bg-carbon-90:hover,
+[data-mrd-theme='dark'] .dark\:hover\:bg-carbon-80:hover,
+[data-mrd-theme='dark'] .dark\:hover\:bg-carbon-70:hover {
+  background-color: #2f3944;
+}
+[data-mrd-theme='dark'] .dark\:hover\:bg-carbon-10:hover,
+[data-mrd-theme='dark'] .dark\:bg-carbon-80\/60,
+[data-mrd-theme='dark'] .dark\:bg-carbon-80\/50,
+[data-mrd-theme='dark'] .dark\:hover\:bg-carbon-80\/50:hover {
+  background-color: var(--mrd-dark-grouped);
+}
+[data-mrd-theme='dark'] .dark\:bg-white {
+  background-color: var(--mrd-bg-elevated);
+}
+[data-mrd-theme='dark'] .dark\:bg-carbon-90\/95 {
+  background-color: color-mix(in srgb, var(--mrd-dark-surface-raised) 95%, transparent);
+}
+[data-mrd-theme='dark'] .dark\:bg-carbon-90\/92 {
+  background-color: color-mix(in srgb, var(--mrd-dark-surface-raised) 92%, transparent);
+}
+[data-mrd-theme='dark'] .dark\:bg-carbon-90\/90 {
+  background-color: color-mix(in srgb, var(--mrd-dark-surface-raised) 90%, transparent);
+}
+[data-mrd-theme='dark'] .dark\:bg-carbon-90\/60,
+[data-mrd-theme='dark'] .dark\:bg-carbon-90\/50,
+[data-mrd-theme='dark'] .dark\:bg-carbon-90\/40,
+[data-mrd-theme='dark'] .dark\:bg-carbon-90\/30 {
+  background-color: color-mix(in srgb, var(--mrd-dark-surface-raised) 80%, transparent);
+}
+[data-mrd-theme='dark'] .dark\:text-carbon-05,
+[data-mrd-theme='dark'] .dark\:text-carbon-10,
+[data-mrd-theme='dark'] .dark\:text-carbon-20,
+[data-mrd-theme='dark'] .dark\:text-carbon-30 {
+  color: var(--mrd-label);
+}
+[data-mrd-theme='dark'] .dark\:text-carbon-40,
+[data-mrd-theme='dark'] .dark\:text-carbon-50 {
+  color: var(--mrd-label-secondary);
+}
+[data-mrd-theme='dark'] .dark\:border-carbon-60,
+[data-mrd-theme='dark'] .dark\:border-carbon-70,
+[data-mrd-theme='dark'] .dark\:border-carbon-80,
+[data-mrd-theme='dark'] .dark\:hover\:border-carbon-60:hover {
+  border-color: var(--mrd-separator);
+}
+[data-mrd-theme='dark'] .dark\:border-carbon-70\/60,
+[data-mrd-theme='dark'] .dark\:border-carbon-80\/60 {
+  border-color: color-mix(in srgb, var(--mrd-separator) 60%, transparent);
+}
+[data-mrd-theme='dark'] .dark\:divide-carbon-70 > :not([hidden]) ~ :not([hidden]),
+[data-mrd-theme='dark'] .dark\:divide-carbon-80 > :not([hidden]) ~ :not([hidden]) {
+  border-color: var(--mrd-separator);
+}
+
 /* ── 6 · the map ---------------------------------------------------------------
    Leaflet paints its own chrome and never reads a custom property, so the map is
    audited separately (MIGRATION_PLAN Phase 9 step 4). Two mechanisms:

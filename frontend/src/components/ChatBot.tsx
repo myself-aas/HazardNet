@@ -346,12 +346,12 @@ export default function ChatBot() {
                           <div className="flex flex-wrap items-center gap-2 px-1">
                             <span className="text-xs font-semibold text-carbon-70 dark:text-carbon-30">AI Advisor</span>
                             {message.groundingType === 'maps' ? (
-                              <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-800 dark:text-blue-200">
+                              <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-800">
                                 <MapPin className="h-3 w-3" aria-hidden="true" /> Google Maps
                               </span>
                             ) : null}
                             {message.groundingType === 'search' ? (
-                              <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-800 dark:text-blue-200">
+                              <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-800">
                                 <Search className="h-3 w-3" aria-hidden="true" /> Web sources
                               </span>
                             ) : null}
@@ -458,7 +458,7 @@ export default function ChatBot() {
                       </select>
                     </div>
                     {userLocation ? (
-                      <span className="inline-flex min-h-[44px] shrink-0 items-center gap-1.5 rounded-lg bg-blue-50 px-2.5 text-xs font-medium text-blue-800 dark:text-blue-200">
+                      <span className="inline-flex min-h-[44px] shrink-0 items-center gap-1.5 rounded-lg bg-blue-50 px-2.5 text-xs font-medium text-blue-800">
                         <MapPin className="h-4 w-4" aria-hidden="true" /> Location on
                       </span>
                     ) : (
