@@ -310,14 +310,15 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
             applies - the hard-coded `pt-16` (64px) was 39px short on a notched phone, so this
             header's status pill sat under the bar. From `sm` up the navbar only overlays the top
             of the stage on the home console, so the padding returns to the tighter value. */}
+        {/* 2026-10-05 restyle: the stage title floats on the map as plain text,
+            the way the reference apps float "Destination Ahead" — bold ink with
+            a soft legibility shadow, no bounding card between it and the map. */}
         <header className="pointer-events-none absolute inset-x-0 top-0 z-[var(--z-sticky)] flex items-start justify-between gap-3 p-3 pt-[calc(var(--navbar-height)+8px)] sm:p-5">
-          <div className="pointer-events-auto flex min-w-0 items-center gap-2 glass-panel px-3.5 py-2">
-            <div className="min-w-0">
-              <p className="truncate text-xs font-bold uppercase tracking-[0.14em] text-carbon-60">HazardNet / live</p>
-              <p className="truncate text-xs font-bold text-carbon-90">National situational map</p>
-            </div>
+          <div className="pointer-events-auto min-w-0 [text-shadow:0_1px_2px_rgba(255,255,255,0.7),0_0_8px_rgba(255,255,255,0.5)] dark:[text-shadow:0_1px_2px_rgba(0,0,0,0.8),0_0_8px_rgba(0,0,0,0.6)]">
+            <p className="truncate text-xs font-bold uppercase tracking-[0.14em] text-carbon-50 dark:text-carbon-40">HazardNet / live</p>
+            <p className="truncate text-sm font-bold tracking-tight text-carbon-90 dark:text-white">National situational map</p>
           </div>
-          <div className="pointer-events-auto hidden items-center gap-2 glass-panel px-3.5 py-2 text-xs font-bold uppercase tracking-[0.12em] text-carbon-60 sm:flex">
+          <div className="pointer-events-auto hidden items-center gap-2 text-xs font-bold uppercase tracking-[0.12em] text-carbon-50 dark:text-carbon-40 [text-shadow:0_1px_2px_rgba(255,255,255,0.7),0_0_8px_rgba(255,255,255,0.5)] dark:[text-shadow:0_1px_2px_rgba(0,0,0,0.8),0_0_8px_rgba(0,0,0,0.6)] sm:flex">
             {predictionSource === 'live' ? 'Forecast synced' : 'Baseline coverage'}
           </div>
         </header>

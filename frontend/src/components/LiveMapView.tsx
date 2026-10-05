@@ -133,11 +133,12 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
   }, [compactHeader]);
 
   // Layer & Visual Controls
-  // Ground choice (Phase B, 2026-10-05): street/topo by default, satellite on
-  // demand. Two grounds, one at a time, in the layers panel — not a toolbar
-  // picker of six. If the satellite provider stops answering this client the
-  // watchdog in useLeafletMap steps us back here automatically.
-  const [activeLayer, setActiveLayer] = useState<MapLayerKey>('topoMap');
+  // Ground choice (Phase B, 2026-10-05): the situational view opens on
+  // satellite, the honest ground for hazard reading; street/topo is one
+  // segment away. Two grounds, one at a time, in the layers panel. If the
+  // satellite provider stops answering this client the watchdog in
+  // useLeafletMap steps us back to the street map automatically.
+  const [activeLayer, setActiveLayer] = useState<MapLayerKey>('esriSatellite');
   const [isEsriUnavailable, setIsEsriUnavailable] = useState<boolean>(false);
   const [isAttributionOpen, setIsAttributionOpen] = useState<boolean>(false);
   const [isHighContrastBoost, setIsHighContrastBoost] = useState<boolean>(true);
@@ -1681,63 +1682,80 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
             </div>
           )}
 
-          {/* District & hazard filters: one compact panel, bottom sheet on phones,
-              44px targets, no wall of text. */}
+          {/* District & hazard filters: 2026-10-05 restyle to the shared map
+              language. One rounded floating sheet (a bottom sheet on phones,
+              a centered card on desktop), a bold title with grey support text,
+              hairline dividers between the two pickers, round division pills,
+              hazard pills with coloured dots, and a sticky CTA row.
+              44px targets throughout, both themes. */}
           <AnimatePresence>
           {isFilterModalOpen && (
             <div
-              className="fixed inset-0 z-[var(--z-modal)] bg-carbon-90/40 flex items-end sm:items-center justify-center sm:p-4 pointer-events-auto"
-              role="dialog"
-              aria-modal="true"
-              aria-label="District and hazard filters"
+              className="fixed inset-0 z-[var(--z-modal)] bg-carbon-90/30 flex items-end sm:items-center justify-center sm:p-4 pointer-events-auto"
+              onClick={(e) => { if (e.target === e.currentTarget) setIsFilterModalOpen(false); }}
             >
               <motion.div
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 16 }}
-                transition={{ duration: 0.18 }}
-                className="bg-white border-t sm:border border-carbon-20 text-carbon-90 w-full sm:max-w-md max-h-[86vh] overflow-y-auto"
+                key="district-filter-sheet"
+                role="dialog"
+                aria-modal="true"
+                aria-label="Division and hazard filters"
+                initial={{ opacity: 0, y: 24, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 24, scale: 0.98 }}
+                transition={{ duration: 0.22, ease: 'easeOut' }}
+                className="w-full sm:max-w-md flex flex-col max-h-[88vh] sm:max-h-[80vh] overflow-hidden bg-white dark:bg-carbon-90 sm:rounded-[28px] rounded-t-[28px] shadow-map"
               >
-                <div className="flex items-center justify-between gap-2 px-4 pt-4 pb-3 border-b border-carbon-20">
-                  <h3 className="text-base font-bold tracking-tight">Filters</h3>
-                  <button
-                    type="button"
-                    onClick={() => setIsFilterModalOpen(false)}
-                    className="tap-target w-11 h-11 rounded-control bg-carbon-05 text-carbon-70 flex items-center justify-center shrink-0"
-                    aria-label="Close filters"
-                  >
-                    <MaterialIcon name="close" className="w-5 h-5" />
-                  </button>
+                {/* grab + header */}
+                <div className="shrink-0 px-5 pt-3 pb-3 border-b border-carbon-10 dark:border-carbon-80">
+                  <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-carbon-20 dark:bg-carbon-70 sm:hidden" aria-hidden="true" />
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <h3 className="text-base font-bold tracking-tight text-carbon-90 dark:text-white">Districts & hazards</h3>
+                      <p className="text-xs text-carbon-50 dark:text-carbon-40">Narrow the national situational map</p>
+                    </div>
+                    <button
+                      type="button"
+                      aria-label="Close filters"
+                      onClick={() => setIsFilterModalOpen(false)}
+                      className="tap-target shrink-0 w-11 h-11 grid place-items-center rounded-full bg-carbon-05 dark:bg-carbon-80 text-carbon-50 dark:text-carbon-30 hover:text-carbon-90 dark:hover:text-white hover:bg-carbon-10 dark:hover:bg-carbon-70 transition-colors"
+                    >
+                      <MaterialIcon name="close" className="w-5 h-5" />
+                    </button>
+                  </div>
                 </div>
 
-                <div className="px-4 py-4 flex flex-col gap-5">
-                  <div>
-                    <div className="text-xs font-bold text-carbon-60 uppercase tracking-wide mb-2">Division</div>
+                <div className="flex-1 overflow-y-auto overscroll-contain min-h-0 px-5">
+                  {/* Divisions */}
+                  <div className="py-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-xs font-bold uppercase tracking-[0.12em] text-carbon-50 dark:text-carbon-40">Division</span>
+                      {selectedDivision !== 'All' && (
+                        <button
+                          type="button"
+                          onClick={() => setSelectedDivision('All')}
+                          className="text-xs font-semibold text-nasa-blue hover:underline"
+                        >
+                          Clear
+                        </button>
+                      )}
+                    </div>
                     <div className="flex flex-wrap gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setSelectedDivision('All')}
-                        className={`min-h-[44px] px-3 py-1.5 text-xs font-bold border transition-colors ${
- selectedDivision === 'All'
- ? 'bg-primary text-white border-nasa-blue'
- : 'bg-carbon-05 text-carbon-70 border-carbon-20 hover:bg-carbon-10'
- }`}
-                      >
-                        All
-                      </button>
-                      {ALL_8_DIVISIONS.map((div) => {
-                        const divName = div.name.replace(' Division', '');
-                        const isActive = selectedDivision.toLowerCase() === divName.toLowerCase();
+                      {[{ id: 'all', name: 'All' }, ...ALL_8_DIVISIONS].map((div) => {
+                        const divName = div.id === 'all' ? 'All' : div.name.replace(' Division', '');
+                        const selected = div.id === 'all'
+                          ? selectedDivision === 'All'
+                          : selectedDivision.toLowerCase() === divName.toLowerCase();
                         return (
                           <button
                             key={div.id}
                             type="button"
+                            aria-pressed={selected}
                             onClick={() => setSelectedDivision(divName)}
-                            className={`min-h-[44px] px-3 py-1.5 text-xs font-bold border transition-colors ${
- isActive
- ? 'bg-primary text-white border-nasa-blue'
- : 'bg-carbon-05 text-carbon-70 border-carbon-20 hover:bg-carbon-10'
- }`}
+                            className={`tap-target inline-flex min-h-[36px] items-center rounded-full px-3.5 text-xs font-bold transition-colors ${
+                              selected
+                                ? 'bg-carbon-90 text-white dark:bg-white dark:text-carbon-90'
+                                : 'bg-carbon-05 dark:bg-carbon-80 text-carbon-60 dark:text-carbon-30 hover:bg-carbon-10 dark:hover:bg-carbon-70 hover:text-carbon-90 dark:hover:text-white'
+                            }`}
                           >
                             {divName}
                           </button>
@@ -1746,59 +1764,58 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                     </div>
                   </div>
 
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="text-xs font-bold text-carbon-60 uppercase tracking-wide">
+                  {/* Hazards */}
+                  <div className="py-4 border-t border-carbon-10 dark:border-carbon-80">
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-xs font-bold uppercase tracking-[0.12em] text-carbon-50 dark:text-carbon-40">
                         Hazards ({selectedHazards.length}/{HAZARD_LAYERS.length})
-                      </div>
-                      <div className="flex gap-3 text-xs font-bold">
-                        <button type="button" onClick={selectAllHazards} className="text-nasa-blue-shade hover:underline min-h-[32px]">All</button>
-                        <button type="button" onClick={clearAllHazards} className="text-nasa-red-shade hover:underline min-h-[32px]">None</button>
+                      </span>
+                      <div className="flex items-center gap-3 text-xs font-semibold">
+                        <button type="button" onClick={selectAllHazards} className="text-nasa-blue hover:underline">All</button>
+                        <button type="button" onClick={clearAllHazards} className="text-nasa-red hover:underline">None</button>
                       </div>
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      {HAZARD_LAYERS.map((h) => {
-                        const isAct = selectedHazards.includes(h.id);
+                    <div className="flex flex-wrap gap-2">
+                      {HAZARD_LAYERS.map((hazard) => {
+                        const selected = selectedHazards.includes(hazard.id);
                         return (
                           <button
-                            key={h.id}
+                            key={hazard.id}
                             type="button"
-                            onClick={() => toggleHazard(h.id)}
-                            aria-pressed={isAct}
-                            className={`min-h-[44px] px-3 py-1.5 text-xs font-bold flex items-center justify-between gap-2 border transition-colors ${
- isAct
- ? 'bg-amber-50 text-amber-900 border-carbon-20'
- : 'bg-carbon-05 text-carbon-60 border-carbon-20 opacity-70'
- }`}
+                            aria-pressed={selected}
+                            onClick={() => toggleHazard(hazard.id)}
+                            className={`tap-target inline-flex min-h-[36px] items-center gap-1.5 rounded-full border px-3.5 text-xs font-bold transition-colors ${
+                              selected
+                                ? 'border-transparent bg-carbon-90 text-white dark:bg-white dark:text-carbon-90'
+                                : 'border-carbon-10 dark:border-carbon-70 text-carbon-60 dark:text-carbon-40 hover:border-carbon-30 dark:hover:border-carbon-60 hover:text-carbon-90 dark:hover:text-white'
+                            }`}
                           >
-                            <span className="truncate">{h.name}</span>
-                            <MaterialIcon
-                              name={isAct ? 'check_circle' : 'radio_button_unchecked'}
-                              className="w-4 h-4 shrink-0"
-                            />
+                            <span className="h-2 w-2 rounded-full" style={{ backgroundColor: hazard.color }} aria-hidden="true" />
+                            {hazard.name}
                           </button>
                         );
                       })}
                     </div>
+                    <p className="mt-3 text-xs text-carbon-40 dark:text-carbon-50">
+                      Showing {filteredDistricts.length} of {liveDistricts.length} districts
+                    </p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 px-4 pb-4 pt-3 border-t border-carbon-10">
+                {/* sticky CTA row */}
+                <div className="shrink-0 flex items-center gap-2 px-5 py-4 border-t border-carbon-10 dark:border-carbon-80 bg-white dark:bg-carbon-90">
                   <button
                     type="button"
-                    onClick={() => {
-                      setSelectedDivision('All');
-                      selectAllHazards();
-                      setSearchQuery('');
-                    }}
-                    className="min-h-[44px] px-4 bg-carbon-10 hover:bg-carbon-20 text-carbon-70 font-bold text-xs transition-colors"
+                    aria-label="Reset division and hazard filters"
+                    onClick={() => { setSelectedDivision('All'); selectAllHazards(); setSearchQuery(''); }}
+                    className="tap-target min-h-[44px] rounded-full px-5 bg-carbon-05 dark:bg-carbon-80 hover:bg-carbon-10 dark:hover:bg-carbon-70 text-carbon-70 dark:text-carbon-20 font-bold text-xs transition-colors"
                   >
                     Reset
                   </button>
                   <button
                     type="button"
                     onClick={() => setIsFilterModalOpen(false)}
-                    className="flex-1 min-h-[44px] bg-carbon-90 hover:bg-carbon-80 text-white font-black text-xs transition-all"
+                    className="flex-1 min-h-[44px] rounded-full bg-carbon-90 hover:bg-carbon-80 dark:bg-white dark:text-carbon-90 dark:hover:bg-carbon-10 text-white font-black text-xs transition-all"
                   >
                     Show {filteredDistricts.length} districts
                   </button>
@@ -2505,10 +2522,11 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
           </div>
 
           {/* Coordinates Readout, Performance Clustering & IndexedDB Tile Cache Indicator */}
-          {/* A card, not a pill: the attribution string is long and wraps — the pill
-              radius turned it into a rounded blob on phones. Every character stays
-              visible (map attribution is not collapsible). */}
-          <div className="absolute bottom-2 left-2 z-[var(--z-sticky)] glass-panel px-3 py-1.5 text-xs leading-snug text-carbon-70 pointer-events-auto max-w-[calc(100%-7rem)]">
+          {/* Attribution as plain map text (2026-10-05 restyle): no card, no panel,
+              the smallest readable size, with a soft shadow so it stays legible
+              over any ground. Every character stays visible (map attribution is
+              not collapsible), it just stops pretending to be chrome. */}
+          <div className="absolute bottom-1.5 left-2 z-[var(--z-sticky)] text-xs leading-snug text-carbon-60 dark:text-carbon-30 [text-shadow:0_1px_2px_rgba(255,255,255,0.7),0_0_6px_rgba(255,255,255,0.5)] dark:[text-shadow:0_1px_2px_rgba(0,0,0,0.8),0_0_6px_rgba(0,0,0,0.6)] pointer-events-auto max-w-[calc(100%-7rem)]">
             <p className="leading-snug">
               {MAP_LAYERS[activeLayer]?.attribution?.replace(/&copy;/g, '©').replace(/&mdash;/g, '—') || 'Map data © OpenStreetMap contributors'}
             </p>
