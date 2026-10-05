@@ -1,0 +1,11 @@
+Hazard_Type,Event_Count,Mean_Severity,Std_Severity,Max_Severity,Total_Affected,Mean_Affected,Max_Affected
+Cold Wave,322,1.0,0.0,1.0,0.0,0.0,0.0
+Drought,64,1.0,0.0,1.0,0.0,0.0,0.0
+Earthquake,128,1.0,0.0,1.0,0.0,0.0,0.0
+Epidemic,262,1.0,0.0,1.0,0.0,0.0,0.0
+Fire,65,1.0,0.0,1.0,0.0,0.0,0.0
+Flash Flood,334,1.0,0.0,1.0,0.0,0.0,0.0
+Flood,890,1.0,0.0,1.0,0.0,0.0,0.0
+Heat Wave,36,1.0,0.0,1.0,0.0,0.0,0.0
+Severe Local Storm,514,1.0,0.0,1.0,0.0,0.0,0.0
+Tropical Cyclone,709,1.0,0.0,1.0,0.0,0.0,0.0
