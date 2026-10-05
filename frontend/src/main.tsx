@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import App from './App';
 import { initAnalytics } from './lib/analytics';
 import { applyBandwidthAttribute } from './lib/bandwidth';
+import { injectSpeedInsights } from '@vercel/speed-insights';
 import './index.css';
 // Low-bandwidth mode is a document-level decision and has to be made before the first paint:
 // the CSS that collapses blur/durations keys off `html[data-low-bandwidth='true']`, and the
@@ -13,6 +14,9 @@ applyBandwidthAttribute();
 // the first render so `app_opened` carries the real entry path rather than a post-navigation
 // one. Off by default — see frontend/src/lib/analytics.ts.
 initAnalytics();
+
+// Speed Insights for Web Vitals tracking
+injectSpeedInsights();
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
