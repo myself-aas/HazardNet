@@ -53,7 +53,7 @@ export const Field: React.FC<{
     </label>
     {children}
     {hint && !error && <p className="mt-1 text-base leading-[1.62] text-carbon-60">{hint}</p>}
-    {error && <p className="mt-1 text-sm font-semibold text-ap-primary">{error}</p>}
+    {error && <p className="mt-1 text-sm font-semibold text-ap-link">{error}</p>}
   </div>
 );
 
@@ -256,7 +256,7 @@ export const SaveBar: React.FC<{
           type="button"
           onClick={onSave}
           disabled={!dirty || saving}
-          className="inline-flex min-h-[44px] items-center gap-2 bg-ap-primary px-6 py-2 text-base font-semibold text-white hover:bg-ap-primary disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer touch-manipulation"
+          className="inline-flex min-h-[44px] items-center gap-2 bg-primary px-6 py-2 text-base font-semibold text-ap-action-fg hover:bg-primary disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer touch-manipulation"
         >
           {saving && <span className="h-3 w-3 animate-spin rounded-full border-2 border-white/40 border-t-white" />}
           {saving ? 'Saving…' : label}

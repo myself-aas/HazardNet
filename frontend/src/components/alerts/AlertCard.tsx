@@ -81,7 +81,7 @@ export const AlertCard: React.FC<AlertCardProps> = ({ alert, onOpen, className =
           <button
             type="button"
             onClick={() => onOpen(alert)}
-            className="inline-flex min-h-10 sm:min-h-11 items-center gap-1 border border-carbon-20 px-2.5 sm:px-3 py-2 text-xs sm:text-sm font-semibold text-carbon-80 hover:bg-carbon-05 dark:hover:bg-carbon-80 touch-manipulation transition-colors rounded-md"
+            className="inline-flex min-h-10 sm:min-h-11 items-center gap-1 border border-carbon-20 px-2.5 sm:px-3 py-2 text-xs sm:text-sm font-semibold text-carbon-90 hover:bg-carbon-05 dark:hover:bg-carbon-80 touch-manipulation transition-colors rounded-md"
           >
             <MaterialIcon name="description" className="text-sm shrink-0" aria-hidden="true" />
             <span className="hidden sm:inline">{t('alerts.card.evidenceCard')}</span><span className="sm:hidden">Details</span>

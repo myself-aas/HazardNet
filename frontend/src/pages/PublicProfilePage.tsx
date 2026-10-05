@@ -191,7 +191,7 @@ const PublicProfilePage: React.FC = () => {
           </p>
           <Link
             to="/signup"
-            className="mt-5 inline-flex min-h-[44px] items-center bg-primary-strong px-5 py-3 text-base font-semibold text-white hover:bg-primary touch-manipulation"
+            className="mt-5 inline-flex min-h-[44px] items-center bg-primary-strong px-5 py-3 text-base font-semibold text-ap-action-fg hover:bg-primary touch-manipulation"
           >
             Claim this username
           </Link>
@@ -229,7 +229,7 @@ const PublicProfilePage: React.FC = () => {
               {profile.photoURL ? (
                 <img src={profile.photoURL} alt={profile.displayName} className="h-24 w-24 rounded-full border-4 border-white object-cover" />
               ) : (
-                <div className="flex h-24 w-24 items-center justify-center rounded-full border-4 border-white bg-ap-primary text-3xl font-black text-white">
+                <div className="flex h-24 w-24 items-center justify-center rounded-full border-4 border-white bg-primary text-3xl font-black text-ap-action-fg">
                   {profile.displayName.charAt(0).toUpperCase()}
                 </div>
               )}
@@ -266,7 +266,7 @@ const PublicProfilePage: React.FC = () => {
                 </span>
               )}
               {profile.irrigationType && (
-                <span className="rounded-sm bg-carbon-05 px-3 py-1.5 text-xs font-bold text-ap-primary">
+                <span className="rounded-sm bg-carbon-05 px-3 py-1.5 text-xs font-bold text-ap-link">
                   <Droplets className="mr-1 inline h-3.5 w-3.5" aria-hidden="true" />
                   {profile.irrigationType}
                 </span>
@@ -320,7 +320,7 @@ const PublicProfilePage: React.FC = () => {
       <p className="mt-6 text-center text-xs text-carbon-60">
         Every HazardNet member gets a profile like this at{' '}
         <span className="font-bold text-carbon-60">hazardnet.live/u/username</span>.{' '}
-        <Link to="/signup" className="font-bold text-ap-primary hover:underline">
+        <Link to="/signup" className="font-bold text-ap-link hover:underline">
           <span className="inline-flex items-center gap-1.5">
             Claim yours <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
           </span>

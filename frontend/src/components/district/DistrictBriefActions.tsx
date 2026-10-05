@@ -178,7 +178,7 @@ export const DistrictBriefActions: React.FC = () => {
             type="button"
             onClick={handlePrintBrief}
             title="Print this district brief (HTML print is the primary export)"
-            className="inline-flex min-h-[44px] items-center gap-2 px-3 py-2 bg-ap-primary text-white text-sm font-semibold cursor-pointer touch-manipulation"
+            className="inline-flex min-h-[44px] items-center gap-2 px-3 py-2 bg-primary text-ap-action-fg text-sm font-semibold cursor-pointer touch-manipulation"
           >
             <Printer className="w-4 h-4" />
             <span>Print brief</span>

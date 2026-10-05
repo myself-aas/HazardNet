@@ -181,6 +181,13 @@
   --ap-action-focus: var(--ap-primary-focus);
   --ap-link: var(--ap-primary);
 
+  /* Paired foreground for a SOLID severity fill (bg-severity-*-solid,
+     bg-rose-600, bg-amber-500 …). The severity ramp is ink-on-surface by
+     design; when a fill is genuinely needed the fill inverts its lightness
+     between themes, so a literal text-white/text-black breaks in one of
+     them. This flips with the fill, exactly like --ap-action-fg does. */
+  --ap-on-sev: var(--ap-on-primary);
+
   --ap-focus-ring: var(--ap-primary-focus);
   --ap-focus-width: 2px;
   --ap-focus-offset: 2px;
@@ -251,6 +258,7 @@
     --ap-action: var(--ap-primary-on-dark);
     --ap-action-fg: var(--ap-black);
     --ap-link: var(--ap-primary-on-dark);
+    --ap-on-sev: var(--ap-black);
     --ap-focus-ring: var(--ap-primary-on-dark);
 
     --ap-frosted-bg: rgba(39, 39, 41, 0.8);
@@ -439,6 +447,7 @@
   --ap-action: var(--ap-primary-on-dark);
   --ap-action-fg: var(--ap-black);
   --ap-link: var(--ap-primary-on-dark);
+  --ap-on-sev: var(--ap-black);
   --ap-focus-ring: var(--ap-primary-on-dark);
 
   --ap-frosted-bg: rgba(39, 39, 41, 0.8);
@@ -630,6 +639,9 @@
   --ap-action-fg: var(--ap-ink);
   --ap-action-focus: #ffffff;
   --ap-link: var(--ap-primary-on-dark);
+  /* --ap-on-sev deliberately NOT set: this context does not override
+     --ap-sev-*, so the severity fills keep the ambient theme's lightness
+     and their paired foreground must come from the ambient theme too. */
   --ap-focus-ring: #ffffff;
   --ap-bg-canvas: var(--ap-tile-1);
   --ap-bg-grouped: var(--ap-tile-3);

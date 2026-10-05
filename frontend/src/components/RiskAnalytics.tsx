@@ -276,7 +276,7 @@ export const RiskAnalytics: React.FC<RiskAnalyticsProps> = ({ onSelectDistrict }
                 onClick={() => setSelectedRegionFilter(reg)}
                 className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
                   selectedRegionFilter === reg
-                    ? 'bg-carbon-90 text-white shadow-xs'
+                    ? 'bg-carbon-90 text-ap-on-inverse shadow-xs'
                     : 'bg-carbon-10 text-carbon-70 hover:text-carbon-90 border border-carbon-20'
                 }`}
               >

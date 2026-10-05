@@ -76,7 +76,7 @@ export const GlideResourcePopover: React.FC<GlideResourcePopoverProps> = ({
                 Multilateral GLIDE Registry
               </h4>
             </div>
-            <div className="mt-1 font-mono text-xs text-blue-300 font-semibold bg-blue-950/70 border border-blue-800/80 px-2 py-0.5 rounded-md inline-block">
+            <div className="mt-1 font-mono text-xs text-blue-700 font-semibold bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-md inline-block">
               {glideId}
             </div>
           </div>

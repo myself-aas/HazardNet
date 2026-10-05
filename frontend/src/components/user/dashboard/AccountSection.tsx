@@ -150,7 +150,7 @@ export const AccountSection: React.FC = () => {
           type="button"
           onClick={handleSignOut}
           disabled={signOutBusy}
-          className="flex items-center gap-2 border border-ap-primary bg-white px-4 py-2.5 text-xs font-extrabold text-ap-primary transition-colors hover:bg-rose-100 disabled:opacity-40 cursor-pointer"
+          className="flex items-center gap-2 border border-ap-primary bg-white px-4 py-2.5 text-xs font-extrabold text-ap-link transition-colors hover:bg-rose-100 disabled:opacity-40 cursor-pointer"
         >
           <MaterialIcon name="logout" size={14} />
           {signOutBusy ? 'Signing out…' : 'Sign out'}

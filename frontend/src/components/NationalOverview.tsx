@@ -214,7 +214,7 @@ export const NationalOverview: React.FC<NationalOverviewProps> = ({
       <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-carbon-20">
         <div className="space-y-3">
           <div className="flex flex-wrap items-center gap-2.5">
-            <span className="px-3 py-1 rounded-full text-xs font-mono font-black uppercase tracking-wider bg-ap-primary/10 text-ap-primary border border-ap-primary/20 shadow-2xs flex items-center gap-1.5">
+            <span className="px-3 py-1 rounded-full text-xs font-mono font-black uppercase tracking-wider bg-ap-primary/10 text-ap-link border border-ap-primary/20 shadow-2xs flex items-center gap-1.5">
               National AI Overview Mode
             </span>
             <span className="text-carbon-30 hidden sm:inline">•</span>
@@ -260,7 +260,7 @@ export const NationalOverview: React.FC<NationalOverviewProps> = ({
             onClick={() => setActiveTab('top3')}
             className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center gap-2 ${
               activeTab === 'top3'
-                ? 'bg-primary text-carbon-90 shadow-xs scale-[1.02]'
+                ? 'bg-primary text-ap-action-fg shadow-xs scale-[1.02]'
                 : 'text-carbon-60 hover:text-carbon-90 hover:bg-carbon-10'
             }`}
           >
@@ -271,7 +271,7 @@ export const NationalOverview: React.FC<NationalOverviewProps> = ({
             onClick={() => setActiveTab('divisions')}
             className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center gap-2 ${
               activeTab === 'divisions'
-                ? 'bg-primary text-carbon-90 shadow-xs scale-[1.02]'
+                ? 'bg-primary text-ap-action-fg shadow-xs scale-[1.02]'
                 : 'text-carbon-60 hover:text-carbon-90 hover:bg-carbon-10'
             }`}
           >
@@ -285,7 +285,7 @@ export const NationalOverview: React.FC<NationalOverviewProps> = ({
             onClick={() => setActiveTab('all_hazards')}
             className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center gap-2 ${
               activeTab === 'all_hazards'
-                ? 'bg-primary text-carbon-90 shadow-xs scale-[1.02]'
+                ? 'bg-primary text-ap-action-fg shadow-xs scale-[1.02]'
                 : 'text-carbon-60 hover:text-carbon-90 hover:bg-carbon-10'
             }`}
           >
@@ -296,7 +296,7 @@ export const NationalOverview: React.FC<NationalOverviewProps> = ({
             onClick={() => setActiveTab('formula')}
             className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center gap-2 ${
               activeTab === 'formula'
-                ? 'bg-primary text-carbon-90 shadow-xs scale-[1.02]'
+                ? 'bg-primary text-ap-action-fg shadow-xs scale-[1.02]'
                 : 'text-carbon-60 hover:text-carbon-90 hover:bg-carbon-10'
             }`}
           >
@@ -336,9 +336,9 @@ export const NationalOverview: React.FC<NationalOverviewProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {top3Hazards.map((hazard, index) => {
               const ranks = [
-                { badge: '#1 Highest Threat', bg: 'bg-rose-50/60', border: 'border-rose-200', badgeColor: 'bg-rose-600 text-white' },
-                { badge: '#2 Severe Risk', bg: 'bg-amber-50/60', border: 'border-amber-200', badgeColor: 'bg-amber-500 text-carbon-90' },
-                { badge: '#3 Major Concern', bg: 'bg-sky-50/60', border: 'border-sky-200', badgeColor: 'bg-sky-500 text-carbon-90' }
+                { badge: '#1 Highest Threat', bg: 'bg-rose-50/60', border: 'border-rose-200', badgeColor: 'bg-rose-600 text-ap-on-sev' },
+                { badge: '#2 Severe Risk', bg: 'bg-amber-50/60', border: 'border-amber-200', badgeColor: 'bg-amber-500 text-ap-on-sev' },
+                { badge: '#3 Major Concern', bg: 'bg-sky-50/60', border: 'border-sky-200', badgeColor: 'bg-sky-500 text-ap-on-sev' }
               ];
               const rankInfo = ranks[index] || ranks[2];
               const isSelected = selectedHazardFilter === hazard.hazardName;
@@ -608,7 +608,7 @@ export const NationalOverview: React.FC<NationalOverviewProps> = ({
                     onClick={() => setSelectedHazardFilter(isSelected ? null : hazard.hazardName)}
                     className={`min-h-[44px] rounded-xl border px-3 py-1.5 font-mono text-xs font-bold transition-all ${
                       isSelected
-                        ? 'border-rose-500 bg-rose-600 text-white'
+                        ? 'border-rose-500 bg-rose-600 text-ap-on-sev'
                         : 'border-carbon-20 bg-carbon-05 text-sky-800 hover:bg-carbon-10'
                     }`}
                   >
@@ -698,7 +698,7 @@ export const NationalOverview: React.FC<NationalOverviewProps> = ({
                           onClick={() => setSelectedHazardFilter(isSelected ? null : hazard.hazardName)}
                           className={`px-3 py-1.5 rounded-xl font-mono text-xs font-bold border transition-all ${
                             isSelected
-                              ? 'bg-rose-600 text-white border-rose-500'
+                              ? 'bg-rose-600 text-ap-on-sev border-rose-500'
                               : 'bg-carbon-05 text-sky-800 border-carbon-20 hover:bg-carbon-10'
                           }`}
                         >

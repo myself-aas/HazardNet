@@ -111,7 +111,7 @@ export const UsernameField: React.FC<UsernameFieldProps> = ({
 
   const statusStyles: Record<UsernameStatus, { ring: string; icon: string; text: string; iconClass: string }> = {
     idle: { ring: 'focus-within:border-ap-primary focus-within:ring-ap-primary/40', icon: '', text: 'text-carbon-60', iconClass: '' },
-    invalid: { ring: 'border-ap-primary focus-within:ring-ap-primary/30', icon: 'error', text: 'text-ap-primary', iconClass: 'text-ap-primary' },
+    invalid: { ring: 'border-severity-high focus-within:ring-severity-high/30', icon: 'error', text: 'text-severity-high', iconClass: 'text-severity-high' },
     checking: { ring: 'focus-within:border-ap-primary focus-within:ring-ap-primary/40', icon: 'hourglass_top', text: 'text-carbon-60', iconClass: 'text-carbon-60' },
     available: { ring: 'border-severity-low focus-within:ring-severity-low/30', icon: 'check_circle', text: 'text-carbon-80', iconClass: 'text-severity-low' },
     taken: { ring: 'border-orange-300 focus-within:ring-orange-200', icon: 'error', text: 'text-orange-700', iconClass: 'text-orange-500' },

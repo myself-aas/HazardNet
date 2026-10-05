@@ -118,7 +118,7 @@ export function AuthSocialButtons({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
             role="alert"
-            className="border-l-2 border-ap-primary bg-white p-4 text-sm text-ap-primary"
+            className="border-l-2 border-ap-primary bg-white p-4 text-sm text-ap-link"
           >
             <p className="font-extrabold">
               {failure.provider}: {failure.title}

@@ -18,7 +18,7 @@ export const Terms: React.FC = () => {
         
         <div className="border-b border-carbon-20 pb-4 space-y-2">
           <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 rounded-sm text-xs font-mono font-bold bg-ap-primary/10 text-ap-primary border border-ap-primary/20 uppercase">
+            <span className="px-2.5 py-0.5 rounded-sm text-xs font-mono font-bold bg-ap-primary/10 text-ap-link border border-ap-primary/20 uppercase">
               Legal Agreement
             </span>
             <span className="text-carbon-30">•</span>
@@ -61,7 +61,7 @@ export const Terms: React.FC = () => {
         <section className="space-y-2">
           <h2 className="text-ap-tagline font-bold tracking-tight text-carbon-90">5. Contact & Questions</h2>
           <p>
-            For legal or academic licensing inquiries, please visit our <Link to="/contact" className="font-bold text-ap-primary underline underline-offset-4">Contact Page</Link> or view our <Link to="/privacy" className="font-bold text-ap-primary underline underline-offset-4">Privacy Policy</Link>.
+            For legal or academic licensing inquiries, please visit our <Link to="/contact" className="font-bold text-ap-link underline underline-offset-4">Contact Page</Link> or view our <Link to="/privacy" className="font-bold text-ap-link underline underline-offset-4">Privacy Policy</Link>.
           </p>
         </section>
 

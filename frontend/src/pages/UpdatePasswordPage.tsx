@@ -53,14 +53,14 @@ export default function UpdatePasswordPage() {
           <p className="border-l-2 border-ap-primary bg-white p-4 text-sm font-medium text-carbon-80">
             {status}
           </p>
-          <Link to="/login" className="font-bold text-ap-primary hover:underline">
+          <Link to="/login" className="font-bold text-ap-link hover:underline">
             Return to sign in
           </Link>
         </div>
       ) : (
         <form onSubmit={submit} className="space-y-4">
           {error && (
-            <p role="alert" className="border-l-2 border-ap-primary bg-white p-4 text-sm font-medium text-ap-primary">
+            <p role="alert" className="border-l-2 border-ap-primary bg-white p-4 text-sm font-medium text-ap-link">
               {error}
             </p>
           )}
@@ -93,7 +93,7 @@ export default function UpdatePasswordPage() {
           <button
             type="submit"
             disabled={saving || !ready}
-            className="min-h-[44px] w-full cursor-pointer bg-primary-strong py-3 text-base font-semibold text-white hover:bg-primary disabled:opacity-50 touch-manipulation"
+            className="min-h-[44px] w-full cursor-pointer bg-primary-strong py-3 text-base font-semibold text-ap-action-fg hover:bg-primary disabled:opacity-50 touch-manipulation"
           >
             {saving ? 'Updating password…' : 'Update password'}
           </button>

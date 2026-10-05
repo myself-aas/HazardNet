@@ -239,7 +239,7 @@ export const UserProfilePage: React.FC = () => {
                 className="h-16 w-16 sm:h-24 sm:w-24 rounded-full object-cover border border-carbon-20 shrink-0"
               />
             ) : (
-              <div className="h-16 w-16 sm:h-24 sm:w-24 rounded-full bg-ap-primary text-white font-black text-lg flex items-center justify-center shrink-0">
+              <div className="h-16 w-16 sm:h-24 sm:w-24 rounded-full bg-primary text-ap-action-fg font-black text-lg flex items-center justify-center shrink-0">
                 {(displayName || 'U')[0].toUpperCase()}
               </div>
             )}
@@ -258,7 +258,7 @@ export const UserProfilePage: React.FC = () => {
             {publicUsername && (
               <Link
                 to={profilePath(publicUsername)}
-                className="min-h-[44px] px-3 py-2 text-base font-semibold text-ap-primary hover:bg-carbon-05 rounded-sm border border-carbon-20 flex items-center gap-1 touch-manipulation"
+                className="min-h-[44px] px-3 py-2 text-base font-semibold text-ap-link hover:bg-carbon-05 rounded-sm border border-carbon-20 flex items-center gap-1 touch-manipulation"
               >
                 Public page /u/{publicUsername}
               </Link>
@@ -277,7 +277,7 @@ export const UserProfilePage: React.FC = () => {
           
           {saveMessage && (
             <div className={`p-3 text-xs font-bold border ${
-              saveMessage.includes('updated') ? 'bg-carbon-05 text-carbon-80 border-carbon-20' : 'bg-white text-ap-primary border-ap-primary'
+              saveMessage.includes('updated') ? 'bg-carbon-05 text-carbon-80 border-carbon-20' : 'bg-white text-ap-link border-ap-primary'
             }`}>
               {saveMessage}
             </div>
@@ -302,13 +302,13 @@ export const UserProfilePage: React.FC = () => {
                     onClick={() => setUserRole(roleKey)}
                     className={`min-h-[44px] p-3 text-left border transition-all flex items-center gap-2.5 touch-manipulation tap-target ${
                       isSelected
-                        ? 'bg-amber-50 text-ap-primary border-ap-primary font-bold'
+                        ? 'bg-amber-50 text-ap-link border-ap-primary font-bold'
                         : 'bg-white text-carbon-70 border-carbon-20 hover:border-carbon-40'
                     }`}
                   >
                     <div className="flex-1 min-w-0">
                       <div className="text-xs font-bold truncate">{item.label}</div>
-                      <div className={`text-xs truncate ${isSelected ? 'text-ap-primary' : 'text-carbon-60'}`}>
+                      <div className={`text-xs truncate ${isSelected ? 'text-ap-link' : 'text-carbon-60'}`}>
                         {item.tag}
                       </div>
                     </div>
@@ -471,7 +471,7 @@ export const UserProfilePage: React.FC = () => {
                       setHomeDistrictId('');
                       try { localStorage.removeItem('hazardnet_home_district'); } catch { /* best-effort */ }
                     }}
-                    className="w-full py-2 px-3 bg-white hover:bg-white text-ap-primary border border-ap-primary font-bold text-xs transition-colors cursor-pointer"
+                    className="w-full py-2 px-3 bg-white hover:bg-white text-ap-link border border-ap-primary font-bold text-xs transition-colors cursor-pointer"
                   >
                     Clear Home District
                   </button>
@@ -501,9 +501,9 @@ export const UserProfilePage: React.FC = () => {
                     </div>
                   </div>
                   <span className={`px-2.5 py-0.5 rounded-full text-xs font-mono font-black border ${
-                    currentDistrictObj.risk === 'High' ? 'bg-ap-primary/20 text-ap-primary border-ap-primary/40' :
-                    currentDistrictObj.risk === 'Moderate' ? 'bg-amber-500/20 text-amber-300 border-amber-500/40' :
-                    'bg-severity-low/20 text-emerald-300 border-emerald-500/40'
+                    currentDistrictObj.risk === 'High' ? 'bg-severity-high-surface text-severity-high border-severity-high/40' :
+                    currentDistrictObj.risk === 'Moderate' ? 'bg-severity-moderate-surface text-severity-moderate border-severity-moderate/40' :
+                    'bg-severity-low-surface text-severity-low border-severity-low/40'
                   }`}>
                     {currentDistrictObj.risk} Risk ({severityScorePct}% Severity)
                   </span>
@@ -679,7 +679,7 @@ export const UserProfilePage: React.FC = () => {
                 type="button"
                 onClick={handleLogout}
                 disabled={isLoggingOut}
-                className="min-h-[44px] px-3.5 py-2 bg-white hover:bg-white text-ap-primary hover:text-ap-primary font-bold rounded-sm border border-ap-primary text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 shrink-0 touch-manipulation tap-target"
+                className="min-h-[44px] px-3.5 py-2 bg-white hover:bg-white text-ap-link hover:text-ap-link font-bold rounded-sm border border-ap-primary text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 shrink-0 touch-manipulation tap-target"
               >
                 {isLoggingOut ? (
                   <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
@@ -738,7 +738,7 @@ export const UserProfilePage: React.FC = () => {
                   type="button"
                   onClick={handleLogout}
                   disabled={isLoggingOut}
-                  className="min-h-[44px] px-3.5 py-2 bg-white hover:bg-white text-ap-primary font-bold border border-ap-primary text-xs cursor-pointer transition-colors disabled:opacity-50 touch-manipulation tap-target inline-flex items-center justify-center"
+                  className="min-h-[44px] px-3.5 py-2 bg-white hover:bg-white text-ap-link font-bold border border-ap-primary text-xs cursor-pointer transition-colors disabled:opacity-50 touch-manipulation tap-target inline-flex items-center justify-center"
                   title="Sign out and clear local state"
                 >
                   {isLoggingOut ? 'Signing Out...' : 'Sign Out'}
@@ -748,7 +748,7 @@ export const UserProfilePage: React.FC = () => {
             <button
               type="submit"
               disabled={isSaving}
-              className="inline-flex min-h-[44px] items-center px-6 py-2 bg-ap-primary hover:bg-ap-primary text-white font-semibold text-base disabled:opacity-50 cursor-pointer touch-manipulation"
+              className="inline-flex min-h-[44px] items-center px-6 py-2 bg-primary hover:bg-primary text-ap-action-fg font-semibold text-base disabled:opacity-50 cursor-pointer touch-manipulation"
             >
               {isSaving ? 'Saving to Firestore...' : 'Save Profile Changes'}
             </button>

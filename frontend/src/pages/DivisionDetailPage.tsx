@@ -148,7 +148,7 @@ export const DivisionDetailPage: React.FC = () => {
           <p className="text-xs text-carbon-60 mt-2">{error || 'Division data not found.'}</p>
           <Link
             to="/divisions"
-            className="mt-5 inline-flex min-h-[44px] items-center px-4 bg-ap-primary text-white text-sm font-semibold hover:bg-ap-primary"
+            className="mt-5 inline-flex min-h-[44px] items-center px-4 bg-primary text-ap-action-fg text-sm font-semibold hover:bg-primary"
           >
             Back to Divisions
           </Link>
@@ -161,9 +161,9 @@ export const DivisionDetailPage: React.FC = () => {
     <div className="min-h-dvh bg-carbon-05 text-carbon-80 pb-8 pt-6 px-4 sm:px-6 lg:px-8 max-w-[1200px] mx-auto">
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-xs text-carbon-60 mb-4">
-        <Link to="/" className="hover:text-ap-primary transition-colors">Home</Link>
+        <Link to="/" className="hover:text-ap-link transition-colors">Home</Link>
         <span>/</span>
-        <Link to="/divisions" className="hover:text-ap-primary transition-colors">Divisions</Link>
+        <Link to="/divisions" className="hover:text-ap-link transition-colors">Divisions</Link>
         <span>/</span>
         <span className="text-carbon-80 font-medium">{data.division}</span>
       </div>
@@ -178,7 +178,7 @@ export const DivisionDetailPage: React.FC = () => {
               onClick={() => navigate(`/divisions/${d.id}`)}
               className={`inline-flex min-h-[44px] items-center px-3 text-sm font-semibold whitespace-nowrap touch-manipulation ${
                 isActive
-                  ? 'bg-ap-primary text-white'
+                  ? 'bg-primary text-ap-action-fg'
                   : 'bg-white border border-carbon-20 text-carbon-70 hover:bg-carbon-10 hover:text-carbon-90'
               }`}
             >
@@ -192,7 +192,7 @@ export const DivisionDetailPage: React.FC = () => {
       <div className="bg-white border border-carbon-20 p-6 sm:p-8 mb-8">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 text-xs font-semibold bg-carbon-05 text-ap-primary border border-carbon-20 mb-3">
+            <div className="inline-flex items-center gap-2 px-3 py-1 text-xs font-semibold bg-carbon-05 text-ap-link border border-carbon-20 mb-3">
               <MapPin className="w-3.5 h-3.5" />
               <span>Administrative Division Dashboard</span>
             </div>
@@ -210,7 +210,7 @@ export const DivisionDetailPage: React.FC = () => {
               <div className="text-xs text-carbon-60 font-medium">Districts</div>
             </div>
             <div className="bg-carbon-05 border border-carbon-20/80 p-3 text-center">
-              <div className="text-xl font-bold text-ap-primary">{data.totalEvents.toLocaleString()}</div>
+              <div className="text-xl font-bold text-ap-link">{data.totalEvents.toLocaleString()}</div>
               <div className="text-xs text-carbon-60 font-medium">Recorded Events</div>
             </div>
             <div className="bg-carbon-05 border border-carbon-20/80 p-3 text-center">
@@ -231,14 +231,14 @@ export const DivisionDetailPage: React.FC = () => {
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-4 border-b border-carbon-20 gap-2">
             <div>
               <h2 className="text-base font-semibold text-carbon-90 flex items-center gap-2">
-                <CloudRain className="w-4 h-4 text-ap-primary" />
+                <CloudRain className="w-4 h-4 text-ap-link" />
                 Active Model Forecasts Across {data.division} Districts
               </h2>
               <p className="text-xs text-carbon-60">
                 Directly from the latest 7-day and 15-day AI predictions (hazardnet_forecasts_latest.csv)
               </p>
             </div>
-            <span className="text-xs font-semibold px-2.5 py-1 bg-carbon-05 text-ap-primary rounded-md">
+            <span className="text-xs font-semibold px-2.5 py-1 bg-carbon-05 text-ap-link rounded-md">
               {data.forecasts.length} Records Active
             </span>
           </div>
@@ -286,7 +286,7 @@ export const DivisionDetailPage: React.FC = () => {
                 footer: (
                   <Link
                     to={`/forecast/district/${targetDistrictSlug}`}
-                    className="inline-flex min-h-[44px] items-center gap-1 font-semibold text-ap-primary hover:text-ap-primary"
+                    className="inline-flex min-h-[44px] items-center gap-1 font-semibold text-ap-link hover:text-ap-link"
                   >
                     <span>District Page</span>
                     <ArrowRight className="w-3 h-3" />
@@ -319,7 +319,7 @@ export const DivisionDetailPage: React.FC = () => {
                     <tr key={dr.district} className="hover:bg-carbon-05/80 transition-colors">
                       <td className="p-3 font-semibold text-carbon-90">{dr.district}</td>
                       <td className="p-3">
-                        <span className="px-2 py-0.5 rounded text-xs font-medium bg-carbon-05 text-ap-primary border border-carbon-20">
+                        <span className="px-2 py-0.5 rounded text-xs font-medium bg-carbon-05 text-ap-link border border-carbon-20">
                           {dr.forecast7DHazard || 'No threat'}
                         </span>
                       </td>
@@ -353,7 +353,7 @@ export const DivisionDetailPage: React.FC = () => {
                       <td className="p-3 text-right">
                         <Link
                           to={`/forecast/district/${targetDistrictSlug}`}
-                          className="inline-flex items-center gap-1 text-ap-primary hover:text-ap-primary font-semibold"
+                          className="inline-flex items-center gap-1 text-ap-link hover:text-ap-link font-semibold"
                         >
                           <span>District Page</span>
                           <ArrowRight className="w-3 h-3" />
@@ -375,7 +375,7 @@ export const DivisionDetailPage: React.FC = () => {
           <div className="flex items-center justify-between pb-3 border-b border-carbon-20">
             <div>
               <h3 className="text-sm font-bold text-carbon-90 flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 text-ap-primary" />
+                <TrendingUp className="w-4 h-4 text-ap-link" />
                 26-Year Historical Disaster Trend (2000–2026)
               </h3>
               <p className="text-xs text-carbon-60">Total events recorded per year in {data.division}</p>
@@ -410,7 +410,7 @@ export const DivisionDetailPage: React.FC = () => {
           <div className="flex items-center justify-between pb-3 border-b border-carbon-20">
             <div>
               <h3 className="text-sm font-bold text-carbon-90 flex items-center gap-2">
-                <Layers className="w-4 h-4 text-ap-primary" />
+                <Layers className="w-4 h-4 text-ap-link" />
                 Constituent Districts Disaster Exposure
               </h3>
               <p className="text-xs text-carbon-60">Historical disaster frequency across {data.division} districts</p>
@@ -436,7 +436,7 @@ export const DivisionDetailPage: React.FC = () => {
           <div className="flex items-center justify-between pb-3 border-b border-carbon-20">
             <div>
               <h3 className="text-sm font-bold text-carbon-90 flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-ap-primary" />
+                <Calendar className="w-4 h-4 text-ap-link" />
                 Monthly Seasonality Curve (Jan–Dec)
               </h3>
               <p className="text-xs text-carbon-60">Calendar month disaster distribution in {data.division}</p>
@@ -462,7 +462,7 @@ export const DivisionDetailPage: React.FC = () => {
           <div className="flex items-center justify-between pb-3 border-b border-carbon-20">
             <div>
               <h3 className="text-sm font-bold text-carbon-90 flex items-center gap-2">
-                <AlertTriangle className="w-4 h-4 text-ap-primary" />
+                <AlertTriangle className="w-4 h-4 text-ap-link" />
                 Hazard Type Composition
               </h3>
               <p className="text-xs text-carbon-60">Breakdown of disaster types experienced in this division</p>
@@ -512,7 +512,7 @@ export const DivisionDetailPage: React.FC = () => {
         <div className="flex flex-col md:flex-row md:items-center justify-between pb-4 border-b border-carbon-20 gap-4">
           <div>
             <h3 className="text-base font-bold text-carbon-90 flex items-center gap-2">
-              <Layers className="w-4 h-4 text-ap-primary" />
+              <Layers className="w-4 h-4 text-ap-link" />
               Historical Climatic Events Archive ({data.division} Division)
             </h3>
             <p className="text-xs text-carbon-60">
@@ -567,7 +567,7 @@ export const DivisionDetailPage: React.FC = () => {
               { label: 'District', value: (
                 <Link
                   to={`/forecast/district/${event.district.toLowerCase().replace(/[^a-z0-9]/g, '')}`}
-                  className="font-semibold text-ap-primary"
+                  className="font-semibold text-ap-link"
                 >
                   {event.district}
                 </Link>
@@ -582,7 +582,7 @@ export const DivisionDetailPage: React.FC = () => {
             footer: (
               <Link
                 to={`/forecast/district/${event.district.toLowerCase().replace(/[^a-z0-9]/g, '')}`}
-                className="inline-flex min-h-[44px] items-center gap-1 font-semibold text-ap-primary"
+                className="inline-flex min-h-[44px] items-center gap-1 font-semibold text-ap-link"
               >
                 <span>Go to {event.district} District Dashboard</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -613,7 +613,7 @@ export const DivisionDetailPage: React.FC = () => {
                     <tr className="hover:bg-carbon-05/80 transition-colors">
                       <td className="p-3 font-medium text-carbon-90 whitespace-nowrap">{event.date}</td>
                       <td className="p-3 font-semibold text-carbon-80">
-                        <Link to={`/forecast/district/${districtSlug}`} className="hover:text-ap-primary">
+                        <Link to={`/forecast/district/${districtSlug}`} className="hover:text-ap-link">
                           {event.district}
                         </Link>
                       </td>
@@ -634,7 +634,7 @@ export const DivisionDetailPage: React.FC = () => {
                       <td className="p-3 font-mono text-carbon-60 whitespace-nowrap">{event.glide || '—'}</td>
                       <td className="p-3 font-bold text-carbon-70">
                         <span className={`px-2 py-0.5 rounded text-xs ${
-                          event.severity >= 3.0 ? 'bg-carbon-05 text-ap-primary border border-carbon-20' :
+                          event.severity >= 3.0 ? 'bg-carbon-05 text-ap-link border border-carbon-20' :
                           event.severity >= 2.0 ? 'bg-amber-50 text-amber-700 border border-amber-200' :
                           'bg-carbon-10 text-carbon-70'
                         }`}>
@@ -647,7 +647,7 @@ export const DivisionDetailPage: React.FC = () => {
                       <td className="p-3 text-right whitespace-nowrap">
                         <button
                           onClick={() => setExpandedEventId(isExpanded ? null : event.id)}
-                          className="text-ap-primary font-semibold inline-flex min-h-[44px] items-center gap-1 cursor-pointer touch-manipulation"
+                          className="text-ap-link font-semibold inline-flex min-h-[44px] items-center gap-1 cursor-pointer touch-manipulation"
                         >
                           <span>{isExpanded ? 'Less' : 'Details'}</span>
                           {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
@@ -669,7 +669,7 @@ export const DivisionDetailPage: React.FC = () => {
                             <div className="pt-2 flex justify-end">
                               <Link
                                 to={`/forecast/district/${districtSlug}`}
-                                className="inline-flex items-center gap-1 text-ap-primary hover:text-ap-primary font-semibold"
+                                className="inline-flex items-center gap-1 text-ap-link hover:text-ap-link font-semibold"
                               >
                                 <span>Go to {event.district} District Dashboard</span>
                                 <ArrowRight className="w-3.5 h-3.5" />

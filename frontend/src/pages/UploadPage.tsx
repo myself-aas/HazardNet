@@ -117,7 +117,7 @@ export default function UploadPage() {
         <button
           type="submit"
           disabled={state.kind === 'loading'}
-          className="inline-flex min-h-11 items-center justify-center bg-ap-primary px-6 py-3 text-base font-semibold text-white hover:bg-ap-primary disabled:opacity-50"
+          className="inline-flex min-h-11 items-center justify-center bg-primary px-6 py-3 text-base font-semibold text-ap-action-fg hover:bg-primary disabled:opacity-50"
         >
           {state.kind === 'loading' ? t('lookup.submitting') : t('lookup.submit')}
         </button>

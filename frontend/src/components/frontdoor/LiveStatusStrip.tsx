@@ -218,12 +218,12 @@ export const LiveStatusStrip: React.FC<LiveStatusStripProps> = ({
             `<nav>` (its table of contents). See the same decision in `pages/FrontDoor.tsx`. */}
         <ul aria-label={t('frontdoor.strip.navLabel')} className="ml-auto flex flex-wrap gap-x-4 gap-y-1">
           <li>
-            <Link to="/alerts" className="inline-flex min-h-[44px] items-center text-base font-bold text-ap-primary underline underline-offset-4">
+            <Link to="/alerts" className="inline-flex min-h-[44px] items-center text-base font-bold text-ap-link underline underline-offset-4">
               {t('frontdoor.strip.allAlerts')}
             </Link>
           </li>
           <li>
-            <Link to="/live" className="inline-flex min-h-[44px] items-center text-base font-bold text-ap-primary underline underline-offset-4">
+            <Link to="/live" className="inline-flex min-h-[44px] items-center text-base font-bold text-ap-link underline underline-offset-4">
               {t('frontdoor.strip.liveMap')}
             </Link>
           </li>
@@ -245,7 +245,7 @@ export const LiveStatusStrip: React.FC<LiveStatusStripProps> = ({
                 />
                 <Link
                   to={`/alerts/${encodeURIComponent(alert.id)}`}
-                  className="font-bold text-ap-primary underline underline-offset-2"
+                  className="font-bold text-ap-link underline underline-offset-2"
                 >
                   {alert.district_name ?? t('frontdoor.strip.districtUnnamed')}
                 </Link>
@@ -274,7 +274,7 @@ export const LiveStatusStrip: React.FC<LiveStatusStripProps> = ({
           ) : (
             t('frontdoor.strip.withheldUnknown')
           )}{' '}
-          <Link to="/status" className="font-bold text-ap-primary underline underline-offset-2">
+          <Link to="/status" className="font-bold text-ap-link underline underline-offset-2">
             {t('frontdoor.strip.whyHeld')}
           </Link>
         </p>
@@ -307,12 +307,12 @@ export const LiveStatusStrip: React.FC<LiveStatusStripProps> = ({
           role="alert"
           className="border-t border-carbon-20 bg-white px-4 py-3 md:px-5 flex flex-wrap items-center gap-3"
         >
-          <p className="text-sm leading-[1.62] text-ap-primary flex-1 min-w-[12rem]">{error}</p>
+          <p className="text-sm leading-[1.62] text-ap-link flex-1 min-w-[12rem]">{error}</p>
           {onRetry && (
             <button
               type="button"
               onClick={onRetry}
-              className="inline-flex min-h-[44px] items-center gap-1.5 bg-ap-primary px-4 py-2 text-sm font-semibold text-white hover:bg-ap-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-ap-primary focus-visible:outline-offset-2"
+              className="inline-flex min-h-[44px] items-center gap-1.5 bg-primary px-4 py-2 text-sm font-semibold text-ap-action-fg hover:bg-primary focus-visible:outline focus-visible:outline-2 focus-visible:outline-ap-primary focus-visible:outline-offset-2"
             >
               {t('common.retry')}
             </button>

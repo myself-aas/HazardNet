@@ -55,7 +55,7 @@ const PublicProfilePreview: React.FC = () => {
       actions={
         <Link
           to={profilePath(username)}
-          className="inline-flex min-h-[44px] items-center bg-ap-primary px-4 py-2 text-base font-semibold text-white hover:bg-ap-primary touch-manipulation"
+          className="inline-flex min-h-[44px] items-center bg-primary px-4 py-2 text-base font-semibold text-ap-action-fg hover:bg-primary touch-manipulation"
         >
           Open live page
         </Link>
@@ -68,7 +68,7 @@ const PublicProfilePreview: React.FC = () => {
             {userProfile?.photoURL ? (
               <img src={userProfile.photoURL} alt="" className="h-16 w-16 rounded-full border-4 border-white object-cover" />
             ) : (
-              <div className="flex h-16 w-16 items-center justify-center rounded-full border-4 border-white bg-ap-primary text-xl font-black text-white">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full border-4 border-white bg-primary text-xl font-black text-ap-action-fg">
                 {(userProfile?.displayName || user?.email || 'U')[0].toUpperCase()}
               </div>
             )}
@@ -194,7 +194,7 @@ const UserDashboardPage: React.FC = () => {
           <button
             type="button"
             onClick={() => { void ensureProfile(); }}
-            className="inline-flex min-h-[44px] items-center bg-primary-strong px-4 py-2 text-base font-semibold text-white hover:bg-primary cursor-pointer touch-manipulation"
+            className="inline-flex min-h-[44px] items-center bg-primary-strong px-4 py-2 text-base font-semibold text-ap-action-fg hover:bg-primary cursor-pointer touch-manipulation"
           >
             Create my profile
           </button>
@@ -249,7 +249,7 @@ const UserDashboardPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => navigate('/forecast/overview')}
-                className="inline-flex min-h-[44px] items-center bg-primary-strong px-4 py-2 text-base font-semibold text-white hover:bg-primary cursor-pointer touch-manipulation"
+                className="inline-flex min-h-[44px] items-center bg-primary-strong px-4 py-2 text-base font-semibold text-ap-action-fg hover:bg-primary cursor-pointer touch-manipulation"
               >
                 Open forecasts
               </button>
@@ -291,7 +291,7 @@ const UserDashboardPage: React.FC = () => {
                   title={tab.hint}
                   className={`flex min-h-[44px] shrink-0 items-center gap-2.5 px-4 py-3 text-left text-base font-semibold cursor-pointer touch-manipulation lg:w-full ${
                     active
-                      ? 'bg-carbon-90 text-white'
+                      ? 'bg-carbon-90 text-ap-on-inverse'
                       : 'border border-carbon-20 bg-white text-carbon-60 hover:bg-carbon-05 lg:border-transparent lg:bg-transparent lg:hover:bg-carbon-10'
                   }`}
                 >

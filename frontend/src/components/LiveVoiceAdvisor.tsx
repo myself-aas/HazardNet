@@ -405,7 +405,7 @@ export const LiveVoiceAdvisor: React.FC<LiveVoiceAdvisorProps> = ({
       {/* Top Bar / Status Header */}
       <div className="px-4 py-3 border-b border-carbon-20 bg-carbon-05 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-2.5">
-          <div className="relative flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-700">
+          <div className="relative flex items-center justify-center w-8 h-8 rounded-full bg-blue-50 text-blue-700">
             <Radio className={`w-4 h-4 ${status === 'listening' || status === 'speaking' ? 'animate-pulse' : ''}`} />
           </div>
           <div>
@@ -575,7 +575,7 @@ export const LiveVoiceAdvisor: React.FC<LiveVoiceAdvisorProps> = ({
             }`}
           >
             {item.sender === 'user' && (
-              <div className="max-w-[85%] bg-blue-600 text-white px-3 py-2 rounded-2xl rounded-tr-none shadow-sm">
+              <div className="max-w-[85%] bg-blue-600 text-ap-action-fg px-3 py-2 rounded-2xl rounded-tr-none shadow-sm">
                 <p className="font-sans leading-relaxed">{item.text}</p>
                 <span className="text-xs text-blue-200 mt-0.5 block text-right">{item.timestamp}</span>
               </div>
@@ -623,7 +623,7 @@ export const LiveVoiceAdvisor: React.FC<LiveVoiceAdvisorProps> = ({
             </div>
             <button
               onClick={connectWebSocket}
-              className="min-h-[44px] shrink-0 rounded-lg bg-rose-600 px-3 py-2 text-xs font-medium text-white transition-colors hover:bg-rose-700"
+              className="min-h-[44px] shrink-0 rounded-lg bg-rose-600 px-3 py-2 text-xs font-medium text-ap-on-sev transition-colors hover:bg-rose-700"
             >
               Retry
             </button>
@@ -641,7 +641,7 @@ export const LiveVoiceAdvisor: React.FC<LiveVoiceAdvisorProps> = ({
             className={`p-3 min-w-[44px] min-h-[44px] rounded-full flex items-center justify-center font-medium transition shadow-sm ${
               isMuted 
                 ? 'bg-rose-100 text-rose-700 hover:bg-rose-200 border border-rose-300' 
-                : 'bg-emerald-600 text-white hover:bg-emerald-700'
+                : 'bg-emerald-600 text-ap-on-sev hover:bg-emerald-700'
             }`}
             title={isMuted ? 'Unmute microphone' : 'Mute microphone'}
             aria-label={isMuted ? 'Unmute microphone' : 'Mute microphone'}
@@ -682,7 +682,7 @@ export const LiveVoiceAdvisor: React.FC<LiveVoiceAdvisorProps> = ({
               if (onClose) onClose();
               else if (onSwitchToText) onSwitchToText();
             }}
-            className="px-3.5 py-2 min-h-[44px] bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold rounded-lg flex items-center gap-1.5 shadow-sm transition"
+            className="px-3.5 py-2 min-h-[44px] bg-rose-600 hover:bg-rose-700 text-ap-on-sev text-xs font-semibold rounded-lg flex items-center gap-1.5 shadow-sm transition"
           >
             <PhoneOff className="w-4 h-4" />
             <span>End Call</span>

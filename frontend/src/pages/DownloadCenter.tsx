@@ -41,7 +41,7 @@ const AssetButton: React.FC<{
     onClick={() => onDownload(asset)}
     className={
       primary
-        ? 'px-5 py-2.5 rounded-xl bg-primary hover:bg-primary-strong text-white text-xs font-black transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 shrink-0 cursor-pointer'
+        ? 'px-5 py-2.5 rounded-xl bg-primary hover:bg-primary-strong text-ap-action-fg text-xs font-black transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 shrink-0 cursor-pointer'
         : 'px-3.5 py-2 rounded-lg bg-carbon-10 hover:bg-carbon-20 border border-carbon-20 text-carbon-80 text-xs font-bold font-mono transition-all flex items-center gap-1.5 shrink-0 cursor-pointer'
     }
     title={`Download ${asset.name}`}
@@ -270,7 +270,7 @@ export const DownloadCenter: React.FC = () => {
 
       {/* Hero Header */}
       <div className="bg-white border border-carbon-20/90 rounded-3xl p-6 md:p-8 shadow-md relative overflow-hidden space-y-3">
-        <div className="absolute top-0 left-0 w-full h-1 bg-ap-primary"></div>
+        <div className="absolute top-0 left-0 w-full h-1 bg-primary"></div>
         <div className="flex items-center gap-2">
           <span className="px-3 py-1 rounded-full text-xs font-mono font-extrabold bg-amber-50 text-amber-900 border border-amber-300 uppercase tracking-wider shadow-2xs">
             Open Software Center
@@ -280,7 +280,7 @@ export const DownloadCenter: React.FC = () => {
         </div>
 
         <h1 className="text-2xl md:text-3xl font-brand font-black text-carbon-90 tracking-tight">
-          Hazard<span className="text-ap-primary">Net</span> Multi-Platform Downloads
+          Hazard<span className="text-ap-link">Net</span> Multi-Platform Downloads
         </h1>
         <p className="text-carbon-60 text-xs md:text-sm leading-relaxed max-w-3xl">
           Every artifact below is produced automatically by the HazardNet product repositories&apos; release
@@ -303,7 +303,7 @@ export const DownloadCenter: React.FC = () => {
             onClick={() => setSelectedTab(tab.id)}
             className={`px-4 py-2.5 rounded-xl transition-all duration-200 shrink-0 whitespace-nowrap cursor-pointer flex items-center gap-2 ${
               selectedTab === tab.id
-                ? 'bg-primary text-white font-black shadow-md shadow-amber-500/20'
+                ? 'bg-primary text-ap-action-fg font-black shadow-md shadow-amber-500/20'
                 : 'bg-white text-carbon-70 border border-carbon-20/90 hover:bg-carbon-05 shadow-2xs'
             }`}
           >

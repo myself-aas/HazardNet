@@ -184,7 +184,7 @@ export const HazardsPage: React.FC = () => {
     <div className="min-h-dvh bg-carbon-05 text-carbon-80 pb-8 pt-6 px-4 sm:px-6 lg:px-8 max-w-[1200px] mx-auto">
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-xs text-carbon-60 mb-4">
-        <Link to="/" className="hover:text-ap-primary transition-colors">Home</Link>
+        <Link to="/" className="hover:text-ap-link transition-colors">Home</Link>
         <span>/</span>
         <span className="text-carbon-80 font-medium">Hazards</span>
       </div>
@@ -193,7 +193,7 @@ export const HazardsPage: React.FC = () => {
       <div className="bg-white border border-carbon-20 p-6 sm:p-8 mb-8">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 text-xs font-semibold bg-carbon-05 text-ap-primary border border-carbon-20 mb-3">
+            <div className="inline-flex items-center gap-2 px-3 py-1 text-xs font-semibold bg-carbon-05 text-ap-link border border-carbon-20 mb-3">
               <ShieldAlert className="w-3.5 h-3.5" />
               <span>Multi-Hazard Classification Framework</span>
             </div>
@@ -211,7 +211,7 @@ export const HazardsPage: React.FC = () => {
               <div className="text-xs text-carbon-60 font-medium">Hazard Types</div>
             </div>
             <div className="bg-carbon-05 border border-carbon-20/80 p-3 text-center">
-              <div className="text-xl sm:text-2xl font-bold text-ap-primary">
+              <div className="text-xl sm:text-2xl font-bold text-ap-link">
                 {archiveLoaded ? summary!.totalEvents.toLocaleString() : '—'}
               </div>
               <div className="text-xs text-carbon-60 font-medium">Historical Records</div>
@@ -231,7 +231,7 @@ export const HazardsPage: React.FC = () => {
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-4 border-b border-carbon-20 gap-2">
           <div>
             <h2 className="text-base font-semibold text-carbon-90 flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-ap-primary" />
+              <TrendingUp className="w-4 h-4 text-ap-link" />
               National Hazard Distribution & Alert Frequency
             </h2>
             <p className="text-xs text-carbon-60">
@@ -315,7 +315,7 @@ export const HazardsPage: React.FC = () => {
                     </span>
                   </div>
 
-                  <h3 className="text-lg font-bold text-carbon-90 group-hover:text-ap-primary transition-colors">
+                  <h3 className="text-lg font-bold text-carbon-90 group-hover:text-ap-link transition-colors">
                     {hazard.name}
                   </h3>
                   <p className="text-xs text-carbon-60 mt-2 leading-relaxed line-clamp-2">
@@ -335,14 +335,14 @@ export const HazardsPage: React.FC = () => {
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-carbon-60">Active Warning Records:</span>
-                      <span className="font-bold text-ap-primary">
+                      <span className="font-bold text-ap-link">
                         {feed === 'none' ? 'Not loaded' : `${hazard.activeForecastsCount} active`}
                       </span>
                     </div>
                   </div>
                 </div>
 
-                <div className="mt-5 pt-3 border-t border-carbon-20 flex min-h-[44px] items-center justify-between text-sm font-semibold text-ap-primary">
+                <div className="mt-5 pt-3 border-t border-carbon-20 flex min-h-[44px] items-center justify-between text-sm font-semibold text-ap-link">
                   <span>Explore hazard</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </div>

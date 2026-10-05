@@ -1507,7 +1507,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                       handleSelectDistrict(nearestDistrictData.district);
                       setInspectedPoint(null);
                     }}
-                    className="flex-1 min-h-[44px] py-2 bg-ap-primary text-white font-semibold text-sm text-center touch-manipulation"
+                    className="flex-1 min-h-[44px] py-2 bg-primary text-ap-action-fg font-semibold text-sm text-center touch-manipulation"
                   >
                     Focus {nearestDistrictData.district.name}
                   </button>
@@ -1598,10 +1598,10 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                         <span
                           className={`font-black px-1.5 py-0.5 rounded text-xs ${
  pathAnalysis.riskRating === 'High'
- ? 'bg-carbon-80/40 text-rose-400 border border-rose-500/40'
+ ? 'bg-severity-high-surface text-severity-high border border-severity-high/40'
  : pathAnalysis.riskRating === 'Moderate'
- ? 'bg-amber-500/20 text-amber-400 border border-amber-500/40'
- : 'bg-carbon-80/40 text-emerald-400 border border-emerald-500/40'
+ ? 'bg-severity-moderate-surface text-severity-moderate border border-severity-moderate/40'
+ : 'bg-severity-low-surface text-severity-low border border-severity-low/40'
  }`}
                         >
                           {(pathAnalysis.maxSeverity * 100).toFixed(0)}% • {pathAnalysis.riskRating} Risk
@@ -1618,7 +1618,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                           {pathAnalysis.hazardsDetected.map((h, idx) => (
                             <span
                               key={idx}
-                              className="text-xs font-bold px-2 py-0.5 bg-amber-500/20 text-amber-300 border border-amber-500/40"
+                              className="text-xs font-bold px-2 py-0.5 bg-amber-50 text-amber-700 border border-amber-200"
                             >
                               <MaterialIcon name="warning" className="w-4 h-4 inline-block align-middle" /> {h}
                             </span>
@@ -1648,7 +1648,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                       setIsMeasuring(false);
                       setMeasurePoints([]);
                     }}
-                    className="min-h-[44px] px-3 py-1.5 bg-primary-strong hover:bg-primary text-white font-semibold text-xs"
+                    className="min-h-[44px] px-3 py-1.5 bg-primary-strong hover:bg-primary text-ap-action-fg font-semibold text-xs"
                   >
                     Exit Ruler
                   </button>
@@ -1733,7 +1733,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                         <button
                           type="button"
                           onClick={() => setSelectedDivision('All')}
-                          className="text-xs font-semibold text-ap-primary hover:underline"
+                          className="text-xs font-semibold text-ap-link hover:underline"
                         >
                           Clear
                         </button>
@@ -1753,7 +1753,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                             onClick={() => setSelectedDivision(divName)}
                             className={`tap-target inline-flex min-h-[36px] items-center rounded-full px-3.5 text-xs font-bold transition-colors ${
                               selected
-                                ? 'bg-carbon-90 text-white dark:bg-white '
+                                ? 'bg-carbon-90 text-ap-on-inverse '
                                 : 'bg-carbon-05 text-carbon-60 hover:bg-carbon-10 dark:hover:bg-carbon-70 hover:text-carbon-90 dark:hover:text-white'
                             }`}
                           >
@@ -1771,8 +1771,8 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                         Hazards ({selectedHazards.length}/{HAZARD_LAYERS.length})
                       </span>
                       <div className="flex items-center gap-3 text-xs font-semibold">
-                        <button type="button" onClick={selectAllHazards} className="text-ap-primary hover:underline">All</button>
-                        <button type="button" onClick={clearAllHazards} className="text-ap-primary hover:underline">None</button>
+                        <button type="button" onClick={selectAllHazards} className="text-ap-link hover:underline">All</button>
+                        <button type="button" onClick={clearAllHazards} className="text-ap-link hover:underline">None</button>
                       </div>
                     </div>
                     <div className="flex flex-wrap gap-2">
@@ -1786,7 +1786,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                             onClick={() => toggleHazard(hazard.id)}
                             className={`tap-target inline-flex min-h-[36px] items-center gap-1.5 rounded-full border px-3.5 text-xs font-bold transition-colors ${
                               selected
-                                ? 'border-transparent bg-carbon-90 text-white dark:bg-white '
+                                ? 'border-transparent bg-carbon-90 text-ap-on-inverse '
                                 : 'border-carbon-20 text-carbon-60 hover:border-carbon-30 dark:hover:border-carbon-60 hover:text-carbon-90 dark:hover:text-white'
                             }`}
                           >
@@ -1880,7 +1880,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                           onClick={() => def.mapLayerKey && setActiveLayer(def.mapLayerKey)}
                           className={`flex-1 min-h-[44px] rounded-full px-3 text-sm font-semibold flex items-center justify-center gap-1.5 transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
                             isSelected
-                              ? 'bg-carbon-90 text-white dark:bg-white shadow-sm'
+                              ? 'bg-carbon-90 text-ap-on-inverse shadow-sm'
                               : 'text-carbon-60 hover:text-carbon-90 dark:hover:text-white'
                           }`}
                           title={isDisabled ? 'Satellite tiles are not answering right now' : def.name}
@@ -1954,7 +1954,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                                   }
                                   className={`min-h-[40px] px-4 rounded-full text-xs font-bold uppercase tracking-wide transition-colors ${
                                     chipActive
-                                      ? 'bg-carbon-90 text-white dark:bg-white '
+                                      ? 'bg-carbon-90 text-ap-on-inverse '
                                       : 'bg-carbon-10 text-carbon-50 '
                                   }`}
                                 >
@@ -2054,7 +2054,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                                   }
                                   className={`min-h-[40px] px-4 rounded-full text-xs font-bold uppercase tracking-wide transition-colors ${
                                     chipAmber
-                                      ? 'bg-amber-100 text-amber-900 border border-amber-200 dark:bg-amber-950 dark:text-amber-200 dark:border-amber-900'
+                                      ? 'bg-amber-100 text-amber-900 border border-amber-200'
                                       : 'bg-carbon-10 text-carbon-50 '
                                   }`}
                                 >
@@ -2219,9 +2219,9 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                                   }
                                   className={`min-h-[40px] px-4 rounded-full text-xs font-bold uppercase tracking-wide transition-colors ${
                                     chipAmber
-                                      ? 'bg-amber-100 text-amber-900 border border-amber-200 dark:bg-amber-950 dark:text-amber-200 dark:border-amber-900'
+                                      ? 'bg-amber-100 text-amber-900 border border-amber-200'
                                       : isActive && !isUnavailable
-                                        ? 'bg-carbon-90 text-white dark:bg-white '
+                                        ? 'bg-carbon-90 text-ap-on-inverse '
                                         : 'bg-carbon-10 text-carbon-50 '
                                   }`}
                                 >
@@ -2331,7 +2331,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                             aria-pressed={toggle.value}
                             className={`min-h-[40px] px-4 rounded-full text-xs font-bold uppercase tracking-wide transition-colors ${
                               toggle.value
-                                ? 'bg-carbon-90 text-white dark:bg-white '
+                                ? 'bg-carbon-90 text-ap-on-inverse '
                                 : 'bg-carbon-10 text-carbon-50 '
                             }`}
                           >
@@ -2511,7 +2511,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
               onClick={handleCenterOnUserLocation}
               className={`tap-target w-12 h-12 border flex items-center justify-center rounded-full shadow-md transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ap-primary ${
                 userGpsPos
-                  ? 'bg-ap-primary text-white border-ap-primary hover:bg-ap-primary'
+                  ? 'bg-primary text-ap-action-fg border-ap-primary hover:bg-primary'
                   : 'bg-white hover:bg-carbon-05 border-carbon-20 text-carbon-80'
               }`}
               title="Center the map on my location"
@@ -2582,7 +2582,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                   }}
                   className={`min-h-[44px] px-3.5 rounded-full border text-xs font-semibold touch-manipulation transition-colors ${
  isAct
- ? 'bg-primary border-ap-primary text-white '
+ ? 'bg-primary border-ap-primary text-ap-action-fg '
  : 'bg-white border-carbon-20 text-carbon-70 hover:text-carbon-90 hover:bg-carbon-10'
  }`}
                 >

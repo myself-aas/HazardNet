@@ -120,7 +120,7 @@ export const DistrictDetailPanel: React.FC<DistrictDetailPanelProps> = ({
             />
             <span className="font-heading font-bold text-xs sm:text-sm text-carbon-90 truncate">
               {isUncertain ? (
-                <span className="text-amber-600 dark:text-amber-400">Uncertain</span>
+                <span className="text-amber-600">Uncertain</span>
               ) : (
                 forecast.hazard_type
               )}
@@ -134,7 +134,7 @@ export const DistrictDetailPanel: React.FC<DistrictDetailPanelProps> = ({
               title="Physical constraints overrode neural predictions."
               data-testid="physics-override-badge"
             >
-              <MaterialIcon name="shield" className="w-3 sm:w-3.5 h-3 sm:h-3.5 text-cyan-600 dark:text-cyan-400 shrink-0" />
+              <MaterialIcon name="shield" className="w-3 sm:w-3.5 h-3 sm:h-3.5 text-cyan-600 shrink-0" />
               <span className="hidden sm:inline">Physics-grounded</span><span className="sm:hidden">Physics</span>
             </div>
           )}
@@ -145,10 +145,10 @@ export const DistrictDetailPanel: React.FC<DistrictDetailPanelProps> = ({
         {/* ── 6. Low Confidence Uncertainty Advisory Notice ── */}
         {isUncertain && (
           <div
-            className="p-3 sm:p-4 rounded-lg sm:rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-200 text-xs leading-relaxed space-y-1 sm:space-y-1.5"
+            className="p-3 sm:p-4 rounded-lg sm:rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs leading-relaxed space-y-1 sm:space-y-1.5"
             data-testid="uncertainty-advisory-notice"
           >
-            <div className="flex items-start gap-2 font-bold text-xs sm:text-sm text-amber-800 dark:text-amber-300">
+            <div className="flex items-start gap-2 font-bold text-xs sm:text-sm text-amber-800">
               <MaterialIcon name="warning" className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
               <span>Low Confidence ({formatNumber(Math.round(confidence * 100))}%)</span>
             </div>
@@ -177,7 +177,7 @@ export const DistrictDetailPanel: React.FC<DistrictDetailPanelProps> = ({
                 Model Track (Calibrated)
               </span>
               <div className="flex items-baseline justify-between mt-1">
-                <span className="text-lg font-mono font-bold text-indigo-600 dark:text-indigo-400">
+                <span className="text-lg font-mono font-bold text-indigo-600">
                   {formatNumber(Math.round(modelCalibrated * 100))}%
                 </span>
                 {modelRaw !== undefined && (
@@ -200,7 +200,7 @@ export const DistrictDetailPanel: React.FC<DistrictDetailPanelProps> = ({
                 Physics Track
               </span>
               <div className="flex items-baseline justify-between mt-1">
-                <span className="text-lg font-mono font-bold text-cyan-600 dark:text-cyan-400">
+                <span className="text-lg font-mono font-bold text-cyan-600">
                   {formatNumber(Math.round(physicsSeverity * 100))}%
                 </span>
                 {isPhysicsOverridden && (
@@ -257,7 +257,7 @@ export const DistrictDetailPanel: React.FC<DistrictDetailPanelProps> = ({
             {/* Max Temp */}
             <div className="p-3 rounded-xl bg-carbon-05 border border-carbon-20 flex flex-col">
               <span className="text-xs font-mono text-carbon-60 uppercase">Max Temp</span>
-              <span className="text-base font-mono font-bold text-rose-600 dark:text-rose-400 mt-1">
+              <span className="text-base font-mono font-bold text-rose-600 mt-1">
                 {forecast.temperature_max !== undefined ? `${formatNumber(forecast.temperature_max)}°C` : '—'}
               </span>
             </div>
@@ -265,7 +265,7 @@ export const DistrictDetailPanel: React.FC<DistrictDetailPanelProps> = ({
             {/* Min Temp */}
             <div className="p-3 rounded-xl bg-carbon-05 border border-carbon-20 flex flex-col">
               <span className="text-xs font-mono text-carbon-60 uppercase">Min Temp</span>
-              <span className="text-base font-mono font-bold text-sky-600 dark:text-sky-400 mt-1">
+              <span className="text-base font-mono font-bold text-sky-600 mt-1">
                 {forecast.temperature_min !== undefined ? `${formatNumber(forecast.temperature_min)}°C` : '—'}
               </span>
             </div>
@@ -273,7 +273,7 @@ export const DistrictDetailPanel: React.FC<DistrictDetailPanelProps> = ({
             {/* Precipitation */}
             <div className="p-3 rounded-xl bg-carbon-05 border border-carbon-20 flex flex-col">
               <span className="text-xs font-mono text-carbon-60 uppercase">Precipitation</span>
-              <span className="text-base font-mono font-bold text-blue-600 dark:text-blue-400 mt-1">
+              <span className="text-base font-mono font-bold text-blue-600 mt-1">
                 {forecast.precipitation_mm !== undefined ? `${formatNumber(forecast.precipitation_mm)} mm` : '—'}
               </span>
             </div>
@@ -281,7 +281,7 @@ export const DistrictDetailPanel: React.FC<DistrictDetailPanelProps> = ({
             {/* Wind Speed */}
             <div className="p-3 rounded-xl bg-carbon-05 border border-carbon-20 flex flex-col">
               <span className="text-xs font-mono text-carbon-60 uppercase">Wind Speed</span>
-              <span className="text-base font-mono font-bold text-teal-600 dark:text-teal-400 mt-1">
+              <span className="text-base font-mono font-bold text-teal-600 mt-1">
                 {forecast.wind_max_kmh !== undefined ? `${formatNumber(forecast.wind_max_kmh)} km/h` : '—'}
               </span>
             </div>
@@ -295,7 +295,7 @@ export const DistrictDetailPanel: React.FC<DistrictDetailPanelProps> = ({
               <MaterialIcon name="analytics" className="w-4 h-4 text-carbon-50" />
               <span>Hazard Probability Breakdown (Top-3)</span>
             </h3>
-            <span className="font-mono text-xs font-bold text-emerald-600 dark:text-emerald-400">
+            <span className="font-mono text-xs font-bold text-emerald-600">
               Confidence: {formatNumber(Math.round(confidence * 100))}%
             </span>
           </div>

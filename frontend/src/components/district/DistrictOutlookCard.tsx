@@ -85,8 +85,8 @@ export const DistrictOutlookCard: React.FC = () => {
                   }`} />
                   {data.modelAssessment.riskCategory} Risk Classification
                 </span>
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-sm bg-carbon-05 border border-carbon-20 text-ap-primary text-xs font-mono font-bold">
-                  <Bot className="w-3 h-3 text-ap-primary" />
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-sm bg-carbon-05 border border-carbon-20 text-ap-link text-xs font-mono font-bold">
+                  <Bot className="w-3 h-3 text-ap-link" />
                   Model Score: {data.modelAssessment.confidenceLevel}% (uncalibrated)
                 </span>
               </div>

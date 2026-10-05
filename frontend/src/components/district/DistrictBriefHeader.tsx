@@ -143,14 +143,14 @@ export const DistrictBriefHeader: React.FC = () => {
         {/* Highlighted Hazard & Peak Severity Occurrence Date Banner */}
         <div className="bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 border border-amber-200 p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-xs font-mono">
           <div className="flex items-center gap-3">
-            <span className="p-2.5 bg-amber-500 text-carbon-black font-black">
+            <span className="p-2.5 bg-amber-500 text-ap-on-sev font-black">
               <Calendar className="w-5 h-5" />
             </span>
             <div>
               <div className="text-carbon-60 font-semibold uppercase tracking-wider text-xs">Peak Severity Occurrence Date</div>
               <div className="text-carbon-black font-black text-sm sm:text-base flex items-center gap-2">
                 <span>{peakSeverityInfo.peakDate}</span>
-                <span className="px-2 py-0.5 rounded bg-red-600 text-white text-xs font-black">
+                <span className="px-2 py-0.5 rounded bg-red-600 text-ap-on-sev text-xs font-black">
                   {Math.round(peakSeverityInfo.peakScore * 100)}% Severity
                 </span>
               </div>

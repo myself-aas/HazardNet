@@ -194,7 +194,7 @@ export function Tile({ tone = 'light', width = 'text', as: Tag = 'section', clas
 
 export function Eyebrow({ children, className, ...rest }: React.HTMLAttributes<HTMLParagraphElement>) {
   return (
-    <p className={cx('ap-caption-strong text-ap-primary', className)} {...rest}>
+    <p className={cx('ap-caption-strong text-ap-link', className)} {...rest}>
       {children}
     </p>
   );

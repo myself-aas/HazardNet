@@ -83,7 +83,7 @@ const COLUMNS: { title: string; links: FooterLink[] }[] = [
 // cannot overlap its neighbour, so the floor is met by geometry rather than by an invisible
 // layer on top of other targets.
 const linkClass =
-  'inline-flex min-h-[44px] min-w-[44px] items-center text-ap-caption font-medium text-carbon-80 no-underline transition-colors hover:text-ap-primary hover:underline';
+  'inline-flex min-h-[44px] min-w-[44px] items-center text-ap-caption font-medium text-carbon-80 no-underline transition-colors hover:text-ap-link hover:underline';
 
 export const Footer: React.FC = () => {
   const [showScrollTop, setShowScrollTop] = useState(false);
@@ -112,7 +112,7 @@ export const Footer: React.FC = () => {
           <div className="flex flex-wrap items-center gap-3">
             <Link
               to="/download"
-              className="inline-flex min-h-[44px] items-center rounded-control bg-ap-primary px-5 text-ap-caption font-semibold text-white no-underline transition-colors hover:bg-ap-primary"
+              className="inline-flex min-h-[44px] items-center rounded-control bg-primary px-5 text-ap-caption font-semibold text-ap-action-fg no-underline transition-colors hover:bg-primary"
             >
               Get the apps
             </Link>

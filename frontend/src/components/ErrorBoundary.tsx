@@ -62,7 +62,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
             <div className="flex flex-col sm:flex-row gap-2 justify-center pt-2">
               <button
                 onClick={this.handleReload}
-                className="px-4 py-2.5 rounded-xl bg-primary hover:bg-primary-strong text-white font-bold text-sm transition-colors cursor-pointer"
+                className="px-4 py-2.5 rounded-xl bg-primary hover:bg-primary-strong text-ap-action-fg font-bold text-sm transition-colors cursor-pointer"
               >
                 Reload HazardNet
               </button>

@@ -325,11 +325,11 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
 
       {/* Editor header */}
       <div className="bg-white border border-carbon-20/90 p-5 relative overflow-hidden space-y-3">
-        <div aria-hidden="true" className="absolute top-0 left-0 w-full h-1 bg-ap-primary" />
+        <div aria-hidden="true" className="absolute top-0 left-0 w-full h-1 bg-primary" />
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <div className="flex items-center gap-2 text-xs font-mono font-bold text-carbon-60 uppercase tracking-wider">
-              <MaterialIcon name="doc" className="w-3.5 h-3.5 text-ap-primary" />
+              <MaterialIcon name="doc" className="w-3.5 h-3.5 text-ap-link" />
               Blog Studio · {mode === 'new' ? 'New article' : 'Editing'}
             </div>
             <h1 className="text-lg sm:text-xl font-black text-carbon-90 tracking-tight mt-1">
@@ -364,7 +364,7 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
               type="button"
               onClick={() => handleSave('published')}
               disabled={saving}
-              className="px-4 py-2 bg-primary text-xs font-black text-white hover:bg-primary-strong disabled:opacity-50 cursor-pointer"
+              className="px-4 py-2 bg-primary text-xs font-black text-ap-action-fg hover:bg-primary-strong disabled:opacity-50 cursor-pointer"
             >
               {saving ? 'Publishing…' : status === 'published' ? 'Update & keep live' : 'Publish'}
             </button>
@@ -440,11 +440,11 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
           <div className="bg-white border border-carbon-20/90 p-5 space-y-4" data-testid="seo-panel">
             <div className="flex items-center justify-between gap-2">
               <h3 className="text-xs font-black uppercase tracking-wider text-carbon-90 font-mono flex items-center gap-1.5">
-                <MaterialIcon name="search" className="w-4 h-4 text-ap-primary" /> SEO &amp; Google Search Console
+                <MaterialIcon name="search" className="w-4 h-4 text-ap-link" /> SEO &amp; Google Search Console
               </h3>
               <span
                 className={`rounded-full px-2.5 py-1 text-xs font-black ${
-                  seo.score >= 80 ? 'bg-carbon-05 text-carbon-80' : seo.score >= 50 ? 'bg-amber-50 text-amber-700' : 'bg-white text-ap-primary'
+                  seo.score >= 80 ? 'bg-carbon-05 text-carbon-80' : seo.score >= 50 ? 'bg-amber-50 text-amber-700' : 'bg-white text-ap-link'
                 }`}
                 data-testid="seo-score"
               >
@@ -541,7 +541,7 @@ export const BlogEditorPage: React.FC<{ mode: 'new' | 'edit' }> = ({ mode }) => 
             <div className="border border-carbon-20 p-4 space-y-3" data-testid="faq-builder">
               <div className="flex items-center justify-between">
                 <p className="text-xs font-bold text-carbon-80 flex items-center gap-1.5">
-                  <MaterialIcon name="faq" className="w-4 h-4 text-ap-primary" /> FAQ section
+                  <MaterialIcon name="faq" className="w-4 h-4 text-ap-link" /> FAQ section
                   <span className="text-xs font-medium text-carbon-60">(emits FAQPage schema for Google rich results)</span>
                 </p>
                 <button

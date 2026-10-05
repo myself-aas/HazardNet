@@ -137,7 +137,7 @@ export const UseCases: React.FC = () => {
 
       {/* Header Banner */}
       <div className="bg-white border border-carbon-20/90 p-6 md:p-8 relative overflow-hidden group space-y-3">
-        <div className="absolute top-0 left-0 w-full h-1 bg-ap-primary"></div>
+        <div className="absolute top-0 left-0 w-full h-1 bg-primary"></div>
         <div className="flex items-center gap-2">
           <span className="px-3 py-1 rounded-full text-xs font-mono font-extrabold bg-amber-50 text-amber-900 border border-amber-300 uppercase tracking-wider">
             Agricultural Disaster AI
@@ -147,7 +147,7 @@ export const UseCases: React.FC = () => {
         </div>
 
         <h1 className="text-2xl md:text-3xl font-brand font-black text-carbon-90 tracking-tight">
-          Hazard<span className="text-ap-primary">Net</span> Operational Use Cases & Field Impact
+          Hazard<span className="text-ap-link">Net</span> Operational Use Cases & Field Impact
         </h1>
         <p className="text-carbon-60 text-xs md:text-sm leading-relaxed max-w-3xl">
           Discover how HazardNet's multi-band multi-task neural network mitigates disaster risks across distinct agro-ecological zones in Bangladesh, protecting food security and rural livelihoods.
@@ -295,7 +295,7 @@ export const UseCases: React.FC = () => {
           <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
             <Link
               to="/download"
-              className="px-5 py-2.5 bg-primary hover:bg-primary-strong text-white font-black text-xs transition-all hover:inline-block cursor-pointer"
+              className="px-5 py-2.5 bg-primary hover:bg-primary-strong text-ap-action-fg font-black text-xs transition-all hover:inline-block cursor-pointer"
             >
               <MaterialIcon name="download" className="w-4 h-4" /> Download Software
             </Link>

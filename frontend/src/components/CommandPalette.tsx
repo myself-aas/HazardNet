@@ -432,7 +432,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
               >
                 {/* Header / Search Input */}
                 <div className="relative flex items-center px-4 py-3 border-b border-carbon-20 bg-carbon-05">
-                  <MaterialIcon name="search" className="text-xl text-ap-primary ml-1 shrink-0" />
+                  <MaterialIcon name="search" className="text-xl text-ap-link ml-1 shrink-0" />
 
                   <input
                     ref={inputRef}
@@ -486,7 +486,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                       }}
                       className={`px-3 py-1 rounded-xl text-xs font-bold whitespace-nowrap transition-colors ${
                         selectedCategory === cat
-                          ? 'bg-primary text-white shadow-sm'
+                          ? 'bg-primary text-ap-action-fg shadow-sm'
                           : 'text-carbon-60 hover:text-carbon-90 hover:bg-carbon-10'
                       }`}
                     >
@@ -550,7 +550,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                             <span className="hidden sm:inline-block px-2 py-0.5 rounded-full text-xs font-mono font-semibold bg-carbon-10 border border-carbon-20 text-carbon-60">
                               {item.category}
                             </span>
-                            <span className="text-ap-primary text-xs font-mono font-bold">SELECT</span>
+                            <span className="text-ap-link text-xs font-mono font-bold">SELECT</span>
                           </div>
                         </div>
                       );
@@ -577,7 +577,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                     </span>
                   </div>
                   <span className="font-brand font-black text-carbon-90 hidden sm:inline">
-                    Hazard<span className="text-ap-primary">Net</span> Search
+                    Hazard<span className="text-ap-link">Net</span> Search
                   </span>
                 </div>
               </motion.div>

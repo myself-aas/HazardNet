@@ -118,7 +118,7 @@ export const OverviewSection: React.FC<{ onNavigate: (tab: 'profile' | 'connecto
             type="button"
             onClick={handleResend}
             disabled={resendBusy}
-            className="inline-flex min-h-[44px] items-center bg-ap-primary px-4 py-2 text-base font-semibold text-white hover:bg-ap-primary disabled:opacity-50 cursor-pointer touch-manipulation"
+            className="inline-flex min-h-[44px] items-center bg-primary px-4 py-2 text-base font-semibold text-ap-action-fg hover:bg-primary disabled:opacity-50 cursor-pointer touch-manipulation"
           >
             {resendBusy ? 'Sending…' : 'Resend link'}
           </button>
@@ -139,7 +139,7 @@ export const OverviewSection: React.FC<{ onNavigate: (tab: 'profile' | 'connecto
             <button
               type="button"
               onClick={copyProfileUrl}
-              className="inline-flex min-h-[44px] items-center gap-1.5 bg-ap-primary px-4 py-2 text-base font-semibold text-white hover:bg-ap-primary cursor-pointer touch-manipulation"
+              className="inline-flex min-h-[44px] items-center gap-1.5 bg-primary px-4 py-2 text-base font-semibold text-ap-action-fg hover:bg-primary cursor-pointer touch-manipulation"
             >
               <MaterialIcon name={copied ? 'check' : 'content_copy'} size={13} />
               {copied ? 'Copied!' : 'Copy link'}
@@ -158,7 +158,7 @@ export const OverviewSection: React.FC<{ onNavigate: (tab: 'profile' | 'connecto
             <button
               type="button"
               onClick={() => onNavigate('profile')}
-              className="inline-flex min-h-[44px] items-center bg-ap-primary px-4 py-2 text-base font-semibold text-white hover:bg-ap-primary cursor-pointer touch-manipulation"
+              className="inline-flex min-h-[44px] items-center bg-primary px-4 py-2 text-base font-semibold text-ap-action-fg hover:bg-primary cursor-pointer touch-manipulation"
             >
               Claim username
             </button>
@@ -226,7 +226,7 @@ export const OverviewSection: React.FC<{ onNavigate: (tab: 'profile' | 'connecto
               className="flex items-center justify-between border border-carbon-20 px-4 py-3 text-xs font-bold text-carbon-80 transition-colors hover:bg-carbon-05"
             >
               <span className="flex items-center gap-2">
-                <MaterialIcon name="public" size={15} className="text-ap-primary" /> Open district forecasts
+                <MaterialIcon name="public" size={15} className="text-ap-link" /> Open district forecasts
               </span>
               <ArrowRight className="h-4 w-4 shrink-0" aria-hidden="true" />
             </Link>

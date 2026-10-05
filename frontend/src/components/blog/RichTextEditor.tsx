@@ -216,7 +216,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
           onClick={() => setSourceView((v) => !v)}
           disabled={disabled}
           className={`h-8 px-2.5 rounded-lg text-xs font-black transition-colors cursor-pointer disabled:opacity-40 ${
-            sourceView ? 'bg-carbon-90 text-white' : 'text-carbon-60 hover:bg-carbon-10'
+            sourceView ? 'bg-carbon-90 text-ap-on-inverse' : 'text-carbon-60 hover:bg-carbon-10'
           }`}
           title="Toggle HTML source view"
         >

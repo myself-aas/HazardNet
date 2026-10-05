@@ -252,7 +252,7 @@ export const PrintPreviewModal: React.FC<PrintPreviewModalProps> = ({
         <div className="print-preview-toolbar screen-only flex flex-wrap items-center justify-between gap-3 px-4 sm:px-6 py-2.5 bg-carbon-90 border-b border-carbon-80 text-carbon-05 shrink-0 shadow-lg">
           {/* Left: Title, Badges & Verification */}
           <div className="flex items-center gap-3 min-w-0">
-            <div className="p-2 rounded-xl bg-amber-400/10 border border-amber-400/30 text-amber-400 shrink-0">
+            <div className="p-2 rounded-xl bg-amber-400/10 border border-amber-400/30 text-amber-700 shrink-0">
               <Eye className="w-5 h-5" />
             </div>
             <div className="min-w-0">
@@ -260,7 +260,7 @@ export const PrintPreviewModal: React.FC<PrintPreviewModalProps> = ({
                 <h2 id="print-preview-modal-title" className="text-sm sm:text-base font-black text-white tracking-tight truncate max-w-sm sm:max-w-md">
                   {title}
                 </h2>
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-mono font-bold">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 text-xs font-mono font-bold">
                   <CheckCircle2 className="w-3 h-3" />
                   SOD 2019 VERIFIED
                 </span>
@@ -282,7 +282,7 @@ export const PrintPreviewModal: React.FC<PrintPreviewModalProps> = ({
                 onClick={() => setViewMode('a4-sheet')}
                 className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
                   viewMode === 'a4-sheet'
-                    ? 'bg-carbon-70 text-white shadow-xs'
+                    ? 'bg-carbon-70 text-ap-on-inverse shadow-xs'
                     : 'text-carbon-60 hover:text-carbon-20'
                 }`}
                 title="View as simulated A4 printed sheets with margins"
@@ -293,7 +293,7 @@ export const PrintPreviewModal: React.FC<PrintPreviewModalProps> = ({
                 onClick={() => setViewMode('continuous')}
                 className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
                   viewMode === 'continuous'
-                    ? 'bg-carbon-70 text-white shadow-xs'
+                    ? 'bg-carbon-70 text-ap-on-inverse shadow-xs'
                     : 'text-carbon-60 hover:text-carbon-20'
                 }`}
                 title="View continuous document stream"
@@ -317,7 +317,7 @@ export const PrintPreviewModal: React.FC<PrintPreviewModalProps> = ({
               onClick={() => setInkSaverMode(!inkSaverMode)}
               className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
                 inkSaverMode
-                  ? 'bg-amber-400/20 border-amber-400/50 text-amber-300'
+                  ? 'bg-severity-moderate-surface border-severity-moderate/50 text-severity-moderate'
                   : 'bg-carbon-80 hover:bg-carbon-70 border-carbon-70 text-carbon-30'
               }`}
               title="Toggle high-contrast ink-saver mode for thermal and dot-matrix printers"
@@ -378,7 +378,7 @@ export const PrintPreviewModal: React.FC<PrintPreviewModalProps> = ({
             {/* Trigger Native Print (Primary Action) */}
             <button
               onClick={handleNativePrint}
-              className="inline-flex items-center gap-2 px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-xl bg-primary hover:bg-ap-primary-tint text-white text-xs font-black transition-all shadow-md cursor-pointer hover:scale-102 active:scale-98"
+              className="inline-flex items-center gap-2 px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-xl bg-primary hover:bg-ap-primary-tint text-ap-action-fg text-xs font-black transition-all shadow-md cursor-pointer hover:scale-102 active:scale-98"
               title="Trigger Browser Print Dialog (Ctrl+P)"
             >
               <Printer className="w-4 h-4 text-white shrink-0" />

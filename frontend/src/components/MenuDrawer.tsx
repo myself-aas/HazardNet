@@ -171,7 +171,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
               aria-busy={isLocating || undefined}
               className={tileClass}
             >
-              <MaterialIcon name="location_on" className="h-6 w-6 text-ap-primary" />
+              <MaterialIcon name="location_on" className="h-6 w-6 text-ap-link" />
               <span>Locate</span>
             </button>
             <button
@@ -185,19 +185,19 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
             >
               <MaterialIcon
                 name={isSubscribed ? 'notifications_active' : 'notifications'}
-                className={`h-6 w-6 ${isSubscribed ? 'text-ap-primary' : 'text-carbon-90'}`}
+                className={`h-6 w-6 ${isSubscribed ? 'text-ap-link' : 'text-carbon-90'}`}
               />
               <span>Alerts</span>
               <span
                 aria-hidden="true"
-                className={`-mt-1 text-xs font-medium ${isSubscribed ? 'text-ap-primary' : 'text-carbon-60'}`}
+                className={`-mt-1 text-xs font-medium ${isSubscribed ? 'text-ap-link' : 'text-carbon-60'}`}
               >
                 {isSubscribed ? 'On' : 'Off'}
               </span>
             </button>
             {showInstall ? (
               <button type="button" onClick={install} className={tileClass}>
-                <MaterialIcon name="install_mobile" className="h-6 w-6 text-ap-primary" />
+                <MaterialIcon name="install_mobile" className="h-6 w-6 text-ap-link" />
                 <span>Install</span>
               </button>
             ) : (
@@ -242,13 +242,13 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                         aria-current={isActive ? 'page' : undefined}
                         className={`flex min-h-[48px] items-center gap-2.5 rounded-xl px-3 text-ap-caption no-underline transition-colors duration-150 touch-manipulation ${
                           isActive
-                            ? 'bg-ap-primary-on-dark/15 font-bold text-ap-primary'
+                            ? 'bg-blue-50 font-bold text-blue-700'
                             : 'font-semibold text-carbon-80 hover:bg-carbon-05'
                         }`}
                       >
                         <MaterialIcon
                           name={item.icon}
-                          className={`h-[18px] w-[18px] shrink-0 ${isActive ? 'text-ap-primary' : 'text-carbon-60'}`}
+                          className={`h-[18px] w-[18px] shrink-0 ${isActive ? 'text-ap-link' : 'text-carbon-60'}`}
                         />
                         <span className="truncate">{item.title}</span>
                       </Link>
@@ -273,7 +273,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                 className="flex min-h-[48px] min-w-0 flex-1 cursor-pointer items-center gap-3 rounded-xl px-2 text-left transition-colors duration-150 hover:bg-carbon-05 touch-manipulation"
                 title="Profile"
               >
-                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-ap-primary text-sm font-bold text-white">
+                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-primary text-sm font-bold text-ap-action-fg">
                   {initial}
                 </span>
                 <span className="truncate text-ap-caption font-semibold text-carbon-90">Profile</span>
@@ -293,7 +293,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                 to="/login"
                 data-testid="drawer-signin-link"
                 onClick={onClose}
-                className="inline-flex min-h-[48px] items-center justify-center rounded-xl bg-ap-primary text-ap-caption font-semibold text-white no-underline transition-colors duration-150 hover:bg-ap-primary touch-manipulation"
+                className="inline-flex min-h-[48px] items-center justify-center rounded-xl bg-primary text-ap-caption font-semibold text-ap-action-fg no-underline transition-colors duration-150 hover:bg-primary touch-manipulation"
               >
                 Sign in
               </Link>

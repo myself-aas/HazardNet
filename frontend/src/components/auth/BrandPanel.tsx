@@ -167,7 +167,7 @@ export const BrandPanel: React.FC<BrandPanelProps> = ({ mode, intervalMs = 5200 
         aria-live="polite"
         data-testid="brand-carousel"
       >
-        <p className="mb-4 text-xs font-mono font-extrabold uppercase tracking-[0.025em] text-ap-primary">
+        <p className="mb-4 text-xs font-mono font-extrabold uppercase tracking-[0.025em] text-ap-link">
           {mode === 'login' ? 'Welcome back' : mode === 'signup' ? 'Create your account' : 'Account recovery'}
         </p>
         <div className="min-h-[13rem]">

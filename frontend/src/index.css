@@ -802,86 +802,86 @@ html[data-map-debug-fx='true'] .marker-high-risk {
 
   /* ── The single accent. Every cool family resolves to Action Blue; the tint
      steps are mixes of it, so even `bg-sky-100` stays inside the one hue. ── */
-  --color-blue-50: color-mix(in srgb, var(--ap-primary) 6%, var(--ap-canvas));
-  --color-blue-100: color-mix(in srgb, var(--ap-primary) 12%, var(--ap-canvas));
-  --color-blue-200: color-mix(in srgb, var(--ap-primary) 22%, var(--ap-canvas));
-  --color-blue-300: color-mix(in srgb, var(--ap-primary) 38%, var(--ap-canvas));
-  --color-blue-400: color-mix(in srgb, var(--ap-primary) 65%, var(--ap-canvas));
-  --color-blue-500: var(--ap-primary);
-  --color-blue-600: var(--ap-primary);
-  --color-blue-700: var(--ap-primary);
-  --color-blue-800: color-mix(in srgb, var(--ap-primary) 82%, var(--ap-n-90));
-  --color-blue-900: color-mix(in srgb, var(--ap-primary) 66%, var(--ap-n-90));
-  --color-blue-950: color-mix(in srgb, var(--ap-primary) 48%, var(--ap-n-90));
+  --color-blue-50: color-mix(in srgb, var(--ap-link) 6%, var(--ap-bg-canvas));
+  --color-blue-100: color-mix(in srgb, var(--ap-link) 12%, var(--ap-bg-canvas));
+  --color-blue-200: color-mix(in srgb, var(--ap-link) 22%, var(--ap-bg-canvas));
+  --color-blue-300: color-mix(in srgb, var(--ap-link) 38%, var(--ap-bg-canvas));
+  --color-blue-400: color-mix(in srgb, var(--ap-link) 65%, var(--ap-bg-canvas));
+  --color-blue-500: var(--ap-link);
+  --color-blue-600: var(--ap-link);
+  --color-blue-700: var(--ap-link);
+  --color-blue-800: color-mix(in srgb, var(--ap-link) 82%, var(--ap-n-90));
+  --color-blue-900: color-mix(in srgb, var(--ap-link) 66%, var(--ap-n-90));
+  --color-blue-950: color-mix(in srgb, var(--ap-link) 48%, var(--ap-n-90));
 
-  --color-sky-50: color-mix(in srgb, var(--ap-primary) 6%, var(--ap-canvas));
-  --color-sky-100: color-mix(in srgb, var(--ap-primary) 12%, var(--ap-canvas));
-  --color-sky-200: color-mix(in srgb, var(--ap-primary) 22%, var(--ap-canvas));
-  --color-sky-300: color-mix(in srgb, var(--ap-primary) 38%, var(--ap-canvas));
-  --color-sky-400: color-mix(in srgb, var(--ap-primary) 65%, var(--ap-canvas));
-  --color-sky-500: var(--ap-primary);
-  --color-sky-600: var(--ap-primary);
-  --color-sky-700: var(--ap-primary);
-  --color-sky-800: color-mix(in srgb, var(--ap-primary) 82%, var(--ap-n-90));
-  --color-sky-900: color-mix(in srgb, var(--ap-primary) 66%, var(--ap-n-90));
-  --color-sky-950: color-mix(in srgb, var(--ap-primary) 48%, var(--ap-n-90));
+  --color-sky-50: color-mix(in srgb, var(--ap-link) 6%, var(--ap-bg-canvas));
+  --color-sky-100: color-mix(in srgb, var(--ap-link) 12%, var(--ap-bg-canvas));
+  --color-sky-200: color-mix(in srgb, var(--ap-link) 22%, var(--ap-bg-canvas));
+  --color-sky-300: color-mix(in srgb, var(--ap-link) 38%, var(--ap-bg-canvas));
+  --color-sky-400: color-mix(in srgb, var(--ap-link) 65%, var(--ap-bg-canvas));
+  --color-sky-500: var(--ap-link);
+  --color-sky-600: var(--ap-link);
+  --color-sky-700: var(--ap-link);
+  --color-sky-800: color-mix(in srgb, var(--ap-link) 82%, var(--ap-n-90));
+  --color-sky-900: color-mix(in srgb, var(--ap-link) 66%, var(--ap-n-90));
+  --color-sky-950: color-mix(in srgb, var(--ap-link) 48%, var(--ap-n-90));
 
-  --color-cyan-50: color-mix(in srgb, var(--ap-primary) 6%, var(--ap-canvas));
-  --color-cyan-100: color-mix(in srgb, var(--ap-primary) 12%, var(--ap-canvas));
-  --color-cyan-200: color-mix(in srgb, var(--ap-primary) 22%, var(--ap-canvas));
-  --color-cyan-300: color-mix(in srgb, var(--ap-primary) 38%, var(--ap-canvas));
-  --color-cyan-400: color-mix(in srgb, var(--ap-primary) 65%, var(--ap-canvas));
-  --color-cyan-500: var(--ap-primary);
-  --color-cyan-600: var(--ap-primary);
-  --color-cyan-700: var(--ap-primary);
-  --color-cyan-800: color-mix(in srgb, var(--ap-primary) 82%, var(--ap-n-90));
-  --color-cyan-900: color-mix(in srgb, var(--ap-primary) 66%, var(--ap-n-90));
-  --color-cyan-950: color-mix(in srgb, var(--ap-primary) 48%, var(--ap-n-90));
+  --color-cyan-50: color-mix(in srgb, var(--ap-link) 6%, var(--ap-bg-canvas));
+  --color-cyan-100: color-mix(in srgb, var(--ap-link) 12%, var(--ap-bg-canvas));
+  --color-cyan-200: color-mix(in srgb, var(--ap-link) 22%, var(--ap-bg-canvas));
+  --color-cyan-300: color-mix(in srgb, var(--ap-link) 38%, var(--ap-bg-canvas));
+  --color-cyan-400: color-mix(in srgb, var(--ap-link) 65%, var(--ap-bg-canvas));
+  --color-cyan-500: var(--ap-link);
+  --color-cyan-600: var(--ap-link);
+  --color-cyan-700: var(--ap-link);
+  --color-cyan-800: color-mix(in srgb, var(--ap-link) 82%, var(--ap-n-90));
+  --color-cyan-900: color-mix(in srgb, var(--ap-link) 66%, var(--ap-n-90));
+  --color-cyan-950: color-mix(in srgb, var(--ap-link) 48%, var(--ap-n-90));
 
-  --color-indigo-50: color-mix(in srgb, var(--ap-primary) 6%, var(--ap-canvas));
-  --color-indigo-100: color-mix(in srgb, var(--ap-primary) 12%, var(--ap-canvas));
-  --color-indigo-200: color-mix(in srgb, var(--ap-primary) 22%, var(--ap-canvas));
-  --color-indigo-300: color-mix(in srgb, var(--ap-primary) 38%, var(--ap-canvas));
-  --color-indigo-400: color-mix(in srgb, var(--ap-primary) 65%, var(--ap-canvas));
-  --color-indigo-500: var(--ap-primary);
-  --color-indigo-600: var(--ap-primary);
-  --color-indigo-700: var(--ap-primary);
-  --color-indigo-800: color-mix(in srgb, var(--ap-primary) 82%, var(--ap-n-90));
-  --color-indigo-900: color-mix(in srgb, var(--ap-primary) 66%, var(--ap-n-90));
-  --color-indigo-950: color-mix(in srgb, var(--ap-primary) 48%, var(--ap-n-90));
+  --color-indigo-50: color-mix(in srgb, var(--ap-link) 6%, var(--ap-bg-canvas));
+  --color-indigo-100: color-mix(in srgb, var(--ap-link) 12%, var(--ap-bg-canvas));
+  --color-indigo-200: color-mix(in srgb, var(--ap-link) 22%, var(--ap-bg-canvas));
+  --color-indigo-300: color-mix(in srgb, var(--ap-link) 38%, var(--ap-bg-canvas));
+  --color-indigo-400: color-mix(in srgb, var(--ap-link) 65%, var(--ap-bg-canvas));
+  --color-indigo-500: var(--ap-link);
+  --color-indigo-600: var(--ap-link);
+  --color-indigo-700: var(--ap-link);
+  --color-indigo-800: color-mix(in srgb, var(--ap-link) 82%, var(--ap-n-90));
+  --color-indigo-900: color-mix(in srgb, var(--ap-link) 66%, var(--ap-n-90));
+  --color-indigo-950: color-mix(in srgb, var(--ap-link) 48%, var(--ap-n-90));
 
-  --color-violet-50: color-mix(in srgb, var(--ap-primary) 6%, var(--ap-canvas));
-  --color-violet-100: color-mix(in srgb, var(--ap-primary) 12%, var(--ap-canvas));
-  --color-violet-200: color-mix(in srgb, var(--ap-primary) 22%, var(--ap-canvas));
-  --color-violet-300: color-mix(in srgb, var(--ap-primary) 38%, var(--ap-canvas));
-  --color-violet-400: color-mix(in srgb, var(--ap-primary) 65%, var(--ap-canvas));
-  --color-violet-500: var(--ap-primary);
-  --color-violet-600: var(--ap-primary);
-  --color-violet-700: var(--ap-primary);
-  --color-violet-800: color-mix(in srgb, var(--ap-primary) 82%, var(--ap-n-90));
-  --color-violet-900: color-mix(in srgb, var(--ap-primary) 66%, var(--ap-n-90));
-  --color-violet-950: color-mix(in srgb, var(--ap-primary) 48%, var(--ap-n-90));
+  --color-violet-50: color-mix(in srgb, var(--ap-link) 6%, var(--ap-bg-canvas));
+  --color-violet-100: color-mix(in srgb, var(--ap-link) 12%, var(--ap-bg-canvas));
+  --color-violet-200: color-mix(in srgb, var(--ap-link) 22%, var(--ap-bg-canvas));
+  --color-violet-300: color-mix(in srgb, var(--ap-link) 38%, var(--ap-bg-canvas));
+  --color-violet-400: color-mix(in srgb, var(--ap-link) 65%, var(--ap-bg-canvas));
+  --color-violet-500: var(--ap-link);
+  --color-violet-600: var(--ap-link);
+  --color-violet-700: var(--ap-link);
+  --color-violet-800: color-mix(in srgb, var(--ap-link) 82%, var(--ap-n-90));
+  --color-violet-900: color-mix(in srgb, var(--ap-link) 66%, var(--ap-n-90));
+  --color-violet-950: color-mix(in srgb, var(--ap-link) 48%, var(--ap-n-90));
 
-  --color-purple-50: color-mix(in srgb, var(--ap-primary) 6%, var(--ap-canvas));
-  --color-purple-100: color-mix(in srgb, var(--ap-primary) 12%, var(--ap-canvas));
-  --color-purple-200: color-mix(in srgb, var(--ap-primary) 22%, var(--ap-canvas));
-  --color-purple-300: color-mix(in srgb, var(--ap-primary) 38%, var(--ap-canvas));
-  --color-purple-400: color-mix(in srgb, var(--ap-primary) 65%, var(--ap-canvas));
-  --color-purple-500: var(--ap-primary);
-  --color-purple-600: var(--ap-primary);
-  --color-purple-700: var(--ap-primary);
-  --color-purple-800: color-mix(in srgb, var(--ap-primary) 82%, var(--ap-n-90));
-  --color-purple-900: color-mix(in srgb, var(--ap-primary) 66%, var(--ap-n-90));
-  --color-purple-950: color-mix(in srgb, var(--ap-primary) 48%, var(--ap-n-90));
+  --color-purple-50: color-mix(in srgb, var(--ap-link) 6%, var(--ap-bg-canvas));
+  --color-purple-100: color-mix(in srgb, var(--ap-link) 12%, var(--ap-bg-canvas));
+  --color-purple-200: color-mix(in srgb, var(--ap-link) 22%, var(--ap-bg-canvas));
+  --color-purple-300: color-mix(in srgb, var(--ap-link) 38%, var(--ap-bg-canvas));
+  --color-purple-400: color-mix(in srgb, var(--ap-link) 65%, var(--ap-bg-canvas));
+  --color-purple-500: var(--ap-link);
+  --color-purple-600: var(--ap-link);
+  --color-purple-700: var(--ap-link);
+  --color-purple-800: color-mix(in srgb, var(--ap-link) 82%, var(--ap-n-90));
+  --color-purple-900: color-mix(in srgb, var(--ap-link) 66%, var(--ap-n-90));
+  --color-purple-950: color-mix(in srgb, var(--ap-link) 48%, var(--ap-n-90));
 
   /* ── Data hues. These carry hazard meaning, so they route to the severity
      layer rather than to chrome — see apple.css §6 for why that is the one
      sanctioned exception to the single-accent rule. ──────────────────────── */
   --color-emerald-50: var(--ap-sev-low-surface);
   --color-emerald-100: var(--ap-sev-low-surface);
-  --color-emerald-200: color-mix(in srgb, var(--ap-sev-low) 26%, var(--ap-canvas));
-  --color-emerald-300: color-mix(in srgb, var(--ap-sev-low) 42%, var(--ap-canvas));
-  --color-emerald-400: color-mix(in srgb, var(--ap-sev-low) 68%, var(--ap-canvas));
+  --color-emerald-200: color-mix(in srgb, var(--ap-sev-low) 26%, var(--ap-bg-canvas));
+  --color-emerald-300: color-mix(in srgb, var(--ap-sev-low) 42%, var(--ap-bg-canvas));
+  --color-emerald-400: color-mix(in srgb, var(--ap-sev-low) 68%, var(--ap-bg-canvas));
   --color-emerald-500: var(--ap-sev-low);
   --color-emerald-600: var(--ap-sev-low);
   --color-emerald-700: var(--ap-sev-low);
@@ -891,9 +891,9 @@ html[data-map-debug-fx='true'] .marker-high-risk {
 
   --color-green-50: var(--ap-sev-low-surface);
   --color-green-100: var(--ap-sev-low-surface);
-  --color-green-200: color-mix(in srgb, var(--ap-sev-low) 26%, var(--ap-canvas));
-  --color-green-300: color-mix(in srgb, var(--ap-sev-low) 42%, var(--ap-canvas));
-  --color-green-400: color-mix(in srgb, var(--ap-sev-low) 68%, var(--ap-canvas));
+  --color-green-200: color-mix(in srgb, var(--ap-sev-low) 26%, var(--ap-bg-canvas));
+  --color-green-300: color-mix(in srgb, var(--ap-sev-low) 42%, var(--ap-bg-canvas));
+  --color-green-400: color-mix(in srgb, var(--ap-sev-low) 68%, var(--ap-bg-canvas));
   --color-green-500: var(--ap-sev-low);
   --color-green-600: var(--ap-sev-low);
   --color-green-700: var(--ap-sev-low);
@@ -903,9 +903,9 @@ html[data-map-debug-fx='true'] .marker-high-risk {
 
   --color-teal-50: var(--ap-sev-low-surface);
   --color-teal-100: var(--ap-sev-low-surface);
-  --color-teal-200: color-mix(in srgb, var(--ap-sev-low) 26%, var(--ap-canvas));
-  --color-teal-300: color-mix(in srgb, var(--ap-sev-low) 42%, var(--ap-canvas));
-  --color-teal-400: color-mix(in srgb, var(--ap-sev-low) 68%, var(--ap-canvas));
+  --color-teal-200: color-mix(in srgb, var(--ap-sev-low) 26%, var(--ap-bg-canvas));
+  --color-teal-300: color-mix(in srgb, var(--ap-sev-low) 42%, var(--ap-bg-canvas));
+  --color-teal-400: color-mix(in srgb, var(--ap-sev-low) 68%, var(--ap-bg-canvas));
   --color-teal-500: var(--ap-sev-low);
   --color-teal-600: var(--ap-sev-low);
   --color-teal-700: var(--ap-sev-low);
@@ -915,9 +915,9 @@ html[data-map-debug-fx='true'] .marker-high-risk {
 
   --color-lime-50: var(--ap-sev-low-surface);
   --color-lime-100: var(--ap-sev-low-surface);
-  --color-lime-200: color-mix(in srgb, var(--ap-sev-low) 26%, var(--ap-canvas));
-  --color-lime-300: color-mix(in srgb, var(--ap-sev-low) 42%, var(--ap-canvas));
-  --color-lime-400: color-mix(in srgb, var(--ap-sev-low) 68%, var(--ap-canvas));
+  --color-lime-200: color-mix(in srgb, var(--ap-sev-low) 26%, var(--ap-bg-canvas));
+  --color-lime-300: color-mix(in srgb, var(--ap-sev-low) 42%, var(--ap-bg-canvas));
+  --color-lime-400: color-mix(in srgb, var(--ap-sev-low) 68%, var(--ap-bg-canvas));
   --color-lime-500: var(--ap-sev-low);
   --color-lime-600: var(--ap-sev-low);
   --color-lime-700: var(--ap-sev-low);
@@ -927,9 +927,9 @@ html[data-map-debug-fx='true'] .marker-high-risk {
 
   --color-amber-50: var(--ap-sev-moderate-surface);
   --color-amber-100: var(--ap-sev-moderate-surface);
-  --color-amber-200: color-mix(in srgb, var(--ap-sev-moderate) 26%, var(--ap-canvas));
-  --color-amber-300: color-mix(in srgb, var(--ap-sev-moderate) 42%, var(--ap-canvas));
-  --color-amber-400: color-mix(in srgb, var(--ap-sev-moderate) 68%, var(--ap-canvas));
+  --color-amber-200: color-mix(in srgb, var(--ap-sev-moderate) 26%, var(--ap-bg-canvas));
+  --color-amber-300: color-mix(in srgb, var(--ap-sev-moderate) 42%, var(--ap-bg-canvas));
+  --color-amber-400: color-mix(in srgb, var(--ap-sev-moderate) 68%, var(--ap-bg-canvas));
   --color-amber-500: var(--ap-sev-moderate);
   --color-amber-600: var(--ap-sev-moderate);
   --color-amber-700: var(--ap-sev-moderate);
@@ -939,9 +939,9 @@ html[data-map-debug-fx='true'] .marker-high-risk {
 
   --color-yellow-50: var(--ap-sev-moderate-surface);
   --color-yellow-100: var(--ap-sev-moderate-surface);
-  --color-yellow-200: color-mix(in srgb, var(--ap-sev-moderate) 26%, var(--ap-canvas));
-  --color-yellow-300: color-mix(in srgb, var(--ap-sev-moderate) 42%, var(--ap-canvas));
-  --color-yellow-400: color-mix(in srgb, var(--ap-sev-moderate) 68%, var(--ap-canvas));
+  --color-yellow-200: color-mix(in srgb, var(--ap-sev-moderate) 26%, var(--ap-bg-canvas));
+  --color-yellow-300: color-mix(in srgb, var(--ap-sev-moderate) 42%, var(--ap-bg-canvas));
+  --color-yellow-400: color-mix(in srgb, var(--ap-sev-moderate) 68%, var(--ap-bg-canvas));
   --color-yellow-500: var(--ap-sev-moderate);
   --color-yellow-600: var(--ap-sev-moderate);
   --color-yellow-700: var(--ap-sev-moderate);
@@ -951,9 +951,9 @@ html[data-map-debug-fx='true'] .marker-high-risk {
 
   --color-orange-50: var(--ap-sev-high-surface);
   --color-orange-100: var(--ap-sev-high-surface);
-  --color-orange-200: color-mix(in srgb, var(--ap-sev-high) 26%, var(--ap-canvas));
-  --color-orange-300: color-mix(in srgb, var(--ap-sev-high) 42%, var(--ap-canvas));
-  --color-orange-400: color-mix(in srgb, var(--ap-sev-high) 68%, var(--ap-canvas));
+  --color-orange-200: color-mix(in srgb, var(--ap-sev-high) 26%, var(--ap-bg-canvas));
+  --color-orange-300: color-mix(in srgb, var(--ap-sev-high) 42%, var(--ap-bg-canvas));
+  --color-orange-400: color-mix(in srgb, var(--ap-sev-high) 68%, var(--ap-bg-canvas));
   --color-orange-500: var(--ap-sev-high);
   --color-orange-600: var(--ap-sev-high);
   --color-orange-700: var(--ap-sev-high);
@@ -963,9 +963,9 @@ html[data-map-debug-fx='true'] .marker-high-risk {
 
   --color-red-50: var(--ap-sev-very-high-surface);
   --color-red-100: var(--ap-sev-very-high-surface);
-  --color-red-200: color-mix(in srgb, var(--ap-sev-very-high) 26%, var(--ap-canvas));
-  --color-red-300: color-mix(in srgb, var(--ap-sev-very-high) 42%, var(--ap-canvas));
-  --color-red-400: color-mix(in srgb, var(--ap-sev-very-high) 68%, var(--ap-canvas));
+  --color-red-200: color-mix(in srgb, var(--ap-sev-very-high) 26%, var(--ap-bg-canvas));
+  --color-red-300: color-mix(in srgb, var(--ap-sev-very-high) 42%, var(--ap-bg-canvas));
+  --color-red-400: color-mix(in srgb, var(--ap-sev-very-high) 68%, var(--ap-bg-canvas));
   --color-red-500: var(--ap-sev-very-high);
   --color-red-600: var(--ap-sev-very-high);
   --color-red-700: var(--ap-sev-very-high);
@@ -975,9 +975,9 @@ html[data-map-debug-fx='true'] .marker-high-risk {
 
   --color-rose-50: var(--ap-sev-extreme-surface);
   --color-rose-100: var(--ap-sev-extreme-surface);
-  --color-rose-200: color-mix(in srgb, var(--ap-sev-extreme) 26%, var(--ap-canvas));
-  --color-rose-300: color-mix(in srgb, var(--ap-sev-extreme) 42%, var(--ap-canvas));
-  --color-rose-400: color-mix(in srgb, var(--ap-sev-extreme) 68%, var(--ap-canvas));
+  --color-rose-200: color-mix(in srgb, var(--ap-sev-extreme) 26%, var(--ap-bg-canvas));
+  --color-rose-300: color-mix(in srgb, var(--ap-sev-extreme) 42%, var(--ap-bg-canvas));
+  --color-rose-400: color-mix(in srgb, var(--ap-sev-extreme) 68%, var(--ap-bg-canvas));
   --color-rose-500: var(--ap-sev-extreme);
   --color-rose-600: var(--ap-sev-extreme);
   --color-rose-700: var(--ap-sev-extreme);
@@ -987,9 +987,9 @@ html[data-map-debug-fx='true'] .marker-high-risk {
 
   --color-pink-50: var(--ap-sev-extreme-surface);
   --color-pink-100: var(--ap-sev-extreme-surface);
-  --color-pink-200: color-mix(in srgb, var(--ap-sev-extreme) 26%, var(--ap-canvas));
-  --color-pink-300: color-mix(in srgb, var(--ap-sev-extreme) 42%, var(--ap-canvas));
-  --color-pink-400: color-mix(in srgb, var(--ap-sev-extreme) 68%, var(--ap-canvas));
+  --color-pink-200: color-mix(in srgb, var(--ap-sev-extreme) 26%, var(--ap-bg-canvas));
+  --color-pink-300: color-mix(in srgb, var(--ap-sev-extreme) 42%, var(--ap-bg-canvas));
+  --color-pink-400: color-mix(in srgb, var(--ap-sev-extreme) 68%, var(--ap-bg-canvas));
   --color-pink-500: var(--ap-sev-extreme);
   --color-pink-600: var(--ap-sev-extreme);
   --color-pink-700: var(--ap-sev-extreme);
@@ -999,9 +999,9 @@ html[data-map-debug-fx='true'] .marker-high-risk {
 
   --color-fuchsia-50: var(--ap-sev-extreme-surface);
   --color-fuchsia-100: var(--ap-sev-extreme-surface);
-  --color-fuchsia-200: color-mix(in srgb, var(--ap-sev-extreme) 26%, var(--ap-canvas));
-  --color-fuchsia-300: color-mix(in srgb, var(--ap-sev-extreme) 42%, var(--ap-canvas));
-  --color-fuchsia-400: color-mix(in srgb, var(--ap-sev-extreme) 68%, var(--ap-canvas));
+  --color-fuchsia-200: color-mix(in srgb, var(--ap-sev-extreme) 26%, var(--ap-bg-canvas));
+  --color-fuchsia-300: color-mix(in srgb, var(--ap-sev-extreme) 42%, var(--ap-bg-canvas));
+  --color-fuchsia-400: color-mix(in srgb, var(--ap-sev-extreme) 68%, var(--ap-bg-canvas));
   --color-fuchsia-500: var(--ap-sev-extreme);
   --color-fuchsia-600: var(--ap-sev-extreme);
   --color-fuchsia-700: var(--ap-sev-extreme);
@@ -1027,6 +1027,19 @@ html[data-map-debug-fx='true'] .marker-high-risk {
   /* ── Apple roles, named directly. ──────────────────────────────────────── */
   --color-ap-primary: var(--ap-primary);
   --color-ap-primary-on-dark: var(--ap-primary-on-dark);
+  /* Semantic action tier. apple.css has always defined these and flipped them
+     correctly per theme, but they were never exposed to the utility layer, so
+     call sites reached past the semantics for the PRIMITIVE (--ap-primary,
+     white) — and primitives do not invert. That is why filled buttons and
+     inline links failed dark mode. Always prefer these over the primitives:
+       bg-primary        → pair the text with text-ap-action-fg (NOT text-white)
+       inline link / ink → text-ap-link (NOT text-ap-primary) */
+  --color-ap-action: var(--ap-action);
+  --color-ap-action-fg: var(--ap-action-fg);
+  --color-ap-action-focus: var(--ap-action-focus);
+  --color-ap-link: var(--ap-link);
+  --color-ap-on-sev: var(--ap-on-sev);
+  --color-ap-on-inverse: var(--ap-on-inverse);
   --color-ap-primary-tint: color-mix(in srgb, var(--ap-primary) 12%, var(--ap-bg-canvas));
   --color-ap-ink: var(--ap-ink);
   --color-ap-label: var(--ap-label);

@@ -295,7 +295,7 @@ export const PdfExportConfigModal: React.FC<PdfExportConfigModalProps> = ({
         {/* Modal Header */}
         <div className="flex items-center justify-between px-5 py-4 bg-carbon-90 text-carbon-05 border-b border-carbon-80 shrink-0">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-amber-400/10 border border-amber-400/30 text-amber-400">
+            <div className="p-2 rounded-xl bg-amber-400/10 border border-amber-400/30 text-amber-700">
               <FileDown className="w-5 h-5" />
             </div>
             <div>
@@ -426,7 +426,7 @@ export const PdfExportConfigModal: React.FC<PdfExportConfigModalProps> = ({
                     disabled={isExporting}
                     className={`p-2.5 text-left rounded-xl border text-xs transition-all cursor-pointer ${
                       isSelected
-                        ? 'bg-carbon-90 text-white border-carbon-90 shadow-xs'
+                        ? 'bg-carbon-90 text-ap-on-inverse border-carbon-90 shadow-xs'
                         : 'bg-white hover:bg-carbon-05 text-carbon-80 border-carbon-20 hover:border-carbon-30'
                     }`}
                   >

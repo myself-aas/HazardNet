@@ -168,7 +168,7 @@ export const HistoricalHazardCatalog: React.FC<HistoricalHazardCatalogProps> = (
             <h3 className="text-base font-bold text-white tracking-tight">
               Historical Hazard Records Catalog
             </h3>
-            <span className="px-2 py-0.5 rounded-full text-xs font-mono font-medium bg-rose-950/60 text-rose-300 border border-rose-800/60">
+            <span className="px-2 py-0.5 rounded-full text-xs font-mono font-medium bg-rose-50 text-rose-700 border border-rose-200">
               {filteredRecords.length.toLocaleString()} of {records.length.toLocaleString()} Events
             </span>
           </div>
@@ -383,7 +383,7 @@ export const HistoricalHazardCatalog: React.FC<HistoricalHazardCatalogProps> = (
                               );
                             }
                           }}
-                          className="px-2 py-0.5 rounded text-xs font-mono font-medium bg-blue-950/70 text-blue-300 border border-blue-800/70 hover:bg-blue-900 transition-colors inline-flex items-center gap-1"
+                          className="px-2 py-0.5 rounded text-xs font-mono font-medium bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-50 transition-colors inline-flex items-center gap-1"
                           title="Open Multilateral GLIDE links"
                         >
                           <span>{r.glide}</span>

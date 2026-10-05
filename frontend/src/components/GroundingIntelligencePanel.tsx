@@ -142,7 +142,7 @@ export const GroundingIntelligencePanel: React.FC<GroundingIntelligencePanelProp
             <h3 className="text-base sm:text-lg font-bold text-carbon-90">
               Grounding Intelligence Engine
             </h3>
-            <span className="text-xs bg-ap-primary text-white font-mono uppercase px-2 py-0.5 rounded tracking-wide font-semibold">
+            <span className="text-xs bg-primary text-ap-action-fg font-mono uppercase px-2 py-0.5 rounded tracking-wide font-semibold">
               gemini-3.5-flash
             </span>
           </div>
@@ -200,7 +200,7 @@ export const GroundingIntelligencePanel: React.FC<GroundingIntelligencePanelProp
           <button
             type="submit"
             disabled={!customQuery.trim() || queryLoading}
-            className="px-4 py-2 bg-ap-primary hover:bg-ap-primary disabled:opacity-40 text-white text-xs font-semibold rounded-xl flex items-center gap-1 cursor-pointer transition-colors"
+            className="px-4 py-2 bg-primary hover:bg-primary disabled:opacity-40 text-ap-action-fg text-xs font-semibold rounded-xl flex items-center gap-1 cursor-pointer transition-colors"
           >
             {queryLoading ? (
               <RefreshCw className="w-3.5 h-3.5 animate-spin" />
@@ -292,7 +292,7 @@ export const GroundingIntelligencePanel: React.FC<GroundingIntelligencePanelProp
               {/* Header Info */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center">
+                  <div className="w-7 h-7 rounded-lg bg-blue-50 text-blue-700 flex items-center justify-center">
                     <MapPin className="w-4 h-4" />
                   </div>
                   <div>
@@ -308,7 +308,7 @@ export const GroundingIntelligencePanel: React.FC<GroundingIntelligencePanelProp
                   type="button"
                   onClick={fetchFacilities}
                   disabled={mapsLoading}
-                  className="text-xs text-carbon-60 hover:text-ap-primary flex items-center gap-1 cursor-pointer"
+                  className="text-xs text-carbon-60 hover:text-ap-link flex items-center gap-1 cursor-pointer"
                 >
                   <RefreshCw className={`w-3.5 h-3.5 ${mapsLoading ? 'animate-spin' : ''}`} />
                   <span>Refresh</span>
@@ -356,7 +356,7 @@ export const GroundingIntelligencePanel: React.FC<GroundingIntelligencePanelProp
                           href={fac.uri}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="mt-2 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg transition-colors cursor-pointer"
+                          className="mt-2 inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-ap-action-fg text-xs font-semibold rounded-lg transition-colors cursor-pointer"
                         >
                           <MapPin className="w-3 h-3" />
                           <span>View on Google Maps</span>

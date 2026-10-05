@@ -108,7 +108,7 @@ export const MultiHazardDistributionChart: React.FC<MultiHazardDistributionChart
             <h3 className="text-base font-bold text-white tracking-tight">
               Multi-Hazard Classification Breakdown
             </h3>
-            <span className="px-2 py-0.5 rounded-full text-xs font-mono font-medium bg-rose-950/60 text-rose-300 border border-rose-800/60">
+            <span className="px-2 py-0.5 rounded-full text-xs font-mono font-medium bg-rose-50 text-rose-700 border border-rose-200">
               {data.length} Hazard Classes
             </span>
           </div>

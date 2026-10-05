@@ -100,7 +100,7 @@ export const AnalyticsAnalyticsPage: React.FC = () => {
           whileTap={{ scale: 0.98 }}
           onClick={() => navigate('/analytics/forecast-dashboard')}
           className={`px-4 py-2.5 rounded-2xl text-xs font-extrabold transition-all shrink-0 whitespace-nowrap cursor-pointer ${
-            activeTab === 'forecast-dashboard' ? 'bg-amber-500 text-carbon-90 shadow-2xs' : 'bg-white text-carbon-70 border border-carbon-20/90 hover:bg-carbon-05 shadow-2xs'
+            activeTab === 'forecast-dashboard' ? 'bg-amber-500 text-ap-on-sev shadow-2xs' : 'bg-white text-carbon-70 border border-carbon-20/90 hover:bg-carbon-05 shadow-2xs'
           }`}
         >
           Forecast Dashboard (Firestore & Recharts)
@@ -110,7 +110,7 @@ export const AnalyticsAnalyticsPage: React.FC = () => {
           whileTap={{ scale: 0.98 }}
           onClick={() => navigate('/analytics/model-metrics')}
           className={`px-4 py-2.5 rounded-2xl text-xs font-extrabold transition-all shrink-0 whitespace-nowrap cursor-pointer ${
-            activeTab === 'model-metrics' ? 'bg-amber-500 text-carbon-90 shadow-2xs' : 'bg-white text-carbon-70 border border-carbon-20/90 hover:bg-carbon-05 shadow-2xs'
+            activeTab === 'model-metrics' ? 'bg-amber-500 text-ap-on-sev shadow-2xs' : 'bg-white text-carbon-70 border border-carbon-20/90 hover:bg-carbon-05 shadow-2xs'
           }`}
         >
           Model Metrics (Latency, MAE, ECE)
@@ -120,7 +120,7 @@ export const AnalyticsAnalyticsPage: React.FC = () => {
           whileTap={{ scale: 0.98 }}
           onClick={() => navigate('/analytics/pipeline-status')}
           className={`px-4 py-2.5 rounded-2xl text-xs font-extrabold transition-all shrink-0 whitespace-nowrap cursor-pointer ${
-            activeTab === 'pipeline-status' ? 'bg-amber-500 text-carbon-90 shadow-2xs' : 'bg-white text-carbon-70 border border-carbon-20/90 hover:bg-carbon-05 shadow-2xs'
+            activeTab === 'pipeline-status' ? 'bg-amber-500 text-ap-on-sev shadow-2xs' : 'bg-white text-carbon-70 border border-carbon-20/90 hover:bg-carbon-05 shadow-2xs'
           }`}
         >
           Pipeline Status (production / GitHub CI/CD)
@@ -130,7 +130,7 @@ export const AnalyticsAnalyticsPage: React.FC = () => {
           whileTap={{ scale: 0.98 }}
           onClick={() => navigate('/analytics/historical')}
           className={`px-4 py-2.5 rounded-2xl text-xs font-extrabold transition-all shrink-0 whitespace-nowrap cursor-pointer ${
-            activeTab === 'historical' ? 'bg-amber-500 text-carbon-90 shadow-2xs' : 'bg-white text-carbon-70 border border-carbon-20/90 hover:bg-carbon-05 shadow-2xs'
+            activeTab === 'historical' ? 'bg-amber-500 text-ap-on-sev shadow-2xs' : 'bg-white text-carbon-70 border border-carbon-20/90 hover:bg-carbon-05 shadow-2xs'
           }`}
         >
           Historical EM-DAT vs Prediction Explorer

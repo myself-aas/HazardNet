@@ -153,7 +153,7 @@ export const HistoricalCatalogPage: React.FC = () => {
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
               <div className="flex items-center gap-2 mb-2">
-                <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-rose-50 text-ap-primary border border-rose-200">
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-rose-50 text-ap-link border border-rose-200">
                   Phase E Verified
                 </span>
                 <span className="text-xs font-mono text-carbon-60">
@@ -176,11 +176,11 @@ export const HistoricalCatalogPage: React.FC = () => {
               </div>
               <div className="text-center px-2 border-r border-carbon-20">
                 <div className="text-xs text-carbon-60 font-medium">Clean Events</div>
-                <div className="text-lg font-bold font-mono text-ap-primary">3,062</div>
+                <div className="text-lg font-bold font-mono text-ap-link">3,062</div>
               </div>
               <div className="text-center px-2">
                 <div className="text-xs text-carbon-60 font-medium">GLIDE Rec.</div>
-                <div className="text-lg font-bold font-mono text-ap-primary">70</div>
+                <div className="text-lg font-bold font-mono text-ap-link">70</div>
               </div>
             </div>
           </div>

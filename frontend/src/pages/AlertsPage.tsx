@@ -156,7 +156,7 @@ export const AlertsPage: React.FC = () => {
           <button
             type="button"
             onClick={data.refresh}
-            className="inline-flex min-h-[44px] items-center gap-1 border border-carbon-20 bg-ap-primary px-3 py-2 font-semibold text-white hover:bg-ap-primary touch-manipulation"
+            className="inline-flex min-h-[44px] items-center gap-1 border border-carbon-20 bg-primary px-3 py-2 font-semibold text-ap-action-fg hover:bg-primary touch-manipulation"
           >
             <MaterialIcon name="refresh" className="text-sm" aria-hidden="true" />
             {t('alerts.page.refresh')}
@@ -207,7 +207,7 @@ export const AlertsPage: React.FC = () => {
               type="button"
               onClick={() => setView('cards')}
               aria-pressed={view === 'cards'}
-              className={`min-h-[44px] px-3 py-2 touch-manipulation ${view === 'cards' ? 'bg-ap-primary text-white' : 'text-carbon-70'}`}
+              className={`min-h-[44px] px-3 py-2 touch-manipulation ${view === 'cards' ? 'bg-primary text-ap-action-fg' : 'text-carbon-70'}`}
             >
               {t('alerts.page.viewCards')}
             </button>
@@ -215,7 +215,7 @@ export const AlertsPage: React.FC = () => {
               type="button"
               onClick={() => setView('list')}
               aria-pressed={view === 'list'}
-              className={`min-h-[44px] px-3 py-2 touch-manipulation ${view === 'list' ? 'bg-ap-primary text-white' : 'text-carbon-70'}`}
+              className={`min-h-[44px] px-3 py-2 touch-manipulation ${view === 'list' ? 'bg-primary text-ap-action-fg' : 'text-carbon-70'}`}
             >
               {t('alerts.page.viewList')}
             </button>

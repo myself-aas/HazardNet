@@ -113,7 +113,7 @@ export const BangladeshSvgMap: React.FC<BangladeshSvgMapProps> = ({
               aria-pressed={viewMode === 'districts'}
               className={`min-h-[44px] px-2.5 py-1 rounded-lg font-bold transition-colors ${
                 viewMode === 'districts'
-                  ? 'bg-primary text-white shadow-xs'
+                  ? 'bg-primary text-ap-action-fg shadow-xs'
                   : 'text-carbon-60 hover:text-carbon-90'
               }`}
             >
@@ -125,7 +125,7 @@ export const BangladeshSvgMap: React.FC<BangladeshSvgMapProps> = ({
               aria-pressed={viewMode === 'divisions'}
               className={`min-h-[44px] px-2.5 py-1 rounded-lg font-bold transition-colors ${
                 viewMode === 'divisions'
-                  ? 'bg-primary text-white shadow-xs'
+                  ? 'bg-primary text-ap-action-fg shadow-xs'
                   : 'text-carbon-60 hover:text-carbon-90'
               }`}
             >
@@ -149,7 +149,7 @@ export const BangladeshSvgMap: React.FC<BangladeshSvgMapProps> = ({
                     aria-pressed={isAct}
                     className={`min-h-[44px] px-2.5 py-1 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors ${
                       isAct
-                        ? 'bg-carbon-90 text-white font-bold border border-carbon-90'
+                        ? 'bg-carbon-90 text-ap-on-inverse font-bold border border-carbon-90'
                         : 'text-carbon-60 bg-carbon-05 hover:bg-carbon-10 border border-carbon-20'
                     }`}
                   >

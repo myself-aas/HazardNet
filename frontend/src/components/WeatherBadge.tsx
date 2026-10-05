@@ -45,7 +45,7 @@ export const WeatherBadge: React.FC<WeatherBadgeProps> = ({
 
   if (error || !data) {
     return (
-      <span className={`${base} bg-amber-50 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300`} title={error || 'Weather unavailable'}>
+      <span className={`${base} bg-amber-50 text-amber-700`} title={error || 'Weather unavailable'}>
         <AlertCircle size={12} />
         <span>{isSm ? 'N/A' : 'Weather unavailable'}</span>
       </span>
@@ -69,7 +69,7 @@ export const WeatherBadge: React.FC<WeatherBadgeProps> = ({
         <Thermometer size={11} />{temp}°
       </span>
       {precip > 0.1 && (
-        <span className="flex items-center gap-0.5 text-sky-600 dark:text-sky-300">
+        <span className="flex items-center gap-0.5 text-sky-600">
           <CloudRain size={11} />{precip.toFixed(1)}mm
         </span>
       )}

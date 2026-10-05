@@ -133,7 +133,7 @@ export const RegionSelector: React.FC<RegionSelectorProps> = ({
             onClick={() => onViewModeChange && onViewModeChange('districts')}
             className={`px-4 py-2 rounded-full text-xs sm:text-sm font-bold transition-all duration-200 flex items-center gap-2 min-h-[44px] ${
               viewMode === 'districts'
-                ? 'bg-primary text-carbon-90 shadow-xs scale-[1.02]'
+                ? 'bg-primary text-ap-action-fg shadow-xs scale-[1.02]'
                 : 'text-carbon-60 hover:text-carbon-90 hover:bg-carbon-20'
             }`}
           >
@@ -143,7 +143,7 @@ export const RegionSelector: React.FC<RegionSelectorProps> = ({
             onClick={() => onViewModeChange && onViewModeChange('divisions')}
             className={`px-4 py-2 rounded-full text-xs sm:text-sm font-bold transition-all duration-200 flex items-center gap-2 min-h-[44px] ${
               viewMode === 'divisions'
-                ? 'bg-primary text-carbon-90 shadow-xs scale-[1.02]'
+                ? 'bg-primary text-ap-action-fg shadow-xs scale-[1.02]'
                 : 'text-carbon-60 hover:text-carbon-90 hover:bg-carbon-20'
             }`}
           >
@@ -347,7 +347,7 @@ export const RegionSelector: React.FC<RegionSelectorProps> = ({
                 }}
                 className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all duration-200 border min-h-[38px] ${
                   isSelected
-                    ? 'bg-primary text-carbon-90 border-ap-primary shadow-xs scale-[1.02]'
+                    ? 'bg-primary text-ap-action-fg border-ap-primary shadow-xs scale-[1.02]'
                     : 'bg-carbon-05 text-carbon-70 border-carbon-20 hover:text-carbon-90 hover:bg-carbon-10'
                 }`}
               >

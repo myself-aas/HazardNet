@@ -188,7 +188,7 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
           onClick={() => onSetActiveTab('upazilas')}
           className={`pb-2.5 px-3 font-bold border-b-2 transition-all whitespace-nowrap flex items-center gap-1.5 ${
             activeTab === 'upazilas'
-              ? 'border-ap-primary text-ap-primary'
+              ? 'border-ap-primary text-ap-link'
               : 'border-transparent text-carbon-60 hover:text-carbon-80'
           }`}
         >
@@ -199,7 +199,7 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
           onClick={() => onSetActiveTab('aiModel')}
           className={`pb-2.5 px-3 font-bold border-b-2 transition-all whitespace-nowrap flex items-center gap-1.5 ${
             activeTab === 'aiModel'
-              ? 'border-ap-primary text-ap-primary'
+              ? 'border-ap-primary text-ap-link'
               : 'border-transparent text-carbon-60 hover:text-carbon-80'
           }`}
         >
@@ -210,7 +210,7 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
           onClick={() => onSetActiveTab('emergency')}
           className={`pb-2.5 px-3 font-bold border-b-2 transition-all whitespace-nowrap flex items-center gap-1.5 ${
             activeTab === 'emergency'
-              ? 'border-ap-primary text-ap-primary'
+              ? 'border-ap-primary text-ap-link'
               : 'border-transparent text-carbon-60 hover:text-carbon-80'
           }`}
         >
@@ -221,7 +221,7 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
           onClick={() => onSetActiveTab('history')}
           className={`pb-2.5 px-3 font-bold border-b-2 transition-all whitespace-nowrap flex items-center gap-1.5 ${
             activeTab === 'history'
-              ? 'border-ap-primary text-ap-primary'
+              ? 'border-ap-primary text-ap-link'
               : 'border-transparent text-carbon-60 hover:text-carbon-80'
           }`}
         >
@@ -358,7 +358,7 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
               <ul className="space-y-2 text-xs text-carbon-70">
                 {data.emergencyResponse.advisoryBullets.map((bullet, idx) => (
                   <li key={idx} className="flex items-start gap-2 bg-white p-2.5 rounded-lg border border-carbon-20">
-                    <span className="text-ap-primary font-bold">•</span>
+                    <span className="text-ap-link font-bold">•</span>
                     <span>{bullet}</span>
                   </li>
                 ))}
@@ -703,7 +703,7 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
               <div className="flex items-center gap-2 pt-1">
                 <button
                   onClick={() => onSetSheetMode('half')}
-                  className="flex-1 py-2.5 bg-primary active:bg-primary-strong text-carbon-90 font-extrabold text-xs rounded-xl shadow-xs transition-all flex items-center justify-center gap-1.5 min-h-[44px]"
+                  className="flex-1 py-2.5 bg-primary active:bg-primary-strong text-ap-action-fg font-extrabold text-xs rounded-xl shadow-xs transition-all flex items-center justify-center gap-1.5 min-h-[44px]"
                 >
                   <span className="inline-flex items-center gap-1.5">
                     View Detailed Analytics &amp; Action Plan

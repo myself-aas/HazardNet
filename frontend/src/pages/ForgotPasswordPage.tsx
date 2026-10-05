@@ -68,7 +68,7 @@ const ForgotPasswordPage: React.FC = () => {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -5 }}
                   role="alert"
-                  className="flex items-start gap-2 border-l-2 border-ap-primary bg-white p-4 text-sm font-medium text-ap-primary"
+                  className="flex items-start gap-2 border-l-2 border-ap-primary bg-white p-4 text-sm font-medium text-ap-link"
                 >
                   <span className="shrink-0"><MaterialIcon name="warning" className="w-4 h-4 inline-block mr-1" /></span>
                   <span>{error}</span>
@@ -100,7 +100,7 @@ const ForgotPasswordPage: React.FC = () => {
               id="forgot-submit-btn"
               type="submit"
               disabled={loading || !email.trim()}
-              className="flex min-h-[44px] w-full cursor-pointer items-center justify-center gap-2 bg-primary-strong px-6 py-3 text-base font-semibold text-white hover:bg-primary disabled:opacity-50 touch-manipulation"
+              className="flex min-h-[44px] w-full cursor-pointer items-center justify-center gap-2 bg-primary-strong px-6 py-3 text-base font-semibold text-ap-action-fg hover:bg-primary disabled:opacity-50 touch-manipulation"
             >
               {loading ? (
                 <>
@@ -118,11 +118,11 @@ const ForgotPasswordPage: React.FC = () => {
             <div className="text-center text-xs text-carbon-60 pt-2 space-y-1.5 border-t border-carbon-20">
               <p>
                 Remembered your password?{' '}
-                <Link to="/login" className="text-ap-primary hover:underline font-extrabold">Log In</Link>
+                <Link to="/login" className="text-ap-link hover:underline font-extrabold">Log In</Link>
               </p>
               <p>
                 Need an account?{' '}
-                <Link to="/signup" className="text-ap-primary hover:underline font-extrabold">Sign Up</Link>
+                <Link to="/signup" className="text-ap-link hover:underline font-extrabold">Sign Up</Link>
               </p>
             </div>
           </form>
@@ -146,7 +146,7 @@ const ForgotPasswordPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => navigate('/login')}
-                className="min-h-[44px] w-full cursor-pointer bg-primary-strong px-6 py-3 text-base font-semibold text-white hover:bg-primary touch-manipulation"
+                className="min-h-[44px] w-full cursor-pointer bg-primary-strong px-6 py-3 text-base font-semibold text-ap-action-fg hover:bg-primary touch-manipulation"
               >
                 Proceed to Sign In
               </button>

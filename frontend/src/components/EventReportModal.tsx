@@ -101,14 +101,14 @@ export const EventReportModal: React.FC<EventReportModalProps> = ({
         <div className="flex items-start justify-between p-5 border-b border-carbon-80 bg-carbon-black/40">
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="px-2.5 py-0.5 rounded text-xs font-semibold bg-rose-950/70 text-rose-300 border border-rose-800/80">
+              <span className="px-2.5 py-0.5 rounded text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200">
                 {event.hazard_type}
               </span>
               {hasGlide ? (
                 <button
                   type="button"
                   onClick={() => onOpenGlide && onOpenGlide(event.glide)}
-                  className="px-2 py-0.5 rounded text-xs font-mono font-medium bg-blue-950/70 text-blue-300 border border-blue-800/80 hover:bg-blue-900 transition-colors inline-flex items-center gap-1"
+                  className="px-2 py-0.5 rounded text-xs font-mono font-medium bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-50 transition-colors inline-flex items-center gap-1"
                 >
                   <span>{event.glide}</span>
                   <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />

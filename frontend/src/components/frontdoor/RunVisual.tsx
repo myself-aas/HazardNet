@@ -129,7 +129,7 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
         </div>
         <div className="flex items-center gap-1.5 shrink-0" aria-hidden="true">
           <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs font-mono font-medium text-carbon-70 bg-carbon-05 border border-carbon-20">
-            <span className="h-1.5 w-1.5 rounded-full bg-ap-primary" />
+            <span className="h-1.5 w-1.5 rounded-full bg-primary" />
             OPERATE RUN
           </span>
         </div>
@@ -190,7 +190,7 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
             {t('frontdoor.runVisual.unreadable')}{' '}
             <Link
               to="/status"
-              className="font-bold text-ap-primary underline underline-offset-2 hover:text-ap-primary"
+              className="font-bold text-ap-link underline underline-offset-2 hover:text-ap-link"
             >
               {t('frontdoor.runVisual.statusPage')}
             </Link>
@@ -409,7 +409,7 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
                     {!honestyExpanded && (
                       <p className="font-mono text-xs leading-[1.62] text-carbon-60">
                         {t('frontdoor.runVisual.moreHonesty', { total: formatNumber(honesty.length) })}{' '}
-                        <Link to="/status" className="font-bold text-ap-primary underline underline-offset-2 hover:text-ap-primary">
+                        <Link to="/status" className="font-bold text-ap-link underline underline-offset-2 hover:text-ap-link">
                           {t('frontdoor.runVisual.statusPage')}
                         </Link>
                       </p>
@@ -419,7 +419,7 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
                         type="button"
                         onClick={() => setHonestyExpanded((v) => !v)}
                         aria-expanded={honestyExpanded}
-                        className="inline-flex min-h-[32px] items-center gap-1.5 text-xs font-bold text-ap-primary underline underline-offset-2 hover:text-ap-primary"
+                        className="inline-flex min-h-[32px] items-center gap-1.5 text-xs font-bold text-ap-link underline underline-offset-2 hover:text-ap-link"
                       >
                         <MaterialIcon name={honestyExpanded ? 'expand_less' : 'expand_more'} className="text-sm" />
                         {honestyExpanded ? t('common.showLess') : t('frontdoor.runVisual.showMore', { remaining: formatNumber(honesty.length - 3) })}
@@ -427,7 +427,7 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
                       {honestyExpanded && (
                         <Link
                           to="/status"
-                          className="font-bold text-ap-primary underline underline-offset-2 hover:text-ap-primary text-xs"
+                          className="font-bold text-ap-link underline underline-offset-2 hover:text-ap-link text-xs"
                         >
                           {t('frontdoor.runVisual.statusPage')}
                         </Link>

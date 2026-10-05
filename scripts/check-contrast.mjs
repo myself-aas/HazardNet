@@ -41,6 +41,7 @@
 
 import { readFileSync, existsSync } from 'node:fs';
 import { execSync } from 'node:child_process';
+import { createResolver } from './lib/token-resolver.mjs';
 
 const argv = process.argv.slice(2);
 const wantsReport = argv.includes('--report');
@@ -48,6 +49,7 @@ const wantsJson = argv.includes('--json');
 const wantsCssCheck = argv.includes('--check-css');
 
 const APPLE_CSS = 'frontend/src/styles/apple.css';
+const INDEX_CSS = 'frontend/src/index.css';
 const AA_NORMAL = 4.5;
 
 /** The inverting neutral ramp, read off apple.css lines 54-64 (light) and 259-268 (dark). */
@@ -92,6 +94,17 @@ const propOf = (cls) => (PROP.exec(cls) ?? [])[1] ?? null;
 /** Only score the resting state; a hover colour is not what the page renders at rest. */
 const isResting = (cls) => !/^(?:dark:)?(?:hover|focus|active|group-hover|disabled):/.test(cls);
 
+/**
+ * The full theme graph, read from index.css + apple.css.
+ *
+ * This used to be a hand-written table that understood `carbon-NN`, `white` and
+ * `black` and returned null for everything else — and a null is SKIPPED, not
+ * failed. So the gate reported "no contrast defects" while never scoring a
+ * single `amber-*`, `emerald-*`, `rose-*`, `severity-*` or `ap-*` pair, which
+ * is precisely where the alert levels, advisories and doc callouts live.
+ */
+const RESOLVER = createResolver({ indexCss: INDEX_CSS, appleCss: APPLE_CSS });
+
 function resolve(cls, mode) {
   const bare = cls.replace(/^dark:/, '');
   const ramp = RAMP[mode];
@@ -106,6 +119,16 @@ function resolve(cls, mode) {
 
   const lit = /^(?:text|bg|border|fill|stroke)-(white|black|carbon-black)(?:\/\d+)?$/.exec(bare);
   if (lit) return LITERAL[lit[1]];
+
+  // Everything else goes through the real token graph. Arbitrary values
+  // (`text-[#fff]`, `bg-[var(--x)]`) and gradients are left unscored on
+  // purpose: the first is already caught by the hex-literal ratchet, and a
+  // gradient has no single ground to score against.
+  const named = /^(?:text|bg|border|fill|stroke|divide|ring)-([a-z][a-z0-9-]*(?:\/\d+)?)$/.exec(bare);
+  if (named) {
+    const ground = mode === 'dark' ? CANVAS_DARK : '#ffffff';
+    return RESOLVER.token(named[1], mode, ground);
+  }
 
   return null;
 }
@@ -124,23 +147,57 @@ function effective(classes, prop, mode) {
   return mode === 'dark' ? dark ?? base : base;
 }
 
+/** The class that actually won `effective()`, for grouping defects by root cause. */
+function effectiveCls(classes, prop, mode) {
+  let base = null;
+  let dark = null;
+  for (const cls of classes) {
+    if (propOf(cls) !== prop || !isResting(cls)) continue;
+    if (resolve(cls, mode) === null) continue;
+    if (cls.startsWith('dark:')) dark = cls;
+    else base = cls;
+  }
+  return mode === 'dark' ? dark ?? base : base;
+}
+
+/** Every ramp family in index.css that inverts between themes. */
+const RAMP_FAMILIES =
+  'amber|rose|emerald|blue|sky|cyan|red|green|yellow|orange|teal|indigo|violet|purple|pink|fuchsia|lime|stone|zinc|neutral|slate|gray';
+const PROP_RE = 'text|bg|border|fill|stroke|divide|ring';
+/** Looks like a Tailwind utility, so a string of them is a class list. */
+const CLASSISH =
+  /^(?:(?:dark|hover|focus|active|group-hover|focus-within|disabled|sm|md|lg|xl|2xl|motion-safe|motion-reduce|print|first|last|odd|even|aria-[a-z]+|data-\[[^\]]+\]):)*(?:[a-z][a-z0-9]*-)*[a-z0-9[\]().#%/_-]+$/i;
+const INVERTING_FILL = new RegExp(
+  `^bg-(?:primary|primary-strong|severity-(?:low|moderate|high|very-high|extreme)-solid|(?:${RAMP_FAMILIES})-(?:[5-9]|9[0-5])00)(?:/\\d+)?$`);
+const LITERAL_FG = /^text-(?:white|black|carbon-black|carbon-90|ap-black|ap-ink)$/;
+/** Fills whose true backdrop is not knowable from the class list. */
+const UNKNOWN_GROUND = /^(?:dark:)?bg-(?:transparent|(?:white|black|carbon-black)\/(?:[0-9]|1[0-9]|2[0-5]))$/;
+
 const files = execSync("find frontend/src -name '*.tsx' ! -path '*__tests__*'")
   .toString().trim().split('\n').filter(Boolean);
 
 const problems = [];
-const add = (file, line, rule, detail, snippet) =>
-  problems.push({ file: file.replace('frontend/src/', ''), line, rule, detail, snippet });
+const add = (file, line, rule, detail, snippet, pair) =>
+  problems.push({ file: file.replace('frontend/src/', ''), line, rule, detail, snippet, ...(pair ? { pair } : {}) });
 
 for (const file of files) {
   readFileSync(file, 'utf8').split('\n').forEach((text, idx) => {
     const line = idx + 1;
-    for (const match of text.matchAll(/(?:className|class)\s*=\s*[{]?[`"']([^`"']{3,1200})[`"']/g)) {
-      const classes = match[1].split(/\s+/).filter(Boolean);
+    // Class lists are not only written in `className="…"`. Variant maps
+    // (`const TONES = { active: 'bg-carbon-90 text-white' }`), ternaries and
+    // helper constants hold them too — and that is where the worst defects
+    // hid, because the old scanner never looked at them. Read every string
+    // literal that is unambiguously a utility class list.
+    for (const match of text.matchAll(/[`"']([^`"'<>{}]{3,1200})[`"']/g)) {
+      const raw = match[1];
+      const classes = raw.split(/\s+/).filter(Boolean);
+      const utilities = classes.filter((c) => CLASSISH.test(c)).length;
+      if (utilities < 2 || utilities / classes.length < 0.6) continue;
       const snippet = text.trim().slice(0, 72);
 
       // 1. The ramp already inverts, so a `dark:` arm on a carbon token inverts it twice.
       for (const cls of classes) {
-        if (/^dark:(?:text|bg|border|fill|stroke|divide|ring)-carbon-/.test(cls)) {
+        if (new RegExp(`^dark:(?:${PROP_RE})-(?:carbon|${RAMP_FAMILIES})-`).test(cls)) {
           add(file, line, 'double-inversion', `${cls} re-inverts an already-inverting token`, snippet);
         }
       }
@@ -150,9 +207,28 @@ for (const file of files) {
         const fg = effective(classes, 'text', mode);
         const bg = effective(classes, 'bg', mode);
         if (!fg || !bg) continue;
+        // A translucent veil (or no fill at all) sits on whatever is behind the
+        // element — typically a hero photo or a map tile. The real ground is
+        // unknowable from the class list, so scoring it against the page canvas
+        // would invent a result. Skip rather than report a number we cannot
+        // stand behind; `.ap-on-dark` is how those surfaces declare their ink.
+        if (UNKNOWN_GROUND.test(effectiveCls(classes, 'bg', mode) ?? '')) continue;
         const ratio = contrast(fg, bg);
         if (ratio < AA_NORMAL) {
-          add(file, line, `contrast-${mode}`, `${fg} on ${bg} = ${ratio.toFixed(2)}:1 (AA needs ${AA_NORMAL})`, snippet);
+          const pair = `${effectiveCls(classes, 'text', mode)} on ${effectiveCls(classes, 'bg', mode)}`;
+          add(file, line, `contrast-${mode}`, `${fg} on ${bg} = ${ratio.toFixed(2)}:1 (AA needs ${AA_NORMAL})`, snippet, pair);
+        }
+      }
+
+      // 2b. A fill that flips lightness between themes cannot carry a literal
+      //     foreground — it will be legible in exactly one of them. Use the
+      //     paired token (text-ap-action-fg / text-ap-on-sev) instead.
+      const fill = classes.find((c) => INVERTING_FILL.test(c));
+      if (fill) {
+        const literal = classes.find((c) => LITERAL_FG.test(c));
+        if (literal) {
+          add(file, line, 'unpaired-fill-foreground',
+            `${literal} on ${fill}; use text-ap-action-fg (action) or text-ap-on-sev (severity)`, snippet);
         }
       }
 
@@ -183,6 +259,42 @@ function checkCss() {
     failures.push(`an alpha step below ${PANEL_ALPHA_MIN}% is being redirected; those stay white`);
   }
   if (css.includes(',,')) failures.push('empty selector in a list (",,") — the whole rule is dropped by the parser');
+
+  // ── Token-graph invariants. These are the defects that made the scanner
+  //    report "all clean" while the product was visibly broken: a ramp that
+  //    mixes against a primitive with no dark override is frozen light, and a
+  //    semantic token that is never exposed to the utility layer forces call
+  //    sites to reach for a primitive that does not invert.
+  const idx = readFileSync(INDEX_CSS, 'utf8');
+
+  const frozen = [...idx.matchAll(/--color-([a-z]+-\d+):\s*color-mix\([^;]*var\(--ap-canvas\)/g)].map((m) => m[1]);
+  if (frozen.length) {
+    failures.push(
+      `${frozen.length} ramp step(s) mix against var(--ap-canvas), which has no dark override, ` +
+      `so the tint stays light on a dark page — use var(--ap-bg-canvas): ${frozen.slice(0, 4).join(', ')}…`);
+  }
+
+  for (const t of ['ap-action', 'ap-action-fg', 'ap-link', 'ap-on-sev']) {
+    if (!idx.includes(`--color-${t}:`)) {
+      failures.push(`semantic token --color-${t} is not exposed to the utility layer; call sites will reach for a non-inverting primitive`);
+    }
+  }
+
+  const R = RESOLVER;
+  const stuck = [];
+  for (const fam of RAMP_FAMILIES.split('|')) {
+    for (const step of [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950]) {
+      const name = `${fam}-${step}`;
+      const l = R.token(name, 'light');
+      const d = R.token(name, 'dark');
+      if (!l || !d) continue;
+      if (relLum(l) > 0.5 && relLum(d) > 0.5) stuck.push(name);
+    }
+  }
+  if (stuck.length) {
+    failures.push(`${stuck.length} ramp step(s) are light in BOTH themes (they will glare on a dark page): ${stuck.slice(0, 6).join(', ')}…`);
+  }
+
   return failures;
 }
 

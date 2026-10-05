@@ -98,7 +98,7 @@ const SignUpPage: React.FC = () => {
               exit={{ opacity: 0, y: -5 }}
               role="alert"
               aria-live="polite"
-              className="flex items-start gap-2 border-l-2 border-ap-primary bg-white p-4 text-sm font-medium text-ap-primary"
+              className="flex items-start gap-2 border-l-2 border-ap-primary bg-white p-4 text-sm font-medium text-ap-link"
             >
               <span className="shrink-0 mt-0.5">
                 <MaterialIcon name="warning" className="w-4 h-4" />
@@ -131,7 +131,7 @@ const SignUpPage: React.FC = () => {
             aria-invalid={Boolean(fieldErrors.name)}
             className={inputClass}
           />
-          {fieldErrors.name && <p className="mt-1 text-sm font-semibold text-ap-primary">{fieldErrors.name}</p>}
+          {fieldErrors.name && <p className="mt-1 text-sm font-semibold text-ap-link">{fieldErrors.name}</p>}
         </div>
 
         <UsernameField
@@ -142,7 +142,7 @@ const SignUpPage: React.FC = () => {
           email={email}
         />
         {fieldErrors.username && (
-          <p className="-mt-2 text-sm font-semibold text-ap-primary">{fieldErrors.username}</p>
+          <p className="-mt-2 text-sm font-semibold text-ap-link">{fieldErrors.username}</p>
         )}
 
         <div>
@@ -162,7 +162,7 @@ const SignUpPage: React.FC = () => {
             aria-invalid={Boolean(fieldErrors.email)}
             className={inputClass}
           />
-          {fieldErrors.email && <p className="mt-1 text-sm font-semibold text-ap-primary">{fieldErrors.email}</p>}
+          {fieldErrors.email && <p className="mt-1 text-sm font-semibold text-ap-link">{fieldErrors.email}</p>}
         </div>
 
         <div>
@@ -193,7 +193,7 @@ const SignUpPage: React.FC = () => {
             </button>
           </div>
           {fieldErrors.password && (
-            <p className="mt-1 text-sm font-semibold text-ap-primary">{fieldErrors.password}</p>
+            <p className="mt-1 text-sm font-semibold text-ap-link">{fieldErrors.password}</p>
           )}
         </div>
 
@@ -207,24 +207,24 @@ const SignUpPage: React.FC = () => {
           />
           <span className="text-sm leading-[1.62] text-carbon-60">
             I agree to the{' '}
-            <Link to="/terms" className="font-bold text-ap-primary hover:underline">
+            <Link to="/terms" className="font-bold text-ap-link hover:underline">
               Terms
             </Link>{' '}
             and{' '}
-            <Link to="/privacy" className="font-bold text-ap-primary hover:underline">
+            <Link to="/privacy" className="font-bold text-ap-link hover:underline">
               Privacy Policy
             </Link>
             , including weather-data processing for my district.
           </span>
         </label>
-        {fieldErrors.terms && <p className="-mt-2 text-sm font-semibold text-ap-primary">{fieldErrors.terms}</p>}
+        {fieldErrors.terms && <p className="-mt-2 text-sm font-semibold text-ap-link">{fieldErrors.terms}</p>}
 
         <button
           id="signup-page-submit-btn"
           data-testid="signup-submit-btn"
           type="submit"
           disabled={loading}
-          className="flex min-h-[44px] w-full cursor-pointer items-center justify-center gap-2 bg-primary-strong px-6 py-3 text-base font-semibold text-white hover:bg-primary disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ap-primary/60 focus-visible:ring-offset-2 touch-manipulation"
+          className="flex min-h-[44px] w-full cursor-pointer items-center justify-center gap-2 bg-primary-strong px-6 py-3 text-base font-semibold text-ap-action-fg hover:bg-primary disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ap-primary/60 focus-visible:ring-offset-2 touch-manipulation"
         >
           {loading ? (
             <>
@@ -254,7 +254,7 @@ const SignUpPage: React.FC = () => {
         Already have an account?{' '}
         <Link
           to={next && next !== '/' ? `/login?next=${encodeURIComponent(next)}` : '/login'}
-          className="font-extrabold text-ap-primary hover:text-ap-primary hover:underline"
+          className="font-extrabold text-ap-link hover:text-ap-link hover:underline"
         >
           Sign in
         </Link>

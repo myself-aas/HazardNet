@@ -30,7 +30,7 @@ export const About: React.FC = () => {
         </div>
         
         <h1 className="text-ap-lead sm:text-ap-display-md font-brand font-bold leading-tight text-carbon-90 tracking-tight">
-          Hazard<span className="text-ap-primary">Net</span> Agro-Climatic Intelligence Platform
+          Hazard<span className="text-ap-link">Net</span> Agro-Climatic Intelligence Platform
         </h1>
         <p className="text-base leading-[1.62] text-carbon-60 max-w-3xl">
           Automated multi-hazard early warning, multi-band satellite feature classification, physical severity quantification, and offline-capable edge computing for agricultural extension across Bangladesh.
@@ -40,7 +40,7 @@ export const About: React.FC = () => {
           <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
             <Link
               to="/use-cases"
-              className="inline-flex min-h-[44px] items-center px-6 py-2 bg-primary-strong hover:bg-primary text-white text-base font-semibold touch-manipulation"
+              className="inline-flex min-h-[44px] items-center px-6 py-2 bg-primary-strong hover:bg-primary text-ap-action-fg text-base font-semibold touch-manipulation"
             >
               Explore Regional Use Cases
             </Link>
@@ -49,7 +49,7 @@ export const About: React.FC = () => {
           <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
             <Link
               to="/download"
-              className="inline-flex min-h-[44px] items-center px-6 py-2 bg-ap-primary hover:bg-ap-primary text-white text-base font-semibold touch-manipulation"
+              className="inline-flex min-h-[44px] items-center px-6 py-2 bg-primary hover:bg-primary text-ap-action-fg text-base font-semibold touch-manipulation"
             >
               Download Offline Software
             </Link>
@@ -181,7 +181,7 @@ export const About: React.FC = () => {
               <p className="leading-relaxed text-carbon-60">
                 {item.desc}
               </p>
-              <Link to={item.link} className="text-ap-primary font-bold underline inline-block pt-1 hover:text-amber-900">
+              <Link to={item.link} className="text-ap-link font-bold underline inline-block pt-1 hover:text-amber-900">
                 <span className="inline-flex items-center gap-1.5">
                   {item.linkText}
                   <ArrowRight className="h-4 w-4" aria-hidden="true" />

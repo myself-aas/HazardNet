@@ -53,7 +53,7 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({ theme, onChange, class
             aria-pressed={active}
             data-theme-option={option.value}
             className={`inline-flex min-h-[44px] min-w-[44px] flex-1 items-center justify-center rounded-lg px-3 py-2 transition-colors touch-manipulation ${
-              active ? 'bg-carbon-90 text-white' : 'text-carbon-70 hover:bg-carbon-10'
+              active ? 'bg-carbon-90 text-ap-on-inverse' : 'text-carbon-70 hover:bg-carbon-10'
             }`}
           >
             {t(option.labelKey)}

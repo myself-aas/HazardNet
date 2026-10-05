@@ -121,7 +121,7 @@ export const DistrictRiskMap: React.FC<DistrictRiskMapProps> = ({
                 onClick={() => setActiveDivisionFilter(div)}
                 className={`px-2.5 py-1 text-xs rounded-lg font-medium whitespace-nowrap transition-colors ${
                   isSelected
-                    ? 'bg-rose-600 text-white font-semibold shadow-sm'
+                    ? 'bg-rose-600 text-ap-on-sev font-semibold shadow-sm'
                     : 'bg-carbon-80 text-carbon-30 hover:bg-carbon-70 hover:text-white'
                 }`}
                 aria-pressed={isSelected}

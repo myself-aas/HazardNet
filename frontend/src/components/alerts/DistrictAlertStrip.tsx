@@ -63,7 +63,7 @@ export const DistrictAlertStrip: React.FC<DistrictAlertStripProps> = ({
         {baselineOnly && <p className="mt-1 text-xs text-carbon-70">{t('district.baselineOnly')}</p>}
         <Link
           to="/alerts"
-          className="mt-2 inline-flex min-h-[44px] items-center gap-1 text-sm font-semibold text-ap-primary underline decoration-dotted underline-offset-4"
+          className="mt-2 inline-flex min-h-[44px] items-center gap-1 text-sm font-semibold text-ap-link underline decoration-dotted underline-offset-4"
         >
           <MaterialIcon name="notifications_active" className="text-sm" aria-hidden="true" />
           {t('alerts.page.listTitle')}
@@ -98,7 +98,7 @@ export const DistrictAlertStrip: React.FC<DistrictAlertStripProps> = ({
       </p>
       <Link
         to={`/alerts/${encodeURIComponent(alert.id)}`}
-        className="mt-2 inline-flex min-h-[44px] items-center gap-1 text-sm font-semibold text-ap-primary underline decoration-dotted underline-offset-4"
+        className="mt-2 inline-flex min-h-[44px] items-center gap-1 text-sm font-semibold text-ap-link underline decoration-dotted underline-offset-4"
       >
         <MaterialIcon name="description" className="text-sm" aria-hidden="true" />
         {t('alerts.card.evidenceCard')}

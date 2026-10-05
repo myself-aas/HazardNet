@@ -111,7 +111,7 @@ const AdvisoryPanel: React.FC<AdvisoryPanelProps> = ({
             <span className="truncate">AI Advisory</span>
           </h3>
           <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-            <span className="px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs sm:text-xs font-mono font-semibold bg-amber-50 dark:bg-amber-950/30 text-amber-950 dark:text-amber-100 border border-amber-200 dark:border-amber-800/50">
+            <span className="px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs sm:text-xs font-mono font-semibold bg-amber-50 text-amber-950 border border-amber-200">
               HA Engine
             </span>
             {advisory.cached && (

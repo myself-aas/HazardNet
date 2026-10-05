@@ -99,7 +99,7 @@ export const TemporalTrendChart: React.FC<TemporalTrendChartProps> = ({
             <h3 className="text-base font-bold text-white tracking-tight">
               Temporal Hazard Recurrence Trends (2000–2026)
             </h3>
-            <span className="px-2 py-0.5 rounded-full text-xs font-mono font-medium bg-rose-950/60 text-rose-300 border border-rose-800/60">
+            <span className="px-2 py-0.5 rounded-full text-xs font-mono font-medium bg-rose-50 text-rose-700 border border-rose-200">
               26-Year Empirical Record
             </span>
           </div>

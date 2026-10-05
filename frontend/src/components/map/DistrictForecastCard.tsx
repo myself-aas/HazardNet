@@ -96,7 +96,7 @@ export const DistrictForecastCard: React.FC<DistrictForecastCardProps> = ({
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5 sm:gap-2 text-xs font-bold text-carbon-60 uppercase tracking-wide">
             <span className="w-6 h-6 rounded-full bg-ap-primary/10 flex items-center justify-center shrink-0">
-              <MaterialIcon name="radar" className="w-3.5 h-3.5 text-ap-primary" />
+              <MaterialIcon name="radar" className="w-3.5 h-3.5 text-ap-link" />
             </span>
             <span>Forecast</span>
           </div>
@@ -184,7 +184,7 @@ export const DistrictForecastCard: React.FC<DistrictForecastCardProps> = ({
               <div className="flex items-center justify-between gap-3 py-3 sm:py-3.5">
                 <span className="flex items-center gap-3 text-xs font-bold uppercase tracking-wide text-carbon-50">
                   <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-carbon-05">
-                    <MaterialIcon name="my_location" className="h-4 w-4 text-ap-primary" />
+                    <MaterialIcon name="my_location" className="h-4 w-4 text-ap-link" />
                   </span>
                   Location
                 </span>
@@ -206,7 +206,7 @@ export const DistrictForecastCard: React.FC<DistrictForecastCardProps> = ({
                 className="my-2 flex min-h-[44px] items-center justify-between gap-2 rounded-full border border-carbon-20 bg-carbon-05 px-4 py-2 text-xs sm:text-sm font-bold text-carbon-70 hover:bg-carbon-10 dark:hover:bg-carbon-70 hover:text-carbon-90 dark:hover:text-white touch-manipulation transition-colors"
               >
                 <span className="flex items-center gap-2 min-w-0">
-                  <MaterialIcon name="map" className="w-4 h-4 text-ap-primary shrink-0" />
+                  <MaterialIcon name="map" className="w-4 h-4 text-ap-link shrink-0" />
                   <span className="truncate">Location Map</span>
                 </span>
                 <MaterialIcon
@@ -242,14 +242,14 @@ export const DistrictForecastCard: React.FC<DistrictForecastCardProps> = ({
             onClick={onOpenAdvisory}
             className="w-full min-h-[44px] py-2.5 bg-carbon-90 hover:bg-carbon-80 text-carbon-05 font-semibold text-sm flex items-center justify-center gap-2 touch-manipulation rounded-full"
           >
-            <MaterialIcon name="insights" className="w-4 h-4 text-ap-primary" />
+            <MaterialIcon name="insights" className="w-4 h-4 text-ap-link" />
             Open district intelligence
           </button>
         )}
         <button
           type="button"
           onClick={() => onOpenAnalytics(district.id)}
-          className="w-full min-h-[44px] py-3 bg-ap-primary hover:bg-ap-primary text-white font-semibold text-base flex items-center justify-center gap-2 touch-manipulation rounded-full"
+          className="w-full min-h-[44px] py-3 bg-primary hover:bg-primary text-ap-action-fg font-semibold text-base flex items-center justify-center gap-2 touch-manipulation rounded-full"
         >
           <MaterialIcon name="analytics" className="w-4 h-4" />
           View Detailed Disaster Analytics

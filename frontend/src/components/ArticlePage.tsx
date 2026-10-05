@@ -45,7 +45,7 @@ interface Section {
 const CALLOUT_STYLES: Record<string, string> = {
   warning: 'border-amber-300 bg-amber-50 text-amber-950',
   info: 'border-carbon-30 bg-carbon-05 text-carbon-80',
-  danger: 'border-rose-300 bg-white text-ap-primary',
+  danger: 'border-rose-300 bg-rose-50 text-rose-950',
 };
 
 const InlineLink: React.FC<{ link: SectionLink }> = ({ link }) => {
@@ -56,14 +56,14 @@ const InlineLink: React.FC<{ link: SectionLink }> = ({ link }) => {
         href={link.href}
         target="_blank"
         rel="noopener noreferrer"
-        className="font-bold text-ap-primary hover:text-ap-primary underline underline-offset-4"
+        className="font-bold text-ap-link hover:text-ap-link underline underline-offset-4"
       >
         {link.label}
       </a>
     );
   }
   return (
-    <Link to={link.href} className="font-bold text-ap-primary hover:text-ap-primary underline underline-offset-4">
+    <Link to={link.href} className="font-bold text-ap-link hover:text-ap-link underline underline-offset-4">
       {link.label}
     </Link>
   );
@@ -86,7 +86,7 @@ export const ArticlePage: React.FC<{ path: string; introSlot?: React.ReactNode }
       <div className="mx-auto max-w-3xl space-y-4 py-16 text-center">
         <h1 className="text-xl font-black text-carbon-90">Page unavailable</h1>
         <p className="text-sm text-carbon-60">
-          This page&apos;s content could not be loaded. Return to the <Link to="/live" className="font-bold text-ap-primary">live map</Link>.
+          This page&apos;s content could not be loaded. Return to the <Link to="/live" className="font-bold text-ap-link">live map</Link>.
         </p>
       </div>
     );
@@ -183,7 +183,7 @@ export const ArticlePage: React.FC<{ path: string; introSlot?: React.ReactNode }
         HazardNet is an independent decision-support platform. It does not replace official warnings from the Bangladesh
         Meteorological Department (BMD), the Flood Forecasting and Warning Centre (FFWC), the Department of Disaster
         Management (DDM) or your local administration. National emergency hotline: 999.{' '}
-        <Link to="/contact" className="font-bold text-ap-primary hover:text-ap-primary">
+        <Link to="/contact" className="font-bold text-ap-link hover:text-ap-link">
           Report a problem
         </Link>
         .

@@ -232,7 +232,7 @@ export const HazardDetailPage: React.FC = () => {
     return (
       <div className="min-h-dvh bg-carbon-05 flex items-center justify-center p-6">
         <div className="bg-white border border-carbon-20 p-8 max-w-md text-center">
-          <AlertTriangle className="w-10 h-10 text-ap-primary mx-auto mb-3" aria-hidden="true" />
+          <AlertTriangle className="w-10 h-10 text-ap-link mx-auto mb-3" aria-hidden="true" />
           <h2 className="text-lg font-bold text-carbon-90">Failed to Load Hazard Data</h2>
           <p className="text-xs text-carbon-60 mt-2">{error || 'Hazard data not found.'}</p>
           <div className="mt-5 flex flex-col items-stretch gap-2 sm:flex-row sm:justify-center">
@@ -246,7 +246,7 @@ export const HazardDetailPage: React.FC = () => {
             </button>
             <Link
               to="/hazards"
-              className="inline-flex min-h-[44px] items-center justify-center px-4 bg-ap-primary text-white text-sm font-semibold hover:bg-ap-primary"
+              className="inline-flex min-h-[44px] items-center justify-center px-4 bg-primary text-ap-action-fg text-sm font-semibold hover:bg-primary"
             >
               Back to Hazards
             </Link>
@@ -260,9 +260,9 @@ export const HazardDetailPage: React.FC = () => {
     <div className="min-h-dvh bg-carbon-05 text-carbon-80 pb-8 pt-6 px-4 sm:px-6 lg:px-8 max-w-[1200px] mx-auto">
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-xs text-carbon-60 mb-4">
-        <Link to="/" className="hover:text-ap-primary transition-colors">Home</Link>
+        <Link to="/" className="hover:text-ap-link transition-colors">Home</Link>
         <span>/</span>
-        <Link to="/hazards" className="hover:text-ap-primary transition-colors">Hazards</Link>
+        <Link to="/hazards" className="hover:text-ap-link transition-colors">Hazards</Link>
         <span>/</span>
         <span className="text-carbon-80 font-medium">{data.hazard}</span>
       </div>
@@ -278,7 +278,7 @@ export const HazardDetailPage: React.FC = () => {
               onClick={() => navigate(`/hazards/${h.slug}`)}
               className={`inline-flex min-h-[44px] items-center gap-1.5 px-3 text-sm font-semibold whitespace-nowrap touch-manipulation ${
                 isActive
-                  ? 'bg-ap-primary text-white'
+                  ? 'bg-primary text-ap-action-fg'
                   : 'bg-white border border-carbon-20 text-carbon-70 hover:bg-carbon-10 hover:text-carbon-90'
               }`}
             >
@@ -317,7 +317,7 @@ export const HazardDetailPage: React.FC = () => {
 
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 w-full md:w-auto">
             <div className="bg-carbon-05 border border-carbon-20/80 p-3 text-center">
-              <div className="text-xl font-bold text-ap-primary">{data.totalEvents.toLocaleString()}</div>
+              <div className="text-xl font-bold text-ap-link">{data.totalEvents.toLocaleString()}</div>
               <div className="text-xs text-carbon-60 font-medium">Historical Records</div>
             </div>
             <div className="bg-carbon-05 border border-carbon-20/80 p-3 text-center">
@@ -359,7 +359,7 @@ export const HazardDetailPage: React.FC = () => {
               heading: `${fc.districtName} (${fc.horizon === '7_days' ? '7-Day' : '15-Day'})`,
               fields: [
                 { label: 'Division', value: (
-                  <Link to={`/divisions/${fc.division.toLowerCase()}`} className="text-ap-primary">
+                  <Link to={`/divisions/${fc.division.toLowerCase()}`} className="text-ap-link">
                     {fc.division}
                   </Link>
                 ) },
@@ -373,7 +373,7 @@ export const HazardDetailPage: React.FC = () => {
               footer: (
                 <Link
                   to={`/forecast/district/${fc.districtName.toLowerCase().replace(/[^a-z0-9]/g, '')}`}
-                  className="inline-flex min-h-[44px] items-center gap-1 font-semibold text-ap-primary"
+                  className="inline-flex min-h-[44px] items-center gap-1 font-semibold text-ap-link"
                 >
                   <span>District Page</span>
                   <ArrowRight className="w-3 h-3" />
@@ -404,7 +404,7 @@ export const HazardDetailPage: React.FC = () => {
                     <tr key={`${fc.districtName}-${fc.horizon}-${idx}`} className="hover:bg-carbon-05/80 transition-colors">
                       <td className="p-3 font-semibold text-carbon-90">{fc.districtName}</td>
                       <td className="p-3 text-carbon-60">
-                        <Link to={`/divisions/${fc.division.toLowerCase()}`} className="hover:text-ap-primary">
+                        <Link to={`/divisions/${fc.division.toLowerCase()}`} className="hover:text-ap-link">
                           {fc.division}
                         </Link>
                       </td>
@@ -414,7 +414,7 @@ export const HazardDetailPage: React.FC = () => {
                         </span>
                       </td>
                       <td className="p-3 text-carbon-60 whitespace-nowrap">{fc.targetDate}</td>
-                      <td className="p-3 font-semibold text-ap-primary">{fc.modelSeverity.toFixed(2)}</td>
+                      <td className="p-3 font-semibold text-ap-link">{fc.modelSeverity.toFixed(2)}</td>
                       <td className="p-3 font-semibold text-amber-700">{fc.physicsSeverity.toFixed(2)}</td>
                       <td className="p-3 text-carbon-60">{Math.round(fc.confidence * 100)}%</td>
                       <td className="p-3 text-carbon-60">{fc.precipitationMm.toFixed(1)} mm</td>
@@ -422,7 +422,7 @@ export const HazardDetailPage: React.FC = () => {
                       <td className="p-3 text-right">
                         <Link
                           to={`/forecast/district/${districtSlug}`}
-                          className="inline-flex items-center gap-1 text-ap-primary hover:text-ap-primary font-semibold"
+                          className="inline-flex items-center gap-1 text-ap-link hover:text-ap-link font-semibold"
                         >
                           <span>District Page</span>
                           <ArrowRight className="w-3 h-3" />
@@ -444,7 +444,7 @@ export const HazardDetailPage: React.FC = () => {
           <div className="flex items-center justify-between pb-3 border-b border-carbon-20">
             <div>
               <h3 className="text-sm font-bold text-carbon-90 flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 text-ap-primary" />
+                <TrendingUp className="w-4 h-4 text-ap-link" />
                 26-Year Historical Occurrence Trend (2000–2026)
               </h3>
               <p className="text-xs text-carbon-60">Annual occurrences of {data.hazard} across Bangladesh</p>
@@ -473,7 +473,7 @@ export const HazardDetailPage: React.FC = () => {
           <div className="flex items-center justify-between pb-3 border-b border-carbon-20">
             <div>
               <h3 className="text-sm font-bold text-carbon-90 flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-ap-primary" />
+                <MapPin className="w-4 h-4 text-ap-link" />
                 Top 15 Most Impacted Districts
               </h3>
               <p className="text-xs text-carbon-60">Districts recording highest {data.hazard} episodes</p>
@@ -499,7 +499,7 @@ export const HazardDetailPage: React.FC = () => {
           <div className="flex items-center justify-between pb-3 border-b border-carbon-20">
             <div>
               <h3 className="text-sm font-bold text-carbon-90 flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-ap-primary" />
+                <Calendar className="w-4 h-4 text-ap-link" />
                 Monthly Seasonality Curve (Jan–Dec)
               </h3>
               <p className="text-xs text-carbon-60">Distribution of historical occurrences by calendar month</p>
@@ -531,7 +531,7 @@ export const HazardDetailPage: React.FC = () => {
           <div className="flex items-center justify-between pb-3 border-b border-carbon-20">
             <div>
               <h3 className="text-sm font-bold text-carbon-90 flex items-center gap-2">
-                <Layers className="w-4 h-4 text-ap-primary" />
+                <Layers className="w-4 h-4 text-ap-link" />
                 Regional Division Breakdown
               </h3>
               <p className="text-xs text-carbon-60">Geographic distribution of {data.hazard} across the 8 divisions</p>
@@ -558,7 +558,7 @@ export const HazardDetailPage: React.FC = () => {
         <div className="flex flex-col md:flex-row md:items-center justify-between pb-4 border-b border-carbon-20 gap-4">
           <div>
             <h3 className="text-base font-bold text-carbon-90 flex items-center gap-2">
-              <Layers className="w-4 h-4 text-ap-primary" />
+              <Layers className="w-4 h-4 text-ap-link" />
               Verified Event Log ({data.hazard})
             </h3>
             <p className="text-xs text-carbon-60">
@@ -613,7 +613,7 @@ export const HazardDetailPage: React.FC = () => {
               heading: event.date,
               fields: [
                 { label: 'District', value: (
-                  <Link to={`/forecast/district/${districtSlug}`} className="font-semibold text-ap-primary">
+                  <Link to={`/forecast/district/${districtSlug}`} className="font-semibold text-ap-link">
                     {event.district}
                   </Link>
                 ) },
@@ -627,7 +627,7 @@ export const HazardDetailPage: React.FC = () => {
               footer: (
                 <Link
                   to={`/forecast/district/${districtSlug}`}
-                  className="inline-flex min-h-[44px] items-center gap-1 font-semibold text-ap-primary"
+                  className="inline-flex min-h-[44px] items-center gap-1 font-semibold text-ap-link"
                 >
                   <span>Go to {event.district} District Dashboard</span>
                   <ArrowRight className="w-3.5 h-3.5" />
@@ -659,7 +659,7 @@ export const HazardDetailPage: React.FC = () => {
                     <tr className="hover:bg-carbon-05/80 transition-colors">
                       <td className="p-3 font-medium text-carbon-90 whitespace-nowrap">{event.date}</td>
                       <td className="p-3 font-semibold text-carbon-80">
-                        <Link to={`/forecast/district/${districtSlug}`} className="hover:text-ap-primary">
+                        <Link to={`/forecast/district/${districtSlug}`} className="hover:text-ap-link">
                           {event.district}
                         </Link>
                       </td>
@@ -667,7 +667,7 @@ export const HazardDetailPage: React.FC = () => {
                       <td className="p-3 font-mono text-carbon-60 whitespace-nowrap">{event.glide || '—'}</td>
                       <td className="p-3 font-bold text-carbon-70">
                         <span className={`px-2 py-0.5 rounded text-xs ${
-                          event.severity >= 3.0 ? 'bg-carbon-05 text-ap-primary border border-carbon-20' :
+                          event.severity >= 3.0 ? 'bg-carbon-05 text-ap-link border border-carbon-20' :
                           event.severity >= 2.0 ? 'bg-amber-50 text-amber-700 border border-amber-200' :
                           'bg-carbon-10 text-carbon-70'
                         }`}>
@@ -680,7 +680,7 @@ export const HazardDetailPage: React.FC = () => {
                       <td className="p-3 text-right whitespace-nowrap">
                         <button
                           onClick={() => setExpandedEventId(isExpanded ? null : event.id)}
-                          className="text-ap-primary font-semibold inline-flex min-h-[44px] items-center gap-1 cursor-pointer touch-manipulation"
+                          className="text-ap-link font-semibold inline-flex min-h-[44px] items-center gap-1 cursor-pointer touch-manipulation"
                         >
                           <span>{isExpanded ? 'Less' : 'Details'}</span>
                           {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
@@ -702,7 +702,7 @@ export const HazardDetailPage: React.FC = () => {
                             <div className="pt-2 flex justify-end">
                               <Link
                                 to={`/forecast/district/${districtSlug}`}
-                                className="inline-flex items-center gap-1 text-ap-primary hover:text-ap-primary font-semibold"
+                                className="inline-flex items-center gap-1 text-ap-link hover:text-ap-link font-semibold"
                               >
                                 <span>Go to {event.district} District Dashboard</span>
                                 <ArrowRight className="w-3.5 h-3.5" />

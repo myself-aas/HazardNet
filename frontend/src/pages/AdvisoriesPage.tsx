@@ -260,7 +260,7 @@ export const AdvisoriesPage: React.FC = () => {
                 to={`/advisories/${sec.id}`}
                 className={`flex flex-col items-start p-3.5 rounded-2xl border transition-all text-left group ${
                   isActive
-                    ? 'bg-carbon-90 text-white border-carbon-90 shadow-md ring-2 ring-amber-400/40'
+                    ? 'bg-carbon-90 text-ap-on-inverse border-carbon-90 shadow-md ring-2 ring-amber-400/40'
                     : 'bg-carbon-05/80 text-carbon-70 border-carbon-20/80 hover:bg-white hover:border-carbon-30 hover:shadow-xs'
                 }`}
               >
@@ -397,7 +397,7 @@ export const AdvisoriesPage: React.FC = () => {
             <div className="bg-carbon-90 text-carbon-05 rounded-3xl p-6 sm:p-8 border border-carbon-80 shadow-xl space-y-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-carbon-80 pb-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-2xl bg-amber-400/20 border border-amber-400/30 flex items-center justify-center text-amber-400">
+                  <div className="w-10 h-10 rounded-2xl bg-amber-400/20 border border-amber-400/30 flex items-center justify-center text-amber-700">
                     <Sparkles className="w-5 h-5" />
                   </div>
                   <div>
@@ -473,7 +473,7 @@ export const AdvisoriesPage: React.FC = () => {
                   <button
                     onClick={handleGenerateAiAdvisory}
                     disabled={aiLoading}
-                    className="w-full py-2.5 px-4 rounded-xl bg-primary hover:bg-ap-primary-tint text-white font-black text-xs flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50"
+                    className="w-full py-2.5 px-4 rounded-xl bg-primary hover:bg-ap-primary-tint text-ap-action-fg font-black text-xs flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50"
                   >
                     {aiLoading ? (
                       <>
@@ -499,7 +499,7 @@ export const AdvisoriesPage: React.FC = () => {
               )}
 
               {aiError && !aiLoading && (
-                <div className="p-4 rounded-2xl bg-rose-950/50 border border-rose-800 text-rose-200 text-xs">
+                <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs">
                   <p className="font-bold">Notice:</p>
                   <p>{aiError}</p>
                 </div>
@@ -558,7 +558,7 @@ export const AdvisoriesPage: React.FC = () => {
                 onClick={() => setSelectedPhase(tab.id as any)}
                 className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
                   selectedPhase === tab.id
-                    ? 'bg-white text-carbon-black shadow-xs border border-carbon-20'
+                    ? 'bg-white text-carbon-90 shadow-xs border border-carbon-20'
                     : 'text-carbon-60 hover:text-carbon-90'
                 }`}
               >

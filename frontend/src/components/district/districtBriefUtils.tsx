@@ -13,7 +13,7 @@ export const getHazardIcon = (hazard: string) => {
     case 'Cold Wave':
       return <Snowflake className="w-5 h-5 text-indigo-600" />;
     default:
-      return <CloudLightning className="w-5 h-5 text-ap-primary" />;
+      return <CloudLightning className="w-5 h-5 text-ap-link" />;
   }
 };
 

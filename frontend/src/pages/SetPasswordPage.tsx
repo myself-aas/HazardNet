@@ -134,7 +134,7 @@ export default function SetPasswordPage() {
           )}
 
           {error && (
-            <p role="alert" className="border-l-2 border-ap-primary bg-white p-4 text-sm font-medium text-ap-primary">
+            <p role="alert" className="border-l-2 border-ap-primary bg-white p-4 text-sm font-medium text-ap-link">
               {error}
             </p>
           )}
@@ -197,21 +197,21 @@ export default function SetPasswordPage() {
               className={inputClass}
             />
             {confirmation.length > 0 && confirmation !== password && (
-              <p className="mt-1 text-sm font-semibold text-ap-primary">Passwords don’t match yet.</p>
+              <p className="mt-1 text-sm font-semibold text-ap-link">Passwords don’t match yet.</p>
             )}
           </div>
 
           <button
             type="submit"
             disabled={saving || (!user && !isAuthConfigured)}
-            className="min-h-[44px] w-full cursor-pointer bg-primary-strong py-3 text-base font-semibold text-white hover:bg-primary disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ap-primary/60 focus-visible:ring-offset-2 touch-manipulation"
+            className="min-h-[44px] w-full cursor-pointer bg-primary-strong py-3 text-base font-semibold text-ap-action-fg hover:bg-primary disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ap-primary/60 focus-visible:ring-offset-2 touch-manipulation"
           >
             {saving ? 'Saving password…' : 'Save password & open my dashboard'}
           </button>
 
           <p className="text-center text-sm text-carbon-60">
             Already set a password?{' '}
-            <Link to="/login" className="font-bold text-ap-primary hover:underline">
+            <Link to="/login" className="font-bold text-ap-link hover:underline">
               Sign in
             </Link>
           </p>

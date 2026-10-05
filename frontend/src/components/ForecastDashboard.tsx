@@ -467,7 +467,7 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
             <button
               onClick={() => setActiveChartTab('trends')}
               className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-colors min-h-[44px] ${
-                activeChartTab === 'trends' ? 'bg-amber-500 text-carbon-90 shadow-2xs font-extrabold' : 'bg-carbon-10 text-carbon-60 hover:bg-carbon-20'
+                activeChartTab === 'trends' ? 'bg-amber-500 text-ap-on-sev shadow-2xs font-extrabold' : 'bg-carbon-10 text-carbon-60 hover:bg-carbon-20'
               }`}
             >
               Trends
@@ -475,7 +475,7 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
             <button
               onClick={() => setActiveChartTab('comparison')}
               className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-colors min-h-[44px] ${
-                activeChartTab === 'comparison' ? 'bg-amber-500 text-carbon-90 shadow-2xs font-extrabold' : 'bg-carbon-10 text-carbon-60 hover:bg-carbon-20'
+                activeChartTab === 'comparison' ? 'bg-amber-500 text-ap-on-sev shadow-2xs font-extrabold' : 'bg-carbon-10 text-carbon-60 hover:bg-carbon-20'
               }`}
             >
               Bar Chart
@@ -483,7 +483,7 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
             <button
               onClick={() => setActiveChartTab('dualTrack')}
               className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-colors min-h-[44px] ${
-                activeChartTab === 'dualTrack' ? 'bg-amber-500 text-carbon-90 shadow-2xs font-extrabold' : 'bg-carbon-10 text-carbon-60 hover:bg-carbon-20'
+                activeChartTab === 'dualTrack' ? 'bg-amber-500 text-ap-on-sev shadow-2xs font-extrabold' : 'bg-carbon-10 text-carbon-60 hover:bg-carbon-20'
               }`}
             >
               Dual-Track
@@ -606,7 +606,7 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
                 footer: (
                   <button
                     onClick={() => setActiveSheetItem(item)}
-                    className="min-h-[44px] font-extrabold text-ap-primary"
+                    className="min-h-[44px] font-extrabold text-ap-link"
                   >
                     Inspect Sheet
                   </button>
@@ -687,7 +687,7 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
                             e.stopPropagation();
                             setActiveSheetItem(item);
                           }}
-                          className="text-ap-primary font-extrabold text-xs hover:underline cursor-pointer min-h-[44px] px-2"
+                          className="text-ap-link font-extrabold text-xs hover:underline cursor-pointer min-h-[44px] px-2"
                         >
                           Inspect Sheet
                         </button>
@@ -721,7 +721,7 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
                   onSelectDistrict(String(activeSheetItem.district_id));
                   setActiveSheetItem(null);
                 }}
-                className="px-5 py-2.5 rounded-xl bg-ap-primary text-white font-sans font-semibold text-xs hover:bg-ap-primary shadow-xs min-h-[44px]"
+                className="px-5 py-2.5 rounded-xl bg-primary text-ap-action-fg font-sans font-semibold text-xs hover:bg-primary shadow-xs min-h-[44px]"
               >
                 View on Live GIS Map
               </button>

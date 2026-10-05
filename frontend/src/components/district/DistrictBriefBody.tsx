@@ -94,7 +94,7 @@ export const DistrictBriefBody: React.FC = () => {
               onClick={() => scrollToSection(sec.id)}
               className={`inline-flex min-h-[44px] items-center gap-2 px-3 py-2 cursor-pointer touch-manipulation ${
                 activeSection === sec.id
-                  ? 'bg-ap-primary text-white font-semibold'
+                  ? 'bg-primary text-ap-action-fg font-semibold'
                   : 'text-carbon-60 hover:text-carbon-90 hover:bg-carbon-10'
               }`}
             >
@@ -116,7 +116,7 @@ export const DistrictBriefBody: React.FC = () => {
       <section id="sec-impact" className="scroll-mt-[calc(var(--navbar-height)+8px)] space-y-4 pt-2">
         <div className="flex items-center justify-between border-b border-carbon-20 pb-3">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 bg-carbon-05 border border-carbon-20 flex items-center justify-center text-ap-primary">
+            <div className="w-8 h-8 bg-carbon-05 border border-carbon-20 flex items-center justify-center text-ap-link">
               <Users className="w-4 h-4" />
             </div>
             <div>
@@ -264,7 +264,7 @@ export const DistrictBriefBody: React.FC = () => {
           <div className="flex flex-wrap items-center gap-3 text-xs font-mono min-w-0">
             <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-severity-low" /> Low (0-33%)</span>
             <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-amber-500" /> Moderate (34-66%)</span>
-            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-ap-primary" /> Critical (67-100%)</span>
+            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-primary" /> Critical (67-100%)</span>
           </div>
         </div>
 
@@ -293,9 +293,9 @@ export const DistrictBriefBody: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-carbon-90 text-sm">{upazila.name}</span>
                   <span className={`px-2.5 py-0.5 rounded-sm text-xs font-mono font-black ${
-                    isCrit ? 'bg-ap-primary text-white animate-pulse' :
-                    isHigh ? 'bg-amber-500 text-carbon-black' :
-                    'bg-emerald-600 text-white'
+                    isCrit ? 'bg-primary text-ap-action-fg animate-pulse' :
+                    isHigh ? 'bg-amber-500 text-ap-on-sev' :
+                    'bg-emerald-600 text-ap-on-sev'
                   }`}>
                     {scorePct}% Intensity
                   </span>
@@ -356,7 +356,7 @@ export const DistrictBriefBody: React.FC = () => {
                 <div className="bg-carbon-05 p-4 border border-carbon-20/80 space-y-1">
                   <span className="text-xs font-mono text-carbon-60 font-bold uppercase">{data.physicalSensorMetrics.primaryMetricName}</span>
                   <div className={`text-2xl font-black font-mono ${
-                    data.modelAssessment.riskCategory === 'High' ? 'text-ap-primary' :
+                    data.modelAssessment.riskCategory === 'High' ? 'text-ap-link' :
                     data.modelAssessment.riskCategory === 'Moderate' ? 'text-amber-600' :
                     'text-carbon-80'
                   }`}>
@@ -445,7 +445,7 @@ export const DistrictBriefBody: React.FC = () => {
             <div className="flex items-center gap-4 text-xs font-mono bg-carbon-05 p-3 border border-carbon-20/80">
               <div>
                 <div className="text-carbon-60">7-Day Peak Risk</div>
-                <div className="text-sm font-black text-ap-primary">
+                <div className="text-sm font-black text-ap-link">
                   {hazardTrendData.length ? Math.max(...hazardTrendData.map(d => Number(d[data.hazardType] || 0))) : "\u2014"} / 100
                 </div>
               </div>
@@ -509,7 +509,7 @@ export const DistrictBriefBody: React.FC = () => {
       <section id="sec-ai-overview" className="scroll-mt-[calc(var(--navbar-height)+8px)] space-y-4 pt-4 pagination-protected">
         <div className="flex items-center justify-between border-b border-carbon-20 pb-3">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 bg-carbon-05 border border-carbon-20 flex items-center justify-center text-ap-primary">
+            <div className="w-8 h-8 bg-carbon-05 border border-carbon-20 flex items-center justify-center text-ap-link">
               <Cpu className="w-4 h-4" />
             </div>
             <div>
@@ -521,7 +521,7 @@ export const DistrictBriefBody: React.FC = () => {
             <a
               href="#appendix-a"
               onClick={(e) => { e.preventDefault(); scrollToSection('appendix-a'); }}
-              className="text-xs text-ap-primary hover:text-carbon-90 font-mono font-bold inline-flex items-center gap-1 screen-only"
+              className="text-xs text-ap-link hover:text-carbon-90 font-mono font-bold inline-flex items-center gap-1 screen-only"
             >
               <span>View Technical Appendix</span>
               <ExternalLink className="w-3 h-3" />
@@ -536,7 +536,7 @@ export const DistrictBriefBody: React.FC = () => {
           <div className="bg-white border border-carbon-20 p-6 space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-bold text-carbon-90 flex items-center gap-2">
-                <BarChart3 className="w-4 h-4 text-ap-primary" />
+                <BarChart3 className="w-4 h-4 text-ap-link" />
                 Hazard Probability Breakdown
               </h3>
               <span className="text-xs font-mono text-carbon-60">Total = 100%</span>
@@ -653,7 +653,7 @@ export const DistrictBriefBody: React.FC = () => {
                   onClick={() => setUpazilaFilter(filterVal)}
                   className={`px-3 py-1.5 font-bold transition-all cursor-pointer ${
                     upazilaFilter === filterVal
-                      ? 'bg-carbon-90 text-white'
+                      ? 'bg-carbon-90 text-ap-on-inverse'
                       : 'bg-carbon-10 text-carbon-60 hover:bg-carbon-20'
                   }`}
                 >
@@ -714,8 +714,8 @@ export const DistrictBriefBody: React.FC = () => {
                     </div>
 
                     <span className={`px-2.5 py-1 text-xs font-mono font-black tracking-wide shrink-0 ${
-                      up.severityScore >= 0.8 ? 'bg-ap-primary text-white' :
-                      up.severityScore >= 0.5 ? 'bg-amber-500 text-carbon-black font-bold' :
+                      up.severityScore >= 0.8 ? 'bg-primary text-ap-action-fg' :
+                      up.severityScore >= 0.5 ? 'bg-amber-500 text-ap-on-sev font-bold' :
                       'bg-carbon-10 text-carbon-70'
                     }`}>
                       {up.severityScore >= 0.8 ? 'PRIORITY 1: CRITICAL' : up.severityScore >= 0.5 ? 'PRIORITY 2: STANDBY' : 'PRIORITY 3: MONITOR'}
@@ -818,7 +818,7 @@ export const DistrictBriefBody: React.FC = () => {
                       </td>
                       <td className="py-4 px-5 text-right">
                         <span className={`inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold font-mono ${
-                          up.severityScore >= 0.8 ? 'bg-ap-primary text-white' :
+                          up.severityScore >= 0.8 ? 'bg-primary text-ap-action-fg' :
                           up.severityScore >= 0.5 ? 'bg-amber-100 text-amber-900' :
                           'bg-carbon-10 text-carbon-70'
                         }`}>
@@ -853,7 +853,7 @@ export const DistrictBriefBody: React.FC = () => {
               onClick={() => setShowLiveAiAdvisory(!showLiveAiAdvisory)}
               className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold transition-all cursor-pointer screen-only ${
                 showLiveAiAdvisory
-                  ? 'bg-amber-500 text-carbon-black'
+                  ? 'bg-amber-500 text-ap-on-sev'
                   : 'bg-white border border-carbon-20 text-carbon-70 hover:bg-carbon-05 hover:text-carbon-90'
               }`}
             >
@@ -869,13 +869,13 @@ export const DistrictBriefBody: React.FC = () => {
           <div className="bg-carbon-90 text-carbon-05 p-6 sm:p-8 border border-carbon-80 space-y-4 screen-only">
             <div className="flex items-center justify-between border-b border-carbon-80 pb-4">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 bg-amber-400/20 border border-amber-400/30 flex items-center justify-center text-amber-400">
+                <div className="w-8 h-8 bg-amber-400/20 border border-amber-400/30 flex items-center justify-center text-amber-700">
                   <Bot className="w-4 h-4" />
                 </div>
                 <div>
                   <h3 className="text-sm font-bold text-white flex items-center gap-2">
                     <span>Gemini 2.5 Dynamic Advisory Engine</span>
-                    <span className="px-2 py-0.5 rounded-sm bg-amber-400/20 text-amber-300 text-xs font-mono font-bold">ONLINE</span>
+                    <span className="px-2 py-0.5 rounded-sm bg-amber-400/20 text-amber-700 text-xs font-mono font-bold">ONLINE</span>
                   </h3>
                   <p className="text-xs text-carbon-60">Real-time LLM inference synthesizing localized meteorological & agrarian guidance.</p>
                 </div>
@@ -1278,7 +1278,7 @@ export const DistrictBriefBody: React.FC = () => {
       <section id="sec-ops" className="scroll-mt-[calc(var(--navbar-height)+8px)] space-y-4 pt-4 pagination-protected">
         <div className="flex items-center justify-between border-b border-carbon-20 pb-3">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 bg-carbon-05 border border-carbon-20 flex items-center justify-center text-ap-primary">
+            <div className="w-8 h-8 bg-carbon-05 border border-carbon-20 flex items-center justify-center text-ap-link">
               <Radio className="w-4 h-4" />
             </div>
             <div>
@@ -1293,7 +1293,7 @@ export const DistrictBriefBody: React.FC = () => {
           {/* Logistics Summary with Standardized Color Coding */}
           <div className="bg-white border border-carbon-20 p-6 space-y-4">
             <h3 className="text-sm font-bold text-carbon-90 flex items-center gap-2">
-              <Building2 className="w-4 h-4 text-ap-primary" />
+              <Building2 className="w-4 h-4 text-ap-link" />
               Emergency Relief & Resource Logistics
             </h3>
 
@@ -1342,7 +1342,7 @@ export const DistrictBriefBody: React.FC = () => {
               <div className="bg-carbon-05 p-4 border border-carbon-20/80 text-xs font-mono space-y-2">
                 <div className="flex justify-between items-center text-carbon-90 font-bold">
                   <span>Disaster Early Warning (BMD/FFWC):</span>
-                  <span className="text-ap-primary text-sm">1090 (Toll Free)</span>
+                  <span className="text-ap-link text-sm">1090 (Toll Free)</span>
                 </div>
                 <div className="flex justify-between items-center text-carbon-90 font-bold">
                   <span>National Emergency Police/Fire:</span>
@@ -1367,7 +1367,7 @@ export const DistrictBriefBody: React.FC = () => {
               <button
                 onClick={handleTriggerDispatch}
                 disabled={dispatchStatus === 'broadcasting'}
-                className="w-full py-3 px-4 bg-primary-strong hover:bg-primary active:bg-primary-strong text-white font-extrabold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                className="w-full py-3 px-4 bg-primary-strong hover:bg-primary active:bg-primary-strong text-ap-action-fg font-extrabold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
               >
                 <Radio className={`w-4 h-4 ${dispatchStatus === 'broadcasting' ? 'animate-spin' : ''}`} />
                 <span>
@@ -1416,7 +1416,7 @@ export const DistrictBriefBody: React.FC = () => {
 
         <div className="bg-white border border-carbon-20 p-6 space-y-4 text-xs font-sans">
           <h3 className="text-sm font-bold text-carbon-90 flex items-center gap-2">
-            <Bot className="w-4 h-4 text-ap-primary" />
+            <Bot className="w-4 h-4 text-ap-link" />
             What this brief reports
           </h3>
 

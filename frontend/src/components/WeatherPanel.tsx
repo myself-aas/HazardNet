@@ -284,25 +284,25 @@ export const WeatherPanel: React.FC<WeatherPanelProps> = ({
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 text-xs font-mono">
             <div className="p-2 rounded bg-white border border-carbon-20">
               <span className="text-xs text-carbon-60 uppercase block">Max Temp</span>
-              <span className="font-bold text-rose-600 dark:text-rose-400">
+              <span className="font-bold text-rose-600">
                 {forecast.temperature_max !== undefined ? `${forecast.temperature_max}°C` : '—'}
               </span>
             </div>
             <div className="p-2 rounded bg-white border border-carbon-20">
               <span className="text-xs text-carbon-60 uppercase block">Min Temp</span>
-              <span className="font-bold text-sky-600 dark:text-sky-400">
+              <span className="font-bold text-sky-600">
                 {forecast.temperature_min !== undefined ? `${forecast.temperature_min}°C` : '—'}
               </span>
             </div>
             <div className="p-2 rounded bg-white border border-carbon-20">
               <span className="text-xs text-carbon-60 uppercase block">Precipitation</span>
-              <span className="font-bold text-blue-600 dark:text-blue-400">
+              <span className="font-bold text-blue-600">
                 {forecast.precipitation_mm !== undefined ? `${forecast.precipitation_mm} mm` : '—'}
               </span>
             </div>
             <div className="p-2 rounded bg-white border border-carbon-20">
               <span className="text-xs text-carbon-60 uppercase block">Wind Speed</span>
-              <span className="font-bold text-teal-600 dark:text-teal-400">
+              <span className="font-bold text-teal-600">
                 {forecast.wind_max_kmh !== undefined ? `${forecast.wind_max_kmh} km/h` : '—'}
               </span>
             </div>
@@ -521,9 +521,9 @@ export const WeatherPanel: React.FC<WeatherPanelProps> = ({
                       </span>
                     </td>
                     <td className="py-2 px-3 text-right font-mono">
-                      <span className="text-rose-600 dark:text-rose-400">{c(d.temperature_2m_max)}</span>
+                      <span className="text-rose-600">{c(d.temperature_2m_max)}</span>
                       {' / '}
-                      <span className="text-sky-600 dark:text-sky-400">{c(d.temperature_2m_min)}</span>
+                      <span className="text-sky-600">{c(d.temperature_2m_min)}</span>
                     </td>
                     <td className="py-2 px-3 text-right font-mono text-xs">
                       {mm(d.precipitation_sum)}
