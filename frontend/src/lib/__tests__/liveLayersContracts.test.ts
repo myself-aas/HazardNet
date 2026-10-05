@@ -1,0 +1,58 @@
+/**
+ * Phase A contracts for the live-map layer table (2026-10-05).
+ *
+ * The layers panel, the attribution lightbox and the contract test all read one
+ * table. These pins keep that table honest: every row declares an icon and
+ * resolvable credits, the ground section is exactly two basemaps with distinct
+ * credit sets, and the registry never renders a blank licence.
+ */
+import { LIVE_LAYERS, LIVE_SECTIONS } from '../liveLayers';
+import { DATA_CREDITS, activeCredits } from '../dataCredits';
+
+describe('live-map layer table', () => {
+  it('keeps the section order ground, overlays, hazards', () => {
+    expect(LIVE_SECTIONS.map((s) => s.id)).toEqual(['ground', 'overlays', 'hazards']);
+  });
+
+  it('gives every row an icon and a section that exists', () => {
+    const sectionIds = LIVE_SECTIONS.map((s) => s.id);
+    for (const layer of LIVE_LAYERS) {
+      expect(layer.icon.length).toBeGreaterThan(0);
+      expect(sectionIds).toContain(layer.section);
+    }
+  });
+
+  it('resolves every credit id a row names', () => {
+    for (const layer of LIVE_LAYERS) {
+      for (const id of layer.creditIds) {
+        expect(DATA_CREDITS[id]).toBeDefined();
+      }
+    }
+  });
+
+  it('ships exactly two basemaps with distinct credit sets', () => {
+    const basemaps = LIVE_LAYERS.filter((l) => l.kind === 'basemap');
+    expect(basemaps).toHaveLength(2);
+    expect(basemaps[0].mapLayerKey).toBe('topoMap');
+    expect(basemaps[1].mapLayerKey).toBe('esriSatellite');
+    expect(basemaps[0].creditIds).not.toEqual(basemaps[1].creditIds);
+  });
+
+  it('names the licences a basemap switch must display', () => {
+    const topo = activeCredits(['osm', 'opentopomap']);
+    expect(topo.map((c) => c.label).join(' ')).toContain('OpenStreetMap');
+    expect(topo.map((c) => c.label).join(' ')).toContain('OpenTopoMap');
+    const esri = activeCredits(['esri']);
+    expect(esri[0].label).toContain('Esri');
+    expect(esri[0].label).toContain('Maxar');
+  });
+
+  it('never renders a credit without licence terms', () => {
+    for (const credit of Object.values(DATA_CREDITS)) {
+      expect(credit.href.length).toBeGreaterThan(0);
+      expect(credit.licence.length).toBeGreaterThan(0);
+    }
+    // Unknown ids drop out instead of rendering blank rows.
+    expect(activeCredits(['osm', 'no-such-source'])).toHaveLength(1);
+  });
+});

@@ -30,6 +30,8 @@ import {
 import { useMapSnapshot } from '../hooks/useMapSnapshot';
 import { useLiveDistricts } from '../hooks/useForecasts';
 import { type ForecastHorizon } from '../lib/forecasts';
+import { LIVE_LAYERS, LIVE_SECTIONS } from '../lib/liveLayers';
+import { activeCredits } from '../lib/dataCredits';
 
 export type { DistrictGeo, PathAnalysisResult, MapLayerKey };
 export const liveDistrictsData: DistrictGeo[] = ALL_64_DISTRICTS;
@@ -100,9 +102,13 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
   }, [compactHeader]);
 
   // Layer & Visual Controls
-  // One basemap, no picker: OpenStreetMap is the ground every HazardNet layer draws on
-  // (see MAP_LAYERS in hooks/useLeafletMap). It was a six-provider choice until 2026-10-05.
-  const activeLayer: MapLayerKey = 'topoMap';
+  // Ground choice (Phase B, 2026-10-05): street/topo by default, satellite on
+  // demand. Two grounds, one at a time, in the layers panel — not a toolbar
+  // picker of six. If the satellite provider stops answering this client the
+  // watchdog in useLeafletMap steps us back here automatically.
+  const [activeLayer, setActiveLayer] = useState<MapLayerKey>('topoMap');
+  const [isEsriUnavailable, setIsEsriUnavailable] = useState<boolean>(false);
+  const [isAttributionOpen, setIsAttributionOpen] = useState<boolean>(false);
   const [isHighContrastBoost, setIsHighContrastBoost] = useState<boolean>(true);
   const [isHeatmapActive, setIsHeatmapActive] = useState<boolean>(false);
   const [isRiverLayerActive, setIsRiverLayerActive] = useState<boolean>(true);
@@ -206,6 +212,12 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
       userProfile?.autoDetectLocationEnabled ??
       (localStorage.getItem('hazardnet_auto_detect_location') !== 'false'),
     lowBandwidth,
+    onBasemapDegraded: (layerKey) => {
+      if (layerKey !== 'esriSatellite') return;
+      setActiveLayer('topoMap');
+      setIsEsriUnavailable(true);
+      toast.error('Satellite imagery is not answering right now. Showing the street map instead.');
+    },
   });
 
   useEffect(() => {
@@ -240,6 +252,25 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
     .filter((h) => selectedHazards.includes(h.id))
     .map((h) => h.name)
     .join(', ') || 'Baseline Vector Boundaries';
+
+  // What the attribution lightbox lists: exactly the credits of what is on
+  // screen. The basemap credit follows the ground; the forecast credit appears
+  // only while an overlay that draws the forecast product is switched on.
+  const attributionCreditIds: string[] =
+    activeLayer === 'esriSatellite' ? ['esri'] : ['osm', 'opentopomap'];
+  if (isRiverLayerActive || isHeatmapActive || isClusteringActive) {
+    attributionCreditIds.push('forecasts');
+  }
+  const attributionList = activeCredits(attributionCreditIds);
+
+  // Overlay rows read the liveLayers table; this map binds each table row to
+  // the component state that actually drives the Leaflet layer.
+  const overlayToggles: Record<string, { value: boolean; set: (next: boolean) => void }> = {
+    'overlay-rivers': { value: isRiverLayerActive, set: setIsRiverLayerActive },
+    'overlay-heatmap': { value: isHeatmapActive, set: setIsHeatmapActive },
+    'overlay-cluster': { value: isClusteringActive, set: setIsClusteringActive },
+    'overlay-contrast': { value: isHighContrastBoost, set: setIsHighContrastBoost },
+  };
 
   const {
     generateMapSnapshot,
@@ -1409,119 +1440,215 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
           )}
           </AnimatePresence>
 
-          {/* Map layers — one list, one line per overlay. The panel this replaced
-              stacked six sections, including the offline tile store that bulk-downloaded
-              all of Bangladesh from OpenStreetMap's volunteer-run servers (deleted
-              2026-10-05 as the abuse named at osm.wiki/blocked) and a "Doppler radar"
-              toggle that drew hard-coded storm cells — data with no artifact behind it. */}
+          {/* Layer panel — one floating card, three flat sections: ground,
+              overlays, hazards. Rows are icon + name + one pill, never a box
+              inside a box. Ground is a two-way segmented control (street & topo,
+              satellite); the satellite ground steps back to the street map on
+              its own if Esri stops answering (see useLeafletMap watchdog).
+              Every source on screen names its credit in the attribution
+              lightbox. The panel this replaced stacked six sections, including
+              the offline tile store that bulk-downloaded all of Bangladesh from
+              OpenStreetMap's volunteer-run servers (deleted 2026-10-05 as the
+              abuse named at osm.wiki/blocked) and a "Doppler radar" toggle that
+              drew hard-coded storm cells — data with no artifact behind it. */}
           <AnimatePresence>
           {isLayerModalOpen && (
             <div className="fixed inset-0 z-[var(--z-modal)] bg-carbon-90/40 flex items-center justify-center p-4 pointer-events-auto">
               <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="bg-white p-4 sm:p-5 max-w-sm w-full border border-carbon-20 text-carbon-90 flex flex-col gap-3"
+                initial={{ opacity: 0, scale: 0.97 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.97 }}
+                transition={{ duration: 0.18 }}
+                className="w-full max-w-sm rounded-[20px] bg-white dark:bg-carbon-90 border border-carbon-20 dark:border-carbon-80 shadow-[0_24px_60px_-16px_rgba(0,0,0,0.30)] p-5 sm:p-6 flex flex-col gap-5 max-h-[85vh] overflow-y-auto"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="map-layers-title"
               >
                 <div className="flex items-center justify-between gap-2">
-                  <h3 id="map-layers-title" className="text-base font-bold tracking-tight">Map layers</h3>
+                  <h3 id="map-layers-title" className="text-lg font-bold tracking-tight text-carbon-90 dark:text-white">Map layers</h3>
                   <button
                     type="button"
                     onClick={() => setIsLayerModalOpen(false)}
-                    className="tap-target w-11 h-11 rounded-control bg-carbon-05 text-carbon-70 flex items-center justify-center"
+                    className="tap-target w-11 h-11 rounded-full bg-carbon-10 hover:bg-carbon-20 dark:bg-carbon-80 dark:hover:bg-carbon-70 text-carbon-60 dark:text-carbon-30 flex items-center justify-center transition-colors"
                     aria-label="Close map layers"
                   >
                     <MaterialIcon name="close" className="w-5 h-5" />
                   </button>
                 </div>
-                <p className="text-xs leading-[1.62] text-carbon-60">
-                  The basemap is OpenTopoMap, built from OpenStreetMap data. These overlays draw HazardNet data on top of it.
-                </p>
 
-                <ul className="flex flex-col gap-1.5" role="group" aria-labelledby="map-layers-title">
-                  <li className="flex items-center justify-between gap-3 p-3 bg-carbon-05 border border-carbon-20">
-                    <span className="flex items-center gap-2 text-sm font-semibold text-carbon-80">
-                      <MaterialIcon name="water" className="w-4 h-4 text-carbon-60" />
-                      River basins
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => setIsRiverLayerActive(!isRiverLayerActive)}
-                      aria-pressed={isRiverLayerActive}
-                      className={`min-h-[44px] min-w-[64px] px-3 rounded-full text-xs font-bold transition-colors ${
-                        isRiverLayerActive ? 'bg-nasa-blue text-white' : 'bg-carbon-20 text-carbon-70'
-                      }`}
-                    >
-                      {isRiverLayerActive ? 'On' : 'Off'}
-                    </button>
-                  </li>
-                  <li className="flex items-center justify-between gap-3 p-3 bg-carbon-05 border border-carbon-20">
-                    <span className="flex items-center gap-2 text-sm font-semibold text-carbon-80">
-                      <MaterialIcon name="local_fire_department" className="w-4 h-4 text-carbon-60" />
-                      Hazard heatmap
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => setIsHeatmapActive(!isHeatmapActive)}
-                      aria-pressed={isHeatmapActive}
-                      className={`min-h-[44px] min-w-[64px] px-3 rounded-full text-xs font-bold transition-colors ${
-                        isHeatmapActive ? 'bg-nasa-blue text-white' : 'bg-carbon-20 text-carbon-70'
-                      }`}
-                    >
-                      {isHeatmapActive ? 'On' : 'Off'}
-                    </button>
-                  </li>
-                  <li className="flex items-center justify-between gap-3 p-3 bg-carbon-05 border border-carbon-20">
-                    <span className="flex items-center gap-2 text-sm font-semibold text-carbon-80">
-                      <MaterialIcon name="location_city" className="w-4 h-4 text-carbon-60" />
-                      Cluster district markers
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => setIsClusteringActive(!isClusteringActive)}
-                      aria-pressed={isClusteringActive}
-                      className={`min-h-[44px] min-w-[64px] px-3 rounded-full text-xs font-bold transition-colors ${
-                        isClusteringActive ? 'bg-nasa-blue text-white' : 'bg-carbon-20 text-carbon-70'
-                      }`}
-                    >
-                      {isClusteringActive ? 'On' : 'Off'}
-                    </button>
-                  </li>
-                  <li className="flex items-center justify-between gap-3 p-3 bg-carbon-05 border border-carbon-20">
-                    <span className="flex items-center gap-2 text-sm font-semibold text-carbon-80">
-                      <MaterialIcon name="bolt" className="w-4 h-4 text-carbon-60" />
-                      High-contrast basemap
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => setIsHighContrastBoost(!isHighContrastBoost)}
-                      aria-pressed={isHighContrastBoost}
-                      className={`min-h-[44px] min-w-[64px] px-3 rounded-full text-xs font-bold transition-colors ${
-                        isHighContrastBoost ? 'bg-carbon-90 text-white' : 'bg-carbon-20 text-carbon-70'
-                      }`}
-                    >
-                      {isHighContrastBoost ? 'On' : 'Off'}
-                    </button>
-                  </li>
-                </ul>
-
-                <div className="flex items-center justify-between text-xs text-carbon-60 border-t border-carbon-10 pt-2">
-                  <span>Basemap</span>
-                  <span className="font-semibold text-carbon-80">OpenTopoMap (OSM data)</span>
+                {/* Ground: two basemaps, one at a time. */}
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-carbon-50 dark:text-carbon-40 mb-2.5">
+                    {LIVE_SECTIONS[0].label}
+                  </p>
+                  <div className="flex gap-1 rounded-full bg-carbon-10 dark:bg-carbon-80 p-1" role="radiogroup" aria-label="Basemap">
+                    {LIVE_LAYERS.filter((l) => l.kind === 'basemap').map((def) => {
+                      const isSelected = activeLayer === def.mapLayerKey;
+                      const isDisabled = def.mapLayerKey === 'esriSatellite' && isEsriUnavailable;
+                      return (
+                        <button
+                          key={def.id}
+                          type="button"
+                          role="radio"
+                          aria-checked={isSelected}
+                          disabled={isDisabled}
+                          onClick={() => def.mapLayerKey && setActiveLayer(def.mapLayerKey)}
+                          className={`flex-1 min-h-[44px] rounded-full px-3 text-sm font-semibold flex items-center justify-center gap-1.5 transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
+                            isSelected
+                              ? 'bg-carbon-90 text-white dark:bg-white dark:text-carbon-90 shadow-sm'
+                              : 'text-carbon-60 dark:text-carbon-30 hover:text-carbon-90 dark:hover:text-white'
+                          }`}
+                          title={isDisabled ? 'Satellite tiles are not answering right now' : def.name}
+                        >
+                          <MaterialIcon name={def.icon} className="w-4 h-4" />
+                          {def.name}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setIsLayerModalOpen(false)}
-                  className="w-full min-h-[44px] py-2.5 bg-carbon-90 hover:bg-carbon-80 text-white font-bold text-xs"
-                >
-                  Done
-                </button>
+
+                {/* Overlays: flat rows, icon + name + one On/Off pill each. */}
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-carbon-50 dark:text-carbon-40 mb-1.5">
+                    {LIVE_SECTIONS[1].label}
+                  </p>
+                  <ul className="flex flex-col" role="group" aria-labelledby="map-layers-title">
+                    {LIVE_LAYERS.filter((l) => l.section === 'overlays').map((def) => {
+                      const toggle = overlayToggles[def.id];
+                      return (
+                        <li key={def.id} className="flex items-center justify-between gap-3 py-2.5 min-h-[52px]">
+                          <span className="flex items-center gap-3 text-[15px] font-semibold text-carbon-80 dark:text-carbon-10">
+                            <MaterialIcon name={def.icon} className="w-5 h-5 text-carbon-50 dark:text-carbon-40" />
+                            {def.name}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => toggle.set(!toggle.value)}
+                            aria-pressed={toggle.value}
+                            className={`min-h-[40px] px-4 rounded-full text-xs font-bold uppercase tracking-wide transition-colors ${
+                              toggle.value
+                                ? 'bg-carbon-90 text-white dark:bg-white dark:text-carbon-90'
+                                : 'bg-carbon-10 text-carbon-50 dark:bg-carbon-80 dark:text-carbon-40'
+                            }`}
+                          >
+                            {toggle.value ? 'On' : 'Off'}
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+
+                {/* Hazards: hairline chips, colored dot + name. A chip is on while
+                    its hazard type is in the marker filter. */}
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-carbon-50 dark:text-carbon-40 mb-2.5">
+                    {LIVE_SECTIONS[2].label}
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {HAZARD_LAYERS.map((h) => {
+                      const isOn = selectedHazards.includes(h.id);
+                      return (
+                        <button
+                          key={h.id}
+                          type="button"
+                          aria-pressed={isOn}
+                          onClick={() =>
+                            setSelectedHazards((prev) =>
+                              prev.includes(h.id) ? prev.filter((id) => id !== h.id) : [...prev, h.id]
+                            )
+                          }
+                          className={`min-h-[40px] px-3.5 rounded-full border text-sm font-semibold flex items-center gap-2 transition-colors ${
+                            isOn
+                              ? 'border-carbon-30 dark:border-carbon-60 text-carbon-90 dark:text-white'
+                              : 'border-carbon-20 dark:border-carbon-80 text-carbon-40 dark:text-carbon-50'
+                          }`}
+                        >
+                          <span
+                            className="w-2.5 h-2.5 rounded-full"
+                            style={{ backgroundColor: h.color, opacity: isOn ? 1 : 0.35 }}
+                          />
+                          {h.name}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Footer: attribution entry on the left, high-contrast Done pill on the right. */}
+                <div className="flex items-center justify-between gap-3 border-t border-carbon-10 dark:border-carbon-80 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setIsAttributionOpen(true)}
+                    className="min-h-[44px] px-1 flex items-center gap-1.5 text-xs font-medium text-carbon-50 dark:text-carbon-40 hover:text-carbon-90 dark:hover:text-white transition-colors"
+                  >
+                    <MaterialIcon name="info" className="w-4 h-4" />
+                    Data attribution ({attributionList.length})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsLayerModalOpen(false)}
+                    className="min-h-[44px] px-6 rounded-full bg-carbon-90 hover:bg-carbon-80 dark:bg-white dark:hover:bg-carbon-10 dark:text-carbon-90 text-white text-sm font-bold transition-colors"
+                  >
+                    Done
+                  </button>
+                </div>
               </motion.div>
             </div>
           )}
           </AnimatePresence>
 
-          {/* Bottom-Center Floating Clear Search & Inspect Pill */}
+          {/* Data attribution lightbox: exactly the credits of what is on screen,
+              each with its licence and a pointer to the provider's terms. */}
+          <AnimatePresence>
+          {isAttributionOpen && (
+            <div className="fixed inset-0 z-[var(--z-modal)] bg-carbon-90/50 flex items-center justify-center p-4 pointer-events-auto">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.97 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.97 }}
+                transition={{ duration: 0.18 }}
+                className="w-full max-w-sm rounded-[20px] bg-white dark:bg-carbon-90 border border-carbon-20 dark:border-carbon-80 shadow-[0_24px_60px_-16px_rgba(0,0,0,0.35)] p-5 sm:p-6 flex flex-col gap-4"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="data-attribution-title"
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <h3 id="data-attribution-title" className="text-lg font-bold tracking-tight text-carbon-90 dark:text-white">Data attribution</h3>
+                  <button
+                    type="button"
+                    onClick={() => setIsAttributionOpen(false)}
+                    className="tap-target w-11 h-11 rounded-full bg-carbon-10 hover:bg-carbon-20 dark:bg-carbon-80 dark:hover:bg-carbon-70 text-carbon-60 dark:text-carbon-30 flex items-center justify-center transition-colors"
+                    aria-label="Close data attribution"
+                  >
+                    <MaterialIcon name="close" className="w-5 h-5" />
+                  </button>
+                </div>
+                <ul className="flex flex-col gap-4">
+                  {attributionList.map((credit) => (
+                    <li key={credit.id} className="flex flex-col gap-1">
+                      <p className="text-sm font-semibold text-carbon-80 dark:text-carbon-10">{credit.label}</p>
+                      <p className="text-xs text-carbon-50 dark:text-carbon-40">
+                        {credit.licence} ·{' '}
+                        <a
+                          href={credit.href}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="underline underline-offset-2 hover:text-carbon-90 dark:hover:text-white"
+                        >
+                          source terms
+                        </a>
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+              </motion.div>
+            </div>
+          )}
+          </AnimatePresence>
+
+                    {/* Bottom-Center Floating Clear Search & Inspect Pill */}
           <AnimatePresence>
           {(searchQuery || inspectedPoint || measurePoints.length > 0) && (
             <motion.div
@@ -1565,7 +1692,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
               title="Filters"
               aria-label="Open district and hazard filters"
             >
-              <MaterialIcon name="filter_alt" className="w-5 h-5" />
+              <MaterialIcon name="tune" className="w-5 h-5" />
             </button>
             <button
               type="button"

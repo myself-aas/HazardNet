@@ -26,6 +26,12 @@ export const MAP_LAYERS = {
     attribution: 'Map data &copy; OpenStreetMap contributors, SRTM · Map style &copy; OpenTopoMap (CC-BY-SA) · map lines delineate study areas and do not necessarily depict accepted national boundaries',
     maxZoom: 17,
   },
+  esriSatellite: {
+    name: 'Esri World Imagery (satellite)',
+    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    attribution: 'Powered by Esri &mdash; Source: Esri, Maxar, Earthstar Geographics and the GIS User Community',
+    maxZoom: 18,
+  },
 };
 
 export type MapLayerKey = keyof typeof MAP_LAYERS;
@@ -56,6 +62,13 @@ export interface UseLeafletMapOptions {
   /** Low-bandwidth mode (Phase 5). With the single OSM basemap there is no heavier
       provider to fall back from; the flag stays in the contract for the overlays. */
   lowBandwidth?: boolean;
+  /**
+   * Phase B (2026-10-05): fired when a basemap's tiles stop arriving (a run of
+   * tile errors with no successful load). LiveMapView uses it to step the
+   * satellite ground back to the street map and tell the user why. The hook
+   * never switches layers itself; the component owns that state.
+   */
+  onBasemapDegraded?: (layerKey: MapLayerKey) => void;
 }
 
 export function useLeafletMap(
@@ -64,6 +77,8 @@ export function useLeafletMap(
   options: UseLeafletMapOptions = {}
 ) {
   const { onMapClick, onAutoLocateDistrict, autoLocateEnabled = true, lowBandwidth = false } = options;
+  const onBasemapDegradedRef = useRef(options.onBasemapDegraded);
+  onBasemapDegradedRef.current = options.onBasemapDegraded;
 
   const mapInstanceRef = useRef<L.Map | null>(null);
   const tileLayerRef = useRef<L.TileLayer | null>(null);
@@ -336,6 +351,25 @@ export function useLeafletMap(
       (newTileLayer as any).bringToBack();
     }
     tileLayerRef.current = newTileLayer;
+
+    // Degraded-tile watchdog: a run of tile errors with no successful load means
+    // the provider is not answering this client (an outage or an IP block). Eight
+    // consecutive failures is the threshold; a single clean load resets it.
+    let errors = 0;
+    let degraded = false;
+    const onTileError = () => {
+      if (degraded) return;
+      errors += 1;
+      if (errors >= 8) {
+        degraded = true;
+        onBasemapDegradedRef.current?.(baseLayerKey);
+      }
+    };
+    const onTilesLoad = () => {
+      errors = 0;
+    };
+    newTileLayer.on('tileerror', onTileError);
+    newTileLayer.on('load', onTilesLoad);
 
     const timer = setTimeout(() => {
       setIsProcessingData(false);
