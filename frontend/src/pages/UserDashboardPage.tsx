@@ -55,7 +55,7 @@ const PublicProfilePreview: React.FC = () => {
       actions={
         <Link
           to={profilePath(username)}
-          className="inline-flex min-h-[44px] items-center bg-primary px-4 py-2 text-base font-semibold text-ap-action-fg hover:bg-primary touch-manipulation"
+          className="inline-flex min-h-[44px] items-center bg-primary px-4 py-2 text-base font-semibold text-ap-action-fg hover:bg-primary-strong touch-manipulation"
         >
           Open live page
         </Link>
@@ -194,7 +194,7 @@ const UserDashboardPage: React.FC = () => {
           <button
             type="button"
             onClick={() => { void ensureProfile(); }}
-            className="inline-flex min-h-[44px] items-center bg-primary-strong px-4 py-2 text-base font-semibold text-ap-action-fg hover:bg-primary cursor-pointer touch-manipulation"
+            className="inline-flex min-h-[44px] items-center bg-primary px-4 py-2 text-base font-semibold text-ap-action-fg hover:bg-primary-strong cursor-pointer touch-manipulation"
           >
             Create my profile
           </button>
@@ -249,7 +249,7 @@ const UserDashboardPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => navigate('/forecast/overview')}
-                className="inline-flex min-h-[44px] items-center bg-primary-strong px-4 py-2 text-base font-semibold text-ap-action-fg hover:bg-primary cursor-pointer touch-manipulation"
+                className="inline-flex min-h-[44px] items-center bg-primary px-4 py-2 text-base font-semibold text-ap-action-fg hover:bg-primary-strong cursor-pointer touch-manipulation"
               >
                 Open forecasts
               </button>

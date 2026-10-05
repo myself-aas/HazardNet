@@ -153,7 +153,7 @@ const LoginPage: React.FC = () => {
           id="login-page-submit-btn"
           type="submit"
           disabled={loading || !email.trim() || !password}
-          className="flex min-h-[44px] w-full cursor-pointer items-center justify-center gap-2 bg-primary-strong px-6 py-3 text-base font-semibold text-ap-action-fg hover:bg-primary disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ap-primary/60 focus-visible:ring-offset-2 touch-manipulation"
+          className="flex min-h-[44px] w-full cursor-pointer items-center justify-center gap-2 bg-primary px-6 py-3 text-base font-semibold text-ap-action-fg hover:bg-primary-strong disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ap-primary/60 focus-visible:ring-offset-2 touch-manipulation"
         >
           {loading ? (
             <>

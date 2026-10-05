@@ -1065,7 +1065,7 @@ html[data-map-debug-fx='true'] .marker-high-risk {
   --color-body: var(--ap-label);
   --color-popover-foreground: var(--ap-label);
   --color-primary: var(--ap-action);
-  --color-primary-strong: var(--ap-action);
+  --color-primary-strong: var(--ap-action-hover);
   --color-muted-foreground: var(--ap-label-secondary);
   --color-accent: var(--ap-bg-grouped);
   --color-accent-foreground: var(--ap-label);

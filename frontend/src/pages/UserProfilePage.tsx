@@ -748,7 +748,7 @@ export const UserProfilePage: React.FC = () => {
             <button
               type="submit"
               disabled={isSaving}
-              className="inline-flex min-h-[44px] items-center px-6 py-2 bg-primary hover:bg-primary text-ap-action-fg font-semibold text-base disabled:opacity-50 cursor-pointer touch-manipulation"
+              className="inline-flex min-h-[44px] items-center px-6 py-2 bg-primary hover:bg-primary-strong text-ap-action-fg font-semibold text-base disabled:opacity-50 cursor-pointer touch-manipulation"
             >
               {isSaving ? 'Saving to Firestore...' : 'Save Profile Changes'}
             </button>

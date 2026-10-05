@@ -159,7 +159,7 @@ export const MapToolbar: React.FC<MapToolbarProps> = ({
             type="button"
             onClick={onExport}
             disabled={exporting}
-            className="min-h-[44px] px-4 py-2 bg-primary hover:bg-primary text-ap-action-fg text-xs font-semibold flex items-center gap-2 touch-manipulation disabled:opacity-50 rounded-full transition-colors"
+            className="min-h-[44px] px-4 py-2 bg-primary hover:bg-primary-strong text-ap-action-fg text-xs font-semibold flex items-center gap-2 touch-manipulation disabled:opacity-50 rounded-full transition-colors"
             title="Export visible map as an image"
           >
             <MaterialIcon name="photo_camera" className="w-4 h-4" />

@@ -32,7 +32,7 @@ export const NotFoundPage: React.FC = () => {
         <div className="flex flex-col sm:flex-row gap-2 pt-2">
           <Link
             to="/"
-            className="inline-flex min-h-[44px] flex-1 items-center justify-center bg-primary-strong px-6 py-3 text-base font-semibold text-ap-action-fg hover:bg-primary touch-manipulation"
+            className="inline-flex min-h-[44px] flex-1 items-center justify-center bg-primary px-6 py-3 text-base font-semibold text-ap-action-fg hover:bg-primary-strong touch-manipulation"
           >
             Home
           </Link>

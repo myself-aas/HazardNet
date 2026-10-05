@@ -183,7 +183,7 @@ export default function ChatBot() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 8 }}
               transition={{ duration: reduceMotion ? 0 : 0.18, ease: 'easeOut' }}
-              className="flex h-14 w-14 items-center justify-center rounded-full border border-white/30 bg-primary text-ap-action-fg shadow-lg transition-colors hover:bg-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-ap-primary focus-visible:ring-offset-2"
+              className="flex h-14 w-14 items-center justify-center rounded-full border border-white/30 bg-primary text-ap-action-fg shadow-lg transition-colors hover:bg-primary-strong focus:outline-none focus-visible:ring-2 focus-visible:ring-ap-primary focus-visible:ring-offset-2"
               aria-label="Open AI Advisor chat"
               aria-haspopup="dialog"
             >
@@ -494,7 +494,7 @@ export default function ChatBot() {
                       <button
                         type="submit"
                         disabled={!input.trim() || loading}
-                        className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-lg bg-primary text-ap-action-fg transition-colors hover:bg-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ap-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-40"
+                        className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-lg bg-primary text-ap-action-fg transition-colors hover:bg-primary-strong focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ap-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-40"
                         aria-label="Send message"
                         title="Send message"
                       >

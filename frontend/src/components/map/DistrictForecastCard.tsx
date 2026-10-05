@@ -249,7 +249,7 @@ export const DistrictForecastCard: React.FC<DistrictForecastCardProps> = ({
         <button
           type="button"
           onClick={() => onOpenAnalytics(district.id)}
-          className="w-full min-h-[44px] py-3 bg-primary hover:bg-primary text-ap-action-fg font-semibold text-base flex items-center justify-center gap-2 touch-manipulation rounded-full"
+          className="w-full min-h-[44px] py-3 bg-primary hover:bg-primary-strong text-ap-action-fg font-semibold text-base flex items-center justify-center gap-2 touch-manipulation rounded-full"
         >
           <MaterialIcon name="analytics" className="w-4 h-4" />
           View Detailed Disaster Analytics

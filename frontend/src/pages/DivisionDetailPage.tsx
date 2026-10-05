@@ -148,7 +148,7 @@ export const DivisionDetailPage: React.FC = () => {
           <p className="text-xs text-carbon-60 mt-2">{error || 'Division data not found.'}</p>
           <Link
             to="/divisions"
-            className="mt-5 inline-flex min-h-[44px] items-center px-4 bg-primary text-ap-action-fg text-sm font-semibold hover:bg-primary"
+            className="mt-5 inline-flex min-h-[44px] items-center px-4 bg-primary text-ap-action-fg text-sm font-semibold hover:bg-primary-strong"
           >
             Back to Divisions
           </Link>

@@ -256,7 +256,7 @@ export const SaveBar: React.FC<{
           type="button"
           onClick={onSave}
           disabled={!dirty || saving}
-          className="inline-flex min-h-[44px] items-center gap-2 bg-primary px-6 py-2 text-base font-semibold text-ap-action-fg hover:bg-primary disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer touch-manipulation"
+          className="inline-flex min-h-[44px] items-center gap-2 bg-primary px-6 py-2 text-base font-semibold text-ap-action-fg hover:bg-primary-strong disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer touch-manipulation"
         >
           {saving && <span className="h-3 w-3 animate-spin rounded-full border-2 border-white/40 border-t-white" />}
           {saving ? 'Saving…' : label}

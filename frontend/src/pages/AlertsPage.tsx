@@ -156,7 +156,7 @@ export const AlertsPage: React.FC = () => {
           <button
             type="button"
             onClick={data.refresh}
-            className="inline-flex min-h-[44px] items-center gap-1 border border-carbon-20 bg-primary px-3 py-2 font-semibold text-ap-action-fg hover:bg-primary touch-manipulation"
+            className="inline-flex min-h-[44px] items-center gap-1 border border-carbon-20 bg-primary px-3 py-2 font-semibold text-ap-action-fg transition-colors hover:bg-primary-strong touch-manipulation"
           >
             <MaterialIcon name="refresh" className="text-sm" aria-hidden="true" />
             {t('alerts.page.refresh')}
@@ -196,8 +196,8 @@ export const AlertsPage: React.FC = () => {
 
       {/* List first in the DOM (mobile). CSS order puts the map first on desktop. */}
       <div className="mt-6 flex flex-col">
-{/* Filters + list/table */}
-      <section className="order-1 mt-8 lg:order-2" aria-labelledby="alerts-list-heading">
+        {/* Filters + list/table */}
+        <section className="order-1 mt-8 lg:order-2" aria-labelledby="alerts-list-heading">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
           <h2 id="alerts-list-heading" className="text-base font-bold text-carbon-90">
             {t('alerts.page.listTitle')}
@@ -297,21 +297,19 @@ export const AlertsPage: React.FC = () => {
         )}
       </section>
 
-<section className="order-2 mt-8 lg:order-1 lg:mt-0" aria-labelledby="alerts-map-heading">
+        {/* Map. CSS order lifts it above the list on desktop. */}
+        <section className="order-2 mt-8 lg:order-1 lg:mt-0" aria-labelledby="alerts-map-heading">
         <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
           <h2 id="alerts-map-heading" className="text-base font-bold text-carbon-90">
             {t('alerts.page.mapTitle')}
           </h2>
-          <AlertLevelLegend
-            levels={ALERT_LEVELS.map((level) => ({
-              level,
-              label: t(`alerts.level.${level}`),
-              description: t(`alerts.level.${level}.desc`),
-            }))}
-          />
+          {/* The alert-level key lives in the map card's own legend slot,
+              directly under the thing it decodes. It used to be rendered here
+              as well, which gave the page two identical keys and made a screen
+              reader announce the whole scale twice. */}
         </div>
-        <div className="h-[240px] overflow-hidden border border-carbon-20 lg:h-[320px]">
-        <BangladeshSvgMap
+        <div className="overflow-hidden rounded-2xl border border-carbon-20">
+          <BangladeshSvgMap
           lowBandwidth={lowBandwidth}
           alertLevels={alertLayers}
           alertLevelLabels={levelLabels}

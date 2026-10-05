@@ -145,7 +145,7 @@ export default function AuthCallbackPage() {
         </p>
         <Link
           to={returnTo && returnTo.startsWith('/') ? returnTo : '/'}
-          className="inline-flex min-h-[44px] items-center bg-primary-strong px-6 py-3 text-base font-semibold text-ap-action-fg hover:bg-primary"
+          className="inline-flex min-h-[44px] items-center bg-primary px-6 py-3 text-base font-semibold text-ap-action-fg hover:bg-primary-strong"
         >
           Continue now
         </Link>

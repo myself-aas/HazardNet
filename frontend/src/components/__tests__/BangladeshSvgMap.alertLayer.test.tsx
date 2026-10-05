@@ -13,7 +13,7 @@ import '@testing-library/jest-dom';
  *      focusable.
  */
 
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { BangladeshSvgMap } from '../BangladeshSvgMap';
 
 const baseProps = { onSelectDistrict: jest.fn() };
@@ -50,11 +50,67 @@ describe('BangladeshSvgMap alert layer', () => {
     expect(withAlerts[0]).toMatch(/Sunamganj/);
   });
 
-  it('keeps markers keyboard-reachable', () => {
-    render(<BangladeshSvgMap {...baseProps} alertLevels={{ sunamganj: 'WATCH' }} lowBandwidth />);
-    const sunamganj = markers().find((node) => (node.getAttribute('aria-label') || '').startsWith('Sunamganj'));
-    expect(sunamganj).toHaveAttribute('tabindex', '0');
-    expect(sunamganj).toHaveAttribute('role', 'button');
+  /**
+   * The map is a composite widget with a ROVING tabindex, so "reachable" is
+   * not "every marker is a tab stop" — that version of this test passed while
+   * the map put 72 stops in the page's tab order, which is the bug the roving
+   * pattern fixes. The contract is: exactly one stop into the widget, arrow
+   * keys move inside it, and every marker keeps its name and role.
+   */
+  it('takes a single tab stop for the whole map', () => {
+    const { container } = render(
+      <BangladeshSvgMap {...baseProps} alertLevels={{ sunamganj: 'WATCH' }} lowBandwidth />,
+    );
+    const districts = Array.from(container.querySelectorAll('g[role="button"]')).filter((n) =>
+      (n.getAttribute('aria-label') || '').includes('District'),
+    );
+    expect(districts.length).toBeGreaterThanOrEqual(64);
+    expect(districts.filter((n) => n.getAttribute('tabindex') === '0')).toHaveLength(1);
+    expect(districts.every((n) => n.getAttribute('aria-label'))).toBe(true);
+  });
+
+  it('moves the active marker with the arrow keys, and every marker can become it', () => {
+    const { container } = render(<BangladeshSvgMap {...baseProps} lowBandwidth />);
+    const districts = () =>
+      Array.from(container.querySelectorAll('g[role="button"]')).filter((n) =>
+        (n.getAttribute('aria-label') || '').includes('District'),
+      );
+    const activeIndex = () => districts().findIndex((n) => n.getAttribute('tabindex') === '0');
+
+    expect(activeIndex()).toBe(0);
+    fireEvent.keyDown(districts()[0], { key: 'ArrowRight' });
+    expect(activeIndex()).toBe(1);
+    fireEvent.keyDown(districts()[1], { key: 'ArrowLeft' });
+    expect(activeIndex()).toBe(0);
+    fireEvent.keyDown(districts()[0], { key: 'End' });
+    expect(activeIndex()).toBe(districts().length - 1);
+    fireEvent.keyDown(districts()[districts().length - 1], { key: 'Home' });
+    expect(activeIndex()).toBe(0);
+  });
+
+  it('activates the focused marker with Enter and Space', () => {
+    const onSelectDistrict = jest.fn();
+    const { container } = render(
+      <BangladeshSvgMap onSelectDistrict={onSelectDistrict} lowBandwidth />,
+    );
+    const first = container.querySelector('g[role="button"][tabindex="0"]')!;
+    fireEvent.keyDown(first, { key: 'Enter' });
+    fireEvent.keyDown(first, { key: ' ' });
+    expect(onSelectDistrict).toHaveBeenCalledTimes(2);
+  });
+
+  it('gives every district a target at or above the 24px WCAG 2.5.8 floor', () => {
+    // The painted marker is r=1.4 user units. The transparent hit circle is the
+    // thing a finger actually lands on, so it is what has to clear the floor.
+    const { container } = render(<BangladeshSvgMap {...baseProps} lowBandwidth />);
+    const groups = Array.from(container.querySelectorAll('g[role="button"]')).filter((n) =>
+      (n.getAttribute('aria-label') || '').includes('District'),
+    );
+    for (const g of groups) {
+      const hit = g.querySelector('circle[fill="transparent"]');
+      expect(hit).not.toBeNull();
+      expect(Number(hit!.getAttribute('r'))).toBeGreaterThanOrEqual(3.5);
+    }
   });
 
   it('says how many districts carry an alert', () => {

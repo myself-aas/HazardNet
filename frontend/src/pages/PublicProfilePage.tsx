@@ -191,7 +191,7 @@ const PublicProfilePage: React.FC = () => {
           </p>
           <Link
             to="/signup"
-            className="mt-5 inline-flex min-h-[44px] items-center bg-primary-strong px-5 py-3 text-base font-semibold text-ap-action-fg hover:bg-primary touch-manipulation"
+            className="mt-5 inline-flex min-h-[44px] items-center bg-primary px-5 py-3 text-base font-semibold text-ap-action-fg hover:bg-primary-strong touch-manipulation"
           >
             Claim this username
           </Link>

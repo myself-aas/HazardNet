@@ -200,7 +200,7 @@ export const GroundingIntelligencePanel: React.FC<GroundingIntelligencePanelProp
           <button
             type="submit"
             disabled={!customQuery.trim() || queryLoading}
-            className="px-4 py-2 bg-primary hover:bg-primary disabled:opacity-40 text-ap-action-fg text-xs font-semibold rounded-xl flex items-center gap-1 cursor-pointer transition-colors"
+            className="px-4 py-2 bg-primary hover:bg-primary-strong disabled:opacity-40 text-ap-action-fg text-xs font-semibold rounded-xl flex items-center gap-1 cursor-pointer transition-colors"
           >
             {queryLoading ? (
               <RefreshCw className="w-3.5 h-3.5 animate-spin" />

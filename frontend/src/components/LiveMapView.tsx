@@ -1648,7 +1648,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                       setIsMeasuring(false);
                       setMeasurePoints([]);
                     }}
-                    className="min-h-[44px] px-3 py-1.5 bg-primary-strong hover:bg-primary text-ap-action-fg font-semibold text-xs"
+                    className="min-h-[44px] px-3 py-1.5 bg-primary hover:bg-primary-strong text-ap-action-fg font-semibold text-xs"
                   >
                     Exit Ruler
                   </button>
@@ -2511,7 +2511,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
               onClick={handleCenterOnUserLocation}
               className={`tap-target w-12 h-12 border flex items-center justify-center rounded-full shadow-md transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ap-primary ${
                 userGpsPos
-                  ? 'bg-primary text-ap-action-fg border-ap-primary hover:bg-primary'
+                  ? 'bg-primary text-ap-action-fg border-ap-primary hover:bg-primary-strong'
                   : 'bg-white hover:bg-carbon-05 border-carbon-20 text-carbon-80'
               }`}
               title="Center the map on my location"

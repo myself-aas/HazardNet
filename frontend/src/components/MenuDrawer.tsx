@@ -293,7 +293,7 @@ export const MenuDrawer: React.FC<MenuDrawerProps> = ({
                 to="/login"
                 data-testid="drawer-signin-link"
                 onClick={onClose}
-                className="inline-flex min-h-[48px] items-center justify-center rounded-xl bg-primary text-ap-caption font-semibold text-ap-action-fg no-underline transition-colors duration-150 hover:bg-primary touch-manipulation"
+                className="inline-flex min-h-[48px] items-center justify-center rounded-xl bg-primary text-ap-caption font-semibold text-ap-action-fg no-underline transition-colors duration-150 hover:bg-primary-strong touch-manipulation"
               >
                 Sign in
               </Link>

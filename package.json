@@ -40,7 +40,7 @@
     "build:frontend:copy": "npm run build",
     "build:events-summary": "node scripts/build_climatic_hazards_summary.mjs",
     "check:events-summary": "node scripts/build_climatic_hazards_summary.mjs --check",
-    "check:device": "npm run check:tokens && npm run check:prose && npm run icons:check && npm run check:events-summary && npm run check:important && npm run check:contrast && npm run check:contrast:css && npm run check:residue",
+    "check:device": "npm run check:tokens && npm run check:prose && npm run icons:check && npm run check:events-summary && npm run check:important && npm run check:contrast && npm run check:contrast:css && npm run check:residue && npm run check:svg-tokens",
     "lint": "tsc -p frontend/tsconfig.json --noEmit",
     "test": "jest --passWithNoTests",
     "lint:eslint": "eslint . --max-warnings 685",
@@ -72,7 +72,9 @@
     "check:contrast:report": "node scripts/check-contrast.mjs --report",
     "check:contrast:css": "node scripts/check-contrast.mjs --check-css",
     "check:residue": "node scripts/check-design-residue.mjs",
-    "check:residue:report": "node scripts/check-design-residue.mjs --report"
+    "check:residue:report": "node scripts/check-design-residue.mjs --report",
+    "check:svg-tokens": "node scripts/check-svg-tokens.mjs",
+    "check:svg-tokens:report": "node scripts/check-svg-tokens.mjs --report"
   },
   "dependencies": {
     "@google-cloud/firestore": "^7.11.6",

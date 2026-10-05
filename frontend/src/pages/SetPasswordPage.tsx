@@ -204,7 +204,7 @@ export default function SetPasswordPage() {
           <button
             type="submit"
             disabled={saving || (!user && !isAuthConfigured)}
-            className="min-h-[44px] w-full cursor-pointer bg-primary-strong py-3 text-base font-semibold text-ap-action-fg hover:bg-primary disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ap-primary/60 focus-visible:ring-offset-2 touch-manipulation"
+            className="min-h-[44px] w-full cursor-pointer bg-primary py-3 text-base font-semibold text-ap-action-fg hover:bg-primary-strong disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ap-primary/60 focus-visible:ring-offset-2 touch-manipulation"
           >
             {saving ? 'Saving password…' : 'Save password & open my dashboard'}
           </button>

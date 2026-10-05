@@ -246,7 +246,7 @@ export const HazardDetailPage: React.FC = () => {
             </button>
             <Link
               to="/hazards"
-              className="inline-flex min-h-[44px] items-center justify-center px-4 bg-primary text-ap-action-fg text-sm font-semibold hover:bg-primary"
+              className="inline-flex min-h-[44px] items-center justify-center px-4 bg-primary text-ap-action-fg text-sm font-semibold hover:bg-primary-strong"
             >
               Back to Hazards
             </Link>

@@ -25,6 +25,11 @@
   --ap-primary: #0066cc;
   --ap-primary-focus: #0071e3; /* keyboard focus ring only */
   --ap-primary-on-dark: #2997ff; /* dark tiles; Action Blue is 2.68:1 there */
+  /* Pointer-hover shades of the SAME accent — not a second accent. Each is the
+     one accent moved along its own lightness: darker in light, lighter on dark
+     tiles, so the feedback reads in both without introducing a new hue. */
+  --ap-primary-hover: #0055b3;
+  --ap-primary-on-dark-hover: #52adff;
 
   /* Text */
   --ap-ink: #1d1d1f; /* 16.83:1 on white · 15.46:1 on parchment */
@@ -179,6 +184,12 @@
   --ap-action: var(--ap-primary);
   --ap-action-fg: var(--ap-on-primary);
   --ap-action-focus: var(--ap-primary-focus);
+  /* Hover fill for a filled action. This has to be a DIFFERENT value from
+     --ap-action: `--color-primary-strong` used to alias straight back to it,
+     so 52 filled buttons carried a `hover:` class that painted the colour they
+     already were and gave no pointer feedback at all. Keeps --ap-action-fg
+     above 7:1 in both themes. */
+  --ap-action-hover: var(--ap-primary-hover);
   --ap-link: var(--ap-primary);
 
   /* Paired foreground for a SOLID severity fill (bg-severity-*-solid,
@@ -269,6 +280,7 @@
 
     --ap-action: var(--ap-primary-on-dark);
     --ap-action-fg: var(--ap-black);
+    --ap-action-hover: var(--ap-primary-on-dark-hover);
     --ap-link: var(--ap-primary-on-dark);
     --ap-on-sev: var(--ap-black);
     --ap-focus-ring: var(--ap-primary-on-dark);
@@ -458,6 +470,7 @@
 
   --ap-action: var(--ap-primary-on-dark);
   --ap-action-fg: var(--ap-black);
+  --ap-action-hover: var(--ap-primary-on-dark-hover);
   --ap-link: var(--ap-primary-on-dark);
   --ap-on-sev: var(--ap-black);
   --ap-focus-ring: var(--ap-primary-on-dark);
@@ -650,6 +663,7 @@
   --ap-action: #ffffff;
   --ap-action-fg: var(--ap-ink);
   --ap-action-focus: #ffffff;
+  --ap-action-hover: #e3e3e8;
   --ap-link: var(--ap-primary-on-dark);
   /* --ap-on-sev deliberately NOT set: this context does not override
      --ap-sev-*, so the severity fills keep the ambient theme's lightness

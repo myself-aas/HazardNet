@@ -100,7 +100,7 @@ const ForgotPasswordPage: React.FC = () => {
               id="forgot-submit-btn"
               type="submit"
               disabled={loading || !email.trim()}
-              className="flex min-h-[44px] w-full cursor-pointer items-center justify-center gap-2 bg-primary-strong px-6 py-3 text-base font-semibold text-ap-action-fg hover:bg-primary disabled:opacity-50 touch-manipulation"
+              className="flex min-h-[44px] w-full cursor-pointer items-center justify-center gap-2 bg-primary px-6 py-3 text-base font-semibold text-ap-action-fg hover:bg-primary-strong disabled:opacity-50 touch-manipulation"
             >
               {loading ? (
                 <>
@@ -146,7 +146,7 @@ const ForgotPasswordPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => navigate('/login')}
-                className="min-h-[44px] w-full cursor-pointer bg-primary-strong px-6 py-3 text-base font-semibold text-ap-action-fg hover:bg-primary touch-manipulation"
+                className="min-h-[44px] w-full cursor-pointer bg-primary px-6 py-3 text-base font-semibold text-ap-action-fg hover:bg-primary-strong touch-manipulation"
               >
                 Proceed to Sign In
               </button>

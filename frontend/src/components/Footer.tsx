@@ -112,7 +112,7 @@ export const Footer: React.FC = () => {
           <div className="flex flex-wrap items-center gap-3">
             <Link
               to="/download"
-              className="inline-flex min-h-[44px] items-center rounded-control bg-primary px-5 text-ap-caption font-semibold text-ap-action-fg no-underline transition-colors hover:bg-primary"
+              className="inline-flex min-h-[44px] items-center rounded-control bg-primary px-5 text-ap-caption font-semibold text-ap-action-fg no-underline transition-colors hover:bg-primary-strong"
             >
               Get the apps
             </Link>
