@@ -1,0 +1,746 @@
+/* ══════════════════════════════════════════════════════════════════════════════
+   HazardNet — Apple design system · CSS layer
+   ══════════════════════════════════════════════════════════════════════════════
+   THE single design system for this product. Generated from DESIGN.md
+   (getdesign `apple` profile). Mirror of packages/design-system/src/apple.ts;
+   __tests__/appleParity.test.js fails if the two drift.
+
+   This file replaces, in full:
+     styles/meridian.css   (HDS v3.0 Meridian)      — deleted
+     styles/dark.css       (Phase 9 dark theme)     — folded into §5
+     styles/nasa-hds.css   (NASA Horizon tokens)    — deleted
+     styles/brand.css      (brand chrome)           — folded into §9
+
+   No Apple font file, artwork or CSS is shipped. "SF Pro Display" / "SF Pro
+   Text" are NAMED in the stacks only; per DESIGN.md §"Note on Font Substitutes"
+   that resolves to the real face on macOS/iOS and falls through to system-ui
+   everywhere else. Nothing is downloaded.
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   1 · PRIMITIVES — verbatim DESIGN.md `colors:`
+   ───────────────────────────────────────────────────────────────────────────── */
+:root {
+  /* Action Blue — the single brand-level interactive colour. 5.57:1 on white. */
+  --ap-primary: #0066cc;
+  --ap-primary-focus: #0071e3; /* keyboard focus ring only */
+  --ap-primary-on-dark: #2997ff; /* dark tiles; Action Blue is 2.68:1 there */
+
+  /* Text */
+  --ap-ink: #1d1d1f; /* 16.83:1 on white · 15.46:1 on parchment */
+  --ap-on-dark: #ffffff;
+  --ap-body-muted: #cccccc; /* secondary copy on dark tiles — 9.28:1 on tile-1 */
+  --ap-ink-muted-80: #333333; /* 12.63:1 on white */
+  --ap-ink-muted-48: #7a7a7a; /* fine print / disabled — 4.29:1, see §6 note */
+
+  /* Hairlines */
+  --ap-divider-soft: #f0f0f0;
+  --ap-hairline: #e0e0e0;
+
+  /* Surfaces */
+  --ap-canvas: #ffffff;
+  --ap-parchment: #f5f5f7;
+  --ap-pearl: #fafafc;
+  --ap-tile-1: #272729;
+  --ap-tile-2: #2a2a2c;
+  --ap-tile-3: #252527;
+  --ap-black: #000000;
+  --ap-chip-translucent: rgba(210, 210, 215, 0.64);
+
+  --ap-on-primary: #ffffff;
+
+  /* Neutral ramp — Apple anchors plus three derived steps. Every step used for
+     text clears WCAG AA on BOTH white and parchment. See apple.ts §NEUTRAL. */
+  --ap-n-05: #fafafc;
+  --ap-n-10: #f5f5f7;
+  --ap-n-20: #e0e0e0;
+  --ap-n-30: #d2d2d7;
+  --ap-n-40: #a1a1a6; /* non-text: disabled ink, icon */
+  --ap-n-50: #6e6e73; /* 5.07 / 4.66 */
+  --ap-n-60: #5a5a5d; /* 6.87 / 6.31 */
+  --ap-n-70: #333333; /* 12.63 / 11.60 */
+  --ap-n-80: #272729;
+  --ap-n-90: #1d1d1f;
+  --ap-n-black: #000000;
+
+  /* ───────────────────────────────────────────────────────────────────────────
+     2 · TYPOGRAPHY — verbatim DESIGN.md `typography:`
+     SF Pro named, never shipped. Bengali is an extension (bundled Noto face).
+     ─────────────────────────────────────────────────────────────────────────── */
+  --ap-font-display: 'SF Pro Display', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --ap-font-text: 'SF Pro Text', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --ap-font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Monaco, Consolas, monospace;
+  --ap-font-bengali: 'Noto Sans Bengali', 'Hind Siliguri', sans-serif;
+
+  /* The 16 named styles. size / line / tracking, exactly as documented.
+     DESIGN.md: weight ladder is 300/400/600/700 — 500 is deliberately absent. */
+  --ap-text-hero: 56px;        --ap-leading-hero: 1.07;        --ap-tracking-hero: -0.28px;
+  --ap-text-display-lg: 40px;  --ap-leading-display-lg: 1.1;   --ap-tracking-display-lg: 0px;
+  --ap-text-display-md: 34px;  --ap-leading-display-md: 1.47;  --ap-tracking-display-md: -0.374px;
+  --ap-text-lead: 28px;        --ap-leading-lead: 1.14;        --ap-tracking-lead: 0.196px;
+  --ap-text-lead-airy: 24px;   --ap-leading-lead-airy: 1.5;    --ap-tracking-lead-airy: 0px;
+  --ap-text-tagline: 21px;     --ap-leading-tagline: 1.19;     --ap-tracking-tagline: 0.231px;
+  --ap-text-body: 17px;        --ap-leading-body: 1.47;        --ap-tracking-body: -0.374px;
+  --ap-text-body-strong: 17px; --ap-leading-body-strong: 1.24; --ap-tracking-body-strong: -0.374px;
+  --ap-text-dense-link: 17px;  --ap-leading-dense-link: 2.41;  --ap-tracking-dense-link: 0px;
+  --ap-text-caption: 14px;     --ap-leading-caption: 1.43;     --ap-tracking-caption: -0.224px;
+  --ap-text-caption-strong: 14px; --ap-leading-caption-strong: 1.29; --ap-tracking-caption-strong: -0.224px;
+  --ap-text-button-large: 18px;--ap-leading-button-large: 1;   --ap-tracking-button-large: 0px;
+  --ap-text-button-utility: 14px; --ap-leading-button-utility: 1.29; --ap-tracking-button-utility: -0.224px;
+  --ap-text-fine-print: 12px;  --ap-leading-fine-print: 1;     --ap-tracking-fine-print: -0.12px;
+  --ap-text-micro-legal: 10px; --ap-leading-micro-legal: 1.3;  --ap-tracking-micro-legal: -0.08px;
+  --ap-text-nav-link: 12px;    --ap-leading-nav-link: 1;       --ap-tracking-nav-link: -0.12px;
+
+  --ap-weight-light: 300;
+  --ap-weight-regular: 400;
+  --ap-weight-semibold: 600;
+  --ap-weight-bold: 700;
+
+  /* Bengali metrics. Matras need more leading and no negative tracking. */
+  --ap-bn-leading: 1.65;
+  --ap-bn-tracking: normal;
+
+  /* ───────────────────────────────────────────────────────────────────────────
+     3 · GEOMETRY · SPACE · ELEVATION · MOTION — verbatim DESIGN.md
+     ─────────────────────────────────────────────────────────────────────────── */
+  --ap-radius-none: 0px;
+  --ap-radius-xs: 5px;
+  --ap-radius-sm: 8px;
+  --ap-radius-md: 11px;
+  --ap-radius-lg: 18px;
+  --ap-radius-pill: 9999px;
+  --ap-radius-full: 9999px;
+
+  --ap-space-xxs: 4px;
+  --ap-space-xs: 8px;
+  --ap-space-sm: 12px;
+  --ap-space-md: 17px;
+  --ap-space-lg: 24px;
+  --ap-space-xl: 32px;
+  --ap-space-xxl: 48px;
+  --ap-space-section: 80px;
+
+  /* "Apple uses exactly ONE drop-shadow, applied to photographic product
+     imagery — never to cards, never to buttons, never to text." */
+  --ap-elev-flat: none;
+  --ap-elev-hairline: 0 0 0 1px rgba(0, 0, 0, 0.08);
+  --ap-elev-product: rgba(0, 0, 0, 0.22) 3px 5px 30px 0;
+
+  --ap-frosted-bg: rgba(245, 245, 247, 0.8);
+  --ap-frosted-blur: 20px;
+  --ap-frosted-saturate: 1.8;
+
+  /* DESIGN.md defines one interaction: scale(0.95) on press, and "never
+     document hover". Durations/easing are the minimum needed to render it. */
+  --ap-press-scale: 0.95;
+  --ap-duration-press: 120ms;
+  --ap-duration-base: 240ms;
+  --ap-ease: cubic-bezier(0.25, 0.1, 0.25, 1);
+
+  --ap-touch-min: 44px;
+  --ap-nav-h: 44px;
+  --ap-subnav-h: 52px;
+  --ap-sticky-h: 64px;
+
+  --ap-container-text: 980px;
+  --ap-container-wide: 1440px;
+
+  /* Single z-scale. One system, one set of numbers. */
+  --ap-z-base: 0;
+  --ap-z-content: 1;
+  --ap-z-map: 400;
+  --ap-z-sticky: 1020;
+  --ap-z-nav: 1030;
+  --ap-z-dropdown: 1040;
+  --ap-z-overlay: 1050;
+  --ap-z-modal: 1060;
+  --ap-z-popover: 1070;
+  --ap-z-tooltip: 1080;
+  --ap-z-toast: 1090;
+  --ap-z-a11y: 1100;
+
+  /* ───────────────────────────────────────────────────────────────────────────
+     4 · SEMANTIC ROLES — light. Components read these, never the primitives.
+     ─────────────────────────────────────────────────────────────────────────── */
+  --ap-bg-canvas: var(--ap-canvas);
+  --ap-bg-grouped: var(--ap-parchment);
+  --ap-bg-raised: var(--ap-pearl);
+  --ap-bg-inverse: var(--ap-tile-1);
+
+  --ap-label: var(--ap-ink);
+  --ap-label-secondary: var(--ap-n-60);
+  --ap-label-tertiary: var(--ap-n-50);
+  --ap-label-quaternary: var(--ap-n-40);
+  --ap-on-inverse: var(--ap-on-dark);
+
+  --ap-separator: var(--ap-divider-soft);
+  --ap-separator-opaque: var(--ap-hairline);
+
+  --ap-action: var(--ap-primary);
+  --ap-action-fg: var(--ap-on-primary);
+  --ap-action-focus: var(--ap-primary-focus);
+  --ap-link: var(--ap-primary);
+
+  --ap-focus-ring: var(--ap-primary-focus);
+  --ap-focus-width: 2px;
+  --ap-focus-offset: 2px;
+
+  /* ───────────────────────────────────────────────────────────────────────────
+     6 · SEVERITY — the declared data layer. See apple.ts §SEVERITY for why this
+     is the one permitted exception to "no second accent": it encodes hazard,
+     never chrome, and is always rendered as colour + icon + word.
+     ─────────────────────────────────────────────────────────────────────────── */
+  --ap-sev-low: #1d7a3e;
+  --ap-sev-low-surface: #e8f5ed;
+  --ap-sev-moderate: #8a5a00;
+  --ap-sev-moderate-surface: #fdf3e0;
+  --ap-sev-high: #b3400f;
+  --ap-sev-high-surface: #fdeee7;
+  --ap-sev-very-high: #c01f1f;
+  --ap-sev-very-high-surface: #fdebeb;
+  --ap-sev-extreme: #8b0f3a;
+  --ap-sev-extreme-surface: #fbe9ef;
+
+  /* Hazard identity — "what kind", orthogonal to severity's "how bad".
+     Solved against four constraints (AA on both grounds, >=22 dE apart,
+     >=24 dE from the accent); see APPLE_HAZARD in apple.ts. */
+  --ap-haz-flood: #496dab;
+  --ap-haz-flash-flood: #357882;
+  --ap-haz-cyclone: #a03dd1;
+  --ap-haz-drought: #846b39;
+  --ap-haz-heat-wave: #a75b2f;
+  --ap-haz-cold-wave: #184962;
+  --ap-haz-storm: #b1488e;
+  --ap-haz-fire: #ca3a2f;
+
+  --ap-success: #1d7a3e;
+  --ap-warning: #8a5a00;
+  --ap-danger: #c01f1f;
+  --ap-info: var(--ap-primary);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   5 · DARK THEME
+   DESIGN.md §Known Gaps leaves dark undocumented, so rather than invent a
+   second colour language this is built ENTIRELY from Apple's own dark tiles:
+   tile-3 is the canvas, tile-1 the grouped surface, tile-2 the raised surface.
+   Links switch to Sky Link Blue exactly as the document instructs.
+
+   Applied two ways on purpose:
+     · [data-theme='dark'] / .dark  — the explicit user choice
+     · prefers-color-scheme          — so a system-dark visitor is painted dark
+                                       BEFORE hydration (fixes audit F-01)
+   ───────────────────────────────────────────────────────────────────────────── */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --ap-bg-canvas: var(--ap-tile-3);
+    --ap-bg-grouped: var(--ap-tile-1);
+    --ap-bg-raised: var(--ap-tile-2);
+    --ap-bg-inverse: var(--ap-parchment);
+
+    --ap-label: #ffffff;
+    --ap-label-secondary: #cccccc;
+    --ap-label-tertiary: #9a9a9f;
+    --ap-label-quaternary: #6e6e73;
+    --ap-on-inverse: var(--ap-ink);
+
+    --ap-separator: #3a3a3c;
+    --ap-separator-opaque: #48484a;
+
+    --ap-action: var(--ap-primary-on-dark);
+    --ap-action-fg: var(--ap-black);
+    --ap-link: var(--ap-primary-on-dark);
+    --ap-focus-ring: var(--ap-primary-on-dark);
+
+    --ap-frosted-bg: rgba(39, 39, 41, 0.8);
+    --ap-elev-hairline: 0 0 0 1px rgba(255, 255, 255, 0.12);
+
+    --ap-n-05: #252527;
+    --ap-n-10: #272729;
+    --ap-n-20: #3a3a3c;
+    --ap-n-30: #48484a;
+    --ap-n-40: #6e6e73;
+    --ap-n-50: #9a9a9f;
+    --ap-n-60: #cccccc;
+    --ap-n-70: #e4e4e6;
+    --ap-n-80: #f2f2f4;
+    --ap-n-90: #ffffff;
+
+    --ap-sev-low: #4ad66d;
+    --ap-sev-low-surface: #10301c;
+    --ap-sev-moderate: #f5b73d;
+    --ap-sev-moderate-surface: #33260a;
+    --ap-sev-high: #ff8a5b;
+    --ap-sev-high-surface: #3a1d10;
+    --ap-sev-very-high: #ff6b60;
+    --ap-sev-very-high-surface: #3a1512;
+    --ap-sev-extreme: #ff7eb6;
+    --ap-sev-extreme-surface: #351022;
+    --ap-haz-flood: #7b97c6;
+    --ap-haz-flash-flood: #30b9cf;
+    --ap-haz-cyclone: #b582ce;
+    --ap-haz-drought: #cf9a30;
+    --ap-haz-heat-wave: #d68251;
+    --ap-haz-cold-wave: #9bc1d4;
+    --ap-haz-storm: #d199be;
+    --ap-haz-fire: #c68580;
+
+    --ap-success: #4ad66d;
+    --ap-warning: #f5b73d;
+    --ap-danger: #ff6b60;
+    --ap-info: var(--ap-primary-on-dark);
+  }
+}
+
+[data-theme='dark'],
+.dark {
+  color-scheme: dark;
+  --ap-bg-canvas: var(--ap-tile-3);
+  --ap-bg-grouped: var(--ap-tile-1);
+  --ap-bg-raised: var(--ap-tile-2);
+  --ap-bg-inverse: var(--ap-parchment);
+
+  --ap-label: #ffffff;
+  --ap-label-secondary: #cccccc;
+  --ap-label-tertiary: #9a9a9f;
+  --ap-label-quaternary: #6e6e73;
+  --ap-on-inverse: var(--ap-ink);
+
+  --ap-separator: #3a3a3c;
+  --ap-separator-opaque: #48484a;
+
+  --ap-action: var(--ap-primary-on-dark);
+  --ap-action-fg: var(--ap-black);
+  --ap-link: var(--ap-primary-on-dark);
+  --ap-focus-ring: var(--ap-primary-on-dark);
+
+  --ap-frosted-bg: rgba(39, 39, 41, 0.8);
+  --ap-elev-hairline: 0 0 0 1px rgba(255, 255, 255, 0.12);
+
+  --ap-n-05: #252527;
+  --ap-n-10: #272729;
+  --ap-n-20: #3a3a3c;
+  --ap-n-30: #48484a;
+  --ap-n-40: #6e6e73;
+  --ap-n-50: #9a9a9f;
+  --ap-n-60: #cccccc;
+  --ap-n-70: #e4e4e6;
+  --ap-n-80: #f2f2f4;
+  --ap-n-90: #ffffff;
+
+  --ap-sev-low: #4ad66d;
+  --ap-sev-low-surface: #10301c;
+  --ap-sev-moderate: #f5b73d;
+  --ap-sev-moderate-surface: #33260a;
+  --ap-sev-high: #ff8a5b;
+  --ap-sev-high-surface: #3a1d10;
+  --ap-sev-very-high: #ff6b60;
+  --ap-sev-very-high-surface: #3a1512;
+  --ap-sev-extreme: #ff7eb6;
+  --ap-sev-extreme-surface: #351022;
+  --ap-haz-flood: #7b97c6;
+  --ap-haz-flash-flood: #30b9cf;
+  --ap-haz-cyclone: #b582ce;
+  --ap-haz-drought: #cf9a30;
+  --ap-haz-heat-wave: #d68251;
+  --ap-haz-cold-wave: #9bc1d4;
+  --ap-haz-storm: #d199be;
+  --ap-haz-fire: #c68580;
+
+  --ap-success: #4ad66d;
+  --ap-warning: #f5b73d;
+  --ap-danger: #ff6b60;
+  --ap-info: var(--ap-primary-on-dark);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   7 · SEMANTIC LAYER
+   Tier two of the token hierarchy: primitive (§1, --ap-n-50) → semantic
+   (--surface-card, --panel-border) → component (§9, .ap-card). A component
+   never reaches past this layer for a raw value.
+
+   The legacy alias block that used to live here — every --hds-* and --hn-*
+   name from the four superseded systems, re-pointed at an Apple role — is gone.
+   All 173 call sites were rewritten to the --ap-* tokens they aliased, so the
+   indirection has no remaining readers.
+   ───────────────────────────────────────────────────────────────────────────── */
+:root {
+
+  /* Dataviz — retained as DATA encodings, re-pointed onto the severity ramp
+     so charts read inside the Apple palette. */
+
+  /* Severity aliases */
+  --severity-low: var(--ap-sev-low);
+  --severity-low-solid: var(--ap-sev-low);
+  --severity-low-surface: var(--ap-sev-low-surface);
+  --severity-moderate: var(--ap-sev-moderate);
+  --severity-moderate-solid: var(--ap-sev-moderate);
+  --severity-moderate-surface: var(--ap-sev-moderate-surface);
+  --severity-high: var(--ap-sev-high);
+  --severity-high-solid: var(--ap-sev-high);
+  --severity-high-surface: var(--ap-sev-high-surface);
+  --severity-very-high: var(--ap-sev-very-high);
+  --severity-very-high-solid: var(--ap-sev-very-high);
+  --severity-very-high-surface: var(--ap-sev-very-high-surface);
+  --severity-extreme: var(--ap-sev-extreme);
+  --severity-extreme-solid: var(--ap-sev-extreme);
+  --severity-extreme-surface: var(--ap-sev-extreme-surface);
+  --severity-green: var(--ap-sev-low);
+  --severity-amber: var(--ap-sev-moderate);
+  --severity-red: var(--ap-sev-very-high);
+
+  /* Fonts */
+  --font-sans: var(--ap-font-text);
+  --font-sans-en: var(--ap-font-text);
+  --font-display: var(--ap-font-display);
+  --font-heading: var(--ap-font-display);
+  --font-brand: var(--ap-font-display);
+  --font-mono: var(--ap-font-mono);
+  --font-bengali: var(--ap-font-bengali);
+  --font-bengali-display: var(--ap-font-bengali);
+  --font-sans-bn: var(--ap-font-bengali);
+
+  /* Surfaces / panels / glass */
+  --surface-page: var(--ap-bg-canvas);
+  --surface-card: var(--ap-bg-canvas);
+  --surface-sunken: var(--ap-bg-grouped);
+  --surface-inverse: var(--ap-bg-inverse);
+  --panel-bg: var(--ap-bg-canvas);
+  --panel-border: var(--ap-separator-opaque);
+  --panel-radius: var(--ap-radius-lg);
+  --panel-shadow: var(--ap-elev-hairline);
+  --panel-blur: var(--ap-frosted-blur);
+  --glass-bg: var(--ap-frosted-bg);
+  --glass-blur: var(--ap-frosted-blur);
+  --glass-border: var(--ap-separator);
+  --glass-saturate: var(--ap-frosted-saturate);
+
+  /* shadcn-compatible core */
+  --primary: var(--ap-primary);
+  --primary-foreground: var(--ap-on-primary);
+  --primary-strong: var(--ap-primary);
+  --primary-strong-foreground: var(--ap-on-primary);
+  --success: var(--ap-success);
+  --success-foreground: var(--ap-canvas);
+  --success-surface: var(--ap-sev-low-surface);
+  --success-border: color-mix(in srgb, var(--ap-success) 35%, transparent);
+  --warning: var(--ap-warning);
+  --warning-foreground: var(--ap-canvas);
+  --warning-surface: var(--ap-sev-moderate-surface);
+  --warning-border: color-mix(in srgb, var(--ap-warning) 35%, transparent);
+  --info: var(--ap-info);
+  --info-foreground: var(--ap-canvas);
+  --info-surface: color-mix(in srgb, var(--ap-primary) 8%, var(--ap-canvas));
+
+  /* Charts — data encodings on the Apple ramp */
+  --chart-1: var(--ap-primary);
+  --chart-2: var(--ap-sev-low);
+  --chart-3: var(--ap-sev-moderate);
+  --chart-4: var(--ap-sev-high);
+  --chart-5: var(--ap-sev-extreme);
+
+  /* Sidebar */
+  --sidebar: var(--ap-bg-grouped);
+  --sidebar-foreground: var(--ap-label);
+  --sidebar-border: var(--ap-separator);
+  --sidebar-accent: var(--ap-bg-raised);
+  --sidebar-accent-foreground: var(--ap-label);
+  --sidebar-primary: var(--ap-primary);
+  --sidebar-primary-foreground: var(--ap-on-primary);
+  --sidebar-ring: var(--ap-focus-ring);
+
+  /* One z-scale. These now resolve to the Apple numbers. */
+  --z-base: var(--ap-z-base);
+  --z-content: var(--ap-z-content);
+  --z-map: var(--ap-z-map);
+  --z-sticky: var(--ap-z-sticky);
+  --z-nav: var(--ap-z-nav);
+  --z-dropdown: var(--ap-z-dropdown);
+  --z-overlay: var(--ap-z-overlay);
+  --z-modal: var(--ap-z-modal);
+  --z-popover: var(--ap-z-popover);
+  --z-tooltip: var(--ap-z-tooltip);
+  --z-toast: var(--ap-z-toast);
+  --z-a11y: var(--ap-z-a11y);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   8 · DENSITY TRACKS
+   DESIGN.md §Overview: "one design language expressed at different volumes."
+   Same tokens, same accent, same type — only the spacing step changes.
+   ───────────────────────────────────────────────────────────────────────────── */
+[data-track='editorial'],
+.ap-track-editorial {
+  --ap-section-block: var(--ap-space-section);
+  --ap-section-gap: var(--ap-space-xxl);
+  --ap-card-padding: var(--ap-space-lg);
+  --ap-track-max: var(--ap-container-text);
+}
+
+[data-track='console'],
+.ap-track-console {
+  --ap-section-block: var(--ap-space-xl);
+  --ap-section-gap: var(--ap-space-md);
+  --ap-card-padding: var(--ap-space-sm);
+  --ap-track-max: var(--ap-container-wide);
+}
+
+:root {
+  --ap-section-block: var(--ap-space-section);
+  --ap-section-gap: var(--ap-space-xxl);
+  --ap-card-padding: var(--ap-space-lg);
+  --ap-track-max: var(--ap-container-text);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   9 · COMPONENTS — the Apple grammar, one class per documented component.
+   ───────────────────────────────────────────────────────────────────────────── */
+
+/* ── Type roles ───────────────────────────────────────────────────────────── */
+.ap-hero { font-family: var(--ap-font-display); font-size: var(--ap-text-hero); line-height: var(--ap-leading-hero); letter-spacing: var(--ap-tracking-hero); font-weight: var(--ap-weight-semibold); color: var(--ap-label); }
+.ap-display { font-family: var(--ap-font-display); font-size: var(--ap-text-display-lg); line-height: var(--ap-leading-display-lg); letter-spacing: var(--ap-tracking-display-lg); font-weight: var(--ap-weight-semibold); color: var(--ap-label); }
+.ap-display-md { font-family: var(--ap-font-text); font-size: var(--ap-text-display-md); line-height: var(--ap-leading-display-md); letter-spacing: var(--ap-tracking-display-md); font-weight: var(--ap-weight-semibold); color: var(--ap-label); }
+.ap-lead { font-family: var(--ap-font-display); font-size: var(--ap-text-lead); line-height: var(--ap-leading-lead); letter-spacing: var(--ap-tracking-lead); font-weight: var(--ap-weight-regular); color: var(--ap-label-secondary); }
+.ap-lead-airy { font-family: var(--ap-font-text); font-size: var(--ap-text-lead-airy); line-height: var(--ap-leading-lead-airy); font-weight: var(--ap-weight-light); color: var(--ap-label-secondary); }
+.ap-tagline { font-family: var(--ap-font-display); font-size: var(--ap-text-tagline); line-height: var(--ap-leading-tagline); letter-spacing: var(--ap-tracking-tagline); font-weight: var(--ap-weight-semibold); color: var(--ap-label); }
+.ap-body { font-family: var(--ap-font-text); font-size: var(--ap-text-body); line-height: var(--ap-leading-body); letter-spacing: var(--ap-tracking-body); font-weight: var(--ap-weight-regular); color: var(--ap-label); }
+.ap-body-strong { font-family: var(--ap-font-text); font-size: var(--ap-text-body-strong); line-height: var(--ap-leading-body-strong); letter-spacing: var(--ap-tracking-body-strong); font-weight: var(--ap-weight-semibold); color: var(--ap-label); }
+.ap-dense-link { font-family: var(--ap-font-text); font-size: var(--ap-text-dense-link); line-height: var(--ap-leading-dense-link); font-weight: var(--ap-weight-regular); }
+.ap-caption { font-family: var(--ap-font-text); font-size: var(--ap-text-caption); line-height: var(--ap-leading-caption); letter-spacing: var(--ap-tracking-caption); font-weight: var(--ap-weight-regular); color: var(--ap-label-secondary); }
+.ap-caption-strong { font-family: var(--ap-font-text); font-size: var(--ap-text-caption-strong); line-height: var(--ap-leading-caption-strong); letter-spacing: var(--ap-tracking-caption-strong); font-weight: var(--ap-weight-semibold); color: var(--ap-label); }
+.ap-fine-print { font-family: var(--ap-font-text); font-size: var(--ap-text-fine-print); line-height: var(--ap-leading-fine-print); letter-spacing: var(--ap-tracking-fine-print); color: var(--ap-label-secondary); }
+.ap-micro-legal { font-family: var(--ap-font-text); font-size: var(--ap-text-micro-legal); line-height: var(--ap-leading-micro-legal); letter-spacing: var(--ap-tracking-micro-legal); color: var(--ap-label-tertiary); }
+.ap-mono { font-family: var(--ap-font-mono); font-variant-numeric: tabular-nums; }
+
+/* ── Buttons. DESIGN.md: two grammars — blue pill CTA, compact utility rect. ─ */
+.ap-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: var(--ap-space-xs);
+  font-family: var(--ap-font-text); font-size: var(--ap-text-body);
+  line-height: var(--ap-leading-body-strong); letter-spacing: var(--ap-tracking-body);
+  font-weight: var(--ap-weight-regular);
+  min-height: var(--ap-touch-min);
+  padding: 11px 22px;
+  border: 0; cursor: pointer; text-decoration: none;
+  border-radius: var(--ap-radius-pill);
+  background: var(--ap-action); color: var(--ap-action-fg);
+  transition: transform var(--ap-duration-press) var(--ap-ease),
+              background-color var(--ap-duration-base) var(--ap-ease);
+}
+.ap-btn:active { transform: scale(var(--ap-press-scale)); }
+.ap-btn:focus-visible { outline: var(--ap-focus-width) solid var(--ap-action-focus); outline-offset: var(--ap-focus-offset); }
+.ap-btn[disabled], .ap-btn[aria-disabled='true'] { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+/* Ghost pill — the second CTA when two pills appear together. */
+.ap-btn-secondary { background: transparent; color: var(--ap-action); box-shadow: inset 0 0 0 1px var(--ap-action); }
+
+/* Compact utility rect — nav actions. */
+.ap-btn-utility {
+  background: var(--ap-ink); color: var(--ap-on-dark);
+  border-radius: var(--ap-radius-sm);
+  font-size: var(--ap-text-button-utility); line-height: var(--ap-leading-button-utility);
+  letter-spacing: var(--ap-tracking-button-utility);
+  padding: 8px 15px; min-height: 32px;
+}
+
+/* Pearl capsule — product-card secondary. */
+.ap-btn-pearl {
+  background: var(--ap-bg-raised); color: var(--ap-ink-muted-80);
+  border-radius: var(--ap-radius-md);
+  font-size: var(--ap-text-caption); line-height: var(--ap-leading-caption);
+  letter-spacing: var(--ap-tracking-caption);
+  padding: 8px 14px; min-height: 36px;
+  box-shadow: 0 0 0 3px var(--ap-divider-soft);
+}
+
+/* Store hero CTA — the rare weight 300. */
+.ap-btn-hero {
+  font-size: var(--ap-text-button-large); line-height: var(--ap-leading-button-large);
+  font-weight: var(--ap-weight-light); padding: 14px 28px;
+}
+
+/* Circular control over photography — exactly 44 × 44. */
+.ap-btn-icon {
+  width: var(--ap-touch-min); height: var(--ap-touch-min); padding: 0;
+  border-radius: var(--ap-radius-full);
+  background: var(--ap-chip-translucent); color: var(--ap-ink);
+}
+
+.ap-link { color: var(--ap-link); text-decoration: none; }
+.ap-link:hover { text-decoration: underline; }
+.ap-link:focus-visible { outline: var(--ap-focus-width) solid var(--ap-focus-ring); outline-offset: var(--ap-focus-offset); border-radius: var(--ap-radius-xs); }
+
+/* ── Tiles. Full-bleed, zero radius, colour change IS the divider. ─────────── */
+.ap-tile { padding-block: var(--ap-section-block); padding-inline: var(--ap-space-lg); border-radius: var(--ap-radius-none); }
+.ap-tile-light { background: var(--ap-canvas); color: var(--ap-ink); }
+.ap-tile-parchment { background: var(--ap-parchment); color: var(--ap-ink); }
+.ap-tile-dark { background: var(--ap-tile-1); color: var(--ap-on-dark); }
+.ap-tile-dark-2 { background: var(--ap-tile-2); color: var(--ap-on-dark); }
+.ap-tile-dark-3 { background: var(--ap-tile-3); color: var(--ap-on-dark); }
+.ap-tile-dark .ap-link, .ap-tile-dark-2 .ap-link, .ap-tile-dark-3 .ap-link { color: var(--ap-primary-on-dark); }
+.ap-tile-inner { max-width: var(--ap-track-max); margin-inline: auto; }
+
+/* Scopes the dark-surface role set to one region — a hero over photography, a
+   dark tile inside a light page. Everything nested inherits the inverted
+   semantics, so a button or link in here does not need its own dark variant,
+   and Action Blue (2.68:1 on tile-1) is swapped for Sky Link Blue. */
+.ap-on-dark {
+  --ap-label: #ffffff;
+  --ap-label-secondary: var(--ap-body-muted);
+  --ap-label-tertiary: #9a9a9f;
+  --ap-separator: rgba(255, 255, 255, 0.16);
+  --ap-separator-opaque: rgba(255, 255, 255, 0.24);
+  --ap-action: #ffffff;
+  --ap-action-fg: var(--ap-ink);
+  --ap-action-focus: #ffffff;
+  --ap-link: var(--ap-primary-on-dark);
+  --ap-focus-ring: #ffffff;
+  --ap-bg-canvas: var(--ap-tile-1);
+  --ap-bg-grouped: var(--ap-tile-3);
+  --ap-bg-raised: var(--ap-tile-2);
+  color: var(--ap-label);
+}
+
+/* ── Cards. 1px hairline, 18px radius, NO shadow. ──────────────────────────── */
+.ap-card {
+  background: var(--ap-bg-canvas); color: var(--ap-label);
+  border: 1px solid var(--ap-separator-opaque);
+  border-radius: var(--ap-radius-lg);
+  padding: var(--ap-card-padding);
+  box-shadow: var(--ap-elev-flat);
+}
+.ap-card-media { border-radius: var(--ap-radius-sm); overflow: hidden; }
+
+/* The ONE shadow in the system — product imagery only. */
+.ap-product-shadow { box-shadow: var(--ap-elev-product); }
+
+/* ── Chips / inputs — pill grammar. ────────────────────────────────────────── */
+.ap-chip {
+  display: inline-flex; align-items: center; gap: var(--ap-space-xs);
+  background: var(--ap-bg-canvas); color: var(--ap-label);
+  font-size: var(--ap-text-caption); line-height: var(--ap-leading-caption);
+  letter-spacing: var(--ap-tracking-caption);
+  border: 1px solid var(--ap-separator-opaque);
+  border-radius: var(--ap-radius-pill);
+  padding: 12px 16px; min-height: var(--ap-touch-min);
+}
+.ap-chip[aria-selected='true'], .ap-chip[data-selected='true'] { border: 2px solid var(--ap-action-focus); }
+
+.ap-input {
+  background: var(--ap-bg-canvas); color: var(--ap-label);
+  font-family: var(--ap-font-text); font-size: var(--ap-text-body);
+  letter-spacing: var(--ap-tracking-body);
+  border: 1px solid var(--ap-separator-opaque);
+  border-radius: var(--ap-radius-pill);
+  padding: 12px 20px; min-height: var(--ap-touch-min); width: 100%;
+}
+.ap-input::placeholder { color: var(--ap-label-tertiary); }
+.ap-input:focus-visible { outline: var(--ap-focus-width) solid var(--ap-focus-ring); outline-offset: var(--ap-focus-offset); }
+
+/* ── Navigation. ───────────────────────────────────────────────────────────── */
+.ap-nav {
+  background: var(--ap-black); color: var(--ap-on-dark);
+  min-height: var(--ap-nav-h);
+  font-size: var(--ap-text-nav-link); line-height: var(--ap-leading-nav-link);
+  letter-spacing: var(--ap-tracking-nav-link);
+  z-index: var(--ap-z-nav);
+}
+.ap-subnav {
+  background: var(--ap-frosted-bg); color: var(--ap-label);
+  -webkit-backdrop-filter: saturate(180%) blur(var(--ap-frosted-blur));
+  backdrop-filter: saturate(180%) blur(var(--ap-frosted-blur));
+  min-height: var(--ap-subnav-h);
+  border-bottom: 1px solid var(--ap-separator);
+  z-index: var(--ap-z-sticky);
+}
+.ap-sticky-bar {
+  background: var(--ap-frosted-bg); color: var(--ap-label);
+  -webkit-backdrop-filter: saturate(180%) blur(var(--ap-frosted-blur));
+  backdrop-filter: saturate(180%) blur(var(--ap-frosted-blur));
+  min-height: var(--ap-sticky-h); padding: 12px 32px;
+  z-index: var(--ap-z-sticky);
+}
+.ap-footer { background: var(--ap-bg-grouped); color: var(--ap-ink-muted-80); padding-block: 64px; }
+
+/* ── Severity — colour + icon + word, never colour alone. ──────────────────── */
+.ap-sev { display: inline-flex; align-items: center; gap: var(--ap-space-xxs); border-radius: var(--ap-radius-pill); padding: 4px 10px; font-size: var(--ap-text-caption); font-weight: var(--ap-weight-semibold); letter-spacing: var(--ap-tracking-caption); }
+.ap-sev-low { background: var(--ap-sev-low-surface); color: var(--ap-sev-low); }
+.ap-sev-moderate { background: var(--ap-sev-moderate-surface); color: var(--ap-sev-moderate); }
+.ap-sev-high { background: var(--ap-sev-high-surface); color: var(--ap-sev-high); }
+.ap-sev-very-high { background: var(--ap-sev-very-high-surface); color: var(--ap-sev-very-high); }
+.ap-sev-extreme { background: var(--ap-sev-extreme-surface); color: var(--ap-sev-extreme); }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   ICONS
+
+   DESIGN.md has no icon system — it is listed under Known Gaps — so HazardNet
+   keeps its generated Lucide set (packages/design-system/src/icons.ts) and binds
+   it to Apple here. One stroke weight, set once in CSS rather than passed at
+   ~500 call sites; the native shell passes the same ICON_STROKE constant to
+   <Svg strokeWidth>, so web and native draw the identical weight.
+
+   Icons inherit `currentColor`, which means they inherit the Apple role of
+   whatever they sit in — an icon inside .ap-on-dark turns white without a
+   variant, and a severity glyph takes the severity colour for free.
+   ───────────────────────────────────────────────────────────────────────────── */
+svg.lucide {
+  stroke-width: 1.75;
+  stroke: currentColor;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* 44 × 44 is the touch floor; the glyph inside it stays optical. */
+.ap-icon-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: var(--ap-touch-min); height: var(--ap-touch-min);
+  border-radius: var(--ap-radius-full);
+  color: var(--ap-label); background: transparent; border: 0; cursor: pointer;
+  transition: transform var(--ap-duration-press) var(--ap-ease);
+}
+.ap-icon-btn:active { transform: scale(var(--ap-press-scale)); }
+.ap-icon-btn:focus-visible { outline: var(--ap-focus-width) solid var(--ap-focus-ring); outline-offset: var(--ap-focus-offset); }
+
+/* ── Focus. One ring, everywhere. ──────────────────────────────────────────── */
+.ap-focusable:focus-visible { outline: var(--ap-focus-width) solid var(--ap-focus-ring); outline-offset: var(--ap-focus-offset); }
+
+/* ── Container. ────────────────────────────────────────────────────────────── */
+.ap-container { max-width: var(--ap-track-max); margin-inline: auto; padding-inline: var(--ap-space-lg); }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   10 · RESPONSIVE — DESIGN.md §"Collapsing Strategy"
+   Hero 56 → 40 at 1068px → 34 at 640px → 28 at 419px.
+   Tile padding 80 → 48 at small phone.
+   ───────────────────────────────────────────────────────────────────────────── */
+@media (max-width: 1068px) {
+  :root { --ap-text-hero: 40px; }
+}
+@media (max-width: 640px) {
+  :root { --ap-text-hero: 34px; --ap-text-display-lg: 32px; --ap-text-lead: 21px; }
+}
+@media (max-width: 419px) {
+  :root { --ap-text-hero: 28px; --ap-text-display-lg: 28px; --ap-space-section: 48px; }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   11 · MOTION — the single documented interaction, and the reduced-motion floor.
+   ───────────────────────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .ap-btn, .ap-btn:active { transition-duration: var(--ap-duration-press); transform: none; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important; /* reduced-motion floor must beat later animation declarations */
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   12 · BENGALI — extension. Matras clip at Latin leading; no negative tracking.
+   ───────────────────────────────────────────────────────────────────────────── */
+.lang-bn, .farmer-advisory, .tts-fallback-text, [lang='bn'], :lang(bn) {
+  font-family: var(--ap-font-bengali);
+  line-height: var(--ap-bn-leading);
+  letter-spacing: var(--ap-bn-tracking);
+}

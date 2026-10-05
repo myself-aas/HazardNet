@@ -69,8 +69,8 @@ const HERO_POSTER_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 19
       <stop offset="100%" stop-color="#020b1e" />
     </radialGradient>
     <radialGradient id="earthAtmosphere" cx="50%" cy="50%" r="50%">
-      <stop offset="85%" stop-color="#38bdf8" stop-opacity="0" />
-      <stop offset="98%" stop-color="#38bdf8" stop-opacity="0.45" />
+      <stop offset="85%" stop-color="#0066cc" stop-opacity="0" />
+      <stop offset="98%" stop-color="#0066cc" stop-opacity="0.45" />
       <stop offset="100%" stop-color="#7dd3fc" stop-opacity="0.8" />
     </radialGradient>
     <filter id="glow">
@@ -110,7 +110,7 @@ const HERO_POSTER_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 19
   <circle cx="960" cy="540" r="380" fill="url(#earthAtmosphere)" />
 
   <!-- Atmospheric Glow Ring -->
-  <circle cx="960" cy="540" r="382" stroke="#38bdf8" stroke-width="3" fill="none" opacity="0.6" />
+  <circle cx="960" cy="540" r="382" stroke="#0066cc" stroke-width="3" fill="none" opacity="0.6" />
 </svg>`;
 
 /**

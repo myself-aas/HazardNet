@@ -386,22 +386,22 @@ export const WeatherPanel: React.FC<WeatherPanelProps> = ({
             <ComposedChart data={hours48} margin={{ top: 8, right: 8, left: -18, bottom: 0 }}>
               <defs>
                 <linearGradient id="tempGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.6} />
-                  <stop offset="95%" stopColor="#f59e0b" stopOpacity={0} />
+                  <stop offset="5%" stopColor="#8a5a00" stopOpacity={0.6} />
+                  <stop offset="95%" stopColor="#8a5a00" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#d1d1d1" className="dark:opacity-20" />
+              <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" className="dark:opacity-20" />
               <XAxis
                 dataKey="time"
                 tick={{ fontSize: 12 }}
                 interval="preserveStartEnd"
                 minTickGap={30}
-                stroke="#959599"
+                stroke="#a1a1a6"
               />
               <YAxis
                 yAxisId="temp"
                 tick={{ fontSize: 12 }}
-                stroke="#f59e0b"
+                stroke="#8a5a00"
                 unit="°"
                 domain={['dataMin - 3', 'dataMax + 3']}
               />
@@ -409,17 +409,17 @@ export const WeatherPanel: React.FC<WeatherPanelProps> = ({
                 yAxisId="precip"
                 orientation="right"
                 tick={{ fontSize: 12 }}
-                stroke="#3b82f6"
+                stroke="#0066cc"
                 unit="mm"
               />
               <Tooltip
-                contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #d1d1d1' }}
+                contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #e0e0e0' }}
               />
               <Area
                 yAxisId="temp"
                 type="monotone"
                 dataKey="temperature_2m"
-                stroke="#f59e0b"
+                stroke="#8a5a00"
                 fill="url(#tempGrad)"
                 strokeWidth={2}
                 name="Temp (°C)"
@@ -427,7 +427,7 @@ export const WeatherPanel: React.FC<WeatherPanelProps> = ({
               <Bar
                 yAxisId="precip"
                 dataKey="precipitation"
-                fill="#3b82f6"
+                fill="#0066cc"
                 opacity={0.7}
                 name="Precip (mm)"
                 radius={[2, 2, 0, 0]}
@@ -436,7 +436,7 @@ export const WeatherPanel: React.FC<WeatherPanelProps> = ({
                 yAxisId="temp"
                 type="monotone"
                 dataKey="apparent_temperature"
-                stroke="#ef4444"
+                stroke="#c01f1f"
                 strokeDasharray="3 3"
                 strokeWidth={1.5}
                 dot={false}
@@ -450,15 +450,15 @@ export const WeatherPanel: React.FC<WeatherPanelProps> = ({
         <div className="h-40 w-full mt-4">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={hours48} margin={{ top: 8, right: 8, left: -18, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#d1d1d1" className="dark:opacity-20" />
-              <XAxis dataKey="time" tick={{ fontSize: 12 }} interval="preserveStartEnd" minTickGap={30} stroke="#959599" />
-              <YAxis yAxisId="wind" tick={{ fontSize: 12 }} stroke="#10b981" unit="" />
-              <YAxis yAxisId="hum" orientation="right" tick={{ fontSize: 12 }} stroke="#06b6d4" unit="%" />
+              <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" className="dark:opacity-20" />
+              <XAxis dataKey="time" tick={{ fontSize: 12 }} interval="preserveStartEnd" minTickGap={30} stroke="#a1a1a6" />
+              <YAxis yAxisId="wind" tick={{ fontSize: 12 }} stroke="#1d7a3e" unit="" />
+              <YAxis yAxisId="hum" orientation="right" tick={{ fontSize: 12 }} stroke="#0066cc" unit="%" />
               <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8 }} />
               <Legend wrapperStyle={{ fontSize: 12 }} />
-              <Line yAxisId="wind" type="monotone" dataKey="wind_speed_10m" stroke="#10b981" strokeWidth={1.5} dot={false} name="Wind m/s" />
-              <Line yAxisId="wind" type="monotone" dataKey="wind_gusts_10m" stroke="#059669" strokeDasharray="2 2" dot={false} name="Gust m/s" />
-              <Line yAxisId="hum" type="monotone" dataKey="relative_humidity_2m" stroke="#06b6d4" strokeWidth={1.5} dot={false} name="Humidity %" />
+              <Line yAxisId="wind" type="monotone" dataKey="wind_speed_10m" stroke="#1d7a3e" strokeWidth={1.5} dot={false} name="Wind m/s" />
+              <Line yAxisId="wind" type="monotone" dataKey="wind_gusts_10m" stroke="#1d7a3e" strokeDasharray="2 2" dot={false} name="Gust m/s" />
+              <Line yAxisId="hum" type="monotone" dataKey="relative_humidity_2m" stroke="#0066cc" strokeWidth={1.5} dot={false} name="Humidity %" />
             </LineChart>
           </ResponsiveContainer>
         </div>

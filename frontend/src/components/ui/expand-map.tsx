@@ -100,7 +100,7 @@ export function LocationMap({
   // Color mapping based on hazard severity and risk level
   const isHighRisk = severity >= 0.7 || risk.toLowerCase().includes("high");
   const isModerateRisk = (severity >= 0.4 && severity < 0.7) || risk.toLowerCase().includes("moderate");
-  const riskColor = isHighRisk ? "#e11d48" : isModerateRisk ? "#f59e0b" : "#10b981";
+  const riskColor = isHighRisk ? "#8b0f3a" : isModerateRisk ? "#8a5a00" : "#1d7a3e";
   const riskBg = isHighRisk ? "rgba(225, 29, 72, 0.2)" : isModerateRisk ? "rgba(245, 158, 11, 0.2)" : "rgba(16, 185, 129, 0.2)";
 
   // Format coordinates string if not present

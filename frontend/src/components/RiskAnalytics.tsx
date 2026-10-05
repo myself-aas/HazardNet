@@ -88,20 +88,20 @@ const regionalHazardBreakdown = [
 
 // Region color palette
 const REGION_COLORS = {
-  Sylhet: '#38bdf8',      // Cyan / Sky
-  Rangpur: '#34d399',     // Emerald
-  Rajshahi: '#f59e0b',    // Amber
-  Khulna: '#ef4444',      // Rose / Red
-  Chattogram: '#a855f7',  // Purple
-  Dhaka: '#6366f1'        // Indigo
+  Sylhet: '#0066cc',      // Cyan / Sky
+  Rangpur: '#1d7a3e',     // Emerald
+  Rajshahi: '#8a5a00',    // Amber
+  Khulna: '#c01f1f',      // Rose / Red
+  Chattogram: '#0066cc',  // Purple
+  Dhaka: '#0066cc'        // Indigo
 };
 
 const HAZARD_COLORS = {
-  FlashFlood: '#38bdf8',
-  MonsoonFlood: '#34d399',
-  Cyclone: '#ef4444',
-  Drought: '#f59e0b',
-  ColdWave: '#a855f7'
+  FlashFlood: '#0066cc',
+  MonsoonFlood: '#1d7a3e',
+  Cyclone: '#c01f1f',
+  Drought: '#8a5a00',
+  ColdWave: '#0066cc'
 };
 
 const districtMap: Record<string, District> = {
@@ -154,7 +154,7 @@ export const RiskAnalytics: React.FC<RiskAnalyticsProps> = ({ onSelectDistrict }
     <div className="space-y-6">
 
       {/* Top Banner KPI Header — Modernized Mobile-First */}
-      <div className="bg-white border border-carbon-10 rounded-lg sm:rounded-[20px] md:rounded-[28px] lg:rounded-3xl p-4 sm:p-6 md:p-8 shadow-sm relative overflow-hidden">
+      <div className="bg-white border border-carbon-10 rounded-lg sm:rounded-xl md:rounded-xl lg:rounded-3xl p-4 sm:p-6 md:p-8 shadow-sm relative overflow-hidden">
         
         {/* Subtle Ambient Glow */}
         <div className="absolute top-0 right-0 w-64 sm:w-96 h-64 sm:h-96 bg-carbon-10/30 rounded-full blur-3xl pointer-events-none"></div>
@@ -255,7 +255,7 @@ export const RiskAnalytics: React.FC<RiskAnalyticsProps> = ({ onSelectDistrict }
       </div>
 
       {/* Main Chart 1: Multi-Year Regional Trend Lines */}
-      <div className="bg-white border border-carbon-10 rounded-lg sm:rounded-[20px] md:rounded-[28px] lg:rounded-3xl p-4 sm:p-6 md:p-8 shadow-sm space-y-3 sm:space-y-4">
+      <div className="bg-white border border-carbon-10 rounded-lg sm:rounded-xl md:rounded-xl lg:rounded-3xl p-4 sm:p-6 md:p-8 shadow-sm space-y-3 sm:space-y-4">
         
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-3 border-b border-carbon-20 pb-2.5 sm:pb-3">
           <div className="min-w-0 flex-1">
@@ -293,25 +293,25 @@ export const RiskAnalytics: React.FC<RiskAnalyticsProps> = ({ onSelectDistrict }
               data={trendDataToUse}
               margin={{ top: 10, right: 20, left: -10, bottom: 0 }}
             >
-              <CartesianGrid strokeDasharray="3 3" stroke="#d1d1d1" vertical={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" vertical={false} />
               <XAxis
                 dataKey="year"
-                stroke="#77777a"
+                stroke="#6e6e73"
                 fontSize={12}
                 tickLine={false}
-                axisLine={{ stroke: '#b9b9bb' }}
+                axisLine={{ stroke: '#d2d2d7' }}
               />
               <YAxis
-                stroke="#77777a"
+                stroke="#6e6e73"
                 fontSize={12}
                 tickLine={false}
-                axisLine={{ stroke: '#b9b9bb' }}
+                axisLine={{ stroke: '#d2d2d7' }}
                 unit={metricMode === 'severity' ? '%' : ''}
                 domain={metricMode === 'severity' ? [0, 100] : [0, 'auto']}
               />
               <Tooltip content={<CustomDarkTooltip />} />
               <Legend
-                wrapperStyle={{ paddingTop: '12px', fontSize: '12px', color: '#023246' }}
+                wrapperStyle={{ paddingTop: '12px', fontSize: '12px', color: '#1d1d1f' }}
               />
 
               {visibleRegions.map((region) => (
@@ -323,7 +323,7 @@ export const RiskAnalytics: React.FC<RiskAnalyticsProps> = ({ onSelectDistrict }
                   stroke={REGION_COLORS[region as keyof typeof REGION_COLORS]}
                   strokeWidth={3}
                   dot={{ r: 4, fill: REGION_COLORS[region as keyof typeof REGION_COLORS], strokeWidth: 1.5, stroke: '#ffffff' }}
-                  activeDot={{ r: 7, stroke: '#023246', strokeWidth: 2 }}
+                  activeDot={{ r: 7, stroke: '#1d1d1f', strokeWidth: 2 }}
                 />
               ))}
             </LineChart>
@@ -400,11 +400,11 @@ export const RiskAnalytics: React.FC<RiskAnalyticsProps> = ({ onSelectDistrict }
                     </linearGradient>
                   </defs>
 
-                  <CartesianGrid strokeDasharray="3 3" stroke="#d1d1d1" vertical={false} />
-                  <XAxis dataKey="month" stroke="#77777a" fontSize={12} tickLine={false} />
-                  <YAxis stroke="#77777a" fontSize={12} tickLine={false} unit="%" domain={[0, 100]} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" vertical={false} />
+                  <XAxis dataKey="month" stroke="#6e6e73" fontSize={12} tickLine={false} />
+                  <YAxis stroke="#6e6e73" fontSize={12} tickLine={false} unit="%" domain={[0, 100]} />
                   <Tooltip content={<CustomDarkTooltip />} />
-                  <Legend wrapperStyle={{ fontSize: '12px', color: '#023246' }} />
+                  <Legend wrapperStyle={{ fontSize: '12px', color: '#1d1d1f' }} />
 
                   <Area
                     type="monotone"
@@ -478,11 +478,11 @@ export const RiskAnalytics: React.FC<RiskAnalyticsProps> = ({ onSelectDistrict }
                   layout="vertical"
                   margin={{ top: 10, right: 10, left: 20, bottom: 0 }}
                 >
-                  <CartesianGrid strokeDasharray="3 3" stroke="#d1d1d1" horizontal={false} />
-                  <XAxis type="number" stroke="#77777a" fontSize={12} unit="%" domain={[0, 100]} />
-                  <YAxis dataKey="region" type="category" stroke="#77777a" fontSize={12} width={90} tickLine={false} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" horizontal={false} />
+                  <XAxis type="number" stroke="#6e6e73" fontSize={12} unit="%" domain={[0, 100]} />
+                  <YAxis dataKey="region" type="category" stroke="#6e6e73" fontSize={12} width={90} tickLine={false} />
                   <Tooltip content={<CustomDarkTooltip />} />
-                  <Legend wrapperStyle={{ fontSize: '12px', color: '#023246' }} />
+                  <Legend wrapperStyle={{ fontSize: '12px', color: '#1d1d1f' }} />
 
                   <Bar dataKey="FlashFlood" name="Flash Flood" stackId="a" fill={HAZARD_COLORS.FlashFlood} />
                   <Bar dataKey="MonsoonFlood" name="Monsoon Flood" stackId="a" fill={HAZARD_COLORS.MonsoonFlood} />

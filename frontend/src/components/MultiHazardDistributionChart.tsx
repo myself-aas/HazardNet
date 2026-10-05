@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { APPLE_HAZARD, APPLE_NEUTRAL } from '@hazardnet/design-system';
 import defaultDistribution from '../../public/data/historical/hazard-distribution.json';
 
 export interface HazardDistributionRecord {
@@ -17,17 +18,26 @@ export interface MultiHazardDistributionChartProps {
   lowBandwidth?: boolean;
 }
 
+/**
+ * Series colours, in the order the donut draws them, resolved from the one
+ * hazard palette. Previously ten Tailwind defaults with no contrast guarantee
+ * and no relationship to the hazard colour used on any other surface.
+ *
+ * Two of the ten slices ("Epidemic", "Earthquake") are outside the eight
+ * documented hazard classes, so they fall back to neutral ink rather than
+ * inventing a ninth and tenth hue that would break the >=22 dE separation.
+ */
 const COLOR_PALETTE = [
-  '#3b82f6', // Flood (Blue)
-  '#ef4444', // Tropical Cyclone (Red)
-  '#f59e0b', // Severe Local Storm (Amber)
-  '#06b6d4', // Flash Flood (Cyan)
-  '#8b5cf6', // Cold Wave (Purple)
-  '#ec4899', // Epidemic (Pink)
-  '#f97316', // Earthquake (Orange)
-  '#dc2626', // Fire (Dark Red)
-  '#eab308', // Drought (Yellow)
-  '#fb923c', // Heat Wave (Light Orange)
+  APPLE_HAZARD.flood.text,
+  APPLE_HAZARD.cyclone.text,
+  APPLE_HAZARD.storm.text,
+  APPLE_HAZARD.flashFlood.text,
+  APPLE_HAZARD.coldWave.text,
+  APPLE_NEUTRAL['70'],
+  APPLE_NEUTRAL['50'],
+  APPLE_HAZARD.fire.text,
+  APPLE_HAZARD.drought.text,
+  APPLE_HAZARD.heatWave.text,
 ];
 
 export const MultiHazardDistributionChart: React.FC<MultiHazardDistributionChartProps> = ({
@@ -125,7 +135,7 @@ export const MultiHazardDistributionChart: React.FC<MultiHazardDistributionChart
                     key={slice.hazard_type}
                     d={slice.path}
                     fill={slice.color}
-                    stroke="#17171b"
+                    stroke="#1d1d1f"
                     strokeWidth={isHovered ? 2.5 : 1}
                     className="cursor-pointer transition-transform hover:opacity-90 focus:outline-hidden"
                     tabIndex={0}

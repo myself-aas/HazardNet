@@ -256,7 +256,7 @@ const UserDashboardPage: React.FC = () => {
             </div>
           </div>
           <div className="mt-3 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-            <h1 className="text-[28px] font-bold leading-tight tracking-tight text-carbon-90 sm:text-[32px]">
+            <h1 className="text-ap-lead font-bold leading-tight tracking-tight text-carbon-90 sm:text-ap-display-md">
               {userProfile?.displayName || user?.email?.split('@')[0] || 'Welcome'}
             </h1>
             {username && <span className="text-sm font-bold text-carbon-60">@{username}</span>}

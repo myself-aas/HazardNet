@@ -807,8 +807,7 @@ source/test/workflow references now point at that section.)
 
 #### `docs/design-system/`  (2 files)
 
-- `docs/design-system/MERIDIAN.md`
-- `docs/design-system/MIGRATION_PLAN.md`
+- `docs/design-system/APPLE.md`
 
 #### `docs/monitoring/`  (1 file)
 

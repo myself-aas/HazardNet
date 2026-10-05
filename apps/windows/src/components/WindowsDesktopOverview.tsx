@@ -5,7 +5,7 @@
 
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
-import { HDS_TOKENS, M3_EXPRESSIVE_TOKENS } from '@hazardnet/design-system';
+import { APPLE_NATIVE } from '@hazardnet/design-system';
 import { FORECAST_HORIZONS, severityBin } from '@hazardnet/core';
 
 export interface WindowsDesktopOverviewProps {
@@ -23,7 +23,7 @@ export const WindowsDesktopOverview: React.FC<WindowsDesktopOverviewProps> = ({
 }) => {
   const desktopPadding = 24;
   const masterPaneWidth = 320;
-  const targetHitArea = M3_EXPRESSIVE_TOKENS.touchTargetFloor.googlePlayDp; // 48dp
+  const targetHitArea = APPLE_NATIVE.touch.min; // 48dp
 
   const keyboardShortcuts = [
     { key: 'Ctrl+F', action: 'Search districts' },
@@ -114,16 +114,16 @@ export const WindowsDesktopOverview: React.FC<WindowsDesktopOverviewProps> = ({
                 {
                   backgroundColor:
                     bin === 'High'
-                      ? HDS_TOKENS.colors.severity.high.surface
+                      ? APPLE_NATIVE.colors.severity.high.surface
                       : bin === 'Moderate'
-                      ? HDS_TOKENS.colors.severity.moderate.surface
-                      : HDS_TOKENS.colors.severity.low.surface,
+                      ? APPLE_NATIVE.colors.severity.moderate.surface
+                      : APPLE_NATIVE.colors.severity.low.surface,
                   borderColor:
                     bin === 'High'
-                      ? HDS_TOKENS.colors.severity.high.border
+                      ? APPLE_NATIVE.colors.severity.high.border
                       : bin === 'Moderate'
-                      ? HDS_TOKENS.colors.severity.moderate.border
-                      : HDS_TOKENS.colors.severity.low.border,
+                      ? APPLE_NATIVE.colors.severity.moderate.border
+                      : APPLE_NATIVE.colors.severity.low.border,
                 },
               ]}
             >
@@ -133,10 +133,10 @@ export const WindowsDesktopOverview: React.FC<WindowsDesktopOverviewProps> = ({
                   {
                     color:
                       bin === 'High'
-                        ? HDS_TOKENS.colors.severity.high.color
+                        ? APPLE_NATIVE.colors.severity.high.color
                         : bin === 'Moderate'
-                        ? HDS_TOKENS.colors.severity.moderate.color
-                        : HDS_TOKENS.colors.severity.low.color,
+                        ? APPLE_NATIVE.colors.severity.moderate.color
+                        : APPLE_NATIVE.colors.severity.low.color,
                   },
                 ]}
               >
@@ -181,7 +181,7 @@ export const WindowsDesktopOverview: React.FC<WindowsDesktopOverviewProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: HDS_TOKENS.colors.surfaceCanvas,
+    backgroundColor: APPLE_NATIVE.colors.surfaceCanvas,
   },
   masterDetail: {
     flexDirection: 'row',
@@ -189,8 +189,8 @@ const styles = StyleSheet.create({
     gap: 24,
   },
   masterPane: {
-    backgroundColor: HDS_TOKENS.colors.surfaceWhite,
-    borderRadius: HDS_TOKENS.radii.card,
+    backgroundColor: APPLE_NATIVE.colors.surfaceWhite,
+    borderRadius: APPLE_NATIVE.radii.card,
     padding: 16,
     // @ts-expect-error - shadow props are web-compatible but RNW uses elevation
     shadowColor: '#000',
@@ -200,8 +200,8 @@ const styles = StyleSheet.create({
   },
   detailPane: {
     flex: 1,
-    backgroundColor: HDS_TOKENS.colors.surfaceWhite,
-    borderRadius: HDS_TOKENS.radii.card,
+    backgroundColor: APPLE_NATIVE.colors.surfaceWhite,
+    borderRadius: APPLE_NATIVE.radii.card,
     padding: 20,
     // @ts-expect-error - shadow props are web-compatible but RNW uses elevation
     shadowColor: '#000',
@@ -212,31 +212,31 @@ const styles = StyleSheet.create({
   paneTitle: {
     fontSize: 16,
     fontWeight: '700',
-    color: HDS_TOKENS.colors.inkPrimary,
+    color: APPLE_NATIVE.colors.inkPrimary,
     marginBottom: 12,
   },
   districtCard: {
     padding: 12,
-    backgroundColor: HDS_TOKENS.colors.surfaceCanvas,
+    backgroundColor: APPLE_NATIVE.colors.surfaceCanvas,
     borderRadius: 12,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: HDS_TOKENS.colors.glassBorderLight,
+    borderColor: APPLE_NATIVE.colors.glassBorderLight,
   },
   districtLabel: {
     fontSize: 11,
     textTransform: 'uppercase',
-    color: HDS_TOKENS.colors.inkMuted,
+    color: APPLE_NATIVE.colors.inkMuted,
     marginBottom: 2,
   },
   districtValue: {
     fontSize: 18,
     fontWeight: '700',
-    color: HDS_TOKENS.colors.inkPrimary,
+    color: APPLE_NATIVE.colors.inkPrimary,
   },
   districtMeta: {
     fontSize: 10,
-    color: HDS_TOKENS.colors.inkMuted,
+    color: APPLE_NATIVE.colors.inkMuted,
     marginTop: 4,
   },
   shortcutSection: {
@@ -245,7 +245,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 12,
     fontWeight: '600',
-    color: HDS_TOKENS.colors.inkSoft,
+    color: APPLE_NATIVE.colors.inkSoft,
     marginBottom: 8,
     textTransform: 'uppercase',
   },
@@ -255,7 +255,7 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   kbdBadge: {
-    backgroundColor: HDS_TOKENS.colors.surfaceSunken,
+    backgroundColor: APPLE_NATIVE.colors.surfaceSunken,
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 4,
@@ -266,12 +266,12 @@ const styles = StyleSheet.create({
   kbdText: {
     fontSize: 10,
     fontWeight: '600',
-    color: HDS_TOKENS.colors.inkPrimary,
-    fontFamily: HDS_TOKENS.typography.families.mono,
+    color: APPLE_NATIVE.colors.inkPrimary,
+    fontFamily: APPLE_NATIVE.typography.families.mono,
   },
   shortcutAction: {
     fontSize: 12,
-    color: HDS_TOKENS.colors.inkSoft,
+    color: APPLE_NATIVE.colors.inkSoft,
     flex: 1,
   },
   horizonSection: {
@@ -283,7 +283,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   horizonChip: {
-    backgroundColor: HDS_TOKENS.colors.surfaceSunken,
+    backgroundColor: APPLE_NATIVE.colors.surfaceSunken,
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 999,
@@ -291,25 +291,25 @@ const styles = StyleSheet.create({
   horizonChipText: {
     fontSize: 11,
     fontWeight: '600',
-    color: HDS_TOKENS.colors.inkSoft,
+    color: APPLE_NATIVE.colors.inkSoft,
   },
   card: {
-    backgroundColor: HDS_TOKENS.colors.surfaceCanvas,
+    backgroundColor: APPLE_NATIVE.colors.surfaceCanvas,
     borderRadius: 12,
     padding: 14,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: HDS_TOKENS.colors.glassBorderLight,
+    borderColor: APPLE_NATIVE.colors.glassBorderLight,
   },
   cardTitle: {
     fontSize: 14,
     fontWeight: '700',
-    color: HDS_TOKENS.colors.inkPrimary,
+    color: APPLE_NATIVE.colors.inkPrimary,
     marginBottom: 4,
   },
   cardMeta: {
     fontSize: 12,
-    color: HDS_TOKENS.colors.inkMuted,
+    color: APPLE_NATIVE.colors.inkMuted,
     marginBottom: 8,
   },
   severityBadge: {
@@ -336,7 +336,7 @@ const styles = StyleSheet.create({
     minHeight: 44,
   },
   primaryButton: {
-    backgroundColor: HDS_TOKENS.colors.primaryRed,
+    backgroundColor: APPLE_NATIVE.colors.primary,
   },
   primaryButtonText: {
     color: '#fff',
@@ -344,7 +344,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
   secondaryButton: {
-    backgroundColor: HDS_TOKENS.colors.nasaBlue,
+    backgroundColor: APPLE_NATIVE.colors.primary,
   },
   secondaryButtonText: {
     color: '#fff',
@@ -354,10 +354,10 @@ const styles = StyleSheet.create({
   ghostButton: {
     backgroundColor: 'transparent',
     borderWidth: 1,
-    borderColor: HDS_TOKENS.colors.glassBorderLight,
+    borderColor: APPLE_NATIVE.colors.glassBorderLight,
   },
   ghostButtonText: {
-    color: HDS_TOKENS.colors.inkSoft,
+    color: APPLE_NATIVE.colors.inkSoft,
     fontWeight: '600',
     fontSize: 13,
   },
@@ -371,12 +371,12 @@ const styles = StyleSheet.create({
   infoTitle: {
     fontSize: 12,
     fontWeight: '700',
-    color: HDS_TOKENS.colors.inkSoft,
+    color: APPLE_NATIVE.colors.inkSoft,
     marginBottom: 4,
   },
   infoText: {
     fontSize: 11,
-    color: HDS_TOKENS.colors.inkMuted,
+    color: APPLE_NATIVE.colors.inkMuted,
     lineHeight: 16,
   },
 });

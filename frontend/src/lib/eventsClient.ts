@@ -470,7 +470,7 @@ export async function fetchHazardEvents(hazardId: string): Promise<HazardEventsR
     meta: {
       id: hazardId.toLowerCase(),
       name: displayName,
-      color: '#EF4444',
+      color: '#c01f1f',
       icon: 'AlertTriangle',
       season: 'Variable',
     },

@@ -625,7 +625,7 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
           role="dialog"
           aria-modal="true"
           aria-labelledby="disaster-detail-modal-title-mobile"
-          className={`w-full bg-white border-t border-carbon-20 rounded-t-[28px] shadow-2xl flex flex-col pointer-events-auto transition-all duration-300 relative z-10 text-carbon-80 overflow-hidden ${
+          className={`w-full bg-white border-t border-carbon-20 rounded-t-xl shadow-2xl flex flex-col pointer-events-auto transition-all duration-300 relative z-10 text-carbon-80 overflow-hidden ${
             sheetMode === 'peek'
               ? 'max-h-[160px]'
               : sheetMode === 'half'

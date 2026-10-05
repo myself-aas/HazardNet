@@ -150,7 +150,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
       onMouseDown={(e) => e.preventDefault()} // keep the text selection
       onClick={onClick}
       disabled={disabled}
-      className={`h-8 min-w-8 px-1.5 rounded-lg text-[13px] font-black transition-colors cursor-pointer disabled:opacity-40 ${
+      className={`h-8 min-w-8 px-1.5 rounded-lg text-ap-caption font-black transition-colors cursor-pointer disabled:opacity-40 ${
         active ? 'bg-amber-100 text-amber-900 border border-amber-300' : 'text-carbon-60 hover:bg-carbon-10 border border-transparent'
       }`}
     >
@@ -194,7 +194,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
         <span className="w-px h-6 bg-carbon-20 mx-1" aria-hidden="true" />
 
         <div className="flex items-center gap-1" role="group" aria-label="Text color">
-          {['#17171b', '#b91c1c', '#1d4ed8', '#15803d', '#b60109'].map((color) => (
+          {['#1d1d1f', '#c01f1f', '#0066cc', '#1d7a3e', '#c01f1f'].map((color) => (
             <button
               key={color}
               type="button"

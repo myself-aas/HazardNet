@@ -44,7 +44,7 @@ export const RemotionRoot: React.FC = () => {
         height={1080}
         defaultProps={{
           title: 'A forecast you can check, not just read',
-          accent: '#1c67e3',
+          accent: '#0066cc',
         }}
       />
       {/* RunVisual — card showcase */}

@@ -60,7 +60,7 @@ export const Blogs: React.FC = () => {
           <span className="text-xs text-carbon-60 font-semibold">HazardNet Knowledge Base</span>
         </div>
 
-        <h1 className="text-[28px] sm:text-[32px] font-bold leading-tight text-carbon-90 tracking-tight">
+        <h1 className="text-ap-lead sm:text-ap-display-md font-bold leading-tight text-carbon-90 tracking-tight">
           HazardNet AI Blog & Field Deployment Studies
         </h1>
         <p className="text-carbon-60 text-base leading-[1.62] max-w-3xl">

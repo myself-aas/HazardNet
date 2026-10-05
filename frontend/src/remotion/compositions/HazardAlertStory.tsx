@@ -40,7 +40,7 @@ export const HazardAlertStory: React.FC<HazardAlertStoryProps> = ({
   });
 
   const isCritical = severityScore >= 0.75;
-  const alertColor = isCritical ? '#f64137' : severityScore >= 0.5 ? '#ea6f24' : '#1c67e3';
+  const alertColor = isCritical ? '#c01f1f' : severityScore >= 0.5 ? '#b3400f' : '#0066cc';
   const alertLabel = isCritical ? 'CRITICAL EMERGENCY' : severityScore >= 0.5 ? 'WARNING WATCH' : 'ADVISORY';
 
   return (

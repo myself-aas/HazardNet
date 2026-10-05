@@ -17,7 +17,7 @@ export const NotFoundPage: React.FC = () => {
         </div>
 
         <div className="space-y-2">
-          <h1 className="text-[28px] font-bold leading-[1.2] tracking-tight text-carbon-90">
+          <h1 className="text-ap-lead font-bold leading-[1.2] tracking-tight text-carbon-90">
             Page not found
           </h1>
           <p className="text-base leading-[1.62] text-carbon-70">

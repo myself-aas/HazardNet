@@ -38,7 +38,9 @@ describe('Phase 6 surface contracts (§14.3 / §14.7 / §14.8)', () => {
       expect(layout).not.toMatch(/bg-gradient-to-r from-nasa-red/);
       expect(layout).not.toMatch(/rounded-3xl/);
       expect(layout).not.toMatch(/shadow-xl/);
-      expect(layout).toMatch(/text-\[28px\]/);
+      // `text-ap-lead` is the named Apple style: the same 28px, sourced from the
+      // system instead of an arbitrary value. See packages/design-system/src/apple.ts.
+      expect(layout).toMatch(/text-ap-lead/);
     });
 
     it('uses the crimson shade + white on submit, not carbon-black on nasa-red', () => {
@@ -62,7 +64,7 @@ describe('Phase 6 surface contracts (§14.3 / §14.7 / §14.8)', () => {
       expect(notFound).toMatch(/to="\/"/);
       expect(notFound).toMatch(/to="\/live"/);
       expect(notFound).toMatch(/min-h-\[44px\]/);
-      expect(notFound).toMatch(/text-\[28px\]/);
+      expect(notFound).toMatch(/text-ap-lead/);
     });
   });
 });

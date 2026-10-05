@@ -245,7 +245,7 @@ export const UserProfilePage: React.FC = () => {
             )}
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
-                <h1 className="text-[28px] font-bold leading-tight text-carbon-90 truncate max-w-[55vw] sm:max-w-none">{displayName || 'User Profile'}</h1>
+                <h1 className="text-ap-lead font-bold leading-tight text-carbon-90 truncate max-w-[55vw] sm:max-w-none">{displayName || 'User Profile'}</h1>
                 <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-carbon-10 text-carbon-70 border border-carbon-20 whitespace-nowrap">
                   {personaInfo.label}
                 </span>

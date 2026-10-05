@@ -40,6 +40,42 @@ token) and almost never *adoption* (does the product actually use the system), *
 
 ---
 
+## Resolution status — updated after the Apple migration
+
+The audit was followed by a decision to delete every dead design system and implement the Apple
+system (`npx getdesign@latest add apple`) as the single system across the whole frontend. That
+work is done, and it closes most of what is below. The findings are **left as written** — they are
+the record of what was true at audit time — with the disposition noted here.
+
+| # | Severity | Status | How |
+|---|---|---|---|
+| F-01 | HIGH | **Fixed** | Two independent pre-hydration mechanisms: a `prefers-color-scheme` arm in `apple.css` that needs no JavaScript, plus an inline un-deferred boot script in `index.html` that honours an explicit choice disagreeing with the OS. Pinned by 6 tests in `appleParity`. |
+| F-02 | HIGH | **Resolved by deletion** | Meridian no longer exists. Its component layer, tokens and stylesheet are gone; `appleParity` asserts the 10 removed paths stay removed. Adoption is now the only option, not a choice. |
+| F-03 | HIGH | **Fixed** | One z-index scale, published by the surviving system. |
+| F-04 | MEDIUM-HIGH | **Fixed** | Contrast is now measured on **both** grounds — white and parchment `#f5f5f7` — for every text neutral, every severity level and every hazard hue. This also moved the grey floor: carbon-50 `#6e6e73` clears AA on both (5.07 / 4.66) and is the smallest text grey; carbon-40 is non-text only. |
+| F-05 | MEDIUM | **Fixed** | `appleParity` reads expected values back out of `DESIGN.md` rather than trusting transcription, and pins the full neutral ramp, all 16 type styles, radii, spacing, severity and motion. |
+| F-06 | MEDIUM | **Fixed** | The gate now validates against the document that *is* the design system. |
+| F-07 | MEDIUM | **Partly fixed** | The shareable artefacts (Remotion compositions, hero media) are now explicitly classed as *media*, not chrome — content the system does not govern — and that exemption is enforced and justified in `colourDiscipline.test.js` rather than being an unexamined gap. |
+| F-08 | MEDIUM | **Fixed** | Both cited sources exist: `DESIGN.md` (the specification) and `docs/design-system/APPLE.md` (HazardNet's four extensions). The stale `MERIDIAN.md` and `MIGRATION_PLAN.md` are deleted. |
+| F-09 | LOW-MEDIUM | **Fixed** | The `--hds-*` / `--hn-*` shim is gone: 173 call sites were rewritten to the `--ap-*` tokens they aliased and the 93 alias declarations deleted. CSS shipped dropped from 259 kB to 251 kB. |
+
+**Two defects the migration found that this audit did not**, both caught by new tests rather than
+by review:
+
+- The native primary button was drawing **ink black**, not Action Blue — `primaryAction` was wired
+  to `roles.label` in `apps/mobile/src/theme/theme.ts`, a leftover grammar from the previous
+  system. Caught by `nativeAppleParity`.
+- Six components each kept a **private hazard palette** built from Tailwind defaults, and they
+  disagreed with one another: "Tropical Cyclone" was `#7c3aed`, `#ef4444` and `#f43f5e` depending
+  on the file. Now one solved, contrast-verified palette (`APPLE_HAZARD`), enforced by
+  `colourDiscipline`.
+
+**Current state:** 168 web suites / 1730 tests and 12 native suites / 108 tests pass; all six
+design gates pass; 435 off-system colour literals reduced to a justified exemption list of
+third-party brand marks, cinematic media and one generated asset.
+
+---
+
 ## Findings
 
 ### F-01 · HIGH · Dark-mode users get a light-painted flash on all 108 prerendered routes

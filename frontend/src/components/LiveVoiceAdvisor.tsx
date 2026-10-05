@@ -327,10 +327,10 @@ export const LiveVoiceAdvisor: React.FC<LiveVoiceAdvisorProps> = ({
       ctx.beginPath();
       ctx.lineWidth = 3;
       ctx.strokeStyle = status === 'speaking' 
-        ? '#0284c7' 
+        ? '#0066cc' 
         : isMuted 
-        ? '#959599' 
-        : '#10b981';
+        ? '#a1a1a6' 
+        : '#1d7a3e';
 
       for (let x = 0; x < w; x++) {
         const normX = x / w;

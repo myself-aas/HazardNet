@@ -119,7 +119,7 @@ export const SavedAssessmentsModalUI: React.FC<SavedAssessmentsModalUIProps> = (
                         </div>
                         {item.notes && (
                           <p className="text-xs text-carbon-70 italic mt-1.5 bg-white p-2 rounded-xl border border-carbon-20">
-                            "{item.notes}"
+"{item.notes}"
                           </p>
                         )}
                       </div>

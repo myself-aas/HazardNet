@@ -173,10 +173,10 @@ export function useLeafletMap(
         const isMod = maxSev >= 0.4 && maxSev < 0.7;
 
         const bgGradient = isHigh
-          ? 'linear-gradient(135deg, #dc2626 0%, #991b1b 100%)'
+          ? 'linear-gradient(135deg, #c01f1f 0%, #c01f1f 100%)'
           : isMod
-          ? 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)'
-          : 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
+          ? 'linear-gradient(135deg, #8a5a00 0%, #8a5a00 100%)'
+          : 'linear-gradient(135deg, #1d7a3e 0%, #1d7a3e 100%)';
 
         const glowColor = isHigh ? 'rgba(220, 38, 38, 0.65)' : isMod ? 'rgba(245, 158, 11, 0.65)' : 'rgba(16, 185, 129, 0.65)';
         const pulseRing = isHigh
@@ -201,7 +201,7 @@ export function useLeafletMap(
               align-items: center;
               justify-content: center;
               color: #ffffff;
-              font-family: var(--hds-font-family-heading);
+              font-family: var(--ap-font-display);
               cursor: pointer;
               transition: transform 0.2s ease;
               outline: none;

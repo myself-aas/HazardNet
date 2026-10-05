@@ -24,7 +24,7 @@ export const badgeSchema = {
   ...Interactive.baseSchema,
   color: {
     type: 'color',
-    default: '#0b84ff',
+    default: '#0066cc',
     description: 'Badge color',
   },
   padding: {
@@ -43,7 +43,7 @@ const BadgeInner = forwardRef<
   BadgeProps & {
     readonly controls: SequenceControls | undefined;
   }
->(({ children, color = '#0b84ff', padding = 16, style, name, controls, ...sequenceProps }, ref) => {
+>(({ children, color = '#0066cc', padding = 16, style, name, controls, ...sequenceProps }, ref) => {
   const outlineRef = useRef<HTMLDivElement>(null);
 
   useImperativeHandle(ref, () => outlineRef.current as HTMLDivElement, [] );

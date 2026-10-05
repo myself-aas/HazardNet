@@ -44,7 +44,7 @@ export const PrintQrCode: React.FC<PrintQrCodeProps> = ({
           size={size}
           level="M"
           includeMargin={false}
-          fgColor="#17171b"
+          fgColor="#1d1d1f"
           bgColor="#ffffff"
         />
       </div>

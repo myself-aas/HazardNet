@@ -168,14 +168,14 @@ export const OverviewSection: React.FC<{ onNavigate: (tab: 'profile' | 'connecto
 
       {/* Stats */}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <StatTile icon="trending_up" label="Profile completion" value={`${completion.percent}%`} accent="#17171b" />
-        <StatTile icon="hub" label="Connectors" value={connectorCount} accent="#1c67e3" />
-        <StatTile icon="bookmark" label="Saved assessments" value={assessmentCount ?? '…'} accent="#0b3d91" />
+        <StatTile icon="trending_up" label="Profile completion" value={`${completion.percent}%`} accent="#1d1d1f" />
+        <StatTile icon="hub" label="Connectors" value={connectorCount} accent="#0066cc" />
+        <StatTile icon="bookmark" label="Saved assessments" value={assessmentCount ?? '…'} accent="#0066cc" />
         <StatTile
           icon="calendar_month"
           label="Member since"
           value={userProfile?.createdAt ? formatDate(userProfile.createdAt, { monthYear: true }) : '—'}
-          accent="#17171b"
+          accent="#1d1d1f"
         />
       </div>
 

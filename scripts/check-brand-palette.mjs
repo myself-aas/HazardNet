@@ -162,7 +162,7 @@ function main() {
       }
       process.stdout.write(`\nFix: map each value onto a declared token (carbon-*/nasa-blue/amber-*/
      emerald-*/rose-*/chart-*) or, for data colours, add it to ALLOWED_HEX with the test
-     that pins it. See docs/design-system/MERIDIAN.md.\n`);
+     that pins it. See docs/design-system/APPLE.md.\n`);
     }
   }
 

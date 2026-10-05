@@ -5,7 +5,7 @@
  */
 
 import React from 'react';
-import { HDS_TOKENS, M3_EXPRESSIVE_TOKENS } from '@hazardnet/design-system';
+import { APPLE_NATIVE } from '@hazardnet/design-system';
 
 export interface FilterChip {
   id: string;
@@ -28,13 +28,13 @@ export const ExpressiveFloatingControlBar: React.FC<ExpressiveFloatingControlBar
   chips = [],
   onSelectChip,
 }) => {
-  const targetHeight = M3_EXPRESSIVE_TOKENS.touchTargetFloor.googlePlayDp; // 48dp minimum
-  const pillRadius = M3_EXPRESSIVE_TOKENS.containerShape.pill; // 9999
+  const targetHeight = APPLE_NATIVE.touch.min; // 48dp minimum
+  const pillRadius = APPLE_NATIVE.radii.pill; // 9999
 
   const containerStyle = {
-    backgroundColor: HDS_TOKENS.colors.glassLight,
-    borderRadius: M3_EXPRESSIVE_TOKENS.containerShape.fullExpressive,
-    borderColor: HDS_TOKENS.colors.glassBorderLight,
+    backgroundColor: APPLE_NATIVE.colors.glassLight,
+    borderRadius: APPLE_NATIVE.radii.card,
+    borderColor: APPLE_NATIVE.colors.glassBorderLight,
     borderWidth: 1,
     padding: 8,
     gap: 8,
@@ -43,8 +43,8 @@ export const ExpressiveFloatingControlBar: React.FC<ExpressiveFloatingControlBar
   const inputStyle = {
     minHeight: targetHeight,
     paddingHorizontal: 16,
-    borderRadius: M3_EXPRESSIVE_TOKENS.containerShape.control,
-    backgroundColor: M3_EXPRESSIVE_TOKENS.containers.surfaceContainerHigh,
+    borderRadius: APPLE_NATIVE.radii.control,
+    backgroundColor: APPLE_NATIVE.colors.surfaceRaised,
   };
 
   return {

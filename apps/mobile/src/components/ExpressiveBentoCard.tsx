@@ -5,7 +5,7 @@
  */
 
 import React from 'react';
-import { HDS_TOKENS, M3_EXPRESSIVE_TOKENS, getSeverityTokenScore } from '@hazardnet/design-system';
+import { APPLE_NATIVE, getSeverityTokenScore } from '@hazardnet/design-system';
 
 export interface ExpressiveBentoCardProps {
   title: string;
@@ -14,7 +14,7 @@ export interface ExpressiveBentoCardProps {
   subtitle?: string;
   severityScore?: number;
   onPress?: () => void;
-  expressiveShape?: keyof typeof M3_EXPRESSIVE_TOKENS.containerShape;
+  expressiveShape?: keyof typeof APPLE_NATIVE.radii;
 }
 
 export const ExpressiveBentoCard: React.FC<ExpressiveBentoCardProps> = ({
@@ -27,13 +27,13 @@ export const ExpressiveBentoCard: React.FC<ExpressiveBentoCardProps> = ({
   expressiveShape = 'semiExpressive',
 }) => {
   const severityToken = severityScore !== undefined ? getSeverityTokenScore(severityScore) : null;
-  const borderRadius = M3_EXPRESSIVE_TOKENS.containerShape[expressiveShape] ?? 16;
-  const minHitHeight = M3_EXPRESSIVE_TOKENS.touchTargetFloor.googlePlayDp; // 48dp for Google Play
+  const borderRadius = APPLE_NATIVE.radii[expressiveShape] ?? 16;
+  const minHitHeight = APPLE_NATIVE.touch.min; // 48dp for Google Play
 
   const cardStyle = {
     borderRadius,
     minHeight: minHitHeight * 2,
-    backgroundColor: severityToken ? severityToken.surface : M3_EXPRESSIVE_TOKENS.containers.surfaceContainerLow,
+    backgroundColor: severityToken ? severityToken.surface : APPLE_NATIVE.colors.surfaceSunken,
     borderColor: severityToken ? severityToken.border : 'rgba(23, 23, 27, 0.12)',
     borderWidth: 1,
     padding: 16,

@@ -193,8 +193,8 @@ export const DistrictRiskMap: React.FC<DistrictRiskMapProps> = ({
               <path
                 key={div.id}
                 d={div.path}
-                fill={div.fill || '#17171b'}
-                stroke={div.stroke || '#444447'}
+                fill={div.fill || '#1d1d1f'}
+                stroke={div.stroke || '#333333'}
                 strokeWidth={0.35}
                 strokeDasharray="1, 1"
               />
@@ -276,7 +276,7 @@ export const DistrictRiskMap: React.FC<DistrictRiskMapProps> = ({
                     cy={d.cy}
                     r={radius}
                     fill={fill}
-                    stroke={isSelected ? '#ffffff' : '#17171b'}
+                    stroke={isSelected ? '#ffffff' : '#1d1d1f'}
                     strokeWidth={isSelected ? 0.6 : 0.3}
                   />
 
@@ -307,19 +307,19 @@ export const DistrictRiskMap: React.FC<DistrictRiskMapProps> = ({
         <div className="flex items-center gap-2">
           <span className="text-carbon-40 font-medium">Vulnerability Index:</span>
           <div className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded-full bg-[#16a34a]" />
+            <span className="w-3 h-3 rounded-full bg-[#1d7a3e]" />
             <span className="text-carbon-40 text-xs">Low (&lt;0.40)</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded-full bg-[#ea580c]" />
+            <span className="w-3 h-3 rounded-full bg-[#b3400f]" />
             <span className="text-carbon-40 text-xs">Moderate (0.40–0.65)</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded-full bg-[#dc2626]" />
+            <span className="w-3 h-3 rounded-full bg-[#c01f1f]" />
             <span className="text-carbon-40 text-xs">High (0.65–0.85)</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded-full bg-[#7f1d1d]" />
+            <span className="w-3 h-3 rounded-full bg-[#8b0f3a]" />
             <span className="text-carbon-40 text-xs">Critical (&ge;0.85)</span>
           </div>
         </div>

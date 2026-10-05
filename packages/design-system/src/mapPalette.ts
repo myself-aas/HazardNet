@@ -1,74 +1,75 @@
 /**
- * Map palette — every colour the live map draws, keyed by the role it plays.
+ * Map palette — the cartographic data layer of the Apple design system.
  *
- * Why this exists (V-P1-1 in `docs/audits/2026-10-03-landing-live-hero-audit.md`): the live map
- * used to hold 79 hex literals inline, in a 2,400-line component. Dark mode, high-contrast mode,
- * the low-bandwidth collapse and the React Native theme each had to be re-derived inside that one
- * file, while every surrounding component followed a token change for free. It is now the only
- * place a map colour is written down, and the native map screen can import the same object.
+ * A map is not chrome. Its colours answer "how much rain fell here", not "is this clickable", so
+ * they are a DATA ENCODING and fall under the same sanctioned exception as severity: DESIGN.md's
+ * single-accent rule governs interactive chrome, and WCAG 1.4.1 forbids encoding a quantity in a
+ * hue that nothing else repeats.
  *
- * Two kinds of entry live here, and they are labelled:
+ * What changed in the Apple migration: every chrome value now resolves to an Apple token instead
+ * of a NASA carbon step, and the risk/heat ramps resolve to the severity scale in `apple.ts`, so
+ * a "high" district reads in exactly the same colour on the map, in a badge and in a table.
  *
- *   - Chrome and text are the design system's own values, referenced from `HDS_NASA_TOKENS` —
- *     not retyped. If a carbon step moves, the map moves with it.
- *   - The ramps below (risk, heat gradient, map interactivity) are *data encodings*: the same
- *     deliberate exception the token docs already record for the hazard palette. Values are
- *     literals on purpose and are kept byte-identical to what shipped, because swapping a data
- *     hue is a design decision with a contrast argument behind it, not an extraction.
- *     `MAP_INTERACTIVE` is the one group that is neither: it is stock Tailwind `sky`, and it is
- *     the last off-system interactive hue on the route. It is isolated here so the pass that
- *     replaces it has exactly one file to change.
- *
- * 2026-10-05: the `MAP_SENSOR_SITES` group (three hard-coded "storm cells") and the old
- * `MAP_RADAR_BANDS` name were removed with the fake Doppler radar they decorated. The heat
- * gradient kept its exact colours under the honest name `MAP_HEAT_RAMP`.
+ * The GIBS rain ramp is the one set of literals left standing, and deliberately: those nine
+ * values are not a HazardNet design decision, they are a transcription of the colours NASA GIBS
+ * has already baked into the `IMERG_Precipitation_Rate` tiles. Re-tinting them would make the
+ * legend lie about the imagery underneath it.
  */
 
-import { HDS_NASA_TOKENS } from './tokens';
-
-const C = HDS_NASA_TOKENS.colors;
+import { APPLE_COLORS, APPLE_NEUTRAL, APPLE_SEVERITY } from './apple';
 
 /** Surfaces, rules and text — every value is the token, not a copy of it. */
 export const MAP_CHROME = {
   /** Popup and chip surfaces, marker fill, text on dark chips. */
-  surface: C.spacesuitWhite,
+  surface: APPLE_COLORS.canvas,
   /** Meta labels (uppercase captions). */
-  muted: C.carbon50,
+  muted: APPLE_NEUTRAL['50'],
   /** Secondary body copy. */
-  inkSoft: C.carbon60,
+  inkSoft: APPLE_NEUTRAL['60'],
   /** Body copy. */
-  ink: C.carbon70,
+  ink: APPLE_NEUTRAL['70'],
   /** Headings and district names. */
-  inkStrong: C.carbon90,
-  /** Base ink of the map popups — a dark teal, not a carbon step. */
-  panelInk: '#023246',
+  inkStrong: APPLE_NEUTRAL['90'],
+  /** Base ink of the map popups. Was a dark teal; now Apple's tile-1, so a popup
+   *  over the map is the same dark surface as a dark tile elsewhere. */
+  panelInk: APPLE_COLORS.surfaceTile1,
 } as const;
 
-/** Map interactivity: GPS accuracy circle, chips, links. */
+/** Map interactivity: GPS accuracy circle, chips, links. One accent, two grounds. */
 export const MAP_INTERACTIVE = {
-  blue: '#0284c7',
-  blueBright: '#38bdf8',
+  /** Action Blue — on the light basemap. */
+  blue: APPLE_COLORS.primary,
+  /** Sky Link Blue — on dark popups and satellite imagery, where Action Blue
+   *  measures 2.68:1 and is unreadable. */
+  blueBright: APPLE_COLORS.primaryOnDark,
 } as const;
 
-/** District risk, worst case kept for the user-location marker ring. */
+/**
+ * District risk, worst case only — the user-location marker ring.
+ *
+ * Deliberately one key: `__tests__/mapPalette.test.js` enforces that every palette entry is
+ * actually drawn by the map, because a data palette that grows colours nothing paints is how
+ * the 79 inline hex literals got in here the first time. The other four severity levels are
+ * drawn from APPLE_SEVERITY directly where they are needed.
+ */
 export const MAP_RISK_RAMP = {
-  severe: C.nasaRed,
+  severe: APPLE_SEVERITY.veryHigh.solid,
 } as const;
 
 /** Hazard heatmap gradient, low intensity to high. */
 export const MAP_HEAT_RAMP = {
   calm: MAP_INTERACTIVE.blue,
-  moderate: '#f59e0b',
-  heavy: '#ef4444',
+  moderate: APPLE_SEVERITY.moderate.solid,
+  heavy: APPLE_SEVERITY.veryHigh.solid,
 } as const;
 
 /**
- * GPM IMERG rain-rate ramp (Phase D, 2026-10-05): documents the colouring GIBS
- * itself renders for `IMERG_Precipitation_Rate` — greens for light rain through
- * yellows and oranges to deep reds for intense rain, with cyan/blue/purple for
- * snowfall shown as liquid-water equivalent. The legend boundaries it draws are
- * approximate on purpose: the tiles are pre-rendered by GIBS, so this ramp is a
- * guide to their encoding, not a client-side re-colouring.
+ * GPM IMERG rain-rate ramp (Phase D, 2026-10-05): documents the colouring GIBS itself renders for
+ * `IMERG_Precipitation_Rate` — greens for light rain through yellows and oranges to deep reds for
+ * intense rain, with cyan/blue/purple for snowfall shown as liquid-water equivalent. The legend
+ * boundaries it draws are approximate on purpose: the tiles are pre-rendered by GIBS, so this ramp
+ * is a guide to their encoding, not a client-side re-colouring — which is also why these are the
+ * only literals in this file that are NOT Apple tokens. See the file header.
  */
 export const MAP_RAIN_RAMP = {
   trace: '#2f9e44',

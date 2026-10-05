@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
-import { HDS_TOKENS } from '../../design-system/tokens';
+import { APPLE_MOTION, APPLE_TOUCH } from '@hazardnet/design-system';
 import { useDialogBehavior } from '../../hooks/useDialogBehavior';
 
 export type SheetDisclosureStage = 'peek' | 'half' | 'expanded';
@@ -28,7 +28,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
   title,
   subtitle,
   children,
-  snapPoints = [HDS_TOKENS.touch.bottomSheetSnapMin, 360, HDS_TOKENS.touch.bottomSheetSnapMax],
+  snapPoints = [APPLE_TOUCH.bottomSheetSnapMin, 360, APPLE_TOUCH.bottomSheetSnapMax],
   footerContent,
   className = '',
 }) => {
@@ -73,8 +73,8 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
             exit={{ y: '100%' }}
             transition={{
               type: 'spring',
-              stiffness: HDS_TOKENS.motion.springStandard.stiffness,
-              damping: HDS_TOKENS.motion.springStandard.damping,
+              stiffness: APPLE_MOTION.springStandard.stiffness,
+              damping: APPLE_MOTION.springStandard.damping,
             }}
             drag="y"
             dragConstraints={{ top: 0, bottom: maxSnap }}
@@ -88,7 +88,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
                 setStage('peek');
               }
             }}
-            className={`pointer-events-auto relative w-full max-w-2xl mx-auto rounded-t-[28px] bg-white/92 dark:bg-carbon-90/92 backdrop-blur-xl border-t border-carbon-20/40 shadow-2xl overflow-hidden flex flex-col ${
+            className={`pointer-events-auto relative w-full max-w-2xl mx-auto rounded-t-xl bg-white/92 dark:bg-carbon-90/92 backdrop-blur-xl border-t border-carbon-20/40 shadow-2xl overflow-hidden flex flex-col ${
               stage === 'peek' ? 'max-h-[32vh]' : stage === 'half' ? 'max-h-[60vh]' : 'max-h-[85vh]'
             } ${className}`}
           >

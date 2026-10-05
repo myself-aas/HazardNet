@@ -11,6 +11,7 @@
  */
 
 import React from 'react';
+import { APPLE_HAZARD_ALIASES, hazardPalette } from '@hazardnet/design-system';
 import type { ForecastRow } from '../lib/forecasts';
 import MaterialIcon from './MaterialIcon';
 import AlertLevelBadge from './alerts/AlertLevelBadge';
@@ -23,16 +24,14 @@ export interface DistrictDetailPanelProps {
   isModal?: boolean;
 }
 
-export const HAZARD_COLOR_MAP: Record<string, string> = {
-  'Flood': '#2563eb',
-  'Flash Flood': '#0284c7',
-  'Tropical Cyclone': '#7c3aed',
-  'Drought': '#d97706',
-  'Heat Wave': '#ea580c',
-  'Cold Wave': '#0891b2',
-  'Severe Local Storm': '#dc2626',
-  'Fire': '#b91c1c',
-};
+/**
+ * Resolved from the one hazard palette rather than declared here. This map used
+ * to be eight Tailwind defaults that disagreed with the two other copies of it
+ * elsewhere in the app; APPLE_HAZARD is now the single source.
+ */
+export const HAZARD_COLOR_MAP: Record<string, string> = Object.fromEntries(
+  Object.keys(APPLE_HAZARD_ALIASES).map((name) => [name, hazardPalette(name).text]),
+);
 
 export const DistrictDetailPanel: React.FC<DistrictDetailPanelProps> = ({
   forecast,
@@ -51,7 +50,7 @@ export const DistrictDetailPanel: React.FC<DistrictDetailPanelProps> = ({
   const physicsSeverity = forecast.physics_severity ?? forecast.severity_score;
   const finalSeverity = forecast.final_severity ?? forecast.severity_score;
 
-  const hazardColor = HAZARD_COLOR_MAP[forecast.hazard_type] || '#0284c7';
+  const hazardColor = HAZARD_COLOR_MAP[forecast.hazard_type] || '#0066cc';
 
   return (
     <div

@@ -197,7 +197,7 @@ export const HazardsPage: React.FC = () => {
               <ShieldAlert className="w-3.5 h-3.5" />
               <span>Multi-Hazard Classification Framework</span>
             </div>
-            <h1 className="text-[28px] font-bold sm:text-[32px] text-carbon-90 tracking-tight">
+            <h1 className="text-ap-lead font-bold sm:text-ap-display-md text-carbon-90 tracking-tight">
               Climatic Hazards of Bangladesh
             </h1>
             <p className="mt-2 text-base leading-[1.62] text-carbon-70 max-w-2xl leading-relaxed">
@@ -272,11 +272,11 @@ export const HazardsPage: React.FC = () => {
         <div className={`h-72 sm:h-80 w-full pt-4 ${!loading && !error && archiveLoaded ? '' : 'hidden'}`}>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={chartData} margin={{ top: 10, right: 20, left: -10, bottom: 20 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--mrd-hairline)" vertical={false} />
-              <XAxis dataKey="name" tick={{ fontSize: 12, fill: 'var(--mrd-ink-soft)' }} />
-              <YAxis tick={{ fontSize: 12, fill: 'var(--mrd-ink-soft)' }} />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--ap-separator)" vertical={false} />
+              <XAxis dataKey="name" tick={{ fontSize: 12, fill: 'var(--ap-label-secondary)' }} />
+              <YAxis tick={{ fontSize: 12, fill: 'var(--ap-label-secondary)' }} />
               <Tooltip
-                contentStyle={{ backgroundColor: 'var(--mrd-surface)', borderColor: 'var(--mrd-hairline-strong)', borderRadius: 'var(--mrd-radius-md)', boxShadow: 'var(--mrd-shadow-card)' }}
+                contentStyle={{ backgroundColor: 'var(--ap-bg-canvas)', borderColor: 'var(--ap-separator-opaque)', borderRadius: 'var(--ap-radius-md)', boxShadow: 'var(--ap-elev-flat)' }}
               />
               <Legend wrapperStyle={{ paddingTop: '10px' }} />
               <Bar dataKey="Historical Occurrences" fill="var(--chart-1)" radius={[6, 6, 0, 0]} />

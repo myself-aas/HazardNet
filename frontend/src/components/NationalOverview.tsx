@@ -1,5 +1,6 @@
 import MaterialIcon from "./MaterialIcon";
 import React from 'react';
+import { hazardPalette } from '@hazardnet/design-system';
 import { AlertTriangle, ArrowRight, BarChart3, MapPin } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { ALL_8_DIVISIONS, DistrictData, DivisionData } from '../data/bangladeshDistricts';
@@ -48,14 +49,24 @@ export interface DivisionSummary {
   districts: DistrictData[];
 }
 
-const HAZARD_METADATA: Record<string, { icon: string; color: string; bg: string; border: string }> = {
-  'Monsoon Flood': { icon: 'water', color: '#38bdf8', bg: 'bg-sky-500/10', border: 'border-sky-500/30' },
-  'Flash Flood': { icon: 'bolt', color: '#06b6d4', bg: 'bg-cyan-500/10', border: 'border-cyan-500/30' },
-  'Tropical Cyclone': { icon: 'cyclone', color: '#f43f5e', bg: 'bg-rose-500/10', border: 'border-rose-500/30' },
-  'Drought': { icon: 'sunny', color: '#f59e0b', bg: 'bg-amber-500/10', border: 'border-amber-500/30' },
-  'Cold Wave': { icon: 'ac_unit', color: '#a855f7', bg: 'bg-purple-500/10', border: 'border-purple-500/30' },
-  'Severe Storm': { icon: 'thunderstorm', color: '#eab308', bg: 'bg-yellow-500/10', border: 'border-yellow-500/30' },
-  'Severe Local Storm': { icon: 'thunderstorm', color: '#eab308', bg: 'bg-yellow-500/10', border: 'border-yellow-500/30' }
+/**
+ * Icon per hazard. The colour is resolved from the one hazard palette rather
+ * than declared here — this map previously held eight Tailwind defaults that
+ * disagreed with the two other copies of it elsewhere in the app. The `bg` and
+ * `border` Tailwind class names it also carried were never read, so they are
+ * gone rather than ported.
+ */
+const HAZARD_ICONS: Record<string, string> = {
+  'Monsoon Flood': 'water',
+  'Flood': 'water',
+  'Flash Flood': 'bolt',
+  'Tropical Cyclone': 'cyclone',
+  'Drought': 'sunny',
+  'Heat Wave': 'thermostat',
+  'Cold Wave': 'ac_unit',
+  'Severe Storm': 'thunderstorm',
+  'Severe Local Storm': 'thunderstorm',
+  'Fire': 'local_fire_department',
 };
 
 export const NationalOverview: React.FC<NationalOverviewProps> = ({
@@ -104,11 +115,9 @@ export const NationalOverview: React.FC<NationalOverviewProps> = ({
         if (d.division) divisionsSet.add(d.division);
       });
 
-      const meta = HAZARD_METADATA[hazardName] || {
-        icon: 'warning',
-        color: '#ef4444',
-        bg: 'bg-red-500/10',
-        border: 'border-red-500/30'
+      const meta = {
+        icon: HAZARD_ICONS[hazardName] ?? 'warning',
+        color: hazardPalette(hazardName).text,
       };
 
       return {
@@ -536,17 +545,17 @@ export const NationalOverview: React.FC<NationalOverviewProps> = ({
             <div className="h-64 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={hazardSummaries} margin={{ top: 10, right: 20, left: -10, bottom: 20 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#d1d1d1" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
                   <XAxis
                     dataKey="hazardName"
-                    stroke="#77777a"
+                    stroke="#6e6e73"
                     fontSize={12}
-                    tick={{ fill: '#444447' }}
+                    tick={{ fill: '#333333' }}
                     interval={0}
                     angle={-15}
                     textAnchor="end"
                   />
-                  <YAxis stroke="#77777a" fontSize={12} tick={{ fill: '#444447' }} />
+                  <YAxis stroke="#6e6e73" fontSize={12} tick={{ fill: '#333333' }} />
                   <Tooltip
                     content={({ active, payload }) => {
                       if (active && payload && payload.length) {
@@ -744,7 +753,7 @@ export const NationalOverview: React.FC<NationalOverviewProps> = ({
               district count and the mean of the published per-district severity —
               no weights, no thresholds, no clusters. This panel also renders on the
               `top3` tab, so it is the disclosure that stands next to the
-              "Composite Index" figure on each Top-3 card. The embargo gate fails
+"Composite Index" figure on each Top-3 card. The embargo gate fails
               the build if the phrase below loses its label. */}
           <div className="bg-sky-50 border border-sky-200 p-4 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs font-mono text-sky-900">
             <div>

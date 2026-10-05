@@ -115,7 +115,7 @@ export const AlertsPage: React.FC = () => {
     <div className="mx-auto w-full max-w-[1100px] px-3 pb-16 pt-6 sm:px-6">
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
-          <h1 className="text-[28px] font-bold leading-[1.2] tracking-tight text-carbon-90 sm:text-[32px]">
+          <h1 className="text-ap-lead font-bold leading-[1.2] tracking-tight text-carbon-90 sm:text-ap-display-md">
             {t('alerts.title')}
           </h1>
           <p className="mt-1 max-w-2xl text-base leading-[1.62] text-carbon-70">

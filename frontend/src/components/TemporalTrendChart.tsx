@@ -22,9 +22,9 @@ interface MilestoneAnnotation {
 }
 
 const MILESTONES: MilestoneAnnotation[] = [
-  { year: 2007, label: 'Cyclone Sidr', sublabel: 'Cat 5 / 3,400+ casualties', color: '#ef4444' },
-  { year: 2017, label: 'Flash Floods', sublabel: 'Haor Basin submerged', color: '#3b82f6' },
-  { year: 2024, label: 'Cyclone Remal', sublabel: 'Severe storm surge', color: '#f59e0b' },
+  { year: 2007, label: 'Cyclone Sidr', sublabel: 'Cat 5 / 3,400+ casualties', color: '#c01f1f' },
+  { year: 2017, label: 'Flash Floods', sublabel: 'Haor Basin submerged', color: '#0066cc' },
+  { year: 2024, label: 'Cyclone Remal', sublabel: 'Severe storm surge', color: '#8a5a00' },
 ];
 
 export const TemporalTrendChart: React.FC<TemporalTrendChartProps> = ({
@@ -155,8 +155,8 @@ export const TemporalTrendChart: React.FC<TemporalTrendChartProps> = ({
         >
           <defs>
             <linearGradient id="trendGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#f43f5e" stopOpacity="0.35" />
-              <stop offset="100%" stopColor="#f43f5e" stopOpacity="0.0" />
+              <stop offset="0%" stopColor="#8b0f3a" stopOpacity="0.35" />
+              <stop offset="100%" stopColor="#8b0f3a" stopOpacity="0.0" />
             </linearGradient>
           </defs>
 
@@ -170,7 +170,7 @@ export const TemporalTrendChart: React.FC<TemporalTrendChartProps> = ({
                   y1={y}
                   x2={width - padding.right}
                   y2={y}
-                  stroke="#444447"
+                  stroke="#333333"
                   strokeWidth={0.5}
                   strokeDasharray="3, 3"
                 />
@@ -195,7 +195,7 @@ export const TemporalTrendChart: React.FC<TemporalTrendChartProps> = ({
           <path
             d={linePath}
             fill="none"
-            stroke="#f43f5e"
+            stroke="#8b0f3a"
             strokeWidth={2.5}
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -250,8 +250,8 @@ export const TemporalTrendChart: React.FC<TemporalTrendChartProps> = ({
                   cx={p.x}
                   cy={p.y}
                   r={isHovered ? 5.5 : 3}
-                  fill={isHovered ? '#ffffff' : '#f43f5e'}
-                  stroke="#17171b"
+                  fill={isHovered ? '#ffffff' : '#8b0f3a'}
+                  stroke="#1d1d1f"
                   strokeWidth={1.5}
                   className="transition-all"
                 />

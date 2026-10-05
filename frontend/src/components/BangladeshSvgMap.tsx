@@ -60,9 +60,9 @@ export const BangladeshSvgMap: React.FC<BangladeshSvgMapProps> = ({
   });
 
   const getSeverityColor = (sev: number) => {
-    if (sev >= 0.8) return '#ef4444'; // Red
-    if (sev >= 0.5) return '#f59e0b'; // Amber
-    return '#10b981'; // Emerald
+    if (sev >= 0.8) return '#c01f1f'; // Red
+    if (sev >= 0.5) return '#8a5a00'; // Amber
+    return '#1d7a3e'; // Emerald
   };
 
   return (
@@ -73,7 +73,7 @@ export const BangladeshSvgMap: React.FC<BangladeshSvgMapProps> = ({
         <div
           className="absolute inset-0 pointer-events-none opacity-20"
           style={{
-            backgroundImage: `radial-gradient(#959599 0.75px, transparent 0.75px)`,
+            backgroundImage: `radial-gradient(#a1a1a6 0.75px, transparent 0.75px)`,
             backgroundSize: '16px 16px'
           }}
         />
@@ -214,16 +214,16 @@ export const BangladeshSvgMap: React.FC<BangladeshSvgMapProps> = ({
         >
           <defs>
             <radialGradient id="highRiskGlow" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="#ef4444" stopOpacity="0.7" />
-              <stop offset="100%" stopColor="#ef4444" stopOpacity="0" />
+              <stop offset="0%" stopColor="#c01f1f" stopOpacity="0.7" />
+              <stop offset="100%" stopColor="#c01f1f" stopOpacity="0" />
             </radialGradient>
             <radialGradient id="modRiskGlow" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.6" />
-              <stop offset="100%" stopColor="#f59e0b" stopOpacity="0" />
+              <stop offset="0%" stopColor="#8a5a00" stopOpacity="0.6" />
+              <stop offset="100%" stopColor="#8a5a00" stopOpacity="0" />
             </radialGradient>
             <radialGradient id="lowRiskGlow" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="#10b981" stopOpacity="0.5" />
-              <stop offset="100%" stopColor="#10b981" stopOpacity="0" />
+              <stop offset="0%" stopColor="#1d7a3e" stopOpacity="0.5" />
+              <stop offset="100%" stopColor="#1d7a3e" stopOpacity="0" />
             </radialGradient>
           </defs>
 
@@ -246,8 +246,8 @@ export const BangladeshSvgMap: React.FC<BangladeshSvgMapProps> = ({
               >
                 <path
                   d={div.path}
-                  fill={isSelectedDiv ? 'rgba(249, 168, 37, 0.25)' : '#e3e3e3'}
-                  stroke={isSelectedDiv ? '#f64137' : '#b9b9bb'}
+                  fill={isSelectedDiv ? 'rgba(249, 168, 37, 0.25)' : '#f5f5f7'}
+                  stroke={isSelectedDiv ? '#c01f1f' : '#d2d2d7'}
                   strokeWidth={isSelectedDiv ? '1.2' : '0.5'}
                   strokeDasharray={viewMode === 'divisions' ? 'none' : '1 1'}
                   onMouseEnter={() => setHoveredDivision(div)}
@@ -263,14 +263,14 @@ export const BangladeshSvgMap: React.FC<BangladeshSvgMapProps> = ({
                       cx={div.cx}
                       cy={div.cy}
                       r="2.5"
-                      fill="#17171b"
+                      fill="#1d1d1f"
                       stroke="#ffffff"
                       strokeWidth="0.5"
                     />
                     <text
                       x={div.cx}
                       y={div.cy - 3.5}
-                      fill="#17171b"
+                      fill="#1d1d1f"
                       fontSize="2.8"
                       fontWeight="bold"
                       textAnchor="middle"
@@ -281,7 +281,7 @@ export const BangladeshSvgMap: React.FC<BangladeshSvgMapProps> = ({
                     <text
                       x={div.cx}
                       y={div.cy + 5}
-                      fill="#58585b"
+                      fill="#5a5a5d"
                       fontSize="2"
                       fontFamily="monospace"
                       textAnchor="middle"
@@ -299,14 +299,14 @@ export const BangladeshSvgMap: React.FC<BangladeshSvgMapProps> = ({
           <path
             d="M 48,16 Q 46,35 58,53 T 54,72"
             fill="none"
-            stroke="#38bdf8"
+            stroke="#0066cc"
             strokeWidth="0.8"
             strokeOpacity="0.6"
           />
           <path
             d="M 72,28 Q 65,40 58,53"
             fill="none"
-            stroke="#38bdf8"
+            stroke="#0066cc"
             strokeWidth="0.6"
             strokeOpacity="0.6"
           />
@@ -379,7 +379,7 @@ export const BangladeshSvgMap: React.FC<BangladeshSvgMapProps> = ({
                     fill={color}
                     stroke="#ffffff"
                     strokeWidth="0.5"
-                    className="transition-transform group-hover:scale-150 group-focus:scale-175 group-focus:stroke-[#17171b] group-focus:stroke-[0.8]"
+                    className="transition-transform group-hover:scale-150 group-focus:scale-175 group-focus:stroke-carbon-90 group-focus:stroke-[0.8]"
                   />
 
                   {/* Selected Ring */}
@@ -389,7 +389,7 @@ export const BangladeshSvgMap: React.FC<BangladeshSvgMapProps> = ({
                       cy={dist.cy}
                       r={3.2}
                       fill="none"
-                      stroke="#17171b"
+                      stroke="#1d1d1f"
                       strokeWidth="0.5"
                       strokeDasharray="0.6 0.6"
                     />
@@ -400,7 +400,7 @@ export const BangladeshSvgMap: React.FC<BangladeshSvgMapProps> = ({
                     <text
                       x={dist.cx + 1.8}
                       y={dist.cy + 0.8}
-                      fill={isSelected ? '#17171b' : '#444447'}
+                      fill={isSelected ? '#1d1d1f' : '#333333'}
                       fontSize="1.9"
                       fontWeight={isSelected ? 'bold' : 'normal'}
                       className="font-sans pointer-events-none select-none drop-shadow-xs"

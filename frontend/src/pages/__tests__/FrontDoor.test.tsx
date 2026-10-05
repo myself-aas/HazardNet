@@ -131,7 +131,7 @@ describe('the front door', () => {
     // The run card moved to /last-run on 2026-10-05: the hero reaches it as a hyperlink,
     // and the card itself is no longer part of this page.
     expect(document.querySelector('[data-testid="last-run-visual"]')).toBeNull();
-    const hero = document.querySelector('header.mrd-on-dark') as HTMLElement;
+    const hero = document.querySelector('header.ap-on-dark') as HTMLElement;
     expect(hero).not.toBeNull();
     expect(Array.from(hero.querySelectorAll('a[href="/last-run"]')).length).toBeGreaterThanOrEqual(1);
   });
@@ -188,7 +188,7 @@ describe('the front door', () => {
   it('keeps the hero simple: one scrim, one primary action, no second frame', async () => {
     renderPage();
     await screen.findByTestId('front-door-status-strip');
-    const hero = document.querySelector('header.mrd-on-dark') as HTMLElement;
+    const hero = document.querySelector('header.ap-on-dark') as HTMLElement;
     expect(hero).not.toBeNull();
 
     // The run card left the hero for /last-run on 2026-10-05: it is not rendered here,
@@ -205,8 +205,8 @@ describe('the front door', () => {
 
     // One primary action in the hero, and it is the navigation one. The other two destinations
     // are text links (the 2026-10-03 audit's L-P1-1: three equal-weight buttons read as none).
-    // `mrd-btn` is the primitive's own marker; the hero renders exactly one of them.
-    const buttons = Array.from(hero.querySelectorAll('a.mrd-btn'));
+    // `ap-btn` is the Apple primitive's own marker; the hero renders exactly one of them.
+    const buttons = Array.from(hero.querySelectorAll('a.ap-btn'));
     expect(buttons.map((link) => link.getAttribute('href'))).toEqual(['/live']);
 
     // The language switch carries its own chip; the glass frame that used to wrap it was a box

@@ -85,7 +85,7 @@ export const DistrictBriefHeader: React.FC = () => {
             <div className="text-xs font-mono font-bold text-carbon-60 uppercase tracking-wider">
               DISTRICT DISASTER INTELLIGENCE BRIEF
             </div>
-            <h1 className="text-[28px] sm:text-[32px] font-bold text-carbon-90 tracking-tight leading-[1.2]">
+            <h1 className="text-ap-lead sm:text-ap-display-md font-bold text-carbon-90 tracking-tight leading-[1.2]">
               {data.districtName} District <span className="text-carbon-30 font-light mx-1">|</span> {data.hazardType}
             </h1>
           </div>
@@ -93,9 +93,9 @@ export const DistrictBriefHeader: React.FC = () => {
           {/* Prominent Risk Badge */}
           <div className="shrink-0">
             <span className={`inline-flex min-h-6 items-center gap-2 px-3 py-1 rounded-control text-xs font-mono font-bold ${
-              data.modelAssessment.riskCategory === 'High' ? 'bg-[#dc2626] text-white' :
-              data.modelAssessment.riskCategory === 'Moderate' ? 'bg-[#f59e0b] text-carbon-black' :
-              'bg-[#16a34a] text-white'
+              data.modelAssessment.riskCategory === 'High' ? 'bg-[#c01f1f] text-white' :
+              data.modelAssessment.riskCategory === 'Moderate' ? 'bg-[#8a5a00] text-carbon-black' :
+              'bg-[#1d7a3e] text-white'
             }`}>
               <span className={`w-2 h-2 rounded-full ${
                 data.modelAssessment.riskCategory === 'High' ? 'bg-white animate-pulse' :

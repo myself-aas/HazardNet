@@ -96,7 +96,7 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
                 width: 100 + '%',
                 height: 100 + '%',
                 borderRadius: 50 + '%',
-                backgroundColor: '#16a34a',
+                backgroundColor: '#1d7a3e',
                 opacity: reduceMotion
                   ? 0
                   : interpolate(frame, [0, 30, 60], [0.4, 0.75, 0.4], {
@@ -121,7 +121,7 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
                 borderRadius: 50 + '%',
                 width: 10,
                 height: 10,
-                backgroundColor: '#16a34a',
+                backgroundColor: '#1d7a3e',
               }}
             />
           </Interactive.Div>
@@ -167,8 +167,8 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
               borderRadius: 50 + '%',
               borderWidth: 2,
               borderStyle: 'solid',
-              borderColor: '#e3e3e3',
-              borderTopColor: '#1c67e3',
+              borderColor: '#f5f5f7',
+              borderTopColor: '#0066cc',
               flexShrink: 0,
               rotate: reduceMotion
                 ? '0deg'
@@ -206,7 +206,7 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
             whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.2 }}
             transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-            className="group rounded-xl border border-carbon-20 bg-gradient-to-br from-white to-carbon-05 p-4 shadow-[0_8px_30px_rgba(20,30,50,0.06)] transition-shadow hover:shadow-[0_12px_34px_rgba(20,30,50,0.12)] sm:p-5"
+            className="group rounded-xl border border-carbon-20 bg-gradient-to-br from-white to-carbon-05 p-4 transition-shadow hover: sm:p-5"
           >
           <div>
             <div className="flex flex-wrap items-center justify-between gap-2">
@@ -243,7 +243,7 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
                 width: 100 + '%',
                 overflow: 'hidden',
                 borderRadius: 999,
-                backgroundColor: '#e3e3e3',
+                backgroundColor: '#f5f5f7',
                 borderWidth: 1,
                 borderStyle: 'solid',
                 borderColor: 'rgba(227,227,227,0.6)',
@@ -262,7 +262,7 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
                 style={{
                   height: 100 + '%',
                   borderRadius: 999,
-                  backgroundColor: coverage?.status === 'complete' ? '#16a34a' : '#d96a00',
+                  backgroundColor: coverage?.status === 'complete' ? '#1d7a3e' : '#b3400f',
                   width: (pct ?? 0) + '%',
                 }}
                 className={`h-full rounded-full ${coverage?.status === 'complete' ? 'bg-nasa-green' : 'bg-nasa-orange'}`}
@@ -288,7 +288,7 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
             whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.2 }}
             transition={{ duration: 0.45, delay: 0.08, ease: [0.16, 1, 0.3, 1] }}
-            className="group rounded-xl border border-carbon-20 bg-gradient-to-br from-white to-carbon-05 p-4 shadow-[0_8px_30px_rgba(20,30,50,0.06)] transition-shadow hover:shadow-[0_12px_34px_rgba(20,30,50,0.12)] sm:p-5"
+            className="group rounded-xl border border-carbon-20 bg-gradient-to-br from-white to-carbon-05 p-4 transition-shadow hover: sm:p-5"
           >
           <div>
             <div className="flex items-center justify-between gap-2">
@@ -337,7 +337,7 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
             whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.2 }}
             transition={{ duration: 0.45, delay: 0.16, ease: [0.16, 1, 0.3, 1] }}
-            className="group rounded-xl border border-carbon-20 bg-gradient-to-br from-white to-carbon-05 p-4 shadow-[0_8px_30px_rgba(20,30,50,0.06)] transition-shadow hover:shadow-[0_12px_34px_rgba(20,30,50,0.12)] sm:p-5 sm:col-span-2"
+            className="group rounded-xl border border-carbon-20 bg-gradient-to-br from-white to-carbon-05 p-4 transition-shadow hover: sm:p-5 sm:col-span-2"
           >
           <div>
             <div className="flex items-center justify-between gap-2">
@@ -381,7 +381,7 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
               whileInView={reduceMotion ? undefined : { opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.2 }}
               transition={{ duration: 0.45, delay: 0.24, ease: [0.16, 1, 0.3, 1] }}
-              className="group rounded-xl border border-carbon-20 bg-gradient-to-br from-white to-carbon-05 p-4 shadow-[0_8px_30px_rgba(20,30,50,0.06)] transition-shadow hover:shadow-[0_12px_34px_rgba(20,30,50,0.12)] sm:col-span-2 sm:p-5"
+              className="group rounded-xl border border-carbon-20 bg-gradient-to-br from-white to-carbon-05 p-4 transition-shadow hover: sm:col-span-2 sm:p-5"
             >
             <div>
               <div className="flex items-center justify-between gap-2">
@@ -449,7 +449,7 @@ export const RunVisual: React.FC<RunVisualProps> = ({ freshness, loading, publis
               className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-carbon-05 border border-carbon-20 text-carbon-70"
               aria-hidden="true"
             >
-              <MaterialIcon name="verified" className="text-[14px] text-nasa-green" />
+              <MaterialIcon name="verified" className="text-ap-caption text-nasa-green" />
               <span>VERIFIED ARTIFACT</span>
             </div>
           </div>

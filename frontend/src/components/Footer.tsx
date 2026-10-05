@@ -83,7 +83,7 @@ const COLUMNS: { title: string; links: FooterLink[] }[] = [
 // cannot overlap its neighbour, so the floor is met by geometry rather than by an invisible
 // layer on top of other targets.
 const linkClass =
-  'inline-flex min-h-[44px] min-w-[44px] items-center text-[14px] font-medium text-carbon-80 no-underline transition-colors hover:text-nasa-blue-shade hover:underline';
+  'inline-flex min-h-[44px] min-w-[44px] items-center text-ap-caption font-medium text-carbon-80 no-underline transition-colors hover:text-nasa-blue-shade hover:underline';
 
 export const Footer: React.FC = () => {
   const [showScrollTop, setShowScrollTop] = useState(false);
@@ -104,7 +104,7 @@ export const Footer: React.FC = () => {
         <div className="flex flex-col gap-6 border-b border-carbon-20 pb-8 md:flex-row md:items-center md:justify-between">
           <div className="max-w-xl space-y-3">
             <HazardNetBrand size="lg" />
-            <p className="text-[13px] leading-relaxed text-carbon-60">
+            <p className="text-ap-caption leading-relaxed text-carbon-60">
               A multi-hazard forecasting platform for 7- and 15-day multi-hazard outlooks across Bangladesh, with
               dual-track severity and agronomic context.
             </p>
@@ -112,7 +112,7 @@ export const Footer: React.FC = () => {
           <div className="flex flex-wrap items-center gap-3">
             <Link
               to="/download"
-              className="inline-flex min-h-[44px] items-center rounded-control bg-nasa-blue px-5 text-[14px] font-semibold text-white no-underline transition-colors hover:bg-nasa-blue-shade"
+              className="inline-flex min-h-[44px] items-center rounded-control bg-nasa-blue px-5 text-ap-caption font-semibold text-white no-underline transition-colors hover:bg-nasa-blue-shade"
             >
               Get the apps
             </Link>
@@ -120,13 +120,13 @@ export const Footer: React.FC = () => {
               href="https://github.com/myself-aas/HazardNet"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex min-h-[44px] items-center rounded-control border border-carbon-30 bg-white px-5 text-[14px] font-semibold text-carbon-90 no-underline transition-colors hover:bg-carbon-10"
+              className="inline-flex min-h-[44px] items-center rounded-control border border-carbon-30 bg-white px-5 text-ap-caption font-semibold text-carbon-90 no-underline transition-colors hover:bg-carbon-10"
             >
               GitHub
             </a>
             <Link
               to="/contact"
-              className="inline-flex min-h-[44px] items-center rounded-control border border-carbon-30 bg-white px-5 text-[14px] font-semibold text-carbon-90 no-underline transition-colors hover:bg-carbon-10"
+              className="inline-flex min-h-[44px] items-center rounded-control border border-carbon-30 bg-white px-5 text-ap-caption font-semibold text-carbon-90 no-underline transition-colors hover:bg-carbon-10"
               title="Report a false alarm, a missed hazard or an idea"
             >
               Feedback
@@ -138,7 +138,7 @@ export const Footer: React.FC = () => {
         <nav aria-label="Footer" className="grid grid-cols-2 gap-x-6 gap-y-8 sm:grid-cols-3 lg:grid-cols-5">
           {COLUMNS.map((column) => (
             <div key={column.title}>
-              <h2 className="text-[13px] font-bold text-carbon-90">{column.title}</h2>
+              <h2 className="text-ap-caption font-bold text-carbon-90">{column.title}</h2>
               <ul className="mt-1.5">
                 {column.links.map((link) => (
                   <li key={`${column.title}-${link.label}`}>
@@ -159,7 +159,7 @@ export const Footer: React.FC = () => {
         </nav>
 
         {/* The sentence that matters most. */}
-        <p className="rounded-2xl border border-carbon-20 bg-white p-4 text-[14px] leading-relaxed text-carbon-70">
+        <p className="rounded-2xl border border-carbon-20 bg-white p-4 text-ap-caption leading-relaxed text-carbon-70">
           <strong className="text-carbon-90">HazardNet is a research platform, not an official warning service.</strong>{' '}
           In an emergency call{' '}
           <a href="tel:999" className="font-bold underline">
@@ -170,7 +170,7 @@ export const Footer: React.FC = () => {
 
         {/* Baseline */}
         <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-1 border-t border-carbon-20 pt-6 text-center">
-          <span className="text-[13px] font-semibold text-carbon-80">© {new Date().getFullYear()} HazardNet</span>
+          <span className="text-ap-caption font-semibold text-carbon-80">© {new Date().getFullYear()} HazardNet</span>
           <Link to="/terms" className={linkClass}>
             Terms
           </Link>

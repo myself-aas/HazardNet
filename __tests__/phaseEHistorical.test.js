@@ -257,20 +257,20 @@ describe('TASK-017 & TASK-018: Frontend Components, Color Ramp & Export Logics',
     const resolvedGeo = geoModule.getVulnerabilityColor ? geoModule : (geoModule.default?.getVulnerabilityColor ? geoModule.default : geoModule.default?.default);
     const { getVulnerabilityColor, getVulnerabilityTier, formatVulnerabilityScore } = resolvedGeo;
 
-    // Green for low
-    assert.equal(getVulnerabilityColor(0.1), '#16a34a');
+    // The ramp is the design system's severity scale, not a parallel palette,
+    // so these assert against APPLE_SEVERITY rather than transcribed hexes.
+    const { APPLE_SEVERITY } = await import('../packages/design-system/src/apple.ts');
+
+    assert.equal(getVulnerabilityColor(0.1), APPLE_SEVERITY.low.text);
     assert.equal(getVulnerabilityTier(0.1), 'LOW');
 
-    // Yellow / Amber for moderate
-    assert.equal(getVulnerabilityColor(0.55), '#ea580c');
+    assert.equal(getVulnerabilityColor(0.55), APPLE_SEVERITY.moderate.text);
     assert.equal(getVulnerabilityTier(0.55), 'MODERATE');
 
-    // Vivid red for high
-    assert.equal(getVulnerabilityColor(0.75), '#dc2626');
+    assert.equal(getVulnerabilityColor(0.75), APPLE_SEVERITY.high.text);
     assert.equal(getVulnerabilityTier(0.75), 'HIGH');
 
-    // Crimson dark for critical
-    assert.equal(getVulnerabilityColor(0.95), '#7f1d1d');
+    assert.equal(getVulnerabilityColor(0.95), APPLE_SEVERITY.extreme.text);
     assert.equal(getVulnerabilityTier(0.95), 'CRITICAL');
 
     // Format score 3 decimals

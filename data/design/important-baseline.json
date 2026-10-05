@@ -18,7 +18,7 @@
     "print": 342,
     "reducedMotion": 7,
     "lowBandwidth": 6,
-    "screen": 48
+    "screen": 43
   },
   "justified": {
     "inline-app": [
@@ -35,8 +35,6 @@
       ".custom-modern-leaflet-popup .leaflet-popup-content-wrapper, .leaflet-popup-content-wrapper::color",
       ".custom-modern-leaflet-popup .leaflet-popup-content-wrapper, .leaflet-popup-content-wrapper::overflow",
       ".custom-modern-leaflet-popup .leaflet-popup-content-wrapper, .leaflet-popup-content-wrapper::padding",
-      ".lang-bn, .farmer-advisory, .tts-fallback-text, [lang=\"bn\"], :lang(bn), .lang-bn *, .farmer-advisory *, .tts-fallback-text *, [lang=\"bn\"] *, :lang(bn) *::font-family",
-      ".lang-bn, .farmer-advisory, .tts-fallback-text, [lang=\"bn\"], :lang(bn)::font-family",
       ".leaflet-container a.leaflet-popup-close-button::color",
       ".leaflet-container a.leaflet-popup-close-button::display",
       ".leaflet-container a.leaflet-popup-close-button::font-size",
@@ -60,8 +58,6 @@
       ".leaflet-popup-tip::background",
       ".leaflet-popup-tip::border",
       ".map-tile-high-contrast .leaflet-tile::filter",
-      ".metric-value, .confidence-badge, .tensor-log, .hn-tabular-nums, code, pre, .metric-value *, .confidence-badge *, .tensor-log *, .hn-tabular-nums *, code *, pre *::font-family",
-      ".metric-value, .confidence-badge, .tensor-log, .hn-tabular-nums, code, pre::font-family",
       ".text-nasa-red-shade, .text-nasa-red-tint::color",
       ".text-severity-amber::color",
       ".text-severity-green::color",

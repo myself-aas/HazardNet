@@ -41,13 +41,13 @@ export function getSeverityColor(severity: number): string {
 
   let r: number, g: number, b: number;
   if (s <= 0.5) {
-    // 0.0 to 0.5: Emerald Green (#16a34a) -> Warning Yellow (#eab308)
+    // 0.0 to 0.5: Emerald Green (#1d7a3e) -> Warning Yellow (#8a5a00)
     const t = s * 2;
     r = Math.round(22 + (234 - 22) * t);
     g = Math.round(163 + (179 - 163) * t);
     b = Math.round(74 + (8 - 74) * t);
   } else {
-    // 0.5 to 1.0: Warning Yellow (#eab308) -> Hazard Red (#dc2626)
+    // 0.5 to 1.0: Warning Yellow (#8a5a00) -> Hazard Red (#c01f1f)
     const t = (s - 0.5) * 2;
     r = Math.round(234 + (220 - 234) * t);
     g = Math.round(179 + (38 - 179) * t);

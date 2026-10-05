@@ -137,7 +137,7 @@ const ChannelCard: React.FC<{ channel: DownloadChannel; state: ChannelState }> =
       {/* Where the artifacts come from.
           This replaced the registry install command (`pip install hazardnet` /
           `npm install hazardnet`) that the page rendered while its own chip read
-          "pending": the packages have never existed, so the command could not
+"pending": the packages have never existed, so the command could not
           work and the two statements contradicted each other. HazardNet does not
           publish to a package registry (ADR 0011) — the card now states the
           distribution path that does exist. */}

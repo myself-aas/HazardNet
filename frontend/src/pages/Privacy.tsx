@@ -25,7 +25,7 @@ export const Privacy: React.FC = () => {
             <span className="text-xs text-carbon-60 font-medium">Updated: August 1, 2026</span>
           </div>
 
-          <h1 className="text-[28px] font-bold leading-[1.2] tracking-tight text-carbon-90">
+          <h1 className="text-ap-lead font-bold leading-[1.2] tracking-tight text-carbon-90">
             HazardNet AI Telemetry & Data Privacy Policy
           </h1>
         </div>

@@ -204,13 +204,13 @@ function Marker({ marker, radius, onClick, onHover }: MarkerProps) {
       {/* Pin shaft, oriented along the surface normal */}
       <mesh position={lineCenter} quaternion={lineQuaternion}>
         <cylinderGeometry args={[0.003, 0.003, lineHeight, 8]} />
-        <meshBasicMaterial color={hovered ? '#ffffff' : '#b9b9bb'} transparent opacity={hovered ? 0.9 : 0.6} />
+        <meshBasicMaterial color={hovered ? '#ffffff' : '#d2d2d7'} transparent opacity={hovered ? 0.9 : 0.6} />
       </mesh>
 
       {/* Pin point at the surface */}
       <mesh position={surfacePosition} quaternion={lineQuaternion}>
         <coneGeometry args={[0.015, 0.04, 8]} />
-        <meshBasicMaterial color={hovered ? '#f97316' : '#ef4444'} />
+        <meshBasicMaterial color={hovered ? '#b3400f' : '#c01f1f'} />
       </mesh>
 
       {/* Circular image at the top of the pin */}

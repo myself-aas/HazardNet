@@ -11,7 +11,7 @@ import { HazardNetBrand } from './HazardNetLogo';
 import { MenuToggleIcon } from './brand';
 import { detectExactPinpointLocation } from '../services/geolocationService';
 import { PRIMARY_LINKS, type NavItem } from '../lib/navigation';
-import type { MeridianThemeName } from './meridian/motion';
+import type { AppleThemeName } from './apple/motion';
 
 /**
  * The site header — as little as it can be.
@@ -45,14 +45,14 @@ interface NavbarProps {
   onOpenAIDrawer?: () => void;
   onExportReport?: () => void;
   /**
-   * Appearance preference and its setter, straight from `useMeridianTheme` in App. Optional:
+   * Appearance preference and its setter, straight from `useAppleTheme` in App. Optional:
    * without them the bar still renders (tests, storybook), it just has no theme control to hand
    * to the drawer. The bar itself deliberately carries no switch — "one button" is the contract
    * (see the class docstring and NavbarSimplicity.test.tsx) — so the control lives in the drawer
    * with the other preference (language).
    */
-  theme?: MeridianThemeName;
-  onThemeChange?: (theme: MeridianThemeName) => void;
+  theme?: AppleThemeName;
+  onThemeChange?: (theme: AppleThemeName) => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ onSelectDistrict, onToggleHeatmap, theme, onThemeChange }) => {
@@ -125,7 +125,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onSelectDistrict, onToggleHeatma
   };
 
   const linkClass = (current: boolean) =>
-    `inline-flex min-h-[44px] items-center rounded-control px-3 text-[15px] font-semibold no-underline transition-colors duration-150 ${
+    `inline-flex min-h-[44px] items-center rounded-control px-3 text-ap-caption font-semibold no-underline transition-colors duration-150 ${
       overHero
         ? current
           ? 'bg-white/15 text-white'

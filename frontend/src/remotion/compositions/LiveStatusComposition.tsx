@@ -11,7 +11,7 @@ export const LiveStatusComposition: React.FC<{
   return (
     <AbsoluteFill
       style={{
-        backgroundColor: '#f6f6f6',
+        backgroundColor: '#fafafc',
         padding: 32,
         fontFamily: 'Inter, sans-serif',
       }}
@@ -21,8 +21,8 @@ export const LiveStatusComposition: React.FC<{
         style={{
           borderWidth: 1,
           borderStyle: 'solid',
-          borderColor: '#d1d1d1',
-          backgroundColor: '#e3e3e3',
+          borderColor: '#e0e0e0',
+          backgroundColor: '#f5f5f7',
           padding: 20,
           display: 'flex',
           gap: 16,
@@ -47,7 +47,7 @@ export const LiveStatusComposition: React.FC<{
             fontWeight: 700,
             letterSpacing: '0.05em',
             textTransform: 'uppercase',
-            color: '#77777a',
+            color: '#6e6e73',
             opacity: interpolate(frame, [fps * 0.2, fps * 0.6], [0, 1], {
               easing: Easing.bezier(0.16, 1, 0.3, 1),
               extrapolateLeft: 'clamp',
@@ -63,7 +63,7 @@ export const LiveStatusComposition: React.FC<{
             fontFamily: 'DM Mono, monospace',
             fontSize: 14,
             fontWeight: 800,
-            color: '#17171b',
+            color: '#1d1d1f',
             scale: interpolate(frame, [fps * 0.3, fps * 0.7], [0.9, 1], {
               easing: Easing.spring({ damping: 200 }),
               extrapolateLeft: 'clamp',

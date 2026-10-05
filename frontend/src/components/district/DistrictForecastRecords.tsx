@@ -138,15 +138,15 @@ export const DistrictForecastRecords: React.FC = () => {
             <div className="h-56 sm:h-64 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={chartData} margin={{ top: 10, right: 20, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#d1d1d1" />
-                  <XAxis dataKey="date" stroke="#77777a" fontSize={12} tickLine={false} />
-                  <YAxis stroke="#77777a" fontSize={12} domain={[0, 100]} tickLine={false} unit="%" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
+                  <XAxis dataKey="date" stroke="#6e6e73" fontSize={12} tickLine={false} />
+                  <YAxis stroke="#6e6e73" fontSize={12} domain={[0, 100]} tickLine={false} unit="%" />
                   <Tooltip
-                    contentStyle={{ backgroundColor: '#17171b', borderColor: '#444447', borderRadius: '12px', color: '#fff', fontSize: '12px' }}
+                    contentStyle={{ backgroundColor: '#1d1d1f', borderColor: '#333333', borderRadius: '12px', color: '#fff', fontSize: '12px' }}
                     formatter={(value: any, name: any) => [`${value}%`, name === 'physicsSeverity' ? 'Physics Severity' : name === 'modelSeverity' ? 'Model Severity' : 'Confidence']}
                   />
-                  <Line type="monotone" dataKey="physicsSeverity" name="physicsSeverity" stroke="#dc2626" strokeWidth={3} dot={{ r: 4, fill: '#dc2626' }} activeDot={{ r: 6 }} />
-                  <Line type="monotone" dataKey="modelSeverity" name="modelSeverity" stroke="#2563eb" strokeWidth={2} strokeDasharray="4 4" dot={{ r: 3, fill: '#2563eb' }} />
+                  <Line type="monotone" dataKey="physicsSeverity" name="physicsSeverity" stroke="#c01f1f" strokeWidth={3} dot={{ r: 4, fill: '#c01f1f' }} activeDot={{ r: 6 }} />
+                  <Line type="monotone" dataKey="modelSeverity" name="modelSeverity" stroke="#0066cc" strokeWidth={2} strokeDasharray="4 4" dot={{ r: 3, fill: '#0066cc' }} />
                 </LineChart>
               </ResponsiveContainer>
             </div>

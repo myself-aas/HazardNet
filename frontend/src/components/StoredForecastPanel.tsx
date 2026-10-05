@@ -29,7 +29,7 @@ function ErrorCopy({
   if (reason === 'offline') {
     return (
       <>
-        <h2 className="text-[22px] font-bold tracking-tight text-carbon-90">{t('lookup.error.offline.title')}</h2>
+        <h2 className="text-ap-tagline font-bold tracking-tight text-carbon-90">{t('lookup.error.offline.title')}</h2>
         <p className="mt-3 text-base leading-[1.62] text-carbon-70">{t('lookup.error.offline.body')}</p>
       </>
     );
@@ -37,7 +37,7 @@ function ErrorCopy({
   if (reason === 'rate-limited') {
     return (
       <>
-        <h2 className="text-[22px] font-bold tracking-tight text-carbon-90">{t('lookup.error.rateLimited.title')}</h2>
+        <h2 className="text-ap-tagline font-bold tracking-tight text-carbon-90">{t('lookup.error.rateLimited.title')}</h2>
         <p className="mt-3 text-base leading-[1.62] text-carbon-70">{t('lookup.error.rateLimited.body')}</p>
       </>
     );
@@ -45,14 +45,14 @@ function ErrorCopy({
   if (reason === 'invalid-data') {
     return (
       <>
-        <h2 className="text-[22px] font-bold tracking-tight text-carbon-90">{t('lookup.error.invalid.title')}</h2>
+        <h2 className="text-ap-tagline font-bold tracking-tight text-carbon-90">{t('lookup.error.invalid.title')}</h2>
         <p className="mt-3 text-base leading-[1.62] text-carbon-70">{t('lookup.error.invalid.body')}</p>
       </>
     );
   }
   return (
     <>
-      <h2 className="text-[22px] font-bold tracking-tight text-carbon-90">{t('lookup.error.server.title')}</h2>
+      <h2 className="text-ap-tagline font-bold tracking-tight text-carbon-90">{t('lookup.error.server.title')}</h2>
       <p className="mt-3 text-base leading-[1.62] text-carbon-70">{t('lookup.error.server.body')}</p>
     </>
   );
@@ -90,7 +90,7 @@ function ReadyForecast({
   return (
     <section className="border border-carbon-20 bg-white p-6" data-testid="stored-forecast-ready">
       <p className="text-xs font-bold uppercase tracking-[0.025em] text-carbon-60">{t('lookup.source.stored')}</p>
-      <h2 className="mt-2 text-[22px] font-bold tracking-tight text-carbon-90">
+      <h2 className="mt-2 text-ap-tagline font-bold tracking-tight text-carbon-90">
         {t('lookup.ready.title', { hazard: prediction.hazard })}
       </h2>
       <p className="mt-3 text-base leading-[1.62] text-carbon-70">
@@ -152,7 +152,7 @@ export default function StoredForecastPanel({
   if (view.kind === 'idle') {
     return (
       <section className="border border-carbon-20 bg-white p-6" role="status" data-testid="stored-forecast-idle">
-        <h2 className="text-[22px] font-bold tracking-tight text-carbon-90">{t('lookup.idle.title')}</h2>
+        <h2 className="text-ap-tagline font-bold tracking-tight text-carbon-90">{t('lookup.idle.title')}</h2>
         <p className="mt-3 text-base leading-[1.62] text-carbon-70">{t('lookup.idle.body')}</p>
       </section>
     );
@@ -175,7 +175,7 @@ export default function StoredForecastPanel({
     const horizon = view.selection.horizon as Horizon;
     return (
       <section className="border border-carbon-20 bg-white p-6" role="status" data-testid="stored-forecast-uncovered">
-        <h2 className="text-[22px] font-bold tracking-tight text-carbon-90">{t('lookup.uncovered.title')}</h2>
+        <h2 className="text-ap-tagline font-bold tracking-tight text-carbon-90">{t('lookup.uncovered.title')}</h2>
         <p className="mt-3 text-base leading-[1.62] text-carbon-70">
           {t('lookup.uncovered.body', {
             district: view.selection.districtId,

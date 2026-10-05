@@ -34,17 +34,17 @@ function hazardKey(value: unknown): string {
 
 /** The canonical token for a hazard type, with a neutral fallback for unknown labels. */
 export function getHazardColor(value: unknown): string {
-  return HAZARD_COLOR_TOKENS[hazardKey(value)] ?? 'var(--mrd-ink-soft)';
+  return HAZARD_COLOR_TOKENS[hazardKey(value)] ?? 'var(--ap-label-secondary)';
 }
 
 /** A subdued surface derived from that same semantic color. */
 export function getHazardSurface(value: unknown, strength = 8): string {
   const amount = Math.max(0, Math.min(100, Math.round(strength)));
-  return `color-mix(in srgb, ${getHazardColor(value)} ${amount}%, var(--mrd-surface))`;
+  return `color-mix(in srgb, ${getHazardColor(value)} ${amount}%, var(--ap-bg-canvas))`;
 }
 
 /** A fine border derived from the same semantic color. */
 export function getHazardBorder(value: unknown, strength = 28): string {
   const amount = Math.max(0, Math.min(100, Math.round(strength)));
-  return `color-mix(in srgb, ${getHazardColor(value)} ${amount}%, var(--mrd-hairline))`;
+  return `color-mix(in srgb, ${getHazardColor(value)} ${amount}%, var(--ap-separator))`;
 }

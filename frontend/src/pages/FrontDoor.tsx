@@ -56,8 +56,8 @@ import { Interactive } from '../components/interactive/Interactive';
 import { useWebFrame, interpolate, Easing } from '../lib/motion-interpolate';
 
 import MaterialIcon from '../components/MaterialIcon';
-import { ButtonLink, Card, PillTabs, ProvenanceNote, SectionHeading, SeverityBadge } from '../components/meridian/primitives';
-import { useReveal } from '../components/meridian/motion';
+import { ButtonLink, Card, PillTabs, ProvenanceNote, SectionHeading, SeverityBadge } from '../components/apple/primitives';
+import { useReveal } from '../components/apple/motion';
 import { AlertLevelBadge } from '../components/alerts/AlertLevelBadge';
 import { LanguageToggle } from '../components/alerts/LanguageToggle';
 import LiveStatusStrip from '../components/frontdoor/LiveStatusStrip';
@@ -156,7 +156,7 @@ function useLiveFacts(): LiveFacts {
 
 /** Meridian eyebrow: uppercase caption, weight over size, secondary label colour. */
 const Eyebrow: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <p className="mrd-eyebrow">{children}</p>
+  <p className="ap-caption-strong text-ap-primary">{children}</p>
 );
 
 /**
@@ -176,24 +176,24 @@ const Eyebrow: React.FC<{ children: React.ReactNode }> = ({ children }) => (
  */
 const Figure: React.FC<{ value: string; label: string; tone?: 'default' | 'muted' }> = ({ value, label, tone = 'default' }) => (
   <div
-    className={`flex flex-col gap-2 p-5 transition-shadow duration-[var(--mrd-duration-base)] ${
+    className={`flex flex-col gap-2 p-5 transition-shadow duration-[var(--ap-duration-base)] ${
       tone === 'muted'
-        ? 'bg-[color:var(--mrd-bg-grouped)]'
-        : 'bg-[color:var(--mrd-bg-elevated)] shadow-[var(--mrd-shadow-card)]'
+        ? 'bg-[color:var(--ap-bg-grouped)]'
+        : 'bg-[color:var(--ap-bg-raised)] shadow-[var(--ap-elev-flat)]'
     }`}
   >
     {/* leading-[1.1], not leading-none: values like "7 & 15 days" wrap on narrow
         screens, and zero leading would collide the wrapped lines. */}
     <p
-      className={`mrd-figure font-semibold leading-[1.1] ${
+      className={`ap-display-md ap-mono ${
         tone === 'muted'
-          ? 'text-[length:var(--mrd-text-display3)] text-[color:var(--mrd-label-secondary)]'
-          : 'text-[length:var(--mrd-text-display2)] text-[color:var(--mrd-label)]'
+          ? 'text-[length:var(--ap-text-tagline)] text-[color:var(--ap-label-secondary)]'
+          : 'text-[length:var(--ap-text-display-lg)] text-[color:var(--ap-label)]'
       }`}
     >
       {value}
     </p>
-    <p className="mrd-caption text-[color:var(--mrd-label)]">{label}</p>
+    <p className="ap-caption text-[color:var(--ap-label)]">{label}</p>
   </div>
 );
 
@@ -394,13 +394,13 @@ export const FrontDoor: React.FC = () => {
           honest rather than busy is the whole job of this block: a claim (h1), the sentence that
           qualifies it, one primary action, and a hyperlink to the page that carries the artifact
           card checking the claim (/last-run — the card itself moved there from this hero). */}
-      {/* `mrd-on-dark` scopes the outline button's inversion to this hero, so the
+      {/* `ap-on-dark` scopes the outline button's inversion to this hero, so the
           same primitive renders white-on-dark here and ink-on-light everywhere
           else without a second variant existing. */}
       {/* `pt-[calc(var(--navbar-height)+44px)]` instead of a hard 100px: the bar is 3.5rem plus
           `env(safe-area-inset-top)`, so a fixed number collided with it on notched phones. The
           variable now carries the inset, which makes this clearance correct on both. */}
-      <header className="mrd-on-dark relative w-full overflow-hidden bg-carbon-90 text-white min-h-[600px] lg:min-h-[100dvh] flex items-center -mt-14 sm:-mt-16 pt-[calc(var(--navbar-height)+20px)] sm:pt-[calc(var(--navbar-height)+44px)] pb-8 sm:pb-16 shadow-2xl">
+      <header className="ap-on-dark relative w-full overflow-hidden bg-carbon-90 text-white min-h-[600px] lg:min-h-[100dvh] flex items-center -mt-14 sm:-mt-16 pt-[calc(var(--navbar-height)+20px)] sm:pt-[calc(var(--navbar-height)+44px)] pb-8 sm:pb-16 shadow-2xl">
         {/* Mesh → photograph → grade → vignette. */}
         <HeroCinematicBackground paused={heroPaused} />
         {/* Pause control — keyboard-reachable, respects reduced-motion (audit #1) */}
@@ -436,7 +436,7 @@ export const FrontDoor: React.FC = () => {
                 card instead of only at the bottom of it, and `carbon-black` is pinned dark in
                 both themes (it is a scrim, see dark.css §1) so this holds in dark mode too. */}
             <div className="min-w-0 rounded-sm border border-white/15 bg-carbon-black/65 p-4 sm:p-5" style={{ backdropFilter: 'blur(var(--hero-glass-blur))', WebkitBackdropFilter: 'blur(var(--hero-glass-blur))' }}>
-              <h1 className="mrd-display2 max-w-3xl text-balance text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+              <h1 className="ap-hero max-w-3xl text-balance text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
                 {localised.h1 ?? localised.title}
               </h1>
               {language === 'bn' && (
@@ -567,7 +567,7 @@ export const FrontDoor: React.FC = () => {
 
       {/* ── Trust strip: every figure carries the artifact it was read from ── */}
       <section aria-labelledby="trust-heading" className="space-y-3">
-          <h2 id="trust-heading" className="text-[22px] font-bold tracking-tight text-carbon-90">
+          <h2 id="trust-heading" className="text-ap-tagline font-bold tracking-tight text-carbon-90">
           {t('frontdoor.covers.h2')}
         </h2>
         <div className="grid grid-cols-1 gap-px bg-carbon-20 sm:grid-cols-2 lg:grid-cols-4">
@@ -688,7 +688,7 @@ export const FrontDoor: React.FC = () => {
           )}
 
           {/* A list, not a `<nav>`: this page already carries its one navigation landmark (the
-              "On this page" table of contents). Extra named navigation regions do not help a
+"On this page" table of contents). Extra named navigation regions do not help a
               reader - VoiceOver's rotor fills with near-identical "Navigation" entries and
               TalkBack does not expose the role at all, so the aria-label is inert there - and
               the links are just as reachable as a labelled list. */}
@@ -732,7 +732,7 @@ export const FrontDoor: React.FC = () => {
       {/* ── Products: the eight hazard classes and the two forecast horizons ── */}
       <section aria-labelledby="products-heading" className="space-y-4">
         <div className="flex flex-wrap items-end justify-between gap-2">
-          <h2 id="products-heading" className="text-[22px] font-bold tracking-tight text-carbon-90 lg:text-2xl">
+          <h2 id="products-heading" className="text-ap-tagline font-bold tracking-tight text-carbon-90 lg:text-2xl">
             {t('frontdoor.products.h2')}
           </h2>
           <p className="font-mono text-xs uppercase tracking-wider text-carbon-60">{t('frontdoor.products.aside')}</p>
@@ -819,7 +819,7 @@ export const FrontDoor: React.FC = () => {
           className="space-y-4 border-t border-carbon-20 pt-6"
         >
           {section.h2 && (
-            <h2 id={`section-${index}`} className="text-[22px] font-bold tracking-tight text-carbon-90 lg:text-2xl">
+            <h2 id={`section-${index}`} className="text-ap-tagline font-bold tracking-tight text-carbon-90 lg:text-2xl">
               {section.h2}
             </h2>
           )}
@@ -830,7 +830,7 @@ export const FrontDoor: React.FC = () => {
       {/* ── Newest from the blog: freshness the published record cannot show ── */}
       <section aria-labelledby="blogs-heading" className="space-y-3 border-t border-carbon-20 pt-6">
         <div className="flex flex-wrap items-end justify-between gap-2">
-          <h2 id="blogs-heading" className="text-[22px] font-bold tracking-tight text-carbon-90 lg:text-2xl">
+          <h2 id="blogs-heading" className="text-ap-tagline font-bold tracking-tight text-carbon-90 lg:text-2xl">
             {t('frontdoor.blogs.h2')}
           </h2>
           <p className="font-mono text-xs uppercase tracking-wider text-carbon-60">{t('frontdoor.blogs.aside')}</p>
@@ -896,7 +896,7 @@ export const FrontDoor: React.FC = () => {
       {/* ── Questions the front door should answer ────────────────────────── */}
       {faqs.length > 0 && (
         <section aria-labelledby="faq-heading" className="space-y-3 border-t border-carbon-20 pt-6">
-          <h2 id="faq-heading" className="text-[22px] font-bold tracking-tight text-carbon-90 lg:text-2xl">
+          <h2 id="faq-heading" className="text-ap-tagline font-bold tracking-tight text-carbon-90 lg:text-2xl">
             {t('frontdoor.faq.h2')}
           </h2>
           {faqs.map((faq) => (
@@ -917,7 +917,7 @@ export const FrontDoor: React.FC = () => {
       {/* ── Attribution: the exact block, from the committed data ─────────── */}
       <section aria-labelledby="attribution-heading" className="border border-carbon-20 bg-white p-6 lg:p-8">
         <Eyebrow>{t('frontdoor.attribution.eyebrow')}</Eyebrow>
-        <h2 id="attribution-heading" className="mt-3 text-[22px] font-bold tracking-tight text-carbon-90">
+        <h2 id="attribution-heading" className="mt-3 text-ap-tagline font-bold tracking-tight text-carbon-90">
           {t('frontdoor.attribution.h2')}
         </h2>
         <p className="mt-3 max-w-3xl text-base leading-[1.62] text-carbon-70">

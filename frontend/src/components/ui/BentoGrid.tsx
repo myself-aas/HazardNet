@@ -122,10 +122,10 @@ export const BentoCard: React.FC<BentoCardProps> = ({
               style={{
                 backgroundColor:
                   gaugePercent > 75
-                    ? '#dc2626'
+                    ? '#c01f1f'
                     : gaugePercent > 40
-                    ? '#ea6f24'
-                    : '#1c67e3',
+                    ? '#b3400f'
+                    : '#0066cc',
               }}
             />
           </div>

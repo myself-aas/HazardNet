@@ -115,7 +115,7 @@ export const ArticlePage: React.FC<{ path: string; introSlot?: React.ReactNode }
             </span>
           )}
         </div>
-        <h1 className="text-[28px] font-bold leading-tight tracking-tight text-carbon-90 sm:text-[32px]">{content.h1 ?? content.title}</h1>
+        <h1 className="text-ap-lead font-bold leading-tight tracking-tight text-carbon-90 sm:text-ap-display-md">{content.h1 ?? content.title}</h1>
         {content.standfirst && <p className="max-w-3xl text-base leading-[1.62] text-carbon-60">{content.standfirst}</p>}
       </header>
 

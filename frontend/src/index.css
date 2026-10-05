@@ -1,8 +1,17 @@
-/* NASA Horizon Design System tokens (nasa/hds-core, CC0-1.0) — vendored and compiled by
-   scripts/import_nasa_tokens.mjs, mapped onto this app's semantic roles below. Imported first so
-   every var(--hds-*) consumer resolves. Source and rules; data/design/nasa-hds/PROVENANCE.md */
-@import "./styles/nasa-hds.css";
-@import "./styles/hero-media.css";
+/* ══════════════════════════════════════════════════════════════════════════════
+   HazardNet — application stylesheet entry.
+
+   ONE design system: Apple (DESIGN.md, getdesign `apple` profile).
+   All tokens, themes, severity encodings and primitives live in styles/apple.css,
+   mirrored by packages/design-system/src/apple.ts.
+
+   Removed in the Apple migration — do not reintroduce:
+     styles/nasa-hds.css   NASA Horizon tokens      (--hds-* now aliased in apple.css §7)
+     styles/meridian.css   HDS v3.0 Meridian        (--mrd-* deleted outright)
+     styles/dark.css       Phase 9 dark theme       (rebuilt from Apple tiles, apple.css §5)
+     styles/brand.css      brand chrome             (folded into apple.css §9)
+   ══════════════════════════════════════════════════════════════════════════════ */
+
 /* One Bengali-only regular WOFF2 face; platform fonts render Latin, and browsers synthesize bold.
    Omitting the legacy WOFF fallback avoids precaching a second, larger copy of the same glyphs. */
 @font-face {
@@ -14,46 +23,26 @@
 }
 
 @import "tailwindcss";
-@import "./styles/brand.css" layer(components);
+@import "./styles/apple.css";
+@import "./styles/hero-media.css";
 @import 'leaflet/dist/leaflet.css' layer(base);
 @import 'leaflet.markercluster/dist/MarkerCluster.css' layer(base);
 @import 'leaflet.markercluster/dist/MarkerCluster.Default.css' layer(base);
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-/* HazardNet Meridian Design System (HDS v3.0). Imported last so its semantic
-   roles sit above the NASA-HDS-derived layer and can override it, while every
-   existing --hn-* / --hds-* name keeps resolving. Additive by design; 6,386
-   palette-family uses and several asserting tests depend on the layer below.
-   Source of truth for values and reasoning:
-   packages/design-system/src/meridian.ts · docs/design-system/MERIDIAN.md */
-@import "./styles/meridian.css";
+/* `dark:` utilities follow the explicit choice written by useAppleTheme(), and the OS when the
+   visitor has not chosen. The media arm is what paints a system-dark visitor correctly on the
+   108 prerendered routes before React hydrates (audit F-01). */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *, .dark, .dark *));
 
-/* Phase 9 · the dark theme. Imported last; it re-points primitives defined at
-   `:root` by the layers above (see the header of styles/dark.css). */
-@import "./styles/dark.css";
-
-@custom-variant dark (&:is(.dark *, [data-mrd-theme="dark"] *));
-
-/* HazardNet edge-first typography & Cartographic-Editorial Brutalism HUD contract.
-   No remote font URL is permitted. */
-:root {
-  /* Every family named in a stack is either bundled or a platform face. The previous stacks led
-     with 'Inter' / 'Plus Jakarta Sans' / 'Instrument Sans' / 'Anek Bangla' / 'Baloo Da 2' - none of
-     which ship - so the only effect was that machines with one of them installed rendered a
-     different product from everyone else, and the design docs described a system the bundle does
-     not contain. See P0-3 in docs/audits/2026-10-03-frontend-design-system-audit.md. */
-  --font-sans-en: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-sans-bn: 'Noto Sans Bengali', 'Hind Siliguri', sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
-  --hn-hud-obsidian: #0b0f17;
-  --hn-hud-slate: #111827;
-  --hn-hud-border: rgba(255, 255, 255, 0.12);
-}
-
+/* ── Base typography ─────────────────────────────────────────────────────────
+   Apple's two faces. No remote font URL is permitted; "SF Pro Display"/"SF Pro Text"
+   are named, never shipped, and fall through to system-ui off Apple platforms.
+   DESIGN.md §Typography sets the Display/Text boundary at 20px. */
 html, body, button, input, select, textarea {
-  font-family: var(--font-sans-en);
-  font-feature-settings: "tnum" 1, "lnum" 1, "cv11" 1;
+  font-family: var(--ap-font-text);
+  font-feature-settings: "tnum" 1, "lnum" 1;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -61,308 +50,44 @@ html, body, button, input, select, textarea {
 html, body {
   max-width: 100vw;
   overflow-x: clip;
+  background: var(--ap-bg-canvas);
+  color: var(--ap-label);
 }
 
-.lang-bn, .farmer-advisory, .tts-fallback-text, [lang="bn"], :lang(bn) {
-  font-family: var(--font-sans-bn) !important;
-  line-height: 1.65;
-  /* No tracking: letter-spacing pulls Bengali conjuncts and matras apart, and the 1.65 line
-     height is already the metric compensation this script needs. */
-  letter-spacing: normal;
+body {
+  font-size: var(--ap-text-body);
+  line-height: var(--ap-leading-body);
+  letter-spacing: var(--ap-tracking-body);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--ap-font-display);
+  font-weight: var(--ap-weight-semibold);
+  color: var(--ap-label);
+}
+
+::selection {
+  background: color-mix(in srgb, var(--ap-primary) 22%, transparent);
+  color: var(--ap-label);
 }
 
 .metric-value, .confidence-badge, .tensor-log, .hn-tabular-nums, code, pre {
-  font-family: var(--font-mono) !important;
+  font-family: var(--ap-font-mono);
   font-variant-numeric: tabular-nums;
 }
 
 .hn-hud-surface {
-  background-color: var(--hn-hud-obsidian);
-  border-color: var(--hn-hud-border);
-  color: var(--hds-color-carbon-10);
+  background-color: var(--ap-tile-1);
+  border-color: var(--ap-separator-opaque);
+  color: var(--ap-on-dark);
 }
-/* Edge-first typography contract: Latin UI stays on platform system faces. Bengali localization
- * loads one bundled Bengali-script WOFF2 weight (regular); bold is synthesized. That keeps the
- * non-system face useful for the target script without shipping unused Latin/extended subsets,
- * duplicate weights, or a runtime CDN request. `npm run check:fonts` measures this local payload.
- */
-/* ==========================================================================
-   HAZARDNET DESIGN SYSTEM — Token Architecture (three layers)
-   Layer 1 primitives (raw values) → Layer 2 semantic (purpose aliases) →
-   Layer 3 component (component-scoped decisions).
-   Components must consume Layer 2/3 tokens — never raw hex values.
-   Reference: docs/design-system/MASTER.md
-   ========================================================================== */
+
+/* ── Component-scoped decisions that are genuinely app-specific ───────────── */
 :root {
-  /* ---- Layer 1 · Primitives --------------------------------------------- */
-  /* Brand ramp (amber = CTA/energy; teal = active navigation) */
-  /* Warm ramp — values are NASA HDS yellow/orange tokens (see Layer 1b), so the
-     caution/highlight family is NASA's rather than a local approximation. */
-  --hn-amber-300: var(--hds-dataviz-seq-yellow-20);     /* #ffcb47 */
-  --hn-amber-400: var(--hds-dataviz-seq-yellow-30);     /* #f5af0c */
-  --hn-amber-500: var(--hds-color-international-orange);/* #ea6f24 */
-  --hn-amber-600: var(--hds-dataviz-seq-orange-50);     /* #d96a00 */
-  --hn-amber-700: var(--hds-dataviz-seq-orange-60);     /* #b25600 — 5.5:1 on white */
-  --hn-amber-950: var(--hds-dataviz-seq-orange-90);     /* #3b1b00 */
-  --hn-teal-500: #14b8a6;
-  --hn-teal-600: #0d9488;
-  --hn-teal-700: #0f766e;
-  --hn-sky-600: #0284c7;
-  --hn-emerald-600: #16a34a;
-  --hn-emerald-700: #15803d;
-
-  /* Layer 1b · NASA Horizon Design System primitives ------------------------
-     Every value below references a compiled NASA token (--hds-*), whose source
-     is nasa/hds-core's tokens.json — vendored in data/design/nasa-hds/ and
-     compiled by scripts/import_nasa_tokens.mjs. The usage rule NASA attaches to
-     each token is repeated here on purpose; the rules are part of the system,
-     and a palette adopted without them is only a costume. */
-  --hn-hds-red: var(--hn-brand-red);                   /* the mark's crimson #970002 — navigation CTAs, errors. Never on-page actions, decoration or dataviz. */
-  --hn-hds-red-tint: var(--hds-color-nasa-red-tint);   /* hover states, error highlights — stays light on purpose; dark grounds need 6.9:1, and a tint of #970002 would only reach 3.6:1 */
-  --hn-hds-red-shade: var(--hn-brand-red-dark);        /* the mark's dark crimson #7B1D21 — button hover, error dark, 10.3:1 against white */
-  --hn-hds-blue: var(--hds-color-nasa-blue);           /* "do something here"; controls, list markers, table headers, info. Never nav CTAs or dataviz. */
-  --hn-hds-blue-tint: var(--hds-color-nasa-blue-tint);
-  --hn-hds-blue-shade: var(--hds-color-nasa-blue-shade); /* 9.9:1 against white — link/info text on light surfaces */
-  --hn-hds-orange: var(--hds-color-international-orange); /* status/decorative accent. Never a primary action. */
-  --hn-hds-green: var(--hds-color-active-green);        /* active/confirmation state. Never branding, backgrounds or dataviz. */
-  --hn-hds-black: var(--hds-color-carbon-black);              /* maximum-contrast text and outlines (focus rings) */
-  --hn-hds-white: var(--hds-color-spacesuit-white);
-  --hn-hds-surface: var(--hds-color-carbon-05);        /* #f6f6f6 — page background */
-  --hn-hds-surface-sunken: var(--hds-color-carbon-10);
-  --hn-hds-line: var(--hds-color-carbon-20);           /* hairline borders, dividers */
-  --hn-hds-line-strong: var(--hds-color-carbon-30);
-  --hn-hds-ink-muted: var(--hds-color-carbon-50);      /* 4.46:1 on white — borders/icons only, just under AA for text */
-  --hn-hds-ink-soft: var(--hds-color-carbon-60);       /* 7.1:1 on white — smallest text gray that clears AA */
-  --hn-hds-ink: var(--hn-brand-ink);                  /* #0D0D0D — the mark's near-black, 19.4:1 on white. Body text. */
-
-  /* Finalized HazardNet mark palette: near-white, ink, graphite edge, and signal red.
-     `--hn-brand-red` and `--hn-brand-ink` are not decorative picks — they are the two
-     colours the brand mark is actually painted in (crimson bars #970002, near-black
-     arrow #0D0D0D / #262626), so the mark and the product share one palette. Red is
-     primary, ink is secondary; that is the whole point of swapping the traced
-     artwork's black bars and red arrow.
-     Contrast is measured, not estimated: #970002 is 9.1:1 on white and 8.4:1 on
-     carbon-05, so it clears AA for normal text — unlike the #ff0000 it replaces,
-     which was never contrast-checked. #0D0D0D is 19.4:1 on white. */
-  --hn-brand-paper: #fefefe;
-  /* `--hn-brand-black: #000000` was declared here and never referenced; pure black is banned as a
-     surface, so the token is gone rather than repointed. Brand ink is `--hn-brand-ink` below. */
-  --hn-brand-graphite: #777777;
-  --hn-brand-red: #970002;
-  --hn-brand-red-dark: #7B1D21;
-  --hn-brand-ink: #0D0D0D;
-  --hn-brand-accent: var(--hn-brand-red);
-
-  /* Typography: readable sans-first UI with a dedicated numeric/log face. */
-  --hn-font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
-  --hn-font-sans: var(--font-sans-en);
-  --hn-font-heading: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --hn-font-display: var(--hn-font-heading);
-  --hn-font-brand: var(--hn-font-heading);
-  --hn-font-bengali: var(--font-sans-bn);
-  --hn-font-bengali-display: var(--font-sans-bn);
-
-  /* Motion */
-  --ease-emphasized: cubic-bezier(0.2, 0, 0, 1);
-  --ease-standard: cubic-bezier(0.2, 0, 0.2, 1);
-  --duration-fast: 150ms;
-  --duration-base: 300ms;
-
-  /* ---- Layer 2 · Semantic (shadcn-compatible core) -----------------------
-     Token names are unchanged; the values they resolve to are now NASA's. That
-     is the entire point of a semantic layer; fifty-one files' worth of
-     components keep saying `bg-primary`, and the answer to "what is primary"
-     changed in one place. Contrast ratios in the comments are measured, not
-     estimated — see docs/design-system/MASTER.md §Contrast. */
-  --background: var(--hn-hds-surface);         /* #f6f6f6 */
-  --foreground: var(--hn-hds-ink);             /* #17171b — 17.4:1 on --background */
-  --card: var(--hn-hds-white);
-  --card-foreground: var(--hn-hds-ink);
-  --popover: var(--hn-hds-white);
-  --popover-foreground: var(--hn-hds-ink);
-  /* Primary = the brand crimson: the colour of "go somewhere". Actions that navigate or
-     submit, and error/emergency states — nowhere else.
-     White on #970002 measures 9.1:1, so it clears AA for normal text as well as large.
-     It used to be NASA's own #f64137 at 3.1:1, which is why --primary-strong existed at
-     all; the shade is kept for hover and error-dark, not to rescue small labels. */
-  --primary: var(--hn-hds-red);                /* #970002 */
-  --primary-foreground: var(--hn-hds-white);   /* 9.1:1 — clears AA at any size */
-  /* The same crimson one step darker; 10.3:1 against white, for hover and filled
-     controls that read as "stronger" rather than merely "on". */
-  --primary-strong: var(--hn-hds-red-shade);   /* #7B1D21 */
-  --primary-strong-foreground: var(--hn-hds-white);
-  /* Accent = NASA blue: "do something here" — on-page interaction. */
-  --secondary: var(--hn-hds-surface-sunken);
-  --secondary-foreground: var(--hn-hds-ink);
-  --accent: var(--hn-hds-blue);                /* #1c67e3 */
-  --accent-foreground: var(--hn-hds-white);
-  --muted: var(--hn-hds-surface-sunken);
-  --muted-foreground: var(--hn-hds-ink-soft);  /* 7.1:1 on white (carbon-50 would be 4.46:1) */
-  --destructive: var(--hn-hds-red-shade);      /* 10.3:1 with white */
-  --destructive-foreground: var(--hn-hds-white);
-  --border: var(--hn-hds-line);                /* carbon-20 — decorative hairlines */
-  --input: var(--hn-hds-ink-muted);            /* 4.46:1 on white — control boundaries clear 1.4.11's 3:1 */
-  --ring: var(--hn-hds-ink-soft);              /* HDS's default dashed-ring colour (carbon-60 on light) */
-
-  /* ---- Layer 2 - Geometry, elevation, glass ------------------------------
-     HazardNet's own web geometry, mapped from the cross-platform design-system
-     tokens (packages/design-system/src/tokens.ts - radii.control/card/sheet/pill,
-     shadows.card/elevated/fab, described there as the "Mobile Bento Grid" and
-     "Glassmorphic drag sheet"). The vendored NASA HDS sheet
-     (src/styles/nasa-hds.css) is generated and still carries NASA's 0px/2px
-     values; it is never edited. This block is the mapping the application
-     consumes.
-     Decision 2026-10-01: the web app adopts the soft bento surface language so
-     it matches the mobile shells, and NASA HDS remains the source of colour and
-     typography rather than of corner geometry. Circles (rounded-full) are
-     untouched - avatars, status dots and icon buttons stay round. */
-  /* Radius: the Meridian scale, never a literal. These four are the only radius
-     names a component may use (plus `rounded-full`, which is `--radius-full` and is
-     reserved for avatars and status dots). The legacy Tailwind names below are
-     aliases onto these roles, so `rounded-xl` and `rounded-2xl` cannot drift apart.
-     See MERIDIAN_RADIUS_ROLES in packages/design-system/src/meridian.ts for the
-     role table and __tests__/meridianParity.test.js for the gate. */
-  --hn-radius-chip: var(--mrd-radius-xs);
-  --hn-radius-control: var(--mrd-radius-sm);   /* inputs, buttons, small controls */
-  --hn-radius-card: var(--mrd-radius-lg);      /* panels, cards, tiles, popovers */
-  --hn-radius-sheet: var(--mrd-radius-sheet);  /* bottom sheets, modals, drawers */
-  --hn-radius-pill: var(--mrd-radius-pill);    /* buttons, badges, search fields */
-  --hn-shadow-card: 0 4px 12px rgba(0, 0, 0, 0.05);
-  --hn-shadow-elevated: 0 12px 24px -4px rgba(0, 0, 0, 0.12);
-  --hn-shadow-fab: 0 12px 20px -5px rgba(0, 0, 0, 0.3), 0 6px 12px rgba(28, 103, 227, 0.25);
-  /* Frosted overlay surfaces: map chrome, bottom sheets, floating controls. */
-  --hn-glass-bg: rgb(255 255 255 / 0.82);
-  --hn-glass-bg-strong: rgb(255 255 255 / 0.94);
-  --hn-glass-border: rgb(255 255 255 / 0.6);
-  --hn-glass-blur: 14px;
-  --radius: var(--hn-radius-control); /* legacy shadcn consumer; see @theme mapping below */
-
-
-  /* Status (text values meet 4.5:1 on white/surfaces; info is NASA blue, per HDS) */
-  --success: var(--hn-emerald-700);
-  --success-foreground: var(--hn-hds-white);
-  --success-surface: color-mix(in srgb, var(--hn-emerald-600) 14%, var(--hn-hds-white));
-  --warning: var(--hn-amber-700);
-  --warning-foreground: var(--hn-hds-white);
-  --warning-surface: color-mix(in srgb, var(--hn-amber-500) 20%, var(--hn-hds-white));
-  --info: var(--hn-hds-blue-shade);            /* 9.9:1 on white */
-  --info-foreground: var(--hn-hds-white);
-  --info-surface: color-mix(in srgb, var(--hn-hds-blue) 8%, var(--hn-hds-white));
-
-  /* Destructive surface and the four border tints. The semantic layer previously
-     defined only a solid --destructive, so the ~110 `rose-*`/`red-*` surface and
-     border shades in the app had no token to land on and fell through to
-     Tailwind's stock pink ramp. Same 8% / 35% color-mix pattern as --info-surface
-     and --warning-surface above; every value derives from an --hn-* token, so
-     nothing here is hand-picked. */
-  --destructive-surface: color-mix(in srgb, var(--destructive) 8%, var(--hn-hds-white));
-  --destructive-border: color-mix(in srgb, var(--destructive) 35%, var(--hn-hds-white));
-  --success-border: color-mix(in srgb, var(--hn-emerald-600) 35%, var(--hn-hds-white));
-  --accent-border: color-mix(in srgb, var(--hn-hds-blue) 35%, var(--hn-hds-white));
-  --warning-border: color-mix(in srgb, var(--hn-amber-500) 35%, var(--hn-hds-white));
-
-  /* Severity scale — text / solid fills (maps, markers, charts) / tint surfaces.
-     HazardNet's own five-step hazard semantics, not NASA's three-colour status
-     set: three states cannot express five hazard levels. Deliberately unchanged
-     by this restyle because the values are asserted by map/legend tests and
-     carry meaning the brand palette does not. --severity-moderate-solid is
-     aligned to HDS's status orange; the rest keep their measured ratios. */
-  --risk-low: #16a34a;
-  --risk-low-bg: #dcfce7;
-  --risk-moderate: #f59e0b;
-  --risk-moderate-bg: #fef3c7;
-  --risk-high: #dc2626;
-  --risk-high-bg: #fee2e2;
-  --risk-critical: #dc2626;
-  --risk-critical-bg: #fee2e2;
-
-  --progression-bar-low: #16a34a;
-  --progression-bar-moderate: #f59e0b;
-  --progression-bar-high: #dc2626;
-
-  /* Standardized Severity Level Tokens */
-  --severity-amber: #f59e0b;
-  --severity-red: #dc2626;
-  --severity-green: #16a34a;
-
-  --severity-low: var(--hn-emerald-700);
-  --severity-low-solid: #16a34a;
-  --severity-low-surface: #dcfce7;
-  --severity-moderate: var(--hn-amber-700);
-  --severity-moderate-solid: var(--hn-hds-orange); /* #ea6f24 — HDS status orange, 3.1:1 vs white */
-  --severity-moderate-surface: #fef3c7;
-  --severity-high: #dc2626;
-  --severity-high-solid: #dc2626;
-  --severity-high-surface: #fee2e2;
-  --severity-very-high: #dc2626;
-  --severity-very-high-solid: #dc2626;
-  --severity-very-high-surface: #fee2e2;
-  --severity-extreme: #991b1b;
-  --severity-extreme-solid: #dc2626;
-  --severity-extreme-surface: #fee2e2;
-
-  /* Surfaces & text roles */
-  --surface-page: var(--hn-hds-surface);
-  --surface-card: var(--hn-hds-white);
-  --surface-sunken: var(--hn-hds-surface-sunken);
-  --surface-inverse: var(--hn-hds-ink);
-  --text-body: var(--foreground);
-  --text-muted: var(--muted-foreground);
-  --text-subtle: var(--hn-hds-ink-soft);       /* 7.1:1 — smallest AA-safe caption gray */
-  --text-inverse: var(--hn-hds-surface);
-
-  /* ---- Layer 2b · Legacy aliases (deprecated — do not use in new code) --- */
-  --nasa-space-bg: var(--surface-page);
-  --nasa-card-bg: var(--surface-card);
-  --nasa-cyan: var(--hn-hds-blue-tint);
-  --nasa-blue: var(--hn-hds-blue);       /* the alias now resolves to the real NASA blue */
-  --nasa-emerald: var(--hn-emerald-600);
-  --nasa-crimson: var(--hn-hds-red-shade);
-  --nasa-amber: var(--warning);          /* was --primary; amber is status-only now */
-  --m3-sys-color-primary: var(--primary);
-  --m3-sys-color-surface: var(--surface-card);
-  --m3-sys-motion-easing-emphasized: var(--ease-emphasized);
-
-  /* Chart palette — NASA's own categorical dataviz assignment (HDS
-     `dataviz.color.cat.set.light.5-items.option-1`: Blue 70, Orange ~38, Aqua 40,
-     Lime 70, Gold ~38). NASA forbids brand red/blue in dataviz, which is why
-     these come from the dataviz group rather than from --primary/--accent. */
-  --chart-1: var(--hds-dataviz-series-a-light);
-  --chart-2: var(--hds-dataviz-series-b-light);
-  --chart-3: var(--hds-dataviz-series-c-light);
-  --chart-4: var(--hds-dataviz-series-d-light);
-  --chart-5: var(--hds-dataviz-series-e-light);
-
-  /* Sidebar slots (shadcn) */
-  --sidebar: #ffffff;
-  --sidebar-foreground: var(--hds-color-carbon-90);
-  --sidebar-primary: var(--primary);
-  --sidebar-primary-foreground: var(--primary-foreground);
-  --sidebar-accent: var(--surface-sunken);
-  --sidebar-accent-foreground: var(--hds-color-carbon-90);
-  --sidebar-border: var(--border);
-  --sidebar-ring: var(--ring);
-
-  /* ---- Layer 3 · Component ----------------------------------------------- */
-  --panel-bg: var(--surface-card);
-  --panel-border: var(--border);
-  --panel-radius: var(--hn-radius-card);
-  --panel-blur: var(--hn-glass-blur);
-  --panel-shadow: var(--hn-shadow-card);
-  --hero-glow-blur-primary: 90px;   /* tokenized hero orbital glow — was blur-[90px] arbitrary */
-  --hero-glass-blur: 8px;          /* hero glass legibility blur — maps to Tailwind backdrop-blur-md; centralises hero blur surface */
-  --control-min-size: 44px; /* minimum touch target (iOS HIG / WCAG 2.5.8) */
+  --hero-glow-blur-primary: 90px;
+  --hero-glass-blur: 8px;
+  --control-min-size: var(--ap-touch-min);
   --navbar-height: calc(3.5rem + env(safe-area-inset-top, 0px));
-
-  /* Stacking scale (plan §13.7) — replace ad hoc 9999 / 10050 / 2000. */
-  --z-base: 0;
-  --z-sticky: 10;
-  --z-map: 400;
-  --z-nav: 40;
-  --z-overlay: 50;
-  --z-modal: 60;
-  --z-toast: 70;
-  --z-a11y: 80;
 }
 @media (min-width: 40rem) {
   :root {
@@ -379,7 +104,7 @@ html {
     margin: 0;
     /* Body copy is the platform UI face at 16px/1.62; no webfont is fetched for Latin
        (see the typography note in the @theme block). */
-    font-family: var(--hn-font-sans);
+    font-family: var(--ap-font-text);
     font-size: 16px;
     line-height: 1.62;
     color: var(--text-body);
@@ -420,13 +145,13 @@ html {
 
 /* Global Mono system: controls, headings, labels, and content share one technical voice. */
 *, *::before, *::after {
-  font-family: var(--hn-font-mono);
+  font-family: var(--ap-font-mono);
 }
 
 /* Finalized mark palette as the shared semantic accent protocol. */
 .text-nasa-red-shade,
 .text-nasa-red-tint {
-  color: var(--hn-brand-accent) !important;
+  color: var(--ap-primary) !important;
 }
 
 /* Compact card geometry and intentionally restrained depth. */
@@ -441,7 +166,7 @@ html {
 .m3-transition {
   transition-property: color, background-color, border-color, opacity, transform;
   transition-duration: 300ms;
-  transition-timing-function: var(--m3-sys-motion-easing-emphasized);
+  transition-timing-function: var(--ap-ease);
 }
 
 /* Clean Light HUD Panels (Layer 3 component tokens) */
@@ -456,7 +181,7 @@ html {
 }
 
 .nasa-glass-panel:hover {
-  border-color: var(--hds-color-carbon-30);
+  border-color: var(--ap-n-30);
   box-shadow: none;
 }
 
@@ -472,8 +197,8 @@ html {
   -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.35);
   backdrop-filter: blur(var(--glass-blur)) saturate(1.35);
   border: 1px solid var(--glass-border);
-  border-radius: var(--hn-radius-card);
-  box-shadow: var(--hn-shadow-card);
+  border-radius: var(--ap-radius-lg);
+  box-shadow: var(--ap-elev-hairline);
 }
 
 .glass-pill {
@@ -481,8 +206,8 @@ html {
   -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.35);
   backdrop-filter: blur(var(--glass-blur)) saturate(1.35);
   border: 1px solid var(--glass-border);
-  border-radius: var(--hn-radius-pill);
-  box-shadow: var(--hn-shadow-card);
+  border-radius: var(--ap-radius-pill);
+  box-shadow: var(--ap-elev-hairline);
 }
 
 /* Circular floating control (right-hand map rail, FAB, map buttons). */
@@ -492,19 +217,19 @@ html {
   justify-content: center;
   /* Size is the caller's (the map rail uses 44px, the FAB 48px on desktop);
      this class owns the frosted recipe and the circular shape only. */
-  border-radius: var(--hn-radius-pill);
+  border-radius: var(--ap-radius-pill);
   background: var(--glass-surface-strong);
   -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.35);
   backdrop-filter: blur(var(--glass-blur)) saturate(1.35);
   border: 1px solid var(--glass-border);
-  box-shadow: var(--hn-shadow-card);
-  color: var(--hn-hds-ink);
+  box-shadow: var(--ap-elev-hairline);
+  color: var(--ap-label);
   transition: background-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
 }
 
 .glass-rail-button:hover {
   background: #ffffff;
-  box-shadow: var(--hn-shadow-elevated);
+  box-shadow: var(--ap-elev-hairline);
 }
 
 .glass-rail-button:active {
@@ -513,17 +238,17 @@ html {
 
 /* Bottom-sheet surface: sheets and drawers owned by the mobile shell. */
 .map-sheet {
-  border-top-left-radius: var(--hn-radius-sheet);
-  border-top-right-radius: var(--hn-radius-sheet);
-  box-shadow: var(--hn-shadow-elevated);
+  border-top-left-radius: var(--ap-radius-lg);
+  border-top-right-radius: var(--ap-radius-lg);
+  box-shadow: var(--ap-elev-hairline);
 }
 
 /* Drag affordance — decorative, so it is aria-hidden at the call site. */
 .map-sheet-handle {
   width: 44px;
   height: 4px;
-  border-radius: var(--hn-radius-pill);
-  background: var(--hds-color-carbon-30);
+  border-radius: var(--ap-radius-pill);
+  background: var(--ap-n-30);
   margin: 4px auto 0;
 }
 
@@ -540,7 +265,7 @@ html {
 
 /* Custom Leaflet Map Light Styling */
 .leaflet-container {
-  background: var(--hds-color-carbon-10) !important;
+  background: var(--ap-n-10) !important;
   font-family: inherit;
   /* Radius follows the surface it is mounted in (bottom sheet, card, full-bleed
      stage) instead of being forced square. */
@@ -579,20 +304,20 @@ html {
   line-height: 1.35;
   margin-bottom: 8px;
   font-size: 18px;
-  color: var(--hn-hds-ink);
+  color: var(--ap-label);
   background: var(--glass-surface-strong);
   -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.35);
   backdrop-filter: blur(var(--glass-blur)) saturate(1.35);
   border: 1px solid var(--glass-border);
-  border-radius: var(--hn-radius-pill) !important;
-  box-shadow: var(--hn-shadow-card);
+  border-radius: var(--ap-radius-pill) !important;
+  box-shadow: var(--ap-elev-hairline);
 }
 
 .leaflet-control-zoom a:hover,
 .leaflet-touch .leaflet-control-zoom a:hover {
   background: #ffffff;
-  color: var(--hn-hds-blue-shade);
-  box-shadow: var(--hn-shadow-elevated);
+  color: var(--ap-primary);
+  box-shadow: var(--ap-elev-hairline);
 }
 
 .leaflet-control-zoom a.leaflet-disabled {
@@ -605,28 +330,28 @@ html {
   margin: 0 8px 8px 0 !important;
   padding: 3px 10px !important;
   font-size: 12px !important;
-  color: var(--hn-hds-ink-muted) !important;
+  color: var(--ap-label-tertiary) !important;
   background: var(--glass-surface) !important;
   -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.35);
   backdrop-filter: blur(var(--glass-blur)) saturate(1.35);
   border: 1px solid var(--glass-border);
-  border-radius: var(--hn-radius-pill) !important;
-  box-shadow: var(--hn-shadow-card);
+  border-radius: var(--ap-radius-pill) !important;
+  box-shadow: var(--ap-elev-hairline);
 }
 
 .leaflet-control-attribution a {
-  color: var(--hn-hds-blue-shade) !important;
+  color: var(--ap-primary) !important;
 }
 
 /* Leaflet's own popups follow the card language. No `!important` for the same reason as the zoom
    control above: the vendor sheet is layered, these rules are not. */
 .leaflet-popup-content-wrapper {
-  border-radius: var(--hn-radius-card);
-  box-shadow: var(--hn-shadow-elevated);
+  border-radius: var(--ap-radius-lg);
+  box-shadow: var(--ap-elev-hairline);
 }
 
 .leaflet-popup-tip {
-  box-shadow: var(--hn-shadow-card);
+  box-shadow: var(--ap-elev-hairline);
 }
 
 .map-tile-high-contrast .leaflet-tile {
@@ -694,8 +419,8 @@ html[data-map-debug-fx='true'] .cluster-pulse-ring {
   border: 1px solid var(--border) !important;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
-  border-radius: var(--hn-radius-card) !important;
-  box-shadow: var(--hn-shadow-elevated);
+  border-radius: var(--ap-radius-lg) !important;
+  box-shadow: var(--ap-elev-hairline);
   padding: 0 !important;
   overflow: hidden !important;
 }
@@ -713,12 +438,12 @@ html[data-map-debug-fx='true'] .cluster-pulse-ring {
 
 .leaflet-popup-tip {
   background: #ffffff !important;
-  border: 1px solid var(--hds-color-carbon-20) !important;
+  border: 1px solid var(--ap-n-20) !important;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
 }
 
 .leaflet-container a.leaflet-popup-close-button {
-  color: var(--hds-color-carbon-50) !important;
+  color: var(--ap-n-50) !important;
   padding: 8px 12px 0 0 !important;
   font-size: 18px !important;
   font-weight: bold !important;
@@ -726,7 +451,7 @@ html[data-map-debug-fx='true'] .cluster-pulse-ring {
 }
 
 .leaflet-container a.leaflet-popup-close-button:hover {
-  color: var(--hds-color-carbon-90) !important;
+  color: var(--ap-n-90) !important;
 }
 
 @media (max-width: 640px) {
@@ -751,7 +476,7 @@ html[data-map-debug-fx='true'] .cluster-pulse-ring {
 /* Map 3D Perspective Container */
 .map-perspective-container {
   perspective: 1400px;
-  transition: all 600ms var(--m3-sys-motion-easing-emphasized);
+  transition: all 600ms var(--ap-ease);
 }
 
 .map-perspective-tilted {
@@ -862,16 +587,16 @@ html[data-map-debug-fx='true'] .marker-high-risk {
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--hds-color-carbon-10);
+  background: var(--ap-n-10);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--hds-color-carbon-30);
-  border-radius: var(--hn-radius-pill);
+  background: var(--ap-n-30);
+  border-radius: var(--ap-radius-pill);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--hds-color-carbon-40);
+  background: var(--ap-n-40);
 }
 
 /* Safe Padding for Mobile Bottom Nav */
@@ -895,351 +620,505 @@ html[data-map-debug-fx='true'] .marker-high-risk {
 }
 
 @theme inline {
-  /* Typography — every alias ends in a family this build can actually render.
-     NASA HDS remains the source of the design system's *vocabulary* (colour, geometry, the
-     token names and their usage rules), but not of its typefaces; this bundle ships exactly
-     one webfont (`@fontsource/noto-sans-bengali`, for the script NASA's Latin-only families
-     cannot cover) and otherwise uses the platform UI face. NASA's own
-     'Public Sans Web' / 'Inter' / 'DM Mono' were aliased here before and are not bundled, so
-     the only thing the alias achieved was that a machine with one of them installed rendered
-     a different product from everyone else. See P0-3 in
-     docs/audits/2026-10-03-frontend-design-system-audit.md. */
-  --font-sans: var(--font-sans-en);
-  --font-brand: var(--hn-font-heading);
-  --font-heading: var(--hn-font-heading);
-  --font-display: var(--hn-font-display);
-  --font-bengali: var(--hn-font-bengali);
-  --font-bengali-display: var(--hn-font-bengali-display);
-  --font-mono: var(--hn-font-mono);
+  /* ══════════════════════════════════════════════════════════════════════════
+     TAILWIND BRIDGE — the whole utility vocabulary re-pointed at Apple.
 
-  /* Corner radius: see the radius keys at the foot of this block — HDS's two
-     values (0px default, 2px for controls) are applied there. `rounded-full` is
-     deliberately untouched: avatars, status dots and circular icon buttons must
-     stay round. */
-  --radius-control: var(--hn-radius-control);
+     This block is the reason the migration did not need 147 files of hand edits.
+     Tailwind resolves `bg-carbon-10`, `text-slate-600`, `rounded-xl`, `shadow-md`
+     and ~6,500 other existing class uses through these keys, so re-pointing the
+     keys repaints the entire product in one place.
 
-  /* Warm ramp — Tailwind's `amber-*` keys re-pointed at NASA's yellow and
-     international-orange sequences from the HDS dataviz ramps. This is what
-     turns 600-odd existing `bg-amber-100 / text-amber-900 / border-amber-300`
-     call sites into NASA's warm palette without touching a single component.
-     Semantics are preserved: amber still means caution/highlight, it is simply
-     now NASA's caution colour. Values are HDS tokens, not inventions —
-     yellow 10/20/30, orange 10/20/50/60/70/80/90 and international-orange. */
-  --color-amber-50: var(--hds-dataviz-seq-yellow-10);
-  --color-amber-100: var(--hds-dataviz-seq-orange-10);
-  --color-amber-200: var(--hds-dataviz-seq-orange-20);
-  --color-amber-300: var(--hds-dataviz-seq-yellow-20);
-  --color-amber-400: var(--hds-dataviz-seq-yellow-30);
-  --color-amber-500: var(--hds-color-international-orange);
-  --color-amber-600: var(--hds-dataviz-seq-orange-50);
-  --color-amber-700: var(--hds-dataviz-seq-orange-60);
-  --color-amber-800: var(--hds-dataviz-seq-orange-70);
-  --color-amber-900: var(--hds-dataviz-seq-orange-80);
-  --color-amber-950: var(--hds-dataviz-seq-orange-90);
+     Three rules govern every mapping below:
+       1. ONE accent. Every blue/sky/cyan/indigo key collapses onto Action Blue.
+          DESIGN.md §Don'ts: "Don't introduce a second accent color."
+       2. Colour that carries MEANING routes to the severity layer (apple.css §6),
+          never to chrome. Warm and red families are data, not decoration.
+       3. Apple has exactly ONE shadow and it is for product photography. Every
+          `shadow-*` key therefore resolves to flat or a 1px hairline.
+     ══════════════════════════════════════════════════════════════════════════ */
 
-  /* NASA palette, published under the names NASA uses, so a class can name the
-     semantic directly: bg-nasa-red, text-nasa-blue-shade, border-carbon-20.
-     The reds are the exception: they route through --hn-brand-red / --hn-brand-red-dark
-     rather than NASA's own values, because the brand mark is painted in that crimson
-     and the product has to match the mark. The tint still comes from NASA — see the
-     note on --hn-hds-red-tint for why it must stay light. */
-  --color-nasa-red: var(--hn-brand-red);
-  --color-nasa-red-tint: var(--hds-color-nasa-red-tint);
-  --color-nasa-red-shade: var(--hn-brand-red-dark);
-  --color-nasa-blue: var(--hds-color-nasa-blue);
-  --color-nasa-blue-tint: var(--hds-color-nasa-blue-tint);
-  --color-nasa-blue-shade: var(--hds-color-nasa-blue-shade);
-  --color-nasa-orange: var(--hds-color-international-orange);
-  --color-nasa-green: var(--hds-color-active-green);
-  --color-carbon-05: var(--hds-color-carbon-05);
-  --color-carbon-10: var(--hds-color-carbon-10);
-  --color-carbon-20: var(--hds-color-carbon-20);
-  --color-carbon-30: var(--hds-color-carbon-30);
-  --color-carbon-40: var(--hds-color-carbon-40);
-  --color-carbon-50: var(--hds-color-carbon-50);
-  --color-carbon-60: var(--hds-color-carbon-60);
-  --color-carbon-70: var(--hds-color-carbon-70);
-  --color-carbon-80: var(--hds-color-carbon-80);
-  --color-carbon-90: var(--hds-color-carbon-90);
-  --color-carbon-black: var(--hds-color-carbon-black);
-  --color-spacesuit: var(--hds-color-spacesuit-white);
+  /* ── Type ──────────────────────────────────────────────────────────────── */
+  --font-sans: var(--ap-font-text);
+  --font-text: var(--ap-font-text);
+  --font-display: var(--ap-font-display);
+  --font-brand: var(--ap-font-display);
+  --font-heading: var(--ap-font-display);
+  --font-mono: var(--ap-font-mono);
+  --font-bengali: var(--ap-font-bengali);
+  --font-bengali-display: var(--ap-font-bengali);
 
-  /* Neutral ramp — Tailwind's five grey families re-pointed at NASA's carbon ramp, the
-     same treatment the warm ramp above gets.
+  /* The 16 named Apple styles, usable as `text-ap-body`, `text-ap-hero`, … */
+  --text-ap-hero: var(--ap-text-hero);
+  --text-ap-hero--line-height: var(--ap-leading-hero);
+  --text-ap-hero--letter-spacing: var(--ap-tracking-hero);
+  --text-ap-display: var(--ap-text-display-lg);
+  --text-ap-display--line-height: var(--ap-leading-display-lg);
+  --text-ap-display-md: var(--ap-text-display-md);
+  --text-ap-display-md--line-height: var(--ap-leading-display-md);
+  --text-ap-lead: var(--ap-text-lead);
+  --text-ap-lead--line-height: var(--ap-leading-lead);
+  --text-ap-lead-airy: var(--ap-text-lead-airy);
+  --text-ap-lead-airy--line-height: var(--ap-leading-lead-airy);
+  --text-ap-tagline: var(--ap-text-tagline);
+  --text-ap-tagline--line-height: var(--ap-leading-tagline);
+  --text-ap-body: var(--ap-text-body);
+  --text-ap-body--line-height: var(--ap-leading-body);
+  --text-ap-body--letter-spacing: var(--ap-tracking-body);
+  --text-ap-caption: var(--ap-text-caption);
+  --text-ap-caption--line-height: var(--ap-leading-caption);
+  --text-ap-fine: var(--ap-text-fine-print);
+  --text-ap-micro: var(--ap-text-micro-legal);
+  --text-ap-nav: var(--ap-text-nav-link);
 
-     As of the 2026-09-19 consolidation nothing in the source wears these names any more:
-     all 4,030 neutral utility classes were renamed onto carbon (bg-slate-50 → bg-carbon-05
-     … bg-slate-950 → bg-carbon-black) and all 252 hard-coded neutral literals — inline
-     styles, SVG fills, canvas and map layer colours, jsPDF text colours, the manifest and
-     theme-color — were moved onto the token values. What remains here is a safety net; if a
-     component reaches for a Tailwind grey again it still renders NASA's carbon rather than
-     Tailwind's slate, and the design gate (npm run check:design) reports the legacy name as
-     a new finding, because the impeccable detector reads class names rather than resolved
-     values. __tests__/paletteTokens.test.js pins the same thing from the source side.
+  /* Weight ladder: 300/400/600/700. DESIGN.md omits 500 on purpose, so
+     `font-medium` is mapped to 400 rather than silently inventing a weight. */
+  --font-weight-light: var(--ap-weight-light);
+  --font-weight-normal: var(--ap-weight-regular);
+  --font-weight-medium: var(--ap-weight-regular);
+  --font-weight-semibold: var(--ap-weight-semibold);
+  --font-weight-bold: var(--ap-weight-bold);
 
-     The mapping is ordinal (50→05 … 900→90, 950→black) and was chosen on measured relative
-     luminance rather than on name similarity: carbon 40–90 sit within 0.03 of the slate step
-     they replace, so text and dark surfaces kept the contrast they had (slate-900 on white
-     measures 17.85:1, carbon-90 17.88:1). The light end is deliberately stronger, because
-     HDS draws a visible 1px rule and #d1d1d1 is NASA's border grey where #e2e8f0 was
-     Tailwind's. Two steps moved further than the ramp; slate-400 and slate-500 as muted text
-     on a light surface measure 2.56:1 and 4.76:1, so the 616 sites wearing them were
-     rewritten to carbon-60 (7.09:1) rather than aliased — the 12 that sit on a dark panel
-     kept their step, where carbon measures what slate did. Measured pair by pair in
-     docs/design-system/MASTER.md §Neutral ramp. */
-  --color-slate-50: var(--hds-color-carbon-05);
-  --color-slate-100: var(--hds-color-carbon-10);
-  --color-slate-200: var(--hds-color-carbon-20);
-  --color-slate-300: var(--hds-color-carbon-30);
-  --color-slate-400: var(--hds-color-carbon-40);
-  --color-slate-500: var(--hds-color-carbon-50);
-  --color-slate-600: var(--hds-color-carbon-60);
-  --color-slate-700: var(--hds-color-carbon-70);
-  --color-slate-800: var(--hds-color-carbon-80);
-  --color-slate-900: var(--hds-color-carbon-90);
-  --color-slate-950: var(--hds-color-carbon-black);
+  /* ── Geometry ──────────────────────────────────────────────────────────── */
+  --radius-none: var(--ap-radius-none);
+  --radius-xs: var(--ap-radius-xs);
+  --radius-sm: var(--ap-radius-xs);
+  --radius-md: var(--ap-radius-sm);
+  --radius-lg: var(--ap-radius-md);
+  --radius-xl: var(--ap-radius-lg);
+  --radius-2xl: var(--ap-radius-lg);
+  --radius-3xl: var(--ap-radius-lg);
+  --radius-4xl: var(--ap-radius-lg);
+  --radius-control: var(--ap-radius-sm);
+  --radius-full: var(--ap-radius-full);
 
-  --color-gray-50: var(--hds-color-carbon-05);
-  --color-gray-100: var(--hds-color-carbon-10);
-  --color-gray-200: var(--hds-color-carbon-20);
-  --color-gray-300: var(--hds-color-carbon-30);
-  --color-gray-400: var(--hds-color-carbon-40);
-  --color-gray-500: var(--hds-color-carbon-50);
-  --color-gray-600: var(--hds-color-carbon-60);
-  --color-gray-700: var(--hds-color-carbon-70);
-  --color-gray-800: var(--hds-color-carbon-80);
-  --color-gray-900: var(--hds-color-carbon-90);
-  --color-gray-950: var(--hds-color-carbon-black);
+  /* Apple's eight-step spacing scale, available as `p-ap-md`, `gap-ap-lg`, … */
+  --spacing-ap-xxs: var(--ap-space-xxs);
+  --spacing-ap-xs: var(--ap-space-xs);
+  --spacing-ap-sm: var(--ap-space-sm);
+  --spacing-ap-md: var(--ap-space-md);
+  --spacing-ap-lg: var(--ap-space-lg);
+  --spacing-ap-xl: var(--ap-space-xl);
+  --spacing-ap-xxl: var(--ap-space-xxl);
+  --spacing-ap-section: var(--ap-space-section);
 
-  --color-zinc-50: var(--hds-color-carbon-05);
-  --color-zinc-100: var(--hds-color-carbon-10);
-  --color-zinc-200: var(--hds-color-carbon-20);
-  --color-zinc-300: var(--hds-color-carbon-30);
-  --color-zinc-400: var(--hds-color-carbon-40);
-  --color-zinc-500: var(--hds-color-carbon-50);
-  --color-zinc-600: var(--hds-color-carbon-60);
-  --color-zinc-700: var(--hds-color-carbon-70);
-  --color-zinc-800: var(--hds-color-carbon-80);
-  --color-zinc-900: var(--hds-color-carbon-90);
-  --color-zinc-950: var(--hds-color-carbon-black);
+  /* ── Elevation. One system, one shadow, and it is not for UI. ──────────── */
+  --shadow-none: none;
+  --shadow-2xs: var(--ap-elev-hairline);
+  --shadow-xs: var(--ap-elev-hairline);
+  --shadow-sm: var(--ap-elev-hairline);
+  --shadow-md: var(--ap-elev-hairline);
+  --shadow-lg: var(--ap-elev-hairline);
+  --shadow-xl: var(--ap-elev-hairline);
+  --shadow-2xl: var(--ap-elev-hairline);
+  --shadow-fab: var(--ap-elev-hairline);
+  --shadow-product: var(--ap-elev-product);
 
-  --color-neutral-50: var(--hds-color-carbon-05);
-  --color-neutral-100: var(--hds-color-carbon-10);
-  --color-neutral-200: var(--hds-color-carbon-20);
-  --color-neutral-300: var(--hds-color-carbon-30);
-  --color-neutral-400: var(--hds-color-carbon-40);
-  --color-neutral-500: var(--hds-color-carbon-50);
-  --color-neutral-600: var(--hds-color-carbon-60);
-  --color-neutral-700: var(--hds-color-carbon-70);
-  --color-neutral-800: var(--hds-color-carbon-80);
-  --color-neutral-900: var(--hds-color-carbon-90);
-  --color-neutral-950: var(--hds-color-carbon-black);
+  /* ── Motion ────────────────────────────────────────────────────────────── */
+  --ease-ap: var(--ap-ease);
+  --animate-duration-ap: var(--ap-duration-base);
 
-  --color-stone-50: var(--hds-color-carbon-05);
-  --color-stone-100: var(--hds-color-carbon-10);
-  --color-stone-200: var(--hds-color-carbon-20);
-  --color-stone-300: var(--hds-color-carbon-30);
-  --color-stone-400: var(--hds-color-carbon-40);
-  --color-stone-500: var(--hds-color-carbon-50);
-  --color-stone-600: var(--hds-color-carbon-60);
-  --color-stone-700: var(--hds-color-carbon-70);
-  --color-stone-800: var(--hds-color-carbon-80);
-  --color-stone-900: var(--hds-color-carbon-90);
-  --color-stone-950: var(--hds-color-carbon-black);
-  /* Status */
-  --color-success: var(--success);
-  --color-success-foreground: var(--success-foreground);
-  --color-success-surface: var(--success-surface);
-  --color-warning: var(--warning);
-  --color-warning-foreground: var(--warning-foreground);
-  --color-warning-surface: var(--warning-surface);
-  --color-warning-border: var(--warning-border);
-  --color-info: var(--info);
-  --color-info-foreground: var(--info-foreground);
-  --color-info-surface: var(--info-surface);
+  /* ── Breakpoints — DESIGN.md §Responsive Behavior ──────────────────────── */
+  --breakpoint-ap-xs: 419px;
+  --breakpoint-ap-sm: 640px;
+  --breakpoint-ap-md: 735px;
+  --breakpoint-ap-lg: 833px;
+  --breakpoint-ap-xl: 1023px;
+  --breakpoint-ap-2xl: 1068px;
+  --breakpoint-ap-max: 1440px;
+  --container-ap-text: var(--ap-container-text);
+  --container-ap-wide: var(--ap-container-wide);
 
-  /* Off-system palette families (Session 3 of docs/plans/2026-09-30-frontend-refactor.md).
-     These families were never declared here, so every use resolved to Tailwind's
-     stock palette. That is how the app ended up with two blues meaning two
-     different things: --hds-color-nasa-blue (#1c67e3) is documented as on-page
-     interaction, while blue-500 (#3b82f6) was used 180 times with nothing behind
-     it. Declaring the families re-points them at the design system's own values.
+  /* ── Neutral ramp. `carbon-*` is the canonical name. ───────────────────── */
+  --color-carbon-05: var(--ap-n-05);
+  --color-carbon-10: var(--ap-n-10);
+  --color-carbon-20: var(--ap-n-20);
+  --color-carbon-30: var(--ap-n-30);
+  --color-carbon-40: var(--ap-n-40);
+  --color-carbon-50: var(--ap-n-50);
+  --color-carbon-60: var(--ap-n-60);
+  --color-carbon-70: var(--ap-n-70);
+  --color-carbon-80: var(--ap-n-80);
+  --color-carbon-90: var(--ap-n-90);
+  --color-carbon-black: var(--ap-n-black);
+  --color-spacesuit: var(--ap-canvas);
 
-     Shades are aliased by ROLE, not by hue, because that is what this design
-     system actually means: 50-200 are surfaces, 300-400 are borders, 500-600 are
-     solid fills, 700-950 are text. This follows the --success / --warning /
-     --info precedent above. It also tightens contrast; text-blue-500 was 3.7:1 on
-     white (an AA failure) and now resolves to --info at 9.9:1.
+  /* Tailwind's five grey families all collapse onto the one Apple ramp, so a
+     stray `bg-slate-100` still renders Apple parchment rather than a sixth grey. */
+  --color-slate-50: var(--ap-n-05);
+  --color-slate-100: var(--ap-n-10);
+  --color-slate-200: var(--ap-n-20);
+  --color-slate-300: var(--ap-n-30);
+  --color-slate-400: var(--ap-n-40);
+  --color-slate-500: var(--ap-n-50);
+  --color-slate-600: var(--ap-n-60);
+  --color-slate-700: var(--ap-n-70);
+  --color-slate-800: var(--ap-n-80);
+  --color-slate-900: var(--ap-n-90);
+  --color-slate-950: var(--ap-n-black);
 
-     indigo and purple are deliberately NOT declared. Their uses are data
-     encodings — weather-phenomenon colours (NationalOverview.tsx:54-56) and chart
-     series indices (DisasterDetailModalUI.tsx:320) — not status semantics. No HDS
-     hue ramp exists for them, and aliasing them onto --accent would render two
-     chart series the same colour. See frontend/DESIGN_SYSTEM.md. */
-  --color-rose-50: var(--destructive-surface);
-  --color-rose-100: var(--destructive-surface);
-  --color-rose-200: var(--destructive-surface);
-  --color-rose-300: var(--destructive-border);
-  --color-rose-400: var(--destructive-border);
-  --color-rose-500: var(--destructive);
-  --color-rose-600: var(--destructive);
-  --color-rose-700: var(--destructive);
-  --color-rose-800: var(--destructive);
-  --color-rose-900: var(--destructive);
-  --color-rose-950: var(--destructive);
-  --color-red-50: var(--destructive-surface);
-  --color-red-100: var(--destructive-surface);
-  --color-red-200: var(--destructive-surface);
-  --color-red-300: var(--destructive-border);
-  --color-red-500: var(--destructive);
-  --color-red-600: var(--destructive);
-  --color-red-700: var(--destructive);
-  --color-red-800: var(--destructive);
-  --color-emerald-50: var(--success-surface);
-  --color-emerald-100: var(--success-surface);
-  --color-emerald-200: var(--success-surface);
-  --color-emerald-300: var(--success-border);
-  --color-emerald-400: var(--success-border);
-  --color-emerald-500: var(--hn-emerald-600);
-  --color-emerald-600: var(--hn-emerald-600);
-  --color-emerald-700: var(--success);
-  --color-emerald-800: var(--success);
-  --color-emerald-900: var(--success);
-  --color-emerald-950: var(--success);
-  --color-teal-400: var(--hn-teal-500);
-  --color-teal-600: var(--hn-teal-600);
-  --color-teal-700: var(--hn-teal-700);
-  --color-teal-900: var(--hn-teal-700);
-  --color-blue-50: var(--info-surface);
-  --color-blue-100: var(--info-surface);
-  --color-blue-200: var(--info-surface);
-  --color-blue-300: var(--accent-border);
-  --color-blue-400: var(--accent-border);
-  --color-blue-500: var(--accent);
-  --color-blue-600: var(--accent);
-  --color-blue-700: var(--info);
-  --color-blue-800: var(--info);
-  --color-blue-900: var(--info);
-  --color-blue-950: var(--info);
-  --color-sky-50: var(--info-surface);
-  --color-sky-100: var(--info-surface);
-  --color-sky-200: var(--info-surface);
-  --color-sky-300: var(--accent-border);
-  --color-sky-400: var(--accent-border);
-  --color-sky-500: var(--accent);
-  --color-sky-600: var(--info);
-  --color-sky-700: var(--info);
-  --color-sky-800: var(--info);
-  --color-sky-900: var(--info);
-  --color-cyan-50: var(--info-surface);
-  --color-cyan-100: var(--info-surface);
-  --color-cyan-200: var(--info-surface);
-  --color-cyan-300: var(--accent-border);
-  --color-cyan-400: var(--accent-border);
-  --color-cyan-500: var(--accent);
-  --color-cyan-600: var(--accent);
-  --color-cyan-800: var(--info);
-  --color-cyan-900: var(--info);
-  --color-cyan-950: var(--info);
-  --color-yellow-50: var(--warning-surface);
-  --color-yellow-300: var(--warning-border);
-  --color-yellow-500: var(--hn-amber-500);
-  --color-yellow-700: var(--warning);
-  --color-yellow-950: var(--warning);
-  --color-orange-50: var(--warning-surface);
-  --color-orange-200: var(--warning-surface);
-  --color-orange-300: var(--warning-border);
-  --color-orange-500: var(--hn-amber-500);
-  --color-orange-700: var(--warning);
-  /* Severity scale */
-  --color-severity-amber: var(--severity-amber);
-  --color-severity-red: var(--severity-red);
-  --color-severity-green: var(--severity-green);
-  --color-severity-low: var(--severity-low);
-  --color-severity-low-solid: var(--severity-low-solid);
-  --color-severity-low-surface: var(--severity-low-surface);
-  --color-severity-moderate: var(--severity-moderate);
-  --color-severity-moderate-solid: var(--severity-moderate-solid);
-  --color-severity-moderate-surface: var(--severity-moderate-surface);
-  --color-severity-high: var(--severity-high);
-  --color-severity-high-solid: var(--severity-high-solid);
-  --color-severity-high-surface: var(--severity-high-surface);
-  --color-severity-very-high: var(--severity-very-high);
-  --color-severity-very-high-solid: var(--severity-very-high-solid);
-  --color-severity-very-high-surface: var(--severity-very-high-surface);
-  --color-severity-extreme: var(--severity-extreme);
-  --color-severity-extreme-solid: var(--severity-extreme-solid);
-  --color-severity-extreme-surface: var(--severity-extreme-surface);
-  /* Surfaces & text roles */
-  --color-surface-page: var(--surface-page);
-  --color-surface-card: var(--surface-card);
-  --color-surface-sunken: var(--surface-sunken);
-  --color-surface-inverse: var(--surface-inverse);
-  --color-body: var(--text-body);
-  --color-subtle: var(--text-subtle);
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar: var(--sidebar);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
-  --color-chart-1: var(--chart-1);
-  --color-ring: var(--ring);
-  --color-primary-strong: var(--primary-strong);
-  --color-primary-strong-foreground: var(--primary-strong-foreground);
-  --color-input: var(--input);
-  --color-border: var(--border);
-  --color-destructive: var(--destructive);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-accent: var(--accent);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-muted: var(--muted);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-secondary: var(--secondary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-primary: var(--primary);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-popover: var(--popover);
-  --color-card-foreground: var(--card-foreground);
-  --color-card: var(--card);
-  --color-foreground: var(--foreground);
-  --color-background: var(--background);
-  /* Corner radius - the whole shadcn/Tailwind scale lands on the three HazardNet
-     geometry tokens, which is what softens every rounded-md/lg/xl/2xl/3xl call
-     site across the app in one edit. Values live in Layer 2 above; the reasoning
-     (and why NASA HDS is no longer the geometry source) is in that block's
-     comment and docs/codebase/CONVENTIONS.md section 7. rounded-full stays round. */
-  --radius-sm: var(--hn-radius-control);
-  --radius-md: var(--hn-radius-control);
-  --radius-lg: var(--hn-radius-card);
-  --radius-xl: var(--hn-radius-card);
-  --radius-2xl: var(--hn-radius-card);
-  --radius-3xl: var(--hn-radius-sheet);
-  --radius-4xl: var(--hn-radius-sheet);
+  --color-gray-50: var(--ap-n-05);
+  --color-gray-100: var(--ap-n-10);
+  --color-gray-200: var(--ap-n-20);
+  --color-gray-300: var(--ap-n-30);
+  --color-gray-400: var(--ap-n-40);
+  --color-gray-500: var(--ap-n-50);
+  --color-gray-600: var(--ap-n-60);
+  --color-gray-700: var(--ap-n-70);
+  --color-gray-800: var(--ap-n-80);
+  --color-gray-900: var(--ap-n-90);
+  --color-gray-950: var(--ap-n-black);
 
-  /* Elevation - the design-system shadow set (shadows.card/elevated/fab in
-     packages/design-system/src/tokens.ts). Mapping Tailwind's shadow-* keys here
-     gives every shadow-sm/md/lg/xl/2xl call site the same soft, low-opacity
-     stack instead of Tailwind's stock ramp. */
-  --shadow-sm: var(--hn-shadow-card);
-  --shadow-md: var(--hn-shadow-card);
-  --shadow-lg: var(--hn-shadow-elevated);
-  --shadow-xl: var(--hn-shadow-elevated);
-  --shadow-2xl: var(--hn-shadow-elevated);
-  --shadow-fab: var(--hn-shadow-fab);
+  --color-zinc-50: var(--ap-n-05);
+  --color-zinc-100: var(--ap-n-10);
+  --color-zinc-200: var(--ap-n-20);
+  --color-zinc-300: var(--ap-n-30);
+  --color-zinc-400: var(--ap-n-40);
+  --color-zinc-500: var(--ap-n-50);
+  --color-zinc-600: var(--ap-n-60);
+  --color-zinc-700: var(--ap-n-70);
+  --color-zinc-800: var(--ap-n-80);
+  --color-zinc-900: var(--ap-n-90);
+  --color-zinc-950: var(--ap-n-black);
 
-  /* Frosted overlay surface - one place to change the glass recipe used by the
-     map chrome, bottom sheets and floating controls. */
-  --glass-surface: var(--hn-glass-bg);
-  --glass-surface-strong: var(--hn-glass-bg-strong);
-  --glass-border: var(--hn-glass-border);
-  --glass-blur: var(--hn-glass-blur);
+  --color-neutral-50: var(--ap-n-05);
+  --color-neutral-100: var(--ap-n-10);
+  --color-neutral-200: var(--ap-n-20);
+  --color-neutral-300: var(--ap-n-30);
+  --color-neutral-400: var(--ap-n-40);
+  --color-neutral-500: var(--ap-n-50);
+  --color-neutral-600: var(--ap-n-60);
+  --color-neutral-700: var(--ap-n-70);
+  --color-neutral-800: var(--ap-n-80);
+  --color-neutral-900: var(--ap-n-90);
+  --color-neutral-950: var(--ap-n-black);
+
+  --color-stone-50: var(--ap-n-05);
+  --color-stone-100: var(--ap-n-10);
+  --color-stone-200: var(--ap-n-20);
+  --color-stone-300: var(--ap-n-30);
+  --color-stone-400: var(--ap-n-40);
+  --color-stone-500: var(--ap-n-50);
+  --color-stone-600: var(--ap-n-60);
+  --color-stone-700: var(--ap-n-70);
+  --color-stone-800: var(--ap-n-80);
+  --color-stone-900: var(--ap-n-90);
+  --color-stone-950: var(--ap-n-black);
+
+  /* ── The single accent. Every cool family resolves to Action Blue; the tint
+     steps are mixes of it, so even `bg-sky-100` stays inside the one hue. ── */
+  --color-blue-50: color-mix(in srgb, var(--ap-primary) 6%, var(--ap-canvas));
+  --color-blue-100: color-mix(in srgb, var(--ap-primary) 12%, var(--ap-canvas));
+  --color-blue-200: color-mix(in srgb, var(--ap-primary) 22%, var(--ap-canvas));
+  --color-blue-300: color-mix(in srgb, var(--ap-primary) 38%, var(--ap-canvas));
+  --color-blue-400: color-mix(in srgb, var(--ap-primary) 65%, var(--ap-canvas));
+  --color-blue-500: var(--ap-primary);
+  --color-blue-600: var(--ap-primary);
+  --color-blue-700: var(--ap-primary);
+  --color-blue-800: color-mix(in srgb, var(--ap-primary) 82%, var(--ap-n-90));
+  --color-blue-900: color-mix(in srgb, var(--ap-primary) 66%, var(--ap-n-90));
+  --color-blue-950: color-mix(in srgb, var(--ap-primary) 48%, var(--ap-n-90));
+
+  --color-sky-50: color-mix(in srgb, var(--ap-primary) 6%, var(--ap-canvas));
+  --color-sky-100: color-mix(in srgb, var(--ap-primary) 12%, var(--ap-canvas));
+  --color-sky-200: color-mix(in srgb, var(--ap-primary) 22%, var(--ap-canvas));
+  --color-sky-300: color-mix(in srgb, var(--ap-primary) 38%, var(--ap-canvas));
+  --color-sky-400: color-mix(in srgb, var(--ap-primary) 65%, var(--ap-canvas));
+  --color-sky-500: var(--ap-primary);
+  --color-sky-600: var(--ap-primary);
+  --color-sky-700: var(--ap-primary);
+  --color-sky-800: color-mix(in srgb, var(--ap-primary) 82%, var(--ap-n-90));
+  --color-sky-900: color-mix(in srgb, var(--ap-primary) 66%, var(--ap-n-90));
+  --color-sky-950: color-mix(in srgb, var(--ap-primary) 48%, var(--ap-n-90));
+
+  --color-cyan-50: color-mix(in srgb, var(--ap-primary) 6%, var(--ap-canvas));
+  --color-cyan-100: color-mix(in srgb, var(--ap-primary) 12%, var(--ap-canvas));
+  --color-cyan-200: color-mix(in srgb, var(--ap-primary) 22%, var(--ap-canvas));
+  --color-cyan-300: color-mix(in srgb, var(--ap-primary) 38%, var(--ap-canvas));
+  --color-cyan-400: color-mix(in srgb, var(--ap-primary) 65%, var(--ap-canvas));
+  --color-cyan-500: var(--ap-primary);
+  --color-cyan-600: var(--ap-primary);
+  --color-cyan-700: var(--ap-primary);
+  --color-cyan-800: color-mix(in srgb, var(--ap-primary) 82%, var(--ap-n-90));
+  --color-cyan-900: color-mix(in srgb, var(--ap-primary) 66%, var(--ap-n-90));
+  --color-cyan-950: color-mix(in srgb, var(--ap-primary) 48%, var(--ap-n-90));
+
+  --color-indigo-50: color-mix(in srgb, var(--ap-primary) 6%, var(--ap-canvas));
+  --color-indigo-100: color-mix(in srgb, var(--ap-primary) 12%, var(--ap-canvas));
+  --color-indigo-200: color-mix(in srgb, var(--ap-primary) 22%, var(--ap-canvas));
+  --color-indigo-300: color-mix(in srgb, var(--ap-primary) 38%, var(--ap-canvas));
+  --color-indigo-400: color-mix(in srgb, var(--ap-primary) 65%, var(--ap-canvas));
+  --color-indigo-500: var(--ap-primary);
+  --color-indigo-600: var(--ap-primary);
+  --color-indigo-700: var(--ap-primary);
+  --color-indigo-800: color-mix(in srgb, var(--ap-primary) 82%, var(--ap-n-90));
+  --color-indigo-900: color-mix(in srgb, var(--ap-primary) 66%, var(--ap-n-90));
+  --color-indigo-950: color-mix(in srgb, var(--ap-primary) 48%, var(--ap-n-90));
+
+  --color-violet-50: color-mix(in srgb, var(--ap-primary) 6%, var(--ap-canvas));
+  --color-violet-100: color-mix(in srgb, var(--ap-primary) 12%, var(--ap-canvas));
+  --color-violet-200: color-mix(in srgb, var(--ap-primary) 22%, var(--ap-canvas));
+  --color-violet-300: color-mix(in srgb, var(--ap-primary) 38%, var(--ap-canvas));
+  --color-violet-400: color-mix(in srgb, var(--ap-primary) 65%, var(--ap-canvas));
+  --color-violet-500: var(--ap-primary);
+  --color-violet-600: var(--ap-primary);
+  --color-violet-700: var(--ap-primary);
+  --color-violet-800: color-mix(in srgb, var(--ap-primary) 82%, var(--ap-n-90));
+  --color-violet-900: color-mix(in srgb, var(--ap-primary) 66%, var(--ap-n-90));
+  --color-violet-950: color-mix(in srgb, var(--ap-primary) 48%, var(--ap-n-90));
+
+  --color-purple-50: color-mix(in srgb, var(--ap-primary) 6%, var(--ap-canvas));
+  --color-purple-100: color-mix(in srgb, var(--ap-primary) 12%, var(--ap-canvas));
+  --color-purple-200: color-mix(in srgb, var(--ap-primary) 22%, var(--ap-canvas));
+  --color-purple-300: color-mix(in srgb, var(--ap-primary) 38%, var(--ap-canvas));
+  --color-purple-400: color-mix(in srgb, var(--ap-primary) 65%, var(--ap-canvas));
+  --color-purple-500: var(--ap-primary);
+  --color-purple-600: var(--ap-primary);
+  --color-purple-700: var(--ap-primary);
+  --color-purple-800: color-mix(in srgb, var(--ap-primary) 82%, var(--ap-n-90));
+  --color-purple-900: color-mix(in srgb, var(--ap-primary) 66%, var(--ap-n-90));
+  --color-purple-950: color-mix(in srgb, var(--ap-primary) 48%, var(--ap-n-90));
+
+  /* ── Data hues. These carry hazard meaning, so they route to the severity
+     layer rather than to chrome — see apple.css §6 for why that is the one
+     sanctioned exception to the single-accent rule. ──────────────────────── */
+  --color-emerald-50: var(--ap-sev-low-surface);
+  --color-emerald-100: var(--ap-sev-low-surface);
+  --color-emerald-200: color-mix(in srgb, var(--ap-sev-low) 26%, var(--ap-canvas));
+  --color-emerald-300: color-mix(in srgb, var(--ap-sev-low) 42%, var(--ap-canvas));
+  --color-emerald-400: color-mix(in srgb, var(--ap-sev-low) 68%, var(--ap-canvas));
+  --color-emerald-500: var(--ap-sev-low);
+  --color-emerald-600: var(--ap-sev-low);
+  --color-emerald-700: var(--ap-sev-low);
+  --color-emerald-800: color-mix(in srgb, var(--ap-sev-low) 82%, var(--ap-n-90));
+  --color-emerald-900: color-mix(in srgb, var(--ap-sev-low) 66%, var(--ap-n-90));
+  --color-emerald-950: color-mix(in srgb, var(--ap-sev-low) 48%, var(--ap-n-90));
+
+  --color-green-50: var(--ap-sev-low-surface);
+  --color-green-100: var(--ap-sev-low-surface);
+  --color-green-200: color-mix(in srgb, var(--ap-sev-low) 26%, var(--ap-canvas));
+  --color-green-300: color-mix(in srgb, var(--ap-sev-low) 42%, var(--ap-canvas));
+  --color-green-400: color-mix(in srgb, var(--ap-sev-low) 68%, var(--ap-canvas));
+  --color-green-500: var(--ap-sev-low);
+  --color-green-600: var(--ap-sev-low);
+  --color-green-700: var(--ap-sev-low);
+  --color-green-800: color-mix(in srgb, var(--ap-sev-low) 82%, var(--ap-n-90));
+  --color-green-900: color-mix(in srgb, var(--ap-sev-low) 66%, var(--ap-n-90));
+  --color-green-950: color-mix(in srgb, var(--ap-sev-low) 48%, var(--ap-n-90));
+
+  --color-teal-50: var(--ap-sev-low-surface);
+  --color-teal-100: var(--ap-sev-low-surface);
+  --color-teal-200: color-mix(in srgb, var(--ap-sev-low) 26%, var(--ap-canvas));
+  --color-teal-300: color-mix(in srgb, var(--ap-sev-low) 42%, var(--ap-canvas));
+  --color-teal-400: color-mix(in srgb, var(--ap-sev-low) 68%, var(--ap-canvas));
+  --color-teal-500: var(--ap-sev-low);
+  --color-teal-600: var(--ap-sev-low);
+  --color-teal-700: var(--ap-sev-low);
+  --color-teal-800: color-mix(in srgb, var(--ap-sev-low) 82%, var(--ap-n-90));
+  --color-teal-900: color-mix(in srgb, var(--ap-sev-low) 66%, var(--ap-n-90));
+  --color-teal-950: color-mix(in srgb, var(--ap-sev-low) 48%, var(--ap-n-90));
+
+  --color-lime-50: var(--ap-sev-low-surface);
+  --color-lime-100: var(--ap-sev-low-surface);
+  --color-lime-200: color-mix(in srgb, var(--ap-sev-low) 26%, var(--ap-canvas));
+  --color-lime-300: color-mix(in srgb, var(--ap-sev-low) 42%, var(--ap-canvas));
+  --color-lime-400: color-mix(in srgb, var(--ap-sev-low) 68%, var(--ap-canvas));
+  --color-lime-500: var(--ap-sev-low);
+  --color-lime-600: var(--ap-sev-low);
+  --color-lime-700: var(--ap-sev-low);
+  --color-lime-800: color-mix(in srgb, var(--ap-sev-low) 82%, var(--ap-n-90));
+  --color-lime-900: color-mix(in srgb, var(--ap-sev-low) 66%, var(--ap-n-90));
+  --color-lime-950: color-mix(in srgb, var(--ap-sev-low) 48%, var(--ap-n-90));
+
+  --color-amber-50: var(--ap-sev-moderate-surface);
+  --color-amber-100: var(--ap-sev-moderate-surface);
+  --color-amber-200: color-mix(in srgb, var(--ap-sev-moderate) 26%, var(--ap-canvas));
+  --color-amber-300: color-mix(in srgb, var(--ap-sev-moderate) 42%, var(--ap-canvas));
+  --color-amber-400: color-mix(in srgb, var(--ap-sev-moderate) 68%, var(--ap-canvas));
+  --color-amber-500: var(--ap-sev-moderate);
+  --color-amber-600: var(--ap-sev-moderate);
+  --color-amber-700: var(--ap-sev-moderate);
+  --color-amber-800: color-mix(in srgb, var(--ap-sev-moderate) 82%, var(--ap-n-90));
+  --color-amber-900: color-mix(in srgb, var(--ap-sev-moderate) 66%, var(--ap-n-90));
+  --color-amber-950: color-mix(in srgb, var(--ap-sev-moderate) 48%, var(--ap-n-90));
+
+  --color-yellow-50: var(--ap-sev-moderate-surface);
+  --color-yellow-100: var(--ap-sev-moderate-surface);
+  --color-yellow-200: color-mix(in srgb, var(--ap-sev-moderate) 26%, var(--ap-canvas));
+  --color-yellow-300: color-mix(in srgb, var(--ap-sev-moderate) 42%, var(--ap-canvas));
+  --color-yellow-400: color-mix(in srgb, var(--ap-sev-moderate) 68%, var(--ap-canvas));
+  --color-yellow-500: var(--ap-sev-moderate);
+  --color-yellow-600: var(--ap-sev-moderate);
+  --color-yellow-700: var(--ap-sev-moderate);
+  --color-yellow-800: color-mix(in srgb, var(--ap-sev-moderate) 82%, var(--ap-n-90));
+  --color-yellow-900: color-mix(in srgb, var(--ap-sev-moderate) 66%, var(--ap-n-90));
+  --color-yellow-950: color-mix(in srgb, var(--ap-sev-moderate) 48%, var(--ap-n-90));
+
+  --color-orange-50: var(--ap-sev-high-surface);
+  --color-orange-100: var(--ap-sev-high-surface);
+  --color-orange-200: color-mix(in srgb, var(--ap-sev-high) 26%, var(--ap-canvas));
+  --color-orange-300: color-mix(in srgb, var(--ap-sev-high) 42%, var(--ap-canvas));
+  --color-orange-400: color-mix(in srgb, var(--ap-sev-high) 68%, var(--ap-canvas));
+  --color-orange-500: var(--ap-sev-high);
+  --color-orange-600: var(--ap-sev-high);
+  --color-orange-700: var(--ap-sev-high);
+  --color-orange-800: color-mix(in srgb, var(--ap-sev-high) 82%, var(--ap-n-90));
+  --color-orange-900: color-mix(in srgb, var(--ap-sev-high) 66%, var(--ap-n-90));
+  --color-orange-950: color-mix(in srgb, var(--ap-sev-high) 48%, var(--ap-n-90));
+
+  --color-red-50: var(--ap-sev-very-high-surface);
+  --color-red-100: var(--ap-sev-very-high-surface);
+  --color-red-200: color-mix(in srgb, var(--ap-sev-very-high) 26%, var(--ap-canvas));
+  --color-red-300: color-mix(in srgb, var(--ap-sev-very-high) 42%, var(--ap-canvas));
+  --color-red-400: color-mix(in srgb, var(--ap-sev-very-high) 68%, var(--ap-canvas));
+  --color-red-500: var(--ap-sev-very-high);
+  --color-red-600: var(--ap-sev-very-high);
+  --color-red-700: var(--ap-sev-very-high);
+  --color-red-800: color-mix(in srgb, var(--ap-sev-very-high) 82%, var(--ap-n-90));
+  --color-red-900: color-mix(in srgb, var(--ap-sev-very-high) 66%, var(--ap-n-90));
+  --color-red-950: color-mix(in srgb, var(--ap-sev-very-high) 48%, var(--ap-n-90));
+
+  --color-rose-50: var(--ap-sev-extreme-surface);
+  --color-rose-100: var(--ap-sev-extreme-surface);
+  --color-rose-200: color-mix(in srgb, var(--ap-sev-extreme) 26%, var(--ap-canvas));
+  --color-rose-300: color-mix(in srgb, var(--ap-sev-extreme) 42%, var(--ap-canvas));
+  --color-rose-400: color-mix(in srgb, var(--ap-sev-extreme) 68%, var(--ap-canvas));
+  --color-rose-500: var(--ap-sev-extreme);
+  --color-rose-600: var(--ap-sev-extreme);
+  --color-rose-700: var(--ap-sev-extreme);
+  --color-rose-800: color-mix(in srgb, var(--ap-sev-extreme) 82%, var(--ap-n-90));
+  --color-rose-900: color-mix(in srgb, var(--ap-sev-extreme) 66%, var(--ap-n-90));
+  --color-rose-950: color-mix(in srgb, var(--ap-sev-extreme) 48%, var(--ap-n-90));
+
+  --color-pink-50: var(--ap-sev-extreme-surface);
+  --color-pink-100: var(--ap-sev-extreme-surface);
+  --color-pink-200: color-mix(in srgb, var(--ap-sev-extreme) 26%, var(--ap-canvas));
+  --color-pink-300: color-mix(in srgb, var(--ap-sev-extreme) 42%, var(--ap-canvas));
+  --color-pink-400: color-mix(in srgb, var(--ap-sev-extreme) 68%, var(--ap-canvas));
+  --color-pink-500: var(--ap-sev-extreme);
+  --color-pink-600: var(--ap-sev-extreme);
+  --color-pink-700: var(--ap-sev-extreme);
+  --color-pink-800: color-mix(in srgb, var(--ap-sev-extreme) 82%, var(--ap-n-90));
+  --color-pink-900: color-mix(in srgb, var(--ap-sev-extreme) 66%, var(--ap-n-90));
+  --color-pink-950: color-mix(in srgb, var(--ap-sev-extreme) 48%, var(--ap-n-90));
+
+  --color-fuchsia-50: var(--ap-sev-extreme-surface);
+  --color-fuchsia-100: var(--ap-sev-extreme-surface);
+  --color-fuchsia-200: color-mix(in srgb, var(--ap-sev-extreme) 26%, var(--ap-canvas));
+  --color-fuchsia-300: color-mix(in srgb, var(--ap-sev-extreme) 42%, var(--ap-canvas));
+  --color-fuchsia-400: color-mix(in srgb, var(--ap-sev-extreme) 68%, var(--ap-canvas));
+  --color-fuchsia-500: var(--ap-sev-extreme);
+  --color-fuchsia-600: var(--ap-sev-extreme);
+  --color-fuchsia-700: var(--ap-sev-extreme);
+  --color-fuchsia-800: color-mix(in srgb, var(--ap-sev-extreme) 82%, var(--ap-n-90));
+  --color-fuchsia-900: color-mix(in srgb, var(--ap-sev-extreme) 66%, var(--ap-n-90));
+  --color-fuchsia-950: color-mix(in srgb, var(--ap-sev-extreme) 48%, var(--ap-n-90));
+
+  /* ── Severity, named directly: `bg-severity-high`, `text-severity-low`. ─ */
+  --color-severity-low: var(--ap-sev-low);
+  --color-severity-low-solid: var(--ap-sev-low);
+  --color-severity-low-surface: var(--ap-sev-low-surface);
+  --color-severity-moderate: var(--ap-sev-moderate);
+  --color-severity-moderate-solid: var(--ap-sev-moderate);
+  --color-severity-moderate-surface: var(--ap-sev-moderate-surface);
+  --color-severity-high: var(--ap-sev-high);
+  --color-severity-high-solid: var(--ap-sev-high);
+  --color-severity-high-surface: var(--ap-sev-high-surface);
+  --color-severity-very-high: var(--ap-sev-very-high);
+  --color-severity-very-high-solid: var(--ap-sev-very-high);
+  --color-severity-very-high-surface: var(--ap-sev-very-high-surface);
+  --color-severity-extreme: var(--ap-sev-extreme);
+  --color-severity-extreme-solid: var(--ap-sev-extreme);
+  --color-severity-extreme-surface: var(--ap-sev-extreme-surface);
+  --color-severity-green: var(--ap-sev-low);
+  --color-severity-amber: var(--ap-sev-moderate);
+  --color-severity-red: var(--ap-sev-very-high);
+
+  /* ── Legacy NASA names, kept resolving so no call site breaks mid-migration.
+     They all point at Apple now; `check:design` blocks new uses. ─────────── */
+  --color-nasa-red: var(--ap-primary);
+  --color-nasa-red-tint: color-mix(in srgb, var(--ap-primary) 12%, var(--ap-canvas));
+  --color-nasa-red-shade: var(--ap-primary);
+  --color-nasa-blue: var(--ap-primary);
+  --color-nasa-blue-tint: var(--ap-primary-on-dark);
+  --color-nasa-blue-shade: var(--ap-primary);
+  --color-nasa-orange: var(--ap-sev-high);
+  --color-nasa-green: var(--ap-sev-low);
+
+  /* ── Apple roles, named directly. ──────────────────────────────────────── */
+  --color-ap-primary: var(--ap-primary);
+  --color-ap-primary-on-dark: var(--ap-primary-on-dark);
+  --color-ap-ink: var(--ap-ink);
+  --color-ap-label: var(--ap-label);
+  --color-ap-label-secondary: var(--ap-label-secondary);
+  --color-ap-label-tertiary: var(--ap-label-tertiary);
+  --color-ap-canvas: var(--ap-bg-canvas);
+  --color-ap-grouped: var(--ap-bg-grouped);
+  --color-ap-raised: var(--ap-bg-raised);
+  --color-ap-parchment: var(--ap-parchment);
+  --color-ap-pearl: var(--ap-pearl);
+  --color-ap-tile-1: var(--ap-tile-1);
+  --color-ap-tile-2: var(--ap-tile-2);
+  --color-ap-tile-3: var(--ap-tile-3);
+  --color-ap-hairline: var(--ap-separator);
+  --color-ap-hairline-strong: var(--ap-separator-opaque);
+  --color-ap-black: var(--ap-black);
+
+  /* ── shadcn / app semantic surface. ────────────────────────────────────── */
+  --color-background: var(--ap-bg-canvas);
+  --color-foreground: var(--ap-label);
+  --color-body: var(--ap-label);
+  --color-subtle: var(--ap-label-secondary);
+  --color-card: var(--ap-bg-canvas);
+  --color-card-foreground: var(--ap-label);
+  --color-popover: var(--ap-bg-canvas);
+  --color-popover-foreground: var(--ap-label);
+  --color-primary: var(--ap-action);
+  --color-primary-foreground: var(--ap-action-fg);
+  --color-primary-strong: var(--ap-action);
+  --color-primary-strong-foreground: var(--ap-action-fg);
+  --color-secondary: var(--ap-bg-grouped);
+  --color-secondary-foreground: var(--ap-label);
+  --color-muted: var(--ap-bg-grouped);
+  --color-muted-foreground: var(--ap-label-secondary);
+  --color-accent: var(--ap-bg-grouped);
+  --color-accent-foreground: var(--ap-label);
+  --color-destructive: var(--ap-danger);
+  --color-border: var(--ap-separator-opaque);
+  --color-input: var(--ap-separator-opaque);
+  --color-ring: var(--ap-focus-ring);
+  --color-success: var(--ap-success);
+  --color-success-foreground: var(--ap-canvas);
+  --color-success-surface: var(--ap-sev-low-surface);
+  --color-warning: var(--ap-warning);
+  --color-warning-foreground: var(--ap-canvas);
+  --color-warning-surface: var(--ap-sev-moderate-surface);
+  --color-warning-border: color-mix(in srgb, var(--ap-warning) 35%, transparent);
+  --color-info: var(--ap-info);
+  --color-info-foreground: var(--ap-canvas);
+  --color-info-surface: color-mix(in srgb, var(--ap-primary) 8%, var(--ap-canvas));
+  --color-surface-page: var(--ap-bg-canvas);
+  --color-surface-card: var(--ap-bg-canvas);
+  --color-surface-sunken: var(--ap-bg-grouped);
+  --color-surface-inverse: var(--ap-bg-inverse);
+  --color-chart-1: var(--ap-primary);
+  --color-chart-2: var(--ap-sev-low);
+  --color-chart-3: var(--ap-sev-moderate);
+  --color-chart-4: var(--ap-sev-high);
+  --color-chart-5: var(--ap-sev-extreme);
+  --color-sidebar: var(--ap-bg-grouped);
+  --color-sidebar-foreground: var(--ap-label);
+  --color-sidebar-border: var(--ap-separator);
+  --color-sidebar-accent: var(--ap-bg-raised);
+  --color-sidebar-accent-foreground: var(--ap-label);
+  --color-sidebar-primary: var(--ap-action);
+  --color-sidebar-primary-foreground: var(--ap-action-fg);
+  --color-sidebar-ring: var(--ap-focus-ring);
+
+  /* ── Frosted material — DESIGN.md: saturate(180%) blur(20px) at 80%. ───── */
+  --glass-surface: var(--ap-frosted-bg);
+  --glass-surface-strong: var(--ap-frosted-bg);
+  --glass-blur: var(--ap-frosted-blur);
+  --glass-border: var(--ap-separator);
 }
 
 @layer base {
@@ -1267,21 +1146,21 @@ html[data-map-debug-fx='true'] .marker-high-risk {
   }
 
   h1 {
-    letter-spacing: var(--hds-letter-spacing-neg-3);
+    letter-spacing: var(--ap-tracking-hero);
   }
 
   h2 {
-    letter-spacing: var(--hds-letter-spacing-neg-2);
+    letter-spacing: var(--ap-tracking-body);
   }
 
   /* Metadata / eyebrow text: uppercase, tracked out, 12px — HDS's
      `metadata` composite, used for dates, sources and provenance labels. */
   .hn-metadata {
     font-family: var(--font-heading);
-    font-size: var(--hds-font-size-3xs);
-    font-weight: var(--hds-font-weight-bold);
-    line-height: var(--hds-line-height-6);
-    letter-spacing: var(--hds-letter-spacing-1);
+    font-size: var(--ap-text-micro-legal);
+    font-weight: var(--ap-weight-semibold);
+    line-height: var(--ap-leading-body);
+    letter-spacing: var(--ap-tracking-tagline);
     text-transform: uppercase;
   }
 
@@ -1292,30 +1171,30 @@ html[data-map-debug-fx='true'] .marker-high-risk {
   .hn-nav-link {
     font-family: var(--font-heading);
     /* HDS metadata is 12px. If a 1280px masthead overflows, drop to 11px — never 10px. */
-    font-size: var(--hds-font-size-3xs);
-    font-weight: var(--hds-font-weight-bold);
-    letter-spacing: var(--hds-letter-spacing-1);
+    font-size: var(--ap-text-micro-legal);
+    font-weight: var(--ap-weight-semibold);
+    letter-spacing: var(--ap-tracking-tagline);
     text-transform: uppercase;
-    color: var(--hn-hds-ink-soft);
+    color: var(--ap-label-secondary);
     border-bottom: 2px solid transparent;
     transition: color 150ms var(--ease-standard), border-color 150ms var(--ease-standard);
   }
 
   .hn-nav-link:hover {
-    color: var(--hn-hds-ink);
-    border-bottom-color: var(--hn-hds-line-strong);
+    color: var(--ap-label);
+    border-bottom-color: var(--ap-separator-opaque);
   }
 
   .hn-nav-link[aria-current='page'],
   .hn-nav-link-active {
-    color: var(--hn-hds-red-shade);
-    border-bottom-color: var(--hn-hds-red);
+    color: var(--ap-primary);
+    border-bottom-color: var(--ap-primary);
   }
 
   @media (min-width: 1536px) {
     .hn-nav-link {
-      font-size: var(--hds-font-size-3xs);
-      letter-spacing: var(--hds-letter-spacing-1);
+      font-size: var(--ap-text-micro-legal);
+      letter-spacing: var(--ap-tracking-tagline);
     }
   }
 
@@ -1332,7 +1211,7 @@ html[data-map-debug-fx='true'] .marker-high-risk {
      Colour is carbon-60 on light surfaces and carbon-30 on dark ones, which is
      HDS's own default treatment. */
   .hn-surface-dark {
-    --ring: var(--hds-color-carbon-30);
+    --ring: var(--ap-n-30);
   }
 
   /* Visible keyboard focus everywhere — focus rings must never be removed.
@@ -1341,15 +1220,15 @@ html[data-map-debug-fx='true'] .marker-high-risk {
      ones). Radius-based rings were the previous treatment; dashed rectangles
      are NASA's, and they read better on the square-cornered controls anyway. */
   :focus-visible {
-    outline: var(--hds-focus-width) var(--hds-focus-style) var(--ring);
-    outline-offset: var(--hds-focus-offset);
+    outline: var(--ap-focus-width) solid var(--ring);
+    outline-offset: var(--ap-focus-offset);
   }
 
   /* The satellite basemap is the one genuinely dark surface in the product;
      carbon-60 would vanish against it, so the ring steps up to carbon-30. */
   .leaflet-container :focus-visible,
   .hn-surface-dark :focus-visible {
-    outline-color: var(--hds-color-carbon-30);
+    outline-color: var(--ap-n-30);
   }
 }
 
@@ -1482,8 +1361,8 @@ input[type="reset"] {
 .hn-nav-item.active,
 .hn-nav-item[data-active="true"] {
   font-weight: 600;
-  color: var(--hn-teal-700);
-  border-bottom: 2px solid var(--hn-teal-600);
+  color: var(--ap-primary);
+  border-bottom: 2px solid var(--ap-primary);
 }
 
 /* 3. Dropdown & sidebar menu: sans, 13–14 px, 400–500, line-height 1.4 */
@@ -1606,20 +1485,20 @@ button,
   justify-content: center;
   min-height: 44px;
   padding: 8px 16px;
-  background-color: var(--hn-hds-red-shade);
+  background-color: var(--ap-primary);
   color: #ffffff;
   font-family: var(--font-sans);
   font-size: 14px;
   font-weight: 600;
   line-height: 1.3;
   letter-spacing: 0.01em;
-  border-radius: var(--hds-border-radius-control);
+  border-radius: var(--ap-radius-sm);
   transition: background-color 150ms var(--ease-standard);
   touch-action: manipulation;
 }
 
 .hn-btn-primary:hover {
-  background-color: var(--hn-hds-red);
+  background-color: var(--ap-primary);
 }
 
 .hn-btn-secondary {
@@ -1628,18 +1507,18 @@ button,
   justify-content: center;
   min-height: 44px;
   padding: 8px 16px;
-  background-color: var(--hn-hds-blue);
+  background-color: var(--ap-primary);
   color: #ffffff;
   font-family: var(--font-sans);
   font-size: 14px;
   font-weight: 600;
-  border-radius: var(--hds-border-radius-control);
+  border-radius: var(--ap-radius-sm);
   transition: background-color 150ms var(--ease-standard);
   touch-action: manipulation;
 }
 
 .hn-btn-secondary:hover {
-  background-color: var(--hn-hds-blue-shade);
+  background-color: var(--ap-primary);
 }
 
 .hn-btn-outline {
@@ -1649,19 +1528,19 @@ button,
   min-height: 44px;
   padding: 8px 16px;
   background-color: #ffffff;
-  color: var(--hn-hds-ink);
+  color: var(--ap-label);
   font-family: var(--font-sans);
   font-size: 14px;
   font-weight: 600;
-  border: 1px solid var(--hn-hds-line);
-  border-radius: var(--hds-border-radius-control);
+  border: 1px solid var(--ap-separator);
+  border-radius: var(--ap-radius-sm);
   transition: background-color 150ms var(--ease-standard), border-color 150ms var(--ease-standard);
   touch-action: manipulation;
 }
 
 .hn-btn-outline:hover {
-  background-color: var(--hn-hds-surface);
-  border-color: var(--hn-hds-line-strong);
+  background-color: var(--ap-bg-canvas);
+  border-color: var(--ap-separator-opaque);
 }
 
 .hn-btn-ghost {
@@ -1671,38 +1550,38 @@ button,
   min-height: 44px;
   padding: 8px 16px;
   background-color: transparent;
-  color: var(--hn-hds-ink);
+  color: var(--ap-label);
   font-family: var(--font-sans);
   font-size: 14px;
   font-weight: 600;
-  border-radius: var(--hds-border-radius-control);
+  border-radius: var(--ap-radius-sm);
   transition: background-color 150ms var(--ease-standard), color 150ms var(--ease-standard);
   touch-action: manipulation;
 }
 
 .hn-btn-ghost:hover {
-  background-color: var(--hn-hds-surface);
+  background-color: var(--ap-bg-canvas);
 }
 
 .hn-card {
   background-color: #ffffff;
-  border: 1px solid var(--hn-hds-line);
-  border-radius: var(--hds-border-radius-control);
-  color: var(--hn-hds-ink);
+  border: 1px solid var(--ap-separator);
+  border-radius: var(--ap-radius-sm);
+  color: var(--ap-label);
 }
 
 .hn-card-elevated {
   background-color: #ffffff;
-  border: 1px solid var(--hn-hds-line);
-  border-radius: var(--hds-border-radius-control);
+  border: 1px solid var(--ap-separator);
+  border-radius: var(--ap-radius-sm);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  color: var(--hn-hds-ink);
+  color: var(--ap-label);
   transition: transform 150ms var(--ease-standard), box-shadow 150ms var(--ease-standard);
 }
 
 /* 10. Data readouts (severity score, confidence, dates); the mono stack, 13–16 px, 600, tabular figures */
 .hn-data-readout {
-  font-family: var(--hds-font-family-code);
+  font-family: var(--ap-font-mono);
   font-size: 13px;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
@@ -1717,7 +1596,7 @@ button,
 
 /* 11. Badges (FLOOD, SEV-3, district code); the mono stack, 11 px, 600, +0.08 em, caps, colored per severity token */
 .hn-badge {
-  font-family: var(--hds-font-family-code);
+  font-family: var(--ap-font-mono);
   font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.08em;
@@ -1837,20 +1716,20 @@ caption {
       font-family: "Times New Roman", Times, serif;
       font-size: 8.5pt;
       font-weight: 600;
-      color: var(--hds-color-carbon-60);
+      color: var(--ap-n-60);
     }
     @bottom-center {
       content: "SOD 2019 Disaster Management Compliance";
       font-family: "Times New Roman", Times, serif;
       font-size: 8pt;
-      color: var(--hds-color-carbon-40);
+      color: var(--ap-n-40);
     }
     @bottom-right {
       content: "Page " counter(page) " of " counter(pages);
       font-family: "Times New Roman", Times, serif;
       font-size: 9pt;
       font-weight: 800;
-      color: var(--hds-color-carbon-90);
+      color: var(--ap-n-90);
     }
   }
 
@@ -1875,7 +1754,7 @@ caption {
   .print-district-brief {
     background-color: #ffffff !important;
     background: #ffffff !important;
-    color: var(--hds-color-carbon-90) !important;
+    color: var(--ap-n-90) !important;
     font-family: "Times New Roman", Times, serif !important;
     font-size: 12pt !important;
     line-height: 1.5 !important;
@@ -2015,8 +1894,8 @@ caption {
   [class*="rounded-2xl"] {
     background-color: #ffffff !important;
     background: #ffffff !important;
-    color: var(--hds-color-carbon-90) !important;
-    border: 1pt solid var(--hds-color-carbon-30) !important;
+    color: var(--ap-n-90) !important;
+    border: 1pt solid var(--ap-n-30) !important;
     border-radius: 6pt !important;
     box-shadow: none !important;
     backdrop-filter: none !important;
@@ -2025,7 +1904,7 @@ caption {
 
   /* 8. Text Color & Contrast Overrides (H1; 18pt, H2; 16pt, H3; 14pt) */
   h1, h2, h3, h4, h5, h6 {
-    color: var(--hds-color-carbon-90) !important;
+    color: var(--ap-n-90) !important;
     font-weight: 800 !important;
     page-break-after: avoid !important;
     break-after: avoid !important;
@@ -2038,7 +1917,7 @@ caption {
   p, span, li, td, th {
     font-size: 12pt !important;
     line-height: 1.5 !important;
-    color: var(--hds-color-carbon-80) !important;
+    color: var(--ap-n-80) !important;
   }
 
   .text-white,
@@ -2046,12 +1925,12 @@ caption {
   .text-carbon-20,
   .text-carbon-30,
   .text-carbon-40 {
-    color: var(--hds-color-carbon-70) !important;
+    color: var(--ap-n-70) !important;
   }
 
   /* 9. Hyperlink Formatting for Physical Emergency Handouts */
   a {
-    color: var(--hds-color-carbon-90) !important;
+    color: var(--ap-n-90) !important;
     text-decoration: none !important;
   }
 
@@ -2062,7 +1941,7 @@ caption {
     font-size: 7pt !important;
     font-family: var(--font-mono) !important;
     font-weight: 500 !important;
-    color: var(--hds-color-carbon-60) !important;
+    color: var(--ap-n-60) !important;
     word-break: break-all !important;
   }
 
@@ -2082,20 +1961,20 @@ caption {
     font-size: 7.5pt !important;
     font-family: var(--font-mono) !important;
     font-weight: 700 !important;
-    color: var(--hds-color-carbon-90) !important;
+    color: var(--ap-n-90) !important;
   }
 
   a[href^="mailto:"]:after {
     content: " [" attr(href) "]";
     font-size: 7pt !important;
     font-family: var(--font-mono) !important;
-    color: var(--hds-color-carbon-70) !important;
+    color: var(--ap-n-70) !important;
   }
 
   a[href^="tel:"] {
     font-weight: 800 !important;
     font-family: var(--font-mono) !important;
-    color: var(--hds-color-carbon-90) !important;
+    color: var(--ap-n-90) !important;
   }
 
   /* 10. Emergency Contacts & Directory Cards Formatting */
@@ -2283,8 +2162,8 @@ caption {
   [class*="bg-emerald-50"],
   [class*="bg-blue-50"],
   [class*="bg-carbon-05"] {
-    background-color: var(--hds-color-carbon-05) !important;
-    border: 1pt solid var(--hds-color-carbon-40) !important;
+    background-color: var(--ap-n-05) !important;
+    border: 1pt solid var(--ap-n-40) !important;
     border-radius: 4pt !important;
     padding: 5pt 7pt !important;
   }
@@ -2293,9 +2172,9 @@ caption {
   [class*="rounded-full"],
   [class*="rounded-lg"],
   [class*="rounded-md"] {
-    border: 0.75pt solid var(--hds-color-carbon-50) !important;
-    background-color: var(--hds-color-carbon-10) !important;
-    color: var(--hds-color-carbon-90) !important;
+    border: 0.75pt solid var(--ap-n-50) !important;
+    background-color: var(--ap-n-10) !important;
+    color: var(--ap-n-90) !important;
     font-weight: 700 !important;
     border-radius: 3pt !important;
   }
@@ -2304,7 +2183,7 @@ caption {
   table {
     width: 100% !important;
     border-collapse: collapse !important;
-    border: 1.5pt solid var(--hds-color-carbon-90) !important;
+    border: 1.5pt solid var(--ap-n-90) !important;
     font-size: 8pt !important;
     margin-top: 6pt !important;
     margin-bottom: 8pt !important;
@@ -2327,14 +2206,14 @@ caption {
     display: table-header-group !important;
     page-break-inside: avoid !important;
     break-inside: avoid !important;
-    background-color: var(--hds-color-carbon-90) !important;
+    background-color: var(--ap-n-90) !important;
     color: #ffffff !important;
   }
 
   .print-table-emergency-header th,
   thead tr.print-table-emergency-header th,
   th.emergency-protocol-title {
-    background-color: var(--hds-color-carbon-90) !important;
+    background-color: var(--ap-n-90) !important;
     color: #ffffff !important;
     font-family: var(--font-mono) !important;
     font-size: 8pt !important;
@@ -2342,16 +2221,16 @@ caption {
     text-transform: uppercase !important;
     letter-spacing: 0.06em !important;
     padding: 4pt 7pt !important;
-    border: 1.5pt solid var(--hds-color-carbon-90) !important;
+    border: 1.5pt solid var(--ap-n-90) !important;
     text-align: left !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
 
   thead tr:not(.print-table-emergency-header) th {
-    background-color: var(--hds-color-carbon-20) !important;
-    color: var(--hds-color-carbon-90) !important;
-    border: 1pt solid var(--hds-color-carbon-60) !important;
+    background-color: var(--ap-n-20) !important;
+    color: var(--ap-n-90) !important;
+    border: 1pt solid var(--ap-n-60) !important;
     font-weight: 800 !important;
     font-family: var(--font-mono) !important;
     font-size: 7.5pt !important;
@@ -2365,16 +2244,16 @@ caption {
   }
 
   td {
-    border: 0.75pt solid var(--hds-color-carbon-30) !important;
+    border: 0.75pt solid var(--ap-n-30) !important;
     padding: 4pt 6pt !important;
-    color: var(--hds-color-carbon-90) !important;
+    color: var(--ap-n-90) !important;
     vertical-align: top !important;
     word-break: break-word !important;
     overflow-wrap: break-word !important;
   }
 
   tbody tr:nth-child(even) td {
-    background-color: var(--hds-color-carbon-05) !important;
+    background-color: var(--ap-n-05) !important;
   }
 
   /* 13. Dynamic QR Code Print Layout */
@@ -2383,7 +2262,7 @@ caption {
     page-break-inside: avoid !important;
     break-inside: avoid !important;
     background-color: #ffffff !important;
-    border: 1pt solid var(--hds-color-carbon-60) !important;
+    border: 1pt solid var(--ap-n-60) !important;
     border-radius: 6pt !important;
     padding: 4pt 6pt !important;
     margin: 4pt 0 !important;
@@ -2398,24 +2277,24 @@ caption {
     display: inline-flex !important;
     align-items: center !important;
     gap: 4pt !important;
-    background-color: var(--hds-color-carbon-05) !important;
-    border: 1pt solid var(--hds-color-carbon-50) !important;
+    background-color: var(--ap-n-05) !important;
+    border: 1pt solid var(--ap-n-50) !important;
     border-radius: 4pt !important;
     padding: 2.5pt 6pt !important;
     font-family: var(--font-mono) !important;
     font-size: 7.5pt !important;
     font-weight: 700 !important;
-    color: var(--hds-color-carbon-90) !important;
+    color: var(--ap-n-90) !important;
   }
 
   .print-last-updated strong {
-    color: var(--hds-color-carbon-90) !important;
+    color: var(--ap-n-90) !important;
     font-weight: 900 !important;
   }
 
   .print-currency-tag {
     display: inline-block !important;
-    background-color: var(--hds-color-carbon-90) !important;
+    background-color: var(--ap-n-90) !important;
     color: #ffffff !important;
     font-family: var(--font-mono) !important;
     font-size: 6.5pt !important;
@@ -2438,8 +2317,8 @@ caption {
     align-items: center !important;
     font-family: var(--font-mono) !important;
     font-size: 7pt !important;
-    color: var(--hds-color-carbon-60) !important;
-    border-top: 0.75pt solid var(--hds-color-carbon-40) !important;
+    color: var(--ap-n-60) !important;
+    border-top: 0.75pt solid var(--ap-n-40) !important;
     padding-top: 2pt !important;
     background-color: #ffffff !important;
     z-index: 999;
@@ -2449,7 +2328,7 @@ caption {
     counter-increment: page;
     content: "Page " counter(page);
     font-weight: 800 !important;
-    color: var(--hds-color-carbon-90) !important;
+    color: var(--ap-n-90) !important;
   }
 
   /* 16. Structured Advisory Renderer: Uncollapse all sections */
@@ -2543,8 +2422,8 @@ body.pdf-exporting .no-print,
 .print-preview-rendered-body [class*="rounded-2xl"] {
   background-color: #ffffff !important;
   background: #ffffff !important;
-  color: var(--hds-color-carbon-90) !important;
-  border: 1pt solid var(--hds-color-carbon-30) !important;
+  color: var(--ap-n-90) !important;
+  border: 1pt solid var(--ap-n-30) !important;
   border-radius: 6pt !important;
   box-shadow: none !important;
 }
@@ -2575,22 +2454,22 @@ body.pdf-exporting .no-print,
 .print-preview-rendered-body .print-qr-code-box {
   display: flex !important;
   background-color: #ffffff !important;
-  border: 1pt solid var(--hds-color-carbon-60) !important;
+  border: 1pt solid var(--ap-n-60) !important;
   border-radius: 6pt !important;
 }
 
 .pdf-capture-mode .print-last-updated,
 .print-preview-rendered-body .print-last-updated {
   display: inline-flex !important;
-  background-color: var(--hds-color-carbon-05) !important;
-  border: 1pt solid var(--hds-color-carbon-50) !important;
-  color: var(--hds-color-carbon-90) !important;
+  background-color: var(--ap-n-05) !important;
+  border: 1pt solid var(--ap-n-50) !important;
+  color: var(--ap-n-90) !important;
 }
 
 .pdf-capture-mode .print-currency-tag,
 .print-preview-rendered-body .print-currency-tag {
   display: inline-block !important;
-  background-color: var(--hds-color-carbon-90) !important;
+  background-color: var(--ap-n-90) !important;
   color: #ffffff !important;
 }
 
@@ -2598,7 +2477,7 @@ body.pdf-exporting .no-print,
 .print-preview-rendered-body table {
   width: 100% !important;
   border-collapse: collapse !important;
-  border: 1.5pt solid var(--hds-color-carbon-90) !important;
+  border: 1.5pt solid var(--ap-n-90) !important;
   font-size: 8pt !important;
   margin-top: 6pt !important;
   margin-bottom: 8pt !important;
@@ -2617,7 +2496,7 @@ body.pdf-exporting .no-print,
 .print-preview-rendered-body thead tr.print-table-emergency-header,
 .pdf-capture-mode .print-table-emergency-header,
 .print-preview-rendered-body .print-table-emergency-header {
-  background-color: var(--hds-color-carbon-90) !important;
+  background-color: var(--ap-n-90) !important;
   color: #ffffff !important;
 }
 
@@ -2625,7 +2504,7 @@ body.pdf-exporting .no-print,
 .pdf-capture-mode th.emergency-protocol-title,
 .print-preview-rendered-body thead tr.print-table-emergency-header th,
 .print-preview-rendered-body th.emergency-protocol-title {
-  background-color: var(--hds-color-carbon-90) !important;
+  background-color: var(--ap-n-90) !important;
   color: #ffffff !important;
   font-family: var(--font-mono) !important;
   font-size: 8pt !important;
@@ -2633,15 +2512,15 @@ body.pdf-exporting .no-print,
   text-transform: uppercase !important;
   letter-spacing: 0.06em !important;
   padding: 4pt 7pt !important;
-  border: 1.5pt solid var(--hds-color-carbon-90) !important;
+  border: 1.5pt solid var(--ap-n-90) !important;
   text-align: left !important;
 }
 
 .pdf-capture-mode thead tr:not(.print-table-emergency-header) th,
 .print-preview-rendered-body thead tr:not(.print-table-emergency-header) th {
-  background-color: var(--hds-color-carbon-20) !important;
-  color: var(--hds-color-carbon-90) !important;
-  border: 1pt solid var(--hds-color-carbon-60) !important;
+  background-color: var(--ap-n-20) !important;
+  color: var(--ap-n-90) !important;
+  border: 1pt solid var(--ap-n-60) !important;
   padding: 4pt 6pt !important;
   font-weight: 800;
   font-size: 7.5pt;
@@ -2650,15 +2529,15 @@ body.pdf-exporting .no-print,
 
 .pdf-capture-mode td,
 .print-preview-rendered-body td {
-  border: 0.75pt solid var(--hds-color-carbon-30) !important;
+  border: 0.75pt solid var(--ap-n-30) !important;
   padding: 4pt 6pt !important;
   font-size: 7.5pt !important;
-  color: var(--hds-color-carbon-80) !important;
+  color: var(--ap-n-80) !important;
 }
 
 .pdf-capture-mode tr:nth-child(even) td,
 .print-preview-rendered-body tr:nth-child(even) td {
-  background-color: var(--hds-color-carbon-05) !important;
+  background-color: var(--ap-n-05) !important;
 }
 
 .pdf-capture-mode .text-white,
@@ -2667,7 +2546,7 @@ body.pdf-exporting .no-print,
 .print-preview-rendered-body .text-white,
 .print-preview-rendered-body .text-carbon-40,
 .print-preview-rendered-body .text-carbon-30 {
-  color: var(--hds-color-carbon-90) !important;
+  color: var(--ap-n-90) !important;
 }
 
 .pdf-capture-mode h1,
@@ -2676,7 +2555,7 @@ body.pdf-exporting .no-print,
 .print-preview-rendered-body h1,
 .print-preview-rendered-body h2,
 .print-preview-rendered-body h3 {
-  color: var(--hds-color-carbon-90) !important;
+  color: var(--ap-n-90) !important;
 }
 
 /* Ink-Saver High Contrast Field Print Mode */
@@ -2701,9 +2580,9 @@ body.pdf-exporting .no-print,
 }
 
 /* ─── Blog article typography (prose-blog) ─────────────────────────────── */
-.prose-blog h1 { font-size: 1.6rem; font-weight: 900; color: var(--hds-color-carbon-90); margin: 1.4rem 0 0.6rem; letter-spacing: -0.01em; }
-.prose-blog h2 { font-size: 1.3rem; font-weight: 900; color: var(--hds-color-carbon-90); margin: 1.3rem 0 0.5rem; }
-.prose-blog h3 { font-size: 1.1rem; font-weight: 800; color: var(--hds-color-carbon-80); margin: 1.1rem 0 0.4rem; }
+.prose-blog h1 { font-size: 1.6rem; font-weight: 900; color: var(--ap-n-90); margin: 1.4rem 0 0.6rem; letter-spacing: -0.01em; }
+.prose-blog h2 { font-size: 1.3rem; font-weight: 900; color: var(--ap-n-90); margin: 1.3rem 0 0.5rem; }
+.prose-blog h3 { font-size: 1.1rem; font-weight: 800; color: var(--ap-n-80); margin: 1.1rem 0 0.4rem; }
 .prose-blog p  { margin: 0.75rem 0; line-height: 1.75; }
 .prose-blog ul, .prose-blog ol { margin: 0.75rem 0 0.75rem 1.4rem; line-height: 1.7; }
 .prose-blog ul { list-style: disc; }
@@ -2711,19 +2590,19 @@ body.pdf-exporting .no-print,
 .prose-blog li { margin: 0.3rem 0; }
 .prose-blog a  { color: #b45309; font-weight: 700; text-decoration: underline; text-underline-offset: 2px; }
 .prose-blog a:hover { color: #92400e; }
-.prose-blog blockquote { margin: 1rem 0; padding: 0.6rem 1rem; border: 1px solid var(--hds-color-carbon-20); background: #fffbeb; color: #78350f; font-style: italic; }
-.prose-blog pre { margin: 1rem 0; padding: 0.9rem 1rem; background: var(--hds-color-carbon-90); color: var(--hds-color-carbon-20); border-radius: 0.75rem; overflow-x: auto; font-size: 0.78rem; line-height: 1.6; }
-.prose-blog code { font-family: var(--hds-font-family-code); font-size: 0.82em; background: var(--hds-color-carbon-10); padding: 0.1rem 0.35rem; border-radius: 0.35rem; color: #b91c1c; }
+.prose-blog blockquote { margin: 1rem 0; padding: 0.6rem 1rem; border: 1px solid var(--ap-n-20); background: #fffbeb; color: #78350f; font-style: italic; }
+.prose-blog pre { margin: 1rem 0; padding: 0.9rem 1rem; background: var(--ap-n-90); color: var(--ap-n-20); border-radius: 0.75rem; overflow-x: auto; font-size: 0.78rem; line-height: 1.6; }
+.prose-blog code { font-family: var(--ap-font-mono); font-size: 0.82em; background: var(--ap-n-10); padding: 0.1rem 0.35rem; border-radius: 0.35rem; color: #b91c1c; }
 .prose-blog pre code { background: transparent; color: inherit; padding: 0; }
-.prose-blog img { max-width: 100%; height: auto; border-radius: 0.75rem; margin: 1rem 0; border: 1px solid var(--hds-color-carbon-20); }
-.prose-blog hr { margin: 1.5rem 0; border: none; border-top: 1px solid var(--hds-color-carbon-20); }
+.prose-blog img { max-width: 100%; height: auto; border-radius: 0.75rem; margin: 1rem 0; border: 1px solid var(--ap-n-20); }
+.prose-blog hr { margin: 1.5rem 0; border: none; border-top: 1px solid var(--ap-n-20); }
 .prose-blog [style*="text-align: center"], .prose-blog [style*="text-align:center"] { text-align: center; }
 .prose-blog [style*="text-align: right"], .prose-blog [style*="text-align:right"] { text-align: right; }
 
 /* Editor empty placeholder */
 [contenteditable][data-placeholder]:empty::before {
   content: attr(data-placeholder);
-  color: var(--hds-color-carbon-40);
+  color: var(--ap-n-40);
   pointer-events: none;
 }
 
@@ -2734,7 +2613,7 @@ body.pdf-exporting .no-print,
   input[type="button"],
   input[type="reset"] {
     @apply min-h-[44px] min-w-[44px] touch-manipulation;
-    border-radius: var(--hds-border-radius-control);
+    border-radius: var(--ap-radius-sm);
   }
 
   /* Global 150ms Smooth Transitions for all interactive components */
@@ -2798,9 +2677,9 @@ footer a,
 /* Phase 4 WCAG AA/AAA light-mode contrast guard ([P0] A11Y-01):
    Promote low-contrast carbon-40 (2.98:1) and carbon-50 (4.46:1) text on light surfaces
    to carbon-60 (#58585b, 7.09:1 AAA) unless inside an explicit dark container. */
-:root:not(.dark):not([data-mrd-theme="dark"]) :not(.bg-carbon-90):not(.bg-carbon-80):not(.hn-surface-dark) > .text-carbon-40,
-:root:not(.dark):not([data-mrd-theme="dark"]) :not(.bg-carbon-90):not(.bg-carbon-80):not(.hn-surface-dark) > .text-carbon-50 {
-  color: var(--hds-color-carbon-60);
+:root:not(.dark):not([data-theme="dark"]) :not(.bg-carbon-90):not(.bg-carbon-80):not(.hn-surface-dark) > .text-carbon-40,
+:root:not(.dark):not([data-theme="dark"]) :not(.bg-carbon-90):not(.bg-carbon-80):not(.hn-surface-dark) > .text-carbon-50 {
+  color: var(--ap-n-60);
 }
 
 /* Phase 4 Touch Target Floor ([P1] RES-01):
@@ -2820,9 +2699,10 @@ button:not([data-compact-target="true"]),
   transition-duration: 150ms;
 }
 
-/* Final cascade guard: legacy component tokens cannot reintroduce old families. */
-body, body * { font-family: var(--font-sans-en); }
-.lang-bn, .farmer-advisory, .tts-fallback-text, [lang="bn"], :lang(bn),
-.lang-bn *, .farmer-advisory *, .tts-fallback-text *, [lang="bn"] *, :lang(bn) * { font-family: var(--font-sans-bn) !important; }
-.metric-value, .confidence-badge, .tensor-log, .hn-tabular-nums, code, pre,
-.metric-value *, .confidence-badge *, .tensor-log *, .hn-tabular-nums *, code *, pre * { font-family: var(--font-mono) !important; }
+/* The "final cascade guard" that used to live here — a `body, body *` font-family reset plus two
+   !important overrides — was deleted in the Apple migration. It existed because four design
+   systems were fighting over the font stack and a legacy component token could reintroduce a
+   family the bundle does not ship. With one system there is nothing to guard against: apple.css
+   sets the base face, §12 sets Bengali, and the mono rule near the top of this file sets tabular
+   type, all at ordinary specificity. Keeping the guard would have meant a universal selector
+   beating those three rules and three !importants fighting back. */

@@ -945,8 +945,8 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
             const severityPercent = Math.round(dist.severity * 100);
             const tierBadge = dist.advisoryTier ? `[${dist.advisoryTier}] ` : '';
             const tooltipText = isUserDist
-              ? `<div style="font-family: var(--hds-font-family-heading); font-size: 12px; font-weight: 900; color: ${MAP_CHROME.surface}; text-shadow: 0 2px 4px rgba(0,0,0,0.8); display: flex; align-items: center; gap: 6px;"><MaterialIcon name="location_on" className="w-4 h-4 inline-block align-middle" /><span>${dist.name} District Boundary (Your Location)</span><span style="background: ${severityColor}; color: ${MAP_CHROME.surface}; padding: 2px 6px; border-radius: 9999px; font-size: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.4);">${tierBadge}${severityPercent}% Severity</span></div>`
-              : `<div style="font-family: var(--hds-font-family-heading); font-size: 12px; font-weight: 900; color: ${MAP_CHROME.surface}; text-shadow: 0 2px 4px rgba(0,0,0,0.8); display: flex; align-items: center; gap: 6px;"><span>${dist.name} District ${isDivSel ? `(${dist.division} Division)` : 'Boundary'}</span><span style="background: ${severityColor}; color: ${MAP_CHROME.surface}; padding: 2px 6px; border-radius: 9999px; font-size: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.4);">${tierBadge}${severityPercent}% Severity</span></div>`;
+              ? `<div style="font-family: var(--ap-font-display); font-size: 12px; font-weight: 900; color: ${MAP_CHROME.surface}; text-shadow: 0 2px 4px rgba(0,0,0,0.8); display: flex; align-items: center; gap: 6px;"><MaterialIcon name="location_on" className="w-4 h-4 inline-block align-middle" /><span>${dist.name} District Boundary (Your Location)</span><span style="background: ${severityColor}; color: ${MAP_CHROME.surface}; padding: 2px 6px; border-radius: 9999px; font-size: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.4);">${tierBadge}${severityPercent}% Severity</span></div>`
+              : `<div style="font-family: var(--ap-font-display); font-size: 12px; font-weight: 900; color: ${MAP_CHROME.surface}; text-shadow: 0 2px 4px rgba(0,0,0,0.8); display: flex; align-items: center; gap: 6px;"><span>${dist.name} District ${isDivSel ? `(${dist.division} Division)` : 'Boundary'}</span><span style="background: ${severityColor}; color: ${MAP_CHROME.surface}; padding: 2px 6px; border-radius: 9999px; font-size: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.4);">${tierBadge}${severityPercent}% Severity</span></div>`;
 
             boundaryPolygon.bindTooltip(tooltipText, {
               permanent: isUserDist && !isSel,
@@ -1065,9 +1065,9 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
         setTimeout(attachPinA11y, 50);
 
         userPinMarker.bindPopup(`
-          <div style="font-family: var(--hds-font-family-heading); color: ${MAP_CHROME.panelInk}; padding: 4px 2px; min-width: 190px; max-width: 240px;">
+          <div style="font-family: var(--ap-font-display); color: ${MAP_CHROME.panelInk}; padding: 4px 2px; min-width: 190px; max-width: 240px;">
             <div style="font-size: 14px; font-weight: 800; color: ${MAP_CHROME.inkStrong}; margin-bottom: 6px;">Your location</div>
-            <div style="font-size: 13px; font-family: var(--hds-font-family-mono), monospace; color: ${MAP_CHROME.inkSoft};">${pinpointLat.toFixed(4)}°N, ${pinpointLng.toFixed(4)}°E</div>
+            <div style="font-size: 13px; font-family: var(--ap-font-mono), monospace; color: ${MAP_CHROME.inkSoft};">${pinpointLat.toFixed(4)}°N, ${pinpointLng.toFixed(4)}°E</div>
             ${pinDist ? `
               <div style="margin-top: 8px; font-size: 13px; line-height: 1.45; color: ${MAP_CHROME.ink};">
                 <strong style="font-weight: 800;">${pinDist.name}</strong> · ${pinDist.division}
@@ -1130,9 +1130,9 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
         const distanceKm = nearest?.distanceKm ? nearest.distanceKm.toFixed(1) : '0.0';
 
         gpsMarker.bindPopup(`
-          <div style="font-family: var(--hds-font-family-heading); color: ${MAP_CHROME.panelInk}; padding: 4px 2px; min-width: 190px; max-width: 240px;">
+          <div style="font-family: var(--ap-font-display); color: ${MAP_CHROME.panelInk}; padding: 4px 2px; min-width: 190px; max-width: 240px;">
             <div style="font-size: 14px; font-weight: 800; color: ${MAP_CHROME.inkStrong}; margin-bottom: 6px;">Your location</div>
-            <div style="font-size: 13px; font-family: var(--hds-font-family-mono), monospace; color: ${MAP_CHROME.inkSoft};">${userGpsPos.lat.toFixed(4)}°N, ${userGpsPos.lng.toFixed(4)}°E</div>
+            <div style="font-size: 13px; font-family: var(--ap-font-mono), monospace; color: ${MAP_CHROME.inkSoft};">${userGpsPos.lat.toFixed(4)}°N, ${userGpsPos.lng.toFixed(4)}°E</div>
             <div style="margin-top: 4px; font-size: 12px; color: ${MAP_CHROME.muted};">Accuracy ±${userGpsPos.accuracy || 10} m</div>
             ${dist ? `
               <div style="margin-top: 8px; font-size: 13px; line-height: 1.45; color: ${MAP_CHROME.ink};">
@@ -1178,7 +1178,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
           });
           markersGroupRef.current?.addLayer(outerGlow);
           boundaryPolygon.bindTooltip(
-            `<div style="font-family: var(--hds-font-family-heading); font-size: 12px; font-weight: 900; color: ${MAP_CHROME.surface}; text-shadow: 0 2px 4px rgba(0,0,0,0.8); display: flex; align-items: center; gap: 6px;"><MaterialIcon name="location_on" className="w-4 h-4 inline-block align-middle" /><span>${activeUserDistrict.name} District Boundary (Your Location)</span><span style="background: ${severityColor}; color: ${MAP_CHROME.surface}; padding: 2px 6px; border-radius: 9999px; font-size: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.4);">${severityPercent}% Severity</span></div>`,
+            `<div style="font-family: var(--ap-font-display); font-size: 12px; font-weight: 900; color: ${MAP_CHROME.surface}; text-shadow: 0 2px 4px rgba(0,0,0,0.8); display: flex; align-items: center; gap: 6px;"><MaterialIcon name="location_on" className="w-4 h-4 inline-block align-middle" /><span>${activeUserDistrict.name} District Boundary (Your Location)</span><span style="background: ${severityColor}; color: ${MAP_CHROME.surface}; padding: 2px 6px; border-radius: 9999px; font-size: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.4);">${severityPercent}% Severity</span></div>`,
             { permanent: true, direction: 'top' }
           );
           markersGroupRef.current?.addLayer(boundaryPolygon);
@@ -1248,7 +1248,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
           });
 
           riverPolyline.bindTooltip(
-            `<div style="font-family: var(--hds-font-family-heading); font-size: 12px; font-weight: 900; color: ${MAP_INTERACTIVE.blue};">
+            `<div style="font-family: var(--ap-font-display); font-size: 12px; font-weight: 900; color: ${MAP_INTERACTIVE.blue};">
               <MaterialIcon name="water" className="w-4 h-4 inline-block align-middle" /> ${river.name}<br/>
               <span style="font-size: 12px; color: ${MAP_CHROME.muted}; font-weight: normal;">${river.status}</span>
             </div>`,
@@ -1703,7 +1703,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 24, scale: 0.98 }}
                 transition={{ duration: 0.22, ease: 'easeOut' }}
-                className="w-full sm:max-w-md flex flex-col max-h-[88vh] sm:max-h-[80vh] overflow-hidden bg-white dark:bg-carbon-90 sm:rounded-[28px] rounded-t-[28px] shadow-map"
+                className="w-full sm:max-w-md flex flex-col max-h-[88vh] sm:max-h-[80vh] overflow-hidden bg-white dark:bg-carbon-90 sm:rounded-xl rounded-t-xl shadow-map"
               >
                 {/* grab + header */}
                 <div className="shrink-0 px-5 pt-3 pb-3 border-b border-carbon-10 dark:border-carbon-80">
@@ -1844,7 +1844,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.97 }}
                 transition={{ duration: 0.18 }}
-                className="w-full max-w-sm rounded-[20px] bg-white dark:bg-carbon-90 border border-carbon-20 dark:border-carbon-80 shadow-[0_24px_60px_-16px_rgba(0,0,0,0.30)] p-5 sm:p-6 flex flex-col gap-5 max-h-[85vh] overflow-y-auto"
+                className="w-full max-w-sm rounded-xl bg-white dark:bg-carbon-90 border border-carbon-20 dark:border-carbon-80 p-5 sm:p-6 flex flex-col gap-5 max-h-[85vh] overflow-y-auto"
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="map-layers-title"
@@ -1920,7 +1920,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                               <span className="flex items-center gap-3">
                                 <MaterialIcon name={def.icon} className="w-5 h-5 text-carbon-50 dark:text-carbon-40 shrink-0" />
                                 <span className="flex flex-col">
-                                  <span className="text-[15px] font-semibold text-carbon-80 dark:text-carbon-10">{def.name}</span>
+                                  <span className="text-ap-caption font-semibold text-carbon-80 dark:text-carbon-10">{def.name}</span>
                                   {def.caption ? (
                                     <span className="text-xs text-carbon-40 dark:text-carbon-50">{def.caption}</span>
                                   ) : null}
@@ -2020,7 +2020,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                               <span className="flex items-center gap-3">
                                 <MaterialIcon name={def.icon} className="w-5 h-5 text-carbon-50 dark:text-carbon-40 shrink-0" />
                                 <span className="flex flex-col">
-                                  <span className="text-[15px] font-semibold text-carbon-80 dark:text-carbon-10">{def.name}</span>
+                                  <span className="text-ap-caption font-semibold text-carbon-80 dark:text-carbon-10">{def.name}</span>
                                   {def.caption ? (
                                     <span className="text-xs text-carbon-40 dark:text-carbon-50">{def.caption}</span>
                                   ) : null}
@@ -2185,7 +2185,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                               <span className="flex items-center gap-3">
                                 <MaterialIcon name={def.icon} className="w-5 h-5 text-carbon-50 dark:text-carbon-40 shrink-0" />
                                 <span className="flex flex-col">
-                                  <span className="text-[15px] font-semibold text-carbon-80 dark:text-carbon-10">{def.name}</span>
+                                  <span className="text-ap-caption font-semibold text-carbon-80 dark:text-carbon-10">{def.name}</span>
                                   {def.caption ? (
                                     <span className="text-xs text-carbon-40 dark:text-carbon-50">{def.caption}</span>
                                   ) : null}
@@ -2319,7 +2319,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                           <span className="flex items-center gap-3">
                             <MaterialIcon name={def.icon} className="w-5 h-5 text-carbon-50 dark:text-carbon-40 shrink-0" />
                             <span className="flex flex-col">
-                              <span className="text-[15px] font-semibold text-carbon-80 dark:text-carbon-10">{def.name}</span>
+                              <span className="text-ap-caption font-semibold text-carbon-80 dark:text-carbon-10">{def.name}</span>
                               {def.caption ? (
                                 <span className="text-xs text-carbon-40 dark:text-carbon-50">{def.caption}</span>
                               ) : null}
@@ -2412,7 +2412,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.97 }}
                 transition={{ duration: 0.18 }}
-                className="w-full max-w-sm rounded-[20px] bg-white dark:bg-carbon-90 border border-carbon-20 dark:border-carbon-80 shadow-[0_24px_60px_-16px_rgba(0,0,0,0.35)] p-5 sm:p-6 flex flex-col gap-4"
+                className="w-full max-w-sm rounded-xl bg-white dark:bg-carbon-90 border border-carbon-20 dark:border-carbon-80 p-5 sm:p-6 flex flex-col gap-4"
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="data-attribution-title"

@@ -7,7 +7,8 @@
  * inside that file, while the components around it followed a token change for free.
  *
  * This suite keeps that from coming back:
- *   - chrome and text must resolve to the design system's own tokens (not to a retyped value);
+ *   - chrome and text must resolve to the Apple design system's own tokens (not to a retyped
+ *     value), so the map obeys a token change like every other surface;
  *   - the data encodings are pinned by value, so changing one is a conscious edit to this list;
  *   - the component may not contain a single hex literal.
  */
@@ -15,7 +16,7 @@ import { readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { HDS_NASA_TOKENS } from '@hazardnet/design-system';
+import { APPLE_COLORS, APPLE_NEUTRAL, APPLE_SEVERITY } from '@hazardnet/design-system';
 import {
   MAP_CHROME,
   MAP_HEAT_RAMP,
@@ -28,34 +29,43 @@ import * as designSystem from '@hazardnet/design-system';
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const liveMap = readFileSync(join(ROOT, 'frontend/src/components/LiveMapView.tsx'), 'utf8');
 
-const colors = HDS_NASA_TOKENS.colors;
+
 
 describe('live-map palette', () => {
-  test('chrome and text are the tokens, not copies of them', () => {
-    expect(MAP_CHROME.surface).toBe(colors.spacesuitWhite);
-    expect(MAP_CHROME.muted).toBe(colors.carbon50);
-    expect(MAP_CHROME.inkSoft).toBe(colors.carbon60);
-    expect(MAP_CHROME.ink).toBe(colors.carbon70);
-    expect(MAP_CHROME.inkStrong).toBe(colors.carbon90);
+  test('chrome and text are the Apple tokens, not copies of them', () => {
+    expect(MAP_CHROME.surface).toBe(APPLE_COLORS.canvas);
+    expect(MAP_CHROME.muted).toBe(APPLE_NEUTRAL['50']);
+    expect(MAP_CHROME.inkSoft).toBe(APPLE_NEUTRAL['60']);
+    expect(MAP_CHROME.ink).toBe(APPLE_NEUTRAL['70']);
+    expect(MAP_CHROME.inkStrong).toBe(APPLE_NEUTRAL['90']);
+    // A popup over the map is the same dark surface as a dark tile anywhere else.
+    expect(MAP_CHROME.panelInk).toBe(APPLE_COLORS.surfaceTile1);
   });
 
-  test('the risk ramp keeps its shipped worst-case step', () => {
-    expect(MAP_RISK_RAMP.severe).toBe(colors.nasaRed);
-    expect(MAP_RISK_RAMP).toEqual({ severe: '#f64137' });
+  test('the map uses the one accent, on both of its grounds', () => {
+    // Action Blue on the light basemap; Sky Link Blue on dark popups and satellite
+    // imagery, where Action Blue measures 2.68:1 and is unreadable.
+    expect(MAP_INTERACTIVE.blue).toBe(APPLE_COLORS.primary);
+    expect(MAP_INTERACTIVE.blueBright).toBe(APPLE_COLORS.primaryOnDark);
+  });
+
+  test('the risk ramp reads from the severity layer, so a district agrees with its badge', () => {
+    expect(MAP_RISK_RAMP.severe).toBe(APPLE_SEVERITY.veryHigh.solid);
+    expect(MAP_RISK_RAMP).toEqual({ severe: '#c01f1f' });
   });
 
   test('the data encodings are pinned by value', () => {
-    expect(MAP_INTERACTIVE).toEqual({ blue: '#0284c7', blueBright: '#38bdf8' });
-    // The heat gradient kept the exact colours it shipped under the old
-    // MAP_RADAR_BANDS name; the fake radar that name implied was deleted.
+    // The heat gradient is the severity scale, so the map legend and the alert list
+    // cannot drift apart.
     expect(MAP_HEAT_RAMP).toEqual({
       calm: MAP_INTERACTIVE.blue,
-      moderate: '#f59e0b',
-      heavy: '#ef4444',
+      moderate: APPLE_SEVERITY.moderate.solid,
+      heavy: APPLE_SEVERITY.veryHigh.solid,
     });
-    // The IMERG rain ramp documents GIBS' own colouring (greens to reds for
-    // rain, cyan to purple for snow as liquid equivalent). Legend boundaries
-    // are approximate; the tiles are pre-rendered by GIBS.
+    // The IMERG rain ramp documents GIBS' own colouring (greens to reds for rain, cyan to
+    // purple for snow as liquid equivalent). These are the only values in the palette that
+    // are NOT Apple tokens, and deliberately so: the tiles are pre-rendered by NASA GIBS, so
+    // re-tinting the legend would make it lie about the imagery underneath it.
     expect(MAP_RAIN_RAMP).toEqual({
       trace: '#2f9e44',
       light: '#82c91e',

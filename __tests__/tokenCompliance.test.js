@@ -1,25 +1,25 @@
 /**
- * Token-compliance gate for the off-system palette families.
+ * Token-compliance gate for the Tailwind palette families, post-Apple migration.
  *
- * Why this exists: eleven Tailwind palette families (emerald, rose, blue, sky,
- * cyan, red, indigo, yellow, teal, orange, purple) were never declared in
- * `@theme inline`, so all ~770 of their uses resolved to Tailwind's stock
- * palette. That is how the app ended up with two blues meaning two different
- * things: `--hds-color-nasa-blue` (#1c67e3) is documented as on-page
- * interaction, while `blue-500` (#3b82f6) was used 180 times with nothing
- * behind it. Session 3 of docs/plans/2026-09-30-frontend-refactor.md declared
- * them, mapping each shade to the token for its ROLE rather than its hue.
+ * Why this exists: eleven Tailwind palette families (emerald, rose, blue, sky, cyan, red,
+ * indigo, yellow, teal, orange, purple) were once undeclared in `@theme inline`, so ~770 uses
+ * resolved to Tailwind's stock palette. That is how the app ended up with two blues meaning two
+ * different things.
  *
- * The scan script (`npm run check:tokens`) measures the resulting percentage.
- * This test pins the invariant that makes that percentage meaningful: every
- * declared family shade must reference a `var(--token)`, never a raw hex.
- * Without it, someone could re-declare `--color-blue-500: #3b82f6` and the
- * count would look compliant while the collision came straight back.
+ * The Apple migration closed that hole completely, and tightened the rule. There is now exactly
+ * ONE design system, so there is no such thing as an "off-system" family any more — every family
+ * Tailwind ships is declared, and every declaration resolves to an Apple token:
  *
- * The second half pins the two deliberate exceptions. indigo and purple are
- * left off-system because their uses are data encodings — weather-phenomenon
- * colours and chart series indices — with no HDS hue ramp behind them, and
- * aliasing them onto --accent would render two chart series the same colour.
+ *   · cool families (blue, sky, cyan, indigo, violet, purple) collapse onto the single Action
+ *     Blue accent. DESIGN.md §Don'ts: "Don't introduce a second accent color."
+ *   · warm and red families (amber, yellow, orange, red, rose, pink, fuchsia) and the greens
+ *     (emerald, green, teal, lime) route to the SEVERITY data layer, because in this product
+ *     those hues carry hazard meaning rather than decoration.
+ *   · the five grey families collapse onto the one Apple neutral ramp.
+ *
+ * The invariant pinned here is that no declaration may contain a raw colour. A shade is either
+ * `var(--ap-*)` or a `color-mix()` whose base is an Apple token — so nobody can re-introduce
+ * `--color-blue-500: #3b82f6` and have the compliance count still look green.
  */
 
 import { readFileSync } from 'node:fs';
@@ -29,20 +29,23 @@ import { fileURLToPath } from 'node:url';
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const INDEX_CSS = join(ROOT, 'frontend/src/index.css');
 
-/** Families Session 3 declared. */
+/** Every family the Apple bridge declares. Nothing is left off-system. */
 const DECLARED_FAMILIES = [
   'rose', 'red', 'emerald', 'teal', 'blue', 'sky', 'cyan', 'yellow', 'orange',
+  'indigo', 'purple', 'violet', 'green', 'lime', 'pink', 'fuchsia', 'amber',
+  'slate', 'gray', 'zinc', 'neutral', 'stone',
 ];
 
-/** Left off-system on purpose — data encodings, no HDS hue ramp. */
-const EXCEPTIONS = ['indigo', 'purple'];
+/** Cool families — all of them resolve to the one accent. */
+const ACCENT_FAMILIES = ['blue', 'sky', 'cyan', 'indigo', 'violet', 'purple'];
+
+/** Families that carry hazard meaning and therefore route to the severity layer. */
+const SEVERITY_FAMILIES = [
+  'emerald', 'green', 'teal', 'lime', 'amber', 'yellow', 'orange', 'red', 'rose', 'pink', 'fuchsia',
+];
 
 /** Every palette family Tailwind ships. */
-const ALL_FAMILIES = [
-  'carbon', 'amber', 'gray', 'neutral', 'slate', 'stone', 'zinc', 'chart',
-  'emerald', 'rose', 'blue', 'sky', 'cyan', 'red', 'indigo', 'yellow',
-  'teal', 'orange', 'purple',
-];
+const ALL_FAMILIES = [...new Set([...DECLARED_FAMILIES, 'carbon', 'chart'])];
 
 function readThemeBlock() {
   const css = readFileSync(INDEX_CSS, 'utf8');
@@ -63,17 +66,24 @@ function readColorDeclarations() {
 describe('token compliance — off-system palette families', () => {
   const decls = readColorDeclarations();
 
-  test('every declared family shade references a token, never a raw value', () => {
+  test('every declared family shade references an Apple token, never a raw value', () => {
     const offenders = [];
+    // Either a bare token reference, or a color-mix() blending two of them — which is how the
+    // tint and shade steps are built without inventing a value.
+    const BARE = /^var\(--[a-z0-9-]+\)$/;
+    const MIX = /^color-mix\(in srgb, var\(--ap-[a-z0-9-]+\) \d+%, var\(--ap-[a-z0-9-]+\)\)$/;
     for (const family of DECLARED_FAMILIES) {
       for (const [key, value] of decls) {
         if (!key.startsWith(`${family}-`)) continue;
-        // A compliant declaration delegates to the semantic layer. A raw hex,
-        // rgb()/hsl() or colour keyword would mean a stock value pasted back in.
-        if (!/^var\(--[a-z0-9-]+\)$/.test(value)) offenders.push(`${key}: ${value}`);
+        if (!BARE.test(value) && !MIX.test(value)) offenders.push(`${key}: ${value}`);
       }
     }
     expect(offenders).toEqual([]);
+  });
+
+  test('no declaration smuggles in a raw colour', () => {
+    const raw = [...decls].filter(([, value]) => /#[0-9a-f]{3,8}\b|\brgba?\(|\bhsla?\(/i.test(value));
+    expect(raw.map(([k, v]) => `${k}: ${v}`)).toEqual([]);
   });
 
   test('each declared family actually has shades declared', () => {
@@ -83,39 +93,74 @@ describe('token compliance — off-system palette families', () => {
     expect(missing).toEqual([]);
   });
 
-  test('rose/red map to destructive, emerald/teal to success, blue/sky/cyan to accent', () => {
-    // Spot-check the semantic intent rather than the whole table: a family
-    // aliased onto the wrong semantic token would pass the shape checks above
-    // while quietly inverting meaning.
-    const expectations = [
-      ['rose-500', '--destructive'],
-      ['red-600', '--destructive'],
-      ['emerald-700', '--success'],
-      ['teal-600', '--hn-teal-600'],
-      ['blue-500', '--accent'],
-      ['sky-600', '--info'],
-      ['cyan-500', '--accent'],
-      ['yellow-700', '--warning'],
-      ['orange-500', '--hn-amber-500'],
-    ];
-    const wrong = expectations.filter(([key, token]) => decls.get(key) !== `var(${token})`);
-    expect(wrong.map(([k, t]) => `${k} -> expected ${t}`)).toEqual([]);
+  test('there is exactly ONE accent: every cool family resolves to Action Blue', () => {
+    const wrong = [];
+    for (const family of ACCENT_FAMILIES) {
+      for (const step of ['500', '600', '700']) {
+        const value = decls.get(`${family}-${step}`);
+        if (value !== 'var(--ap-primary)') wrong.push(`${family}-${step} -> ${value}`);
+      }
+      // The tints must still be mixes of the SAME hue, not a second blue.
+      for (const step of ['50', '100', '200', '300', '400']) {
+        const value = decls.get(`${family}-${step}`) ?? '';
+        if (!value.includes('var(--ap-primary)')) wrong.push(`${family}-${step} -> ${value}`);
+      }
+    }
+    expect(wrong).toEqual([]);
   });
 
-  test('indigo and purple stay off-system (documented data-encoding exceptions)', () => {
+  test('hazard-bearing families route to the severity data layer, not to chrome', () => {
+    const wrong = [];
+    for (const family of SEVERITY_FAMILIES) {
+      for (const step of ['500', '600', '700']) {
+        const value = decls.get(`${family}-${step}`) ?? '';
+        if (!/^var\(--ap-sev-[a-z-]+\)$/.test(value)) wrong.push(`${family}-${step} -> ${value}`);
+      }
+    }
+    expect(wrong).toEqual([]);
+  });
+
+  test('the semantic intent of each family is preserved, not inverted', () => {
+    // A family aliased onto the wrong severity would pass every shape check above while
+    // quietly turning "all clear" red.
+    const expectations = [
+      ['emerald-600', '--ap-sev-low'],
+      ['green-600', '--ap-sev-low'],
+      ['amber-600', '--ap-sev-moderate'],
+      ['yellow-600', '--ap-sev-moderate'],
+      ['orange-600', '--ap-sev-high'],
+      ['red-600', '--ap-sev-very-high'],
+      ['rose-600', '--ap-sev-extreme'],
+      ['blue-600', '--ap-primary'],
+      ['sky-600', '--ap-primary'],
+    ];
+    const wrong = expectations.filter(([key, token]) => decls.get(key) !== `var(${token})`);
+    expect(wrong.map(([k, t]) => `${k} -> expected ${t}, got ${decls.get(k)}`)).toEqual([]);
+  });
+
+  test('no family is left off-system', () => {
     const leaked = ALL_FAMILIES.filter(
-      (f) => EXCEPTIONS.includes(f) && [...decls.keys()].some((k) => k.startsWith(`${f}-`)),
+      (f) => !['carbon', 'chart'].includes(f) && ![...decls.keys()].some((k) => k.startsWith(`${f}-`)),
     );
     expect(leaked).toEqual([]);
   });
 
-  test('surface and border roles use the new tints, not the solid tokens', () => {
-    // The ~110 rose/red surface and border shades had no token before Session 3
-    // and would otherwise collapse onto the solid destructive colour.
-    expect(decls.get('rose-50')).toBe('var(--destructive-surface)');
-    expect(decls.get('rose-300')).toBe('var(--destructive-border)');
-    expect(decls.get('emerald-50')).toBe('var(--success-surface)');
-    expect(decls.get('blue-300')).toBe('var(--accent-border)');
-    expect(decls.get('orange-300')).toBe('var(--warning-border)');
+  test('the 50/100 steps are surfaces, so a tinted background stays readable', () => {
+    expect(decls.get('rose-50')).toBe('var(--ap-sev-extreme-surface)');
+    expect(decls.get('red-50')).toBe('var(--ap-sev-very-high-surface)');
+    expect(decls.get('emerald-50')).toBe('var(--ap-sev-low-surface)');
+    expect(decls.get('amber-100')).toBe('var(--ap-sev-moderate-surface)');
+    expect(decls.get('blue-50')).toContain('var(--ap-primary)');
+  });
+
+  test('the five grey families collapse onto the one Apple neutral ramp', () => {
+    const wrong = [];
+    for (const family of ['slate', 'gray', 'zinc', 'neutral', 'stone']) {
+      for (const [tw, ap] of [['50', '05'], ['100', '10'], ['500', '50'], ['900', '90'], ['950', 'black']]) {
+        const value = decls.get(`${family}-${tw}`);
+        if (value !== `var(--ap-n-${ap})`) wrong.push(`${family}-${tw} -> ${value}`);
+      }
+    }
+    expect(wrong).toEqual([]);
   });
 });

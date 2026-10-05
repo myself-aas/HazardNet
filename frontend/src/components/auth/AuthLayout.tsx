@@ -55,7 +55,7 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({ mode, title, subtitle, c
       >
         <div className="relative border border-carbon-20 bg-white p-6 lg:p-8 space-y-6">
           <header className="space-y-2">
-              <h1 className="text-[28px] font-bold leading-[1.2] tracking-tight text-carbon-90 lg:text-[32px]">{title}</h1>
+              <h1 className="text-ap-lead font-bold leading-[1.2] tracking-tight text-carbon-90 lg:text-ap-display-md">{title}</h1>
             <p className="text-base leading-[1.62] text-carbon-70">{subtitle}</p>
           </header>
           {children}

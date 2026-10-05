@@ -236,7 +236,7 @@ const PublicProfilePage: React.FC = () => {
             </div>
 
             <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-              <h1 className="text-[28px] font-bold leading-tight tracking-tight text-carbon-90 sm:text-[32px]">{profile.displayName}</h1>
+              <h1 className="text-ap-lead font-bold leading-tight tracking-tight text-carbon-90 sm:text-ap-display-md">{profile.displayName}</h1>
               <span className="text-sm font-bold text-amber-700">@{profile.username ?? username}</span>
             </div>
             <p className="mt-1 text-base leading-[1.62] font-semibold text-carbon-60">

@@ -1,3 +1,4 @@
+import { APPLE_SEVERITY } from '@hazardnet/design-system';
 // Extracted from LiveMapView.tsx (P2 decomposition, first slice).
 // Pure, component-independent map primitives: river polylines data,
 // hazard layer registry, and the Leaflet marker icon builder.
@@ -16,7 +17,7 @@ export const BANGLADESH_RIVERS = [
       [23.78, 89.80],
       [23.40, 90.60],
     ] as [number, number][],
-    color: '#0284c7',
+    color: '#0066cc',
   },
   {
     name: 'Jamuna River (Brahmaputra Channel)',
@@ -28,7 +29,7 @@ export const BANGLADESH_RIVERS = [
       [23.95, 89.78],
       [23.78, 89.80],
     ] as [number, number][],
-    color: '#2563eb',
+    color: '#0066cc',
   },
   {
     name: 'Meghna Estuary Network',
@@ -40,7 +41,7 @@ export const BANGLADESH_RIVERS = [
       [22.90, 90.60],
       [22.20, 90.75],
     ] as [number, number][],
-    color: '#0891b2',
+    color: '#0066cc',
   },
   {
     name: 'Teesta River Basin',
@@ -51,7 +52,7 @@ export const BANGLADESH_RIVERS = [
       [25.68, 89.58],
       [25.50, 89.70],
     ] as [number, number][],
-    color: '#38bdf8',
+    color: '#0066cc',
   },
   {
     name: 'Surma & Kushiyara (Sylhet Haor)',
@@ -62,7 +63,7 @@ export const BANGLADESH_RIVERS = [
       [24.55, 91.05],
       [24.40, 90.80],
     ] as [number, number][],
-    color: '#7c3aed',
+    color: '#0066cc',
   },
   {
     name: 'Karnaphuli Coastal Basin',
@@ -72,15 +73,16 @@ export const BANGLADESH_RIVERS = [
       [22.45, 91.95],
       [22.28, 91.80],
     ] as [number, number][],
-    color: '#0284c7',
+    color: '#0066cc',
   },
 ];
 
+/** The four advisory tiers, on four distinct steps of the severity scale. */
 export const ADVISORY_TIER_COLORS: Record<string, string> = {
-  SEVERE: '#DC2626',
-  WARNING: '#D97706',
-  WATCH: '#CA8A04',
-  NORMAL: '#16A34A',
+  SEVERE: APPLE_SEVERITY.veryHigh.text,
+  WARNING: APPLE_SEVERITY.high.text,
+  WATCH: APPLE_SEVERITY.moderate.text,
+  NORMAL: APPLE_SEVERITY.low.text,
 };
 
 export const getAdvisoryColor = (tier?: string, fallbackSeverity: number = 0): string => {
@@ -131,8 +133,8 @@ export const createCustomIcon = (
       background: rgba(255, 255, 255, 0.98);
       border: 3px solid ${color};
       box-shadow: 0 6px 24px rgba(0,0,0,0.25), 0 0 20px ${glowColor};
-      color: #17171b;
-      font-family: var(--hds-font-family-heading);
+      color: #1d1d1f;
+      font-family: var(--ap-font-display);
       font-size: 12px;
       font-weight: 900;
       white-space: nowrap;
@@ -142,7 +144,7 @@ export const createCustomIcon = (
       -webkit-backdrop-filter: blur(14px);
       outline: none;
     ">
-      <span style="color: #17171b; letter-spacing: -0.2px;">${districtName}: <span style="color: #0284c7;">${hazardDef.name}</span></span>
+      <span style="color: #1d1d1f; letter-spacing: -0.2px;">${districtName}: <span style="color: #0066cc;">${hazardDef.name}</span></span>
       ${tierLabel ? `
       <span style="
         background: ${color};
@@ -178,8 +180,8 @@ export const createCustomIcon = (
       background: #ffffff;
       border: 3px solid ${color};
       box-shadow: 0 4px 14px rgba(0,0,0,0.2), 0 0 12px ${glowColor};
-      color: #17171b;
-      font-family: var(--hds-font-family-heading);
+      color: #1d1d1f;
+      font-family: var(--ap-font-display);
       font-size: 12px;
       font-weight: 900;
       display: flex;
@@ -210,10 +212,10 @@ export interface HazardLayerDef {
 }
 
 export const HAZARD_LAYERS: HazardLayerDef[] = [
-  { id: 'Flash Flood', name: 'Flash Flood', color: '#0284c7', badgeColor: 'bg-sky-100 text-sky-800 border-sky-200' },
-  { id: 'Monsoon Flood', name: 'Monsoon Flood', color: '#2563eb', badgeColor: 'bg-blue-100 text-blue-800 border-blue-200' },
-  { id: 'Tropical Cyclone', name: 'Tropical Cyclone', color: '#7c3aed', badgeColor: 'bg-purple-100 text-purple-800 border-purple-200' },
-  { id: 'Drought', name: 'Drought', color: '#d97706', badgeColor: 'bg-amber-100 text-amber-800 border-amber-200' },
-  { id: 'Cold Wave', name: 'Cold Wave', color: '#0891b2', badgeColor: 'bg-cyan-100 text-cyan-800 border-cyan-200' },
-  { id: 'Severe Storm', name: 'Severe Storm', color: '#dc2626', badgeColor: 'bg-rose-100 text-rose-800 border-rose-200' },
+  { id: 'Flash Flood', name: 'Flash Flood', color: '#0066cc', badgeColor: 'bg-sky-100 text-sky-800 border-sky-200' },
+  { id: 'Monsoon Flood', name: 'Monsoon Flood', color: '#0066cc', badgeColor: 'bg-blue-100 text-blue-800 border-blue-200' },
+  { id: 'Tropical Cyclone', name: 'Tropical Cyclone', color: '#0066cc', badgeColor: 'bg-purple-100 text-purple-800 border-purple-200' },
+  { id: 'Drought', name: 'Drought', color: '#8a5a00', badgeColor: 'bg-amber-100 text-amber-800 border-amber-200' },
+  { id: 'Cold Wave', name: 'Cold Wave', color: '#0066cc', badgeColor: 'bg-cyan-100 text-cyan-800 border-cyan-200' },
+  { id: 'Severe Storm', name: 'Severe Storm', color: '#c01f1f', badgeColor: 'bg-rose-100 text-rose-800 border-rose-200' },
 ];

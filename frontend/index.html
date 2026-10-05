@@ -20,15 +20,49 @@
   <meta name="robots" content="noindex,follow" />
   <link rel="icon" type="image/svg+xml" href="/hazardnet-mark.svg" />
   <link rel="manifest" href="/manifest.json" />
-  <!-- The bar tint matches --color-carbon-90, the app's dark surface. Pure #000000 was both
-         untokened and wrong against every surface that actually paints under it. -->
-  <meta name="theme-color" content="#17171b" />
+  <!-- Two tints, one per scheme, because the app has two grounds. Light is Apple's
+       white canvas (--ap-canvas); dark is tile 3 (--ap-tile-3), the same surface the
+       dark arm of apple.css paints as --ap-bg-canvas. A single tint was always wrong
+       against one of the two. -->
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff" />
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#252527" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="HazardNet" />
   <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
   <!-- Typography is same-origin/system fallback only. No third-party font request. -->
+  <!--
+    Theme boot. Runs before first paint, synchronously and inline, so the stored
+    choice is on <html> by the time anything is drawn.
+
+    apple.css already paints a system-dark visitor correctly without JavaScript,
+    using a prefers-color-scheme query scoped to documents not already marked
+    light. What that cannot do is honour an *explicit* choice that disagrees with the
+    system: a visitor who picked dark on a light OS would get a white flash, and
+    one who picked light on a dark OS would get a dark flash. This closes both.
+
+    It must stay inline and un-deferred — an external or module script lands
+    after the first paint, which is the flash it exists to prevent. It writes the
+    same three things the runtime theme code writes, so hydration is a no-op.
+  -->
+  <script>
+    (function () {
+      try {
+        var stored = window.localStorage.getItem('hazardnet.theme');
+        if (stored !== 'light' && stored !== 'dark' && stored !== 'system') return;
+        var resolved = stored === 'system'
+          ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+          : stored;
+        var root = document.documentElement;
+        root.setAttribute('data-theme', resolved);
+        root.classList.toggle('dark', resolved === 'dark');
+        root.style.colorScheme = resolved;
+      } catch (e) {
+        /* Private mode denies localStorage. The CSS fallback is still correct. */
+      }
+    })();
+  </script>
 </head>
 <body>
   <div id="root"></div>

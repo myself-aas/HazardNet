@@ -114,7 +114,7 @@ export const LiveStatusStrip: React.FC<LiveStatusStripProps> = ({
       name="Live status strip — published now"
       style={{
         /* No colour in this style object. The surfaces used to be pinned here as inline
-           `#f6f6f6` / `#d1d1d1`, which is invisible in light mode and a hole in dark mode:
+           `#fafafc` / `#e0e0e0`, which is invisible in light mode and a hole in dark mode:
            an inline declaration beats every class, so the theme layer (styles/dark.css)
            could never re-point the strip's ground, and the dark ramp's near-white inks
            landed on a light panel at under 2:1. The classes below are the only surface

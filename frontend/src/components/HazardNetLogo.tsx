@@ -1,5 +1,5 @@
 import { getSeverityColor } from '../services/geolocationService';
-import { useResolvedTheme } from './meridian/motion';
+import { useResolvedTheme } from './apple/motion';
 
 /**
  * The brand, as React.

@@ -29,7 +29,7 @@ export const About: React.FC = () => {
           <span className="text-xs text-carbon-60 font-medium">Active Deployment: 2026</span>
         </div>
         
-        <h1 className="text-[28px] sm:text-[32px] font-brand font-bold leading-tight text-carbon-90 tracking-tight">
+        <h1 className="text-ap-lead sm:text-ap-display-md font-brand font-bold leading-tight text-carbon-90 tracking-tight">
           Hazard<span className="text-nasa-red-shade">Net</span> Agro-Climatic Intelligence Platform
         </h1>
         <p className="text-base leading-[1.62] text-carbon-60 max-w-3xl">

@@ -175,7 +175,7 @@ const LoginPage: React.FC = () => {
       </div>
       <AuthSocialButtons onSuccess={() => navigate(next, { replace: true })} />
 
-      <p className="text-center text-xs sm:text-[13px] text-carbon-60">
+      <p className="text-center text-xs sm:text-ap-caption text-carbon-60">
         New to HazardNet?{' '}
         <Link
           to={next !== '/' ? `/signup?next=${encodeURIComponent(next)}` : '/signup'}

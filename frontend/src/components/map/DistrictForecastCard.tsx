@@ -127,7 +127,7 @@ export const DistrictForecastCard: React.FC<DistrictForecastCardProps> = ({
           hairline dividers, grey labels with icon bubbles on the left, bold
           values right-aligned — the way the reference tracking sheets read
           their data. The contract strings tests assert stay exact:
-          "Severity score 0.88", "28m MSL", coordinates, main-crop title. */}
+"Severity score 0.88", "28m MSL", coordinates, main-crop title. */}
       <div className="flex flex-col overflow-y-auto overscroll-contain min-h-0 px-4 sm:px-5">
         <div className="divide-y divide-carbon-10 dark:divide-carbon-80">
           {/* hazard + severity row: label left, score right, slim meter under */}

@@ -34,7 +34,7 @@ import { Interactive } from 'remotion';
 export const HeroComposition: React.FC<{
   title?: string;
   accent?: string;
-}> = ({ title = 'A forecast you can check, not just read', accent = '#1c67e3' }) => {
+}> = ({ title = 'A forecast you can check, not just read', accent = '#0066cc' }) => {
   const frame = useCurrentFrame();
   const { fps, durationInFrames } = useVideoConfig();
 
@@ -55,7 +55,7 @@ export const HeroComposition: React.FC<{
           width: 1100,
           height: 1100,
           borderRadius: '50%',
-          backgroundColor: '#1c67e3',
+          backgroundColor: '#0066cc',
           opacity: interpolate(frame, [0, fps * 4, fps * 8], [0.35, 0.45, 0.35], {
             easing: Easing.bezier(0.4, 0, 0.2, 1),
             extrapolateLeft: 'clamp',

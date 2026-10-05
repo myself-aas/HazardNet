@@ -461,11 +461,11 @@ export const DistrictBriefBody: React.FC = () => {
           <div className="h-72 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={hazardTrendData} margin={{ top: 15, right: 20, left: -15, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e3e3e3" vertical={false} />
-                <XAxis dataKey="day" stroke="#959599" fontSize={12} tickLine={false} />
-                <YAxis stroke="#959599" fontSize={12} domain={[0, 100]} tickLine={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#f5f5f7" vertical={false} />
+                <XAxis dataKey="day" stroke="#a1a1a6" fontSize={12} tickLine={false} />
+                <YAxis stroke="#a1a1a6" fontSize={12} domain={[0, 100]} tickLine={false} />
                 <Tooltip
-                  contentStyle={{ backgroundColor: '#ffffff', borderRadius: '12px', border: '1px solid #d1d1d1', fontSize: '12px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}
+                  contentStyle={{ backgroundColor: '#ffffff', borderRadius: '12px', border: '1px solid #e0e0e0', fontSize: '12px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}
                   formatter={(value: any, name: string) => [`${value}% Risk Index`, name]}
                 />
                 <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '8px' }} />
@@ -475,9 +475,9 @@ export const DistrictBriefBody: React.FC = () => {
                     type="monotone"
                     dataKey={data.hazardType}
                     name={`${data.hazardType} Risk`}
-                    stroke="#e11d48"
+                    stroke="#8b0f3a"
                     strokeWidth={3}
-                    dot={{ r: 4, fill: '#e11d48' }}
+                    dot={{ r: 4, fill: '#8b0f3a' }}
                     activeDot={{ r: 6 }}
                   />
                 )}
@@ -958,7 +958,7 @@ export const DistrictBriefBody: React.FC = () => {
                   <span className="w-8 h-8 rounded-sm bg-carbon-10 text-carbon-80 font-mono text-sm flex items-center justify-center shrink-0 font-extrabold mt-0.5 border border-carbon-20">
                     {idx + 1}
                   </span>
-                  <div className="flex-1 text-sm sm:text-[15px] text-carbon-80 leading-relaxed font-normal">
+                  <div className="flex-1 text-sm sm:text-ap-caption text-carbon-80 leading-relaxed font-normal">
                     {bullet}
                   </div>
                   {/* `basis-full` below sm: this 178px attribution chip is
@@ -1107,13 +1107,13 @@ export const DistrictBriefBody: React.FC = () => {
                 <div className="h-56 w-full pt-2">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={climaticEventsData.yearlyTrend} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#e3e3e3" vertical={false} />
-                      <XAxis dataKey="year" tick={{ fontSize: 12, fill: '#77777a' }} />
-                      <YAxis tick={{ fontSize: 12, fill: '#77777a' }} />
+                      <CartesianGrid strokeDasharray="3 3" stroke="#f5f5f7" vertical={false} />
+                      <XAxis dataKey="year" tick={{ fontSize: 12, fill: '#6e6e73' }} />
+                      <YAxis tick={{ fontSize: 12, fill: '#6e6e73' }} />
                       <Tooltip
-                        contentStyle={{ backgroundColor: '#ffffff', borderColor: '#d1d1d1', borderRadius: '0.5rem', fontSize: '12px' }}
+                        contentStyle={{ backgroundColor: '#ffffff', borderColor: '#e0e0e0', borderRadius: '0.5rem', fontSize: '12px' }}
                       />
-                      <Bar dataKey="count" name="Disaster Events" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="count" name="Disaster Events" fill="#0066cc" radius={[4, 4, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
@@ -1135,17 +1135,17 @@ export const DistrictBriefBody: React.FC = () => {
                     <AreaChart data={climaticEventsData.seasonalPattern} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
                       <defs>
                         <linearGradient id="districtSeasonGrad" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.4} />
-                          <stop offset="95%" stopColor="#f59e0b" stopOpacity={0.0} />
+                          <stop offset="5%" stopColor="#8a5a00" stopOpacity={0.4} />
+                          <stop offset="95%" stopColor="#8a5a00" stopOpacity={0.0} />
                         </linearGradient>
                       </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#e3e3e3" vertical={false} />
-                      <XAxis dataKey="monthName" tick={{ fontSize: 12, fill: '#77777a' }} />
-                      <YAxis tick={{ fontSize: 12, fill: '#77777a' }} />
+                      <CartesianGrid strokeDasharray="3 3" stroke="#f5f5f7" vertical={false} />
+                      <XAxis dataKey="monthName" tick={{ fontSize: 12, fill: '#6e6e73' }} />
+                      <YAxis tick={{ fontSize: 12, fill: '#6e6e73' }} />
                       <Tooltip
-                        contentStyle={{ backgroundColor: '#ffffff', borderColor: '#d1d1d1', borderRadius: '0.5rem', fontSize: '12px' }}
+                        contentStyle={{ backgroundColor: '#ffffff', borderColor: '#e0e0e0', borderRadius: '0.5rem', fontSize: '12px' }}
                       />
-                      <Area type="monotone" dataKey="count" name="Historical Events" stroke="#d97706" strokeWidth={2} fill="url(#districtSeasonGrad)" />
+                      <Area type="monotone" dataKey="count" name="Historical Events" stroke="#8a5a00" strokeWidth={2} fill="url(#districtSeasonGrad)" />
                     </AreaChart>
                   </ResponsiveContainer>
                 </div>
@@ -1298,28 +1298,28 @@ export const DistrictBriefBody: React.FC = () => {
             </h3>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-              {/* Active Safe Shelters - Emerald (#059669) for resources, Amber (#f59e0b) for occupancy */}
+              {/* Active Safe Shelters - Emerald (#1d7a3e) for resources, Amber (#8a5a00) for occupancy */}
               <div className="bg-carbon-05 p-4 border border-carbon-20/80 space-y-1">
                 <span className="text-carbon-60 font-medium">Active Safe Shelters</span>
                 <div className="text-xl font-bold text-carbon-80 font-mono">{data.emergencyResponse.activeShelters} Facilities</div>
                 <span className="text-xs font-mono text-amber-700 font-bold">{data.emergencyResponse.shelterCapacityUsedPercent}% occupied</span>
               </div>
 
-              {/* Relief Grain Allocated - Emerald (#059669) */}
+              {/* Relief Grain Allocated - Emerald (#1d7a3e) */}
               <div className="bg-carbon-05 p-4 border border-carbon-20/80 space-y-1">
                 <span className="text-carbon-60 font-medium">Relief Grain Allocated</span>
                 <div className="text-xl font-bold text-carbon-80 font-mono">{data.emergencyResponse.reliefDistributedTons} Metric Tons</div>
                 <span className="text-xs text-carbon-60">Rice, lentils & dry provisions</span>
               </div>
 
-              {/* Rapid Medical Teams - Blue (#2563eb) */}
+              {/* Rapid Medical Teams - Blue (#0066cc) */}
               <div className="bg-carbon-05 p-4 border border-carbon-20/80 space-y-1">
                 <span className="text-carbon-60 font-medium">Rapid Medical Teams</span>
                 <div className="text-xl font-bold text-blue-600 font-mono">{data.emergencyResponse.medicalTeamsDeployed} Mobile Units</div>
                 <span className="text-xs text-carbon-60">Equipped with IV & ORS</span>
               </div>
 
-              {/* Water Purification Units - Emerald (#059669) */}
+              {/* Water Purification Units - Emerald (#1d7a3e) */}
               <div className="bg-carbon-05 p-4 border border-carbon-20/80 space-y-1">
                 <span className="text-carbon-60 font-medium">Water Purification Units</span>
                 <div className="text-xl font-bold text-carbon-80 font-mono">12 Mobile Vans</div>

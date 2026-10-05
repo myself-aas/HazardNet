@@ -19,7 +19,7 @@ import { useHazardNotifications } from './hooks/useHazardNotifications';
 import { initializeAttributionCapture } from './services/conversionTracking';
 import { RequireSuperAdmin } from './components/blog/RequireSuperAdmin';
 import { InfinityLoader } from './components/brand';
-import { useMeridianTheme } from './components/meridian/motion';
+import { useAppleTheme } from './components/apple/motion';
 import { useRouteSeo } from './hooks/useRouteSeo';
 import { Toaster } from 'react-hot-toast';
 
@@ -259,7 +259,7 @@ const AppContent: React.FC = () => {
   // as the only way in or out of dark: a visitor whose OS is dark had no way back to light, and
   // that is what "why is everything black?" turned out to mean (2026-10-04). The preference now
   // travels with the menu drawer, next to the language switch.
-  const { theme, setTheme } = useMeridianTheme();
+  const { theme, setTheme } = useAppleTheme();
   const location = useLocation();
   const reduceMotion = useReducedMotion();
   const frame = useWebFrame(30, 6);
@@ -308,10 +308,10 @@ const AppContent: React.FC = () => {
         }}
         toastOptions={{
           style: {
-            background: 'var(--mrd-surface, #ffffff)',
-            color: 'var(--hds-color-carbon-90, #17171b)',
-            border: '1px solid var(--hds-color-carbon-20, #d1d1d1)',
-            borderRadius: 'var(--mrd-radius-sm, 8px)',
+            background: 'var(--ap-bg-canvas, #ffffff)',
+            color: 'var(--ap-n-90)',
+            border: '1px solid var(--ap-n-20)',
+            borderRadius: 'var(--ap-radius-sm, 8px)',
             boxShadow: 'none',
             fontSize: '16px',
           },

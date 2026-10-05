@@ -117,7 +117,7 @@ export const AlertDetailPage: React.FC = () => {
 
       <div className="no-print mb-3 flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-[28px] font-bold leading-[1.2] tracking-tight text-carbon-90 sm:text-[32px]">{t('alerts.detail.title')}</h1>
+          <h1 className="text-ap-lead font-bold leading-[1.2] tracking-tight text-carbon-90 sm:text-ap-display-md">{t('alerts.detail.title')}</h1>
           <p className="mt-1 flex flex-wrap items-center gap-2 text-xs text-carbon-60">
             <AlertLevelBadge
               level={alert.level}

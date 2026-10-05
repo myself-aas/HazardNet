@@ -196,7 +196,7 @@ export const DivisionDetailPage: React.FC = () => {
               <MapPin className="w-3.5 h-3.5" />
               <span>Administrative Division Dashboard</span>
             </div>
-            <h1 className="text-[28px] font-bold sm:text-[32px] text-carbon-90 tracking-tight">
+            <h1 className="text-ap-lead font-bold sm:text-ap-display-md text-carbon-90 tracking-tight">
               {data.division} Division
             </h1>
             <p className="mt-1.5 text-base leading-[1.62] text-carbon-70 max-w-2xl">
@@ -251,11 +251,11 @@ export const DivisionDetailPage: React.FC = () => {
             <div className="h-64 sm:h-72 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={forecastChartData} margin={{ top: 10, right: 20, left: -10, bottom: 20 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--mrd-hairline)" vertical={false} />
-                  <XAxis dataKey="district" tick={{ fontSize: 12, fill: 'var(--mrd-ink-soft)' }} />
-                  <YAxis tick={{ fontSize: 12, fill: 'var(--mrd-ink-soft)' }} domain={[0, 4]} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--ap-separator)" vertical={false} />
+                  <XAxis dataKey="district" tick={{ fontSize: 12, fill: 'var(--ap-label-secondary)' }} />
+                  <YAxis tick={{ fontSize: 12, fill: 'var(--ap-label-secondary)' }} domain={[0, 4]} />
                   <Tooltip
-                    contentStyle={{ backgroundColor: 'var(--mrd-surface)', borderColor: 'var(--mrd-hairline-strong)', borderRadius: 'var(--mrd-radius-md)', boxShadow: 'var(--mrd-shadow-card)' }}
+                    contentStyle={{ backgroundColor: 'var(--ap-bg-canvas)', borderColor: 'var(--ap-separator-opaque)', borderRadius: 'var(--ap-radius-md)', boxShadow: 'var(--ap-elev-flat)' }}
                   />
                   <Legend wrapperStyle={{ paddingTop: '8px' }} />
                   <Bar dataKey="7-Day Severity" fill="var(--chart-1)" radius={[4, 4, 0, 0]} />
@@ -393,11 +393,11 @@ export const DivisionDetailPage: React.FC = () => {
                     <stop offset="95%" stopColor="var(--chart-1)" stopOpacity={0.0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--mrd-hairline)" vertical={false} />
-                <XAxis dataKey="year" tick={{ fontSize: 12, fill: 'var(--mrd-ink-soft)' }} />
-                <YAxis tick={{ fontSize: 12, fill: 'var(--mrd-ink-soft)' }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--ap-separator)" vertical={false} />
+                <XAxis dataKey="year" tick={{ fontSize: 12, fill: 'var(--ap-label-secondary)' }} />
+                <YAxis tick={{ fontSize: 12, fill: 'var(--ap-label-secondary)' }} />
                 <Tooltip
-                  contentStyle={{ backgroundColor: 'var(--mrd-surface)', borderColor: 'var(--mrd-hairline-strong)', borderRadius: 'var(--mrd-radius-md)', boxShadow: 'var(--mrd-shadow-card)' }}
+                  contentStyle={{ backgroundColor: 'var(--ap-bg-canvas)', borderColor: 'var(--ap-separator-opaque)', borderRadius: 'var(--ap-radius-md)', boxShadow: 'var(--ap-elev-flat)' }}
                 />
                 <Area type="monotone" dataKey="total" name="Disaster Events" stroke="var(--chart-1)" strokeWidth={2} fillOpacity={1} fill="url(#divAreaGrad)" />
               </AreaChart>
@@ -419,11 +419,11 @@ export const DivisionDetailPage: React.FC = () => {
           <div className="h-64 w-full pt-4">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={data.districtRankings} layout="vertical" margin={{ top: 10, right: 20, left: 20, bottom: 10 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--mrd-hairline)" horizontal={false} />
-                <XAxis type="number" tick={{ fontSize: 12, fill: 'var(--mrd-ink-soft)' }} />
-                <YAxis dataKey="district" type="category" tick={{ fontSize: 12, fill: 'var(--mrd-ink-soft)' }} width={80} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--ap-separator)" horizontal={false} />
+                <XAxis type="number" tick={{ fontSize: 12, fill: 'var(--ap-label-secondary)' }} />
+                <YAxis dataKey="district" type="category" tick={{ fontSize: 12, fill: 'var(--ap-label-secondary)' }} width={80} />
                 <Tooltip
-                  contentStyle={{ backgroundColor: 'var(--mrd-surface)', borderColor: 'var(--mrd-hairline-strong)', borderRadius: 'var(--mrd-radius-md)', boxShadow: 'var(--mrd-shadow-card)' }}
+                  contentStyle={{ backgroundColor: 'var(--ap-bg-canvas)', borderColor: 'var(--ap-separator-opaque)', borderRadius: 'var(--ap-radius-md)', boxShadow: 'var(--ap-elev-flat)' }}
                 />
                 <Bar dataKey="eventCount" name="Total Events (2000-2026)" fill="var(--chart-1)" radius={[0, 4, 4, 0]} />
               </BarChart>
@@ -445,11 +445,11 @@ export const DivisionDetailPage: React.FC = () => {
           <div className="h-64 w-full pt-4">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={data.seasonalPattern} margin={{ top: 10, right: 10, left: -15, bottom: 10 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--mrd-hairline)" vertical={false} />
-                <XAxis dataKey="monthName" tick={{ fontSize: 12, fill: 'var(--mrd-ink-soft)' }} />
-                <YAxis tick={{ fontSize: 12, fill: 'var(--mrd-ink-soft)' }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--ap-separator)" vertical={false} />
+                <XAxis dataKey="monthName" tick={{ fontSize: 12, fill: 'var(--ap-label-secondary)' }} />
+                <YAxis tick={{ fontSize: 12, fill: 'var(--ap-label-secondary)' }} />
                 <Tooltip
-                  contentStyle={{ backgroundColor: 'var(--mrd-surface)', borderColor: 'var(--mrd-hairline-strong)', borderRadius: 'var(--mrd-radius-md)', boxShadow: 'var(--mrd-shadow-card)' }}
+                  contentStyle={{ backgroundColor: 'var(--ap-bg-canvas)', borderColor: 'var(--ap-separator-opaque)', borderRadius: 'var(--ap-radius-md)', boxShadow: 'var(--ap-elev-flat)' }}
                 />
                 <Line type="monotone" dataKey="count" name="Monthly Events" stroke="var(--chart-2)" strokeWidth={2.5} dot={{ r: 4, fill: 'var(--chart-2)' }} />
               </LineChart>
@@ -487,7 +487,7 @@ export const DivisionDetailPage: React.FC = () => {
                     ))}
                   </Pie>
                   <Tooltip
-                    contentStyle={{ backgroundColor: 'var(--mrd-surface)', borderColor: 'var(--mrd-hairline-strong)', borderRadius: 'var(--mrd-radius-md)', boxShadow: 'var(--mrd-shadow-card)' }}
+                    contentStyle={{ backgroundColor: 'var(--ap-bg-canvas)', borderColor: 'var(--ap-separator-opaque)', borderRadius: 'var(--ap-radius-md)', boxShadow: 'var(--ap-elev-flat)' }}
                   />
                 </PieChart>
               </ResponsiveContainer>
@@ -622,7 +622,7 @@ export const DivisionDetailPage: React.FC = () => {
                           className="px-2 py-0.5 rounded text-xs font-semibold"
                           style={{
                             backgroundColor: getHazardSurface(event.hazard),
-                            color: 'var(--mrd-ink)',
+                            color: 'var(--ap-label)',
                             borderColor: getHazardBorder(event.hazard),
                             borderWidth: 1,
                             borderStyle: 'solid',

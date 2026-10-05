@@ -109,7 +109,7 @@ export const RegionSelector: React.FC<RegionSelectorProps> = ({
   }, [filteredDistricts]);
 
   return (
-    <div className="bg-white border border-carbon-20 p-6 sm:p-8 rounded-[28px] shadow-xs space-y-6 transition-all duration-300 hover:border-carbon-30 text-carbon-90">
+    <div className="bg-white border border-carbon-20 p-6 sm:p-8 rounded-xl shadow-xs space-y-6 transition-all duration-300 hover:border-carbon-30 text-carbon-90">
       
       {/* Top Header & Map Level Mode Selector (64 Districts vs 8 Divisions) */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-carbon-20 pb-5">

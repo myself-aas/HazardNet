@@ -76,11 +76,11 @@ function generate30DayHistoricalData(districtId: string = 'kurigram') {
 }
 
 const HAZARD_PALETTE = {
-  'Monsoon Flood': { color: '#38bdf8', gradientId: 'gradMonsoon' },
-  'Flash Flood': { color: '#34d399', gradientId: 'gradFlash' },
-  'Tropical Cyclone': { color: '#f43f5e', gradientId: 'gradCyclone' },
-  'Drought Stress': { color: '#fbbf24', gradientId: 'gradDrought' },
-  'Overall Severity': { color: '#a855f7', gradientId: 'gradOverall' }
+  'Monsoon Flood': { color: '#0066cc', gradientId: 'gradMonsoon' },
+  'Flash Flood': { color: '#1d7a3e', gradientId: 'gradFlash' },
+  'Tropical Cyclone': { color: '#8b0f3a', gradientId: 'gradCyclone' },
+  'Drought Stress': { color: '#8a5a00', gradientId: 'gradDrought' },
+  'Overall Severity': { color: '#0066cc', gradientId: 'gradOverall' }
 };
 
 const CustomTooltip = ({ active, payload, label }: any) => {
@@ -216,13 +216,13 @@ export const ThirtyDayTrendChart: React.FC<ThirtyDayTrendChartProps> = ({
               </linearGradient>
             </defs>
 
-            <CartesianGrid strokeDasharray="3 3" stroke="#d1d1d1" vertical={false} />
-            <XAxis dataKey="date" stroke="#77777a" fontSize={12} tickLine={false} />
-            <YAxis stroke="#77777a" fontSize={12} tickLine={false} unit="%" domain={[0, 100]} />
+            <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" vertical={false} />
+            <XAxis dataKey="date" stroke="#6e6e73" fontSize={12} tickLine={false} />
+            <YAxis stroke="#6e6e73" fontSize={12} tickLine={false} unit="%" domain={[0, 100]} />
             <Tooltip content={<CustomTooltip />} />
-            <Legend wrapperStyle={{ fontSize: '12px', color: '#58585b', paddingTop: '8px' }} />
+            <Legend wrapperStyle={{ fontSize: '12px', color: '#5a5a5d', paddingTop: '8px' }} />
 
-            <ReferenceLine y={75} stroke="#f43f5e" strokeDasharray="3 3" label={{ value: 'Catastrophic Threshold (75%)', fill: '#f43f5e', fontSize: 12, position: 'insideTopRight' }} />
+            <ReferenceLine y={75} stroke="#8b0f3a" strokeDasharray="3 3" label={{ value: 'Catastrophic Threshold (75%)', fill: '#8b0f3a', fontSize: 12, position: 'insideTopRight' }} />
 
             {(selectedHazard === 'All' || selectedHazard === 'Monsoon Flood') && (
               <Area
