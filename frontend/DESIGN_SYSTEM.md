@@ -2,7 +2,7 @@
 
 > **Current system:** Meridian / HDS v3.0. This file is the short contributor guide, not a second token specification. The canonical roles, values, contrast rationale and web contracts live in [`docs/design-system/MERIDIAN.md`](../docs/design-system/MERIDIAN.md) and `packages/design-system/src/meridian.ts`.
 >
-> **Latest audit:** [`docs/audits/2026-10-04-frontend-design-system-audit.md`](../docs/audits/2026-10-04-frontend-design-system-audit.md).
+> **Latest audit:** [`docs/audits/2026-10-05-frontend-design-system-audit.md`](../docs/audits/2026-10-05-frontend-design-system-audit.md).
 
 HazardNet is an existing safety-critical product with an editorial front door, a dense live console, alert workflows and an Expo app. Treat it as product UI, not as a marketing-page template. Keep existing data, routes, state handling and offline behavior intact when changing presentation.
 
