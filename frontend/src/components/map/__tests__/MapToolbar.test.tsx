@@ -57,7 +57,7 @@ describe('MapToolbar', () => {
     expect(screen.getByText('Stored 64/64')).toBeInTheDocument();
   });
 
-  it('offers no basemap switcher — the map ships one OpenStreetMap ground', () => {
+  it('offers no basemap switcher — the map ships one ground', () => {
     // The toolbar used to render a chip per tile provider (Satellite, Clarity, Dark GIS,
     // Street Map, Relief, Topo). A choice that changes nothing the reader needs is only
     // a decision to make once, so the picker was deleted with the providers it listed.

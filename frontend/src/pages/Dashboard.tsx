@@ -934,7 +934,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
                 Offline Storage Settings
               </h2>
               <p className="text-xs sm:text-sm text-carbon-30 leading-relaxed font-normal">
-                HazardNet keeps map tiles in the normal browser cache only and never writes them to offline storage: the volunteer-run OpenStreetMap tile servers ask us not to bulk-download or persist their tiles. Forecast snapshots and app assets can still be purged here at any time.
+                HazardNet keeps map tiles in the normal browser cache only and never writes them to offline storage: tile servers ask us not to bulk-download or persist their tiles. Forecast snapshots and app assets can still be purged here at any time.
               </p>
             </div>
           </div>
@@ -950,7 +950,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
                   </div>
                   <div>
                     <h3 className="text-lg font-black text-carbon-90">Map Tiles</h3>
-                    <p className="text-xs text-carbon-60 font-mono">OpenStreetMap standard basemap</p>
+                    <p className="text-xs text-carbon-60 font-mono">OpenTopoMap · OpenStreetMap data</p>
                   </div>
                 </div>
                 <span className="px-3 py-1 rounded-full text-xs font-extrabold bg-carbon-05 text-carbon-80 border border-carbon-20">
@@ -967,8 +967,8 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
 
                 <div className="p-4  bg-carbon-05 border border-carbon-20">
                   <span className="text-xs text-carbon-60 font-bold uppercase block">Tile Source</span>
-                  <strong className="text-sm font-black text-carbon-90">tile.openstreetmap.org</strong>
-                  <span className="text-xs text-carbon-60 block mt-0.5">volunteer-run servers</span>
+                  <strong className="text-sm font-black text-carbon-90">tile.opentopomap.org</strong>
+                  <span className="text-xs text-carbon-60 block mt-0.5">renders OSM data</span>
                 </div>
 
                 <div className="p-4  bg-carbon-05 border border-carbon-20 col-span-2 sm:col-span-1">
@@ -983,7 +983,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
                   <MaterialIcon name="lightbulb" className="w-4 h-4 inline-block mr-1" /><span>Why tiles are not downloadable for offline use</span>
                 </div>
                 <p className="leading-relaxed">
-                  OpenStreetMap's tile usage policy prohibits bulk downloading and permanent local storage of tiles. HazardNet follows that policy so the shared tile servers stay fast for everyone: tiles load on demand and live only in your browser's ordinary HTTP cache.
+                  Map tiles (rendered from OpenStreetMap data) are never bulk-downloaded or permanently stored: the earlier OpenStreetMap tile servers IP-blocked this site after an old build pre-cached them, and that lesson stuck. Tiles load on demand and live only in your browser's ordinary HTTP cache.
                 </p>
               </div>
 

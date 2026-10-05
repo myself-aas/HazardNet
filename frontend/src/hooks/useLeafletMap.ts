@@ -7,17 +7,24 @@ import { DistrictData } from '../data/bangladeshDistricts';
 /**
  * One basemap, deliberately. The console used to offer six tile providers behind a
  * picker (and a "+" menu), and the choice changed nothing the reader needed: every
- * HazardNet layer draws on top of whichever ground is underneath. Since 2026-10-05 the
- * map ships OpenStreetMap only — the provider the offline tile store pre-caches, the
- * one the low-bandwidth fallback already chose, and the only one whose attribution the
- * page prints. A single basemap has no picker.
+ * HazardNet layer draws on top of whichever ground is underneath. A single basemap
+ * has no picker.
+ *
+ * 2026-10-05 (provider change): the ground moved from `tile.openstreetmap.org` to
+ * OpenTopoMap. OSM's own tile servers were IP-blocking this deployment's requests
+ * (its "Access blocked" interstitial) because an earlier build bulk-downloaded their
+ * tiles — an IP block persists and cannot be lifted from code. OpenTopoMap renders
+ * OpenStreetMap data on separate infrastructure, needs no API key, and is free for
+ * on-demand use, so the map renders again while staying policy-compliant: tiles are
+ * still loaded on demand through a plain L.tileLayer and the browser HTTP cache only.
+ * Attribution keeps the OSM copyright ODbL requires, plus the OpenTopoMap style credit.
  */
 export const MAP_LAYERS = {
-  osmStandard: {
-    name: 'OpenStreetMap (Street & Topo)',
-    url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-    attribution: '&copy; OpenStreetMap contributors · map lines delineate study areas and do not necessarily depict accepted national boundaries',
-    maxZoom: 19,
+  topoMap: {
+    name: 'OpenTopoMap (OpenStreetMap data)',
+    url: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
+    attribution: 'Map data &copy; OpenStreetMap contributors, SRTM · Map style &copy; OpenTopoMap (CC-BY-SA) · map lines delineate study areas and do not necessarily depict accepted national boundaries',
+    maxZoom: 17,
   },
 };
 
@@ -53,7 +60,7 @@ export interface UseLeafletMapOptions {
 
 export function useLeafletMap(
   mapContainerRef: React.RefObject<HTMLDivElement | null>,
-  activeLayer: MapLayerKey = 'osmStandard',
+  activeLayer: MapLayerKey = 'topoMap',
   options: UseLeafletMapOptions = {}
 ) {
   const { onMapClick, onAutoLocateDistrict, autoLocateEnabled = true, lowBandwidth = false } = options;
@@ -104,7 +111,7 @@ export function useLeafletMap(
     });
 
     const baseLayerKey = effectiveMapLayer(activeLayer, lowBandwidth);
-    const config = MAP_LAYERS[baseLayerKey] || MAP_LAYERS.osmStandard;
+    const config = MAP_LAYERS[baseLayerKey] || MAP_LAYERS.topoMap;
     // Plain L.tileLayer: Leaflet requests each tile once and the browser's HTTP cache
     // does the rest. No IndexedDB persistence, no pre-cache — that is what keeps this
     // page inside the OpenStreetMap tile usage policy.
@@ -112,7 +119,7 @@ export function useLeafletMap(
       maxZoom: config.maxZoom,
       opacity: 1.0,
       crossOrigin: true,
-      // Names the layer in the DOM (`hn-tile-osmStandard`) so the dark theme can
+      // Names the layer in the DOM (`hn-tile-topoMap`) so the dark theme can
       // regrade the basemap without touching the tiles themselves.
       className: `hn-tile-${baseLayerKey}`,
     }).addTo(map);
@@ -312,7 +319,7 @@ export function useLeafletMap(
     if (!mapInstanceRef.current) return;
     setIsProcessingData(true);
     const baseLayerKey = effectiveMapLayer(activeLayer, lowBandwidth);
-    const config = MAP_LAYERS[baseLayerKey] || MAP_LAYERS.osmStandard;
+    const config = MAP_LAYERS[baseLayerKey] || MAP_LAYERS.topoMap;
 
     if (tileLayerRef.current) {
       mapInstanceRef.current.removeLayer(tileLayerRef.current);

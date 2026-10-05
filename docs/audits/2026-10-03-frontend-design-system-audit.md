@@ -862,3 +862,26 @@ the bottom pill so they never collide at narrow viewports.
 The map palette shrank to what the map draws: `MAP_SENSOR_SITES` is gone, and the heat
 gradient kept its shipped colours under the honest name `MAP_HEAT_RAMP`
 (`__tests__/mapPalette.test.js` pins the values and the absence of the old groups).
+
+### 12.9 Basemap ground moved from tile.openstreetmap.org to OpenTopoMap (2026-10-05)
+
+Follow-up to §12.8. Making the app compliant did not make the map render: OpenStreetMap's
+tile servers were returning their "Access blocked" interstitial to this deployment, because
+an earlier build had bulk-downloaded their tiles and the resulting IP block persists — an
+enforcement that no code change can lift. Rather than fight a block we cannot clear, the
+single basemap moved to OpenTopoMap:
+
+- OpenTopoMap renders OpenStreetMap data on separate infrastructure, needs no API key, and
+  is free for on-demand use, so the map renders again immediately;
+- tiles are still loaded on demand through a plain `L.tileLayer` and the browser HTTP cache
+  only — nothing about the §12.8 compliance work was undone, and no offline/bulk storage
+  returned with the new provider;
+- attribution keeps the OpenStreetMap copyright ODbL requires and adds the OpenTopoMap style
+  credit (CC-BY-SA); the attribution card on `/live`, the layers panel's "Basemap" row, the
+  Dashboard storage card, and the `expand-map` mini-map all name the new ground;
+- the layer key moved `osmStandard` → `topoMap`; the dark-theme hook `hn-tile-topoMap`
+  already existed in `frontend/src/styles/dark.css`, so dark mode needed no new rule.
+
+OpenFreeMap was considered as the primary alternative but ships vector tiles only, which
+would have meant adding MapLibre GL and reworking the heat/overlay stack; it stays a
+candidate follow-up rather than this change.

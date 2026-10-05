@@ -102,7 +102,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
   // Layer & Visual Controls
   // One basemap, no picker: OpenStreetMap is the ground every HazardNet layer draws on
   // (see MAP_LAYERS in hooks/useLeafletMap). It was a six-provider choice until 2026-10-05.
-  const activeLayer: MapLayerKey = 'osmStandard';
+  const activeLayer: MapLayerKey = 'topoMap';
   const [isHighContrastBoost, setIsHighContrastBoost] = useState<boolean>(true);
   const [isHeatmapActive, setIsHeatmapActive] = useState<boolean>(false);
   const [isRiverLayerActive, setIsRiverLayerActive] = useState<boolean>(true);
@@ -232,7 +232,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
   });
 
   // Extracted Hook 3: useMapSnapshot (Manages html2canvas-pro image capture, watermarks & exports)
-  const baseMapName = MAP_LAYERS[activeLayer]?.name || 'OpenStreetMap';
+  const baseMapName = MAP_LAYERS[activeLayer]?.name || 'OpenTopoMap';
   const selectedInfo = currentSelected
     ? `${currentSelected.name} District (${(currentSelected.severity * 100).toFixed(0)}% Risk)`
     : 'Bangladesh National Overview';
@@ -1435,7 +1435,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                   </button>
                 </div>
                 <p className="text-xs leading-[1.62] text-carbon-60">
-                  The basemap is OpenStreetMap. These overlays draw HazardNet data on top of it.
+                  The basemap is OpenTopoMap, built from OpenStreetMap data. These overlays draw HazardNet data on top of it.
                 </p>
 
                 <ul className="flex flex-col gap-1.5" role="group" aria-labelledby="map-layers-title">
@@ -1507,7 +1507,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
 
                 <div className="flex items-center justify-between text-xs text-carbon-60 border-t border-carbon-10 pt-2">
                   <span>Basemap</span>
-                  <span className="font-semibold text-carbon-80">OpenStreetMap</span>
+                  <span className="font-semibold text-carbon-80">OpenTopoMap (OSM data)</span>
                 </div>
                 <button
                   type="button"

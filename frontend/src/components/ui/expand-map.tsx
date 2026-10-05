@@ -32,8 +32,10 @@ export interface LocationMapProps {
 }
 
 // One basemap, same rule as the live map (useLeafletMap.MAP_LAYERS): the location
-// preview ships OpenStreetMap only. The four-provider switcher behind this record
-// was deleted on 2026-10-05 with the rest of the basemap pickers.
+// preview ships one ground, like the live console. The four-provider switcher
+// behind this record was deleted on 2026-10-05 with the rest of the basemap
+// pickers; the ground moved to OpenTopoMap the same day OSM's tile servers
+// started IP-blocking this deployment (see useLeafletMap.MAP_LAYERS).
 type MiniMapLayer = "streets";
 
 const MINI_MAP_LAYERS: Record<
@@ -41,11 +43,11 @@ const MINI_MAP_LAYERS: Record<
   { name: string; url: string; subdomains?: string; maxZoom: number; label: string }
 > = {
   streets: {
-    name: "OpenStreetMap",
-    url: "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+    name: "OpenTopoMap",
+    url: "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
     subdomains: "abc",
-    maxZoom: 19,
-    label: "OSM",
+    maxZoom: 17,
+    label: "Topo",
   },
 };
 
