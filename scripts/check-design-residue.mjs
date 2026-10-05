@@ -220,6 +220,46 @@ if (tokenSheets.length !== 1) {
   fail('split-source-of-truth', `--ap-primary is declared in ${tokenSheets.length} stylesheets: ${tokenSheets.join(', ')}`);
 }
 
+/* ── 10 · Every project class a component renders must be styled ───────────
+   The failure this was written for: `styles/brand.css` was deleted with the
+   other superseded sheets, but MenuToggleIcon.tsx and InfinityLoader.tsx still
+   rendered `hn-menu-icon__bar` and `hn-loop__node`. Thirteen class names, no
+   rules anywhere. Nothing failed — not tsc, not the build, not a single test —
+   because a class that matches nothing is valid CSS and valid JSX.
+
+   For an SVG that is not cosmetic: `fill` has an initial value of BLACK, so
+   losing `fill: currentColor` did not make the menu icon unstyled, it made it
+   black — invisible on the dark hero (1.28:1) and on the dark-mode bar
+   (1.37:1), while still looking correct on the white header.
+
+   Only `hn-`/`ap-` prefixed names are checked: those are ours, so a miss is
+   always a bug rather than a Tailwind utility this script fails to model. */
+const allCss = cssFiles.map((f) => readFileSync(f, 'utf8')).join('\n');
+const styled = new Set();
+for (const m of allCss.matchAll(/\.((?:hn|ap)-[\w-]+)/g)) styled.add(m[1].replace(/\\/g, ''));
+
+for (const file of srcFiles.filter((f) => /\.(tsx|jsx)$/.test(f))) {
+  const body = stripComments(readFileSync(file, 'utf8'));
+  // only look inside className/class string literals, so prose and ids are out
+  const seen = new Set();
+  for (const attr of body.matchAll(/class(?:Name)?\s*=\s*(?:"([^"]*)"|'([^']*)'|\{`([^`]*)`\})/g)) {
+    const value = attr[1] ?? attr[2] ?? attr[3] ?? '';
+    for (let token of value.split(/[\s`${}()?:'"]+/)) {
+      // drop Tailwind variants (`hover:`, `sm:`, `group-hover:`) but keep the utility
+      token = token.replace(/^(?:[a-z0-9[\]._-]+:)+/, '');
+      // `text-ap-primary` is a Tailwind utility over a --color-ap-* theme key,
+      // not a component class. Only a bare `ap-*` / `hn-*` token is ours.
+      if (/^(?:hn|ap)-[a-z0-9]/.test(token)) seen.add(token);
+    }
+  }
+  for (const cls of seen) {
+    // BEM modifiers are written as `base--mod`; the base carrying the rule is enough
+    if (styled.has(cls)) continue;
+    if (cls.includes('--') && styled.has(cls.split('--')[0])) continue;
+    fail('orphan-class', `${file} renders \`${cls}\`, which no stylesheet defines`);
+  }
+}
+
 /* ── report ───────────────────────────────────────────────────────────────── */
 const byRule = {};
 for (const p of problems) (byRule[p.rule] ??= []).push(p);

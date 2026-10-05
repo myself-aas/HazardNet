@@ -31,8 +31,10 @@ import type { AppleThemeName } from './apple/motion';
  * --z-nav). The command palette is mounted exactly once (it used to be mounted twice, once per layout).
  *
  * The scrolled bar is `bg-white/95` + `text-carbon-80`, and the menu icon paints in `currentColor`. In dark mode the
- * theme layer re-points both halves (`dark.css` §4), which is what fixed the 2026-10-04 report of a hamburger that
- * vanished while scrolling: the bar stayed white while its ink went near-white. The brand lockup follows the theme
+ * theme layer re-points both halves (apple.css: the `.bg-white/NN` surface overrides plus the inverted neutral ramp),
+ * which is what fixed the 2026-10-04 report of a hamburger that vanished while scrolling: the bar stayed white while
+ * its ink went near-white. The icon's own `fill: currentColor` lives in apple.css under "Brand motion" — it was lost
+ * for a while with `brand.css`, and an unstyled SVG rect falls back to black, which is the 2026-10-05 report. The brand lockup follows the theme
  * (`variant="auto"`), except over the hero, where the artwork stays the white wordmark because the hero image is
  * dark in both themes.
  */
@@ -144,6 +146,9 @@ export const Navbar: React.FC<NavbarProps> = ({ onSelectDistrict, onToggleHeatma
             : 'border-b border-carbon-20 bg-white/95 text-carbon-80 shadow-xs backdrop-blur-md'
         } transition-colors ease-out`}
         data-testid="site-header"
+        /* Lets the menu icon's accent bead know it is sitting on photography
+           rather than on an opaque bar — see the .hn-menu-icon rules. */
+        data-over-hero={overHero ? 'true' : 'false'}
       >
         <div className="mx-auto flex h-full w-full max-w-[1280px] items-center gap-2 px-4 xl:px-8">
           <Link

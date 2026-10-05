@@ -800,3 +800,270 @@ svg.lucide {
   line-height: var(--ap-bn-leading);
   letter-spacing: var(--ap-bn-tracking);
 }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Brand motion — the menu icon and the infinity loader.
+
+   These rules used to live in `styles/brand.css`. That file was deleted with the
+   other superseded stylesheets, but the two components that depend on it were
+   not: `MenuToggleIcon.tsx` and `InfinityLoader.tsx` still render the class
+   names, and nothing styled them. An SVG `<rect>` with no `fill` falls back to
+   the initial value, which is BLACK — so the header's menu icon painted black
+   over the dark hero art and black on the dark-mode bar, and `currentColor`
+   never got a chance to apply. On the white scrolled header black is very
+   nearly right, which is why it read as "fine" on the page most people see
+   first.
+
+   Restored here, on Apple tokens, with the hardcoded brand blues
+   (#1a7bf5 / #3d93fa / #fff) replaced by --ap-action and --ap-bg-canvas so the
+   marks follow the theme instead of pinning a second accent.
+   ───────────────────────────────────────────────────────────────────────────── */
+
+/* ── Menu icon (components/brand/MenuToggleIcon.tsx) ──────────────────────── */
+.hn-menu-icon {
+  display: block;
+  overflow: visible;
+}
+
+.hn-menu-icon__bar {
+  fill: currentColor;
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform var(--ap-duration-base) var(--ap-ease);
+}
+
+.hn-menu-icon__node {
+  fill: var(--ap-action);
+  transform-box: fill-box;
+  transform-origin: center;
+  transition:
+    transform var(--ap-duration-base) var(--ap-ease),
+    opacity var(--ap-duration-press) var(--ap-ease);
+}
+
+/* Over the hero the backdrop is photography, and it changes every slide. The
+   bars are safe because they inherit the header's own white, which is checked
+   against the art; a fixed accent hue is not — on the brightest slide
+   (`hero-flooded-fields`) Action Blue lands at 1.07:1. The bead joins the bars
+   there and the shape, not the colour, keeps it distinct. */
+[data-over-hero='true'] .hn-menu-icon__node {
+  fill: currentColor;
+}
+
+/* open: the bars cross into a ✕ about (12, 12); the node slips off along the short bar's line */
+.hn-menu-icon[data-open='true'] .hn-menu-icon__bar--a {
+  transform: translateY(4px) rotate(45deg);
+}
+
+.hn-menu-icon[data-open='true'] .hn-menu-icon__bar--b {
+  transform: translate(-2.75px, -4px) rotate(-45deg) scaleX(1.48);
+}
+
+.hn-menu-icon[data-open='true'] .hn-menu-icon__node {
+  opacity: 0;
+  transform: translateX(7px) scale(0.6);
+}
+
+/* ── Infinity loader (components/brand/InfinityLoader.tsx) ────────────────── */
+.hn-loop {
+  display: inline-block;
+  /* No `line-height: 0` here: the descender gap it used to close only exists for
+     an inline-level child, and .hn-loop__svg is display:block. An applied
+     sub-1.3 leading in this file is a defect the type tests look for. */
+  perspective: 460px;
+}
+
+.hn-loop__svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  transform-style: preserve-3d;
+  transition: transform 320ms var(--ap-ease);
+}
+
+.hn-loop[data-interactive='true'] {
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.hn-loop__track {
+  fill: none;
+  stroke-width: 10;
+  stroke-linejoin: round;
+  opacity: 0.16;
+}
+
+.hn-loop__glow {
+  filter: drop-shadow(0 0 2.5px color-mix(in srgb, var(--ap-action) 75%, transparent));
+  transition: filter 300ms var(--ap-ease);
+}
+
+.hn-loop[data-hot='true'] .hn-loop__glow {
+  filter: drop-shadow(0 0 5px color-mix(in srgb, var(--ap-action) 95%, transparent));
+}
+
+.hn-loop__comet {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  animation: hn-loop-run 2.6s linear infinite;
+}
+
+@keyframes hn-loop-run {
+  to {
+    stroke-dashoffset: -100;
+  }
+}
+
+/* The bead is a ring, not a dot: it is filled with the page so the loop reads
+   through it on either theme. */
+.hn-loop__node {
+  fill: var(--ap-bg-canvas);
+  stroke: var(--ap-action);
+  stroke-width: 2;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: hn-loop-node 1.3s ease-out infinite;
+}
+
+@keyframes hn-loop-node {
+  0% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  12% {
+    transform: scale(1.5);
+    opacity: 1;
+  }
+  45% {
+    transform: scale(1);
+    opacity: 0.75;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+}
+
+/* a tap sends one ring out from each apex node */
+.hn-loop__ring {
+  fill: none;
+  stroke: var(--ap-action);
+  stroke-width: 1.6;
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.hn-loop.is-burst .hn-loop__ring {
+  animation: hn-loop-ring 720ms var(--ap-ease) both;
+}
+
+@keyframes hn-loop-ring {
+  from {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(5);
+  }
+}
+
+/* Still, lit composition — heads lined up exactly as the animation's frame at
+   t = 0 — for reduced motion and for Low-bandwidth mode. */
+@media (prefers-reduced-motion: reduce) {
+  .hn-menu-icon__bar,
+  .hn-menu-icon__node {
+    transition-duration: 0.01ms;
+  }
+
+  .hn-loop__comet,
+  .hn-loop__node,
+  .hn-loop.is-burst .hn-loop__ring {
+    animation: none;
+  }
+
+  .hn-loop__comet {
+    stroke-dashoffset: var(--hn-loop-still, 0);
+  }
+
+  .hn-loop__node {
+    opacity: 0.9;
+  }
+
+  .hn-loop__svg {
+    transform: none !important; /* beats the inline 3D tilt the component writes */
+  }
+}
+
+html[data-low-bandwidth='true'] .hn-loop__comet {
+  stroke-dashoffset: var(--hn-loop-still, 0);
+}
+
+html[data-low-bandwidth='true'] .hn-loop__glow {
+  filter: none;
+}
+
+/* ── Paper stays paper ─────────────────────────────────────────────────────
+   The print preview and the PDF export are documents: they are printed on
+   white paper and must render identically from either theme. `.hn-paper` is
+   the marker the modal puts on the sheet.
+
+   These rules existed in `dark.css`, keyed on `[data-mrd-theme='dark']` — an
+   attribute this app has never set (the theme is `data-theme` / `.dark`), so
+   they were dead long before that file was deleted. In dark mode the sheet's
+   own `bg-white` is re-pointed to the dark canvas and `text-carbon-90` inverts
+   to white, so the preview went dark while the printed page stayed white.
+
+   Literal values on purpose: this surface models ink on paper, not the UI
+   theme, so it must not follow the token flip. */
+[data-theme='dark'] .hn-paper,
+[data-theme='dark'] .hn-paper .bg-white,
+.dark .hn-paper,
+.dark .hn-paper .bg-white {
+  background-color: #ffffff;
+  color: var(--ap-ink);
+}
+
+[data-theme='dark'] .hn-paper .text-carbon-90,
+.dark .hn-paper .text-carbon-90 {
+  color: var(--ap-ink);
+}
+
+[data-theme='dark'] .hn-paper .text-carbon-60,
+[data-theme='dark'] .hn-paper .text-carbon-70,
+.dark .hn-paper .text-carbon-60,
+.dark .hn-paper .text-carbon-70 {
+  color: #444447;
+}
+
+[data-theme='dark'] .hn-paper .border-carbon-20,
+[data-theme='dark'] .hn-paper .border-carbon-30,
+.dark .hn-paper .border-carbon-20,
+.dark .hn-paper .border-carbon-30 {
+  border-color: #d1d1d1;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .hn-paper,
+  :root:not([data-theme='light']) .hn-paper .bg-white {
+    background-color: #ffffff;
+    color: var(--ap-ink);
+  }
+
+  :root:not([data-theme='light']) .hn-paper .text-carbon-90 {
+    color: var(--ap-ink);
+  }
+
+  :root:not([data-theme='light']) .hn-paper .text-carbon-60,
+  :root:not([data-theme='light']) .hn-paper .text-carbon-70 {
+    color: #444447;
+  }
+
+  :root:not([data-theme='light']) .hn-paper .border-carbon-20,
+  :root:not([data-theme='light']) .hn-paper .border-carbon-30 {
+    border-color: #d1d1d1;
+  }
+}
