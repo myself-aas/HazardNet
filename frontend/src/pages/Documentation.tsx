@@ -4,10 +4,86 @@ import Breadcrumbs from '../components/Breadcrumbs';
 import MaterialIcon from '../components/MaterialIcon';
 
 /**
- * Results reference for the published HazardNet outputs. Model code, dataset
- * collection, training and benchmarking are research-private and documented
- * here only as "not published".
+ * Documentation hub. The topic pages it links to are rendered by ArticlePage
+ * from src/content/site-routes.json, so the prerendered HTML and the SPA can
+ * never drift apart. This hub is the map: one card per topic, deep links into
+ * the surfaces being documented, and the honesty rules up front.
  */
+
+interface DocTopic {
+  to: string;
+  icon: string;
+  kicker: string;
+  title: string;
+  blurb: string;
+}
+
+const TOPICS: DocTopic[] = [
+  {
+    to: '/docs/platform',
+    icon: 'hub',
+    kicker: '01',
+    title: 'The platform',
+    blurb: 'What HazardNet publishes and a map of every surface, from the live map to the last run.',
+  },
+  {
+    to: '/docs/hazards',
+    icon: 'thunderstorm',
+    kicker: '02',
+    title: 'Hazard classes',
+    blurb: 'The eight classes, their seasons, what each is scored from, and where the score stops telling the truth.',
+  },
+  {
+    to: '/docs/districts',
+    icon: 'map',
+    kicker: '03',
+    title: 'Districts',
+    blurb: 'The 64-district, 8-division coverage and what a district outlook page carries.',
+  },
+  {
+    to: '/docs/forecasts',
+    icon: 'timeline',
+    kicker: '04',
+    title: 'Forecasts',
+    blurb: 'The published record, the two severity tracks, the 7-day and 15-day horizons and the freshness policy.',
+  },
+  {
+    to: '/docs/alerts-and-advisories',
+    icon: 'notification_important',
+    kicker: '05',
+    title: 'Alerts and advisories',
+    blurb: 'The four alert levels, the ceiling rule, and the line between guidance and official warnings.',
+  },
+  {
+    to: '/docs/archive',
+    icon: 'history_edu',
+    kicker: '06',
+    title: 'Historical archive',
+    blurb: 'The catalogued record since May 2000, its national baseline and the Earth Engine cross-check.',
+  },
+  {
+    to: '/docs/data-and-api',
+    icon: 'database',
+    kicker: '07',
+    title: 'Data and the API',
+    blurb: 'Provenance and attribution, downloadable artifacts and the read-only forecast and archive endpoints.',
+  },
+  {
+    to: '/docs/verification',
+    icon: 'verified_user',
+    kicker: '08',
+    title: 'Verification',
+    blurb: 'What has been checked, what has not, and what stays research-private.',
+  },
+];
+
+const CROSS_LINKS = [
+  { to: '/methodology', label: 'Methodology' },
+  { to: '/data-sources', label: 'Data sources' },
+  { to: '/model-performance', label: 'Validation scorecard' },
+  { to: '/faq', label: 'FAQ' },
+];
+
 export const Documentation: React.FC = () => {
   // Per-route <head>: the prerenderer writes these into the static HTML, but a
   // client-side transition needs the hook to keep title/canonical/robots correct.
@@ -20,113 +96,86 @@ export const Documentation: React.FC = () => {
     >
       <Breadcrumbs />
 
-      {/* Title Banner */}
-      <div className="bg-white border border-carbon-20 p-6 md:p-8">
+      {/* Title banner */}
+      <div className="bg-carbon-05 border border-carbon-10 rounded-2xl p-6 md:p-8">
         <div className="flex items-center gap-2 mb-2">
           <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold uppercase tracking-wider bg-nasa-red/10 text-nasa-red-shade border border-nasa-blue/20">
-            HazardNet Results Reference
+            Documentation
           </span>
           <span className="text-carbon-30">•</span>
-          <span className="text-xs text-carbon-60 font-medium">System Documentation 2026</span>
+          <span className="text-xs text-carbon-60 font-medium">Updated 5 October 2026</span>
         </div>
         <h1 className="text-2xl md:text-3xl font-brand font-black text-carbon-90 tracking-tight">
-          Hazard<span className="text-nasa-red-shade">Net</span> Results Reference
+          Hazard<span className="text-nasa-red-shade">Net</span> documentation
         </h1>
-        <p className="text-xs md:text-sm text-carbon-60 mt-2 leading-relaxed">
-          What the system publishes, how to read every number, and where the limits are.
-          Methods are research-private: this site publishes results and outputs only.
+        <p className="text-xs md:text-sm text-carbon-60 mt-2 leading-relaxed max-w-2xl">
+          One place that explains every HazardNet surface and every number it shows: what the
+          system publishes, how to read it, and where its limits are. Methods are
+          research-private; this site publishes results and outputs only.
         </p>
+      </div>
 
-        <div className="flex flex-wrap items-center gap-3 pt-4">
-          <div className="px-4 py-2 bg-carbon-10 text-carbon-60 text-xs font-bold border border-carbon-20">
-            Methods are research-private
-          </div>
-          <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+      {/* Topic index */}
+      <section aria-labelledby="docs-topic-index">
+        <h2 id="docs-topic-index" className="text-lg font-bold text-carbon-90 mb-3">
+          How the documentation is organized
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {TOPICS.map((topic) => (
             <Link
-              to="/model-performance"
-              className="px-4 py-2 bg-carbon-10 hover:bg-carbon-20 text-carbon-80 text-xs font-bold transition-all border border-carbon-20 flex items-center gap-1.5"
+              key={topic.to}
+              to={topic.to}
+              className="group bg-carbon-05 border border-carbon-10 rounded-2xl p-5 hover:border-carbon-20 transition-colors flex flex-col gap-2"
             >
-              <MaterialIcon name="insights" className="w-4 h-4 inline-block mr-1" />
-              <span>Validation Scorecard</span>
+              <div className="flex items-center justify-between">
+                <span className="font-mono text-xs font-bold text-carbon-40">{topic.kicker}</span>
+                <MaterialIcon
+                  name={topic.icon}
+                  className="w-4 h-4 text-carbon-40 group-hover:text-nasa-blue-shade transition-colors"
+                />
+              </div>
+              <span className="text-sm font-bold text-carbon-90 group-hover:text-nasa-blue-shade transition-colors">
+                {topic.title}
+              </span>
+              <span className="text-xs text-carbon-60 leading-relaxed">{topic.blurb}</span>
             </Link>
-          </motion.div>
+          ))}
         </div>
-      </div>
+      </section>
 
-      {/* The published record */}
-      <div className="bg-white border border-carbon-20 p-6 md:p-8 space-y-3">
-        <h2 className="text-lg font-bold text-carbon-90">The published forecast record</h2>
-        <p className="text-xs text-carbon-70 leading-relaxed">
-          Every figure on HazardNet traces to one published record per district and forecast date:
-        </p>
+      {/* Honesty strip */}
+      <section className="bg-carbon-05 border border-carbon-10 rounded-2xl p-6 space-y-2">
+        <h2 className="text-sm font-bold text-carbon-90">Three standing rules</h2>
         <ul className="text-xs text-carbon-70 space-y-1.5 list-disc pl-5">
-          <li><strong>District</strong>: one of the 64 districts of Bangladesh.</li>
-          <li><strong>Hazard class</strong>: one of eight classes.</li>
-          <li><strong>Severity</strong>: a continuous value reported in two tracks (see below).</li>
-          <li><strong>Confidence score</strong>: the score for the chosen class, uncalibrated.</li>
-          <li><strong>Horizons</strong>: 7- and 15-day outlook windows.</li>
-          <li><strong>Forecast date</strong>: the run that produced the record.</li>
+          <li>
+            HazardNet is decision support, not an official warning service. Official warnings
+            come from the Bangladesh Meteorological Department and the Flood Forecasting and
+            Warning Centre.
+          </li>
+          <li>
+            Forecast skill is not yet validated against observed outcomes. Every severity value
+            is published with that stated, and nothing is interpolated to fill a gap.
+          </li>
+          <li>
+            Model code, dataset collection, training and benchmarking are research-private.
+            Results and outputs are public.
+          </li>
         </ul>
-      </div>
+      </section>
 
-      {/* Severity */}
-      <div className="bg-white border border-carbon-20 p-6 md:p-8 space-y-3">
-        <h2 className="text-lg font-bold text-carbon-90">Severity values</h2>
-        <p className="text-xs text-carbon-70 leading-relaxed">
-          Two tracks are reported side by side: a <strong>skill track</strong> (the system&apos;s own
-          score for the class it selected) and a <strong>physics track</strong> (an independent
-          estimate. They can disagree, and when they do, that is shown rather than smoothed away.
-          Neither is an official warning level.
-        </p>
-      </div>
-
-      {/* Alerts */}
-      <div className="bg-white border border-carbon-20 p-6 md:p-8 space-y-3">
-        <h2 className="text-lg font-bold text-carbon-90">Alert levels</h2>
-        <p className="text-xs text-carbon-70 leading-relaxed">
-          Four levels are published: no alert, watch, warning and severe. At or below the
-          configured ceiling for each hazard class, and never inflated by this site. Official
-          warnings come from the Bangladesh Meteorological Department and the Flood Forecasting
-          and Warning Centre; HazardNet defers to them.
-        </p>
-      </div>
-
-      {/* Freshness */}
-      <div className="bg-white border border-carbon-20 p-6 md:p-8 space-y-3">
-        <h2 className="text-lg font-bold text-carbon-90">Freshness &amp; provenance</h2>
-        <p className="text-xs text-carbon-70 leading-relaxed">
-          Every surface is stamped with the forecast date behind it. A stale run is labelled as
-          stale; a missing run is shown as missing. No number is interpolated to fill a gap.
-        </p>
-      </div>
-
-      {/* Validation */}
-      <div className="bg-white border border-carbon-20 p-6 md:p-8 space-y-3">
-        <h2 className="text-lg font-bold text-carbon-90">Validation status</h2>
-        <p className="text-xs text-carbon-70 leading-relaxed">
-          Forecast skill is <strong>not yet validated</strong> against observed outcomes. The
-          published scorecard reports per-episode detection counts for five historical episodes
-          and states what those numbers cannot support. See the{' '}
-          <Link to="/model-performance" className="underline decoration-dotted font-semibold">
-            validation scorecard
+      {/* Cross-links to the trust surfaces */}
+      <section className="flex flex-wrap items-center gap-2">
+        <span className="text-xs font-bold text-carbon-60 mr-1">Related references</span>
+        {CROSS_LINKS.map((link) => (
+          <Link
+            key={link.to}
+            to={link.to}
+            className="px-3 py-1.5 bg-carbon-05 hover:bg-carbon-10 border border-carbon-10 rounded-full text-xs font-bold text-carbon-80 transition-colors"
+          >
+            {link.label}
           </Link>
-          .
-        </p>
-      </div>
-
-      {/* Not published */}
-      <div className="bg-white border border-carbon-20 p-6 md:p-8 space-y-3">
-        <h2 className="text-lg font-bold text-carbon-90">What is not published</h2>
-        <p className="text-xs text-carbon-70 leading-relaxed">
-          Model code, dataset collection procedures, training and benchmarking are research-private.
-          Only results and outputs are public. On this site and in the repository. For research
-          collaboration or licensing enquiries, use the{' '}
-          <Link to="/contact" className="underline decoration-dotted font-semibold">
-            contact page
-          </Link>
-          .
-        </p>
-      </div>
+        ))}
+      </section>
     </motion.div>
   );
 };

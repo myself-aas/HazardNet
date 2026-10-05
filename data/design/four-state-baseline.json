@@ -311,7 +311,7 @@
       },
       "success": {
         "kind": "page",
-        "evidence": "The published forecast record"
+        "evidence": "How the documentation is organized"
       }
     },
     "pages/DownloadCenter.tsx": {
@@ -504,7 +504,7 @@
       },
       "empty": {
         "kind": "notice",
-        "evidence": "isn’t on HazardNet"
+        "evidence": "isn\u2019t on HazardNet"
       },
       "error": {
         "kind": "notice",
@@ -548,7 +548,7 @@
       },
       "error": {
         "kind": "notice",
-        "evidence": "We couldn’t create your account.",
+        "evidence": "We couldn\u2019t create your account.",
         "retry": true,
         "retry_via": "the submit button"
       },

@@ -36,7 +36,15 @@ const STATIC_ROUTES = [
   { loc: '/use-cases', lastmod: '2026-09-29', changefreq: 'monthly', priority: '0.7' },
   { loc: '/about', lastmod: '2026-09-29', changefreq: 'monthly', priority: '0.6' },
   { loc: '/contact', lastmod: '2026-09-29', changefreq: 'monthly', priority: '0.6' },
-  { loc: '/docs', lastmod: '2026-09-29', changefreq: 'monthly', priority: '0.6' },
+  { loc: '/docs', lastmod: '2026-10-05', changefreq: 'monthly', priority: '0.6' },
+  { loc: '/docs/platform', lastmod: '2026-10-05', changefreq: 'monthly', priority: '0.6' },
+  { loc: '/docs/hazards', lastmod: '2026-10-05', changefreq: 'monthly', priority: '0.6' },
+  { loc: '/docs/districts', lastmod: '2026-10-05', changefreq: 'monthly', priority: '0.6' },
+  { loc: '/docs/forecasts', lastmod: '2026-10-05', changefreq: 'monthly', priority: '0.6' },
+  { loc: '/docs/alerts-and-advisories', lastmod: '2026-10-05', changefreq: 'monthly', priority: '0.6' },
+  { loc: '/docs/archive', lastmod: '2026-10-05', changefreq: 'monthly', priority: '0.6' },
+  { loc: '/docs/data-and-api', lastmod: '2026-10-05', changefreq: 'monthly', priority: '0.6' },
+  { loc: '/docs/verification', lastmod: '2026-10-05', changefreq: 'monthly', priority: '0.6' },
   { loc: '/privacy', lastmod: '2026-09-29', changefreq: 'yearly', priority: '0.3' },
   { loc: '/terms', lastmod: '2026-09-29', changefreq: 'yearly', priority: '0.3' }
 ];

@@ -187,6 +187,16 @@ const AppRoutes: React.FC<{ location: ReturnType<typeof useLocation> }> = ({ loc
                 }
               />
               <Route path="/docs" element={<Documentation />} />
+              {/* Documentation topic pages: copy lives in src/content/site-routes.json,
+                  rendered by ArticlePage so the prerendered HTML and the SPA agree. */}
+              <Route path="/docs/platform" element={<ArticlePage path="/docs/platform" />} />
+              <Route path="/docs/hazards" element={<ArticlePage path="/docs/hazards" />} />
+              <Route path="/docs/districts" element={<ArticlePage path="/docs/districts" />} />
+              <Route path="/docs/forecasts" element={<ArticlePage path="/docs/forecasts" />} />
+              <Route path="/docs/alerts-and-advisories" element={<ArticlePage path="/docs/alerts-and-advisories" />} />
+              <Route path="/docs/archive" element={<ArticlePage path="/docs/archive" />} />
+              <Route path="/docs/data-and-api" element={<ArticlePage path="/docs/data-and-api" />} />
+              <Route path="/docs/verification" element={<ArticlePage path="/docs/verification" />} />
               {/* Legacy sitemap URL: /documentation was advertised in sitemap.xml
                   while the app only ever served /docs (404 in production). */}
               <Route path="/documentation" element={<Navigate to="/docs" replace />} />

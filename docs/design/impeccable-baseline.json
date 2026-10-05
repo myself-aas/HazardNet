@@ -15,12 +15,12 @@
   ],
   "counts": {
     "waived": 1,
-    "outstanding": 895,
+    "outstanding": 951,
     "byRule": {
-      "low-contrast": 414,
-      "design-system-font": 217,
+      "low-contrast": 450,
+      "design-system-font": 235,
       "overused-font": 197,
-      "tight-leading": 43,
+      "tight-leading": 45,
       "oversized-h1": 24
     }
   },
@@ -772,8 +772,98 @@
     },
     {
       "rule": "design-system-font",
+      "file": "frontend/dist/docs/alerts-and-advisories.html",
+      "snippet": "h1 \"Alert levels and advisories\" uses roboto; not declared in DESIGN.md typography"
+    },
+    {
+      "rule": "design-system-font",
+      "file": "frontend/dist/docs/alerts-and-advisories/index.html",
+      "snippet": "h1 \"Alert levels and advisories\" uses roboto; not declared in DESIGN.md typography"
+    },
+    {
+      "rule": "design-system-font",
+      "file": "frontend/dist/docs/archive.html",
+      "snippet": "h1 \"The historical archive\" uses roboto; not declared in DESIGN.md typography"
+    },
+    {
+      "rule": "design-system-font",
+      "file": "frontend/dist/docs/archive/index.html",
+      "snippet": "h1 \"The historical archive\" uses roboto; not declared in DESIGN.md typography"
+    },
+    {
+      "rule": "design-system-font",
+      "file": "frontend/dist/docs/data-and-api.html",
+      "snippet": "h1 \"Data, downloads and the API\" uses roboto; not declared in DESIGN.md typography"
+    },
+    {
+      "rule": "design-system-font",
+      "file": "frontend/dist/docs/data-and-api.html",
+      "snippet": "th \"Endpoint\" uses sfmono-regular; not declared in DESIGN.md typography"
+    },
+    {
+      "rule": "design-system-font",
+      "file": "frontend/dist/docs/data-and-api/index.html",
+      "snippet": "h1 \"Data, downloads and the API\" uses roboto; not declared in DESIGN.md typography"
+    },
+    {
+      "rule": "design-system-font",
+      "file": "frontend/dist/docs/data-and-api/index.html",
+      "snippet": "th \"Endpoint\" uses sfmono-regular; not declared in DESIGN.md typography"
+    },
+    {
+      "rule": "design-system-font",
+      "file": "frontend/dist/docs/districts.html",
+      "snippet": "h1 \"District and division coverage\" uses roboto; not declared in DESIGN.md typography"
+    },
+    {
+      "rule": "design-system-font",
+      "file": "frontend/dist/docs/districts/index.html",
+      "snippet": "h1 \"District and division coverage\" uses roboto; not declared in DESIGN.md typography"
+    },
+    {
+      "rule": "design-system-font",
+      "file": "frontend/dist/docs/forecasts.html",
+      "snippet": "h1 \"Reading a forecast\" uses roboto; not declared in DESIGN.md typography"
+    },
+    {
+      "rule": "design-system-font",
+      "file": "frontend/dist/docs/forecasts/index.html",
+      "snippet": "h1 \"Reading a forecast\" uses roboto; not declared in DESIGN.md typography"
+    },
+    {
+      "rule": "design-system-font",
+      "file": "frontend/dist/docs/hazards.html",
+      "snippet": "h1 \"The eight hazard classes\" uses roboto; not declared in DESIGN.md typography"
+    },
+    {
+      "rule": "design-system-font",
+      "file": "frontend/dist/docs/hazards/index.html",
+      "snippet": "h1 \"The eight hazard classes\" uses roboto; not declared in DESIGN.md typography"
+    },
+    {
+      "rule": "design-system-font",
       "file": "frontend/dist/docs/index.html",
       "snippet": "h1 \"Documentation\" uses roboto; not declared in DESIGN.md typography"
+    },
+    {
+      "rule": "design-system-font",
+      "file": "frontend/dist/docs/platform.html",
+      "snippet": "h1 \"The HazardNet platform\" uses roboto; not declared in DESIGN.md typography"
+    },
+    {
+      "rule": "design-system-font",
+      "file": "frontend/dist/docs/platform/index.html",
+      "snippet": "h1 \"The HazardNet platform\" uses roboto; not declared in DESIGN.md typography"
+    },
+    {
+      "rule": "design-system-font",
+      "file": "frontend/dist/docs/verification.html",
+      "snippet": "h1 \"Validation status\" uses roboto; not declared in DESIGN.md typography"
+    },
+    {
+      "rule": "design-system-font",
+      "file": "frontend/dist/docs/verification/index.html",
+      "snippet": "h1 \"Validation status\" uses roboto; not declared in DESIGN.md typography"
     },
     {
       "rule": "design-system-font",
@@ -2622,12 +2712,192 @@
     },
     {
       "rule": "low-contrast",
+      "file": "frontend/dist/docs/alerts-and-advisories.html",
+      "snippet": "1.0:1 (need 3:1) \u2014 text #17171b on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/docs/alerts-and-advisories.html",
+      "snippet": "1.3:1 (need 3:1) \u2014 text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/docs/alerts-and-advisories.html",
+      "snippet": "1.0:1 (need 3:1) \u2014 text #2e2e32 on #2e2e32"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/docs/alerts-and-advisories/index.html",
+      "snippet": "1.0:1 (need 3:1) \u2014 text #17171b on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/docs/alerts-and-advisories/index.html",
+      "snippet": "1.3:1 (need 3:1) \u2014 text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/docs/alerts-and-advisories/index.html",
+      "snippet": "1.0:1 (need 3:1) \u2014 text #2e2e32 on #2e2e32"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/docs/archive.html",
+      "snippet": "1.0:1 (need 3:1) \u2014 text #17171b on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/docs/archive.html",
+      "snippet": "1.3:1 (need 3:1) \u2014 text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/docs/archive/index.html",
+      "snippet": "1.0:1 (need 3:1) \u2014 text #17171b on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/docs/archive/index.html",
+      "snippet": "1.3:1 (need 3:1) \u2014 text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/docs/data-and-api.html",
+      "snippet": "1.0:1 (need 3:1) \u2014 text #17171b on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/docs/data-and-api.html",
+      "snippet": "1.3:1 (need 3:1) \u2014 text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/docs/data-and-api/index.html",
+      "snippet": "1.0:1 (need 3:1) \u2014 text #17171b on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/docs/data-and-api/index.html",
+      "snippet": "1.3:1 (need 3:1) \u2014 text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/docs/districts.html",
+      "snippet": "1.0:1 (need 3:1) \u2014 text #17171b on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/docs/districts.html",
+      "snippet": "1.3:1 (need 3:1) \u2014 text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/docs/districts/index.html",
+      "snippet": "1.0:1 (need 3:1) \u2014 text #17171b on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/docs/districts/index.html",
+      "snippet": "1.3:1 (need 3:1) \u2014 text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/docs/forecasts.html",
+      "snippet": "1.0:1 (need 3:1) \u2014 text #17171b on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/docs/forecasts.html",
+      "snippet": "1.3:1 (need 3:1) \u2014 text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/docs/forecasts/index.html",
+      "snippet": "1.0:1 (need 3:1) \u2014 text #17171b on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/docs/forecasts/index.html",
+      "snippet": "1.3:1 (need 3:1) \u2014 text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/docs/hazards.html",
+      "snippet": "1.0:1 (need 3:1) \u2014 text #17171b on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/docs/hazards.html",
+      "snippet": "1.3:1 (need 3:1) \u2014 text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/docs/hazards/index.html",
+      "snippet": "1.0:1 (need 3:1) \u2014 text #17171b on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/docs/hazards/index.html",
+      "snippet": "1.3:1 (need 3:1) \u2014 text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "low-contrast",
       "file": "frontend/dist/docs/index.html",
       "snippet": "1.0:1 (need 3:1) \u2014 text #17171b on #17171b"
     },
     {
       "rule": "low-contrast",
       "file": "frontend/dist/docs/index.html",
+      "snippet": "1.3:1 (need 3:1) \u2014 text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/docs/platform.html",
+      "snippet": "1.0:1 (need 3:1) \u2014 text #17171b on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/docs/platform.html",
+      "snippet": "1.3:1 (need 3:1) \u2014 text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/docs/platform.html",
+      "snippet": "1.0:1 (need 3:1) \u2014 text #2e2e32 on #2e2e32"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/docs/platform/index.html",
+      "snippet": "1.0:1 (need 3:1) \u2014 text #17171b on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/docs/platform/index.html",
+      "snippet": "1.3:1 (need 3:1) \u2014 text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/docs/platform/index.html",
+      "snippet": "1.0:1 (need 3:1) \u2014 text #2e2e32 on #2e2e32"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/docs/verification.html",
+      "snippet": "1.0:1 (need 3:1) \u2014 text #17171b on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/docs/verification.html",
+      "snippet": "1.3:1 (need 3:1) \u2014 text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/docs/verification/index.html",
+      "snippet": "1.0:1 (need 3:1) \u2014 text #17171b on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/docs/verification/index.html",
       "snippet": "1.3:1 (need 3:1) \u2014 text #2e2e32 on #17171b"
     },
     {
@@ -4343,6 +4613,16 @@
     {
       "rule": "tight-leading",
       "file": "frontend/dist/docs/index.html",
+      "snippet": "line-height 0.13x (need >=1.3)"
+    },
+    {
+      "rule": "tight-leading",
+      "file": "frontend/dist/docs/platform.html",
+      "snippet": "line-height 0.13x (need >=1.3)"
+    },
+    {
+      "rule": "tight-leading",
+      "file": "frontend/dist/docs/platform/index.html",
       "snippet": "line-height 0.13x (need >=1.3)"
     },
     {
@@ -5249,8 +5529,98 @@
     },
     {
       "rule": "design-system-font",
+      "file": "frontend/dist/docs/alerts-and-advisories.html",
+      "snippet": "h1 \"Alert levels and advisories\" uses roboto; not declared in DESIGN.md typography"
+    },
+    {
+      "rule": "design-system-font",
+      "file": "frontend/dist/docs/alerts-and-advisories/index.html",
+      "snippet": "h1 \"Alert levels and advisories\" uses roboto; not declared in DESIGN.md typography"
+    },
+    {
+      "rule": "design-system-font",
+      "file": "frontend/dist/docs/archive.html",
+      "snippet": "h1 \"The historical archive\" uses roboto; not declared in DESIGN.md typography"
+    },
+    {
+      "rule": "design-system-font",
+      "file": "frontend/dist/docs/archive/index.html",
+      "snippet": "h1 \"The historical archive\" uses roboto; not declared in DESIGN.md typography"
+    },
+    {
+      "rule": "design-system-font",
+      "file": "frontend/dist/docs/data-and-api.html",
+      "snippet": "h1 \"Data, downloads and the API\" uses roboto; not declared in DESIGN.md typography"
+    },
+    {
+      "rule": "design-system-font",
+      "file": "frontend/dist/docs/data-and-api.html",
+      "snippet": "th \"Endpoint\" uses sfmono-regular; not declared in DESIGN.md typography"
+    },
+    {
+      "rule": "design-system-font",
+      "file": "frontend/dist/docs/data-and-api/index.html",
+      "snippet": "h1 \"Data, downloads and the API\" uses roboto; not declared in DESIGN.md typography"
+    },
+    {
+      "rule": "design-system-font",
+      "file": "frontend/dist/docs/data-and-api/index.html",
+      "snippet": "th \"Endpoint\" uses sfmono-regular; not declared in DESIGN.md typography"
+    },
+    {
+      "rule": "design-system-font",
+      "file": "frontend/dist/docs/districts.html",
+      "snippet": "h1 \"District and division coverage\" uses roboto; not declared in DESIGN.md typography"
+    },
+    {
+      "rule": "design-system-font",
+      "file": "frontend/dist/docs/districts/index.html",
+      "snippet": "h1 \"District and division coverage\" uses roboto; not declared in DESIGN.md typography"
+    },
+    {
+      "rule": "design-system-font",
+      "file": "frontend/dist/docs/forecasts.html",
+      "snippet": "h1 \"Reading a forecast\" uses roboto; not declared in DESIGN.md typography"
+    },
+    {
+      "rule": "design-system-font",
+      "file": "frontend/dist/docs/forecasts/index.html",
+      "snippet": "h1 \"Reading a forecast\" uses roboto; not declared in DESIGN.md typography"
+    },
+    {
+      "rule": "design-system-font",
+      "file": "frontend/dist/docs/hazards.html",
+      "snippet": "h1 \"The eight hazard classes\" uses roboto; not declared in DESIGN.md typography"
+    },
+    {
+      "rule": "design-system-font",
+      "file": "frontend/dist/docs/hazards/index.html",
+      "snippet": "h1 \"The eight hazard classes\" uses roboto; not declared in DESIGN.md typography"
+    },
+    {
+      "rule": "design-system-font",
       "file": "frontend/dist/docs/index.html",
       "snippet": "h1 \"Documentation\" uses roboto; not declared in DESIGN.md typography"
+    },
+    {
+      "rule": "design-system-font",
+      "file": "frontend/dist/docs/platform.html",
+      "snippet": "h1 \"The HazardNet platform\" uses roboto; not declared in DESIGN.md typography"
+    },
+    {
+      "rule": "design-system-font",
+      "file": "frontend/dist/docs/platform/index.html",
+      "snippet": "h1 \"The HazardNet platform\" uses roboto; not declared in DESIGN.md typography"
+    },
+    {
+      "rule": "design-system-font",
+      "file": "frontend/dist/docs/verification.html",
+      "snippet": "h1 \"Validation status\" uses roboto; not declared in DESIGN.md typography"
+    },
+    {
+      "rule": "design-system-font",
+      "file": "frontend/dist/docs/verification/index.html",
+      "snippet": "h1 \"Validation status\" uses roboto; not declared in DESIGN.md typography"
     },
     {
       "rule": "design-system-font",
@@ -7099,12 +7469,192 @@
     },
     {
       "rule": "low-contrast",
+      "file": "frontend/dist/docs/alerts-and-advisories.html",
+      "snippet": "1.0:1 (need 3:1) \u2014 text #17171b on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/docs/alerts-and-advisories.html",
+      "snippet": "1.3:1 (need 3:1) \u2014 text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/docs/alerts-and-advisories.html",
+      "snippet": "1.0:1 (need 3:1) \u2014 text #2e2e32 on #2e2e32"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/docs/alerts-and-advisories/index.html",
+      "snippet": "1.0:1 (need 3:1) \u2014 text #17171b on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/docs/alerts-and-advisories/index.html",
+      "snippet": "1.3:1 (need 3:1) \u2014 text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/docs/alerts-and-advisories/index.html",
+      "snippet": "1.0:1 (need 3:1) \u2014 text #2e2e32 on #2e2e32"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/docs/archive.html",
+      "snippet": "1.0:1 (need 3:1) \u2014 text #17171b on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/docs/archive.html",
+      "snippet": "1.3:1 (need 3:1) \u2014 text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/docs/archive/index.html",
+      "snippet": "1.0:1 (need 3:1) \u2014 text #17171b on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/docs/archive/index.html",
+      "snippet": "1.3:1 (need 3:1) \u2014 text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/docs/data-and-api.html",
+      "snippet": "1.0:1 (need 3:1) \u2014 text #17171b on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/docs/data-and-api.html",
+      "snippet": "1.3:1 (need 3:1) \u2014 text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/docs/data-and-api/index.html",
+      "snippet": "1.0:1 (need 3:1) \u2014 text #17171b on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/docs/data-and-api/index.html",
+      "snippet": "1.3:1 (need 3:1) \u2014 text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/docs/districts.html",
+      "snippet": "1.0:1 (need 3:1) \u2014 text #17171b on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/docs/districts.html",
+      "snippet": "1.3:1 (need 3:1) \u2014 text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/docs/districts/index.html",
+      "snippet": "1.0:1 (need 3:1) \u2014 text #17171b on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/docs/districts/index.html",
+      "snippet": "1.3:1 (need 3:1) \u2014 text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/docs/forecasts.html",
+      "snippet": "1.0:1 (need 3:1) \u2014 text #17171b on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/docs/forecasts.html",
+      "snippet": "1.3:1 (need 3:1) \u2014 text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/docs/forecasts/index.html",
+      "snippet": "1.0:1 (need 3:1) \u2014 text #17171b on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/docs/forecasts/index.html",
+      "snippet": "1.3:1 (need 3:1) \u2014 text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/docs/hazards.html",
+      "snippet": "1.0:1 (need 3:1) \u2014 text #17171b on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/docs/hazards.html",
+      "snippet": "1.3:1 (need 3:1) \u2014 text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/docs/hazards/index.html",
+      "snippet": "1.0:1 (need 3:1) \u2014 text #17171b on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/docs/hazards/index.html",
+      "snippet": "1.3:1 (need 3:1) \u2014 text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "low-contrast",
       "file": "frontend/dist/docs/index.html",
       "snippet": "1.0:1 (need 3:1) \u2014 text #17171b on #17171b"
     },
     {
       "rule": "low-contrast",
       "file": "frontend/dist/docs/index.html",
+      "snippet": "1.3:1 (need 3:1) \u2014 text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/docs/platform.html",
+      "snippet": "1.0:1 (need 3:1) \u2014 text #17171b on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/docs/platform.html",
+      "snippet": "1.3:1 (need 3:1) \u2014 text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/docs/platform.html",
+      "snippet": "1.0:1 (need 3:1) \u2014 text #2e2e32 on #2e2e32"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/docs/platform/index.html",
+      "snippet": "1.0:1 (need 3:1) \u2014 text #17171b on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/docs/platform/index.html",
+      "snippet": "1.3:1 (need 3:1) \u2014 text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/docs/platform/index.html",
+      "snippet": "1.0:1 (need 3:1) \u2014 text #2e2e32 on #2e2e32"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/docs/verification.html",
+      "snippet": "1.0:1 (need 3:1) \u2014 text #17171b on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/docs/verification.html",
+      "snippet": "1.3:1 (need 3:1) \u2014 text #2e2e32 on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/docs/verification/index.html",
+      "snippet": "1.0:1 (need 3:1) \u2014 text #17171b on #17171b"
+    },
+    {
+      "rule": "low-contrast",
+      "file": "frontend/dist/docs/verification/index.html",
       "snippet": "1.3:1 (need 3:1) \u2014 text #2e2e32 on #17171b"
     },
     {
@@ -8820,6 +9370,16 @@
     {
       "rule": "tight-leading",
       "file": "frontend/dist/docs/index.html",
+      "snippet": "line-height 0.13x (need >=1.3)"
+    },
+    {
+      "rule": "tight-leading",
+      "file": "frontend/dist/docs/platform.html",
+      "snippet": "line-height 0.13x (need >=1.3)"
+    },
+    {
+      "rule": "tight-leading",
+      "file": "frontend/dist/docs/platform/index.html",
       "snippet": "line-height 0.13x (need >=1.3)"
     },
     {
