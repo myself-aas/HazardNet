@@ -105,14 +105,14 @@ export const MultiHazardDistributionChart: React.FC<MultiHazardDistributionChart
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-4 border-b border-carbon-80">
         <div>
           <div className="flex items-center gap-2">
-            <h3 className="text-base font-bold text-white tracking-tight">
+            <h3 className="text-base font-bold text-ap-on-inverse tracking-tight">
               Multi-Hazard Classification Breakdown
             </h3>
             <span className="px-2 py-0.5 rounded-full text-xs font-mono font-medium bg-rose-50 text-rose-700 border border-rose-200">
               {data.length} Hazard Classes
             </span>
           </div>
-          <p className="text-xs text-carbon-50 mt-1">
+          <p className="text-xs text-carbon-30 mt-1">
             Empirical historical frequency distribution of meteorological and geophysical hazards.
           </p>
         </div>
@@ -154,23 +154,23 @@ export const MultiHazardDistributionChart: React.FC<MultiHazardDistributionChart
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center">
               {hoveredHazard ? (
                 <>
-                  <span className="text-xs font-medium text-carbon-50 max-w-[100px] truncate">
+                  <span className="text-xs font-medium text-carbon-30 max-w-[100px] truncate">
                     {hoveredHazard.hazard_type}
                   </span>
-                  <span className="text-lg font-bold font-mono text-white">
+                  <span className="text-lg font-bold font-mono text-ap-on-inverse">
                     {hoveredHazard.event_count}
                   </span>
-                  <span className="text-xs font-mono text-rose-400 font-bold">
+                  <span className="text-xs font-mono text-rose-300 font-bold">
                     {hoveredHazard.percentage}%
                   </span>
                 </>
               ) : (
                 <>
-                  <span className="text-xs text-carbon-50">Total Recorded</span>
-                  <span className="text-xl font-bold font-mono text-white">
+                  <span className="text-xs text-carbon-30">Total Recorded</span>
+                  <span className="text-xl font-bold font-mono text-ap-on-inverse">
                     {totalEvents.toLocaleString()}
                   </span>
-                  <span className="text-xs text-carbon-50">2000–2026</span>
+                  <span className="text-xs text-carbon-30">2000–2026</span>
                 </>
               )}
             </div>
@@ -202,7 +202,7 @@ export const MultiHazardDistributionChart: React.FC<MultiHazardDistributionChart
                   </span>
                 </div>
                 <div className="flex items-center gap-3 font-mono text-xs shrink-0">
-                  <span className="text-carbon-50">{item.event_count.toLocaleString()}</span>
+                  <span className="text-carbon-30">{item.event_count.toLocaleString()}</span>
                   <span className="text-carbon-20 font-bold w-12 text-right">
                     {item.percentage}%
                   </span>

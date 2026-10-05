@@ -169,7 +169,7 @@ export const BlogArticlePage: React.FC = () => {
           <div className="flex items-center gap-2 flex-wrap text-xs font-mono font-bold uppercase tracking-wider">
             <span className="px-2.5 py-1 rounded-sm bg-amber-50 border border-amber-200 text-amber-900">{article.category}</span>
             <span className="text-carbon-60">{date}</span>
-            <span className="text-carbon-30">•</span>
+            <span className="text-carbon-60">•</span>
             <span className="text-carbon-60">{readingTimeMinutes(article.contentHtml)} min read</span>
           </div>
 
@@ -181,7 +181,7 @@ export const BlogArticlePage: React.FC = () => {
               {article.authorAvatarUrl ? (
                 <img src={article.authorAvatarUrl} alt="" className="h-10 w-10 rounded-full border border-carbon-20 object-cover shrink-0" />
               ) : (
-                <span className="h-8 w-8 rounded-full bg-gradient-to-tr from-amber-500 to-amber-300 text-white font-black text-xs flex items-center justify-center shrink-0">
+                <span className="h-8 w-8 rounded-full bg-gradient-to-tr from-amber-500 to-amber-300 text-carbon-90 font-black text-xs flex items-center justify-center shrink-0">
                   {(article.authorName || 'H')[0].toUpperCase()}
                 </span>
               )}
@@ -230,7 +230,7 @@ export const BlogArticlePage: React.FC = () => {
               {article.authorAvatarUrl ? (
                 <img src={article.authorAvatarUrl} alt="" className="h-12 w-12 rounded-full border border-carbon-20 object-cover shrink-0" />
               ) : (
-                <span className="h-12 w-12 rounded-full bg-gradient-to-tr from-amber-500 to-amber-300 text-white font-black text-sm flex items-center justify-center shrink-0">
+                <span className="h-12 w-12 rounded-full bg-gradient-to-tr from-amber-500 to-amber-300 text-carbon-90 font-black text-sm flex items-center justify-center shrink-0">
                   {(article.authorName || 'H')[0].toUpperCase()}
                 </span>
               )}

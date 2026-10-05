@@ -274,7 +274,7 @@ export const RegionSelector: React.FC<RegionSelectorProps> = ({
               <MaterialIcon name="my_location" className="w-4 h-4 text-carbon-90 shrink-0" filled />
             </span>
             <span>
-              Location detected via <strong className="uppercase font-mono">{detectedLocation.method}</strong>: Mapped to <strong className="font-bold text-carbon-black">{detectedLocation.nearestDistrict.name} District</strong> ({detectedLocation.nearestDistrict.division} Division)
+              Location detected via <strong className="uppercase font-mono">{detectedLocation.method}</strong>: Mapped to <strong className="font-bold text-amber-950">{detectedLocation.nearestDistrict.name} District</strong> ({detectedLocation.nearestDistrict.division} Division)
             </span>
           </div>
           <div className="flex items-center gap-2 self-start sm:self-auto shrink-0 font-mono text-xs text-carbon-60">
@@ -291,7 +291,7 @@ export const RegionSelector: React.FC<RegionSelectorProps> = ({
         <div className="flex flex-wrap items-center gap-2.5">
           <span className="text-carbon-60 font-medium">Active Location:</span>
           <strong className="text-carbon-90 font-extrabold text-sm">{currentDistrict.name} District</strong>
-          <span className="text-carbon-30 hidden sm:inline">•</span>
+          <span className="text-carbon-60 hidden sm:inline">•</span>
           <span className="text-carbon-60 font-semibold">{currentDistrict.division} Division</span>
 
           {currentHomeDistrictId === currentDistrict.id ? (
@@ -313,7 +313,7 @@ export const RegionSelector: React.FC<RegionSelectorProps> = ({
         <div className="flex flex-wrap items-center gap-2.5">
           <span className="text-carbon-60">Hazard:</span>
           <span className="text-carbon-80 font-bold">{currentDistrict.hazardType}</span>
-          <span className="text-carbon-30 hidden sm:inline">•</span>
+          <span className="text-carbon-60 hidden sm:inline">•</span>
           <span className="text-carbon-60">Crop:</span>
           <span className="text-carbon-80 font-bold">{currentDistrict.mainCrop}</span>
           <span className={`px-3 py-1 rounded-full font-bold text-xs ${

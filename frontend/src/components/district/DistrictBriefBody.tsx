@@ -257,7 +257,7 @@ export const DistrictBriefBody: React.FC = () => {
             <div className="text-xs font-mono font-bold text-amber-600 uppercase tracking-wider">
               Geospatial Distribution Matrix
             </div>
-            <h3 className="text-xl font-black text-carbon-black tracking-tight">
+            <h3 className="text-xl font-black text-carbon-90 tracking-tight">
               Hazard Severity Heatmap: {data.districtName} District Sub-Regions
             </h3>
           </div>
@@ -695,7 +695,7 @@ export const DistrictBriefBody: React.FC = () => {
                   {/* Card Header: Upazila Name + Geocode + Priority Badge */}
                   <div className="flex items-start justify-between gap-3 border-b border-carbon-20 pb-3">
                     <div>
-                      <h3 className="font-extrabold text-carbon-black text-base flex items-center gap-2">
+                      <h3 className="font-extrabold text-carbon-90 text-base flex items-center gap-2">
                         <span>{up.name}</span>
                         <span className="text-xs font-mono text-carbon-60 font-normal">
                           (GEO-{data.districtId.toUpperCase().slice(0, 3)}-{idx + 101})
@@ -873,16 +873,16 @@ export const DistrictBriefBody: React.FC = () => {
                   <Bot className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                  <h3 className="text-sm font-bold text-ap-on-inverse flex items-center gap-2">
                     <span>Gemini 2.5 Dynamic Advisory Engine</span>
                     <span className="px-2 py-0.5 rounded-sm bg-amber-400/20 text-amber-700 text-xs font-mono font-bold">ONLINE</span>
                   </h3>
-                  <p className="text-xs text-carbon-60">Real-time LLM inference synthesizing localized meteorological & agrarian guidance.</p>
+                  <p className="text-xs text-carbon-30">Real-time LLM inference synthesizing localized meteorological & agrarian guidance.</p>
                 </div>
               </div>
             </div>
 
-            <div className="text-carbon-90">
+            <div className="text-ap-on-inverse">
               <AdvisoryPanel
                 districtName={data.districtName}
                 hazardType={data.hazardType}
@@ -1034,7 +1034,7 @@ export const DistrictBriefBody: React.FC = () => {
                     <span>View {climaticEventsData.division} Division</span>
                     <ExternalLink className="w-3 h-3" />
                   </Link>
-                  <span className="text-carbon-30">•</span>
+                  <span className="text-carbon-60">•</span>
                   <Link
                     to={`/hazards/${climaticEventsData.primaryHazard.toLowerCase().replace(/\s+/g, '-')}`}
                     className="text-amber-700 hover:text-amber-900 font-semibold inline-flex items-center gap-1"
@@ -1383,7 +1383,7 @@ export const DistrictBriefBody: React.FC = () => {
               {dispatchLogs.length > 0 && (
                 <div className="bg-carbon-90 text-carbon-20 p-3 text-xs font-mono space-y-1 max-h-24 overflow-y-auto">
                   {dispatchLogs.map((log, i) => (
-                    <div key={i} className="text-emerald-400">{log}</div>
+                    <div key={i} className="text-emerald-300">{log}</div>
                   ))}
                 </div>
               )}
@@ -1422,25 +1422,25 @@ export const DistrictBriefBody: React.FC = () => {
 
           <div className="bg-carbon-05 border border-carbon-20 p-4 sm:p-5 space-y-3.5 text-carbon-80 leading-relaxed">
             <div>
-              <strong className="text-carbon-black font-bold block mb-1">[1] Published forecast record:</strong>
+              <strong className="text-carbon-90 font-bold block mb-1">[1] Published forecast record:</strong>
               <p className="text-carbon-70">
                 Each district unit is one record: hazard class, severity, confidence score and the 7- and 15-day horizons, stamped with the forecast date of the run that produced it. Nothing on this page is recomputed in the browser.
               </p>
             </div>
             <div>
-              <strong className="text-carbon-black font-bold block mb-1">[2] Confidence score (uncalibrated):</strong>
+              <strong className="text-carbon-90 font-bold block mb-1">[2] Confidence score (uncalibrated):</strong>
               <p className="text-carbon-70">
                 The 0&ndash;100% figure is the score for the chosen class in the published record. It is <strong className="font-bold">not</strong> a calibrated probability &mdash; no calibration accuracy is claimed, and detection performance is reported only once it can be measured against observed outcomes.
               </p>
             </div>
             <div>
-              <strong className="text-carbon-black font-bold block mb-1">[3] What this is not:</strong>
+              <strong className="text-carbon-90 font-bold block mb-1">[3] What this is not:</strong>
               <p className="text-carbon-70">
                 The published product is per-district severity for {data.districtName} &mdash; it is not a metre-scale inundation map and not an official warning.
               </p>
             </div>
             <div>
-              <strong className="text-carbon-black font-bold block mb-1">[4] The official record:</strong>
+              <strong className="text-carbon-90 font-bold block mb-1">[4] The official record:</strong>
               <p className="text-carbon-70">
                 River-level bulletins from the Flood Forecasting and Warning Centre (FFWC) and forecasts from the Bangladesh Meteorological Department (BMD) remain the official record and outrank anything shown here.
               </p>

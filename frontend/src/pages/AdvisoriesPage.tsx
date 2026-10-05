@@ -325,7 +325,7 @@ export const AdvisoriesPage: React.FC = () => {
 
           {/* Quick Action Box */}
           <div className="bg-carbon-90 text-carbon-05 rounded-2xl p-5 sm:p-6 lg:w-80 shrink-0 space-y-4 shadow-md border border-carbon-80">
-            <div className="flex items-center gap-2 text-amber-400">
+            <div className="flex items-center gap-2 text-amber-300">
               <ShieldAlert className="w-5 h-5" />
               <span className="text-xs font-mono font-black tracking-wider uppercase">Emergency Action Desk</span>
             </div>
@@ -348,7 +348,7 @@ export const AdvisoriesPage: React.FC = () => {
                     : 'bg-white/10 text-white hover:bg-white/20 border border-white/10'
                 }`}
               >
-                <Bot className="w-3.5 h-3.5 text-amber-400" />
+                <Bot className="w-3.5 h-3.5 text-amber-300" />
                 <span>{showAiSynthesizer ? 'Hide AI Synthesizer' : 'Synthesize Gemini Advisory'}</span>
               </button>
             </div>
@@ -401,18 +401,18 @@ export const AdvisoriesPage: React.FC = () => {
                     <Sparkles className="w-5 h-5" />
                   </div>
                   <div>
-                    <h3 className="text-base sm:text-lg font-black text-white flex items-center gap-2">
+                    <h3 className="text-base sm:text-lg font-black text-ap-on-inverse flex items-center gap-2">
                       <span>Gemini 2.5 Dynamic Sector AI Synthesizer</span>
                       <span className="px-2 py-0.5 rounded-md bg-amber-400 text-carbon-black text-xs font-mono font-black">LIVE</span>
                     </h3>
-                    <p className="text-xs text-carbon-60">
+                    <p className="text-xs text-carbon-30">
                       Real-time generative intelligence correlating district AEZ soil profiles, river stage thresholds, and sector protocols.
                     </p>
                   </div>
                 </div>
                 <button
                   onClick={() => setShowAiSynthesizer(false)}
-                  className="text-carbon-50 hover:text-white p-1 rounded-lg hover:bg-carbon-80 self-start sm:self-auto cursor-pointer"
+                  className="text-carbon-30 hover:text-white p-1 rounded-lg hover:bg-carbon-80 self-start sm:self-auto cursor-pointer"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -462,10 +462,10 @@ export const AdvisoriesPage: React.FC = () => {
                     onChange={(e) => setAiSeverity(parseFloat(e.target.value))}
                     className="w-full accent-amber-400 cursor-pointer"
                   />
-                  <div className="flex justify-between text-xs text-carbon-60 font-mono">
+                  <div className="flex justify-between text-xs text-carbon-30 font-mono">
                     <span>Watch (0.1)</span>
                     <span>Warning (0.5)</span>
-                    <span className="text-rose-400 font-bold">Emergency (1.0)</span>
+                    <span className="text-rose-300 font-bold">Emergency (1.0)</span>
                   </div>
                 </div>
 
@@ -607,7 +607,7 @@ export const AdvisoriesPage: React.FC = () => {
                         <span className="text-xs font-semibold text-carbon-60">
                           Lead: {step.leadAgency}
                         </span>
-                        <span className="text-carbon-30">•</span>
+                        <span className="text-carbon-60">•</span>
                         <span className="text-xs font-mono text-carbon-60 flex items-center gap-1">
                           <Clock className="w-3 h-3 text-carbon-60" />
                           {step.timeline}
@@ -833,7 +833,7 @@ export const AdvisoriesPage: React.FC = () => {
             onClick={() => setIsEmailModalOpen(true)}
             className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-carbon-90 text-carbon-05 text-xs font-bold hover:bg-carbon-80 transition-all cursor-pointer shadow-xs self-start sm:self-auto"
           >
-            <Mail className="w-3.5 h-3.5 text-amber-400" />
+            <Mail className="w-3.5 h-3.5 text-amber-300" />
             <span>Open Emergency Email Composer</span>
           </button>
         </div>
@@ -970,7 +970,7 @@ export const AdvisoriesPage: React.FC = () => {
               {/* Form Controls to Customize Email */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-carbon-70">Select Affected District:</label>
+                  <label className="text-xs font-bold text-carbon-90">Select Affected District:</label>
                   <select
                     value={selectedDistrictForEmail}
                     onChange={(e) => setSelectedDistrictForEmail(e.target.value)}
@@ -985,7 +985,7 @@ export const AdvisoriesPage: React.FC = () => {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-carbon-70">Affected Upazilas / Unions:</label>
+                  <label className="text-xs font-bold text-carbon-90">Affected Upazilas / Unions:</label>
                   <input
                     type="text"
                     value={affectedUpazilas}
@@ -996,7 +996,7 @@ export const AdvisoriesPage: React.FC = () => {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-carbon-70">Coordinator / Officer Name & Role:</label>
+                  <label className="text-xs font-bold text-carbon-90">Coordinator / Officer Name & Role:</label>
                   <input
                     type="text"
                     value={customOfficerName}
@@ -1007,7 +1007,7 @@ export const AdvisoriesPage: React.FC = () => {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-carbon-70">Officer Phone / Hotline:</label>
+                  <label className="text-xs font-bold text-carbon-90">Officer Phone / Hotline:</label>
                   <input
                     type="text"
                     value={customOfficerPhone}
@@ -1021,7 +1021,7 @@ export const AdvisoriesPage: React.FC = () => {
               {/* Preview of Email */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="font-bold text-carbon-70">Structured Requisition Body Preview:</span>
+                  <span className="font-bold text-carbon-90">Structured Requisition Body Preview:</span>
                   <span className="font-mono text-carbon-60">Recipients: {sector.emailTemplate.recipientDefault}</span>
                 </div>
                 <textarea
@@ -1041,7 +1041,7 @@ export const AdvisoriesPage: React.FC = () => {
                 <div className="flex items-center gap-2 w-full sm:w-auto">
                   <button
                     onClick={handleCopyEmail}
-                    className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl border border-carbon-30 text-carbon-70 text-xs font-bold hover:bg-carbon-10 flex items-center justify-center gap-1.5 cursor-pointer"
+                    className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl border border-carbon-30 text-carbon-90 text-xs font-bold hover:bg-carbon-10 flex items-center justify-center gap-1.5 cursor-pointer"
                   >
                     <Copy className="w-4 h-4" />
                     <span>Copy Structured Email</span>
@@ -1051,7 +1051,7 @@ export const AdvisoriesPage: React.FC = () => {
                     onClick={handleLaunchMailClient}
                     className="flex-1 sm:flex-none px-5 py-2.5 rounded-xl bg-carbon-90 text-carbon-05 text-xs font-bold hover:bg-carbon-80 flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
                   >
-                    <Send className="w-4 h-4 text-amber-400" />
+                    <Send className="w-4 h-4 text-amber-300" />
                     <span>Open in Email App</span>
                   </button>
                 </div>

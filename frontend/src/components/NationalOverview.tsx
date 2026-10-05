@@ -217,7 +217,7 @@ export const NationalOverview: React.FC<NationalOverviewProps> = ({
             <span className="px-3 py-1 rounded-full text-xs font-mono font-black uppercase tracking-wider bg-ap-primary/10 text-ap-link border border-ap-primary/20 shadow-2xs flex items-center gap-1.5">
               National AI Overview Mode
             </span>
-            <span className="text-carbon-30 hidden sm:inline">•</span>
+            <span className="text-carbon-60 hidden sm:inline">•</span>
             <span className="text-xs font-mono text-carbon-60 bg-carbon-05 px-2.5 py-1 rounded-lg border border-carbon-20/90">
               Formula: <code className="text-emerald-600 font-bold">{`{unique_hazard_name} + {district_counts} + {avg_severity}`}</code>
             </span>

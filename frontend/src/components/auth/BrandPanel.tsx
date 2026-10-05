@@ -103,12 +103,12 @@ const Stat: React.FC<{ stat: StatItem; animate: boolean; durationMs?: number }> 
   const value = useCountUp(stat.value, durationMs, animate);
   return (
     <div className="border border-carbon-80 bg-carbon-90 px-3.5 py-3">
-      <p className="font-mono text-lg xl:text-xl font-black text-white tabular-nums">
+      <p className="font-mono text-lg xl:text-xl font-black text-ap-on-inverse tabular-nums">
         {stat.prefix}
         {value}
         {stat.suffix}
       </p>
-      <p className="mt-0.5 text-xs font-bold uppercase tracking-wide text-carbon-60">{stat.label}</p>
+      <p className="mt-0.5 text-xs font-bold uppercase tracking-wide text-carbon-30">{stat.label}</p>
     </div>
   );
 };
@@ -151,7 +151,7 @@ export const BrandPanel: React.FC<BrandPanelProps> = ({ mode, intervalMs = 5200 
         <HazardNetBrand size="md" variant="dark" />
         <Link
           to="/"
-          className="inline-flex min-h-[44px] items-center border border-carbon-70 px-3.5 py-2 text-sm font-semibold text-carbon-30 transition-colors hover:border-carbon-50 hover:text-white"
+          className="inline-flex min-h-[44px] items-center border border-carbon-70 px-3.5 py-2 text-sm font-semibold text-ap-on-scrim-muted transition-colors hover:border-carbon-50 hover:text-white"
         >
           <ArrowLeft className="mr-1 h-4 w-4" aria-hidden="true" /> Back to site
         </Link>
@@ -167,7 +167,7 @@ export const BrandPanel: React.FC<BrandPanelProps> = ({ mode, intervalMs = 5200 
         aria-live="polite"
         data-testid="brand-carousel"
       >
-        <p className="mb-4 text-xs font-mono font-extrabold uppercase tracking-[0.025em] text-ap-link">
+        <p className="mb-4 text-xs font-mono font-extrabold uppercase tracking-[0.025em] text-ap-primary-on-dark">
           {mode === 'login' ? 'Welcome back' : mode === 'signup' ? 'Create your account' : 'Account recovery'}
         </p>
         <div className="min-h-[13rem]">
@@ -189,7 +189,7 @@ export const BrandPanel: React.FC<BrandPanelProps> = ({ mode, intervalMs = 5200 
               <p className="text-3xl xl:text-4xl font-black leading-tight tracking-tight text-white">
                 {message.headline}
               </p>
-              <p className="mt-4 text-base leading-[1.62] text-carbon-30">{message.body}</p>
+              <p className="mt-4 text-base leading-[1.62] text-ap-on-scrim-muted">{message.body}</p>
             </motion.div>
           </AnimatePresence>
         </div>
@@ -221,13 +221,13 @@ export const BrandPanel: React.FC<BrandPanelProps> = ({ mode, intervalMs = 5200 
             <Stat key={stat.label} stat={stat} animate={animateStats} />
           ))}
         </div>
-        <p className="text-xs text-carbon-60">
+        <p className="text-xs text-ap-on-scrim-muted">
           HazardNet · Multi-hazard early warning for Bangladesh agriculture ·{' '}
-          <Link to="/terms" className="font-semibold text-carbon-60 underline-offset-2 hover:underline">
+          <Link to="/terms" className="font-semibold text-ap-on-scrim-muted underline-offset-2 hover:underline">
             Terms
           </Link>{' '}
           ·{' '}
-          <Link to="/privacy" className="font-semibold text-carbon-60 underline-offset-2 hover:underline">
+          <Link to="/privacy" className="font-semibold text-ap-on-scrim-muted underline-offset-2 hover:underline">
             Privacy
           </Link>
         </p>

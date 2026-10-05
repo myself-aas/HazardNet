@@ -490,12 +490,12 @@ export const UserProfilePage: React.FC = () => {
               <div className="bg-carbon-90 text-carbon-05 border border-carbon-80 p-4 space-y-3 relative overflow-hidden">
                 <div className="flex items-center justify-between border-b border-carbon-80 pb-2.5">
                   <div className="flex items-center gap-2">
-                    <span className="text-amber-400 font-bold text-sm"><MaterialIcon name="shield" className="w-4 h-4 inline-block mr-1" /></span>
+                    <span className="text-amber-300 font-bold text-sm"><MaterialIcon name="shield" className="w-4 h-4 inline-block mr-1" /></span>
                     <div>
-                      <h4 className="text-xs font-extrabold text-white tracking-wide uppercase font-mono">
+                      <h4 className="text-xs font-extrabold text-ap-on-inverse tracking-wide uppercase font-mono">
                         District Hazard & Severity Identification
                       </h4>
-                      <p className="text-xs text-carbon-60 font-sans">
+                      <p className="text-xs text-carbon-30 font-sans">
                         Identified using user district ({currentDistrictObj.name}) instead of raw lat/lon coordinates
                       </p>
                     </div>
@@ -511,33 +511,33 @@ export const UserProfilePage: React.FC = () => {
 
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
                   <div className="bg-carbon-80/80 p-2.5 border border-carbon-70/60">
-                    <span className="text-xs font-mono text-carbon-60 block uppercase">Selected District</span>
-                    <strong className="text-amber-400 font-black truncate block mt-0.5">{currentDistrictObj.name} ({currentDistrictObj.division})</strong>
+                    <span className="text-xs font-mono text-carbon-30 block uppercase">Selected District</span>
+                    <strong className="text-amber-300 font-black truncate block mt-0.5">{currentDistrictObj.name} ({currentDistrictObj.division})</strong>
                   </div>
                   <div className="bg-carbon-80/80 p-2.5 border border-carbon-70/60">
-                    <span className="text-xs font-mono text-carbon-60 block uppercase">Primary Hazard</span>
-                    <strong className="text-white font-black truncate block mt-0.5">{currentDistrictObj.hazardType}</strong>
+                    <span className="text-xs font-mono text-carbon-30 block uppercase">Primary Hazard</span>
+                    <strong className="text-ap-on-inverse font-black truncate block mt-0.5">{currentDistrictObj.hazardType}</strong>
                   </div>
                   <div className="bg-carbon-80/80 p-2.5 border border-carbon-70/60">
-                    <span className="text-xs font-mono text-carbon-60 block uppercase">Severity Score</span>
-                    <strong className="text-rose-400 font-mono font-black block mt-0.5">{severityScorePct}%</strong>
+                    <span className="text-xs font-mono text-carbon-30 block uppercase">Severity Score</span>
+                    <strong className="text-rose-300 font-mono font-black block mt-0.5">{severityScorePct}%</strong>
                   </div>
                   <div className="bg-carbon-80/80 p-2.5 border border-carbon-70/60">
-                    <span className="text-xs font-mono text-carbon-60 block uppercase">Vulnerable Crop</span>
-                    <strong className="text-emerald-400 font-black truncate block mt-0.5">{currentDistrictObj.mainCrop}</strong>
+                    <span className="text-xs font-mono text-carbon-30 block uppercase">Vulnerable Crop</span>
+                    <strong className="text-emerald-300 font-black truncate block mt-0.5">{currentDistrictObj.mainCrop}</strong>
                   </div>
                 </div>
 
                 {granular?.modelAssessment?.confidenceProbabilities && (
                   <div className="pt-2 border-t border-carbon-80 text-xs space-y-1.5">
-                    <span className="text-xs font-mono text-carbon-60 font-extrabold uppercase tracking-wider block">
+                    <span className="text-xs font-mono text-carbon-30 font-extrabold uppercase tracking-wider block">
                       Multi-Hazard Risk Distribution for {currentDistrictObj.name}:
                     </span>
                     <div className="flex flex-wrap gap-2">
                       {granular.modelAssessment.confidenceProbabilities.map((item: { hazard: string; probability: number }, idx: number) => (
                         <div key={idx} className="px-2.5 py-1 rounded-sm bg-carbon-80 border border-carbon-70 text-xs flex items-center gap-1.5 font-mono">
                           <span className="text-carbon-30 font-bold">{item.hazard}:</span>
-                          <span className="text-amber-400 font-black">{Math.round(item.probability * 100)}%</span>
+                          <span className="text-amber-300 font-black">{Math.round(item.probability * 100)}%</span>
                         </div>
                       ))}
                     </div>

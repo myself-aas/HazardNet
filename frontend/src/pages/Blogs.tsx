@@ -56,7 +56,7 @@ export const Blogs: React.FC = () => {
           <span className="px-3 py-1 rounded-sm text-xs font-mono font-extrabold bg-amber-50 text-amber-900 border border-amber-300 uppercase tracking-wider">
             Research Insights & Field Reports
           </span>
-          <span className="text-carbon-30">•</span>
+          <span className="text-carbon-60">•</span>
           <span className="text-xs text-carbon-60 font-semibold">HazardNet Knowledge Base</span>
         </div>
 

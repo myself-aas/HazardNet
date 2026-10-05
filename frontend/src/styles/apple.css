@@ -188,6 +188,18 @@
      them. This flips with the fill, exactly like --ap-action-fg does. */
   --ap-on-sev: var(--ap-on-primary);
 
+  /* Ink for a permanently-dark scrim (bg-carbon-black/NN over a map tile or
+     hero photo). Unlike --ap-on-inverse these must NOT flip: carbon-black is
+     #000 in both themes, so an inverting ink goes near-black on black in dark
+     mode. Declared once, at :root, and never overridden. */
+  --ap-on-scrim: var(--ap-on-dark);
+  --ap-on-scrim-muted: var(--ap-body-muted);
+  /* Severity ink on that same fixed scrim. This is the dark-theme --ap-sev-high
+     value pinned as a constant: the severity ramp flips with the PAGE, but a
+     black scrim does not, so the data encoding needs a value that holds in both
+     themes rather than losing the cue to plain white. */
+  --ap-on-scrim-sev: #ff8a5b;
+
   --ap-focus-ring: var(--ap-primary-focus);
   --ap-focus-width: 2px;
   --ap-focus-offset: 2px;

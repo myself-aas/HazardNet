@@ -165,7 +165,7 @@ export const RiskAnalytics: React.FC<RiskAnalyticsProps> = ({ onSelectDistrict }
               <span className="px-2 sm:px-2.5 py-0.5 rounded-md sm:rounded-full text-xs sm:text-xs font-mono font-bold uppercase tracking-wider bg-rose-50 text-rose-700 border border-rose-200/80 whitespace-nowrap">
                 Regional Trends
               </span>
-              <span className="text-carbon-30 hidden sm:inline">•</span>
+              <span className="text-carbon-60 hidden sm:inline">•</span>
               <span className="text-xs font-mono text-carbon-60 font-semibold hidden sm:inline">
                 Time-Series Analytics
               </span>

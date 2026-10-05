@@ -1554,7 +1554,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
 
                 {measurePoints.length === 0 && (
                   <div className="bg-carbon-80/80 p-2.5 border border-carbon-70 text-xs text-carbon-30 flex items-center gap-2">
-                    <MaterialIcon name="touch_app" className="w-4 h-4 shrink-0 text-amber-500" />
+                    <MaterialIcon name="touch_app" className="w-4 h-4 shrink-0 text-amber-300" />
                     <span>Click any location on the map to set <strong>Point 1 (Origin)</strong>.</span>
                   </div>
                 )}
@@ -1578,14 +1578,14 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                         <span>Distance:</span>
                         <span>
                           {pathAnalysis.totalDistanceKm.toFixed(2)} km{' '}
-                          <span className="text-carbon-60 text-xs font-normal">
+                          <span className="text-carbon-30 text-xs font-normal">
                             ({(pathAnalysis.totalDistanceKm * 0.621371).toFixed(2)} mi)
                           </span>
                         </span>
                       </div>
 
                       <div className="flex items-center justify-between text-xs">
-                        <span className="text-carbon-60">Path Span:</span>
+                        <span className="text-carbon-30">Path Span:</span>
                         <span className="font-bold text-carbon-20">
                           {pathAnalysis.startDistrict?.name}{' '}
                           <MaterialIcon name="arrow_forward" className="w-3 h-3 inline-block align-middle" />{' '}
@@ -1594,7 +1594,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                       </div>
 
                       <div className="flex items-center justify-between text-xs border-t border-carbon-70/60 pt-1.5">
-                        <span className="text-carbon-60">Max Hazard Severity:</span>
+                        <span className="text-carbon-30">Max Hazard Severity:</span>
                         <span
                           className={`font-black px-1.5 py-0.5 rounded text-xs ${
  pathAnalysis.riskRating === 'High'
@@ -1629,7 +1629,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
 
                     <div className="text-xs text-carbon-60 font-mono">
                       Transiting {pathAnalysis.districtsAlongPath.length} district(s):{' '}
-                      <span className="text-carbon-30 font-sans font-medium">
+                      <span className="text-carbon-60 font-sans font-medium">
                         {pathAnalysis.districtsAlongPath.map((d) => d.district.name).join(', ')}
                       </span>
                     </div>
@@ -1711,7 +1711,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <h3 className="text-base font-bold tracking-tight text-carbon-90 dark:text-white">Districts & hazards</h3>
-                      <p className="text-xs text-carbon-50">Narrow the national situational map</p>
+                      <p className="text-xs text-carbon-60">Narrow the national situational map</p>
                     </div>
                     <button
                       type="button"
@@ -1728,7 +1728,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                   {/* Divisions */}
                   <div className="py-4">
                     <div className="flex items-center justify-between mb-3">
-                      <span className="text-xs font-bold uppercase tracking-[0.12em] text-carbon-50">Division</span>
+                      <span className="text-xs font-bold uppercase tracking-[0.12em] text-carbon-60">Division</span>
                       {selectedDivision !== 'All' && (
                         <button
                           type="button"
@@ -1767,7 +1767,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                   {/* Hazards */}
                   <div className="py-4 border-t border-carbon-20">
                     <div className="flex items-center justify-between mb-3">
-                      <span className="text-xs font-bold uppercase tracking-[0.12em] text-carbon-50">
+                      <span className="text-xs font-bold uppercase tracking-[0.12em] text-carbon-60">
                         Hazards ({selectedHazards.length}/{HAZARD_LAYERS.length})
                       </span>
                       <div className="flex items-center gap-3 text-xs font-semibold">
@@ -1796,7 +1796,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                         );
                       })}
                     </div>
-                    <p className="mt-3 text-xs text-carbon-50">
+                    <p className="mt-3 text-xs text-carbon-60">
                       Showing {filteredDistricts.length} of {liveDistricts.length} districts
                     </p>
                   </div>
@@ -1863,7 +1863,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
 
                 {/* Ground: two basemaps, one at a time. */}
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-wider text-carbon-50 mb-2.5">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-carbon-60 mb-2.5">
                     {LIVE_SECTIONS[0].label}
                   </p>
                   <div className="flex gap-1 rounded-full bg-carbon-10 p-1" role="radiogroup" aria-label="Basemap">
@@ -1895,7 +1895,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
 
                 {/* Overlays: flat rows, icon + name + one On/Off pill each. */}
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-wider text-carbon-50 mb-1.5">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-carbon-60 mb-1.5">
                     {LIVE_SECTIONS[1].label}
                   </p>
                   <ul className="flex flex-col" role="group" aria-labelledby="map-layers-title">
@@ -1918,11 +1918,11 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                           <li key={def.id} className="py-2.5">
                             <div className="flex items-center justify-between gap-3 min-h-[52px]">
                               <span className="flex items-center gap-3">
-                                <MaterialIcon name={def.icon} className="w-5 h-5 text-carbon-50 shrink-0" />
+                                <MaterialIcon name={def.icon} className="w-5 h-5 text-carbon-60 shrink-0" />
                                 <span className="flex flex-col">
-                                  <span className="text-ap-caption font-semibold text-carbon-80">{def.name}</span>
+                                  <span className="text-ap-caption font-semibold text-carbon-90">{def.name}</span>
                                   {def.caption ? (
-                                    <span className="text-xs text-carbon-50">{def.caption}</span>
+                                    <span className="text-xs text-carbon-60">{def.caption}</span>
                                   ) : null}
                                 </span>
                               </span>
@@ -1933,7 +1933,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                                     onClick={() => setIsWindExpanded(!isWindExpanded)}
                                     aria-expanded={isWindExpanded}
                                     aria-label={isWindExpanded ? 'Hide wind details' : 'Show wind details'}
-                                    className="tap-target w-11 h-11 rounded-full text-carbon-50 hover:bg-carbon-10 dark:hover:bg-carbon-80 flex items-center justify-center transition-colors"
+                                    className="tap-target w-11 h-11 rounded-full text-carbon-60 hover:bg-carbon-10 dark:hover:bg-carbon-80 flex items-center justify-center transition-colors"
                                   >
                                     <MaterialIcon name={isWindExpanded ? 'expand_less' : 'expand_more'} className="w-5 h-5" />
                                   </button>
@@ -1964,7 +1964,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                             </div>
 
                             {isUnavailable ? (
-                              <p className="text-xs leading-[1.62] text-carbon-50 pl-8 pt-1">
+                              <p className="text-xs leading-[1.62] text-carbon-60 pl-8 pt-1">
                                 No wind field is available right now. The pipeline publishes a new one every six hours
                                 from GFS, falling back to ECMWF open data; if this message stays, the latest run could
                                 not reach either model.
@@ -1976,7 +1976,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                                 <p className="text-sm font-semibold text-carbon-90 dark:text-white">
                                   {windArtifact.model_name}
                                 </p>
-                                <p className="text-xs leading-[1.62] text-carbon-50">
+                                <p className="text-xs leading-[1.62] text-carbon-60">
                                   {windArtifact.kind === 'forecast'
                                     ? `${windArtifact.step_hours}-hour forecast.`
                                     : 'Analysis (zero-hour) field.'}{' '}
@@ -1984,7 +1984,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                                   {windArtifact.valid_time.slice(11, 16)} UTC
                                   {windFeed.kind === 'stale' ? ' · older than the six-hourly schedule; last good field kept' : ''}.
                                 </p>
-                                <p className="text-xs leading-[1.62] text-carbon-50">
+                                <p className="text-xs leading-[1.62] text-carbon-60">
                                   What this is: air flowing through one model field over Bangladesh and the Bay of Bengal,
                                   resampled to 1 degree. What it is not: an observation, or a movie of the forecast
                                   advancing. The animation does not advance forecast time.
@@ -1993,7 +1993,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                             ) : null}
 
                             {isActive && isWindExpanded && isLoading ? (
-                              <p className="text-xs leading-[1.62] text-carbon-50 pl-8 pt-2">
+                              <p className="text-xs leading-[1.62] text-carbon-60 pl-8 pt-2">
                                 Fetching the latest wind artifact.
                               </p>
                             ) : null}
@@ -2018,11 +2018,11 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                           <li key={def.id} className="py-2.5">
                             <div className="flex items-center justify-between gap-3 min-h-[52px]">
                               <span className="flex items-center gap-3">
-                                <MaterialIcon name={def.icon} className="w-5 h-5 text-carbon-50 shrink-0" />
+                                <MaterialIcon name={def.icon} className="w-5 h-5 text-carbon-60 shrink-0" />
                                 <span className="flex flex-col">
-                                  <span className="text-ap-caption font-semibold text-carbon-80">{def.name}</span>
+                                  <span className="text-ap-caption font-semibold text-carbon-90">{def.name}</span>
                                   {def.caption ? (
-                                    <span className="text-xs text-carbon-50">{def.caption}</span>
+                                    <span className="text-xs text-carbon-60">{def.caption}</span>
                                   ) : null}
                                 </span>
                               </span>
@@ -2033,7 +2033,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                                     onClick={() => setIsRainExpanded(!isRainExpanded)}
                                     aria-expanded={isRainExpanded}
                                     aria-label={isRainExpanded ? 'Hide rain controls' : 'Show rain controls'}
-                                    className="tap-target w-11 h-11 rounded-full text-carbon-50 hover:bg-carbon-10 dark:hover:bg-carbon-80 flex items-center justify-center transition-colors"
+                                    className="tap-target w-11 h-11 rounded-full text-carbon-60 hover:bg-carbon-10 dark:hover:bg-carbon-80 flex items-center justify-center transition-colors"
                                   >
                                     <MaterialIcon name={isRainExpanded ? 'expand_less' : 'expand_more'} className="w-5 h-5" />
                                   </button>
@@ -2064,13 +2064,13 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                             </div>
 
                             {isUnavailable ? (
-                              <p className="text-xs leading-[1.62] text-carbon-50 pl-8 pt-1">
+                              <p className="text-xs leading-[1.62] text-carbon-60 pl-8 pt-1">
                                 Rain-rate tiles are not answering right now. Try again shortly, or check{' '}
                                 <a
                                   href={GIBS_STATUS_URL}
                                   target="_blank"
                                   rel="noreferrer"
-                                  className="underline underline-offset-2 text-carbon-80"
+                                  className="underline underline-offset-2 text-carbon-90"
                                 >
                                   NASA Earthdata status
                                 </a>
@@ -2103,7 +2103,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                                     <span className="text-sm font-bold text-carbon-90 dark:text-white tabular-nums">
                                       {gibsTimeLabel(latestRainIso)}
                                     </span>
-                                    <span className="text-xs text-carbon-50">
+                                    <span className="text-xs text-carbon-60">
                                       {rainFrameIndex === 0
                                         ? 'Latest frame'
                                         : `${rainFrameIndex * 30} min earlier`}
@@ -2119,7 +2119,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                                     <MaterialIcon name="chevron_right" className="w-5 h-5" />
                                   </button>
                                 </div>
-                                <p className="text-xs text-carbon-50">
+                                <p className="text-xs text-carbon-60">
                                   Observed {gibsTimeLabel(latestRainIso)} · now {nowUtcLabel}
                                 </p>
 
@@ -2132,7 +2132,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                                     role="img"
                                     aria-label="Rain-rate colour ramp from trace to extreme, in millimetres per hour"
                                   />
-                                  <div className="flex justify-between text-xs text-carbon-50 tabular-nums">
+                                  <div className="flex justify-between text-xs text-carbon-60 tabular-nums">
                                     <span>0.1</span>
                                     <span>0.5</span>
                                     <span>1</span>
@@ -2140,7 +2140,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                                     <span>4</span>
                                     <span>10+ mm/h</span>
                                   </div>
-                                  <p className="flex items-center gap-1.5 text-xs text-carbon-50">
+                                  <p className="flex items-center gap-1.5 text-xs text-carbon-60">
                                     <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: MAP_RAIN_RAMP.snowLight }} />
                                     <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: MAP_RAIN_RAMP.snowModerate }} />
                                     <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: MAP_RAIN_RAMP.snowHeavy }} />
@@ -2148,7 +2148,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                                   </p>
                                 </div>
 
-                                <p className="text-xs leading-[1.62] text-carbon-50">
+                                <p className="text-xs leading-[1.62] text-carbon-60">
                                   Rainfall rate in millimetres per hour: the depth that would accumulate in an hour if this
                                   rate persisted. Near-real-time multi-satellite estimate at about 10 km resolution with
                                   roughly a four-hour lag, not gauge data. Colour boundaries are approximate; the tiles are
@@ -2158,7 +2158,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                             ) : null}
 
                             {isActive && isRainExpanded && rainStatus === 'loading' ? (
-                              <p className="text-xs leading-[1.62] text-carbon-50 pl-8 pt-2">
+                              <p className="text-xs leading-[1.62] text-carbon-60 pl-8 pt-2">
                                 Finding the newest rain frames.
                               </p>
                             ) : null}
@@ -2183,11 +2183,11 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                           <li key={def.id} className="py-2.5">
                             <div className="flex items-center justify-between gap-3 min-h-[52px]">
                               <span className="flex items-center gap-3">
-                                <MaterialIcon name={def.icon} className="w-5 h-5 text-carbon-50 shrink-0" />
+                                <MaterialIcon name={def.icon} className="w-5 h-5 text-carbon-60 shrink-0" />
                                 <span className="flex flex-col">
-                                  <span className="text-ap-caption font-semibold text-carbon-80">{def.name}</span>
+                                  <span className="text-ap-caption font-semibold text-carbon-90">{def.name}</span>
                                   {def.caption ? (
-                                    <span className="text-xs text-carbon-50">{def.caption}</span>
+                                    <span className="text-xs text-carbon-60">{def.caption}</span>
                                   ) : null}
                                 </span>
                               </span>
@@ -2198,7 +2198,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                                     onClick={() => setIsTrueColorExpanded(!isTrueColorExpanded)}
                                     aria-expanded={isTrueColorExpanded}
                                     aria-label={isTrueColorExpanded ? 'Hide satellite controls' : 'Show satellite controls'}
-                                    className="tap-target w-11 h-11 rounded-full text-carbon-50 hover:bg-carbon-10 dark:hover:bg-carbon-80 flex items-center justify-center transition-colors"
+                                    className="tap-target w-11 h-11 rounded-full text-carbon-60 hover:bg-carbon-10 dark:hover:bg-carbon-80 flex items-center justify-center transition-colors"
                                   >
                                     <MaterialIcon name={isTrueColorExpanded ? 'expand_less' : 'expand_more'} className="w-5 h-5" />
                                   </button>
@@ -2231,13 +2231,13 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                             </div>
 
                             {isUnavailable ? (
-                              <p className="text-xs leading-[1.62] text-carbon-50 pl-8 pt-1">
+                              <p className="text-xs leading-[1.62] text-carbon-60 pl-8 pt-1">
                                 Satellite imagery is not answering right now. Try again in a few minutes, or check{' '}
                                 <a
                                   href={GIBS_STATUS_URL}
                                   target="_blank"
                                   rel="noreferrer"
-                                  className="underline underline-offset-2 text-carbon-80"
+                                  className="underline underline-offset-2 text-carbon-90"
                                 >
                                   NASA Earthdata status
                                 </a>
@@ -2259,7 +2259,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                                   </button>
                                   <span className="flex flex-col items-center min-w-[132px]">
                                     <span className="text-sm font-bold text-carbon-90 dark:text-white tabular-nums">{trueColorDateIso}</span>
-                                    <span className="text-xs text-carbon-50">
+                                    <span className="text-xs text-carbon-60">
                                       {trueColorOffset === 0 ? 'Newest available' : `${trueColorOffset} ${trueColorOffset === 1 ? 'day' : 'days'} earlier`}
                                     </span>
                                   </span>
@@ -2274,7 +2274,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                                   </button>
                                 </div>
                                 <label className="flex flex-col gap-1.5">
-                                  <span className="flex items-center justify-between text-xs text-carbon-50">
+                                  <span className="flex items-center justify-between text-xs text-carbon-60">
                                     <span>Imagery opacity</span>
                                     <span className="font-semibold tabular-nums">{trueColorOpacity}%</span>
                                   </span>
@@ -2289,14 +2289,14 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                                     className="w-full accent-carbon-90 dark:accent-white min-h-[44px]"
                                   />
                                 </label>
-                                <p className="text-xs leading-[1.62] text-carbon-50">
+                                <p className="text-xs leading-[1.62] text-carbon-60">
                                   {trueColorPlan.source.name} · {trueColorPlan.source.resolution} · usually available{' '}
                                   {trueColorPlan.source.typicalLag} after the satellite pass.
                                   {trueColorPlan.degraded
                                     ? ' MODIS Terra is not answering right now, so this shows VIIRS SNPP instead.'
                                     : ''}
                                 </p>
-                                <p className="text-xs leading-[1.62] text-carbon-50">
+                                <p className="text-xs leading-[1.62] text-carbon-60">
                                   What this is: a true-colour photograph of Bangladesh from space on the date above. What it
                                   is not: a live feed. Imagery arrives a few hours after acquisition and clouds can hide the
                                   ground.
@@ -2305,7 +2305,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                             ) : null}
 
                             {isActive && isTrueColorExpanded && trueColorStatus === 'loading' ? (
-                              <p className="text-xs leading-[1.62] text-carbon-50 pl-8 pt-2">
+                              <p className="text-xs leading-[1.62] text-carbon-60 pl-8 pt-2">
                                 Finding the newest available imagery.
                               </p>
                             ) : null}
@@ -2317,11 +2317,11 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                       return (
                         <li key={def.id} className="flex items-center justify-between gap-3 py-2.5 min-h-[52px]">
                           <span className="flex items-center gap-3">
-                            <MaterialIcon name={def.icon} className="w-5 h-5 text-carbon-50 shrink-0" />
+                            <MaterialIcon name={def.icon} className="w-5 h-5 text-carbon-60 shrink-0" />
                             <span className="flex flex-col">
-                              <span className="text-ap-caption font-semibold text-carbon-80">{def.name}</span>
+                              <span className="text-ap-caption font-semibold text-carbon-90">{def.name}</span>
                               {def.caption ? (
-                                <span className="text-xs text-carbon-50">{def.caption}</span>
+                                <span className="text-xs text-carbon-60">{def.caption}</span>
                               ) : null}
                             </span>
                           </span>
@@ -2346,7 +2346,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                 {/* Hazards: hairline chips, colored dot + name. A chip is on while
                     its hazard type is in the marker filter. */}
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-wider text-carbon-50 mb-2.5">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-carbon-60 mb-2.5">
                     {LIVE_SECTIONS[2].label}
                   </p>
                   <div className="flex flex-wrap gap-2">
@@ -2384,7 +2384,7 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                   <button
                     type="button"
                     onClick={() => setIsAttributionOpen(true)}
-                    className="min-h-[44px] px-1 flex items-center gap-1.5 text-xs font-medium text-carbon-50 hover:text-carbon-90 dark:hover:text-white transition-colors"
+                    className="min-h-[44px] px-1 flex items-center gap-1.5 text-xs font-medium text-carbon-60 hover:text-carbon-90 dark:hover:text-white transition-colors"
                   >
                     <MaterialIcon name="info" className="w-4 h-4" />
                     Data attribution ({attributionList.length})
@@ -2431,8 +2431,8 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                 <ul className="flex flex-col gap-4">
                   {attributionList.map((credit) => (
                     <li key={credit.id} className="flex flex-col gap-1">
-                      <p className="text-sm font-semibold text-carbon-80">{credit.label}</p>
-                      <p className="text-xs text-carbon-50">
+                      <p className="text-sm font-semibold text-carbon-90">{credit.label}</p>
+                      <p className="text-xs text-carbon-60">
                         {credit.licence} ·{' '}
                         <a
                           href={credit.href}

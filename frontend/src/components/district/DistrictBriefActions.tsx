@@ -84,7 +84,7 @@ export const DistrictBriefActions: React.FC = () => {
               className="inline-flex min-h-[44px] items-center gap-2.5 px-3 py-2 bg-white border border-carbon-20 text-carbon-90 hover:border-carbon-30 text-sm font-semibold cursor-pointer touch-manipulation"
             >
               <MapPin className="w-3.5 h-3.5 text-amber-600" />
-              <span>Switch District: <strong className="text-carbon-black">{data.districtName}</strong></span>
+              <span>Switch District: <strong className="text-carbon-90">{data.districtName}</strong></span>
               <ChevronDown className={`w-3.5 h-3.5 text-carbon-60 transition-transform ${districtDropdownOpen ? 'rotate-180' : ''}`} />
             </button>
 
@@ -211,7 +211,7 @@ export const DistrictBriefActions: React.FC = () => {
             title="Download Raw Machine-Readable JSON Telemetry"
             className="inline-flex min-h-[44px] items-center gap-2 px-3.5 py-2 bg-carbon-90 hover:bg-carbon-80 text-carbon-05 text-sm font-semibold cursor-pointer touch-manipulation"
           >
-            <Download className="w-4 h-4 text-amber-400" />
+            <Download className="w-4 h-4 text-amber-300" />
             <span>Export Data</span>
           </button>
         </div>

@@ -21,7 +21,7 @@ export const Privacy: React.FC = () => {
             <span className="rounded-sm border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-xs font-mono font-bold uppercase text-amber-900">
               Privacy Policy
             </span>
-            <span className="text-carbon-30">•</span>
+            <span className="text-carbon-60">•</span>
             <span className="text-xs text-carbon-60 font-medium">Updated: August 1, 2026</span>
           </div>
 

@@ -25,7 +25,7 @@ export const About: React.FC = () => {
           <span className="px-2.5 py-0.5 rounded-sm text-xs font-mono font-bold uppercase tracking-wider bg-amber-50 text-amber-900 border border-amber-200">
             HazardNet Early Warning Initiative
           </span>
-          <span className="text-carbon-30">•</span>
+          <span className="text-carbon-60">•</span>
           <span className="text-xs text-carbon-60 font-medium">Active Deployment: 2026</span>
         </div>
         

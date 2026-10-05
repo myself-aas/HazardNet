@@ -142,7 +142,7 @@ export const EmdatComparisonChart: React.FC<EmdatComparisonChartProps> = ({
         </span>
       </figcaption>
 
-      <div className="relative w-full overflow-hidden rounded-2xl border border-carbon-20/90 bg-carbon-05/60 p-2">
+      <div className="relative w-full overflow-x-auto overflow-y-hidden rounded-2xl border border-carbon-20/90 bg-carbon-05/60 p-2">
         {hovered && (
           <div
             role="tooltip"
@@ -155,9 +155,17 @@ export const EmdatComparisonChart: React.FC<EmdatComparisonChartProps> = ({
           </div>
         )}
 
+        {/* svg-user-units: the viewBox is 0 0 860 340 and `min-w-[860px]` stops the
+            element ever rendering narrower than the viewBox, so one user unit is
+            never smaller than one CSS px. Axis labels at `text-xs` therefore render
+            at 12px or larger at every width (exactly 12px at 860px, 16.8px at
+            1200px) and clear the legibility floor in
+            __tests__/designTypography.test.js. Below 860px the figure scrolls
+            horizontally rather than shrinking the type. */}
         <svg
           viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
-          className="h-[260px] w-full sm:h-[320px]"
+          preserveAspectRatio="xMidYMid meet"
+          className="h-auto w-full min-w-[860px]"
           role="img"
           aria-label={`Catalogued hazard events per year from ${minYear} to ${maxYear}, with ${marks.length} benchmarked detection episodes marked.`}
         >
@@ -176,7 +184,7 @@ export const EmdatComparisonChart: React.FC<EmdatComparisonChartProps> = ({
                 x={PAD.left - 10}
                 y={yOf(t) + 4}
                 textAnchor="end"
-                className="fill-carbon-60 font-mono text-[11px]"
+                className="fill-carbon-60 font-mono text-xs"
               >
                 {t}
               </text>
@@ -254,7 +262,7 @@ export const EmdatComparisonChart: React.FC<EmdatComparisonChartProps> = ({
               x={xOf(b.year)}
               y={PAD.top + INNER_H + 20}
               textAnchor="middle"
-              className="fill-carbon-60 font-mono text-[11px]"
+              className="fill-carbon-60 font-mono text-xs"
             >
               {b.year}
             </text>

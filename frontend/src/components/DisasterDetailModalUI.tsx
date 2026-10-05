@@ -512,7 +512,7 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.92, y: 15 }}
               transition={{ type: 'spring', stiffness: 350, damping: 25 }}
-              className="bg-white border border-carbon-20 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[92vh] flex flex-col overflow-hidden relative text-carbon-80"
+              className="bg-white border border-carbon-20 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[92vh] flex flex-col overflow-hidden relative text-carbon-90"
               onClick={(e) => e.stopPropagation()}
             >
           {/* Top Header & Close Button */}
@@ -532,7 +532,7 @@ export const DisasterDetailModalUI: React.FC<DisasterDetailModalUIProps> = ({
               
               <p className="text-xs text-carbon-60 font-semibold mt-1 flex items-center gap-2">
                 <span>{data.hazardSubtype}</span>
-                <span className="text-carbon-30">•</span>
+                <span className="text-carbon-60">•</span>
                 <span className="text-carbon-60 font-mono text-xs">{data.lastSatelliteUpdate}</span>
               </p>
             </div>

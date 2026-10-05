@@ -96,14 +96,14 @@ export const TemporalTrendChart: React.FC<TemporalTrendChartProps> = ({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-4 border-b border-carbon-80">
         <div>
           <div className="flex items-center gap-2">
-            <h3 className="text-base font-bold text-white tracking-tight">
+            <h3 className="text-base font-bold text-ap-on-inverse tracking-tight">
               Temporal Hazard Recurrence Trends (2000–2026)
             </h3>
             <span className="px-2 py-0.5 rounded-full text-xs font-mono font-medium bg-rose-50 text-rose-700 border border-rose-200">
               26-Year Empirical Record
             </span>
           </div>
-          <p className="text-xs text-carbon-50 mt-1">
+          <p className="text-xs text-carbon-30 mt-1">
             Annual event frequency across all 64 districts with historical milestone disaster annotations.
           </p>
         </div>
@@ -134,10 +134,10 @@ export const TemporalTrendChart: React.FC<TemporalTrendChartProps> = ({
           >
             <div className="flex items-center justify-between gap-4 font-mono font-bold text-white">
               <span>Year {hoveredPoint.year}</span>
-              <span className="text-rose-400">{hoveredPoint.event_frequency} Events</span>
+              <span className="text-ap-on-scrim-sev">{hoveredPoint.event_frequency} Events</span>
             </div>
             {MILESTONES.find((m) => m.year === hoveredPoint.year) && (
-              <div className="text-xs text-amber-300 font-semibold pt-0.5">
+              <div className="text-xs text-ap-on-scrim font-semibold pt-0.5">
                 <Sparkles className="mr-1 inline h-3.5 w-3.5" aria-hidden="true" />
                 {MILESTONES.find((m) => m.year === hoveredPoint.year)?.label}:{' '}
                 {MILESTONES.find((m) => m.year === hoveredPoint.year)?.sublabel}

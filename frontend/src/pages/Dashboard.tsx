@@ -506,7 +506,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
           >
             {loading ? (
               <>
-                <svg className="animate-spin h-4 w-4 sm:h-5 sm:w-5 text-white" viewBox="0 0 24 24" fill="none">
+                <svg className="animate-spin h-4 w-4 sm:h-5 sm:w-5 text-ap-action-fg" viewBox="0 0 24 24" fill="none">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
                 </svg>
@@ -597,7 +597,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
                   {savedDistricts.length} Pinned
                 </span>
               </div>
-              <h2 className="text-lg sm:text-2xl md:text-3xl font-black text-white tracking-tight leading-tight">
+              <h2 className="text-lg sm:text-2xl md:text-3xl font-black text-ap-on-inverse tracking-tight leading-tight">
                 Saved Districts & Map
               </h2>
               <p className="text-xs sm:text-sm text-carbon-30 leading-relaxed font-normal line-clamp-2">
@@ -931,7 +931,7 @@ const Dashboard: React.FC<DashboardProps> = ({ defaultTab = 'gis', isFullScreen 
                   ServiceWorker Cache Engine
                 </span>
               </div>
-              <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+              <h2 className="text-2xl sm:text-3xl font-black text-ap-on-inverse tracking-tight">
                 Offline Storage Settings
               </h2>
               <p className="text-xs sm:text-sm text-carbon-30 leading-relaxed font-normal">

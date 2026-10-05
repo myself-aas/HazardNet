@@ -31,7 +31,7 @@ interface Globe3DLazyProps {
 function GlobeFallback() {
   return (
     <div className="flex h-full w-full items-center justify-center bg-carbon-black" data-testid="globe-3d-fallback">
-      <span className="text-sm text-carbon-50">Loading globe…</span>
+      <span className="text-sm text-ap-on-scrim-muted">Loading globe…</span>
     </div>
   );
 }

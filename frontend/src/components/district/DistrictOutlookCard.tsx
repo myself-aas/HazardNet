@@ -95,8 +95,8 @@ export const DistrictOutlookCard: React.FC = () => {
               <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                 <p className="text-carbon-80 text-sm sm:text-base leading-relaxed font-medium max-w-4xl">
                   {data.hazardSubtype}. Continuous severity index calculated at{' '}
-                  <strong className="text-carbon-black font-bold">{(data.modelAssessment.continuousSeverityIndex * 100).toFixed(0)}%</strong> with a model score of{' '}
-                  <strong className="text-carbon-black font-bold">{data.modelAssessment.confidenceLevel}%</strong>. That score is the classifier&rsquo;s own (uncalibrated) confidence, not a measured probability of the event. Calibration and POD/FAR are tracked in the{' '}
+                  <strong className="text-carbon-90 font-bold">{(data.modelAssessment.continuousSeverityIndex * 100).toFixed(0)}%</strong> with a model score of{' '}
+                  <strong className="text-carbon-90 font-bold">{data.modelAssessment.confidenceLevel}%</strong>. That score is the classifier&rsquo;s own (uncalibrated) confidence, not a measured probability of the event. Calibration and POD/FAR are tracked in the{' '}
                   <a href="/methodology" className="underline decoration-dotted font-semibold">methodology</a>. Primary exposure focuses across low-elevation agricultural floodplains, dense riverine settlements, and vulnerable embankment corridors.
                 </p>
 
@@ -137,7 +137,7 @@ export const DistrictOutlookCard: React.FC = () => {
                 </span>
               </div>
               <div className="flex items-baseline gap-2">
-                <span className="text-2xl sm:text-3xl font-black text-carbon-black font-mono">
+                <span className="text-2xl sm:text-3xl font-black text-carbon-90 font-mono">
                   {(data.modelAssessment.continuousSeverityIndex * 100).toFixed(0)}
                   <span className="text-sm font-semibold text-carbon-60">/100</span>
                 </span>
@@ -192,7 +192,7 @@ export const DistrictOutlookCard: React.FC = () => {
                 </span>
               </div>
               <div className="flex items-baseline gap-2">
-                <span className="text-2xl sm:text-3xl font-black text-carbon-black font-mono">
+                <span className="text-2xl sm:text-3xl font-black text-carbon-90 font-mono">
                   {data.elevationMeters}
                   <span className="text-sm font-semibold text-carbon-60 ml-1">m MSL</span>
                 </span>

@@ -102,7 +102,7 @@ export const Documentation: React.FC = () => {
           <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold uppercase tracking-wider bg-ap-primary/10 text-ap-link border border-ap-primary/20">
             Documentation
           </span>
-          <span className="text-carbon-30">•</span>
+          <span className="text-carbon-60">•</span>
           <span className="text-xs text-carbon-60 font-medium">Updated 5 October 2026</span>
         </div>
         <h1 className="text-2xl md:text-3xl font-brand font-black text-carbon-90 tracking-tight">

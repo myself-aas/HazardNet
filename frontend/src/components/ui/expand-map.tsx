@@ -322,7 +322,7 @@ export function LocationMap({
               className="w-2 h-2 rounded-full animate-pulse"
               style={{ backgroundColor: riskColor }}
             />
-            <span className="text-xs font-mono font-bold tracking-tight text-carbon-20">
+            <span className="text-xs font-mono font-bold tracking-tight text-ap-on-scrim-muted">
               {MINI_MAP_LAYERS[activeLayerKey].label}
             </span>
           </div>
@@ -337,7 +337,7 @@ export function LocationMap({
               title="Recenter Map on Target Coordinates"
               aria-label="Recenter Map"
             >
-              <RotateCcw className="w-3.5 h-3.5 text-carbon-30" />
+              <RotateCcw className="w-3.5 h-3.5 text-ap-on-scrim-muted" />
             </button>
 
             {/* Zoom In */}
@@ -369,7 +369,7 @@ export function LocationMap({
                 e.stopPropagation();
                 setIsExpanded(!isExpanded);
               }}
-              className="w-7 h-7 rounded-full bg-carbon-black/80 hover:bg-carbon-80 text-amber-400 hover:text-amber-300 backdrop-blur-md border border-carbon-70/80 flex items-center justify-center text-xs shadow-xs transition-colors cursor-pointer"
+              className="w-7 h-7 rounded-full bg-carbon-black/80 hover:bg-carbon-80 text-ap-on-scrim-sev hover:text-amber-300 backdrop-blur-md border border-carbon-70/80 flex items-center justify-center text-xs shadow-xs transition-colors cursor-pointer"
               title={isExpanded ? "Collapse Mini Map" : "Expand Mini Map View"}
               aria-label={isExpanded ? "Collapse Mini Map" : "Expand Mini Map View"}
             >
@@ -392,13 +392,13 @@ export function LocationMap({
       <div className="bg-carbon-black/95 border-t border-carbon-80 p-2.5 flex items-center justify-between gap-2">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5">
-            <MapPin className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-            <span className="text-xs font-bold text-carbon-10 truncate">{location}</span>
+            <MapPin className="w-3.5 h-3.5 text-ap-on-scrim-sev shrink-0" />
+            <span className="text-xs font-bold text-ap-on-scrim-muted truncate">{location}</span>
           </div>
-          <div className="flex items-center gap-2 text-xs text-carbon-60 font-mono mt-0.5">
+          <div className="flex items-center gap-2 text-xs text-ap-on-scrim-muted font-mono mt-0.5">
             <span>{displayCoordinates}</span>
             {typeof elevation === "number" && (
-              <span className="text-carbon-60">• {elevation}m MSL</span>
+              <span className="text-ap-on-scrim-muted">• {elevation}m MSL</span>
             )}
           </div>
         </div>
@@ -414,12 +414,12 @@ export function LocationMap({
           >
             {copied ? (
               <>
-                <Check className="w-3 h-3 text-emerald-400" />
-                <span className="text-emerald-400">Copied</span>
+                <Check className="w-3 h-3 text-emerald-300" />
+                <span className="text-emerald-300">Copied</span>
               </>
             ) : (
               <>
-                <Copy className="w-3 h-3 text-carbon-60" />
+                <Copy className="w-3 h-3 text-carbon-30" />
                 <span>Copy</span>
               </>
             )}

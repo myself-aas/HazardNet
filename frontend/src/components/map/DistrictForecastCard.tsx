@@ -242,7 +242,7 @@ export const DistrictForecastCard: React.FC<DistrictForecastCardProps> = ({
             onClick={onOpenAdvisory}
             className="w-full min-h-[44px] py-2.5 bg-carbon-90 hover:bg-carbon-80 text-carbon-05 font-semibold text-sm flex items-center justify-center gap-2 touch-manipulation rounded-full"
           >
-            <MaterialIcon name="insights" className="w-4 h-4 text-ap-link" />
+            <MaterialIcon name="insights" className="w-4 h-4 text-blue-300" />
             Open district intelligence
           </button>
         )}

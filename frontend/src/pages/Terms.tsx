@@ -21,7 +21,7 @@ export const Terms: React.FC = () => {
             <span className="px-2.5 py-0.5 rounded-sm text-xs font-mono font-bold bg-ap-primary/10 text-ap-link border border-ap-primary/20 uppercase">
               Legal Agreement
             </span>
-            <span className="text-carbon-30">•</span>
+            <span className="text-carbon-60">•</span>
             <span className="text-xs text-carbon-60 font-medium">Effective Date: August 1, 2026</span>
           </div>
 

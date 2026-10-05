@@ -142,7 +142,7 @@ export const UseCases: React.FC = () => {
           <span className="px-3 py-1 rounded-full text-xs font-mono font-extrabold bg-amber-50 text-amber-900 border border-amber-300 uppercase tracking-wider">
             Agricultural Disaster AI
           </span>
-          <span className="text-carbon-30">•</span>
+          <span className="text-carbon-60">•</span>
           <span className="text-xs text-carbon-60 font-semibold">South Asia Regional Deployment</span>
         </div>
 

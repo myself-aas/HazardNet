@@ -577,7 +577,7 @@ export const LiveVoiceAdvisor: React.FC<LiveVoiceAdvisorProps> = ({
             {item.sender === 'user' && (
               <div className="max-w-[85%] bg-blue-600 text-ap-action-fg px-3 py-2 rounded-2xl rounded-tr-none shadow-sm">
                 <p className="font-sans leading-relaxed">{item.text}</p>
-                <span className="text-xs text-blue-200 mt-0.5 block text-right">{item.timestamp}</span>
+                <span className="text-xs text-ap-action-fg mt-0.5 block text-right">{item.timestamp}</span>
               </div>
             )}
 

@@ -1040,6 +1040,9 @@ html[data-map-debug-fx='true'] .marker-high-risk {
   --color-ap-link: var(--ap-link);
   --color-ap-on-sev: var(--ap-on-sev);
   --color-ap-on-inverse: var(--ap-on-inverse);
+  --color-ap-on-scrim: var(--ap-on-scrim);
+  --color-ap-on-scrim-muted: var(--ap-on-scrim-muted);
+  --color-ap-on-scrim-sev: var(--ap-on-scrim-sev);
   --color-ap-primary-tint: color-mix(in srgb, var(--ap-primary) 12%, var(--ap-bg-canvas));
   --color-ap-ink: var(--ap-ink);
   --color-ap-label: var(--ap-label);

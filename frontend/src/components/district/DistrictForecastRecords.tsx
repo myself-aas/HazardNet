@@ -76,7 +76,7 @@ export const DistrictForecastRecords: React.FC = () => {
             <div className="text-xs font-mono font-bold text-amber-600 uppercase tracking-wider">
               Published Forecast Records • District Telemetry Feed
             </div>
-            <h2 className="text-xl font-black text-carbon-black tracking-tight">
+            <h2 className="text-xl font-black text-carbon-90 tracking-tight">
               7-Day & 15-Day Forecast Records ({data.districtName})
             </h2>
           </div>

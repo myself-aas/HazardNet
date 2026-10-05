@@ -196,12 +196,12 @@ export const PdfExportButton: React.FC<PdfExportButtonProps> = ({
           >
             {isExporting ? (
               <>
-                <Loader2 className="w-3.5 h-3.5 text-amber-400 animate-spin shrink-0" />
+                <Loader2 className="w-3.5 h-3.5 text-amber-300 animate-spin shrink-0" />
                 <span>{progressStage || 'Generating PDF...'}</span>
               </>
             ) : (
               <>
-                <FileDown className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                <FileDown className="w-3.5 h-3.5 text-amber-300 shrink-0" />
                 <span>{title}</span>
               </>
             )}

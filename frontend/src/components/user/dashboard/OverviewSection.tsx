@@ -44,7 +44,7 @@ export function computeProfileCompletion(profile: Record<string, unknown> | null
 
 const StatTile: React.FC<{ icon: string; label: string; value: React.ReactNode; accent: string }> = ({ icon, label, value, accent }) => (
   <div className="flex items-center gap-3 border border-carbon-20/90 bg-white p-4">
-    <span className="flex h-10 w-10 shrink-0 items-center justify-center text-white" style={{ backgroundColor: accent }}>
+    <span className="flex h-10 w-10 shrink-0 items-center justify-center text-carbon-90" style={{ backgroundColor: accent }}>
       <MaterialIcon name={icon} size={19} />
     </span>
     <div className="min-w-0">

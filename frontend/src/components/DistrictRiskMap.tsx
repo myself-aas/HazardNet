@@ -98,14 +98,14 @@ export const DistrictRiskMap: React.FC<DistrictRiskMapProps> = ({
                 lowBandwidth ? '' : 'animate-pulse'
               }`}
             />
-            <h3 className="text-base font-bold text-white tracking-tight">
+            <h3 className="text-base font-bold text-ap-on-inverse tracking-tight">
               Historical District Vulnerability Choropleth
             </h3>
             <span className="px-2 py-0.5 rounded-full text-xs font-mono font-medium bg-carbon-80 text-rose-300 border border-carbon-70">
               64 Districts Analyzed (2000–2026)
             </span>
           </div>
-          <p className="text-xs text-carbon-50 mt-1">
+          <p className="text-xs text-carbon-30 mt-1">
             Continuous empirical vulnerability ramp based on multi-hazard recurrence, frequency, and impacts.
           </p>
         </div>
@@ -156,20 +156,20 @@ export const DistrictRiskMap: React.FC<DistrictRiskMapProps> = ({
                 Rank #{hoveredDistrict.rank || 'N/A'}
               </span>
             </div>
-            <div className="text-carbon-50">
+            <div className="text-ap-on-scrim-muted">
               Division:{' '}
-              <strong className="text-carbon-20">{hoveredDistrict.division}</strong>
+              <strong className="text-ap-on-scrim-muted">{hoveredDistrict.division}</strong>
             </div>
-            <div className="text-carbon-50">
+            <div className="text-ap-on-scrim-muted">
               Primary Hazard:{' '}
-              <strong className="text-carbon-20">{hoveredDistrict.hazardType}</strong>
+              <strong className="text-ap-on-scrim-muted">{hoveredDistrict.hazardType}</strong>
             </div>
-            <div className="text-carbon-50">
+            <div className="text-ap-on-scrim-muted">
               Historical Events:{' '}
-              <strong className="text-carbon-20">{hoveredDistrict.events}</strong>
+              <strong className="text-ap-on-scrim-muted">{hoveredDistrict.events}</strong>
             </div>
             <div className="flex items-center justify-between pt-1 border-t border-carbon-80 font-mono">
-              <span className="text-carbon-50">Vulnerability Index:</span>
+              <span className="text-ap-on-scrim-muted">Vulnerability Index:</span>
               <span
                 className="font-bold text-sm"
                 style={{ color: getVulnerabilityColor(hoveredDistrict.score) }}
@@ -305,26 +305,26 @@ export const DistrictRiskMap: React.FC<DistrictRiskMapProps> = ({
       {/* Vulnerability Color Ramp Legend */}
       <div className="mt-4 pt-3 border-t border-carbon-80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
         <div className="flex items-center gap-2">
-          <span className="text-carbon-50 font-medium">Vulnerability Index:</span>
+          <span className="text-carbon-30 font-medium">Vulnerability Index:</span>
           <div className="flex items-center gap-1.5">
             <span className="w-3 h-3 rounded-full bg-[#1d7a3e]" />
-            <span className="text-carbon-50 text-xs">Low (&lt;0.40)</span>
+            <span className="text-carbon-30 text-xs">Low (&lt;0.40)</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="w-3 h-3 rounded-full bg-[#b3400f]" />
-            <span className="text-carbon-50 text-xs">Moderate (0.40–0.65)</span>
+            <span className="text-carbon-30 text-xs">Moderate (0.40–0.65)</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="w-3 h-3 rounded-full bg-[#c01f1f]" />
-            <span className="text-carbon-50 text-xs">High (0.65–0.85)</span>
+            <span className="text-carbon-30 text-xs">High (0.65–0.85)</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="w-3 h-3 rounded-full bg-[#8b0f3a]" />
-            <span className="text-carbon-50 text-xs">Critical (&ge;0.85)</span>
+            <span className="text-carbon-30 text-xs">Critical (&ge;0.85)</span>
           </div>
         </div>
 
-        <div className="text-carbon-50 text-xs">
+        <div className="text-carbon-30 text-xs">
           Click or press Enter on any district node to inspect historical hazard details.
         </div>
       </div>

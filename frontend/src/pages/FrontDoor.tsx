@@ -749,7 +749,7 @@ export const FrontDoor: React.FC = () => {
               >
                 <span className="flex items-center justify-between">
                   <MaterialIcon name={hazardIcon(hazard.class)} className="text-xl text-ap-link" />
-                  <MaterialIcon name="arrow_forward" className="text-sm text-carbon-30 transition-colors group-hover:text-ap-link" />
+                  <MaterialIcon name="arrow_forward" className="text-sm text-carbon-60 transition-colors group-hover:text-ap-link" />
                 </span>
                 <span className="text-sm font-bold text-carbon-90">{hazard.class}</span>
                 <span className="text-xs leading-relaxed text-carbon-60">{hazard.season}</span>

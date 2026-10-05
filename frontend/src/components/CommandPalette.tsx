@@ -428,7 +428,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.94, y: -12 }}
                 transition={{ type: 'spring', stiffness: 350, damping: 25 }}
-                className="max-w-2xl w-full bg-white border border-carbon-20 rounded-3xl shadow-2xl overflow-hidden text-carbon-80 flex flex-col max-h-[85vh]"
+                className="max-w-2xl w-full bg-white border border-carbon-20 rounded-3xl shadow-2xl overflow-hidden text-carbon-90 flex flex-col max-h-[85vh]"
               >
                 {/* Header / Search Input */}
                 <div className="relative flex items-center px-4 py-3 border-b border-carbon-20 bg-carbon-05">
@@ -510,10 +510,10 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                     <div className="p-10 text-center text-carbon-60 text-xs space-y-2">
                       <p className="font-bold text-carbon-90 text-base">No results found for "{query}"</p>
                       <p className="text-carbon-60 text-xs max-w-sm mx-auto">
-                        Try searching for <span className="text-carbon-80 font-semibold">"Kurigram"</span>,{' '}
-                        <span className="text-carbon-80 font-semibold">"Sylhet"</span>,{' '}
-                        <span className="text-carbon-80 font-semibold">"Flash Flood"</span>, or{' '}
-                        <span className="text-carbon-80 font-semibold">"Cyclone"</span>.
+                        Try searching for <span className="text-carbon-90 font-semibold">"Kurigram"</span>,{' '}
+                        <span className="text-carbon-90 font-semibold">"Sylhet"</span>,{' '}
+                        <span className="text-carbon-90 font-semibold">"Flash Flood"</span>, or{' '}
+                        <span className="text-carbon-90 font-semibold">"Cyclone"</span>.
                       </p>
                     </div>
                   ) : (

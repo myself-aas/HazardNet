@@ -86,7 +86,7 @@ export const DistrictBriefHeader: React.FC = () => {
               DISTRICT DISASTER INTELLIGENCE BRIEF
             </div>
             <h1 className="text-ap-lead sm:text-ap-display-md font-bold text-carbon-90 tracking-tight leading-[1.2]">
-              {data.districtName} District <span className="text-carbon-30 font-light mx-1">|</span> {data.hazardType}
+              {data.districtName} District <span className="text-carbon-60 font-light mx-1">|</span> {data.hazardType}
             </h1>
           </div>
 
@@ -148,7 +148,7 @@ export const DistrictBriefHeader: React.FC = () => {
             </span>
             <div>
               <div className="text-carbon-60 font-semibold uppercase tracking-wider text-xs">Peak Severity Occurrence Date</div>
-              <div className="text-carbon-black font-black text-sm sm:text-base flex items-center gap-2">
+              <div className="text-carbon-90 font-black text-sm sm:text-base flex items-center gap-2">
                 <span>{peakSeverityInfo.peakDate}</span>
                 <span className="px-2 py-0.5 rounded bg-red-600 text-ap-on-sev text-xs font-black">
                   {Math.round(peakSeverityInfo.peakScore * 100)}% Severity
@@ -163,7 +163,7 @@ export const DistrictBriefHeader: React.FC = () => {
             </div>
             <div>
               <div className="text-carbon-60 font-semibold uppercase tracking-wider text-xs">Model Confidence</div>
-              <div className="text-carbon-black font-extrabold text-sm">{Math.round(peakSeverityInfo.confidence * 100)}%</div>
+              <div className="text-carbon-90 font-extrabold text-sm">{Math.round(peakSeverityInfo.confidence * 100)}%</div>
             </div>
           </div>
         </div>

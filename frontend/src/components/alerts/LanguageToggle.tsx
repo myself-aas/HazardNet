@@ -99,7 +99,7 @@ export const LanguageToggle: React.FC<LanguageToggleProps> = ({
       <span className="text-carbon-60" aria-hidden="true">
         EN
       </span>
-      <span className="text-carbon-30" aria-hidden="true">
+      <span className="text-carbon-60" aria-hidden="true">
         /
       </span>
       <span lang="bn" className="text-carbon-90">

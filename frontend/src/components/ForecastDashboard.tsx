@@ -333,7 +333,7 @@ export const ForecastDashboard: React.FC<ForecastDashboardProps> = ({
               onClick={handleExportCsv}
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-carbon-90 text-carbon-05 text-xs font-extrabold shadow-sm hover:bg-carbon-80 transition-colors cursor-pointer min-h-[44px]"
             >
-              <MaterialIcon name="download" className="w-4 h-4 text-amber-400" />
+              <MaterialIcon name="download" className="w-4 h-4 text-amber-300" />
               <span>Export CSV Data</span>
             </motion.button>
           </div>

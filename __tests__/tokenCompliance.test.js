@@ -39,6 +39,17 @@ const DECLARED_FAMILIES = [
 /** Cool families — all of them resolve to the one accent. */
 const ACCENT_FAMILIES = ['blue', 'sky', 'cyan', 'indigo', 'violet', 'purple'];
 
+/**
+ * The accent is referenced through its SEMANTIC token, not the raw primitive.
+ * `--ap-primary` is a fixed #0066cc; Action Blue only reaches 2.68:1 on Apple's
+ * dark tiles, so the dark theme re-points `--ap-link` at `--ap-primary-on-dark`.
+ * A family pinned to the primitive would therefore be unreadable in dark mode.
+ * The alias chain itself is pinned by the `accent alias chain` test below, so
+ * naming the semantic tier here loosens nothing.
+ */
+const ACCENT = '--ap-link';
+const APPLE_CSS = join(ROOT, 'frontend/src/styles/apple.css');
+
 /** Families that carry hazard meaning and therefore route to the severity layer. */
 const SEVERITY_FAMILIES = [
   'emerald', 'green', 'teal', 'lime', 'amber', 'yellow', 'orange', 'red', 'rose', 'pink', 'fuchsia',
@@ -98,12 +109,12 @@ describe('token compliance — off-system palette families', () => {
     for (const family of ACCENT_FAMILIES) {
       for (const step of ['500', '600', '700']) {
         const value = decls.get(`${family}-${step}`);
-        if (value !== 'var(--ap-primary)') wrong.push(`${family}-${step} -> ${value}`);
+        if (value !== `var(${ACCENT})`) wrong.push(`${family}-${step} -> ${value}`);
       }
       // The tints must still be mixes of the SAME hue, not a second blue.
       for (const step of ['50', '100', '200', '300', '400']) {
         const value = decls.get(`${family}-${step}`) ?? '';
-        if (!value.includes('var(--ap-primary)')) wrong.push(`${family}-${step} -> ${value}`);
+        if (!value.includes(`var(${ACCENT})`)) wrong.push(`${family}-${step} -> ${value}`);
       }
     }
     expect(wrong).toEqual([]);
@@ -131,8 +142,8 @@ describe('token compliance — off-system palette families', () => {
       ['orange-600', '--ap-sev-high'],
       ['red-600', '--ap-sev-very-high'],
       ['rose-600', '--ap-sev-extreme'],
-      ['blue-600', '--ap-primary'],
-      ['sky-600', '--ap-primary'],
+      ['blue-600', ACCENT],
+      ['sky-600', ACCENT],
     ];
     const wrong = expectations.filter(([key, token]) => decls.get(key) !== `var(${token})`);
     expect(wrong.map(([k, t]) => `${k} -> expected ${t}, got ${decls.get(k)}`)).toEqual([]);
@@ -150,7 +161,17 @@ describe('token compliance — off-system palette families', () => {
     expect(decls.get('red-50')).toBe('var(--ap-sev-very-high-surface)');
     expect(decls.get('emerald-50')).toBe('var(--ap-sev-low-surface)');
     expect(decls.get('amber-100')).toBe('var(--ap-sev-moderate-surface)');
-    expect(decls.get('blue-50')).toContain('var(--ap-primary)');
+    expect(decls.get('blue-50')).toContain(`var(${ACCENT})`);
+  });
+
+  test('accent alias chain: the semantic accent still lands on Action Blue in both themes', () => {
+    // Pins the indirection the families depend on. Light must be Action Blue
+    // itself; dark must be the lighter on-dark variant, never the same value.
+    const apple = readFileSync(APPLE_CSS, 'utf8');
+    expect(apple).toMatch(/--ap-link:\s*var\(--ap-primary\)\s*;/);
+    expect(apple).toMatch(/--ap-link:\s*var\(--ap-primary-on-dark\)\s*;/);
+    expect(apple).toMatch(/--ap-primary:\s*#0066cc\s*;/);
+    expect(apple).toMatch(/--ap-primary-on-dark:\s*#2997ff\s*;/);
   });
 
   test('the five grey families collapse onto the one Apple neutral ramp', () => {
