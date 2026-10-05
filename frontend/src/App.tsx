@@ -5,6 +5,7 @@ import { AnimatePresence, useReducedMotion, LazyMotion, domAnimation } from 'fra
 import { Interactive } from './components/interactive/Interactive';
 import { useWebFrame, interpolate, Easing } from './lib/motion-interpolate';
 import { Analytics } from '@vercel/analytics/react';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import SignUpPage from './pages/SignUpPage';
 import LoginPage from './pages/LoginPage';
@@ -434,6 +435,12 @@ const App: React.FC = () => (
       build-time gate in frontend/vite.config.ts.
     */}
     {vercelAnalyticsEnabled && <Analytics />}
+    {/*
+      Vercel Speed Insights follows the same pattern as Web Analytics:
+      it loads from Vercel system routes and should only be enabled on
+      Vercel deployments to avoid similar SyntaxError issues.
+    */}
+    {vercelAnalyticsEnabled && <SpeedInsights />}
   </ErrorBoundary>
 );
 
