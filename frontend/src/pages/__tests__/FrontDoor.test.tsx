@@ -24,6 +24,38 @@ import { FrontDoor } from '../FrontDoor';
 import siteRoutes from '../../content/site-routes.json';
 import { resetLanguageForTests } from '../../lib/i18n';
 
+/**
+ * The blog lives in Firestore; the front door reads it through the same module the blog page
+ * uses. The mock stands in for the store the way Blogs.dedicatedPages.test.tsx does, with one
+ * published article so the new "Newest from the blog" section has something to render.
+ */
+jest.mock('../../lib/blogArticles', () => ({
+  listPublishedArticles: async () => ({
+    data: [
+      {
+        id: 'post-1',
+        slug: 'monsoon-outlook-test',
+        title: 'Monsoon outlook test post',
+        excerpt: 'An excerpt used only by the front door test.',
+        contentHtml: '<p>Body copy.</p>',
+        coverImageUrl: null,
+        category: 'Field notes',
+        tags: [],
+        status: 'published',
+        authorId: null,
+        authorEmail: 'desk@hazardnet.live',
+        authorName: 'HazardNet desk',
+        createdAt: '2026-10-01T00:00:00.000Z',
+        updatedAt: '2026-10-01T00:00:00.000Z',
+        publishedAt: '2026-10-02T00:00:00.000Z',
+      },
+    ],
+    error: null,
+    localDemo: true,
+  }),
+  readingTimeMinutes: () => 4,
+}));
+
 expect.extend(toHaveNoViolations);
 
 const front = siteRoutes.routes.find((route) => route.path === '/');
@@ -228,5 +260,28 @@ describe('the front door', () => {
     );
     await waitFor(() => expect(bengali.container.textContent).toMatch(/৬৪টির মধ্যে ৬০টি জেলা/));
     expect(await axe(bengali.container)).toHaveNoViolations();
+  });
+
+  it('shows the products section: eight hazard classes and both horizons', async () => {
+    const { container, unmount } = renderPage();
+    await waitFor(() => expect(screen.getByText('Monsoon outlook test post')).toBeInTheDocument());
+    const heading = screen.getByRole('heading', { name: 'Products' });
+    expect(heading).toBeInTheDocument();
+    // The eight classes come from the same methodology file the /hazards page reads.
+    expect(container.textContent).toContain('Tropical Cyclone');
+    expect(container.textContent).toContain('Cold Wave');
+    expect(container.textContent).toContain('7-day outlook');
+    expect(container.textContent).toContain('15-day outlook');
+    expect(container.querySelectorAll('a[href^="/hazards/"]').length).toBeGreaterThanOrEqual(8);
+    unmount();
+  });
+
+  it('shows the newest blog posts with a link into the blog', async () => {
+    const { unmount } = renderPage();
+    const post = await screen.findByText('Monsoon outlook test post');
+    expect(post.closest('a')).toHaveAttribute('href', '/blogs/monsoon-outlook-test');
+    expect(screen.getByRole('heading', { name: 'Newest from the blog' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Read all posts/ })).toHaveAttribute('href', '/blogs');
+    unmount();
   });
 });

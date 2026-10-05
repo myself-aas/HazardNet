@@ -65,12 +65,13 @@ import CardStackTable from '../components/ui/CardStackTable';
 import HeroCinematicBackground from '../components/HeroCinematicBackground';
 import { localiseRoute, usePageSeo } from '../hooks/usePageSeo';
 import { useAlertsData } from '../hooks/useAlertsData';
-import { useHazardLabel } from '../hooks/useHazardLabel';
+import { hazardIcon, useHazardLabel } from '../hooks/useHazardLabel';
 import { useI18n } from '../hooks/useI18n';
 import { FRESHNESS_URL, parseFreshness, type FreshnessArtifact } from '../lib/freshness';
 import { ALL_64_DISTRICTS } from '../data/bangladeshDistricts';
 import hazardMethodology from '../content/hazard-methodology.json';
 import attribution from '../content/attribution.json';
+import { listPublishedArticles, readingTimeMinutes, type BlogArticle } from '../lib/blogArticles';
 
 /* ─────────────────────────── live artifact readers ─────────────────────────── */
 
@@ -295,7 +296,7 @@ export const FrontDoor: React.FC = () => {
   const coverageArtifact = freshness?.coverage ?? null;
   const { alerts, assessed, counts, notPublished, generatedAt, loading: alertsLoading, error, refresh: refreshAlerts } = useAlertsData();
   const hazardLabel = useHazardLabel();
-  const { t, language, formatNumber } = useI18n();
+  const { t, language, formatNumber, formatDate } = useI18n();
   const [searchParams] = useSearchParams();
   const location = useLocation();
 
@@ -314,6 +315,31 @@ export const FrontDoor: React.FC = () => {
   const coverage = freshness?.coverage ?? null;
   const hazards = (hazardMethodology as { hazards?: unknown[] }).hazards ?? [];
   const topAlerts = useMemo(() => alerts.slice(0, 4), [alerts]);
+
+  /**
+   * Newest blog posts for the front door. The blog lives in Firestore (same store the
+   * /blogs page reads), so this is a second independent read with its own four states:
+   * an error here hides only this section, never the published record above it.
+   */
+  const [blogPosts, setBlogPosts] = useState<BlogArticle[] | null>(null);
+  const [blogsLoading, setBlogsLoading] = useState(true);
+  const [blogsError, setBlogsError] = useState<string | null>(null);
+  const [blogsReload, setBlogsReload] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+    setBlogsLoading(true);
+    setBlogsError(null);
+    void listPublishedArticles().then((result) => {
+      if (cancelled) return;
+      setBlogsLoading(false);
+      setBlogsError(result.error ? String(result.error) : null);
+      setBlogPosts(result.data ?? []);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [blogsReload]);
 
   /**
    * The two counts the strip and the hero card print. Both come from the alert artifact:
@@ -703,6 +729,72 @@ export const FrontDoor: React.FC = () => {
         )}
       </section>
 
+      {/* ── Products: the eight hazard classes and the two forecast horizons ── */}
+      <section aria-labelledby="products-heading" className="space-y-4">
+        <div className="flex flex-wrap items-end justify-between gap-2">
+          <h2 id="products-heading" className="text-[22px] font-bold tracking-tight text-carbon-90 lg:text-2xl">
+            {t('frontdoor.products.h2')}
+          </h2>
+          <p className="font-mono text-xs uppercase tracking-wider text-carbon-60">{t('frontdoor.products.aside')}</p>
+        </div>
+
+        <div>
+          <Eyebrow>{t('frontdoor.products.hazardsEyebrow')}</Eyebrow>
+          <div className="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {(hazards as { slug: string; class: string; season: string }[]).map((hazard) => (
+              <Link
+                key={hazard.slug}
+                to={`/hazards/${hazard.slug}`}
+                className="group flex flex-col gap-1.5 border border-carbon-20 bg-white p-4 transition-colors hover:border-nasa-blue-shade focus-visible:outline focus-visible:outline-2 focus-visible:outline-nasa-blue focus-visible:outline-offset-2"
+              >
+                <span className="flex items-center justify-between">
+                  <MaterialIcon name={hazardIcon(hazard.class)} className="text-xl text-nasa-blue-shade" />
+                  <MaterialIcon name="arrow_forward" className="text-sm text-carbon-30 transition-colors group-hover:text-nasa-blue-shade" />
+                </span>
+                <span className="text-sm font-bold text-carbon-90">{hazard.class}</span>
+                <span className="text-xs leading-relaxed text-carbon-60">{hazard.season}</span>
+              </Link>
+            ))}
+          </div>
+          <p className="mt-2 text-sm leading-[1.62] text-carbon-70">{t('frontdoor.products.hazardsNote')}</p>
+        </div>
+
+        <div>
+          <Eyebrow>{t('frontdoor.products.horizonsEyebrow')}</Eyebrow>
+          <div className="mt-2 grid grid-cols-1 gap-3 md:grid-cols-2">
+            <Link
+              to="/docs/forecasts"
+              className="group flex items-start gap-3 border border-carbon-20 bg-white p-4 transition-colors hover:border-nasa-blue-shade focus-visible:outline focus-visible:outline-2 focus-visible:outline-nasa-blue focus-visible:outline-offset-2"
+            >
+              <MaterialIcon name="date_range" className="mt-0.5 text-xl text-nasa-blue-shade" />
+              <span className="space-y-1">
+                <span className="block text-sm font-bold text-carbon-90">{t('frontdoor.products.horizon7')}</span>
+                <span className="block text-xs leading-relaxed text-carbon-60">{t('frontdoor.products.horizon7desc')}</span>
+              </span>
+            </Link>
+            <Link
+              to="/docs/forecasts"
+              className="group flex items-start gap-3 border border-carbon-20 bg-white p-4 transition-colors hover:border-nasa-blue-shade focus-visible:outline focus-visible:outline-2 focus-visible:outline-nasa-blue focus-visible:outline-offset-2"
+            >
+              <MaterialIcon name="calendar_month" className="mt-0.5 text-xl text-nasa-blue-shade" />
+              <span className="space-y-1">
+                <span className="block text-sm font-bold text-carbon-90">{t('frontdoor.products.horizon15')}</span>
+                <span className="block text-xs leading-relaxed text-carbon-60">{t('frontdoor.products.horizon15desc')}</span>
+              </span>
+            </Link>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          <Link to="/hazards" className="inline-flex min-h-[44px] items-center gap-1.5 border border-carbon-20 bg-white px-4 py-2 text-sm font-semibold text-carbon-80 hover:bg-carbon-05">
+            {t('frontdoor.products.methodologyLink')}
+          </Link>
+          <Link to="/docs/forecasts" className="inline-flex min-h-[44px] items-center gap-1.5 border border-carbon-20 bg-white px-4 py-2 text-sm font-semibold text-carbon-80 hover:bg-carbon-05">
+            {t('frontdoor.products.forecastDocs')}
+          </Link>
+        </div>
+      </section>
+
       {/* ── On this page — anchor nav for the 7 editorial sections (audit #7: recognition/efficiency) ── */}
       {sections.length > 1 && (
         <nav aria-label={t('frontdoor.toc')} className="border border-carbon-20 bg-carbon-05 p-4">
@@ -734,6 +826,72 @@ export const FrontDoor: React.FC = () => {
           <SectionBody section={section} />
         </section>
       ))}
+
+      {/* ── Newest from the blog: freshness the published record cannot show ── */}
+      <section aria-labelledby="blogs-heading" className="space-y-3 border-t border-carbon-20 pt-6">
+        <div className="flex flex-wrap items-end justify-between gap-2">
+          <h2 id="blogs-heading" className="text-[22px] font-bold tracking-tight text-carbon-90 lg:text-2xl">
+            {t('frontdoor.blogs.h2')}
+          </h2>
+          <p className="font-mono text-xs uppercase tracking-wider text-carbon-60">{t('frontdoor.blogs.aside')}</p>
+        </div>
+
+        {blogsLoading && <p className="text-sm text-carbon-60">{t('frontdoor.blogs.loading')}</p>}
+
+        {!blogsLoading && blogsError && (
+          <div className="flex flex-wrap items-center gap-3 border border-carbon-20 bg-white p-4 text-sm text-carbon-70">
+            <span>{t('frontdoor.blogs.error', { error: blogsError })}</span>
+            <button
+              type="button"
+              onClick={() => setBlogsReload((n) => n + 1)}
+              className="inline-flex min-h-[44px] items-center gap-1.5 border border-carbon-20 bg-carbon-05 px-3 py-1.5 text-xs font-bold text-carbon-80 hover:bg-carbon-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-nasa-blue focus-visible:outline-offset-2"
+            >
+              <MaterialIcon name="refresh" className="text-sm" />
+              {t('frontdoor.blogs.retry')}
+            </button>
+          </div>
+        )}
+
+        {!blogsLoading && !blogsError && blogPosts !== null && blogPosts.length === 0 && (
+          <p className="text-sm text-carbon-60">{t('frontdoor.blogs.empty')}</p>
+        )}
+
+        {!blogsLoading && !blogsError && blogPosts !== null && blogPosts.length > 0 && (
+          <ul className="grid grid-cols-1 gap-3 md:grid-cols-2">
+            {blogPosts.slice(0, 4).map((article, index) => (
+              <li key={article.id}>
+                <Link
+                  to={`/blogs/${encodeURIComponent(article.slug)}`}
+                  className="flex h-full flex-col gap-2 border border-carbon-20 bg-white p-4 transition-colors hover:border-nasa-blue-shade focus-visible:outline focus-visible:outline-2 focus-visible:outline-nasa-blue focus-visible:outline-offset-2"
+                >
+                  <span className="flex flex-wrap items-center gap-2">
+                    <span className="border border-carbon-20 bg-carbon-05 px-2 py-0.5 text-xs font-semibold text-carbon-70">
+                      {article.category || t('frontdoor.blogs.aside')}
+                    </span>
+                    {index === 0 && (
+                      <span className="border border-nasa-blue/20 bg-nasa-blue/10 px-2 py-0.5 text-xs font-bold text-nasa-blue-shade">
+                        {t('frontdoor.blogs.newest')}
+                      </span>
+                    )}
+                  </span>
+                  <span className="text-base font-bold leading-snug text-carbon-90">{article.title}</span>
+                  <span className="line-clamp-2 text-sm leading-[1.62] text-carbon-60">{article.excerpt}</span>
+                  <span className="mt-auto pt-1 font-mono text-xs text-carbon-60">
+                    {formatDate(article.publishedAt ?? article.createdAt)}
+                    {` · ${t('frontdoor.blogs.minRead', { min: readingTimeMinutes(article.contentHtml) })}`}
+                    {article.authorName ? ` · ${article.authorName}` : ''}
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        <Link to="/blogs" className="inline-flex min-h-[44px] items-center gap-1.5 text-sm font-bold text-nasa-blue-shade underline underline-offset-4 hover:decoration-nasa-blue-shade">
+          {t('frontdoor.blogs.allPosts')}
+          <MaterialIcon name="arrow_forward" className="text-sm" />
+        </Link>
+      </section>
 
       {/* ── Questions the front door should answer ────────────────────────── */}
       {faqs.length > 0 && (
