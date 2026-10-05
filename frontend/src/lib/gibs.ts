@@ -280,3 +280,165 @@ export function stepGibsDate(dateIso: string, backDays: number): string {
   const base = new Date(`${dateIso}T00:00:00Z`);
   return utcDateIso(new Date(base.getTime() - backDays * 24 * 60 * 60 * 1000));
 }
+
+/* ── Phase D: GPM IMERG rain rate (sub-daily, 30-min frames) ────────────── */
+
+/**
+ * IMERG Early Run on GIBS: 0.1° half-hourly precipitation rate, minimum
+ * latency about 4 hours (gpm.nasa.gov/data/directory). Tiles ship
+ * pre-coloured by GIBS (greens→reds for rain, cyan→purple for snow as liquid
+ * equivalent), so the client renders them as-is and documents the ramp.
+ */
+export const GIBS_IMERG_RAIN = {
+  id: 'imerg-rain',
+  gibsLayer: 'IMERG_Precipitation_Rate',
+  name: 'GPM IMERG',
+  tileMatrixSet: 'GoogleMapsCompatible_Level6',
+  maxNativeZoom: 6,
+  resolution: '0.1° (~10 km)',
+  cadence: '30 min',
+  typicalLag: '~4 h',
+} as const;
+
+/** IMERG frames are 30 minutes apart. */
+export const IMERG_FRAME_STEP_MS = 30 * 60 * 1000;
+
+/** Early Run minimum latency; probe no newer than this behind now. */
+export const IMERG_LATENCY_MS = 4 * 60 * 60 * 1000;
+
+/** How many replay frames the panel keeps (plan: newest six). */
+export const IMERG_FRAME_COUNT = 6;
+
+/** How many candidate frames to probe per labelling convention, at most. */
+export const IMERG_PROBE_BUDGET = 12;
+
+/** Probe cache for frames is short: IMERG publishes every 30 minutes. */
+export const IMERG_PROBE_TTL_MS = 10 * 60 * 1000;
+
+/**
+ * XYZ template for a GIBS layer on a concrete UTC date-time (sub-daily layers
+ * take `YYYY-MM-DDTHH:MM:SSZ` in the time slot; daily layers take a date).
+ */
+export function gibsSubDailyTileUrl(gibsLayer: string, timeIso: string, tileMatrixSet: string): string {
+  return (
+    'https://gibs-{s}.earthdata.nasa.gov/wmts/epsg3857/best/' +
+    `${gibsLayer}/default/${timeIso}/${tileMatrixSet}/{z}/{y}/{x}.png`
+  );
+}
+
+/** Floor an instant to the half hour (UTC). */
+export function floorToHalfHour(date: Date): Date {
+  const d = new Date(date.getTime());
+  d.setUTCMinutes(d.getUTCMinutes() >= 30 ? 30 : 0, 0, 0);
+  return d;
+}
+
+/** `YYYY-MM-DDTHH:MM:00Z` for the GIBS time dimension. */
+export function gibsTimeIso(date: Date): string {
+  return `${date.toISOString().slice(0, 17)}00Z`;
+}
+
+/** `HH:MM UTC` — the advertised observation time, for chips and replay labels. */
+export function gibsTimeLabel(iso: string): string {
+  return `${iso.slice(11, 16)} UTC`;
+}
+
+/**
+ * Newest-first candidate frame instants: the newest frame that could plausibly
+ * exist given Early Run latency, then half-hour steps back. `offsetMinutes`
+ * selects the labelling convention to try (GIBS labels IMERG frames at the
+ * middle of each 30-minute period, i.e. :15 and :45; period-start labels are
+ * tried too so a relabelled product still resolves).
+ */
+export function imergFrameCandidates(
+  now: Date = new Date(),
+  offsetMinutes: 0 | 15 = 0,
+  budget: number = IMERG_PROBE_BUDGET
+): Date[] {
+  const horizon = now.getTime() - IMERG_LATENCY_MS;
+  let start = floorToHalfHour(new Date(horizon));
+  if (offsetMinutes === 15) start = new Date(start.getTime() + 15 * 60 * 1000);
+  // Keep every candidate behind the latency horizon, newest first.
+  if (start.getTime() > horizon) start = new Date(start.getTime() - IMERG_FRAME_STEP_MS);
+  const out: Date[] = [];
+  for (let i = 0; i < budget; i += 1) {
+    out.push(new Date(start.getTime() - i * IMERG_FRAME_STEP_MS));
+  }
+  return out;
+}
+
+async function probeGibsTime(
+  gibsLayer: string,
+  timeIso: string,
+  tileMatrixSet: string,
+  options: GibsFetchOptions
+): Promise<boolean> {
+  const fetchImpl = options.fetchImpl ?? fetch;
+  const timeoutMs = options.timeoutMs ?? GIBS_FETCH_TIMEOUT_MS;
+  const { z, x, y } = GIBS_PROBE_TILE;
+  const url = gibsSubDailyTileUrl(gibsLayer, timeIso, tileMatrixSet)
+    .replace('{s}', 'a')
+    .replace('{z}', String(z))
+    .replace('{y}', String(y))
+    .replace('{x}', String(x));
+
+  const release = options.gate ? await options.gate.acquire() : () => undefined;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const res = await fetchImpl(url, { signal: controller.signal });
+    return res.ok;
+  } catch {
+    return false;
+  } finally {
+    clearTimeout(timer);
+    release();
+  }
+}
+
+export interface ImergFramePlan {
+  /** Newest-first UTC frame times (`YYYY-MM-DDTHH:MM:00Z`), up to six. */
+  frames: string[];
+  /** Which labelling convention GIBS answered under. */
+  offsetMinutes: 0 | 15;
+}
+
+let imergCacheValue: { at: number; plan: ImergFramePlan | null } | null = null;
+
+/** Test hook: forget the cached frame probe. */
+export function clearImergProbeCache(): void {
+  imergCacheValue = null;
+}
+
+/**
+ * Find the newest six IMERG frames GIBS answers for. Probes newest-first under
+ * the period-start convention first; if that convention yields nothing, the
+ * midpoint convention (:15/:45, the documented IMERG labelling) is tried. All
+ * probes go through the caller's concurrency gate. Null means UNAVAILABLE.
+ */
+export async function resolveImergFrames(
+  options: GibsFetchOptions = {},
+  now: Date = new Date()
+): Promise<ImergFramePlan | null> {
+  if (imergCacheValue && options.fetchImpl === undefined && Date.now() - imergCacheValue.at < IMERG_PROBE_TTL_MS) {
+    return imergCacheValue.plan;
+  }
+  const { gibsLayer, tileMatrixSet } = GIBS_IMERG_RAIN;
+  for (const offsetMinutes of [0, 15] as const) {
+    const frames: string[] = [];
+    for (const instant of imergFrameCandidates(now, offsetMinutes)) {
+      if (frames.length >= IMERG_FRAME_COUNT) break;
+      const iso = gibsTimeIso(instant);
+      // eslint-disable-next-line no-await-in-loop -- deliberate: newest first, bounded
+      const ok = await probeGibsTime(gibsLayer, iso, tileMatrixSet, options);
+      if (ok) frames.push(iso);
+    }
+    if (frames.length > 0) {
+      const plan: ImergFramePlan = { frames, offsetMinutes };
+      imergCacheValue = { at: Date.now(), plan };
+      return plan;
+    }
+  }
+  imergCacheValue = { at: Date.now(), plan: null };
+  return null;
+}

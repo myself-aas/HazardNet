@@ -9,13 +9,22 @@
  */
 import {
   ConcurrencyGate,
+  GIBS_IMERG_RAIN,
   GIBS_MAX_IN_FLIGHT,
   GIBS_TRUECOLOR,
+  IMERG_FRAME_COUNT,
   clearGibsProbeCache,
+  clearImergProbeCache,
+  floorToHalfHour,
   gibsDateCandidates,
+  gibsSubDailyTileUrl,
+  gibsTimeIso,
+  gibsTimeLabel,
   gibsTileUrl,
+  imergFrameCandidates,
   lonLatToTile,
   probeGibsDate,
+  resolveImergFrames,
   resolveNewestGibsDate,
   resolveTrueColorPlan,
   stepGibsDate,
@@ -200,5 +209,93 @@ describe('newest-date probe and ladder', () => {
     expect(plan?.source.id).toBe('modis-terra');
     expect(plan?.degraded).toBe(false);
     expect(seen.some((u) => u.includes('VIIRS_SNPP'))).toBe(false);
+  });
+});
+
+describe('IMERG rain-rate frames (Phase D)', () => {
+  const NOW = new Date('2026-10-05T18:07:00Z');
+
+  beforeEach(() => clearImergProbeCache());
+
+  it('floors instants to the half hour', () => {
+    expect(floorToHalfHour(new Date('2026-10-05T18:07:00Z')).toISOString()).toBe('2026-10-05T18:00:00.000Z');
+    expect(floorToHalfHour(new Date('2026-10-05T18:44:00Z')).toISOString()).toBe('2026-10-05T18:30:00.000Z');
+    expect(floorToHalfHour(new Date('2026-10-05T18:59:59Z')).toISOString()).toBe('2026-10-05T18:30:00.000Z');
+  });
+
+  it('lists newest-first frame candidates behind the latency horizon', () => {
+    const periodStart = imergFrameCandidates(NOW, 0, 4).map(gibsTimeIso);
+    expect(periodStart).toEqual([
+      '2026-10-05T14:00:00Z',
+      '2026-10-05T13:30:00Z',
+      '2026-10-05T13:00:00Z',
+      '2026-10-05T12:30:00Z',
+    ]);
+    // Midpoint labels (:15/:45) stay behind the same horizon.
+    const midpoint = imergFrameCandidates(NOW, 15, 3).map(gibsTimeIso);
+    expect(midpoint).toEqual([
+      '2026-10-05T13:45:00Z',
+      '2026-10-05T13:15:00Z',
+      '2026-10-05T12:45:00Z',
+    ]);
+  });
+
+  it('formats and labels GIBS frame times', () => {
+    expect(gibsTimeIso(new Date('2026-10-05T13:30:00Z'))).toBe('2026-10-05T13:30:00Z');
+    expect(gibsTimeLabel('2026-10-05T13:30:00Z')).toBe('13:30 UTC');
+  });
+
+  it('builds the sub-daily WMTS template at Level6', () => {
+    const url = gibsSubDailyTileUrl(GIBS_IMERG_RAIN.gibsLayer, '2026-10-05T13:30:00Z', GIBS_IMERG_RAIN.tileMatrixSet);
+    expect(url).toContain('IMERG_Precipitation_Rate/default/2026-10-05T13:30:00Z');
+    expect(url).toContain('GoogleMapsCompatible_Level6/{z}/{y}/{x}.png');
+  });
+
+  it('collects the newest six frames when GIBS answers (fetch spy)', async () => {
+    const seen: string[] = [];
+    const fetchImpl = (async (input: RequestInfo | URL) => {
+      seen.push(String(input));
+      return { ok: true } as Response;
+    }) as unknown as typeof fetch;
+    const plan = await resolveImergFrames({ fetchImpl }, NOW);
+    expect(plan).not.toBeNull();
+    expect(plan?.frames).toHaveLength(IMERG_FRAME_COUNT);
+    expect(plan?.frames[0]).toBe('2026-10-05T14:00:00Z');
+    expect(plan?.frames[5]).toBe('2026-10-05T11:30:00Z');
+    // Newest first, and nothing beyond the six collected frames.
+    expect(seen).toHaveLength(IMERG_FRAME_COUNT);
+    expect(plan?.offsetMinutes).toBe(0);
+  });
+
+  it('falls back to midpoint labelling when period-start labels fail', async () => {
+    const fetchImpl = (async (input: RequestInfo | URL) => {
+      const url = String(input);
+      // Only :15/:45-stamped frames answer.
+      return { ok: url.includes('T13:45:00Z') || url.includes(':15:00Z') || url.includes(':45:00Z') } as Response;
+    }) as unknown as typeof fetch;
+    const plan = await resolveImergFrames({ fetchImpl }, NOW);
+    expect(plan).not.toBeNull();
+    expect(plan?.offsetMinutes).toBe(15);
+    expect(plan?.frames[0]).toBe('2026-10-05T13:45:00Z');
+  });
+
+  it('reaches the distinct UNAVAILABLE state under total failure', async () => {
+    let calls = 0;
+    const fetchImpl = (async () => {
+      calls += 1;
+      return { ok: false } as Response;
+    }) as unknown as typeof fetch;
+    await expect(resolveImergFrames({ fetchImpl }, NOW)).resolves.toBeNull();
+    // Bounded probing: at most the per-convention budget, twice.
+    expect(calls).toBeLessThanOrEqual(24);
+  });
+
+  it('routes frame probes through the concurrency gate', async () => {
+    const gate = new ConcurrencyGate(GIBS_MAX_IN_FLIGHT);
+    const observed = { inFlight: 0, peak: 0, calls: 0 };
+    const fetchImpl = okFetch(observed);
+    const plan = await resolveImergFrames({ gate, fetchImpl }, NOW);
+    expect(plan?.frames).toHaveLength(IMERG_FRAME_COUNT);
+    expect(observed.peak).toBeLessThanOrEqual(GIBS_MAX_IN_FLIGHT);
   });
 });

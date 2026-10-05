@@ -102,6 +102,17 @@ export const LIVE_LAYERS: LiveLayerDef[] = [
     lowBandwidthDefaultOff: true,
     caption: 'Heavy imagery · newest available, never live',
   },
+  {
+    id: 'overlay-rain',
+    section: 'overlays',
+    name: 'Rain rate (GPM IMERG)',
+    icon: 'water_drop',
+    kind: 'toggle',
+    creditIds: ['gibs'],
+    freshness: { cadence: '~30 min' },
+    lowBandwidthDefaultOff: true,
+    caption: 'Near-real-time satellite estimate, not gauge data',
+  },
 ];
 
 /** Hazard filter chips reuse the HAZARD_LAYERS palette via the panel. */

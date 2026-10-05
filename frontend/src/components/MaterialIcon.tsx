@@ -201,6 +201,12 @@ export const MaterialIcon: React.FC<MaterialIconProps> = ({
           </>
         );
 
+      case 'play_arrow':
+        return <path d="M8 5v14l11-7z" fill="currentColor" stroke="none" />;
+
+      case 'pause':
+        return <path d="M7 5h4v14H7zM13 5h4v14h-4z" fill="currentColor" stroke="none" />;
+
       case 'push_pin':
       case 'pin':
       case 'pinned':

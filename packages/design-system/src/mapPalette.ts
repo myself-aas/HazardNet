@@ -61,3 +61,23 @@ export const MAP_HEAT_RAMP = {
   moderate: '#f59e0b',
   heavy: '#ef4444',
 } as const;
+
+/**
+ * GPM IMERG rain-rate ramp (Phase D, 2026-10-05): documents the colouring GIBS
+ * itself renders for `IMERG_Precipitation_Rate` — greens for light rain through
+ * yellows and oranges to deep reds for intense rain, with cyan/blue/purple for
+ * snowfall shown as liquid-water equivalent. The legend boundaries it draws are
+ * approximate on purpose: the tiles are pre-rendered by GIBS, so this ramp is a
+ * guide to their encoding, not a client-side re-colouring.
+ */
+export const MAP_RAIN_RAMP = {
+  trace: '#2f9e44',
+  light: '#82c91e',
+  moderate: '#ffd43b',
+  heavy: '#ff922b',
+  intense: '#f03e3e',
+  extreme: '#8f1616',
+  snowLight: '#22b8cf',
+  snowModerate: '#3b5bdb',
+  snowHeavy: '#7048e8',
+} as const;

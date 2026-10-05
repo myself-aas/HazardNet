@@ -75,4 +75,17 @@ describe('live-map layer table', () => {
     expect(gibs.href).toContain('gibs.earthdata.nasa.gov');
     expect(activeCredits(['gibs'])).toHaveLength(1);
   });
+
+  it('declares the IMERG rain-rate row with the NRT chip and an honest caption', () => {
+    const row = LIVE_LAYERS.find((l) => l.id === 'overlay-rain');
+    expect(row).toBeDefined();
+    expect(row?.section).toBe('overlays');
+    expect(row?.kind).toBe('toggle');
+    expect(row?.icon).toBe('water_drop');
+    expect(row?.freshness?.cadence).toMatch(/30 min/);
+    expect(row?.creditIds).toEqual(['gibs']);
+    expect(row?.lowBandwidthDefaultOff).toBe(true);
+    // Meaning-discipline: the caption states what the product is not.
+    expect(row?.caption).toMatch(/not gauge data/);
+  });
 });

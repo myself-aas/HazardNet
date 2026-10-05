@@ -34,13 +34,17 @@ import { LIVE_LAYERS, LIVE_SECTIONS } from '../lib/liveLayers';
 import { activeCredits } from '../lib/dataCredits';
 import {
   ConcurrencyGate,
+  GIBS_IMERG_RAIN,
   GIBS_MAX_IN_FLIGHT,
   GIBS_STATUS_URL,
   GIBS_TILE_MAX_NATIVE_ZOOM,
   GIBS_TILE_SUBDOMAINS,
   GIBS_TRUECOLOR,
   gibsDateCandidates,
+  gibsSubDailyTileUrl,
   gibsTileUrl,
+  gibsTimeLabel,
+  resolveImergFrames,
   resolveTrueColorPlan,
   stepGibsDate,
   type TrueColorPlan,
@@ -66,6 +70,7 @@ import {
   MAP_CHROME,
   MAP_INTERACTIVE,
   MAP_HEAT_RAMP,
+  MAP_RAIN_RAMP,
   MAP_RISK_RAMP,
 } from '@hazardnet/design-system';
 
@@ -298,16 +303,30 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
   const gibsLayerRef = useRef<GibsTileLayer | null>(null);
   const trueColorDateIso = trueColorPlan ? stepGibsDate(trueColorPlan.dateIso, trueColorOffset) : null;
 
+  // Rain rate (Phase D). GPM IMERG Early Run half-hourly frames from GIBS,
+  // probed newest-first behind the ~4 h latency, replayed six frames deep. The
+  // advertised observation time is always shown separately from "now" — the
+  // frames are estimates at the middle of each 30-minute period, not a live
+  // gauge network.
+  const [isRainActive, setIsRainActive] = useState<boolean>(false);
+  const [rainStatus, setRainStatus] = useState<'idle' | 'loading' | 'ready' | 'unavailable'>('idle');
+  const [rainFrames, setRainFrames] = useState<string[]>([]);
+  const [rainFrameIndex, setRainFrameIndex] = useState<number>(0);
+  const [isRainPlaying, setIsRainPlaying] = useState<boolean>(false);
+  const [isRainExpanded, setIsRainExpanded] = useState<boolean>(false);
+  const rainLayerRef = useRef<GibsTileLayer | null>(null);
+  const rainFrameIso = rainFrames[rainFrameIndex] ?? null;
+
   // What the attribution lightbox lists: exactly the credits of what is on
   // screen. The basemap credit follows the ground; the forecast credit appears
   // only while an overlay that draws the forecast product is switched on; the
-  // GIBS credit only while the true-colour overlay is actually rendering.
+  // GIBS credit only while a GIBS overlay is actually rendering.
   const attributionCreditIds: string[] =
     activeLayer === 'esriSatellite' ? ['esri'] : ['osm', 'opentopomap'];
   if (isRiverLayerActive || isHeatmapActive || isClusteringActive) {
     attributionCreditIds.push('forecasts');
   }
-  if (isTrueColorActive && trueColorStatus === 'ready') {
+  if ((isTrueColorActive && trueColorStatus === 'ready') || (isRainActive && rainStatus === 'ready')) {
     attributionCreditIds.push('gibs');
   }
   const attributionList = activeCredits(attributionCreditIds);
@@ -420,6 +439,107 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
     document.addEventListener('visibilitychange', onVisibility);
     return () => document.removeEventListener('visibilitychange', onVisibility);
   }, []);
+
+  // Rain frame probe: newest six IMERG frames behind the Early Run latency.
+  // Re-enabling re-probes; the plan's tiles skip L2/L3, so the only states are
+  // ready and the distinct UNAVAILABLE one.
+  useEffect(() => {
+    if (!isRainActive) {
+      setRainStatus('idle');
+      setRainFrames([]);
+      setRainFrameIndex(0);
+      setIsRainPlaying(false);
+      return;
+    }
+    let cancelled = false;
+    setRainStatus('loading');
+    resolveImergFrames({ gate: gibsGateRef.current ?? undefined }).then((plan) => {
+      if (cancelled) return;
+      if (!plan) {
+        setRainFrames([]);
+        setRainStatus('unavailable');
+        setIsRainExpanded(true);
+        return;
+      }
+      setRainFrames(plan.frames);
+      setRainFrameIndex(0);
+      setRainStatus('ready');
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [isRainActive]);
+
+  // Rain replay: step one frame every 900 ms, looping oldest -> newest.
+  useEffect(() => {
+    if (!isRainPlaying || rainFrames.length < 2) return;
+    const id = window.setInterval(() => {
+      setRainFrameIndex((i) => (i + 1) % rainFrames.length);
+    }, 900);
+    return () => window.clearInterval(id);
+  }, [isRainPlaying, rainFrames.length]);
+
+  // The rain tile layer: created once per ready session; frame changes swap the
+  // URL in place so replay does not flicker the whole layer.
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    const gate = gibsGateRef.current;
+    if (!map || !gate || !isRainActive || rainStatus !== 'ready' || rainFrames.length === 0) {
+      if (rainLayerRef.current) {
+        if (map && map.hasLayer(rainLayerRef.current)) map.removeLayer(rainLayerRef.current);
+        rainLayerRef.current = null;
+      }
+      return;
+    }
+    const { gibsLayer, tileMatrixSet, maxNativeZoom } = GIBS_IMERG_RAIN;
+    const layer = new GibsTileLayer(gibsSubDailyTileUrl(gibsLayer, rainFrames[0], tileMatrixSet), {
+      gate,
+      subdomains: GIBS_TILE_SUBDOMAINS,
+      maxNativeZoom,
+      maxZoom: 10,
+      opacity: 0.85,
+      crossOrigin: true,
+      className: 'hn-tile-imergRain',
+    });
+
+    // Tiles skip L2/L3: a run of errors with no successful load is the distinct
+    // UNAVAILABLE state, with the forecast card's precipitation row as the
+    // rain story in the meantime.
+    let errors = 0;
+    let sawLoad = false;
+    let failed = false;
+    const onTileError = () => {
+      if (sawLoad || failed) return;
+      errors += 1;
+      if (errors < 8) return;
+      failed = true;
+      setRainStatus('unavailable');
+      setIsRainExpanded(true);
+    };
+    const onTilesLoad = () => {
+      errors = 0;
+      sawLoad = true;
+    };
+    layer.on('tileerror', onTileError);
+    layer.on('load', onTilesLoad);
+
+    layer.addTo(map);
+    rainLayerRef.current = layer;
+    return () => {
+      layer.cancelGibsQueue();
+      if (map.hasLayer(layer)) map.removeLayer(layer);
+      if (rainLayerRef.current === layer) rainLayerRef.current = null;
+    };
+    // Frame swaps are handled by setUrl below to keep the layer mounted.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isRainActive, rainStatus, rainFrames]);
+
+  useEffect(() => {
+    const layer = rainLayerRef.current;
+    if (!layer || !rainFrameIso) return;
+    const { gibsLayer, tileMatrixSet } = GIBS_IMERG_RAIN;
+    layer.setUrl(gibsSubDailyTileUrl(gibsLayer, rainFrameIso, tileMatrixSet));
+  }, [rainFrameIso]);
 
   const {
     generateMapSnapshot,
@@ -1664,6 +1784,171 @@ export const LiveMapView: React.FC<LiveMapViewProps> = ({
                   </p>
                   <ul className="flex flex-col" role="group" aria-labelledby="map-layers-title">
                     {LIVE_LAYERS.filter((l) => l.section === 'overlays').map((def) => {
+                      if (def.id === 'overlay-rain') {
+                        // GPM IMERG rain-rate row (Phase D): amber NRT chip,
+                        // six-frame replay, mm/h legend, honest unavailable state.
+                        const isActive = isRainActive;
+                        const isUnavailable = rainStatus === 'unavailable';
+                        const chipLabel = !isActive
+                          ? 'Off'
+                          : isUnavailable
+                            ? mapFreshnessLabel({ kind: 'unavailable' })
+                            : mapFreshnessLabel({ kind: 'nrt', lag: def.freshness?.cadence ?? '30 min' });
+                        const chipAmber = isActive && !isUnavailable;
+                        const latestRainIso = rainFrames[rainFrameIndex] ?? null;
+                        const nowUtcLabel = `${new Date().toISOString().slice(11, 16)} UTC`;
+                        return (
+                          <li key={def.id} className="py-2.5">
+                            <div className="flex items-center justify-between gap-3 min-h-[52px]">
+                              <span className="flex items-center gap-3">
+                                <MaterialIcon name={def.icon} className="w-5 h-5 text-carbon-50 dark:text-carbon-40 shrink-0" />
+                                <span className="flex flex-col">
+                                  <span className="text-[15px] font-semibold text-carbon-80 dark:text-carbon-10">{def.name}</span>
+                                  {def.caption ? (
+                                    <span className="text-xs text-carbon-40 dark:text-carbon-50">{def.caption}</span>
+                                  ) : null}
+                                </span>
+                              </span>
+                              <span className="flex items-center gap-1.5">
+                                {isActive || isUnavailable ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => setIsRainExpanded(!isRainExpanded)}
+                                    aria-expanded={isRainExpanded}
+                                    aria-label={isRainExpanded ? 'Hide rain controls' : 'Show rain controls'}
+                                    className="tap-target w-11 h-11 rounded-full text-carbon-50 dark:text-carbon-40 hover:bg-carbon-10 dark:hover:bg-carbon-80 flex items-center justify-center transition-colors"
+                                  >
+                                    <MaterialIcon name={isRainExpanded ? 'expand_less' : 'expand_more'} className="w-5 h-5" />
+                                  </button>
+                                ) : null}
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setIsRainActive(!isActive);
+                                    if (isActive) setIsRainExpanded(false);
+                                  }}
+                                  aria-pressed={isActive}
+                                  title={
+                                    isUnavailable
+                                      ? 'GIBS is not answering right now. See the NASA Earthdata status page.'
+                                      : isActive
+                                        ? 'Turn the rain-rate overlay off'
+                                        : 'Show the newest IMERG rain-rate frames'
+                                  }
+                                  className={`min-h-[40px] px-4 rounded-full text-xs font-bold uppercase tracking-wide transition-colors ${
+                                    chipAmber
+                                      ? 'bg-amber-100 text-amber-900 border border-amber-200 dark:bg-amber-950 dark:text-amber-200 dark:border-amber-900'
+                                      : 'bg-carbon-10 text-carbon-50 dark:bg-carbon-80 dark:text-carbon-40'
+                                  }`}
+                                >
+                                  {chipLabel}
+                                </button>
+                              </span>
+                            </div>
+
+                            {isUnavailable ? (
+                              <p className="text-xs leading-[1.62] text-carbon-50 dark:text-carbon-40 pl-8 pt-1">
+                                Rain-rate tiles are not answering right now. Try again shortly, or check{' '}
+                                <a
+                                  href={GIBS_STATUS_URL}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="underline underline-offset-2 text-carbon-80 dark:text-carbon-10"
+                                >
+                                  NASA Earthdata status
+                                </a>
+                                . The district forecast card still carries the precipitation outlook in the meantime.
+                              </p>
+                            ) : null}
+
+                            {isActive && isRainExpanded && rainStatus === 'ready' && rainFrames.length > 0 && latestRainIso ? (
+                              <div className="mt-2 pl-8 flex flex-col gap-3">
+                                <div className="flex items-center gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={() => setIsRainPlaying(!isRainPlaying)}
+                                    disabled={rainFrames.length < 2}
+                                    aria-label={isRainPlaying ? 'Pause the rain replay' : 'Play the rain replay'}
+                                    className="tap-target w-11 h-11 rounded-full bg-carbon-90 dark:bg-white text-white dark:text-carbon-90 flex items-center justify-center disabled:opacity-40 transition-colors"
+                                  >
+                                    <MaterialIcon name={isRainPlaying ? 'pause' : 'play_arrow'} className="w-5 h-5" />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => setRainFrameIndex(Math.max(0, rainFrameIndex - 1))}
+                                    disabled={rainFrameIndex <= 0}
+                                    aria-label="One frame newer"
+                                    className="tap-target w-11 h-11 rounded-full bg-carbon-10 dark:bg-carbon-80 text-carbon-70 dark:text-carbon-20 flex items-center justify-center disabled:opacity-40 transition-colors"
+                                  >
+                                    <MaterialIcon name="chevron_left" className="w-5 h-5" />
+                                  </button>
+                                  <span className="flex flex-col items-center min-w-[120px]">
+                                    <span className="text-sm font-bold text-carbon-90 dark:text-white tabular-nums">
+                                      {gibsTimeLabel(latestRainIso)}
+                                    </span>
+                                    <span className="text-xs text-carbon-40 dark:text-carbon-50">
+                                      {rainFrameIndex === 0
+                                        ? 'Latest frame'
+                                        : `${rainFrameIndex * 30} min earlier`}
+                                    </span>
+                                  </span>
+                                  <button
+                                    type="button"
+                                    onClick={() => setRainFrameIndex(Math.min(rainFrames.length - 1, rainFrameIndex + 1))}
+                                    disabled={rainFrameIndex >= rainFrames.length - 1}
+                                    aria-label="One frame older"
+                                    className="tap-target w-11 h-11 rounded-full bg-carbon-10 dark:bg-carbon-80 text-carbon-70 dark:text-carbon-20 flex items-center justify-center disabled:opacity-40 transition-colors"
+                                  >
+                                    <MaterialIcon name="chevron_right" className="w-5 h-5" />
+                                  </button>
+                                </div>
+                                <p className="text-xs text-carbon-50 dark:text-carbon-40">
+                                  Observed {gibsTimeLabel(latestRainIso)} · now {nowUtcLabel}
+                                </p>
+
+                                <div className="flex flex-col gap-1">
+                                  <div
+                                    className="h-2.5 rounded-full"
+                                    style={{
+                                      background: `linear-gradient(to right, ${MAP_RAIN_RAMP.trace} 0%, ${MAP_RAIN_RAMP.light} 20%, ${MAP_RAIN_RAMP.moderate} 40%, ${MAP_RAIN_RAMP.heavy} 60%, ${MAP_RAIN_RAMP.intense} 80%, ${MAP_RAIN_RAMP.extreme} 100%)`,
+                                    }}
+                                    role="img"
+                                    aria-label="Rain-rate colour ramp from trace to extreme, in millimetres per hour"
+                                  />
+                                  <div className="flex justify-between text-xs text-carbon-50 dark:text-carbon-40 tabular-nums">
+                                    <span>0.1</span>
+                                    <span>0.5</span>
+                                    <span>1</span>
+                                    <span>2</span>
+                                    <span>4</span>
+                                    <span>10+ mm/h</span>
+                                  </div>
+                                  <p className="flex items-center gap-1.5 text-xs text-carbon-50 dark:text-carbon-40">
+                                    <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: MAP_RAIN_RAMP.snowLight }} />
+                                    <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: MAP_RAIN_RAMP.snowModerate }} />
+                                    <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: MAP_RAIN_RAMP.snowHeavy }} />
+                                    Cyan to purple is snowfall, shown as liquid-water equivalent.
+                                  </p>
+                                </div>
+
+                                <p className="text-xs leading-[1.62] text-carbon-50 dark:text-carbon-40">
+                                  Rainfall rate in millimetres per hour: the depth that would accumulate in an hour if this
+                                  rate persisted. Near-real-time multi-satellite estimate at about 10 km resolution with
+                                  roughly a four-hour lag, not gauge data. Colour boundaries are approximate; the tiles are
+                                  rendered by NASA GIBS.
+                                </p>
+                              </div>
+                            ) : null}
+
+                            {isActive && isRainExpanded && rainStatus === 'loading' ? (
+                              <p className="text-xs leading-[1.62] text-carbon-50 dark:text-carbon-40 pl-8 pt-2">
+                                Finding the newest rain frames.
+                              </p>
+                            ) : null}
+                          </li>
+                        );
+                      }
+
                       if (def.id === 'overlay-truecolor') {
                         // True-colour satellite row (Phase C): freshness chip,
                         // expandable date + opacity controls, honest states only.

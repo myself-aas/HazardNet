@@ -20,6 +20,7 @@ import {
   MAP_CHROME,
   MAP_HEAT_RAMP,
   MAP_INTERACTIVE,
+  MAP_RAIN_RAMP,
   MAP_RISK_RAMP,
 } from '@hazardnet/design-system';
 import * as designSystem from '@hazardnet/design-system';
@@ -51,6 +52,20 @@ describe('live-map palette', () => {
       calm: MAP_INTERACTIVE.blue,
       moderate: '#f59e0b',
       heavy: '#ef4444',
+    });
+    // The IMERG rain ramp documents GIBS' own colouring (greens to reds for
+    // rain, cyan to purple for snow as liquid equivalent). Legend boundaries
+    // are approximate; the tiles are pre-rendered by GIBS.
+    expect(MAP_RAIN_RAMP).toEqual({
+      trace: '#2f9e44',
+      light: '#82c91e',
+      moderate: '#ffd43b',
+      heavy: '#ff922b',
+      intense: '#f03e3e',
+      extreme: '#8f1616',
+      snowLight: '#22b8cf',
+      snowModerate: '#3b5bdb',
+      snowHeavy: '#7048e8',
     });
   });
 
